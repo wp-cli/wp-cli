@@ -1,5 +1,13 @@
 <?php
 
+class WP_CLI {
+	static $commands = array();
+	
+	function add_command($name, $class) {
+		self::$commands[$name] = $class;
+	}
+}
+
 class WP_Cli_Command {
 	function __construct($args) {
 		$sub_command = array_shift($args);
@@ -14,10 +22,6 @@ class WP_Cli_Command {
 	
 	public function help() {
 		print_r(get_class_methods($this));
-	}
-	
-	protected function parse_args() {
-		
 	}
 	
 	protected function _echo($string) {
