@@ -15,11 +15,13 @@ class WP_CLI {
 
 include 'engine/command.php';
 include 'engine/config.php';
-include 'library/commands/plugins.php';
+include 'engine/functions.php';
+
+foreach (glob('library/commands/*.php') as $filename)  {
+    include $filename; 
+}
 
 // Start output buffering to stop WordPress from spitting out its usual output.
-
-//print_r($GLOBALS['argv']);
 
 // Remove the first entry
 $arguments = array_shift($GLOBALS['argv']);

@@ -5,8 +5,6 @@ WP_CLI::add_command('plugins', 'PluginCommand');
 
 require_once(ABSPATH.'wp-admin/includes/plugin.php');
 require_once(ABSPATH.'wp-admin/includes/plugin-install.php');
-require_once(ABSPATH.'wp-admin/includes/class-wp-upgrader.php');
-	
 
 /**
  * Returns current plugin version.
@@ -86,13 +84,18 @@ class PluginCommand extends WP_Cli_Command {
 	        $api = plugins_api('plugin_information', array('slug' => stripslashes($name)));
 			$status = install_plugin_install_status($api);
 			echo 'Updating '.$name.": ";
-			ob_start('strip_tags');
-			
+
 			switch($status['status']) {
 				case 'update_available':
 				case 'install':
-					$upgrader = new Plugin_Upgrader();
-					$upgrader->install($api->download_link);
+					ob_start();
+					if(!class_exists('Plugin_Upgrader')) {
+						require_once(ABSPATH.'wp-admin/includes/class-wp-upgrader.php');
+					}
+					$upgrader = new Plugin_Upgrader(new CLI_Upgrader_Skin);
+					$result = $upgrader->install($api->download_link);
+					$feedback = ob_get_clean();
+					$this->_echo($feedback);
 				break;
 				case 'newer_installed':
 					$this->_echo(sprintf('Newer Version (%s) Installed', $status['version']));
@@ -126,11 +129,20 @@ class PluginCommand extends WP_Cli_Command {
 			wp_update_plugins();
 			
 			echo 'Updating '.$name.": ";
-			ob_start('strip_tags');
-			$success = wp_update_plugin($file);
+			ob_start();
+			
+			if(!class_exists('Plugin_Upgrader')) {
+				require_once(ABSPATH.'wp-admin/includes/class-wp-upgrader.php');
+			}
+			
+			$upgrader = new Plugin_Upgrader(new CLI_Upgrader_Skin);
+			$success = $upgrader->upgrade($file);
+			
+			$feedback = ob_get_clean();
+			$this->_echo($feedback);
 		}
 		else {
-			echo 'Usage: wp plugins update <name>.'."\n";
+			$this->_echo('Usage: wp plugins update <name>.');
 		}
 	}
 	
