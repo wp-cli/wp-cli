@@ -9,8 +9,10 @@ A command line tool to do maintenance work on a Wordpress install from the comma
 Installing
 ----------
 
-Installing wp-cli is extremely simple: place the wp-cli folder in your Wordpress root, (on the same level as wp-admin and wp-content).
-That's it!
+Installing wp-cli is extremely simple: 
+	
+1. Place the `wp-cli` folder in your Wordpress root (on the same level as `wp-admin` and `wp-content`).
+1. That's it!
 
 Usage
 -----
@@ -33,6 +35,7 @@ Between brackets you can see their sub command.
 Let's for example try to update the hello dolly plugin from Wordpress: `./wp plugins install hello-dolly`
 
 Output:
+
 ```
 Installing Hello Dolly (1.5)
 
