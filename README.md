@@ -29,11 +29,11 @@ Example usage:
     wp plugins [status|activate|deactivate|install|delete|update|help] ...
 ```
 
-So this tells us that there are 4 commands installed: google-sitemap, core, home and pluggins.
-Between brackets you can see their sub command. 
+So this tells us that there are 4 commands installed: google-sitemap, core, home and plugins.
+Between brackets you can see their sub commands. 
 
-Let's for example try to update the hello dolly plugin from Wordpress: `./wp plugins install hello-dolly`
 
+Let's for example try to update the hello dolly plugin from Wordpress: `./wp plugins install hello-dolly`.
 Output:
 
 ```
