@@ -1,7 +1,7 @@
 <?php
 
-WP_CLI::add_command('plugin', 'PluginCommand');
-WP_CLI::add_command('plugins', 'PluginCommand');
+WP_CLI::addCommand('plugin', 'PluginCommand');
+WP_CLI::addCommand('plugins', 'PluginCommand');
 
 require_once(ABSPATH.'wp-admin/includes/plugin.php');
 require_once(ABSPATH.'wp-admin/includes/plugin-install.php');
@@ -12,32 +12,12 @@ require_once(ABSPATH.'wp-admin/includes/plugin-install.php');
  * @return string Plugin version
  */
 
-class PluginCommand extends WP_Cli_Command {
-	function parse_name($name) {
-		$plugins = get_plugins('/'.$name);
-
-		if(!empty($plugins)) {
-			$keys = array_keys($plugins);
-			$file = $name.'/'.$keys[0];
-		}
-		else {
-			$plugins = get_plugins();
-			if(isset($plugins[$name.'.php'])) {
-				$file = $name.'.php';
-			}
-			else {
-				die('This plugin does not exists: '.$name."\n");
-			}
-		}
-		
-		return $file;
-	}
-	
+class PluginCommand extends WP_CLI_Command {
 	function status($args) {
 		if(!empty($args)) {
 			$name = $args[0];
-			$file = $this->parse_name($name);
 			
+			$file = $this->parse_name($name);
 			$details = $this->get_details($file);
 			
 			$this->_echo('Plugin '.$name.' details:');
@@ -151,5 +131,25 @@ class PluginCommand extends WP_Cli_Command {
 		$plugin_file = basename(($file));
 		
 		return $plugin_folder[$plugin_file];
+	}
+	
+	private function parse_name($name) {
+		$plugins = get_plugins('/'.$name);
+
+		if(!empty($plugins)) {
+			$keys = array_keys($plugins);
+			$file = $name.'/'.$keys[0];
+		}
+		else {
+			$plugins = get_plugins();
+			if(isset($plugins[$name.'.php'])) {
+				$file = $name.'.php';
+			}
+			else {
+				die('This plugin does not exists: '.$name."\n");
+			}
+		}
+		
+		return $file;
 	}
 }

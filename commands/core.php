@@ -1,8 +1,8 @@
 <?php
 
-WP_CLI::add_command('core', 'CoreCommand');
+WP_CLI::addCommand('core', 'CoreCommand');
 
-class CoreCommand extends WP_Cli_Command {
+class CoreCommand extends WP_CLI_Command {
 	function update($args) {
 		echo 'Updating the core: ';
 		if(!class_exists('Core_Upgrader')) {
