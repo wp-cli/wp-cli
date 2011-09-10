@@ -285,4 +285,35 @@ class PluginsCommand extends WP_CLI_Command {
 		
 		return $args[0];
 	}
+	
+	/**
+	 * Help function for this command
+	 *
+	 * @param string $args 
+	 * @return void
+	 * @author Andreas Creten
+	 */
+	public function help($args = array()) {
+		// Get the cli arguments
+		$arguments = $GLOBALS['argv'];
+		
+		// Remove the first entry
+		array_shift($arguments);
+
+		// Get the command
+		$used_command = array_shift($arguments);
+		
+		// Show the list of sub-commands for this command
+		WP_CLI::line('Example usage:');
+		
+		$methods = WP_CLI_Command::getMethods($this);
+		foreach ($methods as $method) {
+			if($method != 'help') {
+				WP_CLI::line('    wp '.$used_command.' '.$method.' <plugin-name>');
+			}
+			else {
+				WP_CLI::line('    wp '.$used_command.' '.$method);
+			}
+		}
+	}
 }

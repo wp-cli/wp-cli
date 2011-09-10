@@ -36,8 +36,7 @@ class HomeCommand extends WP_CLI_Command {
 	 * @param string $args 
 	 * @return void
 	 * @author Andreas Creten
-	 **/
-
+	 */
 	public function help($args = array()) {
 		WP_CLI::line('This command has no arguments, when called it will open the wp-cli homepage in your browser.');
 		WP_CLI::line();
