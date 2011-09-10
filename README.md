@@ -17,15 +17,31 @@ Usage
 
 In your terminal, go into the wp-cli folder.
 
-Type the following command:
-`./wp help`
+Typing the following command: `./wp help`,  will show you an output similar to this:
 
-This will show you an output similar to this:
-`Example usage:
+```
+Example usage:
     wp google-sitemap [build|help] ...
     wp core [update|help] ...
     wp home [help] ...
-    wp plugins [status|activate|deactivate|install|delete|update|help] ...`
+    wp plugins [status|activate|deactivate|install|delete|update|help] ...
+```
+
+So this tells us that there are 4 commands installed: google-sitemap, core, home and pluggins.
+Between brackets you can see their sub command. 
+
+Let's for example try to update the hello dolly plugin from Wordpress: `./wp plugins install hello-dolly`
+
+Output:
+```
+Installing Hello Dolly (1.5)
+
+Downloading install package from http://downloads.wordpress.org/plugin/hello-dolly.1.5.zip ...
+Unpacking the package ...
+Installing the plugin ...
+
+Success: The plugin is successfully installed
+```
 
 Adding commands
 ---------------
