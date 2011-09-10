@@ -6,7 +6,7 @@ if(PHP_SAPI !== 'cli') {
 }
 
 // Define the Wordpress location
-define('WP_ROOT', '../wordpress/');
+define('WP_ROOT', '../');
 
 // Set a constant that can be used to check if we are running wp-cli or not
 define('WP_CLI', true);
