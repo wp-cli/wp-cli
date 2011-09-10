@@ -6,7 +6,7 @@
 # And 0.09% to the author of this project:
 # https://github.com/88mph/wpadmin/blob/master/wpadmin.php
 # 
-# This is a wrapper script that will run wp.php with the most appropriate
+# This is a wrapper script that will run wp-cli.php with the most appropriate
 # php executable it can find on your system. 
 #
 
@@ -27,7 +27,7 @@ done
 cd "$ORIGDIR"
 
 # Build the path to wp-cli.php.
-SCRIPT_PATH=$(dirname "$SELF_PATH")/wp.php
+SCRIPT_PATH=$(dirname "$SELF_PATH")/wp-cli.php
 case $(uname -a) in
   CYGWIN*)
     SCRIPT_PATH=$(cygpath -w -a -- "$SCRIPT_PATH") ;;

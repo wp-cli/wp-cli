@@ -1,14 +1,6 @@
 <?php
 
-class WP_CLI {
-	static $commands = array();
-	
-	function add_command($name, $class) {
-		self::$commands[$name] = $class;
-	}
-}
-
-class WP_Cli_Command {
+class WP_CLI_Command {
 	function __construct($args) {
 		$sub_command = array_shift($args);
 		
