@@ -20,7 +20,10 @@ class ExampleCommand extends WP_CLI_Command {
 	 */
 	function example($args) {
 		// Print a string
-		WP_CLI::line('Prints a string -- ');
+		WP_CLI::out('Prints a string -- ');
+		
+		// Print a second string
+		WP_CLI::out('Prints a second string -- ');
 		
 		// Print a single line
 		WP_CLI::line('Prints out a line');
