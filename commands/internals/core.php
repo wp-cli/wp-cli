@@ -12,14 +12,14 @@ WP_CLI::addCommand('core', 'CoreCommand');
  */
 class CoreCommand extends WP_CLI_Command {
 	/**
-	 * Update the Wordpress core
+	 * Update the WordPress core
 	 *
 	 * @param string $args 
 	 * @return void
 	 * @author Andreas Creten
 	 */
 	function update($args) {
-		WP_CLI::line('Updating the Wordpress core.');
+		WP_CLI::line('Updating the WordPress core.');
 		
 		if(!class_exists('Core_Upgrader')) {
 			require_once(ABSPATH.'wp-admin/includes/class-wp-upgrader.php');

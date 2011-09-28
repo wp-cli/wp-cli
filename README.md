@@ -1,25 +1,25 @@
-WP-CLI: Wordpress Command Line Tools
+WP-CLI: WordPress Command Line Tools
 ============================
 
 What is wp-cli
 --------------
 
-A command line tool to do maintenance work on a Wordpress install from the command line.
+A command line tool to do maintenance work on a WordPress install from the command line.
 
 Installing
 ----------
 
 Installing wp-cli is extremely simple: 
 	
-1. Place the `wp-cli` folder in your Wordpress root (on the same level as `wp-admin` and `wp-content`).
+1. Place the `wp-cli` folder in your WordPress root (on the same level as `wp-admin` and `wp-content`).
 1. That's it!
 
 Commands
 --------
 
-- `wp core` - Update the Wordpress core
+- `wp core` - Update the WordPress core
 - `wp home` - Open the wp-cli project on Github
-- `wp option ...` - Manipulate the Wordpress options
+- `wp option ...` - Manipulate the WordPress options
 - `wp plugins ...` - Do cool things with the installed plugins
 - `wp theme ...` - Get details on the installed and current theme
 
@@ -43,13 +43,13 @@ Example usage:
 So this tells us which commands are installed: eg. google-sitemap, core, home, ...
 Between brackets you can see their sub commands. 
 
-Let's for example try to install the hello dolly plugin from Wordpress: `./wp plugins install hello-dolly`.
+Let's for example try to install the hello dolly plugin from WordPress: `./wp plugins install hello-dolly`.
 Output:
 
 ```
 Installing Hello Dolly (1.5)
 
-Downloading install package from http://downloads.wordpress.org/plugin/hello-dolly.1.5.zip ...
+Downloading install package from http://downloads.WordPress.org/plugin/hello-dolly.1.5.zip ...
 Unpacking the package ...
 Installing the plugin ...
 
@@ -103,7 +103,7 @@ This will register the comand `wp example` and the subcommand `wp example exampl
 
 You can take a look at the example command file in `commands/community/example.php` for more details. For the ways to interact with the command line, you should take a look at the WP_CLI class in the `class-wp-cli.php` file.
 
-If you want to register the command from within your plugin you might want to add a check to see if wp-cli is running. By doing this you can implement your wp-cli command by default, even if wp-cli is not installed on the Wordpress installation. You can use the `WP_CLI` constant to check if wp-cli is running:
+If you want to register the command from within your plugin you might want to add a check to see if wp-cli is running. By doing this you can implement your wp-cli command by default, even if wp-cli is not installed on the WordPress installation. You can use the `WP_CLI` constant to check if wp-cli is running:
 
 ```php
 <?php

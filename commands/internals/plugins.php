@@ -109,10 +109,10 @@ class PluginsCommand extends WP_CLI_Command {
 		// Get the plugin file name
 		$file = $this->parse_name($name, false);
 		
-		// Force Wordpress to update the plugin list
+		// Force WordPress to update the plugin list
 		wp_update_plugins();
 		
-		// Get plugin info from the Wordpress servers
+		// Get plugin info from the WordPress servers
 	    $api = plugins_api('plugin_information', array('slug' => stripslashes($name)));
 		$status = install_plugin_install_status($api);
 		
@@ -190,7 +190,7 @@ class PluginsCommand extends WP_CLI_Command {
 		// Get the plugin file name
 		$file = $this->parse_name($name);
 		
-		// Force Wordpress to update the plugin list
+		// Force WordPress to update the plugin list
 		wp_update_plugins();
 		
 		if(!class_exists('Plugin_Upgrader')) {
