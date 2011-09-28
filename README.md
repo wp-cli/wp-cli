@@ -92,7 +92,7 @@ This will register the comand `wp example` and the subcommand `wp example exampl
 
 You can take a look at the example command file in `commands/community/example.php` for more details. For the ways to interact with the command line, you should take a look at the WP_CLI class in the `class-wp-cli.php` file.
 
-If you want to register the command from within your plugin you might want to add a check to see if wp-cli is active to your plugin. By doing this you can implement the wp-cli by default, even if wp-cli is not installed on the Wordpress installation. You can use the `WP_CLI` constant to check if wp-cli is running:
+If you want to register the command from within your plugin you might want to add a check to see if wp-cli is running. By doing this you can implement your wp-cli command by default, even if wp-cli is not installed on the Wordpress installation. You can use the `WP_CLI` constant to check if wp-cli is running:
 
 ```php
 <?php
