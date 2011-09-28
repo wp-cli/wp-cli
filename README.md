@@ -20,7 +20,7 @@ Commands
 - `wp core` - Update the WordPress core
 - `wp home` - Open the wp-cli project on Github
 - `wp option ...` - Manipulate the WordPress options
-- `wp plugins ...` - Do cool things with the installed plugins
+- `wp plugin ...` - Do cool things with the installed plugins
 - `wp theme ...` - Get details on the installed and current theme
 
 Usage
@@ -36,7 +36,7 @@ Example usage:
 	wp core [update|help] ...
 	wp home [help] ...
 	wp option [add|update|delete|get|help] ...
-	wp plugins [status|activate|deactivate|install|delete|update|help] ...
+	wp plugin [status|activate|deactivate|install|delete|update|help] ...
 	wp theme [list|details|activate|help] ...
 ```
 
@@ -84,7 +84,7 @@ class ExampleCommand extends WP_CLI_Command {
 	 * @return void
 	 * @author Andreas Creten
 	 */
-	function example($args) {
+	function example($args = array()) {
 		// Print a success message
 		WP_CLI::success('Success message');
 	}
