@@ -120,7 +120,7 @@ class WP_CLI {
 }
 
 /**
- * A Upgrader Skin for Wordpress that only generates plain-text
+ * A Upgrader Skin for WordPress that only generates plain-text
  *
  * @package wp-cli
  * @author Andreas Creten
