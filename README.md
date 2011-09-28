@@ -40,7 +40,7 @@ Example usage:
 	wp theme [list|details|activate|help] ...
 ```
 
-So this tells us that there are 4 commands installed: google-sitemap, core, home and plugins.
+So this tells us which commandsa are installed: eg. google-sitemap, core, home, ...
 Between brackets you can see their sub commands. 
 
 Let's for example try to install the hello dolly plugin from Wordpress: `./wp plugins install hello-dolly`.
@@ -113,6 +113,14 @@ if(defined('WP_CLI') && WP_CLI) {
 ```
 
 **Please share the commands you make, issue a pull request to get them included in wp-cli by default.**
+
+Todo
+----
+
+Commands to be written:
+- User management
+- Post management (not sure yet if we really need this)
+
 
 Requirements
 ------------
