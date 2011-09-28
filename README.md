@@ -40,7 +40,7 @@ Example usage:
 	wp theme [list|details|activate|help] ...
 ```
 
-So this tells us which commandsa are installed: eg. google-sitemap, core, home, ...
+So this tells us which commands are installed: eg. google-sitemap, core, home, ...
 Between brackets you can see their sub commands. 
 
 Let's for example try to install the hello dolly plugin from Wordpress: `./wp plugins install hello-dolly`.
@@ -118,6 +118,7 @@ Todo
 ----
 
 Commands to be written:
+
 - User management
 - Post management (not sure yet if we really need this)
 
