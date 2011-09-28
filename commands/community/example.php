@@ -18,7 +18,7 @@ class ExampleCommand extends WP_CLI_Command {
 	 * @return void
 	 * @author Andreas Creten
 	 */
-	function example($args) {
+	function example($args = array()) {
 		// Print a string
 		WP_CLI::out('Prints a string -- ');
 		

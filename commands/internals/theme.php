@@ -12,22 +12,30 @@ WP_CLI::addCommand('theme', 'ThemeCommand');
  */
 class ThemeCommand extends WP_CLI_Command {
 	/**
-	 * List all themes
+	 * Get the status of all themes
 	 *
 	 * @param string $args 
 	 * @return void
 	 * @author Andreas Creten
 	 **/
-	public function _list($args = array()) {
+	public function status($args = array()) {
 		// Get the list of themes
 		$themes = get_themes();
 		
+		// Print the header
 		WP_CLI::line('Installed themes:');
+		
+		// Get the current theme
+		$theme_name = get_current_theme();
 		
 		// Show the list if themes
 		foreach ($themes as $key => $theme) {
-			WP_CLI::line('  - '.$theme['Stylesheet']);
+			WP_CLI::line('  '.($theme['Name'] == $theme_name ? '%gA' : 'I').' '.$theme['Stylesheet'].'%n');
 		}
+		
+		// Print the footer
+		WP_CLI::line();
+		WP_CLI::line('Codes: I = Inactive, A = Active');
 	}
 	
 	/**

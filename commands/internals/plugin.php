@@ -1,20 +1,20 @@
 <?php
 
 // Add the command to the wp-cli
-WP_CLI::addCommand('plugins', 'PluginsCommand');
+WP_CLI::addCommand('plugin', 'PluginCommand');
 
 // Do the required includes
 require_once(ABSPATH.'wp-admin/includes/plugin.php');
 require_once(ABSPATH.'wp-admin/includes/plugin-install.php');
 
 /**
- * Implement plugins command
+ * Implement plugin command
  *
  * @package wp-cli
  * @subpackage commands/internals
  * @author Andreas Creten
  */
-class PluginsCommand extends WP_CLI_Command {
+class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Get the status of one plugin
 	 *
@@ -23,22 +23,44 @@ class PluginsCommand extends WP_CLI_Command {
 	 * @author Andreas Creten
 	 */
 	function status($args) {
-		// Get the plugin name from the arguments 
-		$name = $this->check_name($args);
-		
-		// Get the plugin file name
-		$file = $this->parse_name($name);
-		
-		// Get the plugin details
-		$details = $this->get_details($file);
-		
-		// Display the plugin details
-		WP_CLI::line('Plugin %2'.$name.'%n details:');
-		WP_CLI::line('    Active: '.((int) is_plugin_active($file)));
-		if(is_multisite()) {
-			WP_CLI::line('    Network: '.((int) is_plugin_active_for_network($file)));
+		if(!empty($args)) {
+			// Get the plugin name from the arguments 
+			$name = $this->check_name($args);
+
+			// Get the plugin file name
+			$file = $this->parse_name($name);
+
+			// Get the plugin details
+			$details = $this->get_details($file);
+
+			// Display the plugin details
+			WP_CLI::line('Plugin %2'.$name.'%n details:');
+			WP_CLI::line('    Active: '.((int) is_plugin_active($file)));
+			if(is_multisite()) {
+				WP_CLI::line('    Network: '.((int) is_plugin_active_for_network($file)));
+			}
+			WP_CLI::line('    Version: '.$details['Version']);
 		}
-		WP_CLI::line('    Version: '.$details['Version']);
+		else {
+			// Get the list of plugins
+			$plugins = get_plugins();
+			
+			// Print the header
+			WP_CLI::line('Installed plugins:');
+
+			// Show the list if themes
+			foreach ($plugins as $file => $plugin) {
+				// Check plugin status
+				$network = is_plugin_active_for_network($file);
+				$status = is_plugin_active($file);
+				
+				WP_CLI::line('  '.($status ? '%g'.($network ? '%bN' : '').'A' : 'I').' '.$plugin['Name'].'%n');
+			}
+
+			// Print the footer
+			WP_CLI::line();
+			WP_CLI::line('Codes: I = Inactive, A = Active, NA = Network Active');
+		}
 	}
 	
 	/**
@@ -76,7 +98,7 @@ class PluginsCommand extends WP_CLI_Command {
 	 * @author Andreas Creten
 	 */
 	function deactivate($args) {
-		// Get the plugin name from the arguments 
+		// Get the plugin name from the arguments
 		$name = $this->check_name($args);
 		
 		// Get the plugin file name
@@ -148,7 +170,7 @@ class PluginsCommand extends WP_CLI_Command {
 				WP_CLI::error('Latest version already installed');
 				
 				if(is_plugin_inactive($file)) {
-					WP_CLI::warning('If you want to activate the plugin, run: %2wp plugins activate '.$name.'%n');
+					WP_CLI::warning('If you want to activate the plugin, run: %2wp plugin activate '.$name.'%n');
 				}
 			break;
 		}
@@ -309,7 +331,7 @@ class PluginsCommand extends WP_CLI_Command {
 		$methods = WP_CLI_Command::getMethods($this);
 		foreach ($methods as $method) {
 			if($method != 'help') {
-				WP_CLI::line('    wp '.$used_command.' '.$method.' <plugin-name>');
+				WP_CLI::line('    wp '.$used_command.' '.$method.' hello-dolly');
 			}
 			else {
 				WP_CLI::line('    wp '.$used_command.' '.$method);
