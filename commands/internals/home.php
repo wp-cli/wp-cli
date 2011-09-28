@@ -19,18 +19,18 @@ class HomeCommand extends WP_CLI_Command {
 	 */
 	function __construct($args) {
 		if(empty($args)) {
-			// Check if the x-www-browser command exists
-			$result = exec('which x-www-browser');
+			// The url for the wp-cli repository
+			$repository_url = 'http://github.com/andreascreten/wp-cli';
 			
 			// Open the wp-cli page in the browser
 			if(exec('which x-www-browser')) {
-				system('x-www-browser http://github.com/andreascreten/wp-cli');
+				system('x-www-browser '.$repository_url);
 			}
 			elseif(exec('which open')) {
-				system('open https://github.com/andreascreten/wp-cli');
+				system('open '.$repository_url);
 			}
 			else {
-				WP_CLI::error('No command found to open the homepage in the browser. Please open it manually: https://github.com/andreascreten/wp-cli');
+				WP_CLI::error('No command found to open the homepage in the browser. Please open it manually: '.$repository_url);
 				return;
 			}
 			
