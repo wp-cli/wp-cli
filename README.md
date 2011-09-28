@@ -14,6 +14,15 @@ Installing wp-cli is extremely simple:
 1. Place the `wp-cli` folder in your Wordpress root (on the same level as `wp-admin` and `wp-content`).
 1. That's it!
 
+Commands
+--------
+
+- `wp core` - Update the Wordpress core
+- `wp home` - Open the wp-cli project on Github
+- `wp option ...` - Manipulate the Wordpress options
+- `wp plugins ...` - Do cool things with the installed plugins
+- `wp theme ...` - Get details on the installed and current theme
+
 Usage
 -----
 
