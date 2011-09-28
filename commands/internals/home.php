@@ -24,7 +24,7 @@ class HomeCommand extends WP_CLI_Command {
 			
 			// Open the wp-cli page in the browser
 			if(exec('which x-www-browser')) {
-				system('x-www-browser http://github.comandreascreten/wp-cli');
+				system('x-www-browser http://github.com/andreascreten/wp-cli');
 			}
 			elseif(exec('which open')) {
 				system('open https://github.com/andreascreten/wp-cli');
