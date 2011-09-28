@@ -21,6 +21,11 @@ abstract class WP_CLI_Command {
         if(method_exists($this, $sub_command)) {
             $this->$sub_command($args);
         }
+        // If a dummy method exists, use it. This if for reserved keywords in php (like list, isset)
+        elseif(method_exists($this, '_'.$sub_command)) {
+            $sub_command = '_'.$sub_command;
+            $this->$sub_command($args);
+        }
         // Otherwise, show the help for this command
         else {
             $this->help($args);
@@ -78,6 +83,13 @@ abstract class WP_CLI_Command {
             $in_array = array_search($method, $methods);
             if($in_array !== false) {
                 unset($methods[$in_array]);
+            }
+        }
+        
+        // Fix dummy function names
+        foreach($methods as $key => $method) {
+            if(strpos($method, '_') === 0) {
+                $methods[$key] = substr($method, 1, strlen($method));
             }
         }
         
