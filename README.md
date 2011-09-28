@@ -32,7 +32,7 @@ Example usage:
 So this tells us that there are 4 commands installed: google-sitemap, core, home and plugins.
 Between brackets you can see their sub commands. 
 
-Let's for example try to update the hello dolly plugin from Wordpress: `./wp plugins install hello-dolly`.
+Let's for example try to install the hello dolly plugin from Wordpress: `./wp plugins install hello-dolly`.
 Output:
 
 ```
@@ -91,6 +91,15 @@ WP_CLI::addCommand('example', 'ExampleCommand');
 This will register the comand `wp example` and the subcommand `wp example example`. If you run `wp example example`, the text `Success: Success message` will be printed to the command line and the script will end.
 
 You can take a look at the example command file in `commands/community/example.php` for more details. For the ways to interact with the command line, you should take a look at the WP_CLI class in the `class-wp-cli.php` file.
+
+If you want to register the command from within your plugin you might want to add a check to see if wp-cli is active to your plugin. By doing this you can implement the wp-cli by default, even if wp-cli is not installed on the Wordpress installation. You can use the `WP_CLI` constant to check if wp-cli is running:
+
+```php
+<?php
+if(defined('WP_CLI') && WP_CLI) {
+	// Define and register your command in here
+}
+```
 
 **Please share the commands you make, issue a pull request to get them included in wp-cli by default.**
 
