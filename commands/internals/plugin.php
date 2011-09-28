@@ -45,6 +45,12 @@ class PluginCommand extends WP_CLI_Command {
 			// Get the list of plugins
 			$plugins = get_plugins();
 			
+			// Get list of mu plugins
+			$mu_plugins = get_mu_plugins();
+			
+			// Merge the two plugin arrays
+			$plugins = array_merge($plugins, $mu_plugins);
+			
 			// Print the header
 			WP_CLI::line('Installed plugins:');
 
@@ -53,13 +59,15 @@ class PluginCommand extends WP_CLI_Command {
 				// Check plugin status
 				$network = is_plugin_active_for_network($file);
 				$status = is_plugin_active($file);
+				$must_use = isset($mu_plugins[$file]);
+				$name = dirname($file) ? dirname($file) : str_replace('.php', '', basename($file));
 				
-				WP_CLI::line('  '.($status ? '%g'.($network ? '%bN' : '').'A' : 'I').' '.$plugin['Name'].'%n');
+				WP_CLI::line('  '.($must_use ? '%cM' : ($status ? ($network ? '%bN' : '%gA') : 'I')).' '.$name.'%n');
 			}
 
 			// Print the footer
 			WP_CLI::line();
-			WP_CLI::line('Codes: I = Inactive, A = Active, NA = Network Active');
+			WP_CLI::line('Codes: M = Must Use, I = Inactive, A = Active, N = Network Active');
 		}
 	}
 	
