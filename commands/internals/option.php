@@ -16,7 +16,6 @@ class OptionCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args 
 	 * @return void
-	 * @author Andreas Creten
 	 **/
 	public function add($args = array()) {
 		// Check if the required arguments are there
@@ -39,7 +38,6 @@ class OptionCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args 
 	 * @return void
-	 * @author Andreas Creten
 	 **/
 	public function update($args = array()) {
 		// Check if the required arguments are there
@@ -62,7 +60,6 @@ class OptionCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args 
 	 * @return void
-	 * @author Andreas Creten
 	 **/
 	public function delete($args = array()) {
 		// Check if the required arguments are there
@@ -85,7 +82,6 @@ class OptionCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args 
 	 * @return void
-	 * @author Andreas Creten
 	 **/
 	public function get($args = array()) {
 		// Check if the required arguments are there
@@ -109,7 +105,6 @@ class OptionCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args 
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	public function help($args = array()) {
 		WP_CLI::line('Example usage:');

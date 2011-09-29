@@ -16,7 +16,6 @@ class ExampleCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args 
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	function example($args = array()) {
 		// Print a string
@@ -51,7 +50,6 @@ class ExampleCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args 
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	public function help($args = array()) {
 		// Get the cli arguments

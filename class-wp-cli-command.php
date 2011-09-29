@@ -11,7 +11,6 @@ abstract class WP_CLI_Command {
      * Construct for this class, transfers the cli arguments to the right class
      *
      * @param Array $args
-     * @author Andreas Creten
      */
     function __construct($args = array()) {
         // The first command is the sub command
@@ -37,7 +36,6 @@ abstract class WP_CLI_Command {
      *
      * @param Array $args 
      * @return void
-     * @author Andreas Creten
      */
     public function help($args = array()) {
         // Get the cli arguments
@@ -69,7 +67,6 @@ abstract class WP_CLI_Command {
      *
      * @param string $class
      * @return Array The list of methods
-     * @author Andreas Creten
      */
     static function getMethods($class) {
         // Methods that don't need to be included in the method list

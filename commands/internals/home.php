@@ -15,7 +15,6 @@ class HomeCommand extends WP_CLI_Command {
 	 * Overwrite the construct to have a command without subcommand
 	 *
 	 * @param string $args 
-	 * @author Andreas Creten
 	 */
 	function __construct($args) {
 		if(empty($args)) {
@@ -47,7 +46,6 @@ class HomeCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args 
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	public function help($args = array()) {
 		WP_CLI::line('This command has no arguments, when called it will open the wp-cli homepage in your browser.');

@@ -20,7 +20,6 @@ class PluginCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	function status($args) {
 		if(!empty($args)) {
@@ -97,7 +96,6 @@ class PluginCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	function activate($args) {
 		// Get the plugin name from the arguments
@@ -124,7 +122,6 @@ class PluginCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	function deactivate($args) {
 		// Get the plugin name from the arguments
@@ -151,7 +148,6 @@ class PluginCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	function install($args) {
 		// Get the plugin name from the arguments
@@ -210,7 +206,6 @@ class PluginCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	function delete($args) {
 		// Get the plugin name from the arguments
@@ -232,7 +227,6 @@ class PluginCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	function update($args) {
 		// Get the plugin name from the arguments
@@ -273,7 +267,6 @@ class PluginCommand extends WP_CLI_Command {
 	 *
 	 * @param string $file
 	 * @return array
-	 * @author Andreas Creten
 	 */
 	private function get_details($file) {
 		$plugin_folder = get_plugins( '/' . plugin_basename(dirname($file)));
@@ -288,7 +281,6 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param string $name
 	 * @param string $exit
 	 * @return mixed
-	 * @author Andreas Creten
 	 */
 	private function parse_name($name, $exit = true) {
 		$plugins = get_plugins('/'.$name);
@@ -321,7 +313,6 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param string $args
 	 * @param string $exit
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	private function check_name($args, $exit = true) {
 		if(empty($args)) {
@@ -342,7 +333,6 @@ class PluginCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	public function help($args = array()) {
 		// Get the cli arguments

@@ -16,7 +16,6 @@ class CoreCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args 
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	function update($args) {
 		WP_CLI::line('Updating the WordPress core.');

@@ -16,7 +16,6 @@ class ThemeCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args
 	 * @return void
-	 * @author Andreas Creten
 	 **/
 	public function status($args = array()) {
 		// Get the list of themes
@@ -56,7 +55,6 @@ class ThemeCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args
 	 * @return void
-	 * @author Andreas Creten
 	 **/
 	public function details($args = array()) {
 		// Get the info of the theme
@@ -77,7 +75,6 @@ class ThemeCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args
 	 * @return void
-	 * @author Andreas Creten
 	 **/
 	public function activate($args = array()) {
 		WP_CLI::warning('This command is not ready yet!');
@@ -97,7 +94,6 @@ class ThemeCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	public function help($args = array()) {
 		WP_CLI::line('Example usage:');
