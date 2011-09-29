@@ -10,7 +10,7 @@ Installing
 ----------
 
 1. Clone the project: `git clone https://github.com/andreascreten/wp-cli.git`
-1. Make a symlink to the executable: `ln -s /path-to-wp-cli-dir/wp ~/bin/`
+1. Make a symlink to the executable: `sudo ln -s /path-to-wp-cli-dir/wp /usr/local/bin/`
 
 Usage
 -----
