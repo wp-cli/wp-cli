@@ -54,20 +54,31 @@ class PluginCommand extends WP_CLI_Command {
 			// Print the header
 			WP_CLI::line('Installed plugins:');
 
-			// Show the list if themes
 			foreach ($plugins as $file => $plugin) {
-				// Check plugin status
-				$network = is_plugin_active_for_network($file);
-				$status = is_plugin_active($file);
-				$must_use = isset($mu_plugins[$file]);
-				$name = dirname($file) ? dirname($file) : str_replace('.php', '', basename($file));
+				if ( false === strpos( $file, '/' ) )
+					$name = str_replace('.php', '', basename($file));
+				else
+					$name = dirname($file);
 
-				WP_CLI::line('  '.($must_use ? '%cM' : ($status ? ($network ? '%bN' : '%gA') : 'I')).' '.$name.'%n');
+				$line = '  ';
+
+				if ( isset($mu_plugins[$file]) )
+					$line .= '%cM';
+				elseif ( is_plugin_active_for_network($file) )
+					$line .= '%bN';
+				elseif ( is_plugin_active($file) )
+					$line .= '%gA';
+				else
+					$line .= 'I';
+
+				$line .= ' '.$name.'%n';
+
+				WP_CLI::line( $line );
 			}
 
 			// Print the footer
 			WP_CLI::line();
-			WP_CLI::line('Legend: A = Active, I = Inactive, M = Must Use, N = Network Active');
+			WP_CLI::line('Legend: %gA%n = Active, I = Inactive, M = Must Use, N = Network Active');
 		}
 	}
 
