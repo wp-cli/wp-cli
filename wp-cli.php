@@ -6,17 +6,20 @@ if(PHP_SAPI !== 'cli') {
 }
 
 // Define the WordPress location
-define('WP_ROOT', '../');
+define('WP_ROOT', $_SERVER['PWD'] . '/');
+
+// Define the wp-cli location
+define('WP_CLI_ROOT', __DIR__ . '/');
 
 // Set a constant that can be used to check if we are running wp-cli or not
 define('WP_CLI', true);
 
 // Include the wp-cli classes
-include 'class-wp-cli.php';
-include 'class-wp-cli-command.php';
+include WP_CLI_ROOT.'class-wp-cli.php';
+include WP_CLI_ROOT.'class-wp-cli-command.php';
 
 // Include the command line tools, taken from here: https://github.com/jlogsdon/php-cli-tools
-include 'php-cli-tools/lib/cli/cli.php';
+include WP_CLI_ROOT.'php-cli-tools/lib/cli/cli.php';
 \cli\register_autoload();
 
 // Taken from https://github.com/88mph/wpadmin/blob/master/wpadmin.php
@@ -33,17 +36,12 @@ else {
 }
 
 // Load all internal commands
-foreach (glob('commands/internals/*.php') as $filename)  {
+foreach (glob(WP_CLI_ROOT.'/commands/internals/*.php') as $filename)  {
     include $filename;
 }
 
 // Load all plugin commands
-foreach (glob('commands/plugins/*.php') as $filename)  {
-    include $filename;
-}
-
-// Load all theme commands
-foreach (glob('commands/themes/*.php') as $filename)  {
+foreach (glob(WP_CLI_ROOT.'/commands/community/*.php') as $filename)  {
     include $filename;
 }
 
