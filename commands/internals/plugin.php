@@ -78,7 +78,19 @@ class PluginCommand extends WP_CLI_Command {
 
 			// Print the footer
 			WP_CLI::line();
-			WP_CLI::line('Legend: %gA%n = Active, I = Inactive, M = Must Use, N = Network Active');
+
+			$legend = array(
+				'%gA' => 'Active',
+				'I' => 'Inactive',
+				'%cM' => 'Must Use',
+				'%bN' => 'Network Active',
+			);
+
+			$legend_line = array();
+			foreach ( $legend as $key => $title )
+				$legend_line[] = "$key = $title%n";
+
+			WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
 		}
 	}
 
