@@ -80,20 +80,6 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display a legend
-	 *
-	 * @param array( code => title ) $legend
-	 * @return void
-	 */
-	static function legend($legend) {
-		$legend_line = array();
-		foreach ( $legend as $key => $title )
-			$legend_line[] = "$key = $title%n";
-
-		WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
-	}
-
-	/**
 	 * Convert a wp_error into a String
 	 *
 	 * @param mixed $errors
@@ -130,6 +116,39 @@ class WP_CLI {
 			}
 			self::line(' ...');
 		}
+	}
+
+	/**
+	 * Display a legend
+	 *
+	 * @param array( code => title ) $legend
+	 * @return void
+	 */
+	static function legend($legend) {
+		$legend['%yU'] = 'Update Available';
+
+		$legend_line = array();
+		foreach ( $legend as $key => $title )
+			$legend_line[] = "$key = $title%n";
+
+		WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
+	}
+
+	/**
+	 * Return the beginning of the status line for a certain plugin or theme
+	 *
+	 * @param string $item The plugin or theme name
+	 * @param string $key The transient key
+	 *
+	 * @return string
+	 */
+	static function get_update_status( $item, $key ) {
+		$update_list = get_site_transient( $key );
+
+		if ( isset( $update_list->response[ $item ] ) )
+			return ' %yU%n';
+
+		return '  ';
 	}
 }
 
