@@ -14,7 +14,7 @@ class ThemeCommand extends WP_CLI_Command {
 	/**
 	 * Get the status of all themes
 	 *
-	 * @param string $args 
+	 * @param string $args
 	 * @return void
 	 * @author Andreas Creten
 	 **/
@@ -35,13 +35,19 @@ class ThemeCommand extends WP_CLI_Command {
 
 		// Print the footer
 		WP_CLI::line();
-		WP_CLI::line('Codes: I = Inactive, A = Active');
+
+		$legend = array(
+			'I' => 'Inactive',
+			'%gA' => 'Active',
+		);
+
+		WP_CLI::legend( $legend );
 	}
 
 	/**
 	 * Get theme details
 	 *
-	 * @param string $args 
+	 * @param string $args
 	 * @return void
 	 * @author Andreas Creten
 	 **/
@@ -62,7 +68,7 @@ class ThemeCommand extends WP_CLI_Command {
 	/**
 	 * Activate a theme
 	 *
-	 * @param string $args 
+	 * @param string $args
 	 * @return void
 	 * @author Andreas Creten
 	 **/
@@ -82,7 +88,7 @@ class ThemeCommand extends WP_CLI_Command {
 	/**
 	 * Help function for this command
 	 *
-	 * @param string $args 
+	 * @param string $args
 	 * @return void
 	 * @author Andreas Creten
 	 */

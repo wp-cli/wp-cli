@@ -97,11 +97,7 @@ class PluginCommand extends WP_CLI_Command {
 
 			$legend['%yU'] = 'Update Available';
 
-			$legend_line = array();
-			foreach ( $legend as $key => $title )
-				$legend_line[] = "$key = $title%n";
-
-			WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
+			WP_CLI::legend( $legend );
 		}
 	}
 

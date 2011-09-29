@@ -13,76 +13,90 @@ class WP_CLI {
 	 * Add a command to the wp-cli list of commands
 	 *
 	 * @param string $name The name of the command that will be used in the cli
-	 * @param string $class The class to manage the command 
+	 * @param string $class The class to manage the command
 	 * @return void
 	 * @author Andreas Creten
 	 */
 	public function addCommand($name, $class) {
 		self::$commands[$name] = $class;
 	}
-	
+
 	/**
 	 * Display a message in the cli
 	 *
-	 * @param string $message 
+	 * @param string $message
 	 * @return void
 	 * @author Andreas Creten
 	 */
 	static function out($message) {
 		\cli\out($message);
 	}
-	
+
 	/**
 	 * Display a message in the CLI and end with a newline
 	 *
-	 * @param string $message 
+	 * @param string $message
 	 * @return void
 	 * @author Andreas Creten
 	 */
 	static function line($message = '') {
 		\cli\line($message);
 	}
-	
+
 	/**
 	 * Display an error in the CLI and end with a newline
 	 *
-	 * @param string $message 
-	 * @param string $label 
+	 * @param string $message
+	 * @param string $label
 	 * @return void
 	 * @author Andreas Creten
 	 */
 	static function error($message, $label = 'Error') {
 		\cli\line('%R'.$label.': %n'.self::errorToString($message));
 	}
-	
+
 	/**
 	 * Display a success in the CLI and end with a newline
 	 *
-	 * @param string $message 
-	 * @param string $label 
+	 * @param string $message
+	 * @param string $label
 	 * @return void
 	 * @author Andreas Creten
 	 */
 	static function success($message, $label = 'Success') {
 		\cli\line('%G'.$label.': %n'.$message);
 	}
-	
+
 	/**
 	 * Display a warning in the CLI and end with a newline
 	 *
-	 * @param string $message 
-	 * @param string $label 
+	 * @param string $message
+	 * @param string $label
 	 * @return void
 	 * @author Andreas Creten
 	 */
 	static function warning($message, $label = 'Warning') {
 		\cli\line('%C'.$label.': %n'.$message);
 	}
-	
+
+	/**
+	 * Display a legend
+	 *
+	 * @param array( code => title ) $legend
+	 * @return void
+	 */
+	static function legend($legend) {
+		$legend_line = array();
+		foreach ( $legend as $key => $title )
+			$legend_line[] = "$key = $title%n";
+
+		WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
+	}
+
 	/**
 	 * Convert a wp_error into a String
 	 *
-	 * @param mixed $errors 
+	 * @param mixed $errors
 	 * @return string
 	 * @author Andreas Creten
 	 */
@@ -99,7 +113,7 @@ class WP_CLI {
 			}
 		}
 	}
-	
+
 	/**
 	 * Display the help function for the wp-cli
 	 *
@@ -134,35 +148,35 @@ class CLI_Upgrader_Skin {
 		$defaults = array('url' => '', 'nonce' => '', 'title' => '', 'context' => false);
 		$this->options = wp_parse_args($args, $defaults);
 	}
-	
+
 	function set_upgrader(&$upgrader) {
 		if(is_object($upgrader)) {
 			$this->upgrader =& $upgrader;
 		}
-		
+
 		$this->add_strings();
 	}
-	
+
 	function add_strings() {}
-		
+
 	function set_result($result) {
 		$this->result = $result;
 	}
-	
+
 	function request_filesystem_credentials($error = false) {
 		$url = $this->options['url'];
 		$context = $this->options['context'];
 		if(!empty($this->options['nonce'])) {
 			$url = wp_nonce_url($url, $this->options['nonce']);
 		}
-		
+
 		// Possible to bring inline, Leaving as is for now.
 		return request_filesystem_credentials($url, '', $error, $context);
 	}
-	
+
 	function header() {}
 	function footer() {}
-		
+
 	function error($errors) {
 		$this->feedback(WP_CLI::errorToString($errors));
 	}
@@ -170,22 +184,22 @@ class CLI_Upgrader_Skin {
 	function feedback($string) {
 		if(isset( $this->upgrader->strings[$string]))
 			$string = $this->upgrader->strings[$string];
-		
+
 		if(strpos($string, '%') !== false) {
 			$args = func_get_args();
 			$args = array_splice($args, 1);
 			if(!empty($args)) {
 				$string = vsprintf($string, $args);
 			}
-			
+
 		}
 		if(empty($string)) {
 			return;
 		}
-		
+
 		echo $string;
 	}
-	
+
 	function before() {}
 	function after() {}
 }
