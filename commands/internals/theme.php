@@ -25,12 +25,19 @@ class ThemeCommand extends WP_CLI_Command {
 		// Print the header
 		WP_CLI::line('Installed themes:');
 
-		// Get the current theme
 		$theme_name = get_current_theme();
 
-		// Show the list if themes
 		foreach ($themes as $key => $theme) {
-			WP_CLI::line('  '.($theme['Name'] == $theme_name ? '%gA' : 'I').' '.$theme['Stylesheet'].'%n');
+			$line = WP_CLI::get_update_status( $theme['Stylesheet'], 'update_themes' );
+
+			if ( $theme['Name'] == $theme_name )
+				$line .= '%gA';
+			else
+				$line .= 'I';
+
+			$line .=  ' ' . $theme['Stylesheet'].'%n';
+
+			WP_CLI::line( $line );
 		}
 
 		// Print the footer
