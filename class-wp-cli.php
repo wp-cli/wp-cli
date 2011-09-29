@@ -108,6 +108,30 @@ class WP_CLI {
 			}
 			self::line(' ...');
 		}
+
+		self::block( <<<EOB
+
+Built-in commands:
+    core	Update the WordPress core
+    home	Open the wp-cli project on Github
+    option	Manipulate the WordPress options
+    plugin	Do cool things with the installed plugins
+    theme	Do cool things with the installed themes
+
+See 'wp <command> help' for more information on a specific command.
+EOB
+		);
+	}
+
+	/**
+	 * Display multiple lines of content
+	 *
+	 * @param string $content
+	 * @return void
+	 */
+	function block( $content ) {
+		foreach ( explode( "\n", $content ) as $line )
+			self::line( $line );
 	}
 
 	/**
