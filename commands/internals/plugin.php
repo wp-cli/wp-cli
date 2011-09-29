@@ -54,13 +54,20 @@ class PluginCommand extends WP_CLI_Command {
 			// Print the header
 			WP_CLI::line('Installed plugins:');
 
+			$update_plugins = get_site_transient( 'update_plugins' );
+			if ( isset( $update_plugins->response ) )
+				$update_plugins = array_keys( $update_plugins->response );
+			else
+				$update_plugins = array();
+
 			foreach ($plugins as $file => $plugin) {
 				if ( false === strpos( $file, '/' ) )
 					$name = str_replace('.php', '', basename($file));
 				else
 					$name = dirname($file);
 
-				$line = '  ';
+				$line = ' ';
+				$line .=  in_array( $file, $update_plugins ) ? '%yU%n' : ' ';
 
 				if ( isset($mu_plugins[$file]) )
 					$line .= '%cM';
@@ -87,6 +94,8 @@ class PluginCommand extends WP_CLI_Command {
 
 			if ( is_multisite() )
 				$legend['%bN'] = 'Network Active';
+
+			$legend['%yU'] = 'Update Available';
 
 			$legend_line = array();
 			foreach ( $legend as $key => $title )
