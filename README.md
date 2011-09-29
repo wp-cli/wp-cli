@@ -104,14 +104,6 @@ if(defined('WP_CLI') && WP_CLI) {
 
 **Please share the commands you make, issue a pull request to get them included in wp-cli by default.**
 
-Todo
-----
-
-Commands to be written:
-
-- User management
-- Post management (not sure yet if we really need this)
-
 Contributors
 ------------
 
