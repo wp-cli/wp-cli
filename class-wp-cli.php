@@ -15,7 +15,6 @@ class WP_CLI {
 	 * @param string $name The name of the command that will be used in the cli
 	 * @param string $class The class to manage the command
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	public function addCommand($name, $class) {
 		self::$commands[$name] = $class;
@@ -26,7 +25,6 @@ class WP_CLI {
 	 *
 	 * @param string $message
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	static function out($message) {
 		\cli\out($message);
@@ -37,7 +35,6 @@ class WP_CLI {
 	 *
 	 * @param string $message
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	static function line($message = '') {
 		\cli\line($message);
@@ -49,7 +46,6 @@ class WP_CLI {
 	 * @param string $message
 	 * @param string $label
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	static function error($message, $label = 'Error') {
 		\cli\line('%R'.$label.': %n'.self::errorToString($message));
@@ -61,7 +57,6 @@ class WP_CLI {
 	 * @param string $message
 	 * @param string $label
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	static function success($message, $label = 'Success') {
 		\cli\line('%G'.$label.': %n'.$message);
@@ -73,7 +68,6 @@ class WP_CLI {
 	 * @param string $message
 	 * @param string $label
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	static function warning($message, $label = 'Warning') {
 		\cli\line('%C'.$label.': %n'.$message);
@@ -84,7 +78,6 @@ class WP_CLI {
 	 *
 	 * @param mixed $errors
 	 * @return string
-	 * @author Andreas Creten
 	 */
 	static function errorToString($errors) {
 		if(is_string($errors)){
@@ -104,7 +97,6 @@ class WP_CLI {
 	 * Display the help function for the wp-cli
 	 *
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	static function generalHelp() {
 		self::line('Example usage:');
