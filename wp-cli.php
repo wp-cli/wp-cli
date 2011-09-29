@@ -6,7 +6,12 @@ if(PHP_SAPI !== 'cli') {
 }
 
 // Define the WordPress location
-define('WP_ROOT', $_SERVER['PWD'] . '/');
+if(is_readable($_SERVER['PWD'] . '/../wp-load.php')) {
+    define('WP_ROOT', $_SERVER['PWD'] . '/../');
+}
+else {
+    define('WP_ROOT', $_SERVER['PWD'] . '/');
+}
 
 // Define the wp-cli location
 define('WP_CLI_ROOT', __DIR__ . '/');
