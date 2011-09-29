@@ -9,26 +9,15 @@ A command line tool to do maintenance work on a WordPress install from the comma
 Installing
 ----------
 
-Installing wp-cli is extremely simple: 
-	
-1. Place the `wp-cli` folder in your WordPress root (on the same level as `wp-admin` and `wp-content`).
-1. That's it!
-
-Commands
---------
-
-- `wp core` - Update the WordPress core
-- `wp home` - Open the wp-cli project on Github
-- `wp option ...` - Manipulate the WordPress options
-- `wp plugin ...` - Do cool things with the installed plugins
-- `wp theme ...` - Get details on the installed and current theme
+1. Clone the project: `git clone https://github.com/andreascreten/wp-cli.git`
+1. Make a symlink to the executable: `ln -s /path-to-wp-cli-dir/wp ~/bin/`
 
 Usage
 -----
 
-In your terminal, go into the wp-cli folder.
+In your terminal, go into the wp root folder.
 
-Typing the following command: `./wp help`,  will show you an output similar to this:
+Typing the following command: `wp help`,  will show you an output similar to this:
 
 ```
 Example usage:
@@ -43,7 +32,7 @@ Example usage:
 So this tells us which commands are installed: eg. google-sitemap, core, home, ...
 Between brackets you can see their sub commands. 
 
-Let's for example try to install the hello dolly plugin from WordPress: `./wp plugins install hello-dolly`.
+Let's for example try to install the hello dolly plugin from WordPress: `wp plugins install hello-dolly`.
 Output:
 
 ```
