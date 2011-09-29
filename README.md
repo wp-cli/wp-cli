@@ -122,6 +122,11 @@ Commands to be written:
 - User management
 - Post management (not sure yet if we really need this)
 
+Contributors
+------------
+
+- Andreas Creten ([@andreascreten](http://twitter.com/andreascreten))
+- Silviu-Cristian Burcă ([@scribu](http://twitter.com/scribu))
 
 Requirements
 ------------
