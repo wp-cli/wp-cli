@@ -80,11 +80,13 @@ class PluginCommand extends WP_CLI_Command {
 			WP_CLI::line();
 
 			$legend = array(
-				'%gA' => 'Active',
 				'I' => 'Inactive',
+				'%gA' => 'Active',
 				'%cM' => 'Must Use',
-				'%bN' => 'Network Active',
 			);
+
+			if ( is_multisite() )
+				$legend['%bN'] = 'Network Active';
 
 			$legend_line = array();
 			foreach ( $legend as $key => $title )
