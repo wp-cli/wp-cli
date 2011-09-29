@@ -15,7 +15,7 @@ Installing
 Usage
 -----
 
-In your terminal, go into the wp root folder.
+In your terminal, go into the WordPress root folder.
 
 Typing the following command: `wp help`,  will show you an output similar to this:
 
@@ -32,7 +32,8 @@ Example usage:
 So this tells us which commands are installed: eg. google-sitemap, core, home, ...
 Between brackets you can see their sub commands. 
 
-Let's for example try to install the hello dolly plugin from WordPress: `wp plugins install hello-dolly`.
+Let's for example try to install the hello dolly plugin from wordpress.org: `wp plugin install hello-dolly`.
+
 Output:
 
 ```
@@ -115,7 +116,7 @@ Contributors
 ------------
 
 - Andreas Creten ([@andreascreten](http://twitter.com/andreascreten))
-- Silviu-Cristian Burcă ([@scribu](http://twitter.com/scribu))
+- Cristi Burcă ([@scribu](http://twitter.com/scribu))
 
 Requirements
 ------------
