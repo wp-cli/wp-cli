@@ -33,7 +33,21 @@ if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 	exit();
 }
 
-// Load WordPress libs.
+// Get the cli arguments
+list( $arguments, $assoc_args ) = WP_CLI::parse_args( array_slice( $GLOBALS['argv'], 1 ) );
+
+// Handle --blog parameter
+if ( isset( $assoc_args['blog'] ) ) {
+	list( $domain, $path ) = explode( '/', $assoc_args['blog'], 2 );
+
+	unset( $assoc_args['blog'] );
+
+	$_SERVER['HTTP_HOST'] = $domain;
+
+	$_SERVER['REQUEST_URI'] = '/' . $path;
+}
+
+// Load WordPress libs
 require_once(WP_ROOT . 'wp-load.php');
 require_once(ABSPATH . WPINC . '/template-loader.php');
 require_once(ABSPATH . 'wp-admin/includes/admin.php');
@@ -55,11 +69,6 @@ if(empty(WP_CLI::$commands)) {
 	WP_CLI::line('Visit the wp-cli page on github on more information on how to install commands.');
 	exit();
 }
-
-// Get the cli arguments
-$arguments = array_slice( $GLOBALS['argv'], 1 );
-
-list( $arguments, $assoc_args ) = WP_CLI::parse_args( $arguments );
 
 // Get the top-level command
 $command = array_shift( $arguments );
