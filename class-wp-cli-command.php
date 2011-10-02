@@ -7,12 +7,13 @@
  * @author Andreas Creten
  */
 abstract class WP_CLI_Command {
+
     /**
      * Construct for this class, transfers the cli arguments to the right class
      *
      * @param Array $args
      */
-    function __construct( $args, $assoc_args ) {
+    function __construct( $command, $args, $assoc_args ) {
         // The first command is the sub command
         $sub_command = array_shift($args);
 
@@ -27,29 +28,22 @@ abstract class WP_CLI_Command {
         }
         // Otherwise, show the help for this command
         else {
-            $this->help($args);
+            $this->help($command, $sub_command);
         }
     }
 
     /**
      * General help function for this command
      *
-     * @param Array $args
+     * @param string $command
+     * @param string $sub_command
      * @return void
      */
-    public function help($args = array()) {
-        // Get the cli arguments
-        $arguments = $GLOBALS['argv'];
-
-        // Remove the first entry
-        array_shift($arguments);
-
-        // Get the command
-        $used_command = array_shift($arguments);
-
+    public function help( $command, $sub_command = false ) {
         // Show the list of sub-commands for this command
         WP_CLI::line('Example usage:');
-        WP_CLI::out('    wp '.$used_command);
+        WP_CLI::out('    wp '.$command);
+
         $methods = WP_CLI_Command::getMethods($this);
         if(!empty($methods)) {
             WP_CLI::out(' ['.implode('|', $methods).']');
@@ -57,9 +51,7 @@ abstract class WP_CLI_Command {
         WP_CLI::line(' ...');
         WP_CLI::line();
 
-        // Send a warning to the user because there is no custom help function defined in the command
-        // Make usure there always is a help method in your command class
-        WP_CLI::warning('The command has no dedicated help function, ask the creator to fix it.');
+        WP_CLI::warning('The command has no dedicated help function; ask the creator to fix it.');
     }
 
     /**
