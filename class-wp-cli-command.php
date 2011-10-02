@@ -67,7 +67,7 @@ abstract class WP_CLI_Command {
     public function help( $args = array(), $assoc_args = array() ) {
 		// Shot the command description
 		WP_CLI::line( $this->get_description() );
-        WP_CLI::line();
+		WP_CLI::line();
 
         // Show the list of sub-commands for this command
         WP_CLI::line('Example usage:');
