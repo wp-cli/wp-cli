@@ -94,6 +94,28 @@ class WP_CLI {
 	}
 
 	/**
+	 * Splits regular arguments from associative arguments.
+	 *
+	 * @return array
+	 */
+	static function parse_args( $arguments ) {
+		$global_arg_names = array( 'blog' );
+
+		$regular_args = array();
+		$assoc_args = array();
+
+		foreach ( $arguments as $arg ) {
+			if ( preg_match( '/^--(\w+)=(\w+)/', $arg, $matches ) ) {
+				$assoc_args[ $matches[1] ] = $matches[2];
+			} else {
+				$regular_args[] = $arg;
+			}
+		}
+
+		return array( $regular_args, $assoc_args );
+	}
+
+	/**
 	 * Display the help function for the wp-cli
 	 *
 	 * @return void
