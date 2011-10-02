@@ -49,7 +49,6 @@ if ( isset( $assoc_args['blog'] ) ) {
 
 // Load WordPress libs
 require_once(WP_ROOT . 'wp-load.php');
-require_once(ABSPATH . WPINC . '/template-loader.php');
 require_once(ABSPATH . 'wp-admin/includes/admin.php');
 
 // Load all internal commands
