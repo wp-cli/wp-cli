@@ -41,7 +41,7 @@ class GenerateCommand extends WP_CLI_Command {
 
 		$limit = $count + $total;
 
-		for ( $i = $count; $i < $limit; $i++ ) {
+		for ( $i = $total; $i < $limit; $i++ ) {
 			wp_insert_post( array(
 				'post_type' => $type,
 				'post_title' =>  "$label $i",
