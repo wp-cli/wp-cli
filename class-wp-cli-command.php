@@ -25,11 +25,23 @@ abstract class WP_CLI_Command {
     /**
      * Construct for this class, transfers the cli arguments to the right class
      *
+	 * @param string $command
      * @param array $args
+     * @param array $assoc_args
      */
     function __construct( $command, $args, $assoc_args ) {
 		$this->command = $command;
 
+		$this->dispatch( $args, $assoc_args );
+	}
+
+	/**
+	 * Transfers the handling to the appropriate method
+     *
+     * @param array $args
+	 * @param array $assoc_args
+	 */
+	protected function dispatch( $args, $assoc_args ) {
         // The first command is the sub command
         $sub_command = array_shift($args);
 
