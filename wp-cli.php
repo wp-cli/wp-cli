@@ -50,6 +50,14 @@ foreach (glob(WP_CLI_ROOT.'/commands/community/*.php') as $filename)  {
 	include $filename;
 }
 
+// Check if there are commands installed
+if(empty(WP_CLI::$commands)) {
+	WP_CLI::error('No commands installed');
+	WP_CLI::line();
+	WP_CLI::line('Visit the wp-cli page on github on more information on how to install commands.');
+	exit();
+}
+
 // Get the cli arguments
 $arguments = $GLOBALS['argv'];
 
@@ -59,15 +67,8 @@ array_shift($arguments);
 // Get the command
 $command = array_shift($arguments);
 
-// Check if there are commands installed
-if(empty(WP_CLI::$commands)) {
-	WP_CLI::error('No commands installed');
-	WP_CLI::line();
-	WP_CLI::line('Visit the wp-cli page on github on more information on how to install commands.');
-	exit();
-}
 // Try to load the class, otherwise it's an Unknown command
-elseif(isset(WP_CLI::$commands[$command])) {
+if(isset(WP_CLI::$commands[$command])) {
 	new WP_CLI::$commands[$command]($arguments);
 }
 // Show the general help for wp-cli
