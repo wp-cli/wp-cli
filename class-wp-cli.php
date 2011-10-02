@@ -124,14 +124,12 @@ class WP_CLI {
 		self::line('Example usage:');
 		foreach(self::$commands as $name => $command) {
 			self::out('	wp '.$name);
-			$methods = WP_CLI_Command::getMethods($command);
+			$methods = WP_CLI_Command::get_methods($command);
 			if(!empty($methods)) {
 				self::out(' ['.implode('|', $methods).']');
 			}
 			self::line(' ...');
 		}
-
-		self::line( "See 'wp <command> help' for more information on a specific command." );
 	}
 
 	/**
