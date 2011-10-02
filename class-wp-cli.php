@@ -131,19 +131,7 @@ class WP_CLI {
 			self::line(' ...');
 		}
 
-		self::out( <<<EOB
-
-Built-in commands:
-    core	Update the WordPress core
-    home	Open the wp-cli project on Github
-    option	Manipulate the WordPress options
-    plugin	Do cool things with the installed plugins
-    theme	Do cool things with the installed themes
-
-See 'wp <command> help' for more information on a specific command.
-
-EOB
-		);
+		self::line( "See 'wp <command> help' for more information on a specific command." );
 	}
 
 	/**

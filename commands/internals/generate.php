@@ -12,6 +12,10 @@ WP_CLI::addCommand('generate', 'GenerateCommand');
  */
 class GenerateCommand extends WP_CLI_Command {
 
+	public static function get_description() {
+		return 'Generate a certain number of objects.';
+	}
+
 	/**
 	 * Generate posts
 	 *

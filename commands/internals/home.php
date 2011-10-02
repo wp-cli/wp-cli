@@ -11,16 +11,21 @@ WP_CLI::addCommand('home', 'HomeCommand');
  * @author Andreas Creten
  */
 class HomeCommand extends WP_CLI_Command {
+
+	public static function get_description() {
+		return 'Open the wp-cli project on Github.';
+	}
+
 	/**
 	 * Overwrite the construct to have a command without subcommand
 	 *
-	 * @param string $args 
+	 * @param string $args
 	 */
 	function __construct($args) {
 		if(empty($args)) {
 			// The url for the wp-cli repository
 			$repository_url = 'http://github.com/andreascreten/wp-cli';
-			
+
 			// Open the wp-cli page in the browser
 			if(exec('which x-www-browser')) {
 				system('x-www-browser '.$repository_url);
@@ -32,7 +37,7 @@ class HomeCommand extends WP_CLI_Command {
 				WP_CLI::error('No command found to open the homepage in the browser. Please open it manually: '.$repository_url);
 				return;
 			}
-			
+
 			WP_CLI::success('The wp-cli homepage should be opening in your browser.');
 		}
 		else {
@@ -40,11 +45,11 @@ class HomeCommand extends WP_CLI_Command {
 			parent::__construct($args);
 		}
 	}
-	
+
 	/**
 	 * Help function for this command
 	 *
-	 * @param string $args 
+	 * @param string $args
 	 * @return void
 	 */
 	public function help($args = array()) {

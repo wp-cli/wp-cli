@@ -9,6 +9,13 @@
 abstract class WP_CLI_Command {
 
 	/**
+	 * Return a short description for the command.
+	 *
+	 * @return string
+	 */
+	abstract public static function get_description();
+
+	/**
 	 * Keeps a reference to the current command name
 	 *
 	 * @param string
@@ -41,11 +48,15 @@ abstract class WP_CLI_Command {
     /**
      * General help function for this command
      *
-     * @param string $command
-     * @param string $sub_command
+     * @param string $args
+     * @param string $assoc_args
      * @return void
      */
-    public function help( $args, $assoc_args ) {
+    public function help( $args = array(), $assoc_args = array() ) {
+		// Shot the command description
+		WP_CLI::line( $this->get_description() );
+        WP_CLI::line();
+
         // Show the list of sub-commands for this command
         WP_CLI::line('Example usage:');
         WP_CLI::out('    wp '.$this->command);
@@ -56,8 +67,6 @@ abstract class WP_CLI_Command {
         }
         WP_CLI::line(' ...');
         WP_CLI::line();
-
-        WP_CLI::warning('The command has no dedicated help function; ask the creator to fix it.');
     }
 
     /**
@@ -67,28 +76,22 @@ abstract class WP_CLI_Command {
      * @return Array The list of methods
      */
     static function getMethods($class) {
-        // Methods that don't need to be included in the method list
-        $blacklist = array('__construct', 'getMethods');
+		$reflection = new ReflectionClass( $class );
 
-        // Get all the methods of the class
-        $methods = get_class_methods($class);
+        $methods = array();
 
-        // Remove the blacklisted methods
-        foreach($blacklist as $method) {
-            $in_array = array_search($method, $methods);
-            if($in_array !== false) {
-                unset($methods[$in_array]);
-            }
+		foreach ( $reflection->getMethods() as $method ) {
+			if ( $method->isPublic() && !$method->isStatic() && !$method->isConstructor() ) {
+				$name = $method->name;
+
+				if ( strpos($name, '_') === 0 ) {
+					$name = substr( $method, 1 );
+				}
+
+				$methods[] = $name;
+			}
         }
 
-        // Fix dummy function names
-        foreach($methods as $key => $method) {
-            if(strpos($method, '_') === 0) {
-                $methods[$key] = substr($method, 1, strlen($method));
-            }
-        }
-
-        // Only return the values, to fill up the gaps
-        return array_values($methods);
+		return $methods;
     }
 }

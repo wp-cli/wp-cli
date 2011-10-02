@@ -15,6 +15,11 @@ require_once(ABSPATH.'wp-admin/includes/plugin-install.php');
  * @author Andreas Creten
  */
 class PluginCommand extends WP_CLI_Command {
+
+	public static function get_description() {
+		return 'Do cool things with plugins.';
+	}
+
 	/**
 	 * Get the status of one plugin
 	 *
