@@ -38,9 +38,14 @@ list( $arguments, $assoc_args ) = WP_CLI::parse_args( array_slice( $GLOBALS['arg
 
 // Handle --blog parameter
 if ( isset( $assoc_args['blog'] ) ) {
-	list( $domain, $path ) = explode( '/', $assoc_args['blog'], 2 );
-
+	$blog = $assoc_args['blog'];
 	unset( $assoc_args['blog'] );
+} elseif ( is_readable( WP_ROOT . '/wp-cli-blog' ) ) {
+	$blog = file_get_contents( WP_ROOT . '/wp-cli-blog' );
+}
+
+if ( isset( $blog ) ) {
+	list( $domain, $path ) = explode( '/', $blog, 2 );
 
 	$_SERVER['HTTP_HOST'] = $domain;
 
