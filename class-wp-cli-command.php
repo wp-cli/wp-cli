@@ -13,7 +13,9 @@ abstract class WP_CLI_Command {
 	 *
 	 * @return string
 	 */
-	abstract public static function get_description();
+	public static function get_description() {
+		return false;
+	}
 
 	/**
 	 * Keeps a reference to the current command name
@@ -65,16 +67,18 @@ abstract class WP_CLI_Command {
      * @return void
      */
     public function help( $args = array(), $assoc_args = array() ) {
-		// Shot the command description
-		WP_CLI::line( $this->get_description() );
-		WP_CLI::line();
+		$desc = $this->get_description();
+		if ( $desc ) {
+			WP_CLI::line( $desc );
+			WP_CLI::line();
+		}
 
         // Show the list of sub-commands for this command
-        WP_CLI::line('Example usage:');
-        WP_CLI::out('    wp '.$this->command);
+        WP_CLI::line( 'Example usage:' );
+        WP_CLI::out( '    wp '.$this->command );
 
         $methods = WP_CLI_Command::get_methods($this);
-        if(!empty($methods)) {
+        if ( !empty( $methods ) ) {
             WP_CLI::out(' ['.implode('|', $methods).']');
         }
         WP_CLI::line(' ...');
