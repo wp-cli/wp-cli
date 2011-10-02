@@ -25,7 +25,7 @@ abstract class WP_CLI_Command {
     /**
      * Construct for this class, transfers the cli arguments to the right class
      *
-     * @param Array $args
+     * @param array $args
      */
     function __construct( $command, $args, $assoc_args ) {
 		$this->command = $command;
@@ -61,7 +61,7 @@ abstract class WP_CLI_Command {
         WP_CLI::line('Example usage:');
         WP_CLI::out('    wp '.$this->command);
 
-        $methods = WP_CLI_Command::getMethods($this);
+        $methods = WP_CLI_Command::get_methods($this);
         if(!empty($methods)) {
             WP_CLI::out(' ['.implode('|', $methods).']');
         }
@@ -70,12 +70,12 @@ abstract class WP_CLI_Command {
     }
 
     /**
-     * Get the filtered list of methods for a class
+     * Get the filtered list of methods for a class.
      *
      * @param string $class
-     * @return Array The list of methods
+     * @return array The list of methods
      */
-    static function getMethods($class) {
+    static function get_methods($class) {
 		$reflection = new ReflectionClass( $class );
 
         $methods = array();
@@ -84,7 +84,7 @@ abstract class WP_CLI_Command {
 			if ( $method->isPublic() && !$method->isStatic() && !$method->isConstructor() ) {
 				$name = $method->name;
 
-				if ( strpos($name, '_') === 0 ) {
+				if ( strpos( $name, '_' ) === 0 ) {
 					$name = substr( $method, 1 );
 				}
 

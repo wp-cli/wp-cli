@@ -352,7 +352,7 @@ class PluginCommand extends WP_CLI_Command {
 		// Show the list of sub-commands for this command
 		WP_CLI::line('Example usage:');
 
-		$methods = WP_CLI_Command::getMethods($this);
+		$methods = WP_CLI_Command::get_methods($this);
 		foreach ($methods as $method) {
 			if($method != 'help') {
 				WP_CLI::line('    wp '.$used_command.' '.$method.' hello-dolly');
