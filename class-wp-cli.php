@@ -94,6 +94,28 @@ class WP_CLI {
 	}
 
 	/**
+	 * Splits regular arguments from associative arguments.
+	 *
+	 * @return array
+	 */
+	static function parse_args( $arguments ) {
+		$global_arg_names = array( 'blog' );
+
+		$regular_args = array();
+		$assoc_args = array();
+
+		foreach ( $arguments as $arg ) {
+			if ( preg_match( '|^--(\w+)=(.+)|', $arg, $matches ) ) {
+				$assoc_args[ $matches[1] ] = $matches[2];
+			} else {
+				$regular_args[] = $arg;
+			}
+		}
+
+		return array( $regular_args, $assoc_args );
+	}
+
+	/**
 	 * Display the help function for the wp-cli
 	 *
 	 * @return void
@@ -109,7 +131,7 @@ class WP_CLI {
 			self::line(' ...');
 		}
 
-		self::block( <<<EOB
+		self::out( <<<EOB
 
 Built-in commands:
     core	Update the WordPress core
@@ -119,19 +141,9 @@ Built-in commands:
     theme	Do cool things with the installed themes
 
 See 'wp <command> help' for more information on a specific command.
+
 EOB
 		);
-	}
-
-	/**
-	 * Display multiple lines of content
-	 *
-	 * @param string $content
-	 * @return void
-	 */
-	function block( $content ) {
-		foreach ( explode( "\n", $content ) as $line )
-			self::line( $line );
 	}
 
 	/**
