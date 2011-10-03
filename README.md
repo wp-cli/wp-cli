@@ -9,15 +9,30 @@ A command line tool to do maintenance work on a WordPress install from the comma
 Installing
 ----------
 
-1. Clone the project: `git clone https://github.com/andreascreten/wp-cli.git`
-1. Make a symlink to the executable: `sudo ln -s /path-to-wp-cli-dir/wp /usr/local/bin/`
+1. Clone the project:
+
+```
+git clone https://github.com/andreascreten/wp-cli.git
+cd wp-cli
+git submodule update --init
+```
+
+Make a symlink to the executable:
+
+```
+sudo ln -s /path-to-wp-cli-dir/wp /usr/local/bin/
+```
 
 Usage
 -----
 
-In your terminal, go into the WordPress root folder.
+Go into a WordPress root folder:
 
-Typing the following command: `wp help`,  will show you an output similar to this:
+```
+cd /var/www/wp/ # your path might be something else
+```
+
+Typing the following command: `wp help` will show you an output similar to this:
 
 ```
 Example usage:
