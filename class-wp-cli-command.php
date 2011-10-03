@@ -47,15 +47,12 @@ abstract class WP_CLI_Command {
         // The first command is the sub command
         $sub_command = array_shift($args);
 
-		// Assosciative arguments keys
-		$assoc_keys = array_keys($assoc_args);
-
 		if ( !method_exists($this, $sub_command) ) {
 			// This if for reserved keywords in php (like list, isset)
 			$sub_command = '_'.$sub_command;
 		}
 
-		if ( !method_exists($this, $sub_command) || in_array( 'help', $assoc_keys ) ) {
+		if ( !method_exists($this, $sub_command) || isset( $assoc_args[ 'help' ] ) ) {
 			$sub_command = 'help';
 		}
 		

@@ -1,7 +1,9 @@
 <?php
 
-// Add the command to the wp-cli
-WP_CLI::addCommand('super-cache', 'WPSuperCacheCommand');
+// Add the command to the wp-cli, only if the plugin is loaded
+if ( function_exists( 'wp_super_cache_enable' ) ) {
+	WP_CLI::addCommand( 'super-cache', 'WPSuperCacheCommand' );
+}
 
 /**
  * The WP Super Cache plugin
@@ -56,7 +58,6 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 	 * @param array $args
 	 * @param array $vars
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	function status( $args = array(), $vars = array() ) {
 		$cache_stats = get_option( 'supercache_stats' );
@@ -88,7 +89,6 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 	 * @param array $args
 	 * @param array $vars
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	function enable( $args = array(), $vars = array() ) {
 		if ( function_exists( 'wp_super_cache_enable' ) ) {
@@ -110,7 +110,6 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 	 * @param array $args
 	 * @param array $vars
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	function disable( $args = array(), $vars = array() ) {
 		if ( function_exists( 'wp_super_cache_disable' ) ) {
