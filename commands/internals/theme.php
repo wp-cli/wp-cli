@@ -87,9 +87,9 @@ class ThemeCommand extends WP_CLI_Command {
 			exit;
 		}
 
-		$theme = array_shift( $args );
+		$child = array_shift( $args );
 
-		$stylesheet = WP_CONTENT_DIR . '/themes/' . $theme . '/style.css';
+		$stylesheet = $this->get_stylesheet_path( $child );
 
 		if ( !is_readable( $stylesheet ) ) {
 			WP_CLI::warning( 'theme not found' );
@@ -98,12 +98,20 @@ class ThemeCommand extends WP_CLI_Command {
 
 		$details = get_theme_data( $stylesheet );
 
-		$child = $theme;
 		$parent = $details['Template'];
-		if ( empty( $parent ) )
+
+		if ( empty( $parent ) ) {
 			$parent = $child;
+		} elseif ( !is_readable( $this->get_stylesheet_path ( $parent ) ) ) {
+			WP_CLI::warning( 'parent theme not found' );
+			exit;
+		}
 
 		switch_theme( $parent, $child );
+	}
+
+	protected function get_stylesheet_path( $theme ) {
+		return WP_CONTENT_DIR . '/themes/' . $theme . '/style.css';
 	}
 
 	/**
