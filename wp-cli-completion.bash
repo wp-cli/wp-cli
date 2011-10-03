@@ -6,7 +6,8 @@ _wp() {
 	COMPREPLY=()
 	cur="${COMP_WORDS[COMP_CWORD]}"
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
-	opts="core plugin option theme home help"
+
+	opts=$(wp help | awk '/wp / {print $2}')
 
 	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
 	return 0
