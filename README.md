@@ -9,7 +9,7 @@ A command line tool to do maintenance work on a WordPress install from the comma
 Installing
 ----------
 
-1. Clone the project:
+Clone the project:
 
 ```
 git clone https://github.com/andreascreten/wp-cli.git
@@ -29,10 +29,10 @@ Usage
 Go into a WordPress root folder:
 
 ```
-cd /var/www/wp/ # your path might be something else
+cd /var/www/wp/
 ```
 
-Typing the following command: `wp help` will show you an output similar to this:
+Typing `wp help` should show you an output similar to this:
 
 ```
 Example usage:
@@ -47,7 +47,11 @@ Example usage:
 So this tells us which commands are installed: eg. google-sitemap, core, home, ...
 Between brackets you can see their sub commands. 
 
-Let's for example try to install the hello dolly plugin from wordpress.org: `wp plugin install hello-dolly`.
+Let's for example try to install the hello dolly plugin from wordpress.org:
+
+```
+wp plugin install hello-dolly
+```
 
 Output:
 
