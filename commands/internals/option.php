@@ -11,10 +11,15 @@ WP_CLI::addCommand('option', 'OptionCommand');
  * @author Andreas Creten
  */
 class OptionCommand extends WP_CLI_Command {
+
+	public static function get_description() {
+		return 'Manipulate the WordPress options.';
+	}
+
 	/**
 	 * Add an option
 	 *
-	 * @param string $args 
+	 * @param string $args
 	 * @return void
 	 **/
 	public function add($args = array()) {
@@ -32,11 +37,11 @@ class OptionCommand extends WP_CLI_Command {
 			WP_CLI::error('This command needs exactly two arguments.');
 		}
 	}
-	
+
 	/**
 	 * Update an option
 	 *
-	 * @param string $args 
+	 * @param string $args
 	 * @return void
 	 **/
 	public function update($args = array()) {
@@ -54,11 +59,11 @@ class OptionCommand extends WP_CLI_Command {
 			WP_CLI::error('This command needs exactly two arguments.');
 		}
 	}
-	
+
 	/**
 	 * Delete an option
 	 *
-	 * @param string $args 
+	 * @param string $args
 	 * @return void
 	 **/
 	public function delete($args = array()) {
@@ -76,11 +81,11 @@ class OptionCommand extends WP_CLI_Command {
 			WP_CLI::error('This command needs exactly one argument.');
 		}
 	}
-	
+
 	/**
 	 * Get an option
 	 *
-	 * @param string $args 
+	 * @param string $args
 	 * @return void
 	 **/
 	public function get($args = array()) {
@@ -99,11 +104,11 @@ class OptionCommand extends WP_CLI_Command {
 			WP_CLI::error('This command needs exactly one argument.');
 		}
 	}
-	
+
 	/**
 	 * Help function for this command
 	 *
-	 * @param string $args 
+	 * @param string $args
 	 * @return void
 	 */
 	public function help($args = array()) {
