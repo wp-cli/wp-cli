@@ -78,20 +78,32 @@ class ThemeCommand extends WP_CLI_Command {
 	/**
 	 * Activate a theme
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 **/
 	public function activate($args = array()) {
-		WP_CLI::warning('This command is not ready yet!');
+		if ( empty( $args ) ) {
+			WP_CLI::line('usage: wp theme activate <theme-name>');
+			exit;
+		}
 
-		// Get the info of the theme
-		$details = get_theme_data(WP_CONTENT_DIR.'/themes/'.$args[0].'/style.css');
+		$theme = array_shift( $args );
 
-		// Switch to the theme
-		switch_theme($args[0], WP_CONTENT_DIR.'/themes/'.$args[0].'/style.css');
+		$stylesheet = WP_CONTENT_DIR . '/themes/' . $theme . '/style.css';
 
-		// Get the current theme
-		$theme_name = get_current_theme();
+		if ( !is_readable( $stylesheet ) ) {
+			WP_CLI::warning( 'theme not found' );
+			exit;
+		}
+
+		$details = get_theme_data( $stylesheet );
+
+		$child = $theme;
+		$parent = $details['Template'];
+		if ( empty( $parent ) )
+			$parent = $child;
+
+		switch_theme( $parent, $child );
 	}
 
 	/**
