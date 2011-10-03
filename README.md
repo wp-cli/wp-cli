@@ -46,6 +46,33 @@ Installing the plugin ...
 Success: The plugin is successfully installed
 ```
 
+Multisite
+---------
+
+On a multisite installation, you need to pass a --blog parameter, so that WP knows which site it's supposed to be operating on:
+
+```
+wp theme status --blog=localhost/wp/test
+```
+
+If you have a subdomain installation, it would look like this:
+
+```
+wp theme status --blog=test.example.com
+```
+
+If you're usually working on the same site most of the time, you can put the url of that site in a file called 'wp-cli-blog' in your root WP dir:
+
+```
+echo 'test.example.com' > wp-cli-blog
+```
+
+Then, you can call `wp` without the --blog parameter again:
+
+```
+wp theme status
+```
+
 Adding commands
 ---------------
 
