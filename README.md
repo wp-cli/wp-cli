@@ -23,6 +23,12 @@ Make a symlink to the executable:
 sudo ln -s /path-to-wp-cli-dir/wp /usr/local/bin/
 ```
 
+Make a symlink to the autocomplete file (Linux):
+
+```
+sudo ln -s /path-to-wp-cli-dir/wp-cli-completion.bash /etc/bash_completion.d/wp
+```
+
 Usage
 -----
 
