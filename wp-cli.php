@@ -5,13 +5,7 @@ if(PHP_SAPI !== 'cli') {
 	die('Only cli access');
 }
 
-// Define the WordPress location
-if(is_readable($_SERVER['PWD'] . '/../wp-load.php')) {
-	define('WP_ROOT', $_SERVER['PWD'] . '/../');
-}
-else {
-	define('WP_ROOT', $_SERVER['PWD'] . '/');
-}
+define( 'WP_CLI_VERSION', '0.1' );
 
 // Define the wp-cli location
 define('WP_CLI_ROOT', __DIR__ . '/');
@@ -23,18 +17,32 @@ define('WP_CLI', true);
 include WP_CLI_ROOT.'class-wp-cli.php';
 include WP_CLI_ROOT.'class-wp-cli-command.php';
 
-// Include the command line tools, taken from here: https://github.com/jlogsdon/php-cli-tools
+// Include the command line tools
 include WP_CLI_ROOT.'php-cli-tools/lib/cli/cli.php';
 \cli\register_autoload();
+
+// Get the cli arguments
+list( $arguments, $assoc_args ) = WP_CLI::parse_args( array_slice( $GLOBALS['argv'], 1 ) );
+
+// Handle --version parameter
+if ( isset( $assoc_args['version'] ) ) {
+	WP_CLI::line( 'wp-cli ' . WP_CLI_VERSION );
+	exit;
+}
+
+// Define the WordPress location
+if(is_readable($_SERVER['PWD'] . '/../wp-load.php')) {
+	define('WP_ROOT', $_SERVER['PWD'] . '/../');
+}
+else {
+	define('WP_ROOT', $_SERVER['PWD'] . '/');
+}
 
 // Taken from https://github.com/88mph/wpadmin/blob/master/wpadmin.php
 if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 	WP_CLI::error('Either this is not a WordPress document root or you do not have permission to administer this site.');
 	exit();
 }
-
-// Get the cli arguments
-list( $arguments, $assoc_args ) = WP_CLI::parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
 // Handle --blog parameter
 if ( isset( $assoc_args['blog'] ) ) {

@@ -99,13 +99,13 @@ class WP_CLI {
 	 * @return array
 	 */
 	static function parse_args( $arguments ) {
-		$global_arg_names = array( 'blog' );
-
 		$regular_args = array();
 		$assoc_args = array();
 
 		foreach ( $arguments as $arg ) {
-			if ( preg_match( '|^--(\w+)=(.+)|', $arg, $matches ) ) {
+			if ( preg_match( '|^--(\w+)$|', $arg, $matches ) ) {
+				$assoc_args[ $matches[1] ] = true;
+			} elseif ( preg_match( '|^--(\w+)=(.+)|', $arg, $matches ) ) {
 				$assoc_args[ $matches[1] ] = $matches[2];
 			} else {
 				$regular_args[] = $arg;
