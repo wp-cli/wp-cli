@@ -11,6 +11,11 @@ WP_CLI::addCommand('theme', 'ThemeCommand');
  * @author Andreas Creten
  */
 class ThemeCommand extends WP_CLI_Command {
+
+	public static function get_description() {
+		return 'Do cool things with themes.';
+	}
+
 	/**
 	 * Get the status of all themes
 	 *

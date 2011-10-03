@@ -15,6 +15,11 @@ require_once(ABSPATH.'wp-admin/includes/plugin-install.php');
  * @author Andreas Creten
  */
 class PluginCommand extends WP_CLI_Command {
+
+	public static function get_description() {
+		return 'Do cool things with plugins.';
+	}
+
 	/**
 	 * Get the status of one plugin
 	 *
@@ -335,25 +340,19 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function help($args = array()) {
-		// Get the cli arguments
-		$arguments = $GLOBALS['argv'];
-
-		// Remove the first entry
-		array_shift($arguments);
-
-		// Get the command
-		$used_command = array_shift($arguments);
+		// Shot the command description
+		WP_CLI::line( $this->get_description() );
+		WP_CLI::line();
 
 		// Show the list of sub-commands for this command
 		WP_CLI::line('Example usage:');
 
-		$methods = WP_CLI_Command::getMethods($this);
-		foreach ($methods as $method) {
+		foreach (WP_CLI_Command::get_methods($this) as $method) {
 			if($method != 'help') {
-				WP_CLI::line('    wp '.$used_command.' '.$method.' hello-dolly');
+				WP_CLI::line('    wp '.$this->command.' '.$method.' hello-dolly');
 			}
 			else {
-				WP_CLI::line('    wp '.$used_command.' '.$method);
+				WP_CLI::line('    wp '.$this->command.' '.$method);
 			}
 		}
 	}

@@ -99,7 +99,6 @@ class ExampleCommand extends WP_CLI_Command {
 	 *
 	 * @param string $args 
 	 * @return void
-	 * @author Andreas Creten
 	 */
 	function example($args = array()) {
 		// Print a success message
