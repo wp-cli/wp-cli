@@ -7,90 +7,107 @@
  * @author Andreas Creten
  */
 abstract class WP_CLI_Command {
+
+	/**
+	 * Return a short description for the command.
+	 *
+	 * @return string
+	 */
+	public static function get_description() {
+		return false;
+	}
+
+	/**
+	 * Keeps a reference to the current command name
+	 *
+	 * @param string
+	 */
+	protected $command;
+
     /**
      * Construct for this class, transfers the cli arguments to the right class
      *
-     * @param Array $args
+	 * @param string $command
+     * @param array $args
+     * @param array $assoc_args
      */
-    function __construct($args = array()) {
+    function __construct( $command, $args, $assoc_args ) {
+		$this->command = $command;
+
+		$this->dispatch( $args, $assoc_args );
+	}
+
+	/**
+	 * Transfers the handling to the appropriate method
+     *
+     * @param array $args
+	 * @param array $assoc_args
+	 */
+	protected function dispatch( $args, $assoc_args ) {
         // The first command is the sub command
         $sub_command = array_shift($args);
-        
-        // If the method exists, try to load it
-        if(method_exists($this, $sub_command)) {
-            $this->$sub_command($args);
-        }
-        // If a dummy method exists, use it. This if for reserved keywords in php (like list, isset)
-        elseif(method_exists($this, '_'.$sub_command)) {
-            $sub_command = '_'.$sub_command;
-            $this->$sub_command($args);
-        }
-        // Otherwise, show the help for this command
-        else {
-            $this->help($args);
-        }
+
+		if ( !method_exists($this, $sub_command) ) {
+			// This if for reserved keywords in php (like list, isset)
+			$sub_command = '_'.$sub_command;
+		}
+
+		if ( !method_exists($this, $sub_command) ) {
+			$sub_command = 'help';
+		}
+
+		$this->$sub_command($args, $assoc_args);
     }
-    
+
     /**
      * General help function for this command
      *
-     * @param Array $args 
+     * @param string $args
+     * @param string $assoc_args
      * @return void
      */
-    public function help($args = array()) {
-        // Get the cli arguments
-        $arguments = $GLOBALS['argv'];
-        
-        // Remove the first entry
-        array_shift($arguments);
+    public function help( $args = array(), $assoc_args = array() ) {
+		$desc = $this->get_description();
+		if ( $desc ) {
+			WP_CLI::line( $desc );
+			WP_CLI::line();
+		}
 
-        // Get the command
-        $used_command = array_shift($arguments);
-        
         // Show the list of sub-commands for this command
-        WP_CLI::line('Example usage:');
-        WP_CLI::out('    wp '.$used_command);
-        $methods = WP_CLI_Command::getMethods($this);
-        if(!empty($methods)) {
+        WP_CLI::line( 'Example usage:' );
+        WP_CLI::out( '    wp '.$this->command );
+
+        $methods = WP_CLI_Command::get_methods($this);
+        if ( !empty( $methods ) ) {
             WP_CLI::out(' ['.implode('|', $methods).']');
         }
         WP_CLI::line(' ...');
         WP_CLI::line();
-        
-        // Send a warning to the user because there is no custom help function defined in the command
-        // Make usure there always is a help method in your command class
-        WP_CLI::warning('The command has no dedicated help function, ask the creator to fix it.');
     }
-    
+
     /**
-     * Get the filtered list of methods for a class
+     * Get the filtered list of methods for a class.
      *
      * @param string $class
-     * @return Array The list of methods
+     * @return array The list of methods
      */
-    static function getMethods($class) {
-        // Methods that don't need to be included in the method list
-        $blacklist = array('__construct', 'getMethods');
-        
-        // Get all the methods of the class
-        $methods = get_class_methods($class);
-        
-        // Remove the blacklisted methods
-        foreach($blacklist as $method) {
-            $in_array = array_search($method, $methods);
-            if($in_array !== false) {
-                unset($methods[$in_array]);
-            }
+    static function get_methods($class) {
+		$reflection = new ReflectionClass( $class );
+
+        $methods = array();
+
+		foreach ( $reflection->getMethods() as $method ) {
+			if ( $method->isPublic() && !$method->isStatic() && !$method->isConstructor() ) {
+				$name = $method->name;
+
+				if ( strpos( $name, '_' ) === 0 ) {
+					$name = substr( $method, 1 );
+				}
+
+				$methods[] = $name;
+			}
         }
-        
-        // Fix dummy function names
-        foreach($methods as $key => $method) {
-            if(strpos($method, '_') === 0) {
-                $methods[$key] = substr($method, 1, strlen($method));
-            }
-        }
-        
-        // Only return the values, to fill up the gaps
-        return array_values($methods);
+
+		return $methods;
     }
 }
