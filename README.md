@@ -4,7 +4,7 @@ WP-CLI: WordPress Command Line Tools
 What is wp-cli
 --------------
 
-A command line tool to do maintenance work on a WordPress install from the command line.
+A tool to control WordPress installations from the command line.
 
 Installing
 ----------
