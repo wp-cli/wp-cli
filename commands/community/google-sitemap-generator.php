@@ -6,7 +6,7 @@ if( class_exists( 'GoogleSitemapGeneratorLoader' ) ) {
 }
 
 /**
- * The WP Super Cache plugin
+ * Manage the Google XML Sitemap plugin
  *
  * @package wp-cli
  * @subpackage commands/community

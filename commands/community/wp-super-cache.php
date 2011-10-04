@@ -25,7 +25,7 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 	 * @param array $vars
 	 * @return void
 	 */
-	function clear( $args = array(), $vars = array() ) {
+	function flush( $args = array(), $vars = array() ) {
 		if ( function_exists( 'wp_cache_clear_cache' ) ) {
 			if ( isset($vars['post_id']) ) {
 				if ( is_numeric( $vars['post_id'] ) ) {
@@ -138,7 +138,7 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 
 		// Show the list of sub-commands for this command
 		WP_CLI::line('Example usage:');
-		WP_CLI::line('    wp wp-super-cache clean [--post_id=<post-id>] [--permalink=<post-permalink>]');
+		WP_CLI::line('    wp wp-super-cache flush [--post_id=<post-id>] [--permalink=<post-permalink>]');
 		WP_CLI::line('    wp wp-super-cache status');
 		WP_CLI::line('    wp wp-super-cache enable');
 		WP_CLI::line('    wp wp-super-cache disable');
@@ -146,13 +146,13 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 		WP_CLI::line('%9--- DETAILS ---%n');
 		WP_CLI::line();
 		WP_CLI::line('Remove the whole cache content:');
-		WP_CLI::line('    wp wp-super-cache clean');
+		WP_CLI::line('    wp wp-super-cache flush');
 		WP_CLI::line();
 		WP_CLI::line('Remove the caches for one blog post based on the id:');
-		WP_CLI::line('    wp wp-super-cache clean --post_id=1');
+		WP_CLI::line('    wp wp-super-cache flush --post_id=1');
 		WP_CLI::line();
 		WP_CLI::line('Remove the caches for one blog post based on the permalink:');
-		WP_CLI::line('    wp wp-super-cache clean --permalink=http://example.com');
+		WP_CLI::line('    wp wp-super-cache flush --permalink=http://example.com');
 		WP_CLI::line();
 		WP_CLI::line('Get details on the WP Super Cache content:');
 		WP_CLI::line('    wp wp-super-cache status');
