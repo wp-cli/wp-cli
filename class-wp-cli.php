@@ -160,9 +160,9 @@ class WP_CLI {
 		$update_list = get_site_transient( $key );
 
 		if ( isset( $update_list->response[ $item ] ) )
-			return ' %yU%n';
+			return true;
 
-		return '  ';
+		return false;
 	}
 }
 

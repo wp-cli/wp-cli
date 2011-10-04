@@ -32,7 +32,11 @@ class ThemeCommand extends WP_CLI_Command {
 		$theme_name = get_current_theme();
 
 		foreach ($themes as $key => $theme) {
-			$line = WP_CLI::get_update_status( $theme['Stylesheet'], 'update_themes' );
+			if ( WP_CLI::get_update_status( $theme['Stylesheet'], 'update_themes' ) ) {
+				$line = ' %yU%n';
+			} else {
+				$line = '  ';
+			}
 
 			if ( $theme['Name'] == $theme_name )
 				$line .= '%gA';

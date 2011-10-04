@@ -26,24 +26,40 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param string $args
 	 * @return void
 	 */
-	function status($args) {
-		if(!empty($args)) {
+	function status( $args = array(), $vars = array() ) {
+		// Force WordPress to update the plugin list
+		wp_update_plugins();
+		
+		if(!empty( $args )) {
 			// Get the plugin name from the arguments
-			$name = $this->check_name($args);
+			$name = $this->check_name( $args );
 
 			// Get the plugin file name
-			$file = $this->parse_name($name);
+			$file = $this->parse_name( $name );
+			
+			// Get list of mu plugins
+			$mu_plugins = get_mu_plugins();
 
 			// Get the plugin details
-			$details = $this->get_details($file);
-
+			$details = $this->get_details( $file );
+			
+			// Get the plugin status
+			if ( isset( $mu_plugins[ $file ] ) )
+				$status = '%cMust Use';
+			elseif ( is_plugin_active_for_network( $file ) )
+				$status = '%bNetwork Activated';
+			elseif ( is_plugin_active( $file ) )
+				$status = '%gYes';
+			else
+				$status = '%rNo';
+			
 			// Display the plugin details
-			WP_CLI::line('Plugin %2'.$name.'%n details:');
-			WP_CLI::line('    Active: '.((int) is_plugin_active($file)));
-			if(is_multisite()) {
-				WP_CLI::line('    Network: '.((int) is_plugin_active_for_network($file)));
-			}
-			WP_CLI::line('    Version: '.$details['Version']);
+			WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
+			WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
+			WP_CLI::line( '    Active: ' . $status .'%n' );
+			WP_CLI::line( '    Version: ' . $details[ 'Version' ] . ( WP_CLI::get_update_status( $file, 'update_plugins' ) ? ' (%gUpdate available%n)' : '' ) );
+			WP_CLI::line( '    Description: ' . $details[ 'Description' ] );
+			WP_CLI::line( '    Author: ' . $details[ 'Author' ]);
 		}
 		else {
 			// Get the list of plugins
@@ -64,7 +80,11 @@ class PluginCommand extends WP_CLI_Command {
 				else
 					$name = dirname($file);
 
-				$line = WP_CLI::get_update_status( $file, 'update_plugins' );
+				if ( WP_CLI::get_update_status( $file, 'update_plugins' ) ) {
+					$line = ' %yU%n';
+				} else {
+					$line = '  ';
+				}
 
 				if ( isset($mu_plugins[$file]) )
 					$line .= '%cM';
