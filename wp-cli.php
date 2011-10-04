@@ -82,6 +82,14 @@ if(empty(WP_CLI::$commands)) {
 	exit();
 }
 
+// Handle --completions parameter
+if ( isset( $assoc_args['completions'] ) ) {
+	foreach ( WP_CLI::$commands as $name => $command ) {
+		WP_CLI::line( $name .  ' ' . implode( ' ', WP_CLI_Command::get_methods($command) ) );
+	}
+	exit;
+}
+
 // Get the top-level command
 $command = array_shift( $arguments );
 

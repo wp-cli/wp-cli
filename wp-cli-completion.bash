@@ -7,9 +7,12 @@ _wp() {
 	cur="${COMP_WORDS[COMP_CWORD]}"
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-	opts=$(wp help | awk '/wp / {print $2}')
+	if [[ 'wp' = $prev ]]; then
+		opts=$(wp --completions | cut -d ' ' -f 1)
+	else
+		opts=$(wp --completions | grep ^$prev | cut -d ' ' -f 2-)
+	fi
 
 	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-	return 0
 }
 complete -F _wp wp
