@@ -8,11 +8,11 @@ _wp() {
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
 
 	if [[ 'wp' = $prev ]]; then
-		opts=$(wp --completions | cut -d ' ' -f 1)
+		opts=$(wp --completions | cut -d ' ' -f 1 | tr '\n' ' ')
 	else
-		opts=$(wp --completions | grep ^$prev | cut -d ' ' -f 2-)
+		opts=$(wp --completions | grep ^$prev | cut -d ' ' -f 2- | tr '\n' ' ')
 	fi
 
-	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	COMPREPLY=( $(compgen -W "$opts" -- $cur) )
 }
 complete -F _wp wp
