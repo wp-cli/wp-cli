@@ -19,7 +19,8 @@ class GenerateCommand extends WP_CLI_Command {
 	/**
 	 * Generate posts
 	 *
-	 * @param string $args
+	 * @param array $args
+	 * @param array $assoc_args
 	 * @return void
 	 **/
 	public function posts( $args, $assoc_args ) {
@@ -34,7 +35,7 @@ class GenerateCommand extends WP_CLI_Command {
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
 		if ( !post_type_exists( $type ) ) {
-			WP_CLI::warning( "Invalid post type: $type" );
+			WP_CLI::warning( 'invalid post type.' );
 			exit;
 		}
 
@@ -50,6 +51,48 @@ class GenerateCommand extends WP_CLI_Command {
 				'post_type' => $type,
 				'post_title' =>  "$label $i",
 				'post_status' => $status
+			) );
+		}
+	}
+
+	/**
+	 * Generate users
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 * @return void
+	 **/
+	public function users( $args, $assoc_args ) {
+		global $blog_id;
+
+		$defaults = array(
+			'count' => 100,
+			'role' => get_option('default_role'),
+		);
+
+		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
+
+		if ( is_null( get_role( $role ) ) ) {
+			WP_CLI::warning( "invalid role." );
+			exit;
+		}
+
+		$user_count = count_users();
+
+		$total = $user_count['total_users'];
+
+		$limit = $count + $total;
+
+		for ( $i = $total; $i < $limit; $i++ ) {
+			$login = sprintf( 'user_%d_%d', $blog_id, $i );
+			$name = "User $i";
+
+			$r = wp_insert_user( array(
+				'user_login' => $login,
+				'user_pass' => $login,
+				'nickname' => $name,
+				'display_name' => $name,
+				'role' => $role
 			) );
 		}
 	}
