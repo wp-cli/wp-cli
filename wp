@@ -92,9 +92,7 @@ if [ "x$wp_cli_php_override" != "x" ] ; then
 fi
 
 # Get the php version
-PHP_VERSION=$($php -r 'echo phpversion();')
-# Keep only major version number
-PHP_VERSION=${PHP_VERSION%%-*}
+PHP_VERSION=$(php -v | awk '/^PHP / {print $2}' | cut -d '-' -f 1)
 
 # Format version numbers
 CURRENT_NUMBER=$(echo "$PHP_VERSION" | tr -d '.')
