@@ -1,9 +1,7 @@
 <?php
 
-// Add the command to the wp-cli
 WP_CLI::addCommand('plugin', 'PluginCommand');
 
-// Do the required includes
 require_once(ABSPATH.'wp-admin/includes/plugin.php');
 require_once(ABSPATH.'wp-admin/includes/plugin-install.php');
 
@@ -29,20 +27,16 @@ class PluginCommand extends WP_CLI_Command {
 	function status( $args = array(), $vars = array() ) {
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
-		
-		if(!empty( $args )) {
-			// Get the plugin name from the arguments
+
+		if ( !empty( $args ) ) {
 			$name = $this->check_name( $args );
 
-			// Get the plugin file name
 			$file = $this->parse_name( $name );
-			
-			// Get list of mu plugins
+
 			$mu_plugins = get_mu_plugins();
 
-			// Get the plugin details
 			$details = $this->get_details( $file );
-			
+
 			// Get the plugin status
 			if ( isset( $mu_plugins[ $file ] ) )
 				$status = '%cMust Use';
@@ -52,7 +46,7 @@ class PluginCommand extends WP_CLI_Command {
 				$status = '%gYes';
 			else
 				$status = '%rNo';
-			
+
 			// Display the plugin details
 			WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
 			WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
@@ -62,13 +56,10 @@ class PluginCommand extends WP_CLI_Command {
 			WP_CLI::line( '    Author: ' . $details[ 'Author' ]);
 		}
 		else {
-			// Get the list of plugins
 			$plugins = get_plugins();
 
-			// Get list of mu plugins
 			$mu_plugins = get_mu_plugins();
 
-			// Merge the two plugin arrays
 			$plugins = array_merge($plugins, $mu_plugins);
 
 			// Print the header
@@ -122,23 +113,15 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param string $args
 	 * @return void
 	 */
-	function activate($args) {
-		// Get the plugin name from the arguments
-		$name = $this->check_name($args);
+	function activate( $args ) {
+		$name = $this->check_name( $args );
 
-		// Get the plugin file name
-		$file = $this->parse_name($name);
+		$file = $this->parse_name( $name );
 
-		// Check if the plugin is already active
-		if(is_plugin_active($file)) {
-			WP_CLI::error('The plugin is already active: '.$name);
-		}
-		// Try to activate the plugin
-		elseif(activate_plugin($file) === null) {
-			WP_CLI::success('Plugin activated: '.$name);
-		}
-		else {
-			WP_CLI::error('The plugin could not be activated: '.$name);
+		activate_plugin( $file );
+
+		if ( !is_plugin_active( $file ) ) {
+			WP_CLI::error( 'Could not activate this plugin: ' . $name );
 		}
 	}
 
@@ -148,23 +131,15 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param string $args
 	 * @return void
 	 */
-	function deactivate($args) {
-		// Get the plugin name from the arguments
-		$name = $this->check_name($args);
+	function deactivate( $args ) {
+		$name = $this->check_name( $args );
 
-		// Get the plugin file name
-		$file = $this->parse_name($name);
+		$file = $this->parse_name( $name );
 
-		// Check if the plugin is already deactivated
-		if(is_plugin_inactive($file)) {
-			WP_CLI::error('The plugin is already deactivated: '.$name);
-		}
-		// Try to deactivate the plugin
-		elseif(deactivate_plugins($file) === null) {
-			WP_CLI::success('Plugin deactivated: '.$name);
-		}
-		else {
-			WP_CLI::error('Could not deactivate this plugin: '.$name);
+		deactivate_plugins( $file );
+
+		if ( !is_plugin_inactive( $file ) ) {
+			WP_CLI::error( 'Could not deactivate this plugin: '.$name );
 		}
 	}
 
@@ -174,54 +149,54 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param string $args
 	 * @return void
 	 */
-	function install($args) {
+	function install( $args ) {
 		// Get the plugin name from the arguments
-		$name = $this->check_name($args);
+		$name = $this->check_name( $args );
 
 		// Get the plugin file name
-		$file = $this->parse_name($name, false);
+		$file = $this->parse_name( $name, false );
 
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
 
 		// Get plugin info from the WordPress servers
-	    $api = plugins_api('plugin_information', array('slug' => stripslashes($name)));
-		$status = install_plugin_install_status($api);
+		$api = plugins_api( 'plugin_information', array( 'slug' => stripslashes( $name ) ) );
+		$status = install_plugin_install_status( $api );
 
-		WP_CLI::line('Installing '.$api->name.' ('.$api->version.')');
+		WP_CLI::line( 'Installing '.$api->name.' ('.$api->version.')' );
 
 		// Check what to do
-		switch($status['status']) {
-			case 'update_available':
-			case 'install':
-				if(!class_exists('Plugin_Upgrader')) {
-					require_once(ABSPATH.'wp-admin/includes/class-wp-upgrader.php');
-				}
+		switch ( $status['status'] ) {
+		case 'update_available':
+		case 'install':
+			if ( !class_exists( 'Plugin_Upgrader' ) ) {
+				require_once( ABSPATH.'wp-admin/includes/class-wp-upgrader.php' );
+			}
 
-				// Install the plugin
-				ob_start('strip_tags');
-				$upgrader = new Plugin_Upgrader(new CLI_Upgrader_Skin);
-				$result = $upgrader->install($api->download_link);
-				$feedback = ob_get_clean();
+			// Install the plugin
+			ob_start( 'strip_tags' );
+			$upgrader = new Plugin_Upgrader( new CLI_Upgrader_Skin );
+			$result = $upgrader->install( $api->download_link );
+			$feedback = ob_get_clean();
 
-				if($result !== null) {
-					WP_CLI::error($result);
-				}
-				else {
-					WP_CLI::line();
-					WP_CLI::line(strip_tags(str_replace(array('&#8230;', 'Plugin installed successfully.'), array(" ...\n", ''), html_entity_decode($feedback))));
-					WP_CLI::success('The plugin is successfully installed');
-				}
+			if ( $result !== null ) {
+				WP_CLI::error( $result );
+			}
+			else {
+				WP_CLI::line();
+				WP_CLI::line( strip_tags( str_replace( array( '&#8230;', 'Plugin installed successfully.' ), array( " ...\n", '' ), html_entity_decode( $feedback ) ) ) );
+				WP_CLI::success( 'The plugin is successfully installed' );
+			}
 			break;
-			case 'newer_installed':
-				WP_CLI::error(sprintf('Newer version (%s) installed', $status['version']));
+		case 'newer_installed':
+			WP_CLI::error( sprintf( 'Newer version ( %s ) installed', $status['version'] ) );
 			break;
-			case 'latest_installed':
-				WP_CLI::error('Latest version already installed');
+		case 'latest_installed':
+			WP_CLI::error( 'Latest version already installed' );
 
-				if(is_plugin_inactive($file)) {
-					WP_CLI::warning('If you want to activate the plugin, run: %2wp plugin activate '.$name.'%n');
-				}
+			if ( is_plugin_inactive( $file ) ) {
+				WP_CLI::warning( 'If you want to activate the plugin, run: %2wp plugin activate '.$name.'%n' );
+			}
 			break;
 		}
 	}
@@ -232,18 +207,13 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param string $args
 	 * @return void
 	 */
-	function delete($args) {
-		// Get the plugin name from the arguments
-		$name = $this->check_name($args);
+	function delete( $args ) {
+		$name = $this->check_name( $args );
 
-		// Get the plugin file name
-		$file = $this->parse_name($name);
+		$file = $this->parse_name( $name );
 
-		if(delete_plugins(array($file))) {
-			WP_CLI::success('The plugin is successfully deleted.');
-		}
-		else {
-			WP_CLI::error('There was an error while deleting the plugin.');
+		if ( !delete_plugins( array( $file ) ) ) {
+			WP_CLI::error( 'There was an error while deleting the plugin.' );
 		}
 	}
 
@@ -253,35 +223,33 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param string $args
 	 * @return void
 	 */
-	function update($args) {
-		// Get the plugin name from the arguments
-		$name = $this->check_name($args);
+	function update( $args ) {
+		$name = $this->check_name( $args );
 
-		// Get the plugin file name
-		$file = $this->parse_name($name);
+		$file = $this->parse_name( $name );
 
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
 
-		if(!class_exists('Plugin_Upgrader')) {
-			require_once(ABSPATH.'wp-admin/includes/class-wp-upgrader.php');
+		if ( !class_exists( 'Plugin_Upgrader' ) ) {
+			require_once( ABSPATH.'wp-admin/includes/class-wp-upgrader.php' );
 		}
 
-		WP_CLI::line('Updating '.$name);
+		WP_CLI::line( 'Updating '.$name );
 
 		// Upgrading the plugin
-		ob_start('strip_tags');
-		$upgrader = new Plugin_Upgrader(new CLI_Upgrader_Skin);
-		$result = $upgrader->upgrade($file);
+		ob_start( 'strip_tags' );
+		$upgrader = new Plugin_Upgrader( new CLI_Upgrader_Skin );
+		$result = $upgrader->upgrade( $file );
 		$feedback = ob_get_clean();
 
-		if($result !== null) {
-			WP_CLI::error($feedback);
+		if ( $result !== null ) {
+			WP_CLI::error( $feedback );
 		}
 		else {
 			WP_CLI::line();
-			WP_CLI::line(html_entity_decode(strip_tags($feedback)));
-			WP_CLI::success('The plugin is successfully updated.');
+			WP_CLI::line( html_entity_decode( strip_tags( $feedback ) ) );
+			WP_CLI::success( 'The plugin is successfully updated.' );
 		}
 	}
 
@@ -293,9 +261,9 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param string $file
 	 * @return array
 	 */
-	private function get_details($file) {
-		$plugin_folder = get_plugins( '/' . plugin_basename(dirname($file)));
-		$plugin_file = basename(($file));
+	private function get_details( $file ) {
+		$plugin_folder = get_plugins(  '/' . plugin_basename( dirname( $file ) ) );
+		$plugin_file = basename( ( $file ) );
 
 		return $plugin_folder[$plugin_file];
 	}
@@ -307,21 +275,21 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param string $exit
 	 * @return mixed
 	 */
-	private function parse_name($name, $exit = true) {
-		$plugins = get_plugins('/'.$name);
+	private function parse_name( $name, $exit = true ) {
+		$plugins = get_plugins( '/'.$name );
 
-		if(!empty($plugins)) {
-			$keys = array_keys($plugins);
+		if ( !empty( $plugins ) ) {
+			$keys = array_keys( $plugins );
 			$file = $name.'/'.$keys[0];
 		}
 		else {
 			$plugins = get_plugins();
-			if(isset($plugins[$name.'.php'])) {
+			if ( isset( $plugins[$name.'.php'] ) ) {
 				$file = $name.'.php';
 			}
 			else {
-				if($exit) {
-					WP_CLI::error('The plugin \''.$name.'\' could not be found.');
+				if ( $exit ) {
+					WP_CLI::error( 'The plugin \''.$name.'\' could not be found.' );
 					exit();
 				}
 
@@ -339,13 +307,13 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param string $exit
 	 * @return void
 	 */
-	private function check_name($args, $exit = true) {
-		if(empty($args)) {
-			WP_CLI::error('Please specify a plugin.');
+	private function check_name( $args, $exit = true ) {
+		if ( empty( $args ) ) {
+			WP_CLI::error( 'Please specify a plugin.' );
 			WP_CLI::line();
 			$this->help();
 
-			if($exit) {
+			if ( $exit ) {
 				exit();
 			}
 		}
@@ -359,20 +327,20 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param string $args
 	 * @return void
 	 */
-	public function help($args = array()) {
+	public function help( $args = array() ) {
 		// Shot the command description
 		WP_CLI::line( $this->get_description() );
 		WP_CLI::line();
 
 		// Show the list of sub-commands for this command
-		WP_CLI::line('Example usage:');
+		WP_CLI::line( 'Example usage:' );
 
-		foreach (WP_CLI_Command::get_methods($this) as $method) {
-			if($method != 'help') {
-				WP_CLI::line('    wp '.$this->command.' '.$method.' hello-dolly');
+		foreach ( WP_CLI_Command::get_methods( $this ) as $method ) {
+			if ( $method != 'help' ) {
+				WP_CLI::line( '    wp '.$this->command.' '.$method.' hello-dolly' );
 			}
 			else {
-				WP_CLI::line('    wp '.$this->command.' '.$method);
+				WP_CLI::line( '    wp '.$this->command.' '.$method );
 			}
 		}
 	}
