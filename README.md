@@ -115,7 +115,7 @@ A wp-cli class is structured like this:
  * Implement example command
  *
  * @package wp-cli
- * @subpackage commands/cummunity
+ * @subpackage commands/community
  * @author Andreas Creten
  */
 class ExampleCommand extends WP_CLI_Command {
