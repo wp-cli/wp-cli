@@ -114,7 +114,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function activate( $args ) {
-		$name = $this->check_name( $args );
+		$name = $this->check_name( $args, __FUNCTION__ );
 
 		$file = $this->parse_name( $name );
 
@@ -134,7 +134,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function deactivate( $args ) {
-		$name = $this->check_name( $args );
+		$name = $this->check_name( $args, __FUNCTION__ );
 
 		$file = $this->parse_name( $name );
 
@@ -154,7 +154,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function toggle( $args ) {
-		$name = $this->check_name( $args );
+		$name = $this->check_name( $args, __FUNCTION__ );
 
 		$file = $this->parse_name( $name );
 
@@ -172,10 +172,8 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function install( $args ) {
-		// Get the plugin name from the arguments
-		$name = $this->check_name( $args );
+		$name = $this->check_name( $args, __FUNCTION__ );
 
-		// Get the plugin file name
 		$file = $this->parse_name( $name, false );
 
 		// Force WordPress to update the plugin list
@@ -230,7 +228,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function delete( $args ) {
-		$name = $this->check_name( $args );
+		$name = $this->check_name( $args, __FUNCTION__ );
 
 		$file = $this->parse_name( $name );
 
@@ -246,7 +244,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function update( $args ) {
-		$name = $this->check_name( $args );
+		$name = $this->check_name( $args, __FUNCTION__ );
 
 		$file = $this->parse_name( $name );
 
@@ -320,21 +318,16 @@ class PluginCommand extends WP_CLI_Command {
 	}
 
 	/**
-	 * Check if there is a name set in the arguments, if not show the help function
+	 * Check if there is a name set in the arguments; if not show usage example
 	 *
 	 * @param array $args
-	 * @param string $exit
-	 * @return void
+	 * @param string $sub_command
+	 * @return string
 	 */
-	private function check_name( $args, $exit = true ) {
+	private function check_name( $args, $sub_command ) {
 		if ( empty( $args ) ) {
-			WP_CLI::error( 'Please specify a plugin.' );
-			WP_CLI::line();
-			$this->help();
-
-			if ( $exit ) {
-				exit();
-			}
+			WP_CLI::line( "usage: wp plugin $sub_command <plugin-name>" );
+			exit;
 		}
 
 		return $args[0];
