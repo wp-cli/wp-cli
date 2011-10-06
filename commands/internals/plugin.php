@@ -29,9 +29,7 @@ class PluginCommand extends WP_CLI_Command {
 		wp_update_plugins();
 
 		if ( !empty( $args ) ) {
-			$name = $args[0];
-
-			$file = $this->parse_name( $name );
+			list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 			$mu_plugins = get_mu_plugins();
 
@@ -114,9 +112,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function activate( $args ) {
-		$name = $this->check_name( $args, __FUNCTION__ );
-
-		$file = $this->parse_name( $name );
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		activate_plugin( $file );
 
@@ -134,9 +130,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function deactivate( $args ) {
-		$name = $this->check_name( $args, __FUNCTION__ );
-
-		$file = $this->parse_name( $name );
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		deactivate_plugins( $file );
 
@@ -154,9 +148,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function toggle( $args ) {
-		$name = $this->check_name( $args, __FUNCTION__ );
-
-		$file = $this->parse_name( $name );
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		if ( is_plugin_active( $file ) ) {
 			$this->deactivate( $args );
@@ -172,9 +164,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function install( $args ) {
-		$name = $this->check_name( $args, __FUNCTION__ );
-
-		$file = $this->parse_name( $name, false );
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__, false );
 
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
@@ -228,9 +218,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function delete( $args ) {
-		$name = $this->check_name( $args, __FUNCTION__ );
-
-		$file = $this->parse_name( $name );
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		if ( !delete_plugins( array( $file ) ) ) {
 			WP_CLI::error( 'There was an error while deleting the plugin.' );
@@ -244,9 +232,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function update( $args ) {
-		$name = $this->check_name( $args, __FUNCTION__ );
-
-		$file = $this->parse_name( $name );
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
@@ -291,11 +277,19 @@ class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Parse the name of a plugin to a filename, check if it exists
 	 *
-	 * @param string $name
-	 * @param string $exit
-	 * @return mixed
+	 * @param array $args
+	 * @param string $sub_command
+	 * @param bool $exit
+	 * @return array
 	 */
-	private function parse_name( $name, $exit = true ) {
+	private function parse_name( $args, $sub_command, $exit = true ) {
+		if ( empty( $args ) ) {
+			WP_CLI::line( "usage: wp plugin $sub_command <plugin-name>" );
+			exit;
+		}
+
+		$name = $args[0];
+
 		$plugins = get_plugins( '/' . $name );
 
 		if ( !empty( $plugins ) ) {
@@ -314,23 +308,7 @@ class PluginCommand extends WP_CLI_Command {
 			}
 		}
 
-		return $file;
-	}
-
-	/**
-	 * Check if there is a name set in the arguments; if not show usage example
-	 *
-	 * @param array $args
-	 * @param string $sub_command
-	 * @return string
-	 */
-	private function check_name( $args, $sub_command ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp plugin $sub_command <plugin-name>" );
-			exit;
-		}
-
-		return $args[0];
+		return array( $file, $name );
 	}
 
 	/**
