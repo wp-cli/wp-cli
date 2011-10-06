@@ -34,7 +34,7 @@ class ThemeCommand extends WP_CLI_Command {
 		// Get the current theme
 		$theme_name = get_current_theme();
 
-		WP_CLI::line('Theme %2'.$details['Name'].'%n details:');
+		WP_CLI::line('Theme %9'.$details['Name'].'%n details:');
 		WP_CLI::line('    Active: '.((int) ($details['Name'] == $theme_name)));
 		WP_CLI::line('    Version: '.$details['Version']);
 		WP_CLI::line('    Author: '.strip_tags($details['Author']));
