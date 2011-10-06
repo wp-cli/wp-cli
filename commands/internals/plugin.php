@@ -18,6 +18,8 @@ class PluginCommand extends WP_CLI_Command {
 		return 'Do cool things with plugins.';
 	}
 
+	private $mu_plugins;
+
 	/**
 	 * Get the status of one or all plugins
 	 *
@@ -25,6 +27,8 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function status( $args = array(), $vars = array() ) {
+		$this->mu_plugins = get_mu_plugins();
+
 		if ( empty( $args ) ) {
 			$this->list_plugins();
 			return;
@@ -32,24 +36,13 @@ class PluginCommand extends WP_CLI_Command {
 
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
-		$mu_plugins = get_mu_plugins();
-
 		$details = $this->get_details( $file );
 
-		// Get the plugin status
-		if ( isset( $mu_plugins[ $file ] ) )
-			$status = '%cMust Use';
-		elseif ( is_plugin_active_for_network( $file ) )
-			$status = '%bNetwork Activated';
-		elseif ( is_plugin_active( $file ) )
-			$status = '%gYes';
-		else
-			$status = '%rNo';
+		$status = $this->get_status( $file, true );
 
-		// Display the plugin details
 		WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
 		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
-		WP_CLI::line( '    Active: ' . $status .'%n' );
+		WP_CLI::line( '    Status: ' . $status .'%n' );
 		WP_CLI::line( '    Version: ' . $details[ 'Version' ] . ( WP_CLI::get_update_status( $file, 'update_plugins' ) ? ' (%gUpdate available%n)' : '' ) );
 		WP_CLI::line( '    Description: ' . $details[ 'Description' ] );
 		WP_CLI::line( '    Author: ' . $details[ 'Author' ]);
@@ -61,9 +54,7 @@ class PluginCommand extends WP_CLI_Command {
 
 		$plugins = get_plugins();
 
-		$mu_plugins = get_mu_plugins();
-
-		$plugins = array_merge($plugins, $mu_plugins);
+		$plugins = array_merge( $plugins, $this->mu_plugins );
 
 		// Print the header
 		WP_CLI::line('Installed plugins:');
@@ -80,16 +71,7 @@ class PluginCommand extends WP_CLI_Command {
 				$line = '  ';
 			}
 
-			if ( isset($mu_plugins[$file]) )
-				$line .= '%cM';
-			elseif ( is_plugin_active_for_network($file) )
-				$line .= '%bN';
-			elseif ( is_plugin_active($file) )
-				$line .= '%gA';
-			else
-				$line .= 'I';
-
-			$line .= ' '.$name.'%n';
+			$line .= $this->get_status( $file ) . " $name%n";
 
 			WP_CLI::line( $line );
 		}
@@ -107,6 +89,23 @@ class PluginCommand extends WP_CLI_Command {
 			$legend['%bN'] = 'Network Active';
 
 		WP_CLI::legend( $legend );
+	}
+
+	private function get_status( $file, $long = false ) {
+		if ( isset( $this->mu_plugins[ $file ] ) ) {
+			$line  = '%c';
+			$line .= $long ? 'Must Use' : 'M';
+		} elseif ( is_plugin_active_for_network( $file ) ) {
+			$line  = '%b';
+			$line .= $long ? 'Network Active' : 'N';
+		} elseif ( is_plugin_active( $file ) ) {
+			$line  = '%g';
+			$line .= $long ? 'Active' : 'A';
+		} else {
+			$line  = $long ? 'Inactive' : 'I';
+		}
+
+		return $line;
 	}
 
 	/**
