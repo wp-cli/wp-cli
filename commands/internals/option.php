@@ -19,7 +19,7 @@ class OptionCommand extends WP_CLI_Command {
 	/**
 	 * Add an option
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 **/
 	public function add($args = array()) {
@@ -41,7 +41,7 @@ class OptionCommand extends WP_CLI_Command {
 	/**
 	 * Update an option
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 **/
 	public function update($args = array()) {
@@ -63,7 +63,7 @@ class OptionCommand extends WP_CLI_Command {
 	/**
 	 * Delete an option
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 **/
 	public function delete($args = array()) {
@@ -85,7 +85,7 @@ class OptionCommand extends WP_CLI_Command {
 	/**
 	 * Get an option
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 **/
 	public function get($args = array()) {
@@ -108,7 +108,7 @@ class OptionCommand extends WP_CLI_Command {
 	/**
 	 * Help function for this command
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	public function help($args = array()) {

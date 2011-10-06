@@ -19,7 +19,7 @@ class ThemeCommand extends WP_CLI_Command {
 	/**
 	 * Get the status of all themes
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 **/
 	public function status($args = array()) {
@@ -62,7 +62,7 @@ class ThemeCommand extends WP_CLI_Command {
 	/**
 	 * Get theme details
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 **/
 	public function details($args = array()) {
@@ -121,7 +121,7 @@ class ThemeCommand extends WP_CLI_Command {
 	/**
 	 * Help function for this command
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	public function help($args = array()) {

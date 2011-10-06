@@ -21,7 +21,7 @@ class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Get the status of one plugin
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function status( $args = array(), $vars = array() ) {
@@ -110,7 +110,7 @@ class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Activate a plugin
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function activate( $args ) {
@@ -130,7 +130,7 @@ class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Deactivate a plugin
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function deactivate( $args ) {
@@ -150,7 +150,7 @@ class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Toggle a plugin's activation state
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function toggle( $args ) {
@@ -168,7 +168,7 @@ class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Install a new plugin
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function install( $args ) {
@@ -226,7 +226,7 @@ class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Delete a plugin
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function delete( $args ) {
@@ -242,7 +242,7 @@ class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Update a plugin
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function update( $args ) {
@@ -322,7 +322,7 @@ class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Check if there is a name set in the arguments, if not show the help function
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @param string $exit
 	 * @return void
 	 */
@@ -343,7 +343,7 @@ class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Help function for this command
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	public function help( $args = array() ) {

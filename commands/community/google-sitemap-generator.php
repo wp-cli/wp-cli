@@ -32,7 +32,7 @@ class GoogleSitemapGeneratorCommand extends WP_CLI_Command {
 	/**
 	 * Help function for this command
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	public function help($args = array()) {

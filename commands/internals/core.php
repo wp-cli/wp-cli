@@ -19,7 +19,7 @@ class CoreCommand extends WP_CLI_Command {
 	/**
 	 * Update the WordPress core
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function update($args) {
