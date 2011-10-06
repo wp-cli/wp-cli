@@ -17,12 +17,31 @@ class ThemeCommand extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get the status of all themes
+	 * Get the status of one or all themes
 	 *
 	 * @param array $args
 	 * @return void
 	 **/
-	public function status($args = array()) {
+	public function status( $args = array() ) {
+		if ( empty( $args ) ) {
+			$this->list_themes();
+			return;
+		}
+
+		// Get the info of the theme
+		$details = get_theme_data(WP_CONTENT_DIR.'/themes/'.$args[0].'/style.css');
+
+		// Get the current theme
+		$theme_name = get_current_theme();
+
+		WP_CLI::line('Theme %2'.$details['Name'].'%n details:');
+		WP_CLI::line('    Active: '.((int) ($details['Name'] == $theme_name)));
+		WP_CLI::line('    Version: '.$details['Version']);
+		WP_CLI::line('    Author: '.strip_tags($details['Author']));
+		//WP_CLI::line('    Description: '.strip_tags($details['Description']));
+	}
+
+	private function list_themes() {
 		// Get the list of themes
 		$themes = get_themes();
 
@@ -57,26 +76,6 @@ class ThemeCommand extends WP_CLI_Command {
 		);
 
 		WP_CLI::legend( $legend );
-	}
-
-	/**
-	 * Get theme details
-	 *
-	 * @param array $args
-	 * @return void
-	 **/
-	public function details($args = array()) {
-		// Get the info of the theme
-		$details = get_theme_data(WP_CONTENT_DIR.'/themes/'.$args[0].'/style.css');
-
-		// Get the current theme
-		$theme_name = get_current_theme();
-
-		WP_CLI::line('Theme %2'.$details['Name'].'%n details:');
-		WP_CLI::line('    Active: '.((int) ($details['Name'] == $theme_name)));
-		WP_CLI::line('    Version: '.$details['Version']);
-		WP_CLI::line('    Author: '.strip_tags($details['Author']));
-		//WP_CLI::line('    Description: '.strip_tags($details['Description']));
 	}
 
 	/**

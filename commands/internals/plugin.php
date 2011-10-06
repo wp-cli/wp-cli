@@ -19,90 +19,94 @@ class PluginCommand extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get the status of one plugin
+	 * Get the status of one or all plugins
 	 *
 	 * @param array $args
 	 * @return void
 	 */
 	function status( $args = array(), $vars = array() ) {
+		if ( empty( $args ) ) {
+			$this->list_plugins();
+			return;
+		}
+
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+
+		$mu_plugins = get_mu_plugins();
+
+		$details = $this->get_details( $file );
+
+		// Get the plugin status
+		if ( isset( $mu_plugins[ $file ] ) )
+			$status = '%cMust Use';
+		elseif ( is_plugin_active_for_network( $file ) )
+			$status = '%bNetwork Activated';
+		elseif ( is_plugin_active( $file ) )
+			$status = '%gYes';
+		else
+			$status = '%rNo';
+
+		// Display the plugin details
+		WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
+		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
+		WP_CLI::line( '    Active: ' . $status .'%n' );
+		WP_CLI::line( '    Version: ' . $details[ 'Version' ] . ( WP_CLI::get_update_status( $file, 'update_plugins' ) ? ' (%gUpdate available%n)' : '' ) );
+		WP_CLI::line( '    Description: ' . $details[ 'Description' ] );
+		WP_CLI::line( '    Author: ' . $details[ 'Author' ]);
+	}
+
+	private function list_plugins() {
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
 
-		if ( !empty( $args ) ) {
-			list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+		$plugins = get_plugins();
 
-			$mu_plugins = get_mu_plugins();
+		$mu_plugins = get_mu_plugins();
 
-			$details = $this->get_details( $file );
+		$plugins = array_merge($plugins, $mu_plugins);
 
-			// Get the plugin status
-			if ( isset( $mu_plugins[ $file ] ) )
-				$status = '%cMust Use';
-			elseif ( is_plugin_active_for_network( $file ) )
-				$status = '%bNetwork Activated';
-			elseif ( is_plugin_active( $file ) )
-				$status = '%gYes';
+		// Print the header
+		WP_CLI::line('Installed plugins:');
+
+		foreach ($plugins as $file => $plugin) {
+			if ( false === strpos( $file, '/' ) )
+				$name = str_replace('.php', '', basename($file));
 			else
-				$status = '%rNo';
+				$name = dirname($file);
 
-			// Display the plugin details
-			WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
-			WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
-			WP_CLI::line( '    Active: ' . $status .'%n' );
-			WP_CLI::line( '    Version: ' . $details[ 'Version' ] . ( WP_CLI::get_update_status( $file, 'update_plugins' ) ? ' (%gUpdate available%n)' : '' ) );
-			WP_CLI::line( '    Description: ' . $details[ 'Description' ] );
-			WP_CLI::line( '    Author: ' . $details[ 'Author' ]);
-		}
-		else {
-			$plugins = get_plugins();
-
-			$mu_plugins = get_mu_plugins();
-
-			$plugins = array_merge($plugins, $mu_plugins);
-
-			// Print the header
-			WP_CLI::line('Installed plugins:');
-
-			foreach ($plugins as $file => $plugin) {
-				if ( false === strpos( $file, '/' ) )
-					$name = str_replace('.php', '', basename($file));
-				else
-					$name = dirname($file);
-
-				if ( WP_CLI::get_update_status( $file, 'update_plugins' ) ) {
-					$line = ' %yU%n';
-				} else {
-					$line = '  ';
-				}
-
-				if ( isset($mu_plugins[$file]) )
-					$line .= '%cM';
-				elseif ( is_plugin_active_for_network($file) )
-					$line .= '%bN';
-				elseif ( is_plugin_active($file) )
-					$line .= '%gA';
-				else
-					$line .= 'I';
-
-				$line .= ' '.$name.'%n';
-
-				WP_CLI::line( $line );
+			if ( WP_CLI::get_update_status( $file, 'update_plugins' ) ) {
+				$line = ' %yU%n';
+			} else {
+				$line = '  ';
 			}
 
-			// Print the footer
-			WP_CLI::line();
+			if ( isset($mu_plugins[$file]) )
+				$line .= '%cM';
+			elseif ( is_plugin_active_for_network($file) )
+				$line .= '%bN';
+			elseif ( is_plugin_active($file) )
+				$line .= '%gA';
+			else
+				$line .= 'I';
 
-			$legend = array(
-				'I' => 'Inactive',
-				'%gA' => 'Active',
-				'%cM' => 'Must Use',
-			);
+			$line .= ' '.$name.'%n';
 
-			if ( is_multisite() )
-				$legend['%bN'] = 'Network Active';
-
-			WP_CLI::legend( $legend );
+			WP_CLI::line( $line );
 		}
+
+		// Print the footer
+		WP_CLI::line();
+
+		$legend = array(
+			'I' => 'Inactive',
+			'%gA' => 'Active',
+			'%cM' => 'Must Use',
+		);
+
+		if ( is_multisite() )
+			$legend['%bN'] = 'Network Active';
+
+		WP_CLI::legend( $legend );
 	}
 
 	/**
