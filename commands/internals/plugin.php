@@ -29,7 +29,7 @@ class PluginCommand extends WP_CLI_Command {
 		wp_update_plugins();
 
 		if ( !empty( $args ) ) {
-			$name = $this->check_name( $args );
+			$name = $args[0];
 
 			$file = $this->parse_name( $name );
 
@@ -298,20 +298,17 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return mixed
 	 */
 	private function parse_name( $name, $exit = true ) {
-		$plugins = get_plugins( '/'.$name );
+		$plugins = get_plugins( '/' . $name );
 
 		if ( !empty( $plugins ) ) {
-			$keys = array_keys( $plugins );
-			$file = $name.'/'.$keys[0];
+			$file = $name . '/' . key( $plugins );
 		}
 		else {
+			$file = $name . '.php';
 			$plugins = get_plugins();
-			if ( isset( $plugins[$name.'.php'] ) ) {
-				$file = $name.'.php';
-			}
-			else {
+			if ( !isset( $plugins[$file] ) ) {
 				if ( $exit ) {
-					WP_CLI::error( 'The plugin \''.$name.'\' could not be found.' );
+					WP_CLI::error( "The plugin '$name' could not be found." );
 					exit();
 				}
 
