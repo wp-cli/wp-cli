@@ -62,7 +62,7 @@ abstract class WP_CLI_Command {
     /**
      * General help function for this command
      *
-     * @param string $args
+     * @param array $args
      * @param string $assoc_args
      * @return void
      */
