@@ -28,41 +28,36 @@ class ThemeCommand extends WP_CLI_Command {
 			return;
 		}
 
-		// Get the info of the theme
-		$details = get_theme_data(WP_CONTENT_DIR.'/themes/'.$args[0].'/style.css');
+		$name = $args[0];
 
-		// Get the current theme
-		$theme_name = get_current_theme();
+		$details = get_theme_data( $this->get_stylesheet_path( $name ) );
 
-		WP_CLI::line('Theme %9'.$details['Name'].'%n details:');
-		WP_CLI::line('    Active: '.((int) ($details['Name'] == $theme_name)));
-		WP_CLI::line('    Version: '.$details['Version']);
-		WP_CLI::line('    Author: '.strip_tags($details['Author']));
-		//WP_CLI::line('    Description: '.strip_tags($details['Description']));
+		$status = $this->get_status( $details['Name'], true );
+
+		$version = $details[ 'Version' ];
+
+		if ( WP_CLI::get_update_status( $name, 'update_themes' ) )
+			$version .= ' (%gUpdate available%n)';
+
+		WP_CLI::line( 'Theme %9' . $name . '%n details:' );
+		WP_CLI::line( '    Status: ' . $status .'%n' );
+		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
+		WP_CLI::line( '    Version: ' . $version );
+		WP_CLI::line( '    Author: ' . strip_tags( $details[ 'Author' ] ) );
 	}
 
 	private function list_themes() {
-		// Get the list of themes
-		$themes = get_themes();
-
 		// Print the header
-		WP_CLI::line('Installed themes:');
+		WP_CLI::line( 'Installed themes:' );
 
-		$theme_name = get_current_theme();
-
-		foreach ($themes as $key => $theme) {
+		foreach ( get_themes() as $theme ) {
 			if ( WP_CLI::get_update_status( $theme['Stylesheet'], 'update_themes' ) ) {
 				$line = ' %yU%n';
 			} else {
 				$line = '  ';
 			}
 
-			if ( $theme['Name'] == $theme_name )
-				$line .= '%gA';
-			else
-				$line .= 'I';
-
-			$line .=  ' ' . $theme['Stylesheet'].'%n';
+			$line .=  $this->get_status( $theme['Name'] ) . ' ' . $theme['Stylesheet'] . '%n';
 
 			WP_CLI::line( $line );
 		}
@@ -76,6 +71,17 @@ class ThemeCommand extends WP_CLI_Command {
 		);
 
 		WP_CLI::legend( $legend );
+	}
+
+	private function get_status( $theme_name, $long = false ) {
+		if ( get_current_theme() == $theme_name ) {
+			$line  = '%g';
+			$line .= $long ? 'Active' : 'A';
+		} else {
+			$line  = $long ? 'Inactive' : 'I';
+		}
+
+		return $line;
 	}
 
 	/**

@@ -40,12 +40,17 @@ class PluginCommand extends WP_CLI_Command {
 
 		$status = $this->get_status( $file, true );
 
+		$version = $details[ 'Version' ];
+
+		if ( WP_CLI::get_update_status( $file, 'update_plugins' ) )
+			$version .= ' (%gUpdate available%n)';
+
 		WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
-		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
 		WP_CLI::line( '    Status: ' . $status .'%n' );
-		WP_CLI::line( '    Version: ' . $details[ 'Version' ] . ( WP_CLI::get_update_status( $file, 'update_plugins' ) ? ' (%gUpdate available%n)' : '' ) );
+		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
+		WP_CLI::line( '    Version: ' . $version );
+		WP_CLI::line( '    Author: ' . $details[ 'Author' ] );
 		WP_CLI::line( '    Description: ' . $details[ 'Description' ] );
-		WP_CLI::line( '    Author: ' . $details[ 'Author' ]);
 	}
 
 	private function list_plugins() {
