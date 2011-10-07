@@ -130,7 +130,7 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 	public function help($args = array()) {
 		// Show the command description
         		WP_CLI::out( <<<EOB
-usage: wp super-cache <sub-command>
+usage: wp super-cache [flush|status|enable|disable] --post_id=<id> --permalink=<post-permalink>
 
 Avaliable sub-commands:
     flush       Flushes whole cache, or post with given permalink or ID --post_id=<id> --permalink=<post-permalink>
