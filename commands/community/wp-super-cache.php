@@ -14,10 +14,6 @@ if ( function_exists( 'wp_super_cache_enable' ) ) {
  */
 class WPSuperCacheCommand extends WP_CLI_Command {
 
-	public static function get_description() {
-		return 'Manage the WP Super Cache.';
-	}
-
 	/**
 	 * Clear something from the cache
 	 *
@@ -133,7 +129,7 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 	 */
 	public function help($args = array()) {
 		// Shot the command description
-		WP_CLI::line( $this->get_description() );
+		WP_CLI::line( 'Manage the WP Super Cache.' );
 		WP_CLI::line();
 
 		// Show the list of sub-commands for this command

@@ -14,10 +14,6 @@ if( class_exists( 'GoogleSitemapGeneratorLoader' ) ) {
  */
 class GoogleSitemapGeneratorCommand extends WP_CLI_Command {
 
-	public static function get_description() {
-		return 'Generate Google Sitemaps.';
-	}
-
 	/**
 	 * Re-generate the sitemap
 	 *
@@ -37,7 +33,7 @@ class GoogleSitemapGeneratorCommand extends WP_CLI_Command {
 	 */
 	public function help($args = array()) {
 		// Shot the command description
-		WP_CLI::line( $this->get_description() );
+		WP_CLI::line( 'Generate Google Sitemaps.' );
 		WP_CLI::line();
 
 		// Show the list of sub-commands for this command

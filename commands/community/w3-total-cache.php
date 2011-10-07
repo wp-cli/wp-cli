@@ -14,10 +14,6 @@ if ( function_exists( 'w3tc_pgcache_flush' ) ) {
  */
 class W3TotalCacheCommand extends WP_CLI_Command {
 
-	public static function get_description() {
-		return 'Manage the W3 Total Cache.';
-	}
-
 	/**
 	 * Clear something from the cache
 	 *
@@ -91,7 +87,7 @@ class W3TotalCacheCommand extends WP_CLI_Command {
 	 */
 	public function help($args = array()) {
 		// Shot the command description
-		WP_CLI::line( $this->get_description() );
+		WP_CLI::line( 'Manage the W3 Total Cache.' );
 		WP_CLI::line();
 
 		// Show the list of sub-commands for this command
