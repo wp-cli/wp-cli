@@ -34,7 +34,7 @@ class W3TotalCacheCommand extends WP_CLI_Command {
 						WP_CLI::error( 'Flushing the object cache failed.' );
 					}
 				break;
-				
+
 				case 'minify':
 					if ( w3tc_minify_flush() ) {
 						WP_CLI::success( 'The object cache is flushed successfully.' );
@@ -42,7 +42,7 @@ class W3TotalCacheCommand extends WP_CLI_Command {
 						WP_CLI::error( 'Flushing the object cache failed.' );
 					}
 				break;
-				
+
 				case 'object':
 					if ( w3tc_objectcache_flush() ) {
 						WP_CLI::success( 'The object cache is flushed successfully.' );
@@ -50,7 +50,7 @@ class W3TotalCacheCommand extends WP_CLI_Command {
 						WP_CLI::error( 'Flushing the object cache failed.' );
 					}
 				break;
-				
+
 				case 'post':
 				default:
 					if ( isset($vars['post_id']) ) {
@@ -78,7 +78,7 @@ class W3TotalCacheCommand extends WP_CLI_Command {
 			WP_CLI::error('The W3 Total Cache could not be found, is it installed?');
 		}
 	}
-	
+
 	/**
 	 * Help function for this command
 	 *
@@ -86,18 +86,17 @@ class W3TotalCacheCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function help($args = array()) {
-		// Show the command description
-			WP_CLI::out( <<<EOB
+		WP_CLI::line( <<<EOB
 usage: wp total-cache flush [post|database|minify|object] [--post_id=<post-id>] [--permalink=<post-permalink>]
 
-Avaliable sub-commands:
-    flush       flushes whole cache
-                --post_id=<id>                  flush specific ID
-                --permalink=<post-permalink>    flush specific permalink
-                database                        flushes database cache
-                object                          flush object cache
-                minify                          flush minify cache
+Available sub-commands:
+    flush    flushes whole cache
+             --post_id=<id>                  flush specific ID
+             --permalink=<post-permalink>    flush specific permalink
+             database                        flushes database cache
+             object                          flush object cache
+             minify                          flush minify cache
 EOB
-            );
+		);
 	}
 }

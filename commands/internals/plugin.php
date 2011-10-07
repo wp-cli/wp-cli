@@ -322,7 +322,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function help( $args = array() ) {
-		WP_CLI::out( <<<EOB
+		WP_CLI::line( <<<EOB
 usage: wp plugin <sub-command> [<plugin-name>]
 
 Available sub-commands:
@@ -333,7 +333,6 @@ Available sub-commands:
    install      install a plugin from wordpress.org
    update       update a plugin from wordpress.org
    delete       delete a plugin
-
 EOB
 		);
 	}

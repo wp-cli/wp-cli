@@ -100,10 +100,9 @@ class GenerateCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function help( $args = array() ) {
-		WP_CLI::out( <<<EOB
+		WP_CLI::line( <<<EOB
 usage: wp generate posts [--count=100] [--type=post] [--status=publish]
    or: wp generate users [--count=100] [--role=<role>]
-
 EOB
 		);
 	}

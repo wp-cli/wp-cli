@@ -50,11 +50,10 @@ class HomeCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function help($args = array()) {
-		WP_CLI::out( <<<EOB
+		WP_CLI::line( <<<EOB
 usage: wp home
 
 Opens the wp-cli homepage in your browser.
-
 EOB
 		);
 	}

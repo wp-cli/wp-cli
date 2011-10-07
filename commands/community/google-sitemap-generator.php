@@ -32,12 +32,11 @@ class GoogleSitemapGeneratorCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function help($args = array()) {
-		// Show the command description
-	    WP_CLI::out( <<<EOB
+	    WP_CLI::line( <<<EOB
 usage: wp google-sitemap [rebuild]
 
-Avaliable sub-commands:
-    rebuild       rebuild Google sitemap
+Available sub-commands:
+    rebuild    rebuild Google sitemap
 EOB
         );
 	}

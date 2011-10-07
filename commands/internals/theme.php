@@ -126,13 +126,12 @@ class ThemeCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function help($args = array()) {
-		WP_CLI::out( <<<EOB
+		WP_CLI::line( <<<EOB
 usage: wp theme <sub-command> [<theme-name>]
 
 Available sub-commands:
    status     display status of all installed themes or of a particular theme
    activate   activate a particular theme
-
 EOB
 		);
 	}
