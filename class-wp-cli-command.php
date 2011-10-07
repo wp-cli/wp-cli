@@ -16,7 +16,7 @@ abstract class WP_CLI_Command {
 	protected $command;
 
     /**
-     * Construct for this class, transfers the cli arguments to the right class
+     * Constructor
      *
 	 * @param string $command
      * @param array $args
@@ -35,19 +35,18 @@ abstract class WP_CLI_Command {
 	 * @param array $assoc_args
 	 */
 	protected function dispatch( $args, $assoc_args ) {
-        // The first command is the sub command
-        $sub_command = array_shift($args);
+        $sub_command = array_shift( $args );
 
-		if ( !method_exists($this, $sub_command) ) {
+		if ( !method_exists( $this, $sub_command ) ) {
 			// This if for reserved keywords in php (like list, isset)
 			$sub_command = '_'.$sub_command;
 		}
 
-		if ( !method_exists($this, $sub_command) || isset( $assoc_args[ 'help' ] ) ) {
+		if ( !method_exists( $this, $sub_command ) || isset( $assoc_args[ 'help' ] ) ) {
 			$sub_command = 'help';
 		}
 
-		$this->$sub_command($args, $assoc_args);
+		$this->$sub_command( $args, $assoc_args );
     }
 
     /**
