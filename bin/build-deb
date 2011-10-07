@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# script for generating a .deb file
+
+SOURCE_DIR=$(pwd)
+
+ROOT_DIR='usr/share/php/wp-cli'
+
+rm -rf /tmp/wp-cli
+
+mkdir -p /tmp/wp-cli/DEBIAN
+
+cd /tmp/wp-cli
+
+mkdir -p $ROOT_DIR
+
+rsync -r --exclude='*.git*' $SOURCE_DIR/* $ROOT_DIR/
+
+# remove junk files
+find . -name "*~" -exec rm {} \;
+find . -name "*.swp" -exec rm {} \;
+
+# reset permsissions and ownership
+chown -R root .
+chgrp -R root .
+find . -type f -exec chmod 644 {} \;
+find . -type d -exec chmod 755 {} \;
+
+# use a simple bash wrapper for the command, since we know where everything is
+mkdir -p usr/bin
+
+cat > usr/bin/wp <<EOT
+#!/bin/bash
+
+php /usr/share/php/wp-cli/wp-cli.php "\$@"
+EOT
+
+chmod +x usr/bin/wp
+
+mkdir -p usr/share/doc/wp-cli/
+
+mv $ROOT_DIR/LICENSE usr/share/doc/wp-cli/copyright
+
+cat > DEBIAN/control <<EOT
+Package: wp-cli
+Version: 0.1
+Section: web
+Priority: optional
+Architecture: all
+Depends: php5-cli (>= 5.3)
+Installed-Size: 150
+Maintainer: Cristi Burca <scribu@gmail.com>
+Description: WordPress command-line interface
+ A tool for controlling WordPress installations via the command-line.
+EOT
+
+cat > DEBIAN/postinst <<EOT
+#!/bin/bash
+
+mv $ROOT_DIR/bin/wp-cli-completion.bash /etc/bash_completion.d/wp
+rm $ROOT_DIR/bin -rf
+EOT
+
+cat > DEBIAN/postinst <<EOT
+#!/bin/bash
+
+rm -f /etc/bash_completion.d/wp
+EOT
+
+chmod +x DEBIAN/postinst
+
+dpkg --build /tmp/wp-cli
