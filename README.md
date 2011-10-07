@@ -9,6 +9,8 @@ A tool to control WordPress installations from the command line.
 Installing
 ----------
 
+If you're on Ubuntu or Debian, just use the [.deb package](https://github.com/downloads/andreascreten/wp-cli/wp-cli_0.1.deb)
+
 Clone the project:
 
 ```
