@@ -86,32 +86,18 @@ class W3TotalCacheCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function help($args = array()) {
-		// Shot the command description
-		WP_CLI::line( 'Manage the W3 Total Cache.' );
-		WP_CLI::line();
+		// Show the command description
+			WP_CLI::out( <<<EOB
+usage: wp total-cache flush [post|database|minify|object] [--post_id=<post-id>] [--permalink=<post-permalink>]
 
-		// Show the list of sub-commands for this command
-		WP_CLI::line('Example usage:');
-		WP_CLI::line('    wp total-cache flush [post|database|minify|object] [--post_id=<post-id>] [--permalink=<post-permalink>]');
-		WP_CLI::line();
-		WP_CLI::line('%9--- DETAILS ---%n');
-		WP_CLI::line();
-		WP_CLI::line('Remove all post/page caches:');
-		WP_CLI::line('    wp total-cache flush');
-		WP_CLI::line();
-		WP_CLI::line('Remove the caches for one blog post based on the id:');
-		WP_CLI::line('    wp total-cache flush --post_id=1');
-		WP_CLI::line();
-		WP_CLI::line('Remove the caches for one blog post based on the permalink:');
-		WP_CLI::line('    wp total-cache flush --permalink=http://example.com');
-		WP_CLI::line();
-		WP_CLI::line('Remove the database cache:');
-		WP_CLI::line('    wp total-cache flush database');
-		WP_CLI::line();
-		WP_CLI::line('Remove the object cache:');
-		WP_CLI::line('    wp total-cache flush object');
-		WP_CLI::line();
-		WP_CLI::line('Remove the minify cache:');
-		WP_CLI::line('    wp total-cache flush minify');
+Avaliable sub-commands:
+    flush       Flushes whole cache
+                --post_id=<id>                  Flush specific ID
+                --permalink=<post-permalink>    Flush specific permalink
+                database                        Flushes database cache
+                object                          Flush object cache
+                minify                          Flush minify cache
+EOB
+            );
 	}
 }
