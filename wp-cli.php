@@ -5,7 +5,7 @@ if(PHP_SAPI !== 'cli') {
 	die('Only cli access');
 }
 
-define( 'WP_CLI_VERSION', '0.1' );
+define( 'WP_CLI_VERSION', '0.2' );
 
 // Define the wp-cli location
 define('WP_CLI_ROOT', __DIR__ . '/');
@@ -91,11 +91,14 @@ if ( isset( $assoc_args['completions'] ) ) {
 }
 
 // Get the top-level command
-$command = array_shift( $arguments );
+if ( empty( $arguments ) )
+	$command = 'help';
+else
+	$command = array_shift( $arguments );
 
 if ( !isset( WP_CLI::$commands[$command] ) ) {
-	WP_CLI::generalHelp();
-	exit();
+	WP_CLI::error( "'$command' is not a registered wp command. See 'wp help'." );
+	exit;
 }
 
 new WP_CLI::$commands[$command]( $command, $arguments, $assoc_args );
