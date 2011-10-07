@@ -9,15 +9,6 @@
 abstract class WP_CLI_Command {
 
 	/**
-	 * Return a short description for the command.
-	 *
-	 * @return string
-	 */
-	public static function get_description() {
-		return false;
-	}
-
-	/**
 	 * Keeps a reference to the current command name
 	 *
 	 * @param string
@@ -55,7 +46,7 @@ abstract class WP_CLI_Command {
 		if ( !method_exists($this, $sub_command) || isset( $assoc_args[ 'help' ] ) ) {
 			$sub_command = 'help';
 		}
-		
+
 		$this->$sub_command($args, $assoc_args);
     }
 
@@ -67,9 +58,8 @@ abstract class WP_CLI_Command {
      * @return void
      */
     public function help( $args = array(), $assoc_args = array() ) {
-		$desc = $this->get_description();
-		if ( $desc ) {
-			WP_CLI::line( $desc );
+		if ( method_exists( $this, 'get_description' ) ) {
+			WP_CLI::line( $this->get_description() );
 			WP_CLI::line();
 		}
 
