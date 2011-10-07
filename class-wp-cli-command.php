@@ -61,7 +61,7 @@ abstract class WP_CLI_Command {
         WP_CLI::line( 'Example usage:' );
         WP_CLI::out( '    wp '.$this->command );
 
-        $methods = self::get_methods($this);
+        $methods = self::get_subcommands($this);
         if ( !empty( $methods ) ) {
             WP_CLI::out(' ['.implode('|', $methods).']');
         }
@@ -70,12 +70,12 @@ abstract class WP_CLI_Command {
     }
 
     /**
-     * Get the filtered list of methods for a class.
+     * Get the list of subcommands for a class.
      *
      * @param string $class
      * @return array The list of methods
      */
-    static function get_methods($class) {
+    static function get_subcommands($class) {
 		$reflection = new ReflectionClass( $class );
 
         $methods = array();
