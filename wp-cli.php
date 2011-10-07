@@ -101,5 +101,5 @@ if ( !isset( WP_CLI::$commands[$command] ) ) {
 	exit;
 }
 
-new WP_CLI::$commands[$command]( $command, $arguments, $assoc_args );
+new WP_CLI::$commands[$command]( $arguments, $assoc_args );
 
