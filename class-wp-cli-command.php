@@ -51,23 +51,17 @@ abstract class WP_CLI_Command {
     }
 
     /**
-     * General help function for this command
+     * General help function for the current command
      *
      * @param array $args
-     * @param string $assoc_args
      * @return void
      */
-    public function help( $args = array(), $assoc_args = array() ) {
-		if ( method_exists( $this, 'get_description' ) ) {
-			WP_CLI::line( $this->get_description() );
-			WP_CLI::line();
-		}
-
+    public function help( $args = array() ) {
         // Show the list of sub-commands for this command
         WP_CLI::line( 'Example usage:' );
         WP_CLI::out( '    wp '.$this->command );
 
-        $methods = WP_CLI_Command::get_methods($this);
+        $methods = self::get_methods($this);
         if ( !empty( $methods ) ) {
             WP_CLI::out(' ['.implode('|', $methods).']');
         }
