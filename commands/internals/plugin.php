@@ -14,147 +14,161 @@ require_once(ABSPATH.'wp-admin/includes/plugin-install.php');
  */
 class PluginCommand extends WP_CLI_Command {
 
-	public static function get_description() {
-		return 'Do cool things with plugins.';
-	}
+	private $mu_plugins;
 
 	/**
-	 * Get the status of one plugin
+	 * Get the status of one or all plugins
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function status( $args = array(), $vars = array() ) {
+		$this->mu_plugins = get_mu_plugins();
+
+		if ( empty( $args ) ) {
+			$this->list_plugins();
+			return;
+		}
+
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+
+		$details = $this->get_details( $file );
+
+		$status = $this->get_status( $file, true );
+
+		$version = $details[ 'Version' ];
+
+		if ( WP_CLI::get_update_status( $file, 'update_plugins' ) )
+			$version .= ' (%gUpdate available%n)';
+
+		WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
+		WP_CLI::line( '    Status: ' . $status .'%n' );
+		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
+		WP_CLI::line( '    Version: ' . $version );
+		WP_CLI::line( '    Author: ' . $details[ 'Author' ] );
+		WP_CLI::line( '    Description: ' . $details[ 'Description' ] );
+	}
+
+	private function list_plugins() {
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
 
-		if ( !empty( $args ) ) {
-			$name = $this->check_name( $args );
+		$plugins = get_plugins();
 
-			$file = $this->parse_name( $name );
+		$plugins = array_merge( $plugins, $this->mu_plugins );
 
-			$mu_plugins = get_mu_plugins();
+		// Print the header
+		WP_CLI::line('Installed plugins:');
 
-			$details = $this->get_details( $file );
-
-			// Get the plugin status
-			if ( isset( $mu_plugins[ $file ] ) )
-				$status = '%cMust Use';
-			elseif ( is_plugin_active_for_network( $file ) )
-				$status = '%bNetwork Activated';
-			elseif ( is_plugin_active( $file ) )
-				$status = '%gYes';
+		foreach ($plugins as $file => $plugin) {
+			if ( false === strpos( $file, '/' ) )
+				$name = str_replace('.php', '', basename($file));
 			else
-				$status = '%rNo';
+				$name = dirname($file);
 
-			// Display the plugin details
-			WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
-			WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
-			WP_CLI::line( '    Active: ' . $status .'%n' );
-			WP_CLI::line( '    Version: ' . $details[ 'Version' ] . ( WP_CLI::get_update_status( $file, 'update_plugins' ) ? ' (%gUpdate available%n)' : '' ) );
-			WP_CLI::line( '    Description: ' . $details[ 'Description' ] );
-			WP_CLI::line( '    Author: ' . $details[ 'Author' ]);
-		}
-		else {
-			$plugins = get_plugins();
-
-			$mu_plugins = get_mu_plugins();
-
-			$plugins = array_merge($plugins, $mu_plugins);
-
-			// Print the header
-			WP_CLI::line('Installed plugins:');
-
-			foreach ($plugins as $file => $plugin) {
-				if ( false === strpos( $file, '/' ) )
-					$name = str_replace('.php', '', basename($file));
-				else
-					$name = dirname($file);
-
-				if ( WP_CLI::get_update_status( $file, 'update_plugins' ) ) {
-					$line = ' %yU%n';
-				} else {
-					$line = '  ';
-				}
-
-				if ( isset($mu_plugins[$file]) )
-					$line .= '%cM';
-				elseif ( is_plugin_active_for_network($file) )
-					$line .= '%bN';
-				elseif ( is_plugin_active($file) )
-					$line .= '%gA';
-				else
-					$line .= 'I';
-
-				$line .= ' '.$name.'%n';
-
-				WP_CLI::line( $line );
+			if ( WP_CLI::get_update_status( $file, 'update_plugins' ) ) {
+				$line = ' %yU%n';
+			} else {
+				$line = '  ';
 			}
 
-			// Print the footer
-			WP_CLI::line();
+			$line .= $this->get_status( $file ) . " $name%n";
 
-			$legend = array(
-				'I' => 'Inactive',
-				'%gA' => 'Active',
-				'%cM' => 'Must Use',
-			);
-
-			if ( is_multisite() )
-				$legend['%bN'] = 'Network Active';
-
-			WP_CLI::legend( $legend );
+			WP_CLI::line( $line );
 		}
+
+		// Print the footer
+		WP_CLI::line();
+
+		$legend = array(
+			'I' => 'Inactive',
+			'%gA' => 'Active',
+			'%cM' => 'Must Use',
+		);
+
+		if ( is_multisite() )
+			$legend['%bN'] = 'Network Active';
+
+		WP_CLI::legend( $legend );
+	}
+
+	private function get_status( $file, $long = false ) {
+		if ( isset( $this->mu_plugins[ $file ] ) ) {
+			$line  = '%c';
+			$line .= $long ? 'Must Use' : 'M';
+		} elseif ( is_plugin_active_for_network( $file ) ) {
+			$line  = '%b';
+			$line .= $long ? 'Network Active' : 'N';
+		} elseif ( is_plugin_active( $file ) ) {
+			$line  = '%g';
+			$line .= $long ? 'Active' : 'A';
+		} else {
+			$line  = $long ? 'Inactive' : 'I';
+		}
+
+		return $line;
 	}
 
 	/**
 	 * Activate a plugin
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function activate( $args ) {
-		$name = $this->check_name( $args );
-
-		$file = $this->parse_name( $name );
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		activate_plugin( $file );
 
 		if ( !is_plugin_active( $file ) ) {
 			WP_CLI::error( 'Could not activate this plugin: ' . $name );
+		} else {
+			WP_CLI::line( 'Plugin activated.' );
 		}
 	}
 
 	/**
 	 * Deactivate a plugin
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function deactivate( $args ) {
-		$name = $this->check_name( $args );
-
-		$file = $this->parse_name( $name );
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		deactivate_plugins( $file );
 
 		if ( !is_plugin_inactive( $file ) ) {
 			WP_CLI::error( 'Could not deactivate this plugin: '.$name );
+		} else {
+			WP_CLI::line( 'Plugin deactivated.' );
+		}
+	}
+
+	/**
+	 * Toggle a plugin's activation state
+	 *
+	 * @param array $args
+	 * @return void
+	 */
+	function toggle( $args ) {
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+
+		if ( is_plugin_active( $file ) ) {
+			$this->deactivate( $args );
+		} else {
+			$this->activate( $args );
 		}
 	}
 
 	/**
 	 * Install a new plugin
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function install( $args ) {
-		// Get the plugin name from the arguments
-		$name = $this->check_name( $args );
-
-		// Get the plugin file name
-		$file = $this->parse_name( $name, false );
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__, false );
 
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
@@ -204,13 +218,11 @@ class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Delete a plugin
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function delete( $args ) {
-		$name = $this->check_name( $args );
-
-		$file = $this->parse_name( $name );
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		if ( !delete_plugins( array( $file ) ) ) {
 			WP_CLI::error( 'There was an error while deleting the plugin.' );
@@ -220,13 +232,11 @@ class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Update a plugin
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function update( $args ) {
-		$name = $this->check_name( $args );
-
-		$file = $this->parse_name( $name );
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
@@ -271,25 +281,30 @@ class PluginCommand extends WP_CLI_Command {
 	/**
 	 * Parse the name of a plugin to a filename, check if it exists
 	 *
-	 * @param string $name
-	 * @param string $exit
-	 * @return mixed
+	 * @param array $args
+	 * @param string $sub_command
+	 * @param bool $exit
+	 * @return array
 	 */
-	private function parse_name( $name, $exit = true ) {
-		$plugins = get_plugins( '/'.$name );
+	private function parse_name( $args, $sub_command, $exit = true ) {
+		if ( empty( $args ) ) {
+			WP_CLI::line( "usage: wp plugin $sub_command <plugin-name>" );
+			exit;
+		}
+
+		$name = $args[0];
+
+		$plugins = get_plugins( '/' . $name );
 
 		if ( !empty( $plugins ) ) {
-			$keys = array_keys( $plugins );
-			$file = $name.'/'.$keys[0];
+			$file = $name . '/' . key( $plugins );
 		}
 		else {
+			$file = $name . '.php';
 			$plugins = get_plugins();
-			if ( isset( $plugins[$name.'.php'] ) ) {
-				$file = $name.'.php';
-			}
-			else {
+			if ( !isset( $plugins[$file] ) ) {
 				if ( $exit ) {
-					WP_CLI::error( 'The plugin \''.$name.'\' could not be found.' );
+					WP_CLI::error( "The plugin '$name' could not be found." );
 					exit();
 				}
 
@@ -297,51 +312,29 @@ class PluginCommand extends WP_CLI_Command {
 			}
 		}
 
-		return $file;
-	}
-
-	/**
-	 * Check if there is a name set in the arguments, if not show the help function
-	 *
-	 * @param string $args
-	 * @param string $exit
-	 * @return void
-	 */
-	private function check_name( $args, $exit = true ) {
-		if ( empty( $args ) ) {
-			WP_CLI::error( 'Please specify a plugin.' );
-			WP_CLI::line();
-			$this->help();
-
-			if ( $exit ) {
-				exit();
-			}
-		}
-
-		return $args[0];
+		return array( $file, $name );
 	}
 
 	/**
 	 * Help function for this command
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	public function help( $args = array() ) {
-		// Shot the command description
-		WP_CLI::line( $this->get_description() );
-		WP_CLI::line();
+		WP_CLI::out( <<<EOB
+usage: wp plugin <sub-command> [<plugin-name>]
 
-		// Show the list of sub-commands for this command
-		WP_CLI::line( 'Example usage:' );
+Available sub-commands:
+   status       display status of all installed plugins or of a particular plugin
+   activate     activate a particular plugin
+   deactivate   deactivate a particular plugin
+   toggle       toggle activation state of a particular plugin
+   install      install a plugin from wordpress.org
+   update       update a plugin from wordpress.org
+   delete       delete a plugin
 
-		foreach ( WP_CLI_Command::get_methods( $this ) as $method ) {
-			if ( $method != 'help' ) {
-				WP_CLI::line( '    wp '.$this->command.' '.$method.' hello-dolly' );
-			}
-			else {
-				WP_CLI::line( '    wp '.$this->command.' '.$method );
-			}
-		}
+EOB
+		);
 	}
 }

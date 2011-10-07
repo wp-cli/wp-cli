@@ -1,7 +1,5 @@
-#!bash
-#
-# bash completion support for the wp command
-#
+# bash completion for the wp command
+
 _wp() {
 	local cur prev opts
 

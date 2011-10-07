@@ -12,14 +12,10 @@ WP_CLI::addCommand('core', 'CoreCommand');
  */
 class CoreCommand extends WP_CLI_Command {
 
-	public static function get_description() {
-		return 'Update the WordPress core.';
-	}
-
 	/**
 	 * Update the WordPress core
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	function update($args) {
@@ -45,5 +41,19 @@ class CoreCommand extends WP_CLI_Command {
 		else {
 			WP_CLI::success('WordPress upgraded successfully.');
 		}
+	}
+
+	/**
+	 * Help function for this command
+	 *
+	 * @param array $args
+	 * @return void
+	 */
+	public function help( $args = array() ) {
+		WP_CLI::line( 'usage: wp core update' );
+
+		WP_CLI::sub_commands( array(
+			'update' => 'update the WordPress core files from wordpress.org',
+		) );
 	}
 }

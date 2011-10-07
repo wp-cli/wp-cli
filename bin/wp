@@ -1,13 +1,13 @@
 #!/usr/bin/env sh
 #
-# This script has been adapted from the drush wrapper script 
+# This script has been adapted from the drush wrapper script
 # and 99.9% of all credit should go to the authors of that project:
 # http://drupal.org/project/drush
 # And 0.09% to the author of this project:
 # https://github.com/88mph/wpadmin/blob/master/wpadmin.php
-# 
+#
 # This is a wrapper script that will run wp-cli.php with the most appropriate
-# php executable it can find on your system. 
+# php executable it can find on your system.
 #
 
 # Set the required PHP version
@@ -30,7 +30,7 @@ done
 cd "$ORIGDIR"
 
 # Build the path to wp-cli.php.
-SCRIPT_PATH=$(dirname "$SELF_PATH")/wp-cli.php
+SCRIPT_PATH=$(dirname "$SELF_PATH")/../wp-cli.php
 case $(uname -a) in
   CYGWIN*)
     SCRIPT_PATH=$(cygpath -w -a -- "$SCRIPT_PATH") ;;

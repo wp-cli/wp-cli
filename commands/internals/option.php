@@ -12,14 +12,10 @@ WP_CLI::addCommand('option', 'OptionCommand');
  */
 class OptionCommand extends WP_CLI_Command {
 
-	public static function get_description() {
-		return 'Manipulate the WordPress options.';
-	}
-
 	/**
 	 * Add an option
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 **/
 	public function add($args = array()) {
@@ -41,7 +37,7 @@ class OptionCommand extends WP_CLI_Command {
 	/**
 	 * Update an option
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 **/
 	public function update($args = array()) {
@@ -63,7 +59,7 @@ class OptionCommand extends WP_CLI_Command {
 	/**
 	 * Delete an option
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 **/
 	public function delete($args = array()) {
@@ -85,7 +81,7 @@ class OptionCommand extends WP_CLI_Command {
 	/**
 	 * Get an option
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 **/
 	public function get($args = array()) {
@@ -108,28 +104,17 @@ class OptionCommand extends WP_CLI_Command {
 	/**
 	 * Help function for this command
 	 *
-	 * @param string $args
+	 * @param array $args
 	 * @return void
 	 */
 	public function help($args = array()) {
-		WP_CLI::line('Example usage:');
-		WP_CLI::line('    wp option add <option-name> <option-value>');
-		WP_CLI::line('    wp option update <option-name> <option-value>');
-		WP_CLI::line('    wp option delete <option-name>');
-		WP_CLI::line('    wp option get <option-name>');
-		WP_CLI::line('');
-		WP_CLI::line('%9--- DETAILS ---%n');
-		WP_CLI::line('');
-		WP_CLI::line('Adding a new option:');
-		WP_CLI::line('    wp option add <option-name> <option-value>');
-		WP_CLI::line('');
-		WP_CLI::line('Updating an option:');
-		WP_CLI::line('    wp option update <option-name> <option-value>');
-		WP_CLI::line('');
-		WP_CLI::line('Deleting an option:');
-		WP_CLI::line('    wp option delete <option-name>');
-		WP_CLI::line('');
-		WP_CLI::line('Get the value of an option:');
-		WP_CLI::line('    wp option get <option-name>');
+		WP_CLI::out( <<<EOB
+usage: wp option get <option-name>
+   or: wp option add <option-name> <option-value>
+   or: wp option update <option-name> <option-value>
+   or: wp option delete <option-name>
+
+EOB
+		);
 	}
 }
