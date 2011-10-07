@@ -94,8 +94,8 @@ if ( isset( $assoc_args['completions'] ) ) {
 $command = array_shift( $arguments );
 
 if ( !isset( WP_CLI::$commands[$command] ) ) {
-	WP_CLI::generalHelp();
-	exit();
+	WP_CLI::error( "'$command' is not a registered wp command. See 'wp help'." );
+	exit;
 }
 
 new WP_CLI::$commands[$command]( $command, $arguments, $assoc_args );
