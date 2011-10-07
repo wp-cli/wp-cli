@@ -43,7 +43,7 @@ mv $ROOT_DIR/LICENSE usr/share/doc/wp-cli/copyright
 
 cat > DEBIAN/control <<EOT
 Package: wp-cli
-Version: 0.1
+Version: 0.2
 Section: web
 Priority: optional
 Architecture: all
