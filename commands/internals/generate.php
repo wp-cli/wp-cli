@@ -101,17 +101,8 @@ class GenerateCommand extends WP_CLI_Command {
 	 */
 	public function help( $args = array() ) {
 		WP_CLI::out( <<<EOB
-usage: wp generate <object-type> [--count=100]
-
-Available object types:
-    posts         generate some posts
-      --count     number of users to generate (default: 100)
-      --type      post type (default: 'post')
-      --status    post status (default: 'publish')
-    users         generate some users
-      --count     number of users to generate (default: 100)
-      --role      user role (default: default_role option)
-
+usage: wp generate posts [--count=100] [--type=post] [--status=publish]
+   or: wp generate users [--count=100] [--role=<role>]
 EOB
 		);
 	}
