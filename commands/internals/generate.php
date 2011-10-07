@@ -95,11 +95,8 @@ class GenerateCommand extends WP_CLI_Command {
 
 	/**
 	 * Help function for this command
-	 *
-	 * @param array $args
-	 * @return void
 	 */
-	public function help( $args = array() ) {
+	public static function help() {
 		WP_CLI::line( <<<EOB
 usage: wp generate posts [--count=100] [--type=post] [--status=publish]
    or: wp generate users [--count=100] [--role=<role>]

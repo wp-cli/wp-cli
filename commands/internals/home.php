@@ -13,12 +13,12 @@ WP_CLI::addCommand('home', 'HomeCommand');
 class HomeCommand extends WP_CLI_Command {
 
 	/**
-	 * Overwrite the dispatch method to have a command without sub-commands.
+	 * Overwrite the constructor to have a command without sub-commands.
      *
      * @param array $args
 	 * @param array $assoc_args
 	 */
-	protected function dispatch( $args, $assoc_args ) {
+	public function __construct( $args, $assoc_args ) {
 		if(empty($args)) {
 			// The url for the wp-cli repository
 			$repository_url = 'http://github.com/andreascreten/wp-cli';
@@ -39,17 +39,14 @@ class HomeCommand extends WP_CLI_Command {
 		}
 		else {
 			// Call the parent constructor
-			parent::dispatch( $args, $assoc_args );
+			parent::__construct( $args, $assoc_args );
 		}
 	}
 
 	/**
-	 * Help function for this command.
-	 *
-	 * @param array $args
-	 * @return void
+	 * Help function for this command
 	 */
-	public function help($args = array()) {
+	public static function help() {
 		WP_CLI::line( <<<EOB
 usage: wp home
 

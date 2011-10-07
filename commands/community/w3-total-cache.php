@@ -81,11 +81,8 @@ class W3TotalCacheCommand extends WP_CLI_Command {
 
 	/**
 	 * Help function for this command
-	 *
-	 * @param array $args
-	 * @return void
 	 */
-	public function help($args = array()) {
+	public static function help() {
 		WP_CLI::line( <<<EOB
 usage: wp total-cache flush [post|database|minify|object] [--post_id=<post-id>] [--permalink=<post-permalink>]
 

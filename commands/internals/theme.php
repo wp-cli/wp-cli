@@ -121,11 +121,8 @@ class ThemeCommand extends WP_CLI_Command {
 
 	/**
 	 * Help function for this command
-	 *
-	 * @param array $args
-	 * @return void
 	 */
-	public function help($args = array()) {
+	public static function help() {
 		WP_CLI::line( <<<EOB
 usage: wp theme <sub-command> [<theme-name>]
 
