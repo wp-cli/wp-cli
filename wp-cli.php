@@ -91,7 +91,10 @@ if ( isset( $assoc_args['completions'] ) ) {
 }
 
 // Get the top-level command
-$command = array_shift( $arguments );
+if ( empty( $arguments ) )
+	$command = 'help';
+else
+	$command = array_shift( $arguments );
 
 if ( !isset( WP_CLI::$commands[$command] ) ) {
 	WP_CLI::error( "'$command' is not a registered wp command. See 'wp help'." );
