@@ -14,10 +14,6 @@ if( class_exists( 'GoogleSitemapGeneratorLoader' ) ) {
  */
 class GoogleSitemapGeneratorCommand extends WP_CLI_Command {
 
-	public static function get_description() {
-		return 'Generate Google Sitemaps.';
-	}
-
 	/**
 	 * Re-generate the sitemap
 	 *
@@ -36,17 +32,13 @@ class GoogleSitemapGeneratorCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function help($args = array()) {
-		// Shot the command description
-		WP_CLI::line( $this->get_description() );
-		WP_CLI::line();
+		// Show the command description
+	    WP_CLI::out( <<<EOB
+usage: wp google-sitemap [rebuild]
 
-		// Show the list of sub-commands for this command
-		WP_CLI::line('Example usage:');
-		WP_CLI::line('    wp google-sitemap rebuild');
-		WP_CLI::line();
-		WP_CLI::line('%9--- DETAILS ---%n');
-		WP_CLI::line();
-		WP_CLI::line('Rebuild the Google sitemaps:');
-		WP_CLI::line('    wp google-sitemap rebuild');
+Avaliable sub-commands:
+    rebuild       rebuild Google sitemap
+EOB
+        );
 	}
 }

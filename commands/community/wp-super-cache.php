@@ -14,10 +14,6 @@ if ( function_exists( 'wp_super_cache_enable' ) ) {
  */
 class WPSuperCacheCommand extends WP_CLI_Command {
 
-	public static function get_description() {
-		return 'Manage the WP Super Cache.';
-	}
-
 	/**
 	 * Clear something from the cache
 	 *
@@ -132,35 +128,16 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function help($args = array()) {
-		// Shot the command description
-		WP_CLI::line( $this->get_description() );
-		WP_CLI::line();
+		// Show the command description
+        		WP_CLI::out( <<<EOB
+usage: wp super-cache [flush|status|enable|disable] --post_id=<id> --permalink=<post-permalink>
 
-		// Show the list of sub-commands for this command
-		WP_CLI::line('Example usage:');
-		WP_CLI::line('    wp wp-super-cache flush [--post_id=<post-id>] [--permalink=<post-permalink>]');
-		WP_CLI::line('    wp wp-super-cache status');
-		WP_CLI::line('    wp wp-super-cache enable');
-		WP_CLI::line('    wp wp-super-cache disable');
-		WP_CLI::line();
-		WP_CLI::line('%9--- DETAILS ---%n');
-		WP_CLI::line();
-		WP_CLI::line('Remove the whole cache content:');
-		WP_CLI::line('    wp wp-super-cache flush');
-		WP_CLI::line();
-		WP_CLI::line('Remove the caches for one blog post based on the id:');
-		WP_CLI::line('    wp wp-super-cache flush --post_id=1');
-		WP_CLI::line();
-		WP_CLI::line('Remove the caches for one blog post based on the permalink:');
-		WP_CLI::line('    wp wp-super-cache flush --permalink=http://example.com');
-		WP_CLI::line();
-		WP_CLI::line('Get details on the WP Super Cache content:');
-		WP_CLI::line('    wp wp-super-cache status');
-		WP_CLI::line();
-		WP_CLI::line('Enable the WP Super Cache:');
-		WP_CLI::line('    wp wp-super-cache enable');
-		WP_CLI::line();
-		WP_CLI::line('Disable the WP Super Cache:');
-		WP_CLI::line('    wp wp-super-cache disable');
-	}
+Avaliable sub-commands:
+    flush       flushes whole cache, or post with given permalink or ID --post_id=<id> --permalink=<post-permalink>
+    status      shows status of WP Super Cache
+    enable      enables WP Super Cache
+    disable     disables WP Super Cache
+EOB
+                );
+    }
 }
