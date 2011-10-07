@@ -91,12 +91,12 @@ class W3TotalCacheCommand extends WP_CLI_Command {
 usage: wp total-cache flush [post|database|minify|object] [--post_id=<post-id>] [--permalink=<post-permalink>]
 
 Avaliable sub-commands:
-    flush       Flushes whole cache
-                --post_id=<id>                  Flush specific ID
-                --permalink=<post-permalink>    Flush specific permalink
-                database                        Flushes database cache
-                object                          Flush object cache
-                minify                          Flush minify cache
+    flush       flushes whole cache
+                --post_id=<id>                  flush specific ID
+                --permalink=<post-permalink>    flush specific permalink
+                database                        flushes database cache
+                object                          flush object cache
+                minify                          flush minify cache
 EOB
             );
 	}

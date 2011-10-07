@@ -37,7 +37,7 @@ class GoogleSitemapGeneratorCommand extends WP_CLI_Command {
 usage: wp google-sitemap [rebuild]
 
 Avaliable sub-commands:
-    rebuild       Rebuild Google sitemap
+    rebuild       rebuild Google sitemap
 EOB
         );
 	}
