@@ -116,23 +116,6 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display the help function for the wp-cli
-	 *
-	 * @return void
-	 */
-	static function generalHelp() {
-		self::line('Example usage:');
-		foreach(self::$commands as $name => $command) {
-			self::out('	wp '.$name);
-			$methods = WP_CLI_Command::get_methods($command);
-			if(!empty($methods)) {
-				self::out(' ['.implode('|', $methods).']');
-			}
-			self::line(' ...');
-		}
-	}
-
-	/**
 	 * Display a legend
 	 *
 	 * @param array( code => title ) $legend

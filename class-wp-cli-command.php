@@ -87,7 +87,7 @@ abstract class WP_CLI_Command {
         $methods = array();
 
 		foreach ( $reflection->getMethods() as $method ) {
-			if ( $method->isPublic() && !$method->isStatic() && !$method->isConstructor() ) {
+			if ( $method->isPublic() && !$method->isStatic() && !$method->isConstructor() && 'help' != $method->name ) {
 				$name = $method->name;
 
 				if ( strpos( $name, '_' ) === 0 ) {
