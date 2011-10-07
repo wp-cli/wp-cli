@@ -12,10 +12,6 @@ WP_CLI::addCommand('home', 'HomeCommand');
  */
 class HomeCommand extends WP_CLI_Command {
 
-	public static function get_description() {
-		return 'Open the wp-cli project on Github.';
-	}
-
 	/**
 	 * Overwrite the dispatch method to have a command without sub-commands.
      *
@@ -54,9 +50,12 @@ class HomeCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function help($args = array()) {
-		WP_CLI::line('This command has no arguments; when called it will open the wp-cli homepage in your browser.');
-		WP_CLI::line();
-		WP_CLI::line('Example usage:');
-		WP_CLI::line('    wp home');
+		WP_CLI::out( <<<EOB
+usage: wp home
+
+Opens the wp-cli homepage in your browser.
+
+EOB
+		);
 	}
 }

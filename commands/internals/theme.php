@@ -12,10 +12,6 @@ WP_CLI::addCommand('theme', 'ThemeCommand');
  */
 class ThemeCommand extends WP_CLI_Command {
 
-	public static function get_description() {
-		return 'Do cool things with themes.';
-	}
-
 	/**
 	 * Get the status of one or all themes
 	 *
@@ -130,16 +126,14 @@ class ThemeCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function help($args = array()) {
-		WP_CLI::line('Example usage:');
-		WP_CLI::line('    wp theme status');
-		WP_CLI::line('    wp theme details <theme-name>');
-		WP_CLI::line('');
-		WP_CLI::line('%9--- DETAILS ---%n');
-		WP_CLI::line('');
-		WP_CLI::line('Get a status of the installed themes:');
-		WP_CLI::line('    wp theme status');
-		WP_CLI::line('');
-		WP_CLI::line('Get the details for a theme:');
-		WP_CLI::line('    wp theme details <theme-name>');
+		WP_CLI::out( <<<EOB
+usage: wp theme <sub-command> [<theme-name>]
+
+Available sub-commands:
+   status     display status of all installed themes or of a particular theme
+   activate   activate a particular theme
+
+EOB
+		);
 	}
 }

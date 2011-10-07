@@ -12,10 +12,6 @@ WP_CLI::addCommand('generate', 'GenerateCommand');
  */
 class GenerateCommand extends WP_CLI_Command {
 
-	public static function get_description() {
-		return 'Generate a certain number of objects.';
-	}
-
 	/**
 	 * Generate posts
 	 *
@@ -95,5 +91,28 @@ class GenerateCommand extends WP_CLI_Command {
 				'role' => $role
 			) );
 		}
+	}
+
+	/**
+	 * Help function for this command
+	 *
+	 * @param array $args
+	 * @return void
+	 */
+	public function help( $args = array() ) {
+		WP_CLI::out( <<<EOB
+usage: wp generate <object-type> [--count=100]
+
+Available object types:
+    posts         generate some posts
+      --count     number of users to generate (default: 100)
+      --type      post type (default: 'post')
+      --status    post status (default: 'publish')
+    users         generate some users
+      --count     number of users to generate (default: 100)
+      --role      user role (default: default_role option)
+
+EOB
+		);
 	}
 }

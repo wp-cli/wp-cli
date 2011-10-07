@@ -14,10 +14,6 @@ require_once(ABSPATH.'wp-admin/includes/plugin-install.php');
  */
 class PluginCommand extends WP_CLI_Command {
 
-	public static function get_description() {
-		return 'Do cool things with plugins.';
-	}
-
 	private $mu_plugins;
 
 	/**
@@ -326,20 +322,19 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	public function help( $args = array() ) {
-		// Shot the command description
-		WP_CLI::line( $this->get_description() );
-		WP_CLI::line();
+		WP_CLI::out( <<<EOB
+usage: wp plugin <sub-command> [<plugin-name>]
 
-		// Show the list of sub-commands for this command
-		WP_CLI::line( 'Example usage:' );
+Available sub-commands:
+   status       display status of all installed plugins or of a particular plugin
+   activate     activate a particular plugin
+   deactivate   deactivate a particular plugin
+   toggle       toggle activation state of a particular plugin
+   install      install a plugin from wordpress.org
+   update       update a plugin from wordpress.org
+   delete       delete a plugin
 
-		foreach ( WP_CLI_Command::get_methods( $this ) as $method ) {
-			if ( $method != 'help' ) {
-				WP_CLI::line( '    wp '.$this->command.' '.$method.' hello-dolly' );
-			}
-			else {
-				WP_CLI::line( '    wp '.$this->command.' '.$method );
-			}
-		}
+EOB
+		);
 	}
 }
