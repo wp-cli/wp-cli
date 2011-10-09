@@ -175,14 +175,14 @@ class PluginCommand extends WP_CLI_Command {
 
 		// Get plugin info from the WordPress servers
 		$api = plugins_api( 'plugin_information', array( 'slug' => stripslashes( $name ) ) );
-		$status = install_plugin_install_status( $api );
-
-		WP_CLI::line( 'Installing '.$api->name.' ('.$api->version.')' );
-
-		if ( stripslashes( $name ) != $api->slug ) {
+		if ( !$api ) {
 			WP_CLI::error( 'Can\'t find the plugin in the WordPress.org plugins repository.' );
 			exit();
 		}
+
+		$status = install_plugin_install_status( $api );
+
+		WP_CLI::line( 'Installing '.$api->name.' ('.$api->version.')' );
 
 		// Check what to do
 		switch ( $status['status'] ) {
