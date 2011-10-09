@@ -125,7 +125,7 @@ class PluginCommand extends WP_CLI_Command {
 		if ( !is_plugin_active( $file ) ) {
 			WP_CLI::error( 'Could not activate this plugin: ' . $name );
 		} else {
-			WP_CLI::line( 'Plugin activated.' );
+			WP_CLI::success( "Plugin '$name' activated." );
 		}
 	}
 
@@ -143,7 +143,7 @@ class PluginCommand extends WP_CLI_Command {
 		if ( !is_plugin_inactive( $file ) ) {
 			WP_CLI::error( 'Could not deactivate this plugin: '.$name );
 		} else {
-			WP_CLI::line( 'Plugin deactivated.' );
+			WP_CLI::success( "Plugin '$name' deactivated." );
 		}
 	}
 
