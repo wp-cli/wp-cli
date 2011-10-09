@@ -9,7 +9,11 @@ A tool to control WordPress installations from the command line.
 Installing
 ----------
 
-If you're on Ubuntu or Debian, just use the [.deb package](https://github.com/downloads/andreascreten/wp-cli/wp-cli_0.1.deb)
+**Via package manager:**
+
+Ubuntu, Debian: [.deb package](https://github.com/downloads/andreascreten/wp-cli/wp-cli_0.1.deb)
+
+**From source:**
 
 Clone the project:
 
@@ -28,7 +32,7 @@ sudo ln -s /path-to-wp-cli-dir/bin/wp /usr/local/bin/
 Make a symlink to the autocomplete file (Linux):
 
 ```
-sudo ln -s /path-to-wp-cli-dir/bin/wp-cli-completion.bash /etc/bash_completion.d/wp
+sudo ln -s /path-to-wp-cli-dir/bin/wp-completion.bash /etc/bash_completion.d/wp
 ```
 
 Usage
