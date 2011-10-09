@@ -179,6 +179,11 @@ class PluginCommand extends WP_CLI_Command {
 
 		WP_CLI::line( 'Installing '.$api->name.' ('.$api->version.')' );
 
+		if ( stripslashes( $name ) != $api->slug ) {
+			WP_CLI::error( 'Can\'t find the plugin in the WordPress.org plugins repository.' );
+			exit();
+		}
+
 		// Check what to do
 		switch ( $status['status'] ) {
 		case 'update_available':
