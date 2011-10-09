@@ -167,9 +167,9 @@ class PluginCommand extends WP_CLI_Command {
 	 * Install a new plugin
 	 *
 	 * @param array $args
-	 * @return void
+	 * @param array $assoc_args
 	 */
-	function install( $args ) {
+	function install( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
 			WP_CLI::line( "usage: wp plugin install <plugin-name>" );
 			exit;
@@ -209,6 +209,10 @@ class PluginCommand extends WP_CLI_Command {
 				WP_CLI::line();
 				WP_CLI::line( strip_tags( str_replace( array( '&#8230;', 'Plugin installed successfully.' ), array( "...\n", '' ), html_entity_decode( $feedback ) ) ) );
 				WP_CLI::success( 'The plugin is successfully installed' );
+
+				if ( isset( $assoc_args['activate'] ) ) {
+					system( "wp plugin activate " . WP_CLI::compose_args( $args, $assoc_args ) );
+				}
 			}
 			break;
 		case 'newer_installed':
