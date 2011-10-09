@@ -1,11 +1,10 @@
-#!/usr/bin/env php
 <?php
 
 if(PHP_SAPI !== 'cli') {
 	die('Only cli access');
 }
 
-define( 'WP_CLI_VERSION', '0.2' );
+define( 'WP_CLI_VERSION', '0.2-alpha' );
 
 // Define the wp-cli location
 define( 'WP_CLI_ROOT', realpath( __DIR__ . '/..' ) . '/' );
@@ -14,11 +13,11 @@ define( 'WP_CLI_ROOT', realpath( __DIR__ . '/..' ) . '/' );
 define('WP_CLI', true);
 
 // Include the wp-cli classes
-include WP_CLI_ROOT.'core/class-wp-cli.php';
-include WP_CLI_ROOT.'core/class-wp-cli-command.php';
+	include WP_CLI_ROOT.'core/class-wp-cli.php';
+	include WP_CLI_ROOT.'core/class-wp-cli-command.php';
 
-// Include the command line tools
-include WP_CLI_ROOT.'php-cli-tools/lib/cli/cli.php';
+	// Include the command line tools
+	include WP_CLI_ROOT.'php-cli-tools/lib/cli/cli.php';
 \cli\register_autoload();
 
 // Get the cli arguments
