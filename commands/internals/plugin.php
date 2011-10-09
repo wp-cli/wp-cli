@@ -200,7 +200,7 @@ class PluginCommand extends WP_CLI_Command {
 
 			if ( $result ) {
 				WP_CLI::line();
-				WP_CLI::line( strip_tags( str_replace( array( '&#8230;', 'Plugin installed successfully.' ), array( " ...\n", '' ), html_entity_decode( $feedback ) ) ) );
+				WP_CLI::line( strip_tags( str_replace( array( '&#8230;', 'Plugin installed successfully.' ), array( "...\n", '' ), html_entity_decode( $feedback ) ) ) );
 				WP_CLI::success( 'The plugin is successfully installed' );
 			}
 			break;
@@ -256,7 +256,7 @@ class PluginCommand extends WP_CLI_Command {
 		}
 		else {
 			WP_CLI::line();
-			WP_CLI::line( html_entity_decode( strip_tags( $feedback ) ) );
+			WP_CLI::line( strip_tags( str_replace( array( '&#8230;', 'Plugin updates successfully.' ), array( "...\n", '' ), html_entity_decode( $feedback ) ) ) );
 			WP_CLI::success( 'The plugin is successfully updated.' );
 		}
 	}
