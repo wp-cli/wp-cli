@@ -168,7 +168,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function install( $args ) {
-		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__, false );
+		$name = $args[0];
 
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
@@ -193,10 +193,7 @@ class PluginCommand extends WP_CLI_Command {
 			$result = $upgrader->install( $api->download_link );
 			$feedback = ob_get_clean();
 
-			if ( $result !== null ) {
-				WP_CLI::error( $result );
-			}
-			else {
+			if ( $result ) {
 				WP_CLI::line();
 				WP_CLI::line( strip_tags( str_replace( array( '&#8230;', 'Plugin installed successfully.' ), array( " ...\n", '' ), html_entity_decode( $feedback ) ) ) );
 				WP_CLI::success( 'The plugin is successfully installed' );
@@ -207,10 +204,6 @@ class PluginCommand extends WP_CLI_Command {
 			break;
 		case 'latest_installed':
 			WP_CLI::error( 'Latest version already installed' );
-
-			if ( is_plugin_inactive( $file ) ) {
-				WP_CLI::warning( 'If you want to activate the plugin, run: %2wp plugin activate '.$name.'%n' );
-			}
 			break;
 		}
 	}
@@ -286,7 +279,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param bool $exit
 	 * @return array
 	 */
-	private function parse_name( $args, $sub_command, $exit = true ) {
+	private function parse_name( $args, $sub_command ) {
 		if ( empty( $args ) ) {
 			WP_CLI::line( "usage: wp plugin $sub_command <plugin-name>" );
 			exit;
@@ -301,15 +294,13 @@ class PluginCommand extends WP_CLI_Command {
 		}
 		else {
 			$file = $name . '.php';
-			$plugins = get_plugins();
-			if ( !isset( $plugins[$file] ) ) {
-				if ( $exit ) {
-					WP_CLI::error( "The plugin '$name' could not be found." );
-					exit();
-				}
+		}
 
-				return false;
-			}
+		$plugins = get_plugins();
+
+		if ( !isset( $plugins[$file] ) ) {
+			WP_CLI::error( "The plugin '$name' could not be found." );
+			exit();
 		}
 
 		return array( $file, $name );
