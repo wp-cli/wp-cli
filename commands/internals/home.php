@@ -19,28 +19,22 @@ class HomeCommand extends WP_CLI_Command {
 	 * @param array $assoc_args
 	 */
 	public function __construct( $args, $assoc_args ) {
-		if(empty($args)) {
-			// The url for the wp-cli repository
-			$repository_url = 'http://github.com/andreascreten/wp-cli';
+		// The url for the wp-cli repository
+		$repository_url = 'http://github.com/andreascreten/wp-cli';
 
-			// Open the wp-cli page in the browser
-			if(exec('which x-www-browser')) {
-				system('x-www-browser '.$repository_url);
-			}
-			elseif(exec('which open')) {
-				system('open '.$repository_url);
-			}
-			else {
-				WP_CLI::error('No command found to open the homepage in the browser. Please open it manually: '.$repository_url);
-				return;
-			}
-
-			WP_CLI::success('The wp-cli homepage should be opening in your browser.');
+		// Open the wp-cli page in the browser
+		if(exec('which x-www-browser')) {
+			system('x-www-browser '.$repository_url);
+		}
+		elseif(exec('which open')) {
+			system('open '.$repository_url);
 		}
 		else {
-			// Call the parent constructor
-			parent::__construct( $args, $assoc_args );
+			WP_CLI::error('No command found to open the homepage in the browser. Please open it manually: '.$repository_url);
+			return;
 		}
+
+		WP_CLI::success('The wp-cli homepage should be opening in your browser.');
 	}
 
 	/**
