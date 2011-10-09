@@ -15,6 +15,8 @@ Ubuntu, Debian: [.deb package](https://github.com/downloads/andreascreten/wp-cli
 
 **From source:**
 
+First, make sure you have `php-cli` version 5.3 or newer installed.
+
 Clone the project:
 
 ```
@@ -166,8 +168,3 @@ Contributors
 
 - [Contributor list](https://github.com/andreascreten/wp-cli/contributors)
 - [Contributor impact](https://github.com/andreascreten/wp-cli/graphs/impact)
-
-Requirements
-------------
-
- * PHP >= 5.3
