@@ -170,6 +170,11 @@ class PluginCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	function install( $args ) {
+		if ( empty( $args ) ) {
+			WP_CLI::line( "usage: wp plugin install <plugin-name>" );
+			exit;
+		}
+
 		$name = $args[0];
 
 		// Force WordPress to update the plugin list
