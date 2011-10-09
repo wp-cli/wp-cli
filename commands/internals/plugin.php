@@ -14,6 +14,8 @@ require_once(ABSPATH.'wp-admin/includes/plugin-install.php');
  */
 class PluginCommand extends WP_CLI_Command {
 
+	protected $default_subcommand = 'status';
+
 	private $mu_plugins;
 
 	/**

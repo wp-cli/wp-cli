@@ -12,6 +12,8 @@ WP_CLI::addCommand('theme', 'ThemeCommand');
  */
 class ThemeCommand extends WP_CLI_Command {
 
+	protected $default_subcommand = 'status';
+
 	/**
 	 * Get the status of one or all themes
 	 *

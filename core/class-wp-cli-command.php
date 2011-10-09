@@ -8,6 +8,8 @@
  */
 abstract class WP_CLI_Command {
 
+	protected $default_subcommand = 'help';
+
 	/**
 	 * Transfers the handling to the appropriate method
      *
@@ -15,18 +17,21 @@ abstract class WP_CLI_Command {
 	 * @param array $assoc_args
 	 */
 	public function __construct( $args, $assoc_args ) {
-        $sub_command = array_shift( $args );
+		if ( empty( $args ) )
+			$subcommand = $this->default_subcommand;
+		else
+			$subcommand = array_shift( $args );
 
-		if ( !method_exists( $this, $sub_command ) ) {
+		if ( !method_exists( $this, $subcommand ) ) {
 			// This if for reserved keywords in php (like list, isset)
-			$sub_command = '_'.$sub_command;
+			$subcommand = '_'.$subcommand;
 		}
 
-		if ( !method_exists( $this, $sub_command ) || isset( $assoc_args[ 'help' ] ) ) {
-			$sub_command = 'help';
+		if ( !method_exists( $this, $subcommand ) || isset( $assoc_args[ 'help' ] ) ) {
+			$subcommand = 'help';
 		}
 
-		$this->$sub_command( $args, $assoc_args );
+		$this->$subcommand( $args, $assoc_args );
     }
 
     /**
