@@ -94,8 +94,9 @@ class WP_CLI {
 	}
 
 	/**
-	 * Splits regular arguments from associative arguments.
+	 * Splits a string into positional and associative arguments.
 	 *
+	 * @param string
 	 * @return array
 	 */
 	static function parse_args( $arguments ) {
@@ -113,6 +114,25 @@ class WP_CLI {
 		}
 
 		return array( $regular_args, $assoc_args );
+	}
+
+	/**
+	 * Composes positional and associative arguments into a string
+	 *
+	 * @param array
+	 * @return string
+	 */
+	static function compose_args( $args, $assoc_args = array() ) {
+		$str = implode( ' ', $args );
+
+		foreach ( $assoc_args as $key => $value ) {
+			if ( true == $value )
+				$str .= " --$key";
+			else
+				$str .= " --$key=$value";
+		}
+
+		return $str;
 	}
 
 	/**
