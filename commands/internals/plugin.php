@@ -302,7 +302,7 @@ class PluginCommand extends WP_CLI_Command {
 		else {
 			$file = $name . '.php';
 			$plugins = get_plugins();
-			if ( !isset( $plugins[$file] ) ) {
+			if ( !isset( $plugins[$file] && $sub_command != 'install' ) ) {
 				if ( $exit ) {
 					WP_CLI::error( "The plugin '$name' could not be found." );
 					exit();
