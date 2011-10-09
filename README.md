@@ -164,8 +164,8 @@ if(defined('WP_CLI') && WP_CLI) {
 Contributors
 ------------
 
-- Andreas Creten ([@andreascreten](http://twitter.com/andreascreten))
-- Cristi Burcă ([@scribu](http://twitter.com/scribu))
+- [Contributor list](https://github.com/andreascreten/wp-cli/contributors)
+- [Contributor impact](https://github.com/andreascreten/wp-cli/graphs/impact)
 
 Requirements
 ------------
