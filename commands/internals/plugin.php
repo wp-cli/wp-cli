@@ -287,13 +287,13 @@ class PluginCommand extends WP_CLI_Command {
 	 * Parse the name of a plugin to a filename, check if it exists
 	 *
 	 * @param array $args
-	 * @param string $sub_command
+	 * @param string $subcommand
 	 * @param bool $exit
 	 * @return array
 	 */
-	private function parse_name( $args, $sub_command ) {
+	private function parse_name( $args, $subcommand ) {
 		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp plugin $sub_command <plugin-name>" );
+			WP_CLI::line( "usage: wp plugin $subcommand <plugin-name>" );
 			exit;
 		}
 
