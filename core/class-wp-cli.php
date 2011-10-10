@@ -16,7 +16,7 @@ class WP_CLI {
 	 * @param string $class The class to manage the command
 	 * @return void
 	 */
-	public function addCommand($name, $class) {
+	public function addCommand( $name, $class ) {
 		self::$commands[$name] = $class;
 	}
 
@@ -26,7 +26,7 @@ class WP_CLI {
 	 * @param string $message
 	 * @return void
 	 */
-	static function out($message) {
+	static function out( $message ) {
 		\cli\out($message);
 	}
 
@@ -36,7 +36,7 @@ class WP_CLI {
 	 * @param string $message
 	 * @return void
 	 */
-	static function line($message = '') {
+	static function line( $message = '' ) {
 		\cli\line($message);
 	}
 
@@ -47,8 +47,8 @@ class WP_CLI {
 	 * @param string $label
 	 * @return void
 	 */
-	static function error($message, $label = 'Error') {
-		\cli\line('%R'.$label.': %n'.self::errorToString($message));
+	static function error( $message, $label = 'Error' ) {
+		\cli\line( '%R' . $label . ': %n' . self::errorToString( $message ) );
 	}
 
 	/**
@@ -58,8 +58,8 @@ class WP_CLI {
 	 * @param string $label
 	 * @return void
 	 */
-	static function success($message, $label = 'Success') {
-		\cli\line('%G'.$label.': %n'.$message);
+	static function success( $message, $label = 'Success' ) {
+		\cli\line( '%G' . $label . ': %n' . $message );
 	}
 
 	/**
@@ -69,8 +69,8 @@ class WP_CLI {
 	 * @param string $label
 	 * @return void
 	 */
-	static function warning($message, $label = 'Warning') {
-		\cli\line('%C'.$label.': %n'.$message);
+	static function warning( $message, $label = 'Warning' ) {
+		\cli\line( '%C' . $label . ': %n' . $message );
 	}
 
 	/**
@@ -79,13 +79,12 @@ class WP_CLI {
 	 * @param mixed $errors
 	 * @return string
 	 */
-	static function errorToString($errors) {
-		if(is_string($errors)){
+	static function errorToString( $errors ) {
+		if( is_string( $errors ) ) {
 			return $errors;
-		}
-		elseif(is_wp_error($errors) && $errors->get_error_code()){
-			foreach($errors->get_error_messages() as $message){
-				if($errors->get_error_data() )
+		} elseif( is_wp_error( $errors ) && $errors->get_error_code() ) {
+			foreach( $errors->get_error_messages() as $message ) {
+				if( $errors->get_error_data() )
 					return $message . ' ' . $errors->get_error_data();
 				else
 					return $message;
@@ -141,8 +140,8 @@ class WP_CLI {
 	 * @param array( code => title ) $legend
 	 * @return void
 	 */
-	static function legend($legend) {
-		$legend['%yU'] = 'Update Available';
+	static function legend( $legend ) {
+		$legend[ '%yU' ] = 'Update Available';
 
 		$legend_line = array();
 		foreach ( $legend as $key => $title )
@@ -180,13 +179,13 @@ class CLI_Upgrader_Skin {
 	var $done_header = false;
 	var $result = false;
 
-	function __construct($args = array()) {
-		$defaults = array('url' => '', 'nonce' => '', 'title' => '', 'context' => false);
-		$this->options = wp_parse_args($args, $defaults);
+	function __construct( $args = array() ) {
+		$defaults = array( 'url' => '', 'nonce' => '', 'title' => '', 'context' => false );
+		$this->options = wp_parse_args( $args, $defaults );
 	}
 
-	function set_upgrader(&$upgrader) {
-		if(is_object($upgrader)) {
+	function set_upgrader( &$upgrader ) {
+		if( is_object( $upgrader ) ) {
 			$this->upgrader =& $upgrader;
 		}
 
@@ -195,41 +194,42 @@ class CLI_Upgrader_Skin {
 
 	function add_strings() {}
 
-	function set_result($result) {
+	function set_result( $result ) {
 		$this->result = $result;
 	}
 
-	function request_filesystem_credentials($error = false) {
+	function request_filesystem_credentials( $error = false ) {
 		$url = $this->options['url'];
 		$context = $this->options['context'];
-		if(!empty($this->options['nonce'])) {
-			$url = wp_nonce_url($url, $this->options['nonce']);
+		if( !empty( $this->options['nonce'] ) ) {
+			$url = wp_nonce_url( $url, $this->options['nonce']) ;
 		}
 
 		// Possible to bring inline, Leaving as is for now.
-		return request_filesystem_credentials($url, '', $error, $context);
+		return request_filesystem_credentials( $url, '', $error, $context );
 	}
 
 	function header() {}
 	function footer() {}
 
-	function error($errors) {
-		$this->feedback(WP_CLI::errorToString($errors));
+	function error( $errors ) {
+		$this->feedback( WP_CLI::errorToString($errors) );
 	}
 
-	function feedback($string) {
-		if(isset( $this->upgrader->strings[$string]))
+	function feedback( $string ) {
+		if(isset( $this->upgrader->strings[$string] ) )
 			$string = $this->upgrader->strings[$string];
 
-		if(strpos($string, '%') !== false) {
+		if( strpos( $string, '%' ) !== false ) {
 			$args = func_get_args();
-			$args = array_splice($args, 1);
-			if(!empty($args)) {
-				$string = vsprintf($string, $args);
+			$args = array_splice( $args, 1 );
+			if( !empty( $args ) ) {
+				$string = vsprintf( $string, $args );
 			}
 
 		}
-		if(empty($string)) {
+		
+		if( empty( $string ) ) {
 			return;
 		}
 

@@ -13,6 +13,8 @@ Installing
 
 Ubuntu, Debian: [.deb package](https://github.com/downloads/andreascreten/wp-cli/wp-cli_0.1.deb)
 
+On Mac, install [Homebrew](http://mxcl.github.com/homebrew/) and run `brew install wp-cli`.
+
 **From source:**
 
 First, make sure you have `php-cli` version 5.3 or newer installed.
