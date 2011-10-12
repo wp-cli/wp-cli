@@ -82,8 +82,7 @@ class CoreCommand extends WP_CLI_Command {
 	public static function help() {
 		WP_CLI::line( <<<EOB
 usage: wp core update
-
-Update the WordPress core files from wordpress.org
+   or: wp core version [--extra]
 EOB
 		);
 	}
