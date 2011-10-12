@@ -10,7 +10,6 @@ require_once(ABSPATH.'wp-admin/includes/plugin-install.php');
  *
  * @package wp-cli
  * @subpackage commands/internals
- * @author Andreas Creten
  */
 class PluginCommand extends WP_CLI_Command {
 

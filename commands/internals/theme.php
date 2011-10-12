@@ -8,7 +8,6 @@ WP_CLI::addCommand('theme', 'ThemeCommand');
  *
  * @package wp-cli
  * @subpackage commands/internals
- * @author Andreas Creten
  */
 class ThemeCommand extends WP_CLI_Command {
 

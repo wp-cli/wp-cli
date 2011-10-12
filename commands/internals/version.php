@@ -7,7 +7,6 @@ WP_CLI::addCommand('version', 'VersionCommand');
  *
  * @package wp-cli
  * @subpackage commands/internals
- * @author Nikolay Bachiyski <nb@nikolay.bg>
  */
 class VersionCommand extends WP_CLI_Command {
 

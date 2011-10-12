@@ -4,7 +4,6 @@
  * Wrapper class for WP-CLI
  *
  * @package wp-cli
- * @author Andreas Creten
  */
 class WP_CLI {
 	static $commands = array();
@@ -172,7 +171,6 @@ class WP_CLI {
  * A Upgrader Skin for WordPress that only generates plain-text
  *
  * @package wp-cli
- * @author Andreas Creten
  */
 class CLI_Upgrader_Skin {
 	var $upgrader;

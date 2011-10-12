@@ -10,7 +10,7 @@ if ( function_exists( 'w3tc_pgcache_flush' ) ) {
  *
  * @package wp-cli
  * @subpackage commands/community
- * @author Andreas Creten
+ * @maintainer Andreas Creten
  */
 class W3TotalCacheCommand extends WP_CLI_Command {
 

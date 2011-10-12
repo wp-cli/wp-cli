@@ -4,7 +4,6 @@
  * Base class for WP-CLI commands
  *
  * @package wp-cli
- * @author Andreas Creten
  */
 abstract class WP_CLI_Command {
 

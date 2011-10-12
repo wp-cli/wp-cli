@@ -10,7 +10,7 @@ if( class_exists( 'GoogleSitemapGeneratorLoader' ) ) {
  *
  * @package wp-cli
  * @subpackage commands/community
- * @author Andreas Creten
+ * @maintainer Andreas Creten
  */
 class GoogleSitemapGeneratorCommand extends WP_CLI_Command {
 

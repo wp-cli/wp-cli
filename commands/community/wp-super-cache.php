@@ -10,7 +10,7 @@ if ( function_exists( 'wp_super_cache_enable' ) ) {
  *
  * @package wp-cli
  * @subpackage commands/community
- * @author Andreas Creten
+ * @maintainer Andreas Creten
  */
 class WPSuperCacheCommand extends WP_CLI_Command {
 

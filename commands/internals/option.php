@@ -8,7 +8,6 @@ WP_CLI::addCommand('option', 'OptionCommand');
  *
  * @package wp-cli
  * @subpackage commands/internals
- * @author Andreas Creten
  */
 class OptionCommand extends WP_CLI_Command {
 

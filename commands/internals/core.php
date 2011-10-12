@@ -8,7 +8,6 @@ WP_CLI::addCommand('core', 'CoreCommand');
  *
  * @package wp-cli
  * @subpackage commands/internals
- * @author Andreas Creten
  */
 class CoreCommand extends WP_CLI_Command {
 

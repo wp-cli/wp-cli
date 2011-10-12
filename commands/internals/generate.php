@@ -8,7 +8,6 @@ WP_CLI::addCommand('generate', 'GenerateCommand');
  *
  * @package wp-cli
  * @subpackage commands/internals
- * @author Cristi Burca
  */
 class GenerateCommand extends WP_CLI_Command {
 

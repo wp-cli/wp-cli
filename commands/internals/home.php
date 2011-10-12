@@ -8,7 +8,6 @@ WP_CLI::addCommand('home', 'HomeCommand');
  *
  * @package wp-cli
  * @subpackage commands/internals
- * @author Andreas Creten
  */
 class HomeCommand extends WP_CLI_Command {
 
