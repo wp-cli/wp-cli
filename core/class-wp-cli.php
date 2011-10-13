@@ -13,7 +13,6 @@ class WP_CLI {
 	 *
 	 * @param string $name The name of the command that will be used in the cli
 	 * @param string $class The class to manage the command
-	 * @return void
 	 */
 	public function addCommand( $name, $class ) {
 		self::$commands[$name] = $class;
@@ -23,7 +22,6 @@ class WP_CLI {
 	 * Display a message in the cli
 	 *
 	 * @param string $message
-	 * @return void
 	 */
 	static function out( $message ) {
 		\cli\out($message);
@@ -33,7 +31,6 @@ class WP_CLI {
 	 * Display a message in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @return void
 	 */
 	static function line( $message = '' ) {
 		\cli\line($message);
@@ -44,7 +41,6 @@ class WP_CLI {
 	 *
 	 * @param string $message
 	 * @param string $label
-	 * @return void
 	 */
 	static function error( $message, $label = 'Error' ) {
 		\cli\line( '%R' . $label . ': %n' . self::errorToString( $message ) );
@@ -55,7 +51,6 @@ class WP_CLI {
 	 *
 	 * @param string $message
 	 * @param string $label
-	 * @return void
 	 */
 	static function success( $message, $label = 'Success' ) {
 		\cli\line( '%G' . $label . ': %n' . $message );
@@ -66,7 +61,6 @@ class WP_CLI {
 	 *
 	 * @param string $message
 	 * @param string $label
-	 * @return void
 	 */
 	static function warning( $message, $label = 'Warning' ) {
 		\cli\line( '%C' . $label . ': %n' . $message );
@@ -137,7 +131,6 @@ class WP_CLI {
 	 * Display a legend
 	 *
 	 * @param array( code => title ) $legend
-	 * @return void
 	 */
 	static function legend( $legend ) {
 		$legend[ '%yU' ] = 'Update Available';
