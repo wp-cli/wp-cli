@@ -165,11 +165,11 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param array $assoc_args
 	 */
 	function path( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			$path = WP_PLUGIN_DIR;
-		} else {
+		$path = untrailingslashit( WP_PLUGIN_DIR );
+
+		if ( !empty( $args ) ) {
 			list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
-			$path = untrailingslashit( WP_PLUGIN_DIR ) . '/' . $file;
+			$path .= '/' . $file;
 
 			if ( isset( $assoc_args['directory'] ) )
 				$path = dirname( $path );

@@ -85,20 +85,8 @@ class ThemeCommand extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 **/
-	public function activate($args = array()) {
-		if ( empty( $args ) ) {
-			WP_CLI::line('usage: wp theme activate <theme-name>');
-			exit;
-		}
-
-		$child = array_shift( $args );
-
-		$stylesheet = $this->get_stylesheet_path( $child );
-
-		if ( !is_readable( $stylesheet ) ) {
-			WP_CLI::warning( 'theme not found' );
-			exit;
-		}
+	public function activate( $args = array() ) {
+		list( $stylesheet, $child ) = $this->parse_name( $args, __FUNCTION__ );
 
 		$details = get_theme_data( $stylesheet );
 
@@ -106,12 +94,50 @@ class ThemeCommand extends WP_CLI_Command {
 
 		if ( empty( $parent ) ) {
 			$parent = $child;
-		} elseif ( !is_readable( $this->get_stylesheet_path ( $parent ) ) ) {
+		} elseif ( !is_readable( $this->get_stylesheet_path( $parent ) ) ) {
 			WP_CLI::warning( 'parent theme not found' );
 			exit;
 		}
 
 		switch_theme( $parent, $child );
+	}
+
+	/**
+	 * Get a theme path
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 */
+	function path( $args, $assoc_args ) {
+		if ( empty( $args ) ) {
+			$path = WP_CONTENT_DIR . '/themes';
+		} else {
+			list( $stylesheet, $name ) = $this->parse_name( $args, __FUNCTION__ );
+			$path = $stylesheet;
+
+			if ( isset( $assoc_args['directory'] ) )
+				$path = dirname( $path );
+		}
+
+		WP_CLI::line( $path );
+	}
+
+	protected function parse_name( $args, $subcommand ) {
+		if ( empty( $args ) ) {
+			WP_CLI::line( "usage: wp theme $subcommand <theme-name>" );
+			exit;
+		}
+
+		$name = $args[0];
+
+		$stylesheet = $this->get_stylesheet_path( $name );
+
+		if ( !is_readable( $stylesheet ) ) {
+			WP_CLI::error( "The theme '$name' could not be found." );
+			exit;
+		}
+
+		return array( $stylesheet, $name );
 	}
 
 	protected function get_stylesheet_path( $theme ) {
@@ -124,10 +150,12 @@ class ThemeCommand extends WP_CLI_Command {
 	public static function help() {
 		WP_CLI::line( <<<EOB
 usage: wp theme <sub-command> [<theme-name>]
+   or: wp theme path [<theme-name>] [--directory]
 
 Available sub-commands:
    status     display status of all installed themes or of a particular theme
    activate   activate a particular theme
+   path       print path to the theme's stylesheet
 EOB
 		);
 	}
