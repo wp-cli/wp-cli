@@ -54,6 +54,9 @@ if ( isset( $assoc_args['blog'] ) ) {
 }
 
 if ( isset( $blog ) ) {
+	if ( false === strpos( $blog, '/' ) )
+		$blog .= '/';
+
 	list( $domain, $path ) = explode( '/', $blog, 2 );
 
 	$_SERVER['HTTP_HOST'] = $domain;
