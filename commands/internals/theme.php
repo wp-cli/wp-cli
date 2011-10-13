@@ -36,8 +36,8 @@ class ThemeCommand extends WP_CLI_Command {
 			$version .= ' (%gUpdate available%n)';
 
 		WP_CLI::line( 'Theme %9' . $name . '%n details:' );
-		WP_CLI::line( '    Status: ' . $status .'%n' );
 		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
+		WP_CLI::line( '    Status: ' . $status .'%n' );
 		WP_CLI::line( '    Version: ' . $version );
 		WP_CLI::line( '    Author: ' . strip_tags( $details[ 'Author' ] ) );
 	}
