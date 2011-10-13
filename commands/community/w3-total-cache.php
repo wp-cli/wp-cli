@@ -19,7 +19,6 @@ class W3TotalCacheCommand extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $vars
-	 * @return void
 	 */
 	function flush( $args = array(), $vars = array() ) {
 		if ( function_exists( 'w3tc_pgcache_flush' ) ) {

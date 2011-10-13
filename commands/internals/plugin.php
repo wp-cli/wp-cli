@@ -21,7 +21,6 @@ class PluginCommand extends WP_CLI_Command {
 	 * Get the status of one or all plugins
 	 *
 	 * @param array $args
-	 * @return void
 	 */
 	function status( $args = array(), $vars = array() ) {
 		$this->mu_plugins = get_mu_plugins();
@@ -114,7 +113,6 @@ class PluginCommand extends WP_CLI_Command {
 	 * Activate a plugin
 	 *
 	 * @param array $args
-	 * @return void
 	 */
 	function activate( $args ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
@@ -132,7 +130,6 @@ class PluginCommand extends WP_CLI_Command {
 	 * Deactivate a plugin
 	 *
 	 * @param array $args
-	 * @return void
 	 */
 	function deactivate( $args ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
@@ -150,7 +147,6 @@ class PluginCommand extends WP_CLI_Command {
 	 * Toggle a plugin's activation state
 	 *
 	 * @param array $args
-	 * @return void
 	 */
 	function toggle( $args ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
@@ -227,7 +223,6 @@ class PluginCommand extends WP_CLI_Command {
 	 * Delete a plugin
 	 *
 	 * @param array $args
-	 * @return void
 	 */
 	function delete( $args ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
@@ -241,7 +236,6 @@ class PluginCommand extends WP_CLI_Command {
 	 * Update a plugin
 	 *
 	 * @param array $args
-	 * @return void
 	 */
 	function update( $args ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );

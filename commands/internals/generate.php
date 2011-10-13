@@ -16,7 +16,6 @@ class GenerateCommand extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
-	 * @return void
 	 **/
 	public function posts( $args, $assoc_args ) {
 		global $wpdb;
@@ -55,7 +54,6 @@ class GenerateCommand extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
-	 * @return void
 	 **/
 	public function users( $args, $assoc_args ) {
 		global $blog_id;

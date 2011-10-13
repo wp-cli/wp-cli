@@ -19,7 +19,6 @@ class GoogleSitemapGeneratorCommand extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $vars
-	 * @return void
 	 */
 	function rebuild( $args = array(), $vars = array() ) {
 		do_action( 'sm_rebuild' );

@@ -19,7 +19,6 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $vars
-	 * @return void
 	 */
 	function flush( $args = array(), $vars = array() ) {
 		if ( function_exists( 'wp_cache_clear_cache' ) ) {
@@ -53,7 +52,6 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $vars
-	 * @return void
 	 */
 	function status( $args = array(), $vars = array() ) {
 		$cache_stats = get_option( 'supercache_stats' );
@@ -84,7 +82,6 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $vars
-	 * @return void
 	 */
 	function enable( $args = array(), $vars = array() ) {
 		if ( function_exists( 'wp_super_cache_enable' ) ) {
@@ -105,7 +102,6 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $vars
-	 * @return void
 	 */
 	function disable( $args = array(), $vars = array() ) {
 		if ( function_exists( 'wp_super_cache_disable' ) ) {

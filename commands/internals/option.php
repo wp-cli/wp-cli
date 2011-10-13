@@ -15,7 +15,6 @@ class OptionCommand extends WP_CLI_Command {
 	 * Add an option
 	 *
 	 * @param array $args
-	 * @return void
 	 **/
 	public function add($args = array()) {
 		// Check if the required arguments are there
@@ -37,7 +36,6 @@ class OptionCommand extends WP_CLI_Command {
 	 * Update an option
 	 *
 	 * @param array $args
-	 * @return void
 	 **/
 	public function update($args = array()) {
 		// Check if the required arguments are there
@@ -59,7 +57,6 @@ class OptionCommand extends WP_CLI_Command {
 	 * Delete an option
 	 *
 	 * @param array $args
-	 * @return void
 	 **/
 	public function delete($args = array()) {
 		// Check if the required arguments are there
@@ -81,7 +78,6 @@ class OptionCommand extends WP_CLI_Command {
 	 * Get an option
 	 *
 	 * @param array $args
-	 * @return void
 	 **/
 	public function get($args = array()) {
 		// Check if the required arguments are there

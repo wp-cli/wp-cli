@@ -17,7 +17,6 @@ class ThemeCommand extends WP_CLI_Command {
 	 * Get the status of one or all themes
 	 *
 	 * @param array $args
-	 * @return void
 	 **/
 	public function status( $args = array() ) {
 		if ( empty( $args ) ) {
@@ -85,7 +84,6 @@ class ThemeCommand extends WP_CLI_Command {
 	 * Activate a theme
 	 *
 	 * @param array $args
-	 * @return void
 	 **/
 	public function activate($args = array()) {
 		if ( empty( $args ) ) {
