@@ -159,6 +159,26 @@ class PluginCommand extends WP_CLI_Command {
 	}
 
 	/**
+	 * Get a plugin path
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 */
+	function path( $args, $assoc_args ) {
+		if ( empty( $args ) ) {
+			$path = WP_PLUGIN_DIR;
+		} else {
+			list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+			$path = untrailingslashit( WP_PLUGIN_DIR ) . '/' . $file;
+
+			if ( isset( $assoc_args['directory'] ) )
+				$path = dirname( $path );
+		}
+
+		WP_CLI::line( $path );
+	}
+
+	/**
 	 * Install a new plugin
 	 *
 	 * @param array $args
@@ -321,12 +341,15 @@ class PluginCommand extends WP_CLI_Command {
 	public static function help() {
 		WP_CLI::line( <<<EOB
 usage: wp plugin <sub-command> [<plugin-name>]
+   or: wp plugin path [<plugin-name>] [--directory]
+   or: wp plugin install <plugin-name> [--activate]
 
 Available sub-commands:
    status       display status of all installed plugins or of a particular plugin
    activate     activate a particular plugin
    deactivate   deactivate a particular plugin
    toggle       toggle activation state of a particular plugin
+   path         print path to the plugin's file
    install      install a plugin from wordpress.org
    update       update a plugin from wordpress.org
    delete       delete a plugin
