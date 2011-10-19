@@ -65,7 +65,9 @@ class GenerateCommand extends WP_CLI_Command {
 
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
-		if ( is_null( get_role( $role ) ) ) {
+		if ( 'none' == $role )
+			$role = false;
+		elseif ( is_null( get_role( $role ) ) ) {
 			WP_CLI::warning( "invalid role." );
 			exit;
 		}
