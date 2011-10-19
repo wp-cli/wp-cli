@@ -65,9 +65,9 @@ class GenerateCommand extends WP_CLI_Command {
 
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
-		if ( 'none' == $role )
+		if ( 'none' == $role ) {
 			$role = false;
-		elseif ( is_null( get_role( $role ) ) ) {
+		} elseif ( is_null( get_role( $role ) ) ) {
 			WP_CLI::warning( "invalid role." );
 			exit;
 		}
@@ -82,13 +82,18 @@ class GenerateCommand extends WP_CLI_Command {
 			$login = sprintf( 'user_%d_%d', $blog_id, $i );
 			$name = "User $i";
 
-			$r = wp_insert_user( array(
+			$user_id = wp_insert_user( array(
 				'user_login' => $login,
 				'user_pass' => $login,
 				'nickname' => $name,
 				'display_name' => $name,
 				'role' => $role
 			) );
+
+			if ( false === $role ) {
+				delete_user_option( $user_id, 'capabilities' );
+				delete_user_option( $user_id, 'user_level' );
+			}
 		}
 	}
 
