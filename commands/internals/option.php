@@ -16,19 +16,16 @@ class OptionCommand extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 **/
-	public function add($args = array()) {
-		// Check if the required arguments are there
-		if(count($args) == 2) {
-			// Try to add the option
-			if(add_option($args[0], $args[1])) {
-				WP_CLI::success('Added option %9'.$args[0].'%n to \'%9'.$args[1].'%n\'.');
-			}
-			else {
-				WP_CLI::error('Option %9'.$args[0].'%n could not be added. Does it already exist?');
-			}
+	public function add( $args ) {
+		if ( count( $args ) < 2 ) {
+			WP_CLI::line( "usage: wp option add <option-name> <option-value>" );
+			exit;
 		}
-		else {
-			WP_CLI::error('This command needs exactly two arguments.');
+
+		list( $key, $value ) = $args;
+
+		if ( !add_option( $key, $value ) ) {
+			WP_CLI::error( "Could not add option '$key'. Does it already exist?" );
 		}
 	}
 
@@ -37,19 +34,19 @@ class OptionCommand extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 **/
-	public function update($args = array()) {
-		// Check if the required arguments are there
-		if(count($args) == 2) {
-			// Try to update the option
-			if(update_option($args[0], $args[1])) {
-				WP_CLI::success('Updated option %9'.$args[0].'%n to \'%9'.$args[1].'%n\'.');
-			}
-			else {
-				WP_CLI::error('Option %9'.$args[0].'%n could not be updated. Does it exist? Is the value already \'%9'.$args[1].'%n\'?');
-			}
+	public function update( $args ) {
+		if ( count( $args ) < 2 ) {
+			WP_CLI::line( "usage: wp option update <option-name> <option-value>" );
+			exit;
 		}
-		else {
-			WP_CLI::error('This command needs exactly two arguments.');
+
+		list( $key, $value ) = $args;
+
+		if ( $value === get_option( $key ) )
+			return;
+
+		if ( !update_option( $key, $value ) ) {
+			WP_CLI::error( "Could not update option '$key'." );
 		}
 	}
 
@@ -58,19 +55,16 @@ class OptionCommand extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 **/
-	public function delete($args = array()) {
-		// Check if the required arguments are there
-		if(count($args) == 1) {
-			// Try to delete the option
-			if(delete_option($args[0])) {
-				WP_CLI::success('Deleted option %9'.$args[0].'%n.');
-			}
-			else {
-				WP_CLI::error('Option %9'.$args[0].'%n could not be deleted. Does it exist?');
-			}
+	public function delete( $args ) {
+		if ( empty( $args ) ) {
+			WP_CLI::line( "usage: wp option get <option-name>" );
+			exit;
 		}
-		else {
-			WP_CLI::error('This command needs exactly one argument.');
+
+		list( $key ) = $args;
+
+		if ( !delete_option( $key ) ) {
+			WP_CLI::error( "Could not delete '$key' option. Does it exist?" );
 		}
 	}
 
@@ -79,13 +73,13 @@ class OptionCommand extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 **/
-	public function get($args = array()) {
+	public function get( $args ) {
 		if ( empty( $args ) ) {
 			WP_CLI::line( "usage: wp option get <option-name>" );
 			exit;
 		}
 
-		$key = $args[0];
+		list( $key ) = $args;
 
 		$value = get_option( $key );
 
