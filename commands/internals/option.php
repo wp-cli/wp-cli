@@ -80,19 +80,22 @@ class OptionCommand extends WP_CLI_Command {
 	 * @param array $args
 	 **/
 	public function get($args = array()) {
-		// Check if the required arguments are there
-		if(count($args) == 1) {
-			// Try to get the option
-			$option = get_option($args[0]);
-			if($option) {
-				WP_CLI::success('The value of option %9'.$args[0].'%n is \'%9'.$option.'%n\'.');
-			}
-			else {
-				WP_CLI::error('Option %9'.$args[0].'%n could not be found. Does it exist?');
-			}
+		if ( empty( $args ) ) {
+			WP_CLI::line( "usage: wp option get <option-name>" );
+			exit;
 		}
-		else {
-			WP_CLI::error('This command needs exactly one argument.');
+
+		$key = $args[0];
+
+		$value = get_option( $key );
+
+		if ( false === $value )
+			return;
+
+		if ( is_array( $value ) || is_object( $value ) ) {
+			WP_CLI::line( var_export( $value ) );
+		} else {
+			WP_CLI::line( $value );
 		}
 	}
 
