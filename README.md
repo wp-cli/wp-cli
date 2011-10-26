@@ -21,9 +21,7 @@ First, make sure you have `php-cli` version 5.3 or newer installed.
 Clone the project:
 
 ```
-git clone https://github.com/andreascreten/wp-cli.git
-cd wp-cli
-git submodule update --init
+git clone --recurse-submodules https://github.com/andreascreten/wp-cli.git
 ```
 
 Make a symlink to the executable:
