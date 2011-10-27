@@ -15,13 +15,25 @@ class SqlCommand extends WP_CLI_Command {
 	protected $default_subcommand = 'cli';
 
   /**
+   * return a string to connecting to the DB.
+   *
+   * @param void
+   * @return string $connect
+   */
+  protected function connect_string() {
+    $connect = sprintf( 'mysql --database=%s --user=%s --password=%s',
+      DB_NAME, DB_USER, DB_PASSWORD);
+    return $connect;
+  }
+
+  /**
    * A string for connecting to the DB.
    *
    * @param string $args 
    * @return void
    */
   function connect( $args = array() ) {
-    $connect = 'mysql --database=' . DB_NAME . ' --user=' . DB_USER . ' --password=' . DB_PASSWORD; 
+    $connect = $this->connect_string();
     WP_CLI::line( $connect );
   }
 
@@ -31,7 +43,7 @@ class SqlCommand extends WP_CLI_Command {
    * @return void
    */
   function cli() {
-    $exec = sprintf( 'mysql --user=%s --password=%s', DB_USER, DB_PASSWORD );
+    $exec = $this->connect_string();
 
     proc_close( proc_open( $exec , array( 0 => STDIN, 1 => STDOUT, 2 => STDERR ), $pipes ) );
   } 
@@ -49,6 +61,7 @@ class SqlCommand extends WP_CLI_Command {
     }
 
     $exec = sprintf( 'mysqldump %s --result-file %s --user=%s --password=%s', DB_NAME, $result_file, DB_USER, DB_PASSWORD );
+
     exec( $exec );
   } 
   
@@ -64,8 +77,10 @@ class SqlCommand extends WP_CLI_Command {
     }
 
     $query = $args[0];
-    $connect = 'mysql --database=' . DB_NAME . ' --user=' . DB_USER . ' --password=' . DB_PASSWORD; 
-    $exec = sprintf( 'mysql --database=%s  --user=%s --password=%s --execute="%s"', DB_NAME, DB_USER, DB_PASSWORD, $query );
+
+    $exec = $this->connect_string();
+    $exec .= sprintf(' --execute="%s"', $query);
+
     $result = exec( $exec );
     WP_CLI::line( $result );
   }
