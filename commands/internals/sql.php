@@ -8,7 +8,6 @@ WP_CLI::addCommand( 'sql', 'SqlCommand' );
  *
  * @package wp-cli
  * @subpackage commands/internals
- * @maintainer Edgar Marca (http://twitter.com/matiskay)
  **/
 class SqlCommand extends WP_CLI_Command {
 
