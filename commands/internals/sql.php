@@ -84,4 +84,17 @@ class SqlCommand extends WP_CLI_Command {
     $result = exec( $exec );
     WP_CLI::line( $result );
   }
+
+	/**
+	 * Help function for this command
+	 */
+	public static function help() {
+		WP_CLI::line( <<<EOB
+wp sql cli               Open a SQL command-line interface using Wordpress's credentials.
+wp sql connect           A string for connecting to the DB.            
+wp sql dump              Exports the wordpress DB as SQL using mysqldump or equivalent. 
+wp sql query             Execute a query against the site database. 
+EOB
+		);
+	}
 }
