@@ -60,4 +60,21 @@ class SqlCommand extends WP_CLI_Command {
     exec( $exec );
   } 
   
+  /**
+   * Execute a query against the site database.
+   * @param string $args 
+   * @return void
+   */
+
+  function query( $args, $assoc_args ) {
+    if ( !$args[0] ) {
+		  WP_CLI::line( 'Please add a query.' );
+    }
+
+    $query = $args[0];
+    $connect = 'mysql --database=' . DB_NAME . ' --user=' . DB_USER . ' --password=' . DB_PASSWORD; 
+    $exec = sprintf( 'mysql --database=%s  --user=%s --password=%s --execute="%s"', DB_NAME, DB_USER, DB_PASSWORD, $query );
+    $result = exec( $exec );
+    WP_CLI::line( $result );
+  }
 }
