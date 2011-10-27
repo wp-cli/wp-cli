@@ -1,12 +1,4 @@
 <?php
-/**
- * @TODO: 
- * cli               Open a SQL command-line interface using Wordpress's credentials.
- * connect           A string for connecting to the DB.            
- * dump              Exports the wordpress DB as SQL using mysqldump or equivalent. 
- * query             Execute a query against the site database. 
- */
-
 
 // Add the command to the wp-cli
 WP_CLI::addCommand( 'sql', 'SqlCommand' );
