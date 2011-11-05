@@ -27,13 +27,13 @@ git clone --recurse-submodules https://github.com/andreascreten/wp-cli.git
 Make a symlink to the executable:
 
 ```
-sudo ln -s /path-to-wp-cli-dir/bin/wp /usr/local/bin/
+sudo ln -s /path-to-wp-cli-dir/src/bin/wp /usr/local/bin/
 ```
 
 Make a symlink to the autocomplete file (Linux):
 
 ```
-sudo ln -s /path-to-wp-cli-dir/bin/wp-completion.bash /etc/bash_completion.d/wp
+sudo ln -s /path-to-wp-cli-dir/src/bin/wp-completion.bash /etc/bash_completion.d/wp
 ```
 
 Usage
