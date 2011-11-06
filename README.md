@@ -113,11 +113,13 @@ Changelog
 ---------------
 
 **0.3**
+
 - added `wp sql`
 - improved `wp option`
 - pear installer
 
 **0.2**
+
 - added multisite support
 - improved `wp plugin` and `wp theme`
 - added `wp generate`
@@ -126,6 +128,7 @@ Changelog
 - added bash completion script
 
 **0.1**
+
 - initial release
 
 Contributors
