@@ -32,7 +32,7 @@ sudo ln -s ~/git/wp-cli/utils/wp-completion.bash /etc/bash_completion.d/wp
 You can replace `~/git/wp-cli` with whatever you want.
 
 
-Usage
+Using
 -----
 
 Go into a WordPress root folder:
