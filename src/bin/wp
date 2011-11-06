@@ -30,7 +30,11 @@ done
 cd "$ORIGDIR"
 
 # Build the path to wp-cli.php.
-SCRIPT_PATH=$(dirname "$SELF_PATH")/../php/wp-cli.php
+SCRIPT_PATH='@@PHP_DIR@@/wp-cli/wp-cli.php'
+if [ ! -f $SCRIPT_PATH ]; then
+	SCRIPT_PATH=$(dirname "$SELF_PATH")/../php/wp-cli/wp-cli.php
+fi
+
 case $(uname -a) in
   CYGWIN*)
     SCRIPT_PATH=$(cygpath -w -a -- "$SCRIPT_PATH") ;;

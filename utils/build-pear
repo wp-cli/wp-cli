@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# generate package
+find -name '*~' -delete
+phing pear-package
+
+version=$(cat dist/lastBuilt)
+version="${version/*wpcli-/}"
+version="${version/.tgz/}"
+
+#sudo phing install-system
+
+# update channel files
+cd ../wp-cli-pages
+pirum add . ../wp-cli/dist/wpcli-$version.tgz
+pirum build .
+
+exit
+
+# push changes
+git add -A
+git ci -m "release $version"
+git push origin gh-pages

@@ -4,7 +4,7 @@ if(PHP_SAPI !== 'cli') {
 	die('Only cli access');
 }
 
-define( 'WP_CLI_VERSION', '1.0.0' );
+define( 'WP_CLI_VERSION', '0.3.0' );
 
 // Define the wp-cli location
 define( 'WP_CLI_ROOT', __DIR__ . '/' );
@@ -17,7 +17,7 @@ include WP_CLI_ROOT . 'class-wp-cli.php';
 include WP_CLI_ROOT . 'class-wp-cli-command.php';
 
 // Include the command line tools
-include WP_CLI_ROOT . 'php-cli-tools/lib/cli/cli.php';
+include WP_CLI_ROOT . '../php-cli-tools/lib/cli/cli.php';
 
 // Register the cli tools autoload
 \cli\register_autoload();
