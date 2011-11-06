@@ -11,14 +11,14 @@ Installing
 
 **Via PEAR:**
 
-```
+```sh
 pear config-set auto_discover 1
 sudo pear install andreascreten.github.com/wp-cli/wpcli
 ```
 
 **From source:**
 
-```
+```sh
 # Clone the project
 git clone --recurse-submodules https://github.com/andreascreten/wp-cli.git ~/git/wp-cli
 
