@@ -113,6 +113,25 @@ You can find more information about adding commands in the [Commands Cookbook](h
 
 **Please share the commands you make, issue a pull request to get them included in wp-cli by default.**
 
+Changelog
+---------------
+
+**0.3**
+- added `wp sql`
+- improved `wp option`
+- pear installer
+
+**0.2**
+- added multisite support
+- improved `wp plugin` and `wp theme`
+- added `wp generate`
+- added `wp core version`
+- added `wp --version`
+- added bash completion script
+
+**0.1**
+- initial release
+
 Contributors
 ------------
 
