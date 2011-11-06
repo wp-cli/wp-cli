@@ -20,7 +20,7 @@ sudo pear install andreascreten.github.com/wp-cli/wpcli
 
 ```sh
 # Clone the project
-git clone --recurse-submodules https://github.com/andreascreten/wp-cli.git ~/git/wp-cli
+git clone --recurse-submodules git://github.com/andreascreten/wp-cli.git ~/git/wp-cli
 
 # Make a symlink to the binary
 sudo ln -s ~/git/wp-cli/src/bin/wp /usr/bin/
