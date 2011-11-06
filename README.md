@@ -9,32 +9,28 @@ A tool to control WordPress installations from the command line.
 Installing
 ----------
 
-**Via package manager:**
+**Via PEAR:**
 
-* Ubuntu, Debian: [.deb package](https://github.com/downloads/andreascreten/wp-cli/wp-cli_0.1.deb)
-* Mac: install [Homebrew](http://mxcl.github.com/homebrew/) and run `brew install wp-cli`.
+```
+pear config-set auto_discover 1
+sudo pear install andreascreten.github.com/wp-cli/wpcli
+```
 
 **From source:**
 
-First, make sure you have `php-cli` version 5.3 or newer installed.
-
-Clone the project:
-
 ```
-git clone --recurse-submodules https://github.com/andreascreten/wp-cli.git
-```
+# Clone the project
+git clone --recurse-submodules https://github.com/andreascreten/wp-cli.git ~/git/wp-cli
 
-Make a symlink to the executable:
+# Make a symlink to the binary
+sudo ln -s ~/git/wp-cli/src/bin/wp /usr/bin/
 
-```
-sudo ln -s /path-to-wp-cli-dir/src/bin/wp /usr/local/bin/
+# Make a symlink to the bash completion file
+sudo ln -s ~/git/wp-cli/utils/wp-completion.bash /etc/bash_completion.d/wp
 ```
 
-Make a symlink to the autocomplete file (Linux):
+You can replace `~/git/wp-cli` with whatever you want.
 
-```
-sudo ln -s /path-to-wp-cli-dir/src/bin/wp-completion.bash /etc/bash_completion.d/wp
-```
 
 Usage
 -----
