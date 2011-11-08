@@ -72,12 +72,12 @@ require_once(WP_ROOT . 'wp-load.php');
 require_once(ABSPATH . 'wp-admin/includes/admin.php');
 
 // Load all internal commands
-foreach (glob(WP_CLI_ROOT.'/commands/internals/*.php') as $filename)  {
+foreach ( glob(WP_CLI_ROOT.'/commands/internals/*.php') as $filename ) {
 	include $filename;
 }
 
 // Load all plugin commands
-foreach (glob(WP_CLI_ROOT.'/commands/community/*.php') as $filename)  {
+foreach ( glob(WP_CLI_ROOT.'/commands/community/*.php') as $filename ) {
 	include $filename;
 }
 
