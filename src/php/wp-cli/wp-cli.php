@@ -49,6 +49,9 @@ if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 if ( isset( $assoc_args['blog'] ) ) {
 	$blog = $assoc_args['blog'];
 	unset( $assoc_args['blog'] );
+	if ( true === $blog ) {
+		WP_CLI::line( 'usage: wp --blog=example.com' );
+	}
 } elseif ( is_readable( WP_ROOT . '/wp-cli-blog' ) ) {
 	$blog = file_get_contents( WP_ROOT . '/wp-cli-blog' );
 }
