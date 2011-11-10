@@ -354,6 +354,6 @@ Available sub-commands:
    update       update a plugin from wordpress.org
    delete       delete a plugin
 EOB
-		);
+	);
 	}
 }

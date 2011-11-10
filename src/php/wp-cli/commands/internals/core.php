@@ -82,6 +82,6 @@ class CoreCommand extends WP_CLI_Command {
 usage: wp core update
    or: wp core version [--extra]
 EOB
-		);
+	);
 	}
 }

@@ -12,8 +12,8 @@ class EvalCommand extends WP_CLI_Command {
 
 	/**
 	 * Overwrite the constructor to have a command without sub-commands.
-     *
-     * @param array $args
+	 *
+	 * @param array $args
 	 * @param array $assoc_args
 	 */
 	public function __construct( $args, $assoc_args ) {
@@ -34,6 +34,6 @@ example: wp eval 'echo WP_CONTENT_DIR;'
 
 Executes arbitrary PHP code after bootstrapping WordPress.
 EOB
-		);
+	);
 	}
 }

@@ -104,6 +104,6 @@ class GenerateCommand extends WP_CLI_Command {
 usage: wp generate posts [--count=100] [--type=post] [--status=publish]
    or: wp generate users [--count=100] [--role=<role>]
 EOB
-		);
+	);
 	}
 }

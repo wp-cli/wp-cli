@@ -124,11 +124,11 @@ class WPSuperCacheCommand extends WP_CLI_Command {
 usage: wp super-cache [flush|status|enable|disable] --post_id=<id> --permalink=<post-permalink>
 
 Available sub-commands:
-    flush      flushes whole cache, or post with given permalink or ID --post_id=<id> --permalink=<post-permalink>
-    status     shows status of WP Super Cache
-    enable     enables WP Super Cache
-    disable    disables WP Super Cache
+	flush      flushes whole cache, or post with given permalink or ID --post_id=<id> --permalink=<post-permalink>
+	status     shows status of WP Super Cache
+	enable     enables WP Super Cache
+	disable    disables WP Super Cache
 EOB
-		);
-    }
+	);
+	}
 }

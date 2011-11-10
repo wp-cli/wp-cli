@@ -94,6 +94,6 @@ wp sql connect           A string for connecting to the database.
 wp sql dump              Exports the WordPress database as SQL using mysqldump or equivalent.
 wp sql query             Execute a query against the WordPress database.
 EOB
-		);
+	);
 	}
 }

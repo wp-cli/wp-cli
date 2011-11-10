@@ -12,8 +12,8 @@ class EvalFileCommand extends WP_CLI_Command {
 
 	/**
 	 * Overwrite the constructor to have a command without sub-commands.
-     *
-     * @param array $args
+	 *
+	 * @param array $args
 	 * @param array $assoc_args
 	 */
 	public function __construct( $args, $assoc_args ) {
@@ -40,6 +40,6 @@ example: wp eval-file some-file.php
 
 Loads and executes a PHP file after bootstrapping WordPress.
 EOB
-		);
+	);
 	}
 }
