@@ -12,8 +12,8 @@ class HelpCommand extends WP_CLI_Command {
 
 	/**
 	 * Overwrite the constructor to have a command without sub-commands.
-     *
-     * @param array $args
+	 *
+	 * @param array $args
 	 */
 	public function __construct( $args ) {
 		if ( empty( $args ) ) {
