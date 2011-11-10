@@ -1,15 +1,15 @@
 <?php
 
 // Add the command to the wp-cli
-WP_CLI::addCommand('eval', 'EvalCommand');
+WP_CLI::addCommand('eval-file', 'EvalFileCommand');
 
 /**
- * Implement eval command
+ * Implement eval-file command
  *
  * @package wp-cli
  * @subpackage commands/internals
  */
-class EvalCommand extends WP_CLI_Command {
+class EvalFileCommand extends WP_CLI_Command {
 
 	/**
 	 * Overwrite the constructor to have a command without sub-commands.
@@ -19,11 +19,17 @@ class EvalCommand extends WP_CLI_Command {
 	 */
 	public function __construct( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp eval <php-code>" );
+			WP_CLI::line( "usage: wp eval-file <path>" );
 			exit;
 		}
 
-		eval( $args[0] );
+		foreach ( $args as $file ) {
+			if ( !file_exists( $file ) ) {
+				WP_CLI::error( "'$file' does not exist." );
+			} else {
+				include( $file );
+			}
+		}
 	}
 
 	/**
@@ -31,9 +37,9 @@ class EvalCommand extends WP_CLI_Command {
 	 */
 	public static function help() {
 		WP_CLI::line( <<<EOB
-example: wp eval 'echo WP_CONTENT_DIR;'
+example: wp eval-file some-file.php
 
-Executes arbitrary PHP code after bootstrapping WordPress.
+Loads and executes a PHP file after bootstrapping WordPress.
 EOB
 		);
 	}
