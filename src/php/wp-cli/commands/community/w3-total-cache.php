@@ -1,6 +1,5 @@
 <?php
 
-// Add the command to the wp-cli, only if the plugin is loaded
 if ( function_exists( 'w3tc_pgcache_flush' ) ) {
 	WP_CLI::addCommand( 'total-cache', 'W3TotalCacheCommand' );
 }

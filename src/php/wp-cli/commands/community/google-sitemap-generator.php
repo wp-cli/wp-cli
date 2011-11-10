@@ -1,6 +1,5 @@
 <?php
 
-// Add the command to the wp-cli, only if the plugin is loaded
 if( class_exists( 'GoogleSitemapGeneratorLoader' ) ) {
 	WP_CLI::addCommand( 'google-sitemap', 'GoogleSitemapGeneratorCommand' );
 }

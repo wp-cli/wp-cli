@@ -1,6 +1,5 @@
 <?php
 
-// Add the command to the wp-cli, only if the plugin is loaded
 if ( function_exists( 'wp_super_cache_enable' ) ) {
 	WP_CLI::addCommand( 'super-cache', 'WPSuperCacheCommand' );
 }

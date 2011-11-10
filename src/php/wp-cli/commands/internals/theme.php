@@ -1,6 +1,5 @@
 <?php
 
-// Add the command to the wp-cli
 WP_CLI::addCommand('theme', 'ThemeCommand');
 
 /**
