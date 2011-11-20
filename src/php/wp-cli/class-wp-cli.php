@@ -43,7 +43,8 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function error( $message, $label = 'Error' ) {
-		\cli\line( '%R' . $label . ': %n' . self::errorToString( $message ) );
+		\cli\err( '%R' . $label . ': %n' . self::errorToString( $message ) );
+		exit(1);
 	}
 
 	/**
@@ -219,7 +220,7 @@ class CLI_Upgrader_Skin {
 			}
 
 		}
-		
+
 		if( empty( $string ) ) {
 			return;
 		}
