@@ -16,17 +16,12 @@ pear config-set auto_discover 1
 sudo pear install andreascreten.github.com/wp-cli/wpcli
 ```
 
-**From source:**
+**Via GIT:**
 
 ```sh
-# Clone the project
 git clone --recurse-submodules git://github.com/andreascreten/wp-cli.git ~/git/wp-cli
-
-# Make a symlink to the binary
-sudo ln -s ~/git/wp-cli/src/bin/wp /usr/bin/
-
-# Make a symlink to the bash completion file
-sudo ln -s ~/git/wp-cli/utils/wp-completion.bash /etc/bash_completion.d/wp
+cd ~/git/wp-cli
+sudo utils/build-dev
 ```
 
 You can replace `~/git/wp-cli` with whatever you want.
