@@ -190,21 +190,28 @@ class PluginCommand extends WP_CLI_Command {
 			exit;
 		}
 
-		$name = $args[0];
+		$slug = stripslashes( $args[0] );
 
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
 
 		// Get plugin info from the WordPress servers
-		$api = plugins_api( 'plugin_information', array( 'slug' => stripslashes( $name ) ) );
+		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 		if ( !$api ) {
 			WP_CLI::error( 'Can\'t find the plugin in the WordPress.org plugins repository.' );
 			exit();
 		}
 
+		if ( isset( $assoc_args['dev'] ) ) {
+			list( $link ) = explode( $slug, $api->download_link );
+
+			$api->download_link = $link . $slug . '.zip';
+			$api->version = 'Development Version';
+		}
+
 		$status = install_plugin_install_status( $api );
 
-		WP_CLI::line( 'Installing '.$api->name.' ('.$api->version.')' );
+		WP_CLI::line( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 
 		// Check what to do
 		switch ( $status['status'] ) {
@@ -231,7 +238,7 @@ class PluginCommand extends WP_CLI_Command {
 			}
 			break;
 		case 'newer_installed':
-			WP_CLI::error( sprintf( 'Newer version ( %s ) installed', $status['version'] ) );
+			WP_CLI::error( sprintf( 'Newer version (%s) installed', $status['version'] ) );
 			break;
 		case 'latest_installed':
 			WP_CLI::error( 'Latest version already installed' );
