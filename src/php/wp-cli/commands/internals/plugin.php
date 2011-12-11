@@ -361,10 +361,11 @@ Available sub-commands:
    toggle       toggle activation state of a particular plugin
 
    path         print path to the plugin's file
+      --directory   get the path to the closest parent directory
 
    install      install a plugin from wordpress.org
-     --activate   activate the plugin after installing it
-     --dev        install the development version
+      --activate   activate the plugin after installing it
+      --dev        install the development version
 
    update       update a plugin from wordpress.org
 
