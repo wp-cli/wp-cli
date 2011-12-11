@@ -349,16 +349,25 @@ class PluginCommand extends WP_CLI_Command {
 		WP_CLI::line( <<<EOB
 usage: wp plugin <sub-command> [<plugin-name>]
    or: wp plugin path [<plugin-name>] [--directory]
-   or: wp plugin install <plugin-name> [--activate]
+   or: wp plugin install <plugin-name> [--activate] [--dev]
 
 Available sub-commands:
    status       display status of all installed plugins or of a particular plugin
+
    activate     activate a particular plugin
+
    deactivate   deactivate a particular plugin
+
    toggle       toggle activation state of a particular plugin
+
    path         print path to the plugin's file
+
    install      install a plugin from wordpress.org
+     --activate   activate the plugin after installing it
+     --dev        install the development version
+
    update       update a plugin from wordpress.org
+
    delete       delete a plugin
 EOB
 	);
