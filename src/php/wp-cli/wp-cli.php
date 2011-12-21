@@ -67,6 +67,15 @@ if ( isset( $blog ) ) {
 	$_SERVER['REQUEST_URI'] = '/' . $path;
 }
 
+// Set installer flag before loading any Wordpress libs
+$installing = count( $arguments ) >= 2 &&
+    $arguments[0] === "core" &&
+    ($arguments[1] === "install" || $arguments[1] == "is_installed");
+    
+if ( $installing ) {
+    define( 'WP_INSTALLING', true );
+}
+
 // Load WordPress libs
 require_once(WP_ROOT . 'wp-load.php');
 require_once(ABSPATH . 'wp-admin/includes/admin.php');
