@@ -72,7 +72,6 @@ EOB
 		}
 
 		if ( true === $has_errors ) {
-			WP_CLI::error( 'There were errors. Please review the items listed above' );
 			exit;
 		}
 
@@ -83,8 +82,8 @@ EOB
 
 	private function check_path( $path ) {
 		if ( empty( $path ) ) {
-			$this->help();
-			exit;
+			WP_CLI::warning( 'missing --path parameter' );
+			return false;
 		}
 
 		if ( !is_dir( $path ) ) {
@@ -97,8 +96,8 @@ EOB
 
 	private function check_user( $user ) {
 		if ( empty( $user ) ) {
-			$this->help();
-			exit;
+			WP_CLI::warning( 'missing --user parameter' );
+			return false;
 		}
 
 		if ( is_numeric( $user ) ) {
