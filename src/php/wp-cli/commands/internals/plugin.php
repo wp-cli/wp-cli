@@ -247,6 +247,17 @@ class PluginCommand extends WP_CLI_Command {
 	}
 
 	/**
+	 * Uninstall a plugin
+	 *
+	 * @param array $args
+	 */
+	function uninstall( $args ) {
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+
+		uninstall_plugin( $file );
+	}
+
+	/**
 	 * Delete a plugin
 	 *
 	 * @param array $args
@@ -368,6 +379,8 @@ Available sub-commands:
       --dev        install the development version
 
    update       update a plugin from wordpress.org
+
+   uninstall    run the uninstallation procedure for a plugin
 
    delete       delete a plugin
 EOB
