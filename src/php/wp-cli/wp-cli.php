@@ -68,7 +68,10 @@ if ( isset( $blog ) ) {
 }
 
 // Set installer flag before loading any Wordpress libs
-$installing = count( $arguments ) > 0 && $arguments[0] === "installer";
+$installing = count( $arguments ) >= 2 &&
+    $arguments[0] === "core" &&
+    ($arguments[1] === "install" || $arguments[1] == "is_installed");
+    
 if ( $installing ) {
     define( 'WP_INSTALLING', true );
 }
