@@ -10,15 +10,13 @@ WP_CLI::addCommand('export', 'ExportCommand');
  */
 class ExportCommand extends WP_CLI_Command {
 	protected $default_subcommand = 'validate_arguments';
-	
-	public $export_args = array();
-	
-	public static function help() {
-		WP_CLI::warning( <<<EOB
-Please use the following parameters:
 
-usage:	wp export --path=<export-path> --user=<username/id>
-		wp export --path=/tmp/ --user=admin --post_type=post --start_date=2011-01-01 --end_date=2011-12-31
+	public $export_args = array();
+
+	public static function help() {
+		WP_CLI::line( <<<EOB
+usage: wp export --path=<export-path> --user=<username/id>
+   or: wp export --path=/tmp/ --user=admin --post_type=post --start_date=2011-01-01 --end_date=2011-12-31
 
 Required parameters:
 	--path			Full Path to directory where WXR export files should be stored
@@ -42,12 +40,12 @@ EOB
 		WP_CLI::line();
 		$this->export_wp( $this->export_args );
 	}
-	
-	
+
+
 	/**
 	 * Argument validation functions below
 	 */
-	
+
 	public function validate_arguments( $args, $assoc_args ) {
 		$defaults = array(
 			'path'			=>		NULL,
@@ -62,47 +60,47 @@ EOB
 		);
 
 		$args = wp_parse_args( $assoc_args, $defaults );
-		
+
 		$has_errors = false;
-		
+
 		foreach( $defaults as $argument => $default_value ) {
 			if ( is_callable( array( &$this, 'check_' . $argument ) ) ) {
 				$result = call_user_func( array( &$this, 'check_' . $argument ), $args[$argument] );
 				if ( false === $result && false === $has_errors )
 					$has_errors = true;
 			}
-		} 
-		
+		}
+
 		if ( true === $has_errors ) {
 			WP_CLI::error( 'There were errors. Please review the items listed above' );
 			exit;
 		}
-		
+
 		$this->wxr_path = $assoc_args['path'];
-		
+
 		$this->dispatch();
 	}
-	
+
 	private function check_path( $path ) {
 		if ( empty( $path ) ) {
 			$this->help();
 			exit;
 		}
-		
+
 		if ( !is_dir( $path ) ) {
 			WP_CLI::error( sprintf( "The path %s does not exist", $path ) );
 			exit;
 		}
-		
+
 		return true;
 	}
-	
+
 	private function check_user( $user ) {
 		if ( empty( $user ) ) {
 			$this->help();
 			exit;
 		}
-		
+
 		if ( is_numeric( $user ) ) {
 			$user_id = (int) $user;
 		} else {
@@ -115,14 +113,14 @@ EOB
 
 		$current_user = wp_get_current_user();
 		$this->user_id = (int) $user_id;
-		
+
 		return true;
 	}
-	
+
 	private function check_start_date( $date ) {
 		if ( is_null( $date ) )
 			return true;
-			
+
 		$time = strtotime( $date );
 		if ( !empty( $date ) && !$time ) {
 			WP_CLI::warning( sprintf( "The start_date %s is invalid", $date ) );
@@ -131,11 +129,11 @@ EOB
 		$this->export_args['start_date'] = date( 'Y-m-d', $time );
 		return true;
 	}
-	
+
 	private function check_end_date( $date ) {
 		if ( is_null( $date ) )
 			return true;
-			
+
 		$time = strtotime( $date );
 		if ( !empty( $date ) && !$time ) {
 			WP_CLI::warning( sprintf( "The end_date %s is invalid", $date ) );
@@ -144,11 +142,11 @@ EOB
 		$this->export_args['start_date'] = date( 'Y-m-d', $time );
 		return true;
 	}
-	
+
 	private function check_post_type( $post_type ) {
 		if ( is_null( $post_type ) )
 			return true;
-			
+
 		$post_types = get_post_types();
 		if ( !in_array( $post_type, $post_types ) ) {
 			WP_CLI::warning( sprintf( 'The post type %s does not exists. Choose "all" or any of these existing post types instead: %s', $post_type, implode( ", ", $post_types ) ) );
@@ -157,11 +155,11 @@ EOB
 		$this->export_args['content'] = $post_type;
 		return true;
 	}
-	
+
 	private function check_author( $author ) {
 		if ( is_null( $author ) )
 			return true;
-			
+
 		$authors = get_users_of_blog();
 		if ( empty( $authors ) || is_wp_error( $authors ) ) {
 			WP_CLI::warning( sprintf( "Could not find any authors in this blog" ) );
@@ -181,15 +179,15 @@ EOB
 			WP_CLI::warning( sprintf( 'Could not find a matching author for %s. The following authors exist: %s', $author, implode( ", ", $authors_nice ) ) );
 			return false;
 		}
-		
+
 		$this->export_args['author'] = $hit;
 		return true;
 	}
-	
+
 	private function check_category( $category ) {
 		if ( is_null( $category ) )
 			return true;
-			
+
 		$term = category_exists( $category );
 		if ( empty( $term ) || is_wp_error( $term ) ) {
 			WP_CLI::warning( sprintf( 'Could not find a category matching %s', $category ) );
@@ -198,17 +196,17 @@ EOB
 		$this->export_args['category'] = $category;
 		return true;
 	}
-	
+
 	private function check_post_status( $status ) {
 		if ( is_null( $status ) )
 			return true;
-			
+
 		$stati = get_post_statuses();
 		if ( empty( $stati ) || is_wp_error( $stati ) ) {
 			WP_CLI::warning( sprintf( 'Could not find any post stati', $category ) );
 			return false;
 		}
-		
+
 		if ( !isset( $stati[$status] ) ) {
 			WP_CLI::warning( sprintf( 'Could not find a post_status matching %s. Here is a list of available stati: %s', $status, implode( ", ", array_keys( $stati ) ) ) );
 			return false;
@@ -216,11 +214,11 @@ EOB
 		$this->export_args['status'] = $status;
 		return true;
 	}
-	
+
 	private function check_skip_comments( $skip ) {
 		if ( is_null( $skip ) )
 			return true;
-			
+
 		if ( (int) $skip <> 0 && (int) $skip <> 1 ) {
 			WP_CLI::warning( sprintf( 'skip_comments needs to be 0 (no) or 1 (yes)', $category ) );
 			return false;
@@ -228,12 +226,12 @@ EOB
 		$this->export_args['skip_comments'] = $skip;
 		return true;
 	}
-	
-	
+
+
 	/**
 	 * Workaround to prevent memory leaks from growing variables
 	 */
-	 
+
 	private function stop_the_insanity() {
 		global $wpdb, $wp_object_cache;
 		$wpdb->queries = array(); // or define( 'WP_IMPORTING', true );
@@ -245,21 +243,21 @@ EOB
 		$wp_object_cache->cache = array();
 		$wp_object_cache->__remoteset(); // important
 	}
-	
+
 	/**
 	 * Export function as it is defined in the original code of export_wp defined in wp-admin/includes/export.php
 	 */
-	 
+
 	private function export_wp( $args = array() ) {
 		require_once ABSPATH . 'wp-admin/includes/export.php';
-		
+
 		global $wpdb, $post;
 		// call export_wp as we need the functions defined in it.
 		$dummy_args = array( 'content' => 'i-do-not-exist' );
 		ob_start();
 		export_wp( $dummy_args );
 		ob_end_clean();
-		
+
 		/**
 		 * This is mostly the original code of export_wp defined in wp-admin/includes/export.php
 		 */
@@ -269,7 +267,7 @@ EOB
 		$args = wp_parse_args( $args, $defaults );
 
 		WP_CLI::line( "Exporting with export_wp with arguments: " . var_export( $args, true ) );
-		
+
 		do_action( 'export_wp' );
 
 		$sitename = sanitize_key( get_bloginfo( 'name' ) );
@@ -282,7 +280,7 @@ EOB
 				$append[]= "$arg_key-" . (string) $args[$arg_key];
 		}
 		$file_name_base = $sitename . 'wordpress.' . implode( ".", $append );
-		
+
 		if ( 'all' != $args['content'] && post_type_exists( $args['content'] ) ) {
 			$ptype = get_post_type_object( $args['content'] );
 			if ( ! $ptype->can_export )
@@ -321,7 +319,7 @@ EOB
 
 		// grab a snapshot of post IDs, just in case it changes during the export
 		$post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} $join WHERE $where" );
-		
+
 		// get the requested terms ready, empty unless posts filtered by category or all content
 		$cats = $tags = $terms = array();
 		if ( isset( $term ) && $term ) {
@@ -354,13 +352,13 @@ EOB
 				unset( $categories, $custom_taxonomies, $custom_terms );
 			}
 
-		
+
 		WP_CLI::line( 'Exporting ' . count( $post_ids ) . ' items' );
 		WP_CLI::line( 'Exporting ' . count( $cats ) . ' cateogries' );
 		WP_CLI::line( 'Exporting ' . count( $tags ) . ' tags' );
 		WP_CLI::line( 'Exporting ' . count( $terms ) . ' terms' );
 		WP_CLI::line();
-		
+
 		$progress = $this->progress_bar( 'exporting',  count( $post_ids ) );
 
 		ob_start();
@@ -424,15 +422,15 @@ EOB
 
 			// fetch 20 posts at a time rather than loading the entire table into memory
 			while ( $next_posts = array_splice( $post_ids, 0, 20 ) ) {
-				
+
 				$where = 'WHERE ID IN (' . join( ',', $next_posts ) . ')';
 				$posts = $wpdb->get_results( "SELECT * FROM {$wpdb->posts} $where" );
 
 				// Begin Loop
 				foreach ( $posts as $post ) {
-					
+
 					$progress->tick();
-					
+
 					setup_postdata( $post );
 					$is_sticky = is_sticky( $post->ID ) ? 1 : 0;
 ?>
@@ -503,20 +501,20 @@ EOB
 </rss>
 <?php
 		$result = ob_get_clean();
-		
+
 		$full_path = $this->wxr_path . $file_name_base . '.wxr';
-		
+
 		if ( !file_exists( $full_path ) || is_writeable( $full_path ) ) {
 			WP_CLI::line( 'Writing to ' . $full_path );
 			file_put_contents( $full_path, $result );
 		}
 	}
-	
-	/** 
-	 * Implement progress bar 
+
+	/**
+	 * Implement progress bar
 	 */
 	private function progress_bar( $title, $total, $interval = 100 ) {
 		return new \cli\progress\Bar( $title, $total, $interval );
 	}
-	
+
 }
