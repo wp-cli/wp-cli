@@ -76,6 +76,9 @@ class CoreCommand extends WP_CLI_Command {
 		}
 	}
     
+    /**
+     * Run wp_install. Assumes that wp-config.php is already in place.
+     */
     public function install( $args, $assoc_args ) {
         if ( is_blog_installed() ) {
             WP_CLI::error( 'Wordpress is already installed.' );
@@ -100,7 +103,11 @@ class CoreCommand extends WP_CLI_Command {
         }
     }
 
-    public function is_installed( $filename ) {
+    /**
+     * Determine if Wordpress is already installed. Exits with 0 if
+     * Wordpress is installed, 1 if not.
+     */
+    public function is_installed() {
         if ( is_blog_installed() ) {
             exit( 0 );
         } else {
