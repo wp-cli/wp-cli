@@ -254,6 +254,10 @@ class PluginCommand extends WP_CLI_Command {
 	function uninstall( $args ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
+		if ( is_plugin_active( $file ) ) {
+			WP_CLI::error( 'The plugin is active.' );
+		}
+
 		uninstall_plugin( $file );
 	}
 
