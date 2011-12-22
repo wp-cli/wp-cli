@@ -57,22 +57,11 @@ if ( isset( $assoc_args['blog'] ) ) {
 }
 
 if ( isset( $blog ) ) {
-	if ( false === strpos( $blog, '/' ) )
-		$blog .= '/';
-
-	list( $domain, $path ) = explode( '/', $blog, 2 );
-
-	$_SERVER['HTTP_HOST'] = $domain;
-
-	$_SERVER['REQUEST_URI'] = '/' . $path;
+	WP_CLI::set_url( $blog );
 }
 
-// Set installer flag before loading any Wordpress libs
-$installing = count( $arguments ) >= 2 &&
-    $arguments[0] === "core" &&
-    ($arguments[1] === "install" || $arguments[1] == "is_installed");
-    
-if ( $installing ) {
+// Set installer flag before loading any WP files
+if ( $arguments[0] == 'core' && $arguments[1] == 'install' ) {
     define( 'WP_INSTALLING', true );
 }
 

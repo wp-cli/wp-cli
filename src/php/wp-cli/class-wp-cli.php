@@ -144,6 +144,22 @@ class WP_CLI {
 	}
 
 	/**
+	 * Sets the appropriate $_SERVER keys based on a given string
+	 *
+	 * @param string $url The URL
+	 */
+	static function set_url( $url ) {
+		if ( false === strpos( $url, '/' ) )
+			$url .= '/';
+
+		list( $domain, $path ) = explode( '/', $url, 2 );
+
+		$_SERVER['HTTP_HOST'] = $domain;
+
+		$_SERVER['REQUEST_URI'] = '/' . $path;
+	}
+
+	/**
 	 * Return the beginning of the status line for a certain plugin or theme
 	 *
 	 * @param string $item The plugin or theme name

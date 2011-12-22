@@ -85,6 +85,7 @@ class CoreCommand extends WP_CLI_Command {
         }
 
 		extract( wp_parse_args( $assoc_args, array(
+			'site_url' => defined( 'WP_SITEURL' ) ? WP_SITEURL : '',
 			'site_title' => '',
 			'admin_name' => 'admin',
 			'admin_email' => '',
@@ -92,12 +93,15 @@ class CoreCommand extends WP_CLI_Command {
 		) ), EXTR_SKIP );
 
 		$missing = false;
-		foreach ( array( 'site_title', 'admin_email', 'admin_password' ) as $required_arg ) {
+		foreach ( array( 'site_url', 'site_title', 'admin_email', 'admin_password' ) as $required_arg ) {
 			if ( empty( $$required_arg ) ) {
 				WP_CLI::warning( "missing --$required_arg parameter" );
 				$missing = true;
 			}
 		}
+
+		if ( $site_url )
+			WP_CLI::set_url( $site_url );
 
 		if ( $missing )
 			exit(1);
@@ -120,7 +124,7 @@ class CoreCommand extends WP_CLI_Command {
 		WP_CLI::line( <<<EOB
 usage: wp core update
    or: wp core version [--extra]
-   or: wp core install --site_title=<site-title> [--admin_name=<username>] --admin_password=<password> --admin_email=<email-address>
+   or: wp core install --site_url=example.com --site_title=<site-title> [--admin_name=<username>] --admin_password=<password> --admin_email=<email-address>
 EOB
 	);
 	}
