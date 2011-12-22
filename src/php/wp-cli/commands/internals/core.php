@@ -84,18 +84,28 @@ class CoreCommand extends WP_CLI_Command {
             WP_CLI::error( 'WordPress is already installed.' );
         }
 
-        $site_title = $assoc_args["site_title"];
-        $username = $assoc_args["username"];
-        $admin_email = $assoc_args["email_address"];
+		extract( wp_parse_args( $assoc_args, array(
+			'site_title' => '',
+			'admin_name' => 'admin',
+			'admin_email' => '',
+			'admin_password' => ''
+		) ), EXTR_SKIP );
+
+		$missing = false;
+		foreach ( array( 'site_title', 'admin_email', 'admin_password' ) as $required_arg ) {
+			if ( empty( $$required_arg ) ) {
+				WP_CLI::warning( "missing --$required_arg parameter" );
+				$missing = true;
+			}
+		}
+
+		if ( $missing )
+			exit(1);
+
         $public = true;
-        $admin_password = $assoc_args["password"];
 
-        if ( ! $site_title || ! $username || ! $admin_email || ! $admin_password ) {
-            WP_CLI::error( 'Missing installation arguments' );
-            exit( 1 );
-        }
+        $result = wp_install( $site_title, $admin_name, $admin_email, $public, '', $admin_password );
 
-        $result = wp_install( $site_title, $username, $admin_email, $public, '', $admin_password );
         if ( is_wp_error( $result ) ) {
             WP_CLI::error( 'Installation failed (' . WP_CLI::errorToString($result) . ').' );
         } else {
@@ -110,7 +120,7 @@ class CoreCommand extends WP_CLI_Command {
 		WP_CLI::line( <<<EOB
 usage: wp core update
    or: wp core version [--extra]
-   or: wp core install --site_title=<site-title> --username=<username> --password=<password> --email_address=<email-address>
+   or: wp core install --site_title=<site-title> [--admin_name=<username>] --admin_password=<password> --admin_email=<email-address>
 EOB
 	);
 	}
