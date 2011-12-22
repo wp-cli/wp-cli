@@ -75,7 +75,7 @@ class CoreCommand extends WP_CLI_Command {
 			WP_CLI::success('WordPress upgraded successfully.');
 		}
 	}
-    
+
     /**
      * Run wp_install. Assumes that wp-config.php is already in place.
      */
@@ -89,29 +89,17 @@ class CoreCommand extends WP_CLI_Command {
         $admin_email = $assoc_args["email_address"];
         $public = true;
         $admin_password = $assoc_args["password"];
-        
+
         if ( ! $site_title || ! $username || ! $admin_email || ! $admin_password ) {
             WP_CLI::error( 'Missing installation arguments' );
             exit( 1 );
         }
-        
+
         $result = wp_install( $site_title, $username, $admin_email, $public, '', $admin_password );
         if ( is_wp_error( $result ) ) {
             WP_CLI::error( 'Installation failed (' . WP_CLI::errorToString($result) . ').' );
         } else {
             WP_CLI::success( 'WordPress installed successfully.' );
-        }
-    }
-
-    /**
-     * Determine if Wordpress is already installed. Exits with 0 if
-     * Wordpress is installed, 1 if not.
-     */
-    public function is_installed() {
-        if ( is_blog_installed() ) {
-            exit( 0 );
-        } else {
-            exit( 1 );
         }
     }
 
@@ -123,8 +111,8 @@ class CoreCommand extends WP_CLI_Command {
 usage: wp core update
    or: wp core version [--extra]
    or: wp core install --site_title=<site-title> --username=<username> --password=<password> --email_address=<email-address>
-   or: wp core is_installed
 EOB
 	);
 	}
 }
+
