@@ -81,9 +81,9 @@ class CoreCommand extends WP_CLI_Command {
      */
     public function install( $args, $assoc_args ) {
         if ( is_blog_installed() ) {
-            WP_CLI::error( 'Wordpress is already installed.' );
-            exit( 1 );
+            WP_CLI::error( 'WordPress is already installed.' );
         }
+
         $site_title = $assoc_args["site_title"];
         $username = $assoc_args["username"];
         $admin_email = $assoc_args["email_address"];
