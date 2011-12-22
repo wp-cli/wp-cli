@@ -104,6 +104,14 @@ You can find more information about adding commands in the [Commands Cookbook](h
 Changelog
 ---------------
 
+**0.4**
+
+- added `wp eval` and `wp eval-file`
+- added `wp export`
+- added `wp core install`
+- added `--dev` flag to `wp plugin install`
+- added `wp plugin uninstall`
+
 **0.3**
 
 - added `wp sql`
