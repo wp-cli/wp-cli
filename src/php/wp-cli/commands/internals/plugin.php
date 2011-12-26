@@ -2,9 +2,6 @@
 
 WP_CLI::addCommand('plugin', 'PluginCommand');
 
-require_once(ABSPATH.'wp-admin/includes/plugin.php');
-require_once(ABSPATH.'wp-admin/includes/plugin-install.php');
-
 /**
  * Implement plugin command
  *
@@ -16,6 +13,13 @@ class PluginCommand extends WP_CLI_Command {
 	protected $default_subcommand = 'status';
 
 	private $mu_plugins;
+
+	function __construct( $args, $assoc_args ) {
+		require_once ABSPATH.'wp-admin/includes/plugin.php';
+		require_once ABSPATH.'wp-admin/includes/plugin-install.php';
+
+		parent::__construct( $args, $assoc_args );
+	}
 
 	/**
 	 * Get the status of one or all plugins
