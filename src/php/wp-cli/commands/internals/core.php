@@ -2,8 +2,6 @@
 
 WP_CLI::addCommand('core', 'CoreCommand');
 
-require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-
 /**
  * Implement core command
  *
@@ -52,6 +50,8 @@ class CoreCommand extends WP_CLI_Command {
 	 * @param array $args
 	 */
 	function update($args) {
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
 		WP_CLI::line('Updating the WordPress core.');
 
 		if(!class_exists('Core_Upgrader')) {
