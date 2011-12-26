@@ -61,7 +61,7 @@ if ( isset( $blog ) ) {
 }
 
 // Set installer flag before loading any WP files
-if ( $arguments[0] == 'core' && $arguments[1] == 'install' ) {
+if ( count( $arguments ) >= 2 && $arguments[0] == 'core' && $arguments[1] == 'install' ) {
     define( 'WP_INSTALLING', true );
 }
 
