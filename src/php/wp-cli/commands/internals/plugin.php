@@ -221,13 +221,10 @@ class PluginCommand extends WP_CLI_Command {
 		switch ( $status['status'] ) {
 		case 'update_available':
 		case 'install':
-			if ( !class_exists( 'Plugin_Upgrader' ) ) {
-				require_once( ABSPATH.'wp-admin/includes/class-wp-upgrader.php' );
-			}
 
 			// Install the plugin
 			ob_start( 'strip_tags' );
-			$upgrader = new Plugin_Upgrader( new CLI_Upgrader_Skin );
+			$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
 			$result = $upgrader->install( $api->download_link );
 			$feedback = ob_get_clean();
 
@@ -289,15 +286,11 @@ class PluginCommand extends WP_CLI_Command {
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
 
-		if ( !class_exists( 'Plugin_Upgrader' ) ) {
-			require_once( ABSPATH.'wp-admin/includes/class-wp-upgrader.php' );
-		}
-
 		WP_CLI::line( 'Updating '.$name );
 
 		// Upgrading the plugin
 		ob_start( 'strip_tags' );
-		$upgrader = new Plugin_Upgrader( new CLI_Upgrader_Skin );
+		$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
 		$result = $upgrader->upgrade( $file );
 		$feedback = ob_get_clean();
 

@@ -54,11 +54,8 @@ class CoreCommand extends WP_CLI_Command {
 
 		WP_CLI::line('Updating the WordPress core.');
 
-		if(!class_exists('Core_Upgrader')) {
-			require_once(ABSPATH.'wp-admin/includes/class-wp-upgrader.php');
-		}
 		ob_start();
-		$upgrader = new Core_Upgrader(new CLI_Upgrader_Skin);
+		$upgrader = WP_CLI::get_upgrader( 'Core_Upgrader' );
 		$result = $upgrader->upgrade($current);
 		$feedback = ob_get_clean();
 
