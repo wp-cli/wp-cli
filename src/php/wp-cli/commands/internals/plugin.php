@@ -199,7 +199,6 @@ class PluginCommand extends WP_CLI_Command {
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
 
-		// Get plugin info from the WordPress servers
 		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 		if ( !$api ) {
 			WP_CLI::error( 'Can\'t find the plugin in the WordPress.org plugins repository.' );
@@ -217,26 +216,18 @@ class PluginCommand extends WP_CLI_Command {
 
 		WP_CLI::line( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 
-		// Check what to do
 		switch ( $status['status'] ) {
 		case 'update_available':
 		case 'install':
-
-			// Install the plugin
-			ob_start( 'strip_tags' );
 			$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
 			$result = $upgrader->install( $api->download_link );
-			$feedback = ob_get_clean();
 
 			if ( $result ) {
-				WP_CLI::line();
-				WP_CLI::line( strip_tags( str_replace( array( '&#8230;', 'Plugin installed successfully.' ), array( "...\n", '' ), html_entity_decode( $feedback ) ) ) );
-				WP_CLI::success( 'The plugin is successfully installed' );
-
 				if ( isset( $assoc_args['activate'] ) ) {
 					system( "wp plugin activate " . WP_CLI::compose_args( $args, $assoc_args ) );
 				}
 			}
+
 			break;
 		case 'newer_installed':
 			WP_CLI::error( sprintf( 'Newer version (%s) installed', $status['version'] ) );
@@ -245,6 +236,21 @@ class PluginCommand extends WP_CLI_Command {
 			WP_CLI::error( 'Latest version already installed' );
 			break;
 		}
+	}
+
+	/**
+	 * Update a plugin
+	 *
+	 * @param array $args
+	 */
+	function update( $args ) {
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+
+		// Force WordPress to update the plugin list
+		wp_update_plugins();
+
+		$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
+		$result = $upgrader->upgrade( $file );
 	}
 
 	/**
@@ -272,35 +278,6 @@ class PluginCommand extends WP_CLI_Command {
 
 		if ( !delete_plugins( array( $file ) ) ) {
 			WP_CLI::error( 'There was an error while deleting the plugin.' );
-		}
-	}
-
-	/**
-	 * Update a plugin
-	 *
-	 * @param array $args
-	 */
-	function update( $args ) {
-		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
-
-		// Force WordPress to update the plugin list
-		wp_update_plugins();
-
-		WP_CLI::line( 'Updating '.$name );
-
-		// Upgrading the plugin
-		ob_start( 'strip_tags' );
-		$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
-		$result = $upgrader->upgrade( $file );
-		$feedback = ob_get_clean();
-
-		if ( $result !== null ) {
-			WP_CLI::error( $feedback );
-		}
-		else {
-			WP_CLI::line();
-			WP_CLI::line( strip_tags( str_replace( array( '&#8230;', 'Plugin updates successfully.' ), array( "...\n", '' ), html_entity_decode( $feedback ) ) ) );
-			WP_CLI::success( 'The plugin is successfully updated.' );
 		}
 	}
 
