@@ -77,6 +77,8 @@ class CoreCommand extends WP_CLI_Command {
      * Run wp_install. Assumes that wp-config.php is already in place.
      */
     public function install( $args, $assoc_args ) {
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
         if ( is_blog_installed() ) {
             WP_CLI::error( 'WordPress is already installed.' );
         }
