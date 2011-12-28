@@ -50,26 +50,29 @@ class CoreCommand extends WP_CLI_Command {
 	 * @param array $args
 	 */
 	function update($args) {
+		wp_version_check();
+
+		$from_api = get_site_transient( 'update_core' );
+
+		if ( empty( $from_api->updates ) )
+			$update = false;
+		else
+			list( $update ) = $from_api->updates;
+
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
-		WP_CLI::line('Updating the WordPress core.');
-
-		ob_start();
 		$upgrader = WP_CLI::get_upgrader( 'Core_Upgrader' );
-		$result = $upgrader->upgrade($current);
-		$feedback = ob_get_clean();
+		$result = $upgrader->upgrade( $update );
 
-		// Borrowed verbatim from wp-admin/update-core.php
-		if(is_wp_error($result) ) {
-			if('up_to_date' != $result->get_error_code()) {
-				WP_CLI::error('Installation failed ('.WP_CLI::errorToString($result).').');
+		if ( is_wp_error($result) ) {
+			$msg = WP_CLI::errorToString( $result );
+			if ( 'up_to_date' != $result->get_error_code() ) {
+				WP_CLI::error( $msg );
+			} else {
+				WP_CLI::success( $msg );
 			}
-			else {
-				WP_CLI::success(WP_CLI::errorToString($result));
-			}
-		}
-		else {
-			WP_CLI::success('WordPress upgraded successfully.');
+		} else {
+			WP_CLI::success('WordPress updated successfully.');
 		}
 	}
 
