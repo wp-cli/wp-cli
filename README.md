@@ -109,8 +109,10 @@ Changelog
 - added `wp eval` and `wp eval-file`
 - added `wp export`
 - added `wp core install`
+- fixed `wp core update`
 - added `--dev` flag to `wp plugin install`
 - added `wp plugin uninstall`
+- fixed `wp plugin install` and `wp plugin update`
 
 **0.3**
 
