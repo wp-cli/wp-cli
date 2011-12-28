@@ -1,7 +1,7 @@
 <?php
 
-if(PHP_SAPI !== 'cli') {
-	die('Only cli access');
+if ( PHP_SAPI !== 'cli' ) {
+	die( 'Only cli access' );
 }
 
 define( 'WP_CLI_VERSION', '0.4.0-dev' );
@@ -10,7 +10,7 @@ define( 'WP_CLI_VERSION', '0.4.0-dev' );
 define( 'WP_CLI_ROOT', __DIR__ . '/' );
 
 // Set a constant that can be used to check if we are running wp-cli or not
-define('WP_CLI', true);
+define( 'WP_CLI', true );
 
 // Include the wp-cli classes
 include WP_CLI_ROOT . 'class-wp-cli.php';
@@ -32,7 +32,7 @@ if ( isset( $assoc_args['version'] ) ) {
 }
 
 // Define the WordPress location
-if(is_readable($_SERVER['PWD'] . '/../wp-load.php')) {
+if ( is_readable( $_SERVER['PWD'] . '/../wp-load.php' ) ) {
 	define('WP_ROOT', $_SERVER['PWD'] . '/../');
 }
 else {
@@ -77,14 +77,6 @@ foreach ( glob(WP_CLI_ROOT.'/commands/internals/*.php') as $filename ) {
 // Load all plugin commands
 foreach ( glob(WP_CLI_ROOT.'/commands/community/*.php') as $filename ) {
 	include $filename;
-}
-
-// Check if there are commands installed
-if(empty(WP_CLI::$commands)) {
-	WP_CLI::error('No commands installed');
-	WP_CLI::line();
-	WP_CLI::line('Visit the wp-cli page on github on more information on how to install commands.');
-	exit();
 }
 
 // Handle --completions parameter
