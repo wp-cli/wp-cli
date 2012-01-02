@@ -21,7 +21,7 @@ class HelpCommand extends WP_CLI_Command {
 		} else {
 			$command = $args[0];
 			if ( 'help' == $command || !isset( WP_CLI::$commands[$command] ) ) {
-				$this->generalHelp();
+				$this->general_help();
 			} else {
 				$class = WP_CLI::$commands[$command];
 
