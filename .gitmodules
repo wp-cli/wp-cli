@@ -1,3 +1,6 @@
 [submodule "src/php/php-cli-tools"]
 	path = src/php/php-cli-tools
 	url = git://github.com/jlogsdon/php-cli-tools.git
+[submodule "src/php/symfony/component/yaml"]
+	path = src/php/symfony/component/yaml
+	url = git://github.com/fabpot/yaml.git

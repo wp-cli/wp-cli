@@ -19,6 +19,8 @@ include WP_CLI_ROOT . 'class-wp-cli-command.php';
 // Include the command line tools
 include WP_CLI_ROOT . '../php-cli-tools/lib/cli/cli.php';
 
+// Include the symfony YAML library
+include_once WP_CLI_ROOT . '../symfony/component/yaml/lib/sfYaml.php';
 // Register the cli tools autoload
 \cli\register_autoload();
 
