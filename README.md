@@ -3,6 +3,11 @@ What is wp-cli?
 
 A set of tools for controlling WordPress installations from the command line.
 
+Requirements
+------------
+
+PHP >= 5.3
+
 Installing
 ----------
 
