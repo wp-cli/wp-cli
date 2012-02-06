@@ -39,6 +39,16 @@ else {
 	define('WP_ROOT', $_SERVER['PWD'] . '/');
 }
 
+//Download fresh copy of WordPress via SVN
+if ( $arguments[0] == "download" ) {
+	if ( ! file_exists( 'wp-load.php' ) && ! file_exists( '/../wp-load.php' ) ) {
+		cli\line("Downloading WordPress via SVN...");
+		exec("svn export --force http://core.svn.wordpress.org/tags/3.3.1/ ./");
+		WP_CLI::success('WordPress downloaded successfully.');
+		exit;
+	}
+}
+
 // Taken from https://github.com/88mph/wpadmin/blob/master/wpadmin.php
 if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 	WP_CLI::error('Either this is not a WordPress document root or you do not have permission to administer this site.');
