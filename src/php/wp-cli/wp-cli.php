@@ -42,18 +42,18 @@ else {
 //Download fresh copy of WordPress via SVN
 if ( $arguments[0] == "download" ) {
 	if ( ! file_exists( 'wp-load.php' ) && ! file_exists( '/../wp-load.php' ) ) {
-		cli\line("Downloading WordPress...");
+		WP_CLI::line("Downloading WordPress...");
 		exec("curl http://wordpress.org/latest.zip > /tmp/wordpress.zip");
 		WP_CLI::success('WordPress downloaded.');
-		cli\line("Unzipping...");
+		WP_CLI::line("Unzipping...");
 		exec("unzip /tmp/wordpress.zip");
-		exec("rm /tmp/wordpress.zip");
 		exec("mv wordpress/* ./");
 		exec("rm -r wordpress");
 		WP_CLI::success('WordPress unzipped.');
 		exit;
 	}
 }
+
 
 // Taken from https://github.com/88mph/wpadmin/blob/master/wpadmin.php
 if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
