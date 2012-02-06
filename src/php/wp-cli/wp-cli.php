@@ -42,9 +42,15 @@ else {
 //Download fresh copy of WordPress via SVN
 if ( $arguments[0] == "download" ) {
 	if ( ! file_exists( 'wp-load.php' ) && ! file_exists( '/../wp-load.php' ) ) {
-		cli\line("Downloading WordPress via SVN...");
-		exec("svn export --force http://core.svn.wordpress.org/tags/3.3.1/ ./");
-		WP_CLI::success('WordPress downloaded successfully.');
+		cli\line("Downloading WordPress...");
+		exec("curl http://wordpress.org/latest.zip > /tmp/wordpress.zip");
+		WP_CLI::success('WordPress downloaded.');
+		cli\line("Unzipping...");
+		exec("unzip /tmp/wordpress.zip");
+		exec("rm /tmp/wordpress.zip");
+		exec("mv wordpress/* ./");
+		exec("rm -r wordpress");
+		WP_CLI::success('WordPress unzipped.');
 		exit;
 	}
 }
