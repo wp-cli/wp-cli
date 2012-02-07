@@ -61,6 +61,8 @@ class SqlCommand extends WP_CLI_Command {
 			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file );
 
 		exec( $exec );
+
+		WP_CLI::success( sprintf( 'Dumped to %s', $result_file ) );
 	}
 
 	/**
