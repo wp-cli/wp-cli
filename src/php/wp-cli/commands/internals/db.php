@@ -1,22 +1,19 @@
 <?php
 
-WP_CLI::addCommand( 'sql', 'SqlCommand' );
+WP_CLI::addCommand( 'db', 'DBCommand' );
 
 /**
- * Implement sql command
+ * Implement db command
  *
  * @package wp-cli
  * @subpackage commands/internals
  **/
-class SqlCommand extends WP_CLI_Command {
+class DBCommand extends WP_CLI_Command {
 
 	protected $default_subcommand = 'cli';
 
 	/**
-	 * return a string to connecting to the DB.
-	 *
-	 * @param void
-	 * @return string $connect
+	 * Return a string for connecting to the DB.
 	 */
 	protected function connect_string() {
 		return sprintf( 'mysql --host=%s --database=%s --user=%s --password=%s',
@@ -24,31 +21,21 @@ class SqlCommand extends WP_CLI_Command {
 	}
 
 	/**
-	 * A string for connecting to the DB.
-	 *
-	 * @param string $args
-	 * @return void
+	 * Print a string for connecting to the DB.
 	 */
-	function connect( $args = array() ) {
-		$connect = $this->connect_string();
-		WP_CLI::line( $connect );
+	function connect() {
+		WP_CLI::line( $this->connect_string() );
 	}
 
 	/**
 	 * Open a SQL command-line interface using WordPress's credentials.
-	 * @param string $args
-	 * @return void
 	 */
 	function cli() {
-		$exec = $this->connect_string();
-
-		proc_close( proc_open( $exec , array( 0 => STDIN, 1 => STDOUT, 2 => STDERR ), $pipes ) );
+		proc_close( proc_open( $this->connect_string() , array( 0 => STDIN, 1 => STDOUT, 2 => STDERR ), $pipes ) );
 	}
 
 	/**
-	 * Exports the WordPress DB as SQL using mysqldump or equivalent.
-	 * @param string $args
-	 * @return void
+	 * Exports the WordPress DB as SQL using mysqldump.
 	 */
 	function dump( $args, $assoc_args ) {
 		if ( !isset( $assoc_args['file'] ) ) {
@@ -67,10 +54,7 @@ class SqlCommand extends WP_CLI_Command {
 
 	/**
 	 * Execute a query against the site database.
-	 * @param string $args
-	 * @return void
 	 */
-
 	function query( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
 			WP_CLI::line( "usage: wp sql query <SQL>" );
@@ -91,10 +75,10 @@ class SqlCommand extends WP_CLI_Command {
 	 */
 	public static function help() {
 		WP_CLI::line( <<<EOB
-wp sql cli               Open a SQL command-line interface using the WordPress credentials.
-wp sql connect           A string for connecting to the database.
-wp sql dump              Exports the WordPress database as SQL using mysqldump or equivalent.
-wp sql query             Execute a query against the WordPress database.
+wp db cli               Open a SQL command-line interface using the WordPress credentials.
+wp db connect           Print a string for connecting to the database.
+wp db dump              Exports the WordPress database using mydbdump.
+wp db query             Execute a query against the WordPress database.
 EOB
 	);
 	}
