@@ -104,6 +104,14 @@ if ( empty( $arguments ) )
 else
 	$command = array_shift( $arguments );
 
+// Translate aliases
+$aliases = array(
+	'sql' => 'db'
+);
+
+if ( isset( $aliases[ $command ] ) )
+	$command = $aliases[ $command ];
+
 if ( !isset( WP_CLI::$commands[$command] ) ) {
 	WP_CLI::error( "'$command' is not a registered wp command. See 'wp help'." );
 	exit;
