@@ -19,8 +19,8 @@ class SqlCommand extends WP_CLI_Command {
 	 * @return string $connect
 	 */
 	protected function connect_string() {
-		$connect = sprintf( 'mysql --database=%s --user=%s --password=%s',
-			DB_NAME, DB_USER, DB_PASSWORD);
+		$connect = sprintf( 'mysql --host=%s --database=%s --user=%s --password=%s',
+			DB_HOST, DB_NAME, DB_USER, DB_PASSWORD);
 		return $connect;
 	}
 
@@ -58,7 +58,7 @@ class SqlCommand extends WP_CLI_Command {
 			$result_file = $assoc_args['file'];
 		}
 
-		$exec = sprintf( 'mysqldump %s --result-file %s --user=%s --password=%s', DB_NAME, $result_file, DB_USER, DB_PASSWORD );
+		$exec = sprintf( 'mysqldump %s --result-file %s --user=%s --password=%s --host=%s', DB_NAME, $result_file, DB_USER, DB_PASSWORD, DB_HOST );
 
 		exec( $exec );
 	}
