@@ -49,7 +49,7 @@ abstract class WP_CLI_Command {
 				$name = $method->name;
 
 				if ( strpos( $name, '_' ) === 0 ) {
-					$name = substr( $method, 1 );
+					$name = substr( $name, 1 );
 				}
 
 				$methods[] = $name;

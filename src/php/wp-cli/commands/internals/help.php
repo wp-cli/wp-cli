@@ -50,7 +50,9 @@ class HelpCommand extends WP_CLI_Command {
 
 	private function single_command_help( $name, $command ) {
 		WP_CLI::out( '    wp ' . $name );
+
 		$methods = WP_CLI_Command::get_subcommands( $command );
+
 		if ( !empty( $methods ) ) {
 			WP_CLI::out( ' [' . implode( '|', $methods ) . ']' );
 		}
