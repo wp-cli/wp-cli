@@ -6,6 +6,7 @@
  * @package wp-cli
  */
 class WP_CLI {
+
 	static $commands = array();
 
 	/**
