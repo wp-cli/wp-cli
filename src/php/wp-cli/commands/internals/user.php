@@ -120,6 +120,34 @@ class UserCommand extends WP_CLI_Command {
     WP_CLI::line( "Created user $user_id" );
 	}
 
+  /**
+   * Update a user
+   *
+   * @param array $args
+   * @param array $assoc_args
+   **/
+  public function update( $args, $assoc_args ) {
+    $user_id = $args[0];
+
+    if ( ! is_numeric($user_id) ) {
+      WP_CLI::error( "User ID required (see 'wp user help')" );
+    }
+
+    if ( ! count($assoc_args) ) {
+      WP_CLI::error( "Need some fields to update" );
+    }
+
+    $params = array_merge( array('ID' => $user_id), $assoc_args );
+
+    $updated_id = wp_update_user( $params );
+
+    if ( is_wp_error($updated_id) ) {
+      WP_CLI::error( $updated_id->get_error_message() );
+    } else {
+      WP_CLI::line( "Updated user $updated_id" );
+    }
+  }
+
 	/**
 	 * Help function for this command
 	 */
@@ -127,6 +155,8 @@ class UserCommand extends WP_CLI_Command {
 		WP_CLI::line( <<<EOB
 usage: wp user all
    or: wp user create <user_login> <user_email> [--role=<default_role>]
+   or: wp user update <ID> [--field_name=<field_value>]
+   or: wp user delete <ID> [--reassign=<reassign_id>]
 EOB
 	);
 	}
