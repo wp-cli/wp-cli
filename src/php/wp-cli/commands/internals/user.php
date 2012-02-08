@@ -18,8 +18,17 @@ class UserCommand extends WP_CLI_Command {
   public function all( $args, $assoc_args ) {
     global $blog_id;
 
+    $params = array(
+      'blog_id' => $blog_id,
+      'fields' => 'all_with_meta',
+    );
+
+    if ( array_key_exists('role', $assoc_args) ) {
+      $params['role'] = $assoc_args['role'];
+    }
+
     $table = new \cli\Table();
-    $users = get_users("blog_id=$blog_id&fields=all_with_meta");
+    $users = get_users( $params );
     $fields = array('ID', 'user_login', 'display_name', 'user_email',
       'user_registered');
 
@@ -153,7 +162,7 @@ class UserCommand extends WP_CLI_Command {
 	 */
 	public static function help() {
 		WP_CLI::line( <<<EOB
-usage: wp user all
+usage: wp user all [--role=<role>]
    or: wp user create <user_login> <user_email> [--role=<default_role>]
    or: wp user update <ID> [--field_name=<field_value>]
    or: wp user delete <ID> [--reassign=<reassign_id>]
