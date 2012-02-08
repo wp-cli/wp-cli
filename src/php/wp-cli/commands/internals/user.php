@@ -130,6 +130,34 @@ class UserCommand extends WP_CLI_Command {
 	}
 
   /**
+   * Send password retrieval email to user
+   *
+   * @param array $args
+   * @param array $assoc_args
+   **/
+  public function _reset( $args, $assoc_args ) {
+    ob_start();
+    require_once( ABSPATH . 'wp-login.php' );
+
+    $login_or_email = $args[0];
+
+    if ( ! $login_or_email ) {
+      WP_CLI::error( "User login or email required (see 'wp user help')" );
+    }
+
+    $_POST['user_login'] = $login_or_email;
+
+    $result = retrieve_password();
+
+    if ( is_wp_error($result) ) {
+      WP_CLI::error( $result->get_error_message() );
+    }
+
+    ob_end_clean();
+    WP_CLI::line( "Password retrieval email sent to $login_or_email" );
+  }
+
+  /**
    * Update a user
    *
    * @param array $args
@@ -166,6 +194,7 @@ usage: wp user list [--role=<role>]
    or: wp user create <user_login> <user_email> [--role=<default_role>]
    or: wp user update <ID> [--field_name=<field_value>]
    or: wp user delete <ID> [--reassign=<reassign_id>]
+   or: wp user reset <login_or_email>
 EOB
 	);
 	}
