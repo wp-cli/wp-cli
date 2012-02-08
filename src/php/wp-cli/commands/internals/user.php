@@ -41,6 +41,33 @@ class UserCommand extends WP_CLI_Command {
     WP_CLI::line( 'Total: ' . count($users) . ' users' );
   }
 
+  /**
+   * Delete a user
+   *
+   * @param array $args
+   * @param array $assoc_args
+   **/
+  public function delete( $args, $assoc_args ) {
+    global $blog_id;
+
+    $user_id = $args[0];
+
+    if ( ! is_numeric($user_id) ) {
+      WP_CLI::error("User ID required (see 'wp user help')");
+    }
+
+    $defaults = array( 'reassign' => NULL );
+
+    extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
+
+    if ( wp_delete_user( $user_id, $reassign ) ) {
+      WP_CLI::line( "Deleted user $user_id" );
+    } else {
+      WP_CLI::error( "Failed deleting user $user_id" );
+    }
+
+  }
+
 	/**
 	 * Create a user
 	 *
