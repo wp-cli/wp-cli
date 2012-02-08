@@ -15,7 +15,7 @@ class UserCommand extends WP_CLI_Command {
    * @param array $args
 	 * @param array $assoc_args
    **/
-  public function all( $args, $assoc_args ) {
+  public function _list( $args, $assoc_args ) {
     global $blog_id;
 
     $params = array(
@@ -162,7 +162,7 @@ class UserCommand extends WP_CLI_Command {
 	 */
 	public static function help() {
 		WP_CLI::line( <<<EOB
-usage: wp user all [--role=<role>]
+usage: wp user list [--role=<role>]
    or: wp user create <user_login> <user_email> [--role=<default_role>]
    or: wp user update <ID> [--field_name=<field_value>]
    or: wp user delete <ID> [--reassign=<reassign_id>]
