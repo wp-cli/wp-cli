@@ -135,7 +135,7 @@ class UserCommand extends WP_CLI_Command {
    * @param array $args
    * @param array $assoc_args
    **/
-  public function _reset( $args, $assoc_args ) {
+  public function reset( $args, $assoc_args ) {
     ob_start();
     require_once( ABSPATH . 'wp-login.php' );
 
