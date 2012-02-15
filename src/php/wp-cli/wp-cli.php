@@ -39,11 +39,9 @@ else {
 	define('WP_ROOT', $_SERVER['PWD'] . '/');
 }
 
-// Taken from https://github.com/88mph/wpadmin/blob/master/wpadmin.php
 if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
-	// Download fresh copy of WordPress in the current dir
-	if ( isset( $arguments[0] ) && $arguments[0] == 'download' ) {
-		WP_CLI::line("Downloading WordPress...");
+	if ( array( 'core', 'download' ) == $arguments ) {
+		WP_CLI::line('Downloading WordPress...');
 		exec("curl http://wordpress.org/latest.zip > /tmp/wordpress.zip");
 		exec("unzip /tmp/wordpress.zip");
 		exec("mv wordpress/* ./");
@@ -51,7 +49,7 @@ if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 		WP_CLI::success('WordPress downloaded.');
 		exit;
 	} else {
-		WP_CLI::error('This does not seem to be a WordPress install. Try running `wp download`.');
+		WP_CLI::error('This does not seem to be a WordPress install. Try running `wp core download`.');
 		exit;
 	}
 }
