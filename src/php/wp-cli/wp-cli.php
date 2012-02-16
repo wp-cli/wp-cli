@@ -54,6 +54,18 @@ if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 	}
 }
 
+if ( array( 'core', 'config' ) == $arguments ) {
+	$_POST['dbname'] = $assoc_args['name'];
+	$_POST['uname'] = $assoc_args['user'];
+	$_POST['pwd'] = $assoc_args['pass'];
+	$_POST['dbhost'] = isset( $assoc_args['host'] ) ? $assoc_args['host'] : 'localhost';
+	$_POST['prefix'] = isset( $assoc_args['prefix'] ) ? $assoc_args['prefix'] : '';
+
+	$_GET['step'] = 2;
+	require WP_ROOT . '/wp-admin/setup-config.php';
+	exit;
+}
+
 // Handle --blog parameter
 if ( isset( $assoc_args['blog'] ) ) {
 	$blog = $assoc_args['blog'];
