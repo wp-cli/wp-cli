@@ -499,6 +499,8 @@ EOB
 </channel>
 </rss>
 <?php
+		$progress->finish();
+
 		$result = ob_get_clean();
 
 		$full_path = $this->wxr_path . $file_name_base . '.wxr';
