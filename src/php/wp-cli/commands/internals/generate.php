@@ -39,13 +39,19 @@ class GenerateCommand extends WP_CLI_Command {
 
 		$limit = $count + $total;
 
+		$notify = new \cli\progress\Bar( 'Generating posts', $count );
+
 		for ( $i = $total; $i < $limit; $i++ ) {
 			wp_insert_post( array(
 				'post_type' => $type,
 				'post_title' =>  "$label $i",
 				'post_status' => $status
 			) );
+
+			$notify->tick();
 		}
+
+		$notify->finish();
 	}
 
 	/**
@@ -77,6 +83,8 @@ class GenerateCommand extends WP_CLI_Command {
 
 		$limit = $count + $total;
 
+		$notify = new \cli\progress\Bar( 'Generating users', $count );
+
 		for ( $i = $total; $i < $limit; $i++ ) {
 			$login = sprintf( 'user_%d_%d', $blog_id, $i );
 			$name = "User $i";
@@ -93,7 +101,11 @@ class GenerateCommand extends WP_CLI_Command {
 				delete_user_option( $user_id, 'capabilities' );
 				delete_user_option( $user_id, 'user_level' );
 			}
+
+			$notify->tick();
 		}
+
+		$notify->finish();
 	}
 
 	/**
