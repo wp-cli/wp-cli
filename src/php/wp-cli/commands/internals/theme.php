@@ -121,6 +121,21 @@ class ThemeCommand extends WP_CLI_Command {
 		WP_CLI::line( $path );
 	}
 
+	/**
+	 * Delete a theme
+	 *
+	 * @param array $args
+	 */
+	function delete( $args ) {
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+
+		$r = delete_theme( $name );
+
+		if ( is_wp_error( $r ) ) {
+			WP_CLI::error( $r );
+		}
+	}
+
 	protected function parse_name( $args, $subcommand ) {
 		if ( empty( $args ) ) {
 			WP_CLI::line( "usage: wp theme $subcommand <theme-name>" );
@@ -155,6 +170,7 @@ Available sub-commands:
    status     display status of all installed themes or of a particular theme
    activate   activate a particular theme
    path       print path to the theme's stylesheet
+   delete     delete a theme
 EOB
 		);
 	}
