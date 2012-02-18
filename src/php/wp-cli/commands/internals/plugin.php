@@ -276,6 +276,10 @@ class PluginCommand extends WP_CLI_Command {
 	function delete( $args ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
+		if ( is_plugin_active( $file ) ) {
+			WP_CLI::error( 'The plugin is active.' );
+		}
+
 		if ( !delete_plugins( array( $file ) ) ) {
 			WP_CLI::error( 'There was an error while deleting the plugin.' );
 		}
