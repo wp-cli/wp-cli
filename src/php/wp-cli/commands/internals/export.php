@@ -358,7 +358,7 @@ EOB
 		WP_CLI::line( 'Exporting ' . count( $terms ) . ' terms' );
 		WP_CLI::line();
 
-		$progress = $this->progress_bar( 'exporting',  count( $post_ids ) );
+		$progress = new \cli\progress\Bar( 'Exporting',  count( $post_ids ) );
 
 		ob_start();
 		echo '<?xml version="1.0" encoding="' . get_bloginfo( 'charset' ) . "\" ?>\n";
@@ -508,12 +508,5 @@ EOB
 			file_put_contents( $full_path, $result );
 		}
 	}
-
-	/**
-	 * Implement progress bar
-	 */
-	private function progress_bar( $title, $total, $interval = 100 ) {
-		return new \cli\progress\Bar( $title, $total, $interval );
-	}
-
 }
+
