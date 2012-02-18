@@ -34,18 +34,9 @@ EOB
 	);
 	}
 
-	private function dispatch() {
-		WP_CLI::line();
-		WP_CLI::line( 'Starting export processs' );
-		WP_CLI::line();
-		$this->export_wp( $this->export_args );
-	}
-
-
 	/**
 	 * Argument validation functions below
 	 */
-
 	public function validate_arguments( $args, $assoc_args ) {
 		$defaults = array(
 			'path'			=>		NULL,
@@ -77,7 +68,9 @@ EOB
 
 		$this->wxr_path = $assoc_args['path'];
 
-		$this->dispatch();
+		WP_CLI::line( 'Starting export process...' );
+		WP_CLI::line();
+		$this->export_wp( $this->export_args );
 	}
 
 	private function check_path( $path ) {
