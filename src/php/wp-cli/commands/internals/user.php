@@ -71,7 +71,7 @@ class UserCommand extends WP_CLI_Command {
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
 		if ( wp_delete_user( $user_id, $reassign ) ) {
-			WP_CLI::line( "Deleted user $user_id" );
+			WP_CLI::success( "Deleted user $user_id" );
 		} else {
 			WP_CLI::error( "Failed deleting user $user_id" );
 		}
@@ -105,8 +105,7 @@ class UserCommand extends WP_CLI_Command {
 		if ( 'none' == $role ) {
 			$role = false;
 		} elseif ( is_null( get_role( $role ) ) ) {
-			WP_CLI::warning( "invalid role." );
-			exit;
+			WP_CLI::error( "Invalid role." );
 		}
 
 		$user_id = wp_insert_user( array(
@@ -127,7 +126,7 @@ class UserCommand extends WP_CLI_Command {
 			}
 		}
 
-		WP_CLI::line( "Created user $user_id" );
+		WP_CLI::success( "Created user $user_id" );
 	}
 
 	/**
@@ -154,7 +153,7 @@ class UserCommand extends WP_CLI_Command {
 		if ( is_wp_error($updated_id) ) {
 			WP_CLI::error( $updated_id );
 		} else {
-			WP_CLI::line( "Updated user $updated_id" );
+			WP_CLI::success( "Updated user $updated_id" );
 		}
 	}
 
