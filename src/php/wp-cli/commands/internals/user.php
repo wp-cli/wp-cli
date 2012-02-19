@@ -71,9 +71,9 @@ class UserCommand extends WP_CLI_Command {
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
 		if ( wp_delete_user( $user_id, $reassign ) ) {
-			WP_CLI::success( "Deleted user $user_id" );
+			WP_CLI::success( "Deleted user $user_id." );
 		} else {
-			WP_CLI::error( "Failed deleting user $user_id" );
+			WP_CLI::error( "Failed deleting user $user_id." );
 		}
 	}
 
@@ -126,7 +126,7 @@ class UserCommand extends WP_CLI_Command {
 			}
 		}
 
-		WP_CLI::success( "Created user $user_id" );
+		WP_CLI::success( "Created user $user_id." );
 	}
 
 	/**
@@ -139,21 +139,21 @@ class UserCommand extends WP_CLI_Command {
 		$user_id = $args[0];
 
 		if ( ! is_numeric($user_id) ) {
-			WP_CLI::error( "User ID required (see 'wp user help')" );
+			WP_CLI::error( "User ID required (see 'wp user help')." );
 		}
 
-		if ( ! count($assoc_args) ) {
-			WP_CLI::error( "Need some fields to update" );
+		if ( empty( $assoc_args ) ) {
+			WP_CLI::error( "Need some fields to update." );
 		}
 
-		$params = array_merge( array('ID' => $user_id), $assoc_args );
+		$params = array_merge( array( 'ID' => $user_id ), $assoc_args );
 
 		$updated_id = wp_update_user( $params );
 
-		if ( is_wp_error($updated_id) ) {
+		if ( is_wp_error( $updated_id ) ) {
 			WP_CLI::error( $updated_id );
 		} else {
-			WP_CLI::success( "Updated user $updated_id" );
+			WP_CLI::success( "Updated user $updated_id." );
 		}
 	}
 
