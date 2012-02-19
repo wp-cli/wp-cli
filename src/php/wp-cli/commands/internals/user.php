@@ -97,6 +97,7 @@ class UserCommand extends WP_CLI_Command {
 			'role' => get_option('default_role'),
 			'user_pass' => wp_generate_password(),
 			'user_registered' => strftime( "%F %T", time() ),
+			'display_name' => false,
 		);
 
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
