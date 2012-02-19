@@ -30,10 +30,9 @@ class CoreCommand extends WP_CLI_Command {
 				break;
 			}
 		}
-		WP_CLI::line( "WordPress version:\t$version_text" );
-
 		if ( isset( $assoc_args['extra'] ) ) {
-			WP_CLI::line();
+			WP_CLI::line( "WordPress version:\t$version_text" );
+
 			WP_CLI::line( "Database revision:\t$wp_db_version" );
 
 			preg_match( '/(\d)(\d+)-/', $tinymce_version, $match );
@@ -41,6 +40,8 @@ class CoreCommand extends WP_CLI_Command {
 			WP_CLI::line( "TinyMCE version:\t"  . ( $human_readable_tiny_mce? "$human_readable_tiny_mce ($tinymce_version)" : $tinymce_version ) );
 
 			WP_CLI::line( "Manifest revision:\t$manifest_version" );
+		} else {
+			WP_CLI::line( $version_text );
 		}
 	}
 
