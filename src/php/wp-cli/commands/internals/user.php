@@ -119,7 +119,7 @@ class UserCommand extends WP_CLI_Command {
 		) );
 
 		if ( is_wp_error($user_id) ) {
-			WP_CLI::error( $user_id->get_error_message() );
+			WP_CLI::error( $user_id );
 		} else {
 			if ( false === $role ) {
 				delete_user_option( $user_id, 'capabilities' );
@@ -152,7 +152,7 @@ class UserCommand extends WP_CLI_Command {
 		$updated_id = wp_update_user( $params );
 
 		if ( is_wp_error($updated_id) ) {
-			WP_CLI::error( $updated_id->get_error_message() );
+			WP_CLI::error( $updated_id );
 		} else {
 			WP_CLI::line( "Updated user $updated_id" );
 		}
