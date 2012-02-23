@@ -22,7 +22,8 @@ class GenerateCommand extends WP_CLI_Command {
 		$defaults = array(
 			'count' => 100,
 			'type' => 'post',
-			'status' => 'publish'
+			'status' => 'publish',
+			'author' => false
 		);
 
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
@@ -30,6 +31,13 @@ class GenerateCommand extends WP_CLI_Command {
 		if ( !post_type_exists( $type ) ) {
 			WP_CLI::warning( 'invalid post type.' );
 			exit;
+		}
+
+		if ( $author ) {
+			$author = get_user_by( 'login', $author );
+
+			if ( $author )
+				$author = $author->ID;
 		}
 
 		// Get the total number of posts
@@ -45,7 +53,8 @@ class GenerateCommand extends WP_CLI_Command {
 			wp_insert_post( array(
 				'post_type' => $type,
 				'post_title' =>  "$label $i",
-				'post_status' => $status
+				'post_status' => $status,
+				'post_author' => $author
 			) );
 
 			$notify->tick();
@@ -113,7 +122,7 @@ class GenerateCommand extends WP_CLI_Command {
 	 */
 	public static function help() {
 		WP_CLI::line( <<<EOB
-usage: wp generate posts [--count=100] [--type=post] [--status=publish]
+usage: wp generate posts [--count=100] [--type=post] [--status=publish] [--author=<login>]
    or: wp generate users [--count=100] [--role=<role>]
 EOB
 	);
