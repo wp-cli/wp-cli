@@ -9,6 +9,8 @@ abstract class WP_CLI_Command {
 
 	protected $default_subcommand = 'help';
 
+	protected $aliases = array();
+
 	/**
 	 * Transfers the handling to the appropriate method
 	 *
@@ -20,6 +22,9 @@ abstract class WP_CLI_Command {
 			$subcommand = $this->default_subcommand;
 		else
 			$subcommand = array_shift( $args );
+
+		if ( isset( $this->aliases[ $subcommand ] ) )
+			$subcommand = $this->aliases[ $subcommand ];
 
 		if ( !method_exists( $this, $subcommand ) ) {
 			// This if for reserved keywords in php (like list, isset)
