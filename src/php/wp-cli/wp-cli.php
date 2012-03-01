@@ -81,6 +81,13 @@ if ( isset( $blog ) ) {
 	WP_CLI::set_url( $blog );
 }
 
+// Implement --silent flag
+if ( isset( $assoc_args['silent'] ) ) {
+	define('WP_CLI_SILENT', true);
+} else {
+	define('WP_CLI_SILENT', false);
+}
+
 // Set installer flag before loading any WP files
 if ( count( $arguments ) >= 2 && $arguments[0] == 'core' && $arguments[1] == 'install' ) {
     define( 'WP_INSTALLING', true );
