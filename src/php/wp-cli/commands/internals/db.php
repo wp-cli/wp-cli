@@ -70,6 +70,21 @@ class DBCommand extends WP_CLI_Command {
 		WP_CLI::line( $result );
 	}
 
+	function import( $args, $assoc_args ) {
+		if ( !isset( $assoc_args['file'] ) ) {
+			$result_file = sprintf( '%s.sql', DB_NAME );
+		} else {
+			$result_file = $assoc_args['file'];
+		}
+
+		$exec = sprintf( 'mysql %s --user=%s --password=%s --host=%s < %s',
+			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file );
+
+		exec( $exec );
+
+		WP_CLI::success( sprintf( 'Imported from  %s', $result_file ) );
+	}
+
 	/**
 	 * Help function for this command
 	 */
@@ -79,6 +94,7 @@ wp db cli               Open a SQL command-line interface using the WordPress cr
 wp db connect           Print a string for connecting to the database.
 wp db dump              Exports the WordPress database using mysqldump.
 wp db query             Execute a query against the WordPress database.
+wp db import            Import a database dumped via mysqldump.
 EOB
 	);
 	}
