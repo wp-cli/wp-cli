@@ -66,6 +66,10 @@ if ( array( 'core', 'config' ) == $arguments ) {
 	exit;
 }
 
+if ( isset( $assoc_args['url'] ) ) {
+    WP_CLI::set_url( $assoc_args['url'] );
+}
+
 // Handle --blog parameter
 if ( isset( $assoc_args['blog'] ) ) {
 	$blog = $assoc_args['blog'];
@@ -96,6 +100,14 @@ if ( count( $arguments ) >= 2 && $arguments[0] == 'core' && $arguments[1] == 'in
 // Load WordPress libs
 require_once(WP_ROOT . 'wp-load.php');
 require_once(ABSPATH . 'wp-admin/includes/admin.php');
+
+// Load the right info into the global wp_query
+if ( isset( $assoc_args['url'] ) ) {
+    if ( isset( $GLOBALS['wp_query'] ) && isset( $GLOBALS['wp'] ) ) {
+        $GLOBALS['wp']->parse_request();
+        $GLOBALS['wp_query']->query($GLOBALS['wp']->query_vars);
+    }
+}
 
 // Load all internal commands
 foreach ( glob(WP_CLI_ROOT.'/commands/internals/*.php') as $filename ) {

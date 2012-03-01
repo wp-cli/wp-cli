@@ -154,14 +154,16 @@ class WP_CLI {
 	 * @param string $url The URL
 	 */
 	static function set_url( $url ) {
-		if ( false === strpos( $url, '/' ) )
-			$url .= '/';
-
-		list( $domain, $path ) = explode( '/', $url, 2 );
-
-		$_SERVER['HTTP_HOST'] = $domain;
-
-		$_SERVER['REQUEST_URI'] = '/' . $path;
+	    $url_parts = parse_url( $url );
+	    
+	    if ( !isset( $url_parts['scheme'] ) ) {
+	        $url_parts = parse_url( 'http://' . $url );
+	    }
+	    
+		$_SERVER['HTTP_HOST'] = $url_parts['host'];
+		$_SERVER['REQUEST_URI'] = $url_parts['path'] . (isset($url_parts['query']) ? '?' . $url_parts['query'] : '');
+		$_SERVER['REQUEST_URL'] = $url_parts['path'];
+		$_SERVER['QUERY_STRING'] = $url_parts['query'];
 	}
 
 	/**
