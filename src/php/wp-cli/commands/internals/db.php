@@ -12,6 +12,8 @@ class DBCommand extends WP_CLI_Command {
 
 	protected $default_subcommand = 'cli';
 
+	protected $aliases = array( 'dump' => 'export' );
+
 	/**
 	 * Return a string for connecting to the DB.
 	 */
@@ -37,7 +39,7 @@ class DBCommand extends WP_CLI_Command {
 	/**
 	 * Exports the WordPress DB as SQL using mysqldump.
 	 */
-	function dump( $args, $assoc_args ) {
+	function export( $args, $assoc_args ) {
 		if ( !isset( $assoc_args['file'] ) ) {
 			$result_file = sprintf( '%s.sql', DB_NAME );
 		} else {
@@ -92,9 +94,9 @@ class DBCommand extends WP_CLI_Command {
 		WP_CLI::line( <<<EOB
 wp db cli               Open a SQL command-line interface using the WordPress credentials.
 wp db connect           Print a string for connecting to the database.
-wp db dump              Exports the WordPress database using mysqldump.
+wp db export            Export the WordPress database using mysqldump.
+wp db import            Import a database exported via mysqldump.
 wp db query             Execute a query against the WordPress database.
-wp db import            Import a database dumped via mysqldump.
 EOB
 	);
 	}
