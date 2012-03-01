@@ -79,6 +79,26 @@ if ( isset( $assoc_args['url'] ) ) {
 	$blog = trim( file_get_contents( WP_ROOT . 'wp-cli-blog' ) );
 }
 
+// Try to find the blog parameter in the wp-config file
+if ( !isset( $blog ) ) {
+    if ( file_exists( WP_ROOT . '/wp-config.php' ) ) {
+        $wp_config_file = file_get_contents( WP_ROOT . '/wp-config.php' );
+        $hit = array();
+        if ( preg_match_all( "#.*define\s*\(\s*(['|\"]{1})(.+)(['|\"]{1})\s*,\s*(['|\"]{1})(.+)(['|\"]{1})\s*\)\s*;#iU", $wp_config_file, $matches ) ) {
+            foreach( $matches[2] as $def_key => $def_name ) {
+                if ( 'DOMAIN_CURRENT_SITE' == $def_name )
+                    $hit['domain'] = $matches[5][$def_key];
+                if ( 'PATH_CURRENT_SITE' == $def_name ) 
+                    $hit['path'] = $matches[5][$def_key];
+            }
+        }
+        if ( !empty( $hit ) && isset( $hit['domain'] ) )
+            $blog = $hit['domain'];
+        if ( !empty( $hit ) && isset( $hit['path'] ) )
+            $blog .= $hit['path'];
+    }
+}
+
 if ( isset( $blog ) ) {
 	WP_CLI::set_url( $blog );
 }
