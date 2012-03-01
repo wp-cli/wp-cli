@@ -66,12 +66,10 @@ if ( array( 'core', 'config' ) == $arguments ) {
 	exit;
 }
 
+// Handle --url and --blog parameters
 if ( isset( $assoc_args['url'] ) ) {
-    WP_CLI::set_url( $assoc_args['url'] );
-}
-
-// Handle --blog parameter
-if ( isset( $assoc_args['blog'] ) ) {
+    $blog = $assoc_args['url'];
+} elseif ( isset( $assoc_args['blog'] ) ) {
 	$blog = $assoc_args['blog'];
 	unset( $assoc_args['blog'] );
 	if ( true === $blog ) {
