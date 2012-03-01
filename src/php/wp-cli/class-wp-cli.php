@@ -25,6 +25,7 @@ class WP_CLI {
 	 * @param string $message
 	 */
 	static function out( $message ) {
+	    if ( WP_CLI_SILENT ) return;
 		\cli\out($message);
 	}
 
@@ -34,6 +35,7 @@ class WP_CLI {
 	 * @param string $message
 	 */
 	static function line( $message = '' ) {
+	    if ( WP_CLI_SILENT ) return;
 		\cli\line($message);
 	}
 
@@ -55,6 +57,7 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function success( $message, $label = 'Success' ) {
+	    if ( WP_CLI_SILENT ) return;
 		\cli\line( '%G' . $label . ': %n' . $message );
 	}
 
@@ -65,6 +68,7 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function warning( $message, $label = 'Warning' ) {
+	    if ( WP_CLI_SILENT ) return;
 		\cli\line( '%C' . $label . ': %n' . $message );
 	}
 
