@@ -86,9 +86,9 @@ class OptionCommand extends WP_CLI_Command {
 			return;
 
 		if ( is_array( $value ) || is_object( $value ) ) {
-			echo var_export( $value ) . "\n";
+			WP_CLI::line( var_export( $value, true ) );
 		} else {
-			echo $value . "\n";
+			WP_CLI::line( $value );
 		}
 	}
 
@@ -102,6 +102,6 @@ usage: wp option get <option-name>
    or: wp option update <option-name> <option-value>
    or: wp option delete <option-name>
 EOB
-	);
+	    );
 	}
 }
