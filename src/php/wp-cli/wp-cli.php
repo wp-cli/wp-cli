@@ -4,7 +4,7 @@ if ( PHP_SAPI !== 'cli' ) {
 	die( 'Only cli access' );
 }
 
-define( 'WP_CLI_VERSION', '0.4.0' );
+define( 'WP_CLI_VERSION', '0.5.0-dev' );
 
 // Define the wp-cli location
 define( 'WP_CLI_ROOT', __DIR__ . '/' );
@@ -88,7 +88,7 @@ if ( !isset( $blog ) ) {
             foreach( $matches[2] as $def_key => $def_name ) {
                 if ( 'DOMAIN_CURRENT_SITE' == $def_name )
                     $hit['domain'] = $matches[5][$def_key];
-                if ( 'PATH_CURRENT_SITE' == $def_name ) 
+                if ( 'PATH_CURRENT_SITE' == $def_name )
                     $hit['path'] = $matches[5][$def_key];
             }
         }
