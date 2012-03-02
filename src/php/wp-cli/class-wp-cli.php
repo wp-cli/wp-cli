@@ -160,10 +160,10 @@ class WP_CLI {
 	        $url_parts = parse_url( 'http://' . $url );
 	    }
 	    
-		$_SERVER['HTTP_HOST'] = $url_parts['host'];
-		$_SERVER['REQUEST_URI'] = $url_parts['path'] . (isset($url_parts['query']) ? '?' . $url_parts['query'] : '');
-		$_SERVER['REQUEST_URL'] = $url_parts['path'];
-		$_SERVER['QUERY_STRING'] = $url_parts['query'];
+		$_SERVER['HTTP_HOST'] = isset($url_parts['host']) ? $url_parts['host'] : '';
+		$_SERVER['REQUEST_URI'] = (isset($url_parts['path']) ? $url_parts['path'] : '') . (isset($url_parts['query']) ? '?' . $url_parts['query'] : '');
+		$_SERVER['REQUEST_URL'] = isset($url_parts['path']) ? $url_parts['path'] : '';
+		$_SERVER['QUERY_STRING'] = isset($url_parts['query']) ? $url_parts['query'] : '';
 	}
 
 	/**
