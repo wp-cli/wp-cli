@@ -59,7 +59,7 @@ if ( array( 'core', 'config' ) == $arguments ) {
 	$_POST['uname'] = $assoc_args['user'];
 	$_POST['pwd'] = $assoc_args['pass'];
 	$_POST['dbhost'] = isset( $assoc_args['host'] ) ? $assoc_args['host'] : 'localhost';
-	$_POST['prefix'] = isset( $assoc_args['prefix'] ) ? $assoc_args['prefix'] : '';
+	$_POST['prefix'] = isset( $assoc_args['prefix'] ) ? $assoc_args['prefix'] : 'wp_';
 
 	$_GET['step'] = 2;
 	require WP_ROOT . '/wp-admin/setup-config.php';
