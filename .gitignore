@@ -1,6 +1,2 @@
-.build
-dist
-.tmp
-nbproject
-review
-vendor
+/.build
+/dist
