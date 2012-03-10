@@ -34,8 +34,10 @@ if ( isset( $assoc_args['version'] ) ) {
 // Define the WordPress location
 if ( is_readable( $_SERVER['PWD'] . '/../wp-load.php' ) ) {
 	define('WP_ROOT', $_SERVER['PWD'] . '/../');
-}
-else {
+} elseif (isset($assoc_args['wproot'])) {
+	$root = (preg_match('@/$@', $assoc_args['wproot'])) ? $assoc_args['wproot'] : $assoc_args['wproot'] . "/";
+	define('WP_ROOT', $root);
+} else {
 	define('WP_ROOT', $_SERVER['PWD'] . '/');
 }
 
