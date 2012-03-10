@@ -34,22 +34,26 @@ if ( isset( $assoc_args['version'] ) ) {
 // Define the WordPress location
 if ( is_readable( $_SERVER['PWD'] . '/../wp-load.php' ) ) {
 	define('WP_ROOT', $_SERVER['PWD'] . '/../');
-}
-else {
+} elseif (isset($assoc_args['wproot'])) {
+	$root = (preg_match('@/$@', $assoc_args['wproot'])) ? $assoc_args['wproot'] : $assoc_args['wproot'] . "/";
+	define('WP_ROOT', $root);
+} else {
 	define('WP_ROOT', $_SERVER['PWD'] . '/');
 }
 
 if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 	if ( array( 'core', 'download' ) == $arguments ) {
+		if (isset($assoc_args['path'])) $docroot = $assoc_args['path'];
+		else $docroot = './'
 		WP_CLI::line('Downloading WordPress...');
 		exec("curl http://wordpress.org/latest.zip > /tmp/wordpress.zip");
 		exec("unzip /tmp/wordpress.zip");
-		exec("mv wordpress/* ./");
+		exec("mv wordpress/* $docroot");
 		exec("rm -r wordpress");
 		WP_CLI::success('WordPress downloaded.');
 		exit;
 	} else {
-		WP_CLI::error('This does not seem to be a WordPress install. Try running `wp core download`.');
+		WP_CLI::error('This does not seem to be a WordPress install. Pass --wproot=`path/to/wordpress` or run `wp core download`.');
 		exit;
 	}
 }
@@ -59,7 +63,7 @@ if ( array( 'core', 'config' ) == $arguments ) {
 	$_POST['uname'] = $assoc_args['user'];
 	$_POST['pwd'] = $assoc_args['pass'];
 	$_POST['dbhost'] = isset( $assoc_args['host'] ) ? $assoc_args['host'] : 'localhost';
-	$_POST['prefix'] = isset( $assoc_args['prefix'] ) ? $assoc_args['prefix'] : '';
+	$_POST['prefix'] = isset( $assoc_args['prefix'] ) ? $assoc_args['prefix'] : 'wp_';
 
 	$_GET['step'] = 2;
 	require WP_ROOT . '/wp-admin/setup-config.php';
