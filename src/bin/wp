@@ -95,8 +95,14 @@ if [ "x$wp_cli_php_override" != "x" ] ; then
   php="$php $wp_cli_override_vars"
 fi
 
+if [ -z "$php" ]; then
+	echo "Error: Unable to find php!"
+	echo "Set the environment variable WP_CLI_PHP to the location of the php executable and try agin"
+	exit 1
+fi
+
 # Get the php version
-PHP_VERSION=$(php -v | awk '/^PHP / {print $2}' | cut -d '-' -f 1)
+PHP_VERSION=$($php -v | awk '/^PHP / {print $2}' | cut -d '-' -f 1)
 
 # Format version numbers
 CURRENT_NUMBER=$(echo "$PHP_VERSION" | tr -d '.')
