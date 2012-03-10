@@ -254,6 +254,48 @@ class PluginCommand extends WP_CLI_Command {
 	}
 
 	/**
+	 * Update all plugins
+	 *
+	 * @param array $args
+	 */
+	function update_all( $args ) {
+		// Force WordPress to update plugin status transients
+		wp_update_plugins();
+		$plugins = get_plugins();
+		$plugins = array_merge( $plugins, get_mu_plugins() );
+
+		// Grab all Plugins that need Updates
+		$plugins_to_update = array();
+		foreach ( $plugins as $file => $plugin ) {
+			if ( WP_CLI::get_update_status( $file, 'update_plugins' ) ) {
+				$plugins_to_update[] = $file;
+			}
+		}
+
+		if ( empty( $plugins_to_update ) ) {
+			WP_CLI::warning( 'Nothing to Update!' );
+			return;
+		}
+
+		// Update ALL THE THINGS
+		$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
+		$result = $upgrader->bulk_upgrade( $plugins_to_update );
+
+		// Let the user know the results.
+		$num_to_update = count( $plugins_to_update );
+		$num_updated = count( array_filter( $result ) );
+
+		$line = "Updated $num_updated/$num_to_update Plugins.";
+		if ( $num_to_update == $num_updated ) {
+			WP_CLI::success( $line );
+		} else if ( $num_updated > 0 ) {
+			WP_CLI::warning( $line );
+		} else {
+			WP_CLI::error( $line );
+		}
+	}
+
+	/**
 	 * Uninstall a plugin
 	 *
 	 * @param array $args
@@ -361,6 +403,8 @@ Available sub-commands:
       --dev        install the development version
 
    update       update a plugin from wordpress.org
+
+   update_all   update all plugins from wordpress.org
 
    uninstall    run the uninstallation procedure for a plugin
 
