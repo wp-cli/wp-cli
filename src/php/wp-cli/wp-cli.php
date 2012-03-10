@@ -34,8 +34,8 @@ if ( isset( $assoc_args['version'] ) ) {
 // Define the WordPress location
 if ( is_readable( $_SERVER['PWD'] . '/../wp-load.php' ) ) {
 	define('WP_ROOT', $_SERVER['PWD'] . '/../');
-} elseif (isset($assoc_args['wproot'])) {
-	$root = (preg_match('@/$@', $assoc_args['wproot'])) ? $assoc_args['wproot'] : $assoc_args['wproot'] . "/";
+} elseif (isset($assoc_args['path'])) {
+	$root = (preg_match('@/$@', $assoc_args['path'])) ? $assoc_args['path'] : $assoc_args['path'] . "/";
 	define('WP_ROOT', $root);
 } else {
 	define('WP_ROOT', $_SERVER['PWD'] . '/');
@@ -53,7 +53,7 @@ if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 		WP_CLI::success('WordPress downloaded.');
 		exit;
 	} else {
-		WP_CLI::error('This does not seem to be a WordPress install. Pass --wproot=`path/to/wordpress` or run `wp core download`.');
+		WP_CLI::error('This does not seem to be a WordPress install. Pass --path=`path/to/wordpress` or run `wp core download`.');
 		exit;
 	}
 }
