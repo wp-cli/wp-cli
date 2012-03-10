@@ -51,7 +51,7 @@ if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 		WP_CLI::success('WordPress downloaded.');
 		exit;
 	} else {
-		WP_CLI::error('This does not seem to be a WordPress install. Try running `wp core download`.');
+		WP_CLI::error('This does not seem to be a WordPress install. Pass --wproot=`path/to/wordpress` or run `wp core download`.');
 		exit;
 	}
 }
