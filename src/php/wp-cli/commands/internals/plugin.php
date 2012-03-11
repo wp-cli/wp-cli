@@ -242,15 +242,72 @@ class PluginCommand extends WP_CLI_Command {
 	 * Update a plugin
 	 *
 	 * @param array $args
+	 * @param array $assoc_args
 	 */
-	function update( $args ) {
-		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
-
+	function update( $args, $assoc_args ) {
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
 
-		$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
-		$result = $upgrader->upgrade( $file );
+		// If we have arguments and not updating all, update named plugin
+		if ( ! empty( $args ) && ! isset( $assoc_args['all'] ) ) {
+			list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+
+			$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
+			$result = $upgrader->upgrade( $file );
+			return;
+		}
+
+		// If not, fall through and load plugin info.
+		$plugins = get_plugins();
+		$plugins = array_merge( $plugins, get_mu_plugins() );
+
+		// Grab all Plugins that need Updates
+		// If we have no sub-arguments, add them to the output list.
+		$plugin_list = "Plugin Updates Available:";
+		$plugins_to_update = array();
+		foreach ( $plugins as $file => $plugin ) {
+			if ( WP_CLI::get_update_status( $file, 'update_plugins' ) ) {
+				$plugins_to_update[] = $file;
+
+				if ( empty( $assoc_args ) ) {
+					if ( false === strpos( $file, '/' ) )
+						$name = str_replace('.php', '', basename($file));
+					else
+						$name = dirname($file);
+
+					$plugin_list .= "\n\t%y$name%n";
+				}
+			}
+		}
+
+		if ( empty( $plugins_to_update ) ) {
+			WP_CLI::warning( 'No Plugin Updates Available.' );
+			return;
+		}
+
+		// If --all, UPDATE ALL THE THINGS
+		if ( isset( $assoc_args['all'] ) )
+		{
+			$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
+			$result = $upgrader->bulk_upgrade( $plugins_to_update );
+
+			// Let the user know the results.
+			$num_to_update = count( $plugins_to_update );
+			$num_updated = count( array_filter( $result ) );
+
+			$line = "Updated $num_updated/$num_to_update Plugins.";
+			if ( $num_to_update == $num_updated ) {
+				WP_CLI::success( $line );
+			} else if ( $num_updated > 0 ) {
+				WP_CLI::warning( $line );
+			} else {
+				WP_CLI::error( $line );
+			}
+
+		// Else list plugins that require updates
+		} else {
+			WP_CLI::line( $plugin_list );
+		}
 	}
 
 	/**
@@ -361,6 +418,7 @@ Available sub-commands:
       --dev        install the development version
 
    update       update a plugin from wordpress.org
+      --all        update all plugins from wordpress.org
 
    uninstall    run the uninstallation procedure for a plugin
 
