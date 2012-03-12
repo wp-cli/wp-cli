@@ -153,7 +153,7 @@ class WP_CLI {
 	 *
 	 * @param string $url The URL
 	 */
-	static function set_url( $url ) {
+	static function set_url_params( $url ) {
 	    $url_parts = parse_url( $url );
 	    
 	    if ( !isset( $url_parts['scheme'] ) ) {
