@@ -233,11 +233,44 @@ class WP_CLI {
 		}
 	}
 
-	static function _run_core_command( $arguments, $assoc_args ) {
-		array_shift( $arguments );
+	static function load_all_commands() {
+		foreach ( array( 'internals', 'community' ) as $dir ) {
+			foreach ( glob( WP_CLI_ROOT . "/commands/$dir/*.php" ) as $filename ) {
+				include $filename;
+			}
+		}
+	}
 
-		include WP_CLI_ROOT.'/commands/internals/core.php';
-		new WP_CLI::$commands['core']( $arguments, $assoc_args );
+	static function run_command( $arguments, $assoc_args ) {
+		if ( empty( $arguments ) ) {
+			WP_CLI::load_all_commands();
+			$command = 'help';
+		} else {
+			$command = array_shift( $arguments );
+
+			$aliases = array(
+				'sql' => 'db'
+			);
+
+			if ( isset( $aliases[ $command ] ) )
+				$command = $aliases[ $command ];
+
+			foreach ( array( 'internals', 'community' ) as $dir ) {
+				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
+
+				if ( is_readable( $path ) ) {
+					include $path;
+					break;
+				}
+			}
+		}
+
+		if ( !isset( WP_CLI::$commands[$command] ) ) {
+			WP_CLI::error( "'$command' is not a registered wp command. See 'wp help'." );
+			exit;
+		}
+
+		new WP_CLI::$commands[$command]( $arguments, $assoc_args );
 		exit;
 	}
 }
