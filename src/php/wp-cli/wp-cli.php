@@ -46,9 +46,7 @@ if ( is_readable( $_SERVER['PWD'] . '/../wp-load.php' ) ) {
 
 if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 	if ( array( 'core', 'download' ) == $arguments ) {
-		include WP_CLI_ROOT.'/commands/internals/core.php';
-		new WP_CLI::$commands['core']( $arguments, $assoc_args );
-		exit;
+		WP_CLI::_run_core_command( $arguments, $assoc_args );
 	} else {
 		WP_CLI::error('This does not seem to be a WordPress install. Pass --path=`path/to/wordpress` or run `wp core download`.');
 		exit;
@@ -56,9 +54,7 @@ if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 }
 
 if ( array( 'core', 'config' ) == $arguments ) {
-	include WP_CLI_ROOT.'/commands/internals/core.php';
-	new WP_CLI::$commands['core']( $arguments, $assoc_args );
-	exit;
+	WP_CLI::_run_core_command( $arguments, $assoc_args );
 }
 
 // Handle --url and --blog parameters

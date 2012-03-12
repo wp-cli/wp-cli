@@ -232,5 +232,13 @@ class WP_CLI {
 			WP_CLI::set_url_params( $blog );
 		}
 	}
+
+	static function _run_core_command( $arguments, $assoc_args ) {
+		array_shift( $arguments );
+
+		include WP_CLI_ROOT.'/commands/internals/core.php';
+		new WP_CLI::$commands['core']( $arguments, $assoc_args );
+		exit;
+	}
 }
 
