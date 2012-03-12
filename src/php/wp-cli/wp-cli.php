@@ -36,12 +36,12 @@ if ( isset( $assoc_args['version'] ) ) {
 
 // Define the WordPress location
 if ( is_readable( $_SERVER['PWD'] . '/../wp-load.php' ) ) {
-	define('WP_ROOT', $_SERVER['PWD'] . '/../');
-} elseif (isset($assoc_args['path'])) {
-	$root = (preg_match('@/$@', $assoc_args['path'])) ? $assoc_args['path'] : $assoc_args['path'] . "/";
-	define('WP_ROOT', $root);
+	define( 'WP_ROOT', $_SERVER['PWD'] . '/../' );
+} elseif ( !empty( $assoc_args['path'] ) ) {
+	// trailingslashit() isn't available yet
+	define( 'WP_ROOT', rtrim( $assoc_args['path'], '/' ) . '/' );
 } else {
-	define('WP_ROOT', $_SERVER['PWD'] . '/');
+	define( 'WP_ROOT', $_SERVER['PWD'] . '/' );
 }
 
 if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
