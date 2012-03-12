@@ -119,9 +119,9 @@ if ( count( $arguments ) >= 2 && $arguments[0] == 'core' && $arguments[1] == 'in
     define( 'WP_INSTALLING', true );
 }
 
-// Load WordPress libs
-require_once(WP_ROOT . 'wp-load.php');
-require_once(ABSPATH . 'wp-admin/includes/admin.php');
+// Load WordPress
+require WP_ROOT . 'wp-load.php';
+require ABSPATH . 'wp-admin/includes/admin.php';
 
 // Load the right info into the global wp_query
 if ( isset( $assoc_args['url'] ) ) {
