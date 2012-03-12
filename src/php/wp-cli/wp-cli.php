@@ -71,41 +71,7 @@ if ( array( 'core', 'config' ) == $arguments ) {
 }
 
 // Handle --url and --blog parameters
-if ( isset( $assoc_args['url'] ) ) {
-    $blog = $assoc_args['url'];
-} elseif ( isset( $assoc_args['blog'] ) ) {
-	$blog = $assoc_args['blog'];
-	unset( $assoc_args['blog'] );
-	if ( true === $blog ) {
-		WP_CLI::line( 'usage: wp --blog=example.com' );
-	}
-} elseif ( is_readable( WP_ROOT . 'wp-cli-blog' ) ) {
-	$blog = trim( file_get_contents( WP_ROOT . 'wp-cli-blog' ) );
-}
-
-// Try to find the blog parameter in the wp-config file
-if ( !isset( $blog ) ) {
-    if ( file_exists( WP_ROOT . '/wp-config.php' ) ) {
-        $wp_config_file = file_get_contents( WP_ROOT . '/wp-config.php' );
-        $hit = array();
-        if ( preg_match_all( "#.*define\s*\(\s*(['|\"]{1})(.+)(['|\"]{1})\s*,\s*(['|\"]{1})(.+)(['|\"]{1})\s*\)\s*;#iU", $wp_config_file, $matches ) ) {
-            foreach( $matches[2] as $def_key => $def_name ) {
-                if ( 'DOMAIN_CURRENT_SITE' == $def_name )
-                    $hit['domain'] = $matches[5][$def_key];
-                if ( 'PATH_CURRENT_SITE' == $def_name )
-                    $hit['path'] = $matches[5][$def_key];
-            }
-        }
-        if ( !empty( $hit ) && isset( $hit['domain'] ) )
-            $blog = $hit['domain'];
-        if ( !empty( $hit ) && isset( $hit['path'] ) )
-            $blog .= $hit['path'];
-    }
-}
-
-if ( isset( $blog ) ) {
-	WP_CLI::set_url_params( $blog );
-}
+WP_CLI::_set_url();
 
 // Implement --silent flag
 if ( isset( $assoc_args['silent'] ) ) {

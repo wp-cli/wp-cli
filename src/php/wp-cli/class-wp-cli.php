@@ -155,11 +155,11 @@ class WP_CLI {
 	 */
 	static function set_url_params( $url ) {
 	    $url_parts = parse_url( $url );
-	    
+
 	    if ( !isset( $url_parts['scheme'] ) ) {
 	        $url_parts = parse_url( 'http://' . $url );
 	    }
-	    
+
 		$_SERVER['HTTP_HOST'] = isset($url_parts['host']) ? $url_parts['host'] : '';
 		$_SERVER['REQUEST_URI'] = (isset($url_parts['path']) ? $url_parts['path'] : '') . (isset($url_parts['query']) ? '?' . $url_parts['query'] : '');
 		$_SERVER['REQUEST_URL'] = isset($url_parts['path']) ? $url_parts['path'] : '';
@@ -190,6 +190,47 @@ class WP_CLI {
 		require WP_CLI_ROOT . '/class-cli-upgrader-skin.php';
 
 		return new $class( new CLI_Upgrader_Skin );
+	}
+
+	/**
+	 * Set url based on --url, --blog or wp-config.php
+	 */
+	static function _set_url() {
+		if ( isset( $assoc_args['url'] ) ) {
+			$blog = $assoc_args['url'];
+		} elseif ( isset( $assoc_args['blog'] ) ) {
+			$blog = $assoc_args['blog'];
+			unset( $assoc_args['blog'] );
+			if ( true === $blog ) {
+				WP_CLI::line( 'usage: wp --blog=example.com' );
+			}
+		} elseif ( is_readable( WP_ROOT . 'wp-cli-blog' ) ) {
+			$blog = trim( file_get_contents( WP_ROOT . 'wp-cli-blog' ) );
+		}
+
+		// Try to find the blog parameter in the wp-config file
+		if ( !isset( $blog ) ) {
+			if ( file_exists( WP_ROOT . '/wp-config.php' ) ) {
+				$wp_config_file = file_get_contents( WP_ROOT . '/wp-config.php' );
+				$hit = array();
+				if ( preg_match_all( "#.*define\s*\(\s*(['|\"]{1})(.+)(['|\"]{1})\s*,\s*(['|\"]{1})(.+)(['|\"]{1})\s*\)\s*;#iU", $wp_config_file, $matches ) ) {
+					foreach( $matches[2] as $def_key => $def_name ) {
+						if ( 'DOMAIN_CURRENT_SITE' == $def_name )
+							$hit['domain'] = $matches[5][$def_key];
+						if ( 'PATH_CURRENT_SITE' == $def_name )
+							$hit['path'] = $matches[5][$def_key];
+					}
+				}
+				if ( !empty( $hit ) && isset( $hit['domain'] ) )
+					$blog = $hit['domain'];
+				if ( !empty( $hit ) && isset( $hit['path'] ) )
+					$blog .= $hit['path'];
+			}
+		}
+
+		if ( isset( $blog ) ) {
+			WP_CLI::set_url_params( $blog );
+		}
 	}
 }
 
