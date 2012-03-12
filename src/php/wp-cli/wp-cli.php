@@ -131,6 +131,9 @@ if ( isset( $assoc_args['url'] ) ) {
     }
 }
 
+// Set filesystem method
+add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
+
 // Load all internal commands
 foreach ( glob(WP_CLI_ROOT.'/commands/internals/*.php') as $filename ) {
 	include $filename;

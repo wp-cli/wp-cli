@@ -12,11 +12,6 @@ class CLI_Upgrader_Skin extends WP_Upgrader_Skin {
 	function bulk_header() {}
 	function bulk_footer() {}
 
-	// TODO: show prompt
-	function request_filesystem_credentials( $error = false ) {
-		$this->error( $error );
-	}
-
 	function error( $error ) {
 		if ( !$error )
 			return;
