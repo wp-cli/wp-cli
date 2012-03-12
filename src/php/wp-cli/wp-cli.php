@@ -43,14 +43,8 @@ if ( is_readable( $_SERVER['PWD'] . '/../wp-load.php' ) ) {
 
 if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 	if ( array( 'core', 'download' ) == $arguments ) {
-		if (isset($assoc_args['path'])) $docroot = $assoc_args['path'];
-		else $docroot = './';
-		WP_CLI::line('Downloading WordPress...');
-		exec("curl http://wordpress.org/latest.zip > /tmp/wordpress.zip");
-		exec("unzip /tmp/wordpress.zip");
-		exec("mv wordpress/* $docroot");
-		exec("rm -r wordpress");
-		WP_CLI::success('WordPress downloaded.');
+		include WP_CLI_ROOT.'/commands/internals/core.php';
+		new WP_CLI::$commands['core']( $arguments, $assoc_args );
 		exit;
 	} else {
 		WP_CLI::error('This does not seem to be a WordPress install. Pass --path=`path/to/wordpress` or run `wp core download`.');
@@ -59,21 +53,15 @@ if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 }
 
 if ( array( 'core', 'config' ) == $arguments ) {
-	$_POST['dbname'] = $assoc_args['name'];
-	$_POST['uname'] = $assoc_args['user'];
-	$_POST['pwd'] = $assoc_args['pass'];
-	$_POST['dbhost'] = isset( $assoc_args['host'] ) ? $assoc_args['host'] : 'localhost';
-	$_POST['prefix'] = isset( $assoc_args['prefix'] ) ? $assoc_args['prefix'] : 'wp_';
-
-	$_GET['step'] = 2;
-	require WP_ROOT . '/wp-admin/setup-config.php';
+	include WP_CLI_ROOT.'/commands/internals/core.php';
+	new WP_CLI::$commands['core']( $arguments, $assoc_args );
 	exit;
 }
 
 // Handle --url and --blog parameters
 WP_CLI::_set_url();
 
-// Implement --silent flag
+// Check --silent flag
 define( 'WP_CLI_SILENT', isset( $assoc_args['silent'] ) );
 
 // Set installer flag before loading any WP files
@@ -98,10 +86,10 @@ add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
 // Load all internal commands
 foreach ( glob(WP_CLI_ROOT.'/commands/internals/*.php') as $filename ) {
-	include $filename;
+	include_once $filename;
 }
 
-// Load all plugin commands
+// Load all community commands
 foreach ( glob(WP_CLI_ROOT.'/commands/community/*.php') as $filename ) {
 	include $filename;
 }
