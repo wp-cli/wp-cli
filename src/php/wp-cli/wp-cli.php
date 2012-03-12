@@ -46,7 +46,7 @@ if ( is_readable( $_SERVER['PWD'] . '/../wp-load.php' ) ) {
 
 if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 	if ( array( 'core', 'download' ) == $arguments ) {
-		WP_CLI::_run_core_command( $arguments, $assoc_args );
+		WP_CLI::run_command( $arguments, $assoc_args );
 	} else {
 		WP_CLI::error('This does not seem to be a WordPress install. Pass --path=`path/to/wordpress` or run `wp core download`.');
 		exit;
@@ -54,7 +54,7 @@ if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 }
 
 if ( array( 'core', 'config' ) == $arguments ) {
-	WP_CLI::_run_core_command( $arguments, $assoc_args );
+	WP_CLI::run_command( $arguments, $assoc_args );
 }
 
 // Handle --url and --blog parameters
@@ -80,42 +80,15 @@ if ( isset( $assoc_args['url'] ) ) {
 // Set filesystem method
 add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
-// Load all internal commands
-foreach ( glob(WP_CLI_ROOT.'/commands/internals/*.php') as $filename ) {
-	include_once $filename;
-}
-
-// Load all community commands
-foreach ( glob(WP_CLI_ROOT.'/commands/community/*.php') as $filename ) {
-	include $filename;
-}
-
 // Handle --completions parameter
 if ( isset( $assoc_args['completions'] ) ) {
+	WP_CLI::load_all_commands();
+
 	foreach ( WP_CLI::$commands as $name => $command ) {
 		WP_CLI::line( $name .  ' ' . implode( ' ', WP_CLI_Command::get_subcommands($command) ) );
 	}
 	exit;
 }
 
-// Get the top-level command
-if ( empty( $arguments ) )
-	$command = 'help';
-else
-	$command = array_shift( $arguments );
-
-// Translate aliases
-$aliases = array(
-	'sql' => 'db'
-);
-
-if ( isset( $aliases[ $command ] ) )
-	$command = $aliases[ $command ];
-
-if ( !isset( WP_CLI::$commands[$command] ) ) {
-	WP_CLI::error( "'$command' is not a registered wp command. See 'wp help'." );
-	exit;
-}
-
-new WP_CLI::$commands[$command]( $arguments, $assoc_args );
+WP_CLI::run_command( $arguments, $assoc_args );
 
