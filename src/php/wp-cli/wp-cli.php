@@ -25,6 +25,9 @@ include WP_CLI_ROOT . '../php-cli-tools/lib/cli/cli.php';
 // Get the cli arguments
 list( $arguments, $assoc_args ) = WP_CLI::parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
+// Check --silent flag
+define( 'WP_CLI_SILENT', isset( $assoc_args['silent'] ) );
+
 // Handle --version parameter
 if ( isset( $assoc_args['version'] ) ) {
 	WP_CLI::line( 'wp-cli ' . WP_CLI_VERSION );
@@ -60,9 +63,6 @@ if ( array( 'core', 'config' ) == $arguments ) {
 
 // Handle --url and --blog parameters
 WP_CLI::_set_url();
-
-// Check --silent flag
-define( 'WP_CLI_SILENT', isset( $assoc_args['silent'] ) );
 
 // Set installer flag before loading any WP files
 if ( count( $arguments ) >= 2 && $arguments[0] == 'core' && $arguments[1] == 'install' ) {
