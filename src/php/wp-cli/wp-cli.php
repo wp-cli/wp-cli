@@ -104,7 +104,7 @@ if ( !isset( $blog ) ) {
 }
 
 if ( isset( $blog ) ) {
-	WP_CLI::set_url( $blog );
+	WP_CLI::set_url_params( $blog );
 }
 
 // Implement --silent flag

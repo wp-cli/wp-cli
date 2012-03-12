@@ -104,7 +104,7 @@ class CoreCommand extends WP_CLI_Command {
 		}
 
 		if ( $site_url )
-			WP_CLI::set_url( $site_url );
+			WP_CLI::set_url_params( $site_url );
 
 		if ( $missing )
 			exit(1);
