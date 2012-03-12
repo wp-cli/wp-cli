@@ -44,7 +44,7 @@ if ( is_readable( $_SERVER['PWD'] . '/../wp-load.php' ) ) {
 if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 	if ( array( 'core', 'download' ) == $arguments ) {
 		if (isset($assoc_args['path'])) $docroot = $assoc_args['path'];
-		else $docroot = './'
+		else $docroot = './';
 		WP_CLI::line('Downloading WordPress...');
 		exec("curl http://wordpress.org/latest.zip > /tmp/wordpress.zip");
 		exec("unzip /tmp/wordpress.zip");
