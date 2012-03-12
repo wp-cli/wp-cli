@@ -74,11 +74,7 @@ if ( array( 'core', 'config' ) == $arguments ) {
 WP_CLI::_set_url();
 
 // Implement --silent flag
-if ( isset( $assoc_args['silent'] ) ) {
-	define('WP_CLI_SILENT', true);
-} else {
-	define('WP_CLI_SILENT', false);
-}
+define( 'WP_CLI_SILENT', isset( $assoc_args['silent'] ) );
 
 // Set installer flag before loading any WP files
 if ( count( $arguments ) >= 2 && $arguments[0] == 'core' && $arguments[1] == 'install' ) {
