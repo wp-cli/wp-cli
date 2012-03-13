@@ -192,12 +192,10 @@ class WP_CLI {
 		return new $class( new CLI_Upgrader_Skin );
 	}
 
-	/**
-	 * Set url based on --url, --blog or wp-config.php
-	 */
-	static function _set_url() {
+	static function _set_url( &$assoc_args ) {
 		if ( isset( $assoc_args['url'] ) ) {
 			$blog = $assoc_args['url'];
+			unset( $assoc_args['url'] );
 		} elseif ( isset( $assoc_args['blog'] ) ) {
 			$blog = $assoc_args['blog'];
 			unset( $assoc_args['blog'] );
@@ -206,10 +204,8 @@ class WP_CLI {
 			}
 		} elseif ( is_readable( WP_ROOT . 'wp-cli-blog' ) ) {
 			$blog = trim( file_get_contents( WP_ROOT . 'wp-cli-blog' ) );
-		}
-
-		// Try to find the blog parameter in the wp-config file
-		if ( !isset( $blog ) ) {
+		} else {
+			// Try to find the blog parameter in the wp-config file
 			if ( file_exists( WP_ROOT . '/wp-config.php' ) ) {
 				$wp_config_file = file_get_contents( WP_ROOT . '/wp-config.php' );
 				$hit = array();
