@@ -263,7 +263,6 @@ class PluginCommand extends WP_CLI_Command {
 
 	private function update_multiple( $args, $assoc_args ) {
 		$plugins = get_plugins();
-		$plugins = array_merge( $plugins, get_mu_plugins() );
 
 		// Grab all Plugins that need Updates
 		// If we have no sub-arguments, add them to the output list.
