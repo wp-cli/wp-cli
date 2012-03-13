@@ -263,7 +263,7 @@ class PluginCommand extends WP_CLI_Command {
 
 		// Grab all Plugins that need Updates
 		// If we have no sub-arguments, add them to the output list.
-		$plugin_list = "Plugin Updates Available:";
+		$plugin_list = "Available plugin updates:";
 		$plugins_to_update = array();
 		foreach ( $plugins as $file => $plugin ) {
 			if ( WP_CLI::get_update_status( $file, 'update_plugins' ) ) {
@@ -281,13 +281,12 @@ class PluginCommand extends WP_CLI_Command {
 		}
 
 		if ( empty( $plugins_to_update ) ) {
-			WP_CLI::warning( 'No Plugin Updates Available.' );
+			WP_CLI::line( 'No plugin updates available.' );
 			return;
 		}
 
 		// If --all, UPDATE ALL THE THINGS
-		if ( isset( $assoc_args['all'] ) )
-		{
+		if ( isset( $assoc_args['all'] ) ) {
 			$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
 			$result = $upgrader->bulk_upgrade( $plugins_to_update );
 
