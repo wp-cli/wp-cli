@@ -248,16 +248,20 @@ class PluginCommand extends WP_CLI_Command {
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
 
-		// If we have arguments and not updating all, update named plugin
-		if ( ! empty( $args ) && ! isset( $assoc_args['all'] ) ) {
-			list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
-
-			$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
-			$result = $upgrader->upgrade( $file );
-			return;
+		if ( !empty( $args ) && !isset( $assoc_args['all'] ) ) {
+			$this->update_single( $args, $assoc_args );
+		} else {
+			$this->update_multiple( $args, $assoc_args );
 		}
+	}
 
-		// If not, fall through and load plugin info.
+	private function update_single( $args, $assoc_args ) {
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+
+		WP_CLI::get_upgrader( 'Plugin_Upgrader' )->upgrade( $file );
+	}
+
+	private function update_multiple( $args, $assoc_args ) {
 		$plugins = get_plugins();
 		$plugins = array_merge( $plugins, get_mu_plugins() );
 
