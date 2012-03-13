@@ -20,7 +20,11 @@ class HelpCommand extends WP_CLI_Command {
 			$this->general_help();
 		} else {
 			$command = $args[0];
-			if ( 'help' == $command || !isset( WP_CLI::$commands[$command] ) ) {
+
+			if ( !isset( WP_CLI::$commands[$command] ) ) {
+				WP_CLI::error( "'$command' is not a registered wp command." );
+			} elseif ( 'help' == $command ) {
+				// prevent endless loop
 				$this->general_help();
 			} else {
 				$class = WP_CLI::$commands[$command];
