@@ -243,7 +243,6 @@ class WP_CLI {
 
 	static function run_command( $arguments, $assoc_args ) {
 		if ( empty( $arguments ) ) {
-			WP_CLI::load_all_commands();
 			$command = 'help';
 		} else {
 			$command = array_shift( $arguments );
@@ -254,7 +253,12 @@ class WP_CLI {
 
 			if ( isset( $aliases[ $command ] ) )
 				$command = $aliases[ $command ];
+		}
 
+		if ( 'help' == $command ) {
+			self::load_all_commands();
+		}
+		else {
 			foreach ( array( 'internals', 'community' ) as $dir ) {
 				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
 
