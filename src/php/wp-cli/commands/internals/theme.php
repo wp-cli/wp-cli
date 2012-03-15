@@ -122,6 +122,77 @@ class ThemeCommand extends WP_CLI_Command {
 	}
 
 	/**
+	 * Update a theme
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 */
+	function update( $args, $assoc_args ) {
+		// Force WordPress to update the theme list
+		wp_update_themes();
+
+		// If we have arguments and not updating all, update named theme
+		if ( ! empty( $args ) && ! isset( $assoc_args['all'] ) ) {
+			list( $theme, $name ) = $this->parse_name( $args, __FUNCTION__ );
+
+			$upgrader = WP_CLI::get_upgrader( 'Theme_Upgrader' );
+			$result = $upgrader->upgrade( $name );
+			return;
+		}
+
+		// If not, fall through and load theme info.
+		$themes = get_themes();
+
+		// Grab all Themes that need Updates
+		// If we have no sub-arguments, add them to the output list.
+		$theme_list = "Available theme updates:";
+		$themes_to_update = array();
+		foreach ( $themes as $theme ) {
+			$file = $theme['Stylesheet'];
+			if ( WP_CLI::get_update_status( $file, 'update_themes' ) ) {
+				$themes_to_update[] = $file;
+
+				if ( empty( $assoc_args ) ) {
+					if ( false === strpos( $file, '/' ) )
+						$name = str_replace('.php', '', basename($file));
+					else
+						$name = dirname($file);
+
+					$theme_list .= "\n\t%y$name%n";
+				}
+			}
+		}
+
+		if ( empty( $themes_to_update ) ) {
+			WP_CLI::line( 'No theme updates available.' );
+			return;
+		}
+
+		// If --all, UPDATE ALL THE THINGS
+		if ( isset( $assoc_args['all'] ) ) {
+			$upgrader = WP_CLI::get_upgrader( 'Theme_Upgrader' );
+			$result = $upgrader->bulk_upgrade( $themes_to_update );
+
+			// Let the user know the results.
+			$num_to_update = count( $themes_to_update );
+			$num_updated = count( array_filter( $result ) );
+
+			$line = "Updated $num_updated/$num_to_update Themes.";
+			if ( $num_to_update == $num_updated ) {
+				WP_CLI::success( $line );
+			} else if ( $num_updated > 0 ) {
+				WP_CLI::warning( $line );
+			} else {
+				WP_CLI::error( $line );
+			}
+
+		// Else list themes that require updates
+		} else {
+			WP_CLI::line( $theme_list );
+		}
+	}
+
+	/**
 	 * Delete a theme
 	 *
 	 * @param array $args
@@ -173,6 +244,9 @@ Available sub-commands:
 
    path       print path to the theme's stylesheet
       --directory   get the path to the closest parent directory
+
+   update       update a theme from wordpress.org
+      --all        update all themes from wordpress.org
 
    delete     delete a theme
 EOB
