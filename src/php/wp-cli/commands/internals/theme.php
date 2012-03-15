@@ -131,16 +131,20 @@ class ThemeCommand extends WP_CLI_Command {
 		// Force WordPress to update the theme list
 		wp_update_themes();
 
-		// If we have arguments and not updating all, update named theme
-		if ( ! empty( $args ) && ! isset( $assoc_args['all'] ) ) {
-			list( $theme, $name ) = $this->parse_name( $args, __FUNCTION__ );
-
-			$upgrader = WP_CLI::get_upgrader( 'Theme_Upgrader' );
-			$result = $upgrader->upgrade( $name );
-			return;
+		if ( !empty( $args ) && !isset( $assoc_args['all'] ) ) {
+			$this->update_single( $args, $assoc_args );
+		} else {
+			$this->update_multiple( $args, $assoc_args );
 		}
+	}
 
-		// If not, fall through and load theme info.
+	private function update_single( $args, $assoc_args ) {
+		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+
+		WP_CLI::get_upgrader( 'Theme_Upgrader' )->upgrade( $name );
+	}
+
+	private function update_multiple( $args, $assoc_args ) {
 		$themes = get_themes();
 
 		// Grab all Themes that need Updates
