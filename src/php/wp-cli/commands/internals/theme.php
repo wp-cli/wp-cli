@@ -168,8 +168,12 @@ usage: wp theme <sub-command> [<theme-name>]
 
 Available sub-commands:
    status     display status of all installed themes or of a particular theme
+
    activate   activate a particular theme
+
    path       print path to the theme's stylesheet
+      --directory   get the path to the closest parent directory
+
    delete     delete a theme
 EOB
 		);
