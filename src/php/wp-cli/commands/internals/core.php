@@ -139,8 +139,7 @@ class CoreCommand extends WP_CLI_Command {
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
-		$upgrader = WP_CLI::get_upgrader( 'Core_Upgrader' );
-		$result = $upgrader->upgrade( $update );
+		$result = WP_CLI::get_upgrader( 'Core_Upgrader' )->upgrade( $update );
 
 		if ( is_wp_error($result) ) {
 			$msg = WP_CLI::errorToString( $result );

@@ -166,23 +166,6 @@ class WP_CLI {
 		$_SERVER['QUERY_STRING'] = isset($url_parts['query']) ? $url_parts['query'] : '';
 	}
 
-	/**
-	 * Return the beginning of the status line for a certain plugin or theme
-	 *
-	 * @param string $item The plugin or theme name
-	 * @param string $key The transient key
-	 *
-	 * @return string
-	 */
-	static function get_update_status( $item, $key ) {
-		$update_list = get_site_transient( $key );
-
-		if ( isset( $update_list->response[ $item ] ) )
-			return true;
-
-		return false;
-	}
-
 	static function get_upgrader( $class ) {
 		if ( !class_exists( 'WP_Upgrader' ) )
 			require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';

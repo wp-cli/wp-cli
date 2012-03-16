@@ -8,9 +8,12 @@ WP_CLI::addCommand('plugin', 'PluginCommand');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class PluginCommand extends WP_CLI_Command {
+class PluginCommand extends WP_CLI_Command_With_Upgrade {
 
-	protected $default_subcommand = 'status';
+	protected $item_type = 'plugin';
+	protected $upgrader = 'Plugin_Upgrader';
+	protected $upgrade_refresh = 'wp_update_plugins';
+	protected $upgrade_transient = 'update_plugins';
 
 	private $mu_plugins;
 
@@ -42,7 +45,7 @@ class PluginCommand extends WP_CLI_Command {
 
 		$version = $details[ 'Version' ];
 
-		if ( WP_CLI::get_update_status( $file, 'update_plugins' ) )
+		if ( $this->get_update_status( $file ) )
 			$version .= ' (%gUpdate available%n)';
 
 		WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
@@ -70,7 +73,7 @@ class PluginCommand extends WP_CLI_Command {
 			else
 				$name = dirname($file);
 
-			if ( WP_CLI::get_update_status( $file, 'update_plugins' ) ) {
+			if ( $this->get_update_status( $file ) ) {
 				$line = ' %yU%n';
 			} else {
 				$line = '  ';
@@ -238,78 +241,8 @@ class PluginCommand extends WP_CLI_Command {
 		}
 	}
 
-	/**
-	 * Update a plugin
-	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 */
-	function update( $args, $assoc_args ) {
-		// Force WordPress to update the plugin list
-		wp_update_plugins();
-
-		if ( !empty( $args ) && !isset( $assoc_args['all'] ) ) {
-			$this->update_single( $args, $assoc_args );
-		} else {
-			$this->update_multiple( $args, $assoc_args );
-		}
-	}
-
-	private function update_single( $args, $assoc_args ) {
-		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
-
-		WP_CLI::get_upgrader( 'Plugin_Upgrader' )->upgrade( $file );
-	}
-
-	private function update_multiple( $args, $assoc_args ) {
-		$plugins = get_plugins();
-
-		// Grab all Plugins that need Updates
-		// If we have no sub-arguments, add them to the output list.
-		$plugin_list = "Available plugin updates:";
-		$plugins_to_update = array();
-		foreach ( $plugins as $file => $plugin ) {
-			if ( WP_CLI::get_update_status( $file, 'update_plugins' ) ) {
-				$plugins_to_update[] = $file;
-
-				if ( empty( $assoc_args ) ) {
-					if ( false === strpos( $file, '/' ) )
-						$name = str_replace('.php', '', basename($file));
-					else
-						$name = dirname($file);
-
-					$plugin_list .= "\n\t%y$name%n";
-				}
-			}
-		}
-
-		if ( empty( $plugins_to_update ) ) {
-			WP_CLI::line( 'No plugin updates available.' );
-			return;
-		}
-
-		// If --all, UPDATE ALL THE THINGS
-		if ( isset( $assoc_args['all'] ) ) {
-			$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
-			$result = $upgrader->bulk_upgrade( $plugins_to_update );
-
-			// Let the user know the results.
-			$num_to_update = count( $plugins_to_update );
-			$num_updated = count( array_filter( $result ) );
-
-			$line = "Updated $num_updated/$num_to_update Plugins.";
-			if ( $num_to_update == $num_updated ) {
-				WP_CLI::success( $line );
-			} else if ( $num_updated > 0 ) {
-				WP_CLI::warning( $line );
-			} else {
-				WP_CLI::error( $line );
-			}
-
-		// Else list plugins that require updates
-		} else {
-			WP_CLI::line( $plugin_list );
-		}
+	protected function get_item_list() {
+		return array_keys( get_plugins() );
 	}
 
 	/**
@@ -367,7 +300,7 @@ class PluginCommand extends WP_CLI_Command {
 	 * @param bool $exit
 	 * @return array
 	 */
-	private function parse_name( $args, $subcommand ) {
+	protected function parse_name( $args, $subcommand ) {
 		if ( empty( $args ) ) {
 			WP_CLI::line( "usage: wp plugin $subcommand <plugin-name>" );
 			exit;

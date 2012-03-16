@@ -8,9 +8,12 @@ WP_CLI::addCommand('theme', 'ThemeCommand');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class ThemeCommand extends WP_CLI_Command {
+class ThemeCommand extends WP_CLI_Command_With_Upgrade {
 
-	protected $default_subcommand = 'status';
+	protected $item_type = 'theme';
+	protected $upgrader = 'Theme_Upgrader';
+	protected $upgrade_refresh = 'wp_update_themes';
+	protected $upgrade_transient = 'update_themes';
 
 	/**
 	 * Get the status of one or all themes
@@ -29,9 +32,9 @@ class ThemeCommand extends WP_CLI_Command {
 
 		$status = $this->get_status( $details['Name'], true );
 
-		$version = $details[ 'Version' ];
+		$version = $details['Version'];
 
-		if ( WP_CLI::get_update_status( $name, 'update_themes' ) )
+		if ( $this->get_update_status( $details['Stylesheet'] ) )
 			$version .= ' (%gUpdate available%n)';
 
 		WP_CLI::line( 'Theme %9' . $name . '%n details:' );
@@ -46,7 +49,7 @@ class ThemeCommand extends WP_CLI_Command {
 		WP_CLI::line( 'Installed themes:' );
 
 		foreach ( get_themes() as $theme ) {
-			if ( WP_CLI::get_update_status( $theme['Stylesheet'], 'update_themes' ) ) {
+			if ( $this->get_update_status( $theme['Stylesheet'] ) ) {
 				$line = ' %yU%n';
 			} else {
 				$line = '  ';
@@ -121,79 +124,8 @@ class ThemeCommand extends WP_CLI_Command {
 		WP_CLI::line( $path );
 	}
 
-	/**
-	 * Update a theme
-	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 */
-	function update( $args, $assoc_args ) {
-		// Force WordPress to update the theme list
-		wp_update_themes();
-
-		if ( !empty( $args ) && !isset( $assoc_args['all'] ) ) {
-			$this->update_single( $args, $assoc_args );
-		} else {
-			$this->update_multiple( $args, $assoc_args );
-		}
-	}
-
-	private function update_single( $args, $assoc_args ) {
-		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
-
-		WP_CLI::get_upgrader( 'Theme_Upgrader' )->upgrade( $name );
-	}
-
-	private function update_multiple( $args, $assoc_args ) {
-		$themes = get_themes();
-
-		// Grab all Themes that need Updates
-		// If we have no sub-arguments, add them to the output list.
-		$theme_list = "Available theme updates:";
-		$themes_to_update = array();
-		foreach ( $themes as $theme ) {
-			$file = $theme['Stylesheet'];
-			if ( WP_CLI::get_update_status( $file, 'update_themes' ) ) {
-				$themes_to_update[] = $file;
-
-				if ( empty( $assoc_args ) ) {
-					if ( false === strpos( $file, '/' ) )
-						$name = str_replace('.php', '', basename($file));
-					else
-						$name = dirname($file);
-
-					$theme_list .= "\n\t%y$name%n";
-				}
-			}
-		}
-
-		if ( empty( $themes_to_update ) ) {
-			WP_CLI::line( 'No theme updates available.' );
-			return;
-		}
-
-		// If --all, UPDATE ALL THE THINGS
-		if ( isset( $assoc_args['all'] ) ) {
-			$upgrader = WP_CLI::get_upgrader( 'Theme_Upgrader' );
-			$result = $upgrader->bulk_upgrade( $themes_to_update );
-
-			// Let the user know the results.
-			$num_to_update = count( $themes_to_update );
-			$num_updated = count( array_filter( $result ) );
-
-			$line = "Updated $num_updated/$num_to_update Themes.";
-			if ( $num_to_update == $num_updated ) {
-				WP_CLI::success( $line );
-			} else if ( $num_updated > 0 ) {
-				WP_CLI::warning( $line );
-			} else {
-				WP_CLI::error( $line );
-			}
-
-		// Else list themes that require updates
-		} else {
-			WP_CLI::line( $theme_list );
-		}
+	protected function get_item_list() {
+		return wp_list_pluck( get_themes(), 'Stylesheet' );
 	}
 
 	/**
