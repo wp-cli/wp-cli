@@ -114,7 +114,7 @@ class ThemeCommand extends WP_CLI_Command {
 			list( $stylesheet, $name ) = $this->parse_name( $args, __FUNCTION__ );
 			$path = $stylesheet;
 
-			if ( isset( $assoc_args['directory'] ) )
+			if ( isset( $assoc_args['dir'] ) )
 				$path = dirname( $path );
 		}
 
@@ -239,7 +239,7 @@ class ThemeCommand extends WP_CLI_Command {
 	public static function help() {
 		WP_CLI::line( <<<EOB
 usage: wp theme <sub-command> [<theme-name>]
-   or: wp theme path [<theme-name>] [--directory]
+   or: wp theme path [<theme-name>] [--dir]
 
 Available sub-commands:
    status     display status of all installed themes or of a particular theme
@@ -247,10 +247,10 @@ Available sub-commands:
    activate   activate a particular theme
 
    path       print path to the theme's stylesheet
-      --directory   get the path to the closest parent directory
+      --dir      get the path to the closest parent directory
 
-   update       update a theme from wordpress.org
-      --all        update all themes from wordpress.org
+   update     update a theme from wordpress.org
+      --all      update all themes from wordpress.org
 
    delete     delete a theme
 EOB

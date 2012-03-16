@@ -175,7 +175,7 @@ class PluginCommand extends WP_CLI_Command {
 			list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 			$path .= '/' . $file;
 
-			if ( isset( $assoc_args['directory'] ) )
+			if ( isset( $assoc_args['dir'] ) )
 				$path = dirname( $path );
 		}
 
@@ -400,7 +400,7 @@ class PluginCommand extends WP_CLI_Command {
 	public static function help() {
 		WP_CLI::line( <<<EOB
 usage: wp plugin <sub-command> [<plugin-name>]
-   or: wp plugin path [<plugin-name>] [--directory]
+   or: wp plugin path [<plugin-name>] [--dir]
    or: wp plugin install <plugin-name> [--activate] [--dev]
 
 Available sub-commands:
@@ -413,7 +413,7 @@ Available sub-commands:
    toggle       toggle activation state of a particular plugin
 
    path         print path to the plugin's file
-      --directory   get the path to the closest parent directory
+      --dir        get the path to the closest parent directory
 
    install      install a plugin from wordpress.org
       --activate   activate the plugin after installing it
