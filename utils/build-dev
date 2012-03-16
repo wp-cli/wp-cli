@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-ln -sf $(pwd)/src/bin/wp /usr/bin/wp
+for dir in /usr/bin /usr/local/bin; do
+	if [ -d $dir ]; then
+		ln -sf $(pwd)/src/bin/wp $dir/wp
+		break
+	fi
+done
 
 for dir in /etc/bash_completion.d /usr/local/etc/bash_completion.d; do
 	if [ -d $dir ]; then
