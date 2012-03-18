@@ -20,7 +20,6 @@ usage: wp export --path=<export-path> --user=<username/id>
 
 Required parameters:
 	--path			Full Path to directory where WXR export files should be stored
-	--user			Username/ID the import should run as
 
 Optional filters:
 	--start_date       Export only posts new than this date in format YYYY-MM-DD
@@ -40,7 +39,6 @@ EOB
 	public function validate_arguments( $args, $assoc_args ) {
 		$defaults = array(
 			'path'			=>		NULL,
-			'user'			=>		NULL,
 			'start_date'	=>		NULL,
 			'end_date'		=>		NULL,
 			'post_type'		=>		NULL,
@@ -83,28 +81,6 @@ EOB
 			WP_CLI::error( sprintf( "The path %s does not exist", $path ) );
 			exit;
 		}
-
-		return true;
-	}
-
-	private function check_user( $user ) {
-		if ( empty( $user ) ) {
-			WP_CLI::warning( 'missing --user parameter' );
-			return false;
-		}
-
-		if ( is_numeric( $user ) ) {
-			$user_id = (int) $user;
-		} else {
-			$user_id = (int) username_exists( $user );
-		}
-		if ( !$user_id || !wp_set_current_user( $user_id ) ) {
-			WP_CLI::error( sprintf( "Could not get a user_id for this user: %s", var_export( $user_id, true ) ) );
-			exit;
-		}
-
-		$current_user = wp_get_current_user();
-		$this->user_id = (int) $user_id;
 
 		return true;
 	}
