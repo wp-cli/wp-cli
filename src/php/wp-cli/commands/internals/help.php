@@ -40,16 +40,20 @@ class HelpCommand extends WP_CLI_Command {
 	}
 
 	private function general_help() {
-		WP_CLI::line('Example usage:');
+		WP_CLI::line( 'Available commands:' );
 		foreach ( WP_CLI::$commands as $name => $command ) {
 			if ( 'help' == $name )
 				continue;
 
 			$this->single_command_help( $name, $command );
 		}
-		WP_CLI::line('    wp --version');
 		WP_CLI::line();
 		WP_CLI::line( "See 'wp help <command>' for more information on a specific command." );
+		WP_CLI::line();
+		WP_CLI::line( 'Global parameters:' );
+		WP_CLI::line( '    --user=<id|login>   set the current user' );
+		WP_CLI::line( '    --url=<url>         set the current URL' );
+		WP_CLI::line( '    --version           print wp-cli version' );
 	}
 
 	private function single_command_help( $name, $command ) {
