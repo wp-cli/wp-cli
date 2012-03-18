@@ -89,7 +89,7 @@ if ( isset( $assoc_args['user'] ) ) {
 	if ( !$user_id || !wp_set_current_user( $user_id ) ) {
 		WP_CLI::error( sprintf( 'Could not get a user_id for this user: %s', var_export( $user, true ) ) );
 	}
-	unset( $user);
+	unset( $user );
 }
 
 // Set filesystem method
