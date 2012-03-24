@@ -15,13 +15,13 @@ Installing
 
 ```sh
 pear config-set auto_discover 1
-sudo pear install andreascreten.github.com/wp-cli/wpcli
+sudo pear install wp-cli.github.com/wp-cli/wpcli
 ```
 
 **Via GIT:**
 
 ```sh
-git clone --recurse-submodules git://github.com/andreascreten/wp-cli.git ~/git/wp-cli
+git clone --recurse-submodules git://github.com/wp-cli/wp-cli.git ~/git/wp-cli
 cd ~/git/wp-cli
 sudo utils/build-dev
 ```
@@ -102,7 +102,7 @@ Adding commands
 ---------------
 
 Adding commands to wp-cli is very easy. You can even add them from within your own plugin.
-You can find more information about adding commands in the [Commands Cookbook](https://github.com/andreascreten/wp-cli/wiki/Commands-Cookbook) on our Wiki.
+You can find more information about adding commands in the [Commands Cookbook](https://github.com/wp-cli/wp-cli/wiki/Commands-Cookbook) on our Wiki.
 
 **Please share the commands you make, issue a pull request to get them included in wp-cli by default.**
 
@@ -141,5 +141,5 @@ Changelog
 Contributors
 ------------
 
-- [Contributor list](https://github.com/andreascreten/wp-cli/contributors)
-- [Contributor impact](https://github.com/andreascreten/wp-cli/graphs/impact)
+- [Contributor list](https://github.com/wp-cli/wp-cli/contributors)
+- [Contributor impact](https://github.com/wp-cli/wp-cli/graphs/impact)

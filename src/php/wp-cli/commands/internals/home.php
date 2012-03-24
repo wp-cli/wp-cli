@@ -18,7 +18,7 @@ class HomeCommand extends WP_CLI_Command {
 	 */
 	public function __construct( $args, $assoc_args ) {
 		// The url for the wp-cli repository
-		$repository_url = 'http://github.com/andreascreten/wp-cli';
+		$repository_url = 'http://github.com/wp-cli/wp-cli';
 
 		// Open the wp-cli page in the browser
 		if(exec('which x-www-browser')) {
