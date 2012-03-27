@@ -53,6 +53,7 @@ class HelpCommand extends WP_CLI_Command {
 		WP_CLI::line( 'Global parameters:' );
 		WP_CLI::line( '    --user=<id|login>   set the current user' );
 		WP_CLI::line( '    --url=<url>         set the current URL' );
+		WP_CLI::line( '    --path=<path>       set the current path to the WP install' );
 		WP_CLI::line( '    --version           print wp-cli version' );
 	}
 
