@@ -15,7 +15,7 @@ Installing
 
 ```sh
 pear config-set auto_discover 1
-sudo pear install wp-cli.github.com/wp-cli/wpcli
+sudo pear install wp-cli.github.com/pear/wpcli
 ```
 
 **Via GIT:**
