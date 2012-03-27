@@ -109,6 +109,17 @@ You can find more information about adding commands in the [Commands Cookbook](h
 Changelog
 ---------------
 
+**0.5**
+
+- added `wp user`
+- added `wp core download`
+- added `wp core config`
+- added `wp plugin update --all`
+- added `wp theme update`
+- added `wp db import`
+- added `--url` `--path` and `--user` global parameters
+- various bugfixes
+
 **0.4**
 
 - added `wp eval` and `wp eval-file`
