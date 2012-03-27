@@ -11,11 +11,9 @@ version="${version/.tgz/}"
 #sudo phing install-system
 
 # update channel files
-cd ../wp-cli-pages
+cd ../wp-cli-pear
 pirum add . ../wp-cli/dist/wpcli-$version.tgz
 pirum build .
-
-exit
 
 # push changes
 git add -A
