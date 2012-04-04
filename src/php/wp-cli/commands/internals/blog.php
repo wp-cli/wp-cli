@@ -69,9 +69,8 @@ class BlogCommand extends WP_CLI_Command {
 			$public = 1;
 		}
 
-		$domain = '';
-		if (preg_match( '|^([a-zA-Z0-9-])+$|', $blog['domain'])) {
-			$domain = strtolower( $blog['domain'] );
+		if (preg_match( '|^([a-zA-Z0-9-])+$|', $base)) {
+			$base = strtolower($base);
 		}
 		
 		// If not a subdomain install, make sure the domain isn't a reserved word
