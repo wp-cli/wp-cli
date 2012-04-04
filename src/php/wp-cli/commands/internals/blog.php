@@ -10,8 +10,8 @@ WP_CLI::addCommand('blog', 'BlogCommand');
  */
 class BlogCommand extends WP_CLI_Command {
 	
-	private function _create_usage() {
-		WP_CLI::line( "usage: wp blog create <base> <title> [email] [site_id] [public=(1 or 0)] []" );
+	private function _create_usage_string() {
+		return "usage: wp blog create <domain-base> <title> [email] [site_id] [public=(1 or 0)]";
 	}
 	
 	private function get_site($site_id) {
@@ -39,7 +39,7 @@ class BlogCommand extends WP_CLI_Command {
 		// site optional
 		// public optional
 		if (empty($args[0]) || empty($args[1])) {
-			$this->_create_usage();
+			WP_CLI::line($this->_create_usage_string());
 			exit;
 		}
 		
@@ -88,9 +88,7 @@ class BlogCommand extends WP_CLI_Command {
 		// User twice if super admin
 		$email = sanitize_email($email);
 		if (empty($email) || !is_email($email)) {
-			//@TODO just use super admin email if not specified
 			$super_admins = get_super_admins();
-
 			$email = '';
 			if (!empty($super_admins) && is_array($super_admins)) {
 				// Just get the first one
@@ -102,11 +100,12 @@ class BlogCommand extends WP_CLI_Command {
 			}
 		}
 
-		if ( is_subdomain_install() ) {
-			$newdomain = $base . '.' . preg_replace( '|^www\.|', '', $site->domain );
+		if (is_subdomain_install()) {
+			$newdomain = $base.'.'.preg_replace('|^www\.|', '', $site->domain);
 			$path = $site->path;
 			$url = $newdomain;
-		} else {
+		} 
+		else {
 			$newdomain = $site->domain;
 			$path = $site->domain.$site->path.$base.'/';
 			$url = $path;
@@ -117,7 +116,7 @@ class BlogCommand extends WP_CLI_Command {
 		if (!$user_id) { // Create a new user with a random password
 			$password = wp_generate_password(12, false);
 			$user_id = wpmu_create_user($base, $password, $email);
-			if (false == $user_id ) {
+			if (false == $user_id) {
 				WP_CLI::line('ERROR: There was an issue creating the user.');
 				exit;
 			}
@@ -149,17 +148,16 @@ class BlogCommand extends WP_CLI_Command {
 	public function delete($args) {}
 		
 	public function help() {
-		WP_CLI::line( <<<EOB
-usage: wp blog <sub-command> [<theme-name>]
+		WP_CLI::line("
+usage: wp blog <sub-command> [options]
 
 Available sub-commands:
-   create   display status of all installed themes or of a particular theme
+   create   create a new blog
+      ".$this->_create_usage_string()."
 
-   update   activate a particular theme
+   update   //TODO
 
-   delete   print path to the theme's stylesheet
-      --dir   get the path to the closest parent directory
-EOB
-		);
+   delete   //TODO
+");
 	}
 }
