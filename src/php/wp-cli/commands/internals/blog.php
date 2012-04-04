@@ -10,11 +10,12 @@ WP_CLI::addCommand('blog', 'BlogCommand');
  */
 class BlogCommand extends WP_CLI_Command {
 	
+	//@TODO make associative due to optional params
 	private function _create_usage_string() {
-		return "usage: wp blog create <domain-base> <title> [email] [site_id] [public=(1 or 0)]";
+		return "usage: wp blog create --domain_base=<subdomain or directory name> --title=<blog title> [--email] [--site_id] [--public]";
 	}
 	
-	private function get_site($site_id) {
+	private function _get_site($site_id) {
 		global $wpdb;
 		// Load site data
 		$sites = $wpdb->get_results("SELECT * FROM $wpdb->site WHERE `id` = ".$site_id);
@@ -26,7 +27,7 @@ class BlogCommand extends WP_CLI_Command {
 		return false;
 	}
 	
-	public function create($args) {
+	public function create($args, $assoc_args) {
 		if (!is_multisite()) {
 			WP_CLI::line("ERROR: not a multisite instance");
 			exit;
@@ -38,19 +39,20 @@ class BlogCommand extends WP_CLI_Command {
 		// email optional
 		// site optional
 		// public optional
-		if (empty($args[0]) || empty($args[1])) {
+		error_log(print_r($assoc_args,1));
+		if (empty($assoc_args['domain_base']) || empty($assoc_args['title'])) {
 			WP_CLI::line($this->_create_usage_string());
 			exit;
 		}
 		
-		$base = $args[0];
-		$title = $args[1];
-		$email = empty($args[2]) ? '' : $args[2];
+		$base = $assoc_args['domain_base'];
+		$title = $assoc_args['title'];
+		$email = empty($assoc_args['email']) ? '' : $assoc_args['email'];
 		// Site
-		if (!empty($args[3])) {
-			$site = $this->get_site($args[3]);
+		if (!empty($assoc_args['site_id'])) {
+			$site = $this->_get_site($assoc_args['site_id']);
 			if ($site === false) {
-				WP_CLI::line('ERROR: Site with id '.$args[3].'does not exist');
+				WP_CLI::line('ERROR: Site with id '.$assoc_args['site_id'].'does not exist');
 				exit;
 			}
 		}
@@ -58,8 +60,8 @@ class BlogCommand extends WP_CLI_Command {
 			$site = wpmu_current_site();
 		}
 		// Public
-		if (!empty($args[4])) {
-			$public = $args[4];
+		if (!empty($assoc_args['public'])) {
+			$public = $args['public'];
 			// Check for 1 or 0
 			if ($public != '1' && $public != '0') {
 				$this->_create_usage();
@@ -148,16 +150,21 @@ class BlogCommand extends WP_CLI_Command {
 	public function delete($args) {}
 		
 	public function help() {
-		WP_CLI::line("
+		WP_CLI::line(<<<EOB
 usage: wp blog <sub-command> [options]
 
 Available sub-commands:
    create   create a new blog
-      ".$this->_create_usage_string()."
+     --domain_base    Base for the new domain. Subdomain on subdomain installs, directory on subdirectory installs
+     --title          Title of the new blog
+     [--email]        Email for Admin user. User will be created if none exists. Assignement to Super Admin if not included
+     [--site-id]      Site to associate new blog with. Defaults to current site (typically 1)
+     [--public]       Whether or not the new site is public (indexed)
 
    update   //TODO
 
    delete   //TODO
-");
+EOB
+	);
 	}
 }
