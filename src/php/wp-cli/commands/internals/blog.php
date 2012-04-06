@@ -158,7 +158,7 @@ Available sub-commands:
      --domain_base    Base for the new domain. Subdomain on subdomain installs, directory on subdirectory installs
      --title          Title of the new blog
      [--email]        Email for Admin user. User will be created if none exists. Assignement to Super Admin if not included
-     [--site-id]      Site to associate new blog with. Defaults to current site (typically 1)
+     [--site_id]      Site to associate new blog with. Defaults to current site (typically 1)
      [--public]       Whether or not the new site is public (indexed)
 
    update   //TODO
