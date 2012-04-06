@@ -105,6 +105,7 @@ if ( isset( $assoc_args['completions'] ) ) {
 	exit;
 }
 
+// Allow an extra directory to find commands to be specified
 if ( isset( $assoc_args['extra_command_dir'] ) ) {
     $extra_command_dir = $assoc_args['extra_command_dir'];
     WP_CLI::addCommandDirectory( $extra_command_dir );

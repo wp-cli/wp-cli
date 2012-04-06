@@ -20,6 +20,11 @@ class WP_CLI {
 		self::$commands[$name] = $class;
 	}
     
+    /**
+     * Add a directory containing commands
+     * 
+     * @param string $dir
+     */
     static function addCommandDirectory( $dir ) {
         array_push( WP_CLI::$extra_command_directories, $dir );
     }
