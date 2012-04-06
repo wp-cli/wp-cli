@@ -8,6 +8,7 @@
 class WP_CLI {
 
 	static $commands = array();
+    static $extra_command_directories = array( );
 
 	/**
 	 * Add a command to the wp-cli list of commands
@@ -18,6 +19,10 @@ class WP_CLI {
 	public function addCommand( $name, $class ) {
 		self::$commands[$name] = $class;
 	}
+    
+    static function addCommandDirectory( $dir ) {
+        array_push( WP_CLI::$extra_command_directories, $dir );
+    }
 
 	/**
 	 * Display a message in the cli
@@ -213,8 +218,8 @@ class WP_CLI {
 	}
 
 	static function load_all_commands() {
-		foreach ( array( 'internals', 'community' ) as $dir ) {
-			foreach ( glob( WP_CLI_ROOT . "/commands/$dir/*.php" ) as $filename ) {
+		foreach ( WP_CLI::_command_directories() as $dir ) {
+			foreach ( glob( "$dir/*.php" ) as $filename ) {
 				include $filename;
 			}
 		}
@@ -238,8 +243,8 @@ class WP_CLI {
 			self::load_all_commands();
 		}
 		else {
-			foreach ( array( 'internals', 'community' ) as $dir ) {
-				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
+			foreach ( WP_CLI::_command_directories() as $dir ) {
+				$path = "$dir/$command.php";
 
 				if ( is_readable( $path ) ) {
 					include $path;
@@ -256,5 +261,14 @@ class WP_CLI {
 		new WP_CLI::$commands[$command]( $arguments, $assoc_args );
 		exit;
 	}
+    
+    static function _command_directories() {
+        function _standard_command_dir( $name ) {
+            return WP_CLI_ROOT . "/commands/$name";
+        }
+        $standard_directories = array_map( _standard_command_dir, array( 'internals', 'community' ) );
+        return array_merge( $standard_directories, WP_CLI::$extra_command_directories );
+    }
+    
 }
 

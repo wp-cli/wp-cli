@@ -105,5 +105,11 @@ if ( isset( $assoc_args['completions'] ) ) {
 	exit;
 }
 
+if ( isset( $assoc_args['extra_command_dir'] ) ) {
+    $extra_command_dir = $assoc_args['extra_command_dir'];
+    WP_CLI::addCommandDirectory( $extra_command_dir );
+    unset( $assoc_args['extra_command_dir'] );
+}
+
 WP_CLI::run_command( $arguments, $assoc_args );
 
