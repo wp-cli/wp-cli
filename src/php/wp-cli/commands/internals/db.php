@@ -37,20 +37,6 @@ class DBCommand extends WP_CLI_Command {
 	}
 
 	/**
-	 * Exports the WordPress DB as SQL using mysqldump.
-	 */
-	function export( $args, $assoc_args ) {
-		$result_file = $this->get_file_name( $args );
-
-		$exec = sprintf( 'mysqldump "%s" --user="%s" --password="%s" --host="%s" --result-file "%s"',
-			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file );
-
-		exec( $exec );
-
-		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
-	}
-
-	/**
 	 * Execute a query against the site database.
 	 */
 	function query( $args, $assoc_args ) {
@@ -68,6 +54,23 @@ class DBCommand extends WP_CLI_Command {
 		WP_CLI::line( $result );
 	}
 
+	/**
+	 * Exports the WordPress DB as SQL using mysqldump.
+	 */
+	function export( $args, $assoc_args ) {
+		$result_file = $this->get_file_name( $args );
+
+		$exec = sprintf( 'mysqldump "%s" --user="%s" --password="%s" --host="%s" --result-file "%s"',
+			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file );
+
+		exec( $exec );
+
+		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
+	}
+
+	/**
+	 * Imports a database from a file.
+	 */
 	function import( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
