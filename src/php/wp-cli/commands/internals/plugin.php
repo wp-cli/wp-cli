@@ -204,7 +204,7 @@ class PluginCommand extends WP_CLI_Command_With_Upgrade {
 
 		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 		if ( !$api ) {
-			WP_CLI::error( 'Can\'t find the plugin in the WordPress.org plugins repository.' );
+			WP_CLI::error( "Can't find the plugin in the WordPress.org plugins repository." );
 			exit();
 		}
 
@@ -222,7 +222,7 @@ class PluginCommand extends WP_CLI_Command_With_Upgrade {
 			// check if the requested version exists
 			$version_check_response = wp_remote_head( $api->download_link );
 			if ( !$version_check_response || $version_check_response['headers']['content-type'] != 'application/octet-stream' ) {
-				WP_CLI::error( "Can't find the requested plugin's version " . $assoc_args['version'] . "in the WordPress.org plugins repository." );
+				WP_CLI::error( "Can't find the requested plugin's version " . $assoc_args['version'] . " in the WordPress.org plugins repository." );
 			}
 		}
 
@@ -244,10 +244,10 @@ class PluginCommand extends WP_CLI_Command_With_Upgrade {
 
 			break;
 		case 'newer_installed':
-			WP_CLI::error( sprintf( 'Newer version (%s) installed', $status['version'] ) );
+			WP_CLI::error( sprintf( 'Newer version (%s) installed.', $status['version'] ) );
 			break;
 		case 'latest_installed':
-			WP_CLI::error( 'Latest version already installed' );
+			WP_CLI::error( 'Latest version already installed.' );
 			break;
 		}
 	}
