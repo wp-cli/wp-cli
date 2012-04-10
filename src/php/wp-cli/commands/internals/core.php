@@ -21,9 +21,20 @@ class CoreCommand extends WP_CLI_Command {
 			$docroot = $assoc_args['path'];
 		else
 			$docroot = './';
+	
+		if (isset($assoc_args['version'])) {
+			$download_url = 'http://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
+		} else {
+			$download_url = 'http://wordpress.org/latest.zip';
+		}
+		$version_check_response = wp_remote_head($download_url);
+		if (!$version_check_response || $version_check_response['headers']['content-type'] != 'application/octet-stream') {
+			WP_CLI::error( 'Unable to download remote file ' . $download_url);
+			exit();
+		}
 
 		WP_CLI::line('Downloading WordPress...');
-		exec("curl http://wordpress.org/latest.zip > /tmp/wordpress.zip");
+		exec("curl {$download_url} > /tmp/wordpress.zip");
 		exec("unzip /tmp/wordpress.zip");
 		exec("mv wordpress/* $docroot");
 		exec("rm -r wordpress");
