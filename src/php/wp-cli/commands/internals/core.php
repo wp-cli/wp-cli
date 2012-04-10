@@ -21,15 +21,16 @@ class CoreCommand extends WP_CLI_Command {
 			$docroot = $assoc_args['path'];
 		else
 			$docroot = './';
-	
-		if (isset($assoc_args['version'])) {
+
+		if ( isset( $assoc_args['version'] ) ) {
 			$download_url = 'http://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
 		} else {
 			$download_url = 'http://wordpress.org/latest.zip';
 		}
-		$version_check_response = wp_remote_head($download_url);
-		if (!$version_check_response || $version_check_response['headers']['content-type'] != 'application/octet-stream') {
-			WP_CLI::error( 'Unable to download remote file ' . $download_url);
+
+		$version_check_response = wp_remote_head( $download_url );
+		if ( !$version_check_response || $version_check_response['headers']['content-type'] != 'application/octet-stream' ) {
+			WP_CLI::error( 'Unable to download remote file ' . $download_url );
 			exit();
 		}
 
@@ -171,6 +172,7 @@ class CoreCommand extends WP_CLI_Command {
 		WP_CLI::line( <<<EOB
 usage: wp core update
    or: wp core version [--extra]
+   or: wp core download [--version=1.2.3]
    or: wp core install --site_url=example.com --site_title=<site-title> [--admin_name=<username>] --admin_password=<password> --admin_email=<email-address>
 EOB
 	);

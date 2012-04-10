@@ -218,12 +218,11 @@ class PluginCommand extends WP_CLI_Command_With_Upgrade {
 
 			$api->download_link = $link . $slug . '.' . $assoc_args['version'] .'.zip';
 			$api->version = $assoc_args['version'];
-			
-			//check if the requested version exists
-			$version_check_response = wp_remote_head($api->download_link);
-			if (!$version_check_response || $version_check_response['headers']['content-type'] != 'application/octet-stream') {
-				WP_CLI::error( 'Can\'t find the requested plugin\'s version ' . $assoc_args['version'] . ' in the WordPress.org plugins repository.');
-				exit();
+
+			// check if the requested version exists
+			$version_check_response = wp_remote_head( $api->download_link );
+			if ( !$version_check_response || $version_check_response['headers']['content-type'] != 'application/octet-stream' ) {
+				WP_CLI::error( "Can't find the requested plugin's version " . $assoc_args['version'] . "in the WordPress.org plugins repository." );
 			}
 		}
 
@@ -346,7 +345,7 @@ class PluginCommand extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( <<<EOB
 usage: wp plugin <sub-command> [<plugin-name>]
    or: wp plugin path [<plugin-name>] [--dir]
-   or: wp plugin install <plugin-name> [--activate] [--dev]
+   or: wp plugin install <plugin-name> [--activate] [--dev] [--version=1.2.3]
 
 Available sub-commands:
    status       display status of all installed plugins or of a particular plugin
@@ -363,6 +362,7 @@ Available sub-commands:
    install      install a plugin from wordpress.org
       --activate   activate the plugin after installing it
       --dev        install the development version
+      --version    install a specific version
 
    update       update a plugin from wordpress.org
       --all        update all plugins from wordpress.org
