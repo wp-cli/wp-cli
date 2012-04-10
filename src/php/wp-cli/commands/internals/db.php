@@ -40,18 +40,14 @@ class DBCommand extends WP_CLI_Command {
 	 * Exports the WordPress DB as SQL using mysqldump.
 	 */
 	function export( $args, $assoc_args ) {
-		if ( !isset( $assoc_args['file'] ) ) {
-			$result_file = sprintf( '%s.sql', DB_NAME );
-		} else {
-			$result_file = $assoc_args['file'];
-		}
+		$result_file = $this->get_file_name( $args );
 
 		$exec = sprintf( 'mysqldump "%s" --user="%s" --password="%s" --host="%s" --result-file "%s"',
 			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file );
 
 		exec( $exec );
 
-		WP_CLI::success( sprintf( 'Dumped to %s', $result_file ) );
+		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
 	}
 
 	/**
@@ -73,18 +69,21 @@ class DBCommand extends WP_CLI_Command {
 	}
 
 	function import( $args, $assoc_args ) {
-		if ( !isset( $assoc_args['file'] ) ) {
-			$result_file = sprintf( '%s.sql', DB_NAME );
-		} else {
-			$result_file = $assoc_args['file'];
-		}
+		$result_file = $this->get_file_name( $args );
 
 		$exec = sprintf( 'mysql "%s" --user="%s" --password="%s" --host="%s" < "%s"',
 			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file );
 
 		exec( $exec );
 
-		WP_CLI::success( sprintf( 'Imported from  %s', $result_file ) );
+		WP_CLI::success( sprintf( 'Imported from %s', $result_file ) );
+	}
+
+	private function get_file_name( $args ) {
+		if ( empty( $args ) )
+			return sprintf( '%s.sql', DB_NAME );
+
+		return $args[0];
 	}
 
 	/**
