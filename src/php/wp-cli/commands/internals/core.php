@@ -28,12 +28,6 @@ class CoreCommand extends WP_CLI_Command {
 			$download_url = 'http://wordpress.org/latest.zip';
 		}
 
-		$version_check_response = wp_remote_head( $download_url );
-		if ( !$version_check_response || $version_check_response['headers']['content-type'] != 'application/octet-stream' ) {
-			WP_CLI::error( 'Unable to download remote file ' . $download_url );
-			exit();
-		}
-
 		$silent = '';
 		if( !empty( $assoc_args['silent'] ) )
 			$silent = '--silent ';
