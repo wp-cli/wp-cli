@@ -22,8 +22,12 @@ class CoreCommand extends WP_CLI_Command {
 		else
 			$docroot = './';
 
+		$silent = '';
+		if( !empty( $assoc_args['silent'] ) )
+			$silent = '--silent ';
+
 		WP_CLI::line('Downloading WordPress...');
-		exec("curl http://wordpress.org/latest.zip > /tmp/wordpress.zip");
+		exec("curl {$silent}http://wordpress.org/latest.zip > /tmp/wordpress.zip");
 		exec("unzip /tmp/wordpress.zip");
 		exec("mv wordpress/* $docroot");
 		exec("rm -r wordpress");
