@@ -92,11 +92,18 @@ class DBCommand extends WP_CLI_Command {
 	 */
 	public static function help() {
 		WP_CLI::line( <<<EOB
-wp db cli               Open a SQL command-line interface using the WordPress credentials.
-wp db connect           Print a string for connecting to the database.
-wp db export            Export the WordPress database using mysqldump.
-wp db import            Import a database exported via mysqldump.
-wp db query             Execute a query against the WordPress database.
+usage: wp db <sub-command> [<file>]
+
+Available sub-commands:
+   cli          Open a SQL command-line interface using the WordPress credentials.
+
+   connect      Print a string for connecting to the database.
+
+   export       Export the WordPress database using mysqldump.
+
+   import       Import a database exported via mysqldump.
+
+   query        Execute a query against the WordPress database.
 EOB
 	);
 	}
