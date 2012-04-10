@@ -30,7 +30,7 @@ list( $arguments, $assoc_args ) = WP_CLI::parse_args( array_slice( $GLOBALS['arg
 define( 'WP_CLI_SILENT', isset( $assoc_args['silent'] ) );
 
 // Handle --version parameter
-if ( isset( $assoc_args['version'] ) ) {
+if ( isset( $assoc_args['version'] ) && empty( $arguments ) ) {
 	WP_CLI::line( 'wp-cli ' . WP_CLI_VERSION );
 	exit;
 }
