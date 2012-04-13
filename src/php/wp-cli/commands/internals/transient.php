@@ -31,9 +31,9 @@ class TransientCommand extends WP_CLI_Command {
 		}
 			
 		if ( is_array( $value ) || is_object( $value ) )
-			WP_CLI::line( var_export( $value ) );
+			echo var_export( $value ) . "\n";
 		else
-			WP_CLI::success( $value );
+			echo $value . "\n";
 	}
 
 	/**
