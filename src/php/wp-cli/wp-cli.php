@@ -95,6 +95,12 @@ if ( isset( $assoc_args['user'] ) ) {
 	unset( $assoc_args['user'], $user );
 }
 
+// Handle --require parameter
+if ( isset( $assoc_args['require'] ) ) {
+	require $assoc_args['require'];
+	unset( $assoc_args['require'] );
+}
+
 // Handle --completions parameter
 if ( isset( $assoc_args['completions'] ) ) {
 	WP_CLI::load_all_commands();
