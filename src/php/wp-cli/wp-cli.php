@@ -78,7 +78,10 @@ if ( isset( $assoc_args['url'] ) ) {
     }
 }
 
-// Set the user
+// Set filesystem method
+add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
+
+// Handle --user parameter
 if ( isset( $assoc_args['user'] ) ) {
 	$user = $assoc_args['user'];
 	if ( is_numeric( $user ) ) {
@@ -89,11 +92,8 @@ if ( isset( $assoc_args['user'] ) ) {
 	if ( !$user_id || !wp_set_current_user( $user_id ) ) {
 		WP_CLI::error( sprintf( 'Could not get a user_id for this user: %s', var_export( $user, true ) ) );
 	}
-	unset( $user );
+	unset( $assoc_args['user'], $user );
 }
-
-// Set filesystem method
-add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
 // Handle --completions parameter
 if ( isset( $assoc_args['completions'] ) ) {
