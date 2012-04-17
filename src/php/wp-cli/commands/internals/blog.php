@@ -39,7 +39,6 @@ class BlogCommand extends WP_CLI_Command {
 		// email optional
 		// site optional
 		// public optional
-		error_log(print_r($assoc_args,1));
 		if (empty($assoc_args['domain_base']) || empty($assoc_args['title'])) {
 			WP_CLI::line($this->_create_usage_string());
 			exit;
@@ -102,15 +101,18 @@ class BlogCommand extends WP_CLI_Command {
 			}
 		}
 
-		if (is_subdomain_install()) {
-			$newdomain = $base.'.'.preg_replace('|^www\.|', '', $site->domain);
-			$path = $site->path;
-			$url = $newdomain;
+		if (is_subdomain_install()) {			
+			$path = '/';
+			$url = $newdomain = $base.'.'.preg_replace('|^www\.|', '', $site->domain);
+			
 		} 
 		else {
 			$newdomain = $site->domain;
-			$path = $site->domain.$site->path.$base.'/';
-			$url = $path;
+			$path = $base;
+			if (strpos($path, '/') !== 0) {
+				$path = '/'.$path;
+			}
+			$url = $site->domain;
 		}
 		
 		$password = 'N/A';
@@ -139,10 +141,10 @@ class BlogCommand extends WP_CLI_Command {
 //			wp_mail(get_site_option('admin_email'), sprintf(__('[%s] New Site Created'), $current_site->site_name), $content_mail, 'From: "Site Admin" <'.get_site_option( 'admin_email').'>');
 		} 
 		else {
-			WP_CLI::line($id->get_error_message());
+			WP_CLI::line('ERROR: '.$id->get_error_message());
 			exit;
 		}	
-		WP_CLI::line('Blog created with URL: '.$url);
+		WP_CLI::line('Blog created with URL: '.$url.' ID: '.$id);
 	}
 		
 	public function update($args) {}
