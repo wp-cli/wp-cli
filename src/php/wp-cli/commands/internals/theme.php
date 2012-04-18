@@ -131,7 +131,7 @@ class ThemeCommand extends WP_CLI_Command_With_Upgrade {
 	 * @param array $assoc_args
 	 */
 	function install( $args, $assoc_args ) {
-		if ( empty( $args ) && empty( $assoc_args ) ) {
+		if ( empty( $args ) ) {
 			WP_CLI::line( "usage: wp theme install <theme-name>" );
 			exit();
 		}
@@ -141,10 +141,10 @@ class ThemeCommand extends WP_CLI_Command_With_Upgrade {
 		// Force WordPress to update the theme list
 		wp_update_themes();
 
-		// If --file is set, install from file.
-		if ( isset( $assoc_args['file'] ) ) {
+		// If argument ends in .zip, install from file.
+		if ( preg_match( '/\.zip$/', $args[0] ) ) {
 			$upgrader = WP_CLI::get_upgrader( $this->upgrader );
-			$result = $upgrader->install( $assoc_args['file'] );
+			$result = $upgrader->install( $args[0] );
 
 			$slug = $upgrader->result['destination_name'];
 
@@ -242,7 +242,6 @@ Available sub-commands:
 
    install      install a theme from wordpress.org
       --activate   activate the theme after installing it
-      --file       install from ZIP file
 
    update     update a theme from wordpress.org
       --all      update all themes from wordpress.org
