@@ -124,6 +124,65 @@ class ThemeCommand extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( $path );
 	}
 
+	/**
+	 * Install a new theme
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 */
+	function install( $args, $assoc_args ) {
+		if ( empty( $args ) ) {
+			WP_CLI::line( "usage: wp theme install <theme-name>" );
+			exit();
+		}
+
+		$slug = stripslashes( $args[0] );
+
+		// Force WordPress to update the theme list
+		wp_update_themes();
+
+		// If --file is set, install from file.
+		if ( isset( $assoc_args['file'] ) ) {
+			$result = WP_CLI::get_upgrader( $this->upgrader )->install( $args[0] );
+
+		// Else, install from .org theme repo.
+		} else {
+			$result = 0;
+
+			$api = themes_api( 'theme_information', array( 'slug' => $slug ) );
+			if ( is_wp_error( $api ) ) {
+				WP_CLI::error( "Can't find the theme in the WordPress.org theme repository." );
+				exit();
+			}
+
+			// Check to see if we should update, rather than install.
+			if ( $this->get_update_status( $api->slug ) ) {
+				WP_CLI::line( sprintf( 'Updating %s (%s)', $api->name, $api->version ) );
+				$result = WP_CLI::get_upgrader( $this->upgrader )->upgrade( $api->slug );
+
+			/**
+			 *  Else, if there's no update, it's either not installed,
+			 *  or it's newer than what we've got.
+			 */
+			} else if ( !is_readable( $this->get_stylesheet_path( $api->slug ) ) ) {
+				WP_CLI::line( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
+				$result = WP_CLI::get_upgrader( $this->upgrader )->install( $api->download_link );
+			} else {
+				$result = 1;
+				WP_CLI::warning( 'Theme already installed and up to date.' );
+			}
+
+			/**
+			 * Finally, activate theme if requested.
+			 * At the moment, this only works with themes installed from repo.
+			 */
+			if ( $result && isset( $assoc_args['activate'] ) ) {
+				WP_CLI::line( "Activating '$slug'..." );
+				$this->activate( array( $slug ) );
+			}
+		}
+	}
+
 	protected function get_item_list() {
 		return wp_list_pluck( get_themes(), 'Stylesheet' );
 	}
@@ -180,6 +239,10 @@ Available sub-commands:
 
    path       print path to the theme's stylesheet
       --dir      get the path to the closest parent directory
+
+   install      install a theme from wordpress.org
+      --activate   activate the theme after installing it
+      --file       install from ZIP file
 
    update     update a theme from wordpress.org
       --all      update all themes from wordpress.org
