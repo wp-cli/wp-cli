@@ -72,7 +72,7 @@ class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	}
 
 	/**
-	 * Check wether an item has an update available or not.
+	 * Check whether an item has an update available or not.
 	 *
 	 * @param string $item The plugin/theme theme path
 	 *
