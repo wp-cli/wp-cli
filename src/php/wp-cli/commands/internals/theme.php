@@ -131,22 +131,26 @@ class ThemeCommand extends WP_CLI_Command_With_Upgrade {
 	 * @param array $assoc_args
 	 */
 	function install( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
+		if ( empty( $args ) && empty( $assoc_args ) ) {
 			WP_CLI::line( "usage: wp theme install <theme-name>" );
 			exit();
 		}
 
-		$slug = stripslashes( $args[0] );
+		$slug = '';
 
 		// Force WordPress to update the theme list
 		wp_update_themes();
 
 		// If --file is set, install from file.
 		if ( isset( $assoc_args['file'] ) ) {
-			$result = WP_CLI::get_upgrader( $this->upgrader )->install( $args[0] );
+			$upgrader = WP_CLI::get_upgrader( $this->upgrader );
+			$result = $upgrader->install( $assoc_args['file'] );
+
+			$slug = $upgrader->result['destination_name'];
 
 		// Else, install from .org theme repo.
 		} else {
+			$slug = stripslashes( $args[0] );
 			$result = 0;
 
 			$api = themes_api( 'theme_information', array( 'slug' => $slug ) );
@@ -168,18 +172,14 @@ class ThemeCommand extends WP_CLI_Command_With_Upgrade {
 				WP_CLI::line( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 				$result = WP_CLI::get_upgrader( $this->upgrader )->install( $api->download_link );
 			} else {
-				$result = 1;
-				WP_CLI::warning( 'Theme already installed and up to date.' );
+				WP_CLI::error( 'Theme already installed and up to date.' );
 			}
+		}
 
-			/**
-			 * Finally, activate theme if requested.
-			 * At the moment, this only works with themes installed from repo.
-			 */
-			if ( $result && isset( $assoc_args['activate'] ) ) {
-				WP_CLI::line( "Activating '$slug'..." );
-				$this->activate( array( $slug ) );
-			}
+		// Finally, activate theme if requested.
+		if ( $result && isset( $assoc_args['activate'] ) ) {
+			WP_CLI::line( "Activating '$slug'..." );
+			$this->activate( array( $slug ) );
 		}
 	}
 
