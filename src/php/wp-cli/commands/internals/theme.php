@@ -143,10 +143,10 @@ class ThemeCommand extends WP_CLI_Command_With_Upgrade {
 
 		// If argument ends in .zip, install from file.
 		if ( preg_match( '/\.zip$/', $args[0] ) ) {
-			$upgrader = WP_CLI::get_upgrader( $this->upgrader );
-			$result = $upgrader->install( $args[0] );
+			$file_upgrader = WP_CLI::get_upgrader( $this->upgrader );
+			$result = $file_upgrader->install( $args[0] );
 
-			$slug = $upgrader->result['destination_name'];
+			$slug = $file_upgrader->result['destination_name'];
 
 		// Else, install from .org theme repo.
 		} else {
