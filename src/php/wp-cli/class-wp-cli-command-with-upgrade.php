@@ -88,16 +88,21 @@ class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	 * Install a plugin/theme from a ZIP file
 	 *
 	 * @param string $file
-	 *
-	 * @return string The plugin/theme's slug, or NULL on failed install.
+	 * @param bool $activate
 	 */
-	protected function install_from_file( $file ) {
-		$slug = NULL;
+	protected function maybe_install_from_zip( $file, $activate ) {
+		if ( '.zip' != substr( $file, -4 ) )
+			return;
+
 		$file_upgrader = WP_CLI::get_upgrader( $this->upgrader );
 
-		if ( $file_upgrader->install( $file ) )
+		if ( $file_upgrader->install( $file ) ) {
 			$slug = $file_upgrader->result['destination_name'];
 
-		return $slug;
+			if ( $activate )
+				$this->activate( array( $slug ) );
+		}
+
+		exit;
 	}
 }
