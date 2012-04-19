@@ -248,10 +248,9 @@ class PluginCommand extends WP_CLI_Command_With_Upgrade {
 			$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
 			$result = $upgrader->install( $api->download_link );
 
-			if ( $result ) {
-				if ( isset( $assoc_args['activate'] ) ) {
-					system( "wp plugin activate " . WP_CLI::compose_args( $args, $assoc_args ) );
-				}
+			if ( $result && isset( $assoc_args['activate'] ) ) {
+				WP_CLI::line( "Activating '$slug'..." );
+				$this->activate( array( $slug ) );
 			}
 
 			break;
