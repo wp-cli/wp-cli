@@ -202,6 +202,18 @@ class PluginCommand extends WP_CLI_Command_With_Upgrade {
 		// Force WordPress to update the plugin list
 		wp_update_plugins();
 
+		// If argument ends in .zip, install from file.
+		if ( preg_match( '/\.zip$/', $args[0] ) ) {
+			$slug = $this->install_from_file( $args[0] );
+
+			if ( $slug && isset( $assoc_args['activate'] ) ) {
+				WP_CLI::line( "Activating '$slug'..." );
+				$this->activate( array( $slug ) );
+			}
+
+			exit();
+		}
+
 		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 		if ( !$api ) {
 			WP_CLI::error( "Can't find the plugin in the WordPress.org plugins repository." );

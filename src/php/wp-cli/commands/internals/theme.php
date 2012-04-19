@@ -136,22 +136,18 @@ class ThemeCommand extends WP_CLI_Command_With_Upgrade {
 			exit();
 		}
 
-		$slug = '';
+		$slug = $result = NULL;
 
 		// Force WordPress to update the theme list
 		wp_update_themes();
 
 		// If argument ends in .zip, install from file.
 		if ( preg_match( '/\.zip$/', $args[0] ) ) {
-			$file_upgrader = WP_CLI::get_upgrader( $this->upgrader );
-			$result = $file_upgrader->install( $args[0] );
-
-			$slug = $file_upgrader->result['destination_name'];
+			$slug = $result = $this->install_from_file( $args[0] );
 
 		// Else, install from .org theme repo.
 		} else {
 			$slug = stripslashes( $args[0] );
-			$result = 0;
 
 			$api = themes_api( 'theme_information', array( 'slug' => $slug ) );
 			if ( is_wp_error( $api ) ) {
@@ -160,15 +156,15 @@ class ThemeCommand extends WP_CLI_Command_With_Upgrade {
 			}
 
 			// Check to see if we should update, rather than install.
-			if ( $this->get_update_status( $api->slug ) ) {
+			if ( $this->get_update_status( $slug ) ) {
 				WP_CLI::line( sprintf( 'Updating %s (%s)', $api->name, $api->version ) );
-				$result = WP_CLI::get_upgrader( $this->upgrader )->upgrade( $api->slug );
+				$result = WP_CLI::get_upgrader( $this->upgrader )->upgrade( $slug );
 
 			/**
 			 *  Else, if there's no update, it's either not installed,
 			 *  or it's newer than what we've got.
 			 */
-			} else if ( !is_readable( $this->get_stylesheet_path( $api->slug ) ) ) {
+			} else if ( !is_readable( $this->get_stylesheet_path( $slug ) ) ) {
 				WP_CLI::line( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 				$result = WP_CLI::get_upgrader( $this->upgrader )->install( $api->download_link );
 			} else {
