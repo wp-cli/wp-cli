@@ -96,6 +96,8 @@ class BlogCommand extends WP_CLI_Command {
 				$super_login = $super_admins[0];
 				$super_user = get_user_by('login', $super_login);
 				if ($super_user) {
+					error_log($super_user->user_email);
+					error_log($super_user->email);
 					$email = $super_user->user_email;
 				}
 			}
@@ -112,7 +114,7 @@ class BlogCommand extends WP_CLI_Command {
 			if (strpos($path, '/') !== 0) {
 				$path = '/'.$path;
 			}
-			$url = $site->domain;
+			$url = $site->domain.$path;
 		}
 		
 		$password = 'N/A';
@@ -144,7 +146,7 @@ class BlogCommand extends WP_CLI_Command {
 			WP_CLI::line('ERROR: '.$id->get_error_message());
 			exit;
 		}	
-		WP_CLI::line('Blog created with URL: '.$url.' ID: '.$id);
+		WP_CLI::line('Blog created with DOMAIN: '.$site->domain.' URL: '.$url.' ID: '.$id);
 	}
 		
 	public function update($args) {}
