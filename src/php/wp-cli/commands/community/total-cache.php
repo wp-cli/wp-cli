@@ -21,57 +21,64 @@ class W3TotalCacheCommand extends WP_CLI_Command {
 	 */
 	function flush( $args = array(), $vars = array() ) {
 		if ( function_exists( 'w3tc_pgcache_flush' ) ) {
-			$cache_type = array_shift($args);
+			$args = array_unique( $args );
+			do {
+				$cache_type = array_shift($args);
 
-			switch($cache_type) {
-			case 'db':
-			case 'database':
-				if ( w3tc_dbcache_flush() ) {
-					WP_CLI::success( 'The object cache is flushed successfully.' );
-				} else {
-					WP_CLI::error( 'Flushing the object cache failed.' );
-				}
-				break;
+				switch($cache_type) {
+				case 'db':
+				case 'database':
+					if ( w3tc_dbcache_flush() ) {
+						WP_CLI::success( 'The object cache is flushed successfully.' );
+					} else {
+						WP_CLI::error( 'Flushing the object cache failed.' );
+					}
+					break;
 
-			case 'minify':
-				if ( w3tc_minify_flush() ) {
-					WP_CLI::success( 'The object cache is flushed successfully.' );
-				} else {
-					WP_CLI::error( 'Flushing the object cache failed.' );
-				}
-				break;
+				case 'minify':
+					if ( w3tc_minify_flush() ) {
+						WP_CLI::success( 'The object cache is flushed successfully.' );
+					} else {
+						WP_CLI::error( 'Flushing the object cache failed.' );
+					}
+					break;
 
-			case 'object':
-				if ( w3tc_objectcache_flush() ) {
-					WP_CLI::success( 'The object cache is flushed successfully.' );
-				} else {
-					WP_CLI::error( 'Flushing the object cache failed.' );
-				}
-				break;
+				case 'object':
+					if ( w3tc_objectcache_flush() ) {
+						WP_CLI::success( 'The object cache is flushed successfully.' );
+					} else {
+						WP_CLI::error( 'Flushing the object cache failed.' );
+					}
+					break;
 
-			case 'post':
-			default:
-				if ( isset($vars['post_id']) ) {
-					if ( is_numeric( $vars['post_id'] ) ) {
+				case 'post':
+				default:
+					if ( isset($vars['post_id']) ) {
+						if ( is_numeric( $vars['post_id'] ) ) {
+							w3tc_pgcache_flush_post( $vars['post_id'] );
+						} else {
+							WP_CLI::error('This is not a valid post id.');
+						}
+
 						w3tc_pgcache_flush_post( $vars['post_id'] );
-					} else {
-						WP_CLI::error('This is not a valid post id.');
 					}
+					elseif ( isset( $vars['permalink'] ) ) {
+						$id = url_to_postid( $vars['permalink'] );
 
-					w3tc_pgcache_flush_post( $vars['post_id'] );
-				}
-				elseif ( isset( $vars['permalink'] ) ) {
-					$id = url_to_postid( $vars['permalink'] );
-
-					if ( is_numeric( $id ) ) {
-						w3tc_pgcache_flush_post( $id );
+						if ( is_numeric( $id ) ) {
+							w3tc_pgcache_flush_post( $id );
+						} else {
+							WP_CLI::error('There is no post with this permalink.');
+						}
 					} else {
-						WP_CLI::error('There is no post with this permalink.');
+						if ( isset( $flushed_page_cache ) && $flushed_page_cache )
+							break;
+
+						$flushed_page_cache = true;
+						w3tc_pgcache_flush();
 					}
-				} else {
-					w3tc_pgcache_flush();
 				}
-			}
+			} while ( !empty( $args ) );
 		} else {
 			WP_CLI::error('The W3 Total Cache could not be found, is it installed?');
 		}
