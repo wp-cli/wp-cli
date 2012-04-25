@@ -153,4 +153,4 @@ Contributors
 ------------
 
 - [Contributor list](https://github.com/wp-cli/wp-cli/contributors)
-- [Contributor impact](https://github.com/wp-cli/wp-cli/graphs/impact)
+- [Contributor guide](https://github.com/wp-cli/wp-cli/wiki/Commands-Cookbook)
