@@ -248,17 +248,14 @@ class WP_CLI {
 		}
 
 		if ( 'help' == $command ) {
-			self::load_all_commands();
-		}
-		else {
-			foreach ( array( 'internals', 'community' ) as $dir ) {
-				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
-
-				if ( is_readable( $path ) ) {
-					include $path;
-					break;
-				}
+			if ( empty( $arguments ) ) {
+				self::load_all_commands();
+			} else {
+				self::load_command( 'help' );
+				self::load_command( $arguments[0] );
 			}
+		} else {
+			self::load_command( $command );
 		}
 
 		if ( !isset( WP_CLI::$commands[$command] ) ) {
@@ -268,6 +265,17 @@ class WP_CLI {
 
 		new WP_CLI::$commands[$command]( $arguments, $assoc_args );
 		exit;
+	}
+
+	private function load_command( $command ) {
+		foreach ( array( 'internals', 'community' ) as $dir ) {
+			$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
+
+			if ( is_readable( $path ) ) {
+				include $path;
+				break;
+			}
+		}
 	}
 }
 
