@@ -44,11 +44,11 @@ class CoreCommand extends WP_CLI_Command {
 	 * Set up a wp-config.php file.
 	 */
 	public function config( $args, $assoc_args ) {
-		$_POST['dbname'] = $assoc_args['name'];
-		$_POST['uname'] = $assoc_args['user'];
-		$_POST['pwd'] = $assoc_args['pass'];
-		$_POST['dbhost'] = isset( $assoc_args['host'] ) ? $assoc_args['host'] : 'localhost';
-		$_POST['prefix'] = isset( $assoc_args['prefix'] ) ? $assoc_args['prefix'] : 'wp_';
+		$_POST['dbname'] = $assoc_args['dbname'];
+		$_POST['uname'] = $assoc_args['dbuser'];
+		$_POST['pwd'] = $assoc_args['dbpass'];
+		$_POST['dbhost'] = isset( $assoc_args['dbhost'] ) ? $assoc_args['dbhost'] : 'localhost';
+		$_POST['prefix'] = isset( $assoc_args['dbprefix'] ) ? $assoc_args['dbprefix'] : 'wp_';
 
 		$_GET['step'] = 2;
 		require WP_ROOT . '/wp-admin/setup-config.php';
