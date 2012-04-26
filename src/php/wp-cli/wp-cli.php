@@ -62,7 +62,7 @@ if ( array( 'core', 'config' ) == $arguments ) {
 WP_CLI::_set_url( $assoc_args );
 
 // Set installer flag before loading any WP files
-if ( count( $arguments ) >= 2 && $arguments[0] == 'core' && $arguments[1] == 'install' ) {
+if ( array( 'core', 'install' ) == $arguments ) {
     define( 'WP_INSTALLING', true );
 }
 
