@@ -58,6 +58,11 @@ if ( array( 'core', 'config' ) == $arguments ) {
 	WP_CLI::run_command( $arguments, $assoc_args );
 }
 
+if ( array( 'db', 'create' ) == $arguments ) {
+	WP_CLI::load_wp_config();
+	WP_CLI::run_command( $arguments, $assoc_args );
+}
+
 // Handle --url and --blog parameters
 WP_CLI::_set_url( $assoc_args );
 
