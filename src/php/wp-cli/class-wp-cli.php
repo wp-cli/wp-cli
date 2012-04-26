@@ -212,6 +212,19 @@ class WP_CLI {
 		}
 	}
 
+	// Loads wp-config.php without loading the rest of WP
+	static function load_wp_config() {
+		define( 'ABSPATH', dirname(__FILE__) . '/' );
+
+		if ( file_exists( WP_ROOT . 'wp-config.php' ) ) {
+			require_once( WP_ROOT . 'wp-config.php' );
+		} elseif ( file_exists( dirname(WP_ROOT) . '/wp-config.php' ) && ! file_exists( dirname(WP_ROOT) . '/wp-settings.php' ) ) {
+			require_once( dirname(WP_ROOT) . '/wp-config.php' );
+		} else {
+			WP_CLI::error( 'No wp-config.php file.' );
+		}
+	}
+
 	static function load_all_commands() {
 		foreach ( array( 'internals', 'community' ) as $dir ) {
 			foreach ( glob( WP_CLI_ROOT . "/commands/$dir/*.php" ) as $filename ) {

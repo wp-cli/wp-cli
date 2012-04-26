@@ -15,11 +15,11 @@ class DBCommand extends WP_CLI_Command {
 	protected $aliases = array( 'dump' => 'export' );
 
 	/**
-	 * Return a string for connecting to the DB.
+	 * Creates the database according to the wp-config.php file
 	 */
-	protected function connect_string() {
-		return sprintf( 'mysql --host="%s" --database="%s" --user="%s" --password="%s"',
-			DB_HOST, DB_NAME, DB_USER, DB_PASSWORD );
+	function create() {
+		exec( sprintf( 'mysql --host="%s" --user="%s" --password="%s" --execute="CREATE DATABASE %s"',
+			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME ) );
 	}
 
 	/**
@@ -82,6 +82,14 @@ class DBCommand extends WP_CLI_Command {
 		WP_CLI::success( sprintf( 'Imported from %s', $result_file ) );
 	}
 
+	/**
+	 * Return a string for connecting to the DB.
+	 */
+	private function connect_string() {
+		return sprintf( 'mysql --host="%s" --user="%s" --password="%s" --database="%s"',
+			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
+	}
+
 	private function get_file_name( $args ) {
 		if ( empty( $args ) )
 			return sprintf( '%s.sql', DB_NAME );
@@ -106,6 +114,8 @@ Available sub-commands:
    import       Import a database exported via mysqldump.
 
    query        Execute a query against the WordPress database.
+
+   create       Create a database using the info from wp-config.php.
 EOB
 	);
 	}
