@@ -324,17 +324,17 @@ class PluginCommand extends WP_CLI_Command_With_Upgrade {
 		$plugins = get_plugins( '/' . $name );
 
 		if ( !empty( $plugins ) ) {
-			$file = $name . '/' . key( $plugins );
+			$file = key( $plugins );
 		}
 		else {
 			$file = $name . '.php';
-		}
 
-		$plugins = get_plugins();
+			$plugins = get_plugins();
 
-		if ( !isset( $plugins[$file] ) ) {
-			WP_CLI::error( "The plugin '$name' could not be found." );
-			exit();
+			if ( !isset( $plugins[$file] ) ) {
+				WP_CLI::error( "The plugin '$name' could not be found." );
+				exit();
+			}
 		}
 
 		return array( $file, $name );
