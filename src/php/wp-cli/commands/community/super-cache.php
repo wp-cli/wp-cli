@@ -1,7 +1,7 @@
 <?php
 
 if ( function_exists( 'wp_super_cache_enable' ) ) {
-	WP_CLI::addCommand( 'super-cache', 'WPSuperCacheCommand' );
+	WP_CLI::addCommand( 'super-cache', 'WPSuperCache_Command' );
 }
 
 /**
@@ -11,7 +11,7 @@ if ( function_exists( 'wp_super_cache_enable' ) ) {
  * @subpackage commands/community
  * @maintainer Andreas Creten
  */
-class WPSuperCacheCommand extends WP_CLI_Command {
+class WPSuperCache_Command extends WP_CLI_Command {
 
 	/**
 	 * Clear something from the cache

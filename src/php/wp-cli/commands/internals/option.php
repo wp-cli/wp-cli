@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('option', 'OptionCommand');
+WP_CLI::addCommand('option', 'Option_Command');
 
 /**
  * Implement option command
@@ -8,7 +8,7 @@ WP_CLI::addCommand('option', 'OptionCommand');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class OptionCommand extends WP_CLI_Command {
+class Option_Command extends WP_CLI_Command {
 
 	/**
 	 * Add an option

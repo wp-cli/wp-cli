@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('user', 'UserCommand');
+WP_CLI::addCommand('user', 'User_Command');
 
 /**
  * Implement user command
@@ -8,7 +8,7 @@ WP_CLI::addCommand('user', 'UserCommand');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class UserCommand extends WP_CLI_Command {
+class User_Command extends WP_CLI_Command {
 
 	/**
 	 * List users

@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('help', 'HelpCommand');
+WP_CLI::addCommand('help', 'Help_Command');
 
 /**
  * Implement help command
@@ -8,7 +8,7 @@ WP_CLI::addCommand('help', 'HelpCommand');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class HelpCommand extends WP_CLI_Command {
+class Help_Command extends WP_CLI_Command {
 
 	/**
 	 * Overwrite the constructor to have a command without sub-commands.

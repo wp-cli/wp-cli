@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('generate', 'GenerateCommand');
+WP_CLI::addCommand('generate', 'Generate_Command');
 
 /**
  * Implement generate command
@@ -8,7 +8,7 @@ WP_CLI::addCommand('generate', 'GenerateCommand');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class GenerateCommand extends WP_CLI_Command {
+class Generate_Command extends WP_CLI_Command {
 
 	/**
 	 * Generate posts

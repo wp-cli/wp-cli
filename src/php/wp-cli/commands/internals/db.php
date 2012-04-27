@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand( 'db', 'DBCommand' );
+WP_CLI::addCommand( 'db', 'DB_Command' );
 
 /**
  * Implement db command
@@ -8,7 +8,7 @@ WP_CLI::addCommand( 'db', 'DBCommand' );
  * @package wp-cli
  * @subpackage commands/internals
  **/
-class DBCommand extends WP_CLI_Command {
+class DB_Command extends WP_CLI_Command {
 
 	protected $default_subcommand = 'cli';
 

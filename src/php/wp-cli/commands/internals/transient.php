@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand( 'transient', 'TransientCommand' );
+WP_CLI::addCommand( 'transient', 'Transient_Command' );
 
 /**
  * Implement transient commands.
@@ -8,7 +8,7 @@ WP_CLI::addCommand( 'transient', 'TransientCommand' );
  * @package wp-cli
  * @subpackage commands/internals
  */
-class TransientCommand extends WP_CLI_Command {
+class Transient_Command extends WP_CLI_Command {
 
 	/**
 	 * Gets a value using the "get_transient" function.

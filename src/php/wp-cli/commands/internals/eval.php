@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('eval', 'EvalCommand');
+WP_CLI::addCommand('eval', 'Eval_Command');
 
 /**
  * Implement eval command
@@ -8,7 +8,7 @@ WP_CLI::addCommand('eval', 'EvalCommand');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class EvalCommand extends WP_CLI_Command {
+class Eval_Command extends WP_CLI_Command {
 
 	/**
 	 * Overwrite the constructor to have a command without sub-commands.

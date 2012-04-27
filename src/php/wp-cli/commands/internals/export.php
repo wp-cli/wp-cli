@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('export', 'ExportCommand');
+WP_CLI::addCommand('export', 'Export_Command');
 
 /**
  * Implement export command
@@ -8,7 +8,7 @@ WP_CLI::addCommand('export', 'ExportCommand');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class ExportCommand extends WP_CLI_Command {
+class Export_Command extends WP_CLI_Command {
 	protected $default_subcommand = 'validate_arguments';
 
 	public $export_args = array();

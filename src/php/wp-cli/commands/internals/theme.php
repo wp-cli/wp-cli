@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('theme', 'ThemeCommand');
+WP_CLI::addCommand('theme', 'Theme_Command');
 
 /**
  * Implement theme command
@@ -8,7 +8,7 @@ WP_CLI::addCommand('theme', 'ThemeCommand');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class ThemeCommand extends WP_CLI_Command_With_Upgrade {
+class Theme_Command extends WP_CLI_Command_With_Upgrade {
 
 	protected $item_type = 'theme';
 	protected $upgrader = 'Theme_Upgrader';

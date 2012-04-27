@@ -1,7 +1,7 @@
 <?php
 
 if ( function_exists( 'w3tc_pgcache_flush' ) ) {
-	WP_CLI::addCommand( 'total-cache', 'W3TotalCacheCommand' );
+	WP_CLI::addCommand( 'total-cache', 'W3TotalCache_Command' );
 }
 
 /**
@@ -11,7 +11,7 @@ if ( function_exists( 'w3tc_pgcache_flush' ) ) {
  * @subpackage commands/community
  * @maintainer Andreas Creten
  */
-class W3TotalCacheCommand extends WP_CLI_Command {
+class W3TotalCache_Command extends WP_CLI_Command {
 
 	/**
 	 * Clear something from the cache

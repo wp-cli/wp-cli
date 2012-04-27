@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('eval-file', 'EvalFileCommand');
+WP_CLI::addCommand('eval-file', 'Eval_File_Command');
 
 /**
  * Implement eval-file command
@@ -8,7 +8,7 @@ WP_CLI::addCommand('eval-file', 'EvalFileCommand');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class EvalFileCommand extends WP_CLI_Command {
+class Eval_File_Command extends WP_CLI_Command {
 
 	/**
 	 * Overwrite the constructor to have a command without sub-commands.

@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('core', 'CoreCommand');
+WP_CLI::addCommand('core', 'Core_Command');
 
 /**
  * Implement core command
@@ -8,7 +8,7 @@ WP_CLI::addCommand('core', 'CoreCommand');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class CoreCommand extends WP_CLI_Command {
+class Core_Command extends WP_CLI_Command {
 
 	/**
 	 * Download the core files from wordpress.org

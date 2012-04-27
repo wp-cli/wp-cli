@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('home', 'HomeCommand');
+WP_CLI::addCommand('home', 'Home_Command');
 
 /**
  * Implement home command
@@ -8,7 +8,7 @@ WP_CLI::addCommand('home', 'HomeCommand');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class HomeCommand extends WP_CLI_Command {
+class Home_Command extends WP_CLI_Command {
 
 	/**
 	 * Overwrite the constructor to have a command without sub-commands.

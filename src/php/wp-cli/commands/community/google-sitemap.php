@@ -1,7 +1,7 @@
 <?php
 
 if( class_exists( 'GoogleSitemapGeneratorLoader' ) ) {
-	WP_CLI::addCommand( 'google-sitemap', 'GoogleSitemapGeneratorCommand' );
+	WP_CLI::addCommand( 'google-sitemap', 'GoogleSitemapGenerator_Command' );
 }
 
 /**
@@ -11,7 +11,7 @@ if( class_exists( 'GoogleSitemapGeneratorLoader' ) ) {
  * @subpackage commands/community
  * @maintainer Andreas Creten
  */
-class GoogleSitemapGeneratorCommand extends WP_CLI_Command {
+class GoogleSitemapGenerator_Command extends WP_CLI_Command {
 
 	/**
 	 * Re-generate the sitemap
