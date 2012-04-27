@@ -1,7 +1,7 @@
 <?php
 
 if ( function_exists( 'w3tc_pgcache_flush' ) ) {
-	WP_CLI::addCommand( 'total-cache', 'W3TotalCache_Command' );
+	WP_CLI::add_command( 'total-cache', 'W3TotalCache_Command' );
 }
 
 /**

@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('home', 'Home_Command');
+WP_CLI::add_command('home', 'Home_Command');
 
 /**
  * Implement home command

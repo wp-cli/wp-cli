@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('theme', 'Theme_Command');
+WP_CLI::add_command('theme', 'Theme_Command');
 
 /**
  * Implement theme command

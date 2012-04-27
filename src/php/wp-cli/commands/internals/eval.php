@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('eval', 'Eval_Command');
+WP_CLI::add_command('eval', 'Eval_Command');
 
 /**
  * Implement eval command

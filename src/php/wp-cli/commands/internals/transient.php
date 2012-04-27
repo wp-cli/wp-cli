@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand( 'transient', 'Transient_Command' );
+WP_CLI::add_command( 'transient', 'Transient_Command' );
 
 /**
  * Implement transient commands.

@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('user', 'User_Command');
+WP_CLI::add_command('user', 'User_Command');
 
 /**
  * Implement user command

@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('eval-file', 'Eval_File_Command');
+WP_CLI::add_command('eval-file', 'Eval_File_Command');
 
 /**
  * Implement eval-file command

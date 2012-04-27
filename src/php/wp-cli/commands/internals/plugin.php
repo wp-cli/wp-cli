@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('plugin', 'Plugin_Command');
+WP_CLI::add_command('plugin', 'Plugin_Command');
 
 /**
  * Implement plugin command

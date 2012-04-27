@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand( 'db', 'DB_Command' );
+WP_CLI::add_command( 'db', 'DB_Command' );
 
 /**
  * Implement db command

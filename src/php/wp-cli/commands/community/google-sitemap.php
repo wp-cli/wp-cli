@@ -1,7 +1,7 @@
 <?php
 
 if( class_exists( 'GoogleSitemapGeneratorLoader' ) ) {
-	WP_CLI::addCommand( 'google-sitemap', 'GoogleSitemapGenerator_Command' );
+	WP_CLI::add_command( 'google-sitemap', 'GoogleSitemapGenerator_Command' );
 }
 
 /**

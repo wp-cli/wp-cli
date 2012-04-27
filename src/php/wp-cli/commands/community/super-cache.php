@@ -1,7 +1,7 @@
 <?php
 
 if ( function_exists( 'wp_super_cache_enable' ) ) {
-	WP_CLI::addCommand( 'super-cache', 'WPSuperCache_Command' );
+	WP_CLI::add_command( 'super-cache', 'WPSuperCache_Command' );
 }
 
 /**

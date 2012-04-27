@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('export', 'Export_Command');
+WP_CLI::add_command('export', 'Export_Command');
 
 /**
  * Implement export command

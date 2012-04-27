@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('core', 'Core_Command');
+WP_CLI::add_command('core', 'Core_Command');
 
 /**
  * Implement core command

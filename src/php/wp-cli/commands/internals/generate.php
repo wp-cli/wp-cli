@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('generate', 'Generate_Command');
+WP_CLI::add_command('generate', 'Generate_Command');
 
 /**
  * Implement generate command
