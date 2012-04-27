@@ -17,7 +17,7 @@ class CLI_Upgrader_Skin extends WP_Upgrader_Skin {
 			return;
 
 		// TODO: show all errors, not just the first one
-		WP_CLI::warning( WP_CLI::errorToString( $error ) );
+		WP_CLI::warning( $error );
 	}
 
 	function feedback( $string ) {
