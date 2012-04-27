@@ -91,7 +91,7 @@ class Core_Command extends WP_CLI_Command {
 		$result = wp_install( $site_title, $admin_name, $admin_email, $public, '', $admin_password );
 
 		if ( is_wp_error( $result ) ) {
-			WP_CLI::error( 'Installation failed (' . WP_CLI::errorToString($result) . ').' );
+			WP_CLI::error( 'Installation failed (' . WP_CLI::error_to_string($result) . ').' );
 		} else {
 			WP_CLI::success( 'WordPress installed successfully.' );
 		}
@@ -152,7 +152,7 @@ class Core_Command extends WP_CLI_Command {
 		$result = WP_CLI::get_upgrader( 'Core_Upgrader' )->upgrade( $update );
 
 		if ( is_wp_error($result) ) {
-			$msg = WP_CLI::errorToString( $result );
+			$msg = WP_CLI::error_to_string( $result );
 			if ( 'up_to_date' != $result->get_error_code() ) {
 				WP_CLI::error( $msg );
 			} else {

@@ -46,7 +46,7 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function error( $message, $label = 'Error' ) {
-		\cli\err( '%R' . $label . ': %n' . self::errorToString( $message ) );
+		\cli\err( '%R' . $label . ': %n' . self::error_to_string( $message ) );
 		exit(1);
 	}
 
@@ -69,16 +69,16 @@ class WP_CLI {
 	 */
 	static function warning( $message, $label = 'Warning' ) {
 		if ( WP_CLI_SILENT ) return;
-		\cli\line( '%C' . $label . ': %n' . self::errorToString( $message ) );
+		\cli\line( '%C' . $label . ': %n' . self::error_to_string( $message ) );
 	}
 
 	/**
-	 * Convert a wp_error into a String
+	 * Convert a wp_error into a string
 	 *
 	 * @param mixed $errors
 	 * @return string
 	 */
-	static function errorToString( $errors ) {
+	static function error_to_string( $errors ) {
 		if( is_string( $errors ) ) {
 			return $errors;
 		} elseif( is_wp_error( $errors ) && $errors->get_error_code() ) {
