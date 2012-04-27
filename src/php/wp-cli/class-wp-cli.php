@@ -15,7 +15,7 @@ class WP_CLI {
 	 * @param string $name The name of the command that will be used in the cli
 	 * @param string $class The class to manage the command
 	 */
-	public function addCommand( $name, $class ) {
+	public function add_command( $name, $class ) {
 		self::$commands[$name] = $class;
 	}
 
@@ -276,6 +276,11 @@ class WP_CLI {
 				break;
 			}
 		}
+	}
+
+	// back-compat
+	public function addCommand( $name, $class ) {
+		self::add_command( $name, $class );
 	}
 }
 

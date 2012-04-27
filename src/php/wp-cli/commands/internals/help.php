@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('help', 'Help_Command');
+WP_CLI::add_command('help', 'Help_Command');
 
 /**
  * Implement help command
