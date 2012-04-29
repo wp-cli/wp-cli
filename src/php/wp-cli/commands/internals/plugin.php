@@ -206,9 +206,9 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 
 		// Not a zip, so try to install from wp.org
 		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
-		if ( !$api ) {
-			WP_CLI::error( "Can't find the plugin in the WordPress.org plugins repository." );
-			exit();
+
+		if ( is_wp_error( $api ) ) {
+			WP_CLI::error( $api );
 		}
 
 		if ( isset( $assoc_args['dev'] ) ) {
