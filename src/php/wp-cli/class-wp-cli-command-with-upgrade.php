@@ -39,10 +39,20 @@ class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
 		$slug = stripslashes( $args[0] );
 
-		$this->maybe_install_from_zip( $slug, isset( $assoc_args['activate'] ) );
+		if ( '.zip' == substr( $slug, -4 ) ) {
+			$file_upgrader = WP_CLI::get_upgrader( $this->upgrader );
 
-		// Not a zip, so try to install from wp.org
-		$this->install_from_repo( $slug, $assoc_args );
+			if ( $file_upgrader->install( $slug ) ) {
+				$slug = $file_upgrader->result['destination_name'];
+
+				if ( isset( $assoc_args['activate'] ) ) {
+					WP_CLI::line( "Activating '$slug'..." );
+					$this->activate( array( $slug ) );
+				}
+			}
+		} else {
+			$this->install_from_repo( $slug, $assoc_args );
+		}
 	}
 
 	/**
@@ -123,27 +133,5 @@ class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		$update_list = get_site_transient( $this->upgrade_transient );
 
 		return isset( $update_list->response[ $slug ] );
-	}
-
-	/**
-	 * Install a plugin/theme from a ZIP file
-	 *
-	 * @param string $file
-	 * @param bool $activate
-	 */
-	protected function maybe_install_from_zip( $file, $activate ) {
-		if ( '.zip' != substr( $file, -4 ) )
-			return;
-
-		$file_upgrader = WP_CLI::get_upgrader( $this->upgrader );
-
-		if ( $file_upgrader->install( $file ) ) {
-			$slug = $file_upgrader->result['destination_name'];
-
-			if ( $activate )
-				$this->activate( array( $slug ) );
-		}
-
-		exit;
 	}
 }
