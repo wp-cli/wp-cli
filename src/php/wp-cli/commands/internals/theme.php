@@ -26,15 +26,16 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 			return;
 		}
 
-		$name = $args[0];
+		$slug = stripslashes( $args[0] );
 
-		$details = get_theme_data( $this->get_stylesheet_path( $name ) );
+		$stylesheet = $this->get_stylesheet_path( $slug );
+		$details = get_theme_data( $stylesheet );
 
-		$status = $this->get_status( $details['Name'], true );
+		$status = $this->get_status( $stylesheet, true );
 
 		$version = $details['Version'];
 
-		if ( $this->get_update_status( $details['Stylesheet'] ) )
+		if ( $this->get_update_status( $slug ) )
 			$version .= ' (%gUpdate available%n)';
 
 		WP_CLI::line( 'Theme %9' . $name . '%n details:' );
@@ -48,14 +49,16 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		// Print the header
 		WP_CLI::line( 'Installed themes:' );
 
-		foreach ( get_themes() as $theme ) {
+		foreach ( get_themes() as $key => $theme ) {
 			if ( $this->get_update_status( $theme['Stylesheet'] ) ) {
 				$line = ' %yU%n';
 			} else {
 				$line = '  ';
 			}
 
-			$line .=  $this->get_status( $theme['Name'] ) . ' ' . $theme['Stylesheet'] . '%n';
+			$stylesheet = $this->get_stylesheet_path( $theme['Stylesheet'] );
+
+			$line .= $this->get_status( $stylesheet ) . ' ' . $theme['Stylesheet'] . '%n';
 
 			WP_CLI::line( $line );
 		}
@@ -71,8 +74,8 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::legend( $legend );
 	}
 
-	private function get_status( $theme_name, $long = false ) {
-		if ( get_current_theme() == $theme_name ) {
+	private function get_status( $stylesheet, $long = false ) {
+		if ( $this->is_active_theme( $stylesheet ) ) {
 			$line  = '%g';
 			$line .= $long ? 'Active' : 'A';
 		} else {
@@ -102,7 +105,17 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 
 		switch_theme( $parent, $child );
 
-		WP_CLI::success( "Switched to '{$details['Title']}' theme." );
+		$name = $details['Title'];
+
+		if ( $this->is_active_theme( $stylesheet ) ) {
+			WP_CLI::success( "Switched to '$name' theme." );
+		} else {
+			WP_CLI::error( "Could not switch to '$name' theme." );
+		}
+	}
+
+	private function is_active_theme( $stylesheet ) {
+		return dirname( $stylesheet ) == get_stylesheet_directory();
 	}
 
 	/**
