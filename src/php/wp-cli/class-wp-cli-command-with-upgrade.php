@@ -74,14 +74,14 @@ class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	/**
 	 * Check whether an item has an update available or not.
 	 *
-	 * @param string $item The plugin/theme theme path
+	 * @param string $slug The plugin/theme slug
 	 *
 	 * @return bool
 	 */
-	protected function get_update_status( $file ) {
+	protected function get_update_status( $slug ) {
 		$update_list = get_site_transient( $this->upgrade_transient );
 
-		return isset( $update_list->response[ $file ] );
+		return isset( $update_list->response[ $slug ] );
 	}
 
 	/**
