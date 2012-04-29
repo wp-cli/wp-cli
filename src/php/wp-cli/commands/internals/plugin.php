@@ -324,7 +324,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		$plugins = get_plugins( '/' . $name );
 
 		if ( !empty( $plugins ) ) {
-			$file = key( $plugins );
+			$file = $name . '/' . key( $plugins );
 		}
 		else {
 			$file = $name . '.php';
