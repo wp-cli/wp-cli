@@ -15,27 +15,15 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	protected $upgrade_refresh = 'wp_update_themes';
 	protected $upgrade_transient = 'update_themes';
 
-	/**
-	 * Get the status of one or all themes
-	 *
-	 * @param array $args
-	 **/
-	public function status( $args = array() ) {
-		if ( empty( $args ) ) {
-			$this->list_themes();
-			return;
-		}
-
-		$slug = stripslashes( $args[0] );
-
-		$stylesheet = $this->get_stylesheet_path( $slug );
+	// Show details about a single theme
+	protected function status_single( $stylesheet, $name ) {
 		$details = get_theme_data( $stylesheet );
 
 		$status = $this->get_status( $stylesheet, true );
 
 		$version = $details['Version'];
 
-		if ( $this->get_update_status( $slug ) )
+		if ( $this->get_update_status( $name ) )
 			$version .= ' (%gUpdate available%n)';
 
 		WP_CLI::line( 'Theme %9' . $name . '%n details:' );
@@ -45,10 +33,8 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( '    Author: ' . strip_tags( $details[ 'Author' ] ) );
 	}
 
-	private function list_themes() {
-		// Force WordPress to check for theme updates
-		wp_update_themes();
-
+	// Show details about all themes
+	protected function status_all() {
 		// Print the header
 		WP_CLI::line( 'Installed themes:' );
 

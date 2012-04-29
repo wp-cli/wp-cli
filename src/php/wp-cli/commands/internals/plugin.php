@@ -24,21 +24,8 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		parent::__construct( $args, $assoc_args );
 	}
 
-	/**
-	 * Get the status of one or all plugins
-	 *
-	 * @param array $args
-	 */
-	function status( $args = array(), $vars = array() ) {
-		$this->mu_plugins = get_mu_plugins();
-
-		if ( empty( $args ) ) {
-			$this->list_plugins();
-			return;
-		}
-
-		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
-
+	// Show details about a single plugin
+	protected function status_single( $file, $name ) {
 		$details = $this->get_details( $file );
 
 		$status = $this->get_status( $file, true );
@@ -56,9 +43,9 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( '    Description: ' . $details[ 'Description' ] );
 	}
 
-	private function list_plugins() {
-		// Force WordPress to check for plugin updates
-		wp_update_plugins();
+	// Show details about all plugins
+	protected function status_all() {
+		$this->mu_plugins = get_mu_plugins();
 
 		$plugins = get_plugins();
 

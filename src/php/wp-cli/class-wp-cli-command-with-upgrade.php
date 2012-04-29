@@ -5,6 +5,24 @@ class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	protected $default_subcommand = 'status';
 
 	/**
+	 * Get the status of one or all items
+	 *
+	 * @param array $args
+	 */
+	function status( $args = array() ) {
+		// Force WordPress to check for updates
+		call_user_func( $this->upgrade_refresh );
+
+		if ( empty( $args ) ) {
+			$this->status_all();
+		} else {
+			list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+
+			$this->status_single( $file, $name );
+		}
+	}
+
+	/**
 	 * Update a plugin/theme
 	 *
 	 * @param array $args
