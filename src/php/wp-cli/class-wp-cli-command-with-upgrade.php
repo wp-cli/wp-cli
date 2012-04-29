@@ -23,6 +23,29 @@ class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	}
 
 	/**
+	 * Install a new plugin/theme
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 */
+	function install( $args, $assoc_args ) {
+		if ( empty( $args ) ) {
+			WP_CLI::line( "usage: wp $this->item_type install <slug>" );
+			exit;
+		}
+
+		// Force WordPress to check for updates
+		call_user_func( $this->upgrade_refresh );
+
+		$slug = stripslashes( $args[0] );
+
+		$this->maybe_install_from_zip( $slug, isset( $assoc_args['activate'] ) );
+
+		// Not a zip, so try to install from wp.org
+		$this->install_from_repo( $slug, $assoc_args );
+	}
+
+	/**
 	 * Update a plugin/theme
 	 *
 	 * @param array $args

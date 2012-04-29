@@ -172,26 +172,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( $path );
 	}
 
-	/**
-	 * Install a new plugin
-	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 */
-	function install( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp plugin install <plugin-name>" );
-			exit;
-		}
-
-		// Force WordPress to update the plugin list
-		wp_update_plugins();
-
-		$slug = stripslashes( $args[0] );
-
-		$this->maybe_install_from_zip( $slug, isset( $assoc_args['activate'] ) );
-
-		// Not a zip, so try to install from wp.org
+	protected function install_from_repo( $slug, $assoc_args ) {
 		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {

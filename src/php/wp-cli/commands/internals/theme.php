@@ -127,26 +127,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( $path );
 	}
 
-	/**
-	 * Install a new theme
-	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 */
-	function install( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp theme install <theme-name>" );
-			exit();
-		}
-
-		// Force WordPress to update the theme list
-		wp_update_themes();
-
-		$slug = stripslashes( $args[0] );
-
-		$this->maybe_install_from_zip( $slug, isset( $assoc_args['activate'] ) );
-
-		// Not a zip, so try to install from wp.org
+	protected function install_from_repo( $slug, $assoc_args ) {
 		$result = NULL;
 
 		$api = themes_api( 'theme_information', array( 'slug' => $slug ) );
