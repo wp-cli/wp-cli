@@ -57,7 +57,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	private function list_plugins() {
-		// Force WordPress to update the plugin list
+		// Force WordPress to check for plugin updates
 		wp_update_plugins();
 
 		$plugins = get_plugins();

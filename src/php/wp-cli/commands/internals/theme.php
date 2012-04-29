@@ -46,6 +46,9 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	private function list_themes() {
+		// Force WordPress to check for theme updates
+		wp_update_themes();
+
 		// Print the header
 		WP_CLI::line( 'Installed themes:' );
 
