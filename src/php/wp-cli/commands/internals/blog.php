@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::addCommand('blog', 'BlogCommand');
+WP_CLI::addCommand('blog', 'Blog_Command');
 
 /**
  * Implement core command
@@ -8,16 +8,16 @@ WP_CLI::addCommand('blog', 'BlogCommand');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class BlogCommand extends WP_CLI_Command {
-	
+class Blog_Command extends WP_CLI_Command {
+
 	private function _create_usage_string() {
 		return "usage: wp blog create --domain_base=<subdomain or directory name> --title=<blog title> [--email] [--site_id] [--public]";
 	}
-	
+
 	/**
 	 * Get site (network) data for a given id
 	 *
-	 * @param int $site_id 
+	 * @param int $site_id
 	 * @return bool|array False if no network found with given id, array otherwise
 	 */
 	private function _get_site($site_id) {
@@ -28,23 +28,23 @@ class BlogCommand extends WP_CLI_Command {
 			// Only care about domain and path which are set here
 			return $sites[0];
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Create a blog via passed in arguments
 	 *
 	 * @see BlogCommand::help()
-	 * @param array $args 
-	 * @param array $assoc_args 
+	 * @param array $args
+	 * @param array $assoc_args
 	 */
 	public function create($args, $assoc_args) {
 		if (!is_multisite()) {
 			WP_CLI::error("Not a multisite instance");
 		}
 		global $wpdb;
-		
+
 		// domain required
 		// title required
 		// email optional
@@ -54,7 +54,7 @@ class BlogCommand extends WP_CLI_Command {
 			WP_CLI::line($this->_create_usage_string());
 			exit(1);
 		}
-		
+
 		$base = $assoc_args['domain_base'];
 		$title = $assoc_args['title'];
 		$email = empty($assoc_args['email']) ? '' : $assoc_args['email'];
@@ -80,12 +80,12 @@ class BlogCommand extends WP_CLI_Command {
 		else {
 			$public = 1;
 		}
-		
+
 		// Sanitize
 		if (preg_match( '|^([a-zA-Z0-9-])+$|', $base)) {
 			$base = strtolower($base);
 		}
-		
+
 		// If not a subdomain install, make sure the domain isn't a reserved word
 		if (!is_subdomain_install()) {
 			$subdirectory_reserved_names = apply_filters('subdirectory_reserved_names', array( 'page', 'comments', 'blog', 'files', 'feed' ));
@@ -93,7 +93,7 @@ class BlogCommand extends WP_CLI_Command {
 				WP_CLI::error(sprintf(__('The following words are reserved for use by WordPress functions and cannot be used as blog names: <code>%s</code>'), implode('</code>, <code>', $subdirectory_reserved_names)));
 			}
 		}
-		
+
 		// Check for valid email, if not, use the first Super Admin found
 		// Probably a more efficient way to do this so we dont query for the
 		// User twice if super admin
@@ -111,10 +111,10 @@ class BlogCommand extends WP_CLI_Command {
 			}
 		}
 
-		if (is_subdomain_install()) {			
+		if (is_subdomain_install()) {
 			$path = '/';
 			$url = $newdomain = $base.'.'.preg_replace('|^www\.|', '', $site->domain);
-		} 
+		}
 		else {
 			$newdomain = $site->domain;
 			$path = $base;
@@ -123,7 +123,7 @@ class BlogCommand extends WP_CLI_Command {
 			}
 			$url = $site->domain.$path;
 		}
-		
+
 		$password = 'N/A';
 		$user_id = email_exists($email);
 		if (!$user_id) { // Create a new user with a random password
@@ -136,7 +136,7 @@ class BlogCommand extends WP_CLI_Command {
 				wp_new_user_notification($user_id, $password);
 			}
 		}
-		
+
 		$wpdb->hide_errors();
 		$id = wpmu_create_blog($newdomain, $path, $title, $user_id, array( 'public' => $public ), $site->id);
 		$wpdb->show_errors();
@@ -148,17 +148,17 @@ class BlogCommand extends WP_CLI_Command {
 			// @TODO argument to pass in?
 			// $content_mail = sprintf(__( "New site created by WP Command Line Interface\n\nAddress: %2s\nName: %3s"), get_site_url($id), stripslashes($title));
 			// wp_mail(get_site_option('admin_email'), sprintf(__('[%s] New Site Created'), $current_site->site_name), $content_mail, 'From: "Site Admin" <'.get_site_option( 'admin_email').'>');
-		} 
+		}
 		else {
 			WP_CLI::error($id->get_error_message());
-		}	
+		}
 		WP_CLI::line('Blog created with domain: '.$site->domain.' url: '.$url.' id: '.$id);
 	}
-		
+
 	public function update($args) {}
-		
+
 	public function delete($args) {}
-		
+
 	public function help() {
 		WP_CLI::line(<<<EOB
 usage: wp blog <sub-command> [options]
