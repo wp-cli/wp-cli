@@ -42,7 +42,6 @@ class BlogCommand extends WP_CLI_Command {
 	public function create($args, $assoc_args) {
 		if (!is_multisite()) {
 			WP_CLI::error("Not a multisite instance");
-			exit;
 		}
 		global $wpdb;
 		
@@ -53,7 +52,7 @@ class BlogCommand extends WP_CLI_Command {
 		// public optional
 		if (empty($assoc_args['domain_base']) || empty($assoc_args['title'])) {
 			WP_CLI::line($this->_create_usage_string());
-			exit;
+			exit(1);
 		}
 		
 		$base = $assoc_args['domain_base'];
@@ -64,7 +63,6 @@ class BlogCommand extends WP_CLI_Command {
 			$site = $this->_get_site($assoc_args['site_id']);
 			if ($site === false) {
 				WP_CLI::error('Site with id '.$assoc_args['site_id'].' does not exist');
-				exit;
 			}
 		}
 		else {
@@ -93,7 +91,6 @@ class BlogCommand extends WP_CLI_Command {
 			$subdirectory_reserved_names = apply_filters('subdirectory_reserved_names', array( 'page', 'comments', 'blog', 'files', 'feed' ));
 			if (in_array($domain, $subdirectory_reserved_names)) {
 				WP_CLI::error(sprintf(__('The following words are reserved for use by WordPress functions and cannot be used as blog names: <code>%s</code>'), implode('</code>, <code>', $subdirectory_reserved_names)));
-				exit;
 			}
 		}
 		
@@ -134,7 +131,6 @@ class BlogCommand extends WP_CLI_Command {
 			$user_id = wpmu_create_user($base, $password, $email);
 			if (false == $user_id) {
 				WP_CLI::error('There was an issue creating the user.');
-				exit;
 			}
 			else {
 				wp_new_user_notification($user_id, $password);
@@ -155,7 +151,6 @@ class BlogCommand extends WP_CLI_Command {
 		} 
 		else {
 			WP_CLI::error($id->get_error_message());
-			exit;
 		}	
 		WP_CLI::line('Blog created with domain: '.$site->domain.' url: '.$url.' id: '.$id);
 	}
