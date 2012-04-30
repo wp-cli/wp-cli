@@ -11,7 +11,7 @@ WP_CLI::addCommand('blog', 'Blog_Command');
 class Blog_Command extends WP_CLI_Command {
 
 	private function _create_usage_string() {
-		return "usage: wp blog create --domain_base=<subdomain or directory name> --title=<blog title> [--email] [--site_id] [--public]";
+		return "usage: wp blog create --slug=<subdomain or directory name> --title=<blog title> [--email] [--site_id] [--public]";
 	}
 
 	/**
@@ -50,12 +50,12 @@ class Blog_Command extends WP_CLI_Command {
 		// email optional
 		// site optional
 		// public optional
-		if (empty($assoc_args['domain_base']) || empty($assoc_args['title'])) {
+		if (empty($assoc_args['slug']) || empty($assoc_args['title'])) {
 			WP_CLI::line($this->_create_usage_string());
 			exit(1);
 		}
 
-		$base = $assoc_args['domain_base'];
+		$base = $assoc_args['slug'];
 		$title = $assoc_args['title'];
 		$email = empty($assoc_args['email']) ? '' : $assoc_args['email'];
 		// Site
@@ -165,7 +165,7 @@ usage: wp blog <sub-command> [options]
 
 Available sub-commands:
    create   create a new blog
-     --domain_base    Base for the new domain. Subdomain on subdomain installs, directory on subdirectory installs
+     --slug           Base for the new domain. Subdomain on subdomain installs, directory on subdirectory installs
      --title          Title of the new blog
      [--email]        Email for Admin user. User will be created if none exists. Assignement to Super Admin if not included
      [--site_id]      Site (network) to associate new blog with. Defaults to current site (typically 1)
