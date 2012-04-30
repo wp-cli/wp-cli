@@ -10,15 +10,20 @@ WP_CLI::addCommand('blog', 'BlogCommand');
  */
 class BlogCommand extends WP_CLI_Command {
 	
-	//@TODO make associative due to optional params
 	private function _create_usage_string() {
 		return "usage: wp blog create --domain_base=<subdomain or directory name> --title=<blog title> [--email] [--site_id] [--public]";
 	}
 	
+	/**
+	 * Get site (network) data for a given id
+	 *
+	 * @param int $site_id 
+	 * @return bool|array False if no network found with given id, array otherwise
+	 */
 	private function _get_site($site_id) {
 		global $wpdb;
 		// Load site data
-		$sites = $wpdb->get_results("SELECT * FROM $wpdb->site WHERE `id` = ".$site_id);
+		$sites = $wpdb->get_results("SELECT * FROM $wpdb->site WHERE `id` = ".$wpdb->escape($site_id));
 		if (count($sites) > 0) {
 			// Only care about domain and path which are set here
 			return $sites[0];
@@ -27,9 +32,16 @@ class BlogCommand extends WP_CLI_Command {
 		return false;
 	}
 	
+	/**
+	 * Create a blog via passed in arguments
+	 *
+	 * @see BlogCommand::help()
+	 * @param array $args 
+	 * @param array $assoc_args 
+	 */
 	public function create($args, $assoc_args) {
 		if (!is_multisite()) {
-			WP_CLI::line("ERROR: not a multisite instance");
+			WP_CLI::error("Not a multisite instance");
 			exit;
 		}
 		global $wpdb;
@@ -51,25 +63,27 @@ class BlogCommand extends WP_CLI_Command {
 		if (!empty($assoc_args['site_id'])) {
 			$site = $this->_get_site($assoc_args['site_id']);
 			if ($site === false) {
-				WP_CLI::line('ERROR: Site with id '.$assoc_args['site_id'].'does not exist');
+				WP_CLI::error('Site with id '.$assoc_args['site_id'].' does not exist');
 				exit;
 			}
 		}
 		else {
 			$site = wpmu_current_site();
 		}
-		// Public
+		// Public, default is true (1)
 		if (!empty($assoc_args['public'])) {
 			$public = $args['public'];
 			// Check for 1 or 0
 			if ($public != '1' && $public != '0') {
 				$this->_create_usage();
+				exit;
 			}
 		}
 		else {
 			$public = 1;
 		}
-
+		
+		// Sanitize
 		if (preg_match( '|^([a-zA-Z0-9-])+$|', $base)) {
 			$base = strtolower($base);
 		}
@@ -78,12 +92,11 @@ class BlogCommand extends WP_CLI_Command {
 		if (!is_subdomain_install()) {
 			$subdirectory_reserved_names = apply_filters('subdirectory_reserved_names', array( 'page', 'comments', 'blog', 'files', 'feed' ));
 			if (in_array($domain, $subdirectory_reserved_names)) {
-				WP_CLI::line(sprintf(__('ERROR: The following words are reserved for use by WordPress functions and cannot be used as blog names: <code>%s</code>'), implode('</code>, <code>', $subdirectory_reserved_names)));
+				WP_CLI::error(sprintf(__('The following words are reserved for use by WordPress functions and cannot be used as blog names: <code>%s</code>'), implode('</code>, <code>', $subdirectory_reserved_names)));
 				exit;
 			}
 		}
 		
-
 		// Check for valid email, if not, use the first Super Admin found
 		// Probably a more efficient way to do this so we dont query for the
 		// User twice if super admin
@@ -96,8 +109,6 @@ class BlogCommand extends WP_CLI_Command {
 				$super_login = $super_admins[0];
 				$super_user = get_user_by('login', $super_login);
 				if ($super_user) {
-					error_log($super_user->user_email);
-					error_log($super_user->email);
 					$email = $super_user->user_email;
 				}
 			}
@@ -106,7 +117,6 @@ class BlogCommand extends WP_CLI_Command {
 		if (is_subdomain_install()) {			
 			$path = '/';
 			$url = $newdomain = $base.'.'.preg_replace('|^www\.|', '', $site->domain);
-			
 		} 
 		else {
 			$newdomain = $site->domain;
@@ -123,7 +133,7 @@ class BlogCommand extends WP_CLI_Command {
 			$password = wp_generate_password(12, false);
 			$user_id = wpmu_create_user($base, $password, $email);
 			if (false == $user_id) {
-				WP_CLI::line('ERROR: There was an issue creating the user.');
+				WP_CLI::error('There was an issue creating the user.');
 				exit;
 			}
 			else {
@@ -138,15 +148,16 @@ class BlogCommand extends WP_CLI_Command {
 			if ( !is_super_admin($user_id) && !get_user_option('primary_blog', $user_id)) {
 				update_user_option($user_id, 'primary_blog', $id, true);
 			}
-//			$content_mail = sprintf(__( "New site created by WP Command Line Interface\n\nAddress: %2s\nName: %3s"), get_site_url($id), stripslashes($title));
-			//@TODO Current site
-//			wp_mail(get_site_option('admin_email'), sprintf(__('[%s] New Site Created'), $current_site->site_name), $content_mail, 'From: "Site Admin" <'.get_site_option( 'admin_email').'>');
+			// Prevent mailing admins of new sites
+			// @TODO argument to pass in?
+			// $content_mail = sprintf(__( "New site created by WP Command Line Interface\n\nAddress: %2s\nName: %3s"), get_site_url($id), stripslashes($title));
+			// wp_mail(get_site_option('admin_email'), sprintf(__('[%s] New Site Created'), $current_site->site_name), $content_mail, 'From: "Site Admin" <'.get_site_option( 'admin_email').'>');
 		} 
 		else {
-			WP_CLI::line('ERROR: '.$id->get_error_message());
+			WP_CLI::error($id->get_error_message());
 			exit;
 		}	
-		WP_CLI::line('Blog created with DOMAIN: '.$site->domain.' URL: '.$url.' ID: '.$id);
+		WP_CLI::line('Blog created with domain: '.$site->domain.' url: '.$url.' id: '.$id);
 	}
 		
 	public function update($args) {}
@@ -162,7 +173,7 @@ Available sub-commands:
      --domain_base    Base for the new domain. Subdomain on subdomain installs, directory on subdirectory installs
      --title          Title of the new blog
      [--email]        Email for Admin user. User will be created if none exists. Assignement to Super Admin if not included
-     [--site_id]      Site to associate new blog with. Defaults to current site (typically 1)
+     [--site_id]      Site (network) to associate new blog with. Defaults to current site (typically 1)
      [--public]       Whether or not the new site is public (indexed)
 
    update   //TODO
