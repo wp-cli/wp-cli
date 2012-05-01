@@ -278,8 +278,16 @@ class WP_CLI {
 		}
 	}
 
+	static function get_path( $which ) {
+		switch ( $which ) {
+		case 'doc':
+			// TODO: pear config-get doc_dir
+			return WP_CLI_ROOT . "../../doc/";
+		}
+	}
+
 	// back-compat
-	public function addCommand( $name, $class ) {
+	static function addCommand( $name, $class ) {
 		self::add_command( $name, $class );
 	}
 }

@@ -18,25 +18,35 @@ class Help_Command extends WP_CLI_Command {
 	public function __construct( $args ) {
 		if ( empty( $args ) ) {
 			$this->general_help();
-		} else {
-			$command = $args[0];
+			return;
+		}
 
-			if ( !isset( WP_CLI::$commands[$command] ) ) {
-				WP_CLI::error( "'$command' is not a registered wp command." );
-			} elseif ( 'help' == $command ) {
-				// prevent endless loop
-				$this->general_help();
+		$command = $args[0];
+
+		if ( !isset( WP_CLI::$commands[$command] ) )
+			WP_CLI::error( "'$command' is not a registered wp command." );
+
+		if ( !$this->show_help( $command ) ) {
+			$class = WP_CLI::$commands[$command];
+
+			if ( method_exists( $class, 'help' ) ) {
+				$class::help();
 			} else {
-				$class = WP_CLI::$commands[$command];
-
-				if ( method_exists( $class, 'help' ) ) {
-					$class::help();
-				} else {
-					WP_CLI::line( 'Example usage:' );
-					$this->single_command_help( $command, $class );
-				}
+				WP_CLI::line( 'Example usage:' );
+				$this->single_command_help( $command, $class );
 			}
 		}
+	}
+
+	private function show_help( $command ) {
+		$doc_file = WP_CLI::get_path( 'doc' ) . "$command.md";
+
+		if ( !is_readable( $doc_file ) )
+			return false;
+
+		echo file_get_contents( $doc_file );
+
+		return true;
 	}
 
 	private function general_help() {
@@ -47,15 +57,8 @@ class Help_Command extends WP_CLI_Command {
 
 			$this->single_command_help( $name, $command );
 		}
-		WP_CLI::line();
-		WP_CLI::line( "See 'wp help <command>' for more information on a specific command." );
-		WP_CLI::line();
-		WP_CLI::line( 'Global parameters:' );
-		WP_CLI::line( '    --user=<id|login>   set the current user' );
-		WP_CLI::line( '    --url=<url>         set the current URL' );
-		WP_CLI::line( '    --path=<path>       set the current path to the WP install' );
-		WP_CLI::line( '    --require=<path>    load a certain file before running the command' );
-		WP_CLI::line( '    --version           print wp-cli version' );
+
+		$this->show_help( 'general' );
 	}
 
 	private function single_command_help( $name, $command ) {
