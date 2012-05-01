@@ -26,11 +26,11 @@ class Help_Command extends WP_CLI_Command {
 		if ( !isset( WP_CLI::$commands[$command] ) )
 			WP_CLI::error( "'$command' is not a registered wp command." );
 
-		if ( !$this->show_help( $command ) ) {
+		if ( !$this->show_help( $args ) ) {
 			$class = WP_CLI::$commands[$command];
 
 			if ( method_exists( $class, 'help' ) ) {
-				$class::help();
+				$class::help( $subcommand );
 			} else {
 				WP_CLI::line( 'Example usage:' );
 				$this->single_command_help( $command, $class );
@@ -38,8 +38,8 @@ class Help_Command extends WP_CLI_Command {
 		}
 	}
 
-	private function show_help( $command ) {
-		$doc_file = WP_CLI::get_path( 'doc' ) . "$command.md";
+	private function show_help( $args ) {
+		$doc_file = WP_CLI::get_path( 'doc' ) . implode( '-', $args ) . '.md';
 
 		if ( !is_readable( $doc_file ) )
 			return false;
