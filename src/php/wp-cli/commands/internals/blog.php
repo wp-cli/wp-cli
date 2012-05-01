@@ -152,7 +152,7 @@ class Blog_Command extends WP_CLI_Command {
 		else {
 			WP_CLI::error($id->get_error_message());
 		}
-		WP_CLI::line('Blog created with domain: '.$site->domain.' url: '.$url.' id: '.$id);
+		WP_CLI::success("Blog $id created: $url");
 	}
 
 	public function update($args) {}
