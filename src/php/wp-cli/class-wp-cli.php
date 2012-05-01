@@ -149,6 +149,15 @@ class WP_CLI {
 	}
 
 	/**
+	 * Launch an external process, closing the current one
+	 *
+	 * @param string Command to call
+	 */
+	static function launch( $command ) {
+		proc_close( proc_open( $command, array( 0 => STDIN, 1 => STDOUT, 2 => STDERR ), $pipes ) );
+	}
+
+	/**
 	 * Sets the appropriate $_SERVER keys based on a given string
 	 *
 	 * @param string $url The URL
@@ -275,14 +284,6 @@ class WP_CLI {
 				include $path;
 				break;
 			}
-		}
-	}
-
-	static function get_path( $which ) {
-		switch ( $which ) {
-		case 'doc':
-			// TODO: pear config-get doc_dir
-			return WP_CLI_ROOT . "../../doc/";
 		}
 	}
 
