@@ -39,7 +39,7 @@ class Help_Command extends WP_CLI_Command {
 	}
 
 	private function show_help( $args ) {
-		$doc_file = WP_CLI::get_path( 'doc' ) . implode( '-', $args ) . '.md';
+		$doc_file = WP_CLI::get_path( 'doc' ) . implode( '-', $args ) . '.txt';
 
 		if ( !is_readable( $doc_file ) )
 			return false;
