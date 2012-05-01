@@ -3,7 +3,7 @@ wp-blog-create(1) -- Create a new blog in a multisite install.
 
 ## SYNOPSIS
 
-`wp blog create` --slug=<slug> --title=<Title>
+`wp blog create` --slug=<slug> --title=<Title> [--email=<email>] [--site_id=<site-id>] [--public=true]
 
 ## OPTIONS
 
