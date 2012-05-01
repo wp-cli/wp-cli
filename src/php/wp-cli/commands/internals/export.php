@@ -60,8 +60,8 @@ EOB
 			}
 		}
 
-		if ( true === $has_errors ) {
-			exit;
+		if ( $has_errors ) {
+			exit(1);
 		}
 
 		$this->wxr_path = $assoc_args['path'];
@@ -79,7 +79,6 @@ EOB
 
 		if ( !is_dir( $path ) ) {
 			WP_CLI::error( sprintf( "The path %s does not exist", $path ) );
-			exit;
 		}
 
 		return true;
