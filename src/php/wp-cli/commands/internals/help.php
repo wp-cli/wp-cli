@@ -21,49 +21,45 @@ class Help_Command extends WP_CLI_Command {
 			return;
 		}
 
-		$command = $args[0];
+		$this->maybe_load_man_page( $args );
 
-		if ( !isset( WP_CLI::$commands[$command] ) )
-			WP_CLI::error( "'$command' is not a registered wp command." );
+		$this->show_available_subcommands( $args[0] );
+	}
 
-		if ( !$this->show_help( $args ) ) {
-			$class = WP_CLI::$commands[$command];
+	private function maybe_load_man_page( $args ) {
+		$man_dir = WP_CLI_ROOT . "../../../man/";
 
-			if ( method_exists( $class, 'help' ) ) {
-				$class::help( $subcommand );
-			} else {
-				WP_CLI::line( 'Example usage:' );
-				$this->single_command_help( $command, $class );
+		if ( !is_dir( $man_dir ) ) {
+			WP_CLI::warning( "man pages do not seem to be installed." );
+		} else {
+			$man_file = $man_dir . implode( '-', $args ) . '.1';
+
+			if ( is_readable( $man_file ) ) {
+				WP_CLI::launch( "man $man_file" );
 			}
 		}
 	}
 
-	private function show_help( $args ) {
-		$fname = implode( '-', $args );
+	private function show_available_subcommands( $command ) {
+		$class = WP_CLI::load_command( $command );
 
-		$man_file = WP_CLI_ROOT . "../../../man/$fname.1";
-
-		if ( is_readable( $man_file ) ) {
-			WP_CLI::launch( "man $man_file" );
+		if ( method_exists( $class, 'help' ) ) {
+			$class::help();
+		} else {
+			WP_CLI::line( 'Example usage:' );
+			$this->single_command_help( $command, $class );
+			WP_CLI::line();
+			WP_CLI::line( "See 'wp help blog <subcommand>' for more information on a specific subcommand." );
 		}
-
-		$doc_file = WP_CLI_ROOT . "../../doc/$fname.txt";
-
-		if ( !is_readable( $doc_file ) )
-			return false;
-
-		echo file_get_contents( $doc_file );
-
-		return true;
 	}
 
 	private function general_help() {
 		WP_CLI::line( 'Available commands:' );
-		foreach ( WP_CLI::$commands as $name => $command ) {
+		foreach ( WP_CLI::load_all_commands() as $name => $class ) {
 			if ( 'help' == $name )
 				continue;
 
-			$this->single_command_help( $name, $command );
+			$this->single_command_help( $name, $class );
 		}
 
 		WP_CLI::line(<<<EOB
@@ -80,14 +76,15 @@ EOB
 		);
 	}
 
-	private function single_command_help( $name, $command ) {
-		WP_CLI::out( '    wp ' . $name );
+	private function single_command_help( $name, $class ) {
+		$out = "    wp $name";
 
-		$methods = WP_CLI_Command::get_subcommands( $command );
+		$methods = WP_CLI_Command::get_subcommands( $class );
 
 		if ( !empty( $methods ) ) {
-			WP_CLI::out( ' [' . implode( '|', $methods ) . ']' );
+			$out .= ' [' . implode( '|', $methods ) . ']';
 		}
-		WP_CLI::line(' ...');
+
+		WP_CLI::line( $out );
 	}
 }
