@@ -89,7 +89,7 @@ class Blog_Command extends WP_CLI_Command {
 		if ( !is_subdomain_install() ) {
 			$subdirectory_reserved_names = apply_filters( 'subdirectory_reserved_names', array( 'page', 'comments', 'blog', 'files', 'feed' ) );
 			if ( in_array( $base, $subdirectory_reserved_names ) ) {
-				WP_CLI::error( sprintf( __( 'The following words are reserved for use by WordPress functions and cannot be used as blog names: <code>%s</code>' ), implode( '</code>, <code>', $subdirectory_reserved_names ) ) );
+				WP_CLI::error( 'The following words are reserved and cannot be used as blog names: ' . implode( ', ', $subdirectory_reserved_names ) );
 			}
 		}
 
