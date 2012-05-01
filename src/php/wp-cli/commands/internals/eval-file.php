@@ -30,16 +30,4 @@ class Eval_File_Command extends WP_CLI_Command {
 			}
 		}
 	}
-
-	/**
-	 * Help function for this command
-	 */
-	public static function help() {
-		WP_CLI::line( <<<EOB
-example: wp eval-file some-file.php
-
-Loads and executes a PHP file after bootstrapping WordPress.
-EOB
-	);
-	}
 }

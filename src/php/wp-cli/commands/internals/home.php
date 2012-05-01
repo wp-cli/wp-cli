@@ -34,16 +34,4 @@ class Home_Command extends WP_CLI_Command {
 
 		WP_CLI::success('The wp-cli homepage should be opening in your browser.');
 	}
-
-	/**
-	 * Help function for this command
-	 */
-	public static function help() {
-		WP_CLI::line( <<<EOB
-usage: wp home
-
-Opens the wp-cli homepage in your browser.
-EOB
-	);
-	}
 }

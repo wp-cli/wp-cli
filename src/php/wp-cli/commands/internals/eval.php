@@ -24,16 +24,4 @@ class Eval_Command extends WP_CLI_Command {
 
 		eval( $args[0] );
 	}
-
-	/**
-	 * Help function for this command
-	 */
-	public static function help() {
-		WP_CLI::line( <<<EOB
-example: wp eval 'echo WP_CONTENT_DIR;'
-
-Executes arbitrary PHP code after bootstrapping WordPress.
-EOB
-	);
-	}
 }

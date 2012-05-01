@@ -162,19 +162,5 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::success('WordPress updated successfully.');
 		}
 	}
-
-	/**
-	 * Help function for this command
-	 */
-	public static function help() {
-		WP_CLI::line( <<<EOB
-usage: wp core update
-   or: wp core version [--extra]
-   or: wp core download [--version=1.2.3]
-   or: wp core config --dbname=<name> --dbuser=<user> --dbpass=<password> [--dbhost=localhost] [--dbprefix=wp_]
-   or: wp core install --site_url=example.com --site_title=<site-title> [--admin_name=<username>] --admin_password=<password> --admin_email=<email-address>
-EOB
-	);
-	}
 }
 

@@ -116,15 +116,4 @@ class Generate_Command extends WP_CLI_Command {
 
 		$notify->finish();
 	}
-
-	/**
-	 * Help function for this command
-	 */
-	public static function help() {
-		WP_CLI::line( <<<EOB
-usage: wp generate posts [--count=100] [--type=post] [--status=publish] [--author=<login>]
-   or: wp generate users [--count=100] [--role=<role>]
-EOB
-	);
-	}
 }

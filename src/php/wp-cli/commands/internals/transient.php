@@ -29,7 +29,7 @@ class Transient_Command extends WP_CLI_Command {
 			WP_CLI::warning( 'Transient with key "' . $key . '" is not set.' );
 			exit;
 		}
-			
+
 		if ( is_array( $value ) || is_object( $value ) )
 			echo var_export( $value ) . "\n";
 		else
@@ -86,24 +86,11 @@ class Transient_Command extends WP_CLI_Command {
 	public function type() {
 		global $_wp_using_ext_object_cache, $wpdb;
 
-		if ( $_wp_using_ext_object_cache ) 
+		if ( $_wp_using_ext_object_cache )
 			$message = 'Transients are saved to the object cache.';
 		else
 			$message = 'Transients are saved to the ' . $wpdb->prefix . 'options table.';
 
 		WP_CLI::line( $message );
-	}
-
-	/**
-	 * Displays the help message.
-	 */
-	static function help() {
-		WP_CLI::line( <<<EOB
-usage: wp transient get <key>
-   or: wp transient set <key> <value> [expiration]
-   or: wp transient delete <key>
-   or: wp transient type
-EOB
-	    );	
 	}
 }

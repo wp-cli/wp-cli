@@ -91,17 +91,4 @@ class Option_Command extends WP_CLI_Command {
 			echo $value . "\n";
 		}
 	}
-
-	/**
-	 * Help function for this command
-	 */
-	public static function help() {
-		WP_CLI::line( <<<EOB
-usage: wp option get <option-name>
-   or: wp option add <option-name> <option-value>
-   or: wp option update <option-name> <option-value>
-   or: wp option delete <option-name>
-EOB
-	    );
-	}
 }
