@@ -117,11 +117,8 @@ class Blog_Command extends WP_CLI_Command {
 		}
 		else {
 			$newdomain = $site->domain;
-			$path = $base;
-			if (strpos($path, '/') !== 0) {
-				$path = '/'.$path;
-			}
-			$url = $site->domain.$path;
+			$path = '/' . trim( $base, '/' ) . '/';
+			$url = $site->domain . $path;
 		}
 
 		$user_id = email_exists($email);
