@@ -44,15 +44,17 @@ class Blog_Command extends WP_CLI_Command {
 	public function create( $args, $assoc_args ) {
 		global $wpdb;
 
-		// domain required
-		// title required
-		// email optional
-		// site optional
-		// public optional
-		if ( empty( $assoc_args['slug'] ) || empty( $assoc_args['title'] ) ) {
-			WP_CLI::line( $this->_create_usage_string() );
-			exit( 1 );
+		$has_errors = false;
+
+		foreach ( array( 'slug', 'title' ) as $required ) {
+			if ( empty( $assoc_args[$required] ) ) {
+				WP_CLI::warning( "missing --$required parameter" );
+				$has_errors = true;
+			}
 		}
+
+		if ( $has_errors )
+			exit(1);
 
 		$base = $assoc_args['slug'];
 		$title = $assoc_args['title'];
