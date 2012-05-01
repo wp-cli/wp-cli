@@ -124,13 +124,12 @@ class Blog_Command extends WP_CLI_Command {
 			$url = $site->domain.$path;
 		}
 
-		$password = 'N/A';
 		$user_id = email_exists($email);
 		if (!$user_id) { // Create a new user with a random password
 			$password = wp_generate_password(12, false);
 			$user_id = wpmu_create_user($base, $password, $email);
 			if (false == $user_id) {
-				WP_CLI::error('There was an issue creating the user.');
+				WP_CLI::error("Can't create user.");
 			}
 			else {
 				wp_new_user_notification($user_id, $password);
