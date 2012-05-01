@@ -13,7 +13,7 @@ if ( is_multisite() ) {
 class Blog_Command extends WP_CLI_Command {
 
 	private function _create_usage_string() {
-		return "usage: wp blog create --slug=<subdomain or directory name> --title=<blog title> [--email] [--site_id] [--public]";
+		return "usage: wp blog create --slug=<subdomain or directory name> --title=<blog title> [--email] [--site_id] [--private]";
 	}
 
 	/**
@@ -69,18 +69,8 @@ class Blog_Command extends WP_CLI_Command {
 		else {
 			$site = wpmu_current_site();
 		}
-		// Public, default is true (1)
-		if ( !empty( $assoc_args['public'] ) ) {
-			$public = $args['public'];
-			// Check for 1 or 0
-			if ( $public != '1' && $public != '0' ) {
-				$this->_create_usage();
-				exit;
-			}
-		}
-		else {
-			$public = 1;
-		}
+
+		$public = isset( $assoc_args['private'] ) ? 0 : 1;
 
 		// Sanitize
 		if ( preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
