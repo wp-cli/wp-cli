@@ -1,6 +1,8 @@
 <?php
 
-WP_CLI::addCommand('blog', 'Blog_Command');
+if ( is_multisite() ) {
+	WP_CLI::addCommand( 'blog', 'Blog_Command' );
+}
 
 /**
  * Implement core command
@@ -40,9 +42,6 @@ class Blog_Command extends WP_CLI_Command {
 	 * @param array $assoc_args
 	 */
 	public function create($args, $assoc_args) {
-		if (!is_multisite()) {
-			WP_CLI::error("Not a multisite instance");
-		}
 		global $wpdb;
 
 		// domain required
