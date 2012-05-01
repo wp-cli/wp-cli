@@ -23,6 +23,6 @@ wp-blog-create(1) -- Create a new blog in a multisite install.
 
 	Site (network) to associate new blog with. Defaults to current site (typically 1).
 
-* `--public`:
+* `--private`:
 
-	Whether or not the new site is public (indexed).
+	If set, the new blog will be non-public (not indexed)
