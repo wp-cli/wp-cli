@@ -19,14 +19,14 @@ class Blog_Command extends WP_CLI_Command {
 	/**
 	 * Get site (network) data for a given id
 	 *
-	 * @param int $site_id
+	 * @param int     $site_id
 	 * @return bool|array False if no network found with given id, array otherwise
 	 */
-	private function _get_site($site_id) {
+	private function _get_site( $site_id ) {
 		global $wpdb;
 		// Load site data
-		$sites = $wpdb->get_results("SELECT * FROM $wpdb->site WHERE `id` = ".$wpdb->escape($site_id));
-		if (count($sites) > 0) {
+		$sites = $wpdb->get_results( "SELECT * FROM $wpdb->site WHERE `id` = ".$wpdb->escape( $site_id ) );
+		if ( count( $sites ) > 0 ) {
 			// Only care about domain and path which are set here
 			return $sites[0];
 		}
@@ -38,10 +38,10 @@ class Blog_Command extends WP_CLI_Command {
 	 * Create a blog via passed in arguments
 	 *
 	 * @see BlogCommand::help()
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @param array   $args
+	 * @param array   $assoc_args
 	 */
-	public function create($args, $assoc_args) {
+	public function create( $args, $assoc_args ) {
 		global $wpdb;
 
 		// domain required
@@ -49,29 +49,29 @@ class Blog_Command extends WP_CLI_Command {
 		// email optional
 		// site optional
 		// public optional
-		if (empty($assoc_args['slug']) || empty($assoc_args['title'])) {
-			WP_CLI::line($this->_create_usage_string());
-			exit(1);
+		if ( empty( $assoc_args['slug'] ) || empty( $assoc_args['title'] ) ) {
+			WP_CLI::line( $this->_create_usage_string() );
+			exit( 1 );
 		}
 
 		$base = $assoc_args['slug'];
 		$title = $assoc_args['title'];
-		$email = empty($assoc_args['email']) ? '' : $assoc_args['email'];
+		$email = empty( $assoc_args['email'] ) ? '' : $assoc_args['email'];
 		// Site
-		if (!empty($assoc_args['site_id'])) {
-			$site = $this->_get_site($assoc_args['site_id']);
-			if ($site === false) {
-				WP_CLI::error('Site with id '.$assoc_args['site_id'].' does not exist');
+		if ( !empty( $assoc_args['site_id'] ) ) {
+			$site = $this->_get_site( $assoc_args['site_id'] );
+			if ( $site === false ) {
+				WP_CLI::error( 'Site with id '.$assoc_args['site_id'].' does not exist' );
 			}
 		}
 		else {
 			$site = wpmu_current_site();
 		}
 		// Public, default is true (1)
-		if (!empty($assoc_args['public'])) {
+		if ( !empty( $assoc_args['public'] ) ) {
 			$public = $args['public'];
 			// Check for 1 or 0
-			if ($public != '1' && $public != '0') {
+			if ( $public != '1' && $public != '0' ) {
 				$this->_create_usage();
 				exit;
 			}
@@ -81,38 +81,38 @@ class Blog_Command extends WP_CLI_Command {
 		}
 
 		// Sanitize
-		if (preg_match( '|^([a-zA-Z0-9-])+$|', $base)) {
-			$base = strtolower($base);
+		if ( preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
+			$base = strtolower( $base );
 		}
 
 		// If not a subdomain install, make sure the domain isn't a reserved word
-		if (!is_subdomain_install()) {
-			$subdirectory_reserved_names = apply_filters('subdirectory_reserved_names', array( 'page', 'comments', 'blog', 'files', 'feed' ));
-			if (in_array($base, $subdirectory_reserved_names)) {
-				WP_CLI::error(sprintf(__('The following words are reserved for use by WordPress functions and cannot be used as blog names: <code>%s</code>'), implode('</code>, <code>', $subdirectory_reserved_names)));
+		if ( !is_subdomain_install() ) {
+			$subdirectory_reserved_names = apply_filters( 'subdirectory_reserved_names', array( 'page', 'comments', 'blog', 'files', 'feed' ) );
+			if ( in_array( $base, $subdirectory_reserved_names ) ) {
+				WP_CLI::error( sprintf( __( 'The following words are reserved for use by WordPress functions and cannot be used as blog names: <code>%s</code>' ), implode( '</code>, <code>', $subdirectory_reserved_names ) ) );
 			}
 		}
 
 		// Check for valid email, if not, use the first Super Admin found
 		// Probably a more efficient way to do this so we dont query for the
 		// User twice if super admin
-		$email = sanitize_email($email);
-		if (empty($email) || !is_email($email)) {
+		$email = sanitize_email( $email );
+		if ( empty( $email ) || !is_email( $email ) ) {
 			$super_admins = get_super_admins();
 			$email = '';
-			if (!empty($super_admins) && is_array($super_admins)) {
+			if ( !empty( $super_admins ) && is_array( $super_admins ) ) {
 				// Just get the first one
 				$super_login = $super_admins[0];
-				$super_user = get_user_by('login', $super_login);
-				if ($super_user) {
+				$super_user = get_user_by( 'login', $super_login );
+				if ( $super_user ) {
 					$email = $super_user->user_email;
 				}
 			}
 		}
 
-		if (is_subdomain_install()) {
+		if ( is_subdomain_install() ) {
 			$path = '/';
-			$url = $newdomain = $base.'.'.preg_replace('|^www\.|', '', $site->domain);
+			$url = $newdomain = $base.'.'.preg_replace( '|^www\.|', '', $site->domain );
 		}
 		else {
 			$newdomain = $site->domain;
@@ -120,24 +120,24 @@ class Blog_Command extends WP_CLI_Command {
 			$url = $site->domain . $path;
 		}
 
-		$user_id = email_exists($email);
-		if (!$user_id) { // Create a new user with a random password
-			$password = wp_generate_password(12, false);
-			$user_id = wpmu_create_user($base, $password, $email);
-			if (false == $user_id) {
-				WP_CLI::error("Can't create user.");
+		$user_id = email_exists( $email );
+		if ( !$user_id ) { // Create a new user with a random password
+			$password = wp_generate_password( 12, false );
+			$user_id = wpmu_create_user( $base, $password, $email );
+			if ( false == $user_id ) {
+				WP_CLI::error( "Can't create user." );
 			}
 			else {
-				wp_new_user_notification($user_id, $password);
+				wp_new_user_notification( $user_id, $password );
 			}
 		}
 
 		$wpdb->hide_errors();
-		$id = wpmu_create_blog($newdomain, $path, $title, $user_id, array( 'public' => $public ), $site->id);
+		$id = wpmu_create_blog( $newdomain, $path, $title, $user_id, array( 'public' => $public ), $site->id );
 		$wpdb->show_errors();
-		if (!is_wp_error($id)) {
-			if ( !is_super_admin($user_id) && !get_user_option('primary_blog', $user_id)) {
-				update_user_option($user_id, 'primary_blog', $id, true);
+		if ( !is_wp_error( $id ) ) {
+			if ( !is_super_admin( $user_id ) && !get_user_option( 'primary_blog', $user_id ) ) {
+				update_user_option( $user_id, 'primary_blog', $id, true );
 			}
 			// Prevent mailing admins of new sites
 			// @TODO argument to pass in?
@@ -145,9 +145,9 @@ class Blog_Command extends WP_CLI_Command {
 			// wp_mail(get_site_option('admin_email'), sprintf(__('[%s] New Site Created'), $current_site->site_name), $content_mail, 'From: "Site Admin" <'.get_site_option( 'admin_email').'>');
 		}
 		else {
-			WP_CLI::error($id->get_error_message());
+			WP_CLI::error( $id->get_error_message() );
 		}
-		WP_CLI::success("Blog $id created: $url");
+		WP_CLI::success( "Blog $id created: $url" );
 	}
 
 	/* public function update($args) {} */
@@ -155,7 +155,7 @@ class Blog_Command extends WP_CLI_Command {
 	/* public function delete($args) {} */
 
 	public function help() {
-		WP_CLI::line(<<<EOB
+		WP_CLI::line( <<<EOB
 usage: wp blog <sub-command> [options]
 
 Available sub-commands:
@@ -166,6 +166,6 @@ Available sub-commands:
      [--site_id]      Site (network) to associate new blog with. Defaults to current site (typically 1)
      [--public]       Whether or not the new site is public (indexed)
 EOB
-	);
+		);
 	}
 }
