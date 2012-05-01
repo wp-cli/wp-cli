@@ -1,7 +1,7 @@
 <?php
 
 if ( is_multisite() ) {
-	WP_CLI::addCommand( 'blog', 'Blog_Command' );
+	WP_CLI::add_command( 'blog', 'Blog_Command' );
 }
 
 /**
