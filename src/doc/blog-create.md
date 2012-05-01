@@ -11,7 +11,7 @@ wp-blog-create(1) -- Create a new blog in a multisite install.
 
 	Base for the new domain. Subdomain on subdomain installs, directory on subdirectory installs.
 
-* `--title`=<title>:
+* `--title`=<title&gt;:
 
 	Title of the new blog.
 
