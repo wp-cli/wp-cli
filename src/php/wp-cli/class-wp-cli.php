@@ -7,7 +7,7 @@
  */
 class WP_CLI {
 
-	static $commands = array();
+	private static $commands = array();
 
 	/**
 	 * Add a command to the wp-cli list of commands
@@ -237,9 +237,16 @@ class WP_CLI {
 	static function load_all_commands() {
 		foreach ( array( 'internals', 'community' ) as $dir ) {
 			foreach ( glob( WP_CLI_ROOT . "/commands/$dir/*.php" ) as $filename ) {
+				$command = substr( basename( $filename ), 0, -4 );
+
+				if ( isset( self::$commands[ $command ] ) )
+					continue;
+
 				include $filename;
 			}
 		}
+
+		return self::$commands;
 	}
 
 	static function run_command( $arguments, $assoc_args ) {
@@ -256,27 +263,12 @@ class WP_CLI {
 				$command = $aliases[ $command ];
 		}
 
-		if ( 'help' == $command ) {
-			if ( empty( $arguments ) ) {
-				self::load_all_commands();
-			} else {
-				self::load_command( 'help' );
-				self::load_command( $arguments[0] );
-			}
-		} else {
-			self::load_command( $command );
-		}
+		$class = self::load_command( $command );
 
-		if ( !isset( WP_CLI::$commands[$command] ) ) {
-			WP_CLI::error( "'$command' is not a registered wp command. See 'wp help'." );
-			exit;
-		}
-
-		new WP_CLI::$commands[$command]( $arguments, $assoc_args );
-		exit;
+		new $class( $arguments, $assoc_args );
 	}
 
-	private function load_command( $command ) {
+	static function load_command( $command ) {
 		foreach ( array( 'internals', 'community' ) as $dir ) {
 			$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
 
@@ -285,6 +277,13 @@ class WP_CLI {
 				break;
 			}
 		}
+
+		if ( !isset( WP_CLI::$commands[$command] ) ) {
+			WP_CLI::error( "'$command' is not a registered wp command. See 'wp help'." );
+			exit;
+		}
+
+		return WP_CLI::$commands[$command];
 	}
 
 	// back-compat
