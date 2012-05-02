@@ -7,7 +7,7 @@
  */
 abstract class WP_CLI_Command {
 
-	protected $default_subcommand = 'help';
+	protected $default_subcommand;
 
 	protected $aliases = array();
 
@@ -31,11 +31,33 @@ abstract class WP_CLI_Command {
 			$subcommand = '_' . $subcommand;
 		}
 
-		if ( !method_exists( $this, $subcommand ) || isset( $assoc_args[ 'help' ] ) ) {
-			$subcommand = 'help';
+		if ( __FUNCTION__ == $subcommand || !method_exists( $this, $subcommand ) ) {
+			self::describe_command( get_class( $this ), WP_CLI_COMMAND );
+		} else {
+			$this->$subcommand( $args, $assoc_args );
+		}
+	}
+
+	static function describe_command( $class, $command ) {
+		if ( method_exists( $class, 'help' ) ) {
+			$class::help();
+			return;
 		}
 
-		$this->$subcommand( $args, $assoc_args );
+		$methods = self::get_subcommands( $class );
+
+		$out = "usage: wp $command";
+
+		if ( empty( $methods ) ) {
+			WP_CLI::line( $out );
+		} else {
+			$out .= ' [' . implode( '|', $methods ) . ']';
+
+			WP_CLI::line( $out );
+
+			WP_CLI::line();
+			WP_CLI::line( "See 'wp help $command <subcommand>' for more information on a specific subcommand." );
+		}
 	}
 
 	/**
@@ -50,17 +72,19 @@ abstract class WP_CLI_Command {
 		$methods = array();
 
 		foreach ( $reflection->getMethods() as $method ) {
-			if ( $method->isPublic() && !$method->isStatic() && !$method->isConstructor() ) {
-				$name = $method->name;
+			if ( !$method->isPublic() || $method->isStatic() || $method->isConstructor() )
+				continue;
 
-				if ( strpos( $name, '_' ) === 0 ) {
-					$name = substr( $name, 1 );
-				}
+			$name = $method->name;
 
-				$methods[] = $name;
+			if ( strpos( $name, '_' ) === 0 ) {
+				$name = substr( $name, 1 );
 			}
+
+			$methods[] = $name;
 		}
 
 		return $methods;
 	}
 }
+

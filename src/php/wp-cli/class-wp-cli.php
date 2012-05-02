@@ -7,7 +7,7 @@
  */
 class WP_CLI {
 
-	static $commands = array();
+	private static $commands = array();
 
 	/**
 	 * Add a command to the wp-cli list of commands
@@ -149,6 +149,15 @@ class WP_CLI {
 	}
 
 	/**
+	 * Launch an external process, closing the current one
+	 *
+	 * @param string Command to call
+	 */
+	static function launch( $command ) {
+		proc_close( proc_open( $command, array( 0 => STDIN, 1 => STDOUT, 2 => STDERR ), $pipes ) );
+	}
+
+	/**
 	 * Sets the appropriate $_SERVER keys based on a given string
 	 *
 	 * @param string $url The URL
@@ -228,9 +237,16 @@ class WP_CLI {
 	static function load_all_commands() {
 		foreach ( array( 'internals', 'community' ) as $dir ) {
 			foreach ( glob( WP_CLI_ROOT . "/commands/$dir/*.php" ) as $filename ) {
+				$command = substr( basename( $filename ), 0, -4 );
+
+				if ( isset( self::$commands[ $command ] ) )
+					continue;
+
 				include $filename;
 			}
 		}
+
+		return self::$commands;
 	}
 
 	static function run_command( $arguments, $assoc_args ) {
@@ -247,15 +263,23 @@ class WP_CLI {
 				$command = $aliases[ $command ];
 		}
 
-		if ( 'help' == $command ) {
-			if ( empty( $arguments ) ) {
-				self::load_all_commands();
-			} else {
-				self::load_command( 'help' );
-				self::load_command( $arguments[0] );
+		$class = self::load_command( $command );
+
+		define( 'WP_CLI_COMMAND', $command );
+
+		$instance = new $class( $arguments, $assoc_args );
+	}
+
+	static function load_command( $command ) {
+		if ( !isset( WP_CLI::$commands[$command] ) ) {
+			foreach ( array( 'internals', 'community' ) as $dir ) {
+				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
+
+				if ( is_readable( $path ) ) {
+					include $path;
+					break;
+				}
 			}
-		} else {
-			self::load_command( $command );
 		}
 
 		if ( !isset( WP_CLI::$commands[$command] ) ) {
@@ -263,27 +287,7 @@ class WP_CLI {
 			exit;
 		}
 
-		new WP_CLI::$commands[$command]( $arguments, $assoc_args );
-		exit;
-	}
-
-	private function load_command( $command ) {
-		foreach ( array( 'internals', 'community' ) as $dir ) {
-			$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
-
-			if ( is_readable( $path ) ) {
-				include $path;
-				break;
-			}
-		}
-	}
-
-	static function get_path( $which ) {
-		switch ( $which ) {
-		case 'doc':
-			// TODO: pear config-get doc_dir
-			return WP_CLI_ROOT . "../../doc/";
-		}
+		return WP_CLI::$commands[$command];
 	}
 
 	// back-compat

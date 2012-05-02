@@ -35,6 +35,12 @@ if ( isset( $assoc_args['version'] ) && empty( $arguments ) ) {
 	exit;
 }
 
+// Handle --help parameter
+if ( isset( $assoc_args['help'] ) ) {
+	array_unshift( $arguments, 'help' );
+	unset( $assoc_args['help'] );
+}
+
 // Define the WordPress location
 if ( is_readable( $_SERVER['PWD'] . '/../wp-load.php' ) ) {
 	define( 'WP_ROOT', $_SERVER['PWD'] . '/../' );
@@ -108,10 +114,9 @@ if ( isset( $assoc_args['require'] ) ) {
 
 // Handle --completions parameter
 if ( isset( $assoc_args['completions'] ) ) {
-	WP_CLI::load_all_commands();
-
-	foreach ( WP_CLI::$commands as $name => $command ) {
-		WP_CLI::line( $name .  ' ' . implode( ' ', WP_CLI_Command::get_subcommands($command) ) );
+	foreach ( WP_CLI::load_all_commands() as $name => $command ) {
+		$subcommands = implode( ' ', WP_CLI_Command::get_subcommands( $command ) );
+		WP_CLI::line( $name .  ' ' . $subcommands );
 	}
 	exit;
 }
