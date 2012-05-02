@@ -179,21 +179,21 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 			WP_CLI::error( $api );
 		}
 
-		if ( isset( $assoc_args['dev'] ) ) {
+		if ( isset( $assoc_args['version'] ) ) {
 			list( $link ) = explode( $slug, $api->download_link );
 
-			$api->download_link = $link . $slug . '.zip';
-			$api->version = 'Development Version';
-		} else if ( isset( $assoc_args['version'] ) ) {
-			list( $link ) = explode( $slug, $api->download_link );
+			if ( 'dev' == $assoc_args['version'] ) {
+				$api->download_link = $link . $slug . '.zip';
+				$api->version = 'Development Version';
+			} else {
+				$api->download_link = $link . $slug . '.' . $assoc_args['version'] .'.zip';
+				$api->version = $assoc_args['version'];
 
-			$api->download_link = $link . $slug . '.' . $assoc_args['version'] .'.zip';
-			$api->version = $assoc_args['version'];
-
-			// check if the requested version exists
-			$version_check_response = wp_remote_head( $api->download_link );
-			if ( !$version_check_response || $version_check_response['headers']['content-type'] != 'application/octet-stream' ) {
-				WP_CLI::error( "Can't find the requested plugin's version " . $assoc_args['version'] . " in the WordPress.org plugins repository." );
+				// check if the requested version exists
+				$response = wp_remote_head( $api->download_link );
+				if ( !$response || $response['headers']['content-type'] != 'application/octet-stream' ) {
+					WP_CLI::error( "Can't find the requested plugin's version " . $assoc_args['version'] . " in the WordPress.org plugins repository." );
+				}
 			}
 		}
 
