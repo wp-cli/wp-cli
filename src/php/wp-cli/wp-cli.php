@@ -109,7 +109,8 @@ if ( isset( $assoc_args['require'] ) ) {
 // Handle --completions parameter
 if ( isset( $assoc_args['completions'] ) ) {
 	foreach ( WP_CLI::load_all_commands() as $name => $command ) {
-		WP_CLI::line( $name .  ' ' . implode( ' ', WP_CLI_Command::get_subcommands($command) ) );
+		$subcommands = implode( ' ', WP_CLI_Command::get_subcommands( $command ) );
+		WP_CLI::line( $name .  ' ' . $subcommands );
 	}
 	exit;
 }

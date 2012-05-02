@@ -265,16 +265,20 @@ class WP_CLI {
 
 		$class = self::load_command( $command );
 
-		new $class( $arguments, $assoc_args );
+		define( 'WP_CLI_COMMAND', $command );
+
+		$instance = new $class( $arguments, $assoc_args );
 	}
 
 	static function load_command( $command ) {
-		foreach ( array( 'internals', 'community' ) as $dir ) {
-			$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
+		if ( !isset( WP_CLI::$commands[$command] ) ) {
+			foreach ( array( 'internals', 'community' ) as $dir ) {
+				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
 
-			if ( is_readable( $path ) ) {
-				include $path;
-				break;
+				if ( is_readable( $path ) ) {
+					include $path;
+					break;
+				}
 			}
 		}
 

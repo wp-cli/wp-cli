@@ -10,11 +10,6 @@ WP_CLI::add_command('help', 'Help_Command');
  */
 class Help_Command extends WP_CLI_Command {
 
-	/**
-	 * Overwrite the constructor to have a command without sub-commands.
-	 *
-	 * @param array $args
-	 */
 	public function __construct( $args ) {
 		if ( empty( $args ) ) {
 			$this->general_help();
@@ -42,24 +37,24 @@ class Help_Command extends WP_CLI_Command {
 
 	private function show_available_subcommands( $command ) {
 		$class = WP_CLI::load_command( $command );
-
-		if ( method_exists( $class, 'help' ) ) {
-			$class::help();
-		} else {
-			WP_CLI::line( 'Example usage:' );
-			$this->single_command_help( $command, $class );
-			WP_CLI::line();
-			WP_CLI::line( "See 'wp help blog <subcommand>' for more information on a specific subcommand." );
-		}
+		WP_CLI_Command::describe_command( $class, $command );
 	}
 
 	private function general_help() {
 		WP_CLI::line( 'Available commands:' );
-		foreach ( WP_CLI::load_all_commands() as $name => $class ) {
-			if ( 'help' == $name )
+		foreach ( WP_CLI::load_all_commands() as $command => $class ) {
+			if ( 'help' == $command )
 				continue;
 
-			$this->single_command_help( $name, $class );
+			$out = "    wp $command";
+
+			$methods = WP_CLI_Command::get_subcommands( $class );
+
+			if ( !empty( $methods ) ) {
+				$out .= ' [' . implode( '|', $methods ) . ']';
+			}
+
+			WP_CLI::line( $out );
 		}
 
 		WP_CLI::line(<<<EOB
@@ -74,17 +69,5 @@ Global parameters:
     --version           print wp-cli version
 EOB
 		);
-	}
-
-	private function single_command_help( $name, $class ) {
-		$out = "    wp $name";
-
-		$methods = WP_CLI_Command::get_subcommands( $class );
-
-		if ( !empty( $methods ) ) {
-			$out .= ' [' . implode( '|', $methods ) . ']';
-		}
-
-		WP_CLI::line( $out );
 	}
 }
