@@ -1,0 +1,12 @@
+wp-db-export(1) -- Export the WordPress database using mysqldump.
+====
+
+## SYNOPSIS
+
+`wp db export` [<file>]
+
+## OPTIONS
+
+* `<file>`:
+
+	The name of the export file. If omitted, it will be '{dbname}.sql'

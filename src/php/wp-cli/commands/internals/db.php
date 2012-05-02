@@ -41,7 +41,7 @@ class DB_Command extends WP_CLI_Command {
 	 */
 	function query( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp sql query <SQL>" );
+			WP_CLI::line( "usage: wp db query <SQL>" );
 			exit;
 		}
 
