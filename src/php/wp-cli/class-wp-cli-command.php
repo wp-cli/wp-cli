@@ -31,7 +31,7 @@ abstract class WP_CLI_Command {
 			$subcommand = '_' . $subcommand;
 		}
 
-		if ( __FUNCTION__ == $subcommand || !method_exists( $this, $subcommand ) || isset( $assoc_args[ 'help' ] ) ) {
+		if ( __FUNCTION__ == $subcommand || !method_exists( $this, $subcommand ) ) {
 			self::describe_command( get_class( $this ), WP_CLI_COMMAND );
 		} else {
 			$this->$subcommand( $args, $assoc_args );
