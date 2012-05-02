@@ -31,6 +31,7 @@ class Help_Command extends WP_CLI_Command {
 
 			if ( is_readable( $man_file ) ) {
 				WP_CLI::launch( "man $man_file" );
+				exit;
 			}
 		}
 	}
