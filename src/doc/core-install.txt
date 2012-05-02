@@ -1,0 +1,28 @@
+wp-core-install(1) -- Install the WordPress tables in the database.
+====
+
+## SYNOPSIS
+
+`wp core install` --site_url=<url> --site_title=<title&gt; [--admin_name=<username>] --admin_password=<password> --admin_email=<email>
+
+## OPTIONS
+
+* `--site_url`=<url>:
+
+	The address of the new site.
+
+* `--site_title`=<title&gt;:
+
+	The title of the new site.
+
+* `--admin_name`=<username>:
+
+	The name of the admin user. Default: 'admin'
+
+* `--admin_password`=<password>:
+
+	The password for the admin user.
+
+* `--admin_email`=<email>:
+
+	The email address for the admin user.

@@ -1,0 +1,12 @@
+wp-core-version(1) -- Show the WordPress version.
+====
+
+## SYNOPSIS
+
+`wp core version` [--extra]
+
+## OPTIONS
+
+* `--extra`:
+
+	Show extended version information.

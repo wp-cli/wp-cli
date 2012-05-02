@@ -1,0 +1,28 @@
+wp-core-config(1) -- Create a wp-config.php file.
+====
+
+## SYNOPSIS
+
+`wp core config` --dbname=<name> --dbuser=<user> --dbpass=<password> [--dbhost=localhost] [--dbprefix=wp_]
+
+## OPTIONS
+
+* `--dbname`=<dbname>:
+
+	Set the database name.
+
+* `--dbuser`=<dbuser>:
+
+	Set the database user.
+
+* `--dbpass`=<dbpass>:
+
+	Set the database user password.
+
+* `--dbhost`=<dbhost>:
+
+	Set the database host. Default: 'localhost'
+
+* `--dbprefix`=<dbprefix>:
+
+	Set the database table prefix. Default: 'wp_'
