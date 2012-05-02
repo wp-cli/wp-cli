@@ -7,6 +7,7 @@ Requirements
 ------------
 
 PHP >= 5.3
+WP >= 3.3
 
 Installing
 ----------
