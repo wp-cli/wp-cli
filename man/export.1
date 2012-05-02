@@ -1,0 +1,71 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-EXPORT" "1" "May 2012" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-export\fR \- Create a WXR file\.
+.
+.SH "SYNOPSIS"
+\fBwp export\fR \-\-path=\fIdirname\fR [filters] [\-\-skip_comments]
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-\-path\fR=\fIdirname\fR:
+.
+.IP
+Full Path to directory where WXR export files should be stored\.
+.
+.TP
+\fB\-\-skip_comments\fR:
+.
+.IP
+Don\'t export comments\.
+.
+.SH "FILTERS"
+.
+.TP
+\fB\-\-start_date\fR=\fIdate\fR:
+.
+.IP
+Export only posts newer than this date in format YYYY\-MM\-DD\.
+.
+.TP
+\fB\-\-end_date\fR=\fIdate\fR:
+.
+.IP
+Export only posts older than this date in format YYYY\-MM\-DD\.
+.
+.TP
+\fB\-\-post_type\fR=\fIpost_type\fR:
+.
+.IP
+Export only posts with this post_type\.
+.
+.TP
+\fB\-\-author\fR=<login/id>:
+.
+.IP
+Export only posts by this author\.
+.
+.TP
+\fB\-\-category\fR=\fIcategory\-id\fR:
+.
+.IP
+Export only posts in this category\.
+.
+.TP
+\fB\-\-post_status\fR=\fIstatus\fR:
+.
+.IP
+Export only posts with this status\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp export \-\-path=/tmp/ \-\-user=admin \-\-post_type=post \-\-start_date=2011\-01\-01 \-\-end_date=2011\-12\-31
+.
+.fi
+

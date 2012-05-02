@@ -1,0 +1,35 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-PLUGIN\-UPDATE" "1" "May 2012" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-plugin\-update\fR \- Update an installed plugin\.
+.
+.SH "SYNOPSIS"
+\fBwp plugin update\fR [\fIplugin\fR] [\-\-all]
+.
+.SH "OPTIONS"
+.
+.TP
+\fIplugin\fR:
+.
+.IP
+The plugin to update\. Can be omitted when \-\-all is passed\.
+.
+.TP
+\fB\-\-all\fR:
+.
+.IP
+If set, updates for all plugins will be performed\. Use \fBwp plugin status\fR to see which plugins have updates available\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp plugin update bbpress
+
+wp plugin update \-\-all
+.
+.fi
+

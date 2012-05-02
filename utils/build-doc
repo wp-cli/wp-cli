@@ -2,6 +2,7 @@
 
 # generate man pages
 
+rm -rf man
 mkdir -p man
 
 for file in $(ls src/doc/*.txt); do
