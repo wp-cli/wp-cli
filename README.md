@@ -6,8 +6,8 @@ A set of tools for controlling WordPress installations from the command line.
 Requirements
 ------------
 
-PHP >= 5.3
-WP >= 3.3
+* PHP >= 5.3
+* WP >= 3.3
 
 Installing
 ----------
