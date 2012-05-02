@@ -1,4 +1,40 @@
-usage: wp option get <option-name>
-   or: wp option add <option-name> <option-value>
-   or: wp option update <option-name> <option-value>
-   or: wp option delete <option-name>
+wp-option(1) -- Manage WordPress options.
+====
+
+## SYNOPSIS
+
+wp option get <key>
+
+wp option add <key> <value>
+
+wp option update <key> <value>
+
+wp option delete <key>
+
+## SUBCOMMANDS
+
+* `get`:
+
+	Get an option value.
+
+* `add`:
+
+	Add a new option.
+
+* `update`:
+
+	Update an existing option.
+
+* `delete`:
+
+	Delete an option.
+
+## EXAMPLES
+
+	wp option get siteurl
+
+	wp option add my_option foobar
+
+	wp option update my_option barfoo
+
+	wp option delete my_option
