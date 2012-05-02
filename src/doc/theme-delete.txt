@@ -1,0 +1,16 @@
+wp-theme-delete(1) -- Delete a theme.
+====
+
+## SYNOPSIS
+
+`wp theme delete` <theme>
+
+## OPTIONS
+
+* <theme>:
+
+	The theme to delete.
+
+## EXAMPLES
+
+	wp theme delete twentyeleven

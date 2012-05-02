@@ -1,0 +1,23 @@
+wp-theme-update(1) -- Update an installed theme.
+====
+
+## SYNOPSIS
+
+`wp theme update` [<theme>] [--all]
+
+## OPTIONS
+
+* <theme>:
+
+	The theme to update. Can be omitted when --all is passed.
+
+* `--all`:
+
+	If set, updates for all themes will be performed. Use `wp theme status`
+to see which themes have updates available.
+
+## EXAMPLES
+
+	wp theme update twentytwelve
+
+	wp theme update --all
