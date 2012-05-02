@@ -1,0 +1,20 @@
+wp-user-delete(1) -- Delete a WordPress user.
+====
+
+## SYNOPSIS
+
+`wp user delete` <ID> [--reassign=<ID>]
+
+## OPTIONS
+
+* `<ID>`:
+
+	The ID of the user to delete.
+
+* `--reassign`=<ID>:
+
+	User to reassign the posts to.
+
+## EXAMPLES
+
+	wp user delete 123 --reassign=567

@@ -1,0 +1,24 @@
+wp-user-create(1) -- Create a new WordPress user.
+====
+
+## SYNOPSIS
+
+`wp user create` <user-login> <user-email> [--role=<role>]
+
+## OPTIONS
+
+* `<user-login>`:
+
+	The login of the user to create.
+
+* `<user-email>`:
+
+	The email address of the user to create.
+
+* `--role`=<role>:
+
+	The role of the user to create.
+
+## EXAMPLES
+
+	wp user create bob bob@example.com --role=author
