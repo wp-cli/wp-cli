@@ -1,0 +1,23 @@
+wp-plugin-update(1) -- Update an installed plugin.
+====
+
+## SYNOPSIS
+
+`wp plugin update` [<plugin>] [--all]
+
+## OPTIONS
+
+* <plugin>:
+
+	The plugin to update. Can be omitted when --all is passed.
+
+* `--all`:
+
+	If set, updates for all plugins will be performed. Use `wp plugin status`
+to see which plugins have updates available.
+
+## EXAMPLES
+
+	wp plugin update bbpress
+
+	wp plugin update --all

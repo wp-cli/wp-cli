@@ -1,0 +1,16 @@
+wp-plugin-uninstall(1) -- Run the uninstallation procedure for a plugin.
+====
+
+## SYNOPSIS
+
+`wp plugin uninstall` <plugin>
+
+## OPTIONS
+
+* <plugin>:
+
+	The plugin to uninstall.
+
+## EXAMPLES
+
+	wp plugin uninstall hello

@@ -1,0 +1,25 @@
+wp-plugin-install(1) -- Install a plugin from wordpress.org or from a zip file.
+====
+
+## SYNOPSIS
+
+`wp plugin install` <plugin/zip> [--version=<version>] [--activate]
+
+## OPTIONS
+
+* <plugin>:
+
+	A plugin slug or the path to a zip file.
+
+* `--version`=<version>:
+
+	If set, get that particular version from wordpress.org, instead of the
+stable version.
+
+## EXAMPLES
+
+	wp plugin install bbpress --version=2.1
+
+	wp plugin install bbpress --version=dev
+
+	wp plugin install ../my-plugin.zip
