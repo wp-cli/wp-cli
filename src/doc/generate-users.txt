@@ -1,0 +1,16 @@
+wp-generate-users(1) -- Generate a bunch of users.
+====
+
+## SYNOPSIS
+
+`wp generate users` [--count=100] [--role=<role>]
+
+## OPTIONS
+
+* `--count`=<number>:
+
+	How many users to generate. Default: 100
+
+* `--role`=<role>:
+
+	The role of the generated users. Default: default role from WP
