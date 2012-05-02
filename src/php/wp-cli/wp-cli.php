@@ -115,5 +115,11 @@ if ( isset( $assoc_args['completions'] ) ) {
 	exit;
 }
 
+// Handle --help parameter
+if ( isset( $assoc_args['help'] ) ) {
+	array_unshift( $arguments, 'help' );
+	unset( $assoc_args['help'] );
+}
+
 WP_CLI::run_command( $arguments, $assoc_args );
 
