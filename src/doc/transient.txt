@@ -28,7 +28,8 @@ seconds.
 
 * `type`:
 
-	Delete an option.
+	See wether the transients API is using an object cache or the options
+table.
 
 ## EXAMPLES
 
