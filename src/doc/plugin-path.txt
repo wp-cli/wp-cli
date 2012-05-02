@@ -1,4 +1,4 @@
-wp-plugin-path(1) -- Activate/Deactivate an installed plugin.
+wp-plugin-path(1) -- Get the path to a plugin or to the plugin directory.
 ====
 
 ## SYNOPSIS
