@@ -1,0 +1,12 @@
+wp-theme-status(1) -- See the status of one or all themes.
+====
+
+## SYNOPSIS
+
+`wp theme status` [<theme>]
+
+## OPTIONS
+
+* `<theme>`:
+
+	A particular theme to show the status for.

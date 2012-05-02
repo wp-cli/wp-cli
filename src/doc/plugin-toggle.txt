@@ -1,0 +1,12 @@
+wp-plugin-deactivate(1) -- Activate/Deactivate an installed plugin.
+====
+
+## SYNOPSIS
+
+`wp plugin toggle` <plugin>
+
+## OPTIONS
+
+* `<plugin>`:
+
+	The plugin to toggle.

@@ -1,0 +1,6 @@
+wp-db-create(1) -- Create a database using the credentials from wp-config.php.
+====
+
+## SYNOPSIS
+
+`wp db create`

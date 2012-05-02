@@ -1,0 +1,10 @@
+wp-eval(1) -- Executes arbitrary PHP code after loading WordPress.
+====
+
+## SYNOPSIS
+
+`wp eval` <PHP>
+
+## EXAMPLES
+
+	wp eval 'echo WP_CONTENT_DIR;'

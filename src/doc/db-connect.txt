@@ -1,0 +1,6 @@
+wp-db-connect(1) -- Print a string for connecting to the database.
+====
+
+## SYNOPSIS
+
+`wp db connect`

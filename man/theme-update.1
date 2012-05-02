@@ -1,0 +1,35 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-THEME\-UPDATE" "1" "May 2012" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-theme\-update\fR \- Update an installed theme\.
+.
+.SH "SYNOPSIS"
+\fBwp theme update\fR [\fItheme\fR] [\-\-all]
+.
+.SH "OPTIONS"
+.
+.TP
+\fItheme\fR:
+.
+.IP
+The theme to update\. Can be omitted when \-\-all is passed\.
+.
+.TP
+\fB\-\-all\fR:
+.
+.IP
+If set, updates for all themes will be performed\. Use \fBwp theme status\fR to see which themes have updates available\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp theme update twentytwelve
+
+wp theme update \-\-all
+.
+.fi
+

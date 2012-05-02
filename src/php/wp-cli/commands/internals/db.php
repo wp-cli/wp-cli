@@ -33,7 +33,7 @@ class DB_Command extends WP_CLI_Command {
 	 * Open a SQL command-line interface using WordPress's credentials.
 	 */
 	function cli() {
-		proc_close( proc_open( $this->connect_string() , array( 0 => STDIN, 1 => STDOUT, 2 => STDERR ), $pipes ) );
+		WP_CLI::launch( $this->connect_string() );
 	}
 
 	/**
@@ -41,7 +41,7 @@ class DB_Command extends WP_CLI_Command {
 	 */
 	function query( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp sql query <SQL>" );
+			WP_CLI::line( "usage: wp db query <SQL>" );
 			exit;
 		}
 

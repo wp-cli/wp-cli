@@ -1,0 +1,12 @@
+wp-db-query(1) -- Execute a query against the WordPress database.
+====
+
+## SYNOPSIS
+
+`wp db query` <SQL>
+
+## OPTIONS
+
+* `<SQL>`:
+
+	A SQL query.

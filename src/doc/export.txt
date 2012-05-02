@@ -1,0 +1,46 @@
+wp-export(1) -- Create a WXR file.
+====
+
+## SYNOPSIS
+
+`wp export` --path=<dirname> [filters] [--skip_comments]
+
+## OPTIONS
+
+* `--path`=<dirname>:
+
+	Full Path to directory where WXR export files should be stored.
+
+* `--skip_comments`:
+
+	Don't export comments.
+
+## FILTERS
+
+* `--start_date`=<date>:
+
+	Export only posts newer than this date in format YYYY-MM-DD.
+
+* `--end_date`=<date>:
+
+	Export only posts older than this date in format YYYY-MM-DD.
+
+* `--post_type`=<post_type>:
+
+	Export only posts with this post_type.
+
+* `--author`=<login/id>:
+
+	Export only posts by this author.
+
+* `--category`=<category-id>:
+
+	Export only posts in this category.
+
+* `--post_status`=<status>:
+
+	Export only posts with this status.
+
+## EXAMPLES
+
+	wp export --path=/tmp/ --user=admin --post_type=post --start_date=2011-01-01 --end_date=2011-12-31

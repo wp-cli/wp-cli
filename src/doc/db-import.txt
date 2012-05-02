@@ -1,0 +1,12 @@
+wp-db-import(1) -- Import a database from a text file.
+====
+
+## SYNOPSIS
+
+`wp db import` [<file>]
+
+## OPTIONS
+
+* `<file>`:
+
+	The name of the import file. If omitted, it will be '{dbname}.sql'

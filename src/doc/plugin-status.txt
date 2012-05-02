@@ -1,0 +1,12 @@
+wp-plugin-status(1) -- See the status of one or all plugins.
+====
+
+## SYNOPSIS
+
+`wp plugin status` [<plugin>]
+
+## OPTIONS
+
+* `<plugin>`:
+
+	A particular plugin to show the status for.

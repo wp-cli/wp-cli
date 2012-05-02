@@ -1,0 +1,6 @@
+wp-home(1) -- Opens the wp-cli homepage in your browser.
+====
+
+## SYNOPSIS
+
+`wp home`

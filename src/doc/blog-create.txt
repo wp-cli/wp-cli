@@ -1,0 +1,28 @@
+wp-blog-create(1) -- Create a new blog in a multisite install.
+====
+
+## SYNOPSIS
+
+`wp blog create` --slug=<slug> --title=<Title> [--email=<email>] [--site_id=<site-id>] [--public=true]
+
+## OPTIONS
+
+* `--slug`=<slug>:
+
+	Base for the new domain. Subdomain on subdomain installs, directory on subdirectory installs.
+
+* `--title`=<title&gt;:
+
+	Title of the new blog.
+
+* `--email`=<email>:
+
+	Email for Admin user. User will be created if none exists. Assignement to Super Admin if not included.
+
+* `--site_id`=<site-id>:
+
+	Site (network) to associate new blog with. Defaults to current site (typically 1).
+
+* `--private`:
+
+	If set, the new blog will be non-public (not indexed)

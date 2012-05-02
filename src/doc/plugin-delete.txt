@@ -1,0 +1,16 @@
+wp-plugin-delete(1) -- Delete a plugin's files, without removing it's data.
+====
+
+## SYNOPSIS
+
+`wp plugin delete` <plugin>
+
+## OPTIONS
+
+* <plugin>:
+
+	The plugin to delete.
+
+## EXAMPLES
+
+	wp plugin delete hello

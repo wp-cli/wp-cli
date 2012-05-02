@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# generate man pages
+
+rm -rf man
+mkdir -p man
+
+for file in $(ls src/doc/*.txt); do
+	cat $file | ronn --roff --manual="WP-CLI" > man/$(basename $file .txt).1
+done

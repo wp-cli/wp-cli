@@ -1,0 +1,12 @@
+wp-theme-activate(1) -- Activate an installed theme.
+====
+
+## SYNOPSIS
+
+`wp theme activate` <theme>
+
+## OPTIONS
+
+* `<theme>`:
+
+	The theme to activate.

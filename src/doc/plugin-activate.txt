@@ -1,0 +1,12 @@
+wp-plugin-activate(1) -- Activate an installed plugin.
+====
+
+## SYNOPSIS
+
+`wp plugin activate` <plugin>
+
+## OPTIONS
+
+* `<plugin>`:
+
+	The plugin to activate.

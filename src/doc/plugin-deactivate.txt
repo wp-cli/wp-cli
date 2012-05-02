@@ -1,0 +1,12 @@
+wp-plugin-deactivate(1) -- Deactivate an active plugin.
+====
+
+## SYNOPSIS
+
+`wp plugin deactivate` <plugin>
+
+## OPTIONS
+
+* `<plugin>`:
+
+	The plugin to deactivate.

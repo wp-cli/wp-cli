@@ -1,0 +1,43 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-BLOG\-CREATE" "1" "May 2012" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-blog\-create\fR \- Create a new blog in a multisite install\.
+.
+.SH "SYNOPSIS"
+\fBwp blog create\fR \-\-slug=\fIslug\fR \-\-title=\fITitle\fR [\-\-email=\fIemail\fR] [\-\-site_id=\fIsite\-id\fR] [\-\-public=true]
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-\-slug\fR=\fIslug\fR:
+.
+.IP
+Base for the new domain\. Subdomain on subdomain installs, directory on subdirectory installs\.
+.
+.TP
+\fB\-\-title\fR=<title>:
+.
+.IP
+Title of the new blog\.
+.
+.TP
+\fB\-\-email\fR=\fIemail\fR:
+.
+.IP
+Email for Admin user\. User will be created if none exists\. Assignement to Super Admin if not included\.
+.
+.TP
+\fB\-\-site_id\fR=\fIsite\-id\fR:
+.
+.IP
+Site (network) to associate new blog with\. Defaults to current site (typically 1)\.
+.
+.TP
+\fB\-\-private\fR:
+.
+.IP
+If set, the new blog will be non\-public (not indexed)
+

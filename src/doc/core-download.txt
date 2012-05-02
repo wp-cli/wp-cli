@@ -1,0 +1,16 @@
+wp-core-download(1) -- Download core WordPress files.
+====
+
+## SYNOPSIS
+
+`wp core download` [--version=<version>]
+
+## OPTIONS
+
+* `--version`=<version>:
+
+	Select which version you want to download.
+
+## EXAMPLES
+
+	Download version 3.3: wp core download --version=3.3

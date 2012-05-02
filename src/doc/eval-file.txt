@@ -1,0 +1,10 @@
+wp-eval-file(1) -- Loads and executes a PHP file after loading WordPress.
+====
+
+## SYNOPSIS
+
+`wp eval-file` <file>
+
+## EXAMPLES
+
+	wp eval-file my-code.php

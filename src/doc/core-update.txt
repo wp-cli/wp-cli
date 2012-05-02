@@ -1,0 +1,6 @@
+wp-core-update(1) -- Update WordPress to the latest version.
+====
+
+## SYNOPSIS
+
+`wp core update`
