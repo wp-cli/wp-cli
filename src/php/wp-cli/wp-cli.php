@@ -35,6 +35,12 @@ if ( isset( $assoc_args['version'] ) && empty( $arguments ) ) {
 	exit;
 }
 
+// Handle --help parameter
+if ( isset( $assoc_args['help'] ) ) {
+	array_unshift( $arguments, 'help' );
+	unset( $assoc_args['help'] );
+}
+
 // Define the WordPress location
 if ( is_readable( $_SERVER['PWD'] . '/../wp-load.php' ) ) {
 	define( 'WP_ROOT', $_SERVER['PWD'] . '/../' );
@@ -113,12 +119,6 @@ if ( isset( $assoc_args['completions'] ) ) {
 		WP_CLI::line( $name .  ' ' . $subcommands );
 	}
 	exit;
-}
-
-// Handle --help parameter
-if ( isset( $assoc_args['help'] ) ) {
-	array_unshift( $arguments, 'help' );
-	unset( $assoc_args['help'] );
 }
 
 WP_CLI::run_command( $arguments, $assoc_args );
