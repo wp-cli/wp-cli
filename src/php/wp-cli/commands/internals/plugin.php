@@ -204,7 +204,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		switch ( $status['status'] ) {
 		case 'update_available':
 		case 'install':
-			$upgrader = WP_CLI::get_upgrader( 'Plugin_Upgrader' );
+			$upgrader = WP_CLI::get_upgrader( $this->upgrader );
 			$result = $upgrader->install( $api->download_link );
 
 			if ( $result && isset( $assoc_args['activate'] ) ) {
