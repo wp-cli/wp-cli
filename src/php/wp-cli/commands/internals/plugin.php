@@ -242,20 +242,18 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/**
-	 * Delete a plugin
+	 * Delete plugin files
 	 *
 	 * @param array $args
 	 */
 	function delete( $args ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
-		if ( is_plugin_active( $file ) ) {
-			WP_CLI::error( 'The plugin is active.' );
-		}
+		$plugin_dir = dirname( $file );
+		if ( '.' == $plugin_dir )
+			$plugin_dir = $file;
 
-		if ( !delete_plugins( array( $file ) ) ) {
-			WP_CLI::error( 'There was an error while deleting the plugin.' );
-		}
+		exit( WP_CLI::launch( 'rm -rf ' . path_join( WP_PLUGIN_DIR, $plugin_dir ) ) );
 	}
 
 	/* PRIVATES */
