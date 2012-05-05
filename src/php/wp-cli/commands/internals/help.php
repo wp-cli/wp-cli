@@ -30,8 +30,7 @@ class Help_Command extends WP_CLI_Command {
 			$man_file = $man_dir . implode( '-', $args ) . '.1';
 
 			if ( is_readable( $man_file ) ) {
-				WP_CLI::launch( "man $man_file" );
-				exit;
+				exit( WP_CLI::launch( "man $man_file" ) );
 			}
 		}
 	}

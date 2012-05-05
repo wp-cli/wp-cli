@@ -33,7 +33,7 @@ class DB_Command extends WP_CLI_Command {
 	 * Open a SQL command-line interface using WordPress's credentials.
 	 */
 	function cli() {
-		WP_CLI::launch( $this->connect_string() );
+		exit( WP_CLI::launch( $this->connect_string() ) );
 	}
 
 	/**
