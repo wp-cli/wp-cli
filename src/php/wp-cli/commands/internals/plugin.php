@@ -222,6 +222,21 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		}
 	}
 
+	/**
+	 * Update a plugin (to the latest dev version)
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 */
+	function update( $args, $assoc_args ) {
+		if ( isset( $assoc_args['version'] ) && 'dev' == $assoc_args['version'] ) {
+			$this->delete( $args, array(), false );
+			$this->install( $args, $assoc_args );
+		} else {
+			parent::update( $args, $assoc_args );
+		}
+	}
+
 	protected function get_item_list() {
 		return array_keys( get_plugins() );
 	}
@@ -246,14 +261,17 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	 *
 	 * @param array $args
 	 */
-	function delete( $args ) {
+	function delete( $args, $assoc_args = array(), $exit_on_success = true ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		$plugin_dir = dirname( $file );
 		if ( '.' == $plugin_dir )
 			$plugin_dir = $file;
 
-		exit( WP_CLI::launch( 'rm -rf ' . path_join( WP_PLUGIN_DIR, $plugin_dir ) ) );
+		$status = WP_CLI::launch( 'rm -rf ' . path_join( WP_PLUGIN_DIR, $plugin_dir ) );
+
+		if ( $status || $exit_on_success )
+			exit( $status );
 	}
 
 	/* PRIVATES */
