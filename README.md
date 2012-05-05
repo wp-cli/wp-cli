@@ -24,7 +24,7 @@ sudo pear install wp-cli.github.com/pear/wpcli
 ```sh
 git clone --recurse-submodules git://github.com/wp-cli/wp-cli.git ~/git/wp-cli
 cd ~/git/wp-cli
-sudo utils/build-dev
+sudo utils/dev-build
 ```
 
 You can replace `~/git/wp-cli` with whatever you want.
