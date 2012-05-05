@@ -7,7 +7,7 @@
 \fBwp\-plugin\-update\fR \- Update an installed plugin\.
 .
 .SH "SYNOPSIS"
-\fBwp plugin update\fR [\fIplugin\fR] [\-\-all]
+\fBwp plugin update\fR [\fIplugin\fR] [\-\-all] [\-\-version=dev]
 .
 .SH "OPTIONS"
 .
@@ -16,6 +16,12 @@
 .
 .IP
 The plugin to update\. Can be omitted when \-\-all is passed\.
+.
+.TP
+\fB\-\-version=dev\fR:
+.
+.IP
+If set, the plugin will be updated to the latest development version, regardless of what version is currently installed\. Not compatible with \-\-all\.
 .
 .TP
 \fB\-\-all\fR:
@@ -27,7 +33,7 @@ If set, updates for all plugins will be performed\. Use \fBwp plugin status\fR t
 .
 .nf
 
-wp plugin update bbpress
+wp plugin update bbpress \-\-version=dev
 
 wp plugin update \-\-all
 .

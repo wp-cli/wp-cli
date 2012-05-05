@@ -3,13 +3,18 @@ wp-plugin-update(1) -- Update an installed plugin.
 
 ## SYNOPSIS
 
-`wp plugin update` [<plugin>] [--all]
+`wp plugin update` [<plugin>] [--all] [--version=dev]
 
 ## OPTIONS
 
 * <plugin>:
 
 	The plugin to update. Can be omitted when --all is passed.
+
+* `--version=dev`:
+
+	If set, the plugin will be updated to the latest development version,
+regardless of what version is currently installed. Not compatible with --all.
 
 * `--all`:
 
@@ -18,6 +23,6 @@ to see which plugins have updates available.
 
 ## EXAMPLES
 
-	wp plugin update bbpress
+	wp plugin update bbpress --version=dev
 
 	wp plugin update --all
