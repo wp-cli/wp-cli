@@ -69,11 +69,11 @@ class Core_Command extends WP_CLI_Command {
 			'site_title' => '',
 			'admin_name' => 'admin',
 			'admin_email' => '',
-			'admin_password' => ''
+			'admin_password' => wp_generate_password( 12, false )
 		) ), EXTR_SKIP );
 
 		$missing = false;
-		foreach ( array( 'site_url', 'site_title', 'admin_email', 'admin_password' ) as $required_arg ) {
+		foreach ( array( 'site_url', 'site_title', 'admin_email' ) as $required_arg ) {
 			if ( empty( $$required_arg ) ) {
 				WP_CLI::warning( "missing --$required_arg parameter" );
 				$missing = true;
