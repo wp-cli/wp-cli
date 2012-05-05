@@ -1,8 +1,22 @@
 <?php
 
-class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
+abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
+
+	protected $item_type;
+	protected $upgrader;
+	protected $upgrade_refresh;
+	protected $upgrade_transient;
 
 	protected $default_subcommand = 'status';
+
+	abstract protected function parse_name( $args, $subcommand );
+
+	abstract protected function get_item_list();
+
+	abstract protected function status_all();
+	abstract protected function status_single( $file, $name );
+
+	abstract protected function install_from_repo( $slug, $assoc_args );
 
 	/**
 	 * Get the status of one or all items
