@@ -44,6 +44,8 @@ class Core_Command extends WP_CLI_Command {
 	 * Set up a wp-config.php file.
 	 */
 	public function config( $args, $assoc_args ) {
+		WP_CLI::check_required_args( array( 'dbname', 'dbuser', 'dbpass' ), $assoc_args );
+
 		$_POST['dbname'] = $assoc_args['dbname'];
 		$_POST['uname'] = $assoc_args['dbuser'];
 		$_POST['pwd'] = $assoc_args['dbpass'];
@@ -64,6 +66,8 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::error( 'WordPress is already installed.' );
 		}
 
+		WP_CLI::check_required_args( array( 'site_url', 'site_title', 'admin_email' ), $assoc_args );
+
 		extract( wp_parse_args( $assoc_args, array(
 			'site_url' => defined( 'WP_SITEURL' ) ? WP_SITEURL : '',
 			'site_title' => '',
@@ -72,19 +76,8 @@ class Core_Command extends WP_CLI_Command {
 			'admin_password' => wp_generate_password( 12, false )
 		) ), EXTR_SKIP );
 
-		$missing = false;
-		foreach ( array( 'site_url', 'site_title', 'admin_email' ) as $required_arg ) {
-			if ( empty( $$required_arg ) ) {
-				WP_CLI::warning( "missing --$required_arg parameter" );
-				$missing = true;
-			}
-		}
-
 		if ( $site_url )
 			WP_CLI::set_url_params( $site_url );
-
-		if ( $missing )
-			exit(1);
 
 		$public = true;
 
