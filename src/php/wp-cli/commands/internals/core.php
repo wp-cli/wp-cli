@@ -69,18 +69,12 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::error( 'WordPress is already installed.' );
 		}
 
-		WP_CLI::check_required_args( array( 'site_url', 'site_title', 'admin_email' ), $assoc_args );
-
 		extract( wp_parse_args( $assoc_args, array(
-			'site_url' => defined( 'WP_SITEURL' ) ? WP_SITEURL : '',
-			'site_title' => '',
+			'title' => '',
 			'admin_name' => 'admin',
 			'admin_email' => '',
 			'admin_password' => wp_generate_password( 12, false )
 		) ), EXTR_SKIP );
-
-		if ( $site_url )
-			WP_CLI::set_url_params( $site_url );
 
 		$public = true;
 
