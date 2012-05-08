@@ -53,7 +53,10 @@ class Core_Command extends WP_CLI_Command {
 		$_POST['prefix'] = isset( $assoc_args['dbprefix'] ) ? $assoc_args['dbprefix'] : 'wp_';
 
 		$_GET['step'] = 2;
+
+		if ( WP_CLI_SILENT ) ob_start();
 		require WP_ROOT . '/wp-admin/setup-config.php';
+		if ( WP_CLI_SILENT ) ob_end_clean();
 	}
 
 	/**
