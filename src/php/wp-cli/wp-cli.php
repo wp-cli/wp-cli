@@ -51,13 +51,13 @@ if ( is_readable( $_SERVER['PWD'] . '/../wp-load.php' ) ) {
 	define( 'WP_ROOT', $_SERVER['PWD'] . '/' );
 }
 
+if ( array( 'core', 'download' ) == $arguments ) {
+	WP_CLI::run_command( $arguments, $assoc_args );
+	exit;
+}
+
 if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
-	if ( array( 'core', 'download' ) == $arguments ) {
-		WP_CLI::run_command( $arguments, $assoc_args );
-	} else {
-		WP_CLI::error('This does not seem to be a WordPress install. Pass --path=`path/to/wordpress` or run `wp core download`.');
-		exit;
-	}
+	WP_CLI::error( 'This does not seem to be a WordPress install. Pass --path=`path/to/wordpress` or run `wp core download`.' );
 }
 
 if ( array( 'core', 'config' ) == $arguments ) {
