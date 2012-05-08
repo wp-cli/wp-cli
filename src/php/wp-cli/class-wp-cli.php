@@ -46,7 +46,10 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function error( $message, $label = 'Error' ) {
-		\cli\err( '%R' . $label . ': %n' . self::error_to_string( $message ) );
+		if ( !WP_CLI_AUTOCOMPLETE ) {
+			\cli\err( '%R' . $label . ': %n' . self::error_to_string( $message ) );
+		}
+
 		exit(1);
 	}
 

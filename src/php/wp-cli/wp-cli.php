@@ -26,7 +26,8 @@ include WP_CLI_ROOT . '../php-cli-tools/lib/cli/cli.php';
 // Get the cli arguments
 list( $arguments, $assoc_args ) = WP_CLI::parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
-// Check --silent flag
+// Set output levels
+define( 'WP_CLI_AUTOCOMPLETE', isset( $assoc_args['completions'] ) );
 define( 'WP_CLI_SILENT', isset( $assoc_args['silent'] ) );
 
 // Handle --version parameter
@@ -112,8 +113,8 @@ if ( isset( $assoc_args['require'] ) ) {
 	unset( $assoc_args['require'] );
 }
 
-// Handle --completions parameter
-if ( isset( $assoc_args['completions'] ) ) {
+// Generate strings for autocomplete
+if ( WP_CLI_AUTOCOMPLETE ) {
 	foreach ( WP_CLI::load_all_commands() as $name => $command ) {
 		$subcommands = implode( ' ', WP_CLI_Command::get_subcommands( $command ) );
 		WP_CLI::line( $name .  ' ' . $subcommands );
