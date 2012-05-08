@@ -72,13 +72,15 @@ if ( array( 'db', 'create' ) == $arguments ) {
 	exit;
 }
 
-// Handle --url and --blog parameters
-WP_CLI::_set_url( $assoc_args );
-
 // Set installer flag before loading any WP files
 if ( array( 'core', 'install' ) == $arguments ) {
+	WP_CLI::check_required_args( array( 'url', 'title', 'admin_email' ), $assoc_args );
+
     define( 'WP_INSTALLING', true );
 }
+
+// Handle --url and --blog parameters
+WP_CLI::_set_url( $assoc_args );
 
 // Load WordPress
 require WP_ROOT . 'wp-load.php';
