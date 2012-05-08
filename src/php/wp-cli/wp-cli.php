@@ -63,11 +63,13 @@ if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
 
 if ( array( 'core', 'config' ) == $arguments ) {
 	WP_CLI::run_command( $arguments, $assoc_args );
+	exit;
 }
 
 if ( array( 'db', 'create' ) == $arguments ) {
 	WP_CLI::load_wp_config();
 	WP_CLI::run_command( $arguments, $assoc_args );
+	exit;
 }
 
 // Handle --url and --blog parameters
