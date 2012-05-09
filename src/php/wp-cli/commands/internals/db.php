@@ -18,8 +18,10 @@ class DB_Command extends WP_CLI_Command {
 	 * Creates the database according to the wp-config.php file
 	 */
 	function create() {
-		exec( sprintf( 'mysql --host="%s" --user="%s" --password="%s" --execute="CREATE DATABASE %s"',
-			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME ) );
+		exit( WP_CLI::launch( sprintf(
+			'mysql --host="%s" --user="%s" --password="%s" --execute="CREATE DATABASE %s"',
+			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+		) ) );
 	}
 
 	/**
