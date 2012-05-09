@@ -179,11 +179,17 @@ class WP_CLI {
 	 * Launch an external process, closing the current one
 	 *
 	 * @param string Command to call
+	 * @param bool Whether to exit if the command returns an error status
 	 *
 	 * @return int The command exit status
 	 */
-	static function launch( $command ) {
-		return proc_close( proc_open( $command, array( STDIN, STDOUT, STDERR ), $pipes ) );
+	static function launch( $command, $exit_on_error = true ) {
+		$r = proc_close( proc_open( $command, array( STDIN, STDOUT, STDERR ), $pipes ) );
+
+		if ( $r && $exit_on_error )
+			exit($r);
+
+		return $r;
 	}
 
 	/**
