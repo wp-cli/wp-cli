@@ -49,11 +49,9 @@ class DB_Command extends WP_CLI_Command {
 
 		$query = $args[0];
 
-		$exec = $this->connect_string();
-		$exec .= sprintf(' --execute="%s"', $query);
+		$command = $this->connect_string() . sprintf( ' --execute="%s"', $query );
 
-		$result = exec( $exec );
-		WP_CLI::line( $result );
+		exit( WP_CLI::launch( $command ) );
 	}
 
 	/**
