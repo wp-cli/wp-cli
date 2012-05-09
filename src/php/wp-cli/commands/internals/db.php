@@ -18,10 +18,10 @@ class DB_Command extends WP_CLI_Command {
 	 * Creates the database according to the wp-config.php file
 	 */
 	function create() {
-		exit( WP_CLI::launch( sprintf(
+		WP_CLI::launch( sprintf(
 			'mysql --host="%s" --user="%s" --password="%s" --execute="CREATE DATABASE %s"',
 			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
-		) ) );
+		) );
 	}
 
 	/**
@@ -35,7 +35,7 @@ class DB_Command extends WP_CLI_Command {
 	 * Open a SQL command-line interface using WordPress's credentials.
 	 */
 	function cli() {
-		exit( WP_CLI::launch( $this->connect_string() ) );
+		WP_CLI::launch( $this->connect_string() );
 	}
 
 	/**
@@ -51,7 +51,7 @@ class DB_Command extends WP_CLI_Command {
 
 		$command = $this->connect_string() . sprintf( ' --execute="%s"', $query );
 
-		exit( WP_CLI::launch( $command ) );
+		WP_CLI::launch( $command );
 	}
 
 	/**
@@ -63,8 +63,7 @@ class DB_Command extends WP_CLI_Command {
 		$command = sprintf( 'mysqldump "%s" --user="%s" --password="%s" --host="%s" --result-file "%s"',
 			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file );
 
-		$r = WP_CLI::launch( $command );
-		if ( $r ) exit($r);
+		WP_CLI::launch( $command );
 
 		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
 	}
@@ -78,8 +77,7 @@ class DB_Command extends WP_CLI_Command {
 		$command = sprintf( 'mysql "%s" --user="%s" --password="%s" --host="%s" < "%s"',
 			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file );
 
-		$r = WP_CLI::launch( $command );
-		if ( $r ) exit($r);
+		WP_CLI::launch( $command );
 
 		WP_CLI::success( sprintf( 'Imported from %s', $result_file ) );
 	}

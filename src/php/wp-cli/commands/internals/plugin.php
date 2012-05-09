@@ -261,17 +261,16 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	 *
 	 * @param array $args
 	 */
-	function delete( $args, $assoc_args = array(), $exit_on_success = true ) {
+	function delete( $args, $assoc_args = array(), $exit_on_error = true ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		$plugin_dir = dirname( $file );
 		if ( '.' == $plugin_dir )
 			$plugin_dir = $file;
 
-		$status = WP_CLI::launch( 'rm -rf ' . path_join( WP_PLUGIN_DIR, $plugin_dir ) );
+		$command = 'rm -rf ' . path_join( WP_PLUGIN_DIR, $plugin_dir );
 
-		if ( $status || $exit_on_success )
-			exit( $status );
+		return WP_CLI::launch( $command, $exit_on_error );
 	}
 
 	/* PRIVATES */
