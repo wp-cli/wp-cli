@@ -60,10 +60,11 @@ class DB_Command extends WP_CLI_Command {
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
-		$exec = sprintf( 'mysqldump "%s" --user="%s" --password="%s" --host="%s" --result-file "%s"',
+		$command = sprintf( 'mysqldump "%s" --user="%s" --password="%s" --host="%s" --result-file "%s"',
 			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file );
 
-		exec( $exec );
+		$r = WP_CLI::launch( $command );
+		if ( $r ) exit($r);
 
 		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
 	}
@@ -74,10 +75,11 @@ class DB_Command extends WP_CLI_Command {
 	function import( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
-		$exec = sprintf( 'mysql "%s" --user="%s" --password="%s" --host="%s" < "%s"',
+		$command = sprintf( 'mysql "%s" --user="%s" --password="%s" --host="%s" < "%s"',
 			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file );
 
-		exec( $exec );
+		$r = WP_CLI::launch( $command );
+		if ( $r ) exit($r);
 
 		WP_CLI::success( sprintf( 'Imported from %s', $result_file ) );
 	}
