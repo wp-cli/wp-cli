@@ -127,7 +127,7 @@ class WP_CLI {
 		$str = implode( ' ', array_map( 'escapeshellarg', $args ) );
 
 		foreach ( $assoc_args as $key => $value ) {
-			if ( true == $value )
+			if ( true === $value )
 				$str .= " --$key";
 			else
 				$str .= " --$key=" . escapeshellarg( $value );
