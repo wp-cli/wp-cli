@@ -63,6 +63,8 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 					WP_CLI::line( "Activating '$slug'..." );
 					$this->activate( array( $slug ) );
 				}
+			} else {
+				exit(1);
 			}
 		} else {
 			$this->install_from_repo( $slug, $assoc_args );
