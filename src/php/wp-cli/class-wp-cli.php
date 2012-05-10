@@ -118,13 +118,13 @@ class WP_CLI {
 	}
 
 	/**
-	 * Composes positional and associative arguments into a string
+	 * Composes positional and associative arguments into a string.
 	 *
 	 * @param array
 	 * @return string
 	 */
 	static function compose_args( $args, $assoc_args = array() ) {
-		$str = implode( ' ', array_map( 'escapeshellarg', $args ) );
+		$str = ' ' . implode( ' ', array_map( 'escapeshellarg', $args ) );
 
 		foreach ( $assoc_args as $key => $value ) {
 			if ( true === $value )
