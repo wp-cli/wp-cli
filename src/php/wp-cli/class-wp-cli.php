@@ -124,13 +124,13 @@ class WP_CLI {
 	 * @return string
 	 */
 	static function compose_args( $args, $assoc_args = array() ) {
-		$str = implode( ' ', $args );
+		$str = implode( ' ', array_map( 'escapeshellarg', $args ) );
 
 		foreach ( $assoc_args as $key => $value ) {
 			if ( true == $value )
 				$str .= " --$key";
 			else
-				$str .= " --$key=$value";
+				$str .= " --$key=" . escapeshellarg( $value );
 		}
 
 		return $str;
