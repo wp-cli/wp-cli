@@ -15,11 +15,21 @@ class DB_Command extends WP_CLI_Command {
 	protected $aliases = array( 'dump' => 'export' );
 
 	/**
-	 * Creates the database according to the wp-config.php file
+	 * Creates the database specified in the wp-config.php file.
 	 */
 	function create() {
 		WP_CLI::launch( sprintf(
 			'mysql --host="%s" --user="%s" --password="%s" --execute="CREATE DATABASE %s"',
+			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+		) );
+	}
+
+	/**
+	 * Deletes the database specified in the wp-config.php file.
+	 */
+	function drop() {
+		WP_CLI::launch( sprintf(
+			'mysql --host="%s" --user="%s" --password="%s" --execute="DROP DATABASE %s"',
 			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
 		) );
 	}
