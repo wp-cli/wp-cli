@@ -78,7 +78,7 @@ class Core_Command extends WP_CLI_Command {
 
 		$public = true;
 
-		$result = wp_install( $site_title, $admin_name, $admin_email, $public, '', $admin_password );
+		$result = wp_install( $title, $admin_name, $admin_email, $public, '', $admin_password );
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( 'Installation failed (' . WP_CLI::error_to_string($result) . ').' );
