@@ -72,7 +72,7 @@ class WP_CLI {
 	 */
 	static function warning( $message, $label = 'Warning' ) {
 		if ( WP_CLI_SILENT ) return;
-		\cli\line( '%C' . $label . ': %n' . self::error_to_string( $message ) );
+		\cli\err( '%C' . $label . ': %n' . self::error_to_string( $message ) );
 	}
 
 	/**
