@@ -35,9 +35,7 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::line( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		$silent = '';
-		if( !empty( $assoc_args['silent'] ) )
-			$silent = '--silent ';
+		$silent = WP_CLI_SILENT ? '--silent ' : '';
 
 		WP_CLI::line('Downloading WordPress...');
 		exec("curl {$silent}http://wordpress.org/latest.zip > /tmp/wordpress.zip");
