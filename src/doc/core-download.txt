@@ -3,9 +3,14 @@ wp-core-download(1) -- Download core WordPress files.
 
 ## SYNOPSIS
 
-`wp core download` [--version=<version>]
+`wp core download` [--locale=<locale>] [--version=<version>]
 
 ## OPTIONS
+
+* `--locale`=<locale>:
+
+	Select which language you want to download. The --version parameter is
+ignored in this case.
 
 * `--version`=<version>:
 
