@@ -22,10 +22,17 @@ class Core_Command extends WP_CLI_Command {
 		else
 			$docroot = './';
 
-		if ( isset( $assoc_args['version'] ) ) {
+		if ( isset( $assoc_args['locale'] ) ) {
+			exec( 'curl -s ' . escapeshellarg( 'http://api.wordpress.org/core/version-check/1.5/?locale=' . $assoc_args['locale'] ), $lines, $r );
+			if ($r) exit($r);
+			$download_url = $lines[2];
+			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $lines[3], $lines[4] ) );
+		} elseif ( isset( $assoc_args['version'] ) ) {
 			$download_url = 'http://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
+			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
 		} else {
 			$download_url = 'http://wordpress.org/latest.zip';
+			WP_CLI::line( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
 		$silent = '';
