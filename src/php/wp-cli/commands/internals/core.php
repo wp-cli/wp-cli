@@ -17,7 +17,7 @@ class Core_Command extends WP_CLI_Command {
 		if ( is_readable( WP_ROOT . 'wp-load.php' ) )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
-		if (isset($assoc_args['path']))
+		if ( isset( $assoc_args['path'] ) )
 			$docroot = $assoc_args['path'];
 		else
 			$docroot = './';
@@ -35,14 +35,12 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::line( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		$silent = WP_CLI_SILENT ? '--silent ' : '';
+		WP_CLI::launch( 'curl -f' . (WP_CLI_SILENT ? ' --silent ' : ' ') . escapeshellarg( $download_url ) . ' > /tmp/wordpress.zip' );
+		WP_CLI::launch( 'unzip ' . (WP_CLI_SILENT ? '-qq ' : '-q ') . '/tmp/wordpress.zip' );
+		WP_CLI::launch( 'mv wordpress/* ' . escapeshellarg( $docroot ) );
+		WP_CLI::launch( 'rm -r wordpress' );
 
-		WP_CLI::line('Downloading WordPress...');
-		exec("curl {$silent}http://wordpress.org/latest.zip > /tmp/wordpress.zip");
-		exec("unzip /tmp/wordpress.zip");
-		exec("mv wordpress/* $docroot");
-		exec("rm -r wordpress");
-		WP_CLI::success('WordPress downloaded.');
+		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
 	/**
