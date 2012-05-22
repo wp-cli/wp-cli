@@ -21,6 +21,7 @@ class Generate_Command extends WP_CLI_Command {
 
 		$defaults = array(
 			'count' => 100,
+			'max_depth' => 1,
 			'type' => 'post',
 			'status' => 'publish',
 			'author' => false
@@ -49,18 +50,46 @@ class Generate_Command extends WP_CLI_Command {
 
 		$notify = new \cli\progress\Bar( 'Generating posts', $count );
 
+		$post_ids = array();
+		$current_depth = 1;
+		$current_parent = 0;
+
 		for ( $i = $total; $i < $limit; $i++ ) {
-			wp_insert_post( array(
+
+			if( $this->maybe_make_child() && $current_depth < $max_depth ) {
+
+				$current_parent = $post_ids[$i-1];
+				$current_depth++;
+
+			} else if( $this->maybe_reset_depth() ) {
+
+				$current_depth = 1;
+				$current_parent = 0;
+
+			}
+
+			$post_ids[$i] = wp_insert_post( array(
 				'post_type' => $type,
 				'post_title' =>  "$label $i",
 				'post_status' => $status,
-				'post_author' => $author
+				'post_author' => $author,
+				'post_parent' => $current_parent
 			) );
 
 			$notify->tick();
 		}
 
 		$notify->finish();
+	}
+
+	private function maybe_make_child() {
+		// 50% chance of making child post
+		return ( mt_rand(1,2) == 1 ) ? true: false;
+	}
+
+	private function maybe_reset_depth() {
+		// 10% chance of reseting to root depth
+		return ( mt_rand(1,10) == 7 ) ? true : false;
 	}
 
 	/**
