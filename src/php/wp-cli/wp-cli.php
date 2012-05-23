@@ -75,6 +75,12 @@ if ( array( 'db', 'create' ) == $arguments ) {
 	exit;
 }
 
+if ( array( 'db', 'import' ) == array_slice( $arguments, 0, 2 ) ) {
+	WP_CLI::load_wp_config();
+	WP_CLI::run_command( $arguments, $assoc_args );
+	exit;
+}
+
 // Set installer flag before loading any WP files
 if ( array( 'core', 'install' ) == $arguments ) {
 	WP_CLI::check_required_args( array( 'url', 'title', 'admin_email' ), $assoc_args );
