@@ -52,6 +52,9 @@ if ( !empty( $assoc_args['path'] ) ) {
 	define( 'WP_ROOT', $_SERVER['PWD'] . '/' );
 }
 
+// Handle --url and --blog parameters
+WP_CLI::_set_url( $assoc_args );
+
 if ( array( 'core', 'download' ) == $arguments ) {
 	WP_CLI::run_command( $arguments, $assoc_args );
 	exit;
@@ -78,9 +81,6 @@ if ( array( 'core', 'install' ) == $arguments ) {
 
     define( 'WP_INSTALLING', true );
 }
-
-// Handle --url and --blog parameters
-WP_CLI::_set_url( $assoc_args );
 
 // Load WordPress
 require WP_ROOT . 'wp-load.php';
