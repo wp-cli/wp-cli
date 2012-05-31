@@ -164,17 +164,9 @@ class User_Command extends WP_CLI_Command {
 	 * @param array $assoc_args
 	 **/
 	public function update_meta( $args, $assoc_args ) {
-		$user_id = $args[0];
-		$meta_key = $args[1];
-		$meta_value = $args[2];
-
-		if ( ! is_numeric($user_id) ) {
-			self::error_see_help( "User ID required" );
-		}
-
-		if ( ! $meta_key || ! $meta_value ) {
-			self::error_see_help( "meta_key and meta_value required");
-		}
+		$user_id = self::get_numeric_arg_or_error($args, 0, "User ID");
+		$meta_key = self::get_arg_or_error($args, 1, "meta_key");;
+		$meta_value = self::get_arg_or_error($args, 2, "meta_value");;
 
 		$success = update_user_meta( $user_id, $meta_key, $meta_value );
 
@@ -183,6 +175,22 @@ class User_Command extends WP_CLI_Command {
 		} else {
 			WP_CLI::error( "Failed to update meta field" );
 		}
+	}
+	
+	private function get_numeric_arg_or_error( $args, $index, $name ) {
+		$value = self::get_arg_or_error( $args, $index, $name );
+		if ( ! is_numeric( $value ) ) {
+			self::error_see_help( "$name must be numeric" );
+		}
+		return $value;
+	}
+	
+	private function get_arg_or_error( $args, $index, $name ) {
+		$value = $args[$index];
+		if ( ! $value ) {
+			self::error_see_help( "$name required" );
+		}
+		return $value;
 	}
 	
 	private function error_see_help( $message ) {
