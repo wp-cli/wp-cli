@@ -156,4 +156,32 @@ class User_Command extends WP_CLI_Command {
 			WP_CLI::success( "Updated user $updated_id." );
 		}
 	}
+
+	/**
+	 * Update meta field for a user
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 **/
+	public function update_meta( $args, $assoc_args ) {
+		$user_id = $args[0];
+		$meta_key = $args[1];
+		$meta_value = $args[2];
+
+		if ( ! is_numeric($user_id) ) {
+			WP_CLI::error( "User ID required (see 'wp user help')." );
+		}
+
+		if ( ! $meta_key || ! $meta_value ) {
+			WP_CLI:error( "meta_key and meta_value required (see 'wp user help').");
+		}
+
+		$success = update_user_meta( $user_id, $meta_key, $meta_value );
+
+		if ( $success ) {
+			WP_CLI::success( "Updated user $user_id." );
+		} else {
+			WP_CLI::error( "Failed to update meta field" );
+		}
+	}
 }
