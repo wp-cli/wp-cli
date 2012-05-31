@@ -59,12 +59,8 @@ class User_Command extends WP_CLI_Command {
 	 **/
 	public function delete( $args, $assoc_args ) {
 		global $blog_id;
-
-		$user_id = $args[0];
-
-		if ( ! is_numeric($user_id) ) {
-			self::error_see_help( "User ID required" );
-		}
+		
+		$user_id = self::get_numeric_arg_or_error($args, 0, "User ID");
 
 		$defaults = array( 'reassign' => NULL );
 
@@ -136,11 +132,7 @@ class User_Command extends WP_CLI_Command {
 	 * @param array $assoc_args
 	 **/
 	public function update( $args, $assoc_args ) {
-		$user_id = $args[0];
-
-		if ( ! is_numeric($user_id) ) {
-			self::error_see_help( "User ID required" );
-		}
+		$user_id = self::get_numeric_arg_or_error($args, 0, "User ID");
 
 		if ( empty( $assoc_args ) ) {
 			WP_CLI::error( "Need some fields to update." );
