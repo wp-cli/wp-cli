@@ -63,7 +63,7 @@ class User_Command extends WP_CLI_Command {
 		$user_id = $args[0];
 
 		if ( ! is_numeric($user_id) ) {
-			WP_CLI::error("User ID required (see 'wp user help')");
+			self::error_see_help( "User ID required" );
 		}
 
 		$defaults = array( 'reassign' => NULL );
@@ -90,7 +90,7 @@ class User_Command extends WP_CLI_Command {
 		$user_email = $args[1];
 
 		if ( ! $user_login || ! $user_email ) {
-			WP_CLI::error("Login and email required (see 'wp user help').");
+			self::error_see_help( "Login and email required" );
 		}
 
 		$defaults = array(
@@ -139,7 +139,7 @@ class User_Command extends WP_CLI_Command {
 		$user_id = $args[0];
 
 		if ( ! is_numeric($user_id) ) {
-			WP_CLI::error( "User ID required (see 'wp user help')." );
+			self::error_see_help( "User ID required" );
 		}
 
 		if ( empty( $assoc_args ) ) {
@@ -169,11 +169,11 @@ class User_Command extends WP_CLI_Command {
 		$meta_value = $args[2];
 
 		if ( ! is_numeric($user_id) ) {
-			WP_CLI::error( "User ID required (see 'wp user help')." );
+			self::error_see_help( "User ID required" );
 		}
 
 		if ( ! $meta_key || ! $meta_value ) {
-			WP_CLI:error( "meta_key and meta_value required (see 'wp user help').");
+			self::error_see_help( "meta_key and meta_value required");
 		}
 
 		$success = update_user_meta( $user_id, $meta_key, $meta_value );
@@ -183,5 +183,9 @@ class User_Command extends WP_CLI_Command {
 		} else {
 			WP_CLI::error( "Failed to update meta field" );
 		}
+	}
+	
+	private function error_see_help( $message ) {
+		WP_CLI::error( "$message (see 'wp user help').");
 	}
 }
