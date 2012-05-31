@@ -178,11 +178,10 @@ class User_Command extends WP_CLI_Command {
 	}
 	
 	private function get_arg_or_error( $args, $index, $name ) {
-		$value = $args[$index];
-		if ( ! $value ) {
+		if ( ! isset( $args[$index] ) ) {
 			self::error_see_help( "$name required" );
 		}
-		return $value;
+		return $args[$index];
 	}
 	
 	private function error_see_help( $message ) {
