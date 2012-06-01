@@ -85,10 +85,6 @@ class Option_Command extends WP_CLI_Command {
 		if ( false === $value )
 			return;
 
-		if ( is_array( $value ) || is_object( $value ) ) {
-			echo var_export( $value ) . "\n";
-		} else {
-			echo $value . "\n";
-		}
+		WP_CLI::print_value( $value );
 	}
 }

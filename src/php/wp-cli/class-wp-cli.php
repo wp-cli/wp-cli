@@ -76,6 +76,19 @@ class WP_CLI {
 	}
 
 	/**
+	 * Display an easy to paste PHP value.
+	 *
+	 * @param string $message
+	 */
+	static function print_value( $value ) {
+		if ( is_array( $value ) || is_object( $value ) ) {
+			echo var_export( $value ) . "\n";
+		} else {
+			echo $value . "\n";
+		}
+	}
+
+	/**
 	 * Convert a wp_error into a string
 	 *
 	 * @param mixed $errors
