@@ -9,6 +9,25 @@ WP_CLI::add_command('user-meta', 'User_Meta_Command');
  * @subpackage commands/internals
  */
 class User_Meta_Command extends WP_CLI_Command {
+
+	/**
+	 * Get meta field value for a user
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 **/
+	public function get( $args, $assoc_args ) {
+		$user_id = self::get_numeric_arg_or_error($args, 0, "User ID");
+		$meta_key = self::get_arg_or_error($args, 1, "meta_key");
+
+		$value = get_user_meta( $user_id, $meta_key, true );
+
+		if ( '' === $value )
+			die(1);
+
+		WP_CLI::print_value( $value );
+	}
+
 	/**
 	 * Update meta field for a user
 	 *
@@ -17,8 +36,8 @@ class User_Meta_Command extends WP_CLI_Command {
 	 **/
 	public function set( $args, $assoc_args ) {
 		$user_id = self::get_numeric_arg_or_error($args, 0, "User ID");
-		$meta_key = self::get_arg_or_error($args, 1, "meta_key");;
-		$meta_value = self::get_arg_or_error($args, 2, "meta_value");;
+		$meta_key = self::get_arg_or_error($args, 1, "meta_key");
+		$meta_value = self::get_arg_or_error($args, 2, "meta_value");
 
 		$success = update_user_meta( $user_id, $meta_key, $meta_value );
 
