@@ -235,7 +235,7 @@ class WP_CLI {
 	static function _set_url( &$assoc_args ) {
 		if ( isset( $assoc_args['url'] ) ) {
 			$blog = $assoc_args['url'];
-			unset( $assoc_args['url'] );
+			/* unset( $assoc_args['url'] ); */
 		} elseif ( isset( $assoc_args['blog'] ) ) {
 			$blog = $assoc_args['blog'];
 			unset( $assoc_args['blog'] );
