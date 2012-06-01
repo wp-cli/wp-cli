@@ -29,12 +29,51 @@ class User_Meta_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Get meta field value for a user
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 **/
+	public function delete( $args, $assoc_args ) {
+		$user_id = self::get_numeric_arg_or_error($args, 0, "User ID");
+		$meta_key = self::get_arg_or_error($args, 1, "meta_key");
+
+		$success = delete_user_meta( $user_id, $meta_key );
+
+		if ( $success ) {
+			WP_CLI::success( "Deleted custom field." );
+		} else {
+			WP_CLI::error( "Failed to delete custom field." );
+		}
+	}
+
+	/**
 	 * Update meta field for a user
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
 	 **/
-	public function set( $args, $assoc_args ) {
+	public function add( $args, $assoc_args ) {
+		$user_id = self::get_numeric_arg_or_error($args, 0, "User ID");
+		$meta_key = self::get_arg_or_error($args, 1, "meta_key");
+		$meta_value = self::get_arg_or_error($args, 2, "meta_value");
+
+		$success = add_user_meta( $user_id, $meta_key, $meta_value );
+
+		if ( $success ) {
+			WP_CLI::success( "Added custom field." );
+		} else {
+			WP_CLI::error( "Failed to add custom field." );
+		}
+	}
+
+	/**
+	 * Update meta field for a user
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 **/
+	public function update( $args, $assoc_args ) {
 		$user_id = self::get_numeric_arg_or_error($args, 0, "User ID");
 		$meta_key = self::get_arg_or_error($args, 1, "meta_key");
 		$meta_value = self::get_arg_or_error($args, 2, "meta_value");
@@ -42,9 +81,9 @@ class User_Meta_Command extends WP_CLI_Command {
 		$success = update_user_meta( $user_id, $meta_key, $meta_value );
 
 		if ( $success ) {
-			WP_CLI::success( "Updated user $user_id." );
+			WP_CLI::success( "Updated custom field." );
 		} else {
-			WP_CLI::error( "Failed to set meta field" );
+			WP_CLI::error( "Failed to update custom field." );
 		}
 	}
 

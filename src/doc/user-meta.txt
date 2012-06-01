@@ -1,0 +1,34 @@
+wp-user-meta(1) -- Manage user custom fields.
+====
+
+## SYNOPSIS
+
+wp user-meta get <ID> <key>
+
+wp user-meta add <ID> <key> <value>
+
+wp user-meta update <ID> <key> <value>
+
+wp user-meta delete <ID> <key>
+
+## SUBCOMMANDS
+
+* `get`:
+
+	Get a custom field value.
+
+* `add`:
+
+	Add a new custom field.
+
+* `update`:
+
+	Update an existing custom field.
+
+* `delete`:
+
+	Delete a custom field.
+
+## EXAMPLES
+
+	wp user-meta set 123 description "Mary is a WordPress developer."
