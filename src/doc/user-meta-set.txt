@@ -11,14 +11,14 @@ wp-user-meta-set(1) -- Update a meta field for a WordPress user.
 
 	The ID of the user to update.
 
-* meta_key:
+* `<meta_key>`:
 
-	The meta_key to be updated
-	
-* meta_value:
-	
-	The new desired value of the meta_key
+	The meta_key to be updated.
+
+* `<meta_value>`:
+
+	The new desired value of the meta_key.
 
 ## EXAMPLES
 
-	wp user-meta set 123 description "Mary is a WordPress developer"
+wp user-meta set 123 description "Mary is a WordPress developer."

@@ -28,7 +28,7 @@ class User_Meta_Command extends WP_CLI_Command {
 			WP_CLI::error( "Failed to set meta field" );
 		}
 	}
-	
+
 	private function get_numeric_arg_or_error( $args, $index, $name ) {
 		$value = self::get_arg_or_error( $args, $index, $name );
 		if ( ! is_numeric( $value ) ) {
@@ -36,14 +36,14 @@ class User_Meta_Command extends WP_CLI_Command {
 		}
 		return $value;
 	}
-	
+
 	private function get_arg_or_error( $args, $index, $name ) {
 		if ( ! isset( $args[$index] ) ) {
 			self::error_see_help( "$name required" );
 		}
 		return $args[$index];
 	}
-	
+
 	private function error_see_help( $message ) {
 		WP_CLI::error( "$message (see 'wp user-meta help').");
 	}
