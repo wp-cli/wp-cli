@@ -1,13 +1,13 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WP\-GENERATE\-POSTS" "1" "May 2012" "" "WP-CLI"
+.TH "WP\-GENERATE\-POSTS" "1" "June 2012" "" "WP-CLI"
 .
 .SH "NAME"
 \fBwp\-generate\-posts\fR \- Generate a bunch of posts\.
 .
 .SH "SYNOPSIS"
-\fBwp generate posts\fR [\-\-count=100] [\-\-type=post] [\-\-status=publish] [\-\-author=\fIlogin\fR]
+\fBwp generate posts\fR [\-\-count=100] [\-\-type=post] [\-\-status=publish] [\-\-author=\fIlogin\fR] [\-\-max_depth=1]
 .
 .SH "OPTIONS"
 .
@@ -34,4 +34,10 @@ The status of the generated posts\. Default: \'publish\'
 .
 .IP
 The author of the generated posts\. Default: none
+.
+.TP
+\fB\-\-max_depth\fR=\fInumber\fR:
+.
+.IP
+For hierarchical post types, generate child posts down to a certain depth\. Default: 1
 
