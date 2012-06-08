@@ -1,10 +1,20 @@
 #!/bin/bash
 
-# generate man pages
+# regenerate everything:
+#	./utils/doc-build
 
-rm -rf man
-mkdir -p man
+# regenerate certain files:
+#	./utils/doc-build src/doc/core-update.txt
 
-for file in $(ls src/doc/*.txt); do
+files="$@"
+
+if [ "$files" == "" ]; then
+	files=$(ls src/doc/*.txt)
+
+	rm -rf man
+	mkdir -p man
+fi
+
+for file in $files; do
 	cat $file | ronn --roff --manual="WP-CLI" > man/$(basename $file .txt).1
 done
