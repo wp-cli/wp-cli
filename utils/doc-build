@@ -4,9 +4,10 @@
 #	./utils/doc-build
 
 # regenerate certain files:
-#	./utils/doc-build src/doc/core-update.txt
+#	./utils/doc-build src/doc/core-*
 
-files="$@"
+# eliminate *~ files
+files=$(echo "$@" | tr ' ' "\n" | grep -v '~$')
 
 if [ "$files" == "" ]; then
 	files=$(ls src/doc/*.txt)
