@@ -46,6 +46,8 @@ class Generate_Command extends WP_CLI_Command {
 
 		$label = get_post_type_object( $type )->labels->singular_name;
 
+		$hierarchical = get_post_type_object( $type )->hierarchical;
+
 		$limit = $count + $total;
 
 		$notify = new \cli\progress\Bar( 'Generating posts', $count );
@@ -56,16 +58,19 @@ class Generate_Command extends WP_CLI_Command {
 
 		for ( $i = $total; $i < $limit; $i++ ) {
 
-			if( $this->maybe_make_child() && $current_depth < $max_depth ) {
+			if( $hierarchical ) {
+				
+				if( $this->maybe_make_child() && $current_depth < $max_depth ) {
 
-				$current_parent = $post_ids[$i-1];
-				$current_depth++;
+					$current_parent = $post_ids[$i-1];
+					$current_depth++;
 
-			} else if( $this->maybe_reset_depth() ) {
+				} else if( $this->maybe_reset_depth() ) {
 
-				$current_depth = 1;
-				$current_parent = 0;
+					$current_depth = 1;
+					$current_parent = 0;
 
+				}
 			}
 
 			$post_ids[$i] = wp_insert_post( array(
