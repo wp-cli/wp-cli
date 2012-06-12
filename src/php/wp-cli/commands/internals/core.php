@@ -155,5 +155,11 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::success('WordPress updated successfully.');
 		}
 	}
+	
+	function database_upgrade( $args ) {
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		wp_upgrade();
+		WP_CLI::success('WordPress database upgraded successfully.');
+	}
 }
 
