@@ -1,10 +1,19 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WP\-CORE\-UPDATE" "1" "May 2012" "" "WP-CLI"
+.TH "WP\-CORE\-UPDATE" "1" "June 2012" "" "WP-CLI"
 .
 .SH "NAME"
 \fBwp\-core\-update\fR \- Update WordPress to the latest version\.
 .
 .SH "SYNOPSIS"
-\fBwp core update\fR
+\fBwp core update\fR [\-\-db]
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-\-db\fR:
+.
+.IP
+When passed, it applies any outstanding database upgrades, without touching the files\.
+

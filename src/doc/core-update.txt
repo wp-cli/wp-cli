@@ -3,4 +3,11 @@ wp-core-update(1) -- Update WordPress to the latest version.
 
 ## SYNOPSIS
 
-`wp core update`
+`wp core update` [--db]
+
+## OPTIONS
+
+* `--db`:
+
+	When passed, it applies any outstanding database upgrades, without
+touching the files.

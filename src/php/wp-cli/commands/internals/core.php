@@ -130,7 +130,15 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 */
-	function update( $args ) {
+	function update( $args, $assoc_args ) {
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
+		if ( isset( $assoc_args['db'] ) ) {
+			wp_upgrade();
+			WP_CLI::success( 'WordPress database upgraded successfully.' );
+			return;
+		}
+
 		wp_version_check();
 
 		$from_api = get_site_transient( 'update_core' );
@@ -139,8 +147,6 @@ class Core_Command extends WP_CLI_Command {
 			$update = false;
 		else
 			list( $update ) = $from_api->updates;
-
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
 		$result = WP_CLI::get_upgrader( 'Core_Upgrader' )->upgrade( $update );
 
@@ -152,14 +158,8 @@ class Core_Command extends WP_CLI_Command {
 				WP_CLI::success( $msg );
 			}
 		} else {
-			WP_CLI::success('WordPress updated successfully.');
+			WP_CLI::success( 'WordPress updated successfully.' );
 		}
-	}
-	
-	function upgrade_database( $args ) {
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		wp_upgrade();
-		WP_CLI::success('WordPress database upgraded successfully.');
 	}
 }
 

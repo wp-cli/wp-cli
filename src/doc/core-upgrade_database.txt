@@ -1,6 +1,0 @@
-wp-core-upgrade_database(1) -- Apply any outstanding database upgrades.
-====
-
-## SYNOPSIS
-
-`wp core database_upgrade`
