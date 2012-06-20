@@ -16,13 +16,13 @@ SELF_PATH=$(cd -P -- "$(dirname -- "$0")" && pwd -P) && SELF_PATH=$SELF_PATH/$(b
 
 # Resolve symlinks - this is the equivalent of "readlink -f", but also works with non-standard OS X readlink.
 while [ -h "$SELF_PATH" ]; do
-    # 1) cd to directory of the symlink
-    # 2) cd to the directory of where the symlink points
-    # 3) Get the pwd
-    # 4) Append the basename
-    DIR=$(dirname -- "$SELF_PATH")
-    SYM=$(readlink $SELF_PATH)
-    SELF_PATH=$(cd $DIR && cd $(dirname -- "$SYM") && pwd)/$(basename -- "$SYM")
+	# 1) cd to directory of the symlink
+	# 2) cd to the directory of where the symlink points
+	# 3) Get the pwd
+	# 4) Append the basename
+	DIR=$(dirname -- "$SELF_PATH")
+	SYM=$(readlink $SELF_PATH)
+	SELF_PATH=$(cd $DIR && cd $(dirname -- "$SYM") && pwd)/$(basename -- "$SYM")
 done
 cd "$ORIGDIR"
 
@@ -35,8 +35,8 @@ fi
 SCRIPT_PATH=$SCRIPT_PATH/wp-cli/wp-cli-boot.php
 
 case $(uname -a) in
-  CYGWIN*)
-    SCRIPT_PATH=$(cygpath -w -a -- "$SCRIPT_PATH") ;;
+	CYGWIN*)
+		SCRIPT_PATH=$(cygpath -w -a -- "$SCRIPT_PATH") ;;
 esac
 
 # If not exported, try to determine and export the number of columns.
@@ -46,53 +46,53 @@ esac
 # error message is suppressed, but tput cols becomes confused about the
 # terminal and prints out the default value (80).
 if [ -z $COLUMNS ] && [ -n "$TERM" ] && [ "$TERM" != dumb ] ; then
-  # Note to cygwin users: install the ncurses package to get tput command.
-  if COLUMNS=$(tput cols); then
-    export COLUMNS
-  fi
+	# Note to cygwin users: install the ncurses package to get tput command.
+	if COLUMNS=$(tput cols); then
+		export COLUMNS
+	fi
 fi
 
 if [ ! -z "$WP_CLI_PHP" ] ; then
-  # Use the WP_CLI_PHP environment variable if it is available.
-  php="$WP_CLI_PHP"
+	# Use the WP_CLI_PHP environment variable if it is available.
+	php="$WP_CLI_PHP"
 else
-  # Default to using the php that we find on the PATH.
-  # Note that we need the full path to php here for Dreamhost, which behaves oddly.  See http://drupal.org/node/662926
-  php=`which php`
+	# Default to using the php that we find on the PATH.
+	# Note that we need the full path to php here for Dreamhost, which behaves oddly.  See http://drupal.org/node/662926
+	php=`which php`
 
-  # We check for a command line (cli) version of php, and if found use that.
-  which php-cli >/dev/null 2>&1
-  if [ "$?" = 0 ] ; then
-    php=`which php-cli`
-  fi
+	# We check for a command line (cli) version of php, and if found use that.
+	which php-cli >/dev/null 2>&1
+	if [ "$?" = 0 ] ; then
+		php=`which php-cli`
+	fi
 
-  # Special case for *AMP installers, since they normally don't set themselves as the default cli php out of the box.
-  for amp_php in /Applications/MAMP/bin/php5*/bin/php /opt/lampp/bin/php /Applications/xampp/xamppfiles/bin/php; do
-    if [ -x $amp_php ]; then
-      php=$amp_php
-	  break
-    fi
-  done
+	# Special case for *AMP installers, since they normally don't set themselves as the default cli php out of the box.
+	for amp_php in /Applications/MAMP/bin/php5*/bin/php /opt/lampp/bin/php /Applications/xampp/xamppfiles/bin/php; do
+		if [ -x $amp_php ]; then
+			php=$amp_php
+			break
+		fi
+	done
 fi
 
 # Check to see if the user has provided a php.ini file or wp-cli.ini file in any conf dir
 # Last found wins, so search in reverse priority order
 for conf_dir in $(dirname "$SELF_PATH") /etc/wp-cli $HOME/.wp-cli ; do
-  if [ -f $conf_dir/php.ini ] ; then
-    wp_cli_php_ini=$conf_dir/php.ini
-  fi
-  if [ -f $conf_dir/wp-cli.ini ] ; then
-    wp_cli_php_override=$conf_dir/wp-cli.ini
-  fi
+	if [ -f $conf_dir/php.ini ] ; then
+		wp_cli_php_ini=$conf_dir/php.ini
+	fi
+	if [ -f $conf_dir/wp-cli.ini ] ; then
+		wp_cli_php_override=$conf_dir/wp-cli.ini
+	fi
 done
 
 # Add in the php file location and/or the php override variables as appropriate
 if [ "x$wp_cli_php_ini" != "x" ] ; then
-  php="$php --php-ini $wp_cli_php_ini"
+	php="$php --php-ini $wp_cli_php_ini"
 fi
 if [ "x$wp_cli_php_override" != "x" ] ; then
-  wp_cli_override_vars=`grep '^[a-z_A-Z0-9]\+ *=' $wp_cli_php_override | sed -e 's|\([^ =]*\) *= *\(.*\)|\1="\2"|' -e 's| ||g' -e 's|^|-d |' | tr '\n\r' '  '`
-  php="$php $wp_cli_override_vars"
+	wp_cli_override_vars=`grep '^[a-z_A-Z0-9]\+ *=' $wp_cli_php_override | sed -e 's|\([^ =]*\) *= *\(.*\)|\1="\2"|' -e 's| ||g' -e 's|^|-d |' | tr '\n\r' '  '`
+	php="$php $wp_cli_override_vars"
 fi
 
 # Pass in the path to php so that wp-cli knows which one
