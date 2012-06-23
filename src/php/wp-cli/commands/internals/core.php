@@ -76,7 +76,7 @@ class Core_Command extends WP_CLI_Command {
 			'title' => '',
 			'admin_name' => 'admin',
 			'admin_email' => '',
-			'admin_password' => wp_generate_password( 12, false )
+			'admin_password' => ''
 		) ), EXTR_SKIP );
 
 		$public = true;
