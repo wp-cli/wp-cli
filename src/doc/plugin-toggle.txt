@@ -13,4 +13,4 @@ wp-plugin-deactivate(1) -- Activate/Deactivate an installed plugin.
 
 * `--network`:
 
-	If set, the plugin will be deactivated for the entire multisite network.
+	If set, the plugin will be toggled for the entire multisite network.
