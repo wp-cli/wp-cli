@@ -3,10 +3,14 @@ wp-plugin-deactivate(1) -- Deactivate an active plugin.
 
 ## SYNOPSIS
 
-`wp plugin deactivate` <plugin>
+`wp plugin deactivate` <plugin> [--network]
 
 ## OPTIONS
 
 * `<plugin>`:
 
 	The plugin to deactivate.
+
+* `--network`:
+
+	If set, the plugin will be deactivated for the entire multisite network.

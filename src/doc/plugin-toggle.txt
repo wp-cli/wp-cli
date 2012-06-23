@@ -3,10 +3,14 @@ wp-plugin-deactivate(1) -- Activate/Deactivate an installed plugin.
 
 ## SYNOPSIS
 
-`wp plugin toggle` <plugin>
+`wp plugin toggle` <plugin> [--network]
 
 ## OPTIONS
 
 * `<plugin>`:
 
 	The plugin to toggle.
+
+* `--network`:
+
+	If set, the plugin will be deactivated for the entire multisite network.

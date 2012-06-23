@@ -3,10 +3,14 @@ wp-plugin-activate(1) -- Activate an installed plugin.
 
 ## SYNOPSIS
 
-`wp plugin activate` <plugin>
+`wp plugin activate` <plugin> [--network]
 
 ## OPTIONS
 
 * `<plugin>`:
 
 	The plugin to activate.
+
+* `--network`:
+
+	If set, the plugin will be deactivated for the entire multisite network.
