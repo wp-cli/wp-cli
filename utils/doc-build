@@ -1,21 +1,8 @@
 #!/bin/bash
 
-# regenerate everything:
+# regenerate modified files:
 #	./utils/doc-build
 
-# regenerate certain files:
-#	./utils/doc-build src/doc/core-*
-
-# eliminate *~ files
-files=$(echo "$@" | tr ' ' "\n" | grep -v '~$')
-
-if [ "$files" == "" ]; then
-	files=$(ls src/doc/*.txt)
-
-	rm -rf man
-	mkdir -p man
-fi
-
-for file in $files; do
+for file in $(git st src/doc/ --porcelain | cut -d ' ' -f 3); do
 	cat $file | ronn --roff --manual="WP-CLI" > man/$(basename $file .txt).1
 done
