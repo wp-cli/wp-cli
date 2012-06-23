@@ -108,15 +108,17 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	 *
 	 * @param array $args
 	 */
-	function activate( $args ) {
+	function activate( $args, $assoc_args ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
-		activate_plugin( $file );
+		$network_wide = isset( $assoc_args['network'] );
 
-		if ( !is_plugin_active( $file ) ) {
-			WP_CLI::error( 'Could not activate this plugin: ' . $name );
-		} else {
+		activate_plugin( $file, '', $network_wide );
+
+		if ( $this->check_active( $file, $network_wide ) ) {
 			WP_CLI::success( "Plugin '$name' activated." );
+		} else {
+			WP_CLI::error( 'Could not activate plugin: ' . $name );
 		}
 	}
 
@@ -125,16 +127,28 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	 *
 	 * @param array $args
 	 */
-	function deactivate( $args ) {
+	function deactivate( $args, $assoc_args ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
-		deactivate_plugins( $file );
+		$network_wide = isset( $assoc_args['network'] );
 
-		if ( !is_plugin_inactive( $file ) ) {
-			WP_CLI::error( 'Could not deactivate this plugin: '.$name );
-		} else {
+		deactivate_plugins( $file, false, $network_wide );
+
+		if ( ! $this->check_active( $file, $network_wide ) ) {
 			WP_CLI::success( "Plugin '$name' deactivated." );
+		} else {
+			WP_CLI::error( 'Could not deactivate plugin: ' . $name );
 		}
+	}
+
+	private function check_active( $file, $network_wide ) {
+		if ( $network_wide ) {
+			$check = is_plugin_active_for_network( $file );
+		} else {
+			$check = is_plugin_active( $file );
+		}
+
+		return $check;
 	}
 
 	/**
@@ -142,13 +156,15 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	 *
 	 * @param array $args
 	 */
-	function toggle( $args ) {
+	function toggle( $args, $assoc_args ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
-		if ( is_plugin_active( $file ) ) {
-			$this->deactivate( $args );
+		$network_wide = isset( $assoc_args['network'] );
+
+		if ( $this->check_active( $file, $network_wide ) ) {
+			$this->deactivate( $args, $assoc_args );
 		} else {
-			$this->activate( $args );
+			$this->activate( $args, $assoc_args );
 		}
 	}
 
