@@ -89,6 +89,10 @@ if ( array( 'core', 'install' ) == $arguments ) {
     define( 'WP_INSTALLING', true );
 }
 
+// Fix memory limit. See http://core.trac.wordpress.org/ticket/14889
+if ( !defined('WP_MEMORY_LIMIT') )
+	define('WP_MEMORY_LIMIT', '1024M');
+
 // Load WordPress
 require WP_ROOT . 'wp-load.php';
 require ABSPATH . 'wp-admin/includes/admin.php';
