@@ -1,13 +1,13 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WP\-PLUGIN\-UNINSTALL" "1" "May 2012" "" "WP-CLI"
+.TH "WP\-PLUGIN\-UNINSTALL" "1" "June 2012" "" "WP-CLI"
 .
 .SH "NAME"
 \fBwp\-plugin\-uninstall\fR \- Run the uninstallation procedure for a plugin\.
 .
 .SH "SYNOPSIS"
-\fBwp plugin uninstall\fR \fIplugin\fR
+\fBwp plugin uninstall\fR \fIplugin\fR [\-\-no\-delete]
 .
 .SH "OPTIONS"
 .
@@ -16,6 +16,12 @@
 .
 .IP
 The plugin to uninstall\.
+.
+.TP
+\fB\-\-no\-delete\fR:
+.
+.IP
+If set, the plugin files will not be deleted\. Only the uninstall procedure will be run\.
 .
 .SH "EXAMPLES"
 .

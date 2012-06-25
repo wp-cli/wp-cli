@@ -3,13 +3,18 @@ wp-plugin-uninstall(1) -- Run the uninstallation procedure for a plugin.
 
 ## SYNOPSIS
 
-`wp plugin uninstall` <plugin>
+`wp plugin uninstall` <plugin> [--no-delete]
 
 ## OPTIONS
 
 * <plugin>:
 
 	The plugin to uninstall.
+
+* `--no-delete`:
+
+	If set, the plugin files will not be deleted. Only the uninstall procedure
+will be run.
 
 ## EXAMPLES
 

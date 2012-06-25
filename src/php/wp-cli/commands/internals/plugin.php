@@ -262,7 +262,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	 *
 	 * @param array $args
 	 */
-	function uninstall( $args ) {
+	function uninstall( $args, $assoc_args = array() ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		if ( is_plugin_active( $file ) ) {
@@ -270,6 +270,9 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		}
 
 		uninstall_plugin( $file );
+
+		if ( !isset( $assoc_args['no-delete'] ) )
+			$this->delete( $args );
 	}
 
 	/**
