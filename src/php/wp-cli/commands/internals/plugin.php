@@ -108,7 +108,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	 *
 	 * @param array $args
 	 */
-	function activate( $args, $assoc_args ) {
+	function activate( $args, $assoc_args = array() ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		$network_wide = isset( $assoc_args['network'] );
@@ -127,7 +127,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	 *
 	 * @param array $args
 	 */
-	function deactivate( $args, $assoc_args ) {
+	function deactivate( $args, $assoc_args = array() ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		$network_wide = isset( $assoc_args['network'] );
@@ -156,7 +156,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	 *
 	 * @param array $args
 	 */
-	function toggle( $args, $assoc_args ) {
+	function toggle( $args, $assoc_args = array() ) {
 		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
 		$network_wide = isset( $assoc_args['network'] );
