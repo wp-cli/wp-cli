@@ -10,10 +10,10 @@
 wp option get \fIkey\fR [\-\-json]
 .
 .P
-wp option add \fIkey\fR \fIvalue\fR
+wp option add \fIkey\fR \fIvalue\fR [\-\-json]
 .
 .P
-wp option update \fIkey\fR \fIvalue\fR
+wp option update \fIkey\fR \fIvalue\fR [\-\-json]
 .
 .P
 wp option delete \fIkey\fR
@@ -30,13 +30,13 @@ Get an option value\. Passing \-\-json causes the output to be formatted as JSON
 \fBadd\fR:
 .
 .IP
-Add a new option\.
+Add a new option\. Pass \-\-json to decode JSON values before adding the option\.
 .
 .TP
 \fBupdate\fR:
 .
 .IP
-Update an existing option\.
+Update an existing option\. Pass \-\-json to decode JSON values before updating the option\.
 .
 .TP
 \fBdelete\fR:
