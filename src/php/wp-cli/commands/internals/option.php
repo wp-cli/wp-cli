@@ -33,13 +33,17 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 **/
-	public function update( $args ) {
+	public function update( $args, $assoc_args ) {
 		if ( count( $args ) < 2 ) {
 			WP_CLI::line( "usage: wp option update <option-name> <option-value>" );
 			exit;
 		}
 
 		list( $key, $value ) = $args;
+
+		if ( isset( $assoc_args['json'] ) ) {
+			$value = json_decode( $value, true );
+		}
 
 		if ( $value === get_option( $key ) )
 			return;
