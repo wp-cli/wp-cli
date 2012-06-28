@@ -3,7 +3,7 @@ wp-option(1) -- Manage WordPress options.
 
 ## SYNOPSIS
 
-wp option get <key>
+wp option get <key> [--json]
 
 wp option add <key> <value>
 
@@ -15,7 +15,8 @@ wp option delete <key>
 
 * `get`:
 
-	Get an option value.
+	Get an option value. Passing --json causes the output to be formatted
+	as JSON.
 
 * `add`:
 
