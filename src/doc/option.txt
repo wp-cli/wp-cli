@@ -5,9 +5,9 @@ wp-option(1) -- Manage WordPress options.
 
 wp option get <key> [--json]
 
-wp option add <key> <value>
+wp option add <key> <value> [--json]
 
-wp option update <key> <value>
+wp option update <key> <value> [--json]
 
 wp option delete <key>
 
@@ -20,11 +20,13 @@ wp option delete <key>
 
 * `add`:
 
-	Add a new option.
+	Add a new option. Pass --json to decode JSON values before adding
+	the option.
 
 * `update`:
 
-	Update an existing option.
+	Update an existing option. Pass --json to decode JSON values before
+	updating the option.
 
 * `delete`:
 
