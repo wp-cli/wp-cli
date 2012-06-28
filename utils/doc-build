@@ -5,7 +5,7 @@
 # run automatically before each commit:
 # ln -s ../../utils/doc-build .git/hooks/pre-commit
 
-if [ -n "$@" ]; then
+if [ $# -eq 0 ]; then
 	files=$(git diff --cached --name-only src/doc/)
 else
 	files=$@
