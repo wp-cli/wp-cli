@@ -72,7 +72,7 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 **/
-	public function get( $args ) {
+	public function get( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
 			WP_CLI::line( "usage: wp option get <option-name>" );
 			exit;
@@ -85,6 +85,10 @@ class Option_Command extends WP_CLI_Command {
 		if ( false === $value )
 			die(1);
 
+		if ( isset( $assoc_args['json'] ) ) {
+			$value = json_encode( $value );
+		}
+		
 		WP_CLI::print_value( $value );
 	}
 }
