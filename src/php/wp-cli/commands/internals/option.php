@@ -85,10 +85,6 @@ class Option_Command extends WP_CLI_Command {
 		if ( false === $value )
 			die(1);
 
-		if ( isset( $assoc_args['json'] ) ) {
-			$value = json_encode( $value );
-		}
-		
-		WP_CLI::print_value( $value );
+		WP_CLI::print_value( $value, $assoc_args );
 	}
 }
