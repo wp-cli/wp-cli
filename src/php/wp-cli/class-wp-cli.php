@@ -87,7 +87,7 @@ class WP_CLI {
 			$value = var_export( $value );
 		}
 
-		echo var_export( $value ) . "\n";
+		echo $value . "\n";
 	}
 
 	/**
