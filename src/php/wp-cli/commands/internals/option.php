@@ -15,13 +15,13 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 **/
-	public function add( $args ) {
+	public function add( $args, $assoc_args ) {
 		if ( count( $args ) < 2 ) {
 			WP_CLI::line( "usage: wp option add <option-name> <option-value>" );
 			exit;
 		}
 
-		list( $key, $value ) = $args;
+		list( $key, $value ) = self::read_name_and_value( $args, $assoc_args );
 
 		if ( !add_option( $key, $value ) ) {
 			WP_CLI::error( "Could not add option '$key'. Does it already exist?" );
@@ -39,11 +39,7 @@ class Option_Command extends WP_CLI_Command {
 			exit;
 		}
 
-		list( $key, $value ) = $args;
-
-		if ( isset( $assoc_args['json'] ) ) {
-			$value = json_decode( $value, true );
-		}
+		list( $key, $value ) = self::read_name_and_value( $args, $assoc_args );
 
 		if ( $value === get_option( $key ) )
 			return;
@@ -51,6 +47,16 @@ class Option_Command extends WP_CLI_Command {
 		if ( !update_option( $key, $value ) ) {
 			WP_CLI::error( "Could not update option '$key'." );
 		}
+	}
+	
+	private function read_name_and_value( $args, $assoc_args) {
+		list( $key, $value ) = $args;
+		
+		if ( isset( $assoc_args['json'] ) ) {
+			$value = json_decode( $value, true );
+		}
+		
+		return array( $key, $value );
 	}
 
 	/**
