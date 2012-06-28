@@ -81,13 +81,13 @@ class WP_CLI {
 	 * @param string $message
 	 */
 	static function print_value( $value, $assoc_args = array() ) {
-		if ( is_array( $value ) || is_object( $value ) ) {
-			$formatter = isset( $assoc_args['json'] ) ? 'json_encode' : 'var_export';
-
-			$value = $formatter( $value );
+		if ( isset( $assoc_args['json'] ) ) {
+			$value = json_encode( $value );
+		} elseif ( is_array( $value ) || is_object( $value ) ) {
+			$value = var_export( $value );
 		}
 
-		echo $value . "\n";
+		echo var_export( $value ) . "\n";
 	}
 
 	/**
