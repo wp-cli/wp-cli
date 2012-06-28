@@ -25,7 +25,7 @@ class User_Meta_Command extends WP_CLI_Command {
 		if ( '' === $value )
 			die(1);
 
-		WP_CLI::print_value( $value );
+		WP_CLI::print_value( $value, $assoc_args );
 	}
 
 	/**

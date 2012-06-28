@@ -3,7 +3,7 @@ wp-user-meta(1) -- Manage user custom fields.
 
 ## SYNOPSIS
 
-wp user-meta get <ID> <key>
+wp user-meta get <ID> <key> [--json]
 
 wp user-meta add <ID> <key> <value>
 
@@ -15,7 +15,8 @@ wp user-meta delete <ID> <key>
 
 * `get`:
 
-	Get a custom field value.
+	Get a custom field value. Passing --json causes the output to be formatted
+	as JSON.
 
 * `add`:
 
