@@ -1,13 +1,13 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WP\-OPTION" "1" "May 2012" "" "WP-CLI"
+.TH "WP\-OPTION" "1" "June 2012" "" "WP-CLI"
 .
 .SH "NAME"
 \fBwp\-option\fR \- Manage WordPress options\.
 .
 .SH "SYNOPSIS"
-wp option get \fIkey\fR
+wp option get \fIkey\fR [\-\-json]
 .
 .P
 wp option add \fIkey\fR \fIvalue\fR
@@ -24,7 +24,7 @@ wp option delete \fIkey\fR
 \fBget\fR:
 .
 .IP
-Get an option value\.
+Get an option value\. Passing \-\-json causes the output to be formatted as JSON\.
 .
 .TP
 \fBadd\fR:
