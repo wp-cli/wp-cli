@@ -21,7 +21,9 @@ class Option_Command extends WP_CLI_Command {
 			exit;
 		}
 
-		list( $key, $value ) = self::read_name_and_value( $args, $assoc_args );
+		$key = $args[0];
+
+		$value = WP_CLI::read_value( $args[1], $assoc_args );
 
 		if ( !add_option( $key, $value ) ) {
 			WP_CLI::error( "Could not add option '$key'. Does it already exist?" );
@@ -39,7 +41,9 @@ class Option_Command extends WP_CLI_Command {
 			exit;
 		}
 
-		list( $key, $value ) = self::read_name_and_value( $args, $assoc_args );
+		$key = $args[0];
+
+		$value = WP_CLI::read_value( $args[1], $assoc_args );
 
 		if ( $value === get_option( $key ) )
 			return;
@@ -47,16 +51,6 @@ class Option_Command extends WP_CLI_Command {
 		if ( !update_option( $key, $value ) ) {
 			WP_CLI::error( "Could not update option '$key'." );
 		}
-	}
-	
-	private function read_name_and_value( $args, $assoc_args) {
-		list( $key, $value ) = $args;
-		
-		if ( isset( $assoc_args['json'] ) ) {
-			$value = json_decode( $value, true );
-		}
-		
-		return array( $key, $value );
 	}
 
 	/**

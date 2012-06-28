@@ -76,9 +76,24 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display an easy to paste PHP value.
+	 * Read a value, from various formats
 	 *
-	 * @param string $message
+	 * @param mixed $value
+	 * @param array $assoc_args
+	 */
+	static function read_value( $value, $assoc_args = array() ) {
+		if ( isset( $assoc_args['json'] ) ) {
+			$value = json_decode( $value, true );
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Display a value, in various formats
+	 *
+	 * @param mixed $value
+	 * @param array $assoc_args
 	 */
 	static function print_value( $value, $assoc_args = array() ) {
 		if ( isset( $assoc_args['json'] ) ) {
