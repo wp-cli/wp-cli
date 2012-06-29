@@ -47,8 +47,6 @@ if ( isset( $assoc_args['help'] ) ) {
 if ( !empty( $assoc_args['path'] ) ) {
 	// trailingslashit() isn't available yet
 	define( 'WP_ROOT', rtrim( $assoc_args['path'], '/' ) . '/' );
-} elseif ( is_readable( $_SERVER['PWD'] . '/../wp-load.php' ) ) {
-	define( 'WP_ROOT', $_SERVER['PWD'] . '/../' );
 } else {
 	define( 'WP_ROOT', $_SERVER['PWD'] . '/' );
 }
