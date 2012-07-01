@@ -10,6 +10,10 @@ WP_CLI::add_command('user-meta', 'User_Meta_Command');
  */
 class User_Meta_Command extends WP_CLI_Command {
 
+	protected $aliases = array(
+		'set' => 'update'
+	);
+
 	/**
 	 * Get meta field value for a user
 	 *
