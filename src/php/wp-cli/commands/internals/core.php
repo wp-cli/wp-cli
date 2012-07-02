@@ -129,9 +129,11 @@ class Core_Command extends WP_CLI_Command {
 	 * Update the WordPress core
 	 *
 	 * @param array $args
+	 * @param array $assoc_args
 	 */
 	function update( $args, $assoc_args ) {
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		global $wp_version;
+		$update = $from_api = null;
 
 		if ( isset( $assoc_args['db'] ) ) {
 			wp_upgrade();
@@ -139,14 +141,42 @@ class Core_Command extends WP_CLI_Command {
 			return;
 		}
 
-		wp_version_check();
+		if ( empty( $assoc_args['version'] ) ) {
+			wp_version_check();
+			$from_api = get_site_transient( 'update_core' );
 
-		$from_api = get_site_transient( 'update_core' );
+			if ( empty( $from_api->updates ) )
+				$update = false;
+			else
+				list( $update ) = $from_api->updates;
 
-		if ( empty( $from_api->updates ) )
-			$update = false;
-		else
-			list( $update ) = $from_api->updates;
+		} else {
+			if ( empty( $args[0] ) )
+				WP_CLI::error( "Package not specified." );
+
+			$new_package = $args[0];
+			$new_version = $assoc_args['version'];
+
+			if ( version_compare( $wp_version, $new_version, '<' ) ) {
+				$update = (object) array(
+					'response' => 'upgrade',
+					'current' => $new_version,
+					'download' => $new_package,
+					'packages' => (object) array (
+						'partial' => null,
+						'new_bundled' => null,
+						'no_content' => null,
+						'full' => $new_package,
+					),
+				);
+
+			} else {
+				WP_CLI::success( 'WordPress is up to date.' );
+				return;
+			}
+		}
+
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
 		$result = WP_CLI::get_upgrader( 'Core_Upgrader' )->upgrade( $update );
 

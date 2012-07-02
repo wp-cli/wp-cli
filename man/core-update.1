@@ -1,13 +1,13 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WP\-CORE\-UPDATE" "1" "June 2012" "" "WP-CLI"
+.TH "WP\-CORE\-UPDATE" "1" "July 2012" "" "WP-CLI"
 .
 .SH "NAME"
 \fBwp\-core\-update\fR \- Update WordPress to the latest version\.
 .
 .SH "SYNOPSIS"
-\fBwp core update\fR [\-\-db]
+\fBwp core update\fR [\-\-db] [\-\-version=\fInew_version\fR <package/zip>]
 .
 .SH "OPTIONS"
 .
@@ -16,4 +16,20 @@
 .
 .IP
 When passed, it applies any outstanding database upgrades, without touching the files\.
+.
+.TP
+\fB\-\-version=\fR\fInew_version\fR <package/zip>:
+.
+.IP
+When passed, updates to new_version using package/zip as input\. NOTE: package removed by WordPress automatically upon completion\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp core update
+
+wp core update \-\-version=3\.4 \.\./latest\.zip
+.
+.fi
 

@@ -3,7 +3,7 @@ wp-core-update(1) -- Update WordPress to the latest version.
 
 ## SYNOPSIS
 
-`wp core update` [--db]
+`wp core update` [--db] [--version=<new_version> <package/zip>]
 
 ## OPTIONS
 
@@ -11,3 +11,14 @@ wp-core-update(1) -- Update WordPress to the latest version.
 
 	When passed, it applies any outstanding database upgrades, without
 touching the files.
+
+* `--version=`<new_version> <package/zip>:
+
+	When passed, updates to new_version using package/zip as input.
+	NOTE: package removed by WordPress automatically upon completion.
+
+## EXAMPLES
+
+	wp core update
+
+	wp core update --version=3.4 ../latest.zip
