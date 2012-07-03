@@ -15,7 +15,6 @@ touching the files.
 * `--version=`<new_version> <package/zip>:
 
 	When passed, updates to new_version using package/zip as input.
-	NOTE: package removed by WordPress automatically upon completion.
 
 ## EXAMPLES
 

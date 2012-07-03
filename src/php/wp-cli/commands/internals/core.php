@@ -133,7 +133,7 @@ class Core_Command extends WP_CLI_Command {
 	 */
 	function update( $args, $assoc_args ) {
 		global $wp_version;
-		$update = $from_api = null;
+		$update = $from_api = $upgrader = null;
 
 		if ( isset( $assoc_args['db'] ) ) {
 			wp_upgrade();
@@ -149,6 +149,8 @@ class Core_Command extends WP_CLI_Command {
 				$update = false;
 			else
 				list( $update ) = $from_api->updates;
+
+			$upgrader = 'Core_Upgrader';
 
 		} else {
 			if ( empty( $args[0] ) )
@@ -170,6 +172,8 @@ class Core_Command extends WP_CLI_Command {
 					),
 				);
 
+				$upgrader = 'Non_Destructive_Core_Upgrader';
+
 			} else {
 				WP_CLI::success( 'WordPress is up to date.' );
 				return;
@@ -178,7 +182,7 @@ class Core_Command extends WP_CLI_Command {
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
-		$result = WP_CLI::get_upgrader( 'Core_Upgrader' )->upgrade( $update );
+		$result = WP_CLI::get_upgrader( $upgrader )->upgrade( $update );
 
 		if ( is_wp_error($result) ) {
 			$msg = WP_CLI::error_to_string( $result );
