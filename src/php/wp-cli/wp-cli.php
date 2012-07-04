@@ -98,7 +98,7 @@ require WP_ROOT . 'wp-load.php';
 require ABSPATH . 'wp-admin/includes/admin.php';
 
 // Load the right info into the global wp_query
-if ( isset( $assoc_args['url'] ) ) {
+if ( !defined( 'WP_INSTALLING' ) && isset( $assoc_args['url'] ) ) {
     if ( isset( $GLOBALS['wp_query'] ) && isset( $GLOBALS['wp'] ) ) {
         $GLOBALS['wp']->parse_request();
         $GLOBALS['wp_query']->query($GLOBALS['wp']->query_vars);
