@@ -90,6 +90,65 @@ class Core_Command extends WP_CLI_Command {
 		}
 	}
 
+	public function install_network( $args, $assoc_args ) {
+		if ( is_multisite() )
+			WP_CLI::error( 'This already is a multisite install.' );
+
+		global $wpdb;
+
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
+		// need to register the multisite tables manually for some reason
+		foreach ( $wpdb->tables( 'ms_global' ) as $table => $prefixed_table )
+			$wpdb->$table = $prefixed_table;
+
+		WP_CLI::check_required_args( array( 'title' ), $assoc_args );
+
+		extract( wp_parse_args( $assoc_args, array(
+			'base' => '/',
+		) ) );
+
+		$hostname = self::get_clean_basedomain();
+		$subdomain_install = isset( $assoc_args['subdomains'] );
+
+		install_network();
+
+		$result = populate_network( 1, $hostname, get_option( 'admin_email' ), $assoc_args['title'], $base, $subdomain_install );
+
+		if ( is_wp_error( $result ) )
+			WP_CLI::error( $result );
+
+		ob_start();
+?>
+define('MULTISITE', true);
+define('SUBDOMAIN_INSTALL', <?php echo $subdomain_install ? 'true' : 'false'; ?>);
+$base = '<?php echo $base; ?>';
+define('DOMAIN_CURRENT_SITE', '<?php echo $hostname; ?>');
+define('PATH_CURRENT_SITE', '<?php echo $base; ?>');
+define('SITE_ID_CURRENT_SITE', 1);
+define('BLOG_ID_CURRENT_SITE', 1);
+
+<?php
+		$ms_config = ob_get_clean();
+
+		$wp_config_path = WP_CLI::locate_wp_config();
+
+		$token = "/* That's all, stop editing!";
+
+		list( $before, $after ) = explode( $token, file_get_contents( $wp_config_path ) );
+
+		file_put_contents( $wp_config_path, $before . $ms_config . $token . $after );
+
+		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
+	}
+
+	private static function get_clean_basedomain() {
+		$domain = preg_replace( '|https?://|', '', get_option( 'siteurl' ) );
+		if ( $slash = strpos( $domain, '/' ) )
+			$domain = substr( $domain, 0, $slash );
+		return $domain;
+	}
+
 	/**
 	 * Display the WordPress version.
 	 */
