@@ -139,6 +139,8 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		file_put_contents( $wp_config_path, $before . $ms_config . $token . $after );
 
+		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
+
 		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
 	}
 
