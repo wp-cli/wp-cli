@@ -11,6 +11,11 @@ else
 	files=$@
 fi
 
+if ! which ronn; then
+	echo "doc-build: ronn is not installed"
+	exit 1
+fi
+
 for file in $files; do
 	man_file=man/$(basename $file .txt).1
 	cat $file | ronn --roff --manual="WP-CLI" > $man_file
