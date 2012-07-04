@@ -43,6 +43,8 @@ if ( isset( $assoc_args['help'] ) ) {
 	unset( $assoc_args['help'] );
 }
 
+$_SERVER['DOCUMENT_ROOT'] = getcwd();
+
 // Define the WordPress location
 if ( !empty( $assoc_args['path'] ) ) {
 	// trailingslashit() isn't available yet
