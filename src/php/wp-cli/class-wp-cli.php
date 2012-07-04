@@ -261,24 +261,23 @@ class WP_CLI {
 			}
 		} elseif ( is_readable( WP_ROOT . 'wp-cli-blog' ) ) {
 			$blog = trim( file_get_contents( WP_ROOT . 'wp-cli-blog' ) );
-		} else {
+		} elseif ( $wp_config_path = self::locate_wp_config() ) {
 			// Try to find the blog parameter in the wp-config file
-			if ( file_exists( WP_ROOT . '/wp-config.php' ) ) {
-				$wp_config_file = file_get_contents( WP_ROOT . '/wp-config.php' );
-				$hit = array();
-				if ( preg_match_all( "#.*define\s*\(\s*(['|\"]{1})(.+)(['|\"]{1})\s*,\s*(['|\"]{1})(.+)(['|\"]{1})\s*\)\s*;#iU", $wp_config_file, $matches ) ) {
-					foreach( $matches[2] as $def_key => $def_name ) {
-						if ( 'DOMAIN_CURRENT_SITE' == $def_name )
-							$hit['domain'] = $matches[5][$def_key];
-						if ( 'PATH_CURRENT_SITE' == $def_name )
-							$hit['path'] = $matches[5][$def_key];
-					}
+			$wp_config_file = file_get_contents( $wp_config_path );
+			$hit = array();
+			if ( preg_match_all( "#.*define\s*\(\s*(['|\"]{1})(.+)(['|\"]{1})\s*,\s*(['|\"]{1})(.+)(['|\"]{1})\s*\)\s*;#iU", $wp_config_file, $matches ) ) {
+				foreach ( $matches[2] as $def_key => $def_name ) {
+					if ( 'DOMAIN_CURRENT_SITE' == $def_name )
+						$hit['domain'] = $matches[5][$def_key];
+					if ( 'PATH_CURRENT_SITE' == $def_name )
+						$hit['path'] = $matches[5][$def_key];
 				}
-				if ( !empty( $hit ) && isset( $hit['domain'] ) )
-					$blog = $hit['domain'];
-				if ( !empty( $hit ) && isset( $hit['path'] ) )
-					$blog .= $hit['path'];
 			}
+
+			if ( !empty( $hit ) && isset( $hit['domain'] ) )
+				$blog = $hit['domain'];
+			if ( !empty( $hit ) && isset( $hit['path'] ) )
+				$blog .= $hit['path'];
 		}
 
 		if ( isset( $blog ) ) {
@@ -290,12 +289,19 @@ class WP_CLI {
 	static function load_wp_config() {
 		define( 'ABSPATH', dirname(__FILE__) . '/' );
 
-		if ( file_exists( WP_ROOT . 'wp-config.php' ) ) {
-			require_once( WP_ROOT . 'wp-config.php' );
-		} elseif ( file_exists( dirname(WP_ROOT) . '/wp-config.php' ) && ! file_exists( dirname(WP_ROOT) . '/wp-settings.php' ) ) {
-			require_once( dirname(WP_ROOT) . '/wp-config.php' );
-		} else {
+		if ( $wp_config_path = self::locate_wp_config() )
+			require self::locate_wp_config();
+		else
 			WP_CLI::error( 'No wp-config.php file.' );
+	}
+
+	static function locate_wp_config() {
+		if ( file_exists( WP_ROOT . 'wp-config.php' ) ) {
+			return WP_ROOT . 'wp-config.php';
+		} elseif ( file_exists( WP_ROOT . '/../wp-config.php' ) && ! file_exists( WP_ROOT . '/../wp-settings.php' ) ) {
+			return WP_ROOT . '/../wp-config.php';
+		} else {
+			return false;
 		}
 	}
 
