@@ -7,6 +7,6 @@ wp-db-drop(1) -- Drop the database specified in wp-config.php
 
 ## OPTIONS
 
-* `--really`:
+* `--yes`:
 
-	Skip the confirmation messaje.
+	Answer yes to the confirmation message.

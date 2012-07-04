@@ -28,7 +28,7 @@ class DB_Command extends WP_CLI_Command {
 	 * Deletes the database specified in the wp-config.php file.
 	 */
 	function drop( $args, $assoc_args ) {
-		if ( !isset( $assoc_args['really'] ) ) {
+		if ( !isset( $assoc_args['yes'] ) ) {
 			WP_CLI::out( "Are you sure you want to drop the database? [y/n] " );
 
 			$answer = trim( fgets( STDIN ) );
