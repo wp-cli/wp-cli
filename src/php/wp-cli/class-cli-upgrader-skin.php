@@ -16,8 +16,13 @@ class CLI_Upgrader_Skin extends WP_Upgrader_Skin {
 		if ( !$error )
 			return;
 
+		if ( isset( $this->upgrader->strings[$error] ) )
+			$string = $this->upgrader->strings[$error];
+		else
+			$string = $error;
+
 		// TODO: show all errors, not just the first one
-		WP_CLI::warning( $error );
+		WP_CLI::warning( $string );
 	}
 
 	function feedback( $string ) {
