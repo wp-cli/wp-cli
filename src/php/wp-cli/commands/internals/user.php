@@ -60,7 +60,7 @@ class User_Command extends WP_CLI_Command {
 	public function delete( $args, $assoc_args ) {
 		global $blog_id;
 
-		$user_id = self::get_numeric_arg_or_error($args, 0, "User ID");
+		$user_id = WP_CLI::get_numeric_arg( $args, 0, "User ID" );
 
 		$defaults = array( 'reassign' => NULL );
 
@@ -82,11 +82,10 @@ class User_Command extends WP_CLI_Command {
 	public function create( $args, $assoc_args ) {
 		global $blog_id;
 
-		$user_login = $args[0];
-		$user_email = $args[1];
+		list( $user_login, $user_email ) = $args[0];
 
 		if ( ! $user_login || ! $user_email ) {
-			self::error_see_help( "Login and email required" );
+			WP_CLI::error( "Login and email required." );
 		}
 
 		$defaults = array(
@@ -135,7 +134,7 @@ class User_Command extends WP_CLI_Command {
 	 * @param array $assoc_args
 	 **/
 	public function update( $args, $assoc_args ) {
-		$user_id = self::get_numeric_arg_or_error($args, 0, "User ID");
+		$user_id = WP_CLI::get_numeric_arg( $args, 0, "User ID" );
 
 		if ( empty( $assoc_args ) ) {
 			WP_CLI::error( "Need some fields to update." );
@@ -150,24 +149,5 @@ class User_Command extends WP_CLI_Command {
 		} else {
 			WP_CLI::success( "Updated user $updated_id." );
 		}
-	}
-
-	private function get_numeric_arg_or_error( $args, $index, $name ) {
-		$value = self::get_arg_or_error( $args, $index, $name );
-		if ( ! is_numeric( $value ) ) {
-			self::error_see_help( "$name must be numeric" );
-		}
-		return $value;
-	}
-
-	private function get_arg_or_error( $args, $index, $name ) {
-		if ( ! isset( $args[$index] ) ) {
-			self::error_see_help( "$name required" );
-		}
-		return $args[$index];
-	}
-
-	private function error_see_help( $message ) {
-		WP_CLI::error( "$message (see 'wp user help').");
 	}
 }
