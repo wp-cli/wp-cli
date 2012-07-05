@@ -45,3 +45,13 @@ class CLI_Upgrader_Skin extends WP_Upgrader_Skin {
 	}
 }
 
+/**
+ * A Core Upgrader class that leaves packages intact by default.
+ *
+ * @package wp-cli
+ */
+class Non_Destructive_Core_Upgrader extends Core_Upgrader {
+	function unpack_package($package, $delete_package = false) {
+		return parent::unpack_package( $package, $delete_package );
+	}
+}
