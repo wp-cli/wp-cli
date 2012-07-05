@@ -190,9 +190,12 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 * Update the WordPress core
 	 *
 	 * @param array $args
+	 * @param array $assoc_args
 	 */
 	function update( $args, $assoc_args ) {
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		global $wp_version;
+		$update = $from_api = null;
+		$upgrader = 'Core_Upgrader';
 
 		if ( isset( $assoc_args['db'] ) ) {
 			wp_upgrade();
@@ -200,16 +203,48 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			return;
 		}
 
-		wp_version_check();
+		if ( empty( $assoc_args['version'] ) ) {
+			wp_version_check();
+			$from_api = get_site_transient( 'update_core' );
 
-		$from_api = get_site_transient( 'update_core' );
+			if ( empty( $from_api->updates ) )
+				$update = false;
+			else
+				list( $update ) = $from_api->updates;
 
-		if ( empty( $from_api->updates ) )
-			$update = false;
-		else
-			list( $update ) = $from_api->updates;
+		} else if (	version_compare( $wp_version, $assoc_args['version'], '<' )
+					|| isset( $assoc_args['force'] ) ) {
 
-		$result = WP_CLI::get_upgrader( 'Core_Upgrader' )->upgrade( $update );
+			$new_package = null;
+
+			if ( empty( $args[0] ) ) {
+				$new_package = 'http://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
+				WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
+			} else {
+				$new_package = $args[0];
+				$upgrader = 'Non_Destructive_Core_Upgrader';
+			}
+
+			$update = (object) array(
+				'response' => 'upgrade',
+				'current' => $assoc_args['version'],
+				'download' => $new_package,
+				'packages' => (object) array (
+					'partial' => null,
+					'new_bundled' => null,
+					'no_content' => null,
+					'full' => $new_package,
+				),
+			);
+
+		} else {
+			WP_CLI::success( 'WordPress is up to date.' );
+			return;
+		}
+
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
+		$result = WP_CLI::get_upgrader( $upgrader )->upgrade( $update );
 
 		if ( is_wp_error($result) ) {
 			$msg = WP_CLI::error_to_string( $result );
