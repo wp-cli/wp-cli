@@ -1,0 +1,35 @@
+wp-post-meta(1) -- Manage post custom fields.
+====
+
+## SYNOPSIS
+
+wp post-meta get <ID> <key> [--json]
+
+wp post-meta add <ID> <key> <value>
+
+wp post-meta update <ID> <key> <value>
+
+wp post-meta delete <ID> <key>
+
+## SUBCOMMANDS
+
+* `get`:
+
+	Get a custom field value. Passing --json causes the output to be formatted
+	as JSON.
+
+* `add`:
+
+	Add a new custom field.
+
+* `update`:
+
+	Update an existing custom field.
+
+* `delete`:
+
+	Delete a custom field.
+
+## EXAMPLES
+
+	wp post-meta set 123 _wp_page_template about.php

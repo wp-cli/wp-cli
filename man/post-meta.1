@@ -1,0 +1,54 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-POST\-META" "1" "July 2012" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-post\-meta\fR \- Manage post custom fields\.
+.
+.SH "SYNOPSIS"
+wp post\-meta get \fIID\fR \fIkey\fR [\-\-json]
+.
+.P
+wp post\-meta add \fIID\fR \fIkey\fR \fIvalue\fR
+.
+.P
+wp post\-meta update \fIID\fR \fIkey\fR \fIvalue\fR
+.
+.P
+wp post\-meta delete \fIID\fR \fIkey\fR
+.
+.SH "SUBCOMMANDS"
+.
+.TP
+\fBget\fR:
+.
+.IP
+Get a custom field value\. Passing \-\-json causes the output to be formatted as JSON\.
+.
+.TP
+\fBadd\fR:
+.
+.IP
+Add a new custom field\.
+.
+.TP
+\fBupdate\fR:
+.
+.IP
+Update an existing custom field\.
+.
+.TP
+\fBdelete\fR:
+.
+.IP
+Delete a custom field\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp post\-meta set 123 _wp_page_template about\.php
+.
+.fi
+
