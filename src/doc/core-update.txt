@@ -3,7 +3,7 @@ wp-core-update(1) -- Update WordPress to the latest version.
 
 ## SYNOPSIS
 
-`wp core update` [--db] [--version=<new_version> <package/zip>]
+`wp core update` [--db] [--version=<new_version>] [--force] [<package/zip>]
 
 ## OPTIONS
 
@@ -14,8 +14,11 @@ touching the files.
 
 * `--version=`<new_version> [--force] [package/zip]:
 
-	When passed, updates to new_version, optionally using package/zip as input.
-	Will update even when current WP version < new_version if --force is specified.  Use with caution, since if you update to < 3.0, you won't be able to revert using wp-cli.
+	When passed, updates to new_version, optionally using package/zip as
+input.
+	Will update even when current WP version < new_version if --force is
+specified. Use with caution, since if you update to < 3.0, you won't be able
+to revert using wp-cli.
 
 ## EXAMPLES
 
