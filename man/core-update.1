@@ -18,10 +18,16 @@
 When passed, it applies any outstanding database upgrades, without touching the files\.
 .
 .TP
-\fB\-\-version=\fR\fInew_version\fR [\-\-force] [package/zip]:
+\fB\-\-version=\fR\fInew_version\fR [package/zip]:
 .
 .IP
-When passed, updates to new_version, optionally using package/zip as input\. Will update even when current WP version < new_version if \-\-force is specified\. Use with caution, since if you update to < 3\.0, you won\'t be able to revert using wp\-cli\.
+When passed, updates to new_version, optionally using package/zip as input\.
+.
+.TP
+\fB\-\-force\fR:
+.
+.IP
+Will update even when current WP version < passed version\. Use with caution\.
 .
 .SH "EXAMPLES"
 .
