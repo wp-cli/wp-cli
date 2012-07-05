@@ -83,7 +83,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		if ( !empty( $args ) && !isset( $assoc_args['all'] ) ) {
 			list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
-			WP_CLI::get_upgrader( $this->upgrader )->upgrade( $name );
+			WP_CLI::get_upgrader( $this->upgrader )->upgrade( $file );
 		} else {
 			$this->update_multiple( $args, $assoc_args );
 		}
