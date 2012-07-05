@@ -197,12 +197,6 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		$update = $from_api = null;
 		$upgrader = 'Core_Upgrader';
 
-		if ( isset( $assoc_args['db'] ) ) {
-			wp_upgrade();
-			WP_CLI::success( 'WordPress database upgraded successfully.' );
-			return;
-		}
-
 		if ( empty( $assoc_args['version'] ) ) {
 			wp_version_check();
 			$from_api = get_site_transient( 'update_core' );
@@ -257,5 +251,15 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			WP_CLI::success( 'WordPress updated successfully.' );
 		}
 	}
-}
 
+	/**
+	 * Update the WordPress database
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 */
+	function update_db() {
+		wp_upgrade();
+		WP_CLI::success( 'WordPress database upgraded successfully.' );
+	}
+}
