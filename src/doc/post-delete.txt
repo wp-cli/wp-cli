@@ -1,0 +1,20 @@
+wp-post-delete(1) -- Delete a WordPress post.
+====
+
+## SYNOPSIS
+
+`wp post delete` <ID> [--force]
+
+## OPTIONS
+
+* `<ID>`:
+
+	The ID of the post to delete.
+
+* `--force`:
+
+	Skip the trash bin.
+
+## EXAMPLES
+
+	wp post delete 123 --force

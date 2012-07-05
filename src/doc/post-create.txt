@@ -1,0 +1,21 @@
+wp-post-create(1) -- Create a new WordPress post.
+====
+
+## SYNOPSIS
+
+`wp post create` --<field>=<value> [--<field>=<value>...] [--porcelain]
+
+## OPTIONS
+
+* `--<field>`=<value>:
+
+	Field values for the new post. See wp_insert_post().
+
+* `--porcelain`:
+
+	Output just the new post id.
+
+## EXAMPLES
+
+	wp post create --post_type=page --post_status=publish --post_title='A new
+page'
