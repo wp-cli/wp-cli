@@ -11,7 +11,7 @@ else
 	files=$@
 fi
 
-if ! which ronn; then
+if ! which ronn > /dev/null; then
 	echo "doc-build: ronn is not installed"
 	exit 1
 fi
