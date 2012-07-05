@@ -3,7 +3,7 @@ wp-user-create(1) -- Create a new WordPress user.
 
 ## SYNOPSIS
 
-`wp user create` <user-login> <user-email> [--role=<role>]
+`wp user create` <user-login> <user-email> [--role=<role>] [--porcelain]
 
 ## OPTIONS
 
@@ -18,6 +18,10 @@ wp-user-create(1) -- Create a new WordPress user.
 * `--role`=<role>:
 
 	The role of the user to create.
+
+* `--porcelain`:
+
+	Output just the new user id.
 
 ## EXAMPLES
 

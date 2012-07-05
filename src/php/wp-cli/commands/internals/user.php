@@ -59,7 +59,7 @@ class User_Command extends WP_CLI_Command {
 	 **/
 	public function delete( $args, $assoc_args ) {
 		global $blog_id;
-		
+
 		$user_id = self::get_numeric_arg_or_error($args, 0, "User ID");
 
 		$defaults = array( 'reassign' => NULL );
@@ -122,7 +122,10 @@ class User_Command extends WP_CLI_Command {
 			}
 		}
 
-		WP_CLI::success( "Created user $user_id." );
+		if ( isset( $assoc_args['porcelain'] ) )
+			WP_CLI::line( $user_id );
+		else
+			WP_CLI::success( "Created user $user_id." );
 	}
 
 	/**
@@ -148,7 +151,7 @@ class User_Command extends WP_CLI_Command {
 			WP_CLI::success( "Updated user $updated_id." );
 		}
 	}
-	
+
 	private function get_numeric_arg_or_error( $args, $index, $name ) {
 		$value = self::get_arg_or_error( $args, $index, $name );
 		if ( ! is_numeric( $value ) ) {
@@ -156,14 +159,14 @@ class User_Command extends WP_CLI_Command {
 		}
 		return $value;
 	}
-	
+
 	private function get_arg_or_error( $args, $index, $name ) {
 		if ( ! isset( $args[$index] ) ) {
 			self::error_see_help( "$name required" );
 		}
 		return $args[$index];
 	}
-	
+
 	private function error_see_help( $message ) {
 		WP_CLI::error( "$message (see 'wp user help').");
 	}
