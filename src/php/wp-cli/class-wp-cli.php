@@ -135,9 +135,9 @@ class WP_CLI {
 		$assoc_args = array();
 
 		foreach ( $arguments as $arg ) {
-			if ( preg_match( '|^--(\w+)$|', $arg, $matches ) ) {
+			if ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
 				$assoc_args[ $matches[1] ] = true;
-			} elseif ( preg_match( '|^--(\w+)=(.+)|', $arg, $matches ) ) {
+			} elseif ( preg_match( '|^--([^=]+)=(.+)|', $arg, $matches ) ) {
 				$assoc_args[ $matches[1] ] = $matches[2];
 			} else {
 				$regular_args[] = $arg;
