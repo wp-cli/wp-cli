@@ -193,7 +193,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 
 		if ( is_wp_error( $api ) ) {
 			if ( null === maybe_unserialize( $api->get_error_data() ) )
-				WP_CLI::error( 'Plugin not found.' );
+				WP_CLI::error( "Can't find the plugin in the WordPress.org repository." );
 			else
 				WP_CLI::error( $api );
 		}

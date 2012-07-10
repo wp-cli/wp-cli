@@ -131,9 +131,12 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		$result = NULL;
 
 		$api = themes_api( 'theme_information', array( 'slug' => $slug ) );
+
 		if ( is_wp_error( $api ) ) {
-			WP_CLI::error( "Can't find the theme in the WordPress.org theme repository." );
-			exit();
+			if ( null === maybe_unserialize( $api->get_error_data() ) )
+				WP_CLI::error( "Can't find the theme in the WordPress.org repository." );
+			else
+				WP_CLI::error( $api );
 		}
 
 		// Check to see if we should update, rather than install.
