@@ -3,7 +3,7 @@ wp-theme-install(1) -- Install a theme from wordpress.org or from a zip file.
 
 ## SYNOPSIS
 
-`wp theme install` <theme/zip>
+`wp theme install` <theme/zip> [--activate]
 
 ## OPTIONS
 
@@ -11,8 +11,12 @@ wp-theme-install(1) -- Install a theme from wordpress.org or from a zip file.
 
 	A theme slug or the path to a zip file.
 
+* `--activate`:
+
+	If set, the theme will be activated immediately after install.
+
 ## EXAMPLES
 
-	wp theme install twentytwelve
+	wp theme install twentytwelve --activate
 
 	wp theme install ../my-theme.zip
