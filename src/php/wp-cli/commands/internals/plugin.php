@@ -192,7 +192,10 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {
-			WP_CLI::error( $api );
+			if ( null === maybe_unserialize( $api->get_error_data() ) )
+				WP_CLI::error( 'Plugin not found.' );
+			else
+				WP_CLI::error( $api );
 		}
 
 		if ( isset( $assoc_args['version'] ) ) {
