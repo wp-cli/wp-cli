@@ -46,6 +46,30 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Optimizes the database specified in the wp-config.php file.
+	 */
+	function optimize() {
+		WP_CLI::launch( sprintf(
+			'mysqlcheck --optimize --host=%s --user=%s --password=%s %s',
+			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+		) );
+
+		WP_CLI::success( "Database optimized." );
+	}
+
+	/**
+	 * Repairs the database specified in the wp-config.php file.
+	 */
+	function repair() {
+		WP_CLI::launch( sprintf(
+			'mysqlcheck --repair --host=%s --user=%s --password=%s %s',
+			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+		) );
+
+		WP_CLI::success( "Database repaired." );
+	}
+
+	/**
 	 * Print a string for connecting to the DB.
 	 */
 	function connect() {
