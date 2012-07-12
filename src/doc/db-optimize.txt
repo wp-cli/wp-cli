@@ -1,0 +1,6 @@
+wp-db-optimize(1) -- Optimize the database specified in the wp-config.php file.
+====
+
+## SYNOPSIS
+
+`wp db optimize`
