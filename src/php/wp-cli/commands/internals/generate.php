@@ -52,14 +52,13 @@ class Generate_Command extends WP_CLI_Command {
 
 		$notify = new \cli\progress\Bar( 'Generating posts', $count );
 
-		$post_ids = array();
 		$current_depth = 1;
 		$current_parent = 0;
 
 		for ( $i = $total; $i < $limit; $i++ ) {
 
-			if( $hierarchical ) {
-				
+			if ( $hierarchical ) {
+
 				if( $this->maybe_make_child() && $current_depth < $max_depth ) {
 
 					$current_parent = $post_ids[$i-1];
@@ -73,13 +72,17 @@ class Generate_Command extends WP_CLI_Command {
 				}
 			}
 
-			$post_ids[$i] = wp_insert_post( array(
+			$args = array(
 				'post_type' => $type,
 				'post_title' =>  "$label $i",
 				'post_status' => $status,
 				'post_author' => $author,
-				'post_parent' => $current_parent
-			) );
+				'post_parent' => $current_parent,
+				'post_name' => "post-$i"
+			);
+
+			// Not using wp_insert_post() because it's slow
+			$wpdb->insert( $wpdb->posts, $args );
 
 			$notify->tick();
 		}
