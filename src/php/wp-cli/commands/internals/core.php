@@ -35,10 +35,12 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::line( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		WP_CLI::launch( 'curl -f' . (WP_CLI_SILENT ? ' --silent ' : ' ') . escapeshellarg( $download_url ) . ' > /tmp/wordpress.zip' );
-		WP_CLI::launch( 'unzip ' . (WP_CLI_SILENT ? '-qq ' : '-q ') . '/tmp/wordpress.zip' );
+		$archive = tempnam("/tmp", "wordpress");
+
+		WP_CLI::launch( 'curl -f' . (WP_CLI_SILENT ? ' --silent ' : ' ') . escapeshellarg( $download_url ) . ' > ' . escapeshellarg( $archive ) );
+		WP_CLI::launch( 'unzip ' . (WP_CLI_SILENT ? '-qq ' : '-q ') . escapeshellarg( $archive ) );
 		WP_CLI::launch( 'mv wordpress/* ' . escapeshellarg( $docroot ) );
-		WP_CLI::launch( 'rm -r wordpress' );
+		WP_CLI::launch( 'rm -r wordpress ' . escapeshellarg( $archive ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
