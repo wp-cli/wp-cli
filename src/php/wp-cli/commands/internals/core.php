@@ -25,20 +25,18 @@ class Core_Command extends WP_CLI_Command {
 		if ( isset( $assoc_args['locale'] ) ) {
 			exec( 'curl -s ' . escapeshellarg( 'http://api.wordpress.org/core/version-check/1.5/?locale=' . $assoc_args['locale'] ), $lines, $r );
 			if ($r) exit($r);
-			$download_url = $lines[2];
+			$download_url = str_replace( '.zip', '.tar.gz', $lines[2] );
 			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $lines[3], $lines[4] ) );
 		} elseif ( isset( $assoc_args['version'] ) ) {
-			$download_url = 'http://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
+			$download_url = 'http://wordpress.org/wordpress-' . $assoc_args['version'] . '.tar.gz';
 			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
 		} else {
-			$download_url = 'http://wordpress.org/latest.zip';
+			$download_url = 'http://wordpress.org/latest.tar.gz';
 			WP_CLI::line( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		WP_CLI::launch( 'curl -f' . (WP_CLI_SILENT ? ' --silent ' : ' ') . escapeshellarg( $download_url ) . ' > /tmp/wordpress.zip' );
-		WP_CLI::launch( 'unzip ' . (WP_CLI_SILENT ? '-qq ' : '-q ') . '/tmp/wordpress.zip' );
-		WP_CLI::launch( 'mv wordpress/* ' . escapeshellarg( $docroot ) );
-		WP_CLI::launch( 'rm -r wordpress' );
+		WP_CLI::launch( 'curl -f' . (WP_CLI_SILENT ? ' --silent ' : ' ') . escapeshellarg( $download_url ) . ' | tar xz' );
+		WP_CLI::launch( 'mv wordpress/* . && rm -rf wordpress' );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
