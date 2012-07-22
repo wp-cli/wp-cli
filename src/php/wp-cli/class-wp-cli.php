@@ -346,11 +346,14 @@ class WP_CLI {
 				$command = $aliases[ $command ];
 		}
 
-		$class = self::load_command( $command );
-
 		define( 'WP_CLI_COMMAND', $command );
 
-		$instance = new $class( $arguments, $assoc_args );
+		$implementation = self::load_command( $command );
+
+		if ( is_string( $implementation ) && class_exists( $implementation ) )
+			$instance = new $implementation( $arguments, $assoc_args );
+		else
+			call_user_func( $implementation, $arguments, $assoc_args );
 	}
 
 	static function load_command( $command ) {
