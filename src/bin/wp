@@ -67,7 +67,7 @@ else
 	fi
 
 	# Special case for *AMP installers, since they normally don't set themselves as the default cli php out of the box.
-	for amp_php in /Applications/MAMP/bin/php5*/bin/php /opt/lampp/bin/php /Applications/xampp/xamppfiles/bin/php; do
+	for amp_php in /Applications/MAMP/bin/php5*/bin/php /Applications/MAMP/bin/php/php.[34]*/bin/php /opt/lampp/bin/php /Applications/xampp/xamppfiles/bin/php; do
 		if [ -x $amp_php ]; then
 			php=$amp_php
 			break
