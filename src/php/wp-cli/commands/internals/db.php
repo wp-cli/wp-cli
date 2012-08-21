@@ -19,8 +19,8 @@ class DB_Command extends WP_CLI_Command {
 	 */
 	function create() {
 		WP_CLI::launch( self::create_cmd(
-			'mysql --host=%s --user=%s --password=%s --execute=CREATE DATABASE %s',
-			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+			'mysql --host=%s --user=%s --password=%s --execute=%s',
+			DB_HOST, DB_USER, DB_PASSWORD, 'CREATE DATABASE ' . DB_NAME
 		) );
 	}
 
@@ -38,8 +38,8 @@ class DB_Command extends WP_CLI_Command {
 		}
 
 		WP_CLI::launch( self::create_cmd(
-			'mysql --host=%s --user=%s --password=%s --execute=DROP DATABASE %s',
-			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+			'mysql --host=%s --user=%s --password=%s --execute=%s',
+			DB_HOST, DB_USER, DB_PASSWORD, 'DROP DATABASE ' . DB_NAME
 		) );
 
 		WP_CLI::success( "Database dropped." );
