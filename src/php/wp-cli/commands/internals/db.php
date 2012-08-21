@@ -22,6 +22,8 @@ class DB_Command extends WP_CLI_Command {
 			'mysql --host=%s --user=%s --password=%s --execute=%s',
 			DB_HOST, DB_USER, DB_PASSWORD, 'CREATE DATABASE ' . DB_NAME
 		) );
+
+		WP_CLI::success( "Database created." );
 	}
 
 	/**
