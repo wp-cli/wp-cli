@@ -82,11 +82,11 @@ class User_Command extends WP_CLI_Command {
 	public function create( $args, $assoc_args ) {
 		global $blog_id;
 
-		list( $user_login, $user_email ) = $args[0];
-
-		if ( ! $user_login || ! $user_email ) {
+		if ( count( $args ) < 2 ) {
 			WP_CLI::error( "Login and email required." );
 		}
+
+		list( $user_login, $user_email ) = $args;
 
 		$defaults = array(
 			'role' => get_option('default_role'),
