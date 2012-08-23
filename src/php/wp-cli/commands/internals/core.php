@@ -35,7 +35,7 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::line( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		WP_CLI::launch( 'curl -f' . (WP_CLI_SILENT ? ' --silent ' : ' ') . escapeshellarg( $download_url ) . ' | tar xz' );
+		WP_CLI::launch( 'curl -f' . (WP_CLI_QUIET ? ' --silent ' : ' ') . escapeshellarg( $download_url ) . ' | tar xz' );
 		WP_CLI::launch( 'mv wordpress/* . && rm -rf wordpress' );
 
 		WP_CLI::success( 'WordPress downloaded.' );
@@ -55,9 +55,9 @@ class Core_Command extends WP_CLI_Command {
 
 		$_GET['step'] = 2;
 
-		if ( WP_CLI_SILENT ) ob_start();
+		if ( WP_CLI_QUIET ) ob_start();
 		require WP_ROOT . '/wp-admin/setup-config.php';
-		if ( WP_CLI_SILENT ) ob_end_clean();
+		if ( WP_CLI_QUIET ) ob_end_clean();
 	}
 
 	/**
