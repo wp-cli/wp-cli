@@ -71,19 +71,8 @@ if ( array( 'core', 'config' ) == $arguments ) {
 	exit;
 }
 
-if ( array( 'db', 'create' ) == $arguments ) {
-	WP_CLI::load_wp_config();
-	WP_CLI::run_command( $arguments, $assoc_args );
-	exit;
-}
-
-if ( array( 'db', 'drop' ) == $arguments ) {
-	WP_CLI::load_wp_config();
-	WP_CLI::run_command( $arguments, $assoc_args );
-	exit;
-}
-
-if ( array( 'db', 'import' ) == array_slice( $arguments, 0, 2 ) ) {
+// The db commands don't need any WP files
+if ( array( 'db' ) == array_slice( $arguments, 0, 1 ) ) {
 	WP_CLI::load_wp_config();
 	WP_CLI::run_command( $arguments, $assoc_args );
 	exit;
