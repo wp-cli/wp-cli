@@ -48,6 +48,32 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Removes all tables from the database.
+	 */
+	function reset( $args, $assoc_args ) {
+		if ( !isset( $assoc_args['yes'] ) ) {
+			WP_CLI::out( "Are you sure you want to reset the database? [y/n] " );
+
+			$answer = trim( fgets( STDIN ) );
+
+			if ( 'y' != $answer )
+				return;
+		}
+
+		WP_CLI::launch( self::create_cmd(
+			'mysql --host=%s --user=%s --password=%s --execute=%s',
+			DB_HOST, DB_USER, DB_PASSWORD, 'DROP DATABASE IF EXISTS ' . DB_NAME
+		) );
+
+		WP_CLI::launch( self::create_cmd(
+			'mysql --host=%s --user=%s --password=%s --execute=%s',
+			DB_HOST, DB_USER, DB_PASSWORD, 'CREATE DATABASE ' . DB_NAME
+		) );
+
+		WP_CLI::success( "Database reset." );
+	}
+
+	/**
 	 * Optimizes the database specified in the wp-config.php file.
 	 */
 	function optimize() {
