@@ -30,7 +30,7 @@ list( $arguments, $assoc_args ) = WP_CLI::parse_args( array_slice( $GLOBALS['arg
 
 // Set output levels
 define( 'WP_CLI_AUTOCOMPLETE', isset( $assoc_args['completions'] ) );
-define( 'WP_CLI_SILENT', isset( $assoc_args['silent'] ) );
+define( 'WP_CLI_QUIET', isset( $assoc_args['quiet'] ) || isset( $assoc_args['silent'] ) );
 
 // Handle --version parameter
 if ( isset( $assoc_args['version'] ) && empty( $arguments ) ) {
