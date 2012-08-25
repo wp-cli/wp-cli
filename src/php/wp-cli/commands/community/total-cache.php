@@ -62,7 +62,7 @@ class W3TotalCache_Command extends WP_CLI_Command {
 				case 'post':
 				default:
 					if ( isset($vars['post_id']) ) {
-						if ( is_numeric( $vars['post_id'] ) ) {
+						if ( is_numeric( $vars['post_id'] ) && get_post( $vars['post_id'] ) ) {
 							if ( w3tc_pgcache_flush_post( $vars['post_id'] ) ) {
 								WP_CLI::success( 'Post '.$vars['post_id'].' is flushed successfully.' );
 							} else {
