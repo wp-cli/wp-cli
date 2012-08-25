@@ -51,6 +51,14 @@ class W3TotalCache_Command extends WP_CLI_Command {
 					}
 					break;
 
+				case 'page':
+					if ( w3tc_pgcache_flush() ) {
+						WP_CLI::success( 'The page cache is flushed successfully.' );
+					} else {
+						WP_CLI::error( 'Flushing the page cache failed.' );
+					}
+					break;
+
 				case 'post':
 				default:
 					if ( isset($vars['post_id']) ) {
@@ -70,12 +78,6 @@ class W3TotalCache_Command extends WP_CLI_Command {
 						} else {
 							WP_CLI::error('There is no post with this permalink.');
 						}
-					} else {
-						if ( isset( $flushed_page_cache ) && $flushed_page_cache )
-							break;
-
-						$flushed_page_cache = true;
-						w3tc_pgcache_flush();
 					}
 				}
 			} while ( !empty( $args ) );
