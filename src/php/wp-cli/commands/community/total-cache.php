@@ -63,18 +63,24 @@ class W3TotalCache_Command extends WP_CLI_Command {
 				default:
 					if ( isset($vars['post_id']) ) {
 						if ( is_numeric( $vars['post_id'] ) ) {
-							w3tc_pgcache_flush_post( $vars['post_id'] );
+							if ( w3tc_pgcache_flush_post( $vars['post_id'] ) ) {
+								WP_CLI::success( 'Post '.$vars['post_id'].' is flushed successfully.' );
+							} else {
+								WP_CLI::error( 'Flushing '.$vars['post_id'].' from cache failed.' );
+							}
 						} else {
 							WP_CLI::error('This is not a valid post id.');
 						}
-
-						w3tc_pgcache_flush_post( $vars['post_id'] );
 					}
 					elseif ( isset( $vars['permalink'] ) ) {
 						$id = url_to_postid( $vars['permalink'] );
 
 						if ( is_numeric( $id ) ) {
-							w3tc_pgcache_flush_post( $id );
+							if ( w3tc_pgcache_flush_post( $id ) ) {
+  								WP_CLI::success( $id.' is flushed successfully.' );
+							} else {
+								WP_CLI::error( 'Flushing '.$id.' from cache failed.' );
+							}
 						} else {
 							WP_CLI::error('There is no post with this permalink.');
 						}
