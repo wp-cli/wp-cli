@@ -29,17 +29,17 @@ class W3TotalCache_Command extends WP_CLI_Command {
 				case 'db':
 				case 'database':
 					if ( w3tc_dbcache_flush() ) {
-						WP_CLI::success( 'The object cache is flushed successfully.' );
+						WP_CLI::success( 'The database cache is flushed successfully.' );
 					} else {
-						WP_CLI::error( 'Flushing the object cache failed.' );
+						WP_CLI::error( 'Flushing the database cache failed.' );
 					}
 					break;
 
 				case 'minify':
 					if ( w3tc_minify_flush() ) {
-						WP_CLI::success( 'The object cache is flushed successfully.' );
+						WP_CLI::success( 'The minify cache is flushed successfully.' );
 					} else {
-						WP_CLI::error( 'Flushing the object cache failed.' );
+						WP_CLI::error( 'Flushing the minify cache failed.' );
 					}
 					break;
 
