@@ -75,9 +75,9 @@ class W3TotalCache_Command extends WP_CLI_Command {
 					elseif ( isset( $vars['permalink'] ) ) {
 						$id = url_to_postid( $vars['permalink'] );
 
-						if ( is_numeric( $id ) ) {
+						if ( is_numeric( $id ) && $id > 0 ) {
 							if ( w3tc_pgcache_flush_post( $id ) ) {
-  								WP_CLI::success( $id.' is flushed successfully.' );
+								WP_CLI::success( $id.' is flushed successfully.' );
 							} else {
 								WP_CLI::error( 'Flushing '.$id.' from cache failed.' );
 							}
