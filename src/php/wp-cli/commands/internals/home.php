@@ -2,7 +2,7 @@
 
 WP_CLI::add_command( 'home', function() {
 	// The url for the wp-cli repository
-	$repository_url = 'http://github.com/wp-cli/wp-cli';
+	$repository_url = 'https://github.com/wp-cli/wp-cli';
 
 	// Open the wp-cli page in the browser
 	if ( exec( 'which x-www-browser' ) ) {
