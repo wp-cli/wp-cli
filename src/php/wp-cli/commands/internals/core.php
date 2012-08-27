@@ -23,15 +23,15 @@ class Core_Command extends WP_CLI_Command {
 			$docroot = './';
 
 		if ( isset( $assoc_args['locale'] ) ) {
-			exec( 'curl -s ' . escapeshellarg( 'http://api.wordpress.org/core/version-check/1.5/?locale=' . $assoc_args['locale'] ), $lines, $r );
+			exec( 'curl -s ' . escapeshellarg( 'https://api.wordpress.org/core/version-check/1.5/?locale=' . $assoc_args['locale'] ), $lines, $r );
 			if ($r) exit($r);
 			$download_url = str_replace( '.zip', '.tar.gz', $lines[2] );
 			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $lines[3], $lines[4] ) );
 		} elseif ( isset( $assoc_args['version'] ) ) {
-			$download_url = 'http://wordpress.org/wordpress-' . $assoc_args['version'] . '.tar.gz';
+			$download_url = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.tar.gz';
 			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
 		} else {
-			$download_url = 'http://wordpress.org/latest.tar.gz';
+			$download_url = 'https://wordpress.org/latest.tar.gz';
 			WP_CLI::line( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
@@ -210,7 +210,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			$new_package = null;
 
 			if ( empty( $args[0] ) ) {
-				$new_package = 'http://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
+				$new_package = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
 				WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
 			} else {
 				$new_package = $args[0];
