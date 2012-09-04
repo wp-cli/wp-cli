@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -ex
+
 # generate package
 find -name '*~' -delete
 phing pear-package
