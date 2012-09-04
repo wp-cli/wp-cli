@@ -31,7 +31,7 @@
     <release>${project.stability}</release>
     <api>stable</api>
   </stability>
-  <license>GPL 2+</license>
+  <license>MIT</license>
   <notes>
     No notes.
   </notes>
