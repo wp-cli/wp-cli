@@ -122,6 +122,7 @@ Changelog
 - added `wp db import`
 - added `wp theme install` and `wp theme update`
 - added `wp core install_network`
+- added `wp core update_db`
 - added `--json` option to several subcommands
 - added `--network` option to `wp plugin activate`
 - added `--require` global parameter
