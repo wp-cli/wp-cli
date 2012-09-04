@@ -5,7 +5,7 @@ if ( PHP_SAPI !== 'cli' ) {
 	die(-1);
 }
 
-define( 'WP_CLI_VERSION', '0.6.0-dev' );
+define( 'WP_CLI_VERSION', '0.6.0' );
 
 // Define the wp-cli location
 define( 'WP_CLI_ROOT', __DIR__ . '/' );
