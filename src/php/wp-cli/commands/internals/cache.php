@@ -319,15 +319,15 @@ class Cache_Command extends WP_CLI_Command {
 	 * @param 	array 			$assoc_args			Function arguments with parameter key.
 	 * @return	void
 	 */
-	public function which( $args, $assoc_args ) {
+	public function type( $args, $assoc_args ) {
 		global $_wp_using_ext_object_cache, $wp_object_cache;
 
-		$message = 'Using an unknown object cache';
+		$message = 'Unknown';
 
 		if ( false !== $_wp_using_ext_object_cache ) {
 			// Test for Memcached PECL extension memcached object cache (https://github.com/tollmanz/wordpress-memcached-backend)
 			if ( isset( $wp_object_cache->m ) && is_a( $wp_object_cache->m, 'Memcached' ) )
-				$message = 'Using memcached with the memcached PECL extension';
+				$message = 'Memcached (Memcached PECL extension)';
 
 			// Test for Memcache PECL extension memcached object cache (http://wordpress.org/extend/plugins/memcached/)
 			if ( isset( $wp_object_cache->mc ) ) {
@@ -338,22 +338,22 @@ class Cache_Command extends WP_CLI_Command {
 				}
 
 				if ( $is_memcache )
-					$message = 'Using memcached with the memcache PECL extension';
+					$message = 'Memcached (Memcache PECL extension)';
 			}
 
 			// Test for Xcache object cache (http://plugins.svn.wordpress.org/xcache/trunk/object-cache.php)
 			if ( is_a( $wp_object_cache, 'XCache_Object_Cache' ) )
-				$message = 'Using the xcache object cache';
+				$message = 'Xcache';
 
 			// Test for WinCache object cache (http://wordpress.org/extend/plugins/wincache-object-cache-backend/)
 			if ( class_exists( 'WinCache_Object_Cache' ) )
-				$message = 'Using the wincache object cache';
+				$message = 'WinCache';
 
 			// Test for APC object cache (http://wordpress.org/extend/plugins/apc/)
 			if ( class_exists( 'APC_Object_Cache' ) )
-				$message = 'Using the APC object cache';
+				$message = 'APC';
 		} else {
-			$message = 'Using the default object cache';
+			$message = 'Default object cache';
 		}
 
 		WP_CLI::print_value( $message );
