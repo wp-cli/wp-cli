@@ -6,7 +6,6 @@ set -ex
 mkdir -p src/data
 mkdir -p src/tests/unit-tests/php 
 mkdir -p src/www 
-mkdir -p src/docs
 
 # temporarily move the .git dir, because phing is stupid
 git_dir=src/php/php-cli-tools/.git
