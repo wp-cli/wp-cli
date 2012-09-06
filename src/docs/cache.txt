@@ -69,10 +69,6 @@ wp cache type
 
 	Set a value in cache.
 
-* `switch_to_blog`:
-
-	Interact with the cache for the specified <blog_id>.
-
 * `type`:
 
 	Report the type of object being used.

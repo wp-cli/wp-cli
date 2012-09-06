@@ -282,30 +282,6 @@ class Cache_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Switch the blog id, which switches the cache keys for all values.
-	 *
-	 * @uses	wp_cache_switch_to_blog
-	 *
-	 * @param 	array 			$args				Function arguments.
-	 * @param 	array 			$assoc_args			Function arguments with parameter key.
-	 * @return	void
-	 */
-	public function switch_to_blog( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( 'usage: wp cache switch_to_blog <blog_id>' );
-			exit;
-		}
-
-		if ( ! function_exists( 'wp_cache_switch_to_blog' ) ) {
-			WP_CLI::warning( "Command cannot be executed because the 'wp_cache_switch_to_blog' function does not exist." );
-		}
-
-		$blog_id = $args[0];
-
-		wp_cache_switch_to_blog( $blog_id );
-	}
-
-	/**
 	 * Attempts to determine which object cache is being used.
 	 *
 	 * Note that the guesses made by this function are based on the WP_Object_Cache classes
