@@ -1,0 +1,16 @@
+wp-comment-spam(1) -- Mark a comment as spam.
+====
+
+## SYNOPSIS
+
+`wp comment spam` <ID>
+
+## OPTIONS
+
+* `<ID>`:
+
+	The ID of the comment to mark as spam.
+
+## EXAMPLES
+
+	wp comment spam 1337

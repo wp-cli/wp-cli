@@ -1,0 +1,16 @@
+wp-comment-status(1) -- Get status of a comment
+====
+
+## SYNOPSIS
+
+`wp comment status` <ID>
+
+## OPTIONS
+
+* `<ID>`:
+
+	The ID of the comment to check
+
+## EXAMPLES
+
+	wp comment status 1337
