@@ -12,14 +12,6 @@ WP_CLI::add_command( 'comment', 'Comment_Command' );
 class Comment_Command extends WP_CLI_Command {
 
 	/**
-	 * Basic help message
-	 */
-	static function help() {
-		WP_CLI::line( 'usage: wp comment [last|create|delete|trash|untrash|spam|unspam|approve|unapprove|count|status]' );
-	}
-
-	
-	/**
 	 * Insert a comment.
 	 *
 	 * Example: wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"

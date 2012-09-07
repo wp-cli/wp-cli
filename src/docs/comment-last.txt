@@ -1,0 +1,20 @@
+wp-comment-last(1) -- Retrieve last approved comment
+====
+
+## SYNOPSIS
+
+`wp comment last` [--porcelain] [--full|verbose]
+
+## OPTIONS
+
+* `--porcelain`:
+
+	Output just the last comment id.
+
+* `--full` or `--verbose`:
+
+	Output complete comment information
+
+## EXAMPLES
+
+	wp comment last
