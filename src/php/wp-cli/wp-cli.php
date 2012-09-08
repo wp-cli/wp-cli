@@ -50,6 +50,8 @@ $_SERVER['DOCUMENT_ROOT'] = getcwd();
 if ( !empty( $assoc_args['path'] ) ) {
 	// trailingslashit() isn't available yet
 	define( 'WP_ROOT', rtrim( $assoc_args['path'], '/' ) . '/' );
+} elseif ( preg_match( '|/wp-content/plugins/|', $_SERVER['PWD'] ) ) {
+	define( 'WP_ROOT', preg_replace( '|/wp-content/plugins/.*|', '', $_SERVER['PWD'] ) . '/' );
 } else {
 	define( 'WP_ROOT', $_SERVER['PWD'] . '/' );
 }
