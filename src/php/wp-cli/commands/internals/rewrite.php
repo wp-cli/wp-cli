@@ -20,13 +20,7 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * @param array $assoc_args
 	 */
 	public function flush( $args, $assoc_args ) {
-
-		$verbose = ( isset( $assoc_args['verbose'] ) );
 		$hard = ( isset( $assoc_args['soft'] ) ) ? false : true;
-
-		if ( $verbose )
-			WP_CLI::line( "Triggering ".( ( $hard ) ? 'hard' : 'soft' ). " permalink flush." );
-
 		flush_rewrite_rules( $hard );
 	}
 
@@ -53,14 +47,8 @@ class Rewrite_Command extends WP_CLI_Command {
 		if ( is_multisite() && !is_subdomain_install() && is_main_site() )
 			$blog_prefix = '/blog';
 
-		$verbose = ( isset( $assoc_args['verbose'] ) );
-
-
 		// Update base permastruct if argument is provided
 		if ( isset( $args[0] ) ) {
-
-			if ( $verbose )
-				WP_CLI::line( "Setting permalink structure to ". $args[0] );
 
 			$permalink_structure = ( $args[0] == 'default' ) ? '' : $args[0];
 
@@ -77,9 +65,6 @@ class Rewrite_Command extends WP_CLI_Command {
 		// Update category or tag bases
 		if ( isset( $assoc_args['category-base'] ) ) {
 
-			if ( $verbose )
-				WP_CLI::line( "Setting category base to ". $assoc_args['category-base'] );
-
 			$category_base = $assoc_args['category-base'];
 			if ( ! empty( $category_base ) )
 				$category_base = $blog_prefix . preg_replace('#/+#', '/', '/' . str_replace( '#', '', $category_base ) );
@@ -87,9 +72,6 @@ class Rewrite_Command extends WP_CLI_Command {
 		}
 
 		if ( isset( $assoc_args['tag-base'] ) ) {
-
-			if ( $verbose )
-				WP_CLI::line( "Setting tag base to ". $assoc_args['tag-base'] );
 
 			$tag_base = $assoc_args['tag-base'];
 			if ( ! empty( $tag_base ) )
