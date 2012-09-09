@@ -16,8 +16,8 @@ class Rewrite_Command extends WP_CLI_Command {
 	/**
 	 * Flush rules
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @param array $args 		not used
+	 * @param array $assoc_args --soft or --hard (default)
 	 */
 	public function flush( $args, $assoc_args ) {
 		$hard = ( isset( $assoc_args['soft'] ) ) ? false : true;
@@ -86,16 +86,18 @@ class Rewrite_Command extends WP_CLI_Command {
 	/**
 	 * Dump rewrite rules
 	 *
-	 * @param none
+	 * @param array $args
+	 * @param array $assoc_args
 	 */
-	public function dump() {
+	public function dump( $args, $assoc_args ) {
 
 		$rules = get_option( 'rewrite_rules' );
 
-		foreach ( $rules as $route => $rule )
-			WP_CLI::line( $route . "\t" . $rule );
+		if ( isset( $assoc_args['json'] ) )
+			echo json_encode( $rules );
+		else
+			foreach ( $rules as $route => $rule )
+				WP_CLI::line( $route . "\t" . $rule );
 
 	}
 }
-
-?>
