@@ -93,11 +93,17 @@ class Rewrite_Command extends WP_CLI_Command {
 
 		$rules = get_option( 'rewrite_rules' );
 
-		if ( isset( $assoc_args['json'] ) )
+		if ( isset( $assoc_args['json'] ) ) {
 			echo json_encode( $rules );
-		else
+		} else {
+			$table = new \cli\Table;
+			$table->setHeaders( array( 'Pattern', 'Substitution' ) );
+
 			foreach ( $rules as $route => $rule )
-				WP_CLI::line( $route . "\t" . $rule );
+				$table->addRow( array( $route, $rule ) );
+
+			$table->display();
+		}
 
 	}
 }
