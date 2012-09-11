@@ -1,0 +1,12 @@
+rewrite-dump(1) -- Print current rewrite rules to STDOUT.
+====
+
+## SYNOPSIS
+
+`wp rewrite dump` [--json]
+
+## OPTIONS
+
+* `--json`:
+
+	Output rules in JSON format.
