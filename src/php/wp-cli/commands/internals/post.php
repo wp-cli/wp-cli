@@ -60,7 +60,7 @@ class Post_Command extends WP_CLI_Command {
 	public function delete( $args, $assoc_args ) {
 
 		$defaults = array(
-			'post_id'               =>		null,
+			'p'                     =>		null,
 			'post_type'             =>		null,
 			'author'                =>		null,
 			'post_status'           =>		'any',
@@ -71,8 +71,8 @@ class Post_Command extends WP_CLI_Command {
 		// Support for simply passing the post ID as the first argument
 		if ( isset( $args[0] ) && is_numeric( $args[0] ) )
 			$post_id = $args[0];
-		else if ( is_numeric( $assoc_args['post_id'] ) )
-			$post_id = $assoc_args['post_id'];
+		else if ( is_numeric( $assoc_args['p'] ) )
+			$post_id = $assoc_args['p'];
 		else
 			$post_id = false;
 
