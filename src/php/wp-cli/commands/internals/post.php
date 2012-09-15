@@ -87,10 +87,7 @@ class Post_Command extends WP_CLI_Command {
 					'post_status'       =>		$assoc_args['post_status'],
 				);
 			$maybe_posts = new WP_Query( $query_args );
-			if ( ! is_wp_error( $maybe_posts ) )
-				$posts_to_delete = $maybe_posts->posts;
-			else
-				$posts_to_delete = array();
+			$posts_to_delete = $maybe_posts->posts;
 		}
 
 		if ( empty( $posts_to_delete ) ) {
