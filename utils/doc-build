@@ -6,7 +6,7 @@
 # ln -s ../../utils/doc-build .git/hooks/pre-commit
 
 if [ $# -eq 0 ]; then
-	files=$(git diff --cached --name-only src/doc/)
+	files=$(git diff --cached --name-only src/docs/)
 else
 	files=$@
 fi

@@ -1,8 +1,25 @@
 #!/bin/bash
 
+set -ex
+
+# create bunch of directories that phing complains about
+mkdir -p src/data
+mkdir -p src/tests/unit-tests/php 
+mkdir -p src/www 
+
+# temporarily move the .git dir, because phing is stupid
+git_dir=src/php/php-cli-tools/.git
+if [ -d $git_dir ]; then
+	mv $git_dir /tmp/php-cli-tools-git
+fi
+
 # generate package
 find -name '*~' -delete
 phing pear-package
+
+if [ ! -d $git_dir ]; then
+	mv /tmp/php-cli-tools-git $git_dir 
+fi
 
 version=$(cat dist/lastBuilt)
 version="${version/*wpcli-/}"

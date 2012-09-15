@@ -1,0 +1,117 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-CACHE" "1" "September 2012" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-cache\fR \- Manage WordPress the object cache\.
+.
+.SH "SYNOPSIS"
+wp cache add \fIkey\fR \fIvalue\fR [\fIgroup\fR] [\fIexpiration\fR]
+.
+.P
+wp cache add_global_groups \fIgroup\fR
+.
+.P
+wp cache add_non_persistent_groups \fIgroup\fR
+.
+.P
+wp cache decr \fIkey\fR [\fIoffset\fR] [\fIgroup\fR]
+.
+.P
+wp cache delete \fIkey\fR \fIgroup\fR
+.
+.P
+wp cache flush
+.
+.P
+wp cache get \fIkey\fR [\fIgroup\fR]
+.
+.P
+wp cache incr \fIkey\fR [\fIoffset\fR] [\fIgroup\fR]
+.
+.P
+wp cache replace \fIkey\fR \fIvalue\fR [\fIgroup\fR] [\fIexpiration\fR]
+.
+.P
+wp cache set \fIkey\fR \fIvalue\fR [\fIgroup\fR] [\fIexpiration\fR]
+.
+.P
+wp cache switch_to_blog \fIblog_id\fR
+.
+.P
+wp cache type
+.
+.SH "SUBCOMMANDS"
+.
+.TP
+\fBadd\fR:
+.
+.IP
+Add a value to cache where \fIkey\fR in \fIgroup\fR does not already exist\.
+.
+.TP
+\fBadd_global_groups\fR:
+.
+.IP
+Add a value to the global groups array\.
+.
+.TP
+\fBadd_non_persistent_groups\fR:
+.
+.IP
+Add a value to the non persistent groups array\.
+.
+.TP
+\fBdecr\fR:
+.
+.IP
+Decrement the value of a cached object by 1 or the value of the \fIoffset\fR parameter\.
+.
+.TP
+\fBdelete\fR:
+.
+.IP
+Remove an object from cache\.
+.
+.TP
+\fBflush\fR:
+.
+.IP
+Flush the cache\.
+.
+.TP
+\fBget\fR:
+.
+.IP
+Get a value from cache\.
+.
+.TP
+\fBincr\fR:
+.
+.IP
+Increment the value of a cached object by 1 or the value of the \fIoffset\fR parameter\.
+.
+.TP
+\fBreplace\fR:
+.
+.IP
+Replace a value in cache with a new value\.
+.
+.TP
+\fBset\fR:
+.
+.IP
+Set a value in cache\.
+.
+.TP
+\fBtype\fR:
+.
+.IP
+Report the type of object being used\.
+.
+.SH "EXAMPLES"
+wp cache set my_key my_value my_group 300
+.
+.P
+wp cache get my_key my_group

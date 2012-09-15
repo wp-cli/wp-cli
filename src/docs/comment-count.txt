@@ -1,0 +1,17 @@
+wp-comment-count(1) -- Get total comments for blog or single post
+====
+
+## SYNOPSIS
+
+`wp comment count` [<ID>]
+
+## OPTIONS
+
+* `<ID>`:
+
+	The ID of the post to count comments in
+
+## EXAMPLES
+
+	wp comment count
+	wp comment count 42

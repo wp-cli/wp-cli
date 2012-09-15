@@ -66,6 +66,7 @@ Global parameters:
     --url=<url>         set the current URL
     --path=<path>       set the current path to the WP install
     --require=<path>    load a certain file before running the command
+    --quiet             suppress informational messages
     --version           print wp-cli version
 EOB
 		);

@@ -5,7 +5,7 @@ if ( PHP_SAPI !== 'cli' ) {
 	die(-1);
 }
 
-define( 'WP_CLI_VERSION', '0.6.0-dev' );
+define( 'WP_CLI_VERSION', '0.7.0-alpha' );
 
 // Define the wp-cli location
 define( 'WP_CLI_ROOT', __DIR__ . '/' );
@@ -30,7 +30,7 @@ list( $arguments, $assoc_args ) = WP_CLI::parse_args( array_slice( $GLOBALS['arg
 
 // Set output levels
 define( 'WP_CLI_AUTOCOMPLETE', isset( $assoc_args['completions'] ) );
-define( 'WP_CLI_SILENT', isset( $assoc_args['silent'] ) );
+define( 'WP_CLI_QUIET', isset( $assoc_args['quiet'] ) || isset( $assoc_args['silent'] ) );
 
 // Handle --version parameter
 if ( isset( $assoc_args['version'] ) && empty( $arguments ) ) {
@@ -71,13 +71,8 @@ if ( array( 'core', 'config' ) == $arguments ) {
 	exit;
 }
 
-if ( array( 'db', 'create' ) == $arguments ) {
-	WP_CLI::load_wp_config();
-	WP_CLI::run_command( $arguments, $assoc_args );
-	exit;
-}
-
-if ( array( 'db', 'import' ) == array_slice( $arguments, 0, 2 ) ) {
+// The db commands don't need any WP files
+if ( array( 'db' ) == array_slice( $arguments, 0, 1 ) ) {
 	WP_CLI::load_wp_config();
 	WP_CLI::run_command( $arguments, $assoc_args );
 	exit;

@@ -15,7 +15,7 @@ Installing
 **Via PEAR:**
 
 ```sh
-pear config-set auto_discover 1
+sudo pear config-set auto_discover 1
 sudo pear install wp-cli.github.com/pear/wpcli
 ```
 
@@ -109,6 +109,27 @@ You can find more information about adding commands in the [Commands Cookbook](h
 
 Changelog
 ---------------
+
+**0.6**
+
+- added `wp post` and `wp post-meta`
+- added `wp user-meta`
+- added `wp blog create`
+- added `wp export`
+- added `wp transient`
+- added `wp db optimize` and `wp db repair`
+- added `wp db create`, `wp db drop` and `wp db reset`
+- added `wp db import`
+- added `wp theme install` and `wp theme update`
+- added `wp core install_network`
+- added `wp core update_db`
+- added `--json` option to several subcommands
+- added `--network` option to `wp plugin activate`
+- added `--require` global parameter
+- fixed `wp plugin update`
+- fixed "out of memory" error
+- misc bugfixes and optimizations
+- man pages (not in PEAR package)
 
 **0.5**
 

@@ -1,0 +1,12 @@
+wp-db-reset(1) -- Remove all data from the database specified in wp-config.php
+====
+
+## SYNOPSIS
+
+`wp db reset` [--yes]
+
+## OPTIONS
+
+* `--yes`:
+
+	Answer yes to the confirmation message.

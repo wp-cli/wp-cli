@@ -1,0 +1,16 @@
+wp-comment-approve(1) -- Approve a comment.
+====
+
+## SYNOPSIS
+
+`wp comment approve` <ID>
+
+## OPTIONS
+
+* `<ID>`:
+
+	The ID of the comment to approve.
+
+## EXAMPLES
+
+	wp comment approve 1337

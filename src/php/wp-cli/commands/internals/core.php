@@ -23,22 +23,20 @@ class Core_Command extends WP_CLI_Command {
 			$docroot = './';
 
 		if ( isset( $assoc_args['locale'] ) ) {
-			exec( 'curl -s ' . escapeshellarg( 'http://api.wordpress.org/core/version-check/1.5/?locale=' . $assoc_args['locale'] ), $lines, $r );
+			exec( 'curl -s ' . escapeshellarg( 'https://api.wordpress.org/core/version-check/1.5/?locale=' . $assoc_args['locale'] ), $lines, $r );
 			if ($r) exit($r);
-			$download_url = $lines[2];
+			$download_url = str_replace( '.zip', '.tar.gz', $lines[2] );
 			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $lines[3], $lines[4] ) );
 		} elseif ( isset( $assoc_args['version'] ) ) {
-			$download_url = 'http://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
+			$download_url = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.tar.gz';
 			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
 		} else {
-			$download_url = 'http://wordpress.org/latest.zip';
+			$download_url = 'https://wordpress.org/latest.tar.gz';
 			WP_CLI::line( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		WP_CLI::launch( 'curl -f' . (WP_CLI_SILENT ? ' --silent ' : ' ') . escapeshellarg( $download_url ) . ' > /tmp/wordpress.zip' );
-		WP_CLI::launch( 'unzip ' . (WP_CLI_SILENT ? '-qq ' : '-q ') . '/tmp/wordpress.zip' );
-		WP_CLI::launch( 'mv wordpress/* ' . escapeshellarg( $docroot ) );
-		WP_CLI::launch( 'rm -r wordpress' );
+		WP_CLI::launch( 'curl -f' . (WP_CLI_QUIET ? ' --silent ' : ' ') . escapeshellarg( $download_url ) . ' | tar xz' );
+		WP_CLI::launch( 'mv wordpress/* . && rm -rf wordpress' );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
@@ -57,9 +55,9 @@ class Core_Command extends WP_CLI_Command {
 
 		$_GET['step'] = 2;
 
-		if ( WP_CLI_SILENT ) ob_start();
+		if ( WP_CLI_QUIET ) ob_start();
 		require WP_ROOT . '/wp-admin/setup-config.php';
-		if ( WP_CLI_SILENT ) ob_end_clean();
+		if ( WP_CLI_QUIET ) ob_end_clean();
 	}
 
 	/**
@@ -212,7 +210,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			$new_package = null;
 
 			if ( empty( $args[0] ) ) {
-				$new_package = 'http://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
+				$new_package = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
 				WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
 			} else {
 				$new_package = $args[0];
@@ -259,6 +257,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 * @param array $assoc_args
 	 */
 	function update_db() {
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		wp_upgrade();
 		WP_CLI::success( 'WordPress database upgraded successfully.' );
 	}

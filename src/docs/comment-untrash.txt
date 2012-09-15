@@ -1,0 +1,16 @@
+wp-comment-untrash(1) -- Untrash a comment.
+====
+
+## SYNOPSIS
+
+`wp comment untrash` <ID>
+
+## OPTIONS
+
+* `<ID>`:
+
+	The ID of the comment to untrash.
+
+## EXAMPLES
+
+	wp comment untrash 1337
