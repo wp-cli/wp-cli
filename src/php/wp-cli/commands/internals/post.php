@@ -62,7 +62,7 @@ class Post_Command extends WP_CLI_Command {
 		$defaults = array(
 			'p'                     =>		null,
 			'post_type'             =>		null,
-			'author'                =>		null,
+			'post_author'           =>		null,
 			'post_status'           =>		'any',
 			'force'                 =>		false,
 		);
@@ -83,7 +83,7 @@ class Post_Command extends WP_CLI_Command {
 					'fields'            =>		'ids',
 					'posts_per_page'    =>		-1,
 					'post_type'         =>		$assoc_args['post_type'],
-					'author'            =>		$assoc_args['author'],
+					'post_author'       =>		$assoc_args['post_author'],
 					'post_status'       =>		$assoc_args['post_status'],
 				);
 			$maybe_posts = new WP_Query( $query_args );
