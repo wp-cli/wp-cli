@@ -23,16 +23,19 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 */
-	function status( $args = array() ) {
+	function status( $args = array(), $assoc_args ) {
+
+		$porcelain = ( isset( $assoc_args['porcelain'] ) );
+
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
 		if ( empty( $args ) ) {
-			$this->status_all();
+			$this->status_all( $porcelain );
 		} else {
 			list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
 
-			$this->status_single( $file, $name );
+			$this->status_single( $file, $name, $porcelain );
 		}
 	}
 

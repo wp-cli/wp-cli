@@ -44,7 +44,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	// Show details about all plugins
-	protected function status_all() {
+	protected function status_all( $porcelain = false ) {
 		$this->mu_plugins = get_mu_plugins();
 
 		$plugins = get_plugins();
@@ -61,15 +61,18 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 				$name = dirname($file);
 
 			if ( $this->get_update_status( $file ) ) {
-				$line = ' %yU%n';
+				$line = $porcelain ? 'U' : ' %yU%n';
 			} else {
-				$line = '  ';
+				$line = $porcelain ? '' : '  ';
 			}
 
-			$line .= $this->get_status( $file ) . " $name%n";
+			$line .= $this->get_status( $file, null, $porcelain ) . ( $porcelain ? "\t" : ' ' ) . "$name" . ( $porcelain ? '' : "%n");
 
 			WP_CLI::line( $line );
 		}
+
+		if ( $porcelain )
+			return;
 
 		// Print the footer
 		WP_CLI::line();
@@ -86,15 +89,15 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::legend( $legend );
 	}
 
-	private function get_status( $file, $long = false ) {
+	private function get_status( $file, $long = false, $porcelain = false ) {
 		if ( isset( $this->mu_plugins[ $file ] ) ) {
-			$line  = '%c';
+			$line  = $porcelain ? '' : '%c';
 			$line .= $long ? 'Must Use' : 'M';
 		} elseif ( is_plugin_active_for_network( $file ) ) {
-			$line  = '%b';
+			$line  = $porcelain ? '' : '%b';
 			$line .= $long ? 'Network Active' : 'N';
 		} elseif ( is_plugin_active( $file ) ) {
-			$line  = '%g';
+			$line  = $porcelain ? '' : '%g';
 			$line .= $long ? 'Active' : 'A';
 		} else {
 			$line  = $long ? 'Inactive' : 'I';
