@@ -199,13 +199,17 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
 		$status = $this->get_status( $file );
 
-		$colors = array(
+		return $this->get_color( $status ) . $map[ $format ][ $status ];
+	}
+
+	protected function get_color( $status ) {
+		static $colors = array(
 			'inactive' => '',
 			'active' => '%g',
 			'active-network' => '%g',
 			'must-use' => '%c',
 		);
 
-		return $colors[ $status ] . $map[ $format ][ $status ];
+		return $colors[ $status ];
 	}
 }
