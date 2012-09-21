@@ -15,8 +15,6 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	protected $upgrade_refresh = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
 
-	private $mu_plugins;
-
 	function __construct( $args, $assoc_args ) {
 		require_once ABSPATH.'wp-admin/includes/plugin.php';
 		require_once ABSPATH.'wp-admin/includes/plugin-install.php';
@@ -35,25 +33,26 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 
 	// Show details about all plugins
 	protected function status_all() {
-		$this->mu_plugins = get_mu_plugins();
+		$items = $this->get_item_list();
 
-		$plugins = get_plugins();
-
-		$plugins = array_merge( $plugins, $this->mu_plugins );
+		foreach ( get_mu_plugins() as $mu_plugin ) {
+			$items[ $mu_plugin ] = array(
+				'status' => 'must-use',
+				'update' => false
+			);
+		}
 
 		// Print the header
 		WP_CLI::line('Installed plugins:');
 
-		foreach ( $plugins as $file => $plugin ) {
-			if ( $this->has_update( $file ) ) {
+		foreach ( $items as $file => $details ) {
+			if ( $details['update'] ) {
 				$line = ' %yU%n';
 			} else {
 				$line = '  ';
 			}
 
-			$status = $this->get_status( $file );
-
-			$line .= $this->format_status( $status, 'short' );
+			$line .= $this->format_status( $details['status'], 'short' );
 			$line .= " " . $this->get_name( $file ) . "%n";
 
 			WP_CLI::line( $line );
@@ -265,9 +264,6 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	protected function get_status( $file ) {
-		if ( isset( $this->mu_plugins[ $file ] ) )
-			return 'must-use';
-
 		if ( is_plugin_active_for_network( $file ) )
 			return 'active-network';
 
