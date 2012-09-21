@@ -44,12 +44,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		// Print the header
 		WP_CLI::line('Installed plugins:');
 
-		foreach ($plugins as $file => $plugin) {
-			if ( false === strpos( $file, '/' ) )
-				$name = str_replace('.php', '', basename($file));
-			else
-				$name = dirname($file);
-
+		foreach ( $plugins as $file => $plugin ) {
 			if ( $this->get_update_status( $file ) ) {
 				$line = ' %yU%n';
 			} else {
@@ -58,7 +53,8 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 
 			$status = $this->get_status( $file );
 
-			$line .= $this->format_status( $status, 'short' ) . " $name%n";
+			$line .= $this->format_status( $status, 'short' );
+			$line .= " " . $this->get_name( $file ) . "%n";
 
 			WP_CLI::line( $line );
 		}
@@ -76,6 +72,15 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 			$legend['%bN'] = 'Network Active';
 
 		self::legend( $legend );
+	}
+
+	private function get_name( $file ) {
+		if ( false === strpos( $file, '/' ) )
+			$name = str_replace( '.php', '', basename( $file ) );
+		else
+			$name = dirname( $file );
+
+		return $name;
 	}
 
 	/**
