@@ -138,6 +138,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 				'name' => $details['Stylesheet'],
 				'status' => $this->get_status( $file ),
 				'update' => $this->has_update( $details['Stylesheet'] ),
+				'update_id' => $details['Stylesheet'],
 			);
 		}
 

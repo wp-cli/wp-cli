@@ -198,6 +198,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 				'name' => $this->get_name( $file ),
 				'status' => $this->get_status( $file ),
 				'update' => $this->has_update( $file ),
+				'update_id' => $file,
 			);
 		}
 
