@@ -186,8 +186,8 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		'long' => array(
 			'inactive' => 'Inactive',
 			'active' => 'Active',
-			'active-network' => 'Must Use',
-			'must-use' => 'Network Active',
+			'active-network' => 'Network Active',
+			'must-use' => 'Must Use',
 		)
 	);
 
