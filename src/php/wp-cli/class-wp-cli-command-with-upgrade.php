@@ -41,7 +41,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	protected function status_single( $file, $name ) {
 		$details = $this->get_details( $file );
 
-		$status = $this->format_status( $file, 'long' );
+		$status = $this->format_status( $this->get_status( $file ), 'long' );
 
 		$version = $details[ 'Version' ];
 
@@ -181,7 +181,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		return isset( $update_list->response[ $slug ] );
 	}
 
-	protected function format_status( $file, $format ) {
+	protected function format_status( $status, $format ) {
 		static $map = array(
 			'short' => array(
 				'inactive' => 'I',
@@ -196,8 +196,6 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 				'must-use' => 'Network Active',
 			)
 		);
-
-		$status = $this->get_status( $file );
 
 		return $this->get_color( $status ) . $map[ $format ][ $status ];
 	}

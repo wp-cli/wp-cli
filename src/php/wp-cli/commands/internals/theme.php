@@ -41,7 +41,9 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 
 			$stylesheet = $this->get_stylesheet_path( $theme['Stylesheet'] );
 
-			$line .= $this->format_status( $stylesheet, 'short' ) . ' ' . $theme['Stylesheet'] . '%n';
+			$status = $this->get_status( $stylesheet );
+
+			$line .= $this->format_status( $status, 'short' ) . ' ' . $theme['Stylesheet'] . '%n';
 
 			WP_CLI::line( $line );
 		}

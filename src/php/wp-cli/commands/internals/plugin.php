@@ -56,7 +56,9 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 				$line = '  ';
 			}
 
-			$line .= $this->format_status( $file, 'short' ) . " $name%n";
+			$status = $this->get_status( $file );
+
+			$line .= $this->format_status( $status, 'short' ) . " $name%n";
 
 			WP_CLI::line( $line );
 		}
