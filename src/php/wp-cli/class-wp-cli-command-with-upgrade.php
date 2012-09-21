@@ -57,7 +57,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		$this->show_legend( $items );
 	}
 
-	protected function show_legend( $items ) {
+	private function show_legend( $items ) {
 		$statuses = array_unique( wp_list_pluck( $items, 'status' ) );
 
 		$legend_line = array();
@@ -76,7 +76,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
 	}
 
-	protected function status_single( $file, $name ) {
+	private function status_single( $file, $name ) {
 		$details = $this->get_details( $file );
 
 		$status = $this->format_status( $this->get_status( $file ), 'long' );
@@ -195,7 +195,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		return isset( $update_list->response[ $slug ] );
 	}
 
-	protected $map = array(
+	private $map = array(
 		'short' => array(
 			'inactive' => 'I',
 			'active' => 'A',
@@ -210,11 +210,11 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		)
 	);
 
-	protected function format_status( $status, $format ) {
+	private function format_status( $status, $format ) {
 		return $this->get_color( $status ) . $this->map[ $format ][ $status ];
 	}
 
-	protected function get_color( $status ) {
+	private function get_color( $status ) {
 		static $colors = array(
 			'inactive' => '',
 			'active' => '%g',
