@@ -15,6 +15,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
 	abstract protected function status_all();
 	abstract protected function status_single( $file, $name );
+	abstract protected function get_status( $file );
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
 
@@ -149,5 +150,34 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		$update_list = get_site_transient( $this->upgrade_transient );
 
 		return isset( $update_list->response[ $slug ] );
+	}
+
+	protected function format_status( $file, $long = false ) {
+		$status = $this->get_status( $file );
+
+		$colors = array(
+			'inactive' => '',
+			'active' => '%g',
+			'active-network' => '%g',
+			'must-use' => '%c',
+		);
+
+		$map_short = array(
+			'inactive' => 'I',
+			'active' => 'A',
+			'active-network' => 'N',
+			'must-use' => 'M',
+		);
+
+		$map_long = array(
+			'inactive' => 'Inactive',
+			'active' => 'Active',
+			'active-network' => 'Must Use',
+			'must-use' => 'Network Active',
+		);
+
+		$active_map = $long ? $map_long : $map_short;
+
+		return $colors[ $status ] . $active_map[ $status ];
 	}
 }
