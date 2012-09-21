@@ -28,7 +28,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	protected function status_single( $file, $name ) {
 		$details = $this->get_details( $file );
 
-		$status = $this->get_status( $file, true );
+		$status = $this->format_status( $file, true );
 
 		$version = $details[ 'Version' ];
 
@@ -66,7 +66,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 				$line = '  ';
 			}
 
-			$line .= $this->get_status( $file ) . " $name%n";
+			$line .= $this->format_status( $file ) . " $name%n";
 
 			WP_CLI::line( $line );
 		}
@@ -86,7 +86,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::legend( $legend );
 	}
 
-	private function _get_status( $file ) {
+	private function get_status( $file ) {
 		if ( isset( $this->mu_plugins[ $file ] ) )
 			return 'must-use';
 
@@ -99,8 +99,8 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		return 'inactive';
 	}
 
-	private function get_status( $file, $long = false ) {
-		$status = $this->_get_status( $file );
+	private function format_status( $file, $long = false ) {
+		$status = $this->get_status( $file );
 
 		$colors = array(
 			'inactive' => '',

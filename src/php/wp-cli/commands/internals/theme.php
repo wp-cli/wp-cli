@@ -19,7 +19,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	protected function status_single( $stylesheet, $name ) {
 		$details = get_theme_data( $stylesheet );
 
-		$status = $this->get_status( $stylesheet, true );
+		$status = $this->format_status( $stylesheet, true );
 
 		$version = $details['Version'];
 
@@ -47,7 +47,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 
 			$stylesheet = $this->get_stylesheet_path( $theme['Stylesheet'] );
 
-			$line .= $this->get_status( $stylesheet ) . ' ' . $theme['Stylesheet'] . '%n';
+			$line .= $this->format_status( $stylesheet ) . ' ' . $theme['Stylesheet'] . '%n';
 
 			WP_CLI::line( $line );
 		}
@@ -63,15 +63,15 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::legend( $legend );
 	}
 
-	private function _get_status( $stylesheet ) {
+	private function get_status( $stylesheet ) {
 		if ( $this->is_active_theme( $stylesheet ) )
 			return 'active';
 
 		return 'inactive';
 	}
 
-	private function get_status( $stylesheet, $long = false ) {
-		$status = $this->_get_status( $stylesheet );
+	private function format_status( $stylesheet, $long = false ) {
+		$status = $this->get_status( $stylesheet );
 
 		$colors = array(
 			'inactive' => '',
