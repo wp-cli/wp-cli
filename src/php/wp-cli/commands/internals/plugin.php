@@ -31,7 +31,6 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( '    Description: ' . $details[ 'Description' ] );
 	}
 
-	// Show details about all plugins
 	protected function status_all() {
 		$items = $this->get_item_list();
 
@@ -43,26 +42,9 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 			);
 		}
 
-		// Print the header
-		WP_CLI::line('Installed plugins:');
+		WP_CLI::line( 'Installed plugins:' );
 
-		foreach ( $items as $file => $details ) {
-			if ( $details['update'] ) {
-				$line = ' %yU%n';
-			} else {
-				$line = '  ';
-			}
-
-			$line .= $this->format_status( $details['status'], 'short' );
-			$line .= " " . $details['name'] . "%n";
-
-			WP_CLI::line( $line );
-		}
-
-		// Print the footer
-		WP_CLI::line();
-
-		$this->show_legend();
+		$this->print_status_all( $items );
 	}
 
 	/**

@@ -23,31 +23,10 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( '    Author: ' . strip_tags( $details[ 'Author' ] ) );
 	}
 
-	// Show details about all themes
 	protected function status_all() {
-		// Print the header
 		WP_CLI::line( 'Installed themes:' );
 
-		foreach ( get_themes() as $key => $theme ) {
-			if ( $this->has_update( $theme['Stylesheet'] ) ) {
-				$line = ' %yU%n';
-			} else {
-				$line = '  ';
-			}
-
-			$stylesheet = $this->get_stylesheet_path( $theme['Stylesheet'] );
-
-			$status = $this->get_status( $stylesheet );
-
-			$line .= $this->format_status( $status, 'short' ) . ' ' . $theme['Stylesheet'] . '%n';
-
-			WP_CLI::line( $line );
-		}
-
-		// Print the footer
-		WP_CLI::line();
-
-		$this->show_legend();
+		$this->print_status_all( $this->get_item_list() );
 	}
 
 	protected function get_status( $stylesheet ) {
@@ -153,12 +132,12 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		$items = array();
 
 		foreach ( get_themes() as $title => $details ) {
-			$file = $details['Stylesheet'];
+			$file = $this->get_stylesheet_path( $details['Stylesheet'] );
 
 			$items[ $file ] = array(
 				'name' => $details['Stylesheet'],
 				'status' => $this->get_status( $file ),
-				'update' => $this->has_update( $file ),
+				'update' => $this->has_update( $details['Stylesheet'] ),
 			);
 		}
 

@@ -38,6 +38,25 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		}
 	}
 
+	protected function print_status_all( $items ) {
+		foreach ( $items as $file => $details ) {
+			if ( $details['update'] ) {
+				$line = ' %yU%n';
+			} else {
+				$line = '  ';
+			}
+
+			$line .= $this->format_status( $details['status'], 'short' );
+			$line .= " " . $details['name'] . "%n";
+
+			WP_CLI::line( $line );
+		}
+
+		WP_CLI::line();
+
+		$this->show_legend();
+	}
+
 	protected function status_single( $file, $name ) {
 		$details = $this->get_details( $file );
 
