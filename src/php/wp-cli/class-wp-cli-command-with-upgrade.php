@@ -105,19 +105,9 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	}
 
 	private function update_multiple( $args, $assoc_args ) {
-		// Grab all items that need updates
-		// If we have no sub-arguments, add them to the output list.
-		$item_list = "Available {$this->item_type} updates:";
-		$items_to_update = array();
-		foreach ( $this->get_item_list() as $file ) {
-			if ( $this->has_update( $file ) ) {
-				$items_to_update[] = $file;
-
-				if ( empty( $assoc_args ) ) {
-					$item_list .= "\n\t%y" . $this->get_name( $file ) . "%n";
-				}
-			}
-		}
+		$items_to_update = wp_list_filter( $this->get_item_list(), array(
+			'update' => true
+		) );
 
 		if ( empty( $items_to_update ) ) {
 			WP_CLI::line( "No {$this->item_type} updates available." );
@@ -144,6 +134,12 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
 		// Else list items that require updates
 		} else {
+			$item_list = "Available {$this->item_type} updates:";
+
+			foreach ( $items_to_update as $file => $details ) {
+				$item_list .= "\n\t%y" . $this->get_name( $file ) . "%n";
+			}
+
 			WP_CLI::line( $item_list );
 		}
 	}

@@ -209,7 +209,16 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	protected function get_item_list() {
-		return array_keys( get_plugins() );
+		$items = array();
+
+		foreach ( get_plugins() as $file => $details ) {
+			$items[ $file ] = array(
+				'status' => $this->get_status( $file ),
+				'update' => $this->has_update( $file ),
+			);
+		}
+
+		return $items;
 	}
 
 	/**

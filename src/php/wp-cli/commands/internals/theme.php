@@ -150,7 +150,18 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	protected function get_item_list() {
-		return wp_list_pluck( get_themes(), 'Stylesheet' );
+		$items = array();
+
+		foreach ( get_themes() as $title => $details ) {
+			$file = $details['Stylesheet'];
+
+			$items[ $file ] = array(
+				'status' => $this->get_status( $file ),
+				'update' => $this->has_update( $file ),
+			);
+		}
+
+		return $items;
 	}
 
 	/**
