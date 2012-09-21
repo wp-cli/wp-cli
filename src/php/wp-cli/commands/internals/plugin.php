@@ -306,7 +306,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 
 	private function get_name( $file ) {
 		if ( false === strpos( $file, '/' ) )
-			$name = str_replace( '.php', '', basename( $file ) );
+			$name = basename( $file, '.php' );
 		else
 			$name = dirname( $file );
 
