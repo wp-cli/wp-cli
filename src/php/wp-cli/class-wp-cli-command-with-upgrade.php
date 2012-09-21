@@ -137,20 +137,11 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 			$item_list = "Available {$this->item_type} updates:";
 
 			foreach ( $items_to_update as $file => $details ) {
-				$item_list .= "\n\t%y" . $this->get_name( $file ) . "%n";
+				$item_list .= "\n\t%y" . $details['name'] . "%n";
 			}
 
 			WP_CLI::line( $item_list );
 		}
-	}
-
-	protected function get_name( $file ) {
-		if ( false === strpos( $file, '/' ) )
-			$name = str_replace( '.php', '', basename( $file ) );
-		else
-			$name = dirname( $file );
-
-		return $name;
 	}
 
 	/**

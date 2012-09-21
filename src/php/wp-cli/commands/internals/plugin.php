@@ -35,8 +35,9 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	protected function status_all() {
 		$items = $this->get_item_list();
 
-		foreach ( get_mu_plugins() as $mu_plugin ) {
-			$items[ $mu_plugin ] = array(
+		foreach ( get_mu_plugins() as $file => $mu_plugin ) {
+			$items[ $file ] = array(
+				'name' => $this->get_name( $file ),
 				'status' => 'must-use',
 				'update' => false
 			);
@@ -53,7 +54,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 			}
 
 			$line .= $this->format_status( $details['status'], 'short' );
-			$line .= " " . $this->get_name( $file ) . "%n";
+			$line .= " " . $details['name'] . "%n";
 
 			WP_CLI::line( $line );
 		}
@@ -212,6 +213,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 
 		foreach ( get_plugins() as $file => $details ) {
 			$items[ $file ] = array(
+				'name' => $this->get_name( $file ),
 				'status' => $this->get_status( $file ),
 				'update' => $this->has_update( $file ),
 			);
@@ -319,5 +321,14 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		}
 
 		return array( $file, $name );
+	}
+
+	private function get_name( $file ) {
+		if ( false === strpos( $file, '/' ) )
+			$name = str_replace( '.php', '', basename( $file ) );
+		else
+			$name = dirname( $file );
+
+		return $name;
 	}
 }

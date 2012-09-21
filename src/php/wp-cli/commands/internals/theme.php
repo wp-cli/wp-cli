@@ -156,6 +156,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 			$file = $details['Stylesheet'];
 
 			$items[ $file ] = array(
+				'name' => $details['Stylesheet'],
 				'status' => $this->get_status( $file ),
 				'update' => $this->has_update( $file ),
 			);
