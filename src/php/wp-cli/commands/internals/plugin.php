@@ -73,7 +73,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		if ( is_multisite() )
 			$legend['%bN'] = 'Network Active';
 
-		WP_CLI::legend( $legend );
+		self::legend( $legend );
 	}
 
 	protected function get_status( $file ) {

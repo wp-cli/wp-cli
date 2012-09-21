@@ -54,7 +54,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 			'%gA' => 'Active',
 		);
 
-		WP_CLI::legend( $legend );
+		self::legend( $legend );
 	}
 
 	protected function get_status( $stylesheet ) {

@@ -52,6 +52,21 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	}
 
 	/**
+	 * Display a legend
+	 *
+	 * @param array( code => title ) $legend
+	 */
+	protected static function legend( $legend ) {
+		$legend[ '%yU' ] = 'Update Available';
+
+		$legend_line = array();
+		foreach ( $legend as $key => $title )
+			$legend_line[] = "$key = $title%n";
+
+		WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
+	}
+
+	/**
 	 * Install a new plugin/theme
 	 *
 	 * @param array $args
