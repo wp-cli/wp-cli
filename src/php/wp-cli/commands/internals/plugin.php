@@ -117,13 +117,9 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	private function check_active( $file, $network_wide ) {
-		if ( $network_wide ) {
-			$check = is_plugin_active_for_network( $file );
-		} else {
-			$check = is_plugin_active( $file );
-		}
+		$required = $network_wide ? 'active-network' : 'active';
 
-		return $check;
+		return $required == $this->get_status( $file );
 	}
 
 	/**
