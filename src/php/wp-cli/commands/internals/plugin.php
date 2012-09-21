@@ -62,16 +62,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		// Print the footer
 		WP_CLI::line();
 
-		$legend = array(
-			'I' => 'Inactive',
-			'%gA' => 'Active',
-			'%cM' => 'Must Use',
-		);
-
-		if ( is_multisite() )
-			$legend['%bN'] = 'Network Active';
-
-		self::legend( $legend );
+		$this->show_legend();
 	}
 
 	private function get_name( $file ) {

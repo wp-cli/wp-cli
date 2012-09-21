@@ -52,21 +52,6 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	}
 
 	/**
-	 * Display a legend
-	 *
-	 * @param array( code => title ) $legend
-	 */
-	protected static function legend( $legend ) {
-		$legend[ '%yU' ] = 'Update Available';
-
-		$legend_line = array();
-		foreach ( $legend as $key => $title )
-			$legend_line[] = "$key = $title%n";
-
-		WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
-	}
-
-	/**
 	 * Install a new plugin/theme
 	 *
 	 * @param array $args
@@ -181,23 +166,41 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		return isset( $update_list->response[ $slug ] );
 	}
 
-	protected function format_status( $status, $format ) {
-		static $map = array(
-			'short' => array(
-				'inactive' => 'I',
-				'active' => 'A',
-				'active-network' => 'N',
-				'must-use' => 'M',
-			),
-			'long' => array(
-				'inactive' => 'Inactive',
-				'active' => 'Active',
-				'active-network' => 'Must Use',
-				'must-use' => 'Network Active',
-			)
-		);
+	protected $map = array(
+		'short' => array(
+			'inactive' => 'I',
+			'active' => 'A',
+			'active-network' => 'N',
+			'must-use' => 'M',
+		),
+		'long' => array(
+			'inactive' => 'Inactive',
+			'active' => 'Active',
+			'active-network' => 'Must Use',
+			'must-use' => 'Network Active',
+		)
+	);
 
-		return $this->get_color( $status ) . $map[ $format ][ $status ];
+	protected function format_status( $status, $format ) {
+		return $this->get_color( $status ) . $this->map[ $format ][ $status ];
+	}
+
+	protected function show_legend() {
+		$legend = array();
+
+		// TODO: show only the values that were used
+		foreach ( $this->map['short'] as $status => $short ) {
+			$key = $this->format_status( $status, 'short' );
+			$legend[ $key ] = $this->map['long'][ $status ];
+		}
+
+		$legend[ '%yU' ] = 'Update Available';
+
+		$legend_line = array();
+		foreach ( $legend as $key => $title )
+			$legend_line[] = "$key = $title%n";
+
+		WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
 	}
 
 	protected function get_color( $status ) {

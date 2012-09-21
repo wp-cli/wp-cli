@@ -47,12 +47,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		// Print the footer
 		WP_CLI::line();
 
-		$legend = array(
-			'I' => 'Inactive',
-			'%gA' => 'Active',
-		);
-
-		self::legend( $legend );
+		$this->show_legend();
 	}
 
 	protected function get_status( $stylesheet ) {
