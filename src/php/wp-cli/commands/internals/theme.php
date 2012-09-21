@@ -17,7 +17,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 
 	// Show details about a single theme
 	protected function status_single( $stylesheet, $name ) {
-		$details = get_theme_data( $stylesheet );
+		$details = $this->get_details( $stylesheet );
 
 		$status = $this->format_status( $stylesheet, 'long' );
 
@@ -31,6 +31,10 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( '    Status: ' . $status .'%n' );
 		WP_CLI::line( '    Version: ' . $version );
 		WP_CLI::line( '    Author: ' . strip_tags( $details[ 'Author' ] ) );
+	}
+
+	protected function get_details( $stylesheet ) {
+		return get_theme_data( $stylesheet );
 	}
 
 	// Show details about all themes

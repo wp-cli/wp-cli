@@ -299,7 +299,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	 * @param string $file
 	 * @return array
 	 */
-	private function get_details( $file ) {
+	protected function get_details( $file ) {
 		$plugin_folder = get_plugins(  '/' . plugin_basename( dirname( $file ) ) );
 		$plugin_file = basename( ( $file ) );
 

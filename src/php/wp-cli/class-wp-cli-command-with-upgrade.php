@@ -12,10 +12,11 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	abstract protected function parse_name( $args, $subcommand );
 
 	abstract protected function get_item_list();
+	abstract protected function get_status( $file );
+	abstract protected function get_details( $file );
 
 	abstract protected function status_all();
 	abstract protected function status_single( $file, $name );
-	abstract protected function get_status( $file );
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
 
