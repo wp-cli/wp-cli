@@ -15,17 +15,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	protected $upgrade_refresh = 'wp_update_themes';
 	protected $upgrade_transient = 'update_themes';
 
-	// Show details about a single theme
-	protected function status_single( $stylesheet, $name ) {
-		$details = $this->get_details( $stylesheet );
-
-		$status = $this->format_status( $stylesheet, 'long' );
-
-		$version = $details['Version'];
-
-		if ( $this->get_update_status( $name ) )
-			$version .= ' (%gUpdate available%n)';
-
+	protected function _status_single( $details, $name, $version, $status ) {
 		WP_CLI::line( 'Theme %9' . $name . '%n details:' );
 		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
 		WP_CLI::line( '    Status: ' . $status .'%n' );

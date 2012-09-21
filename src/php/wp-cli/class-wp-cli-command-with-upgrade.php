@@ -16,7 +16,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	abstract protected function get_details( $file );
 
 	abstract protected function status_all();
-	abstract protected function status_single( $file, $name );
+	abstract protected function _status_single( $details, $name, $version, $status );
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
 
@@ -36,6 +36,19 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
 			$this->status_single( $file, $name );
 		}
+	}
+
+	protected function status_single( $file, $name ) {
+		$details = $this->get_details( $file );
+
+		$status = $this->format_status( $file, 'long' );
+
+		$version = $details[ 'Version' ];
+
+		if ( $this->get_update_status( $file ) )
+			$version .= ' (%gUpdate available%n)';
+
+		$this->_status_single( $details, $name, $version, $status );
 	}
 
 	/**

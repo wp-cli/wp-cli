@@ -24,17 +24,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		parent::__construct( $args, $assoc_args );
 	}
 
-	// Show details about a single plugin
-	protected function status_single( $file, $name ) {
-		$details = $this->get_details( $file );
-
-		$status = $this->format_status( $file, 'long' );
-
-		$version = $details[ 'Version' ];
-
-		if ( $this->get_update_status( $file ) )
-			$version .= ' (%gUpdate available%n)';
-
+	protected function _status_single( $details, $name, $version, $status ) {
 		WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
 		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
 		WP_CLI::line( '    Status: ' . $status .'%n' );
