@@ -152,7 +152,22 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		return isset( $update_list->response[ $slug ] );
 	}
 
-	protected function format_status( $file, $long = false ) {
+	protected function format_status( $file, $format ) {
+		static $map = array(
+			'short' => array(
+				'inactive' => 'I',
+				'active' => 'A',
+				'active-network' => 'N',
+				'must-use' => 'M',
+			),
+			'long' => array(
+				'inactive' => 'Inactive',
+				'active' => 'Active',
+				'active-network' => 'Must Use',
+				'must-use' => 'Network Active',
+			)
+		);
+
 		$status = $this->get_status( $file );
 
 		$colors = array(
@@ -162,22 +177,6 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 			'must-use' => '%c',
 		);
 
-		$map_short = array(
-			'inactive' => 'I',
-			'active' => 'A',
-			'active-network' => 'N',
-			'must-use' => 'M',
-		);
-
-		$map_long = array(
-			'inactive' => 'Inactive',
-			'active' => 'Active',
-			'active-network' => 'Must Use',
-			'must-use' => 'Network Active',
-		);
-
-		$active_map = $long ? $map_long : $map_short;
-
-		return $colors[ $status ] . $active_map[ $status ];
+		return $colors[ $status ] . $map[ $format ][ $status ];
 	}
 }

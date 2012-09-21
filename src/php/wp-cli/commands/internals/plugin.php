@@ -28,7 +28,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	protected function status_single( $file, $name ) {
 		$details = $this->get_details( $file );
 
-		$status = $this->format_status( $file, true );
+		$status = $this->format_status( $file, 'long' );
 
 		$version = $details[ 'Version' ];
 
@@ -66,7 +66,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 				$line = '  ';
 			}
 
-			$line .= $this->format_status( $file ) . " $name%n";
+			$line .= $this->format_status( $file, 'short' ) . " $name%n";
 
 			WP_CLI::line( $line );
 		}

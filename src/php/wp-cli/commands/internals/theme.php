@@ -19,7 +19,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	protected function status_single( $stylesheet, $name ) {
 		$details = get_theme_data( $stylesheet );
 
-		$status = $this->format_status( $stylesheet, true );
+		$status = $this->format_status( $stylesheet, 'long' );
 
 		$version = $details['Version'];
 
@@ -47,7 +47,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 
 			$stylesheet = $this->get_stylesheet_path( $theme['Stylesheet'] );
 
-			$line .= $this->format_status( $stylesheet ) . ' ' . $theme['Stylesheet'] . '%n';
+			$line .= $this->format_status( $stylesheet, 'short' ) . ' ' . $theme['Stylesheet'] . '%n';
 
 			WP_CLI::line( $line );
 		}
