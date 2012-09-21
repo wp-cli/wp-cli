@@ -116,12 +116,6 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		}
 	}
 
-	private function check_active( $file, $network_wide ) {
-		$required = $network_wide ? 'active-network' : 'active';
-
-		return $required == $this->get_status( $file );
-	}
-
 	/**
 	 * Toggle a plugin's activation state
 	 *
@@ -267,6 +261,12 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/* PRIVATES */
+
+	private function check_active( $file, $network_wide ) {
+		$required = $network_wide ? 'active-network' : 'active';
+
+		return $required == $this->get_status( $file );
+	}
 
 	protected function get_status( $file ) {
 		if ( isset( $this->mu_plugins[ $file ] ) )
