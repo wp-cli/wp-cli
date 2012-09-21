@@ -203,21 +203,6 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display a legend
-	 *
-	 * @param array( code => title ) $legend
-	 */
-	static function legend( $legend ) {
-		$legend[ '%yU' ] = 'Update Available';
-
-		$legend_line = array();
-		foreach ( $legend as $key => $title )
-			$legend_line[] = "$key = $title%n";
-
-		WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
-	}
-
-	/**
 	 * Launch an external process, closing the current one
 	 *
 	 * @param string Command to call
