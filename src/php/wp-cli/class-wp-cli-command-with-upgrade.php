@@ -54,7 +54,26 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
 		WP_CLI::line();
 
-		$this->show_legend();
+		$this->show_legend( $items );
+	}
+
+	protected function show_legend( $items ) {
+		$statuses = array_unique( wp_list_pluck( $items, 'status' ) );
+
+		$legend_line = array();
+
+		foreach ( $statuses as $status ) {
+			$legend_line[] = sprintf( '%s%s = %s%%n',
+				$this->get_color( $status ),
+				$this->map['short'][ $status ],
+				$this->map['long'][ $status ]
+			);
+		}
+
+		if ( in_array( true, wp_list_pluck( $items, 'update' ) ) )
+			$legend_line[] = '%yU = Update Available%n';
+
+		WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
 	}
 
 	protected function status_single( $file, $name ) {
@@ -193,24 +212,6 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
 	protected function format_status( $status, $format ) {
 		return $this->get_color( $status ) . $this->map[ $format ][ $status ];
-	}
-
-	protected function show_legend() {
-		$legend = array();
-
-		// TODO: show only the values that were used
-		foreach ( $this->map['short'] as $status => $short ) {
-			$key = $this->format_status( $status, 'short' );
-			$legend[ $key ] = $this->map['long'][ $status ];
-		}
-
-		$legend[ '%yU' ] = 'Update Available';
-
-		$legend_line = array();
-		foreach ( $legend as $key => $title )
-			$legend_line[] = "$key = $title%n";
-
-		WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
 	}
 
 	protected function get_color( $status ) {
