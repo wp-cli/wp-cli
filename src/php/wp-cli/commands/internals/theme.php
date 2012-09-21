@@ -29,7 +29,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( 'Installed themes:' );
 
 		foreach ( get_themes() as $key => $theme ) {
-			if ( $this->get_update_status( $theme['Stylesheet'] ) ) {
+			if ( $this->has_update( $theme['Stylesheet'] ) ) {
 				$line = ' %yU%n';
 			} else {
 				$line = '  ';
@@ -132,7 +132,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		}
 
 		// Check to see if we should update, rather than install.
-		if ( $this->get_update_status( $slug ) ) {
+		if ( $this->has_update( $slug ) ) {
 			WP_CLI::line( sprintf( 'Updating %s (%s)', $api->name, $api->version ) );
 			$result = WP_CLI::get_upgrader( $this->upgrader )->upgrade( $slug );
 

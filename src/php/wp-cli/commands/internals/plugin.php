@@ -45,7 +45,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line('Installed plugins:');
 
 		foreach ( $plugins as $file => $plugin ) {
-			if ( $this->get_update_status( $file ) ) {
+			if ( $this->has_update( $file ) ) {
 				$line = ' %yU%n';
 			} else {
 				$line = '  ';

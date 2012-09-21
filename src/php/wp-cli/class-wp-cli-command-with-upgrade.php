@@ -45,7 +45,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
 		$version = $details[ 'Version' ];
 
-		if ( $this->get_update_status( $file ) )
+		if ( $this->has_update( $file ) )
 			$version .= ' (%gUpdate available%n)';
 
 		$this->_status_single( $details, $name, $version, $status );
@@ -125,7 +125,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		$item_list = "Available {$this->item_type} updates:";
 		$items_to_update = array();
 		foreach ( $this->get_item_list() as $file ) {
-			if ( $this->get_update_status( $file ) ) {
+			if ( $this->has_update( $file ) ) {
 				$items_to_update[] = $file;
 
 				if ( empty( $assoc_args ) ) {
@@ -175,7 +175,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	 *
 	 * @return bool
 	 */
-	protected function get_update_status( $slug ) {
+	protected function has_update( $slug ) {
 		$update_list = get_site_transient( $this->upgrade_transient );
 
 		return isset( $update_list->response[ $slug ] );
