@@ -12,10 +12,11 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	abstract protected function parse_name( $args, $subcommand );
 
 	abstract protected function get_item_list();
+	abstract protected function get_all_items();
+
 	abstract protected function get_status( $file );
 	abstract protected function get_details( $file );
 
-	abstract protected function status_all();
 	abstract protected function _status_single( $details, $name, $version, $status );
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
@@ -38,7 +39,11 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		}
 	}
 
-	protected function print_status_all( $items ) {
+	private function status_all() {
+		$items = $this->get_all_items();
+
+		WP_CLI::line( "Installed {$this->item_type}s:" );
+
 		foreach ( $items as $file => $details ) {
 			if ( $details['update'] ) {
 				$line = ' %yU%n';

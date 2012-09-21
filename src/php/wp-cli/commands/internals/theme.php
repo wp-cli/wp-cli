@@ -23,10 +23,8 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( '    Author: ' . strip_tags( $details[ 'Author' ] ) );
 	}
 
-	protected function status_all() {
-		WP_CLI::line( 'Installed themes:' );
-
-		$this->print_status_all( $this->get_item_list() );
+	protected function get_all_items() {
+		return $this->get_item_list();
 	}
 
 	protected function get_status( $stylesheet ) {

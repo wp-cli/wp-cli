@@ -31,7 +31,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( '    Description: ' . $details[ 'Description' ] );
 	}
 
-	protected function status_all() {
+	protected function get_all_items() {
 		$items = $this->get_item_list();
 
 		foreach ( get_mu_plugins() as $file => $mu_plugin ) {
@@ -42,9 +42,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 			);
 		}
 
-		WP_CLI::line( 'Installed plugins:' );
-
-		$this->print_status_all( $items );
+		return $items;
 	}
 
 	/**
