@@ -86,21 +86,46 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::legend( $legend );
 	}
 
-	private function get_status( $file, $long = false ) {
-		if ( isset( $this->mu_plugins[ $file ] ) ) {
-			$line  = '%c';
-			$line .= $long ? 'Must Use' : 'M';
-		} elseif ( is_plugin_active_for_network( $file ) ) {
-			$line  = '%b';
-			$line .= $long ? 'Network Active' : 'N';
-		} elseif ( is_plugin_active( $file ) ) {
-			$line  = '%g';
-			$line .= $long ? 'Active' : 'A';
-		} else {
-			$line  = $long ? 'Inactive' : 'I';
-		}
+	private function _get_status( $file ) {
+		if ( isset( $this->mu_plugins[ $file ] ) )
+			return 'must-use';
 
-		return $line;
+		if ( is_plugin_active_for_network( $file ) )
+			return 'active-network';
+
+		if ( is_plugin_active( $file ) )
+			return 'active';
+
+		return 'inactive';
+	}
+
+	private function get_status( $file, $long = false ) {
+		$status = $this->_get_status( $file );
+
+		$colors = array(
+			'inactive' => '',
+			'active' => '%g',
+			'active-network' => '%g',
+			'must-use' => '%c',
+		);
+
+		$map_short = array(
+			'inactive' => 'I',
+			'active' => 'A',
+			'active-network' => 'N',
+			'must-use' => 'M',
+		);
+
+		$map_long = array(
+			'inactive' => 'Inactive',
+			'active' => 'Active',
+			'active-network' => 'Must Use',
+			'must-use' => 'Network Active',
+		);
+
+		$active_map = $long ? $map_long : $map_short;
+
+		return $colors[ $status ] . $active_map[ $status ];
 	}
 
 	/**

@@ -63,15 +63,34 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::legend( $legend );
 	}
 
-	private function get_status( $stylesheet, $long = false ) {
-		if ( $this->is_active_theme( $stylesheet ) ) {
-			$line  = '%g';
-			$line .= $long ? 'Active' : 'A';
-		} else {
-			$line  = $long ? 'Inactive' : 'I';
-		}
+	private function _get_status( $stylesheet ) {
+		if ( $this->is_active_theme( $stylesheet ) )
+			return 'active';
 
-		return $line;
+		return 'inactive';
+	}
+
+	private function get_status( $stylesheet, $long = false ) {
+		$status = $this->_get_status( $stylesheet );
+
+		$colors = array(
+			'inactive' => '',
+			'active' => '%g',
+		);
+
+		$map_short = array(
+			'inactive' => 'I',
+			'active' => 'A',
+		);
+
+		$map_long = array(
+			'inactive' => 'Inactive',
+			'active' => 'Active',
+		);
+
+		$active_map = $long ? $map_long : $map_short;
+
+		return $colors[ $status ] . $active_map[ $status ];
 	}
 
 	/**
