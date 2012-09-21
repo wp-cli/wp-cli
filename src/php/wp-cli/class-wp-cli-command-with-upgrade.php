@@ -114,12 +114,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 				$items_to_update[] = $file;
 
 				if ( empty( $assoc_args ) ) {
-					if ( false === strpos( $file, '/' ) )
-						$name = str_replace('.php', '', basename($file));
-					else
-						$name = dirname($file);
-
-					$item_list .= "\n\t%y$name%n";
+					$item_list .= "\n\t%y" . $this->get_name( $file ) . "%n";
 				}
 			}
 		}
@@ -151,6 +146,15 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		} else {
 			WP_CLI::line( $item_list );
 		}
+	}
+
+	protected function get_name( $file ) {
+		if ( false === strpos( $file, '/' ) )
+			$name = str_replace( '.php', '', basename( $file ) );
+		else
+			$name = dirname( $file );
+
+		return $name;
 	}
 
 	/**

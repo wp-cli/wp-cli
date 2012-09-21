@@ -65,15 +65,6 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		$this->show_legend();
 	}
 
-	private function get_name( $file ) {
-		if ( false === strpos( $file, '/' ) )
-			$name = str_replace( '.php', '', basename( $file ) );
-		else
-			$name = dirname( $file );
-
-		return $name;
-	}
-
 	/**
 	 * Activate a plugin
 	 *
