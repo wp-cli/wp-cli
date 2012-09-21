@@ -23,10 +23,6 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( '    Author: ' . strip_tags( $details[ 'Author' ] ) );
 	}
 
-	protected function get_details( $stylesheet ) {
-		return get_theme_data( $stylesheet );
-	}
-
 	// Show details about all themes
 	protected function status_all() {
 		// Print the header
@@ -64,6 +60,10 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 			return 'active';
 
 		return 'inactive';
+	}
+
+	protected function get_details( $stylesheet ) {
+		return get_theme_data( $stylesheet );
 	}
 
 	/**

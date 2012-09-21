@@ -78,19 +78,6 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		self::legend( $legend );
 	}
 
-	protected function get_status( $file ) {
-		if ( isset( $this->mu_plugins[ $file ] ) )
-			return 'must-use';
-
-		if ( is_plugin_active_for_network( $file ) )
-			return 'active-network';
-
-		if ( is_plugin_active( $file ) )
-			return 'active';
-
-		return 'inactive';
-	}
-
 	/**
 	 * Activate a plugin
 	 *
@@ -284,6 +271,19 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/* PRIVATES */
+
+	protected function get_status( $file ) {
+		if ( isset( $this->mu_plugins[ $file ] ) )
+			return 'must-use';
+
+		if ( is_plugin_active_for_network( $file ) )
+			return 'active-network';
+
+		if ( is_plugin_active( $file ) )
+			return 'active';
+
+		return 'inactive';
+	}
 
 	/**
 	 * Get the details of a plugin
