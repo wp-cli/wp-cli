@@ -30,8 +30,7 @@ class Generate_Command extends WP_CLI_Command {
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
 		if ( !post_type_exists( $type ) ) {
-			WP_CLI::warning( 'invalid post type.' );
-			exit;
+			WP_CLI::error( sprintf( "'%s' is not a registered post type.", $type ) );
 		}
 
 		if ( $author ) {

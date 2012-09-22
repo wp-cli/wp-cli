@@ -15,8 +15,6 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	protected $upgrade_refresh = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
 
-	private $mu_plugins;
-
 	function __construct( $args, $assoc_args ) {
 		require_once ABSPATH.'wp-admin/includes/plugin.php';
 		require_once ABSPATH.'wp-admin/includes/plugin-install.php';
@@ -24,17 +22,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		parent::__construct( $args, $assoc_args );
 	}
 
-	// Show details about a single plugin
-	protected function status_single( $file, $name ) {
-		$details = $this->get_details( $file );
-
-		$status = $this->get_status( $file, true );
-
-		$version = $details[ 'Version' ];
-
-		if ( $this->get_update_status( $file ) )
-			$version .= ' (%gUpdate available%n)';
-
+	protected function _status_single( $details, $name, $version, $status ) {
 		WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
 		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
 		WP_CLI::line( '    Status: ' . $status .'%n' );
@@ -43,64 +31,18 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		WP_CLI::line( '    Description: ' . $details[ 'Description' ] );
 	}
 
-	// Show details about all plugins
-	protected function status_all() {
-		$this->mu_plugins = get_mu_plugins();
+	protected function get_all_items() {
+		$items = $this->get_item_list();
 
-		$plugins = get_plugins();
-
-		$plugins = array_merge( $plugins, $this->mu_plugins );
-
-		// Print the header
-		WP_CLI::line('Installed plugins:');
-
-		foreach ($plugins as $file => $plugin) {
-			if ( false === strpos( $file, '/' ) )
-				$name = str_replace('.php', '', basename($file));
-			else
-				$name = dirname($file);
-
-			if ( $this->get_update_status( $file ) ) {
-				$line = ' %yU%n';
-			} else {
-				$line = '  ';
-			}
-
-			$line .= $this->get_status( $file ) . " $name%n";
-
-			WP_CLI::line( $line );
+		foreach ( get_mu_plugins() as $file => $mu_plugin ) {
+			$items[ $file ] = array(
+				'name' => $this->get_name( $file ),
+				'status' => 'must-use',
+				'update' => false
+			);
 		}
 
-		// Print the footer
-		WP_CLI::line();
-
-		$legend = array(
-			'I' => 'Inactive',
-			'%gA' => 'Active',
-			'%cM' => 'Must Use',
-		);
-
-		if ( is_multisite() )
-			$legend['%bN'] = 'Network Active';
-
-		WP_CLI::legend( $legend );
-	}
-
-	private function get_status( $file, $long = false ) {
-		if ( isset( $this->mu_plugins[ $file ] ) ) {
-			$line  = '%c';
-			$line .= $long ? 'Must Use' : 'M';
-		} elseif ( is_plugin_active_for_network( $file ) ) {
-			$line  = '%b';
-			$line .= $long ? 'Network Active' : 'N';
-		} elseif ( is_plugin_active( $file ) ) {
-			$line  = '%g';
-			$line .= $long ? 'Active' : 'A';
-		} else {
-			$line  = $long ? 'Inactive' : 'I';
-		}
-
-		return $line;
+		return $items;
 	}
 
 	/**
@@ -139,16 +81,6 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		} else {
 			WP_CLI::error( 'Could not deactivate plugin: ' . $name );
 		}
-	}
-
-	private function check_active( $file, $network_wide ) {
-		if ( $network_wide ) {
-			$check = is_plugin_active_for_network( $file );
-		} else {
-			$check = is_plugin_active( $file );
-		}
-
-		return $check;
 	}
 
 	/**
@@ -257,7 +189,18 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	protected function get_item_list() {
-		return array_keys( get_plugins() );
+		$items = array();
+
+		foreach ( get_plugins() as $file => $details ) {
+			$items[ $file ] = array(
+				'name' => $this->get_name( $file ),
+				'status' => $this->get_status( $file ),
+				'update' => $this->has_update( $file ),
+				'update_id' => $file,
+			);
+		}
+
+		return $items;
 	}
 
 	/**
@@ -297,13 +240,29 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 
 	/* PRIVATES */
 
+	private function check_active( $file, $network_wide ) {
+		$required = $network_wide ? 'active-network' : 'active';
+
+		return $required == $this->get_status( $file );
+	}
+
+	protected function get_status( $file ) {
+		if ( is_plugin_active_for_network( $file ) )
+			return 'active-network';
+
+		if ( is_plugin_active( $file ) )
+			return 'active';
+
+		return 'inactive';
+	}
+
 	/**
 	 * Get the details of a plugin
 	 *
 	 * @param string $file
 	 * @return array
 	 */
-	private function get_details( $file ) {
+	protected function get_details( $file ) {
 		$plugin_folder = get_plugins(  '/' . plugin_basename( dirname( $file ) ) );
 		$plugin_file = basename( ( $file ) );
 
@@ -343,5 +302,14 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		}
 
 		return array( $file, $name );
+	}
+
+	private function get_name( $file ) {
+		if ( false === strpos( $file, '/' ) )
+			$name = basename( $file, '.php' );
+		else
+			$name = dirname( $file );
+
+		return $name;
 	}
 }
