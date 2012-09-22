@@ -94,9 +94,12 @@ class Post_Command extends WP_CLI_Command {
 			WP_CLI::error( "No posts to delete." );
 		}
 
-		foreach( $posts_to_delete as $post_id ) {
-			if ( wp_delete_post( $post_id, (bool)$assoc_args['force'] ) ) {
-				$action = ( (bool) $assoc_args['force'] ) ? 'Deleted' : 'Trashed';
+		$force = (bool) $assoc_args['force'];
+
+		$action = $force ? 'Deleted' : 'Trashed';
+
+		foreach ( $posts_to_delete as $post_id ) {
+			if ( wp_delete_post( $post_id, $force ) ) {
 				WP_CLI::success( "{$action} post $post_id." );
 			} else {
 				WP_CLI::error( "Failed deleting post $post_id." );
