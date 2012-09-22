@@ -7,7 +7,7 @@
 \fBwp\-post\-delete\fR \- Delete a WordPress post\.
 .
 .SH "SYNOPSIS"
-\fBwp post delete\fR \fIID\fR [\-\-force]
+\fBwp post delete\fR [\fIID\fR] [\-\-post_type=\fIvalue\fR] [\-\-post_author=\fIvalue\fR] [\-\-post_status=\fIvalue\fR] [\-\-force]
 .
 .SH "OPTIONS"
 .
@@ -16,6 +16,24 @@
 .
 .IP
 The ID of the post to delete\.
+.
+.TP
+\fB\-\-post_type\fR:
+.
+.IP
+Trash or delete all posts of a given post type
+.
+.TP
+\fB\-\-post_author\fR:
+.
+.IP
+Trash or delete all posts written by a specific user
+.
+.TP
+\fB\-\-post_status\fR:
+.
+.IP
+Trash or delete all posts of a given post status
 .
 .TP
 \fB\-\-force\fR:
@@ -28,6 +46,8 @@ Skip the trash bin\.
 .nf
 
 wp post delete 123 \-\-force
+
+wp post delete \-\-post_type=page \-\-post_status=draft
 .
 .fi
 
