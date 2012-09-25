@@ -13,7 +13,7 @@ class Export_Command extends WP_CLI_Command {
 	/**
 	 * Argument validation functions below
 	 */
-	public function validate_arguments( $args, $assoc_args ) {
+	private function validate_arguments( $args, $assoc_args ) {
 		$defaults = array(
 			'path'			=>		NULL,
 			'start_date'	=>		NULL,
