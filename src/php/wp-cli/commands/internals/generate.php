@@ -25,6 +25,7 @@ class Generate_Command extends WP_CLI_Command {
 			'type' => 'post',
 			'post_status' => 'publish',
 			'post_author' => false,
+			'post_date' => date('Y-m-d H:i:s'),
 		);
 
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
@@ -77,7 +78,8 @@ class Generate_Command extends WP_CLI_Command {
 				'post_status' => $post_status,
 				'post_author' => $author,
 				'post_parent' => $current_parent,
-				'post_name' => "post-$i"
+				'post_name' => "post-$i",
+				'post_date' => $post_date,
 			);
 
 			// Not using wp_insert_post() because it's slow
