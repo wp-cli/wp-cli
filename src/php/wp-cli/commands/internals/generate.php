@@ -22,7 +22,7 @@ class Generate_Command extends WP_CLI_Command {
 		$defaults = array(
 			'count' => 100,
 			'max_depth' => 1,
-			'type' => 'post',
+			'post_type' => 'post',
 			'post_status' => 'publish',
 			'post_author' => false,
 			'post_date' => date('Y-m-d H:i:s'),
@@ -34,11 +34,11 @@ class Generate_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( "'%s' is not a registered post type.", $post_type ) );
 		}
 
-		if ( $author ) {
-			$author = get_user_by( 'login', $author );
+		if ( $post_author ) {
+			$post_author = get_user_by( 'login', $post_author );
 
-			if ( $author )
-				$author = $author->ID;
+			if ( $post_author )
+				$post_author = $post_author->ID;
 		}
 
 		// Get the total number of posts
@@ -76,7 +76,7 @@ class Generate_Command extends WP_CLI_Command {
 				'post_type' => $post_type,
 				'post_title' =>  "$label $i",
 				'post_status' => $post_status,
-				'post_author' => $author,
+				'post_author' => $post_author,
 				'post_parent' => $current_parent,
 				'post_name' => "post-$i",
 				'post_date' => $post_date,
