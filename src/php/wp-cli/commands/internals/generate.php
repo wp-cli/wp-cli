@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::add_command('generate', 'Generate_Command');
+WP_CLI::add_command('post', 'Post_Command');
 
 /**
  * Implement generate command
@@ -8,7 +8,7 @@ WP_CLI::add_command('generate', 'Generate_Command');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class Generate_Command extends WP_CLI_Command {
+class Post_Command extends WP_CLI_Command {
 
 	/**
 	 * Generate posts
@@ -16,7 +16,7 @@ class Generate_Command extends WP_CLI_Command {
 	 * @param array $args
 	 * @param array $assoc_args
 	 **/
-	public function posts( $args, $assoc_args ) {
+	public function generate( $args, $assoc_args ) {
 		global $wpdb;
 
 		$defaults = array(
