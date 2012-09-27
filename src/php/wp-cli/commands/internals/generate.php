@@ -23,14 +23,14 @@ class Generate_Command extends WP_CLI_Command {
 			'count' => 100,
 			'max_depth' => 1,
 			'type' => 'post',
-			'status' => 'publish',
-			'author' => false
+			'post_status' => 'publish',
+			'post_author' => false,
 		);
 
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
-		if ( !post_type_exists( $type ) ) {
-			WP_CLI::error( sprintf( "'%s' is not a registered post type.", $type ) );
+		if ( !post_type_exists( $post_type ) ) {
+			WP_CLI::error( sprintf( "'%s' is not a registered post type.", $post_type ) );
 		}
 
 		if ( $author ) {
@@ -41,11 +41,11 @@ class Generate_Command extends WP_CLI_Command {
 		}
 
 		// Get the total number of posts
-		$total = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = %s", $type ) );
+		$total = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = %s", $post_type ) );
 
-		$label = get_post_type_object( $type )->labels->singular_name;
+		$label = get_post_type_object( $post_type )->labels->singular_name;
 
-		$hierarchical = get_post_type_object( $type )->hierarchical;
+		$hierarchical = get_post_type_object( $post_type )->hierarchical;
 
 		$limit = $count + $total;
 
@@ -72,9 +72,9 @@ class Generate_Command extends WP_CLI_Command {
 			}
 
 			$args = array(
-				'post_type' => $type,
+				'post_type' => $post_type,
 				'post_title' =>  "$label $i",
-				'post_status' => $status,
+				'post_status' => $post_status,
 				'post_author' => $author,
 				'post_parent' => $current_parent,
 				'post_name' => "post-$i"
