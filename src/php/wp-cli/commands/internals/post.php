@@ -30,7 +30,7 @@ class Post_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a user
+	 * Update a post
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
