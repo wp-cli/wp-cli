@@ -122,7 +122,7 @@ class Post_Command extends WP_CLI_Command {
 			'post_type' => 'post',
 			'post_status' => 'publish',
 			'post_author' => false,
-			'post_date' => date('Y-m-d H:i:s'),
+			'post_date' => current_time( 'mysql' ),
 		);
 
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
