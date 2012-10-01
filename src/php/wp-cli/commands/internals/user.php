@@ -205,4 +205,60 @@ class User_Command extends WP_CLI_Command {
 
 		$notify->finish();
 	}
+
+	/**
+	 * Add a user to a blog
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 **/
+	public function add_to_blog( $args, $assoc_args ) {
+
+		$defaults = array(
+				'id_or_login'      => $args[0],
+				'role'             => $args[1],
+			);
+		$args = array_merge( $assoc_args, $defaults );
+
+		if ( is_numeric( $args['id_or_login'] ) )
+			$user = get_user_by( 'id', $args['id_or_login'] );
+		else
+			$user = get_user_by( 'login', $args['id_or_login'] );
+
+		if ( empty( $args['id_or_login'] ) || empty( $user ) )
+			WP_CLI::error( "Please specify a valid user ID or user login to add to this blog" );
+
+		global $wp_roles;
+		if ( empty( $args['role'] ) || ! array_key_exists( $args['role'], $wp_roles->roles ) )
+			$args['role'] = get_option( 'default_role' );
+
+		add_user_to_blog( get_current_blog_id(), $user->ID, $args['role'] );
+		WP_CLI::success( "Added {$user->user_login} ({$user->ID}) to " . site_url() . " as {$args['role']}" );
+	}
+
+	/**
+	 * Remove a user from a blog
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 **/
+	public function remove_from_blog( $args, $assoc_args ) {
+
+		$defaults = array(
+				'id_or_login'      => $args[0],
+			);
+		$args = array_merge( $assoc_args, $defaults );
+
+		if ( is_numeric( $args['id_or_login'] ) )
+			$user = get_user_by( 'id', $args['id_or_login'] );
+		else
+			$user = get_user_by( 'login', $args['id_or_login'] );
+
+		if ( empty( $args['id_or_login'] ) || empty( $user ) )
+			WP_CLI::error( "Please specify a valid user ID or user login to remove from this blog" );
+
+		remove_user_from_blog( $user->ID, get_current_blog_id() );
+		WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() );
+	}
+
 }
