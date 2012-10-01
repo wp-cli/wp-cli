@@ -1,0 +1,16 @@
+wp-user-remove_from_blog(1) -- Remove a WordPress user from a blog
+====
+
+## SYNOPSIS
+
+`wp user remove_from_blog` <user-login>
+
+## OPTIONS
+
+* `<user-login>`:
+
+	The login of the user to remove from the blog.
+
+## EXAMPLES
+
+	wp user remove_from_blog bob
