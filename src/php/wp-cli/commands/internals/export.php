@@ -9,13 +9,15 @@ WP_CLI::add_command('export', 'Export_Command');
  * @subpackage commands/internals
  */
 class Export_Command extends WP_CLI_Command {
+	
+	protected $default_subcommand = 'export';
 
 	/**
 	 * Argument validation functions below
 	 */
-	private function validate_arguments( $args, $assoc_args ) {
+	protected function export( $args, $assoc_args ) {
 		$defaults = array(
-			'path'			=>		NULL,
+			'dir'			=>		NULL,
 			'start_date'	=>		NULL,
 			'end_date'		=>		NULL,
 			'post_type'		=>		NULL,
@@ -41,21 +43,21 @@ class Export_Command extends WP_CLI_Command {
 			exit(1);
 		}
 
-		$this->wxr_path = $assoc_args['path'];
+		$this->wxr_path = $assoc_args['dir'];
 
 		WP_CLI::line( 'Starting export process...' );
 		WP_CLI::line();
 		$this->export_wp( $this->export_args );
 	}
 
-	private function check_path( $path ) {
+	private function check_dir( $path ) {
 		if ( empty( $path ) ) {
-			WP_CLI::warning( 'missing --path parameter' );
+			WP_CLI::warning( 'missing --dir parameter' );
 			return false;
 		}
 
 		if ( !is_dir( $path ) ) {
-			WP_CLI::error( sprintf( "The path %s does not exist", $path ) );
+			WP_CLI::error( sprintf( "The directory %s does not exist", $path ) );
 		}
 
 		return true;
@@ -456,4 +458,3 @@ class Export_Command extends WP_CLI_Command {
 		}
 	}
 }
-

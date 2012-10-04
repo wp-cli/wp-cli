@@ -30,7 +30,7 @@ abstract class WP_CLI_Command {
 			// This if for reserved keywords in php (like list, isset)
 			$subcommand = '_' . $subcommand;
 		}
-
+		
 		if ( __FUNCTION__ == $subcommand || !method_exists( $this, $subcommand ) ) {
 			self::describe_command( get_class( $this ), WP_CLI_COMMAND );
 		} else {
