@@ -37,7 +37,7 @@ class Help_Command extends WP_CLI_Command {
 
 	private function show_available_subcommands( $command ) {
 		$class = WP_CLI::load_command( $command );
-		WP_CLI_Command::describe_command( $class, $command );
+		WP_CLI::describe_command( $class, $command );
 	}
 
 	private function general_help() {
@@ -48,7 +48,7 @@ class Help_Command extends WP_CLI_Command {
 
 			$out = "    wp $command";
 
-			$methods = WP_CLI_Command::get_subcommands( $class );
+			$methods = WP_CLI::get_subcommands( $class );
 
 			if ( !empty( $methods ) ) {
 				$out .= ' [' . implode( '|', $methods ) . ']';
