@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::add_command('export', 'Export_Command');
+WP_CLI::add_command( 'export', array( new Export_Command, 'export' ) );
 
 /**
  * Implement export command
@@ -8,14 +8,12 @@ WP_CLI::add_command('export', 'Export_Command');
  * @package wp-cli
  * @subpackage commands/internals
  */
-class Export_Command extends WP_CLI_Command {
-	
-	protected $default_subcommand = 'export';
+class Export_Command {
 
 	/**
 	 * Argument validation functions below
 	 */
-	protected function export( $args, $assoc_args ) {
+	public function export( $args, $assoc_args ) {
 		$defaults = array(
 			'dir'			=>		NULL,
 			'start_date'	=>		NULL,
