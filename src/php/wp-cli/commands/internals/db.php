@@ -10,7 +10,9 @@ WP_CLI::add_command( 'db', 'DB_Command' );
  **/
 class DB_Command extends WP_CLI_Command {
 
-	protected $default_subcommand = 'cli';
+	public static function get_default_subcommand() {
+		return 'cli';
+	}
 
 	protected $aliases = array( 'dump' => 'export' );
 

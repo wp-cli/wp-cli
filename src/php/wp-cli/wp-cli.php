@@ -14,6 +14,7 @@ define( 'WP_CLI_ROOT', __DIR__ . '/' );
 define( 'WP_CLI', true );
 
 // Include the wp-cli classes
+include WP_CLI_ROOT . 'dispatcher.php';
 include WP_CLI_ROOT . 'class-wp-cli.php';
 include WP_CLI_ROOT . 'class-wp-cli-command.php';
 include WP_CLI_ROOT . 'class-wp-cli-command-with-meta.php';
@@ -127,7 +128,7 @@ if ( isset( $assoc_args['require'] ) ) {
 // Generate strings for autocomplete
 if ( WP_CLI_AUTOCOMPLETE ) {
 	foreach ( WP_CLI::load_all_commands() as $name => $command ) {
-		$subcommands = implode( ' ', WP_CLI::get_subcommands( $command ) );
+		$subcommands = implode( ' ', WP_CLI\Dispatcher\get_subcommands( $command ) );
 		WP_CLI::line( $name .  ' ' . $subcommands );
 	}
 	exit;

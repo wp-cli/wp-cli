@@ -15,11 +15,11 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	protected $upgrade_refresh = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
 
-	function __construct( $args, $assoc_args ) {
+	function __construct() {
 		require_once ABSPATH.'wp-admin/includes/plugin.php';
 		require_once ABSPATH.'wp-admin/includes/plugin-install.php';
 
-		parent::__construct( $args, $assoc_args );
+		parent::__construct();
 	}
 
 	protected function _status_single( $details, $name, $version, $status ) {
