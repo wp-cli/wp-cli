@@ -335,10 +335,7 @@ class WP_CLI {
 
 		$implementation = self::load_command( $command );
 
-		if ( is_string( $implementation ) && class_exists( $implementation ) )
-			$instance = new $implementation( $arguments, $assoc_args );
-		else
-			call_user_func( $implementation, $arguments, $assoc_args );
+		\WP_CLI\Dispatcher\dispatch( $implementation, $arguments, $assoc_args );
 	}
 
 	static function load_command( $command ) {
@@ -359,61 +356,6 @@ class WP_CLI {
 		}
 
 		return WP_CLI::$commands[$command];
-	}
-
-	/**
-	 * Get the list of subcommands for a class.
-	 *
-	 * @param string $class
-	 * @return array The list of methods
-	 */
-	static function get_subcommands( $class ) {
-		$reflection = new ReflectionClass( $class );
-
-		return self::filter_methods( $reflection, function( $method ) {
-			$name = $method->name;
-
-			if ( strpos( $name, '_' ) === 0 ) {
-				$name = substr( $name, 1 );
-			}
-
-			return $name;
-		} );
-	}
-
-	private static function filter_methods( $reflection, $cb ) {
-		$methods = array();
-
-		foreach ( $reflection->getMethods() as $method ) {
-			if ( !$method->isPublic() || $method->isStatic() || $method->isConstructor() )
-				continue;
-
-			$methods[] = $cb( $method );
-		}
-
-		return $methods;
-	}
-
-	static function describe_command( $class, $command ) {
-		if ( method_exists( $class, 'help' ) ) {
-			$class::help();
-			return;
-		}
-
-		$methods = WP_CLI::get_subcommands( $class );
-
-		$out = "usage: wp $command";
-
-		if ( empty( $methods ) ) {
-			WP_CLI::line( $out );
-		} else {
-			$out .= ' [' . implode( '|', $methods ) . ']';
-
-			WP_CLI::line( $out );
-
-			WP_CLI::line();
-			WP_CLI::line( "See 'wp help $command <subcommand>' for more information on a specific subcommand." );
-		}
 	}
 
 	// back-compat

@@ -28,7 +28,7 @@ function maybe_load_man_page( $args ) {
 
 function show_available_subcommands( $command ) {
 	$class = \WP_CLI::load_command( $command );
-	\WP_CLI::describe_command( $class, $command );
+	\WP_CLI\Dispatcher\describe_command( $class, $command );
 }
 
 function general_help() {
@@ -39,7 +39,7 @@ function general_help() {
 
 		$out = "    wp $command";
 
-		$methods = \WP_CLI::get_subcommands( $class );
+		$methods = \WP_CLI\Dispatcher\get_subcommands( $class );
 
 		if ( !empty( $methods ) ) {
 			$out .= ' [' . implode( '|', $methods ) . ']';
