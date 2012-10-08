@@ -4,13 +4,13 @@ What is wp-cli?
 A set of tools for controlling WordPress installations from the command line.
 
 Requirements
-------------
+============
 
 * PHP >= 5.3
 * WP >= 3.3
 
 Installing
-----------
+==========
 
 **Via PEAR:**
 
@@ -29,9 +29,25 @@ sudo utils/dev-build
 
 You can replace `~/git/wp-cli` with whatever you want.
 
+MAMP, XAMP, etc.
+-----------
+
+If the `php` command is not available, you can try finding an appropriate binary:
+
+```sh
+./utils/find-php
+```
+
+Then, create an environment variable called `WP_CLI_PHP` with the path found by `find-php`.
+
+In a UNIX environment, you would do this by adding the following line to your `.bashrc` file:
+
+```sh
+WP_CLI_PHP=/path/to/php-binary
+```
 
 Using
------
+=====
 
 Go into a WordPress root folder:
 
@@ -100,7 +116,7 @@ wp theme status
 ```
 
 Adding commands
----------------
+===============
 
 Adding commands to wp-cli is very easy. You can even add them from within your own plugin.
 You can find more information about adding commands in the [Commands Cookbook](https://github.com/wp-cli/wp-cli/wiki/Commands-Cookbook) on our Wiki.
@@ -108,7 +124,7 @@ You can find more information about adding commands in the [Commands Cookbook](h
 **Please share the commands you make, issue a pull request to get them included in wp-cli by default.**
 
 Changelog
----------------
+=========
 
 **0.6**
 

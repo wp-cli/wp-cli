@@ -5,10 +5,6 @@
 # http://drupal.org/project/drush
 # And 0.09% to the author of this project:
 # https://github.com/88mph/wpadmin/blob/master/wpadmin.php
-#
-# This is a wrapper script that will run wp-cli.php with the most appropriate
-# php executable it can find on your system.
-#
 
 # Get the absolute path of this executable
 ORIGDIR=$(pwd)
@@ -59,20 +55,6 @@ else
 	# Default to using the php that we find on the PATH.
 	# Note that we need the full path to php here for Dreamhost, which behaves oddly.  See http://drupal.org/node/662926
 	php=`which php`
-
-	# We check for a command line (cli) version of php, and if found use that.
-	which php-cli >/dev/null 2>&1
-	if [ "$?" = 0 ] ; then
-		php=`which php-cli`
-	fi
-
-	# Special case for *AMP installers, since they normally don't set themselves as the default cli php out of the box.
-	for amp_php in /Applications/MAMP/bin/php/php5.3*/bin/php /Applications/MAMP/bin/php5*/bin/php /Applications/MAMP/bin/php/php5.[34]*/bin/php /opt/lampp/bin/php /Applications/xampp/xamppfiles/bin/php; do
-		if [ -x $amp_php ]; then
-			php=$amp_php
-			break
-		fi
-	done
 fi
 
 # Check to see if the user has provided a php.ini file or wp-cli.ini file in any conf dir
