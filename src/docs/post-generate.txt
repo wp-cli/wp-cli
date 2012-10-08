@@ -1,10 +1,10 @@
-wp-generate-posts(1) -- Generate a bunch of posts.
+wp-post-generate(1) -- Generate a bunch of posts.
 ====
 
 ## SYNOPSIS
 
-`wp generate posts` [--count=100] [--type=post] [--status=publish]
-[--author=<login>] [--max_depth=1]
+`wp post generate` [--count=100] [--post_type=post] [--post_status=publish]
+[--post_author=<login>] [--post_date=<date>] [--max_depth=1]
 
 ## OPTIONS
 
@@ -27,3 +27,7 @@ wp-generate-posts(1) -- Generate a bunch of posts.
 * `--max_depth`=<number>:
 
 	For hierarchical post types, generate child posts down to a certain depth. Default: 1
+
+## EXAMPLES
+
+	wp post generate --count=10 --post_type=page --post_date=1999-01-04

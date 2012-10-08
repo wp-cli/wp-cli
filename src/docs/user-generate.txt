@@ -1,9 +1,9 @@
-wp-generate-users(1) -- Generate a bunch of users.
+wp-user-generate(1) -- Generate a bunch of users.
 ====
 
 ## SYNOPSIS
 
-`wp generate users` [--count=100] [--role=<role>]
+`wp user generate` [--count=100] [--role=<role>]
 
 ## OPTIONS
 
