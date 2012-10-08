@@ -40,38 +40,6 @@ class Cache_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add global cache groups.
-	 *
-	 * @subcommand add-global-groups
-	 */
-	public function add_global_groups( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( 'usage: wp cache add_global_groups <group>' );
-			exit;
-		}
-
-		$group = $args[0];
-
-		wp_cache_add_global_groups( $group );
-	}
-
-	/**
-	 * Adds a non-persistent group to the list.
-	 *
-	 * @subcommand add-non-persistent-groups
-	 */
-	public function add_non_persistent_groups( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( 'usage: wp cache add_non_persistent_groups <group>' );
-			exit;
-		}
-
-		$group = $args[0];
-
-		wp_cache_add_non_persistent_groups( $group );
-	}
-
-	/**
 	 * Decrement a value in the object cache.
 	 *
 	 * @uses	wp_cache_decr
