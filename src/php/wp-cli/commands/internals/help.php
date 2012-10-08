@@ -39,7 +39,7 @@ function general_help() {
 
 		$out = "    wp $command";
 
-		$methods = \WP_CLI\Dispatcher\get_subcommands( $class );
+		$methods = array_keys( \WP_CLI\Dispatcher\get_subcommands( $class ) );
 
 		if ( !empty( $methods ) ) {
 			$out .= ' [' . implode( '|', $methods ) . ']';
