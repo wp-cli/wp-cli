@@ -361,6 +361,55 @@ class WP_CLI {
 		return WP_CLI::$commands[$command];
 	}
 
+	/**
+	 * Get the list of subcommands for a class.
+	 *
+	 * @param string $class
+	 * @return array The list of methods
+	 */
+	static function get_subcommands( $class ) {
+		$reflection = new ReflectionClass( $class );
+
+		$methods = array();
+
+		foreach ( $reflection->getMethods() as $method ) {
+			if ( !$method->isPublic() || $method->isStatic() || $method->isConstructor() )
+				continue;
+
+			$name = $method->name;
+
+			if ( strpos( $name, '_' ) === 0 ) {
+				$name = substr( $name, 1 );
+			}
+
+			$methods[] = $name;
+		}
+
+		return $methods;
+	}
+
+	static function describe_command( $class, $command ) {
+		if ( method_exists( $class, 'help' ) ) {
+			$class::help();
+			return;
+		}
+
+		$methods = WP_CLI::get_subcommands( $class );
+
+		$out = "usage: wp $command";
+
+		if ( empty( $methods ) ) {
+			WP_CLI::line( $out );
+		} else {
+			$out .= ' [' . implode( '|', $methods ) . ']';
+
+			WP_CLI::line( $out );
+
+			WP_CLI::line();
+			WP_CLI::line( "See 'wp help $command <subcommand>' for more information on a specific subcommand." );
+		}
+	}
+
 	// back-compat
 	static function addCommand( $name, $class ) {
 		self::add_command( $name, $class );

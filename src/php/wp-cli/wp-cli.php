@@ -127,7 +127,7 @@ if ( isset( $assoc_args['require'] ) ) {
 // Generate strings for autocomplete
 if ( WP_CLI_AUTOCOMPLETE ) {
 	foreach ( WP_CLI::load_all_commands() as $name => $command ) {
-		$subcommands = implode( ' ', WP_CLI_Command::get_subcommands( $command ) );
+		$subcommands = implode( ' ', WP_CLI::get_subcommands( $command ) );
 		WP_CLI::line( $name .  ' ' . $subcommands );
 	}
 	exit;
