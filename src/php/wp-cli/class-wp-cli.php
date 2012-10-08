@@ -370,19 +370,25 @@ class WP_CLI {
 	static function get_subcommands( $class ) {
 		$reflection = new ReflectionClass( $class );
 
-		$methods = array();
-
-		foreach ( $reflection->getMethods() as $method ) {
-			if ( !$method->isPublic() || $method->isStatic() || $method->isConstructor() )
-				continue;
-
+		return self::filter_methods( $reflection, function( $method ) {
 			$name = $method->name;
 
 			if ( strpos( $name, '_' ) === 0 ) {
 				$name = substr( $name, 1 );
 			}
 
-			$methods[] = $name;
+			return $name;
+		} );
+	}
+
+	private static function filter_methods( $reflection, $cb ) {
+		$methods = array();
+
+		foreach ( $reflection->getMethods() as $method ) {
+			if ( !$method->isPublic() || $method->isStatic() || $method->isConstructor() )
+				continue;
+
+			$methods[] = $cb( $method );
 		}
 
 		return $methods;
