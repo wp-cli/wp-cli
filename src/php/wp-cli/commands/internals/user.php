@@ -13,8 +13,7 @@ class User_Command extends WP_CLI_Command {
 	/**
 	 * List users
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @subcommand list
 	 **/
 	public function _list( $args, $assoc_args ) {
 		global $blog_id;

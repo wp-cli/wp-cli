@@ -5,9 +5,9 @@ wp-cache(1) -- Manage WordPress the object cache.
 
 wp cache add <key> <value> [<group>] [<expiration>]
 
-wp cache add_global_groups <group>
+wp cache add-global-groups <group>
 
-wp cache add_non_persistent_groups <group>
+wp cache add-non-persistent-groups <group>
 
 wp cache decr <key> [<offset>] [<group>]
 
@@ -33,11 +33,11 @@ wp cache type
 
 	Add a value to cache where <key> in <group> does not already exist.
 
-* `add_global_groups`:
+* `add-global-groups`:
 
 	Add a value to the global groups array.
 
-* `add_non_persistent_groups`:
+* `add-non-persistent-groups`:
 
 	Add a value to the non persistent groups array.
 

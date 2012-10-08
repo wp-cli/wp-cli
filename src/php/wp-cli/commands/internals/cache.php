@@ -42,11 +42,7 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Add global cache groups.
 	 *
-	 * @uses	wp_cache_add_global_groups
-	 *
-	 * @param 	array 			$args				Function arguments.
-	 * @param 	array 			$assoc_args			Function arguments with parameter key.
-	 * @return	void
+	 * @subcommand add-global-groups
 	 */
 	public function add_global_groups( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
@@ -62,11 +58,7 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Adds a non-persistent group to the list.
 	 *
-	 * @uses	wp_cache_add_non_persistent_groups
-	 *
-	 * @param 	array 			$args				Function arguments.
-	 * @param 	array 			$assoc_args			Function arguments with parameter key.
-	 * @return	void
+	 * @subcommand add-non-persistent-groups
 	 */
 	public function add_non_persistent_groups( $args, $assoc_args ) {
 		if ( empty( $args ) ) {

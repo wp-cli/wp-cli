@@ -19,33 +19,34 @@ function dispatch_subcommand( $class, $args, $assoc_args ) {
 	if ( empty( $args ) ) {
 		$subcommand = $class::get_default_subcommand();
 	} else {
-		$subcommand = subcommand_to_method( $class, array_shift( $args ) );
+		$subcommand = array_shift( $args );
 	}
 
-	if ( !$subcommand ) {
+	$method = subcommand_to_method( $class, $subcommand );
+
+	if ( !$method ) {
 		describe_command( $class, WP_CLI_COMMAND );
 		return;
 	}
 
 	$instance = new $class;
-	$instance->$subcommand( $args, $assoc_args );
+
+	$method->invoke( $instance, $args, $assoc_args );
 }
 
-function subcommand_to_method( $class, $command ) {
+function subcommand_to_method( $class, $subcommand ) {
 	$aliases = $class::get_aliases();
 
 	if ( isset( $aliases[ $subcommand ] ) ) {
-		$method = $aliases[ $subcommand ];
+		$subcommand = $aliases[ $subcommand ];
 	}
 
-	if ( !method_exists( $class, $subcommand ) ) {
-		// This if for reserved keywords in php (like list, isset)
-		$subcommand = '_' . $subcommand;
-	}
+	$subcommands = get_subcommands( $class );
 
-	if ( !method_exists( $class, $method ) ) {
+	if ( !isset( $subcommands[ $subcommand ] ) )
 		return false;
-	}
+
+	return $subcommands[ $subcommand ];
 }
 
 function describe_command( $class, $command ) {
@@ -54,7 +55,7 @@ function describe_command( $class, $command ) {
 		return;
 	}
 
-	$methods = get_subcommands( $class );
+	$methods = array_keys( get_subcommands( $class ) );
 
 	$out = "usage: wp $command";
 
@@ -74,7 +75,7 @@ function describe_command( $class, $command ) {
  * Get the list of subcommands for a class (reverse-dispatch).
  *
  * @param string $class
- * @return array The list of methods
+ * @return array('subcommand' => $method) The list of methods
  */
 function get_subcommands( $class ) {
 	if ( !is_string( $class ) )
@@ -82,27 +83,28 @@ function get_subcommands( $class ) {
 
 	$reflection = new \ReflectionClass( $class );
 
-	return _filter_methods( $reflection, function( $method ) {
-		$name = $method->name;
-
-		if ( strpos( $name, '_' ) === 0 ) {
-			$name = substr( $name, 1 );
-		}
-
-		return $name;
-	} );
-}
-
-function _filter_methods( $reflection, $cb ) {
 	$methods = array();
 
 	foreach ( $reflection->getMethods() as $method ) {
-		if ( !$method->isPublic() || $method->isStatic() || $method->isConstructor() )
+		if ( !_is_good_method( $method ) )
 			continue;
 
-		$methods[] = $cb( $method );
+		$methods[ _get_subcommand_name( $method ) ] = $method;
 	}
 
 	return $methods;
+}
+
+function _is_good_method( $method ) {
+	return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
+}
+
+function _get_subcommand_name( $method ) {
+	$comment = $method->getDocComment();
+
+	if ( preg_match( '/@subcommand\s+([a-z-]+)/', $comment, $matches ) )
+		return $matches[1];
+
+	return $method->name;
 }
 

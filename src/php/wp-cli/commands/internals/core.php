@@ -253,8 +253,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	/**
 	 * Update the WordPress database
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @subcommand update-db
 	 */
 	function update_db() {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
