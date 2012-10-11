@@ -101,7 +101,7 @@ class CompositeCommand implements Command {
 }
 
 
-class SingleCommand extends CompositeCommand {
+class SingleCommand implements Command {
 
 	function __construct( $name, $callable ) {
 		$this->name = $name;
@@ -120,10 +120,12 @@ class SingleCommand extends CompositeCommand {
 		\WP_CLI::line(  "usage: wp $this->name" );
 	}
 
-	protected function find_subcommand( &$args ) {
+	function invoke( $args, $assoc_args ) {
 		$method = new \ReflectionMethod( $this->callable, '__invoke' );
 
-		return new SingleSubcommand( $method, $this );
+		$subcommand = new SingleSubcommand( $method, $this );
+
+		$subcommand->invoke( $args, $assoc_args );
 	}
 }
 
