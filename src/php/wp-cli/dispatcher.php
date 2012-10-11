@@ -16,37 +16,37 @@ function dispatch( $implementation, $arguments, $assoc_args ) {
  * @param array $assoc_args
  */
 function dispatch_subcommand( $class, $args, $assoc_args ) {
-	if ( empty( $args ) ) {
-		$subcommand = $class::get_default_subcommand();
-	} else {
-		$subcommand = array_shift( $args );
-	}
+	$subcommand = find_subcommand( $class, $args );
 
-	$method = subcommand_to_method( $class, $subcommand );
-
-	if ( !$method ) {
+	if ( !$subcommand ) {
 		describe_command( $class, WP_CLI_COMMAND );
 		return;
 	}
 
 	$instance = new $class;
 
-	$method->invoke( $instance, $args, $assoc_args );
+	$subcommand->invoke( $instance, $args, $assoc_args );
 }
 
-function subcommand_to_method( $class, $subcommand ) {
+function find_subcommand( $class, $args ) {
+	if ( empty( $args ) ) {
+		$name = $class::get_default_subcommand();
+	} else {
+		$name = array_shift( $args );
+	}
+
 	$aliases = $class::get_aliases();
 
-	if ( isset( $aliases[ $subcommand ] ) ) {
-		$subcommand = $aliases[ $subcommand ];
+	if ( isset( $aliases[ $name ] ) ) {
+		$name = $aliases[ $name ];
 	}
 
 	$subcommands = get_subcommands( $class );
 
-	if ( !isset( $subcommands[ $subcommand ] ) )
+	if ( !isset( $subcommands[ $name ] ) )
 		return false;
 
-	return $subcommands[ $subcommand ];
+	return $subcommands[ $name ];
 }
 
 function describe_command( $class, $command ) {
@@ -64,13 +64,10 @@ function describe_command( $class, $command ) {
 
 	$i = 0;
 
-	foreach ( $methods as $subcommand => $method ) {
-		$synopsis = _get_subcommand_synopsis( $method );
+	foreach ( $methods as $name => $subcommand ) {
+		$prefix = ( 0 == $i++ ) ? 'usage:' : '   or:';
 
-		$prefix = ( 0 == $i++ ) ? 'usage: ' : '   or: ';
-
-		$desc = "wp $command $subcommand $synopsis";
-		\WP_CLI::line( $prefix . $desc );
+		\WP_CLI::line( "$prefix wp $command $name " . $subcommand->get_synopsis() );
 	}
 
 	\WP_CLI::line();
@@ -81,7 +78,7 @@ function describe_command( $class, $command ) {
  * Get the list of subcommands for a class.
  *
  * @param string $class
- * @return array('subcommand' => $method) The list of methods
+ * @return array('subcommand' => Subcommand) The list of subcommands
  */
 function get_subcommands( $class ) {
 	if ( !is_string( $class ) )
@@ -89,37 +86,51 @@ function get_subcommands( $class ) {
 
 	$reflection = new \ReflectionClass( $class );
 
-	$methods = array();
+	$subcommands = array();
 
 	foreach ( $reflection->getMethods() as $method ) {
 		if ( !_is_good_method( $method ) )
 			continue;
 
-		$methods[ _get_subcommand_name( $method ) ] = $method;
+		$subcommand = new Subcommand( $method );
+
+		$subcommands[ $subcommand->get_name() ] = $subcommand;
 	}
 
-	return $methods;
+	return $subcommands;
 }
 
 function _is_good_method( $method ) {
 	return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
 }
 
-function _get_subcommand_name( $method ) {
-	$comment = $method->getDocComment();
 
-	if ( preg_match( '/@subcommand\s+([a-z-]+)/', $comment, $matches ) )
+class Subcommand {
+
+	function __construct( $method ) {
+		$this->method = $method;
+	}
+
+	function get_name() {
+		$comment = $this->method->getDocComment();
+
+		if ( preg_match( '/@subcommand\s+([a-z-]+)/', $comment, $matches ) )
+			return $matches[1];
+
+		return $this->method->name;
+	}
+
+	function get_synopsis() {
+		$comment = $this->method->getDocComment();
+
+		if ( !preg_match( '/@synopsis\s+([^\n]+)/', $comment, $matches ) )
+			return false;
+
 		return $matches[1];
+	}
 
-	return $method->name;
-}
-
-function _get_subcommand_synopsis( $method ) {
-	$comment = $method->getDocComment();
-
-	if ( !preg_match( '/@synopsis\s+([^\n]+)/', $comment, $matches ) )
-		return false;
-
-	return $matches[1];
+	function invoke() {
+		return call_user_func_array( array( $this->method, 'invoke' ), func_get_args() );
+	}
 }
 
