@@ -17,6 +17,22 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Get an option
+	 *
+	 * @synopsis <key> [--json]
+	 */
+	public function get( $args, $assoc_args ) {
+		list( $key ) = $args;
+
+		$value = get_option( $key );
+
+		if ( false === $value )
+			die(1);
+
+		WP_CLI::print_value( $value, $assoc_args );
+	}
+
+	/**
 	 * Add an option.
 	 *
 	 * @synopsis <key> <value> [--json]
@@ -60,21 +76,5 @@ class Option_Command extends WP_CLI_Command {
 		if ( !delete_option( $key ) ) {
 			WP_CLI::error( "Could not delete '$key' option. Does it exist?" );
 		}
-	}
-
-	/**
-	 * Get an option
-	 *
-	 * @synopsis <key> [--json]
-	 */
-	public function get( $args, $assoc_args ) {
-		list( $key ) = $args;
-
-		$value = get_option( $key );
-
-		if ( false === $value )
-			die(1);
-
-		WP_CLI::print_value( $value, $assoc_args );
 	}
 }

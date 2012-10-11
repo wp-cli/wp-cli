@@ -157,15 +157,6 @@ class Subcommand {
 		return $this->method->invoke( $instance, $args, $assoc_args );
 	}
 
-	protected function get_synopsis() {
-		$comment = $this->method->getDocComment();
-
-		if ( !preg_match( '/@synopsis\s+([^\n]+)/', $comment, $matches ) )
-			return false;
-
-		return $matches[1];
-	}
-
 	protected function check_args( $args, $assoc_args ) {
 		$accepted_params = $this->parse_synopsis( $this->get_synopsis() );
 
@@ -178,6 +169,15 @@ class Subcommand {
 			$this->show_usage();
 			exit(1);
 		}
+	}
+
+	protected function get_synopsis() {
+		$comment = $this->method->getDocComment();
+
+		if ( !preg_match( '/@synopsis\s+([^\n]+)/', $comment, $matches ) )
+			return false;
+
+		return $matches[1];
 	}
 
 	protected function parse_synopsis( $synopsis ) {
