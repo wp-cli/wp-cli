@@ -52,10 +52,7 @@ class CompositeCommand implements Command {
 			return;
 		}
 
-		$class = $this->class;
-		$instance = new $class;
-
-		$subcommand->invoke( $instance, $args, $assoc_args );
+		$subcommand->invoke( $args, $assoc_args );
 	}
 
 	protected function find_subcommand( &$args ) {
@@ -90,7 +87,7 @@ class CompositeCommand implements Command {
 			if ( !self::_is_good_method( $method ) )
 				continue;
 
-			$subcommand = new Subcommand( $method, $this->name );
+			$subcommand = new MethodSubcommand( $method, $this );
 
 			$subcommands[ $subcommand->get_name() ] = $subcommand;
 		}
@@ -123,16 +120,10 @@ class SingleCommand extends CompositeCommand {
 		\WP_CLI::line(  "usage: wp $this->name" );
 	}
 
-	function invoke( $args, $assoc_args ) {
-		$subcommand = $this->find_subcommand( $args );
-
-		$subcommand->invoke( $this->callable, $args, $assoc_args );
-	}
-
 	protected function find_subcommand( &$args ) {
 		$method = new \ReflectionMethod( $this->callable, '__invoke' );
 
-		return new SingleSubcommand( $method, $this->name );
+		return new SingleSubcommand( $method, $this );
 	}
 }
 
