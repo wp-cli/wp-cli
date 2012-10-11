@@ -11,7 +11,7 @@ abstract class WP_CLI_Command {
 		return false;
 	}
 
-	static function get_aliases() {
+	public static function get_aliases() {
 		return array();
 	}
 

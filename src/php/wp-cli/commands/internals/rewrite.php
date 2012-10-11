@@ -10,9 +10,6 @@ WP_CLI:: add_command('rewrite', 'Rewrite_Command');
  */
 class Rewrite_Command extends WP_CLI_Command {
 
-	protected $aliases = array(
-	);
-
 	/**
 	 * Flush rules
 	 *

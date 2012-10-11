@@ -10,9 +10,11 @@ WP_CLI::add_command('option', 'Option_Command');
  */
 class Option_Command extends WP_CLI_Command {
 
-	protected $aliases = array(
-		'set' => 'update'
-	);
+	public static function get_aliases() {
+		return array(
+			'set' => 'update'
+		);
+	}
 
 	/**
 	 * Add an option

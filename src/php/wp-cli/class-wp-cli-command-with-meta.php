@@ -7,11 +7,13 @@
  */
 abstract class WP_CLI_Command_With_Meta extends WP_CLI_Command {
 
-	protected $meta_type;
+	public static function get_aliases() {
+		return array(
+			'set' => 'update'
+		);
+	}
 
-	protected $aliases = array(
-		'set' => 'update'
-	);
+	protected $meta_type;
 
 	/**
 	 * Get meta field value
