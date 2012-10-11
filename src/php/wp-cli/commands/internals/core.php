@@ -88,6 +88,9 @@ class Core_Command extends WP_CLI_Command {
 		}
 	}
 
+    /**
+     * @subcommand install-network
+     */
 	public function install_network( $args, $assoc_args ) {
 		if ( is_multisite() )
 			WP_CLI::error( 'This already is a multisite install.' );
