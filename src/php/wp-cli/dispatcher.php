@@ -83,7 +83,7 @@ class CompositeCommand extends Command {
 		$subcommand->invoke( $instance, $args, $assoc_args );
 	}
 
-	protected function find_subcommand( $args ) {
+	protected function find_subcommand( &$args ) {
 		$class = $this->implementation;
 
 		if ( empty( $args ) ) {
