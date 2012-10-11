@@ -19,7 +19,7 @@ class WP_CLI {
 		if ( is_string( $class ) )
 			$command = new \WP_CLI\Dispatcher\CompositeCommand( $name, $class );
 		else
-			$command = new \WP_CLI\Dispatcher\SimpleCommand( $name, $class );
+			$command = new \WP_CLI\Dispatcher\SingleCommand( $name, $class );
 
 		self::$commands[ $name ] = $command;
 	}
