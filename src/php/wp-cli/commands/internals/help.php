@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::add_command( 'help', 'Help_Command', 'help' );
+WP_CLI::add_command( 'help', new Help_Command );
 
 /**
  * Implement help command
@@ -10,7 +10,7 @@ WP_CLI::add_command( 'help', 'Help_Command', 'help' );
  */
 class Help_Command extends WP_CLI_Command {
 
-	function help( $args ) {
+	function __invoke( $args ) {
 		if ( empty( $args ) ) {
 			self::general_help();
 			return;

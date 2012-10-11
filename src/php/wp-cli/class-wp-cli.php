@@ -14,13 +14,12 @@ class WP_CLI {
 	 *
 	 * @param string $name The name of the command that will be used in the cli
 	 * @param string $class The class to manage the command
-	 * @param string $method The method to call, instead of subcommands
 	 */
-	public function add_command( $name, $class, $method = false ) {
-		if ( !$method )
+	public function add_command( $name, $class ) {
+		if ( is_string( $class ) )
 			$command = new \WP_CLI\Dispatcher\CompositeCommand( $name, $class );
 		else
-			$command = new \WP_CLI\Dispatcher\SimpleCommand( $name, $class, $method );
+			$command = new \WP_CLI\Dispatcher\SimpleCommand( $name, $class );
 
 		self::$commands[ $name ] = $command;
 	}
