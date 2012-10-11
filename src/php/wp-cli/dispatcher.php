@@ -2,106 +2,130 @@
 
 namespace WP_CLI\Dispatcher;
 
-function dispatch( $implementation, $arguments, $assoc_args ) {
-	if ( is_string( $implementation ) && class_exists( $implementation ) )
-		dispatch_subcommand( $implementation, $arguments, $assoc_args );
-	else
-		call_user_func( $implementation, $arguments, $assoc_args );
+abstract class Command {
+
+	function __construct( $implementation, $name ) {
+		$this->implementation = $implementation;
+		$this->name = $name;
+	}
+
+	abstract function autocomplete();
+	abstract function shortdesc();
+	abstract function show_usage();
+	abstract function invoke( $arguments, $assoc_args );
 }
 
-/**
- * Transfers the handling to the appropriate method
- *
- * @param array $args
- * @param array $assoc_args
- */
-function dispatch_subcommand( $class, $args, $assoc_args ) {
-	$subcommand = find_subcommand( $class, $args );
 
-	if ( !$subcommand ) {
-		describe_command( $class, WP_CLI_COMMAND );
-		return;
+class SimpleCommand extends Command {
+
+	function autocomplete() {
+		return $this->name;
 	}
 
-	$instance = new $class;
+	function shortdesc() {
+		return '';
+	}
 
-	$subcommand->invoke( $instance, $args, $assoc_args );
+	function show_usage() {
+		\WP_CLI::line(  "usage: wp $this->name" );
+	}
+
+	function invoke( $arguments, $assoc_args ) {
+		call_user_func( $this->implementation, $arguments, $assoc_args );
+	}
 }
 
-function find_subcommand( $class, $args ) {
-	if ( empty( $args ) ) {
-		$name = $class::get_default_subcommand();
-	} else {
-		$name = array_shift( $args );
+
+class CompositeCommand extends Command {
+
+	function autocomplete() {
+		$subcommands = array_keys( $this->get_subcommands() );
+		return $this->name .  ' ' . implode( ' ', $subcommands );
 	}
 
-	$aliases = $class::get_aliases();
+	function shortdesc() {
+		$methods = array_keys( $this->get_subcommands() );
 
-	if ( isset( $aliases[ $name ] ) ) {
-		$name = $aliases[ $name ];
+		return implode( '|', $methods );
 	}
 
-	$subcommands = get_subcommands( $class );
+	function show_usage() {
+		if ( method_exists( $this->implementation, 'help' ) ) {
+			$class::help();
+			return;
+		}
 
-	if ( !isset( $subcommands[ $name ] ) )
-		return false;
+		$methods = $this->get_subcommands();
 
-	return $subcommands[ $name ];
-}
+		$i = 0;
 
-function describe_command( $class, $command ) {
-	if ( method_exists( $class, 'help' ) ) {
-		$class::help();
-		return;
+		foreach ( $methods as $name => $subcommand ) {
+			$prefix = ( 0 == $i++ ) ? 'usage: ' : '   or: ';
+
+			$subcommand->show_usage( $prefix );
+		}
+
+		\WP_CLI::line();
+		\WP_CLI::line( "See 'wp help $this->name <subcommand>' for more information on a specific subcommand." );
 	}
 
-	$methods = get_subcommands( $class );
+	function invoke( $args, $assoc_args ) {
+		$subcommand = $this->find_subcommand( $args );
 
-	if ( empty( $methods ) ) {
-		\WP_CLI::line(  "usage: wp $command" );
-		return;
+		if ( !$subcommand ) {
+			$this->show_usage();
+			return;
+		}
+
+		$class = $this->implementation;
+		$instance = new $class;
+
+		$subcommand->invoke( $instance, $args, $assoc_args );
 	}
 
-	$i = 0;
+	protected function find_subcommand( $args ) {
+		$class = $this->implementation;
 
-	foreach ( $methods as $name => $subcommand ) {
-		$prefix = ( 0 == $i++ ) ? 'usage: ' : '   or: ';
+		if ( empty( $args ) ) {
+			$name = $class::get_default_subcommand();
+		} else {
+			$name = array_shift( $args );
+		}
 
-		$subcommand->show_usage( $prefix );
+		$aliases = $class::get_aliases();
+
+		if ( isset( $aliases[ $name ] ) ) {
+			$name = $aliases[ $name ];
+		}
+
+		$subcommands = $this->get_subcommands();
+
+		if ( !isset( $subcommands[ $name ] ) )
+			return false;
+
+		return $subcommands[ $name ];
 	}
 
-	\WP_CLI::line();
-	\WP_CLI::line( "See 'wp help $command <subcommand>' for more information on a specific subcommand." );
-}
+	protected function get_subcommands() {
+		$reflection = new \ReflectionClass( $this->implementation );
 
-/**
- * Get the list of subcommands for a class.
- *
- * @param string $class
- * @return array('subcommand' => Subcommand) The list of subcommands
- */
-function get_subcommands( $class ) {
-	if ( !is_string( $class ) )
-		return array();
+		$subcommands = array();
 
-	$reflection = new \ReflectionClass( $class );
+		foreach ( $reflection->getMethods() as $method ) {
+			if ( !self::_is_good_method( $method ) )
+				continue;
 
-	$subcommands = array();
+			$subcommand = new Subcommand( $method, $this->name );
 
-	foreach ( $reflection->getMethods() as $method ) {
-		if ( !_is_good_method( $method ) )
-			continue;
+			$subcommands[ $subcommand->get_name() ] = $subcommand;
+		}
 
-		$subcommand = new Subcommand( $method, 'TODO' );
-
-		$subcommands[ $subcommand->get_name() ] = $subcommand;
+		return $subcommands;
 	}
 
-	return $subcommands;
-}
-
-function _is_good_method( $method ) {
-	return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
+	private static function _is_good_method( $method ) {
+		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
+	}
 }
 
 
