@@ -17,13 +17,13 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add an option
+	 * Add an option.
 	 *
-	 * @param array $args
-	 **/
+	 * @synopsis <key> <value> [--json]
+	 */
 	public function add( $args, $assoc_args ) {
 		if ( count( $args ) < 2 ) {
-			WP_CLI::line( "usage: wp option add <option-name> <option-value>" );
+			WP_CLI::line( "usage: wp option add <key> <value>" );
 			exit;
 		}
 
@@ -39,11 +39,11 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Update an option
 	 *
-	 * @param array $args
+	 * @synopsis <key> <value> [--json]
 	 **/
 	public function update( $args, $assoc_args ) {
 		if ( count( $args ) < 2 ) {
-			WP_CLI::line( "usage: wp option update <option-name> <option-value>" );
+			WP_CLI::line( "usage: wp option update <key> <value>" );
 			exit;
 		}
 
@@ -62,11 +62,11 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Delete an option
 	 *
-	 * @param array $args
-	 **/
+	 * @synopsis <key>
+	 */
 	public function delete( $args ) {
 		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp option get <option-name>" );
+			WP_CLI::line( "usage: wp option delete <key>" );
 			exit;
 		}
 
@@ -80,11 +80,11 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Get an option
 	 *
-	 * @param array $args
-	 **/
+	 * @synopsis <key> [--json]
+	 */
 	public function get( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp option get <option-name>" );
+			WP_CLI::line( "usage: wp option get <key>" );
 			exit;
 		}
 
