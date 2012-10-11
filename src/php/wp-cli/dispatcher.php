@@ -2,41 +2,21 @@
 
 namespace WP_CLI\Dispatcher;
 
-abstract class Command {
+interface Command {
 
-	function __construct( $implementation, $name ) {
-		$this->implementation = $implementation;
+	function autocomplete();
+	function shortdesc();
+	function show_usage();
+	function invoke( $arguments, $assoc_args );
+}
+
+
+class CompositeCommand implements Command {
+
+	function __construct( $name, $class ) {
 		$this->name = $name;
+		$this->class = $class;
 	}
-
-	abstract function autocomplete();
-	abstract function shortdesc();
-	abstract function show_usage();
-	abstract function invoke( $arguments, $assoc_args );
-}
-
-
-class SimpleCommand extends Command {
-
-	function autocomplete() {
-		return $this->name;
-	}
-
-	function shortdesc() {
-		return '';
-	}
-
-	function show_usage() {
-		\WP_CLI::line(  "usage: wp $this->name" );
-	}
-
-	function invoke( $arguments, $assoc_args ) {
-		call_user_func( $this->implementation, $arguments, $assoc_args );
-	}
-}
-
-
-class CompositeCommand extends Command {
 
 	function autocomplete() {
 		$subcommands = array_keys( $this->get_subcommands() );
@@ -50,7 +30,7 @@ class CompositeCommand extends Command {
 	}
 
 	function show_usage() {
-		if ( method_exists( $this->implementation, 'help' ) ) {
+		if ( method_exists( $this->class, 'help' ) ) {
 			$class::help();
 			return;
 		}
@@ -77,14 +57,14 @@ class CompositeCommand extends Command {
 			return;
 		}
 
-		$class = $this->implementation;
+		$class = $this->class;
 		$instance = new $class;
 
 		$subcommand->invoke( $instance, $args, $assoc_args );
 	}
 
 	protected function find_subcommand( &$args ) {
-		$class = $this->implementation;
+		$class = $this->class;
 
 		if ( empty( $args ) ) {
 			$name = $class::get_default_subcommand();
@@ -106,8 +86,8 @@ class CompositeCommand extends Command {
 		return $subcommands[ $name ];
 	}
 
-	protected function get_subcommands() {
-		$reflection = new \ReflectionClass( $this->implementation );
+	private function get_subcommands() {
+		$reflection = new \ReflectionClass( $this->class );
 
 		$subcommands = array();
 
@@ -125,6 +105,36 @@ class CompositeCommand extends Command {
 
 	private static function _is_good_method( $method ) {
 		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
+	}
+}
+
+
+class SimpleCommand extends CompositeCommand {
+
+	function __construct( $name, $class, $method ) {
+		$this->name = $name;
+		$this->class = $class;
+		$this->method = $method;
+	}
+
+	function autocomplete() {
+		return $this->name;
+	}
+
+	function shortdesc() {
+		return '';
+	}
+
+	function show_usage() {
+		\WP_CLI::line(  "usage: wp $this->name" );
+	}
+
+	protected function find_subcommand( &$args ) {
+		$class = $this->class;
+
+		$method = new \ReflectionMethod( $this->class, $this->method );
+
+		return new Subcommand( $method, $this->name );
 	}
 }
 
@@ -248,4 +258,5 @@ class Subcommand {
 		return $patterns;
 	}
 }
+
 
