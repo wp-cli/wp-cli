@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::add_command( 'home', 'Home_Command', 'home' );
+WP_CLI::add_command( 'home', new Home_Command );
 
 /**
  * Implement home command
@@ -10,7 +10,7 @@ WP_CLI::add_command( 'home', 'Home_Command', 'home' );
  */
 class Home_Command extends WP_CLI_Command {
 
-	function home() {
+	function __invoke() {
 		// The url for the wp-cli repository
 		$repository_url = 'https://github.com/wp-cli/wp-cli';
 

@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::add_command( 'export', 'Export_Command', 'export' );
+WP_CLI::add_command( 'export', new Export_Command );
 
 /**
  * Implement export command
@@ -15,7 +15,7 @@ class Export_Command extends WP_CLI_Command {
 	 *
 	 * @synopsis --dir=<dir> [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--author=<login>] [--category=<cat>] [--skip_comments]
 	 */
-	public function export( $args, $assoc_args ) {
+	public function __invoke( $args, $assoc_args ) {
 		$defaults = array(
 			'dir'			=>		NULL,
 			'start_date'	=>		NULL,

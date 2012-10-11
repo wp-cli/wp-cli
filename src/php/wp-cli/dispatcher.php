@@ -106,10 +106,9 @@ class CompositeCommand implements Command {
 
 class SimpleCommand extends CompositeCommand {
 
-	function __construct( $name, $class, $method ) {
+	function __construct( $name, $callable ) {
 		$this->name = $name;
-		$this->class = $class;
-		$this->method = $method;
+		$this->callable = $callable;
 	}
 
 	function autocomplete() {
@@ -124,10 +123,14 @@ class SimpleCommand extends CompositeCommand {
 		\WP_CLI::line(  "usage: wp $this->name" );
 	}
 
-	protected function find_subcommand( &$args ) {
-		$class = $this->class;
+	function invoke( $args, $assoc_args ) {
+		$subcommand = $this->find_subcommand( $args );
 
-		$method = new \ReflectionMethod( $this->class, $this->method );
+		$subcommand->invoke( $this->callable, $args, $assoc_args );
+	}
+
+	protected function find_subcommand( &$args ) {
+		$method = new \ReflectionMethod( $this->callable, '__invoke' );
 
 		return new SimpleSubcommand( $method, $this->name );
 	}
