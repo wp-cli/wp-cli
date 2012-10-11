@@ -4,9 +4,8 @@ namespace WP_CLI\Dispatcher;
 
 abstract class Subcommand {
 
-	function __construct( $method, $parent ) {
+	function __construct( $method ) {
 		$this->method = $method;
-		$this->parent = $parent;
 	}
 
 	abstract function show_usage();
@@ -105,6 +104,12 @@ abstract class Subcommand {
 
 class MethodSubcommand extends Subcommand {
 
+	function __construct( $method, $parent ) {
+		$this->parent = $parent;
+
+		parent::__construct( $method );
+	}
+
 	function show_usage( $prefix = 'usage: ' ) {
 		$command = $this->parent->name;
 		$subcommand = $this->get_name();
@@ -128,24 +133,7 @@ class MethodSubcommand extends Subcommand {
 		$class = $this->parent->class;
 		$instance = new $class;
 
-		return $this->method->invoke( $instance, $args, $assoc_args );
-	}
-}
-
-
-class SingleSubcommand extends Subcommand {
-
-	function show_usage( $prefix = 'usage: ' ) {
-		$command = $this->parent->name;
-		$synopsis = $this->get_synopsis();
-
-		\WP_CLI::line( $prefix . "wp $command $synopsis" );
-	}
-
-	function invoke( $args, $assoc_args ) {
-		$this->check_args( $args, $assoc_args );
-
-		return $this->method->invoke( $this->parent->callable, $args, $assoc_args );
+		$this->method->invoke( $instance, $args, $assoc_args );
 	}
 }
 

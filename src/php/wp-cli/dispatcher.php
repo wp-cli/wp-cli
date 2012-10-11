@@ -101,11 +101,15 @@ class CompositeCommand implements Command {
 }
 
 
-class SingleCommand implements Command {
+class SingleCommand extends Subcommand implements Command {
 
 	function __construct( $name, $callable ) {
 		$this->name = $name;
 		$this->callable = $callable;
+
+		$method = new \ReflectionMethod( $this->callable, '__invoke' );
+
+		parent::__construct( $method );
 	}
 
 	function autocomplete() {
@@ -116,16 +120,17 @@ class SingleCommand implements Command {
 		return '';
 	}
 
-	function show_usage() {
-		\WP_CLI::line(  "usage: wp $this->name" );
+	function show_usage( $prefix = 'usage: ' ) {
+		$command = $this->name;
+		$synopsis = $this->get_synopsis();
+
+		\WP_CLI::line( $prefix . "wp $command $synopsis" );
 	}
 
 	function invoke( $args, $assoc_args ) {
-		$method = new \ReflectionMethod( $this->callable, '__invoke' );
+		$this->check_args( $args, $assoc_args );
 
-		$subcommand = new SingleSubcommand( $method, $this );
-
-		$subcommand->invoke( $args, $assoc_args );
+		$this->method->invoke( $this->callable, $args, $assoc_args );
 	}
 }
 
