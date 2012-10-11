@@ -134,7 +134,7 @@ class SimpleCommand extends CompositeCommand {
 
 		$method = new \ReflectionMethod( $this->class, $this->method );
 
-		return new Subcommand( $method, $this->name );
+		return new SimpleSubcommand( $method, $this->name );
 	}
 }
 
@@ -146,6 +146,13 @@ class Subcommand {
 		$this->command = $command;
 	}
 
+	function show_usage( $prefix = 'usage: ' ) {
+		$name = $this->get_name();
+		$synopsis = $this->get_synopsis();
+
+		\WP_CLI::line( $prefix . "wp $this->command $name $synopsis" );
+	}
+
 	function get_name() {
 		$comment = $this->method->getDocComment();
 
@@ -153,13 +160,6 @@ class Subcommand {
 			return $matches[1];
 
 		return $this->method->name;
-	}
-
-	function show_usage( $prefix = 'usage: ' ) {
-		$name = $this->get_name();
-		$synopsis = $this->get_synopsis();
-
-		\WP_CLI::line( $prefix . "wp $this->command $name $synopsis" );
 	}
 
 	function invoke( $instance, $args, $assoc_args ) {
@@ -197,9 +197,7 @@ class Subcommand {
 		if ( empty( $errors ) )
 			return;
 
-		foreach ( $errors as $error )
-			\WP_CLI::warning( $error );
-
+		$this->show_usage();
 		exit(1);
 	}
 
@@ -259,4 +257,13 @@ class Subcommand {
 	}
 }
 
+
+class SimpleSubcommand extends Subcommand {
+
+	function show_usage( $prefix = 'usage: ' ) {
+		$synopsis = $this->get_synopsis();
+
+		\WP_CLI::line( $prefix . "wp $this->command $synopsis" );
+	}
+}
 
