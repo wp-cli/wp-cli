@@ -22,6 +22,15 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		parent::__construct();
 	}
 
+	/**
+	 * See the status of one or all plugins.
+	 *
+	 * @synopsis [<plugin>]
+	 */
+	function status( $args ) {
+		parent::status( $args );
+	}
+
 	protected function _status_single( $details, $name, $version, $status ) {
 		WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
 		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
@@ -199,6 +208,15 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		}
 
 		return $items;
+	}
+
+	/**
+	 * Install a plugin from wordpress.org or from a zip file.
+	 *
+	 * @synopsis <plugin|zip> [--version=<version>] [--activate]
+	 */
+	function install( $args, $assoc_args ) {
+		parent::install( $args, $assoc_args );
 	}
 
 	/**

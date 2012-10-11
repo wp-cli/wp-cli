@@ -223,7 +223,7 @@ class Subcommand {
 
 	private static function get_patterns() {
 		$p_name = '(?P<name>[a-z-]+)';
-		$p_value = '<(?P<value>[a-z-]+)>';
+		$p_value = '<(?P<value>[a-z-|]+)>';
 
 		$param_types = array(
 			'positional' => $p_value,
