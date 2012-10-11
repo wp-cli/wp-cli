@@ -30,11 +30,6 @@ class CompositeCommand implements Command {
 	}
 
 	function show_usage() {
-		if ( method_exists( $this->class, 'help' ) ) {
-			$class::help();
-			return;
-		}
-
 		$methods = $this->get_subcommands();
 
 		$i = 0;
