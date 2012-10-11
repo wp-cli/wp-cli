@@ -104,7 +104,7 @@ class CompositeCommand implements Command {
 }
 
 
-class SimpleCommand extends CompositeCommand {
+class SingleCommand extends CompositeCommand {
 
 	function __construct( $name, $callable ) {
 		$this->name = $name;
@@ -132,7 +132,7 @@ class SimpleCommand extends CompositeCommand {
 	protected function find_subcommand( &$args ) {
 		$method = new \ReflectionMethod( $this->callable, '__invoke' );
 
-		return new SimpleSubcommand( $method, $this->name );
+		return new SingleSubcommand( $method, $this->name );
 	}
 }
 
@@ -256,7 +256,7 @@ class Subcommand {
 }
 
 
-class SimpleSubcommand extends Subcommand {
+class SingleSubcommand extends Subcommand {
 
 	function show_usage( $prefix = 'usage: ' ) {
 		$synopsis = $this->get_synopsis();
