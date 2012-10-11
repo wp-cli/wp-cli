@@ -2,33 +2,15 @@
 
 namespace WP_CLI\Dispatcher;
 
-class Subcommand {
+abstract class Subcommand {
 
-	function __construct( $method, $command ) {
+	function __construct( $method, $parent ) {
 		$this->method = $method;
-		$this->command = $command;
+		$this->parent = $parent;
 	}
 
-	function show_usage( $prefix = 'usage: ' ) {
-		$name = $this->get_name();
-		$synopsis = $this->get_synopsis();
-
-		\WP_CLI::line( $prefix . "wp $this->command $name $synopsis" );
-	}
-
-	function get_name() {
-		$comment = $this->method->getDocComment();
-
-		if ( preg_match( '/@subcommand\s+([a-z-]+)/', $comment, $matches ) )
-			return $matches[1];
-
-		return $this->method->name;
-	}
-
-	function invoke( $instance, $args, $assoc_args ) {
-		$this->check_args( $args, $assoc_args );
-		return $this->method->invoke( $instance, $args, $assoc_args );
-	}
+	abstract function show_usage();
+	abstract function invoke( $args, $assoc_args );
 
 	protected function check_args( $args, $assoc_args ) {
 		$accepted_params = $this->parse_synopsis( $this->get_synopsis() );
@@ -121,12 +103,49 @@ class Subcommand {
 }
 
 
+class MethodSubcommand extends Subcommand {
+
+	function show_usage( $prefix = 'usage: ' ) {
+		$command = $this->parent->name;
+		$subcommand = $this->get_name();
+		$synopsis = $this->get_synopsis();
+
+		\WP_CLI::line( $prefix . "wp $command $subcommand $synopsis" );
+	}
+
+	function get_name() {
+		$comment = $this->method->getDocComment();
+
+		if ( preg_match( '/@subcommand\s+([a-z-]+)/', $comment, $matches ) )
+			return $matches[1];
+
+		return $this->method->name;
+	}
+
+	function invoke( $args, $assoc_args ) {
+		$this->check_args( $args, $assoc_args );
+
+		$class = $this->parent->class;
+		$instance = new $class;
+
+		return $this->method->invoke( $instance, $args, $assoc_args );
+	}
+}
+
+
 class SingleSubcommand extends Subcommand {
 
 	function show_usage( $prefix = 'usage: ' ) {
+		$command = $this->parent->name;
 		$synopsis = $this->get_synopsis();
 
-		\WP_CLI::line( $prefix . "wp $this->command $synopsis" );
+		\WP_CLI::line( $prefix . "wp $command $synopsis" );
+	}
+
+	function invoke( $args, $assoc_args ) {
+		$this->check_args( $args, $assoc_args );
+
+		return $this->method->invoke( $this->parent->callable, $args, $assoc_args );
 	}
 }
 
