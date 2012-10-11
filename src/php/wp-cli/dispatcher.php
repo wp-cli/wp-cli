@@ -169,6 +169,28 @@ class Subcommand {
 			$this->show_usage();
 			exit(1);
 		}
+
+		$mandatory_assoc = wp_list_pluck( wp_list_filter( $accepted_params, array(
+			'type' => 'assoc',
+			'optional' => false
+		) ), 'name' );
+
+		$errors = array();
+
+		foreach ( $mandatory_assoc as $key ) {
+			if ( !isset( $assoc_args[ $key ] ) )
+				$errors[] = "missing --$key parameter";
+			elseif ( true === $assoc_args[ $key ] )
+				$errors[] = "--$key parameter needs a value";
+		}
+
+		if ( empty( $errors ) )
+			return;
+
+		foreach ( $errors as $error )
+			\WP_CLI::warning( $error );
+
+		exit(1);
 	}
 
 	protected function get_synopsis() {
