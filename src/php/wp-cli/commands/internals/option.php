@@ -22,11 +22,6 @@ class Option_Command extends WP_CLI_Command {
 	 * @synopsis <key> <value> [--json]
 	 */
 	public function add( $args, $assoc_args ) {
-		if ( count( $args ) < 2 ) {
-			WP_CLI::line( "usage: wp option add <key> <value>" );
-			exit;
-		}
-
 		$key = $args[0];
 
 		$value = WP_CLI::read_value( $args[1], $assoc_args );
@@ -42,11 +37,6 @@ class Option_Command extends WP_CLI_Command {
 	 * @synopsis <key> <value> [--json]
 	 **/
 	public function update( $args, $assoc_args ) {
-		if ( count( $args ) < 2 ) {
-			WP_CLI::line( "usage: wp option update <key> <value>" );
-			exit;
-		}
-
 		$key = $args[0];
 
 		$value = WP_CLI::read_value( $args[1], $assoc_args );
@@ -65,11 +55,6 @@ class Option_Command extends WP_CLI_Command {
 	 * @synopsis <key>
 	 */
 	public function delete( $args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp option delete <key>" );
-			exit;
-		}
-
 		list( $key ) = $args;
 
 		if ( !delete_option( $key ) ) {
@@ -83,11 +68,6 @@ class Option_Command extends WP_CLI_Command {
 	 * @synopsis <key> [--json]
 	 */
 	public function get( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp option get <key>" );
-			exit;
-		}
-
 		list( $key ) = $args;
 
 		$value = get_option( $key );
