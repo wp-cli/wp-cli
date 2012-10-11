@@ -27,25 +27,17 @@ function maybe_load_man_page( $args ) {
 }
 
 function show_available_subcommands( $command ) {
-	$class = \WP_CLI::load_command( $command );
-	\WP_CLI\Dispatcher\describe_command( $class, $command );
+	$command = \WP_CLI::load_command( $command );
+	$command->show_usage();
 }
 
 function general_help() {
 	\WP_CLI::line( 'Available commands:' );
-	foreach ( \WP_CLI::load_all_commands() as $command => $class ) {
-		if ( 'help' == $command )
+	foreach ( \WP_CLI::load_all_commands() as $name => $command ) {
+		if ( 'help' == $name )
 			continue;
 
-		$out = "    wp $command";
-
-		$methods = array_keys( \WP_CLI\Dispatcher\get_subcommands( $class ) );
-
-		if ( !empty( $methods ) ) {
-			$out .= ' [' . implode( '|', $methods ) . ']';
-		}
-
-		\WP_CLI::line( $out );
+		\WP_CLI::line( "    wp $name " . $command->shortdesc() );
 	}
 
 	\WP_CLI::line(<<<EOB

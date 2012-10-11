@@ -15,8 +15,13 @@ class WP_CLI {
 	 * @param string $name The name of the command that will be used in the cli
 	 * @param string $class The class to manage the command
 	 */
-	public function add_command( $name, $class ) {
-		self::$commands[$name] = $class;
+	public function add_command( $name, $implementation ) {
+		if ( is_string( $implementation ) && class_exists( $implementation ) )
+			$class = '\WP_CLI\Dispatcher\CompositeCommand';
+		else
+			$class = '\WP_CLI\Dispatcher\SimpleCommand';
+
+		self::$commands[ $name ] = new $class( $implementation, $name );
 	}
 
 	/**
@@ -333,9 +338,9 @@ class WP_CLI {
 
 		define( 'WP_CLI_COMMAND', $command );
 
-		$implementation = self::load_command( $command );
+		$command = self::load_command( $command );
 
-		\WP_CLI\Dispatcher\dispatch( $implementation, $arguments, $assoc_args );
+		$command->invoke( $arguments, $assoc_args );
 	}
 
 	static function load_command( $command ) {
