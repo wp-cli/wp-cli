@@ -1,46 +1,55 @@
 <?php
-namespace WP_CLI\Help;
 
-\WP_CLI::add_command( 'help', function( $args ) {
-	if ( empty( $args ) ) {
-		general_help();
-		return;
+WP_CLI::add_command( 'help', 'Help_Command', 'help' );
+
+/**
+ * Implement help command
+ *
+ * @package wp-cli
+ * @subpackage commands/internals
+ */
+class Help_Command extends WP_CLI_Command {
+
+	function help( $args ) {
+		if ( empty( $args ) ) {
+			self::general_help();
+			return;
+		}
+
+		self::maybe_load_man_page( $args );
+
+		self::show_available_subcommands( $args[0] );
 	}
 
-	maybe_load_man_page( $args );
+	private static function maybe_load_man_page( $args ) {
+		$man_dir = WP_CLI_ROOT . "../../../man/";
 
-	show_available_subcommands( $args[0] );
-} );
+		if ( !is_dir( $man_dir ) ) {
+			WP_CLI::warning( "man pages do not seem to be installed." );
+		} else {
+			$man_file = $man_dir . implode( '-', $args ) . '.1';
 
-function maybe_load_man_page( $args ) {
-	$man_dir = WP_CLI_ROOT . "../../../man/";
-
-	if ( !is_dir( $man_dir ) ) {
-		\WP_CLI::warning( "man pages do not seem to be installed." );
-	} else {
-		$man_file = $man_dir . implode( '-', $args ) . '.1';
-
-		if ( is_readable( $man_file ) ) {
-			exit( \WP_CLI::launch( "man $man_file" ) );
+			if ( is_readable( $man_file ) ) {
+				exit( WP_CLI::launch( "man $man_file" ) );
+			}
 		}
 	}
-}
 
-function show_available_subcommands( $command ) {
-	$command = \WP_CLI::load_command( $command );
-	$command->show_usage();
-}
-
-function general_help() {
-	\WP_CLI::line( 'Available commands:' );
-	foreach ( \WP_CLI::load_all_commands() as $name => $command ) {
-		if ( 'help' == $name )
-			continue;
-
-		\WP_CLI::line( "    wp $name " . $command->shortdesc() );
+	private static function show_available_subcommands( $command ) {
+		$command = WP_CLI::load_command( $command );
+		$command->show_usage();
 	}
 
-	\WP_CLI::line(<<<EOB
+	private static function general_help() {
+		WP_CLI::line( 'Available commands:' );
+		foreach ( WP_CLI::load_all_commands() as $name => $command ) {
+			if ( 'help' == $name )
+				continue;
+
+			WP_CLI::line( "    wp $name " . $command->shortdesc() );
+		}
+
+		WP_CLI::line(<<<EOB
 
 See 'wp help <command>' for more information on a specific command.
 
@@ -52,6 +61,7 @@ Global parameters:
 --quiet             suppress informational messages
 --version           print wp-cli version
 EOB
-	);
+		);
+	}
 }
 
