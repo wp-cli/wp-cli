@@ -19,8 +19,6 @@ wp cache replace <key> <value> [<group>] [<expiration>]
 
 wp cache set <key> <value> [<group>] [<expiration>]
 
-wp cache switch_to_blog <blog_id>
-
 wp cache type
 
 ## SUBCOMMANDS
