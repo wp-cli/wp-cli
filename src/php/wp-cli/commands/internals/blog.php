@@ -12,10 +12,6 @@ if ( is_multisite() ) {
  */
 class Blog_Command extends WP_CLI_Command {
 
-	private function _create_usage_string() {
-		return "usage: wp blog create --slug=<subdomain or directory name> --title=<blog title> [--email] [--site_id] [--private]";
-	}
-
 	/**
 	 * Get site (network) data for a given id
 	 *
@@ -35,11 +31,9 @@ class Blog_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Create a blog via passed in arguments
+	 * Create a blog in a multisite install.
 	 *
-	 * @see BlogCommand::help()
-	 * @param array   $args
-	 * @param array   $assoc_args
+	 * @synopsis --slug=<slug> --title=<Title> [--email=<email>] [--site_id=<site-id>] [--public]
 	 */
 	public function create( $args, $assoc_args ) {
 		global $wpdb;

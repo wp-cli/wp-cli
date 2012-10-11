@@ -55,24 +55,30 @@ function describe_command( $class, $command ) {
 		return;
 	}
 
-	$methods = array_keys( get_subcommands( $class ) );
-
-	$out = "usage: wp $command";
+	$methods = get_subcommands( $class );
 
 	if ( empty( $methods ) ) {
-		\WP_CLI::line( $out );
-	} else {
-		$out .= ' [' . implode( '|', $methods ) . ']';
-
-		\WP_CLI::line( $out );
-
-		\WP_CLI::line();
-		\WP_CLI::line( "See 'wp help $command <subcommand>' for more information on a specific subcommand." );
+		\WP_CLI::line(  "usage: wp $command" );
+		return;
 	}
+
+	$i = 0;
+
+	foreach ( $methods as $subcommand => $method ) {
+		$synopsis = _get_subcommand_synopsis( $method );
+
+		$prefix = ( 0 == $i++ ) ? 'usage: ' : '   or: ';
+
+		$desc = "wp $command $subcommand $synopsis";
+		\WP_CLI::line( $prefix . $desc );
+	}
+
+	\WP_CLI::line();
+	\WP_CLI::line( "See 'wp help $command <subcommand>' for more information on a specific subcommand." );
 }
 
 /**
- * Get the list of subcommands for a class (reverse-dispatch).
+ * Get the list of subcommands for a class.
  *
  * @param string $class
  * @return array('subcommand' => $method) The list of methods
@@ -106,5 +112,14 @@ function _get_subcommand_name( $method ) {
 		return $matches[1];
 
 	return $method->name;
+}
+
+function _get_subcommand_synopsis( $method ) {
+	$comment = $method->getDocComment();
+
+	if ( !preg_match( '/@synopsis\s+([^\n]+)/', $comment, $matches ) )
+		return false;
+
+	return $matches[1];
 }
 
