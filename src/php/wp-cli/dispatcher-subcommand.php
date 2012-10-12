@@ -38,11 +38,20 @@ abstract class Subcommand {
 				$errors[] = "--$key parameter needs a value";
 		}
 
-		if ( empty( $errors ) )
-			return;
+		if ( !empty( $errors ) ) {
+			$this->show_usage();
+			exit(1);
+		}
 
-		$this->show_usage();
-		exit(1);
+		$known_assoc = wp_list_pluck( wp_list_filter( $accepted_params, array(
+			'type' => 'positional',
+		), 'NOT' ), 'name' );
+
+		$unknown_assoc = array_diff( array_keys( $assoc_args ), $known_assoc );
+
+		foreach ( $unknown_assoc as $key ) {
+			\WP_CLI::warning( "unkown --$key parameter" );
+		}
 	}
 
 	protected function get_synopsis() {
