@@ -163,7 +163,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	/**
 	 * Update a theme.
 	 *
-	 * @synopsis [<theme>] [--all]
+	 * @synopsis <theme>
 	 */
 	function update( $args, $assoc_args ) {
 		parent::update( $args, $assoc_args );
