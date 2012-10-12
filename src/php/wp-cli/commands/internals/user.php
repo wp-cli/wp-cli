@@ -14,7 +14,7 @@ class User_Command extends WP_CLI_Command {
 	 * List users
 	 *
 	 * @subcommand list
-	 **/
+	 */
 	public function _list( $args, $assoc_args ) {
 		global $blog_id;
 
@@ -55,7 +55,7 @@ class User_Command extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
-	 **/
+	 */
 	public function delete( $args, $assoc_args ) {
 		global $blog_id;
 
@@ -77,7 +77,7 @@ class User_Command extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
-	 **/
+	 */
 	public function create( $args, $assoc_args ) {
 		global $blog_id;
 
@@ -131,7 +131,7 @@ class User_Command extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
-	 **/
+	 */
 	public function update( $args, $assoc_args ) {
 		$user_id = WP_CLI::get_numeric_arg( $args, 0, "User ID" );
 
@@ -156,7 +156,7 @@ class User_Command extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
-	 **/
+	 */
 	public function generate( $args, $assoc_args ) {
 		global $blog_id;
 

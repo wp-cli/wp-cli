@@ -51,7 +51,7 @@ class Option_Command extends WP_CLI_Command {
 	 * Update an option
 	 *
 	 * @synopsis <key> <value> [--json]
-	 **/
+	 */
 	public function update( $args, $assoc_args ) {
 		$key = $args[0];
 

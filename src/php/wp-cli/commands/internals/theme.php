@@ -51,7 +51,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	 * Activate a theme.
 	 *
 	 * @synopsis <theme>
-	 **/
+	 */
 	public function activate( $args = array() ) {
 		list( $stylesheet, $child ) = $this->parse_name( $args );
 

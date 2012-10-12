@@ -7,7 +7,7 @@ WP_CLI::add_command( 'db', 'DB_Command' );
  *
  * @package wp-cli
  * @subpackage commands/internals
- **/
+ */
 class DB_Command extends WP_CLI_Command {
 
 	public static function get_default_subcommand() {
