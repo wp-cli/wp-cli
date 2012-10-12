@@ -14,20 +14,34 @@ abstract class Subcommand {
 	protected function check_args( $args, $assoc_args ) {
 		$accepted_params = $this->parse_synopsis( $this->get_synopsis() );
 
-		$mandatory_positinal = wp_list_filter( $accepted_params, array(
-			'type' => 'positional',
-			'optional' => false
-		) );
+		$this->check_positional( $args, $accepted_params );
 
-		if ( count( $args ) < count( $mandatory_positinal ) ) {
+		$this->check_assoc( $assoc_args, $accepted_params );
+
+		$this->check_unknown_assoc( $assoc_args, $accepted_params );
+	}
+
+	private function check_positional( $args, $accepted_params ) {
+		$count = 0;
+
+		foreach ( $accepted_params as $param ) {
+			if ( 'positional' == $param['type'] && !$param['optional'] )
+				$count++;
+		}
+
+		if ( count( $args ) < $count ) {
 			$this->show_usage();
 			exit(1);
 		}
+	}
 
-		$mandatory_assoc = wp_list_pluck( wp_list_filter( $accepted_params, array(
-			'type' => 'assoc',
-			'optional' => false
-		) ), 'name' );
+	private function check_assoc( $assoc_args, $accepted_params ) {
+		$mandatory_assoc = array();
+
+		foreach ( $accepted_params as $param ) {
+			if ( 'assoc' == $param['type'] && !$param['optional'] )
+				$mandatory_assoc[] = $param['name'];
+		}
 
 		$errors = array();
 
@@ -42,10 +56,15 @@ abstract class Subcommand {
 			$this->show_usage();
 			exit(1);
 		}
+	}
 
-		$known_assoc = wp_list_pluck( wp_list_filter( $accepted_params, array(
-			'type' => 'positional',
-		), 'NOT' ), 'name' );
+	private function check_unknown_assoc( $assoc_args, $accepted_params ) {
+		$known_assoc = array();
+
+		foreach ( $accepted_params as $param ) {
+			if ( 'positional' != $param['type'] )
+				$known_assoc[] = $param['name'];
+		}
 
 		$unknown_assoc = array_diff( array_keys( $assoc_args ), $known_assoc );
 
