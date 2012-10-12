@@ -11,9 +11,10 @@ WP_CLI::add_command('user', 'User_Command');
 class User_Command extends WP_CLI_Command {
 
 	/**
-	 * List users
+	 * List users.
 	 *
 	 * @subcommand list
+	 * @synopsis [--role=<role>]
 	 */
 	public function _list( $args, $assoc_args ) {
 		global $blog_id;
@@ -51,10 +52,9 @@ class User_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete a user
+	 * Delete a user.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @synopsis <id> [--reassign=<id>]
 	 */
 	public function delete( $args, $assoc_args ) {
 		global $blog_id;
@@ -73,17 +73,12 @@ class User_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Create a user
+	 * Create a user.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @synopsis <user-login> <user-email> [--role=<role>] [--porcelain]
 	 */
 	public function create( $args, $assoc_args ) {
 		global $blog_id;
-
-		if ( count( $args ) < 2 ) {
-			WP_CLI::error( "Login and email required." );
-		}
 
 		list( $user_login, $user_email ) = $args;
 
@@ -127,10 +122,7 @@ class User_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a user
-	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * Update a user.
 	 */
 	public function update( $args, $assoc_args ) {
 		$user_id = WP_CLI::get_numeric_arg( $args, 0, "User ID" );
@@ -154,8 +146,7 @@ class User_Command extends WP_CLI_Command {
 	/**
 	 * Generate users
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @synopsis [--count=100] [--role=<role>]
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $blog_id;
