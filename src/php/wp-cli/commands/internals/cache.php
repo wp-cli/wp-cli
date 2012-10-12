@@ -13,18 +13,9 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Add a value to the object cache.
 	 *
-	 * @uses	wp_cache_add
-	 *
-	 * @param 	array 			$args				Function arguments.
-	 * @param 	array 			$assoc_args			Function arguments with parameter key.
-	 * @return	void
+	 * @synopsis <key> <value> [<group>] [<expiration>]
 	 */
 	public function add( $args, $assoc_args ) {
-		if ( count( $assoc_args ) + count( $args ) < 2 ) {
-			WP_CLI::line( 'usage: wp cache add <key> <value> [group] [expiration]' );
-			exit;
-		}
-
 		list( $key, $value ) = $args;
 
 		$group = ( isset( $args[2] ) ) ? $args[2] : '';
@@ -42,18 +33,9 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Decrement a value in the object cache.
 	 *
-	 * @uses	wp_cache_decr
-	 *
-	 * @param 	array 			$args				Function arguments.
-	 * @param 	array 			$assoc_args			Function arguments with parameter key.
-	 * @return	void
+	 * @synopsis <key> [<offset>] [<group>]
 	 */
 	public function decr( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( 'usage: wp cache decr <key> [offset] [group]' );
-			exit;
-		}
-
 		$key = $args[0];
 
 		$offset = ( isset( $args[1] ) ) ? $args[1] : 1;
@@ -64,7 +46,6 @@ class Cache_Command extends WP_CLI_Command {
 
 		if ( false === $value ) {
 			WP_CLI::error( 'The value was not decremented.' );
-			exit;
 		}
 
 		WP_CLI::print_value( $value, $assoc_args );
@@ -73,18 +54,9 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Remove a value from the object cache.
 	 *
-	 * @uses	wp_cache_delete
-	 *
-	 * @param 	array 			$args				Function arguments.
-	 * @param 	array 			$assoc_args			Function arguments with parameter key.
-	 * @return	void
+	 * @synopsis <key> <group>
 	 */
 	public function delete( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( 'usage: wp cache delete <key> [group]' );
-			exit;
-		}
-
 		$key = $args[0];
 
 		$group = ( isset( $args[1] ) ) ? $args[1] : '';
@@ -101,12 +73,6 @@ class Cache_Command extends WP_CLI_Command {
 
 	/**
 	 * Flush the object cache.
-	 *
-	 * @uses	wp_cache_flush
-	 *
-	 * @param 	array 			$args				Function arguments.
-	 * @param 	array 			$assoc_args			Function arguments with parameter key.
-	 * @return	void
 	 */
 	public function flush( $args, $assoc_args ) {
 		$value = wp_cache_flush();
@@ -122,18 +88,9 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Get a value from the object cache.
 	 *
-	 * @uses	wp_cache_get
-	 *
-	 * @param 	array 			$args				Function arguments.
-	 * @param 	array 			$assoc_args			Function arguments with parameter key.
-	 * @return	void
+	 * @synopsis <key> [<group>]
 	 */
 	public function get( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( 'usage: wp cache get <key> [group]' );
-			exit;
-		}
-
 		$key = $args[0];
 
 		$group = ( isset( $args[1] ) ) ? $args[1] : '';
@@ -151,18 +108,9 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Increment a value in the object cache.
 	 *
-	 * @uses	wp_cache_incr
-	 *
-	 * @param 	array 			$args				Function arguments.
-	 * @param 	array 			$assoc_args			Function arguments with parameter key.
-	 * @return	void
+	 * @synopsis <key> [<offset>] [<group>]
 	 */
 	public function incr( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( 'usage: wp cache incr <key> [offset] [group]' );
-			exit;
-		}
-
 		$key = $args[0];
 
 		$offset = ( isset( $args[1] ) ) ? $args[1] : 1;
@@ -182,18 +130,9 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Replace an existing value in the object cache.
 	 *
-	 * @uses	wp_cache_replace
-	 *
-	 * @param 	array 			$args				Function arguments.
-	 * @param 	array 			$assoc_args			Function arguments with parameter key.
-	 * @return	void
+	 * @synopsis <key> <value> [<group>] [<expiration>]
 	 */
 	public function replace( $args, $assoc_args ) {
-		if ( count( $assoc_args ) + count( $args ) < 2 ) {
-			WP_CLI::line( 'usage: wp cache replace <key> <value> [group] [expiration]' );
-			exit;
-		}
-
 		list( $key, $value ) = $args;
 
 		$group = ( isset( $args[2] ) ) ? $args[2] : '';
@@ -213,18 +152,9 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Set a value to the object cache.
 	 *
-	 * @uses	wp_cache_set
-	 *
-	 * @param 	array 			$args				Function arguments.
-	 * @param 	array 			$assoc_args			Function arguments with parameter key.
-	 * @return	void
+	 * @synopsis <key> <value> [<group>] [<expiration>]
 	 */
 	public function set( $args, $assoc_args ) {
-		if ( count( $assoc_args ) + count( $args ) < 2 ) {
-			WP_CLI::line( 'usage: wp cache set <key> <value> [group] [expiration]' );
-			exit;
-		}
-
 		list( $key, $value ) = $args;
 
 		$group = ( isset( $args[2] ) ) ? $args[2] : '';
@@ -247,13 +177,6 @@ class Cache_Command extends WP_CLI_Command {
 	 * Note that the guesses made by this function are based on the WP_Object_Cache classes
 	 * that define the 3rd party object cache extension. Changes to those classes could render
 	 * problems with this function's ability to determine which object cache is being used.
-	 *
-	 * @uses	$_wp_using_ext_object_cache
-	 * @uses	$wp_object_cache
-	 *
-	 * @param 	array 			$args				Function arguments.
-	 * @param 	array 			$assoc_args			Function arguments with parameter key.
-	 * @return	void
 	 */
 	public function type( $args, $assoc_args ) {
 		global $_wp_using_ext_object_cache, $wp_object_cache;
@@ -295,3 +218,4 @@ class Cache_Command extends WP_CLI_Command {
 		WP_CLI::print_value( $message );
 	}
 }
+
