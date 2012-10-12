@@ -7,18 +7,20 @@
  */
 abstract class WP_CLI_Command_With_Meta extends WP_CLI_Command {
 
-	protected $meta_type;
+	public static function get_aliases() {
+		return array(
+			'set' => 'update'
+		);
+	}
 
-	protected $aliases = array(
-		'set' => 'update'
-	);
+	protected $meta_type;
 
 	/**
 	 * Get meta field value
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
-	 **/
+	 */
 	public function get( $args, $assoc_args ) {
 		$object_id = WP_CLI::get_numeric_arg( $args, 0, "$this->meta_type ID" );
 		$meta_key = self::get_arg_or_error( $args, 1, "meta_key" );
@@ -36,7 +38,7 @@ abstract class WP_CLI_Command_With_Meta extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
-	 **/
+	 */
 	public function delete( $args, $assoc_args ) {
 		$object_id = WP_CLI::get_numeric_arg( $args, 0, "$this->meta_type ID" );
 		$meta_key = self::get_arg_or_error( $args, 1, "meta_key" );
@@ -55,7 +57,7 @@ abstract class WP_CLI_Command_With_Meta extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
-	 **/
+	 */
 	public function add( $args, $assoc_args ) {
 		$object_id = WP_CLI::get_numeric_arg( $args, 0, "$this->meta_type ID" );
 		$meta_key = self::get_arg_or_error( $args, 1, "meta_key" );
@@ -75,7 +77,7 @@ abstract class WP_CLI_Command_With_Meta extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
-	 **/
+	 */
 	public function update( $args, $assoc_args ) {
 		$object_id = WP_CLI::get_numeric_arg( $args, 0, "$this->meta_type ID" );
 		$meta_key = self::get_arg_or_error( $args, 1, "meta_key" );

@@ -2,14 +2,16 @@
 
 abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
+	public static function get_default_subcommand() {
+		return 'status';
+	}
+
 	protected $item_type;
 	protected $upgrader;
 	protected $upgrade_refresh;
 	protected $upgrade_transient;
 
-	protected $default_subcommand = 'status';
-
-	abstract protected function parse_name( $args, $subcommand );
+	abstract protected function parse_name( $args );
 
 	abstract protected function get_item_list();
 	abstract protected function get_all_items();
@@ -21,19 +23,14 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
 
-	/**
-	 * Get the status of one or all items
-	 *
-	 * @param array $args
-	 */
-	function status( $args = array() ) {
+	function status( $args ) {
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
 		if ( empty( $args ) ) {
 			$this->status_all();
 		} else {
-			list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+			list( $file, $name ) = $this->parse_name( $args );
 
 			$this->status_single( $file, $name );
 		}
@@ -94,12 +91,6 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		$this->_status_single( $details, $name, $version, $status );
 	}
 
-	/**
-	 * Install a new plugin/theme
-	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 */
 	function install( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
 			WP_CLI::line( "usage: wp $this->item_type install <slug>" );
@@ -129,17 +120,11 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		}
 	}
 
-	/**
-	 * Update a plugin/theme
-	 *
-	 * @param array $args
-	 * @param array $assoc_args
-	 */
 	function update( $args, $assoc_args ) {
 		call_user_func( $this->upgrade_refresh );
 
 		if ( !empty( $args ) && !isset( $assoc_args['all'] ) ) {
-			list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+			list( $file, $name ) = $this->parse_name( $args );
 
 			WP_CLI::get_upgrader( $this->upgrader )->upgrade( $file );
 		} else {

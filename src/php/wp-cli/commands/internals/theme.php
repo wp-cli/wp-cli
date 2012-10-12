@@ -15,6 +15,15 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	protected $upgrade_refresh = 'wp_update_themes';
 	protected $upgrade_transient = 'update_themes';
 
+	/**
+	 * See the status of one or all themes.
+	 *
+	 * @synopsis [<theme>]
+	 */
+	function status( $args ) {
+		parent::status( $args );
+	}
+
 	protected function _status_single( $details, $name, $version, $status ) {
 		WP_CLI::line( 'Theme %9' . $name . '%n details:' );
 		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
@@ -39,12 +48,12 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/**
-	 * Activate a theme
+	 * Activate a theme.
 	 *
-	 * @param array $args
-	 **/
+	 * @synopsis <theme>
+	 */
 	public function activate( $args = array() ) {
-		list( $stylesheet, $child ) = $this->parse_name( $args, __FUNCTION__ );
+		list( $stylesheet, $child ) = $this->parse_name( $args );
 
 		$details = get_theme_data( $stylesheet );
 
@@ -72,16 +81,15 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/**
-	 * Get a theme path
+	 * Get a theme path.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @synopsis [<theme>] [--dir]
 	 */
 	function path( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
 			$path = WP_CONTENT_DIR . '/themes';
 		} else {
-			list( $stylesheet, $name ) = $this->parse_name( $args, __FUNCTION__ );
+			list( $stylesheet, $name ) = $this->parse_name( $args );
 			$path = $stylesheet;
 
 			if ( isset( $assoc_args['dir'] ) )
@@ -144,12 +152,30 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/**
-	 * Delete a theme
+	 * Install a theme from wordpress.org or from a zip file.
 	 *
-	 * @param array $args
+	 * @synopsis <theme|zip> [--version=<version>] [--activate]
+	 */
+	function install( $args, $assoc_args ) {
+		parent::install( $args, $assoc_args );
+	}
+
+	/**
+	 * Update a theme.
+	 *
+	 * @synopsis [<theme>] [--all]
+	 */
+	function update( $args, $assoc_args ) {
+		parent::update( $args, $assoc_args );
+	}
+
+	/**
+	 * Delete a theme.
+	 *
+	 * @synopsis <theme>
 	 */
 	function delete( $args ) {
-		list( $file, $name ) = $this->parse_name( $args, __FUNCTION__ );
+		list( $file, $name ) = $this->parse_name( $args );
 
 		$r = delete_theme( $name );
 
@@ -158,7 +184,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		}
 	}
 
-	protected function parse_name( $args, $subcommand ) {
+	protected function parse_name( $args ) {
 		if ( empty( $args ) ) {
 			WP_CLI::line( "usage: wp theme $subcommand <theme-name>" );
 			exit;
