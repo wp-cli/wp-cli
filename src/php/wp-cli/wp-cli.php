@@ -82,8 +82,6 @@ if ( array( 'db' ) == array_slice( $arguments, 0, 1 ) ) {
 
 // Set installer flag before loading any WP files
 if ( array( 'core', 'install' ) == $arguments ) {
-	WP_CLI::check_required_args( array( 'url', 'title', 'admin_email', 'admin_password' ), $assoc_args );
-
     define( 'WP_INSTALLING', true );
 }
 

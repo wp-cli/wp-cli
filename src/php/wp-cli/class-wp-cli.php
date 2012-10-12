@@ -171,30 +171,6 @@ class WP_CLI {
 		return $str;
 	}
 
-	/**
-	 * Issue warnings for each missing associative argument.
-	 *
-	 * @param array List of required arg names
-	 * @param array Passed args
-	 */
-	static function check_required_args( $required, $assoc_args ) {
-		$missing = false;
-
-		foreach ( $required as $arg ) {
-			if ( !isset( $assoc_args[ $arg ] ) ) {
-				WP_CLI::warning( "--$arg parameter is missing" );
-				$missing = true;
-			} elseif ( true === $assoc_args[ $arg ] ) {
-				// passed as a flag
-				WP_CLI::warning( "--$arg needs to have a value" );
-				$missing = true;
-			}
-		}
-
-		if ( $missing )
-			exit(1);
-	}
-
 	static function get_numeric_arg( $args, $index, $name ) {
 		if ( ! isset( $args[$index] ) ) {
 			WP_CLI::error( "$name required" );
