@@ -7,12 +7,18 @@ WP_CLI::add_command( 'db', 'DB_Command' );
  *
  * @package wp-cli
  * @subpackage commands/internals
- **/
+ */
 class DB_Command extends WP_CLI_Command {
 
-	protected $default_subcommand = 'cli';
+	public static function get_default_subcommand() {
+		return 'cli';
+	}
 
-	protected $aliases = array( 'dump' => 'export' );
+	public static function get_aliases() {
+		return array(
+			'dump' => 'export'
+		);
+	}
 
 	/**
 	 * Creates the database specified in the wp-config.php file.
@@ -28,6 +34,8 @@ class DB_Command extends WP_CLI_Command {
 
 	/**
 	 * Deletes the database specified in the wp-config.php file.
+	 *
+	 * @synopsis [--yes]
 	 */
 	function drop( $args, $assoc_args ) {
 		if ( !isset( $assoc_args['yes'] ) ) {
@@ -49,6 +57,8 @@ class DB_Command extends WP_CLI_Command {
 
 	/**
 	 * Removes all tables from the database.
+	 *
+	 * @synopsis [--yes]
 	 */
 	function reset( $args, $assoc_args ) {
 		if ( !isset( $assoc_args['yes'] ) ) {
@@ -113,13 +123,10 @@ class DB_Command extends WP_CLI_Command {
 
 	/**
 	 * Execute a query against the site database.
+	 *
+	 * @synopsis <sql>
 	 */
 	function query( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp db query <SQL>" );
-			exit;
-		}
-
 		$query = $args[0];
 
 		$command = $this->connect_string() . self::create_cmd( ' --execute=%s', $query );
@@ -129,6 +136,8 @@ class DB_Command extends WP_CLI_Command {
 
 	/**
 	 * Exports the WordPress DB as SQL using mysqldump.
+	 *
+	 * @synopsis [<file>]
 	 */
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
@@ -143,6 +152,8 @@ class DB_Command extends WP_CLI_Command {
 
 	/**
 	 * Imports a database from a file.
+	 *
+	 * @synopsis [<file>]
 	 */
 	function import( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );

@@ -1,11 +1,16 @@
 <?php
 
-WP_CLI::add_command( 'eval', function( $args, $assoc_args ) {
-	if ( empty( $args ) ) {
-		WP_CLI::line( "usage: wp eval '<php-code>'" );
-		exit;
-	}
+WP_CLI::add_command( 'eval', new Eval_Command );
 
-	eval( $args[0] );
-} );
+class Eval_Command extends WP_CLI_Command {
+
+	/**
+	 * Executes arbitrary PHP code after loading WordPress.
+	 *
+	 * @synopsis <php-code>
+	 */
+	public function __invoke( $args, $assoc_args ) {
+		eval( $args[0] );
+	}
+}
 

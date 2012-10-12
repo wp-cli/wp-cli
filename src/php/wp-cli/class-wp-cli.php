@@ -16,7 +16,12 @@ class WP_CLI {
 	 * @param string $class The class to manage the command
 	 */
 	public function add_command( $name, $class ) {
-		self::$commands[$name] = $class;
+		if ( is_string( $class ) )
+			$command = new \WP_CLI\Dispatcher\CompositeCommand( $name, $class );
+		else
+			$command = new \WP_CLI\Dispatcher\SingleCommand( $name, $class );
+
+		self::$commands[ $name ] = $command;
 	}
 
 	/**
@@ -166,30 +171,6 @@ class WP_CLI {
 		return $str;
 	}
 
-	/**
-	 * Issue warnings for each missing associative argument.
-	 *
-	 * @param array List of required arg names
-	 * @param array Passed args
-	 */
-	static function check_required_args( $required, $assoc_args ) {
-		$missing = false;
-
-		foreach ( $required as $arg ) {
-			if ( !isset( $assoc_args[ $arg ] ) ) {
-				WP_CLI::warning( "--$arg parameter is missing" );
-				$missing = true;
-			} elseif ( true === $assoc_args[ $arg ] ) {
-				// passed as a flag
-				WP_CLI::warning( "--$arg needs to have a value" );
-				$missing = true;
-			}
-		}
-
-		if ( $missing )
-			exit(1);
-	}
-
 	static function get_numeric_arg( $args, $index, $name ) {
 		if ( ! isset( $args[$index] ) ) {
 			WP_CLI::error( "$name required" );
@@ -333,12 +314,9 @@ class WP_CLI {
 
 		define( 'WP_CLI_COMMAND', $command );
 
-		$implementation = self::load_command( $command );
+		$command = self::load_command( $command );
 
-		if ( is_string( $implementation ) && class_exists( $implementation ) )
-			$instance = new $implementation( $arguments, $assoc_args );
-		else
-			call_user_func( $implementation, $arguments, $assoc_args );
+		$command->invoke( $arguments, $assoc_args );
 	}
 
 	static function load_command( $command ) {

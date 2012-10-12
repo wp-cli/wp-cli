@@ -1,40 +1,24 @@
 <?php
 
-WP_CLI:: add_command('rewrite', 'Rewrite_Command');
+WP_CLI:: add_command( 'rewrite', 'Rewrite_Command' );
 
-/**
- * Implement rewrite command
- *
- * @package	wp-cli
- * @subpackage	commands/internal
- */
 class Rewrite_Command extends WP_CLI_Command {
 
-	protected $aliases = array(
-	);
-
 	/**
-	 * Flush rules
+	 * Flush rewrite rules.
 	 *
-	 * @param array $args 		not used
-	 * @param array $assoc_args --soft or --hard (default)
+	 * @synopsis [--soft]
 	 */
 	public function flush( $args, $assoc_args ) {
-		$hard = ( isset( $assoc_args['soft'] ) ) ? false : true;
-		flush_rewrite_rules( $hard );
+		flush_rewrite_rules( isset( $assoc_args['soft'] ) );
 	}
 
 	/**
-	 * Set permalink structure
+	 * Update the permalink structure.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @synopsis <permastruct> [--category-base=<base>] [--tag-base=<base>]
 	 */
 	public function structure( $args, $assoc_args ) {
-		if ( !count( $args ) && !count( $assoc_args ) ) {
-			WP_CLI::line( "usage: wp rewrite structure <new-permalink-structure>" );
-			exit;
-		}
 		global $wp_rewrite;
 
 		// copypasta from /wp-admin/options-permalink.php
@@ -47,20 +31,16 @@ class Rewrite_Command extends WP_CLI_Command {
 		if ( is_multisite() && !is_subdomain_install() && is_main_site() )
 			$blog_prefix = '/blog';
 
-		// Update base permastruct if argument is provided
-		if ( isset( $args[0] ) ) {
+		$permalink_structure = ( $args[0] == 'default' ) ? '' : $args[0];
 
-			$permalink_structure = ( $args[0] == 'default' ) ? '' : $args[0];
-
-			if ( ! empty( $permalink_structure ) ) {
-				$permalink_structure = preg_replace( '#/+#', '/', '/' . str_replace( '#', '', $permalink_structure ) );
-				if ( $prefix && $blog_prefix )
-					$permalink_structure = $prefix . preg_replace( '#^/?index\.php#', '', $permalink_structure );
-				else
-					$permalink_structure = $blog_prefix . $permalink_structure;
-			}
-			$wp_rewrite->set_permalink_structure( $permalink_structure );
+		if ( ! empty( $permalink_structure ) ) {
+			$permalink_structure = preg_replace( '#/+#', '/', '/' . str_replace( '#', '', $permalink_structure ) );
+			if ( $prefix && $blog_prefix )
+				$permalink_structure = $prefix . preg_replace( '#^/?index\.php#', '', $permalink_structure );
+			else
+				$permalink_structure = $blog_prefix . $permalink_structure;
 		}
+		$wp_rewrite->set_permalink_structure( $permalink_structure );
 
 		// Update category or tag bases
 		if ( isset( $assoc_args['category-base'] ) ) {
@@ -79,15 +59,13 @@ class Rewrite_Command extends WP_CLI_Command {
 			$wp_rewrite->set_tag_base( $tag_base );
 		}
 
-
 		flush_rewrite_rules( $hard );
 	}
 
 	/**
-	 * Dump rewrite rules
+	 * Print current rewrite rules.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @synopsis [--json]
 	 */
 	public function dump( $args, $assoc_args ) {
 

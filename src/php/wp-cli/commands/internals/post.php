@@ -112,7 +112,7 @@ class Post_Command extends WP_CLI_Command {
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
-	 **/
+	 */
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
 
