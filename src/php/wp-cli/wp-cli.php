@@ -14,6 +14,8 @@ define( 'WP_CLI_ROOT', __DIR__ . '/' );
 define( 'WP_CLI', true );
 
 // Include the wp-cli classes
+include WP_CLI_ROOT . 'dispatcher-subcommand.php';
+include WP_CLI_ROOT . 'dispatcher.php';
 include WP_CLI_ROOT . 'class-wp-cli.php';
 include WP_CLI_ROOT . 'class-wp-cli-command.php';
 include WP_CLI_ROOT . 'class-wp-cli-command-with-meta.php';
@@ -80,8 +82,6 @@ if ( array( 'db' ) == array_slice( $arguments, 0, 1 ) ) {
 
 // Set installer flag before loading any WP files
 if ( array( 'core', 'install' ) == $arguments ) {
-	WP_CLI::check_required_args( array( 'url', 'title', 'admin_email', 'admin_password' ), $assoc_args );
-
     define( 'WP_INSTALLING', true );
 }
 
@@ -127,8 +127,7 @@ if ( isset( $assoc_args['require'] ) ) {
 // Generate strings for autocomplete
 if ( WP_CLI_AUTOCOMPLETE ) {
 	foreach ( WP_CLI::load_all_commands() as $name => $command ) {
-		$subcommands = implode( ' ', WP_CLI_Command::get_subcommands( $command ) );
-		WP_CLI::line( $name .  ' ' . $subcommands );
+		WP_CLI::line( $command->autocomplete() );
 	}
 	exit;
 }
