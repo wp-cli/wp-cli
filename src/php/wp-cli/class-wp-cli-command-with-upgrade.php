@@ -123,16 +123,14 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	function update( $args, $assoc_args ) {
 		call_user_func( $this->upgrade_refresh );
 
-		if ( !empty( $args ) && !isset( $assoc_args['all'] ) ) {
-			list( $file, $name ) = $this->parse_name( $args );
+		list( $file, $name ) = $this->parse_name( $args );
 
-			WP_CLI::get_upgrader( $this->upgrader )->upgrade( $file );
-		} else {
-			$this->update_multiple( $args, $assoc_args );
-		}
+		WP_CLI::get_upgrader( $this->upgrader )->upgrade( $file );
 	}
 
-	private function update_multiple( $args, $assoc_args ) {
+	function update_all( $args, $assoc_args ) {
+		call_user_func( $this->upgrade_refresh );
+
 		$items_to_update = wp_list_filter( $this->get_item_list(), array(
 			'update' => true
 		) );

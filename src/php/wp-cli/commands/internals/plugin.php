@@ -184,7 +184,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	/**
 	 * Update a plugin.
 	 *
-	 * @synopsis [<plugin>] [--all] [--version=<version>]
+	 * @synopsis <plugin> [--version=<version>]
 	 */
 	function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['version'] ) && 'dev' == $assoc_args['version'] ) {
@@ -193,6 +193,15 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		} else {
 			parent::update( $args, $assoc_args );
 		}
+	}
+
+	/**
+	 * Update all plugins.
+	 *
+	 * @subcommand update-all
+	 */
+	function update_all( $args, $assoc_args ) {
+		parent::update_all( $args, $assoc_args );
 	}
 
 	protected function get_item_list() {
