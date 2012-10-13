@@ -108,10 +108,9 @@ class Post_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Generate posts
+	 * Generate some posts.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @synopsis [--count=100] [--post_type=post] [--post_status=publish] [--post_author=<login>] [--post_date=<date>] [--max_depth=1]
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
