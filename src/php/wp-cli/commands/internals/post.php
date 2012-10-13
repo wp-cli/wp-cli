@@ -54,12 +54,10 @@ class Post_Command extends WP_CLI_Command {
 	/**
 	 * Delete a post by ID.
 	 *
-	 * @synopsis <id>
+	 * @synopsis <id>... [--force]
 	 */
 	public function delete( $args, $assoc_args ) {
-		$post_id = WP_CLI::get_numeric_arg( $args, 0, "Post ID" );
-
-		$this->_delete_posts( array( $post_id ), isset( $assoc_args['force'] ) );
+		$this->_delete_posts( $args, isset( $assoc_args['force'] ) );
 	}
 
 	/**
