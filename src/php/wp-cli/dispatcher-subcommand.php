@@ -53,6 +53,9 @@ abstract class Subcommand {
 		}
 
 		if ( !empty( $errors ) ) {
+			foreach ( $errors as $error ) {
+				\WP_CLI::warning( $error );
+			}
 			$this->show_usage();
 			exit(1);
 		}
