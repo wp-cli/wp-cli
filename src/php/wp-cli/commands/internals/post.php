@@ -52,51 +52,45 @@ class Post_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete a single post, or series of posts based on arguments.
+	 * Delete a post by ID.
 	 *
-	 * @synopsis [<ID>] [--post_type=<value>] [--post_author=<value>] [--post_status=<value>] [--force]
+	 * @synopsis <id>
 	 */
 	public function delete( $args, $assoc_args ) {
-		$defaults = array(
-			'p'                     =>		null,
-			'post_type'             =>		null,
-			'post_author'           =>		null,
-			'post_status'           =>		'any',
-			'force'                 =>		false,
+		$post_id = WP_CLI::get_numeric_arg( $args, 0, "Post ID" );
+
+		$this->_delete_posts( array( $post_id ), isset( $assoc_args['force'] ) );
+	}
+
+	/**
+	 * Delete a series of posts based on arguments.
+	 *
+	 * @subcommand delete-many
+	 * @synopsis [--post_type=<value>] [--post_author=<value>] [--post_status=<value>] [--force]
+	 */
+	public function delete_many( $_, $assoc_args ) {
+		$query_args = array(
+			'fields'            =>		'ids',
+			'posts_per_page'    =>		-1,
+			'post_type'         =>		$assoc_args['post_type'],
+			'post_author'       =>		$assoc_args['post_author'],
+			'post_status'       =>		$assoc_args['post_status'],
 		);
-		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
-		// Support for simply passing the post ID as the first argument
-		if ( isset( $args[0] ) && is_numeric( $args[0] ) )
-			$post_id = $args[0];
-		else if ( is_numeric( $assoc_args['p'] ) )
-			$post_id = $assoc_args['p'];
-		else
-			$post_id = false;
-
-		if ( $post_id ) {
-			$posts_to_delete = array( $post_id );
-		} else {
-			$query_args = array(
-					'fields'            =>		'ids',
-					'posts_per_page'    =>		-1,
-					'post_type'         =>		$assoc_args['post_type'],
-					'post_author'       =>		$assoc_args['post_author'],
-					'post_status'       =>		$assoc_args['post_status'],
-				);
-			$maybe_posts = new WP_Query( $query_args );
-			$posts_to_delete = $maybe_posts->posts;
-		}
+		$query = new WP_Query( $query_args );
+		$posts_to_delete = $query->posts;
 
 		if ( empty( $posts_to_delete ) ) {
 			WP_CLI::error( "No posts to delete." );
 		}
 
-		$force = (bool) $assoc_args['force'];
+		$this->_delete_posts( $posts_to_delete, isset( $assoc_args['force'] ) );
+	}
 
+	protected function _delete_posts( $post_ids, $force ) {
 		$action = $force ? 'Deleted' : 'Trashed';
 
-		foreach ( $posts_to_delete as $post_id ) {
+		foreach ( $post_ids as $post_id ) {
 			if ( wp_delete_post( $post_id, $force ) ) {
 				WP_CLI::success( "{$action} post $post_id." );
 			} else {
