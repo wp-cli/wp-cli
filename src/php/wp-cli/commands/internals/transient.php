@@ -11,16 +11,11 @@ WP_CLI::add_command( 'transient', 'Transient_Command' );
 class Transient_Command extends WP_CLI_Command {
 
 	/**
-	 * Gets a value using the "get_transient" function.
+	 * Get a transient value.
 	 *
-	 * @param array $args
+	 * @synopsis <key>
 	 */
 	public function get( $args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::error( 'Usage: wp transient get <key>' );
-			exit;
-		}
-
 		list( $key ) = $args;
 
 		$value = get_transient( $key );
@@ -37,19 +32,14 @@ class Transient_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Sets a value using the "set_transient" function.
+	 * Set a transient value. <expiration> is the time until expiration, in seconds.
 	 *
-	 * @param array $args
+	 * @synopsis <key> <value> [<expiration>]
 	 */
 	public function set( $args ) {
-		if ( count( $args ) < 2 ) {
-			WP_CLI::error( 'usage: wp transient set <key> <value> [expiration]' );
-			exit;
-		}
+		list( $key, $value ) = $args;
 
-		list( $key, $value, $expiration ) = $args;
-
-		$expiration = isset( $expiration ) ? $expiration : 0;
+		$expiration = isset( $args[2] ) ? $args[2] : 0;
 
 		if ( set_transient( $key, $value, $expiration ) )
 			WP_CLI::success( 'Transient added.' );
@@ -58,16 +48,11 @@ class Transient_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Deletes a value using the "delete_transient" function.
+	 * Delete a transient value.
 	 *
-	 * @param array $args
+	 * @synopsis <key>
 	 */
 	public function delete( $args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::warning( 'Usage: wp transient delete <key>' );
-			exit;
-		}
-
 		list( $key ) = $args;
 
 		if ( delete_transient( $key ) ) {
@@ -81,7 +66,7 @@ class Transient_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Indicates whether the transients API is using the object cache or options table in the current environment.
+	 * See wether the transients API is using an object cache or the options table.
 	 */
 	public function type() {
 		global $_wp_using_ext_object_cache, $wpdb;
