@@ -52,13 +52,11 @@ class Post_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete a single post, or series of posts based on arguments
+	 * Delete a single post, or series of posts based on arguments.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @synopsis [<ID>] [--post_type=<value>] [--post_author=<value>] [--post_status=<value>] [--force]
 	 */
 	public function delete( $args, $assoc_args ) {
-
 		$defaults = array(
 			'p'                     =>		null,
 			'post_type'             =>		null,
