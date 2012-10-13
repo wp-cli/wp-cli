@@ -12,6 +12,8 @@ class Core_Command extends WP_CLI_Command {
 
 	/**
 	 * Download the core files from wordpress.org
+	 *
+	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>]
 	 */
 	public function download( $args, $assoc_args ) {
 		if ( is_readable( WP_ROOT . 'wp-load.php' ) )
@@ -43,10 +45,10 @@ class Core_Command extends WP_CLI_Command {
 
 	/**
 	 * Set up a wp-config.php file.
+	 *
+	 * @synopsis --dbname=<name> --dbuser=<user> --dbpass=<password> [--dbhost=<host>] [--dbprefix=<prefix>]
 	 */
 	public function config( $args, $assoc_args ) {
-		WP_CLI::check_required_args( array( 'dbname', 'dbuser', 'dbpass' ), $assoc_args );
-
 		$_POST['dbname'] = $assoc_args['dbname'];
 		$_POST['uname'] = $assoc_args['dbuser'];
 		$_POST['pwd'] = $assoc_args['dbpass'];
@@ -62,6 +64,8 @@ class Core_Command extends WP_CLI_Command {
 
 	/**
 	 * Run wp_install. Assumes that wp-config.php is already in place.
+	 *
+	 * @synopsis --url=<url> --title=<site-title> [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
 	 */
 	public function install( $args, $assoc_args ) {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -88,6 +92,12 @@ class Core_Command extends WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * Transform a single-site install into a multi-site install.
+	 *
+	 * @subcommand install-network
+	 * @synopsis --title=<network-title> [--base_path=/]
+	 */
 	public function install_network( $args, $assoc_args ) {
 		if ( is_multisite() )
 			WP_CLI::error( 'This already is a multisite install.' );
@@ -99,8 +109,6 @@ class Core_Command extends WP_CLI_Command {
 		// need to register the multisite tables manually for some reason
 		foreach ( $wpdb->tables( 'ms_global' ) as $table => $prefixed_table )
 			$wpdb->$table = $prefixed_table;
-
-		WP_CLI::check_required_args( array( 'title' ), $assoc_args );
 
 		extract( wp_parse_args( $assoc_args, array(
 			'base' => '/',
@@ -151,6 +159,8 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 	/**
 	 * Display the WordPress version.
+	 *
+	 * @synopsis [--extra]
 	 */
 	public function version( $args = array(), $assoc_args = array() ) {
 		global $wp_version, $wp_db_version, $tinymce_version, $manifest_version;
@@ -162,6 +172,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			'-beta' => array( 'beta', '%B' ),
 			'-' => array( 'in development', '%R' ),
 		);
+
 		foreach( $version_types as $needle => $type ) {
 			if ( stristr( $wp_version, $needle ) ) {
 				list( $version_text, $color ) = $type;
@@ -169,6 +180,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 				break;
 			}
 		}
+
 		if ( isset( $assoc_args['extra'] ) ) {
 			WP_CLI::line( "WordPress version:\t$version_text" );
 
@@ -185,13 +197,13 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	}
 
 	/**
-	 * Update the WordPress core
+	 * Update WordPress.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @synopsis [<zip>] [--version=<version>] [--force]
 	 */
 	function update( $args, $assoc_args ) {
 		global $wp_version;
+
 		$update = $from_api = null;
 		$upgrader = 'Core_Upgrader';
 
@@ -251,10 +263,9 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	}
 
 	/**
-	 * Update the WordPress database
+	 * Update the WordPress database.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @subcommand update-db
 	 */
 	function update_db() {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );

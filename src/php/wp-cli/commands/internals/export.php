@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::add_command('export', 'Export_Command');
+WP_CLI::add_command( 'export', new Export_Command );
 
 /**
  * Implement export command
@@ -9,13 +9,13 @@ WP_CLI::add_command('export', 'Export_Command');
  * @subpackage commands/internals
  */
 class Export_Command extends WP_CLI_Command {
-	
-	protected $default_subcommand = 'export';
 
 	/**
-	 * Argument validation functions below
+	 * Export posts to a WXR file.
+	 *
+	 * @synopsis --dir=<dir> [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--author=<login>] [--category=<cat>] [--skip_comments]
 	 */
-	protected function export( $args, $assoc_args ) {
+	public function __invoke( $args, $assoc_args ) {
 		$defaults = array(
 			'dir'			=>		NULL,
 			'start_date'	=>		NULL,
