@@ -13,9 +13,9 @@ class Transient_Command extends WP_CLI_Command {
 	/**
 	 * Get a transient value.
 	 *
-	 * @synopsis <key>
+	 * @synopsis <key> [--json]
 	 */
-	public function get( $args ) {
+	public function get( $args, $assoc_args ) {
 		list( $key ) = $args;
 
 		$value = get_transient( $key );
@@ -25,10 +25,7 @@ class Transient_Command extends WP_CLI_Command {
 			exit;
 		}
 
-		if ( is_array( $value ) || is_object( $value ) )
-			echo var_export( $value ) . "\n";
-		else
-			echo $value . "\n";
+		WP_CLI::print_value( $value, $assoc_args );
 	}
 
 	/**
