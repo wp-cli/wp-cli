@@ -30,7 +30,7 @@ class Post_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a user
+	 * Update a post
 	 *
 	 * @param array $args
 	 * @param array $assoc_args
@@ -105,5 +105,96 @@ class Post_Command extends WP_CLI_Command {
 				WP_CLI::error( "Failed deleting post $post_id." );
 			}
 		}
+	}
+
+	/**
+	 * Generate posts
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 **/
+	public function generate( $args, $assoc_args ) {
+		global $wpdb;
+
+		$defaults = array(
+			'count' => 100,
+			'max_depth' => 1,
+			'post_type' => 'post',
+			'post_status' => 'publish',
+			'post_author' => false,
+			'post_date' => current_time( 'mysql' ),
+		);
+
+		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
+
+		if ( !post_type_exists( $post_type ) ) {
+			WP_CLI::error( sprintf( "'%s' is not a registered post type.", $post_type ) );
+		}
+
+		if ( $post_author ) {
+			$post_author = get_user_by( 'login', $post_author );
+
+			if ( $post_author )
+				$post_author = $post_author->ID;
+		}
+
+		// Get the total number of posts
+		$total = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = %s", $post_type ) );
+
+		$label = get_post_type_object( $post_type )->labels->singular_name;
+
+		$hierarchical = get_post_type_object( $post_type )->hierarchical;
+
+		$limit = $count + $total;
+
+		$notify = new \cli\progress\Bar( 'Generating posts', $count );
+
+		$current_depth = 1;
+		$current_parent = 0;
+
+		for ( $i = $total; $i < $limit; $i++ ) {
+
+			if ( $hierarchical ) {
+
+				if( $this->maybe_make_child() && $current_depth < $max_depth ) {
+
+					$current_parent = $post_ids[$i-1];
+					$current_depth++;
+
+				} else if( $this->maybe_reset_depth() ) {
+
+					$current_depth = 1;
+					$current_parent = 0;
+
+				}
+			}
+
+			$args = array(
+				'post_type' => $post_type,
+				'post_title' =>  "$label $i",
+				'post_status' => $post_status,
+				'post_author' => $post_author,
+				'post_parent' => $current_parent,
+				'post_name' => "post-$i",
+				'post_date' => $post_date,
+			);
+
+			// Not using wp_insert_post() because it's slow
+			$wpdb->insert( $wpdb->posts, $args );
+
+			$notify->tick();
+		}
+
+		$notify->finish();
+	}
+
+	private function maybe_make_child() {
+		// 50% chance of making child post
+		return ( mt_rand(1,2) == 1 ) ? true: false;
+	}
+
+	private function maybe_reset_depth() {
+		// 10% chance of reseting to root depth
+		return ( mt_rand(1,10) == 7 ) ? true : false;
 	}
 }

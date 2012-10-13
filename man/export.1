@@ -7,12 +7,12 @@
 \fBwp\-export\fR \- Create a WXR file\.
 .
 .SH "SYNOPSIS"
-\fBwp export\fR \-\-path=\fIdirname\fR [filters] [\-\-skip_comments]
+\fBwp export\fR \-\-dir=\fIdirname\fR [filters] [\-\-skip_comments]
 .
 .SH "OPTIONS"
 .
 .TP
-\fB\-\-path\fR=\fIdirname\fR:
+\fB\-\-dir\fR=\fIdirname\fR:
 .
 .IP
 Full Path to directory where WXR export files should be stored\.
@@ -65,7 +65,7 @@ Export only posts with this status\.
 .
 .nf
 
-wp export \-\-path=/tmp/ \-\-user=admin \-\-post_type=post \-\-start_date=2011\-01\-01 \-\-end_date=2011\-12\-31
+wp export \-\-dir=/tmp/ \-\-user=admin \-\-post_type=post \-\-start_date=2011\-01\-01 \-\-end_date=2011\-12\-31
 .
 .fi
 

@@ -7,7 +7,7 @@ wp-export(1) -- Create a WXR file.
 
 ## OPTIONS
 
-* `--path`=<dirname>:
+* `--dir`=<dirname>:
 
 	Full Path to directory where WXR export files should be stored.
 
@@ -43,4 +43,4 @@ wp-export(1) -- Create a WXR file.
 
 ## EXAMPLES
 
-	wp export --path=/tmp/ --user=admin --post_type=post --start_date=2011-01-01 --end_date=2011-12-31
+	wp export --dir=/tmp/ --user=admin --post_type=post --start_date=2011-01-01 --end_date=2011-12-31
