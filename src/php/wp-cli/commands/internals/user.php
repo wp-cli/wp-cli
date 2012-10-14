@@ -28,10 +28,11 @@ class User_Command extends WP_CLI_Command {
 			$params['role'] = $assoc_args['role'];
 		}
 
-		$table = new \cli\Table();
 		$users = get_users( $params );
 		$fields = array('ID', 'user_login', 'display_name', 'user_email',
 			'user_registered');
+
+		$table = new \cli\Table();
 
 		$table->setHeaders( array_merge($fields, array('roles')) );
 

@@ -56,37 +56,8 @@ class Post_Command extends WP_CLI_Command {
 	 *
 	 * @synopsis <id>... [--force]
 	 */
-	public function delete( $args, $assoc_args ) {
-		$this->_delete_posts( $args, isset( $assoc_args['force'] ) );
-	}
-
-	/**
-	 * Delete a series of posts based on arguments.
-	 *
-	 * @subcommand delete-many
-	 * @synopsis [--post_type=<value>] [--post_author=<value>] [--post_status=<value>] [--force]
-	 */
-	public function delete_many( $_, $assoc_args ) {
-		$query_args = array(
-			'fields'            =>		'ids',
-			'posts_per_page'    =>		-1,
-			'post_type'         =>		$assoc_args['post_type'],
-			'post_author'       =>		$assoc_args['post_author'],
-			'post_status'       =>		$assoc_args['post_status'],
-		);
-
-		$query = new WP_Query( $query_args );
-		$posts_to_delete = $query->posts;
-
-		if ( empty( $posts_to_delete ) ) {
-			WP_CLI::error( "No posts to delete." );
-		}
-
-		$this->_delete_posts( $posts_to_delete, isset( $assoc_args['force'] ) );
-	}
-
-	protected function _delete_posts( $post_ids, $force ) {
-		$action = $force ? 'Deleted' : 'Trashed';
+	public function delete( $post_ids, $assoc_args ) {
+		$action = isset( $assoc_args['force'] ) ? 'Deleted' : 'Trashed';
 
 		foreach ( $post_ids as $post_id ) {
 			if ( wp_delete_post( $post_id, $force ) ) {
@@ -94,6 +65,51 @@ class Post_Command extends WP_CLI_Command {
 			} else {
 				WP_CLI::error( "Failed deleting post $post_id." );
 			}
+		}
+	}
+
+	/**
+	 * Get a list of posts.
+	 *
+	 * @subcommand list
+	 */
+	public function _list( $_, $assoc_args ) {
+		$query_args = array(
+			'posts_per_page' => -1
+		);
+
+		foreach ( $assoc_args as $key => $value ) {
+			if ( true === $value )
+				continue;
+
+			$query_args[ $key ] = $value;
+		}
+
+		if ( isset( $assoc_args['ids'] ) )
+			$query_args['fields'] = 'ids';
+
+		$query = new WP_Query( $query_args );
+
+		if ( isset( $assoc_args['ids'] ) ) {
+			WP_CLI::out( implode( ' ', $query->posts ) );
+		} else {
+			$fields = array( 'ID', 'post_title', 'post_name', 'post_date' );
+
+			$table = new \cli\Table();
+
+			$table->setHeaders( $fields );
+
+			foreach ( $query->posts as $post ) {
+				$line = array();
+
+				foreach ( $fields as $field ) {
+					$line[] = $post->$field;
+				}
+
+				$table->addRow( $line );
+			}
+
+			$table->display();
 		}
 	}
 
