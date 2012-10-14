@@ -1,27 +1,15 @@
-wp-post-delete(1) -- Delete a WordPress post.
+wp-post-delete(1) -- Delete one or several posts by ID.
 ====
 
 ## SYNOPSIS
 
-`wp post delete` [<ID>] [--post_type=<value>] [--post_author=<value>] [--post_status=<value>] [--force]
+`wp post delete` <ID>... [--force]
 
 ## OPTIONS
 
 * `<ID>`:
 
 	The ID of the post to delete.
-
-* `--post_type`:
-
-	Trash or delete all posts of a given post type
-
-* `--post_author`:
-
-	Trash or delete all posts written by a specific user
-
-* `--post_status`:
-
-	Trash or delete all posts of a given post status
 
 * `--force`:
 
@@ -31,4 +19,4 @@ wp-post-delete(1) -- Delete a WordPress post.
 
 	wp post delete 123 --force
 
-	wp post delete --post_type=page --post_status=draft
+	wp post delete $(wp post list --post_type='page' --ids)

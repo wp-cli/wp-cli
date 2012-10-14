@@ -1,13 +1,13 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WP\-POST\-DELETE" "1" "September 2012" "" "WP-CLI"
+.TH "WP\-POST\-DELETE" "1" "October 2012" "" "WP-CLI"
 .
 .SH "NAME"
-\fBwp\-post\-delete\fR \- Delete a WordPress post\.
+\fBwp\-post\-delete\fR \- Delete one or several posts by ID\.
 .
 .SH "SYNOPSIS"
-\fBwp post delete\fR [\fIID\fR] [\-\-post_type=\fIvalue\fR] [\-\-post_author=\fIvalue\fR] [\-\-post_status=\fIvalue\fR] [\-\-force]
+\fBwp post delete\fR \fIID\fR\.\.\. [\-\-force]
 .
 .SH "OPTIONS"
 .
@@ -16,24 +16,6 @@
 .
 .IP
 The ID of the post to delete\.
-.
-.TP
-\fB\-\-post_type\fR:
-.
-.IP
-Trash or delete all posts of a given post type
-.
-.TP
-\fB\-\-post_author\fR:
-.
-.IP
-Trash or delete all posts written by a specific user
-.
-.TP
-\fB\-\-post_status\fR:
-.
-.IP
-Trash or delete all posts of a given post status
 .
 .TP
 \fB\-\-force\fR:
@@ -47,7 +29,7 @@ Skip the trash bin\.
 
 wp post delete 123 \-\-force
 
-wp post delete \-\-post_type=page \-\-post_status=draft
+wp post delete $(wp post list \-\-post_type=\'page\' \-\-ids)
 .
 .fi
 
