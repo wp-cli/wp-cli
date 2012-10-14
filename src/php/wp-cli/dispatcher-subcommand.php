@@ -12,7 +12,11 @@ abstract class Subcommand {
 	abstract function invoke( $args, $assoc_args );
 
 	protected function check_args( $args, $assoc_args ) {
-		$accepted_params = $this->parse_synopsis( $this->get_synopsis() );
+		$synopsis = $this->get_synopsis();
+		if ( !$synopsis )
+			return;
+
+		$accepted_params = $this->parse_synopsis( $synopsis );
 
 		$this->check_positional( $args, $accepted_params );
 

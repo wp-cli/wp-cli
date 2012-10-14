@@ -1,0 +1,18 @@
+wp-post-list(1) -- Get a list of posts.
+====
+
+## SYNOPSIS
+
+`wp post list` --<field>=<value> [--<field>=<value>...] [--ids]
+
+## OPTIONS
+
+* `--<field>`=<value>:
+
+	One or more args to pass to WP_Query.
+
+## EXAMPLES
+
+	wp post list
+
+	wp post list --post_type=page --post_status=draft --ids
