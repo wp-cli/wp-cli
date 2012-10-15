@@ -248,7 +248,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
-		$result = WP_CLI::get_upgrader( $upgrader )->upgrade( $update );
+		$result = WP_CLI\Utils\get_upgrader( $upgrader )->upgrade( $update );
 
 		if ( is_wp_error($result) ) {
 			$msg = WP_CLI::error_to_string( $result );

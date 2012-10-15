@@ -177,15 +177,6 @@ class WP_CLI {
 		return $r;
 	}
 
-	static function get_upgrader( $class ) {
-		if ( !class_exists( 'WP_Upgrader' ) )
-			require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-
-		require WP_CLI_ROOT . '/class-cli-upgrader-skin.php';
-
-		return new $class( new CLI_Upgrader_Skin );
-	}
-
 	static function load_all_commands() {
 		foreach ( array( 'internals', 'community' ) as $dir ) {
 			foreach ( glob( WP_CLI_ROOT . "/commands/$dir/*.php" ) as $filename ) {
