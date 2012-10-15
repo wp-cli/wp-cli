@@ -51,7 +51,7 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function error( $message, $label = 'Error' ) {
-		if ( !WP_CLI_AUTOCOMPLETE ) {
+		if ( !isset( self::$assoc_special['completions'] ) ) {
 			\cli\err( '%R' . $label . ': %n' . self::error_to_string( $message ) );
 		}
 
@@ -192,6 +192,26 @@ class WP_CLI {
 		return self::$commands;
 	}
 
+	static function load_command( $command ) {
+		if ( !isset( WP_CLI::$commands[$command] ) ) {
+			foreach ( array( 'internals', 'community' ) as $dir ) {
+				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
+
+				if ( is_readable( $path ) ) {
+					include $path;
+					break;
+				}
+			}
+		}
+
+		if ( !isset( WP_CLI::$commands[$command] ) ) {
+			WP_CLI::error( "'$command' is not a registered wp command. See 'wp help'." );
+			exit;
+		}
+
+		return WP_CLI::$commands[$command];
+	}
+
 	static function run_command( $arguments, $assoc_args ) {
 		if ( empty( $arguments ) ) {
 			$command = 'help';
@@ -213,24 +233,89 @@ class WP_CLI {
 		$command->invoke( $arguments, $assoc_args );
 	}
 
-	static function load_command( $command ) {
-		if ( !isset( WP_CLI::$commands[$command] ) ) {
-			foreach ( array( 'internals', 'community' ) as $dir ) {
-				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
+	private static $arguments, $assoc_args, $assoc_special;
 
-				if ( is_readable( $path ) ) {
-					include $path;
-					break;
-				}
-			}
-		}
+	static function before_wp_load() {
+		$r = WP_CLI\Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
-		if ( !isset( WP_CLI::$commands[$command] ) ) {
-			WP_CLI::error( "'$command' is not a registered wp command. See 'wp help'." );
+		list( self::$arguments, self::$assoc_args ) = $r;
+
+		self::$assoc_special = WP_CLI\Utils\split_assoc( self::$assoc_args, array(
+			'path', 'url', 'blog', 'user', 'require',
+			'quiet', 'completions'
+		) );
+
+		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
+
+		// Handle --version parameter
+		if ( isset( self::$assoc_args['version'] ) && empty( self::$arguments ) ) {
+			self::line( 'wp-cli ' . WP_CLI_VERSION );
 			exit;
 		}
 
-		return WP_CLI::$commands[$command];
+		$_SERVER['DOCUMENT_ROOT'] = getcwd();
+
+		// Define the WordPress location
+		if ( !empty( self::$assoc_special['path'] ) ) {
+			// trailingslashit() isn't available yet
+			define( 'WP_ROOT', rtrim( self::$assoc_args['path'], '/' ) . '/' );
+		} else {
+			define( 'WP_ROOT', $_SERVER['PWD'] . '/' );
+		}
+
+		// Handle --url and --blog parameters
+		WP_CLI\Utils\set_url( self::$assoc_special );
+
+		if ( array( 'core', 'download' ) == self::$arguments ) {
+			WP_CLI::run_command( self::$arguments, self::$assoc_args );
+			exit;
+		}
+
+		if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
+			WP_CLI::error( 'This does not seem to be a WordPress install. Pass --path=`path/to/wordpress` or run `wp core download`.' );
+		}
+
+		if ( array( 'core', 'config' ) == self::$arguments ) {
+			WP_CLI::run_command( self::$arguments, self::$assoc_args );
+			exit;
+		}
+
+		// The db commands don't need any WP files
+		if ( array( 'db' ) == array_slice( self::$arguments, 0, 1 ) ) {
+			WP_CLI\Utils\load_wp_config();
+			WP_CLI::run_command( self::$arguments, self::$assoc_args );
+			exit;
+		}
+
+		// Set installer flag before loading any WP files
+		if ( array( 'core', 'install' ) == self::$arguments ) {
+			define( 'WP_INSTALLING', true );
+		}
+	}
+
+	static function get_assoc_special() {
+		return self::$assoc_special;
+	}
+
+	static function after_wp_load() {
+		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
+
+		WP_CLI\Utils\set_user( self::$assoc_special );
+
+		if ( !defined( 'WP_INSTALLING' ) && isset( self::$assoc_special['url'] ) )
+			WP_CLI\Utils\set_wp_query();
+
+		if ( isset( self::$assoc_special['require'] ) )
+			require self::$assoc_special['require'];
+
+		if ( isset( self::$assoc_special['completions'] ) ) {
+			foreach ( self::load_all_commands() as $name => $command ) {
+				self::line( $command->autocomplete() );
+			}
+			exit;
+		}
+
+		self::run_command( self::$arguments, self::$assoc_args );
 	}
 
 	// back-compat

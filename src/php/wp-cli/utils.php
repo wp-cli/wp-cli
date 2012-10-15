@@ -8,11 +8,11 @@ namespace WP_CLI\Utils;
  * @param string
  * @return array
  */
-function parse_args() {
+function parse_args( $arguments ) {
 	$regular_args = array();
 	$assoc_args = array();
 
-	foreach ( array_slice( $GLOBALS['argv'], 1 ) as $arg ) {
+	foreach ( $arguments as $arg ) {
 		if ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
 			$assoc_args[ $matches[1] ] = true;
 		} elseif ( preg_match( '|^--([^=]+)=(.+)|', $arg, $matches ) ) {
@@ -25,14 +25,30 @@ function parse_args() {
 	return array( $regular_args, $assoc_args );
 }
 
-function set_url( &$assoc_args ) {
+/**
+ * Splits $argv into positional and associative arguments.
+ *
+ * @param string
+ * @return array
+ */
+function split_assoc( &$assoc_args, $special_keys ) {
+	$assoc_special = array();
+
+	foreach ( $special_keys as $key ) {
+		if ( isset( $assoc_args[ $key ] ) ) {
+			$assoc_special[ $key ] = $assoc_args[ $key ];
+			unset( $assoc_args[ $key ] );
+		}
+	}
+
+	return $assoc_special;
+}
+
+function set_url( $assoc_args ) {
 	if ( isset( $assoc_args['url'] ) ) {
-		define( 'WP_CLI_URL', $assoc_args['url'] );
 		$blog = $assoc_args['url'];
-		unset( $assoc_args['url'] );
 	} elseif ( isset( $assoc_args['blog'] ) ) {
 		$blog = $assoc_args['blog'];
-		unset( $assoc_args['blog'] );
 		if ( true === $blog ) {
 			\WP_CLI::line( 'usage: wp --blog=example.com' );
 		}
@@ -107,7 +123,7 @@ function load_wp_config() {
 
 
 // Handle --user parameter
-function set_user( &$assoc_args ) {
+function set_user( $assoc_args ) {
 	if ( !isset( $assoc_args['user'] ) )
 		return;
 
@@ -122,8 +138,13 @@ function set_user( &$assoc_args ) {
 	if ( !$user_id || !wp_set_current_user( $user_id ) ) {
 		\WP_CLI::error( sprintf( 'Could not get a user_id for this user: %s', var_export( $user, true ) ) );
 	}
+}
 
-	unset( $assoc_args['user'] );
+function set_wp_query() {
+	if ( isset( $GLOBALS['wp_query'] ) && isset( $GLOBALS['wp'] ) ) {
+		$GLOBALS['wp']->parse_request();
+		$GLOBALS['wp_query']->query($GLOBALS['wp']->query_vars);
+	}
 }
 
 function get_upgrader( $class ) {
