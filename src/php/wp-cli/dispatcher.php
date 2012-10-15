@@ -125,7 +125,8 @@ abstract class Subcommand implements Command {
 
 		$this->check_assoc( $assoc_args, $accepted_params );
 
-		$this->check_unknown_assoc( $assoc_args, $accepted_params );
+		if ( empty( $accepted_params['generic'] ) )
+			$this->check_unknown_assoc( $assoc_args, $accepted_params );
 	}
 
 	private function check_positional( $args, $accepted_params ) {
@@ -215,15 +216,17 @@ abstract class Subcommand implements Command {
 
 	private static function get_patterns() {
 		$p_name = '(?P<name>[a-z-_]+)';
-		$p_value = '<(?P<value>[a-z-|]+)>';
+		$p_value = '(?P<value>[a-z-|]+)';
 
 		$param_types = array(
-			array( 'positional', $p_value,             1, 1 ),
-			array( 'assoc',      "--$p_name=$p_value", 1, 1 ),
-			array( 'flag',       "--$p_name",          1, 0 ),
+			array( 'positional', "<$p_value>",           1, 1 ),
+			array( 'generic',    "--<field>=<value>",    1, 1 ),
+			array( 'assoc',      "--$p_name=<$p_value>", 1, 1 ),
+			array( 'flag',       "--$p_name",            1, 0 ),
 		);
 
 		$patterns = array();
+		$params = array();
 
 		foreach ( $param_types as $pt ) {
 			list( $type, $pattern, $optional, $mandatory ) = $pt;
@@ -241,11 +244,9 @@ abstract class Subcommand implements Command {
 					'optional' => true
 				);
 			}
-		}
 
-		$params = array();
-		foreach ( array_keys( $param_types ) as $type )
-			$params[$type] = array();
+			$params[ $type ] = array();
+		}
 
 		return array( $patterns, $params );
 	}
