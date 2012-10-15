@@ -8,8 +8,9 @@ abstract class Subcommand {
 		$this->method = $method;
 	}
 
-	abstract function show_usage();
-	abstract function invoke( $args, $assoc_args );
+	// WPCOM https://github.com/wp-cli/wp-cli/commit/223a75400a31bf7079b2dcc61a8de9904295af55#commitcomment-1994186
+	// abstract function show_usage();
+	// abstract function invoke( $args, $assoc_args );
 
 	protected function check_args( $args, $assoc_args ) {
 		$synopsis = $this->get_synopsis();
