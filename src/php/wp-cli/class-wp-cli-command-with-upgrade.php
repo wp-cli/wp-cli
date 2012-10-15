@@ -103,7 +103,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		$slug = stripslashes( $args[0] );
 
 		if ( '.zip' == substr( $slug, -4 ) ) {
-			$file_upgrader = WP_CLI::get_upgrader( $this->upgrader );
+			$file_upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
 
 			if ( $file_upgrader->install( $slug ) ) {
 				$slug = $file_upgrader->result['destination_name'];
@@ -125,7 +125,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
 		list( $file, $name ) = $this->parse_name( $args );
 
-		WP_CLI::get_upgrader( $this->upgrader )->upgrade( $file );
+		WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $file );
 	}
 
 	function update_all( $args, $assoc_args ) {
@@ -142,7 +142,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
 		// If --all, UPDATE ALL THE THINGS
 		if ( isset( $assoc_args['all'] ) ) {
-			$upgrader = WP_CLI::get_upgrader( $this->upgrader );
+			$upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
 			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
 
 			// Let the user know the results.

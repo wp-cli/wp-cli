@@ -145,6 +145,8 @@ abstract class Subcommand implements Command {
 	private function check_assoc( $assoc_args, $accepted_params ) {
 		$mandatory_assoc = array();
 
+		$assoc_args += \WP_CLI::get_assoc_special();
+
 		foreach ( $accepted_params['assoc'] as $param ) {
 			if ( !$param['optional'] )
 				$mandatory_assoc[] = $param['name'];

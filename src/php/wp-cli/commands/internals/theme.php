@@ -114,7 +114,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		// Check to see if we should update, rather than install.
 		if ( $this->has_update( $slug ) ) {
 			WP_CLI::line( sprintf( 'Updating %s (%s)', $api->name, $api->version ) );
-			$result = WP_CLI::get_upgrader( $this->upgrader )->upgrade( $slug );
+			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $slug );
 
 			/**
 			 *  Else, if there's no update, it's either not installed,
@@ -122,7 +122,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 			 */
 		} else if ( !is_readable( $this->get_stylesheet_path( $slug ) ) ) {
 			WP_CLI::line( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
-			$result = WP_CLI::get_upgrader( $this->upgrader )->install( $api->download_link );
+			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->install( $api->download_link );
 		} else {
 			WP_CLI::error( 'Theme already installed and up to date.' );
 		}
