@@ -11,6 +11,10 @@ wp-post-list(1) -- Get a list of posts.
 
 	One or more args to pass to WP_Query.
 
+* `--ids`:
+
+	Return only the IDs of the found posts, separated by spaces.
+
 ## EXAMPLES
 
 	wp post list
