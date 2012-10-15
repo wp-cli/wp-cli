@@ -19,14 +19,11 @@ class CompositeCommand implements Command {
 	}
 
 	function autocomplete() {
-		$subcommands = array_keys( $this->get_subcommands() );
-		return $this->name .  ' ' . implode( ' ', $subcommands );
+		return $this->name .  ' ' . implode( ' ', $this->get_subcommand_names() );
 	}
 
 	function shortdesc() {
-		$methods = array_keys( $this->get_subcommands() );
-
-		return implode( '|', $methods );
+		return implode( '|', $this->get_subcommand_names() );
 	}
 
 	function show_usage() {
@@ -76,6 +73,10 @@ class CompositeCommand implements Command {
 			return false;
 
 		return $subcommands[ $name ];
+	}
+
+	private function get_subcommand_names() {
+		return array_keys( $this->get_subcommands() );
 	}
 
 	private function get_subcommands() {
