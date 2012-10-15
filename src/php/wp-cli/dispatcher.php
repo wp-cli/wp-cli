@@ -218,23 +218,29 @@ abstract class Subcommand implements Command {
 		$p_value = '<(?P<value>[a-z-|]+)>';
 
 		$param_types = array(
-			'positional' => $p_value,
-			'assoc' => "--$p_name=$p_value",
-			'flag' => "--$p_name"
+			array( 'positional', $p_value,             1, 1 ),
+			array( 'assoc',      "--$p_name=$p_value", 1, 1 ),
+			array( 'flag',       "--$p_name",          1, 0 ),
 		);
 
 		$patterns = array();
 
-		foreach ( $param_types as $type => $pattern ) {
-			$patterns[ "/^$pattern$/" ] = array(
-				'type' => $type,
-				'optional' => false
-			);
+		foreach ( $param_types as $pt ) {
+			list( $type, $pattern, $optional, $mandatory ) = $pt;
 
-			$patterns[ "/^\[$pattern\]$/" ] = array(
-				'type' => $type,
-				'optional' => true
-			);
+			if ( $mandatory ) {
+				$patterns[ "/^$pattern$/" ] = array(
+					'type' => $type,
+					'optional' => false
+				);
+			}
+
+			if ( $optional ) {
+				$patterns[ "/^\[$pattern\]$/" ] = array(
+					'type' => $type,
+					'optional' => true
+				);
+			}
 		}
 
 		$params = array();
