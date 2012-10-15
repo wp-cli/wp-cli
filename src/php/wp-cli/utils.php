@@ -27,8 +27,9 @@ function parse_args() {
 
 function set_url( &$assoc_args ) {
 	if ( isset( $assoc_args['url'] ) ) {
+		define( 'WP_CLI_URL', $assoc_args['url'] );
 		$blog = $assoc_args['url'];
-		/* unset( $assoc_args['url'] ); */
+		unset( $assoc_args['url'] );
 	} elseif ( isset( $assoc_args['blog'] ) ) {
 		$blog = $assoc_args['blog'];
 		unset( $assoc_args['blog'] );
