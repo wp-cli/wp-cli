@@ -14,12 +14,6 @@ class DB_Command extends WP_CLI_Command {
 		return 'cli';
 	}
 
-	public static function get_aliases() {
-		return array(
-			'dump' => 'export'
-		);
-	}
-
 	/**
 	 * Creates the database specified in the wp-config.php file.
 	 */
@@ -137,6 +131,7 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Exports the WordPress DB as SQL using mysqldump.
 	 *
+	 * @alias dump
 	 * @synopsis [<file>]
 	 */
 	function export( $args, $assoc_args ) {

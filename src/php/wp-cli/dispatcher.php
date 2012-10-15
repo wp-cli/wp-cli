@@ -65,18 +65,32 @@ class CompositeCommand implements Command, TopLevelCommand {
 			$name = array_shift( $args );
 		}
 
-		$aliases = $class::get_aliases();
-
-		if ( isset( $aliases[ $name ] ) ) {
-			$name = $aliases[ $name ];
-		}
-
 		$subcommands = $this->get_subcommands();
+
+		if ( !isset( $subcommands[ $name ] ) ) {
+			$aliases = self::get_aliases( $subcommands );
+
+			if ( isset( $aliases[ $name ] ) ) {
+				$name = $aliases[ $name ];
+			}
+		}
 
 		if ( !isset( $subcommands[ $name ] ) )
 			return false;
 
 		return $subcommands[ $name ];
+	}
+
+	private static function get_aliases( $subcommands ) {
+		$aliases = array();
+
+		foreach ( $subcommands as $name => $subcommand ) {
+			$alias = $subcommand->get_alias();
+			if ( $alias )
+				$aliases[ $alias ] = $name;
+		}
+
+		return $aliases;
 	}
 
 	private function get_subcommand_names() {
@@ -262,13 +276,24 @@ class MethodSubcommand extends Subcommand {
 		\WP_CLI::line( $prefix . "wp $command $subcommand $synopsis" );
 	}
 
-	function get_name() {
+	private function get_tag( $name ) {
 		$comment = $this->method->getDocComment();
 
-		if ( preg_match( '/@subcommand\s+([a-z-]+)/', $comment, $matches ) )
+		if ( preg_match( '/@' . $name . '\s+([a-z-]+)/', $comment, $matches ) )
 			return $matches[1];
 
+		return false;
+	}
+
+	function get_name() {
+		if ( $name = $this->get_tag( 'subcommand' ) )
+			return $name;
+
 		return $this->method->name;
+	}
+
+	function get_alias() {
+		return $this->get_tag( 'alias' );
 	}
 
 	function invoke( $args, $assoc_args ) {
