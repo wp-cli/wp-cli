@@ -137,7 +137,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 <?php
 		$ms_config = ob_get_clean();
 
-		$wp_config_path = WP_CLI::locate_wp_config();
+		$wp_config_path = WP_CLI\Utils\locate_wp_config();
 
 		$token = "/* That's all, stop editing!";
 
