@@ -130,29 +130,6 @@ class WP_CLI {
 	}
 
 	/**
-	 * Splits a string into positional and associative arguments.
-	 *
-	 * @param string
-	 * @return array
-	 */
-	static function parse_args( $arguments ) {
-		$regular_args = array();
-		$assoc_args = array();
-
-		foreach ( $arguments as $arg ) {
-			if ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
-				$assoc_args[ $matches[1] ] = true;
-			} elseif ( preg_match( '|^--([^=]+)=(.+)|', $arg, $matches ) ) {
-				$assoc_args[ $matches[1] ] = $matches[2];
-			} else {
-				$regular_args[] = $arg;
-			}
-		}
-
-		return array( $regular_args, $assoc_args );
-	}
-
-	/**
 	 * Composes positional and associative arguments into a string.
 	 *
 	 * @param array
