@@ -14,7 +14,6 @@ define( 'WP_CLI_ROOT', __DIR__ . '/' );
 define( 'WP_CLI', true );
 
 // Include the wp-cli classes
-include WP_CLI_ROOT . 'dispatcher-subcommand.php';
 include WP_CLI_ROOT . 'dispatcher.php';
 include WP_CLI_ROOT . 'class-wp-cli.php';
 include WP_CLI_ROOT . 'class-wp-cli-command.php';
