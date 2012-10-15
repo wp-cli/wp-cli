@@ -101,7 +101,7 @@ class CompositeCommand implements Command {
 }
 
 
-class SingleCommand extends Subcommand implements Command {
+class SingleCommand extends AbstractSubcommand implements Command {
 
 	function __construct( $name, $callable ) {
 		$this->name = $name;

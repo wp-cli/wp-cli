@@ -2,14 +2,18 @@
 
 namespace WP_CLI\Dispatcher;
 
-abstract class Subcommand {
+interface Subcommand {
+
+	function show_usage();
+	function invoke( $arguments, $assoc_args );
+}
+
+
+abstract class AbstractSubcommand implements Subcommand {
 
 	function __construct( $method ) {
 		$this->method = $method;
 	}
-
-	abstract function show_usage();
-	abstract function invoke( $args, $assoc_args );
 
 	protected function check_args( $args, $assoc_args ) {
 		$synopsis = $this->get_synopsis();
@@ -141,7 +145,7 @@ abstract class Subcommand {
 }
 
 
-class MethodSubcommand extends Subcommand {
+class MethodSubcommand extends AbstractSubcommand {
 
 	function __construct( $method, $parent ) {
 		$this->parent = $parent;
