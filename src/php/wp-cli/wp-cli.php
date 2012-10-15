@@ -14,6 +14,7 @@ define( 'WP_CLI_ROOT', __DIR__ . '/' );
 define( 'WP_CLI', true );
 
 // Include the wp-cli classes
+include WP_CLI_ROOT . 'utils.php';
 include WP_CLI_ROOT . 'dispatcher.php';
 include WP_CLI_ROOT . 'class-wp-cli.php';
 include WP_CLI_ROOT . 'class-wp-cli-command.php';
@@ -27,7 +28,7 @@ include WP_CLI_ROOT . '../php-cli-tools/lib/cli/cli.php';
 \cli\register_autoload();
 
 // Get the cli arguments
-list( $arguments, $assoc_args ) = WP_CLI::parse_args( array_slice( $GLOBALS['argv'], 1 ) );
+list( $arguments, $assoc_args ) = WP_CLI\Utils\parse_args();
 
 // Set output levels
 define( 'WP_CLI_AUTOCOMPLETE', isset( $assoc_args['completions'] ) );
