@@ -76,7 +76,7 @@ if ( array( 'db' ) == array_slice( $arguments, 0, 1 ) ) {
 
 // Set installer flag before loading any WP files
 if ( array( 'core', 'install' ) == $arguments ) {
-    define( 'WP_INSTALLING', true );
+	define( 'WP_INSTALLING', true );
 }
 
 // Load WordPress
@@ -88,11 +88,11 @@ require WP_ROOT . 'wp-load.php';
 require ABSPATH . 'wp-admin/includes/admin.php';
 
 // Load the right info into the global wp_query
-if ( !defined( 'WP_INSTALLING' ) && isset( $assoc_args['url'] ) ) {
-    if ( isset( $GLOBALS['wp_query'] ) && isset( $GLOBALS['wp'] ) ) {
-        $GLOBALS['wp']->parse_request();
-        $GLOBALS['wp_query']->query($GLOBALS['wp']->query_vars);
-    }
+if ( !defined( 'WP_INSTALLING' ) && defined( 'WP_CLI_URL' ) ) {
+	if ( isset( $GLOBALS['wp_query'] ) && isset( $GLOBALS['wp'] ) ) {
+		$GLOBALS['wp']->parse_request();
+		$GLOBALS['wp_query']->query($GLOBALS['wp']->query_vars);
+	}
 }
 
 // Set filesystem method
