@@ -52,7 +52,7 @@ class CompositeCommand implements Command {
 		$subcommand->invoke( $args, $assoc_args );
 	}
 
-	protected function find_subcommand( &$args ) {
+	private function find_subcommand( &$args ) {
 		$class = $this->class;
 
 		if ( empty( $args ) ) {
