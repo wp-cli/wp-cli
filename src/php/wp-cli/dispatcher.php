@@ -108,6 +108,8 @@ abstract class Subcommand implements Command {
 		$this->method = $method;
 	}
 
+	abstract function get_name();
+
 	protected function check_args( $args, $assoc_args ) {
 		$synopsis = $this->get_synopsis();
 		if ( !$synopsis )
@@ -293,6 +295,10 @@ class SingleCommand extends Subcommand {
 		parent::__construct( $method );
 	}
 
+	function get_name() {
+		return $this->name;
+	}
+
 	function autocomplete() {
 		return $this->name;
 	}
@@ -302,7 +308,7 @@ class SingleCommand extends Subcommand {
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
-		$command = $this->name;
+		$command = $this->get_name();
 		$synopsis = $this->get_synopsis();
 
 		\WP_CLI::line( $prefix . "wp $command $synopsis" );
