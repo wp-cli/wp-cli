@@ -91,11 +91,9 @@ abstract class Subcommand {
 	}
 
 	protected function parse_synopsis( $synopsis ) {
-		$patterns = self::get_patterns();
+		list( $patterns, $params ) = self::get_patterns();
 
 		$tokens = preg_split( '/[\s\t]+/', $synopsis );
-
-		$params = new \WP_CLI\Utils\Defaultdict( array() );
 
 		foreach ( $tokens as $token ) {
 			foreach ( $patterns as $regex => $desc ) {
@@ -134,7 +132,11 @@ abstract class Subcommand {
 			);
 		}
 
-		return $patterns;
+		$params = array();
+		foreach ( array_keys( $param_types ) as $type )
+			$params[$type] = array();
+
+		return array( $patterns, $params );
 	}
 }
 
