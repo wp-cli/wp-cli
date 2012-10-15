@@ -309,13 +309,18 @@ class WP_CLI {
 			require self::$assoc_special['require'];
 
 		if ( isset( self::$assoc_special['completions'] ) ) {
-			foreach ( self::load_all_commands() as $name => $command ) {
-				self::line( $command->autocomplete() );
-			}
-			exit;
+			self::render_automcomplete();
 		}
 
 		self::run_command( self::$arguments, self::$assoc_args );
+	}
+
+	private static function render_automcomplete() {
+		foreach ( self::load_all_commands() as $name => $command ) {
+			$subcommands = $command->get_subcommands();
+			self::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
+		}
+		exit;
 	}
 
 	// back-compat
