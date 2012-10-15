@@ -96,6 +96,32 @@ function load_wp_config() {
 	if ( $wp_config_path = locate_wp_config() )
 		require locate_wp_config();
 	else
-		WP_CLI::error( 'No wp-config.php file.' );
+		\WP_CLI::error( 'No wp-config.php file.' );
+}
+
+
+
+// ---- AFTER WORDPRESS IS LOADED ---- //
+
+
+
+// Handle --user parameter
+function set_user( &$assoc_args ) {
+	if ( !isset( $assoc_args['user'] ) )
+		return;
+
+	$user = $assoc_args['user'];
+
+	if ( is_numeric( $user ) ) {
+		$user_id = (int) $user;
+	} else {
+		$user_id = (int) username_exists( $user );
+	}
+
+	if ( !$user_id || !wp_set_current_user( $user_id ) ) {
+		\WP_CLI::error( sprintf( 'Could not get a user_id for this user: %s', var_export( $user, true ) ) );
+	}
+
+	unset( $assoc_args['user'] );
 }
 
