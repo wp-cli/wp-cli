@@ -11,10 +11,9 @@ WP_CLI::add_command( 'post', 'Post_Command' );
 class Post_Command extends WP_CLI_Command {
 
 	/**
-	 * Create a post
+	 * Create a post.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @synopsis --<field>=<value> [--porcelain]
 	 */
 	public function create( $args, $assoc_args ) {
 		$post_id = wp_insert_post( $assoc_args, true );
@@ -30,13 +29,12 @@ class Post_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a post
+	 * Update a post.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @synopsis <id> --<field>=<value>
 	 */
 	public function update( $args, $assoc_args ) {
-		$post_id = WP_CLI::get_numeric_arg( $args, 0, "Post ID" );
+		list( $post_id ) = $args;
 
 		if ( empty( $assoc_args ) ) {
 			WP_CLI::error( "Need some fields to update." );
@@ -72,6 +70,7 @@ class Post_Command extends WP_CLI_Command {
 	 * Get a list of posts.
 	 *
 	 * @subcommand list
+	 * @synopsis [--<field>=<value>]
 	 */
 	public function _list( $_, $assoc_args ) {
 		$query_args = array(
