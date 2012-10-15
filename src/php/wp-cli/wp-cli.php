@@ -57,7 +57,7 @@ if ( !empty( $assoc_args['path'] ) ) {
 }
 
 // Handle --url and --blog parameters
-WP_CLI::_set_url( $assoc_args );
+WP_CLI\Utils\set_url( $assoc_args );
 
 if ( array( 'core', 'download' ) == $arguments ) {
 	WP_CLI::run_command( $arguments, $assoc_args );
@@ -75,7 +75,7 @@ if ( array( 'core', 'config' ) == $arguments ) {
 
 // The db commands don't need any WP files
 if ( array( 'db' ) == array_slice( $arguments, 0, 1 ) ) {
-	WP_CLI::load_wp_config();
+	WP_CLI\Utils\load_wp_config();
 	WP_CLI::run_command( $arguments, $assoc_args );
 	exit;
 }
