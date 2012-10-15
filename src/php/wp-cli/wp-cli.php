@@ -1,13 +1,7 @@
 <?php
 
-if ( PHP_SAPI !== 'cli' ) {
-	echo "Only CLI access.\n";
-	die(-1);
-}
-
 define( 'WP_CLI_VERSION', '0.7.0-alpha' );
 
-// Define the wp-cli location
 define( 'WP_CLI_ROOT', __DIR__ . '/' );
 
 // Set a constant that can be used to check if we are running wp-cli or not
