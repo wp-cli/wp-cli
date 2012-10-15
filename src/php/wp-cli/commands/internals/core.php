@@ -137,7 +137,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 <?php
 		$ms_config = ob_get_clean();
 
-		$wp_config_path = WP_CLI::locate_wp_config();
+		$wp_config_path = WP_CLI\Utils\locate_wp_config();
 
 		$token = "/* That's all, stop editing!";
 
@@ -248,7 +248,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
-		$result = WP_CLI::get_upgrader( $upgrader )->upgrade( $update );
+		$result = WP_CLI\Utils\get_upgrader( $upgrader )->upgrade( $update );
 
 		if ( is_wp_error($result) ) {
 			$msg = WP_CLI::error_to_string( $result );
