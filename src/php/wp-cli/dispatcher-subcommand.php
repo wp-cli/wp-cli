@@ -12,7 +12,11 @@ abstract class Subcommand {
 	abstract function invoke( $args, $assoc_args );
 
 	protected function check_args( $args, $assoc_args ) {
-		$accepted_params = $this->parse_synopsis( $this->get_synopsis() );
+		$synopsis = $this->get_synopsis();
+		if ( !$synopsis )
+			return;
+
+		$accepted_params = $this->parse_synopsis( $synopsis );
 
 		$this->check_positional( $args, $accepted_params );
 
@@ -24,8 +28,8 @@ abstract class Subcommand {
 	private function check_positional( $args, $accepted_params ) {
 		$count = 0;
 
-		foreach ( $accepted_params as $param ) {
-			if ( 'positional' == $param['type'] && !$param['optional'] )
+		foreach ( $accepted_params['positional'] as $param ) {
+			if ( !$param['optional'] )
 				$count++;
 		}
 
@@ -38,8 +42,8 @@ abstract class Subcommand {
 	private function check_assoc( $assoc_args, $accepted_params ) {
 		$mandatory_assoc = array();
 
-		foreach ( $accepted_params as $param ) {
-			if ( 'assoc' == $param['type'] && !$param['optional'] )
+		foreach ( $accepted_params['assoc'] as $param ) {
+			if ( !$param['optional'] )
 				$mandatory_assoc[] = $param['name'];
 		}
 
@@ -64,9 +68,10 @@ abstract class Subcommand {
 	private function check_unknown_assoc( $assoc_args, $accepted_params ) {
 		$known_assoc = array();
 
-		foreach ( $accepted_params as $param ) {
-			if ( 'positional' != $param['type'] )
+		foreach ( array( 'assoc', 'flag' ) as $type ) {
+			foreach ( $accepted_params[$type] as $param ) {
 				$known_assoc[] = $param['name'];
+			}
 		}
 
 		$unknown_assoc = array_diff( array_keys( $assoc_args ), $known_assoc );
@@ -90,12 +95,13 @@ abstract class Subcommand {
 
 		$tokens = preg_split( '/[\s\t]+/', $synopsis );
 
-		$params = array();
+		$params = new \WP_CLI\Utils\Defaultdict( array() );
 
 		foreach ( $tokens as $token ) {
 			foreach ( $patterns as $regex => $desc ) {
 				if ( preg_match( $regex, $token, $matches ) ) {
-					$params[] = array_merge( $matches, $desc );
+					$type = $desc['type'];
+					$params[$type][] = array_merge( $matches, $desc );
 					break;
 				}
 			}

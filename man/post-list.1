@@ -1,0 +1,35 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-POST\-LIST" "1" "October 2012" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-post\-list\fR \- Get a list of posts\.
+.
+.SH "SYNOPSIS"
+\fBwp post list\fR \-\-\fIfield\fR=\fIvalue\fR [\-\-\fIfield\fR=\fIvalue\fR\.\.\.] [\-\-ids]
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-\-<field>\fR=\fIvalue\fR:
+.
+.IP
+One or more args to pass to WP_Query\.
+.
+.TP
+\fB\-\-ids\fR:
+.
+.IP
+Return only the IDs of the found posts, separated by spaces\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp post list
+
+wp post list \-\-post_type=page \-\-post_status=draft \-\-ids
+.
+.fi
+
