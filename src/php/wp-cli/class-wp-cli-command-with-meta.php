@@ -7,12 +7,6 @@
  */
 abstract class WP_CLI_Command_With_Meta extends WP_CLI_Command {
 
-	public static function get_aliases() {
-		return array(
-			'set' => 'update'
-		);
-	}
-
 	protected $meta_type;
 
 	/**
@@ -68,6 +62,7 @@ abstract class WP_CLI_Command_With_Meta extends WP_CLI_Command {
 	/**
 	 * Update a meta field.
 	 *
+	 * @alias set
 	 * @synopsis <id> <key> <value>
 	 */
 	public function update( $args, $assoc_args ) {

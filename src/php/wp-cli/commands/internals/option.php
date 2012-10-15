@@ -10,12 +10,6 @@ WP_CLI::add_command('option', 'Option_Command');
  */
 class Option_Command extends WP_CLI_Command {
 
-	public static function get_aliases() {
-		return array(
-			'set' => 'update'
-		);
-	}
-
 	/**
 	 * Get an option
 	 *
@@ -50,6 +44,7 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Update an option
 	 *
+	 * @alias set
 	 * @synopsis <key> <value> [--json]
 	 */
 	public function update( $args, $assoc_args ) {
