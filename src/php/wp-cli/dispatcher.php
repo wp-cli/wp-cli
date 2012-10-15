@@ -4,14 +4,18 @@ namespace WP_CLI\Dispatcher;
 
 interface Command {
 
-	function autocomplete();
-	function shortdesc();
 	function show_usage();
 	function invoke( $arguments, $assoc_args );
 }
 
+interface TopLevelCommand {
 
-class CompositeCommand implements Command {
+	function autocomplete();
+	function shortdesc();
+}
+
+
+class CompositeCommand implements Command, TopLevelCommand {
 
 	function __construct( $name, $class ) {
 		$this->name = $name;
@@ -248,14 +252,6 @@ class MethodSubcommand extends Subcommand {
 		parent::__construct( $method );
 	}
 
-	function autocomplete() {
-		throw new Exception( "Not implemented." );
-	}
-
-	function shortdesc() {
-		throw new Exception( "Not implemented." );
-	}
-
 	function show_usage( $prefix = 'usage: ' ) {
 		$command = $this->parent->name;
 		$subcommand = $this->get_name();
@@ -284,7 +280,7 @@ class MethodSubcommand extends Subcommand {
 }
 
 
-class SingleCommand extends Subcommand {
+class SingleCommand extends Subcommand implements TopLevelCommand {
 
 	function __construct( $name, $callable ) {
 		$this->name = $name;
