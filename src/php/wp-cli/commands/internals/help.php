@@ -46,7 +46,8 @@ class Help_Command extends WP_CLI_Command {
 			if ( 'help' == $name )
 				continue;
 
-			WP_CLI::line( "    wp $name " . $command->shortdesc() );
+			$subcommands = $command->get_subcommands();
+			WP_CLI::line( "    wp $name " . implode( '|', array_keys( $subcommands ) ) );
 		}
 
 		WP_CLI::line(<<<EOB

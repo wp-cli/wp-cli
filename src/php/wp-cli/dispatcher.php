@@ -6,28 +6,18 @@ interface Command {
 
 	function show_usage();
 	function invoke( $arguments, $assoc_args );
-}
-
-interface TopLevelCommand {
-
-	function autocomplete();
-	function shortdesc();
+	function get_subcommands();
 }
 
 
-class CompositeCommand implements Command, TopLevelCommand {
+class CompositeCommand implements Command {
 
 	function __construct( $name, $class ) {
 		$this->name = $name;
 		$this->class = $class;
 	}
 
-	function autocomplete() {
-		return $this->name .  ' ' . implode( ' ', $this->get_subcommand_names() );
-	}
-
 	function shortdesc() {
-		return implode( '|', $this->get_subcommand_names() );
 	}
 
 	function show_usage() {
@@ -79,11 +69,7 @@ class CompositeCommand implements Command, TopLevelCommand {
 		return $subcommands[ $name ];
 	}
 
-	private function get_subcommand_names() {
-		return array_keys( $this->get_subcommands() );
-	}
-
-	private function get_subcommands() {
+	public function get_subcommands() {
 		$reflection = new \ReflectionClass( $this->class );
 
 		$subcommands = array();
@@ -110,6 +96,10 @@ abstract class Subcommand implements Command {
 
 	function __construct( $method ) {
 		$this->method = $method;
+	}
+
+	function get_subcommands() {
+		return array();
 	}
 
 	abstract function get_name();
@@ -289,7 +279,7 @@ class MethodSubcommand extends Subcommand {
 }
 
 
-class SingleCommand extends Subcommand implements TopLevelCommand {
+class SingleCommand extends Subcommand {
 
 	function __construct( $name, $callable ) {
 		$this->name = $name;
@@ -302,14 +292,6 @@ class SingleCommand extends Subcommand implements TopLevelCommand {
 
 	function get_name() {
 		return $this->name;
-	}
-
-	function autocomplete() {
-		return $this->name;
-	}
-
-	function shortdesc() {
-		return '';
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
