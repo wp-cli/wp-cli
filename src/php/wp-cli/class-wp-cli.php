@@ -148,18 +148,6 @@ class WP_CLI {
 		return $str;
 	}
 
-	static function get_numeric_arg( $args, $index, $name ) {
-		if ( ! isset( $args[$index] ) ) {
-			WP_CLI::error( "$name required" );
-		}
-
-		if ( ! is_numeric( $args[$index] ) ) {
-			WP_CLI::error( "$name must be numeric" );
-		}
-
-		return $args[$index];
-	}
-
 	/**
 	 * Launch an external process, closing the current one
 	 *
