@@ -4,19 +4,28 @@ namespace WP_CLI\Dispatcher;
 
 interface Command {
 
+	function get_path();
+	function get_subcommands();
+
 	function show_usage();
 	function invoke( $arguments, $assoc_args );
-	function get_subcommands();
 }
 
 
 class RootCommand implements Command {
 
+	function get_path() {
+		return array();
+	}
+
 	function show_usage() {
 		\WP_CLI::line( 'Available commands:' );
-		foreach ( \WP_CLI::load_all_commands() as $name => $command ) {
-			$subcommands = $command->get_subcommands();
-			\WP_CLI::line( "    wp $name " . implode( '|', array_keys( $subcommands ) ) );
+
+		foreach ( \WP_CLI::load_all_commands() as $command ) {
+			\WP_CLI::line( sprintf( "    wp %s %s",
+				implode( ' ', $command->get_path() ),
+				implode( '|', array_keys( $command->get_subcommands() ) )
+			) );
 		}
 
 		\WP_CLI::line(<<<EOB
@@ -67,6 +76,10 @@ class CompositeCommand implements Command {
 	function __construct( $name, $class ) {
 		$this->name = $name;
 		$this->class = $class;
+	}
+
+	function get_path() {
+		return array( $this->name );
 	}
 
 	function show_usage() {
@@ -159,6 +172,13 @@ abstract class Subcommand implements Command {
 
 	function __construct( $method ) {
 		$this->method = $method;
+	}
+
+	function show_usage( $prefix = 'usage: ' ) {
+		$full_name = implode( ' ', $this->get_path() );
+		$synopsis = $this->get_synopsis();
+
+		\WP_CLI::line( $prefix . "wp $full_name $synopsis" );
 	}
 
 	function get_subcommands() {
@@ -314,12 +334,8 @@ class MethodSubcommand extends Subcommand {
 		parent::__construct( $method );
 	}
 
-	function show_usage( $prefix = 'usage: ' ) {
-		$command = $this->parent->name;
-		$subcommand = $this->get_name();
-		$synopsis = $this->get_synopsis();
-
-		\WP_CLI::line( $prefix . "wp $command $subcommand $synopsis" );
+	function get_path() {
+		return array( $this->parent->name, $this->get_name() );
 	}
 
 	private function get_tag( $name ) {
@@ -368,11 +384,8 @@ class SingleCommand extends Subcommand {
 		return $this->name;
 	}
 
-	function show_usage( $prefix = 'usage: ' ) {
-		$command = $this->get_name();
-		$synopsis = $this->get_synopsis();
-
-		\WP_CLI::line( $prefix . "wp $command $synopsis" );
+	function get_path() {
+		return array( $this->name );
 	}
 
 	function invoke( $args, $assoc_args ) {
