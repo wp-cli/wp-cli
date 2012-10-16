@@ -70,7 +70,7 @@ class Post_Command extends WP_CLI_Command {
 	 * Get a list of posts.
 	 *
 	 * @subcommand list
-	 * @synopsis [--<field>=<value>]
+	 * @synopsis [--<field>=<value>] [--ids]
 	 */
 	public function _list( $_, $assoc_args ) {
 		$query_args = array(
