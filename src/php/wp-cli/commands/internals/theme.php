@@ -173,6 +173,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	 * Update all themes.
 	 *
 	 * @subcommand update-all
+	 * @synopsis [--dry-run]
 	 */
 	function update_all( $args, $assoc_args ) {
 		parent::update_all( $args, $assoc_args );
