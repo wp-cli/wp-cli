@@ -193,7 +193,7 @@ class WP_CLI {
 	}
 
 	static function load_command( $command ) {
-		if ( !isset( WP_CLI::$commands[$command] ) ) {
+		if ( !isset( self::$commands[$command] ) ) {
 			foreach ( array( 'internals', 'community' ) as $dir ) {
 				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
 
@@ -204,33 +204,12 @@ class WP_CLI {
 			}
 		}
 
-		if ( !isset( WP_CLI::$commands[$command] ) ) {
-			WP_CLI::error( "'$command' is not a registered wp command. See 'wp help'." );
+		if ( !isset( self::$commands[$command] ) ) {
+			self::error( "'$command' is not a registered wp command. See 'wp help'." );
 			exit;
 		}
 
-		return WP_CLI::$commands[$command];
-	}
-
-	static function run_command( $arguments, $assoc_args ) {
-		if ( empty( $arguments ) ) {
-			$command = 'help';
-		} else {
-			$command = array_shift( $arguments );
-
-			$aliases = array(
-				'sql' => 'db'
-			);
-
-			if ( isset( $aliases[ $command ] ) )
-				$command = $aliases[ $command ];
-		}
-
-		define( 'WP_CLI_COMMAND', $command );
-
-		$command = self::load_command( $command );
-
-		$command->invoke( $arguments, $assoc_args );
+		return self::$commands[$command];
 	}
 
 	private static $arguments, $assoc_args, $assoc_special;
@@ -267,7 +246,7 @@ class WP_CLI {
 		WP_CLI\Utils\set_url( self::$assoc_special );
 
 		if ( array( 'core', 'download' ) == self::$arguments ) {
-			WP_CLI::run_command( self::$arguments, self::$assoc_args );
+			self::run_command();
 			exit;
 		}
 
@@ -276,14 +255,14 @@ class WP_CLI {
 		}
 
 		if ( array( 'core', 'config' ) == self::$arguments ) {
-			WP_CLI::run_command( self::$arguments, self::$assoc_args );
+			self::run_command();
 			exit;
 		}
 
 		// The db commands don't need any WP files
 		if ( array( 'db' ) == array_slice( self::$arguments, 0, 1 ) ) {
 			WP_CLI\Utils\load_wp_config();
-			WP_CLI::run_command( self::$arguments, self::$assoc_args );
+			self::run_command();
 			exit;
 		}
 
@@ -312,7 +291,13 @@ class WP_CLI {
 			self::render_automcomplete();
 		}
 
-		self::run_command( self::$arguments, self::$assoc_args );
+		self::run_command();
+	}
+
+	private static function run_command() {
+		$root = new \WP_CLI\Dispatcher\RootCommand;
+
+		$root->invoke( self::$arguments, self::$assoc_args );
 	}
 
 	private static function render_automcomplete() {

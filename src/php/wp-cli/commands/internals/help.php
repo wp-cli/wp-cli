@@ -11,11 +11,6 @@ WP_CLI::add_command( 'help', new Help_Command );
 class Help_Command extends WP_CLI_Command {
 
 	function __invoke( $args ) {
-		if ( empty( $args ) ) {
-			self::general_help();
-			return;
-		}
-
 		self::maybe_load_man_page( $args );
 
 		self::show_available_subcommands( $args[0] );
@@ -38,31 +33,6 @@ class Help_Command extends WP_CLI_Command {
 	private static function show_available_subcommands( $command ) {
 		$command = WP_CLI::load_command( $command );
 		$command->show_usage();
-	}
-
-	private static function general_help() {
-		WP_CLI::line( 'Available commands:' );
-		foreach ( WP_CLI::load_all_commands() as $name => $command ) {
-			if ( 'help' == $name )
-				continue;
-
-			$subcommands = $command->get_subcommands();
-			WP_CLI::line( "    wp $name " . implode( '|', array_keys( $subcommands ) ) );
-		}
-
-		WP_CLI::line(<<<EOB
-
-See 'wp help <command>' for more information on a specific command.
-
-Global parameters:
---user=<id|login>   set the current user
---url=<url>         set the current URL
---path=<path>       set the current path to the WP install
---require=<path>    load a certain file before running the command
---quiet             suppress informational messages
---version           print wp-cli version
-EOB
-		);
 	}
 }
 

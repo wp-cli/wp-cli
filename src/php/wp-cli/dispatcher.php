@@ -10,6 +10,58 @@ interface Command {
 }
 
 
+class RootCommand implements Command {
+
+	function show_usage() {
+		\WP_CLI::line( 'Available commands:' );
+		foreach ( \WP_CLI::load_all_commands() as $name => $command ) {
+			$subcommands = $command->get_subcommands();
+			\WP_CLI::line( "    wp $name " . implode( '|', array_keys( $subcommands ) ) );
+		}
+
+		\WP_CLI::line(<<<EOB
+
+See 'wp help <command>' for more information on a specific command.
+
+Global parameters:
+--user=<id|login>   set the current user
+--url=<url>         set the current URL
+--path=<path>       set the current path to the WP install
+--require=<path>    load a certain file before running the command
+--quiet             suppress informational messages
+--version           print wp-cli version
+EOB
+		);
+	}
+
+	function invoke( $arguments, $assoc_args ) {
+		if ( empty( $arguments ) ) {
+			$this->show_usage();
+			exit;
+		}
+
+		$command = array_shift( $arguments );
+
+		$aliases = array(
+			'sql' => 'db'
+		);
+
+		if ( isset( $aliases[ $command ] ) )
+			$command = $aliases[ $command ];
+
+		define( 'WP_CLI_COMMAND', $command );
+
+		$command = \WP_CLI::load_command( $command );
+
+		$command->invoke( $arguments, $assoc_args );
+	}
+
+	function get_subcommands() {
+		return \WP_CLI::load_all_commands();
+	}
+}
+
+
 class CompositeCommand implements Command {
 
 	function __construct( $name, $class ) {
