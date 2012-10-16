@@ -96,7 +96,7 @@ class Core_Command extends WP_CLI_Command {
 	 * Transform a single-site install into a multi-site install.
 	 *
 	 * @subcommand install-network
-	 * @synopsis --title=<network-title> [--base_path=/]
+	 * @synopsis --title=<network-title> [--base_path=<url-path>]
 	 */
 	public function install_network( $args, $assoc_args ) {
 		if ( is_multisite() )

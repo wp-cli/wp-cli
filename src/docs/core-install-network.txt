@@ -4,7 +4,7 @@ multi-site install.
 
 ## SYNOPSIS
 
-`wp core install-network` --title=<network-title> [--base_path=/]
+`wp core install-network` --title=<network-title> [--base_path=<url-path>]
 
 ## OPTIONS
 
@@ -12,6 +12,7 @@ multi-site install.
 
 	The title of the new network.
 
-* `--base_path`=<path>:
+* `--base_path`=<url-path>:
 
 	Base path after the domain name that each site url will start with.
+Default: '/'
