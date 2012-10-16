@@ -35,7 +35,7 @@ EOB
 	}
 
 	function invoke( $arguments, $assoc_args ) {
-		if ( empty( $arguments ) ) {
+		if ( empty( $arguments ) || array( 'help' ) == $arguments ) {
 			$this->show_usage();
 			exit;
 		}
