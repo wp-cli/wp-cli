@@ -14,6 +14,17 @@ class DB_Command extends WP_CLI_Command {
 		return 'cli';
 	}
 
+	private static function confirm( $question, $assoc_args ) {
+		if ( !isset( $assoc_args['yes'] ) ) {
+			WP_CLI::out( $question . " [y/n] " );
+
+			$answer = trim( fgets( STDIN ) );
+
+			if ( 'y' != $answer )
+				exit;
+		}
+	}
+
 	/**
 	 * Creates the database specified in the wp-config.php file.
 	 */
@@ -32,14 +43,7 @@ class DB_Command extends WP_CLI_Command {
 	 * @synopsis [--yes]
 	 */
 	function drop( $args, $assoc_args ) {
-		if ( !isset( $assoc_args['yes'] ) ) {
-			WP_CLI::out( "Are you sure you want to drop the database? [y/n] " );
-
-			$answer = trim( fgets( STDIN ) );
-
-			if ( 'y' != $answer )
-				return;
-		}
+		self::confirm( "Are you sure you want to drop the database?", $assoc_args );
 
 		WP_CLI::launch( self::create_cmd(
 			'mysql --host=%s --user=%s --password=%s --execute=%s',
@@ -55,14 +59,7 @@ class DB_Command extends WP_CLI_Command {
 	 * @synopsis [--yes]
 	 */
 	function reset( $args, $assoc_args ) {
-		if ( !isset( $assoc_args['yes'] ) ) {
-			WP_CLI::out( "Are you sure you want to reset the database? [y/n] " );
-
-			$answer = trim( fgets( STDIN ) );
-
-			if ( 'y' != $answer )
-				return;
-		}
+		self::confirm( "Are you sure you want to reset the database?", $assoc_args );
 
 		WP_CLI::launch( self::create_cmd(
 			'mysql --host=%s --user=%s --password=%s --execute=%s',
