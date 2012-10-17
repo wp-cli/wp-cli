@@ -137,7 +137,12 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	protected function get_item_list() {
 		$items = array();
 
-		foreach ( get_themes() as $title => $details ) {
+		if( function_exists( 'wp_get_themes' ) )
+			$themes = wp_get_themes();
+		else
+			$themes = get_themes();
+
+		foreach ( $themes as $title => $details ) {
 			$file = $this->get_stylesheet_path( $details['Stylesheet'] );
 
 			$items[ $file ] = array(
