@@ -142,7 +142,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		else
 			$themes = get_themes();
 
-		foreach ( $themes as $title => $details ) {
+		foreach ( $themes as $details ) {
 			$file = $this->get_stylesheet_path( $details['Stylesheet'] );
 
 			$items[ $file ] = array(
