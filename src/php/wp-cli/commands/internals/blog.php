@@ -127,7 +127,7 @@ class Blog_Command extends WP_CLI_Command {
 	/**
 	 * Delete a blog in a multisite install.
 	 *
-	 * @synopsis --slug=<slug> [--yes]
+	 * @synopsis --slug=<slug> [--yes] [--keep-tables]
 	 */
 	function delete( $_, $assoc_args ) {
 		$slug = '/' . trim( $assoc_args['slug'], '/' ) . '/';
@@ -139,7 +139,7 @@ class Blog_Command extends WP_CLI_Command {
 
 		WP_CLI::confirm( "Are you sure you want to delete the '$slug' blog?", $assoc_args );
 
-		wpmu_delete_blog( $blog_id, true );
+		wpmu_delete_blog( $blog_id, !isset( $assoc_args['keep-tables'] ) );
 
 		WP_CLI::success( "Blog '%s' deleted." );
 	}
