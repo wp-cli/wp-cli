@@ -81,6 +81,20 @@ class WP_CLI {
 	}
 
 	/**
+	 * Ask for confirmation before running a destructive operation.
+	 */
+	static function confirm( $question, $assoc_args ) {
+		if ( !isset( $assoc_args['yes'] ) ) {
+			WP_CLI::out( $question . " [y/n] " );
+
+			$answer = trim( fgets( STDIN ) );
+
+			if ( 'y' != $answer )
+				exit;
+		}
+	}
+
+	/**
 	 * Read a value, from various formats
 	 *
 	 * @param mixed $value
