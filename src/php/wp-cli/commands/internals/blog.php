@@ -123,4 +123,33 @@ class Blog_Command extends WP_CLI_Command {
 		}
 		WP_CLI::success( "Blog $id created: $url" );
 	}
+
+	/**
+	 * Delete a blog in a multisite install.
+	 *
+	 * @synopsis --slug=<slug>
+	 */
+	function delete( $_, $assoc_args ) {
+		$slug = $assoc_args['slug'];
+
+		$slug = '/' . trim( $slug, '/' ) . '/';
+
+		$blog_id = self::get_blog_id_by_slug( $slug );
+
+		if ( !$blog_id )
+			WP_CLI::error( sprintf( "'%s' blog not found.", $slug ) );
+
+		wpmu_delete_blog( $blog_id, true );
+
+		WP_CLI::success( "Blog '%s' deleted." );
+	}
+
+	protected static function get_blog_id_by_slug( $slug ) {
+		global $wpdb, $current_site;
+
+		return $wpdb->get_var( $wpdb->prepare( "
+			SELECT blog_id FROM $wpdb->blogs WHERE domain = %s AND path = %s"
+		, $current_site->domain, $slug ) );
+	}
 }
+
