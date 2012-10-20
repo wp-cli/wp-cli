@@ -127,17 +127,17 @@ class Blog_Command extends WP_CLI_Command {
 	/**
 	 * Delete a blog in a multisite install.
 	 *
-	 * @synopsis --slug=<slug>
+	 * @synopsis --slug=<slug> [--yes]
 	 */
 	function delete( $_, $assoc_args ) {
-		$slug = $assoc_args['slug'];
-
-		$slug = '/' . trim( $slug, '/' ) . '/';
+		$slug = '/' . trim( $assoc_args['slug'], '/' ) . '/';
 
 		$blog_id = self::get_blog_id_by_slug( $slug );
 
 		if ( !$blog_id )
 			WP_CLI::error( sprintf( "'%s' blog not found.", $slug ) );
+
+		WP_CLI::confirm( "Are you sure you want to delete the '$slug' blog?", $assoc_args );
 
 		wpmu_delete_blog( $blog_id, true );
 
