@@ -9,7 +9,7 @@ wp-blog-create(1) -- Create a new blog in a multisite install.
 
 * `--slug`=<slug>:
 
-	Base for the new domain. Subdomain on subdomain installs, directory on subdirectory installs.
+	Path for the new blog. Subdomain on subdomain installs, directory on subdirectory installs.
 
 * `--title`=<title&gt;:
 
