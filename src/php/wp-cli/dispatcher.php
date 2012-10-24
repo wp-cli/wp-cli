@@ -7,11 +7,15 @@ interface Command {
 	function get_path();
 	function get_subcommands();
 
-	function get_shortdesc();
-	function get_synopsis();
-
 	function show_usage();
 	function invoke( $arguments, $assoc_args );
+}
+
+
+interface Documentable {
+
+	function get_shortdesc();
+	function get_synopsis();
 }
 
 
@@ -19,14 +23,6 @@ class RootCommand implements Command {
 
 	function get_path() {
 		return array();
-	}
-
-	function get_shortdesc() {
-		return '';
-	}
-
-	function get_synopsis() {
-		return '';
 	}
 
 	function show_usage() {
@@ -89,14 +85,6 @@ class CompositeCommand implements Command {
 
 	function get_path() {
 		return array( $this->name );
-	}
-
-	function get_shortdesc() {
-		return '';
-	}
-
-	function get_synopsis() {
-		return '';
 	}
 
 	function show_usage() {
@@ -185,7 +173,7 @@ class CompositeCommand implements Command {
 }
 
 
-abstract class Subcommand implements Command {
+abstract class Subcommand implements Command, Documentable {
 
 	function __construct( $method ) {
 		$this->method = $method;
