@@ -28,16 +28,10 @@ class Help_Command extends WP_CLI_Command {
 	}
 
 	private static function maybe_load_man_page( $args ) {
-		$man_dir = WP_CLI_ROOT . "../../../man/";
+		$man_file = \WP_CLI\Man\get_path( $args );
 
-		if ( !is_dir( $man_dir ) ) {
-			WP_CLI::warning( "man pages do not seem to be installed." );
-		} else {
-			$man_file = $man_dir . implode( '-', $args ) . '.1';
-
-			if ( is_readable( $man_file ) ) {
-				exit( WP_CLI::launch( "man $man_file" ) );
-			}
+		if ( is_readable( $man_file ) ) {
+			exit( WP_CLI::launch( "man $man_file" ) );
 		}
 	}
 }
