@@ -6,6 +6,7 @@ interface Command {
 
 	function get_path();
 	function get_subcommands();
+	function get_synopsis();
 
 	function show_usage();
 	function invoke( $arguments, $assoc_args );
@@ -16,6 +17,10 @@ class RootCommand implements Command {
 
 	function get_path() {
 		return array();
+	}
+
+	function get_synopsis() {
+		return '';
 	}
 
 	function show_usage() {
@@ -78,6 +83,10 @@ class CompositeCommand implements Command {
 
 	function get_path() {
 		return array( $this->name );
+	}
+
+	function get_synopsis() {
+		return '';
 	}
 
 	function show_usage() {
@@ -258,7 +267,7 @@ abstract class Subcommand implements Command {
 		}
 	}
 
-	protected function get_synopsis() {
+	public function get_synopsis() {
 		$comment = $this->method->getDocComment();
 
 		if ( !preg_match( '/@synopsis\s+([^\n]+)/', $comment, $matches ) )
