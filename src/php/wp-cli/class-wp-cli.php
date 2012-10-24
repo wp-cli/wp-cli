@@ -222,7 +222,7 @@ class WP_CLI {
 
 		self::$assoc_special = WP_CLI\Utils\split_assoc( self::$assoc_args, array(
 			'path', 'url', 'blog', 'user', 'require',
-			'quiet', 'completions'
+			'quiet', 'completions', 'doc'
 		) );
 
 		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
@@ -288,8 +288,14 @@ class WP_CLI {
 		if ( isset( self::$assoc_special['require'] ) )
 			require self::$assoc_special['require'];
 
+		if ( isset( self::$assoc_special['doc'] ) ) {
+			self::render_doc();
+			exit;
+		}
+
 		if ( isset( self::$assoc_special['completions'] ) ) {
 			self::render_automcomplete();
+			exit;
 		}
 
 		self::run_command();
@@ -301,12 +307,25 @@ class WP_CLI {
 		$root->invoke( self::$arguments, self::$assoc_args );
 	}
 
+	private static function render_doc() {
+		foreach ( self::load_all_commands() as $command ) {
+			$subcommands = $command->get_subcommands();
+
+			if ( empty( $subcommands ) ) {
+				\WP_CLI\Utils\print_man_markdown( $command );
+			} else {
+				foreach ( $subcommands as $subcommand ) {
+					\WP_CLI\Utils\print_man_markdown( $subcommand );
+				}
+			}
+		}
+	}
+
 	private static function render_automcomplete() {
 		foreach ( self::load_all_commands() as $name => $command ) {
 			$subcommands = $command->get_subcommands();
 			self::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
 		}
-		exit;
 	}
 
 	// back-compat
