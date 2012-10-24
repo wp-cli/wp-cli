@@ -6,6 +6,8 @@ interface Command {
 
 	function get_path();
 	function get_subcommands();
+
+	function get_shortdesc();
 	function get_synopsis();
 
 	function show_usage();
@@ -17,6 +19,10 @@ class RootCommand implements Command {
 
 	function get_path() {
 		return array();
+	}
+
+	function get_shortdesc() {
+		return '';
 	}
 
 	function get_synopsis() {
@@ -83,6 +89,10 @@ class CompositeCommand implements Command {
 
 	function get_path() {
 		return array( $this->name );
+	}
+
+	function get_shortdesc() {
+		return '';
 	}
 
 	function get_synopsis() {
@@ -265,6 +275,15 @@ abstract class Subcommand implements Command {
 		foreach ( $unknown_assoc as $key ) {
 			\WP_CLI::warning( "unkown --$key parameter" );
 		}
+	}
+
+	function get_shortdesc() {
+		$comment = $this->method->getDocComment();
+
+		if ( !preg_match( '/\* ([^@\.]+\.)\s*/', $comment, $matches ) )
+			return false;
+
+		return $matches[1];
 	}
 
 	public function get_synopsis() {
