@@ -146,7 +146,7 @@ class User_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Generate users
+	 * Generate users.
 	 *
 	 * @synopsis [--count=100] [--role=<role>]
 	 */
