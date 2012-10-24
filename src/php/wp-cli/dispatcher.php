@@ -58,8 +58,6 @@ EOB
 		if ( isset( $aliases[ $command ] ) )
 			$command = $aliases[ $command ];
 
-		define( 'WP_CLI_COMMAND', $command );
-
 		$command = \WP_CLI::load_command( $command );
 
 		$command->invoke( $arguments, $assoc_args );
