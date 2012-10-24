@@ -207,8 +207,7 @@ class WP_CLI {
 		}
 
 		if ( !isset( self::$commands[$command] ) ) {
-			self::error( "'$command' is not a registered wp command. See 'wp help'." );
-			exit;
+			return false;
 		}
 
 		return self::$commands[$command];

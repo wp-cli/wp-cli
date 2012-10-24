@@ -2,6 +2,22 @@
 
 namespace WP_CLI\Dispatcher;
 
+function traverse( &$args ) {
+	$args_copy = $args;
+
+	$command = new RootCommand;
+
+	while ( !empty( $args ) && $command && $command instanceof Composite ) {
+		$command = $command->find_subcommand( $args );
+	}
+
+	if ( !$command )
+		$args = $args_copy;
+
+	return $command;
+}
+
+
 interface Command {
 
 	function get_path();
@@ -12,6 +28,12 @@ interface Command {
 }
 
 
+interface Composite {
+
+	function find_subcommand( &$arguments );
+}
+
+
 interface Documentable {
 
 	function get_shortdesc();
@@ -19,7 +41,7 @@ interface Documentable {
 }
 
 
-class RootCommand implements Command {
+class RootCommand implements Command, Composite {
 
 	function get_path() {
 		return array();
@@ -56,6 +78,15 @@ EOB
 			exit;
 		}
 
+		$command = $this->find_subcommand( $arguments );
+
+		if ( !$command )
+			\WP_CLI::error( sprintf( "'%s' is not a registered wp command. See 'wp help'.", $arguments[0] ) );
+
+		$command->invoke( $arguments, $assoc_args );
+	}
+
+	function find_subcommand( &$arguments ) {
 		$command = array_shift( $arguments );
 
 		$aliases = array(
@@ -65,9 +96,7 @@ EOB
 		if ( isset( $aliases[ $command ] ) )
 			$command = $aliases[ $command ];
 
-		$command = \WP_CLI::load_command( $command );
-
-		$command->invoke( $arguments, $assoc_args );
+		return \WP_CLI::load_command( $command );
 	}
 
 	function get_subcommands() {
@@ -76,7 +105,7 @@ EOB
 }
 
 
-class CompositeCommand implements Command {
+class CompositeCommand implements Command, Composite {
 
 	function __construct( $name, $class ) {
 		$this->name = $name;
@@ -113,7 +142,7 @@ class CompositeCommand implements Command {
 		$subcommand->invoke( $args, $assoc_args );
 	}
 
-	private function find_subcommand( &$args ) {
+	function find_subcommand( &$args ) {
 		$class = $this->class;
 
 		if ( empty( $args ) ) {

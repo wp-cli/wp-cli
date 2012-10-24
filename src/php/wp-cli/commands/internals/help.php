@@ -13,7 +13,13 @@ class Help_Command extends WP_CLI_Command {
 	function __invoke( $args ) {
 		self::maybe_load_man_page( $args );
 
-		self::show_available_subcommands( $args[0] );
+		$command = \WP_CLI\Dispatcher\traverse( $args );
+
+		if ( !$command ) {
+			\WP_CLI::error( sprintf( "'%s' is not a registered wp command.", $args[0] ) );
+		}
+
+		$command->show_usage();
 	}
 
 	private static function maybe_load_man_page( $args ) {
@@ -28,11 +34,6 @@ class Help_Command extends WP_CLI_Command {
 				exit( WP_CLI::launch( "man $man_file" ) );
 			}
 		}
-	}
-
-	private static function show_available_subcommands( $command ) {
-		$command = WP_CLI::load_command( $command );
-		$command->show_usage();
 	}
 }
 
