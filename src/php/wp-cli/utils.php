@@ -156,31 +156,3 @@ function get_upgrader( $class ) {
 	return new $class( new \CLI_Upgrader_Skin );
 }
 
-function print_man_markdown( \WP_CLI\Dispatcher\Documentable $command ) {
-	$path = $command->get_path();
-	$shortdesc = $command->get_shortdesc();
-	$synopsis = $command->get_synopsis();
-
-	$name_m = implode( '-', $path );
-	$name_s = implode( ' ', $path );
-
-	if ( !$shortdesc ) {
-		WP_CLI::warning( "No shortdesc for $name_s" );
-	}
-
-	echo <<<DOC
-wp-$name_m(1) -- $shortdesc
-====
-
-## SYNOPSIS
-
-`wp $name_s` $synopsis
-
-DOC;
-
-	$doc_path = WP_CLI_ROOT . "../../docs/$name_m.txt";
-
-	if ( file_exists( $doc_path ) )
-		echo file_get_contents( $doc_path );
-}
-
