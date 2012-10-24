@@ -10,6 +10,11 @@ WP_CLI::add_command( 'help', new Help_Command );
  */
 class Help_Command extends WP_CLI_Command {
 
+	/**
+	 * Get help on a certain topic.
+	 *
+	 * @synopsis [<command>]
+	 */
 	function __invoke( $args ) {
 		self::maybe_load_man_page( $args );
 
