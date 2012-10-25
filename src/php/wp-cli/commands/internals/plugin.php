@@ -110,7 +110,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/**
-	 * Get a plugin path.
+	 * Get the path to a plugin or to the plugin directory.
 	 *
 	 * @synopsis [<plugin>] [--dir]
 	 */
@@ -221,7 +221,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/**
-	 * Install a plugin from wordpress.org or from a zip file.
+	 * Install a plugin.
 	 *
 	 * @synopsis <plugin|zip> [--version=<version>] [--activate]
 	 */

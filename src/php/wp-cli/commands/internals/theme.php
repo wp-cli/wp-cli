@@ -81,7 +81,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/**
-	 * Get a theme path.
+	 * Get the path to a theme or to the theme directory.
 	 *
 	 * @synopsis [<theme>] [--dir]
 	 */
@@ -157,7 +157,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/**
-	 * Install a theme from wordpress.org or from a zip file.
+	 * Install a theme.
 	 *
 	 * @synopsis <theme|zip> [--version=<version>] [--activate]
 	 */
