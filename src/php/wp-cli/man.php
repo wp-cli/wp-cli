@@ -8,7 +8,7 @@ function get_path( $args ) {
 	return WP_CLI_ROOT . "../../../man/" . implode( '-', $args ) . '.1';
 }
 
-function get_doc_path( $args ) {
+function get_src_path( $args ) {
 	return WP_CLI_ROOT . "../../docs/" . implode( '-', $args ) . '.txt';
 }
 
@@ -20,15 +20,19 @@ function generate( $command ) {
 		return;
 	}
 
+	call_ronn( get_markdown( $command ), get_path( $command->get_path() ) );
+}
+
+function call_ronn( $markdown, $dest ) {
 	$descriptorspec = array(
-		0 => get_markdown( $command ),
-		1 => array( 'file', get_path( $command->get_path() ), 'w' ),
+		0 => $markdown,
+		1 => array( 'file', $dest, 'w' ),
 		2 => STDERR
 	);
 
 	$r = proc_close( proc_open( "ronn --roff --manual='WP-CLI'", $descriptorspec, $pipes ) );
 
-	\WP_CLI::line( "generated man page for " . implode( '-', $command->get_path() ) );
+	\WP_CLI::line( "generated " . basename( $dest ) );
 }
 
 // returns a file descriptor containing markdown that will be passed to ronn
@@ -37,7 +41,7 @@ function get_markdown( Dispatcher\Documentable $command ) {
 
 	add_initial_markdown( $fd, $command );
 
-	$doc_path = get_doc_path( $command->get_path() );
+	$doc_path = get_src_path( $command->get_path() );
 
 	if ( file_exists( $doc_path ) )
 		fwrite( $fd, file_get_contents( $doc_path ) );
