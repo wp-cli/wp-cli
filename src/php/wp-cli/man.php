@@ -8,8 +8,8 @@ function get_path( $args ) {
 	return WP_CLI_ROOT . "../../../man/" . implode( '-', $args ) . '.1';
 }
 
-function get_doc_path() {
-	return WP_CLI_ROOT . "../../docs/";
+function get_doc_path( $args ) {
+	return WP_CLI_ROOT . "../../docs/" . implode( '-', $args ) . '.txt';
 }
 
 function generate( $command ) {
@@ -33,6 +33,21 @@ function generate( $command ) {
 
 // returns a file descriptor containing markdown that will be passed to ronn
 function get_markdown( Dispatcher\Documentable $command ) {
+	$fd = fopen( "php://temp", "rw" );
+
+	add_initial_markdown( $fd, $command );
+
+	$doc_path = get_doc_path( $command->get_path() );
+
+	if ( file_exists( $doc_path ) )
+		fwrite( $fd, file_get_contents( $doc_path ) );
+
+	fseek( $fd, 0 );
+
+	return $fd;
+}
+
+function add_initial_markdown( $fd, Dispatcher\Documentable $command ) {
 	$path = $command->get_path();
 	$shortdesc = $command->get_shortdesc();
 	$synopsis = $command->get_synopsis();
@@ -46,9 +61,7 @@ function get_markdown( Dispatcher\Documentable $command ) {
 		\WP_CLI::warning( "No shortdesc for $name_s" );
 	}
 
-	$temp = fopen( "php://temp", "rw" );
-
-	fwrite( $temp, <<<DOC
+	fwrite( $fd, <<<DOC
 wp-$name_m(1) -- $shortdesc
 ====
 
@@ -58,14 +71,5 @@ wp-$name_m(1) -- $shortdesc
 
 DOC
 	);
-
-	$doc_path = get_doc_path() . "$name_m.txt";
-
-	if ( file_exists( $doc_path ) )
-		fwrite( $temp, file_get_contents( $doc_path ) );
-
-	fseek( $temp, 0 );
-
-	return $temp;
 }
 
