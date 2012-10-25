@@ -1,11 +1,3 @@
-wp-blog-delete(1) -- Delete a blog in a multisite install.
- 
-====
-
-## SYNOPSIS
-
-`wp blog delete` --slug=<slug> [--yes] [--keep-tables]
-
 ## OPTIONS
 
 * `--slug`=<slug>:

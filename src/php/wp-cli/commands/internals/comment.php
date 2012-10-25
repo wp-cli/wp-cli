@@ -119,7 +119,7 @@ class Comment_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Unapprove a comment
+	 * Unapprove a comment.
 	 *
 	 * @synopsis <id>
 	 */

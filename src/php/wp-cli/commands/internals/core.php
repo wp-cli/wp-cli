@@ -11,7 +11,7 @@ WP_CLI::add_command('core', 'Core_Command');
 class Core_Command extends WP_CLI_Command {
 
 	/**
-	 * Download the core files from wordpress.org
+	 * Download core WordPress files.
 	 *
 	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>]
 	 */
@@ -63,7 +63,7 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Run wp_install. Assumes that wp-config.php is already in place.
+	 * Create the WordPress tables in the database.
 	 *
 	 * @synopsis --url=<url> --title=<site-title> [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
 	 */

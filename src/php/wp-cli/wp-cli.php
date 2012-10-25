@@ -13,6 +13,7 @@ include WP_CLI_ROOT . 'class-wp-cli.php';
 include WP_CLI_ROOT . 'class-wp-cli-command.php';
 include WP_CLI_ROOT . 'class-wp-cli-command-with-meta.php';
 include WP_CLI_ROOT . 'class-wp-cli-command-with-upgrade.php';
+include WP_CLI_ROOT . 'man.php';
 
 include WP_CLI_ROOT . '../php-cli-tools/lib/cli/cli.php';
 \cli\register_autoload();

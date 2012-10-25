@@ -1,5 +1,7 @@
 <?php
 
+use \WP_CLI\Dispatcher;
+
 /**
  * Wrapper class for WP-CLI
  *
@@ -207,8 +209,7 @@ class WP_CLI {
 		}
 
 		if ( !isset( self::$commands[$command] ) ) {
-			self::error( "'$command' is not a registered wp command. See 'wp help'." );
-			exit;
+			return false;
 		}
 
 		return self::$commands[$command];
@@ -223,7 +224,7 @@ class WP_CLI {
 
 		self::$assoc_special = WP_CLI\Utils\split_assoc( self::$assoc_args, array(
 			'path', 'url', 'blog', 'user', 'require',
-			'quiet', 'completions'
+			'quiet', 'completions', 'man'
 		) );
 
 		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
@@ -289,25 +290,39 @@ class WP_CLI {
 		if ( isset( self::$assoc_special['require'] ) )
 			require self::$assoc_special['require'];
 
+		if ( isset( self::$assoc_special['man'] ) ) {
+			self::generate_man( self::$arguments );
+			exit;
+		}
+
 		if ( isset( self::$assoc_special['completions'] ) ) {
 			self::render_automcomplete();
+			exit;
 		}
 
 		self::run_command();
 	}
 
 	private static function run_command() {
-		$root = new \WP_CLI\Dispatcher\RootCommand;
+		$root = new Dispatcher\RootCommand;
 
 		$root->invoke( self::$arguments, self::$assoc_args );
+	}
+
+	private static function generate_man( $args ) {
+		$command = Dispatcher\traverse( $args );
+		if ( !$command )
+			WP_CLI::error( sprintf( "'%s' command not found." ) );
+
+		\WP_CLI\Man\generate( $command );
 	}
 
 	private static function render_automcomplete() {
 		foreach ( self::load_all_commands() as $name => $command ) {
 			$subcommands = $command->get_subcommands();
+
 			self::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
 		}
-		exit;
 	}
 
 	// back-compat

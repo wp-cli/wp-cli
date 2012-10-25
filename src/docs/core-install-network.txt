@@ -1,11 +1,3 @@
-wp-core-install-network(1) -- Transform a single-site install into a
-multi-site install.
-====
-
-## SYNOPSIS
-
-`wp core install-network` --title=<network-title> [--base_path=<url-path>]
-
 ## OPTIONS
 
 * `--title`=<site-title>:

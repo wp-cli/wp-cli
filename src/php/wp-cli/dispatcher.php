@@ -2,6 +2,22 @@
 
 namespace WP_CLI\Dispatcher;
 
+function traverse( &$args ) {
+	$args_copy = $args;
+
+	$command = new RootCommand;
+
+	while ( !empty( $args ) && $command && $command instanceof Composite ) {
+		$command = $command->find_subcommand( $args );
+	}
+
+	if ( !$command )
+		$args = $args_copy;
+
+	return $command;
+}
+
+
 interface Command {
 
 	function get_path();
@@ -12,7 +28,20 @@ interface Command {
 }
 
 
-class RootCommand implements Command {
+interface Composite {
+
+	function find_subcommand( &$arguments );
+}
+
+
+interface Documentable {
+
+	function get_shortdesc();
+	function get_synopsis();
+}
+
+
+class RootCommand implements Command, Composite {
 
 	function get_path() {
 		return array();
@@ -49,6 +78,15 @@ EOB
 			exit;
 		}
 
+		$command = $this->find_subcommand( $arguments );
+
+		if ( !$command )
+			\WP_CLI::error( sprintf( "'%s' is not a registered wp command. See 'wp help'.", $arguments[0] ) );
+
+		$command->invoke( $arguments, $assoc_args );
+	}
+
+	function find_subcommand( &$arguments ) {
 		$command = array_shift( $arguments );
 
 		$aliases = array(
@@ -58,9 +96,7 @@ EOB
 		if ( isset( $aliases[ $command ] ) )
 			$command = $aliases[ $command ];
 
-		$command = \WP_CLI::load_command( $command );
-
-		$command->invoke( $arguments, $assoc_args );
+		return \WP_CLI::load_command( $command );
 	}
 
 	function get_subcommands() {
@@ -69,7 +105,7 @@ EOB
 }
 
 
-class CompositeCommand implements Command {
+class CompositeCommand implements Command, Composite {
 
 	function __construct( $name, $class ) {
 		$this->name = $name;
@@ -106,7 +142,7 @@ class CompositeCommand implements Command {
 		$subcommand->invoke( $args, $assoc_args );
 	}
 
-	private function find_subcommand( &$args ) {
+	function find_subcommand( &$args ) {
 		$class = $this->class;
 
 		if ( empty( $args ) ) {
@@ -166,7 +202,7 @@ class CompositeCommand implements Command {
 }
 
 
-abstract class Subcommand implements Command {
+abstract class Subcommand implements Command, Documentable {
 
 	function __construct( $method ) {
 		$this->method = $method;
@@ -258,7 +294,16 @@ abstract class Subcommand implements Command {
 		}
 	}
 
-	protected function get_synopsis() {
+	function get_shortdesc() {
+		$comment = $this->method->getDocComment();
+
+		if ( !preg_match( '/\* ([^@\.]+\.)\s*/', $comment, $matches ) )
+			return false;
+
+		return $matches[1];
+	}
+
+	public function get_synopsis() {
 		$comment = $this->method->getDocComment();
 
 		if ( !preg_match( '/@synopsis\s+([^\n]+)/', $comment, $matches ) )

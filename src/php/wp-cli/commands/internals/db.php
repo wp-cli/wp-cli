@@ -15,7 +15,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Creates the database specified in the wp-config.php file.
+	 * Create the database.
 	 */
 	function create() {
 		WP_CLI::launch( self::create_cmd(
@@ -27,7 +27,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Deletes the database specified in the wp-config.php file.
+	 * Delete the database.
 	 *
 	 * @synopsis [--yes]
 	 */
@@ -43,7 +43,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Removes all tables from the database.
+	 * Remove all tables from the database.
 	 *
 	 * @synopsis [--yes]
 	 */
@@ -64,7 +64,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Optimizes the database specified in the wp-config.php file.
+	 * Optimize the database.
 	 */
 	function optimize() {
 		WP_CLI::launch( self::create_cmd(
@@ -76,7 +76,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Repairs the database specified in the wp-config.php file.
+	 * Repair the database.
 	 */
 	function repair() {
 		WP_CLI::launch( self::create_cmd(
@@ -95,14 +95,14 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Open a SQL command-line interface using WordPress's credentials.
+	 * Open a mysql console using the WordPress credentials.
 	 */
 	function cli() {
 		WP_CLI::launch( $this->connect_string() );
 	}
 
 	/**
-	 * Execute a query against the site database.
+	 * Execute a query against the database.
 	 *
 	 * @synopsis <sql>
 	 */
@@ -115,7 +115,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Exports the WordPress DB as SQL using mysqldump.
+	 * Exports the database using mysqldump.
 	 *
 	 * @alias dump
 	 * @synopsis [<file>]
@@ -132,7 +132,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Imports a database from a file.
+	 * Import database from a file.
 	 *
 	 * @synopsis [<file>]
 	 */
@@ -148,9 +148,6 @@ class DB_Command extends WP_CLI_Command {
 		WP_CLI::success( sprintf( 'Imported from %s', $result_file ) );
 	}
 
-	/**
-	 * Return a string for connecting to the DB.
-	 */
 	private function connect_string() {
 		return self::create_cmd( 'mysql --host=%s --user=%s --password=%s --database=%s',
 			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );

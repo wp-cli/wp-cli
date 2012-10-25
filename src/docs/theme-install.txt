@@ -1,10 +1,3 @@
-wp-theme-install(1) -- Install a theme from wordpress.org or from a zip file.
-====
-
-## SYNOPSIS
-
-`wp theme install` <theme/zip> [--activate]
-
 ## OPTIONS
 
 * <theme>:
