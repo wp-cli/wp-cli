@@ -37,6 +37,8 @@ function get_markdown( Dispatcher\Documentable $command ) {
 	$shortdesc = $command->get_shortdesc();
 	$synopsis = $command->get_synopsis();
 
+	$synopsis = str_replace( array( '<', '>' ), '_', $synopsis );
+
 	$name_m = implode( '-', $path );
 	$name_s = implode( ' ', $path );
 
