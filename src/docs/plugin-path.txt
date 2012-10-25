@@ -1,10 +1,3 @@
-wp-plugin-path(1) -- Get the path to a plugin or to the plugin directory.
-====
-
-## SYNOPSIS
-
-`wp plugin path` [<plugin>] [--dir]
-
 ## OPTIONS
 
 * `<plugin>`:

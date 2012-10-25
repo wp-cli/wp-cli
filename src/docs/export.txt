@@ -1,10 +1,3 @@
-wp-export(1) -- Create a WXR file.
-====
-
-## SYNOPSIS
-
-`wp export` --dir=<dirname> [filters] [--skip_comments]
-
 ## OPTIONS
 
 * `--dir`=<dirname>:

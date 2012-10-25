@@ -1,10 +1,3 @@
-wp-core-update(1) -- Update WordPress to the latest version.
-====
-
-## SYNOPSIS
-
-`wp core update` [--version=<new_version>] [--force] [<package/zip>]
-
 ## OPTIONS
 
 * `--version=`<new_version> [package/zip]:

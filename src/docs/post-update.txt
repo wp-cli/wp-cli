@@ -1,10 +1,3 @@
-wp-post-update(1) -- Update a WordPress post.
-====
-
-## SYNOPSIS
-
-`wp post update` <ID> --<field>=<value> [--<field>=<value>...]
-
 ## OPTIONS
 
 * `<ID>`:
