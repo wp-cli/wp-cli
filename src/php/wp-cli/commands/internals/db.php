@@ -15,7 +15,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Create the database.
+	 * Create the database, as specified in wp-config.php
 	 */
 	function create() {
 		WP_CLI::launch( self::create_cmd(

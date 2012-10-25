@@ -297,7 +297,7 @@ abstract class Subcommand implements Command, Documentable {
 	function get_shortdesc() {
 		$comment = $this->method->getDocComment();
 
-		if ( !preg_match( '/\* ([^@\.]+\.)\s*/', $comment, $matches ) )
+		if ( !preg_match( '/\* (\w.+)\n*/', $comment, $matches ) )
 			return false;
 
 		return $matches[1];
