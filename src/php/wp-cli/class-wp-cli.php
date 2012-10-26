@@ -240,7 +240,7 @@ class WP_CLI {
 		// Define the WordPress location
 		if ( !empty( self::$assoc_special['path'] ) ) {
 			// trailingslashit() isn't available yet
-			define( 'WP_ROOT', rtrim( self::$assoc_args['path'], '/' ) . '/' );
+			define( 'WP_ROOT', rtrim( self::$assoc_special['path'], '/' ) . '/' );
 		} else {
 			define( 'WP_ROOT', $_SERVER['PWD'] . '/' );
 		}
