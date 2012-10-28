@@ -17,7 +17,7 @@ class WP_CLI {
 	 * @param string $name The name of the command that will be used in the cli
 	 * @param string $class The class to manage the command
 	 */
-	public function add_command( $name, $class ) {
+	static function add_command( $name, $class ) {
 		if ( is_string( $class ) )
 			$command = new Dispatcher\CompositeCommand( $name, $class );
 		else
