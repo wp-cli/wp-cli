@@ -1,8 +1,8 @@
 <?php
 
-WP_CLI::add_command( 'repl', new Repl_Command );
+WP_CLI::add_command( 'interactive', new Interactive_Command );
 
-class Repl_Command extends WP_CLI_Command {
+class Interactive_Command extends WP_CLI_Command {
 
 	/**
 	 * Open an interactive shell environment.
