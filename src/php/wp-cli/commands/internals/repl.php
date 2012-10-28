@@ -16,7 +16,12 @@ class Repl_Command extends WP_CLI_Command {
 			if ( 'exit' == $in )
 				return;
 
-			echo eval( $in );
+			$r = eval( $in );
+
+			if ( null === $r )
+				WP_CLI::line();
+			else
+				var_export( $r );
 		}
 	}
 }
