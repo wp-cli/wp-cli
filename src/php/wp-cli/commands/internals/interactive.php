@@ -9,9 +9,7 @@ class Interactive_Command extends WP_CLI_Command {
 	 */
 	public function __invoke() {
 		while ( true ) {
-			WP_CLI::out( 'wp> ' );
-
-			$in = \cli\input();
+			$in = $this->read_input();
 
 			if ( 'exit' == $in )
 				return;
@@ -23,6 +21,18 @@ class Interactive_Command extends WP_CLI_Command {
 			else
 				var_export( $r );
 		}
+	}
+
+	private function read_input() {
+		if ( function_exists( 'readline' ) ) {
+			$line = readline( 'wp> ' );
+			readline_add_history( $line );
+		} else {
+			WP_CLI::out( 'wp> ' );
+			$line = \cli\input();
+		}
+
+		return $line;
 	}
 }
 
