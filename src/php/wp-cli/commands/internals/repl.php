@@ -13,6 +13,9 @@ class Repl_Command extends WP_CLI_Command {
 
 			$in = \cli\input();
 
+			if ( 'exit' == $in )
+				return;
+
 			echo eval( $in );
 		}
 	}
