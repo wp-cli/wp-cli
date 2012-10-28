@@ -16,6 +16,9 @@ class Interactive_Command extends WP_CLI_Command {
 
 			$r = eval( $in );
 
+			if ( false === $r )
+				continue;
+
 			if ( null === $r )
 				WP_CLI::line();
 			else
