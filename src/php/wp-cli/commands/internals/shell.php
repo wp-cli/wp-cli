@@ -20,7 +20,7 @@ class Shell_Command extends WP_CLI_Command {
 			if ( 'exit' == $in )
 				return;
 
-			if ( !preg_match( '/^\s*(echo|return)\s+/', $in ) )
+			if ( !preg_match( '/^\s*(global|echo|return)\s+/', $in ) )
 				$in = 'return ' . $in;
 
 			$in .= ';';
