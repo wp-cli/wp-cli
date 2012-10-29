@@ -25,15 +25,12 @@ class Shell_Command extends WP_CLI_Command {
 
 			$in .= ';';
 
-			$r = eval( $in );
+			$_ = eval( $in );
 
-			if ( false === $r )
+			if ( false === $_ )
 				continue;
 
-			if ( null === $r )
-				\WP_CLI::line();
-			else
-				\WP_CLI::line( var_export( $r, false ) );
+			\WP_CLI::line( var_export( $_, false ) );
 		}
 	}
 
