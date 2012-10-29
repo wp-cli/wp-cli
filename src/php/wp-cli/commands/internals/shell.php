@@ -20,6 +20,9 @@ class Shell_Command extends WP_CLI_Command {
 			if ( 'exit' == $in )
 				return;
 
+			if ( !preg_match( '/^\s*(echo|return)\s+/', $in ) )
+				$in = 'return ' . $in;
+
 			$r = eval( $in );
 
 			if ( false === $r )
@@ -28,7 +31,7 @@ class Shell_Command extends WP_CLI_Command {
 			if ( null === $r )
 				\WP_CLI::line();
 			else
-				var_export( $r );
+				\WP_CLI::line( var_export( $r, false ) );
 		}
 	}
 
