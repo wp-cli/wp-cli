@@ -1,23 +1,21 @@
 <?php
 
-namespace WP_CLI\Commands;
+WP_CLI::add_command( 'interactive', new Interactive_Command );
 
-\WP_CLI::add_command( 'interactive', new Interactive_Command );
-
-class Interactive_Command extends \WP_CLI_Command {
+class Interactive_Command extends WP_CLI_Command {
 
 	/**
 	 * Open an interactive shell environment.
 	 */
 	public function __invoke() {
 		if ( function_exists( 'readline' ) ) {
-			$repl = new REPL_Readline;
+			$repl = 'repl_readline';
 		} else {
-			$repl = new REPL_Basic;
+			$repl = 'repl_basic';
 		}
 
 		while ( true ) {
-			$in = $repl->prompt( 'wp> ' );
+			$in = call_user_func( array( __CLASS__, $repl ), 'wp> ' );
 
 			if ( 'exit' == $in )
 				return;
@@ -33,22 +31,14 @@ class Interactive_Command extends \WP_CLI_Command {
 				var_export( $r );
 		}
 	}
-}
 
-
-class REPL_Readline {
-
-	function prompt( $str ) {
+	private static function repl_readline( $str ) {
 		$line = readline( $str );
 		readline_add_history( $line );
 		return $line;
 	}
-}
 
-
-class REPL_Basic {
-
-	function prompt( $str ) {
+	private static function repl_basic( $str ) {
 		\WP_CLI::out( $str );
 		return \cli\input();
 	}
