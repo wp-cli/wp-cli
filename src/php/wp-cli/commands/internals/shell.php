@@ -23,6 +23,8 @@ class Shell_Command extends WP_CLI_Command {
 			if ( !preg_match( '/^\s*(echo|return)\s+/', $in ) )
 				$in = 'return ' . $in;
 
+			$in .= ';';
+
 			$r = eval( $in );
 
 			if ( false === $r )
