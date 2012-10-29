@@ -15,17 +15,17 @@ class Shell_Command extends WP_CLI_Command {
 		}
 
 		while ( true ) {
-			$in = call_user_func( array( __CLASS__, $repl ), 'wp> ' );
+			$line = call_user_func( array( __CLASS__, $repl ), 'wp> ' );
 
-			if ( 'exit' == $in )
+			if ( 'exit' == $line )
 				return;
 
-			if ( !preg_match( '/^\s*(global|echo|return)\s+/', $in ) )
-				$in = 'return ' . $in;
+			if ( !preg_match( '/^\s*(global|echo|return)\s+/', $line ) )
+				$line = 'return ' . $line;
 
-			$in .= ';';
+			$line .= ';';
 
-			$_ = eval( $in );
+			$_ = eval( $line );
 
 			if ( false === $_ )
 				continue;
