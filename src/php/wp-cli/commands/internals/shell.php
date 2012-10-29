@@ -14,10 +14,19 @@ class Shell_Command extends WP_CLI_Command {
 			$repl = 'repl_basic';
 		}
 
+		$non_expressions = array(
+			'echo', 'return', 'global',
+			'while', 'for', 'foreach', 'if', 'switch',
+			'include', 'include\_once', 'require', 'require\_once'
+		);
+		$non_expressions = implode( '|', $non_expressions );
+
+		$pattern = "/^\s*($non_expressions)\s+/";
+
 		while ( true ) {
 			$line = call_user_func( array( __CLASS__, $repl ), 'wp> ' );
 
-			if ( !preg_match( '/^\s*(global|echo|return)\s+/', $line ) )
+			if ( !preg_match( $pattern, $line ) )
 				$line = 'return ' . $line;
 
 			$line .= ';';
