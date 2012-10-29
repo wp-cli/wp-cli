@@ -17,9 +17,6 @@ class Shell_Command extends WP_CLI_Command {
 		while ( true ) {
 			$line = call_user_func( array( __CLASS__, $repl ), 'wp> ' );
 
-			if ( 'exit' == $line )
-				return;
-
 			if ( !preg_match( '/^\s*(global|echo|return)\s+/', $line ) )
 				$line = 'return ' . $line;
 
