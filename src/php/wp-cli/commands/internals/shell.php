@@ -21,7 +21,7 @@ class Shell_Command extends WP_CLI_Command {
 		);
 		$non_expressions = implode( '|', $non_expressions );
 
-		$pattern = "/^\s*($non_expressions)\s+/";
+		$pattern = "/^\s*($non_expressions)[\(\s]+/";
 
 		while ( true ) {
 			$line = call_user_func( array( __CLASS__, $repl ), 'wp> ' );
