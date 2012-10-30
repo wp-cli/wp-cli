@@ -33,7 +33,7 @@ class WP_CLI {
 	 */
 	static function out( $message ) {
 		if ( WP_CLI_QUIET ) return;
-		\cli\Streams::out($message);
+		\cli\out($message);
 	}
 
 	/**
@@ -43,7 +43,7 @@ class WP_CLI {
 	 */
 	static function line( $message = '' ) {
 		if ( WP_CLI_QUIET ) return;
-		\cli\Streams::line($message);
+		\cli\line($message);
 	}
 
 	/**
@@ -54,7 +54,7 @@ class WP_CLI {
 	 */
 	static function error( $message, $label = 'Error' ) {
 		if ( !isset( self::$assoc_special['completions'] ) ) {
-			\cli\Streams::err( '%R' . $label . ': %n' . self::error_to_string( $message ) );
+			\cli\err( '%R' . $label . ': %n' . self::error_to_string( $message ) );
 		}
 
 		exit(1);
@@ -68,7 +68,7 @@ class WP_CLI {
 	 */
 	static function success( $message, $label = 'Success' ) {
 		if ( WP_CLI_QUIET ) return;
-		\cli\Streams::line( '%G' . $label . ': %n' . $message );
+		\cli\line( '%G' . $label . ': %n' . $message );
 	}
 
 	/**
@@ -79,7 +79,7 @@ class WP_CLI {
 	 */
 	static function warning( $message, $label = 'Warning' ) {
 		if ( WP_CLI_QUIET ) return;
-		\cli\Streams::err( '%C' . $label . ': %n' . self::error_to_string( $message ) );
+		\cli\err( '%C' . $label . ': %n' . self::error_to_string( $message ) );
 	}
 
 	/**
