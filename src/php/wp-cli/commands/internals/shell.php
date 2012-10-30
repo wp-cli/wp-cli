@@ -47,11 +47,17 @@ class Shell_Command extends \WP_CLI_Command {
 class REPL_Readline {
 
 	function __construct() {
-		$this->hist_path = getcwd() . '/.wp-cli-history';
+		$this->hist_path = self::get_history_path();
 
 		readline_read_history( $this->hist_path );
 
 		register_shutdown_function( array( $this, 'save_history' ) );
+	}
+
+	private static function get_history_path() {
+		$data = getcwd() . get_current_user();
+
+		return sys_get_temp_dir() . '/wp-cli-history-' . md5( $data );
 	}
 
 	function read( $prompt ) {
