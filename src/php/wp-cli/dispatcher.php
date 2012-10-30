@@ -290,7 +290,7 @@ abstract class Subcommand implements Command, Documentable {
 		$unknown_assoc = array_diff( array_keys( $assoc_args ), $known_assoc );
 
 		foreach ( $unknown_assoc as $key ) {
-			\WP_CLI::warning( "unkown --$key parameter" );
+			\WP_CLI::warning( "unknown --$key parameter" );
 		}
 	}
 
