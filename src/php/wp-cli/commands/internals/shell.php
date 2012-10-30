@@ -1,17 +1,19 @@
 <?php
 
-WP_CLI::add_command( 'shell', new Shell_Command );
+namespace WP_CLI\Commands;
 
-class Shell_Command extends WP_CLI_Command {
+\WP_CLI::add_command( 'shell', new Shell_Command );
+
+class Shell_Command extends \WP_CLI_Command {
 
 	/**
 	 * Open an interactive shell environment.
 	 */
 	public function __invoke() {
 		if ( function_exists( 'readline' ) ) {
-			$repl = 'repl_readline';
+			$repl = new REPL_Readline;
 		} else {
-			$repl = 'repl_basic';
+			$repl = new REPL_Basic;
 		}
 
 		$non_expressions = array(
@@ -24,7 +26,7 @@ class Shell_Command extends WP_CLI_Command {
 		$pattern = "/^($non_expressions)[\(\s]+/";
 
 		while ( true ) {
-			$line = call_user_func( array( __CLASS__, $repl ), 'wp> ' );
+			$line = $repl->read( 'wp> ' );
 
 			if ( !preg_match( $pattern, $line ) )
 				$line = 'return ' . $line;
@@ -39,16 +41,37 @@ class Shell_Command extends WP_CLI_Command {
 			\WP_CLI::line( var_export( $_, false ) );
 		}
 	}
+}
 
-	private static function repl_readline( $str ) {
-		$line = trim( readline( $str ) );
+
+class REPL_Readline {
+
+	function __construct() {
+		$this->hist_path = getcwd() . '/.wp-cli-history';
+
+		readline_read_history( $this->hist_path );
+
+		register_shutdown_function( array( $this, 'save_history' ) );
+	}
+
+	function read( $prompt ) {
+		$line = trim( readline( $prompt ) );
 		if ( !empty( $line ) )
 			readline_add_history( $line );
+
 		return $line;
 	}
 
-	private static function repl_basic( $str ) {
-		\WP_CLI::out( $str );
+	function save_history() {
+		readline_write_history( $this->hist_path );
+	}
+}
+
+
+class REPL_Basic {
+
+	function read( $prompt ) {
+		\WP_CLI::out( $prompt );
 		return \cli\input();
 	}
 }
