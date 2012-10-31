@@ -60,7 +60,7 @@ class Post_Command extends WP_CLI_Command {
 		$action = isset( $assoc_args['force'] ) ? 'Deleted' : 'Trashed';
 
 		foreach ( $post_ids as $post_id ) {
-			if ( wp_delete_post( $post_id, $force ) ) {
+			if ( wp_delete_post( $post_id, $assoc_args['force'] ) ) {
 				WP_CLI::success( "{$action} post $post_id." );
 			} else {
 				WP_CLI::error( "Failed deleting post $post_id." );
