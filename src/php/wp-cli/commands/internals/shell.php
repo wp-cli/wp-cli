@@ -16,6 +16,8 @@ class Shell_Command extends \WP_CLI_Command {
 			$repl = new REPL_Basic;
 		}
 
+		\WP_CLI::line( 'Type "exit" to close session.' );
+
 		$non_expressions = array(
 			'echo', 'return', 'global',
 			'while', 'for', 'foreach', 'if', 'switch',
