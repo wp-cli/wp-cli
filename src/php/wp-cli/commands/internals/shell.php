@@ -52,23 +52,6 @@ class REPL_Readline {
 		readline_read_history( $this->hist_path );
 
 		register_shutdown_function( array( $this, 'save_history' ) );
-
-		declare( ticks = 1 );
-		pcntl_signal( SIGINT, array( $this, 'catch_signal' ) );
-		pcntl_signal( SIGTERM, array( $this, 'catch_signal' ) );
-		pcntl_signal( SIGSEGV, array( $this, 'catch_signal' ) );
-		pcntl_signal( SIGQUIT, array( $this, 'catch_signal' ) );
-	}
-
-	function catch_signal( $signo ) {
-		switch ( $signo ) {
-		case SIGTERM:
-		case SIGSEGV:
-		case SIGQUIT:
-		case SIGABRT:
-		case SIGINT:
-			exit; // ensures clean shutdown
-		}
 	}
 
 	private static function get_history_path() {
