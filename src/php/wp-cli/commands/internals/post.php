@@ -15,7 +15,9 @@ class Post_Command extends WP_CLI_Command {
 	 *
 	 * @synopsis --<field>=<value> [--porcelain]
 	 */
-	public function create( $args, $assoc_args ) {
+	public function create( $_, $assoc_args ) {
+		unset( $assoc_args['ID'] );
+
 		$post_id = wp_insert_post( $assoc_args, true );
 
 		if ( is_wp_error( $post_id ) ) {
