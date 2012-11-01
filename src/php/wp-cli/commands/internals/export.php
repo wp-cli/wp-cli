@@ -104,7 +104,7 @@ class Export_Command extends WP_CLI_Command {
 			WP_CLI::warning( sprintf( 'The post type %s does not exists. Choose "all" or any of these existing post types instead: %s', $post_type, implode( ", ", $post_types ) ) );
 			return false;
 		}
-		$this->export_args['content'] = $post_type;
+		$this->export_args['post_type'] = $post_type;
 		return true;
 	}
 
@@ -213,7 +213,7 @@ class Export_Command extends WP_CLI_Command {
 		/**
 		 * This is mostly the original code of export_wp defined in wp-admin/includes/export.php
 		 */
-		$defaults = array( 'content' => 'all', 'author' => false, 'category' => false,
+		$defaults = array( 'post_type' => 'all', 'author' => false, 'category' => false,
 			'start_date' => false, 'end_date' => false, 'status' => false, 'skip_comments' => false,
 		);
 		$args = wp_parse_args( $args, $defaults );
@@ -233,32 +233,32 @@ class Export_Command extends WP_CLI_Command {
 		}
 		$file_name_base = $sitename . 'wordpress.' . implode( ".", $append );
 
-		if ( 'all' != $args['content'] && post_type_exists( $args['content'] ) ) {
-			$ptype = get_post_type_object( $args['content'] );
+		if ( 'all' != $args['post_type'] && post_type_exists( $args['post_type'] ) ) {
+			$ptype = get_post_type_object( $args['post_type'] );
 			if ( ! $ptype->can_export )
-				$args['content'] = 'post';
+				$args['post_type'] = 'post';
 
-			$where = $wpdb->prepare( "{$wpdb->posts}.post_type = %s", $args['content'] );
+			$where = $wpdb->prepare( "{$wpdb->posts}.post_type = %s", $args['post_type'] );
 		} else {
 			$post_types = get_post_types( array( 'can_export' => true ) );
 			$esses = array_fill( 0, count( $post_types ), '%s' );
 			$where = $wpdb->prepare( "{$wpdb->posts}.post_type IN (" . implode( ',', $esses ) . ')', $post_types );
 		}
 
-		if ( $args['status'] && ( 'post' == $args['content'] || 'page' == $args['content'] ) )
+		if ( $args['status'] && ( 'post' == $args['post_type'] || 'page' == $args['post_type'] ) )
 			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_status = %s", $args['status'] );
 		else
 			$where .= " AND {$wpdb->posts}.post_status != 'auto-draft'";
 
 		$join = '';
-		if ( $args['category'] && 'post' == $args['content'] ) {
+		if ( $args['category'] && 'post' == $args['post_type'] ) {
 			if ( $term = term_exists( $args['category'], 'category' ) ) {
 				$join = "INNER JOIN {$wpdb->term_relationships} ON ({$wpdb->posts}.ID = {$wpdb->term_relationships}.object_id)";
 				$where .= $wpdb->prepare( " AND {$wpdb->term_relationships}.term_taxonomy_id = %d", $term['term_taxonomy_id'] );
 			}
 		}
 
-		if ( 'post' == $args['content'] || 'page' == $args['content'] ) {
+		if ( 'post' == $args['post_type'] || 'page' == $args['post_type'] ) {
 			if ( $args['author'] )
 				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_author = %d", $args['author'] );
 
@@ -278,7 +278,7 @@ class Export_Command extends WP_CLI_Command {
 			$cat = get_term( $term['term_id'], 'category' );
 			$cats = array( $cat->term_id => $cat );
 			unset( $term, $cat );
-		} else if ( 'all' == $args['content'] ) {
+		} else if ( 'all' == $args['post_type'] ) {
 				$categories = (array) get_categories( array( 'get' => 'all' ) );
 				$tags = (array) get_tags( array( 'get' => 'all' ) );
 
@@ -364,7 +364,7 @@ class Export_Command extends WP_CLI_Command {
 <?php foreach ( $terms as $t ) : ?>
 	<wp:term><wp:term_id><?php echo $t->term_id ?></wp:term_id><wp:term_taxonomy><?php echo $t->taxonomy; ?></wp:term_taxonomy><wp:term_slug><?php echo $t->slug; ?></wp:term_slug><wp:term_parent><?php echo $t->parent ? $terms[$t->parent]->slug : ''; ?></wp:term_parent><?php wxr_term_name( $t ); ?><?php wxr_term_description( $t ); ?></wp:term>
 <?php endforeach; ?>
-<?php if ( 'all' == $args['content'] ) wxr_nav_menu_terms(); ?>
+<?php if ( 'all' == $args['post_type'] ) wxr_nav_menu_terms(); ?>
 
 	<?php do_action( 'rss2_head' ); ?>
 
