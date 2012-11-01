@@ -203,12 +203,7 @@ class Export_Command extends WP_CLI_Command {
 	private function export_wp( $args = array() ) {
 		require_once ABSPATH . 'wp-admin/includes/export.php';
 
-		global $wpdb, $post;
-		// call export_wp as we need the functions defined in it.
-		$dummy_args = array( 'content' => 'i-do-not-exist' );
-		ob_start();
-		export_wp( $dummy_args );
-		ob_end_clean();
+		global $wpdb;
 
 		/**
 		 * This is mostly the original code of export_wp defined in wp-admin/includes/export.php
@@ -302,6 +297,125 @@ class Export_Command extends WP_CLI_Command {
 
 				unset( $categories, $custom_taxonomies, $custom_terms );
 			}
+
+		/**
+		 * Functions normally defined in wp-admin/includes/export.php
+		 */
+		function wxr_cdata( $str ) {
+			if ( seems_utf8( $str ) == false )
+				$str = utf8_encode( $str );
+
+			// $str = ent2ncr(esc_html($str));
+			$str = '<![CDATA[' . str_replace( ']]>', ']]]]><![CDATA[>', $str ) . ']]>';
+
+			return $str;
+		}
+
+		function wxr_site_url() {
+			// ms: the base url
+			if ( is_multisite() )
+				return network_home_url();
+			// wp: the blog url
+			else
+				return get_bloginfo_rss( 'url' );
+		}
+
+		function wxr_cat_name( $category ) {
+			if ( empty( $category->name ) )
+				return;
+
+			echo '<wp:cat_name>' . wxr_cdata( $category->name ) . '</wp:cat_name>';
+		}
+
+		function wxr_category_description( $category ) {
+			if ( empty( $category->description ) )
+				return;
+
+			echo '<wp:category_description>' . wxr_cdata( $category->description ) . '</wp:category_description>';
+		}
+
+		function wxr_tag_name( $tag ) {
+			if ( empty( $tag->name ) )
+				return;
+
+			echo '<wp:tag_name>' . wxr_cdata( $tag->name ) . '</wp:tag_name>';
+		}
+
+
+		function wxr_tag_description( $tag ) {
+			if ( empty( $tag->description ) )
+				return;
+
+			echo '<wp:tag_description>' . wxr_cdata( $tag->description ) . '</wp:tag_description>';
+		}
+
+		function wxr_term_name( $term ) {
+			if ( empty( $term->name ) )
+				return;
+
+			echo '<wp:term_name>' . wxr_cdata( $term->name ) . '</wp:term_name>';
+		}
+
+		function wxr_term_description( $term ) {
+			if ( empty( $term->description ) )
+				return;
+
+			echo '<wp:term_description>' . wxr_cdata( $term->description ) . '</wp:term_description>';
+		}
+
+		function wxr_authors_list() {
+			global $wpdb;
+
+			$authors = array();
+			$results = $wpdb->get_results( "SELECT DISTINCT post_author FROM $wpdb->posts WHERE post_status != 'auto-draft'" );
+			foreach ( (array) $results as $result )
+				$authors[] = get_userdata( $result->post_author );
+
+			$authors = array_filter( $authors );
+
+			foreach ( $authors as $author ) {
+				echo "\t<wp:author>";
+				echo '<wp:author_id>' . $author->ID . '</wp:author_id>';
+				echo '<wp:author_login>' . $author->user_login . '</wp:author_login>';
+				echo '<wp:author_email>' . $author->user_email . '</wp:author_email>';
+				echo '<wp:author_display_name>' . wxr_cdata( $author->display_name ) . '</wp:author_display_name>';
+				echo '<wp:author_first_name>' . wxr_cdata( $author->user_firstname ) . '</wp:author_first_name>';
+				echo '<wp:author_last_name>' . wxr_cdata( $author->user_lastname ) . '</wp:author_last_name>';
+				echo "</wp:author>\n";
+			}
+		}
+
+		function wxr_nav_menu_terms() {
+			$nav_menus = wp_get_nav_menus();
+			if ( empty( $nav_menus ) || ! is_array( $nav_menus ) )
+				return;
+
+			foreach ( $nav_menus as $menu ) {
+				echo "\t<wp:term><wp:term_id>{$menu->term_id}</wp:term_id><wp:term_taxonomy>nav_menu</wp:term_taxonomy><wp:term_slug>{$menu->slug}</wp:term_slug>";
+				wxr_term_name( $menu );
+				echo "</wp:term>\n";
+			}
+		}
+
+		function wxr_post_taxonomy() {
+			$post = get_post();
+
+			$taxonomies = get_object_taxonomies( $post->post_type );
+			if ( empty( $taxonomies ) )
+				return;
+			$terms = wp_get_object_terms( $post->ID, $taxonomies );
+
+			foreach ( (array) $terms as $term ) {
+				echo "\t\t<category domain=\"{$term->taxonomy}\" nicename=\"{$term->slug}\">" . wxr_cdata( $term->name ) . "</category>\n";
+			}
+		}
+
+		function wxr_filter_postmeta( $return_me, $meta_key ) {
+			if ( '_edit_lock' == $meta_key )
+				$return_me = true;
+			return $return_me;
+		}
+		add_filter( 'wxr_export_skip_postmeta', 'wxr_filter_postmeta', 10, 2 );	
 
 
 		WP_CLI::line( 'Exporting ' . count( $post_ids ) . ' items' );
