@@ -575,7 +575,7 @@ class Export_Command extends WP_CLI_Command {
 
 		$result = ob_get_clean();
 
-		$full_path = $this->wxr_path . $file_name_base . '.wxr';
+		$full_path = $this->wxr_path . $file_name_base . '.xml';
 
 		if ( !file_exists( $full_path ) || is_writeable( $full_path ) ) {
 			WP_CLI::line( 'Writing to ' . $full_path );
