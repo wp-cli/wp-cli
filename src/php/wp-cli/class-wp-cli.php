@@ -10,6 +10,7 @@ use \WP_CLI\Dispatcher;
 class WP_CLI {
 
 	private static $commands = array();
+	private static $man_dirs = array();
 
 	/**
 	 * Add a command to the wp-cli list of commands
@@ -24,6 +25,16 @@ class WP_CLI {
 			$command = new Dispatcher\SingleCommand( $name, $class );
 
 		self::$commands[ $name ] = $command;
+	}
+
+	static function add_man_dir( $path ) {
+		$path = realpath( $path ) . '/';
+
+		self::$man_dirs[ $path ] = true;
+	}
+
+	static function get_man_dirs() {
+		return array_keys( self::$man_dirs );
 	}
 
 	/**
@@ -218,6 +229,8 @@ class WP_CLI {
 	private static $arguments, $assoc_args, $assoc_special;
 
 	static function before_wp_load() {
+		self::add_man_dir( WP_CLI_ROOT . "../../../man/" );
+
 		$r = WP_CLI\Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
 		list( self::$arguments, self::$assoc_args ) = $r;
@@ -314,7 +327,7 @@ class WP_CLI {
 		if ( !$command )
 			WP_CLI::error( sprintf( "'%s' command not found." ) );
 
-		\WP_CLI\Man\generate( $command );
+		\WP_CLI\Man\generate( key( self::$man_dirs ), $command );
 	}
 
 	private static function render_automcomplete() {
