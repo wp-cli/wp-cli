@@ -19,25 +19,26 @@ class Export_Command extends WP_CLI_Command {
 	/**
 	 * Export posts to a WXR file.
 	 *
-	 * @synopsis --dir=<dir> [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--author=<login>] [--category=<cat>] [--skip_comments]
+	 * @synopsis --dir=<dir> [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>]
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$defaults = array(
-			'dir'			=>		NULL,
-			'start_date'	=>		NULL,
-			'end_date'		=>		NULL,
-			'post_type'		=>		NULL,
-			'author'		=>		NULL,
-			'category'		=>		NULL,
-			'post_status'	=>		NULL,
-			'skip_comments'	=>		NULL,
+			'dir'				=>		NULL,
+			'start_date'		=>		NULL,
+			'end_date'			=>		NULL,
+			'post_type'			=>		NULL,
+			'author'			=>		NULL,
+			'category'			=>		NULL,
+			'post_status'		=>		NULL,
+			'skip_comments'		=>		NULL,
+			'file_item_count'	=>		1000,
 		);
 
 		$args = wp_parse_args( $assoc_args, $defaults );
 
 		$has_errors = false;
-
-		foreach( $defaults as $argument => $default_value ) {
+		
+		foreach( $args as $argument => $default_value ) {
 			if ( is_callable( array( &$this, 'check_' . $argument ) ) ) {
 				$result = call_user_func( array( &$this, 'check_' . $argument ), $args[$argument] );
 				if ( false === $result && false === $has_errors )
@@ -179,6 +180,16 @@ class Export_Command extends WP_CLI_Command {
 		return true;
 	}
 
+	private function check_file_item_count( $file_item_count ) {
+
+		if ( ! is_numeric( $file_item_count ) ) {
+			WP_CLI::warning( 'File item count needs to be numeric' );
+			return false;
+		}
+		$this->export_args['file_item_count'] = $file_item_count;
+		return true;
+	}
+
 
 	/**
 	 * Workaround to prevent memory leaks from growing variables
@@ -196,6 +207,22 @@ class Export_Command extends WP_CLI_Command {
 		$wp_object_cache->__remoteset(); // important
 	}
 
+	private function start_export() {
+		ob_start();
+	}
+
+	private function end_export() {
+		ob_end_clean();
+	}
+
+	private function flush_export( $file_path, $append = true ) {
+		$result = ob_get_clean();
+		if ( $append )
+			$append = FILE_APPEND;
+		file_put_contents( $file_path, $result, $append );
+		$this->start_export();
+	}
+
 	/**
 	 * Export function as it is defined in the original code of export_wp defined in wp-admin/includes/export.php
 	 */
@@ -209,7 +236,7 @@ class Export_Command extends WP_CLI_Command {
 		 * This is mostly the original code of export_wp defined in wp-admin/includes/export.php
 		 */
 		$defaults = array( 'post_type' => 'all', 'author' => false, 'category' => false,
-			'start_date' => false, 'end_date' => false, 'status' => false, 'skip_comments' => false,
+			'start_date' => false, 'end_date' => false, 'status' => false, 'skip_comments' => false, 'file_item_count' => 1000,
 		);
 		$args = wp_parse_args( $args, $defaults );
 
@@ -264,7 +291,7 @@ class Export_Command extends WP_CLI_Command {
 			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date <= %s", date( 'Y-m-d 23:59:59', strtotime( $args['end_date'] ) ) );
 
 		// grab a snapshot of post IDs, just in case it changes during the export
-		$post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} $join WHERE $where ORDER BY post_date ASC, post_parent ASC" );
+		$all_the_post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} $join WHERE $where ORDER BY post_date ASC, post_parent ASC" );
 
 		// get the requested terms ready, empty unless posts filtered by category or all content
 		$cats = $tags = $terms = array();
@@ -418,15 +445,33 @@ class Export_Command extends WP_CLI_Command {
 		add_filter( 'wxr_export_skip_postmeta', 'wxr_filter_postmeta', 10, 2 );	
 
 
-		WP_CLI::line( 'Exporting ' . count( $post_ids ) . ' items' );
+		WP_CLI::line( 'Exporting ' . count( $all_the_post_ids ) . ' items to be broken into ' . ceil( count( $all_the_post_ids ) / $args['file_item_count'] ) . ' files' );
 		WP_CLI::line( 'Exporting ' . count( $cats ) . ' cateogries' );
 		WP_CLI::line( 'Exporting ' . count( $tags ) . ' tags' );
 		WP_CLI::line( 'Exporting ' . count( $terms ) . ' terms' );
 		WP_CLI::line();
 
-		$progress = new \cli\progress\Bar( 'Exporting',  count( $post_ids ) );
+		$file_count = 1;
 
-		ob_start();
+		while ( $post_ids = array_splice( $all_the_post_ids, 0, $args['file_item_count'] ) ) {
+
+			$full_path = $this->wxr_path . $file_name_base . '.' . str_pad( $file_count, 3, '0', STR_PAD_LEFT ) . '.xml';
+
+			// Create the file if it doesn't exist
+			if ( ! file_exists( $full_path ) ) {
+				touch( $full_path );
+			}
+
+			if ( ! file_exists( $full_path ) ) {
+				WP_CLI::error( "Failed to create file " . $full_path );
+				exit;
+			} else {
+				WP_CLI::line( 'Writing to file ' . $full_path );
+			}
+
+			$progress = new \cli\progress\Bar( 'Exporting',  count( $post_ids ) );
+
+		$this->start_export();
 		echo '<?xml version="1.0" encoding="' . get_bloginfo( 'charset' ) . "\" ?>\n";
 
 ?>
@@ -480,6 +525,7 @@ class Export_Command extends WP_CLI_Command {
 <?php if ( 'all' == $args['post_type'] ) wxr_nav_menu_terms(); ?>
 
 	<?php do_action( 'rss2_head' ); ?>
+	<?php $this->flush_export( $full_path, false ); ?>
 
 <?php if ( $post_ids ) {
 			global $wp_query;
@@ -565,21 +611,19 @@ class Export_Command extends WP_CLI_Command {
 <?php endif; ?>
 	</item>
 <?php
+				$this->flush_export( $full_path );
 				}
 			}
 		} ?>
 </channel>
 </rss>
 <?php
-		$progress->finish();
-
-		$result = ob_get_clean();
-
-		$full_path = $this->wxr_path . $file_name_base . '.xml';
-
-		if ( !file_exists( $full_path ) || is_writeable( $full_path ) ) {
-			WP_CLI::line( 'Writing to ' . $full_path );
-			file_put_contents( $full_path, $result );
+			$this->flush_export( $full_path );
+			$this->end_export();
+			$this->stop_the_insanity();
+			$progress->finish();
+			$file_count++;
 		}
+		WP_CLI::success( "All done with export" );
 	}
 }
