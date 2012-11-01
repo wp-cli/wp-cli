@@ -378,6 +378,12 @@ class Export_Command extends WP_CLI_Command {
 				$where = 'WHERE ID IN (' . join( ',', $next_posts ) . ')';
 				$posts = $wpdb->get_results( "SELECT * FROM {$wpdb->posts} $where" );
 
+				if ( 'all' != $args['post_type'] ) {
+					$attachment_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_parent IN (". implode( ",", array_map( 'intval', $post_ids ) ) .")" );
+					if ( is_array( $attachment_ids ) )
+						$posts = array_merge( $posts, array_map( 'get_post', $attachment_ids ) );
+				}
+
 				// Begin Loop
 				foreach ( $posts as $post ) {
 
