@@ -258,16 +258,15 @@ class Export_Command extends WP_CLI_Command {
 			}
 		}
 
-		if ( 'post' == $args['post_type'] || 'page' == $args['post_type'] ) {
-			if ( $args['author'] )
-				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_author = %d", $args['author'] );
+	
+		if ( $args['author'] )
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_author = %d", $args['author'] );
 
-			if ( $args['start_date'] )
-				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date >= %s", date( 'Y-m-d', strtotime( $args['start_date'] ) ) );
+		if ( $args['start_date'] )
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date >= %s", date( 'Y-m-d', strtotime( $args['start_date'] ) ) );
 
-			if ( $args['end_date'] )
-				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date < %s", date( 'Y-m-d', strtotime( $args['end_date'] ) ) );
-		}
+		if ( $args['end_date'] )
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date < %s", date( 'Y-m-d', strtotime( $args['end_date'] ) ) );
 
 		// grab a snapshot of post IDs, just in case it changes during the export
 		$post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} $join WHERE $where ORDER BY post_date ASC, post_parent ASC" );
