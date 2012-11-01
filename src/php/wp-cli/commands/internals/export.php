@@ -156,7 +156,7 @@ class Export_Command extends WP_CLI_Command {
 
 		$stati = get_post_statuses();
 		if ( empty( $stati ) || is_wp_error( $stati ) ) {
-			WP_CLI::warning( sprintf( 'Could not find any post stati', $category ) );
+			WP_CLI::warning( 'Could not find any post stati' );
 			return false;
 		}
 
@@ -173,7 +173,7 @@ class Export_Command extends WP_CLI_Command {
 			return true;
 
 		if ( (int) $skip <> 0 && (int) $skip <> 1 ) {
-			WP_CLI::warning( sprintf( 'skip_comments needs to be 0 (no) or 1 (yes)', $category ) );
+			WP_CLI::warning( 'skip_comments needs to be 0 (no) or 1 (yes)' );
 			return false;
 		}
 		$this->export_args['skip_comments'] = $skip;
