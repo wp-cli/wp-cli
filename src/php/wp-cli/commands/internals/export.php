@@ -258,10 +258,10 @@ class Export_Command extends WP_CLI_Command {
 			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_author = %d", $args['author'] );
 
 		if ( $args['start_date'] )
-			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date >= %s 00:00:00", date( 'Y-m-d', strtotime( $args['start_date'] ) ) );
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date >= %s", date( 'Y-m-d 00:00:00', strtotime( $args['start_date'] ) ) );
 
 		if ( $args['end_date'] )
-			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date <= %s 23:59:59", date( 'Y-m-d', strtotime( $args['end_date'] ) ) );
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date <= %s", date( 'Y-m-d 23:59:59', strtotime( $args['end_date'] ) ) );
 
 		// grab a snapshot of post IDs, just in case it changes during the export
 		$post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} $join WHERE $where ORDER BY post_date ASC, post_parent ASC" );
