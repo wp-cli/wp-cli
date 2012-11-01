@@ -49,7 +49,7 @@ class Export_Command extends WP_CLI_Command {
 			exit(1);
 		}
 
-		$this->wxr_path = $assoc_args['dir'];
+		$this->wxr_path = trailingslashit( $assoc_args['dir'] );
 
 		WP_CLI::line( 'Starting export process...' );
 		WP_CLI::line();
@@ -91,7 +91,7 @@ class Export_Command extends WP_CLI_Command {
 			WP_CLI::warning( sprintf( "The end_date %s is invalid", $date ) );
 			return false;
 		}
-		$this->export_args['start_date'] = date( 'Y-m-d', $time );
+		$this->export_args['end_date'] = date( 'Y-m-d', $time );
 		return true;
 	}
 
@@ -104,7 +104,7 @@ class Export_Command extends WP_CLI_Command {
 			WP_CLI::warning( sprintf( 'The post type %s does not exists. Choose "all" or any of these existing post types instead: %s', $post_type, implode( ", ", $post_types ) ) );
 			return false;
 		}
-		$this->export_args['content'] = $post_type;
+		$this->export_args['post_type'] = $post_type;
 		return true;
 	}
 
@@ -203,17 +203,12 @@ class Export_Command extends WP_CLI_Command {
 	private function export_wp( $args = array() ) {
 		require_once ABSPATH . 'wp-admin/includes/export.php';
 
-		global $wpdb, $post;
-		// call export_wp as we need the functions defined in it.
-		$dummy_args = array( 'content' => 'i-do-not-exist' );
-		ob_start();
-		export_wp( $dummy_args );
-		ob_end_clean();
+		global $wpdb;
 
 		/**
 		 * This is mostly the original code of export_wp defined in wp-admin/includes/export.php
 		 */
-		$defaults = array( 'content' => 'all', 'author' => false, 'category' => false,
+		$defaults = array( 'post_type' => 'all', 'author' => false, 'category' => false,
 			'start_date' => false, 'end_date' => false, 'status' => false, 'skip_comments' => false,
 		);
 		$args = wp_parse_args( $args, $defaults );
@@ -233,44 +228,43 @@ class Export_Command extends WP_CLI_Command {
 		}
 		$file_name_base = $sitename . 'wordpress.' . implode( ".", $append );
 
-		if ( 'all' != $args['content'] && post_type_exists( $args['content'] ) ) {
-			$ptype = get_post_type_object( $args['content'] );
+		if ( 'all' != $args['post_type'] && post_type_exists( $args['post_type'] ) ) {
+			$ptype = get_post_type_object( $args['post_type'] );
 			if ( ! $ptype->can_export )
-				$args['content'] = 'post';
+				$args['post_type'] = 'post';
 
-			$where = $wpdb->prepare( "{$wpdb->posts}.post_type = %s", $args['content'] );
+			$where = $wpdb->prepare( "{$wpdb->posts}.post_type = %s", $args['post_type'] );
 		} else {
 			$post_types = get_post_types( array( 'can_export' => true ) );
 			$esses = array_fill( 0, count( $post_types ), '%s' );
 			$where = $wpdb->prepare( "{$wpdb->posts}.post_type IN (" . implode( ',', $esses ) . ')', $post_types );
 		}
 
-		if ( $args['status'] && ( 'post' == $args['content'] || 'page' == $args['content'] ) )
+		if ( $args['status'] && ( 'post' == $args['post_type'] || 'page' == $args['post_type'] ) )
 			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_status = %s", $args['status'] );
 		else
 			$where .= " AND {$wpdb->posts}.post_status != 'auto-draft'";
 
 		$join = '';
-		if ( $args['category'] && 'post' == $args['content'] ) {
+		if ( $args['category'] && 'post' == $args['post_type'] ) {
 			if ( $term = term_exists( $args['category'], 'category' ) ) {
 				$join = "INNER JOIN {$wpdb->term_relationships} ON ({$wpdb->posts}.ID = {$wpdb->term_relationships}.object_id)";
 				$where .= $wpdb->prepare( " AND {$wpdb->term_relationships}.term_taxonomy_id = %d", $term['term_taxonomy_id'] );
 			}
 		}
 
-		if ( 'post' == $args['content'] || 'page' == $args['content'] ) {
-			if ( $args['author'] )
-				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_author = %d", $args['author'] );
+	
+		if ( $args['author'] )
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_author = %d", $args['author'] );
 
-			if ( $args['start_date'] )
-				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date >= %s", date( 'Y-m-d', strtotime( $args['start_date'] ) ) );
+		if ( $args['start_date'] )
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date >= %s", date( 'Y-m-d 00:00:00', strtotime( $args['start_date'] ) ) );
 
-			if ( $args['end_date'] )
-				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date < %s", date( 'Y-m-d', strtotime( '+1 month', strtotime( $args['end_date'] ) ) ) );
-		}
+		if ( $args['end_date'] )
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date <= %s", date( 'Y-m-d 23:59:59', strtotime( $args['end_date'] ) ) );
 
 		// grab a snapshot of post IDs, just in case it changes during the export
-		$post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} $join WHERE $where" );
+		$post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} $join WHERE $where ORDER BY post_date ASC, post_parent ASC" );
 
 		// get the requested terms ready, empty unless posts filtered by category or all content
 		$cats = $tags = $terms = array();
@@ -278,7 +272,7 @@ class Export_Command extends WP_CLI_Command {
 			$cat = get_term( $term['term_id'], 'category' );
 			$cats = array( $cat->term_id => $cat );
 			unset( $term, $cat );
-		} else if ( 'all' == $args['content'] ) {
+		} else if ( 'all' == $args['post_type'] ) {
 				$categories = (array) get_categories( array( 'get' => 'all' ) );
 				$tags = (array) get_tags( array( 'get' => 'all' ) );
 
@@ -303,6 +297,125 @@ class Export_Command extends WP_CLI_Command {
 
 				unset( $categories, $custom_taxonomies, $custom_terms );
 			}
+
+		/**
+		 * Functions normally defined in wp-admin/includes/export.php
+		 */
+		function wxr_cdata( $str ) {
+			if ( seems_utf8( $str ) == false )
+				$str = utf8_encode( $str );
+
+			// $str = ent2ncr(esc_html($str));
+			$str = '<![CDATA[' . str_replace( ']]>', ']]]]><![CDATA[>', $str ) . ']]>';
+
+			return $str;
+		}
+
+		function wxr_site_url() {
+			// ms: the base url
+			if ( is_multisite() )
+				return network_home_url();
+			// wp: the blog url
+			else
+				return get_bloginfo_rss( 'url' );
+		}
+
+		function wxr_cat_name( $category ) {
+			if ( empty( $category->name ) )
+				return;
+
+			echo '<wp:cat_name>' . wxr_cdata( $category->name ) . '</wp:cat_name>';
+		}
+
+		function wxr_category_description( $category ) {
+			if ( empty( $category->description ) )
+				return;
+
+			echo '<wp:category_description>' . wxr_cdata( $category->description ) . '</wp:category_description>';
+		}
+
+		function wxr_tag_name( $tag ) {
+			if ( empty( $tag->name ) )
+				return;
+
+			echo '<wp:tag_name>' . wxr_cdata( $tag->name ) . '</wp:tag_name>';
+		}
+
+
+		function wxr_tag_description( $tag ) {
+			if ( empty( $tag->description ) )
+				return;
+
+			echo '<wp:tag_description>' . wxr_cdata( $tag->description ) . '</wp:tag_description>';
+		}
+
+		function wxr_term_name( $term ) {
+			if ( empty( $term->name ) )
+				return;
+
+			echo '<wp:term_name>' . wxr_cdata( $term->name ) . '</wp:term_name>';
+		}
+
+		function wxr_term_description( $term ) {
+			if ( empty( $term->description ) )
+				return;
+
+			echo '<wp:term_description>' . wxr_cdata( $term->description ) . '</wp:term_description>';
+		}
+
+		function wxr_authors_list() {
+			global $wpdb;
+
+			$authors = array();
+			$results = $wpdb->get_results( "SELECT DISTINCT post_author FROM $wpdb->posts WHERE post_status != 'auto-draft'" );
+			foreach ( (array) $results as $result )
+				$authors[] = get_userdata( $result->post_author );
+
+			$authors = array_filter( $authors );
+
+			foreach ( $authors as $author ) {
+				echo "\t<wp:author>";
+				echo '<wp:author_id>' . $author->ID . '</wp:author_id>';
+				echo '<wp:author_login>' . $author->user_login . '</wp:author_login>';
+				echo '<wp:author_email>' . $author->user_email . '</wp:author_email>';
+				echo '<wp:author_display_name>' . wxr_cdata( $author->display_name ) . '</wp:author_display_name>';
+				echo '<wp:author_first_name>' . wxr_cdata( $author->user_firstname ) . '</wp:author_first_name>';
+				echo '<wp:author_last_name>' . wxr_cdata( $author->user_lastname ) . '</wp:author_last_name>';
+				echo "</wp:author>\n";
+			}
+		}
+
+		function wxr_nav_menu_terms() {
+			$nav_menus = wp_get_nav_menus();
+			if ( empty( $nav_menus ) || ! is_array( $nav_menus ) )
+				return;
+
+			foreach ( $nav_menus as $menu ) {
+				echo "\t<wp:term><wp:term_id>{$menu->term_id}</wp:term_id><wp:term_taxonomy>nav_menu</wp:term_taxonomy><wp:term_slug>{$menu->slug}</wp:term_slug>";
+				wxr_term_name( $menu );
+				echo "</wp:term>\n";
+			}
+		}
+
+		function wxr_post_taxonomy() {
+			$post = get_post();
+
+			$taxonomies = get_object_taxonomies( $post->post_type );
+			if ( empty( $taxonomies ) )
+				return;
+			$terms = wp_get_object_terms( $post->ID, $taxonomies );
+
+			foreach ( (array) $terms as $term ) {
+				echo "\t\t<category domain=\"{$term->taxonomy}\" nicename=\"{$term->slug}\">" . wxr_cdata( $term->name ) . "</category>\n";
+			}
+		}
+
+		function wxr_filter_postmeta( $return_me, $meta_key ) {
+			if ( '_edit_lock' == $meta_key )
+				$return_me = true;
+			return $return_me;
+		}
+		add_filter( 'wxr_export_skip_postmeta', 'wxr_filter_postmeta', 10, 2 );	
 
 
 		WP_CLI::line( 'Exporting ' . count( $post_ids ) . ' items' );
@@ -364,7 +477,7 @@ class Export_Command extends WP_CLI_Command {
 <?php foreach ( $terms as $t ) : ?>
 	<wp:term><wp:term_id><?php echo $t->term_id ?></wp:term_id><wp:term_taxonomy><?php echo $t->taxonomy; ?></wp:term_taxonomy><wp:term_slug><?php echo $t->slug; ?></wp:term_slug><wp:term_parent><?php echo $t->parent ? $terms[$t->parent]->slug : ''; ?></wp:term_parent><?php wxr_term_name( $t ); ?><?php wxr_term_description( $t ); ?></wp:term>
 <?php endforeach; ?>
-<?php if ( 'all' == $args['content'] ) wxr_nav_menu_terms(); ?>
+<?php if ( 'all' == $args['post_type'] ) wxr_nav_menu_terms(); ?>
 
 	<?php do_action( 'rss2_head' ); ?>
 
@@ -377,6 +490,12 @@ class Export_Command extends WP_CLI_Command {
 
 				$where = 'WHERE ID IN (' . join( ',', $next_posts ) . ')';
 				$posts = $wpdb->get_results( "SELECT * FROM {$wpdb->posts} $where" );
+
+				if ( 'all' != $args['post_type'] ) {
+					$attachment_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_parent IN (". implode( ",", array_map( 'intval', $post_ids ) ) .")" );
+					if ( is_array( $attachment_ids ) )
+						$posts = array_merge( $posts, array_map( 'get_post', $attachment_ids ) );
+				}
 
 				// Begin Loop
 				foreach ( $posts as $post ) {
@@ -456,7 +575,7 @@ class Export_Command extends WP_CLI_Command {
 
 		$result = ob_get_clean();
 
-		$full_path = $this->wxr_path . $file_name_base . '.wxr';
+		$full_path = $this->wxr_path . $file_name_base . '.xml';
 
 		if ( !file_exists( $full_path ) || is_writeable( $full_path ) ) {
 			WP_CLI::line( 'Writing to ' . $full_path );
