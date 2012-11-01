@@ -91,7 +91,7 @@ class Export_Command extends WP_CLI_Command {
 			WP_CLI::warning( sprintf( "The end_date %s is invalid", $date ) );
 			return false;
 		}
-		$this->export_args['start_date'] = date( 'Y-m-d', $time );
+		$this->export_args['end_date'] = date( 'Y-m-d', $time );
 		return true;
 	}
 
