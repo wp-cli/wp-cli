@@ -1,0 +1,9 @@
+## OPTIONS
+
+* `<file>`:
+
+	The csv file of users to import
+
+## EXAMPLES
+
+	wp user import_csv /path/to/csv.csv

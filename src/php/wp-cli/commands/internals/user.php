@@ -197,4 +197,63 @@ class User_Command extends WP_CLI_Command {
 
 		$notify->finish();
 	}
+
+	/**
+	 * Import users from a CSV
+	 *
+	 * @synopsis <file>
+	 */
+	public function import_csv( $args, $assoc_args ) {
+
+		list( $csv ) = $args;
+
+		$new_users = \WP_CLI\utils\parse_csv( $csv );
+		
+		$blog_users = get_users();
+
+		foreach( $new_users as $new_user ) {
+
+			$defaults = array(
+				'role' => get_option('default_role'),
+				'user_pass' => wp_generate_password(),
+				'user_registered' => strftime( "%F %T", time() ),
+				'display_name' => false,
+			);
+			$new_user = array_merge( $new_user, $defaults );
+
+			if ( 'none' == $new_user['role'] ) {
+				$new_user['role'] = false;
+			} elseif ( is_null( get_role( $new_user['role'] ) ) ) {
+				WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
+				continue;
+			}
+
+			// User already exists and we just need to add them to the site if they aren't already there
+			if ( $existing_user = get_user_by( 'login', $new_user['user_login'] ) ) {
+				if ( in_array( $new_user['user_login'], wp_list_pluck( $blog_users, 'user_login' ) ) )
+					WP_CLI::warning( "{$new_user['user_login']} already is a member of blog" );
+				else if ( $new_user['role'] ) {
+					add_user_to_blog( get_current_blog_id(), $new_user['user_login'], $new_user['role'] );
+					WP_CLI::line( "{$new_user['user_login']} added to blog as {$new_user['role']}" );
+				} else {
+					WP_CLI::line( "{$new_user['user_login']} exists, but won't be added to the blog" );
+				}
+				continue;
+			}
+
+			$user_id = wp_insert_user( $new_user );
+
+			if ( is_wp_error( $user_id ) ) {
+				WP_CLI::warning( $user_id );
+			} else {
+				if ( false === $new_user['role'] ) {
+					delete_user_option( $user_id, 'capabilities' );
+					delete_user_option( $user_id, 'user_level' );
+				}
+			}
+
+			WP_CLI::line( "{$new_user['user_login']} created" );
+
+		}
+	}
 }
