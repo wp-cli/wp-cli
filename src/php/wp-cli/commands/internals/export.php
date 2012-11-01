@@ -49,7 +49,7 @@ class Export_Command extends WP_CLI_Command {
 			exit(1);
 		}
 
-		$this->wxr_path = $assoc_args['dir'];
+		$this->wxr_path = trailingslashit( $assoc_args['dir'] );
 
 		WP_CLI::line( 'Starting export process...' );
 		WP_CLI::line();
