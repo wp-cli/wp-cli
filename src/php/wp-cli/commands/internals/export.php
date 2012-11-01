@@ -266,7 +266,7 @@ class Export_Command extends WP_CLI_Command {
 				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date >= %s", date( 'Y-m-d', strtotime( $args['start_date'] ) ) );
 
 			if ( $args['end_date'] )
-				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date < %s", date( 'Y-m-d', strtotime( '+1 month', strtotime( $args['end_date'] ) ) ) );
+				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date < %s", date( 'Y-m-d', strtotime( $args['end_date'] ) ) );
 		}
 
 		// grab a snapshot of post IDs, just in case it changes during the export
