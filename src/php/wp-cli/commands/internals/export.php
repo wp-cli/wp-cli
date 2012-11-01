@@ -11,6 +11,12 @@ WP_CLI::add_command( 'export', new Export_Command );
 class Export_Command extends WP_CLI_Command {
 
 	/**
+	* Initialize the array of arguments that will be eventually be passed to export_wp
+	* @var array
+	*/
+	public $export_args = array();
+
+	/**
 	 * Export posts to a WXR file.
 	 *
 	 * @synopsis --dir=<dir> [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--author=<login>] [--category=<cat>] [--skip_comments]
