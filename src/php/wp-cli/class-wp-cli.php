@@ -327,7 +327,10 @@ class WP_CLI {
 		if ( !$command )
 			WP_CLI::error( sprintf( "'%s' command not found." ) );
 
-		\WP_CLI\Man\generate( key( self::$man_dirs ), $command );
+		$src_dir = WP_CLI_ROOT . "../../docs/";
+		$dest_dir = key( self::$man_dirs );
+
+		\WP_CLI\Man\generate( $src_dir, $dest_dir, $command );
 	}
 
 	private static function render_automcomplete() {
