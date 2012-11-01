@@ -4,20 +4,22 @@ namespace WP_CLI\Man;
 
 use \WP_CLI\Dispatcher;
 
-function get_path( $args ) {
-	return WP_CLI_ROOT . "../../../man/" . implode( '-', $args ) . '.1';
+function get_file_name( $args ) {
+	return implode( '-', $args ) . '.1';
 }
 
 function get_src_path( $args ) {
 	return WP_CLI_ROOT . "../../docs/" . implode( '-', $args ) . '.txt';
 }
 
-function generate( $command ) {
-	call_ronn( get_markdown( $command ), get_path( $command->get_path() ) );
+function generate( $dir, $command ) {
+	$man_path = $dir . get_file_name( $command->get_path() );
+
+	call_ronn( get_markdown( $command ), $man_path );
 
 	if ( $command instanceof Dispatcher\Composite ) {
 		foreach ( $command->get_subcommands() as $subcommand ) {
-			generate( $subcommand );
+			generate( $dir, $subcommand );
 		}
 	}
 }
