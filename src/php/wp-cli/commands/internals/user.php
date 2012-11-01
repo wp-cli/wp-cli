@@ -219,7 +219,7 @@ class User_Command extends WP_CLI_Command {
 				'user_registered' => strftime( "%F %T", time() ),
 				'display_name' => false,
 			);
-			$new_user = array_merge( $new_user, $defaults );
+			$new_user = array_merge( $defaults, $new_user );
 
 			if ( 'none' == $new_user['role'] ) {
 				$new_user['role'] = false;
