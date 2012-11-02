@@ -1,0 +1,16 @@
+wp-user-remove_role(1) -- Remove a user's role on a blog
+====
+
+## SYNOPSIS
+
+`wp user remove_role` <user-login>
+
+## OPTIONS
+
+* `<user-login>`:
+
+	The login of the user to remove from the blog.
+
+## EXAMPLES
+
+	wp user remove_role bob

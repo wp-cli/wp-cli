@@ -212,28 +212,28 @@ class User_Command extends WP_CLI_Command {
 	 * @param array $args
 	 * @param array $assoc_args
 	 **/
-	public function add_to_blog( $args, $assoc_args ) {
+	public function set_role( $args, $assoc_args ) {
 
-		$defaults = array(
-				'id_or_login'      => $args[0],
-				'role'             => $args[1],
-			);
-		$args = array_merge( $assoc_args, $defaults );
+		list( $id_or_login, $role ) = $args;
 
-		if ( is_numeric( $args['id_or_login'] ) )
-			$user = get_user_by( 'id', $args['id_or_login'] );
+		if ( is_numeric( $id_or_login ) )
+			$user = get_user_by( 'id', $id_or_login );
 		else
-			$user = get_user_by( 'login', $args['id_or_login'] );
+			$user = get_user_by( 'login', $id_or_login );
 
-		if ( empty( $args['id_or_login'] ) || empty( $user ) )
+		if ( ! $user )
 			WP_CLI::error( "Please specify a valid user ID or user login to add to this blog" );
 
-		global $wp_roles;
-		if ( empty( $args['role'] ) || ! array_key_exists( $args['role'], $wp_roles->roles ) )
-			$args['role'] = get_option( 'default_role' );
+		if ( ! get_role( $role ) )
+			$role = get_option( 'default_role' );
 
-		add_user_to_blog( get_current_blog_id(), $user->ID, $args['role'] );
-		WP_CLI::success( "Added {$user->user_login} ({$user->ID}) to " . site_url() . " as {$args['role']}" );
+		// Multisite
+		if ( function_exists( 'add_user_to_blog' ) )
+			add_user_to_blog( get_current_blog_id(), $user->ID, $role );
+		else
+			$user->set_role( $role );
+
+		WP_CLI::success( "Added {$user->user_login} ({$user->ID}) to " . site_url() . " as {$role}" );
 	}
 
 	/**
@@ -242,22 +242,24 @@ class User_Command extends WP_CLI_Command {
 	 * @param array $args
 	 * @param array $assoc_args
 	 **/
-	public function remove_from_blog( $args, $assoc_args ) {
+	public function remove_role( $args, $assoc_args ) {
 
-		$defaults = array(
-				'id_or_login'      => $args[0],
-			);
-		$args = array_merge( $assoc_args, $defaults );
+		list( $id_or_login ) = $args;
 
-		if ( is_numeric( $args['id_or_login'] ) )
-			$user = get_user_by( 'id', $args['id_or_login'] );
+		if ( is_numeric( $id_or_login ) )
+			$user = get_user_by( 'id', $id_or_login );
 		else
-			$user = get_user_by( 'login', $args['id_or_login'] );
+			$user = get_user_by( 'login', $id_or_login );
 
-		if ( empty( $args['id_or_login'] ) || empty( $user ) )
+		if ( ! $user )
 			WP_CLI::error( "Please specify a valid user ID or user login to remove from this blog" );
 
-		remove_user_from_blog( $user->ID, get_current_blog_id() );
+		// Multisite
+		if ( function_exists( 'remove_user_from_blog' ) )
+			remove_user_from_blog( $user->ID, get_current_blog_id() );
+		else
+			$user->remove_all_caps();
+
 		WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() );
 	}
 
