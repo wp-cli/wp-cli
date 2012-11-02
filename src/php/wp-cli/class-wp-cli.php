@@ -27,14 +27,17 @@ class WP_CLI {
 		self::$commands[ $name ] = $command;
 	}
 
-	static function add_man_dir( $path ) {
-		$path = realpath( $path ) . '/';
+	static function add_man_dir( $dest_dir, $src_dir ) {
+		$dest_dir = realpath( $dest_dir ) . '/';
 
-		self::$man_dirs[ $path ] = true;
+		if ( $src_dir )
+			$src_dir = realpath( $src_dir ) . '/';
+
+		self::$man_dirs[ $dest_dir ] = $src_dir;
 	}
 
 	static function get_man_dirs() {
-		return array_keys( self::$man_dirs );
+		return self::$man_dirs;
 	}
 
 	/**
@@ -229,7 +232,10 @@ class WP_CLI {
 	private static $arguments, $assoc_args, $assoc_special;
 
 	static function before_wp_load() {
-		self::add_man_dir( WP_CLI_ROOT . "../../../man/" );
+		self::add_man_dir(
+			WP_CLI_ROOT . "../../../man/",
+			WP_CLI_ROOT . "../../docs/"
+		);
 
 		$r = WP_CLI\Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
@@ -327,10 +333,9 @@ class WP_CLI {
 		if ( !$command )
 			WP_CLI::error( sprintf( "'%s' command not found." ) );
 
-		$src_dir = WP_CLI_ROOT . "../../docs/";
-		$dest_dir = key( self::$man_dirs );
-
-		\WP_CLI\Man\generate( $src_dir, $dest_dir, $command );
+		foreach ( self::$man_dirs as $dest_dir => $src_dir ) {
+			\WP_CLI\Man\generate( $src_dir, $dest_dir, $command );
+		}
 	}
 
 	private static function render_automcomplete() {
