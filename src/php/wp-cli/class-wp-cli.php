@@ -16,13 +16,13 @@ class WP_CLI {
 	 * Add a command to the wp-cli list of commands
 	 *
 	 * @param string $name The name of the command that will be used in the cli
-	 * @param string $class The class to manage the command
+	 * @param string|object $implementation The command implementation
 	 */
-	static function add_command( $name, $class ) {
-		if ( is_string( $class ) )
-			$command = new Dispatcher\CompositeCommand( $name, $class );
+	static function add_command( $name, $implementation ) {
+		if ( is_string( $implementation ) )
+			$command = new Dispatcher\CompositeCommand( $name, $implementation );
 		else
-			$command = new Dispatcher\SingleCommand( $name, $class );
+			$command = new Dispatcher\SingleCommand( $name, $implementation );
 
 		self::$commands[ $name ] = $command;
 	}
