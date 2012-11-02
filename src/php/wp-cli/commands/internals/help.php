@@ -30,8 +30,8 @@ class Help_Command extends WP_CLI_Command {
 	private static function maybe_load_man_page( $args ) {
 		$man_file = \WP_CLI\Man\get_file_name( $args );
 
-		foreach ( \WP_CLI::get_man_dirs() as $dir ) {
-			$man_path = $dir . $man_file;
+		foreach ( \WP_CLI::get_man_dirs() as $dest_dir => $_ ) {
+			$man_path = $dest_dir . $man_file;
 
 			if ( is_readable( $man_path ) ) {
 				exit( WP_CLI::launch( "man $man_path" ) );
