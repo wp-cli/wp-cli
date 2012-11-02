@@ -13,9 +13,10 @@ function get_src_file_name( $args ) {
 }
 
 function generate( $src_dir, $dest_dir, $command ) {
-	$man_path = $dest_dir . get_file_name( $command->get_path() );
+	$src_path = $src_dir . get_src_file_name( $command->get_path() );
+	$dest_path = $dest_dir . get_file_name( $command->get_path() );
 
-	call_ronn( get_markdown( $src_dir, $command ), $man_path );
+	call_ronn( get_markdown( $src_path, $command ), $dest_path );
 
 	if ( $command instanceof Dispatcher\Composite ) {
 		foreach ( $command->get_subcommands() as $subcommand ) {
@@ -25,16 +26,16 @@ function generate( $src_dir, $dest_dir, $command ) {
 }
 
 // returns a file descriptor or false
-function get_markdown( $src_dir, $command ) {
+function get_markdown( $doc_path, $command ) {
+	if ( !file_exists( $doc_path ) )
+		return false;
+
 	$fd = fopen( "php://temp", "rw" );
 
 	if ( $command instanceof Dispatcher\Documentable )
 		add_initial_markdown( $fd, $command );
 
-	$doc_path = $src_dir . get_src_file_name( $command->get_path() );
-
-	if ( file_exists( $doc_path ) )
-		fwrite( $fd, file_get_contents( $doc_path ) );
+	fwrite( $fd, file_get_contents( $doc_path ) );
 
 	if ( 0 === ftell( $fd ) )
 		return false;
