@@ -243,7 +243,7 @@ class WP_CLI {
 
 		self::$assoc_special = Utils\split_assoc( self::$assoc_args, array(
 			'path', 'url', 'blog', 'user', 'require',
-			'quiet', 'completions', 'man'
+			'quiet', 'completions', 'man', 'syn-list'
 		) );
 
 		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
@@ -306,6 +306,19 @@ class WP_CLI {
 
 		if ( isset( self::$assoc_special['man'] ) ) {
 			self::generate_man( self::$arguments );
+			exit;
+		}
+
+		// Handle --syn-list parameter
+		if ( isset( self::$assoc_special['syn-list'] ) ) {
+			foreach ( self::load_all_commands() as $command ) {
+				if ( $command instanceof \WP_CLI\Dispatcher\Composite ) {
+					foreach ( $command->get_subcommands() as $subcommand )
+						$subcommand->show_usage( '' );
+				} else {
+					$command->show_usage( '' );
+				}
+			}
 			exit;
 		}
 
