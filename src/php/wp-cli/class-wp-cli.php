@@ -10,20 +10,34 @@ use \WP_CLI\Dispatcher;
 class WP_CLI {
 
 	private static $commands = array();
+	private static $man_dirs = array();
 
 	/**
 	 * Add a command to the wp-cli list of commands
 	 *
 	 * @param string $name The name of the command that will be used in the cli
-	 * @param string $class The class to manage the command
+	 * @param string|object $implementation The command implementation
 	 */
-	static function add_command( $name, $class ) {
-		if ( is_string( $class ) )
-			$command = new Dispatcher\CompositeCommand( $name, $class );
+	static function add_command( $name, $implementation ) {
+		if ( is_string( $implementation ) )
+			$command = new Dispatcher\CompositeCommand( $name, $implementation );
 		else
-			$command = new Dispatcher\SingleCommand( $name, $class );
+			$command = new Dispatcher\SingleCommand( $name, $implementation );
 
 		self::$commands[ $name ] = $command;
+	}
+
+	static function add_man_dir( $dest_dir, $src_dir ) {
+		$dest_dir = realpath( $dest_dir ) . '/';
+
+		if ( $src_dir )
+			$src_dir = realpath( $src_dir ) . '/';
+
+		self::$man_dirs[ $dest_dir ] = $src_dir;
+	}
+
+	static function get_man_dirs() {
+		return self::$man_dirs;
 	}
 
 	/**
@@ -218,6 +232,11 @@ class WP_CLI {
 	private static $arguments, $assoc_args, $assoc_special;
 
 	static function before_wp_load() {
+		self::add_man_dir(
+			WP_CLI_ROOT . "../../../man/",
+			WP_CLI_ROOT . "../../docs/"
+		);
+
 		$r = WP_CLI\Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
 		list( self::$arguments, self::$assoc_args ) = $r;
@@ -314,7 +333,9 @@ class WP_CLI {
 		if ( !$command )
 			WP_CLI::error( sprintf( "'%s' command not found." ) );
 
-		\WP_CLI\Man\generate( $command );
+		foreach ( self::$man_dirs as $dest_dir => $src_dir ) {
+			\WP_CLI\Man\generate( $src_dir, $dest_dir, $command );
+		}
 	}
 
 	private static function render_automcomplete() {

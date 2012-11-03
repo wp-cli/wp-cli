@@ -4,35 +4,38 @@ namespace WP_CLI\Man;
 
 use \WP_CLI\Dispatcher;
 
-function get_path( $args ) {
-	return WP_CLI_ROOT . "../../../man/" . implode( '-', $args ) . '.1';
+function get_file_name( $args ) {
+	return implode( '-', $args ) . '.1';
 }
 
-function get_src_path( $args ) {
-	return WP_CLI_ROOT . "../../docs/" . implode( '-', $args ) . '.txt';
+function get_src_file_name( $args ) {
+	return implode( '-', $args ) . '.txt';
 }
 
-function generate( $command ) {
-	call_ronn( get_markdown( $command ), get_path( $command->get_path() ) );
+function generate( $src_dir, $dest_dir, $command ) {
+	$src_path = $src_dir . get_src_file_name( $command->get_path() );
+	$dest_path = $dest_dir . get_file_name( $command->get_path() );
+
+	call_ronn( get_markdown( $src_path, $command ), $dest_path );
 
 	if ( $command instanceof Dispatcher\Composite ) {
 		foreach ( $command->get_subcommands() as $subcommand ) {
-			generate( $subcommand );
+			generate( $src_dir, $dest_dir, $subcommand );
 		}
 	}
 }
 
 // returns a file descriptor or false
-function get_markdown( $command ) {
+function get_markdown( $doc_path, $command ) {
+	if ( !file_exists( $doc_path ) )
+		return false;
+
 	$fd = fopen( "php://temp", "rw" );
 
 	if ( $command instanceof Dispatcher\Documentable )
 		add_initial_markdown( $fd, $command );
 
-	$doc_path = get_src_path( $command->get_path() );
-
-	if ( file_exists( $doc_path ) )
-		fwrite( $fd, file_get_contents( $doc_path ) );
+	fwrite( $fd, file_get_contents( $doc_path ) );
 
 	if ( 0 === ftell( $fd ) )
 		return false;
