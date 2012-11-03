@@ -256,13 +256,8 @@ class WP_CLI {
 
 		$_SERVER['DOCUMENT_ROOT'] = getcwd();
 
-		// Define the WordPress location
-		if ( !empty( self::$assoc_special['path'] ) ) {
-			// trailingslashit() isn't available yet
-			define( 'WP_ROOT', rtrim( self::$assoc_special['path'], '/' ) . '/' );
-		} else {
-			define( 'WP_ROOT', getcwd() . '/' );
-		}
+		// Handle --path
+		Utils\set_wp_root( self::$assoc_special );
 
 		// Handle --url and --blog parameters
 		Utils\set_url( self::$assoc_special );
