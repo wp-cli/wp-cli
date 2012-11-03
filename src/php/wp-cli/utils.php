@@ -44,6 +44,14 @@ function split_assoc( &$assoc_args, $special_keys ) {
 	return $assoc_special;
 }
 
+function set_wp_root( $assoc_args ) {
+	if ( !empty( $assoc_args['path'] ) ) {
+		define( 'WP_ROOT', rtrim( $assoc_args['path'], '/' ) . '/' );
+	} else {
+		define( 'WP_ROOT', getcwd() . '/' );
+	}
+}
+
 function set_url( $assoc_args ) {
 	if ( isset( $assoc_args['url'] ) ) {
 		$blog = $assoc_args['url'];
