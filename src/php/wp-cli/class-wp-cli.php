@@ -11,6 +11,7 @@ class WP_CLI {
 
 	private static $commands = array();
 	private static $man_dirs = array();
+	private static $arguments, $assoc_args, $assoc_special;
 
 	/**
 	 * Add a command to the wp-cli list of commands
@@ -228,8 +229,6 @@ class WP_CLI {
 
 		return self::$commands[$command];
 	}
-
-	private static $arguments, $assoc_args, $assoc_special;
 
 	static function before_wp_load() {
 		self::add_man_dir(
