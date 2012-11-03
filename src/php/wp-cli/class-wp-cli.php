@@ -1,6 +1,7 @@
 <?php
 
 use \WP_CLI\Dispatcher;
+use \WP_CLI\Utils;
 
 /**
  * Wrapper class for WP-CLI
@@ -236,11 +237,11 @@ class WP_CLI {
 			WP_CLI_ROOT . "../../docs/"
 		);
 
-		$r = WP_CLI\Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
+		$r = Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
 		list( self::$arguments, self::$assoc_args ) = $r;
 
-		self::$assoc_special = WP_CLI\Utils\split_assoc( self::$assoc_args, array(
+		self::$assoc_special = Utils\split_assoc( self::$assoc_args, array(
 			'path', 'url', 'blog', 'user', 'require',
 			'quiet', 'completions', 'man'
 		) );
@@ -264,7 +265,7 @@ class WP_CLI {
 		}
 
 		// Handle --url and --blog parameters
-		WP_CLI\Utils\set_url( self::$assoc_special );
+		Utils\set_url( self::$assoc_special );
 
 		if ( array( 'core', 'download' ) == self::$arguments ) {
 			self::run_command();
@@ -282,7 +283,7 @@ class WP_CLI {
 
 		// The db commands don't need any WP files
 		if ( array( 'db' ) == array_slice( self::$arguments, 0, 1 ) ) {
-			WP_CLI\Utils\load_wp_config();
+			Utils\load_wp_config();
 			self::run_command();
 			exit;
 		}
@@ -300,10 +301,10 @@ class WP_CLI {
 	static function after_wp_load() {
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
-		WP_CLI\Utils\set_user( self::$assoc_special );
+		Utils\set_user( self::$assoc_special );
 
 		if ( !defined( 'WP_INSTALLING' ) && isset( self::$assoc_special['url'] ) )
-			WP_CLI\Utils\set_wp_query();
+			Utils\set_wp_query();
 
 		if ( isset( self::$assoc_special['require'] ) )
 			require self::$assoc_special['require'];
