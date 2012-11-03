@@ -63,6 +63,19 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Determine if the WordPress tables are installed.
+	 *
+	 * @subcommand is-installed
+	 */
+	public function is_installed() {
+		if ( is_blog_installed() ) {
+			exit( 0 );
+		} else {
+			exit( 1 );
+		}
+	}
+
+	/**
 	 * Create the WordPress tables in the database.
 	 *
 	 * @synopsis --url=<url> --title=<site-title> [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
