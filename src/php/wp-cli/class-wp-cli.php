@@ -261,7 +261,7 @@ class WP_CLI {
 			// trailingslashit() isn't available yet
 			define( 'WP_ROOT', rtrim( self::$assoc_special['path'], '/' ) . '/' );
 		} else {
-			define( 'WP_ROOT', $_SERVER['PWD'] . '/' );
+			define( 'WP_ROOT', getcwd() . '/' );
 		}
 
 		// Handle --url and --blog parameters
