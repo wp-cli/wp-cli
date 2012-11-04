@@ -27,7 +27,7 @@ class Shell_Command extends \WP_CLI_Command {
 
 		while ( true ) {
 			$line = $repl->read( 'wp> ' );
-			$line .= ';';
+			$line = rtrim( $line, ';' ) . ';';
 
 			if ( self::starts_with( $non_expressions, $line ) ) {
 				eval( $line );
