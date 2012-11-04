@@ -17,7 +17,7 @@ class Shell_Command extends \WP_CLI_Command {
 		$this->repl = self::create_repl();
 
 		$non_expressions = array(
-			'echo', 'global',
+			'echo', 'global', 'unset',
 			'while', 'for', 'foreach', 'if', 'switch',
 			'include', 'include\_once', 'require', 'require\_once'
 		);
