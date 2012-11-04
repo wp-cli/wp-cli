@@ -19,29 +19,33 @@ class Shell_Command extends \WP_CLI_Command {
 		\WP_CLI::line( 'Type "exit" to close session.' );
 
 		$non_expressions = array(
-			'echo', 'return', 'global',
+			'echo', 'global',
 			'while', 'for', 'foreach', 'if', 'switch',
 			'include', 'include\_once', 'require', 'require\_once'
 		);
 		$non_expressions = implode( '|', $non_expressions );
 
-		$pattern = "/^($non_expressions)[\(\s]+/";
-
 		while ( true ) {
 			$line = $repl->read( 'wp> ' );
-
-			if ( !preg_match( $pattern, $line ) )
-				$line = 'return ' . $line;
-
 			$line .= ';';
 
-			$_ = eval( $line );
+			if ( self::starts_with( $non_expressions, $line ) ) {
+				eval( $line );
+			} else {
+				if ( self::starts_with( 'return', $line ) )
+					$line = substr( $line, strlen( 'return' ) );
 
-			if ( false === $_ )
-				continue;
+				$line = '$_ = ' . $line;
 
-			\WP_CLI::line( var_export( $_, false ) );
+				eval( $line );
+
+				\WP_CLI::line( var_export( $_, false ) );
+			}
 		}
+	}
+
+	private static function starts_with( $tokens, $line ) {
+		return preg_match( "/^($tokens)[\(\s]+/", $line );
 	}
 }
 
