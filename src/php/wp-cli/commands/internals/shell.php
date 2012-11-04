@@ -6,19 +6,15 @@ namespace WP_CLI\Commands;
 
 class Shell_Command extends \WP_CLI_Command {
 
+	private $repl;
+
 	/**
 	 * Open an interactive shell environment.
 	 */
 	public function __invoke() {
-		$history_path = self::get_history_path();
-
-		if ( function_exists( 'readline' ) ) {
-			$repl = new REPL_Readline( $history_path );
-		} else {
-			$repl = new REPL_Basic( $history_path );
-		}
-
 		\WP_CLI::line( 'Type "exit" to close session.' );
+
+		$this->repl = self::create_repl();
 
 		$non_expressions = array(
 			'echo', 'global',
@@ -28,7 +24,7 @@ class Shell_Command extends \WP_CLI_Command {
 		$non_expressions = implode( '|', $non_expressions );
 
 		while ( true ) {
-			$line = $repl->read( 'wp> ' );
+			$line = $this->repl->read( 'wp> ' );
 			$line = rtrim( $line, ';' ) . ';';
 
 			if ( self::starts_with( $non_expressions, $line ) ) {
@@ -44,6 +40,18 @@ class Shell_Command extends \WP_CLI_Command {
 				\WP_CLI::line( var_export( $_, false ) );
 			}
 		}
+	}
+
+	private static function create_repl() {
+		$class = __NAMESPACE__ . '\\';
+
+		if ( function_exists( 'readline' ) ) {
+			$class .= 'REPL_Readline';
+		} else {
+			$class .= 'REPL_Basic';
+		}
+
+		return new $class( self::get_history_path() );
 	}
 
 	private static function starts_with( $tokens, $line ) {
