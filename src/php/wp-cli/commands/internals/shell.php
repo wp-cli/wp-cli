@@ -20,7 +20,7 @@ class Shell_Command extends \WP_CLI_Command {
 		$non_expressions = implode( '|', $non_expressions );
 
 		while ( true ) {
-			$line = self::prompt( 'wp> ', self::get_history_path() );
+			$line = self::prompt();
 
 			if ( '' === $line )
 				continue;
@@ -42,8 +42,22 @@ class Shell_Command extends \WP_CLI_Command {
 		}
 	}
 
-	private static function prompt( $prompt, $history_path ) {
-		$cmds = array(
+	private static function prompt() {
+		static $cmd;
+
+		if ( !$cmd ) {
+			$cmd = self::create_prompt_cmd( 'wp> ', self::get_history_path() );
+		}
+
+		$fp = popen( $cmd, 'r' );
+
+		$line = fgets( $fp );
+
+		return trim( $line );
+	}
+
+	private static function create_prompt_cmd( $prompt, $history_path ) {
+		$cmd = implode( '; ', array(
 			'set -f',
 			sprintf( 'history -r %s', escapeshellarg( $history_path ) ),
 			'LINE=""',
@@ -51,15 +65,9 @@ class Shell_Command extends \WP_CLI_Command {
 			'history -s "$LINE"',
 			sprintf( 'history -w %s', escapeshellarg( $history_path ) ),
 			'echo $LINE'
-		);
+		) );
 
-		$cmd = implode( '; ', $cmds );
-
-		$fp = popen( '/bin/bash -c ' . escapeshellarg( $cmd ), 'r' );
-
-		$line = fgets( $fp );
-
-		return trim( $line );
+		return '/bin/bash -c ' . escapeshellarg( $cmd );
 	}
 
 	private static function get_history_path() {
