@@ -12,13 +12,6 @@ class Shell_Command extends \WP_CLI_Command {
 	public function __invoke() {
 		\WP_CLI::line( 'Type "exit" to close session.' );
 
-		$non_expressions = array(
-			'echo', 'global', 'unset',
-			'while', 'for', 'foreach', 'if', 'switch',
-			'include', 'include\_once', 'require', 'require\_once'
-		);
-		$non_expressions = implode( '|', $non_expressions );
-
 		while ( true ) {
 			$line = self::prompt();
 
@@ -27,7 +20,7 @@ class Shell_Command extends \WP_CLI_Command {
 
 			$line = rtrim( $line, ';' ) . ';';
 
-			if ( self::starts_with( $non_expressions, $line ) ) {
+			if ( self::starts_with( self::non_expressions(), $line ) ) {
 				eval( $line );
 			} else {
 				if ( self::starts_with( 'return', $line ) )
@@ -40,6 +33,14 @@ class Shell_Command extends \WP_CLI_Command {
 				\WP_CLI::line( var_export( $_, false ) );
 			}
 		}
+	}
+
+	private static function non_expressions() {
+		return implode( '|', array(
+			'echo', 'global', 'unset',
+			'while', 'for', 'foreach', 'if', 'switch',
+			'include', 'include\_once', 'require', 'require\_once'
+		) );
 	}
 
 	private static function prompt() {
