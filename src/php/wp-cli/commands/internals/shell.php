@@ -10,10 +10,12 @@ class Shell_Command extends \WP_CLI_Command {
 	 * Open an interactive shell environment.
 	 */
 	public function __invoke() {
+		$history_path = self::get_history_path();
+
 		if ( function_exists( 'readline' ) ) {
-			$repl = new REPL_Readline;
+			$repl = new REPL_Readline( $history_path );
 		} else {
-			$repl = new REPL_Basic;
+			$repl = new REPL_Basic( $history_path );
 		}
 
 		\WP_CLI::line( 'Type "exit" to close session.' );
@@ -47,23 +49,23 @@ class Shell_Command extends \WP_CLI_Command {
 	private static function starts_with( $tokens, $line ) {
 		return preg_match( "/^($tokens)[\(\s]+/", $line );
 	}
-}
-
-
-class REPL_Readline {
-
-	function __construct() {
-		$this->hist_path = self::get_history_path();
-
-		readline_read_history( $this->hist_path );
-
-		register_shutdown_function( array( $this, 'save_history' ) );
-	}
 
 	private static function get_history_path() {
 		$data = getcwd() . get_current_user();
 
 		return sys_get_temp_dir() . '/wp-cli-history-' . md5( $data );
+	}
+}
+
+
+class REPL_Readline {
+
+	function __construct( $history_path ) {
+		$this->hist_path = $history_path;
+
+		readline_read_history( $this->hist_path );
+
+		register_shutdown_function( array( $this, 'save_history' ) );
 	}
 
 	function read( $prompt ) {
