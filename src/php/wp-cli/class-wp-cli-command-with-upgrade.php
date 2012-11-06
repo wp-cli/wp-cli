@@ -39,7 +39,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	private function status_all() {
 		$items = $this->get_all_items();
 
-		WP_CLI::line( "Installed {$this->item_type}s:" );
+		WP_CLI::line( count( $items ) . " installed {$this->item_type}s:" );
 
 		foreach ( $items as $file => $details ) {
 			if ( $details['update'] ) {
