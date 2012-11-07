@@ -294,6 +294,16 @@ class Export_Command extends WP_CLI_Command {
 		// grab a snapshot of post IDs, just in case it changes during the export
 		$all_the_post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} $join WHERE $where ORDER BY post_date ASC, post_parent ASC" );
 
+		// Make sure we're getting all of the attachments for these posts too
+		if ( 'all' != $args['post_type'] ) {
+			$all_post_ids_with_attachments = array();
+			while ( $post_ids = array_splice( $all_the_post_ids, 0, 100 ) ) {
+				$attachment_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_parent IN (". implode( ",", array_map( 'intval', $post_ids ) ) .")" );
+				$all_post_ids_with_attachments = array_merge( $all_post_ids_with_attachments, $post_ids, (array)$attachment_ids );
+			}
+			$all_the_post_ids = $all_post_ids_with_attachments;
+		}
+
 		// get the requested terms ready, empty unless posts filtered by category or all content
 		$cats = $tags = $terms = array();
 		if ( isset( $term ) && $term ) {
@@ -422,12 +432,6 @@ class Export_Command extends WP_CLI_Command {
 
 				$where = 'WHERE ID IN (' . join( ',', $next_posts ) . ')';
 				$posts = $wpdb->get_results( "SELECT * FROM {$wpdb->posts} $where" );
-
-				if ( 'all' != $args['post_type'] ) {
-					$attachment_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_parent IN (". implode( ",", array_map( 'intval', $post_ids ) ) .")" );
-					if ( is_array( $attachment_ids ) )
-						$posts = array_merge( $posts, array_map( 'get_post', $attachment_ids ) );
-				}
 
 				// Begin Loop
 				foreach ( $posts as $post ) {
