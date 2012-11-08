@@ -19,25 +19,26 @@ class Export_Command extends WP_CLI_Command {
 	/**
 	 * Export posts to a WXR file.
 	 *
-	 * @synopsis --dir=<dir> [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--author=<login>] [--category=<cat>] [--skip_comments]
+	 * @synopsis --dir=<dir> [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>]
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$defaults = array(
-			'dir'			=>		NULL,
-			'start_date'	=>		NULL,
-			'end_date'		=>		NULL,
-			'post_type'		=>		NULL,
-			'author'		=>		NULL,
-			'category'		=>		NULL,
-			'post_status'	=>		NULL,
-			'skip_comments'	=>		NULL,
+			'dir'				=>		NULL,
+			'start_date'		=>		NULL,
+			'end_date'			=>		NULL,
+			'post_type'			=>		NULL,
+			'author'			=>		NULL,
+			'category'			=>		NULL,
+			'post_status'		=>		NULL,
+			'skip_comments'		=>		NULL,
+			'file_item_count'	=>		1000,
 		);
 
 		$args = wp_parse_args( $assoc_args, $defaults );
 
 		$has_errors = false;
-
-		foreach( $defaults as $argument => $default_value ) {
+		
+		foreach( $args as $argument => $default_value ) {
 			if ( is_callable( array( &$this, 'check_' . $argument ) ) ) {
 				$result = call_user_func( array( &$this, 'check_' . $argument ), $args[$argument] );
 				if ( false === $result && false === $has_errors )
@@ -49,7 +50,7 @@ class Export_Command extends WP_CLI_Command {
 			exit(1);
 		}
 
-		$this->wxr_path = $assoc_args['dir'];
+		$this->wxr_path = trailingslashit( $assoc_args['dir'] );
 
 		WP_CLI::line( 'Starting export process...' );
 		WP_CLI::line();
@@ -91,7 +92,7 @@ class Export_Command extends WP_CLI_Command {
 			WP_CLI::warning( sprintf( "The end_date %s is invalid", $date ) );
 			return false;
 		}
-		$this->export_args['start_date'] = date( 'Y-m-d', $time );
+		$this->export_args['end_date'] = date( 'Y-m-d', $time );
 		return true;
 	}
 
@@ -104,7 +105,7 @@ class Export_Command extends WP_CLI_Command {
 			WP_CLI::warning( sprintf( 'The post type %s does not exists. Choose "all" or any of these existing post types instead: %s', $post_type, implode( ", ", $post_types ) ) );
 			return false;
 		}
-		$this->export_args['content'] = $post_type;
+		$this->export_args['post_type'] = $post_type;
 		return true;
 	}
 
@@ -155,7 +156,7 @@ class Export_Command extends WP_CLI_Command {
 
 		$stati = get_post_statuses();
 		if ( empty( $stati ) || is_wp_error( $stati ) ) {
-			WP_CLI::warning( sprintf( 'Could not find any post stati', $category ) );
+			WP_CLI::warning( 'Could not find any post stati' );
 			return false;
 		}
 
@@ -172,10 +173,20 @@ class Export_Command extends WP_CLI_Command {
 			return true;
 
 		if ( (int) $skip <> 0 && (int) $skip <> 1 ) {
-			WP_CLI::warning( sprintf( 'skip_comments needs to be 0 (no) or 1 (yes)', $category ) );
+			WP_CLI::warning( 'skip_comments needs to be 0 (no) or 1 (yes)' );
 			return false;
 		}
 		$this->export_args['skip_comments'] = $skip;
+		return true;
+	}
+
+	private function check_file_item_count( $file_item_count ) {
+
+		if ( ! is_numeric( $file_item_count ) ) {
+			WP_CLI::warning( 'File item count needs to be numeric' );
+			return false;
+		}
+		$this->export_args['file_item_count'] = $file_item_count;
 		return true;
 	}
 
@@ -193,7 +204,24 @@ class Export_Command extends WP_CLI_Command {
 		$wp_object_cache->stats = array();
 		$wp_object_cache->memcache_debug = array();
 		$wp_object_cache->cache = array();
-		$wp_object_cache->__remoteset(); // important
+		if ( method_exists( $wp_object_cache, '__remoteset' ) )
+			$wp_object_cache->__remoteset();
+	}
+
+	private function start_export() {
+		ob_start();
+	}
+
+	private function end_export() {
+		ob_end_clean();
+	}
+
+	private function flush_export( $file_path, $append = true ) {
+		$result = ob_get_clean();
+		if ( $append )
+			$append = FILE_APPEND;
+		file_put_contents( $file_path, $result, $append );
+		$this->start_export();
 	}
 
 	/**
@@ -203,18 +231,13 @@ class Export_Command extends WP_CLI_Command {
 	private function export_wp( $args = array() ) {
 		require_once ABSPATH . 'wp-admin/includes/export.php';
 
-		global $wpdb, $post;
-		// call export_wp as we need the functions defined in it.
-		$dummy_args = array( 'content' => 'i-do-not-exist' );
-		ob_start();
-		export_wp( $dummy_args );
-		ob_end_clean();
+		global $wpdb;
 
 		/**
 		 * This is mostly the original code of export_wp defined in wp-admin/includes/export.php
 		 */
-		$defaults = array( 'content' => 'all', 'author' => false, 'category' => false,
-			'start_date' => false, 'end_date' => false, 'status' => false, 'skip_comments' => false,
+		$defaults = array( 'post_type' => 'all', 'author' => false, 'category' => false,
+			'start_date' => false, 'end_date' => false, 'status' => false, 'skip_comments' => false, 'file_item_count' => 1000,
 		);
 		$args = wp_parse_args( $args, $defaults );
 
@@ -233,44 +256,53 @@ class Export_Command extends WP_CLI_Command {
 		}
 		$file_name_base = $sitename . 'wordpress.' . implode( ".", $append );
 
-		if ( 'all' != $args['content'] && post_type_exists( $args['content'] ) ) {
-			$ptype = get_post_type_object( $args['content'] );
+		if ( 'all' != $args['post_type'] && post_type_exists( $args['post_type'] ) ) {
+			$ptype = get_post_type_object( $args['post_type'] );
 			if ( ! $ptype->can_export )
-				$args['content'] = 'post';
+				$args['post_type'] = 'post';
 
-			$where = $wpdb->prepare( "{$wpdb->posts}.post_type = %s", $args['content'] );
+			$where = $wpdb->prepare( "{$wpdb->posts}.post_type = %s", $args['post_type'] );
 		} else {
 			$post_types = get_post_types( array( 'can_export' => true ) );
 			$esses = array_fill( 0, count( $post_types ), '%s' );
 			$where = $wpdb->prepare( "{$wpdb->posts}.post_type IN (" . implode( ',', $esses ) . ')', $post_types );
 		}
 
-		if ( $args['status'] && ( 'post' == $args['content'] || 'page' == $args['content'] ) )
+		if ( $args['status'] && ( 'post' == $args['post_type'] || 'page' == $args['post_type'] ) )
 			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_status = %s", $args['status'] );
 		else
 			$where .= " AND {$wpdb->posts}.post_status != 'auto-draft'";
 
 		$join = '';
-		if ( $args['category'] && 'post' == $args['content'] ) {
+		if ( $args['category'] && 'post' == $args['post_type'] ) {
 			if ( $term = term_exists( $args['category'], 'category' ) ) {
 				$join = "INNER JOIN {$wpdb->term_relationships} ON ({$wpdb->posts}.ID = {$wpdb->term_relationships}.object_id)";
 				$where .= $wpdb->prepare( " AND {$wpdb->term_relationships}.term_taxonomy_id = %d", $term['term_taxonomy_id'] );
 			}
 		}
 
-		if ( 'post' == $args['content'] || 'page' == $args['content'] ) {
-			if ( $args['author'] )
-				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_author = %d", $args['author'] );
+	
+		if ( $args['author'] )
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_author = %d", $args['author'] );
 
-			if ( $args['start_date'] )
-				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date >= %s", date( 'Y-m-d', strtotime( $args['start_date'] ) ) );
+		if ( $args['start_date'] )
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date >= %s", date( 'Y-m-d 00:00:00', strtotime( $args['start_date'] ) ) );
 
-			if ( $args['end_date'] )
-				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date < %s", date( 'Y-m-d', strtotime( '+1 month', strtotime( $args['end_date'] ) ) ) );
-		}
+		if ( $args['end_date'] )
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date <= %s", date( 'Y-m-d 23:59:59', strtotime( $args['end_date'] ) ) );
 
 		// grab a snapshot of post IDs, just in case it changes during the export
-		$post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} $join WHERE $where" );
+		$all_the_post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} $join WHERE $where ORDER BY post_date ASC, post_parent ASC" );
+
+		// Make sure we're getting all of the attachments for these posts too
+		if ( 'all' != $args['post_type'] ) {
+			$all_post_ids_with_attachments = array();
+			while ( $post_ids = array_splice( $all_the_post_ids, 0, 100 ) ) {
+				$attachment_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_parent IN (". implode( ",", array_map( 'intval', $post_ids ) ) .")" );
+				$all_post_ids_with_attachments = array_merge( $all_post_ids_with_attachments, $post_ids, (array)$attachment_ids );
+			}
+			$all_the_post_ids = $all_post_ids_with_attachments;
+		}
 
 		// get the requested terms ready, empty unless posts filtered by category or all content
 		$cats = $tags = $terms = array();
@@ -278,7 +310,7 @@ class Export_Command extends WP_CLI_Command {
 			$cat = get_term( $term['term_id'], 'category' );
 			$cats = array( $cat->term_id => $cat );
 			unset( $term, $cat );
-		} else if ( 'all' == $args['content'] ) {
+		} else if ( 'all' == $args['post_type'] ) {
 				$categories = (array) get_categories( array( 'get' => 'all' ) );
 				$tags = (array) get_tags( array( 'get' => 'all' ) );
 
@@ -304,16 +336,38 @@ class Export_Command extends WP_CLI_Command {
 				unset( $categories, $custom_taxonomies, $custom_terms );
 			}
 
+		// Load the functions available in wp-admin/includes/export.php
+		ob_start();
+		export_wp( array( 'content' => 'page', 'start_date' => '1971-01-01', 'end_date' => '1971-01-02' ) );
+		ob_end_clean();
 
-		WP_CLI::line( 'Exporting ' . count( $post_ids ) . ' items' );
+		WP_CLI::line( 'Exporting ' . count( $all_the_post_ids ) . ' items to be broken into ' . ceil( count( $all_the_post_ids ) / $args['file_item_count'] ) . ' files' );
 		WP_CLI::line( 'Exporting ' . count( $cats ) . ' cateogries' );
 		WP_CLI::line( 'Exporting ' . count( $tags ) . ' tags' );
 		WP_CLI::line( 'Exporting ' . count( $terms ) . ' terms' );
 		WP_CLI::line();
 
-		$progress = new \cli\progress\Bar( 'Exporting',  count( $post_ids ) );
+		$file_count = 1;
 
-		ob_start();
+		while ( $post_ids = array_splice( $all_the_post_ids, 0, $args['file_item_count'] ) ) {
+
+			$full_path = $this->wxr_path . $file_name_base . '.' . str_pad( $file_count, 3, '0', STR_PAD_LEFT ) . '.xml';
+
+			// Create the file if it doesn't exist
+			if ( ! file_exists( $full_path ) ) {
+				touch( $full_path );
+			}
+
+			if ( ! file_exists( $full_path ) ) {
+				WP_CLI::error( "Failed to create file " . $full_path );
+				exit;
+			} else {
+				WP_CLI::line( 'Writing to file ' . $full_path );
+			}
+
+			$progress = new \cli\progress\Bar( 'Exporting',  count( $post_ids ) );
+
+		$this->start_export();
 		echo '<?xml version="1.0" encoding="' . get_bloginfo( 'charset' ) . "\" ?>\n";
 
 ?>
@@ -364,12 +418,13 @@ class Export_Command extends WP_CLI_Command {
 <?php foreach ( $terms as $t ) : ?>
 	<wp:term><wp:term_id><?php echo $t->term_id ?></wp:term_id><wp:term_taxonomy><?php echo $t->taxonomy; ?></wp:term_taxonomy><wp:term_slug><?php echo $t->slug; ?></wp:term_slug><wp:term_parent><?php echo $t->parent ? $terms[$t->parent]->slug : ''; ?></wp:term_parent><?php wxr_term_name( $t ); ?><?php wxr_term_description( $t ); ?></wp:term>
 <?php endforeach; ?>
-<?php if ( 'all' == $args['content'] ) wxr_nav_menu_terms(); ?>
+<?php if ( 'all' == $args['post_type'] ) wxr_nav_menu_terms(); ?>
 
 	<?php do_action( 'rss2_head' ); ?>
+	<?php $this->flush_export( $full_path, false ); ?>
 
 <?php if ( $post_ids ) {
-			global $wp_query;
+			global $wp_query, $post;
 			$wp_query->in_the_loop = true; // Fake being in the loop.
 
 			// fetch 20 posts at a time rather than loading the entire table into memory
@@ -446,21 +501,19 @@ class Export_Command extends WP_CLI_Command {
 <?php endif; ?>
 	</item>
 <?php
+				$this->flush_export( $full_path );
 				}
 			}
 		} ?>
 </channel>
 </rss>
 <?php
-		$progress->finish();
-
-		$result = ob_get_clean();
-
-		$full_path = $this->wxr_path . $file_name_base . '.wxr';
-
-		if ( !file_exists( $full_path ) || is_writeable( $full_path ) ) {
-			WP_CLI::line( 'Writing to ' . $full_path );
-			file_put_contents( $full_path, $result );
+			$this->flush_export( $full_path );
+			$this->end_export();
+			$this->stop_the_insanity();
+			$progress->finish();
+			$file_count++;
 		}
+		WP_CLI::success( "All done with export" );
 	}
 }
