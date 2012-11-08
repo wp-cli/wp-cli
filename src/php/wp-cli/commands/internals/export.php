@@ -424,7 +424,7 @@ class Export_Command extends WP_CLI_Command {
 	<?php $this->flush_export( $full_path, false ); ?>
 
 <?php if ( $post_ids ) {
-			global $wp_query;
+			global $wp_query, $post;
 			$wp_query->in_the_loop = true; // Fake being in the loop.
 
 			// fetch 20 posts at a time rather than loading the entire table into memory
