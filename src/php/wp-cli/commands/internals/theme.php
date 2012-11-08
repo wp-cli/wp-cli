@@ -81,7 +81,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/**
-	 * Get a theme path.
+	 * Get the path to a theme or to the theme directory.
 	 *
 	 * @synopsis [<theme>] [--dir]
 	 */
@@ -114,7 +114,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 		// Check to see if we should update, rather than install.
 		if ( $this->has_update( $slug ) ) {
 			WP_CLI::line( sprintf( 'Updating %s (%s)', $api->name, $api->version ) );
-			$result = WP_CLI::get_upgrader( $this->upgrader )->upgrade( $slug );
+			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $slug );
 
 			/**
 			 *  Else, if there's no update, it's either not installed,
@@ -122,7 +122,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 			 */
 		} else if ( !is_readable( $this->get_stylesheet_path( $slug ) ) ) {
 			WP_CLI::line( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
-			$result = WP_CLI::get_upgrader( $this->upgrader )->install( $api->download_link );
+			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->install( $api->download_link );
 		} else {
 			WP_CLI::error( 'Theme already installed and up to date.' );
 		}
@@ -137,7 +137,12 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	protected function get_item_list() {
 		$items = array();
 
-		foreach ( get_themes() as $title => $details ) {
+		if( function_exists( 'wp_get_themes' ) )
+			$themes = wp_get_themes();
+		else
+			$themes = get_themes();
+
+		foreach ( $themes as $details ) {
 			$file = $this->get_stylesheet_path( $details['Stylesheet'] );
 
 			$items[ $file ] = array(
@@ -152,7 +157,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/**
-	 * Install a theme from wordpress.org or from a zip file.
+	 * Install a theme.
 	 *
 	 * @synopsis <theme|zip> [--version=<version>] [--activate]
 	 */
@@ -173,6 +178,7 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	 * Update all themes.
 	 *
 	 * @subcommand update-all
+	 * @synopsis [--dry-run]
 	 */
 	function update_all( $args, $assoc_args ) {
 		parent::update_all( $args, $assoc_args );

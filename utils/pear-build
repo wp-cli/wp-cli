@@ -9,7 +9,7 @@ mkdir -p src/www
 
 # temporarily move the .git dir, because phing is stupid
 git_dir=src/php/php-cli-tools/.git
-if [ -d $git_dir ]; then
+if [ -f $git_dir ]; then
 	mv $git_dir /tmp/php-cli-tools-git
 fi
 

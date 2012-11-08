@@ -1,10 +1,3 @@
-wp-user-list(1) -- List WordPress users.
-====
-
-## SYNOPSIS
-
-`wp user list` [--role=<role>]
-
 ## OPTIONS
 
 * `--role`=<role>:

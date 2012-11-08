@@ -10,6 +10,9 @@ WP_CLI::add_command( 'home', new Home_Command );
  */
 class Home_Command extends WP_CLI_Command {
 
+	/**
+	 * Opens the wp-cli homepage in your browser.
+	 */
 	function __invoke() {
 		// The url for the wp-cli repository
 		$repository_url = 'https://github.com/wp-cli/wp-cli';

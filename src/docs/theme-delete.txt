@@ -1,10 +1,3 @@
-wp-theme-delete(1) -- Delete a theme.
-====
-
-## SYNOPSIS
-
-`wp theme delete` <theme>
-
 ## OPTIONS
 
 * <theme>:

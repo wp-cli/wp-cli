@@ -1,6 +1,0 @@
-wp-core-update-db(1) -- Update the WordPress database.
-====
-
-## SYNOPSIS
-
-`wp core update-db`

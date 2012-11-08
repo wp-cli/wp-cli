@@ -1,5 +1,8 @@
 <?php
 
+use \WP_CLI\Dispatcher;
+use \WP_CLI\Utils;
+
 /**
  * Wrapper class for WP-CLI
  *
@@ -8,20 +11,35 @@
 class WP_CLI {
 
 	private static $commands = array();
+	private static $man_dirs = array();
+	private static $arguments, $assoc_args, $assoc_special;
 
 	/**
 	 * Add a command to the wp-cli list of commands
 	 *
 	 * @param string $name The name of the command that will be used in the cli
-	 * @param string $class The class to manage the command
+	 * @param string|object $implementation The command implementation
 	 */
-	public function add_command( $name, $class ) {
-		if ( is_string( $class ) )
-			$command = new \WP_CLI\Dispatcher\CompositeCommand( $name, $class );
+	static function add_command( $name, $implementation ) {
+		if ( is_string( $implementation ) )
+			$command = new Dispatcher\CompositeCommand( $name, $implementation );
 		else
-			$command = new \WP_CLI\Dispatcher\SingleCommand( $name, $class );
+			$command = new Dispatcher\SingleCommand( $name, $implementation );
 
 		self::$commands[ $name ] = $command;
+	}
+
+	static function add_man_dir( $dest_dir, $src_dir ) {
+		$dest_dir = realpath( $dest_dir ) . '/';
+
+		if ( $src_dir )
+			$src_dir = realpath( $src_dir ) . '/';
+
+		self::$man_dirs[ $dest_dir ] = $src_dir;
+	}
+
+	static function get_man_dirs() {
+		return self::$man_dirs;
 	}
 
 	/**
@@ -51,7 +69,7 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function error( $message, $label = 'Error' ) {
-		if ( !WP_CLI_AUTOCOMPLETE ) {
+		if ( !isset( self::$assoc_special['completions'] ) ) {
 			\cli\err( '%R' . $label . ': %n' . self::error_to_string( $message ) );
 		}
 
@@ -78,6 +96,20 @@ class WP_CLI {
 	static function warning( $message, $label = 'Warning' ) {
 		if ( WP_CLI_QUIET ) return;
 		\cli\err( '%C' . $label . ': %n' . self::error_to_string( $message ) );
+	}
+
+	/**
+	 * Ask for confirmation before running a destructive operation.
+	 */
+	static function confirm( $question, $assoc_args ) {
+		if ( !isset( $assoc_args['yes'] ) ) {
+			WP_CLI::out( $question . " [y/n] " );
+
+			$answer = trim( fgets( STDIN ) );
+
+			if ( 'y' != $answer )
+				exit;
+		}
 	}
 
 	/**
@@ -130,29 +162,6 @@ class WP_CLI {
 	}
 
 	/**
-	 * Splits a string into positional and associative arguments.
-	 *
-	 * @param string
-	 * @return array
-	 */
-	static function parse_args( $arguments ) {
-		$regular_args = array();
-		$assoc_args = array();
-
-		foreach ( $arguments as $arg ) {
-			if ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
-				$assoc_args[ $matches[1] ] = true;
-			} elseif ( preg_match( '|^--([^=]+)=(.+)|', $arg, $matches ) ) {
-				$assoc_args[ $matches[1] ] = $matches[2];
-			} else {
-				$regular_args[] = $arg;
-			}
-		}
-
-		return array( $regular_args, $assoc_args );
-	}
-
-	/**
 	 * Composes positional and associative arguments into a string.
 	 *
 	 * @param array
@@ -169,18 +178,6 @@ class WP_CLI {
 		}
 
 		return $str;
-	}
-
-	static function get_numeric_arg( $args, $index, $name ) {
-		if ( ! isset( $args[$index] ) ) {
-			WP_CLI::error( "$name required" );
-		}
-
-		if ( ! is_numeric( $args[$index] ) ) {
-			WP_CLI::error( "$name must be numeric" );
-		}
-
-		return $args[$index];
 	}
 
 	/**
@@ -200,89 +197,6 @@ class WP_CLI {
 		return $r;
 	}
 
-	/**
-	 * Sets the appropriate $_SERVER keys based on a given string
-	 *
-	 * @param string $url The URL
-	 */
-	static function set_url_params( $url ) {
-	    $url_parts = parse_url( $url );
-
-	    if ( !isset( $url_parts['scheme'] ) ) {
-	        $url_parts = parse_url( 'http://' . $url );
-	    }
-
-		$_SERVER['HTTP_HOST'] = isset($url_parts['host']) ? $url_parts['host'] : '';
-		$_SERVER['REQUEST_URI'] = (isset($url_parts['path']) ? $url_parts['path'] : '') . (isset($url_parts['query']) ? '?' . $url_parts['query'] : '');
-		$_SERVER['REQUEST_URL'] = isset($url_parts['path']) ? $url_parts['path'] : '';
-		$_SERVER['QUERY_STRING'] = isset($url_parts['query']) ? $url_parts['query'] : '';
-	}
-
-	static function get_upgrader( $class ) {
-		if ( !class_exists( 'WP_Upgrader' ) )
-			require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-
-		require WP_CLI_ROOT . '/class-cli-upgrader-skin.php';
-
-		return new $class( new CLI_Upgrader_Skin );
-	}
-
-	static function _set_url( &$assoc_args ) {
-		if ( isset( $assoc_args['url'] ) ) {
-			$blog = $assoc_args['url'];
-			/* unset( $assoc_args['url'] ); */
-		} elseif ( isset( $assoc_args['blog'] ) ) {
-			$blog = $assoc_args['blog'];
-			unset( $assoc_args['blog'] );
-			if ( true === $blog ) {
-				WP_CLI::line( 'usage: wp --blog=example.com' );
-			}
-		} elseif ( is_readable( WP_ROOT . 'wp-cli-blog' ) ) {
-			$blog = trim( file_get_contents( WP_ROOT . 'wp-cli-blog' ) );
-		} elseif ( $wp_config_path = self::locate_wp_config() ) {
-			// Try to find the blog parameter in the wp-config file
-			$wp_config_file = file_get_contents( $wp_config_path );
-			$hit = array();
-			if ( preg_match_all( "#.*define\s*\(\s*(['|\"]{1})(.+)(['|\"]{1})\s*,\s*(['|\"]{1})(.+)(['|\"]{1})\s*\)\s*;#iU", $wp_config_file, $matches ) ) {
-				foreach ( $matches[2] as $def_key => $def_name ) {
-					if ( 'DOMAIN_CURRENT_SITE' == $def_name )
-						$hit['domain'] = $matches[5][$def_key];
-					if ( 'PATH_CURRENT_SITE' == $def_name )
-						$hit['path'] = $matches[5][$def_key];
-				}
-			}
-
-			if ( !empty( $hit ) && isset( $hit['domain'] ) )
-				$blog = $hit['domain'];
-			if ( !empty( $hit ) && isset( $hit['path'] ) )
-				$blog .= $hit['path'];
-		}
-
-		if ( isset( $blog ) ) {
-			WP_CLI::set_url_params( $blog );
-		}
-	}
-
-	// Loads wp-config.php without loading the rest of WP
-	static function load_wp_config() {
-		define( 'ABSPATH', dirname(__FILE__) . '/' );
-
-		if ( $wp_config_path = self::locate_wp_config() )
-			require self::locate_wp_config();
-		else
-			WP_CLI::error( 'No wp-config.php file.' );
-	}
-
-	static function locate_wp_config() {
-		if ( file_exists( WP_ROOT . 'wp-config.php' ) ) {
-			return WP_ROOT . 'wp-config.php';
-		} elseif ( file_exists( WP_ROOT . '/../wp-config.php' ) && ! file_exists( WP_ROOT . '/../wp-settings.php' ) ) {
-			return WP_ROOT . '/../wp-config.php';
-		} else {
-			return false;
-		}
-	}
-
 	static function load_all_commands() {
 		foreach ( array( 'internals', 'community' ) as $dir ) {
 			foreach ( glob( WP_CLI_ROOT . "/commands/$dir/*.php" ) as $filename ) {
@@ -298,29 +212,8 @@ class WP_CLI {
 		return self::$commands;
 	}
 
-	static function run_command( $arguments, $assoc_args ) {
-		if ( empty( $arguments ) ) {
-			$command = 'help';
-		} else {
-			$command = array_shift( $arguments );
-
-			$aliases = array(
-				'sql' => 'db'
-			);
-
-			if ( isset( $aliases[ $command ] ) )
-				$command = $aliases[ $command ];
-		}
-
-		define( 'WP_CLI_COMMAND', $command );
-
-		$command = self::load_command( $command );
-
-		$command->invoke( $arguments, $assoc_args );
-	}
-
 	static function load_command( $command ) {
-		if ( !isset( WP_CLI::$commands[$command] ) ) {
+		if ( !isset( self::$commands[$command] ) ) {
 			foreach ( array( 'internals', 'community' ) as $dir ) {
 				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
 
@@ -331,12 +224,134 @@ class WP_CLI {
 			}
 		}
 
-		if ( !isset( WP_CLI::$commands[$command] ) ) {
-			WP_CLI::error( "'$command' is not a registered wp command. See 'wp help'." );
+		if ( !isset( self::$commands[$command] ) ) {
+			return false;
+		}
+
+		return self::$commands[$command];
+	}
+
+	static function before_wp_load() {
+		self::add_man_dir(
+			WP_CLI_ROOT . "../../../man/",
+			WP_CLI_ROOT . "../../docs/"
+		);
+
+		$r = Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
+
+		list( self::$arguments, self::$assoc_args ) = $r;
+
+		self::$assoc_special = Utils\split_assoc( self::$assoc_args, array(
+			'path', 'url', 'blog', 'user', 'require',
+			'quiet', 'completions', 'man', 'syn-list'
+		) );
+
+		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
+
+		// Handle --version parameter
+		if ( isset( self::$assoc_args['version'] ) && empty( self::$arguments ) ) {
+			self::line( 'wp-cli ' . WP_CLI_VERSION );
 			exit;
 		}
 
-		return WP_CLI::$commands[$command];
+		$_SERVER['DOCUMENT_ROOT'] = getcwd();
+
+		// Handle --path
+		Utils\set_wp_root( self::$assoc_special );
+
+		// Handle --url and --blog parameters
+		Utils\set_url( self::$assoc_special );
+
+		if ( array( 'core', 'download' ) == self::$arguments ) {
+			self::run_command();
+			exit;
+		}
+
+		if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
+			WP_CLI::error( 'This does not seem to be a WordPress install. Pass --path=`path/to/wordpress` or run `wp core download`.' );
+		}
+
+		if ( array( 'core', 'config' ) == self::$arguments ) {
+			self::run_command();
+			exit;
+		}
+
+		// The db commands don't need any WP files
+		if ( array( 'db' ) == array_slice( self::$arguments, 0, 1 ) ) {
+			Utils\load_wp_config();
+			self::run_command();
+			exit;
+		}
+
+		// Set installer flag before loading any WP files
+		if ( array( 'core', 'install' ) == self::$arguments ) {
+			define( 'WP_INSTALLING', true );
+		}
+	}
+
+	static function get_assoc_special() {
+		return self::$assoc_special;
+	}
+
+	static function after_wp_load() {
+		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
+
+		Utils\set_user( self::$assoc_special );
+
+		if ( !defined( 'WP_INSTALLING' ) && isset( self::$assoc_special['url'] ) )
+			Utils\set_wp_query();
+
+		if ( isset( self::$assoc_special['require'] ) )
+			require self::$assoc_special['require'];
+
+		if ( isset( self::$assoc_special['man'] ) ) {
+			self::generate_man( self::$arguments );
+			exit;
+		}
+
+		// Handle --syn-list parameter
+		if ( isset( self::$assoc_special['syn-list'] ) ) {
+			foreach ( self::load_all_commands() as $command ) {
+				if ( $command instanceof \WP_CLI\Dispatcher\Composite ) {
+					foreach ( $command->get_subcommands() as $subcommand )
+						$subcommand->show_usage( '' );
+				} else {
+					$command->show_usage( '' );
+				}
+			}
+			exit;
+		}
+
+		if ( isset( self::$assoc_special['completions'] ) ) {
+			self::render_automcomplete();
+			exit;
+		}
+
+		self::run_command();
+	}
+
+	private static function run_command() {
+		$root = new Dispatcher\RootCommand;
+
+		$root->invoke( self::$arguments, self::$assoc_args );
+	}
+
+	private static function generate_man( $args ) {
+		$command = Dispatcher\traverse( $args );
+		if ( !$command )
+			WP_CLI::error( sprintf( "'%s' command not found." ) );
+
+		foreach ( self::$man_dirs as $dest_dir => $src_dir ) {
+			\WP_CLI\Man\generate( $src_dir, $dest_dir, $command );
+		}
+	}
+
+	private static function render_automcomplete() {
+		foreach ( self::load_all_commands() as $name => $command ) {
+			$subcommands = $command->get_subcommands();
+
+			self::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
+		}
 	}
 
 	// back-compat

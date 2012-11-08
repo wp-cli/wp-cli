@@ -1,10 +1,3 @@
-wp-comment-trash(1) -- Trash a comment.
-====
-
-## SYNOPSIS
-
-`wp comment trash` <ID>
-
 ## OPTIONS
 
 * `<ID>`:

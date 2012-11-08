@@ -11,7 +11,7 @@ WP_CLI::add_command('core', 'Core_Command');
 class Core_Command extends WP_CLI_Command {
 
 	/**
-	 * Download the core files from wordpress.org
+	 * Download core WordPress files.
 	 *
 	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>]
 	 */
@@ -63,7 +63,20 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Run wp_install. Assumes that wp-config.php is already in place.
+	 * Determine if the WordPress tables are installed.
+	 *
+	 * @subcommand is-installed
+	 */
+	public function is_installed() {
+		if ( is_blog_installed() ) {
+			exit( 0 );
+		} else {
+			exit( 1 );
+		}
+	}
+
+	/**
+	 * Create the WordPress tables in the database.
 	 *
 	 * @synopsis --url=<url> --title=<site-title> [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
 	 */
@@ -96,7 +109,7 @@ class Core_Command extends WP_CLI_Command {
 	 * Transform a single-site install into a multi-site install.
 	 *
 	 * @subcommand install-network
-	 * @synopsis --title=<network-title> [--base_path=/]
+	 * @synopsis --title=<network-title> [--base_path=<url-path>]
 	 */
 	public function install_network( $args, $assoc_args ) {
 		if ( is_multisite() )
@@ -137,7 +150,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 <?php
 		$ms_config = ob_get_clean();
 
-		$wp_config_path = WP_CLI::locate_wp_config();
+		$wp_config_path = WP_CLI\Utils\locate_wp_config();
 
 		$token = "/* That's all, stop editing!";
 
@@ -248,7 +261,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
-		$result = WP_CLI::get_upgrader( $upgrader )->upgrade( $update );
+		$result = WP_CLI\Utils\get_upgrader( $upgrader )->upgrade( $update );
 
 		if ( is_wp_error($result) ) {
 			$msg = WP_CLI::error_to_string( $result );

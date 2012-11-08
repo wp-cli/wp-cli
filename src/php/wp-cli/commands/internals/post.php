@@ -11,12 +11,13 @@ WP_CLI::add_command( 'post', 'Post_Command' );
 class Post_Command extends WP_CLI_Command {
 
 	/**
-	 * Create a post
+	 * Create a post.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @synopsis --<field>=<value> [--porcelain]
 	 */
-	public function create( $args, $assoc_args ) {
+	public function create( $_, $assoc_args ) {
+		unset( $assoc_args['ID'] );
+
 		$post_id = wp_insert_post( $assoc_args, true );
 
 		if ( is_wp_error( $post_id ) ) {
@@ -30,13 +31,12 @@ class Post_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a post
+	 * Update a post.
 	 *
-	 * @param array $args
-	 * @param array $assoc_args
+	 * @synopsis <id> --<field>=<value>
 	 */
 	public function update( $args, $assoc_args ) {
-		$post_id = WP_CLI::get_numeric_arg( $args, 0, "Post ID" );
+		list( $post_id ) = $args;
 
 		if ( empty( $assoc_args ) ) {
 			WP_CLI::error( "Need some fields to update." );
@@ -60,7 +60,7 @@ class Post_Command extends WP_CLI_Command {
 		$action = isset( $assoc_args['force'] ) ? 'Deleted' : 'Trashed';
 
 		foreach ( $post_ids as $post_id ) {
-			if ( wp_delete_post( $post_id, $force ) ) {
+			if ( wp_delete_post( $post_id, $assoc_args['force'] ) ) {
 				WP_CLI::success( "{$action} post $post_id." );
 			} else {
 				WP_CLI::error( "Failed deleting post $post_id." );
@@ -72,6 +72,7 @@ class Post_Command extends WP_CLI_Command {
 	 * Get a list of posts.
 	 *
 	 * @subcommand list
+	 * @synopsis [--<field>=<value>] [--ids]
 	 */
 	public function _list( $_, $assoc_args ) {
 		$query_args = array(

@@ -110,7 +110,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/**
-	 * Get a plugin path.
+	 * Get the path to a plugin or to the plugin directory.
 	 *
 	 * @synopsis [<plugin>] [--dir]
 	 */
@@ -163,7 +163,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		switch ( $status['status'] ) {
 		case 'update_available':
 		case 'install':
-			$upgrader = WP_CLI::get_upgrader( $this->upgrader );
+			$upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
 			$result = $upgrader->install( $api->download_link );
 
 			if ( $result && isset( $assoc_args['activate'] ) ) {
@@ -199,6 +199,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	 * Update all plugins.
 	 *
 	 * @subcommand update-all
+	 * @synopsis [--dry-run]
 	 */
 	function update_all( $args, $assoc_args ) {
 		parent::update_all( $args, $assoc_args );
@@ -220,7 +221,7 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 	}
 
 	/**
-	 * Install a plugin from wordpress.org or from a zip file.
+	 * Install a plugin.
 	 *
 	 * @synopsis <plugin|zip> [--version=<version>] [--activate]
 	 */

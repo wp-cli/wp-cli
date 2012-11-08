@@ -60,7 +60,7 @@ class User_Command extends WP_CLI_Command {
 	public function delete( $args, $assoc_args ) {
 		global $blog_id;
 
-		$user_id = WP_CLI::get_numeric_arg( $args, 0, "User ID" );
+		list( $user_id ) = $args;
 
 		$defaults = array( 'reassign' => NULL );
 
@@ -124,9 +124,11 @@ class User_Command extends WP_CLI_Command {
 
 	/**
 	 * Update a user.
+	 *
+	 * @synopsis <id> --<field>=<value>
 	 */
 	public function update( $args, $assoc_args ) {
-		$user_id = WP_CLI::get_numeric_arg( $args, 0, "User ID" );
+		list( $user_id ) = $args;
 
 		if ( empty( $assoc_args ) ) {
 			WP_CLI::error( "Need some fields to update." );
@@ -143,9 +145,8 @@ class User_Command extends WP_CLI_Command {
 		}
 	}
 
-
 	/**
-	 * Generate users
+	 * Generate users.
 	 *
 	 * @synopsis [--count=100] [--role=<role>]
 	 */

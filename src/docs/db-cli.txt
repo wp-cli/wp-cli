@@ -1,6 +1,0 @@
-wp-db-cli(1) -- Open a SQL command-line interface to the WordPress database.
-====
-
-## SYNOPSIS
-
-`wp db cli`

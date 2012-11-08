@@ -39,7 +39,10 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	private function status_all() {
 		$items = $this->get_all_items();
 
-		WP_CLI::line( "Installed {$this->item_type}s:" );
+		$n = count( $items );
+
+		// Not interested in the translation, just the number logic
+		WP_CLI::line( sprintf( _n( "%d installed {$this->item_type}:", "%d installed {$this->item_type}s:", $n ), $n ) );
 
 		foreach ( $items as $file => $details ) {
 			if ( $details['update'] ) {
@@ -103,7 +106,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		$slug = stripslashes( $args[0] );
 
 		if ( '.zip' == substr( $slug, -4 ) ) {
-			$file_upgrader = WP_CLI::get_upgrader( $this->upgrader );
+			$file_upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
 
 			if ( $file_upgrader->install( $slug ) ) {
 				$slug = $file_upgrader->result['destination_name'];
@@ -125,7 +128,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
 		list( $file, $name ) = $this->parse_name( $args );
 
-		WP_CLI::get_upgrader( $this->upgrader )->upgrade( $file );
+		WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $file );
 	}
 
 	function update_all( $args, $assoc_args ) {
@@ -135,38 +138,36 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 			'update' => true
 		) );
 
-		if ( empty( $items_to_update ) ) {
-			WP_CLI::line( "No {$this->item_type} updates available." );
-			return;
-		}
-
-		// If --all, UPDATE ALL THE THINGS
-		if ( isset( $assoc_args['all'] ) ) {
-			$upgrader = WP_CLI::get_upgrader( $this->upgrader );
-			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
-
-			// Let the user know the results.
-			$num_to_update = count( $items_to_update );
-			$num_updated = count( array_filter( $result ) );
-
-			$line = "Updated $num_updated/$num_to_update {$this->item_type}s.";
-			if ( $num_to_update == $num_updated ) {
-				WP_CLI::success( $line );
-			} else if ( $num_updated > 0 ) {
-				WP_CLI::warning( $line );
-			} else {
-				WP_CLI::error( $line );
-			}
-
-		// Else list items that require updates
-		} else {
+		if ( isset( $assoc_args['dry-run'] ) ) {
 			$item_list = "Available {$this->item_type} updates:";
 
-			foreach ( $items_to_update as $file => $details ) {
-				$item_list .= "\n\t%y" . $details['name'] . "%n";
+			if ( empty( $items_to_update ) ) {
+				$item_list .= " none";
+			} else {
+				foreach ( $items_to_update as $file => $details ) {
+					$item_list .= "\n\t%y" . $details['name'] . "%n";
+				}
 			}
 
 			WP_CLI::line( $item_list );
+			return;
+		}
+
+		$upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
+		$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
+
+		// Let the user know the results.
+		$num_to_update = count( $items_to_update );
+		$num_updated = count( array_filter( $result ) );
+
+		$line = "Updated $num_updated/$num_to_update {$this->item_type}s.";
+
+		if ( $num_to_update == $num_updated ) {
+			WP_CLI::success( $line );
+		} else if ( $num_updated > 0 ) {
+			WP_CLI::warning( $line );
+		} else {
+			WP_CLI::error( $line );
 		}
 	}
 

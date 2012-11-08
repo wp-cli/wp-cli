@@ -4,10 +4,10 @@
 .TH "WP\-CORE\-INSTALL\-NETWORK" "1" "October 2012" "" "WP-CLI"
 .
 .SH "NAME"
-\fBwp\-core\-install\-network\fR \- Transform a single\-site install into a
+\fBwp\-core\-install\-network\fR \- Transform a single\-site install into a multi\-site install\.
 .
 .SH "SYNOPSIS"
-\fBwp core install\-network\fR \-\-title=\fInetwork\-title\fR [\-\-base_path=/]
+\fBwp core install\-network\fR \-\-title=\fInetwork\-title\fR [\-\-base_path=\fIurl\-path\fR]
 .
 .SH "OPTIONS"
 .
@@ -18,8 +18,8 @@
 The title of the new network\.
 .
 .TP
-\fB\-\-base_path\fR=\fIpath\fR:
+\fB\-\-base_path\fR=\fIurl\-path\fR:
 .
 .IP
-Base path after the domain name that each site url will start with\.
+Base path after the domain name that each site url will start with\. Default: \'/\'
 
