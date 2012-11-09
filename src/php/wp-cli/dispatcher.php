@@ -78,10 +78,11 @@ EOB
 			exit;
 		}
 
+		$cmd_name = $arguments[0];
 		$command = $this->find_subcommand( $arguments );
 
 		if ( !$command )
-			\WP_CLI::error( sprintf( "'%s' is not a registered wp command. See 'wp help'.", $arguments[0] ) );
+			\WP_CLI::error( sprintf( "'%s' is not a registered wp command. See 'wp help'.", $cmd_name ) );
 
 		$command->invoke( $arguments, $assoc_args );
 	}
