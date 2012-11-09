@@ -7,7 +7,7 @@
 \fBwp\-export\fR \- Export posts to a WXR file\.
 .
 .SH "SYNOPSIS"
-\fBwp export\fR \-\-dir=\fIdir\fR [\-\-start_date=\fIdate\fR] [\-\-end_date=\fIdate\fR] [\-\-post_type=\fIptype\fR] [\-\-post_status=\fIstatus\fR] [\-\-author=\fIlogin\fR] [\-\-category=\fIcat\fR] [\-\-skip_comments] [\-\-file_item_count=\fIcount\fR]
+\fBwp export\fR [\-\-dir=\fIdir\fR] [\-\-start_date=\fIdate\fR] [\-\-end_date=\fIdate\fR] [\-\-post_type=\fIptype\fR] [\-\-post_status=\fIstatus\fR] [\-\-author=\fIlogin\fR] [\-\-category=\fIcat\fR] [\-\-skip_comments] [\-\-file_item_count=\fIcount\fR]
 .
 .SH "OPTIONS"
 .
@@ -15,7 +15,7 @@
 \fB\-\-dir\fR=\fIdirname\fR:
 .
 .IP
-Full Path to directory where WXR export files should be stored\.
+Full path to directory where WXR export files should be stored\. Defaults to current working directory\.
 .
 .TP
 \fB\-\-skip_comments\fR:
@@ -27,7 +27,7 @@ Don\'t export comments\.
 \fB\-\-file_item_count\fR=\fIcount\fR:
 .
 .IP
-Break export into files with N posts
+Break export into files with N posts\.
 .
 .SH "FILTERS"
 .
@@ -35,13 +35,13 @@ Break export into files with N posts
 \fB\-\-start_date\fR=\fIdate\fR:
 .
 .IP
-Export only posts newer than this date in format YYYY\-MM\-DD\.
+Export only posts newer than this date, in format YYYY\-MM\-DD\.
 .
 .TP
 \fB\-\-end_date\fR=\fIdate\fR:
 .
 .IP
-Export only posts older than this date in format YYYY\-MM\-DD\.
+Export only posts older than this date, in format YYYY\-MM\-DD\.
 .
 .TP
 \fB\-\-post_type\fR=\fIpost_type\fR:
