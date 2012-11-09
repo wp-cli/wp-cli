@@ -2,7 +2,7 @@
 
 * `--dir`=<dirname>:
 
-	Full Path to directory where WXR export files should be stored.
+	Full Path to directory where WXR export files should be stored. Defaults to current working directory
 
 * `--skip_comments`:
 
