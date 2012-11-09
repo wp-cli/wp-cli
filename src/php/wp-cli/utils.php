@@ -44,6 +44,14 @@ function split_assoc( &$assoc_args, $special_keys ) {
 	return $assoc_special;
 }
 
+function set_wp_root( $assoc_args ) {
+	if ( !empty( $assoc_args['path'] ) ) {
+		define( 'WP_ROOT', rtrim( $assoc_args['path'], '/' ) . '/' );
+	} else {
+		define( 'WP_ROOT', getcwd() . '/' );
+	}
+}
+
 function set_url( $assoc_args ) {
 	if ( isset( $assoc_args['url'] ) ) {
 		$blog = $assoc_args['url'];
@@ -90,10 +98,14 @@ function set_url_params( $url ) {
 		$url_parts = parse_url( 'http://' . $url );
 	}
 
-	$_SERVER['HTTP_HOST'] = isset($url_parts['host']) ? $url_parts['host'] : '';
-	$_SERVER['REQUEST_URI'] = (isset($url_parts['path']) ? $url_parts['path'] : '') . (isset($url_parts['query']) ? '?' . $url_parts['query'] : '');
-	$_SERVER['REQUEST_URL'] = isset($url_parts['path']) ? $url_parts['path'] : '';
-	$_SERVER['QUERY_STRING'] = isset($url_parts['query']) ? $url_parts['query'] : '';
+	$f = function( $key ) use ( $url_parts ) {
+		return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
+	};
+
+	$_SERVER['HTTP_HOST'] = $f('host');
+	$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
+	$_SERVER['REQUEST_URL'] = $f('path');
+	$_SERVER['QUERY_STRING'] = $f('query');
 }
 
 function locate_wp_config() {

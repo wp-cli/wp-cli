@@ -10,50 +10,65 @@ class Shell_Command extends \WP_CLI_Command {
 	 * Open an interactive shell environment.
 	 */
 	public function __invoke() {
-		if ( function_exists( 'readline' ) ) {
-			$repl = new REPL_Readline;
-		} else {
-			$repl = new REPL_Basic;
-		}
-
 		\WP_CLI::line( 'Type "exit" to close session.' );
 
-		$non_expressions = array(
-			'echo', 'return', 'global',
-			'while', 'for', 'foreach', 'if', 'switch',
-			'include', 'include\_once', 'require', 'require\_once'
-		);
-		$non_expressions = implode( '|', $non_expressions );
-
-		$pattern = "/^($non_expressions)[\(\s]+/";
-
 		while ( true ) {
-			$line = $repl->read( 'wp> ' );
+			$line = self::prompt();
 
-			if ( !preg_match( $pattern, $line ) )
-				$line = 'return ' . $line;
-
-			$line .= ';';
-
-			$_ = eval( $line );
-
-			if ( false === $_ )
+			if ( '' === $line )
 				continue;
 
-			\WP_CLI::line( var_export( $_, false ) );
+			$line = rtrim( $line, ';' ) . ';';
+
+			if ( self::starts_with( self::non_expressions(), $line ) ) {
+				eval( $line );
+			} else {
+				if ( self::starts_with( 'return', $line ) )
+					$line = substr( $line, strlen( 'return' ) );
+
+				$line = '$_ = ' . $line;
+
+				eval( $line );
+
+				\WP_CLI::line( var_export( $_, false ) );
+			}
 		}
 	}
-}
 
+	private static function non_expressions() {
+		return implode( '|', array(
+			'echo', 'global', 'unset',
+			'while', 'for', 'foreach', 'if', 'switch',
+			'include', 'include\_once', 'require', 'require\_once'
+		) );
+	}
 
-class REPL_Readline {
+	private static function prompt() {
+		static $cmd;
 
-	function __construct() {
-		$this->hist_path = self::get_history_path();
+		if ( !$cmd ) {
+			$cmd = self::create_prompt_cmd( 'wp> ', self::get_history_path() );
+		}
 
-		readline_read_history( $this->hist_path );
+		$fp = popen( $cmd, 'r' );
 
-		register_shutdown_function( array( $this, 'save_history' ) );
+		$line = fgets( $fp );
+
+		return trim( $line );
+	}
+
+	private static function create_prompt_cmd( $prompt, $history_path ) {
+		$cmd = implode( '; ', array(
+			'set -f',
+			sprintf( 'history -r %s', escapeshellarg( $history_path ) ),
+			'LINE=""',
+			sprintf( 'read -re -p %s LINE', escapeshellarg( $prompt ) ),
+			'history -s "$LINE"',
+			sprintf( 'history -w %s', escapeshellarg( $history_path ) ),
+			'echo $LINE'
+		) );
+
+		return '/bin/bash -c ' . escapeshellarg( $cmd );
 	}
 
 	private static function get_history_path() {
@@ -62,25 +77,8 @@ class REPL_Readline {
 		return sys_get_temp_dir() . '/wp-cli-history-' . md5( $data );
 	}
 
-	function read( $prompt ) {
-		$line = trim( readline( $prompt ) );
-		if ( !empty( $line ) )
-			readline_add_history( $line );
-
-		return $line;
-	}
-
-	function save_history() {
-		readline_write_history( $this->hist_path );
-	}
-}
-
-
-class REPL_Basic {
-
-	function read( $prompt ) {
-		\WP_CLI::out( $prompt );
-		return \cli\input();
+	private static function starts_with( $tokens, $line ) {
+		return preg_match( "/^($tokens)[\(\s]+/", $line );
 	}
 }
 

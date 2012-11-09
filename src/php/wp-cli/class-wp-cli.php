@@ -1,6 +1,7 @@
 <?php
 
 use \WP_CLI\Dispatcher;
+use \WP_CLI\Utils;
 
 /**
  * Wrapper class for WP-CLI
@@ -10,20 +11,35 @@ use \WP_CLI\Dispatcher;
 class WP_CLI {
 
 	private static $commands = array();
+	private static $man_dirs = array();
+	private static $arguments, $assoc_args, $assoc_special;
 
 	/**
 	 * Add a command to the wp-cli list of commands
 	 *
 	 * @param string $name The name of the command that will be used in the cli
-	 * @param string $class The class to manage the command
+	 * @param string|object $implementation The command implementation
 	 */
-	static function add_command( $name, $class ) {
-		if ( is_string( $class ) )
-			$command = new Dispatcher\CompositeCommand( $name, $class );
+	static function add_command( $name, $implementation ) {
+		if ( is_string( $implementation ) )
+			$command = new Dispatcher\CompositeCommand( $name, $implementation );
 		else
-			$command = new Dispatcher\SingleCommand( $name, $class );
+			$command = new Dispatcher\SingleCommand( $name, $implementation );
 
 		self::$commands[ $name ] = $command;
+	}
+
+	static function add_man_dir( $dest_dir, $src_dir ) {
+		$dest_dir = realpath( $dest_dir ) . '/';
+
+		if ( $src_dir )
+			$src_dir = realpath( $src_dir ) . '/';
+
+		self::$man_dirs[ $dest_dir ] = $src_dir;
+	}
+
+	static function get_man_dirs() {
+		return self::$man_dirs;
 	}
 
 	/**
@@ -215,16 +231,19 @@ class WP_CLI {
 		return self::$commands[$command];
 	}
 
-	private static $arguments, $assoc_args, $assoc_special;
-
 	static function before_wp_load() {
-		$r = WP_CLI\Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
+		self::add_man_dir(
+			WP_CLI_ROOT . "../../../man/",
+			WP_CLI_ROOT . "../../docs/"
+		);
+
+		$r = Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
 		list( self::$arguments, self::$assoc_args ) = $r;
 
-		self::$assoc_special = WP_CLI\Utils\split_assoc( self::$assoc_args, array(
+		self::$assoc_special = Utils\split_assoc( self::$assoc_args, array(
 			'path', 'url', 'blog', 'user', 'require',
-			'quiet', 'completions', 'man'
+			'quiet', 'completions', 'man', 'syn-list'
 		) );
 
 		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
@@ -237,16 +256,11 @@ class WP_CLI {
 
 		$_SERVER['DOCUMENT_ROOT'] = getcwd();
 
-		// Define the WordPress location
-		if ( !empty( self::$assoc_special['path'] ) ) {
-			// trailingslashit() isn't available yet
-			define( 'WP_ROOT', rtrim( self::$assoc_special['path'], '/' ) . '/' );
-		} else {
-			define( 'WP_ROOT', $_SERVER['PWD'] . '/' );
-		}
+		// Handle --path
+		Utils\set_wp_root( self::$assoc_special );
 
 		// Handle --url and --blog parameters
-		WP_CLI\Utils\set_url( self::$assoc_special );
+		Utils\set_url( self::$assoc_special );
 
 		if ( array( 'core', 'download' ) == self::$arguments ) {
 			self::run_command();
@@ -264,7 +278,7 @@ class WP_CLI {
 
 		// The db commands don't need any WP files
 		if ( array( 'db' ) == array_slice( self::$arguments, 0, 1 ) ) {
-			WP_CLI\Utils\load_wp_config();
+			Utils\load_wp_config();
 			self::run_command();
 			exit;
 		}
@@ -282,16 +296,29 @@ class WP_CLI {
 	static function after_wp_load() {
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
-		WP_CLI\Utils\set_user( self::$assoc_special );
+		Utils\set_user( self::$assoc_special );
 
 		if ( !defined( 'WP_INSTALLING' ) && isset( self::$assoc_special['url'] ) )
-			WP_CLI\Utils\set_wp_query();
+			Utils\set_wp_query();
 
 		if ( isset( self::$assoc_special['require'] ) )
 			require self::$assoc_special['require'];
 
 		if ( isset( self::$assoc_special['man'] ) ) {
 			self::generate_man( self::$arguments );
+			exit;
+		}
+
+		// Handle --syn-list parameter
+		if ( isset( self::$assoc_special['syn-list'] ) ) {
+			foreach ( self::load_all_commands() as $command ) {
+				if ( $command instanceof \WP_CLI\Dispatcher\Composite ) {
+					foreach ( $command->get_subcommands() as $subcommand )
+						$subcommand->show_usage( '' );
+				} else {
+					$command->show_usage( '' );
+				}
+			}
 			exit;
 		}
 
@@ -314,7 +341,9 @@ class WP_CLI {
 		if ( !$command )
 			WP_CLI::error( sprintf( "'%s' command not found." ) );
 
-		\WP_CLI\Man\generate( $command );
+		foreach ( self::$man_dirs as $dest_dir => $src_dir ) {
+			\WP_CLI\Man\generate( $src_dir, $dest_dir, $command );
+		}
 	}
 
 	private static function render_automcomplete() {
