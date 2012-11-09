@@ -201,6 +201,7 @@ class User_Command extends WP_CLI_Command {
 	/**
 	 * Import users from a CSV
 	 *
+	 * @subcommand import-csv
 	 * @synopsis <file>
 	 */
 	public function import_csv( $args, $assoc_args ) {
