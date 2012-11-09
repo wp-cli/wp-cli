@@ -1,17 +1,10 @@
-wp-user-set_role(1) -- Set the user's role 
-====
-
-## SYNOPSIS
-
-`wp user set_role` <user-login> [<role>] [--blog=<blog>]
-
 ## OPTIONS
 
 * `<user-login>`:
 
 	The login of the user to add to the blog.
 
-* `<role>`:
+* `[<role>]`:
 
 	Add the user with the specified role. Defaults to blog default.
 
