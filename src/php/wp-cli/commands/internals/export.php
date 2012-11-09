@@ -21,7 +21,7 @@ class Export_Command extends WP_CLI_Command {
 	 *
 	 * @synopsis --dir=<dir> [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>]
 	 */
-	public function __invoke( $args, $assoc_args ) {
+	public function __invoke( $_, $assoc_args ) {
 		$defaults = array(
 			'dir'				=>		NULL,
 			'start_date'		=>		NULL,
@@ -37,11 +37,11 @@ class Export_Command extends WP_CLI_Command {
 		$args = wp_parse_args( $assoc_args, $defaults );
 
 		$has_errors = false;
-		
-		foreach( $args as $argument => $default_value ) {
-			if ( is_callable( array( &$this, 'check_' . $argument ) ) ) {
-				$result = call_user_func( array( &$this, 'check_' . $argument ), $args[$argument] );
-				if ( false === $result && false === $has_errors )
+
+		foreach ( $args as $key => $value ) {
+			if ( is_callable( array( $this, 'check_' . $key ) ) ) {
+				$result = call_user_func( array( &$this, 'check_' . $key ), $value );
+				if ( false === $result )
 					$has_errors = true;
 			}
 		}
@@ -281,7 +281,7 @@ class Export_Command extends WP_CLI_Command {
 			}
 		}
 
-	
+
 		if ( $args['author'] )
 			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_author = %d", $args['author'] );
 
