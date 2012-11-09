@@ -2,21 +2,26 @@
 
 * `--dir`=<dirname>:
 
-	Full Path to directory where WXR export files should be stored.
+	Full path to directory where WXR export files should be stored. Defaults
+to current working directory.
 
 * `--skip_comments`:
 
 	Don't export comments.
 
+* `--file_item_count`=<count>:
+
+	Break export into files with N posts.
+
 ## FILTERS
 
 * `--start_date`=<date>:
 
-	Export only posts newer than this date in format YYYY-MM-DD.
+	Export only posts newer than this date, in format YYYY-MM-DD.
 
 * `--end_date`=<date>:
 
-	Export only posts older than this date in format YYYY-MM-DD.
+	Export only posts older than this date, in format YYYY-MM-DD.
 
 * `--post_type`=<post_type>:
 
