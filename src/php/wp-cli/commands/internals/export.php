@@ -40,7 +40,7 @@ class Export_Command extends WP_CLI_Command {
 
 		foreach ( $args as $key => $value ) {
 			if ( is_callable( array( $this, 'check_' . $key ) ) ) {
-				$result = call_user_func( array( &$this, 'check_' . $key ), $value );
+				$result = call_user_func( array( $this, 'check_' . $key ), $value );
 				if ( false === $result )
 					$has_errors = true;
 			}
