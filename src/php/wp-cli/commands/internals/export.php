@@ -19,7 +19,7 @@ class Export_Command extends WP_CLI_Command {
 	/**
 	 * Export posts to a WXR file.
 	 *
-	 * @synopsis --dir=<dir> [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>]
+	 * @synopsis [--dir=<dir>] [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>]
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$defaults = array(
@@ -50,7 +50,8 @@ class Export_Command extends WP_CLI_Command {
 			exit(1);
 		}
 
-		$this->wxr_path = trailingslashit( $assoc_args['dir'] );
+		$this->wxr_path = trailingslashit( $this->export_args['dir'] );
+		unset( $this->export_args['dir'] );
 
 		WP_CLI::line( 'Starting export process...' );
 		WP_CLI::line();
@@ -59,14 +60,15 @@ class Export_Command extends WP_CLI_Command {
 
 	private function check_dir( $path ) {
 		if ( empty( $path ) ) {
-			WP_CLI::warning( 'missing --dir parameter' );
-			return false;
+			$this->export_args['dir'] = getcwd();
+			return true;
 		}
 
 		if ( !is_dir( $path ) ) {
 			WP_CLI::error( sprintf( "The directory %s does not exist", $path ) );
 		}
 
+		$this->export_args['dir'] = $path;
 		return true;
 	}
 
