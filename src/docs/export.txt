@@ -8,7 +8,7 @@
 
 	Don't export comments.
 
-* `--file_item_count`=<count>
+* `--file_item_count`=<count>:
 
 	Break export into files with N posts
 
