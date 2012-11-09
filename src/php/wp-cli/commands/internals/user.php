@@ -230,7 +230,7 @@ class User_Command extends WP_CLI_Command {
 			}
 
 			// User already exists and we just need to add them to the site if they aren't already there
-			if ( $existing_user = get_user_by( 'login', $new_user['user_login'] ) ) {
+			if ( $existing_user = get_user_by( 'email', $new_user['user_email'] ) ) {
 				if ( in_array( $new_user['user_login'], wp_list_pluck( $blog_users, 'user_login' ) ) )
 					WP_CLI::warning( "{$new_user['user_login']} already is a member of blog" );
 				else if ( $new_user['role'] ) {
