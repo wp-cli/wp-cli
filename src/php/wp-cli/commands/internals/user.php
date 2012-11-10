@@ -249,7 +249,7 @@ class User_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Import users from a CSV
+	 * Import users from a CSV file.
 	 *
 	 * @subcommand import-csv
 	 * @synopsis <file>
@@ -304,8 +304,7 @@ class User_Command extends WP_CLI_Command {
 				}
 			}
 
-			WP_CLI::line( "{$new_user['user_login']} created" );
-
+			WP_CLI::line( $new_user['user_login'] . " created" );
 		}
 	}
 }

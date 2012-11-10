@@ -2,11 +2,13 @@
 
 * `<file>`:
 
-	The csv file of users to import
+	The CSV file of users to import.
 
 ## EXAMPLES
 
-	wp user import_csv /path/to/csv.csv
+	wp user import-csv /path/to/users.csv
+
+	Sample users.csv file:
 
 	user_login,user_email,display_name,role
 	bobjones,bobjones@domain.com,Bob Jones,contributor
