@@ -236,6 +236,11 @@ class WP_CLI {
 
 		list( self::$arguments, self::$assoc_args ) = $r;
 
+		if ( isset( self::$assoc_args['help'] ) ) {
+			array_unshift( self::$arguments, 'help' );
+			unset( self::$assoc_args['help'] );
+		}
+
 		self::$assoc_special = Utils\split_assoc( self::$assoc_args, array(
 			'path', 'url', 'blog', 'user', 'require',
 			'quiet', 'completions', 'man', 'syn-list'
