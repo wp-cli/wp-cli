@@ -205,8 +205,7 @@ class User_Command extends WP_CLI_Command {
 	 * @synopsis <user-login> [<role>] [--blog=<blog>]
 	 */
 	public function set_role( $args, $assoc_args ) {
-
-		list( $id_or_login, $role ) = $args;
+		list( $id_or_login ) = $args;
 
 		if ( is_numeric( $id_or_login ) )
 			$user = get_user_by( 'id', $id_or_login );
@@ -216,8 +215,7 @@ class User_Command extends WP_CLI_Command {
 		if ( ! $user )
 			WP_CLI::error( "Please specify a valid user ID or user login to add to this blog" );
 
-		if ( ! get_role( $role ) )
-			$role = get_option( 'default_role' );
+		$role = isset( $args[1] ) ? $args[1] : get_option( 'default_role' );
 
 		// Multisite
 		if ( function_exists( 'add_user_to_blog' ) )
