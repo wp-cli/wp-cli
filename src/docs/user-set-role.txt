@@ -2,7 +2,7 @@
 
 * `<user-login>`:
 
-	The login of the user to add to the blog.
+	User ID or user login.
 
 * `[<role>]`:
 
@@ -10,4 +10,5 @@
 
 ## EXAMPLES
 
-	wp user set_role bob author
+	wp user set-role bob author
+	wp user set-role 12 author

@@ -2,8 +2,9 @@
 
 * `<user-login>`:
 
-	The login of the user to remove from the blog.
+	User ID or user login.
 
 ## EXAMPLES
 
-	wp user remove_role bob
+	wp user remove-role bob
+	wp user remove-role 12
