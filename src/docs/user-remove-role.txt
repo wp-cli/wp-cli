@@ -1,0 +1,9 @@
+## OPTIONS
+
+* `<user-login>`:
+
+	The login of the user to remove from the blog.
+
+## EXAMPLES
+
+	wp user remove_role bob
