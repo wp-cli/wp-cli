@@ -231,12 +231,7 @@ class WP_CLI {
 		return self::$commands[$command];
 	}
 
-	static function before_wp_load() {
-		self::add_man_dir(
-			WP_CLI_ROOT . "../../../man/",
-			WP_CLI_ROOT . "../../docs/"
-		);
-
+	private static function parse_args() {
 		$r = Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
 		list( self::$arguments, self::$assoc_args ) = $r;
@@ -245,14 +240,27 @@ class WP_CLI {
 			'path', 'url', 'blog', 'user', 'require',
 			'quiet', 'completions', 'man', 'syn-list'
 		) );
+	}
 
-		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
+	static function get_assoc_special() {
+		return self::$assoc_special;
+	}
+
+	static function before_wp_load() {
+		self::add_man_dir(
+			WP_CLI_ROOT . "../../../man/",
+			WP_CLI_ROOT . "../../docs/"
+		);
+
+		self::parse_args();
 
 		// Handle --version parameter
 		if ( isset( self::$assoc_args['version'] ) && empty( self::$arguments ) ) {
 			self::line( 'wp-cli ' . WP_CLI_VERSION );
 			exit;
 		}
+
+		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
 
 		$_SERVER['DOCUMENT_ROOT'] = getcwd();
 
@@ -287,10 +295,6 @@ class WP_CLI {
 		if ( array( 'core', 'install' ) == self::$arguments ) {
 			define( 'WP_INSTALLING', true );
 		}
-	}
-
-	static function get_assoc_special() {
-		return self::$assoc_special;
 	}
 
 	static function after_wp_load() {
