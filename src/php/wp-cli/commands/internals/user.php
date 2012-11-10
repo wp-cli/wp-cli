@@ -209,6 +209,7 @@ class User_Command extends WP_CLI_Command {
 	/**
 	 * Add a user to a blog
 	 *
+	 * @subcommand set-role
 	 * @synopsis <user-login> [<role>] [--blog=<blog>]
 	 **/
 	public function set_role( $args, $assoc_args ) {
@@ -238,6 +239,7 @@ class User_Command extends WP_CLI_Command {
 	/**
 	 * Remove a user from a blog
 	 *
+	 * @subcommand remove-role
 	 * @synopsis <user-login>
 	 **/
 	public function remove_role( $args, $assoc_args ) {
