@@ -246,6 +246,7 @@ class User_Command extends WP_CLI_Command {
 
 			if ( is_wp_error( $user_id ) ) {
 				WP_CLI::warning( $user_id );
+				continue;
 			} else {
 				if ( false === $new_user['role'] ) {
 					delete_user_option( $user_id, 'capabilities' );
