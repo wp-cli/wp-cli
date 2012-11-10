@@ -205,15 +205,7 @@ class User_Command extends WP_CLI_Command {
 	 * @synopsis <user-login> [<role>] [--blog=<blog>]
 	 */
 	public function set_role( $args, $assoc_args ) {
-		list( $id_or_login ) = $args;
-
-		if ( is_numeric( $id_or_login ) )
-			$user = get_user_by( 'id', $id_or_login );
-		else
-			$user = get_user_by( 'login', $id_or_login );
-
-		if ( ! $user )
-			WP_CLI::error( "Please specify a valid user ID or user login to add to this blog" );
+		$user = self::get_user_from_first_arg( $args[0] );
 
 		$role = isset( $args[1] ) ? $args[1] : get_option( 'default_role' );
 
@@ -233,15 +225,7 @@ class User_Command extends WP_CLI_Command {
 	 * @synopsis <user-login>
 	 */
 	public function remove_role( $args, $assoc_args ) {
-		list( $id_or_login ) = $args;
-
-		if ( is_numeric( $id_or_login ) )
-			$user = get_user_by( 'id', $id_or_login );
-		else
-			$user = get_user_by( 'login', $id_or_login );
-
-		if ( ! $user )
-			WP_CLI::error( "Please specify a valid user ID or user login to remove from this blog" );
+		$user = self::get_user_from_first_arg( $args[0] );
 
 		// Multisite
 		if ( function_exists( 'remove_user_from_blog' ) )
@@ -252,4 +236,16 @@ class User_Command extends WP_CLI_Command {
 		WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() );
 	}
 
+	private static function get_user_from_first_arg( $id_or_login ) {
+		if ( is_numeric( $id_or_login ) )
+			$user = get_user_by( 'id', $id_or_login );
+		else
+			$user = get_user_by( 'login', $id_or_login );
+
+		if ( ! $user )
+			WP_CLI::error( "Please specify a valid user ID or user login to remove from this blog" );
+
+		return $user;
+	}
 }
+
