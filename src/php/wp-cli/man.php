@@ -81,7 +81,13 @@ function call_ronn( $markdown, $dest ) {
 		2 => STDERR
 	);
 
-	$r = proc_close( proc_open( "ronn --roff --manual='WP-CLI'", $descriptorspec, $pipes ) );
+	$cmd = "ronn --date=2012-01-01 --roff --manual='WP-CLI'";
+
+	$r = proc_close( proc_open( $cmd, $descriptorspec, $pipes ) );
+
+	$roff = file_get_contents( $dest );
+	$roff = str_replace( ' "January 2012"', '', $roff );
+	file_put_contents( $dest, $roff );
 
 	\WP_CLI::line( "generated " . basename( $dest ) );
 }

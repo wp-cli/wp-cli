@@ -1,0 +1,10 @@
+## OPTIONS
+
+* `<user-login>`:
+
+	User ID or user login.
+
+## EXAMPLES
+
+	wp user remove-role bob
+	wp user remove-role 12
