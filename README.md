@@ -16,7 +16,7 @@ Who's behind this thing?
 
 We are [Andreas Creten](https://github.com/andreascreten) and [Cristi Burcă](https://github.com/scribu), friendly guys from Europe.
 
-A complete list of contibuters can be found [here](https://github.com/wp-cli/wp-cli/contributors).
+A complete list of contributors can be found [here](https://github.com/wp-cli/wp-cli/contributors).
 
 Need even more info?
 --------------------
