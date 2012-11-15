@@ -43,6 +43,8 @@ interface Documentable {
 
 class RootCommand implements Command, Composite {
 
+	protected $subcommands = array();
+
 	function get_path() {
 		return array();
 	}
@@ -50,7 +52,7 @@ class RootCommand implements Command, Composite {
 	function show_usage() {
 		\WP_CLI::line( 'Available commands:' );
 
-		foreach ( \WP_CLI::load_all_commands() as $command ) {
+		foreach ( $this->get_subcommands() as $command ) {
 			\WP_CLI::line( sprintf( "    wp %s %s",
 				implode( ' ', $command->get_path() ),
 				implode( '|', array_keys( $command->get_subcommands() ) )
@@ -97,11 +99,54 @@ EOB
 		if ( isset( $aliases[ $command ] ) )
 			$command = $aliases[ $command ];
 
-		return \WP_CLI::load_command( $command );
+		return $this->load_command( $command );
+	}
+
+	function add_command( $name, $implementation ) {
+		if ( is_string( $implementation ) )
+			$command = new CompositeCommand( $name, $implementation );
+		else
+			$command = new SingleCommand( $name, $implementation, $this );
+
+		$this->subcommands[ $name ] = $command;
 	}
 
 	function get_subcommands() {
-		return \WP_CLI::load_all_commands();
+		$this->load_all_commands();
+
+		return $this->subcommands;
+	}
+
+	protected function load_all_commands() {
+		foreach ( array( 'internals', 'community' ) as $dir ) {
+			foreach ( glob( WP_CLI_ROOT . "/commands/$dir/*.php" ) as $filename ) {
+				$command = substr( basename( $filename ), 0, -4 );
+
+				if ( isset( $this->subcommands[ $command ] ) )
+					continue;
+
+				include $filename;
+			}
+		}
+	}
+
+	function load_command( $command ) {
+		if ( !isset( $this->subcommands[$command] ) ) {
+			foreach ( array( 'internals', 'community' ) as $dir ) {
+				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
+
+				if ( is_readable( $path ) ) {
+					include $path;
+					break;
+				}
+			}
+		}
+
+		if ( !isset( $this->subcommands[$command] ) ) {
+			return false;
+		}
+
+		return $this->subcommands[$command];
 	}
 }
 

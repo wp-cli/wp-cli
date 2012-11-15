@@ -12,8 +12,6 @@ class WP_CLI {
 
 	public static $root;
 
-	private static $commands = array();
-
 	private static $man_dirs = array();
 	private static $arguments, $assoc_args, $assoc_special;
 
@@ -24,12 +22,7 @@ class WP_CLI {
 	 * @param string|object $implementation The command implementation
 	 */
 	static function add_command( $name, $implementation ) {
-		if ( is_string( $implementation ) )
-			$command = new Dispatcher\CompositeCommand( $name, $implementation );
-		else
-			$command = new Dispatcher\SingleCommand( $name, $implementation, self::$root );
-
-		self::$commands[ $name ] = $command;
+		self::$root->add_command( $name, $implementation );
 	}
 
 	static function add_man_dir( $dest_dir, $src_dir ) {
@@ -200,40 +193,6 @@ class WP_CLI {
 		return $r;
 	}
 
-	static function load_all_commands() {
-		foreach ( array( 'internals', 'community' ) as $dir ) {
-			foreach ( glob( WP_CLI_ROOT . "/commands/$dir/*.php" ) as $filename ) {
-				$command = substr( basename( $filename ), 0, -4 );
-
-				if ( isset( self::$commands[ $command ] ) )
-					continue;
-
-				include $filename;
-			}
-		}
-
-		return self::$commands;
-	}
-
-	static function load_command( $command ) {
-		if ( !isset( self::$commands[$command] ) ) {
-			foreach ( array( 'internals', 'community' ) as $dir ) {
-				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
-
-				if ( is_readable( $path ) ) {
-					include $path;
-					break;
-				}
-			}
-		}
-
-		if ( !isset( self::$commands[$command] ) ) {
-			return false;
-		}
-
-		return self::$commands[$command];
-	}
-
 	private static function parse_args() {
 		$r = Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
@@ -323,7 +282,7 @@ class WP_CLI {
 
 		// Handle --syn-list parameter
 		if ( isset( self::$assoc_special['syn-list'] ) ) {
-			foreach ( self::load_all_commands() as $command ) {
+			foreach ( self::$root->get_subcommands() as $command ) {
 				if ( $command instanceof \WP_CLI\Dispatcher\Composite ) {
 					foreach ( $command->get_subcommands() as $subcommand )
 						$subcommand->show_usage( '' );
@@ -357,7 +316,7 @@ class WP_CLI {
 	}
 
 	private static function render_automcomplete() {
-		foreach ( self::load_all_commands() as $name => $command ) {
+		foreach ( self::$root->get_subcommands() as $name => $command ) {
 			$subcommands = $command->get_subcommands();
 
 			self::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
