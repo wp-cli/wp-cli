@@ -105,8 +105,11 @@ EOB
 	function add_command( $name, $implementation ) {
 		if ( is_string( $implementation ) )
 			$command = new CompositeCommand( $name, $implementation );
-		else
-			$command = new SingleCommand( $name, $implementation, $this );
+		else {
+			$method = new \ReflectionMethod( $implementation, '__invoke' );
+
+			$command = new Subcommand( $name, $implementation, $method, $this );
+		}
 
 		$this->subcommands[ $name ] = $command;
 	}
@@ -251,7 +254,7 @@ class CompositeCommand implements Command, Composite {
 }
 
 
-abstract class Subcommand implements Command, Documentable {
+class Subcommand implements Command, Documentable {
 
 	function __construct( $name, $callable, $method, $parent ) {
 		$this->name = $name;
@@ -459,16 +462,6 @@ class MethodSubcommand extends Subcommand {
 
 	function get_alias() {
 		return self::get_tag( $this->method, 'alias' );
-	}
-}
-
-
-class SingleCommand extends Subcommand {
-
-	function __construct( $name, $callable, $parent ) {
-		$method = new \ReflectionMethod( $callable, '__invoke' );
-
-		parent::__construct( $name, $callable, $method, $parent );
 	}
 }
 
