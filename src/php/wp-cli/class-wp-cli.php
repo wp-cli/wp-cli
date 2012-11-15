@@ -10,7 +10,10 @@ use \WP_CLI\Utils;
  */
 class WP_CLI {
 
+	public static $root;
+
 	private static $commands = array();
+
 	private static $man_dirs = array();
 	private static $arguments, $assoc_args, $assoc_special;
 
@@ -24,7 +27,7 @@ class WP_CLI {
 		if ( is_string( $implementation ) )
 			$command = new Dispatcher\CompositeCommand( $name, $implementation );
 		else
-			$command = new Dispatcher\SingleCommand( $name, $implementation );
+			$command = new Dispatcher\SingleCommand( $name, $implementation, self::$root );
 
 		self::$commands[ $name ] = $command;
 	}
@@ -340,9 +343,7 @@ class WP_CLI {
 	}
 
 	private static function run_command() {
-		$root = new Dispatcher\RootCommand;
-
-		$root->invoke( self::$arguments, self::$assoc_args );
+		self::$root->invoke( self::$arguments, self::$assoc_args );
 	}
 
 	private static function generate_man( $args ) {
@@ -368,4 +369,6 @@ class WP_CLI {
 		self::add_command( $name, $class );
 	}
 }
+
+WP_CLI::$root = new Dispatcher\RootCommand;
 
