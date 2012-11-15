@@ -144,13 +144,7 @@ class CompositeCommand implements Command, Composite {
 	}
 
 	function find_subcommand( &$args ) {
-		$class = $this->class;
-
-		if ( empty( $args ) ) {
-			$name = $class::get_default_subcommand();
-		} else {
-			$name = array_shift( $args );
-		}
+		$name = array_shift( $args );
 
 		$subcommands = $this->get_subcommands();
 
