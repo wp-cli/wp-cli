@@ -108,9 +108,31 @@ EOB
 
 class CompositeCommand implements Command, Composite {
 
-	function __construct( $name, $class ) {
+	protected $name;
+
+	protected $subcommands;
+
+	public function __construct( $name, $class ) {
 		$this->name = $name;
-		$this->class = $class;
+
+		$this->subcommands = $this->collect_subcommands( $class );
+	}
+
+	private function collect_subcommands( $class ) {
+		$reflection = new \ReflectionClass( $class );
+
+		$subcommands = array();
+
+		foreach ( $reflection->getMethods() as $method ) {
+			if ( !self::_is_good_method( $method ) )
+				continue;
+
+			$subcommand = new MethodSubcommand( $class, $method, $this );
+
+			$subcommands[ $subcommand->get_name() ] = $subcommand;
+		}
+
+		return $subcommands;
 	}
 
 	function get_path() {
@@ -175,20 +197,7 @@ class CompositeCommand implements Command, Composite {
 	}
 
 	public function get_subcommands() {
-		$reflection = new \ReflectionClass( $this->class );
-
-		$subcommands = array();
-
-		foreach ( $reflection->getMethods() as $method ) {
-			if ( !self::_is_good_method( $method ) )
-				continue;
-
-			$subcommand = new MethodSubcommand( $method, $this );
-
-			$subcommands[ $subcommand->get_name() ] = $subcommand;
-		}
-
-		return $subcommands;
+		return $this->subcommands;
 	}
 
 	private static function _is_good_method( $method ) {
@@ -199,10 +208,10 @@ class CompositeCommand implements Command, Composite {
 
 abstract class Subcommand implements Command, Documentable {
 
-	function __construct( $method, $parent ) {
-		$this->parent = $parent;
-
+	function __construct( $callable, $method, $parent ) {
+		$this->callable = $callable;
 		$this->method = $method;
+		$this->parent = $parent;
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
@@ -210,6 +219,12 @@ abstract class Subcommand implements Command, Documentable {
 		$synopsis = $this->get_synopsis();
 
 		\WP_CLI::line( $prefix . "wp $full_name $synopsis" );
+	}
+
+	function invoke( $args, $assoc_args ) {
+		$this->check_args( $args, $assoc_args );
+
+		call_user_func( $this->callable, $args, $assoc_args );
 	}
 
 	function get_subcommands() {
@@ -372,6 +387,12 @@ abstract class Subcommand implements Command, Documentable {
 
 class MethodSubcommand extends Subcommand {
 
+	function __construct( $class, $method, $parent ) {
+		$callable = array( new $class, $method->name );
+
+		parent::__construct( $callable, $method, $parent );
+	}
+
 	private function get_tag( $name ) {
 		$comment = $this->method->getDocComment();
 
@@ -391,15 +412,6 @@ class MethodSubcommand extends Subcommand {
 	function get_alias() {
 		return $this->get_tag( 'alias' );
 	}
-
-	function invoke( $args, $assoc_args ) {
-		$this->check_args( $args, $assoc_args );
-
-		$class = $this->parent->class;
-		$instance = new $class;
-
-		$this->method->invoke( $instance, $args, $assoc_args );
-	}
 }
 
 
@@ -407,21 +419,14 @@ class SingleCommand extends Subcommand {
 
 	function __construct( $name, $callable, $parent ) {
 		$this->name = $name;
-		$this->callable = $callable;
 
-		$method = new \ReflectionMethod( $this->callable, '__invoke' );
+		$method = new \ReflectionMethod( $callable, '__invoke' );
 
-		parent::__construct( $method, $parent );
+		parent::__construct( $callable, $method, $parent );
 	}
 
 	function get_name() {
 		return $this->name;
-	}
-
-	function invoke( $args, $assoc_args ) {
-		$this->check_args( $args, $assoc_args );
-
-		$this->method->invoke( $this->callable, $args, $assoc_args );
 	}
 }
 
