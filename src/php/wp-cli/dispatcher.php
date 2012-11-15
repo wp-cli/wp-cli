@@ -373,7 +373,7 @@ class MethodSubcommand extends Subcommand {
 	}
 
 	function get_path() {
-		return array( $this->parent->name, $this->get_name() );
+		return array_merge( $this->parent->get_path(), array( $this->get_name() ) );
 	}
 
 	private function get_tag( $name ) {
