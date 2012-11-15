@@ -253,7 +253,8 @@ class CompositeCommand implements Command, Composite {
 
 abstract class Subcommand implements Command, Documentable {
 
-	function __construct( $callable, $method, $parent ) {
+	function __construct( $name, $callable, $method, $parent ) {
+		$this->name = $name;
 		$this->callable = $callable;
 		$this->method = $method;
 		$this->parent = $parent;
@@ -276,11 +277,13 @@ abstract class Subcommand implements Command, Documentable {
 		return array();
 	}
 
+	function get_name() {
+		return $this->name;
+	}
+
 	function get_path() {
 		return array_merge( $this->parent->get_path(), array( $this->get_name() ) );
 	}
-
-	abstract function get_name();
 
 	protected function check_args( $args, $assoc_args ) {
 		$synopsis = $this->get_synopsis();
@@ -435,11 +438,18 @@ class MethodSubcommand extends Subcommand {
 	function __construct( $class, $method, $parent ) {
 		$callable = array( new $class, $method->name );
 
-		parent::__construct( $callable, $method, $parent );
+		parent::__construct( self::_get_name( $method ), $callable, $method, $parent );
 	}
 
-	private function get_tag( $name ) {
-		$comment = $this->method->getDocComment();
+	private static function _get_name( $method ) {
+		if ( $name = self::get_tag( $method, 'subcommand' ) )
+			return $name;
+
+		return $method->name;
+	}
+
+	private static function get_tag( $method, $name ) {
+		$comment = $method->getDocComment();
 
 		if ( preg_match( '/@' . $name . '\s+([a-z-]+)/', $comment, $matches ) )
 			return $matches[1];
@@ -447,15 +457,8 @@ class MethodSubcommand extends Subcommand {
 		return false;
 	}
 
-	function get_name() {
-		if ( $name = $this->get_tag( 'subcommand' ) )
-			return $name;
-
-		return $this->method->name;
-	}
-
 	function get_alias() {
-		return $this->get_tag( 'alias' );
+		return self::get_tag( $this->method, 'alias' );
 	}
 }
 
@@ -463,15 +466,9 @@ class MethodSubcommand extends Subcommand {
 class SingleCommand extends Subcommand {
 
 	function __construct( $name, $callable, $parent ) {
-		$this->name = $name;
-
 		$method = new \ReflectionMethod( $callable, '__invoke' );
 
-		parent::__construct( $callable, $method, $parent );
-	}
-
-	function get_name() {
-		return $this->name;
+		parent::__construct( $name, $callable, $method, $parent );
 	}
 }
 
