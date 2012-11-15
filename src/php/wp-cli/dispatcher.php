@@ -5,7 +5,7 @@ namespace WP_CLI\Dispatcher;
 function traverse( &$args ) {
 	$args_copy = $args;
 
-	$command = new RootCommand;
+	$command = \WP_CLI::$root;
 
 	while ( !empty( $args ) && $command && $command instanceof Composite ) {
 		$command = $command->find_subcommand( $args );
@@ -199,7 +199,9 @@ class CompositeCommand implements Command, Composite {
 
 abstract class Subcommand implements Command, Documentable {
 
-	function __construct( $method ) {
+	function __construct( $method, $parent ) {
+		$this->parent = $parent;
+
 		$this->method = $method;
 	}
 
@@ -212,6 +214,10 @@ abstract class Subcommand implements Command, Documentable {
 
 	function get_subcommands() {
 		return array();
+	}
+
+	function get_path() {
+		return array_merge( $this->parent->get_path(), array( $this->get_name() ) );
 	}
 
 	abstract function get_name();
@@ -366,16 +372,6 @@ abstract class Subcommand implements Command, Documentable {
 
 class MethodSubcommand extends Subcommand {
 
-	function __construct( $method, $parent ) {
-		$this->parent = $parent;
-
-		parent::__construct( $method );
-	}
-
-	function get_path() {
-		return array_merge( $this->parent->get_path(), array( $this->get_name() ) );
-	}
-
 	private function get_tag( $name ) {
 		$comment = $this->method->getDocComment();
 
@@ -409,21 +405,17 @@ class MethodSubcommand extends Subcommand {
 
 class SingleCommand extends Subcommand {
 
-	function __construct( $name, $callable ) {
+	function __construct( $name, $callable, $parent ) {
 		$this->name = $name;
 		$this->callable = $callable;
 
 		$method = new \ReflectionMethod( $this->callable, '__invoke' );
 
-		parent::__construct( $method );
+		parent::__construct( $method, $parent );
 	}
 
 	function get_name() {
 		return $this->name;
-	}
-
-	function get_path() {
-		return array( $this->name );
 	}
 
 	function invoke( $args, $assoc_args ) {
