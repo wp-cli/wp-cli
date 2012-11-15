@@ -283,7 +283,7 @@ class WP_CLI {
 		// Handle --syn-list parameter
 		if ( isset( self::$assoc_special['syn-list'] ) ) {
 			foreach ( self::$root->get_subcommands() as $command ) {
-				if ( $command instanceof \WP_CLI\Dispatcher\Composite ) {
+				if ( $command instanceof Dispatcher\Composite ) {
 					foreach ( $command->get_subcommands() as $subcommand )
 						$subcommand->show_usage( '' );
 				} else {
