@@ -5,7 +5,7 @@ namespace WP_CLI\Dispatcher;
 function traverse( &$args ) {
 	$args_copy = $args;
 
-	$command = new RootCommand;
+	$command = \WP_CLI::$root;
 
 	while ( !empty( $args ) && $command && $command instanceof Composite ) {
 		$command = $command->find_subcommand( $args );
@@ -43,6 +43,8 @@ interface Documentable {
 
 class RootCommand implements Command, Composite {
 
+	protected $subcommands = array();
+
 	function get_path() {
 		return array();
 	}
@@ -50,7 +52,7 @@ class RootCommand implements Command, Composite {
 	function show_usage() {
 		\WP_CLI::line( 'Available commands:' );
 
-		foreach ( \WP_CLI::load_all_commands() as $command ) {
+		foreach ( $this->get_subcommands() as $command ) {
 			\WP_CLI::line( sprintf( "    wp %s %s",
 				implode( ' ', $command->get_path() ),
 				implode( '|', array_keys( $command->get_subcommands() ) )
@@ -97,20 +99,88 @@ EOB
 		if ( isset( $aliases[ $command ] ) )
 			$command = $aliases[ $command ];
 
-		return \WP_CLI::load_command( $command );
+		return $this->load_command( $command );
+	}
+
+	function add_command( $name, $implementation ) {
+		if ( is_string( $implementation ) )
+			$command = new CompositeCommand( $name, $implementation );
+		else {
+			$method = new \ReflectionMethod( $implementation, '__invoke' );
+
+			$command = new Subcommand( $name, $implementation, $method, $this );
+		}
+
+		$this->subcommands[ $name ] = $command;
 	}
 
 	function get_subcommands() {
-		return \WP_CLI::load_all_commands();
+		$this->load_all_commands();
+
+		return $this->subcommands;
+	}
+
+	protected function load_all_commands() {
+		foreach ( array( 'internals', 'community' ) as $dir ) {
+			foreach ( glob( WP_CLI_ROOT . "/commands/$dir/*.php" ) as $filename ) {
+				$command = substr( basename( $filename ), 0, -4 );
+
+				if ( isset( $this->subcommands[ $command ] ) )
+					continue;
+
+				include $filename;
+			}
+		}
+	}
+
+	function load_command( $command ) {
+		if ( !isset( $this->subcommands[$command] ) ) {
+			foreach ( array( 'internals', 'community' ) as $dir ) {
+				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
+
+				if ( is_readable( $path ) ) {
+					include $path;
+					break;
+				}
+			}
+		}
+
+		if ( !isset( $this->subcommands[$command] ) ) {
+			return false;
+		}
+
+		return $this->subcommands[$command];
 	}
 }
 
 
 class CompositeCommand implements Command, Composite {
 
-	function __construct( $name, $class ) {
+	protected $name;
+
+	protected $subcommands;
+
+	public function __construct( $name, $class ) {
 		$this->name = $name;
-		$this->class = $class;
+
+		$this->subcommands = $this->collect_subcommands( $class );
+	}
+
+	private function collect_subcommands( $class ) {
+		$reflection = new \ReflectionClass( $class );
+
+		$subcommands = array();
+
+		foreach ( $reflection->getMethods() as $method ) {
+			if ( !self::_is_good_method( $method ) )
+				continue;
+
+			$subcommand = new MethodSubcommand( $class, $method, $this );
+
+			$subcommands[ $subcommand->get_name() ] = $subcommand;
+		}
+
+		return $subcommands;
 	}
 
 	function get_path() {
@@ -144,13 +214,7 @@ class CompositeCommand implements Command, Composite {
 	}
 
 	function find_subcommand( &$args ) {
-		$class = $this->class;
-
-		if ( empty( $args ) ) {
-			$name = $class::get_default_subcommand();
-		} else {
-			$name = array_shift( $args );
-		}
+		$name = array_shift( $args );
 
 		$subcommands = $this->get_subcommands();
 
@@ -181,20 +245,7 @@ class CompositeCommand implements Command, Composite {
 	}
 
 	public function get_subcommands() {
-		$reflection = new \ReflectionClass( $this->class );
-
-		$subcommands = array();
-
-		foreach ( $reflection->getMethods() as $method ) {
-			if ( !self::_is_good_method( $method ) )
-				continue;
-
-			$subcommand = new MethodSubcommand( $method, $this );
-
-			$subcommands[ $subcommand->get_name() ] = $subcommand;
-		}
-
-		return $subcommands;
+		return $this->subcommands;
 	}
 
 	private static function _is_good_method( $method ) {
@@ -203,10 +254,13 @@ class CompositeCommand implements Command, Composite {
 }
 
 
-abstract class Subcommand implements Command, Documentable {
+class Subcommand implements Command, Documentable {
 
-	function __construct( $method ) {
+	function __construct( $name, $callable, $method, $parent ) {
+		$this->name = $name;
+		$this->callable = $callable;
 		$this->method = $method;
+		$this->parent = $parent;
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
@@ -216,11 +270,23 @@ abstract class Subcommand implements Command, Documentable {
 		\WP_CLI::line( $prefix . "wp $full_name $synopsis" );
 	}
 
+	function invoke( $args, $assoc_args ) {
+		$this->check_args( $args, $assoc_args );
+
+		call_user_func( $this->callable, $args, $assoc_args );
+	}
+
 	function get_subcommands() {
 		return array();
 	}
 
-	abstract function get_name();
+	function get_name() {
+		return $this->name;
+	}
+
+	function get_path() {
+		return array_merge( $this->parent->get_path(), array( $this->get_name() ) );
+	}
 
 	protected function check_args( $args, $assoc_args ) {
 		$synopsis = $this->get_synopsis();
@@ -372,18 +438,21 @@ abstract class Subcommand implements Command, Documentable {
 
 class MethodSubcommand extends Subcommand {
 
-	function __construct( $method, $parent ) {
-		$this->parent = $parent;
+	function __construct( $class, $method, $parent ) {
+		$callable = array( new $class, $method->name );
 
-		parent::__construct( $method );
+		parent::__construct( self::_get_name( $method ), $callable, $method, $parent );
 	}
 
-	function get_path() {
-		return array( $this->parent->name, $this->get_name() );
+	private static function _get_name( $method ) {
+		if ( $name = self::get_tag( $method, 'subcommand' ) )
+			return $name;
+
+		return $method->name;
 	}
 
-	private function get_tag( $name ) {
-		$comment = $this->method->getDocComment();
+	private static function get_tag( $method, $name ) {
+		$comment = $method->getDocComment();
 
 		if ( preg_match( '/@' . $name . '\s+([a-z-]+)/', $comment, $matches ) )
 			return $matches[1];
@@ -391,51 +460,8 @@ class MethodSubcommand extends Subcommand {
 		return false;
 	}
 
-	function get_name() {
-		if ( $name = $this->get_tag( 'subcommand' ) )
-			return $name;
-
-		return $this->method->name;
-	}
-
 	function get_alias() {
-		return $this->get_tag( 'alias' );
-	}
-
-	function invoke( $args, $assoc_args ) {
-		$this->check_args( $args, $assoc_args );
-
-		$class = $this->parent->class;
-		$instance = new $class;
-
-		$this->method->invoke( $instance, $args, $assoc_args );
-	}
-}
-
-
-class SingleCommand extends Subcommand {
-
-	function __construct( $name, $callable ) {
-		$this->name = $name;
-		$this->callable = $callable;
-
-		$method = new \ReflectionMethod( $this->callable, '__invoke' );
-
-		parent::__construct( $method );
-	}
-
-	function get_name() {
-		return $this->name;
-	}
-
-	function get_path() {
-		return array( $this->name );
-	}
-
-	function invoke( $args, $assoc_args ) {
-		$this->check_args( $args, $assoc_args );
-
-		$this->method->invoke( $this->callable, $args, $assoc_args );
+		return self::get_tag( $this->method, 'alias' );
 	}
 }
 

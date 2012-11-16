@@ -2,10 +2,6 @@
 
 abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
-	public static function get_default_subcommand() {
-		return 'status';
-	}
-
 	protected $item_type;
 	protected $upgrader;
 	protected $upgrade_refresh;
