@@ -17,7 +17,8 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 
 	function __construct() {
 		require_once ABSPATH.'wp-admin/includes/plugin.php';
-		require_once ABSPATH.'wp-admin/includes/plugin-install.php';
+		if ( file_exists( ABSPATH.'wp-admin/includes/plugin-install.php' ) )
+			require_once ABSPATH.'wp-admin/includes/plugin-install.php';
 
 		parent::__construct();
 	}
