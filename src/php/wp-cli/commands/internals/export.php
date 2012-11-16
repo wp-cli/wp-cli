@@ -469,12 +469,15 @@ class Export_Command extends WP_CLI_Command {
 <?php  endif; ?>
 <?php  wxr_post_taxonomy(); ?>
 <?php $postmeta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->postmeta WHERE post_id = %d", $post->ID ) );
-					foreach ( $postmeta as $meta ) : if ( $meta->meta_key != '_edit_lock' ) : ?>
+					foreach ( $postmeta as $meta ) :
+						if ( apply_filters( 'wxr_export_skip_postmeta', false, $meta->meta_key, $meta ) )
+							continue;
+					?>
 		<wp:postmeta>
 			<wp:meta_key><?php echo $meta->meta_key; ?></wp:meta_key>
 			<wp:meta_value><?php echo wxr_cdata( $meta->meta_value ); ?></wp:meta_value>
 		</wp:postmeta>
-<?php endif; endforeach; ?>
+<?php endforeach; ?>
 <?php if ( false === $args['skip_comments'] ): ?>
 <?php $comments = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->comments WHERE comment_post_ID = %d AND comment_approved <> 'spam'", $post->ID ) );
 					foreach ( $comments as $c ) : ?>
