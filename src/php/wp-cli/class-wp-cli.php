@@ -221,13 +221,13 @@ class WP_CLI {
 
 		self::parse_args();
 
+		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
+
 		// Handle --version parameter
 		if ( isset( self::$assoc_args['version'] ) && empty( self::$arguments ) ) {
 			self::line( 'wp-cli ' . WP_CLI_VERSION );
 			exit;
 		}
-
-		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
 
 		$_SERVER['DOCUMENT_ROOT'] = getcwd();
 
