@@ -54,7 +54,7 @@ class WP_CLI {
 	 * @param string $message
 	 */
 	static function line( $message = '' ) {
-		if ( WP_CLI_QUIET ) return;
+		if ( defined('WP_CLI_QUIET') && WP_CLI_QUIET ) return;
 		\cli\line($message);
 	}
 
