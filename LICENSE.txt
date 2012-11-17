@@ -1,5 +1,5 @@
 ========================================
-wp-cli is licensed under the MIT License
+WP-CLI is licensed under the MIT License
 ========================================
 
 Copyright (C) 2011-2012 WP-CLI Development Group (https://github.com/wp-cli/wp-cli/contributors)
