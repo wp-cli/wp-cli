@@ -2,13 +2,13 @@
 
 namespace WP_CLI\Dispatcher;
 
-function traverse( &$args ) {
+function traverse( &$args, $method = 'find_subcommand' ) {
 	$args_copy = $args;
 
 	$command = \WP_CLI::$root;
 
 	while ( !empty( $args ) && $command && $command instanceof Composite ) {
-		$command = $command->find_subcommand( $args );
+		$command = $command->$method( $args );
 	}
 
 	if ( !$command )
@@ -24,13 +24,14 @@ interface Command {
 	function get_subcommands();
 
 	function show_usage();
-	function invoke( $arguments, $assoc_args );
+	function invoke( $args, $assoc_args );
 }
 
 
 interface Composite {
 
-	function find_subcommand( &$arguments );
+	function pre_invoke( &$args );
+	function find_subcommand( &$args );
 }
 
 
@@ -74,23 +75,28 @@ EOB
 		);
 	}
 
-	function invoke( $arguments, $assoc_args ) {
-		if ( empty( $arguments ) || array( 'help' ) == $arguments ) {
+	function invoke( $args, $assoc_args ) {
+		$subcommand = $this->pre_invoke( $args );
+		$subcommand->invoke( $args, $assoc_args );
+	}
+
+	function pre_invoke( &$args ) {
+		if ( empty( $args ) || array( 'help' ) == $args ) {
 			$this->show_usage();
 			exit;
 		}
 
-		$cmd_name = $arguments[0];
-		$command = $this->find_subcommand( $arguments );
+		$cmd_name = $args[0];
+		$command = $this->find_subcommand( $args );
 
 		if ( !$command )
 			\WP_CLI::error( sprintf( "'%s' is not a registered wp command. See 'wp help'.", $cmd_name ) );
 
-		$command->invoke( $arguments, $assoc_args );
+		return $command;
 	}
 
-	function find_subcommand( &$arguments ) {
-		$command = array_shift( $arguments );
+	function find_subcommand( &$args ) {
+		$command = array_shift( $args );
 
 		$aliases = array(
 			'sql' => 'db'
@@ -203,14 +209,19 @@ class CompositeCommand implements Command, Composite {
 	}
 
 	function invoke( $args, $assoc_args ) {
+		$subcommand = $this->pre_invoke( $args );
+		$subcommand->invoke( $args, $assoc_args );
+	}
+
+	function pre_invoke( &$args ) {
 		$subcommand = $this->find_subcommand( $args );
 
 		if ( !$subcommand ) {
 			$this->show_usage();
-			return;
+			exit;
 		}
 
-		$subcommand->invoke( $args, $assoc_args );
+		return $subcommand;
 	}
 
 	function find_subcommand( &$args ) {

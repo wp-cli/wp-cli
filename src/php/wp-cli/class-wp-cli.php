@@ -302,7 +302,8 @@ class WP_CLI {
 	}
 
 	private static function run_command() {
-		self::$root->invoke( self::$arguments, self::$assoc_args );
+		$command = Dispatcher\traverse( self::$arguments, 'pre_invoke' );
+		$command->invoke( self::$arguments, self::$assoc_args );
 	}
 
 	private static function generate_man( $args ) {
