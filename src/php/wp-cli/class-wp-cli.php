@@ -223,6 +223,12 @@ class WP_CLI {
 
 		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
 
+		// Handle --version parameter
+		if ( isset( self::$assoc_args['version'] ) && empty( self::$arguments ) ) {
+			self::line( 'wp-cli ' . WP_CLI_VERSION );
+			exit;
+		}
+
 		// Handle --info parameter
 		if ( isset( self::$assoc_args['info'] ) && empty( self::$arguments ) ) {
 			self::show_info();
