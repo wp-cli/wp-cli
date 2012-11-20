@@ -223,9 +223,9 @@ class WP_CLI {
 
 		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
 
-		// Handle --version parameter
-		if ( isset( self::$assoc_args['version'] ) && empty( self::$arguments ) ) {
-			self::line( 'wp-cli ' . WP_CLI_VERSION );
+		// Handle --info parameter
+		if ( isset( self::$assoc_args['info'] ) && empty( self::$arguments ) ) {
+			self::show_info();
 			exit;
 		}
 
@@ -304,6 +304,16 @@ class WP_CLI {
 	private static function run_command() {
 		$command = Dispatcher\traverse( self::$arguments, 'pre_invoke' );
 		$command->invoke( self::$arguments, self::$assoc_args );
+	}
+
+	private static function show_info() {
+		$php_bin = defined( 'PHP_BINARY' ) ? PHP_BINARY : getenv( 'WP_CLI_PHP_USED' );
+
+		WP_CLI::line( "PHP binary:\t" . $php_bin );
+		WP_CLI::line( "PHP version:\t" . PHP_VERSION );
+		WP_CLI::line( "php.ini used:\t" . get_cfg_var( 'cfg_file_path' ) );
+		WP_CLI::line( "wp-cli root:\t" . WP_CLI_ROOT );
+		WP_CLI::line( "wp-cli version:\t" . WP_CLI_VERSION );
 	}
 
 	private static function generate_man( $args ) {
