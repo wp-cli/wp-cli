@@ -14,14 +14,14 @@ class User_Command extends WP_CLI_Command {
 	 * List users.
 	 *
 	 * @subcommand list
-	 * @synopsis [--role=<role>]
+	 * @synopsis [--role=<role>] [--ids]
 	 */
 	public function _list( $args, $assoc_args ) {
 		global $blog_id;
 
 		$params = array(
 			'blog_id' => $blog_id,
-			'fields' => 'all_with_meta',
+			'fields' => isset( $assoc_args['ids'] ) ? 'ids' : 'all_with_meta',
 		);
 
 		if ( array_key_exists('role', $assoc_args) ) {
@@ -29,6 +29,12 @@ class User_Command extends WP_CLI_Command {
 		}
 
 		$users = get_users( $params );
+
+		if ( isset( $assoc_args['ids'] ) ) {
+			WP_CLI::out( implode( ' ', $users ) );
+			return;
+		}
+
 		$fields = array('ID', 'user_login', 'display_name', 'user_email',
 			'user_registered');
 
