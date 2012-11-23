@@ -122,16 +122,11 @@ class Scaffold_Command extends WP_CLI_Command {
      fclose( $handle );
   }
 
-  function status( $args, $assoc_args ) {
-    WP_CLI::success( "Status command executed \n" );
-  }
-
   static function help() {
     WP_CLI::line( 'Welcome to wp-cli scaffold' );
     WP_CLI::line( 'Possible subcommando: post_type, taxonomy' );
     WP_CLI::line( 'Example: post_type zombie' );
     WP_CLI::line( 'Example: taxonomy zombie_speed --post_types=zombie' );
-
   }
 
 }
