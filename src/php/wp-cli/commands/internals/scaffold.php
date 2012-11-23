@@ -12,7 +12,7 @@ WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );
 class Scaffold_Command extends WP_CLI_Command {
   
   /**
-   * Subcommand post type
+   * Subcommand posttype
    *
    * @param string $args Name of post type 
    * @param array $assoc_args
@@ -128,9 +128,9 @@ class Scaffold_Command extends WP_CLI_Command {
 
   static function help() {
     WP_CLI::line( 'Welcome to wp-cli scaffold' );
-    WP_CLI::line( 'Possible subcommando: cpt, tax' );
-    WP_CLI::line( 'Example: cpt zombie' );
-    WP_CLI::line( 'Example: tax zombie_speed --post_types=zombie' );
+    WP_CLI::line( 'Possible subcommando: post_type, taxonomy' );
+    WP_CLI::line( 'Example: post_type zombie' );
+    WP_CLI::line( 'Example: taxonomy zombie_speed --post_types=zombie' );
 
   }
 
