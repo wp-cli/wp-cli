@@ -12,15 +12,15 @@ WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );
 class Scaffold_Command extends WP_CLI_Command {
   
   /**
-   * Subcommand custom post type
+   * Subcommand post type
    *
-   * @param string $args Name of custom post type 
+   * @param string $args Name of post type 
    * @param array $assoc_args
    *
    */
 
-  function custom_post_type( $args, $assoc_args ) {
-    if( !isset( $args[0] ) ) WP_CLI::error( "Please provide a cpt name" );
+  function post_type( $args, $assoc_args ) {
+    if( !isset( $args[0] ) ) WP_CLI::error( "Please provide a post type name" );
 
     // set the args to variables with normal names to keep our sanity
     $post_type      = strtolower( $args[0] );
@@ -56,7 +56,7 @@ class Scaffold_Command extends WP_CLI_Command {
     // generate the variables from the defaults and associated arguments if they are set
     extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
-    $path = TEMPLATEPATH . '/custom-post-types/';
+    $path = TEMPLATEPATH . '/post-types/';
     if(! is_dir($path) )
       mkdir( $path );
 
@@ -67,18 +67,6 @@ class Scaffold_Command extends WP_CLI_Command {
 
     fwrite( $handle, $output );
     fclose( $handle );
-  }
-
-  /**
-   * Subcommand cpt
-   * Alias for custom_post_type
-   *
-   * @param string $args Name of custom post type
-   * @param array $assoc_args
-   *
-   */
-  function cpt ( $args, $assoc_args ) {
-    $this->custom_post_type( $args, $assoc_args );
   }
 
   /**
@@ -134,20 +122,8 @@ class Scaffold_Command extends WP_CLI_Command {
      fclose( $handle );
   }
 
-  /**
-   * Subcommand tax
-   * Alias for taxonomy
-   *
-   * @param string $args Name of taxonomy
-   * @param array $assoc_args
-   *
-   */
-  function tax ( $args, $assoc_args ) {
-    $this->taxonomy( $args, $assoc_args );
-  }
-
   function status( $args, $assoc_args ) {
-    WP_CLI::success( "status command executed \n" );
+    WP_CLI::success( "Status command executed \n" );
   }
 
   static function help() {
