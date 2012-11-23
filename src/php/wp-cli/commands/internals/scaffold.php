@@ -1,11 +1,12 @@
 <?php
 /**
- * Implement Scaffold Command
+ * Implement scaffold command
  *
  * @package wp-cli
- * @subpackage commands/community
+ * @subpackage commands/internals
  * @maintainer LinePress (http://www.linespress.org)
  */
+
 WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );
 
 class Scaffold_Command extends WP_CLI_Command {
