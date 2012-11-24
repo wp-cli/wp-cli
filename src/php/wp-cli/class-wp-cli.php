@@ -177,7 +177,7 @@ class WP_CLI {
 	}
 
 	/**
-	 * Launch an external process, closing the current one
+	 * Launch an external process that takes over I/O.
 	 *
 	 * @param string Command to call
 	 * @param bool Whether to exit if the command returns an error status
