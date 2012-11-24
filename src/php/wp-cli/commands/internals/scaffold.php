@@ -58,7 +58,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
     $path = TEMPLATEPATH . '/post-types/';
     if(! is_dir($path) )
-      mkdir( $path );
+      WP_CLI::launch('mkdir ' . $path);
 
     $file = $path . $post_type .'.php';
     $handle = fopen( $file, 'wb' ) or die( 'Cannot open file:  ' . $file );
@@ -111,7 +111,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
     $path = TEMPLATEPATH . '/taxonomies/';
     if(! is_dir($path) )
-      mkdir( $path );
+      WP_CLI::launch('mkdir ' . $path);
     
     $file = $path . $taxonomy .'.php';
     $handle = fopen( $file, 'wb' ) or die( 'Cannot open file:  ' . $file );
