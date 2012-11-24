@@ -1,4 +1,7 @@
 <?php
+
+WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );
+
 /**
  * Implement scaffold command
  *
@@ -6,30 +9,29 @@
  * @subpackage commands/internals
  * @maintainer LinePress (http://www.linespress.org)
  */
-
-WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );
-
 class Scaffold_Command extends WP_CLI_Command {
   
   /**
    * Subcommand posttype
    *
    * @param string $args Name of post type 
-   * @param array $assoc_args
+   * @param array $assoc_args The ussual WordPress arguments
    *
    */
-
   function post_type( $args, $assoc_args ) {
-    if( !isset( $args[0] ) ) WP_CLI::error( "Please provide a post type name" );
+    if( !isset( $args[0] ) ) {
+      WP_CLI::error( "Please provide a post type name" );
+    }
 
-    // set the args to variables with normal names to keep our sanity
+    // Set the args to variables with normal names to keep our sanity
     $post_type      = strtolower( $args[0] );
-    // we use the machine name for function declarations 
-    $machine_name   = preg_replace('/-/', '_', $post_type );
 
-    // if no label is given use the slug and prettify it as good as possible
-    if( !isset($assoc_args['label'])){
-      $label = preg_replace('/_|-/', ' ', ucfirst( strtolower( $post_type ) ) );            
+    // We use the machine name for function declarations 
+    $machine_name   = preg_replace( '/-/', '_', $post_type );
+
+    // If no label is given use the slug and prettify it as good as possible
+    if( !isset( $assoc_args['label'] ) ) {
+      $label = preg_replace( '/_|-/', ' ', ucfirst( strtolower( $post_type ) ) );            
     }
     
     // set up defaults and merge theme with assoc_args
@@ -53,12 +55,12 @@ class Scaffold_Command extends WP_CLI_Command {
       'context'             => strtolower( wp_get_theme()->template ),
     );
 
-    // generate the variables from the defaults and associated arguments if they are set
+    // Generate the variables from the defaults and associated arguments if they are set
     extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
     $path = TEMPLATEPATH . '/post-types/';
-    if(! is_dir($path) )
-      WP_CLI::launch('mkdir ' . $path);
+    if(! is_dir( $path ) )
+      WP_CLI::launch( 'mkdir ' . $path );
 
     $file = $path . $post_type .'.php';
     $handle = fopen( $file, 'wb' ) or die( 'Cannot open file:  ' . $file );
@@ -73,25 +75,27 @@ class Scaffold_Command extends WP_CLI_Command {
    * Subcommand taxonomy
    *
    * @param string $args Name of taxonomy
-   * @param array $assoc_args
+   * @param array $assoc_args The ussual WordPress arguments
    *
    */
   function taxonomy( $args, $assoc_args ) {
 
-    if( !isset($args[0])) WP_CLI::error( "Please provide a taxonomy" );
-
-    // set the args to variables with normal names to keep our sanity
-    $taxonomy       = strtolower( $args[0] );
-
-    // we use the machine name for function declarations 
-    $machine_name   = preg_replace('/-/', '_', $taxonomy );
-
-    // if no label is given use the slug and prettify it as good as possible
-    if( !isset($assoc_args['label'])){
-      $label = preg_replace('/_|-/', ' ', ucfirst( strtolower( $taxonomy ) ) );            
+    if( !isset( $args[0] ) ) {
+      WP_CLI::error( "Please provide a taxonomy" );
     }
 
-    // set up defaults and merge theme with assoc_args
+    // Set the args to variables with normal names to keep our sanity
+    $taxonomy       = strtolower( $args[0] );
+
+    // We use the machine name for function declarations 
+    $machine_name   = preg_replace( '/-/', '_', $taxonomy );
+
+    // If no label is given use the slug and prettify it as good as possible
+    if( !isset( $assoc_args['label'] ) ){
+      $label = preg_replace( '/_|-/', ' ', ucfirst( strtolower( $taxonomy ) ) );            
+    }
+
+    // Set up defaults and merge theme with assoc_args
     $defaults = array(
       'public'              => 'true',
       'show_in_nav_menus'   => 'true',
@@ -106,20 +110,20 @@ class Scaffold_Command extends WP_CLI_Command {
       'post_types'          => 'post'
     );
     
-    // generate the variables from the defaults and associated arguments if they are set
+    // Generate the variables from the defaults and associated arguments if they are set
     extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
     $path = TEMPLATEPATH . '/taxonomies/';
-    if(! is_dir($path) )
-      WP_CLI::launch('mkdir ' . $path);
+    if(! is_dir( $path ) )
+      WP_CLI::launch( 'mkdir ' . $path );
     
     $file = $path . $taxonomy .'.php';
     $handle = fopen( $file, 'wb' ) or die( 'Cannot open file:  ' . $file );
   
     include 'skeletons/taxonomy_skeleton.php';
 
-     fwrite( $handle, $output );
-     fclose( $handle );
+    fwrite( $handle, $output );
+    fclose( $handle );
   }
 
   static function help() {
@@ -128,5 +132,4 @@ class Scaffold_Command extends WP_CLI_Command {
     WP_CLI::line( 'Example: post_type zombie' );
     WP_CLI::line( 'Example: taxonomy zombie_speed --post_types=zombie' );
   }
-
 }
