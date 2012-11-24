@@ -7,7 +7,7 @@
 \fBwp\-post\-generate\fR \- Generate some posts\.
 .
 .SH "SYNOPSIS"
-\fBwp post generate\fR [\-\-count=100] [\-\-post_type=post] [\-\-post_status=publish] [\-\-post_author=\fIlogin\fR] [\-\-post_date=\fIdate\fR] [\-\-max_depth=1]
+\fBwp post generate\fR [\-\-count=100] [\-\-post_type=\fItype\fR] [\-\-post_status=\fIstatus\fR] [\-\-post_author=\fIlogin\fR] [\-\-post_date=\fIyyyy\-mm\-dd\fR] [\-\-max_depth=1]
 .
 .SH "OPTIONS"
 .
@@ -18,22 +18,28 @@
 How many posts to generate\. Default: 100
 .
 .TP
-\fB\-\-type\fR=\fIpost_type\fR:
+\fB\-\-post_type\fR=\fItype\fR:
 .
 .IP
 The type of the generated posts\. Default: \'post\'
 .
 .TP
-\fB\-\-status\fR=\fIpost_status\fR:
+\fB\-\-post_status\fR=\fIstatus\fR:
 .
 .IP
 The status of the generated posts\. Default: \'publish\'
 .
 .TP
-\fB\-\-author\fR=\fIlogin\fR:
+\fB\-\-post_author\fR=\fIlogin\fR:
 .
 .IP
 The author of the generated posts\. Default: none
+.
+.TP
+\fB\-\-post_date\fR=\fIyyyy\-mm\-dd\fR:
+.
+.IP
+The date of the generated posts\. Default: current date
 .
 .TP
 \fB\-\-max_depth\fR=\fInumber\fR:
