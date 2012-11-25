@@ -75,6 +75,8 @@ class Scaffold_Command extends WP_CLI_Command {
 
     if ( ! $wp_filesystem->put_contents( $filename, $output ) ) {
       WP_CLI::error( 'Error while saving file' );
+    } else {
+      WP_CLI::success( $post_type . ' created' );
     }
   }
 
@@ -132,6 +134,8 @@ class Scaffold_Command extends WP_CLI_Command {
 
     if ( ! $wp_filesystem->put_contents( $filename, $output ) ) {
       WP_CLI::error( 'Error while saving file' );
+    } else {
+      WP_CLI::success( $taxonomy . ' created' );
     }
   }
 
