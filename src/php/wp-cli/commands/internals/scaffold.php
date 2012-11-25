@@ -11,6 +11,10 @@ WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );
  */
 class Scaffold_Command extends WP_CLI_Command {
   
+  function __construct() {
+    WP_Filesystem();
+  }
+
   /**
    * Subcommand posttype
    *
@@ -19,6 +23,8 @@ class Scaffold_Command extends WP_CLI_Command {
    *
    */
   function post_type( $args, $assoc_args ) {
+    global $wp_filesystem;
+
     if( !isset( $args[0] ) ) {
       WP_CLI::error( "Please provide a post type name" );
     }
@@ -59,16 +65,17 @@ class Scaffold_Command extends WP_CLI_Command {
     extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
     $path = TEMPLATEPATH . '/post-types/';
-    if(! is_dir( $path ) )
-      WP_CLI::launch( 'mkdir ' . $path );
+    if( !$wp_filesystem->is_dir( $path ) ) {
+      $wp_filesystem->mkdir( $path );
+    }
 
-    $file = $path . $post_type .'.php';
-    $handle = fopen( $file, 'wb' ) or die( 'Cannot open file:  ' . $file );
-  
+    $filename = $path . $post_type .'.php';
+
     include 'skeletons/post_type_skeleton.php';
 
-    fwrite( $handle, $output );
-    fclose( $handle );
+    if ( ! $wp_filesystem->put_contents( $filename, $output ) ) {
+      WP_CLI::error( 'Error while saving file' );
+    }
   }
 
   /**
@@ -79,6 +86,7 @@ class Scaffold_Command extends WP_CLI_Command {
    *
    */
   function taxonomy( $args, $assoc_args ) {
+    global $wp_filesystem;
 
     if( !isset( $args[0] ) ) {
       WP_CLI::error( "Please provide a taxonomy" );
@@ -91,7 +99,7 @@ class Scaffold_Command extends WP_CLI_Command {
     $machine_name   = preg_replace( '/-/', '_', $taxonomy );
 
     // If no label is given use the slug and prettify it as good as possible
-    if( !isset( $assoc_args['label'] ) ){
+    if( !isset( $assoc_args['label'] ) ) {
       $label = preg_replace( '/_|-/', ' ', ucfirst( strtolower( $taxonomy ) ) );            
     }
 
@@ -114,16 +122,17 @@ class Scaffold_Command extends WP_CLI_Command {
     extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
     $path = TEMPLATEPATH . '/taxonomies/';
-    if(! is_dir( $path ) )
-      WP_CLI::launch( 'mkdir ' . $path );
-    
-    $file = $path . $taxonomy .'.php';
-    $handle = fopen( $file, 'wb' ) or die( 'Cannot open file:  ' . $file );
-  
+    if( !$wp_filesystem->is_dir( $path ) ) {
+      $wp_filesystem->mkdir( $path );
+    }
+
+    $filename = $path . $taxonomy .'.php';
+
     include 'skeletons/taxonomy_skeleton.php';
 
-    fwrite( $handle, $output );
-    fclose( $handle );
+    if ( ! $wp_filesystem->put_contents( $filename, $output ) ) {
+      WP_CLI::error( 'Error while saving file' );
+    }
   }
 
   static function help() {
