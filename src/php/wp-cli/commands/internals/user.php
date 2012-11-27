@@ -91,7 +91,7 @@ class User_Command extends WP_CLI_Command {
 
 		$defaults = array(
 			'role' => get_option('default_role'),
-			'user_pass' => wp_generate_password(),
+			'user_pass' => false,
 			'user_registered' => strftime( "%F %T", time() ),
 			'display_name' => false,
 		);
@@ -102,6 +102,11 @@ class User_Command extends WP_CLI_Command {
 			$role = false;
 		} elseif ( is_null( get_role( $role ) ) ) {
 			WP_CLI::error( "Invalid role." );
+		}
+
+		if ( !$user_pass ) {
+			$user_pass = wp_generate_password();
+			$generated_pass = true;
 		}
 
 		$user_id = wp_insert_user( array(
@@ -126,6 +131,8 @@ class User_Command extends WP_CLI_Command {
 			WP_CLI::line( $user_id );
 		} else {
 			WP_CLI::success( "Created user $user_id." );
+			if ( isset( $generated_pass ) )
+				WP_CLI::line( "Password: $user_pass" );
 		}
 	}
 
