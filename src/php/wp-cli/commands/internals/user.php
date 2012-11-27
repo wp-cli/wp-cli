@@ -82,7 +82,7 @@ class User_Command extends WP_CLI_Command {
 	/**
 	 * Create a user.
 	 *
-	 * @synopsis <user-login> <user-email> [--role=<role>] [--porcelain]
+	 * @synopsis <user-login> <user-email> [--role=<role>] [--user_pass=<password>] [--user_registered=<yyyy-mm-dd>] [--display_name=<name>] [--porcelain]
 	 */
 	public function create( $args, $assoc_args ) {
 		global $blog_id;
@@ -122,10 +122,11 @@ class User_Command extends WP_CLI_Command {
 			}
 		}
 
-		if ( isset( $assoc_args['porcelain'] ) )
+		if ( isset( $assoc_args['porcelain'] ) ) {
 			WP_CLI::line( $user_id );
-		else
+		} else {
 			WP_CLI::success( "Created user $user_id." );
+		}
 	}
 
 	/**

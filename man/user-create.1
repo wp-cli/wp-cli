@@ -7,7 +7,7 @@
 \fBwp\-user\-create\fR \- Create a user\.
 .
 .SH "SYNOPSIS"
-\fBwp user create\fR \fIuser\-login\fR \fIuser\-email\fR [\-\-role=\fIrole\fR] [\-\-porcelain]
+\fBwp user create\fR \fIuser\-login\fR \fIuser\-email\fR [\-\-role=\fIrole\fR] [\-\-user_pass=\fIpassword\fR] [\-\-user_registered=\fIyyyy\-mm\-dd\fR] [\-\-display_name=\fIname\fR] [\-\-porcelain]
 .
 .SH "OPTIONS"
 .
@@ -27,7 +27,25 @@ The email address of the user to create\.
 \fB\-\-role\fR=\fIrole\fR:
 .
 .IP
-The role of the user to create\.
+The role of the user to create\. Default: default role
+.
+.TP
+\fB\-\-user_pass\fR=\fIpassword\fR:
+.
+.IP
+The user password\. Default: randomly generated
+.
+.TP
+\fB\-\-user_registered\fR=\fIyyyy\-mm\-dd\fR:
+.
+.IP
+The date the user registered\. Default: current date
+.
+.TP
+\fB\-\-display_name\fR=\fIname\fR:
+.
+.IP
+The display name\.
 .
 .TP
 \fB\-\-porcelain\fR:

@@ -10,7 +10,19 @@
 
 * `--role`=<role>:
 
-	The role of the user to create.
+	The role of the user to create. Default: default role
+
+* `--user_pass`=<password>:
+
+	The user password. Default: randomly generated
+
+* `--user_registered`=<yyyy-mm-dd>:
+
+	The date the user registered. Default: current date
+
+* `--display_name`=<name>:
+
+	The display name.
 
 * `--porcelain`:
 
