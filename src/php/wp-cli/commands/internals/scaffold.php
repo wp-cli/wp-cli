@@ -144,13 +144,6 @@ class Scaffold_Command extends WP_CLI_Command {
     }
   }
 
-  static function help() {
-    WP_CLI::line( 'Welcome to wp-cli scaffold' );
-    WP_CLI::line( 'Possible subcommando: post_type, taxonomy' );
-    WP_CLI::line( 'Example: post_type zombie' );
-    WP_CLI::line( 'Example: taxonomy zombie_speed --post_types=zombie' );
-  }
-
   private function pluralize($word) {
     $plural = array(
     '/(quiz)$/i'                => '\1zes',
