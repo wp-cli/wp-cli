@@ -9,3 +9,7 @@ themes directory.
 
 	If set, get the path to the closest parent directory, instead of the
 theme file.
+
+## EXAMPLES
+
+	cd $(wp theme path)
