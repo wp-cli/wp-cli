@@ -30,14 +30,19 @@ class Scaffold_Command extends WP_CLI_Command {
     }
 
     // Set the args to variables with normal names to keep our sanity
-    $post_type      = strtolower( $args[0] );
+    $post_type                = strtolower( $args[0] );
 
     // We use the machine name for function declarations 
-    $machine_name   = preg_replace( '/-/', '_', $post_type );
+    $machine_name             = preg_replace( '/-/', '_', $post_type );
+    $machine_name_plural      = $this->pluralize( $post_type );
 
     // If no label is given use the slug and prettify it as good as possible
     if( !isset( $assoc_args['label'] ) ) {
-      $label = preg_replace( '/_|-/', ' ', ucfirst( strtolower( $post_type ) ) );            
+      $label                  = preg_replace( '/_|-/', ' ', strtolower( $post_type ) );
+      $label_ucfirst          = ucfirst( $label );
+      $label_plural           = $this->pluralize( $label );
+      
+      $label_plural_ucfirst   = ucfirst( $label_plural );
     }
     
     // set up defaults and merge theme with assoc_args
@@ -55,7 +60,7 @@ class Scaffold_Command extends WP_CLI_Command {
       'hierarchical'        => 'false',
       'supports'            => "'title', 'editor'",
       'has_archive'         => 'true',
-      'rewrite'             => "array( 'slug' => '{$post_type}', 'feeds' => true, 'pages' => true )",
+      'rewrite'             => "array( 'slug' => '{$machine_name_plural}', 'feeds' => true, 'pages' => true )",
       'query_var'           => 'true',
       'can_export'          => 'true',
       'context'             => strtolower( wp_get_theme()->template ),
@@ -144,5 +149,59 @@ class Scaffold_Command extends WP_CLI_Command {
     WP_CLI::line( 'Possible subcommando: post_type, taxonomy' );
     WP_CLI::line( 'Example: post_type zombie' );
     WP_CLI::line( 'Example: taxonomy zombie_speed --post_types=zombie' );
+  }
+
+  private function pluralize($word) {
+    $plural = array(
+    '/(quiz)$/i'                => '\1zes',
+    '/^(ox)$/i'                 => '\1en',
+    '/([m|l])ouse$/i'           => '\1ice',
+    '/(matr|vert|ind)ix|ex$/i'  => '\1ices',
+    '/(x|ch|ss|sh)$/i'          => '\1es',
+    '/([^aeiouy]|qu)ies$/i'     => '\1y',
+    '/([^aeiouy]|qu)y$/i'       => '\1ies',
+    '/(hive)$/i'                => '\1s',
+    '/(?:([^f])fe|([lr])f)$/i'  => '\1\2ves',
+    '/sis$/i'                   => 'ses',
+    '/([ti])um$/i'              => '\1a',
+    '/(buffal|tomat)o$/i'       => '\1oes',
+    '/(bu)s$/i'                 => '1ses',
+    '/(alias|status)/i'         => '\1es',
+    '/(octop|vir)us$/i'         => '1i',
+    '/(ax|test)is$/i'           => '\1es',
+    '/s$/i'                     => 's',
+    '/$/'                       => 's');
+
+    $uncountable = array('equipment', 'information', 'rice', 'money', 'species', 'series', 'fish', 'sheep');
+
+    $irregular = array(
+    'person'    => 'people',
+    'man'       => 'men',
+    'woman'     => 'women',
+    'child'     => 'children',
+    'sex'       => 'sexes',
+    'move'      => 'moves');
+
+    $lowercased_word = strtolower($word);
+
+    foreach ($uncountable as $_uncountable){
+      if(substr($lowercased_word,(-1*strlen($_uncountable))) == $_uncountable){
+        return $word;
+      }
+    }
+
+    foreach ($irregular as $_plural=> $_singular){
+      if (preg_match('/('.$_plural.')$/i', $word, $arr)) {
+        return preg_replace('/('.$_plural.')$/i', substr($arr[0],0,1).substr($_singular,1), $word);
+      }
+    }
+
+    foreach ($plural as $rule => $replacement) {
+      if (preg_match($rule, $word)) {
+        return preg_replace($rule, $replacement, $word);
+      }
+    }
+    return false;
+
   }
 }
