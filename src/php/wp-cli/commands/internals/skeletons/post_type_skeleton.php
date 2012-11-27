@@ -18,7 +18,7 @@
         'hierarchical'        => {$hierarchical},
         'supports'            => array( {$supports} ),
         'has_archive'         => {$has_archive},
-        'rewrite'             => {$rewrite},
+        'rewrite'             => array( 'slug' => '{$slug}', 'feeds' => {$feeds}, 'pages' => {$pages} ),
         'query_var'           => {$query_var},
         'can_export'          => {$can_export},
         'labels'              => array(

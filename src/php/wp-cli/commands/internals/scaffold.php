@@ -16,11 +16,9 @@ class Scaffold_Command extends WP_CLI_Command {
   }
 
   /**
-   * Subcommand posttype
+   * @subcommand post-type
    *
-   * @param string $args Name of post type 
-   * @param array $assoc_args The ussual WordPress arguments
-   *
+   * @synopsis [--description=<description>] [--public=<public>] [--exclude_from_search=<exclude_from_search>] [--show_ui=<show_ui>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_in_menu=<show_in_menu>] [--show_in_admin_bar=<show_in_admin_bar>] [--menu_position=<menu_position>] [--menu_icon=<menu_icon>] [--capability_type=<capability_type>] [--hierarchical=<hierarchical>] [--supports=<supports>] [--has_archive=<has_archive>] [--slug=<slug>] [--feed=<feed>] [--pages=<pages>] [--query_var=<query_var>] [--can_export=<can_export>] [context=<context>] 
    */
   function post_type( $args, $assoc_args ) {
     global $wp_filesystem;
@@ -60,7 +58,9 @@ class Scaffold_Command extends WP_CLI_Command {
       'hierarchical'        => 'false',
       'supports'            => "'title', 'editor'",
       'has_archive'         => 'true',
-      'rewrite'             => "array( 'slug' => '{$machine_name_plural}', 'feeds' => true, 'pages' => true )",
+      'slug'                => $machine_name_plural,
+      'feeds'               => 'true',
+      'pages'               => 'true',
       'query_var'           => 'true',
       'can_export'          => 'true',
       'context'             => strtolower( wp_get_theme()->template ),
