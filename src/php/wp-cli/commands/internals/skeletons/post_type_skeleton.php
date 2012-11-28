@@ -38,6 +38,7 @@
         ),
       ) 
     );
+  }
   add_action( 'init', '{$machine_name}_init' );
 
   function {$machine_name}_updated_messages( \$messages ) {
