@@ -3,21 +3,21 @@
 
   if ( !taxonomy_exists( '{$taxonomy}' ) ) :
     \$labels = array( 
-      'name'                        =>  __( '{$taxonomy}', '{$context}' ),
-      'singular_name'               =>  __( '{$taxonomy}', '{$context}' ),
-      'search_items'                =>  __( 'Search {$taxonomy}', '{$context}' ),
-      'popular_items'               =>  __( 'Popular {$taxonomy}', '{$context}' ),
-      'all_items'                   =>  __( 'All {$taxonomy}', '{$context}' ),
-      'parent_item'                 =>  __( 'Parent {$taxonomy}', '{$context}' ),
-      'parent_item_colon'           =>  __( 'Parent {$taxonomy}:', '{$context}' ),
-      'edit_item'                   =>  __( 'Edit {$taxonomy}', '{$context}' ),
-      'update_item'                 =>  __( 'Update {$taxonomy}', '{$context}' ),
-      'add_new_item'                =>  __( 'New {$taxonomy}', '{$context}' ),
-      'new_item_name'               =>  __( 'New {$taxonomy}', '{$context}' ),
-      'separate_items_with_commas'  =>  __( '{$taxonomy}s seperated by comma', '{$context}' ),
-      'add_or_remove_items'         =>  __( 'Add or remove {$taxonomy}s', '{$context}' ),
-      'choose_from_most_used'       =>  __( 'Choose from the most used {$taxonomy}', '{$context}' ),
-      'menu_name'                   =>  __( '{$taxonomy}s', '{$context}' ),
+      'name'                        =>  __( '{$taxonomy}', '{$textdomain}' ),
+      'singular_name'               =>  __( '{$taxonomy}', '{$textdomain}' ),
+      'search_items'                =>  __( 'Search {$taxonomy}', '{$textdomain}' ),
+      'popular_items'               =>  __( 'Popular {$taxonomy}', '{$textdomain}' ),
+      'all_items'                   =>  __( 'All {$taxonomy}', '{$textdomain}' ),
+      'parent_item'                 =>  __( 'Parent {$taxonomy}', '{$textdomain}' ),
+      'parent_item_colon'           =>  __( 'Parent {$taxonomy}:', '{$textdomain}' ),
+      'edit_item'                   =>  __( 'Edit {$taxonomy}', '{$textdomain}' ),
+      'update_item'                 =>  __( 'Update {$taxonomy}', '{$textdomain}' ),
+      'add_new_item'                =>  __( 'New {$taxonomy}', '{$textdomain}' ),
+      'new_item_name'               =>  __( 'New {$taxonomy}', '{$textdomain}' ),
+      'separate_items_with_commas'  =>  __( '{$taxonomy}s seperated by comma', '{$textdomain}' ),
+      'add_or_remove_items'         =>  __( 'Add or remove {$taxonomy}s', '{$textdomain}' ),
+      'choose_from_most_used'       =>  __( 'Choose from the most used {$taxonomy}', '{$textdomain}' ),
+      'menu_name'                   =>  __( '{$taxonomy}s', '{$textdomain}' ),
     );
   
     \$args = array( 
