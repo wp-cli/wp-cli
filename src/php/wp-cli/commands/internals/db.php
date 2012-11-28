@@ -85,6 +85,9 @@ class DB_Command extends WP_CLI_Command {
 
 	/**
 	 * Print a string for connecting to the DB.
+	 *
+	 * @subcommand connect-str
+	 * @subcommand connect
 	 */
 	function connect() {
 		WP_CLI::line( $this->connect_string() );

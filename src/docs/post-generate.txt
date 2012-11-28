@@ -4,17 +4,21 @@
 
 	How many posts to generate. Default: 100
 
-* `--type`=<post_type>:
+* `--post_type`=<type>:
 
 	The type of the generated posts. Default: 'post'
 
-* `--status`=<post_status>:
+* `--post_status`=<status>:
 
 	The status of the generated posts. Default: 'publish'
 
-* `--author`=<login>:
+* `--post_author`=<login>:
 
 	The author of the generated posts. Default: none
+
+* `--post_date`=<yyyy-mm-dd>:
+
+	The date of the generated posts. Default: current date
 
 * `--max_depth`=<number>:
 

@@ -3,3 +3,8 @@
 * `--role`=<role>:
 
 	Only display users with a certain role.
+
+* `--ids`:
+
+	Return only the IDs of the found users, separated by spaces.
+

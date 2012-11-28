@@ -14,14 +14,14 @@ class User_Command extends WP_CLI_Command {
 	 * List users.
 	 *
 	 * @subcommand list
-	 * @synopsis [--role=<role>]
+	 * @synopsis [--role=<role>] [--ids]
 	 */
 	public function _list( $args, $assoc_args ) {
 		global $blog_id;
 
 		$params = array(
 			'blog_id' => $blog_id,
-			'fields' => 'all_with_meta',
+			'fields' => isset( $assoc_args['ids'] ) ? 'ids' : 'all_with_meta',
 		);
 
 		if ( array_key_exists('role', $assoc_args) ) {
@@ -29,6 +29,12 @@ class User_Command extends WP_CLI_Command {
 		}
 
 		$users = get_users( $params );
+
+		if ( isset( $assoc_args['ids'] ) ) {
+			WP_CLI::out( implode( ' ', $users ) );
+			return;
+		}
+
 		$fields = array('ID', 'user_login', 'display_name', 'user_email',
 			'user_registered');
 
@@ -76,7 +82,7 @@ class User_Command extends WP_CLI_Command {
 	/**
 	 * Create a user.
 	 *
-	 * @synopsis <user-login> <user-email> [--role=<role>] [--porcelain]
+	 * @synopsis <user-login> <user-email> [--role=<role>] [--user_pass=<password>] [--user_registered=<yyyy-mm-dd>] [--display_name=<name>] [--porcelain]
 	 */
 	public function create( $args, $assoc_args ) {
 		global $blog_id;
@@ -85,7 +91,7 @@ class User_Command extends WP_CLI_Command {
 
 		$defaults = array(
 			'role' => get_option('default_role'),
-			'user_pass' => wp_generate_password(),
+			'user_pass' => false,
 			'user_registered' => strftime( "%F %T", time() ),
 			'display_name' => false,
 		);
@@ -96,6 +102,11 @@ class User_Command extends WP_CLI_Command {
 			$role = false;
 		} elseif ( is_null( get_role( $role ) ) ) {
 			WP_CLI::error( "Invalid role." );
+		}
+
+		if ( !$user_pass ) {
+			$user_pass = wp_generate_password();
+			$generated_pass = true;
 		}
 
 		$user_id = wp_insert_user( array(
@@ -116,10 +127,13 @@ class User_Command extends WP_CLI_Command {
 			}
 		}
 
-		if ( isset( $assoc_args['porcelain'] ) )
+		if ( isset( $assoc_args['porcelain'] ) ) {
 			WP_CLI::line( $user_id );
-		else
+		} else {
 			WP_CLI::success( "Created user $user_id." );
+			if ( isset( $generated_pass ) )
+				WP_CLI::line( "Password: $user_pass" );
+		}
 	}
 
 	/**
@@ -281,13 +295,13 @@ class User_Command extends WP_CLI_Command {
 
 			// User already exists and we just need to add them to the site if they aren't already there
 			if ( $existing_user = get_user_by( 'email', $new_user['user_email'] ) ) {
-				if ( in_array( $new_user['user_login'], wp_list_pluck( $blog_users, 'user_login' ) ) )
-					WP_CLI::warning( "{$new_user['user_login']} already is a member of blog" );
+				if ( in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ) ) )
+					WP_CLI::warning( "{$existing_user->user_login} already is a member of blog" );
 				else if ( $new_user['role'] ) {
-					add_user_to_blog( get_current_blog_id(), $new_user['user_login'], $new_user['role'] );
-					WP_CLI::line( "{$new_user['user_login']} added to blog as {$new_user['role']}" );
+					add_user_to_blog( get_current_blog_id(), $existing_user->ID, $new_user['role'] );
+					WP_CLI::line( "{$existing_user->user_login} added to blog as {$new_user['role']}" );
 				} else {
-					WP_CLI::line( "{$new_user['user_login']} exists, but won't be added to the blog" );
+					WP_CLI::line( "{$existing_user->user_login} exists, but won't be added to the blog" );
 				}
 				continue;
 			}
