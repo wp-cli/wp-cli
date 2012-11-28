@@ -40,7 +40,7 @@
     );
   endif;
 
-  function lp_{$machine_name}_updated_messages( \$messages ) {
+  function {$machine_name}_updated_messages( \$messages ) {
     global \$post, \$post_ID;
 
     \$messages['{$post_type}'] = array(
@@ -62,22 +62,22 @@
 
     return \$messages;
   }
-  add_filter( 'post_updated_messages', 'lp_{$machine_name}_updated_messages' );
+  add_filter( 'post_updated_messages', '{$machine_name}_updated_messages' );
 
-  function lp_pre_single_{$machine_name}( \$query ) {
+  function pre_single_{$machine_name}( \$query ) {
     if ( !is_admin() && get_post_type() == '{$post_type}' && is_main_query() ) {
       // use \$query->set() to change the main query 
       // or use this function to hook in some other specific code
 
     }
   }
-  add_action( 'pre_get_posts', 'lp_pre_single_{$machine_name}' );
+  add_action( 'pre_get_posts', 'pre_single_{$machine_name}' );
 
-  function lp_pre_archive_{$machine_name}( \$query ) {
+  function pre_archive_{$machine_name}( \$query ) {
     if ( !is_admin() && is_post_type_archive( '{$post_type}' ) ) {
       // use \$query->set() to change the main query 
       // or use this function to hook in some other specific code
 
     }
   }
-  add_action( 'pre_get_posts', 'lp_pre_archive_{$machine_name}' );";
+  add_action( 'pre_get_posts', 'pre_archive_{$machine_name}' );";
