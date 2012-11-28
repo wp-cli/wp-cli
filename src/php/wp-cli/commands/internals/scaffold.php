@@ -96,11 +96,15 @@ class Scaffold_Command extends WP_CLI_Command {
     $taxonomy       = strtolower( $args[0] );
 
     // We use the machine name for function declarations 
-    $machine_name   = preg_replace( '/-/', '_', $taxonomy );
+    $machine_name             = preg_replace( '/-/', '_', $taxonomy );
+    $machine_name_plural      = $this->pluralize( $taxonomy );
 
     // If no label is given use the slug and prettify it as good as possible
     if( !isset( $assoc_args['label'] ) ) {
-      $label = preg_replace( '/_|-/', ' ', ucfirst( strtolower( $taxonomy ) ) );            
+      $label                  = preg_replace( '/_|-/', ' ', strtolower( $taxonomy ) );
+      $label_ucfirst          = ucfirst( $label );
+      $label_plural           = $this->pluralize( $label );
+      $label_plural_ucfirst   = ucfirst( $label_plural );
     }
 
     // Set up defaults and merge theme with assoc_args
