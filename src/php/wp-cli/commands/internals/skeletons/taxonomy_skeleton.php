@@ -14,10 +14,10 @@ if ( !taxonomy_exists( '{$taxonomy}' ) ) :
     'update_item'                 =>  __( 'Update {$taxonomy}', '{$textdomain}' ),
     'add_new_item'                =>  __( 'New {$taxonomy}', '{$textdomain}' ),
     'new_item_name'               =>  __( 'New {$taxonomy}', '{$textdomain}' ),
-    'separate_items_with_commas'  =>  __( '{$taxonomy}s seperated by comma', '{$textdomain}' ),
-    'add_or_remove_items'         =>  __( 'Add or remove {$taxonomy}s', '{$textdomain}' ),
+    'separate_items_with_commas'  =>  __( '{$taxonomy} seperated by comma', '{$textdomain}' ),
+    'add_or_remove_items'         =>  __( 'Add or remove {$taxonomy}', '{$textdomain}' ),
     'choose_from_most_used'       =>  __( 'Choose from the most used {$taxonomy}', '{$textdomain}' ),
-    'menu_name'                   =>  __( '{$taxonomy}s', '{$textdomain}' ),
+    'menu_name'                   =>  __( '{$taxonomy}', '{$textdomain}' ),
   );
 
   \$args = array( 
