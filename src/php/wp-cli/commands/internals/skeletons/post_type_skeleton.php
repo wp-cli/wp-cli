@@ -62,4 +62,4 @@
 
     return \$messages;
   }
-  add_filter( 'post_updated_messages', '{$machine_name}_updated_messages' );
+  add_filter( 'post_updated_messages', '{$machine_name}_updated_messages' );";
