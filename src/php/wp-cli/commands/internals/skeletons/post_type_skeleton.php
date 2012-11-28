@@ -1,7 +1,7 @@
 <?php
   $output = "<?php
 
-  if (!post_type_exists( '{$post_type}' ) ) :
+  function {$machine_name}_init() {
     register_post_type( '{$post_type}', 
       array(
         'label'               => __( '{$label_plural_ucfirst}', '{$context}' ),
@@ -38,7 +38,7 @@
         ),
       ) 
     );
-  endif;
+  add_action( 'init', '{$machine_name}_init' );
 
   function {$machine_name}_updated_messages( \$messages ) {
     global \$post, \$post_ID;
