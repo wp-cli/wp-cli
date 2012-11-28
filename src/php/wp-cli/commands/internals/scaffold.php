@@ -18,14 +18,12 @@ class Scaffold_Command extends WP_CLI_Command {
   /**
    * @subcommand post-type
    *
+   * @alias pt
+   *
    * @synopsis [--description=<description>] [--public=<public>] [--exclude_from_search=<exclude_from_search>] [--show_ui=<show_ui>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_in_menu=<show_in_menu>] [--show_in_admin_bar=<show_in_admin_bar>] [--menu_position=<menu_position>] [--menu_icon=<menu_icon>] [--capability_type=<capability_type>] [--hierarchical=<hierarchical>] [--supports=<supports>] [--has_archive=<has_archive>] [--slug=<slug>] [--feed=<feed>] [--pages=<pages>] [--query_var=<query_var>] [--can_export=<can_export>] [context=<context>] 
    */
   function post_type( $args, $assoc_args ) {
     global $wp_filesystem;
-
-    if( !isset( $args[0] ) ) {
-      WP_CLI::error( "Please provide a post type name" );
-    }
 
     // Set the args to variables with normal names to keep our sanity
     $post_type                = strtolower( $args[0] );
@@ -86,18 +84,14 @@ class Scaffold_Command extends WP_CLI_Command {
   }
 
   /**
-   * Subcommand taxonomy
+   * @subcommand taxonomy
    *
-   * @param string $args Name of taxonomy
-   * @param array $assoc_args The ussual WordPress arguments
+   * @alias tax
    *
+   * @synopsis [--public=<public>]  [--show_in_nav_menus=<show_in_nav_menus>]  [--show_ui=<show_ui>]  [--show_tagcloud=<show_tagcloud>]  [--hierarchical=<hierarchical>]  [--rewrite=<rewrite>]  [--query_var=<query_var>] [--slug=<slug>] [--textdomain=<textdomain>] [--post_types=<post_types>]
    */
   function taxonomy( $args, $assoc_args ) {
     global $wp_filesystem;
-
-    if( !isset( $args[0] ) ) {
-      WP_CLI::error( "Please provide a taxonomy" );
-    }
 
     // Set the args to variables with normal names to keep our sanity
     $taxonomy       = strtolower( $args[0] );
@@ -120,8 +114,7 @@ class Scaffold_Command extends WP_CLI_Command {
       'rewrite'             => 'true',
       'query_var'           => 'true',
       'slug'                => $taxonomy,
-      'hierarchical'        => 'true',
-      'context'             => strtolower( wp_get_theme()->template ),
+      'textdomain'          => strtolower( wp_get_theme()->template ),
       'post_types'          => 'post'
     );
     
