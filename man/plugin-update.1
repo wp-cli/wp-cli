@@ -15,27 +15,19 @@
 \fIplugin\fR:
 .
 .IP
-The plugin to update\. Can be omitted when \-\-all is passed\.
+The plugin to update\.
 .
 .TP
 \fB\-\-version=dev\fR:
 .
 .IP
-If set, the plugin will be updated to the latest development version, regardless of what version is currently installed\. Not compatible with \-\-all\.
-.
-.TP
-\fB\-\-all\fR:
-.
-.IP
-If set, updates for all plugins will be performed\. Use \fBwp plugin status\fR to see which plugins have updates available\.
+If set, the plugin will be updated to the latest development version, regardless of what version is currently installed\.
 .
 .SH "EXAMPLES"
 .
 .nf
 
 wp plugin update bbpress \-\-version=dev
-
-wp plugin update \-\-all
 .
 .fi
 
