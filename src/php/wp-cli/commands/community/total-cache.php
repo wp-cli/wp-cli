@@ -5,19 +5,17 @@ if ( function_exists( 'w3tc_pgcache_flush' ) ) {
 }
 
 /**
- * The WP Super Cache plugin
+ * The W3 Total Cache plugin
  *
  * @package wp-cli
  * @subpackage commands/community
- * @maintainer Andreas Creten
  */
 class W3TotalCache_Command extends WP_CLI_Command {
 
 	/**
-	 * Clear something from the cache
+	 * Clear something from the cache.
 	 *
-	 * @param array $args
-	 * @param array $vars
+	 * @synopsis <cache-type>... [--post_id=<post-id>] [--permalink=<permalink>]
 	 */
 	function flush( $args = array(), $vars = array() ) {
 		$args = array_unique( $args );
