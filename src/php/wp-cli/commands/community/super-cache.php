@@ -9,50 +9,41 @@ if ( function_exists( 'wp_super_cache_enable' ) ) {
  *
  * @package wp-cli
  * @subpackage commands/community
- * @maintainer Andreas Creten
  */
 class WPSuperCache_Command extends WP_CLI_Command {
 
 	/**
-	 * Clear something from the cache
+	 * Clear something from the cache.
 	 *
-	 * @param array $args
-	 * @param array $vars
+	 * @synopsis [--post_id=<post-id>] [--permalink=<permalink>]
 	 */
-	function flush( $args = array(), $vars = array() ) {
-		if ( function_exists( 'wp_cache_clear_cache' ) ) {
-			if ( isset($vars['post_id']) ) {
-				if ( is_numeric( $vars['post_id'] ) ) {
-					wp_cache_post_change( $vars['post_id'] );
-				} else {
-					WP_CLI::error('This is not a valid post id.');
-				}
-
-				wp_cache_post_change( $vars['post_id'] );
-			}
-			elseif ( isset( $vars['permalink'] ) ) {
-				$id = url_to_postid( $vars['permalink'] );
-
-				if ( is_numeric( $id ) ) {
-					wp_cache_post_change( $id );
-				} else {
-					WP_CLI::error('There is no post with this permalink.');
-				}
+	function flush( $args = array(), $assoc_args = array() ) {
+		if ( isset($assoc_args['post_id']) ) {
+			if ( is_numeric( $assoc_args['post_id'] ) ) {
+				wp_cache_post_change( $assoc_args['post_id'] );
 			} else {
-				wp_cache_clear_cache();
+				WP_CLI::error('This is not a valid post id.');
+			}
+
+			wp_cache_post_change( $assoc_args['post_id'] );
+		}
+		elseif ( isset( $assoc_args['permalink'] ) ) {
+			$id = url_to_postid( $assoc_args['permalink'] );
+
+			if ( is_numeric( $id ) ) {
+				wp_cache_post_change( $id );
+			} else {
+				WP_CLI::error('There is no post with this permalink.');
 			}
 		} else {
-			WP_CLI::error('The WP Super Cache could not be found, is it installed?');
+			wp_cache_clear_cache();
 		}
 	}
 
 	/**
-	 * Get the status of the cache
-	 *
-	 * @param array $args
-	 * @param array $vars
+	 * Get the status of the cache.
 	 */
-	function status( $args = array(), $vars = array() ) {
+	function status( $args = array(), $assoc_args = array() ) {
 		$cache_stats = get_option( 'supercache_stats' );
 
 		if ( !empty( $cache_stats ) ) {
@@ -77,58 +68,32 @@ class WPSuperCache_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Enable the WP Super Cache
-	 *
-	 * @param array $args
-	 * @param array $vars
+	 * Enable the WP Super Cache.
 	 */
-	function enable( $args = array(), $vars = array() ) {
-		if ( function_exists( 'wp_super_cache_enable' ) ) {
-			global $super_cache_enabled;
-			wp_super_cache_enable();
-			if($super_cache_enabled) {
-				WP_CLI::success( 'The WP Super Cache is enabled.' );
-			} else {
-				WP_CLI::error('The WP Super Cache is not enabled, check its settings page for more info.');
-			}
+	function enable( $args = array(), $assoc_args = array() ) {
+		global $super_cache_enabled;
+
+		wp_super_cache_enable();
+
+		if($super_cache_enabled) {
+			WP_CLI::success( 'The WP Super Cache is enabled.' );
 		} else {
-			WP_CLI::error('The WP Super Cache could not be found, is it installed?');
+			WP_CLI::error('The WP Super Cache is not enabled, check its settings page for more info.');
 		}
 	}
 
 	/**
-	 * Disable the WP Super Cache
-	 *
-	 * @param array $args
-	 * @param array $vars
+	 * Disable the WP Super Cache.
 	 */
-	function disable( $args = array(), $vars = array() ) {
-		if ( function_exists( 'wp_super_cache_disable' ) ) {
-			global $super_cache_enabled;
-			wp_super_cache_disable();
-			if(!$super_cache_enabled) {
-				WP_CLI::success( 'The WP Super Cache is disabled.' );
-			} else {
-				WP_CLI::error('The WP Super Cache is still enabled, check its settings page for more info.');
-			}
+	function disable( $args = array(), $assoc_args = array() ) {
+		global $super_cache_enabled;
+
+		wp_super_cache_disable();
+
+		if(!$super_cache_enabled) {
+			WP_CLI::success( 'The WP Super Cache is disabled.' );
 		} else {
-			WP_CLI::error('The WP Super Cache could not be found, is it installed?');
+			WP_CLI::error('The WP Super Cache is still enabled, check its settings page for more info.');
 		}
-	}
-
-	/**
-	 * Help function for this command
-	 */
-	public static function help() {
-		WP_CLI::line( <<<EOB
-usage: wp super-cache [flush|status|enable|disable] --post_id=<id> --permalink=<post-permalink>
-
-Available sub-commands:
-	flush      flushes whole cache, or post with given permalink or ID --post_id=<id> --permalink=<post-permalink>
-	status     shows status of WP Super Cache
-	enable     enables WP Super Cache
-	disable    disables WP Super Cache
-EOB
-	);
 	}
 }
