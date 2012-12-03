@@ -17,12 +17,12 @@ class W3TotalCache_Command extends WP_CLI_Command {
 	 *
 	 * @synopsis <cache-type>... [--post_id=<post-id>] [--permalink=<permalink>]
 	 */
-	function flush( $args = array(), $vars = array() ) {
+	function flush( $args = array(), $assoc_args = array() ) {
 		$args = array_unique( $args );
 		do {
-			$cache_type = array_shift($args);
+			$cache_type = array_shift( $args );
 
-			switch($cache_type) {
+			switch( $cache_type ) {
 			case 'db':
 			case 'database':
 				if ( w3tc_dbcache_flush() ) {
@@ -58,19 +58,19 @@ class W3TotalCache_Command extends WP_CLI_Command {
 
 			case 'post':
 			default:
-				if ( isset($vars['post_id']) ) {
-					if ( is_numeric( $vars['post_id'] ) && get_post( $vars['post_id'] ) ) {
-						if ( w3tc_pgcache_flush_post( $vars['post_id'] ) ) {
-							WP_CLI::success( 'Post '.$vars['post_id'].' is flushed successfully.' );
+				if ( isset($assoc_args['post_id']) ) {
+					if ( is_numeric( $assoc_args['post_id'] ) && get_post( $assoc_args['post_id'] ) ) {
+						if ( w3tc_pgcache_flush_post( $assoc_args['post_id'] ) ) {
+							WP_CLI::success( 'Post '.$assoc_args['post_id'].' is flushed successfully.' );
 						} else {
-							WP_CLI::error( 'Flushing '.$vars['post_id'].' from cache failed.' );
+							WP_CLI::error( 'Flushing '.$assoc_args['post_id'].' from cache failed.' );
 						}
 					} else {
 						WP_CLI::error('This is not a valid post id.');
 					}
 				}
-				elseif ( isset( $vars['permalink'] ) ) {
-					$id = url_to_postid( $vars['permalink'] );
+				elseif ( isset( $assoc_args['permalink'] ) ) {
+					$id = url_to_postid( $assoc_args['permalink'] );
 
 					if ( is_numeric( $id ) && $id > 0 ) {
 						if ( w3tc_pgcache_flush_post( $id ) ) {
