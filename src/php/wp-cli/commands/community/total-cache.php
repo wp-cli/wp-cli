@@ -20,76 +20,72 @@ class W3TotalCache_Command extends WP_CLI_Command {
 	 * @param array $vars
 	 */
 	function flush( $args = array(), $vars = array() ) {
-		if ( function_exists( 'w3tc_pgcache_flush' ) ) {
-			$args = array_unique( $args );
-			do {
-				$cache_type = array_shift($args);
+		$args = array_unique( $args );
+		do {
+			$cache_type = array_shift($args);
 
-				switch($cache_type) {
-				case 'db':
-				case 'database':
-					if ( w3tc_dbcache_flush() ) {
-						WP_CLI::success( 'The database cache is flushed successfully.' );
-					} else {
-						WP_CLI::error( 'Flushing the database cache failed.' );
-					}
-					break;
+			switch($cache_type) {
+			case 'db':
+			case 'database':
+				if ( w3tc_dbcache_flush() ) {
+					WP_CLI::success( 'The database cache is flushed successfully.' );
+				} else {
+					WP_CLI::error( 'Flushing the database cache failed.' );
+				}
+				break;
 
-				case 'minify':
-					if ( w3tc_minify_flush() ) {
-						WP_CLI::success( 'The minify cache is flushed successfully.' );
-					} else {
-						WP_CLI::error( 'Flushing the minify cache failed.' );
-					}
-					break;
+			case 'minify':
+				if ( w3tc_minify_flush() ) {
+					WP_CLI::success( 'The minify cache is flushed successfully.' );
+				} else {
+					WP_CLI::error( 'Flushing the minify cache failed.' );
+				}
+				break;
 
-				case 'object':
-					if ( w3tc_objectcache_flush() ) {
-						WP_CLI::success( 'The object cache is flushed successfully.' );
-					} else {
-						WP_CLI::error( 'Flushing the object cache failed.' );
-					}
-					break;
+			case 'object':
+				if ( w3tc_objectcache_flush() ) {
+					WP_CLI::success( 'The object cache is flushed successfully.' );
+				} else {
+					WP_CLI::error( 'Flushing the object cache failed.' );
+				}
+				break;
 
-				case 'page':
-					if ( w3tc_pgcache_flush() ) {
-						WP_CLI::success( 'The page cache is flushed successfully.' );
-					} else {
-						WP_CLI::error( 'Flushing the page cache failed.' );
-					}
-					break;
+			case 'page':
+				if ( w3tc_pgcache_flush() ) {
+					WP_CLI::success( 'The page cache is flushed successfully.' );
+				} else {
+					WP_CLI::error( 'Flushing the page cache failed.' );
+				}
+				break;
 
-				case 'post':
-				default:
-					if ( isset($vars['post_id']) ) {
-						if ( is_numeric( $vars['post_id'] ) && get_post( $vars['post_id'] ) ) {
-							if ( w3tc_pgcache_flush_post( $vars['post_id'] ) ) {
-								WP_CLI::success( 'Post '.$vars['post_id'].' is flushed successfully.' );
-							} else {
-								WP_CLI::error( 'Flushing '.$vars['post_id'].' from cache failed.' );
-							}
+			case 'post':
+			default:
+				if ( isset($vars['post_id']) ) {
+					if ( is_numeric( $vars['post_id'] ) && get_post( $vars['post_id'] ) ) {
+						if ( w3tc_pgcache_flush_post( $vars['post_id'] ) ) {
+							WP_CLI::success( 'Post '.$vars['post_id'].' is flushed successfully.' );
 						} else {
-							WP_CLI::error('This is not a valid post id.');
+							WP_CLI::error( 'Flushing '.$vars['post_id'].' from cache failed.' );
 						}
-					}
-					elseif ( isset( $vars['permalink'] ) ) {
-						$id = url_to_postid( $vars['permalink'] );
-
-						if ( is_numeric( $id ) && $id > 0 ) {
-							if ( w3tc_pgcache_flush_post( $id ) ) {
-								WP_CLI::success( $id.' is flushed successfully.' );
-							} else {
-								WP_CLI::error( 'Flushing '.$id.' from cache failed.' );
-							}
-						} else {
-							WP_CLI::error('There is no post with this permalink.');
-						}
+					} else {
+						WP_CLI::error('This is not a valid post id.');
 					}
 				}
-			} while ( !empty( $args ) );
-		} else {
-			WP_CLI::error('The W3 Total Cache could not be found, is it installed?');
-		}
+				elseif ( isset( $vars['permalink'] ) ) {
+					$id = url_to_postid( $vars['permalink'] );
+
+					if ( is_numeric( $id ) && $id > 0 ) {
+						if ( w3tc_pgcache_flush_post( $id ) ) {
+							WP_CLI::success( $id.' is flushed successfully.' );
+						} else {
+							WP_CLI::error( 'Flushing '.$id.' from cache failed.' );
+						}
+					} else {
+						WP_CLI::error('There is no post with this permalink.');
+					}
+				}
+			}
+		} while ( !empty( $args ) );
 	}
 
 	/**
