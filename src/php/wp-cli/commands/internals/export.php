@@ -19,7 +19,7 @@ class Export_Command extends WP_CLI_Command {
 	/**
 	 * Export posts to a WXR file.
 	 *
-	 * @synopsis [--dir=<dir>] [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>]
+	 * @synopsis [--dir=<dir>] [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--post__in=<pids>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>]
 	 */
 	public function __invoke( $_, $assoc_args ) {
 		$defaults = array(
@@ -30,6 +30,7 @@ class Export_Command extends WP_CLI_Command {
 			'author'			=>		NULL,
 			'category'			=>		NULL,
 			'post_status'		=>		NULL,
+			'post__in'			=>		NULL,
 			'skip_comments'		=>		NULL,
 			'file_item_count'	=>		1000,
 		);
@@ -108,6 +109,19 @@ class Export_Command extends WP_CLI_Command {
 			return false;
 		}
 		$this->export_args['post_type'] = $post_type;
+		return true;
+	}
+
+	private function check_post__in( $post__in ) {
+		if ( is_null( $post__in ) )
+			return true;
+
+		$post__in = array_unique( array_map( 'intval', explode( ',', $post__in ) ) );
+		if ( empty( $post__in ) ) {
+			WP_CLI::warning( "post__in should be comma-separated post IDs" );
+			return false;
+		}
+		$this->export_args['post__in'] = implode( ',', $post__in );
 		return true;
 	}
 
@@ -238,7 +252,7 @@ class Export_Command extends WP_CLI_Command {
 		/**
 		 * This is mostly the original code of export_wp defined in wp-admin/includes/export.php
 		 */
-		$defaults = array( 'post_type' => 'all', 'author' => false, 'category' => false,
+		$defaults = array( 'post_type' => 'all', 'post__in' => false, 'author' => false, 'category' => false,
 			'start_date' => false, 'end_date' => false, 'status' => false, 'skip_comments' => false, 'file_item_count' => 1000,
 		);
 		$args = wp_parse_args( $args, $defaults );
@@ -253,10 +267,10 @@ class Export_Command extends WP_CLI_Command {
 
 		$append = array( date( 'Y-m-d' ) );
 		foreach( array_keys( $args ) as $arg_key ) {
-			if ( $defaults[$arg_key] <> $args[$arg_key] )
+			if ( $defaults[$arg_key] <> $args[$arg_key] && 'post__in' != $arg_key )
 				$append[]= "$arg_key-" . (string) $args[$arg_key];
 		}
-		$file_name_base = $sitename . 'wordpress.' . implode( ".", $append );
+		$file_name_base = sanitize_file_name( $sitename . 'wordpress.' . implode( ".", $append ) );
 
 		if ( 'all' != $args['post_type'] && post_type_exists( $args['post_type'] ) ) {
 			$ptype = get_post_type_object( $args['post_type'] );
@@ -294,10 +308,13 @@ class Export_Command extends WP_CLI_Command {
 			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_date <= %s", date( 'Y-m-d 23:59:59', strtotime( $args['end_date'] ) ) );
 
 		// grab a snapshot of post IDs, just in case it changes during the export
-		$all_the_post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} $join WHERE $where ORDER BY post_date ASC, post_parent ASC" );
+		if ( empty( $args['post__in'] ) )
+			$all_the_post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} $join WHERE $where ORDER BY post_date ASC, post_parent ASC" );
+		else
+			$all_the_post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} WHERE ID IN ({$args['post__in']}) ORDER BY post_date ASC, post_parent ASC" );
 
 		// Make sure we're getting all of the attachments for these posts too
-		if ( 'all' != $args['post_type'] ) {
+		if ( 'all' != $args['post_type'] || ! empty( $args['post__in'] ) ) {
 			$all_post_ids_with_attachments = array();
 			while ( $post_ids = array_splice( $all_the_post_ids, 0, 100 ) ) {
 				$attachment_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_parent IN (". implode( ",", array_map( 'intval', $post_ids ) ) .")" );

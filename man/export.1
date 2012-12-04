@@ -7,7 +7,7 @@
 \fBwp\-export\fR \- Export posts to a WXR file\.
 .
 .SH "SYNOPSIS"
-\fBwp export\fR [\-\-dir=\fIdir\fR] [\-\-start_date=\fIdate\fR] [\-\-end_date=\fIdate\fR] [\-\-post_type=\fIptype\fR] [\-\-post_status=\fIstatus\fR] [\-\-author=\fIlogin\fR] [\-\-category=\fIcat\fR] [\-\-skip_comments] [\-\-file_item_count=\fIcount\fR]
+\fBwp export\fR [\-\-dir=\fIdir\fR] [\-\-start_date=\fIdate\fR] [\-\-end_date=\fIdate\fR] [\-\-post_type=\fIptype\fR] [\-\-post_status=\fIstatus\fR] [\-\-post\fI\fIin=\fRpids\fR] [\-\-author=\fIlogin\fR] [\-\-category=\fIcat\fR] [\-\-skip_comments] [\-\-file_item_count=\fIcount\fR]
 .
 .SH "OPTIONS"
 .
@@ -50,6 +50,12 @@ Export only posts older than this date, in format YYYY\-MM\-DD\.
 Export only posts with this post_type\.
 .
 .TP
+\fB\-\-post__in\fR=\fIpid\fR:
+.
+.IP
+Export all posts specified as a comma\-separated list of IDs\.
+.
+.TP
 \fB\-\-author\fR=<login/id>:
 .
 .IP
@@ -72,6 +78,8 @@ Export only posts with this status\.
 .nf
 
 wp export \-\-dir=/tmp/ \-\-user=admin \-\-post_type=post \-\-start_date=2011\-01\-01 \-\-end_date=2011\-12\-31
+
+wp export \-\-dir=/tmp/ \-\-post__in=123,124,125
 .
 .fi
 
