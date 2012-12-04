@@ -136,8 +136,6 @@ class Blog_Command extends WP_CLI_Command {
 		list( $old_blog_id, $old_slug ) = self::get_blog_id_by_slug( $assoc_args['old-slug'] );
 		list( $new_blog_id, $new_slug ) = self::get_blog_id_by_slug( $assoc_args['new-slug'] );
 
-		$new_blog_prefix = $wpdb->get_blog_prefix( $new_blog_id );
-
 		$this->_duplicate_tables( $old_blog_id, $new_blog_id );
 
 		$url = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
@@ -147,7 +145,18 @@ class Blog_Command extends WP_CLI_Command {
 		update_option( 'home', $url );
 		restore_current_blog();
 
-		// TODO: duplicate user roles
+		$old_cap = $wpdb->get_blog_prefix( $old_blog_id ) . 'capabilities';
+		$new_cap = $wpdb->get_blog_prefix( $new_blog_id ) . 'capabilities';
+
+		$wpdb->query( $wpdb->prepare( "
+			DELETE FROM $wpdb->usermeta WHERE meta_key = %s
+		", $new_cap ) );
+
+		$wpdb->query( $wpdb->prepare( "
+			INSERT INTO $wpdb->usermeta (user_id, meta_key, meta_value)
+			SELECT user_id, %s as meta_key, meta_value FROM $wpdb->usermeta
+			WHERE meta_key = %s
+		", $new_cap, $old_cap ) );
 
 		WP_CLI::success( sprintf( "Made '%s' a clone of '%s'.", $new_slug, $old_slug ) );
 	}
