@@ -136,6 +136,25 @@ class Blog_Command extends WP_CLI_Command {
 		list( $old_blog_id, $old_slug ) = self::get_blog_id_by_slug( $assoc_args['old-slug'] );
 		list( $new_blog_id, $new_slug ) = self::get_blog_id_by_slug( $assoc_args['new-slug'] );
 
+		$new_blog_prefix = $wpdb->get_blog_prefix( $new_blog_id );
+
+		$this->_duplicate_tables( $old_blog_id, $new_blog_id );
+
+		$url = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
+
+		switch_to_blog( $new_blog_id );
+		update_option( 'siteurl', $url );
+		update_option( 'home', $url );
+		restore_current_blog();
+
+		// TODO: duplicate user roles
+
+		WP_CLI::success( sprintf( "Made '%s' a clone of '%s'.", $new_slug, $old_slug ) );
+	}
+
+	private function _duplicate_tables( $old_blog_id, $new_blog_id ) {
+		global $wpdb;
+
 		$old_blog_prefix = $wpdb->get_blog_prefix( $old_blog_id );
 
 		$old_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s",
@@ -151,17 +170,6 @@ class Blog_Command extends WP_CLI_Command {
 			if ( in_array( $old_table, $old_tables ) )
 				$wpdb->query( "CREATE TABLE $new_table SELECT * FROM $old_table" );
 		}
-
-		$url = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
-
-		switch_to_blog( $new_blog_id );
-		update_option( 'siteurl', $url );
-		update_option( 'home', $url );
-		restore_current_blog();
-
-		// TODO: duplicate user roles
-
-		WP_CLI::success( sprintf( "Made '%s' a clone of '%s'.", $new_slug, $old_slug ) );
 	}
 
 	/**
