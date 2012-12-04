@@ -7,7 +7,7 @@
 \fBwp\-theme\-update\fR \- Update a theme\.
 .
 .SH "SYNOPSIS"
-\fBwp theme update\fR \fItheme\fR
+\fBwp theme update\fR \fItheme\fR [\-\-version=\fIversion\fR]
 .
 .SH "OPTIONS"
 .
@@ -15,21 +15,19 @@
 \fItheme\fR:
 .
 .IP
-The theme to update\. Can be omitted when \-\-all is passed\.
+The theme to update\.
 .
 .TP
-\fB\-\-all\fR:
+\fB\-\-version=dev\fR:
 .
 .IP
-If set, updates for all themes will be performed\. Use \fBwp theme status\fR to see which themes have updates available\.
+If set, the theme will be updated to the latest development version, regardless of what version is currently installed\.
 .
 .SH "EXAMPLES"
 .
 .nf
 
 wp theme update twentytwelve
-
-wp theme update \-\-all
 .
 .fi
 
