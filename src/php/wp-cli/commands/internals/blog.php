@@ -152,8 +152,14 @@ class Blog_Command extends WP_CLI_Command {
 				$wpdb->query( "CREATE TABLE $new_table SELECT * FROM $old_table" );
 		}
 
-		// TODO: change URLs
-		// TODO: update user roles
+		$url = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
+
+		switch_to_blog( $new_blog_id );
+		update_option( 'siteurl', $url );
+		update_option( 'home', $url );
+		restore_current_blog();
+
+		// TODO: duplicate user roles
 
 		WP_CLI::success( sprintf( "Made '%s' a clone of '%s'.", $new_slug, $old_slug ) );
 	}
