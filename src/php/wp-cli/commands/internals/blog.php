@@ -140,9 +140,17 @@ class Blog_Command extends WP_CLI_Command {
 
 		$url = untrailingslashit( get_blogaddress_by_id( $new_blog_id ) );
 
+		switch_to_blog( $old_blog_id );
+
+		$old_roles = get_option( $wpdb->prefix . 'user_roles' );
+
 		switch_to_blog( $new_blog_id );
+
+		update_option( $wpdb->prefix . 'user_roles', $old_roles );
+
 		update_option( 'siteurl', $url );
 		update_option( 'home', $url );
+
 		restore_current_blog();
 
 		$old_cap = $wpdb->get_blog_prefix( $old_blog_id ) . 'capabilities';
