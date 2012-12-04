@@ -133,21 +133,29 @@ class Blog_Command extends WP_CLI_Command {
 	function duplicate( $_, $assoc_args ) {
 		global $wpdb;
 
-		$old_blog_id = self::get_blog_id_by_slug( $assoc_args['old-slug'] );
-		$new_blog_id = self::get_blog_id_by_slug( $assoc_args['new-slug'] );
+		list( $old_blog_id, $old_slug ) = self::get_blog_id_by_slug( $assoc_args['old-slug'] );
+		list( $new_blog_id, $new_slug ) = self::get_blog_id_by_slug( $assoc_args['new-slug'] );
 
-		$old_tables = $wpdb->tables( 'blog', true, $old_blog_id );
+		$old_blog_prefix = $wpdb->get_blog_prefix( $old_blog_id );
+
+		$old_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s",
+			 $old_blog_prefix . '%' ) );
+
 		$new_tables = $wpdb->tables( 'blog', true, $new_blog_id );
 
-		$tables = array_combine( $old_tables, $new_tables );
-
-		foreach ( $tables as $old_table => $new_table ) {
+		foreach ( $new_tables as $table => $new_table ) {
 			$wpdb->query( "DROP TABLE IF EXISTS $new_table" );
-			$wpdb->query( "CREATE TABLE $new_table SELECT * FROM $old_table" );
+
+			$old_table = $old_blog_prefix . $table;
+
+			if ( in_array( $old_table, $old_tables ) )
+				$wpdb->query( "CREATE TABLE $new_table SELECT * FROM $old_table" );
 		}
 
 		// TODO: change URLs
 		// TODO: update user roles
+
+		WP_CLI::success( sprintf( "Made '%s' a clone of '%s'.", $new_slug, $old_slug ) );
 	}
 
 	/**
@@ -156,7 +164,7 @@ class Blog_Command extends WP_CLI_Command {
 	 * @synopsis --slug=<slug> [--yes] [--keep-tables]
 	 */
 	function delete( $_, $assoc_args ) {
-		$blog_id = self::get_blog_id_by_slug( $slug );
+		list( $blog_id, $slug ) = self::get_blog_id_by_slug( $slug );
 
 		WP_CLI::confirm( "Are you sure you want to delete the '$slug' blog?", $assoc_args );
 
@@ -177,7 +185,7 @@ class Blog_Command extends WP_CLI_Command {
 		if ( !$blog_id )
 			WP_CLI::error( sprintf( "'%s' blog not found.", $slug ) );
 
-		return $blog_id;
+		return array( $blog_id, $slug );
 	}
 }
 
