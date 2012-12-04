@@ -7,7 +7,7 @@
 \fBwp\-blog\-create\fR \- Create a blog in a multisite install\.
 .
 .SH "SYNOPSIS"
-\fBwp blog create\fR \-\-slug=\fIslug\fR \-\-title=\fItitle\fR [\-\-email=\fIemail\fR] [\-\-site_id=\fIsite\-id\fR] [\-\-public]
+\fBwp blog create\fR \-\-slug=\fIslug\fR [\-\-title=\fItitle\fR] [\-\-email=\fIemail\fR] [\-\-site_id=\fIsite\-id\fR] [\-\-private]
 .
 .SH "OPTIONS"
 .
@@ -21,7 +21,7 @@ Path for the new blog\. Subdomain on subdomain installs, directory on subdirecto
 \fB\-\-title\fR=<title>:
 .
 .IP
-Title of the new blog\.
+Title of the new blog\. Default: prettified slug\.
 .
 .TP
 \fB\-\-email\fR=\fIemail\fR:

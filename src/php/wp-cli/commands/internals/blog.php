@@ -33,13 +33,14 @@ class Blog_Command extends WP_CLI_Command {
 	/**
 	 * Create a blog in a multisite install.
 	 *
-	 * @synopsis --slug=<slug> --title=<title> [--email=<email>] [--site_id=<site-id>] [--private]
+	 * @synopsis --slug=<slug> [--title=<title>] [--email=<email>] [--site_id=<site-id>] [--private]
 	 */
 	public function create( $_, $assoc_args ) {
 		global $wpdb;
 
 		$base = $assoc_args['slug'];
-		$title = $assoc_args['title'];
+		$title = isset( $assoc_args['title'] ) ? $assoc_args['title'] : ucfirst( $base );
+
 		$email = empty( $assoc_args['email'] ) ? '' : $assoc_args['email'];
 		// Site
 		if ( !empty( $assoc_args['site_id'] ) ) {

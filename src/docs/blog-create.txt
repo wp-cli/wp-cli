@@ -6,7 +6,7 @@
 
 * `--title`=<title&gt;:
 
-	Title of the new blog.
+	Title of the new blog. Default: prettified slug.
 
 * `--email`=<email>:
 
