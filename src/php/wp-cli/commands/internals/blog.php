@@ -174,18 +174,15 @@ class Blog_Command extends WP_CLI_Command {
 
 		$old_blog_prefix = $wpdb->get_blog_prefix( $old_blog_id );
 
-		$old_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s",
-			 $old_blog_prefix . '%' ) );
-
+		$old_tables = $wpdb->tables( 'blog', true, $old_blog_id );
 		$new_tables = $wpdb->tables( 'blog', true, $new_blog_id );
 
-		foreach ( $new_tables as $table => $new_table ) {
+		$tables = array_combine( $old_tables, $new_tables );
+
+		foreach ( $tables as $old_table => $new_table ) {
 			$wpdb->query( "DROP TABLE IF EXISTS $new_table" );
 
-			$old_table = $old_blog_prefix . $table;
-
-			if ( in_array( $old_table, $old_tables ) )
-				$wpdb->query( "CREATE TABLE $new_table SELECT * FROM $old_table" );
+			$wpdb->query( "CREATE TABLE $new_table SELECT * FROM $old_table" );
 		}
 	}
 
