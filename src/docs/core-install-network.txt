@@ -4,7 +4,7 @@
 
 	The title of the new network.
 
-* `--base_path`=<url-path>:
+* `--base`=<url-path>:
 
 	Base path after the domain name that each site url will start with.
 Default: '/'
