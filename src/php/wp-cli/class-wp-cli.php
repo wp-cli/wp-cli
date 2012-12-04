@@ -268,6 +268,10 @@ class WP_CLI {
 		if ( array( 'core', 'install' ) == self::$arguments ) {
 			define( 'WP_INSTALLING', true );
 		}
+
+		// Pretend we're in WP_ADMIN, to side-step full-page caching plugins
+		define( 'WP_ADMIN', true );
+		$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
 	}
 
 	static function after_wp_load() {
