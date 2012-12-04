@@ -131,12 +131,7 @@ class Blog_Command extends WP_CLI_Command {
 	 * @synopsis --slug=<slug> [--yes] [--keep-tables]
 	 */
 	function delete( $_, $assoc_args ) {
-		$slug = '/' . trim( $assoc_args['slug'], '/' ) . '/';
-
 		$blog_id = self::get_blog_id_by_slug( $slug );
-
-		if ( !$blog_id )
-			WP_CLI::error( sprintf( "'%s' blog not found.", $slug ) );
 
 		WP_CLI::confirm( "Are you sure you want to delete the '$slug' blog?", $assoc_args );
 
@@ -148,9 +143,16 @@ class Blog_Command extends WP_CLI_Command {
 	protected static function get_blog_id_by_slug( $slug ) {
 		global $wpdb, $current_site;
 
-		return $wpdb->get_var( $wpdb->prepare( "
+		$slug = '/' . trim( $slug, '/' ) . '/';
+
+		$blog_id = $wpdb->get_var( $wpdb->prepare( "
 			SELECT blog_id FROM $wpdb->blogs WHERE domain = %s AND path = %s"
 		, $current_site->domain, $slug ) );
+
+		if ( !$blog_id )
+			WP_CLI::error( sprintf( "'%s' blog not found.", $slug ) );
+
+		return $blog_id;
 	}
 }
 
