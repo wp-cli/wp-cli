@@ -29,7 +29,7 @@ to current working directory.
 
 * `--post__in`=<pid>:
 
-	Export all posts specified with IDs
+	Export all posts specified as a comma-separated list of IDs.
 
 * `--author`=<login/id>:
 
@@ -46,3 +46,5 @@ to current working directory.
 ## EXAMPLES
 
 	wp export --dir=/tmp/ --user=admin --post_type=post --start_date=2011-01-01 --end_date=2011-12-31
+
+	wp export --dir=/tmp/ --post__in=123,124,125
