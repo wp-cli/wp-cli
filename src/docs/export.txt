@@ -27,6 +27,10 @@ to current working directory.
 
 	Export only posts with this post_type.
 
+* `--post__in`=<pid>:
+
+	Export all posts specified with IDs
+
 * `--author`=<login/id>:
 
 	Export only posts by this author.
