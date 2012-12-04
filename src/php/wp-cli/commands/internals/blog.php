@@ -126,6 +126,31 @@ class Blog_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Copy all data from blog A to blog B.
+	 *
+	 * @synopsis --old-slug=<slug> --new-slug=<slug>
+	 */
+	function duplicate( $_, $assoc_args ) {
+		global $wpdb;
+
+		$old_blog_id = self::get_blog_id_by_slug( $assoc_args['old-slug'] );
+		$new_blog_id = self::get_blog_id_by_slug( $assoc_args['new-slug'] );
+
+		$old_tables = $wpdb->tables( 'blog', true, $old_blog_id );
+		$new_tables = $wpdb->tables( 'blog', true, $new_blog_id );
+
+		$tables = array_combine( $old_tables, $new_tables );
+
+		foreach ( $tables as $old_table => $new_table ) {
+			$wpdb->query( "DROP TABLE IF EXISTS $new_table" );
+			$wpdb->query( "CREATE TABLE $new_table SELECT * FROM $old_table" );
+		}
+
+		// TODO: change URLs
+		// TODO: update user roles
+	}
+
+	/**
 	 * Delete a blog in a multisite install.
 	 *
 	 * @synopsis --slug=<slug> [--yes] [--keep-tables]
