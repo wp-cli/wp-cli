@@ -192,7 +192,7 @@ class Blog_Command extends WP_CLI_Command {
 	 * @synopsis --slug=<slug> [--yes] [--keep-tables]
 	 */
 	function delete( $_, $assoc_args ) {
-		list( $blog_id, $slug ) = self::get_blog_id_by_slug( $slug );
+		list( $blog_id, $slug ) = self::get_blog_id_by_slug( $assoc_args['slug'] );
 
 		WP_CLI::confirm( "Are you sure you want to delete the '$slug' blog?", $assoc_args );
 
