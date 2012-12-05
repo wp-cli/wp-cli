@@ -268,7 +268,7 @@ class User_Command extends WP_CLI_Command {
 	 * @subcommand import-csv
 	 * @synopsis <file>
 	 */
-	public function import_csv( $args, $assoc_args ) {
+	public function import_csv( $args, $assoc_args, $update = false ) {
 
 		list( $csv ) = $args;
 
@@ -295,31 +295,57 @@ class User_Command extends WP_CLI_Command {
 
 			// User already exists and we just need to add them to the site if they aren't already there
 			if ( $existing_user = get_user_by( 'email', $new_user['user_email'] ) ) {
-				if ( in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ) ) )
+				$new_user['ID'] = $existing_user->ID;
+
+				if ( in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ) ) ) {
 					WP_CLI::warning( "{$existing_user->user_login} already is a member of blog" );
-				else if ( $new_user['role'] ) {
+
+				} else if ( $new_user['role'] ) {
 					add_user_to_blog( get_current_blog_id(), $existing_user->ID, $new_user['role'] );
 					WP_CLI::line( "{$existing_user->user_login} added to blog as {$new_user['role']}" );
+
 				} else {
 					WP_CLI::line( "{$existing_user->user_login} exists, but won't be added to the blog" );
 				}
-				continue;
-			}
 
-			$user_id = wp_insert_user( $new_user );
+				if (!$update) {
+					continue;
+				}
+
+				$user_id = wp_update_user( $new_user );
+
+			// Create the user
+			} else {
+				$user_id = wp_insert_user( $new_user );
+			}
 
 			if ( is_wp_error( $user_id ) ) {
 				WP_CLI::warning( $user_id );
 				continue;
 			} else {
-				if ( false === $new_user['role'] ) {
+				if ( $new_user['role'] === false ) {
 					delete_user_option( $user_id, 'capabilities' );
 					delete_user_option( $user_id, 'user_level' );
 				}
 			}
 
-			WP_CLI::line( $new_user['user_login'] . " created" );
+			if (!empty($existing_user)) {
+				WP_CLI::line( $new_user['user_login'] . " updated" );
+			} else {
+				WP_CLI::line( $new_user['user_login'] . " created" );
+			}
 		}
 	}
+
+	/**
+	 * Import users from a CSV file and allow it to update the records instead of just create.
+	 *
+	 * @subcommand import-csv-upsert
+	 * @synopsis <file>
+	 */
+	public function import_csv_upsert( $args, $assoc_args ) {
+		$this->import_csv( $args, $assoc_args, true );
+	}
+
 }
 
