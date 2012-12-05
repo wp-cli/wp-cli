@@ -1,2 +1,5 @@
 /.build
 /dist
+
+# Mac specific
+.DS_Store
