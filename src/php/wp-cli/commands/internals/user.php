@@ -294,7 +294,13 @@ class User_Command extends WP_CLI_Command {
 			}
 
 			// User already exists and we just need to add them to the site if they aren't already there
-			if ( $existing_user = get_user_by( 'email', $new_user['user_email'] ) ) {
+			$existing_user = get_user_by( 'email', $new_user['user_email'] );
+
+			if ( !$existing_user ) {
+				$existing_user = get_user_by( 'login', $new_user['user_login'] );
+			}
+
+			if ( $existing_user ) {
 				$new_user['ID'] = $existing_user->ID;
 
 				if ( in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ) ) ) {
@@ -330,9 +336,9 @@ class User_Command extends WP_CLI_Command {
 			}
 
 			if (!empty($existing_user)) {
-				WP_CLI::line( $new_user['user_login'] . " updated" );
+				WP_CLI::success( $new_user['user_login'] . " updated" );
 			} else {
-				WP_CLI::line( $new_user['user_login'] . " created" );
+				WP_CLI::success( $new_user['user_login'] . " created" );
 			}
 		}
 	}
