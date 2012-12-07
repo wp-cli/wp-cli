@@ -1,5 +1,0 @@
-## OPTIONS
-
-* `--yes`:
-
-	Answer yes to the confirmation message.

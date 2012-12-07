@@ -1,0 +1,112 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-DB" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-db\fR \- Implement db command
+.
+.SH "SYNOPSIS"
+wp db create [\-\-str]
+.
+.P
+wp db drop [\-\-yes] [\-\-str]
+.
+.P
+wp db reset [\-\-yes] [\-\-str]
+.
+.P
+wp db optimize [\-\-str]
+.
+.P
+wp db repair [\-\-str]
+.
+.P
+wp db connect [\-\-str]
+.
+.P
+wp db query \fIsql\fR [\-\-str]
+.
+.P
+wp db export [\fIfile\fR] [\-\-str]
+.
+.P
+wp db import [\fIfile\fR] [\-\-str]
+.
+.SH "SUBCOMMANDS"
+.
+.TP
+\fBcreate\fR:
+.
+.IP
+Create the database, as specified in wp\-config\.php
+.
+.TP
+\fBdrop\fR:
+.
+.IP
+Delete the database\.
+.
+.TP
+\fBreset\fR:
+.
+.IP
+Remove all tables from the database\.
+.
+.TP
+\fBoptimize\fR:
+.
+.IP
+Optimize the database\.
+.
+.TP
+\fBrepair\fR:
+.
+.IP
+Repair the database\.
+.
+.TP
+\fBconnect\fR:
+.
+.IP
+Open a mysql console using the WordPress credentials\.
+.
+.TP
+\fBquery\fR:
+.
+.IP
+Execute a query against the database\.
+.
+.TP
+\fBexport\fR:
+.
+.IP
+Exports the database using mysqldump\.
+.
+.TP
+\fBimport\fR:
+.
+.IP
+Import database from a file\.
+.
+.SH "OPTIONS"
+
+.
+.TP
+\fB\-\-yes\fR:
+.
+.IP
+Answer yes to the confirmation message\.
+.
+.TP
+\fB<file>\fR:
+.
+.IP
+The name of the export file\. If omitted, it will be \'{dbname}\.sql\'
+.
+.TP
+\fB<SQL>\fR:
+.
+.IP
+A SQL query\.
+
