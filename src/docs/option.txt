@@ -15,22 +15,25 @@ wp option delete <key>
 
 * `get`:
 
-	Get an option value. Passing --json causes the output to be formatted
-	as JSON.
+	Get an option value.
 
 * `add`:
 
-	Add a new option. Pass --json to decode JSON values before adding
-	the option.
+	Add a new option.
 
 * `update`:
 
-	Update an existing option. Pass --json to decode JSON values before
-	updating the option.
+	Update an existing option. 
 
 * `delete`:
 
 	Delete an option.
+
+## OPTIONS
+
+* `json`:
+
+	Encode/decode values as JSON.
 
 ## EXAMPLES
 
@@ -38,6 +41,6 @@ wp option delete <key>
 
 	wp option add my_option foobar
 
-	wp option update my_option barfoo
+	wp option update my_option '{"foo": "bar"}' --json
 
 	wp option delete my_option
