@@ -1,5 +1,0 @@
-## OPTIONS
-
-* `<file>`:
-
-	The name of the import file. If omitted, it will be '{dbname}.sql'
