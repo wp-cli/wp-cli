@@ -47,22 +47,28 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Remove all tables from the database.
 	 *
-	 * @synopsis [--yes]
+	 * @synopsis [--yes] [--str]
 	 */
 	function reset( $_, $assoc_args ) {
-		WP_CLI::confirm( "Are you sure you want to reset the database?", $assoc_args );
-
-		WP_CLI::launch( self::create_cmd(
+		$drop_cmd = self::create_cmd(
 			'mysql --host=%s --user=%s --password=%s --execute=%s',
 			DB_HOST, DB_USER, DB_PASSWORD, 'DROP DATABASE IF EXISTS ' . DB_NAME
-		) );
+		);
 
-		WP_CLI::launch( self::create_cmd(
+		$create_cmd = self::create_cmd(
 			'mysql --host=%s --user=%s --password=%s --execute=%s',
 			DB_HOST, DB_USER, DB_PASSWORD, 'CREATE DATABASE ' . DB_NAME
-		) );
+		);
 
-		WP_CLI::success( "Database reset." );
+		if ( !isset( $assoc_args['str'] ) ) {
+			WP_CLI::confirm( "Are you sure you want to reset the database?", $assoc_args );
+			WP_CLI::launch( $drop_cmd );
+			WP_CLI::launch( $create_cmd );
+			WP_CLI::success( "Database reset." );
+		} else {
+			WP_CLI::line( $drop_cmd );
+			WP_CLI::line( $create_cmd );
+		}
 	}
 
 	/**
