@@ -3,7 +3,7 @@
 WP_CLI::add_command( 'transient', 'Transient_Command' );
 
 /**
- * Implement transient commands.
+ * Manage WordPress transients.
  *
  * @package wp-cli
  * @subpackage commands/internals

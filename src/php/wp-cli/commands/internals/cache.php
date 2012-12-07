@@ -3,7 +3,7 @@
 WP_CLI::add_command( 'cache', 'Cache_Command' );
 
 /**
- * Implement cache command
+ * Manage the WordPress object cache.
  *
  * @package wp-cli
  * @subpackage commands/internals

@@ -4,7 +4,7 @@
 .TH "WP\-CACHE" "1" "" "WP-CLI"
 .
 .SH "NAME"
-\fBwp\-cache\fR \- Manage WordPress the object cache\.
+\fBwp\-cache\fR \- Manage the WordPress object cache\.
 .
 .SH "SYNOPSIS"
 wp cache add \fIkey\fR \fIvalue\fR [\fIgroup\fR] [\fIexpiration\fR]
@@ -39,57 +39,60 @@ wp cache type
 \fBadd\fR:
 .
 .IP
-Add a value to cache where \fIkey\fR in \fIgroup\fR does not already exist\.
+Add a value to the object cache\.
 .
 .TP
 \fBdecr\fR:
 .
 .IP
-Decrement the value of a cached object by 1 or the value of the \fIoffset\fR parameter\.
+Decrement a value in the object cache\.
 .
 .TP
 \fBdelete\fR:
 .
 .IP
-Remove an object from cache\.
+Remove a value from the object cache\.
 .
 .TP
 \fBflush\fR:
 .
 .IP
-Flush the cache\.
+Flush the object cache\.
 .
 .TP
 \fBget\fR:
 .
 .IP
-Get a value from cache\.
+Get a value from the object cache\.
 .
 .TP
 \fBincr\fR:
 .
 .IP
-Increment the value of a cached object by 1 or the value of the \fIoffset\fR parameter\.
+Increment a value in the object cache\.
 .
 .TP
 \fBreplace\fR:
 .
 .IP
-Replace a value in cache with a new value\.
+Replace an existing value in the object cache\.
 .
 .TP
 \fBset\fR:
 .
 .IP
-Set a value in cache\.
+Set a value to the object cache\.
 .
 .TP
 \fBtype\fR:
 .
 .IP
-Report the type of object being used\.
+Attempts to determine which object cache is being used\.
 .
 .SH "EXAMPLES"
+
+.
+.P
 wp cache set my_key my_value my_group 300
 .
 .P
