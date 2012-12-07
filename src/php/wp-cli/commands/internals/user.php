@@ -268,7 +268,7 @@ class User_Command extends WP_CLI_Command {
 	 * @subcommand import-csv
 	 * @synopsis <file>
 	 */
-	public function import_csv( $args, $assoc_args, $update = false ) {
+	public function import_csv( $args, $assoc_args ) {
 
 		list( $csv ) = $args;
 
@@ -288,6 +288,7 @@ class User_Command extends WP_CLI_Command {
 
 			if ( 'none' == $new_user['role'] ) {
 				$new_user['role'] = false;
+
 			} elseif ( is_null( get_role( $new_user['role'] ) ) ) {
 				WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
 				continue;
@@ -302,23 +303,12 @@ class User_Command extends WP_CLI_Command {
 
 			if ( $existing_user ) {
 				$new_user['ID'] = $existing_user->ID;
+				$user_id = wp_update_user( $new_user );
 
-				if ( in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ) ) ) {
-					WP_CLI::warning( "{$existing_user->user_login} already is a member of blog" );
-
-				} else if ( $new_user['role'] ) {
+				if ( !in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ) ) &&  $new_user['role'] ) {
 					add_user_to_blog( get_current_blog_id(), $existing_user->ID, $new_user['role'] );
 					WP_CLI::line( "{$existing_user->user_login} added to blog as {$new_user['role']}" );
-
-				} else {
-					WP_CLI::line( "{$existing_user->user_login} exists, but won't be added to the blog" );
 				}
-
-				if (!$update) {
-					continue;
-				}
-
-				$user_id = wp_update_user( $new_user );
 
 			// Create the user
 			} else {
@@ -328,11 +318,10 @@ class User_Command extends WP_CLI_Command {
 			if ( is_wp_error( $user_id ) ) {
 				WP_CLI::warning( $user_id );
 				continue;
-			} else {
-				if ( $new_user['role'] === false ) {
-					delete_user_option( $user_id, 'capabilities' );
-					delete_user_option( $user_id, 'user_level' );
-				}
+
+			} else if ( $new_user['role'] === false ) {
+				delete_user_option( $user_id, 'capabilities' );
+				delete_user_option( $user_id, 'user_level' );
 			}
 
 			if (!empty($existing_user)) {
@@ -341,16 +330,6 @@ class User_Command extends WP_CLI_Command {
 				WP_CLI::success( $new_user['user_login'] . " created" );
 			}
 		}
-	}
-
-	/**
-	 * Import users from a CSV file and allow it to update the records instead of just create.
-	 *
-	 * @subcommand import-csv-upsert
-	 * @synopsis <file>
-	 */
-	public function import_csv_upsert( $args, $assoc_args ) {
-		$this->import_csv( $args, $assoc_args, true );
 	}
 
 }
