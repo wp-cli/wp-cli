@@ -18,6 +18,37 @@ function traverse( &$args, $method = 'find_subcommand' ) {
 }
 
 
+class DocParser {
+
+	protected $docComment;
+
+	function __construct( $reflection ) {
+		$this->docComment = $reflection->getDocComment();
+	}
+
+	function get_shortdesc() {
+		if ( !preg_match( '/\* (\w.+)\n*/', $this->docComment, $matches ) )
+			return false;
+
+		return $matches[1];
+	}
+
+	function get_tag( $name ) {
+		if ( preg_match( '/@' . $name . '\s+([a-z-]+)/', $this->docComment, $matches ) )
+			return $matches[1];
+
+		return false;
+	}
+
+	function get_synopsis() {
+		if ( !preg_match( '/@synopsis\s+([^\n]+)/', $this->docComment, $matches ) )
+			return false;
+
+		return $matches[1];
+	}
+}
+
+
 interface Command {
 
 	function get_path();
@@ -38,7 +69,7 @@ interface Composite {
 interface Documentable {
 
 	function get_shortdesc();
-	function get_synopsis();
+	function get_full_synopsis();
 }
 
 
@@ -114,7 +145,9 @@ EOB
 		else {
 			$method = new \ReflectionMethod( $implementation, '__invoke' );
 
-			$command = new Subcommand( $name, $implementation, $method, $this );
+			$docparser = new DocParser( $method );
+
+			$command = new Subcommand( $name, $implementation, $docparser, $this );
 		}
 
 		$this->subcommands[ $name ] = $command;
@@ -160,21 +193,25 @@ EOB
 }
 
 
-class CompositeCommand implements Command, Composite {
+class CompositeCommand implements Command, Composite, Documentable {
 
 	protected $name;
 
 	protected $subcommands;
 
+	protected $shortdesc;
+
 	public function __construct( $name, $class ) {
 		$this->name = $name;
 
-		$this->subcommands = $this->collect_subcommands( $class );
-	}
-
-	private function collect_subcommands( $class ) {
 		$reflection = new \ReflectionClass( $class );
 
+		$this->subcommands = $this->collect_subcommands( $reflection, $class );
+
+		$this->docparser = new DocParser( $reflection );
+	}
+
+	private function collect_subcommands( $reflection, $class ) {
 		$subcommands = array();
 
 		foreach ( $reflection->getMethods() as $method ) {
@@ -259,6 +296,20 @@ class CompositeCommand implements Command, Composite {
 		return $this->subcommands;
 	}
 
+	public function get_shortdesc() {
+		return $this->docparser->get_shortdesc();
+	}
+
+	public function get_full_synopsis() {
+		$str = array();
+
+		foreach ( $this->subcommands as $subcommand ) {
+			$str[] = $subcommand->get_full_synopsis();
+		}
+
+		return implode( "\n\n", $str );
+	}
+
 	private static function _is_good_method( $method ) {
 		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
 	}
@@ -267,18 +318,26 @@ class CompositeCommand implements Command, Composite {
 
 class Subcommand implements Command, Documentable {
 
-	function __construct( $name, $callable, $method, $parent ) {
+	function __construct( $name, $callable, $docparser, $parent ) {
 		$this->name = $name;
 		$this->callable = $callable;
-		$this->method = $method;
+		$this->docparser = $docparser;
 		$this->parent = $parent;
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
-		$full_name = implode( ' ', $this->get_path() );
-		$synopsis = $this->get_synopsis();
+		\WP_CLI::line( $prefix . $this->get_full_synopsis() );
+	}
 
-		\WP_CLI::line( $prefix . "wp $full_name $synopsis" );
+	function get_shortdesc() {
+		return $this->docparser->get_shortdesc();
+	}
+
+	function get_full_synopsis() {
+		$full_name = implode( ' ', $this->get_path() );
+		$synopsis = $this->docparser->get_synopsis();
+
+		return "wp $full_name $synopsis";
 	}
 
 	function invoke( $args, $assoc_args ) {
@@ -300,7 +359,7 @@ class Subcommand implements Command, Documentable {
 	}
 
 	protected function check_args( $args, $assoc_args ) {
-		$synopsis = $this->get_synopsis();
+		$synopsis = $this->docparser->get_synopsis();
 		if ( !$synopsis )
 			return;
 
@@ -372,24 +431,6 @@ class Subcommand implements Command, Documentable {
 		}
 	}
 
-	function get_shortdesc() {
-		$comment = $this->method->getDocComment();
-
-		if ( !preg_match( '/\* (\w.+)\n*/', $comment, $matches ) )
-			return false;
-
-		return $matches[1];
-	}
-
-	public function get_synopsis() {
-		$comment = $this->method->getDocComment();
-
-		if ( !preg_match( '/@synopsis\s+([^\n]+)/', $comment, $matches ) )
-			return false;
-
-		return $matches[1];
-	}
-
 	protected function parse_synopsis( $synopsis ) {
 		list( $patterns, $params ) = self::get_patterns();
 
@@ -452,27 +493,17 @@ class MethodSubcommand extends Subcommand {
 	function __construct( $class, $method, $parent ) {
 		$callable = array( new $class, $method->name );
 
-		parent::__construct( self::_get_name( $method ), $callable, $method, $parent );
-	}
+		$docparser = new DocParser( $method );
 
-	private static function _get_name( $method ) {
-		if ( $name = self::get_tag( $method, 'subcommand' ) )
-			return $name;
+		$name = $docparser->get_tag( 'subcommand' );
+		if ( !$name )
+			$name = $method->name;
 
-		return $method->name;
-	}
-
-	private static function get_tag( $method, $name ) {
-		$comment = $method->getDocComment();
-
-		if ( preg_match( '/@' . $name . '\s+([a-z-]+)/', $comment, $matches ) )
-			return $matches[1];
-
-		return false;
+		parent::__construct( $name, $callable, $docparser, $parent );
 	}
 
 	function get_alias() {
-		return self::get_tag( $this->method, 'alias' );
+		return $this->docparser->get_tag( 'alias' );
 	}
 }
 
