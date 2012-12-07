@@ -3,7 +3,7 @@
 WP_CLI::add_command( 'user-meta', 'User_Meta_Command' );
 
 /**
- * Implement user-meta command
+ * Manage user custom fields.
  *
  * @package wp-cli
  * @subpackage commands/internals
