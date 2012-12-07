@@ -48,7 +48,7 @@ function get_markdown( $doc_path, $command ) {
 function add_initial_markdown( $fd, $command ) {
 	$path = $command->get_path();
 	$shortdesc = $command->get_shortdesc();
-	$synopsis = $command->get_synopsis();
+	$synopsis = $command->get_full_synopsis();
 
 	$synopsis = str_replace( array( '<', '>' ), '_', $synopsis );
 
@@ -65,7 +65,7 @@ wp-$name_m(1) -- $shortdesc
 
 ## SYNOPSIS
 
-`wp $name_s` $synopsis
+$synopsis
 
 DOC
 	);
