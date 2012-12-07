@@ -69,6 +69,28 @@ $synopsis
 
 DOC
 	);
+
+	if ( $command instanceof Dispatcher\Composite ) {
+
+		fwrite( $fd, <<<DOC
+## SUBCOMMANDS
+
+DOC
+		);
+
+		foreach ( $command->get_subcommands() as $subcommand ) {
+			$name = $subcommand->get_name();
+			$desc = $subcommand->get_shortdesc();
+
+			fwrite( $fd, <<<DOC
+* `$name`:
+
+	$desc
+
+DOC
+	);
+		}
+	}
 }
 
 function call_ronn( $markdown, $dest ) {
