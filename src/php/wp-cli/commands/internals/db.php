@@ -30,14 +30,18 @@ class DB_Command extends WP_CLI_Command {
 	 * @synopsis [--yes] [--str]
 	 */
 	function drop( $_, $assoc_args ) {
-		WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args );
-
-		self::run( $assoc_args, self::create_cmd(
+		$command = self::create_cmd(
 			'mysql --host=%s --user=%s --password=%s --execute=%s',
 			DB_HOST, DB_USER, DB_PASSWORD, 'DROP DATABASE ' . DB_NAME
-		) );
+		);
 
-		WP_CLI::success( "Database dropped." );
+		if ( !isset( $assoc_args['str'] ) ) {
+			WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args );
+			WP_CLI::launch( $command );
+			WP_CLI::success( "Database dropped." );
+		} else {
+			WP_CLI::line( $command );
+		}
 	}
 
 	/**
