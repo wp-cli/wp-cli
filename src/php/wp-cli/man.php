@@ -48,7 +48,7 @@ function get_markdown( $doc_path, $command ) {
 function add_initial_markdown( $fd, $command ) {
 	$path = $command->get_path();
 	$shortdesc = $command->get_shortdesc();
-	$synopsis = $command->get_synopsis();
+	$synopsis = $command->get_full_synopsis();
 
 	$synopsis = str_replace( array( '<', '>' ), '_', $synopsis );
 
@@ -65,10 +65,32 @@ wp-$name_m(1) -- $shortdesc
 
 ## SYNOPSIS
 
-`wp $name_s` $synopsis
+$synopsis
 
 DOC
 	);
+
+	if ( $command instanceof Dispatcher\Composite ) {
+
+		fwrite( $fd, <<<DOC
+## SUBCOMMANDS
+
+DOC
+		);
+
+		foreach ( $command->get_subcommands() as $subcommand ) {
+			$name = $subcommand->get_name();
+			$desc = $subcommand->get_shortdesc();
+
+			fwrite( $fd, <<<DOC
+* `$name`:
+
+	$desc
+
+DOC
+	);
+		}
+	}
 }
 
 function call_ronn( $markdown, $dest ) {

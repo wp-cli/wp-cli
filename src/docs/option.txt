@@ -1,34 +1,3 @@
-wp-option(1) -- Manage WordPress options.
-====
-
-## SYNOPSIS
-
-wp option get <key> [--json]
-
-wp option add <key> <value> [--json]
-
-wp option update <key> <value> [--json]
-
-wp option delete <key>
-
-## SUBCOMMANDS
-
-* `get`:
-
-	Get an option value.
-
-* `add`:
-
-	Add a new option.
-
-* `update`:
-
-	Update an existing option. 
-
-* `delete`:
-
-	Delete an option.
-
 ## OPTIONS
 
 * `json`:
