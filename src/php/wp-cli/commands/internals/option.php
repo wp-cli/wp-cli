@@ -3,7 +3,7 @@
 WP_CLI::add_command('option', 'Option_Command');
 
 /**
- * Implement option command
+ * Manage WordPress options.
  *
  * @package wp-cli
  * @subpackage commands/internals

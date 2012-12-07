@@ -3,7 +3,7 @@
 WP_CLI::add_command( 'post-meta', 'Post_Meta_Command' );
 
 /**
- * Implement post-meta command
+ * Manage post custom fields.
  *
  * @package wp-cli
  * @subpackage commands/internals
