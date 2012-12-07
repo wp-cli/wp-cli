@@ -1,5 +1,9 @@
 ## OPTIONS
 
+* `--str`:
+
+	Show the mysql command, instead of executing it.
+
 * `--yes`:
 
 	Answer yes to the confirmation message.
