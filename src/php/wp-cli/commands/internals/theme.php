@@ -171,7 +171,9 @@ class Theme_Command extends WP_CLI_Command_With_Upgrade {
 	 * @synopsis <theme> [--version=<version>]
 	 */
 	function update( $args, $assoc_args ) {
-		parent::update( $args, $assoc_args );
+		list( $_, $name ) = $this->parse_name( $args );
+
+		parent::_update( $name );
 	}
 
 	/**

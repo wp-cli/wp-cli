@@ -119,12 +119,10 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		}
 	}
 
-	function update( $args, $assoc_args ) {
+	protected function _update( $item ) {
 		call_user_func( $this->upgrade_refresh );
 
-		list( $file, $name ) = $this->parse_name( $args );
-
-		WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $file );
+		WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $item );
 	}
 
 	function update_all( $args, $assoc_args ) {

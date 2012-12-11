@@ -191,7 +191,9 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 			$this->delete( $args, array(), false );
 			$this->install( $args, $assoc_args );
 		} else {
-			parent::update( $args, $assoc_args );
+			list( $basename ) = $this->parse_name( $args );
+
+			parent::_update( $basename );
 		}
 	}
 
