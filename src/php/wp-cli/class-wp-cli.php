@@ -205,7 +205,7 @@ class WP_CLI {
 		}
 
 		// {plugin|theme} update --all  ->  {plugin|theme} update-all
-		if ( count( self::$arguments ) > 0 && in_array( self::$arguments[0], array( 'plugin', 'theme' ) )
+		if ( count( self::$arguments ) > 1 && in_array( self::$arguments[0], array( 'plugin', 'theme' ) )
 			&& self::$arguments[1] == 'update'
 			&& isset( self::$assoc_args['all'] )
 		) {
