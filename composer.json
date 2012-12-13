@@ -4,6 +4,9 @@
 	"keywords": [ "cli", "wordpress" ], 
 	"homepage": "http://wp-cli.org",
 	"license": "MIT",
+	"require": {
+		"php": ">=5.3"
+	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.x"
 	}
