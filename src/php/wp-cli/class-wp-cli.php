@@ -277,6 +277,11 @@ class WP_CLI {
 		// Set installer flag before loading any WP files
 		if ( array( 'core', 'install' ) == self::$arguments ) {
 			define( 'WP_INSTALLING', true );
+
+            if ( !file_exists( WP_ROOT . '/wp-config.php' ) ) {
+                WP_CLI::error( "wp-config.php not found\n" .
+                    "Either create one manually or use wp core config" );
+            }
 		}
 
 		// Pretend we're in WP_ADMIN, to side-step full-page caching plugins
