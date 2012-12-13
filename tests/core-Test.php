@@ -3,20 +3,20 @@
 require __DIR__ . '/class-command-runner.php';
 
 class CoreTest extends PHPUnit_Framework_TestCase {
-    public function testIsInstalledExitsWith1IfWordPressNotInstalled() {
+    public function test_is_installed_exits_with_1_if_wordpress_not_installed() {
         $temp_dir = self::create_temporary_directory();
         $command_runner = new Command_Runner( $temp_dir );
         $result = $command_runner->run_wp_cli( "core is-installed" );
         $this->assertEquals(1, $result->return_code);
     }
     
-    public function testIsInstalledExitsWith0AfterRunningInstallCommand() {
+    public function test_is_installed_exits_with_0_after_running_install_command() {
         $command_runner = $this->install_wp_cli();
         $result = $command_runner->run_wp_cli( "core is-installed" );
         $this->assertEquals(0, $result->return_code);
     }
     
-    public function testInstallCommandCreatesDefaultBlogPost() {
+    public function test_install_command_creates_default_blog_post() {
         $command_runner = $this->install_wp_cli();
         $result = $command_runner->run_wp_cli( "post list --ids" );
         $this->assertEquals( "1", $result->output );
