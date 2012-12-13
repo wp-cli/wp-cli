@@ -2,6 +2,18 @@
 
 namespace WP_CLI\Utils;
 
+function load_cli_tools() {
+	$vendor_path = WP_CLI_ROOT . '../../../vendor';
+
+	if ( file_exists( $vendor_path . '/autoload.php' ) ) {
+		require $vendor_path . '/autoload.php';
+		include $vendor_path . '/wp-cli/php-cli-tools/lib/cli/cli.php';
+	} else {
+		include WP_CLI_ROOT . '../php-cli-tools/lib/cli/cli.php';
+		\cli\register_autoload();
+	}
+}
+
 /**
  * Splits $argv into positional and associative arguments.
  *
