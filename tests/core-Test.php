@@ -22,6 +22,18 @@ class CoreTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals( "1", $result->output );
     }
     
+    public function test_message_explains_that_config_must_be_present_before_install() {
+        $temp_dir = self::create_temporary_directory();
+        $command_runner = new Command_Runner( $temp_dir );
+        self::download_wordpress_files( $temp_dir );
+        $result = $command_runner->run_wp_cli( "core install" );
+        $this->assertEquals(
+            "^[[31;1mError: ^[[0mwp-config.php not found\n" .
+            "Either create one manually or use wp core config\n",
+            $result->output
+        );
+    }
+    
     private function install_wp_cli() {
         $temp_dir = self::create_temporary_directory();
         $command_runner = new Command_Runner( $temp_dir );
@@ -45,7 +57,7 @@ class CoreTest extends PHPUnit_Framework_TestCase {
         $cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
         if ( !file_exists( $cache_dir ) ) {
             mkdir( $cache_dir );
-            $command_runner = new CommandRunner( $cache_dir );
+            $command_runner = new Command_Runner( $cache_dir );
             $command_runner->run_wp_cli( "core download" );
         }
         exec( "cp -r '$cache_dir/'* '$target_dir/'" );
