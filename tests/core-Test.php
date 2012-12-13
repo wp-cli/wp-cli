@@ -5,7 +5,7 @@ require __DIR__ . '/class-command-runner.php';
 class CoreTest extends PHPUnit_Framework_TestCase {
     public function testIsInstalledExitsWith1IfWordPressNotInstalled() {
         $temp_dir = self::create_temporary_directory();
-        $command_runner = new CommandRunner( $temp_dir );
+        $command_runner = new Command_Runner( $temp_dir );
         $result = $command_runner->run_wp_cli( "core is-installed" );
         $this->assertEquals(1, $result->return_code);
     }
