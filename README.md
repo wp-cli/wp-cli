@@ -32,9 +32,9 @@ Once you've got composer installed, run:
 
     composer.phar install --dev
 
-Before running the tests, you'll need a MySQL user called wp_cli_test with the password password1 that
-has full privileges on the MySQL database wp_cli_test. Running the following
-as root in MySQL should do the trick:
+Before running the tests, you'll need a MySQL user called `wp_cli_test` with the
+password `password1` that has full privileges on the MySQL database `wp_cli_test`.
+Running the following as root in MySQL should do the trick:
 
     GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"localhost"
     IDENTIFIED BY "password1";
