@@ -28,7 +28,7 @@ Running tests
 -------------
 
 The tests use PHPUnit, which can be installed using [composer](http://getcomposer.org/).
-Once you've composer installed, run:
+Once you've got composer installed, run:
 
     composer.phar install --dev
 
