@@ -6,13 +6,13 @@ class CoreTest extends PHPUnit_Framework_TestCase {
     public function testIsInstalledExitsWith1IfWordPressNotInstalled() {
         $temp_dir = self::create_temporary_directory();
         $command_runner = new CommandRunner( $temp_dir );
-        $result = $command_runner->run_wp_cli("core is-installed");
+        $result = $command_runner->run_wp_cli( "core is-installed" );
         $this->assertEquals(1, $result->return_code);
     }
     
     public function testIsInstalledExitsWith0AfterRunningInstallCommand() {
         $command_runner = $this->install_wp_cli();
-        $result = $command_runner->run_wp_cli("core is-installed");
+        $result = $command_runner->run_wp_cli( "core is-installed" );
         $this->assertEquals(0, $result->return_code);
     }
     
@@ -44,7 +44,7 @@ class CoreTest extends PHPUnit_Framework_TestCase {
         // Ideally, we'd cache at the HTTP layer for more reliable tests
         $cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
         if ( !file_exists( $cache_dir ) ) {
-            mkdir($cache_dir);
+            mkdir( $cache_dir );
             $command_runner = new CommandRunner( $cache_dir );
             $command_runner->run_wp_cli( "core download" );
         }
@@ -52,8 +52,8 @@ class CoreTest extends PHPUnit_Framework_TestCase {
     }
     
     private static function create_temporary_directory() {
-        $dir = sys_get_temp_dir() . '/' . uniqid("wp-cli-test-", TRUE);
-        mkdir($dir);
+        $dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-", TRUE );
+        mkdir( $dir );
         return $dir;
     }
 }
