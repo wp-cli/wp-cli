@@ -26,7 +26,8 @@ class CoreTest extends Wp_Cli_Test_Case {
     public function test_message_explains_that_config_must_be_present_before_install() {
         $temp_dir = $this->create_temporary_directory();
         $command_runner = new Command_Runner( $temp_dir );
-        $this->download_wordpress_files( $temp_dir );
+        $installer = new Wordpress_Installer( $temp_dir, $command_runner );
+        $installer->download_wordpress_files( $temp_dir );
         $result = $command_runner->run_wp_cli( "core install" );
         $this->assertEquals(
             "^[[31;1mError: ^[[0mwp-config.php not found\n" .
