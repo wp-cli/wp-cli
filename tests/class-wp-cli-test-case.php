@@ -3,13 +3,34 @@
 require_once __DIR__ . '/class-command-runner.php';
 
 abstract class Wp_Cli_Test_Case extends PHPUnit_Framework_TestCase {
+    protected $database_settings = array(
+        "dbname" => "wp_cli_test",
+        "dbuser" => "wp_cli_test",
+        "dbpass" => "password1"
+    );
+    
+    protected function setUp() {
+        $this->reset_database();
+    }
+    
+    private function reset_database() {
+        $dbname = $this->database_settings["dbname"];
+        $this->run_sql( "DROP DATABASE $dbname" );
+        $this->run_sql( "CREATE DATABASE $dbname" );
+    }
+    
+    private function run_sql( $sql ) {
+        $dbuser = $this->database_settings["dbuser"];
+        $dbpass = $this->database_settings["dbpass"];
+        exec( "mysql -u$dbuser -p$dbpass -e '$sql'" );
+    }
+    
     public function install_wp_cli() {
         $temp_dir = $this->create_temporary_directory();
         $command_runner = new Command_Runner( $temp_dir );
         $installer = new Wordpress_Installer( $temp_dir, $command_runner );
         $installer->download_wordpress_files( $temp_dir );
-        $installer->reset_database();
-        $installer->create_config();
+        $installer->create_config( $this->database_settings );
         $installer->run_install();
         return $command_runner;
     }
@@ -22,9 +43,6 @@ abstract class Wp_Cli_Test_Case extends PHPUnit_Framework_TestCase {
 }
 
 class Wordpress_Installer {
-    private $dbname = "wp_cli_test";
-    private $dbuser = "wp_cli_test";
-    private $dbpass = "password1";
     private $install_dir;
     private $command_runner;
     
@@ -33,21 +51,20 @@ class Wordpress_Installer {
         $this->command_runner = $command_runner;
     }
     
-    public function reset_database() {
-        exec( "mysql -u$this->dbname -p$this->dbpass -e 'DROP DATABASE $this->dbname'" );
-        exec( "mysql -u$this->dbname -p$this->dbpass -e 'CREATE DATABASE $this->dbname'" );
-    }
-    
-    public function create_config() {
+    public function create_config( $database_settings ) {
+        $dbname = $database_settings["dbname"];
+        $dbuser = $database_settings["dbuser"];
+        $dbpass = $database_settings["dbpass"];
         $this->command_runner->run_wp_cli(
-            "core config --dbname=$this->dbname --dbuser=$this->dbuser --dbpass=$this->dbpass" );
+            "core config --dbname=$dbname --dbuser=$dbuser --dbpass=$dbpass" );
     }
     
     public function run_install() {
-        $this->command_runner->run_wp_cli(
+        $install_result = $this->command_runner->run_wp_cli(
             "core install --url=http://example.com/ --title=WordPress " .
             " --admin_email=admin@example.com --admin_password=password1"
         );
+        $this->assert_process_exited_successfully( $install_result );
     }
     
     public function download_wordpress_files() {
@@ -62,4 +79,10 @@ class Wordpress_Installer {
         exec( "cp -r '$cache_dir/'* '$this->install_dir/'" );
     }
     
+    private function assert_process_exited_successfully( $result ) {
+        if ( $result->return_code !== 0 ) {
+            $message = "return code was $result->return_code, output was: $result->output";
+            throw new Exception( $message );
+        }
+    }
 }

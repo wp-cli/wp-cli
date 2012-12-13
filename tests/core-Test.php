@@ -35,4 +35,18 @@ class CoreTest extends Wp_Cli_Test_Case {
             $result->output
         );
     }
+    
+    public function test_wp_config_can_be_placed_in_parent_directory() {
+        $temp_dir = $this->create_temporary_directory();
+        $install_dir = $temp_dir . '/www-root';
+        mkdir( $install_dir );
+        $command_runner = new Command_Runner( $install_dir );
+        $installer = new Wordpress_Installer( $install_dir, $command_runner );
+        $installer->download_wordpress_files( $install_dir );
+        $installer->create_config( $this->database_settings );
+        rename( $install_dir . '/wp-config.php', $temp_dir . '/wp-config.php' );
+        $installer->run_install();
+        $result = $command_runner->run_wp_cli( "post list --ids" );
+        $this->assertEquals( "1", $result->output );
+    }
 }
