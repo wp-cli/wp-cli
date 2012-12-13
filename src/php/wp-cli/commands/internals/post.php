@@ -33,21 +33,23 @@ class Post_Command extends WP_CLI_Command {
 	/**
 	 * Update a post.
 	 *
-	 * @synopsis <id> --<field>=<value>
+	 * @synopsis <id>... --<field>=<value>
 	 */
 	public function update( $args, $assoc_args ) {
-		list( $post_id ) = $args;
+		foreach ( $args as $post_id ) {
+			if ( empty( $assoc_args ) ) {
+				WP_CLI::error( "Need some fields to update." );
+			}
 
-		if ( empty( $assoc_args ) ) {
-			WP_CLI::error( "Need some fields to update." );
-		}
+			$params = array_merge( $assoc_args, array( 'ID' => $post_id ) );
 
-		$params = array_merge( $assoc_args, array( 'ID' => $post_id ) );
+			$r = wp_update_post( $params, true );
 
-		if ( wp_update_post( $params ) ) {
-			WP_CLI::success( "Updated post $post_id." );
-		} else {
-			WP_CLI::error( "Failed updating post $post_id" );
+			if ( is_wp_error( $r ) ) {
+				WP_CLI::error( "Post $post_id: " . $r->get_error_message() );
+			} else {
+				WP_CLI::success( "Updated post $post_id." );
+			}
 		}
 	}
 
