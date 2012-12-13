@@ -1,7 +1,8 @@
 <?php
+
+require __DIR__ . '/class-command-runner.php';
+
 class CoreTest extends PHPUnit_Framework_TestCase {
-    
-    
     public function testIsInstalledExitsWith1IfWordPressNotInstalled() {
         $temp_dir = self::create_temporary_directory();
         $command_runner = new CommandRunner( $temp_dir );
@@ -23,7 +24,7 @@ class CoreTest extends PHPUnit_Framework_TestCase {
     
     private function install_wp_cli() {
         $temp_dir = self::create_temporary_directory();
-        $command_runner = new CommandRunner( $temp_dir );
+        $command_runner = new Command_Runner( $temp_dir );
         self::download_wordpress_files( $temp_dir );
         $dbname = "wp_cli_test";
         $dbuser = "wp_cli_test";
@@ -54,37 +55,5 @@ class CoreTest extends PHPUnit_Framework_TestCase {
         $dir = sys_get_temp_dir() . '/' . uniqid("wp-cli-test-", TRUE);
         mkdir($dir);
         return $dir;
-    }
-}
-
-class CommandRunner {
-    private $cwd;
-    
-    public function __construct( $cwd ) {
-        $this->cwd = $cwd;
-    }
-    
-    public function run_wp_cli( $wp_cli_command ) {
-        $wp_cli_path = self::find_wp_cli();
-        return self::run_command( "$wp_cli_path $wp_cli_command" );
-    }
-    
-    private function find_wp_cli() {
-        return getcwd() . "/src/bin/wp";
-    }
-    
-    private function run_command( $command ) {
-        $output = array();
-        $return_code = 0;
-        $cwd = $this->cwd;
-        exec( "sh -c 'cd $cwd; $command'", $output, $return_code );
-        return new ExecutionResult( $return_code, implode( "\n", $output ) );
-    }
-}
-
-class ExecutionResult {
-    public function __construct( $return_code, $output ) {
-        $this->return_code = $return_code;
-        $this->output = $output;
     }
 }
