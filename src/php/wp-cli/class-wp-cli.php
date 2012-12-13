@@ -277,11 +277,26 @@ class WP_CLI {
 		// Set installer flag before loading any WP files
 		if ( array( 'core', 'install' ) == self::$arguments ) {
 			define( 'WP_INSTALLING', true );
+
+			if ( !self::wp_config_is_present() ) {
+				WP_CLI::error( "wp-config.php not found\n" .
+					"Either create one manually or use wp core config" );
+			}
 		}
 
 		// Pretend we're in WP_ADMIN, to side-step full-page caching plugins
 		define( 'WP_ADMIN', true );
 		$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
+	}
+	
+	private static function wp_config_is_present() {
+		if ( file_exists( WP_ROOT . '/wp-config.php' ) ) {
+			return TRUE;
+		}
+		if ( file_exists( dirname(WP_ROOT) . '/wp-config.php' ) && ! file_exists( dirname(WP_ROOT) . '/wp-settings.php' ) ) {
+			return TRUE;
+		}
+		return FALSE;
 	}
 
 	static function after_wp_load() {

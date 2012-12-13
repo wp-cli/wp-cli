@@ -1,2 +1,4 @@
 /.build
 /dist
+/vendor
+/composer.lock
