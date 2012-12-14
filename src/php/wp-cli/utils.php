@@ -8,7 +8,7 @@ function load_cli_tools() {
 		WP_CLI_ROOT . '../../../vendor',			// top-level project
 	);
 
-	$found = true;
+	$found = false;
 
 	foreach ( $vendor_paths as $vendor_path ) {
 		if ( file_exists( $vendor_path . '/autoload.php' ) ) {
