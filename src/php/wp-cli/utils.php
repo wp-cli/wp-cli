@@ -3,12 +3,23 @@
 namespace WP_CLI\Utils;
 
 function load_cli_tools() {
-	$vendor_path = WP_CLI_ROOT . '../../../vendor';
+	$vendor_paths = array(
+		WP_CLI_ROOT . '../../../../../../vendor',	// part of a larger project
+		WP_CLI_ROOT . '../../../vendor',			// top-level project
+	);
 
-	if ( file_exists( $vendor_path . '/autoload.php' ) ) {
-		require $vendor_path . '/autoload.php';
-		include $vendor_path . '/wp-cli/php-cli-tools/lib/cli/cli.php';
-	} else {
+	$found = true;
+
+	foreach ( $vendor_paths as $vendor_path ) {
+		if ( file_exists( $vendor_path . '/autoload.php' ) ) {
+			require $vendor_path . '/autoload.php';
+			include $vendor_path . '/wp-cli/php-cli-tools/lib/cli/cli.php';
+			$found = true;
+			break;
+		}
+	}
+
+	if ( !$found ) {
 		include WP_CLI_ROOT . '../php-cli-tools/lib/cli/cli.php';
 		\cli\register_autoload();
 	}
