@@ -129,6 +129,10 @@ function set_url_params( $url ) {
 	$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
 	$_SERVER['REQUEST_URL'] = $f('path');
 	$_SERVER['QUERY_STRING'] = $f('query');
+	$_SERVER['SERVER_NAME'] = substr($_SERVER['HTTP_HOST'], 0, strrpos($_SERVER['HTTP_HOST'], '.'));
+	$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
+	$_SERVER['HTTP_USER_AGENT'] = '';
+	$_SERVER['REQUEST_METHOD'] = 'GET';
 }
 
 function locate_wp_config() {
