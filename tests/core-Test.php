@@ -31,7 +31,7 @@ class CoreTest extends Wp_Cli_Test_Case {
 
 		$installer = new Wordpress_Installer( $temp_dir, $runner );
 		$installer->download_wordpress_files( $temp_dir );
-		$installer->create_config( $this->database_settings );
+		$installer->create_config( $this->db_settings );
 
 		$result = $runner->run_wp_cli( "core is-installed" );
 		$this->assertEquals( 1, $result->return_code );
@@ -69,7 +69,7 @@ class CoreTest extends Wp_Cli_Test_Case {
 		$runner = new Command_Runner( $install_dir );
 		$installer = new Wordpress_Installer( $install_dir, $runner );
 		$installer->download_wordpress_files( $install_dir );
-		$installer->create_config( $this->database_settings );
+		$installer->create_config( $this->db_settings );
 		rename( $install_dir . '/wp-config.php', $temp_dir . '/wp-config.php' );
 		$installer->run_install();
 		$result = $runner->run_wp_cli( "post list --ids" );

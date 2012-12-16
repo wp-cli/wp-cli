@@ -3,7 +3,7 @@
 require_once __DIR__ . '/class-command-runner.php';
 
 abstract class Wp_Cli_Test_Case extends PHPUnit_Framework_TestCase {
-	protected $database_settings = array(
+	protected $db_settings = array(
 		"dbname" => "wp_cli_test",
 		"dbuser" => "wp_cli_test",
 		"dbpass" => "password1"
@@ -14,14 +14,14 @@ abstract class Wp_Cli_Test_Case extends PHPUnit_Framework_TestCase {
 	}
 
 	private function reset_database() {
-		$dbname = $this->database_settings["dbname"];
+		$dbname = $this->db_settings["dbname"];
 		$this->run_sql( "DROP DATABASE $dbname" );
 		$this->run_sql( "CREATE DATABASE $dbname" );
 	}
 
 	private function run_sql( $sql ) {
-		$dbuser = $this->database_settings["dbuser"];
-		$dbpass = $this->database_settings["dbpass"];
+		$dbuser = $this->db_settings["dbuser"];
+		$dbpass = $this->db_settings["dbpass"];
 		exec( "mysql -u$dbuser -p$dbpass -e '$sql'" );
 	}
 
@@ -30,7 +30,7 @@ abstract class Wp_Cli_Test_Case extends PHPUnit_Framework_TestCase {
 		$runner = new Command_Runner( $temp_dir );
 		$installer = new Wordpress_Installer( $temp_dir, $runner );
 		$installer->download_wordpress_files( $temp_dir );
-		$installer->create_config( $this->database_settings );
+		$installer->create_config( $this->db_settings );
 		$installer->run_install();
 		return $runner;
 	}
@@ -51,10 +51,10 @@ class Wordpress_Installer {
 		$this->runner = $runner;
 	}
 
-	public function create_config( $database_settings ) {
-		$dbname = $database_settings["dbname"];
-		$dbuser = $database_settings["dbuser"];
-		$dbpass = $database_settings["dbpass"];
+	public function create_config( $db_settings ) {
+		$dbname = $db_settings["dbname"];
+		$dbuser = $db_settings["dbuser"];
+		$dbpass = $db_settings["dbpass"];
 		$this->runner->run_wp_cli(
 			"core config --dbname=$dbname --dbuser=$dbuser --dbpass=$dbpass" );
 	}
