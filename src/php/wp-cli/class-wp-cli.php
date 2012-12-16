@@ -274,13 +274,16 @@ class WP_CLI {
 			exit;
 		}
 
-		// Set installer flag before loading any WP files
-		if ( array( 'core', 'install' ) == self::$arguments ) {
-			define( 'WP_INSTALLING', true );
-
+		if ( 'core' == self::$arguments[0] && in_array( self::$arguments[1], array( 'install', 'is-installed' ) ) ) {
 			if ( !Utils\locate_wp_config() ) {
 				WP_CLI::error( "wp-config.php not found\n" .
 					"Either create one manually or use `wp core config`." );
+			}
+
+			define( 'WP_INSTALLING', true );
+
+			if ( !isset( $_SERVER['HTTP_HOST'] ) ) {
+				define( 'WP_SITEURL', 'http://example.com' );
 			}
 		}
 
