@@ -285,7 +285,7 @@ class WP_CLI {
 			define( 'WP_INSTALLING', true );
 
 			if ( !isset( $_SERVER['HTTP_HOST'] ) ) {
-				define( 'WP_SITEURL', 'http://example.com' );
+				Utils\set_url_params( 'http://example.com' );
 			}
 		}
 
