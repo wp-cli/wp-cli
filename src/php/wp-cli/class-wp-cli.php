@@ -267,14 +267,16 @@ class WP_CLI {
 			exit;
 		}
 
-		// The db commands don't need any WP files
-		if ( array( 'db' ) == array_slice( self::$arguments, 0, 1 ) ) {
+		if ( self::cmd_starts_with( array( 'db' ) ) ) {
 			Utils\load_wp_config();
 			self::run_command();
 			exit;
 		}
 
-		if ( 'core' == self::$arguments[0] && in_array( self::$arguments[1], array( 'install', 'is-installed' ) ) ) {
+		if (
+			self::cmd_starts_with( array( 'core', 'install' ) ) ||
+			self::cmd_starts_with( array( 'core', 'is-installed' ) )
+		) {
 			if ( !Utils\locate_wp_config() ) {
 				WP_CLI::error( "wp-config.php not found\n" .
 					"Either create one manually or use `wp core config`." );
@@ -290,6 +292,10 @@ class WP_CLI {
 		// Pretend we're in WP_ADMIN, to side-step full-page caching plugins
 		define( 'WP_ADMIN', true );
 		$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
+	}
+
+	private static function cmd_starts_with( $prefix ) {
+		return $prefix == array_slice( self::$arguments, 0, count( $prefix  ) );
 	}
 
 	static function after_wp_load() {
