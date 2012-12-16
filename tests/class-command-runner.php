@@ -27,8 +27,8 @@ class Command_Runner {
 			'RETURN_CODE=$?;' .
 			"cat -v $output_binary_file > $output_file;" .
 			'exit $RETURN_CODE';
-		exec("sh -c '$sh_command'", $output_dummy, $return_code );
-		$output = file_get_contents( $output_file);
+		exec( "sh -c '$sh_command'", $output_dummy, $return_code );
+		$output = file_get_contents( $output_file );
 		unlink( $output_file );
 		unlink( $output_binary_file );
 		return new Execution_Result( $return_code, $output );
@@ -36,6 +36,7 @@ class Command_Runner {
 }
 
 class Execution_Result {
+
 	public function __construct( $return_code, $output ) {
 		$this->return_code = $return_code;
 		$this->output = $output;
