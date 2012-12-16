@@ -193,7 +193,20 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		} else {
 			list( $basename ) = $this->parse_name( $args );
 
+			$was_active = is_plugin_active( $basename );
+			$was_network_active = is_plugin_active_for_network( $basename );
+
 			parent::_update( $basename );
+
+			if ( $was_active ) {
+				$new_args = array( $args[0] );
+
+				$new_assoc_args = array();
+				if ( $was_network_active )
+					$new_assoc_args['network'] = true;
+
+				$this->activate( $new_args, $new_assoc_args );
+			}
 		}
 	}
 
