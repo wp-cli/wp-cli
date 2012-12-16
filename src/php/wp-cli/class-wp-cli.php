@@ -62,14 +62,16 @@ class WP_CLI {
 	 * Display an error in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @param string $label
+	 * @param bool $exit
 	 */
-	static function error( $message, $label = 'Error' ) {
+	static function error( $message, $exit = true ) {
 		if ( !isset( self::$assoc_special['completions'] ) ) {
+			$label = 'Error';
 			\cli\err( '%R' . $label . ': %n' . self::error_to_string( $message ) );
 		}
 
-		exit(1);
+		if ( $exit )
+			exit(1);
 	}
 
 	/**
@@ -259,7 +261,9 @@ class WP_CLI {
 		}
 
 		if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
-			WP_CLI::error( 'This does not seem to be a WordPress install. Pass --path=`path/to/wordpress` or run `wp core download`.' );
+			WP_CLI::error( "This does not seem to be a WordPress install.", false );
+			WP_CLI::line( "Pass --path=`path/to/wordpress` or run `wp core download`." );
+			exit(1);
 		}
 
 		if ( array( 'core', 'config' ) == self::$arguments ) {
@@ -278,8 +282,9 @@ class WP_CLI {
 			self::cmd_starts_with( array( 'core', 'is-installed' ) )
 		) {
 			if ( !Utils\locate_wp_config() ) {
-				WP_CLI::error( "wp-config.php not found\n" .
-					"Either create one manually or use `wp core config`." );
+				WP_CLI::error( "wp-config.php not found.", false );
+				WP_CLI::line( "Either create one manually or use `wp core config`." );
+				exit(1);
 			}
 
 			define( 'WP_INSTALLING', true );
