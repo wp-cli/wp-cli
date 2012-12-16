@@ -32,7 +32,7 @@ class CoreTest extends Wp_Cli_Test_Case {
 		$result = $runner->run_wp_cli( "core install" );
 		$this->assertEquals(
 			"^[[31;1mError: ^[[0mwp-config.php not found\n" .
-			"Either create one manually or use wp core config\n",
+			"Either create one manually or use `wp core config`.\n",
 			$result->output
 		);
 	}
