@@ -213,7 +213,7 @@ class User_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add a user to a blog.
+	 * Set the user role (for a particular blog).
 	 *
 	 * @subcommand set-role
 	 * @synopsis <user-login> [<role>] [--blog=<blog>]
@@ -233,21 +233,45 @@ class User_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Remove a user from a blog.
+	 * Add a role for a user.
+	 *
+	 * @subcommand add-role
+	 * @synopsis <user-login> <role> [--blog=<blog>]
+	 */
+	public function add_role( $args, $assoc_args ) {
+		$user = self::get_user_from_first_arg( $args[0] );
+
+		$role = $args[1];
+
+		$user->add_role( $role );
+
+		WP_CLI::success( sprintf( "Added '%s' role for %s (%d).", $role, $user->user_login, $user->ID ) );
+	}
+
+	/**
+	 * Remove a user's role.
 	 *
 	 * @subcommand remove-role
-	 * @synopsis <user-login>
+	 * @synopsis <user-login> [<role>] [--blog=<blog>]
 	 */
 	public function remove_role( $args, $assoc_args ) {
 		$user = self::get_user_from_first_arg( $args[0] );
 
-		// Multisite
-		if ( function_exists( 'remove_user_from_blog' ) )
-			remove_user_from_blog( $user->ID, get_current_blog_id() );
-		else
-			$user->remove_all_caps();
+		if ( isset( $args[1] ) ) {
+			$role = $args[1];
 
-		WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() );
+			$user->remove_role( $role );
+
+			WP_CLI::success( sprintf( "Removed '%s' role for %s (%d).", $role, $user->user_login, $user->ID ) );
+		} else {
+			// Multisite
+			if ( function_exists( 'remove_user_from_blog' ) )
+				remove_user_from_blog( $user->ID, get_current_blog_id() );
+			else
+				$user->remove_all_caps();
+
+			WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() );
+		}
 	}
 
 	private static function get_user_from_first_arg( $id_or_login ) {
