@@ -12,6 +12,31 @@ class CoreTest extends Wp_Cli_Test_Case {
 		$this->assertEquals( 1, $result->return_code );
 	}
 
+	public function test_is_installed_exits_with_1_if_missing_wp_config() {
+		$temp_dir = $this->create_temporary_directory();
+
+		$runner = new Command_Runner( $temp_dir );
+
+		$installer = new Wordpress_Installer( $temp_dir, $runner );
+		$installer->download_wordpress_files( $temp_dir );
+
+		$result = $runner->run_wp_cli( "core is-installed" );
+		$this->assertEquals( 1, $result->return_code );
+	}
+
+	public function test_is_installed_exits_with_1_if_db_not_installed() {
+		$temp_dir = $this->create_temporary_directory();
+
+		$runner = new Command_Runner( $temp_dir );
+
+		$installer = new Wordpress_Installer( $temp_dir, $runner );
+		$installer->download_wordpress_files( $temp_dir );
+		$installer->create_config( $this->database_settings );
+
+		$result = $runner->run_wp_cli( "core is-installed" );
+		$this->assertEquals( 1, $result->return_code );
+	}
+
 	public function test_is_installed_exits_with_0_after_running_install_command() {
 		$runner = $this->full_wp_install();
 		$result = $runner->run_wp_cli( "core is-installed" );
