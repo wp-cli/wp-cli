@@ -25,7 +25,7 @@ abstract class Wp_Cli_Test_Case extends PHPUnit_Framework_TestCase {
 		exec( "mysql -u$dbuser -p$dbpass -e '$sql'" );
 	}
 
-	public function install_wp_cli() {
+	public function full_wp_install() {
 		$temp_dir = $this->create_temporary_directory();
 		$command_runner = new Command_Runner( $temp_dir );
 		$installer = new Wordpress_Installer( $temp_dir, $command_runner );

@@ -13,13 +13,13 @@ class CoreTest extends Wp_Cli_Test_Case {
 	}
 
 	public function test_is_installed_exits_with_0_after_running_install_command() {
-		$runner = $this->install_wp_cli();
+		$runner = $this->full_wp_install();
 		$result = $runner->run_wp_cli( "core is-installed" );
 		$this->assertEquals( 0, $result->return_code );
 	}
 
 	public function test_install_command_creates_default_blog_post() {
-		$runner = $this->install_wp_cli();
+		$runner = $this->full_wp_install();
 		$result = $runner->run_wp_cli( "post list --ids" );
 		$this->assertEquals( "1", $result->output );
 	}
