@@ -150,17 +150,21 @@ define('BLOG_ID_CURRENT_SITE', 1);
 <?php
 		$ms_config = ob_get_clean();
 
+		self::modify_wp_config( $ms_config );
+
+		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
+
+		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
+	}
+
+	private static function modify_wp_config( $content ) {
 		$wp_config_path = WP_CLI\Utils\locate_wp_config();
 
 		$token = "/* That's all, stop editing!";
 
 		list( $before, $after ) = explode( $token, file_get_contents( $wp_config_path ) );
 
-		file_put_contents( $wp_config_path, $before . $ms_config . $token . $after );
-
-		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
-
-		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
+		file_put_contents( $wp_config_path, $before . $content . $token . $after );
 	}
 
 	private static function get_clean_basedomain() {
