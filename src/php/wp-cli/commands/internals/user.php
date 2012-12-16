@@ -213,7 +213,7 @@ class User_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add a user to a blog.
+	 * Set the user role (for a particular blog).
 	 *
 	 * @subcommand set-role
 	 * @synopsis <user-login> [<role>] [--blog=<blog>]
@@ -230,6 +230,22 @@ class User_Command extends WP_CLI_Command {
 			$user->set_role( $role );
 
 		WP_CLI::success( "Added {$user->user_login} ({$user->ID}) to " . site_url() . " as {$role}" );
+	}
+
+	/**
+	 * Add a role for a user.
+	 *
+	 * @subcommand add-role
+	 * @synopsis <user-login> <role> [--blog=<blog>]
+	 */
+	public function add_role( $args, $assoc_args ) {
+		$user = self::get_user_from_first_arg( $args[0] );
+
+		$role = $args[1];
+
+		$user->add_role( $role );
+
+		WP_CLI::success( sprintf( "Added '%s' role for %s (%d).", $role, $user->user_login, $user->ID ) );
 	}
 
 	/**
