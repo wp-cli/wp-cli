@@ -27,12 +27,12 @@ abstract class Wp_Cli_Test_Case extends PHPUnit_Framework_TestCase {
 
 	public function full_wp_install() {
 		$temp_dir = $this->create_temporary_directory();
-		$command_runner = new Command_Runner( $temp_dir );
-		$installer = new Wordpress_Installer( $temp_dir, $command_runner );
+		$runner = new Command_Runner( $temp_dir );
+		$installer = new Wordpress_Installer( $temp_dir, $runner );
 		$installer->download_wordpress_files( $temp_dir );
 		$installer->create_config( $this->database_settings );
 		$installer->run_install();
-		return $command_runner;
+		return $runner;
 	}
 
 	public function create_temporary_directory() {
@@ -44,23 +44,23 @@ abstract class Wp_Cli_Test_Case extends PHPUnit_Framework_TestCase {
 
 class Wordpress_Installer {
 	private $install_dir;
-	private $command_runner;
+	private $runner;
 
-	public function __construct( $install_dir, $command_runner ) {
+	public function __construct( $install_dir, $runner ) {
 		$this->install_dir = $install_dir;
-		$this->command_runner = $command_runner;
+		$this->runner = $runner;
 	}
 
 	public function create_config( $database_settings ) {
 		$dbname = $database_settings["dbname"];
 		$dbuser = $database_settings["dbuser"];
 		$dbpass = $database_settings["dbpass"];
-		$this->command_runner->run_wp_cli(
+		$this->runner->run_wp_cli(
 			"core config --dbname=$dbname --dbuser=$dbuser --dbpass=$dbpass" );
 	}
 
 	public function run_install() {
-		$install_result = $this->command_runner->run_wp_cli(
+		$install_result = $this->runner->run_wp_cli(
 			"core install --url=http://example.com/ --title=WordPress " .
 			" --admin_email=admin@example.com --admin_password=password1"
 		);
@@ -73,8 +73,8 @@ class Wordpress_Installer {
 		$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
 		if ( !file_exists( $cache_dir ) ) {
 			mkdir( $cache_dir );
-			$command_runner = new Command_Runner( $cache_dir );
-			$command_runner->run_wp_cli( "core download" );
+			$runner = new Command_Runner( $cache_dir );
+			$runner->run_wp_cli( "core download" );
 		}
 		exec( "cp -r '$cache_dir/'* '$this->install_dir/'" );
 	}
