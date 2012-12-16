@@ -249,21 +249,29 @@ class User_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Remove a user from a blog.
+	 * Remove a user's role.
 	 *
 	 * @subcommand remove-role
-	 * @synopsis <user-login>
+	 * @synopsis <user-login> [<role>] [--blog=<blog>]
 	 */
 	public function remove_role( $args, $assoc_args ) {
 		$user = self::get_user_from_first_arg( $args[0] );
 
-		// Multisite
-		if ( function_exists( 'remove_user_from_blog' ) )
-			remove_user_from_blog( $user->ID, get_current_blog_id() );
-		else
-			$user->remove_all_caps();
+		if ( isset( $args[1] ) ) {
+			$role = $args[1];
 
-		WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() );
+			$user->remove_role( $role );
+
+			WP_CLI::success( sprintf( "Removed '%s' role for %s (%d).", $role, $user->user_login, $user->ID ) );
+		} else {
+			// Multisite
+			if ( function_exists( 'remove_user_from_blog' ) )
+				remove_user_from_blog( $user->ID, get_current_blog_id() );
+			else
+				$user->remove_all_caps();
+
+			WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() );
+		}
 	}
 
 	private static function get_user_from_first_arg( $id_or_login ) {
