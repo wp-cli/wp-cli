@@ -271,6 +271,12 @@ class WP_CLI {
 			exit;
 		}
 
+		if ( !Utils\locate_wp_config() ) {
+			WP_CLI::error( "wp-config.php not found.", false );
+			WP_CLI::line( "Either create one manually or use `wp core config`." );
+			exit(1);
+		}
+
 		if ( self::cmd_starts_with( array( 'db' ) ) ) {
 			Utils\load_wp_config();
 			self::run_command();
@@ -281,12 +287,6 @@ class WP_CLI {
 			self::cmd_starts_with( array( 'core', 'install' ) ) ||
 			self::cmd_starts_with( array( 'core', 'is-installed' ) )
 		) {
-			if ( !Utils\locate_wp_config() ) {
-				WP_CLI::error( "wp-config.php not found.", false );
-				WP_CLI::line( "Either create one manually or use `wp core config`." );
-				exit(1);
-			}
-
 			define( 'WP_INSTALLING', true );
 
 			if ( !isset( $_SERVER['HTTP_HOST'] ) ) {
