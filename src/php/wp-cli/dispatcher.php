@@ -160,27 +160,22 @@ EOB
 	}
 
 	protected function load_all_commands() {
-		foreach ( array( 'internals', 'community' ) as $dir ) {
-			foreach ( glob( WP_CLI_ROOT . "/commands/$dir/*.php" ) as $filename ) {
-				$command = substr( basename( $filename ), 0, -4 );
+		foreach ( glob( WP_CLI_ROOT . "/commands/*.php" ) as $filename ) {
+			$command = substr( basename( $filename ), 0, -4 );
 
-				if ( isset( $this->subcommands[ $command ] ) )
-					continue;
+			if ( isset( $this->subcommands[ $command ] ) )
+				continue;
 
-				include $filename;
-			}
+			include $filename;
 		}
 	}
 
 	function load_command( $command ) {
 		if ( !isset( $this->subcommands[$command] ) ) {
-			foreach ( array( 'internals', 'community' ) as $dir ) {
-				$path = WP_CLI_ROOT . "/commands/$dir/$command.php";
+			$path = WP_CLI_ROOT . "/commands/$command.php";
 
-				if ( is_readable( $path ) ) {
-					include $path;
-					break;
-				}
+			if ( is_readable( $path ) ) {
+				include $path;
 			}
 		}
 
