@@ -43,9 +43,11 @@ class WP_CLI {
 	 *
 	 * @param string $message
 	 */
-	static function out( $message ) {
-		if ( WP_CLI_QUIET ) return;
-		\cli\out($message);
+	static function out( $message, $handle = STDOUT ) {
+		if ( WP_CLI_QUIET )
+			return;
+
+		fwrite( $handle, \cli\Colors::colorize( $message, ! \cli\Shell::isPiped() ) );
 	}
 
 	/**
@@ -54,8 +56,7 @@ class WP_CLI {
 	 * @param string $message
 	 */
 	static function line( $message = '' ) {
-		if ( WP_CLI_QUIET ) return;
-		\cli\line($message);
+		self::out( $message . "\n" );
 	}
 
 	/**
@@ -67,7 +68,8 @@ class WP_CLI {
 	static function error( $message, $exit = true ) {
 		if ( !isset( self::$assoc_special['completions'] ) ) {
 			$label = 'Error';
-			\cli\err( '%R' . $label . ': %n' . self::error_to_string( $message ) );
+			$msg = '%R' . $label . ': %n' . self::error_to_string( $message );
+			self::out( $msg . "\n", STDERR );
 		}
 
 		if ( $exit )
@@ -81,8 +83,10 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function success( $message, $label = 'Success' ) {
-		if ( WP_CLI_QUIET ) return;
-		\cli\line( '%G' . $label . ': %n' . $message );
+		if ( WP_CLI_QUIET )
+			return;
+
+		self::line( '%G' . $label . ': %n' . $message );
 	}
 
 	/**
@@ -92,8 +96,11 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function warning( $message, $label = 'Warning' ) {
-		if ( WP_CLI_QUIET ) return;
-		\cli\err( '%C' . $label . ': %n' . self::error_to_string( $message ) );
+		if ( WP_CLI_QUIET )
+			return;
+
+		$msg = '%C' . $label . ': %n' . self::error_to_string( $message );
+		self::out( $msg . "\n", STDERR );
 	}
 
 	/**
@@ -101,7 +108,7 @@ class WP_CLI {
 	 */
 	static function confirm( $question, $assoc_args ) {
 		if ( !isset( $assoc_args['yes'] ) ) {
-			WP_CLI::out( $question . " [y/n] " );
+			self::out( $question . " [y/n] " );
 
 			$answer = trim( fgets( STDIN ) );
 
