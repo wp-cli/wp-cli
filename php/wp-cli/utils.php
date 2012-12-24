@@ -4,8 +4,8 @@ namespace WP_CLI\Utils;
 
 function load_cli_tools() {
 	$vendor_paths = array(
-		WP_CLI_ROOT . '../../../../../../vendor',	// part of a larger project
-		WP_CLI_ROOT . '../../../vendor',			// top-level project
+		WP_CLI_ROOT . '../../../../../vendor',  // part of a larger project
+		WP_CLI_ROOT . '../../vendor',           // top-level project
 	);
 
 	$found = false;
