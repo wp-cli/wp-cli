@@ -13,7 +13,7 @@ class Command_Runner {
 	}
 
 	private function find_wp_cli() {
-		return getcwd() . "/src/bin/wp";
+		return getcwd() . "/bin/wp";
 	}
 
 	private function run_command( $command ) {

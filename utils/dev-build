@@ -2,7 +2,7 @@
 
 for dir in /usr/bin /usr/local/bin; do
 	if [ -d $dir ]; then
-		ln -sf $(pwd)/src/bin/wp $dir/wp
+		ln -sf $(pwd)/bin/wp $dir/wp
 		break
 	fi
 done
