@@ -22,7 +22,7 @@
   <property name="project.apiversion"      value="${project.majorVersion}.${project.minorVersion}" />
 
   <!-- Paths to the directories that we work with -->
-  <property name="project.srcdir"          value="${project.basedir}/src" override="true" />
+  <property name="project.srcdir"          value="${project.basedir}" override="true" />
   <property name="project.src.phpdir"      value="${project.srcdir}/php" override="true" />
   <property name="project.src.bindir"      value="${project.srcdir}/bin" override="true" />
   <property name="project.src.datadir"     value="${project.srcdir}/data" override="true" />
