@@ -2,13 +2,19 @@
 
 set -ex
 
+# create src dir
+rm -rf src
+mkdir src
+cp -r php src/
+cp -r bin src/
+
 # create bunch of directories that phing complains about
-mkdir -p src/data
-mkdir -p src/tests/unit-tests/php 
-mkdir -p src/www 
+cd src
+mkdir -p docs data www tests/unit-tests/php 
+cd -
 
 # temporarily move the .git dir, because phing is stupid
-git_dir=src/php/php-cli-tools/.git
+git_dir=php/php-cli-tools/.git
 if [ -f $git_dir ]; then
 	mv $git_dir /tmp/php-cli-tools-git
 fi

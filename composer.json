@@ -5,7 +5,7 @@
 	"homepage": "http://wp-cli.org",
 	"license": "MIT",
 	"bin": [
-		"src/bin/wp"
+		"bin/wp"
 	],
 	"require": {
 		"php": ">=5.3",
