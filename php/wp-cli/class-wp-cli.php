@@ -234,8 +234,8 @@ class WP_CLI {
 
 	static function before_wp_load() {
 		self::add_man_dir(
-			WP_CLI_ROOT . "../../../man/",
-			WP_CLI_ROOT . "../../docs/"
+			WP_CLI_ROOT . "../../man/",
+			WP_CLI_ROOT . "../../man-src/"
 		);
 
 		self::parse_args();
