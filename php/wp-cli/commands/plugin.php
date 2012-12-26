@@ -1,14 +1,12 @@
 <?php
 
-WP_CLI::add_command('plugin', 'Plugin_Command');
-
 /**
  * Implement plugin command
  *
  * @package wp-cli
  * @subpackage commands/internals
  */
-class Plugin_Command extends WP_CLI_Command_With_Upgrade {
+class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	protected $item_type = 'plugin';
 	protected $upgrader = 'Plugin_Upgrader';
@@ -347,3 +345,6 @@ class Plugin_Command extends WP_CLI_Command_With_Upgrade {
 		return $name;
 	}
 }
+
+WP_CLI::add_command( 'plugin', 'Plugin_Command' );
+
