@@ -18,37 +18,6 @@ function traverse( &$args, $method = 'find_subcommand' ) {
 }
 
 
-class DocParser {
-
-	protected $docComment;
-
-	function __construct( $reflection ) {
-		$this->docComment = $reflection->getDocComment();
-	}
-
-	function get_shortdesc() {
-		if ( !preg_match( '/\* (\w.+)\n*/', $this->docComment, $matches ) )
-			return false;
-
-		return $matches[1];
-	}
-
-	function get_tag( $name ) {
-		if ( preg_match( '/@' . $name . '\s+([a-z-]+)/', $this->docComment, $matches ) )
-			return $matches[1];
-
-		return false;
-	}
-
-	function get_synopsis() {
-		if ( !preg_match( '/@synopsis\s+([^\n]+)/', $this->docComment, $matches ) )
-			return false;
-
-		return $matches[1];
-	}
-}
-
-
 interface Command {
 
 	function get_path();
@@ -145,7 +114,7 @@ EOB
 		else {
 			$method = new \ReflectionMethod( $implementation, '__invoke' );
 
-			$docparser = new DocParser( $method );
+			$docparser = new \WP_CLI\DocParser( $method );
 
 			$command = new Subcommand( $name, $implementation, $docparser, $this );
 		}
@@ -203,7 +172,7 @@ class CompositeCommand implements Command, Composite, Documentable {
 
 		$this->subcommands = $this->collect_subcommands( $reflection, $class );
 
-		$this->docparser = new DocParser( $reflection );
+		$this->docparser = new \WP_CLI\DocParser( $reflection );
 	}
 
 	private function collect_subcommands( $reflection, $class ) {
@@ -488,7 +457,7 @@ class MethodSubcommand extends Subcommand {
 	function __construct( $class, $method, $parent ) {
 		$callable = array( new $class, $method->name );
 
-		$docparser = new DocParser( $method );
+		$docparser = new \WP_CLI\DocParser( $method );
 
 		$name = $docparser->get_tag( 'subcommand' );
 		if ( !$name )
