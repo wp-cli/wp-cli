@@ -1,11 +1,13 @@
 <?php
 
+namespace WP_CLI;
+
 /**
  * A Upgrader Skin for WordPress that only generates plain-text
  *
  * @package wp-cli
  */
-class CLI_Upgrader_Skin extends WP_Upgrader_Skin {
+class UpgraderSkin extends \WP_Upgrader_Skin {
 
 	function header() {}
 	function footer() {}
@@ -20,7 +22,7 @@ class CLI_Upgrader_Skin extends WP_Upgrader_Skin {
 			$error = $this->upgrader->strings[ $error ];
 
 		// TODO: show all errors, not just the first one
-		WP_CLI::warning( $error );
+		\WP_CLI::warning( $error );
 	}
 
 	function feedback( $string ) {
@@ -39,17 +41,7 @@ class CLI_Upgrader_Skin extends WP_Upgrader_Skin {
 
 		$string = str_replace( '&#8230;', '...', strip_tags( $string ) );
 
-		WP_CLI::line( $string );
+		\WP_CLI::line( $string );
 	}
 }
 
-/**
- * A Core Upgrader class that leaves packages intact by default.
- *
- * @package wp-cli
- */
-class Non_Destructive_Core_Upgrader extends Core_Upgrader {
-	function unpack_package($package, $delete_package = false) {
-		return parent::unpack_package( $package, $delete_package );
-	}
-}
