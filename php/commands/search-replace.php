@@ -3,13 +3,13 @@
 WP_CLI::add_command( 'search-replace', new Search_Replace_Command );
 
 /**
- * Search/Replace strings in the database.
- *
  * @package wp-cli
  */
 class Search_Replace_Command extends WP_CLI_Command {
 
 	/**
+	 * Search/replace strings in the database.
+	 *
 	 * @synopsis <old> <new> [--dry-run]
 	 */
 	public function __invoke( $args, $assoc_args ) {
