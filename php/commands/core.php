@@ -243,7 +243,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 				WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
 			} else {
 				$new_package = $args[0];
-				$upgrader = 'Non_Destructive_Core_Upgrader';
+				$upgrader = 'WP_CLI\\NonDestructiveCoreUpgrader';
 			}
 
 			$update = (object) array(

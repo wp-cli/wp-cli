@@ -13,8 +13,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * @synopsis <old> <new> [--dry-run]
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		require_once WP_CLI_ROOT . '../query-iterators/class-table-iterator.php';
-
 		global $wpdb;
 
 		list( $old, $new ) = $args;
@@ -59,7 +57,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 			'limit' => 1000
 		);
 
-		$it = new TableIterator( $args );
+		$it = new \WP_CLI\TableIterator( $args );
 
 		$count = 0;
 
