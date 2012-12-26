@@ -1,6 +1,8 @@
 <?php
 
-abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
+namespace WP_CLI;
+
+abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected $item_type;
 	protected $upgrader;
@@ -38,7 +40,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		$n = count( $items );
 
 		// Not interested in the translation, just the number logic
-		WP_CLI::line( sprintf( _n( "%d installed {$this->item_type}:", "%d installed {$this->item_type}s:", $n ), $n ) );
+		\WP_CLI::line( sprintf( _n( "%d installed {$this->item_type}:", "%d installed {$this->item_type}s:", $n ), $n ) );
 
 		foreach ( $items as $file => $details ) {
 			if ( $details['update'] ) {
@@ -50,10 +52,10 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 			$line .= $this->format_status( $details['status'], 'short' );
 			$line .= " " . $details['name'] . "%n";
 
-			WP_CLI::line( $line );
+			\WP_CLI::line( $line );
 		}
 
-		WP_CLI::line();
+		\WP_CLI::line();
 
 		$this->show_legend( $items );
 	}
@@ -74,7 +76,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		if ( in_array( true, wp_list_pluck( $items, 'update' ) ) )
 			$legend_line[] = '%yU = Update Available%n';
 
-		WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
+		\WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
 	}
 
 	private function status_single( $file, $name ) {
@@ -92,7 +94,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 
 	function install( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp $this->item_type install <slug>" );
+			\WP_CLI::line( "usage: wp $this->item_type install <slug>" );
 			exit;
 		}
 
@@ -102,13 +104,13 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		$slug = stripslashes( $args[0] );
 
 		if ( '.zip' == substr( $slug, -4 ) ) {
-			$file_upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
+			$file_upgrader = \WP_CLI\Utils\get_upgrader( $this->upgrader );
 
 			if ( $file_upgrader->install( $slug ) ) {
 				$slug = $file_upgrader->result['destination_name'];
 
 				if ( isset( $assoc_args['activate'] ) ) {
-					WP_CLI::line( "Activating '$slug'..." );
+					\WP_CLI::line( "Activating '$slug'..." );
 					$this->activate( array( $slug ) );
 				}
 			} else {
@@ -122,7 +124,7 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 	protected function _update( $item ) {
 		call_user_func( $this->upgrade_refresh );
 
-		WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $item );
+		\WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $item );
 	}
 
 	function update_all( $args, $assoc_args ) {
@@ -143,11 +145,11 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 				}
 			}
 
-			WP_CLI::line( $item_list );
+			\WP_CLI::line( $item_list );
 			return;
 		}
 
-		$upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
+		$upgrader = \WP_CLI\Utils\get_upgrader( $this->upgrader );
 		$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
 
 		// Let the user know the results.
@@ -157,11 +159,11 @@ abstract class WP_CLI_Command_With_Upgrade extends WP_CLI_Command {
 		$line = "Updated $num_updated/$num_to_update {$this->item_type}s.";
 
 		if ( $num_to_update == $num_updated ) {
-			WP_CLI::success( $line );
+			\WP_CLI::success( $line );
 		} else if ( $num_updated > 0 ) {
-			WP_CLI::warning( $line );
+			\WP_CLI::warning( $line );
 		} else {
-			WP_CLI::error( $line );
+			\WP_CLI::error( $line );
 		}
 	}
 
