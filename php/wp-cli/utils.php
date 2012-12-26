@@ -25,6 +25,23 @@ function load_cli_tools() {
 	}
 }
 
+function register_autoload() {
+	spl_autoload_register( function($class) {
+		// Only attempt to load classes in our namespace
+		if ( 0 !== strpos( $class, 'WP_CLI\\' ) ) {
+			return;
+		}
+
+		$base = WP_CLI_ROOT . 'classes/';
+
+		$path = $base . str_replace( 'WP_CLI\\', '', $class ) . '.php';
+
+		if ( is_file( $path ) ) {
+			require_once $path;
+		}
+	} );
+}
+
 /**
  * Splits $argv into positional and associative arguments.
  *
