@@ -23,17 +23,24 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		$total = 0;
 
+		$report = array();
+
 		foreach ( $tables as $table ) {
 			list( $primary_key, $columns ) = self::get_columns( $table );
 
 			foreach ( $columns as $col ) {
 				$count = self::handle_col( $col, $primary_key, $table, $old, $new );
 
-				WP_CLI::line( "$table.$col: $count" );
+				$report[] = array( $table, $col, $count );
 
 				$total += $count;
 			}
 		}
+
+		$table = new \cli\Table();
+		$table->setHeaders( array( 'Table', 'Column', 'Replacements' ) );
+		$table->setRows( $report );
+		$table->display();
 
 		WP_CLI::success( "Made $total replacements." );
 	}
