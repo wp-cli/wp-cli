@@ -2,27 +2,43 @@
 
 namespace WP_CLI\Utils;
 
-function load_cli_tools() {
+function bootstrap() {
 	$vendor_paths = array(
-		WP_CLI_ROOT . '../../../../../vendor',  // part of a larger project
-		WP_CLI_ROOT . '../../vendor',           // top-level project
+		WP_CLI_ROOT . '../../../../vendor',  // part of a larger project
+		WP_CLI_ROOT . '../vendor',           // top-level project
 	);
 
-	$found = false;
+	$has_autoload = false;
 
 	foreach ( $vendor_paths as $vendor_path ) {
 		if ( file_exists( $vendor_path . '/autoload.php' ) ) {
 			require $vendor_path . '/autoload.php';
 			include $vendor_path . '/wp-cli/php-cli-tools/lib/cli/cli.php';
-			$found = true;
+			$has_autoload = true;
 			break;
 		}
 	}
 
-	if ( !$found ) {
-		include WP_CLI_ROOT . '../php-cli-tools/lib/cli/cli.php';
+	if ( !$has_autoload ) {
+		include WP_CLI_ROOT . 'php-cli-tools/lib/cli/cli.php';
 		\cli\register_autoload();
+		register_autoload();
 	}
+}
+
+function register_autoload() {
+	spl_autoload_register( function($class) {
+		// Only attempt to load classes in our namespace
+		if ( 0 !== strpos( $class, 'WP_CLI\\' ) ) {
+			return;
+		}
+
+		$path = WP_CLI_ROOT . str_replace( '\\', DIRECTORY_SEPARATOR, $class ) . '.php';
+
+		if ( is_file( $path ) ) {
+			require_once $path;
+		}
+	} );
 }
 
 /**
@@ -190,9 +206,7 @@ function get_upgrader( $class ) {
 	if ( !class_exists( '\WP_Upgrader' ) )
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
-	require WP_CLI_ROOT . '/class-cli-upgrader-skin.php';
-
-	return new $class( new \CLI_Upgrader_Skin );
+	return new $class( new \WP_CLI\UpgraderSkin );
 }
 
 function parse_csv( $filepath, $has_headers = true ) {
