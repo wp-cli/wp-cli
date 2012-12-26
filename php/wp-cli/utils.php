@@ -34,7 +34,9 @@ function register_autoload() {
 
 		$base = WP_CLI_ROOT . 'classes/';
 
-		$path = $base . str_replace( 'WP_CLI\\', '', $class ) . '.php';
+		$class = str_replace( 'WP_CLI\\', '', $class );
+
+		$path = $base . str_replace( '\\', DIRECTORY_SEPARATOR, $class ) . '.php';
 
 		if ( is_file( $path ) ) {
 			require_once $path;
