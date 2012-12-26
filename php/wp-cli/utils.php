@@ -2,26 +2,27 @@
 
 namespace WP_CLI\Utils;
 
-function load_cli_tools() {
+function bootstrap() {
 	$vendor_paths = array(
 		WP_CLI_ROOT . '../../../../../vendor',  // part of a larger project
 		WP_CLI_ROOT . '../../vendor',           // top-level project
 	);
 
-	$found = false;
+	$has_autoload = false;
 
 	foreach ( $vendor_paths as $vendor_path ) {
 		if ( file_exists( $vendor_path . '/autoload.php' ) ) {
 			require $vendor_path . '/autoload.php';
 			include $vendor_path . '/wp-cli/php-cli-tools/lib/cli/cli.php';
-			$found = true;
+			$has_autoload = true;
 			break;
 		}
 	}
 
-	if ( !$found ) {
+	if ( !$has_autoload ) {
 		include WP_CLI_ROOT . '../php-cli-tools/lib/cli/cli.php';
 		\cli\register_autoload();
+		register_autoload();
 	}
 }
 
