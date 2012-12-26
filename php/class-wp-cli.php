@@ -236,8 +236,8 @@ class WP_CLI {
 		self::$root = new Dispatcher\RootCommand;
 
 		self::add_man_dir(
-			WP_CLI_ROOT . "../../man/",
-			WP_CLI_ROOT . "../../man-src/"
+			WP_CLI_ROOT . "../man/",
+			WP_CLI_ROOT . "../man-src/"
 		);
 
 		self::parse_args();
