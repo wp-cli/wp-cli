@@ -1,7 +1,7 @@
 <?php
 
-use \WP_CLI\Dispatcher;
 use \WP_CLI\Utils;
+use \WP_CLI\Dispatcher;
 
 /**
  * Wrapper class for WP-CLI
@@ -233,6 +233,8 @@ class WP_CLI {
 	}
 
 	static function before_wp_load() {
+		self::$root = new Dispatcher\RootCommand;
+
 		self::add_man_dir(
 			WP_CLI_ROOT . "../../man/",
 			WP_CLI_ROOT . "../../man-src/"
@@ -385,6 +387,4 @@ class WP_CLI {
 		self::add_command( $name, $class );
 	}
 }
-
-WP_CLI::$root = new Dispatcher\RootCommand;
 
