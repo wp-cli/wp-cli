@@ -13,8 +13,7 @@ include WP_CLI_ROOT . 'class-wp-cli.php';
 include WP_CLI_ROOT . 'class-wp-cli-command.php';
 include WP_CLI_ROOT . 'man.php';
 
-\WP_CLI\Utils\register_autoload();
-\WP_CLI\Utils\load_cli_tools();
+\WP_CLI\Utils\bootstrap();
 
 WP_CLI::before_wp_load();
 
