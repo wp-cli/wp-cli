@@ -4,8 +4,8 @@ namespace WP_CLI\Utils;
 
 function bootstrap() {
 	$vendor_paths = array(
-		WP_CLI_ROOT . '../../../../../vendor',  // part of a larger project
-		WP_CLI_ROOT . '../../vendor',           // top-level project
+		WP_CLI_ROOT . '../../../../vendor',  // part of a larger project
+		WP_CLI_ROOT . '../vendor',           // top-level project
 	);
 
 	$has_autoload = false;
@@ -20,7 +20,7 @@ function bootstrap() {
 	}
 
 	if ( !$has_autoload ) {
-		include WP_CLI_ROOT . '../php-cli-tools/lib/cli/cli.php';
+		include WP_CLI_ROOT . 'php-cli-tools/lib/cli/cli.php';
 		\cli\register_autoload();
 		register_autoload();
 	}

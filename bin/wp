@@ -28,7 +28,7 @@ if [ ! -d $SCRIPT_PATH ]; then
 	SCRIPT_PATH=$(dirname "$SELF_PATH")/../php
 fi
 
-SCRIPT_PATH=$SCRIPT_PATH/wp-cli/wp-cli-boot.php
+SCRIPT_PATH=$SCRIPT_PATH/wp-cli-boot.php
 
 case $(uname -a) in
 	CYGWIN*)
