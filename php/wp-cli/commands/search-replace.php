@@ -10,7 +10,7 @@ WP_CLI::add_command( 'search-replace', new Search_Replace_Command );
 class Search_Replace_Command extends WP_CLI_Command {
 
 	/**
-	 * @synopsis <old> <new>
+	 * @synopsis <old> <new> [--dry-run]
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		require_once WP_CLI_ROOT . '../query-iterators/class-table-iterator.php';
@@ -25,11 +25,14 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		$report = array();
 
+		$dry_run = isset( $assoc_args['dry-run'] );
+
 		foreach ( $tables as $table ) {
 			list( $primary_key, $columns ) = self::get_columns( $table );
 
 			foreach ( $columns as $col ) {
-				$count = self::handle_col( $col, $primary_key, $table, $old, $new );
+				$count = self::handle_col( $col, $primary_key, $table, $old, $new,
+					 $dry_run );
 
 				$report[] = array( $table, $col, $count );
 
@@ -42,10 +45,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$table->setRows( $report );
 		$table->display();
 
-		WP_CLI::success( "Made $total replacements." );
+		if ( !$dry_run )
+			WP_CLI::success( "Made $total replacements." );
 	}
 
-	private static function handle_col( $col, $primary_key, $table, $old, $new ) {
+	private static function handle_col( $col, $primary_key, $table, $old, $new, $dry_run ) {
 		global $wpdb;
 
 		$args = array(
@@ -65,10 +69,15 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 			$value = \WP_CLI\Utils\recursive_unserialize_replace( $old, $new, $row->$col );
 
-			$count += $wpdb->update( $table,
-				array( $col => $value ),
-				array( $primary_key => $row->$primary_key )
-			);
+			if ( $dry_run ) {
+				if ( $value != $row->$col )
+					$count++;
+			} else {
+				$count += $wpdb->update( $table,
+					array( $col => $value ),
+					array( $primary_key => $row->$primary_key )
+				);
+			}
 		}
 
 		return $count;
