@@ -9,8 +9,8 @@ define( 'WP_CLI_ROOT', __DIR__ . '/' );
 
 include WP_CLI_ROOT . 'utils.php';
 include WP_CLI_ROOT . 'dispatcher.php';
-include WP_CLI_ROOT . 'classes/wp-cli.php';
-include WP_CLI_ROOT . 'classes/wp-cli-command.php';
+include WP_CLI_ROOT . 'class-wp-cli.php';
+include WP_CLI_ROOT . 'class-wp-cli-command.php';
 include WP_CLI_ROOT . 'man.php';
 
 \WP_CLI\Utils\register_autoload();
