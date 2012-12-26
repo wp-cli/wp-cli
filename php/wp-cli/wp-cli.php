@@ -15,6 +15,7 @@ include WP_CLI_ROOT . 'classes/wp-cli-command-with-meta.php';
 include WP_CLI_ROOT . 'classes/wp-cli-command-with-upgrade.php';
 include WP_CLI_ROOT . 'man.php';
 
+\WP_CLI\Utils\register_autoload();
 \WP_CLI\Utils\load_cli_tools();
 
 WP_CLI::before_wp_load();
