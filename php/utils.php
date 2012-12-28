@@ -177,30 +177,6 @@ function load_wp_config() {
 		\WP_CLI::error( 'No wp-config.php file.' );
 }
 
-function parse_csv( $filepath, $has_headers = true ) {
-
-	if ( false == ( $csv = fopen( $filepath, 'r' ) ) )
-		\WP_CLI::error( sprintf( 'Could not open csv file: %s', $filepath ) );
-
-	$parsed_data = array();
-	$headers = array();
-	while ( ( $row = fgetcsv( $csv, 10000, "," ) ) !== FALSE ) {
-		if ( $has_headers ) {
-			$headers = array_values( $row );
-			$has_headers = false;
-			continue;
-		}
-		$row_data = array();
-		foreach( $row as $index => $cell_value ) {
-			if ( ! empty( $headers[$index] ) )
-				$index = $headers[$index];
-			$row_data[$index] = $cell_value;
-		}
-		$parsed_data[] = $row_data;
-	}
-	return $parsed_data;
-}
-
 /**
  * Take a serialised array and unserialise it replacing elements as needed and
  * unserialising any subordinate arrays and performing the replace on those too.
