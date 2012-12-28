@@ -85,7 +85,7 @@ EOB
 	function get_subcommands() {
 		$this->load_all_commands();
 
-		return $this->subcommands;
+		return apply_filters( 'wp_cli_commands', $this->subcommands );
 	}
 
 	protected function load_all_commands() {
@@ -112,7 +112,7 @@ EOB
 			return false;
 		}
 
-		return $this->subcommands[$command];
+		return apply_filters( 'wp_cli_commands', $this->subcommands );
 	}
 }
 
