@@ -24,6 +24,8 @@ function bootstrap() {
 		\cli\register_autoload();
 		register_autoload();
 	}
+
+	include WP_CLI_ROOT . 'Spyc.php';
 }
 
 function register_autoload() {
@@ -39,6 +41,27 @@ function register_autoload() {
 			require_once $path;
 		}
 	} );
+}
+
+function load_config( $allowed_keys ) {
+	foreach ( array( 'wp-cli.local.yml', 'wp-cli.yml' ) as $fname ) {
+		$path = getcwd() . '/' . $fname;
+
+		if ( file_exists( $path ) ) {
+			$config = spyc_load_file( $path );
+
+			$sanitized_config = array();
+
+			foreach ( $allowed_keys as $key ) {
+				if ( isset( $config[ $key ] ) )
+					$sanitized_config[ $key ] = $config[ $key ];
+			}
+
+			return $sanitized_config;
+		}
+	}
+
+	return array();
 }
 
 /**
@@ -62,25 +85,6 @@ function parse_args( $arguments ) {
 	}
 
 	return array( $regular_args, $assoc_args );
-}
-
-/**
- * Splits $argv into positional and associative arguments.
- *
- * @param string
- * @return array
- */
-function split_assoc( &$assoc_args, $special_keys ) {
-	$assoc_special = array();
-
-	foreach ( $special_keys as $key ) {
-		if ( isset( $assoc_args[ $key ] ) ) {
-			$assoc_special[ $key ] = $assoc_args[ $key ];
-			unset( $assoc_args[ $key ] );
-		}
-	}
-
-	return $assoc_special;
 }
 
 function set_wp_root( $assoc_args ) {

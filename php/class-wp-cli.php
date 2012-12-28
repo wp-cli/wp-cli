@@ -13,7 +13,10 @@ class WP_CLI {
 	public static $root;
 
 	private static $man_dirs = array();
-	private static $arguments, $assoc_args, $assoc_special;
+
+	private static $config;
+
+	private static $arguments, $assoc_args;
 
 	/**
 	 * Add a command to the wp-cli list of commands
@@ -66,7 +69,7 @@ class WP_CLI {
 	 * @param bool $exit
 	 */
 	static function error( $message, $exit = true ) {
-		if ( !isset( self::$assoc_special['completions'] ) ) {
+		if ( !isset( self::$config['completions'] ) ) {
 			$label = 'Error';
 			$msg = '%R' . $label . ': %n' . self::error_to_string( $message );
 			self::out( $msg . "\n", STDERR );
@@ -222,14 +225,23 @@ class WP_CLI {
 			unset( self::$assoc_args['all'] );
 		}
 
-		self::$assoc_special = Utils\split_assoc( self::$assoc_args, array(
+		self::split_special( array(
 			'path', 'url', 'blog', 'user', 'require',
 			'quiet', 'completions', 'man', 'syn-list'
 		) );
 	}
 
-	static function get_assoc_special() {
-		return self::$assoc_special;
+	private static function split_special( $special_keys ) {
+		foreach ( $special_keys as $key ) {
+			if ( isset( self::$assoc_args[ $key ] ) ) {
+				self::$config[ $key ] = self::$assoc_args[ $key ];
+				unset( self::$assoc_args[ $key ] );
+			}
+		}
+	}
+
+	static function get_config() {
+		return self::$config;
 	}
 
 	static function before_wp_load() {
@@ -240,9 +252,13 @@ class WP_CLI {
 			WP_CLI_ROOT . "../man-src/"
 		);
 
+		self::$config = Utils\load_config( array(
+			'path', 'url', 'user'
+		) );
+
 		self::parse_args();
 
-		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
+		define( 'WP_CLI_QUIET', isset( self::$config['quiet'] ) );
 
 		// Handle --version parameter
 		if ( isset( self::$assoc_args['version'] ) && empty( self::$arguments ) ) {
@@ -259,10 +275,10 @@ class WP_CLI {
 		$_SERVER['DOCUMENT_ROOT'] = getcwd();
 
 		// Handle --path
-		Utils\set_wp_root( self::$assoc_special );
+		Utils\set_wp_root( self::$config );
 
 		// Handle --url and --blog parameters
-		Utils\set_url( self::$assoc_special );
+		Utils\set_url( self::$config );
 
 		if ( array( 'core', 'download' ) == self::$arguments ) {
 			self::run_command();
@@ -315,21 +331,21 @@ class WP_CLI {
 	static function after_wp_load() {
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
-		Utils\set_user( self::$assoc_special );
+		Utils\set_user( self::$config );
 
-		if ( !defined( 'WP_INSTALLING' ) && isset( self::$assoc_special['url'] ) )
+		if ( !defined( 'WP_INSTALLING' ) && isset( self::$config['url'] ) )
 			Utils\set_wp_query();
 
-		if ( isset( self::$assoc_special['require'] ) )
-			require self::$assoc_special['require'];
+		if ( isset( self::$config['require'] ) )
+			require self::$config['require'];
 
-		if ( isset( self::$assoc_special['man'] ) ) {
+		if ( isset( self::$config['man'] ) ) {
 			self::generate_man( self::$arguments );
 			exit;
 		}
 
 		// Handle --syn-list parameter
-		if ( isset( self::$assoc_special['syn-list'] ) ) {
+		if ( isset( self::$config['syn-list'] ) ) {
 			foreach ( self::$root->get_subcommands() as $command ) {
 				if ( $command instanceof Dispatcher\Composite ) {
 					foreach ( $command->get_subcommands() as $subcommand )
@@ -341,7 +357,7 @@ class WP_CLI {
 			exit;
 		}
 
-		if ( isset( self::$assoc_special['completions'] ) ) {
+		if ( isset( self::$config['completions'] ) ) {
 			self::render_automcomplete();
 			exit;
 		}
