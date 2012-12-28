@@ -86,7 +86,7 @@ class Scaffold_Command extends WP_CLI_Command {
    *
    * @alias tax
    *
-   * @synopsis [--public=<public>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_ui=<show_ui>] [--show_tagcloud=<show_tagcloud>] [--hierarchical=<hierarchical>]  [--rewrite=<rewrite>] [--query_var=<query_var>] [--slug=<slug>] [--textdomain=<textdomain>] [--post_types=<post_types>]
+   * @synopsis [--public=<public>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_ui=<show_ui>] [--show_tagcloud=<show_tagcloud>] [--hierarchical=<hierarchical>]  [--rewrite=<rewrite>] [--query_var=<query_var>] [--slug=<slug>] [--textdomain=<textdomain>] [--post_types=<post_types>] [--theme] [--plugin=<plugin-name>]
    */
   function taxonomy( $args, $assoc_args ) {
     global $wp_filesystem;
@@ -117,25 +117,24 @@ class Scaffold_Command extends WP_CLI_Command {
       'query_var'           => 'true',
       'slug'                => $taxonomy,
       'textdomain'          => strtolower( wp_get_theme()->template ),
-      'post_types'          => 'post'
+      'post_types'          => 'post',
+      'theme'               => false,
+      'plugin'              => false
     );
     
     // Generate the variables from the defaults and associated arguments if they are set
     extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
-    $path = TEMPLATEPATH . '/taxonomies/';
-    if( !$wp_filesystem->is_dir( $path ) ) {
-      $wp_filesystem->mkdir( $path );
-    }
-
-    $filename = $path . $taxonomy . '.php';
-
     include 'skeletons/taxonomy_skeleton.php';
-
-    if ( ! $wp_filesystem->put_contents( $filename, $output ) ) {
-      WP_CLI::error( 'Error while saving file' );
+    $assoc_args = array('type' => 'taxonomy', 'output' => $output, 'theme' => $theme, 'plugin' => $plugin, 'machine_name' => $machine_name, 'path' => false );
+    
+    if ( $theme || !empty( $plugin ) ) {
+      // Write file to theme or (given) plugin path
+      $assoc_args['path'] = $this->get_output_path( $assoc_args );
+      $this->parse_skeleton( $assoc_args );
     } else {
-      WP_CLI::success( $taxonomy . ' created' );
+      // STDOUT
+      echo $this->parse_skeleton( $assoc_args );
     }
   }
 
@@ -187,7 +186,7 @@ class Scaffold_Command extends WP_CLI_Command {
       if ( ! $wp_filesystem->put_contents( $filename, $output ) ) {
         WP_CLI::error( "Error while saving file: {$filename}" );
       } else {
-        WP_CLI::success( $machine_name . ' created' );
+        WP_CLI::success( ucfirst($type) . " {$machine_name} created" );
       }
     } else {
       // Return for STDOUT
