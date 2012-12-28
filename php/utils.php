@@ -43,12 +43,21 @@ function register_autoload() {
 	} );
 }
 
-function load_config() {
+function load_config( $allowed_keys ) {
 	foreach ( array( 'wp-cli.local.yml', 'wp-cli.yml' ) as $fname ) {
 		$path = getcwd() . '/' . $fname;
 
 		if ( file_exists( $path ) ) {
-			return spyc_load_file( $path );
+			$config = spyc_load_file( $path );
+
+			$sanitized_config = array();
+
+			foreach ( $allowed_keys as $key ) {
+				if ( isset( $config[ $key ] ) )
+					$sanitized_config[ $key ] = $config[ $key ];
+			}
+
+			return $sanitized_config;
 		}
 	}
 

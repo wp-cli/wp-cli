@@ -252,7 +252,9 @@ class WP_CLI {
 			WP_CLI_ROOT . "../man-src/"
 		);
 
-		self::$config = Utils\load_config();
+		self::$config = Utils\load_config( array(
+			'path', 'url', 'user'
+		) );
 
 		self::parse_args();
 
