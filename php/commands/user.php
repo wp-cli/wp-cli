@@ -294,14 +294,11 @@ class User_Command extends WP_CLI_Command {
 	 */
 	public function import_csv( $args, $assoc_args ) {
 
-		list( $csv ) = $args;
-
-		$new_users = \WP_CLI\utils\parse_csv( $csv );
-
 		$blog_users = get_users();
 
-		foreach( $new_users as $new_user ) {
+		$filename = $args[0];
 
+		foreach ( new \WP_CLI\CSVIterator( $filename ) as $i => $new_user ) {
 			$defaults = array(
 				'role' => get_option('default_role'),
 				'user_pass' => wp_generate_password(),
