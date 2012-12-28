@@ -13,6 +13,7 @@ class WP_CLI {
 	public static $root;
 
 	private static $man_dirs = array();
+
 	private static $arguments, $assoc_args, $assoc_special;
 
 	/**
@@ -222,10 +223,19 @@ class WP_CLI {
 			unset( self::$assoc_args['all'] );
 		}
 
-		self::$assoc_special = Utils\split_assoc( self::$assoc_args, array(
+		self::split_special( array(
 			'path', 'url', 'blog', 'user', 'require',
 			'quiet', 'completions', 'man', 'syn-list'
 		) );
+	}
+
+	private static function split_special( $special_keys ) {
+		foreach ( $special_keys as $key ) {
+			if ( isset( self::$assoc_args[ $key ] ) ) {
+				self::$assoc_special[ $key ] = self::$assoc_args[ $key ];
+				unset( self::$assoc_args[ $key ] );
+			}
+		}
 	}
 
 	static function get_assoc_special() {
@@ -239,6 +249,8 @@ class WP_CLI {
 			WP_CLI_ROOT . "../man/",
 			WP_CLI_ROOT . "../man-src/"
 		);
+
+		self::$assoc_special = Utils\load_config();
 
 		self::parse_args();
 
