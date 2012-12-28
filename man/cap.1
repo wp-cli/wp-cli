@@ -1,0 +1,57 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-CAP" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-cap\fR \- Manage capabilities\.
+.
+.SH "SYNOPSIS"
+wp cap list \fIrole\fR
+.
+.P
+wp cap add \fIrole\fR \fIcap\fR\.\.\.
+.
+.P
+wp cap remove \fIrole\fR \fIcap\fR\.\.\.
+.
+.SH "SUBCOMMANDS"
+.
+.TP
+\fBlist\fR:
+.
+.IP
+List capabilities for a given role\.
+.
+.TP
+\fBadd\fR:
+.
+.IP
+Add capabilities to a given role\.
+.
+.TP
+\fBremove\fR:
+.
+.IP
+Add capabilities to a given role\.
+.
+.SH "EXAMPLES"
+.
+.IP
+# Add \'spectate\' capability to \'author\' role
+.
+.br
+wp cap add \'author\' \'spectate\'
+.
+.IP
+# Add all caps from \'editor\' role to \'author\' role
+.
+.br
+wp cap list \'editor\' | xargs wp cap add \'author\'
+.
+.IP
+# Remove all caps from \'editor\' role that also appear in \'author\' role
+.
+.br
+wp cap list \'author\' | xargs wp cap remove \'editor\'
+

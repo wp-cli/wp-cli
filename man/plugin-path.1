@@ -7,7 +7,7 @@
 \fBwp\-plugin\-path\fR \- Get the path to a plugin or to the plugin directory\.
 .
 .SH "SYNOPSIS"
-\fBwp plugin path\fR [\fIplugin\fR] [\-\-dir]
+wp plugin path [\fIplugin\fR] [\-\-dir]
 .
 .SH "OPTIONS"
 .
@@ -22,4 +22,12 @@ The plugin to get the path to\. If not set, will return the path to the plugins 
 .
 .IP
 If set, get the path to the closest parent directory, instead of the plugin file\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+cd $(wp theme path)
+.
+.fi
 

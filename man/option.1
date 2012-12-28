@@ -24,25 +24,34 @@ wp option delete \fIkey\fR
 \fBget\fR:
 .
 .IP
-Get an option value\. Passing \-\-json causes the output to be formatted as JSON\.
+Get an option\.
 .
 .TP
 \fBadd\fR:
 .
 .IP
-Add a new option\. Pass \-\-json to decode JSON values before adding the option\.
+Add an option\.
 .
 .TP
 \fBupdate\fR:
 .
 .IP
-Update an existing option\. Pass \-\-json to decode JSON values before updating the option\.
+Update an option\.
 .
 .TP
 \fBdelete\fR:
 .
 .IP
 Delete an option\.
+.
+.SH "OPTIONS"
+
+.
+.TP
+\fB\-\-json\fR:
+.
+.IP
+Encode/decode values as JSON\.
 .
 .SH "EXAMPLES"
 .
@@ -52,7 +61,7 @@ wp option get siteurl
 
 wp option add my_option foobar
 
-wp option update my_option barfoo
+wp option update my_option \'{"foo": "bar"}\' \-\-json
 
 wp option delete my_option
 .

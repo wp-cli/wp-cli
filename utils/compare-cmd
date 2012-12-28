@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# utility for comparing commands between two different wp-cli versions.
+
 if [ $# -lt 3 ]; then
 	echo 'usage: <version-a> <version-b> <wp-path>'
 	exit 1
@@ -15,4 +17,6 @@ wp --path=$wp_path --syn-list > /tmp/wp-cli-a
 git checkout $ver_b
 wp --path=$wp_path --syn-list > /tmp/wp-cli-b
 
-diff /tmp/wp-cli-a /tmp/wp-cli-b
+diff /tmp/wp-cli-a /tmp/wp-cli-b > cmd.diff
+
+echo 'Generated cmd.diff'

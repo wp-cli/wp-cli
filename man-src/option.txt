@@ -1,0 +1,15 @@
+## OPTIONS
+
+* `--json`:
+
+	Encode/decode values as JSON.
+
+## EXAMPLES
+
+	wp option get siteurl
+
+	wp option add my_option foobar
+
+	wp option update my_option '{"foo": "bar"}' --json
+
+	wp option delete my_option

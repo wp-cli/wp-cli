@@ -1,0 +1,3 @@
+## EXAMPLES
+
+wp transient set my_key my_value 300

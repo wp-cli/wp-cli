@@ -1,0 +1,21 @@
+{
+	"name": "wp-cli/wp-cli",
+	"description": "A command line interface for WordPress",
+	"keywords": [ "cli", "wordpress" ], 
+	"homepage": "http://wp-cli.org",
+	"license": "MIT",
+	"bin": [
+		"bin/wp"
+	],
+	"require": {
+		"php": ">=5.3",
+		"wp-cli/php-cli-tools": "dev-master"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "3.7.x"
+	},
+	"autoload": {
+		"psr-0": { "WP_CLI": "php" }
+	},
+	"minimum-stability": "dev" 
+}

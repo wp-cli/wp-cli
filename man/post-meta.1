@@ -7,16 +7,16 @@
 \fBwp\-post\-meta\fR \- Manage post custom fields\.
 .
 .SH "SYNOPSIS"
-wp post\-meta get \fIID\fR \fIkey\fR [\-\-json]
+wp post\-meta get \fIid\fR \fIkey\fR [\-\-json]
 .
 .P
-wp post\-meta add \fIID\fR \fIkey\fR \fIvalue\fR
+wp post\-meta delete \fIid\fR \fIkey\fR
 .
 .P
-wp post\-meta update \fIID\fR \fIkey\fR \fIvalue\fR
+wp post\-meta add \fIid\fR \fIkey\fR \fIvalue\fR
 .
 .P
-wp post\-meta delete \fIID\fR \fIkey\fR
+wp post\-meta update \fIid\fR \fIkey\fR \fIvalue\fR
 .
 .SH "SUBCOMMANDS"
 .
@@ -24,25 +24,34 @@ wp post\-meta delete \fIID\fR \fIkey\fR
 \fBget\fR:
 .
 .IP
-Get a custom field value\. Passing \-\-json causes the output to be formatted as JSON\.
-.
-.TP
-\fBadd\fR:
-.
-.IP
-Add a new custom field\.
-.
-.TP
-\fBupdate\fR:
-.
-.IP
-Update an existing custom field\.
+Get meta field value\.
 .
 .TP
 \fBdelete\fR:
 .
 .IP
-Delete a custom field\.
+Delete a meta field\.
+.
+.TP
+\fBadd\fR:
+.
+.IP
+Add a meta field\.
+.
+.TP
+\fBupdate\fR:
+.
+.IP
+Update a meta field\.
+.
+.SH "OPTIONS"
+
+.
+.TP
+\fB\-\-json\fR:
+.
+.IP
+Encode/decode values as JSON\.
 .
 .SH "EXAMPLES"
 .

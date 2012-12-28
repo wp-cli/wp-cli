@@ -1,0 +1,9 @@
+## OPTIONS
+
+* `--json`:
+
+	Encode/decode values as JSON.
+
+## EXAMPLES
+
+	wp post-meta set 123 _wp_page_template about.php

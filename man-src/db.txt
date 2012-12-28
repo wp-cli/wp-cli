@@ -1,0 +1,17 @@
+## OPTIONS
+
+* `--str`:
+
+	Show the mysql command, instead of executing it.
+
+* `--yes`:
+
+	Answer yes to the confirmation message.
+
+* `<file>`:
+
+	The name of the export file. If omitted, it will be '{dbname}.sql'
+
+* `<SQL>`:
+
+	A SQL query.

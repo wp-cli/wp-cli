@@ -12,6 +12,6 @@ fi
 
 DIR=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 
-alias wp='$DIR/../src/bin/wp'
+alias wp='$DIR/../bin/wp'
 
 . $DIR/wp-completion.bash
