@@ -14,19 +14,18 @@ class CSVIterator implements \Iterator {
 	private $currentIndex;
 	private $currentElement;
 
-	public function __construct( $file, $delimiter = ',' ) {
-		$this->filePointer = fopen( $file, 'r' );
-		$this->delimiter = $delimiter;
-	}
+	public function __construct( $filename, $delimiter = ',' ) {
+		$this->filePointer = fopen( $filename, 'r' );
+		if ( !is_readable( $filename ) )
+			\WP_CLI::error( sprintf( 'Could not open file: %s', $filename ) );
 
-	private function read_line() {
-		return fgetcsv( $this->filePointer, self::ROW_SIZE, $this->delimiter );
+		$this->delimiter = $delimiter;
 	}
 
 	public function rewind() {
 		rewind( $this->filePointer );
 
-		$this->columns = $this->read_line();
+		$this->columns = fgetcsv( $this->filePointer, self::ROW_SIZE, $this->delimiter );
 
 		$this->currentIndex = -1;
 		$this->next();
@@ -41,13 +40,28 @@ class CSVIterator implements \Iterator {
 	}
 
 	public function next() {
-		$row = $this->read_line();
+		$this->currentElement = false;
 
-		if ( !is_array( $row ) ) {
-			$this->currentElement = false;
-		} else {
-			$this->currentElement = array_combine( $this->columns, $row );
-			$this->currentIndex++;
+		while ( true ) {
+			$str = fgets( $this->filePointer );
+
+			if ( false === $str )
+				break;
+
+			$row = str_getcsv( $str, $this->delimiter );
+
+			$element = array();
+			foreach ( $this->columns as $i => $key ) {
+				if ( isset( $row[ $i ] ) )
+					$element[ $key ] = $row[ $i ];
+			}
+
+			if ( !empty( $element ) ) {
+				$this->currentElement = $element;
+				$this->currentIndex++;
+
+				break;
+			}
 		}
 	}
 
