@@ -39,7 +39,7 @@ class Scaffold_Command extends WP_CLI_Command {
       $label_plural           = $this->pluralize( $label );
       $label_plural_ucfirst   = ucfirst( $label_plural );
     }
-    
+   
     // set up defaults and merge theme with assoc_args
     $defaults = array(
       'description'         => "",
@@ -60,13 +60,23 @@ class Scaffold_Command extends WP_CLI_Command {
       'pages'               => 'true',
       'query_var'           => 'true',
       'can_export'          => 'true',
-      'textdomain'          => strtolower( wp_get_theme()->template ),
+      'textdomain'          => '',
       'theme'               => false,
       'plugin'              => false
     );
 
     // Generate the variables from the defaults and associated arguments if they are set
     extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
+
+    // Because if you're writing your files to your theme directory your textdomain also needs to be the same
+    // Same goes for when plugin is being used
+    if( empty($textdomain) && $theme ) {
+      $textdomain = strtolower( wp_get_theme()->template ); 
+    } elseif ( empty($textdomain) && $plugin) {
+      $textdomain = $plugin;
+    } else {
+      $textdomain = 'YOUR_TEXTDOMAIN';
+    }
     
     include "skeletons/post_type_skeleton.php";
     $assoc_args = array('type' => 'post_type', 'output' => $output, 'theme' => $theme, 'plugin' => $plugin, 'machine_name' => $machine_name, 'path' => false );
