@@ -1,7 +1,7 @@
 <?php
 
-use \WP_CLI\Dispatcher;
 use \WP_CLI\Utils;
+use \WP_CLI\Dispatcher;
 
 /**
  * Wrapper class for WP-CLI
@@ -13,7 +13,10 @@ class WP_CLI {
 	public static $root;
 
 	private static $man_dirs = array();
-	private static $arguments, $assoc_args, $assoc_special;
+
+	private static $config;
+
+	private static $arguments, $assoc_args;
 
 	/**
 	 * Add a command to the wp-cli list of commands
@@ -43,9 +46,11 @@ class WP_CLI {
 	 *
 	 * @param string $message
 	 */
-	static function out( $message ) {
-		if ( WP_CLI_QUIET ) return;
-		\cli\out($message);
+	static function out( $message, $handle = STDOUT ) {
+		if ( WP_CLI_QUIET )
+			return;
+
+		fwrite( $handle, \cli\Colors::colorize( $message, ! \cli\Shell::isPiped() ) );
 	}
 
 	/**
@@ -54,22 +59,24 @@ class WP_CLI {
 	 * @param string $message
 	 */
 	static function line( $message = '' ) {
-		if ( WP_CLI_QUIET ) return;
-		\cli\line($message);
+		self::out( $message . "\n" );
 	}
 
 	/**
 	 * Display an error in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @param string $label
+	 * @param bool $exit
 	 */
-	static function error( $message, $label = 'Error' ) {
-		if ( !isset( self::$assoc_special['completions'] ) ) {
-			\cli\err( '%R' . $label . ': %n' . self::error_to_string( $message ) );
+	static function error( $message, $exit = true ) {
+		if ( !isset( self::$config['completions'] ) ) {
+			$label = 'Error';
+			$msg = '%R' . $label . ': %n' . self::error_to_string( $message );
+			self::out( $msg . "\n", STDERR );
 		}
 
-		exit(1);
+		if ( $exit )
+			exit(1);
 	}
 
 	/**
@@ -79,8 +86,10 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function success( $message, $label = 'Success' ) {
-		if ( WP_CLI_QUIET ) return;
-		\cli\line( '%G' . $label . ': %n' . $message );
+		if ( WP_CLI_QUIET )
+			return;
+
+		self::line( '%G' . $label . ': %n' . $message );
 	}
 
 	/**
@@ -90,8 +99,11 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function warning( $message, $label = 'Warning' ) {
-		if ( WP_CLI_QUIET ) return;
-		\cli\err( '%C' . $label . ': %n' . self::error_to_string( $message ) );
+		if ( WP_CLI_QUIET )
+			return;
+
+		$msg = '%C' . $label . ': %n' . self::error_to_string( $message );
+		self::out( $msg . "\n", STDERR );
 	}
 
 	/**
@@ -99,7 +111,7 @@ class WP_CLI {
 	 */
 	static function confirm( $question, $assoc_args ) {
 		if ( !isset( $assoc_args['yes'] ) ) {
-			WP_CLI::out( $question . " [y/n] " );
+			self::out( $question . " [y/n] " );
 
 			$answer = trim( fgets( STDIN ) );
 
@@ -177,7 +189,7 @@ class WP_CLI {
 	}
 
 	/**
-	 * Launch an external process, closing the current one
+	 * Launch an external process that takes over I/O.
 	 *
 	 * @param string Command to call
 	 * @param bool Whether to exit if the command returns an error status
@@ -198,30 +210,55 @@ class WP_CLI {
 
 		list( self::$arguments, self::$assoc_args ) = $r;
 
+		// foo --help  ->  help foo
 		if ( isset( self::$assoc_args['help'] ) ) {
 			array_unshift( self::$arguments, 'help' );
 			unset( self::$assoc_args['help'] );
 		}
 
-		self::$assoc_special = Utils\split_assoc( self::$assoc_args, array(
+		// {plugin|theme} update --all  ->  {plugin|theme} update-all
+		if ( count( self::$arguments ) > 1 && in_array( self::$arguments[0], array( 'plugin', 'theme' ) )
+			&& self::$arguments[1] == 'update'
+			&& isset( self::$assoc_args['all'] )
+		) {
+			self::$arguments[1] = 'update-all';
+			unset( self::$assoc_args['all'] );
+		}
+
+		self::split_special( array(
 			'path', 'url', 'blog', 'user', 'require',
 			'quiet', 'completions', 'man', 'syn-list'
 		) );
 	}
 
-	static function get_assoc_special() {
-		return self::$assoc_special;
+	private static function split_special( $special_keys ) {
+		foreach ( $special_keys as $key ) {
+			if ( isset( self::$assoc_args[ $key ] ) ) {
+				self::$config[ $key ] = self::$assoc_args[ $key ];
+				unset( self::$assoc_args[ $key ] );
+			}
+		}
+	}
+
+	static function get_config() {
+		return self::$config;
 	}
 
 	static function before_wp_load() {
+		self::$root = new Dispatcher\RootCommand;
+
 		self::add_man_dir(
-			WP_CLI_ROOT . "../../../man/",
-			WP_CLI_ROOT . "../../docs/"
+			WP_CLI_ROOT . "../man/",
+			WP_CLI_ROOT . "../man-src/"
 		);
+
+		self::$config = Utils\load_config( array(
+			'path', 'url', 'user'
+		) );
 
 		self::parse_args();
 
-		define( 'WP_CLI_QUIET', isset( self::$assoc_special['quiet'] ) );
+		define( 'WP_CLI_QUIET', isset( self::$config['quiet'] ) );
 
 		// Handle --version parameter
 		if ( isset( self::$assoc_args['version'] ) && empty( self::$arguments ) ) {
@@ -238,10 +275,10 @@ class WP_CLI {
 		$_SERVER['DOCUMENT_ROOT'] = getcwd();
 
 		// Handle --path
-		Utils\set_wp_root( self::$assoc_special );
+		Utils\set_wp_root( self::$config );
 
 		// Handle --url and --blog parameters
-		Utils\set_url( self::$assoc_special );
+		Utils\set_url( self::$config );
 
 		if ( array( 'core', 'download' ) == self::$arguments ) {
 			self::run_command();
@@ -249,7 +286,9 @@ class WP_CLI {
 		}
 
 		if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
-			WP_CLI::error( 'This does not seem to be a WordPress install. Pass --path=`path/to/wordpress` or run `wp core download`.' );
+			WP_CLI::error( "This does not seem to be a WordPress install.", false );
+			WP_CLI::line( "Pass --path=`path/to/wordpress` or run `wp core download`." );
+			exit(1);
 		}
 
 		if ( array( 'core', 'config' ) == self::$arguments ) {
@@ -257,37 +296,58 @@ class WP_CLI {
 			exit;
 		}
 
-		// The db commands don't need any WP files
-		if ( array( 'db' ) == array_slice( self::$arguments, 0, 1 ) ) {
+		if ( !Utils\locate_wp_config() ) {
+			WP_CLI::error( "wp-config.php not found.", false );
+			WP_CLI::line( "Either create one manually or use `wp core config`." );
+			exit(1);
+		}
+
+		if ( self::cmd_starts_with( array( 'db' ) ) ) {
 			Utils\load_wp_config();
 			self::run_command();
 			exit;
 		}
 
-		// Set installer flag before loading any WP files
-		if ( array( 'core', 'install' ) == self::$arguments ) {
+		if (
+			self::cmd_starts_with( array( 'core', 'install' ) ) ||
+			self::cmd_starts_with( array( 'core', 'is-installed' ) )
+		) {
 			define( 'WP_INSTALLING', true );
+
+			if ( !isset( $_SERVER['HTTP_HOST'] ) ) {
+				Utils\set_url_params( 'http://example.com' );
+			}
 		}
+
+		// Pretend we're in WP_ADMIN, to side-step full-page caching plugins
+		define( 'WP_ADMIN', true );
+		$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
+	}
+
+	private static function cmd_starts_with( $prefix ) {
+		return $prefix == array_slice( self::$arguments, 0, count( $prefix  ) );
 	}
 
 	static function after_wp_load() {
+		require WP_CLI_ROOT . 'utils-wp.php';
+
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
-		Utils\set_user( self::$assoc_special );
+		Utils\set_user( self::$config );
 
-		if ( !defined( 'WP_INSTALLING' ) && isset( self::$assoc_special['url'] ) )
+		if ( !defined( 'WP_INSTALLING' ) && isset( self::$config['url'] ) )
 			Utils\set_wp_query();
 
-		if ( isset( self::$assoc_special['require'] ) )
-			require self::$assoc_special['require'];
+		if ( isset( self::$config['require'] ) )
+			require self::$config['require'];
 
-		if ( isset( self::$assoc_special['man'] ) ) {
+		if ( isset( self::$config['man'] ) ) {
 			self::generate_man( self::$arguments );
 			exit;
 		}
 
 		// Handle --syn-list parameter
-		if ( isset( self::$assoc_special['syn-list'] ) ) {
+		if ( isset( self::$config['syn-list'] ) ) {
 			foreach ( self::$root->get_subcommands() as $command ) {
 				if ( $command instanceof Dispatcher\Composite ) {
 					foreach ( $command->get_subcommands() as $subcommand )
@@ -299,7 +359,7 @@ class WP_CLI {
 			exit;
 		}
 
-		if ( isset( self::$assoc_special['completions'] ) ) {
+		if ( isset( self::$config['completions'] ) ) {
 			self::render_automcomplete();
 			exit;
 		}
@@ -345,6 +405,4 @@ class WP_CLI {
 		self::add_command( $name, $class );
 	}
 }
-
-WP_CLI::$root = new Dispatcher\RootCommand;
 
