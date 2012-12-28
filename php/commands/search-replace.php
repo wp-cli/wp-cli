@@ -3,21 +3,26 @@
 WP_CLI::add_command( 'search-replace', new Search_Replace_Command );
 
 /**
- * Search/Replace strings in the database.
- *
  * @package wp-cli
  */
 class Search_Replace_Command extends WP_CLI_Command {
 
 	/**
-	 * @synopsis <old> <new> [--dry-run]
+	 * Search/replace strings in the database.
+	 *
+	 * @synopsis <old> <new> [<table>...] [--dry-run]
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		global $wpdb;
 
-		list( $old, $new ) = $args;
+		$old = array_shift( $args );
+		$new = array_shift( $args );
 
-		$tables = $wpdb->tables( 'blog' );
+		if ( !empty( $args ) ) {
+			$tables = $args;
+		} else {
+			$tables = $wpdb->tables( 'blog' );
+		}
 
 		$total = 0;
 

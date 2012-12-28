@@ -1,6 +1,6 @@
 ## OPTIONS
 
-* `json`:
+* `--json`:
 
 	Encode/decode values as JSON.
 

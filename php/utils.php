@@ -1,5 +1,7 @@
 <?php
 
+// Utilities that do NOT depend on WordPress code.
+
 namespace WP_CLI\Utils;
 
 function bootstrap() {
@@ -24,6 +26,8 @@ function bootstrap() {
 		\cli\register_autoload();
 		register_autoload();
 	}
+
+	include WP_CLI_ROOT . 'Spyc.php';
 }
 
 function register_autoload() {
@@ -39,6 +43,27 @@ function register_autoload() {
 			require_once $path;
 		}
 	} );
+}
+
+function load_config( $allowed_keys ) {
+	foreach ( array( 'wp-cli.local.yml', 'wp-cli.yml' ) as $fname ) {
+		$path = getcwd() . '/' . $fname;
+
+		if ( file_exists( $path ) ) {
+			$config = spyc_load_file( $path );
+
+			$sanitized_config = array();
+
+			foreach ( $allowed_keys as $key ) {
+				if ( isset( $config[ $key ] ) )
+					$sanitized_config[ $key ] = $config[ $key ];
+			}
+
+			return $sanitized_config;
+		}
+	}
+
+	return array();
 }
 
 /**
@@ -62,33 +87,6 @@ function parse_args( $arguments ) {
 	}
 
 	return array( $regular_args, $assoc_args );
-}
-
-/**
- * Splits $argv into positional and associative arguments.
- *
- * @param string
- * @return array
- */
-function split_assoc( &$assoc_args, $special_keys ) {
-	$assoc_special = array();
-
-	foreach ( $special_keys as $key ) {
-		if ( isset( $assoc_args[ $key ] ) ) {
-			$assoc_special[ $key ] = $assoc_args[ $key ];
-			unset( $assoc_args[ $key ] );
-		}
-	}
-
-	return $assoc_special;
-}
-
-function set_wp_root( $assoc_args ) {
-	if ( !empty( $assoc_args['path'] ) ) {
-		define( 'WP_ROOT', rtrim( $assoc_args['path'], '/' ) . '/' );
-	} else {
-		define( 'WP_ROOT', getcwd() . '/' );
-	}
 }
 
 function set_url( $assoc_args ) {
@@ -151,14 +149,22 @@ function set_url_params( $url ) {
 	$_SERVER['REQUEST_METHOD'] = 'GET';
 }
 
-function locate_wp_config() {
-	if ( file_exists( WP_ROOT . 'wp-config.php' ) ) {
-		return WP_ROOT . 'wp-config.php';
-	} elseif ( file_exists( WP_ROOT . '/../wp-config.php' ) && ! file_exists( WP_ROOT . '/../wp-settings.php' ) ) {
-		return WP_ROOT . '/../wp-config.php';
+function set_wp_root( $config ) {
+	if ( !empty( $config['path'] ) ) {
+		define( 'WP_ROOT', rtrim( $config['path'], '/' ) . '/' );
 	} else {
-		return false;
+		define( 'WP_ROOT', getcwd() . '/' );
 	}
+}
+
+function locate_wp_config() {
+	if ( file_exists( WP_ROOT . 'wp-config.php' ) )
+		return WP_ROOT . 'wp-config.php';
+
+	if ( file_exists( WP_ROOT . '/../wp-config.php' ) && ! file_exists( WP_ROOT . '/../wp-settings.php' ) )
+		return WP_ROOT . '/../wp-config.php';
+
+	return false;
 }
 
 // Loads wp-config.php without loading the rest of WP
@@ -169,68 +175,6 @@ function load_wp_config() {
 		require locate_wp_config();
 	else
 		\WP_CLI::error( 'No wp-config.php file.' );
-}
-
-
-
-// ---- AFTER WORDPRESS IS LOADED ---- //
-
-
-
-// Handle --user parameter
-function set_user( $assoc_args ) {
-	if ( !isset( $assoc_args['user'] ) )
-		return;
-
-	$user = $assoc_args['user'];
-
-	if ( is_numeric( $user ) ) {
-		$user_id = (int) $user;
-	} else {
-		$user_id = (int) username_exists( $user );
-	}
-
-	if ( !$user_id || !wp_set_current_user( $user_id ) ) {
-		\WP_CLI::error( sprintf( 'Could not get a user_id for this user: %s', var_export( $user, true ) ) );
-	}
-}
-
-function set_wp_query() {
-	if ( isset( $GLOBALS['wp_query'] ) && isset( $GLOBALS['wp'] ) ) {
-		$GLOBALS['wp']->parse_request();
-		$GLOBALS['wp_query']->query($GLOBALS['wp']->query_vars);
-	}
-}
-
-function get_upgrader( $class ) {
-	if ( !class_exists( '\WP_Upgrader' ) )
-		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-
-	return new $class( new \WP_CLI\UpgraderSkin );
-}
-
-function parse_csv( $filepath, $has_headers = true ) {
-
-	if ( false == ( $csv = fopen( $filepath, 'r' ) ) )
-		\WP_CLI::error( sprintf( 'Could not open csv file: %s', $filepath ) );
-
-	$parsed_data = array();
-	$headers = array();
-	while ( ( $row = fgetcsv( $csv, 10000, "," ) ) !== FALSE ) {
-		if ( $has_headers ) {
-			$headers = array_values( $row );
-			$has_headers = false;
-			continue;
-		}
-		$row_data = array();
-		foreach( $row as $index => $cell_value ) {
-			if ( ! empty( $headers[$index] ) )
-				$index = $headers[$index];
-			$row_data[$index] = $cell_value;
-		}
-		$parsed_data[] = $row_data;
-	}
-	return $parsed_data;
 }
 
 /**

@@ -1,0 +1,11 @@
+## OPTIONS
+
+* `--dry-run`:
+
+	Show report, but don't perform the changes.
+
+## EXAMPLES
+
+	wp search-replace 'http://example.dev' 'http://example.com' --dry-run
+
+	wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms
