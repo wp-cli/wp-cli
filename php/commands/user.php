@@ -59,24 +59,28 @@ class User_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete a user.
+	 * Delete one or more users.
 	 *
-	 * @synopsis <id> [--reassign=<id>]
+	 * @synopsis <id>... [--reassign=<id>]
 	 */
 	public function delete( $args, $assoc_args ) {
-		global $blog_id;
-
-		list( $user_id ) = $args;
-
-		$defaults = array( 'reassign' => NULL );
+		$defaults = array(
+			'reassign' => null
+		);
 
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
-		if ( wp_delete_user( $user_id, $reassign ) ) {
-			WP_CLI::success( "Deleted user $user_id." );
-		} else {
-			WP_CLI::error( "Failed deleting user $user_id." );
+		foreach ( $args as $user_id ) {
+			if ( wp_delete_user( $user_id, $reassign ) ) {
+				WP_CLI::success( "Deleted user $user_id." );
+				$status = 0;
+			} else {
+				WP_CLI::error( "Failed deleting user $user_id.", false );
+				$status = 1;
+			}
 		}
+
+		exit( $status );
 	}
 
 	/**
