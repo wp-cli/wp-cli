@@ -44,7 +44,7 @@ function register_autoload() {
 }
 
 function load_config() {
-	foreach ( array( 'wp-cli.local.yaml', 'wp-cli.yaml' ) as $fname ) {
+	foreach ( array( 'wp-cli.local.yml', 'wp-cli.yml' ) as $fname ) {
 		$path = getcwd() . '/' . $fname;
 
 		if ( file_exists( $path ) ) {
