@@ -70,16 +70,16 @@ class Scaffold_Command extends WP_CLI_Command {
 
     $textdomain = $this->get_textdomain( $textdomain, $theme, $plugin_name );
     
-    include "skeletons/post_type_skeleton.php";
-    $assoc_args = array('type' => 'post_type', 'output' => $output, 'theme' => $theme, 'plugin_name' => $plugin_name, 'machine_name' => $machine_name, 'path' => false );
-    
+    include 'skeletons/post_type_skeleton.php';
+
     if ( $theme || !empty( $plugin_name ) ) {
       // Write file to theme or given plugin_name
+      $assoc_args = array('type' => 'post_type', 'output' => $output, 'theme' => $theme, 'plugin_name' => $plugin_name, 'machine_name' => $machine_name );
       $assoc_args['path'] = $this->get_output_path( $assoc_args );
-      $this->parse_skeleton( $assoc_args );
+      $this->save_skeleton_output( $assoc_args );
     } else {
       // STDOUT
-      echo $this->parse_skeleton( $assoc_args );
+      echo $output;
     }
   }
 
@@ -130,15 +130,15 @@ class Scaffold_Command extends WP_CLI_Command {
     $textdomain = $this->get_textdomain( $textdomain, $theme, $plugin_name );
 
     include 'skeletons/taxonomy_skeleton.php';
-    $assoc_args = array('type' => 'taxonomy', 'output' => $output, 'theme' => $theme, 'plugin_name' => $plugin_name, 'machine_name' => $machine_name, 'path' => false );
-    
+
     if ( $theme || !empty( $plugin_name ) ) {
       // Write file to theme or given plugin_name
+      $assoc_args = array('type' => 'taxonomy', 'output' => $output, 'theme' => $theme, 'plugin_name' => $plugin_name, 'machine_name' => $machine_name );
       $assoc_args['path'] = $this->get_output_path( $assoc_args );
-      $this->parse_skeleton( $assoc_args );
+      $this->save_skeleton_output( $assoc_args );
     } else {
       // STDOUT
-      echo $this->parse_skeleton( $assoc_args );
+      echo $output;
     }
   }
 
@@ -178,7 +178,7 @@ class Scaffold_Command extends WP_CLI_Command {
     return $path;
   }
 
-  private function parse_skeleton( $assoc_args = array() ) {
+  private function save_skeleton_output( $assoc_args ) {
     global $wp_filesystem;
 
     extract( $assoc_args, EXTR_SKIP );
@@ -190,11 +190,8 @@ class Scaffold_Command extends WP_CLI_Command {
       if ( ! $wp_filesystem->put_contents( $filename, $output ) ) {
         WP_CLI::error( "Error while saving file: {$filename}" );
       } else {
-        WP_CLI::success( ucfirst($type) . " {$machine_name} created" );
+        WP_CLI::success( "{$type} {$machine_name} created" );
       }
-    } else {
-      // Return for STDOUT
-      return $output;
     }
   }
 
