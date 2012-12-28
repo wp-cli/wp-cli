@@ -43,6 +43,18 @@ function register_autoload() {
 	} );
 }
 
+function load_config() {
+	foreach ( array( 'wp-cli.local.yaml', 'wp-cli.yaml' ) as $fname ) {
+		$path = getcwd() . '/' . $fname;
+
+		if ( file_exists( $path ) ) {
+			return spyc_load_file( $path );
+		}
+	}
+
+	return array();
+}
+
 /**
  * Splits $argv into positional and associative arguments.
  *
@@ -64,25 +76,6 @@ function parse_args( $arguments ) {
 	}
 
 	return array( $regular_args, $assoc_args );
-}
-
-/**
- * Splits $argv into positional and associative arguments.
- *
- * @param string
- * @return array
- */
-function split_assoc( &$assoc_args, $special_keys ) {
-	$assoc_special = array();
-
-	foreach ( $special_keys as $key ) {
-		if ( isset( $assoc_args[ $key ] ) ) {
-			$assoc_special[ $key ] = $assoc_args[ $key ];
-			unset( $assoc_args[ $key ] );
-		}
-	}
-
-	return $assoc_special;
 }
 
 function set_wp_root( $assoc_args ) {
