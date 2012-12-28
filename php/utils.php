@@ -24,6 +24,8 @@ function bootstrap() {
 		\cli\register_autoload();
 		register_autoload();
 	}
+
+	include WP_CLI_ROOT . 'Spyc.php';
 }
 
 function register_autoload() {
