@@ -85,6 +85,8 @@ EOB
 	function get_subcommands() {
 		$this->load_all_commands();
 
+		ksort( $this->subcommands );
+
 		return $this->subcommands;
 	}
 
