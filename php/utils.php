@@ -89,14 +89,6 @@ function parse_args( $arguments ) {
 	return array( $regular_args, $assoc_args );
 }
 
-function set_wp_root( $assoc_args ) {
-	if ( !empty( $assoc_args['path'] ) ) {
-		define( 'WP_ROOT', rtrim( $assoc_args['path'], '/' ) . '/' );
-	} else {
-		define( 'WP_ROOT', getcwd() . '/' );
-	}
-}
-
 function set_url( $assoc_args ) {
 	if ( isset( $assoc_args['url'] ) ) {
 		$blog = $assoc_args['url'];
@@ -157,14 +149,22 @@ function set_url_params( $url ) {
 	$_SERVER['REQUEST_METHOD'] = 'GET';
 }
 
-function locate_wp_config() {
-	if ( file_exists( WP_ROOT . 'wp-config.php' ) ) {
-		return WP_ROOT . 'wp-config.php';
-	} elseif ( file_exists( WP_ROOT . '/../wp-config.php' ) && ! file_exists( WP_ROOT . '/../wp-settings.php' ) ) {
-		return WP_ROOT . '/../wp-config.php';
+function set_wp_root( $config ) {
+	if ( !empty( $config['path'] ) ) {
+		define( 'WP_ROOT', rtrim( $config['path'], '/' ) . '/' );
 	} else {
-		return false;
+		define( 'WP_ROOT', getcwd() . '/' );
 	}
+}
+
+function locate_wp_config() {
+	if ( file_exists( WP_ROOT . 'wp-config.php' ) )
+		return WP_ROOT . 'wp-config.php';
+
+	if ( file_exists( WP_ROOT . '/../wp-config.php' ) && ! file_exists( WP_ROOT . '/../wp-settings.php' ) )
+		return WP_ROOT . '/../wp-config.php';
+
+	return false;
 }
 
 // Loads wp-config.php without loading the rest of WP
