@@ -72,9 +72,15 @@ class Scaffold_Command extends WP_CLI_Command {
     
     include 'skeletons/post_type_skeleton.php';
 
-    if ( $theme || !empty( $plugin_name ) ) {
+    if ( $theme || ! empty( $plugin_name ) ) {
       // Write file to theme or given plugin_name
-      $assoc_args = array('type' => 'post_type', 'output' => $output, 'theme' => $theme, 'plugin_name' => $plugin_name, 'machine_name' => $machine_name );
+      $assoc_args = array(
+        'type' => 'post_type',
+        'output' => $output,
+        'theme' => $theme,
+        'plugin_name' => $plugin_name,
+        'machine_name' => $machine_name,
+      );
       $assoc_args['path'] = $this->get_output_path( $assoc_args );
       $this->save_skeleton_output( $assoc_args );
     } else {
@@ -133,7 +139,13 @@ class Scaffold_Command extends WP_CLI_Command {
 
     if ( $theme || !empty( $plugin_name ) ) {
       // Write file to theme or given plugin_name
-      $assoc_args = array('type' => 'taxonomy', 'output' => $output, 'theme' => $theme, 'plugin_name' => $plugin_name, 'machine_name' => $machine_name );
+      $assoc_args = array(
+        'type' => 'taxonomy',
+        'output' => $output,
+        'theme' => $theme,
+        'plugin_name' => $plugin_name,
+        'machine_name' => $machine_name,
+      );
       $assoc_args['path'] = $this->get_output_path( $assoc_args );
       $this->save_skeleton_output( $assoc_args );
     } else {
@@ -151,7 +163,7 @@ class Scaffold_Command extends WP_CLI_Command {
     if( $theme ) {
       //Here we assume you got a theme installed
       $path = TEMPLATEPATH; 
-    } elseif ( !empty( $plugin_name ) ){
+    } elseif ( ! empty( $plugin_name ) ){
       $path = WP_PLUGIN_DIR . '/' . $plugin_name; //Faking recursive mkdir for down the line
       $wp_filesystem->mkdir( WP_PLUGIN_DIR . '/' . $plugin_name ); //Faking recursive mkdir for down the line
     } else {
@@ -166,7 +178,7 @@ class Scaffold_Command extends WP_CLI_Command {
     }
 
     // If it doesn't exists create it
-    if( !$wp_filesystem->is_dir( $path ) ) {
+    if( ! $wp_filesystem->is_dir( $path ) ) {
       $wp_filesystem->mkdir( $path );
       WP_CLI::success( "Created dir: {$path}" );
     } elseif( $wp_filesystem->is_dir( $path ) ) {
