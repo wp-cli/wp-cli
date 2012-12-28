@@ -20,7 +20,7 @@ class Scaffold_Command extends WP_CLI_Command {
    *
    * @alias pt
    *
-   * @synopsis [--description=<description>] [--public=<public>] [--exclude_from_search=<exclude_from_search>] [--show_ui=<show_ui>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_in_menu=<show_in_menu>] [--show_in_admin_bar=<show_in_admin_bar>] [--menu_position=<menu_position>] [--menu_icon=<menu_icon>] [--capability_type=<capability_type>] [--hierarchical=<hierarchical>] [--supports=<supports>] [--has_archive=<has_archive>] [--slug=<slug>] [--feed=<feed>] [--pages=<pages>] [--query_var=<query_var>] [--can_export=<can_export>] [--textdomain=<textdomain>] 
+   * @synopsis [--description=<description>] [--public=<public>] [--exclude_from_search=<exclude_from_search>] [--show_ui=<show_ui>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_in_menu=<show_in_menu>] [--show_in_admin_bar=<show_in_admin_bar>] [--menu_position=<menu_position>] [--menu_icon=<menu_icon>] [--capability_type=<capability_type>] [--hierarchical=<hierarchical>] [--supports=<supports>] [--has_archive=<has_archive>] [--slug=<slug>] [--feed=<feed>] [--pages=<pages>] [--query_var=<query_var>] [--can_export=<can_export>] [--textdomain=<textdomain>] [--theme] [--plugin=<plugin-name>]
    */
   function post_type( $args, $assoc_args ) {
     global $wp_filesystem;
@@ -61,24 +61,23 @@ class Scaffold_Command extends WP_CLI_Command {
       'query_var'           => 'true',
       'can_export'          => 'true',
       'textdomain'          => strtolower( wp_get_theme()->template ),
+      'theme'               => false,
+      'plugin'              => false
     );
 
     // Generate the variables from the defaults and associated arguments if they are set
     extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
-
-    $path = TEMPLATEPATH . '/post-types/';
-    if( !$wp_filesystem->is_dir( $path ) ) {
-      $wp_filesystem->mkdir( $path );
-    }
-
-    $filename = $path . $post_type .'.php';
-
-    include 'skeletons/post_type_skeleton.php';
-
-    if ( ! $wp_filesystem->put_contents( $filename, $output ) ) {
-      WP_CLI::error( 'Error while saving file' );
+    
+    include "skeletons/post_type_skeleton.php";
+    $assoc_args = array('type' => 'post_type', 'output' => $output, 'theme' => $theme, 'plugin' => $plugin, 'machine_name' => $machine_name, 'path' => false );
+    
+    if ( $theme || !empty( $plugin ) ) {
+      // Write file to theme or (given) plugin path
+      $assoc_args['path'] = $this->get_output_path( $assoc_args );
+      $this->parse_skeleton( $assoc_args );
     } else {
-      WP_CLI::success( $post_type . ' created' );
+      // STDOUT
+      echo $this->parse_skeleton( $assoc_args );
     }
   }
 
@@ -129,7 +128,7 @@ class Scaffold_Command extends WP_CLI_Command {
       $wp_filesystem->mkdir( $path );
     }
 
-    $filename = $path . $taxonomy .'.php';
+    $filename = $path . $taxonomy . '.php';
 
     include 'skeletons/taxonomy_skeleton.php';
 
@@ -137,6 +136,62 @@ class Scaffold_Command extends WP_CLI_Command {
       WP_CLI::error( 'Error while saving file' );
     } else {
       WP_CLI::success( $taxonomy . ' created' );
+    }
+  }
+
+  private function get_output_path( $assoc_args ) {
+    global $wp_filesystem;
+
+    extract( $assoc_args, EXTR_SKIP );
+
+    // Implements the --theme flag || --plugin=<plugin-name>
+    if( $theme ) {
+      //Here we assume you got a theme installed
+      $path = TEMPLATEPATH; 
+    } elseif ( !empty( $plugin ) ){
+      $path = WP_PLUGIN_DIR . '/' . $plugin; //Faking recursive mkdir for down the line
+      $wp_filesystem->mkdir( WP_PLUGIN_DIR . '/' . $plugin ); //Faking recursive mkdir for down the line
+    } else {
+      // STDOUT
+      return false;
+    }
+
+    if ( $type === "post_type") {
+      $path .= '/post-types/';
+    } elseif ( $type === "taxonomy" ) {
+      $path .= '/taxonomies/';
+    }
+
+    // If it doesn't exists create it
+    if( !$wp_filesystem->is_dir( $path ) ) {
+      $wp_filesystem->mkdir( $path );
+      WP_CLI::success( "Created dir: {$path}" );
+    } elseif( $wp_filesystem->is_dir( $path ) ) {
+      WP_CLI::success( "Dir already exists: {$path}" );
+    } else {
+      WP_CLI::error( "Couldn't create dir exists: {$path}" );
+    }
+
+    return $path;
+  }
+
+  private function parse_skeleton( $assoc_args = array() ) {
+    global $wp_filesystem;
+
+    extract( $assoc_args, EXTR_SKIP );
+
+    // Write to file
+    if( $path ) {
+      $filename = $path . $machine_name .'.php';
+
+      if ( ! $wp_filesystem->put_contents( $filename, $output ) ) {
+        WP_CLI::error( "Error while saving file: {$filename}" );
+      } else {
+        WP_CLI::success( $machine_name . ' created' );
+      }
+    } else {
+      // Return for STDOUT
+      return $output;
     }
   }
 
@@ -193,6 +248,5 @@ class Scaffold_Command extends WP_CLI_Command {
       }
     }
     return false;
-
   }
 }
