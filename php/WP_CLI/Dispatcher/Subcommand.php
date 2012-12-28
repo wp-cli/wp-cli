@@ -76,7 +76,7 @@ class Subcommand implements Command, Documentable {
 	private function check_assoc( $assoc_args, $accepted_params ) {
 		$mandatory_assoc = array();
 
-		$assoc_args += \WP_CLI::get_assoc_special();
+		$assoc_args += \WP_CLI::get_config();
 
 		foreach ( $accepted_params['assoc'] as $param ) {
 			if ( !$param['optional'] )
