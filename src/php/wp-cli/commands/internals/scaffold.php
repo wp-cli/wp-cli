@@ -87,7 +87,7 @@ class Scaffold_Command extends WP_CLI_Command {
    *
    * @alias tax
    *
-   * @synopsis [--public=<public>]  [--show_in_nav_menus=<show_in_nav_menus>]  [--show_ui=<show_ui>]  [--show_tagcloud=<show_tagcloud>]  [--hierarchical=<hierarchical>]  [--rewrite=<rewrite>]  [--query_var=<query_var>] [--slug=<slug>] [--textdomain=<textdomain>] [--post_types=<post_types>]
+   * @synopsis [--public=<public>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_ui=<show_ui>] [--show_tagcloud=<show_tagcloud>] [--hierarchical=<hierarchical>]  [--rewrite=<rewrite>] [--query_var=<query_var>] [--slug=<slug>] [--textdomain=<textdomain>] [--post_types=<post_types>]
    */
   function taxonomy( $args, $assoc_args ) {
     global $wp_filesystem;

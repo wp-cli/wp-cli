@@ -1,7 +1,7 @@
 <?php
 $output = "<?php
 
-if ( !taxonomy_exists( '{$taxonomy}' ) ) :
+function {$machine_name}_init() {
   \$labels = array( 
     'name'                        =>  __( '{$label_plural_ucfirst}', '{$textdomain}' ),
     'singular_name'               =>  __( '{$label_ucfirst}', '{$textdomain}' ),
@@ -44,4 +44,5 @@ if ( !taxonomy_exists( '{$taxonomy}' ) ) :
     
   register_taxonomy( '{$taxonomy}', array( '{$post_types}' ), \$args );
 
-endif;";
+}
+add_action( 'init', '{$machine_name}_init' );";
