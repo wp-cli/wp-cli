@@ -1,14 +1,12 @@
 <?php
 
-WP_CLI::add_command('user', 'User_Command');
-
 /**
  * Implement user command
  *
  * @package wp-cli
  * @subpackage commands/internals
  */
-class User_Command extends WP_CLI_Command {
+class User_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * List users.
@@ -24,7 +22,7 @@ class User_Command extends WP_CLI_Command {
 			'fields' => isset( $assoc_args['ids'] ) ? 'ids' : 'all_with_meta',
 		);
 
-		if ( array_key_exists('role', $assoc_args) ) {
+		if ( array_key_exists( 'role', $assoc_args ) ) {
 			$params['role'] = $assoc_args['role'];
 		}
 
@@ -32,30 +30,29 @@ class User_Command extends WP_CLI_Command {
 
 		if ( isset( $assoc_args['ids'] ) ) {
 			WP_CLI::out( implode( ' ', $users ) );
-			return;
-		}
+		} else {
+			$fields = array('ID', 'user_login', 'display_name', 'user_email',
+				'user_registered');
 
-		$fields = array('ID', 'user_login', 'display_name', 'user_email',
-			'user_registered');
+			$table = new \cli\Table();
 
-		$table = new \cli\Table();
+			$table->setHeaders( array_merge( $fields, array('roles') ) );
 
-		$table->setHeaders( array_merge($fields, array('roles')) );
+			foreach ( $users as $user ) {
+				$line = array();
 
-		foreach ( $users as $user ) {
-			$line = array();
+				foreach ( $fields as $field ) {
+					$line[] = $user->$field;
+				}
+				$line[] = implode( ',', $user->roles );
 
-			foreach ( $fields as $field ) {
-				$line[] = $user->$field;
+				$table->addRow( $line );
 			}
-			$line[] = implode( ',', $user->roles );
 
-			$table->addRow($line);
+			$table->display();
+
+			WP_CLI::line( 'Total: ' . count( $users ) . ' users' );
 		}
-
-		$table->display();
-
-		WP_CLI::line( 'Total: ' . count($users) . ' users' );
 	}
 
 	/**
@@ -64,23 +61,25 @@ class User_Command extends WP_CLI_Command {
 	 * @synopsis <id>... [--reassign=<id>]
 	 */
 	public function delete( $args, $assoc_args ) {
-		$defaults = array(
+		$assoc_args = wp_parse_args( $assoc_args, array(
 			'reassign' => null
-		);
+		) );
 
-		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
+		parent::delete( $args, $assoc_args );
+	}
 
-		foreach ( $args as $user_id ) {
-			if ( wp_delete_user( $user_id, $reassign ) ) {
-				WP_CLI::success( "Deleted user $user_id." );
-				$status = 0;
-			} else {
-				WP_CLI::error( "Failed deleting user $user_id.", false );
-				$status = 1;
-			}
+	protected function _delete( $user_id, $assoc_args ) {
+		if ( is_multisite() ) {
+			$r = wpmu_delete_user( $user_id );
+		} else {
+			$r = wp_delete_user( $user_id, $assoc_args['reassign'] );
 		}
 
-		exit( $status );
+		if ( $r ) {
+			return array( 'success', "Deleted user $user_id." );
+		} else {
+			return array( 'error', "Failed deleting user $user_id." );
+		}
 	}
 
 	/**
@@ -89,8 +88,6 @@ class User_Command extends WP_CLI_Command {
 	 * @synopsis <user-login> <user-email> [--role=<role>] [--user_pass=<password>] [--user_registered=<yyyy-mm-dd>] [--display_name=<name>] [--porcelain]
 	 */
 	public function create( $args, $assoc_args ) {
-		global $blog_id;
-
 		list( $user_login, $user_email ) = $args;
 
 		$defaults = array(
@@ -113,7 +110,7 @@ class User_Command extends WP_CLI_Command {
 			$generated_pass = true;
 		}
 
-		$user_id = wp_insert_user( array(
+		$user_id = $this->_create( array(
 			'user_email' => $user_email,
 			'user_login' => $user_login,
 			'user_pass' => $user_pass,
@@ -122,7 +119,7 @@ class User_Command extends WP_CLI_Command {
 			'role' => $role,
 		) );
 
-		if ( is_wp_error($user_id) ) {
+		if ( is_wp_error( $user_id ) ) {
 			WP_CLI::error( $user_id );
 		} else {
 			if ( false === $role ) {
@@ -140,27 +137,21 @@ class User_Command extends WP_CLI_Command {
 		}
 	}
 
+	protected function _create( $params ) {
+		return wp_insert_user( $params );
+	}
+
 	/**
 	 * Update a user.
 	 *
-	 * @synopsis <id> --<field>=<value>
+	 * @synopsis <id>... --<field>=<value>
 	 */
 	public function update( $args, $assoc_args ) {
-		list( $user_id ) = $args;
+		parent::update( $args, $assoc_args, 'user' );
+	}
 
-		if ( empty( $assoc_args ) ) {
-			WP_CLI::error( "Need some fields to update." );
-		}
-
-		$params = array_merge( array( 'ID' => $user_id ), $assoc_args );
-
-		$updated_id = wp_update_user( $params );
-
-		if ( is_wp_error( $updated_id ) ) {
-			WP_CLI::error( $updated_id );
-		} else {
-			WP_CLI::success( "Updated user $updated_id." );
-		}
+	protected function _update( $params ) {
+		return wp_update_user( $params );
 	}
 
 	/**
@@ -356,6 +347,7 @@ class User_Command extends WP_CLI_Command {
 			}
 		}
 	}
-
 }
+
+WP_CLI::add_command( 'user', 'User_Command' );
 
