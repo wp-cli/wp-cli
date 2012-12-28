@@ -1,0 +1,10 @@
+## OPTIONS
+
+* `--title`=<site-title>:
+
+	The title of the new network.
+
+* `--base`=<url-path>:
+
+	Base path after the domain name that each site url will start with.
+Default: '/'

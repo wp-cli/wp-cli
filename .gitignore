@@ -1,3 +1,6 @@
 .svn
-.build
-dist
+/.build
+/src
+/dist
+/vendor
+/composer.lock

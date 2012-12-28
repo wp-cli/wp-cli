@@ -7,7 +7,7 @@
 \fBwp\-transient\fR \- Manage WordPress transients\.
 .
 .SH "SYNOPSIS"
-wp transient get \fIkey\fR
+wp transient get \fIkey\fR [\-\-json]
 .
 .P
 wp transient set \fIkey\fR \fIvalue\fR [\fIexpiration\fR]
@@ -45,4 +45,7 @@ Delete a transient value\.
 See wether the transients API is using an object cache or the options table\.
 .
 .SH "EXAMPLES"
+
+.
+.P
 wp transient set my_key my_value 300
