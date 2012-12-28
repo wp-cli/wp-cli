@@ -298,9 +298,6 @@ class User_Command extends WP_CLI_Command {
 
 		$filename = $args[0];
 
-		if ( !is_readable( $filename ) )
-			\WP_CLI::error( sprintf( 'Could not open file: %s', $filename ) );
-
 		foreach ( new \WP_CLI\CSVIterator( $filename ) as $i => $new_user ) {
 			$defaults = array(
 				'role' => get_option('default_role'),
