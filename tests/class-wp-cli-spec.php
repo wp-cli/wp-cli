@@ -43,7 +43,9 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 
 			case 'wp install': {
 				$installer = new Wordpress_Installer( $world['temp_dir'] );
-				$installer->full_install( self::$db_settings );
+				$installer->download_wordpress_files();
+				$installer->create_config( self::$db_settings );
+				$installer->run_install();
 			}
 			break;
 
