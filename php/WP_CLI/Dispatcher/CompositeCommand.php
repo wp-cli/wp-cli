@@ -25,7 +25,7 @@ class CompositeCommand extends AbstractCommandContainer implements Documentable 
 			if ( !self::_is_good_method( $method ) )
 				continue;
 
-			$subcommand = new MethodSubcommand( $class, $method, $this );
+			$subcommand = new MethodSubcommand( $this, $class, $method );
 
 			$subcommands[ $subcommand->get_name() ] = $subcommand;
 		}
