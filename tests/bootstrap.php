@@ -1,5 +1,7 @@
 <?php
 
+require_once getcwd() . '/php/utils.php';
+
 require_once __DIR__ . '/class-wp-cli-spec.php';
 
 function run_wp_cli( $command, $cwd ) {
@@ -23,19 +25,18 @@ class Wordpress_Installer {
 	}
 
 	public function create_config( $db_settings ) {
-		$dbname = $db_settings["dbname"];
-		$dbuser = $db_settings["dbuser"];
-		$dbpass = $db_settings["dbpass"];
-
-		$cmd = "core config --dbname=$dbname --dbuser=$dbuser --dbpass=$dbpass";
+		$cmd = 'core config' . \WP_CLI\Utils\compose_assoc_args( $db_settings );
 
 		run_wp_cli( $cmd, $this->install_dir );
 	}
 
 	public function run_install() {
-		$cmd =
-			"core install --url=http://example.com/ --title=WordPress " .
-			" --admin_email=admin@example.com --admin_password=password1";
+		$cmd = 'core install' . \WP_CLI\Utils\compose_assoc_args( array(
+			'url' => 'http://example.com',
+			'title' => 'WP CLI Tests',
+			'admin_email' => 'admin@example.com',
+			'admin_password' => 'password1'
+		) );
 
 		$install_result = run_wp_cli( $cmd, $this->install_dir );
 
@@ -50,6 +51,7 @@ class Wordpress_Installer {
 			mkdir( $cache_dir );
 			run_wp_cli( "core download", $cache_dir );
 		}
+
 		exec( "cp -r '$cache_dir/'* '$this->install_dir/'" );
 	}
 
