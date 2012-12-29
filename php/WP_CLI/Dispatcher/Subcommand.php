@@ -4,11 +4,13 @@ namespace WP_CLI\Dispatcher;
 
 class Subcommand implements Command, AtomicCommand, Documentable {
 
-	function __construct( $name, $callable, $docparser, $parent ) {
-		$this->name = $name;
-		$this->callable = $callable;
-		$this->docparser = $docparser;
+	function __construct( CommandContainer $parent, $name, $callable, $docparser ) {
 		$this->parent = $parent;
+		$this->name = $name;
+
+		$this->callable = $callable;
+
+		$this->docparser = $docparser;
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {

@@ -2,6 +2,8 @@
 
 WP_CLI::add_command( 'help', new Help_Command );
 
+use \WP_CLI\Dispatcher\CommandContainer;
+
 /**
  * Implement help command
  *
@@ -18,10 +20,16 @@ class Help_Command extends WP_CLI_Command {
 	function __invoke( $args ) {
 		self::maybe_load_man_page( $args );
 
-		$command = \WP_CLI\Dispatcher\traverse( $args );
+		$arg_copy = $args;
+
+		$command = \WP_CLI::$root;
+
+		while ( !empty( $args ) && $command && $command instanceof CommandContainer ) {
+			$command = $command->find_subcommand( $args );
+		}
 
 		if ( !$command ) {
-			\WP_CLI::error( sprintf( "'%s' is not a registered wp command.", $args[0] ) );
+			\WP_CLI::error( sprintf( "'%s' is not a registered wp command.", $arg_copy[0] ) );
 		}
 
 		$command->show_usage();

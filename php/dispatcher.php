@@ -2,21 +2,6 @@
 
 namespace WP_CLI\Dispatcher;
 
-function traverse( &$args, $method = 'find_subcommand' ) {
-	$args_copy = $args;
-
-	$command = \WP_CLI::$root;
-
-	while ( !empty( $args ) && $command && $command instanceof CommandContainer ) {
-		$command = $command->$method( $args );
-	}
-
-	if ( !$command )
-		$args = $args_copy;
-
-	return $command;
-}
-
 function get_subcommands( $command ) {
 	if ( $command instanceof CommandContainer )
 		return $command->get_subcommands();
@@ -64,5 +49,20 @@ interface Documentable {
 
 	function get_shortdesc();
 	function get_full_synopsis();
+}
+
+
+class CallableMethod {
+
+	function __construct( $class, $method ) {
+		$this->class = $class;
+		$this->method = $method;
+	}
+
+	function __invoke( $args, $assoc_args ) {
+		$instance = new $this->class;
+
+		call_user_func( array( $instance, $this->method ), $args, $assoc_args );
+	}
 }
 
