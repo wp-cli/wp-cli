@@ -29,7 +29,7 @@ class WP_CLI_Command_Runner {
 	}
 
 	public function create_config( $db_settings ) {
-		$this->run( 'core config' . \WP_CLI\Utils\compose_assoc_args( $db_settings ) );
+		return $this->run( 'core config' . \WP_CLI\Utils\compose_assoc_args( $db_settings ) );
 	}
 
 	public function run_install() {
@@ -40,9 +40,7 @@ class WP_CLI_Command_Runner {
 			'admin_password' => 'password1'
 		) );
 
-		$install_result = $this->run( $cmd );
-
-		$this->assert_process_exited_successfully( $install_result );
+		return $this->run( $cmd );
 	}
 
 	public function download_wordpress_files() {
@@ -55,12 +53,5 @@ class WP_CLI_Command_Runner {
 		}
 
 		exec( "cp -r '$cache_dir/'* '$this->install_dir/'" );
-	}
-
-	private function assert_process_exited_successfully( $result ) {
-		if ( $result->return_code !== 0 ) {
-			$message = "return code was $result->return_code, output was: $result->output";
-			throw new Exception( $message );
-		}
 	}
 }
