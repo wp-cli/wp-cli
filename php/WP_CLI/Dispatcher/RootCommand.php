@@ -68,17 +68,7 @@ EOB
 		return $this->load_command( $command );
 	}
 
-	function add_command( $name, $implementation ) {
-		if ( is_string( $implementation ) ) {
-			$command = new CompositeCommand( $name, $implementation );
-		} else {
-			$method = new \ReflectionMethod( $implementation, '__invoke' );
-
-			$docparser = new \WP_CLI\DocParser( $method );
-
-			$command = new Subcommand( $name, $implementation, $docparser, $this );
-		}
-
+	function add_command( $name, Command $command ) {
 		$this->subcommands[ $name ] = $command;
 	}
 
