@@ -58,8 +58,7 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 	public function runWhen( &$world, $action, $arguments ) {
 		$cmd = str_replace( 'invoking ', '', $action );
 
-		$runner = new Command_Runner( $world['temp_dir'] );
-		$world['result'] = $runner->run_wp_cli( $cmd );
+		$world['result'] = run_wp_cli( $cmd, $world['temp_dir'] );
 	}
 
 	public function runThen( &$world, $action, $arguments ) {
