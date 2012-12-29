@@ -8,6 +8,7 @@ class CoreCommandSpec extends PHPUnit_Extensions_Story_TestCase {
 	public function emptyDir() {
 		$this
 			->given( 'empty dir' )
+
 			->when( 'invoking core is-installed' )
 			->then( 'return code should be', 1 );
 	}
@@ -19,6 +20,26 @@ class CoreCommandSpec extends PHPUnit_Extensions_Story_TestCase {
 		$this
 			->given( 'empty dir' )
 			->and( 'wp files' )
+
+			->when( 'invoking core is-installed' )
+			->then( 'return code should be', 1 )
+
+			->when( 'invoking core install' )
+			->then( 'output should be',
+				"Error: wp-config.php not found.\n" .
+				"Either create one manually or use `wp core config`.\n"
+			);
+	}
+
+	/**
+	 * @scenario
+	 */
+	public function dbTablesNotInstalled() {
+		$this
+			->given( 'empty dir' )
+			->and( 'wp files' )
+			->and( 'wp config' )
+
 			->when( 'invoking core is-installed' )
 			->then( 'return code should be', 1 );
 	}
@@ -26,13 +47,16 @@ class CoreCommandSpec extends PHPUnit_Extensions_Story_TestCase {
 	/**
 	 * @scenario
 	 */
-	public function notInstalled() {
+	public function fullInstall() {
 		$this
 			->given( 'empty dir' )
-			->and( 'wp files' )
-			->and( 'wp config' )
+			->and( 'wp install' )
+
 			->when( 'invoking core is-installed' )
-			->then( 'return code should be', 1 );
+			->then( 'return code should be', 0 )
+
+			->when( 'invoking post list --ids' )
+			->then( 'output should be', 1 );
 	}
 
 	protected static $db_settings = array(
@@ -74,6 +98,12 @@ class CoreCommandSpec extends PHPUnit_Extensions_Story_TestCase {
 			}
 			break;
 
+			case 'wp install': {
+				$installer = new Wordpress_Installer( $world['temp_dir'] );
+				$installer->full_install( self::$db_settings );
+			}
+			break;
+
 			default: {
 				return $this->notImplemented( $action );
 			}
@@ -91,6 +121,11 @@ class CoreCommandSpec extends PHPUnit_Extensions_Story_TestCase {
 		switch ( $action ) {
 			case 'return code should be': {
 				$this->assertEquals( $arguments[0], $world['result']->return_code );
+			}
+			break;
+
+			case 'output should be': {
+				$this->assertEquals( $arguments[0], $world['result']->output );
 			}
 			break;
 
