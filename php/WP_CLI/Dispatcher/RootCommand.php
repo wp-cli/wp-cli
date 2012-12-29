@@ -69,9 +69,9 @@ EOB
 	}
 
 	function add_command( $name, $implementation ) {
-		if ( is_string( $implementation ) )
+		if ( is_string( $implementation ) ) {
 			$command = new CompositeCommand( $name, $implementation );
-		else {
+		} else {
 			$method = new \ReflectionMethod( $implementation, '__invoke' );
 
 			$docparser = new \WP_CLI\DocParser( $method );
@@ -92,7 +92,7 @@ EOB
 
 	protected function load_all_commands() {
 		foreach ( glob( WP_CLI_ROOT . "/commands/*.php" ) as $filename ) {
-			$command = substr( basename( $filename ), 0, -4 );
+			$command = str_replace( '.php', '', $filename );
 
 			if ( isset( $this->subcommands[ $command ] ) )
 				continue;
@@ -101,7 +101,7 @@ EOB
 		}
 	}
 
-	function load_command( $command ) {
+	protected function load_command( $command ) {
 		if ( !isset( $this->subcommands[$command] ) ) {
 			$path = WP_CLI_ROOT . "/commands/$command.php";
 
