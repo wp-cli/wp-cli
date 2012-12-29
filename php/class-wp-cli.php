@@ -25,6 +25,9 @@ class WP_CLI {
 	 * @param string|object $implementation The command implementation
 	 */
 	static function add_command( $name, $implementation ) {
+		if ( in_array( $name, self::$config['disabled_commands'] ) )
+			return;
+
 		if ( is_string( $implementation ) ) {
 			$command = self::create_composite_command( $name, $implementation );
 		} else {
@@ -47,10 +50,23 @@ class WP_CLI {
 
 			$subcommand = new Dispatcher\MethodSubcommand( $container, $class, $method );
 
-			$container->add_subcommand( $subcommand->get_name(), $subcommand );
+			$subcommand_name = $subcommand->get_name();
+			$full_name = self::get_full_name( $subcommand );
+
+			if ( in_array( $full_name, self::$config['disabled_commands'] ) )
+				continue;
+
+			$container->add_subcommand( $subcommand_name, $subcommand );
 		}
 
 		return $container;
+	}
+
+	private static function get_full_name( Dispatcher\Command $command ) {
+		$path = Dispatcher\get_path( $command );
+		array_shift( $path );
+
+		return implode( ' ', $path );
 	}
 
 	private static function _is_good_method( $method ) {
@@ -293,6 +309,9 @@ class WP_CLI {
 			'path', 'url', 'user', 'disabled_commands'
 		) );
 
+		if ( !isset( self::$config['disabled_commands'] ) )
+			self::$config['disabled_commands'] = array();
+
 		self::parse_args();
 
 		define( 'WP_CLI_QUIET', isset( self::$config['quiet'] ) );
@@ -407,25 +426,11 @@ class WP_CLI {
 	private static function run_command() {
 		$command = Dispatcher\traverse( self::$arguments, 'pre_invoke' );
 
-		self::check_disabled_commands( $command );
-
 		if ( $command instanceof Dispatcher\CommandContainer ) {
 			$command->show_usage();
 		} else {
 			$command->invoke( self::$arguments, self::$assoc_args );
 		}
-	}
-
-	private static function check_disabled_commands( Dispatcher\Command $command ) {
-		if ( !isset( self::$config['disabled_commands'] ) )
-			return;
-
-		$path = Dispatcher\get_path( $command );
-		array_shift( $path );
-		$cmd_str = implode( ' ', $path );
-
-		if ( in_array( $cmd_str, self::$config['disabled_commands'] ) )
-			WP_CLI::error( "The '$cmd_str' command is disabled." );
 	}
 
 	private static function show_info() {
