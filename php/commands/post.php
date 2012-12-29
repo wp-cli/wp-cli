@@ -188,12 +188,12 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 	private function maybe_make_child() {
 		// 50% chance of making child post
-		return ( mt_rand(1,2) == 1 ) ? true: false;
+		return ( mt_rand(1, 2) == 1 );
 	}
 
 	private function maybe_reset_depth() {
 		// 10% chance of reseting to root depth
-		return ( mt_rand(1,10) == 7 ) ? true : false;
+		return ( mt_rand(1, 10) == 7 );
 	}
 }
 
