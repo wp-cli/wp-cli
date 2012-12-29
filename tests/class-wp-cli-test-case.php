@@ -27,12 +27,9 @@ abstract class Wp_Cli_Test_Case extends PHPUnit_Framework_TestCase {
 
 	public function full_wp_install() {
 		$temp_dir = $this->create_temporary_directory();
-		$runner = new Command_Runner( $temp_dir );
-		$installer = new Wordpress_Installer( $temp_dir, $runner );
-		$installer->download_wordpress_files( $temp_dir );
-		$installer->create_config( $this->db_settings );
-		$installer->run_install();
-		return $runner;
+		$installer = new Wordpress_Installer( $temp_dir );
+		$installer->full_install( $this->db_settings );
+		return new Command_Runner( $temp_dir );
 	}
 
 	public function create_temporary_directory() {
@@ -78,6 +75,12 @@ class Wordpress_Installer {
 			$runner->run_wp_cli( "core download" );
 		}
 		exec( "cp -r '$cache_dir/'* '$this->install_dir/'" );
+	}
+
+	public function full_install( $db_settings ) {
+		$this->download_wordpress_files();
+		$this->create_config( $db_settings );
+		$this->run_install();
 	}
 
 	private function assert_process_exited_successfully( $result ) {
