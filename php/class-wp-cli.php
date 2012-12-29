@@ -25,17 +25,60 @@ class WP_CLI {
 	 * @param string|object $implementation The command implementation
 	 */
 	static function add_command( $name, $implementation ) {
+		if ( in_array( $name, self::$config['disabled_commands'] ) )
+			return;
+
 		if ( is_string( $implementation ) ) {
-			$command = new Dispatcher\CompositeCommand( $name, $implementation );
+			$command = self::create_composite_command( $name, $implementation );
 		} else {
-			$method = new \ReflectionMethod( $implementation, '__invoke' );
-
-			$docparser = new \WP_CLI\DocParser( $method );
-
-			$command = new Dispatcher\Subcommand( $name, $implementation, $docparser, self::$root );
+			$command = self::create_atomic_command( $name, $implementation );
 		}
 
 		self::$root->add_subcommand( $name, $command );
+	}
+
+	private static function create_composite_command( $name, $class ) {
+		$reflection = new \ReflectionClass( $class );
+
+		$docparser = new \WP_CLI\DocParser( $reflection );
+
+		$container = new Dispatcher\CompositeCommand( $name, $docparser->get_shortdesc() );
+
+		foreach ( $reflection->getMethods() as $method ) {
+			if ( !self::_is_good_method( $method ) )
+				continue;
+
+			$subcommand = new Dispatcher\MethodSubcommand( $container, $class, $method );
+
+			$subcommand_name = $subcommand->get_name();
+			$full_name = self::get_full_name( $subcommand );
+
+			if ( in_array( $full_name, self::$config['disabled_commands'] ) )
+				continue;
+
+			$container->add_subcommand( $subcommand_name, $subcommand );
+		}
+
+		return $container;
+	}
+
+	private static function get_full_name( Dispatcher\Command $command ) {
+		$path = Dispatcher\get_path( $command );
+		array_shift( $path );
+
+		return implode( ' ', $path );
+	}
+
+	private static function _is_good_method( $method ) {
+		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
+	}
+
+	private static function create_atomic_command( $name, $implementation ) {
+		$method = new \ReflectionMethod( $implementation, '__invoke' );
+
+		$docparser = new \WP_CLI\DocParser( $method );
+
+		return new Dispatcher\Subcommand( self::$root, $name, $implementation, $docparser );
 	}
 
 	static function add_man_dir( $dest_dir, $src_dir ) {
@@ -263,8 +306,11 @@ class WP_CLI {
 		);
 
 		self::$config = Utils\load_config( array(
-			'path', 'url', 'user'
+			'path', 'url', 'user', 'disabled_commands'
 		) );
+
+		if ( !isset( self::$config['disabled_commands'] ) )
+			self::$config['disabled_commands'] = array();
 
 		self::parse_args();
 
@@ -378,12 +424,23 @@ class WP_CLI {
 	}
 
 	private static function run_command() {
-		$command = Dispatcher\traverse( self::$arguments, 'pre_invoke' );
+		$command = \WP_CLI::$root;
 
-		if ( $command instanceof Dispatcher\CommandContainer )
+		$args = self::$arguments;
+
+		while ( !empty( $args ) && $command instanceof Dispatcher\CommandContainer ) {
+			$subcommand = $command->pre_invoke( $args );
+			if ( !$subcommand )
+				break;
+
+			$command = $subcommand;
+		}
+
+		if ( $command instanceof Dispatcher\CommandContainer ) {
 			$command->show_usage();
-		else
-			$command->invoke( self::$arguments, self::$assoc_args );
+		} else {
+			$command->invoke( $args, self::$assoc_args );
+		}
 	}
 
 	private static function show_info() {
@@ -397,9 +454,17 @@ class WP_CLI {
 	}
 
 	private static function generate_man( $args ) {
-		$command = Dispatcher\traverse( $args );
+		$arg_copy = $args;
+
+		$command = \WP_CLI::$root;
+
+		while ( !empty( $args ) && $command && $command instanceof Dispatcher\CommandContainer ) {
+			$command = $command->find_subcommand( $args );
+		}
+
 		if ( !$command )
-			WP_CLI::error( sprintf( "'%s' command not found." ) );
+			WP_CLI::error( sprintf( "'%s' command not found.",
+				implode( ' ', $arg_copy ) ) );
 
 		foreach ( self::$man_dirs as $dest_dir => $src_dir ) {
 			\WP_CLI\Man\generate( $src_dir, $dest_dir, $command );
