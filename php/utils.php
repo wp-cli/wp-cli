@@ -89,6 +89,26 @@ function parse_args( $arguments ) {
 	return array( $regular_args, $assoc_args );
 }
 
+/**
+ * Composes positional and associative arguments into a string.
+ *
+ * @param array Positional args
+ * @param array Associative args
+ * @return string
+ */
+function compose_args( $args, $assoc_args = array() ) {
+	$str = ' ' . implode( ' ', array_map( 'escapeshellarg', $args ) );
+
+	foreach ( $assoc_args as $key => $value ) {
+		if ( true === $value )
+			$str .= " --$key";
+		else
+			$str .= " --$key=" . escapeshellarg( $value );
+	}
+
+	return $str;
+}
+
 function set_url( $assoc_args ) {
 	if ( isset( $assoc_args['url'] ) ) {
 		$blog = $assoc_args['url'];
