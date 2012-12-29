@@ -25,7 +25,17 @@ class WP_CLI {
 	 * @param string|object $implementation The command implementation
 	 */
 	static function add_command( $name, $implementation ) {
-		self::$root->add_command( $name, $implementation );
+		if ( is_string( $implementation ) ) {
+			$command = new Dispatcher\CompositeCommand( $name, $implementation );
+		} else {
+			$method = new \ReflectionMethod( $implementation, '__invoke' );
+
+			$docparser = new \WP_CLI\DocParser( $method );
+
+			$command = new Dispatcher\Subcommand( $name, $implementation, $docparser, self::$root );
+		}
+
+		self::$root->add_command( $name, $command );
 	}
 
 	static function add_man_dir( $dest_dir, $src_dir ) {
