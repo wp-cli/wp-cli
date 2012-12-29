@@ -35,7 +35,26 @@ class WP_CLI {
 	}
 
 	private static function create_composite_command( $name, $class ) {
-		return new Dispatcher\CompositeCommand( $name, $class );
+		$reflection = new \ReflectionClass( $class );
+
+		$docparser = new \WP_CLI\DocParser( $reflection );
+
+		$container = new Dispatcher\CompositeCommand( $name, $docparser->get_shortdesc() );
+
+		foreach ( $reflection->getMethods() as $method ) {
+			if ( !self::_is_good_method( $method ) )
+				continue;
+
+			$subcommand = new Dispatcher\MethodSubcommand( $container, $class, $method );
+
+			$container->add_subcommand( $subcommand->get_name(), $subcommand );
+		}
+
+		return $container;
+	}
+
+	private static function _is_good_method( $method ) {
+		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
 	}
 
 	private static function create_atomic_command( $name, $implementation ) {
