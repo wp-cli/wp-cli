@@ -17,20 +17,13 @@ class Command_Runner {
 	}
 
 	private function run_command( $command ) {
-		$output_dummy = array();
-		$output_file = tempnam( sys_get_temp_dir(), "wp-cli-test" );
-		$output_binary_file = tempnam( sys_get_temp_dir(), "wp-cli-test" );
-		$return_code = 0;
 		$cwd = $this->cwd;
-		$sh_command = "cd $cwd;" .
-			"$command > $output_binary_file 2>&1;" .
-			'RETURN_CODE=$?;' .
-			"cat -v $output_binary_file > $output_file;" .
-			'exit $RETURN_CODE';
-		exec( "sh -c '$sh_command'", $output_dummy, $return_code );
-		$output = file_get_contents( $output_file );
-		unlink( $output_file );
-		unlink( $output_binary_file );
+		$sh_command = "cd $cwd; $command 2>&1;";
+
+		ob_start();
+		system( $sh_command, $return_code );
+		$output = ob_get_clean();
+
 		return new Execution_Result( $return_code, $output );
 	}
 }
