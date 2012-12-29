@@ -68,12 +68,6 @@ class Wordpress_Installer {
 		exec( "cp -r '$cache_dir/'* '$this->install_dir/'" );
 	}
 
-	public function full_install( $db_settings ) {
-		$this->download_wordpress_files();
-		$this->create_config( $db_settings );
-		$this->run_install();
-	}
-
 	private function assert_process_exited_successfully( $result ) {
 		if ( $result->return_code !== 0 ) {
 			$message = "return code was $result->return_code, output was: $result->output";
