@@ -2,9 +2,7 @@
 
 class CoreCommandSpec extends WP_CLI_Spec {
 
-	/**
-	 * @scenario
-	 */
+	/** @scenario */
 	public function emptyDir() {
 		$this
 			->given( 'empty dir' )
@@ -13,9 +11,7 @@ class CoreCommandSpec extends WP_CLI_Spec {
 			->then( 'return code should be', 1 );
 	}
 
-	/**
-	 * @scenario
-	 */
+	/** @scenario */
 	public function noWpConfig() {
 		$this
 			->given( 'empty dir' )
@@ -31,9 +27,7 @@ class CoreCommandSpec extends WP_CLI_Spec {
 			);
 	}
 
-	/**
-	 * @scenario
-	 */
+	/** @scenario */
 	public function dbTablesNotInstalled() {
 		$this
 			->given( 'empty dir' )
@@ -44,9 +38,7 @@ class CoreCommandSpec extends WP_CLI_Spec {
 			->then( 'return code should be', 1 );
 	}
 
-	/**
-	 * @scenario
-	 */
+	/** @scenario */
 	public function fullInstall() {
 		$this
 			->given( 'empty dir' )
