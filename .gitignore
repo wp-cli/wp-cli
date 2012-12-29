@@ -3,3 +3,4 @@
 /dist
 /vendor
 /composer.lock
+/phpunit.xml
