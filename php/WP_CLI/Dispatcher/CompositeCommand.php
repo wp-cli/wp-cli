@@ -2,11 +2,9 @@
 
 namespace WP_CLI\Dispatcher;
 
-class CompositeCommand implements Command, CommandContainer, Documentable {
+class CompositeCommand extends AbstractCommandContainer implements Documentable {
 
 	protected $name;
-
-	protected $subcommands;
 
 	protected $shortdesc;
 
@@ -91,10 +89,6 @@ class CompositeCommand implements Command, CommandContainer, Documentable {
 		}
 
 		return $aliases;
-	}
-
-	public function get_subcommands() {
-		return $this->subcommands;
 	}
 
 	public function get_shortdesc() {

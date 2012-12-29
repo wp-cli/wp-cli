@@ -2,9 +2,7 @@
 
 namespace WP_CLI\Dispatcher;
 
-class RootCommand implements Command, CommandContainer {
-
-	protected $subcommands = array();
+class RootCommand extends AbstractCommandContainer {
 
 	function get_name() {
 		return 'wp';
@@ -68,16 +66,10 @@ EOB
 		return $this->load_command( $command );
 	}
 
-	function add_command( $name, Command $command ) {
-		$this->subcommands[ $name ] = $command;
-	}
-
 	function get_subcommands() {
 		$this->load_all_commands();
 
-		ksort( $this->subcommands );
-
-		return $this->subcommands;
+		return parent::get_subcommands();
 	}
 
 	protected function load_all_commands() {
