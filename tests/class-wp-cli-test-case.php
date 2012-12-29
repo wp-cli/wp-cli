@@ -43,12 +43,13 @@ abstract class Wp_Cli_Test_Case extends PHPUnit_Framework_TestCase {
 }
 
 class Wordpress_Installer {
+
 	private $install_dir;
 	private $runner;
 
-	public function __construct( $install_dir, $runner ) {
+	public function __construct( $install_dir ) {
 		$this->install_dir = $install_dir;
-		$this->runner = $runner;
+		$this->runner = new Command_Runner( $install_dir );
 	}
 
 	public function create_config( $db_settings ) {
