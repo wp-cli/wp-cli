@@ -32,10 +32,6 @@ class Subcommand implements Command, Documentable {
 		call_user_func( $this->callable, $args, $assoc_args );
 	}
 
-	function get_subcommands() {
-		return array();
-	}
-
 	function get_name() {
 		return $this->name;
 	}

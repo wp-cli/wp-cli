@@ -17,23 +17,30 @@ function traverse( &$args, $method = 'find_subcommand' ) {
 	return $command;
 }
 
+function get_subcommands( $command ) {
+	if ( $command instanceof CommandContainer )
+		return $command->get_subcommands();
+
+	return array();
+}
+
 
 interface Command {
 
 	function get_path();
-	function get_subcommands();
-
 	function show_usage();
+
 	function invoke( $args, $assoc_args );
 }
 
 
 interface CommandContainer {
 
+	function get_subcommands();
+
 	function show_usage();
 
 	function find_subcommand( &$args );
-
 	function pre_invoke( &$args );
 }
 

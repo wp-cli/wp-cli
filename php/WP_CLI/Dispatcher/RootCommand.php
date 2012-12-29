@@ -16,7 +16,7 @@ class RootCommand implements CommandContainer {
 		foreach ( $this->get_subcommands() as $command ) {
 			\WP_CLI::line( sprintf( "    wp %s %s",
 				implode( ' ', $command->get_path() ),
-				implode( '|', array_keys( $command->get_subcommands() ) )
+				implode( '|', array_keys( get_subcommands( $command ) ) )
 			) );
 		}
 

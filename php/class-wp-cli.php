@@ -398,7 +398,7 @@ class WP_CLI {
 
 	private static function render_automcomplete() {
 		foreach ( self::$root->get_subcommands() as $name => $command ) {
-			$subcommands = $command->get_subcommands();
+			$subcommands = Dispatcher\get_subcommands( $command );
 
 			self::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
 		}
