@@ -1,7 +1,5 @@
 <?php
 $output = "<?php
-
-function {$machine_name}_init() {
   \$labels = array( 
     'name'                        =>  __( '{$label_plural_ucfirst}', '{$textdomain}' ),
     'singular_name'               =>  __( '{$label_ucfirst}', '{$textdomain}' ),
@@ -20,8 +18,8 @@ function {$machine_name}_init() {
     'menu_name'                   =>  __( '{$label_plural_ucfirst}', '{$textdomain}' ),
   );
 
-  \$args = array( 
-    'labels'                  => \$labels,
+  \$args = array(
+  	'labels'                  => \$labels,
     'public'                  => {$public},
     'show_in_nav_menus'       => {$show_in_nav_menus},
     'show_ui'                 => {$show_ui},
@@ -42,7 +40,4 @@ function {$machine_name}_init() {
     ),
   );
     
-  register_taxonomy( '{$taxonomy}', array( '{$post_types}' ), \$args );
-
-}
-add_action( 'init', '{$machine_name}_init' );";
+  register_taxonomy( '{$taxonomy}', array( '{$post_types}' ), \$args );";
