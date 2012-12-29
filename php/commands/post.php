@@ -178,8 +178,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				'post_date' => $post_date,
 			);
 
-			// Not using wp_insert_post() because it's slow
-			$wpdb->insert( $wpdb->posts, $args );
+			wp_insert_post( $args, true );
 
 			$notify->tick();
 		}
