@@ -35,6 +35,25 @@ class CoreCommandSpec extends PHPUnit_Extensions_Story_TestCase {
 			->then( 'return code should be', 1 );
 	}
 
+	protected static $db_settings = array(
+		'dbname' => 'wp_cli_test',
+		'dbuser' => 'wp_cli_test',
+		'dbpass' => 'password1'
+	);
+
+	private static function run_sql( $sql ) {
+		$dbuser = self::$db_settings['dbuser'];
+		$dbpass = self::$db_settings['dbpass'];
+
+		exec( "mysql -u$dbuser -p$dbpass -e '$sql'" );
+	}
+
+	protected function setUp() {
+		$dbname = self::$db_settings['dbname'];
+		$this->run_sql( "DROP DATABASE $dbname" );
+		$this->run_sql( "CREATE DATABASE $dbname" );
+	}
+
 	public function runGiven( &$world, $action, $arguments ) {
 		switch ( $action ) {
 			case 'empty dir': {
@@ -51,11 +70,7 @@ class CoreCommandSpec extends PHPUnit_Extensions_Story_TestCase {
 
 			case 'wp config': {
 				$installer = new Wordpress_Installer( $world['temp_dir'] );
-				$installer->create_config( array(
-					'dbname' => 'wp_cli_test',
-					'dbuser' => 'wp_cli_test',
-					'dbpass' => 'password1'
-				) );
+				$installer->create_config( self::$db_settings );
 			}
 			break;
 
