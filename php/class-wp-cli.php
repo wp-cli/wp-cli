@@ -263,7 +263,7 @@ class WP_CLI {
 		);
 
 		self::$config = Utils\load_config( array(
-			'path', 'url', 'user'
+			'path', 'url', 'user', 'disabled_commands'
 		) );
 
 		self::parse_args();
@@ -380,10 +380,25 @@ class WP_CLI {
 	private static function run_command() {
 		$command = Dispatcher\traverse( self::$arguments, 'pre_invoke' );
 
-		if ( $command instanceof Dispatcher\CommandContainer )
+		self::check_disabled_commands( $command );
+
+		if ( $command instanceof Dispatcher\CommandContainer ) {
 			$command->show_usage();
-		else
+		} else {
 			$command->invoke( self::$arguments, self::$assoc_args );
+		}
+	}
+
+	private static function check_disabled_commands( Dispatcher\Command $command ) {
+		if ( !isset( self::$config['disabled_commands'] ) )
+			return;
+
+		$path = Dispatcher\get_path( $command );
+		array_shift( $path );
+		$cmd_str = implode( ' ', $path );
+
+		if ( in_array( $cmd_str, self::$config['disabled_commands'] ) )
+			WP_CLI::error( "The '$cmd_str' command is disabled." );
 	}
 
 	private static function show_info() {
