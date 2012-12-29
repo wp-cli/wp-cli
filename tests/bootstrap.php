@@ -4,30 +4,32 @@ require_once getcwd() . '/php/utils.php';
 
 require_once __DIR__ . '/class-wp-cli-spec.php';
 
-function run_wp_cli( $command, $cwd ) {
-	$wp_cli_path = getcwd() . "/bin/wp";
-
-	$sh_command = "cd $cwd; $wp_cli_path $command 2>&1;";
-
-	ob_start();
-	system( $sh_command, $return_code );
-	$output = ob_get_clean();
-
-	return (object) compact( 'return_code', 'output' );
-}
-
-class Wordpress_Installer {
+class WP_CLI_Command_Runner {
 
 	private $install_dir;
 
-	public function __construct( $install_dir ) {
-		$this->install_dir = $install_dir;
+	public function __construct() {
+		$this->install_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-", TRUE );
+		mkdir( $this->install_dir );
+	}
+
+	public function run( $command, $cwd = false ) {
+		if ( !$cwd )
+			$cwd = $this->install_dir;
+
+		$wp_cli_path = getcwd() . "/bin/wp";
+
+		$sh_command = "cd $cwd; $wp_cli_path $command 2>&1;";
+
+		ob_start();
+		system( $sh_command, $return_code );
+		$output = ob_get_clean();
+
+		return (object) compact( 'return_code', 'output' );
 	}
 
 	public function create_config( $db_settings ) {
-		$cmd = 'core config' . \WP_CLI\Utils\compose_assoc_args( $db_settings );
-
-		run_wp_cli( $cmd, $this->install_dir );
+		$this->run( 'core config' . \WP_CLI\Utils\compose_assoc_args( $db_settings ) );
 	}
 
 	public function run_install() {
@@ -38,7 +40,7 @@ class Wordpress_Installer {
 			'admin_password' => 'password1'
 		) );
 
-		$install_result = run_wp_cli( $cmd, $this->install_dir );
+		$install_result = $this->run( $cmd );
 
 		$this->assert_process_exited_successfully( $install_result );
 	}
@@ -49,7 +51,7 @@ class Wordpress_Installer {
 		$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
 		if ( !file_exists( $cache_dir ) ) {
 			mkdir( $cache_dir );
-			run_wp_cli( "core download", $cache_dir );
+			$this->run( "core download", $cache_dir );
 		}
 
 		exec( "cp -r '$cache_dir/'* '$this->install_dir/'" );
