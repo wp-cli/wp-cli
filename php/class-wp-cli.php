@@ -26,16 +26,24 @@ class WP_CLI {
 	 */
 	static function add_command( $name, $implementation ) {
 		if ( is_string( $implementation ) ) {
-			$command = new Dispatcher\CompositeCommand( $name, $implementation );
+			$command = self::create_composite_command( $name, $implementation );
 		} else {
-			$method = new \ReflectionMethod( $implementation, '__invoke' );
-
-			$docparser = new \WP_CLI\DocParser( $method );
-
-			$command = new Dispatcher\Subcommand( $name, $implementation, $docparser, self::$root );
+			$command = self::create_atomic_command( $name, $implementation );
 		}
 
 		self::$root->add_subcommand( $name, $command );
+	}
+
+	private static function create_composite_command( $name, $class ) {
+		return new Dispatcher\CompositeCommand( $name, $class );
+	}
+
+	private static function create_atomic_command( $name, $implementation ) {
+		$method = new \ReflectionMethod( $implementation, '__invoke' );
+
+		$docparser = new \WP_CLI\DocParser( $method );
+
+		return new Dispatcher\Subcommand( self::$root, $name, $implementation, $docparser );
 	}
 
 	static function add_man_dir( $dest_dir, $src_dir ) {

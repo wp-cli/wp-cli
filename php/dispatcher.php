@@ -66,3 +66,18 @@ interface Documentable {
 	function get_full_synopsis();
 }
 
+
+class CallableMethod {
+
+	function __construct( $class, $method ) {
+		$this->class = $class;
+		$this->method = $method;
+	}
+
+	function __invoke( $args, $assoc_args ) {
+		$instance = new $this->class;
+
+		call_user_func( array( $instance, $this->method ), $args, $assoc_args );
+	}
+}
+
