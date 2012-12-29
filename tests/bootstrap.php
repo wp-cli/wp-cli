@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/class-wp-cli-spec.php';
+
 class Command_Runner {
 	private $cwd;
 
