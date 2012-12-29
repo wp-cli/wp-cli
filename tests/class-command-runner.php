@@ -24,14 +24,7 @@ class Command_Runner {
 		system( $sh_command, $return_code );
 		$output = ob_get_clean();
 
-		return new Execution_Result( $return_code, $output );
+		return (object) compact( 'return_code', 'output' );
 	}
 }
 
-class Execution_Result {
-
-	public function __construct( $return_code, $output ) {
-		$this->return_code = $return_code;
-		$this->output = $output;
-	}
-}
