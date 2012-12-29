@@ -38,12 +38,12 @@ Running the following as root in MySQL should do the trick:
 
     GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"localhost"
     IDENTIFIED BY "password1";
-    
+
 Finally, to run the tests:
 
-    vendor/bin/phpunit tests
+    vendor/bin/phpunit -c tests/phpunit.xml
 
 Most tests install WordPress from scratch. Since this is pretty slow, you can
 use arguments to `phpunit` to only run the test that you're interested in:
 
-    vendor/bin/phpunit --filter test_function_you_want_to_run tests
+    vendor/bin/phpunit -c tests/phpunit.xml --filter test_function_you_want_to_run tests

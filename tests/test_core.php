@@ -1,5 +1,8 @@
 <?php
 
+require_once __DIR__ . '/class-command-runner.php';
+require_once __DIR__ . '/class-wp-cli-test-case.php';
+
 class CoreTest extends Wp_Cli_Test_Case {
 
 	public function test_is_installed_exits_with_1_if_empty_dir() {
