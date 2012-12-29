@@ -52,6 +52,7 @@ interface AtomicCommand {
 
 interface CommandContainer {
 
+	function add_subcommand( $name, Command $command );
 	function get_subcommands();
 
 	function find_subcommand( &$args );

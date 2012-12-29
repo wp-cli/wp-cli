@@ -35,7 +35,7 @@ class WP_CLI {
 			$command = new Dispatcher\Subcommand( $name, $implementation, $docparser, self::$root );
 		}
 
-		self::$root->add_command( $name, $command );
+		self::$root->add_subcommand( $name, $command );
 	}
 
 	static function add_man_dir( $dest_dir, $src_dir ) {
