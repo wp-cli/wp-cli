@@ -24,7 +24,10 @@ class CoreCommandSpec extends WP_CLI_Spec {
 			->then( 'output should be',
 				"Error: wp-config.php not found.\n" .
 				"Either create one manually or use `wp core config`.\n"
-			);
+			)
+
+			->when( 'invoking core config' )
+			->then( 'return code should be', 0 );
 	}
 
 	/** @scenario */
@@ -35,7 +38,13 @@ class CoreCommandSpec extends WP_CLI_Spec {
 			->and( 'wp config' )
 
 			->when( 'invoking core is-installed' )
-			->then( 'return code should be', 1 );
+			->then( 'return code should be', 1 )
+
+			->when( 'invoking core install' )
+			->then( 'return code should be', 0 )
+
+			->when( 'invoking post list --ids' )
+			->then( 'output should be', 1 );
 	}
 
 	/** @scenario */
@@ -45,10 +54,7 @@ class CoreCommandSpec extends WP_CLI_Spec {
 			->and( 'wp install' )
 
 			->when( 'invoking core is-installed' )
-			->then( 'return code should be', 0 )
-
-			->when( 'invoking post list --ids' )
-			->then( 'output should be', 1 );
+			->then( 'return code should be', 0 );
 	}
 }
 

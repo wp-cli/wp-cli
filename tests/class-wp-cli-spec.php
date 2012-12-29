@@ -52,9 +52,23 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 	}
 
 	public function runWhen( &$world, $action, $arguments ) {
-		$cmd = str_replace( 'invoking ', '', $action );
+		switch ( $action ) {
+			case 'invoking core install': {
+				$world['result'] = $world['runner']->run_install();
+			}
+			break;
 
-		$world['result'] = $world['runner']->run( $cmd );
+			case 'invoking core config': {
+				$world['result'] = $world['runner']->create_config( self::$db_settings );
+			}
+			break;
+
+			default: {
+				$cmd = str_replace( 'invoking ', '', $action );
+
+				$world['result'] = $world['runner']->run( $cmd );
+			}
+		}
 	}
 
 	public function runThen( &$world, $action, $arguments ) {
