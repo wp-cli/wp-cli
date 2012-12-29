@@ -424,12 +424,22 @@ class WP_CLI {
 	}
 
 	private static function run_command() {
-		$command = Dispatcher\traverse( self::$arguments, 'pre_invoke' );
+		$command = \WP_CLI::$root;
+
+		$args = self::$arguments;
+
+		while ( !empty( $args ) && $command instanceof Dispatcher\CommandContainer ) {
+			$subcommand = $command->pre_invoke( $args );
+			if ( !$subcommand )
+				break;
+
+			$command = $subcommand;
+		}
 
 		if ( $command instanceof Dispatcher\CommandContainer ) {
 			$command->show_usage();
 		} else {
-			$command->invoke( self::$arguments, self::$assoc_args );
+			$command->invoke( $args, self::$assoc_args );
 		}
 	}
 
@@ -444,9 +454,17 @@ class WP_CLI {
 	}
 
 	private static function generate_man( $args ) {
-		$command = Dispatcher\traverse( $args );
+		$arg_copy = $args;
+
+		$command = \WP_CLI::$root;
+
+		while ( !empty( $args ) && $command && $command instanceof Dispatcher\CommandContainer ) {
+			$command = $command->find_subcommand( $args );
+		}
+
 		if ( !$command )
-			WP_CLI::error( sprintf( "'%s' command not found." ) );
+			WP_CLI::error( sprintf( "'%s' command not found.",
+				implode( ' ', $arg_copy ) ) );
 
 		foreach ( self::$man_dirs as $dest_dir => $src_dir ) {
 			\WP_CLI\Man\generate( $src_dir, $dest_dir, $command );
