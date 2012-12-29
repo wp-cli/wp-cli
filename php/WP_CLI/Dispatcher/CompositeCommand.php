@@ -5,32 +5,11 @@ namespace WP_CLI\Dispatcher;
 class CompositeCommand extends AbstractCommandContainer implements Documentable {
 
 	protected $name;
-
 	protected $shortdesc;
 
-	public function __construct( $name, $class ) {
+	public function __construct( $name, $shortdesc ) {
 		$this->name = $name;
-
-		$reflection = new \ReflectionClass( $class );
-
-		$this->subcommands = $this->collect_subcommands( $reflection, $class );
-
-		$this->docparser = new \WP_CLI\DocParser( $reflection );
-	}
-
-	private function collect_subcommands( $reflection, $class ) {
-		$subcommands = array();
-
-		foreach ( $reflection->getMethods() as $method ) {
-			if ( !self::_is_good_method( $method ) )
-				continue;
-
-			$subcommand = new MethodSubcommand( $this, $class, $method );
-
-			$subcommands[ $subcommand->get_name() ] = $subcommand;
-		}
-
-		return $subcommands;
+		$this->shortdesc = $shortdesc;
 	}
 
 	function get_name() {
@@ -92,7 +71,7 @@ class CompositeCommand extends AbstractCommandContainer implements Documentable 
 	}
 
 	public function get_shortdesc() {
-		return $this->docparser->get_shortdesc();
+		return $this->shortdesc;
 	}
 
 	public function get_full_synopsis() {
@@ -103,10 +82,6 @@ class CompositeCommand extends AbstractCommandContainer implements Documentable 
 		}
 
 		return implode( "\n\n", $str );
-	}
-
-	private static function _is_good_method( $method ) {
-		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
 	}
 }
 
