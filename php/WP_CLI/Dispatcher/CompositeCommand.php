@@ -2,7 +2,7 @@
 
 namespace WP_CLI\Dispatcher;
 
-class CompositeCommand implements CommandContainer, Documentable {
+class CompositeCommand implements Command, CommandContainer, Documentable {
 
 	protected $name;
 
@@ -35,8 +35,12 @@ class CompositeCommand implements CommandContainer, Documentable {
 		return $subcommands;
 	}
 
-	function get_path() {
-		return array( $this->name );
+	function get_name() {
+		return $this->name;
+	}
+
+	function get_parent() {
+		return \WP_CLI::$root;
 	}
 
 	function show_usage() {

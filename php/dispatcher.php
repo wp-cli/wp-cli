@@ -24,11 +24,27 @@ function get_subcommands( $command ) {
 	return array();
 }
 
+function get_path( Command $command ) {
+	$path = array();
+
+	do {
+		array_unshift( $path, $command->get_name() );
+	} while ( $command = $command->get_parent() );
+
+	return $path;
+}
+
 
 interface Command {
 
-	function get_path();
+	function get_name();
+	function get_parent();
+
 	function show_usage();
+}
+
+
+interface AtomicCommand {
 
 	function invoke( $args, $assoc_args );
 }
@@ -37,8 +53,6 @@ interface Command {
 interface CommandContainer {
 
 	function get_subcommands();
-
-	function show_usage();
 
 	function find_subcommand( &$args );
 	function pre_invoke( &$args );

@@ -2,20 +2,24 @@
 
 namespace WP_CLI\Dispatcher;
 
-class RootCommand implements CommandContainer {
+class RootCommand implements Command, CommandContainer {
 
 	protected $subcommands = array();
 
-	function get_path() {
-		return array();
+	function get_name() {
+		return 'wp';
+	}
+
+	function get_parent() {
+		return false;
 	}
 
 	function show_usage() {
 		\WP_CLI::line( 'Available commands:' );
 
 		foreach ( $this->get_subcommands() as $command ) {
-			\WP_CLI::line( sprintf( "    wp %s %s",
-				implode( ' ', $command->get_path() ),
+			\WP_CLI::line( sprintf( "    %s %s",
+				implode( ' ', get_path( $command ) ),
 				implode( '|', array_keys( get_subcommands( $command ) ) )
 			) );
 		}

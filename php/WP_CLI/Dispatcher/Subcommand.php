@@ -2,7 +2,7 @@
 
 namespace WP_CLI\Dispatcher;
 
-class Subcommand implements Command, Documentable {
+class Subcommand implements Command, AtomicCommand, Documentable {
 
 	function __construct( $name, $callable, $docparser, $parent ) {
 		$this->name = $name;
@@ -20,10 +20,10 @@ class Subcommand implements Command, Documentable {
 	}
 
 	function get_full_synopsis() {
-		$full_name = implode( ' ', $this->get_path() );
+		$full_name = implode( ' ', get_path( $this ) );
 		$synopsis = $this->docparser->get_synopsis();
 
-		return "wp $full_name $synopsis";
+		return "$full_name $synopsis";
 	}
 
 	function invoke( $args, $assoc_args ) {
@@ -36,8 +36,8 @@ class Subcommand implements Command, Documentable {
 		return $this->name;
 	}
 
-	function get_path() {
-		return array_merge( $this->parent->get_path(), array( $this->get_name() ) );
+	function get_parent() {
+		return $this->parent;
 	}
 
 	protected function check_args( $args, $assoc_args ) {
