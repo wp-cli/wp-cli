@@ -2,7 +2,7 @@
 
 namespace WP_CLI\Dispatcher;
 
-class CompositeCommand implements Command, Composite, Documentable {
+class CompositeCommand implements CommandContainer, Documentable {
 
 	protected $name;
 
@@ -54,20 +54,8 @@ class CompositeCommand implements Command, Composite, Documentable {
 		\WP_CLI::line( "See 'wp help $this->name <subcommand>' for more information on a specific subcommand." );
 	}
 
-	function invoke( $args, $assoc_args ) {
-		$subcommand = $this->pre_invoke( $args );
-		$subcommand->invoke( $args, $assoc_args );
-	}
-
 	function pre_invoke( &$args ) {
-		$subcommand = $this->find_subcommand( $args );
-
-		if ( !$subcommand ) {
-			$this->show_usage();
-			exit;
-		}
-
-		return $subcommand;
+		return $this->find_subcommand( $args );
 	}
 
 	function find_subcommand( &$args ) {

@@ -7,7 +7,7 @@ function traverse( &$args, $method = 'find_subcommand' ) {
 
 	$command = \WP_CLI::$root;
 
-	while ( !empty( $args ) && $command && $command instanceof Composite ) {
+	while ( !empty( $args ) && $command && $command instanceof CommandContainer ) {
 		$command = $command->$method( $args );
 	}
 
@@ -28,10 +28,13 @@ interface Command {
 }
 
 
-interface Composite {
+interface CommandContainer {
+
+	function show_usage();
+
+	function find_subcommand( &$args );
 
 	function pre_invoke( &$args );
-	function find_subcommand( &$args );
 }
 
 

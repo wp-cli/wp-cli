@@ -18,7 +18,7 @@ function generate( $src_dir, $dest_dir, $command ) {
 
 	call_ronn( get_markdown( $src_path, $command ), $dest_path );
 
-	if ( $command instanceof Dispatcher\Composite ) {
+	if ( $command instanceof Dispatcher\CommandContainer ) {
 		foreach ( $command->get_subcommands() as $subcommand ) {
 			generate( $src_dir, $dest_dir, $subcommand );
 		}
@@ -70,7 +70,7 @@ $synopsis
 DOC
 	);
 
-	if ( $command instanceof Dispatcher\Composite ) {
+	if ( $command instanceof Dispatcher\CommandContainer ) {
 
 		fwrite( $fd, <<<DOC
 ## SUBCOMMANDS
