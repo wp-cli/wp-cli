@@ -349,7 +349,7 @@ class WP_CLI {
 		// Handle --syn-list parameter
 		if ( isset( self::$config['syn-list'] ) ) {
 			foreach ( self::$root->get_subcommands() as $command ) {
-				if ( $command instanceof Dispatcher\Composite ) {
+				if ( $command instanceof Dispatcher\CommandContainer ) {
 					foreach ( $command->get_subcommands() as $subcommand )
 						$subcommand->show_usage( '' );
 				} else {
@@ -369,7 +369,11 @@ class WP_CLI {
 
 	private static function run_command() {
 		$command = Dispatcher\traverse( self::$arguments, 'pre_invoke' );
-		$command->invoke( self::$arguments, self::$assoc_args );
+
+		if ( $command instanceof Dispatcher\CommandContainer )
+			$command->show_usage();
+		else
+			$command->invoke( self::$arguments, self::$assoc_args );
 	}
 
 	private static function show_info() {

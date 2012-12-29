@@ -2,7 +2,7 @@
 
 namespace WP_CLI\Dispatcher;
 
-class RootCommand implements Command, Composite {
+class RootCommand implements CommandContainer {
 
 	protected $subcommands = array();
 
@@ -35,18 +35,14 @@ EOB
 		);
 	}
 
-	function invoke( $args, $assoc_args ) {
-		$subcommand = $this->pre_invoke( $args );
-		$subcommand->invoke( $args, $assoc_args );
-	}
-
 	function pre_invoke( &$args ) {
-		if ( empty( $args ) || array( 'help' ) == $args ) {
+		if ( array( 'help' ) == $args ) {
 			$this->show_usage();
 			exit;
 		}
 
 		$cmd_name = $args[0];
+
 		$command = $this->find_subcommand( $args );
 
 		if ( !$command )
