@@ -24,28 +24,24 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 	public function runGiven( &$world, $action, $arguments ) {
 		switch ( $action ) {
 			case 'empty dir': {
-				$world['temp_dir'] = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-", TRUE );
-				mkdir( $world['temp_dir'] );
+				$world['runner'] = new WP_CLI_Command_Runner;
 			}
 			break;
 
 			case 'wp files': {
-				$installer = new Wordpress_Installer( $world['temp_dir'] );
-				$installer->download_wordpress_files();
+				$world['runner']->download_wordpress_files();
 			}
 			break;
 
 			case 'wp config': {
-				$installer = new Wordpress_Installer( $world['temp_dir'] );
-				$installer->create_config( self::$db_settings );
+				$world['runner']->create_config( self::$db_settings );
 			}
 			break;
 
 			case 'wp install': {
-				$installer = new Wordpress_Installer( $world['temp_dir'] );
-				$installer->download_wordpress_files();
-				$installer->create_config( self::$db_settings );
-				$installer->run_install();
+				$world['runner']->download_wordpress_files();
+				$world['runner']->create_config( self::$db_settings );
+				$world['runner']->run_install();
 			}
 			break;
 
@@ -58,7 +54,7 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 	public function runWhen( &$world, $action, $arguments ) {
 		$cmd = str_replace( 'invoking ', '', $action );
 
-		$world['result'] = run_wp_cli( $cmd, $world['temp_dir'] );
+		$world['result'] = $world['runner']->run( $cmd );
 	}
 
 	public function runThen( &$world, $action, $arguments ) {
