@@ -1,5 +1,7 @@
 <?php
 
-require __DIR__ . '/class-command-runner.php';
-require __DIR__ . '/class-wp-cli-test-case.php';
+require_once getcwd() . '/php/utils.php';
+
+require_once __DIR__ . '/abstract-spec.php';
+require_once __DIR__ . '/command-runner.php';
 
