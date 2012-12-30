@@ -356,7 +356,7 @@ class WP_CLI {
 			}
 		}
 
-		// Pretend we're in WP_ADMIN, to side-step full-page caching plugins
+		// Pretend we're in WP_ADMIN
 		define( 'WP_ADMIN', true );
 		$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
 	}
