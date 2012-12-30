@@ -340,7 +340,7 @@ class WP_CLI {
 		}
 
 		if ( self::cmd_starts_with( array( 'db' ) ) ) {
-			Utils\load_wp_config();
+			eval( Utils\get_wp_config_code() );
 			self::run_command();
 			exit;
 		}
@@ -356,7 +356,7 @@ class WP_CLI {
 			}
 		}
 
-		// Pretend we're in WP_ADMIN, to side-step full-page caching plugins
+		// Pretend we're in WP_ADMIN
 		define( 'WP_ADMIN', true );
 		$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
 	}
@@ -366,8 +366,6 @@ class WP_CLI {
 	}
 
 	static function after_wp_load() {
-		require WP_CLI_ROOT . 'utils-wp.php';
-
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
 		Utils\set_user( self::$config );
