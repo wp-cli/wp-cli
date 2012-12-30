@@ -366,8 +366,6 @@ class WP_CLI {
 	}
 
 	static function after_wp_load() {
-		require WP_CLI_ROOT . 'utils-wp.php';
-
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
 		Utils\set_user( self::$config );
