@@ -340,7 +340,7 @@ class WP_CLI {
 		}
 
 		if ( self::cmd_starts_with( array( 'db' ) ) ) {
-			Utils\load_wp_config();
+			eval( Utils\get_wp_config_code() );
 			self::run_command();
 			exit;
 		}
