@@ -12,6 +12,13 @@ function wp_not_installed() {
 	}
 }
 
+function maybe_require( $since, $path ) {
+	global $wp_version;
+
+	if ( version_compare( $wp_version, $since, '>=' ) )
+		require $path;
+}
+
 // Handle --user parameter
 function set_user( $assoc_args ) {
 	if ( !isset( $assoc_args['user'] ) )
