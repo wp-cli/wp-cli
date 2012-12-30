@@ -12,7 +12,8 @@
 		"wp-cli/php-cli-tools": "dev-master"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "3.7.x"
+		"phpunit/phpunit": "3.7.x",
+		"phpunit/phpunit-story": "1.0.x"
 	},
 	"autoload": {
 		"psr-0": { "WP_CLI": "php" }
