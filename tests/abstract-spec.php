@@ -83,6 +83,11 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 			}
 			break;
 
+			case 'should have output': {
+				$this->assertNotEmpty( $world['result']->output );
+			}
+			break;
+
 			default: {
 				return $this->notImplemented( $action );
 			}

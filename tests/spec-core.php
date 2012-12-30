@@ -40,6 +40,9 @@ class CoreCommandSpec extends WP_CLI_Spec {
 			->when( 'invoking core is-installed' )
 			->then( 'return code should be', 1 )
 
+			->when( 'invoking help' )
+			->then( 'should have output' )
+
 			->when( 'invoking core install' )
 			->then( 'return code should be', 0 )
 
