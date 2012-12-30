@@ -202,18 +202,28 @@ function locate_wp_config() {
  * @return string
  */
 function get_wp_config_code() {
-	$wp_config_code = file_get_contents( locate_wp_config() );
+	$wp_config_path = locate_wp_config();
+
+	$replacements = array(
+		'__FILE__' => "'$wp_config_path'",
+		'__DIR__'  => "'" . dirname( $wp_config_path ) . "'"
+	);
+
+	$old = array_keys( $replacements );
+	$new = array_values( $replacements );
+
+	$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
 
 	$lines_to_run = array();
 
-	foreach ( explode( "\n", $wp_config_code ) as $line ) {
+	foreach ( $wp_config_code as $line ) {
 		if ( 0 === strpos( $line, '<?php' ) )
 			continue;
 
 		if ( preg_match( '/^require.+wp-settings\.php/', $line ) )
 			continue;
 
-		$lines_to_run[] = $line;
+		$lines_to_run[] = str_replace( $old, $new, $line );
 	}
 
 	return implode( "\n", $lines_to_run );
