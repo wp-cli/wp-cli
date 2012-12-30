@@ -3,6 +3,8 @@
  * A modified version of wp-settings.php, tailored for CLI use.
  */
 
+use \WP_CLI\Utils;
+
 /**
  * Stores the location of the WordPress directory of functions, classes, and core content.
  *
@@ -85,7 +87,7 @@ require WP_CLI_ROOT . 'utils-wp.php';
 require_once( ABSPATH . WPINC . '/l10n.php' );
 
 // Run the installer if WordPress is not installed.
-\WP_CLI\Utils\wp_not_installed();
+Utils\wp_not_installed();
 
 // Load most of WordPress.
 require( ABSPATH . WPINC . '/class-wp-walker.php' );
@@ -120,7 +122,7 @@ require( ABSPATH . WPINC . '/taxonomy.php' );
 require( ABSPATH . WPINC . '/update.php' );
 require( ABSPATH . WPINC . '/canonical.php' );
 require( ABSPATH . WPINC . '/shortcodes.php' );
-\WP_CLI\Utils\maybe_require( ABSPATH . WPINC . '/class-wp-embed.php' );
+Utils\maybe_require( ABSPATH . WPINC . '/class-wp-embed.php' );
 require( ABSPATH . WPINC . '/media.php' );
 require( ABSPATH . WPINC . '/http.php' );
 require( ABSPATH . WPINC . '/class-http.php' );
