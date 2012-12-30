@@ -196,14 +196,27 @@ function locate_wp_config() {
 	return false;
 }
 
-// Loads wp-config.php without loading the rest of WP
-function load_wp_config() {
-	define( 'ABSPATH', dirname(__FILE__) . '/' );
+/**
+ * Returns wp-config.php code, skipping the loading of wp-settings.php
+ *
+ * @return string
+ */
+function get_wp_config_code() {
+	$wp_config_code = file_get_contents( locate_wp_config() );
 
-	if ( $wp_config_path = locate_wp_config() )
-		require locate_wp_config();
-	else
-		\WP_CLI::error( 'No wp-config.php file.' );
+	$lines_to_run = array();
+
+	foreach ( explode( "\n", $wp_config_code ) as $line ) {
+		if ( 0 === strpos( $line, '<?php' ) )
+			continue;
+
+		if ( preg_match( '/^require.+wp-settings\.php/', $line ) )
+			continue;
+
+		$lines_to_run[] = $line;
+	}
+
+	return implode( "\n", $lines_to_run );
 }
 
 /**
