@@ -120,7 +120,7 @@ require( ABSPATH . WPINC . '/taxonomy.php' );
 require( ABSPATH . WPINC . '/update.php' );
 require( ABSPATH . WPINC . '/canonical.php' );
 require( ABSPATH . WPINC . '/shortcodes.php' );
-require( ABSPATH . WPINC . '/class-wp-embed.php' );
+\WP_CLI\Utils\maybe_require( ABSPATH . WPINC . '/class-wp-embed.php' );
 require( ABSPATH . WPINC . '/media.php' );
 require( ABSPATH . WPINC . '/http.php' );
 require( ABSPATH . WPINC . '/class-http.php' );

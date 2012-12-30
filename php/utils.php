@@ -219,6 +219,11 @@ function get_wp_config_code() {
 	return implode( "\n", $lines_to_run );
 }
 
+function maybe_require( $path ) {
+	if ( file_exists( $path ) )
+		require $path;
+}
+
 /**
  * Take a serialised array and unserialise it replacing elements as needed and
  * unserialising any subordinate arrays and performing the replace on those too.
