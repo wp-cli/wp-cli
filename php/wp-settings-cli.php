@@ -78,11 +78,14 @@ register_shutdown_function( 'shutdown_action_hook' );
 if ( SHORTINIT )
 	return false;
 
+// Load WP-CLI utilities
+require WP_CLI_ROOT . 'utils-wp.php';
+
 // Load the L10n library.
 require_once( ABSPATH . WPINC . '/l10n.php' );
 
 // Run the installer if WordPress is not installed.
-wp_not_installed();
+\WP_CLI\Utils\wp_not_installed();
 
 // Load most of WordPress.
 require( ABSPATH . WPINC . '/class-wp-walker.php' );
