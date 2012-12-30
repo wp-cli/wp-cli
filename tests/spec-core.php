@@ -59,5 +59,19 @@ class CoreCommandSpec extends WP_CLI_Spec {
 			->when( 'invoking', 'core is-installed' )
 			->then( 'return code should be', 0 );
 	}
+
+	/** @scenario */
+	public function customWpContentDir() {
+		$this
+			->given( 'empty dir' )
+			->and( 'wp install' )
+			->and( 'custom wp-content dir' )
+
+			->when( 'invoking', 'theme status twentytwelve' )
+			->then( 'return code should be', 0 )
+
+			->when( 'invoking', 'plugin status hello' )
+			->then( 'return code should be', 0 );
+	}
 }
 

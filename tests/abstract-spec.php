@@ -45,6 +45,11 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 			}
 			break;
 
+			case 'custom wp-content dir': {
+				$world['runner']->define_custom_wp_content_dir();
+			}
+			break;
+
 			default: {
 				return $this->notImplemented( $action );
 			}

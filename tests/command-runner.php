@@ -28,6 +28,37 @@ class WP_CLI_Command_Runner {
 		return $this->run( 'core config' . \WP_CLI\Utils\compose_assoc_args( $db_settings ) );
 	}
 
+	public function define_custom_wp_content_dir() {
+		$wp_config_path = $this->install_dir . '/wp-config.php';
+
+		$wp_config_code = file_get_contents( $wp_config_path );
+
+		$this->add_line_to_wp_config( $wp_config_code,
+			"define( 'WP_CONTENT_DIR', dirname(__FILE__) . '/my-content' );" );
+
+		$this->move_files( 'wp-content', 'my-content' );
+
+		$this->add_line_to_wp_config( $wp_config_code,
+			"define( 'WP_PLUGIN_DIR', __DIR__ . '/my-plugins' );" );
+
+		$this->move_files( 'my-content/plugins', 'my-plugins' );
+
+		file_put_contents( $wp_config_path, $wp_config_code );
+	}
+
+	private function move_files( $src, $dest ) {
+		rename(
+			$this->install_dir . '/' . $src,
+			$this->install_dir . '/' . $dest
+		);
+	}
+
+	private function add_line_to_wp_config( &$wp_config_code, $line ) {
+		$token = "/* That's all, stop editing!";
+
+		$wp_config_code = str_replace( $token, "$line\n\n$token", $wp_config_code );
+	}
+
 	public function run_install() {
 		$cmd = 'core install' . \WP_CLI\Utils\compose_assoc_args( array(
 			'url' => 'http://example.com',
