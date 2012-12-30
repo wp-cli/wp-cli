@@ -4,6 +4,21 @@
 
 namespace WP_CLI\Utils;
 
+function wp_not_installed() {
+	if ( !is_blog_installed() && !defined( 'WP_INSTALLING' ) ) {
+		\WP_CLI::error( 'The site you have requested is not installed.', false );
+		\WP_CLI::line( 'Run `wp core install`.' );
+		exit( 1 );
+	}
+}
+
+function maybe_require( $since, $path ) {
+	global $wp_version;
+
+	if ( version_compare( $wp_version, $since, '>=' ) )
+		require $path;
+}
+
 // Handle --user parameter
 function set_user( $assoc_args ) {
 	if ( !isset( $assoc_args['user'] ) )

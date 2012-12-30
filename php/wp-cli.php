@@ -18,7 +18,11 @@ include WP_CLI_ROOT . 'man.php';
 WP_CLI::before_wp_load();
 
 // Load WordPress, in the global scope
-require WP_ROOT . 'wp-load.php';
+define( 'ABSPATH', WP_ROOT );
+
+eval( \WP_CLI\Utils\get_wp_config_code() );
+
+require WP_CLI_ROOT . 'wp-settings-cli.php';
 
 // Fix memory limit. See http://core.trac.wordpress.org/ticket/14889
 @ini_set( 'memory_limit', -1 );
