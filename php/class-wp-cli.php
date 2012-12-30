@@ -223,25 +223,6 @@ class WP_CLI {
 	}
 
 	/**
-	 * Composes positional and associative arguments into a string.
-	 *
-	 * @param array
-	 * @return string
-	 */
-	static function compose_args( $args, $assoc_args = array() ) {
-		$str = ' ' . implode( ' ', array_map( 'escapeshellarg', $args ) );
-
-		foreach ( $assoc_args as $key => $value ) {
-			if ( true === $value )
-				$str .= " --$key";
-			else
-				$str .= " --$key=" . escapeshellarg( $value );
-		}
-
-		return $str;
-	}
-
-	/**
 	 * Launch an external process that takes over I/O.
 	 *
 	 * @param string Command to call

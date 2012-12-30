@@ -89,6 +89,35 @@ function parse_args( $arguments ) {
 	return array( $regular_args, $assoc_args );
 }
 
+/**
+ * Composes positional arguments into a command string.
+ *
+ * @param array
+ * @return string
+ */
+function compose_args( $args ) {
+	return ' ' . implode( ' ', array_map( 'escapeshellarg', $args ) );
+}
+
+/**
+ * Composes associative arguments into a command string.
+ *
+ * @param array
+ * @return string
+ */
+function compose_assoc_args( $assoc_args ) {
+	$str = '';
+
+	foreach ( $assoc_args as $key => $value ) {
+		if ( true === $value )
+			$str .= " --$key";
+		else
+			$str .= " --$key=" . escapeshellarg( $value );
+	}
+
+	return $str;
+}
+
 function set_url( $assoc_args ) {
 	if ( isset( $assoc_args['url'] ) ) {
 		$blog = $assoc_args['url'];
