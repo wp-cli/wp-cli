@@ -74,17 +74,17 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 	public function runThen( &$world, $action, $arguments ) {
 		switch ( $action ) {
 			case 'return code should be': {
-				$this->assertEquals( $arguments[0], $world['result']->return_code );
+				$this->assertEquals( $arguments[0], $world['result']->return_code, $action );
 			}
 			break;
 
 			case 'output should be': {
-				$this->assertEquals( $arguments[0], $world['result']->output );
+				$this->assertEquals( $arguments[0], $world['result']->output, $action );
 			}
 			break;
 
 			case 'should have output': {
-				$this->assertNotEmpty( $world['result']->output );
+				$this->assertNotEmpty( $world['result']->output, $action );
 			}
 			break;
 
