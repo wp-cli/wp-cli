@@ -2,41 +2,22 @@
 
 namespace WP_CLI\Dispatcher;
 
-class CompositeCommand implements Command, Composite, Documentable {
+class CompositeCommand extends AbstractCommandContainer implements Documentable {
 
 	protected $name;
-
-	protected $subcommands;
-
 	protected $shortdesc;
 
-	public function __construct( $name, $class ) {
+	public function __construct( $name, $shortdesc ) {
 		$this->name = $name;
-
-		$reflection = new \ReflectionClass( $class );
-
-		$this->subcommands = $this->collect_subcommands( $reflection, $class );
-
-		$this->docparser = new \WP_CLI\DocParser( $reflection );
+		$this->shortdesc = $shortdesc;
 	}
 
-	private function collect_subcommands( $reflection, $class ) {
-		$subcommands = array();
-
-		foreach ( $reflection->getMethods() as $method ) {
-			if ( !self::_is_good_method( $method ) )
-				continue;
-
-			$subcommand = new MethodSubcommand( $class, $method, $this );
-
-			$subcommands[ $subcommand->get_name() ] = $subcommand;
-		}
-
-		return $subcommands;
+	function get_name() {
+		return $this->name;
 	}
 
-	function get_path() {
-		return array( $this->name );
+	function get_parent() {
+		return \WP_CLI::$root;
 	}
 
 	function show_usage() {
@@ -54,20 +35,8 @@ class CompositeCommand implements Command, Composite, Documentable {
 		\WP_CLI::line( "See 'wp help $this->name <subcommand>' for more information on a specific subcommand." );
 	}
 
-	function invoke( $args, $assoc_args ) {
-		$subcommand = $this->pre_invoke( $args );
-		$subcommand->invoke( $args, $assoc_args );
-	}
-
 	function pre_invoke( &$args ) {
-		$subcommand = $this->find_subcommand( $args );
-
-		if ( !$subcommand ) {
-			$this->show_usage();
-			exit;
-		}
-
-		return $subcommand;
+		return $this->find_subcommand( $args );
 	}
 
 	function find_subcommand( &$args ) {
@@ -101,12 +70,8 @@ class CompositeCommand implements Command, Composite, Documentable {
 		return $aliases;
 	}
 
-	public function get_subcommands() {
-		return $this->subcommands;
-	}
-
 	public function get_shortdesc() {
-		return $this->docparser->get_shortdesc();
+		return $this->shortdesc;
 	}
 
 	public function get_full_synopsis() {
@@ -117,10 +82,6 @@ class CompositeCommand implements Command, Composite, Documentable {
 		}
 
 		return implode( "\n\n", $str );
-	}
-
-	private static function _is_good_method( $method ) {
-		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
 	}
 }
 

@@ -2,21 +2,23 @@
 
 namespace WP_CLI\Dispatcher;
 
-class RootCommand implements Command, Composite {
+class RootCommand extends AbstractCommandContainer {
 
-	protected $subcommands = array();
+	function get_name() {
+		return 'wp';
+	}
 
-	function get_path() {
-		return array();
+	function get_parent() {
+		return false;
 	}
 
 	function show_usage() {
 		\WP_CLI::line( 'Available commands:' );
 
 		foreach ( $this->get_subcommands() as $command ) {
-			\WP_CLI::line( sprintf( "    wp %s %s",
-				implode( ' ', $command->get_path() ),
-				implode( '|', array_keys( $command->get_subcommands() ) )
+			\WP_CLI::line( sprintf( "    %s %s",
+				implode( ' ', get_path( $command ) ),
+				implode( '|', array_keys( get_subcommands( $command ) ) )
 			) );
 		}
 
@@ -35,18 +37,14 @@ EOB
 		);
 	}
 
-	function invoke( $args, $assoc_args ) {
-		$subcommand = $this->pre_invoke( $args );
-		$subcommand->invoke( $args, $assoc_args );
-	}
-
 	function pre_invoke( &$args ) {
-		if ( empty( $args ) || array( 'help' ) == $args ) {
+		if ( array( 'help' ) == $args ) {
 			$this->show_usage();
 			exit;
 		}
 
 		$cmd_name = $args[0];
+
 		$command = $this->find_subcommand( $args );
 
 		if ( !$command )
@@ -68,31 +66,15 @@ EOB
 		return $this->load_command( $command );
 	}
 
-	function add_command( $name, $implementation ) {
-		if ( is_string( $implementation ) )
-			$command = new CompositeCommand( $name, $implementation );
-		else {
-			$method = new \ReflectionMethod( $implementation, '__invoke' );
-
-			$docparser = new \WP_CLI\DocParser( $method );
-
-			$command = new Subcommand( $name, $implementation, $docparser, $this );
-		}
-
-		$this->subcommands[ $name ] = $command;
-	}
-
 	function get_subcommands() {
 		$this->load_all_commands();
 
-		ksort( $this->subcommands );
-
-		return $this->subcommands;
+		return parent::get_subcommands();
 	}
 
 	protected function load_all_commands() {
 		foreach ( glob( WP_CLI_ROOT . "/commands/*.php" ) as $filename ) {
-			$command = substr( basename( $filename ), 0, -4 );
+			$command = str_replace( '.php', '', $filename );
 
 			if ( isset( $this->subcommands[ $command ] ) )
 				continue;
@@ -101,7 +83,7 @@ EOB
 		}
 	}
 
-	function load_command( $command ) {
+	protected function load_command( $command ) {
 		if ( !isset( $this->subcommands[$command] ) ) {
 			$path = WP_CLI_ROOT . "/commands/$command.php";
 

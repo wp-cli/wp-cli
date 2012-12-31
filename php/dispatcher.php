@@ -2,36 +2,46 @@
 
 namespace WP_CLI\Dispatcher;
 
-function traverse( &$args, $method = 'find_subcommand' ) {
-	$args_copy = $args;
+function get_subcommands( $command ) {
+	if ( $command instanceof CommandContainer )
+		return $command->get_subcommands();
 
-	$command = \WP_CLI::$root;
+	return array();
+}
 
-	while ( !empty( $args ) && $command && $command instanceof Composite ) {
-		$command = $command->$method( $args );
-	}
+function get_path( Command $command ) {
+	$path = array();
 
-	if ( !$command )
-		$args = $args_copy;
+	do {
+		array_unshift( $path, $command->get_name() );
+	} while ( $command = $command->get_parent() );
 
-	return $command;
+	return $path;
 }
 
 
 interface Command {
 
-	function get_path();
-	function get_subcommands();
+	function get_name();
+	function get_parent();
 
 	function show_usage();
+}
+
+
+interface AtomicCommand {
+
 	function invoke( $args, $assoc_args );
 }
 
 
-interface Composite {
+interface CommandContainer {
 
-	function pre_invoke( &$args );
+	function add_subcommand( $name, Command $command );
+	function get_subcommands();
+
 	function find_subcommand( &$args );
+	function pre_invoke( &$args );
 }
 
 
@@ -39,5 +49,20 @@ interface Documentable {
 
 	function get_shortdesc();
 	function get_full_synopsis();
+}
+
+
+class CallableMethod {
+
+	function __construct( $class, $method ) {
+		$this->class = $class;
+		$this->method = $method;
+	}
+
+	function __invoke( $args, $assoc_args ) {
+		$instance = new $this->class;
+
+		call_user_func( array( $instance, $this->method ), $args, $assoc_args );
+	}
 }
 

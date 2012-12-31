@@ -13,12 +13,15 @@ function get_src_file_name( $args ) {
 }
 
 function generate( $src_dir, $dest_dir, $command ) {
-	$src_path = $src_dir . get_src_file_name( $command->get_path() );
-	$dest_path = $dest_dir . get_file_name( $command->get_path() );
+	$cmd_path = Dispatcher\get_path( $command );
+	array_shift( $cmd_path ); // discard 'wp'
+
+	$src_path = $src_dir . get_src_file_name( $cmd_path );
+	$dest_path = $dest_dir . get_file_name( $cmd_path );
 
 	call_ronn( get_markdown( $src_path, $command ), $dest_path );
 
-	if ( $command instanceof Dispatcher\Composite ) {
+	if ( $command instanceof Dispatcher\CommandContainer ) {
 		foreach ( $command->get_subcommands() as $subcommand ) {
 			generate( $src_dir, $dest_dir, $subcommand );
 		}
@@ -46,7 +49,8 @@ function get_markdown( $doc_path, $command ) {
 }
 
 function add_initial_markdown( $fd, $command ) {
-	$path = $command->get_path();
+	$path = Dispatcher\get_path( $command );
+
 	$shortdesc = $command->get_shortdesc();
 	$synopsis = $command->get_full_synopsis();
 
@@ -60,7 +64,7 @@ function add_initial_markdown( $fd, $command ) {
 	}
 
 	fwrite( $fd, <<<DOC
-wp-$name_m(1) -- $shortdesc
+$name_m(1) -- $shortdesc
 ====
 
 ## SYNOPSIS
@@ -70,7 +74,7 @@ $synopsis
 DOC
 	);
 
-	if ( $command instanceof Dispatcher\Composite ) {
+	if ( $command instanceof Dispatcher\CommandContainer ) {
 
 		fwrite( $fd, <<<DOC
 ## SUBCOMMANDS

@@ -4,6 +4,8 @@
 
 namespace WP_CLI\Utils;
 
+use \WP_CLI\Dispatcher;
+
 function bootstrap() {
 	$vendor_paths = array(
 		WP_CLI_ROOT . '../../../../vendor',  // part of a larger project
@@ -89,16 +91,73 @@ function parse_args( $arguments ) {
 	return array( $regular_args, $assoc_args );
 }
 
+/**
+ * Composes positional arguments into a command string.
+ *
+ * @param array
+ * @return string
+ */
+function args_to_str( $args ) {
+	return ' ' . implode( ' ', array_map( 'escapeshellarg', $args ) );
+}
+
+/**
+ * Composes associative arguments into a command string.
+ *
+ * @param array
+ * @return string
+ */
+function assoc_args_to_str( $assoc_args ) {
+	$str = '';
+
+	foreach ( $assoc_args as $key => $value ) {
+		if ( true === $value )
+			$str .= " --$key";
+		else
+			$str .= " --$key=" . escapeshellarg( $value );
+	}
+
+	return $str;
+}
+
+/**
+ * Run a given command.
+ *
+ * @param array
+ * @param array
+ */
+function run_command( $args, $assoc_args = array() ) {
+	$command = \WP_CLI::$root;
+
+	while ( !empty( $args ) && $command instanceof Dispatcher\CommandContainer ) {
+		$subcommand = $command->pre_invoke( $args );
+		if ( !$subcommand )
+			break;
+
+		$command = $subcommand;
+	}
+
+	if ( $command instanceof Dispatcher\CommandContainer ) {
+		$command->show_usage();
+	} else {
+		$command->invoke( $args, $assoc_args );
+	}
+}
+
 function set_url( $assoc_args ) {
 	if ( isset( $assoc_args['url'] ) ) {
-		$blog = $assoc_args['url'];
+		$url = $assoc_args['url'];
 	} elseif ( isset( $assoc_args['blog'] ) ) {
-		$blog = $assoc_args['blog'];
-		if ( true === $blog ) {
+		\WP_CLI::warning( 'The --blog parameter is deprecated. Use --url instead.' );
+
+		$url = $assoc_args['blog'];
+		if ( true === $url ) {
 			\WP_CLI::line( 'usage: wp --blog=example.com' );
 		}
 	} elseif ( is_readable( WP_ROOT . 'wp-cli-blog' ) ) {
-		$blog = trim( file_get_contents( WP_ROOT . 'wp-cli-blog' ) );
+		\WP_CLI::warning( 'The wp-cli-blog file is deprecated. Use wp-cli.yml instead.' );
+
+		$url = trim( file_get_contents( WP_ROOT . 'wp-cli-blog' ) );
 	} elseif ( $wp_config_path = locate_wp_config() ) {
 		// Try to find the blog parameter in the wp-config file
 		$wp_config_file = file_get_contents( $wp_config_path );
@@ -113,13 +172,13 @@ function set_url( $assoc_args ) {
 		}
 
 		if ( !empty( $hit ) && isset( $hit['domain'] ) )
-			$blog = $hit['domain'];
+			$url = $hit['domain'];
 		if ( !empty( $hit ) && isset( $hit['path'] ) )
-			$blog .= $hit['path'];
+			$url .= $hit['path'];
 	}
 
-	if ( isset( $blog ) ) {
-		set_url_params( $blog );
+	if ( isset( $url ) ) {
+		set_url_params( $url );
 	}
 }
 
@@ -167,14 +226,37 @@ function locate_wp_config() {
 	return false;
 }
 
-// Loads wp-config.php without loading the rest of WP
-function load_wp_config() {
-	define( 'ABSPATH', dirname(__FILE__) . '/' );
+/**
+ * Returns wp-config.php code, skipping the loading of wp-settings.php
+ *
+ * @return string
+ */
+function get_wp_config_code() {
+	$wp_config_path = locate_wp_config();
 
-	if ( $wp_config_path = locate_wp_config() )
-		require locate_wp_config();
-	else
-		\WP_CLI::error( 'No wp-config.php file.' );
+	$replacements = array(
+		'__FILE__' => "'$wp_config_path'",
+		'__DIR__'  => "'" . dirname( $wp_config_path ) . "'"
+	);
+
+	$old = array_keys( $replacements );
+	$new = array_values( $replacements );
+
+	$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
+
+	$lines_to_run = array();
+
+	foreach ( $wp_config_code as $line ) {
+		if ( 0 === strpos( $line, '<?php' ) )
+			continue;
+
+		if ( preg_match( '/^require.+wp-settings\.php/', $line ) )
+			continue;
+
+		$lines_to_run[] = str_replace( $old, $new, $line );
+	}
+
+	return implode( "\n", $lines_to_run );
 }
 
 /**

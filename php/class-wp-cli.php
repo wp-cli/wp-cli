@@ -25,7 +25,60 @@ class WP_CLI {
 	 * @param string|object $implementation The command implementation
 	 */
 	static function add_command( $name, $implementation ) {
-		self::$root->add_command( $name, $implementation );
+		if ( in_array( $name, self::$config['disabled_commands'] ) )
+			return;
+
+		if ( is_string( $implementation ) ) {
+			$command = self::create_composite_command( $name, $implementation );
+		} else {
+			$command = self::create_atomic_command( $name, $implementation );
+		}
+
+		self::$root->add_subcommand( $name, $command );
+	}
+
+	private static function create_composite_command( $name, $class ) {
+		$reflection = new \ReflectionClass( $class );
+
+		$docparser = new \WP_CLI\DocParser( $reflection );
+
+		$container = new Dispatcher\CompositeCommand( $name, $docparser->get_shortdesc() );
+
+		foreach ( $reflection->getMethods() as $method ) {
+			if ( !self::_is_good_method( $method ) )
+				continue;
+
+			$subcommand = new Dispatcher\MethodSubcommand( $container, $class, $method );
+
+			$subcommand_name = $subcommand->get_name();
+			$full_name = self::get_full_name( $subcommand );
+
+			if ( in_array( $full_name, self::$config['disabled_commands'] ) )
+				continue;
+
+			$container->add_subcommand( $subcommand_name, $subcommand );
+		}
+
+		return $container;
+	}
+
+	private static function get_full_name( Dispatcher\Command $command ) {
+		$path = Dispatcher\get_path( $command );
+		array_shift( $path );
+
+		return implode( ' ', $path );
+	}
+
+	private static function _is_good_method( $method ) {
+		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
+	}
+
+	private static function create_atomic_command( $name, $implementation ) {
+		$method = new \ReflectionMethod( $implementation, '__invoke' );
+
+		$docparser = new \WP_CLI\DocParser( $method );
+
+		return new Dispatcher\Subcommand( self::$root, $name, $implementation, $docparser );
 	}
 
 	static function add_man_dir( $dest_dir, $src_dir ) {
@@ -170,25 +223,6 @@ class WP_CLI {
 	}
 
 	/**
-	 * Composes positional and associative arguments into a string.
-	 *
-	 * @param array
-	 * @return string
-	 */
-	static function compose_args( $args, $assoc_args = array() ) {
-		$str = ' ' . implode( ' ', array_map( 'escapeshellarg', $args ) );
-
-		foreach ( $assoc_args as $key => $value ) {
-			if ( true === $value )
-				$str .= " --$key";
-			else
-				$str .= " --$key=" . escapeshellarg( $value );
-		}
-
-		return $str;
-	}
-
-	/**
 	 * Launch an external process that takes over I/O.
 	 *
 	 * @param string Command to call
@@ -253,8 +287,11 @@ class WP_CLI {
 		);
 
 		self::$config = Utils\load_config( array(
-			'path', 'url', 'user'
+			'path', 'url', 'user', 'disabled_commands'
 		) );
+
+		if ( !isset( self::$config['disabled_commands'] ) )
+			self::$config['disabled_commands'] = array();
 
 		self::parse_args();
 
@@ -303,7 +340,7 @@ class WP_CLI {
 		}
 
 		if ( self::cmd_starts_with( array( 'db' ) ) ) {
-			Utils\load_wp_config();
+			eval( Utils\get_wp_config_code() );
 			self::run_command();
 			exit;
 		}
@@ -319,7 +356,7 @@ class WP_CLI {
 			}
 		}
 
-		// Pretend we're in WP_ADMIN, to side-step full-page caching plugins
+		// Pretend we're in WP_ADMIN
 		define( 'WP_ADMIN', true );
 		$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
 	}
@@ -329,8 +366,6 @@ class WP_CLI {
 	}
 
 	static function after_wp_load() {
-		require WP_CLI_ROOT . 'utils-wp.php';
-
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
 		Utils\set_user( self::$config );
@@ -349,7 +384,7 @@ class WP_CLI {
 		// Handle --syn-list parameter
 		if ( isset( self::$config['syn-list'] ) ) {
 			foreach ( self::$root->get_subcommands() as $command ) {
-				if ( $command instanceof Dispatcher\Composite ) {
+				if ( $command instanceof Dispatcher\CommandContainer ) {
 					foreach ( $command->get_subcommands() as $subcommand )
 						$subcommand->show_usage( '' );
 				} else {
@@ -368,8 +403,7 @@ class WP_CLI {
 	}
 
 	private static function run_command() {
-		$command = Dispatcher\traverse( self::$arguments, 'pre_invoke' );
-		$command->invoke( self::$arguments, self::$assoc_args );
+		Utils\run_command( self::$arguments, self::$assoc_args );
 	}
 
 	private static function show_info() {
@@ -383,9 +417,17 @@ class WP_CLI {
 	}
 
 	private static function generate_man( $args ) {
-		$command = Dispatcher\traverse( $args );
+		$arg_copy = $args;
+
+		$command = \WP_CLI::$root;
+
+		while ( !empty( $args ) && $command && $command instanceof Dispatcher\CommandContainer ) {
+			$command = $command->find_subcommand( $args );
+		}
+
 		if ( !$command )
-			WP_CLI::error( sprintf( "'%s' command not found." ) );
+			WP_CLI::error( sprintf( "'%s' command not found.",
+				implode( ' ', $arg_copy ) ) );
 
 		foreach ( self::$man_dirs as $dest_dir => $src_dir ) {
 			\WP_CLI\Man\generate( $src_dir, $dest_dir, $command );
@@ -394,7 +436,7 @@ class WP_CLI {
 
 	private static function render_automcomplete() {
 		foreach ( self::$root->get_subcommands() as $name => $command ) {
-			$subcommands = $command->get_subcommands();
+			$subcommands = Dispatcher\get_subcommands( $command );
 
 			self::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
 		}

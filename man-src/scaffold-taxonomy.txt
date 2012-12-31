@@ -1,0 +1,19 @@
+## OPTIONS
+
+* `--textdomain=<textdomain>`:
+
+	The textdomain to use for the labels.
+
+* `--theme`:
+
+	Create a file in the current theme directory, instead of sending to
+STDOUT.
+
+* `--plugin=<plugin>`:
+
+	Create a file in the given plugin's directory, instead of sending to
+STDOUT.
+
+* `--raw`:
+
+	Just generate the `register_taxonomy()` call and nothing else.
