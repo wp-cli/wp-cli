@@ -18,11 +18,11 @@ function {{machine_name}}_updated_messages( $messages ) {
 		5 => isset($_GET['revision']) ? sprintf( __('{{label_ucfirst}} restored to revision from %s', '{{textdomain}}'), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
 		6 => sprintf( __('{{label_ucfirst}} published. <a href=\"%s\">View {{label}}</a>', '{{textdomain}}'), esc_url( get_permalink($post_ID) ) ),
 		7 => __('{{label_ucfirst}} saved.', '{{textdomain}}'),
-		8 => sprintf( __('{{label_ucfirst}} submitted. <a target=\"_blank\" href=\"%s\">Preview {{slug}}</a>', '{{textdomain}}'), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
+		8 => sprintf( __('{{label_ucfirst}} submitted. <a target=\"_blank\" href=\"%s\">Preview {{label}}</a>', '{{textdomain}}'), esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
 		9 => sprintf( __('{{label_ucfirst}} scheduled for: <strong>%1$s</strong>. <a target=\"_blank\" href=\"%2$s\">Preview {{label}}</a>', '{{textdomain}}'),
 		// translators: Publish box date format, see http://php.net/date
 		date_i18n( __( 'M j, Y @ G:i' ), strtotime( $post->post_date ) ), esc_url( get_permalink( $post_ID ) ) ),
-		10 => sprintf( __('{{label_ucfirst}} draft updated. <a target=\"_blank\" href=\"%s\">Preview {{slug}}</a>', '{{textdomain}}'), esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_ID ) ) ) ),
+		10 => sprintf( __('{{label_ucfirst}} draft updated. <a target=\"_blank\" href=\"%s\">Preview {{label}}</a>', '{{textdomain}}'), esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_ID ) ) ) ),
 	);
 
 	return $messages;
