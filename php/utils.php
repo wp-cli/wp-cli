@@ -146,14 +146,14 @@ function run_command( $args, $assoc_args = array() ) {
 
 function set_url( $assoc_args ) {
 	if ( isset( $assoc_args['url'] ) ) {
-		$blog = $assoc_args['url'];
+		$url = $assoc_args['url'];
 	} elseif ( isset( $assoc_args['blog'] ) ) {
-		$blog = $assoc_args['blog'];
-		if ( true === $blog ) {
+		$url = $assoc_args['blog'];
+		if ( true === $url ) {
 			\WP_CLI::line( 'usage: wp --blog=example.com' );
 		}
 	} elseif ( is_readable( WP_ROOT . 'wp-cli-blog' ) ) {
-		$blog = trim( file_get_contents( WP_ROOT . 'wp-cli-blog' ) );
+		$url = trim( file_get_contents( WP_ROOT . 'wp-cli-blog' ) );
 	} elseif ( $wp_config_path = locate_wp_config() ) {
 		// Try to find the blog parameter in the wp-config file
 		$wp_config_file = file_get_contents( $wp_config_path );
@@ -168,13 +168,13 @@ function set_url( $assoc_args ) {
 		}
 
 		if ( !empty( $hit ) && isset( $hit['domain'] ) )
-			$blog = $hit['domain'];
+			$url = $hit['domain'];
 		if ( !empty( $hit ) && isset( $hit['path'] ) )
-			$blog .= $hit['path'];
+			$url .= $hit['path'];
 	}
 
-	if ( isset( $blog ) ) {
-		set_url_params( $blog );
+	if ( isset( $url ) ) {
+		set_url_params( $url );
 	}
 }
 
