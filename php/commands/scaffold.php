@@ -22,7 +22,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * @alias cpt
 	 *
-	 * @synopsis <slug> [--description=<description>] [--public=<public>] [--exclude_from_search=<exclude_from_search>] [--show_ui=<show_ui>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_in_menu=<show_in_menu>] [--show_in_admin_bar=<show_in_admin_bar>] [--menu_position=<menu_position>] [--menu_icon=<menu_icon>] [--capability_type=<capability_type>] [--hierarchical=<hierarchical>] [--supports=<supports>] [--has_archive=<has_archive>] [--slug=<slug>] [--feed=<feed>] [--pages=<pages>] [--query_var=<query_var>] [--can_export=<can_export>] [--textdomain=<textdomain>] [--theme] [--plugin_name=<plugin_name>] [--raw]
+	 * @synopsis <slug> [--description=<description>] [--public=<public>] [--exclude_from_search=<exclude_from_search>] [--show_ui=<show_ui>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_in_menu=<show_in_menu>] [--show_in_admin_bar=<show_in_admin_bar>] [--menu_position=<menu_position>] [--menu_icon=<menu_icon>] [--capability_type=<capability_type>] [--hierarchical=<hierarchical>] [--supports=<supports>] [--has_archive=<has_archive>] [--slug=<slug>] [--feed=<feed>] [--pages=<pages>] [--query_var=<query_var>] [--can_export=<can_export>] [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
 	 */
 	function post_type( $args, $assoc_args ) {
 		global $wp_filesystem;
@@ -64,14 +64,14 @@ class Scaffold_Command extends WP_CLI_Command {
 			'can_export'          => 'true',
 			'textdomain'          => '',
 			'theme'               => false,
-			'plugin_name'         => false,
+			'plugin'              => false,
 			'raw'                 => false,
 		);
 
 		// Generate the variables from the defaults and associated arguments if they are set
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
-		$textdomain = $this->get_textdomain( $textdomain, $theme, $plugin_name );
+		$textdomain = $this->get_textdomain( $textdomain, $theme, $plugin );
 
 		if ( ! $raw ) {
 			include 'skeletons/post_type_skeleton.php';
@@ -81,13 +81,13 @@ class Scaffold_Command extends WP_CLI_Command {
 			include 'skeletons/post_type_skeleton.php';
 		}
 
-		if ( $theme || ! empty( $plugin_name ) ) {
-			// Write file to theme or given plugin_name
+		if ( $theme || ! empty( $plugin ) ) {
+			// Write file to theme or given plugin
 			$assoc_args = array(
 				'type' => 'post_type',
 				'output' => $output,
 				'theme' => $theme,
-				'plugin_name' => $plugin_name,
+				'plugin' => $plugin,
 				'machine_name' => $machine_name,
 			);
 			$assoc_args['path'] = $this->get_output_path( $assoc_args );
@@ -105,7 +105,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * @alias tax
 	 *
-	 * @synopsis <slug> [--public=<public>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_ui=<show_ui>] [--show_tagcloud=<show_tagcloud>] [--hierarchical=<hierarchical>]  [--rewrite=<rewrite>] [--query_var=<query_var>] [--slug=<slug>] [--textdomain=<textdomain>] [--post_types=<post_types>] [--theme] [--plugin_name=<plugin_name>] [--raw]
+	 * @synopsis <slug> [--public=<public>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_ui=<show_ui>] [--show_tagcloud=<show_tagcloud>] [--hierarchical=<hierarchical>]  [--rewrite=<rewrite>] [--query_var=<query_var>] [--slug=<slug>] [--textdomain=<textdomain>] [--post_types=<post_types>] [--theme] [--plugin=<plugin>] [--raw]
 	 */
 	function taxonomy( $args, $assoc_args ) {
 		global $wp_filesystem;
@@ -138,14 +138,14 @@ class Scaffold_Command extends WP_CLI_Command {
 			'post_types'          => 'post',
 			'textdomain'          => '',
 			'theme'               => false,
-			'plugin_name'         => false,
+			'plugin'              => false,
 			'raw'                 => false,
 		);
 
 		// Generate the variables from the defaults and associated arguments if they are set
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
-		$textdomain = $this->get_textdomain( $textdomain, $theme, $plugin_name );
+		$textdomain = $this->get_textdomain( $textdomain, $theme, $plugin );
 
 		if ( ! $raw ) {
 			include 'skeletons/taxonomy_skeleton.php';
@@ -155,13 +155,13 @@ class Scaffold_Command extends WP_CLI_Command {
 			include 'skeletons/taxonomy_skeleton.php';
 		}
 
-		if ( $theme || ! empty( $plugin_name ) ) {
-			// Write file to theme or given plugin_name
+		if ( $theme || ! empty( $plugin ) ) {
+			// Write file to theme or given plugin
 			$assoc_args = array(
 				'type' => 'taxonomy',
 				'output' => $output,
 				'theme' => $theme,
-				'plugin_name' => $plugin_name,
+				'plugin' => $plugin,
 				'machine_name' => $machine_name,
 			);
 			$assoc_args['path'] = $this->get_output_path( $assoc_args );
@@ -177,13 +177,13 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		extract( $assoc_args, EXTR_SKIP );
 
-		// Implements the --theme flag || --plugin_name=<plugin_name>
+		// Implements the --theme flag || --plugin=<plugin>
 		if ( $theme ) {
 			//Here we assume you got a theme installed
 			$path = TEMPLATEPATH;
-		} elseif ( ! empty( $plugin_name ) ) {
-			$path = WP_PLUGIN_DIR . '/' . $plugin_name; //Faking recursive mkdir for down the line
-			$wp_filesystem->mkdir( WP_PLUGIN_DIR . '/' . $plugin_name ); //Faking recursive mkdir for down the line
+		} elseif ( ! empty( $plugin ) ) {
+			$path = WP_PLUGIN_DIR . '/' . $plugin; //Faking recursive mkdir for down the line
+			$wp_filesystem->mkdir( WP_PLUGIN_DIR . '/' . $plugin ); //Faking recursive mkdir for down the line
 		} else {
 			// STDOUT
 			return false;
@@ -227,13 +227,13 @@ class Scaffold_Command extends WP_CLI_Command {
 
 	/**
 	 * If you're writing your files to your theme directory your textdomain also needs to be the same as your theme.
-	 * Same goes for when plugin_name is being used.
+	 * Same goes for when plugin is being used.
 	 */
-	private function get_textdomain( $textdomain, $theme, $plugin_name ) {
+	private function get_textdomain( $textdomain, $theme, $plugin ) {
 		if ( empty( $textdomain ) && $theme ) {
 			$textdomain = strtolower( wp_get_theme()->template );
-		} elseif ( empty( $textdomain ) && $plugin_name ) {
-			$textdomain = $plugin_name;
+		} elseif ( empty( $textdomain ) && $plugin ) {
+			$textdomain = $plugin;
 		} elseif ( empty( $textdomain ) || gettype( $textdomain ) == 'boolean' ) { //This mean just a flag
 			$textdomain = 'YOUR-TEXTDOMAIN';
 		}
