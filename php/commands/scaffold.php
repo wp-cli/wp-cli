@@ -74,11 +74,11 @@ class Scaffold_Command extends WP_CLI_Command {
 		$textdomain = $this->get_textdomain( $textdomain, $theme, $plugin );
 
 		if ( ! $raw ) {
-			include 'skeletons/post_type_skeleton.php';
+			include WP_CLI_ROOT . '/templates/post_type.php';
 			$output = str_replace( "<?php", "", $output );
-			include 'skeletons/post_type_skeleton_extended.php';
+			include WP_CLI_ROOT . '/templates/post_type_extended.php';
 		} else {
-			include 'skeletons/post_type_skeleton.php';
+			include WP_CLI_ROOT . '/templates/post_type.php';
 		}
 
 		if ( $theme || ! empty( $plugin ) ) {
@@ -148,11 +148,11 @@ class Scaffold_Command extends WP_CLI_Command {
 		$textdomain = $this->get_textdomain( $textdomain, $theme, $plugin );
 
 		if ( ! $raw ) {
-			include 'skeletons/taxonomy_skeleton.php';
+			include WP_CLI_ROOT . '/templates/taxonomy.php';
 			$output = str_replace( "<?php", "", $output );
-			include 'skeletons/taxonomy_skeleton_extended.php';
+			include WP_CLI_ROOT . '/templates/taxonomy_extended.php';
 		} else {
-			include 'skeletons/taxonomy_skeleton.php';
+			include WP_CLI_ROOT . '/templates/taxonomy.php';
 		}
 
 		if ( $theme || ! empty( $plugin ) ) {
