@@ -4,6 +4,8 @@
 
 namespace WP_CLI\Utils;
 
+use \WP_CLI\Dispatcher;
+
 function bootstrap() {
 	$vendor_paths = array(
 		WP_CLI_ROOT . '../../../../vendor',  // part of a larger project
@@ -116,6 +118,30 @@ function compose_assoc_args( $assoc_args ) {
 	}
 
 	return $str;
+}
+
+/**
+ * Run a given command.
+ *
+ * @param array
+ * @param array
+ */
+function run_command( $args, $assoc_args ) {
+	$command = \WP_CLI::$root;
+
+	while ( !empty( $args ) && $command instanceof Dispatcher\CommandContainer ) {
+		$subcommand = $command->pre_invoke( $args );
+		if ( !$subcommand )
+			break;
+
+		$command = $subcommand;
+	}
+
+	if ( $command instanceof Dispatcher\CommandContainer ) {
+		$command->show_usage();
+	} else {
+		$command->invoke( $args, $assoc_args );
+	}
 }
 
 function set_url( $assoc_args ) {
