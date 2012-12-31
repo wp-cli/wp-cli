@@ -16,6 +16,8 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 *
+	 *
 	 * @subcommand post-type
 	 *
 	 * @alias cpt
@@ -33,7 +35,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$machine_name_plural      = $this->pluralize( $post_type );
 
 		// If no label is given use the slug and prettify it as good as possible
-		if( ! isset( $assoc_args['label'] ) ) {
+		if ( ! isset( $assoc_args['label'] ) ) {
 			$label                  = preg_replace( '/_|-/', ' ', strtolower( $post_type ) );
 			$label_ucfirst          = ucfirst( $label );
 			$label_plural           = $this->pluralize( $label );
@@ -71,9 +73,9 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$textdomain = $this->get_textdomain( $textdomain, $theme, $plugin_name );
 
-		if( ! $raw ) {
+		if ( ! $raw ) {
 			include 'skeletons/post_type_skeleton.php';
-			$output = str_replace( "<?php", "", $output);
+			$output = str_replace( "<?php", "", $output );
 			include 'skeletons/post_type_skeleton_extended.php';
 		} else {
 			include 'skeletons/post_type_skeleton.php';
@@ -97,6 +99,8 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 *
+	 *
 	 * @subcommand taxonomy
 	 *
 	 * @alias tax
@@ -114,7 +118,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$machine_name_plural      = $this->pluralize( $taxonomy );
 
 		// If no label is given use the slug and prettify it as good as possible
-		if( ! isset( $assoc_args['label'] ) ) {
+		if ( ! isset( $assoc_args['label'] ) ) {
 			$label                  = preg_replace( '/_|-/', ' ', strtolower( $taxonomy ) );
 			$label_ucfirst          = ucfirst( $label );
 			$label_plural           = $this->pluralize( $label );
@@ -143,9 +147,9 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$textdomain = $this->get_textdomain( $textdomain, $theme, $plugin_name );
 
-		if( ! $raw ) {
+		if ( ! $raw ) {
 			include 'skeletons/taxonomy_skeleton.php';
-			$output = str_replace( "<?php", "", $output);
+			$output = str_replace( "<?php", "", $output );
 			include 'skeletons/taxonomy_skeleton_extended.php';
 		} else {
 			include 'skeletons/taxonomy_skeleton.php';
@@ -174,10 +178,10 @@ class Scaffold_Command extends WP_CLI_Command {
 		extract( $assoc_args, EXTR_SKIP );
 
 		// Implements the --theme flag || --plugin_name=<plugin_name>
-		if( $theme ) {
+		if ( $theme ) {
 			//Here we assume you got a theme installed
 			$path = TEMPLATEPATH;
-		} elseif ( ! empty( $plugin_name ) ){
+		} elseif ( ! empty( $plugin_name ) ) {
 			$path = WP_PLUGIN_DIR . '/' . $plugin_name; //Faking recursive mkdir for down the line
 			$wp_filesystem->mkdir( WP_PLUGIN_DIR . '/' . $plugin_name ); //Faking recursive mkdir for down the line
 		} else {
@@ -185,17 +189,17 @@ class Scaffold_Command extends WP_CLI_Command {
 			return false;
 		}
 
-		if ( $type === "post_type") {
+		if ( $type === "post_type" ) {
 			$path .= '/post-types/';
 		} elseif ( $type === "taxonomy" ) {
 			$path .= '/taxonomies/';
 		}
 
 		// If it doesn't exists create it
-		if( ! $wp_filesystem->is_dir( $path ) ) {
+		if ( ! $wp_filesystem->is_dir( $path ) ) {
 			$wp_filesystem->mkdir( $path );
 			WP_CLI::success( "Created dir: {$path}" );
-		} elseif( $wp_filesystem->is_dir( $path ) ) {
+		} elseif ( $wp_filesystem->is_dir( $path ) ) {
 			WP_CLI::success( "Dir already exists: {$path}" );
 		} else {
 			WP_CLI::error( "Couldn't create dir exists: {$path}" );
@@ -210,7 +214,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		extract( $assoc_args, EXTR_SKIP );
 
 		// Write to file
-		if( $path ) {
+		if ( $path ) {
 			$filename = $path . $machine_name .'.php';
 
 			if ( ! $wp_filesystem->put_contents( $filename, $output ) ) {
@@ -226,11 +230,11 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * Same goes for when plugin_name is being used.
 	 */
 	private function get_textdomain( $textdomain, $theme, $plugin_name ) {
-		if( empty( $textdomain ) && $theme ) {
+		if ( empty( $textdomain ) && $theme ) {
 			$textdomain = strtolower( wp_get_theme()->template );
-		} elseif ( empty( $textdomain ) && $plugin_name) {
+		} elseif ( empty( $textdomain ) && $plugin_name ) {
 			$textdomain = $plugin_name;
-		} elseif ( empty( $textdomain ) || gettype($textdomain) == 'boolean' ) { //This mean just a flag
+		} elseif ( empty( $textdomain ) || gettype( $textdomain ) == 'boolean' ) { //This mean just a flag
 			$textdomain = 'YOUR-TEXTDOMAIN';
 		}
 
@@ -272,13 +276,13 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$lowercased_word = strtolower( $word );
 
-		foreach ( $uncountable as $_uncountable ){
-			if( substr( $lowercased_word, ( -1 * strlen( $_uncountable) ) ) == $_uncountable ){
+		foreach ( $uncountable as $_uncountable ) {
+			if ( substr( $lowercased_word, ( -1 * strlen( $_uncountable ) ) ) == $_uncountable ) {
 				return $word;
 			}
 		}
 
-		foreach ( $irregular as $_plural=> $_singular ){
+		foreach ( $irregular as $_plural=> $_singular ) {
 			if ( preg_match( '/('.$_plural.')$/i', $word, $arr ) ) {
 				return preg_replace( '/('.$_plural.')$/i', substr( $arr[0], 0, 1 ).substr( $_singular, 1 ), $word );
 			}
@@ -292,4 +296,3 @@ class Scaffold_Command extends WP_CLI_Command {
 		return false;
 	}
 }
-
