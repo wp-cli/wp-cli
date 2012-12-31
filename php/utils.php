@@ -126,7 +126,7 @@ function assoc_args_to_str( $assoc_args ) {
  * @param array
  * @param array
  */
-function run_command( $args, $assoc_args ) {
+function run_command( $args, $assoc_args = array() ) {
 	$command = \WP_CLI::$root;
 
 	while ( !empty( $args ) && $command instanceof Dispatcher\CommandContainer ) {
