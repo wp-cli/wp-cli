@@ -1,0 +1,37 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-SCAFFOLD\-TAXONOMY" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-scaffold\-taxonomy\fR \- Generate PHP code for registering a custom taxonomy\.
+.
+.SH "SYNOPSIS"
+wp scaffold taxonomy \fIslug\fR [\-\-public=\fIpublic\fR] [\-\-show_in_nav_menus=\fIshow_in_nav_menus\fR] [\-\-show_ui=\fIshow_ui\fR] [\-\-show_tagcloud=\fIshow_tagcloud\fR] [\-\-hierarchical=\fIhierarchical\fR] [\-\-rewrite=\fIrewrite\fR] [\-\-query_var=\fIquery_var\fR] [\-\-slug=\fIslug\fR] [\-\-textdomain=\fItextdomain\fR] [\-\-post_types=\fIpost_types\fR] [\-\-theme] [\-\-plugin=\fIplugin\fR] [\-\-raw]
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-\-textdomain=<textdomain>\fR:
+.
+.IP
+The textdomain to use for the labels\.
+.
+.TP
+\fB\-\-theme\fR:
+.
+.IP
+Create a file in the current theme directory, instead of sending to STDOUT\.
+.
+.TP
+\fB\-\-plugin=<plugin>\fR:
+.
+.IP
+Create a file in the given plugin\'s directory, instead of sending to STDOUT\.
+.
+.TP
+\fB\-\-raw\fR:
+.
+.IP
+Just generate the \fBregister_taxonomy()\fR call and nothing else\.
+

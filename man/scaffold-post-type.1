@@ -1,0 +1,37 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-SCAFFOLD\-POST\-TYPE" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-scaffold\-post\-type\fR \- Generate PHP code for registering a custom post type\.
+.
+.SH "SYNOPSIS"
+wp scaffold post\-type \fIslug\fR [\-\-description=\fIdescription\fR] [\-\-public=\fIpublic\fR] [\-\-exclude_from_search=\fIexclude_from_search\fR] [\-\-show_ui=\fIshow_ui\fR] [\-\-show_in_nav_menus=\fIshow_in_nav_menus\fR] [\-\-show_in_menu=\fIshow_in_menu\fR] [\-\-show_in_admin_bar=\fIshow_in_admin_bar\fR] [\-\-menu_position=\fImenu_position\fR] [\-\-menu_icon=\fImenu_icon\fR] [\-\-capability_type=\fIcapability_type\fR] [\-\-hierarchical=\fIhierarchical\fR] [\-\-supports=\fIsupports\fR] [\-\-has_archive=\fIhas_archive\fR] [\-\-slug=\fIslug\fR] [\-\-feed=\fIfeed\fR] [\-\-pages=\fIpages\fR] [\-\-query_var=\fIquery_var\fR] [\-\-can_export=\fIcan_export\fR] [\-\-textdomain=\fItextdomain\fR] [\-\-theme] [\-\-plugin=\fIplugin\fR] [\-\-raw]
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-\-textdomain=<textdomain>\fR:
+.
+.IP
+The textdomain to use for the labels\.
+.
+.TP
+\fB\-\-theme\fR:
+.
+.IP
+Create a file in the current theme directory, instead of sending to STDOUT\.
+.
+.TP
+\fB\-\-plugin=<plugin>\fR:
+.
+.IP
+Create a file in the given plugin\'s directory, instead of sending to STDOUT\.
+.
+.TP
+\fB\-\-raw\fR:
+.
+.IP
+Just generate the \fBregister_post_type()\fR call and nothing else\.
+
