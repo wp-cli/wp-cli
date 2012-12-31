@@ -97,7 +97,7 @@ function parse_args( $arguments ) {
  * @param array
  * @return string
  */
-function compose_args( $args ) {
+function args_to_str( $args ) {
 	return ' ' . implode( ' ', array_map( 'escapeshellarg', $args ) );
 }
 
@@ -107,7 +107,7 @@ function compose_args( $args ) {
  * @param array
  * @return string
  */
-function compose_assoc_args( $assoc_args ) {
+function assoc_args_to_str( $assoc_args ) {
 	$str = '';
 
 	foreach ( $assoc_args as $key => $value ) {
