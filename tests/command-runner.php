@@ -25,7 +25,7 @@ class WP_CLI_Command_Runner {
 	}
 
 	public function create_config( $db_settings ) {
-		return $this->run( 'core config' . \WP_CLI\Utils\compose_assoc_args( $db_settings ) );
+		return $this->run( 'core config' . \WP_CLI\Utils\assoc_args_to_str( $db_settings ) );
 	}
 
 	public function define_custom_wp_content_dir() {
@@ -60,7 +60,7 @@ class WP_CLI_Command_Runner {
 	}
 
 	public function run_install() {
-		$cmd = 'core install' . \WP_CLI\Utils\compose_assoc_args( array(
+		$cmd = 'core install' . \WP_CLI\Utils\assoc_args_to_str( array(
 			'url' => 'http://example.com',
 			'title' => 'WP CLI Tests',
 			'admin_email' => 'admin@example.com',
