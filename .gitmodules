@@ -1,3 +1,6 @@
 [submodule "php/php-cli-tools"]
 	path = php/php-cli-tools
 	url = git://github.com/wp-cli/php-cli-tools.git
+[submodule "php/mustache"]
+	path = php/mustache
+	url = git://github.com/bobthecow/mustache.php.git
