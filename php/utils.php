@@ -148,11 +148,15 @@ function set_url( $assoc_args ) {
 	if ( isset( $assoc_args['url'] ) ) {
 		$url = $assoc_args['url'];
 	} elseif ( isset( $assoc_args['blog'] ) ) {
+		\WP_CLI::warning( 'The --blog parameter is deprecated. use --url instead' );
+
 		$url = $assoc_args['blog'];
 		if ( true === $url ) {
 			\WP_CLI::line( 'usage: wp --blog=example.com' );
 		}
 	} elseif ( is_readable( WP_ROOT . 'wp-cli-blog' ) ) {
+		\WP_CLI::warning( 'The wp-cli-blog file is deprecated. use wp-cli.yml instead' );
+
 		$url = trim( file_get_contents( WP_ROOT . 'wp-cli-blog' ) );
 	} elseif ( $wp_config_path = locate_wp_config() ) {
 		// Try to find the blog parameter in the wp-config file
