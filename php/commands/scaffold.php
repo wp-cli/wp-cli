@@ -10,7 +10,7 @@ WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );
  * @maintainer LinePress (http://www.linespress.org)
  */
 class Scaffold_Command extends WP_CLI_Command {
-  
+
   function __construct() {
     WP_Filesystem();
   }
@@ -18,7 +18,7 @@ class Scaffold_Command extends WP_CLI_Command {
   /**
    * @subcommand post-type
    *
-   * @alias pt
+   * @alias cpt
    *
    * @synopsis [--description=<description>] [--public=<public>] [--exclude_from_search=<exclude_from_search>] [--show_ui=<show_ui>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_in_menu=<show_in_menu>] [--show_in_admin_bar=<show_in_admin_bar>] [--menu_position=<menu_position>] [--menu_icon=<menu_icon>] [--capability_type=<capability_type>] [--hierarchical=<hierarchical>] [--supports=<supports>] [--has_archive=<has_archive>] [--slug=<slug>] [--feed=<feed>] [--pages=<pages>] [--query_var=<query_var>] [--can_export=<can_export>] [--textdomain=<textdomain>] [--theme] [--plugin_name=<plugin_name>] [--raw]
    */
@@ -28,7 +28,7 @@ class Scaffold_Command extends WP_CLI_Command {
     // Set the args to variables with normal names to keep our sanity
     $post_type                = strtolower( $args[0] );
 
-    // We use the machine name for function declarations 
+    // We use the machine name for function declarations
     $machine_name             = preg_replace( '/-/', '_', $post_type );
     $machine_name_plural      = $this->pluralize( $post_type );
 
@@ -39,7 +39,7 @@ class Scaffold_Command extends WP_CLI_Command {
       $label_plural           = $this->pluralize( $label );
       $label_plural_ucfirst   = ucfirst( $label_plural );
     }
-   
+
     // set up defaults and merge theme with assoc_args
     $defaults = array(
       'description'         => "",
@@ -70,7 +70,7 @@ class Scaffold_Command extends WP_CLI_Command {
     extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
     $textdomain = $this->get_textdomain( $textdomain, $theme, $plugin_name );
-    
+
     if( ! $raw ) {
       include 'skeletons/post_type_skeleton.php';
       $output = str_replace( "<?php", "", $output);
@@ -109,7 +109,7 @@ class Scaffold_Command extends WP_CLI_Command {
     // Set the args to variables with normal names to keep our sanity
     $taxonomy       = strtolower( $args[0] );
 
-    // We use the machine name for function declarations 
+    // We use the machine name for function declarations
     $machine_name             = preg_replace( '/-/', '_', $taxonomy );
     $machine_name_plural      = $this->pluralize( $taxonomy );
 
@@ -137,7 +137,7 @@ class Scaffold_Command extends WP_CLI_Command {
       'plugin_name'         => false,
       'raw'                 => false,
     );
-    
+
     // Generate the variables from the defaults and associated arguments if they are set
     extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
@@ -176,7 +176,7 @@ class Scaffold_Command extends WP_CLI_Command {
     // Implements the --theme flag || --plugin_name=<plugin_name>
     if( $theme ) {
       //Here we assume you got a theme installed
-      $path = TEMPLATEPATH; 
+      $path = TEMPLATEPATH;
     } elseif ( ! empty( $plugin_name ) ){
       $path = WP_PLUGIN_DIR . '/' . $plugin_name; //Faking recursive mkdir for down the line
       $wp_filesystem->mkdir( WP_PLUGIN_DIR . '/' . $plugin_name ); //Faking recursive mkdir for down the line
@@ -227,7 +227,7 @@ class Scaffold_Command extends WP_CLI_Command {
    */
   private function get_textdomain( $textdomain, $theme, $plugin_name ) {
     if( empty( $textdomain ) && $theme ) {
-      $textdomain = strtolower( wp_get_theme()->template ); 
+      $textdomain = strtolower( wp_get_theme()->template );
     } elseif ( empty( $textdomain ) && $plugin_name) {
       $textdomain = $plugin_name;
     } elseif ( empty( $textdomain ) || gettype($textdomain) == 'boolean' ) { //This mean just a flag
