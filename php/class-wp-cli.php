@@ -403,23 +403,7 @@ class WP_CLI {
 	}
 
 	private static function run_command() {
-		$command = \WP_CLI::$root;
-
-		$args = self::$arguments;
-
-		while ( !empty( $args ) && $command instanceof Dispatcher\CommandContainer ) {
-			$subcommand = $command->pre_invoke( $args );
-			if ( !$subcommand )
-				break;
-
-			$command = $subcommand;
-		}
-
-		if ( $command instanceof Dispatcher\CommandContainer ) {
-			$command->show_usage();
-		} else {
-			$command->invoke( $args, self::$assoc_args );
-		}
+		Utils\run_command( self::$arguments, self::$assoc_args );
 	}
 
 	private static function show_info() {
