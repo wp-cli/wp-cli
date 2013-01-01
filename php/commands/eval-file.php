@@ -3,7 +3,7 @@
 class EvalFile_Command extends WP_CLI_Command {
 
 	/**
-	 * Loads and executes a PHP file after loading WordPress.
+	 * Load and execute a PHP file after loading WordPress.
 	 *
 	 * @synopsis <path>
 	 */
