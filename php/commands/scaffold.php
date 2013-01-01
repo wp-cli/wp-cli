@@ -162,8 +162,9 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$data = wp_parse_args( $assoc_args, array(
 			'plugin_name' => ucfirst( $plugin_slug ),
-			'textdomain' => $plugin_slug
 		) );
+
+		$data['textdomain'] = $plugin_slug;
 
 		$plugin_contents = $this->render( 'plugin.php', $data );
 
