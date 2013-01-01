@@ -1,13 +1,9 @@
 <?php
 
-WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );
-
 /**
- * Implement scaffold command
+ * Generate code for post types, taxonomies, etc.
  *
  * @package wp-cli
- * @subpackage commands/internals
- * @maintainer LinePress (http://www.linespress.org)
  */
 class Scaffold_Command extends WP_CLI_Command {
 
@@ -294,3 +290,6 @@ class Scaffold_Command extends WP_CLI_Command {
 		return $m->render( $template, $data );
 	}
 }
+
+WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );
+
