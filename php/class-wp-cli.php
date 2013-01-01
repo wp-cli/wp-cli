@@ -372,7 +372,9 @@ class WP_CLI {
 
 		if ( !defined( 'WP_INSTALLING' ) && isset( self::$config['url'] ) )
 			Utils\set_wp_query();
+	}
 
+	static function run() {
 		if ( isset( self::$config['require'] ) )
 			require self::$config['require'];
 
