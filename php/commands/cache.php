@@ -1,9 +1,7 @@
 <?php
 
-WP_CLI::add_command( 'cache', 'Cache_Command' );
-
 /**
- * Manage the WordPress object cache.
+ * Manage the object cache.
  *
  * @package wp-cli
  * @subpackage commands/internals
@@ -218,4 +216,6 @@ class Cache_Command extends WP_CLI_Command {
 		WP_CLI::print_value( $message );
 	}
 }
+
+WP_CLI::add_command( 'cache', 'Cache_Command' );
 

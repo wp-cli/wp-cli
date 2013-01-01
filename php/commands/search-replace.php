@@ -1,8 +1,8 @@
 <?php
 
-WP_CLI::add_command( 'search-replace', new Search_Replace_Command );
-
 /**
+ * Search and replace strings in the database.
+ *
  * @package wp-cli
  */
 class Search_Replace_Command extends WP_CLI_Command {
@@ -117,4 +117,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 		return false;
 	}
 }
+
+WP_CLI::add_command( 'search-replace', new Search_Replace_Command );
 

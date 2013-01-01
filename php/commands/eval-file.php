@@ -1,7 +1,5 @@
 <?php
 
-WP_CLI::add_command( 'eval-file', new EvalFile_Command );
-
 class EvalFile_Command extends WP_CLI_Command {
 
 	/**
@@ -19,4 +17,6 @@ class EvalFile_Command extends WP_CLI_Command {
 		}
 	}
 }
+
+WP_CLI::add_command( 'eval-file', new EvalFile_Command );
 

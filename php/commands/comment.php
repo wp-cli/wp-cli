@@ -1,9 +1,7 @@
 <?php
 
-WP_CLI::add_command( 'comment', 'Comment_Command' );
-
 /**
- * Implement 'comment' command
+ * Manage comments.
  *
  * @package wp-cli
  * @subpackage commands/internals
@@ -192,4 +190,6 @@ class Comment_Command extends WP_CLI_Command {
 		}
 	}
 }
+
+WP_CLI::add_command( 'comment', 'Comment_Command' );
 

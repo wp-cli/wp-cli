@@ -1,7 +1,10 @@
 <?php
 
-WP_CLI:: add_command( 'rewrite', 'Rewrite_Command' );
-
+/**
+ * Manage rewrite rules.
+ *
+ * @package wp-cli
+ */
 class Rewrite_Command extends WP_CLI_Command {
 
 	/**
@@ -79,3 +82,6 @@ class Rewrite_Command extends WP_CLI_Command {
 
 	}
 }
+
+WP_CLI:: add_command( 'rewrite', 'Rewrite_Command' );
+

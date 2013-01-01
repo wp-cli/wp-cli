@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Implement plugin command
+ * Manage plugins.
  *
  * @package wp-cli
  * @subpackage commands/internals

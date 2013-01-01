@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Implement user command
+ * Manage users.
  *
  * @package wp-cli
  * @subpackage commands/internals

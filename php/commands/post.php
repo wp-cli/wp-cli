@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Implement post command
+ * Manage posts.
  *
  * @package wp-cli
  * @subpackage commands/internals

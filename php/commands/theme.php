@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Implement theme command
+ * Manage themes.
  *
  * @package wp-cli
  * @subpackage commands/internals
