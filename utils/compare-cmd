@@ -7,15 +7,15 @@ if [ $# -lt 3 ]; then
 	exit 1
 fi
 
-ver_a=$1
-ver_b=$2
 wp_path=$3
 
-git checkout $ver_a
-wp --path=$wp_path --syn-list > /tmp/wp-cli-a
+get_syn_list() {
+	git checkout $1
+	wp --path=$wp_path --cmd-dump | php $(dirname $0)/syn-list.php
+}
 
-git checkout $ver_b
-wp --path=$wp_path --syn-list > /tmp/wp-cli-b
+get_syn_list $1 > /tmp/wp-cli-a
+get_syn_list $2 > /tmp/wp-cli-b
 
 diff /tmp/wp-cli-a /tmp/wp-cli-b > cmd.diff
 
