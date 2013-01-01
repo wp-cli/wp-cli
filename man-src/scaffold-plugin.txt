@@ -1,0 +1,9 @@
+## OPTIONS
+
+* `--activate`:
+
+	Activate the newly generated plugin.
+
+* `--plugin_name=<title>`:
+
+	What to put in the 'Plugin Name:' header
