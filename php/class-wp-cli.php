@@ -407,7 +407,7 @@ class WP_CLI {
 		);
 
 		if ( $command instanceof Dispatcher\AtomicCommand ) {
-			$dump['synopsis'] = $command->get_synopsis();
+			$dump['synopsis'] = (string) $command->get_synopsis();
 		} else {
 			foreach ( Dispatcher\get_subcommands( $command ) as $subcommand ) {
 				$dump['subcommands'][] = self::command_to_array( $subcommand );
