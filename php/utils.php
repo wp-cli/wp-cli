@@ -26,6 +26,10 @@ function bootstrap() {
 	if ( !$has_autoload ) {
 		include WP_CLI_ROOT . 'php-cli-tools/lib/cli/cli.php';
 		\cli\register_autoload();
+
+		include WP_CLI_ROOT . 'mustache/src/Mustache/Autoloader.php';
+		\Mustache_Autoloader::register();
+
 		register_autoload();
 	}
 
