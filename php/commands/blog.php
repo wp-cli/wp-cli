@@ -4,7 +4,6 @@
  * Manage blogs in a multisite install.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Blog_Command extends WP_CLI_Command {
 

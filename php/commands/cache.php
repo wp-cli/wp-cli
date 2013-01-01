@@ -4,7 +4,6 @@
  * Manage the object cache.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Cache_Command extends WP_CLI_Command {
 

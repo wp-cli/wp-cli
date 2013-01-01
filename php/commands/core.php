@@ -4,7 +4,6 @@
  * Download, install, update and otherwise manage WordPress proper.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Core_Command extends WP_CLI_Command {
 

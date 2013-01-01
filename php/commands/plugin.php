@@ -4,7 +4,6 @@
  * Manage plugins.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 

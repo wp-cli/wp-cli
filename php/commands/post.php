@@ -4,7 +4,6 @@
  * Manage posts.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Post_Command extends \WP_CLI\CommandWithDBObject {
 

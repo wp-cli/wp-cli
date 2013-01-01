@@ -4,7 +4,6 @@
  * Manage WordPress options.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Option_Command extends WP_CLI_Command {
 

@@ -4,7 +4,6 @@
  * Manage user capabilities.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Capabilities_Command extends WP_CLI_Command {
 

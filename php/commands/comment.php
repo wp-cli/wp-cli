@@ -4,7 +4,6 @@
  * Manage comments.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Comment_Command extends WP_CLI_Command {
 

@@ -4,7 +4,6 @@
  * Manage WordPress transients.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Transient_Command extends WP_CLI_Command {
 
