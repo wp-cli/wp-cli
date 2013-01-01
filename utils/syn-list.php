@@ -21,7 +21,7 @@ function read_json() {
 	return $json;
 }
 
-function generate_synopsis( $command, $path ) {
+function generate_synopsis( $command, $path = '' ) {
 	$full_path = $path . ' ' . $command['name'];
 
 	if ( !isset( $command['subcommands'] ) ) {
@@ -33,9 +33,5 @@ function generate_synopsis( $command, $path ) {
 	}
 }
 
-$commands = read_json();
-
-foreach ( $commands as $command ) {
-	generate_synopsis( $command, 'wp' );
-}
+generate_synopsis( read_json() );
 
