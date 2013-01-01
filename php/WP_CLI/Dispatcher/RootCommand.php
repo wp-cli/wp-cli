@@ -2,7 +2,7 @@
 
 namespace WP_CLI\Dispatcher;
 
-class RootCommand extends AbstractCommandContainer {
+class RootCommand extends AbstractCommandContainer implements Documentable {
 
 	function get_name() {
 		return 'wp';
@@ -10,6 +10,14 @@ class RootCommand extends AbstractCommandContainer {
 
 	function get_parent() {
 		return false;
+	}
+
+	function get_shortdesc() {
+		return '';
+	}
+
+	function get_full_synopsis() {
+		return '';
 	}
 
 	function show_usage() {

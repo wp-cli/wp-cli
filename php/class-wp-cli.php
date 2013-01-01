@@ -261,7 +261,7 @@ class WP_CLI {
 
 		self::split_special( array(
 			'path', 'url', 'blog', 'user', 'require',
-			'quiet', 'completions', 'man', 'syn-list'
+			'quiet', 'completions', 'man', 'cmd-dump'
 		) );
 	}
 
@@ -381,16 +381,8 @@ class WP_CLI {
 			exit;
 		}
 
-		// Handle --syn-list parameter
-		if ( isset( self::$config['syn-list'] ) ) {
-			foreach ( self::$root->get_subcommands() as $command ) {
-				if ( $command instanceof Dispatcher\CommandContainer ) {
-					foreach ( $command->get_subcommands() as $subcommand )
-						$subcommand->show_usage( '' );
-				} else {
-					$command->show_usage( '' );
-				}
-			}
+		if ( isset( self::$config['cmd-dump'] ) ) {
+			self::cmd_dump();
 			exit;
 		}
 
@@ -400,6 +392,29 @@ class WP_CLI {
 		}
 
 		self::run_command();
+	}
+
+	private static function cmd_dump() {
+		$dump = self::command_to_array( self::$root );
+
+		echo json_encode( $dump['subcommands'] );
+	}
+
+	private static function command_to_array( $command ) {
+		$dump = array(
+			'name' => $command->get_name(),
+			'description' => $command->get_shortdesc(),
+		);
+
+		if ( $command instanceof Dispatcher\AtomicCommand ) {
+			$dump['synopsis'] = $command->get_synopsis();
+		} else {
+			foreach ( Dispatcher\get_subcommands( $command ) as $subcommand ) {
+				$dump['subcommands'][] = self::command_to_array( $subcommand );
+			}
+		}
+
+		return $dump;
 	}
 
 	private static function run_command() {
