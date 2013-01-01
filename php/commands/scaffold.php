@@ -41,7 +41,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			'textdomain'          => '',
 		);
 
-		$this->_scaffold( $args[0], $assoc_args, $defaults, array(
+		$this->_scaffold( $args[0], $assoc_args, $defaults, '/post-types/', array(
 			'post_type.php',
 			'post_type_extended.php'
 		) );
@@ -72,13 +72,13 @@ class Scaffold_Command extends WP_CLI_Command {
 			'raw'                 => false,
 		);
 
-		$this->_scaffold( $args[0], $assoc_args, $defaults, array(
+		$this->_scaffold( $args[0], $assoc_args, $defaults, '/taxonomies/', array(
 			'taxonomy.php',
 			'taxonomy_extended.php'
 		) );
 	}
 
-	private function _scaffold( $slug, $assoc_args, $defaults, $templates ) {
+	private function _scaffold( $slug, $assoc_args, $defaults, $subdir, $templates ) {
 		global $wp_filesystem;
 
 		$control_args = $this->extract_args( $assoc_args, array(
@@ -113,9 +113,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$raw_output = $this->render( $raw_template, $vars );
 		$raw_output = str_replace( "<?php", '', $raw_output );
 
-		extract( $control_args );
-
-		if ( ! $raw ) {
+		if ( ! $control_args['raw'] ) {
 			$vars = array_merge( $vars, array(
 				'machine_name' => $machine_name,
 				'output' => $raw_output
@@ -126,55 +124,30 @@ class Scaffold_Command extends WP_CLI_Command {
 			$final_output = $raw_output;
 		}
 
-		if ( $theme || ! empty( $plugin ) ) {
-			// Write file to theme or plugin dir
-			$assoc_args = array(
-				'type' => 'post_type',
-				'output' => $final_output,
-				'theme' => $theme,
-				'plugin' => $plugin,
-				'machine_name' => $machine_name,
-			);
-			$assoc_args['path'] = $this->get_output_path( $assoc_args );
-			$this->save_skeleton_output( $assoc_args );
+		if ( $path = $this->get_output_path( $control_args, $subdir ) ) {
+			$filename = $path . $machine_name .'.php';
+
+			$this->create_file( $filename, $final_output );
+
+			WP_CLI::success( "Created $filename" );
 		} else {
 			// STDOUT
 			echo $final_output;
 		}
 	}
 
-	private function get_output_path( $assoc_args ) {
-		global $wp_filesystem;
-
+	private function get_output_path( $assoc_args, $subdir ) {
 		extract( $assoc_args, EXTR_SKIP );
 
-		// Implements the --theme flag || --plugin=<plugin>
 		if ( $theme ) {
-			//Here we assume you got a theme installed
 			$path = TEMPLATEPATH;
 		} elseif ( ! empty( $plugin ) ) {
-			$path = WP_PLUGIN_DIR . '/' . $plugin; //Faking recursive mkdir for down the line
-			$wp_filesystem->mkdir( WP_PLUGIN_DIR . '/' . $plugin ); //Faking recursive mkdir for down the line
+			$path = WP_PLUGIN_DIR . '/' . $plugin;
 		} else {
-			// STDOUT
 			return false;
 		}
 
-		if ( $type === "post_type" ) {
-			$path .= '/post-types/';
-		} elseif ( $type === "taxonomy" ) {
-			$path .= '/taxonomies/';
-		}
-
-		// If it doesn't exists create it
-		if ( ! $wp_filesystem->is_dir( $path ) ) {
-			$wp_filesystem->mkdir( $path );
-			WP_CLI::success( "Created dir: {$path}" );
-		} elseif ( $wp_filesystem->is_dir( $path ) ) {
-			WP_CLI::success( "Dir already exists: {$path}" );
-		} else {
-			WP_CLI::error( "Couldn't create dir exists: {$path}" );
-		}
+		$path .= $subdir;
 
 		return $path;
 	}
@@ -196,9 +169,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$plugin_path = WP_PLUGIN_DIR . "/$plugin_slug/$plugin_slug.php";
 
-		if ( ! $this->create_file( $plugin_path, $plugin_contents ) ) {
-			WP_CLI::error( "Error creating file: $plugin_path" );
-		}
+		$this->create_file( $plugin_path, $plugin_contents );
 
 		WP_CLI::success( "Plugin scaffold created: $plugin_path" );
 
@@ -206,29 +177,14 @@ class Scaffold_Command extends WP_CLI_Command {
 			\WP_CLI\Utils\run_command( array( 'plugin', 'activate', $plugin_slug ) );
 	}
 
-	private function save_skeleton_output( $assoc_args ) {
-		global $wp_filesystem;
-
-		extract( $assoc_args, EXTR_SKIP );
-
-		// Write to file
-		if ( $path ) {
-			$filename = $path . $machine_name .'.php';
-
-			if ( ! $wp_filesystem->put_contents( $filename, $output ) ) {
-				WP_CLI::error( "Error while saving file: {$filename}" );
-			} else {
-				WP_CLI::success( "{$type} {$machine_name} created" );
-			}
-		}
-	}
-
 	private function create_file( $filename, $contents ) {
 		global $wp_filesystem;
 
 		$wp_filesystem->mkdir( dirname( $filename ) );
 
-		return $wp_filesystem->put_contents( $filename, $contents );
+		if ( !$wp_filesystem->put_contents( $filename, $contents ) ) {
+			WP_CLI::error( "Error creating file: $filename" );
+		}
 	}
 
 	/**
