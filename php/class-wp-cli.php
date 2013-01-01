@@ -397,7 +397,7 @@ class WP_CLI {
 	private static function cmd_dump() {
 		$dump = self::command_to_array( self::$root );
 
-		echo json_encode( $dump['subcommands'] );
+		echo json_encode( $dump );
 	}
 
 	private static function command_to_array( $command ) {
