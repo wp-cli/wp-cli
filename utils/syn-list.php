@@ -5,21 +5,7 @@
 #
 # wp --cmd-dump | php /path/to/wp-cli/utils/syn-list.php
 
-function read_json() {
-	$input = '';
-
-	while ( false !== ( $line = fgets( STDIN ) ) ) {
-		$input .= $line;
-	}
-
-	$json = json_decode( $input, true );
-	if ( !$json ) {
-		echo "Invalid JSON.";
-		exit(1);
-	}
-
-	return $json;
-}
+include __DIR__ . '/utils.php';
 
 function generate_synopsis( $command, $path = '' ) {
 	$full_path = $path . ' ' . $command['name'];
