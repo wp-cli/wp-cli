@@ -1,13 +1,9 @@
 <?php
 
-WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );
-
 /**
- * Implement scaffold command
+ * Generate code for post types, taxonomies, etc.
  *
  * @package wp-cli
- * @subpackage commands/internals
- * @maintainer LinePress (http://www.linespress.org)
  */
 class Scaffold_Command extends WP_CLI_Command {
 
@@ -22,29 +18,11 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * @alias cpt
 	 *
-	 * @synopsis <slug> [--description=<description>] [--public=<public>] [--exclude_from_search=<exclude_from_search>] [--show_ui=<show_ui>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_in_menu=<show_in_menu>] [--show_in_admin_bar=<show_in_admin_bar>] [--menu_position=<menu_position>] [--menu_icon=<menu_icon>] [--capability_type=<capability_type>] [--hierarchical=<hierarchical>] [--supports=<supports>] [--has_archive=<has_archive>] [--slug=<slug>] [--feed=<feed>] [--pages=<pages>] [--query_var=<query_var>] [--can_export=<can_export>] [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
+	 * @synopsis <slug> [--singular=<label>] [--description=<description>] [--public=<public>] [--exclude_from_search=<exclude_from_search>] [--show_ui=<show_ui>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_in_menu=<show_in_menu>] [--show_in_admin_bar=<show_in_admin_bar>] [--menu_position=<menu_position>] [--menu_icon=<menu_icon>] [--capability_type=<capability_type>] [--hierarchical=<hierarchical>] [--supports=<supports>] [--has_archive=<has_archive>] [--query_var=<query_var>] [--can_export=<can_export>] [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
 	 */
 	function post_type( $args, $assoc_args ) {
-		global $wp_filesystem;
-
-		// Set the args to variables with normal names to keep our sanity
-		$post_type                = strtolower( $args[0] );
-
-		// We use the machine name for function declarations
-		$machine_name             = preg_replace( '/-/', '_', $post_type );
-		$machine_name_plural      = $this->pluralize( $post_type );
-
-		// If no label is given use the slug and prettify it as good as possible
-		if ( ! isset( $assoc_args['label'] ) ) {
-			$label                  = preg_replace( '/_|-/', ' ', strtolower( $post_type ) );
-			$label_ucfirst          = ucfirst( $label );
-			$label_plural           = $this->pluralize( $label );
-			$label_plural_ucfirst   = ucfirst( $label_plural );
-		}
-
-		// set up defaults and merge theme with assoc_args
 		$defaults = array(
-			'description'         => "",
+			'description'         => '',
 			'public'              => 'true',
 			'exclude_from_search' => 'false',
 			'show_ui'             => 'true',
@@ -57,45 +35,16 @@ class Scaffold_Command extends WP_CLI_Command {
 			'hierarchical'        => 'false',
 			'supports'            => "'title', 'editor'",
 			'has_archive'         => 'true',
-			'slug'                => $machine_name_plural,
-			'feeds'               => 'true',
-			'pages'               => 'true',
+			'rewrite'             => 'true',
 			'query_var'           => 'true',
 			'can_export'          => 'true',
 			'textdomain'          => '',
-			'theme'               => false,
-			'plugin'              => false,
-			'raw'                 => false,
 		);
 
-		// Generate the variables from the defaults and associated arguments if they are set
-		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
-
-		$textdomain = $this->get_textdomain( $textdomain, $theme, $plugin );
-
-		if ( ! $raw ) {
-			include WP_CLI_ROOT . '/templates/post_type.php';
-			$output = str_replace( "<?php", "", $output );
-			include WP_CLI_ROOT . '/templates/post_type_extended.php';
-		} else {
-			include WP_CLI_ROOT . '/templates/post_type.php';
-		}
-
-		if ( $theme || ! empty( $plugin ) ) {
-			// Write file to theme or given plugin
-			$assoc_args = array(
-				'type' => 'post_type',
-				'output' => $output,
-				'theme' => $theme,
-				'plugin' => $plugin,
-				'machine_name' => $machine_name,
-			);
-			$assoc_args['path'] = $this->get_output_path( $assoc_args );
-			$this->save_skeleton_output( $assoc_args );
-		} else {
-			// STDOUT
-			echo $output;
-		}
+		$this->_scaffold( $args[0], $assoc_args, $defaults, array(
+			'post_type.php',
+			'post_type_extended.php'
+		) );
 	}
 
 	/**
@@ -105,27 +54,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * @alias tax
 	 *
-	 * @synopsis <slug> [--public=<public>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_ui=<show_ui>] [--show_tagcloud=<show_tagcloud>] [--hierarchical=<hierarchical>]  [--rewrite=<rewrite>] [--query_var=<query_var>] [--slug=<slug>] [--textdomain=<textdomain>] [--post_types=<post_types>] [--theme] [--plugin=<plugin>] [--raw]
+	 * @synopsis <slug> [--singular=<label>] [--public=<public>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_ui=<show_ui>] [--show_tagcloud=<show_tagcloud>] [--hierarchical=<hierarchical>]  [--rewrite=<rewrite>] [--query_var=<query_var>] [--textdomain=<textdomain>] [--post_types=<post_types>] [--theme] [--plugin=<plugin>] [--raw]
 	 */
 	function taxonomy( $args, $assoc_args ) {
-		global $wp_filesystem;
-
-		// Set the args to variables with normal names to keep our sanity
-		$taxonomy       = strtolower( $args[0] );
-
-		// We use the machine name for function declarations
-		$machine_name             = preg_replace( '/-/', '_', $taxonomy );
-		$machine_name_plural      = $this->pluralize( $taxonomy );
-
-		// If no label is given use the slug and prettify it as good as possible
-		if ( ! isset( $assoc_args['label'] ) ) {
-			$label                  = preg_replace( '/_|-/', ' ', strtolower( $taxonomy ) );
-			$label_ucfirst          = ucfirst( $label );
-			$label_plural           = $this->pluralize( $label );
-			$label_plural_ucfirst   = ucfirst( $label_plural );
-		}
-
-		// Set up defaults and merge theme with assoc_args
 		$defaults = array(
 			'public'              => 'true',
 			'show_in_nav_menus'   => 'true',
@@ -134,7 +65,6 @@ class Scaffold_Command extends WP_CLI_Command {
 			'hierarchical'        => 'false',
 			'rewrite'             => 'true',
 			'query_var'           => 'true',
-			'slug'                => $taxonomy,
 			'post_types'          => 'post',
 			'textdomain'          => '',
 			'theme'               => false,
@@ -142,24 +72,65 @@ class Scaffold_Command extends WP_CLI_Command {
 			'raw'                 => false,
 		);
 
-		// Generate the variables from the defaults and associated arguments if they are set
-		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
+		$this->_scaffold( $args[0], $assoc_args, $defaults, array(
+			'taxonomy.php',
+			'taxonomy_extended.php'
+		) );
+	}
 
-		$textdomain = $this->get_textdomain( $textdomain, $theme, $plugin );
+	private function _scaffold( $slug, $assoc_args, $defaults, $templates ) {
+		global $wp_filesystem;
+
+		$control_args = $this->extract_args( $assoc_args, array(
+			'theme'  => false,
+			'plugin' => false,
+			'raw'    => false,
+		) );
+
+		$vars = $this->extract_args( $assoc_args, $defaults );
+
+		$vars['slug'] = $slug;
+
+		$vars['textdomain'] = $this->get_textdomain( $vars['textdomain'], $control_args );
+
+		// If no label is given use the slug and prettify it as good as possible
+		if ( isset( $assoc_args['singular'] ) ) {
+			$vars['label'] = $assoc_args['singular'];
+		} else {
+			$vars['label'] = preg_replace( '/_|-/', ' ', strtolower( $slug ) );
+		}
+
+		$vars['label_ucfirst']        = ucfirst( $vars['label'] );
+		$vars['label_plural']         = $this->pluralize( $vars['label'] );
+		$vars['label_plural_ucfirst'] = ucfirst( $vars['label_plural'] );
+
+		// We use the machine name for function declarations
+		$machine_name = preg_replace( '/-/', '_', $slug );
+		$machine_name_plural = $this->pluralize( $slug );
+
+		list( $raw_template, $extended_template ) = $templates;
+
+		$raw_output = $this->render( $raw_template, $vars );
+		$raw_output = str_replace( "<?php", '', $raw_output );
+
+		extract( $control_args );
 
 		if ( ! $raw ) {
-			include WP_CLI_ROOT . '/templates/taxonomy.php';
-			$output = str_replace( "<?php", "", $output );
-			include WP_CLI_ROOT . '/templates/taxonomy_extended.php';
+			$vars = array_merge( $vars, array(
+				'machine_name' => $machine_name,
+				'output' => $raw_output
+			) );
+
+			$final_output = $this->render( $extended_template, $vars );
 		} else {
-			include WP_CLI_ROOT . '/templates/taxonomy.php';
+			$final_output = $raw_output;
 		}
 
 		if ( $theme || ! empty( $plugin ) ) {
-			// Write file to theme or given plugin
+			// Write file to theme or plugin dir
 			$assoc_args = array(
-				'type' => 'taxonomy',
-				'output' => $output,
+				'type' => 'post_type',
+				'output' => $final_output,
 				'theme' => $theme,
 				'plugin' => $plugin,
 				'machine_name' => $machine_name,
@@ -168,7 +139,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			$this->save_skeleton_output( $assoc_args );
 		} else {
 			// STDOUT
-			echo $output;
+			echo $final_output;
 		}
 	}
 
@@ -229,16 +200,17 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * If you're writing your files to your theme directory your textdomain also needs to be the same as your theme.
 	 * Same goes for when plugin is being used.
 	 */
-	private function get_textdomain( $textdomain, $theme, $plugin ) {
-		if ( empty( $textdomain ) && $theme ) {
-			$textdomain = strtolower( wp_get_theme()->template );
-		} elseif ( empty( $textdomain ) && $plugin ) {
-			$textdomain = $plugin;
-		} elseif ( empty( $textdomain ) || gettype( $textdomain ) == 'boolean' ) { //This mean just a flag
-			$textdomain = 'YOUR-TEXTDOMAIN';
-		}
+	private function get_textdomain( $textdomain, $args ) {
+		if ( strlen( $textdomain ) )
+			return $textdomain;
 
-		return $textdomain;
+		if ( $args['theme'] )
+			return strtolower( wp_get_theme()->template );
+
+		if ( $args['plugin'] && true !== $args['plugin'] )
+			return $args['plugin'];
+
+		return 'YOUR-TEXTDOMAIN';
 	}
 
 	private function pluralize( $word ) {
@@ -295,4 +267,29 @@ class Scaffold_Command extends WP_CLI_Command {
 		}
 		return false;
 	}
+
+	protected function extract_args( $assoc_args, $defaults ) {
+		$out = array();
+
+		foreach ( $defaults as $key => $value ) {
+			$out[ $key ] = isset( $assoc_args[ $key ] )
+				? $assoc_args[ $key ]
+				: $value;
+		}
+
+		return $out;
+	}
+
+	private function render( $template, $data ) {
+		$scaffolds_dir = WP_CLI_ROOT . 'templates';
+
+		$template = file_get_contents( $scaffolds_dir . '/' . $template );
+
+		$m = new Mustache_Engine;
+
+		return $m->render( $template, $data );
+	}
 }
+
+WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );
+
