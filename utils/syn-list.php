@@ -8,6 +8,9 @@
 include __DIR__ . '/utils.php';
 
 function generate_synopsis( $command, $path = '' ) {
+	if ( isset( $command['internal'] ) && !$command['internal'] )
+		continue;
+
 	$full_path = $path . ' ' . $command['name'];
 
 	if ( !isset( $command['subcommands'] ) ) {

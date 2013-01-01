@@ -12,6 +12,9 @@ include __DIR__ . '/utils.php';
 $wp = read_json();
 
 foreach ( $wp['subcommands'] as $command ) {
+	if ( !$command['internal'] )
+		continue;
+
 	echo <<<EOB
 	<tr>
 		<td><a href="https://github.com/wp-cli/wp-cli/blob/master/php/commands/{$command['name']}.php">{$command['name']}</a></td>
