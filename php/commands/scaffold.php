@@ -179,6 +179,33 @@ class Scaffold_Command extends WP_CLI_Command {
 		return $path;
 	}
 
+	/**
+	 * Generate starter code for a plugin.
+	 *
+	 * @synopsis <slug> [--plugin_name=<title>] [--activate]
+	 */
+	function plugin( $args, $assoc_args ) {
+		$plugin_slug = $args[0];
+
+		$data = wp_parse_args( $assoc_args, array(
+			'plugin_name' => ucfirst( $plugin_slug ),
+			'textdomain' => $plugin_slug
+		) );
+
+		$plugin_contents = $this->render( 'plugin.php', $data );
+
+		$plugin_path = WP_PLUGIN_DIR . "/$plugin_slug/$plugin_slug.php";
+
+		if ( ! $this->create_file( $plugin_path, $plugin_contents ) ) {
+			WP_CLI::error( "Error creating file: $plugin_path" );
+		}
+
+		WP_CLI::success( "Plugin scaffold created: $plugin_path" );
+
+		if ( isset( $assoc_args['activate'] ) )
+			\WP_CLI\Utils\run_command( array( 'plugin', 'activate', $plugin_slug ) );
+	}
+
 	private function save_skeleton_output( $assoc_args ) {
 		global $wp_filesystem;
 
@@ -194,6 +221,14 @@ class Scaffold_Command extends WP_CLI_Command {
 				WP_CLI::success( "{$type} {$machine_name} created" );
 			}
 		}
+	}
+
+	private function create_file( $filename, $contents ) {
+		global $wp_filesystem;
+
+		$wp_filesystem->mkdir( dirname( $filename ) );
+
+		return $wp_filesystem->put_contents( $filename, $contents );
 	}
 
 	/**
