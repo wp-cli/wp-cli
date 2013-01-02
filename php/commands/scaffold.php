@@ -42,8 +42,8 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 
 		$this->_scaffold( $args[0], $assoc_args, $defaults, '/post-types/', array(
-			'post_type.php',
-			'post_type_extended.php'
+			'post_type.mustache',
+			'post_type_extended.mustache'
 		) );
 	}
 
@@ -73,8 +73,8 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 
 		$this->_scaffold( $args[0], $assoc_args, $defaults, '/taxonomies/', array(
-			'taxonomy.php',
-			'taxonomy_extended.php'
+			'taxonomy.mustache',
+			'taxonomy_extended.mustache'
 		) );
 	}
 
@@ -166,7 +166,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$data['textdomain'] = $plugin_slug;
 
-		$plugin_contents = $this->render( 'plugin.php', $data );
+		$plugin_contents = $this->render( 'plugin.mustache', $data );
 
 		$plugin_path = WP_PLUGIN_DIR . "/$plugin_slug/$plugin_slug.php";
 
