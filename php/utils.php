@@ -261,11 +261,10 @@ function get_wp_config_code() {
 	$lines_to_run = array();
 
 	foreach ( $wp_config_code as $line ) {
-		if ( 0 === strpos( $line, '<?php' ) )
-			continue;
-
 		if ( preg_match( '/^require.+wp-settings\.php/', $line ) )
 			continue;
+
+		$line = preg_replace( '|^\s*\<\?php\s*|', '', $line );
 
 		$lines_to_run[] = str_replace( $old, $new, $line );
 	}
