@@ -111,7 +111,6 @@ class Scaffold_Command extends WP_CLI_Command {
 		list( $raw_template, $extended_template ) = $templates;
 
 		$raw_output = $this->render( $raw_template, $vars );
-		$raw_output = str_replace( "<?php", '', $raw_output );
 
 		if ( ! $control_args['raw'] ) {
 			$vars = array_merge( $vars, array(
