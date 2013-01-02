@@ -261,7 +261,7 @@ class WP_CLI {
 
 		self::split_special( array(
 			'path', 'url', 'blog', 'user', 'require',
-			'quiet', 'completions', 'man', 'syn-list'
+			'quiet', 'completions', 'man', 'cmd-dump'
 		) );
 	}
 
@@ -306,6 +306,12 @@ class WP_CLI {
 		// Handle --info parameter
 		if ( isset( self::$assoc_args['info'] ) && empty( self::$arguments ) ) {
 			self::show_info();
+			exit;
+		}
+
+		// Handle --cmd-dump parameter
+		if ( isset( self::$config['cmd-dump'] ) ) {
+			self::cmd_dump();
 			exit;
 		}
 
@@ -372,25 +378,14 @@ class WP_CLI {
 
 		if ( !defined( 'WP_INSTALLING' ) && isset( self::$config['url'] ) )
 			Utils\set_wp_query();
+	}
 
+	static function run() {
 		if ( isset( self::$config['require'] ) )
 			require self::$config['require'];
 
 		if ( isset( self::$config['man'] ) ) {
 			self::generate_man( self::$arguments );
-			exit;
-		}
-
-		// Handle --syn-list parameter
-		if ( isset( self::$config['syn-list'] ) ) {
-			foreach ( self::$root->get_subcommands() as $command ) {
-				if ( $command instanceof Dispatcher\CommandContainer ) {
-					foreach ( $command->get_subcommands() as $subcommand )
-						$subcommand->show_usage( '' );
-				} else {
-					$command->show_usage( '' );
-				}
-			}
 			exit;
 		}
 
@@ -400,6 +395,27 @@ class WP_CLI {
 		}
 
 		self::run_command();
+	}
+
+	private static function cmd_dump() {
+		echo json_encode( self::command_to_array( self::$root ) );
+	}
+
+	private static function command_to_array( $command ) {
+		$dump = array(
+			'name' => $command->get_name(),
+			'description' => $command->get_shortdesc(),
+		);
+
+		if ( $command instanceof Dispatcher\AtomicCommand ) {
+			$dump['synopsis'] = (string) $command->get_synopsis();
+		} else {
+			foreach ( Dispatcher\get_subcommands( $command ) as $subcommand ) {
+				$dump['subcommands'][] = self::command_to_array( $subcommand );
+			}
+		}
+
+		return $dump;
 	}
 
 	private static function run_command() {

@@ -3,7 +3,7 @@
 class Eval_Command extends WP_CLI_Command {
 
 	/**
-	 * Executes arbitrary PHP code after loading WordPress.
+	 * Execute arbitrary PHP code after loading WordPress.
 	 *
 	 * @synopsis <php-code>
 	 */

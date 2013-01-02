@@ -124,6 +124,16 @@ function assoc_args_to_str( $assoc_args ) {
 	return $str;
 }
 
+function get_command_file( $command ) {
+	$path = WP_CLI_ROOT . "/commands/$command.php";
+
+	if ( !is_readable( $path ) ) {
+		return false;
+	}
+
+	return $path;
+}
+
 /**
  * Run a given command.
  *
