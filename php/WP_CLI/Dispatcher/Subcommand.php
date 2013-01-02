@@ -23,9 +23,13 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 
 	function get_full_synopsis() {
 		$full_name = implode( ' ', get_path( $this ) );
-		$synopsis = $this->docparser->get_synopsis();
+		$synopsis = $this->get_synopsis();
 
 		return "$full_name $synopsis";
+	}
+
+	function get_synopsis() {
+		return $this->docparser->get_synopsis();
 	}
 
 	function invoke( $args, $assoc_args ) {
@@ -43,7 +47,7 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 	}
 
 	protected function check_args( $args, $assoc_args ) {
-		$synopsis = $this->docparser->get_synopsis();
+		$synopsis = $this->get_synopsis();
 		if ( !$synopsis )
 			return;
 

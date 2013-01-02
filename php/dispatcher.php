@@ -31,6 +31,7 @@ interface Command {
 
 interface AtomicCommand {
 
+	function get_synopsis();
 	function invoke( $args, $assoc_args );
 }
 
