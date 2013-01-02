@@ -67,9 +67,6 @@ class Scaffold_Command extends WP_CLI_Command {
 			'query_var'           => 'true',
 			'post_types'          => 'post',
 			'textdomain'          => '',
-			'theme'               => false,
-			'plugin'              => false,
-			'raw'                 => false,
 		);
 
 		$this->_scaffold( $args[0], $assoc_args, $defaults, '/taxonomies/', array(
