@@ -309,6 +309,12 @@ class WP_CLI {
 			exit;
 		}
 
+		// Handle --cmd-dump parameter
+		if ( isset( self::$config['cmd-dump'] ) ) {
+			self::cmd_dump();
+			exit;
+		}
+
 		$_SERVER['DOCUMENT_ROOT'] = getcwd();
 
 		// Handle --path
@@ -383,11 +389,6 @@ class WP_CLI {
 			exit;
 		}
 
-		if ( isset( self::$config['cmd-dump'] ) ) {
-			self::cmd_dump();
-			exit;
-		}
-
 		if ( isset( self::$config['completions'] ) ) {
 			self::render_automcomplete();
 			exit;
@@ -404,7 +405,6 @@ class WP_CLI {
 		$dump = array(
 			'name' => $command->get_name(),
 			'description' => $command->get_shortdesc(),
-			'internal' => (bool) Utils\get_command_file( $command->get_name() )
 		);
 
 		if ( $command instanceof Dispatcher\AtomicCommand ) {

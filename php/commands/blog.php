@@ -149,7 +149,8 @@ class Blog_Command extends WP_CLI_Command {
 	}
 }
 
-if ( is_multisite() ) {
-	WP_CLI::add_command( 'blog', 'Blog_Command' );
-}
+if ( function_exists( 'is_multisite' ) && !is_multisite() )
+	return;
+
+WP_CLI::add_command( 'blog', 'Blog_Command' );
 
