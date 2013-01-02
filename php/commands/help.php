@@ -1,15 +1,7 @@
 <?php
 
-WP_CLI::add_command( 'help', new Help_Command );
-
 use \WP_CLI\Dispatcher\CommandContainer;
 
-/**
- * Implement help command
- *
- * @package wp-cli
- * @subpackage commands/internals
- */
 class Help_Command extends WP_CLI_Command {
 
 	/**
@@ -47,3 +39,6 @@ class Help_Command extends WP_CLI_Command {
 		}
 	}
 }
+
+WP_CLI::add_command( 'help', new Help_Command );
+

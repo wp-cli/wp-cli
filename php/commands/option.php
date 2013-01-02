@@ -1,12 +1,9 @@
 <?php
 
-WP_CLI::add_command('option', 'Option_Command');
-
 /**
  * Manage WordPress options.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Option_Command extends WP_CLI_Command {
 
@@ -73,3 +70,6 @@ class Option_Command extends WP_CLI_Command {
 		}
 	}
 }
+
+WP_CLI::add_command( 'option', 'Option_Command' );
+

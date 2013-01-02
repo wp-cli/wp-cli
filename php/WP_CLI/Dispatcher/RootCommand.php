@@ -2,7 +2,7 @@
 
 namespace WP_CLI\Dispatcher;
 
-class RootCommand extends AbstractCommandContainer {
+class RootCommand extends AbstractCommandContainer implements Documentable {
 
 	function get_name() {
 		return 'wp';
@@ -10,6 +10,14 @@ class RootCommand extends AbstractCommandContainer {
 
 	function get_parent() {
 		return false;
+	}
+
+	function get_shortdesc() {
+		return '';
+	}
+
+	function get_full_synopsis() {
+		return '';
 	}
 
 	function show_usage() {
@@ -84,19 +92,16 @@ EOB
 	}
 
 	protected function load_command( $command ) {
-		if ( !isset( $this->subcommands[$command] ) ) {
-			$path = WP_CLI_ROOT . "/commands/$command.php";
-
-			if ( is_readable( $path ) ) {
+		if ( !isset( $this->subcommands[ $command ] ) ) {
+			if ( $path = \WP_CLI\Utils\get_command_file( $command ) )
 				include $path;
-			}
 		}
 
-		if ( !isset( $this->subcommands[$command] ) ) {
+		if ( !isset( $this->subcommands[ $command ] ) ) {
 			return false;
 		}
 
-		return $this->subcommands[$command];
+		return $this->subcommands[ $command ];
 	}
 }
 

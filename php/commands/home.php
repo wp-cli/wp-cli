@@ -1,17 +1,9 @@
 <?php
 
-WP_CLI::add_command( 'home', new Home_Command );
-
-/**
- * Implement home command
- *
- * @package wp-cli
- * @subpackage commands/internals
- */
 class Home_Command extends WP_CLI_Command {
 
 	/**
-	 * Opens the wp-cli homepage in your browser.
+	 * Open the wp-cli homepage in your browser.
 	 */
 	function __invoke() {
 		// The url for the wp-cli repository
@@ -32,4 +24,6 @@ class Home_Command extends WP_CLI_Command {
 		WP_CLI::success( 'The wp-cli homepage should be opening in your browser.' );
 	}
 }
+
+WP_CLI::add_command( 'home', new Home_Command );
 

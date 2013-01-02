@@ -2,12 +2,10 @@
 
 namespace WP_CLI\Commands;
 
-\WP_CLI::add_command( 'shell', new Shell_Command );
-
 class Shell_Command extends \WP_CLI_Command {
 
 	/**
-	 * Open an interactive shell environment.
+	 * Interactive PHP console.
 	 */
 	public function __invoke() {
 		\WP_CLI::line( 'Type "exit" to close session.' );
@@ -81,4 +79,6 @@ class Shell_Command extends \WP_CLI_Command {
 		return preg_match( "/^($tokens)[\(\s]+/", $line );
 	}
 }
+
+\WP_CLI::add_command( 'shell', new Shell_Command );
 

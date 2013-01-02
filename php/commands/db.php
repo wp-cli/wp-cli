@@ -1,12 +1,9 @@
 <?php
 
-WP_CLI::add_command( 'db', 'DB_Command' );
-
 /**
- * Implement db command
+ * Perform basic database operations.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class DB_Command extends WP_CLI_Command {
 
@@ -186,4 +183,6 @@ class DB_Command extends WP_CLI_Command {
 		WP_CLI::launch( $cmd );
 	}
 }
+
+WP_CLI::add_command( 'db', 'DB_Command' );
 

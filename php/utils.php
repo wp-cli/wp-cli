@@ -26,6 +26,10 @@ function bootstrap() {
 	if ( !$has_autoload ) {
 		include WP_CLI_ROOT . 'php-cli-tools/lib/cli/cli.php';
 		\cli\register_autoload();
+
+		include WP_CLI_ROOT . 'mustache/src/Mustache/Autoloader.php';
+		\Mustache_Autoloader::register();
+
 		register_autoload();
 	}
 
@@ -118,6 +122,16 @@ function assoc_args_to_str( $assoc_args ) {
 	}
 
 	return $str;
+}
+
+function get_command_file( $command ) {
+	$path = WP_CLI_ROOT . "/commands/$command.php";
+
+	if ( !is_readable( $path ) ) {
+		return false;
+	}
+
+	return $path;
 }
 
 /**
@@ -247,16 +261,13 @@ function get_wp_config_code() {
 	$lines_to_run = array();
 
 	foreach ( $wp_config_code as $line ) {
-		if ( 0 === strpos( $line, '<?php' ) )
-			continue;
-
 		if ( preg_match( '/^require.+wp-settings\.php/', $line ) )
 			continue;
 
 		$lines_to_run[] = str_replace( $old, $new, $line );
 	}
 
-	return implode( "\n", $lines_to_run );
+	return preg_replace( '|^\s*\<\?php\s*|', '', implode( "\n", $lines_to_run ) );
 }
 
 /**

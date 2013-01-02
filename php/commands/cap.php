@@ -1,12 +1,9 @@
 <?php
 
-WP_CLI::add_command( 'cap', 'Capabilities_Command' );
-
 /**
- * Manage capabilities.
+ * Manage user capabilities.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Capabilities_Command extends WP_CLI_Command {
 
@@ -93,4 +90,6 @@ class Capabilities_Command extends WP_CLI_Command {
 			WP_CLI::error( "Role definitions are not persistent." );
 	}
 }
+
+WP_CLI::add_command( 'cap', 'Capabilities_Command' );
 

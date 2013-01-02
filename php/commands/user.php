@@ -1,10 +1,9 @@
 <?php
 
 /**
- * Implement user command
+ * Manage users.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class User_Command extends \WP_CLI\CommandWithDBObject {
 

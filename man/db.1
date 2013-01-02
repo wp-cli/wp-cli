@@ -4,7 +4,7 @@
 .TH "WP\-DB" "1" "" "WP-CLI"
 .
 .SH "NAME"
-\fBwp\-db\fR \- Implement db command
+\fBwp\-db\fR \- Perform basic database operations\.
 .
 .SH "SYNOPSIS"
 wp db create [\-\-str]
@@ -36,6 +36,12 @@ wp db import [\fIfile\fR] [\-\-str]
 .SH "SUBCOMMANDS"
 .
 .TP
+\fBconnect\fR:
+.
+.IP
+Open a mysql console using the WordPress credentials\.
+.
+.TP
 \fBcreate\fR:
 .
 .IP
@@ -48,36 +54,6 @@ Create the database, as specified in wp\-config\.php
 Delete the database\.
 .
 .TP
-\fBreset\fR:
-.
-.IP
-Remove all tables from the database\.
-.
-.TP
-\fBoptimize\fR:
-.
-.IP
-Optimize the database\.
-.
-.TP
-\fBrepair\fR:
-.
-.IP
-Repair the database\.
-.
-.TP
-\fBconnect\fR:
-.
-.IP
-Open a mysql console using the WordPress credentials\.
-.
-.TP
-\fBquery\fR:
-.
-.IP
-Execute a query against the database\.
-.
-.TP
 \fBexport\fR:
 .
 .IP
@@ -88,6 +64,30 @@ Exports the database using mysqldump\.
 .
 .IP
 Import database from a file\.
+.
+.TP
+\fBoptimize\fR:
+.
+.IP
+Optimize the database\.
+.
+.TP
+\fBquery\fR:
+.
+.IP
+Execute a query against the database\.
+.
+.TP
+\fBrepair\fR:
+.
+.IP
+Repair the database\.
+.
+.TP
+\fBreset\fR:
+.
+.IP
+Remove all tables from the database\.
 .
 .SH "OPTIONS"
 

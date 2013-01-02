@@ -1,12 +1,9 @@
 <?php
 
-WP_CLI::add_command( 'transient', 'Transient_Command' );
-
 /**
  * Manage WordPress transients.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Transient_Command extends WP_CLI_Command {
 
@@ -76,3 +73,6 @@ class Transient_Command extends WP_CLI_Command {
 		WP_CLI::line( $message );
 	}
 }
+
+WP_CLI::add_command( 'transient', 'Transient_Command' );
+

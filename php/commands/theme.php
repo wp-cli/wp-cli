@@ -1,10 +1,9 @@
 <?php
 
 /**
- * Implement theme command
+ * Manage themes.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 

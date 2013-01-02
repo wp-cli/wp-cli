@@ -1,12 +1,9 @@
 <?php
 
-WP_CLI::add_command('core', 'Core_Command');
-
 /**
- * Implement core command
+ * Download, install, update and otherwise manage WordPress proper.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Core_Command extends WP_CLI_Command {
 
@@ -290,3 +287,6 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		WP_CLI::success( 'WordPress database upgraded successfully.' );
 	}
 }
+
+WP_CLI::add_command( 'core', 'Core_Command' );
+

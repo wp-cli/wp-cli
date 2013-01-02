@@ -1,14 +1,9 @@
 <?php
 
-if ( is_multisite() ) {
-	WP_CLI::add_command( 'blog', 'Blog_Command' );
-}
-
 /**
- * Implement core command
+ * Manage blogs in a multisite install.
  *
  * @package wp-cli
- * @subpackage commands/internals
  */
 class Blog_Command extends WP_CLI_Command {
 
@@ -153,4 +148,9 @@ class Blog_Command extends WP_CLI_Command {
 		, $current_site->domain, $slug ) );
 	}
 }
+
+if ( function_exists( 'is_multisite' ) && !is_multisite() )
+	return;
+
+WP_CLI::add_command( 'blog', 'Blog_Command' );
 

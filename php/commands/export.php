@@ -1,13 +1,5 @@
 <?php
 
-WP_CLI::add_command( 'export', new Export_Command );
-
-/**
- * Implement export command
- *
- * @package wp-cli
- * @subpackage commands/internals
- */
 class Export_Command extends WP_CLI_Command {
 
 	/**
@@ -17,7 +9,7 @@ class Export_Command extends WP_CLI_Command {
 	public $export_args = array();
 
 	/**
-	 * Export posts to a WXR file.
+	 * Export content to a WXR file.
 	 *
 	 * @synopsis [--dir=<dir>] [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--post__in=<pids>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>]
 	 */
@@ -539,3 +531,6 @@ class Export_Command extends WP_CLI_Command {
 		WP_CLI::success( "All done with export" );
 	}
 }
+
+WP_CLI::add_command( 'export', new Export_Command );
+
