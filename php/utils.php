@@ -264,12 +264,10 @@ function get_wp_config_code() {
 		if ( preg_match( '/^require.+wp-settings\.php/', $line ) )
 			continue;
 
-		$line = preg_replace( '|^\s*\<\?php\s*|', '', $line );
-
 		$lines_to_run[] = str_replace( $old, $new, $line );
 	}
 
-	return implode( "\n", $lines_to_run );
+	return preg_replace( '|^\s*\<\?php\s*|', '', implode( "\n", $lines_to_run ) );
 }
 
 /**
