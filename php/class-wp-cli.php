@@ -324,7 +324,7 @@ class WP_CLI {
 		Utils\set_url( self::$config );
 
 		if ( array( 'core', 'download' ) == self::$arguments ) {
-			self::run_command();
+			self::_run_command();
 			exit;
 		}
 
@@ -335,7 +335,7 @@ class WP_CLI {
 		}
 
 		if ( array( 'core', 'config' ) == self::$arguments ) {
-			self::run_command();
+			self::_run_command();
 			exit;
 		}
 
@@ -347,7 +347,7 @@ class WP_CLI {
 
 		if ( self::cmd_starts_with( array( 'db' ) ) ) {
 			eval( Utils\get_wp_config_code() );
-			self::run_command();
+			self::_run_command();
 			exit;
 		}
 
@@ -394,7 +394,7 @@ class WP_CLI {
 			exit;
 		}
 
-		self::run_command();
+		self::_run_command();
 	}
 
 	private static function cmd_dump() {
@@ -418,8 +418,32 @@ class WP_CLI {
 		return $dump;
 	}
 
-	private static function run_command() {
-		Utils\run_command( self::$arguments, self::$assoc_args );
+	private static function _run_command() {
+		self::run_command( self::$arguments, self::$assoc_args );
+	}
+
+	/**
+	 * Run a given command.
+	 *
+	 * @param array
+	 * @param array
+	 */
+	public static function run_command( $args, $assoc_args = array() ) {
+		$command = self::$root;
+
+		while ( !empty( $args ) && $command instanceof Dispatcher\CommandContainer ) {
+			$subcommand = $command->pre_invoke( $args );
+			if ( !$subcommand )
+				break;
+
+			$command = $subcommand;
+		}
+
+		if ( $command instanceof Dispatcher\CommandContainer ) {
+			$command->show_usage();
+		} else {
+			$command->invoke( $args, $assoc_args );
+		}
 	}
 
 	private static function show_info() {
