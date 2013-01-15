@@ -134,30 +134,6 @@ function get_command_file( $command ) {
 	return $path;
 }
 
-/**
- * Run a given command.
- *
- * @param array
- * @param array
- */
-function run_command( $args, $assoc_args = array() ) {
-	$command = \WP_CLI::$root;
-
-	while ( !empty( $args ) && $command instanceof Dispatcher\CommandContainer ) {
-		$subcommand = $command->pre_invoke( $args );
-		if ( !$subcommand )
-			break;
-
-		$command = $subcommand;
-	}
-
-	if ( $command instanceof Dispatcher\CommandContainer ) {
-		$command->show_usage();
-	} else {
-		$command->invoke( $args, $assoc_args );
-	}
-}
-
 function set_url( $assoc_args ) {
 	if ( isset( $assoc_args['url'] ) ) {
 		$url = $assoc_args['url'];

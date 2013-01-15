@@ -171,7 +171,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		WP_CLI::success( "Plugin scaffold created: $plugin_path" );
 
 		if ( isset( $assoc_args['activate'] ) )
-			\WP_CLI\Utils\run_command( array( 'plugin', 'activate', $plugin_slug ) );
+			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug ) );
 	}
 
 	private function create_file( $filename, $contents ) {
