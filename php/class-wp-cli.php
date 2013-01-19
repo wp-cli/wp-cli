@@ -293,8 +293,8 @@ class WP_CLI {
 		if ( !isset( self::$config['disabled_commands'] ) )
 			self::$config['disabled_commands'] = array();
 
-		if ( !isset( self::$config['colors'] ) )
-			self::$config['colors'] = ! \cli\Shell::isPiped();
+		if ( !isset( self::$config['color'] ) )
+			self::$config['color'] = ! \cli\Shell::isPiped();
 
 		self::parse_args();
 
