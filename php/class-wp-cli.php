@@ -103,7 +103,7 @@ class WP_CLI {
 		if ( WP_CLI_QUIET )
 			return;
 
-		fwrite( $handle, \cli\Colors::colorize( $message, ! \cli\Shell::isPiped() ) );
+		fwrite( $handle, \cli\Colors::colorize( $message, self::$config['color'] ) );
 	}
 
 	/**
@@ -287,11 +287,14 @@ class WP_CLI {
 		);
 
 		self::$config = Utils\load_config( array(
-			'path', 'url', 'user', 'disabled_commands'
+			'path', 'url', 'user', 'disabled_commands', 'color'
 		) );
 
 		if ( !isset( self::$config['disabled_commands'] ) )
 			self::$config['disabled_commands'] = array();
+
+		if ( !isset( self::$config['colors'] ) )
+			self::$config['colors'] = ! \cli\Shell::isPiped();
 
 		self::parse_args();
 
