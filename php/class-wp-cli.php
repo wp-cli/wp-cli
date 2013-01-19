@@ -269,8 +269,14 @@ class WP_CLI {
 		}
 	}
 
-	static function get_config() {
-		return self::$config;
+	static function get_config( $key = null ) {
+		if ( null === $key )
+			return self::$config;
+
+		if ( !isset( self::$config[ $key ] ) )
+			return null;
+
+		return self::$config[ $key ];
 	}
 
 	static function before_wp_load() {
@@ -286,12 +292,13 @@ class WP_CLI {
 		self::$config_path = Utils\get_config_path( self::$assoc_args );
 
 		self::$config = Utils\load_config( self::$config_path, array(
-			'path', 'url', 'user', 'disabled_commands', 'color'
+			'path', 'url', 'user', 'debug', 'disabled_commands', 'color'
 		) );
 
 		self::split_special( array(
 			'path', 'url', 'blog', 'user', 'require',
-			'quiet', 'completions', 'man', 'cmd-dump'
+			'quiet', 'debug',
+			'completions', 'man', 'cmd-dump'
 		) );
 
 		if ( !isset( self::$config['disabled_commands'] ) )
@@ -374,6 +381,13 @@ class WP_CLI {
 
 	private static function cmd_starts_with( $prefix ) {
 		return $prefix == array_slice( self::$arguments, 0, count( $prefix  ) );
+	}
+
+	static function after_wp_config_load() {
+		if ( isset( self::$config['debug'] ) ) {
+			if ( !defined( 'WP_DEBUG' ) )
+			define( 'WP_DEBUG', true );
+		}
 	}
 
 	static function after_wp_load() {

@@ -41,6 +41,7 @@ Global parameters:
 --config=<path>     set the path to the wp-cli config file
 --require=<path>    load a certain PHP file before running the command
 --quiet             suppress informational messages
+--debug             show all PHP errors
 --info              print wp-cli information
 EOB
 		);
