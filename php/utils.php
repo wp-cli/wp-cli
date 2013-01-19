@@ -74,7 +74,7 @@ function get_config_path( $assoc_args ) {
 	} else {
 		$paths = array(
 			getcwd() . '/wp-cli.local.yml',
-			getcwd() . 'wp-cli.yml'
+			getcwd() . '/wp-cli.yml'
 		);
 	}
 
