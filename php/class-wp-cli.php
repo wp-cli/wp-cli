@@ -14,7 +14,7 @@ class WP_CLI {
 
 	private static $man_dirs = array();
 
-	private static $config;
+	private static $config_path, $config;
 
 	private static $arguments, $assoc_args;
 
@@ -258,11 +258,6 @@ class WP_CLI {
 			self::$arguments[1] = 'update-all';
 			unset( self::$assoc_args['all'] );
 		}
-
-		self::split_special( array(
-			'path', 'url', 'blog', 'user', 'require',
-			'quiet', 'completions', 'man', 'cmd-dump'
-		) );
 	}
 
 	private static function split_special( $special_keys ) {
@@ -286,8 +281,17 @@ class WP_CLI {
 			WP_CLI_ROOT . "../man-src/"
 		);
 
-		self::$config = Utils\load_config( array(
+		self::parse_args();
+
+		self::$config_path = Utils\get_config_path( self::$assoc_args );
+
+		self::$config = Utils\load_config( self::$config_path, array(
 			'path', 'url', 'user', 'disabled_commands', 'color'
+		) );
+
+		self::split_special( array(
+			'path', 'url', 'blog', 'user', 'require',
+			'quiet', 'completions', 'man', 'cmd-dump'
 		) );
 
 		if ( !isset( self::$config['disabled_commands'] ) )
@@ -295,8 +299,6 @@ class WP_CLI {
 
 		if ( !isset( self::$config['color'] ) )
 			self::$config['color'] = ! \cli\Shell::isPiped();
-
-		self::parse_args();
 
 		define( 'WP_CLI_QUIET', isset( self::$config['quiet'] ) );
 
@@ -456,6 +458,7 @@ class WP_CLI {
 		WP_CLI::line( "PHP version:\t" . PHP_VERSION );
 		WP_CLI::line( "php.ini used:\t" . get_cfg_var( 'cfg_file_path' ) );
 		WP_CLI::line( "wp-cli root:\t" . WP_CLI_ROOT );
+		WP_CLI::line( "wp-cli config:\t" . self::$config_path );
 		WP_CLI::line( "wp-cli version:\t" . WP_CLI_VERSION );
 	}
 
