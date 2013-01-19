@@ -51,25 +51,39 @@ function register_autoload() {
 	} );
 }
 
-function load_config( $allowed_keys ) {
-	foreach ( array( 'wp-cli.local.yml', 'wp-cli.yml' ) as $fname ) {
-		$path = getcwd() . '/' . $fname;
+function load_config( $path, $allowed_keys ) {
+	if ( !$path )
+		return array();
 
-		if ( file_exists( $path ) ) {
-			$config = spyc_load_file( $path );
+	$config = spyc_load_file( $path );
 
-			$sanitized_config = array();
+	$sanitized_config = array();
 
-			foreach ( $allowed_keys as $key ) {
-				if ( isset( $config[ $key ] ) )
-					$sanitized_config[ $key ] = $config[ $key ];
-			}
-
-			return $sanitized_config;
-		}
+	foreach ( $allowed_keys as $key ) {
+		if ( isset( $config[ $key ] ) )
+			$sanitized_config[ $key ] = $config[ $key ];
 	}
 
-	return array();
+	return $sanitized_config;
+}
+
+function get_config_path( $assoc_args ) {
+	if ( isset( $assoc_args['config'] ) ) {
+		$paths = array( $assoc_args['config'] );
+		unset( $assoc_args['config'] );
+	} else {
+		$paths = array(
+			getcwd() . '/wp-cli.local.yml',
+			getcwd() . 'wp-cli.yml'
+		);
+	}
+
+	foreach ( $paths as $path ) {
+		if ( file_exists( $path ) )
+			return $path;
+	}
+
+	return false;
 }
 
 /**

@@ -35,10 +35,11 @@ class RootCommand extends AbstractCommandContainer implements Documentable {
 See 'wp help <command>' for more information on a specific command.
 
 Global parameters:
---user=<id|login>   set the current user
---url=<url>         set the current URL
---path=<path>       set the current path to the WP install
---require=<path>    load a certain file before running the command
+--user=<id|login>   set the WordPress user
+--url=<url>         set the URL
+--path=<path>       set the path to the WP install
+--config=<path>     set the path to the wp-cli config file
+--require=<path>    load a certain PHP file before running the command
 --quiet             suppress informational messages
 --info              print wp-cli information
 EOB
