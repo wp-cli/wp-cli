@@ -39,8 +39,11 @@ wp_fix_server_vars();
 // Start loading timer.
 timer_start();
 
+// Load WP-CLI utilities
+require WP_CLI_ROOT . 'utils-wp.php';
+
 // Check if we're in WP_DEBUG mode.
-wp_debug_mode();
+Utils\wp_debug_mode();
 
 // Define WP_LANG_DIR if not set.
 wp_set_lang_dir();
@@ -79,9 +82,6 @@ register_shutdown_function( 'shutdown_action_hook' );
 // Stop most of WordPress from being loaded if we just want the basics.
 if ( SHORTINIT )
 	return false;
-
-// Load WP-CLI utilities
-require WP_CLI_ROOT . 'utils-wp.php';
 
 // Load the L10n library.
 require_once( ABSPATH . WPINC . '/l10n.php' );
