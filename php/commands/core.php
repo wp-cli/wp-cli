@@ -13,7 +13,7 @@ class Core_Command extends WP_CLI_Command {
 	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>]
 	 */
 	public function download( $args, $assoc_args ) {
-		if ( is_readable( WP_ROOT . 'wp-load.php' ) )
+		if ( is_readable( ABSPATH . 'wp-load.php' ) )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
 		if ( isset( $assoc_args['path'] ) )
@@ -55,7 +55,7 @@ class Core_Command extends WP_CLI_Command {
 		$_GET['step'] = 2;
 
 		if ( WP_CLI_QUIET ) ob_start();
-		require WP_ROOT . '/wp-admin/setup-config.php';
+		require ABSPATH . '/wp-admin/setup-config.php';
 		if ( WP_CLI_QUIET ) ob_end_clean();
 	}
 

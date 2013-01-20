@@ -18,8 +18,6 @@ include WP_CLI_ROOT . 'man.php';
 WP_CLI::before_wp_load();
 
 // Load WordPress, in the global scope
-define( 'ABSPATH', WP_ROOT );
-
 eval( \WP_CLI\Utils\get_wp_config_code() );
 
 WP_CLI::after_wp_config_load();
