@@ -100,7 +100,7 @@ class WP_CLI {
 	 * @param string $message
 	 */
 	static function out( $message, $handle = STDOUT ) {
-		if ( WP_CLI_QUIET )
+		if ( self::get_config('quiet') )
 			return;
 
 		fwrite( $handle, \cli\Colors::colorize( $message, self::$config['color'] ) );
@@ -287,8 +287,6 @@ class WP_CLI {
 
 		if ( !isset( self::$config['color'] ) )
 			self::$config['color'] = ! \cli\Shell::isPiped();
-
-		define( 'WP_CLI_QUIET', isset( self::$config['quiet'] ) );
 
 		// Handle --version parameter
 		if ( isset( self::$assoc_args['version'] ) && empty( self::$arguments ) ) {
