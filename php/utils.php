@@ -158,10 +158,10 @@ function set_url( $assoc_args ) {
 		if ( true === $url ) {
 			\WP_CLI::line( 'usage: wp --blog=example.com' );
 		}
-	} elseif ( is_readable( WP_ROOT . 'wp-cli-blog' ) ) {
+	} elseif ( is_readable( ABSPATH . 'wp-cli-blog' ) ) {
 		\WP_CLI::warning( 'The wp-cli-blog file is deprecated. Use wp-cli.yml instead.' );
 
-		$url = trim( file_get_contents( WP_ROOT . 'wp-cli-blog' ) );
+		$url = trim( file_get_contents( ABSPATH . 'wp-cli-blog' ) );
 	} elseif ( $wp_config_path = locate_wp_config() ) {
 		// Try to find the blog parameter in the wp-config file
 		$wp_config_file = file_get_contents( $wp_config_path );
@@ -214,18 +214,18 @@ function set_url_params( $url ) {
 
 function set_wp_root( $config ) {
 	if ( !empty( $config['path'] ) ) {
-		define( 'WP_ROOT', rtrim( $config['path'], '/' ) . '/' );
+		define( 'ABSPATH', rtrim( $config['path'], '/' ) . '/' );
 	} else {
-		define( 'WP_ROOT', getcwd() . '/' );
+		define( 'ABSPATH', getcwd() . '/' );
 	}
 }
 
 function locate_wp_config() {
-	if ( file_exists( WP_ROOT . 'wp-config.php' ) )
-		return WP_ROOT . 'wp-config.php';
+	if ( file_exists( ABSPATH . 'wp-config.php' ) )
+		return ABSPATH . 'wp-config.php';
 
-	if ( file_exists( WP_ROOT . '/../wp-config.php' ) && ! file_exists( WP_ROOT . '/../wp-settings.php' ) )
-		return WP_ROOT . '/../wp-config.php';
+	if ( file_exists( ABSPATH . '/../wp-config.php' ) && ! file_exists( ABSPATH . '/../wp-settings.php' ) )
+		return ABSPATH . '/../wp-config.php';
 
 	return false;
 }

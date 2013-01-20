@@ -340,7 +340,7 @@ class WP_CLI {
 			exit;
 		}
 
-		if ( !is_readable( WP_ROOT . 'wp-load.php' ) ) {
+		if ( !is_readable( ABSPATH . 'wp-load.php' ) ) {
 			WP_CLI::error( "This does not seem to be a WordPress install.", false );
 			WP_CLI::line( "Pass --path=`path/to/wordpress` or run `wp core download`." );
 			exit(1);
