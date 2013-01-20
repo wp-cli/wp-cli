@@ -258,8 +258,10 @@ class WP_CLI {
 		if ( null === $key )
 			return self::$config;
 
-		if ( !isset( self::$config[ $key ] ) )
+		if ( !isset( self::$config[ $key ] ) ) {
+			self::warning( "Unknown config option '$key'." );
 			return null;
+		}
 
 		return self::$config[ $key ];
 	}
@@ -282,10 +284,7 @@ class WP_CLI {
 
 		Utils\split_special( self::$assoc_args, self::$config, $config_spec );
 
-		if ( !isset( self::$config['disabled_commands'] ) )
-			self::$config['disabled_commands'] = array();
-
-		if ( !isset( self::$config['color'] ) )
+		if ( 'auto' == self::$config['color'] )
 			self::$config['color'] = ! \cli\Shell::isPiped();
 
 		// Handle --version parameter
