@@ -124,8 +124,8 @@ class WP_CLI {
 	static function error( $message, $exit = true ) {
 		if ( !isset( self::$config['completions'] ) ) {
 			$label = 'Error';
-			$msg = '%R' . $label . ': %n' . self::error_to_string( $message );
-			self::out( $msg . "\n", STDERR );
+			$msg = '%R' . $label . ': %n' . self::error_to_string( $message ) . "\n";
+			fwrite( STDERR, \cli\Colors::colorize( $msg, self::$config['color'] ) );
 		}
 
 		if ( $exit )
@@ -139,9 +139,6 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function success( $message, $label = 'Success' ) {
-		if ( WP_CLI_QUIET )
-			return;
-
 		self::line( '%G' . $label . ': %n' . $message );
 	}
 
@@ -152,9 +149,6 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function warning( $message, $label = 'Warning' ) {
-		if ( WP_CLI_QUIET )
-			return;
-
 		$msg = '%C' . $label . ': %n' . self::error_to_string( $message );
 		self::out( $msg . "\n", STDERR );
 	}
