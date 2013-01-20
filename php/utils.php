@@ -51,20 +51,25 @@ function register_autoload() {
 	} );
 }
 
-function load_config( $path, $allowed_keys ) {
-	if ( !$path )
-		return array();
+function get_config_spec() {
+	static $spec;
 
-	$config = spyc_load_file( $path );
+	if ( !$spec ) {
+		$spec = include __DIR__ . '/config-spec.php';
 
-	$sanitized_config = array();
+		$defaults = array(
+			'runtime' => false,
+			'file' => false,
+			'synopsis' => '',
+			'default' => null,
+		);
 
-	foreach ( $allowed_keys as $key ) {
-		if ( isset( $config[ $key ] ) )
-			$sanitized_config[ $key ] = $config[ $key ];
+		foreach ( $spec as &$option ) {
+			$option = array_merge( $defaults, $option );
+		}
 	}
 
-	return $sanitized_config;
+	return $spec;
 }
 
 function get_config_path( $assoc_args ) {
@@ -84,6 +89,31 @@ function get_config_path( $assoc_args ) {
 	}
 
 	return false;
+}
+
+function load_config( $path, $spec ) {
+	if ( !$path )
+		return array();
+
+	$config = spyc_load_file( $path );
+
+	$sanitized_config = array();
+
+	foreach ( $spec as $key => $details ) {
+		if ( $details['file'] && isset( $config[ $key ] ) )
+			$sanitized_config[ $key ] = $config[ $key ];
+	}
+
+	return $sanitized_config;
+}
+
+function split_special( &$assoc_args, &$config, $spec ) {
+	foreach ( $spec as $key => $details ) {
+		if ( isset( $assoc_args[ $key ] ) ) {
+			$config[ $key ] = $assoc_args[ $key ];
+			unset( $assoc_args[ $key ] );
+		}
+	}
 }
 
 /**

@@ -260,15 +260,6 @@ class WP_CLI {
 		}
 	}
 
-	private static function split_special( $special_keys ) {
-		foreach ( $special_keys as $key ) {
-			if ( isset( self::$assoc_args[ $key ] ) ) {
-				self::$config[ $key ] = self::$assoc_args[ $key ];
-				unset( self::$assoc_args[ $key ] );
-			}
-		}
-	}
-
 	static function get_config( $key = null ) {
 		if ( null === $key )
 			return self::$config;
@@ -289,17 +280,13 @@ class WP_CLI {
 
 		self::parse_args();
 
+		$config_spec = Utils\get_config_spec();
+
 		self::$config_path = Utils\get_config_path( self::$assoc_args );
 
-		self::$config = Utils\load_config( self::$config_path, array(
-			'path', 'url', 'user', 'debug', 'disabled_commands', 'color'
-		) );
+		self::$config = Utils\load_config( self::$config_path, $config_spec );
 
-		self::split_special( array(
-			'path', 'url', 'blog', 'user', 'require',
-			'quiet', 'debug',
-			'completions', 'man', 'cmd-dump'
-		) );
+		Utils\split_special( self::$assoc_args, self::$config, $config_spec );
 
 		if ( !isset( self::$config['disabled_commands'] ) )
 			self::$config['disabled_commands'] = array();
@@ -322,7 +309,7 @@ class WP_CLI {
 		}
 
 		// Handle --cmd-dump parameter
-		if ( isset( self::$config['cmd-dump'] ) ) {
+		if ( isset( self::$assoc_args['cmd-dump'] ) ) {
 			self::cmd_dump();
 			exit;
 		}
@@ -401,12 +388,12 @@ class WP_CLI {
 		if ( isset( self::$config['require'] ) )
 			require self::$config['require'];
 
-		if ( isset( self::$config['man'] ) ) {
+		if ( isset( self::$assoc_args['man'] ) ) {
 			self::generate_man( self::$arguments );
 			exit;
 		}
 
-		if ( isset( self::$config['completions'] ) ) {
+		if ( isset( self::$assoc_args['completions'] ) ) {
 			self::render_automcomplete();
 			exit;
 		}
