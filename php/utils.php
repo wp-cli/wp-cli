@@ -92,16 +92,18 @@ function get_config_path( $assoc_args ) {
 }
 
 function load_config( $path, $spec ) {
-	if ( !$path )
-		return array();
-
-	$config = spyc_load_file( $path );
+	if ( $path )
+		$config = spyc_load_file( $path );
+	else
+		$config = array();
 
 	$sanitized_config = array();
 
 	foreach ( $spec as $key => $details ) {
 		if ( $details['file'] && isset( $config[ $key ] ) )
 			$sanitized_config[ $key ] = $config[ $key ];
+		else
+			$sanitized_config[ $key ] = $details['default'];
 	}
 
 	return $sanitized_config;

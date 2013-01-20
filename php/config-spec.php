@@ -50,7 +50,7 @@ return array(
 	'color' => array(
 		'runtime' => true,
 		'file' => true,
-		'default' => false,
+		'default' => 'auto',
 		'desc' => 'Show all PHP errors.',
 		'synopsis' => '<bool>',
 	),
