@@ -34,5 +34,3 @@ require ABSPATH . 'wp-admin/includes/admin.php';
 
 WP_CLI::after_wp_load();
 
-WP_CLI::run();
-
