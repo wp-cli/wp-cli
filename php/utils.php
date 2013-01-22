@@ -6,7 +6,7 @@ namespace WP_CLI\Utils;
 
 use \WP_CLI\Dispatcher;
 
-function bootstrap() {
+function load_dependencies() {
 	$vendor_paths = array(
 		WP_CLI_ROOT . '../../../../vendor',  // part of a larger project
 		WP_CLI_ROOT . '../vendor',           // top-level project
