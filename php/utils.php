@@ -52,21 +52,17 @@ function register_autoload() {
 }
 
 function get_config_spec() {
-	static $spec;
+	$spec = include __DIR__ . '/config-spec.php';
 
-	if ( !$spec ) {
-		$spec = include __DIR__ . '/config-spec.php';
+	$defaults = array(
+		'runtime' => false,
+		'file' => false,
+		'synopsis' => '',
+		'default' => null,
+	);
 
-		$defaults = array(
-			'runtime' => false,
-			'file' => false,
-			'synopsis' => '',
-			'default' => null,
-		);
-
-		foreach ( $spec as &$option ) {
-			$option = array_merge( $defaults, $option );
-		}
+	foreach ( $spec as &$option ) {
+		$option = array_merge( $defaults, $option );
 	}
 
 	return $spec;
