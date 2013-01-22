@@ -185,6 +185,12 @@ class Runner {
 		}
 
 		// Handle --cmd-dump parameter
+		if ( isset( $this->assoc_args['param-dump'] ) ) {
+			\WP_CLI\InternalAssoc::param_dump();
+			exit;
+		}
+
+		// Handle --cmd-dump parameter
 		if ( isset( $this->assoc_args['cmd-dump'] ) ) {
 			\WP_CLI\InternalAssoc::cmd_dump();
 			exit;
