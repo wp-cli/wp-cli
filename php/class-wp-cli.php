@@ -4,19 +4,28 @@ use \WP_CLI\Utils;
 use \WP_CLI\Dispatcher;
 
 /**
- * Wrapper class for WP-CLI
- *
- * @package wp-cli
+ * Various utilities for WP-CLI commands.
  */
 class WP_CLI {
 
 	public static $root;
 
+	public static $runner;
+
 	private static $man_dirs = array();
 
-	private static $config_path, $config;
+	/**
+	 * Initialize WP_CLI static variables.
+	 */
+	static function init() {
+		self::add_man_dir(
+			WP_CLI_ROOT . "../man/",
+			WP_CLI_ROOT . "../man-src/"
+		);
 
-	private static $arguments, $assoc_args;
+		self::$root = new Dispatcher\RootCommand;
+		self::$runner = new WP_CLI\Runner;
+	}
 
 	/**
 	 * Add a command to the wp-cli list of commands
@@ -25,7 +34,7 @@ class WP_CLI {
 	 * @param string|object $implementation The command implementation
 	 */
 	static function add_command( $name, $implementation ) {
-		if ( in_array( $name, self::$config['disabled_commands'] ) )
+		if ( in_array( $name, self::get_config('disabled_commands') ) )
 			return;
 
 		if ( is_string( $implementation ) ) {
@@ -53,7 +62,7 @@ class WP_CLI {
 			$subcommand_name = $subcommand->get_name();
 			$full_name = self::get_full_name( $subcommand );
 
-			if ( in_array( $full_name, self::$config['disabled_commands'] ) )
+			if ( in_array( $full_name, self::get_config('disabled_commands') ) )
 				continue;
 
 			$container->add_subcommand( $subcommand_name, $subcommand );
@@ -103,7 +112,7 @@ class WP_CLI {
 		if ( self::get_config('quiet') )
 			return;
 
-		fwrite( $handle, \cli\Colors::colorize( $message, self::$config['color'] ) );
+		fwrite( $handle, \cli\Colors::colorize( $message, self::get_config('color') ) );
 	}
 
 	/**
@@ -122,10 +131,10 @@ class WP_CLI {
 	 * @param bool $exit
 	 */
 	static function error( $message, $exit = true ) {
-		if ( !isset( self::$config['completions'] ) ) {
+		if ( ! self::get_config('completions') ) {
 			$label = 'Error';
 			$msg = '%R' . $label . ': %n' . self::error_to_string( $message ) . "\n";
-			fwrite( STDERR, \cli\Colors::colorize( $msg, self::$config['color'] ) );
+			fwrite( STDERR, \cli\Colors::colorize( $msg, self::get_config('color') ) );
 		}
 
 		if ( $exit )
@@ -233,171 +242,20 @@ class WP_CLI {
 		return $r;
 	}
 
-	private static function parse_args() {
-		$r = Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
-
-		list( self::$arguments, self::$assoc_args ) = $r;
-
-		// foo --help  ->  help foo
-		if ( isset( self::$assoc_args['help'] ) ) {
-			array_unshift( self::$arguments, 'help' );
-			unset( self::$assoc_args['help'] );
-		}
-
-		// {plugin|theme} update --all  ->  {plugin|theme} update-all
-		if ( count( self::$arguments ) > 1 && in_array( self::$arguments[0], array( 'plugin', 'theme' ) )
-			&& self::$arguments[1] == 'update'
-			&& isset( self::$assoc_args['all'] )
-		) {
-			self::$arguments[1] = 'update-all';
-			unset( self::$assoc_args['all'] );
-		}
-	}
-
 	static function get_config_path() {
-		return self::$config_path;
+		return self::$runner->config_path;
 	}
 
 	static function get_config( $key = null ) {
 		if ( null === $key )
-			return self::$config;
+			return self::$runner->config;
 
-		if ( !isset( self::$config[ $key ] ) ) {
+		if ( !isset( self::$runner->config[ $key ] ) ) {
 			self::warning( "Unknown config option '$key'." );
 			return null;
 		}
 
-		return self::$config[ $key ];
-	}
-
-	static function before_wp_load() {
-		self::$root = new Dispatcher\RootCommand;
-
-		self::add_man_dir(
-			WP_CLI_ROOT . "../man/",
-			WP_CLI_ROOT . "../man-src/"
-		);
-
-		self::parse_args();
-
-		$config_spec = Utils\get_config_spec();
-
-		self::$config_path = Utils\get_config_path( self::$assoc_args );
-
-		self::$config = Utils\load_config( self::$config_path, $config_spec );
-
-		Utils\split_special( self::$assoc_args, self::$config, $config_spec );
-
-		if ( 'auto' == self::$config['color'] )
-			self::$config['color'] = ! \cli\Shell::isPiped();
-
-		// Handle --version parameter
-		if ( isset( self::$assoc_args['version'] ) && empty( self::$arguments ) ) {
-			\WP_CLI\InternalAssoc::version();
-			exit;
-		}
-
-		// Handle --info parameter
-		if ( isset( self::$assoc_args['info'] ) && empty( self::$arguments ) ) {
-			\WP_CLI\InternalAssoc::info();
-			exit;
-		}
-
-		// Handle --cmd-dump parameter
-		if ( isset( self::$assoc_args['cmd-dump'] ) ) {
-			\WP_CLI\InternalAssoc::cmd_dump();
-			exit;
-		}
-
-		$_SERVER['DOCUMENT_ROOT'] = getcwd();
-
-		// Handle --path
-		Utils\set_wp_root( self::$config );
-
-		// Handle --url and --blog parameters
-		Utils\set_url( self::$config );
-
-		if ( array( 'core', 'download' ) == self::$arguments ) {
-			self::_run_command();
-			exit;
-		}
-
-		if ( !is_readable( ABSPATH . 'wp-load.php' ) ) {
-			WP_CLI::error( "This does not seem to be a WordPress install.", false );
-			WP_CLI::line( "Pass --path=`path/to/wordpress` or run `wp core download`." );
-			exit(1);
-		}
-
-		if ( array( 'core', 'config' ) == self::$arguments ) {
-			self::_run_command();
-			exit;
-		}
-
-		if ( !Utils\locate_wp_config() ) {
-			WP_CLI::error( "wp-config.php not found.", false );
-			WP_CLI::line( "Either create one manually or use `wp core config`." );
-			exit(1);
-		}
-
-		if ( self::cmd_starts_with( array( 'db' ) ) ) {
-			eval( Utils\get_wp_config_code() );
-			self::_run_command();
-			exit;
-		}
-
-		if (
-			self::cmd_starts_with( array( 'core', 'install' ) ) ||
-			self::cmd_starts_with( array( 'core', 'is-installed' ) )
-		) {
-			define( 'WP_INSTALLING', true );
-
-			if ( !isset( $_SERVER['HTTP_HOST'] ) ) {
-				Utils\set_url_params( 'http://example.com' );
-			}
-		}
-
-		// Pretend we're in WP_ADMIN
-		define( 'WP_ADMIN', true );
-		$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
-	}
-
-	private static function cmd_starts_with( $prefix ) {
-		return $prefix == array_slice( self::$arguments, 0, count( $prefix  ) );
-	}
-
-	static function after_wp_config_load() {
-		if ( isset( self::$config['debug'] ) ) {
-			if ( !defined( 'WP_DEBUG' ) )
-			define( 'WP_DEBUG', true );
-		}
-	}
-
-	static function after_wp_load() {
-		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
-
-		Utils\set_user( self::$config );
-
-		if ( !defined( 'WP_INSTALLING' ) && isset( self::$config['url'] ) )
-			Utils\set_wp_query();
-
-		if ( isset( self::$config['require'] ) )
-			require self::$config['require'];
-
-		if ( isset( self::$assoc_args['man'] ) ) {
-			\WP_CLI\InternalAssoc::man( self::$arguments );
-			exit;
-		}
-
-		if ( isset( self::$assoc_args['completions'] ) ) {
-			\WP_CLI\InternalAssoc::completions();
-			exit;
-		}
-
-		self::_run_command();
-	}
-
-	private static function _run_command() {
-		self::run_command( self::$arguments, self::$assoc_args );
+		return self::$runner->config[ $key ];
 	}
 
 	/**

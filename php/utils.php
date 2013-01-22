@@ -72,52 +72,6 @@ function get_config_spec() {
 	return $spec;
 }
 
-function get_config_path( $assoc_args ) {
-	if ( isset( $assoc_args['config'] ) ) {
-		$paths = array( $assoc_args['config'] );
-		unset( $assoc_args['config'] );
-	} else {
-		$paths = array(
-			getcwd() . '/wp-cli.local.yml',
-			getcwd() . '/wp-cli.yml'
-		);
-	}
-
-	foreach ( $paths as $path ) {
-		if ( file_exists( $path ) )
-			return $path;
-	}
-
-	return false;
-}
-
-function load_config( $path, $spec ) {
-	if ( $path )
-		$config = spyc_load_file( $path );
-	else
-		$config = array();
-
-	$sanitized_config = array();
-
-	foreach ( $spec as $key => $details ) {
-		if ( $details['file'] && isset( $config[ $key ] ) )
-			$sanitized_config[ $key ] = $config[ $key ];
-		else
-			$sanitized_config[ $key ] = $details['default'];
-	}
-
-	return $sanitized_config;
-}
-
-function split_special( &$assoc_args, &$config, $spec ) {
-	foreach ( $spec as $key => $details ) {
-		if ( isset( $assoc_args[ $key ] ) ) {
-			$config[ $key ] = $assoc_args[ $key ];
-			unset( $assoc_args[ $key ] );
-		}
-	}
-}
-
 /**
  * Splits $argv into positional and associative arguments.
  *
