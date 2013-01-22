@@ -254,6 +254,10 @@ class WP_CLI {
 		}
 	}
 
+	static function get_config_path() {
+		return self::$config_path;
+	}
+
 	static function get_config( $key = null ) {
 		if ( null === $key )
 			return self::$config;
@@ -289,19 +293,19 @@ class WP_CLI {
 
 		// Handle --version parameter
 		if ( isset( self::$assoc_args['version'] ) && empty( self::$arguments ) ) {
-			self::line( 'wp-cli ' . WP_CLI_VERSION );
+			\WP_CLI\InternalAssoc::version();
 			exit;
 		}
 
 		// Handle --info parameter
 		if ( isset( self::$assoc_args['info'] ) && empty( self::$arguments ) ) {
-			self::show_info();
+			\WP_CLI\InternalAssoc::info();
 			exit;
 		}
 
 		// Handle --cmd-dump parameter
 		if ( isset( self::$assoc_args['cmd-dump'] ) ) {
-			self::cmd_dump();
+			\WP_CLI\InternalAssoc::cmd_dump();
 			exit;
 		}
 
@@ -380,37 +384,16 @@ class WP_CLI {
 			require self::$config['require'];
 
 		if ( isset( self::$assoc_args['man'] ) ) {
-			self::generate_man( self::$arguments );
+			\WP_CLI\InternalAssoc::man( self::$arguments );
 			exit;
 		}
 
 		if ( isset( self::$assoc_args['completions'] ) ) {
-			self::render_automcomplete();
+			\WP_CLI\InternalAssoc::completions();
 			exit;
 		}
 
 		self::_run_command();
-	}
-
-	private static function cmd_dump() {
-		echo json_encode( self::command_to_array( self::$root ) );
-	}
-
-	private static function command_to_array( $command ) {
-		$dump = array(
-			'name' => $command->get_name(),
-			'description' => $command->get_shortdesc(),
-		);
-
-		if ( $command instanceof Dispatcher\AtomicCommand ) {
-			$dump['synopsis'] = (string) $command->get_synopsis();
-		} else {
-			foreach ( Dispatcher\get_subcommands( $command ) as $subcommand ) {
-				$dump['subcommands'][] = self::command_to_array( $subcommand );
-			}
-		}
-
-		return $dump;
 	}
 
 	private static function _run_command() {
@@ -438,43 +421,6 @@ class WP_CLI {
 			$command->show_usage();
 		} else {
 			$command->invoke( $args, $assoc_args );
-		}
-	}
-
-	private static function show_info() {
-		$php_bin = defined( 'PHP_BINARY' ) ? PHP_BINARY : getenv( 'WP_CLI_PHP_USED' );
-
-		WP_CLI::line( "PHP binary:\t" . $php_bin );
-		WP_CLI::line( "PHP version:\t" . PHP_VERSION );
-		WP_CLI::line( "php.ini used:\t" . get_cfg_var( 'cfg_file_path' ) );
-		WP_CLI::line( "wp-cli root:\t" . WP_CLI_ROOT );
-		WP_CLI::line( "wp-cli config:\t" . self::$config_path );
-		WP_CLI::line( "wp-cli version:\t" . WP_CLI_VERSION );
-	}
-
-	private static function generate_man( $args ) {
-		$arg_copy = $args;
-
-		$command = \WP_CLI::$root;
-
-		while ( !empty( $args ) && $command && $command instanceof Dispatcher\CommandContainer ) {
-			$command = $command->find_subcommand( $args );
-		}
-
-		if ( !$command )
-			WP_CLI::error( sprintf( "'%s' command not found.",
-				implode( ' ', $arg_copy ) ) );
-
-		foreach ( self::$man_dirs as $dest_dir => $src_dir ) {
-			\WP_CLI\Man\generate( $src_dir, $dest_dir, $command );
-		}
-	}
-
-	private static function render_automcomplete() {
-		foreach ( self::$root->get_subcommands() as $name => $command ) {
-			$subcommands = Dispatcher\get_subcommands( $command );
-
-			self::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
 		}
 	}
 
