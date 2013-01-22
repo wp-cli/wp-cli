@@ -20,7 +20,7 @@ WP_CLI::init();
 WP_CLI::$runner->before_wp_load();
 
 // Load WordPress, in the global scope
-eval( \WP_CLI\Utils\get_wp_config_code() );
+eval( WP_CLI::$runner->get_wp_config_code() );
 
 WP_CLI::$runner->after_wp_config_load();
 

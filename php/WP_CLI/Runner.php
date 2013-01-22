@@ -62,6 +62,85 @@ class Runner {
 		}
 	}
 
+	private static function set_wp_root( $config ) {
+		if ( !empty( $config['path'] ) ) {
+			define( 'ABSPATH', rtrim( $config['path'], '/' ) . '/' );
+		} else {
+			define( 'ABSPATH', getcwd() . '/' );
+		}
+	}
+
+	private static function set_url( $assoc_args ) {
+		if ( isset( $assoc_args['url'] ) ) {
+			$url = $assoc_args['url'];
+		} elseif ( isset( $assoc_args['blog'] ) ) {
+			WP_CLI::warning( 'The --blog parameter is deprecated. Use --url instead.' );
+
+			$url = $assoc_args['blog'];
+			if ( true === $url ) {
+				WP_CLI::line( 'usage: wp --blog=example.com' );
+			}
+		} elseif ( is_readable( ABSPATH . 'wp-cli-blog' ) ) {
+			WP_CLI::warning( 'The wp-cli-blog file is deprecated. Use wp-cli.yml instead.' );
+
+			$url = trim( file_get_contents( ABSPATH . 'wp-cli-blog' ) );
+		} elseif ( $wp_config_path = Utils\locate_wp_config() ) {
+			// Try to find the blog parameter in the wp-config file
+			$wp_config_file = file_get_contents( $wp_config_path );
+			$hit = array();
+
+			$re_define = "#.*define\s*\(\s*(['|\"]{1})(.+)(['|\"]{1})\s*,\s*(['|\"]{1})(.+)(['|\"]{1})\s*\)\s*;#iU";
+
+			if ( preg_match_all( $re_define, $wp_config_file, $matches ) ) {
+				foreach ( $matches[2] as $def_key => $def_name ) {
+					if ( 'DOMAIN_CURRENT_SITE' == $def_name )
+						$hit['domain'] = $matches[5][$def_key];
+					if ( 'PATH_CURRENT_SITE' == $def_name )
+						$hit['path'] = $matches[5][$def_key];
+				}
+			}
+
+			if ( !empty( $hit ) && isset( $hit['domain'] ) )
+				$url = $hit['domain'];
+			if ( !empty( $hit ) && isset( $hit['path'] ) )
+				$url .= $hit['path'];
+		}
+
+		if ( isset( $url ) ) {
+			Utils\set_url_params( $url );
+		}
+	}
+
+	/**
+	 * Returns wp-config.php code, skipping the loading of wp-settings.php
+	 *
+	 * @return string
+	 */
+	function get_wp_config_code() {
+		$wp_config_path = Utils\locate_wp_config();
+
+		$replacements = array(
+			'__FILE__' => "'$wp_config_path'",
+			'__DIR__'  => "'" . dirname( $wp_config_path ) . "'"
+		);
+
+		$old = array_keys( $replacements );
+		$new = array_values( $replacements );
+
+		$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
+
+		$lines_to_run = array();
+
+		foreach ( $wp_config_code as $line ) {
+			if ( preg_match( '/^require.+wp-settings\.php/', $line ) )
+				continue;
+
+			$lines_to_run[] = str_replace( $old, $new, $line );
+		}
+
+		return preg_replace( '|^\s*\<\?php\s*|', '', implode( "\n", $lines_to_run ) );
+	}
+
 	public function before_wp_load() {
 		$r = Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
@@ -114,10 +193,10 @@ class Runner {
 		$_SERVER['DOCUMENT_ROOT'] = getcwd();
 
 		// Handle --path
-		Utils\set_wp_root( $this->config );
+		self::set_wp_root( $this->config );
 
 		// Handle --url and --blog parameters
-		Utils\set_url( $this->config );
+		self::set_url( $this->config );
 
 		if ( array( 'core', 'download' ) == $this->arguments ) {
 			$this->_run_command();
@@ -142,7 +221,7 @@ class Runner {
 		}
 
 		if ( $this->cmd_starts_with( array( 'db' ) ) ) {
-			eval( Utils\get_wp_config_code() );
+			eval( $this->get_wp_config_code() );
 			$this->_run_command();
 			exit;
 		}
