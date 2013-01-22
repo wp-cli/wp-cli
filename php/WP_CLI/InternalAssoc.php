@@ -23,6 +23,10 @@ class InternalAssoc {
 		WP_CLI::line( "wp-cli version:\t" . WP_CLI_VERSION );
 	}
 
+	static function param_dump() {
+		echo json_encode( Utils\get_config_spec() );
+	}
+
 	static function cmd_dump() {
 		echo json_encode( self::command_to_array( WP_CLI::$root ) );
 	}
