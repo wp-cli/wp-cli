@@ -2,73 +2,58 @@
 
 return array(
 	'path' => array(
-		'runtime' => true,
-		'file' => true,
-		'default' => null,
+		'runtime' => '=<path>',
+		'file' => '<path>',
 		'desc' => 'Path to the WordPress files',
-		'synopsis' => '<path>'
 	),
 
 	'url' => array(
-		'runtime' => true,
-		'file' => true,
-		'default' => null,
+		'runtime' => '=<url>',
+		'file' => '<url>',
 		'desc' => 'Pretend request came from given URL',
-		'synopsis' => '<url>'
 	),
 	'blog' => array(
 		'deprecated' => 'Use --url instead',
-		'runtime' => true,
-		'file' => false,
-		'default' => null,
-		'synopsis' => '<url>',
+		'runtime' => '',
 	),
 
 	'user' => array(
-		'runtime' => true,
-		'file' => true,
-		'default' => null,
+		'runtime' => '=<id|login>',
+		'file' => '<id|login>',
 		'desc' => 'Set the WordPress user',
-		'synopsis' => '<id|login>'
 	),
 
 	'require' => array(
-		'runtime' => true,
-		'file' => true,
-		'default' => null,
+		'runtime' => '=<path>',
+		'file' => '<path>',
 		'desc' => 'Load given PHP file before running the command',
-		'synopsis' => '<path>'
 	),
 
 	'disabled_commands' => array(
-		'runtime' => false,
-		'file' => true,
+		'file' => '<list>',
 		'default' => array(),
 		'desc' => '(Sub)commands to disable',
 	),
 
 	'color' => array(
 		'runtime' => true,
-		'file' => true,
+		'file' => '<bool>',
 		'default' => 'auto',
-		'desc' => 'Show all PHP errors.',
-		'synopsis' => '<bool>',
+		'desc' => 'Whether to colozire the output',
 	),
 
 	'debug' => array(
-		'runtime' => true,
-		'file' => true,
+		'runtime' => '',
+		'file' => '<bool>',
 		'default' => false,
-		'desc' => 'Show all PHP errors.',
-		'synopsis' => '',
+		'desc' => 'Show all PHP errors',
 	),
 
 	'quiet' => array(
-		'runtime' => true,
-		'file' => true,
+		'runtime' => '',
+		'file' => '<bool>',
 		'default' => false,
-		'desc' => 'Show all PHP errors.',
-		'synopsis' => '<bool>',
+		'desc' => 'Suppress informational messages',
 	),
 );
 
