@@ -70,7 +70,7 @@ class Runner {
 
 	private static function split_special( &$assoc_args, &$config, $spec ) {
 		foreach ( $spec as $key => $details ) {
-			if ( true == $details['runtime'] ) {
+			if ( true === $details['runtime'] ) {
 				self::handle_boolean_param( $assoc_args, $config, $key );
 			} elseif ( false !== $details['runtime'] ) {
 				if ( isset( $assoc_args[ $key ] ) ) {
