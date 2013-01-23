@@ -4,7 +4,7 @@ class Menu_Command extends WP_CLI_Command {
     
     function list_locations() {
         $locations = get_nav_menu_locations();
-        WP_CLI::print_value($locations);
+//        WP_CLI::print_value($locations);
         $data = array();
         foreach ($locations as $location=>$id) {
             $data[] = array($id, $location);
@@ -85,6 +85,44 @@ class Menu_Command extends WP_CLI_Command {
         WP_CLI::success("Menu '". $_menu->name. "' deleted");
     }
     
+    /**
+     * Attach menu to location
+     * 
+     * @param type $args
+     * @param type $assoc_args
+     * 
+     * @synopsis <location> <menu_slug>
+     */
+    function attach_menu($args, $assoc_args) {
+        
+        if (count($args) != 2) {
+            WP_CLI::error('Missing arguments');
+            return;
+        }
+        
+        $location  = $args[0];
+        $menu_slug = $args[1];
+        
+        $locations = get_nav_menu_locations();
+       
+        if (!isset($locations[$location])) {
+            WP_CLI::error('Unknown menu location: ' . $location);
+            return;
+        }
+        
+        $_menu = wp_get_nav_menu_object($menu_slug);
+        
+        if (!$_menu) {
+            WP_CLI::error('Menu "' . $menu_slug . '" not found');
+            return;
+        }
+
+        $locations = get_theme_mod('nav_menu_locations');
+        $locations[$location] = $_menu->term_id;
+        set_theme_mod( 'nav_menu_locations', $locations );
+        
+        WP_CLI::success("Menu configuration updated");
+    }
     
     /**
      * Appends new menu item
