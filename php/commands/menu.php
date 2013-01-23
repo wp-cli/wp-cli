@@ -16,9 +16,27 @@ class Menu_Command extends WP_CLI_Command {
         $table->display();
     }
     
-    
-    function get_nav_menus() {
-        var_dump(wp_get_nav_menus());
+    /*
+     * Get nav menus
+     *  
+     * @synopsis 
+     */
+    function get_nav_menus($args, $assoc_args) {
+        $menus = wp_get_nav_menus();
+        $data = array();
+        foreach ($menus as $menu) {
+            $data[] = array($menu->term_id, $menu->slug, $menu->name);
+        }
+        
+        if (isset($assoc_args['json'])) {
+            WP_CLI::print_value($data, $assoc_args);
+            return;
+        }
+
+        $table = new \cli\Table();
+        $table->setHeaders( array('Id', 'Slug', 'Name' ) );
+        $table->setRows( $data );
+        $table->display();
     }
     
     /*
