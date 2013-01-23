@@ -196,6 +196,7 @@ function set_url_params( $url ) {
 	$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
 	$_SERVER['HTTP_USER_AGENT'] = '';
 	$_SERVER['REQUEST_METHOD'] = 'GET';
+	$_SERVER['HTTP_ACCEPT'] = 'text/plain';
 }
 
 function set_wp_root( $config ) {
