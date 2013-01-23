@@ -53,11 +53,30 @@ class Runner {
 		return $sanitized_config;
 	}
 
+	private static function handle_boolean_param( &$assoc_args, &$config, $param ) {
+		$subkeys = array(
+			"$param" => true,
+			"no-$param" => false
+		);
+
+		foreach ( $subkeys as $key => $value ) {
+			if ( isset( $assoc_args[ $key ] ) ) {
+				$config[ $param ] = $value;
+			}
+
+			unset( $assoc_args[ $key ] );
+		}
+	}
+
 	private static function split_special( &$assoc_args, &$config, $spec ) {
 		foreach ( $spec as $key => $details ) {
-			if ( isset( $assoc_args[ $key ] ) ) {
-				$config[ $key ] = $assoc_args[ $key ];
-				unset( $assoc_args[ $key ] );
+			if ( true == $details['runtime'] ) {
+				self::handle_boolean_param( $assoc_args, $config, $key );
+			} elseif ( false !== $details['runtime'] ) {
+				if ( isset( $assoc_args[ $key ] ) ) {
+					$config[ $key ] = $assoc_args[ $key ];
+					unset( $assoc_args[ $key ] );
+				}
 			}
 		}
 	}
@@ -169,8 +188,12 @@ class Runner {
 
 		self::split_special( $this->assoc_args, $this->config, $config_spec );
 
-		if ( 'auto' == $this->config['color'] )
+		if ( isset( $this->assoc_args['no-color'] ) ) {
+			$this->config['color'] = false;
+			unset( $this->assoc_args['no-color'] );
+		} elseif ( 'auto' == $this->config['color'] ) {
 			$this->config['color'] = ! \cli\Shell::isPiped();
+		}
 
 		// Handle --version parameter
 		if ( isset( $this->assoc_args['version'] ) && empty( $this->arguments ) ) {
