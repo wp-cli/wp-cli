@@ -131,7 +131,7 @@ class WP_CLI {
 	 * @param bool $exit
 	 */
 	static function error( $message, $exit = true ) {
-		if ( ! self::get_config('completions') ) {
+		if ( ! isset( self::$runner->assoc_args[ 'completions' ] ) ) {
 			$label = 'Error';
 			$msg = '%R' . $label . ': %n' . self::error_to_string( $message ) . "\n";
 			fwrite( STDERR, \cli\Colors::colorize( $msg, self::get_config('color') ) );
