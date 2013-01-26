@@ -157,13 +157,21 @@ function set_url_params( $url ) {
 }
 
 function locate_wp_config() {
-	if ( file_exists( ABSPATH . 'wp-config.php' ) )
-		return ABSPATH . 'wp-config.php';
+	static $path;
 
-	if ( file_exists( ABSPATH . '../wp-config.php' ) && ! file_exists( ABSPATH . '/../wp-settings.php' ) )
-		return ABSPATH . '../wp-config.php';
+	if ( null === $path ) {
+		if ( file_exists( ABSPATH . 'wp-config.php' ) )
+			$path = ABSPATH . 'wp-config.php';
+		elseif ( file_exists( ABSPATH . '../wp-config.php' ) && ! file_exists( ABSPATH . '/../wp-settings.php' ) )
+			$path = ABSPATH . '../wp-config.php';
+		else
+			$path = false;
 
-	return false;
+		if ( $path )
+			$path = realpath( $path );
+	}
+
+	return $path;
 }
 
 /**
