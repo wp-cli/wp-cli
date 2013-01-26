@@ -75,37 +75,37 @@
     <include name="**/**"/>
     <exclude name="**/.DS_Store"/>
     <exclude name="**/.empty"/>
-    <exclude name="**/.svn"/>
+    <exclude name="**/.git*"/>
   </fileset>
   <fileset dir="${project.src.datadir}" id="datafiles">
     <include name="**/**"/>
     <exclude name="**/.DS_Store"/>
     <exclude name="**/.empty"/>
-    <exclude name="**/.svn"/>
+    <exclude name="**/.git*"/>
   </fileset>
   <fileset dir="${project.src.phpdir}" id="phpfiles">
     <include name="**/**"/>
     <exclude name="**/.DS_Store"/>
     <exclude name="**/.empty"/>
-    <exclude name="**/.svn"/>
+    <exclude name="**/.git*"/>
   </fileset>
   <fileset dir="${project.src.testunitdir}/php" id="testfiles">
     <include name="**/**"/>
     <exclude name="**/.DS_Store"/>
     <exclude name="**/.empty"/>
-    <exclude name="**/.svn"/>
+    <exclude name="**/.git*"/>
   </fileset>
   <fileset dir="${project.src.wwwdir}" id="wwwfiles">
     <include name="**/**" />
     <exclude name="**/.DS_Store"/>
     <exclude name="**/.empty"/>
-    <exclude name="**/.svn"/>
+    <exclude name="**/.git*"/>
   </fileset>
   <fileset dir="${project.src.docdir}" id="docfiles">
     <include name="**/**" />
     <exclude name="**/.DS_Store"/>
     <exclude name="**/.empty"/>
-    <exclude name="**/.svn"/>
+    <exclude name="**/.git*"/>
   </fileset>
   <fileset dir="${project.basedir}" id="topleveldocfiles">
     <include name="*.txt" />
