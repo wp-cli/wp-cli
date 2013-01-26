@@ -84,10 +84,7 @@
     <exclude name="**/.git*"/>
   </fileset>
   <fileset dir="${project.src.phpdir}" id="phpfiles">
-    <include name="**/**"/>
-    <exclude name="**/.DS_Store"/>
-    <exclude name="**/.empty"/>
-    <exclude name="**/.git*"/>
+    <include name="**/*.php"/>
   </fileset>
   <fileset dir="${project.src.testunitdir}/php" id="testfiles">
     <include name="**/**"/>

@@ -6,7 +6,6 @@ set -ex
 mkdir -p docs data www tests/unit-tests/php 
 
 # generate package
-find -name '*~' -delete
 phing pear-package
 
 version=$(cat dist/lastBuilt)
@@ -16,11 +15,14 @@ version="${version/.tgz/}"
 #sudo phing install-system
 
 # update channel files
-cd ../wp-cli-pear
-pirum add . ../wp-cli/dist/wpcli-$version.tgz
-pirum build .
+pear_repo=../wp-cli-pear
+
+pirum add $pear_repo ../wp-cli/dist/wpcli-$version.tgz
+pirum build $pear_repo
 
 # push changes
+cd $pear_repo
+
 git add -A
 git ci -m "release $version"
 git push origin gh-pages
