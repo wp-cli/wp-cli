@@ -160,8 +160,8 @@ function locate_wp_config() {
 	if ( file_exists( ABSPATH . 'wp-config.php' ) )
 		return ABSPATH . 'wp-config.php';
 
-	if ( file_exists( ABSPATH . '/../wp-config.php' ) && ! file_exists( ABSPATH . '/../wp-settings.php' ) )
-		return ABSPATH . '/../wp-config.php';
+	if ( file_exists( ABSPATH . '../wp-config.php' ) && ! file_exists( ABSPATH . '/../wp-settings.php' ) )
+		return ABSPATH . '../wp-config.php';
 
 	return false;
 }
