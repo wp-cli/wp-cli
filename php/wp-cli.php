@@ -3,7 +3,7 @@
 // Can be used by plugins/themes to check if wp-cli is running or not
 define( 'WP_CLI', true );
 
-define( 'WP_CLI_VERSION', '0.8.0' );
+define( 'WP_CLI_VERSION', '0.9.0-dev' );
 
 define( 'WP_CLI_ROOT', __DIR__ . '/' );
 
