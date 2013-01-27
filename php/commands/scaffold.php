@@ -139,6 +139,9 @@ class Scaffold_Command extends WP_CLI_Command {
 			$path = TEMPLATEPATH;
 		} elseif ( ! empty( $plugin ) ) {
 			$path = WP_PLUGIN_DIR . '/' . $plugin;
+			if ( !is_dir( $path ) ) {
+				WP_CLI::error( "Can't find '$plugin' plugin." );
+			}
 		} else {
 			return false;
 		}
