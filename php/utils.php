@@ -6,7 +6,7 @@ namespace WP_CLI\Utils;
 
 use \WP_CLI\Dispatcher;
 
-function bootstrap() {
+function load_dependencies() {
 	$vendor_paths = array(
 		WP_CLI_ROOT . '../../../../vendor',  // part of a larger project
 		WP_CLI_ROOT . '../vendor',           // top-level project
@@ -51,25 +51,21 @@ function register_autoload() {
 	} );
 }
 
-function load_config( $allowed_keys ) {
-	foreach ( array( 'wp-cli.local.yml', 'wp-cli.yml' ) as $fname ) {
-		$path = getcwd() . '/' . $fname;
+function get_config_spec() {
+	$spec = include __DIR__ . '/config-spec.php';
 
-		if ( file_exists( $path ) ) {
-			$config = spyc_load_file( $path );
+	$defaults = array(
+		'runtime' => false,
+		'file' => false,
+		'synopsis' => '',
+		'default' => null,
+	);
 
-			$sanitized_config = array();
-
-			foreach ( $allowed_keys as $key ) {
-				if ( isset( $config[ $key ] ) )
-					$sanitized_config[ $key ] = $config[ $key ];
-			}
-
-			return $sanitized_config;
-		}
+	foreach ( $spec as &$option ) {
+		$option = array_merge( $defaults, $option );
 	}
 
-	return array();
+	return $spec;
 }
 
 /**
@@ -135,68 +131,6 @@ function get_command_file( $command ) {
 }
 
 /**
- * Run a given command.
- *
- * @param array
- * @param array
- */
-function run_command( $args, $assoc_args = array() ) {
-	$command = \WP_CLI::$root;
-
-	while ( !empty( $args ) && $command instanceof Dispatcher\CommandContainer ) {
-		$subcommand = $command->pre_invoke( $args );
-		if ( !$subcommand )
-			break;
-
-		$command = $subcommand;
-	}
-
-	if ( $command instanceof Dispatcher\CommandContainer ) {
-		$command->show_usage();
-	} else {
-		$command->invoke( $args, $assoc_args );
-	}
-}
-
-function set_url( $assoc_args ) {
-	if ( isset( $assoc_args['url'] ) ) {
-		$url = $assoc_args['url'];
-	} elseif ( isset( $assoc_args['blog'] ) ) {
-		\WP_CLI::warning( 'The --blog parameter is deprecated. Use --url instead.' );
-
-		$url = $assoc_args['blog'];
-		if ( true === $url ) {
-			\WP_CLI::line( 'usage: wp --blog=example.com' );
-		}
-	} elseif ( is_readable( WP_ROOT . 'wp-cli-blog' ) ) {
-		\WP_CLI::warning( 'The wp-cli-blog file is deprecated. Use wp-cli.yml instead.' );
-
-		$url = trim( file_get_contents( WP_ROOT . 'wp-cli-blog' ) );
-	} elseif ( $wp_config_path = locate_wp_config() ) {
-		// Try to find the blog parameter in the wp-config file
-		$wp_config_file = file_get_contents( $wp_config_path );
-		$hit = array();
-		if ( preg_match_all( "#.*define\s*\(\s*(['|\"]{1})(.+)(['|\"]{1})\s*,\s*(['|\"]{1})(.+)(['|\"]{1})\s*\)\s*;#iU", $wp_config_file, $matches ) ) {
-			foreach ( $matches[2] as $def_key => $def_name ) {
-				if ( 'DOMAIN_CURRENT_SITE' == $def_name )
-					$hit['domain'] = $matches[5][$def_key];
-				if ( 'PATH_CURRENT_SITE' == $def_name )
-					$hit['path'] = $matches[5][$def_key];
-			}
-		}
-
-		if ( !empty( $hit ) && isset( $hit['domain'] ) )
-			$url = $hit['domain'];
-		if ( !empty( $hit ) && isset( $hit['path'] ) )
-			$url .= $hit['path'];
-	}
-
-	if ( isset( $url ) ) {
-		set_url_params( $url );
-	}
-}
-
-/**
  * Sets the appropriate $_SERVER keys based on a given string
  *
  * @param string $url The URL
@@ -222,52 +156,22 @@ function set_url_params( $url ) {
 	$_SERVER['REQUEST_METHOD'] = 'GET';
 }
 
-function set_wp_root( $config ) {
-	if ( !empty( $config['path'] ) ) {
-		define( 'WP_ROOT', rtrim( $config['path'], '/' ) . '/' );
-	} else {
-		define( 'WP_ROOT', getcwd() . '/' );
-	}
-}
-
 function locate_wp_config() {
-	if ( file_exists( WP_ROOT . 'wp-config.php' ) )
-		return WP_ROOT . 'wp-config.php';
+	static $path;
 
-	if ( file_exists( WP_ROOT . '/../wp-config.php' ) && ! file_exists( WP_ROOT . '/../wp-settings.php' ) )
-		return WP_ROOT . '/../wp-config.php';
+	if ( null === $path ) {
+		if ( file_exists( ABSPATH . 'wp-config.php' ) )
+			$path = ABSPATH . 'wp-config.php';
+		elseif ( file_exists( ABSPATH . '../wp-config.php' ) && ! file_exists( ABSPATH . '/../wp-settings.php' ) )
+			$path = ABSPATH . '../wp-config.php';
+		else
+			$path = false;
 
-	return false;
-}
-
-/**
- * Returns wp-config.php code, skipping the loading of wp-settings.php
- *
- * @return string
- */
-function get_wp_config_code() {
-	$wp_config_path = locate_wp_config();
-
-	$replacements = array(
-		'__FILE__' => "'$wp_config_path'",
-		'__DIR__'  => "'" . dirname( $wp_config_path ) . "'"
-	);
-
-	$old = array_keys( $replacements );
-	$new = array_values( $replacements );
-
-	$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
-
-	$lines_to_run = array();
-
-	foreach ( $wp_config_code as $line ) {
-		if ( preg_match( '/^require.+wp-settings\.php/', $line ) )
-			continue;
-
-		$lines_to_run[] = str_replace( $old, $new, $line );
+		if ( $path )
+			$path = realpath( $path );
 	}
 
-	return preg_replace( '|^\s*\<\?php\s*|', '', implode( "\n", $lines_to_run ) );
+	return $path;
 }
 
 /**

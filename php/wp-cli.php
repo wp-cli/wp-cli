@@ -3,7 +3,7 @@
 // Can be used by plugins/themes to check if wp-cli is running or not
 define( 'WP_CLI', true );
 
-define( 'WP_CLI_VERSION', '0.8.0-alpha' );
+define( 'WP_CLI_VERSION', '0.9.0-dev' );
 
 define( 'WP_CLI_ROOT', __DIR__ . '/' );
 
@@ -13,14 +13,16 @@ include WP_CLI_ROOT . 'class-wp-cli.php';
 include WP_CLI_ROOT . 'class-wp-cli-command.php';
 include WP_CLI_ROOT . 'man.php';
 
-\WP_CLI\Utils\bootstrap();
+\WP_CLI\Utils\load_dependencies();
 
-WP_CLI::before_wp_load();
+WP_CLI::init();
+
+WP_CLI::$runner->before_wp_load();
 
 // Load WordPress, in the global scope
-define( 'ABSPATH', WP_ROOT );
+eval( WP_CLI::$runner->get_wp_config_code() );
 
-eval( \WP_CLI\Utils\get_wp_config_code() );
+WP_CLI::$runner->after_wp_config_load();
 
 require WP_CLI_ROOT . 'wp-settings-cli.php';
 
@@ -30,7 +32,5 @@ require WP_CLI_ROOT . 'wp-settings-cli.php';
 // Load all admin utilities
 require ABSPATH . 'wp-admin/includes/admin.php';
 
-WP_CLI::after_wp_load();
-
-WP_CLI::run();
+WP_CLI::$runner->after_wp_load();
 

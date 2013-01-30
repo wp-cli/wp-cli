@@ -35,14 +35,41 @@ class RootCommand extends AbstractCommandContainer implements Documentable {
 See 'wp help <command>' for more information on a specific command.
 
 Global parameters:
---user=<id|login>   set the current user
---url=<url>         set the current URL
---path=<path>       set the current path to the WP install
---require=<path>    load a certain file before running the command
---quiet             suppress informational messages
---info              print wp-cli information
 EOB
-		);
+	);
+
+		\WP_CLI::line( self::generate_synopsis() );
+	}
+
+	private static function generate_synopsis() {
+		$max_len = 0;
+
+		$lines = array();
+
+		foreach ( \WP_CLI\Utils\get_config_spec() as $key => $details ) {
+			if ( false === $details['runtime'] )
+				continue;
+
+			if ( isset( $details['deprecated'] ) )
+				continue;
+
+			$synopsis = ( true === $details['runtime'] )
+				? "--$key/--no-$key"
+				: "--$key" . $details['runtime'];
+
+			$cur_len = strlen( $synopsis );
+
+			if ( $max_len < $cur_len )
+				$max_len = $cur_len;
+
+			$lines[] = array( $synopsis, $details['desc'] );
+		}
+
+		foreach ( $lines as $line ) {
+			list( $synopsis, $desc ) = $line;
+
+			\WP_CLI::line( '    ' . str_pad( $synopsis, $max_len ) . '  ' . $desc );
+		}
 	}
 
 	function pre_invoke( &$args ) {

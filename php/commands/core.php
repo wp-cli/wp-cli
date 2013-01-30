@@ -13,7 +13,7 @@ class Core_Command extends WP_CLI_Command {
 	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>]
 	 */
 	public function download( $args, $assoc_args ) {
-		if ( is_readable( WP_ROOT . 'wp-load.php' ) )
+		if ( is_readable( ABSPATH . 'wp-load.php' ) )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
 		if ( isset( $assoc_args['path'] ) )
@@ -34,7 +34,9 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::line( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		WP_CLI::launch( 'curl -f' . (WP_CLI_QUIET ? ' --silent ' : ' ') . escapeshellarg( $download_url ) . ' | tar xz' );
+		$silent = WP_CLI::get_config('quiet') ? ' --silent ' : ' ';
+
+		WP_CLI::launch( 'curl -f' . $silent . escapeshellarg( $download_url ) . ' | tar xz' );
 		WP_CLI::launch( 'mv wordpress/* . && rm -rf wordpress' );
 
 		WP_CLI::success( 'WordPress downloaded.' );
@@ -54,9 +56,9 @@ class Core_Command extends WP_CLI_Command {
 
 		$_GET['step'] = 2;
 
-		if ( WP_CLI_QUIET ) ob_start();
-		require WP_ROOT . '/wp-admin/setup-config.php';
-		if ( WP_CLI_QUIET ) ob_end_clean();
+		if ( WP_CLI::get_config('quiet') ) ob_start();
+		require ABSPATH . '/wp-admin/setup-config.php';
+		if ( WP_CLI::get_config('quiet') ) ob_end_clean();
 	}
 
 	/**

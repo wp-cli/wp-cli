@@ -139,6 +139,9 @@ class Scaffold_Command extends WP_CLI_Command {
 			$path = TEMPLATEPATH;
 		} elseif ( ! empty( $plugin ) ) {
 			$path = WP_PLUGIN_DIR . '/' . $plugin;
+			if ( !is_dir( $path ) ) {
+				WP_CLI::error( "Can't find '$plugin' plugin." );
+			}
 		} else {
 			return false;
 		}
@@ -168,10 +171,10 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$this->create_file( $plugin_path, $plugin_contents );
 
-		WP_CLI::success( "Plugin scaffold created: $plugin_path" );
+		WP_CLI::success( "Created $plugin_path" );
 
 		if ( isset( $assoc_args['activate'] ) )
-			\WP_CLI\Utils\run_command( array( 'plugin', 'activate', $plugin_slug ) );
+			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug ) );
 	}
 
 	private function create_file( $filename, $contents ) {
