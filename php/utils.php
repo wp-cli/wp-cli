@@ -233,3 +233,27 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 	return $data;
 }
 
+/**
+ * Output data as CSV
+ *
+ * @param array  $headers    Headers for the CSV (optional)
+ * @param array  $data       Data for each row
+ */
+function output_csv( $headers = array(), $data = array() ) {
+
+	// Prepare the headers if they were specified
+	if ( ! empty( $headers ) ) {
+		echo '"' . implode( '","', $headers ) .  '"' . PHP_EOL;
+	}
+
+	foreach( $data as $row ) {
+
+		if ( ! empty( $headers ) ) {
+			$build_row = array();
+			foreach( $headers as $key ) {
+				$build_row[] = $row[$key];
+			}
+		}
+		echo '"' . implode( '","', $row ) .  '"' . PHP_EOL;
+	}
+}
