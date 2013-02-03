@@ -242,9 +242,8 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 function output_csv( $headers = array(), $data = array() ) {
 
 	// Prepare the headers if they were specified
-	if ( ! empty( $headers ) ) {
-		echo '"' . implode( '","', $headers ) .  '"' . PHP_EOL;
-	}
+	if ( ! empty( $headers ) )
+		fputcsv( STDOUT, $headers );
 
 	foreach( $data as $row ) {
 		$row = (array)$row;
@@ -256,6 +255,6 @@ function output_csv( $headers = array(), $data = array() ) {
 			}
 			$row = $build_row;
 		}
-		echo '"' . implode( '","', $row ) .  '"' . PHP_EOL;
+		fputcsv( STDOUT, $row );
 	}
 }
