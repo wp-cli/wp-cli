@@ -34,45 +34,7 @@ class Term_Command extends WP_CLI_Command {
 				'count',
 			);
 
-		switch ( $assoc_args['format'] ) {
-			case 'table':
-				$table = new \cli\Table();
-
-				$table->setHeaders( $fields );
-
-				foreach ( $terms as $term ) {
-					$line = array();
-
-					foreach ( $fields as $field ) {
-						$line[] = $term->$field;
-					}
-
-					$table->addRow( $line );
-				}
-
-				$table->display();
-
-				WP_CLI::line( 'Total: ' . count( $terms ) . ' terms.' );
-				break;
-			case 'csv':
-			case 'json':
-				$output_terms = array();
-
-				foreach( $terms as $term ) {
-					$output_term = new stdClass;
-					foreach( $fields as $field ) {
-						$output_term->$field = $term->$field;
-					}
-					$output_terms[] = $output_term;
-				}
-
-				if ( 'json' == $assoc_args['format'] )
-					echo json_encode( $output_terms );
-				else
-					WP_CLI\Utils\output_csv( $output_terms, $fields );
-				break;
-		}
-
+		WP_CLI\Utils\format_items( $assoc_args['format'], $fields, $terms );
 	}
 
 	/**
