@@ -132,6 +132,40 @@ class Scaffold_Command extends WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * Generate starter code for a theme.
+	 *
+	 * @synopsis <slug> [--theme_name=<title>] [--author=<full name>] [--author_uri=<http url>] [--activate]
+	 */
+	function _s( $args, $assoc_args ) {
+
+		$theme_slug = $args[0];
+		$theme_path = WP_CONTENT_DIR . "/themes";
+		$data = wp_parse_args( $assoc_args, array(
+			'theme_name' => ucfirst( $theme_slug ),
+			'author' => "Me",
+			'author_uri' => "",
+		) );
+		$theme_description = "Custom theme ".$data['theme_name']."developed by: ".$data['author'];
+		$prepare  = 'curl -d underscoresme_name="'.$data['theme_name'].'"';
+		$prepare .= ' -d underscoresme_slug="'.$theme_slug.'"';
+		$prepare .= ' -d underscoresme_author="'.$data['author'].'"';
+		$prepare .= ' -d underscoresme_author_uri="'.$data['author_uri'].'"';
+		$prepare .= ' -d underscoresme_description="'.$theme_description.'"';
+		$prepare .= ' -d underscoresme_generate_submit="Generate"';
+		$prepare .= ' -d underscoresme_generate="1"';
+		$prepare .= ' http://underscores.me > '.$theme_path.'/underscores.zip';
+		$prepare .= ' && unzip -d '.$theme_path.' '.$theme_path.'/underscores.zip && rm '.$theme_path.'/underscores.zip';
+		
+		shell_exec($prepare); // Don't know the WordPress way of doing this.
+		
+		WP_CLI::success( "Created Theme: ".$data['theme_name'] );
+		
+
+		if ( isset( $assoc_args['activate'] ) )
+			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
+	}
+
 	private function get_output_path( $assoc_args, $subdir ) {
 		extract( $assoc_args, EXTR_SKIP );
 
