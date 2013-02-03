@@ -236,25 +236,26 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 /**
  * Output data as CSV
  *
- * @param array  $headers    Headers for the CSV (optional)
- * @param array  $data       Data for each row
+ * @param array  $rows       Array of rows to output
+ * @param array  $headers    List of CSV columns (optional)
  */
-function output_csv( $headers = array(), $data = array() ) {
+function output_csv( $rows, $headers = array() ) {
 
 	// Prepare the headers if they were specified
 	if ( ! empty( $headers ) )
 		fputcsv( STDOUT, $headers );
 
-	foreach( $data as $row ) {
-		$row = (array)$row;
+	foreach ( $rows as $row ) {
+		$row = (array) $row;
 
 		if ( ! empty( $headers ) ) {
 			$build_row = array();
-			foreach( $headers as $key ) {
-				$build_row[] = $row[$key];
+			foreach ( $headers as $key ) {
+				$build_row[] = $row[ $key ];
 			}
 			$row = $build_row;
 		}
 		fputcsv( STDOUT, $row );
 	}
 }
+
