@@ -30,6 +30,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( isset( $assoc_args['ids'] ) ) {
 			WP_CLI::out( implode( ' ', $users ) );
+			exit;
 		}
 
 		$fields = array(
