@@ -247,6 +247,7 @@ function output_csv( $headers = array(), $data = array() ) {
 	}
 
 	foreach( $data as $row ) {
+		$row = (array)$row;
 
 		if ( ! empty( $headers ) ) {
 			$build_row = array();

@@ -63,30 +63,21 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				WP_CLI::line( 'Total: ' . count( $users ) . ' users' );
 				break;
 			case 'json':
-				$json_users = array();
-
-				foreach( $users as $user ) {
-					$json_user = new stdClass;
-					foreach( $fields as $field ) {
-						$json_user->$field = $user->$field;
-					}
-					$json_users[] = $json_user;
-				}
-
-				echo json_encode( $json_users );
-				break;
 			case 'csv':
-				$csv_users = array();
+				$output_users = array();
 
 				foreach( $users as $user ) {
-					$csv_user = array();
+					$output_user = new stdClass;
 					foreach( $fields as $field ) {
-						$csv_user[$field] = $user->$field;
+						$output_user->$field = $user->$field;
 					}
-					$csv_users[] = $csv_user;
+					$output_users[] = $output_user;
 				}
 
-				WP_CLI\Utils\output_csv( $fields, $csv_users );
+				if ( 'json' == $params['format'] )
+					echo json_encode( $output_users );
+				else
+					WP_CLI\Utils\output_csv( $fields, $output_users );
 				break;
 		}
 
