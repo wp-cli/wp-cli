@@ -7,7 +7,7 @@
 \fBwp\-user\-list\fR \- List users\.
 .
 .SH "SYNOPSIS"
-wp user list [\-\-role=\fIrole\fR] [\-\-ids]
+wp user list [\-\-role=\fIrole\fR] [\-\-ids] [\-\-format=\fIformat\fR]
 .
 .SH "OPTIONS"
 .
@@ -22,4 +22,20 @@ Only display users with a certain role\.
 .
 .IP
 Return only the IDs of the found users, separated by spaces\.
+.
+.TP
+\fB\-\-format\fR=\fIformat\fR:
+.
+.IP
+Output list as table, CSV or JSON\. Defaults to table\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp user list
+
+wp user list \-\-role=administrator \-\-format=csv
+.
+.fi
 
