@@ -11,15 +11,16 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * List users.
 	 *
 	 * @subcommand list
-	 * @synopsis [--role=<role>] [--ids]
+	 * @synopsis [--role=<role>] [--ids] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
-		global $blog_id;
 
-		$params = array(
-			'blog_id' => $blog_id,
-			'fields' => isset( $assoc_args['ids'] ) ? 'ids' : 'all_with_meta',
+		$defaults = array(
+			'blog_id'   => get_current_blog_id(),
+			'fields'    => isset( $assoc_args['ids'] ) ? 'ids' : 'all_with_meta',
+			'format'    => 'table',
 		);
+		$params = array_merge( $defaults, $assoc_args );
 
 		if ( array_key_exists( 'role', $assoc_args ) ) {
 			$params['role'] = $assoc_args['role'];
@@ -29,28 +30,55 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( isset( $assoc_args['ids'] ) ) {
 			WP_CLI::out( implode( ' ', $users ) );
-		} else {
-			$fields = array('ID', 'user_login', 'display_name', 'user_email',
-				'user_registered');
+			exit;
+		}
 
-			$table = new \cli\Table();
+		$fields = array(
+			'ID',
+			'user_login',
+			'display_name',
+			'user_email',
+			'user_registered'
+		);
 
-			$table->setHeaders( array_merge( $fields, array('roles') ) );
+		switch( $params['format'] ) {
+			case 'table':
+				$table = new \cli\Table();
 
-			foreach ( $users as $user ) {
-				$line = array();
+				$table->setHeaders( array_merge( $fields, array('roles') ) );
 
-				foreach ( $fields as $field ) {
-					$line[] = $user->$field;
+				foreach ( $users as $user ) {
+					$line = array();
+
+					foreach ( $fields as $field ) {
+						$line[] = $user->$field;
+					}
+					$line[] = implode( ',', $user->roles );
+
+					$table->addRow( $line );
 				}
-				$line[] = implode( ',', $user->roles );
 
-				$table->addRow( $line );
-			}
+				$table->display();
 
-			$table->display();
+				WP_CLI::line( 'Total: ' . count( $users ) . ' users' );
+				break;
+			case 'json':
+			case 'csv':
+				$output_users = array();
 
-			WP_CLI::line( 'Total: ' . count( $users ) . ' users' );
+				foreach( $users as $user ) {
+					$output_user = new stdClass;
+					foreach( $fields as $field ) {
+						$output_user->$field = $user->$field;
+					}
+					$output_users[] = $output_user;
+				}
+
+				if ( 'json' == $params['format'] )
+					echo json_encode( $output_users );
+				else
+					WP_CLI\Utils\output_csv( $output_users, $fields );
+				break;
 		}
 	}
 
