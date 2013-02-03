@@ -254,6 +254,7 @@ function output_csv( $headers = array(), $data = array() ) {
 			foreach( $headers as $key ) {
 				$build_row[] = $row[$key];
 			}
+			$row = $build_row;
 		}
 		echo '"' . implode( '","', $row ) .  '"' . PHP_EOL;
 	}
