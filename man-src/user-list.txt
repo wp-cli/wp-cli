@@ -10,4 +10,4 @@
 
 * `--format`=<format>:
 
-	Output list as table, CSV or JSON
+	Output list as table, CSV or JSON. Defaults to table.
