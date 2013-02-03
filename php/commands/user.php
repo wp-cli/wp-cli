@@ -34,12 +34,12 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$fields = array(
-				'ID',
-				'user_login',
-				'display_name',
-				'user_email',
-				'user_registered'
-			);
+			'ID',
+			'user_login',
+			'display_name',
+			'user_email',
+			'user_registered'
+		);
 
 		switch( $params['format'] ) {
 			case 'table':
@@ -77,10 +77,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				if ( 'json' == $params['format'] )
 					echo json_encode( $output_users );
 				else
-					WP_CLI\Utils\output_csv( $fields, $output_users );
+					WP_CLI\Utils\output_csv( $output_users, $fields );
 				break;
 		}
-
 	}
 
 	/**
