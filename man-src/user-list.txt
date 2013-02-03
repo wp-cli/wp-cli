@@ -8,3 +8,6 @@
 
 	Return only the IDs of the found users, separated by spaces.
 
+* `--format`=<format>:
+
+	Output list as table, CSV or JSON
