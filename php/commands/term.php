@@ -40,7 +40,7 @@ class Term_Command extends WP_CLI_Command {
 	/**
 	 * Create a term.
 	 *
-	 * @synopsis <term> <taxonomy> [--slug=<slug>] [--description=<description>]
+	 * @synopsis <term> <taxonomy> [--slug=<slug>] [--description=<description>] [--parent=<parent>]
 	 */
 	public function create( $args, $assoc_args ) {
 
@@ -49,6 +49,7 @@ class Term_Command extends WP_CLI_Command {
 		$defaults = array(
 				'slug'            => sanitize_title( $term ),
 				'description'     => '',
+				'parent'          => '',
 			);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 

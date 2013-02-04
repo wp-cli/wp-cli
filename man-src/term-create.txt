@@ -16,6 +16,10 @@
 
 	A description for the new term.
 
+* `--parent`=<parent>:
+
+	A parent for the new term.
+
 ## EXAMPLES
 
 	wp term create Apple category --description="A type of fruit"
