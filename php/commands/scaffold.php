@@ -157,22 +157,14 @@ class Scaffold_Command extends WP_CLI_Command {
 		$body['underscoresme_generate_submit'] = "Generate";
 		$body['underscoresme_generate'] = "1";
 
-		// Request Array
-		$request = array(
-			'method' => 'POST',
-			'stream' => true,
-			'body' => $body,
-			'sslverify' => false
-		);
-
 		$tmpfname = wp_tempnam($url);
 		$response = wp_remote_post( $url, array( 'timeout' => $timeout, 'body' => $body, 'stream' => true, 'filename' => $tmpfname ) );
 		
 		unzip_file( $tmpfname, $theme_path );
-		unlink($tmpfname);
+		unlink( $tmpfname );
 
 		if ( isset( $assoc_args['activate'] ) )
-		WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
+			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
 
 	}
 
