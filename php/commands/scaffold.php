@@ -141,6 +141,9 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$theme_slug = $args[0];
 		$theme_path = WP_CONTENT_DIR . "/themes";
+		$zip_path  = $theme_path.'/underscores.zip';
+		$activate = ( isset( $assoc_args['activate'] ) ) ? 1 : 0;
+
 		$data = wp_parse_args( $assoc_args, array(
 			'theme_name' => ucfirst( $theme_slug ),
 			'author' => "Me",
@@ -154,17 +157,14 @@ class Scaffold_Command extends WP_CLI_Command {
 		$prepare .= ' -d underscoresme_description="'.$theme_description.'"';
 		$prepare .= ' -d underscoresme_generate_submit="Generate"';
 		$prepare .= ' -d underscoresme_generate="1"';
-		$prepare .= ' http://underscores.me > '.$theme_path.'/underscores.zip';
-		$prepare .= ' && unzip -d '.$theme_path.' '.$theme_path.'/underscores.zip && rm '.$theme_path.'/underscores.zip';
+		$prepare .= ' http://underscores.me > '.$zip_path;
 		
-		shell_exec($prepare); // Don't know the WordPress way of doing this.
-		
-		WP_CLI::success( "Created Theme: ".$data['theme_name'] );
-		
+		shell_exec($prepare);
 
-		if ( isset( $assoc_args['activate'] ) )
-			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
+		WP_CLI::run_command( array( 'theme', 'install', $zip_path ), array( 'activate' => $activate ) );
+
 	}
+
 
 	private function get_output_path( $assoc_args, $subdir ) {
 		extract( $assoc_args, EXTR_SKIP );
