@@ -141,27 +141,38 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$theme_slug = $args[0];
 		$theme_path = WP_CONTENT_DIR . "/themes";
-		$zip_path  = $theme_path.'/underscores.zip';
-		$activate = ( isset( $assoc_args['activate'] ) ) ? 1 : 0;
+		$url = "http://underscores.me";
 
 		$data = wp_parse_args( $assoc_args, array(
 			'theme_name' => ucfirst( $theme_slug ),
 			'author' => "Me",
 			'author_uri' => "",
 		) );
-		$theme_description = "Custom theme ".$data['theme_name']."developed by: ".$data['author'];
-		$prepare  = 'curl -d underscoresme_name="'.$data['theme_name'].'"';
-		$prepare .= ' -d underscoresme_slug="'.$theme_slug.'"';
-		$prepare .= ' -d underscoresme_author="'.$data['author'].'"';
-		$prepare .= ' -d underscoresme_author_uri="'.$data['author_uri'].'"';
-		$prepare .= ' -d underscoresme_description="'.$theme_description.'"';
-		$prepare .= ' -d underscoresme_generate_submit="Generate"';
-		$prepare .= ' -d underscoresme_generate="1"';
-		$prepare .= ' http://underscores.me > '.$zip_path;
 		
-		shell_exec($prepare);
+		$body['underscoresme_name'] = $data['theme_name'];
+		$body['underscoresme_slug'] = $theme_slug;
+		$body['underscoresme_author'] = $data['author'];
+		$body['underscoresme_author_uri'] = $data['author_uri'];
+		$body['underscoresme_description'] = $theme_description;
+		$body['underscoresme_generate_submit'] = "Generate";
+		$body['underscoresme_generate'] = "1";
 
-		WP_CLI::run_command( array( 'theme', 'install', $zip_path ), array( 'activate' => $activate ) );
+		// Request Array
+		$request = array(
+			'method' => 'POST',
+			'stream' => true,
+			'body' => $body,
+			'sslverify' => false
+		);
+
+		$tmpfname = wp_tempnam($url);
+		$response = wp_remote_post( $url, array( 'timeout' => $timeout, 'body' => $body, 'stream' => true, 'filename' => $tmpfname ) );
+		
+		unzip_file( $tmpfname, $theme_path );
+		unlink($tmpfname);
+
+		if ( isset( $assoc_args['activate'] ) )
+		WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
 
 	}
 
