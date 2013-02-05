@@ -35,7 +35,7 @@ class Media_Command extends WP_CLI_Command {
 
         extract($vars, EXTR_SKIP);
 
-        $where_clause = ( $id ) ? "AND ID = $id" : 'bla';
+        $where_clause = ( $id ) ? "AND ID = $id" : '';
 
         if ( !$images = $wpdb->get_results( "SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' $where_clause AND post_mime_type LIKE 'image/%' ORDER BY ID DESC" ) ) {
             if ( $id ) {
@@ -135,19 +135,6 @@ class Media_Command extends WP_CLI_Command {
         wp_update_attachment_metadata( $image->ID, $metadata );
         WP_CLI::success( esc_html( get_the_title( $image->ID ) ) . " (ID {$image->ID}): All thumbnails were successfully regenerated in  " . timer_stop() . "  seconds " );
     }
-
-    protected function extract_args( $assoc_args, $defaults ) {
-        $out = array();
-
-        foreach ( $defaults as $key => $value ) {
-            $out[ $key ] = isset( $assoc_args[ $key ] )
-                ? $assoc_args[ $key ]
-                : $value;
-        }
-
-        return $out;
-    }
-    
 }
 
 WP_CLI::add_command( 'media', 'Media_Command' );
