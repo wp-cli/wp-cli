@@ -22,12 +22,13 @@ class Media_Command extends WP_CLI_Command {
     /**
      * Regenerate thumbnail(s)
      *
-     * @synopsis    [--all] 
+     * @synopsis    [--all]
      * @todo        [--file=<file>] [--id=<id>]
+     * props @benmay
      */
     function regenerate( $args, $assoc_args = array() ) {
         global $wpdb;
-            
+
         if ( !$images = $wpdb->get_results( "SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' AND post_mime_type LIKE 'image/%' ORDER BY ID DESC" ) ) {
             WP_CLI::error( "Unable to find any images. Are you sure some exist?" );
             return;
