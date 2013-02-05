@@ -22,15 +22,28 @@ class Media_Command extends WP_CLI_Command {
     /**
      * Regenerate thumbnail(s)
      *
-     * @synopsis    [--all]
-     * @todo        [--file=<file>] [--id=<id>]
+     * @synopsis    [--id=<id>] 
+     * @todo        [--file=<file>]
      * props @benmay
      */
     function regenerate( $args, $assoc_args = array() ) {
         global $wpdb;
 
-        if ( !$images = $wpdb->get_results( "SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' AND post_mime_type LIKE 'image/%' ORDER BY ID DESC" ) ) {
-            WP_CLI::error( "Unable to find any images. Are you sure some exist?" );
+        $vars = wp_parse_args( $assoc_args, array(
+            'id' => false,
+        ) );
+
+        extract($vars, EXTR_SKIP);
+
+        $where_clause = ( $id ) ? "AND ID = $id" : 'bla';
+
+        if ( !$images = $wpdb->get_results( "SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' $where_clause AND post_mime_type LIKE 'image/%' ORDER BY ID DESC" ) ) {
+            if ( $id ) {
+                WP_CLI::error( "Unable to find the image. Are you sure some it exists?" );
+            } else {
+                WP_CLI::error( "Unable to find any images. Are you sure some exist?" );
+            }
+
             return;
         }
         
@@ -121,6 +134,18 @@ class Media_Command extends WP_CLI_Command {
         }
         wp_update_attachment_metadata( $image->ID, $metadata );
         WP_CLI::success( esc_html( get_the_title( $image->ID ) ) . " (ID {$image->ID}): All thumbnails were successfully regenerated in  " . timer_stop() . "  seconds " );
+    }
+
+    protected function extract_args( $assoc_args, $defaults ) {
+        $out = array();
+
+        foreach ( $defaults as $key => $value ) {
+            $out[ $key ] = isset( $assoc_args[ $key ] )
+                ? $assoc_args[ $key ]
+                : $value;
+        }
+
+        return $out;
     }
     
 }
