@@ -132,6 +132,49 @@ class Scaffold_Command extends WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * Generate starter code for a theme.
+	 *
+	 * @synopsis <slug> [--theme_name=<title>] [--author=<full-name>] [--author_uri=<http-url>] [--activate]
+	 */
+	function _s( $args, $assoc_args ) {
+
+		$theme_slug = $args[0];
+		$theme_path = WP_CONTENT_DIR . "/themes";
+		$url = "http://underscores.me";
+		$timeout = 30;
+
+		$data = wp_parse_args( $assoc_args, array(
+			'theme_name' => ucfirst( $theme_slug ),
+			'author' => "Me",
+			'author_uri' => "",
+		) );
+
+		$theme_description = "Custom theme: ".$data['theme_name']." developed by, ".$data['author'];
+
+		$body['underscoresme_name'] = $data['theme_name'];
+		$body['underscoresme_slug'] = $theme_slug;
+		$body['underscoresme_author'] = $data['author'];
+		$body['underscoresme_author_uri'] = $data['author_uri'];
+		$body['underscoresme_description'] = $theme_description;
+		$body['underscoresme_generate_submit'] = "Generate";
+		$body['underscoresme_generate'] = "1";
+
+		$tmpfname = wp_tempnam($url);
+		$response = wp_remote_post( $url, array( 'timeout' => $timeout, 'body' => $body, 'stream' => true, 'filename' => $tmpfname ) );
+		
+		if ( $response['response']['code'] == 200 )
+			WP_CLI::success( "Created theme '".$data['theme_name']."'." );
+
+		unzip_file( $tmpfname, $theme_path );
+		unlink( $tmpfname );
+
+		if ( isset( $assoc_args['activate'] ) )
+			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
+
+	}
+
+
 	private function get_output_path( $assoc_args, $subdir ) {
 		extract( $assoc_args, EXTR_SKIP );
 
