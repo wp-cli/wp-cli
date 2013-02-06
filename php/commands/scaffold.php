@@ -121,7 +121,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		}
 
 		if ( $path = $this->get_output_path( $control_args, $subdir ) ) {
-			$filename = $path . $machine_name .'.php';
+			$filename = $path . $slug .'.php';
 
 			$this->create_file( $filename, $final_output );
 
