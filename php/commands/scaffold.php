@@ -142,7 +142,6 @@ class Scaffold_Command extends WP_CLI_Command {
 		$theme_slug = $args[0];
 		$theme_path = WP_CONTENT_DIR . "/themes";
 		$url = "http://underscores.me";
-		$theme_description = "Custom theme: ".$data['theme_name']." developed by, ".$data['author'];
 		$timeout = 30;
 
 		$data = wp_parse_args( $assoc_args, array(
@@ -150,6 +149,8 @@ class Scaffold_Command extends WP_CLI_Command {
 			'author' => "Me",
 			'author_uri' => "",
 		) );
+
+		$theme_description = "Custom theme: ".$data['theme_name']." developed by, ".$data['author'];
 
 		$body['underscoresme_name'] = $data['theme_name'];
 		$body['underscoresme_slug'] = $theme_slug;
