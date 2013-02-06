@@ -135,7 +135,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	/**
 	 * Generate starter code for a theme.
 	 *
-	 * @synopsis <slug> [--theme_name=<title>] [--author=<full name>] [--author_uri=<http url>] [--activate]
+	 * @synopsis <slug> [--theme_name=<title>] [--author=<full-name>] [--author_uri=<http-url>] [--activate]
 	 */
 	function _s( $args, $assoc_args ) {
 
