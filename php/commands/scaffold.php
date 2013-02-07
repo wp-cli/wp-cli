@@ -162,7 +162,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$tmpfname = wp_tempnam($url);
 		$response = wp_remote_post( $url, array( 'timeout' => $timeout, 'body' => $body, 'stream' => true, 'filename' => $tmpfname ) );
-		
+
 		if ( $response['response']['code'] == 200 )
 			WP_CLI::success( "Created theme '".$data['theme_name']."'." );
 
@@ -315,7 +315,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	private function render( $template, $data ) {
-		$scaffolds_dir = WP_CLI_ROOT . 'templates';
+		$scaffolds_dir = WP_CLI_ROOT . '../templates';
 
 		$template = file_get_contents( $scaffolds_dir . '/' . $template );
 
