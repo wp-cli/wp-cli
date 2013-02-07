@@ -31,11 +31,27 @@ class CoreCommandSpec extends WP_CLI_Spec {
 	}
 
 	/** @scenario */
+	public function dbDoesntExist() {
+		$this
+			->given( 'empty dir' )
+			->and( 'wp files' )
+			->and( 'wp config' )
+
+			->when( 'invoking', 'wp' )
+			->then( 'return code should be', 1 )
+			->and( 'output should be', "Error: Can't connect to the database." )
+
+			->when( 'invoking', 'db create' )
+			->then( 'return code should be', 0 );
+	}
+
+	/** @scenario */
 	public function dbTablesNotInstalled() {
 		$this
 			->given( 'empty dir' )
 			->and( 'wp files' )
 			->and( 'wp config' )
+			->and( 'database' )
 
 			->when( 'invoking', 'core is-installed' )
 			->then( 'return code should be', 1 )
@@ -47,7 +63,7 @@ class CoreCommandSpec extends WP_CLI_Spec {
 			->then( 'return code should be', 0 )
 
 			->when( 'invoking', 'post list --ids' )
-			->then( 'output should be', 1 );
+			->then( 'output should be', "1" );
 	}
 
 	/** @scenario */
