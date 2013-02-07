@@ -187,7 +187,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$this->add_testing_files( $plugin_dir, $plugin_slug );
 
-		WP_CLI::success( "Created $plugin_path" );
+		WP_CLI::success( "Created $plugin_dir" );
 
 		if ( isset( $assoc_args['activate'] ) )
 			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug ) );
