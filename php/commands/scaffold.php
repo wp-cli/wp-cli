@@ -180,16 +180,37 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$data['textdomain'] = $plugin_slug;
 
-		$plugin_contents = $this->render( 'plugin.mustache', $data );
+		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
+		$plugin_path = "$plugin_dir/$plugin_slug.php";
 
-		$plugin_path = WP_PLUGIN_DIR . "/$plugin_slug/$plugin_slug.php";
+		$this->create_file( $plugin_path, $this->render( 'plugin.mustache', $data ) );
 
-		$this->create_file( $plugin_path, $plugin_contents );
+		$this->add_testing_files( $plugin_dir, $plugin_slug );
 
 		WP_CLI::success( "Created $plugin_path" );
 
 		if ( isset( $assoc_args['activate'] ) )
 			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug ) );
+	}
+
+	private function add_testing_files( $plugin_dir, $plugin_slug ) {
+		global $wp_filesystem;
+
+		$tests_dir = "$plugin_dir/tests";
+
+		$wp_filesystem->mkdir( $tests_dir );
+
+		$this->create_file( "$tests_dir/bootstrap.php",
+			$this->render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) );
+
+		$to_copy = array(
+			'phpunit.xml' => $plugin_dir,
+			'.travis.yml' => $plugin_dir,
+		);
+
+		foreach ( $to_copy as $file => $dir ) {
+			$wp_filesystem->copy( $this->get_template_path( $file ), "$dir/$file" );
+		}
 	}
 
 	private function create_file( $filename, $contents ) {
@@ -287,13 +308,15 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	private function render( $template, $data ) {
-		$scaffolds_dir = WP_CLI_ROOT . '../templates';
-
-		$template = file_get_contents( $scaffolds_dir . '/' . $template );
+		$template = file_get_contents( $this->get_template_path( $template ) );
 
 		$m = new Mustache_Engine;
 
 		return $m->render( $template, $data );
+	}
+
+	private function get_template_path( $template ) {
+		return WP_CLI_ROOT . "../templates/$template";
 	}
 }
 
