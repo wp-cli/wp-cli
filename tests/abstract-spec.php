@@ -49,6 +49,7 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 
 			case 'wp install': {
 				$this->create_db();
+				$world['runner'] = new WP_CLI_Command_Runner;
 				$world['runner']->download_wordpress_files();
 				$world['runner']->create_config( self::$db_settings );
 				$world['runner']->run_install();

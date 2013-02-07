@@ -5,8 +5,7 @@ class FlagsSpec extends WP_CLI_Spec {
 	/** @scenario */
 	public function quietRun() {
 		$this
-			->given( 'empty dir' )
-			->and( 'wp install' )
+			->given( 'wp install' )
 
 			->when( 'invoking', '' )
 			->then( 'return code should be', 0 )

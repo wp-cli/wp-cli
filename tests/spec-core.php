@@ -69,8 +69,7 @@ class CoreCommandSpec extends WP_CLI_Spec {
 	/** @scenario */
 	public function fullInstall() {
 		$this
-			->given( 'empty dir' )
-			->and( 'wp install' )
+			->given( 'wp install' )
 
 			->when( 'invoking', 'core is-installed' )
 			->then( 'return code should be', 0 );
@@ -79,8 +78,7 @@ class CoreCommandSpec extends WP_CLI_Spec {
 	/** @scenario */
 	public function customWpContentDir() {
 		$this
-			->given( 'empty dir' )
-			->and( 'wp install' )
+			->given( 'wp install' )
 			->and( 'custom wp-content dir' )
 
 			->when( 'invoking', 'theme status twentytwelve' )
