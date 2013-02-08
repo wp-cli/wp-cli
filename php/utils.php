@@ -257,5 +257,35 @@ function output_csv( $rows, $headers = array() ) {
 		}
 		fputcsv( STDOUT, $row );
 	}
+
 }
 
+/**
+ * Launch system's $EDITOR to edit text
+ *
+ * @param	str	$content	Text to edit (eg post content)
+ * @return		str|bool	Edited text, if file is saved from editor
+ */
+function launch_editor_for_input( $input ) {
+
+	$tmpfile = tempnam( '/tmp', 'wp-cli' );
+
+	if ( !$tmpfile )
+		die( 'Error creating temporary file.' );
+
+	$handle = fopen( $tmpfile, 'w+t' );
+	fwrite( $handle, $input );
+	fclose( $handle );
+
+	$out = `\${EDITOR:-vi} "$tmpfile" 3>&1 1>&2 2>&3 || exit $?`;
+
+	$handle = fopen( $tmpfile, 'r' );
+	$output = fread( $handle, filesize( $tmpfile )  );
+	fclose( $handle );
+	unlink( $tmpfile );
+
+	if ( $output === $input )
+		return false;
+
+	return $output;
+}
