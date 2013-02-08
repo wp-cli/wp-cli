@@ -103,13 +103,20 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 			}
 			break;
 
-			case 'output should be': {
-				$this->assertEquals( $arguments[0], $world['result']->output, $action );
+			case 'stdout': {
+				$this->assertEquals( $arguments[0], $world['result']->stdout, $action );
+			}
+			break;
+
+			case 'stderr': {
+				$this->assertEquals( $arguments[0], $world['result']->stderr, $action );
 			}
 			break;
 
 			case 'should have output': {
-				$this->assertNotEmpty( $world['result']->output, $action );
+				if ( empty( $world['result']->stdout ) )
+					var_dump($world['result']);
+				$this->assertNotEmpty( $world['result']->stdout, $action );
 			}
 			break;
 

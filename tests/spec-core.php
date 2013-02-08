@@ -21,7 +21,7 @@ class CoreCommandSpec extends WP_CLI_Spec {
 			->then( 'return code should be', 1 )
 
 			->when( 'invoking', 'core install' )
-			->then( 'output should be',
+			->then( 'stderr',
 				"Error: wp-config.php not found.\n" .
 				"Either create one manually or use `wp core config`.\n"
 			)
@@ -37,9 +37,9 @@ class CoreCommandSpec extends WP_CLI_Spec {
 			->and( 'wp files' )
 			->and( 'wp config' )
 
-			->when( 'invoking', 'wp' )
+			->when( 'invoking', '' )
 			->then( 'return code should be', 1 )
-			->and( 'output should be', "Error: Can’t select database\n" )
+			->and( 'stderr', "Error: Can’t select database\n" )
 
 			->when( 'invoking', 'db create' )
 			->then( 'return code should be', 0 );
@@ -56,14 +56,17 @@ class CoreCommandSpec extends WP_CLI_Spec {
 			->when( 'invoking', 'core is-installed' )
 			->then( 'return code should be', 1 )
 
-			->when( 'invoking', 'help' )
-			->then( 'should have output' )
+			->when( 'invoking', '' )
+			->then( 'stderr',
+				"Error: The site you have requested is not installed.\n" .
+				"Run `wp core install`.\n"
+			)
 
 			->when( 'invoking', 'core install' )
 			->then( 'return code should be', 0 )
 
 			->when( 'invoking', 'post list --ids' )
-			->then( 'output should be', "1" );
+			->then( 'stdout', "1" );
 	}
 
 	/** @scenario */

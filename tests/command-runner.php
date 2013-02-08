@@ -15,13 +15,23 @@ class WP_CLI_Command_Runner {
 
 		$wp_cli_path = getcwd() . "/bin/wp";
 
-		$sh_command = "cd $cwd; $wp_cli_path $command 2>&1;";
+		$sh_command = "cd $cwd; $wp_cli_path $command";
 
-		ob_start();
-		system( $sh_command, $return_code );
-		$output = ob_get_clean();
+		$process = proc_open( $sh_command, array(
+			0 => STDIN,
+			1 => array( 'pipe', 'w' ),
+			2 => array( 'pipe', 'w' ),
+		), $pipes );
 
-		return (object) compact( 'return_code', 'output' );
+		$stdout = stream_get_contents( $pipes[1] );
+		fclose( $pipes[1] );
+
+		$stderr = stream_get_contents( $pipes[2] );
+		fclose( $pipes[2] );
+
+		$return_code = proc_close( $process );
+
+		return (object) compact( 'return_code', 'stdout', 'stderr' );
 	}
 
 	public function create_config( $db_settings ) {
