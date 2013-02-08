@@ -5,8 +5,7 @@ class FlagsSpec extends WP_CLI_Spec {
 	/** @scenario */
 	public function quietRun() {
 		$this
-			->given( 'empty dir' )
-			->and( 'wp install' )
+			->given( 'wp install' )
 
 			->when( 'invoking', '' )
 			->then( 'return code should be', 0 )
@@ -14,11 +13,13 @@ class FlagsSpec extends WP_CLI_Spec {
 
 			->when( 'invoking', '--quiet' )
 			->then( 'return code should be', 0 )
-			->and( 'output should be', '' )
+			->and( 'stdout', '' )
 
-			->when( 'invoking', 'wp non-existing-command --quiet' )
+			->when( 'invoking', 'non-existing-command --quiet' )
 			->then( 'return code should be', 1 )
-			->and( 'should have output' );
+			->and( 'stderr',
+				"Error: 'non-existing-command' is not a registered wp command. See 'wp help'.\n"
+			);
 	}
 }
 

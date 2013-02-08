@@ -128,17 +128,15 @@ class WP_CLI {
 	 * Display an error in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @param bool $exit
+	 * @param string $label
 	 */
-	static function error( $message, $exit = true ) {
+	static function error( $message, $label = 'Error' ) {
 		if ( ! isset( self::$runner->assoc_args[ 'completions' ] ) ) {
-			$label = 'Error';
 			$msg = '%R' . $label . ': %n' . self::error_to_string( $message ) . "\n";
 			fwrite( STDERR, \cli\Colors::colorize( $msg, self::get_config('color') ) );
 		}
 
-		if ( $exit )
-			exit(1);
+		exit(1);
 	}
 
 	/**
