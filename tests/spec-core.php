@@ -39,7 +39,7 @@ class CoreCommandSpec extends WP_CLI_Spec {
 
 			->when( 'invoking', 'wp' )
 			->then( 'return code should be', 1 )
-			->and( 'output should be', "Error: Can't connect to the database." )
+			->and( 'output should be', "Error: Can’t select database\n" )
 
 			->when( 'invoking', 'db create' )
 			->then( 'return code should be', 0 );
