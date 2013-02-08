@@ -21,6 +21,25 @@ function wp_debug_mode() {
 	}
 }
 
+function replace_wp_die_handler() {
+	\remove_filter( 'wp_die_handler', '_default_wp_die_handler' );
+	\add_filter( 'wp_die_handler', function() { return __NAMESPACE__ . '\\' . 'wp_die_handler'; } );
+}
+
+function wp_die_handler( $message ) {
+	if ( is_wp_error( $message ) ) {
+		$message = $message->get_error_message();
+	}
+
+	if ( preg_match( '|^\<h1>(.+?)</h1>|', $message, $matches ) ) {
+		$message = $matches[1];
+	}
+
+	$message = html_entity_decode( $message );
+
+	\WP_CLI::error( $message );
+}
+
 function maybe_require( $since, $path ) {
 	global $wp_version;
 
