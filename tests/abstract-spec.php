@@ -15,9 +15,13 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 		exec( "mysql -u$dbuser -p$dbpass -e '$sql'" );
 	}
 
-	protected function setUp() {
+	protected function tearDown() {
 		$dbname = self::$db_settings['dbname'];
-		$this->run_sql( "DROP DATABASE $dbname" );
+		$this->run_sql( "DROP DATABASE IF EXISTS $dbname" );
+	}
+
+	private function create_db() {
+		$dbname = self::$db_settings['dbname'];
 		$this->run_sql( "CREATE DATABASE $dbname" );
 	}
 
@@ -25,6 +29,11 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 		switch ( $action ) {
 			case 'empty dir': {
 				$world['runner'] = new WP_CLI_Command_Runner;
+			}
+			break;
+
+			case 'database': {
+				$this->create_db();
 			}
 			break;
 
@@ -39,6 +48,8 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 			break;
 
 			case 'wp install': {
+				$this->create_db();
+				$world['runner'] = new WP_CLI_Command_Runner;
 				$world['runner']->download_wordpress_files();
 				$world['runner']->create_config( self::$db_settings );
 				$world['runner']->run_install();
@@ -92,13 +103,20 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 			}
 			break;
 
-			case 'output should be': {
-				$this->assertEquals( $arguments[0], $world['result']->output, $action );
+			case 'stdout': {
+				$this->assertEquals( $arguments[0], $world['result']->stdout, $action );
+			}
+			break;
+
+			case 'stderr': {
+				$this->assertEquals( $arguments[0], $world['result']->stderr, $action );
 			}
 			break;
 
 			case 'should have output': {
-				$this->assertNotEmpty( $world['result']->output, $action );
+				if ( empty( $world['result']->stdout ) )
+					var_dump($world['result']);
+				$this->assertNotEmpty( $world['result']->stdout, $action );
 			}
 			break;
 
