@@ -136,8 +136,7 @@ class WP_CLI {
 			fwrite( STDERR, \cli\Colors::colorize( $msg, self::get_config('color') ) );
 		}
 
-		if ( $exit )
-			exit(1);
+		exit(1);
 	}
 
 	/**
