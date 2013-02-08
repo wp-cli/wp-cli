@@ -244,9 +244,9 @@ class Runner {
 		}
 
 		if ( !Utils\locate_wp_config() ) {
-			WP_CLI::error( "wp-config.php not found.", false );
-			WP_CLI::line( "Either create one manually or use `wp core config`." );
-			exit(1);
+			WP_CLI::error(
+				"wp-config.php not found.\n" .
+				"Either create one manually or use `wp core config`." );
 		}
 
 		if ( $this->cmd_starts_with( array( 'db' ) ) ) {
