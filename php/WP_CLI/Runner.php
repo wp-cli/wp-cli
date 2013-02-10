@@ -233,9 +233,9 @@ class Runner {
 		}
 
 		if ( !is_readable( ABSPATH . 'wp-load.php' ) ) {
-			WP_CLI::error( "This does not seem to be a WordPress install.", false );
-			WP_CLI::line( "Pass --path=`path/to/wordpress` or run `wp core download`." );
-			exit(1);
+			WP_CLI::error(
+				"This does not seem to be a WordPress install.\n" .
+				"Pass --path=`path/to/wordpress` or run `wp core download`." );
 		}
 
 		if ( array( 'core', 'config' ) == $this->arguments ) {
@@ -310,4 +310,3 @@ class Runner {
 		WP_CLI::run_command( $this->arguments, $this->assoc_args );
 	}
 }
-
