@@ -37,7 +37,7 @@ class Core_Command extends WP_CLI_Command {
 		$silent = WP_CLI::get_config('quiet') ? ' --silent ' : ' ';
 
 		WP_CLI::launch( 'curl -f' . $silent . escapeshellarg( $download_url ) . ' | tar xz' );
-		WP_CLI::launch( 'mv wordpress/* . && rm -rf wordpress' );
+		WP_CLI::launch( 'cp -r wordpress/* . && rm -rf wordpress' );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
