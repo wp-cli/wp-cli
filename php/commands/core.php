@@ -10,10 +10,10 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Download core WordPress files.
 	 *
-	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>]
+	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>] [--force]
 	 */
 	public function download( $args, $assoc_args ) {
-		if ( is_readable( ABSPATH . 'wp-load.php' ) )
+		if ( !isset( $assoc_args['force'] ) && is_readable( ABSPATH . 'wp-load.php' ) )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
 		if ( isset( $assoc_args['path'] ) )
