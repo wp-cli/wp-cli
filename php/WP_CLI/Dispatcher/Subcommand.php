@@ -51,7 +51,7 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 		if ( !$synopsis )
 			return;
 
-		$accepted_params = $this->parse_synopsis( $synopsis );
+		$accepted_params = \WP_CLI\SynopsisParser::parse( $synopsis );
 
 		$this->check_positional( $args, $accepted_params );
 
@@ -119,59 +119,5 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 		}
 	}
 
-	protected function parse_synopsis( $synopsis ) {
-		list( $patterns, $params ) = self::get_patterns();
-
-		$tokens = preg_split( '/[\s\t]+/', $synopsis );
-
-		foreach ( $tokens as $token ) {
-			foreach ( $patterns as $regex => $desc ) {
-				if ( preg_match( $regex, $token, $matches ) ) {
-					$type = $desc['type'];
-					$params[$type][] = array_merge( $matches, $desc );
-					break;
-				}
-			}
-		}
-
-		return $params;
-	}
-
-	private static function get_patterns() {
-		$p_name = '(?P<name>[a-z-_]+)';
-		$p_value = '(?P<value>[a-z-|]+)';
-
-		$param_types = array(
-			array( 'positional', "<$p_value>",           1, 1 ),
-			array( 'generic',    "--<field>=<value>",    1, 1 ),
-			array( 'assoc',      "--$p_name=<$p_value>", 1, 1 ),
-			array( 'flag',       "--$p_name",            1, 0 ),
-		);
-
-		$patterns = array();
-		$params = array();
-
-		foreach ( $param_types as $pt ) {
-			list( $type, $pattern, $optional, $mandatory ) = $pt;
-
-			if ( $mandatory ) {
-				$patterns[ "/^$pattern$/" ] = array(
-					'type' => $type,
-					'optional' => false
-				);
-			}
-
-			if ( $optional ) {
-				$patterns[ "/^\[$pattern\]$/" ] = array(
-					'type' => $type,
-					'optional' => true
-				);
-			}
-
-			$params[ $type ] = array();
-		}
-
-		return array( $patterns, $params );
-	}
 }
 
