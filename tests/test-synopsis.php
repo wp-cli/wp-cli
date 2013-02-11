@@ -39,17 +39,17 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 	function testCombined() {
 		$r = SynopsisParser::parse( '<positional> --assoc=<someval> --<field>=<value> [--flag]' );
 
-		$this->assertEquals( 1, count( $r['positional'] ) );
-		$this->assertEquals( 1, count( $r['assoc'] ) );
-		$this->assertEquals( 1, count( $r['generic'] ) );
-		$this->assertEquals( 1, count( $r['flag'] ) );
+		$this->assertCount( 1, $r['positional'] );
+		$this->assertCount( 1, $r['assoc'] );
+		$this->assertCount( 1, $r['generic'] );
+		$this->assertCount( 1, $r['flag'] );
 	}
 
 	protected function assertFoundParameters( $count, $type, $r ) {
 		foreach ( $r as $key => $params ) {
 			$expected = ( $key == $type ) ? $count : 0;
 
-			$this->assertEquals( $expected, count( $params ) );
+			$this->assertCount( $expected, $params );
 		}
 	}
 }
