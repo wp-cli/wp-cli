@@ -14,7 +14,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$r = SynopsisParser::parse( '<foo> [<bar>]' );
 
 		$this->assertFoundParameters( 2, 'positional', $r );
-		$this->assertFalse( $r['positional'][0]['optional'] );
+		$this->assertTrue( $r['positional'][0]['mandatory'] );
 		$this->assertTrue( $r['positional'][1]['optional'] );
 	}
 
@@ -31,7 +31,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$r = SynopsisParser::parse( '--<field>=<value> [--<field>=<value>]' );
 
 		$this->assertFoundParameters( 2, 'generic', $r );
-		$this->assertFalse( $r['generic'][0]['optional'] );
+		$this->assertTrue( $r['generic'][0]['mandatory'] );
 		$this->assertTrue( $r['generic'][1]['optional'] );
 	}
 
@@ -39,7 +39,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$r = SynopsisParser::parse( '--foo=<value> [--bar=<value>]' );
 
 		$this->assertFoundParameters( 2, 'assoc', $r );
-		$this->assertFalse( $r['assoc'][0]['optional'] );
+		$this->assertTrue( $r['assoc'][0]['mandatory'] );
 		$this->assertTrue( $r['assoc'][1]['optional'] );
 
 		// shouldn't pass defaults to assoc parameters
