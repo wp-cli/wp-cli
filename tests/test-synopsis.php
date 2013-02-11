@@ -4,6 +4,12 @@ use WP_CLI\SynopsisParser;
 
 class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 
+	function testEmpty() {
+		$r = SynopsisParser::parse( ' ' );
+
+		$this->assertFoundParameters( 0, 'positional', $r );
+	}
+
 	function testPositional() {
 		$r = SynopsisParser::parse( '<foo> [<bar>]' );
 
