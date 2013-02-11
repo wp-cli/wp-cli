@@ -31,7 +31,7 @@ class WP_CLI_Command_Runner {
 
 		$return_code = proc_close( $process );
 
-		return (object) compact( 'return_code', 'stdout', 'stderr' );
+		return (object) compact( 'command', 'return_code', 'stdout', 'stderr' );
 	}
 
 	public function create_config( $db_settings ) {
