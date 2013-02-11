@@ -13,11 +13,12 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 	}
 
 	function testFlag() {
-		$r = SynopsisParser::parse( '--foo' );
-		$this->assertFoundParameters( 0, 'flag', $r ); // flags can't be mandatory
-
 		$r = SynopsisParser::parse( '[--foo]' );
 		$this->assertFoundParameters( 1, 'flag', $r );
+
+		// flags can't be mandatory
+		$r = SynopsisParser::parse( '--foo' );
+		$this->assertFoundParameters( 1, 'unknown', $r );
 	}
 
 	function testGeneric() {
@@ -34,6 +35,10 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertFoundParameters( 2, 'assoc', $r );
 		$this->assertFalse( $r['assoc'][0]['optional'] );
 		$this->assertTrue( $r['assoc'][1]['optional'] );
+
+		// shouldn't pass defaults to assoc parameters
+		$r = SynopsisParser::parse( '--count=100' );
+		$this->assertFoundParameters( 1, 'unknown', $r );
 	}
 
 	function testCombined() {

@@ -14,12 +14,18 @@ class SynopsisParser {
 		$tokens = preg_split( '/[\s\t]+/', $synopsis );
 
 		foreach ( $tokens as $token ) {
+			$type = false;
+
 			foreach ( $patterns as $regex => $desc ) {
 				if ( preg_match( $regex, $token, $matches ) ) {
 					$type = $desc['type'];
 					$params[$type][] = array_merge( $matches, $desc );
 					break;
 				}
+			}
+
+			if ( !$type ) {
+				$params['unknown'][] = $token;
 			}
 		}
 
