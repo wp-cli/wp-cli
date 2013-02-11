@@ -21,9 +21,11 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 	}
 
 	function testGeneric() {
-		$r = SynopsisParser::parse( '--<field>=<value>' );
+		$r = SynopsisParser::parse( '--<field>=<value> [--<field>=<value>]' );
 
-		$this->assertFoundParameters( 1, 'generic', $r );
+		$this->assertFoundParameters( 2, 'generic', $r );
+		$this->assertFalse( $r['generic'][0]['optional'] );
+		$this->assertTrue( $r['generic'][1]['optional'] );
 	}
 
 	function testAssoc() {
@@ -32,6 +34,15 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertFoundParameters( 2, 'assoc', $r );
 		$this->assertFalse( $r['assoc'][0]['optional'] );
 		$this->assertTrue( $r['assoc'][1]['optional'] );
+	}
+
+	function testCombined() {
+		$r = SynopsisParser::parse( '<positional> --assoc=<someval> --<field>=<value> [--flag]' );
+
+		$this->assertEquals( 1, count( $r['positional'] ) );
+		$this->assertEquals( 1, count( $r['assoc'] ) );
+		$this->assertEquals( 1, count( $r['generic'] ) );
+		$this->assertEquals( 1, count( $r['flag'] ) );
 	}
 
 	protected function assertFoundParameters( $count, $type, $r ) {
