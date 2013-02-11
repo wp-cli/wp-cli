@@ -1,5 +1,6 @@
 <?php
 
+require_once getcwd() . '/vendor/autoload.php';
 require_once getcwd() . '/php/utils.php';
 
 require_once __DIR__ . '/abstract-spec.php';
