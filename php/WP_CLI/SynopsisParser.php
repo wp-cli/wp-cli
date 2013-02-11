@@ -11,7 +11,7 @@ class SynopsisParser {
 	static function parse( $synopsis ) {
 		list( $patterns, $params ) = self::get_patterns();
 
-		$tokens = preg_split( '/[\s\t]+/', $synopsis );
+		$tokens = array_filter( preg_split( '/[\s\t]+/', $synopsis ) );
 
 		foreach ( $tokens as $token ) {
 			$type = false;
