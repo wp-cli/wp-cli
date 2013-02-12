@@ -37,6 +37,7 @@ foreach ( $iterator as $path ) {
 }
 
 $phar->setStub( <<<EOB
+#!/usr/bin/env php
 <?php
 Phar::mapPhar();
 include 'phar://wp-cli.phar/php/boot-phar.php';
