@@ -14,25 +14,27 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
-		\WP_CLI::line( $prefix . $this->get_full_synopsis( false ) );
+		\WP_CLI::line( $prefix . $this->get_full_synopsis() );
 	}
 
 	function get_shortdesc() {
 		return $this->docparser->get_shortdesc();
 	}
 
-	function get_full_synopsis( $validate = true ) {
+	function get_full_synopsis( $validate = false ) {
 		$full_name = implode( ' ', get_path( $this ) );
 		$synopsis = $this->get_synopsis();
 
-		$tokens = \WP_CLI\SynopsisParser::parse( $synopsis );
+		if ( $validate ) {
+			$tokens = \WP_CLI\SynopsisParser::parse( $synopsis );
 
-		foreach ( $tokens as $token ) {
-			if ( 'unknown' == $token['type'] ) {
-				\WP_CLI::warning( sprintf(
-					"Invalid token '%s' in synopsis for '%s'",
-					$token['token'], $full_name
-				) );
+			foreach ( $tokens as $token ) {
+				if ( 'unknown' == $token['type'] ) {
+					\WP_CLI::warning( sprintf(
+						"Invalid token '%s' in synopsis for '%s'",
+						$token['token'], $full_name
+					) );
+				}
 			}
 		}
 
