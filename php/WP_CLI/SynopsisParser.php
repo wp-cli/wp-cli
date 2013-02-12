@@ -129,20 +129,20 @@ class SynopsisParser {
 
 	private function gen_patterns( $type, $pattern, $flavour_types ) {
 		static $flavours = array(
-			'mandatory' => ":pattern:",
-			'optional' => "\[:pattern:\]",
-			'repeating' => ":pattern:...",
+			'mandatory' => ':pattern:',
+			'optional' => '\[:pattern:\]',
+			'repeating' => array( ':pattern:...', '\[:pattern:...\]' )
 		);
 
 		foreach ( $flavour_types as $flavour_type ) {
-			$flavour = $flavours[ $flavour_type ];
+			foreach ( (array) $flavours[ $flavour_type ] as $flavour ) {
+				$final_pattern = str_replace( ':pattern:', $pattern, $flavour );
 
-			$final_pattern = str_replace( ':pattern:', $pattern, $flavour );
-
-			self::$patterns[ '/^' . $final_pattern . '$/' ] = array(
-				'type' => $type,
-				'flavour' => $flavour_type
-			);
+				self::$patterns[ '/^' . $final_pattern . '$/' ] = array(
+					'type' => $type,
+					'flavour' => $flavour_type
+				);
+			}
 		}
 	}
 
