@@ -1,6 +1,8 @@
 <?php
 
-// php -dphar.readonly=0 utils/make-phar.php
+// php -dphar.readonly=0 utils/make-phar.php [--quiet]
+
+define( 'BE_QUIET', isset( $argv[1] ) && '--quiet' == $argv[1] );
 
 $iterator = new \RecursiveIteratorIterator(
 	new \RecursiveDirectoryIterator( './php', FilesystemIterator::SKIP_DOTS )
@@ -28,7 +30,8 @@ foreach ( $iterator as $path ) {
 
 	$key = str_replace( './', '', $path );
 
-	echo "$key - $path\n";
+	if ( !BE_QUIET )
+		echo "$key - $path\n";
 
 	$phar[ $key ] = file_get_contents( $path );
 }
