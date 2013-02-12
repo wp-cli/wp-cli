@@ -91,11 +91,6 @@ class WP_CLI {
 	}
 
 	static function add_man_dir( $dest_dir, $src_dir ) {
-		$dest_dir = realpath( $dest_dir ) . '/';
-
-		if ( $src_dir )
-			$src_dir = realpath( $src_dir ) . '/';
-
 		self::$man_dirs[ $dest_dir ] = $src_dir;
 	}
 

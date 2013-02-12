@@ -4,9 +4,20 @@
 
 define( 'BE_QUIET', isset( $argv[1] ) && '--quiet' == $argv[1] );
 
-$iterator = new \RecursiveIteratorIterator(
-	new \RecursiveDirectoryIterator( './php', FilesystemIterator::SKIP_DOTS )
-);
+function get_iterator( $dir ) {
+	return new \RecursiveIteratorIterator(
+		new \RecursiveDirectoryIterator( $dir, FilesystemIterator::SKIP_DOTS )
+	);
+}
+
+function add_file( $phar, $path ) {
+	$key = str_replace( './', '', $path );
+
+	if ( !BE_QUIET )
+		echo "$key - $path\n";
+
+	$phar[ $key ] = file_get_contents( $path );
+}
 
 $phar = new Phar( 'wp-cli.phar', 0, 'wp-cli.phar' );
 
@@ -19,7 +30,7 @@ $ignored_paths = array(
 	'/php-cli-tools/examples/'
 );
 
-foreach ( $iterator as $path ) {
+foreach ( get_iterator( './php' ) as $path ) {
 	foreach ( $ignored_paths as $ignore ) {
 		if ( strpos( $path, $ignore ) )
 			continue 2;
@@ -28,12 +39,11 @@ foreach ( $iterator as $path ) {
 	if ( !preg_match( '/\.php$/', $path ) )
 		continue;
 
-	$key = str_replace( './', '', $path );
+	add_file( $phar, $path );
+}
 
-	if ( !BE_QUIET )
-		echo "$key - $path\n";
-
-	$phar[ $key ] = file_get_contents( $path );
+foreach ( get_iterator( './man' ) as $path ) {
+	add_file( $phar, $path );
 }
 
 $phar->setStub( <<<EOB
