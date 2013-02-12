@@ -108,13 +108,20 @@ EOB
 	}
 
 	protected function load_all_commands() {
-		foreach ( glob( WP_CLI_ROOT . "/commands/*.php" ) as $filename ) {
-			$command = str_replace( '.php', '', $filename );
+		$cmd_dir = WP_CLI_ROOT . "commands";
+
+		$iterator = new \DirectoryIterator( $cmd_dir );
+
+		foreach ( $iterator as $filename ) {
+			if ( '.php' != substr( $filename, -4 ) )
+				continue;
+
+			$command = substr( $filename, 0, -4 );
 
 			if ( isset( $this->subcommands[ $command ] ) )
 				continue;
 
-			include $filename;
+			include "$cmd_dir/$filename";
 		}
 	}
 
