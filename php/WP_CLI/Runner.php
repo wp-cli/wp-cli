@@ -351,6 +351,10 @@ class Runner {
 				Utils\set_url_params( 'http://example.com' );
 			}
 		}
+
+		if ( $this->cmd_starts_with( array( 'import') ) )
+			define( 'WP_LOAD_IMPORTERS', true );
+
 	}
 
 	public function after_wp_load() {
