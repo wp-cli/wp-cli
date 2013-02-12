@@ -121,22 +121,25 @@ class SynopsisParser {
 		$p_name = '(?P<name>[a-z-_]+)';
 		$p_value = '(?P<value>[a-z-|]+)';
 
-		self::gen_patterns( 'positional', "<$p_value>",           array( 'mandatory', 'optional' ) );
-		self::gen_patterns( 'generic',    "--<field>=<value>",    array( 'mandatory', 'optional' ) );
+		self::gen_patterns( 'positional', "<$p_value>",           array( 'mandatory', 'optional', 'repeating' ) );
+		self::gen_patterns( 'generic',    "--<field>=<value>",    array( 'mandatory', 'optional', 'repeating' ) );
 		self::gen_patterns( 'assoc',      "--$p_name=<$p_value>", array( 'mandatory', 'optional' ) );
 		self::gen_patterns( 'flag',       "--$p_name",            array( 'optional' ) );
 	}
 
 	private function gen_patterns( $type, $pattern, $flavour_types ) {
 		static $flavours = array(
-			'mandatory' => "/^:pattern:$/",
-			'optional' => "/^\[:pattern:\]$/",
+			'mandatory' => ":pattern:",
+			'optional' => "\[:pattern:\]",
+			'repeating' => ":pattern:...",
 		);
 
 		foreach ( $flavour_types as $flavour_type ) {
 			$flavour = $flavours[ $flavour_type ];
 
-			self::$patterns[ str_replace( ':pattern:', $pattern, $flavour ) ] = array(
+			$final_pattern = str_replace( ':pattern:', $pattern, $flavour );
+
+			self::$patterns[ '/^' . $final_pattern . '$/' ] = array(
 				'type' => $type,
 				'flavour' => $flavour_type
 			);
