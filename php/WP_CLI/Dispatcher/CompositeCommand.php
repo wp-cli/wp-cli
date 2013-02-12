@@ -78,7 +78,7 @@ class CompositeCommand extends AbstractCommandContainer implements Documentable 
 		$str = array();
 
 		foreach ( $this->subcommands as $subcommand ) {
-			$str[] = $subcommand->get_full_synopsis();
+			$str[] = $subcommand->get_full_synopsis( true );
 		}
 
 		return implode( "\n\n", $str );
