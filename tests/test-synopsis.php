@@ -66,11 +66,15 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 	}
 
 	function testRepeating() {
-		$r = SynopsisParser::parse( '<positional>...' );
+		$r = SynopsisParser::parse( '<positional>... [--<field>=<value>...]' );
 
-		$this->assertCount( 1, $r );
+		$this->assertCount( 2, $r );
+
 		$this->assertEquals( 'positional', $r[0]['type'] );
 		$this->assertEquals( 'repeating', $r[0]['flavour'] );
+
+		$this->assertEquals( 'generic', $r[1]['type'] );
+		$this->assertEquals( 'repeating', $r[1]['flavour'] );
 	}
 
 	function testCombined() {
