@@ -109,7 +109,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Generate some posts.
 	 *
-	 * @synopsis [--count=100] [--post_type=<type>] [--post_status=<status>] [--post_author=<login>] [--post_date=<yyyy-mm-dd>] [--max_depth=1]
+	 * @synopsis [--count=<number>] [--post_type=<type>] [--post_status=<status>] [--post_author=<login>] [--post_date=<yyyy-mm-dd>] [--max_depth=<number>]
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;

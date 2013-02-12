@@ -184,7 +184,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Generate users.
 	 *
-	 * @synopsis [--count=100] [--role=<role>]
+	 * @synopsis [--count=<number>] [--role=<role>]
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $blog_id;
