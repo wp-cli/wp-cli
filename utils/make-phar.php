@@ -42,6 +42,10 @@ foreach ( get_iterator( './php' ) as $path ) {
 	add_file( $phar, $path );
 }
 
+foreach ( get_iterator( './templates' ) as $path ) {
+	add_file( $phar, $path );
+}
+
 foreach ( get_iterator( './man' ) as $path ) {
 	add_file( $phar, $path );
 }
