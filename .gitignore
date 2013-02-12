@@ -4,3 +4,4 @@
 /vendor
 /composer.lock
 /phpunit.xml
+/wp-cli.phar

@@ -12,5 +12,7 @@ if ( version_compare( PHP_VERSION, '5.3.0', '<' ) ) {
 	die(-1);
 }
 
+define( 'WP_CLI_ROOT', __DIR__ . '/' );
+
 include dirname(__FILE__) . '/wp-cli.php';
 
