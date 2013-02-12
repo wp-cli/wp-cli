@@ -34,9 +34,28 @@ class Help_Command extends WP_CLI_Command {
 			$man_path = $dest_dir . $man_file;
 
 			if ( is_readable( $man_path ) ) {
-				exit( WP_CLI::launch( "man $man_path" ) );
+				self::show_manpage( $man_path );
 			}
 		}
+	}
+
+	private static function show_manpage( $path ) {
+		// to make compatible with Phar archives, need to write to a temporary file
+		$fd = fopen( 'php://temp', 'rw' );
+		fwrite( $fd, file_get_contents( $path ) );
+		fseek( $fd, 0 );
+
+		$descriptorspec = array(
+			0 => $fd,
+			1 => STDOUT,
+			2 => STDERR
+		);
+
+		$cmd = 'man -l -';
+
+		$r = proc_close( proc_open( $cmd, $descriptorspec, $pipes ) );
+
+		exit( $r );
 	}
 }
 
