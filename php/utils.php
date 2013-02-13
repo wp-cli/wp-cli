@@ -280,8 +280,13 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 
 	\WP_CLI::launch( "\${EDITOR:-vi} '$tmpfile'" );
 
+	$filesize = filesize( $tmpfile );
+
+	if ( $filesize === 0 )
+		return false;
+
 	$handle = fopen( $tmpfile, 'r' );
-	$output = fread( $handle, filesize( $tmpfile )  );
+	$output = fread( $handle, $filesize );
 	fclose( $handle );
 	unlink( $tmpfile );
 
