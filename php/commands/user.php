@@ -41,45 +41,23 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			'user_registered'
 		);
 
-		switch( $params['format'] ) {
-			case 'table':
-				$table = new \cli\Table();
+		$output_users = array();
 
-				$table->setHeaders( array_merge( $fields, array('roles') ) );
+		foreach ( $users as $user ) {
+			$output_user = new stdClass;
 
-				foreach ( $users as $user ) {
-					$line = array();
+			foreach ( $fields as $field ) {
+				$output_user->$field = $user->$field;
+			}
 
-					foreach ( $fields as $field ) {
-						$line[] = $user->$field;
-					}
-					$line[] = implode( ',', $user->roles );
+			$output_user->roles = implode( ',', $user->roles );
 
-					$table->addRow( $line );
-				}
-
-				$table->display();
-
-				WP_CLI::line( 'Total: ' . count( $users ) . ' users' );
-				break;
-			case 'json':
-			case 'csv':
-				$output_users = array();
-
-				foreach( $users as $user ) {
-					$output_user = new stdClass;
-					foreach( $fields as $field ) {
-						$output_user->$field = $user->$field;
-					}
-					$output_users[] = $output_user;
-				}
-
-				if ( 'json' == $params['format'] )
-					echo json_encode( $output_users );
-				else
-					WP_CLI\Utils\output_csv( $output_users, $fields );
-				break;
+			$output_users[] = $output_user;
 		}
+
+		$fields[] = 'roles';
+
+		WP_CLI\Utils\format_items( $params['format'], $fields, $output_users );
 	}
 
 	/**
