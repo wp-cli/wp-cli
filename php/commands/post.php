@@ -61,7 +61,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$r = \WP_CLI\Utils\launch_editor_for_input( $post->post_content, "WP-CLI post $post_id"  );
 
-		if ( !$r ) {
+		if ( $r === false ) {
 			\WP_CLI::error( "Aborting. No change made to post.", false );
 			return;
 		}
