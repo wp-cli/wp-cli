@@ -18,27 +18,11 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * @alias cpt
 	 *
-	 * @synopsis <slug> [--singular=<label>] [--description=<description>] [--public=<public>] [--exclude_from_search=<exclude_from_search>] [--show_ui=<show_ui>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_in_menu=<show_in_menu>] [--show_in_admin_bar=<show_in_admin_bar>] [--menu_position=<menu_position>] [--menu_icon=<menu_icon>] [--capability_type=<capability_type>] [--hierarchical=<hierarchical>] [--supports=<supports>] [--has_archive=<has_archive>] [--query_var=<query_var>] [--can_export=<can_export>] [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
+	 * @synopsis <slug> [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
 	 */
 	function post_type( $args, $assoc_args ) {
 		$defaults = array(
-			'description'         => '',
-			'public'              => 'true',
-			'exclude_from_search' => 'false',
-			'show_ui'             => 'true',
-			'show_in_nav_menus'   => 'true',
-			'show_in_menu'        => 'true',
-			'show_in_admin_bar'   => 'true',
-			'menu_position'       => 'null',
-			'menu_icon'           => 'null',
-			'capability_type'     => 'post',
-			'hierarchical'        => 'false',
-			'supports'            => "'title', 'editor'",
-			'has_archive'         => 'true',
-			'rewrite'             => 'true',
-			'query_var'           => 'true',
-			'can_export'          => 'true',
-			'textdomain'          => '',
+			'textdomain' => '',
 		);
 
 		$this->_scaffold( $args[0], $assoc_args, $defaults, '/post-types/', array(
@@ -54,19 +38,12 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * @alias tax
 	 *
-	 * @synopsis <slug> [--singular=<label>] [--public=<public>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_ui=<show_ui>] [--show_tagcloud=<show_tagcloud>] [--hierarchical=<hierarchical>]  [--rewrite=<rewrite>] [--query_var=<query_var>] [--textdomain=<textdomain>] [--post_types=<post_types>] [--theme] [--plugin=<plugin>] [--raw]
+	 * @synopsis <slug> [--post_types=<post-types>] [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
 	 */
 	function taxonomy( $args, $assoc_args ) {
 		$defaults = array(
-			'public'              => 'true',
-			'show_in_nav_menus'   => 'true',
-			'show_ui'             => 'true',
-			'show_tagcloud'       => 'true',
-			'hierarchical'        => 'false',
-			'rewrite'             => 'true',
-			'query_var'           => 'true',
-			'post_types'          => 'post',
-			'textdomain'          => '',
+			'textdomain' => '',
+			'post_types' => 'post'
 		);
 
 		$this->_scaffold( $args[0], $assoc_args, $defaults, '/taxonomies/', array(
@@ -90,12 +67,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$vars['textdomain'] = $this->get_textdomain( $vars['textdomain'], $control_args );
 
-		// If no label is given use the slug and prettify it as good as possible
-		if ( isset( $assoc_args['singular'] ) ) {
-			$vars['label'] = $assoc_args['singular'];
-		} else {
-			$vars['label'] = preg_replace( '/_|-/', ' ', strtolower( $slug ) );
-		}
+		$vars['label'] = preg_replace( '/_|-/', ' ', strtolower( $slug ) );
 
 		$vars['label_ucfirst']        = ucfirst( $vars['label'] );
 		$vars['label_plural']         = $this->pluralize( $vars['label'] );
