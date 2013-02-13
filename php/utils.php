@@ -234,6 +234,53 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 }
 
 /**
+ * Output items in a table, JSON, or CSV
+ *
+ * @param string $format     Format to use: 'table', 'json', 'csv'
+ * @param array  $fields     Named fields for each item of data
+ * @param array  $items      Data to output
+ */
+function format_items( $format, $fields, $items ) {
+
+	switch ( $format ) {
+		case 'table':
+			$table = new \cli\Table();
+
+			$table->setHeaders( $fields );
+
+			foreach ( $items as $item ) {
+				$line = array();
+
+				foreach ( $fields as $field ) {
+					$line[] = $item->$field;
+				}
+
+				$table->addRow( $line );
+			}
+
+			$table->display();
+			break;
+		case 'csv':
+		case 'json':
+			$output_items = array();
+
+			foreach( $items as $item ) {
+				$output_item = new \stdClass;
+				foreach( $fields as $field ) {
+					$output_item->$field = $item->$field;
+				}
+				$output_items[] = $output_item;
+			}
+
+			if ( 'json' == $format )
+				echo json_encode( $output_items );
+			else
+				output_csv( $output_items, $fields );
+			break;
+	}
+}
+
+/**
  * Output data as CSV
  *
  * @param array  $rows       Array of rows to output
