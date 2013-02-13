@@ -1,8 +1,13 @@
 <?php
 
-// php -dphar.readonly=0 utils/make-phar.php [--quiet]
+if ( !isset( $argv[1] ) ) {
+	echo "usage: php -dphar.readonly=0 $argv[0] <path> [--quiet]\n";
+	exit(1);
+}
 
-define( 'BE_QUIET', isset( $argv[1] ) && '--quiet' == $argv[1] );
+define( 'DEST_PATH', $argv[1] );
+
+define( 'BE_QUIET', in_array( '--quiet', $argv ) );
 
 function get_iterator( $dir ) {
 	return new \RecursiveIteratorIterator(
@@ -19,7 +24,7 @@ function add_file( $phar, $path ) {
 	$phar[ $key ] = file_get_contents( $path );
 }
 
-$phar = new Phar( 'wp-cli.phar', 0, 'wp-cli.phar' );
+$phar = new Phar( DEST_PATH, 0, 'wp-cli.phar' );
 
 $phar->startBuffering();
 
@@ -62,5 +67,5 @@ EOB
 
 $phar->stopBuffering();
 
-echo "Generated wp-cli.phar.\n";
+echo "\nGenerated " . DEST_PATH . "\n";
 
