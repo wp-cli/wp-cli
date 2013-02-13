@@ -40,7 +40,7 @@ class Term_Command extends WP_CLI_Command {
 	/**
 	 * Create a term.
 	 *
-	 * @synopsis <term> <taxonomy> [--slug=<slug>] [--description=<description>] [--parent=<parent>]
+	 * @synopsis <term> <taxonomy> [--slug=<slug>] [--description=<description>] [--parent=<term-id>]
 	 */
 	public function create( $args, $assoc_args ) {
 
@@ -63,7 +63,7 @@ class Term_Command extends WP_CLI_Command {
 
 	/**
 	 * Update a term.
-	 * 
+	 *
 	 * @synopsis <term-id> <taxonomy> [--name=<name>] [--slug=<slug>] [--description=<description>] [--parent=<parent>]
 	 */
 	public function update( $args, $assoc_args ) {

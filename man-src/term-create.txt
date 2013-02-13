@@ -16,7 +16,7 @@
 
 	A description for the new term.
 
-* `--parent`=<parent>:
+* `--parent`=<term-id>:
 
 	A parent for the new term.
 
