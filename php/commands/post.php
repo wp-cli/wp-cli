@@ -20,7 +20,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$input = ( isset( $assoc_args['post_content'] ) ) ?
 				$assoc_args['post_content'] : '';
 
-			if ( $output = \WP_CLI\Utils\launch_editor_for_input( $input ) )
+			if ( $output = \WP_CLI\Utils\launch_editor_for_input( $input, 'WP-CLI: New Post' ) )
 				$assoc_args['post_content'] = $output;
 			else
 				$assoc_args['post_content'] = $input;
@@ -59,7 +59,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			return;
 		}
 
-		$r = \WP_CLI\Utils\launch_editor_for_input( $post->post_content );
+		$r = \WP_CLI\Utils\launch_editor_for_input( $post->post_content, "WP-CLI post $post_id"  );
 
 		if ( !$r ) {
 			\WP_CLI::error( "Aborting. No change made to post.", false );

@@ -265,10 +265,11 @@ function output_csv( $rows, $headers = array() ) {
  *
  * @param	str	$content	Text to edit (eg post content)
  * @return		str|bool	Edited text, if file is saved from editor
+ *							False, if no change to file
  */
-function launch_editor_for_input( $input ) {
+function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 
-	$tmpfile = tempnam( '/tmp', 'wp-cli' );
+	$tmpfile = wp_tempnam( $title );
 
 	if ( !$tmpfile )
 		die( 'Error creating temporary file.' );
@@ -277,7 +278,7 @@ function launch_editor_for_input( $input ) {
 	fwrite( $handle, $input );
 	fclose( $handle );
 
-	$out = `\${EDITOR:-vi} "$tmpfile" 3>&1 1>&2 2>&3 || exit $?`;
+	\WP_CLI::launch( "\${EDITOR:-vi} '$tmpfile'" );
 
 	$handle = fopen( $tmpfile, 'r' );
 	$output = fread( $handle, filesize( $tmpfile )  );
