@@ -23,12 +23,7 @@ done
 cd "$ORIGDIR"
 
 # Build the path to the root PHP file
-SCRIPT_PATH='@@PHP_DIR@@'
-if [ ! -d $SCRIPT_PATH ]; then
-	SCRIPT_PATH=$(dirname "$SELF_PATH")/../php
-fi
-
-SCRIPT_PATH=$SCRIPT_PATH/boot-fs.php
+SCRIPT_PATH=$(dirname "$SELF_PATH")/../php/boot-fs.php
 
 case $(uname -a) in
 	CYGWIN*)
