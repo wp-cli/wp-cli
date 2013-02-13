@@ -17,22 +17,22 @@ class Term_Command extends WP_CLI_Command {
 		list( $taxonomy ) = $args;
 
 		$defaults = array(
-				'format'           => 'table',
-				'hide_empty'       => false,
-			);
+			'format'     => 'table',
+			'hide_empty' => false,
+		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
 		$terms = get_terms( array( $taxonomy ), $assoc_args );
 
 		$fields = array(
-				'term_id',
-				'term_taxonomy_id',
-				'name',
-				'slug',
-				'description',
-				'parent',
-				'count',
-			);
+			'term_id',
+			'term_taxonomy_id',
+			'name',
+			'slug',
+			'description',
+			'parent',
+			'count',
+		);
 
 		WP_CLI\Utils\format_items( $assoc_args['format'], $fields, $terms );
 	}
@@ -47,10 +47,10 @@ class Term_Command extends WP_CLI_Command {
 		list( $term, $taxonomy ) = $args;
 
 		$defaults = array(
-				'slug'            => sanitize_title( $term ),
-				'description'     => '',
-				'parent'          => '',
-			);
+			'slug'        => sanitize_title( $term ),
+			'description' => '',
+			'parent'      => '',
+		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
 		$ret = wp_insert_term( $term, $taxonomy, $assoc_args );
@@ -71,11 +71,11 @@ class Term_Command extends WP_CLI_Command {
 		list( $term_id, $taxonomy ) = $args;
 
 		$defaults = array(
-				'name'              => null,
-				'slug'              => null,
-				'description'       => null,
-				'parent'            => null,
-			);
+			'name'        => null,
+			'slug'        => null,
+			'description' => null,
+			'parent'      => null,
+		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
 		foreach( $assoc_args as $key => $value ) {
@@ -89,7 +89,6 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( $ret->get_error_message() );
 		else
 			WP_CLI::success( "Term updated." );
-
 	}
 
 	/**
@@ -114,3 +113,4 @@ class Term_Command extends WP_CLI_Command {
 }
 
 WP_CLI::add_command( 'term', 'Term_Command' );
+
