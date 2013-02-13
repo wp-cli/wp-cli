@@ -1,0 +1,57 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-TERM\-UPDATE" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-term\-update\fR \- Update a term\.
+.
+.SH "SYNOPSIS"
+wp term update \fIterm\-id\fR \fItaxonomy\fR [\-\-name=\fIname\fR] [\-\-slug=\fIslug\fR] [\-\-description=\fIdescription\fR] [\-\-parent=\fIterm\-id\fR]
+.
+.SH "OPTIONS"
+.
+.TP
+\fB<term\-id>\fR:
+.
+.IP
+ID for the term to update\.
+.
+.TP
+\fB<taxonomy>\fR:
+.
+.IP
+Taxonomy of the term to update\.
+.
+.TP
+\fB\-\-name\fR=\fIname\fR:
+.
+.IP
+A new name for the term\.
+.
+.TP
+\fB\-\-slug\fR=\fIslug\fR:
+.
+.IP
+A new slug for the term\.
+.
+.TP
+\fB\-\-description\fR=\fIdescription\fR:
+.
+.IP
+A new description for the term\.
+.
+.TP
+\fB\-\-parent\fR=\fIterm\-id\fR:
+.
+.IP
+A new parent for the term\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp term update 15 category \-\-name=Apple
+.
+.fi
+
