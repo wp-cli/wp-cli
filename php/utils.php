@@ -274,20 +274,12 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 	if ( !$tmpfile )
 		die( 'Error creating temporary file.' );
 
-	$handle = fopen( $tmpfile, 'w+t' );
-	fwrite( $handle, $input );
-	fclose( $handle );
+	file_put_contents( $tmpfile, $input );
 
 	\WP_CLI::launch( "\${EDITOR:-vi} '$tmpfile'" );
 
-	$filesize = filesize( $tmpfile );
+	$output = file_get_contents( $tmpfile );
 
-	if ( $filesize === 0 )
-		return false;
-
-	$handle = fopen( $tmpfile, 'r' );
-	$output = fread( $handle, $filesize );
-	fclose( $handle );
 	unlink( $tmpfile );
 
 	if ( $output === $input )
