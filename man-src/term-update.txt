@@ -20,7 +20,7 @@
 
 	A new description for the term.
 
-* `--parent`=<parent>:
+* `--parent`=<term-id>:
 
 	A new parent for the term.
 

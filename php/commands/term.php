@@ -64,7 +64,7 @@ class Term_Command extends WP_CLI_Command {
 	/**
 	 * Update a term.
 	 *
-	 * @synopsis <term-id> <taxonomy> [--name=<name>] [--slug=<slug>] [--description=<description>] [--parent=<parent>]
+	 * @synopsis <term-id> <taxonomy> [--name=<name>] [--slug=<slug>] [--description=<description>] [--parent=<term-id>]
 	 */
 	public function update( $args, $assoc_args ) {
 
