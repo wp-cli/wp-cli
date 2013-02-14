@@ -272,7 +272,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 	$tmpfile = wp_tempnam( $title );
 
 	if ( !$tmpfile )
-		die( 'Error creating temporary file.' );
+		\WP_CLI::error( 'Error creating temporary file.' );
 
 	file_put_contents( $tmpfile, $input );
 
