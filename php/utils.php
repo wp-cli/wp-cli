@@ -304,5 +304,33 @@ function output_csv( $rows, $headers = array() ) {
 		}
 		fputcsv( STDOUT, $row );
 	}
+
 }
 
+/**
+ * Launch system's $EDITOR to edit text
+ *
+ * @param  str  $content  Text to edit (eg post content)
+ * @return str|bool       Edited text, if file is saved from editor
+ *                        False, if no change to file
+ */
+function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
+
+	$tmpfile = wp_tempnam( $title );
+
+	if ( !$tmpfile )
+		\WP_CLI::error( 'Error creating temporary file.' );
+
+	file_put_contents( $tmpfile, $input );
+
+	\WP_CLI::launch( "\${EDITOR:-vi} '$tmpfile'" );
+
+	$output = file_get_contents( $tmpfile );
+
+	unlink( $tmpfile );
+
+	if ( $output === $input )
+		return false;
+
+	return $output;
+}

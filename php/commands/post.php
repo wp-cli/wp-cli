@@ -12,9 +12,21 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Create a post.
 	 *
-	 * @synopsis --<field>=<value> [--porcelain]
+	 * @synopsis --<field>=<value> [--edit] [--porcelain]
 	 */
 	public function create( $_, $assoc_args ) {
+		if ( isset( $assoc_args['edit'] ) ) {
+
+			$input = ( isset( $assoc_args['post_content'] ) ) ?
+				$assoc_args['post_content'] : '';
+
+			if ( $output = $this->_edit( $input, 'WP-CLI: New Post' ) )
+				$assoc_args['post_content'] = $output;
+			else
+				$assoc_args['post_content'] = $input;
+
+		}
+
 		parent::create( $assoc_args );
 	}
 
@@ -33,6 +45,28 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected function _update( $params ) {
 		return wp_update_post( $params, true );
+	}
+
+	/**
+	 * Launch system editor to edit post content
+	 *
+	 * @synopsis <id>
+	 */
+	public function edit( $args, $_ ) {
+		$post_id = $args[0];
+		if ( !$post_id || !$post = get_post( $post_id ) )
+ 			 \WP_CLI::error( "Failed opening post $post_id to edit." );
+
+		$r = $this->_edit( $post->post_content, "WP-CLI post $post_id" );
+
+		if ( $r === false )
+ 			 \WP_CLI::warning( 'No change made to post content.', 'Aborted' );
+		else
+			 parent::update( $args, array( 'post_content' => $r ) );
+	}
+
+	protected function _edit( $content, $title ) {
+		return \WP_CLI\Utils\launch_editor_for_input( $content, $title );
 	}
 
 	/**
