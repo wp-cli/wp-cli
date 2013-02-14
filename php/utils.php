@@ -263,9 +263,9 @@ function output_csv( $rows, $headers = array() ) {
 /**
  * Launch system's $EDITOR to edit text
  *
- * @param	str	$content	Text to edit (eg post content)
- * @return		str|bool	Edited text, if file is saved from editor
- *							False, if no change to file
+ * @param  str  $content  Text to edit (eg post content)
+ * @return str|bool       Edited text, if file is saved from editor
+ *                        False, if no change to file
  */
 function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 
