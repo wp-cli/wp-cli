@@ -52,6 +52,10 @@ class Shell_Command extends \WP_CLI_Command {
 
 		$line = fgets( $fp );
 
+		if ( !$line ) {
+			$line = 'exit';
+		}
+
 		return trim( $line );
 	}
 
@@ -61,6 +65,7 @@ class Shell_Command extends \WP_CLI_Command {
 			sprintf( 'history -r %s', escapeshellarg( $history_path ) ),
 			'LINE=""',
 			sprintf( 'read -re -p %s LINE', escapeshellarg( $prompt ) ),
+			'[ $? -eq 0 ] || exit',
 			'history -s "$LINE"',
 			sprintf( 'history -w %s', escapeshellarg( $history_path ) ),
 			'echo $LINE'
