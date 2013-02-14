@@ -151,7 +151,7 @@ class Runner {
 		$lines_to_run = array();
 
 		foreach ( $wp_config_code as $line ) {
-			if ( preg_match( '/^require.+wp-settings\.php/', $line ) )
+			if ( preg_match( '/^\s*require.+wp-settings\.php/', $line ) )
 				continue;
 
 			$lines_to_run[] = str_replace( $old, $new, $line );
