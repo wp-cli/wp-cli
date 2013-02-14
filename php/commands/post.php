@@ -20,7 +20,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$input = ( isset( $assoc_args['post_content'] ) ) ?
 				$assoc_args['post_content'] : '';
 
-			if ( $output = \WP_CLI\Utils\launch_editor_for_input( $input, 'WP-CLI: New Post' ) )
+			if ( $output = $this->_edit( $input, 'WP-CLI: New Post' ) )
 				$assoc_args['post_content'] = $output;
 			else
 				$assoc_args['post_content'] = $input;
@@ -50,24 +50,23 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Launch system editor to edit post content
 	 *
-	 * @synopsis <id>...
+	 * @synopsis <id>
 	 */
-	public function edit( $args, $assoc_args ) {
+	public function edit( $args, $_ ) {
 		$post_id = $args[0];
-		if ( !$post_id || !$post = get_post( $post_id ) ) {
-			\WP_CLI::error( "Failed opening post $post_id to edit.", false );
-			return;
-		}
+		if ( !$post_id || !$post = get_post( $post_id ) )
+ 			 \WP_CLI::error( "Failed opening post $post_id to edit." );
 
-		$r = \WP_CLI\Utils\launch_editor_for_input( $post->post_content, "WP-CLI post $post_id"  );
+		$r = $this->_edit( $post->post_content, "WP-CLI post $post_id" );
 
-		if ( $r === false ) {
-			\WP_CLI::error( "Aborting. No change made to post.", false );
-			return;
-		}
+		if ( $r === false )
+ 			 \WP_CLI::warning( 'No change made to post content.', 'Aborted' );
+		else
+			 parent::update( $args, array( 'post_content' => $r ) );
+	}
 
-		$assoc_args['post_content'] = $r;
-		parent::update( $args, $assoc_args );
+	protected function _edit( $content, $title ) {
+		return \WP_CLI\Utils\launch_editor_for_input( $content, $title );
 	}
 
 	/**
