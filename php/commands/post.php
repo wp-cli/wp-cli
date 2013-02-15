@@ -12,9 +12,17 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Create a post.
 	 *
-	 * @synopsis --<field>=<value> [--edit] [--porcelain]
+	 * @synopsis [<file>] --<field>=<value> [--porcelain]
 	 */
-	public function create( $_, $assoc_args ) {
+	public function create( $args, $assoc_args ) {
+		if ( ! empty( $args[0] ) ) {
+			$readfile = ( $args[0] === '-' ) ? 'php://stdin' : $args[0];
+
+			if ( ! file_exists( $readfile ) || ! is_file( $readfile ) )
+				 \WP_CLI::error( "Unable to read content from $readfile." );
+
+			$assoc_args['post_content'] = file_get_contents( $readfile );
+		}
 		if ( isset( $assoc_args['edit'] ) ) {
 
 			$input = ( isset( $assoc_args['post_content'] ) ) ?
@@ -26,7 +34,6 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				$assoc_args['post_content'] = $input;
 
 		}
-
 		parent::create( $assoc_args );
 	}
 
