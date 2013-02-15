@@ -48,7 +48,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Launch system editor to edit post content
+	 * Launch system editor to edit post content.
 	 *
 	 * @synopsis <id>
 	 */
