@@ -11,10 +11,16 @@ class WP_CLI_Command_Runner {
 	private $install_dir;
 
 	public function __construct() {
+		$this->drop_db();
+	}
+
+	public function create_empty_dir() {
 		$this->install_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-", TRUE );
 		mkdir( $this->install_dir );
+	}
 
-		$this->drop_db();
+	public function get_path( $file ) {
+		return $this->install_dir . '/' . $file;
 	}
 
 	public function create_db() {
@@ -48,15 +54,15 @@ class WP_CLI_Command_Runner {
 			2 => array( 'pipe', 'w' ),
 		), $pipes );
 
-		$stdout = stream_get_contents( $pipes[1] );
+		$STDOUT = stream_get_contents( $pipes[1] );
 		fclose( $pipes[1] );
 
-		$stderr = stream_get_contents( $pipes[2] );
+		$STDERR = stream_get_contents( $pipes[2] );
 		fclose( $pipes[2] );
 
 		$return_code = proc_close( $process );
 
-		return (object) compact( 'command', 'return_code', 'stdout', 'stderr' );
+		return (object) compact( 'command', 'return_code', 'STDOUT', 'STDERR' );
 	}
 
 	public function create_config() {
