@@ -7,5 +7,6 @@ Feature: Manage WordPress users
     Then the return code should be 0
     And STDOUT should match '%d'
 
-    When I run the previous command again
-    Then the return code should be 1
+    When I run `wp user delete <STDOUT>`
+    Then the return code should be 0
+    And STDOUT should not be empty

@@ -85,6 +85,13 @@ class FeatureContext extends BehatContext
 	 */
 	public function iRun( $cmd )
 	{
+		if ( false !== strpos( $cmd, '<STDOUT>' ) ) {
+			if ( !isset( $this->result ) )
+				throw new \Exception( 'No previous command.' );
+
+			$cmd = str_replace( '<STDOUT>', trim( $this->result->STDOUT ), $cmd );
+		}
+
 		$cmd = ltrim( str_replace( 'wp', '', $cmd ) );
 
 		$this->result = $this->runner->run( $cmd );
