@@ -87,19 +87,18 @@ class FeatureContext extends BehatContext
 	{
 		$cmd = ltrim( str_replace( 'wp', '', $cmd ) );
 
-		switch ( $cmd )
-		{
-		case 'core install':
-			$this->result = $this->runner->run_install();
-			break;
+		$this->result = $this->runner->run( $cmd );
+	}
 
-		case 'core config':
-			$this->result = $this->runner->create_config();
-			break;
+	/**
+	 * @When /^I run the previous command again$/
+	 */
+	public function iRunThePreviousCommandAgain()
+	{
+		if ( !isset( $this->result ) )
+			throw new \Exception( 'No previous command.' );
 
-		default:
-			$this->result = $this->runner->run( $cmd );
-		}
+		$this->result = $this->runner->run( $this->result->command );
 	}
 
 	/**
@@ -116,6 +115,14 @@ class FeatureContext extends BehatContext
 	public function outputShouldBe( $stream, PyStringNode $output )
 	{
 		assertEquals( (string) $output, rtrim( $this->result->$stream, "\n" ) );
+	}
+
+	/**
+	 * @Then /^(STDOUT|STDERR) should match \'([^\']+)\'$/
+	 */
+	public function outputShouldMatch( $stream, $format )
+	{
+		assertStringMatchesFormat( $format, $this->result->$stream );
 	}
 
 	/**

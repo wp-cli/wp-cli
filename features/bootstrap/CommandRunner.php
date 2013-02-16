@@ -41,6 +41,21 @@ class WP_CLI_Command_Runner {
 	}
 
 	public function run( $command, $cwd = false ) {
+		switch ( $command ) {
+		case 'core install':
+			return $this->run_install();
+			break;
+
+		case 'core config':
+			return $this->create_config();
+			break;
+
+		default:
+			return $this->_run( $command, $cwd );
+		}
+	}
+
+	private function _run( $command, $cwd ) {
 		if ( !$cwd )
 			$cwd = $this->install_dir;
 
