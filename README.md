@@ -27,8 +27,12 @@ If you want to receive an email for every single commit, you can subscribe to th
 Running tests
 -------------
 
-The tests use PHPUnit, which can be installed using [composer](http://getcomposer.org/).
-Once you've got composer installed, run:
+There are two types of tests:
+
+* unit tests, implemented using [PHPUnit](http://phpunit.de/)
+* functional tests, implemented using [Behat](http://behat.org)
+
+All the test dependencies can be installed using [composer](http://getcomposer.org/):
 
     composer.phar install --dev
 
@@ -39,11 +43,10 @@ Running the following as root in MySQL should do the trick:
     GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"localhost"
     IDENTIFIED BY "password1";
 
-Finally, to run the tests:
+Finally, to run the unit tests:
 
     vendor/bin/phpunit
 
-Most tests install WordPress from scratch. Since this is pretty slow, you can
-use arguments to `phpunit` to only run the test that you're interested in:
+And to run the functional tests:
 
-    vendor/bin/phpunit --filter test_function_you_want_to_run
+    vendor/bin/behat
