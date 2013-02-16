@@ -2,11 +2,42 @@
 
 class WP_CLI_Command_Runner {
 
+	protected static $db_settings = array(
+		'dbname' => 'wp_cli_test',
+		'dbuser' => 'wp_cli_test',
+		'dbpass' => 'password1'
+	);
+
 	private $install_dir;
 
 	public function __construct() {
+		$this->drop_db();
+	}
+
+	public function create_empty_dir() {
 		$this->install_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-", TRUE );
 		mkdir( $this->install_dir );
+	}
+
+	public function get_path( $file ) {
+		return $this->install_dir . '/' . $file;
+	}
+
+	public function create_db() {
+		$dbname = self::$db_settings['dbname'];
+		self::run_sql( "CREATE DATABASE $dbname" );
+	}
+
+	public function drop_db() {
+		$dbname = self::$db_settings['dbname'];
+		self::run_sql( "DROP DATABASE IF EXISTS $dbname" );
+	}
+
+	private static function run_sql( $sql ) {
+		$dbuser = self::$db_settings['dbuser'];
+		$dbpass = self::$db_settings['dbpass'];
+
+		exec( "mysql -u$dbuser -p$dbpass -e '$sql'" );
 	}
 
 	public function run( $command, $cwd = false ) {
@@ -23,19 +54,19 @@ class WP_CLI_Command_Runner {
 			2 => array( 'pipe', 'w' ),
 		), $pipes );
 
-		$stdout = stream_get_contents( $pipes[1] );
+		$STDOUT = stream_get_contents( $pipes[1] );
 		fclose( $pipes[1] );
 
-		$stderr = stream_get_contents( $pipes[2] );
+		$STDERR = stream_get_contents( $pipes[2] );
 		fclose( $pipes[2] );
 
 		$return_code = proc_close( $process );
 
-		return (object) compact( 'command', 'return_code', 'stdout', 'stderr' );
+		return (object) compact( 'command', 'return_code', 'STDOUT', 'STDERR' );
 	}
 
-	public function create_config( $db_settings ) {
-		return $this->run( 'core config' . \WP_CLI\Utils\assoc_args_to_str( $db_settings ) );
+	public function create_config() {
+		return $this->run( 'core config' . \WP_CLI\Utils\assoc_args_to_str( self::$db_settings ) );
 	}
 
 	public function define_custom_wp_content_dir() {
