@@ -2,11 +2,36 @@
 
 class WP_CLI_Command_Runner {
 
+	protected static $db_settings = array(
+		'dbname' => 'wp_cli_test',
+		'dbuser' => 'wp_cli_test',
+		'dbpass' => 'password1'
+	);
+
 	private $install_dir;
 
 	public function __construct() {
 		$this->install_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-", TRUE );
 		mkdir( $this->install_dir );
+
+		$this->drop_db();
+	}
+
+	public function create_db() {
+		$dbname = self::$db_settings['dbname'];
+		self::run_sql( "CREATE DATABASE $dbname" );
+	}
+
+	public function drop_db() {
+		$dbname = self::$db_settings['dbname'];
+		self::run_sql( "DROP DATABASE IF EXISTS $dbname" );
+	}
+
+	private static function run_sql( $sql ) {
+		$dbuser = self::$db_settings['dbuser'];
+		$dbpass = self::$db_settings['dbpass'];
+
+		exec( "mysql -u$dbuser -p$dbpass -e '$sql'" );
 	}
 
 	public function run( $command, $cwd = false ) {
@@ -34,8 +59,8 @@ class WP_CLI_Command_Runner {
 		return (object) compact( 'command', 'return_code', 'stdout', 'stderr' );
 	}
 
-	public function create_config( $db_settings ) {
-		return $this->run( 'core config' . \WP_CLI\Utils\assoc_args_to_str( $db_settings ) );
+	public function create_config() {
+		return $this->run( 'core config' . \WP_CLI\Utils\assoc_args_to_str( self::$db_settings ) );
 	}
 
 	public function define_custom_wp_content_dir() {

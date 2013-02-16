@@ -2,29 +2,6 @@
 
 abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 
-	protected static $db_settings = array(
-		'dbname' => 'wp_cli_test',
-		'dbuser' => 'wp_cli_test',
-		'dbpass' => 'password1'
-	);
-
-	private static function run_sql( $sql ) {
-		$dbuser = self::$db_settings['dbuser'];
-		$dbpass = self::$db_settings['dbpass'];
-
-		exec( "mysql -u$dbuser -p$dbpass -e '$sql'" );
-	}
-
-	protected function tearDown() {
-		$dbname = self::$db_settings['dbname'];
-		$this->run_sql( "DROP DATABASE IF EXISTS $dbname" );
-	}
-
-	private function create_db() {
-		$dbname = self::$db_settings['dbname'];
-		$this->run_sql( "CREATE DATABASE $dbname" );
-	}
-
 	public function runGiven( &$world, $action, $arguments ) {
 		switch ( $action ) {
 			case 'empty dir': {
@@ -33,7 +10,7 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 			break;
 
 			case 'database': {
-				$this->create_db();
+				$world['runner']->create_db();
 			}
 			break;
 
@@ -43,15 +20,15 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 			break;
 
 			case 'wp config': {
-				$world['runner']->create_config( self::$db_settings );
+				$world['runner']->create_config();
 			}
 			break;
 
 			case 'wp install': {
-				$this->create_db();
 				$world['runner'] = new WP_CLI_Command_Runner;
+				$world['runner']->create_db();
 				$world['runner']->download_wordpress_files();
-				$world['runner']->create_config( self::$db_settings );
+				$world['runner']->create_config();
 				$world['runner']->run_install();
 			}
 			break;
@@ -79,7 +56,7 @@ abstract class WP_CLI_Spec extends PHPUnit_Extensions_Story_TestCase {
 					break;
 
 					case 'core config': {
-						$world['result'] = $world['runner']->create_config( self::$db_settings );
+						$world['result'] = $world['runner']->create_config();
 					}
 					break;
 
