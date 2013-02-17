@@ -4,11 +4,11 @@ Feature: Global flags
     Given WP install
 
     When I run `wp`
-    Then the return code should be 0
+    Then it should run without errors
     And STDOUT should not be empty
 
     When I run `wp --quiet`
-    Then the return code should be 0
+    Then it should run without errors
     And STDOUT should be:
       """
       """

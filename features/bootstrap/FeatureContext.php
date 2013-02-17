@@ -132,6 +132,15 @@ class FeatureContext extends BehatContext
 	}
 
 	/**
+	 * @Then /^it should run without errors$/
+	 */
+	public function itShouldRunWithoutErrors()
+	{
+		assertEquals( 0, $this->result->return_code );
+		assertEmpty( $this->result->STDERR );
+	}
+
+	/**
 	 * @Then /^(STDOUT|STDERR) should be:$/
 	 */
 	public function outputShouldBe( $stream, PyStringNode $output )

@@ -20,7 +20,7 @@ Feature: Manage WordPress installation
       """
     
     When I run `wp core config`
-    Then the return code should be 0
+    Then it should run without errors
     And the wp-config.php file should exist
 
   Scenario: Database doesn't exist
@@ -36,7 +36,7 @@ Feature: Manage WordPress installation
       """
 
     When I run `wp db create`
-    Then the return code should be 0
+    Then it should run without errors
 
   Scenario: Database tables not installed
     Given an empty directory
@@ -56,7 +56,7 @@ Feature: Manage WordPress installation
       """
 
     When I run `wp core install`
-    Then the return code should be 0
+    Then it should run without errors
 
     When I run `wp post list --ids`
     Then STDOUT should be:
@@ -68,14 +68,14 @@ Feature: Manage WordPress installation
     Given WP install
 
     When I run `wp core is-installed`
-    Then the return code should be 0
+    Then it should run without errors
 
   Scenario: Custom wp-content directory
     Given WP install
     And custom wp-content directory
 
     When I run `wp theme status twentytwelve`
-    Then the return code should be 0
+    Then it should run without errors
 
     When I run `wp plugin status hello`
-    Then the return code should be 0
+    Then it should run without errors
