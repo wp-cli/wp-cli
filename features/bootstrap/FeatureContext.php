@@ -136,8 +136,11 @@ class FeatureContext extends BehatContext
 	 */
 	public function itShouldRunWithoutErrors()
 	{
-		assertEquals( 0, $this->result->return_code );
-		assertEmpty( $this->result->STDERR );
+		if ( !empty( $this->result->STDERR ) )
+			throw new \Exception( $this->result->STDERR );
+
+		if ( 0 != $this->result->return_code )
+			throw new \Exception( "Return code was $this->result->return_code" );
 	}
 
 	/**
