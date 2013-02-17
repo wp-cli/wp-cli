@@ -9,9 +9,7 @@ Feature: Global flags
 
     When I run `wp --quiet`
     Then it should run without errors
-    And STDOUT should be:
-      """
-      """
+    And STDOUT should be empty
  
     When I run `wp non-existing-command --quiet`
     Then the return code should be 1
