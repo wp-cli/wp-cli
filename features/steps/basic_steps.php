@@ -46,7 +46,9 @@ $steps->Given( '/^custom wp-content directory$/',
 
 $steps->When( '/^I run `(.+)`$/',
 	function ( $world, $cmd ) {
-		$cmd = ltrim( str_replace( 'wp', '', $cmd ) );
+		if ( 0 === strpos( $cmd, 'wp' ) ) {
+			$cmd = ltrim( substr( $cmd, 2 ) );
+		}
 
 		$world->replace_variables( $cmd );
 
