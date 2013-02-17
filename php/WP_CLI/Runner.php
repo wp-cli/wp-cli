@@ -191,7 +191,7 @@ class Runner {
 		if ( isset( $this->assoc_args['no-color'] ) ) {
 			$this->config['color'] = false;
 			unset( $this->assoc_args['no-color'] );
-		} elseif ( 'auto' == $this->config['color'] ) {
+		} elseif ( 'auto' === $this->config['color'] ) {
 			$this->config['color'] = ! \cli\Shell::isPiped();
 		}
 

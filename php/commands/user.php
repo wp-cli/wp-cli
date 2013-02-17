@@ -7,6 +7,8 @@
  */
 class User_Command extends \WP_CLI\CommandWithDBObject {
 
+	protected $obj_type = 'user';
+
 	/**
 	 * List users.
 	 *
