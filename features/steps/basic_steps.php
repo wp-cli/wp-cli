@@ -5,31 +5,31 @@ use Behat\Behat\Exception\PendingException,
     Behat\Gherkin\Node\TableNode;
 
 $steps->Given( '/^an empty directory$/', function( $world ) {
-	$world->runner->create_empty_dir();
+	$world->create_empty_dir();
 } );
 
 $steps->Given( '/^WP files$/', function ( $world ) {
-	$world->runner->download_wordpress_files();
+	$world->download_wordpress_files();
 } );
 
 $steps->Given( '/^wp-config\.php$/', function ( $world ) {
-	$world->runner->create_config();
+	$world->create_config();
 } );
 
 $steps->Given( '/^a database$/', function( $world ) {
-	$world->runner->create_db();
+	$world->create_db();
 } );
 
 $steps->Given( '/^WP install$/', function( $world ) {
-	$world->runner->create_db();
-	$world->runner->create_empty_dir();
-	$world->runner->download_wordpress_files();
-	$world->runner->create_config();
-	$world->runner->run_install();
+	$world->create_db();
+	$world->create_empty_dir();
+	$world->download_wordpress_files();
+	$world->create_config();
+	$world->run_install();
 } );
 
 $steps->Given( '/^custom wp-content directory$/', function( $world ) {
-	$world->runner->define_custom_wp_content_dir();
+	$world->define_custom_wp_content_dir();
 } );
 
 $steps->When( '/^I run `(.+)`$/', function( $world, $cmd ) {
@@ -37,14 +37,14 @@ $steps->When( '/^I run `(.+)`$/', function( $world, $cmd ) {
 
 	$world->replace_variables( $cmd );
 
-	$world->result = $world->runner->run( $cmd );
+	$world->result = $world->run( $cmd );
 } );
 
 $steps->When( '/^I run the previous command again$/', function( $world ) {
 	if ( !isset( $world->result ) )
 		throw new \Exception( 'No previous command.' );
 
-	$world->result = $world->runner->run( $world->result->command );
+	$world->result = $world->run( $world->result->command );
 } );
 
 $steps->Given( '/^save (STDOUT|STDERR) as \{(\w+)\}$/', function( $world, $stream, $key ) {
@@ -95,5 +95,5 @@ $steps->Then( '/^(STDOUT|STDERR) should not be empty$/', function( $world, $stre
 } );
 
 $steps->Then( '/^the (.+) file should exist$/', function( $world, $path ) {
-	assertFileExists( $world->runner->get_path( $path ) );
+	assertFileExists( $world->get_path( $path ) );
 } );
