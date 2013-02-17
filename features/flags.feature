@@ -1,7 +1,4 @@
-Feature: flags
-  In order to manage WordPress
-  As a UNIX user
-  I need to be able to use various flags
+Feature: Global flags
 
   Scenario: Quiet run
     Given WP install

@@ -1,7 +1,4 @@
-Feature: core
-  In order to manage WordPress
-  As a UNIX user
-  I need to be able to install it
+Feature: Manage WordPress installation
 
   Scenario: Empty dir
     Given an empty directory
