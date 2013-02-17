@@ -34,3 +34,27 @@ Feature: Global flags
       """
       Notice: Use of undefined constant CONST_WITHOUT_QUOTES
       """
+
+  Scenario: Setting the WP user
+    Given WP install
+
+    When I run `wp eval 'echo (int) is_user_logged_in();'`
+    Then it should run without errors
+    And STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp --user=admin eval 'echo wp_get_current_user()->user_login;'`
+    Then it should run without errors
+    And STDOUT should be:
+      """
+      admin
+      """
+
+    When I run `wp --user=non-existing-user`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Could not get a user_id for this user: 'non-existing-user'
+      """
