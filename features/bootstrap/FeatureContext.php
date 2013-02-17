@@ -17,6 +17,8 @@ require_once __DIR__ . '/../../php/utils.php';
  */
 class FeatureContext extends BehatContext
 {
+	private $variables = array();
+
 	/**
 	 * Initializes context.
 	 * Every scenario gets it's own context object.
@@ -85,16 +87,21 @@ class FeatureContext extends BehatContext
 	 */
 	public function iRun( $cmd )
 	{
-		if ( false !== strpos( $cmd, '<STDOUT>' ) ) {
-			if ( !isset( $this->result ) )
-				throw new \Exception( 'No previous command.' );
-
-			$cmd = str_replace( '<STDOUT>', trim( $this->result->STDOUT ), $cmd );
-		}
-
 		$cmd = ltrim( str_replace( 'wp', '', $cmd ) );
 
+		$cmd = preg_replace_callback( '/\{(\w+)\}/', array( $this, 'replace_var' ), $cmd );
+
 		$this->result = $this->runner->run( $cmd );
+	}
+
+	private function replace_var( $matches ) {
+		$cmd = $matches[0];
+
+		foreach ( array_slice( $matches, 1 ) as $key ) {
+			$cmd = str_replace( '{' . $key . '}', $this->variables[ $key ], $cmd );
+		}
+
+		return $cmd;
 	}
 
 	/**
@@ -106,6 +113,14 @@ class FeatureContext extends BehatContext
 			throw new \Exception( 'No previous command.' );
 
 		$this->result = $this->runner->run( $this->result->command );
+	}
+
+	/**
+	 * @Given /^save (STDOUT|STDERR) as \{(\w+)\}$/
+	 */
+	public function saveStreamAsVariable( $stream, $key )
+	{
+		$this->variables[ $key ] = rtrim( $this->result->$stream, "\n" );
 	}
 
 	/**
