@@ -1,6 +1,6 @@
 Feature: Manage WordPress users
 
-  Scenario: Creating/deleting users
+  Scenario: Creating/updating/deleting users
     Given WP install
 
     When I run `wp user create testuser testuser@example.com --porcelain`
@@ -10,6 +10,13 @@ Feature: Manage WordPress users
 
     When I run the previous command again
     Then the return code should be 1
+
+    When I run `wp user update {USER_ID} --displayname=Foo`
+    Then it should run without errors
+    And STDOUT should be:
+      """
+      Success: Updated user {USER_ID}.
+      """
 
     When I run `wp user delete {USER_ID}`
     Then it should run without errors

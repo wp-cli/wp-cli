@@ -25,9 +25,25 @@ class FeatureContext extends BehatContext
 	 *
 	 * @param array $parameters context parameters (set them up through behat.yml)
 	 */
-	public function __construct(array $parameters)
+	public function __construct( array $parameters )
 	{
 		$this->runner = new WP_CLI_Command_Runner;
+	}
+
+	private function replace_variables( &$str )
+	{
+		$str = preg_replace_callback( '/\{(\w+)\}/', array( $this, '_replace_var' ), $str );
+	}
+
+	private function _replace_var( $matches )
+	{
+		$cmd = $matches[0];
+
+		foreach ( array_slice( $matches, 1 ) as $key ) {
+			$cmd = str_replace( '{' . $key . '}', $this->variables[ $key ], $cmd );
+		}
+
+		return $cmd;
 	}
 
 	/**
@@ -89,19 +105,9 @@ class FeatureContext extends BehatContext
 	{
 		$cmd = ltrim( str_replace( 'wp', '', $cmd ) );
 
-		$cmd = preg_replace_callback( '/\{(\w+)\}/', array( $this, 'replace_var' ), $cmd );
+		$this->replace_variables( $cmd );
 
 		$this->result = $this->runner->run( $cmd );
-	}
-
-	private function replace_var( $matches ) {
-		$cmd = $matches[0];
-
-		foreach ( array_slice( $matches, 1 ) as $key ) {
-			$cmd = str_replace( '{' . $key . '}', $this->variables[ $key ], $cmd );
-		}
-
-		return $cmd;
 	}
 
 	/**
@@ -148,6 +154,8 @@ class FeatureContext extends BehatContext
 	 */
 	public function outputShouldBe( $stream, PyStringNode $output )
 	{
+		$this->replace_variables( $output );
+
 		$result = rtrim( $this->result->$stream, "\n" );
 
 		if ( (string) $output != $result ) {
