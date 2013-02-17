@@ -58,3 +58,18 @@ Feature: Global flags
       """
       Error: Could not get a user_id for this user: 'non-existing-user'
       """
+
+  Scenario: Enabling/disabling color
+    Given WP install
+
+    When I run `wp --no-color non-existant-command`
+    Then STDERR should be:
+      """
+      Error: 'non-existant-command' is not a registered wp command. See 'wp help'.
+      """
+
+    When I run `wp --color non-existant-command`
+    Then STDERR should contain:
+      """
+      [31;1mError:
+      """
