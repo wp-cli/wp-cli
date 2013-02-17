@@ -17,3 +17,20 @@ Feature: Global flags
       """
       Error: 'non-existing-command' is not a registered wp command. See 'wp help'.
       """
+
+  Scenario: Debug run
+    Given WP install
+
+    When I run `wp eval 'echo CONST_WITHOUT_QUOTES;'`
+    Then it should run without errors
+    And STDOUT should be:
+      """
+      CONST_WITHOUT_QUOTES
+      """
+
+    When I run `wp --debug eval 'echo CONST_WITHOUT_QUOTES;'`
+    Then the return code should be 0
+    And STDOUT should contain:
+      """
+      Notice: Use of undefined constant CONST_WITHOUT_QUOTES
+      """

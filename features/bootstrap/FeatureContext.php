@@ -164,6 +164,16 @@ class FeatureContext extends BehatContext
 	}
 
 	/**
+	 * @Then /^(STDOUT|STDERR) should contain:$/
+	 */
+	public function outputShouldContain( $stream, PyStringNode $output )
+	{
+		if ( false === strpos( $this->result->$stream, (string) $output ) ) {
+			throw new \Exception( $this->result->$stream );
+		}
+	}
+
+	/**
 	 * @Then /^(STDOUT|STDERR) should match \'([^\']+)\'$/
 	 */
 	public function outputShouldMatch( $stream, $format )
