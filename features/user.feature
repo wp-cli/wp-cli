@@ -30,9 +30,7 @@ Feature: Manage WordPress users
     And I run `wp user delete {USER_IDS}`
     When I run `wp user list --ids`
     Then it should run without errors
-    And STDOUT should be:
-      """
-      """
+    And STDOUT should be empty
 
     When I run `wp user generate --count=10`
     Then it should run without errors

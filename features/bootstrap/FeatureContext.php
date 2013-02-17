@@ -172,6 +172,16 @@ class FeatureContext extends BehatContext
 	}
 
 	/**
+	 * @Then /^(STDOUT|STDERR) should be empty$/
+	 */
+	public function outputShouldBeEmpty( $stream )
+	{
+		if ( !empty( $this->result->$stream ) ) {
+			throw new \Exception( $this->result->$stream );
+		}
+	}
+
+	/**
 	 * @Then /^(STDOUT|STDERR) should not be empty$/
 	 */
 	public function outputShouldNotBeEmpty( $stream )
