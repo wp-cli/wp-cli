@@ -185,16 +185,27 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$this->create_file( $plugin_path, $this->render( 'plugin.mustache', $data ) );
 
-		$this->add_testing_files( $plugin_dir, $plugin_slug );
-
 		WP_CLI::success( "Created $plugin_dir" );
+
+		WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ) );
 
 		if ( isset( $assoc_args['activate'] ) )
 			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug ) );
 	}
 
-	private function add_testing_files( $plugin_dir, $plugin_slug ) {
+	/**
+	 * Generate files needed for running PHPUnit tests.
+	 *
+	 * @subcommand plugin-tests
+	 *
+	 * @synopsis <plugin>
+	 */
+	function plugin_tests( $args, $assoc_args ) {
 		global $wp_filesystem;
+
+		$plugin_slug = $args[0];
+
+		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 
 		$tests_dir = "$plugin_dir/tests";
 
@@ -211,6 +222,8 @@ class Scaffold_Command extends WP_CLI_Command {
 		foreach ( $to_copy as $file => $dir ) {
 			$wp_filesystem->copy( $this->get_template_path( $file ), "$dir/$file" );
 		}
+
+		WP_CLI::success( "Created test files in $plugin_dir" );
 	}
 
 	private function create_file( $filename, $contents ) {
