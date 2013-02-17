@@ -69,6 +69,13 @@ class SynopsisParser {
 	}
 
 	private function check_unknown_assoc( $assoc_args ) {
+		$generic = $this->query_params( array(
+			'type' => 'generic',
+		) );
+
+		if ( count( $generic ) )
+			return;
+
 		$known_assoc = array();
 
 		foreach ( $this->params as $param ) {

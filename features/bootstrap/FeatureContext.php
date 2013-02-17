@@ -2,10 +2,7 @@
 
 use Behat\Behat\Context\ClosuredContextInterface,
     Behat\Behat\Context\TranslatedContextInterface,
-    Behat\Behat\Context\BehatContext,
-    Behat\Behat\Exception\PendingException;
-use Behat\Gherkin\Node\PyStringNode,
-    Behat\Gherkin\Node\TableNode;
+    Behat\Behat\Context\BehatContext;
 
 require_once 'PHPUnit/Autoload.php';
 require_once 'PHPUnit/Framework/Assert/Functions.php';
@@ -15,130 +12,177 @@ require_once __DIR__ . '/../../php/utils.php';
 /**
  * Features context.
  */
-class FeatureContext extends BehatContext
+class FeatureContext extends BehatContext implements ClosuredContextInterface
 {
+	protected static $db_settings = array(
+		'dbname' => 'wp_cli_test',
+		'dbuser' => 'wp_cli_test',
+		'dbpass' => 'password1'
+	);
+
+	private $install_dir;
+
+	public $variables = array();
+
 	/**
 	 * Initializes context.
 	 * Every scenario gets it's own context object.
 	 *
 	 * @param array $parameters context parameters (set them up through behat.yml)
 	 */
-	public function __construct(array $parameters)
+	public function __construct( array $parameters )
 	{
-		$this->runner = new WP_CLI_Command_Runner;
+		$this->drop_db();
 	}
 
-	/**
-	 * @Given /^an empty directory$/
-	 */
-	public function anEmptyDirectory()
+	public function getStepDefinitionResources()
 	{
-		$this->runner->create_empty_dir();
+		return array( __DIR__ . '/../steps/basic_steps.php' );
 	}
 
-	/**
-	 * @Given /^WP files$/
-	 */
-	public function wordpressFiles()
+	public function getHookDefinitionResources()
 	{
-		$this->runner->download_wordpress_files();
+		return array();
 	}
 
-	/**
-	 * @Given /^wp-config\.php$/
-	 */
-	public function wpConfigPhp()
+	public function replace_variables( &$str )
 	{
-		$this->runner->create_config();
+		$str = preg_replace_callback( '/\{(\w+)\}/', array( $this, '_replace_var' ), $str );
 	}
 
-	/**
-	 * @Given /^a database$/
-	 */
-	public function aDatabase()
+	private function _replace_var( $matches )
 	{
-		$this->runner->create_db();
+		$cmd = $matches[0];
+
+		foreach ( array_slice( $matches, 1 ) as $key ) {
+			$cmd = str_replace( '{' . $key . '}', $this->variables[ $key ], $cmd );
+		}
+
+		return $cmd;
 	}
 
-	/**
-	 * @Given /^WP install$/
-	 */
-	public function wpInstall()
-	{
-		$this->runner->create_db();
-		$this->runner->create_empty_dir();
-		$this->runner->download_wordpress_files();
-		$this->runner->create_config();
-		$this->runner->run_install();
+	public function create_empty_dir() {
+		$this->install_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-", TRUE );
+		mkdir( $this->install_dir );
 	}
 
-	/**
-	 * @Given /^custom wp-content directory$/
-	 */
-	public function customWpContentDirectory()
-	{
-		$this->runner->define_custom_wp_content_dir();
+	public function get_path( $file ) {
+		return $this->install_dir . '/' . $file;
 	}
 
-	/**
-	 * @When /^I run `(.+)`$/
-	 */
-	public function iRun( $cmd )
-	{
-		$cmd = ltrim( str_replace( 'wp', '', $cmd ) );
+	private static function run_sql( $sql ) {
+		$dbuser = self::$db_settings['dbuser'];
+		$dbpass = self::$db_settings['dbpass'];
 
-		switch ( $cmd )
-		{
+		exec( "mysql -u$dbuser -p$dbpass -e '$sql'" );
+	}
+
+	public function create_db() {
+		$dbname = self::$db_settings['dbname'];
+		self::run_sql( "CREATE DATABASE $dbname" );
+	}
+
+	public function drop_db() {
+		$dbname = self::$db_settings['dbname'];
+		self::run_sql( "DROP DATABASE IF EXISTS $dbname" );
+	}
+
+	private function _run( $command, $cwd ) {
+		if ( !$cwd )
+			$cwd = $this->install_dir;
+
+		$wp_cli_path = getcwd() . "/bin/wp";
+
+		$sh_command = "cd $cwd; $wp_cli_path $command";
+
+		$process = proc_open( $sh_command, array(
+			0 => STDIN,
+			1 => array( 'pipe', 'w' ),
+			2 => array( 'pipe', 'w' ),
+		), $pipes );
+
+		$STDOUT = stream_get_contents( $pipes[1] );
+		fclose( $pipes[1] );
+
+		$STDERR = stream_get_contents( $pipes[2] );
+		fclose( $pipes[2] );
+
+		$return_code = proc_close( $process );
+
+		return (object) compact( 'command', 'return_code', 'STDOUT', 'STDERR' );
+	}
+
+	public function run( $command, $cwd = false ) {
+		switch ( $command ) {
 		case 'core install':
-			$this->result = $this->runner->run_install();
+			return $this->run_install();
 			break;
 
 		case 'core config':
-			$this->result = $this->runner->create_config();
+			return $this->create_config();
 			break;
 
 		default:
-			$this->result = $this->runner->run( $cmd );
+			return $this->_run( $command, $cwd );
 		}
 	}
 
-	/**
-	 * @Then /^the return code should be (\d+)$/
-	 */
-	public function theReturnCodeShouldBe( $return_code )
-	{
-		assertEquals( $return_code, $this->result->return_code );
+	public function create_config() {
+		return $this->run( 'core config' . \WP_CLI\Utils\assoc_args_to_str( self::$db_settings ) );
 	}
 
-	/**
-	 * @Then /^(STDOUT|STDERR) should be:$/
-	 */
-	public function outputShouldBe( $stream, PyStringNode $output )
-	{
-		assertEquals( (string) $output, rtrim( $this->result->$stream, "\n" ) );
+	public function define_custom_wp_content_dir() {
+		$wp_config_path = $this->install_dir . '/wp-config.php';
+
+		$wp_config_code = file_get_contents( $wp_config_path );
+
+		$this->add_line_to_wp_config( $wp_config_code,
+			"define( 'WP_CONTENT_DIR', dirname(__FILE__) . '/my-content' );" );
+
+		$this->move_files( 'wp-content', 'my-content' );
+
+		$this->add_line_to_wp_config( $wp_config_code,
+			"define( 'WP_PLUGIN_DIR', __DIR__ . '/my-plugins' );" );
+
+		$this->move_files( 'my-content/plugins', 'my-plugins' );
+
+		file_put_contents( $wp_config_path, $wp_config_code );
 	}
 
-	/**
-	 * @Then /^(STDOUT|STDERR) should not be empty$/
-	 */
-	public function outputShouldNotBeEmpty( $stream )
-	{
-		assertNotEmpty( rtrim( $this->result->$stream, "\n" ) );
+	private function move_files( $src, $dest ) {
+		rename(
+			$this->install_dir . '/' . $src,
+			$this->install_dir . '/' . $dest
+		);
 	}
 
-	/**
-	 * @Then /^the (.+) file should exist$/
-	 */
-	public function fileShouldExist( $path )
-	{
-		assertFileExists( $this->runner->get_path( $path ) );
+	private function add_line_to_wp_config( &$wp_config_code, $line ) {
+		$token = "/* That's all, stop editing!";
+
+		$wp_config_code = str_replace( $token, "$line\n\n$token", $wp_config_code );
 	}
 
-	/**
-	 * @Then /^database exists$/
-	 */
-	public function databaseExists()
-	{
-		throw new PendingException();
+	public function run_install() {
+		$cmd = 'core install' . \WP_CLI\Utils\assoc_args_to_str( array(
+			'url' => 'http://example.com',
+			'title' => 'WP CLI Tests',
+			'admin_email' => 'admin@example.com',
+			'admin_password' => 'password1'
+		) );
+
+		return $this->run( $cmd );
+	}
+
+	public function download_wordpress_files() {
+		// We cache the results of "wp core download" to improve test performance
+		// Ideally, we'd cache at the HTTP layer for more reliable tests
+		$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
+		if ( !file_exists( $cache_dir ) ) {
+			mkdir( $cache_dir );
+			$this->run( "core download", $cache_dir );
+		}
+
+		exec( "cp -r '$cache_dir/'* '$this->install_dir/'" );
 	}
 }
+
