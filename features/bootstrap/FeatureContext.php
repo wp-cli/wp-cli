@@ -148,7 +148,11 @@ class FeatureContext extends BehatContext
 	 */
 	public function outputShouldBe( $stream, PyStringNode $output )
 	{
-		assertEquals( (string) $output, rtrim( $this->result->$stream, "\n" ) );
+		$result = rtrim( $this->result->$stream, "\n" );
+
+		if ( (string) $output != $result ) {
+			throw new \Exception( $this->result->$stream );
+		}
 	}
 
 	/**
