@@ -294,10 +294,13 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 *
 	 * @subcommand init-tests
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>]
+	 * @synopsis [<path>] --dbname=<name> --dbuser=<user> [--dbpass=<password>]
 	 */
 	function init_tests( $args, $assoc_args ) {
-		$tests_dir = ABSPATH . 'unit-tests/';
+		if ( isset( $args[0] ) )
+			$tests_dir = trailingslashit( $args[0] );
+		else
+			$tests_dir = ABSPATH . 'unit-tests/';
 
 		WP_CLI::launch( 'svn co https://unit-test.svn.wordpress.org/trunk/ ' . escapeshellarg( $tests_dir ) );
 
