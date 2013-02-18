@@ -217,6 +217,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$to_copy = array(
 			'phpunit.xml' => $plugin_dir,
 			'.travis.yml' => $plugin_dir,
+			'test-sample.php' => $tests_dir,
 		);
 
 		foreach ( $to_copy as $file => $dir ) {
