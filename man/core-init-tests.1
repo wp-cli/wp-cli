@@ -1,0 +1,39 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-CORE\-INIT\-TESTS" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-core\-init\-tests\fR \- Set up the official test suite using the current WordPress instance\.
+.
+.SH "SYNOPSIS"
+wp core init\-tests [\fIpath\fR] \-\-dbname=\fIname\fR \-\-dbuser=\fIuser\fR [\-\-dbpass=\fIpassword\fR]
+.
+.SH "OPTIONS"
+.
+.TP
+\fB<path>\fR:
+.
+.IP
+The directory in which to download the testing suite files\. (Optional)
+.
+.TP
+\fB\-\-dbname\fR=\fIdbname\fR:
+.
+.IP
+Set the database name\. \fBWARNING\fR: The database will be whipped every time you run the tests\.
+.
+.TP
+\fB\-\-dbuser\fR=\fIdbuser\fR:
+.
+.IP
+Set the database user\.
+.
+.TP
+\fB\-\-dbpass\fR=\fIdbpass\fR:
+.
+.IP
+Set the database user password\.
+.
+.SH "EXAMPLE"
+wp core init\-tests ~/svn/wp\-tests \-\-dbname=wp_test \-\-dbuser=wp_test
