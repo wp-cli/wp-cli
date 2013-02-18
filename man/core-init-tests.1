@@ -12,6 +12,12 @@ wp core init\-tests [\fIpath\fR] \-\-dbname=\fIname\fR \-\-dbuser=\fIuser\fR [\-
 .SH "OPTIONS"
 .
 .TP
+\fB<path>\fR:
+.
+.IP
+The directory in which to download the testing suite files\. (Optional)
+.
+.TP
 \fB\-\-dbname\fR=\fIdbname\fR:
 .
 .IP
@@ -28,4 +34,6 @@ Set the database user\.
 .
 .IP
 Set the database user password\.
-
+.
+.SH "EXAMPLE"
+wp core init\-tests ~/svn/wp\-tests \-\-dbname=wp_test \-\-dbuser=wp_test
