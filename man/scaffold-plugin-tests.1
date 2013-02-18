@@ -1,0 +1,33 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-SCAFFOLD\-PLUGIN\-TESTS" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-scaffold\-plugin\-tests\fR \- Generate files needed for running PHPUnit tests\.
+.
+.SH "SYNOPSIS"
+wp scaffold plugin\-tests \fIplugin\fR
+.
+.SH "DESCRIPTION"
+These are the files that are generated:
+.
+.IP "\(bu" 4
+\fBphpunit\.xml\fR is the configuration file for PHPUnit
+.
+.IP "\(bu" 4
+\fB\.travis\.yml\fR is the configuration file for Travis CI
+.
+.IP "\(bu" 4
+\fBtests/bootstrap\.php\fR is the file that makes the current plugin active when running the test suite
+.
+.IP "\(bu" 4
+\fBtests/test\-sample\.php\fR is a sample file containing the actual tests
+.
+.IP "" 0
+.
+.SH "ENVIRONMENT"
+The \fBtests/bootstrap\.php\fR file looks for the WP_TESTS_DIR environment variable\.
+.
+.SH "EXAMPLE"
+wp scaffold plugin\-tests hello
