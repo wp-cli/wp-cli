@@ -288,6 +288,36 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		wp_upgrade();
 		WP_CLI::success( 'WordPress database upgraded successfully.' );
 	}
+
+	/**
+	 * Set up the test suite using the current WP instance.
+	 *
+	 * @subcommand init-tests
+	 *
+	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>]
+	 */
+	function init_tests( $args, $assoc_args ) {
+		$tests_dir = ABSPATH . 'unit-tests/';
+
+		WP_CLI::launch( 'svn co https://unit-test.svn.wordpress.org/trunk/ ' . escapeshellarg( $tests_dir ) );
+
+		$config_file = file_get_contents( $tests_dir . 'wp-tests-config-sample.php' );
+
+		$replacements = array(
+			"dirname( __FILE__ ) . '/wordpress/'" => "'" . ABSPATH . "'",
+			"yourdbnamehere"   => $assoc_args['dbname'],
+			"yourusernamehere" => $assoc_args['dbuser'],
+			"yourpasswordhere" => isset( $assoc_args['dbpass'] ) ? $assoc_args['dbpass'] : ''
+		);
+
+		$config_file = str_replace( array_keys( $replacements ), array_values( $replacements ), $config_file );
+
+		$config_file_path = $tests_dir . 'wp-tests-config.php';
+
+		file_put_contents( $config_file_path, $config_file );
+
+		WP_CLI::success( "Created $config_file_path" );
+	}
 }
 
 WP_CLI::add_command( 'core', 'Core_Command' );
