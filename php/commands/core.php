@@ -290,7 +290,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	}
 
 	/**
-	 * Set up the test suite using the current WP instance.
+	 * Set up the official test suite using the current WordPress instance.
 	 *
 	 * @subcommand init-tests
 	 *

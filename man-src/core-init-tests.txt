@@ -1,0 +1,14 @@
+## OPTIONS
+
+* `--dbname`=<dbname>:
+
+	Set the database name. **WARNING**: The database will be whipped every time
+you run the tests.
+
+* `--dbuser`=<dbuser>:
+
+	Set the database user.
+
+* `--dbpass`=<dbpass>:
+
+	Set the database user password.
