@@ -1,0 +1,40 @@
+language: php
+
+php:
+    - 5.3
+    - 5.4
+
+env:
+    - WP_VERSION=master WP_MULTISITE=0
+    - WP_VERSION=3.4.2 WP_MULTISITE=0
+    - WP_VERSION=master WP_MULTISITE=1
+    - WP_VERSION=3.4.2 WP_MULTISITE=1
+
+before_install:
+    - git submodule update --init --recursive
+
+before_script:
+    # set up WP install
+    - WP_CORE_DIR=/tmp/wordpress/
+    - wget -nv -O /tmp/wordpress.tar.gz https://github.com/WordPress/WordPress/tarball/$WP_VERSION
+    - mkdir -p $WP_CORE_DIR
+    - tar --strip-components=1 -zxmf /tmp/wordpress.tar.gz -C $WP_CORE_DIR
+    - plugin_slug=$(basename $(pwd))
+    - plugin_dir=$WP_CORE_DIR/wp-content/plugins/$plugin_slug
+    - cd ..
+    - mv $plugin_slug $plugin_dir
+    # set up testing suite
+    - export WP_TESTS_DIR=/tmp/wordpress-tests/
+    - svn co --ignore-externals http://unit-tests.svn.wordpress.org/trunk/ $WP_TESTS_DIR
+    - cd $WP_TESTS_DIR
+    - cp wp-tests-config-sample.php wp-tests-config.php
+    - sed -i "s:dirname( __FILE__ ) . '/wordpress/':'$WP_CORE_DIR':" wp-tests-config.php
+    - sed -i "s/yourdbnamehere/wordpress_test/" wp-tests-config.php
+    - sed -i "s/yourusernamehere/root/" wp-tests-config.php
+    - sed -i "s/yourpasswordhere//" wp-tests-config.php
+    # set up database
+    - mysql -e 'CREATE DATABASE wordpress_test;' -uroot
+    # prepare for running the tests
+    - cd $plugin_dir
+
+script: phpunit
