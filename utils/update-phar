@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -ex
+
+current_rev=$(git rev-parse HEAD)
+current_rev=${current_rev:0:10}
+
+php -dphar.readonly=0 ./utils/make-phar.php ../wp-cli-packages/phar/wp-cli.phar --quiet
+
+cd ../wp-cli-packages
+
+new_commit_subj="update wp-cli.phar to $current_rev"
+
+current_commit_subj=$(git show -s --pretty=format:%s HEAD)
+
+if [ "$new_commit_subj" = "$current_commit_subj" ]; then
+	echo "already at latest revision"
+	exit 1
+fi
+
+git add phar/wp-cli.phar
+
+git commit -m "$new_commit_subj"
+
+git push
