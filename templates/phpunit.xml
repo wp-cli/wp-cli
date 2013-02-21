@@ -11,10 +11,4 @@
 			<directory prefix="test-" suffix=".php">./tests/</directory>
 		</testsuite>
 	</testsuites>
-	<filter>
-		<whitelist>
-			<directory suffix=".php">./core</directory>
-			<directory suffix=".php">./admin</directory>
-		</whitelist>
-	</filter>
 </phpunit>
