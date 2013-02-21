@@ -25,7 +25,7 @@ before_script:
     - mv $plugin_slug $plugin_dir
     # set up testing suite
     - export WP_TESTS_DIR=/tmp/wordpress-tests/
-    - svn co --ignore-externals http://unit-tests.svn.wordpress.org/trunk/ $WP_TESTS_DIR
+    - svn co --ignore-externals --quiet http://unit-tests.svn.wordpress.org/trunk/ $WP_TESTS_DIR
     - cd $WP_TESTS_DIR
     - cp wp-tests-config-sample.php wp-tests-config.php
     - sed -i "s:dirname( __FILE__ ) . '/wordpress/':'$WP_CORE_DIR':" wp-tests-config.php
