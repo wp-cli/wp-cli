@@ -60,16 +60,21 @@ class Shell_Command extends \WP_CLI_Command {
 	}
 
 	private static function create_prompt_cmd( $prompt, $history_path ) {
-		$cmd = implode( '; ', array(
-			'set -f',
-			sprintf( 'history -r %s', escapeshellarg( $history_path ) ),
-			'LINE=""',
-			sprintf( 'read -re -p %s LINE', escapeshellarg( $prompt ) ),
-			'[ $? -eq 0 ] || exit',
-			'history -s "$LINE"',
-			sprintf( 'history -w %s', escapeshellarg( $history_path ) ),
-			'echo $LINE'
-		) );
+		$prompt = escapeshellarg( $prompt );
+		$history_path = escapeshellarg( $history_path );
+
+		$cmd = <<<BASH
+set -f
+history -r $history_path
+LINE=""
+read -re -p $prompt LINE
+[ $? -eq 0 ] || exit
+history -s "\$LINE"
+history -w $history_path
+echo \$LINE
+BASH;
+
+		$cmd = str_replace( "\n", '; ', $cmd );
 
 		return '/bin/bash -c ' . escapeshellarg( $cmd );
 	}
