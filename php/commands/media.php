@@ -6,25 +6,18 @@
  * @package wp-cli
  */
 class Media_Command extends WP_CLI_Command {
+    
     var $errors = false;
+    
     function __construct() {
         WP_Filesystem();
     }
 
     /**
-     * Import a file into the media library.
-     *
-     * @synopsis <filename> [--blog] [--zip=<zip>]
-     */
-    function import( $args, $assoc_args = array() ) {
-    }
-
-    /**
      * Regenerate thumbnail(s)
      *
-     * @synopsis    [--id=<id>] 
-     * @todo        [--file=<file>]
-     * props @benmay
+     * @synopsis    [--id=<id>]
+     * props @benmay & @Viper007Bond
      */
     function regenerate( $args, $assoc_args = array() ) {
         global $wpdb;
