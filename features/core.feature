@@ -56,7 +56,7 @@ Feature: Manage WordPress installation
       """
 
     When I run `wp core install`
-    Then it should run without errors
+    Then the return code should be 0
 
     When I run `wp post list --ids`
     Then STDOUT should be:
