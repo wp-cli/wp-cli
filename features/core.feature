@@ -74,8 +74,5 @@ Feature: Manage WordPress installation
     Given WP install
     And custom wp-content directory
 
-    When I run `wp theme status twentytwelve`
-    Then it should run without errors
-
     When I run `wp plugin status hello`
     Then it should run without errors
