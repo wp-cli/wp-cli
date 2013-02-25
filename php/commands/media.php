@@ -16,17 +16,19 @@ class Media_Command extends WP_CLI_Command {
     /**
      * Regenerate thumbnail(s)
      *
-     * @synopsis    [--id=<id>]
+     * @synopsis    [--id=<id>] [--yes]
      * props @benmay & @Viper007Bond
      */
     function regenerate( $args, $assoc_args = array() ) {
         global $wpdb;
 
         $vars = wp_parse_args( $assoc_args, array(
-            'id' => false,
+            'id' => false
         ) );
 
         extract($vars, EXTR_SKIP);
+
+        WP_CLI::confirm('Do you realy want to regenerate all images?', $assoc_args);
 
         $where_clause = ( $id ) ? "AND ID = $id" : '';
 
