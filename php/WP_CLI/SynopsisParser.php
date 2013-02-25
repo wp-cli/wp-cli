@@ -134,7 +134,7 @@ class SynopsisParser {
 		self::gen_patterns( 'flag',       "--$p_name",            array( 'optional' ) );
 	}
 
-	private function gen_patterns( $type, $pattern, $flavour_types ) {
+	private static function gen_patterns( $type, $pattern, $flavour_types ) {
 		static $flavours = array(
 			'mandatory' => ':pattern:',
 			'optional' => '\[:pattern:\]',
