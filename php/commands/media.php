@@ -23,10 +23,15 @@ class Media_Command extends WP_CLI_Command {
         global $wpdb;
 
         $vars = wp_parse_args( $assoc_args, array(
-            'id' => false
+            'id'    => false
         ) );
 
         extract($vars, EXTR_SKIP);
+
+        // If id is given, skip confirm because it is only one file
+        if( !empty( $id ) ) {
+            $assoc_args['yes'] = true;
+        }
 
         WP_CLI::confirm('Do you realy want to regenerate all images?', $assoc_args);
 
