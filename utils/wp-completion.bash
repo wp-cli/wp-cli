@@ -12,6 +12,10 @@ _wp() {
 		opts=$(wp --completions | grep ^$prev | cut -d ' ' -f 2- | tr '\n' ' ')
 	fi
 
-	COMPREPLY=( $(compgen -W "$opts" -- $cur) )
+	if [[ 'create' = $prev ]]; then
+		COMPREPLY=( $(compgen -f "$cur") )
+	else
+		COMPREPLY=( $(compgen -W "$opts" -- $cur) )
+	fi
 }
 complete -F _wp wp

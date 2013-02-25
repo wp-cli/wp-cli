@@ -1,8 +1,24 @@
 ## OPTIONS
 
+* `<filename>`:
+
+	Read post content from <filename>. If this value is present, the 
+	`--post_content` argument will be ignored.
+
+	Passing `-` as the filename will cause post content to
+	be read from STDIN.
+
 * `--<field>`=<value>:
 
 	Field values for the new post. See wp_insert_post().
+
+* `--edit`:
+
+	Immediately open system's editor to write or edit post content. 
+	
+	(If content is read from a file, from STDIN, or from the `--post_content`
+	argument, that text will be loaded into the editor; otherwise, an empty
+	file will be opened.) 
 
 * `--porcelain`:
 
@@ -10,5 +26,6 @@
 
 ## EXAMPLES
 
-	wp post create --post_type=page --post_status=publish --post_title='A new
-page'
+	wp post create --post_type=page --post_status=publish --post_title='A new page'
+
+	wp post create file.txt --post_type=post --post_title='Post from file'

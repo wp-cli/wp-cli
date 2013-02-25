@@ -61,7 +61,7 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 			\WP_CLI::success( $msg );
 			$status = 0;
 		} else {
-			\WP_CLI::error( $msg, false );
+			\WP_CLI::warning( $msg );
 			$status = 1;
 		}
 

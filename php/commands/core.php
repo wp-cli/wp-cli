@@ -10,10 +10,10 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Download core WordPress files.
 	 *
-	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>]
+	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>] [--force]
 	 */
 	public function download( $args, $assoc_args ) {
-		if ( is_readable( ABSPATH . 'wp-load.php' ) )
+		if ( !isset( $assoc_args['force'] ) && is_readable( ABSPATH . 'wp-load.php' ) )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
 		if ( isset( $assoc_args['path'] ) )
@@ -37,7 +37,7 @@ class Core_Command extends WP_CLI_Command {
 		$silent = WP_CLI::get_config('quiet') ? ' --silent ' : ' ';
 
 		WP_CLI::launch( 'curl -f' . $silent . escapeshellarg( $download_url ) . ' | tar xz' );
-		WP_CLI::launch( 'mv wordpress/* . && rm -rf wordpress' );
+		WP_CLI::launch( 'cp -r wordpress/* . && rm -rf wordpress' );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
@@ -287,6 +287,39 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		wp_upgrade();
 		WP_CLI::success( 'WordPress database upgraded successfully.' );
+	}
+
+	/**
+	 * Set up the official test suite using the current WordPress instance.
+	 *
+	 * @subcommand init-tests
+	 *
+	 * @synopsis [<path>] --dbname=<name> --dbuser=<user> [--dbpass=<password>]
+	 */
+	function init_tests( $args, $assoc_args ) {
+		if ( isset( $args[0] ) )
+			$tests_dir = trailingslashit( $args[0] );
+		else
+			$tests_dir = ABSPATH . 'unit-tests/';
+
+		WP_CLI::launch( 'svn co https://unit-test.svn.wordpress.org/trunk/ ' . escapeshellarg( $tests_dir ) );
+
+		$config_file = file_get_contents( $tests_dir . 'wp-tests-config-sample.php' );
+
+		$replacements = array(
+			"dirname( __FILE__ ) . '/wordpress/'" => "'" . ABSPATH . "'",
+			"yourdbnamehere"   => $assoc_args['dbname'],
+			"yourusernamehere" => $assoc_args['dbuser'],
+			"yourpasswordhere" => isset( $assoc_args['dbpass'] ) ? $assoc_args['dbpass'] : ''
+		);
+
+		$config_file = str_replace( array_keys( $replacements ), array_values( $replacements ), $config_file );
+
+		$config_file_path = $tests_dir . 'wp-tests-config.php';
+
+		file_put_contents( $config_file_path, $config_file );
+
+		WP_CLI::success( "Created $config_file_path" );
 	}
 }
 
