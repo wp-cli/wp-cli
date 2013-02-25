@@ -30,10 +30,7 @@ Feature: Manage WordPress installation
 
     When I run `wp`
     Then the return code should be 1
-    And STDERR should be:
-      """
-      Error: Can’t select database
-      """
+    And STDERR should not be empty
 
     When I run `wp db create`
     Then it should run without errors
