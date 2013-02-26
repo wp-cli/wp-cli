@@ -16,11 +16,6 @@ class Core_Command extends WP_CLI_Command {
 		if ( !isset( $assoc_args['force'] ) && is_readable( ABSPATH . 'wp-load.php' ) )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
-		if ( isset( $assoc_args['path'] ) )
-			$docroot = $assoc_args['path'];
-		else
-			$docroot = './';
-
 		if ( isset( $assoc_args['locale'] ) ) {
 			exec( 'curl -s ' . escapeshellarg( 'https://api.wordpress.org/core/version-check/1.5/?locale=' . $assoc_args['locale'] ), $lines, $r );
 			if ($r) exit($r);
@@ -37,7 +32,7 @@ class Core_Command extends WP_CLI_Command {
 		$silent = WP_CLI::get_config('quiet') ? ' --silent ' : ' ';
 
 		WP_CLI::launch( 'curl -f' . $silent . escapeshellarg( $download_url ) . ' | tar xz' );
-		WP_CLI::launch( 'cp -r wordpress/* . && rm -rf wordpress' );
+		WP_CLI::launch( sprintf( 'cp -r wordpress/* %s && rm -rf wordpress', escapeshellarg( ABSPATH ) ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
