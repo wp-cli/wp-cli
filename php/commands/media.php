@@ -106,14 +106,20 @@ class Media_Command extends WP_CLI_Command {
         while ( $file = readdir( $dir ) ) {
             if ( !( strrpos( $file, $imageName ) === false ) ) {
                 $thumbnail = explode( $imageName, $file );
-                if ( $thumbnail[ 0 ] == "" ) {
-                    $thumbnailFormat = substr( $thumbnail[ 1 ], -4 );
-                    $thumbnail       = substr( $thumbnail[ 1 ], 0, strlen( $thumbnail[ 1 ] ) - 4 );
-                    $thumbnail       = explode( 'x', $thumbnail );
-                    if ( count( $thumbnail ) == 2 ) {
-                        if ( is_numeric( $thumbnail[ 0 ] ) && is_numeric( $thumbnail[ 1 ] ) ) {
-                            WP_CLI::line( "Thumbnail: {$thumbnail[0]} x {$thumbnail[1]} was deleted." );
-                            @unlink( $dirPath . $imageName . $thumbnail[ 0 ] . 'x' . $thumbnail[ 1 ] . $thumbnailFormat );
+                $filename = $thumbnail[ 1 ];
+
+                if ( "" == $thumbnail[ 0 ] ) {
+                    $thumbnailFormat = substr( $filename, -4 );
+                    $thumbnail       = substr( $filename, 0, strlen( $filename ) - 4 );
+                    
+                    $sizes  = explode( 'x', $thumbnail );
+                    $width  = $sizes[0];
+                    $height = $sizes[1];
+                    
+                    if ( 2 == count( $sizes ) ) {
+                        if ( is_numeric( $width ) && is_numeric( $height ) ) {
+                            WP_CLI::line( "Thumbnail: {$width} x {$height} was deleted." );
+                            @unlink( $dirPath . $imageName . $width . 'x' . $thumbnail[ 1 ] . $thumbnailFormat );
                         }
                     }
                 }
