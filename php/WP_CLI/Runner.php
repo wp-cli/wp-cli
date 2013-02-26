@@ -82,11 +82,12 @@ class Runner {
 	}
 
 	private static function set_wp_root( $config ) {
-		if ( !empty( $config['path'] ) ) {
-			define( 'ABSPATH', rtrim( $config['path'], '/' ) . '/' );
-		} else {
-			define( 'ABSPATH', getcwd() . '/' );
-		}
+		$path = getcwd() . '/';
+
+		if ( !empty( $config['path'] ) )
+			$path .= rtrim( $config['path'], '/' ) . '/';
+
+		define( 'ABSPATH', $path );
 	}
 
 	private static function set_url( $assoc_args ) {
