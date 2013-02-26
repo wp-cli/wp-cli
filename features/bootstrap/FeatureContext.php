@@ -87,13 +87,16 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 		self::run_sql( "DROP DATABASE IF EXISTS $dbname" );
 	}
 
-	private function _run( $command, $cwd ) {
-		if ( !$cwd )
-			$cwd = $this->install_dir;
-
+	private function _run( $command ) {
 		$wp_cli_path = getcwd() . "/bin/wp";
 
-		$sh_command = "cd $cwd; $wp_cli_path $command";
+		if ( false === strpos( $command, '--path' ) ) {
+			$command .= \WP_CLI\Utils\assoc_args_to_str( array(
+				'path' => $this->install_dir
+			) );
+		}
+
+		$sh_command = "$wp_cli_path $command";
 
 		$process = proc_open( $sh_command, array(
 			0 => STDIN,
@@ -112,7 +115,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 		return (object) compact( 'command', 'return_code', 'STDOUT', 'STDERR' );
 	}
 
-	public function run( $command, $cwd = false ) {
+	public function run( $command ) {
 		switch ( $command ) {
 		case 'core install':
 			return $this->run_install();
@@ -123,7 +126,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 			break;
 
 		default:
-			return $this->_run( $command, $cwd );
+			return $this->_run( $command );
 		}
 	}
 
@@ -179,10 +182,12 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 		$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
 		if ( !file_exists( $cache_dir ) ) {
 			mkdir( $cache_dir );
-			$this->run( "core download", $cache_dir );
+			$this->run( 'core download' . \WP_CLI\Utils\assoc_args_to_str( array(
+				'path' => $cache_dir
+			) ) );
 		}
 
-		exec( "cp -r '$cache_dir/'* '$this->install_dir/'" );
+		exec( sprintf( "cp -r '%s/'* '%s/'", $cache_dir, $this->install_dir ) );
 	}
 }
 
