@@ -16,6 +16,11 @@ class Core_Command extends WP_CLI_Command {
 		if ( !isset( $assoc_args['force'] ) && is_readable( ABSPATH . 'wp-load.php' ) )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
+		if ( !is_dir( ABSPATH ) ) {
+			WP_CLI::line( sprintf( 'Creating directory %s', ABSPATH ) );
+			WP_CLI::launch( 'mkdir -p ' . escapeshellarg( ABSPATH ) );
+		}
+
 		if ( isset( $assoc_args['locale'] ) ) {
 			exec( 'curl -s ' . escapeshellarg( 'https://api.wordpress.org/core/version-check/1.5/?locale=' . $assoc_args['locale'] ), $lines, $r );
 			if ($r) exit($r);
