@@ -13,9 +13,8 @@ class DB_Command extends WP_CLI_Command {
 	 * @synopsis [--str]
 	 */
 	function create( $_, $assoc_args ) {
-		self::run( $assoc_args, self::create_cmd(
-			'mysql --host=%s --user=%s --password=%s --execute=%s',
-			DB_HOST, DB_USER, DB_PASSWORD, 'CREATE DATABASE ' . DB_NAME
+		self::run( $assoc_args, self::create_execute_cmd(
+			sprintf( 'CREATE DATABASE `%s`', DB_NAME )
 		) );
 
 		WP_CLI::success( "Database created." );
@@ -27,10 +26,7 @@ class DB_Command extends WP_CLI_Command {
 	 * @synopsis [--yes] [--str]
 	 */
 	function drop( $_, $assoc_args ) {
-		$command = self::create_cmd(
-			'mysql --host=%s --user=%s --password=%s --execute=%s',
-			DB_HOST, DB_USER, DB_PASSWORD, 'DROP DATABASE ' . DB_NAME
-		);
+		$command = self::create_execute_cmd( sprintf( 'DROP DATABASE `%s`', DB_NAME ) );
 
 		if ( !isset( $assoc_args['str'] ) ) {
 			WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args );
@@ -47,15 +43,9 @@ class DB_Command extends WP_CLI_Command {
 	 * @synopsis [--yes] [--str]
 	 */
 	function reset( $_, $assoc_args ) {
-		$drop_cmd = self::create_cmd(
-			'mysql --host=%s --user=%s --password=%s --execute=%s',
-			DB_HOST, DB_USER, DB_PASSWORD, 'DROP DATABASE IF EXISTS ' . DB_NAME
-		);
+		$drop_cmd = self::create_execute_cmd( sprintf( 'DROP DATABASE IF EXISTS `%s`', DB_NAME ) );
 
-		$create_cmd = self::create_cmd(
-			'mysql --host=%s --user=%s --password=%s --execute=%s',
-			DB_HOST, DB_USER, DB_PASSWORD, 'CREATE DATABASE ' . DB_NAME
-		);
+		$create_cmd = self::create_execute_cmd( sprintf( 'CREATE DATABASE `%s`', DB_NAME ) );
 
 		if ( !isset( $assoc_args['str'] ) ) {
 			WP_CLI::confirm( "Are you sure you want to reset the database?", $assoc_args );
@@ -162,6 +152,13 @@ class DB_Command extends WP_CLI_Command {
 		return $args[0];
 	}
 
+	private static function create_execute_cmd( $execute_statement ) {
+		return self::create_cmd(
+			'mysql --host=%s --user=%s --password=%s --execute=%s',
+			DB_HOST, DB_USER, DB_PASSWORD, $execute_statement
+		);
+	}
+
 	/**
 	 * Given a formatted string and an arbitrary number of arguments,
 	 * returns the final command, with the parameters escaped
@@ -185,4 +182,3 @@ class DB_Command extends WP_CLI_Command {
 }
 
 WP_CLI::add_command( 'db', 'DB_Command' );
-
