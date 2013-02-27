@@ -59,11 +59,9 @@ Feature: Manage WordPress installation
     When I run `wp core install`
     Then the return code should be 0
 
-    When I run `wp post list --ids`
-    Then STDOUT should be:
-      """
-      1
-      """
+    When I run `wp core version`
+    Then it should run without errors
+    And STDOUT should not be empty
 
   Scenario: Full install
     Given WP install
