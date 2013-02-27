@@ -84,18 +84,18 @@ class Runner {
 	private static function set_wp_root( $config ) {
 		$path = getcwd();
 
-		if ( !empty( $config['path'] ) )
-		{
+		if ( !empty( $config['path'] ) ) {
 			if ( self::is_absolute_path( $config['path'] ) )
 				$path = $config['path'];
 			else
 				$path .= '/' . $config['path'];
 		}
+
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
 	}
 
 	private static function is_absolute_path( $path ) {
-		return $path[0] === '/' ? true : false;
+		return $path[0] === '/';
 	}
 
 	private static function set_url( $assoc_args ) {
