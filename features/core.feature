@@ -5,6 +5,10 @@ Feature: Manage WordPress installation
     When I run `wp core is-installed`
     Then the return code should be 1
 
+    When I run `wp core download --quiet`
+    Then it should run without errors
+    And the wp-settings.php file should exist
+
   Scenario: No wp-config.php
     Given an empty directory
     And WP files
