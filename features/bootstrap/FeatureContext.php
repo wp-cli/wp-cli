@@ -91,9 +91,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 		$wp_cli_path = getcwd() . "/bin/wp";
 
 		if ( false === strpos( $command, '--path' ) ) {
-			$command .= \WP_CLI\Utils\assoc_args_to_str( array(
+			$command = \WP_CLI\Utils\assoc_args_to_str( array(
 				'path' => $this->install_dir
-			) );
+			) ) . ' ' . $command;
 		}
 
 		$sh_command = "$wp_cli_path $command";
