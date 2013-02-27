@@ -54,7 +54,7 @@ EOB
 				continue;
 
 			$synopsis = ( true === $details['runtime'] )
-				? "--$key/--no-$key"
+				? "--[no-]$key"
 				: "--$key" . $details['runtime'];
 
 			$cur_len = strlen( $synopsis );
