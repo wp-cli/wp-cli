@@ -89,7 +89,7 @@ class Runner {
 			if ( self::is_absolute_path( $config['path'] ) )
 				$path = $config['path'];
 			else
-				$path .= $config['path'];
+				$path .= '/' . $config['path'];
 		}
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
 	}
