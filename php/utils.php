@@ -23,32 +23,7 @@ function load_dependencies() {
 		}
 	}
 
-	if ( !$has_autoload ) {
-		include WP_CLI_ROOT . 'php-cli-tools/lib/cli/cli.php';
-		\cli\register_autoload();
-
-		include WP_CLI_ROOT . 'mustache/src/Mustache/Autoloader.php';
-		\Mustache_Autoloader::register();
-
-		register_autoload();
-	}
-
 	include WP_CLI_ROOT . 'Spyc.php';
-}
-
-function register_autoload() {
-	spl_autoload_register( function($class) {
-		// Only attempt to load classes in our namespace
-		if ( 0 !== strpos( $class, 'WP_CLI\\' ) ) {
-			return;
-		}
-
-		$path = WP_CLI_ROOT . str_replace( '\\', DIRECTORY_SEPARATOR, $class ) . '.php';
-
-		if ( is_file( $path ) ) {
-			require_once $path;
-		}
-	} );
 }
 
 function get_config_spec() {
