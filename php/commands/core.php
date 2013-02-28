@@ -45,12 +45,12 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Set up a wp-config.php file.
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> --dbpass=<password> [--dbhost=<host>] [--dbprefix=<prefix>]
+	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>]
 	 */
 	public function config( $args, $assoc_args ) {
 		$_POST['dbname'] = $assoc_args['dbname'];
 		$_POST['uname'] = $assoc_args['dbuser'];
-		$_POST['pwd'] = $assoc_args['dbpass'];
+		$_POST['pwd'] = isset( $assoc_args['dbpass'] ) ? $assoc_args['dbpass'] : '';
 		$_POST['dbhost'] = isset( $assoc_args['dbhost'] ) ? $assoc_args['dbhost'] : 'localhost';
 		$_POST['prefix'] = isset( $assoc_args['dbprefix'] ) ? $assoc_args['dbprefix'] : 'wp_';
 
