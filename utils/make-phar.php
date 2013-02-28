@@ -28,31 +28,45 @@ $phar = new Phar( DEST_PATH, 0, 'wp-cli.phar' );
 
 $phar->startBuffering();
 
-$ignored_paths = array(
-	'/mustache/bin/',
-	'/mustache/test/',
-	'/mustache/vendor/',
-	'/php-cli-tools/examples/'
-);
-
+// php files
 foreach ( get_iterator( './php' ) as $path ) {
-	foreach ( $ignored_paths as $ignore ) {
-		if ( strpos( $path, $ignore ) )
-			continue 2;
-	}
-
 	if ( !preg_match( '/\.php$/', $path ) )
 		continue;
 
 	add_file( $phar, $path );
 }
 
-foreach ( get_iterator( './templates' ) as $path ) {
-	add_file( $phar, $path );
+// non-php files
+$additional_dirs = array(
+	'./templates',
+	'./man'
+);
+
+foreach ( $additional_dirs as $dir ) {
+	foreach ( get_iterator( $dir ) as $path ) {
+		add_file( $phar, $path );
+	}
 }
 
-foreach ( get_iterator( './man' ) as $path ) {
-	add_file( $phar, $path );
+// dependencies
+$ignored_paths = array(
+	'/.git',
+);
+
+$vendor_dirs = array(
+	'./vendor/mustache',
+	'./vendor/wp-cli',
+);
+
+foreach ( $vendor_dirs as $vendor_dir ) {
+	foreach ( get_iterator( $vendor_dir ) as $path ) {
+		foreach ( $ignored_paths as $ignore ) {
+			if ( strpos( $path, $ignore ) )
+				continue 2;
+		}
+
+		add_file( $phar, $path );
+	}
 }
 
 $phar->setStub( <<<EOB
@@ -67,5 +81,5 @@ EOB
 
 $phar->stopBuffering();
 
-echo "\nGenerated " . DEST_PATH . "\n";
+echo "Generated " . DEST_PATH . "\n";
 
