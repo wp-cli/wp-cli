@@ -23,6 +23,11 @@ function load_dependencies() {
 		}
 	}
 
+	if ( !$has_autoload ) {
+		fputs( STDERR, "Internal error: Can't find Composer autoloader.\n" );
+		exit(2);
+	}
+
 	include WP_CLI_ROOT . 'Spyc.php';
 }
 
