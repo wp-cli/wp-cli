@@ -146,6 +146,39 @@ class Scaffold_Command extends WP_CLI_Command {
 
 	}
 
+	/**
+	 * Generate empty child theme (twentytwelve by default).
+	 *
+	 * @synopsis <slug> [--theme_name=<title>] [--parent_theme=<title>] [--author=<full-name>] [--author_uri=<http-url>] [--theme_uri=<http-url>] [--activate]
+	 */
+	function child_theme( $args, $assoc_args ) {
+
+		$theme_slug = $args[0];
+		$theme_path = WP_CONTENT_DIR . "/themes";
+
+		$data = wp_parse_args( $assoc_args, array(
+			'theme_name' => ucfirst( $theme_slug ),
+			'parent_theme' => 'twentytwelve',
+			'author' => "Me",
+			'author_uri' => "",
+			'theme_uri' => ""
+		) );
+
+		$data['theme_description'] = ucfirst($data['parent_theme']) . " child theme. ";
+
+	
+		$theme_dir = $theme_path . "/$theme_slug";
+		$theme_style_path = "$theme_dir/style.css";
+
+		$this->create_file( $theme_style_path, $this->render( 'child_theme.mustache', $data ) );
+
+		WP_CLI::success( "Created $theme_dir" );
+	
+
+		if ( isset( $assoc_args['activate'] ) )
+			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
+
+	}
 
 	private function get_output_path( $assoc_args, $subdir ) {
 		extract( $assoc_args, EXTR_SKIP );
