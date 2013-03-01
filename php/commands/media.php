@@ -99,27 +99,32 @@ class Media_Command extends WP_CLI_Command {
         $imageName = sprintf( "%s-", $dirPath[ count( $dirPath ) - 1 ] );
         unset( $dirPath[ count( $dirPath ) - 1 ] );
         $dirPath = sprintf( "%s%s", implode( DIRECTORY_SEPARATOR, $dirPath ), DIRECTORY_SEPARATOR );
-        
+
         // Read and delete files
         $dir   = opendir( $dirPath );
         $files = array();
         while ( $file = readdir( $dir ) ) {
+            
             if ( !( strrpos( $file, $imageName ) === false ) ) {
+                
                 $thumbnail = explode( $imageName, $file );
                 $filename = $thumbnail[ 1 ];
 
+                //If we got the original / full image
                 if ( "" == $thumbnail[ 0 ] ) {
-                    $thumbnailFormat = substr( $filename, -4 );
-                    $thumbnail       = substr( $filename, 0, strlen( $filename ) - 4 );
+                    preg_match('/\.[^\.]+$/i', $file, $ext);
+                    $thumbnailFormat = $ext[0];
+                    $thumbnail       = basename( $file, $thumbnailFormat );
                     
-                    $sizes  = explode( 'x', $thumbnail );
-                    $width  = $sizes[0];
-                    $height = $sizes[1];
+                    $sizes  = explode( 'x', $thumbnail );                 
                     
+                    // If not cropped by WP
                     if ( 2 == count( $sizes ) ) {
+                        $width  = $sizes[0];
+                        $height = $sizes[1];
                         if ( is_numeric( $width ) && is_numeric( $height ) ) {
                             WP_CLI::line( "Thumbnail: {$width} x {$height} was deleted." );
-                            @unlink( $dirPath . $imageName . $width . 'x' . $thumbnail[ 1 ] . $thumbnailFormat );
+                            @unlink( $dirPath . $imageName . $width . 'x' . $thumbnail . $thumbnailFormat );
                         }
                     }
                 }
