@@ -5,10 +5,12 @@ set -ex
 current_rev=$(git rev-parse HEAD)
 current_rev=${current_rev:0:10}
 
+# generate archive
 php -dphar.readonly=0 ./utils/make-phar.php ../wp-cli-packages/phar/wp-cli.phar --quiet
 
 cd ../wp-cli-packages
 
+# check which wp-cli commit the previous Phar archive was based on
 new_commit_subj="update wp-cli.phar to $current_rev"
 
 current_commit_subj=$(git show -s --pretty=format:%s HEAD)
@@ -18,7 +20,12 @@ if [ "$new_commit_subj" = "$current_commit_subj" ]; then
 	exit 1
 fi
 
-git add phar/wp-cli.phar
+fname="phar/wp-cli.phar"
+
+# generate md5 checksum
+md5sum $fname | cut -d ' ' -f 1 > $fname.md5
+
+git add $fname $fname.md5
 
 git commit -m "$new_commit_subj"
 
