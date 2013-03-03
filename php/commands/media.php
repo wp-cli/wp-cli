@@ -6,9 +6,7 @@
  * @package wp-cli
  */
 class Media_Command extends WP_CLI_Command {
-    
-    var $errors = false;
-    
+   
     function __construct() {
         WP_Filesystem();
     }
@@ -49,23 +47,18 @@ class Media_Command extends WP_CLI_Command {
         
         WP_CLI::line( 'Found ' . count( $images ) . ' pictures to regenerate!' );
         
-        foreach ( $images as $image )
+        foreach ( $images as $image ) {
             $this->_process_regeneration( $image->ID );
+        }
         
-        if ( $this->errors )
-            WP_CLI::error( 'Finished regenerating images - however, there were some errors throughout.' );
-        else
-            WP_CLI::success( 'Finished - without any errors either!' );
+        WP_CLI::success( 'Finished regenerating images' );
     }
 
     private function _process_regeneration( $id ) {
-        // Don't break the JSON result
-        @error_reporting( 0 );
         
         $image = get_post( $id );
         
         if ( !$image || 'attachment' != $image->post_type || 'image/' != substr( $image->post_mime_type, 0, 6 ) ) {
-            $this->errors = true;
             WP_CLI::line( "FAILED: {$image->post_title} - invalid image ID" );
             return;
         }
@@ -73,7 +66,6 @@ class Media_Command extends WP_CLI_Command {
         $fullsizepath = get_attached_file( $image->ID );
         
         if ( false === $fullsizepath || !file_exists( $fullsizepath ) ) {
-            $this->errors = true;
             WP_CLI::line( "FAILED: {$image->post_title} -  Can't find it $fullsizepath" );
             return;
         }
@@ -139,7 +131,6 @@ class Media_Command extends WP_CLI_Command {
         }
         
         if ( empty( $metadata ) ) {
-            $this->errors = true;
             WP_CLI::line( 'Unknown failure reason.' );
             return;
         }
