@@ -69,7 +69,7 @@ class Media_Command extends WP_CLI_Command {
             WP_CLI::warning( "{$image->post_title} - Can't find {$fullsizepath}." );
             return;
         }
-        //wp_upload_dir()
+        
         $array_path = explode( DIRECTORY_SEPARATOR, $fullsizepath );
         $array_file = explode( '.', $array_path[ count( $array_path ) - 1 ] );
 
@@ -96,7 +96,7 @@ class Media_Command extends WP_CLI_Command {
                 if ( "" == $thumbnail[ 0 ] ) {
                     preg_match('/\.[^\.]+$/i', $file, $ext);
                     $thumbnailFormat = $ext[0];
-                    $thumbnail       = basename( $file, $thumbnailFormat );
+                    $thumbnail       = basename( $filename, $thumbnailFormat );
                     
                     $sizes  = explode( 'x', $thumbnail );                 
                     
