@@ -14,44 +14,38 @@ class Media_Command extends WP_CLI_Command {
     /**
      * Regenerate thumbnail(s)
      *
-     * @synopsis    [--id=<id>] [--yes]
+     * @synopsis    <id>... [--yes]
      * props @benmay & @Viper007Bond
      */
     function regenerate( $args, $assoc_args = array() ) {
         global $wpdb;
-
-        $vars = wp_parse_args( $assoc_args, array(
-            'id'    => false
-        ) );
-
-        extract($vars, EXTR_SKIP);
-
+        $count = 0;
+        
         // If id is given, skip confirm because it is only one file
-        if( !empty( $id ) ) {
+        if( !empty( $args ) ) {
             $assoc_args['yes'] = true;
         }
 
         WP_CLI::confirm('Do you realy want to regenerate all images?', $assoc_args);
 
-        $where_clause = ( $id ) ? "AND ID = $id" : '';
+        $where_clause = ( !empty( $args ) ) ? "AND ID = " . implode(" OR ID = ", $args) . " " : '';        
 
-        if ( !$images = $wpdb->get_results( "SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' $where_clause AND post_mime_type LIKE 'image/%' ORDER BY ID DESC" ) ) {
-            if ( $id ) {
-                WP_CLI::error( "Unable to find the image. Are you sure it exists?" );
-            } else {
-                WP_CLI::error( "Unable to find any images. Are you sure some exist?" );
-            }
-
-            return;
+        if ( !$images = $wpdb->get_results( "SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' $where_clause AND post_mime_type LIKE 'image/%' ORDER BY ID DESC", ARRAY_A ) ) {
+            //No images, so all keys in $args are not found within WP
+            WP_CLI::error( $this->_not_found_message( $args ) );
         }
-        
-        WP_CLI::line( 'Found ' . count( $images ) . ' images to regenerate.' );
+        $count = count($images);
+
+        WP_CLI::line( "Found {$count} " . ngettext('image', 'images', $count) . " to regenerate." );
+
+        $not_found = array_diff( $args, wp_list_pluck( $images, 'ID' ) );        
+        WP_CLI::warning( $this->_not_found_message( $not_found ) );
         
         foreach ( $images as $image ) {
-            $this->_process_regeneration( $image->ID );
+            $this->_process_regeneration( $image['ID'] );
         }
         
-        WP_CLI::success( 'Finished regenerating images' );
+        WP_CLI::success( "Finished regenerating " . ngettext('the image', 'all images', $count) . ".");
     }
 
     private function _process_regeneration( $id ) {
@@ -69,7 +63,9 @@ class Media_Command extends WP_CLI_Command {
             WP_CLI::warning( "{$image->post_title} - Can't find {$fullsizepath}." );
             return;
         }
-        
+
+        WP_CLI::line( "Start processing of \"" .  get_the_title( $image->ID ) . " (ID: {$image->ID})\"" );
+
         $array_path = explode( DIRECTORY_SEPARATOR, $fullsizepath );
         $array_file = explode( '.', $array_path[ count( $array_path ) - 1 ] );
 
@@ -125,7 +121,12 @@ class Media_Command extends WP_CLI_Command {
             return;
         }
         wp_update_attachment_metadata( $image->ID, $metadata );
-        WP_CLI::success( esc_html( get_the_title( $image->ID ) ) . " (ID {$image->ID}): All thumbnails were successfully regenerated in " . timer_stop() . " seconds." );
+        WP_CLI::success( "{$image->ID} All thumbnails were successfully regenerated in " . timer_stop() . " seconds." );
+    }
+
+    private function _not_found_message( $not_found_ids ){
+        $count = count($not_found_ids);
+        return "Unable to find the " . ngettext('image', 'images', $count) . " (" . implode(", ", $not_found_ids) . "). Are you sure " . ngettext('it', 'they', $count) .  " " . ngettext('exist', 'exists', $count) . "?";
     }
 }
 
