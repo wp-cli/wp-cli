@@ -69,12 +69,10 @@ class Media_Command extends WP_CLI_Command {
             WP_CLI::warning( "{$image->post_title} - Can't find {$fullsizepath}." );
             return;
         }
-        
+        //wp_upload_dir()
         $array_path = explode( DIRECTORY_SEPARATOR, $fullsizepath );
         $array_file = explode( '.', $array_path[ count( $array_path ) - 1 ] );
-        
-        $imageFormat = $array_file[ count( $array_file ) - 1 ];
-        
+                
         unset( $array_path[ count( $array_path ) - 1 ] );
         unset( $array_file[ count( $array_file ) - 1 ] );
         
