@@ -59,14 +59,14 @@ class Media_Command extends WP_CLI_Command {
         $image = get_post( $id );
         
         if ( !$image || 'attachment' != $image->post_type || 'image/' != substr( $image->post_mime_type, 0, 6 ) ) {
-            WP_CLI::warning( "{$image->post_title} - invalid image ID" );
+            WP_CLI::warning( "{$image->post_title} - invalid image ID." );
             return;
         }
         
         $fullsizepath = get_attached_file( $image->ID );
         
         if ( false === $fullsizepath || !file_exists( $fullsizepath ) ) {
-            WP_CLI::warning( "{$image->post_title} -  Can't find it $fullsizepath" );
+            WP_CLI::warning( "{$image->post_title} - Can't find {$fullsizepath}." );
             return;
         }
         
@@ -123,11 +123,11 @@ class Media_Command extends WP_CLI_Command {
         }
         
         if ( empty( $metadata ) ) {
-            WP_CLI::warning( 'Unknown failure reason.' );
+            WP_CLI::warning( "Couldn't regenerate image." );
             return;
         }
         wp_update_attachment_metadata( $image->ID, $metadata );
-        WP_CLI::success( esc_html( get_the_title( $image->ID ) ) . " (ID {$image->ID}): All thumbnails were successfully regenerated in  " . timer_stop() . "  seconds " );
+        WP_CLI::success( esc_html( get_the_title( $image->ID ) ) . " (ID {$image->ID}): All thumbnails were successfully regenerated in " . timer_stop() . " seconds." );
     }
 }
 
