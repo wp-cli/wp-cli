@@ -12,7 +12,7 @@ fi
 
 [ -f composer.phar ] || curl -sS https://getcomposer.org/installer | php
 
-php composer.phar install
+[ -d vendor/ ] || php composer.phar install
 
 DIR=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 
