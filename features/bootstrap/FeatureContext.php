@@ -4,7 +4,6 @@ use Behat\Behat\Context\ClosuredContextInterface,
     Behat\Behat\Context\TranslatedContextInterface,
     Behat\Behat\Context\BehatContext;
 
-require_once 'PHPUnit/Autoload.php';
 require_once 'PHPUnit/Framework/Assert/Functions.php';
 
 require_once __DIR__ . '/../../php/utils.php';
@@ -180,12 +179,10 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 		// We cache the results of "wp core download" to improve test performance
 		// Ideally, we'd cache at the HTTP layer for more reliable tests
 		$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
-		if ( !file_exists( $cache_dir ) ) {
-			mkdir( $cache_dir );
-			$this->run( 'core download' . \WP_CLI\Utils\assoc_args_to_str( array(
-				'path' => $cache_dir
-			) ) );
-		}
+
+		$r = $this->run( 'core download' . \WP_CLI\Utils\assoc_args_to_str( array(
+			'path' => $cache_dir
+		) ) );
 
 		exec( sprintf( "cp -r '%s/'* '%s/'", $cache_dir, $this->install_dir ) );
 	}
