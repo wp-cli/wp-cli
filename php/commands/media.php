@@ -59,14 +59,14 @@ class Media_Command extends WP_CLI_Command {
         $image = get_post( $id );
         
         if ( !$image || 'attachment' != $image->post_type || 'image/' != substr( $image->post_mime_type, 0, 6 ) ) {
-            WP_CLI::line( "FAILED: {$image->post_title} - invalid image ID" );
+            WP_CLI::warning( "FAILED: {$image->post_title} - invalid image ID" );
             return;
         }
         
         $fullsizepath = get_attached_file( $image->ID );
         
         if ( false === $fullsizepath || !file_exists( $fullsizepath ) ) {
-            WP_CLI::line( "FAILED: {$image->post_title} -  Can't find it $fullsizepath" );
+            WP_CLI::warning( "FAILED: {$image->post_title} -  Can't find it $fullsizepath" );
             return;
         }
         
