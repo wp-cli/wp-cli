@@ -70,9 +70,6 @@ class Media_Command extends WP_CLI_Command {
             return;
         }
         
-        // 5 minutes per image should be PLENTY
-        @set_time_limit( 900 );
-        
         $array_path = explode( DIRECTORY_SEPARATOR, $fullsizepath );
         $array_file = explode( '.', $array_path[ count( $array_path ) - 1 ] );
         
