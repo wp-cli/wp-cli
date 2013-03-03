@@ -121,7 +121,7 @@ class Media_Command extends WP_CLI_Command {
             return;
         }
         wp_update_attachment_metadata( $image->ID, $metadata );
-        WP_CLI::success( "{$image->ID} All thumbnails were successfully regenerated in " . timer_stop() . " seconds." );
+        WP_CLI::success( "All thumbnails were successfully regenerated in " . timer_stop() . " seconds." );
     }
 
     private function _not_found_message( $not_found_ids ){
