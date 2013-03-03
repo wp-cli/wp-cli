@@ -37,7 +37,7 @@ class Media_Command extends WP_CLI_Command {
 
         if ( !$images = $wpdb->get_results( "SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' $where_clause AND post_mime_type LIKE 'image/%' ORDER BY ID DESC" ) ) {
             if ( $id ) {
-                WP_CLI::error( "Unable to find the image. Are you sure some it exists?" );
+                WP_CLI::error( "Unable to find the image. Are you sure it exists?" );
             } else {
                 WP_CLI::error( "Unable to find any images. Are you sure some exist?" );
             }
@@ -45,7 +45,7 @@ class Media_Command extends WP_CLI_Command {
             return;
         }
         
-        WP_CLI::line( 'Found ' . count( $images ) . ' pictures to regenerate!' );
+        WP_CLI::line( 'Found ' . count( $images ) . ' images to regenerate.' );
         
         foreach ( $images as $image ) {
             $this->_process_regeneration( $image->ID );
@@ -72,7 +72,7 @@ class Media_Command extends WP_CLI_Command {
         //wp_upload_dir()
         $array_path = explode( DIRECTORY_SEPARATOR, $fullsizepath );
         $array_file = explode( '.', $array_path[ count( $array_path ) - 1 ] );
-                
+
         unset( $array_path[ count( $array_path ) - 1 ] );
         unset( $array_file[ count( $array_file ) - 1 ] );
         
