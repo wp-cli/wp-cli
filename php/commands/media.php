@@ -79,15 +79,10 @@ class Media_Command extends WP_CLI_Command {
         unset( $array_file[ count( $array_file ) - 1 ] );
         
         $imagePath = implode( DIRECTORY_SEPARATOR, $array_path ) . DIRECTORY_SEPARATOR . implode( '.', $array_file );
-        
-        
-        /**
-         * Continue
-         */
         $dirPath   = explode( DIRECTORY_SEPARATOR, $imagePath );
-        $imageName = sprintf( "%s-", $dirPath[ count( $dirPath ) - 1 ] );
+        $imageName = $dirPath[ count( $dirPath ) - 1 ] . "-";
         unset( $dirPath[ count( $dirPath ) - 1 ] );
-        $dirPath = sprintf( "%s%s", implode( DIRECTORY_SEPARATOR, $dirPath ), DIRECTORY_SEPARATOR );
+        $dirPath = implode( DIRECTORY_SEPARATOR, $dirPath ) . DIRECTORY_SEPARATOR;
 
         // Read and delete files
         $dir   = opendir( $dirPath );
