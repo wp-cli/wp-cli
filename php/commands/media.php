@@ -55,7 +55,6 @@ class Media_Command extends WP_CLI_Command {
             $this->_process_regeneration( $id );
         }
 
-        wp_reset_postdata();
         WP_CLI::success( "Finished regenerating " . ngettext('the image', 'all images', $count) . ".");
     }
 
