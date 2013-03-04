@@ -56,6 +56,7 @@ $ignored_paths = array(
 $vendor_dirs = array(
 	'./vendor/mustache',
 	'./vendor/wp-cli',
+	'./vendor/composer',
 );
 
 foreach ( $vendor_dirs as $vendor_dir ) {
@@ -68,6 +69,8 @@ foreach ( $vendor_dirs as $vendor_dir ) {
 		add_file( $phar, $path );
 	}
 }
+
+add_file( $phar, './vendor/autoload.php' );
 
 $phar->setStub( <<<EOB
 #!/usr/bin/env php
