@@ -76,35 +76,33 @@ class Media_Command extends WP_CLI_Command {
 
         WP_CLI::line( "Start processing of \"" .  get_the_title( $image->ID ) . " (ID: {$image->ID})\"" );
 
-        $array_path = explode( DIRECTORY_SEPARATOR, $fullsizepath );
-        $array_file = explode( '.', $array_path[ count( $array_path ) - 1 ] );
+        $a_path = explode( DIRECTORY_SEPARATOR, $fullsizepath );
+        $a_file = explode( '.', $a_path[ count( $a_path ) - 1 ] );
 
-        unset( $array_path[ count( $array_path ) - 1 ] );
-        unset( $array_file[ count( $array_file ) - 1 ] );
-        
-        $imagePath = implode( DIRECTORY_SEPARATOR, $array_path ) . DIRECTORY_SEPARATOR . implode( '.', $array_file );
-        $dirPath   = explode( DIRECTORY_SEPARATOR, $imagePath );
-        $imageName = $dirPath[ count( $dirPath ) - 1 ] . "-";
-        unset( $dirPath[ count( $dirPath ) - 1 ] );
-        $dirPath = implode( DIRECTORY_SEPARATOR, $dirPath ) . DIRECTORY_SEPARATOR;
+        unset( $a_path );
+        unset( $a_file[ count( $a_file ) - 1 ] );
+
+        $image_name = $a_file[ count( $a_file ) - 1 ] . '-';
+        $dir_path   = wp_upload_dir();
 
         // Read and delete files
-        $dir   = opendir( $dirPath );
+        $dir   = opendir( $dir_path['basedir'] );
         $files = array();
+
         while ( $file = readdir( $dir ) ) {
-            
-            if ( !( strrpos( $file, $imageName ) === false ) ) {
+        
+            if ( !( strrpos( $file, $image_name ) === false ) ) {
                 
-                $thumbnail = explode( $imageName, $file );
-                $filename = $thumbnail[ 1 ];
+                $thumbnail  = explode( $image_name, $file );
+                $filename   = $thumbnail[ 1 ];
 
                 //If we got the original / full image
                 if ( "" == $thumbnail[ 0 ] ) {
-                    preg_match('/\.[^\.]+$/i', $file, $ext);
-                    $thumbnailFormat = $ext[0];
-                    $thumbnail       = basename( $filename, $thumbnailFormat );
-                    
-                    $sizes  = explode( 'x', $thumbnail );                 
+                    $filetype       = wp_check_filetype($file);
+                    $thumbnail_ext  = ".{$filetype['ext']}";
+                    $thumbnail_name = basename( $filename, $thumbnail_ext );
+
+                    $sizes          = explode( 'x', $thumbnail_name );
                     
                     // If not cropped by WP
                     if ( 2 == count( $sizes ) ) {
@@ -112,7 +110,7 @@ class Media_Command extends WP_CLI_Command {
                         $height = $sizes[1];
                         if ( is_numeric( $width ) && is_numeric( $height ) ) {
                             WP_CLI::line( "Thumbnail: {$width} x {$height} was deleted." );
-                            @unlink( $dirPath . $imageName . $width . 'x' . $thumbnail . $thumbnailFormat );
+                            @unlink( $dir_path['basedir'] . DIRECTORY_SEPARATOR . $image_name . $thumbnail_name . $thumbnail_ext );
                         }
                     }
                 }
