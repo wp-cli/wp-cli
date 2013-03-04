@@ -19,7 +19,6 @@ class Media_Command extends WP_CLI_Command {
      */
     function regenerate( $args, $assoc_args = array() ) {
         global $wpdb;
-        $count = 0;
         
         // If id is given, skip confirm because it is only one file
         if( !empty( $args ) ) {
@@ -28,23 +27,35 @@ class Media_Command extends WP_CLI_Command {
 
         WP_CLI::confirm('Do you realy want to regenerate all images?', $assoc_args);
 
-        $where_clause = ( !empty( $args ) ) ? "AND ID = " . implode(" OR ID = ", $args) . " " : '';        
+        $query_args = array(
+            'post_type' => 'attachment',
+            'post__in' => $args,
+            'post_mime_type' => 'image',
+            'post_status' => 'any',
+            'posts_per_page' => -1,
+            'fields' => 'ids'
+        );
 
-        if ( !$images = $wpdb->get_results( "SELECT ID FROM $wpdb->posts WHERE post_type = 'attachment' $where_clause AND post_mime_type LIKE 'image/%' ORDER BY ID DESC", ARRAY_A ) ) {
+        $images = new WP_Query( $query_args );
+
+        if ( $images->post_count == 0 ) {
             //No images, so all keys in $args are not found within WP
             WP_CLI::error( $this->_not_found_message( $args ) );
         }
-        $count = count($images);
+        $count = $images->post_count;
 
         WP_CLI::line( "Found {$count} " . ngettext('image', 'images', $count) . " to regenerate." );
-
-        $not_found = array_diff( $args, wp_list_pluck( $images, 'ID' ) );        
-        WP_CLI::warning( $this->_not_found_message( $not_found ) );
-        
-        foreach ( $images as $image ) {
-            $this->_process_regeneration( $image['ID'] );
+ 
+        $not_found = array_diff( $args, $images->posts );
+        if( !empty($not_found) ) {
+            WP_CLI::warning( $this->_not_found_message( $not_found ) );
         }
-        
+
+        foreach ( $images->posts as $id ) {
+            $this->_process_regeneration( $id );
+        }
+
+        wp_reset_postdata();
         WP_CLI::success( "Finished regenerating " . ngettext('the image', 'all images', $count) . ".");
     }
 
