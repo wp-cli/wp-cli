@@ -14,10 +14,9 @@
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.x",
-		"phpunit/phpunit-story": "1.0.x"
+		"behat/behat": "2.4.*@stable"
 	},
 	"autoload": {
 		"psr-0": { "WP_CLI": "php" }
-	},
-	"minimum-stability": "dev" 
+	}
 }

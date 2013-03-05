@@ -1,6 +1,2 @@
-/.build
-/src
-/dist
 /vendor
-/composer.lock
 /phpunit.xml

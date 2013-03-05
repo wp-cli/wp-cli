@@ -45,7 +45,7 @@ return array(
 		'runtime' => true,
 		'file' => '<bool>',
 		'default' => 'auto',
-		'desc' => 'Whether to colozire the output',
+		'desc' => 'Whether to colorize the output',
 	),
 
 	'debug' => array(

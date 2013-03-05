@@ -56,6 +56,8 @@ require( ABSPATH . WPINC . '/class-wp-error.php' );
 require( ABSPATH . WPINC . '/plugin.php' );
 require( ABSPATH . WPINC . '/pomo/mo.php' );
 
+Utils\replace_wp_die_handler();
+
 // Include the wpdb class and, if present, a db.php database drop-in.
 require_wp_db();
 
@@ -105,6 +107,8 @@ require( ABSPATH . WPINC . '/link-template.php' );
 require( ABSPATH . WPINC . '/author-template.php' );
 require( ABSPATH . WPINC . '/post.php' );
 require( ABSPATH . WPINC . '/post-template.php' );
+Utils\maybe_require( '3.6-alpha-23451', ABSPATH . WPINC . '/revision.php' );
+Utils\maybe_require( '3.6-alpha-23451', ABSPATH . WPINC . '/post-formats.php' );
 require( ABSPATH . WPINC . '/post-thumbnail-template.php' );
 require( ABSPATH . WPINC . '/category.php' );
 require( ABSPATH . WPINC . '/category-template.php' );

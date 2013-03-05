@@ -82,11 +82,20 @@ class Runner {
 	}
 
 	private static function set_wp_root( $config ) {
+		$path = getcwd();
+
 		if ( !empty( $config['path'] ) ) {
-			define( 'ABSPATH', rtrim( $config['path'], '/' ) . '/' );
-		} else {
-			define( 'ABSPATH', getcwd() . '/' );
+			if ( self::is_absolute_path( $config['path'] ) )
+				$path = $config['path'];
+			else
+				$path .= '/' . $config['path'];
 		}
+
+		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+	}
+
+	private static function is_absolute_path( $path ) {
+		return $path[0] === '/';
 	}
 
 	private static function set_url( $assoc_args ) {
@@ -151,7 +160,7 @@ class Runner {
 		$lines_to_run = array();
 
 		foreach ( $wp_config_code as $line ) {
-			if ( preg_match( '/^require.+wp-settings\.php/', $line ) )
+			if ( preg_match( '/^\s*require.+wp-settings\.php/', $line ) )
 				continue;
 
 			$lines_to_run[] = str_replace( $old, $new, $line );
@@ -191,7 +200,7 @@ class Runner {
 		if ( isset( $this->assoc_args['no-color'] ) ) {
 			$this->config['color'] = false;
 			unset( $this->assoc_args['no-color'] );
-		} elseif ( 'auto' == $this->config['color'] ) {
+		} elseif ( 'auto' === $this->config['color'] ) {
 			$this->config['color'] = ! \cli\Shell::isPiped();
 		}
 
@@ -233,9 +242,9 @@ class Runner {
 		}
 
 		if ( !is_readable( ABSPATH . 'wp-load.php' ) ) {
-			WP_CLI::error( "This does not seem to be a WordPress install.", false );
-			WP_CLI::line( "Pass --path=`path/to/wordpress` or run `wp core download`." );
-			exit(1);
+			WP_CLI::error(
+				"This does not seem to be a WordPress install.\n" .
+				"Pass --path=`path/to/wordpress` or run `wp core download`." );
 		}
 
 		if ( array( 'core', 'config' ) == $this->arguments ) {
@@ -244,9 +253,9 @@ class Runner {
 		}
 
 		if ( !Utils\locate_wp_config() ) {
-			WP_CLI::error( "wp-config.php not found.", false );
-			WP_CLI::line( "Either create one manually or use `wp core config`." );
-			exit(1);
+			WP_CLI::error(
+				"wp-config.php not found.\n" .
+				"Either create one manually or use `wp core config`." );
 		}
 
 		if ( $this->cmd_starts_with( array( 'db' ) ) ) {
@@ -310,4 +319,3 @@ class Runner {
 		WP_CLI::run_command( $this->arguments, $this->assoc_args );
 	}
 }
-

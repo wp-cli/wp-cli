@@ -24,31 +24,11 @@ function load_dependencies() {
 	}
 
 	if ( !$has_autoload ) {
-		include WP_CLI_ROOT . 'php-cli-tools/lib/cli/cli.php';
-		\cli\register_autoload();
-
-		include WP_CLI_ROOT . 'mustache/src/Mustache/Autoloader.php';
-		\Mustache_Autoloader::register();
-
-		register_autoload();
+		fputs( STDERR, "Internal error: Can't find Composer autoloader.\n" );
+		exit(2);
 	}
 
 	include WP_CLI_ROOT . 'Spyc.php';
-}
-
-function register_autoload() {
-	spl_autoload_register( function($class) {
-		// Only attempt to load classes in our namespace
-		if ( 0 !== strpos( $class, 'WP_CLI\\' ) ) {
-			return;
-		}
-
-		$path = WP_CLI_ROOT . str_replace( '\\', DIRECTORY_SEPARATOR, $class ) . '.php';
-
-		if ( is_file( $path ) ) {
-			require_once $path;
-		}
-	} );
 }
 
 function get_config_spec() {
@@ -233,3 +213,104 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 	return $data;
 }
 
+/**
+ * Output items in a table, JSON, or CSV
+ *
+ * @param string $format     Format to use: 'table', 'json', 'csv'
+ * @param array  $fields     Named fields for each item of data
+ * @param array  $items      Data to output
+ */
+function format_items( $format, $fields, $items ) {
+
+	switch ( $format ) {
+		case 'table':
+			$table = new \cli\Table();
+
+			$table->setHeaders( $fields );
+
+			foreach ( $items as $item ) {
+				$line = array();
+
+				foreach ( $fields as $field ) {
+					$line[] = $item->$field;
+				}
+
+				$table->addRow( $line );
+			}
+
+			$table->display();
+			break;
+		case 'csv':
+		case 'json':
+			$output_items = array();
+
+			foreach( $items as $item ) {
+				$output_item = new \stdClass;
+				foreach( $fields as $field ) {
+					$output_item->$field = $item->$field;
+				}
+				$output_items[] = $output_item;
+			}
+
+			if ( 'json' == $format )
+				echo json_encode( $output_items );
+			else
+				output_csv( $output_items, $fields );
+			break;
+	}
+}
+
+/**
+ * Output data as CSV
+ *
+ * @param array  $rows       Array of rows to output
+ * @param array  $headers    List of CSV columns (optional)
+ */
+function output_csv( $rows, $headers = array() ) {
+
+	// Prepare the headers if they were specified
+	if ( ! empty( $headers ) )
+		fputcsv( STDOUT, $headers );
+
+	foreach ( $rows as $row ) {
+		$row = (array) $row;
+
+		if ( ! empty( $headers ) ) {
+			$build_row = array();
+			foreach ( $headers as $key ) {
+				$build_row[] = $row[ $key ];
+			}
+			$row = $build_row;
+		}
+		fputcsv( STDOUT, $row );
+	}
+
+}
+
+/**
+ * Launch system's $EDITOR to edit text
+ *
+ * @param  str  $content  Text to edit (eg post content)
+ * @return str|bool       Edited text, if file is saved from editor
+ *                        False, if no change to file
+ */
+function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
+
+	$tmpfile = wp_tempnam( $title );
+
+	if ( !$tmpfile )
+		\WP_CLI::error( 'Error creating temporary file.' );
+
+	file_put_contents( $tmpfile, $input );
+
+	\WP_CLI::launch( "\${EDITOR:-vi} '$tmpfile'" );
+
+	$output = file_get_contents( $tmpfile );
+
+	unlink( $tmpfile );
+
+	if ( $output === $input )
+		return false;
+
+	return $output;
+}
