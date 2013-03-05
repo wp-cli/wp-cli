@@ -18,27 +18,11 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * @alias cpt
 	 *
-	 * @synopsis <slug> [--singular=<label>] [--description=<description>] [--public=<public>] [--exclude_from_search=<exclude_from_search>] [--show_ui=<show_ui>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_in_menu=<show_in_menu>] [--show_in_admin_bar=<show_in_admin_bar>] [--menu_position=<menu_position>] [--menu_icon=<menu_icon>] [--capability_type=<capability_type>] [--hierarchical=<hierarchical>] [--supports=<supports>] [--has_archive=<has_archive>] [--query_var=<query_var>] [--can_export=<can_export>] [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
+	 * @synopsis <slug> [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
 	 */
 	function post_type( $args, $assoc_args ) {
 		$defaults = array(
-			'description'         => '',
-			'public'              => 'true',
-			'exclude_from_search' => 'false',
-			'show_ui'             => 'true',
-			'show_in_nav_menus'   => 'true',
-			'show_in_menu'        => 'true',
-			'show_in_admin_bar'   => 'true',
-			'menu_position'       => 'null',
-			'menu_icon'           => 'null',
-			'capability_type'     => 'post',
-			'hierarchical'        => 'false',
-			'supports'            => "'title', 'editor'",
-			'has_archive'         => 'true',
-			'rewrite'             => 'true',
-			'query_var'           => 'true',
-			'can_export'          => 'true',
-			'textdomain'          => '',
+			'textdomain' => '',
 		);
 
 		$this->_scaffold( $args[0], $assoc_args, $defaults, '/post-types/', array(
@@ -54,19 +38,12 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * @alias tax
 	 *
-	 * @synopsis <slug> [--singular=<label>] [--public=<public>] [--show_in_nav_menus=<show_in_nav_menus>] [--show_ui=<show_ui>] [--show_tagcloud=<show_tagcloud>] [--hierarchical=<hierarchical>]  [--rewrite=<rewrite>] [--query_var=<query_var>] [--textdomain=<textdomain>] [--post_types=<post_types>] [--theme] [--plugin=<plugin>] [--raw]
+	 * @synopsis <slug> [--post_types=<post-types>] [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
 	 */
 	function taxonomy( $args, $assoc_args ) {
 		$defaults = array(
-			'public'              => 'true',
-			'show_in_nav_menus'   => 'true',
-			'show_ui'             => 'true',
-			'show_tagcloud'       => 'true',
-			'hierarchical'        => 'false',
-			'rewrite'             => 'true',
-			'query_var'           => 'true',
-			'post_types'          => 'post',
-			'textdomain'          => '',
+			'textdomain' => '',
+			'post_types' => 'post'
 		);
 
 		$this->_scaffold( $args[0], $assoc_args, $defaults, '/taxonomies/', array(
@@ -90,12 +67,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$vars['textdomain'] = $this->get_textdomain( $vars['textdomain'], $control_args );
 
-		// If no label is given use the slug and prettify it as good as possible
-		if ( isset( $assoc_args['singular'] ) ) {
-			$vars['label'] = $assoc_args['singular'];
-		} else {
-			$vars['label'] = preg_replace( '/_|-/', ' ', strtolower( $slug ) );
-		}
+		$vars['label'] = preg_replace( '/_|-/', ' ', strtolower( $slug ) );
 
 		$vars['label_ucfirst']        = ucfirst( $vars['label'] );
 		$vars['label_plural']         = $this->pluralize( $vars['label'] );
@@ -121,7 +93,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		}
 
 		if ( $path = $this->get_output_path( $control_args, $subdir ) ) {
-			$filename = $path . $machine_name .'.php';
+			$filename = $path . $slug .'.php';
 
 			$this->create_file( $filename, $final_output );
 
@@ -131,6 +103,49 @@ class Scaffold_Command extends WP_CLI_Command {
 			echo $final_output;
 		}
 	}
+
+	/**
+	 * Generate starter code for a theme.
+	 *
+	 * @synopsis <slug> [--theme_name=<title>] [--author=<full-name>] [--author_uri=<http-url>] [--activate]
+	 */
+	function _s( $args, $assoc_args ) {
+
+		$theme_slug = $args[0];
+		$theme_path = WP_CONTENT_DIR . "/themes";
+		$url = "http://underscores.me";
+		$timeout = 30;
+
+		$data = wp_parse_args( $assoc_args, array(
+			'theme_name' => ucfirst( $theme_slug ),
+			'author' => "Me",
+			'author_uri' => "",
+		) );
+
+		$theme_description = "Custom theme: ".$data['theme_name']." developed by, ".$data['author'];
+
+		$body['underscoresme_name'] = $data['theme_name'];
+		$body['underscoresme_slug'] = $theme_slug;
+		$body['underscoresme_author'] = $data['author'];
+		$body['underscoresme_author_uri'] = $data['author_uri'];
+		$body['underscoresme_description'] = $theme_description;
+		$body['underscoresme_generate_submit'] = "Generate";
+		$body['underscoresme_generate'] = "1";
+
+		$tmpfname = wp_tempnam($url);
+		$response = wp_remote_post( $url, array( 'timeout' => $timeout, 'body' => $body, 'stream' => true, 'filename' => $tmpfname ) );
+
+		if ( $response['response']['code'] == 200 )
+			WP_CLI::success( "Created theme '".$data['theme_name']."'." );
+
+		unzip_file( $tmpfname, $theme_path );
+		unlink( $tmpfname );
+
+		if ( isset( $assoc_args['activate'] ) )
+			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
+
+	}
+
 
 	private function get_output_path( $assoc_args, $subdir ) {
 		extract( $assoc_args, EXTR_SKIP );
@@ -165,16 +180,51 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$data['textdomain'] = $plugin_slug;
 
-		$plugin_contents = $this->render( 'plugin.mustache', $data );
+		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
+		$plugin_path = "$plugin_dir/$plugin_slug.php";
 
-		$plugin_path = WP_PLUGIN_DIR . "/$plugin_slug/$plugin_slug.php";
+		$this->create_file( $plugin_path, $this->render( 'plugin.mustache', $data ) );
 
-		$this->create_file( $plugin_path, $plugin_contents );
+		WP_CLI::success( "Created $plugin_dir" );
 
-		WP_CLI::success( "Created $plugin_path" );
+		WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ) );
 
 		if ( isset( $assoc_args['activate'] ) )
 			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug ) );
+	}
+
+	/**
+	 * Generate files needed for running PHPUnit tests.
+	 *
+	 * @subcommand plugin-tests
+	 *
+	 * @synopsis <plugin>
+	 */
+	function plugin_tests( $args, $assoc_args ) {
+		global $wp_filesystem;
+
+		$plugin_slug = $args[0];
+
+		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
+
+		$tests_dir = "$plugin_dir/tests";
+
+		$wp_filesystem->mkdir( $tests_dir );
+
+		$this->create_file( "$tests_dir/bootstrap.php",
+			$this->render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) );
+
+		$to_copy = array(
+			'phpunit.xml' => $plugin_dir,
+			'.travis.yml' => $plugin_dir,
+			'test-sample.php' => $tests_dir,
+		);
+
+		foreach ( $to_copy as $file => $dir ) {
+			$wp_filesystem->copy( $this->get_template_path( $file ), "$dir/$file", true );
+		}
+
+		WP_CLI::success( "Created test files in $plugin_dir" );
 	}
 
 	private function create_file( $filename, $contents ) {
@@ -272,13 +322,15 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	private function render( $template, $data ) {
-		$scaffolds_dir = WP_CLI_ROOT . 'templates';
-
-		$template = file_get_contents( $scaffolds_dir . '/' . $template );
+		$template = file_get_contents( $this->get_template_path( $template ) );
 
 		$m = new Mustache_Engine;
 
 		return $m->render( $template, $data );
+	}
+
+	private function get_template_path( $template ) {
+		return WP_CLI_ROOT . "../templates/$template";
 	}
 }
 

@@ -54,6 +54,7 @@ function add_initial_markdown( $fd, $command ) {
 	$shortdesc = $command->get_shortdesc();
 	$synopsis = $command->get_full_synopsis();
 
+	$synopsis = str_replace( '_', '\_', $synopsis );
 	$synopsis = str_replace( array( '<', '>' ), '_', $synopsis );
 
 	$name_m = implode( '-', $path );

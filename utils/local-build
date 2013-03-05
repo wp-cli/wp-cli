@@ -10,6 +10,10 @@ if [ "$BASH_SOURCE" = "$0" ]; then
 	exit 1
 fi
 
+[ -f composer.phar ] || curl -sS https://getcomposer.org/installer | php
+
+[ -d vendor/ ] || php composer.phar install
+
 DIR=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 
 alias wp='$DIR/../bin/wp'

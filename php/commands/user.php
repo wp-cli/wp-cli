@@ -7,19 +7,22 @@
  */
 class User_Command extends \WP_CLI\CommandWithDBObject {
 
+	protected $obj_type = 'user';
+
 	/**
 	 * List users.
 	 *
 	 * @subcommand list
-	 * @synopsis [--role=<role>] [--ids]
+	 * @synopsis [--role=<role>] [--ids] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
-		global $blog_id;
 
-		$params = array(
-			'blog_id' => $blog_id,
-			'fields' => isset( $assoc_args['ids'] ) ? 'ids' : 'all_with_meta',
+		$defaults = array(
+			'blog_id'   => get_current_blog_id(),
+			'fields'    => isset( $assoc_args['ids'] ) ? 'ids' : 'all_with_meta',
+			'format'    => 'table',
 		);
+		$params = array_merge( $defaults, $assoc_args );
 
 		if ( array_key_exists( 'role', $assoc_args ) ) {
 			$params['role'] = $assoc_args['role'];
@@ -29,29 +32,34 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( isset( $assoc_args['ids'] ) ) {
 			WP_CLI::out( implode( ' ', $users ) );
-		} else {
-			$fields = array('ID', 'user_login', 'display_name', 'user_email',
-				'user_registered');
+			exit;
+		}
 
-			$table = new \cli\Table();
+		$fields = array(
+			'ID',
+			'user_login',
+			'display_name',
+			'user_email',
+			'user_registered'
+		);
 
-			$table->setHeaders( array_merge( $fields, array('roles') ) );
+		$output_users = array();
 
-			foreach ( $users as $user ) {
-				$line = array();
+		foreach ( $users as $user ) {
+			$output_user = new stdClass;
 
-				foreach ( $fields as $field ) {
-					$line[] = $user->$field;
-				}
-				$line[] = implode( ',', $user->roles );
-
-				$table->addRow( $line );
+			foreach ( $fields as $field ) {
+				$output_user->$field = $user->$field;
 			}
 
-			$table->display();
+			$output_user->roles = implode( ',', $user->roles );
 
-			WP_CLI::line( 'Total: ' . count( $users ) . ' users' );
+			$output_users[] = $output_user;
 		}
+
+		$fields[] = 'roles';
+
+		WP_CLI\Utils\format_items( $params['format'], $fields, $output_users );
 	}
 
 	/**
@@ -156,7 +164,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Generate users.
 	 *
-	 * @synopsis [--count=100] [--role=<role>]
+	 * @synopsis [--count=<number>] [--role=<role>]
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $blog_id;

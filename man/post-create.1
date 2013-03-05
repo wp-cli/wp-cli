@@ -7,15 +7,33 @@
 \fBwp\-post\-create\fR \- Create a post\.
 .
 .SH "SYNOPSIS"
-wp post create \-\-\fIfield\fR=\fIvalue\fR [\-\-porcelain]
+wp post create [\fIfilename\fR] \-\-\fIfield\fR=\fIvalue\fR [\-\-edit] [\-\-porcelain]
 .
 .SH "OPTIONS"
+.
+.TP
+\fB<filename>\fR:
+.
+.IP
+Read post content from \fIfilename\fR\. If this value is present, the \fB\-\-post_content\fR argument will be ignored\.
+.
+.IP
+Passing \fB\-\fR as the filename will cause post content to be read from STDIN\.
 .
 .TP
 \fB\-\-<field>\fR=\fIvalue\fR:
 .
 .IP
 Field values for the new post\. See wp_insert_post()\.
+.
+.TP
+\fB\-\-edit\fR:
+.
+.IP
+Immediately open system\'s editor to write or edit post content\.
+.
+.IP
+(If content is read from a file, from STDIN, or from the \fB\-\-post_content\fR argument, that text will be loaded into the editor; otherwise, an empty file will be opened\.)
 .
 .TP
 \fB\-\-porcelain\fR:
@@ -27,9 +45,9 @@ Output just the new post id\.
 .
 .nf
 
-wp post create \-\-post_type=page \-\-post_status=publish \-\-post_title=\'A new
+wp post create \-\-post_type=page \-\-post_status=publish \-\-post_title=\'A new page\'
+
+wp post create file\.txt \-\-post_type=post \-\-post_title=\'Post from file\'
 .
 .fi
-.
-.P
-page\'
+

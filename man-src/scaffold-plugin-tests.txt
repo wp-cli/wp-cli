@@ -1,0 +1,17 @@
+## DESCRIPTION
+
+These are the files that are generated:
+
+* `phpunit.xml` is the configuration file for PHPUnit
+* `.travis.yml` is the configuration file for Travis CI
+* `tests/bootstrap.php` is the file that makes the current plugin active when running the test suite
+* `tests/test-sample.php` is a sample file containing the actual tests
+
+## ENVIRONMENT
+
+The `tests/bootstrap.php` file looks for the WP_TESTS_DIR environment
+variable.
+
+## EXAMPLE
+
+wp scaffold plugin-tests hello

@@ -1,13 +1,11 @@
 	register_taxonomy( '{{slug}}', array( '{{post_types}}' ), array(
-		'public'                  => {{public}},
-		'show_in_nav_menus'       => {{show_in_nav_menus}},
-		'show_ui'                 => {{show_ui}},
-		'show_tagcloud'           => {{show_tagcloud}},
-		'hierarchical'            => {{hierarchical}},
-		'update_count_callback'   => '_update_post_term_count',
-		'query_var'               => {{query_var}},
-		'rewrite'                 => {{rewrite}},
-		'capabilities'            => array (
+		'hierarchical'            => false,
+		'public'                  => true,
+		'show_in_nav_menus'       => true,
+		'show_ui'                 => true,
+		'query_var'               => {{slug}},
+		'rewrite'                 => true,
+		'capabilities'            => array(
 			'manage_terms'  => 'edit_posts',
 			'edit_terms'    => 'edit_posts',
 			'delete_terms'  => 'edit_posts',

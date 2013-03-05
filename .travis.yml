@@ -1,0 +1,28 @@
+language: php
+
+php:
+    - 5.3
+    - 5.4
+
+env:
+    - WP_VERSION=master WP_MULTISITE=0
+    - WP_VERSION=master WP_MULTISITE=1
+    - WP_VERSION=3.5.1 WP_MULTISITE=0
+    - WP_VERSION=3.5.1 WP_MULTISITE=1
+    - WP_VERSION=3.4.2 WP_MULTISITE=0
+    - WP_VERSION=3.4.2 WP_MULTISITE=1
+
+before_script:
+    # install dependencies
+    - curl -sS https://getcomposer.org/installer | php
+    - php composer.phar install --dev --no-interaction
+    # set up WP install
+    - WP_CORE_DIR=/tmp/wp-cli-test-core-download-cache/
+    - mkdir -p $WP_CORE_DIR
+    - wget -nv -O /tmp/wordpress.tar.gz https://github.com/WordPress/WordPress/tarball/$WP_VERSION
+    - tar --strip-components=1 -zxmf /tmp/wordpress.tar.gz -C $WP_CORE_DIR
+    # set up database
+    - mysql -e 'CREATE DATABASE wp_cli_test;' -uroot
+    - mysql -e 'GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"localhost" IDENTIFIED BY "password1"' -uroot
+
+script: vendor/bin/phpunit && vendor/bin/behat
