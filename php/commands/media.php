@@ -90,12 +90,12 @@ class Media_Command extends WP_CLI_Command {
         $files = array();
 
         while ( $file = readdir( $dir ) ) {
-        
+        WP_CLI::print_value( $dir_path );
             if ( !( strrpos( $file, $image_name ) === false ) ) {
                 
                 $thumbnail  = explode( $image_name, $file );
                 $filename   = $thumbnail[ 1 ];
-
+//WP_CLI::print_value( $dir );
                 //If we got the original / full image
                 if ( "" == $thumbnail[ 0 ] ) {
                     $filetype       = wp_check_filetype($file);
@@ -110,7 +110,7 @@ class Media_Command extends WP_CLI_Command {
                         $height = $sizes[1];
                         if ( is_numeric( $width ) && is_numeric( $height ) ) {
                             WP_CLI::line( "Thumbnail: {$width} x {$height} was deleted." );
-                            @unlink( $dir_path['basedir'] . DIRECTORY_SEPARATOR . $image_name . $thumbnail_name . $thumbnail_ext );
+                            unlink( $dir_path['basedir'] . DIRECTORY_SEPARATOR . $image_name . $thumbnail_name . $thumbnail_ext );
                         }
                     }
                 }
