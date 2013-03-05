@@ -6,7 +6,7 @@
 
 * `<attachment-id>`:
 
-	One or more IDs of the attachment to regenerate.
+	One or more IDs of the attachments to regenerate.
 
 ## EXAMPLES
 
