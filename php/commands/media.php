@@ -74,7 +74,7 @@ class Media_Command extends WP_CLI_Command {
             return;
         }
 
-        WP_CLI::line( "Start processing of \"" .  get_the_title( $image->ID ) . " (ID: {$image->ID})\"" );
+        WP_CLI::line( "Start processing of \"" .  get_the_title( $image->ID ) . "\" (ID: {$image->ID})" );
 
         $a_path = explode( DIRECTORY_SEPARATOR, $fullsizepath );
         $a_file = explode( '.', $a_path[ count( $a_path ) - 1 ] );
@@ -90,12 +90,12 @@ class Media_Command extends WP_CLI_Command {
         $files = array();
 
         while ( $file = readdir( $dir ) ) {
-        WP_CLI::print_value( $dir_path );
+
             if ( !( strrpos( $file, $image_name ) === false ) ) {
                 
                 $thumbnail  = explode( $image_name, $file );
                 $filename   = $thumbnail[ 1 ];
-//WP_CLI::print_value( $dir );
+
                 //If we got the original / full image
                 if ( "" == $thumbnail[ 0 ] ) {
                     $filetype       = wp_check_filetype($file);
