@@ -20,7 +20,7 @@ php $fname --version
 # check which wp-cli commit the previous Phar archive was based on
 # can't use the md5 hash, since it will be different each time the
 # archive is generated
-new_commit_subj="update wp-cli.phar to $current_rev"
+new_commit_subj="update wp-cli.phar to wp-cli/wp-cli@$current_rev"
 
 current_commit_subj=$(git show -s --pretty=format:%s HEAD)
 
