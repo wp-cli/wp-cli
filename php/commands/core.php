@@ -133,8 +133,12 @@ class Core_Command extends WP_CLI_Command {
 
 		$result = populate_network( 1, $hostname, get_option( 'admin_email' ), $assoc_args['title'], $base, $subdomain_install );
 
-		if ( is_wp_error( $result ) )
-			WP_CLI::error( $result );
+		if ( is_wp_error( $result ) ) {
+			if ( $result->get_error_codes() === array( 'no_wildcard_dns' ) )
+				WP_CLI::warning( __( 'Wildcard DNS may not be configured correctly.' ) );
+			else
+				WP_CLI::error( $result );
+		}
 
 		ob_start();
 ?>
