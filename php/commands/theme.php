@@ -41,7 +41,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function get_details( $stylesheet ) {
-		return get_theme_data( $stylesheet );
+		return wp_get_theme( $stylesheet );
 	}
 
 	/**
@@ -52,7 +52,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	public function activate( $args = array() ) {
 		list( $stylesheet, $child ) = $this->parse_name( $args );
 
-		$details = get_theme_data( $stylesheet );
+		$details = wp_get_theme( $stylesheet );
 
 		$parent = $details['Template'];
 
