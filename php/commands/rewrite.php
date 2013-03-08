@@ -75,7 +75,7 @@ class Rewrite_Command extends WP_CLI_Command {
 		$rules = get_option( 'rewrite_rules' );
 		if ( ! $rules ) {
 			$rules = array();
-			WP_CLI::warning( 'No rewrite rules' );
+			WP_CLI::warning( 'No rewrite rules.' );
 		}
 
 		if ( isset( $assoc_args['json'] ) ) {
