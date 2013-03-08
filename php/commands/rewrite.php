@@ -73,22 +73,18 @@ class Rewrite_Command extends WP_CLI_Command {
 	public function dump( $args, $assoc_args ) {
 
 		$rules = get_option( 'rewrite_rules' );
+		if ( ! $rules ) {
+			$rules = array();
+			WP_CLI::warning( 'No rewrite rules' );
+		}
 
 		if ( isset( $assoc_args['json'] ) ) {
-			if ( ! $rules ) {
-				WP_CLI::warning( 'No rewrite rules' );
-				echo json_encode( array() );
-			} else {
-				echo json_encode( $rules );
-			}
+			echo json_encode( $rules );
 		} else {
-			if ( ! $rules ) {
-				WP_CLI::warning( 'No rewrite rules' );
-			} else {
-				foreach ( $rules as $route => $rule )
-					WP_CLI::line( $route . "\t" . $rule );
-			}
+			foreach ( $rules as $route => $rule )
+				WP_CLI::line( $route . "\t" . $rule );
 		}
+
 	}
 }
 
