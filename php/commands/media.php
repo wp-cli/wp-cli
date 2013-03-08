@@ -40,7 +40,7 @@ class Media_Command extends WP_CLI_Command {
         }
         $count = $images->post_count;
 
-        WP_CLI::line( "Found {$count} " . ngettext('image', 'images', $count) . " to regenerate." );
+        WP_CLI::line( sprintf( 'Found %1$d %2$s to regenerate.', $count, ngettext('image', 'images', $count) ) );
  
         $not_found = array_diff( $args, $images->posts );
         if( !empty($not_found) ) {
@@ -51,7 +51,7 @@ class Media_Command extends WP_CLI_Command {
             $this->_process_regeneration( $id );
         }
 
-        WP_CLI::success( "Finished regenerating " . ngettext('the image', 'all images', $count) . ".");
+        WP_CLI::success( sprintf( 'Finished regenerating %1$s.', ngettext('the image', 'all images', $count) ) );
     }
 
     private function _process_regeneration( $id ) {
@@ -70,7 +70,7 @@ class Media_Command extends WP_CLI_Command {
             return;
         }
 
-        WP_CLI::line( "Start processing of \"" .  get_the_title( $image->ID ) . "\" (ID: {$image->ID})" );
+        WP_CLI::line( sprintf( 'Start processing of "%1$s" (ID %2$d).', get_the_title( $image->ID ), $image->ID ) );
 
         $a_path = explode( DIRECTORY_SEPARATOR, $fullsizepath );
         $a_file = explode( '.', $a_path[ count( $a_path ) - 1 ] );
@@ -130,7 +130,12 @@ class Media_Command extends WP_CLI_Command {
 
     private function _not_found_message( $not_found_ids ){
         $count = count($not_found_ids);
-        return "Unable to find the " . ngettext('image', 'images', $count) . " (" . implode(", ", $not_found_ids) . "). Are you sure " . ngettext('it', 'they', $count) .  " " . ngettext('exist', 'exists', $count) . "?";
+        return vsprintf( 'Unable to find the %1$s (%2$s). Are you sure %3$s %4$s?', array(
+            ngettext('image', 'images', $count),
+            implode(", ", $not_found_ids),
+            ngettext('it', 'they', $count),
+            ngettext('exists', 'exist', $count),
+        ));
     }
 }
 
