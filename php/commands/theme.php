@@ -54,15 +54,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$details = wp_get_theme( $stylesheet );
 
-		$parent = $details['Template'];
-
-		if ( empty( $parent ) ) {
-			$parent = $child;
-		} elseif ( !is_readable( $this->get_stylesheet_path( $parent ) ) ) {
-			WP_CLI::error( 'Parent theme not found.' );
-		}
-
-		switch_theme( $parent, $child );
+		switch_theme( $child );
 
 		$name = $details['Title'];
 
