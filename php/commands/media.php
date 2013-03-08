@@ -57,12 +57,7 @@ class Media_Command extends WP_CLI_Command {
     private function _process_regeneration( $id ) {
         
         $image = get_post( $id );
-        
-        if ( !$image || 'attachment' != $image->post_type || 'image/' != substr( $image->post_mime_type, 0, 6 ) ) {
-            WP_CLI::warning( "{$image->post_title} - invalid image ID." );
-            return;
-        }
-        
+
         $fullsizepath = get_attached_file( $image->ID );
         
         if ( false === $fullsizepath || !file_exists( $fullsizepath ) ) {
