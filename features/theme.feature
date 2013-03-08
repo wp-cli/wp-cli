@@ -1,7 +1,7 @@
 Feature: Manage WordPress themes
 
   Scenario: Installing a theme
-    Given WP install
+    Given a WP install
 
     When I run `wp theme install p2`
     Then it should run without errors
@@ -42,7 +42,7 @@ Feature: Manage WordPress themes
       """
 
   Scenario: Upgrading a theme
-    Given WP install
+    Given a WP install
     And a P2 theme zip
 
     When I run `wp theme install {THEME_ZIP}`

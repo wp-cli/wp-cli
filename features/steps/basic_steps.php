@@ -28,7 +28,7 @@ $steps->Given( '/^a database$/',
 	}
 );
 
-$steps->Given( '/^WP install$/',
+$steps->Given( '/^a WP install$/',
 	function ( $world ) {
 		$world->create_db();
 		$world->create_empty_dir();

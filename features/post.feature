@@ -1,7 +1,7 @@
 Feature: Manage WordPress posts
 
   Scenario: Creating/updating/deleting posts
-    Given WP install
+    Given a WP install
 
     When I run `wp post create --post_title='Test post' --porcelain`
     Then it should run without errors

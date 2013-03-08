@@ -64,13 +64,13 @@ Feature: Manage WordPress installation
     And STDOUT should not be empty
 
   Scenario: Full install
-    Given WP install
+    Given a WP install
 
     When I run `wp core is-installed`
     Then it should run without errors
 
   Scenario: Custom wp-content directory
-    Given WP install
+    Given a WP install
     And custom wp-content directory
 
     When I run `wp plugin status hello`

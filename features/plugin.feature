@@ -1,7 +1,7 @@
 Feature: Manage WordPress plugins
 
   Scenario: Checking the plugin status
-    Given WP install
+    Given a WP install
 
     When I run `wp plugin status`
     Then it should run without errors
