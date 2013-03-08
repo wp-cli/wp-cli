@@ -1,0 +1,35 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-MEDIA\-REGENERATE" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-media\-regenerate\fR \- Regenerate thumbnail(s)
+.
+.SH "SYNOPSIS"
+wp media regenerate \fIattachment\-id\fR\.\.\. [\-\-yes]
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-\-yes\fR:
+.
+.IP
+Answer yes to the confirmation message\.
+.
+.TP
+\fB<attachment\-id>\fR:
+.
+.IP
+One or more IDs of the attachments to regenerate\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp media regenerate 123 1337
+
+wp media regenerate \-\-yes
+.
+.fi
+
