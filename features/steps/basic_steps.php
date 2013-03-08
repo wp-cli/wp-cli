@@ -44,6 +44,22 @@ $steps->Given( '/^custom wp-content directory$/',
 	}
 );
 
+$steps->Given('/^a P2 theme zip$/',
+	function ( $world ) {
+		$zip_name = 'p2.1.0.1.zip';
+
+		$cache_dir = sys_get_temp_dir() . '/wp-cli-test-cache';
+		$world->variables['THEME_ZIP'] = $cache_dir . '/' . $zip_name;
+
+		$zip_url = 'http://wordpress.org/extend/themes/download/' . $zip_name;
+
+		system( \WP_CLI\Utils\create_cmd( 'mkdir -p %s', $cache_dir ) );
+
+		system( \WP_CLI\Utils\create_cmd( 'curl -s %s > %s', $zip_url,
+			$world->variables['THEME_ZIP'] ) );
+	}
+);
+
 $steps->When( '/^I run `wp`$/',
 	function ( $world ) {
 		$world->result = $world->run( '' );
@@ -52,9 +68,7 @@ $steps->When( '/^I run `wp`$/',
 
 $steps->When( '/^I run `wp (.+)`$/',
 	function ( $world, $cmd ) {
-		$world->replace_variables( $cmd );
-
-		$world->result = $world->run( $cmd );
+		$world->result = $world->run( $world->replace_variables( $cmd ) );
 	}
 );
 
@@ -89,22 +103,32 @@ $steps->Then( '/^it should run without errors$/',
 	}
 );
 
-$steps->Then( '/^(STDOUT|STDERR) should be:$/',
-	function ( $world, $stream, PyStringNode $output ) {
-		$world->replace_variables( $output );
+$steps->Then( '/^(STDOUT|STDERR) should (be|contain|not contain):$/',
+	function ( $world, $stream, $action, PyStringNode $expected ) {
+		$output = $world->replace_variables( $world->result->$stream );
 
-		$result = rtrim( $world->result->$stream, "\n" );
+		$expected = (string) $expected;
 
-		if ( (string) $output != $result ) {
-			throw new \Exception( $world->result->$stream );
+		switch ( $action ) {
+
+		case 'be':
+			$r = $expected === rtrim( $output, "\n" );
+			break;
+
+		case 'contain':
+			$r = false !== strpos( $output, $expected );
+			break;
+
+		case 'not contain':
+			$r = false === strpos( $output, $expected );
+			break;
+
+		default:
+			throw new PendingException();
 		}
-	}
-);
 
-$steps->Then( '/^(STDOUT|STDERR) should contain:$/',
-	function ( $world, $stream, PyStringNode $output ) {
-		if ( false === strpos( $world->result->$stream, (string) $output ) ) {
-			throw new \Exception( $world->result->$stream );
+		if ( !$r ) {
+			throw new \Exception( $output );
 		}
 	}
 );
