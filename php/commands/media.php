@@ -6,10 +6,6 @@
  * @package wp-cli
  */
 class Media_Command extends WP_CLI_Command {
-   
-    function __construct() {
-        WP_Filesystem();
-    }
 
     /**
      * Regenerate thumbnail(s)
