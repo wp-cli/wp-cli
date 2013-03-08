@@ -105,9 +105,9 @@ $steps->Then( '/^it should run without errors$/',
 
 $steps->Then( '/^(STDOUT|STDERR) should (be|contain|not contain):$/',
 	function ( $world, $stream, $action, PyStringNode $expected ) {
-		$output = $world->replace_variables( $world->result->$stream );
+		$output = $world->result->$stream;
 
-		$expected = (string) $expected;
+		$expected = $world->replace_variables( (string) $expected );
 
 		switch ( $action ) {
 
