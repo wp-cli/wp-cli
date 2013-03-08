@@ -64,7 +64,7 @@ class DB_Command extends WP_CLI_Command {
 	 * @synopsis [--str]
 	 */
 	function optimize( $_, $assoc_args ) {
-		self::run( $assoc_args, self::create_cmd(
+		self::run( $assoc_args, \WP_CLI\Utils\create_cmd(
 			'mysqlcheck --optimize --host=%s --user=%s --password=%s %s',
 			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
 		) );
@@ -78,7 +78,7 @@ class DB_Command extends WP_CLI_Command {
 	 * @synopsis [--str]
 	 */
 	function repair( $_, $assoc_args ) {
-		self::run( $assoc_args, self::create_cmd(
+		self::run( $assoc_args, \WP_CLI\Utils\create_cmd(
 			'mysqlcheck --repair --host=%s --user=%s --password=%s %s',
 			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
 		) );
@@ -105,7 +105,7 @@ class DB_Command extends WP_CLI_Command {
 	function query( $args, $assoc_args ) {
 		list( $query ) = $args;
 
-		self::run( $assoc_args, $this->connect_string() . self::create_cmd(
+		self::run( $assoc_args, $this->connect_string() . \WP_CLI\Utils\create_cmd(
 			' --execute=%s', $query ) );
 	}
 
@@ -118,7 +118,7 @@ class DB_Command extends WP_CLI_Command {
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
-		self::run( $assoc_args, self::create_cmd(
+		self::run( $assoc_args, \WP_CLI\Utils\create_cmd(
 			'mysqldump %s --user=%s --password=%s --host=%s --result-file %s',
 			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file ) );
 
@@ -133,7 +133,7 @@ class DB_Command extends WP_CLI_Command {
 	function import( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
-		self::run( $assoc_args, self::create_cmd(
+		self::run( $assoc_args, \WP_CLI\Utils\create_cmd(
 			'mysql %s --user=%s --password=%s --host=%s < %s',
 			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file ) );
 
@@ -141,7 +141,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	private function connect_string() {
-		return self::create_cmd( 'mysql --host=%s --user=%s --password=%s --database=%s',
+		return \WP_CLI\Utils\create_cmd( 'mysql --host=%s --user=%s --password=%s --database=%s',
 			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
 	}
 
@@ -153,22 +153,10 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	private static function create_execute_cmd( $execute_statement ) {
-		return self::create_cmd(
+		return \WP_CLI\Utils\create_cmd(
 			'mysql --host=%s --user=%s --password=%s --execute=%s',
 			DB_HOST, DB_USER, DB_PASSWORD, $execute_statement
 		);
-	}
-
-	/**
-	 * Given a formatted string and an arbitrary number of arguments,
-	 * returns the final command, with the parameters escaped
-	 */
-	private static function create_cmd( $cmd ) {
-		$args = func_get_args();
-
-		$cmd = array_shift( $args );
-
-		return vsprintf( $cmd, array_map( 'escapeshellarg', $args ) );
 	}
 
 	private static function run( $assoc_args, $cmd ) {

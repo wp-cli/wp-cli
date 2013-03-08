@@ -100,6 +100,18 @@ function assoc_args_to_str( $assoc_args ) {
 	return $str;
 }
 
+/**
+ * Given a template string and an arbitrary number of arguments,
+ * returns the final command, with the parameters escaped.
+ */
+function create_cmd( $cmd ) {
+	$args = func_get_args();
+
+	$cmd = array_shift( $args );
+
+	return vsprintf( $cmd, array_map( 'escapeshellarg', $args ) );
+}
+
 function get_command_file( $command ) {
 	$path = WP_CLI_ROOT . "/commands/$command.php";
 
