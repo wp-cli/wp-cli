@@ -9,15 +9,15 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin status hello`
     Then it should run without errors
-	And STDOUT should contain:
-	  """
-	  Plugin hello details:
-	      Name: Hello Dolly
-	  """
+    And STDOUT should contain:
+      """
+      Plugin hello details:
+          Name: Hello Dolly
+      """
 
     When I run `wp plugin status non-existent-plugin`
     Then the return code should be 1
-	And STDERR should contain:
-	  """
-	  Error: The plugin 'non-existent-plugin' could not be found.
-	  """
+    And STDERR should contain:
+      """
+      Error: The plugin 'non-existent-plugin' could not be found.
+      """

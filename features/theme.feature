@@ -52,14 +52,14 @@ Feature: Manage WordPress themes
     Then it should run without errors
     And STDOUT should contain:
       """
-	  U = Update Available
+      U = Update Available
       """
 
     When I run `wp theme status p2`
     Then it should run without errors
     And STDOUT should contain:
       """
-	  Version: 1.0.1 (Update available)
+      Version: 1.0.1 (Update available)
       """
 
     When I run `wp theme update p2`
@@ -69,5 +69,5 @@ Feature: Manage WordPress themes
     Then it should run without errors
     And STDOUT should not contain:
       """
-	  (Update available)
+      (Update available)
       """
