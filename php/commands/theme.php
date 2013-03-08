@@ -134,12 +134,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	protected function get_item_list() {
 		$items = array();
 
-		if( function_exists( 'wp_get_themes' ) )
-			$themes = wp_get_themes();
-		else
-			$themes = get_themes();
-
-		foreach ( $themes as $details ) {
+		foreach ( wp_get_themes() as $details ) {
 			$file = $this->get_stylesheet_path( $details['Stylesheet'] );
 
 			$items[ $file ] = array(
