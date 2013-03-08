@@ -21,27 +21,28 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		parent::status( $args );
 	}
 
-	protected function _status_single( $details, $name, $version, $status ) {
-		WP_CLI::line( 'Theme %9' . $name . '%n details:' );
-		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
+	protected function status_single( $args ) {
+		$theme = $this->parse_name( $args );
+
+		$status = $this->format_status( $this->get_status( $theme ), 'long' );
+
+		$version = $theme->get('Version');
+		if ( $this->has_update( $theme->get_stylesheet() ) )
+			$version .= ' (%gUpdate available%n)';
+
+		WP_CLI::line( 'Theme %9' . $theme->get_stylesheet() . '%n details:' );
+		WP_CLI::line( '    Name: ' . $theme->get('Name') );
 		WP_CLI::line( '    Status: ' . $status .'%n' );
 		WP_CLI::line( '    Version: ' . $version );
-		WP_CLI::line( '    Author: ' . strip_tags( $details[ 'Author' ] ) );
+		WP_CLI::line( '    Author: ' . $theme->get('Author') );
 	}
 
 	protected function get_all_items() {
 		return $this->get_item_list();
 	}
 
-	protected function get_status( $stylesheet ) {
-		if ( $this->is_active_theme( $stylesheet ) )
-			return 'active';
-
-		return 'inactive';
-	}
-
-	protected function get_details( $stylesheet ) {
-		return wp_get_theme( $stylesheet );
+	protected function get_status( $theme ) {
+		return ( $this->is_active_theme( $theme ) ) ? 'active' : 'inactive';
 	}
 
 	/**
@@ -50,23 +51,21 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <theme>
 	 */
 	public function activate( $args = array() ) {
-		list( $stylesheet, $child ) = $this->parse_name( $args );
+		$theme = $this->parse_name( $args );
 
-		$details = wp_get_theme( $stylesheet );
+		switch_theme( $theme->get_stylesheet() );
 
-		switch_theme( $child );
+		$name = $theme->get('Name');
 
-		$name = $details['Title'];
-
-		if ( $this->is_active_theme( $stylesheet ) ) {
+		if ( $this->is_active_theme( $theme ) ) {
 			WP_CLI::success( "Switched to '$name' theme." );
 		} else {
 			WP_CLI::error( "Could not switch to '$name' theme." );
 		}
 	}
 
-	private function is_active_theme( $stylesheet ) {
-		return dirname( $stylesheet ) == get_stylesheet_directory();
+	private function is_active_theme( $theme ) {
+		return $theme->get_stylesheet_directory() == get_stylesheet_directory();
 	}
 
 	/**
@@ -78,11 +77,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( empty( $args ) ) {
 			$path = WP_CONTENT_DIR . '/themes';
 		} else {
-			list( $stylesheet, $name ) = $this->parse_name( $args );
-			$path = $stylesheet;
+			$theme = $this->parse_name( $args );
 
-			if ( isset( $assoc_args['dir'] ) )
-				$path = dirname( $path );
+			$path = $theme->get_stylesheet_directory();
+
+			if ( !isset( $assoc_args['dir'] ) )
+				$path .= '/style.css';
 		}
 
 		WP_CLI::line( $path );
@@ -109,7 +109,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			 *  Else, if there's no update, it's either not installed,
 			 *  or it's newer than what we've got.
 			 */
-		} else if ( !is_readable( $this->get_stylesheet_path( $slug ) ) ) {
+		} else if ( !wp_get_theme( $slug )->exists() ) {
 			WP_CLI::line( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->install( $api->download_link );
 		} else {
@@ -126,14 +126,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	protected function get_item_list() {
 		$items = array();
 
-		foreach ( wp_get_themes() as $details ) {
-			$file = $this->get_stylesheet_path( $details['Stylesheet'] );
+		foreach ( wp_get_themes() as $theme ) {
+			$file = $theme->get_stylesheet_directory();
 
 			$items[ $file ] = array(
-				'name' => $details['Stylesheet'],
-				'status' => $this->get_status( $file ),
-				'update' => $this->has_update( $details['Stylesheet'] ),
-				'update_id' => $details['Stylesheet'],
+				'name' => $theme->get('Name'),
+				'status' => $this->get_status( $theme ),
+				'update' => $this->has_update( $theme->get_stylesheet() ),
+				'update_id' => $theme->get_stylesheet(),
 			);
 		}
 
@@ -155,9 +155,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <theme> [--version=<version>]
 	 */
 	function update( $args, $assoc_args ) {
-		list( $_, $name ) = $this->parse_name( $args );
+		$theme = $this->parse_name( $args );
 
-		parent::_update( $name );
+		parent::_update( $theme->get_stylesheet() );
 	}
 
 	/**
@@ -176,9 +176,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <theme>
 	 */
 	function delete( $args ) {
-		list( $file, $name ) = $this->parse_name( $args );
+		$theme = $this->parse_name( $args );
 
-		$r = delete_theme( $name );
+		$r = delete_theme( $theme->get_stylesheet() );
 
 		if ( is_wp_error( $r ) ) {
 			WP_CLI::error( $r );
@@ -193,18 +193,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$name = $args[0];
 
-		$stylesheet = $this->get_stylesheet_path( $name );
+		$theme = wp_get_theme( $name );
 
-		if ( !is_readable( $stylesheet ) ) {
+		if ( !$theme->exists() ) {
 			WP_CLI::error( "The theme '$name' could not be found." );
 			exit;
 		}
 
-		return array( $stylesheet, $name );
-	}
-
-	protected function get_stylesheet_path( $theme ) {
-		return WP_CONTENT_DIR . '/themes/' . $theme . '/style.css';
+		return $theme;
 	}
 }
 

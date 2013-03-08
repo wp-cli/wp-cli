@@ -28,6 +28,21 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		parent::status( $args );
 	}
 
+	protected function status_single( $args ) {
+		list( $file, $name ) = $this->parse_name( $args );
+
+		$details = $this->get_details( $file );
+
+		$status = $this->format_status( $this->get_status( $file ), 'long' );
+
+		$version = $details[ 'Version' ];
+
+		if ( $this->has_update( $file ) )
+			$version .= ' (%gUpdate available%n)';
+
+		$this->_status_single( $details, $name, $version, $status );
+	}
+
 	protected function _status_single( $details, $name, $version, $status ) {
 		WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
 		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
