@@ -15,9 +15,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	abstract protected function get_all_items();
 
 	abstract protected function get_status( $file );
-	abstract protected function get_details( $file );
 
-	abstract protected function _status_single( $details, $name, $version, $status );
+	abstract protected function status_single( $args );
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
 
@@ -28,9 +27,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( empty( $args ) ) {
 			$this->status_all();
 		} else {
-			list( $file, $name ) = $this->parse_name( $args );
-
-			$this->status_single( $file, $name );
+			$this->status_single( $args );
 		}
 	}
 
@@ -77,19 +74,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$legend_line[] = '%yU = Update Available%n';
 
 		\WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
-	}
-
-	private function status_single( $file, $name ) {
-		$details = $this->get_details( $file );
-
-		$status = $this->format_status( $this->get_status( $file ), 'long' );
-
-		$version = $details[ 'Version' ];
-
-		if ( $this->has_update( $file ) )
-			$version .= ' (%gUpdate available%n)';
-
-		$this->_status_single( $details, $name, $version, $status );
 	}
 
 	function install( $args, $assoc_args ) {
@@ -195,7 +179,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		)
 	);
 
-	private function format_status( $status, $format ) {
+	protected function format_status( $status, $format ) {
 		return $this->get_color( $status ) . $this->map[ $format ][ $status ];
 	}
 
