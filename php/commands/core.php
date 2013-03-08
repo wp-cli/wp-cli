@@ -219,6 +219,8 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	/**
 	 * Update WordPress.
 	 *
+	 * @alias upgrade
+	 *
 	 * @synopsis [<zip>] [--version=<version>] [--force]
 	 */
 	function update( $args, $assoc_args ) {
