@@ -1,0 +1,12 @@
+## OPTIONS
+
+* [<role-key>]:
+
+	Optional. A role to return.
+
+## EXAMPLES
+
+	wp roles list
+
+	wp roles list editor
+

@@ -1,0 +1,16 @@
+## OPTIONS
+
+* <role-key>:
+
+	The internal name of the role, e.g. editor
+
+* <role-name>:
+
+    The publically visible name of the rule, e.g. Editor
+
+## EXAMPLES
+
+    wp roles create approver Approver
+
+	wp roles create productadmin "Product Administrator"
+
