@@ -53,7 +53,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	public function activate( $args = array() ) {
 		$theme = $this->parse_name( $args );
 
-		switch_theme( $theme->get_stylesheet() );
+		switch_theme( $theme->get_template(), $theme->get_stylesheet() );
 
 		$name = $theme->get('Name');
 
