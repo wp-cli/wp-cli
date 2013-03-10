@@ -15,7 +15,7 @@ env:
 before_script:
     # install dependencies
     - curl -sS https://getcomposer.org/installer | php
-    - php composer.phar install --dev --no-interaction
+    - php composer.phar install --dev --no-interaction --prefer-source
     # set up WP install
     - WP_CORE_DIR=/tmp/wp-cli-test-core-download-cache/
     - mkdir -p $WP_CORE_DIR
