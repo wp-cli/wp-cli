@@ -21,6 +21,21 @@ class Role_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Check if a role exists.
+	 * Will return 0 if the role exists, 1 if it does not.
+	 *
+	 * @subcommand exists
+	 * @synopsis <role-key>
+	 */
+	public function _exists( $args ) {
+		global $wp_roles;
+
+		if ( ! in_array($args[0], array_keys( $wp_roles->roles ) ) ) {
+			WP_CLI::error( "Role not found." );
+		}
+	}
+
+	/**
 	 * Create a new role.
 	 *
 	 * @synopsis <role-key> <role-name>
