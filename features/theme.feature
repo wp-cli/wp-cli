@@ -24,12 +24,20 @@ Feature: Manage WordPress themes
       /themes/p2/style.css
       """
 
+    When I run `wp option get stylesheet`
+    Then it should run without errors
+    And save STDOUT as {PREVIOUS_THEME}
+
     When I run `wp theme activate p2`
     Then it should run without errors
     And STDOUT should contain:
       """
       Success: Switched to 'P2' theme.
       """
+
+    When I run `wp theme activate {PREVIOUS_THEME}`
+    Then it should run without errors
+    And STDOUT should not be empty
 
     When I run `wp theme delete p2`
     Then it should run without errors
