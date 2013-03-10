@@ -30,10 +30,9 @@ class Role_Command extends WP_CLI_Command {
 	/**
 	 * Create a new role.
 	 *
-	 * @subcommand create
 	 * @synopsis <role-key> <role-name>
 	 */
-	public function _create( $args ) {
+	public function create( $args ) {
 		self::persistence_check();
 
 		$role_key = array_shift( $args );
@@ -52,10 +51,9 @@ class Role_Command extends WP_CLI_Command {
 	/**
 	 * Delete an existing role
 	 *
-	 * @subcommand delete
 	 * @synopsis <role-key>
 	 */
-	public function _delete( $args ) {
+	public function delete( $args ) {
 
 		global $wp_roles;
 
