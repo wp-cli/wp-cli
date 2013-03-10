@@ -49,7 +49,7 @@ class Role_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete an existing role
+	 * Delete an existing role.
 	 *
 	 * @synopsis <role-key>
 	 */
