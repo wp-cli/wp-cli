@@ -8,21 +8,14 @@
 class Role_Command extends WP_CLI_Command {
 
 	/**
-	 * List one or all roles.
+	 * List all roles.
 	 *
 	 * @subcommand list
-	 * @synopsis [<role-key>]
 	 */
 	public function _list( $args ) {
 		global $wp_roles;
 
-		if ( isset( $args[0] ) )
-			$target_role = $args[0];
-		else
-			$target_role = '';
-
 		foreach ( $wp_roles->roles as $key => $role ) {
-			if ( empty( $target_role ) || $key == $target_role )
 				WP_CLI::line( $role['name'] . " ($key)");
 		}
 	}
