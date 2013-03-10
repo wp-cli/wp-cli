@@ -5,7 +5,7 @@
  *
  * @package wp-cli
  */
-class Roles_Command extends WP_CLI_Command {
+class Role_Command extends WP_CLI_Command {
 
 	/**
 	 * List one or all roles.
@@ -85,4 +85,4 @@ class Roles_Command extends WP_CLI_Command {
 	}
 }
 
-WP_CLI::add_command( 'roles', 'Roles_Command' );
+WP_CLI::add_command( 'role', 'Role_Command' );

@@ -6,7 +6,7 @@
 
 ## EXAMPLES
 
-    wp roles delete approver
+    wp role delete approver
 
-	wp roles create productadmin
+	wp role delete productadmin
 

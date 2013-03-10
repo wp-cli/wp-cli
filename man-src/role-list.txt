@@ -6,7 +6,7 @@
 
 ## EXAMPLES
 
-	wp roles list
+	wp role list
 
-	wp roles list editor
+	wp role list editor
 

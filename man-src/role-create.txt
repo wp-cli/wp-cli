@@ -10,7 +10,7 @@
 
 ## EXAMPLES
 
-    wp roles create approver Approver
+    wp role create approver Approver
 
-	wp roles create productadmin "Product Administrator"
+	wp role create productadmin "Product Administrator"
 
