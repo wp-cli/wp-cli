@@ -6,7 +6,7 @@
 
 * <role-name>:
 
-    The publically visible name of the rule, e.g. Editor
+    The publically visible name of the role, e.g. Editor
 
 ## EXAMPLES
 
