@@ -23,3 +23,6 @@ Feature: Get help about WP-CLI commands
       """
       WP-CORE-DOWNLOAD(1)
       """
+
+    When I run `wp help non-existent-command`
+    Then the return code should be 1
