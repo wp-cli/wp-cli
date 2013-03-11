@@ -62,13 +62,13 @@ Feature: Global flags
   Scenario: Enabling/disabling color
     Given a WP install
 
-    When I run `wp --no-color non-existant-command`
+    When I run `wp --no-color non-existent-command`
     Then STDERR should be:
       """
-      Error: 'non-existant-command' is not a registered wp command. See 'wp help'.
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
       """
 
-    When I run `wp --color non-existant-command`
+    When I run `wp --color non-existent-command`
     Then STDERR should contain:
       """
       [31;1mError:
