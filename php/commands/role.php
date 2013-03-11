@@ -31,7 +31,7 @@ class Role_Command extends WP_CLI_Command {
         global $wp_roles;
 
         if ( ! in_array($args[0], array_keys( $wp_roles->roles ) ) ) {
-            WP_CLI::error( "Role not found." );
+            exit(1);
         }
     }
 
