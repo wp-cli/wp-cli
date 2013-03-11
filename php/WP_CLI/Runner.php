@@ -274,10 +274,6 @@ class Runner {
 				Utils\set_url_params( 'http://example.com' );
 			}
 		}
-
-		// Pretend we're in WP_ADMIN
-		define( 'WP_ADMIN', true );
-		$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
 	}
 
 	private function cmd_starts_with( $prefix ) {
