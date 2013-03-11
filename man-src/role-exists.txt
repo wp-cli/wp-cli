@@ -2,7 +2,7 @@
 
 * <role-key>:
 
-	The internal name of the role, e.g. editor
+    The internal name of the role, e.g. editor
 
 
 ##DESCRIPTION

@@ -7,88 +7,88 @@
  */
 class Role_Command extends WP_CLI_Command {
 
-	/**
-	 * List all roles.
-	 *
-	 * @subcommand list
-	 */
-	public function _list( $args ) {
-		global $wp_roles;
+    /**
+     * List all roles.
+     *
+     * @subcommand list
+     */
+    public function _list( $args ) {
+        global $wp_roles;
 
-		foreach ( $wp_roles->roles as $key => $role ) {
-				WP_CLI::line( $role['name'] . " ($key)");
-		}
-	}
+        foreach ( $wp_roles->roles as $key => $role ) {
+                WP_CLI::line( $role['name'] . " ($key)");
+        }
+    }
 
-	/**
-	 * Check if a role exists.
-	 * Will return 0 if the role exists, 1 if it does not.
-	 *
-	 * @subcommand exists
-	 * @synopsis <role-key>
-	 */
-	public function _exists( $args ) {
-		global $wp_roles;
+    /**
+     * Check if a role exists.
+     * Will return 0 if the role exists, 1 if it does not.
+     *
+     * @subcommand exists
+     * @synopsis <role-key>
+     */
+    public function _exists( $args ) {
+        global $wp_roles;
 
-		if ( ! in_array($args[0], array_keys( $wp_roles->roles ) ) ) {
-			WP_CLI::error( "Role not found." );
-		}
-	}
+        if ( ! in_array($args[0], array_keys( $wp_roles->roles ) ) ) {
+            WP_CLI::error( "Role not found." );
+        }
+    }
 
-	/**
-	 * Create a new role.
-	 *
-	 * @synopsis <role-key> <role-name>
-	 */
-	public function create( $args ) {
-		self::persistence_check();
+    /**
+     * Create a new role.
+     *
+     * @synopsis <role-key> <role-name>
+     */
+    public function create( $args ) {
+        self::persistence_check();
 
-		$role_key = array_shift( $args );
-		$role_name = array_shift( $args );
+        $role_key = array_shift( $args );
+        $role_name = array_shift( $args );
 
-		if ( empty( $role_key ) || empty( $role_name ) )
-			WP_CLI::error( "Can't create role, insufficient information provided.");
+        if ( empty( $role_key ) || empty( $role_name ) )
+            WP_CLI::error( "Can't create role, insufficient information provided.");
 
-		if ( ! add_role( $role_key, $role_name ) )
-			WP_CLI::error( "Role couldn't be created." );
-		else
-			WP_CLI::success( sprintf( "Role with key %s created.", $role_key ) );
+        if ( ! add_role( $role_key, $role_name ) )
+            WP_CLI::error( "Role couldn't be created." );
+        else
+            WP_CLI::success( sprintf( "Role with key %s created.", $role_key ) );
 
-	}
+    }
 
-	/**
-	 * Delete an existing role.
-	 *
-	 * @synopsis <role-key>
-	 */
-	public function delete( $args ) {
+    /**
+     * Delete an existing role.
+     *
+     * @synopsis <role-key>
+     */
+    public function delete( $args ) {
 
-		global $wp_roles;
+        global $wp_roles;
 
-		self::persistence_check();
+        self::persistence_check();
 
-		$role_key = array_shift( $args );
+        $role_key = array_shift( $args );
 
-		if ( empty( $role_key ) || ! isset( $wp_roles->roles[$role_key] ) )
-			WP_CLI::error( "Role key not provided, or is invalid." );
+        if ( empty( $role_key ) || ! isset( $wp_roles->roles[$role_key] ) )
+            WP_CLI::error( "Role key not provided, or is invalid." );
 
-		remove_role( $role_key );
+        remove_role( $role_key );
 
-		// Note: remove_role() doesn't indicate success or otherwise, so we have to
-		// check ourselves
-		if ( ! isset( $wp_roles->roles[$role_key] ) )
-			WP_CLI::success( sprintf( "Role with key %s deleted.", $role_key ) );
-		else
-			WP_CLI::error( sprintf( "Role with key %s could not be deleted.", $role_key ) );
+        // Note: remove_role() doesn't indicate success or otherwise, so we have to
+        // check ourselves
+        if ( ! isset( $wp_roles->roles[$role_key] ) )
+            WP_CLI::success( sprintf( "Role with key %s deleted.", $role_key ) );
+        else
+            WP_CLI::error( sprintf( "Role with key %s could not be deleted.", $role_key ) );
 
-	}
+    }
 
-	private static function persistence_check() {
-		global $wp_roles;
+    private static function persistence_check() {
+        global $wp_roles;
 
-		if ( !$wp_roles->use_db )
-			WP_CLI::error( "Role definitions are not persistent." );
-	}
+        if ( !$wp_roles->use_db )
+            WP_CLI::error( "Role definitions are not persistent." );
+    }
 }
 
 WP_CLI::add_command( 'role', 'Role_Command' );

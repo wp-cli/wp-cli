@@ -2,7 +2,7 @@
 
 * <role-key>:
 
-	The internal name of the role, e.g. editor
+    The internal name of the role, e.g. editor
 
 * <role-name>:
 
@@ -12,5 +12,4 @@
 
     wp role create approver Approver
 
-	wp role create productadmin "Product Administrator"
-
+    wp role create productadmin "Product Administrator"
