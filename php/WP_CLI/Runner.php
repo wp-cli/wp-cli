@@ -139,12 +139,20 @@ class Runner {
 		}
 	}
 
+	private function cmd_starts_with( $prefix ) {
+		return $prefix == array_slice( $this->arguments, 0, count( $prefix  ) );
+	}
+
+	private function _run_command() {
+		WP_CLI::run_command( $this->arguments, $this->assoc_args );
+	}
+
 	/**
 	 * Returns wp-config.php code, skipping the loading of wp-settings.php
 	 *
 	 * @return string
 	 */
-	function get_wp_config_code() {
+	public function get_wp_config_code() {
 		$wp_config_path = Utils\locate_wp_config();
 
 		$replacements = array(
@@ -276,18 +284,14 @@ class Runner {
 		}
 	}
 
-	private function cmd_starts_with( $prefix ) {
-		return $prefix == array_slice( $this->arguments, 0, count( $prefix  ) );
-	}
-
-	function after_wp_config_load() {
+	public function after_wp_config_load() {
 		if ( isset( $this->config['debug'] ) ) {
 			if ( !defined( 'WP_DEBUG' ) )
 				define( 'WP_DEBUG', true );
 		}
 	}
 
-	function after_wp_load() {
+	public function after_wp_load() {
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
 		Utils\set_user( $this->config );
@@ -309,9 +313,5 @@ class Runner {
 		}
 
 		$this->_run_command();
-	}
-
-	private function _run_command() {
-		WP_CLI::run_command( $this->arguments, $this->assoc_args );
 	}
 }
