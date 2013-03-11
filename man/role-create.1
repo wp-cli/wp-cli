@@ -1,0 +1,35 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-ROLE\-CREATE" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-role\-create\fR \- Create a new role\.
+.
+.SH "SYNOPSIS"
+wp role create \fIrole\-key\fR \fIrole\-name\fR
+.
+.SH "OPTIONS"
+.
+.TP
+\fIrole\-key\fR:
+.
+.IP
+The internal name of the role, e\.g\. editor
+.
+.TP
+\fIrole\-name\fR:
+.
+.IP
+The publically visible name of the role, e\.g\. Editor
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp role create approver Approver
+
+wp role create productadmin "Product Administrator"
+.
+.fi
+

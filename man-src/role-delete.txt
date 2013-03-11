@@ -1,0 +1,12 @@
+## OPTIONS
+
+* <role-key>:
+
+    The internal name of the role, e.g. editor
+
+## EXAMPLES
+
+    wp role delete approver
+
+    wp role delete productadmin
+
