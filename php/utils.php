@@ -112,16 +112,6 @@ function create_cmd( $cmd ) {
 	return vsprintf( $cmd, array_map( 'escapeshellarg', $args ) );
 }
 
-function get_command_file( $command ) {
-	$path = WP_CLI_ROOT . "/commands/$command.php";
-
-	if ( !is_readable( $path ) ) {
-		return false;
-	}
-
-	return $path;
-}
-
 /**
  * Sets the appropriate $_SERVER keys based on a given string
  *
