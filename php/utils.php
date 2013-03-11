@@ -316,3 +316,14 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 
 	return $output;
 }
+
+function find_subcommand( $args ) {
+		$command = \WP_CLI::$root;
+
+		while ( !empty( $args ) && $command && $command instanceof Dispatcher\CommandContainer ) {
+			$command = $command->find_subcommand( $args );
+		}
+
+		return $command;
+}
+
