@@ -28,13 +28,17 @@ $steps->Given( '/^a database$/',
 	}
 );
 
-$steps->Given( '/^a WP install$/',
-	function ( $world ) {
+$steps->Given( '/^a WP (install|multisite install)$/',
+	function ( $world, $type ) {
 		$world->create_db();
 		$world->create_empty_dir();
 		$world->download_wordpress_files();
 		$world->create_config();
 		$world->run_install();
+
+		if ( 'multisite install' == $type ) {
+			$world->run_install_network();
+		}
 	}
 );
 
