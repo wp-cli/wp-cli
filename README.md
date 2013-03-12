@@ -26,29 +26,3 @@ Need even more info?
 Read our [wiki](https://github.com/wp-cli/wp-cli/wiki) and find out how to create your own commands with our [commands cookbook](https://github.com/wp-cli/wp-cli/wiki/Commands-Cookbook).
 
 If you want to receive an email for every single commit, you can subscribe to the [wp-cli-commits](https://groups.google.com/forum/?fromgroups=#!forum/wp-cli-commits) mailing list.
-
-Running tests
--------------
-
-There are two types of tests:
-
-* unit tests, implemented using [PHPUnit](http://phpunit.de/)
-* functional tests, implemented using [Behat](http://behat.org)
-
-All the test dependencies can be installed using [composer](http://getcomposer.org/):
-
-    composer.phar install --dev
-
-Before running the tests, you'll need a MySQL user called `wp_cli_test` with the
-password `password1` that has full privileges on the MySQL database `wp_cli_test`.
-Running the following as root in MySQL should do the trick:
-
-    GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"localhost" IDENTIFIED BY "password1";
-
-Finally, to run the unit tests:
-
-    vendor/bin/phpunit
-
-And to run the functional tests:
-
-    vendor/bin/behat
