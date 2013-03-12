@@ -1,13 +1,27 @@
 Contribute
 ==========
 
-So you've got an awesome idea to throw into WP-CLI. Great! Please keep the
-following in mind:
+So you've got an awesome idea to throw into WP-CLI. Great! Please keep the following in mind:
 
 * If you're adding a new command or subcommand, please consider adding a functional test for it in the `features` directory. Also, please create the appropriate `.txt` file in the `man-src` directory.
 * Please follow the [WordPress Coding Standards](http://make.wordpress.org/core/handbook/coding-standards/).
 
-Test Dependencies
+Generating man pages
+--------------------
+
+To generate a man page, WP-CLI looks for `.txt` files in the `man-src` directory. It also gather information from the inline comments and the `@synopsis` annotations.
+
+The compiled man page is placed in the `man` directory.
+
+To (re)generate one or more man pages, you first need to have the [ronn](https://rubygems.org/gems/ronn) ruby gem installed.
+
+Then, you can run one of the following:
+
+* `wp --man` - regenerates all man pages
+* `wp core --man` - regenerates man pages for the `core` command
+* `wp core download --man` - regenerates man page only for the `core download` subcommand
+
+Running the tests
 -----------------
 
 There are two types of tests:
