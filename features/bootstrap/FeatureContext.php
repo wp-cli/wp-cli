@@ -69,6 +69,21 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 		return $this->install_dir . '/' . $file;
 	}
 
+	public function get_cache_path( $file ) {
+		static $path;
+
+		if ( !$path ) {
+			$path = sys_get_temp_dir() . '/wp-cli-test-cache';
+			system( \WP_CLI\Utils\create_cmd( 'mkdir -p %s', $path ) );
+		}
+
+		return $path . '/' . $file;
+	}
+
+	public function download_file( $url, $path ) {
+		system( \WP_CLI\Utils\create_cmd( 'curl -sSL %s > %s', $url, $path ) );
+	}
+
 	private static function run_sql( $sql ) {
 		$dbuser = self::$db_settings['dbuser'];
 		$dbpass = self::$db_settings['dbpass'];

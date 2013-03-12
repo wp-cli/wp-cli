@@ -125,9 +125,19 @@ EOB
 		}
 	}
 
+	protected static function get_command_file( $command ) {
+		$path = WP_CLI_ROOT . "/commands/$command.php";
+
+		if ( !is_readable( $path ) ) {
+			return false;
+		}
+
+		return $path;
+	}
+
 	protected function load_command( $command ) {
 		if ( !isset( $this->subcommands[ $command ] ) ) {
-			if ( $path = \WP_CLI\Utils\get_command_file( $command ) )
+			if ( $path = self::get_command_file( $command ) )
 				include $path;
 		}
 

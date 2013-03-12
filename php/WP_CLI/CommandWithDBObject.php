@@ -13,7 +13,7 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	abstract protected function _update( $params );
 	abstract protected function _delete( $obj_id, $assoc_args );
 
-	public function create( $assoc_args ) {
+	public function create( $args, $assoc_args ) {
 		unset( $assoc_args['ID'] );
 
 		$obj_id = $this->_create( $assoc_args );

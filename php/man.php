@@ -119,3 +119,29 @@ function call_ronn( $markdown, $dest ) {
 	\WP_CLI::line( "generated " . basename( $dest ) );
 }
 
+function show_manpage( $path ) {
+	// man can't read phar://, so need to copy to a temporary file
+	$tmp_path = tempnam( sys_get_temp_dir(), 'wp-cli-man-' );
+
+	copy( $path, $tmp_path );
+
+	\WP_CLI::launch( "man $tmp_path" );
+
+	unlink( $tmp_path );
+}
+
+function maybe_show_manpage( $args ) {
+	$man_file = get_file_name( $args );
+
+	foreach ( \WP_CLI::get_man_dirs() as $dest_dir => $_ ) {
+		$man_path = $dest_dir . $man_file;
+
+		if ( is_readable( $man_path ) ) {
+			show_manpage( $man_path );
+			return true;
+		}
+	}
+
+	return false;
+}
+
