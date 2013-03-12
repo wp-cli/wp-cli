@@ -14,7 +14,7 @@ Feature: Get help about WP-CLI commands
     Then it should run without errors
     And STDOUT should contain:
       """
-      usage:
+      usage: wp core
       """
 
     When I run `wp help core download`
@@ -26,3 +26,16 @@ Feature: Get help about WP-CLI commands
 
     When I run `wp help non-existent-command`
     Then the return code should be 1
+
+  Scenario: Getting help for a third-party command
+    Given a WP install
+    And a google-sitemap-generator-cli plugin zip
+    And I run `wp plugin install --activate {PLUGIN_ZIP}`
+    And I run `wp plugin install --activate google-sitemap-generator`
+
+    When I run `wp help google-sitemap`
+    Then it should run without errors
+    And STDOUT should contain:
+      """
+      usage: wp google-sitemap
+      """
