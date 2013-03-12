@@ -99,8 +99,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 		self::run_sql( "DROP DATABASE IF EXISTS $dbname" );
 	}
 
-	private function _run( $command ) {
-		$wp_cli_path = getcwd() . "/bin/wp";
+	private function _run( $command, $assoc_args ) {
+		if ( !empty( $assoc_args ) )
+			$command .= \WP_CLI\Utils\assoc_args_to_str( $assoc_args );
 
 		if ( false === strpos( $command, '--path' ) ) {
 			$command = \WP_CLI\Utils\assoc_args_to_str( array(
@@ -108,7 +109,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 			) ) . ' ' . $command;
 		}
 
-		$sh_command = "$wp_cli_path $command";
+		$sh_command = getcwd() . "/bin/wp $command";
 
 		$process = proc_open( $sh_command, array(
 			0 => STDIN,
@@ -127,7 +128,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 		return (object) compact( 'command', 'return_code', 'STDOUT', 'STDERR' );
 	}
 
-	public function run( $command ) {
+	public function run( $command, $assoc_args = array() ) {
 		switch ( $command ) {
 		case 'core install':
 			return $this->run_install();
@@ -138,12 +139,12 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 			break;
 
 		default:
-			return $this->_run( $command );
+			return $this->_run( $command, $assoc_args );
 		}
 	}
 
 	public function create_config() {
-		return $this->run( 'core config' . \WP_CLI\Utils\assoc_args_to_str( self::$db_settings ) );
+		return $this->_run( 'core config', self::$db_settings );
 	}
 
 	public function define_custom_wp_content_dir() {
@@ -178,18 +179,18 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 	}
 
 	public function run_install() {
-		return $this->run( 'core install' . \WP_CLI\Utils\assoc_args_to_str( array(
+		return $this->_run( 'core install', array(
 			'url' => 'http://example.com',
 			'title' => 'WP CLI Site',
 			'admin_email' => 'admin@example.com',
 			'admin_password' => 'password1'
-		) ) );
+		) );
 	}
 
 	public function run_install_network() {
-		return $this->run( 'core install-network' . \WP_CLI\Utils\assoc_args_to_str( array(
+		return $this->_run( 'core install-network', array(
 			'title' => 'WP CLI Network'
-		) ) );
+		) );
 	}
 
 	public function download_wordpress_files() {
@@ -197,9 +198,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 		// Ideally, we'd cache at the HTTP layer for more reliable tests
 		$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
 
-		$r = $this->run( 'core download' . \WP_CLI\Utils\assoc_args_to_str( array(
+		$r = $this->_run( 'core download', array(
 			'path' => $cache_dir
-		) ) );
+		) );
 
 		exec( sprintf( "cp -r '%s/'* '%s/'", $cache_dir, $this->install_dir ) );
 	}
