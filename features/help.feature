@@ -31,7 +31,9 @@ Feature: Get help about WP-CLI commands
     Given a WP install
     And a google-sitemap-generator-cli plugin zip
     And I run `wp plugin install --activate {PLUGIN_ZIP}`
+    And it should run without errors
     And I run `wp plugin install --activate google-sitemap-generator`
+    And it should run without errors
 
     When I run `wp help google-sitemap`
     Then it should run without errors
