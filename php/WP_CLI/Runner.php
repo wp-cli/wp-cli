@@ -140,7 +140,7 @@ class Runner {
 	}
 
 	private function cmd_starts_with( $prefix ) {
-		return $prefix == array_slice( $this->arguments, 0, count( $prefix  ) );
+		return $prefix == array_slice( $this->arguments, 0, count( $prefix ) );
 	}
 
 	private function _run_command() {
@@ -175,6 +175,20 @@ class Runner {
 		}
 
 		return preg_replace( '|^\s*\<\?php\s*|', '', implode( "\n", $lines_to_run ) );
+	}
+
+	private static function show_help_early( $args ) {
+		if ( \WP_CLI\Man\maybe_show_manpage( $args ) )
+			return true;
+
+		$command = WP_CLI\Utils\find_subcommand( $args );
+
+		if ( $command ) {
+			$command->show_usage();
+			return true;
+		}
+
+		return false;
 	}
 
 	public function before_wp_load() {
@@ -237,6 +251,13 @@ class Runner {
 		}
 
 		$_SERVER['DOCUMENT_ROOT'] = getcwd();
+
+		// First try at showing man page
+		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
+			if ( self::show_help_early( array_slice( $this->arguments, 1 ) ) ) {
+				exit;
+			}
+		}
 
 		// Handle --path
 		self::set_wp_root( $this->config );

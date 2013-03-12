@@ -44,19 +44,25 @@ $steps->Given( '/^custom wp-content directory$/',
 	}
 );
 
-$steps->Given('/^a P2 theme zip$/',
+$steps->Given( '/^a P2 theme zip$/',
 	function ( $world ) {
 		$zip_name = 'p2.1.0.1.zip';
 
-		$cache_dir = sys_get_temp_dir() . '/wp-cli-test-cache';
-		$world->variables['THEME_ZIP'] = $cache_dir . '/' . $zip_name;
+		$world->variables['THEME_ZIP'] = $world->get_cache_path( $zip_name );
 
 		$zip_url = 'http://wordpress.org/extend/themes/download/' . $zip_name;
 
-		system( \WP_CLI\Utils\create_cmd( 'mkdir -p %s', $cache_dir ) );
+		$world->download_file( $zip_url, $world->variables['THEME_ZIP'] );
+	}
+);
 
-		system( \WP_CLI\Utils\create_cmd( 'curl -s %s > %s', $zip_url,
-			$world->variables['THEME_ZIP'] ) );
+$steps->Given( '/^a google-sitemap-generator-cli plugin zip$/',
+	function ( $world ) {
+		$zip_url = 'https://github.com/wp-cli/google-sitemap-generator-cli/archive/master.zip';
+
+		$world->variables['PLUGIN_ZIP'] = $world->get_cache_path( 'google-sitemap-generator-cli.zip' );
+
+		$world->download_file( $zip_url, $world->variables['PLUGIN_ZIP'] );
 	}
 );
 
