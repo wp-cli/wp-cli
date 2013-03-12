@@ -9,7 +9,7 @@ So you've got an awesome idea to throw into WP-CLI. Great! Please keep the follo
 Generating man pages
 --------------------
 
-To generate a man page, WP-CLI looks for `.txt` files in the `man-src` directory. It also gather information from the inline comments and the `@synopsis` annotations.
+To generate a man page, WP-CLI looks for `.txt` files in the `man-src` directory. It also gathers information from the inline comments and the `@synopsis` annotations.
 
 The compiled man page is placed in the `man` directory.
 
