@@ -180,14 +180,24 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 	}
 
 	public function run_install() {
-		$cmd = 'core install' . \WP_CLI\Utils\assoc_args_to_str( array(
+		$install_r = $this->run( 'core install' . \WP_CLI\Utils\assoc_args_to_str( array(
 			'url' => 'http://example.com',
-			'title' => 'WP CLI Tests',
+			'title' => 'WP CLI Site',
 			'admin_email' => 'admin@example.com',
 			'admin_password' => 'password1'
-		) );
+		) ) );
 
-		return $this->run( $cmd );
+		if ( 0 !== $install_r->return_code ) {
+			return $install_r;
+		}
+
+		if ( getenv( 'WP_MULTISITE' ) === '1' ) {
+			$install_r = $this->run( 'core install-network' . \WP_CLI\Utils\assoc_args_to_str( array(
+				'title' => 'WP CLI Network'
+			) ) );
+		}
+
+		return $install_r;
 	}
 
 	public function download_wordpress_files() {
