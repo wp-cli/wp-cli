@@ -9,7 +9,7 @@ Feature: Manage a WordPress multisite installation
     When I run the previous command again
     Then the return code should be 1
 
-  Scenario: Create some blogs
+  Scenario: Delete a blog by id
     Given a WP multisite install
 
     When I run `wp blog create --slug=first --porcelain`
@@ -19,10 +19,21 @@ Feature: Manage a WordPress multisite installation
 
     When I run `wp blog delete {BLOG_ID} --yes`
     Then it should run without errors
-    And STDOUT should contain:
-      """
-      Blog {BLOG_ID} deleted.
-      """
+    And STDOUT should not be empty
+
+    When I run the previous command again
+    Then the return code should be 1
+
+  Scenario: Delete a blog by slug
+    Given a WP multisite install
+
+    When I run `wp blog create --slug=first`
+    Then it should run without errors
+    And STDOUT should not be empty
+
+    When I run `wp blog delete --slug=first --yes`
+    Then it should run without errors
+    And STDOUT should not be empty
 
     When I run the previous command again
     Then the return code should be 1

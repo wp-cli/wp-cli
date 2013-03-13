@@ -148,9 +148,9 @@ class Blog_Command extends WP_CLI_Command {
 
 		WP_CLI::confirm( "Are you sure you want to delete the $blog->siteurl blog?", $assoc_args );
 
-		wpmu_delete_blog( $blog_id, !isset( $assoc_args['keep-tables'] ) );
+		wpmu_delete_blog( $blog->blog_id, !isset( $assoc_args['keep-tables'] ) );
 
-		WP_CLI::success( "Blog $blog_id deleted." );
+		WP_CLI::success( "The blog at $blog->siteurl was deleted." );
 	}
 }
 
