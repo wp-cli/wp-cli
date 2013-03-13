@@ -18,7 +18,7 @@ $steps->Given( '/^WP files$/',
 
 $steps->Given( '/^wp-config\.php$/',
 	function ( $world ) {
-		$world->create_config();
+		$world->run( 'core config' );
 	}
 );
 
@@ -33,11 +33,11 @@ $steps->Given( '/^a WP (install|multisite install)$/',
 		$world->create_db();
 		$world->create_empty_dir();
 		$world->download_wordpress_files();
-		$world->create_config();
-		$world->run_install();
+		$world->run( 'core config' );
+		$world->run( 'core install' );
 
 		if ( 'multisite install' == $type ) {
-			$world->run_install_network();
+			$world->run( 'core install-network' );
 		}
 	}
 );

@@ -20,6 +20,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 	);
 
 	private $install_dir;
+	private $additional_args;
 
 	public $variables = array();
 
@@ -32,6 +33,21 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 	public function __construct( array $parameters )
 	{
 		$this->drop_db();
+
+		$this->additional_args = array(
+			'core config' => self::$db_settings,
+
+			'core install' => array(
+				'url' => 'http://example.com',
+				'title' => 'WP CLI Site',
+				'admin_email' => 'admin@example.com',
+				'admin_password' => 'password1'
+			),
+
+			'core install-network', array(
+				'title' => 'WP CLI Network'
+			)
+		);
 	}
 
 	public function getStepDefinitionResources()
@@ -129,22 +145,12 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 	}
 
 	public function run( $command, $assoc_args = array() ) {
-		switch ( $command ) {
-		case 'core install':
-			return $this->run_install();
-			break;
-
-		case 'core config':
-			return $this->create_config();
-			break;
-
-		default:
-			return $this->_run( $command, $assoc_args );
+		if ( isset( $this->additional_args[ $command ] ) ) {
+			$assoc_args = array_merge( $this->additional_args[ $command ],
+				$assoc_args );
 		}
-	}
 
-	public function create_config() {
-		return $this->_run( 'core config', self::$db_settings );
+		return $this->_run( $command, $assoc_args );
 	}
 
 	public function define_custom_wp_content_dir() {
@@ -176,21 +182,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 		$token = "/* That's all, stop editing!";
 
 		$wp_config_code = str_replace( $token, "$line\n\n$token", $wp_config_code );
-	}
-
-	public function run_install() {
-		return $this->_run( 'core install', array(
-			'url' => 'http://example.com',
-			'title' => 'WP CLI Site',
-			'admin_email' => 'admin@example.com',
-			'admin_password' => 'password1'
-		) );
-	}
-
-	public function run_install_network() {
-		return $this->_run( 'core install-network', array(
-			'title' => 'WP CLI Network'
-		) );
 	}
 
 	public function download_wordpress_files() {
