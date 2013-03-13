@@ -11,13 +11,32 @@ class Role_Command extends WP_CLI_Command {
 	 * List all roles.
 	 *
 	 * @subcommand list
+	 * @synopsis [--format=<format>]
 	 */
-	public function _list( $args ) {
+	public function _list( $args, $assoc_args ) {
 		global $wp_roles;
 
+		$defaults = array(
+			'format'    => 'table',
+		);
+		$params = array_merge( $defaults, $assoc_args );
+
+		$fields = array(
+				'name',
+				'role',
+			);
+
+		$output_roles = array();
 		foreach ( $wp_roles->roles as $key => $role ) {
-				WP_CLI::line( $role['name'] . " ($key)");
+			$output_role = new stdClass;
+
+			$output_role->name = $role['name'];
+			$output_role->role = $key;
+
+			$output_roles[] = $output_role;
 		}
+
+		WP_CLI\Utils\format_items( $params['format'], $fields, $output_roles );
 	}
 
 	/**
