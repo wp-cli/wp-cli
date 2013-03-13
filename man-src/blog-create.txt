@@ -19,3 +19,7 @@
 * `--private`:
 
 	If set, the new blog will be non-public (not indexed)
+
+* `--porcelain`:
+
+	If set, only the blog id will be output on success.
