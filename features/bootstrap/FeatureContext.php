@@ -193,7 +193,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 			'path' => $cache_dir
 		) );
 
-		exec( sprintf( "cp -r '%s/'* '%s/'", $cache_dir, $this->install_dir ) );
+		system( \WP_CLI\Utils\create_cmd( "cp -r %s/* %s/", $cache_dir, $this->install_dir ) );
 	}
 }
 
