@@ -117,35 +117,40 @@ class Blog_Command extends WP_CLI_Command {
 		else {
 			WP_CLI::error( $id->get_error_message() );
 		}
-		WP_CLI::success( "Blog $id created: $url" );
+
+		if ( isset( $assoc_args['porcelain'] ) )
+			WP_CLI::line( $id );
+		else
+			WP_CLI::success( "Blog $id created: $url" );
 	}
 
 	/**
 	 * Delete a blog in a multisite install.
 	 *
-	 * @synopsis --slug=<slug> [--yes] [--keep-tables]
+	 * @synopsis [<blog-id>] [--slug=<slug>] [--yes] [--keep-tables]
 	 */
-	function delete( $_, $assoc_args ) {
-		$slug = '/' . trim( $assoc_args['slug'], '/' ) . '/';
+	function delete( $args, $assoc_args ) {
+		if ( isset( $assoc_args['slug'] ) ) {
+			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
+		} else {
+			if ( empty( $args ) ) {
+				WP_CLI::error( "Need to specify a blog id." );
+			}
 
-		$blog_id = self::get_blog_id_by_slug( $slug );
+			$blog_id = $args[0];
 
-		if ( !$blog_id )
-			WP_CLI::error( sprintf( "'%s' blog not found.", $slug ) );
+			$blog = get_blog_details( $blog_id );
+		}
 
-		WP_CLI::confirm( "Are you sure you want to delete the '$slug' blog?", $assoc_args );
+		if ( !$blog ) {
+			WP_CLI::error( "Blog not found." );
+		}
+
+		WP_CLI::confirm( "Are you sure you want to delete the $blog->siteurl blog?", $assoc_args );
 
 		wpmu_delete_blog( $blog_id, !isset( $assoc_args['keep-tables'] ) );
 
-		WP_CLI::success( "Blog '$slug' deleted." );
-	}
-
-	protected static function get_blog_id_by_slug( $slug ) {
-		global $wpdb, $current_site;
-
-		return $wpdb->get_var( $wpdb->prepare( "
-			SELECT blog_id FROM $wpdb->blogs WHERE domain = %s AND path = %s"
-		, $current_site->domain, $slug ) );
+		WP_CLI::success( "Blog 3 deleted." );
 	}
 }
 
