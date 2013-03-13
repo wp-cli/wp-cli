@@ -7,9 +7,15 @@
 \fBwp\-blog\-delete\fR \- Delete a blog in a multisite install\.
 .
 .SH "SYNOPSIS"
-wp blog delete \-\-slug=\fIslug\fR [\-\-yes] [\-\-keep\-tables]
+wp blog delete [\fIblog\-id\fR] [\-\-slug=\fIslug\fR] [\-\-yes] [\-\-keep\-tables]
 .
 .SH "OPTIONS"
+.
+.TP
+\fB<blog\-id>\fR:
+.
+.IP
+The id of the blog to delete\. If not provided, you must set the \-\-slug parameter\.
 .
 .TP
 \fB\-\-slug\fR=\fIslug\fR:

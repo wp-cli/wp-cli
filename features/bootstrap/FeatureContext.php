@@ -44,7 +44,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 				'admin_password' => 'password1'
 			),
 
-			'core install-network', array(
+			'core install-network' => array(
 				'title' => 'WP CLI Network'
 			)
 		);
