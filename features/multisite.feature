@@ -19,6 +19,10 @@ Feature: Manage a WordPress multisite installation
 
     When I run `wp blog delete {BLOG_ID} --yes`
     Then it should run without errors
+    And STDOUT should contain:
+      """
+      Blog {BLOG_ID} deleted.
+      """
 
     When I run the previous command again
     Then the return code should be 1

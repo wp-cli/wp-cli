@@ -150,7 +150,7 @@ class Blog_Command extends WP_CLI_Command {
 
 		wpmu_delete_blog( $blog_id, !isset( $assoc_args['keep-tables'] ) );
 
-		WP_CLI::success( "Blog 3 deleted." );
+		WP_CLI::success( "Blog $blog_id deleted." );
 	}
 }
 
