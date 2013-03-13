@@ -8,6 +8,11 @@ env:
     - WP_VERSION=latest
     - WP_VERSION=3.4.2
 
+matrix:
+  exclude:
+    - php: 5.4
+      env: WP_VERSION=3.4.2
+
 before_script:
     # install dependencies
     - composer install --dev --no-interaction --prefer-source
