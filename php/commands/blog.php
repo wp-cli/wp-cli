@@ -28,7 +28,7 @@ class Blog_Command extends WP_CLI_Command {
 	/**
 	 * Create a blog in a multisite install.
 	 *
-	 * @synopsis --slug=<slug> [--title=<title>] [--email=<email>] [--site_id=<site-id>] [--private]
+	 * @synopsis --slug=<slug> [--title=<title>] [--email=<email>] [--site_id=<site-id>] [--private] [--porcelain]
 	 */
 	public function create( $_, $assoc_args ) {
 		global $wpdb;

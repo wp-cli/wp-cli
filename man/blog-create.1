@@ -7,7 +7,7 @@
 \fBwp\-blog\-create\fR \- Create a blog in a multisite install\.
 .
 .SH "SYNOPSIS"
-wp blog create \-\-slug=\fIslug\fR [\-\-title=\fItitle\fR] [\-\-email=\fIemail\fR] [\-\-site_id=\fIsite\-id\fR] [\-\-private]
+wp blog create \-\-slug=\fIslug\fR [\-\-title=\fItitle\fR] [\-\-email=\fIemail\fR] [\-\-site_id=\fIsite\-id\fR] [\-\-private] [\-\-porcelain]
 .
 .SH "OPTIONS"
 .
@@ -40,4 +40,10 @@ Site (network) to associate new blog with\. Defaults to current site (typically 
 .
 .IP
 If set, the new blog will be non\-public (not indexed)
+.
+.TP
+\fB\-\-porcelain\fR:
+.
+.IP
+If set, only the blog id will be output on success\.
 
