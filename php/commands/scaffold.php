@@ -221,7 +221,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 
 		foreach ( $to_copy as $file => $dir ) {
-			$wp_filesystem->copy( $this->get_template_path( $file ), "$dir/$file" );
+			$wp_filesystem->copy( $this->get_template_path( $file ), "$dir/$file", true );
 		}
 
 		WP_CLI::success( "Created test files in $plugin_dir" );

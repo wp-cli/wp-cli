@@ -5,6 +5,10 @@ Feature: Manage WordPress installation
     When I run `wp core is-installed`
     Then the return code should be 1
 
+    When I run `wp core download --quiet`
+    Then it should run without errors
+    And the wp-settings.php file should exist
+
   Scenario: No wp-config.php
     Given an empty directory
     And WP files
@@ -55,20 +59,18 @@ Feature: Manage WordPress installation
     When I run `wp core install`
     Then the return code should be 0
 
-    When I run `wp post list --ids`
-    Then STDOUT should be:
-      """
-      1
-      """
+    When I run `wp core version`
+    Then it should run without errors
+    And STDOUT should not be empty
 
   Scenario: Full install
-    Given WP install
+    Given a WP install
 
     When I run `wp core is-installed`
     Then it should run without errors
 
   Scenario: Custom wp-content directory
-    Given WP install
+    Given a WP install
     And custom wp-content directory
 
     When I run `wp plugin status hello`

@@ -26,8 +26,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 			$assoc_args['post_content'] = file_get_contents( $readfile );
 		}
-		if ( isset( $assoc_args['edit'] ) ) {
 
+		if ( isset( $assoc_args['edit'] ) ) {
 			$input = ( isset( $assoc_args['post_content'] ) ) ?
 				$assoc_args['post_content'] : '';
 
@@ -35,9 +35,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				$assoc_args['post_content'] = $output;
 			else
 				$assoc_args['post_content'] = $input;
-
 		}
-		parent::create( $assoc_args );
+
+		parent::create( $args, $assoc_args );
 	}
 
 	protected function _create( $params ) {

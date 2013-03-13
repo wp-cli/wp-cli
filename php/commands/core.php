@@ -16,10 +16,10 @@ class Core_Command extends WP_CLI_Command {
 		if ( !isset( $assoc_args['force'] ) && is_readable( ABSPATH . 'wp-load.php' ) )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
-		if ( isset( $assoc_args['path'] ) )
-			$docroot = $assoc_args['path'];
-		else
-			$docroot = './';
+		if ( !is_dir( ABSPATH ) ) {
+			WP_CLI::line( sprintf( 'Creating directory %s', ABSPATH ) );
+			WP_CLI::launch( 'mkdir -p ' . escapeshellarg( ABSPATH ) );
+		}
 
 		if ( isset( $assoc_args['locale'] ) ) {
 			exec( 'curl -s ' . escapeshellarg( 'https://api.wordpress.org/core/version-check/1.5/?locale=' . $assoc_args['locale'] ), $lines, $r );
@@ -37,7 +37,7 @@ class Core_Command extends WP_CLI_Command {
 		$silent = WP_CLI::get_config('quiet') ? ' --silent ' : ' ';
 
 		WP_CLI::launch( 'curl -f' . $silent . escapeshellarg( $download_url ) . ' | tar xz' );
-		WP_CLI::launch( 'cp -r wordpress/* . && rm -rf wordpress' );
+		WP_CLI::launch( sprintf( 'cp -r wordpress/* %s && rm -rf wordpress', escapeshellarg( ABSPATH ) ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
@@ -45,12 +45,12 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Set up a wp-config.php file.
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> --dbpass=<password> [--dbhost=<host>] [--dbprefix=<prefix>]
+	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>]
 	 */
 	public function config( $args, $assoc_args ) {
 		$_POST['dbname'] = $assoc_args['dbname'];
 		$_POST['uname'] = $assoc_args['dbuser'];
-		$_POST['pwd'] = $assoc_args['dbpass'];
+		$_POST['pwd'] = isset( $assoc_args['dbpass'] ) ? $assoc_args['dbpass'] : '';
 		$_POST['dbhost'] = isset( $assoc_args['dbhost'] ) ? $assoc_args['dbhost'] : 'localhost';
 		$_POST['prefix'] = isset( $assoc_args['dbprefix'] ) ? $assoc_args['dbprefix'] : 'wp_';
 
@@ -133,8 +133,12 @@ class Core_Command extends WP_CLI_Command {
 
 		$result = populate_network( 1, $hostname, get_option( 'admin_email' ), $assoc_args['title'], $base, $subdomain_install );
 
-		if ( is_wp_error( $result ) )
-			WP_CLI::error( $result );
+		if ( is_wp_error( $result ) ) {
+			if ( $result->get_error_codes() === array( 'no_wildcard_dns' ) )
+				WP_CLI::warning( __( 'Wildcard DNS may not be configured correctly.' ) );
+			else
+				WP_CLI::error( $result );
+		}
 
 		ob_start();
 ?>
@@ -214,6 +218,8 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 	/**
 	 * Update WordPress.
+	 *
+	 * @alias upgrade
 	 *
 	 * @synopsis [<zip>] [--version=<version>] [--force]
 	 */

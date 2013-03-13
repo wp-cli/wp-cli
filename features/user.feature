@@ -1,7 +1,7 @@
 Feature: Manage WordPress users
 
   Scenario: Creating/updating/deleting users
-    Given WP install
+    Given a WP install
 
     When I run `wp user create testuser testuser@example.com --porcelain`
     Then it should run without errors
@@ -22,7 +22,7 @@ Feature: Manage WordPress users
     Then it should run without errors
 
   Scenario: Generating users
-    Given WP install
+    Given a WP install
 
     # Delete all users
     When I run `wp user list --ids`

@@ -1,0 +1,30 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-ROLE\-EXISTS" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-role\-exists\fR \- Check if a role exists\.
+.
+.SH "SYNOPSIS"
+wp role exists \fIrole\-key\fR
+.
+.SH "OPTIONS"
+.
+.TP
+\fIrole\-key\fR:
+.
+.IP
+The internal name of the role, e\.g\. editor
+.
+.SH "DESCRIPTION"
+Will exit with status 0 if the role exists, 1 if it does not\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp role exists editor
+.
+.fi
+

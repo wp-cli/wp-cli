@@ -1,0 +1,9 @@
+## OPTIONS
+
+* `--format`=<format>:
+
+	Output list as table, CSV or JSON. Defaults to table.
+
+## EXAMPLES
+
+    wp role list

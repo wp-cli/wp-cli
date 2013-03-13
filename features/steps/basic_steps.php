@@ -18,7 +18,7 @@ $steps->Given( '/^WP files$/',
 
 $steps->Given( '/^wp-config\.php$/',
 	function ( $world ) {
-		$world->create_config();
+		$world->run( 'core config' );
 	}
 );
 
@@ -28,13 +28,17 @@ $steps->Given( '/^a database$/',
 	}
 );
 
-$steps->Given( '/^WP install$/',
-	function ( $world ) {
+$steps->Given( '/^a WP (install|multisite install)$/',
+	function ( $world, $type ) {
 		$world->create_db();
 		$world->create_empty_dir();
 		$world->download_wordpress_files();
-		$world->create_config();
-		$world->run_install();
+		$world->run( 'core config' );
+		$world->run( 'core install' );
+
+		if ( 'multisite install' == $type ) {
+			$world->run( 'core install-network' );
+		}
 	}
 );
 
@@ -44,15 +48,37 @@ $steps->Given( '/^custom wp-content directory$/',
 	}
 );
 
-$steps->When( '/^I run `(.+)`$/',
+$steps->Given( '/^a P2 theme zip$/',
+	function ( $world ) {
+		$zip_name = 'p2.1.0.1.zip';
+
+		$world->variables['THEME_ZIP'] = $world->get_cache_path( $zip_name );
+
+		$zip_url = 'http://wordpress.org/extend/themes/download/' . $zip_name;
+
+		$world->download_file( $zip_url, $world->variables['THEME_ZIP'] );
+	}
+);
+
+$steps->Given( '/^a google-sitemap-generator-cli plugin zip$/',
+	function ( $world ) {
+		$zip_url = 'https://github.com/wp-cli/google-sitemap-generator-cli/archive/master.zip';
+
+		$world->variables['PLUGIN_ZIP'] = $world->get_cache_path( 'google-sitemap-generator-cli.zip' );
+
+		$world->download_file( $zip_url, $world->variables['PLUGIN_ZIP'] );
+	}
+);
+
+$steps->When( '/^I run `wp`$/',
+	function ( $world ) {
+		$world->result = $world->run( '' );
+	}
+);
+
+$steps->When( '/^I run `wp (.+)`$/',
 	function ( $world, $cmd ) {
-		if ( 0 === strpos( $cmd, 'wp' ) ) {
-			$cmd = ltrim( substr( $cmd, 2 ) );
-		}
-
-		$world->replace_variables( $cmd );
-
-		$world->result = $world->run( $cmd );
+		$world->result = $world->run( $world->replace_variables( $cmd ) );
 	}
 );
 
@@ -87,22 +113,32 @@ $steps->Then( '/^it should run without errors$/',
 	}
 );
 
-$steps->Then( '/^(STDOUT|STDERR) should be:$/',
-	function ( $world, $stream, PyStringNode $output ) {
-		$world->replace_variables( $output );
+$steps->Then( '/^(STDOUT|STDERR) should (be|contain|not contain):$/',
+	function ( $world, $stream, $action, PyStringNode $expected ) {
+		$output = $world->result->$stream;
 
-		$result = rtrim( $world->result->$stream, "\n" );
+		$expected = $world->replace_variables( (string) $expected );
 
-		if ( (string) $output != $result ) {
-			throw new \Exception( $world->result->$stream );
+		switch ( $action ) {
+
+		case 'be':
+			$r = $expected === rtrim( $output, "\n" );
+			break;
+
+		case 'contain':
+			$r = false !== strpos( $output, $expected );
+			break;
+
+		case 'not contain':
+			$r = false === strpos( $output, $expected );
+			break;
+
+		default:
+			throw new PendingException();
 		}
-	}
-);
 
-$steps->Then( '/^(STDOUT|STDERR) should contain:$/',
-	function ( $world, $stream, PyStringNode $output ) {
-		if ( false === strpos( $world->result->$stream, (string) $output ) ) {
-			throw new \Exception( $world->result->$stream );
+		if ( !$r ) {
+			throw new \Exception( $output );
 		}
 	}
 );

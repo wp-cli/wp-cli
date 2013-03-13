@@ -1,7 +1,7 @@
 Feature: Global flags
 
   Scenario: Quiet run
-    Given WP install
+    Given a WP install
 
     When I run `wp`
     Then it should run without errors
@@ -19,7 +19,7 @@ Feature: Global flags
       """
 
   Scenario: Debug run
-    Given WP install
+    Given a WP install
 
     When I run `wp eval 'echo CONST_WITHOUT_QUOTES;'`
     Then it should run without errors
@@ -36,7 +36,7 @@ Feature: Global flags
       """
 
   Scenario: Setting the WP user
-    Given WP install
+    Given a WP install
 
     When I run `wp eval 'echo (int) is_user_logged_in();'`
     Then it should run without errors
@@ -60,15 +60,15 @@ Feature: Global flags
       """
 
   Scenario: Enabling/disabling color
-    Given WP install
+    Given a WP install
 
-    When I run `wp --no-color non-existant-command`
+    When I run `wp --no-color non-existent-command`
     Then STDERR should be:
       """
-      Error: 'non-existant-command' is not a registered wp command. See 'wp help'.
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
       """
 
-    When I run `wp --color non-existant-command`
+    When I run `wp --color non-existent-command`
     Then STDERR should contain:
       """
       [31;1mError:

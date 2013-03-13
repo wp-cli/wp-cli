@@ -47,7 +47,7 @@ class Capabilities_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add capabilities to a given role.
+	 * Remove capabilities from a given role.
 	 *
 	 * @synopsis <role> <cap>...
 	 */

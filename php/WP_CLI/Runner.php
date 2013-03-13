@@ -82,11 +82,20 @@ class Runner {
 	}
 
 	private static function set_wp_root( $config ) {
+		$path = getcwd();
+
 		if ( !empty( $config['path'] ) ) {
-			define( 'ABSPATH', rtrim( $config['path'], '/' ) . '/' );
-		} else {
-			define( 'ABSPATH', getcwd() . '/' );
+			if ( self::is_absolute_path( $config['path'] ) )
+				$path = $config['path'];
+			else
+				$path .= '/' . $config['path'];
 		}
+
+		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+	}
+
+	private static function is_absolute_path( $path ) {
+		return $path[0] === '/';
 	}
 
 	private static function set_url( $assoc_args ) {
@@ -130,12 +139,20 @@ class Runner {
 		}
 	}
 
+	private function cmd_starts_with( $prefix ) {
+		return $prefix == array_slice( $this->arguments, 0, count( $prefix ) );
+	}
+
+	private function _run_command() {
+		WP_CLI::run_command( $this->arguments, $this->assoc_args );
+	}
+
 	/**
 	 * Returns wp-config.php code, skipping the loading of wp-settings.php
 	 *
 	 * @return string
 	 */
-	function get_wp_config_code() {
+	public function get_wp_config_code() {
 		$wp_config_path = Utils\locate_wp_config();
 
 		$replacements = array(
@@ -158,6 +175,20 @@ class Runner {
 		}
 
 		return preg_replace( '|^\s*\<\?php\s*|', '', implode( "\n", $lines_to_run ) );
+	}
+
+	private static function show_help_early( $args ) {
+		if ( \WP_CLI\Man\maybe_show_manpage( $args ) )
+			return true;
+
+		$command = WP_CLI\Utils\find_subcommand( $args );
+
+		if ( $command ) {
+			$command->show_usage();
+			return true;
+		}
+
+		return false;
 	}
 
 	public function before_wp_load() {
@@ -221,6 +252,13 @@ class Runner {
 
 		$_SERVER['DOCUMENT_ROOT'] = getcwd();
 
+		// First try at showing man page
+		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
+			if ( self::show_help_early( array_slice( $this->arguments, 1 ) ) ) {
+				exit;
+			}
+		}
+
 		// Handle --path
 		self::set_wp_root( $this->config );
 
@@ -265,24 +303,16 @@ class Runner {
 				Utils\set_url_params( 'http://example.com' );
 			}
 		}
-
-		// Pretend we're in WP_ADMIN
-		define( 'WP_ADMIN', true );
-		$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
 	}
 
-	private function cmd_starts_with( $prefix ) {
-		return $prefix == array_slice( $this->arguments, 0, count( $prefix  ) );
-	}
-
-	function after_wp_config_load() {
+	public function after_wp_config_load() {
 		if ( isset( $this->config['debug'] ) ) {
 			if ( !defined( 'WP_DEBUG' ) )
 				define( 'WP_DEBUG', true );
 		}
 	}
 
-	function after_wp_load() {
+	public function after_wp_load() {
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
 		Utils\set_user( $this->config );
@@ -304,9 +334,5 @@ class Runner {
 		}
 
 		$this->_run_command();
-	}
-
-	private function _run_command() {
-		WP_CLI::run_command( $this->arguments, $this->assoc_args );
 	}
 }
