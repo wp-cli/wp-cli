@@ -65,46 +65,7 @@ class Media_Command extends WP_CLI_Command {
 
         WP_CLI::line( sprintf( 'Start processing of "%1$s" (ID %2$d).', get_the_title( $image->ID ), $image->ID ) );
 
-        $a_path = explode( DIRECTORY_SEPARATOR, $fullsizepath );
-        $a_file = explode( '.', $a_path[ count( $a_path ) - 1 ] );
-
-        unset( $a_path );
-        unset( $a_file[ count( $a_file ) - 1 ] );
-
-        $image_name = $a_file[ count( $a_file ) - 1 ] . '-';
-        $dir_path   = wp_upload_dir();
-
-        // Read and delete files
-        $dir   = opendir( $dir_path['basedir'] );
-        $files = array();
-
-        while ( $file = readdir( $dir ) ) {
-
-            if ( !( strrpos( $file, $image_name ) === false ) ) {
-
-                $thumbnail  = explode( $image_name, $file );
-                $filename   = $thumbnail[ 1 ];
-
-                //If we got the original / full image
-                if ( "" == $thumbnail[ 0 ] ) {
-                    $filetype       = wp_check_filetype($file);
-                    $thumbnail_ext  = ".{$filetype['ext']}";
-                    $thumbnail_name = basename( $filename, $thumbnail_ext );
-
-                    $sizes          = explode( 'x', $thumbnail_name );
-
-                    // If not cropped by WP
-                    if ( 2 == count( $sizes ) ) {
-                        $width  = $sizes[0];
-                        $height = $sizes[1];
-                        if ( is_numeric( $width ) && is_numeric( $height ) ) {
-                            WP_CLI::line( "Thumbnail: {$width} x {$height} was deleted." );
-                            unlink( $dir_path['basedir'] . DIRECTORY_SEPARATOR . $image_name . $thumbnail_name . $thumbnail_ext );
-                        }
-                    }
-                }
-            }
-        }
+		$this->remove_old_images( $image->ID );
 
         $metadata = wp_generate_attachment_metadata( $image->ID, $fullsizepath );
 
@@ -122,6 +83,27 @@ class Media_Command extends WP_CLI_Command {
 
         WP_CLI::success( "All thumbnails were successfully regenerated in " . timer_stop() . " seconds." );
     }
+
+	private function remove_old_images( $att_id ) {
+		$wud = wp_upload_dir();
+
+		$metadata = wp_get_attachment_metadata( $att_id );
+
+		$dir_path = $wud['basedir'] . '/' . dirname( $metadata['file'] ) . '/';
+		$original_path = $dir_path . basename( $metadata['file'] );
+
+		foreach ( $metadata['sizes'] as $size => $size_info ) {
+			$intermediate_path = $dir_path . $size_info['file'];
+
+			if ( $intermediate_path == $original_path )
+				continue;
+
+			if ( unlink( $intermediate_path ) ) {
+				WP_CLI::line( sprintf( "Thumbnail %s x %s was deleted.",
+					$size_info['width'], $size_info['height'] ) );
+			}
+		}
+	}
 
     private function _not_found_message( $not_found_ids ){
         $count = count($not_found_ids);
