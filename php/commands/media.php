@@ -10,8 +10,7 @@ class Media_Command extends WP_CLI_Command {
     /**
      * Regenerate thumbnail(s)
      *
-     * @synopsis    <attachment-id>... [--yes]
-     * props @benmay & @Viper007Bond
+     * @synopsis <attachment-id>... [--yes]
      */
     function regenerate( $args, $assoc_args = array() ) {
         global $wpdb;
