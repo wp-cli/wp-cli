@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+if [ $# -lt 1 ]; then
+	echo "usage: $(basename $0) v0.8.0..v0.9.0 [-l]"
+	exit 1
+fi
+
+prev_version=$1
+linked=$2
+
+if [ '-l' == "$linked" ]
+then
+	git log --format="%aN" $prev_version -- | sort | uniq | sed 's#\(.*\)# [\1](http://github.com/\1)#' | tr '\n' ','
+else
+	git log --format="%aN <%aE>" $prev_version -- | sort | uniq
+fi
