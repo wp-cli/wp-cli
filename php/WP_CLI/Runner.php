@@ -306,7 +306,7 @@ class Runner {
 	}
 
 	public function after_wp_config_load() {
-		if ( isset( $this->config['debug'] ) ) {
+		if ( $this->config['debug'] ) {
 			if ( !defined( 'WP_DEBUG' ) )
 				define( 'WP_DEBUG', true );
 		}
