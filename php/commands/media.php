@@ -15,7 +15,7 @@ class Media_Command extends WP_CLI_Command {
      */
     function regenerate( $args, $assoc_args = array() ) {
         global $wpdb;
-        
+
         // If id is given, skip confirm because it is only one file
         if( !empty( $args ) ) {
             $assoc_args['yes'] = true;
@@ -41,7 +41,7 @@ class Media_Command extends WP_CLI_Command {
         $count = $images->post_count;
 
         WP_CLI::line( sprintf( 'Found %1$d %2$s to regenerate.', $count, ngettext('image', 'images', $count) ) );
- 
+
         $not_found = array_diff( $args, $images->posts );
         if( !empty($not_found) ) {
             WP_CLI::warning( $this->_not_found_message( $not_found ) );
@@ -55,11 +55,10 @@ class Media_Command extends WP_CLI_Command {
     }
 
     private function _process_regeneration( $id ) {
-        
         $image = get_post( $id );
 
         $fullsizepath = get_attached_file( $image->ID );
-        
+
         if ( false === $fullsizepath || !file_exists( $fullsizepath ) ) {
             WP_CLI::warning( "{$image->post_title} - Can't find {$fullsizepath}." );
             return;
@@ -83,7 +82,7 @@ class Media_Command extends WP_CLI_Command {
         while ( $file = readdir( $dir ) ) {
 
             if ( !( strrpos( $file, $image_name ) === false ) ) {
-                
+
                 $thumbnail  = explode( $image_name, $file );
                 $filename   = $thumbnail[ 1 ];
 
@@ -94,7 +93,7 @@ class Media_Command extends WP_CLI_Command {
                     $thumbnail_name = basename( $filename, $thumbnail_ext );
 
                     $sizes          = explode( 'x', $thumbnail_name );
-                    
+
                     // If not cropped by WP
                     if ( 2 == count( $sizes ) ) {
                         $width  = $sizes[0];
@@ -107,19 +106,21 @@ class Media_Command extends WP_CLI_Command {
                 }
             }
         }
-        
+
         $metadata = wp_generate_attachment_metadata( $image->ID, $fullsizepath );
-        
+
         if ( is_wp_error( $metadata ) ) {
             WP_CLI::warning( $metadata->get_error_message() );
             return;
         }
-        
+
         if ( empty( $metadata ) ) {
             WP_CLI::warning( "Couldn't regenerate image." );
             return;
         }
+
         wp_update_attachment_metadata( $image->ID, $metadata );
+
         WP_CLI::success( "All thumbnails were successfully regenerated in " . timer_stop() . " seconds." );
     }
 
