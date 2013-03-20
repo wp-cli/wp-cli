@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Functionality to control the media library and its attachments
+ * Control the media library and its attachments.
  *
  * @package wp-cli
  */
