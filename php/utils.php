@@ -257,22 +257,23 @@ function format_items( $format, $fields, $items ) {
 			if ( 'json' == $format )
 				echo json_encode( $output_items );
 			else
-				output_csv( $output_items, $fields );
+				write_csv( STDOUT, $output_items, $fields );
 			break;
 	}
 }
 
 /**
- * Output data as CSV
+ * Write data as CSV to a given file.
  *
- * @param array  $rows       Array of rows to output
- * @param array  $headers    List of CSV columns (optional)
+ * @param resource $fd         File descriptor
+ * @param array    $rows       Array of rows to output
+ * @param array    $headers    List of CSV columns (optional)
  */
-function output_csv( $rows, $headers = array() ) {
+function write_csv( $fd, $rows, $headers = array() ) {
 
 	// Prepare the headers if they were specified
 	if ( ! empty( $headers ) )
-		fputcsv( STDOUT, $headers );
+		fputcsv( $fd, $headers );
 
 	foreach ( $rows as $row ) {
 		$row = (array) $row;
@@ -284,7 +285,7 @@ function output_csv( $rows, $headers = array() ) {
 			}
 			$row = $build_row;
 		}
-		fputcsv( STDOUT, $row );
+		fputcsv( $fd, $row );
 	}
 
 }
