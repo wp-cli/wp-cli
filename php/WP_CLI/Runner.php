@@ -17,19 +17,29 @@ class Runner {
 	}
 
 	private static function get_config_path( &$assoc_args ) {
-		if ( isset( $assoc_args['config'] ) ) {
-			$paths = array( $assoc_args['config'] );
+		if ( isset( $assoc_args['config'] ) && file_exists( $assoc_args['config'] ) ) {
+			$path = $assoc_args['config'];
 			unset( $assoc_args['config'] );
-		} else {
-			$paths = array(
-				getcwd() . '/wp-cli.local.yml',
-				getcwd() . '/wp-cli.yml'
-			);
+			return $path;
 		}
 
-		foreach ( $paths as $path ) {
-			if ( file_exists( $path ) )
-				return $path;
+		$dir = getcwd();
+		$config_files = array(
+			'wp-cli.local.yml',
+			'wp-cli.yml'
+		);
+		while ( is_readable( $dir ) ) {
+			foreach ( $config_files as $config_file ) {
+				$path = $dir . DIRECTORY_SEPARATOR . $config_file;
+				if ( file_exists( $path ) ) {
+					return $path;
+				}
+			}
+			$parent_dir = dirname( $dir );
+			if ( empty($parent_dir) || $parent_dir === $dir ) {
+				break;
+			}
+			$dir = $parent_dir;
 		}
 
 		return false;
@@ -48,6 +58,12 @@ class Runner {
 				$sanitized_config[ $key ] = $config[ $key ];
 			else
 				$sanitized_config[ $key ] = $details['default'];
+		}
+
+		// When invoking from a subdirectory in the project,
+		// make sure a config-relative 'path' is made absolute
+		if ( ! self::is_absolute_path( $sanitized_config['path'] ) ) {
+			$sanitized_config['path'] = dirname( $path ) . DIRECTORY_SEPARATOR . $sanitized_config['path'];
 		}
 
 		return $sanitized_config;
@@ -250,7 +266,7 @@ class Runner {
 			exit;
 		}
 
-		$_SERVER['DOCUMENT_ROOT'] = getcwd();
+		$_SERVER['DOCUMENT_ROOT'] = realpath( $this->config['path'] );
 
 		// First try at showing man page
 		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
