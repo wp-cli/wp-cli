@@ -3,6 +3,7 @@ Contribute
 
 So you've got an awesome idea to throw into WP-CLI. Great! Please keep the following in mind:
 
+* The best way to get feedback is by opening an issue or a pull request; if you think the code shouldn't be merged yet, just say so.
 * If you're adding a new command or subcommand, please consider adding a functional test for it in the `features` directory. Also, please create the appropriate `.txt` file in the `man-src` directory.
 * Please follow the [WordPress Coding Standards](http://make.wordpress.org/core/handbook/coding-standards/).
 
