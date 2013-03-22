@@ -148,32 +148,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		return $this->_run( $command, $assoc_args );
 	}
 
-	public function define_custom_wp_content_dir() {
-		$wp_config_path = $this->install_dir . '/wp-config.php';
-
-		$wp_config_code = file_get_contents( $wp_config_path );
-
-		$this->add_line_to_wp_config( $wp_config_code,
-			"define( 'WP_CONTENT_DIR', dirname(__FILE__) . '/my-content' );" );
-
-		$this->move_files( 'wp-content', 'my-content' );
-
-		$this->add_line_to_wp_config( $wp_config_code,
-			"define( 'WP_PLUGIN_DIR', __DIR__ . '/my-plugins' );" );
-
-		$this->move_files( 'my-content/plugins', 'my-plugins' );
-
-		file_put_contents( $wp_config_path, $wp_config_code );
+	public function move_files( $src, $dest ) {
+		rename( $this->get_path( $src ), $this->get_path( $dest ) );
 	}
 
-	private function move_files( $src, $dest ) {
-		rename(
-			$this->install_dir . '/' . $src,
-			$this->install_dir . '/' . $dest
-		);
-	}
-
-	private function add_line_to_wp_config( &$wp_config_code, $line ) {
+	public function add_line_to_wp_config( &$wp_config_code, $line ) {
 		$token = "/* That's all, stop editing!";
 
 		$wp_config_code = str_replace( $token, "$line\n\n$token", $wp_config_code );

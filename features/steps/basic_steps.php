@@ -44,7 +44,19 @@ $steps->Given( '/^a WP (install|multisite install)$/',
 
 $steps->Given( '/^custom wp-content directory$/',
 	function ( $world ) {
-		$world->define_custom_wp_content_dir();
+		$wp_config_path = $world->get_path( 'wp-config.php' );
+
+		$wp_config_code = file_get_contents( $wp_config_path );
+
+		$world->move_files( 'wp-content', 'my-content' );
+		$world->add_line_to_wp_config( $wp_config_code,
+			"define( 'WP_CONTENT_DIR', dirname(__FILE__) . '/my-content' );" );
+
+		$world->move_files( 'my-content/plugins', 'my-plugins' );
+		$world->add_line_to_wp_config( $wp_config_code,
+			"define( 'WP_PLUGIN_DIR', __DIR__ . '/my-plugins' );" );
+
+		file_put_contents( $wp_config_path, $wp_config_code );
 	}
 );
 
