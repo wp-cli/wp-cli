@@ -23,23 +23,13 @@ class Runner {
 			return $path;
 		}
 
-		$dir = getcwd();
 		$config_files = array(
 			'wp-cli.local.yml',
 			'wp-cli.yml'
 		);
-		while ( is_readable( $dir ) ) {
-			foreach ( $config_files as $config_file ) {
-				$path = $dir . DIRECTORY_SEPARATOR . $config_file;
-				if ( file_exists( $path ) ) {
-					return $path;
-				}
-			}
-			$parent_dir = dirname( $dir );
-			if ( empty($parent_dir) || $parent_dir === $dir ) {
-				break;
-			}
-			$dir = $parent_dir;
+		$path = Utils\find_file_upward( $config_files, getcwd() );
+		if ( $path ) {
+			return $path;
 		}
 
 		return false;
@@ -228,6 +218,12 @@ class Runner {
 		}
 
 		$config_spec = Utils\get_config_spec();
+
+		// Set the path default to the ABSPATH
+		$wp_abspath = dirname( Utils\find_file_upward( 'wp-load.php' ) );
+		if ( ! empty( $wp_abspath ) ) {
+			$config_spec['path']['default'] = $wp_abspath;
+		}
 
 		$this->config_path = self::get_config_path( $this->assoc_args );
 

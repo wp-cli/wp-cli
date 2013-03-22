@@ -49,6 +49,34 @@ function get_config_spec() {
 }
 
 /**
+ * Search for file by walking up the directory tree until the first file is found
+ * @param string|array The files (or file) to search for
+ * @param string|null The directory to start searching from; defaults to CWD
+ * @return null|string Null if the file was not found
+ */
+function find_file_upward($files, $dir = null) {
+	$files = (array) $files;
+	if ( is_null( $dir ) ) {
+		$dir = getcwd();
+	}
+	while ( is_readable( $dir ) ) {
+		foreach ( $files as $file ) {
+			$path = $dir . DIRECTORY_SEPARATOR . $file;
+			if ( file_exists( $path ) ) {
+				return $path;
+			}
+		}
+
+		$parent_dir = dirname( $dir );
+		if ( empty($parent_dir) || $parent_dir === $dir ) {
+			break;
+		}
+		$dir = $parent_dir;
+	}
+	return null;
+}
+
+/**
  * Splits $argv into positional and associative arguments.
  *
  * @param string
