@@ -11,8 +11,8 @@ require_once __DIR__ . '/../../php/utils.php';
 /**
  * Features context.
  */
-class FeatureContext extends BehatContext implements ClosuredContextInterface
-{
+class FeatureContext extends BehatContext implements ClosuredContextInterface {
+
 	protected static $db_settings = array(
 		'dbname' => 'wp_cli_test',
 		'dbuser' => 'wp_cli_test',
@@ -30,8 +30,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 	 *
 	 * @param array $parameters context parameters (set them up through behat.yml)
 	 */
-	public function __construct( array $parameters )
-	{
+	public function __construct( array $parameters ) {
 		$this->drop_db();
 
 		$this->additional_args = array(
@@ -50,23 +49,19 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface
 		);
 	}
 
-	public function getStepDefinitionResources()
-	{
+	public function getStepDefinitionResources() {
 		return array( __DIR__ . '/../steps/basic_steps.php' );
 	}
 
-	public function getHookDefinitionResources()
-	{
+	public function getHookDefinitionResources() {
 		return array();
 	}
 
-	public function replace_variables( $str )
-	{
+	public function replace_variables( $str ) {
 		return preg_replace_callback( '/\{([A-Z_]+)\}/', array( $this, '_replace_var' ), $str );
 	}
 
-	private function _replace_var( $matches )
-	{
+	private function _replace_var( $matches ) {
 		$cmd = $matches[0];
 
 		foreach ( array_slice( $matches, 1 ) as $key ) {
