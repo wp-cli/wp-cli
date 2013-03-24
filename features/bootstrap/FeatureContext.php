@@ -174,5 +174,13 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		system( \WP_CLI\Utils\create_cmd( "cp -r %s/* %s/", $cache_dir, $this->install_dir ) );
 	}
+
+	public function wp_install() {
+		$this->create_db();
+		$this->create_empty_dir();
+		$this->download_wordpress_files();
+		$this->run( 'core config' );
+		$this->run( 'core install' );
+	}
 }
 
