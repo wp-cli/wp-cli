@@ -2,7 +2,8 @@
 
 use Behat\Behat\Context\ClosuredContextInterface,
     Behat\Behat\Context\TranslatedContextInterface,
-    Behat\Behat\Context\BehatContext;
+    Behat\Behat\Context\BehatContext,
+    Behat\Behat\Event\SuiteEvent;
 
 require_once 'PHPUnit/Framework/Assert/Functions.php';
 
@@ -13,27 +14,23 @@ require_once __DIR__ . '/../../php/utils.php';
  */
 class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
-	protected static $db_settings = array(
+	private static $db_settings = array(
 		'dbname' => 'wp_cli_test',
 		'dbuser' => 'wp_cli_test',
 		'dbpass' => 'password1'
 	);
 
+	private static $additional_args;
+
 	private $install_dir;
-	private $additional_args;
 
 	public $variables = array();
 
 	/**
-	 * Initializes context.
-	 * Every scenario gets it's own context object.
-	 *
-	 * @param array $parameters context parameters (set them up through behat.yml)
+	 * @BeforeSuite
 	 */
-	public function __construct( array $parameters ) {
-		$this->drop_db();
-
-		$this->additional_args = array(
+	public static function prepare( SuiteEvent $event ) {
+		self::$additional_args = array(
 			'core config' => self::$db_settings,
 
 			'core install' => array(
@@ -47,6 +44,16 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 				'title' => 'WP CLI Network'
 			)
 		);
+	}
+
+	/**
+	 * Initializes context.
+	 * Every scenario gets it's own context object.
+	 *
+	 * @param array $parameters context parameters (set them up through behat.yml)
+	 */
+	public function __construct( array $parameters ) {
+		$this->drop_db();
 	}
 
 	public function getStepDefinitionResources() {
@@ -140,8 +147,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function run( $command, $assoc_args = array() ) {
-		if ( isset( $this->additional_args[ $command ] ) ) {
-			$assoc_args = array_merge( $this->additional_args[ $command ],
+		if ( isset( self::$additional_args[ $command ] ) ) {
+			$assoc_args = array_merge( self::$additional_args[ $command ],
 				$assoc_args );
 		}
 
