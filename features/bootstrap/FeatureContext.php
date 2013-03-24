@@ -85,7 +85,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function get_path( $file ) {
-		return $file;
+		return './' . $file;
 	}
 
 	public function get_cache_path( $file ) {
