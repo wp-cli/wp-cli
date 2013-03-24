@@ -137,9 +137,13 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$STDERR = stream_get_contents( $pipes[2] );
 		fclose( $pipes[2] );
 
-		$return_code = proc_close( $proc );
-
-		$r = (object) compact( 'command', 'return_code', 'STDOUT', 'STDERR' );
+		$r = (object) array(
+			'command' => $command,
+			'STDOUT' => $STDOUT,
+			'STDERR' => $STDERR,
+			'return_code' => proc_close( $proc ),
+			'cwd' => $this->install_dir
+		);
 
 		return $r;
 	}
