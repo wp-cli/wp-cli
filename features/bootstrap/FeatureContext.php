@@ -81,6 +81,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function create_empty_dir() {
 		$this->install_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-", TRUE );
 		mkdir( $this->install_dir );
+		chdir( $this->install_dir );
 	}
 
 	public function get_path( $file ) {
@@ -121,13 +122,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( !empty( $assoc_args ) )
 			$command .= \WP_CLI\Utils\assoc_args_to_str( $assoc_args );
 
-		if ( false === strpos( $command, '--path' ) ) {
-			$command = \WP_CLI\Utils\assoc_args_to_str( array(
-				'path' => $this->install_dir
-			) ) . ' ' . $command;
-		}
-
-		$sh_command = getcwd() . "/bin/wp $command";
+		$sh_command = __DIR__ . "/../../bin/wp $command";
 
 		$process = proc_open( $sh_command, array(
 			0 => STDIN,
