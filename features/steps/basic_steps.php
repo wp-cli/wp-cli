@@ -10,6 +10,12 @@ $steps->Given( '/^an empty directory$/',
 	}
 );
 
+$steps->Given( '/^a ([^\s]+) file:$/',
+	function ( $world, $path, PyStringNode $content ) {
+		file_put_contents( $world->get_path( $path ), (string) $content );
+	}
+);
+
 $steps->Given( '/^WP files$/',
 	function ( $world ) {
 		$world->download_wordpress_files();
