@@ -81,11 +81,10 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function create_empty_dir() {
 		$this->install_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-", TRUE );
 		mkdir( $this->install_dir );
-		chdir( $this->install_dir );
 	}
 
 	public function get_path( $file ) {
-		return './' . $file;
+		return $this->install_dir . '/' . $file;
 	}
 
 	public function get_cache_path( $file ) {
@@ -122,13 +121,15 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( !empty( $assoc_args ) )
 			$command .= \WP_CLI\Utils\assoc_args_to_str( $assoc_args );
 
-		$sh_command = __DIR__ . "/../../bin/wp $command";
+		$cmd = __DIR__ . "/../../bin/wp $command";
 
-		$process = proc_open( $sh_command, array(
+		$descriptors = array(
 			0 => STDIN,
 			1 => array( 'pipe', 'w' ),
 			2 => array( 'pipe', 'w' ),
-		), $pipes );
+		);
+
+		$proc = proc_open( $cmd, $descriptors, $pipes, $this->install_dir );
 
 		$STDOUT = stream_get_contents( $pipes[1] );
 		fclose( $pipes[1] );
@@ -136,9 +137,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$STDERR = stream_get_contents( $pipes[2] );
 		fclose( $pipes[2] );
 
-		$return_code = proc_close( $process );
+		$return_code = proc_close( $proc );
 
-		return (object) compact( 'command', 'return_code', 'STDOUT', 'STDERR' );
+		$r = (object) compact( 'command', 'return_code', 'STDOUT', 'STDERR' );
+
+		return $r;
 	}
 
 	public function run( $command, $assoc_args = array() ) {
