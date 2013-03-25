@@ -40,6 +40,12 @@ $steps->Given( '/^a WP install$/',
 	}
 );
 
+$steps->Given( "/^a WP install in '([^\s]+)'$/",
+	function ( $world, $subdir ) {
+		$world->wp_install( $subdir );
+	}
+);
+
 $steps->Given( '/^a WP multisite install$/',
 	function ( $world ) {
 		$world->wp_install();

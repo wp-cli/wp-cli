@@ -167,7 +167,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$wp_config_code = str_replace( $token, "$line\n\n$token", $wp_config_code );
 	}
 
-	public function download_wordpress_files() {
+	public function download_wordpress_files( $subdir = '' ) {
 		// We cache the results of "wp core download" to improve test performance
 		// Ideally, we'd cache at the HTTP layer for more reliable tests
 		$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
@@ -176,15 +176,21 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			'path' => $cache_dir
 		) );
 
-		system( \WP_CLI\Utils\create_cmd( "cp -r %s/* %s/", $cache_dir, $this->install_dir ) );
+		$dest_dir = $this->get_path( $subdir );
+
+		if ( $subdir ) mkdir( $dest_dir );
+
+		$cmd = \WP_CLI\Utils\create_cmd( "cp -r %s/* %s", $cache_dir, $dest_dir );
+
+		system( $cmd );
 	}
 
-	public function wp_install() {
+	public function wp_install( $subdir = '' ) {
 		$this->create_db();
 		$this->create_empty_dir();
-		$this->download_wordpress_files();
-		$this->run( 'core config' );
-		$this->run( 'core install' );
+		$this->download_wordpress_files( $subdir );
+		$this->run( 'core config', array( 'path' => $subdir ) );
+		$this->run( 'core install', array( 'path' => $subdir ) );
 	}
 }
 
