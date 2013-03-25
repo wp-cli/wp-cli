@@ -24,3 +24,14 @@ Feature: Have a config file
       """
       wp-cli.yml
       """
+
+  Scenario: WP in a subdirectory
+    Given a WP install in 'core'
+    And a wp-cli.yml file:
+      """
+      path: core
+      """
+
+    When I run `wp core version`
+    Then it should run without errors
+    And STDOUT should not be empty
