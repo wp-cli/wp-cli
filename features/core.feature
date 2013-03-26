@@ -71,7 +71,7 @@ Feature: Manage WordPress installation
 
   Scenario: Custom wp-content directory
     Given a WP install
-    And custom wp-content directory
+    And a custom wp-content directory
 
     When I run `wp plugin status hello`
     Then it should run without errors

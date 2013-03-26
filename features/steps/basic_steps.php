@@ -53,7 +53,7 @@ $steps->Given( '/^a WP multisite install$/',
 	}
 );
 
-$steps->Given( '/^custom wp-content directory$/',
+$steps->Given( '/^a custom wp-content directory$/',
 	function ( $world ) {
 		$wp_config_path = $world->get_path( 'wp-config.php' );
 
