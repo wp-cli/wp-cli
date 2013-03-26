@@ -105,6 +105,12 @@ $steps->When( '/^I run `wp (.+)`$/',
 	}
 );
 
+$steps->When( "/^I run `wp (.+)` from '([^\s]+)'$/",
+	function ( $world, $cmd, $subdir ) {
+		$world->result = $world->run( $world->replace_variables( $cmd ), array(), $subdir );
+	}
+);
+
 $steps->When( '/^I run the previous command again$/',
 	function ( $world ) {
 		if ( !isset( $world->result ) )

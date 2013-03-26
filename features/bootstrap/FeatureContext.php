@@ -117,9 +117,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		self::run_sql( "DROP DATABASE IF EXISTS $dbname" );
 	}
 
-	private function _run( $command, $assoc_args ) {
+	private function _run( $command, $assoc_args, $subdir = '' ) {
 		if ( !empty( $assoc_args ) )
 			$command .= \WP_CLI\Utils\assoc_args_to_str( $assoc_args );
+
+		$subdir = $this->get_path( $subdir );
 
 		$cmd = __DIR__ . "/../../bin/wp $command";
 
@@ -129,7 +131,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			2 => array( 'pipe', 'w' ),
 		);
 
-		$proc = proc_open( $cmd, $descriptors, $pipes, $this->install_dir );
+		$proc = proc_open( $cmd, $descriptors, $pipes, $subdir );
 
 		$STDOUT = stream_get_contents( $pipes[1] );
 		fclose( $pipes[1] );
@@ -148,13 +150,13 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		return $r;
 	}
 
-	public function run( $command, $assoc_args = array() ) {
+	public function run( $command, $assoc_args = array(), $subdir = '' ) {
 		if ( isset( self::$additional_args[ $command ] ) ) {
 			$assoc_args = array_merge( self::$additional_args[ $command ],
 				$assoc_args );
 		}
 
-		return $this->_run( $command, $assoc_args );
+		return $this->_run( $command, $assoc_args, $subdir );
 	}
 
 	public function move_files( $src, $dest ) {
@@ -189,8 +191,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->create_db();
 		$this->create_empty_dir();
 		$this->download_wordpress_files( $subdir );
-		$this->run( 'core config', array( 'path' => $subdir ) );
-		$this->run( 'core install', array( 'path' => $subdir ) );
+		$this->run( 'core config', array(), $subdir );
+		$this->run( 'core install', array(), $subdir );
 	}
 }
 
