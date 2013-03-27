@@ -238,7 +238,7 @@ class Runner {
 			exit;
 		}
 
-		// Handle --cmd-dump parameter
+		// Handle --param-dump parameter
 		if ( isset( $this->assoc_args['param-dump'] ) ) {
 			\WP_CLI\InternalAssoc::param_dump();
 			exit;
