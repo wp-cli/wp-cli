@@ -18,7 +18,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * @alias cpt
 	 *
-	 * @synopsis <slug> [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
+	 * @synopsis <slug> [--label=<label>] [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
 	 */
 	function post_type( $args, $assoc_args ) {
 		$defaults = array(
@@ -38,7 +38,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * @alias tax
 	 *
-	 * @synopsis <slug> [--post_types=<post-types>] [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
+	 * @synopsis <slug> [--post_types=<post-types>] [--label=<label>] [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
 	 */
 	function taxonomy( $args, $assoc_args ) {
 		$defaults = array(
@@ -56,6 +56,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		global $wp_filesystem;
 
 		$control_args = $this->extract_args( $assoc_args, array(
+			'label'  => $slug,
 			'theme'  => false,
 			'plugin' => false,
 			'raw'    => false,
@@ -67,7 +68,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$vars['textdomain'] = $this->get_textdomain( $vars['textdomain'], $control_args );
 
-		$vars['label'] = preg_replace( '/_|-/', ' ', strtolower( $slug ) );
+		$vars['label'] = preg_replace( '/_|-/', ' ', strtolower( $control_args['label'] ) );
 
 		$vars['label_ucfirst']        = ucfirst( $vars['label'] );
 		$vars['label_plural']         = $this->pluralize( $vars['label'] );
