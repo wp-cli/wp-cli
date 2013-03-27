@@ -56,7 +56,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		global $wp_filesystem;
 
 		$control_args = $this->extract_args( $assoc_args, array(
-			'label'  => $slug,
+			'label'  => preg_replace( '/_|-/', ' ', strtolower( $slug ) ),
 			'theme'  => false,
 			'plugin' => false,
 			'raw'    => false,
@@ -68,7 +68,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$vars['textdomain'] = $this->get_textdomain( $vars['textdomain'], $control_args );
 
-		$vars['label'] = preg_replace( '/_|-/', ' ', strtolower( $control_args['label'] ) );
+		$vars['label'] = $control_args['label'];
 
 		$vars['label_ucfirst']        = ucfirst( $vars['label'] );
 		$vars['label_plural']         = $this->pluralize( $vars['label'] );
