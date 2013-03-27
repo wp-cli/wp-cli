@@ -53,6 +53,45 @@ class Media_Command extends WP_CLI_Command {
 		WP_CLI::success( sprintf( 'Finished regenerating %1$s.', ngettext('the image', 'all images', $count) ) );
 	}
 
+	/**
+	 * Sideload images from file(s) and import as attachments, optionally attached to a post
+	 *
+	 * @synopsis <file>... [--post_id=<post_id>] [--desc=<description>]
+	 */
+	function import( $args, $assoc_args = array() ) {
+
+		$assoc_args = wp_parse_args(
+			$assoc_args,
+			array(
+				'post_id' => 0,
+			)
+		);
+
+		foreach( $args as $file ) {
+			$file_array = array(
+				'tmp_name' => $file,
+				'name' => basename( $file )
+			);
+			$success = media_handle_sideload( $file_array, $assoc_args['post_id'], $assoc_args['desc'] );
+			if ( is_wp_error( $success ) )
+				WP_CLI::error(
+					sprintf(
+						'Unable to import file %s. Reason: %s',
+						$file_array['tmp_name'], implode( ', ', $success->get_error_messages() )
+					)
+				);
+			else
+				WP_CLI::success(
+					sprintf(
+						'Successfully imported file %s as attachment ID %d.',
+						$file_array['tmp_name'], $success
+					)
+				);
+		}
+
+	}
+
+
 	private function _process_regeneration( $id ) {
 		$image = get_post( $id );
 

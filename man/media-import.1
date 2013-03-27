@@ -1,0 +1,43 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-MEDIA\-IMPORT" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-media\-import\fR \- Sideload images from file(s) and import as attachments, optionally attached to a post
+.
+.SH "SYNOPSIS"
+wp media import \fIfile\fR\.\.\. [\-\-post_id=\fIpost_id\fR] [\-\-desc=\fIdescription\fR]
+.
+.SH "OPTIONS"
+.
+.IP "\(bu" 4
+\fB<file>\fR:
+.
+.IP
+Path to file or files to be imported\. Supports the glob(3) capabilities of the current shell\.
+.
+.IP "\(bu" 4
+\fB\-\-post\-id=<post_id>\fR
+.
+.IP
+ID of the post to attach the imported files to\.
+.
+.IP "\(bu" 4
+\fB\-\-desc=<description>\fR
+.
+.IP
+"Description" field (post title) of attachment post
+.
+.IP "" 0
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp media import ~/Pictures/**/*\.jpg
+
+wp media import ~/Downloads/image\.png \-\-post_id=123 \-\-desc="A downloaded picture"
+.
+.fi
+

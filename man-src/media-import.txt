@@ -1,0 +1,20 @@
+## OPTIONS
+
+* `<file>`:
+
+	Path to file or files to be imported. Supports the glob(3) capabilities of the current shell.
+
+* `--post-id=<post_id>`
+
+	ID of the post to attach the imported files to.
+
+* `--desc=<description>`
+
+	"Description" field (post title) of attachment post
+
+
+## EXAMPLES
+
+	wp media import ~/Pictures/**/*.jpg
+
+	wp media import ~/Downloads/image.png --post_id=123 --desc="A downloaded picture"
