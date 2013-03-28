@@ -52,7 +52,7 @@ class Runner {
 
 		// When invoking from a subdirectory in the project,
 		// make sure a config-relative 'path' is made absolute
-		if ( ! self::is_absolute_path( $sanitized_config['path'] ) ) {
+		if ( ! empty( $sanitized_config['path'] ) && ! self::is_absolute_path( $sanitized_config['path'] ) ) {
 			$sanitized_config['path'] = dirname( $path ) . DIRECTORY_SEPARATOR . $sanitized_config['path'];
 		}
 
