@@ -3,6 +3,8 @@
 * `<file>`:
 
 	Path to file or files to be imported. Supports the glob(3) capabilities of the current shell.
+	If file is recognized as a URL (for example, with a scheme of http or ftp), the file will be 
+	downloaded to a temp file before being sideloaded.
 
 * `--post-id=<post_id>`
 

@@ -54,7 +54,7 @@ class Media_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Sideload images from file(s) and import as attachments, optionally attached to a post
+	 * Sideload images from local file(s) or URL and import as attachments, optionally attached to a post
 	 *
 	 * @synopsis <file>... [--post_id=<post_id>] [--desc=<description>]
 	 */
@@ -64,10 +64,26 @@ class Media_Command extends WP_CLI_Command {
 			$assoc_args,
 			array(
 				'post_id' => 0,
+				'desc' => null
 			)
 		);
 
 		foreach( $args as $file ) {
+
+			$is_file_remote = parse_url( $file, PHP_URL_SCHEME );
+
+			if ( !empty( $is_file_remote ) ) {
+				$extension = pathinfo( $file, PATHINFO_EXTENSION );
+				$tempfile = download_url( $file );
+
+				// Necessary because temp filename will probably have an extension like
+				// .tmp, which is not in the list of permitted upload extensions
+				// and won't be recognized with the correct mime type
+				$tempfile_extension = pathinfo( $tempfile, PATHINFO_EXTENSION );
+				$file = preg_replace( "/$tempfile_extension$/", $extension, $tempfile );
+				rename( $tempfile, $file );
+			}
+
 			$file_array = array(
 				'tmp_name' => $file,
 				'name' => basename( $file )
