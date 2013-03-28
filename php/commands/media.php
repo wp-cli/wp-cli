@@ -56,7 +56,7 @@ class Media_Command extends WP_CLI_Command {
 	/**
 	 * Sideload images from local file(s) or URL and import as attachments, optionally attached to a post
 	 *
-	 * @synopsis <file>... [--post_id=<post_id>] [--desc=<description>]
+	 * @synopsis <file>... [--post_id=<post_id>] [--title=<title>] [--caption=<caption>] [--alt=<alt_text>] [--desc=<description>]
 	 */
 	function import( $args, $assoc_args = array() ) {
 
@@ -64,6 +64,9 @@ class Media_Command extends WP_CLI_Command {
 			$assoc_args,
 			array(
 				'post_id' => 0,
+				'title' => null,
+				'caption' => null,
+				'alt' => null,
 				'desc' => null
 			)
 		);
@@ -88,7 +91,18 @@ class Media_Command extends WP_CLI_Command {
 				'tmp_name' => $file,
 				'name' => basename( $file )
 			);
-			$success = media_handle_sideload( $file_array, $assoc_args['post_id'], $assoc_args['desc'] );
+
+			$post_array= array(
+				'post_title' => $assoc_args['title'],
+				'post_excerpt' => $assoc_args['caption'],
+				'post_content' => $assoc_args['desc']
+			);
+
+			$success = media_handle_sideload( $file_array, $assoc_args['post_id'], $assoc_args['title'], $post_array );
+
+			if ( !is_wp_error( $success ) && $assoc_args['alt'] )
+				update_post_meta( $success, '_wp_attachment_image_alt', $assoc_args['alt'] );
+
 			if ( is_wp_error( $success ) )
 				WP_CLI::error(
 					sprintf(

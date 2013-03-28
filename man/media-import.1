@@ -4,10 +4,10 @@
 .TH "WP\-MEDIA\-IMPORT" "1" "" "WP-CLI"
 .
 .SH "NAME"
-\fBwp\-media\-import\fR \- Sideload images from file(s) and import as attachments, optionally attached to a post
+\fBwp\-media\-import\fR \- Sideload images from local file(s) or URL and import as attachments, optionally attached to a post
 .
 .SH "SYNOPSIS"
-wp media import \fIfile\fR\.\.\. [\-\-post_id=\fIpost_id\fR] [\-\-desc=\fIdescription\fR]
+wp media import \fIfile\fR\.\.\. [\-\-post_id=\fIpost_id\fR] [\-\-title=\fItitle\fR] [\-\-caption=\fIcaption\fR] [\-\-alt=\fIalt_text\fR] [\-\-desc=\fIdescription\fR]
 .
 .SH "OPTIONS"
 .
@@ -18,16 +18,34 @@ wp media import \fIfile\fR\.\.\. [\-\-post_id=\fIpost_id\fR] [\-\-desc=\fIdescri
 Path to file or files to be imported\. Supports the glob(3) capabilities of the current shell\. If file is recognized as a URL (for example, with a scheme of http or ftp), the file will be downloaded to a temp file before being sideloaded\.
 .
 .IP "\(bu" 4
-\fB\-\-post\-id=<post_id>\fR
+\fB\-\-post_id=<post_id>\fR
 .
 .IP
-ID of the post to attach the imported files to\.
+ID of the post to attach the imported files to
+.
+.IP "\(bu" 4
+\fB\-\-title=<title>\fR
+.
+.IP
+Attachment title (post title field)
+.
+.IP "\(bu" 4
+\fB\-\-caption=<caption>\fR
+.
+.IP
+Caption for attachent (post excerpt field)
+.
+.IP "\(bu" 4
+\fB\-\-alt=<alt_text>\fR
+.
+.IP
+Alt text for image (saved as post meta)
 .
 .IP "\(bu" 4
 \fB\-\-desc=<description>\fR
 .
 .IP
-"Description" field (post title) of attachment post
+"Description" field (post content) of attachment post
 .
 .IP "" 0
 .
@@ -37,7 +55,9 @@ ID of the post to attach the imported files to\.
 
 wp media import ~/Pictures/**/*\.jpg
 
-wp media import ~/Downloads/image\.png \-\-post_id=123 \-\-desc="A downloaded picture"
+wp media import ~/Downloads/image\.png \-\-post_id=123 \-\-title="A downloaded picture"
+
+wp media import http://s\.wordpress\.org/style/images/wp\-header\-logo\.png \-\-title=\'The WordPress logo\' \-\-alt="Semantic personal publishing"
 .
 .fi
 

@@ -6,17 +6,33 @@
 	If file is recognized as a URL (for example, with a scheme of http or ftp), the file will be 
 	downloaded to a temp file before being sideloaded.
 
-* `--post-id=<post_id>`
+* `--post_id=<post_id>`
 
-	ID of the post to attach the imported files to.
+	ID of the post to attach the imported files to
+
+* `--title=<title>`
+
+	Attachment title (post title field)
+
+* `--caption=<caption>`
+
+	Caption for attachent (post excerpt field)
+
+* `--alt=<alt_text>`
+
+	Alt text for image (saved as post meta)
 
 * `--desc=<description>`
 
-	"Description" field (post title) of attachment post
+	"Description" field (post content) of attachment post
 
 
 ## EXAMPLES
 
 	wp media import ~/Pictures/**/*.jpg
 
-	wp media import ~/Downloads/image.png --post_id=123 --desc="A downloaded picture"
+	wp media import ~/Downloads/image.png --post_id=123 --title="A downloaded picture"
+
+	wp media import http://s.wordpress.org/style/images/wp-header-logo.png --title='The WordPress logo' --alt="Semantic personal publishing"
+
+
