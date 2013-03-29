@@ -103,8 +103,10 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	private static function run_sql( $sql ) {
-		system( \WP_CLI\Utils\create_cmd( 'mysql -u%s -p%s -e %s',
-			self::$db_settings['dbuser'], self::$db_settings['dbpass'], $sql ) );
+		putenv( 'MYSQL_PWD=' . self::$db_settings['dbpass'] );
+
+		system( \WP_CLI\Utils\create_cmd( 'mysql -u%s -e %s',
+			self::$db_settings['dbuser'], $sql ) );
 	}
 
 	public function create_db() {
