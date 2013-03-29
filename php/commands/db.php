@@ -65,8 +65,8 @@ class DB_Command extends WP_CLI_Command {
 	 */
 	function optimize( $_, $assoc_args ) {
 		self::run( $assoc_args, \WP_CLI\Utils\create_cmd(
-			'mysqlcheck --optimize --host=%s --user=%s --password=%s %s',
-			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+			'mysqlcheck --optimize --host=%s --user=%s %s',
+			DB_HOST, DB_USER, DB_NAME
 		) );
 
 		WP_CLI::success( "Database optimized." );
@@ -79,8 +79,8 @@ class DB_Command extends WP_CLI_Command {
 	 */
 	function repair( $_, $assoc_args ) {
 		self::run( $assoc_args, \WP_CLI\Utils\create_cmd(
-			'mysqlcheck --repair --host=%s --user=%s --password=%s %s',
-			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+			'mysqlcheck --repair --host=%s --user=%s %s',
+			DB_HOST, DB_USER, DB_NAME
 		) );
 
 		WP_CLI::success( "Database repaired." );
@@ -119,8 +119,8 @@ class DB_Command extends WP_CLI_Command {
 		$result_file = $this->get_file_name( $args );
 
 		self::run( $assoc_args, \WP_CLI\Utils\create_cmd(
-			'mysqldump %s --user=%s --password=%s --host=%s --result-file %s',
-			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file ) );
+			'mysqldump %s --user=%s --host=%s --result-file %s',
+			DB_NAME, DB_USER, DB_HOST, $result_file ) );
 
 		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
 	}
@@ -134,15 +134,15 @@ class DB_Command extends WP_CLI_Command {
 		$result_file = $this->get_file_name( $args );
 
 		self::run( $assoc_args, \WP_CLI\Utils\create_cmd(
-			'mysql %s --user=%s --password=%s --host=%s < %s',
-			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file ) );
+			'mysql %s --user=%s --host=%s < %s',
+			DB_NAME, DB_USER, DB_HOST, $result_file ) );
 
 		WP_CLI::success( sprintf( 'Imported from %s', $result_file ) );
 	}
 
 	private function connect_string() {
-		return \WP_CLI\Utils\create_cmd( 'mysql --host=%s --user=%s --password=%s --database=%s',
-			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
+		return \WP_CLI\Utils\create_cmd( 'mysql --host=%s --user=%s --database=%s',
+			DB_HOST, DB_USER, DB_NAME );
 	}
 
 	private function get_file_name( $args ) {
@@ -154,8 +154,8 @@ class DB_Command extends WP_CLI_Command {
 
 	private static function create_execute_cmd( $execute_statement ) {
 		return \WP_CLI\Utils\create_cmd(
-			'mysql --host=%s --user=%s --password=%s --execute=%s',
-			DB_HOST, DB_USER, DB_PASSWORD, $execute_statement
+			'mysql --host=%s --user=%s --execute=%s',
+			DB_HOST, DB_USER, $execute_statement
 		);
 	}
 
@@ -165,7 +165,11 @@ class DB_Command extends WP_CLI_Command {
 			exit;
 		}
 
+		$old_val = getenv( 'MYSQL_PWD' );
+
+		putenv( 'MYSQL_PWD=' . DB_PASSWORD );
 		WP_CLI::launch( $cmd );
+		putenv( 'MYSQL_PWD=' . $old_val );
 	}
 }
 
