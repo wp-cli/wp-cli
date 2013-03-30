@@ -57,6 +57,10 @@ class InternalAssoc {
 	}
 
 	static function man( $args ) {
+		if ( '' === exec( 'which ronn' ) ) {
+			WP_CLI::error( '`ronn` executable not found.' );
+		}
+
 		$arg_copy = $args;
 
 		$command = WP_CLI::$root;
