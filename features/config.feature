@@ -52,3 +52,17 @@ Feature: Have a config file
     When I run `wp core is-installed` from 'core/wp-content'
     Then it should run without errors
     And STDOUT should be empty
+
+  Scenario: Nested installs
+    Given a WP install
+    And a WP install in 'subsite'
+    And a wp-cli.yml file:
+      """
+      """
+
+    When I run `wp info` from 'subsite'
+    And STDOUT should not contain:
+      """
+      wp-cli.yml
+      """
+
