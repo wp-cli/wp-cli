@@ -27,7 +27,16 @@ class Runner {
 			'wp-cli.local.yml',
 			'wp-cli.yml'
 		);
-		$path = Utils\find_file_upward( $config_files, getcwd() );
+		// Stop looking upward when we find we have emerged from a subdirectory install into a parent install
+		$stop_check = function ( $dir ) {
+			static $wp_load_count = 0;
+			$wp_load_path = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
+			if ( file_exists( $wp_load_path ) ) {
+				$wp_load_count += 1;
+			}
+			return $wp_load_count > 1;
+		};
+		$path = Utils\find_file_upward( $config_files, getcwd(), $stop_check );
 		if ( $path ) {
 			return $path;
 		}

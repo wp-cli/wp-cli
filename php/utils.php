@@ -49,17 +49,23 @@ function get_config_spec() {
 }
 
 /**
- * Search for file by walking up the directory tree until the first file is found
+ * Search for file by walking up the directory tree until the first file is found or until $stop_check($dir) returns true
  * @param string|array The files (or file) to search for
  * @param string|null The directory to start searching from; defaults to CWD
+ * @param callable Function which is passed the current dir each time a directory level is traversed
  * @return null|string Null if the file was not found
  */
-function find_file_upward($files, $dir = null) {
+function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	$files = (array) $files;
 	if ( is_null( $dir ) ) {
 		$dir = getcwd();
 	}
 	while ( is_readable( $dir ) ) {
+		// Stop walking up when the supplied callable returns true being passed the $dir
+		if ( is_callable( $stop_check ) && call_user_func( $stop_check, $dir ) ) {
+			return null;
+		}
+
 		foreach ( $files as $file ) {
 			$path = $dir . DIRECTORY_SEPARATOR . $file;
 			if ( file_exists( $path ) ) {
