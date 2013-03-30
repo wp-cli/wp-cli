@@ -17,19 +17,28 @@ class Runner {
 	}
 
 	private static function get_config_path( &$assoc_args ) {
-		if ( isset( $assoc_args['config'] ) ) {
-			$paths = array( $assoc_args['config'] );
+		if ( isset( $assoc_args['config'] ) && file_exists( $assoc_args['config'] ) ) {
+			$path = $assoc_args['config'];
 			unset( $assoc_args['config'] );
-		} else {
-			$paths = array(
-				getcwd() . '/wp-cli.local.yml',
-				getcwd() . '/wp-cli.yml'
-			);
+			return $path;
 		}
 
-		foreach ( $paths as $path ) {
-			if ( file_exists( $path ) )
-				return $path;
+		$config_files = array(
+			'wp-cli.local.yml',
+			'wp-cli.yml'
+		);
+		// Stop looking upward when we find we have emerged from a subdirectory install into a parent install
+		$stop_check = function ( $dir ) {
+			static $wp_load_count = 0;
+			$wp_load_path = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
+			if ( file_exists( $wp_load_path ) ) {
+				$wp_load_count += 1;
+			}
+			return $wp_load_count > 1;
+		};
+		$path = Utils\find_file_upward( $config_files, getcwd(), $stop_check );
+		if ( $path ) {
+			return $path;
 		}
 
 		return false;
@@ -48,6 +57,12 @@ class Runner {
 				$sanitized_config[ $key ] = $config[ $key ];
 			else
 				$sanitized_config[ $key ] = $details['default'];
+		}
+
+		// When invoking from a subdirectory in the project,
+		// make sure a config-relative 'path' is made absolute
+		if ( ! empty( $sanitized_config['path'] ) && ! self::is_absolute_path( $sanitized_config['path'] ) ) {
+			$sanitized_config['path'] = dirname( $path ) . DIRECTORY_SEPARATOR . $sanitized_config['path'];
 		}
 
 		return $sanitized_config;
@@ -213,6 +228,12 @@ class Runner {
 
 		$config_spec = Utils\get_config_spec();
 
+		// Set the path default to the ABSPATH
+		$wp_abspath = dirname( Utils\find_file_upward( 'wp-load.php' ) );
+		if ( ! empty( $wp_abspath ) ) {
+			$config_spec['path']['default'] = $wp_abspath;
+		}
+
 		$this->config_path = self::get_config_path( $this->assoc_args );
 
 		$this->config = self::load_config( $this->config_path, $config_spec );
@@ -250,7 +271,7 @@ class Runner {
 			exit;
 		}
 
-		$_SERVER['DOCUMENT_ROOT'] = getcwd();
+		$_SERVER['DOCUMENT_ROOT'] = realpath( $this->config['path'] );
 
 		// First try at showing man page
 		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
