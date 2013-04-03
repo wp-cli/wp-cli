@@ -1,0 +1,5 @@
+## DESCRIPTION
+
+`wp shell` allows you to evaluate PHP statements and expressions interactively, from within a WordPress environment. This means that you have access to all the functions, classes and globals that you would have access to from inside a WordPress plugin, for example.
+
+If you type `history` and hit Return, WP-CLI will print the list of previously evaluated statements, which you can copy+paste into a PHP file.
