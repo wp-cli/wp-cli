@@ -13,8 +13,16 @@ class Shell_Command extends \WP_CLI_Command {
 		while ( true ) {
 			$line = self::prompt();
 
-			if ( '' === $line )
-				continue;
+			switch ( $line ) {
+				case '': {
+					continue 2;
+				}
+
+				case 'history': {
+					self::print_history();
+					continue 2;
+				}
+			}
 
 			$line = rtrim( $line, ';' ) . ';';
 
@@ -77,6 +85,24 @@ BASH;
 		$cmd = str_replace( "\n", '; ', $cmd );
 
 		return '/bin/bash -c ' . escapeshellarg( $cmd );
+	}
+
+	private static function print_history() {
+		$history_file = self::get_history_path();
+
+		if ( !is_readable( $history_file ) )
+			return;
+
+		$lines = array_filter( explode( "\n", file_get_contents( $history_file ) ) );
+
+		foreach ( $lines as $line ) {
+			if ( 'history' == $line )
+				continue;
+
+			$line = rtrim( $line, ';' ) . ';';
+
+			echo "$line\n";
+		}
 	}
 
 	private static function get_history_path() {
