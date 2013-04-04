@@ -9,8 +9,6 @@ class DB_Command extends WP_CLI_Command {
 
 	/**
 	 * Create the database, as specified in wp-config.php
-	 *
-	 * @synopsis
 	 */
 	function create( $_, $assoc_args ) {
 		self::run_query( sprintf( 'CREATE DATABASE `%s`', DB_NAME ) );
@@ -47,8 +45,6 @@ class DB_Command extends WP_CLI_Command {
 
 	/**
 	 * Optimize the database.
-	 *
-	 * @synopsis
 	 */
 	function optimize() {
 		self::run( \WP_CLI\Utils\create_cmd(
@@ -61,8 +57,6 @@ class DB_Command extends WP_CLI_Command {
 
 	/**
 	 * Repair the database.
-	 *
-	 * @synopsis
 	 */
 	function repair() {
 		self::run( \WP_CLI\Utils\create_cmd(
@@ -76,8 +70,6 @@ class DB_Command extends WP_CLI_Command {
 	 * Open a mysql console using the WordPress credentials.
 	 *
 	 * @alias cli
-	 *
-	 * @synopsis
 	 */
 	function connect() {
 		self::run( \WP_CLI\Utils\create_cmd(
@@ -100,6 +92,7 @@ class DB_Command extends WP_CLI_Command {
 	 * Exports the database using mysqldump.
 	 *
 	 * @alias dump
+	 *
 	 * @synopsis [<file>]
 	 */
 	function export( $args, $assoc_args ) {
