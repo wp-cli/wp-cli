@@ -1,6 +1,16 @@
 Feature: Wordpress code scaffolding
   
   @Custom Post Types
+  Scenario: Scaffold a Custom Post Type
+      Given a WP install
+
+      When I run `wp scaffold post-type zombie`
+      Then it should run without errors
+      And STDOUT should contain:
+        """
+        __( 'Zombies'
+        """
+          
   Scenario: Scaffold a Custom Post Type with label
     Given a WP install
 
@@ -10,13 +20,3 @@ Feature: Wordpress code scaffolding
       """
       __( 'Brain eaters'
       """
-
-    Scenario: Scaffold a Custom Post Type without the label flag
-        Given a WP install
-
-        When I run `wp scaffold post-type zombie`
-        Then it should run without errors
-        And STDOUT should contain:
-          """
-          __( 'Zombies'
-          """
