@@ -362,3 +362,17 @@ function find_subcommand( $args ) {
 		return $command;
 }
 
+function run_mysql_query( $query, $args, $dry_run = false ) {
+	// TODO: use PDO?
+
+	$cmd = \WP_CLI\Utils\create_cmd( 'mysql --host=%s --user=%s --execute=%s',
+		$args['host'], $args['user'], $query
+	);
+
+	$old_val = getenv( 'MYSQL_PWD' );
+
+	putenv( 'MYSQL_PWD=' . $args['pass'] );
+	\WP_CLI::launch( $cmd );
+	putenv( 'MYSQL_PWD=' . $old_val );
+}
+
