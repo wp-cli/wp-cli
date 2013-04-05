@@ -36,9 +36,9 @@ Feature: Manage WordPress posts
     And STDOUT should match '%d'
     And save STDOUT as {POST_ID}
 
-    When I run `wp post get {POST_ID} -`
+    When I run `wp post get {POST_ID}`
     Then it should run without errors
     And STDOUT should be:
-       """
-       Test content.
-       """
+      """
+      Test content.
+      """

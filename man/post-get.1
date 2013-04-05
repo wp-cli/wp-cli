@@ -7,7 +7,7 @@
 \fBwp\-post\-get\fR \- Get a post\'s content by ID\.
 .
 .SH "SYNOPSIS"
-wp post get \fIid\fR \fIfilename\fR
+wp post get \fIid\fR
 .
 .SH "OPTIONS"
 .
@@ -17,22 +17,13 @@ wp post get \fIid\fR \fIfilename\fR
 .IP
 The ID of the post to get\.
 .
-.TP
-\fB<filename>\fR:
-.
-.IP
-Write post content to \fIfilename\fR\.
-.
-.IP
-Passing \fB\-\fR as the filename will cause post content to be written to STDOUT\.
-.
 .SH "EXAMPLES"
 .
 .nf
 
-wp post get 12 \-
+wp post get 12
 
-wp post get 12 file\.txt
+wp post get 12 > file\.txt
 .
 .fi
 
