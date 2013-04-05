@@ -1,6 +1,5 @@
 Feature: Wordpress code scaffolding
   
-  @Custom Post Types
   Scenario: Scaffold a Custom Post Type
       Given a WP install
 
