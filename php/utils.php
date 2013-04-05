@@ -377,7 +377,9 @@ function run_mysql_command( $cmd, $arg_str, $pass ) {
 	$final_cmd = "$cmd --defaults-file=/dev/null $arg_str";
 
 	putenv( 'MYSQL_PWD=' . $pass );
-	\WP_CLI::launch( $final_cmd );
+	$r = proc_close( proc_open( $final_cmd, array( STDIN, STDOUT, STDERR ), $pipes ) );
 	putenv( 'MYSQL_PWD=' . $old_val );
+
+	if ( $r ) exit( $r );
 }
 
