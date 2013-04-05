@@ -1,0 +1,18 @@
+## OPTIONS
+
+* `<id>`:
+
+	The ID of the post to get.
+
+* `<filename>`:
+
+	Write post content to <filename>.
+
+	Passing `-` as the filename will cause post content to
+	be written to STDOUT.
+
+## EXAMPLES
+
+	wp post get 12 -
+
+	wp post get 12 file.txt

@@ -80,6 +80,28 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
+ 	 * Get a post's content by ID.
+ 	 *
+ 	 * @synopsis <id> <filename>
+ 	 */
+	public function get( $args, $_ ) {
+		$post_id = $args[0];
+		if ( !$post_id || !$post = get_post( $post_id ) )
+ 			 \WP_CLI::error( "Failed opening post $post_id to get." );
+
+		if ( $args[1] !== '-' ) {
+			$writefile = $args[1];
+			if ( ! file_exists( $writefile ) || ! is_file( $writefile ) )
+				\WP_CLI::error( "Unable to write content to $writefile." );
+		} else
+			$writefile = 'php://stdout';
+
+		$r = file_put_contents( $writefile, $post->post_content );
+		if ( $r === false )
+			\WP_CLI::error( "Failed to write content to $writefile." );
+	}
+
+	/**
 	 * Delete a post by ID.
 	 *
 	 * @synopsis <id>... [--force]
@@ -241,4 +263,3 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 }
 
 WP_CLI::add_command( 'post', 'Post_Command' );
-
