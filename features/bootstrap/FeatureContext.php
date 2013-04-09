@@ -114,7 +114,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	public function create_db() {
 		$dbname = self::$db_settings['dbname'];
-		self::run_sql( "CREATE DATABASE $dbname" );
+		self::run_sql( "CREATE DATABASE IF NOT EXISTS $dbname" );
 	}
 
 	public function drop_db() {
