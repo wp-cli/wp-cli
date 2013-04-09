@@ -1,5 +1,7 @@
 <?php
 
+use \WP_CLI\Utils;
+
 /**
  * Perform basic database operations.
  *
@@ -47,8 +49,8 @@ class DB_Command extends WP_CLI_Command {
 	 * Optimize the database.
 	 */
 	function optimize() {
-		self::run( \WP_CLI\Utils\create_cmd(
-			'mysqlcheck --optimize --host=%s --user=%s %s',
+		self::run( 'mysqlcheck', Utils\create_cmd(
+			'--optimize --host=%s --user=%s %s',
 			DB_HOST, DB_USER, DB_NAME
 		) );
 
@@ -59,8 +61,8 @@ class DB_Command extends WP_CLI_Command {
 	 * Repair the database.
 	 */
 	function repair() {
-		self::run( \WP_CLI\Utils\create_cmd(
-			'mysqlcheck --repair --host=%s --user=%s %s',
+		self::run( 'mysqlcheck', Utils\create_cmd(
+			'--repair --host=%s --user=%s %s',
 			DB_HOST, DB_USER, DB_NAME ) );
 
 		WP_CLI::success( "Database repaired." );
@@ -72,8 +74,8 @@ class DB_Command extends WP_CLI_Command {
 	 * @alias cli
 	 */
 	function connect() {
-		self::run( \WP_CLI\Utils\create_cmd(
-			'mysql --host=%s --user=%s --database=%s',
+		self::run( 'mysql', Utils\create_cmd(
+			'--host=%s --user=%s --database=%s',
 			DB_HOST, DB_USER, DB_NAME ) );
 	}
 
@@ -98,8 +100,8 @@ class DB_Command extends WP_CLI_Command {
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
-		self::run( \WP_CLI\Utils\create_cmd(
-			'mysqldump %s --user=%s --host=%s --result-file %s',
+		self::run( 'mysqldump', Utils\create_cmd(
+			'%s --user=%s --host=%s --result-file %s',
 			DB_NAME, DB_USER, DB_HOST, $result_file ) );
 
 		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
@@ -113,8 +115,8 @@ class DB_Command extends WP_CLI_Command {
 	function import( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
-		self::run( \WP_CLI\Utils\create_cmd(
-			'mysql %s --user=%s --host=%s < %s',
+		self::run( 'mysql', Utils\create_cmd(
+			'%s --user=%s --host=%s < %s',
 			DB_NAME, DB_USER, DB_HOST, $result_file ) );
 
 		WP_CLI::success( sprintf( 'Imported from %s', $result_file ) );
@@ -128,20 +130,17 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	private static function run_query( $query ) {
-		return \WP_CLI\Utils\run_mysql_query( $query, array(
+		Utils\run_mysql_query( $query, array(
 			'host' => DB_HOST,
 			'user' => DB_USER,
 			'pass' => DB_PASSWORD,
 		) );
 	}
 
-	private static function run( $cmd ) {
-		$old_val = getenv( 'MYSQL_PWD' );
-
-		putenv( 'MYSQL_PWD=' . DB_PASSWORD );
-		WP_CLI::launch( $cmd );
-		putenv( 'MYSQL_PWD=' . $old_val );
+	private static function run( $cmd, $args ) {
+		Utils\run_mysql_command( $cmd, $args, DB_PASSWORD );
 	}
 }
 
 WP_CLI::add_command( 'db', 'DB_Command' );
+

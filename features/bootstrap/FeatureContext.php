@@ -5,6 +5,8 @@ use Behat\Behat\Context\ClosuredContextInterface,
     Behat\Behat\Context\BehatContext,
     Behat\Behat\Event\SuiteEvent;
 
+use \WP_CLI\Utils;
+
 require_once 'PHPUnit/Framework/Assert/Functions.php';
 
 require_once __DIR__ . '/../../php/utils.php';
@@ -92,26 +94,27 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		if ( !$path ) {
 			$path = sys_get_temp_dir() . '/wp-cli-test-cache';
-			system( \WP_CLI\Utils\create_cmd( 'mkdir -p %s', $path ) );
+			system( Utils\create_cmd( 'mkdir -p %s', $path ) );
 		}
 
 		return $path . '/' . $file;
 	}
 
 	public function download_file( $url, $path ) {
-		system( \WP_CLI\Utils\create_cmd( 'curl -sSL %s > %s', $url, $path ) );
+		system( Utils\create_cmd( 'curl -sSL %s > %s', $url, $path ) );
 	}
 
 	private static function run_sql( $sql ) {
-		putenv( 'MYSQL_PWD=' . self::$db_settings['dbpass'] );
-
-		system( \WP_CLI\Utils\create_cmd( 'mysql -u%s -e %s',
-			self::$db_settings['dbuser'], $sql ) );
+		Utils\run_mysql_query( $sql, array(
+			'host' => 'localhost',
+			'user' => self::$db_settings['dbuser'],
+			'pass' => self::$db_settings['dbpass'],
+		) );
 	}
 
 	public function create_db() {
 		$dbname = self::$db_settings['dbname'];
-		self::run_sql( "CREATE DATABASE $dbname" );
+		self::run_sql( "CREATE DATABASE IF NOT EXISTS $dbname" );
 	}
 
 	public function drop_db() {
@@ -121,7 +124,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	private function _run( $command, $assoc_args, $subdir = '' ) {
 		if ( !empty( $assoc_args ) )
-			$command .= \WP_CLI\Utils\assoc_args_to_str( $assoc_args );
+			$command .= Utils\assoc_args_to_str( $assoc_args );
 
 		$subdir = $this->get_path( $subdir );
 
@@ -184,7 +187,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		if ( $subdir ) mkdir( $dest_dir );
 
-		$cmd = \WP_CLI\Utils\create_cmd( "cp -r %s/* %s", $cache_dir, $dest_dir );
+		$cmd = Utils\create_cmd( "cp -r %s/* %s", $cache_dir, $dest_dir );
 
 		system( $cmd );
 	}
