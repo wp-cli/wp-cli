@@ -30,7 +30,14 @@ if [ "$new_commit_subj" = "$current_commit_subj" ]; then
 fi
 
 # generate md5 checksum
-md5sum $fname | cut -d ' ' -f 1 > $fname.md5
+if [ command -v md5sum > /dev/null ]
+then
+	md5hash=$(md5sum $fname)
+else
+	md5hash=$(md5 -r $fname)
+fi
+
+echo $md5hash | cut -d ' ' -f 1 > $fname.md5
 
 git add $fname $fname.md5
 

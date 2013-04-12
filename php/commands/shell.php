@@ -10,11 +10,21 @@ class Shell_Command extends \WP_CLI_Command {
 	public function __invoke() {
 		\WP_CLI::line( 'Type "exit" to close session.' );
 
-		while ( true ) {
-			$line = self::prompt();
+		$this->set_history_file();
 
-			if ( '' === $line )
-				continue;
+		while ( true ) {
+			$line = $this->prompt();
+
+			switch ( $line ) {
+				case '': {
+					continue 2;
+				}
+
+				case 'history': {
+					self::print_history();
+					continue 2;
+				}
+			}
 
 			$line = rtrim( $line, ';' ) . ';';
 
@@ -41,11 +51,11 @@ class Shell_Command extends \WP_CLI_Command {
 		) );
 	}
 
-	private static function prompt() {
+	private function prompt() {
 		static $cmd;
 
 		if ( !$cmd ) {
-			$cmd = self::create_prompt_cmd( 'wp> ', self::get_history_path() );
+			$cmd = self::create_prompt_cmd( 'wp> ', $this->history_file );
 		}
 
 		$fp = popen( $cmd, 'r' );
@@ -79,10 +89,26 @@ BASH;
 		return '/bin/bash -c ' . escapeshellarg( $cmd );
 	}
 
-	private static function get_history_path() {
+	private function print_history() {
+		if ( !is_readable( $this->history_file ) )
+			return;
+
+		$lines = array_filter( explode( "\n", file_get_contents( $this->history_file ) ) );
+
+		foreach ( $lines as $line ) {
+			if ( 'history' == $line )
+				continue;
+
+			$line = rtrim( $line, ';' ) . ';';
+
+			echo "$line\n";
+		}
+	}
+
+	private function set_history_file() {
 		$data = getcwd() . get_current_user();
 
-		return sys_get_temp_dir() . '/wp-cli-history-' . md5( $data );
+		$this->history_file = sys_get_temp_dir() . '/wp-cli-history-' . md5( $data );
 	}
 
 	private static function starts_with( $tokens, $line ) {

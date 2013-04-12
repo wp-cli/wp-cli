@@ -308,15 +308,30 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		else
 			$tests_dir = ABSPATH . 'unit-tests/';
 
+		$assoc_args = wp_parse_args( $assoc_args, array(
+			'dbpass' => '',
+		) );
+
+		// Download the test suite
 		WP_CLI::launch( 'svn co https://unit-test.svn.wordpress.org/trunk/ ' . escapeshellarg( $tests_dir ) );
 
+		// Create the database
+		$query = sprintf( 'CREATE DATABASE IF NOT EXISTS `%s`', $assoc_args['dbname'] );
+
+		\WP_CLI\Utils\run_mysql_query( $query, array(
+			'host' => 'localhost',
+			'user' => $assoc_args['dbuser'],
+			'pass' => $assoc_args['dbpass'],
+		) );
+
+		// Create the wp-tests-config.php file
 		$config_file = file_get_contents( $tests_dir . 'wp-tests-config-sample.php' );
 
 		$replacements = array(
 			"dirname( __FILE__ ) . '/wordpress/'" => "'" . ABSPATH . "'",
 			"yourdbnamehere"   => $assoc_args['dbname'],
 			"yourusernamehere" => $assoc_args['dbuser'],
-			"yourpasswordhere" => isset( $assoc_args['dbpass'] ) ? $assoc_args['dbpass'] : ''
+			"yourpasswordhere" => $assoc_args['dbpass'],
 		);
 
 		$config_file = str_replace( array_keys( $replacements ), array_values( $replacements ), $config_file );

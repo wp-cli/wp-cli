@@ -10,6 +10,12 @@ $steps->Given( '/^an empty directory$/',
 	}
 );
 
+$steps->Given( '/^a ([^\s]+) file:$/',
+	function ( $world, $path, PyStringNode $content ) {
+		file_put_contents( $world->get_path( $path ), (string) $content );
+	}
+);
+
 $steps->Given( '/^WP files$/',
 	function ( $world ) {
 		$world->download_wordpress_files();
@@ -28,23 +34,40 @@ $steps->Given( '/^a database$/',
 	}
 );
 
-$steps->Given( '/^a WP (install|multisite install)$/',
-	function ( $world, $type ) {
-		$world->create_db();
-		$world->create_empty_dir();
-		$world->download_wordpress_files();
-		$world->run( 'core config' );
-		$world->run( 'core install' );
-
-		if ( 'multisite install' == $type ) {
-			$world->run( 'core install-network' );
-		}
+$steps->Given( '/^a WP install$/',
+	function ( $world ) {
+		$world->wp_install();
 	}
 );
 
-$steps->Given( '/^custom wp-content directory$/',
+$steps->Given( "/^a WP install in '([^\s]+)'$/",
+	function ( $world, $subdir ) {
+		$world->wp_install( $subdir );
+	}
+);
+
+$steps->Given( '/^a WP multisite install$/',
 	function ( $world ) {
-		$world->define_custom_wp_content_dir();
+		$world->wp_install();
+		$world->run( 'core install-network' );
+	}
+);
+
+$steps->Given( '/^a custom wp-content directory$/',
+	function ( $world ) {
+		$wp_config_path = $world->get_path( 'wp-config.php' );
+
+		$wp_config_code = file_get_contents( $wp_config_path );
+
+		$world->move_files( 'wp-content', 'my-content' );
+		$world->add_line_to_wp_config( $wp_config_code,
+			"define( 'WP_CONTENT_DIR', dirname(__FILE__) . '/my-content' );" );
+
+		$world->move_files( 'my-content/plugins', 'my-plugins' );
+		$world->add_line_to_wp_config( $wp_config_code,
+			"define( 'WP_PLUGIN_DIR', __DIR__ . '/my-plugins' );" );
+
+		file_put_contents( $wp_config_path, $wp_config_code );
 	}
 );
 
@@ -79,6 +102,12 @@ $steps->When( '/^I run `wp`$/',
 $steps->When( '/^I run `wp (.+)`$/',
 	function ( $world, $cmd ) {
 		$world->result = $world->run( $world->replace_variables( $cmd ) );
+	}
+);
+
+$steps->When( "/^I run `wp (.+)` from '([^\s]+)'$/",
+	function ( $world, $cmd, $subdir ) {
+		$world->result = $world->run( $world->replace_variables( $cmd ), array(), $subdir );
 	}
 );
 

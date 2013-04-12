@@ -49,6 +49,40 @@ function get_config_spec() {
 }
 
 /**
+ * Search for file by walking up the directory tree until the first file is found or until $stop_check($dir) returns true
+ * @param string|array The files (or file) to search for
+ * @param string|null The directory to start searching from; defaults to CWD
+ * @param callable Function which is passed the current dir each time a directory level is traversed
+ * @return null|string Null if the file was not found
+ */
+function find_file_upward( $files, $dir = null, $stop_check = null ) {
+	$files = (array) $files;
+	if ( is_null( $dir ) ) {
+		$dir = getcwd();
+	}
+	while ( is_readable( $dir ) ) {
+		// Stop walking up when the supplied callable returns true being passed the $dir
+		if ( is_callable( $stop_check ) && call_user_func( $stop_check, $dir ) ) {
+			return null;
+		}
+
+		foreach ( $files as $file ) {
+			$path = $dir . DIRECTORY_SEPARATOR . $file;
+			if ( file_exists( $path ) ) {
+				return $path;
+			}
+		}
+
+		$parent_dir = dirname( $dir );
+		if ( empty($parent_dir) || $parent_dir === $dir ) {
+			break;
+		}
+		$dir = $parent_dir;
+	}
+	return null;
+}
+
+/**
  * Splits $argv into positional and associative arguments.
  *
  * @param string
@@ -257,22 +291,23 @@ function format_items( $format, $fields, $items ) {
 			if ( 'json' == $format )
 				echo json_encode( $output_items );
 			else
-				output_csv( $output_items, $fields );
+				write_csv( STDOUT, $output_items, $fields );
 			break;
 	}
 }
 
 /**
- * Output data as CSV
+ * Write data as CSV to a given file.
  *
- * @param array  $rows       Array of rows to output
- * @param array  $headers    List of CSV columns (optional)
+ * @param resource $fd         File descriptor
+ * @param array    $rows       Array of rows to output
+ * @param array    $headers    List of CSV columns (optional)
  */
-function output_csv( $rows, $headers = array() ) {
+function write_csv( $fd, $rows, $headers = array() ) {
 
 	// Prepare the headers if they were specified
 	if ( ! empty( $headers ) )
-		fputcsv( STDOUT, $headers );
+		fputcsv( $fd, $headers );
 
 	foreach ( $rows as $row ) {
 		$row = (array) $row;
@@ -284,7 +319,7 @@ function output_csv( $rows, $headers = array() ) {
 			}
 			$row = $build_row;
 		}
-		fputcsv( STDOUT, $row );
+		fputcsv( $fd, $row );
 	}
 
 }
@@ -325,5 +360,26 @@ function find_subcommand( $args ) {
 		}
 
 		return $command;
+}
+
+function run_mysql_query( $query, $args ) {
+	// TODO: use PDO?
+
+	$arg_str = create_cmd( '--host=%s --user=%s --execute=%s',
+		$args['host'], $args['user'], $query );
+
+	run_mysql_command( 'mysql', $arg_str, $args['pass'] );
+}
+
+function run_mysql_command( $cmd, $arg_str, $pass ) {
+	$old_val = getenv( 'MYSQL_PWD' );
+
+	$final_cmd = "$cmd --defaults-file=/dev/null $arg_str";
+
+	putenv( 'MYSQL_PWD=' . $pass );
+	$r = proc_close( proc_open( $final_cmd, array( STDIN, STDOUT, STDERR ), $pipes ) );
+	putenv( 'MYSQL_PWD=' . $old_val );
+
+	if ( $r ) exit( $r );
 }
 

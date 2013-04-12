@@ -1,5 +1,9 @@
 ## OPTIONS
 
+* `--label=<label>`:
+
+	The text used to translate the update messages
+
 * `--textdomain=<textdomain>`:
 
 	The textdomain to use for the labels.

@@ -126,11 +126,11 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	protected function get_item_list() {
 		$items = array();
 
-		foreach ( wp_get_themes() as $theme ) {
+		foreach ( wp_get_themes() as $key => $theme ) {
 			$file = $theme->get_stylesheet_directory();
 
 			$items[ $file ] = array(
-				'name' => $theme->get('Name'),
+				'name' => $key,
 				'status' => $this->get_status( $theme ),
 				'update' => $this->has_update( $theme->get_stylesheet() ),
 				'update_id' => $theme->get_stylesheet(),

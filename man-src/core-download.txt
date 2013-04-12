@@ -9,6 +9,10 @@ ignored in this case.
 
 	Select which version you want to download.
 
+* `--force`:
+
+	Overwrites existing files, if present.
+
 ## EXAMPLES
 
 	Download version 3.3: wp core download --version=3.3

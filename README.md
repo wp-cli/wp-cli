@@ -11,13 +11,11 @@ For documentation, usage, and examples, check out [wp-cli.org](http://wp-cli.org
 
 I'm running into troubles, what can I do?
 -----------------------------------------
-
 To suggest a feature, report a bug, or general discussion, visit the [issues section](https://github.com/wp-cli/wp-cli/issues).
 
 Who's behind this thing?
 ------------------------
-
-We are [Andreas Creten](https://github.com/andreascreten) and [Cristi Burcă](https://github.com/scribu), friendly guys from Europe.
+We are [Andreas Creten](https://github.com/andreascreten) and [Cristi Burcă](https://github.com/scribu), friendly guys from Europe. For more info, see [Governance](https://github.com/wp-cli/wp-cli/wiki/Governance).
 
 A complete list of contributors can be found [here](https://github.com/wp-cli/wp-cli/contributors).
 

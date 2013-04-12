@@ -1,5 +1,7 @@
 <?php
 
+use \WP_CLI\Utils;
+
 /**
  * Perform basic database operations.
  *
@@ -9,13 +11,9 @@ class DB_Command extends WP_CLI_Command {
 
 	/**
 	 * Create the database, as specified in wp-config.php
-	 *
-	 * @synopsis [--str]
 	 */
 	function create( $_, $assoc_args ) {
-		self::run( $assoc_args, self::create_execute_cmd(
-			sprintf( 'CREATE DATABASE `%s`', DB_NAME )
-		) );
+		self::run_query( sprintf( 'CREATE DATABASE `%s`', DB_NAME ) );
 
 		WP_CLI::success( "Database created." );
 	}
@@ -23,50 +21,37 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Delete the database.
 	 *
-	 * @synopsis [--yes] [--str]
+	 * @synopsis [--yes]
 	 */
 	function drop( $_, $assoc_args ) {
-		$command = self::create_execute_cmd( sprintf( 'DROP DATABASE `%s`', DB_NAME ) );
+		WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args );
 
-		if ( !isset( $assoc_args['str'] ) ) {
-			WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args );
-			WP_CLI::launch( $command );
-			WP_CLI::success( "Database dropped." );
-		} else {
-			WP_CLI::line( $command );
-		}
+		self::run_query( sprintf( 'DROP DATABASE `%s`', DB_NAME ) );
+
+		WP_CLI::success( "Database dropped." );
 	}
 
 	/**
 	 * Remove all tables from the database.
 	 *
-	 * @synopsis [--yes] [--str]
+	 * @synopsis [--yes]
 	 */
 	function reset( $_, $assoc_args ) {
-		$drop_cmd = self::create_execute_cmd( sprintf( 'DROP DATABASE IF EXISTS `%s`', DB_NAME ) );
+		WP_CLI::confirm( "Are you sure you want to reset the database?", $assoc_args );
 
-		$create_cmd = self::create_execute_cmd( sprintf( 'CREATE DATABASE `%s`', DB_NAME ) );
+		self::run_query( sprintf( 'DROP DATABASE IF EXISTS `%s`', DB_NAME ) );
+		self::run_query( sprintf( 'CREATE DATABASE `%s`', DB_NAME ) );
 
-		if ( !isset( $assoc_args['str'] ) ) {
-			WP_CLI::confirm( "Are you sure you want to reset the database?", $assoc_args );
-			WP_CLI::launch( $drop_cmd );
-			WP_CLI::launch( $create_cmd );
-			WP_CLI::success( "Database reset." );
-		} else {
-			WP_CLI::line( $drop_cmd );
-			WP_CLI::line( $create_cmd );
-		}
+		WP_CLI::success( "Database reset." );
 	}
 
 	/**
 	 * Optimize the database.
-	 *
-	 * @synopsis [--str]
 	 */
-	function optimize( $_, $assoc_args ) {
-		self::run( $assoc_args, \WP_CLI\Utils\create_cmd(
-			'mysqlcheck --optimize --host=%s --user=%s --password=%s %s',
-			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+	function optimize() {
+		self::run( 'mysqlcheck', Utils\create_cmd(
+			'--optimize --host=%s --user=%s %s',
+			DB_HOST, DB_USER, DB_NAME
 		) );
 
 		WP_CLI::success( "Database optimized." );
@@ -74,14 +59,11 @@ class DB_Command extends WP_CLI_Command {
 
 	/**
 	 * Repair the database.
-	 *
-	 * @synopsis [--str]
 	 */
-	function repair( $_, $assoc_args ) {
-		self::run( $assoc_args, \WP_CLI\Utils\create_cmd(
-			'mysqlcheck --repair --host=%s --user=%s --password=%s %s',
-			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
-		) );
+	function repair() {
+		self::run( 'mysqlcheck', Utils\create_cmd(
+			'--repair --host=%s --user=%s %s',
+			DB_HOST, DB_USER, DB_NAME ) );
 
 		WP_CLI::success( "Database repaired." );
 	}
@@ -90,37 +72,37 @@ class DB_Command extends WP_CLI_Command {
 	 * Open a mysql console using the WordPress credentials.
 	 *
 	 * @alias cli
-	 *
-	 * @synopsis [--str]
 	 */
-	function connect( $_, $assoc_args ) {
-		self::run( $assoc_args, $this->connect_string() );
+	function connect() {
+		self::run( 'mysql', Utils\create_cmd(
+			'--host=%s --user=%s --database=%s',
+			DB_HOST, DB_USER, DB_NAME ) );
 	}
 
 	/**
 	 * Execute a query against the database.
 	 *
-	 * @synopsis <sql> [--str]
+	 * @synopsis <sql>
 	 */
-	function query( $args, $assoc_args ) {
+	function query( $args ) {
 		list( $query ) = $args;
 
-		self::run( $assoc_args, $this->connect_string() . \WP_CLI\Utils\create_cmd(
-			' --execute=%s', $query ) );
+		self::run_query( $query );
 	}
 
 	/**
 	 * Exports the database using mysqldump.
 	 *
 	 * @alias dump
-	 * @synopsis [<file>] [--str]
+	 *
+	 * @synopsis [<file>]
 	 */
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
-		self::run( $assoc_args, \WP_CLI\Utils\create_cmd(
-			'mysqldump %s --user=%s --password=%s --host=%s --result-file %s',
-			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file ) );
+		self::run( 'mysqldump', Utils\create_cmd(
+			'%s --user=%s --host=%s --result-file %s',
+			DB_NAME, DB_USER, DB_HOST, $result_file ) );
 
 		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
 	}
@@ -128,21 +110,16 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Import database from a file.
 	 *
-	 * @synopsis [<file>] [--str]
+	 * @synopsis [<file>]
 	 */
 	function import( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
-		self::run( $assoc_args, \WP_CLI\Utils\create_cmd(
-			'mysql %s --user=%s --password=%s --host=%s < %s',
-			DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, $result_file ) );
+		self::run( 'mysql', Utils\create_cmd(
+			'%s --user=%s --host=%s < %s',
+			DB_NAME, DB_USER, DB_HOST, $result_file ) );
 
 		WP_CLI::success( sprintf( 'Imported from %s', $result_file ) );
-	}
-
-	private function connect_string() {
-		return \WP_CLI\Utils\create_cmd( 'mysql --host=%s --user=%s --password=%s --database=%s',
-			DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
 	}
 
 	private function get_file_name( $args ) {
@@ -152,21 +129,18 @@ class DB_Command extends WP_CLI_Command {
 		return $args[0];
 	}
 
-	private static function create_execute_cmd( $execute_statement ) {
-		return \WP_CLI\Utils\create_cmd(
-			'mysql --host=%s --user=%s --password=%s --execute=%s',
-			DB_HOST, DB_USER, DB_PASSWORD, $execute_statement
-		);
+	private static function run_query( $query ) {
+		Utils\run_mysql_query( $query, array(
+			'host' => DB_HOST,
+			'user' => DB_USER,
+			'pass' => DB_PASSWORD,
+		) );
 	}
 
-	private static function run( $assoc_args, $cmd ) {
-		if ( isset( $assoc_args['str'] ) ) {
-			WP_CLI::line( $cmd );
-			exit;
-		}
-
-		WP_CLI::launch( $cmd );
+	private static function run( $cmd, $args ) {
+		Utils\run_mysql_command( $cmd, $args, DB_PASSWORD );
 	}
 }
 
 WP_CLI::add_command( 'db', 'DB_Command' );
+
