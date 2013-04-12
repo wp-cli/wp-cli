@@ -108,12 +108,19 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * Get a list of posts.
 	 *
 	 * @subcommand list
-	 * @synopsis [--<field>=<value>] [--ids]
+	 * @synopsis [--<field>=<value>] [--ids] [--format=<format>]
 	 */
 	public function _list( $_, $assoc_args ) {
 		$query_args = array(
 			'posts_per_page' => -1
 		);
+
+		if ( ! empty( $assoc_args['format'] ) ) {
+			$format = $assoc_args['format'];
+			unset( $assoc_args['format'] );
+		} else {
+			$format = 'table';
+		}
 
 		foreach ( $assoc_args as $key => $value ) {
 			if ( true === $value )
@@ -130,24 +137,21 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		if ( isset( $assoc_args['ids'] ) ) {
 			WP_CLI::out( implode( ' ', $query->posts ) );
 		} else {
+
 			$fields = array( 'ID', 'post_title', 'post_name', 'post_date' );
 
-			$table = new \cli\Table();
-
-			$table->setHeaders( $fields );
-
+			$output_posts = array();
 			foreach ( $query->posts as $post ) {
-				$line = array();
 
+				$output_post = new stdClass;
 				foreach ( $fields as $field ) {
-					$line[] = $post->$field;
+					$output_post->$field = $post->$field;
 				}
-
-				$table->addRow( $line );
+				$output_posts[] = $output_post;
 			}
-
-			$table->display();
+			WP_CLI\Utils\format_items( $format, $fields, $output_posts );
 		}
+
 	}
 
 	/**
