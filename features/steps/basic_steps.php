@@ -178,6 +178,41 @@ $steps->Then( '/^(STDOUT|STDERR) should match \'([^\']+)\'$/',
 	}
 );
 
+$steps->Then( '/^STDOUT should be a table containing rows:$/',
+	function ( $world, PyStringNode $expected ) {
+		$output     = $world->result->STDOUT;
+		$outputRows = explode( "\n", rtrim( $output, "\n" ) );
+
+		$expected     = $world->replace_variables( (string) $expected );
+		$expectedRows = explode( "\n", rtrim( $expected, "\n" ) );
+
+		// the first row is the header and must be present
+		if ( $expectedRows[0] != $outputRows[0] ) {
+			throw new \Exception( $output );
+		}
+
+		unset($outputRows[0]);
+		unset($expectedRows[0]);
+		$matches = array_intersect( $expectedRows, $outputRows );
+		if ( count( $expectedRows ) != count( $matches ) ) {
+			throw new \Exception( $output );
+		}
+	}
+);
+
+$steps->Then( '/^STDOUT should be JSON containing:$/',
+	function ( $world, PyStringNode $expected ) {
+		$output     = $world->result->STDOUT;
+		$outputJson = json_decode( $output );
+
+		$expected     = $world->replace_variables( (string) $expected );
+		$expectedJson = json_decode( $expected );
+
+		if ( !compareJson( $expectedJson, $outputJson ) ) {
+			throw new \Exception( $output );
+		}
+});
+
 $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 	function ( $world, $stream ) {
 		if ( !empty( $world->result->$stream ) ) {
@@ -197,3 +232,28 @@ $steps->Then( '/^the (.+) file should exist$/',
 		assertFileExists( $world->get_path( $path ) );
 	}
 );
+
+
+function compareJson( $expected, $actual ) {
+	if ( gettype( $expected ) != gettype( $actual ) ) {
+		return false;
+	}
+
+	if ( is_object( $expected ) ) {
+		foreach ( get_object_vars( $expected ) as $name => $value ) {
+			if ( !compareJson( $value, $actual->$name ) ) {
+				return false;
+			}
+		}
+	} else if ( is_array( $expected ) ) {
+		foreach ( $expected as $key => $value ) {
+			if ( !compareJson( $value, $actual[$key] ) ) {
+				return false;
+			}
+		}
+	} else {
+		return $expected === $actual;
+	}
+
+	return true;
+}

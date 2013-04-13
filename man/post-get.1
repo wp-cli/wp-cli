@@ -7,9 +7,27 @@
 \fBwp\-post\-get\fR \- Get a post\'s content by ID\.
 .
 .SH "SYNOPSIS"
-wp post get \fIid\fR
+wp post get [\-\-format=\fIformat\fR] \fIid\fR
 .
 .SH "OPTIONS"
+.
+.TP
+\fB[\-\-format=<format>]\fR:
+.
+.IP
+The format to use when printing the post, acceptable values:
+.
+.IP
+content: outputs only the post\'s content (default)
+.
+.IP
+table: output all fields of the post as a table, note that the post_content field is output last to simplify parsing
+.
+.IP
+csv: output all fields in Comma Separated Value format
+.
+.IP
+json: output all fields in JavaScript Object Notation format
 .
 .TP
 \fB<id>\fR:

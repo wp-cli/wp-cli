@@ -42,3 +42,37 @@ Feature: Manage WordPress posts
       """
       Test content.
       """
+
+    When I run `wp post get --format=content {POST_ID}`
+    Then it should run without errors
+    And STDOUT should be:
+      """
+      Test content.
+      """
+
+    When I run `wp post get --format=table {POST_ID}`
+    Then it should run without errors
+    And STDOUT should be a table containing rows:
+      """
+      Field	Value
+      ID	{POST_ID}
+      post_title	Test post
+      post_content	Test content.
+      """
+
+    When I run `wp post get --format=csv {POST_ID}`
+    Then it should run without errors
+    And STDOUT should be a table containing rows:
+      """
+      Field,Value
+      ID,{POST_ID}
+      post_title,"Test post"
+      post_content,"Test content."
+      """
+
+    When I run `wp post get --format=json {POST_ID}`
+    Then it should run without errors
+    And STDOUT should be JSON containing:
+      """
+      {"ID":{POST_ID},"post_title":"Test post","post_content":"Test content."}
+      """

@@ -65,14 +65,14 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	public function edit( $args, $_ ) {
 		$post_id = $args[0];
 		if ( !$post_id || !$post = get_post( $post_id ) )
- 			 \WP_CLI::error( "Failed opening post $post_id to edit." );
+			\WP_CLI::error( "Failed opening post $post_id to edit." );
 
 		$r = $this->_edit( $post->post_content, "WP-CLI post $post_id" );
 
 		if ( $r === false )
- 			 \WP_CLI::warning( 'No change made to post content.', 'Aborted' );
+			\WP_CLI::warning( 'No change made to post content.', 'Aborted' );
 		else
-			 parent::update( $args, array( 'post_content' => $r ) );
+			parent::update( $args, array( 'post_content' => $r ) );
 	}
 
 	protected function _edit( $content, $title ) {
@@ -80,16 +80,53 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
- 	 * Get a post's content by ID.
- 	 *
- 	 * @synopsis <id>
- 	 */
-	public function get( $args, $_ ) {
+	 * Get a post's content by ID.
+	 *
+	 * @synopsis [--format=<format>] <id>
+	 */
+	public function get( $args, $assoc_args ) {
+		$assoc_args = wp_parse_args( $assoc_args, array(
+			'format' => 'content'
+		) );
+		$format = $assoc_args['format'];
+
 		$post_id = $args[0];
 		if ( !$post_id || !$post = get_post( $post_id ) )
- 			 \WP_CLI::error( "Failed opening post $post_id to get." );
+			\WP_CLI::error( "Failed opening post $post_id to get." );
 
-        echo($post->post_content);
+		switch ( $assoc_args['format'] ) {
+
+		case 'content':
+			echo($post->post_content);
+			break;
+
+		case 'table':
+		case 'csv':
+			$items = array();
+			foreach ( get_object_vars( $post ) as $field => $value ) {
+				if ( 'post_content' === $field )
+					continue;
+
+				$item = new \stdClass;
+				$item->Field = $field;
+				$item->Value = $value;
+				$items[] = $item;
+			}
+			$content = new \stdClass;
+			$content->Field = 'post_content';
+			$content->Value = $post->post_content;
+			$items[] = $content;
+
+			\WP_CLI\Utils\format_items( $format, array( 'Field', 'Value' ), $items );
+			break;
+
+		case 'json':
+			echo( json_encode( $post ) );
+			break;
+
+		default:
+			\WP_CLI::error( "Invalid value for format: " . $format );
+		}
 	}
 
 	/**
