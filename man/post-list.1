@@ -7,7 +7,7 @@
 \fBwp\-post\-list\fR \- Get a list of posts\.
 .
 .SH "SYNOPSIS"
-wp post list [\-\-\fIfield\fR=\fIvalue\fR] [\-\-ids]
+wp post list [\-\-\fIfield\fR=\fIvalue\fR] [\-\-ids] [\-\-format=\fIformat\fR]
 .
 .SH "OPTIONS"
 .
@@ -23,6 +23,12 @@ One or more args to pass to WP_Query\.
 .IP
 Return only the IDs of the found posts, separated by spaces\.
 .
+.TP
+\fB\-\-format\fR=\fIformat\fR:
+.
+.IP
+Output list as table, CSV or JSON\. Defaults to table\.
+.
 .SH "EXAMPLES"
 .
 .nf
@@ -30,6 +36,8 @@ Return only the IDs of the found posts, separated by spaces\.
 wp post list
 
 wp post list \-\-post_type=page \-\-post_status=draft \-\-ids
+
+wp post list \-\-post_type=post \-\-posts_per_page=5 \-\-format=json
 .
 .fi
 
