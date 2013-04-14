@@ -1,23 +1,23 @@
 <?php
 
-namespace WP_CLI;
+namespace WP_CLI\Iterators;
 
 /**
  * @source https://gist.github.com/4060005
  */
-class TableIterator extends QueryIterator {
+class Table extends Query {
 
 	/**
 	 * Creates an iterator over a database table
 	 *
 	 * <code>
-	 * foreach( new TableIterator( array( 'table' => $wpdb->posts, 'fields' => array( 'ID', 'post_content' ) ) ) as $post ) {
+	 * foreach( new Iterators\Table( array( 'table' => $wpdb->posts, 'fields' => array( 'ID', 'post_content' ) ) ) as $post ) {
 	 *     count_words_for( $post->ID, $post->post_content );
 	 * }
 	 * </code>
 	 *
 	 * <code>
-	 * foreach( new TableIterator( array( 'table' => $wpdb->posts, 'where' => 'ID = 8 OR post_status = "publish"' ) ) as $post ) {
+	 * foreach( new Iterators\Table( array( 'table' => $wpdb->posts, 'where' => 'ID = 8 OR post_status = "publish"' ) ) as $post ) {
 	 *     …
 	 * }
 	 * </code>
