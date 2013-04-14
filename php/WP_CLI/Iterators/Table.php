@@ -52,11 +52,10 @@ class Table extends Query {
 		$conditions = self::build_where_conditions( $args['where'] );
 		$where_sql = $conditions? " WHERE $conditions" : '';
 		$query = "SELECT $fields FROM $table $where_sql";
-		$parent_args = compact( 'query' );
-		if ( isset( $args['limit'] ) ) {
-			$parent_args['limit'] = $args['limit'];
-		}
-		parent::__construct( $parent_args );
+
+		$limit = isset( $args['limit'] ) ? $args['limit'] : 500;
+
+		parent::__construct( $query, $limit );
 	}
 
 	static function build_fields( $fields ) {

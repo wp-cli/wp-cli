@@ -24,24 +24,19 @@ class Query implements \Iterator {
 	 *
 	 * This will loop over all users, but will retrieve them 100 by 100:
 	 * <code>
-	 * foreach( new Iterators\Query( array( 'query' => 'SELECT * FROM users', 'limit' => 100 ) ) as $user ) {
+	 * foreach( new Iterators\Query( 'SELECT * FROM users', 100 ) as $user ) {
 	 *     tickle( $user );
 	 * }
 	 * </code>
 	 *
-	 *
-	 * @param array $args Supported arguments:
-	 *		query – the query as a string. It shouldn't include any LIMIT clauses
-	 *		limit – (optional) how many rows to retrieve at once, default value is 500
+	 * @param string $query The query as a string. It shouldn't include any LIMIT clauses
+	 * @param number $limit How many rows to retrieve at once; default value is 500 (optional)
 	 */
-	function __construct( $args = array() ) {
+	public function __construct( $query, $limit = 500 ) {
+		$this->query = $query;
+		$this->limit = $limit;
+
 		$this->db = $GLOBALS['wpdb'];
-		foreach( $args as $key => $value ) {
-			$this->$key = $value;
-		}
-		if ( !$this->query ) {
-			throw new InvalidArgumentException( 'Missing query argument.' );
-		}
 	}
 
 	function load_items_from_db() {
