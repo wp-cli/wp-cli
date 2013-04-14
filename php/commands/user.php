@@ -300,7 +300,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$filename = $args[0];
 
-		foreach ( new \WP_CLI\CSVIterator( $filename ) as $i => $new_user ) {
+		foreach ( new \WP_CLI\Iterators\CSV( $filename ) as $i => $new_user ) {
 			$defaults = array(
 				'role' => get_option('default_role'),
 				'user_pass' => wp_generate_password(),
