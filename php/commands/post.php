@@ -20,7 +20,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			if ( $args[0] !== '-' ) {
 				$readfile = $args[0];
 				if ( ! file_exists( $readfile ) || ! is_file( $readfile ) )
-					 \WP_CLI::error( "Unable to read content from $readfile." );
+					\WP_CLI::error( "Unable to read content from $readfile." );
 			} else
 				$readfile = 'php://stdin';
 
@@ -101,31 +101,33 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			break;
 
 		case 'table':
-		case 'csv':
 			$items = array();
 			foreach ( get_object_vars( $post ) as $field => $value ) {
 				if ( 'post_content' === $field )
 					continue;
+
+				if ( !is_string($value) ) {
+					$value = json_encode($value);
+				}
 
 				$item = new \stdClass;
 				$item->Field = $field;
 				$item->Value = $value;
 				$items[] = $item;
 			}
-			$content = new \stdClass;
-			$content->Field = 'post_content';
-			$content->Value = $post->post_content;
-			$items[] = $content;
 
 			\WP_CLI\Utils\format_items( $format, array( 'Field', 'Value' ), $items );
 			break;
 
 		case 'json':
 			echo( json_encode( $post ) );
+			echo( "\n" );
 			break;
 
 		default:
 			\WP_CLI::error( "Invalid value for format: " . $format );
+			break;
+
 		}
 	}
 

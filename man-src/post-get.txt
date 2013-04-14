@@ -7,9 +7,7 @@
 	content: outputs only the post's content (default)
 
 	table: output all fields of the post as a table, note that the
-	post_content field is output last to simplify parsing
-
-	csv: output all fields in Comma Separated Value format
+	post_content field is omitted so that the table is readable
 
 	json: output all fields in JavaScript Object Notation format
 
