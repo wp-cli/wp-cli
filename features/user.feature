@@ -40,3 +40,23 @@ Feature: Manage WordPress users
       """
       11
       """
+
+  Scenario: Importing users from a CSV file
+    Given a WP install
+    And a users.csv file:
+      """
+      user_login, user_email, display_name, role
+      bobjones, bobjones@domain.com, Bob Jones, contributor
+      newuser1, newuser1@domain.com, New User, author
+      admin, admin@domain.com, Existing User, administrator
+      """
+
+    When I run `wp user import-csv users.csv`
+    Then it should run without errors
+
+    When I run `wp user list | wc -l | tr -d ' '`
+    Then STDOUT should be:
+      """
+      4
+      """
+
