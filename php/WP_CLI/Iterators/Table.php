@@ -5,7 +5,7 @@ namespace WP_CLI\Iterators;
 /**
  * @source https://gist.github.com/4060005
  */
-class Table extends Iterators\Query {
+class Table extends Query {
 
 	/**
 	 * Creates an iterator over a database table
