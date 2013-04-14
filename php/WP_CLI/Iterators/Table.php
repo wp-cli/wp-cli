@@ -58,11 +58,11 @@ class Table extends Query {
 		parent::__construct( $query, $limit );
 	}
 
-	static function build_fields( $fields ) {
+	private static function build_fields( $fields ) {
 		return implode( ', ', $fields );
 	}
 
-	static function build_where_conditions( $where ) {
+	private static function build_where_conditions( $where ) {
 		global $wpdb;
 		if ( is_array( $where ) ) {
 			$conditions = array();

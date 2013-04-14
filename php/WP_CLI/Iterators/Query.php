@@ -39,22 +39,24 @@ class Query implements \Iterator {
 		$this->db = $GLOBALS['wpdb'];
 	}
 
-	function load_items_from_db() {
+	private function load_items_from_db() {
 		$query = $this->query . sprintf( ' LIMIT %d OFFSET %d', $this->limit, $this->offset );
 		$this->results = $this->db->get_results( $query );
+
 		if ( !$this->results ) {
 			if ( $this->db->last_error ) {
-				throw new Iterators\Exception( 'Database error: '.$this->db->last_error );
+				throw new Iterators\Exception( 'Database error: ' . $this->db->last_error );
 			} else {
 				return false;
 			}
 		}
+
 		$this->offset += $this->limit;
 		return true;
 	}
 
 	function current() {
-		return $this->results[$this->index_in_results];
+		return $this->results[ $this->index_in_results ];
 	}
 
 	function key() {
@@ -78,15 +80,19 @@ class Query implements \Iterator {
 		if ( $this->depleted ) {
 			return false;
 		}
-		if ( !isset( $this->results[$this->index_in_results] ) ) {
+
+		if ( !isset( $this->results[ $this->index_in_results ] ) ) {
 			$items_loaded = $this->load_items_from_db();
+
 			if ( !$items_loaded ) {
 				$this->rewind();
 				$this->depleted = true;
 				return false;
 			}
+
 			$this->index_in_results = 0;
 		}
+
 		return true;
 	}
 }
