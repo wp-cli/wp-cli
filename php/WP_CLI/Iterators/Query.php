@@ -1,13 +1,13 @@
 <?php
 
-namespace WP_CLI;
+namespace WP_CLI\Iterators;
 
 /**
  * Iterates over results of a query, split into many queries via LIMIT and OFFSET
  *
  * @source https://gist.github.com/4060005
  */
-class QueryIterator implements \Iterator {
+class Query implements \Iterator {
 
 	private $limit = 500;
 	private $query = '';
@@ -24,7 +24,7 @@ class QueryIterator implements \Iterator {
 	 *
 	 * This will loop over all users, but will retrieve them 100 by 100:
 	 * <code>
-	 * foreach( new QueryIterator( array( 'query' => 'SELECT * FROM users', 'limit' => 100 ) ) as $user ) {
+	 * foreach( new Iterators\Query( array( 'query' => 'SELECT * FROM users', 'limit' => 100 ) ) as $user ) {
 	 *     tickle( $user );
 	 * }
 	 * </code>
@@ -49,7 +49,7 @@ class QueryIterator implements \Iterator {
 		$this->results = $this->db->get_results( $query );
 		if ( !$this->results ) {
 			if ( $this->db->last_error ) {
-				throw new QueryIteratorException( 'Database error: '.$this->db->last_error );
+				throw new Iterators\Exception( 'Database error: '.$this->db->last_error );
 			} else {
 				return false;
 			}
@@ -95,6 +95,4 @@ class QueryIterator implements \Iterator {
 		return true;
 	}
 }
-
-class QueryIteratorException extends \RuntimeException {}
 
