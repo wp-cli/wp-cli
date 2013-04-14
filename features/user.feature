@@ -35,7 +35,7 @@ Feature: Manage WordPress users
     When I run `wp user generate --count=10`
     Then it should run without errors
  
-    When I run `wp user list | wc -l`
+    When I run `wp user list | wc -l | tr -d ' '`
     Then STDOUT should be:
       """
       11
