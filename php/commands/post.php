@@ -20,7 +20,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			if ( $args[0] !== '-' ) {
 				$readfile = $args[0];
 				if ( ! file_exists( $readfile ) || ! is_file( $readfile ) )
-					 \WP_CLI::error( "Unable to read content from $readfile." );
+					\WP_CLI::error( "Unable to read content from $readfile." );
 			} else
 				$readfile = 'php://stdin';
 
@@ -65,18 +65,70 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	public function edit( $args, $_ ) {
 		$post_id = $args[0];
 		if ( !$post_id || !$post = get_post( $post_id ) )
- 			 \WP_CLI::error( "Failed opening post $post_id to edit." );
+			\WP_CLI::error( "Failed opening post $post_id to edit." );
 
 		$r = $this->_edit( $post->post_content, "WP-CLI post $post_id" );
 
 		if ( $r === false )
- 			 \WP_CLI::warning( 'No change made to post content.', 'Aborted' );
+			\WP_CLI::warning( 'No change made to post content.', 'Aborted' );
 		else
-			 parent::update( $args, array( 'post_content' => $r ) );
+			parent::update( $args, array( 'post_content' => $r ) );
 	}
 
 	protected function _edit( $content, $title ) {
 		return \WP_CLI\Utils\launch_editor_for_input( $content, $title );
+	}
+
+	/**
+	 * Get a post's content by ID.
+	 *
+	 * @synopsis [--format=<format>] <id>
+	 */
+	public function get( $args, $assoc_args ) {
+		$assoc_args = wp_parse_args( $assoc_args, array(
+			'format' => 'content'
+		) );
+		$format = $assoc_args['format'];
+
+		$post_id = $args[0];
+		if ( !$post_id || !$post = get_post( $post_id ) )
+			\WP_CLI::error( "Failed opening post $post_id to get." );
+
+		switch ( $assoc_args['format'] ) {
+
+		case 'content':
+			echo($post->post_content);
+			break;
+
+		case 'table':
+			$items = array();
+			foreach ( get_object_vars( $post ) as $field => $value ) {
+				if ( 'post_content' === $field )
+					continue;
+
+				if ( !is_string($value) ) {
+					$value = json_encode($value);
+				}
+
+				$item = new \stdClass;
+				$item->Field = $field;
+				$item->Value = $value;
+				$items[] = $item;
+			}
+
+			\WP_CLI\Utils\format_items( $format, array( 'Field', 'Value' ), $items );
+			break;
+
+		case 'json':
+			echo( json_encode( $post ) );
+			echo( "\n" );
+			break;
+
+		default:
+			\WP_CLI::error( "Invalid value for format: " . $format );
+			break;
+
+		}
 	}
 
 	/**
@@ -245,4 +297,3 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 }
 
 WP_CLI::add_command( 'post', 'Post_Command' );
-
