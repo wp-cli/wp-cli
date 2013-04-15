@@ -203,12 +203,11 @@ $steps->Then( '/^STDOUT should be a table containing rows:$/',
 $steps->Then( '/^STDOUT should be JSON containing:$/',
 	function ( $world, PyStringNode $expected ) {
 		$output     = $world->result->STDOUT;
-		$outputJson = json_decode( $output );
 
 		$expected     = $world->replace_variables( (string) $expected );
-		$expectedJson = json_decode( $expected );
 
-		if ( !compareJson( $expectedJson, $outputJson ) ) {
+		if ( !checkThatJsonStringContainsJsonString( $output,
+		                                             $expected ) ) {
 			throw new \Exception( $output );
 		}
 });
@@ -234,26 +233,70 @@ $steps->Then( '/^the (.+) file should exist$/',
 );
 
 
-function compareJson( $expected, $actual ) {
-	if ( gettype( $expected ) != gettype( $actual ) ) {
+/**
+ * Compare two strings containing JSON to ensure that @a $actualJson contains at
+ * least what the JSON string @a $expectedJson contains.
+ *
+ * @return whether or not @a $actualJson contains @a $expectedJson
+ *     @retval true  @a $actualJson contains @a $expectedJson
+ *     @retval false @a $actualJson does not contain @a $expectedJson
+ *
+ * @param[in] $actualJson   the JSON string to be tested
+ * @param[in] $expectedJson the expected JSON string
+ *
+ * Examples:
+ *   expected: {'a':1,'array':[1,3,5]}
+ *
+ *   1)
+ *   actual: {'a':1,'b':2,'c':3,'array':[1,2,3,4,5]}
+ *   return: true
+ *
+ *   2)
+ *   actual: {'b':2,'c':3,'array':[1,2,3,4,5]}
+ *   return: false
+ *     element 'a' is missing from the root object
+ *
+ *   3)
+ *   actual: {'a':0,'b':2,'c':3,'array':[1,2,3,4,5]}
+ *   return: false
+ *     the value of element 'a' is not 1
+ *
+ *   4)
+ *   actual: {'a':1,'b':2,'c':3,'array':[1,2,4,5]}
+ *   return: false
+ *     the contents of 'array' does not include 3
+ */
+function checkThatJsonStringContainsJsonString( $actualJson, $expectedJson ) {
+	$actualValue   = json_decode( $actualJson );
+	$expectedValue = json_decode( $expectedJson );
+
+	if ( !$actualValue ) {
 		return false;
 	}
 
-	if ( is_object( $expected ) ) {
-		foreach ( get_object_vars( $expected ) as $name => $value ) {
-			if ( !compareJson( $value, $actual->$name ) ) {
-				return false;
-			}
+	function compareContents( $expected, $actual ) {
+		if ( gettype( $expected ) != gettype( $actual ) ) {
+			return false;
 		}
-	} else if ( is_array( $expected ) ) {
-		foreach ( $expected as $key => $value ) {
-			if ( !compareJson( $value, $actual[$key] ) ) {
-				return false;
+
+		if ( is_object( $expected ) ) {
+			foreach ( get_object_vars( $expected ) as $name => $value ) {
+				if ( !compareContents( $value, $actual->$name ) ) {
+					return false;
+				}
 			}
+		} else if ( is_array( $expected ) ) {
+			foreach ( $expected as $key => $value ) {
+				if ( !compareContents( $value, $actual[$key] ) ) {
+					return false;
+				}
+			}
+		} else {
+			return $expected === $actual;
 		}
-	} else {
-		return $expected === $actual;
+
+		return true;
 	}
 
-	return true;
+	return compareContents( $expectedValue, $actualValue );
 }
