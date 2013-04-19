@@ -10,6 +10,6 @@
 
 ## EXAMPLES
 
-	wp user list
+	wp user list --format=ids
 
 	wp user list --role=administrator --format=csv

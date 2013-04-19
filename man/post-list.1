@@ -7,7 +7,7 @@
 \fBwp\-post\-list\fR \- Get a list of posts\.
 .
 .SH "SYNOPSIS"
-wp post list [\-\-\fIfield\fR=\fIvalue\fR] [\-\-format=\fIformat\fR] [\-\-ids]
+wp post list [\-\-\fIfield\fR=\fIvalue\fR] [\-\-format=\fIformat\fR]
 .
 .SH "OPTIONS"
 .
@@ -27,7 +27,7 @@ Output list as table, CSV, JSON, or simply IDs\. Defaults to table\.
 .
 .nf
 
-wp post list
+wp post list \-\-format=ids
 
 wp post list \-\-post_type=post \-\-posts_per_page=5 \-\-format=json
 .

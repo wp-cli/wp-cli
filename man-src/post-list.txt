@@ -10,6 +10,6 @@
 
 ## EXAMPLES
 
-	wp post list
+	wp post list --format=ids
 
 	wp post list --post_type=post --posts_per_page=5 --format=json

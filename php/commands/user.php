@@ -13,7 +13,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * List users.
 	 *
 	 * @subcommand list
-	 * @synopsis [--role=<role>] [--format=<format>] [--ids]
+	 * @synopsis [--role=<role>] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 
@@ -26,12 +26,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( array_key_exists( 'role', $assoc_args ) ) {
 			$params['role'] = $assoc_args['role'];
-		}
-
-		// --ids is deprecated
-		if ( isset( $params['ids'] ) ) {
-			$params['format'] = 'ids';
-			unset( $params['ids'] );
 		}
 
 		if ( 'ids' == $params['format'] )
@@ -47,6 +41,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			'user_registered',
 			'roles'
 		);
+
 		if ( 'ids' != $params['format'] ) {
 			foreach ( $users as $user ) {
 				$user->roles = implode( ',', $user->roles );

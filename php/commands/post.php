@@ -160,18 +160,12 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * Get a list of posts.
 	 *
 	 * @subcommand list
-	 * @synopsis [--<field>=<value>] [--format=<format>] [--ids]
+	 * @synopsis [--<field>=<value>] [--format=<format>]
 	 */
 	public function _list( $_, $assoc_args ) {
 		$query_args = array(
 			'posts_per_page' => -1
 		);
-
-		// --ids is deprecated
-		if ( isset( $assoc_args['ids'] ) ) {
-			$assoc_args['format'] = 'ids';
-			unset( $assoc_args['ids'] );
-		}
 
 		if ( ! empty( $assoc_args['format'] ) ) {
 			$format = $assoc_args['format'];
