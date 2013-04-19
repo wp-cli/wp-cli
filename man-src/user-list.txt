@@ -4,13 +4,9 @@
 
 	Only display users with a certain role.
 
-* `--ids`:
-
-	Return only the IDs of the found users, separated by spaces.
-
 * `--format`=<format>:
 
-	Output list as table, CSV or JSON. Defaults to table.
+	Output list as table, CSV, JSON, or simply IDs. Defaults to table.
 
 ## EXAMPLES
 
