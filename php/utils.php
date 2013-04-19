@@ -293,6 +293,9 @@ function format_items( $format, $fields, $items ) {
 			else
 				write_csv( STDOUT, $output_items, $fields );
 			break;
+		case 'ids':
+			\WP_CLI::out( implode( ' ', $items ) );
+			break;
 	}
 }
 
