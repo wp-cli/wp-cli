@@ -24,6 +24,9 @@ class Term_Command extends WP_CLI_Command {
 
 		$terms = get_terms( array( $taxonomy ), $assoc_args );
 
+		if ( 'ids' == $assoc_args['format'] )
+			$terms = wp_list_pluck( $terms, 'term_id' );
+
 		$fields = array(
 			'term_id',
 			'term_taxonomy_id',
@@ -32,7 +35,7 @@ class Term_Command extends WP_CLI_Command {
 			'description',
 			'parent',
 			'count',
-		);
+			);
 
 		WP_CLI\Utils\format_items( $assoc_args['format'], $fields, $terms );
 	}

@@ -274,29 +274,29 @@ function checkThatJsonStringContainsJsonString( $actualJson, $expectedJson ) {
 		return false;
 	}
 
-	function compareContents( $expected, $actual ) {
-		if ( gettype( $expected ) != gettype( $actual ) ) {
-			return false;
-		}
+	return compareContents( $expectedValue, $actualValue );
+}
 
-		if ( is_object( $expected ) ) {
-			foreach ( get_object_vars( $expected ) as $name => $value ) {
-				if ( !compareContents( $value, $actual->$name ) ) {
-					return false;
-				}
-			}
-		} else if ( is_array( $expected ) ) {
-			foreach ( $expected as $key => $value ) {
-				if ( !compareContents( $value, $actual[$key] ) ) {
-					return false;
-				}
-			}
-		} else {
-			return $expected === $actual;
-		}
-
-		return true;
+function compareContents( $expected, $actual ) {
+	if ( gettype( $expected ) != gettype( $actual ) ) {
+		return false;
 	}
 
-	return compareContents( $expectedValue, $actualValue );
+	if ( is_object( $expected ) ) {
+		foreach ( get_object_vars( $expected ) as $name => $value ) {
+			if ( !compareContents( $value, $actual->$name ) ) {
+				return false;
+			}
+		}
+	} else if ( is_array( $expected ) ) {
+		foreach ( $expected as $key => $value ) {
+			if ( !compareContents( $value, $actual[$key] ) ) {
+				return false;
+			}
+		}
+	} else {
+		return $expected === $actual;
+	}
+
+	return true;
 }

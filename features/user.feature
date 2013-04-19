@@ -25,10 +25,10 @@ Feature: Manage WordPress users
     Given a WP install
 
     # Delete all users
-    When I run `wp user list --ids`
+    When I run `wp user list --format=ids`
     And save STDOUT as {USER_IDS}
     And I run `wp user delete {USER_IDS}`
-    When I run `wp user list --ids`
+    When I run `wp user list --format=ids`
     Then it should run without errors
     And STDOUT should be empty
 
@@ -45,10 +45,10 @@ Feature: Manage WordPress users
     Given a WP install
     And a users.csv file:
       """
-      user_login, user_email, display_name, role
-      bobjones, bobjones@domain.com, Bob Jones, contributor
-      newuser1, newuser1@domain.com, New User, author
-      admin, admin@domain.com, Existing User, administrator
+      user_login,user_email,display_name,role
+      bobjones,bobjones@domain.com,Bob Jones,contributor
+      newuser1,newuser1@domain.com,New User,author
+      admin,admin@domain.com,Existing User,administrator
       """
 
     When I run `wp user import-csv users.csv`
@@ -60,3 +60,9 @@ Feature: Manage WordPress users
       4
       """
 
+    When I run `wp user list --format=json`
+    Then it should run without errors
+    And STDOUT should be JSON containing:
+    """
+    [{"user_login":"admin","display_name":"Existing User","user_email":"admin@domain.com","roles":"administrator"}]
+    """
