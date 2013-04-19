@@ -281,6 +281,7 @@ function checkThatJsonStringContainsJsonString( $actualJson, $expectedJson ) {
 		return false;
 	}
 
+	if ( ! function_exists( 'compareContents' ) ) :
 	function compareContents( $expected, $actual ) {
 		if ( gettype( $expected ) != gettype( $actual ) ) {
 			return false;
@@ -304,6 +305,7 @@ function checkThatJsonStringContainsJsonString( $actualJson, $expectedJson ) {
 
 		return true;
 	}
+	endif;
 
 	return compareContents( $expectedValue, $actualValue );
 }
