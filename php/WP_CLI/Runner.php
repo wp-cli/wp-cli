@@ -160,6 +160,7 @@ class Runner {
 			case 'admin':
 				if ( ! defined( 'WP_ADMIN' ) )
 					define( 'WP_ADMIN', true );
+				$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
 				break;
 			default:
 				break;
