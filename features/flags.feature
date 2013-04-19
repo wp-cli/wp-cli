@@ -35,6 +35,36 @@ Feature: Global flags
       Notice: Use of undefined constant CONST_WITHOUT_QUOTES
       """
 
+  Scenario: Context run
+    Given a WP install
+
+    When I run `wp eval 'echo defined( "WP_ADMIN" );'`
+    Then it should run without errors
+    And STDOUT should be:
+      """
+      """
+
+    When I run `wp eval --context=admin 'echo defined( "WP_ADMIN" );'`
+    Then it should run without errors
+    And STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp eval 'echo function_exists( "media_handle_upload" );'`
+    Then it should run without errors
+    And STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp eval --context=admin 'echo function_exists( "media_handle_upload" );'`
+    Then it should run without errors
+    And STDOUT should be:
+      """
+      1
+      """
+
   Scenario: Setting the WP user
     Given a WP install
 
