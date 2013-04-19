@@ -151,7 +151,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand child-theme
 	 *
-	 * @synopsis <slug> [--theme_name=<title>] [--parent_theme=<title>] [--author=<full-name>] [--author_uri=<http-url>] [--theme_uri=<http-url>] [--activate]
+	 * @synopsis <slug> --parent_theme=<title> [--theme_name=<title>] [--author=<full-name>] [--author_uri=<http-url>] [--theme_uri=<http-url>] [--activate]
 	 */
 	function child_theme( $args, $assoc_args ) {
 
@@ -160,7 +160,6 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$data = wp_parse_args( $assoc_args, array(
 			'theme_name' => ucfirst( $theme_slug ),
-			'parent_theme' => 'twentytwelve',
 			'author' => "Me",
 			'author_uri' => "",
 			'theme_uri' => ""
