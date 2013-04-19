@@ -4,13 +4,9 @@
 
 	List terms of a given taxonomy.
 
-* `--ids`:
-
-	Return only the term ids of the found terms, separated by spaces.
-
 * `--format`=<format>:
 
-	Output list as table, CSV or JSON. Defaults to table.
+	Output list as table, CSV, JSON, or simply IDs. Defaults to table.
 
 ## EXAMPLES
 
