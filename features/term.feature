@@ -11,11 +11,7 @@ Feature: Manage WordPress terms
       """
 
     When I run the previous command again
-    Then it should run with errors
-    And STDERR should be:
-      """
-      Error: A term with the name provided already exists.
-      """
+    Then STDERR should not be empty
 
     When I run `wp term list post_tag --format=json`
     Then it should run without errors

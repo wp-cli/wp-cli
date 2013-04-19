@@ -142,13 +142,6 @@ $steps->Then( '/^it should run without errors$/',
 	}
 );
 
-$steps->Then( '/^it should run with errors$/' ,
-	function ( $world ) {
-		if ( empty( $world->result->STDERR ) )
-			throw new \Exception( "No error produced" );
-	}
-);
-
 $steps->Then( '/^(STDOUT|STDERR) should (be|contain|not contain):$/',
 	function ( $world, $stream, $action, PyStringNode $expected ) {
 		$output = $world->result->$stream;
