@@ -10,7 +10,7 @@ class Term_Command extends WP_CLI_Command {
 	 * List terms in a taxonomy.
 	 *
 	 * @subcommand list
-	 * @synopsis <taxonomy> [--format=<format>]
+	 * @synopsis <taxonomy> [--ids] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 
@@ -24,17 +24,22 @@ class Term_Command extends WP_CLI_Command {
 
 		$terms = get_terms( array( $taxonomy ), $assoc_args );
 
-		$fields = array(
-			'term_id',
-			'term_taxonomy_id',
-			'name',
-			'slug',
-			'description',
-			'parent',
-			'count',
-		);
+		if ( isset( $assoc_args['ids'] ) ) {
+			WP_CLI::out( implode( ' ', wp_list_pluck( $terms, 'term_id' ) ) );
+		} else {
 
-		WP_CLI\Utils\format_items( $assoc_args['format'], $fields, $terms );
+			$fields = array(
+				'term_id',
+				'term_taxonomy_id',
+				'name',
+				'slug',
+				'description',
+				'parent',
+				'count',
+			);
+
+			WP_CLI\Utils\format_items( $assoc_args['format'], $fields, $terms );
+		}
 	}
 
 	/**
