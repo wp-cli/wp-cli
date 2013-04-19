@@ -154,9 +154,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * @synopsis <slug> --parent_theme=<title> [--theme_name=<title>] [--author=<full-name>] [--author_uri=<http-url>] [--theme_uri=<http-url>] [--activate]
 	 */
 	function child_theme( $args, $assoc_args ) {
-
 		$theme_slug = $args[0];
-		$theme_path = WP_CONTENT_DIR . "/themes";
 
 		$data = wp_parse_args( $assoc_args, array(
 			'theme_name' => ucfirst( $theme_slug ),
@@ -165,20 +163,17 @@ class Scaffold_Command extends WP_CLI_Command {
 			'theme_uri' => ""
 		) );
 
-		$data['theme_description'] = ucfirst($data['parent_theme']) . " child theme. ";
+		$data['description'] = ucfirst( $data['parent_theme'] ) . " child theme.";
 
-
-		$theme_dir = $theme_path . "/$theme_slug";
+		$theme_dir = WP_CONTENT_DIR . "themes" . "/$theme_slug";
 		$theme_style_path = "$theme_dir/style.css";
 
 		$this->create_file( $theme_style_path, $this->render( 'child_theme.mustache', $data ) );
 
 		WP_CLI::success( "Created $theme_dir" );
 
-
 		if ( isset( $assoc_args['activate'] ) )
 			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
-
 	}
 
 	private function get_output_path( $assoc_args, $subdir ) {
