@@ -226,6 +226,15 @@ class Runner {
 			unset( $this->assoc_args['all'] );
 		}
 
+		// {post|user} list --ids  ->  {post|user} list --format=ids
+		if ( count( $this->arguments ) > 1 && in_array( $this->arguments[0], array( 'post', 'user' ) )
+			&& $this->arguments[1] == 'list'
+			&& isset( $this->assoc_args['ids'] )
+		) {
+			$this->assoc_args['format'] = 'ids';
+			unset( $this->assoc_args['ids'] );
+		}
+
 		$config_spec = Utils\get_config_spec();
 
 		// Set the path default to the ABSPATH
