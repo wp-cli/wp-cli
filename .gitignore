@@ -1,6 +1,4 @@
 .svn
-/.build
-/src
-/dist
+composer.phar
 /vendor
 /phpunit.xml

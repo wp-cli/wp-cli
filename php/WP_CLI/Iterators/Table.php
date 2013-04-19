@@ -1,23 +1,23 @@
 <?php
 
-namespace WP_CLI;
+namespace WP_CLI\Iterators;
 
 /**
  * @source https://gist.github.com/4060005
  */
-class TableIterator extends QueryIterator {
+class Table extends Query {
 
 	/**
 	 * Creates an iterator over a database table
 	 *
 	 * <code>
-	 * foreach( new TableIterator( array( 'table' => $wpdb->posts, 'fields' => array( 'ID', 'post_content' ) ) ) as $post ) {
+	 * foreach( new Iterators\Table( array( 'table' => $wpdb->posts, 'fields' => array( 'ID', 'post_content' ) ) ) as $post ) {
 	 *     count_words_for( $post->ID, $post->post_content );
 	 * }
 	 * </code>
 	 *
 	 * <code>
-	 * foreach( new TableIterator( array( 'table' => $wpdb->posts, 'where' => 'ID = 8 OR post_status = "publish"' ) ) as $post ) {
+	 * foreach( new Iterators\Table( array( 'table' => $wpdb->posts, 'where' => 'ID = 8 OR post_status = "publish"' ) ) as $post ) {
 	 *     …
 	 * }
 	 * </code>
@@ -52,18 +52,17 @@ class TableIterator extends QueryIterator {
 		$conditions = self::build_where_conditions( $args['where'] );
 		$where_sql = $conditions? " WHERE $conditions" : '';
 		$query = "SELECT $fields FROM $table $where_sql";
-		$parent_args = compact( 'query' );
-		if ( isset( $args['limit'] ) ) {
-			$parent_args['limit'] = $args['limit'];
-		}
-		parent::__construct( $parent_args );
+
+		$limit = isset( $args['limit'] ) ? $args['limit'] : 500;
+
+		parent::__construct( $query, $limit );
 	}
 
-	static function build_fields( $fields ) {
+	private static function build_fields( $fields ) {
 		return implode( ', ', $fields );
 	}
 
-	static function build_where_conditions( $where ) {
+	private static function build_where_conditions( $where ) {
 		global $wpdb;
 		if ( is_array( $where ) ) {
 			$conditions = array();

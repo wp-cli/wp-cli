@@ -62,7 +62,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 			'limit' => 1000
 		);
 
-		$it = new \WP_CLI\TableIterator( $args );
+		$it = new \WP_CLI\Iterators\Table( $args );
 
 		$count = 0;
 

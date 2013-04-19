@@ -178,6 +178,40 @@ $steps->Then( '/^(STDOUT|STDERR) should match \'([^\']+)\'$/',
 	}
 );
 
+$steps->Then( '/^STDOUT should be a table containing rows:$/',
+	function ( $world, PyStringNode $expected ) {
+		$output     = $world->result->STDOUT;
+		$outputRows = explode( "\n", rtrim( $output, "\n" ) );
+
+		$expected     = $world->replace_variables( (string) $expected );
+		$expectedRows = explode( "\n", rtrim( $expected, "\n" ) );
+
+		// the first row is the header and must be present
+		if ( $expectedRows[0] != $outputRows[0] ) {
+			throw new \Exception( $output );
+		}
+
+		unset($outputRows[0]);
+		unset($expectedRows[0]);
+		$matches = array_intersect( $expectedRows, $outputRows );
+		if ( count( $expectedRows ) != count( $matches ) ) {
+			throw new \Exception( $output );
+		}
+	}
+);
+
+$steps->Then( '/^STDOUT should be JSON containing:$/',
+	function ( $world, PyStringNode $expected ) {
+		$output     = $world->result->STDOUT;
+
+		$expected     = $world->replace_variables( (string) $expected );
+
+		if ( !checkThatJsonStringContainsJsonString( $output,
+		                                             $expected ) ) {
+			throw new \Exception( $output );
+		}
+});
+
 $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 	function ( $world, $stream ) {
 		if ( !empty( $world->result->$stream ) ) {
@@ -197,3 +231,72 @@ $steps->Then( '/^the (.+) file should exist$/',
 		assertFileExists( $world->get_path( $path ) );
 	}
 );
+
+
+/**
+ * Compare two strings containing JSON to ensure that @a $actualJson contains at
+ * least what the JSON string @a $expectedJson contains.
+ *
+ * @return whether or not @a $actualJson contains @a $expectedJson
+ *     @retval true  @a $actualJson contains @a $expectedJson
+ *     @retval false @a $actualJson does not contain @a $expectedJson
+ *
+ * @param[in] $actualJson   the JSON string to be tested
+ * @param[in] $expectedJson the expected JSON string
+ *
+ * Examples:
+ *   expected: {'a':1,'array':[1,3,5]}
+ *
+ *   1)
+ *   actual: {'a':1,'b':2,'c':3,'array':[1,2,3,4,5]}
+ *   return: true
+ *
+ *   2)
+ *   actual: {'b':2,'c':3,'array':[1,2,3,4,5]}
+ *   return: false
+ *     element 'a' is missing from the root object
+ *
+ *   3)
+ *   actual: {'a':0,'b':2,'c':3,'array':[1,2,3,4,5]}
+ *   return: false
+ *     the value of element 'a' is not 1
+ *
+ *   4)
+ *   actual: {'a':1,'b':2,'c':3,'array':[1,2,4,5]}
+ *   return: false
+ *     the contents of 'array' does not include 3
+ */
+function checkThatJsonStringContainsJsonString( $actualJson, $expectedJson ) {
+	$actualValue   = json_decode( $actualJson );
+	$expectedValue = json_decode( $expectedJson );
+
+	if ( !$actualValue ) {
+		return false;
+	}
+
+	function compareContents( $expected, $actual ) {
+		if ( gettype( $expected ) != gettype( $actual ) ) {
+			return false;
+		}
+
+		if ( is_object( $expected ) ) {
+			foreach ( get_object_vars( $expected ) as $name => $value ) {
+				if ( !compareContents( $value, $actual->$name ) ) {
+					return false;
+				}
+			}
+		} else if ( is_array( $expected ) ) {
+			foreach ( $expected as $key => $value ) {
+				if ( !compareContents( $value, $actual[$key] ) ) {
+					return false;
+				}
+			}
+		} else {
+			return $expected === $actual;
+		}
+
+		return true;
+	}
+
+	return compareContents( $expectedValue, $actualValue );
+}

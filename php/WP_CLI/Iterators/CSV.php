@@ -1,8 +1,8 @@
 <?php
 
-namespace WP_CLI;
+namespace WP_CLI\Iterators;
 
-class CSVIterator implements \Iterator {
+class CSV implements \Iterator {
 
 	const ROW_SIZE = 4096;
 

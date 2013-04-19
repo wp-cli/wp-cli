@@ -1,0 +1,44 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-POST\-GET" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-post\-get\fR \- Get a post\'s content by ID\.
+.
+.SH "SYNOPSIS"
+wp post get [\-\-format=\fIformat\fR] \fIid\fR
+.
+.SH "OPTIONS"
+.
+.TP
+\fB[\-\-format=<format>]\fR:
+.
+.IP
+The format to use when printing the post, acceptable values:
+.
+.IP
+content: outputs only the post\'s content (default)
+.
+.IP
+table: output all fields of the post as a table, note that the post_content field is omitted so that the table is readable
+.
+.IP
+json: output all fields in JavaScript Object Notation format
+.
+.TP
+\fB<id>\fR:
+.
+.IP
+The ID of the post to get\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp post get 12
+
+wp post get 12 > file\.txt
+.
+.fi
+
