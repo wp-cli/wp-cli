@@ -21,5 +21,5 @@ Feature: Manage WordPress terms
     Then it should run without errors
     And STDOUT should be JSON containing:
       """
-      [{"term_id":"2","term_taxonomy_id":"2","name":"Test term","slug":"test","description":"This is a test term","parent":"0","count":"0"}]
+      [{"name":"Test term","slug":"test","description":"This is a test term","parent":"0","count":"0"}]
       """
