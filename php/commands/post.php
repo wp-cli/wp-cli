@@ -160,12 +160,18 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * Get a list of posts.
 	 *
 	 * @subcommand list
-	 * @synopsis [--<field>=<value>] [--ids] [--format=<format>]
+	 * @synopsis [--<field>=<value>] [--format=<format>] [--ids]
 	 */
 	public function _list( $_, $assoc_args ) {
 		$query_args = array(
 			'posts_per_page' => -1
 		);
+
+		// --ids is deprecated
+		if ( isset( $assoc_args['ids'] ) ) {
+			$assoc_args['format'] = 'ids';
+			unset( $assoc_args['ids'] );
+		}
 
 		if ( ! empty( $assoc_args['format'] ) ) {
 			$format = $assoc_args['format'];
@@ -181,29 +187,16 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$query_args[ $key ] = $value;
 		}
 
-		if ( isset( $assoc_args['ids'] ) )
+		if ( 'ids' == $format )
 			$query_args['fields'] = 'ids';
 
 		$query = new WP_Query( $query_args );
 
-		if ( isset( $assoc_args['ids'] ) ) {
-			WP_CLI::out( implode( ' ', $query->posts ) );
-		} else {
+		$fields = array( 'ID', 'post_title', 'post_name', 'post_date' );
 
-			$fields = array( 'ID', 'post_title', 'post_name', 'post_date' );
+		$output_posts = $query->posts;
 
-			$output_posts = array();
-			foreach ( $query->posts as $post ) {
-
-				$output_post = new stdClass;
-				foreach ( $fields as $field ) {
-					$output_post->$field = $post->$field;
-				}
-				$output_posts[] = $output_post;
-			}
-			WP_CLI\Utils\format_items( $format, $fields, $output_posts );
-		}
-
+		WP_CLI\Utils\format_items( $format, $fields, $output_posts );
 	}
 
 	/**
