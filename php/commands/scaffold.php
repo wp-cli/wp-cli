@@ -148,11 +148,11 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Generate empty child theme (twentytwelve by default).
+	 * Generate empty child theme.
 	 *
 	 * @subcommand child-theme
 	 *
-	 * @synopsis <slug> --parent_theme=<title> [--theme_name=<title>] [--author=<full-name>] [--author_uri=<http-url>] [--theme_uri=<http-url>] [--activate]
+	 * @synopsis <slug> --parent_theme=<slug> [--theme_name=<title>] [--author=<full-name>] [--author_uri=<http-url>] [--theme_uri=<http-url>] [--activate]
 	 */
 	function child_theme( $args, $assoc_args ) {
 		$theme_slug = $args[0];
