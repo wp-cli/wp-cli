@@ -25,10 +25,10 @@ Feature: Manage WordPress users
     Given a WP install
 
     # Delete all users
-    When I run `wp user list --ids`
+    When I run `wp user list --format=ids`
     And save STDOUT as {USER_IDS}
     And I run `wp user delete {USER_IDS}`
-    When I run `wp user list --ids`
+    When I run `wp user list --format=ids`
     Then it should run without errors
     And STDOUT should be empty
 
