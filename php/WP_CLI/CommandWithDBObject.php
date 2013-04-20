@@ -78,5 +78,14 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 
 		exit( $status );
 	}
+
+	public function bulk_delete( $assoc_args ) {
+		$status = 0;
+
+		$r = $this->_bulk_delete( $assoc_args );
+		$status = $this->success_or_failure( $r );
+
+		exit( $status );
+	}
 }
 
