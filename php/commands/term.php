@@ -59,14 +59,15 @@ class Term_Command extends WP_CLI_Command {
 		if ( isset( $assoc_args['porcelain'] ) ) {
 			$porcelain = true;
 			unset( $assoc_args['porcelain'] );
-		} else
+		} else {
 			$porcelain = false;
+		}
 
 		$ret = wp_insert_term( $term, $taxonomy, $assoc_args );
 
-		if ( is_wp_error( $ret ) )
+		if ( is_wp_error( $ret ) ) {
 			WP_CLI::error( $ret->get_error_message() );
-		else {
+		} else {
 			if ( $porcelain )
 				WP_CLI::line( $ret['term_id'] );
 			else
