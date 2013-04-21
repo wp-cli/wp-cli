@@ -6,28 +6,7 @@
  */
 class Term_Command extends WP_CLI_Command {
 
-	/**
-	 * List terms in a taxonomy.
-	 *
-	 * @subcommand list
-	 * @synopsis <taxonomy> [--format=<format>]
-	 */
-	public function _list( $args, $assoc_args ) {
-
-		list( $taxonomy ) = $args;
-
-		$defaults = array(
-			'format'     => 'table',
-			'hide_empty' => false,
-		);
-		$assoc_args = wp_parse_args( $assoc_args, $defaults );
-
-		$terms = get_terms( array( $taxonomy ), $assoc_args );
-
-		if ( 'ids' == $assoc_args['format'] )
-			$terms = wp_list_pluck( $terms, 'term_id' );
-
-		$fields = array(
+	public $fields = array(
 			'term_id',
 			'term_taxonomy_id',
 			'name',
@@ -35,7 +14,32 @@ class Term_Command extends WP_CLI_Command {
 			'description',
 			'parent',
 			'count',
-			);
+		);
+
+	/**
+	 * List terms in a taxonomy.
+	 *
+	 * @subcommand list
+	 * @synopsis <taxonomy> [--fields=<fields>] [--format=<format>]
+	 */
+	public function _list( $args, $assoc_args ) {
+
+		list( $taxonomy ) = $args;
+
+		$defaults = array(
+			'fields'     => implode( ',', $this->fields ),
+			'format'     => 'table',
+			'hide_empty' => false,
+		);
+		$assoc_args = wp_parse_args( $assoc_args, $defaults );
+
+		$fields = $assoc_args['fields'];
+		unset( $assoc_args['fields'] );
+
+		$terms = get_terms( array( $taxonomy ), $assoc_args );
+
+		if ( 'ids' == $assoc_args['format'] )
+			$terms = wp_list_pluck( $terms, 'term_id' );
 
 		WP_CLI\Utils\format_items( $assoc_args['format'], $fields, $terms );
 	}
