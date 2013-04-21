@@ -65,74 +65,47 @@ class Import_Command extends WP_CLI_Command {
 		if ( is_wp_error( $import_data ) )
 			return $import_data;
 
-		$author_in = $user_select = array();
-		if ( file_exists( $args['authors'] ) ) {
-			foreach ( new \WP_CLI\Iterators\CSV( $args['authors'] ) as $i => $author ) {
-				if ( ! array_key_exists( 'old_user_login', $author ) || ! array_key_exists( 'new_user_login', $author ) )
-					return new WP_Error( 'invalid-author-mapping', "Author mapping file isn't properly formatted." );
+		// Prepare the data to be used in process_author_mapping();
+		$wp_import->get_authors_from_import( $import_data );
+		$author_data = array();
+		foreach( $wp_import->authors as $wxr_author ) {
+			$author = new \stdClass;
+			// Always in the WXR
+			$author->user_login = $wxr_author['author_login'];
+			$author->user_email = $wxr_author['author_email'];
 
-				$author_in[] = $author['old_user_login'];
-				$user_select[] = $author['new_user_login'];
-			}
-		} else if ( false !== stripos( $args['authors'], '.csv' ) ) {
-			if ( touch( $args['authors'] ) ) {
-				$author_mapping = array();
-				foreach( $import_data['authors'] as $wxr_author ) {	
-					$author_mapping[] = array(
-							'old_user_login' => $wxr_author['author_login'],
-							'new_user_login' => $this->suggest_user( $wxr_author['author_login'], $wxr_author['author_email'] ),
-						);
-				}
-				$file = fopen( $args['authors'], 'w' );
-				\WP_CLI\utils\write_csv( $file, $author_mapping, array( 'old_user_login', 'new_user_login' ) );
-				WP_CLI::success( sprintf( "Please update author mapping file before continuing: %s", $args['authors'] ) );
-				exit;
-			} else {
-				return new WP_Error( 'author-mapping-error', "Couldn't create author mapping file." );
-			}
-		} else {
-			switch( $args['authors'] ) {
-				// Create authors if they don't yet exist; maybe match on email or user_login
-				case 'create':
-					foreach( $import_data['authors'] as $author ) {
+			// Should be in the WXR; no guarantees
+			if ( isset( $wxr_author['author_display_name'] ) )
+				$author->display_name = $wxr_author['author_display_name'];
+			if ( isset( $wxr_author['author_first_name'] ) )
+				$author->first_name = $wxr_author['author_first_name'];
+			if ( isset( $wxr_author['author_last_name'] ) )
+				$author->last_name = $wxr_author['author_last_name'];
 
-						if ( $user = get_user_by( 'email', $author['author_email'] ) ) {
-							$author_in[] = $author['author_login'];
-							$user_select[] = $user->user_login;
-							continue;
-						}
-
-						if ( $user = get_user_by( 'login', $author['author_login'] ) ) {
-							$author_in[] = $author['author_login'];
-							$user_select[] = $user->user_login;
-							continue;
-						}
-
-						$user = array(
-								'user_login'       => $author['author_login'],
-								'user_email'       => $author['author_email'],
-								'display_name'     => $author['author_display_name'],
-								'first_name'       => $author['author_first_name'],
-								'last_name'        => $author['author_last_name'],
-								'user_pass'        => wp_generate_password(),
-							);
-						$user_id = wp_insert_user( $user );
-						if ( is_wp_error( $user_id ) )
-							return $user_id;
-
-						$user = get_user_by( 'id', $user_id );
-						$author_in[] = $author['author_login'];
-						$user_select[] = $user->user_login;
-					}
-					break;
-				// Skip any sort of author mapping
-				case 'skip':
-					break;
-				default:
-					return new WP_Error( 'invalid-argument', "'authors' argument is invalid." );
-			}
+			$author_data[] = $author;
 		}
 
+		// Build the author mapping
+		$author_mapping = $this->process_author_mapping( $args['authors'], $author_data );
+		if ( is_wp_error( $author_mapping ) )
+			return $author_mapping;
+
+		$author_in = wp_list_pluck( $author_mapping, 'old_user_login' );
+		$author_out = wp_list_pluck( $author_mapping, 'new_user_login' );
+		// $user_select needs to be an array of user IDs
+		$user_select = array();
+		$invalid_user_select = array();
+		foreach( $author_out as $author_login ) {
+			$user = get_user_by( 'login', $author_login );
+			if ( $user )
+				$user_select[] = $user->ID;
+			else
+				$invalid_user_select[] = $author_login;
+		}
+		if ( ! empty( $invalid_user_select ) )
+			return new WP_Error( 'invalid-author-mapping', sprintf( "These user_logins are invalid: %s", implode( ',', $invalid_user_select ) ) );
+
+		// Drive the import
 		$wp_import->fetch_attachments = ( in_array( 'attachment', $args['skip'] ) ) ? false : true;
 		$_GET = array( 'import' => 'wordpress', 'step' => 2 );
 		$_POST = array(
@@ -172,6 +145,121 @@ class Import_Command extends WP_CLI_Command {
 				break;
 		}
 		return $ret;
+	}
+
+	/**
+	 * Process how the authors should be mapped
+	 *
+	 * @param string            $authors_arg      The `--author` argument originally passed to command
+	 * @param array             $author_data      An array of WP_User-esque author objects
+	 * @return array|WP_Error   $author_mapping   Author mapping array if successful, WP_Error if something bad happened
+	 */
+	private function process_author_mapping( $authors_arg, $author_data ) {
+
+		// Provided an author mapping file (method checks validity)
+		if ( file_exists( $authors_arg ) )
+			return $this->read_author_mapping_file( $authors_arg );
+
+		// Provided a file reference, but the file doesn't yet exist
+		if ( false !== stripos( $authors_arg, '.csv' ) )
+			return $this->create_author_mapping_file( $authors_arg, $author_data );
+
+		switch( $authors_arg ) {
+			// Create authors if they don't yet exist; maybe match on email or user_login
+			case 'create':
+				return $this->create_authors_for_mapping( $author_data );
+				break;
+			// Skip any sort of author mapping
+			case 'skip':
+				return array();
+				break;
+			default:
+				return new WP_Error( 'invalid-argument', "'authors' argument is invalid." );
+		}
+	}
+
+	/**
+	 * Read an author mapping file
+	 */
+	private function read_author_mapping_file( $file ) {
+
+		$author_mapping = array();
+		foreach ( new \WP_CLI\Iterators\CSV( $file ) as $i => $author ) {
+			if ( ! array_key_exists( 'old_user_login', $author ) || ! array_key_exists( 'new_user_login', $author ) )
+				return new WP_Error( 'invalid-author-mapping', "Author mapping file isn't properly formatted." );
+
+			$author_mapping[] = $author;
+		}
+		return $author_mapping;
+	}
+
+	/**
+	 * Create an author mapping file, based on provided author data
+	 *
+	 * @return WP_Error      The file was just now created, so some action needs to be taken
+	 */
+	private function create_author_mapping_file( $file, $author_data ) {
+
+		if ( touch( $file ) ) {
+			$author_mapping = array();
+			foreach( $author_data as $author ) {
+				$author_mapping[] = array(
+						'old_user_login' => $author->user_login,
+						'new_user_login' => $this->suggest_user( $author->user_login, $author->user_email ),
+					);
+			}
+			$file_resource = fopen( $file, 'w' );
+			\WP_CLI\utils\write_csv( $file_resource, $author_mapping, array( 'old_user_login', 'new_user_login' ) );
+			return new WP_Error( 'author-mapping-error', sprintf( "Please update author mapping file before continuing: %s", $file ) );
+		} else {
+			return new WP_Error( 'author-mapping-error', "Couldn't create author mapping file." );
+		}
+	}
+
+	/**
+	 * Create users if they don't exist, and build an author mapping file
+	 */
+	private function create_authors_for_mapping( $author_data ) {
+
+		$author_mapping = array();
+		foreach( $author_data as $author ) {
+
+			if ( isset( $author->user_email ) ) {
+				if ( $user = get_user_by( 'email', $author->user_email ) ) {
+					$author_mapping[] = array(
+							'old_user_login' => $author->user_login,
+							'new_user_login' => $user->user_login,
+						);
+					continue;
+				}
+			}
+
+			if ( $user = get_user_by( 'login', $author->user_login ) ) {
+				$author_mapping[] = array(
+					'old_user_login' => $author->user_login,
+					'new_user_login' => $user->user_login,
+				);
+				continue;
+			}
+
+			$user = array(
+					'user_login'       => '',
+					'user_email'       => '',
+					'user_pass'        => wp_generate_password(),
+				);
+			$user = array_merge( $user, (array)$author );
+			$user_id = wp_insert_user( $user );
+			if ( is_wp_error( $user_id ) )
+				return $user_id;
+
+			$user = get_user_by( 'id', $user_id );
+			$author_mapping[] = array(
+					'old_user_login' => $author->user_login,
+					'new_user_login' => $user->user_login,
+				);
+		}
+		return $author_mapping;
+
 	}
 
 	/**
