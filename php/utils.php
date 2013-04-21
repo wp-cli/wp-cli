@@ -252,11 +252,14 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 /**
  * Output items in a table, JSON, or CSV
  *
- * @param string $format     Format to use: 'table', 'json', 'csv'
- * @param array  $fields     Named fields for each item of data
- * @param array  $items      Data to output
+ * @param string        $format     Format to use: 'table', 'json', 'csv'
+ * @param array|string  $fields     Named fields for each item of data. Can be array or CSV
+ * @param array         $items      Data to output
  */
 function format_items( $format, $fields, $items ) {
+
+	if ( ! is_array( $fields ) )
+		$fields = explode( ',', $fields );
 
 	switch ( $format ) {
 		case 'table':
