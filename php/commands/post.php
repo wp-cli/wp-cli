@@ -9,6 +9,13 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected $obj_type = 'post';
 
+	public $fields = array(
+		'ID',
+		'post_title',
+		'post_name',
+		'post_date'
+	);
+
 	/**
 	 * Create a post.
 	 *
@@ -160,7 +167,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * Get a list of posts.
 	 *
 	 * @subcommand list
-	 * @synopsis [--<field>=<value>] [--format=<format>]
+	 * @synopsis [--<field>=<value>] [--fields=<fields>] [--format=<format>]
 	 */
 	public function _list( $_, $assoc_args ) {
 		$query_args = array(
@@ -174,6 +181,13 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$format = 'table';
 		}
 
+		if ( isset( $assoc_args['fields'] ) ) {
+			$fields = $assoc_args['fields'];
+			unset( $assoc_args['fields'] );
+		} else {
+			$fields = $this->fields;
+		}
+
 		foreach ( $assoc_args as $key => $value ) {
 			if ( true === $value )
 				continue;
@@ -185,8 +199,6 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$query_args['fields'] = 'ids';
 
 		$query = new WP_Query( $query_args );
-
-		$fields = array( 'ID', 'post_title', 'post_name', 'post_date' );
 
 		$output_posts = $query->posts;
 
