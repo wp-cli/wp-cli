@@ -62,6 +62,84 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Empty a blog
+	 *
+	 * @synopsis [--post_type] [--empty_terms] [--empty_comments] [--empty_options]
+	 */
+	public function empty_blog( $args, $assoc_args ) {
+
+		$assoc_args = wp_parse_args( $assoc_args, array(
+			'post_type' => 'all',
+			'empty_terms' => 1,
+			'empty_comments' => 1,
+			'empty_options' => 1,
+		) );
+
+		WP_CLI::confirm( 'Are you sure you want to empty the blog at ' . site_url() . '?', $assoc_args );
+
+		global $wpdb;
+
+		// Empty posts and post cache
+		$posts_query = "SELECT ID FROM $wpdb->posts";
+		if ( 'all' != $assoc_args['post_type'] )
+			$posts_query .= " WHERE post_type='$assoc_args[post_type]'";
+
+		$taxonomies = get_taxonomies();
+		$posts = $wpdb->get_col( $posts_query );
+		$max = count( $posts );
+		foreach ( $posts as $postid ) {
+			wp_cache_delete( $postid, 'posts' );
+			wp_cache_delete( $postid, 'post_meta' );
+			foreach ( $taxonomies as $taxonomy )
+				wp_cache_delete( $postid, "{$taxonomy}_relationships" );
+			wp_cache_delete( $wpdb->blogid . '-' . $postid, 'global-posts' );
+		}
+		$wpdb->query( "TRUNCATE $wpdb->posts" );
+
+		if ( 'all' == $assoc_args['post_type'] )
+			$wpdb->query( "TRUNCATE $wpdb->postmeta" );
+
+
+		// Empty comments and comment cache
+		if ( 1 == $assoc_args['empty_comments'] ) {
+			$comment_ids = $wpdb->get_col( "SELECT comment_ID FROM $wpdb->comments" );
+			foreach ( $comment_ids as $comment_id ) {
+				wp_cache_delete( $comment_id, 'comment' );
+				wp_cache_delete( $comment_id, 'comment_meta' );
+			}
+			$wpdb->query( "TRUNCATE $wpdb->comments" );
+			$wpdb->query( "TRUNCATE $wpdb->commentmeta" );
+		}
+
+		// Empty taxonomies and terms
+		if ( 1 == $assoc_args['empty_terms'] ) {
+			$terms = $wpdb->get_results( "SELECT term_id, taxonomy FROM $wpdb->term_taxonomy" );
+			$ids = array();
+			foreach ( (array) $terms as $term ) {
+				$taxonomies[] = $term->taxonomy;
+				$ids[] = $term->term_id;
+				wp_cache_delete( $term->term_id, $term->taxonomy );
+			}
+		 
+			$taxonomies = array_unique( $taxonomies );
+			foreach ( $taxonomies as $taxonomy ) {
+				if ( isset( $cleaned[$taxonomy] ) )
+					continue;
+				$cleaned[$taxonomy] = true;
+		 
+				wp_cache_delete( 'all_ids', $taxonomy );
+				wp_cache_delete( 'get', $taxonomy );
+				delete_option( "{$taxonomy}_children" );
+			}
+			$wpdb->query( "TRUNCATE $wpdb->terms" );
+			$wpdb->query( "TRUNCATE $wpdb->term_taxonomy" );
+			$wpdb->query( "TRUNCATE $wpdb->term_relationships" );
+		}
+
+		WP_CLI::success( 'The blog at ' . site_url() . ' was emptied.' );
+	}
+
+	/**
 	 * Determine if the WordPress tables are installed.
 	 *
 	 * @subcommand is-installed
