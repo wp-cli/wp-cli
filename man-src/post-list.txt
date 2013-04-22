@@ -4,18 +4,12 @@
 
 	One or more args to pass to WP_Query.
 
-* `--ids`:
-
-	Return only the IDs of the found posts, separated by spaces.
-
 * `--format`=<format>:
 
-	Output list as table, CSV or JSON. Defaults to table.
+	Output list as table, CSV, JSON, or simply IDs. Defaults to table.
 
 ## EXAMPLES
 
-	wp post list
-
-	wp post list --post_type=page --post_status=draft --ids
+	wp post list --format=ids
 
 	wp post list --post_type=post --posts_per_page=5 --format=json

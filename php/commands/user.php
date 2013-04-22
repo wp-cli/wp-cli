@@ -13,7 +13,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * List users.
 	 *
 	 * @subcommand list
-	 * @synopsis [--role=<role>] [--ids] [--format=<format>]
+	 * @synopsis [--role=<role>] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 
@@ -28,38 +28,27 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$params['role'] = $assoc_args['role'];
 		}
 
-		$users = get_users( $params );
+		if ( 'ids' == $params['format'] )
+			$params['fields'] = 'ids';
 
-		if ( isset( $assoc_args['ids'] ) ) {
-			WP_CLI::out( implode( ' ', $users ) );
-			exit;
-		}
+		$users = get_users( $params );
 
 		$fields = array(
 			'ID',
 			'user_login',
 			'display_name',
 			'user_email',
-			'user_registered'
+			'user_registered',
+			'roles'
 		);
 
-		$output_users = array();
-
-		foreach ( $users as $user ) {
-			$output_user = new stdClass;
-
-			foreach ( $fields as $field ) {
-				$output_user->$field = $user->$field;
+		if ( 'ids' != $params['format'] ) {
+			foreach ( $users as $user ) {
+				$user->roles = implode( ',', $user->roles );
 			}
-
-			$output_user->roles = implode( ',', $user->roles );
-
-			$output_users[] = $output_user;
 		}
 
-		$fields[] = 'roles';
-
-		WP_CLI\Utils\format_items( $params['format'], $fields, $output_users );
+		WP_CLI\Utils\format_items( $params['format'], $fields, $users );
 	}
 
 	/**

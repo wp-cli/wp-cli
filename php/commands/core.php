@@ -35,9 +35,11 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		$silent = WP_CLI::get_config('quiet') ? ' --silent ' : ' ';
-
-		WP_CLI::launch( 'curl -f' . $silent . escapeshellarg( $download_url ) . ' | tar xz' );
-		WP_CLI::launch( sprintf( 'cp -r wordpress/* %s && rm -rf wordpress', escapeshellarg( ABSPATH ) ) );
+		
+		WP_CLI::launch( sprintf( 'mkdir -p %s', escapeshellarg( ABSPATH ) ) );
+		$curl_command = 'curl -f' . $silent . escapeshellarg( $download_url );
+		$tar_command = sprintf( 'tar xz --directory=%s --strip-components=1', escapeshellarg( ABSPATH ) );
+		WP_CLI::launch( $curl_command . ' | ' . $tar_command );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
