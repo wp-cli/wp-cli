@@ -86,7 +86,6 @@ class Core_Command extends WP_CLI_Command {
 
 		$taxonomies = get_taxonomies();
 		$posts = $wpdb->get_col( $posts_query );
-		$max = count( $posts );
 		foreach ( $posts as $postid ) {
 			wp_cache_delete( $postid, 'posts' );
 			wp_cache_delete( $postid, 'post_meta' );
