@@ -64,7 +64,7 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Empty a blog
 	 *
-	 * @synopsis [--post_type] [--empty_terms] [--empty_comments] [--empty_options]
+	 * @synopsis [--post_type] [--empty_terms] [--empty_comments]
 	 */
 	public function empty_blog( $args, $assoc_args ) {
 
@@ -72,7 +72,6 @@ class Core_Command extends WP_CLI_Command {
 			'post_type' => 'all',
 			'empty_terms' => 1,
 			'empty_comments' => 1,
-			'empty_options' => 1,
 		) );
 
 		WP_CLI::confirm( 'Are you sure you want to empty the blog at ' . site_url() . '?', $assoc_args );
