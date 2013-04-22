@@ -64,14 +64,14 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Empty a blog
 	 *
-	 * @synopsis [--post_type=<post-type>] [--empty_terms] [--empty_comments]
+	 * @synopsis [--post_type=<post-type>] [--keep_terms] [--keep_comments]
 	 */
 	public function empty_blog( $args, $assoc_args ) {
 
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'post_type' => 'all',
-			'empty_terms' => 1,
-			'empty_comments' => 1,
+			'keep_terms' => 0,
+			'keep_comments' => 0,
 		) );
 
 		WP_CLI::confirm( 'Are you sure you want to empty the blog at ' . site_url() . '?', $assoc_args );
@@ -104,7 +104,7 @@ class Core_Command extends WP_CLI_Command {
 
 
 		// Empty comments and comment cache
-		if ( 1 == $assoc_args['empty_comments'] ) {
+		if ( 0 == $assoc_args['keep_comments'] ) {
 			$comment_ids = $wpdb->get_col( "SELECT comment_ID FROM $wpdb->comments" );
 			foreach ( $comment_ids as $comment_id ) {
 				wp_cache_delete( $comment_id, 'comment' );
@@ -115,7 +115,7 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		// Empty taxonomies and terms
-		if ( 1 == $assoc_args['empty_terms'] ) {
+		if ( 0 == $assoc_args['keep_terms'] ) {
 			$terms = $wpdb->get_results( "SELECT term_id, taxonomy FROM $wpdb->term_taxonomy" );
 			$ids = array();
 			foreach ( (array) $terms as $term ) {
