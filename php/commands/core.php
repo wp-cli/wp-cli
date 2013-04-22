@@ -84,13 +84,18 @@ class Core_Command extends WP_CLI_Command {
 			$posts_query .= " WHERE post_type='$assoc_args[post_type]'";
 
 		$taxonomies = get_taxonomies();
-		$posts = $wpdb->get_col( $posts_query );
-		foreach ( $posts as $postid ) {
-			wp_cache_delete( $postid, 'posts' );
-			wp_cache_delete( $postid, 'post_meta' );
+		$posts = new WP_CLI\Iterators\Query( $posts_query, 10000 );
+
+		while ( $posts->valid() ) {
+			$post_id = $posts->current()->ID;
+
+			wp_cache_delete( $post_id, 'posts' );
+			wp_cache_delete( $post_id, 'post_meta' );
 			foreach ( $taxonomies as $taxonomy )
-				wp_cache_delete( $postid, "{$taxonomy}_relationships" );
-			wp_cache_delete( $wpdb->blogid . '-' . $postid, 'global-posts' );
+				wp_cache_delete( $post_id, "{$taxonomy}_relationships" );
+			wp_cache_delete( $wpdb->blogid . '-' . $post_id, 'global-posts' );
+
+			$posts->next();
 		}
 		$wpdb->query( "TRUNCATE $wpdb->posts" );
 
