@@ -64,7 +64,7 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Empty a blog
 	 *
-	 * @synopsis [--post_type] [--empty_terms] [--empty_comments]
+	 * @synopsis [--post_type=<post-type>] [--empty_terms] [--empty_comments]
 	 */
 	public function empty_blog( $args, $assoc_args ) {
 
