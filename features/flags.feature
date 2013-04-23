@@ -35,14 +35,45 @@ Feature: Global flags
       Notice: Use of undefined constant CONST_WITHOUT_QUOTES
       """
 
-  Scenario: Setting the WP user
+  Scenario: Context run
     Given a WP install
 
-    When I run `wp eval 'echo (int) is_user_logged_in();'`
+    When I run `wp eval 'var_export( is_admin() );'`
     Then it should run without errors
     And STDOUT should be:
       """
-      0
+      false
+      """
+
+    When I run `wp --context=admin eval 'var_export( is_admin() );'`
+    Then it should run without errors
+    And STDOUT should be:
+      """
+      true
+      """
+
+    When I run `wp eval 'var_export( function_exists( "media_handle_upload" ) );'`
+    Then it should run without errors
+    And STDOUT should be:
+      """
+      true
+      """
+
+    When I run `wp --context=admin eval 'var_export( function_exists( "media_handle_upload" ) );'`
+    Then it should run without errors
+    And STDOUT should be:
+      """
+      true
+      """
+
+  Scenario: Setting the WP user
+    Given a WP install
+
+    When I run `wp eval 'var_export( is_user_logged_in() );'`
+    Then it should run without errors
+    And STDOUT should be:
+      """
+      false
       """
 
     When I run `wp --user=admin eval 'echo wp_get_current_user()->user_login;'`

@@ -154,6 +154,19 @@ class Runner {
 		}
 	}
 
+	private static function set_context( $config ) {
+
+		switch ( $config['context'] ) {
+			case 'admin':
+				if ( ! defined( 'WP_ADMIN' ) )
+					define( 'WP_ADMIN', true );
+				$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
+				break;
+			default:
+				break;
+		}
+	}
+
 	private function cmd_starts_with( $prefix ) {
 		return $prefix == array_slice( $this->arguments, 0, count( $prefix ) );
 	}
@@ -294,6 +307,9 @@ class Runner {
 
 		// Handle --url and --blog parameters
 		self::set_url( $this->config );
+
+		// Handle --context
+		self::set_context( $this->config );
 
 		if ( array( 'core', 'download' ) == $this->arguments ) {
 			$this->_run_command();

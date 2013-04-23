@@ -35,6 +35,13 @@ return array(
 		'desc' => 'Load given PHP file before running the command',
 	),
 
+	'context' => array(
+		'runtime' => '=<context>',
+		'file' => '<context>',
+		'default' => 'false',
+		'desc' => 'Load WordPress in a given context',
+	),
+
 	'disabled_commands' => array(
 		'file' => '<list>',
 		'default' => array(),
