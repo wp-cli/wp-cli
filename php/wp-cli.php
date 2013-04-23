@@ -22,15 +22,16 @@ eval( WP_CLI::$runner->get_wp_config_code() );
 
 WP_CLI::$runner->after_wp_config_load();
 
+// Simulate a /wp-admin/ page load
+$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
+define( 'WP_ADMIN', true );
+
 // Load main WordPress code, in the global scope
 require WP_CLI_ROOT . 'wp-settings-cli.php';
 
 // Fix memory limit. See http://core.trac.wordpress.org/ticket/14889
 @ini_set( 'memory_limit', -1 );
 
-// Simulate a /wp-admin/ page load
-$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
-define( 'WP_ADMIN', true );
 require ABSPATH . 'wp-admin/includes/admin.php';
 do_action( 'admin_init' );
 
