@@ -65,13 +65,6 @@ function set_user( $assoc_args ) {
 	}
 }
 
-function set_wp_query() {
-	if ( isset( $GLOBALS['wp_query'] ) && isset( $GLOBALS['wp'] ) ) {
-		$GLOBALS['wp']->parse_request();
-		$GLOBALS['wp_query']->query($GLOBALS['wp']->query_vars);
-	}
-}
-
 function get_upgrader( $class ) {
 	if ( !class_exists( '\WP_Upgrader' ) )
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
