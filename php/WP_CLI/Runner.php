@@ -347,9 +347,6 @@ class Runner {
 
 		Utils\set_user( $this->config );
 
-		if ( !defined( 'WP_INSTALLING' ) && isset( $this->config['url'] ) )
-			Utils\set_wp_query();
-
 		if ( isset( $this->config['require'] ) )
 			require $this->config['require'];
 
