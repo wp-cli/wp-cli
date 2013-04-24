@@ -10,9 +10,10 @@ class Blog_Command extends WP_CLI_Command {
 	/**
 	 * Empty a blog
 	 *
+	 * @subcommand empty
 	 * @synopsis [--post_type=<post-type>] [--keep_terms] [--keep_comments]
 	 */
-	public function truncate( $args, $assoc_args ) {
+	public function _empty( $args, $assoc_args ) {
 
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'post_type' => 'all',
