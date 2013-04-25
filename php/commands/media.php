@@ -56,7 +56,7 @@ class Media_Command extends WP_CLI_Command {
 	/**
 	 * Sideload images from local file(s) or URL and import as attachments, optionally attached to a post
 	 *
-	 * @synopsis <file>... [--post_id=<post_id>] [--title=<title>] [--caption=<caption>] [--alt=<alt_text>] [--desc=<description>]
+	 * @synopsis <file>... [--post_id=<post_id>] [--title=<title>] [--caption=<caption>] [--alt=<alt_text>] [--desc=<description>] [--featured_image]
 	 */
 	function import( $args, $assoc_args = array() ) {
 
@@ -74,6 +74,7 @@ class Media_Command extends WP_CLI_Command {
 		foreach( $args as $file ) {
 
 			$is_file_remote = parse_url( $file, PHP_URL_SCHEME );
+			$orig_filename = $file;
 
 			if ( !empty( $is_file_remote ) ) {
 				$extension = pathinfo( $file, PATHINFO_EXTENSION );
@@ -100,21 +101,31 @@ class Media_Command extends WP_CLI_Command {
 
 			$success = media_handle_sideload( $file_array, $assoc_args['post_id'], $assoc_args['title'], $post_array );
 
+			// Set alt text
 			if ( !is_wp_error( $success ) && $assoc_args['alt'] )
 				update_post_meta( $success, '_wp_attachment_image_alt', $assoc_args['alt'] );
+
+			// Set as featured image, if --post_id and --featured_image are set
+			if ( !is_wp_error( $success ) && $assoc_args['post_id'] && $assoc_args['featured_image'] )
+				update_post_meta( $assoc_args['post_id'], '_thumbnail_id', $success );
+
+			$attachment_success_text = ( $assoc_args['post_id'] && get_post( $assoc_args['post_id'] ) ) ?
+				" and attached to post {$assoc_args['post_id']}" .
+					( ( $assoc_args['featured_image'] ) ? ' as featured image' : '' )
+				: '';
 
 			if ( is_wp_error( $success ) )
 				WP_CLI::error(
 					sprintf(
 						'Unable to import file %s. Reason: %s',
-						$file_array['tmp_name'], implode( ', ', $success->get_error_messages() )
+						$orig_filename, implode( ', ', $success->get_error_messages() )
 					)
 				);
 			else
 				WP_CLI::success(
 					sprintf(
-						'Successfully imported file %s as attachment ID %d.',
-						$file_array['tmp_name'], $success
+						'Imported file %s as attachment ID %d%s.',
+						$orig_filename, $success, $attachment_success_text
 					)
 				);
 		}
