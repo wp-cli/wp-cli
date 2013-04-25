@@ -8,30 +8,32 @@
 class Blog_Command extends WP_CLI_Command {
 
 	/**
-	 * Empty a blog
-	 *
-	 * @subcommand empty
-	 * @synopsis [--post_type=<post-type>] [--keep_terms] [--keep_comments]
+	 * Delete comments
 	 */
-	public function _empty( $args, $assoc_args ) {
+	private function _empty_comments() {
+		global $wpdb;
 
-		$assoc_args = wp_parse_args( $assoc_args, array(
-			'post_type' => 'all',
-			'keep_terms' => 0,
-			'keep_comments' => 0,
-		) );
+		// Empty comments and comment cache
+		$comment_ids = $wpdb->get_col( "SELECT comment_ID FROM $wpdb->comments" );
+		foreach ( $comment_ids as $comment_id ) {
+			wp_cache_delete( $comment_id, 'comment' );
+			wp_cache_delete( $comment_id, 'comment_meta' );
+		}
+		$wpdb->query( "TRUNCATE $wpdb->comments" );
+		$wpdb->query( "TRUNCATE $wpdb->commentmeta" );
+	}
 
-		WP_CLI::confirm( 'Are you sure you want to empty the blog at ' . site_url() . '?', $assoc_args );
-
+	/**
+	 * Delete all posts
+	 */
+	private function _empty_posts() {
 		global $wpdb;
 
 		// Empty posts and post cache
 		$posts_query = "SELECT ID FROM $wpdb->posts";
-		if ( 'all' != $assoc_args['post_type'] )
-			$posts_query .= " WHERE post_type='$assoc_args[post_type]'";
+		$posts = new WP_CLI\Iterators\Query( $posts_query, 10000 );
 
 		$taxonomies = get_taxonomies();
-		$posts = new WP_CLI\Iterators\Query( $posts_query, 10000 );
 
 		while ( $posts->valid() ) {
 			$post_id = $posts->current()->ID;
@@ -45,46 +47,79 @@ class Blog_Command extends WP_CLI_Command {
 			$posts->next();
 		}
 		$wpdb->query( "TRUNCATE $wpdb->posts" );
+		$wpdb->query( "TRUNCATE $wpdb->postmeta" );
+	}
 
-		if ( 'all' == $assoc_args['post_type'] )
-			$wpdb->query( "TRUNCATE $wpdb->postmeta" );
-
-
-		// Empty comments and comment cache
-		if ( 0 == $assoc_args['keep_comments'] ) {
-			$comment_ids = $wpdb->get_col( "SELECT comment_ID FROM $wpdb->comments" );
-			foreach ( $comment_ids as $comment_id ) {
-				wp_cache_delete( $comment_id, 'comment' );
-				wp_cache_delete( $comment_id, 'comment_meta' );
-			}
-			$wpdb->query( "TRUNCATE $wpdb->comments" );
-			$wpdb->query( "TRUNCATE $wpdb->commentmeta" );
-		}
+	/**
+	 * Delete terms, taxonomies, and tax relationships
+	 */
+	private function _empty_taxonomies() {
+		global $wpdb;
 
 		// Empty taxonomies and terms
-		if ( 0 == $assoc_args['keep_terms'] ) {
-			$terms = $wpdb->get_results( "SELECT term_id, taxonomy FROM $wpdb->term_taxonomy" );
-			$ids = array();
-			foreach ( (array) $terms as $term ) {
-				$taxonomies[] = $term->taxonomy;
-				$ids[] = $term->term_id;
-				wp_cache_delete( $term->term_id, $term->taxonomy );
-			}
-		 
-			$taxonomies = array_unique( $taxonomies );
-			foreach ( $taxonomies as $taxonomy ) {
-				if ( isset( $cleaned[$taxonomy] ) )
-					continue;
-				$cleaned[$taxonomy] = true;
-		 
-				wp_cache_delete( 'all_ids', $taxonomy );
-				wp_cache_delete( 'get', $taxonomy );
-				delete_option( "{$taxonomy}_children" );
-			}
-			$wpdb->query( "TRUNCATE $wpdb->terms" );
-			$wpdb->query( "TRUNCATE $wpdb->term_taxonomy" );
-			$wpdb->query( "TRUNCATE $wpdb->term_relationships" );
+		$terms = $wpdb->get_results( "SELECT term_id, taxonomy FROM $wpdb->term_taxonomy" );
+		$ids = array();
+		foreach ( (array) $terms as $term ) {
+			$taxonomies[] = $term->taxonomy;
+			$ids[] = $term->term_id;
+			wp_cache_delete( $term->term_id, $term->taxonomy );
 		}
+		
+		$taxonomies = array_unique( $taxonomies );
+		foreach ( $taxonomies as $taxonomy ) {
+			if ( isset( $cleaned[$taxonomy] ) )
+				continue;
+			$cleaned[$taxonomy] = true;
+		
+			wp_cache_delete( 'all_ids', $taxonomy );
+			wp_cache_delete( 'get', $taxonomy );
+			delete_option( "{$taxonomy}_children" );
+		}
+		$wpdb->query( "TRUNCATE $wpdb->terms" );
+		$wpdb->query( "TRUNCATE $wpdb->term_taxonomy" );
+		$wpdb->query( "TRUNCATE $wpdb->term_relationships" );
+	}
+
+	/**
+	 * Insert default terms
+	 */
+	private function _insert_default_terms() {
+		global $wpdb;
+
+		// Default category
+		$cat_name = __( 'Uncategorized' );
+
+		/* translators: Default category slug */
+		$cat_slug = sanitize_title( _x( 'Uncategorized', 'Default category slug' ) );
+
+		if ( global_terms_enabled() ) {
+			$cat_id = $wpdb->get_var( $wpdb->prepare( "SELECT cat_ID FROM {$wpdb->sitecategories} WHERE category_nicename = %s", $cat_slug ) );
+			if ( $cat_id == null ) {
+				$wpdb->insert( $wpdb->sitecategories, array('cat_ID' => 0, 'cat_name' => $cat_name, 'category_nicename' => $cat_slug, 'last_updated' => current_time('mysql', true)) );
+				$cat_id = $wpdb->insert_id;
+			}
+			update_option('default_category', $cat_id);
+		} else {
+			$cat_id = 1;
+		}
+
+		$wpdb->insert( $wpdb->terms, array('term_id' => $cat_id, 'name' => $cat_name, 'slug' => $cat_slug, 'term_group' => 0) );
+		$wpdb->insert( $wpdb->term_taxonomy, array('term_id' => $cat_id, 'taxonomy' => 'category', 'description' => '', 'parent' => 0, 'count' => 1));
+	}
+
+	/**
+	 * Empty a blog
+	 *
+	 * @subcommand empty
+	 */
+	public function _empty( $args, $assoc_args ) {
+
+		WP_CLI::confirm( 'Are you sure you want to empty the blog at ' . site_url() . '?', $assoc_args );
+
+		$this->_empty_posts();
+		$this->_empty_comments();
+		$this->_empty_taxonomies();
+		$this->_insert_default_terms();
 
 		WP_CLI::success( 'The blog at ' . site_url() . ' was emptied.' );
 	}
