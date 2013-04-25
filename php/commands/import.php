@@ -5,7 +5,7 @@ class Import_Command extends WP_CLI_Command {
 	/**
 	 * Import content.
 	 *
-	 * @synopsis <file> [--authors=<authors>] [--skip=<data-type>]
+	 * @synopsis <file> --authors=<authors> [--skip=<data-type>]
 	 */
 	public function __invoke( $args, $assoc_args ) {
 
