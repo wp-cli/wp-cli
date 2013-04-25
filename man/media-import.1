@@ -7,7 +7,7 @@
 \fBwp\-media\-import\fR \- Sideload images from local file(s) or URL and import as attachments, optionally attached to a post
 .
 .SH "SYNOPSIS"
-wp media import \fIfile\fR\.\.\. [\-\-post_id=\fIpost_id\fR] [\-\-title=\fItitle\fR] [\-\-caption=\fIcaption\fR] [\-\-alt=\fIalt_text\fR] [\-\-desc=\fIdescription\fR]
+wp media import \fIfile\fR\.\.\. [\-\-post_id=\fIpost_id\fR] [\-\-title=\fItitle\fR] [\-\-caption=\fIcaption\fR] [\-\-alt=\fIalt_text\fR] [\-\-desc=\fIdescription\fR] [\-\-featured_image]
 .
 .SH "OPTIONS"
 .
@@ -47,16 +47,25 @@ Alt text for image (saved as post meta)
 .IP
 "Description" field (post content) of attachment post
 .
+.IP "\(bu" 4
+\fB\-\-featured_image\fR
+.
+.IP
+If set, set the imported image as the Featured Image of the post its attached to\.
+.
 .IP "" 0
 .
 .SH "EXAMPLES"
 .
 .nf
 
+# Import all jpgs in the current user\'s "Pictures" directory, not attached to any post
 wp media import ~/Pictures/**/*\.jpg
 
-wp media import ~/Downloads/image\.png \-\-post_id=123 \-\-title="A downloaded picture"
+# Import a local image and set it to be the post thumbnail for a post
+wp media import ~/Downloads/image\.png \-\-post_id=123 \-\-title="A downloaded picture" \-\-featured_image
 
+# Import an image from the web
 wp media import http://s\.wordpress\.org/style/images/wp\-header\-logo\.png \-\-title=\'The WordPress logo\' \-\-alt="Semantic personal publishing"
 .
 .fi
