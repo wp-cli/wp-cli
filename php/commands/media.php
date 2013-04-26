@@ -76,17 +76,29 @@ class Media_Command extends WP_CLI_Command {
 			$is_file_remote = parse_url( $file, PHP_URL_SCHEME );
 			$orig_filename = $file;
 
-			if ( !empty( $is_file_remote ) ) {
-				$extension = pathinfo( $file, PATHINFO_EXTENSION );
+			if ( empty( $is_file_remote ) ) {
+				// File appears to be a local file; make a copy first to work with
+
+				$tempfile = wp_tempnam( $file );
+				if ( ! $tempfile )
+					WP_CLI::error( 'Could not create temporary file.' );
+
+				copy( $file, $tempfile );
+
+			} else {
+				// File appear to be a remote file; download as temp file
+
 				$tempfile = download_url( $file );
 
-				// Necessary because temp filename will probably have an extension like
-				// .tmp, which is not in the list of permitted upload extensions
-				// and won't be recognized with the correct mime type
-				$tempfile_extension = pathinfo( $tempfile, PATHINFO_EXTENSION );
-				$file = preg_replace( "/$tempfile_extension$/", $extension, $tempfile );
-				rename( $tempfile, $file );
 			}
+
+			// Necessary because temp filename will probably have an extension like
+			// .tmp, which is not in the list of permitted upload extensions
+			// and won't be recognized with the correct mime type
+			$extension = pathinfo( $file, PATHINFO_EXTENSION );
+			$tempfile_extension = pathinfo( $tempfile, PATHINFO_EXTENSION );
+			$file = preg_replace( "/$tempfile_extension$/", $extension, $tempfile );
+			rename( $tempfile, $file );
 
 			$file_array = array(
 				'tmp_name' => $file,
