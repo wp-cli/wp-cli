@@ -40,20 +40,12 @@ class WP_CLI {
 		$reflection = new \ReflectionClass( $class );
 
 		if ( $reflection->hasMethod( '__invoke' ) ) {
-			$command = self::create_atomic_command( $name, $reflection );
+			$command = new Dispatcher\MethodSubcommand( self::$root, $reflection->name, $reflection->getMethod( '__invoke' ) );
 		} else {
 			$command = self::create_composite_command( $name, $reflection );
 		}
 
 		self::$root->add_subcommand( $name, $command );
-	}
-
-	private static function create_atomic_command( $name, $reflection ) {
-		$method = $reflection->getMethod( '__invoke' );
-
-		$docparser = new \WP_CLI\DocParser( $method );
-
-		return new Dispatcher\Subcommand( self::$root, $name, $reflection->name, $docparser );
 	}
 
 	private static function create_composite_command( $name, $reflection ) {
