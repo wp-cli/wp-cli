@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# check that PHP is available
+command -v php > /dev/null || {
+	echo "can't find PHP binary" >&2
+	exit 1
+}
+
 # install Composer
 command -v composer > /dev/null || {
 	curl -sS https://getcomposer.org/installer | php

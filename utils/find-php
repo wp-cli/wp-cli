@@ -15,5 +15,5 @@ if [ $? -eq 0 ]; then
 	exit
 fi
 
-echo "no php binary found"
+echo "no PHP binary found" >&2
 exit 1
