@@ -1,7 +1,5 @@
 <?php
 
-namespace WP_CLI\Commands;
-
 class Shell_Command extends \WP_CLI_Command {
 
 	/**
@@ -116,5 +114,5 @@ BASH;
 	}
 }
 
-\WP_CLI::add_command( 'shell', new Shell_Command );
+\WP_CLI::add_command( 'shell', 'Shell_Command' );
 

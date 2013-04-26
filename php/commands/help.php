@@ -22,5 +22,5 @@ class Help_Command extends WP_CLI_Command {
 	}
 }
 
-WP_CLI::add_command( 'help', new Help_Command );
+WP_CLI::add_command( 'help', 'Help_Command' );
 
