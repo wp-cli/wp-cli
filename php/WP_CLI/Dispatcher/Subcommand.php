@@ -4,13 +4,26 @@ namespace WP_CLI\Dispatcher;
 
 class Subcommand implements Command, AtomicCommand, Documentable {
 
-	function __construct( CommandContainer $parent, $name, $callable, $docparser ) {
+	private $parent, $name, $method, $docparser;
+
+	function __construct( CommandContainer $parent, \ReflectionMethod $method, $name = false ) {
+		$docparser = new \WP_CLI\DocParser( $method );
+
+		if ( !$name )
+			$name = $docparser->get_tag( 'subcommand' );
+
+		if ( !$name )
+			$name = $method->name;
+
 		$this->parent = $parent;
 		$this->name = $name;
 
-		$this->callable = $callable;
-
+		$this->method = $method;
 		$this->docparser = $docparser;
+	}
+
+	function get_alias() {
+		return $this->docparser->get_tag( 'alias' );
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
@@ -53,7 +66,9 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 				array( $this, 'show_usage' ) );
 		}
 
-		call_user_func( $this->callable, $args, $assoc_args );
+		$instance = new $this->method->class;
+
+		call_user_func( array( $instance, $this->method->name ), $args, $assoc_args );
 	}
 
 	function get_name() {
