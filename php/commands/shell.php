@@ -116,5 +116,5 @@ BASH;
 	}
 }
 
-\WP_CLI::add_command( 'shell', new Shell_Command );
+\WP_CLI::add_command( 'shell', 'Shell_Command' );
 
