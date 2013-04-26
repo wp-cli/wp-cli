@@ -532,5 +532,5 @@ class Export_Command extends WP_CLI_Command {
 	}
 }
 
-WP_CLI::add_command( 'export', new Export_Command );
+WP_CLI::add_command( 'export', 'Export_Command' );
 
