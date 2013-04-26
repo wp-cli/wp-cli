@@ -31,24 +31,32 @@ class WP_CLI {
 	 * Add a command to the wp-cli list of commands
 	 *
 	 * @param string $name The name of the command that will be used in the cli
-	 * @param string|object $implementation The command implementation
+	 * @param string $class The command implementation
 	 */
-	static function add_command( $name, $implementation ) {
+	static function add_command( $name, $class ) {
 		if ( in_array( $name, self::get_config('disabled_commands') ) )
 			return;
 
-		if ( is_string( $implementation ) ) {
-			$command = self::create_composite_command( $name, $implementation );
+		$reflection = new \ReflectionClass( $class );
+
+		if ( $reflection->hasMethod( '__invoke' ) ) {
+			$command = self::create_atomic_command( $name, $reflection );
 		} else {
-			$command = self::create_atomic_command( $name, $implementation );
+			$command = self::create_composite_command( $name, $reflection );
 		}
 
 		self::$root->add_subcommand( $name, $command );
 	}
 
-	private static function create_composite_command( $name, $class ) {
-		$reflection = new \ReflectionClass( $class );
+	private static function create_atomic_command( $name, $reflection ) {
+		$method = $reflection->getMethod( '__invoke' );
 
+		$docparser = new \WP_CLI\DocParser( $method );
+
+		return new Dispatcher\Subcommand( self::$root, $name, $reflection->name, $docparser );
+	}
+
+	private static function create_composite_command( $name, $reflection ) {
 		$docparser = new \WP_CLI\DocParser( $reflection );
 
 		$container = new Dispatcher\CompositeCommand( $name, $docparser->get_shortdesc() );
@@ -57,7 +65,7 @@ class WP_CLI {
 			if ( !self::_is_good_method( $method ) )
 				continue;
 
-			$subcommand = new Dispatcher\MethodSubcommand( $container, $class, $method );
+			$subcommand = new Dispatcher\MethodSubcommand( $container, $reflection->name, $method );
 
 			$subcommand_name = $subcommand->get_name();
 			$full_name = self::get_full_name( $subcommand );
@@ -80,14 +88,6 @@ class WP_CLI {
 
 	private static function _is_good_method( $method ) {
 		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
-	}
-
-	private static function create_atomic_command( $name, $implementation ) {
-		$method = new \ReflectionMethod( $implementation, '__invoke' );
-
-		$docparser = new \WP_CLI\DocParser( $method );
-
-		return new Dispatcher\Subcommand( self::$root, $name, $implementation, $docparser );
 	}
 
 	static function add_man_dir( $dest_dir, $src_dir ) {
