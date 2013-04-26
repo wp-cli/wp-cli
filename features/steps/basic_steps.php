@@ -247,13 +247,16 @@ $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 
 $steps->Then( '/^the (.+) file should exist$/',
 	function ( $world, $path ) {
-		assertFileExists( $world->get_path( $path ) );
-	}
-);
+    $path = $world->replace_variables( $path );
 
-$steps->Then( '/^the image should not be deleted$/',
-	function ( $world ) {
-		assertFileExists( $world->variables['DOWNLOADED_IMAGE'] );
+    // If $path refers to a complete cache path, use it;
+    // otherwise, get the real path using $world->get_path()
+    if ( strpos( $path, $world->get_cache_path('') ) === 0 )
+      $realpath = $path;
+    else
+      $realpath = $world->get_path( $path );
+
+		assertFileExists( $realpath );
 	}
 );
 
