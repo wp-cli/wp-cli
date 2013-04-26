@@ -1,7 +1,5 @@
 <?php
 
-namespace WP_CLI\Commands;
-
 class Shell_Command extends \WP_CLI_Command {
 
 	/**
