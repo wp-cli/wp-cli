@@ -93,6 +93,16 @@ $steps->Given( '/^a google-sitemap-generator-cli plugin zip$/',
 	}
 );
 
+$steps->Given( '/^a large image file$/',
+	function ( $world ) {
+    $image_file = 'http://wordpresswallpaper.com/wp-content/gallery/photo-based-wallpaper/1058.jpg';
+
+    $world->variables['DOWNLOADED_IMAGE'] = $world->get_cache_path( 'wallpaper.jpg' );
+
+    $world->download_file( $image_file, $world->variables['DOWNLOADED_IMAGE'] );
+	}
+);
+
 $steps->When( '/^I run `wp`$/',
 	function ( $world ) {
 		$world->result = $world->run( '' );
@@ -117,6 +127,15 @@ $steps->When( '/^I run the previous command again$/',
 			throw new \Exception( 'No previous command.' );
 
 		$world->result = $world->run( $world->result->command );
+	}
+);
+
+$steps->When( '/^I try to import it$/',
+	function ( $world ) {
+		if ( !isset( $world->variables['DOWNLOADED_IMAGE'] ) )
+			throw new \Exception( 'Cached image not available.' );
+
+		$world->result = $world->run( 'media import ' . $world->variables['DOWNLOADED_IMAGE'] . ' --post_id=1 --featured_image' );
 	}
 );
 
@@ -232,6 +251,11 @@ $steps->Then( '/^the (.+) file should exist$/',
 	}
 );
 
+$steps->Then( '/^the image should not be deleted$/',
+	function ( $world ) {
+		assertFileExists( $world->variables['DOWNLOADED_IMAGE'] );
+	}
+);
 
 /**
  * Compare two strings containing JSON to ensure that @a $actualJson contains at
