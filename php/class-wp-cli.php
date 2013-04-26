@@ -40,7 +40,8 @@ class WP_CLI {
 		$reflection = new \ReflectionClass( $class );
 
 		if ( $reflection->hasMethod( '__invoke' ) ) {
-			$command = new Dispatcher\MethodSubcommand( self::$root, $reflection->name, $reflection->getMethod( '__invoke' ) );
+			$command = new Dispatcher\Subcommand( self::$root,
+				$reflection->getMethod( '__invoke' ), $name );
 		} else {
 			$command = self::create_composite_command( $name, $reflection );
 		}
@@ -57,7 +58,7 @@ class WP_CLI {
 			if ( !self::_is_good_method( $method ) )
 				continue;
 
-			$subcommand = new Dispatcher\MethodSubcommand( $container, $reflection->name, $method );
+			$subcommand = new Dispatcher\Subcommand( $container, $method );
 
 			$subcommand_name = $subcommand->get_name();
 			$full_name = self::get_full_name( $subcommand );
