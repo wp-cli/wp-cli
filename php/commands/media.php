@@ -121,10 +121,12 @@ class Media_Command extends WP_CLI_Command {
 			if ( !is_wp_error( $success ) && $assoc_args['post_id'] && $assoc_args['featured_image'] )
 				update_post_meta( $assoc_args['post_id'], '_thumbnail_id', $success );
 
-			$attachment_success_text = ( $assoc_args['post_id'] && get_post( $assoc_args['post_id'] ) ) ?
-				" and attached to post {$assoc_args['post_id']}" .
-					( ( $assoc_args['featured_image'] ) ? ' as featured image' : '' )
-				: '';
+			$attachment_success_text = '';
+			if ( $assoc_args['post_id'] && get_post( $assoc_args['post_id'] ) ) {
+				$attachment_success_text = " and attached to post {$assoc_args['post_id']}";
+				if ( $assoc_args['featured_image'] )
+					$attachment_success_text .= ' as featured image';
+			}
 
 			if ( is_wp_error( $success ) )
 				WP_CLI::error(
