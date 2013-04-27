@@ -8,7 +8,7 @@
 class Media_Command extends WP_CLI_Command {
 
 	/**
-	 * Regenerate thumbnail(s)
+	 * Regenerate thumbnail(s).
 	 *
 	 * @synopsis <attachment-id>... [--yes]
 	 */
@@ -54,7 +54,7 @@ class Media_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Sideload images from local file(s) or URL and import as attachments, optionally attached to a post
+	 * Create attachments from local files or from URLs.
 	 *
 	 * @synopsis <file>... [--post_id=<post_id>] [--title=<title>] [--caption=<caption>] [--alt=<alt_text>] [--desc=<description>] [--featured_image]
 	 */
