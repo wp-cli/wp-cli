@@ -1,0 +1,3 @@
+## EXAMPLES
+
+	wp blog empty
