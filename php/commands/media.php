@@ -63,7 +63,7 @@ class Media_Command extends WP_CLI_Command {
 		$assoc_args = wp_parse_args(
 			$assoc_args,
 			array(
-				'post_id' => 0,
+				'post_id' => false,
 				'title' => null,
 				'caption' => null,
 				'alt' => null,
@@ -71,7 +71,12 @@ class Media_Command extends WP_CLI_Command {
 			)
 		);
 
-		foreach( $args as $file ) {
+		if ( !get_post( $assoc_args['post_id'] ) ) {
+			WP_CLI::warning( "Invalid --post_id" );
+			$assoc_args['post_id'] = false;
+		}
+
+		foreach ( $args as $file ) {
 
 			$is_file_remote = parse_url( $file, PHP_URL_SCHEME );
 			$orig_filename = $file;
@@ -122,7 +127,7 @@ class Media_Command extends WP_CLI_Command {
 				update_post_meta( $assoc_args['post_id'], '_thumbnail_id', $success );
 
 			$attachment_success_text = '';
-			if ( $assoc_args['post_id'] && get_post( $assoc_args['post_id'] ) ) {
+			if ( $assoc_args['post_id'] ) {
 				$attachment_success_text = " and attached to post {$assoc_args['post_id']}";
 				if ( $assoc_args['featured_image'] )
 					$attachment_success_text .= ' as featured image';
