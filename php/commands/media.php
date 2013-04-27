@@ -53,6 +53,98 @@ class Media_Command extends WP_CLI_Command {
 		WP_CLI::success( sprintf( 'Finished regenerating %1$s.', ngettext('the image', 'all images', $count) ) );
 	}
 
+	/**
+	 * Sideload images from local file(s) or URL and import as attachments, optionally attached to a post
+	 *
+	 * @synopsis <file>... [--post_id=<post_id>] [--title=<title>] [--caption=<caption>] [--alt=<alt_text>] [--desc=<description>] [--featured_image]
+	 */
+	function import( $args, $assoc_args = array() ) {
+
+		$assoc_args = wp_parse_args(
+			$assoc_args,
+			array(
+				'post_id' => 0,
+				'title' => null,
+				'caption' => null,
+				'alt' => null,
+				'desc' => null
+			)
+		);
+
+		foreach( $args as $file ) {
+
+			$is_file_remote = parse_url( $file, PHP_URL_SCHEME );
+			$orig_filename = $file;
+
+			if ( empty( $is_file_remote ) ) {
+				// File appears to be a local file; make a copy first to work with
+
+				$tempfile = wp_tempnam( $file );
+				if ( ! $tempfile )
+					WP_CLI::error( 'Could not create temporary file.' );
+
+				copy( $file, $tempfile );
+
+			} else {
+				// File appear to be a remote file; download as temp file
+
+				$tempfile = download_url( $file );
+
+			}
+
+			// Necessary because temp filename will probably have an extension like
+			// .tmp, which is not in the list of permitted upload extensions
+			// and won't be recognized with the correct mime type
+			$extension = pathinfo( $file, PATHINFO_EXTENSION );
+			$tempfile_extension = pathinfo( $tempfile, PATHINFO_EXTENSION );
+			$file = preg_replace( "/$tempfile_extension$/", $extension, $tempfile );
+			rename( $tempfile, $file );
+
+			$file_array = array(
+				'tmp_name' => $file,
+				'name' => basename( $file )
+			);
+
+			$post_array= array(
+				'post_title' => $assoc_args['title'],
+				'post_excerpt' => $assoc_args['caption'],
+				'post_content' => $assoc_args['desc']
+			);
+
+			$success = media_handle_sideload( $file_array, $assoc_args['post_id'], $assoc_args['title'], $post_array );
+
+			// Set alt text
+			if ( !is_wp_error( $success ) && $assoc_args['alt'] )
+				update_post_meta( $success, '_wp_attachment_image_alt', $assoc_args['alt'] );
+
+			// Set as featured image, if --post_id and --featured_image are set
+			if ( !is_wp_error( $success ) && $assoc_args['post_id'] && $assoc_args['featured_image'] )
+				update_post_meta( $assoc_args['post_id'], '_thumbnail_id', $success );
+
+			$attachment_success_text = ( $assoc_args['post_id'] && get_post( $assoc_args['post_id'] ) ) ?
+				" and attached to post {$assoc_args['post_id']}" .
+					( ( $assoc_args['featured_image'] ) ? ' as featured image' : '' )
+				: '';
+
+			if ( is_wp_error( $success ) )
+				WP_CLI::error(
+					sprintf(
+						'Unable to import file %s. Reason: %s',
+						$orig_filename, implode( ', ', $success->get_error_messages() )
+					)
+				);
+			else
+				WP_CLI::success(
+					sprintf(
+						'Imported file %s as attachment ID %d%s.',
+						$orig_filename, $success, $attachment_success_text
+					)
+				);
+		}
+
+	}
+
+
 	private function _process_regeneration( $id ) {
 		$image = get_post( $id );
 
