@@ -28,6 +28,7 @@ function load_dependencies() {
 	}
 
 	include WP_CLI_ROOT . 'Spyc.php';
+	include WP_CLI_ROOT . 'WP_CLI/Package.php';
 }
 
 function get_config_spec() {
@@ -392,3 +393,39 @@ function run_mysql_command( $cmd, $arg_str, $pass ) {
 	if ( $r ) exit( $r );
 }
 
+/**
+ * Clone a Git repo into a directory
+ *
+ * @param string            $clone_url     Where the Git repo should be cloned from
+ * @param string            $local_dir     Where the local Git repo should live
+ * @return bool|WP_Error    $result       Output of the execution
+ */
+function git_clone( $clone_url, $local_dir ) {
+
+	$results = array();
+	exec( 'git clone ' . escapeshellarg( $clone_url ) . ' ' . $local_dir, $results, $return );
+
+	$git_result = array_pop( $results );
+	if ( false !== stripos( $git_result, 'Cloning into' ) )
+		return true;
+	else
+		return new \WP_Error( 'shell-fatal', $git_result );
+}
+
+/**
+ * Update a local Git repo
+ *
+ * @param string            $local_dir     Where the local Git repo lives
+ * @return bool|WP_Error    $result       Output of the execution
+ */
+function git_pull( $local_dir ) {
+
+	$results = array();
+	exec( 'cd ' . escapeshellarg( $local_dir ) .  '; git pull origin master', $results, $return );
+
+	$git_result = array_pop( $results );
+	if ( false !== stripos( $git_result, 'Unpacking objects:' ) || false !== stripos( $git_result, 'Already up-to-date' )  )
+		return true;
+	else
+		return new \WP_Error( 'shell-fatal', $git_result );
+}
