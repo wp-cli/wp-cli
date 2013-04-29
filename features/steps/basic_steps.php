@@ -231,6 +231,17 @@ $steps->Then( '/^STDOUT should be JSON containing:$/',
 		}
 });
 
+$steps->Then( '/^STDOUT should be CSV containing:$/',
+	function( $world, PyStringNode $expected ) {
+		
+		$output        = $world->result->STDOUT;
+		$expected      = $world->replace_variables( (string) $expected );
+
+		if ( ! checkThatCsvStringContainsCsvString( $output, $expected ) )
+			throw new \Exception( $output );
+	}
+);
+
 $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 	function ( $world, $stream ) {
 		if ( !empty( $world->result->$stream ) ) {
@@ -326,4 +337,21 @@ function compareContents( $expected, $actual ) {
 	}
 
 	return true;
+}
+
+/**
+ * Compare two strings to confirm $actualCSV contains $expectedCSV
+ *
+ * @return bool     Whether $actualCSV contacts $expectedCSV
+ */
+function checkThatCsvStringContainsCsvString( $actualCSV, $expectedCSV ) {
+
+	$actualCSV = array_map( 'str_getcsv', explode( PHP_EOL, $actualCSV ) );
+	$expectedCSV = array_map( 'str_getcsv', explode( PHP_EOL, $expectedCSV ) );
+
+	if ( ! $actualCSV ) {
+		return false;
+	}
+
+	return compareContents( $expectedCSV, $actualCSV );
 }
