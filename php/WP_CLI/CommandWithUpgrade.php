@@ -20,18 +20,23 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
 
-	function status( $args ) {
+	function status( $args, $assoc_args ) {
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
 		if ( empty( $args ) ) {
-			$this->status_all();
+			$with_version = false;
+			if( in_array( 'with-version', $assoc_args ) ) {
+				$with_version = true;
+			}
+
+			$this->status_all( $with_version );
 		} else {
 			$this->status_single( $args );
 		}
 	}
 
-	private function status_all() {
+	private function status_all( $with_version = false ) {
 		$items = $this->get_all_items();
 
 		$n = count( $items );
@@ -47,7 +52,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 
 			$line .= $this->format_status( $details['status'], 'short' );
-			$line .= " " . $details['name'] . "%n";
+			$line .= " " . $details['name'];
+			if ( $with_version ) {
+				$line .= " " . $this->format_version( $details['version'] ) . "%n";
+			}
 
 			\WP_CLI::line( $line );
 		}
@@ -181,6 +189,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected function format_status( $status, $format ) {
 		return $this->get_color( $status ) . $this->map[ $format ][ $status ];
+	}
+
+	protected function format_version( $version ) {
+		return '%c' . $version;
 	}
 
 	private function get_color( $status ) {
