@@ -24,9 +24,24 @@ Feature: Perform database operations
     Then it should run without errors
     And STDOUT should not be empty
 
-    When I run `wp db query 'SELECT 42 FROM dual'`
+  Scenario: DB Query
+    Given a WP install
+
+    When I run `wp db query 'SELECT COUNT(*) as total FROM wp_posts'`
     Then it should run without errors
     And STDOUT should contain:
-       """
-       42
-       """
+    """
+    total
+    """
+
+    Given a debug.sql file:
+    """
+    SELECT COUNT(*) as total FROM wp_posts
+    """
+
+    When I run `wp db query < debug.sql`
+    Then it should run without errors
+    And STDOUT should contain:
+    """
+    total
+    """

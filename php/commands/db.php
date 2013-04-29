@@ -82,12 +82,17 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Execute a query against the database.
 	 *
-	 * @synopsis <sql>
+	 * @synopsis [<sql>]
 	 */
 	function query( $args ) {
-		list( $query ) = $args;
+		$cmd = '--host=%s --user=%s --database=%s';
+		$cmd = Utils\esc_cmd( $cmd, DB_HOST, DB_USER, DB_NAME );
 
-		self::run_query( $query );
+		if ( !empty( $args ) ) {
+			$cmd .= Utils\esc_cmd( ' --execute=%s', $args[0] );
+		}
+
+		self::run( 'mysql', $cmd );
 	}
 
 	/**
