@@ -231,6 +231,17 @@ $steps->Then( '/^STDOUT should be JSON containing:$/',
 		}
 });
 
+$steps->Then( '/^STDOUT should be CSV containing:$/',
+	function( $world, PyStringNode $expected ) {
+		
+		$output        = $world->result->STDOUT;
+		$expected      = $world->replace_variables( (string) $expected );
+
+		if ( ! checkThatCsvStringContainsCsvString( $output, $expected ) )
+			throw new \Exception( $output );
+	}
+);
+
 $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 	function ( $world, $stream ) {
 		if ( !empty( $world->result->$stream ) ) {
@@ -311,19 +322,54 @@ function compareContents( $expected, $actual ) {
 
 	if ( is_object( $expected ) ) {
 		foreach ( get_object_vars( $expected ) as $name => $value ) {
-			if ( !compareContents( $value, $actual->$name ) ) {
+			if ( ! compareContents( $value, $actual->$name ) )
 				return false;
-			}
 		}
 	} else if ( is_array( $expected ) ) {
 		foreach ( $expected as $key => $value ) {
-			if ( !compareContents( $value, $actual[$key] ) ) {
+			if ( ! compareContents( $value, $actual[$key] ) )
 				return false;
-			}
 		}
 	} else {
 		return $expected === $actual;
 	}
 
 	return true;
+}
+
+/**
+ * Compare two strings to confirm $actualCSV contains $expectedCSV
+ * Both strings are expected to have headers for their CSVs.
+ * $actualCSV must match all data rows in $expectedCSV
+ *
+ * @return bool     Whether $actualCSV contacts $expectedCSV
+ */
+function checkThatCsvStringContainsCsvString( $actualCSV, $expectedCSV ) {
+
+	$actualCSV = array_map( 'str_getcsv', explode( PHP_EOL, $actualCSV ) );
+	$expectedCSV = array_map( 'str_getcsv', explode( PHP_EOL, $expectedCSV ) );
+
+	if ( empty( $actualCSV ) )
+		return false;
+
+	// Each sample must have headers
+	$actualHeaders = array_values( array_shift( $actualCSV ) );
+	$expectedHeaders = array_values( array_shift( $expectedCSV ) );
+
+	// Each expectedCSV must exist somewhere in actualCSV in the proper column
+	$expectedResult = 0;
+	foreach( $expectedCSV as $expected_row ) {
+		$expected_row = array_combine( $expectedHeaders, $expected_row );
+		foreach( $actualCSV as $actual_row ) {
+
+			if ( count( $actualHeaders ) != count( $actual_row ) )
+				continue;
+
+			$actual_row = array_intersect_key( array_combine( $actualHeaders, $actual_row ), $expected_row );
+			if ( $actual_row == $expected_row )
+				$expectedResult++;
+		}
+	}
+
+	return $expectedResult >= count( $expectedCSV );
 }
