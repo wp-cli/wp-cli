@@ -22,10 +22,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * See the status of one or all plugins.
 	 *
-	 * @synopsis [<plugin>] [--with-version]
+	 * @synopsis [<plugin>]
 	 */
-	function status( $args, $assoc_args ) {
-		parent::status( $args, $assoc_args );
+	function status( $args ) {
+		parent::status( $args );
 	}
 
 	protected function status_single( $args ) {

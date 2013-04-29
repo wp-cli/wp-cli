@@ -20,23 +20,18 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
 
-	function status( $args, $assoc_args ) {
+	function status( $args ) {
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
 		if ( empty( $args ) ) {
-			$with_version = false;
-			if( in_array( 'with-version', $assoc_args ) ) {
-				$with_version = true;
-			}
-
-			$this->status_all( $with_version );
+			$this->status_all();
 		} else {
 			$this->status_single( $args );
 		}
 	}
 
-	private function status_all( $with_version = false ) {
+	private function status_all() {
 		$items = $this->get_all_items();
 
 		$n = count( $items );
@@ -44,18 +39,17 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// Not interested in the translation, just the number logic
 		\WP_CLI::line( sprintf( _n( "%d installed {$this->item_type}:", "%d installed {$this->item_type}s:", $n ), $n ) );
 
+		$padding = $this->get_padding($items);
+
 		foreach ( $items as $file => $details ) {
 			if ( $details['update'] ) {
 				$line = ' %yU%n';
 			} else {
 				$line = '  ';
 			}
-
 			$line .= $this->format_status( $details['status'], 'short' );
-			$line .= " " . $details['name'];
-			if ( $with_version ) {
-				$line .= " " . $this->format_version( $details['version'] ) . "%n";
-			}
+			$line .= " " . str_pad( $details['name'], $padding );
+			$line .= "%n " . $this->format_version( $details['version'] ) . "%n";
 
 			\WP_CLI::line( $line );
 		}
@@ -63,6 +57,20 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		\WP_CLI::line();
 
 		$this->show_legend( $items );
+	}
+
+	private function get_padding( $items ) {
+		$max_len = 0;
+
+		foreach ( $items as $details ) {
+	    $len = strlen( $details['name'] );
+
+	    if ( $len > $max_len ) {
+        $max_len = $len;
+	    }
+		}
+
+		return $max_len;
 	}
 
 	private function show_legend( $items ) {
@@ -192,7 +200,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	protected function format_version( $version ) {
-		return '%c' . $version;
+		return '' . $version;
 	}
 
 	private function get_color( $status ) {
