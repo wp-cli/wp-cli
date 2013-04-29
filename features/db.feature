@@ -24,9 +24,6 @@ Feature: Perform database operations
     Then it should run without errors
     And STDOUT should not be empty
 
-    When I run `wp db query 'SELECT 42 FROM dual'`
+    When I run `wp db query 'SELECT COUNT(*) FROM wp_posts'`
     Then it should run without errors
-    And STDOUT should contain:
-       """
-       42
-       """
+    And STDOUT should match '%d'
