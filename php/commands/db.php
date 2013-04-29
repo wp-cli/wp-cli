@@ -71,9 +71,9 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Open a mysql console using the WordPress credentials.
 	 *
-	 * @alias cli
+	 * @alias connect
 	 */
-	function connect() {
+	function cli() {
 		self::run( 'mysql', Utils\create_cmd(
 			'--host=%s --user=%s --database=%s',
 			DB_HOST, DB_USER, DB_NAME ) );

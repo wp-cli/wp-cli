@@ -22,7 +22,7 @@ wp db optimize
 wp db repair
 .
 .P
-wp db connect
+wp db cli
 .
 .P
 wp db query \fIsql\fR
@@ -36,7 +36,7 @@ wp db import [\fIfile\fR]
 .SH "SUBCOMMANDS"
 .
 .TP
-\fBconnect\fR:
+\fBcli\fR:
 .
 .IP
 Open a mysql console using the WordPress credentials\.
@@ -91,12 +91,6 @@ Remove all tables from the database\.
 .
 .SH "OPTIONS"
 
-.
-.TP
-\fB\-\-str\fR:
-.
-.IP
-Show the mysql command, instead of executing it\.
 .
 .TP
 \fB\-\-yes\fR:
