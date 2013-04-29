@@ -34,11 +34,10 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::line( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		$silent = WP_CLI::get_config('quiet') ? ' --silent ' : ' ';
+		$silent = WP_CLI::get_config('quiet') ? '--silent ' : '';
 
-		$curl_command = 'curl -f' . $silent . escapeshellarg( $download_url );
-		$tar_command = sprintf( 'tar xz --directory=%s --strip-components=1', escapeshellarg( ABSPATH ) );
-		WP_CLI::launch( $curl_command . ' | ' . $tar_command );
+		$cmd = "curl -f $silent %s | tar xz --strip-components=1 --directory=%s";
+		WP_CLI::launch( \WP_CLI\Utils\create_cmd( $cmd, $download_url, ABSPATH ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
