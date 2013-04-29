@@ -82,10 +82,14 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Execute a query against the database.
 	 *
-	 * @synopsis <sql>
+	 * @synopsis [<sql>]
 	 */
 	function query( $args ) {
-		list( $query ) = $args;
+		if ( empty( $args ) ) {
+			$query = file_get_contents( 'php://stdin' );
+		} else {
+			list( $query ) = $args;
+		}
 
 		self::run_query( $query );
 	}
