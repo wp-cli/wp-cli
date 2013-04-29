@@ -13,7 +13,7 @@ command -v composer > /dev/null || {
 }
 
 # install dependencies
-composer install
+composer install --dev
 
 # add symlink to wp binary
 for dir in /usr/bin /usr/local/bin; do
