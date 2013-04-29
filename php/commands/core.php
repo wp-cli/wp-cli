@@ -18,7 +18,7 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( !is_dir( ABSPATH ) ) {
 			WP_CLI::line( sprintf( 'Creating directory %s', ABSPATH ) );
-			WP_CLI::launch( 'mkdir -p ' . escapeshellarg( ABSPATH ) );
+			WP_CLI::launch( sprintf( 'mkdir -p %s', escapeshellarg( ABSPATH ) ) );
 		}
 
 		if ( isset( $assoc_args['locale'] ) ) {
@@ -35,8 +35,7 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		$silent = WP_CLI::get_config('quiet') ? ' --silent ' : ' ';
-		
-		WP_CLI::launch( sprintf( 'mkdir -p %s', escapeshellarg( ABSPATH ) ) );
+
 		$curl_command = 'curl -f' . $silent . escapeshellarg( $download_url );
 		$tar_command = sprintf( 'tar xz --directory=%s --strip-components=1', escapeshellarg( ABSPATH ) );
 		WP_CLI::launch( $curl_command . ' | ' . $tar_command );
