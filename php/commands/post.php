@@ -187,7 +187,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$query = new WP_Query( $query_args );
 
-		$fields = array( 'ID', 'post_title', 'post_name', 'post_date' );
+		$fields = array( 'ID', 'post_title', 'post_name', 'post_date', 'post_status' );
 
 		$output_posts = $query->posts;
 
