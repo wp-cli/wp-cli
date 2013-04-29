@@ -1,5 +1,7 @@
 <?php
 
+use \WP_CLI\Utils;
+
 /**
  * Download, install, update and otherwise manage WordPress proper.
  *
@@ -37,7 +39,7 @@ class Core_Command extends WP_CLI_Command {
 		$silent = WP_CLI::get_config('quiet') ? '--silent ' : '';
 
 		$cmd = "curl -f $silent %s | tar xz --strip-components=1 --directory=%s";
-		WP_CLI::launch( \WP_CLI\Utils\create_cmd( $cmd, $download_url, ABSPATH ) );
+		WP_CLI::launch( Utils\create_cmd( $cmd, $download_url, ABSPATH ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
@@ -161,7 +163,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	}
 
 	private static function modify_wp_config( $content ) {
-		$wp_config_path = WP_CLI\Utils\locate_wp_config();
+		$wp_config_path = Utils\locate_wp_config();
 
 		$token = "/* That's all, stop editing!";
 
@@ -270,7 +272,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
-		$result = WP_CLI\Utils\get_upgrader( $upgrader )->upgrade( $update );
+		$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 
 		if ( is_wp_error($result) ) {
 			$msg = WP_CLI::error_to_string( $result );
@@ -318,7 +320,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		// Create the database
 		$query = sprintf( 'CREATE DATABASE IF NOT EXISTS `%s`', $assoc_args['dbname'] );
 
-		\WP_CLI\Utils\run_mysql_query( $query, array(
+		Utils\run_mysql_query( $query, array(
 			'host' => 'localhost',
 			'user' => $assoc_args['dbuser'],
 			'pass' => $assoc_args['dbpass'],
