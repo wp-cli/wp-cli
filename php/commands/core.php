@@ -39,7 +39,7 @@ class Core_Command extends WP_CLI_Command {
 		$silent = WP_CLI::get_config('quiet') ? '--silent ' : '';
 
 		$cmd = "curl -f $silent %s | tar xz --strip-components=1 --directory=%s";
-		WP_CLI::launch( Utils\create_cmd( $cmd, $download_url, ABSPATH ) );
+		WP_CLI::launch( Utils\esc_cmd( $cmd, $download_url, ABSPATH ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}

@@ -94,14 +94,14 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		if ( !$path ) {
 			$path = sys_get_temp_dir() . '/wp-cli-test-cache';
-			system( Utils\create_cmd( 'mkdir -p %s', $path ) );
+			system( Utils\esc_cmd( 'mkdir -p %s', $path ) );
 		}
 
 		return $path . '/' . $file;
 	}
 
 	public function download_file( $url, $path ) {
-		system( Utils\create_cmd( 'curl -sSL %s > %s', $url, $path ) );
+		system( Utils\esc_cmd( 'curl -sSL %s > %s', $url, $path ) );
 	}
 
 	private static function run_sql( $sql ) {
@@ -187,7 +187,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		if ( $subdir ) mkdir( $dest_dir );
 
-		$cmd = Utils\create_cmd( "cp -r %s/* %s", $cache_dir, $dest_dir );
+		$cmd = Utils\esc_cmd( "cp -r %s/* %s", $cache_dir, $dest_dir );
 
 		system( $cmd );
 	}

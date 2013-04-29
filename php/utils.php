@@ -138,7 +138,10 @@ function assoc_args_to_str( $assoc_args ) {
  * Given a template string and an arbitrary number of arguments,
  * returns the final command, with the parameters escaped.
  */
-function create_cmd( $cmd ) {
+function esc_cmd( $cmd ) {
+	if ( func_num_args() < 2 )
+		trigger_error( 'esc_cmd() requires at least two arguments.', E_USER_WARNING );
+
 	$args = func_get_args();
 
 	$cmd = array_shift( $args );
@@ -368,7 +371,7 @@ function find_subcommand( $args ) {
 function run_mysql_query( $query, $args ) {
 	// TODO: use PDO?
 
-	$arg_str = create_cmd( '--host=%s --user=%s --execute=%s',
+	$arg_str = esc_cmd( '--host=%s --user=%s --execute=%s',
 		$args['host'], $args['user'], $query );
 
 	run_mysql_command( 'mysql', $arg_str, $args['pass'] );
