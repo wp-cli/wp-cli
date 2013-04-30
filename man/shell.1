@@ -13,4 +13,10 @@ wp shell
 \fBwp shell\fR allows you to evaluate PHP statements and expressions interactively, from within a WordPress environment\. This means that you have access to all the functions, classes and globals that you would have access to from inside a WordPress plugin, for example\.
 .
 .P
+\fB$_\fR is a special variable that contains the result from the last evaluated statement\.
+.
+.P
+You can split a statement over multiple lines by adding a \fB\e\fR (backslash) before hitting Return\.
+.
+.P
 If you type \fBhistory\fR and hit Return, WP\-CLI will print the list of previously evaluated statements, which you can copy+paste into a PHP file\.
