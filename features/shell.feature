@@ -10,7 +10,7 @@ Feature: WordPress REPL
     Type "exit" to close session.
     """
 
-  Scenario: Basic session
+  Scenario: $_ special variable
     Given a WP install
     And a session file:
     """
@@ -28,4 +28,21 @@ Feature: WordPress REPL
     true
     0
     0
+    """
+
+  Scenario: Persistent environment
+    Given a WP install
+    And a session file:
+    """
+    function is_empty_string( $str ) { return strlen( $str ) == 0; }
+    1; $a = get_option('home')
+    is_empty_string( $a )
+    """
+
+    When I run `wp shell --quiet < session`
+    Then it should run without errors
+    And STDOUT should be:
+    """
+    1
+    false
     """

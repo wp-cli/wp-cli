@@ -43,7 +43,7 @@ class Shell_Command extends \WP_CLI_Command {
 
 	private static function non_expressions() {
 		return implode( '|', array(
-			'echo', 'global', 'unset',
+			'echo', 'global', 'unset', 'function',
 			'while', 'for', 'foreach', 'if', 'switch',
 			'include', 'include\_once', 'require', 'require\_once'
 		) );
