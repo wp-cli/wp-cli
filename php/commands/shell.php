@@ -36,14 +36,14 @@ class Shell_Command extends \WP_CLI_Command {
 
 				eval( $line );
 
-				\WP_CLI::line( var_export( $_, false ) );
+				\WP_CLI::print_value( var_export( $_, false ) );
 			}
 		}
 	}
 
 	private static function non_expressions() {
 		return implode( '|', array(
-			'echo', 'global', 'unset',
+			'echo', 'global', 'unset', 'function',
 			'while', 'for', 'foreach', 'if', 'switch',
 			'include', 'include\_once', 'require', 'require\_once'
 		) );
