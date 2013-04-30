@@ -36,7 +36,7 @@ class Shell_Command extends \WP_CLI_Command {
 
 				eval( $line );
 
-				\WP_CLI::line( var_export( $_, false ) );
+				\WP_CLI::print_value( var_export( $_, false ) );
 			}
 		}
 	}
