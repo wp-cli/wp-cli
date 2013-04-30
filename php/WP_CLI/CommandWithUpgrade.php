@@ -48,8 +48,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$line = '  ';
 			}
 			$line .= $this->format_status( $details['status'], 'short' );
-			$line .= " " . str_pad( $details['name'], $padding );
-			$line .= "%n " . $this->format_version( $details['version'] ) . "%n";
+			$line .= " " . str_pad( $details['name'], $padding ). "%n";
+			if ( !empty( $details['version'] ) ) {
+				$line .= " " . $details['version'];
+			}
 
 			\WP_CLI::line( $line );
 		}
@@ -197,10 +199,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected function format_status( $status, $format ) {
 		return $this->get_color( $status ) . $this->map[ $format ][ $status ];
-	}
-
-	protected function format_version( $version ) {
-		return '' . $version;
 	}
 
 	private function get_color( $status ) {
