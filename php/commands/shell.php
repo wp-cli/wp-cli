@@ -50,21 +50,37 @@ class Shell_Command extends \WP_CLI_Command {
 	}
 
 	private function prompt() {
-		static $cmd;
+		$full_line = false;
 
-		if ( !$cmd ) {
-			$cmd = self::create_prompt_cmd( 'wp> ', $this->history_file );
+		$done = false;
+		do {
+			$prompt = ( !$done && $full_line !== false ) ? '--> ' : 'wp> ';
+
+			$fp = popen( self::create_prompt_cmd( $prompt, $this->history_file ), 'r' );
+
+			$line = fgets( $fp );
+
+			if ( !$line ) {
+				break;
+			}
+
+			$line = rtrim( $line, "\n" );
+
+			if ( $line && '\\' == $line[ strlen( $line ) - 1 ] ) {
+				$line = substr( $line, 0, -1 );
+			} else {
+				$done = true;
+			}
+
+			$full_line .= $line;
+
+		} while ( !$done );
+
+		if ( $full_line === false ) {
+			return 'exit';
 		}
 
-		$fp = popen( $cmd, 'r' );
-
-		$line = fgets( $fp );
-
-		if ( !$line ) {
-			$line = 'exit';
-		}
-
-		return trim( $line );
+		return $full_line;
 	}
 
 	private static function create_prompt_cmd( $prompt, $history_path ) {
