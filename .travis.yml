@@ -23,3 +23,7 @@ before_script:
     - mysql -e 'GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"localhost" IDENTIFIED BY "password1"' -uroot
 
 script: vendor/bin/phpunit && vendor/bin/behat
+
+notifications:
+    email:
+        on_success: never
