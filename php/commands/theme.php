@@ -133,6 +133,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				'name' => $key,
 				'status' => $this->get_status( $theme ),
 				'update' => $this->has_update( $theme->get_stylesheet() ),
+				'version' => $theme->get('Version'),
 				'update_id' => $theme->get_stylesheet(),
 			);
 		}
