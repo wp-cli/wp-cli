@@ -111,6 +111,7 @@ class Blog_Command extends WP_CLI_Command {
 	 * Empty a blog
 	 *
 	 * @subcommand empty
+	 * @synopsis [--yes]
 	 */
 	public function _empty( $args, $assoc_args ) {
 
