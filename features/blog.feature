@@ -1,4 +1,4 @@
-Feature: Manage a WordPress multisite installation
+Feature: Manage a WordPress installation
 
   Scenario: Install multisite
     Given a WP install
@@ -37,3 +37,26 @@ Feature: Manage a WordPress multisite installation
 
     When I run the previous command again
     Then the return code should be 1
+
+ Scenario: Empty a blog
+    Given a WP install
+
+    When I run `wp post create --post_title='Test post' --post_content='Test content.' --porcelain`
+    Then it should run without errors
+    And STDOUT should not be empty
+
+    When I run `wp term create 'Test term' post_tag --slug=test --description='This is a test term'`
+    Then it should run without errors
+    And STDOUT should not be empty
+
+    When I run `wp blog empty --yes`
+    Then it should run without errors
+    And STDOUT should not be empty
+
+    When I run `wp post list --format=ids`
+    Then it should run without errors
+    And STDOUT should be empty
+
+    When I run `wp term list post_tag --format=ids`
+    Then it should run without errors
+    And STDOUT should be empty
