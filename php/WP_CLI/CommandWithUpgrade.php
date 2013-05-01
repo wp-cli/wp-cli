@@ -39,15 +39,19 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// Not interested in the translation, just the number logic
 		\WP_CLI::line( sprintf( _n( "%d installed {$this->item_type}:", "%d installed {$this->item_type}s:", $n ), $n ) );
 
+		$padding = $this->get_padding($items);
+
 		foreach ( $items as $file => $details ) {
 			if ( $details['update'] ) {
 				$line = ' %yU%n';
 			} else {
 				$line = '  ';
 			}
-
 			$line .= $this->format_status( $details['status'], 'short' );
-			$line .= " " . $details['name'] . "%n";
+			$line .= " " . str_pad( $details['name'], $padding ). "%n";
+			if ( !empty( $details['version'] ) ) {
+				$line .= " " . $details['version'];
+			}
 
 			\WP_CLI::line( $line );
 		}
@@ -55,6 +59,20 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		\WP_CLI::line();
 
 		$this->show_legend( $items );
+	}
+
+	private function get_padding( $items ) {
+		$max_len = 0;
+
+		foreach ( $items as $details ) {
+	    $len = strlen( $details['name'] );
+
+	    if ( $len > $max_len ) {
+        $max_len = $len;
+	    }
+		}
+
+		return $max_len;
 	}
 
 	private function show_legend( $items ) {
