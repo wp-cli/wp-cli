@@ -60,11 +60,12 @@ class SynopsisParser {
 		}
 
 		if ( !empty( $errors ) ) {
+			$out = '';
 			foreach ( $errors as $error ) {
-				\WP_CLI::warning( $error );
+				$out .= "\n " . $error;
 			}
-			call_user_func( $callback );
-			exit(1);
+
+			\WP_CLI::error( $out, "Parameter errors" );
 		}
 	}
 
