@@ -25,7 +25,7 @@ $steps->Given( '/^WP files$/',
 
 $steps->Given( '/^wp-config\.php$/',
 	function ( $world ) {
-		$world->run( 'core config' );
+		$world->proc( 'core config' )->run_check();
 	}
 );
 
@@ -50,7 +50,7 @@ $steps->Given( "/^a WP install in '([^\s]+)'$/",
 $steps->Given( '/^a WP multisite install$/',
 	function ( $world ) {
 		$world->wp_install();
-		$world->run( 'core install-network' );
+		$world->proc( 'core install-network' )->run_check();
 	}
 );
 
@@ -96,29 +96,29 @@ $steps->Given( '/^a google-sitemap-generator-cli plugin zip$/',
 
 $steps->Given( '/^a large image file$/',
 	function ( $world ) {
-    $image_file = 'http://wordpresswallpaper.com/wp-content/gallery/photo-based-wallpaper/1058.jpg';
+		$image_file = 'http://wordpresswallpaper.com/wp-content/gallery/photo-based-wallpaper/1058.jpg';
 
-    $world->variables['DOWNLOADED_IMAGE'] = $world->get_cache_path( 'wallpaper.jpg' );
+		$world->variables['DOWNLOADED_IMAGE'] = $world->get_cache_path( 'wallpaper.jpg' );
 
-    $world->download_file( $image_file, $world->variables['DOWNLOADED_IMAGE'] );
+		$world->download_file( $image_file, $world->variables['DOWNLOADED_IMAGE'] );
 	}
 );
 
 $steps->When( '/^I run `wp`$/',
 	function ( $world ) {
-		$world->result = $world->run( '' );
+		$world->result = $world->proc( '' )->run();
 	}
 );
 
 $steps->When( '/^I run `wp (.+)`$/',
 	function ( $world, $cmd ) {
-		$world->result = $world->run( $world->replace_variables( $cmd ) );
+		$world->result = $world->proc( $world->replace_variables( $cmd ) )->run();
 	}
 );
 
 $steps->When( "/^I run `wp (.+)` from '([^\s]+)'$/",
 	function ( $world, $cmd, $subdir ) {
-		$world->result = $world->run( $world->replace_variables( $cmd ), array(), $subdir );
+		$world->result = $world->proc( $world->replace_variables( $cmd ) )->run( $subdir );
 	}
 );
 
@@ -127,7 +127,7 @@ $steps->When( '/^I run the previous command again$/',
 		if ( !isset( $world->result ) )
 			throw new \Exception( 'No previous command.' );
 
-		$world->result = $world->run( $world->result->command );
+		$world->result = Process::create( $world->result->command, $world->result->cwd )->run();
 	}
 );
 
@@ -136,7 +136,7 @@ $steps->When( '/^I try to import it$/',
 		if ( !isset( $world->variables['DOWNLOADED_IMAGE'] ) )
 			throw new \Exception( 'Cached image not available.' );
 
-		$world->result = $world->run( 'media import ' . $world->variables['DOWNLOADED_IMAGE'] . ' --post_id=1 --featured_image' );
+		$world->result = $world->proc( 'media import ' . $world->variables['DOWNLOADED_IMAGE'] . ' --post_id=1 --featured_image' )->run();
 	}
 );
 
@@ -234,7 +234,7 @@ $steps->Then( '/^STDOUT should be JSON containing:$/',
 
 $steps->Then( '/^STDOUT should be CSV containing:$/',
 	function( $world, PyStringNode $expected ) {
-		
+
 		$output        = $world->result->STDOUT;
 		$expected      = $world->replace_variables( (string) $expected );
 
