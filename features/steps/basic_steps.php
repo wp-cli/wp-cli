@@ -84,16 +84,6 @@ $steps->Given( '/^a P2 theme zip$/',
 	}
 );
 
-$steps->Given( '/^a google-sitemap-generator-cli plugin zip$/',
-	function ( $world ) {
-		$zip_url = 'https://github.com/wp-cli/google-sitemap-generator-cli/archive/master.zip';
-
-		$world->variables['PLUGIN_ZIP'] = $world->get_cache_path( 'google-sitemap-generator-cli.zip' );
-
-		$world->download_file( $zip_url, $world->variables['PLUGIN_ZIP'] );
-	}
-);
-
 $steps->Given( '/^a large image file$/',
 	function ( $world ) {
 		$image_file = 'http://wordpresswallpaper.com/wp-content/gallery/photo-based-wallpaper/1058.jpg';
