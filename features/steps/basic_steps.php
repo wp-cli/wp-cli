@@ -154,8 +154,11 @@ $steps->Then( '/^the return code should be (\d+)$/',
 
 $steps->Then( '/^it should run without errors$/',
 	function ( $world ) {
-		if ( !empty( $world->result->STDERR ) )
-			throw new \Exception( $world->result->STDERR );
+		if ( !empty( $world->result->STDERR ) ) {
+			$r = $world->result;
+			throw new \Exception( sprintf( "%s: %s\ncwd: %s",
+				$r->command, $r->STDERR, $r->cwd ) );
+		}
 
 		if ( 0 != $world->result->return_code )
 			throw new \Exception( "Return code was $world->result->return_code" );
