@@ -1,14 +1,14 @@
 <?php
 
 /**
- * Manage blog(s)
+ * Manage blog.
  *
  * @package wp-cli
  */
 class Blog_Command extends WP_CLI_Command {
 
 	/**
-	 * Delete comments
+	 * Delete comments.
 	 */
 	private function _empty_comments() {
 		global $wpdb;
@@ -24,7 +24,7 @@ class Blog_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete all posts
+	 * Delete all posts.
 	 */
 	private function _empty_posts() {
 		global $wpdb;
@@ -51,7 +51,7 @@ class Blog_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete terms, taxonomies, and tax relationships
+	 * Delete terms, taxonomies, and tax relationships.
 	 */
 	private function _empty_taxonomies() {
 		global $wpdb;
@@ -64,13 +64,13 @@ class Blog_Command extends WP_CLI_Command {
 			$ids[] = $term->term_id;
 			wp_cache_delete( $term->term_id, $term->taxonomy );
 		}
-		
+
 		$taxonomies = array_unique( $taxonomies );
 		foreach ( $taxonomies as $taxonomy ) {
 			if ( isset( $cleaned[$taxonomy] ) )
 				continue;
 			$cleaned[$taxonomy] = true;
-		
+
 			wp_cache_delete( 'all_ids', $taxonomy );
 			wp_cache_delete( 'get', $taxonomy );
 			delete_option( "{$taxonomy}_children" );
@@ -81,7 +81,7 @@ class Blog_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Insert default terms
+	 * Insert default terms.
 	 */
 	private function _insert_default_terms() {
 		global $wpdb;
@@ -108,7 +108,7 @@ class Blog_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Empty a blog
+	 * Empty a blog of its content.
 	 *
 	 * @subcommand empty
 	 * @synopsis [--yes]
@@ -127,7 +127,7 @@ class Blog_Command extends WP_CLI_Command {
 }
 
 /**
- * Manage blogs in a multisite install
+ * Manage blogs in a multisite install.
  */
 class MS_Blog_Command extends Blog_Command {
 
@@ -161,7 +161,7 @@ class MS_Blog_Command extends Blog_Command {
 	}
 
 	/**
-	 * Get site (network) data for a given id
+	 * Get site (network) data for a given id.
 	 *
 	 * @param int     $site_id
 	 * @return bool|array False if no network found with given id, array otherwise
