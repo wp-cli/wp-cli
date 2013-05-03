@@ -131,8 +131,6 @@ class Blog_Command extends WP_CLI_Command {
  */
 class MS_Blog_Command extends Blog_Command {
 
-	public function __construct() { }
-
 	/**
 	 * Delete a blog in a multisite install.
 	 *
