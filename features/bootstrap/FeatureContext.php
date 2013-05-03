@@ -122,7 +122,12 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		self::run_sql( "DROP DATABASE IF EXISTS $dbname" );
 	}
 
-	private function _run( $command, $assoc_args, $subdir = '' ) {
+	public function run( $command, $assoc_args = array(), $subdir = '' ) {
+		if ( isset( self::$additional_args[ $command ] ) ) {
+			$assoc_args = array_merge( self::$additional_args[ $command ],
+				$assoc_args );
+		}
+
 		if ( !empty( $assoc_args ) )
 			$command .= Utils\assoc_args_to_str( $assoc_args );
 
@@ -155,15 +160,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		return $r;
 	}
 
-	public function run( $command, $assoc_args = array(), $subdir = '' ) {
-		if ( isset( self::$additional_args[ $command ] ) ) {
-			$assoc_args = array_merge( self::$additional_args[ $command ],
-				$assoc_args );
-		}
-
-		return $this->_run( $command, $assoc_args, $subdir );
-	}
-
 	public function move_files( $src, $dest ) {
 		rename( $this->get_path( $src ), $this->get_path( $dest ) );
 	}
@@ -179,7 +175,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		// Ideally, we'd cache at the HTTP layer for more reliable tests
 		$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
 
-		$r = $this->_run( 'core download', array(
+		$r = $this->run( 'core download', array(
 			'path' => $cache_dir
 		) );
 
