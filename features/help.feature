@@ -29,15 +29,23 @@ Feature: Get help about WP-CLI commands
 
   Scenario: Getting help for a third-party command
     Given a WP install
-    And a google-sitemap-generator-cli plugin zip
-    And I run `wp plugin install --activate {PLUGIN_ZIP}`
-    And it should run without errors
-    And I run `wp plugin install --activate google-sitemap-generator`
+    And a wp-content/plugins/test-cli-help.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI Help
+
+      class Test_Help extends WP_CLI_Command {
+        function __invoke() {}
+      }
+
+      WP_CLI::add_command( 'test-help', 'Test_Help' );
+      """
+    And I run `wp plugin activate test-cli-help`
     And it should run without errors
 
-    When I run `wp help google-sitemap`
+    When I run `wp help test-help`
     Then it should run without errors
     And STDOUT should contain:
       """
-      usage: wp google-sitemap
+      usage: wp test-help
       """
