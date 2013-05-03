@@ -164,7 +164,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->create_db();
 		$this->create_empty_dir();
 		$this->download_wordpress_files( $subdir );
-		$this->proc( 'core config' )->run_check( $subdir );
+
+		$this->proc( 'core config', array( 'dbprefix' => $subdir ? $subdir : 'wp_' ) )->run_check( $subdir );
+
 		$this->proc( 'core install' )->run_check( $subdir );
 	}
 }
