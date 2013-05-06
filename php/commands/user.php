@@ -9,14 +9,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected $obj_type = 'user';
 
-	public $fields = array(
-			'ID',
-			'user_login',
-			'display_name',
-			'user_email',
-			'user_registered',
-			'roles'
-		);
+	private $fields = array(
+		'ID',
+		'user_login',
+		'display_name',
+		'user_email',
+		'user_registered',
+		'roles'
+	);
 
 	/**
 	 * List users.

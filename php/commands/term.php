@@ -6,15 +6,15 @@
  */
 class Term_Command extends WP_CLI_Command {
 
-	public $fields = array(
-			'term_id',
-			'term_taxonomy_id',
-			'name',
-			'slug',
-			'description',
-			'parent',
-			'count',
-		);
+	private $fields = array(
+		'term_id',
+		'term_taxonomy_id',
+		'name',
+		'slug',
+		'description',
+		'parent',
+		'count',
+	);
 
 	/**
 	 * List terms in a taxonomy.

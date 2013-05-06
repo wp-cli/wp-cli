@@ -7,10 +7,10 @@
  */
 class Role_Command extends WP_CLI_Command {
 
-	public $fields = array(
-			'name',
-			'role'
-		);
+	private $fields = array(
+		'name',
+		'role'
+	);
 
 	/**
 	 * List all roles.

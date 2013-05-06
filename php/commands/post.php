@@ -9,7 +9,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected $obj_type = 'post';
 
-	public $fields = array(
+	private $fields = array(
 		'ID',
 		'post_title',
 		'post_name',
