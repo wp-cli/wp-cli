@@ -174,19 +174,18 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'posts_per_page' => -1
 		);
 
-		if ( ! empty( $assoc_args['format'] ) ) {
-			$format = $assoc_args['format'];
-			unset( $assoc_args['format'] );
-		} else {
-			$format = 'table';
-		}
+		$values = array(
+			'format' => 'table',
+			'fields' => $this->fields
+		);
 
-		if ( isset( $assoc_args['fields'] ) ) {
-			$fields = $assoc_args['fields'];
-			unset( $assoc_args['fields'] );
-		} else {
-			$fields = $this->fields;
+		foreach ( $values as $key => &$value ) {
+			if ( isset( $assoc_args[ $key ] ) ) {
+				$value = $assoc_args[ $key ];
+				unset( $assoc_args[ $key ] );
+			}
 		}
+		unset( $value );
 
 		foreach ( $assoc_args as $key => $value ) {
 			if ( true === $value )
@@ -195,12 +194,12 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$query_args[ $key ] = $value;
 		}
 
-		if ( 'ids' == $format )
+		if ( 'ids' == $values['format'] )
 			$query_args['fields'] = 'ids';
 
 		$query = new WP_Query( $query_args );
 
-		WP_CLI\Utils\format_items( $query->posts, $format, $fields );
+		WP_CLI\Utils\format_items( $query->posts, $values['format'], $values['fields'] );
 	}
 
 	/**
