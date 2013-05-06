@@ -28,7 +28,10 @@ class SynopsisParser {
 			'type' => 'assoc',
 		) );
 
-		$errors = array();
+		$errors = array(
+			'fatal' => array(),
+			'warnings' => array()
+		);
 
 		foreach ( $assoc as $param ) {
 			$key = $param['name'];
@@ -54,7 +57,7 @@ class SynopsisParser {
 		) );
 
 		if ( count( $generic ) )
-			return;
+			return array();
 
 		$known_assoc = array();
 
