@@ -78,7 +78,7 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 			exit(1);
 		}
 
-		$errors = $parser->validate_assoc( array_merge( WP_CLI::get_config(), $assoc_args ) );
+		$errors = $parser->validate_assoc( array_merge( \WP_CLI::get_config(), $assoc_args ) );
 
 		if ( !empty( $errors['fatal'] ) ) {
 			$out = '';
