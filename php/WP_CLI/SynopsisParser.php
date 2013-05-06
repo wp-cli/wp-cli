@@ -21,7 +21,7 @@ class SynopsisParser {
 		return count( $args ) >= count( $positional );
 	}
 
-	public function validate_assoc( $assoc_args ) {
+	public function validate_assoc( &$assoc_args, $ignored_keys = array() ) {
 		$assoc = $this->query_params( array(
 			'type' => 'assoc',
 		) );
@@ -34,6 +34,9 @@ class SynopsisParser {
 		foreach ( $assoc as $param ) {
 			$key = $param['name'];
 
+			if ( in_array( $key, $ignored_keys ) )
+				continue;
+
 			if ( !isset( $assoc_args[ $key ] ) ) {
 				if ( 'mandatory' == $param['flavour'] ) {
 					$errors['fatal'][] = "missing --$key parameter";
@@ -42,6 +45,8 @@ class SynopsisParser {
 				if ( true === $assoc_args[ $key ] ) {
 					$error_type = ( 'mandatory' == $param['flavour'] ) ? 'fatal' : 'warning';
 					$errors[ $error_type ][] = "--$key parameter needs a value";
+
+					unset( $assoc_args[ $key ] );
 				}
 			}
 		}

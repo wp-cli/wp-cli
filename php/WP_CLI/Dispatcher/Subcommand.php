@@ -66,7 +66,7 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 		return $this->docparser->get_synopsis();
 	}
 
-	private function validate_args( $args, $assoc_args ) {
+	private function validate_args( $args, &$assoc_args ) {
 		$synopsis = $this->get_synopsis();
 
 		if ( !$synopsis )
@@ -78,7 +78,7 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 			exit(1);
 		}
 
-		$errors = $parser->validate_assoc( array_merge( \WP_CLI::get_config(), $assoc_args ) );
+		$errors = $parser->validate_assoc( $assoc_args, array_keys( \WP_CLI::get_config() ) );
 
 		if ( !empty( $errors['fatal'] ) ) {
 			$out = '';
