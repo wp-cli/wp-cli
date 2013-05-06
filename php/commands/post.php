@@ -123,7 +123,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				$items[] = $item;
 			}
 
-			\WP_CLI\Utils\format_items( $format, array( 'Field', 'Value' ), $items );
+			\WP_CLI\Utils\format_items( $items, $format, array( 'Field', 'Value' ) );
 			break;
 
 		case 'json':
@@ -200,9 +200,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$query = new WP_Query( $query_args );
 
-		$output_posts = $query->posts;
-
-		WP_CLI\Utils\format_items( $format, $fields, $output_posts );
+		WP_CLI\Utils\format_items( $query->posts, $format, $fields );
 	}
 
 	/**
