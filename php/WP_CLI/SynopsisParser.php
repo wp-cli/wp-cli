@@ -22,15 +22,13 @@ class SynopsisParser {
 	}
 
 	public function validate_assoc( $assoc_args ) {
-		$assoc_args += \WP_CLI::get_config();
-
 		$assoc = $this->query_params( array(
 			'type' => 'assoc',
 		) );
 
 		$errors = array(
 			'fatal' => array(),
-			'warnings' => array()
+			'warning' => array()
 		);
 
 		foreach ( $assoc as $param ) {

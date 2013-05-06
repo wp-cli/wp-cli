@@ -78,7 +78,7 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 			exit(1);
 		}
 
-		$errors = $parser->validate_assoc( $assoc_args );
+		$errors = $parser->validate_assoc( array_merge( WP_CLI::get_config(), $assoc_args ) );
 
 		if ( !empty( $errors['fatal'] ) ) {
 			$out = '';
@@ -89,7 +89,7 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 			\WP_CLI::error( $out, "Parameter errors" );
 		}
 
-		array_map( '\\WP_CLI::warning', $errors['warnings'] );
+		array_map( '\\WP_CLI::warning', $errors['warning'] );
 
 		foreach ( $parser->unknown_assoc( $assoc_args ) as $key ) {
 			\WP_CLI::warning( "unknown --$key parameter" );
