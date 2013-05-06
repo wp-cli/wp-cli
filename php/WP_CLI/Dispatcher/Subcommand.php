@@ -26,6 +26,14 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 		return $this->docparser->get_tag( 'alias' );
 	}
 
+	function get_name() {
+		return $this->name;
+	}
+
+	function get_parent() {
+		return $this->parent;
+	}
+
 	function show_usage( $prefix = 'usage: ' ) {
 		\WP_CLI::line( $prefix . $this->get_full_synopsis() );
 	}
@@ -58,25 +66,42 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 		return $this->docparser->get_synopsis();
 	}
 
-	function invoke( $args, $assoc_args ) {
+	private function validate_args( $args, $assoc_args ) {
 		$synopsis = $this->get_synopsis();
 
-		if ( $synopsis ) {
-			\WP_CLI\SynopsisParser::validate_args( $synopsis, $args, $assoc_args,
-				array( $this, 'show_usage' ) );
+		if ( !$synopsis )
+			return;
+
+		$parser = new \WP_CLI\SynopsisParser( $synopsis );
+		if ( !$parser->enough_positionals( $args ) ) {
+			$this->show_usage();
+			exit(1);
 		}
+
+		$errors = $parser->validate_assoc( $assoc_args );
+
+		if ( !empty( $errors['fatal'] ) ) {
+			$out = '';
+			foreach ( $errors['fatal'] as $error ) {
+				$out .= "\n " . $error;
+			}
+
+			\WP_CLI::error( $out, "Parameter errors" );
+		}
+
+		array_map( '\\WP_CLI::warning', $errors['warnings'] );
+
+		foreach ( $parser->unknown_assoc( $assoc_args ) as $key ) {
+			\WP_CLI::warning( "unknown --$key parameter" );
+		}
+	}
+
+	function invoke( $args, $assoc_args ) {
+		$this->validate_args( $args, $assoc_args );
 
 		$instance = new $this->method->class;
 
 		call_user_func( array( $instance, $this->method->name ), $args, $assoc_args );
-	}
-
-	function get_name() {
-		return $this->name;
-	}
-
-	function get_parent() {
-		return $this->parent;
 	}
 }
 

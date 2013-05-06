@@ -8,68 +8,47 @@ class SynopsisParser {
 
 	private $params = array();
 
-	/**
-	 * @param string Synopsis
-	 * @param array Positional args
-	 * @param array Associative args
-	 * @param callback What to do on a critical failure
-	 */
-	static function validate_args( $synopsis, $args, $assoc_args, $callback ) {
-		$instance = new self( $synopsis );
-
-		$instance->check_positional( $args, $callback );
-
-		$instance->check_assoc( $assoc_args, $callback );
-
-		$instance->check_unknown_assoc( $assoc_args );
-	}
-
-	private function __construct( $synopsis ) {
+	public function __construct( $synopsis ) {
 		$this->params = $this->parse( $synopsis );
 	}
 
-	private function check_positional( $args, $callback ) {
+	public function enough_positionals( $args ) {
 		$positional = $this->query_params( array(
 			'type' => 'positional',
 			'flavour' => 'mandatory'
 		) );
 
-		if ( count( $args ) < count( $positional ) ) {
-			call_user_func( $callback );
-			exit(1);
-		}
+		return count( $args ) >= count( $positional );
 	}
 
-	private function check_assoc( $assoc_args, $callback ) {
+	public function validate_assoc( $assoc_args ) {
 		$assoc_args += \WP_CLI::get_config();
+
+		$assoc = $this->query_params( array(
+			'type' => 'assoc',
+		) );
 
 		$errors = array();
 
-		$mandatory_assoc = $this->query_params( array(
-			'type' => 'assoc',
-			'flavour' => 'mandatory'
-		) );
-
-		foreach ( $mandatory_assoc as $param ) {
+		foreach ( $assoc as $param ) {
 			$key = $param['name'];
 
-			if ( !isset( $assoc_args[ $key ] ) )
-				$errors[] = "missing --$key parameter";
-			elseif ( true === $assoc_args[ $key ] )
-				$errors[] = "--$key parameter needs a value";
-		}
-
-		if ( !empty( $errors ) ) {
-			$out = '';
-			foreach ( $errors as $error ) {
-				$out .= "\n " . $error;
+			if ( !isset( $assoc_args[ $key ] ) ) {
+				if ( 'mandatory' == $param['flavour'] ) {
+					$errors['fatal'][] = "missing --$key parameter";
+				}
+			} else {
+				if ( true === $assoc_args[ $key ] ) {
+					$error_type = ( 'mandatory' == $param['flavour'] ) ? 'fatal' : 'warning';
+					$errors[ $error_type ][] = "--$key parameter needs a value";
+				}
 			}
-
-			\WP_CLI::error( $out, "Parameter errors" );
 		}
+
+		return $errors;
 	}
 
-	private function check_unknown_assoc( $assoc_args ) {
+	public function unknown_assoc( $assoc_args ) {
 		$generic = $this->query_params( array(
 			'type' => 'generic',
 		) );
@@ -84,11 +63,7 @@ class SynopsisParser {
 				$known_assoc[] = $param['name'];
 		}
 
-		$unknown_assoc = array_diff( array_keys( $assoc_args ), $known_assoc );
-
-		foreach ( $unknown_assoc as $key ) {
-			\WP_CLI::warning( "unknown --$key parameter" );
-		}
+		return array_diff( array_keys( $assoc_args ), $known_assoc );
 	}
 
 	/**
