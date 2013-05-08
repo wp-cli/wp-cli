@@ -255,11 +255,11 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 /**
  * Output items in a table, JSON, or CSV
  *
+ * @param string        $format     Format to use: 'table', 'json', 'csv', 'ids'
  * @param array         $items      Data to output
- * @param string        $format     Format to use: 'table', 'json', 'csv'
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
-function format_items( $items, $format, $fields ) {
+function format_items( $format, $items, $fields ) {
 	if ( 'ids' == $format )
 		\WP_CLI::out( implode( ' ', $items ) );
 

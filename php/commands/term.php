@@ -41,7 +41,7 @@ class Term_Command extends WP_CLI_Command {
 		if ( 'ids' == $assoc_args['format'] )
 			$terms = wp_list_pluck( $terms, 'term_id' );
 
-		WP_CLI\Utils\format_items( $terms, $assoc_args['format'], $fields, $terms );
+		WP_CLI\Utils\format_items( $assoc_args['format'], $terms, $fields );
 	}
 
 	/**

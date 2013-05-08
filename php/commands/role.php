@@ -40,7 +40,7 @@ class Role_Command extends WP_CLI_Command {
 			$output_roles[] = $output_role;
 		}
 
-		WP_CLI\Utils\format_items( $output_roles, $params['format'], $fields );
+		WP_CLI\Utils\format_items( $params['format'], $output_roles, $fields );
 	}
 
 	/**

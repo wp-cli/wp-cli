@@ -53,7 +53,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			}
 		}
 
-		WP_CLI\Utils\format_items( $users, $params['format'], $fields );
+		WP_CLI\Utils\format_items( $params['format'], $users, $fields );
 	}
 
 	/**
