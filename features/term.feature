@@ -17,6 +17,14 @@ Feature: Manage WordPress terms
       [{"name":"Test term","slug":"test","description":"This is a test term","parent":"0","count":"0"}]
       """
 
+    When I run `wp term list post_tag --fields=name,slug --format=csv`
+    Then it should run without errors
+    And STDOUT should be CSV containing:
+      """
+      name,slug
+      "Test term",test
+      """
+
   Scenario: Creating/deleting a term
     Given a WP install
 

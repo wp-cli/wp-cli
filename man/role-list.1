@@ -7,9 +7,15 @@
 \fBwp\-role\-list\fR \- List all roles\.
 .
 .SH "SYNOPSIS"
-wp role list [\-\-format=\fIformat\fR]
+wp role list [\-\-fields=\fIfields\fR] [\-\-format=\fIformat\fR]
 .
 .SH "OPTIONS"
+.
+.TP
+\fB\-\-fields\fR=\fIfields\fR:
+.
+.IP
+Limit the output to specific object fields\. Defaults to name,role\.
 .
 .TP
 \fB\-\-format\fR=\fIformat\fR:
@@ -21,7 +27,7 @@ Output list as table, CSV or JSON\. Defaults to table\.
 .
 .nf
 
-wp role list
+wp role list \-\-fields=role \-\-format=csv
 .
 .fi
 

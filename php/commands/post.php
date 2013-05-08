@@ -9,6 +9,13 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected $obj_type = 'post';
 
+	private $fields = array(
+		'ID',
+		'post_title',
+		'post_name',
+		'post_date'
+	);
+
 	/**
 	 * Create a post.
 	 *
@@ -116,7 +123,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				$items[] = $item;
 			}
 
-			\WP_CLI\Utils\format_items( $format, array( 'Field', 'Value' ), $items );
+			\WP_CLI\Utils\format_items( $format, $items, array( 'Field', 'Value' ) );
 			break;
 
 		case 'json':
@@ -160,7 +167,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * Get a list of posts.
 	 *
 	 * @subcommand list
-	 * @synopsis [--<field>=<value>] [--format=<format>]
+	 * @synopsis [--<field>=<value>] [--fields=<fields>] [--format=<format>]
 	 */
 	public function _list( $_, $assoc_args ) {
 		$query_args = array(
@@ -168,12 +175,18 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'post_status'     => 'any',
 		);
 
-		if ( ! empty( $assoc_args['format'] ) ) {
-			$format = $assoc_args['format'];
-			unset( $assoc_args['format'] );
-		} else {
-			$format = 'table';
+		$values = array(
+			'format' => 'table',
+			'fields' => $this->fields
+		);
+
+		foreach ( $values as $key => &$value ) {
+			if ( isset( $assoc_args[ $key ] ) ) {
+				$value = $assoc_args[ $key ];
+				unset( $assoc_args[ $key ] );
+			}
 		}
+		unset( $value );
 
 		foreach ( $assoc_args as $key => $value ) {
 			if ( true === $value )
@@ -182,16 +195,12 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$query_args[ $key ] = $value;
 		}
 
-		if ( 'ids' == $format )
+		if ( 'ids' == $values['format'] )
 			$query_args['fields'] = 'ids';
 
 		$query = new WP_Query( $query_args );
 
-		$fields = array( 'ID', 'post_title', 'post_name', 'post_date', 'post_status' );
-
-		$output_posts = $query->posts;
-
-		WP_CLI\Utils\format_items( $format, $fields, $output_posts );
+		WP_CLI\Utils\format_items( $values['format'], $query->posts, $values['fields'] );
 	}
 
 	/**
