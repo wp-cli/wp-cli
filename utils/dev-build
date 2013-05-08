@@ -15,9 +15,6 @@ command -v composer > /dev/null || {
 # install dependencies
 composer install --dev
 
-# try installing Boris
-composer require d11wtq/boris=dev-master
-
 # add symlink to wp binary
 for dir in /usr/bin /usr/local/bin; do
 	if [ -d $dir ]; then
