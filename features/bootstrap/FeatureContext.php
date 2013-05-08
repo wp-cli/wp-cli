@@ -94,14 +94,14 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		if ( !$path ) {
 			$path = sys_get_temp_dir() . '/wp-cli-test-cache';
-			system( Utils\create_cmd( 'mkdir -p %s', $path ) );
+			Process::create( Utils\esc_cmd( 'mkdir -p %s', $path ) )->run_check();
 		}
 
 		return $path . '/' . $file;
 	}
 
 	public function download_file( $url, $path ) {
-		system( Utils\create_cmd( 'curl -sSL %s > %s', $url, $path ) );
+		Process::create( Utils\esc_cmd( 'curl -sSL %s > %s', $url, $path ) )->run_check();
 	}
 
 	private static function run_sql( $sql ) {
@@ -122,46 +122,16 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		self::run_sql( "DROP DATABASE IF EXISTS $dbname" );
 	}
 
-	private function _run( $command, $assoc_args, $subdir = '' ) {
-		if ( !empty( $assoc_args ) )
-			$command .= Utils\assoc_args_to_str( $assoc_args );
-
-		$subdir = $this->get_path( $subdir );
-
-		$cmd = __DIR__ . "/../../bin/wp $command";
-
-		$descriptors = array(
-			0 => STDIN,
-			1 => array( 'pipe', 'w' ),
-			2 => array( 'pipe', 'w' ),
-		);
-
-		$proc = proc_open( $cmd, $descriptors, $pipes, $subdir );
-
-		$STDOUT = stream_get_contents( $pipes[1] );
-		fclose( $pipes[1] );
-
-		$STDERR = stream_get_contents( $pipes[2] );
-		fclose( $pipes[2] );
-
-		$r = (object) array(
-			'command' => $command,
-			'STDOUT' => $STDOUT,
-			'STDERR' => $STDERR,
-			'return_code' => proc_close( $proc ),
-			'cwd' => $this->install_dir
-		);
-
-		return $r;
-	}
-
-	public function run( $command, $assoc_args = array(), $subdir = '' ) {
+	public function proc( $command, $assoc_args = array() ) {
 		if ( isset( self::$additional_args[ $command ] ) ) {
 			$assoc_args = array_merge( self::$additional_args[ $command ],
 				$assoc_args );
 		}
 
-		return $this->_run( $command, $assoc_args, $subdir );
+		if ( !empty( $assoc_args ) )
+			$command .= Utils\assoc_args_to_str( $assoc_args );
+
+		return Process::create( __DIR__ . "/../../bin/wp $command", $this->install_dir );
 	}
 
 	public function move_files( $src, $dest ) {
@@ -179,25 +149,25 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		// Ideally, we'd cache at the HTTP layer for more reliable tests
 		$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
 
-		$r = $this->_run( 'core download', array(
+		$r = $this->proc( 'core download', array(
 			'path' => $cache_dir
-		) );
+		) )->run();
 
 		$dest_dir = $this->get_path( $subdir );
 
 		if ( $subdir ) mkdir( $dest_dir );
 
-		$cmd = Utils\create_cmd( "cp -r %s/* %s", $cache_dir, $dest_dir );
-
-		system( $cmd );
+		Process::create( Utils\esc_cmd( "cp -r %s/* %s", $cache_dir, $dest_dir ) )->run_check();
 	}
 
 	public function wp_install( $subdir = '' ) {
 		$this->create_db();
 		$this->create_empty_dir();
 		$this->download_wordpress_files( $subdir );
-		$this->run( 'core config', array(), $subdir );
-		$this->run( 'core install', array(), $subdir );
+
+		$this->proc( 'core config', array( 'dbprefix' => $subdir ? $subdir : 'wp_' ) )->run_check( $subdir );
+
+		$this->proc( 'core install' )->run_check( $subdir );
 	}
 }
 

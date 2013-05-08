@@ -171,7 +171,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function _list( $_, $assoc_args ) {
 		$query_args = array(
-			'posts_per_page' => -1
+			'posts_per_page'  => -1,
+			'post_status'     => 'any',
 		);
 
 		$values = array(

@@ -11,3 +11,7 @@
 * `<SQL>`:
 
 	A SQL query.
+
+## EXAMPLES
+
+wp db query < debug.sql

@@ -47,7 +47,7 @@ class Term_Command extends WP_CLI_Command {
 	/**
 	 * Create a term.
 	 *
-	 * @synopsis <term> <taxonomy> [--slug=<slug>] [--description=<description>] [--parent=<term-id>]
+	 * @synopsis <term> <taxonomy> [--slug=<slug>] [--description=<description>] [--parent=<term-id>] [--porcelain]
 	 */
 	public function create( $args, $assoc_args ) {
 
@@ -60,12 +60,23 @@ class Term_Command extends WP_CLI_Command {
 		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
+		if ( isset( $assoc_args['porcelain'] ) ) {
+			$porcelain = true;
+			unset( $assoc_args['porcelain'] );
+		} else {
+			$porcelain = false;
+		}
+
 		$ret = wp_insert_term( $term, $taxonomy, $assoc_args );
 
-		if ( is_wp_error( $ret ) )
+		if ( is_wp_error( $ret ) ) {
 			WP_CLI::error( $ret->get_error_message() );
-		else
-			WP_CLI::success( "Term created." );
+		} else {
+			if ( $porcelain )
+				WP_CLI::line( $ret['term_id'] );
+			else
+				WP_CLI::success( sprintf( "Created %s %d.", $taxonomy, $ret['term_id'] ) );
+		}
 	}
 
 	/**
@@ -112,9 +123,9 @@ class Term_Command extends WP_CLI_Command {
 		if ( is_wp_error( $ret ) )
 			WP_CLI::error( $ret->get_error_message() );
 		else if ( $ret )
-			WP_CLI::success( "Term deleted." );
+			WP_CLI::success( sprintf( "Deleted %s %d.", $taxonomy, $term_id ) );
 		else
-			WP_CLI::error( "Error deleting term." );
+			WP_CLI::error( "Term doesn't exist." );
 	}
 
 }

@@ -20,6 +20,10 @@
 
 	A parent for the new term.
 
+* `--porcelain`:
+
+	Output just the new term id.
+
 ## EXAMPLES
 
 	wp term create Apple category --description="A type of fruit"

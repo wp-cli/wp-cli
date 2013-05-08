@@ -240,6 +240,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'name' => $this->get_name( $file ),
 				'status' => $this->get_status( $file ),
 				'update' => $this->has_update( $file ),
+				'version' => $details['Version'],
 				'update_id' => $file,
 			);
 		}
