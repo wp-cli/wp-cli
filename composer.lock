@@ -3,8 +3,40 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "f2b06fd19e26795775358b054c6fb09d",
+    "hash": "1d1cf2cc2d559d96f2e3397353a4be3e",
     "packages": [
+        {
+            "name": "d11wtq/boris",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/d11wtq/boris.git",
+                "reference": "09c211ab3a79154f39efce542f737ad08596e63f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/d11wtq/boris/zipball/09c211ab3a79154f39efce542f737ad08596e63f",
+                "reference": "09c211ab3a79154f39efce542f737ad08596e63f",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pcntl": "*",
+                "ext-posix": "*",
+                "ext-readline": "*",
+                "php": ">=5.3.0"
+            },
+            "bin": [
+                "bin/boris"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Boris": "lib"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "time": "2013-04-23 13:31:51"
+        },
         {
             "name": "mustache/mustache",
             "version": "v2.0.2",
@@ -929,6 +961,7 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "wp-cli/php-cli-tools": 20,
+        "d11wtq/boris": 20,
         "behat/behat": 0
     },
     "platform": {
