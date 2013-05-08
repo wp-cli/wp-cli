@@ -164,7 +164,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function _list( $_, $assoc_args ) {
 		$query_args = array(
-			'posts_per_page' => -1
+			'posts_per_page'  => -1,
+			'post_status'     => 'any',
 		);
 
 		if ( ! empty( $assoc_args['format'] ) ) {
@@ -186,7 +187,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$query = new WP_Query( $query_args );
 
-		$fields = array( 'ID', 'post_title', 'post_name', 'post_date' );
+		$fields = array( 'ID', 'post_title', 'post_name', 'post_date', 'post_status' );
 
 		$output_posts = $query->posts;
 

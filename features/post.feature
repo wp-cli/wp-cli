@@ -28,7 +28,7 @@ Feature: Manage WordPress posts
     When I run the previous command again
     Then the return code should be 1
 
-  Scenario: Creating/geting posts
+  Scenario: Creating/getting posts
     Given a WP install
 
     When I run `wp post create --post_title='Test post' --post_content='Test content.' --porcelain`
@@ -64,4 +64,24 @@ Feature: Manage WordPress posts
     And STDOUT should be JSON containing:
       """
       {"ID":{POST_ID},"post_title":"Test post","post_content":"Test content."}
+      """
+
+  Scenario: Creating/listing posts
+    Given a WP install
+
+    When I run `wp post create --post_title='Publish post' --post_content='Publish post content' --post_status='publish' --porcelain`
+    Then it should run without errors
+    And STDOUT should match '%d'
+
+    When I run `wp post create --post_title='Draft post' --post_content='Draft post content' --post_status='draft' --porcelain`
+    Then it should run without errors
+    And STDOUT should match '%d'
+
+    When I run `wp post list --post_type='post' --format=csv`
+    Then it should run without errors
+    And STDOUT should be CSV containing:
+      """
+      post_title,post_name
+      "Publish post",publish-post
+      "Draft post",
       """

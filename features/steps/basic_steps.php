@@ -12,7 +12,8 @@ $steps->Given( '/^an empty directory$/',
 
 $steps->Given( '/^a ([^\s]+) file:$/',
 	function ( $world, $path, PyStringNode $content ) {
-		file_put_contents( $world->get_path( $path ), (string) $content );
+		$content = (string) $content . "\n";
+		file_put_contents( $world->get_path( $path ), $content );
 	}
 );
 
@@ -24,7 +25,7 @@ $steps->Given( '/^WP files$/',
 
 $steps->Given( '/^wp-config\.php$/',
 	function ( $world ) {
-		$world->run( 'core config' );
+		$world->proc( 'core config' )->run_check();
 	}
 );
 
@@ -49,7 +50,7 @@ $steps->Given( "/^a WP install in '([^\s]+)'$/",
 $steps->Given( '/^a WP multisite install$/',
 	function ( $world ) {
 		$world->wp_install();
-		$world->run( 'core install-network' );
+		$world->proc( 'core install-network' )->run_check();
 	}
 );
 
@@ -83,31 +84,31 @@ $steps->Given( '/^a P2 theme zip$/',
 	}
 );
 
-$steps->Given( '/^a google-sitemap-generator-cli plugin zip$/',
+$steps->Given( '/^a large image file$/',
 	function ( $world ) {
-		$zip_url = 'https://github.com/wp-cli/google-sitemap-generator-cli/archive/master.zip';
+		$image_file = 'http://wordpresswallpaper.com/wp-content/gallery/photo-based-wallpaper/1058.jpg';
 
-		$world->variables['PLUGIN_ZIP'] = $world->get_cache_path( 'google-sitemap-generator-cli.zip' );
+		$world->variables['DOWNLOADED_IMAGE'] = $world->get_cache_path( 'wallpaper.jpg' );
 
-		$world->download_file( $zip_url, $world->variables['PLUGIN_ZIP'] );
+		$world->download_file( $image_file, $world->variables['DOWNLOADED_IMAGE'] );
 	}
 );
 
 $steps->When( '/^I run `wp`$/',
 	function ( $world ) {
-		$world->result = $world->run( '' );
+		$world->result = $world->proc( '' )->run();
 	}
 );
 
 $steps->When( '/^I run `wp (.+)`$/',
 	function ( $world, $cmd ) {
-		$world->result = $world->run( $world->replace_variables( $cmd ) );
+		$world->result = $world->proc( $world->replace_variables( $cmd ) )->run();
 	}
 );
 
 $steps->When( "/^I run `wp (.+)` from '([^\s]+)'$/",
 	function ( $world, $cmd, $subdir ) {
-		$world->result = $world->run( $world->replace_variables( $cmd ), array(), $subdir );
+		$world->result = $world->proc( $world->replace_variables( $cmd ) )->run( $subdir );
 	}
 );
 
@@ -116,7 +117,16 @@ $steps->When( '/^I run the previous command again$/',
 		if ( !isset( $world->result ) )
 			throw new \Exception( 'No previous command.' );
 
-		$world->result = $world->run( $world->result->command );
+		$world->result = Process::create( $world->result->command, $world->result->cwd )->run();
+	}
+);
+
+$steps->When( '/^I try to import it$/',
+	function ( $world ) {
+		if ( !isset( $world->variables['DOWNLOADED_IMAGE'] ) )
+			throw new \Exception( 'Cached image not available.' );
+
+		$world->result = $world->proc( 'media import ' . $world->variables['DOWNLOADED_IMAGE'] . ' --post_id=1 --featured_image' )->run();
 	}
 );
 
@@ -134,8 +144,11 @@ $steps->Then( '/^the return code should be (\d+)$/',
 
 $steps->Then( '/^it should run without errors$/',
 	function ( $world ) {
-		if ( !empty( $world->result->STDERR ) )
-			throw new \Exception( $world->result->STDERR );
+		if ( !empty( $world->result->STDERR ) ) {
+			$r = $world->result;
+			throw new \Exception( sprintf( "%s: %s\ncwd: %s",
+				$r->command, $r->STDERR, $r->cwd ) );
+		}
 
 		if ( 0 != $world->result->return_code )
 			throw new \Exception( "Return code was $world->result->return_code" );
@@ -212,6 +225,17 @@ $steps->Then( '/^STDOUT should be JSON containing:$/',
 		}
 });
 
+$steps->Then( '/^STDOUT should be CSV containing:$/',
+	function( $world, PyStringNode $expected ) {
+
+		$output        = $world->result->STDOUT;
+		$expected      = $world->replace_variables( (string) $expected );
+
+		if ( ! checkThatCsvStringContainsCsvString( $output, $expected ) )
+			throw new \Exception( $output );
+	}
+);
+
 $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 	function ( $world, $stream ) {
 		if ( !empty( $world->result->$stream ) ) {
@@ -228,10 +252,18 @@ $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 
 $steps->Then( '/^the (.+) file should exist$/',
 	function ( $world, $path ) {
-		assertFileExists( $world->get_path( $path ) );
+    $path = $world->replace_variables( $path );
+
+    // If $path refers to a complete cache path, use it;
+    // otherwise, get the real path using $world->get_path()
+    if ( strpos( $path, $world->get_cache_path('') ) === 0 )
+      $realpath = $path;
+    else
+      $realpath = $world->get_path( $path );
+
+		assertFileExists( $realpath );
 	}
 );
-
 
 /**
  * Compare two strings containing JSON to ensure that @a $actualJson contains at
@@ -284,19 +316,54 @@ function compareContents( $expected, $actual ) {
 
 	if ( is_object( $expected ) ) {
 		foreach ( get_object_vars( $expected ) as $name => $value ) {
-			if ( !compareContents( $value, $actual->$name ) ) {
+			if ( ! compareContents( $value, $actual->$name ) )
 				return false;
-			}
 		}
 	} else if ( is_array( $expected ) ) {
 		foreach ( $expected as $key => $value ) {
-			if ( !compareContents( $value, $actual[$key] ) ) {
+			if ( ! compareContents( $value, $actual[$key] ) )
 				return false;
-			}
 		}
 	} else {
 		return $expected === $actual;
 	}
 
 	return true;
+}
+
+/**
+ * Compare two strings to confirm $actualCSV contains $expectedCSV
+ * Both strings are expected to have headers for their CSVs.
+ * $actualCSV must match all data rows in $expectedCSV
+ *
+ * @return bool     Whether $actualCSV contacts $expectedCSV
+ */
+function checkThatCsvStringContainsCsvString( $actualCSV, $expectedCSV ) {
+
+	$actualCSV = array_map( 'str_getcsv', explode( PHP_EOL, $actualCSV ) );
+	$expectedCSV = array_map( 'str_getcsv', explode( PHP_EOL, $expectedCSV ) );
+
+	if ( empty( $actualCSV ) )
+		return false;
+
+	// Each sample must have headers
+	$actualHeaders = array_values( array_shift( $actualCSV ) );
+	$expectedHeaders = array_values( array_shift( $expectedCSV ) );
+
+	// Each expectedCSV must exist somewhere in actualCSV in the proper column
+	$expectedResult = 0;
+	foreach( $expectedCSV as $expected_row ) {
+		$expected_row = array_combine( $expectedHeaders, $expected_row );
+		foreach( $actualCSV as $actual_row ) {
+
+			if ( count( $actualHeaders ) != count( $actual_row ) )
+				continue;
+
+			$actual_row = array_intersect_key( array_combine( $actualHeaders, $actual_row ), $expected_row );
+			if ( $actual_row == $expected_row )
+				$expectedResult++;
+		}
+	}
+
+	return $expectedResult >= count( $expectedCSV );
 }

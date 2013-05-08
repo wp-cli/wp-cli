@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# check that PHP is available
+command -v php > /dev/null || {
+	echo "can't find PHP binary" >&2
+	exit 1
+}
+
 # install Composer
 command -v composer > /dev/null || {
 	curl -sS https://getcomposer.org/installer | php
@@ -7,7 +13,7 @@ command -v composer > /dev/null || {
 }
 
 # install dependencies
-composer install
+composer install --dev
 
 # add symlink to wp binary
 for dir in /usr/bin /usr/local/bin; do

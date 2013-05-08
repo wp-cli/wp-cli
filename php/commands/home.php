@@ -25,5 +25,4 @@ class Home_Command extends WP_CLI_Command {
 	}
 }
 
-WP_CLI::add_command( 'home', new Home_Command );
-
+WP_CLI::add_command( 'home', 'Home_Command' );

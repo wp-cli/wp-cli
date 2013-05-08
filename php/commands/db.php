@@ -49,7 +49,7 @@ class DB_Command extends WP_CLI_Command {
 	 * Optimize the database.
 	 */
 	function optimize() {
-		self::run( 'mysqlcheck', Utils\create_cmd(
+		self::run( 'mysqlcheck', Utils\esc_cmd(
 			'--optimize --host=%s --user=%s %s',
 			DB_HOST, DB_USER, DB_NAME
 		) );
@@ -61,7 +61,7 @@ class DB_Command extends WP_CLI_Command {
 	 * Repair the database.
 	 */
 	function repair() {
-		self::run( 'mysqlcheck', Utils\create_cmd(
+		self::run( 'mysqlcheck', Utils\esc_cmd(
 			'--repair --host=%s --user=%s %s',
 			DB_HOST, DB_USER, DB_NAME ) );
 
@@ -71,10 +71,10 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Open a mysql console using the WordPress credentials.
 	 *
-	 * @alias cli
+	 * @alias connect
 	 */
-	function connect() {
-		self::run( 'mysql', Utils\create_cmd(
+	function cli() {
+		self::run( 'mysql', Utils\esc_cmd(
 			'--host=%s --user=%s --database=%s',
 			DB_HOST, DB_USER, DB_NAME ) );
 	}
@@ -82,12 +82,17 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Execute a query against the database.
 	 *
-	 * @synopsis <sql>
+	 * @synopsis [<sql>]
 	 */
 	function query( $args ) {
-		list( $query ) = $args;
+		$cmd = '--host=%s --user=%s --database=%s';
+		$cmd = Utils\esc_cmd( $cmd, DB_HOST, DB_USER, DB_NAME );
 
-		self::run_query( $query );
+		if ( !empty( $args ) ) {
+			$cmd .= Utils\esc_cmd( ' --execute=%s', $args[0] );
+		}
+
+		self::run( 'mysql', $cmd );
 	}
 
 	/**
@@ -100,7 +105,7 @@ class DB_Command extends WP_CLI_Command {
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
-		self::run( 'mysqldump', Utils\create_cmd(
+		self::run( 'mysqldump', Utils\esc_cmd(
 			'%s --user=%s --host=%s --result-file %s',
 			DB_NAME, DB_USER, DB_HOST, $result_file ) );
 
@@ -115,7 +120,7 @@ class DB_Command extends WP_CLI_Command {
 	function import( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
-		self::run( 'mysql', Utils\create_cmd(
+		self::run( 'mysql', Utils\esc_cmd(
 			'%s --user=%s --host=%s < %s',
 			DB_NAME, DB_USER, DB_HOST, $result_file ) );
 

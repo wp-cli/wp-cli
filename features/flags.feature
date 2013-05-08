@@ -59,6 +59,28 @@ Feature: Global flags
       Error: Could not get a user_id for this user: 'non-existing-user'
       """
 
+  Scenario: Using --require
+    Given a WP install
+    And a custom-cmd.php file:
+    """
+    <?php
+    class Test_Command extends WP_CLI_Command {
+
+      function req( $args, $assoc_args ) {
+        WP_CLI::line( $args[0] );
+      }
+    }
+
+    WP_CLI::add_command( 'test', 'Test_Command' );
+    """
+
+    When I run `wp --require=custom-cmd.php test req 'This is a custom command.'`
+    Then it should run without errors
+    And STDOUT should be:
+    """
+    This is a custom command.
+    """
+
   Scenario: Enabling/disabling color
     Given a WP install
 

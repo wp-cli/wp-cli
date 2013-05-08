@@ -1,0 +1,72 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-MEDIA\-IMPORT" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-media\-import\fR \- Create attachments from local files or from URLs\.
+.
+.SH "SYNOPSIS"
+wp media import \fIfile\fR\.\.\. [\-\-post_id=\fIpost_id\fR] [\-\-title=\fItitle\fR] [\-\-caption=\fIcaption\fR] [\-\-alt=\fIalt_text\fR] [\-\-desc=\fIdescription\fR] [\-\-featured_image]
+.
+.SH "OPTIONS"
+.
+.IP "\(bu" 4
+\fB<file>\fR:
+.
+.IP
+Path to file or files to be imported\. Supports the glob(3) capabilities of the current shell\. If file is recognized as a URL (for example, with a scheme of http or ftp), the file will be downloaded to a temp file before being sideloaded\.
+.
+.IP "\(bu" 4
+\fB\-\-post_id=<post_id>\fR
+.
+.IP
+ID of the post to attach the imported files to
+.
+.IP "\(bu" 4
+\fB\-\-title=<title>\fR
+.
+.IP
+Attachment title (post title field)
+.
+.IP "\(bu" 4
+\fB\-\-caption=<caption>\fR
+.
+.IP
+Caption for attachent (post excerpt field)
+.
+.IP "\(bu" 4
+\fB\-\-alt=<alt_text>\fR
+.
+.IP
+Alt text for image (saved as post meta)
+.
+.IP "\(bu" 4
+\fB\-\-desc=<description>\fR
+.
+.IP
+"Description" field (post content) of attachment post
+.
+.IP "\(bu" 4
+\fB\-\-featured_image\fR
+.
+.IP
+If set, set the imported image as the Featured Image of the post its attached to\.
+.
+.IP "" 0
+.
+.SH "EXAMPLES"
+.
+.nf
+
+# Import all jpgs in the current user\'s "Pictures" directory, not attached to any post
+wp media import ~/Pictures/**/*\.jpg
+
+# Import a local image and set it to be the post thumbnail for a post
+wp media import ~/Downloads/image\.png \-\-post_id=123 \-\-title="A downloaded picture" \-\-featured_image
+
+# Import an image from the web
+wp media import http://s\.wordpress\.org/style/images/wp\-header\-logo\.png \-\-title=\'The WordPress logo\' \-\-alt="Semantic personal publishing"
+.
+.fi
+
