@@ -27,24 +27,6 @@ Feature: WordPress REPL
     bool(false)
     """
 
-  Scenario: History builtin
-    Given a WP install
-    And a session file:
-    """
-    defined('WP_CLI')
-    function foo() {}
-    history
-    """
-
-    When I run `wp shell --basic --quiet < session`
-    Then it should run without errors
-    And STDOUT should be:
-    """
-    bool(true)
-    defined('WP_CLI');
-    function foo() {};
-    """
-
   Scenario: Multiline support
     Given a WP install
     And a session file:

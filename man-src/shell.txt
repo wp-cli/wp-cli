@@ -4,8 +4,6 @@
 
 You can split a statement over multiple lines by adding a `\` (backslash) before hitting Return.
 
-If you type `history` and hit Return, WP-CLI will print the list of previously evaluated statements, which you can copy+paste into a PHP file.
-
 ## OPTIONS
 
 * `--basic`:

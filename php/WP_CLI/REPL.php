@@ -16,16 +16,7 @@ class REPL {
 		while ( true ) {
 			$line = $this->prompt();
 
-			switch ( $line ) {
-				case '': {
-					continue 2;
-				}
-
-				case 'history': {
-					self::print_history();
-					continue 2;
-				}
-			}
+			if ( '' === $line ) continue;
 
 			$line = rtrim( $line, ';' ) . ';';
 
@@ -100,22 +91,6 @@ BASH;
 		$cmd = str_replace( "\n", '; ', $cmd );
 
 		return '/bin/bash -c ' . escapeshellarg( $cmd );
-	}
-
-	private function print_history() {
-		if ( !is_readable( $this->history_file ) )
-			return;
-
-		$lines = array_filter( explode( "\n", file_get_contents( $this->history_file ) ) );
-
-		foreach ( $lines as $line ) {
-			if ( 'history' == $line )
-				continue;
-
-			$line = rtrim( $line, ';' ) . ';';
-
-			echo "$line\n";
-		}
 	}
 
 	private function set_history_file() {
