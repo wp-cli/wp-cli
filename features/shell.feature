@@ -27,25 +27,6 @@ Feature: WordPress REPL
     bool(false)
     """
 
-  Scenario: Multiline support
-    Given a WP install
-    And a session file:
-    """
-    function is_empty_string( $str ) {
-        return strlen( $str ) == 0;
-    }
-
-    function_exists( 'is_empty_string' );
-    """
-
-    When I run `wp shell --quiet < session`
-    Then it should run without errors
-    And STDOUT should be:
-    """
-     → NULL
-     → bool(true)
-    """
-
   Scenario: Multiline support (basic)
     Given a WP install
     And a session file:
