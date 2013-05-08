@@ -7,16 +7,16 @@
 \fBwp\-shell\fR \- Interactive PHP console\.
 .
 .SH "SYNOPSIS"
-wp shell
+wp shell [\-\-basic]
 .
 .SH "DESCRIPTION"
 \fBwp shell\fR allows you to evaluate PHP statements and expressions interactively, from within a WordPress environment\. This means that you have access to all the functions, classes and globals that you would have access to from inside a WordPress plugin, for example\.
 .
-.P
-\fB$_\fR is a special variable that contains the result from the last evaluated statement\.
+.SH "OPTIONS"
 .
-.P
-You can split a statement over multiple lines by adding a \fB\e\fR (backslash) before hitting Return\.
+.TP
+\fB\-\-basic\fR:
 .
-.P
-If you type \fBhistory\fR and hit Return, WP\-CLI will print the list of previously evaluated statements, which you can copy+paste into a PHP file\.
+.IP
+Start in fail\-safe mode, even if Boris is available\.
+
