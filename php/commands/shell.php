@@ -8,8 +8,6 @@ class Shell_Command extends \WP_CLI_Command {
 	 * @synopsis [--basic]
 	 */
 	public function __invoke( $_, $assoc_args ) {
-		\WP_CLI::line( 'Type "exit" to close session.' );
-
 		$implementations = array(
 			'\\Boris\\Boris',
 			'\\WP_CLI\\REPL',
