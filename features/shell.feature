@@ -5,25 +5,25 @@ Feature: WordPress REPL
 
     When I run `wp shell < /dev/null`
     Then it should run without errors
-    And STDOUT should be:
-    """
-    Type "exit" to close session.
-    """
+    And STDOUT should not be empty
+
+    When I run `wp shell --basic < /dev/null`
+    Then it should run without errors
+    And STDOUT should not be empty
 
   Scenario: Persistent environment
     Given a WP install
     And a session file:
     """
     function is_empty_string( $str ) { return strlen( $str ) == 0; }
-    1; $a = get_option('home')
-    is_empty_string( $a )
+    $a = get_option('home');
+    is_empty_string( $a );
     """
 
-    When I run `wp shell --quiet < session`
+    When I run `wp shell --basic --quiet < session`
     Then it should run without errors
-    And STDOUT should be:
+    And STDOUT should contain:
     """
-    1
     false
     """
 
@@ -36,7 +36,7 @@ Feature: WordPress REPL
     history
     """
 
-    When I run `wp shell --quiet < session`
+    When I run `wp shell --basic --quiet < session`
     Then it should run without errors
     And STDOUT should be:
     """
@@ -49,14 +49,33 @@ Feature: WordPress REPL
     Given a WP install
     And a session file:
     """
+    function is_empty_string( $str ) {
+        return strlen( $str ) == 0;
+    }
+
+    function_exists( 'is_empty_string' );
+    """
+
+    When I run `wp shell --quiet < session`
+    Then it should run without errors
+    And STDOUT should be:
+    """
+     → NULL
+     → bool(true)
+    """
+
+  Scenario: Multiline support (basic)
+    Given a WP install
+    And a session file:
+    """
     function is_empty_string( $str ) { \
         return strlen( $str ) == 0; \
     }
 
-    function_exists( 'is_empty_string' )
+    function_exists( 'is_empty_string' );
     """
 
-    When I run `wp shell --quiet < session`
+    When I run `wp shell --basic --quiet < session`
     Then it should run without errors
     And STDOUT should be:
     """
