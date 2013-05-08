@@ -4,6 +4,10 @@
 
 	One or more args to pass to WP_Query.
 
+* `--fields`=<fields>:
+
+	Limit the output to specific object fields. Defaults to ID,post_title,post_name,post_date.
+
 * `--format`=<format>:
 
 	Output list as table, CSV, JSON, or simply IDs. Defaults to table.
@@ -13,3 +17,5 @@
 	wp post list --format=ids
 
 	wp post list --post_type=post --posts_per_page=5 --format=json
+
+	wp post list --post_type=page --fields=post_title,post_status

@@ -7,7 +7,7 @@
 \fBwp\-post\-list\fR \- Get a list of posts\.
 .
 .SH "SYNOPSIS"
-wp post list [\-\-\fIfield\fR=\fIvalue\fR] [\-\-format=\fIformat\fR]
+wp post list [\-\-\fIfield\fR=\fIvalue\fR] [\-\-fields=\fIfields\fR] [\-\-format=\fIformat\fR]
 .
 .SH "OPTIONS"
 .
@@ -16,6 +16,12 @@ wp post list [\-\-\fIfield\fR=\fIvalue\fR] [\-\-format=\fIformat\fR]
 .
 .IP
 One or more args to pass to WP_Query\.
+.
+.TP
+\fB\-\-fields\fR=\fIfields\fR:
+.
+.IP
+Limit the output to specific object fields\. Defaults to ID,post_title,post_name,post_date\.
 .
 .TP
 \fB\-\-format\fR=\fIformat\fR:
@@ -30,6 +36,8 @@ Output list as table, CSV, JSON, or simply IDs\. Defaults to table\.
 wp post list \-\-format=ids
 
 wp post list \-\-post_type=post \-\-posts_per_page=5 \-\-format=json
+
+wp post list \-\-post_type=page \-\-fields=post_title,post_status
 .
 .fi
 

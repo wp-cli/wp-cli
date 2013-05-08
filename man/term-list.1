@@ -7,7 +7,7 @@
 \fBwp\-term\-list\fR \- List terms in a taxonomy\.
 .
 .SH "SYNOPSIS"
-wp term list \fItaxonomy\fR [\-\-format=\fIformat\fR]
+wp term list \fItaxonomy\fR [\-\-fields=\fIfields\fR] [\-\-format=\fIformat\fR]
 .
 .SH "OPTIONS"
 .
@@ -16,6 +16,12 @@ wp term list \fItaxonomy\fR [\-\-format=\fIformat\fR]
 .
 .IP
 List terms of a given taxonomy\.
+.
+.TP
+\fB\-\-fields\fR=\fIfields\fR:
+.
+.IP
+Limit the output to specific object fields\. Defaults to all of the term object fields\.
 .
 .TP
 \fB\-\-format\fR=\fIformat\fR:
@@ -28,6 +34,8 @@ Output list as table, CSV, JSON, or simply IDs\. Defaults to table\.
 .nf
 
 wp term list category \-\-format=csv
+
+wp term list post_tag \-\-fields=name,slug
 .
 .fi
 
