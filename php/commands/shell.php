@@ -8,8 +8,18 @@ class Shell_Command extends \WP_CLI_Command {
 	public function __invoke() {
 		\WP_CLI::line( 'Type "exit" to close session.' );
 
-		$repl = new \Boris\Boris( 'wp> ' );
-		$repl->start();
+		$implementations = array(
+			'\\Boris\\Boris',
+			'\\WP_CLI\\REPL',
+		);
+
+		foreach ( $implementations as $class ) {
+			if ( class_exists( $class ) ) {
+				$repl = new $class( 'wp> ' );
+				$repl->start();
+				break;
+			}
+		}
 	}
 }
 
