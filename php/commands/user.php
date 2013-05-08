@@ -9,20 +9,32 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected $obj_type = 'user';
 
+	private $fields = array(
+		'ID',
+		'user_login',
+		'display_name',
+		'user_email',
+		'user_registered',
+		'roles'
+	);
+
 	/**
 	 * List users.
 	 *
 	 * @subcommand list
-	 * @synopsis [--role=<role>] [--format=<format>]
+	 * @synopsis [--role=<role>] [--fields=<fields>] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 
 		$defaults = array(
 			'blog_id'   => get_current_blog_id(),
-			'fields'    => isset( $assoc_args['ids'] ) ? 'ids' : 'all_with_meta',
+			'fields'    => implode( ',', $this->fields ),
 			'format'    => 'table',
 		);
 		$params = array_merge( $defaults, $assoc_args );
+
+		$fields = $params['fields'];
+		unset( $params['fields'] );
 
 		if ( array_key_exists( 'role', $assoc_args ) ) {
 			$params['role'] = $assoc_args['role'];
@@ -30,17 +42,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( 'ids' == $params['format'] )
 			$params['fields'] = 'ids';
+		else
+			$params['fields'] = 'all_with_meta';
 
 		$users = get_users( $params );
-
-		$fields = array(
-			'ID',
-			'user_login',
-			'display_name',
-			'user_email',
-			'user_registered',
-			'roles'
-		);
 
 		if ( 'ids' != $params['format'] ) {
 			foreach ( $users as $user ) {
@@ -48,7 +53,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			}
 		}
 
-		WP_CLI\Utils\format_items( $params['format'], $fields, $users );
+		WP_CLI\Utils\format_items( $params['format'], $users, $fields );
 	}
 
 	/**

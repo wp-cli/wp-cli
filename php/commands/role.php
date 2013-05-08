@@ -7,24 +7,28 @@
  */
 class Role_Command extends WP_CLI_Command {
 
+	private $fields = array(
+		'name',
+		'role'
+	);
+
 	/**
 	 * List all roles.
 	 *
 	 * @subcommand list
-	 * @synopsis [--format=<format>]
+	 * @synopsis [--fields=<fields>] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 		global $wp_roles;
 
 		$defaults = array(
+			'fields'    => implode( ',', $this->fields ),
 			'format'    => 'table',
 		);
 		$params = array_merge( $defaults, $assoc_args );
 
-		$fields = array(
-				'name',
-				'role',
-			);
+		$fields = $params['fields'];
+		unset( $params['fields'] );
 
 		$output_roles = array();
 		foreach ( $wp_roles->roles as $key => $role ) {
@@ -36,7 +40,7 @@ class Role_Command extends WP_CLI_Command {
 			$output_roles[] = $output_role;
 		}
 
-		WP_CLI\Utils\format_items( $params['format'], $fields, $output_roles );
+		WP_CLI\Utils\format_items( $params['format'], $output_roles, $fields );
 	}
 
 	/**

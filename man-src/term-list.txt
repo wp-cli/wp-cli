@@ -4,6 +4,10 @@
 
 	List terms of a given taxonomy.
 
+* `--fields`=<fields>:
+
+	Limit the output to specific object fields. Defaults to all of the term object fields.
+
 * `--format`=<format>:
 
 	Output list as table, CSV, JSON, or simply IDs. Defaults to table.
@@ -11,3 +15,5 @@
 ## EXAMPLES
 
 	wp term list category --format=csv
+
+	wp term list post_tag --fields=name,slug
