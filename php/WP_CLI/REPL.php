@@ -35,7 +35,7 @@ class REPL {
 				if ( !self::starts_with( 'return', $line ) )
 					$line = 'return ' . $line;
 
-				\WP_CLI::print_value( var_export( eval( $line ), false ) );
+				var_dump( eval( $line ) );
 			}
 		}
 	}

@@ -24,7 +24,7 @@ Feature: WordPress REPL
     Then it should run without errors
     And STDOUT should contain:
     """
-    false
+    bool(false)
     """
 
   Scenario: History builtin
@@ -40,7 +40,7 @@ Feature: WordPress REPL
     Then it should run without errors
     And STDOUT should be:
     """
-    true
+    bool(true)
     defined('WP_CLI');
     function foo() {};
     """
@@ -79,6 +79,6 @@ Feature: WordPress REPL
     Then it should run without errors
     And STDOUT should be:
     """
-    true
+    bool(true)
     """
 
