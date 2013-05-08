@@ -10,8 +10,10 @@
 	"require": {
 		"php": ">=5.3",
 		"wp-cli/php-cli-tools": "dev-master",
-		"mustache/mustache": "2.0.x",
-		"d11wtq/boris": "dev-master"
+		"mustache/mustache": "2.0.x"
+	},
+	"suggest": {
+		"d11wtq/boris": "Enhanced `wp shell` functionality"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.x",
