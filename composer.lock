@@ -3,8 +3,50 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "b0b7111ec0133fedf911454fef153d87",
+    "hash": "2f907ef4729a8057cba8d5310e72ed9f",
     "packages": [
+        {
+            "name": "jlogsdon/cli",
+            "version": "v0.9.1",
+            "source": {
+                "type": "git",
+                "url": "git://github.com/jlogsdon/php-cli-tools.git",
+                "reference": "v0.9.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://github.com/jlogsdon/php-cli-tools/zipball/v0.9.1",
+                "reference": "v0.9.1",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">= 5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "cli": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "James Logsdon",
+                    "email": "jlogsdon@php.net",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Console utilities for PHP",
+            "homepage": "http://github.com/jlogsdon/php-cli-tools",
+            "keywords": [
+                "cli",
+                "console"
+            ],
+            "time": "2012-09-15 14:09:00"
+        },
         {
             "name": "mustache/mustache",
             "version": "v2.0.2",
@@ -46,48 +88,6 @@
                 "templating"
             ],
             "time": "2012-09-12 09:13:06"
-        },
-        {
-            "name": "wp-cli/php-cli-tools",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/php-cli-tools.git",
-                "reference": "f3def25b862bb0c5330a6347c6c04d62a99eb217"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/f3def25b862bb0c5330a6347c6c04d62a99eb217",
-                "reference": "f3def25b862bb0c5330a6347c6c04d62a99eb217",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">= 5.3.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "cli": "lib/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "James Logsdon",
-                    "email": "jlogsdon@php.net",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Console utilities for PHP",
-            "homepage": "http://github.com/jlogsdon/php-cli-tools",
-            "keywords": [
-                "cli",
-                "console"
-            ],
-            "time": "2012-12-13 22:18:34"
         }
     ],
     "packages-dev": [
@@ -928,11 +928,10 @@
     ],
     "minimum-stability": "stable",
     "stability-flags": {
-        "wp-cli/php-cli-tools": 20,
         "behat/behat": 0
     },
     "platform": {
-        "php": ">=5.3"
+        "php": ">=5.3.2"
     },
     "platform-dev": [
 

@@ -8,8 +8,8 @@
 		"bin/wp"
 	],
 	"require": {
-		"php": ">=5.3",
-		"wp-cli/php-cli-tools": "dev-master",
+		"php": ">=5.3.2",
+		"jlogsdon/cli": "~0.9.1",
 		"mustache/mustache": "2.0.x"
 	},
 	"suggest": {
