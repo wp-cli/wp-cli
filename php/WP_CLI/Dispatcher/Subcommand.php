@@ -4,13 +4,34 @@ namespace WP_CLI\Dispatcher;
 
 class Subcommand implements Command, AtomicCommand, Documentable {
 
-	function __construct( CommandContainer $parent, $name, $callable, $docparser ) {
+	private $parent, $name, $method, $docparser;
+
+	function __construct( CommandContainer $parent, \ReflectionMethod $method, $name = false ) {
+		$docparser = new \WP_CLI\DocParser( $method );
+
+		if ( !$name )
+			$name = $docparser->get_tag( 'subcommand' );
+
+		if ( !$name )
+			$name = $method->name;
+
 		$this->parent = $parent;
 		$this->name = $name;
 
-		$this->callable = $callable;
-
+		$this->method = $method;
 		$this->docparser = $docparser;
+	}
+
+	function get_alias() {
+		return $this->docparser->get_tag( 'alias' );
+	}
+
+	function get_name() {
+		return $this->name;
+	}
+
+	function get_parent() {
+		return $this->parent;
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
@@ -45,23 +66,42 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 		return $this->docparser->get_synopsis();
 	}
 
-	function invoke( $args, $assoc_args ) {
+	private function validate_args( $args, &$assoc_args ) {
 		$synopsis = $this->get_synopsis();
 
-		if ( $synopsis ) {
-			\WP_CLI\SynopsisParser::validate_args( $synopsis, $args, $assoc_args,
-				array( $this, 'show_usage' ) );
+		if ( !$synopsis )
+			return;
+
+		$parser = new \WP_CLI\SynopsisParser( $synopsis );
+		if ( !$parser->enough_positionals( $args ) ) {
+			$this->show_usage();
+			exit(1);
 		}
 
-		call_user_func( $this->callable, $args, $assoc_args );
+		$errors = $parser->validate_assoc( $assoc_args, array_keys( \WP_CLI::get_config() ) );
+
+		if ( !empty( $errors['fatal'] ) ) {
+			$out = '';
+			foreach ( $errors['fatal'] as $error ) {
+				$out .= "\n " . $error;
+			}
+
+			\WP_CLI::error( $out, "Parameter errors" );
+		}
+
+		array_map( '\\WP_CLI::warning', $errors['warning'] );
+
+		foreach ( $parser->unknown_assoc( $assoc_args ) as $key ) {
+			\WP_CLI::warning( "unknown --$key parameter" );
+		}
 	}
 
-	function get_name() {
-		return $this->name;
-	}
+	function invoke( $args, $assoc_args ) {
+		$this->validate_args( $args, $assoc_args );
 
-	function get_parent() {
-		return $this->parent;
+		$instance = new $this->method->class;
+
+		call_user_func( array( $instance, $this->method->name ), $args, $assoc_args );
 	}
 }
 
