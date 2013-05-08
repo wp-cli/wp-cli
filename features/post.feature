@@ -77,11 +77,11 @@ Feature: Manage WordPress posts
     Then it should run without errors
     And STDOUT should match '%d'
 
-    When I run `wp post list --post_type='post' --format=csv`
+    When I run `wp post list --post_type='post' --fields=post_title,post_name,post_status --format=csv`
     Then it should run without errors
     And STDOUT should be CSV containing:
       """
-      post_title,post_name
-      "Publish post",publish-post
-      "Draft post",
+      post_title,post_name,post_status
+      "Publish post",publish-post,publish
+      "Draft post",,draft
       """
