@@ -2,8 +2,8 @@
 
 `wp shell` allows you to evaluate PHP statements and expressions interactively, from within a WordPress environment. This means that you have access to all the functions, classes and globals that you would have access to from inside a WordPress plugin, for example.
 
-`$_` is a special variable that contains the result from the last evaluated statement.
+## OPTIONS
 
-You can split a statement over multiple lines by adding a `\` (backslash) before hitting Return.
+* `--basic`:
 
-If you type `history` and hit Return, WP-CLI will print the list of previously evaluated statements, which you can copy+paste into a PHP file.
+	Start in fail-safe mode, even if Boris is available.
