@@ -32,14 +32,10 @@ class REPL {
 			if ( self::starts_with( self::non_expressions(), $line ) ) {
 				eval( $line );
 			} else {
-				if ( self::starts_with( 'return', $line ) )
-					$line = substr( $line, strlen( 'return' ) );
+				if ( !self::starts_with( 'return', $line ) )
+					$line = 'return ' . $line;
 
-				$line = '$_ = ' . $line;
-
-				eval( $line );
-
-				\WP_CLI::print_value( var_export( $_, false ) );
+				\WP_CLI::print_value( var_export( eval( $line ), false ) );
 			}
 		}
 	}

@@ -10,26 +10,6 @@ Feature: WordPress REPL
     Type "exit" to close session.
     """
 
-  Scenario: $_ special variable
-    Given a WP install
-    And a session file:
-    """
-    WP_ADMIN
-    $_
-    get_current_user_id()
-    $_
-    """
-
-    When I run `wp shell --quiet < session`
-    Then it should run without errors
-    And STDOUT should be:
-    """
-    true
-    true
-    0
-    0
-    """
-
   Scenario: Persistent environment
     Given a WP install
     And a session file:
