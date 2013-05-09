@@ -6,14 +6,23 @@
  */
 class Package_Command extends WP_CLI_Command {
 
+	private $fields = array(
+				'slug',
+				'name',
+				'installed',
+				'description',
+				'author',
+			); 
+
 	/**
 	 * List all available community packages.
 	 *
-	 * @subcommand list [--format]
+	 * @subcommand list [--fields=<fields>] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 
 		$defaults = array(
+				'fields'          => $this->fields,
 				'format'          => 'table',
 			);
 		$assoc_args = array_merge( $defaults, $assoc_args );
@@ -23,19 +32,11 @@ class Package_Command extends WP_CLI_Command {
 		if ( is_wp_error( $package_directory ) )
 			WP_CLI::error( $package_directory->get_error_message() );
 
-		$fields = array(
-				'slug',
-				'name',
-				'installed',
-				'description',
-				'author',
-			);
-
 		foreach( $package_directory as &$package ) {
 			$package->installed = ( $package->installed ) ? 'yes' : 'no';
 		}
 
-		\WP_CLI\Utils\format_items( $assoc_args['format'], $fields, $package_directory );
+		\WP_CLI\Utils\format_items( $assoc_args['format'], $assoc_args['fields'], $package_directory );
 	}
 
 	/**
