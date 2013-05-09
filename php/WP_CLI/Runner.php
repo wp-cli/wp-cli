@@ -335,13 +335,6 @@ class Runner {
 		}
 	}
 
-	public function after_wp_config_load() {
-		if ( $this->config['debug'] ) {
-			if ( !defined( 'WP_DEBUG' ) )
-				define( 'WP_DEBUG', true );
-		}
-	}
-
 	public function after_wp_load() {
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
