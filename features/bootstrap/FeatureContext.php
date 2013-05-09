@@ -16,6 +16,8 @@ require_once __DIR__ . '/../../php/utils.php';
  */
 class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
+	private static $cache_dir;
+
 	private static $db_settings = array(
 		'dbname' => 'wp_cli_test',
 		'dbuser' => 'wp_cli_test',
@@ -28,10 +30,28 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	public $variables = array();
 
+	private static function wp_cli( $command ) {
+		return __DIR__ . "/../../bin/wp $command";
+	}
+
+	// We cache the results of `wp core download` to improve test performance
+	// Ideally, we'd cache at the HTTP layer for more reliable tests
+	private static function cache_wp_files() {
+		self::$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
+
+		if ( is_readable( self::$cache_dir . '/wp-config-sample.php' ) )
+			return;
+
+		$cmd = Utils\esc_cmd( 'core download --force --path=%s', self::$cache_dir );
+		Process::create( self::wp_cli( $cmd ) )->run_check();
+	}
+
 	/**
 	 * @BeforeSuite
 	 */
 	public static function prepare( SuiteEvent $event ) {
+		self::cache_wp_files();
+
 		self::$additional_args = array(
 			'core config' => self::$db_settings,
 
@@ -131,7 +151,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( !empty( $assoc_args ) )
 			$command .= Utils\assoc_args_to_str( $assoc_args );
 
-		return Process::create( __DIR__ . "/../../bin/wp $command", $this->install_dir );
+		return Process::create( self::wp_cli( $command ), $this->install_dir );
 	}
 
 	public function move_files( $src, $dest ) {
@@ -145,19 +165,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function download_wordpress_files( $subdir = '' ) {
-		// We cache the results of "wp core download" to improve test performance
-		// Ideally, we'd cache at the HTTP layer for more reliable tests
-		$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
-
-		$r = $this->proc( 'core download', array(
-			'path' => $cache_dir
-		) )->run();
-
 		$dest_dir = $this->get_path( $subdir );
 
 		if ( $subdir ) mkdir( $dest_dir );
 
-		Process::create( Utils\esc_cmd( "cp -r %s/* %s", $cache_dir, $dest_dir ) )->run_check();
+		Process::create( Utils\esc_cmd( "cp -r %s/* %s", self::$cache_dir, $dest_dir ) )->run_check();
 	}
 
 	public function wp_install( $subdir = '' ) {
