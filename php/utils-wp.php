@@ -18,10 +18,12 @@ function wp_debug_mode() {
 			define( 'WP_DEBUG', true );
 
 		error_reporting( E_ALL & ~E_DEPRECATED & ~E_STRICT );
-		ini_set( 'display_errors', true );
 	} else {
 		\wp_debug_mode();
 	}
+
+	// Never show errors on STDOUT; only on STDERR
+	ini_set( 'display_errors', false );
 }
 
 function replace_wp_die_handler() {
