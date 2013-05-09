@@ -6,12 +6,10 @@ Feature: Wordpress code scaffolding
     When I run `wp scaffold taxonomy zombie-speed --theme`
     Then it should run without errors
 
-    When I run `wp option get stylesheet`
+    When I run `wp eval 'echo STYLESHEETPATH;'`
     Then it should run without errors
-    And save STDOUT as {ACTIVE_THEME}
-
-    #And the wp-content/{ACTIVE_THEME}/taxonomy/zombie-speed.php file should exist
-    And the wp-content/themes/twentytwelve/taxonomies/zombie-speed.php file should exist
+    And save STDOUT as {STYLESHEETPATH}
+    And the {STYLESHEETPATH}/taxonomies/zombie-speed.php file should exist
 
   # Test for all flags but --label, --theme, --plugin and --raw
   Scenario: Scaffold a Custom Taxonomy and attach it to a CPT zombie that is prefixed and has a text domain
