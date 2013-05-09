@@ -21,3 +21,7 @@ Feature: Manage WordPress plugins
       """
       Error: The plugin 'non-existent-plugin' could not be found.
       """
+
+    When I run `wp plugin list --format=json`
+    Then it should run without errors
+    And STDOUT should not be empty
