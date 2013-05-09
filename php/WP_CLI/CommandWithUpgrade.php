@@ -169,7 +169,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 	}
 
-	protected function _list( $format ) {
+	protected function _list( $_, $format ) {
 		$values = array(
 			'format' => 'table',
 			'fields' => $this->fields

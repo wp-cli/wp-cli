@@ -204,7 +204,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis [--format=<format>]
 	 */
 	function _list( $_, $assoc_args ) {
-		parent::_list( $assoc_args );	
+		parent::_list( $_, $assoc_args );	
 	}
 
 	protected function parse_name( $args ) {
