@@ -11,7 +11,7 @@ class Export_Command extends WP_CLI_Command {
 	/**
 	 * Export content to a WXR file.
 	 *
-	 * @synopsis [--dir=<dir>] [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--post__in=<pids>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>]
+	 * @synopsis [--dir=<dir>] [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--post__in=<pids>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>] [--verbose]
 	 */
 	public function __invoke( $_, $assoc_args ) {
 		$defaults = array(
@@ -25,6 +25,7 @@ class Export_Command extends WP_CLI_Command {
 			'post__in'			=>		NULL,
 			'skip_comments'		=>		NULL,
 			'file_item_count'	=>		1000,
+			'verbose'         => false,
 		);
 
 		$args = wp_parse_args( $assoc_args, $defaults );
@@ -49,6 +50,12 @@ class Export_Command extends WP_CLI_Command {
 		WP_CLI::line( 'Starting export process...' );
 		WP_CLI::line();
 		$this->export_wp( $this->export_args );
+	}
+
+	private function check_verbose( $verbose ) {
+		$this->verbose = $verbose;
+
+		return true;
 	}
 
 	private function check_dir( $path ) {
@@ -376,7 +383,8 @@ class Export_Command extends WP_CLI_Command {
 				WP_CLI::line( 'Writing to file ' . $full_path );
 			}
 
-			$progress = new \cli\progress\Bar( 'Exporting',  count( $post_ids ) );
+			if ( !$this->verbose )
+				$progress = new \cli\progress\Bar( 'Exporting',  count( $post_ids ) );
 
 		$this->start_export();
 		echo '<?xml version="1.0" encoding="' . get_bloginfo( 'charset' ) . "\" ?>\n";
@@ -447,7 +455,11 @@ class Export_Command extends WP_CLI_Command {
 				// Begin Loop
 				foreach ( $posts as $post ) {
 
-					$progress->tick();
+					if ( !$this->verbose ) {
+						$progress->tick();
+					} else {
+						WP_CLI::line( "Exporting post $post->ID" );
+					}
 
 					setup_postdata( $post );
 					$is_sticky = is_sticky( $post->ID ) ? 1 : 0;
@@ -525,7 +537,11 @@ class Export_Command extends WP_CLI_Command {
 			$this->flush_export( $full_path );
 			$this->end_export();
 			$this->stop_the_insanity();
-			$progress->finish();
+
+			if ( !$this->verbose ) {
+				$progress->finish();
+			}
+
 			$file_count++;
 		}
 		WP_CLI::success( "All done with export" );
