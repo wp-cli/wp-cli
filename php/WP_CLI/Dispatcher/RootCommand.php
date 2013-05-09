@@ -130,19 +130,12 @@ EOB
 
 	protected function load_package_commands() {
 
-		$packages = \WP_CLI\Package\get_directory_details();
-
 		if ( \is_wp_error( $packages ) )
 			return;
 
-		foreach( $packages as $package ) {
-
-			if ( isset( $this->subcommands[ $package->slug ] ) )
-				continue;
-
-			if ( $path = self::get_package_command_file( $package->slug ) )
-				include $path;
-		}
+		$package_autoload = \WP_CLI_ROOT . 'packages/vendor/autoload.php';
+		if ( file_exists( $package_autoload ) )
+			require_once $package_autoload;
 
 	}
 
@@ -156,22 +149,9 @@ EOB
 		return $path;
 	}
 
-	protected static function get_package_command_file( $command ) {
-
-		$path = \WP_CLI::get_config( 'package_directory_local' ) . "{$command}/{$command}.php";
-
-		if ( !is_readable( $path ) ) {
-			return false;
-		}
-
-		return $path;
-	}
-
 	protected function load_command( $command ) {
 		if ( !isset( $this->subcommands[ $command ] ) ) {
 			if ( $path = self::get_command_file( $command ) )
-				include $path;
-			else if ( $path = self::get_package_command_file( $command ) )
 				include $path;
 		}
 

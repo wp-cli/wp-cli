@@ -8,10 +8,8 @@ class Package_Command extends WP_CLI_Command {
 
 	private $fields = array(
 				'slug',
-				'name',
 				'installed',
-				'description',
-				'author',
+				'description'
 			); 
 
 	/**
@@ -71,28 +69,6 @@ class Package_Command extends WP_CLI_Command {
 			WP_CLI::error( $ret->get_error_message() );
 		else
 			WP_CLI::success( sprintf( "Package '%s' uninstalled.", $package_slug ) );
-	}
-
-	/**
-	 * Update the directory to the latest version
-	 *
-	 * @subcommand update-directory
-	 */
-	public function update_directory() {
-
-		if ( ! \WP_CLI\Package\directory_exists() ) {
-			$ret = \WP_CLI\Package\install_directory();
-			if ( is_wp_error( $ret ) )
-				WP_CLI::error( $ret->get_error_message() );
-			else
-				WP_CLI::success( "Package directory installed." );
-		} else {
-			$ret = \WP_CLI\Package\update_directory();
-			if ( is_wp_error( $ret ) )
-				WP_CLI::error( $ret->get_error_message() );
-			else
-				WP_CLI::success( "Package directory updated." );
-		}
 	}
 
 }
