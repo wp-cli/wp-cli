@@ -20,8 +20,6 @@ WP_CLI::$runner->before_wp_load();
 // Load wp-config.php code, in the global scope
 eval( WP_CLI::$runner->get_wp_config_code() );
 
-WP_CLI::$runner->after_wp_config_load();
-
 // Simulate a /wp-admin/ page load
 $_SERVER['PHP_SELF'] = '/wp-admin/index.php';
 define( 'WP_ADMIN', true );

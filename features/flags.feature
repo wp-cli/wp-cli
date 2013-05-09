@@ -30,9 +30,13 @@ Feature: Global flags
 
     When I run `wp eval 'echo CONST_WITHOUT_QUOTES;' --debug`
     Then the return code should be 0
-    And STDOUT should contain:
+    And STDOUT should be:
       """
-      Notice: Use of undefined constant CONST_WITHOUT_QUOTES
+      CONST_WITHOUT_QUOTES
+      """
+    And STDERR should contain:
+      """
+      PHP Notice:  Use of undefined constant CONST_WITHOUT_QUOTES
       """
 
   Scenario: Setting the WP user
