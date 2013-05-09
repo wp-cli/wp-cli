@@ -14,6 +14,9 @@ function wp_not_installed() {
 
 function wp_debug_mode() {
 	if ( \WP_CLI::get_config( 'debug' ) ) {
+		if ( !defined( 'WP_DEBUG' ) )
+			define( 'WP_DEBUG', true );
+
 		error_reporting( E_ALL & ~E_DEPRECATED & ~E_STRICT );
 		ini_set( 'display_errors', true );
 	} else {
