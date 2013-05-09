@@ -254,9 +254,18 @@ $steps->Then( '/^the (.+) file should exist$/',
 	function ( $world, $path ) {
 		$path = $world->replace_variables( $path );
 
-		assertFileExists( $path );
+		// If $path refers to a complete cache path, use it;
+		// otherwise, get the real path using $world->get_path()
+		if ( strpos( $path, $world->get_cache_path('') ) === 0 || strpos( $path, $world->get_path('')) === 0) {
+			$realpath = $path;
+		} else {
+			$realpath = $world->get_path( $path );
+		}
+
+		assertFileExists( $realpath );
 	}
 );
+
 
 /**
  * Compare two strings containing JSON to ensure that @a $actualJson contains at
