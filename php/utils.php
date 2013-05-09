@@ -17,7 +17,6 @@ function load_dependencies() {
 	foreach ( $vendor_paths as $vendor_path ) {
 		if ( file_exists( $vendor_path . '/autoload.php' ) ) {
 			require $vendor_path . '/autoload.php';
-			include $vendor_path . '/jlogsdon/cli/lib/cli/cli.php';
 			$has_autoload = true;
 			break;
 		}
