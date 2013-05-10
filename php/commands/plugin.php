@@ -12,6 +12,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	protected $upgrade_refresh = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
 
+	protected $fields = array(
+		'name',
+		'status',
+		'update',
+		'version'
+	);
+
 	function __construct() {
 		require_once ABSPATH.'wp-admin/includes/plugin.php';
 		require_once ABSPATH.'wp-admin/includes/plugin-install.php';
@@ -290,6 +297,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$command = 'rm -rf ' . path_join( WP_PLUGIN_DIR, $plugin_dir );
 
 		return WP_CLI::launch( $command, $exit_on_error );
+	}
+
+	/**
+	 * Get a list of plugins.
+	 *
+	 * @subcommand list
+	 * @synopsis [--format=<format>]
+	 */
+	function _list( $_, $assoc_args ) {
+		parent::_list( $_, $assoc_args );
 	}
 
 	/* PRIVATES */

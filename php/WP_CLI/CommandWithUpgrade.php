@@ -169,6 +169,26 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 	}
 
+	protected function _list( $_, $format ) {
+		$values = array(
+			'format' => 'table',
+			'fields' => $this->fields
+		);
+
+		foreach ( $values as $key => &$value ) {
+			if ( isset( $format[ $key ] ) ) {
+				$value = $format[ $key ];
+				unset( $format[ $key ] );
+			}
+		}
+		unset( $value );
+
+		$all_items = $this->get_all_items();
+		$items = $this->create_objects( $all_items );
+
+		\WP_CLI\Utils\format_items( $values['format'], $items, $values['fields'] );
+	}
+
 	/**
 	 * Check whether an item has an update available or not.
 	 *
@@ -196,6 +216,33 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			'must-use' => 'Must Use',
 		)
 	);
+
+	private function create_objects( $items ) {
+		if ( !is_array( $items ) && !empty( $items ) )
+			\WP_CLI::error( sprintf( "No '$this->item_type's found." ) );
+
+		$objects = array();
+
+		foreach ( $items as $item ) {
+			$object = new \stdClass;
+
+			if ( empty( $item['version'] ) )
+				$item['version'] = "";
+
+			foreach ( $item as $field => $value ) {
+				if ( $value === true ) {
+					$value = "available";
+				} else if ( $value === false) {
+					$value = "none";
+				}
+				
+				$object->{$field} = $value;
+			}
+			$objects[] = $object;
+		}
+
+		return $objects;
+	}
 
 	protected function format_status( $status, $format ) {
 		return $this->get_color( $status ) . $this->map[ $format ][ $status ];
