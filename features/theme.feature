@@ -49,6 +49,10 @@ Feature: Manage WordPress themes
       Error: The theme 'p2' could not be found.
       """
 
+    When I run `wp theme list`
+    Then it should run without errors
+    And STDOUT should not be empty
+
   Scenario: Upgrading a theme
     Given a WP install
     And a P2 theme zip
