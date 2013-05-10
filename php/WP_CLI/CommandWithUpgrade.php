@@ -226,6 +226,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		foreach ( $items as $item ) {
 			$object = new \stdClass;
 
+			if ( empty( $item['version'] ) )
+				$item['version'] = "";
+
 			foreach ( $item as $field => $value ) {
 				if ( $value === true ) {
 					$value = "available";
