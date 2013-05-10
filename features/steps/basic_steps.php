@@ -252,16 +252,13 @@ $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 
 $steps->Then( '/^the (.+) file should exist$/',
 	function ( $world, $path ) {
-    $path = $world->replace_variables( $path );
+		$path = $world->replace_variables( $path );
 
-    // If $path refers to a complete cache path, use it;
-    // otherwise, get the real path using $world->get_path()
-    if ( strpos( $path, $world->get_cache_path('') ) === 0 )
-      $realpath = $path;
-    else
-      $realpath = $world->get_path( $path );
+		// If it's a relative path, make it relative to the current test dir
+		if ( '/' !== $path[0] )
+			$path = $world->get_path( $path );
 
-		assertFileExists( $realpath );
+		assertFileExists( $path );
 	}
 );
 
