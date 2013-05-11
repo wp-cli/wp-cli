@@ -8,8 +8,8 @@ use \WP_CLI\Dispatcher;
 
 function load_dependencies() {
 	$vendor_paths = array(
-		WP_CLI_ROOT . '../../../../vendor',  // part of a larger project
 		WP_CLI_ROOT . '../vendor',           // top-level project
+		WP_CLI_ROOT . '../../../../vendor',  // part of a larger project
 	);
 
 	$has_autoload = false;
@@ -18,7 +18,6 @@ function load_dependencies() {
 		if ( file_exists( $vendor_path . '/autoload.php' ) ) {
 			require $vendor_path . '/autoload.php';
 			$has_autoload = true;
-			break;
 		}
 	}
 
