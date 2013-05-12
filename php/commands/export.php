@@ -256,7 +256,9 @@ class Export_Command extends WP_CLI_Command {
 		);
 		$args = wp_parse_args( $args, $defaults );
 
-		WP_CLI::line( "Exporting with export_wp with arguments: " . var_export( $args, true ) );
+		if ( $this->verbose ) {
+			WP_CLI::line( "Exporting with export_wp with arguments: " . var_export( $args, true ) );
+		}
 
 		do_action( 'export_wp' );
 
