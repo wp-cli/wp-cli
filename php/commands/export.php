@@ -329,30 +329,30 @@ class Export_Command extends WP_CLI_Command {
 			$cats = array( $cat->term_id => $cat );
 			unset( $term, $cat );
 		} else if ( 'all' == $args['post_type'] ) {
-				$categories = (array) get_categories( array( 'get' => 'all' ) );
-				$tags = (array) get_tags( array( 'get' => 'all' ) );
+			$categories = (array) get_categories( array( 'get' => 'all' ) );
+			$tags = (array) get_tags( array( 'get' => 'all' ) );
 
-				$custom_taxonomies = get_taxonomies( array( '_builtin' => false ) );
-				$custom_terms = (array) get_terms( $custom_taxonomies, array( 'get' => 'all' ) );
+			$custom_taxonomies = get_taxonomies( array( '_builtin' => false ) );
+			$custom_terms = (array) get_terms( $custom_taxonomies, array( 'get' => 'all' ) );
 
-				// put categories in order with no child going before its parent
-				while ( $cat = array_shift( $categories ) ) {
-					if ( $cat->parent == 0 || isset( $cats[$cat->parent] ) )
-						$cats[$cat->term_id] = $cat;
-					else
-						$categories[] = $cat;
-				}
-
-				// put terms in order with no child going before its parent
-				while ( $t = array_shift( $custom_terms ) ) {
-					if ( $t->parent == 0 || isset( $terms[$t->parent] ) )
-						$terms[$t->term_id] = $t;
-					else
-						$custom_terms[] = $t;
-				}
-
-				unset( $categories, $custom_taxonomies, $custom_terms );
+			// put categories in order with no child going before its parent
+			while ( $cat = array_shift( $categories ) ) {
+				if ( $cat->parent == 0 || isset( $cats[$cat->parent] ) )
+					$cats[$cat->term_id] = $cat;
+				else
+					$categories[] = $cat;
 			}
+
+			// put terms in order with no child going before its parent
+			while ( $t = array_shift( $custom_terms ) ) {
+				if ( $t->parent == 0 || isset( $terms[$t->parent] ) )
+					$terms[$t->term_id] = $t;
+				else
+					$custom_terms[] = $t;
+			}
+
+			unset( $categories, $custom_taxonomies, $custom_terms );
+		}
 
 		// Load the functions available in wp-admin/includes/export.php
 		ob_start();
