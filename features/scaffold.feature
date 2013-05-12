@@ -11,6 +11,18 @@ Feature: Wordpress code scaffolding
     Then it should run without errors
     And save STDOUT as {THEME_PATH}
     And the {THEME_PATH}/zombieland/style.css file should exist
+
+  @plugin
+  Scenario: Scaffold a plugin
+    Given a WP install
+
+    When I run `wp scaffold plugin zombieland`
+    Then it should run without errors
+    
+    When I run `wp path path`
+    Then it should run without errors
+    And save STDOUT as {PLUGIN_PATH}
+    And the {PLUGIN_PATH}/zombieland/zombieland.php file should exist
     
   @tax @cpt
   Scenario: Scaffold a Custom Taxonomy and Custom Post Type and write it to active theme
