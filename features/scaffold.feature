@@ -4,7 +4,7 @@ Feature: Wordpress code scaffolding
   Scenario: Scaffold a child theme
     Given a WP install
 
-    When I run `wp scaffold child-theme zombieland --parent_theme=umbrella`
+    When I run `wp scaffold child-theme zombieland --parent_theme=umbrella --theme_name=Zombieland --author=Tallahassee --author_uri=http://www.wp-cli.org --theme_uri=http://www.zombieland.com  --activate`
     Then it should run without errors
     
     When I run `wp theme path`
@@ -16,7 +16,7 @@ Feature: Wordpress code scaffolding
   Scenario: Scaffold a plugin
     Given a WP install
 
-    When I run `wp scaffold plugin zombieland`
+    When I run `wp scaffold plugin zombieland --activate`
     Then it should run without errors
     
     When I run `wp path path`
