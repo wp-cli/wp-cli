@@ -13,6 +13,10 @@ to current working directory.
 
 	Break export into files with N posts.
 
+* `--verbose`:
+
+	Show more information about the process on STDOUT.
+
 ## FILTERS
 
 * `--start_date`=<date>:
