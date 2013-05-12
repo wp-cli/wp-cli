@@ -270,6 +270,8 @@ class WP_CLI {
 
 	// back-compat
 	static function addCommand( $name, $class ) {
+		trigger_error( sprintf( 'wp %s: %s is deprecated. use WP_CLI::add_command() instead.',
+			$name, __FUNCTION__ ), E_USER_WARNING );
 		self::add_command( $name, $class );
 	}
 }
