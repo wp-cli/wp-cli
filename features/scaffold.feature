@@ -1,5 +1,18 @@
 Feature: Wordpress code scaffolding
 
+  @theme
+  Scenario: Scaffold a child theme
+    Given a WP install
+
+    When I run `wp scaffold child-theme zombieland --parent_theme=umbrella`
+    Then it should run without errors
+    
+    When I run `wp theme path`
+    Then it should run without errors
+    And save STDOUT as {THEME_PATH}
+    And the {THEME_PATH}/zombieland/style.css file should exist
+    
+
   Scenario: Scaffold a Custom Taxonomy and Custom Post Type and write it to active theme
     Given a WP install
 
