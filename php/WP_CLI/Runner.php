@@ -110,6 +110,10 @@ class Runner {
 	}
 
 	private static function is_absolute_path( $path ) {
+		// Windows
+		if ( ':' === $path[1] )
+			return true;
+
 		return $path[0] === '/';
 	}
 
