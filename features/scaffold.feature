@@ -1,6 +1,6 @@
 Feature: Wordpress code scaffolding
 
-  Scenario: Scaffold a Custom Taxonomy and write it to active theme
+  Scenario: Scaffold a Custom Taxonomy and Custom Post Type and write it to active theme
     Given a WP install
 
     When I run `wp scaffold taxonomy zombie-speed --theme`
@@ -11,15 +11,8 @@ Feature: Wordpress code scaffolding
     And save STDOUT as {STYLESHEETPATH}
     And the {STYLESHEETPATH}/taxonomies/zombie-speed.php file should exist
 
-  Scenario: Scaffold a Custom Post Type and write it to active theme
-    Given a WP install
-
     When I run `wp scaffold post-type zombie --theme`
     Then it should run without errors
-
-    When I run `wp eval 'echo STYLESHEETPATH;'`
-    Then it should run without errors
-    And save STDOUT as {STYLESHEETPATH}
     And the {STYLESHEETPATH}/post-types/zombie.php file should exist
 
   # Test for all flags but --label, --theme, --plugin and --raw
