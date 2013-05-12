@@ -12,7 +12,7 @@ Feature: Wordpress code scaffolding
     And save STDOUT as {THEME_PATH}
     And the {THEME_PATH}/zombieland/style.css file should exist
     
-
+  @tax @cpt
   Scenario: Scaffold a Custom Taxonomy and Custom Post Type and write it to active theme
     Given a WP install
 
@@ -29,6 +29,7 @@ Feature: Wordpress code scaffolding
     And the {STYLESHEETPATH}/post-types/zombie.php file should exist
 
   # Test for all flags but --label, --theme, --plugin and --raw
+  @tax
   Scenario: Scaffold a Custom Taxonomy and attach it to a CPT zombie that is prefixed and has a text domain
     Given a WP install
 
@@ -47,6 +48,7 @@ Feature: Wordpress code scaffolding
       __( 'Zombie speeds', 'zombieland'
       """
 
+  @tax
   Scenario: Scaffold a Custom Taxonomy with label "Speed"
     Given a WP install
 
@@ -58,6 +60,7 @@ Feature: Wordpress code scaffolding
         """
 
   # Test for all flags but --label, --theme, --plugin and --raw
+  @cpt
   Scenario: Scaffold a Custom Post Type
     Given a WP install
 
@@ -72,6 +75,7 @@ Feature: Wordpress code scaffolding
       __( 'Zombies', 'zombieland'
       """
 
+  @cpt
   Scenario: Scaffold a Custom Post Type with label
     Given a WP install
 
