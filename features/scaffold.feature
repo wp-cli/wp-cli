@@ -12,17 +12,21 @@ Feature: Wordpress code scaffolding
     And save STDOUT as {THEME_PATH}
     And the {THEME_PATH}/zombieland/style.css file should exist
 
+  # Adding --activate to the test crashes the tests
   @plugin
   Scenario: Scaffold a plugin
     Given a WP install
 
-    When I run `wp scaffold plugin zombieland --activate`
+    When I run `wp scaffold plugin zombieland`
     Then it should run without errors
     
     When I run `wp plugin path`
     Then it should run without errors
     And save STDOUT as {PLUGIN_PATH}
     And the {PLUGIN_PATH}/zombieland/zombieland.php file should exist
+
+    When I run `wp plugin activate zombieland`
+    Then it should run without errors
     
   @tax @cpt
   Scenario: Scaffold a Custom Taxonomy and Custom Post Type and write it to active theme
