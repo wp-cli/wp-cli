@@ -19,7 +19,7 @@ Feature: Wordpress code scaffolding
     When I run `wp scaffold plugin zombieland --activate`
     Then it should run without errors
     
-    When I run `wp path path`
+    When I run `wp plugin path`
     Then it should run without errors
     And save STDOUT as {PLUGIN_PATH}
     And the {PLUGIN_PATH}/zombieland/zombieland.php file should exist
