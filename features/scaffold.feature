@@ -17,7 +17,7 @@ Feature: Wordpress code scaffolding
   Scenario: Scaffold a plugin
     Given a WP install
 
-    When I run `wp scaffold plugin zombieland`
+    When I run `wp scaffold plugin zombieland --plugin_name="Welcome to Zombieland"`
     Then it should run without errors
     
     When I run `wp plugin path`
