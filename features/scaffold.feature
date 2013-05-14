@@ -14,13 +14,12 @@ Feature: Wordpress code scaffolding
   @plugin
   Scenario: Scaffold a plugin
     Given a WP install
+    And I run `wp plugin path`
+    And save STDOUT as {PLUGIN_DIR}
 
     When I run `wp scaffold plugin zombieland --plugin_name="Welcome to Zombieland"`
     Then STDOUT should not be empty
-
-    When I run `wp plugin path`
-    And save STDOUT as {PLUGIN_PATH}
-    Then the {PLUGIN_PATH}/zombieland/zombieland.php file should exist
+    And the {PLUGIN_DIR}/zombieland/zombieland.php file should exist
 
     When I run `wp plugin activate zombieland`
     Then STDOUT should not be empty
