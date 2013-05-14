@@ -3,12 +3,12 @@ Feature: Wordpress code scaffolding
   @theme
   Scenario: Scaffold a child theme
     Given a WP install
+    And I run `wp theme path`
+    And save STDOUT as {THEME_DIR}
 
-    When I run `wp scaffold child-theme zombieland --parent_theme=umbrella --theme_name=Zombieland --author=Tallahassee --author_uri=http://www.wp-cli.org --theme_uri=http://www.zombieland.com  --activate`
-    
-    When I run `wp theme path`
-    Then save STDOUT as {THEME_PATH}
-    And the {THEME_PATH}/zombieland/style.css file should exist
+    When I run `wp scaffold child-theme zombieland --parent_theme=umbrella --theme_name=Zombieland --author=Tallahassee --author_uri=http://www.wp-cli.org --theme_uri=http://www.zombieland.com --activate`
+    Then STDOUT should not be empty
+    And the {THEME_DIR}/zombieland/style.css file should exist
 
   # Adding --activate to the test crashes the tests
   @plugin
@@ -17,14 +17,14 @@ Feature: Wordpress code scaffolding
 
     When I run `wp scaffold plugin zombieland --plugin_name="Welcome to Zombieland"`
     Then STDOUT should not be empty
-    
+
     When I run `wp plugin path`
     And save STDOUT as {PLUGIN_PATH}
     Then the {PLUGIN_PATH}/zombieland/zombieland.php file should exist
 
     When I run `wp plugin activate zombieland`
     Then STDOUT should not be empty
-    
+
   @tax @cpt
   Scenario: Scaffold a Custom Taxonomy and Custom Post Type and write it to active theme
     Given a WP install
