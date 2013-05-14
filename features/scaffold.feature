@@ -10,14 +10,13 @@ Feature: Wordpress code scaffolding
     Then STDOUT should not be empty
     And the {THEME_DIR}/zombieland/style.css file should exist
 
-  # Adding --activate to the test crashes the tests
   @plugin
   Scenario: Scaffold a plugin
     Given a WP install
     And I run `wp plugin path`
     And save STDOUT as {PLUGIN_DIR}
 
-    When I run `wp scaffold plugin zombieland --plugin_name="Welcome to Zombieland"`
+    When I run `wp scaffold plugin zombieland --plugin_name="Welcome to Zombieland" --activate`
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/zombieland/zombieland.php file should exist
 
