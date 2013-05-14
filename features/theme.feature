@@ -37,7 +37,7 @@ Feature: Manage WordPress themes
     When I run `wp theme delete p2`
     Then STDOUT should not be empty
 
-    When I run the previous command again
+    When I try the previous command again
     Then the return code should be 1
     And STDERR should contain:
       """
