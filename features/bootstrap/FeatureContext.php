@@ -101,8 +101,10 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function create_empty_dir() {
-		$this->install_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-", TRUE );
-		mkdir( $this->install_dir );
+		if ( !$this->install_dir ) {
+			$this->install_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-", TRUE );
+			mkdir( $this->install_dir );
+		}
 	}
 
 	public function get_path( $file ) {

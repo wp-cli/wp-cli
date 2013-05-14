@@ -4,6 +4,16 @@ use Behat\Behat\Exception\PendingException,
     Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
 
+function invoke_proc( $proc, $mode, $subdir = null ) {
+	$map = array(
+		'run' => 'run_check',
+		'try' => 'run'
+	);
+	$method = $map[ $mode ];
+
+	return $proc->$method( $subdir );
+}
+
 $steps->Given( '/^an empty directory$/',
 	function ( $world ) {
 		$world->create_empty_dir();
@@ -94,30 +104,33 @@ $steps->Given( '/^a large image file$/',
 	}
 );
 
-$steps->When( '/^I run `wp`$/',
-	function ( $world ) {
-		$world->result = $world->proc( '' )->run();
+$steps->When( '/^I (run|try) `wp`$/',
+	function ( $world, $mode ) {
+		$world->result = invoke_proc( $world->proc( '' ), $mode );
 	}
 );
 
-$steps->When( '/^I run `wp (.+)`$/',
-	function ( $world, $cmd ) {
-		$world->result = $world->proc( $world->replace_variables( $cmd ) )->run();
+$steps->When( '/^I (run|try) `wp (.+)`$/',
+	function ( $world, $mode, $cmd ) {
+		$cmd = $world->replace_variables( $cmd );
+		$world->result = invoke_proc( $world->proc( $cmd ), $mode );
 	}
 );
 
-$steps->When( "/^I run `wp (.+)` from '([^\s]+)'$/",
-	function ( $world, $cmd, $subdir ) {
-		$world->result = $world->proc( $world->replace_variables( $cmd ) )->run( $subdir );
+$steps->When( "/^I (run|try) `wp (.+)` from '([^\s]+)'$/",
+	function ( $world, $mode, $cmd, $subdir ) {
+		$cmd = $world->replace_variables( $cmd );
+		$world->result = invoke_proc( $world->proc( $cmd ), $mode, $subdir );
 	}
 );
 
-$steps->When( '/^I run the previous command again$/',
-	function ( $world ) {
+$steps->When( '/^I (run|try) the previous command again$/',
+	function ( $world, $mode ) {
 		if ( !isset( $world->result ) )
 			throw new \Exception( 'No previous command.' );
 
-		$world->result = Process::create( $world->result->command, $world->result->cwd )->run();
+		$proc = Process::create( $world->result->command, $world->result->cwd );
+		$world->result = invoke_proc( $proc, $mode );
 	}
 );
 
@@ -139,19 +152,6 @@ $steps->Given( '/^save (STDOUT|STDERR) as \{(\w+)\}$/',
 $steps->Then( '/^the return code should be (\d+)$/',
 	function ( $world, $return_code ) {
 		assertEquals( $return_code, $world->result->return_code );
-	}
-);
-
-$steps->Then( '/^it should run without errors$/',
-	function ( $world ) {
-		if ( !empty( $world->result->STDERR ) ) {
-			$r = $world->result;
-			throw new \Exception( sprintf( "%s: %s\ncwd: %s",
-				$r->command, $r->STDERR, $r->cwd ) );
-		}
-
-		if ( 0 != $world->result->return_code )
-			throw new \Exception( "Return code was $world->result->return_code" );
 	}
 );
 
