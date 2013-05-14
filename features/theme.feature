@@ -67,6 +67,7 @@ Feature: Manage WordPress themes
       """
 
     When I run `wp theme update p2`
+    Then STDOUT should not be empty
 
     When I run `wp theme status p2`
     Then STDOUT should not contain:

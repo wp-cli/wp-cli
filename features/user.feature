@@ -17,6 +17,7 @@ Feature: Manage WordPress users
       """
 
     When I run `wp user delete {USER_ID}`
+    Then STDOUT should not be empty
 
   Scenario: Generating users
     Given a WP install
@@ -29,6 +30,7 @@ Feature: Manage WordPress users
     Then STDOUT should be empty
 
     When I run `wp user generate --count=10`
+    Then STDOUT should not be empty
  
     When I run `wp user list | wc -l | tr -d ' '`
     Then STDOUT should be:
@@ -56,7 +58,7 @@ Feature: Manage WordPress users
       """
 
     When I run `wp user list --format=json`
-    And STDOUT should be JSON containing:
+    Then STDOUT should be JSON containing:
     """
     [{"user_login":"admin","display_name":"Existing User","user_email":"admin@domain.com","roles":"administrator"}]
     """
