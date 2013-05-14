@@ -4,7 +4,7 @@ Feature: Manage WordPress attachments
   Scenario: Regenerate all images while none exists
     Given a WP install
 
-    When I run `wp media regenerate --yes`
+    When I try `wp media regenerate --yes`
     Then STDERR should contain:
       """
       Error: Unable to find the images
@@ -24,7 +24,7 @@ Feature: Manage WordPress attachments
   Scenario: Fail to import missing image
     Given a WP install
 
-    When I run `wp media import gobbledygook.png`
+    When I try `wp media import gobbledygook.png`
     Then STDERR should contain:
       """
       Error: Unable to import file gobbledygook.png. Reason: File is empty.
