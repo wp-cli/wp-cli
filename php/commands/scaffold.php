@@ -166,7 +166,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$data['description'] = ucfirst( $data['parent_theme'] ) . " child theme.";
 
-		$theme_dir = WP_CONTENT_DIR . "themes" . "/$theme_slug";
+		$theme_dir = WP_CONTENT_DIR . "/themes" . "/$theme_slug";
 		$theme_style_path = "$theme_dir/style.css";
 
 		$this->create_file( $theme_style_path, $this->render( 'child_theme.mustache', $data ) );
