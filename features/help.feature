@@ -41,7 +41,7 @@ Feature: Get help about WP-CLI commands
     And I run `wp plugin activate test-cli-help`
 
     When I run `wp help test-help`
-    And STDOUT should contain:
+    Then STDOUT should contain:
       """
       usage: wp test-help
       """
