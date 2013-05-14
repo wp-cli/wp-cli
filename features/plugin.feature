@@ -4,18 +4,16 @@ Feature: Manage WordPress plugins
     Given a WP install
 
     When I run `wp plugin status`
-    Then it should run without errors
-    And STDOUT should not be empty
+    Then STDOUT should not be empty
 
     When I run `wp plugin status hello`
-    Then it should run without errors
-    And STDOUT should contain:
+    Then STDOUT should contain:
       """
       Plugin hello details:
           Name: Hello Dolly
       """
 
-    When I run `wp plugin status non-existent-plugin`
+    When I try `wp plugin status non-existent-plugin`
     Then the return code should be 1
     And STDERR should contain:
       """
@@ -23,5 +21,4 @@ Feature: Manage WordPress plugins
       """
 
     When I run `wp plugin list --format=json`
-    Then it should run without errors
     And STDOUT should not be empty

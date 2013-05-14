@@ -4,10 +4,9 @@ Feature: WordPress REPL
     Given a WP install
 
     When I run `wp shell < /dev/null`
-    Then it should run without errors
 
     When I run `wp shell --basic < /dev/null`
-    Then it should run without errors
+    Then STDOUT should be empty
 
   Scenario: Persistent environment
     Given a WP install
@@ -19,8 +18,7 @@ Feature: WordPress REPL
     """
 
     When I run `wp shell --basic < session`
-    Then it should run without errors
-    And STDOUT should contain:
+    Then STDOUT should contain:
     """
     bool(false)
     """
@@ -37,7 +35,6 @@ Feature: WordPress REPL
     """
 
     When I run `wp shell --basic < session`
-    Then it should run without errors
     And STDOUT should be:
     """
     bool(true)

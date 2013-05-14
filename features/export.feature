@@ -4,5 +4,4 @@ Feature: Export content.
     Given a WP install
 
     When I run `wp export`
-    Then it should run without errors
-    And STDOUT should not be empty
+    Then STDOUT should not be empty
