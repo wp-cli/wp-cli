@@ -84,3 +84,4 @@ Feature: Manage WordPress installation
     And a custom wp-content directory
 
     When I run `wp plugin status hello`
+    Then STDOUT should not be empty

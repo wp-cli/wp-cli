@@ -21,4 +21,4 @@ Feature: Manage WordPress plugins
       """
 
     When I run `wp plugin list --format=json`
-    And STDOUT should not be empty
+    Then STDOUT should not be empty
