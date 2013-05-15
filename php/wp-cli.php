@@ -10,6 +10,7 @@ include WP_CLI_ROOT . 'dispatcher.php';
 include WP_CLI_ROOT . 'class-wp-cli.php';
 include WP_CLI_ROOT . 'class-wp-cli-command.php';
 include WP_CLI_ROOT . 'man.php';
+include WP_CLI_ROOT . 'package.php';
 
 \WP_CLI\Utils\load_dependencies();
 

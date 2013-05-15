@@ -391,4 +391,3 @@ function run_mysql_command( $cmd, $arg_str, $pass ) {
 
 	if ( $r ) exit( $r );
 }
-

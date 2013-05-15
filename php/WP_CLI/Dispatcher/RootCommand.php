@@ -123,6 +123,14 @@ EOB
 
 			include "$cmd_dir/$filename";
 		}
+
+		$this->load_package_commands();
+	}
+
+	private function load_package_commands() {
+		$package_autoload = WP_CLI_ROOT . 'packages/vendor/autoload.php';
+		if ( file_exists( $package_autoload ) )
+			require_once $package_autoload;
 	}
 
 	protected static function get_command_file( $command ) {

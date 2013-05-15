@@ -61,5 +61,13 @@ return array(
 		'default' => false,
 		'desc' => 'Suppress informational messages',
 	),
+
+	'package_directory_remote' => array(
+		'default' => 'https://github.com/danielbachhuber/wp-cli-package-directory.git',
+	),
+
+	'package_directory_local' => array(
+		'default' => dirname( __FILE__ ) . "/packages/",
+	),
 );
 
