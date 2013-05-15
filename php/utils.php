@@ -28,7 +28,6 @@ function load_dependencies() {
 	}
 
 	include WP_CLI_ROOT . 'Spyc.php';
-	include WP_CLI_ROOT . 'WP_CLI/Package.php';
 }
 
 function get_config_spec() {
