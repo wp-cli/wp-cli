@@ -125,18 +125,12 @@ EOB
 		}
 
 		$this->load_package_commands();
-
 	}
 
-	protected function load_package_commands() {
-
-		if ( \is_wp_error( $packages ) )
-			return;
-
-		$package_autoload = \WP_CLI_ROOT . 'packages/vendor/autoload.php';
+	private function load_package_commands() {
+		$package_autoload = WP_CLI_ROOT . 'packages/vendor/autoload.php';
 		if ( file_exists( $package_autoload ) )
 			require_once $package_autoload;
-
 	}
 
 	protected static function get_command_file( $command ) {
