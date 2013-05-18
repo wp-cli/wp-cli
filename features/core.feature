@@ -1,5 +1,6 @@
 Feature: Manage WordPress installation
 
+  @download
   Scenario: Empty dir
     Given an empty directory
 
@@ -7,6 +8,12 @@ Feature: Manage WordPress installation
     Then the return code should be 1
 
     When I run `wp core download --quiet`
+    Then the wp-settings.php file should exist
+
+  @download
+  Scenario: Localized install
+    Given an empty directory
+    When I run `wp core download --locale=de_DE`
     Then the wp-settings.php file should exist
 
   Scenario: No wp-config.php
