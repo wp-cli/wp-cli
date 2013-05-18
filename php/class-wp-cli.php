@@ -169,7 +169,7 @@ class WP_CLI {
 	 * @param array $assoc_args
 	 */
 	static function read_value( $value, $assoc_args = array() ) {
-		if ( isset( $assoc_args['json'] ) ) {
+		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
 			$value = json_decode( $value, true );
 		}
 
@@ -183,7 +183,7 @@ class WP_CLI {
 	 * @param array $assoc_args
 	 */
 	static function print_value( $value, $assoc_args = array() ) {
-		if ( isset( $assoc_args['json'] ) ) {
+		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
 			$value = json_encode( $value );
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
 			$value = var_export( $value );
