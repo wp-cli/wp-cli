@@ -24,10 +24,10 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		if ( isset( $assoc_args['locale'] ) ) {
-			exec( 'curl -s ' . escapeshellarg( 'https://api.wordpress.org/core/version-check/1.5/?locale=' . $assoc_args['locale'] ), $lines, $r );
-			if ($r) exit($r);
-			$download_url = str_replace( '.zip', '.tar.gz', $lines[2] );
-			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $lines[3], $lines[4] ) );
+			$offer = $this->get_download_offer( $assoc_args['locale'] );
+			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
+			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...',
+				$offer['current'], $offer['locale'] ) );
 		} elseif ( isset( $assoc_args['version'] ) ) {
 			$download_url = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.tar.gz';
 			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
@@ -42,6 +42,14 @@ class Core_Command extends WP_CLI_Command {
 		WP_CLI::launch( Utils\esc_cmd( $cmd, $download_url, ABSPATH ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
+	}
+
+	private function get_download_offer( $locale ) {
+		$out = exec( 'curl -s ' . escapeshellarg( 'https://api.wordpress.org/core/version-check/1.6/?locale=' . $locale ), $lines, $r );
+		if ($r) exit($r);
+
+		$out = unserialize( $out );
+		return $out['offers'][0];
 	}
 
 	/**
