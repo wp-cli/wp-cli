@@ -93,7 +93,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function get( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
-			'format' => 'content'
+			'format' => 'table'
 		) );
 		$format = $assoc_args['format'];
 

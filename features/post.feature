@@ -32,12 +32,6 @@ Feature: Manage WordPress posts
     Then STDOUT should match '%d'
     And save STDOUT as {POST_ID}
 
-    When I run `wp post get {POST_ID}`
-    Then STDOUT should be:
-      """
-      Test content.
-      """
-
     When I run `wp post get --format=content {POST_ID}`
     Then STDOUT should be:
       """
