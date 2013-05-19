@@ -21,6 +21,12 @@ Feature: Get help about WP-CLI commands
       WP-CORE-DOWNLOAD(1)
       """
 
+    When I run `wp help --help`
+    Then STDOUT should contain:
+      """
+      WP-HELP(1)
+      """
+
     When I try `wp help non-existent-command`
     Then the return code should be 1
     And STDERR should not be empty
