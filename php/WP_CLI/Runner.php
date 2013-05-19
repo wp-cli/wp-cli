@@ -210,11 +210,8 @@ class Runner {
 		return false;
 	}
 
-	public function before_wp_load() {
-		$r = Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
-
-		list( $this->arguments, $this->assoc_args ) = $r;
-
+	// Transparently convert old syntaxes
+	private function back_compat_conversions() {
 		// foo --help  ->  help foo
 		if ( isset( $this->assoc_args['help'] ) ) {
 			array_unshift( $this->arguments, 'help' );
@@ -238,6 +235,20 @@ class Runner {
 			$this->assoc_args['format'] = 'ids';
 			unset( $this->assoc_args['ids'] );
 		}
+
+		// --json  ->  --format=json
+		if ( isset( $this->assoc_args['json'] ) ) {
+			$this->assoc_args['format'] = 'json';
+			unset( $this->assoc_args['json'] );
+		}
+	}
+
+	public function before_wp_load() {
+		$r = Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
+
+		list( $this->arguments, $this->assoc_args ) = $r;
+
+		$this->back_compat_conversions();
 
 		$config_spec = Utils\get_config_spec();
 

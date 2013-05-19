@@ -40,7 +40,7 @@ class WP_CLI {
 		$reflection = new \ReflectionClass( $class );
 
 		if ( $reflection->hasMethod( '__invoke' ) ) {
-			$command = new Dispatcher\Subcommand( self::$root,
+			$command = new Dispatcher\Subcommand( self::$root, $reflection->name,
 				$reflection->getMethod( '__invoke' ), $name );
 		} else {
 			$command = self::create_composite_command( $name, $reflection );
@@ -58,7 +58,7 @@ class WP_CLI {
 			if ( !self::_is_good_method( $method ) )
 				continue;
 
-			$subcommand = new Dispatcher\Subcommand( $container, $method );
+			$subcommand = new Dispatcher\Subcommand( $container, $reflection->name, $method );
 
 			$subcommand_name = $subcommand->get_name();
 			$full_name = self::get_full_name( $subcommand );
@@ -169,7 +169,7 @@ class WP_CLI {
 	 * @param array $assoc_args
 	 */
 	static function read_value( $value, $assoc_args = array() ) {
-		if ( isset( $assoc_args['json'] ) ) {
+		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
 			$value = json_decode( $value, true );
 		}
 
@@ -183,7 +183,7 @@ class WP_CLI {
 	 * @param array $assoc_args
 	 */
 	static function print_value( $value, $assoc_args = array() ) {
-		if ( isset( $assoc_args['json'] ) ) {
+		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
 			$value = json_encode( $value );
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
 			$value = var_export( $value );

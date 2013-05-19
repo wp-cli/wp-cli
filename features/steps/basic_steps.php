@@ -215,21 +215,18 @@ $steps->Then( '/^STDOUT should be a table containing rows:$/',
 
 $steps->Then( '/^STDOUT should be JSON containing:$/',
 	function ( $world, PyStringNode $expected ) {
-		$output     = $world->result->STDOUT;
+		$output = $world->result->STDOUT;
+		$expected = $world->replace_variables( (string) $expected );
 
-		$expected     = $world->replace_variables( (string) $expected );
-
-		if ( !checkThatJsonStringContainsJsonString( $output,
-		                                             $expected ) ) {
+		if ( !checkThatJsonStringContainsJsonString( $output, $expected ) ) {
 			throw new \Exception( $output );
 		}
 });
 
 $steps->Then( '/^STDOUT should be CSV containing:$/',
 	function( $world, PyStringNode $expected ) {
-
-		$output        = $world->result->STDOUT;
-		$expected      = $world->replace_variables( (string) $expected );
+		$output = $world->result->STDOUT;
+		$expected = $world->replace_variables( (string) $expected );
 
 		if ( ! checkThatCsvStringContainsCsvString( $output, $expected ) )
 			throw new \Exception( $output );
