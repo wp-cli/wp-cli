@@ -273,25 +273,25 @@ class Runner {
 
 		// Handle --version parameter
 		if ( isset( $this->assoc_args['version'] ) && empty( $this->arguments ) ) {
-			\WP_CLI\InternalAssoc::version();
+			\WP_CLI\InternalFlags::version();
 			exit;
 		}
 
 		// Handle --info parameter
 		if ( isset( $this->assoc_args['info'] ) && empty( $this->arguments ) ) {
-			\WP_CLI\InternalAssoc::info();
+			\WP_CLI\InternalFlags::info();
 			exit;
 		}
 
 		// Handle --param-dump parameter
 		if ( isset( $this->assoc_args['param-dump'] ) ) {
-			\WP_CLI\InternalAssoc::param_dump();
+			\WP_CLI\InternalFlags::param_dump();
 			exit;
 		}
 
 		// Handle --cmd-dump parameter
 		if ( isset( $this->assoc_args['cmd-dump'] ) ) {
-			\WP_CLI\InternalAssoc::cmd_dump();
+			\WP_CLI\InternalFlags::cmd_dump();
 			exit;
 		}
 
@@ -304,7 +304,7 @@ class Runner {
 			}
 		}
 
-		// Handle --path
+		// Handle --path parameter
 		self::set_wp_root( $this->config );
 
 		// Handle --url and --blog parameters
@@ -358,13 +358,15 @@ class Runner {
 		if ( isset( $this->config['require'] ) )
 			require $this->config['require'];
 
+		// Handle --man parameter
 		if ( isset( $this->assoc_args['man'] ) ) {
-			\WP_CLI\InternalAssoc::man( $this->arguments );
+			\WP_CLI\InternalFlags::man( $this->arguments );
 			exit;
 		}
 
+		// Handle --completions parameter
 		if ( isset( $this->assoc_args['completions'] ) ) {
-			\WP_CLI\InternalAssoc::completions();
+			\WP_CLI\InternalFlags::completions();
 			exit;
 		}
 

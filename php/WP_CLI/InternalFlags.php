@@ -6,7 +6,7 @@ use \WP_CLI;
 /**
  * Class that handles special assoc parameters
  */
-class InternalAssoc {
+class InternalFlags {
 
 	static function version() {
 		WP_CLI::line( 'wp-cli ' . WP_CLI_VERSION );
