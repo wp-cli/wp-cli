@@ -10,15 +10,21 @@ class Help_Command extends WP_CLI_Command {
 	 * @synopsis [<command>]
 	 */
 	function __invoke( $args ) {
-		\WP_CLI\Man\maybe_show_manpage( $args );
+		if ( \WP_CLI\Man\maybe_show_manpage( $args ) ) {
+			exit;
+		}
 
 		$command = WP_CLI\Utils\find_subcommand( $args );
 
-		if ( !$command ) {
-			\WP_CLI::error( sprintf( "'%s' is not a registered wp command.", $args[0] ) );
+		if ( $command ) {
+			$command->show_usage();
+			exit;
 		}
 
-		$command->show_usage();
+		// WordPress is already loaded, so there's no chance we'll find the command
+		if ( function_exists( 'add_filter' ) ) {
+			\WP_CLI::error( sprintf( "'%s' is not a registered wp command.", $args[0] ) );
+		}
 	}
 }
 
