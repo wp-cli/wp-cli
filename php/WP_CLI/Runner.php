@@ -239,7 +239,7 @@ class Runner {
 		// --json  ->  --format=json
 		if ( isset( $this->assoc_args['json'] ) ) {
 			$this->assoc_args['format'] = 'json';
-			unset( $this->assoc_args['ids'] );
+			unset( $this->assoc_args['json'] );
 		}
 	}
 
