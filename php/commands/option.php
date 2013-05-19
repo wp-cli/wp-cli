@@ -10,7 +10,7 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Get an option.
 	 *
-	 * @synopsis <key> [--json]
+	 * @synopsis <key> [--format=<format>]
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $key ) = $args;
@@ -26,7 +26,7 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Add an option.
 	 *
-	 * @synopsis <key> <value> [--json]
+	 * @synopsis <key> [--format=<format>]
 	 */
 	public function add( $args, $assoc_args ) {
 		$key = $args[0];
@@ -42,7 +42,7 @@ class Option_Command extends WP_CLI_Command {
 	 * Update an option.
 	 *
 	 * @alias set
-	 * @synopsis <key> <value> [--json]
+	 * @synopsis <key> [--format=<format>]
 	 */
 	public function update( $args, $assoc_args ) {
 		$key = $args[0];

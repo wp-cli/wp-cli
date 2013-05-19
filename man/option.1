@@ -7,13 +7,13 @@
 \fBwp\-option\fR \- Manage WordPress options\.
 .
 .SH "SYNOPSIS"
-wp option get \fIkey\fR [\-\-json]
+wp option get \fIkey\fR [\-\-format=\fIformat\fR]
 .
 .P
-wp option add \fIkey\fR \fIvalue\fR [\-\-json]
+wp option add \fIkey\fR [\-\-format=\fIformat\fR]
 .
 .P
-wp option update \fIkey\fR \fIvalue\fR [\-\-json]
+wp option update \fIkey\fR [\-\-format=\fIformat\fR]
 .
 .P
 wp option delete \fIkey\fR
@@ -48,7 +48,7 @@ Update an option\.
 
 .
 .TP
-\fB\-\-json\fR:
+\fB\-\-format=json\fR:
 .
 .IP
 Encode/decode values as JSON\.
@@ -61,7 +61,7 @@ wp option get siteurl
 
 wp option add my_option foobar
 
-wp option update my_option \'{"foo": "bar"}\' \-\-json
+wp option update my_option \'{"foo": "bar"}\' \-\-format=json
 
 wp option delete my_option
 .

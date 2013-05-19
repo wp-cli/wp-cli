@@ -7,16 +7,16 @@
 \fBwp\-post\-meta\fR \- Manage post custom fields\.
 .
 .SH "SYNOPSIS"
-wp post\-meta get \fIid\fR \fIkey\fR [\-\-json]
+wp post\-meta get \fIid\fR \fIkey\fR [\-\-format=\fIformat\fR]
 .
 .P
 wp post\-meta delete \fIid\fR \fIkey\fR
 .
 .P
-wp post\-meta add \fIid\fR \fIkey\fR \fIvalue\fR
+wp post\-meta add \fIid\fR \fIkey\fR \fIvalue\fR [\-\-format=\fIformat\fR]
 .
 .P
-wp post\-meta update \fIid\fR \fIkey\fR \fIvalue\fR
+wp post\-meta update \fIid\fR \fIkey\fR \fIvalue\fR [\-\-format=\fIformat\fR]
 .
 .SH "SUBCOMMANDS"
 .
@@ -48,7 +48,7 @@ Update a meta field\.
 
 .
 .TP
-\fB\-\-json\fR:
+\fB\-\-format=json\fR:
 .
 .IP
 Encode/decode values as JSON\.

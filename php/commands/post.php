@@ -104,7 +104,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		switch ( $assoc_args['format'] ) {
 
 		case 'content':
-			echo($post->post_content);
+			WP_CLI::print_value( $post->post_content );
 			break;
 
 		case 'table':
@@ -127,8 +127,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			break;
 
 		case 'json':
-			echo( json_encode( $post ) );
-			echo( "\n" );
+			WP_CLI::print_value( $post, $assoc_args );
 			break;
 
 		default:
