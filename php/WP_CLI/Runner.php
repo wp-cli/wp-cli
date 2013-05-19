@@ -163,6 +163,12 @@ class Runner {
 	}
 
 	private function _run_command() {
+		// Handle --man parameter
+		if ( isset( $this->assoc_args['man'] ) ) {
+			\WP_CLI\InternalFlags::man( $this->arguments );
+			exit;
+		}
+
 		WP_CLI::run_command( $this->arguments, $this->assoc_args );
 	}
 
@@ -194,20 +200,6 @@ class Runner {
 		}
 
 		return preg_replace( '|^\s*\<\?php\s*|', '', implode( "\n", $lines_to_run ) );
-	}
-
-	private static function show_help_early( $args ) {
-		if ( \WP_CLI\Man\maybe_show_manpage( $args ) )
-			return true;
-
-		$command = WP_CLI\Utils\find_subcommand( $args );
-
-		if ( $command ) {
-			$command->show_usage();
-			return true;
-		}
-
-		return false;
 	}
 
 	// Transparently convert old syntaxes
@@ -273,25 +265,25 @@ class Runner {
 
 		// Handle --version parameter
 		if ( isset( $this->assoc_args['version'] ) && empty( $this->arguments ) ) {
-			\WP_CLI\InternalAssoc::version();
+			\WP_CLI\InternalFlags::version();
 			exit;
 		}
 
 		// Handle --info parameter
 		if ( isset( $this->assoc_args['info'] ) && empty( $this->arguments ) ) {
-			\WP_CLI\InternalAssoc::info();
+			\WP_CLI\InternalFlags::info();
 			exit;
 		}
 
 		// Handle --param-dump parameter
 		if ( isset( $this->assoc_args['param-dump'] ) ) {
-			\WP_CLI\InternalAssoc::param_dump();
+			\WP_CLI\InternalFlags::param_dump();
 			exit;
 		}
 
 		// Handle --cmd-dump parameter
 		if ( isset( $this->assoc_args['cmd-dump'] ) ) {
-			\WP_CLI\InternalAssoc::cmd_dump();
+			\WP_CLI\InternalFlags::cmd_dump();
 			exit;
 		}
 
@@ -299,12 +291,10 @@ class Runner {
 
 		// First try at showing man page
 		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
-			if ( self::show_help_early( array_slice( $this->arguments, 1 ) ) ) {
-				exit;
-			}
+			$this->_run_command();
 		}
 
-		// Handle --path
+		// Handle --path parameter
 		self::set_wp_root( $this->config );
 
 		// Handle --url and --blog parameters
@@ -358,13 +348,9 @@ class Runner {
 		if ( isset( $this->config['require'] ) )
 			require $this->config['require'];
 
-		if ( isset( $this->assoc_args['man'] ) ) {
-			\WP_CLI\InternalAssoc::man( $this->arguments );
-			exit;
-		}
-
+		// Handle --completions parameter
 		if ( isset( $this->assoc_args['completions'] ) ) {
-			\WP_CLI\InternalAssoc::completions();
+			\WP_CLI\InternalFlags::completions();
 			exit;
 		}
 
