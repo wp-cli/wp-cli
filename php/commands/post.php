@@ -13,7 +13,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		'ID',
 		'post_title',
 		'post_name',
-		'post_date'
+		'post_date',
+		'post_status'
 	);
 
 	/**
