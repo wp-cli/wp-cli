@@ -202,20 +202,6 @@ class Runner {
 		return preg_replace( '|^\s*\<\?php\s*|', '', implode( "\n", $lines_to_run ) );
 	}
 
-	private static function show_help_early( $args ) {
-		if ( \WP_CLI\Man\maybe_show_manpage( $args ) )
-			return true;
-
-		$command = WP_CLI\Utils\find_subcommand( $args );
-
-		if ( $command ) {
-			$command->show_usage();
-			return true;
-		}
-
-		return false;
-	}
-
 	// Transparently convert old syntaxes
 	private function back_compat_conversions() {
 		// foo --help  ->  help foo
@@ -305,9 +291,7 @@ class Runner {
 
 		// First try at showing man page
 		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
-			if ( self::show_help_early( array_slice( $this->arguments, 1 ) ) ) {
-				exit;
-			}
+			$this->_run_command();
 		}
 
 		// Handle --path parameter
