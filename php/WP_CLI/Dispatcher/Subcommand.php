@@ -4,9 +4,10 @@ namespace WP_CLI\Dispatcher;
 
 class Subcommand implements Command, AtomicCommand, Documentable {
 
-	private $parent, $name, $method, $docparser;
+	private $parent, $name, $class, $method, $docparser;
 
-	function __construct( CommandContainer $parent, \ReflectionMethod $method, $name = false ) {
+	function __construct( CommandContainer $parent, $class, \ReflectionMethod $method, $name = false ) {
+		$this->class = $class;
 		$docparser = new \WP_CLI\DocParser( $method );
 
 		if ( !$name )
@@ -99,7 +100,7 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 	function invoke( $args, $assoc_args ) {
 		$this->validate_args( $args, $assoc_args );
 
-		$instance = new $this->method->class;
+		$instance = new $this->class;
 
 		call_user_func( array( $instance, $this->method->name ), $args, $assoc_args );
 	}
