@@ -69,6 +69,18 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	/**
+	 * @AfterScenario
+	 */
+	public function afterScenario( $event ) {
+		if ( !$this->install_dir )
+			return;
+
+		if ( $event->getResult() < 4 ) {
+			Process::create( Utils\esc_cmd( 'rm -r %s', $this->install_dir ) )->run();
+		}
+	}
+
+	/**
 	 * Initializes context.
 	 * Every scenario gets it's own context object.
 	 *
