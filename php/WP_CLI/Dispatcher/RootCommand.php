@@ -73,11 +73,6 @@ EOB
 	}
 
 	function pre_invoke( &$args ) {
-		if ( array( 'help' ) == $args ) {
-			$this->show_usage();
-			exit;
-		}
-
 		$cmd_name = $args[0];
 
 		$command = $this->find_subcommand( $args );

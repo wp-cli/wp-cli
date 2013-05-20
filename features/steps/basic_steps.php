@@ -23,7 +23,9 @@ $steps->Given( '/^an empty directory$/',
 $steps->Given( '/^a ([^\s]+) file:$/',
 	function ( $world, $path, PyStringNode $content ) {
 		$content = (string) $content . "\n";
-		file_put_contents( $world->get_path( $path ), $content );
+		$full_path = $world->get_path( $path );
+		Process::create( \WP_CLI\utils\esc_cmd( 'mkdir -p %s', dirname( $full_path ) ) )->run_check();
+		file_put_contents( $full_path, $content );
 	}
 );
 
