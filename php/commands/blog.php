@@ -279,7 +279,7 @@ class MS_Blog_Command extends Blog_Command {
 }
 
 $command_class = 'Blog_Command';
-if ( function_exists( 'is_multisite' ) && is_multisite() )
+if ( !function_exists( 'is_multisite' ) || is_multisite() )
 	$command_class = 'MS_Blog_Command';
 
 WP_CLI::add_command( 'blog', $command_class );

@@ -51,3 +51,11 @@ Feature: Get help about WP-CLI commands
       """
       usage: wp test-help
       """
+
+  Scenario: Generating help
+    Given an empty directory
+    When I run `wp help --gen blog create`
+    Then STDOUT should be:
+      """
+      generated blog-create.1
+      """
