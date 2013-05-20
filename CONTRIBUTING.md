@@ -16,11 +16,7 @@ The compiled man page is placed in the `man` directory.
 
 To (re)generate one or more man pages, you first need to have the [ronn](https://rubygems.org/gems/ronn) ruby gem installed.
 
-Then, you can run one of the following:
-
-* `wp --man` - regenerates all man pages
-* `wp core --man` - regenerates man pages for the `core` command
-* `wp core download --man` - regenerates man page only for the `core download` subcommand
+Then, you can use the `wp help --gen` command.
 
 Running the tests
 -----------------
