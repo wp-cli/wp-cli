@@ -49,10 +49,7 @@ Feature: Manage WordPress themes
 
   Scenario: Upgrading a theme
     Given a WP install
-    And a P2 theme zip
-
-    When I run `wp theme install {THEME_ZIP}`
-    Then STDOUT should not be empty
+    And I run `wp theme install p2 --version=1.0.1`
 
     When I run `wp theme status`
     Then STDOUT should contain:

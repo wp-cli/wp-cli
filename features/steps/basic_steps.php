@@ -84,18 +84,6 @@ $steps->Given( '/^a custom wp-content directory$/',
 	}
 );
 
-$steps->Given( '/^a P2 theme zip$/',
-	function ( $world ) {
-		$zip_name = 'p2.1.0.1.zip';
-
-		$world->variables['THEME_ZIP'] = $world->get_cache_path( $zip_name );
-
-		$zip_url = 'http://wordpress.org/extend/themes/download/' . $zip_name;
-
-		$world->download_file( $zip_url, $world->variables['THEME_ZIP'] );
-	}
-);
-
 $steps->Given( '/^a large image file$/',
 	function ( $world ) {
 		$image_file = 'http://wordpresswallpaper.com/wp-content/gallery/photo-based-wallpaper/1058.jpg';
