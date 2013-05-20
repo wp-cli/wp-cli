@@ -163,12 +163,6 @@ class Runner {
 	}
 
 	private function _run_command() {
-		// Handle --man parameter
-		if ( isset( $this->assoc_args['man'] ) ) {
-			\WP_CLI\InternalFlags::man( $this->arguments );
-			exit;
-		}
-
 		WP_CLI::run_command( $this->arguments, $this->assoc_args );
 	}
 
