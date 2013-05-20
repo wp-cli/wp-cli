@@ -47,6 +47,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			} else {
 				$line = '  ';
 			}
+
 			$line .= $this->format_status( $details['status'], 'short' );
 			$line .= " " . str_pad( $details['name'], $padding ). "%n";
 			if ( !empty( $details['version'] ) ) {
@@ -65,11 +66,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$max_len = 0;
 
 		foreach ( $items as $details ) {
-	    $len = strlen( $details['name'] );
+			$len = strlen( $details['name'] );
 
-	    if ( $len > $max_len ) {
-        $max_len = $len;
-	    }
+			if ( $len > $max_len ) {
+				$max_len = $len;
+			}
 		}
 
 		return $max_len;
@@ -95,11 +96,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	function install( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			\WP_CLI::line( "usage: wp $this->item_type install <slug>" );
-			exit;
-		}
-
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
@@ -235,7 +231,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				} else if ( $value === false) {
 					$value = "none";
 				}
-				
+
 				$object->{$field} = $value;
 			}
 			$objects[] = $object;
