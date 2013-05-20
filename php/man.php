@@ -16,8 +16,8 @@ function generate( $src_dir, $dest_dir, $command ) {
 	$cmd_path = Dispatcher\get_path( $command );
 	array_shift( $cmd_path ); // discard 'wp'
 
-	$src_path = $src_dir . get_src_file_name( $cmd_path );
-	$dest_path = $dest_dir . get_file_name( $cmd_path );
+	$src_path = "$src_dir/" . get_src_file_name( $cmd_path );
+	$dest_path = "$dest_dir/" . get_file_name( $cmd_path );
 
 	call_ronn( get_markdown( $src_path, $command ), $dest_path );
 
@@ -134,7 +134,7 @@ function maybe_show_manpage( $args ) {
 	$man_file = get_file_name( $args );
 
 	foreach ( \WP_CLI::get_man_dirs() as $dest_dir => $_ ) {
-		$man_path = $dest_dir . $man_file;
+		$man_path = "$dest_dir/" . $man_file;
 
 		if ( is_readable( $man_path ) ) {
 			show_manpage( $man_path );
