@@ -41,16 +41,17 @@ class Help_Command extends WP_CLI_Command {
 
 		$command = WP_CLI\Utils\find_subcommand( $args );
 
-		if ( !$command ) {
-			WP_CLI::error( sprintf( "'%s' command not found.",
-				implode( ' ', $arg_copy ) ) );
+		if ( $command ) {
+			foreach ( WP_CLI::get_man_dirs() as $dest_dir => $src_dir ) {
+				WP_CLI\Man\generate( $src_dir, $dest_dir, $command );
+			}
+			exit;
 		}
 
-		foreach ( WP_CLI::get_man_dirs() as $dest_dir => $src_dir ) {
-			WP_CLI\Man\generate( $src_dir, $dest_dir, $command );
+		// WordPress is already loaded, so there's no chance we'll find the command
+		if ( function_exists( 'add_filter' ) ) {
+			WP_CLI::error( sprintf( "'%s' command not found.", implode( ' ', $arg_copy ) ) );
 		}
-
-		exit;
 	}
 }
 

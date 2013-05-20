@@ -33,7 +33,13 @@ Feature: Get help about WP-CLI commands
 
   Scenario: Getting help for a third-party command
     Given a WP install
-    And a wp-content/plugins/test-cli-help.php file:
+    And a wp-content/plugins/test-cli/test-help.txt file:
+      """
+      ## EXAMPLES
+
+          wp test-help
+      """
+    And a wp-content/plugins/test-cli/command.php file:
       """
       <?php
       // Plugin Name: Test CLI Help
@@ -43,8 +49,10 @@ Feature: Get help about WP-CLI commands
       }
 
       WP_CLI::add_command( 'test-help', 'Test_Help' );
+
+      WP_CLI::add_man_dir( __DIR__, __DIR__ );
       """
-    And I run `wp plugin activate test-cli-help`
+    And I run `wp plugin activate test-cli`
 
     When I run `wp help test-help`
     Then STDOUT should contain:
@@ -52,7 +60,19 @@ Feature: Get help about WP-CLI commands
       usage: wp test-help
       """
 
-  Scenario: Generating help
+    When I run `wp help --gen test-help`
+    Then STDOUT should contain:
+      """
+      generated test-help.1
+      """
+
+    When I run `wp help test-help`
+    Then STDOUT should contain:
+      """
+      WP-TEST-HELP(1)
+      """
+
+  Scenario: Generating help for multisite-only subcommands
     Given an empty directory
     When I run `wp help --gen blog create`
     Then STDOUT should be:
