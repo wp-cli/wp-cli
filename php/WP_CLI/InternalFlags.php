@@ -55,27 +55,5 @@ class InternalFlags {
 			WP_CLI::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
 		}
 	}
-
-	static function man( $args ) {
-		if ( '' === exec( 'which ronn' ) ) {
-			WP_CLI::error( '`ronn` executable not found.' );
-		}
-
-		$arg_copy = $args;
-
-		$command = WP_CLI::$root;
-
-		while ( !empty( $args ) && $command && $command instanceof Dispatcher\CommandContainer ) {
-			$command = $command->find_subcommand( $args );
-		}
-
-		if ( !$command )
-			WP_CLI::error( sprintf( "'%s' command not found.",
-				implode( ' ', $arg_copy ) ) );
-
-		foreach ( WP_CLI::get_man_dirs() as $dest_dir => $src_dir ) {
-			WP_CLI\Man\generate( $src_dir, $dest_dir, $command );
-		}
-	}
 }
 
