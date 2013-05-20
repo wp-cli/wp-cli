@@ -10,6 +10,10 @@ It will correctly handle serialized values.
 
 	Show report, but don't perform the changes.
 
+* `--skip-guids`:
+
+	Do not perform the replacement in columns named 'guid'. Use to preserve existing GUID values when changing domain names.
+
 ## EXAMPLES
 
 	wp search-replace 'http://example.dev' 'http://example.com' --dry-run

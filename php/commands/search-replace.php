@@ -10,7 +10,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	/**
 	 * Search/replace strings in the database.
 	 *
-	 * @synopsis <old> <new> [<table>...] [--dry-run]
+	 * @synopsis <old> <new> [<table>...] [--dry-run] [--skip-guids]
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		global $wpdb;
@@ -30,10 +30,15 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		$dry_run = isset( $assoc_args['dry-run'] );
 
+		$skip_guids = isset( $assoc_args['skip-guids'] );
+
 		foreach ( $tables as $table ) {
 			list( $primary_key, $columns ) = self::get_columns( $table );
 
 			foreach ( $columns as $col ) {
+				if ( $skip_guids && 'guid' === $col )
+					continue;
+
 				$count = self::handle_col( $col, $primary_key, $table, $old, $new,
 					 $dry_run );
 
