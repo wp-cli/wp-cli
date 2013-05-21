@@ -7,13 +7,13 @@
 \fBwp\-search\-replace\fR \- Search/replace strings in the database\.
 .
 .SH "SYNOPSIS"
-wp search\-replace \fIold\fR \fInew\fR [\fItable\fR\.\.\.] [\-\-dry\-run] [\-\-skip\-guids]
+wp search\-replace \fIold\fR \fInew\fR [\fItable\fR\.\.\.] [\-\-dry\-run] [\-\-skip\-columns=\fIcolumns\fR]
 .
 .SH "DESCRIPTION"
 This command will go through all rows in all tables and will replace all appearances of the old string with the new one\.
 .
 .P
-It will correctly handle serialized values\.
+It will correctly handle serialized values, and will not change primary key values\.
 .
 .SH "OPTIONS"
 .
@@ -24,16 +24,16 @@ It will correctly handle serialized values\.
 Show report, but don\'t perform the changes\.
 .
 .TP
-\fB\-\-skip\-guids\fR:
+\fB\-\-skip\-columns=<columns>\fR:
 .
 .IP
-Do not perform the replacement in columns named \'guid\'\. Use to preserve existing GUID values when changing domain names\.
+Do not perform the replacement in the comma\-separated columns\. Useful to preserve existing guid column values when changing domain names\.
 .
 .SH "EXAMPLES"
 .
 .nf
 
-wp search\-replace \'http://example\.dev\' \'http://example\.com\' \-\-dry\-run
+wp search\-replace \'http://example\.dev\' \'http://example\.com\' \-\-dry\-run \-\-skip\-columns=guid
 
 wp search\-replace \'foo\' \'bar\' wp_posts wp_postmeta wp_terms
 .

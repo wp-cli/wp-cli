@@ -2,7 +2,7 @@
 
 This command will go through all rows in all tables and will replace all appearances of the old string with the new one.
 
-It will correctly handle serialized values.
+It will correctly handle serialized values, and will not change primary key values.
 
 ## OPTIONS
 
@@ -10,12 +10,12 @@ It will correctly handle serialized values.
 
 	Show report, but don't perform the changes.
 
-* `--skip-guids`:
+* `--skip-columns=<columns>`:
 
-	Do not perform the replacement in columns named 'guid'. Use to preserve existing GUID values when changing domain names.
+	Do not perform the replacement in the comma-separated columns. Useful to preserve existing guid column values when changing domain names.
 
 ## EXAMPLES
 
-	wp search-replace 'http://example.dev' 'http://example.com' --dry-run
+	wp search-replace 'http://example.dev' 'http://example.com' --dry-run --skip-columns=guid
 
 	wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms
