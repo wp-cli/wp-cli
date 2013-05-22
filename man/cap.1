@@ -37,21 +37,16 @@ Remove capabilities from a given role\.
 .
 .SH "EXAMPLES"
 .
-.IP
+.nf
+
 # Add \'spectate\' capability to \'author\' role
-.
-.br
 wp cap add \'author\' \'spectate\'
-.
-.IP
+
 # Add all caps from \'editor\' role to \'author\' role
-.
-.br
 wp cap list \'editor\' | xargs wp cap add \'author\'
-.
-.IP
+
 # Remove all caps from \'editor\' role that also appear in \'author\' role
-.
-.br
 wp cap list \'author\' | xargs wp cap remove \'editor\'
+.
+.fi
 
