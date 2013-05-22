@@ -10,7 +10,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	/**
 	 * Search/replace strings in the database.
 	 *
-	 * @synopsis <old> <new> [<table>...] [--dry-run] [--skip-columns=<columns>]
+	 * @synopsis <old> <new> [<table>...] [--skip-columns=<columns>] [--dry-run]
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		global $wpdb;
