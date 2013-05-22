@@ -1,6 +1,6 @@
 Feature: Get help about WP-CLI commands
 
-  Scenario: Empty dir
+  Scenario: Help for internal commands
     Given an empty directory
 
     When I run `wp help`
@@ -31,7 +31,23 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should not be empty
 
-  Scenario: Getting help for a third-party command
+  Scenario: Generating help for subcommands
+    Given an empty directory
+    When I run `wp help --gen option`
+    Then STDOUT should be:
+      """
+      generated option.1
+      """
+
+  Scenario: Generating help for multisite-only subcommands
+    Given an empty directory
+    When I run `wp help --gen blog create`
+    Then STDOUT should be:
+      """
+      generated blog-create.1
+      """
+
+  Scenario: Help for third-party commands
     Given a WP install
     And a wp-content/plugins/test-cli/test-help.txt file:
       """
@@ -70,12 +86,4 @@ Feature: Get help about WP-CLI commands
     Then STDOUT should contain:
       """
       WP-TEST-HELP(1)
-      """
-
-  Scenario: Generating help for multisite-only subcommands
-    Given an empty directory
-    When I run `wp help --gen blog create`
-    Then STDOUT should be:
-      """
-      generated blog-create.1
       """

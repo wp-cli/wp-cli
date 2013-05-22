@@ -392,3 +392,11 @@ function run_mysql_command( $cmd, $arg_str, $pass ) {
 	if ( $r ) exit( $r );
 }
 
+function mustache_render( $template_name, $data ) {
+	$template = file_get_contents( WP_CLI_ROOT . "../templates/$template_name" );
+
+	$m = new \Mustache_Engine;
+
+	return $m->render( $template, $data );
+}
+
