@@ -1,0 +1,37 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WP\-CORE\-UPDATE" "1" "" "WP-CLI"
+.
+.SH "NAME"
+\fBwp\-core\-update\fR \- Update WordPress\.
+.
+.SH "SYNOPSIS"
+wp core update [\fIzip\fR] [\-\-version=\fIversion\fR] [\-\-force]
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-\-version=\fR\fInew_version\fR [package/zip]:
+.
+.IP
+When passed, updates to new_version, optionally using package/zip as input\.
+.
+.TP
+\fB\-\-force\fR:
+.
+.IP
+Will update even when current WP version < passed version\. Use with caution\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp core update
+
+wp core update \-\-version=3\.4 \.\./latest\.zip
+
+wp core update \-\-version=3\.1 \-\-force
+.
+.fi
+
