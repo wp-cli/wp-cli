@@ -54,7 +54,6 @@ Feature: Wordpress code scaffolding
       __( 'Zombie speeds', 'zombieland'
       """
   
-  # Test for multiple post types
   @tax 
   Scenario: Scaffold a Custom Taxonomy and attach it to multiple post types
     Given a WP install
