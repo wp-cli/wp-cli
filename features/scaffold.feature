@@ -53,6 +53,17 @@ Feature: Wordpress code scaffolding
       """
       __( 'Zombie speeds', 'zombieland'
       """
+  
+  # Test for multiple post types
+  @tax 
+  Scenario: Scaffold a Custom Taxonomy and attach it to multiple post types
+    Given a WP install
+
+    When I run `wp scaffold taxonomy perambulation-speed --post_types="zombie,wraith" --textdomain=zombieland`
+	 Then STDOUT should contain:
+	 	"""
+		array( 'zombie', 'wraith' )
+		"""
 
   @tax
   Scenario: Scaffold a Custom Taxonomy with label "Speed"

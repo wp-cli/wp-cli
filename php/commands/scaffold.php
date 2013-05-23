@@ -68,6 +68,8 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$vars['slug'] = $slug;
 
+		$vars['post_types'] = $this->quote_comma_list_elements( $vars['post_types'] );
+
 		$vars['textdomain'] = $this->get_textdomain( $vars['textdomain'], $control_args );
 
 		$vars['label'] = $control_args['label'];
@@ -351,6 +353,10 @@ class Scaffold_Command extends WP_CLI_Command {
 		}
 
 		return $out;
+	}
+
+	protected function quote_comma_list_elements( $comma_list ) {
+		return "'" . implode( "', '", explode( ',', $comma_list ) ) . "'";
 	}
 }
 
