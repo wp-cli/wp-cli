@@ -25,3 +25,7 @@ STDOUT.
 * `--raw`:
 
 	Just generate the `register_taxonomy()` call and nothing else.
+
+## EXAMPLES
+
+	wp scaffold taxonomy venue --post_types=event,presentation
