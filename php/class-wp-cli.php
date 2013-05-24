@@ -12,6 +12,8 @@ class WP_CLI {
 
 	public static $runner;
 
+	private static $logger;
+
 	private static $man_dirs = array();
 
 	/**
@@ -25,6 +27,15 @@ class WP_CLI {
 
 		self::$root = new Dispatcher\RootCommand;
 		self::$runner = new WP_CLI\Runner;
+	}
+
+	/**
+	 * Set the logger instance.
+	 *
+	 * @param object $logger
+	 */
+	static function set_logger( $logger ) {
+		self::$logger = $logger;
 	}
 
 	/**
@@ -92,24 +103,32 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display a message in the cli
-	 *
-	 * @param string $message
-	 */
-	static function out( $message, $handle = STDOUT ) {
-		if ( self::get_config('quiet') )
-			return;
-
-		fwrite( $handle, \cli\Colors::colorize( $message, self::get_config('color') ) );
-	}
-
-	/**
 	 * Display a message in the CLI and end with a newline
 	 *
 	 * @param string $message
 	 */
 	static function line( $message = '' ) {
-		self::out( $message . "\n" );
+		self::$logger->line( $message );
+	}
+
+	/**
+	 * Display a success in the CLI and end with a newline
+	 *
+	 * @param string $message
+	 * @param string $label
+	 */
+	static function success( $message, $label = 'Success' ) {
+		self::$logger->success( $message, $label );
+	}
+
+	/**
+	 * Display a warning in the CLI and end with a newline
+	 *
+	 * @param string $message
+	 * @param string $label
+	 */
+	static function warning( $message, $label = 'Warning' ) {
+		self::$logger->warning( self::error_to_string( $message ), $label );
 	}
 
 	/**
@@ -120,32 +139,10 @@ class WP_CLI {
 	 */
 	static function error( $message, $label = 'Error' ) {
 		if ( ! isset( self::$runner->assoc_args[ 'completions' ] ) ) {
-			$msg = '%R' . $label . ': %n' . self::error_to_string( $message ) . "\n";
-			fwrite( STDERR, \cli\Colors::colorize( $msg, self::get_config('color') ) );
+			self::$logger->error( self::error_to_string( $message ), $label );
 		}
 
 		exit(1);
-	}
-
-	/**
-	 * Display a success in the CLI and end with a newline
-	 *
-	 * @param string $message
-	 * @param string $label
-	 */
-	static function success( $message, $label = 'Success' ) {
-		self::line( '%G' . $label . ': %n' . $message );
-	}
-
-	/**
-	 * Display a warning in the CLI and end with a newline
-	 *
-	 * @param string $message
-	 * @param string $label
-	 */
-	static function warning( $message, $label = 'Warning' ) {
-		$msg = '%C' . $label . ': %n' . self::error_to_string( $message );
-		self::out( $msg . "\n", STDERR );
 	}
 
 	/**
@@ -153,7 +150,7 @@ class WP_CLI {
 	 */
 	static function confirm( $question, $assoc_args ) {
 		if ( !isset( $assoc_args['yes'] ) ) {
-			self::out( $question . " [y/n] " );
+			echo $question . " [y/n] ";
 
 			$answer = trim( fgets( STDIN ) );
 
@@ -199,11 +196,13 @@ class WP_CLI {
 	 * @return string
 	 */
 	static function error_to_string( $errors ) {
-		if( is_string( $errors ) ) {
+		if ( is_string( $errors ) ) {
 			return $errors;
-		} elseif( is_wp_error( $errors ) && $errors->get_error_code() ) {
-			foreach( $errors->get_error_messages() as $message ) {
-				if( $errors->get_error_data() )
+		}
+
+		if ( is_object( $errors ) && is_a( $errors, 'WP_Error' ) ) {
+			foreach ( $errors->get_error_messages() as $message ) {
+				if ( $errors->get_error_data() )
 					return $message . ' ' . $errors->get_error_data();
 				else
 					return $message;
@@ -266,6 +265,11 @@ class WP_CLI {
 		} else {
 			$command->invoke( $args, $assoc_args );
 		}
+	}
+
+	// back-compat
+	static function out( $str ) {
+		echo $str;
 	}
 
 	// back-compat
