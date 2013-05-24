@@ -229,6 +229,24 @@ class Runner {
 		}
 	}
 
+	private function init_logger() {
+		if ( isset( $this->assoc_args['no-color'] ) ) {
+			$color = false;
+			unset( $this->assoc_args['no-color'] );
+		} elseif ( 'auto' === $this->config['color'] ) {
+			$color = ! \cli\Shell::isPiped();
+		} else {
+			$color = $this->config['color'];
+		}
+
+		if ( $this->config['quiet'] )
+			$logger = new \WP_CLI\Loggers\Quiet( $color );
+		else
+			$logger = new \WP_CLI\Loggers\Regular( $color );
+
+		WP_CLI::set_logger( $logger );
+	}
+
 	public function before_wp_load() {
 		$r = Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
@@ -250,12 +268,7 @@ class Runner {
 
 		self::split_special( $this->assoc_args, $this->config, $config_spec );
 
-		if ( isset( $this->assoc_args['no-color'] ) ) {
-			$this->config['color'] = false;
-			unset( $this->assoc_args['no-color'] );
-		} elseif ( 'auto' === $this->config['color'] ) {
-			$this->config['color'] = ! \cli\Shell::isPiped();
-		}
+		$this->init_logger();
 
 		// Handle --version parameter
 		if ( isset( $this->assoc_args['version'] ) && empty( $this->arguments ) ) {
