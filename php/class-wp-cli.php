@@ -112,20 +112,6 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display an error in the CLI and end with a newline
-	 *
-	 * @param string $message
-	 * @param string $label
-	 */
-	static function error( $message, $label = 'Error' ) {
-		if ( ! isset( self::$runner->assoc_args[ 'completions' ] ) ) {
-			self::$logger->error( $message, $label );
-		}
-
-		exit(1);
-	}
-
-	/**
 	 * Display a success in the CLI and end with a newline
 	 *
 	 * @param string $message
@@ -142,7 +128,21 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function warning( $message, $label = 'Warning' ) {
-		self::$logger->warning( $message, $label );
+		self::$logger->warning( self::error_to_string( $message ), $label );
+	}
+
+	/**
+	 * Display an error in the CLI and end with a newline
+	 *
+	 * @param string $message
+	 * @param string $label
+	 */
+	static function error( $message, $label = 'Error' ) {
+		if ( ! isset( self::$runner->assoc_args[ 'completions' ] ) ) {
+			self::$logger->error( self::error_to_string( $message ), $label );
+		}
+
+		exit(1);
 	}
 
 	/**

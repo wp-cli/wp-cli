@@ -23,7 +23,7 @@ class Quiet {
 	}
 
 	function error( $message, $label ) {
-		$msg = '%R' . $label . ': %n' . \WP_CLI::error_to_string( $message );
+		$msg = '%R' . $label . ': %n' . $message;
 		fwrite( STDERR, \cli\Colors::colorize( $msg . "\n", $this->colorize ) );
 	}
 }

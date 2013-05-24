@@ -23,12 +23,12 @@ class Regular {
 	}
 
 	function warning( $message, $label ) {
-		$msg = '%C' . $label . ': %n' . \WP_CLI::error_to_string( $message );
+		$msg = '%C' . $label . ': %n' . $message;
 		$this->_line( $msg, STDERR );
 	}
 
 	function error( $message, $label ) {
-		$msg = '%R' . $label . ': %n' . \WP_CLI::error_to_string( $message );
+		$msg = '%R' . $label . ': %n' . $message;
 		$this->_line( $msg, STDERR );
 	}
 }
