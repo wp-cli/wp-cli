@@ -260,7 +260,7 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
  */
 function format_items( $format, $items, $fields ) {
 	if ( 'ids' == $format )
-		\WP_CLI::out( implode( ' ', $items ) );
+		echo implode( ' ', $items );
 
 	if ( ! is_array( $fields ) )
 		$fields = explode( ',', $fields );
