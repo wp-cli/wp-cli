@@ -10,8 +10,12 @@ class Regular {
 		$this->colorize = $colorize;
 	}
 
-	function line( $message, $handle = STDOUT ) {
+	private function _line( $message, $handle = STDOUT ) {
 		fwrite( $handle, \cli\Colors::colorize( $message . "\n", $this->colorize ) );
+	}
+
+	function line( $message ) {
+		$this->_line( $message );
 	}
 
 	function success( $message, $label ) {
@@ -20,12 +24,12 @@ class Regular {
 
 	function warning( $message, $label ) {
 		$msg = '%C' . $label . ': %n' . \WP_CLI::error_to_string( $message );
-		$this->line( $msg, STDERR );
+		$this->_line( $msg, STDERR );
 	}
 
 	function error( $message, $label ) {
 		$msg = '%R' . $label . ': %n' . \WP_CLI::error_to_string( $message );
-		$this->line( $msg, STDERR );
+		$this->_line( $msg, STDERR );
 	}
 }
 
