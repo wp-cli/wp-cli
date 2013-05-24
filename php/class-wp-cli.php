@@ -12,6 +12,8 @@ class WP_CLI {
 
 	public static $runner;
 
+	private static $logger;
+
 	private static $man_dirs = array();
 
 	/**
@@ -25,6 +27,15 @@ class WP_CLI {
 
 		self::$root = new Dispatcher\RootCommand;
 		self::$runner = new WP_CLI\Runner;
+	}
+
+	/**
+	 * Set the logger instance.
+	 *
+	 * @param object $logger
+	 */
+	static function set_logger( $logger ) {
+		self::$logger = $logger;
 	}
 
 	/**
@@ -92,24 +103,12 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display a message in the cli
-	 *
-	 * @param string $message
-	 */
-	static function out( $message, $handle = STDOUT ) {
-		if ( self::get_config('quiet') )
-			return;
-
-		fwrite( $handle, \cli\Colors::colorize( $message, self::get_config('color') ) );
-	}
-
-	/**
 	 * Display a message in the CLI and end with a newline
 	 *
 	 * @param string $message
 	 */
 	static function line( $message = '' ) {
-		self::out( $message . "\n" );
+		self::$logger->line( $message );
 	}
 
 	/**
@@ -120,8 +119,7 @@ class WP_CLI {
 	 */
 	static function error( $message, $label = 'Error' ) {
 		if ( ! isset( self::$runner->assoc_args[ 'completions' ] ) ) {
-			$msg = '%R' . $label . ': %n' . self::error_to_string( $message ) . "\n";
-			fwrite( STDERR, \cli\Colors::colorize( $msg, self::get_config('color') ) );
+			self::$logger->error( $message, $label );
 		}
 
 		exit(1);
@@ -134,7 +132,7 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function success( $message, $label = 'Success' ) {
-		self::line( '%G' . $label . ': %n' . $message );
+		self::$logger->success( $message, $label );
 	}
 
 	/**
@@ -144,8 +142,7 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function warning( $message, $label = 'Warning' ) {
-		$msg = '%C' . $label . ': %n' . self::error_to_string( $message );
-		self::out( $msg . "\n", STDERR );
+		self::$logger->warning( $message, $label );
 	}
 
 	/**
@@ -153,7 +150,7 @@ class WP_CLI {
 	 */
 	static function confirm( $question, $assoc_args ) {
 		if ( !isset( $assoc_args['yes'] ) ) {
-			self::out( $question . " [y/n] " );
+			echo $question . " [y/n] ";
 
 			$answer = trim( fgets( STDIN ) );
 
