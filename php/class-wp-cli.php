@@ -196,11 +196,13 @@ class WP_CLI {
 	 * @return string
 	 */
 	static function error_to_string( $errors ) {
-		if( is_string( $errors ) ) {
+		if ( is_string( $errors ) ) {
 			return $errors;
-		} elseif( is_wp_error( $errors ) && $errors->get_error_code() ) {
-			foreach( $errors->get_error_messages() as $message ) {
-				if( $errors->get_error_data() )
+		}
+
+		if ( is_object( $errors ) && is_a( $errors, 'WP_Error' ) ) {
+			foreach ( $errors->get_error_messages() as $message ) {
+				if ( $errors->get_error_data() )
 					return $message . ' ' . $errors->get_error_data();
 				else
 					return $message;
