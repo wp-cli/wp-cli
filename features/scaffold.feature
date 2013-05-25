@@ -37,23 +37,23 @@ Feature: Wordpress code scaffolding
 
   # Test for all flags but --label, --theme, --plugin and --raw
   @tax
-  Scenario: Scaffold a Custom Taxonomy and attach it to a CPT zombie that is prefixed and has a text domain
+  Scenario: Scaffold a Custom Taxonomy and attach it to CPTs including one that is prefixed and has a text domain
     Given a WP install
 
-    When I run `wp scaffold taxonomy zombie-speed --post_types="prefix-zombie" --textdomain=zombieland`
+    When I run `wp scaffold taxonomy zombie-speed --post_types="prefix-zombie,wraith" --textdomain=zombieland`
     Then STDOUT should contain:
       """
       __( 'Zombie speeds'
       """
     And STDOUT should contain:
       """
-      array( 'prefix-zombie' )
+      array( 'prefix-zombie', 'wraith' )
       """
     And STDOUT should contain:
       """
       __( 'Zombie speeds', 'zombieland'
       """
-
+  
   @tax
   Scenario: Scaffold a Custom Taxonomy with label "Speed"
     Given a WP install
