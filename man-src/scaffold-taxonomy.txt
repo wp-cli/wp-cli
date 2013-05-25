@@ -1,5 +1,9 @@
 ## OPTIONS
 
+* `--post_types=<post_types>`:
+
+	Post types to register for use with the taxonomy.
+
 * `--label=<label>`:
 
 	The text used to translate the update messages
@@ -21,3 +25,7 @@ STDOUT.
 * `--raw`:
 
 	Just generate the `register_taxonomy()` call and nothing else.
+
+## EXAMPLES
+
+	wp scaffold taxonomy venue --post_types=event,presentation
