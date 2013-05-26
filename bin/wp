@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 #
-# This script has been adapted from the drush wrapper script
+# This wrapper script has been adapted from the equivalent drush wrapper
 # and 99.9% of all credit should go to the authors of that project:
 # http://drupal.org/project/drush
 # And 0.09% to the author of this project:
