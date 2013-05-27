@@ -14,3 +14,15 @@ Feature: Do global search/replace
       """
       guid
       """
+
+  Scenario: Large search/replace
+    Given a WP install
+
+    And I run `wp post generate --count=1200`
+
+    And I run `wp search-replace $( wp option get siteurl ) testreplacement`
+    Then STDOUT should be a table containing rows:
+    """
+    Table	Column	Replacements
+    wp_posts	guid	1202
+    """
