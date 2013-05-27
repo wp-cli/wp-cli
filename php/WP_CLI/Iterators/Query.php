@@ -9,7 +9,7 @@ namespace WP_CLI\Iterators;
  */
 class Query implements \Iterator {
 
-	private $limit = 500;
+	private $chunk_size;
 	private $query = '';
 
 	private $global_index = 0;
@@ -30,17 +30,17 @@ class Query implements \Iterator {
 	 * </code>
 	 *
 	 * @param string $query The query as a string. It shouldn't include any LIMIT clauses
-	 * @param number $limit How many rows to retrieve at once; default value is 500 (optional)
+	 * @param number $chunk_size How many rows to retrieve at once; default value is 500 (optional)
 	 */
-	public function __construct( $query, $limit = 500 ) {
+	public function __construct( $query, $chunk_size = 500 ) {
 		$this->query = $query;
-		$this->limit = $limit;
+		$this->chunk_size = $chunk_size;
 
 		$this->db = $GLOBALS['wpdb'];
 	}
 
 	private function load_items_from_db() {
-		$query = $this->query . sprintf( ' LIMIT %d OFFSET %d', $this->limit, $this->offset );
+		$query = $this->query . sprintf( ' LIMIT %d OFFSET %d', $this->chunk_size, $this->offset );
 		$this->results = $this->db->get_results( $query );
 
 		if ( !$this->results ) {
@@ -51,7 +51,7 @@ class Query implements \Iterator {
 			}
 		}
 
-		$this->offset += $this->limit;
+		$this->offset += $this->chunk_size;
 		return true;
 	}
 
