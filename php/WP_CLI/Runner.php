@@ -197,36 +197,39 @@ class Runner {
 	}
 
 	// Transparently convert old syntaxes
-	private function back_compat_conversions() {
+	private static function back_compat_conversions( $r ) {
+		list( $args, $assoc_args ) = $r;
+
 		// foo --help  ->  help foo
-		if ( isset( $this->assoc_args['help'] ) ) {
-			array_unshift( $this->arguments, 'help' );
-			unset( $this->assoc_args['help'] );
+		if ( isset( $assoc_args['help'] ) ) {
+			array_unshift( $args, 'help' );
+			unset( $assoc_args['help'] );
 		}
 
 		// {plugin|theme} update --all  ->  {plugin|theme} update-all
-		if ( count( $this->arguments ) > 1 && in_array( $this->arguments[0], array( 'plugin', 'theme' ) )
-			&& $this->arguments[1] == 'update'
-			&& isset( $this->assoc_args['all'] )
+		if ( count( $args ) > 1 && in_array( $args[0], array( 'plugin', 'theme' ) )
+			&& $args[1] == 'update' && isset( $assoc_args['all'] )
 		) {
-			$this->arguments[1] = 'update-all';
-			unset( $this->assoc_args['all'] );
+			$args[1] = 'update-all';
+			unset( $assoc_args['all'] );
 		}
 
 		// {post|user} list --ids  ->  {post|user} list --format=ids
-		if ( count( $this->arguments ) > 1 && in_array( $this->arguments[0], array( 'post', 'user' ) )
-			&& $this->arguments[1] == 'list'
-			&& isset( $this->assoc_args['ids'] )
+		if ( count( $args ) > 1 && in_array( $args[0], array( 'post', 'user' ) )
+			&& $args[1] == 'list'
+			&& isset( $assoc_args['ids'] )
 		) {
-			$this->assoc_args['format'] = 'ids';
-			unset( $this->assoc_args['ids'] );
+			$assoc_args['format'] = 'ids';
+			unset( $assoc_args['ids'] );
 		}
 
 		// --json  ->  --format=json
-		if ( isset( $this->assoc_args['json'] ) ) {
-			$this->assoc_args['format'] = 'json';
-			unset( $this->assoc_args['json'] );
+		if ( isset( $assoc_args['json'] ) ) {
+			$assoc_args['format'] = 'json';
+			unset( $assoc_args['json'] );
 		}
+
+		return array( $args, $assoc_args );
 	}
 
 	private function init_logger() {
@@ -248,11 +251,8 @@ class Runner {
 	}
 
 	public function before_wp_load() {
-		$r = Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
-
-		list( $this->arguments, $this->assoc_args ) = $r;
-
-		$this->back_compat_conversions();
+		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
+			Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) ) );
 
 		$config_spec = Utils\get_config_spec();
 
