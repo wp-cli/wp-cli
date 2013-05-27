@@ -214,6 +214,11 @@ class Runner {
 			unset( $assoc_args['all'] );
 		}
 
+		// plugin scaffold  ->  scaffold plugin
+		if ( array( 'plugin', 'scaffold' ) == array_slice( $args, 0, 2 ) ) {
+			list( $args[0], $args[1] ) = array( $args[1], $args[0] );
+		}
+
 		// {post|user} list --ids  ->  {post|user} list --format=ids
 		if ( count( $args ) > 1 && in_array( $args[0], array( 'post', 'user' ) )
 			&& $args[1] == 'list'
