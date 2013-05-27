@@ -67,7 +67,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 			'table' => $table,
 			'fields' => array( $primary_key, $col ),
 			'where' => $col . ' LIKE "%' . like_escape( esc_sql( $old ) ) . '%"',
-			'limit' => 1000
+			'chunk_size' => 1000
 		);
 
 		$it = new \WP_CLI\Iterators\Table( $args );

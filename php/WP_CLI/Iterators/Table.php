@@ -44,6 +44,7 @@ class Table extends Query {
 			'fields' => array( '*' ),
 			'where' => array(),
 			'table' => null,
+			'chunk_size' => 500
 		);
 		$table = $args['table'];
 		$args = array_merge( $defaults, $args );
@@ -53,9 +54,7 @@ class Table extends Query {
 		$where_sql = $conditions? " WHERE $conditions" : '';
 		$query = "SELECT $fields FROM $table $where_sql";
 
-		$limit = isset( $args['limit'] ) ? $args['limit'] : 500;
-
-		parent::__construct( $query, $limit );
+		parent::__construct( $query, $args['chunk_size'] );
 	}
 
 	private static function build_fields( $fields ) {
