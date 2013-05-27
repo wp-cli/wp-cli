@@ -16,7 +16,7 @@ Feature: Wordpress code scaffolding
     And I run `wp plugin path`
     And save STDOUT as {PLUGIN_DIR}
 
-    When I run `wp scaffold plugin zombieland --plugin_name="Welcome to Zombieland" --activate`
+    When I run `wp plugin scaffold zombieland --plugin_name="Welcome to Zombieland" --activate`
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/zombieland/zombieland.php file should exist
 
