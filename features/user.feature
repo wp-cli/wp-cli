@@ -23,9 +23,7 @@ Feature: Manage WordPress users
     Given a WP install
 
     # Delete all users
-    When I run `wp user list --format=ids`
-    And save STDOUT as {USER_IDS}
-    And I run `wp user delete {USER_IDS}`
+    When I run `wp user delete $(wp user list --format=ids)`
     And I run `wp user list --format=ids`
     Then STDOUT should be empty
 
