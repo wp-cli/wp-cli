@@ -37,7 +37,7 @@ $steps->Given( '/^WP files$/',
 
 $steps->Given( '/^wp-config\.php$/',
 	function ( $world ) {
-		$world->proc( 'core config' )->run_check();
+		$world->proc( 'wp core config' )->run_check();
 	}
 );
 
@@ -62,7 +62,7 @@ $steps->Given( "/^a WP install in '([^\s]+)'$/",
 $steps->Given( '/^a WP multisite install$/',
 	function ( $world ) {
 		$world->wp_install();
-		$world->proc( 'core install-network' )->run_check();
+		$world->proc( 'wp core install-network' )->run_check();
 	}
 );
 
@@ -106,20 +106,14 @@ $steps->Given( '/^a large image file$/',
 	}
 );
 
-$steps->When( '/^I (run|try) `wp`$/',
-	function ( $world, $mode ) {
-		$world->result = invoke_proc( $world->proc( '' ), $mode );
-	}
-);
-
-$steps->When( '/^I (run|try) `wp (.+)`$/',
+$steps->When( '/^I (run|try) `([^`]+)`$/',
 	function ( $world, $mode, $cmd ) {
 		$cmd = $world->replace_variables( $cmd );
 		$world->result = invoke_proc( $world->proc( $cmd ), $mode );
 	}
 );
 
-$steps->When( "/^I (run|try) `wp (.+)` from '([^\s]+)'$/",
+$steps->When( "/^I (run|try) `([^`]+)` from '([^\s]+)'$/",
 	function ( $world, $mode, $cmd, $subdir ) {
 		$cmd = $world->replace_variables( $cmd );
 		$world->result = invoke_proc( $world->proc( $cmd ), $mode, $subdir );
@@ -141,7 +135,7 @@ $steps->When( '/^I try to import it$/',
 		if ( !isset( $world->variables['DOWNLOADED_IMAGE'] ) )
 			throw new \Exception( 'Cached image not available.' );
 
-		$world->result = $world->proc( 'media import ' . $world->variables['DOWNLOADED_IMAGE'] . ' --post_id=1 --featured_image' )->run();
+		$world->result = $world->proc( 'wp media import ' . $world->variables['DOWNLOADED_IMAGE'] . ' --post_id=1 --featured_image' )->run();
 	}
 );
 
