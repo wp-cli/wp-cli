@@ -63,31 +63,41 @@ class Search_Replace_Command extends WP_CLI_Command {
 	private static function handle_col( $col, $primary_key, $table, $old, $new, $dry_run ) {
 		global $wpdb;
 
-		$args = array(
-			'table' => $table,
-			'fields' => array( $primary_key, $col ),
-			'where' => $col . ' LIKE "%' . like_escape( esc_sql( $old ) ) . '%"',
-			'chunk_size' => 1000
-		);
+		if ( strpos( $new, $old ) !== false )
+			$new_contains_old = true;
+		else 
+			$new_contains_old = false;
 
-		$it = new \WP_CLI\Iterators\Table( $args );
+		$fields = $primary_key . ', ' . $col;
+		$conditions = $col . ' LIKE "%' . like_escape( esc_sql( $old ) ) . '%"';
+		$chunk_size = 1000;
+		$offset = 0;
+
+		$chunk_query = "SELECT $fields FROM $table WHERE $conditions LIMIT $chunk_size OFFSET $offset"; 
 
 		$count = 0;
 
-		foreach ( $it as $row ) {
-			if ( '' === $row->$col )
-				continue;
+		while ( $chunk = $wpdb->get_results( $chunk_query ) ) {
+			foreach ( $chunk as $row ) {
+				if ( '' === $row->$col )
+					continue;
 
-			$value = \WP_CLI\Utils\recursive_unserialize_replace( $old, $new, $row->$col );
+				$value = \WP_CLI\Utils\recursive_unserialize_replace( $old, $new, $row->$col );
 
-			if ( $dry_run ) {
-				if ( $value != $row->$col )
-					$count++;
-			} else {
-				$count += $wpdb->update( $table,
-					array( $col => $value ),
-					array( $primary_key => $row->$primary_key )
-				);
+				if ( $dry_run ) {
+					if ( $value != $row->$col )
+						$count++;
+				} else {
+					$count += $wpdb->update( $table,
+						array( $col => $value ),
+						array( $primary_key => $row->$primary_key )
+					);
+				}
+			}
+
+			if ( $new_contains_old ) {
+				$offset += $chunk_size;
+				$chunk_query = "SELECT $fields FROM $table WHERE $conditions LIMIT $chunk_size OFFSET $offset"; 
 			}
 		}
 
