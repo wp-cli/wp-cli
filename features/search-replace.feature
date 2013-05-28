@@ -22,13 +22,13 @@ Feature: Do global search/replace
    
     And save STDOUT as {SITEURL}
 
-    And I run `wp post generate --count=1200`
+    And I run `wp post generate --count=1000`
 
     And I run `wp search-replace {SITEURL} {SITEURL}/subdir`
     Then STDOUT should be a table containing rows:
     """
     Table	Column	Replacements
-    wp_posts	guid	1202
+    wp_posts	guid	1002
     """
   Scenario: Large guid search/replace where replacement does not contain search
     Given a WP install
@@ -37,11 +37,11 @@ Feature: Do global search/replace
 
     And save STDOUT as {SITEURL}
 
-    And I run `wp post generate --count=1200`
+    And I run `wp post generate --count=1000`
 
     And I run `wp search-replace {SITEURL} http://newdomain.com`
     Then STDOUT should be a table containing rows:
     """
     Table	Column	Replacements
-    wp_posts	guid	1202
+    wp_posts	guid	1002
     """
