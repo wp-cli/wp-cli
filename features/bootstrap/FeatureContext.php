@@ -31,7 +31,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public $variables = array();
 
 	private static function wp_cli( $command ) {
-		return __DIR__ . "/../../bin/wp $command";
+		return "wp $command";
 	}
 
 	// We cache the results of `wp core download` to improve test performance
