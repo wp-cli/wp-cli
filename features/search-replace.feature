@@ -15,22 +15,22 @@ Feature: Do global search/replace
       guid
       """
 
-  Scenario: Small guid search/replace
+  Scenario: Large guid search/replace where replacement contains search
     Given a WP install
 
     When I run `wp option get siteurl`
    
     And save STDOUT as {SITEURL}
 
-    And I run `wp post generate --count=100`
+    And I run `wp post generate --count=1200`
 
-    And I run `wp search-replace {SITEURL} testreplacement`
+    And I run `wp search-replace {SITEURL} {SITEURL}/subdir`
     Then STDOUT should be a table containing rows:
     """
     Table	Column	Replacements
-    wp_posts	guid	102
+    wp_posts	guid	1202
     """
-  Scenario: Large guid search/replace
+  Scenario: Large guid search/replace where replacement does not contain search
     Given a WP install
 
     When I run `wp option get siteurl`
@@ -39,7 +39,7 @@ Feature: Do global search/replace
 
     And I run `wp post generate --count=1200`
 
-    And I run `wp search-replace {SITEURL} testreplacement`
+    And I run `wp search-replace {SITEURL} http://newdomain.com`
     Then STDOUT should be a table containing rows:
     """
     Table	Column	Replacements
