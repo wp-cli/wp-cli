@@ -15,12 +15,31 @@ Feature: Do global search/replace
       guid
       """
 
-  Scenario: Large search/replace
+  Scenario: Small guid search/replace
     Given a WP install
+
+    When I run `wp option get siteurl`
+   
+    And save STDOUT as {SITEURL}
+
+    And I run `wp post generate --count=100`
+
+    And I run `wp search-replace {SITEURL} testreplacement`
+    Then STDOUT should be a table containing rows:
+    """
+    Table	Column	Replacements
+    wp_posts	guid	102
+    """
+  Scenario: Large guid search/replace
+    Given a WP install
+
+    When I run `wp option get siteurl`
+
+    And save STDOUT as {SITEURL}
 
     And I run `wp post generate --count=1200`
 
-    And I run `wp search-replace $( wp option get siteurl ) testreplacement`
+    And I run `wp search-replace {SITEURL} testreplacement`
     Then STDOUT should be a table containing rows:
     """
     Table	Column	Replacements
