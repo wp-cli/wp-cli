@@ -4,4 +4,8 @@ set -ex
 
 vendor/bin/phpunit
 
-vendor/bin/behat --format progress
+if [ -z "$WITH_RONN" ]; then
+	BEHAT_OPTS="--tags ~@ronn"
+fi
+
+vendor/bin/behat --format progress $BEHAT_OPTS

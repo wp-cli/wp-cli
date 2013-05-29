@@ -7,7 +7,10 @@ set -ex
 # install dependencies
 composer install --dev --no-interaction --prefer-source
 composer require d11wtq/boris=dev-master --no-interaction --prefer-source
-gem install ronn
+
+if [ -n "$WITH_RONN" ]; then
+	gem install ronn
+fi
 
 # set up WP install
 ./bin/wp core download --version=$WP_VERSION --path=/tmp/wp-cli-test-core-download-cache/
