@@ -26,10 +26,9 @@ Feature: Do global search/replace
 
     And I run `wp search-replace {SITEURL} {SITEURL}/subdir`
     Then STDOUT should be a table containing rows:
-    """
-    Table	Column	Replacements
-    wp_posts	guid	1002
-    """
+      | Table    | Column | Replacements |
+      | wp_posts | guid   | 1002         |
+
   Scenario: Large guid search/replace where replacement does not contain search
     Given a WP install
 
@@ -41,10 +40,8 @@ Feature: Do global search/replace
 
     And I run `wp search-replace {SITEURL} http://newdomain.com`
     Then STDOUT should be a table containing rows:
-    """
-    Table	Column	Replacements
-    wp_posts	guid	1002
-    """
+      | Table    | Column | Replacements |
+      | wp_posts | guid   | 1002         |
 
   Scenario: Large guid search/replace dry run where replacement does not contain search
     Given a WP install
@@ -57,7 +54,5 @@ Feature: Do global search/replace
 
     And I run `wp search-replace --dry-run {SITEURL} http://newdomain.com`
     Then STDOUT should be a table containing rows:
-    """
-    Table	Column	Replacements
-    wp_posts	guid	1002
-    """
+      | Table    | Column | Replacements |
+      | wp_posts | guid   | 1002         |

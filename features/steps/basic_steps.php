@@ -165,12 +165,14 @@ $steps->Then( '/^(STDOUT|STDERR) should match \'([^\']+)\'$/',
 );
 
 $steps->Then( '/^STDOUT should be a table containing rows:$/',
-	function ( $world, PyStringNode $expected ) {
+	function ( $world, TableNode $expected ) {
 		$output     = $world->result->STDOUT;
 		$outputRows = explode( "\n", rtrim( $output, "\n" ) );
 
-		$expected     = $world->replace_variables( (string) $expected );
-		$expectedRows = explode( "\n", rtrim( $expected, "\n" ) );
+		$expectedRows = array();
+		foreach ( $expected->getRows() as $row ) {
+			$expectedRows[] = $world->replace_variables( implode( "\t", $row ) );
+		}
 
 		// the first row is the header and must be present
 		if ( $expectedRows[0] != $outputRows[0] ) {
