@@ -15,8 +15,8 @@ matrix:
 
 before_script: ./bin/ci/install_dependencies.sh
 
-script: vendor/bin/phpunit && vendor/bin/behat --format progress
-
+script: ./bin/ci/run_build.sh
+    
 notifications:
     email:
         on_success: never
