@@ -31,6 +31,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should not be empty
 
+  @ronn
   Scenario: Generating help for subcommands
     Given an empty directory
     When I run `wp help --gen option`
@@ -39,6 +40,7 @@ Feature: Get help about WP-CLI commands
       generated option.1
       """
 
+  @ronn
   Scenario: Generating help for multisite-only subcommands
     Given an empty directory
     When I run `wp help --gen blog create`
@@ -47,6 +49,7 @@ Feature: Get help about WP-CLI commands
       generated blog-create.1
       """
 
+  @ronn
   Scenario: Help for third-party commands
     Given a WP install
     And a wp-content/plugins/test-cli/test-help.txt file:
