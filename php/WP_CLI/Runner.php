@@ -299,7 +299,7 @@ class Runner {
 			exit;
 		}
 
-		$_SERVER['DOCUMENT_ROOT'] = realpath( $this->config['path'] );
+		$_SERVER['DOCUMENT_ROOT'] = $this->config['path'];
 
 		// First try at showing man page
 		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
