@@ -1,7 +1,6 @@
 <?php
 
-use Behat\Behat\Exception\PendingException,
-    Behat\Gherkin\Node\PyStringNode,
+use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
 
 function invoke_proc( $proc, $mode, $subdir = null ) {
@@ -153,31 +152,9 @@ $steps->Then( '/^the return code should be (\d+)$/',
 
 $steps->Then( '/^(STDOUT|STDERR) should (be|contain|not contain):$/',
 	function ( $world, $stream, $action, PyStringNode $expected ) {
-		$output = $world->result->$stream;
-
 		$expected = $world->replace_variables( (string) $expected );
 
-		switch ( $action ) {
-
-		case 'be':
-			$r = $expected === rtrim( $output, "\n" );
-			break;
-
-		case 'contain':
-			$r = false !== strpos( $output, $expected );
-			break;
-
-		case 'not contain':
-			$r = false === strpos( $output, $expected );
-			break;
-
-		default:
-			throw new PendingException();
-		}
-
-		if ( !$r ) {
-			throw new \Exception( $output );
-		}
+		checkString( $world->result->$stream, $expected, $action );
 	}
 );
 
@@ -243,8 +220,8 @@ $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 	}
 );
 
-$steps->Then( '/^the (.+) file should exist$/',
-	function ( $world, $path ) {
+$steps->Then( '/^the (.+) file should (exist|be:|contain:|not contain:)$/',
+	function ( $world, $path, $action, $expected = null ) {
 		$path = $world->replace_variables( $path );
 
 		// If it's a relative path, make it relative to the current test dir
@@ -252,6 +229,12 @@ $steps->Then( '/^the (.+) file should exist$/',
 			$path = $world->get_path( $path );
 
 		assertFileExists( $path );
+
+		if ( 'exist' !== $action ) {
+			$action = substr( $action, 0, -1 );
+			$expected = $world->replace_variables( (string) $expected );
+			checkString( file_get_contents( $path ), $expected, $action );
+		}
 	}
 );
 

@@ -2,6 +2,30 @@
 
 // Utility functions used by Behat steps
 
+function checkString( $output, $expected, $action ) {
+	switch ( $action ) {
+
+	case 'be':
+		$r = $expected === rtrim( $output, "\n" );
+		break;
+
+	case 'contain':
+		$r = false !== strpos( $output, $expected );
+		break;
+
+	case 'not contain':
+		$r = false === strpos( $output, $expected );
+		break;
+
+	default:
+		throw new Behat\Behat\Exception\PendingException();
+	}
+
+	if ( !$r ) {
+		throw new Exception( $output );
+	}
+}
+
 function compareContents( $expected, $actual ) {
 	if ( gettype( $expected ) != gettype( $actual ) ) {
 		return false;
