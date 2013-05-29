@@ -28,12 +28,9 @@ class Process {
 		);
 
 		// Ensure we're using the expected `wp` binary
-		$env = sprintf( 'function wp() { %s "$@"; }; %s',
-			realpath( __DIR__ . "/../../bin/wp" ), $this->command );
-
-		$wrapper = sprintf( 'bash -c %s', escapeshellarg( $env ) );
-
-		$proc = proc_open( $wrapper, $descriptors, $pipes, $cwd );
+		$proc = proc_open( $this->command, $descriptors, $pipes, $cwd, array(
+			'PATH' => realpath( __DIR__ . "/../../bin" ) . ':' . getenv( 'PATH' )
+		) );
 
 		$STDOUT = stream_get_contents( $pipes[1] );
 		fclose( $pipes[1] );
