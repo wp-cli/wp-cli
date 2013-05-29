@@ -1,11 +1,19 @@
 Contribute
 ==========
 
-So you've got an awesome idea to throw into WP-CLI. Great! Please keep the following in mind:
+So you've got an awesome idea to throw into WP-CLI. Great! Here's the process, in a nutshell:
 
-* The best way to get feedback is by opening an issue or a pull request; if you think the code shouldn't be merged yet, just say so.
-* If you're adding a new command or subcommand, please consider adding a functional test for it in the `features` directory. Also, please create the appropriate `.txt` file in the `man-src` directory.
-* Please follow the [WordPress Coding Standards](http://make.wordpress.org/core/handbook/coding-standards/).
+1. [Fork](https://github.com/wp-cli/wp-cli/fork) the repository.
+2. Make the code changes in your fork.
+3. Open a pull request.
+
+It doesn't matter if the code isn't perfect. The idea is to get feedback early and iterate.
+
+If you're adding a new feature, please add one or more functional tests for it in the `features` directory. See below.
+
+Also, please create or update the appropriate `.txt` file in the `man-src` directory. See below.
+
+Lastly, please follow the [WordPress Coding Standards](http://make.wordpress.org/core/handbook/coding-standards/).
 
 Generating man pages
 --------------------
