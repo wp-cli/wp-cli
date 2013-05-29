@@ -153,9 +153,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function proc( $command, $assoc_args = array() ) {
-		if ( isset( self::$additional_args[ $command ] ) ) {
-			$assoc_args = array_merge( self::$additional_args[ $command ],
-				$assoc_args );
+		foreach ( self::$additional_args as $start => $additional_args ) {
+			if ( 0 === strpos( $command, $start ) ) {
+				$assoc_args = array_merge( $additional_args, $assoc_args );
+				break;
+			}
 		}
 
 		if ( !empty( $assoc_args ) )
