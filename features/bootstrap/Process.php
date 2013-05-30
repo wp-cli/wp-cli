@@ -29,7 +29,8 @@ class Process {
 
 		// Ensure we're using the expected `wp` binary
 		$proc = proc_open( $this->command, $descriptors, $pipes, $cwd, array(
-			'PATH' => realpath( __DIR__ . "/../../bin" ) . ':' . getenv( 'PATH' )
+			'PATH' => realpath( __DIR__ . "/../../bin" ) . ':' . getenv( 'PATH' ),
+			'BEHAT_RUN' => 1
 		) );
 
 		$STDOUT = stream_get_contents( $pipes[1] );

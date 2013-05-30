@@ -63,11 +63,14 @@ class Search_Replace_Command extends WP_CLI_Command {
 	private static function handle_col( $col, $primary_key, $table, $old, $new, $dry_run ) {
 		global $wpdb;
 
+		// We don't want to have to generate thousands of rows when running the test suite
+		$chunk_size = getenv( 'BEHAT_RUN' ) ? 10 : 1000;
+
 		$args = array(
 			'table' => $table,
 			'fields' => array( $primary_key, $col ),
 			'where' => $col . ' LIKE "%' . like_escape( esc_sql( $old ) ) . '%"',
-			'chunk_size' => 1000
+			'chunk_size' => $chunk_size
 		);
 
 		$it = new \WP_CLI\Iterators\Table( $args );
