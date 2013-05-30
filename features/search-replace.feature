@@ -15,49 +15,19 @@ Feature: Do global search/replace
       guid
       """
 
-  Scenario: Large guid search/replace where replacement contains search
+  Scenario Outline: Large guid search/replace where replacement contains search (or not)
     Given a WP install
-
-    When I run `wp option get siteurl`
-   
+    And I run `wp option get siteurl`
     And save STDOUT as {SITEURL}
+    And I run `wp post generate --count=20`
 
-    And I run `wp post generate --count=1000`
-
-    And I run `wp search-replace {SITEURL} {SITEURL}/subdir`
+    When I run `wp search-replace <flags> {SITEURL} <replacement>`
     Then STDOUT should be a table containing rows:
-    """
-    Table	Column	Replacements
-    wp_posts	guid	1002
-    """
-  Scenario: Large guid search/replace where replacement does not contain search
-    Given a WP install
+      | Table    | Column | Replacements |
+      | wp_posts | guid   | 22           |
 
-    When I run `wp option get siteurl`
-
-    And save STDOUT as {SITEURL}
-
-    And I run `wp post generate --count=1000`
-
-    And I run `wp search-replace {SITEURL} http://newdomain.com`
-    Then STDOUT should be a table containing rows:
-    """
-    Table	Column	Replacements
-    wp_posts	guid	1002
-    """
-
-  Scenario: Large guid search/replace dry run where replacement does not contain search
-    Given a WP install
-
-    When I run `wp option get siteurl`
-
-    And save STDOUT as {SITEURL}
-
-    And I run `wp post generate --count=1000`
-
-    And I run `wp search-replace --dry-run {SITEURL} http://newdomain.com`
-    Then STDOUT should be a table containing rows:
-    """
-    Table	Column	Replacements
-    wp_posts	guid	1002
-    """
+    Examples:
+      | replacement          | flags     |
+      | {SITEURL}/subdir     |           |
+      | http://newdomain.com |           |
+      | http://newdomain.com | --dry-run |
