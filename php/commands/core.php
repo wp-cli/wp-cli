@@ -62,23 +62,30 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--extra-php]
 	 */
-	public function config( $args, $assoc_args ) {
+	public function config( $_, $assoc_args ) {
 		if ( Utils\locate_wp_config() ) {
 			WP_CLI::error( "The 'wp-config.php' file already exists." );
 		}
 
+		$defaults = array(
+			'dbhost' => 'localhost',
+			'dbprefix' => 'wp_'
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		if ( preg_match( '|[^a-z0-9_]|i', $assoc_args['dbprefix'] ) )
+			WP_CLI::error( '--dbprefix can only contain numbers, letters, and underscores.' );
+
+		// Check DB connection
+		Utils\run_mysql_query( ';', array(
+			'host' => $assoc_args['dbhost'],
+			'user' => $assoc_args['dbuser'],
+			'pass' => $assoc_args['dbpass'],
+		) );
+
 		if ( isset( $assoc_args['extra-php'] ) ) {
 			$assoc_args['extra-php'] = file_get_contents( 'php://stdin' );
 		}
-
-		if ( isset( $assoc_args['dbprefix'] ) ) {
-			if ( preg_match( '|[^a-z0-9_]|i', $assoc_args['dbprefix'] ) )
-				WP_CLI::error( '--dbprefix can only contain numbers, letters, and underscores.' );
-		} else {
-			$assoc_args['dbprefix'] = 'wp_';
-		}
-
-		// TODO: check db connection
 
 		// TODO: adapt more resilient code from wp-admin/setup-config.php
 		$assoc_args['keys-and-salts'] = self::_download(
