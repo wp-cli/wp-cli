@@ -19,3 +19,18 @@
 * `--dbprefix`=<dbprefix>:
 
 	Set the database table prefix. Default: 'wp_'
+
+* `--extra-php`:
+
+	If set, the command reads additional PHP code from STDIN.
+
+## EXAMPLES
+
+# Standard wp-config.php file:
+wp core config --dbname=testing --dbuser=wp --dbpass=securepswd
+
+# Enable WP_DEBUG and WP_DEBUG_LOG
+wp core config --dbname=testing --dbuser=wp --dbpass=securepswd --extra-php <<PHP
+define( 'WP_DEBUG', true );
+define( 'WP_DEBUG_LOG', true );
+PHP

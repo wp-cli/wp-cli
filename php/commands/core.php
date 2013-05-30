@@ -44,31 +44,49 @@ class Core_Command extends WP_CLI_Command {
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
-	private function get_download_offer( $locale ) {
-		$out = exec( 'curl -s ' . escapeshellarg( 'https://api.wordpress.org/core/version-check/1.6/?locale=' . $locale ), $lines, $r );
-		if ($r) exit($r);
+	private static function _download( $url ) {
+		exec( 'curl -s ' . escapeshellarg( $url ), $lines, $r );
+		if ( $r ) exit( $r );
+		return implode( "\n", $lines );
+	}
 
-		$out = unserialize( $out );
+	private function get_download_offer( $locale ) {
+		$out = unserialize( self::_download(
+			'https://api.wordpress.org/core/version-check/1.6/?locale=' . $locale ) );
+
 		return $out['offers'][0];
 	}
 
 	/**
 	 * Set up a wp-config.php file.
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>]
+	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--extra-php]
 	 */
 	public function config( $args, $assoc_args ) {
-		$_POST['dbname'] = $assoc_args['dbname'];
-		$_POST['uname'] = $assoc_args['dbuser'];
-		$_POST['pwd'] = isset( $assoc_args['dbpass'] ) ? $assoc_args['dbpass'] : '';
-		$_POST['dbhost'] = isset( $assoc_args['dbhost'] ) ? $assoc_args['dbhost'] : 'localhost';
-		$_POST['prefix'] = isset( $assoc_args['dbprefix'] ) ? $assoc_args['dbprefix'] : 'wp_';
+		// TODO: check if wp-config.php already exists
 
-		$_GET['step'] = 2;
+		if ( isset( $assoc_args['extra-php'] ) ) {
+			$assoc_args['extra-php'] = file_get_contents( 'php://stdin' );
+		}
 
-		if ( WP_CLI::get_config('quiet') ) ob_start();
-		require ABSPATH . '/wp-admin/setup-config.php';
-		if ( WP_CLI::get_config('quiet') ) ob_end_clean();
+		if ( isset( $assoc_args['dbprefix'] ) ) {
+			if ( preg_match( '|[^a-z0-9_]|i', $assoc_args['dbprefix'] ) )
+				WP_CLI::error( '--dbprefix can only contain numbers, letters, and underscores.' );
+		} else {
+			$assoc_args['dbprefix'] = 'wp_';
+		}
+
+		// TODO: check db connection
+
+		// TODO: adapt more resilient code from wp-admin/setup-config.php
+		$assoc_args['keys-and-salts'] = self::_download(
+			'https://api.wordpress.org/secret-key/1.1/salt/' );
+
+		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
+
+		file_put_contents( ABSPATH . 'wp-config.php', $out );
+
+		WP_CLI::success( 'Generated wp-config.php file.' );
 	}
 
 	/**
