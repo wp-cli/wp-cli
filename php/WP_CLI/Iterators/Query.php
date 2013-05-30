@@ -11,10 +11,12 @@ class Query implements \Iterator {
 
 	private $chunk_size;
 	private $query = '';
+	private $count_query = '';
 
 	private $global_index = 0;
 	private $index_in_results = 0;
 	private $results = array();
+	private $row_count = 0;
 	private $offset = 0;
 	private $db = null;
 	private $depleted = false;
@@ -34,12 +36,38 @@ class Query implements \Iterator {
 	 */
 	public function __construct( $query, $chunk_size = 500 ) {
 		$this->query = $query;
+		
+		$this->count_query = preg_replace( '/^.*? FROM /', 'SELECT COUNT(*) FROM ', $query, 1, $replacements );
+		if ( $replacements != 1 )
+			$this->count_query = '';
+
 		$this->chunk_size = $chunk_size;
 
 		$this->db = $GLOBALS['wpdb'];
 	}
 
+	/**
+	 * Reduces the offset when the query row count shrinks
+	 * 
+	 * In cases where the iterated rows are being updated such that they will no 
+	 * longer be returned by the original query, the offset must be reduced to
+	 * iterate over all remaining rows.
+	 */
+	private function adjust_offset_for_shrinking_result_set() {
+		if ( empty( $this->count_query ) )
+			return;
+
+		$row_count = $this->db->get_var( $this->count_query );
+
+		if ( $row_count < $this->row_count )
+			$this->offset -= $this->row_count - $row_count;
+
+		$this->row_count = $row_count;
+	}
+
 	private function load_items_from_db() {
+		$this->adjust_offset_for_shrinking_result_set();
+
 		$query = $this->query . sprintf( ' LIMIT %d OFFSET %d', $this->chunk_size, $this->offset );
 		$this->results = $this->db->get_results( $query );
 
