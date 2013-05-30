@@ -180,8 +180,8 @@ function locate_wp_config() {
 	if ( null === $path ) {
 		if ( file_exists( ABSPATH . 'wp-config.php' ) )
 			$path = ABSPATH . 'wp-config.php';
-		elseif ( file_exists( ABSPATH . '../wp-config.php' ) && ! file_exists( ABSPATH . '/../wp-settings.php' ) )
-			$path = ABSPATH . '../wp-config.php';
+		elseif ( file_exists( dirname(ABSPATH) . '/wp-config.php' ) && ! file_exists( dirname(ABSPATH) . '/wp-settings.php' ) )
+			$path = dirname(ABSPATH) . '/wp-config.php';
 		else
 			$path = false;
 
