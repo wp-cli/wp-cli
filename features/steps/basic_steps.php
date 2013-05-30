@@ -199,11 +199,17 @@ $steps->Then( '/^STDOUT should be JSON containing:$/',
 });
 
 $steps->Then( '/^STDOUT should be CSV containing:$/',
-	function( $world, PyStringNode $expected ) {
+	function( $world, TableNode $expected ) {
 		$output = $world->result->STDOUT;
-		$expected = $world->replace_variables( (string) $expected );
 
-		if ( ! checkThatCsvStringContainsCsvString( $output, $expected ) )
+		$expectedRows = $expected->getRows();
+		foreach ( $expected as &$row ) {
+			foreach ( $row as &$value ) {
+				$value = $world->replace_variables( $value );
+			}
+		}
+
+		if ( ! checkThatCsvStringContainsValues( $output, $expectedRows ) )
 			throw new \Exception( $output );
 	}
 );

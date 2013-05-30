@@ -61,8 +61,6 @@ Feature: Manage WordPress posts
 
     When I run `wp post list --post_type='post' --fields=post_title,post_name,post_status --format=csv`
     Then STDOUT should be CSV containing:
-      """
-      post_title,post_name,post_status
-      "Publish post",publish-post,publish
-      "Draft post",,draft
-      """
+      | post_title   | post_name    | post_status  |
+      | Publish post | publish-post | publish      |
+      | Draft post   |              | draft        |
