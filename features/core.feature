@@ -45,6 +45,10 @@ Feature: Manage WordPress installation
       define( 'WP_DEBUG_LOG', true );
       """
 
+    When I try the previous command again
+    Then the return code should be 1
+    And STDERR should not be empty
+
   Scenario: Database doesn't exist
     Given an empty directory
     And WP files

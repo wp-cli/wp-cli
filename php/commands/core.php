@@ -63,7 +63,9 @@ class Core_Command extends WP_CLI_Command {
 	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--extra-php]
 	 */
 	public function config( $args, $assoc_args ) {
-		// TODO: check if wp-config.php already exists
+		if ( Utils\locate_wp_config() ) {
+			WP_CLI::error( "The 'wp-config.php' file already exists." );
+		}
 
 		if ( isset( $assoc_args['extra-php'] ) ) {
 			$assoc_args['extra-php'] = file_get_contents( 'php://stdin' );
