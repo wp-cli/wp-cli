@@ -7,7 +7,7 @@
 \fBwp\-core\-config\fR \- Set up a wp\-config\.php file\.
 .
 .SH "SYNOPSIS"
-wp core config \-\-dbname=\fIname\fR \-\-dbuser=\fIuser\fR [\-\-dbpass=\fIpassword\fR] [\-\-dbhost=\fIhost\fR] [\-\-dbprefix=\fIprefix\fR]
+wp core config \-\-dbname=\fIname\fR \-\-dbuser=\fIuser\fR [\-\-dbpass=\fIpassword\fR] [\-\-dbhost=\fIhost\fR] [\-\-dbprefix=\fIprefix\fR] [\-\-extra\-php]
 .
 .SH "OPTIONS"
 .
@@ -40,4 +40,25 @@ Set the database host\. Default: \'localhost\'
 .
 .IP
 Set the database table prefix\. Default: \'wp_\'
+.
+.TP
+\fB\-\-extra\-php\fR:
+.
+.IP
+If set, the command reads additional PHP code from STDIN\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+# Standard wp\-config\.php file
+wp core config \-\-dbname=testing \-\-dbuser=wp \-\-dbpass=securepswd
+
+# Enable WP_DEBUG and WP_DEBUG_LOG
+wp core config \-\-dbname=testing \-\-dbuser=wp \-\-dbpass=securepswd \-\-extra\-php <<PHP
+define( \'WP_DEBUG\', true );
+define( \'WP_DEBUG_LOG\', true );
+PHP
+.
+.fi
 
