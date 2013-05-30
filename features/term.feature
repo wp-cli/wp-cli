@@ -17,10 +17,8 @@ Feature: Manage WordPress terms
 
     When I run `wp term list post_tag --fields=name,slug --format=csv`
     Then STDOUT should be CSV containing:
-      """
-      name,slug
-      "Test term",test
-      """
+      | name      | slug |
+      | Test term | test |
 
   Scenario: Creating/deleting a term
     Given a WP install
