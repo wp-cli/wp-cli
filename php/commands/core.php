@@ -44,31 +44,58 @@ class Core_Command extends WP_CLI_Command {
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
-	private function get_download_offer( $locale ) {
-		$out = exec( 'curl -s ' . escapeshellarg( 'https://api.wordpress.org/core/version-check/1.6/?locale=' . $locale ), $lines, $r );
-		if ($r) exit($r);
+	private static function _download( $url ) {
+		exec( 'curl -s ' . escapeshellarg( $url ), $lines, $r );
+		if ( $r ) exit( $r );
+		return implode( "\n", $lines );
+	}
 
-		$out = unserialize( $out );
+	private function get_download_offer( $locale ) {
+		$out = unserialize( self::_download(
+			'https://api.wordpress.org/core/version-check/1.6/?locale=' . $locale ) );
+
 		return $out['offers'][0];
 	}
 
 	/**
 	 * Set up a wp-config.php file.
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>]
+	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--extra-php]
 	 */
-	public function config( $args, $assoc_args ) {
-		$_POST['dbname'] = $assoc_args['dbname'];
-		$_POST['uname'] = $assoc_args['dbuser'];
-		$_POST['pwd'] = isset( $assoc_args['dbpass'] ) ? $assoc_args['dbpass'] : '';
-		$_POST['dbhost'] = isset( $assoc_args['dbhost'] ) ? $assoc_args['dbhost'] : 'localhost';
-		$_POST['prefix'] = isset( $assoc_args['dbprefix'] ) ? $assoc_args['dbprefix'] : 'wp_';
+	public function config( $_, $assoc_args ) {
+		if ( Utils\locate_wp_config() ) {
+			WP_CLI::error( "The 'wp-config.php' file already exists." );
+		}
 
-		$_GET['step'] = 2;
+		$defaults = array(
+			'dbhost' => 'localhost',
+			'dbprefix' => 'wp_'
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		if ( WP_CLI::get_config('quiet') ) ob_start();
-		require ABSPATH . '/wp-admin/setup-config.php';
-		if ( WP_CLI::get_config('quiet') ) ob_end_clean();
+		if ( preg_match( '|[^a-z0-9_]|i', $assoc_args['dbprefix'] ) )
+			WP_CLI::error( '--dbprefix can only contain numbers, letters, and underscores.' );
+
+		// Check DB connection
+		Utils\run_mysql_query( ';', array(
+			'host' => $assoc_args['dbhost'],
+			'user' => $assoc_args['dbuser'],
+			'pass' => $assoc_args['dbpass'],
+		) );
+
+		if ( isset( $assoc_args['extra-php'] ) ) {
+			$assoc_args['extra-php'] = file_get_contents( 'php://stdin' );
+		}
+
+		// TODO: adapt more resilient code from wp-admin/setup-config.php
+		$assoc_args['keys-and-salts'] = self::_download(
+			'https://api.wordpress.org/secret-key/1.1/salt/' );
+
+		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
+
+		file_put_contents( ABSPATH . 'wp-config.php', $out );
+
+		WP_CLI::success( 'Generated wp-config.php file.' );
 	}
 
 	/**
