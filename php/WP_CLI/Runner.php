@@ -292,28 +292,15 @@ class Runner {
 
 		$this->init_logger();
 
-		// Handle --version parameter
-		if ( isset( $this->assoc_args['version'] ) && empty( $this->arguments ) ) {
-			\WP_CLI\InternalFlags::version();
-			exit;
-		}
-
-		// Handle --info parameter
-		if ( isset( $this->assoc_args['info'] ) && empty( $this->arguments ) ) {
-			\WP_CLI\InternalFlags::info();
-			exit;
-		}
-
-		// Handle --param-dump parameter
-		if ( isset( $this->assoc_args['param-dump'] ) ) {
-			\WP_CLI\InternalFlags::param_dump();
-			exit;
-		}
-
-		// Handle --cmd-dump parameter
-		if ( isset( $this->assoc_args['cmd-dump'] ) ) {
-			\WP_CLI\InternalFlags::cmd_dump();
-			exit;
+		// Handle a bunch of special-purpose flags
+		if ( empty( $this->arguments ) ) {
+			foreach ( array( 'version', 'info', 'param-dump', 'cmd-dump' ) as $key  ) {
+				if ( isset( $this->assoc_args[ $key ] ) ) {
+					call_user_func( array( '\\WP_CLI\\InternalFlags',
+						str_replace( '-', '_', $key ) ) );
+					exit;
+				}
+			}
 		}
 
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $this->config['path'] );
