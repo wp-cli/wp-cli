@@ -109,6 +109,23 @@ class Runner {
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
 	}
 
+	private static function set_user( $assoc_args ) {
+		if ( !isset( $assoc_args['user'] ) )
+			return;
+
+		$user = $assoc_args['user'];
+
+		if ( is_numeric( $user ) ) {
+			$user_id = (int) $user;
+		} else {
+			$user_id = (int) username_exists( $user );
+		}
+
+		if ( !$user_id || !wp_set_current_user( $user_id ) ) {
+			\WP_CLI::error( sprintf( 'Could not get a user_id for this user: %s', var_export( $user, true ) ) );
+		}
+	}
+
 	private static function is_absolute_path( $path ) {
 		// Windows
 		if ( ':' === $path[1] )
@@ -355,7 +372,8 @@ class Runner {
 	public function after_wp_load() {
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
-		Utils\set_user( $this->config );
+		// Handle --user parameter
+		self::set_user( $this->config );
 
 		if ( isset( $this->config['require'] ) )
 			require $this->config['require'];
