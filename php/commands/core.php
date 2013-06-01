@@ -156,7 +156,7 @@ class Core_Command extends WP_CLI_Command {
 	 * Transform a single-site install into a multi-site install.
 	 *
 	 * @subcommand install-network
-	 * @synopsis --title=<network-title> [--base=<url-path>]
+	 * @synopsis --title=<network-title> [--base=<url-path>] [--skip-config]
 	 */
 	public function install_network( $args, $assoc_args ) {
 		if ( is_multisite() )
@@ -188,7 +188,9 @@ class Core_Command extends WP_CLI_Command {
 				WP_CLI::error( $result );
 		}
 
-		ob_start();
+		if ( ! isset( $assoc_args['skip-config'] ) ) {
+
+			ob_start();
 ?>
 define('MULTISITE', true);
 define('SUBDOMAIN_INSTALL', <?php echo $subdomain_install ? 'true' : 'false'; ?>);
@@ -202,6 +204,8 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		$ms_config = ob_get_clean();
 
 		self::modify_wp_config( $ms_config );
+
+		}
 
 		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
 
