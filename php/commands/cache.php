@@ -51,7 +51,7 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Remove a value from the object cache.
 	 *
-	 * @synopsis <key> <group>
+	 * @synopsis <key> [<group>]
 	 */
 	public function delete( $args, $assoc_args ) {
 		$key = $args[0];
