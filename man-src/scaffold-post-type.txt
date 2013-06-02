@@ -10,8 +10,8 @@
 
 * `--theme`:
 
-	Create a file in the current theme's directory, instead of sending to
-STDOUT.
+	Create a file in the active theme directory, instead of sending to
+STDOUT. Specify a theme with `--theme=<theme>` to have the file placed in that theme.
 
 * `--plugin=<plugin>`:
 
