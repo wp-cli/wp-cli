@@ -14,7 +14,7 @@
 
 * `--theme`:
 
-	Create a file in the current theme directory, instead of sending to
+	Create a file in the current theme's directory, instead of sending to
 STDOUT.
 
 * `--plugin=<plugin>`:
