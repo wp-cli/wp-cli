@@ -26,6 +26,9 @@ class RootCommand extends AbstractCommandContainer implements Documentable {
 		\WP_CLI::line( 'Available commands:' );
 
 		foreach ( $this->get_subcommands() as $command ) {
+			if ( '_sys' == $command->get_name() )
+				continue;
+
 			\WP_CLI::line( sprintf( "    %s %s",
 				implode( ' ', get_path( $command ) ),
 				implode( '|', array_keys( get_subcommands( $command ) ) )
