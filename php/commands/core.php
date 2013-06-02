@@ -156,7 +156,7 @@ class Core_Command extends WP_CLI_Command {
 	 * Transform a single-site install into a multi-site install.
 	 *
 	 * @subcommand install-network
-	 * @synopsis --title=<network-title> [--base=<url-path>] [--skip-config]
+	 * @synopsis --title=<network-title> [--base=<url-path>]
 	 */
 	public function install_network( $args, $assoc_args ) {
 		if ( is_multisite() )
@@ -188,9 +188,7 @@ class Core_Command extends WP_CLI_Command {
 				WP_CLI::error( $result );
 		}
 
-		if ( ! isset( $assoc_args['skip-config'] ) ) {
-
-			ob_start();
+		ob_start();
 ?>
 define('MULTISITE', true);
 define('SUBDOMAIN_INSTALL', <?php echo $subdomain_install ? 'true' : 'false'; ?>);
@@ -205,8 +203,6 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		self::modify_wp_config( $ms_config );
 
-		}
-
 		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
 
 		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
@@ -215,9 +211,16 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	private static function modify_wp_config( $content ) {
 		$wp_config_path = Utils\locate_wp_config();
 
+		$wp_config = file_get_contents( $wp_config_path );
+
+		$already_exists = array_filter( array_intersect( explode( PHP_EOL, $content ), explode( PHP_EOL, $wp_config ) ) );
+
+		if ( empty( $already_exists ) )
+			return;
+
 		$token = "/* That's all, stop editing!";
 
-		list( $before, $after ) = explode( $token, file_get_contents( $wp_config_path ) );
+		list( $before, $after ) = explode( $token, $wp_config );
 
 		file_put_contents( $wp_config_path, $before . $content . $token . $after );
 	}
