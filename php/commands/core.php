@@ -57,6 +57,15 @@ class Core_Command extends WP_CLI_Command {
 		return $out['offers'][0];
 	}
 
+	private static function get_initial_locale() {
+		include ABSPATH . '/wp-includes/version.php';
+
+		if ( isset( $wp_local_package ) )
+			return $wp_local_package;
+
+		return '';
+	}
+
 	/**
 	 * Set up a wp-config.php file.
 	 *
@@ -71,6 +80,7 @@ class Core_Command extends WP_CLI_Command {
 			'dbhost' => 'localhost',
 			'dbpass' => '',
 			'dbprefix' => 'wp_',
+			'locale' => self::get_initial_locale()
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
