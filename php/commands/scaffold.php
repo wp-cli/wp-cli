@@ -185,7 +185,10 @@ class Scaffold_Command extends WP_CLI_Command {
 		extract( $assoc_args, EXTR_SKIP );
 
 		if ( $theme ) {
-			$path = get_stylesheet_directory();
+			if ( is_string( $theme ) )
+				$path = get_theme_root( $theme ) . '/' . $theme;
+			else
+				$path = get_stylesheet_directory();
 		} elseif ( ! empty( $plugin ) ) {
 			$path = WP_PLUGIN_DIR . '/' . $plugin;
 			if ( !is_dir( $path ) ) {
