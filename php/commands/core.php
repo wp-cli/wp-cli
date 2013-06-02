@@ -69,7 +69,8 @@ class Core_Command extends WP_CLI_Command {
 
 		$defaults = array(
 			'dbhost' => 'localhost',
-			'dbprefix' => 'wp_'
+			'dbpass' => '',
+			'dbprefix' => 'wp_',
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
