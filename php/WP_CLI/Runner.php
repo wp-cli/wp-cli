@@ -251,6 +251,16 @@ class Runner {
 			unset( $assoc_args['json'] );
 		}
 
+		// --{version|info}  ->  _sys {version|info}
+		if ( empty( $args ) ) {
+			foreach ( array( 'version', 'info' ) as $key ) {
+				if ( isset( $assoc_args[ $key ] ) ) {
+					$args = array( '_sys', $key );
+					break;
+				}
+			}
+		}
+
 		return array( $args, $assoc_args );
 	}
 
@@ -292,18 +302,12 @@ class Runner {
 
 		$this->init_logger();
 
-		// Handle a bunch of special-purpose flags
-		if ( empty( $this->arguments ) ) {
-			foreach ( array( 'version', 'info', 'param-dump', 'cmd-dump' ) as $key  ) {
-				if ( isset( $this->assoc_args[ $key ] ) ) {
-					call_user_func( array( '\\WP_CLI\\InternalFlags',
-						str_replace( '-', '_', $key ) ) );
-					exit;
-				}
-			}
-		}
-
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $this->config['path'] );
+
+		if ( $this->cmd_starts_with( array( '_sys' ) ) ) {
+			$this->_run_command();
+			exit;
+		}
 
 		// First try at showing man page
 		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
@@ -367,7 +371,11 @@ class Runner {
 
 		// Handle --completions parameter
 		if ( isset( $this->assoc_args['completions'] ) ) {
-			\WP_CLI\InternalFlags::completions();
+			foreach ( WP_CLI::$root->get_subcommands() as $name => $command ) {
+				$subcommands = Dispatcher\get_subcommands( $command );
+
+				WP_CLI::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
+			}
 			exit;
 		}
 
