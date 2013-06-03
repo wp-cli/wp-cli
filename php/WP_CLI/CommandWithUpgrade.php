@@ -47,6 +47,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			} else {
 				$line = '  ';
 			}
+
 			$line .= $this->format_status( $details['status'], 'short' );
 			$line .= " " . str_pad( $details['name'], $padding ). "%n";
 			if ( !empty( $details['version'] ) ) {
@@ -65,11 +66,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$max_len = 0;
 
 		foreach ( $items as $details ) {
-	    $len = strlen( $details['name'] );
+			$len = strlen( $details['name'] );
 
-	    if ( $len > $max_len ) {
-        $max_len = $len;
-	    }
+			if ( $len > $max_len ) {
+				$max_len = $len;
+			}
 		}
 
 		return $max_len;
@@ -95,11 +96,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	function install( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			\WP_CLI::line( "usage: wp $this->item_type install <slug>" );
-			exit;
-		}
-
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
@@ -120,6 +116,37 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 		} else {
 			$this->install_from_repo( $slug, $assoc_args );
+		}
+	}
+
+	/**
+	 * Prepare an API response for downloading a particular version of an item.
+	 *
+	 * @param object $response wordpress.org API response
+	 * @param string $version The desired version of the package
+	 */
+	protected static function alter_api_response( $response, $version ) {
+		list( $link ) = explode( $response->slug, $response->download_link );
+
+		if ( false !== strpos( $response->download_link, 'theme' ) )
+			$download_type = 'theme';
+		else
+			$download_type = 'plugin';
+
+		if ( 'dev' == $version ) {
+			$response->download_link = $link . $response->slug . '.zip';
+			$response->version = 'Development Version';
+		} else {
+			$response->download_link = $link . $response->slug . '.' . $version .'.zip';
+			$response->version = $version;
+
+			// check if the requested version exists
+			$response = wp_remote_head( $response->download_link );
+			if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+				\WP_CLI::error( sprintf(
+					"Can't find the requested %s's version %s in the WordPress.org %s repository.",
+					$download_type, $version, $download_type ) );
+			}
 		}
 	}
 
@@ -235,7 +262,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				} else if ( $value === false) {
 					$value = "none";
 				}
-				
+
 				$object->{$field} = $value;
 			}
 			$objects[] = $object;
