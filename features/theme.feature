@@ -47,30 +47,3 @@ Feature: Manage WordPress themes
     When I run `wp theme list`
     Then STDOUT should not be empty
 
-  Scenario: Upgrading a theme
-    Given a WP install
-    And a P2 theme zip
-
-    When I run `wp theme install {THEME_ZIP}`
-    Then STDOUT should not be empty
-
-    When I run `wp theme status`
-    Then STDOUT should contain:
-      """
-      U = Update Available
-      """
-
-    When I run `wp theme status p2`
-    Then STDOUT should contain:
-      """
-      Version: 1.0.1 (Update available)
-      """
-
-    When I run `wp theme update p2`
-    Then STDOUT should not be empty
-
-    When I run `wp theme status p2`
-    Then STDOUT should not contain:
-      """
-      (Update available)
-      """
