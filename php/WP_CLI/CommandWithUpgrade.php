@@ -119,30 +119,35 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 	}
 
-	protected function get_api_for_version( $api, $version ) {
-		
-		list( $link ) = explode( $api->slug, $api->download_link );
+	/**
+	 * Prepare an API response for downloading a particular version of an item.
+	 *
+	 * @param object $response wordpress.org API response
+	 * @param string $version The desired version of the package
+	 */
+	protected static function alter_api_response( $response, $version ) {
+		list( $link ) = explode( $response->slug, $response->download_link );
 
-		if ( stripos( $api->download_link, 'theme' ) )
+		if ( false !== strpos( $response->download_link, 'theme' ) )
 			$download_type = 'theme';
 		else
 			$download_type = 'plugin';
 
-
 		if ( 'dev' == $version ) {
-			$api->download_link = $link . $api->slug . '.zip';
-			$api->version = 'Development Version';
+			$response->download_link = $link . $response->slug . '.zip';
+			$response->version = 'Development Version';
 		} else {
-			$api->download_link = $link . $api->slug . '.' . $version .'.zip';
-			$api->version = $version;
+			$response->download_link = $link . $response->slug . '.' . $version .'.zip';
+			$response->version = $version;
 
 			// check if the requested version exists
-			$response = wp_remote_head( $api->download_link );
+			$response = wp_remote_head( $response->download_link );
 			if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
-				\WP_CLI::error( sprintf( "Can't find the requested %s's version %s in the WordPress.org %s repository.", $download_type, $version, $download_type ) );
-				}
+				\WP_CLI::error( sprintf(
+					"Can't find the requested %s's version %s in the WordPress.org %s repository.",
+					$download_type, $version, $download_type ) );
+			}
 		}
-		return $api;
 	}
 
 	protected function _update( $item ) {
