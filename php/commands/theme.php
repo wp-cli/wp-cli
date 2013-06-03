@@ -107,6 +107,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				WP_CLI::error( $api );
 		}
 
+		if ( ! empty( $assoc_args['version'] ) )
+			$api = $this->get_api_for_version( $api, $assoc_args['version'] );
+
 		// Check to see if we should update, rather than install.
 		if ( $this->has_update( $slug ) ) {
 			WP_CLI::line( sprintf( 'Updating %s (%s)', $api->name, $api->version ) );

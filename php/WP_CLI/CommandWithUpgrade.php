@@ -119,6 +119,32 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 	}
 
+	protected function get_api_for_version( $api, $version ) {
+		
+		list( $link ) = explode( $api->slug, $api->download_link );
+
+		if ( stripos( $api->download_link, 'theme' ) )
+			$download_type = 'theme';
+		else
+			$download_type = 'plugin';
+
+
+		if ( 'dev' == $version ) {
+			$api->download_link = $link . $api->slug . '.zip';
+			$api->version = 'Development Version';
+		} else {
+			$api->download_link = $link . $api->slug . '.' . $version .'.zip';
+			$api->version = $version;
+
+			// check if the requested version exists
+			$response = wp_remote_head( $api->download_link );
+			if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+				\WP_CLI::error( sprintf( "Can't find the requested %s's version %s in the WordPress.org %s repository.", $download_type, $version, $download_type ) );
+				}
+		}
+		return $api;
+	}
+
 	protected function _update( $item ) {
 		call_user_func( $this->upgrade_refresh );
 
