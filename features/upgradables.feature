@@ -1,6 +1,6 @@
 Feature: Manage WordPress themes and plugins
 
-  Scenario Outline: Upgrading a theme or plugin
+  Scenario Outline: Installing, upgrading and deleting a theme or plugin
     Given a WP install
     And I run `wp <type> install <item> --version=<version>`
 
@@ -13,7 +13,8 @@ Feature: Manage WordPress themes and plugins
     When I run `wp <type> status <item>`
     Then STDOUT should contain:
       """
-      Version: <version> (Update available)
+          Status: Inactive
+          Version: <version> (Update available)
       """
 
     When I run `wp <type> update <item>`
@@ -24,6 +25,16 @@ Feature: Manage WordPress themes and plugins
       """
       (Update available)
       """
+
+    When I run `wp <type> delete <item>`
+    Then STDOUT should contain:
+      """
+      Success: Deleted '<item>' <type>.
+      """
+
+    When I try `wp <type> status <item>`
+    Then the return code should be 1
+    And STDERR should not be empty
 
     Examples:
       | type   | item                    | version |

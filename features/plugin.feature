@@ -37,13 +37,26 @@ Feature: Manage WordPress plugins
       | name       | status | update | version   |
       | zombieland | active | none   | 0.1-alpha |
 
-    When I run `wp plugin delete zombieland`
-    Then the {PLUGIN_DIR}/zombieland file should not exist
-
-    When I try `wp plugin status zombieland`
+    When I try `wp plugin uninstall zombieland`
     Then the return code should be 1
     And STDERR should contain:
       """
-      Error: The plugin 'zombieland' could not be found.
+      The plugin is active.
       """
 
+    When I run `wp plugin deactivate zombieland`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin uninstall zombieland`
+    Then STDOUT should contain:
+      """
+      Success: Uninstalled 'zombieland' plugin.
+      """
+    And the {PLUGIN_DIR}/zombieland file should not exist
+
+    When I try the previous command again
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      The plugin 'zombieland' could not be found.
+      """
