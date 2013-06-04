@@ -349,8 +349,7 @@ class Runner {
 		}
 
 		if (
-			$this->cmd_starts_with( array( 'core', 'install' ) ) ||
-			$this->cmd_starts_with( array( 'core', 'is-installed' ) )
+			$this->cmd_starts_with( array( 'core', 'install' ) )
 		) {
 			define( 'WP_INSTALLING', true );
 
