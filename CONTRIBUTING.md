@@ -47,7 +47,7 @@ Running the following as root in MySQL should do the trick:
 Finally, to run the tests:
 
     vendor/bin/phpunit
-    vendor/bin/behat
+    vendor/bin/behat --expand
 
 Finally...
 ----------
