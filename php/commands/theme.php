@@ -189,18 +189,19 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	function delete( $args ) {
 		$theme = $this->parse_name( $args );
+		$theme_slug = $theme->get_stylesheet();
 
 		if ( $this->is_active_theme( $theme ) ) {
 			WP_CLI::error( "Can't delete the currently active theme." );
 		}
 
-		$r = delete_theme( $theme->get_stylesheet() );
+		$r = delete_theme( $theme_slug );
 
 		if ( is_wp_error( $r ) ) {
 			WP_CLI::error( $r );
 		}
 
-		WP_CLI::success( "$theme->name theme deleted." );
+		WP_CLI::success( sprintf( "Deleted '%s' theme.", $theme_slug ) );
 	}
 
 	/**

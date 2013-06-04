@@ -216,7 +216,7 @@ $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 	}
 );
 
-$steps->Then( '/^the (.+) file should (exist|be:|contain:|not contain:)$/',
+$steps->Then( '/^the (.+) file should (exist|not exist|be:|contain:|not contain:)$/',
 	function ( $world, $path, $action, $expected = null ) {
 		$path = $world->replace_variables( $path );
 
@@ -224,9 +224,15 @@ $steps->Then( '/^the (.+) file should (exist|be:|contain:|not contain:)$/',
 		if ( '/' !== $path[0] )
 			$path = $world->get_path( $path );
 
-		assertFileExists( $path );
-
-		if ( 'exist' !== $action ) {
+		switch ( $action ) {
+		case 'exist':
+			assertFileExists( $path );
+			break;
+		case 'not exist':
+			assertFileNotExists( $path );
+			break;
+		default:
+			assertFileExists( $path );
 			$action = substr( $action, 0, -1 );
 			$expected = $world->replace_variables( (string) $expected );
 			checkString( file_get_contents( $path ), $expected, $action );
