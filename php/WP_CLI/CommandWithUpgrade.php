@@ -179,7 +179,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 
 		$upgrader = \WP_CLI\Utils\get_upgrader( $this->upgrader );
-		$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
+
+		$result = array();
+
+		// Only attempt to update if there is something to update
+		if ( !empty( $items_to_update ) )
+			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
 
 		// Let the user know the results.
 		$num_to_update = count( $items_to_update );
