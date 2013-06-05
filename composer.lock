@@ -3,20 +3,20 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "e83d4615b33cb717939303cba9848c94",
+    "hash": "9cb0bdfbcfa8b3b505b9241ca38f19f7",
     "packages": [
         {
             "name": "mustache/mustache",
-            "version": "v2.0.2",
+            "version": "v2.3.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/bobthecow/mustache.php",
-                "reference": "v2.0.2"
+                "url": "https://github.com/bobthecow/mustache.php.git",
+                "reference": "v2.3.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/bobthecow/mustache.php/zipball/v2.0.2",
-                "reference": "v2.0.2",
+                "url": "https://api.github.com/repos/bobthecow/mustache.php/zipball/v2.3.1",
+                "reference": "v2.3.1",
                 "shasum": ""
             },
             "require": {
@@ -45,7 +45,7 @@
                 "mustache",
                 "templating"
             ],
-            "time": "2012-09-12 09:13:06"
+            "time": "2013-04-25 15:23:30"
         },
         {
             "name": "wp-cli/php-cli-tools",
@@ -221,16 +221,16 @@
         },
         {
             "name": "phpunit/php-code-coverage",
-            "version": "1.2.9",
+            "version": "1.2.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "1.2.9"
+                "reference": "1.2.11"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/1.2.9",
-                "reference": "1.2.9",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/1.2.11",
+                "reference": "1.2.11",
                 "shasum": ""
             },
             "require": {
@@ -238,6 +238,9 @@
                 "phpunit/php-file-iterator": ">=1.3.0@stable",
                 "phpunit/php-text-template": ">=1.1.1@stable",
                 "phpunit/php-token-stream": ">=1.1.3@stable"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "3.7.*"
             },
             "suggest": {
                 "ext-dom": "*",
@@ -270,7 +273,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2013-02-26 18:55:56"
+            "time": "2013-05-23 18:23:24"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -452,16 +455,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "3.7.19",
+            "version": "3.7.21",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "3.7.19"
+                "reference": "3.7.21"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/3.7.19",
-                "reference": "3.7.19",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/3.7.21",
+                "reference": "3.7.21",
                 "shasum": ""
             },
             "require": {
@@ -475,7 +478,7 @@
                 "phpunit/php-text-template": ">=1.1.1",
                 "phpunit/php-timer": ">=1.0.2,<1.1.0",
                 "phpunit/phpunit-mock-objects": ">=1.2.0,<1.3.0",
-                "symfony/yaml": ">=2.0.0,<2.3.0"
+                "symfony/yaml": ">=2.0,<3.0"
             },
             "require-dev": {
                 "pear-pear/pear": "1.9.4"
@@ -522,7 +525,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2013-03-25 11:45:06"
+            "time": "2013-05-23 18:54:29"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -575,17 +578,17 @@
         },
         {
             "name": "symfony/config",
-            "version": "v2.2.1",
+            "version": "v2.2.2",
             "target-dir": "Symfony/Component/Config",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Config.git",
-                "reference": "v2.2.1"
+                "reference": "v2.2.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Config/zipball/v2.2.1",
-                "reference": "v2.2.1",
+                "url": "https://api.github.com/repos/symfony/Config/zipball/v2.2.2",
+                "reference": "v2.2.2",
                 "shasum": ""
             },
             "require": {
@@ -618,21 +621,21 @@
             ],
             "description": "Symfony Config Component",
             "homepage": "http://symfony.com",
-            "time": "2013-03-01 10:42:10"
+            "time": "2013-05-10 18:08:31"
         },
         {
             "name": "symfony/console",
-            "version": "v2.2.1",
+            "version": "v2.2.2",
             "target-dir": "Symfony/Component/Console",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "v2.2.1"
+                "reference": "v2.2.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/v2.2.1",
-                "reference": "v2.2.1",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/v2.2.2",
+                "reference": "v2.2.2",
                 "shasum": ""
             },
             "require": {
@@ -665,21 +668,21 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2013-03-19 20:48:08"
+            "time": "2013-05-27 14:47:40"
         },
         {
             "name": "symfony/dependency-injection",
-            "version": "v2.2.1",
+            "version": "v2.2.2",
             "target-dir": "Symfony/Component/DependencyInjection",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/DependencyInjection.git",
-                "reference": "v2.2.1"
+                "reference": "v2.2.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/DependencyInjection/zipball/v2.2.1",
-                "reference": "v2.2.1",
+                "url": "https://api.github.com/repos/symfony/DependencyInjection/zipball/v2.2.2",
+                "reference": "v2.2.2",
                 "shasum": ""
             },
             "require": {
@@ -720,21 +723,21 @@
             ],
             "description": "Symfony DependencyInjection Component",
             "homepage": "http://symfony.com",
-            "time": "2013-03-23 07:49:54"
+            "time": "2013-05-06 08:37:50"
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.2.1",
+            "version": "v2.2.2",
             "target-dir": "Symfony/Component/EventDispatcher",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/EventDispatcher.git",
-                "reference": "v2.2.1"
+                "reference": "v2.2.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/v2.2.1",
-                "reference": "v2.2.1",
+                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/v2.2.2",
+                "reference": "v2.2.2",
                 "shasum": ""
             },
             "require": {
@@ -778,17 +781,17 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v2.2.1",
+            "version": "v2.2.2",
             "target-dir": "Symfony/Component/Finder",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Finder.git",
-                "reference": "v2.2.1"
+                "reference": "v2.2.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Finder/zipball/v2.2.1",
-                "reference": "v2.2.1",
+                "url": "https://api.github.com/repos/symfony/Finder/zipball/v2.2.2",
+                "reference": "v2.2.2",
                 "shasum": ""
             },
             "require": {
@@ -821,21 +824,21 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "http://symfony.com",
-            "time": "2013-04-01 07:51:50"
+            "time": "2013-05-27 20:26:32"
         },
         {
             "name": "symfony/translation",
-            "version": "v2.2.1",
+            "version": "v2.2.2",
             "target-dir": "Symfony/Component/Translation",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Translation.git",
-                "reference": "v2.2.1"
+                "reference": "v2.2.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Translation/zipball/v2.2.1",
-                "reference": "v2.2.1",
+                "url": "https://api.github.com/repos/symfony/Translation/zipball/v2.2.2",
+                "reference": "v2.2.2",
                 "shasum": ""
             },
             "require": {
@@ -876,21 +879,21 @@
             ],
             "description": "Symfony Translation Component",
             "homepage": "http://symfony.com",
-            "time": "2013-04-01 08:06:05"
+            "time": "2013-05-10 16:49:00"
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.2.1",
+            "version": "v2.2.2",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "v2.2.1"
+                "reference": "v2.2.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/v2.2.1",
-                "reference": "v2.2.1",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/v2.2.2",
+                "reference": "v2.2.2",
                 "shasum": ""
             },
             "require": {
@@ -923,7 +926,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2013-03-23 07:49:54"
+            "time": "2013-05-10 18:08:31"
         }
     ],
     "aliases": [
