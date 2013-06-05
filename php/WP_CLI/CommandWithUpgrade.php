@@ -183,7 +183,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$result = array();
 
 		// Only attempt to update if there is something to update
-		if ( count($items_to_update) > 0 )
+		if ( !empty( $items_to_update ) )
 			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
 
 		// Let the user know the results.
