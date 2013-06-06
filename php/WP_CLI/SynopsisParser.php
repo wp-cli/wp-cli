@@ -108,7 +108,7 @@ class SynopsisParser {
 
 	private static function init_patterns() {
 		$p_name = '(?P<name>[a-z-_]+)';
-		$p_value = '(?P<value>[a-z-|]+)';
+		$p_value = '(?P<value>[a-zA-Z-|]+)';
 
 		self::gen_patterns( 'positional', "<$p_value>",           array( 'mandatory', 'optional', 'repeating' ) );
 		self::gen_patterns( 'generic',    "--<field>=<value>",    array( 'mandatory', 'optional', 'repeating' ) );
