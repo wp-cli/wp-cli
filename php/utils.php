@@ -428,7 +428,7 @@ function open_url( $url ) {
 	elseif ( exec( 'which open' ) )
 		system( 'open ' . $url );
 	else
-		return new WP_Error( 'no_command', 'No command found to open the URL in the browser. Please open it manually: ' . $url );
+		return new \WP_Error( 'no_command', 'No command found to open the URL in the browser. Please open it manually: ' . $url );
 
 	return true;
 
