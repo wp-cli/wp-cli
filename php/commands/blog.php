@@ -8,6 +8,18 @@
 class Blog_Command extends WP_CLI_Command {
 
 	/**
+	 * Display overview info for a blog.
+	 */
+	public function info() {
+
+		WP_CLI::line( sprintf( 'Site Title: %s', get_option( 'blogname' ) ) );
+		WP_CLI::line( sprintf( 'Home URL: %s',  home_url() ) );
+		WP_CLI::line( sprintf( 'Admin URL: %s', admin_url() ) );
+		WP_CLI::line( sprintf( 'Admin Email: %s', get_option( 'admin_email' ) ) );
+
+	}
+
+	/**
 	 * Delete comments.
 	 */
 	private function _empty_comments() {
