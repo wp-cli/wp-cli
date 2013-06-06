@@ -8,6 +8,19 @@
 class Blog_Command extends WP_CLI_Command {
 
 	/**
+	 * Display overview info for a blog.
+	 */
+	public function info() {
+
+		WP_CLI::line( sprintf( 'Site Title: %s', get_option( 'blogname' ) ) );
+		WP_CLI::line( sprintf( 'Home URL: %s',  home_url() ) );
+		WP_CLI::line( sprintf( 'Admin URL: %s', admin_url() ) );
+		WP_CLI::line( sprintf( 'Admin Email: %s', get_option( 'admin_email' ) ) );
+		WP_CLI::line( sprintf( 'WP Version: %s', $GLOBALS['wp_version'] ) );
+
+	}
+
+	/**
 	 * Delete comments.
 	 */
 	private function _empty_comments() {
@@ -124,6 +137,41 @@ class Blog_Command extends WP_CLI_Command {
 
 		WP_CLI::success( 'The blog at ' . site_url() . ' was emptied.' );
 	}
+
+	/**
+	 * Open the blog's homepage in your browser.
+	 */
+	public function home() {
+
+		$open = \WP_CLI\Utils\open_url( home_url() );
+
+		if ( is_wp_error( $open ) ) {
+			WP_CLI::error( $open );
+			return;
+		}
+
+		WP_CLI::success( 'The blog homepage should be opening in your browser.' );
+
+	}
+
+	/**
+	 * Open the blog's admin URL in your browser.
+	 *
+	 * @alias dashboard
+	 */
+	public function admin() {
+
+		$open = \WP_CLI\Utils\open_url( admin_url() );
+
+		if ( is_wp_error( $open ) ) {
+			WP_CLI::error( $open );
+			return;
+		}
+
+		WP_CLI::success( 'The blog admin URL should be opening in your browser.' );
+
+	}
+
 }
 
 /**
