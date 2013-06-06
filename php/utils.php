@@ -421,3 +421,15 @@ function mustache_render( $template_name, $data ) {
 	return $m->render( $template, $data );
 }
 
+function open_url( $url ) {
+
+	if ( exec( 'which x-www-browser' ) )
+		system( 'x-www-browser ' . $url );
+	elseif ( exec( 'which open' ) )
+		system( 'open ' . $url );
+	else
+		return new WP_Error( 'no_command', 'No command found to open the URL in the browser. Please open it manually: ' . $url );
+
+	return true;
+
+}

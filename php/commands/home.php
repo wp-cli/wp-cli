@@ -6,18 +6,11 @@ class Home_Command extends WP_CLI_Command {
 	 * Open the wp-cli homepage in your browser.
 	 */
 	function __invoke() {
-		// The url for the wp-cli repository
-		$repository_url = 'https://github.com/wp-cli/wp-cli';
+		// Open the url for the wp-cli repository
+		$open = \WP_CLI\Utils\open_url( 'https://github.com/wp-cli/wp-cli' );
 
-		// Open the wp-cli page in the browser
-		if ( exec( 'which x-www-browser' ) ) {
-			system( 'x-www-browser '.$repository_url );
-		}
-		elseif ( exec( 'which open' ) ) {
-			system( 'open '.$repository_url );
-		}
-		else {
-			WP_CLI::error( 'No command found to open the homepage in the browser. Please open it manually: '.$repository_url );
+		if ( is_wp_error( $open ) ) {
+			WP_CLI::error( $open );
 			return;
 		}
 

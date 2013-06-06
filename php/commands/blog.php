@@ -136,6 +136,41 @@ class Blog_Command extends WP_CLI_Command {
 
 		WP_CLI::success( 'The blog at ' . site_url() . ' was emptied.' );
 	}
+
+	/**
+	 * Open the blog's homepage in your browser.
+	 */
+	public function home() {
+
+		$open = \WP_CLI\Utils\open_url( home_url() );
+
+		if ( is_wp_error( $open ) ) {
+			WP_CLI::error( $open );
+			return;
+		}
+
+		WP_CLI::success( 'The blog homepage should be opening in your browser.' );
+
+	}
+
+	/**
+	 * Open the blog's admin URL in your browser.
+	 *
+	 * @alias dashboard
+	 */
+	public function admin() {
+
+		$open = \WP_CLI\Utils\open_url( admin_url() );
+
+		if ( is_wp_error( $open ) ) {
+			WP_CLI::error( $open );
+			return;
+		}
+
+		WP_CLI::success( 'The blog admin URL should be opening in your browser.' );
+
+	}
+
 }
 
 /**
