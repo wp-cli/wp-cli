@@ -16,6 +16,7 @@ class Blog_Command extends WP_CLI_Command {
 		WP_CLI::line( sprintf( 'Home URL: %s',  home_url() ) );
 		WP_CLI::line( sprintf( 'Admin URL: %s', admin_url() ) );
 		WP_CLI::line( sprintf( 'Admin Email: %s', get_option( 'admin_email' ) ) );
+		WP_CLI::line( sprintf( 'WP Version: %s', $GLOBALS['wp_version'] ) );
 
 	}
 
