@@ -188,7 +188,9 @@ class Core_Command extends WP_CLI_Command {
 				WP_CLI::error( $result );
 		}
 
-		ob_start();
+		if ( ! self::wp_config_contains( "define( 'MULTISITE'" ) ) {
+
+			ob_start();
 ?>
 define('MULTISITE', true);
 define('SUBDOMAIN_INSTALL', <?php echo $subdomain_install ? 'true' : 'false'; ?>);
@@ -199,24 +201,29 @@ define('SITE_ID_CURRENT_SITE', 1);
 define('BLOG_ID_CURRENT_SITE', 1);
 
 <?php
-		$ms_config = ob_get_clean();
+			$ms_config = ob_get_clean();
 
-		self::modify_wp_config( $ms_config );
+			self::modify_wp_config( $ms_config );
+		}
 
 		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
 
 		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
 	}
 
+	private static function wp_config_contains( $content ) {
+		return ( false === stripos( self::get_wp_config_content(), $content ) ) ? false : true;
+	}
+
+	private static function get_wp_config_content() {
+		$wp_config_path = Utils\locate_wp_config();
+		return file_get_contents( $wp_config_path );
+	}
+
 	private static function modify_wp_config( $content ) {
 		$wp_config_path = Utils\locate_wp_config();
 
-		$wp_config = file_get_contents( $wp_config_path );
-
-		$already_exists = array_filter( array_intersect( explode( PHP_EOL, $content ), explode( PHP_EOL, $wp_config ) ) );
-
-		if ( empty( $already_exists ) )
-			return;
+		$wp_config = self::get_wp_config_content();
 
 		$token = "/* That's all, stop editing!";
 
