@@ -13,8 +13,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * @synopsis <old> <new> [<table>...] [--skip-columns=<columns>] [--dry-run] [--multisite]
 	 */
 	public function __invoke( $args, $assoc_args ) {
-
-		//vars
 		global $wpdb;
 		$old = array_shift( $args );
 		$new = array_shift( $args );
@@ -23,33 +21,29 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$dry_run = isset( $assoc_args['dry-run'] );
 		$multisite = isset( $assoc_args['multisite'] );
 
-		/**
-		 * build list of tables to find/replace
-		 */
+		// build list of tables to find/replace
 		if ( !empty( $args ) ) {
 			$tables = $args;
 		} else {
-
 			$tables = $wpdb->tables( 'blog' );
 
-			if( $multisite ) {
+			if ( $multisite ) {
 				$blogs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}blogs ORDER BY blog_id" ) );
 				$mu_tables = $wpdb->tables( 'global' );
-				
-				if( ! $wpdb->query("SHOW TABLES LIKE '{$mu_tables['sitecategories']}' " ) )
+
+				if ( ! $wpdb->query( "SHOW TABLES LIKE '{$mu_tables['sitecategories']}' " ) )
 					unset( $mu_tables['sitecategories'] );	//table $prefix_sitecategories not found
-				
-				foreach( $blogs as $blog ){
-					if( $blog->blog_id == 1 ) 
+
+				foreach ( $blogs as $blog ) {
+					if ( $blog->blog_id == 1 )
 						continue;
 
-					foreach( $tables as $table_ref => $table ){
+					foreach ( $tables as $table_ref => $table ) {
 						$tbl = "{$wpdb->prefix}{$blog->blog_id}_{$table_ref}";
 						$mu_tables[$tbl] = $tbl;
 					}
 				}
 
-				//set multisite vars
 				$tables = array_merge( $mu_tables, $tables );
 				if ( isset( $assoc_args['skip-columns'] ) )
 					$assoc_args['skip-columns'] .= ",user_pass";
@@ -57,7 +51,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 					$assoc_args['skip-columns'] .= "user_pass";
 			}
 		}
-		//end build list of tables to find/replace
+		// end build list of tables to find/replace
 
 		if ( isset( $assoc_args['skip-columns'] ) )
 			$skip_columns = explode( ',', $assoc_args['skip-columns'] );
@@ -101,9 +95,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 			'chunk_size' => $chunk_size
 		);
 
-		if($primary_key===null)
+		if ( $primary_key===null )
 			return "skipped";
-		
+
 		$it = new \WP_CLI\Iterators\Table( $args );
 
 		$count = 0;
@@ -124,7 +118,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 				);
 			}
 		}
-		
+
 		return $count;
 	}
 
