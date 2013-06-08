@@ -31,6 +31,14 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		foreach ( $tables as $table ) {
 			list( $primary_key, $columns ) = self::get_columns( $table );
+
+			// since we'll be updating one row at a time,
+			// we need a primary key to identify the row
+			if ( null === $primary_key ) {
+				$report[] = array( $table, '', 'skipped' );
+				continue;
+			}
+
 			foreach ( $columns as $col ) {
 				if ( in_array( $col, $skip_columns ) )
 					continue;
@@ -80,9 +88,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 			'where' => $col . ' LIKE "%' . like_escape( esc_sql( $old ) ) . '%"',
 			'chunk_size' => $chunk_size
 		);
-
-		if ( $primary_key===null )
-			return "skipped";
 
 		$it = new \WP_CLI\Iterators\Table( $args );
 
