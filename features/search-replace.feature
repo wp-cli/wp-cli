@@ -15,6 +15,15 @@ Feature: Do global search/replace
       guid
       """
 
+  Scenario: Multisite search/replace
+    Given a WP multisite install
+    And I run `wp blog create --slug="foo" --title="foo" --email="foo@example.com"`
+    And I run `wp search-replace foo bar --multisite`
+    Then STDOUT should be a table containing rows:
+      | Table      | Column | Replacements |
+      | wp_2_posts | guid   | 2            |
+      | wp_blogs   | path   | 1            |
+
   Scenario Outline: Large guid search/replace where replacement contains search (or not)
     Given a WP install
     And I run `wp option get siteurl`
