@@ -103,6 +103,24 @@ Feature: Manage WordPress installation
     Then STDOUT should be:
       """
       true
+      """
+
+  Scenario: Convert install to multisite
+    Given a WP install
+
+    When I run `wp eval 'var_export( is_multisite() );'`
+    Then STDOUT should be:
+      """
+      false
+      """ 
+
+    When I run `wp core install-network --title='test network'`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'var_export( is_multisite() );'`
+    Then STDOUT should be:
+      """
+      true
       """ 
 
   Scenario: Custom wp-content directory
