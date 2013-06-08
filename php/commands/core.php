@@ -228,15 +228,12 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	}
 
 	private static function modify_wp_config( $content ) {
-		$wp_config_path = Utils\locate_wp_config();
-
-		$wp_config = self::get_wp_config_content();
 
 		$token = "/* That's all, stop editing!";
 
-		list( $before, $after ) = explode( $token, $wp_config );
+		list( $before, $after ) = explode( $token, self::get_wp_config_content() );
 
-		file_put_contents( $wp_config_path, $before . $content . $token . $after );
+		file_put_contents( Utils\locate_wp_config(), $before . $content . $token . $after );
 	}
 
 	private static function get_clean_basedomain() {
