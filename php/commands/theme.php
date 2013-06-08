@@ -107,10 +107,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				WP_CLI::error( $api );
 		}
 
-		if ( isset( $assoc_args['version'] ) ) {
-			self::alter_api_response( $api, $assoc_args['version'] );
-		}
-
 		// Check to see if we should update, rather than install.
 		if ( $this->has_update( $slug ) ) {
 			WP_CLI::line( sprintf( 'Updating %s (%s)', $api->name, $api->version ) );
@@ -189,19 +185,18 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	function delete( $args ) {
 		$theme = $this->parse_name( $args );
-		$theme_slug = $theme->get_stylesheet();
 
 		if ( $this->is_active_theme( $theme ) ) {
 			WP_CLI::error( "Can't delete the currently active theme." );
 		}
 
-		$r = delete_theme( $theme_slug );
+		$r = delete_theme( $theme->get_stylesheet() );
 
 		if ( is_wp_error( $r ) ) {
 			WP_CLI::error( $r );
 		}
 
-		WP_CLI::success( sprintf( "Deleted '%s' theme.", $theme_slug ) );
+		WP_CLI::success( "$theme->name theme deleted." );
 	}
 
 	/**
