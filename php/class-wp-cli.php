@@ -243,8 +243,14 @@ class WP_CLI {
 		return self::$runner->config[ $key ];
 	}
 
-	private static function find_command_to_run( $args ) {
-		$command = \WP_CLI::$root;
+	/**
+	 * Run a given command.
+	 *
+	 * @param array
+	 * @param array
+	 */
+	public static function run_command( $args, $assoc_args = array() ) {
+		$command = self::$root;
 
 		while ( !empty( $args ) && $command instanceof Dispatcher\CommandContainer ) {
 			$subcommand = $command->pre_invoke( $args );
@@ -254,22 +260,10 @@ class WP_CLI {
 			$command = $subcommand;
 		}
 
-		return array( $command, $args );
-	}
-
-	/**
-	 * Run a given command.
-	 *
-	 * @param array
-	 * @param array
-	 */
-	public static function run_command( $args, $assoc_args = array() ) {
-		list( $command, $final_args ) = self::find_command_to_run( $args );
-
 		if ( $command instanceof Dispatcher\CommandContainer ) {
 			$command->show_usage();
 		} else {
-			$command->invoke( $final_args, $assoc_args );
+			$command->invoke( $args, $assoc_args );
 		}
 	}
 

@@ -158,7 +158,21 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		if ( isset( $assoc_args['version'] ) ) {
-			self::alter_api_response( $api, $assoc_args['version'] );
+			list( $link ) = explode( $slug, $api->download_link );
+
+			if ( 'dev' == $assoc_args['version'] ) {
+				$api->download_link = $link . $slug . '.zip';
+				$api->version = 'Development Version';
+			} else {
+				$api->download_link = $link . $slug . '.' . $assoc_args['version'] .'.zip';
+				$api->version = $assoc_args['version'];
+
+				// check if the requested version exists
+				$response = wp_remote_head( $api->download_link );
+				if ( !$response || $response['headers']['content-type'] != 'application/octet-stream' ) {
+					WP_CLI::error( "Can't find the requested plugin's version " . $assoc_args['version'] . " in the WordPress.org plugins repository." );
+				}
+			}
 		}
 
 		$status = install_plugin_install_status( $api );
@@ -192,12 +206,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin> [--version=<version>]
 	 */
 	function update( $args, $assoc_args ) {
-		list( $basename ) = $this->parse_name( $args );
-
 		if ( isset( $assoc_args['version'] ) && 'dev' == $assoc_args['version'] ) {
-			$this->_delete( $basename, false );
+			$this->delete( $args, array(), false );
 			$this->install( $args, $assoc_args );
 		} else {
+			list( $basename ) = $this->parse_name( $args );
+
 			$was_active = is_plugin_active( $basename );
 			$was_network_active = is_plugin_active_for_network( $basename );
 
@@ -264,12 +278,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		uninstall_plugin( $file );
 
-		if ( isset( $assoc_args['no-delete'] ) )
-			return;
-
-		if ( $this->_delete( $file ) ) {
-			WP_CLI::success( sprintf( "Uninstalled '%s' plugin.", $name ) );
-		}
+		if ( !isset( $assoc_args['no-delete'] ) )
+			$this->delete( $args );
 	}
 
 	/**
@@ -277,12 +287,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @synopsis <plugin>
 	 */
-	function delete( $args, $assoc_args = array() ) {
+	function delete( $args, $assoc_args = array(), $exit_on_error = true ) {
 		list( $file, $name ) = $this->parse_name( $args );
 
-		if ( $this->_delete( $file ) ) {
-			WP_CLI::success( sprintf( "Deleted '%s' plugin.", $name ) );
-		}
+		$plugin_dir = dirname( $file );
+		if ( '.' == $plugin_dir )
+			$plugin_dir = $file;
+
+		$command = 'rm -rf ' . path_join( WP_PLUGIN_DIR, $plugin_dir );
+
+		return WP_CLI::launch( $command, $exit_on_error );
 	}
 
 	/**
@@ -361,16 +375,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$name = dirname( $file );
 
 		return $name;
-	}
-
-	private function _delete( $file ) {
-		$plugin_dir = dirname( $file );
-		if ( '.' == $plugin_dir )
-			$plugin_dir = $file;
-
-		$command = 'rm -rf ' . path_join( WP_PLUGIN_DIR, $plugin_dir );
-
-		return ! WP_CLI::launch( $command );
 	}
 }
 

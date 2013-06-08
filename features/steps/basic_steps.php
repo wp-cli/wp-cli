@@ -83,6 +83,18 @@ $steps->Given( '/^a custom wp-content directory$/',
 	}
 );
 
+$steps->Given( '/^a P2 theme zip$/',
+	function ( $world ) {
+		$zip_name = 'p2.1.0.1.zip';
+
+		$world->variables['THEME_ZIP'] = $world->get_cache_path( $zip_name );
+
+		$zip_url = 'http://wordpress.org/extend/themes/download/' . $zip_name;
+
+		$world->download_file( $zip_url, $world->variables['THEME_ZIP'] );
+	}
+);
+
 $steps->Given( '/^a large image file$/',
 	function ( $world ) {
 		$image_file = 'http://wordpresswallpaper.com/wp-content/gallery/photo-based-wallpaper/1058.jpg';
@@ -216,7 +228,7 @@ $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 	}
 );
 
-$steps->Then( '/^the (.+) file should (exist|not exist|be:|contain:|not contain:)$/',
+$steps->Then( '/^the (.+) file should (exist|be:|contain:|not contain:)$/',
 	function ( $world, $path, $action, $expected = null ) {
 		$path = $world->replace_variables( $path );
 
@@ -224,15 +236,9 @@ $steps->Then( '/^the (.+) file should (exist|not exist|be:|contain:|not contain:
 		if ( '/' !== $path[0] )
 			$path = $world->get_path( $path );
 
-		switch ( $action ) {
-		case 'exist':
-			assertFileExists( $path );
-			break;
-		case 'not exist':
-			assertFileNotExists( $path );
-			break;
-		default:
-			assertFileExists( $path );
+		assertFileExists( $path );
+
+		if ( 'exist' !== $action ) {
 			$action = substr( $action, 0, -1 );
 			$expected = $world->replace_variables( (string) $expected );
 			checkString( file_get_contents( $path ), $expected, $action );

@@ -6,7 +6,6 @@ Feature: Manage WordPress installation
 
     When I try `wp core is-installed`
     Then the return code should be 1
-    And STDERR should not be empty
 
     When I run `wp core download --quiet`
     Then the wp-settings.php file should exist
@@ -23,7 +22,6 @@ Feature: Manage WordPress installation
 
     When I try `wp core is-installed`
     Then the return code should be 1
-    And STDERR should not be empty
 
     When I try `wp core install`
     Then the return code should be 1
@@ -71,7 +69,6 @@ Feature: Manage WordPress installation
 
     When I try `wp core is-installed`
     Then the return code should be 1
-    And STDERR should not be empty
 
     When I try `wp`
     Then the return code should be 1
@@ -91,7 +88,6 @@ Feature: Manage WordPress installation
     Given a WP install
 
     When I run `wp core is-installed`
-    Then STDOUT should be empty
 
     When I run `wp eval 'var_export( is_admin() );'`
     Then STDOUT should be:
