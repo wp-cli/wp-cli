@@ -178,17 +178,22 @@ class Core_Command extends WP_CLI_Command {
 		$subdomain_install = isset( $assoc_args['subdomains'] );
 
 		install_network();
+		WP_CLI::line( "Created multisite database tables." );
 
 		$result = populate_network( 1, $hostname, get_option( 'admin_email' ), $assoc_args['title'], $base, $subdomain_install );
 
-		if ( is_wp_error( $result ) ) {
+		if ( true === $result ) {
+			WP_CLI::line( "Populated multisite options." );
+		} else if ( is_wp_error( $result ) ) {
 			if ( $result->get_error_codes() === array( 'no_wildcard_dns' ) )
 				WP_CLI::warning( __( 'Wildcard DNS may not be configured correctly.' ) );
 			else
 				WP_CLI::error( $result );
 		}
 
-		if ( ! self::wp_config_contains( "define( 'MULTISITE'" ) ) {
+		if ( self::wp_config_contains( "define( 'MULTISITE'" ) ) {
+			WP_CLI::line( "Found multisite constants in wp-config.php. Skipping." );
+		} else {
 
 			ob_start();
 ?>
@@ -204,6 +209,8 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			$ms_config = ob_get_clean();
 
 			self::modify_wp_config( $ms_config );
+
+			WP_CLI::line( "Added multisite constants to wp-config.php." );
 		}
 
 		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
