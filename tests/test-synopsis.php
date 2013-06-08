@@ -85,5 +85,23 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'generic', $r[2]['type'] );
 		$this->assertEquals( 'flag', $r[3]['type'] );
 	}
+
+    function testAllowedValueCharacters() {
+        $r = SynopsisParser::parse( '--capitals=<VALUE> --hyphen=<val-ue> --combined=<VAL-ue> --disallowed=<wrong:char>' );
+
+        $this->assertCount( 4, $r );
+
+        $this->assertEquals( 'assoc', $r[0]['type'] );
+        $this->assertEquals( 'mandatory', $r[0]['flavour'] );
+
+        $this->assertEquals( 'assoc', $r[1]['type'] );
+        $this->assertEquals( 'mandatory', $r[1]['flavour'] );
+
+        $this->assertEquals( 'assoc', $r[2]['type'] );
+        $this->assertEquals( 'mandatory', $r[2]['flavour'] );
+
+        $this->assertEquals( 'unknown', $r[3]['type'] );
+    }
+
 }
 

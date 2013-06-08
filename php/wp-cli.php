@@ -3,7 +3,7 @@
 // Can be used by plugins/themes to check if wp-cli is running or not
 define( 'WP_CLI', true );
 
-define( 'WP_CLI_VERSION', '0.10.0-beta' );
+define( 'WP_CLI_VERSION', '0.10.0-RC' );
 
 include WP_CLI_ROOT . 'utils.php';
 include WP_CLI_ROOT . 'dispatcher.php';
