@@ -62,11 +62,15 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$tables = $wpdb->tables( 'blog' );
 
 		if ( $multisite ) {
-			$blogs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}blogs ORDER BY blog_id" ) );
 			$mu_tables = $wpdb->tables( 'global' );
 
-			if ( ! $wpdb->query( "SHOW TABLES LIKE '{$mu_tables['sitecategories']}' " ) )
-				unset( $mu_tables['sitecategories'] );	//table $prefix_sitecategories not found
+			// The $prefix_sitecategories table isn't always present
+			if ( ! $wpdb->query( $wpdb->prepare( "SHOW TABLES LIKE %s",
+				$mu_tables['sitecategories'] ) ) ) {
+				unset( $mu_tables['sitecategories'] );
+			}
+
+			$blogs = $wpdb->get_results( "SELECT * FROM $wpdb->blogs ORDER BY blog_id" );
 
 			foreach ( $blogs as $blog ) {
 				if ( $blog->blog_id == 1 )
