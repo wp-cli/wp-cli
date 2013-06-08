@@ -7,7 +7,7 @@
 \fBwp\-search\-replace\fR \- Search/replace strings in the database\.
 .
 .SH "SYNOPSIS"
-wp search\-replace \fIold\fR \fInew\fR [\fItable\fR\.\.\.] [\-\-skip\-columns=\fIcolumns\fR] [\-\-dry\-run] [\-\-multisite]
+wp search\-replace \fIold\fR \fInew\fR [\fItable\fR\.\.\.] [\-\-skip\-columns=\fIcolumns\fR] [\-\-dry\-run] [\-\-network]
 .
 .SH "DESCRIPTION"
 This command will go through all rows in all tables and will replace all appearances of the old string with the new one\.
@@ -16,6 +16,12 @@ This command will go through all rows in all tables and will replace all appeara
 It will correctly handle serialized values, and will not change primary key values\.
 .
 .SH "OPTIONS"
+.
+.TP
+\fB\-\-network\fR:
+.
+.IP
+Search/replace through all the tables in a multisite install\.
 .
 .TP
 \fB\-\-skip\-columns=<columns>\fR:

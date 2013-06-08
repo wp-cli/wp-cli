@@ -6,7 +6,7 @@ It will correctly handle serialized values, and will not change primary key valu
 
 ## OPTIONS
 
-* `--multisite`:
+* `--network`:
 
 	Search/replace through all the tables in a multisite install.
 

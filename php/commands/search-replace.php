@@ -10,7 +10,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	/**
 	 * Search/replace strings in the database.
 	 *
-	 * @synopsis <old> <new> [<table>...] [--skip-columns=<columns>] [--dry-run] [--multisite]
+	 * @synopsis <old> <new> [<table>...] [--skip-columns=<columns>] [--dry-run] [--network]
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$old = array_shift( $args );
@@ -27,7 +27,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';
 
-		$tables = self::get_table_list( $args, isset( $assoc_args['multisite'] ) );
+		$tables = self::get_table_list( $args, isset( $assoc_args['network'] ) );
 
 		foreach ( $tables as $table ) {
 			list( $primary_key, $columns ) = self::get_columns( $table );
@@ -61,13 +61,13 @@ class Search_Replace_Command extends WP_CLI_Command {
 			WP_CLI::success( "Made $total replacements." );
 	}
 
-	private static function get_table_list( $args, $multisite ) {
+	private static function get_table_list( $args, $network ) {
 		global $wpdb;
 
 		if ( !empty( $args ) )
 			return $args;
 
-		if ( !$multisite ) {
+		if ( !$network ) {
 			$tables = $wpdb->tables( 'blog' );
 		} else {
 			$tables = $wpdb->get_col( "SHOW TABLES LIKE '{$wpdb->base_prefix}%'" );
