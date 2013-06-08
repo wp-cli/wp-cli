@@ -13,41 +13,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * @synopsis <old> <new> [<table>...] [--skip-columns=<columns>] [--dry-run] [--multisite]
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		global $wpdb;
 		$old = array_shift( $args );
 		$new = array_shift( $args );
 		$total = 0;
 		$report = array();
 		$dry_run = isset( $assoc_args['dry-run'] );
-		$multisite = isset( $assoc_args['multisite'] );
-
-		// build list of tables to find/replace
-		if ( !empty( $args ) ) {
-			$tables = $args;
-		} else {
-			$tables = $wpdb->tables( 'blog' );
-
-			if ( $multisite ) {
-				$blogs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}blogs ORDER BY blog_id" ) );
-				$mu_tables = $wpdb->tables( 'global' );
-
-				if ( ! $wpdb->query( "SHOW TABLES LIKE '{$mu_tables['sitecategories']}' " ) )
-					unset( $mu_tables['sitecategories'] );	//table $prefix_sitecategories not found
-
-				foreach ( $blogs as $blog ) {
-					if ( $blog->blog_id == 1 )
-						continue;
-
-					foreach ( $tables as $table_ref => $table ) {
-						$tbl = "{$wpdb->prefix}{$blog->blog_id}_{$table_ref}";
-						$mu_tables[$tbl] = $tbl;
-					}
-				}
-
-				$tables = array_merge( $mu_tables, $tables );
-			}
-		}
-		// end build list of tables to find/replace
 
 		if ( isset( $assoc_args['skip-columns'] ) )
 			$skip_columns = explode( ',', $assoc_args['skip-columns'] );
@@ -56,6 +26,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';
+
+		$tables = self::get_table_list( $args, isset( $assoc_args['multisite'] ) );
 
 		foreach ( $tables as $table ) {
 			list( $primary_key, $columns ) = self::get_columns( $table );
@@ -79,6 +51,37 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		if ( !$dry_run )
 			WP_CLI::success( "Made $total replacements." );
+	}
+
+	private static function get_table_list( $args, $multisite ) {
+		global $wpdb;
+
+		if ( !empty( $args ) )
+			return $args;
+
+		$tables = $wpdb->tables( 'blog' );
+
+		if ( $multisite ) {
+			$blogs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}blogs ORDER BY blog_id" ) );
+			$mu_tables = $wpdb->tables( 'global' );
+
+			if ( ! $wpdb->query( "SHOW TABLES LIKE '{$mu_tables['sitecategories']}' " ) )
+				unset( $mu_tables['sitecategories'] );	//table $prefix_sitecategories not found
+
+			foreach ( $blogs as $blog ) {
+				if ( $blog->blog_id == 1 )
+					continue;
+
+				foreach ( $tables as $table_ref => $table ) {
+					$tbl = "{$wpdb->prefix}{$blog->blog_id}_{$table_ref}";
+					$mu_tables[$tbl] = $tbl;
+				}
+			}
+
+			$tables = array_merge( $mu_tables, $tables );
+		}
+
+		return $tables;
 	}
 
 	private static function handle_col( $col, $primary_key, $table, $old, $new, $dry_run ) {
