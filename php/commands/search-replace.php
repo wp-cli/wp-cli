@@ -45,10 +45,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 				}
 
 				$tables = array_merge( $mu_tables, $tables );
-				if ( isset( $assoc_args['skip-columns'] ) )
-					$assoc_args['skip-columns'] .= ",user_pass";
-				else
-					$assoc_args['skip-columns'] .= "user_pass";
 			}
 		}
 		// end build list of tables to find/replace
@@ -57,6 +53,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 			$skip_columns = explode( ',', $assoc_args['skip-columns'] );
 		else
 			$skip_columns = array();
+
+		// never mess with hashed passwords
+		$skip_columns[] = 'user_pass';
 
 		foreach ( $tables as $table ) {
 			list( $primary_key, $columns ) = self::get_columns( $table );
