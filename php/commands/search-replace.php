@@ -10,24 +10,13 @@ class Search_Replace_Command extends WP_CLI_Command {
 	/**
 	 * Search/replace strings in the database.
 	 *
-	 * @synopsis <old> <new> [<table>...] [--skip-columns=<columns>] [--dry-run]
+	 * @synopsis <old> <new> [<table>...] [--skip-columns=<columns>] [--dry-run] [--network]
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		global $wpdb;
-
 		$old = array_shift( $args );
 		$new = array_shift( $args );
-
-		if ( !empty( $args ) ) {
-			$tables = $args;
-		} else {
-			$tables = $wpdb->tables( 'blog' );
-		}
-
 		$total = 0;
-
 		$report = array();
-
 		$dry_run = isset( $assoc_args['dry-run'] );
 
 		if ( isset( $assoc_args['skip-columns'] ) )
@@ -35,8 +24,20 @@ class Search_Replace_Command extends WP_CLI_Command {
 		else
 			$skip_columns = array();
 
+		// never mess with hashed passwords
+		$skip_columns[] = 'user_pass';
+
+		$tables = self::get_table_list( $args, isset( $assoc_args['network'] ) );
+
 		foreach ( $tables as $table ) {
 			list( $primary_key, $columns ) = self::get_columns( $table );
+
+			// since we'll be updating one row at a time,
+			// we need a primary key to identify the row
+			if ( null === $primary_key ) {
+				$report[] = array( $table, '', 'skipped' );
+				continue;
+			}
 
 			foreach ( $columns as $col ) {
 				if ( in_array( $col, $skip_columns ) )
@@ -58,6 +59,21 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		if ( !$dry_run )
 			WP_CLI::success( "Made $total replacements." );
+	}
+
+	private static function get_table_list( $args, $network ) {
+		global $wpdb;
+
+		if ( !empty( $args ) )
+			return $args;
+
+		if ( !$network ) {
+			$tables = $wpdb->tables( 'blog' );
+		} else {
+			$tables = $wpdb->get_col( "SHOW TABLES LIKE '{$wpdb->base_prefix}%'" );
+		}
+
+		return $tables;
 	}
 
 	private static function handle_col( $col, $primary_key, $table, $old, $new, $dry_run ) {
