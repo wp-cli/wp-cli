@@ -404,7 +404,7 @@ function run_mysql_query( $query, $args ) {
 function run_mysql_command( $cmd, $arg_str, $pass ) {
 	$old_val = getenv( 'MYSQL_PWD' );
 
-	$final_cmd = "$cmd --defaults-file=/dev/null $arg_str";
+	$final_cmd = "$cmd --no-defaults $arg_str";
 
 	putenv( 'MYSQL_PWD=' . $pass );
 	$r = proc_close( proc_open( $final_cmd, array( STDIN, STDOUT, STDERR ), $pipes ) );
