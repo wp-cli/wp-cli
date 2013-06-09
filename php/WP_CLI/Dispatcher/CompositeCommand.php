@@ -2,14 +2,28 @@
 
 namespace WP_CLI\Dispatcher;
 
-class CompositeCommand extends AbstractCommandContainer {
+/**
+ * A non-leaf node in the command tree.
+ */
+class CompositeCommand {
 
 	protected $name;
 	protected $shortdesc;
+	protected $subcommands = array();
 
 	public function __construct( $name, $shortdesc ) {
 		$this->name = $name;
 		$this->shortdesc = $shortdesc;
+	}
+
+	function add_subcommand( $name, $command ) {
+		$this->subcommands[ $name ] = $command;
+	}
+
+	function get_subcommands() {
+		ksort( $this->subcommands );
+
+		return $this->subcommands;
 	}
 
 	function get_name() {
@@ -18,6 +32,14 @@ class CompositeCommand extends AbstractCommandContainer {
 
 	function get_parent() {
 		return \WP_CLI::$root;
+	}
+
+	function get_synopsis() {
+		return '';
+	}
+
+	function invoke( $args, $assoc_args ) {
+		$this->show_usage();
 	}
 
 	function show_usage() {

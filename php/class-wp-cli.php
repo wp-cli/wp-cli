@@ -83,7 +83,7 @@ class WP_CLI {
 		return $container;
 	}
 
-	private static function get_full_name( Dispatcher\Command $command ) {
+	private static function get_full_name( $command ) {
 		$path = Dispatcher\get_path( $command );
 		array_shift( $path );
 
@@ -246,7 +246,7 @@ class WP_CLI {
 	private static function find_command_to_run( $args ) {
 		$command = \WP_CLI::$root;
 
-		while ( !empty( $args ) && $command instanceof Dispatcher\CommandContainer ) {
+		while ( !empty( $args ) && $command instanceof Dispatcher\CompositeCommand ) {
 			$subcommand = $command->pre_invoke( $args );
 			if ( !$subcommand )
 				break;
@@ -266,7 +266,7 @@ class WP_CLI {
 	public static function run_command( $args, $assoc_args = array() ) {
 		list( $command, $final_args ) = self::find_command_to_run( $args );
 
-		if ( $command instanceof Dispatcher\CommandContainer ) {
+		if ( $command instanceof Dispatcher\CompositeCommand ) {
 			$command->show_usage();
 		} else {
 			$command->invoke( $final_args, $assoc_args );

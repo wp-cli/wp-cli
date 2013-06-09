@@ -4,18 +4,17 @@ namespace WP_CLI\Dispatcher;
 
 use \WP_CLI\Utils;
 
-class RootCommand extends AbstractCommandContainer {
+/**
+ * The root node in the command tree.
+ */
+class RootCommand extends CompositeCommand {
 
-	function get_name() {
-		return 'wp';
+	function __construct() {
+		parent::__construct( 'wp', '' );
 	}
 
 	function get_parent() {
 		return false;
-	}
-
-	function get_shortdesc() {
-		return '';
 	}
 
 	function show_usage() {

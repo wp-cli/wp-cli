@@ -2,11 +2,14 @@
 
 namespace WP_CLI\Dispatcher;
 
-class Subcommand implements Command {
+/**
+ * A leaf node in the command tree.
+ */
+class Subcommand {
 
 	private $parent, $name, $class, $method, $docparser;
 
-	function __construct( CommandContainer $parent, $class, \ReflectionMethod $method, $name = false ) {
+	function __construct( CompositeCommand $parent, $class, \ReflectionMethod $method, $name = false ) {
 		$this->class = $class;
 		$docparser = new \WP_CLI\DocParser( $method );
 
