@@ -191,7 +191,7 @@ class Core_Command extends WP_CLI_Command {
 				WP_CLI::error( $result );
 		}
 
-		if ( self::wp_config_contains( "define( 'MULTISITE'" ) ) {
+		if ( self::wp_config_contains( "/define\(\s*'MULTISITE'/" ) ) {
 			WP_CLI::line( "Found multisite constants in wp-config.php. Skipping." );
 		} else {
 
@@ -218,8 +218,8 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
 	}
 
-	private static function wp_config_contains( $content ) {
-		return ( false === stripos( self::get_wp_config_content(), $content ) ) ? false : true;
+	private static function wp_config_contains( $pattern ) {
+		return preg_match( $pattern, self::get_wp_config_content() );
 	}
 
 	private static function get_wp_config_content() {
