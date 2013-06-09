@@ -11,12 +11,12 @@ class Sys_Command extends WP_CLI_Command {
 			'description' => $command->get_shortdesc(),
 		);
 
-		if ( $command instanceof Dispatcher\AtomicCommand ) {
+		foreach ( $command->get_subcommands() as $subcommand ) {
+			$dump['subcommands'][] = self::command_to_array( $subcommand );
+		}
+
+		if ( empty( $dump['subcommands'] ) ) {
 			$dump['synopsis'] = (string) $command->get_synopsis();
-		} else {
-			foreach ( Dispatcher\get_subcommands( $command ) as $subcommand ) {
-				$dump['subcommands'][] = self::command_to_array( $subcommand );
-			}
 		}
 
 		return $dump;
