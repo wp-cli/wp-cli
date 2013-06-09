@@ -69,7 +69,13 @@ class WP_CLI {
 		if ( !$name )
 			$name = $method->name;
 
-		return new Dispatcher\Subcommand( $parent, $name, $class_name, $method, $docparser );
+		$method_name = $method->name;
+
+		$when_invoked = function ( $args, $assoc_args ) use ( $class_name, $method_name ) {
+			call_user_func( array( new $class_name, $method_name ), $args, $assoc_args );
+		};
+
+		return new Dispatcher\Subcommand( $parent, $name, $when_invoked, $docparser );
 	}
 
 	private static function create_composite_command( $name, $reflection ) {
