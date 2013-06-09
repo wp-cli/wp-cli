@@ -2,7 +2,7 @@
 
 namespace WP_CLI\Dispatcher;
 
-class CompositeCommand extends AbstractCommandContainer implements Documentable {
+class CompositeCommand extends AbstractCommandContainer {
 
 	protected $name;
 	protected $shortdesc;

@@ -106,8 +106,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$fd = fopen( "php://temp", "rw" );
 
-		if ( $command instanceof Dispatcher\Documentable )
-			self::add_initial_markdown( $fd, $command );
+		self::add_initial_markdown( $fd, $command );
 
 		fwrite( $fd, file_get_contents( $doc_path ) );
 

@@ -17,7 +17,10 @@ interface Command {
 
 	function get_name();
 	function get_parent();
+
 	function get_synopsis();
+	function get_shortdesc();
+	function get_full_synopsis();
 
 	function get_subcommands();
 
@@ -32,12 +35,5 @@ interface CommandContainer {
 
 	function find_subcommand( &$args );
 	function pre_invoke( &$args );
-}
-
-
-interface Documentable {
-
-	function get_shortdesc();
-	function get_full_synopsis();
 }
 
