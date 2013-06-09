@@ -255,6 +255,9 @@ class Runner {
 
 		$this->init_logger();
 
+		if ( !empty( $this->arguments ) )
+			Utils\load_command( $this->arguments[0] );
+
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {
 				require $path;
