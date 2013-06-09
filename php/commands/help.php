@@ -126,7 +126,7 @@ class Help_Command extends WP_CLI_Command {
 			'shortdesc' => $command->get_shortdesc(),
 		);
 
-		$synopsis = $command->get_full_synopsis();
+		$synopsis = Dispatcher\get_full_synopsis( $command, true );
 
 		$synopsis = str_replace( '_', '\_', $synopsis );
 		$synopsis = str_replace( array( '<', '>' ), '_', $synopsis );
