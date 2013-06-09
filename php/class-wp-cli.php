@@ -63,7 +63,8 @@ class WP_CLI {
 	private static function create_composite_command( $name, $reflection ) {
 		$docparser = new \WP_CLI\DocParser( $reflection );
 
-		$container = new Dispatcher\CompositeCommand( $name, $docparser->get_shortdesc() );
+		$container = new Dispatcher\CompositeCommand( self::$root, $name,
+			$docparser->get_shortdesc() );
 
 		foreach ( $reflection->getMethods() as $method ) {
 			if ( !self::_is_good_method( $method ) )
@@ -83,7 +84,7 @@ class WP_CLI {
 		return $container;
 	}
 
-	private static function get_full_name( Dispatcher\Command $command ) {
+	private static function get_full_name( $command ) {
 		$path = Dispatcher\get_path( $command );
 		array_shift( $path );
 
@@ -246,10 +247,17 @@ class WP_CLI {
 	private static function find_command_to_run( $args ) {
 		$command = \WP_CLI::$root;
 
-		while ( !empty( $args ) && $command instanceof Dispatcher\CommandContainer ) {
-			$subcommand = $command->pre_invoke( $args );
-			if ( !$subcommand )
-				break;
+		$cmd_path = array();
+
+		while ( !empty( $args ) && $command->has_subcommands() ) {
+			$cmd_path[] = $args[0];
+
+			$subcommand = $command->find_subcommand( $args );
+
+			if ( !$subcommand ) {
+				\WP_CLI::error( sprintf( "'%s' is not a registered wp command. See 'wp help'.",
+					implode( ' ', $cmd_path ) ) );
+			}
 
 			$command = $subcommand;
 		}
@@ -266,11 +274,7 @@ class WP_CLI {
 	public static function run_command( $args, $assoc_args = array() ) {
 		list( $command, $final_args ) = self::find_command_to_run( $args );
 
-		if ( $command instanceof Dispatcher\CommandContainer ) {
-			$command->show_usage();
-		} else {
-			$command->invoke( $final_args, $assoc_args );
-		}
+		$command->invoke( $final_args, $assoc_args );
 	}
 
 	// back-compat
