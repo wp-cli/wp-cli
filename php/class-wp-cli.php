@@ -39,7 +39,7 @@ class WP_CLI {
 	}
 
 	/**
-	 * Add a command to the wp-cli list of commands
+	 * Add a command to the WP-CLI list of commands
 	 *
 	 * @param string $name The name of the command that will be used in the cli
 	 * @param string $class The command implementation
