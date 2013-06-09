@@ -5,13 +5,17 @@ namespace WP_CLI\Dispatcher;
 /**
  * A leaf node in the command tree.
  */
-class Subcommand {
+class Subcommand extends CompositeCommand {
 
-	private $parent, $name, $class, $method, $docparser;
+	private $class, $method;
 
 	function __construct( CompositeCommand $parent, $class, \ReflectionMethod $method, $name = false ) {
 		$this->class = $class;
+		$this->method = $method;
+
 		$docparser = new \WP_CLI\DocParser( $method );
+
+		$this->alias = $docparser->get_tag( 'alias' );
 
 		if ( !$name )
 			$name = $docparser->get_tag( 'subcommand' );
@@ -19,39 +23,16 @@ class Subcommand {
 		if ( !$name )
 			$name = $method->name;
 
-		$this->parent = $parent;
-		$this->name = $name;
-
-		$this->method = $method;
-		$this->docparser = $docparser;
+		parent::__construct( $parent, $name,
+			$docparser->get_shortdesc(), $docparser->get_synopsis() );
 	}
 
 	function get_alias() {
-		return $this->docparser->get_tag( 'alias' );
-	}
-
-	function get_name() {
-		return $this->name;
-	}
-
-	function get_parent() {
-		return $this->parent;
-	}
-
-	function get_subcommands() {
-		return array();
+		return $this->alias;
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
 		\WP_CLI::line( $prefix . get_full_synopsis( $this ) );
-	}
-
-	function get_shortdesc() {
-		return $this->docparser->get_shortdesc();
-	}
-
-	function get_synopsis() {
-		return $this->docparser->get_synopsis();
 	}
 
 	private function validate_args( $args, &$assoc_args ) {

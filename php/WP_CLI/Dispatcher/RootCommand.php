@@ -10,11 +10,7 @@ use \WP_CLI\Utils;
 class RootCommand extends CompositeCommand {
 
 	function __construct() {
-		parent::__construct( 'wp', '' );
-	}
-
-	function get_parent() {
-		return false;
+		parent::__construct( false, 'wp', '' );
 	}
 
 	function show_usage() {
@@ -99,6 +95,11 @@ EOB
 		Utils\load_all_commands();
 
 		return parent::get_subcommands();
+	}
+
+	function has_subcommands() {
+		// Commands are lazy-loaded, so we need to assume there will be some
+		return true;
 	}
 }
 

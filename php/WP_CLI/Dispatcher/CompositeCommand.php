@@ -7,17 +7,28 @@ namespace WP_CLI\Dispatcher;
  */
 class CompositeCommand {
 
-	protected $name;
-	protected $shortdesc;
-	protected $subcommands = array();
+	protected $name, $shortdesc, $synopsis;
 
-	public function __construct( $name, $shortdesc ) {
+	protected $parent, $subcommands = array();
+
+	public function __construct( $parent, $name, $shortdesc, $synopsis = '' ) {
+		$this->parent = $parent;
+
 		$this->name = $name;
 		$this->shortdesc = $shortdesc;
+		$this->synopsis = $synopsis;
+	}
+
+	function get_parent() {
+		return $this->parent;
 	}
 
 	function add_subcommand( $name, $command ) {
 		$this->subcommands[ $name ] = $command;
+	}
+
+	function has_subcommands() {
+		return !empty( $this->subcommands );
 	}
 
 	function get_subcommands() {
@@ -30,12 +41,12 @@ class CompositeCommand {
 		return $this->name;
 	}
 
-	function get_parent() {
-		return \WP_CLI::$root;
+	function get_shortdesc() {
+		return $this->shortdesc;
 	}
 
 	function get_synopsis() {
-		return '';
+		return $this->synopsis;
 	}
 
 	function invoke( $args, $assoc_args ) {
@@ -90,10 +101,6 @@ class CompositeCommand {
 		}
 
 		return $aliases;
-	}
-
-	public function get_shortdesc() {
-		return $this->shortdesc;
 	}
 }
 
