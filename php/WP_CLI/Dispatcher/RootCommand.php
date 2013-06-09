@@ -68,17 +68,6 @@ EOB
 		}
 	}
 
-	function pre_invoke( &$args ) {
-		$cmd_name = $args[0];
-
-		$command = $this->find_subcommand( $args );
-
-		if ( !$command )
-			\WP_CLI::error( sprintf( "'%s' is not a registered wp command. See 'wp help'.", $cmd_name ) );
-
-		return $command;
-	}
-
 	function find_subcommand( &$args ) {
 		$command = array_shift( $args );
 
