@@ -3,7 +3,7 @@ WP-CLI
 
 [![Build Status](https://travis-ci.org/wp-cli/wp-cli.png?branch=master)](https://travis-ci.org/wp-cli/wp-cli)
 
-wp-cli is a set of command-line tools for managing WordPress installations.
+WP-CLI is a set of command-line tools for managing WordPress installations.
 
 Where can I get more info?
 --------------------------
