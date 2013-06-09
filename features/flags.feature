@@ -58,6 +58,27 @@ Feature: Global flags
       Error: Could not get a user_id for this user: 'non-existing-user'
       """
 
+  Scenario: Using a custom logger
+    Given an empty directory
+    And a custom-logger.php file:
+      """
+      <?php
+      class Dummy_Logger {
+
+        function __call( $method, $args ) {
+          echo "log: called '$method' method";
+        }
+      }
+
+      WP_CLI::set_logger( new Dummy_Logger );
+      """
+
+    When I try `wp --require=custom-logger.php`
+    Then STDOUT should be:
+      """
+      log: called 'error' method
+      """
+
   Scenario: Using --require
     Given a WP install
     And a custom-cmd.php file:
