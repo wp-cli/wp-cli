@@ -354,14 +354,51 @@ function write_csv( $fd, $rows, $headers = array() ) {
 
 }
 
+
+/**
+ * Suspend all activity until a change occurs in the $tmpfile's modification date
+ *
+ * @param  str  $filename File to monitor
+ * @return bool           True if file is modified
+ *                        Otherwise will do nothing until changes made
+ */
+function wait_for_change($filename) {
+
+	if (file_exists($filename)) {
+		$content_before = file_get_contents($filename);
+
+		echo "BEFORE:\n";
+		echo "----------------------------------------------------------------\n";
+		echo $content_before;
+		echo "----------------------------------------------------------------\n\n";
+
+		$last_modified = filemtime($filename);
+
+		echo "Post was last modified: " . date("F d Y H:i:s.", $last_modified ) . " Waiting for new changes...\n\n";
+
+		exec('$EDITOR '.escapeshellarg($filename) );
+
+	} else {
+		echo "Could not find temporary file.";
+	}
+
+	while(filemtime($filename) == $last_modified) {
+		clearstatcache();
+		usleep(10000);
+	}
+	return;
+}
+
+
 /**
  * Launch system's $EDITOR to edit text
  *
- * @param  str  $content  Text to edit (eg post content)
+ * @param  str  $input    Text to edit (eg post content)
+ * @param  str  $title    Title of editor window
  * @return str|bool       Edited text, if file is saved from editor
  *                        False, if no change to file
  */
-function launch_editor_for_input($input, $title) {
+function launch_editor_for_input($input, $title = 'WP-CLI') {
 
 	$tmpfile = wp_tempnam( $title );
 
@@ -370,34 +407,7 @@ function launch_editor_for_input($input, $title) {
 
 	file_put_contents( $tmpfile, utf8_encode($input) );
 
-        function waitforchange($tmpfile) {
-
-                if (file_exists($tmpfile)) {
-                        $content_before = file_get_contents($tmpfile);
-
-			echo "BEFORE:\n";
-			echo "----------------------------------------------------------------\n";
-			echo $content_before;
-			echo "----------------------------------------------------------------\n\n";
-
-                        $last_modified = filemtime($tmpfile);
-
-                        echo "Post was last modified: " . date("F d Y H:i:s.", $last_modified ) . " Waiting for new changes...\n\n";
-
-			exec('$EDITOR '.escapeshellarg($tmpfile) );
-
-                } else {
-			echo "Could not find temporary file.";
-                }
-
-
-                while(filemtime($tmpfile) == $last_modified) {
-                        clearstatcache();
-                        usleep(10000);
-                }
-        }
-
-        waitforchange($tmpfile);
+        wait_for_change($tmpfile);
         sleep(1);
 
         $content_after = file_get_contents($tmpfile);
