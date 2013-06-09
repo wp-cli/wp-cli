@@ -77,12 +77,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$r = $this->_edit( $post->post_content, "WP-CLI post $post_id" );
 
-		if ( $r === false )
-			\WP_CLI::warning( 'No change made to post content.', 'Aborted' );
-		else
-			parent::update( $args, array( 'post_content' => $r ) );
-	}
+		parent::update( $args, array( 'post_content' => $r ) );
 
+	}
+	
 	protected function _edit( $content, $title ) {
 		return \WP_CLI\Utils\launch_editor_for_input( $content, $title );
 	}

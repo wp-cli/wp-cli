@@ -340,25 +340,55 @@ function write_csv( $fd, $rows, $headers = array() ) {
  * @return str|bool       Edited text, if file is saved from editor
  *                        False, if no change to file
  */
-function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
+function launch_editor_for_input($input, $title) {
 
 	$tmpfile = wp_tempnam( $title );
 
 	if ( !$tmpfile )
 		\WP_CLI::error( 'Error creating temporary file.' );
 
-	file_put_contents( $tmpfile, $input );
+	file_put_contents( $tmpfile, utf8_encode($input) );
 
-	\WP_CLI::launch( "\${EDITOR:-vi} '$tmpfile'" );
+        function waitforchange($tmpfile) {
 
-	$output = file_get_contents( $tmpfile );
+                if (file_exists($tmpfile)) {
+                        $content_before = file_get_contents($tmpfile);
 
-	unlink( $tmpfile );
+			echo "BEFORE:\n";
+			echo "----------------------------------------------------------------\n";
+			echo $content_before;
+			echo "----------------------------------------------------------------\n\n";
 
-	if ( $output === $input )
-		return false;
+                        $last_modified = filemtime($tmpfile);
 
-	return $output;
+                        echo "Post was last modified: " . date("F d Y H:i:s.", $last_modified ) . " Waiting for new changes...\n\n";
+
+			exec('$EDITOR '.escapeshellarg($tmpfile) );
+
+                } else {
+			echo "Could not find temporary file.";
+                }
+
+
+                while(filemtime($tmpfile) == $last_modified) {
+                        clearstatcache();
+                        usleep(10000);
+                }
+        }
+
+        waitforchange($tmpfile);
+        sleep(1);
+
+        $content_after = file_get_contents($tmpfile);
+
+        unlink($tmpfile);
+
+        echo "AFTER:\n";
+	echo "----------------------------------------------------------------\n";
+	echo $content_after;
+	echo "----------------------------------------------------------------\n\n";
+
+        return $content_after;
 }
 
 function find_subcommand( $args ) {
@@ -399,4 +429,3 @@ function mustache_render( $template_name, $data ) {
 
 	return $m->render( $template, $data );
 }
-
