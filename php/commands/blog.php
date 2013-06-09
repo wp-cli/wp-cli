@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage blog.
+ * Perform blog-wide operations.
  *
  * @package wp-cli
  */
@@ -124,12 +124,6 @@ class Blog_Command extends WP_CLI_Command {
 
 		WP_CLI::success( 'The blog at ' . site_url() . ' was emptied.' );
 	}
-}
-
-/**
- * Manage blogs in a multisite install.
- */
-class MS_Blog_Command extends Blog_Command {
 
 	/**
 	 * Delete a blog in a multisite install.
@@ -137,6 +131,10 @@ class MS_Blog_Command extends Blog_Command {
 	 * @synopsis [<blog-id>] [--slug=<slug>] [--yes] [--keep-tables]
 	 */
 	function delete( $args, $assoc_args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
 		if ( isset( $assoc_args['slug'] ) ) {
 			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
 		} else {
@@ -184,6 +182,10 @@ class MS_Blog_Command extends Blog_Command {
 	 * @synopsis --slug=<slug> [--title=<title>] [--email=<email>] [--site_id=<site-id>] [--private] [--porcelain]
 	 */
 	public function create( $_, $assoc_args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
 		global $wpdb;
 
 		$base = $assoc_args['slug'];
@@ -278,11 +280,5 @@ class MS_Blog_Command extends Blog_Command {
 	}
 }
 
-// We want multisite subcommands to be available when doing `wp help --gen blog`
-if ( !function_exists( 'add_filter' ) || is_multisite() )
-	$command_class = 'MS_Blog_Command';
-else
-	$command_class = 'Blog_Command';
-
-WP_CLI::add_command( 'blog', $command_class );
+WP_CLI::add_command( 'blog', 'Blog_Command' );
 
