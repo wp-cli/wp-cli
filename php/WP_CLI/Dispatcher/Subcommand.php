@@ -7,24 +7,17 @@ namespace WP_CLI\Dispatcher;
  */
 class Subcommand extends CompositeCommand {
 
+	private $alias;
+
 	private $class, $method;
 
-	function __construct( CompositeCommand $parent, $class, \ReflectionMethod $method, $name = false ) {
+	function __construct( $parent, $name, $class, \ReflectionMethod $method, $docparser ) {
 		$this->class = $class;
 		$this->method = $method;
 
-		$docparser = new \WP_CLI\DocParser( $method );
-
 		$this->alias = $docparser->get_tag( 'alias' );
 
-		if ( !$name )
-			$name = $docparser->get_tag( 'subcommand' );
-
-		if ( !$name )
-			$name = $method->name;
-
-		parent::__construct( $parent, $name,
-			$docparser->get_shortdesc(), $docparser->get_synopsis() );
+		parent::__construct( $parent, $name, $docparser->get_shortdesc(), $docparser->get_synopsis() );
 	}
 
 	function get_alias() {
