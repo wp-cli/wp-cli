@@ -17,12 +17,22 @@ class Help_Command extends WP_CLI_Command {
 			$this->show( $args );
 	}
 
+	private static function find_subcommand( $args ) {
+		$command = \WP_CLI::$root;
+
+		while ( !empty( $args ) && $command && $command->has_subcommands() ) {
+			$command = $command->find_subcommand( $args );
+		}
+
+		return $command;
+	}
+
 	private function show( $args ) {
 		if ( self::maybe_show_manpage( $args ) ) {
 			exit;
 		}
 
-		$command = WP_CLI\Utils\find_subcommand( $args );
+		$command = self::find_subcommand( $args );
 
 		if ( $command ) {
 			$command->show_usage();
@@ -42,7 +52,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$arg_copy = $args;
 
-		$command = WP_CLI\Utils\find_subcommand( $args );
+		$command = self::find_subcommand( $args );
 
 		if ( $command ) {
 			foreach ( WP_CLI::get_man_dirs() as $dest_dir => $src_dir ) {
