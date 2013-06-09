@@ -63,7 +63,8 @@ class WP_CLI {
 	private static function create_composite_command( $name, $reflection ) {
 		$docparser = new \WP_CLI\DocParser( $reflection );
 
-		$container = new Dispatcher\CompositeCommand( $name, $docparser->get_shortdesc() );
+		$container = new Dispatcher\CompositeCommand( self::$root, $name,
+			$docparser->get_shortdesc() );
 
 		foreach ( $reflection->getMethods() as $method ) {
 			if ( !self::_is_good_method( $method ) )
@@ -246,7 +247,7 @@ class WP_CLI {
 	private static function find_command_to_run( $args ) {
 		$command = \WP_CLI::$root;
 
-		while ( !empty( $args ) && $command instanceof Dispatcher\CompositeCommand ) {
+		while ( !empty( $args ) && $command->has_subcommands() ) {
 			$subcommand = $command->pre_invoke( $args );
 			if ( !$subcommand )
 				break;
@@ -266,11 +267,7 @@ class WP_CLI {
 	public static function run_command( $args, $assoc_args = array() ) {
 		list( $command, $final_args ) = self::find_command_to_run( $args );
 
-		if ( $command instanceof Dispatcher\CompositeCommand ) {
-			$command->show_usage();
-		} else {
-			$command->invoke( $final_args, $assoc_args );
-		}
+		$command->invoke( $final_args, $assoc_args );
 	}
 
 	// back-compat
