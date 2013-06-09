@@ -376,7 +376,7 @@ class Runner {
 		// Handle --completions parameter
 		if ( isset( $this->assoc_args['completions'] ) ) {
 			foreach ( WP_CLI::$root->get_subcommands() as $name => $command ) {
-				$subcommands = Dispatcher\get_subcommands( $command );
+				$subcommands = $command->get_subcommands();
 
 				WP_CLI::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
 			}

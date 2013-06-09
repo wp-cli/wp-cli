@@ -2,14 +2,7 @@
 
 namespace WP_CLI\Dispatcher;
 
-function get_subcommands( $command ) {
-	if ( $command instanceof CommandContainer )
-		return $command->get_subcommands();
-
-	return array();
-}
-
-function get_path( Command $command ) {
+function get_path( $command ) {
 	$path = array();
 
 	do {
@@ -19,36 +12,31 @@ function get_path( Command $command ) {
 	return $path;
 }
 
+function get_full_synopsis( $command, $validate = false ) {
+	$subcommands = $command->get_subcommands();
 
-interface Command {
+	if ( empty( $subcommands ) ) {
+		$synopsis = $command->get_synopsis();
 
-	function get_name();
-	function get_parent();
+		if ( $validate ) {
+			$tokens = \WP_CLI\SynopsisParser::parse( $synopsis );
 
-	function show_usage();
-}
+			foreach ( $tokens as $token ) {
+				if ( 'unknown' == $token['type'] ) {
+					\WP_CLI::warning( sprintf(
+						"Invalid token '%s' in synopsis for '%s'",
+						$token['token'], $full_name
+					) );
+				}
+			}
+		}
 
+		$full_name = implode( ' ', get_path( $command ) );
 
-interface AtomicCommand {
-
-	function get_synopsis();
-	function invoke( $args, $assoc_args );
-}
-
-
-interface CommandContainer {
-
-	function add_subcommand( $name, Command $command );
-	function get_subcommands();
-
-	function find_subcommand( &$args );
-	function pre_invoke( &$args );
-}
-
-
-interface Documentable {
-
-	function get_shortdesc();
-	function get_full_synopsis();
+		return "$full_name $synopsis";
+	} else {
+		return implode( "\n\n", array_map( __FUNCTION__,
+			$subcommands ) );
+	}
 }
 

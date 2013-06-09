@@ -17,12 +17,22 @@ class Help_Command extends WP_CLI_Command {
 			$this->show( $args );
 	}
 
+	private static function find_subcommand( $args ) {
+		$command = \WP_CLI::$root;
+
+		while ( !empty( $args ) && $command && $command->has_subcommands() ) {
+			$command = $command->find_subcommand( $args );
+		}
+
+		return $command;
+	}
+
 	private function show( $args ) {
 		if ( self::maybe_show_manpage( $args ) ) {
 			exit;
 		}
 
-		$command = WP_CLI\Utils\find_subcommand( $args );
+		$command = self::find_subcommand( $args );
 
 		if ( $command ) {
 			$command->show_usage();
@@ -42,7 +52,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$arg_copy = $args;
 
-		$command = WP_CLI\Utils\find_subcommand( $args );
+		$command = self::find_subcommand( $args );
 
 		if ( $command ) {
 			foreach ( WP_CLI::get_man_dirs() as $dest_dir => $src_dir ) {
@@ -92,7 +102,7 @@ class Help_Command extends WP_CLI_Command {
 
 		self::call_ronn( self::get_markdown( $src_path, $command ), $dest_path );
 
-		if ( $command instanceof Dispatcher\CommandContainer ) {
+		if ( $command->has_subcommands() ) {
 			foreach ( $command->get_subcommands() as $subcommand ) {
 				self::_generate( $src_dir, $dest_dir, $subcommand );
 			}
@@ -106,8 +116,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$fd = fopen( "php://temp", "rw" );
 
-		if ( $command instanceof Dispatcher\Documentable )
-			self::add_initial_markdown( $fd, $command );
+		self::add_initial_markdown( $fd, $command );
 
 		fwrite( $fd, file_get_contents( $doc_path ) );
 
@@ -127,7 +136,7 @@ class Help_Command extends WP_CLI_Command {
 			'shortdesc' => $command->get_shortdesc(),
 		);
 
-		$synopsis = $command->get_full_synopsis();
+		$synopsis = Dispatcher\get_full_synopsis( $command, true );
 
 		$synopsis = str_replace( '_', '\_', $synopsis );
 		$synopsis = str_replace( array( '<', '>' ), '_', $synopsis );
@@ -139,7 +148,7 @@ class Help_Command extends WP_CLI_Command {
 			\WP_CLI::warning( "No shortdesc for $name_s" );
 		}
 
-		if ( $command instanceof Dispatcher\CommandContainer ) {
+		if ( $command->has_subcommands() ) {
 			foreach ( $command->get_subcommands() as $subcommand ) {
 				$binding['has-subcommands']['subcommands'][] = array(
 					'name' => $subcommand->get_name(),

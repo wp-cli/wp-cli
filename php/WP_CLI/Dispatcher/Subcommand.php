@@ -2,13 +2,20 @@
 
 namespace WP_CLI\Dispatcher;
 
-class Subcommand implements Command, AtomicCommand, Documentable {
+/**
+ * A leaf node in the command tree.
+ */
+class Subcommand extends CompositeCommand {
 
-	private $parent, $name, $class, $method, $docparser;
+	private $class, $method;
 
-	function __construct( CommandContainer $parent, $class, \ReflectionMethod $method, $name = false ) {
+	function __construct( CompositeCommand $parent, $class, \ReflectionMethod $method, $name = false ) {
 		$this->class = $class;
+		$this->method = $method;
+
 		$docparser = new \WP_CLI\DocParser( $method );
+
+		$this->alias = $docparser->get_tag( 'alias' );
 
 		if ( !$name )
 			$name = $docparser->get_tag( 'subcommand' );
@@ -16,55 +23,16 @@ class Subcommand implements Command, AtomicCommand, Documentable {
 		if ( !$name )
 			$name = $method->name;
 
-		$this->parent = $parent;
-		$this->name = $name;
-
-		$this->method = $method;
-		$this->docparser = $docparser;
+		parent::__construct( $parent, $name,
+			$docparser->get_shortdesc(), $docparser->get_synopsis() );
 	}
 
 	function get_alias() {
-		return $this->docparser->get_tag( 'alias' );
-	}
-
-	function get_name() {
-		return $this->name;
-	}
-
-	function get_parent() {
-		return $this->parent;
+		return $this->alias;
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
-		\WP_CLI::line( $prefix . $this->get_full_synopsis() );
-	}
-
-	function get_shortdesc() {
-		return $this->docparser->get_shortdesc();
-	}
-
-	function get_full_synopsis( $validate = false ) {
-		$full_name = implode( ' ', get_path( $this ) );
-		$synopsis = $this->get_synopsis();
-
-		if ( $validate ) {
-			$tokens = \WP_CLI\SynopsisParser::parse( $synopsis );
-
-			foreach ( $tokens as $token ) {
-				if ( 'unknown' == $token['type'] ) {
-					\WP_CLI::warning( sprintf(
-						"Invalid token '%s' in synopsis for '%s'",
-						$token['token'], $full_name
-					) );
-				}
-			}
-		}
-
-		return "$full_name $synopsis";
-	}
-
-	function get_synopsis() {
-		return $this->docparser->get_synopsis();
+		\WP_CLI::line( $prefix . get_full_synopsis( $this ) );
 	}
 
 	private function validate_args( $args, &$assoc_args ) {

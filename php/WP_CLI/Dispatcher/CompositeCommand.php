@@ -2,22 +2,55 @@
 
 namespace WP_CLI\Dispatcher;
 
-class CompositeCommand extends AbstractCommandContainer implements Documentable {
+/**
+ * A non-leaf node in the command tree.
+ */
+class CompositeCommand {
 
-	protected $name;
-	protected $shortdesc;
+	protected $name, $shortdesc, $synopsis;
 
-	public function __construct( $name, $shortdesc ) {
+	protected $parent, $subcommands = array();
+
+	public function __construct( $parent, $name, $shortdesc, $synopsis = '' ) {
+		$this->parent = $parent;
+
 		$this->name = $name;
 		$this->shortdesc = $shortdesc;
+		$this->synopsis = $synopsis;
+	}
+
+	function get_parent() {
+		return $this->parent;
+	}
+
+	function add_subcommand( $name, $command ) {
+		$this->subcommands[ $name ] = $command;
+	}
+
+	function has_subcommands() {
+		return !empty( $this->subcommands );
+	}
+
+	function get_subcommands() {
+		ksort( $this->subcommands );
+
+		return $this->subcommands;
 	}
 
 	function get_name() {
 		return $this->name;
 	}
 
-	function get_parent() {
-		return \WP_CLI::$root;
+	function get_shortdesc() {
+		return $this->shortdesc;
+	}
+
+	function get_synopsis() {
+		return $this->synopsis;
+	}
+
+	function invoke( $args, $assoc_args ) {
+		$this->show_usage();
 	}
 
 	function show_usage() {
@@ -33,10 +66,6 @@ class CompositeCommand extends AbstractCommandContainer implements Documentable 
 
 		\WP_CLI::line();
 		\WP_CLI::line( "See 'wp help $this->name <subcommand>' for more information on a specific subcommand." );
-	}
-
-	function pre_invoke( &$args ) {
-		return $this->find_subcommand( $args );
 	}
 
 	function find_subcommand( &$args ) {
@@ -68,20 +97,6 @@ class CompositeCommand extends AbstractCommandContainer implements Documentable 
 		}
 
 		return $aliases;
-	}
-
-	public function get_shortdesc() {
-		return $this->shortdesc;
-	}
-
-	public function get_full_synopsis() {
-		$str = array();
-
-		foreach ( $this->subcommands as $subcommand ) {
-			$str[] = $subcommand->get_full_synopsis( true );
-		}
-
-		return implode( "\n\n", $str );
 	}
 }
 

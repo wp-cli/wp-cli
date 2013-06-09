@@ -4,22 +4,13 @@ namespace WP_CLI\Dispatcher;
 
 use \WP_CLI\Utils;
 
-class RootCommand extends AbstractCommandContainer implements Documentable {
+/**
+ * The root node in the command tree.
+ */
+class RootCommand extends CompositeCommand {
 
-	function get_name() {
-		return 'wp';
-	}
-
-	function get_parent() {
-		return false;
-	}
-
-	function get_shortdesc() {
-		return '';
-	}
-
-	function get_full_synopsis() {
-		return '';
+	function __construct() {
+		parent::__construct( false, 'wp', '' );
 	}
 
 	function show_usage() {
@@ -31,7 +22,7 @@ class RootCommand extends AbstractCommandContainer implements Documentable {
 
 			\WP_CLI::line( sprintf( "    %s %s",
 				implode( ' ', get_path( $command ) ),
-				implode( '|', array_keys( get_subcommands( $command ) ) )
+				implode( '|', array_keys( $command->get_subcommands() ) )
 			) );
 		}
 
@@ -77,17 +68,6 @@ EOB
 		}
 	}
 
-	function pre_invoke( &$args ) {
-		$cmd_name = $args[0];
-
-		$command = $this->find_subcommand( $args );
-
-		if ( !$command )
-			\WP_CLI::error( sprintf( "'%s' is not a registered wp command. See 'wp help'.", $cmd_name ) );
-
-		return $command;
-	}
-
 	function find_subcommand( &$args ) {
 		$command = array_shift( $args );
 
@@ -104,6 +84,11 @@ EOB
 		Utils\load_all_commands();
 
 		return parent::get_subcommands();
+	}
+
+	function has_subcommands() {
+		// Commands are lazy-loaded, so we need to assume there will be some
+		return true;
 	}
 }
 
