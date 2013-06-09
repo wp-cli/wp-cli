@@ -2,13 +2,6 @@
 
 namespace WP_CLI\Dispatcher;
 
-function get_subcommands( $command ) {
-	if ( $command instanceof CommandContainer )
-		return $command->get_subcommands();
-
-	return array();
-}
-
 function get_path( Command $command ) {
 	$path = array();
 
@@ -24,22 +17,18 @@ interface Command {
 
 	function get_name();
 	function get_parent();
-
-	function show_usage();
-}
-
-
-interface AtomicCommand {
-
 	function get_synopsis();
+
+	function get_subcommands();
+
 	function invoke( $args, $assoc_args );
+	function show_usage();
 }
 
 
 interface CommandContainer {
 
 	function add_subcommand( $name, Command $command );
-	function get_subcommands();
 
 	function find_subcommand( &$args );
 	function pre_invoke( &$args );

@@ -31,7 +31,7 @@ class RootCommand extends AbstractCommandContainer implements Documentable {
 
 			\WP_CLI::line( sprintf( "    %s %s",
 				implode( ' ', get_path( $command ) ),
-				implode( '|', array_keys( get_subcommands( $command ) ) )
+				implode( '|', array_keys( $command->get_subcommands() ) )
 			) );
 		}
 
