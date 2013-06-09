@@ -9,11 +9,10 @@ class Subcommand extends CompositeCommand {
 
 	private $alias;
 
-	private $class, $method;
+	private $when_invoked;
 
-	function __construct( $parent, $name, $class, \ReflectionMethod $method, $docparser ) {
-		$this->class = $class;
-		$this->method = $method;
+	function __construct( $parent, $name, $when_invoked, $docparser ) {
+		$this->when_invoked = $when_invoked;
 
 		$this->alias = $docparser->get_tag( 'alias' );
 
@@ -61,9 +60,7 @@ class Subcommand extends CompositeCommand {
 	function invoke( $args, $assoc_args ) {
 		$this->validate_args( $args, $assoc_args );
 
-		$instance = new $this->class;
-
-		call_user_func( array( $instance, $this->method->name ), $args, $assoc_args );
+		call_user_func( $this->when_invoked, $args, $assoc_args );
 	}
 }
 
