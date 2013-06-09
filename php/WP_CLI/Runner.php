@@ -223,6 +223,11 @@ class Runner {
 			unset( $assoc_args['help'] );
 		}
 
+		// sql  ->  db
+		if ( count( $args ) > 0 && 'sql' == $args[0] ) {
+			$args[0] = 'db';
+		}
+
 		// {plugin|theme} update --all  ->  {plugin|theme} update-all
 		if ( count( $args ) > 1 && in_array( $args[0], array( 'plugin', 'theme' ) )
 			&& $args[1] == 'update' && isset( $assoc_args['all'] )

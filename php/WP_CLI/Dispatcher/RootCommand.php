@@ -91,13 +91,6 @@ EOB
 	function find_subcommand( &$args ) {
 		$command = array_shift( $args );
 
-		$aliases = array(
-			'sql' => 'db'
-		);
-
-		if ( isset( $aliases[ $command ] ) )
-			$command = $aliases[ $command ];
-
 		Utils\load_command( $command );
 
 		if ( !isset( $this->subcommands[ $command ] ) ) {
