@@ -123,6 +123,9 @@ Feature: Manage WordPress installation
       true
       """ 
 
+    When I try `wp core install-network --title='test network'`
+    Then the return code should be 1
+
   Scenario: Custom wp-content directory
     Given a WP install
     And a custom wp-content directory
