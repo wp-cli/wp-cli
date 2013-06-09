@@ -18,10 +18,6 @@ class RootCommand extends AbstractCommandContainer {
 		return '';
 	}
 
-	function get_full_synopsis() {
-		return '';
-	}
-
 	function show_usage() {
 		\WP_CLI::line( 'Available commands:' );
 

@@ -73,15 +73,5 @@ class CompositeCommand extends AbstractCommandContainer {
 	public function get_shortdesc() {
 		return $this->shortdesc;
 	}
-
-	public function get_full_synopsis() {
-		$str = array();
-
-		foreach ( $this->subcommands as $subcommand ) {
-			$str[] = $subcommand->get_full_synopsis( true );
-		}
-
-		return implode( "\n\n", $str );
-	}
 }
 

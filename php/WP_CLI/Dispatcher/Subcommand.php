@@ -40,31 +40,11 @@ class Subcommand implements Command {
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
-		\WP_CLI::line( $prefix . $this->get_full_synopsis() );
+		\WP_CLI::line( $prefix . get_full_synopsis( $this ) );
 	}
 
 	function get_shortdesc() {
 		return $this->docparser->get_shortdesc();
-	}
-
-	function get_full_synopsis( $validate = false ) {
-		$full_name = implode( ' ', get_path( $this ) );
-		$synopsis = $this->get_synopsis();
-
-		if ( $validate ) {
-			$tokens = \WP_CLI\SynopsisParser::parse( $synopsis );
-
-			foreach ( $tokens as $token ) {
-				if ( 'unknown' == $token['type'] ) {
-					\WP_CLI::warning( sprintf(
-						"Invalid token '%s' in synopsis for '%s'",
-						$token['token'], $full_name
-					) );
-				}
-			}
-		}
-
-		return "$full_name $synopsis";
 	}
 
 	function get_synopsis() {
