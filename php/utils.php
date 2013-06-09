@@ -30,6 +30,27 @@ function load_dependencies() {
 	include WP_CLI_ROOT . 'Spyc.php';
 }
 
+function load_command( $name ) {
+	$path = WP_CLI_ROOT . "/commands/$name.php";
+
+	if ( is_readable( $path ) ) {
+		include_once $path;
+	}
+}
+
+function load_all_commands() {
+	$cmd_dir = WP_CLI_ROOT . "commands";
+
+	$iterator = new \DirectoryIterator( $cmd_dir );
+
+	foreach ( $iterator as $filename ) {
+		if ( '.php' != substr( $filename, -4 ) )
+			continue;
+
+		include_once "$cmd_dir/$filename";
+	}
+}
+
 function get_config_spec() {
 	$spec = include __DIR__ . '/config-spec.php';
 

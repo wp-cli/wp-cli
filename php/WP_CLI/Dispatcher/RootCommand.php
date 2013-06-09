@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Dispatcher;
 
+use \WP_CLI\Utils;
+
 class RootCommand extends AbstractCommandContainer implements Documentable {
 
 	function get_name() {
@@ -93,54 +95,19 @@ EOB
 		if ( isset( $aliases[ $command ] ) )
 			$command = $aliases[ $command ];
 
-		return $this->load_command( $command );
-	}
-
-	function get_subcommands() {
-		$this->load_all_commands();
-
-		return parent::get_subcommands();
-	}
-
-	protected function load_all_commands() {
-		$cmd_dir = WP_CLI_ROOT . "commands";
-
-		$iterator = new \DirectoryIterator( $cmd_dir );
-
-		foreach ( $iterator as $filename ) {
-			if ( '.php' != substr( $filename, -4 ) )
-				continue;
-
-			$command = substr( $filename, 0, -4 );
-
-			if ( isset( $this->subcommands[ $command ] ) )
-				continue;
-
-			include "$cmd_dir/$filename";
-		}
-	}
-
-	protected static function get_command_file( $command ) {
-		$path = WP_CLI_ROOT . "/commands/$command.php";
-
-		if ( !is_readable( $path ) ) {
-			return false;
-		}
-
-		return $path;
-	}
-
-	protected function load_command( $command ) {
-		if ( !isset( $this->subcommands[ $command ] ) ) {
-			if ( $path = self::get_command_file( $command ) )
-				include $path;
-		}
+		Utils\load_command( $command );
 
 		if ( !isset( $this->subcommands[ $command ] ) ) {
 			return false;
 		}
 
 		return $this->subcommands[ $command ];
+	}
+
+	function get_subcommands() {
+		Utils\load_all_commands();
+
+		return parent::get_subcommands();
 	}
 }
 

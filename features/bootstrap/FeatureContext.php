@@ -30,10 +30,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	public $variables = array();
 
-	private static function wp_cli( $command ) {
-		return __DIR__ . "/../../bin/wp $command";
-	}
-
 	// We cache the results of `wp core download` to improve test performance
 	// Ideally, we'd cache at the HTTP layer for more reliable tests
 	private static function cache_wp_files() {
@@ -42,8 +38,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( is_readable( self::$cache_dir . '/wp-config-sample.php' ) )
 			return;
 
-		$cmd = Utils\esc_cmd( 'core download --force --path=%s', self::$cache_dir );
-		Process::create( self::wp_cli( $cmd ) )->run_check();
+		$cmd = Utils\esc_cmd( 'wp core download --force --path=%s', self::$cache_dir );
+		Process::create( $cmd )->run_check();
 	}
 
 	/**
@@ -53,16 +49,16 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		self::cache_wp_files();
 
 		self::$additional_args = array(
-			'core config' => self::$db_settings,
+			'wp core config' => self::$db_settings,
 
-			'core install' => array(
+			'wp core install' => array(
 				'url' => 'http://example.com',
 				'title' => 'WP CLI Site',
 				'admin_email' => 'admin@example.com',
 				'admin_password' => 'password1'
 			),
 
-			'core install-network' => array(
+			'wp core install-network' => array(
 				'title' => 'WP CLI Network'
 			)
 		);
@@ -157,15 +153,17 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function proc( $command, $assoc_args = array() ) {
-		if ( isset( self::$additional_args[ $command ] ) ) {
-			$assoc_args = array_merge( self::$additional_args[ $command ],
-				$assoc_args );
+		foreach ( self::$additional_args as $start => $additional_args ) {
+			if ( 0 === strpos( $command, $start ) ) {
+				$assoc_args = array_merge( $additional_args, $assoc_args );
+				break;
+			}
 		}
 
 		if ( !empty( $assoc_args ) )
 			$command .= Utils\assoc_args_to_str( $assoc_args );
 
-		return Process::create( self::wp_cli( $command ), $this->install_dir );
+		return Process::create( $command, $this->install_dir );
 	}
 
 	public function move_files( $src, $dest ) {
@@ -191,9 +189,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->create_empty_dir();
 		$this->download_wordpress_files( $subdir );
 
-		$this->proc( 'core config', array( 'dbprefix' => $subdir ? $subdir : 'wp_' ) )->run_check( $subdir );
+		$this->proc( 'wp core config', array( 'dbprefix' => $subdir ? $subdir : 'wp_' ) )->run_check( $subdir );
 
-		$this->proc( 'core install' )->run_check( $subdir );
+		$this->proc( 'wp core install' )->run_check( $subdir );
 	}
 }
 

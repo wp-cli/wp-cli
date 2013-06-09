@@ -10,19 +10,6 @@ Feature: Wordpress code scaffolding
     Then STDOUT should not be empty
     And the {THEME_DIR}/zombieland/style.css file should exist
 
-  @plugin
-  Scenario: Scaffold a plugin
-    Given a WP install
-    And I run `wp plugin path`
-    And save STDOUT as {PLUGIN_DIR}
-
-    When I run `wp plugin scaffold zombieland --plugin_name="Welcome to Zombieland" --activate`
-    Then STDOUT should not be empty
-    And the {PLUGIN_DIR}/zombieland/zombieland.php file should exist
-
-    When I run `wp plugin activate zombieland`
-    Then STDOUT should not be empty
-
   @tax @cpt
   Scenario: Scaffold a Custom Taxonomy and Custom Post Type and write it to active theme
     Given a WP install

@@ -6,6 +6,10 @@ It will correctly handle serialized values, and will not change primary key valu
 
 ## OPTIONS
 
+* `--network`:
+
+	Search/replace through all the tables in a multisite install.
+
 * `--skip-columns=<columns>`:
 
 	Do not perform the replacement in the comma-separated columns.

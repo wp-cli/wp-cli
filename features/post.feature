@@ -40,11 +40,9 @@ Feature: Manage WordPress posts
 
     When I run `wp post get --format=table {POST_ID}`
     Then STDOUT should be a table containing rows:
-      """
-      Field	Value
-      ID	{POST_ID}
-      post_title	Test post
-      """
+      | Field      | Value     |
+      | ID         | {POST_ID} |
+      | post_title | Test post |
 
     When I run `wp post get --format=json {POST_ID}`
     Then STDOUT should be JSON containing:
@@ -63,8 +61,6 @@ Feature: Manage WordPress posts
 
     When I run `wp post list --post_type='post' --fields=post_title,post_name,post_status --format=csv`
     Then STDOUT should be CSV containing:
-      """
-      post_title,post_name,post_status
-      "Publish post",publish-post,publish
-      "Draft post",,draft
-      """
+      | post_title   | post_name    | post_status  |
+      | Publish post | publish-post | publish      |
+      | Draft post   |              | draft        |

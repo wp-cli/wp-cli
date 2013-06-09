@@ -6,6 +6,7 @@ Feature: Manage WordPress installation
 
     When I try `wp core is-installed`
     Then the return code should be 1
+    And STDERR should not be empty
 
     When I run `wp core download --quiet`
     Then the wp-settings.php file should exist
@@ -22,17 +23,33 @@ Feature: Manage WordPress installation
 
     When I try `wp core is-installed`
     Then the return code should be 1
+    And STDERR should not be empty
 
     When I try `wp core install`
     Then the return code should be 1
-    Then STDERR should be:
+    And STDERR should be:
       """
       Error: wp-config.php not found.
       Either create one manually or use `wp core config`.
       """
     
-    When I run `wp core config`
-    Then the wp-config.php file should exist
+    Given a wp-config-extra.php file:
+      """
+      define( 'WP_DEBUG_LOG', true );
+      """
+    When I run `wp core config --extra-php < wp-config-extra.php`
+    Then the wp-config.php file should contain:
+      """
+      define('AUTH_SALT',
+      """
+    And the wp-config.php file should contain:
+      """
+      define( 'WP_DEBUG_LOG', true );
+      """
+
+    When I try the previous command again
+    Then the return code should be 1
+    And STDERR should not be empty
 
   Scenario: Database doesn't exist
     Given an empty directory
@@ -54,6 +71,7 @@ Feature: Manage WordPress installation
 
     When I try `wp core is-installed`
     Then the return code should be 1
+    And STDERR should not be empty
 
     When I try `wp`
     Then the return code should be 1
@@ -73,6 +91,7 @@ Feature: Manage WordPress installation
     Given a WP install
 
     When I run `wp core is-installed`
+    Then STDOUT should be empty
 
     When I run `wp eval 'var_export( is_admin() );'`
     Then STDOUT should be:

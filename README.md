@@ -24,3 +24,7 @@ Need even more info?
 Read our [wiki](https://github.com/wp-cli/wp-cli/wiki) and find out how to create your own commands with our [commands cookbook](https://github.com/wp-cli/wp-cli/wiki/Commands-Cookbook).
 
 If you want to receive an email for every single commit, you can subscribe to the [wp-cli-commits](https://groups.google.com/forum/?fromgroups=#!forum/wp-cli-commits) mailing list.
+
+Contributing
+------------
+See [CONTRIBUTING.md](CONTRIBUTING.md).

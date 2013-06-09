@@ -4,7 +4,7 @@ Feature: Manage WordPress options
     Given a WP install
 
     When I run `wp option add foo 'bar'`
-    Then STDOUT should be empty
+    Then STDOUT should not be empty
 
     When I run `wp option get foo`
     Then STDOUT should be:
@@ -13,7 +13,7 @@ Feature: Manage WordPress options
     """
 
     When I run `wp option set foo '[ 1, 2 ]' --format=json`
-    Then STDOUT should be empty
+    Then STDOUT should not be empty
 
     When I run `wp option get foo --format=json`
     Then STDOUT should be:
@@ -22,7 +22,7 @@ Feature: Manage WordPress options
     """
 
     When I run `wp option delete foo`
-    Then STDOUT should be empty
+    Then STDOUT should not be empty
 
     When I try `wp option get foo`
     Then the return code should be 1
