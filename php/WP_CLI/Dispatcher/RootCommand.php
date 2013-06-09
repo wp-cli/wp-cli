@@ -4,7 +4,7 @@ namespace WP_CLI\Dispatcher;
 
 use \WP_CLI\Utils;
 
-class RootCommand extends AbstractCommandContainer implements Documentable {
+class RootCommand extends AbstractCommandContainer {
 
 	function get_name() {
 		return 'wp';
