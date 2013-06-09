@@ -92,7 +92,7 @@ class Help_Command extends WP_CLI_Command {
 
 		self::call_ronn( self::get_markdown( $src_path, $command ), $dest_path );
 
-		if ( $command instanceof Dispatcher\CommandContainer ) {
+		if ( $command instanceof Dispatcher\CompositeCommand ) {
 			foreach ( $command->get_subcommands() as $subcommand ) {
 				self::_generate( $src_dir, $dest_dir, $subcommand );
 			}
@@ -138,7 +138,7 @@ class Help_Command extends WP_CLI_Command {
 			\WP_CLI::warning( "No shortdesc for $name_s" );
 		}
 
-		if ( $command instanceof Dispatcher\CommandContainer ) {
+		if ( $command instanceof Dispatcher\CompositeCommand ) {
 			foreach ( $command->get_subcommands() as $subcommand ) {
 				$binding['has-subcommands']['subcommands'][] = array(
 					'name' => $subcommand->get_name(),

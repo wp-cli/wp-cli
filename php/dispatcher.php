@@ -2,7 +2,7 @@
 
 namespace WP_CLI\Dispatcher;
 
-function get_path( Command $command ) {
+function get_path( $command ) {
 	$path = array();
 
 	do {
@@ -38,29 +38,5 @@ function get_full_synopsis( $command, $validate = false ) {
 		return implode( "\n\n", array_map( __FUNCTION__,
 			$subcommands ) );
 	}
-}
-
-
-interface Command {
-
-	function get_name();
-	function get_parent();
-
-	function get_synopsis();
-	function get_shortdesc();
-
-	function get_subcommands();
-
-	function invoke( $args, $assoc_args );
-	function show_usage();
-}
-
-
-interface CommandContainer {
-
-	function add_subcommand( $name, Command $command );
-
-	function find_subcommand( &$args );
-	function pre_invoke( &$args );
 }
 
