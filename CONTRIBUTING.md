@@ -4,6 +4,7 @@ Contribute
 So you've got an awesome idea to throw into WP-CLI. Great! Here's the process, in a nutshell:
 
 1. [Fork](https://github.com/wp-cli/wp-cli/fork) the repository.
+2. Clone the repo and run `./utils/dev-build`.
 2. Make the code changes in your fork.
 3. Open a pull request.
 
