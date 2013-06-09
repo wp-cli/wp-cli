@@ -68,10 +68,6 @@ class CompositeCommand {
 		\WP_CLI::line( "See 'wp help $this->name <subcommand>' for more information on a specific subcommand." );
 	}
 
-	function pre_invoke( &$args ) {
-		return $this->find_subcommand( $args );
-	}
-
 	function find_subcommand( &$args ) {
 		$name = array_shift( $args );
 

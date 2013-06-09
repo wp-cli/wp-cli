@@ -247,10 +247,17 @@ class WP_CLI {
 	private static function find_command_to_run( $args ) {
 		$command = \WP_CLI::$root;
 
+		$cmd_path = array();
+
 		while ( !empty( $args ) && $command->has_subcommands() ) {
-			$subcommand = $command->pre_invoke( $args );
-			if ( !$subcommand )
-				break;
+			$cmd_path[] = $args[0];
+
+			$subcommand = $command->find_subcommand( $args );
+
+			if ( !$subcommand ) {
+				\WP_CLI::error( sprintf( "'%s' is not a registered wp command. See 'wp help'.",
+					implode( ' ', $cmd_path ) ) );
+			}
 
 			$command = $subcommand;
 		}
