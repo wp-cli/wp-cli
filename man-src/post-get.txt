@@ -4,12 +4,12 @@
 
 	The format to use when printing the post, acceptable values:
 
-	content: outputs only the post's content (default)
+	**content**: Outputs only the post's content.
 
-	table: output all fields of the post as a table, note that the
-	post_content field is omitted so that the table is readable
+	**table**: Outputs all fields of the post as a table. Note that the
+	post_content field is omitted so that the table is readable.
 
-	json: output all fields in JavaScript Object Notation format
+	**json**: Outputs all fields in JSON format.
 
 * `<id>`:
 
@@ -17,6 +17,6 @@
 
 ## EXAMPLES
 
-	wp post get 12
+	wp post get 12 --format=content
 
 	wp post get 12 > file.txt
