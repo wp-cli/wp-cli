@@ -10,7 +10,12 @@ use \WP_CLI\Utils;
 class RootCommand extends CompositeCommand {
 
 	function __construct() {
-		parent::__construct( false, 'wp', '' );
+		$this->parent = false;
+
+		$this->name = 'wp';
+
+		$this->shortdesc = '';
+		$this->synopsis = '';
 	}
 
 	function show_usage() {

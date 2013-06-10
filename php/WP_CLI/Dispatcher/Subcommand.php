@@ -11,12 +11,12 @@ class Subcommand extends CompositeCommand {
 
 	private $when_invoked;
 
-	function __construct( $parent, $name, $when_invoked, $docparser ) {
+	function __construct( $parent, $name, $docparser, $when_invoked ) {
 		$this->when_invoked = $when_invoked;
 
 		$this->alias = $docparser->get_tag( 'alias' );
 
-		parent::__construct( $parent, $name, $docparser->get_shortdesc(), $docparser->get_synopsis() );
+		parent::__construct( $parent, $name, $docparser );
 	}
 
 	function get_alias() {

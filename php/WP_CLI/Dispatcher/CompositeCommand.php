@@ -11,12 +11,13 @@ class CompositeCommand {
 
 	protected $parent, $subcommands = array();
 
-	public function __construct( $parent, $name, $shortdesc, $synopsis = '' ) {
+	public function __construct( $parent, $name, $docparser ) {
 		$this->parent = $parent;
 
 		$this->name = $name;
-		$this->shortdesc = $shortdesc;
-		$this->synopsis = $synopsis;
+
+		$this->shortdesc = $docparser->get_shortdesc();
+		$this->synopsis = $docparser->get_synopsis();
 	}
 
 	function get_parent() {

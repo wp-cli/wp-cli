@@ -75,14 +75,13 @@ class WP_CLI {
 			call_user_func( array( new $class_name, $method_name ), $args, $assoc_args );
 		};
 
-		return new Dispatcher\Subcommand( $parent, $name, $when_invoked, $docparser );
+		return new Dispatcher\Subcommand( $parent, $name, $docparser, $when_invoked );
 	}
 
 	private static function create_composite_command( $name, $reflection ) {
 		$docparser = new \WP_CLI\DocParser( $reflection );
 
-		$container = new Dispatcher\CompositeCommand( self::$root, $name,
-			$docparser->get_shortdesc() );
+		$container = new Dispatcher\CompositeCommand( self::$root, $name, $docparser );
 
 		foreach ( $reflection->getMethods() as $method ) {
 			if ( !self::_is_good_method( $method ) )
