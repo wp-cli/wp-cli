@@ -8,9 +8,22 @@ fi
 prev_version=$1
 linked=$2
 
+githubify() {
+	local url="https://github.com/$name"
+	local response_code=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' $url)
+
+	if [ "200" != "$response_code" ]; then
+		echo "$response_code: $url" 1>&2;
+	fi
+
+	while read name; do
+		echo " [$name]($url)"
+	done
+}
+
 if [ '-l' == "$linked" ]
 then
-	git log --format="%aN" $prev_version -- | sort | uniq | sed 's#\(.*\)# [\1](http://github.com/\1)#' | tr '\n' ','
+	git log --format="%aN" $prev_version -- | sort | uniq | githubify | tr '\n' ','
 else
 	git log --format="%aN <%aE>" $prev_version -- | sort | uniq
 fi

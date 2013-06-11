@@ -14,11 +14,16 @@ function wp_not_installed() {
 
 function wp_debug_mode() {
 	if ( \WP_CLI::get_config( 'debug' ) ) {
+		if ( !defined( 'WP_DEBUG' ) )
+			define( 'WP_DEBUG', true );
+
 		error_reporting( E_ALL & ~E_DEPRECATED & ~E_STRICT );
-		ini_set( 'display_errors', true );
 	} else {
 		\wp_debug_mode();
 	}
+
+	// Never show errors on STDOUT; only on STDERR
+	ini_set( 'display_errors', false );
 }
 
 function replace_wp_die_handler() {
@@ -45,24 +50,6 @@ function maybe_require( $since, $path ) {
 
 	if ( version_compare( $wp_version, $since, '>=' ) )
 		require $path;
-}
-
-// Handle --user parameter
-function set_user( $assoc_args ) {
-	if ( !isset( $assoc_args['user'] ) )
-		return;
-
-	$user = $assoc_args['user'];
-
-	if ( is_numeric( $user ) ) {
-		$user_id = (int) $user;
-	} else {
-		$user_id = (int) username_exists( $user );
-	}
-
-	if ( !$user_id || !wp_set_current_user( $user_id ) ) {
-		\WP_CLI::error( sprintf( 'Could not get a user_id for this user: %s', var_export( $user, true ) ) );
-	}
 }
 
 function get_upgrader( $class ) {

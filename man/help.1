@@ -1,10 +1,26 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WP\-HELP" "1" "October 2012" "" "WP-CLI"
+.TH "WP\-HELP" "1" "" "WP-CLI"
 .
 .SH "NAME"
 \fBwp\-help\fR \- Get help on a certain topic\.
 .
 .SH "SYNOPSIS"
-\fBwp help\fR [\fIcommand\fR]
+wp help [\fIcommand\fR] [\-\-gen]
+.
+.SH "EXAMPLES"
+.
+.nf
+
+# (re)generates all man pages
+wp help \-\-gen
+
+# (re)generate man pages for the `core` command
+wp help \-\-gen core
+
+# (re)generate man page only for the `core download` subcommand
+wp help \-\-gen core download
+.
+.fi
+

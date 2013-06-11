@@ -7,7 +7,7 @@
 \fBwp\-export\fR \- Export content to a WXR file\.
 .
 .SH "SYNOPSIS"
-wp export [\-\-dir=\fIdir\fR] [\-\-start_date=\fIdate\fR] [\-\-end_date=\fIdate\fR] [\-\-post_type=\fIptype\fR] [\-\-post_status=\fIstatus\fR] [\-\-post__in=\fIpids\fR] [\-\-author=\fIlogin\fR] [\-\-category=\fIcat\fR] [\-\-skip_comments] [\-\-file_item_count=\fIcount\fR]
+wp export [\-\-dir=\fIdir\fR] [\-\-start_date=\fIdate\fR] [\-\-end_date=\fIdate\fR] [\-\-post_type=\fIptype\fR] [\-\-post_status=\fIstatus\fR] [\-\-post__in=\fIpids\fR] [\-\-author=\fIlogin\fR] [\-\-category=\fIcat\fR] [\-\-skip_comments] [\-\-file_item_count=\fIcount\fR] [\-\-verbose]
 .
 .SH "OPTIONS"
 .
@@ -28,6 +28,12 @@ Don\'t export comments\.
 .
 .IP
 Break export into files with N posts\.
+.
+.TP
+\fB\-\-verbose\fR:
+.
+.IP
+Show more information about the process on STDOUT\.
 .
 .SH "FILTERS"
 .

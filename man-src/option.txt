@@ -1,6 +1,6 @@
 ## OPTIONS
 
-* `--json`:
+* `--format=json`:
 
 	Encode/decode values as JSON.
 
@@ -10,6 +10,6 @@
 
 	wp option add my_option foobar
 
-	wp option update my_option '{"foo": "bar"}' --json
+	wp option update my_option '{"foo": "bar"}' --format=json
 
 	wp option delete my_option

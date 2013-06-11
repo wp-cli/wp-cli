@@ -1,5 +1,7 @@
 <?php
 
+use \WP_CLI\Utils;
+
 /**
  * Download, install, update and otherwise manage WordPress proper.
  *
@@ -18,14 +20,14 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( !is_dir( ABSPATH ) ) {
 			WP_CLI::line( sprintf( 'Creating directory %s', ABSPATH ) );
-			WP_CLI::launch( 'mkdir -p ' . escapeshellarg( ABSPATH ) );
+			WP_CLI::launch( sprintf( 'mkdir -p %s', escapeshellarg( ABSPATH ) ) );
 		}
 
 		if ( isset( $assoc_args['locale'] ) ) {
-			exec( 'curl -s ' . escapeshellarg( 'https://api.wordpress.org/core/version-check/1.5/?locale=' . $assoc_args['locale'] ), $lines, $r );
-			if ($r) exit($r);
-			$download_url = str_replace( '.zip', '.tar.gz', $lines[2] );
-			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $lines[3], $lines[4] ) );
+			$offer = $this->get_download_offer( $assoc_args['locale'] );
+			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
+			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...',
+				$offer['current'], $offer['locale'] ) );
 		} elseif ( isset( $assoc_args['version'] ) ) {
 			$download_url = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.tar.gz';
 			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
@@ -34,33 +36,77 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::line( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		$silent = WP_CLI::get_config('quiet') ? ' --silent ' : ' ';
-		
-		WP_CLI::launch( sprintf( 'mkdir -p %s', escapeshellarg( ABSPATH ) ) );
-		$curl_command = 'curl -f' . $silent . escapeshellarg( $download_url );
-		$tar_command = sprintf( 'tar xz --directory=%s --strip-components=1', escapeshellarg( ABSPATH ) );
-		WP_CLI::launch( $curl_command . ' | ' . $tar_command );
+		$silent = WP_CLI::get_config('quiet') ? '--silent ' : '';
+
+		$cmd = "curl -f $silent %s | tar xz --strip-components=1 --directory=%s";
+		WP_CLI::launch( Utils\esc_cmd( $cmd, $download_url, ABSPATH ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
+	}
+
+	private static function _download( $url ) {
+		exec( 'curl -s ' . escapeshellarg( $url ), $lines, $r );
+		if ( $r ) exit( $r );
+		return implode( "\n", $lines );
+	}
+
+	private function get_download_offer( $locale ) {
+		$out = unserialize( self::_download(
+			'https://api.wordpress.org/core/version-check/1.6/?locale=' . $locale ) );
+
+		return $out['offers'][0];
+	}
+
+	private static function get_initial_locale() {
+		include ABSPATH . '/wp-includes/version.php';
+
+		if ( isset( $wp_local_package ) )
+			return $wp_local_package;
+
+		return '';
 	}
 
 	/**
 	 * Set up a wp-config.php file.
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>]
+	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--extra-php]
 	 */
-	public function config( $args, $assoc_args ) {
-		$_POST['dbname'] = $assoc_args['dbname'];
-		$_POST['uname'] = $assoc_args['dbuser'];
-		$_POST['pwd'] = isset( $assoc_args['dbpass'] ) ? $assoc_args['dbpass'] : '';
-		$_POST['dbhost'] = isset( $assoc_args['dbhost'] ) ? $assoc_args['dbhost'] : 'localhost';
-		$_POST['prefix'] = isset( $assoc_args['dbprefix'] ) ? $assoc_args['dbprefix'] : 'wp_';
+	public function config( $_, $assoc_args ) {
+		if ( Utils\locate_wp_config() ) {
+			WP_CLI::error( "The 'wp-config.php' file already exists." );
+		}
 
-		$_GET['step'] = 2;
+		$defaults = array(
+			'dbhost' => 'localhost',
+			'dbpass' => '',
+			'dbprefix' => 'wp_',
+			'locale' => self::get_initial_locale()
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		if ( WP_CLI::get_config('quiet') ) ob_start();
-		require ABSPATH . '/wp-admin/setup-config.php';
-		if ( WP_CLI::get_config('quiet') ) ob_end_clean();
+		if ( preg_match( '|[^a-z0-9_]|i', $assoc_args['dbprefix'] ) )
+			WP_CLI::error( '--dbprefix can only contain numbers, letters, and underscores.' );
+
+		// Check DB connection
+		Utils\run_mysql_query( ';', array(
+			'host' => $assoc_args['dbhost'],
+			'user' => $assoc_args['dbuser'],
+			'pass' => $assoc_args['dbpass'],
+		) );
+
+		if ( isset( $assoc_args['extra-php'] ) ) {
+			$assoc_args['extra-php'] = file_get_contents( 'php://stdin' );
+		}
+
+		// TODO: adapt more resilient code from wp-admin/setup-config.php
+		$assoc_args['keys-and-salts'] = self::_download(
+			'https://api.wordpress.org/secret-key/1.1/salt/' );
+
+		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
+
+		file_put_contents( ABSPATH . 'wp-config.php', $out );
+
+		WP_CLI::success( 'Generated wp-config.php file.' );
 	}
 
 	/**
@@ -163,7 +209,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	}
 
 	private static function modify_wp_config( $content ) {
-		$wp_config_path = WP_CLI\Utils\locate_wp_config();
+		$wp_config_path = Utils\locate_wp_config();
 
 		$token = "/* That's all, stop editing!";
 
@@ -272,7 +318,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
-		$result = WP_CLI\Utils\get_upgrader( $upgrader )->upgrade( $update );
+		$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 
 		if ( is_wp_error($result) ) {
 			$msg = WP_CLI::error_to_string( $result );
@@ -320,7 +366,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		// Create the database
 		$query = sprintf( 'CREATE DATABASE IF NOT EXISTS `%s`', $assoc_args['dbname'] );
 
-		\WP_CLI\Utils\run_mysql_query( $query, array(
+		Utils\run_mysql_query( $query, array(
 			'host' => 'localhost',
 			'user' => $assoc_args['dbuser'],
 			'pass' => $assoc_args['dbpass'],

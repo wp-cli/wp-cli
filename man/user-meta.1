@@ -7,16 +7,16 @@
 \fBwp\-user\-meta\fR \- Manage user custom fields\.
 .
 .SH "SYNOPSIS"
-wp user\-meta get \fIid\fR \fIkey\fR [\-\-json]
+wp user\-meta get \fIid\fR \fIkey\fR [\-\-format=\fIformat\fR]
 .
 .P
 wp user\-meta delete \fIid\fR \fIkey\fR
 .
 .P
-wp user\-meta add \fIid\fR \fIkey\fR \fIvalue\fR
+wp user\-meta add \fIid\fR \fIkey\fR \fIvalue\fR [\-\-format=\fIformat\fR]
 .
 .P
-wp user\-meta update \fIid\fR \fIkey\fR \fIvalue\fR
+wp user\-meta update \fIid\fR \fIkey\fR \fIvalue\fR [\-\-format=\fIformat\fR]
 .
 .SH "SUBCOMMANDS"
 .
@@ -45,10 +45,9 @@ Get meta field value\.
 Update a meta field\.
 .
 .SH "OPTIONS"
-
 .
 .TP
-\fB\-\-json\fR:
+\fB\-\-format=json\fR:
 .
 .IP
 Encode/decode values as JSON\.

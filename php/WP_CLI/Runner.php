@@ -109,7 +109,28 @@ class Runner {
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
 	}
 
+	private static function set_user( $assoc_args ) {
+		if ( !isset( $assoc_args['user'] ) )
+			return;
+
+		$user = $assoc_args['user'];
+
+		if ( is_numeric( $user ) ) {
+			$user_id = (int) $user;
+		} else {
+			$user_id = (int) username_exists( $user );
+		}
+
+		if ( !$user_id || !wp_set_current_user( $user_id ) ) {
+			\WP_CLI::error( sprintf( 'Could not get a user_id for this user: %s', var_export( $user, true ) ) );
+		}
+	}
+
 	private static function is_absolute_path( $path ) {
+		// Windows
+		if ( ':' === $path[1] )
+			return true;
+
 		return $path[0] === '/';
 	}
 
@@ -192,48 +213,83 @@ class Runner {
 		return preg_replace( '|^\s*\<\?php\s*|', '', implode( "\n", $lines_to_run ) );
 	}
 
-	private static function show_help_early( $args ) {
-		if ( \WP_CLI\Man\maybe_show_manpage( $args ) )
-			return true;
-
-		$command = WP_CLI\Utils\find_subcommand( $args );
-
-		if ( $command ) {
-			$command->show_usage();
-			return true;
-		}
-
-		return false;
-	}
-
-	public function before_wp_load() {
-		$r = Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) );
-
-		list( $this->arguments, $this->assoc_args ) = $r;
+	// Transparently convert old syntaxes
+	private static function back_compat_conversions( $r ) {
+		list( $args, $assoc_args ) = $r;
 
 		// foo --help  ->  help foo
-		if ( isset( $this->assoc_args['help'] ) ) {
-			array_unshift( $this->arguments, 'help' );
-			unset( $this->assoc_args['help'] );
+		if ( isset( $assoc_args['help'] ) ) {
+			array_unshift( $args, 'help' );
+			unset( $assoc_args['help'] );
+		}
+
+		// sql  ->  db
+		if ( count( $args ) > 0 && 'sql' == $args[0] ) {
+			$args[0] = 'db';
 		}
 
 		// {plugin|theme} update --all  ->  {plugin|theme} update-all
-		if ( count( $this->arguments ) > 1 && in_array( $this->arguments[0], array( 'plugin', 'theme' ) )
-			&& $this->arguments[1] == 'update'
-			&& isset( $this->assoc_args['all'] )
+		if ( count( $args ) > 1 && in_array( $args[0], array( 'plugin', 'theme' ) )
+			&& $args[1] == 'update' && isset( $assoc_args['all'] )
 		) {
-			$this->arguments[1] = 'update-all';
-			unset( $this->assoc_args['all'] );
+			$args[1] = 'update-all';
+			unset( $assoc_args['all'] );
+		}
+
+		// plugin scaffold  ->  scaffold plugin
+		if ( array( 'plugin', 'scaffold' ) == array_slice( $args, 0, 2 ) ) {
+			list( $args[0], $args[1] ) = array( $args[1], $args[0] );
 		}
 
 		// {post|user} list --ids  ->  {post|user} list --format=ids
-		if ( count( $this->arguments ) > 1 && in_array( $this->arguments[0], array( 'post', 'user' ) )
-			&& $this->arguments[1] == 'list'
-			&& isset( $this->assoc_args['ids'] )
+		if ( count( $args ) > 1 && in_array( $args[0], array( 'post', 'user' ) )
+			&& $args[1] == 'list'
+			&& isset( $assoc_args['ids'] )
 		) {
-			$this->assoc_args['format'] = 'ids';
-			unset( $this->assoc_args['ids'] );
+			$assoc_args['format'] = 'ids';
+			unset( $assoc_args['ids'] );
 		}
+
+		// --json  ->  --format=json
+		if ( isset( $assoc_args['json'] ) ) {
+			$assoc_args['format'] = 'json';
+			unset( $assoc_args['json'] );
+		}
+
+		// --{version|info}  ->  _sys {version|info}
+		if ( empty( $args ) ) {
+			foreach ( array( 'version', 'info' ) as $key ) {
+				if ( isset( $assoc_args[ $key ] ) ) {
+					$args = array( '_sys', $key );
+					break;
+				}
+			}
+		}
+
+		return array( $args, $assoc_args );
+	}
+
+	private function init_logger() {
+		if ( isset( $this->assoc_args['no-color'] ) ) {
+			$color = false;
+			unset( $this->assoc_args['no-color'] );
+		} elseif ( 'auto' === $this->config['color'] ) {
+			$color = ! \cli\Shell::isPiped();
+		} else {
+			$color = $this->config['color'];
+		}
+
+		if ( $this->config['quiet'] )
+			$logger = new \WP_CLI\Loggers\Quiet( $color );
+		else
+			$logger = new \WP_CLI\Loggers\Regular( $color );
+
+		WP_CLI::set_logger( $logger );
+	}
+
+	public function before_wp_load() {
+		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
+			Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) ) );
 
 		$config_spec = Utils\get_config_spec();
 
@@ -249,47 +305,21 @@ class Runner {
 
 		self::split_special( $this->assoc_args, $this->config, $config_spec );
 
-		if ( isset( $this->assoc_args['no-color'] ) ) {
-			$this->config['color'] = false;
-			unset( $this->assoc_args['no-color'] );
-		} elseif ( 'auto' === $this->config['color'] ) {
-			$this->config['color'] = ! \cli\Shell::isPiped();
-		}
-
-		// Handle --version parameter
-		if ( isset( $this->assoc_args['version'] ) && empty( $this->arguments ) ) {
-			\WP_CLI\InternalAssoc::version();
-			exit;
-		}
-
-		// Handle --info parameter
-		if ( isset( $this->assoc_args['info'] ) && empty( $this->arguments ) ) {
-			\WP_CLI\InternalAssoc::info();
-			exit;
-		}
-
-		// Handle --param-dump parameter
-		if ( isset( $this->assoc_args['param-dump'] ) ) {
-			\WP_CLI\InternalAssoc::param_dump();
-			exit;
-		}
-
-		// Handle --cmd-dump parameter
-		if ( isset( $this->assoc_args['cmd-dump'] ) ) {
-			\WP_CLI\InternalAssoc::cmd_dump();
-			exit;
-		}
+		$this->init_logger();
 
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $this->config['path'] );
 
-		// First try at showing man page
-		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
-			if ( self::show_help_early( array_slice( $this->arguments, 1 ) ) ) {
-				exit;
-			}
+		if ( $this->cmd_starts_with( array( '_sys' ) ) ) {
+			$this->_run_command();
+			exit;
 		}
 
-		// Handle --path
+		// First try at showing man page
+		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
+			$this->_run_command();
+		}
+
+		// Handle --path parameter
 		self::set_wp_root( $this->config );
 
 		// Handle --url and --blog parameters
@@ -324,8 +354,7 @@ class Runner {
 		}
 
 		if (
-			$this->cmd_starts_with( array( 'core', 'install' ) ) ||
-			$this->cmd_starts_with( array( 'core', 'is-installed' ) )
+			$this->cmd_starts_with( array( 'core', 'install' ) )
 		) {
 			define( 'WP_INSTALLING', true );
 
@@ -335,28 +364,22 @@ class Runner {
 		}
 	}
 
-	public function after_wp_config_load() {
-		if ( $this->config['debug'] ) {
-			if ( !defined( 'WP_DEBUG' ) )
-				define( 'WP_DEBUG', true );
-		}
-	}
-
 	public function after_wp_load() {
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
-		Utils\set_user( $this->config );
+		// Handle --user parameter
+		self::set_user( $this->config );
 
 		if ( isset( $this->config['require'] ) )
 			require $this->config['require'];
 
-		if ( isset( $this->assoc_args['man'] ) ) {
-			\WP_CLI\InternalAssoc::man( $this->arguments );
-			exit;
-		}
-
+		// Handle --completions parameter
 		if ( isset( $this->assoc_args['completions'] ) ) {
-			\WP_CLI\InternalAssoc::completions();
+			foreach ( WP_CLI::$root->get_subcommands() as $name => $command ) {
+				$subcommands = $command->get_subcommands();
+
+				WP_CLI::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
+			}
 			exit;
 		}
 

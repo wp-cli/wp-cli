@@ -2,31 +2,32 @@
 
 namespace WP_CLI\Dispatcher;
 
-class RootCommand extends AbstractCommandContainer implements Documentable {
+use \WP_CLI\Utils;
 
-	function get_name() {
-		return 'wp';
-	}
+/**
+ * The root node in the command tree.
+ */
+class RootCommand extends CompositeCommand {
 
-	function get_parent() {
-		return false;
-	}
+	function __construct() {
+		$this->parent = false;
 
-	function get_shortdesc() {
-		return '';
-	}
+		$this->name = 'wp';
 
-	function get_full_synopsis() {
-		return '';
+		$this->shortdesc = '';
+		$this->synopsis = '';
 	}
 
 	function show_usage() {
 		\WP_CLI::line( 'Available commands:' );
 
 		foreach ( $this->get_subcommands() as $command ) {
+			if ( '_sys' == $command->get_name() )
+				continue;
+
 			\WP_CLI::line( sprintf( "    %s %s",
 				implode( ' ', get_path( $command ) ),
-				implode( '|', array_keys( get_subcommands( $command ) ) )
+				implode( '|', array_keys( $command->get_subcommands() ) )
 			) );
 		}
 
@@ -72,80 +73,27 @@ EOB
 		}
 	}
 
-	function pre_invoke( &$args ) {
-		if ( array( 'help' ) == $args ) {
-			$this->show_usage();
-			exit;
-		}
-
-		$cmd_name = $args[0];
-
-		$command = $this->find_subcommand( $args );
-
-		if ( !$command )
-			\WP_CLI::error( sprintf( "'%s' is not a registered wp command. See 'wp help'.", $cmd_name ) );
-
-		return $command;
-	}
-
 	function find_subcommand( &$args ) {
 		$command = array_shift( $args );
 
-		$aliases = array(
-			'sql' => 'db'
-		);
-
-		if ( isset( $aliases[ $command ] ) )
-			$command = $aliases[ $command ];
-
-		return $this->load_command( $command );
-	}
-
-	function get_subcommands() {
-		$this->load_all_commands();
-
-		return parent::get_subcommands();
-	}
-
-	protected function load_all_commands() {
-		$cmd_dir = WP_CLI_ROOT . "commands";
-
-		$iterator = new \DirectoryIterator( $cmd_dir );
-
-		foreach ( $iterator as $filename ) {
-			if ( '.php' != substr( $filename, -4 ) )
-				continue;
-
-			$command = substr( $filename, 0, -4 );
-
-			if ( isset( $this->subcommands[ $command ] ) )
-				continue;
-
-			include "$cmd_dir/$filename";
-		}
-	}
-
-	protected static function get_command_file( $command ) {
-		$path = WP_CLI_ROOT . "/commands/$command.php";
-
-		if ( !is_readable( $path ) ) {
-			return false;
-		}
-
-		return $path;
-	}
-
-	protected function load_command( $command ) {
-		if ( !isset( $this->subcommands[ $command ] ) ) {
-			if ( $path = self::get_command_file( $command ) )
-				include $path;
-		}
+		Utils\load_command( $command );
 
 		if ( !isset( $this->subcommands[ $command ] ) ) {
 			return false;
 		}
 
 		return $this->subcommands[ $command ];
+	}
+
+	function get_subcommands() {
+		Utils\load_all_commands();
+
+		return parent::get_subcommands();
+	}
+
+	function has_subcommands() {
+		// Commands are lazy-loaded, so we need to assume there will be some
+		return true;
 	}
 }
 

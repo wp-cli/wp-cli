@@ -39,6 +39,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// Not interested in the translation, just the number logic
 		\WP_CLI::line( sprintf( _n( "%d installed {$this->item_type}:", "%d installed {$this->item_type}s:", $n ), $n ) );
 
+		$padding = $this->get_padding($items);
+
 		foreach ( $items as $file => $details ) {
 			if ( $details['update'] ) {
 				$line = ' %yU%n';
@@ -47,7 +49,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 
 			$line .= $this->format_status( $details['status'], 'short' );
-			$line .= " " . $details['name'] . "%n";
+			$line .= " " . str_pad( $details['name'], $padding ). "%n";
+			if ( !empty( $details['version'] ) ) {
+				$line .= " " . $details['version'];
+			}
 
 			\WP_CLI::line( $line );
 		}
@@ -55,6 +60,20 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		\WP_CLI::line();
 
 		$this->show_legend( $items );
+	}
+
+	private function get_padding( $items ) {
+		$max_len = 0;
+
+		foreach ( $items as $details ) {
+			$len = strlen( $details['name'] );
+
+			if ( $len > $max_len ) {
+				$max_len = $len;
+			}
+		}
+
+		return $max_len;
 	}
 
 	private function show_legend( $items ) {
@@ -77,11 +96,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	function install( $args, $assoc_args ) {
-		if ( empty( $args ) ) {
-			\WP_CLI::line( "usage: wp $this->item_type install <slug>" );
-			exit;
-		}
-
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
@@ -102,6 +116,37 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 		} else {
 			$this->install_from_repo( $slug, $assoc_args );
+		}
+	}
+
+	/**
+	 * Prepare an API response for downloading a particular version of an item.
+	 *
+	 * @param object $response wordpress.org API response
+	 * @param string $version The desired version of the package
+	 */
+	protected static function alter_api_response( $response, $version ) {
+		list( $link ) = explode( $response->slug, $response->download_link );
+
+		if ( false !== strpos( $response->download_link, 'theme' ) )
+			$download_type = 'theme';
+		else
+			$download_type = 'plugin';
+
+		if ( 'dev' == $version ) {
+			$response->download_link = $link . $response->slug . '.zip';
+			$response->version = 'Development Version';
+		} else {
+			$response->download_link = $link . $response->slug . '.' . $version .'.zip';
+			$response->version = $version;
+
+			// check if the requested version exists
+			$response = wp_remote_head( $response->download_link );
+			if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+				\WP_CLI::error( sprintf(
+					"Can't find the requested %s's version %s in the WordPress.org %s repository.",
+					$download_type, $version, $download_type ) );
+			}
 		}
 	}
 
@@ -134,7 +179,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 
 		$upgrader = \WP_CLI\Utils\get_upgrader( $this->upgrader );
-		$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
+
+		$result = array();
+
+		// Only attempt to update if there is something to update
+		if ( !empty( $items_to_update ) )
+			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
 
 		// Let the user know the results.
 		$num_to_update = count( $items_to_update );
@@ -149,6 +199,26 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		} else {
 			\WP_CLI::error( $line );
 		}
+	}
+
+	protected function _list( $_, $format ) {
+		$values = array(
+			'format' => 'table',
+			'fields' => $this->fields
+		);
+
+		foreach ( $values as $key => &$value ) {
+			if ( isset( $format[ $key ] ) ) {
+				$value = $format[ $key ];
+				unset( $format[ $key ] );
+			}
+		}
+		unset( $value );
+
+		$all_items = $this->get_all_items();
+		$items = $this->create_objects( $all_items );
+
+		\WP_CLI\Utils\format_items( $values['format'], $items, $values['fields'] );
 	}
 
 	/**
@@ -178,6 +248,33 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			'must-use' => 'Must Use',
 		)
 	);
+
+	private function create_objects( $items ) {
+		if ( !is_array( $items ) && !empty( $items ) )
+			\WP_CLI::error( sprintf( "No '$this->item_type's found." ) );
+
+		$objects = array();
+
+		foreach ( $items as $item ) {
+			$object = new \stdClass;
+
+			if ( empty( $item['version'] ) )
+				$item['version'] = "";
+
+			foreach ( $item as $field => $value ) {
+				if ( $value === true ) {
+					$value = "available";
+				} else if ( $value === false) {
+					$value = "none";
+				}
+
+				$object->{$field} = $value;
+			}
+			$objects[] = $object;
+		}
+
+		return $objects;
+	}
 
 	protected function format_status( $status, $format ) {
 		return $this->get_color( $status ) . $this->map[ $format ][ $status ];

@@ -8,8 +8,8 @@ use \WP_CLI\Dispatcher;
 
 function load_dependencies() {
 	$vendor_paths = array(
-		WP_CLI_ROOT . '../../../../vendor',  // part of a larger project
 		WP_CLI_ROOT . '../vendor',           // top-level project
+		WP_CLI_ROOT . '../../../../vendor',  // part of a larger project
 	);
 
 	$has_autoload = false;
@@ -17,7 +17,6 @@ function load_dependencies() {
 	foreach ( $vendor_paths as $vendor_path ) {
 		if ( file_exists( $vendor_path . '/autoload.php' ) ) {
 			require $vendor_path . '/autoload.php';
-			include $vendor_path . '/wp-cli/php-cli-tools/lib/cli/cli.php';
 			$has_autoload = true;
 			break;
 		}
@@ -25,10 +24,31 @@ function load_dependencies() {
 
 	if ( !$has_autoload ) {
 		fputs( STDERR, "Internal error: Can't find Composer autoloader.\n" );
-		exit(2);
+		exit(3);
 	}
 
 	include WP_CLI_ROOT . 'Spyc.php';
+}
+
+function load_command( $name ) {
+	$path = WP_CLI_ROOT . "/commands/$name.php";
+
+	if ( is_readable( $path ) ) {
+		include_once $path;
+	}
+}
+
+function load_all_commands() {
+	$cmd_dir = WP_CLI_ROOT . "commands";
+
+	$iterator = new \DirectoryIterator( $cmd_dir );
+
+	foreach ( $iterator as $filename ) {
+		if ( '.php' != substr( $filename, -4 ) )
+			continue;
+
+		include_once "$cmd_dir/$filename";
+	}
 }
 
 function get_config_spec() {
@@ -138,7 +158,10 @@ function assoc_args_to_str( $assoc_args ) {
  * Given a template string and an arbitrary number of arguments,
  * returns the final command, with the parameters escaped.
  */
-function create_cmd( $cmd ) {
+function esc_cmd( $cmd ) {
+	if ( func_num_args() < 2 )
+		trigger_error( 'esc_cmd() requires at least two arguments.', E_USER_WARNING );
+
 	$args = func_get_args();
 
 	$cmd = array_shift( $args );
@@ -252,11 +275,33 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 /**
  * Output items in a table, JSON, or CSV
  *
- * @param string $format     Format to use: 'table', 'json', 'csv'
- * @param array  $fields     Named fields for each item of data
- * @param array  $items      Data to output
+ * @param string        $format     Format to use: 'table', 'json', 'csv', 'ids'
+ * @param array         $items      Data to output
+ * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
-function format_items( $format, $fields, $items ) {
+function format_items( $format, $items, $fields ) {
+	if ( 'ids' == $format )
+		echo implode( ' ', $items );
+
+	if ( ! is_array( $fields ) )
+		$fields = explode( ',', $fields );
+
+	$output_items = array();
+	foreach ( $items as $item ) {
+
+		$output_item = new \stdClass;
+		foreach ( $fields as $key => $field ) {
+
+			if ( ! isset( $item->$field ) ) {
+				unset( $fields[$key] );
+				continue;
+			}
+
+			$output_item->$field = $item->$field;
+		}
+
+		$output_items[] = $output_item;
+	}
 
 	switch ( $format ) {
 		case 'table':
@@ -264,37 +309,19 @@ function format_items( $format, $fields, $items ) {
 
 			$table->setHeaders( $fields );
 
-			foreach ( $items as $item ) {
-				$line = array();
-
-				foreach ( $fields as $field ) {
-					$line[] = $item->$field;
-				}
-
-				$table->addRow( $line );
+			foreach ( $output_items as $item ) {
+				$table->addRow( array_values( (array)$item ) );
 			}
 
 			$table->display();
 			break;
 		case 'csv':
 		case 'json':
-			$output_items = array();
-
-			foreach( $items as $item ) {
-				$output_item = new \stdClass;
-				foreach( $fields as $field ) {
-					$output_item->$field = $item->$field;
-				}
-				$output_items[] = $output_item;
-			}
 
 			if ( 'json' == $format )
 				echo json_encode( $output_items );
 			else
 				write_csv( STDOUT, $output_items, $fields );
-			break;
-		case 'ids':
-			\WP_CLI::out( implode( ' ', $items ) );
 			break;
 	}
 }
@@ -355,20 +382,10 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 	return $output;
 }
 
-function find_subcommand( $args ) {
-		$command = \WP_CLI::$root;
-
-		while ( !empty( $args ) && $command && $command instanceof Dispatcher\CommandContainer ) {
-			$command = $command->find_subcommand( $args );
-		}
-
-		return $command;
-}
-
 function run_mysql_query( $query, $args ) {
 	// TODO: use PDO?
 
-	$arg_str = create_cmd( '--host=%s --user=%s --execute=%s',
+	$arg_str = esc_cmd( '--host=%s --user=%s --execute=%s',
 		$args['host'], $args['user'], $query );
 
 	run_mysql_command( 'mysql', $arg_str, $args['pass'] );
@@ -377,12 +394,20 @@ function run_mysql_query( $query, $args ) {
 function run_mysql_command( $cmd, $arg_str, $pass ) {
 	$old_val = getenv( 'MYSQL_PWD' );
 
-	$final_cmd = "$cmd --defaults-file=/dev/null $arg_str";
+	$final_cmd = "$cmd --no-defaults $arg_str";
 
 	putenv( 'MYSQL_PWD=' . $pass );
 	$r = proc_close( proc_open( $final_cmd, array( STDIN, STDOUT, STDERR ), $pipes ) );
 	putenv( 'MYSQL_PWD=' . $old_val );
 
 	if ( $r ) exit( $r );
+}
+
+function mustache_render( $template_name, $data ) {
+	$template = file_get_contents( WP_CLI_ROOT . "../templates/$template_name" );
+
+	$m = new \Mustache_Engine;
+
+	return $m->render( $template, $data );
 }
 

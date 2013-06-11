@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 #
-# This script has been adapted from the drush wrapper script
+# This wrapper script has been adapted from the equivalent drush wrapper
 # and 99.9% of all credit should go to the authors of that project:
 # http://drupal.org/project/drush
 # And 0.09% to the author of this project:
@@ -29,19 +29,6 @@ case $(uname -a) in
 	CYGWIN*)
 		SCRIPT_PATH=$(cygpath -w -a -- "$SCRIPT_PATH") ;;
 esac
-
-# If not exported, try to determine and export the number of columns.
-# We do not want to run $(tput cols) if $TERM is empty or "dumb", because
-# if we do, tput will output an undesirable error message to stderr.  If
-# we redirect stderr in any way, e.g. $(tput cols 2>/dev/null), then the
-# error message is suppressed, but tput cols becomes confused about the
-# terminal and prints out the default value (80).
-if [ -z $COLUMNS ] && [ -n "$TERM" ] && [ "$TERM" != dumb ] ; then
-	# Note to cygwin users: install the ncurses package to get tput command.
-	if COLUMNS=$(tput cols); then
-		export COLUMNS
-	fi
-fi
 
 if [ ! -z "$WP_CLI_PHP" ] ; then
 	# Use the WP_CLI_PHP environment variable if it is available.

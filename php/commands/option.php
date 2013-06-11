@@ -10,7 +10,7 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Get an option.
 	 *
-	 * @synopsis <key> [--json]
+	 * @synopsis <key> [--format=<format>]
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $key ) = $args;
@@ -26,7 +26,7 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Add an option.
 	 *
-	 * @synopsis <key> <value> [--json]
+	 * @synopsis <key> [--format=<format>]
 	 */
 	public function add( $args, $assoc_args ) {
 		$key = $args[0];
@@ -35,6 +35,8 @@ class Option_Command extends WP_CLI_Command {
 
 		if ( !add_option( $key, $value ) ) {
 			WP_CLI::error( "Could not add option '$key'. Does it already exist?" );
+		} else {
+			WP_CLI::success( "Added '$key' option." );
 		}
 	}
 
@@ -42,7 +44,7 @@ class Option_Command extends WP_CLI_Command {
 	 * Update an option.
 	 *
 	 * @alias set
-	 * @synopsis <key> <value> [--json]
+	 * @synopsis <key> [--format=<format>]
 	 */
 	public function update( $args, $assoc_args ) {
 		$key = $args[0];
@@ -54,6 +56,8 @@ class Option_Command extends WP_CLI_Command {
 
 		if ( !update_option( $key, $value ) ) {
 			WP_CLI::error( "Could not update option '$key'." );
+		} else {
+			WP_CLI::success( "Updated '$key' option." );
 		}
 	}
 
@@ -67,6 +71,8 @@ class Option_Command extends WP_CLI_Command {
 
 		if ( !delete_option( $key ) ) {
 			WP_CLI::error( "Could not delete '$key' option. Does it exist?" );
+		} else {
+			WP_CLI::success( "Deleted '$key' option." );
 		}
 	}
 }

@@ -7,9 +7,15 @@
 \fBwp\-scaffold\-taxonomy\fR \- Generate PHP code for registering a custom taxonomy\.
 .
 .SH "SYNOPSIS"
-wp scaffold taxonomy \fIslug\fR [\-\-post_types=\fIpost\-types\fR] [\-\-textdomain=\fItextdomain\fR] [\-\-theme] [\-\-plugin=\fIplugin\fR] [\-\-label=\fIlabel\fR] [\-\-raw]
+wp scaffold taxonomy \fIslug\fR [\-\-post_types=\fIpost\-types\fR] [\-\-label=\fIlabel\fR] [\-\-textdomain=\fItextdomain\fR] [\-\-theme] [\-\-plugin=\fIplugin\fR] [\-\-raw]
 .
 .SH "OPTIONS"
+.
+.TP
+\fB\-\-post_types=<post_types>\fR:
+.
+.IP
+Post types to register for use with the taxonomy\.
 .
 .TP
 \fB\-\-label=<label>\fR:
@@ -27,7 +33,7 @@ The textdomain to use for the labels\.
 \fB\-\-theme\fR:
 .
 .IP
-Create a file in the current theme directory, instead of sending to STDOUT\.
+Create a file in the active theme directory, instead of sending to STDOUT\. Specify a theme with \fB\-\-theme=<theme>\fR to have the file placed in that theme\.
 .
 .TP
 \fB\-\-plugin=<plugin>\fR:
@@ -40,4 +46,12 @@ Create a file in the given plugin\'s directory, instead of sending to STDOUT\.
 .
 .IP
 Just generate the \fBregister_taxonomy()\fR call and nothing else\.
+.
+.SH "EXAMPLES"
+.
+.nf
+
+wp scaffold taxonomy venue \-\-post_types=event,presentation
+.
+.fi
 

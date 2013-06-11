@@ -14,7 +14,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	/**
 	 * Get meta field value.
 	 *
-	 * @synopsis <id> <key> [--json]
+	 * @synopsis <id> <key> [--format=<format>]
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
@@ -47,10 +47,12 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	/**
 	 * Add a meta field.
 	 *
-	 * @synopsis <id> <key> <value>
+	 * @synopsis <id> <key> <value> [--format=<format>]
 	 */
 	public function add( $args, $assoc_args ) {
-		list( $object_id, $meta_key, $meta_value ) = $args;
+		list( $object_id, $meta_key ) = $args;
+
+		$meta_value = \WP_CLI::read_value( $args[2], $assoc_args );
 
 		$success = \add_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
 
@@ -65,10 +67,12 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * Update a meta field.
 	 *
 	 * @alias set
-	 * @synopsis <id> <key> <value>
+	 * @synopsis <id> <key> <value> [--format=<format>]
 	 */
 	public function update( $args, $assoc_args ) {
-		list( $object_id, $meta_key, $meta_value ) = $args;
+		list( $object_id, $meta_key ) = $args;
+
+		$meta_value = \WP_CLI::read_value( $args[2], $assoc_args );
 
 		$success = \update_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
 

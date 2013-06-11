@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\Utils;
+
 /**
  * Generate code for post types, taxonomies, etc.
  *
@@ -66,6 +68,8 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$vars['slug'] = $slug;
 
+		$vars['post_types'] = $this->quote_comma_list_elements( $vars['post_types'] );
+
 		$vars['textdomain'] = $this->get_textdomain( $vars['textdomain'], $control_args );
 
 		$vars['label'] = $control_args['label'];
@@ -80,7 +84,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		list( $raw_template, $extended_template ) = $templates;
 
-		$raw_output = $this->render( $raw_template, $vars );
+		$raw_output = Utils\mustache_render( $raw_template, $vars );
 
 		if ( ! $control_args['raw'] ) {
 			$vars = array_merge( $vars, array(
@@ -88,7 +92,7 @@ class Scaffold_Command extends WP_CLI_Command {
 				'output' => $raw_output
 			) );
 
-			$final_output = $this->render( $extended_template, $vars );
+			$final_output = Utils\mustache_render( $extended_template, $vars );
 		} else {
 			$final_output = $raw_output;
 		}
@@ -166,10 +170,10 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$data['description'] = ucfirst( $data['parent_theme'] ) . " child theme.";
 
-		$theme_dir = WP_CONTENT_DIR . "themes" . "/$theme_slug";
+		$theme_dir = WP_CONTENT_DIR . "/themes" . "/$theme_slug";
 		$theme_style_path = "$theme_dir/style.css";
 
-		$this->create_file( $theme_style_path, $this->render( 'child_theme.mustache', $data ) );
+		$this->create_file( $theme_style_path, Utils\mustache_render( 'child_theme.mustache', $data ) );
 
 		WP_CLI::success( "Created $theme_dir" );
 
@@ -181,7 +185,10 @@ class Scaffold_Command extends WP_CLI_Command {
 		extract( $assoc_args, EXTR_SKIP );
 
 		if ( $theme ) {
-			$path = TEMPLATEPATH;
+			if ( is_string( $theme ) )
+				$path = get_theme_root( $theme ) . '/' . $theme;
+			else
+				$path = get_stylesheet_directory();
 		} elseif ( ! empty( $plugin ) ) {
 			$path = WP_PLUGIN_DIR . '/' . $plugin;
 			if ( !is_dir( $path ) ) {
@@ -213,7 +220,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
 
-		$this->create_file( $plugin_path, $this->render( 'plugin.mustache', $data ) );
+		$this->create_file( $plugin_path, Utils\mustache_render( 'plugin.mustache', $data ) );
 
 		WP_CLI::success( "Created $plugin_dir" );
 
@@ -242,7 +249,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$wp_filesystem->mkdir( $tests_dir );
 
 		$this->create_file( "$tests_dir/bootstrap.php",
-			$this->render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) );
+			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) );
 
 		$to_copy = array(
 			'phpunit.xml' => $plugin_dir,
@@ -251,7 +258,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 
 		foreach ( $to_copy as $file => $dir ) {
-			$wp_filesystem->copy( $this->get_template_path( $file ), "$dir/$file", true );
+			$wp_filesystem->copy( WP_CLI_ROOT . "../templates/$file", "$dir/$file", true );
 		}
 
 		WP_CLI::success( "Created test files in $plugin_dir" );
@@ -351,16 +358,8 @@ class Scaffold_Command extends WP_CLI_Command {
 		return $out;
 	}
 
-	private function render( $template, $data ) {
-		$template = file_get_contents( $this->get_template_path( $template ) );
-
-		$m = new Mustache_Engine;
-
-		return $m->render( $template, $data );
-	}
-
-	private function get_template_path( $template ) {
-		return WP_CLI_ROOT . "../templates/$template";
+	protected function quote_comma_list_elements( $comma_list ) {
+		return "'" . implode( "', '", explode( ',', $comma_list ) ) . "'";
 	}
 }
 

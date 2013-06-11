@@ -12,6 +12,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	protected $upgrade_refresh = 'wp_update_themes';
 	protected $upgrade_transient = 'update_themes';
 
+	protected $fields = array(
+		'name',
+		'status',
+		'update',
+		'version'
+	);
+
 	/**
 	 * See the status of one or all themes.
 	 *
@@ -100,6 +107,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				WP_CLI::error( $api );
 		}
 
+		if ( isset( $assoc_args['version'] ) ) {
+			self::alter_api_response( $api, $assoc_args['version'] );
+		}
+
 		// Check to see if we should update, rather than install.
 		if ( $this->has_update( $slug ) ) {
 			WP_CLI::line( sprintf( 'Updating %s (%s)', $api->name, $api->version ) );
@@ -133,6 +144,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				'name' => $key,
 				'status' => $this->get_status( $theme ),
 				'update' => $this->has_update( $theme->get_stylesheet() ),
+				'version' => $theme->get('Version'),
 				'update_id' => $theme->get_stylesheet(),
 			);
 		}
@@ -177,16 +189,29 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	function delete( $args ) {
 		$theme = $this->parse_name( $args );
+		$theme_slug = $theme->get_stylesheet();
 
 		if ( $this->is_active_theme( $theme ) ) {
 			WP_CLI::error( "Can't delete the currently active theme." );
 		}
 
-		$r = delete_theme( $theme->get_stylesheet() );
+		$r = delete_theme( $theme_slug );
 
 		if ( is_wp_error( $r ) ) {
 			WP_CLI::error( $r );
 		}
+
+		WP_CLI::success( sprintf( "Deleted '%s' theme.", $theme_slug ) );
+	}
+
+	/**
+	 * Get a list of themes.
+	 *
+	 * @subcommand list
+	 * @synopsis [--format=<format>]
+	 */
+	function _list( $_, $assoc_args ) {
+		parent::_list( $_, $assoc_args );
 	}
 
 	protected function parse_name( $args ) {

@@ -12,6 +12,8 @@ class WP_CLI {
 
 	public static $runner;
 
+	private static $logger;
+
 	private static $man_dirs = array();
 
 	/**
@@ -19,8 +21,8 @@ class WP_CLI {
 	 */
 	static function init() {
 		self::add_man_dir(
-			WP_CLI_ROOT . "../man/",
-			WP_CLI_ROOT . "../man-src/"
+			WP_CLI_ROOT . "../man",
+			WP_CLI_ROOT . "../man-src"
 		);
 
 		self::$root = new Dispatcher\RootCommand;
@@ -28,36 +30,64 @@ class WP_CLI {
 	}
 
 	/**
-	 * Add a command to the wp-cli list of commands
+	 * Set the logger instance.
+	 *
+	 * @param object $logger
+	 */
+	static function set_logger( $logger ) {
+		self::$logger = $logger;
+	}
+
+	/**
+	 * Add a command to the WP-CLI list of commands
 	 *
 	 * @param string $name The name of the command that will be used in the cli
-	 * @param string|object $implementation The command implementation
+	 * @param string $class The command implementation
 	 */
-	static function add_command( $name, $implementation ) {
+	static function add_command( $name, $class ) {
 		if ( in_array( $name, self::get_config('disabled_commands') ) )
 			return;
 
-		if ( is_string( $implementation ) ) {
-			$command = self::create_composite_command( $name, $implementation );
+		$reflection = new \ReflectionClass( $class );
+
+		if ( $reflection->hasMethod( '__invoke' ) ) {
+			$command = self::create_subcommand( self::$root, $name, $reflection->name,
+				$reflection->getMethod( '__invoke' ) );
 		} else {
-			$command = self::create_atomic_command( $name, $implementation );
+			$command = self::create_composite_command( $name, $reflection );
 		}
 
 		self::$root->add_subcommand( $name, $command );
 	}
 
-	private static function create_composite_command( $name, $class ) {
-		$reflection = new \ReflectionClass( $class );
+	private static function create_subcommand( $parent, $name, $class_name, $method ) {
+		$docparser = new \WP_CLI\DocParser( $method );
 
+		if ( !$name )
+			$name = $docparser->get_tag( 'subcommand' );
+
+		if ( !$name )
+			$name = $method->name;
+
+		$method_name = $method->name;
+
+		$when_invoked = function ( $args, $assoc_args ) use ( $class_name, $method_name ) {
+			call_user_func( array( new $class_name, $method_name ), $args, $assoc_args );
+		};
+
+		return new Dispatcher\Subcommand( $parent, $name, $docparser, $when_invoked );
+	}
+
+	private static function create_composite_command( $name, $reflection ) {
 		$docparser = new \WP_CLI\DocParser( $reflection );
 
-		$container = new Dispatcher\CompositeCommand( $name, $docparser->get_shortdesc() );
+		$container = new Dispatcher\CompositeCommand( self::$root, $name, $docparser );
 
 		foreach ( $reflection->getMethods() as $method ) {
 			if ( !self::_is_good_method( $method ) )
 				continue;
 
-			$subcommand = new Dispatcher\MethodSubcommand( $container, $class, $method );
+			$subcommand = self::create_subcommand( $container, false, $reflection->name, $method );
 
 			$subcommand_name = $subcommand->get_name();
 			$full_name = self::get_full_name( $subcommand );
@@ -71,7 +101,7 @@ class WP_CLI {
 		return $container;
 	}
 
-	private static function get_full_name( Dispatcher\Command $command ) {
+	private static function get_full_name( $command ) {
 		$path = Dispatcher\get_path( $command );
 		array_shift( $path );
 
@@ -80,14 +110,6 @@ class WP_CLI {
 
 	private static function _is_good_method( $method ) {
 		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
-	}
-
-	private static function create_atomic_command( $name, $implementation ) {
-		$method = new \ReflectionMethod( $implementation, '__invoke' );
-
-		$docparser = new \WP_CLI\DocParser( $method );
-
-		return new Dispatcher\Subcommand( self::$root, $name, $implementation, $docparser );
 	}
 
 	static function add_man_dir( $dest_dir, $src_dir ) {
@@ -99,24 +121,32 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display a message in the cli
-	 *
-	 * @param string $message
-	 */
-	static function out( $message, $handle = STDOUT ) {
-		if ( self::get_config('quiet') )
-			return;
-
-		fwrite( $handle, \cli\Colors::colorize( $message, self::get_config('color') ) );
-	}
-
-	/**
 	 * Display a message in the CLI and end with a newline
 	 *
 	 * @param string $message
 	 */
 	static function line( $message = '' ) {
-		self::out( $message . "\n" );
+		self::$logger->line( $message );
+	}
+
+	/**
+	 * Display a success in the CLI and end with a newline
+	 *
+	 * @param string $message
+	 * @param string $label
+	 */
+	static function success( $message, $label = 'Success' ) {
+		self::$logger->success( $message, $label );
+	}
+
+	/**
+	 * Display a warning in the CLI and end with a newline
+	 *
+	 * @param string $message
+	 * @param string $label
+	 */
+	static function warning( $message, $label = 'Warning' ) {
+		self::$logger->warning( self::error_to_string( $message ), $label );
 	}
 
 	/**
@@ -127,32 +157,10 @@ class WP_CLI {
 	 */
 	static function error( $message, $label = 'Error' ) {
 		if ( ! isset( self::$runner->assoc_args[ 'completions' ] ) ) {
-			$msg = '%R' . $label . ': %n' . self::error_to_string( $message ) . "\n";
-			fwrite( STDERR, \cli\Colors::colorize( $msg, self::get_config('color') ) );
+			self::$logger->error( self::error_to_string( $message ), $label );
 		}
 
 		exit(1);
-	}
-
-	/**
-	 * Display a success in the CLI and end with a newline
-	 *
-	 * @param string $message
-	 * @param string $label
-	 */
-	static function success( $message, $label = 'Success' ) {
-		self::line( '%G' . $label . ': %n' . $message );
-	}
-
-	/**
-	 * Display a warning in the CLI and end with a newline
-	 *
-	 * @param string $message
-	 * @param string $label
-	 */
-	static function warning( $message, $label = 'Warning' ) {
-		$msg = '%C' . $label . ': %n' . self::error_to_string( $message );
-		self::out( $msg . "\n", STDERR );
 	}
 
 	/**
@@ -160,7 +168,7 @@ class WP_CLI {
 	 */
 	static function confirm( $question, $assoc_args ) {
 		if ( !isset( $assoc_args['yes'] ) ) {
-			self::out( $question . " [y/n] " );
+			echo $question . " [y/n] ";
 
 			$answer = trim( fgets( STDIN ) );
 
@@ -176,7 +184,7 @@ class WP_CLI {
 	 * @param array $assoc_args
 	 */
 	static function read_value( $value, $assoc_args = array() ) {
-		if ( isset( $assoc_args['json'] ) ) {
+		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
 			$value = json_decode( $value, true );
 		}
 
@@ -190,7 +198,7 @@ class WP_CLI {
 	 * @param array $assoc_args
 	 */
 	static function print_value( $value, $assoc_args = array() ) {
-		if ( isset( $assoc_args['json'] ) ) {
+		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
 			$value = json_encode( $value );
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
 			$value = var_export( $value );
@@ -206,11 +214,13 @@ class WP_CLI {
 	 * @return string
 	 */
 	static function error_to_string( $errors ) {
-		if( is_string( $errors ) ) {
+		if ( is_string( $errors ) ) {
 			return $errors;
-		} elseif( is_wp_error( $errors ) && $errors->get_error_code() ) {
-			foreach( $errors->get_error_messages() as $message ) {
-				if( $errors->get_error_data() )
+		}
+
+		if ( is_object( $errors ) && is_a( $errors, 'WP_Error' ) ) {
+			foreach ( $errors->get_error_messages() as $message ) {
+				if ( $errors->get_error_data() )
 					return $message . ' ' . $errors->get_error_data();
 				else
 					return $message;
@@ -251,6 +261,27 @@ class WP_CLI {
 		return self::$runner->config[ $key ];
 	}
 
+	private static function find_command_to_run( $args ) {
+		$command = \WP_CLI::$root;
+
+		$cmd_path = array();
+
+		while ( !empty( $args ) && $command->has_subcommands() ) {
+			$cmd_path[] = $args[0];
+
+			$subcommand = $command->find_subcommand( $args );
+
+			if ( !$subcommand ) {
+				\WP_CLI::error( sprintf( "'%s' is not a registered wp command. See 'wp help'.",
+					implode( ' ', $cmd_path ) ) );
+			}
+
+			$command = $subcommand;
+		}
+
+		return array( $command, $args );
+	}
+
 	/**
 	 * Run a given command.
 	 *
@@ -258,25 +289,20 @@ class WP_CLI {
 	 * @param array
 	 */
 	public static function run_command( $args, $assoc_args = array() ) {
-		$command = self::$root;
+		list( $command, $final_args ) = self::find_command_to_run( $args );
 
-		while ( !empty( $args ) && $command instanceof Dispatcher\CommandContainer ) {
-			$subcommand = $command->pre_invoke( $args );
-			if ( !$subcommand )
-				break;
+		$command->invoke( $final_args, $assoc_args );
+	}
 
-			$command = $subcommand;
-		}
-
-		if ( $command instanceof Dispatcher\CommandContainer ) {
-			$command->show_usage();
-		} else {
-			$command->invoke( $args, $assoc_args );
-		}
+	// back-compat
+	static function out( $str ) {
+		echo $str;
 	}
 
 	// back-compat
 	static function addCommand( $name, $class ) {
+		trigger_error( sprintf( 'wp %s: %s is deprecated. use WP_CLI::add_command() instead.',
+			$name, __FUNCTION__ ), E_USER_WARNING );
 		self::add_command( $name, $class );
 	}
 }

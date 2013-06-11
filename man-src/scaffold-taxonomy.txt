@@ -1,5 +1,9 @@
 ## OPTIONS
 
+* `--post_types=<post_types>`:
+
+	Post types to register for use with the taxonomy.
+
 * `--label=<label>`:
 
 	The text used to translate the update messages
@@ -10,8 +14,8 @@
 
 * `--theme`:
 
-	Create a file in the current theme directory, instead of sending to
-STDOUT.
+	Create a file in the active theme directory, instead of sending to
+STDOUT. Specify a theme with `--theme=<theme>` to have the file placed in that theme.
 
 * `--plugin=<plugin>`:
 
@@ -21,3 +25,7 @@ STDOUT.
 * `--raw`:
 
 	Just generate the `register_taxonomy()` call and nothing else.
+
+## EXAMPLES
+
+	wp scaffold taxonomy venue --post_types=event,presentation
