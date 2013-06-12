@@ -51,23 +51,6 @@ function load_all_commands() {
 	}
 }
 
-function get_config_spec() {
-	$spec = include __DIR__ . '/config-spec.php';
-
-	$defaults = array(
-		'runtime' => false,
-		'file' => false,
-		'synopsis' => '',
-		'default' => null,
-	);
-
-	foreach ( $spec as &$option ) {
-		$option = array_merge( $defaults, $option );
-	}
-
-	return $spec;
-}
-
 /**
  * Search for file by walking up the directory tree until the first file is found or until $stop_check($dir) returns true
  * @param string|array The files (or file) to search for
@@ -100,6 +83,14 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 		$dir = $parent_dir;
 	}
 	return null;
+}
+
+function is_absolute_path( $path ) {
+	// Windows
+	if ( ':' === $path[1] )
+		return true;
+
+	return $path[0] === '/';
 }
 
 /**

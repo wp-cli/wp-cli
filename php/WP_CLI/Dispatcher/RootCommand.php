@@ -47,7 +47,7 @@ EOB
 
 		$lines = array();
 
-		foreach ( \WP_CLI\Utils\get_config_spec() as $key => $details ) {
+		foreach ( \WP_CLI::$configurator->get_spec() as $key => $details ) {
 			if ( false === $details['runtime'] )
 				continue;
 
