@@ -8,8 +8,8 @@ use \WP_CLI\Dispatcher;
  */
 class WP_CLI {
 
+	public static $configurator;
 	public static $root;
-
 	public static $runner;
 
 	private static $logger;
@@ -25,6 +25,7 @@ class WP_CLI {
 			WP_CLI_ROOT . "../man-src"
 		);
 
+		self::$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/config-spec.php' );
 		self::$root = new Dispatcher\RootCommand;
 		self::$runner = new WP_CLI\Runner;
 	}
