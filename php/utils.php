@@ -85,7 +85,7 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	return null;
 }
 
-function is_absolute_path( $path ) {
+function is_path_absolute( $path ) {
 	// Windows
 	if ( ':' === $path[1] )
 		return true;

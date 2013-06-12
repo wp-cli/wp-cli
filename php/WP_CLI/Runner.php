@@ -48,7 +48,7 @@ class Runner {
 		$path = getcwd();
 
 		if ( !empty( $config['path'] ) ) {
-			if ( Utils\is_absolute_path( $config['path'] ) )
+			if ( Utils\is_path_absolute( $config['path'] ) )
 				$path = $config['path'];
 			else
 				$path .= '/' . $config['path'];
