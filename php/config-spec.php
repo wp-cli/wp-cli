@@ -33,6 +33,8 @@ return array(
 		'runtime' => '=<path>',
 		'file' => '<path>',
 		'desc' => 'Load given PHP file before running the command',
+		'multiple' => true,
+		'default' => array(),
 	),
 
 	'disabled_commands' => array(
