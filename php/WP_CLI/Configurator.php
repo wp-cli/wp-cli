@@ -59,7 +59,7 @@ class Configurator {
 
 		// When invoking from a subdirectory in the project,
 		// make sure a config-relative 'path' is made absolute
-		if ( ! empty( $sanitized_config['path'] ) && ! \WP_CLI\Utils\is_absolute_path( $sanitized_config['path'] ) ) {
+		if ( ! empty( $sanitized_config['path'] ) && ! \WP_CLI\Utils\is_path_absolute( $sanitized_config['path'] ) ) {
 			$sanitized_config['path'] = dirname( $path ) . DIRECTORY_SEPARATOR . $sanitized_config['path'];
 		}
 
