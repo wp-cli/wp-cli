@@ -25,7 +25,7 @@ class RootCommand extends CompositeCommand {
 			if ( '_sys' == $command->get_name() )
 				continue;
 
-			\WP_CLI::line( sprintf( "    %s %s",
+			\WP_CLI::line( sprintf( '  %s %s',
 				implode( ' ', get_path( $command ) ),
 				implode( '|', array_keys( $command->get_subcommands() ) )
 			) );
@@ -47,7 +47,7 @@ EOB
 
 		$lines = array();
 
-		foreach ( \WP_CLI\Utils\get_config_spec() as $key => $details ) {
+		foreach ( \WP_CLI::$configurator->get_spec() as $key => $details ) {
 			if ( false === $details['runtime'] )
 				continue;
 
@@ -69,7 +69,7 @@ EOB
 		foreach ( $lines as $line ) {
 			list( $synopsis, $desc ) = $line;
 
-			\WP_CLI::line( '    ' . str_pad( $synopsis, $max_len ) . '  ' . $desc );
+			\WP_CLI::line( sprintf( '  %s  %s', str_pad( $synopsis, $max_len ), $desc ) );
 		}
 	}
 
