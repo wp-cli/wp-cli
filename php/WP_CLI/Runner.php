@@ -44,63 +44,11 @@ class Runner {
 		return false;
 	}
 
-	private static function load_config( $path, $spec ) {
-		if ( $path )
-			$config = spyc_load_file( $path );
-		else
-			$config = array();
-
-		$sanitized_config = array();
-
-		foreach ( $spec as $key => $details ) {
-			if ( $details['file'] && isset( $config[ $key ] ) )
-				$sanitized_config[ $key ] = $config[ $key ];
-			else
-				$sanitized_config[ $key ] = $details['default'];
-		}
-
-		// When invoking from a subdirectory in the project,
-		// make sure a config-relative 'path' is made absolute
-		if ( ! empty( $sanitized_config['path'] ) && ! self::is_absolute_path( $sanitized_config['path'] ) ) {
-			$sanitized_config['path'] = dirname( $path ) . DIRECTORY_SEPARATOR . $sanitized_config['path'];
-		}
-
-		return $sanitized_config;
-	}
-
-	private static function handle_boolean_param( &$assoc_args, &$config, $param ) {
-		$subkeys = array(
-			"$param" => true,
-			"no-$param" => false
-		);
-
-		foreach ( $subkeys as $key => $value ) {
-			if ( isset( $assoc_args[ $key ] ) ) {
-				$config[ $param ] = $value;
-			}
-
-			unset( $assoc_args[ $key ] );
-		}
-	}
-
-	private static function split_special( &$assoc_args, &$config, $spec ) {
-		foreach ( $spec as $key => $details ) {
-			if ( true === $details['runtime'] ) {
-				self::handle_boolean_param( $assoc_args, $config, $key );
-			} elseif ( false !== $details['runtime'] ) {
-				if ( isset( $assoc_args[ $key ] ) ) {
-					$config[ $key ] = $assoc_args[ $key ];
-					unset( $assoc_args[ $key ] );
-				}
-			}
-		}
-	}
-
 	private static function set_wp_root( $config ) {
 		$path = getcwd();
 
 		if ( !empty( $config['path'] ) ) {
-			if ( self::is_absolute_path( $config['path'] ) )
+			if ( Utils\is_absolute_path( $config['path'] ) )
 				$path = $config['path'];
 			else
 				$path .= '/' . $config['path'];
@@ -124,14 +72,6 @@ class Runner {
 		if ( !$user_id || !wp_set_current_user( $user_id ) ) {
 			\WP_CLI::error( sprintf( 'Could not get a user_id for this user: %s', var_export( $user, true ) ) );
 		}
-	}
-
-	private static function is_absolute_path( $path ) {
-		// Windows
-		if ( ':' === $path[1] )
-			return true;
-
-		return $path[0] === '/';
 	}
 
 	private static function set_url( $assoc_args ) {
@@ -291,19 +231,17 @@ class Runner {
 		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
 			Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) ) );
 
-		$config_spec = Utils\get_config_spec();
-
 		// Set the path default to the ABSPATH
 		$wp_abspath = dirname( Utils\find_file_upward( 'wp-load.php' ) );
 		if ( ! empty( $wp_abspath ) ) {
-			$config_spec['path']['default'] = $wp_abspath;
+			\WP_CLI::$configurator->set_default( 'path', $wp_abspath );
 		}
 
 		$this->config_path = self::get_config_path( $this->assoc_args );
 
-		$this->config = self::load_config( $this->config_path, $config_spec );
+		$this->config = \WP_CLI::$configurator->load_config( $this->config_path );
 
-		self::split_special( $this->assoc_args, $this->config, $config_spec );
+		\WP_CLI::$configurator->split_special( $this->assoc_args, $this->config );
 
 		$this->init_logger();
 
