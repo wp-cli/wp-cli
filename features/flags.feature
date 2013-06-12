@@ -61,23 +61,53 @@ Feature: Global flags
   Scenario: Using --require
     Given a WP install
     And a custom-cmd.php file:
-    """
-    <?php
-    class Test_Command extends WP_CLI_Command {
+      """
+      <?php
+      class Test_Command extends WP_CLI_Command {
 
-      function req( $args, $assoc_args ) {
-        WP_CLI::line( $args[0] );
+        function req( $args, $assoc_args ) {
+          WP_CLI::line( $args[0] );
+        }
       }
-    }
 
-    WP_CLI::add_command( 'test', 'Test_Command' );
-    """
+      WP_CLI::add_command( 'test', 'Test_Command' );
+      """
+
+    And a foo.php file:
+      """
+      <?php echo basename(__FILE__) . "\n";
+      """
+
+    And a bar.php file:
+      """
+      <?php echo basename(__FILE__) . "\n";
+      """
+
+    And a wp-cli.yml file:
+      """
+      require:
+        - foo.php
+        - bar.php
+      """
+
+    And a wp-cli2.yml file:
+      """
+      require: custom-cmd.php
+      """
 
     When I run `wp --require=custom-cmd.php test req 'This is a custom command.'`
     Then STDOUT should be:
-    """
-    This is a custom command.
-    """
+      """
+      foo.php
+      bar.php
+      This is a custom command.
+      """
+
+    When I run `wp --config=wp-cli2.yml test req 'This is a custom command.'`
+    Then STDOUT should contain:
+      """
+      This is a custom command.
+      """
 
   Scenario: Enabling/disabling color
     Given a WP install

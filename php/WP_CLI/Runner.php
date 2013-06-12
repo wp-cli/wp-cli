@@ -236,7 +236,21 @@ class Runner {
 
 		$local_config = \WP_CLI::$configurator->load_config( $this->config_path );
 
-		$this->config = array_merge( $local_config, $runtime_config );
+		// When invoking from a subdirectory in the project,
+		// make sure a config-relative 'path' is made absolute
+		if ( !empty( $local_config['path'] ) && !\WP_CLI\Utils\is_path_absolute( $local_config['path'] ) ) {
+			$local_config['path'] = dirname( $this->config_path ) . DIRECTORY_SEPARATOR . $local_config['path'];
+		}
+
+		$this->config = $local_config;
+
+		foreach ( $runtime_config as $key => $value ) {
+			if ( isset( $this->config[ $key ] ) && is_array( $this->config[ $key ] ) ) {
+				$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
+			} else {
+				$this->config[ $key ] = $value;
+			}
+		}
 
 		if ( !isset( $this->config['path'] ) ) {
 			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
@@ -307,8 +321,11 @@ class Runner {
 		// Handle --user parameter
 		self::set_user( $this->config );
 
-		if ( isset( $this->config['require'] ) )
-			require $this->config['require'];
+		if ( isset( $this->config['require'] ) ) {
+			foreach ( $this->config['require'] as $path ) {
+				require $path;
+			}
+		}
 
 		// Handle --completions parameter
 		if ( isset( $this->assoc_args['completions'] ) ) {

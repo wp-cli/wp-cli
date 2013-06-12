@@ -14,6 +14,7 @@ class Configurator {
 			'file' => false,
 			'synopsis' => '',
 			'default' => null,
+			'multiple' => false,
 		);
 
 		foreach ( $this->spec as &$option ) {
@@ -37,28 +38,34 @@ class Configurator {
 	 * @return array
 	 */
 	function parse_args( $arguments ) {
-		$regular_args = array();
-		$assoc_args = array();
+		$regular_args = $mixed_args = array();
 
 		foreach ( $arguments as $arg ) {
 			if ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
-				$assoc_args[ $matches[1] ] = true;
+				$mixed_args[] = array( $matches[1], true );
 			} elseif ( preg_match( '|^--([^=]+)=(.+)|', $arg, $matches ) ) {
-				$assoc_args[ $matches[1] ] = $matches[2];
+				$mixed_args[] = array( $matches[1], $matches[2] );
 			} else {
 				$regular_args[] = $arg;
 			}
 		}
 
-		$runtime_config = array();
+		$assoc_args = $runtime_config = array();
 
-		foreach ( $this->spec as $key => $details ) {
-			if ( true === $details['runtime'] ) {
-				self::handle_boolean_param( $assoc_args, $runtime_config, $key );
-			} elseif ( false !== $details['runtime'] ) {
-				if ( isset( $assoc_args[ $key ] ) ) {
-					$runtime_config[ $key ] = $assoc_args[ $key ];
-					unset( $assoc_args[ $key ] );
+		foreach ( $mixed_args as $tmp ) {
+			list( $key, $value ) = $tmp;
+
+			$enabled = isset( $this->spec[ $key ] ) ? $this->spec[ $key ]['runtime'] : false;
+
+			if ( false === $enabled ) {
+				$assoc_args[ $key ] = $value;
+			} elseif ( true === $enabled ) {
+				self::handle_boolean_param( $mixed_args, $runtime_config, $key );
+			} else {
+				if ( $this->spec[ $key ]['multiple'] ) {
+					$runtime_config[ $key ][] = $value;
+				} else {
+					$runtime_config[ $key ] = $value;
 				}
 			}
 		}
@@ -95,16 +102,16 @@ class Configurator {
 		$sanitized_config = array();
 
 		foreach ( $this->spec as $key => $details ) {
-			if ( $details['file'] && isset( $config[ $key ] ) )
-				$sanitized_config[ $key ] = $config[ $key ];
-			else
-				$sanitized_config[ $key ] = $details['default'];
-		}
+			if ( $details['file'] && isset( $config[ $key ] ) ) {
+				$value = $config[ $key ];
+				if ( $details['multiple'] && !is_array( $value ) ) {
+					$value = array( $value );
+				}
+			} else {
+				 $value = $details['default'];
+			}
 
-		// When invoking from a subdirectory in the project,
-		// make sure a config-relative 'path' is made absolute
-		if ( ! empty( $sanitized_config['path'] ) && ! \WP_CLI\Utils\is_path_absolute( $sanitized_config['path'] ) ) {
-			$sanitized_config['path'] = dirname( $path ) . DIRECTORY_SEPARATOR . $sanitized_config['path'];
+			$sanitized_config[ $key ] = $value;
 		}
 
 		return $sanitized_config;
