@@ -32,7 +32,7 @@ return array(
 	'require' => array(
 		'runtime' => '=<path>',
 		'file' => '<path>',
-		'desc' => 'Load given PHP file before running the command',
+		'desc' => 'Load PHP file before running the command (may be used more than once)',
 		'multiple' => true,
 		'default' => array(),
 	),
