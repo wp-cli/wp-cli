@@ -31,10 +31,26 @@ class Configurator {
 	}
 
 	/**
-	 * Set default value for a particular configuration key.
+	 * Splits a list of arguments into positional and associative.
+	 *
+	 * @param string
+	 * @return array
 	 */
-	function set_default( $key, $value ) {
-		$this->spec[ $key ]['default'] = $value;
+	function parse_args( $arguments ) {
+		$regular_args = array();
+		$assoc_args = array();
+
+		foreach ( $arguments as $arg ) {
+			if ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
+				$assoc_args[ $matches[1] ] = true;
+			} elseif ( preg_match( '|^--([^=]+)=(.+)|', $arg, $matches ) ) {
+				$assoc_args[ $matches[1] ] = $matches[2];
+			} else {
+				$regular_args[] = $arg;
+			}
+		}
+
+		return array( $regular_args, $assoc_args );
 	}
 
 	/**

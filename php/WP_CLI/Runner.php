@@ -229,19 +229,17 @@ class Runner {
 
 	public function before_wp_load() {
 		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
-			Utils\parse_args( array_slice( $GLOBALS['argv'], 1 ) ) );
-
-		// Set the path default to the ABSPATH
-		$wp_abspath = dirname( Utils\find_file_upward( 'wp-load.php' ) );
-		if ( ! empty( $wp_abspath ) ) {
-			\WP_CLI::$configurator->set_default( 'path', $wp_abspath );
-		}
+			\WP_CLI::$configurator->parse_args( array_slice( $GLOBALS['argv'], 1 ) ) );
 
 		$this->config_path = self::get_config_path( $this->assoc_args );
 
 		$this->config = \WP_CLI::$configurator->load_config( $this->config_path );
 
 		\WP_CLI::$configurator->split_special( $this->assoc_args, $this->config );
+
+		if ( !isset( $this->config['path'] ) ) {
+			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
+		}
 
 		$this->init_logger();
 
