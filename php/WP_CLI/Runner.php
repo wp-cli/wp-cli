@@ -208,10 +208,7 @@ class Runner {
 	}
 
 	private function init_logger() {
-		if ( isset( $this->assoc_args['no-color'] ) ) {
-			$color = false;
-			unset( $this->assoc_args['no-color'] );
-		} elseif ( 'auto' === $this->config['color'] ) {
+		if ( 'auto' === $this->config['color'] ) {
 			$color = ! \cli\Shell::isPiped();
 		} else {
 			$color = $this->config['color'];
