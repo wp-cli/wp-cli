@@ -31,7 +31,7 @@ class Configurator {
 	}
 
 	/**
-	 * Splits a list of arguments into positional and associative.
+	 * Splits a list of arguments into positional, associative and config.
 	 *
 	 * @param string
 	 * @return array
@@ -50,7 +50,35 @@ class Configurator {
 			}
 		}
 
-		return array( $regular_args, $assoc_args );
+		$runtime_config = array();
+
+		foreach ( $this->spec as $key => $details ) {
+			if ( true === $details['runtime'] ) {
+				self::handle_boolean_param( $assoc_args, $runtime_config, $key );
+			} elseif ( false !== $details['runtime'] ) {
+				if ( isset( $assoc_args[ $key ] ) ) {
+					$runtime_config[ $key ] = $assoc_args[ $key ];
+					unset( $assoc_args[ $key ] );
+				}
+			}
+		}
+
+		return array( $regular_args, $assoc_args, $runtime_config );
+	}
+
+	private static function handle_boolean_param( &$assoc_args, &$config, $param ) {
+		$subkeys = array(
+			"$param" => true,
+			"no-$param" => false
+		);
+
+		foreach ( $subkeys as $key => $value ) {
+			if ( isset( $assoc_args[ $key ] ) ) {
+				$config[ $param ] = $value;
+			}
+
+			unset( $assoc_args[ $key ] );
+		}
 	}
 
 	/**
@@ -80,37 +108,6 @@ class Configurator {
 		}
 
 		return $sanitized_config;
-	}
-
-	/**
-	 * Extract values from an associative array, according to the spec.
-	 */
-	function split_special( &$assoc_args, &$config ) {
-		foreach ( $this->spec as $key => $details ) {
-			if ( true === $details['runtime'] ) {
-				self::handle_boolean_param( $assoc_args, $config, $key );
-			} elseif ( false !== $details['runtime'] ) {
-				if ( isset( $assoc_args[ $key ] ) ) {
-					$config[ $key ] = $assoc_args[ $key ];
-					unset( $assoc_args[ $key ] );
-				}
-			}
-		}
-	}
-
-	private static function handle_boolean_param( &$assoc_args, &$config, $param ) {
-		$subkeys = array(
-			"$param" => true,
-			"no-$param" => false
-		);
-
-		foreach ( $subkeys as $key => $value ) {
-			if ( isset( $assoc_args[ $key ] ) ) {
-				$config[ $param ] = $value;
-			}
-
-			unset( $assoc_args[ $key ] );
-		}
 	}
 }
 

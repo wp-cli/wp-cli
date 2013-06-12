@@ -16,27 +16,27 @@ class Runner {
 		return $this->$key;
 	}
 
-	private static function get_config_path( &$assoc_args ) {
-		if ( isset( $assoc_args['config'] ) && file_exists( $assoc_args['config'] ) ) {
-			$path = $assoc_args['config'];
-			unset( $assoc_args['config'] );
-			return $path;
+	private static function get_config_path( $runtime_config ) {
+		if ( isset( $runtime_config['config'] ) && file_exists( $runtime_config['config'] ) ) {
+			return $runtime_config['config'];
 		}
 
 		$config_files = array(
 			'wp-cli.local.yml',
 			'wp-cli.yml'
 		);
-		// Stop looking upward when we find we have emerged from a subdirectory install into a parent install
-		$stop_check = function ( $dir ) {
+
+		// Stop looking upward when we find we have emerged from a subdirectory
+		// install into a parent install
+		$path = Utils\find_file_upward( $config_files, getcwd(), function ( $dir ) {
 			static $wp_load_count = 0;
 			$wp_load_path = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
 			if ( file_exists( $wp_load_path ) ) {
 				$wp_load_count += 1;
 			}
 			return $wp_load_count > 1;
-		};
-		$path = Utils\find_file_upward( $config_files, getcwd(), $stop_check );
+		} );
+
 		if ( $path ) {
 			return $path;
 		}
@@ -154,9 +154,7 @@ class Runner {
 	}
 
 	// Transparently convert old syntaxes
-	private static function back_compat_conversions( $r ) {
-		list( $args, $assoc_args ) = $r;
-
+	private static function back_compat_conversions( $args, $assoc_args ) {
 		// foo --help  ->  help foo
 		if ( isset( $assoc_args['help'] ) ) {
 			array_unshift( $args, 'help' );
@@ -228,14 +226,17 @@ class Runner {
 	}
 
 	public function before_wp_load() {
+		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::$configurator->parse_args(
+			array_slice( $GLOBALS['argv'], 1 ) );
+
 		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
-			\WP_CLI::$configurator->parse_args( array_slice( $GLOBALS['argv'], 1 ) ) );
+			$args, $assoc_args );
 
-		$this->config_path = self::get_config_path( $this->assoc_args );
+		$this->config_path = self::get_config_path( $runtime_config );
 
-		$this->config = \WP_CLI::$configurator->load_config( $this->config_path );
+		$local_config = \WP_CLI::$configurator->load_config( $this->config_path );
 
-		\WP_CLI::$configurator->split_special( $this->assoc_args, $this->config );
+		$this->config = array_merge( $local_config, $runtime_config );
 
 		if ( !isset( $this->config['path'] ) ) {
 			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
