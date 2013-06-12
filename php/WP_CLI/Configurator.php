@@ -41,7 +41,9 @@ class Configurator {
 		$regular_args = $mixed_args = array();
 
 		foreach ( $arguments as $arg ) {
-			if ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
+			if ( preg_match( '|^--no-([^=]+)$|', $arg, $matches ) ) {
+				$mixed_args[] = array( $matches[1], false );
+			} elseif ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
 				$mixed_args[] = array( $matches[1], true );
 			} elseif ( preg_match( '|^--([^=]+)=(.+)|', $arg, $matches ) ) {
 				$mixed_args[] = array( $matches[1], $matches[2] );
@@ -59,8 +61,6 @@ class Configurator {
 
 			if ( false === $enabled ) {
 				$assoc_args[ $key ] = $value;
-			} elseif ( true === $enabled ) {
-				self::handle_boolean_param( $mixed_args, $runtime_config, $key );
 			} else {
 				if ( $this->spec[ $key ]['multiple'] ) {
 					$runtime_config[ $key ][] = $value;
@@ -71,21 +71,6 @@ class Configurator {
 		}
 
 		return array( $regular_args, $assoc_args, $runtime_config );
-	}
-
-	private static function handle_boolean_param( &$assoc_args, &$config, $param ) {
-		$subkeys = array(
-			"$param" => true,
-			"no-$param" => false
-		);
-
-		foreach ( $subkeys as $key => $value ) {
-			if ( isset( $assoc_args[ $key ] ) ) {
-				$config[ $param ] = $value;
-			}
-
-			unset( $assoc_args[ $key ] );
-		}
 	}
 
 	/**
