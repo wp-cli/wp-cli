@@ -51,23 +51,6 @@ function load_all_commands() {
 	}
 }
 
-function get_config_spec() {
-	$spec = include __DIR__ . '/config-spec.php';
-
-	$defaults = array(
-		'runtime' => false,
-		'file' => false,
-		'synopsis' => '',
-		'default' => null,
-	);
-
-	foreach ( $spec as &$option ) {
-		$option = array_merge( $defaults, $option );
-	}
-
-	return $spec;
-}
-
 /**
  * Search for file by walking up the directory tree until the first file is found or until $stop_check($dir) returns true
  * @param string|array The files (or file) to search for
@@ -102,27 +85,12 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	return null;
 }
 
-/**
- * Splits $argv into positional and associative arguments.
- *
- * @param string
- * @return array
- */
-function parse_args( $arguments ) {
-	$regular_args = array();
-	$assoc_args = array();
+function is_path_absolute( $path ) {
+	// Windows
+	if ( ':' === $path[1] )
+		return true;
 
-	foreach ( $arguments as $arg ) {
-		if ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
-			$assoc_args[ $matches[1] ] = true;
-		} elseif ( preg_match( '|^--([^=]+)=(.+)|', $arg, $matches ) ) {
-			$assoc_args[ $matches[1] ] = $matches[2];
-		} else {
-			$regular_args[] = $arg;
-		}
-	}
-
-	return array( $regular_args, $assoc_args );
+	return $path[0] === '/';
 }
 
 /**

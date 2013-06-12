@@ -41,7 +41,7 @@ class Sys_Command extends WP_CLI_Command {
 	 * @subcommand param-dump
 	 */
 	function param_dump() {
-		echo json_encode( Utils\get_config_spec() );
+		echo json_encode( \WP_CLI::$configurator->get_spec() );
 	}
 
 	/**
