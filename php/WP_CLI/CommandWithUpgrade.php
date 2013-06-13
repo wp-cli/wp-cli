@@ -54,7 +54,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$line .= " " . $details['version'];
 			}
 
-			\WP_CLI::line( $line );
+			\WP_CLI::line( \WP_CLI::colorize( $line ) );
 		}
 
 		\WP_CLI::line();
