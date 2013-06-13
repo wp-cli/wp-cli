@@ -131,7 +131,7 @@ class WP_CLI {
 	 * @param string $message
 	 */
 	static function line( $message = '' ) {
-		self::$logger->line( $message );
+		echo $message . "\n";
 	}
 
 	/**

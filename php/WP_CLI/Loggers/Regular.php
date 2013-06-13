@@ -8,17 +8,12 @@ class Regular {
 		fwrite( $handle, \WP_CLI::colorize( $message . "\n" ) );
 	}
 
-	function line( $message ) {
-		echo $message . "\n";
-	}
-
 	function success( $message, $label ) {
-		$this->line( '%G' . $label . ': %n' . $message );
+		$this->_line( "%G$label:%n $message" );
 	}
 
 	function warning( $message, $label ) {
-		$msg = '%C' . $label . ': %n' . $message;
-		$this->_line( $msg, STDERR );
+		$this->_line( "%C$label:%n $message", STDERR );
 	}
 
 	function error( $message, $label ) {

@@ -4,10 +4,6 @@ namespace WP_CLI\Loggers;
 
 class Quiet {
 
-	function line( $message ) {
-		// nothing
-	}
-
 	function success( $message, $label ) {
 		// nothing
 	}
@@ -17,8 +13,7 @@ class Quiet {
 	}
 
 	function error( $message, $label ) {
-		$msg = '%R' . $label . ': %n' . $message;
-		fwrite( STDERR, \WP_CLI::colorize( $msg . "\n" ) );
+		fwrite( STDERR, \WP_CLI::colorize( "%R$label:%n $message\n" ) );
 	}
 }
 
