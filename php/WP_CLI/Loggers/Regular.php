@@ -4,14 +4,8 @@ namespace WP_CLI\Loggers;
 
 class Regular {
 
-	private $colorize;
-
-	function __construct( $colorize ) {
-		$this->colorize = $colorize;
-	}
-
 	private function _line( $message, $handle = STDOUT ) {
-		fwrite( $handle, \cli\Colors::colorize( $message . "\n", $this->colorize ) );
+		fwrite( $handle, \WP_CLI::colorize( $message . "\n" ) );
 	}
 
 	function line( $message ) {

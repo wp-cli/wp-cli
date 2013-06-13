@@ -207,17 +207,23 @@ class Runner {
 		return array( $args, $assoc_args );
 	}
 
-	private function init_logger() {
-		if ( 'auto' === $this->config['color'] ) {
-			$color = ! \cli\Shell::isPiped();
-		} else {
-			$color = $this->config['color'];
-		}
+	public function in_color() {
+		return $this->colorize;
+	}
 
+	private function init_colorization() {
+		if ( 'auto' === $this->config['color'] ) {
+			$this->colorize = !\cli\Shell::isPiped();
+		} else {
+			$this->colorize = $this->config['color'];
+		}
+	}
+
+	private function init_logger() {
 		if ( $this->config['quiet'] )
-			$logger = new \WP_CLI\Loggers\Quiet( $color );
+			$logger = new \WP_CLI\Loggers\Quiet;
 		else
-			$logger = new \WP_CLI\Loggers\Regular( $color );
+			$logger = new \WP_CLI\Loggers\Regular;
 
 		WP_CLI::set_logger( $logger );
 	}
@@ -253,6 +259,7 @@ class Runner {
 			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
 		}
 
+		$this->init_colorization();
 		$this->init_logger();
 
 		if ( !empty( $this->arguments ) )
