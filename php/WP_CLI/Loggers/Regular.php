@@ -9,7 +9,7 @@ class Regular {
 	}
 
 	function line( $message ) {
-		$this->_line( $message );
+		echo $message . "\n";
 	}
 
 	function success( $message, $label ) {
