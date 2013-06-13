@@ -37,11 +37,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( $this->has_update( $theme->get_stylesheet() ) )
 			$version .= ' (%gUpdate available%n)';
 
-		WP_CLI::line( 'Theme %9' . $theme->get_stylesheet() . '%n details:' );
-		WP_CLI::line( '    Name: ' . $theme->get('Name') );
-		WP_CLI::line( '    Status: ' . $status .'%n' );
-		WP_CLI::line( '    Version: ' . $version );
-		WP_CLI::line( '    Author: ' . $theme->get('Author') );
+		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( 'theme-status.mustache', array(
+			'slug' => $theme->get_stylesheet(),
+			'status' => $status,
+			'version' => $version,
+			'name' => $theme->get('Name'),
+			'author' => $theme->get('Author'),
+		) ) );
 	}
 
 	protected function get_all_items() {

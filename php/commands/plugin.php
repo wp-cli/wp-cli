@@ -47,16 +47,14 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( $this->has_update( $file ) )
 			$version .= ' (%gUpdate available%n)';
 
-		$this->_status_single( $details, $name, $version, $status );
-	}
-
-	protected function _status_single( $details, $name, $version, $status ) {
-		WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
-		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
-		WP_CLI::line( '    Status: ' . $status .'%n' );
-		WP_CLI::line( '    Version: ' . $version );
-		WP_CLI::line( '    Author: ' . $details[ 'Author' ] );
-		WP_CLI::line( '    Description: ' . $details[ 'Description' ] );
+		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( 'plugin-status.mustache', array(
+			'slug' => $name,
+			'status' => $status,
+			'version' => $version,
+			'name' => $details['Name'],
+			'author' => $details['Author'],
+			'description' => $details['Description']
+		) ) );
 	}
 
 	protected function get_all_items() {
