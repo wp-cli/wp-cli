@@ -39,6 +39,10 @@ class WP_CLI {
 		self::$logger = $logger;
 	}
 
+	static function colorize( $string ) {
+		return \cli\Colors::colorize( $string, self::$runner->in_color() );
+	}
+
 	/**
 	 * Add a command to the WP-CLI list of commands
 	 *
@@ -127,7 +131,7 @@ class WP_CLI {
 	 * @param string $message
 	 */
 	static function line( $message = '' ) {
-		self::$logger->line( $message );
+		echo $message . "\n";
 	}
 
 	/**

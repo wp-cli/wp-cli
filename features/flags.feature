@@ -3,12 +3,6 @@ Feature: Global flags
   Scenario: Quiet run
     Given a WP install
 
-    When I run `wp`
-    Then STDOUT should not be empty
-
-    When I run `wp --quiet`
-    Then STDOUT should be empty
- 
     When I try `wp non-existing-command --quiet`
     Then the return code should be 1
     And STDERR should be:
