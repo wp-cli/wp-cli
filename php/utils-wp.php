@@ -45,6 +45,16 @@ function wp_die_handler( $message ) {
 	\WP_CLI::error( $message );
 }
 
+function wp_redirect_handler( $url ) {
+	\WP_CLI::warning( 'Some code is trying to do a URL redirect. Backtrace:' );
+
+	ob_start();
+	debug_print_backtrace();
+	fwrite( STDERR, ob_get_clean() );
+
+	return $url;
+}
+
 function maybe_require( $since, $path ) {
 	global $wp_version;
 
