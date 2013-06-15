@@ -5,7 +5,7 @@
  *
  * @package wp-cli
  */
-class Blog_Command extends WP_CLI_Command {
+class Site_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete comments.
@@ -108,27 +108,27 @@ class Blog_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Empty a blog of its content.
+	 * Empty a site of its content.
 	 *
 	 * @subcommand empty
 	 * @synopsis [--yes]
 	 */
 	public function _empty( $args, $assoc_args ) {
 
-		WP_CLI::confirm( 'Are you sure you want to empty the blog at ' . site_url() . '?', $assoc_args );
+		WP_CLI::confirm( 'Are you sure you want to empty the site at ' . site_url() . '?', $assoc_args );
 
 		$this->_empty_posts();
 		$this->_empty_comments();
 		$this->_empty_taxonomies();
 		$this->_insert_default_terms();
 
-		WP_CLI::success( 'The blog at ' . site_url() . ' was emptied.' );
+		WP_CLI::success( 'The site at ' . site_url() . ' was emptied.' );
 	}
 
 	/**
-	 * Delete a blog in a multisite install.
+	 * Delete a site in a multisite install.
 	 *
-	 * @synopsis [<blog-id>] [--slug=<slug>] [--yes] [--keep-tables]
+	 * @synopsis [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
 	 */
 	function delete( $args, $assoc_args ) {
 		if ( !is_multisite() ) {
@@ -148,14 +148,14 @@ class Blog_Command extends WP_CLI_Command {
 		}
 
 		if ( !$blog ) {
-			WP_CLI::error( "Blog not found." );
+			WP_CLI::error( "Site not found." );
 		}
 
-		WP_CLI::confirm( "Are you sure you want to delete the $blog->siteurl blog?", $assoc_args );
+		WP_CLI::confirm( "Are you sure you want to delete the $blog->siteurl site?", $assoc_args );
 
 		wpmu_delete_blog( $blog->blog_id, !isset( $assoc_args['keep-tables'] ) );
 
-		WP_CLI::success( "The blog at $blog->siteurl was deleted." );
+		WP_CLI::success( "The site at $blog->siteurl was deleted." );
 	}
 
 	/**
@@ -177,7 +177,7 @@ class Blog_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Create a blog in a multisite install.
+	 * Create a site in a multisite install.
 	 *
 	 * @synopsis --slug=<slug> [--title=<title>] [--email=<email>] [--site_id=<site-id>] [--private] [--porcelain]
 	 */
@@ -276,9 +276,9 @@ class Blog_Command extends WP_CLI_Command {
 		if ( isset( $assoc_args['porcelain'] ) )
 			WP_CLI::line( $id );
 		else
-			WP_CLI::success( "Blog $id created: $url" );
+			WP_CLI::success( "Site $id created: $url" );
 	}
 }
 
-WP_CLI::add_command( 'blog', 'Blog_Command' );
+WP_CLI::add_command( 'site', 'Site_Command' );
 
