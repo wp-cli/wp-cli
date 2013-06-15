@@ -7,7 +7,7 @@
 \fBwp\-site\-create\fR \- Create a site in a multisite install\.
 .
 .SH "SYNOPSIS"
-wp site create \-\-slug=\fIslug\fR [\-\-title=\fItitle\fR] [\-\-email=\fIemail\fR] [\-\-site_id=\fIsite\-id\fR] [\-\-private] [\-\-porcelain]
+wp site create \-\-slug=\fIslug\fR [\-\-title=\fItitle\fR] [\-\-email=\fIemail\fR] [\-\-network_id=\fInetwork\-id\fR] [\-\-private] [\-\-porcelain]
 .
 .SH "OPTIONS"
 .
@@ -15,13 +15,13 @@ wp site create \-\-slug=\fIslug\fR [\-\-title=\fItitle\fR] [\-\-email=\fIemail\f
 \fB\-\-slug\fR=\fIslug\fR:
 .
 .IP
-Path for the new blog\. Subdomain on subdomain installs, directory on subdirectory installs\.
+Path for the new site\. Subdomain on subdomain installs, directory on subdirectory installs\.
 .
 .TP
 \fB\-\-title\fR=<title>:
 .
 .IP
-Title of the new blog\. Default: prettified slug\.
+Title of the new site\. Default: prettified slug\.
 .
 .TP
 \fB\-\-email\fR=\fIemail\fR:
@@ -30,20 +30,20 @@ Title of the new blog\. Default: prettified slug\.
 Email for Admin user\. User will be created if none exists\. Assignement to Super Admin if not included\.
 .
 .TP
-\fB\-\-site_id\fR=\fIsite\-id\fR:
+\fB\-\-network_id\fR=\fInetwork\-id\fR:
 .
 .IP
-Site (network) to associate new blog with\. Defaults to current site (typically 1)\.
+Network to associate new site with\. Defaults to current network (typically 1)\.
 .
 .TP
 \fB\-\-private\fR:
 .
 .IP
-If set, the new blog will be non\-public (not indexed)
+If set, the new site will be non\-public (not indexed)
 .
 .TP
 \fB\-\-porcelain\fR:
 .
 .IP
-If set, only the blog id will be output on success\.
+If set, only the site id will be output on success\.
 
