@@ -15,6 +15,11 @@ class Help_Command extends WP_CLI_Command {
 			$this->generate( $args );
 		else
 			$this->show( $args );
+
+		// WordPress is already loaded, so there's no chance we'll find the command
+		if ( function_exists( 'add_filter' ) ) {
+			\WP_CLI::error( sprintf( "'%s' is not a registered wp command.", $args[0] ) );
+		}
 	}
 
 	private static function find_subcommand( $args ) {
@@ -38,19 +43,12 @@ class Help_Command extends WP_CLI_Command {
 			$command->show_usage();
 			exit;
 		}
-
-		// WordPress is already loaded, so there's no chance we'll find the command
-		if ( function_exists( 'add_filter' ) ) {
-			\WP_CLI::error( sprintf( "'%s' is not a registered wp command.", $args[0] ) );
-		}
 	}
 
 	private function generate( $args ) {
 		if ( '' === exec( 'which ronn' ) ) {
 			WP_CLI::error( '`ronn` executable not found.' );
 		}
-
-		$arg_copy = $args;
 
 		$command = self::find_subcommand( $args );
 
@@ -59,11 +57,6 @@ class Help_Command extends WP_CLI_Command {
 				self::_generate( $src_dir, $dest_dir, $command );
 			}
 			exit;
-		}
-
-		// WordPress is already loaded, so there's no chance we'll find the command
-		if ( function_exists( 'add_filter' ) ) {
-			WP_CLI::error( sprintf( "'%s' command not found.", implode( ' ', $arg_copy ) ) );
 		}
 	}
 
