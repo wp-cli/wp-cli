@@ -11,7 +11,7 @@ class Network_Meta_Command extends \WP_CLI\CommandWithMeta {
 
 WP_CLI::add_command( 'network-meta', 'Network_Meta_Command' );
 
-WP_CLI::add_hook( 'before_invoke:network-meta', function () {
+WP_CLI::add_action( 'before_invoke:network-meta', function () {
 	if ( !is_multisite() ) {
 		WP_CLI::error( 'This is not a multisite install.' );
 	}

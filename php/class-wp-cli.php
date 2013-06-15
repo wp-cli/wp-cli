@@ -48,7 +48,7 @@ class WP_CLI {
 	/**
 	 * Schedule a callback to be executed at a certain point (before WP is loaded).
 	 */
-	static function add_hook( $when, $callback ) {
+	static function add_action( $when, $callback ) {
 		if ( in_array( $when, self::$hooks_passed ) )
 			call_user_func( $callback );
 
@@ -58,7 +58,7 @@ class WP_CLI {
 	/**
 	 * Execute registered callbacks.
 	 */
-	static function do_hook( $when ) {
+	static function do_action( $when ) {
 		self::$hooks_passed[] = $when;
 
 		if ( !isset( self::$hooks[ $when ] ) )
