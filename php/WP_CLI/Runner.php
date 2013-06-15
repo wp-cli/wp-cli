@@ -168,6 +168,12 @@ class Runner {
 			}
 		}
 
+		// site --site_id=  ->  site --network_id=
+		if ( count( $args ) > 0 && 'site' == $args[0] && isset( $assoc_args['site_id'] ) ) {
+			$assoc_args['network_id'] = $assoc_args['site_id'];
+			unset( $assoc_args['site_id'] );
+		}
+
 		// {plugin|theme} update --all  ->  {plugin|theme} update-all
 		if ( count( $args ) > 1 && in_array( $args[0], array( 'plugin', 'theme' ) )
 			&& $args[1] == 'update' && isset( $assoc_args['all'] )
