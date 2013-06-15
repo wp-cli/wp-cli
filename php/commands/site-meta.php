@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage site custom fields.
+ * Manage network custom fields.
  *
  * @package wp-cli
  */
