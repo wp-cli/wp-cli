@@ -155,15 +155,23 @@ class Runner {
 
 	// Transparently convert old syntaxes
 	private static function back_compat_conversions( $args, $assoc_args ) {
-		// foo --help  ->  help foo
-		if ( isset( $assoc_args['help'] ) ) {
-			array_unshift( $args, 'help' );
-			unset( $assoc_args['help'] );
+		$top_level_aliases = array(
+			'sql' => 'db',
+			'blog' => 'site'
+		);
+		if ( count( $args ) > 0 ) {
+			foreach ( $top_level_aliases as $old => $new ) {
+				if ( $old == $args[0] ) {
+					$args[0] = $new;
+					break;
+				}
+			}
 		}
 
-		// sql  ->  db
-		if ( count( $args ) > 0 && 'sql' == $args[0] ) {
-			$args[0] = 'db';
+		// site --site_id=  ->  site --network_id=
+		if ( count( $args ) > 0 && 'site' == $args[0] && isset( $assoc_args['site_id'] ) ) {
+			$assoc_args['network_id'] = $assoc_args['site_id'];
+			unset( $assoc_args['site_id'] );
 		}
 
 		// {plugin|theme} update --all  ->  {plugin|theme} update-all
@@ -177,6 +185,12 @@ class Runner {
 		// plugin scaffold  ->  scaffold plugin
 		if ( array( 'plugin', 'scaffold' ) == array_slice( $args, 0, 2 ) ) {
 			list( $args[0], $args[1] ) = array( $args[1], $args[0] );
+		}
+
+		// foo --help  ->  help foo
+		if ( isset( $assoc_args['help'] ) ) {
+			array_unshift( $args, 'help' );
+			unset( $assoc_args['help'] );
 		}
 
 		// {post|user} list --ids  ->  {post|user} list --format=ids
