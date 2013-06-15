@@ -43,10 +43,10 @@ Feature: Get help about WP-CLI commands
   @ronn
   Scenario: Generating help for multisite-only subcommands
     Given an empty directory
-    When I run `wp help --gen blog create`
+    When I run `wp help --gen site create`
     Then STDOUT should be:
       """
-      generated blog-create.1
+      generated site-create.1
       """
 
   @ronn
