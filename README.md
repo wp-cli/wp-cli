@@ -13,6 +13,8 @@ I'm running into troubles, what can I do?
 -----------------------------------------
 To suggest a feature, report a bug, or general discussion, visit the [issues section](https://github.com/wp-cli/wp-cli/issues).
 
+If you're reporting a bug, please also post the output from `wp --info`.
+
 Who's behind this thing?
 ------------------------
 We are [Andreas Creten](https://github.com/andreascreten) and [Cristi Burcă](https://github.com/scribu), friendly guys from Europe. For more info, see [Governance](https://github.com/wp-cli/wp-cli/wiki/Governance).

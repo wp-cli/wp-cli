@@ -126,6 +126,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * @param string $version The desired version of the package
 	 */
 	protected static function alter_api_response( $response, $version ) {
+		if ( $response->version == $version )
+			return;
+
 		list( $link ) = explode( $response->slug, $response->download_link );
 
 		if ( false !== strpos( $response->download_link, 'theme' ) )

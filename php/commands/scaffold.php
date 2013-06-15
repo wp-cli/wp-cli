@@ -243,17 +243,19 @@ class Scaffold_Command extends WP_CLI_Command {
 		$plugin_slug = $args[0];
 
 		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
-
 		$tests_dir = "$plugin_dir/tests";
+		$bin_dir = "$plugin_dir/bin";
 
 		$wp_filesystem->mkdir( $tests_dir );
+		$wp_filesystem->mkdir( $bin_dir );
 
 		$this->create_file( "$tests_dir/bootstrap.php",
 			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) );
 
 		$to_copy = array(
-			'phpunit.xml' => $plugin_dir,
+			'install-wp-tests.sh' => $bin_dir,
 			'.travis.yml' => $plugin_dir,
+			'phpunit.xml' => $plugin_dir,
 			'test-sample.php' => $tests_dir,
 		);
 
@@ -261,7 +263,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			$wp_filesystem->copy( WP_CLI_ROOT . "../templates/$file", "$dir/$file", true );
 		}
 
-		WP_CLI::success( "Created test files in $plugin_dir" );
+		WP_CLI::success( "Created test files." );
 	}
 
 	private function create_file( $filename, $contents ) {

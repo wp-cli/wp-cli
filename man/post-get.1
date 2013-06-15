@@ -18,13 +18,13 @@ wp post get [\-\-format=\fIformat\fR] \fIid\fR
 The format to use when printing the post, acceptable values:
 .
 .IP
-content: outputs only the post\'s content (default)
+\fBcontent\fR: Outputs only the post\'s content\.
 .
 .IP
-table: output all fields of the post as a table, note that the post_content field is omitted so that the table is readable
+\fBtable\fR: Outputs all fields of the post as a table\. Note that the post_content field is omitted so that the table is readable\.
 .
 .IP
-json: output all fields in JavaScript Object Notation format
+\fBjson\fR: Outputs all fields in JSON format\.
 .
 .TP
 \fB<id>\fR:
@@ -36,7 +36,7 @@ The ID of the post to get\.
 .
 .nf
 
-wp post get 12
+wp post get 12 \-\-format=content
 
 wp post get 12 > file\.txt
 .
