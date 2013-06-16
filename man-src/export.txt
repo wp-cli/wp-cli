@@ -9,9 +9,9 @@ to current working directory.
 
 	Don't export comments.
 
-* `--file_item_count`=<count>:
+* `--max_file_size`=<MB>:
 
-	Break export into files with N posts.
+	Set maximum size (in MB) each export file should have. Default: 15.
 
 * `--verbose`:
 
