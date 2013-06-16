@@ -38,7 +38,7 @@ class Export_Command extends WP_CLI_Command {
 
 		wp_export( array(
 			'filters' => $this->export_args,
-			'writer' => 'WP_Export_Split_Files_Writer',
+			'writer' => '\\WP_CLI\\VerboseExportWriter',
 			'writer_args' => array(
 				'max_file_size' => $this->max_file_size * MB_IN_BYTES,
 				'destination_directory' => $this->wxr_path,
