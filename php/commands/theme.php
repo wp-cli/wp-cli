@@ -217,11 +217,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function parse_name( $args ) {
-		if ( empty( $args ) ) {
-			WP_CLI::line( "usage: wp theme $subcommand <theme-name>" );
-			exit;
-		}
-
 		$name = $args[0];
 
 		$theme = wp_get_theme( $name );
