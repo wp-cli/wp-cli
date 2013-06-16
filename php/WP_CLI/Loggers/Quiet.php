@@ -4,6 +4,10 @@ namespace WP_CLI\Loggers;
 
 class Quiet {
 
+	function info( $message ) {
+		// nothing
+	}
+
 	function success( $message, $label ) {
 		// nothing
 	}

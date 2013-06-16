@@ -8,6 +8,10 @@ class Regular {
 		fwrite( $handle, \WP_CLI::colorize( $message . "\n" ) );
 	}
 
+	function info( $message ) {
+		fwrite( STDOUT, $message . "\n" );
+	}
+
 	function success( $message, $label ) {
 		$this->_line( "%G$label:%n $message" );
 	}
