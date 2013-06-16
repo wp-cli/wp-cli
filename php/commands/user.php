@@ -324,7 +324,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 				if ( !in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ) ) &&  $new_user['role'] ) {
 					add_user_to_blog( get_current_blog_id(), $existing_user->ID, $new_user['role'] );
-					WP_CLI::line( "{$existing_user->user_login} added to blog as {$new_user['role']}" );
+					WP_CLI::log( "{$existing_user->user_login} added to blog as {$new_user['role']}" );
 				}
 
 			// Create the user

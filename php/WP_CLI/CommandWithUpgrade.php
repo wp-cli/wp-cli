@@ -37,7 +37,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$n = count( $items );
 
 		// Not interested in the translation, just the number logic
-		\WP_CLI::line( sprintf( _n( "%d installed {$this->item_type}:", "%d installed {$this->item_type}s:", $n ), $n ) );
+		\WP_CLI::log( sprintf( _n( "%d installed {$this->item_type}:", "%d installed {$this->item_type}s:", $n ), $n ) );
 
 		$padding = $this->get_padding($items);
 
@@ -108,7 +108,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$slug = $file_upgrader->result['destination_name'];
 
 				if ( isset( $assoc_args['activate'] ) ) {
-					\WP_CLI::line( "Activating '$slug'..." );
+					\WP_CLI::log( "Activating '$slug'..." );
 					$this->activate( array( $slug ) );
 				}
 			} else {

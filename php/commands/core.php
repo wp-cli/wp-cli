@@ -19,21 +19,21 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
 		if ( !is_dir( ABSPATH ) ) {
-			WP_CLI::line( sprintf( 'Creating directory %s', ABSPATH ) );
+			WP_CLI::log( sprintf( 'Creating directory %s', ABSPATH ) );
 			WP_CLI::launch( sprintf( 'mkdir -p %s', escapeshellarg( ABSPATH ) ) );
 		}
 
 		if ( isset( $assoc_args['locale'] ) ) {
 			$offer = $this->get_download_offer( $assoc_args['locale'] );
 			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
-			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...',
+			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...',
 				$offer['current'], $offer['locale'] ) );
 		} elseif ( isset( $assoc_args['version'] ) ) {
 			$download_url = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.tar.gz';
-			WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
+			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
 		} else {
 			$download_url = 'https://wordpress.org/latest.tar.gz';
-			WP_CLI::line( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
+			WP_CLI::log( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
 		$silent = WP_CLI::get_config('quiet') ? '--silent ' : '';
@@ -279,7 +279,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 			if ( empty( $args[0] ) ) {
 				$new_package = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
-				WP_CLI::line( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
+				WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
 			} else {
 				$new_package = $args[0];
 				$upgrader = 'WP_CLI\\NonDestructiveCoreUpgrader';

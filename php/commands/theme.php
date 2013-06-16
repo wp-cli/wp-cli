@@ -115,7 +115,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		// Check to see if we should update, rather than install.
 		if ( $this->has_update( $slug ) ) {
-			WP_CLI::line( sprintf( 'Updating %s (%s)', $api->name, $api->version ) );
+			WP_CLI::log( sprintf( 'Updating %s (%s)', $api->name, $api->version ) );
 			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $slug );
 
 			/**
@@ -123,7 +123,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			 *  or it's newer than what we've got.
 			 */
 		} else if ( !wp_get_theme( $slug )->exists() ) {
-			WP_CLI::line( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
+			WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->install( $api->download_link );
 		} else {
 			WP_CLI::error( 'Theme already installed and up to date.' );
@@ -131,7 +131,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		// Finally, activate theme if requested.
 		if ( $result && isset( $assoc_args['activate'] ) ) {
-			WP_CLI::line( "Activating '$slug'..." );
+			WP_CLI::log( "Activating '$slug'..." );
 			$this->activate( array( $slug ) );
 		}
 	}
