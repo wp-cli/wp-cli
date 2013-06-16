@@ -159,6 +159,15 @@ class WP_CLI {
 	}
 
 	/**
+	 * Log an informational message.
+	 *
+	 * @param string $message
+	 */
+	static function log( $message ) {
+		self::$logger->info( $message );
+	}
+
+	/**
 	 * Display a success in the CLI and end with a newline
 	 *
 	 * @param string $message
