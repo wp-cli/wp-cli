@@ -8,8 +8,6 @@
  */
 define( 'WXR_VERSION', '1.2' );
 
-require_once ABSPATH . WPINC . '/export/class-wp-export-oxymel.php';
-
 /**
  * Responsible for formatting the data in WP_Export_Query to WXR
  */

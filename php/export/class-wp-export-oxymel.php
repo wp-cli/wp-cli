@@ -1,7 +1,5 @@
 <?php
 
-require_once ABSPATH . WPINC . '/Oxymel.php';
-
 class WP_Export_Oxymel extends Oxymel {
 	public function optional( $tag_name, $contents ) {
 		if ( $contents ) {
