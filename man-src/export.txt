@@ -13,10 +13,6 @@ to current working directory.
 
 	Set maximum size (in MB) each export file should have. Default: 15.
 
-* `--verbose`:
-
-	Show more information about the process on STDOUT.
-
 ## FILTERS
 
 * `--start_date`=<date>:

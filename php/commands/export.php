@@ -11,7 +11,7 @@ class Export_Command extends WP_CLI_Command {
 	/**
 	 * Export content to a WXR file.
 	 *
-	 * @synopsis [--dir=<dir>] [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--post__in=<pids>] [--author=<login>] [--category=<cat>] [--skip_comments] [--max_file_size=<MB>] [--verbose]
+	 * @synopsis [--dir=<dir>] [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--post__in=<pids>] [--author=<login>] [--category=<cat>] [--skip_comments] [--max_file_size=<MB>]
 	 */
 	public function __invoke( $_, $assoc_args ) {
 		$defaults = array(
@@ -25,7 +25,6 @@ class Export_Command extends WP_CLI_Command {
 			'post__in'        => NULL,
 			'skip_comments'   => NULL,
 			'max_file_size'   => 15,
-			'verbose'         => false,
 		);
 
 		$this->validate_args( wp_parse_args( $assoc_args, $defaults ) );
@@ -34,7 +33,7 @@ class Export_Command extends WP_CLI_Command {
 			self::load_export_api();
 		}
 
-		WP_CLI::line( 'Starting export process...' );
+		WP_CLI::log( 'Starting export process...' );
 
 		wp_export( array(
 			'filters' => $this->export_args,
