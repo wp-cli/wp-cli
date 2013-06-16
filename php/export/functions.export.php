@@ -28,3 +28,14 @@ function wp_export_new_style_args_from_old_style_args( $args ) {
 	}
 	return $args;
 }
+
+// TEMPORARY
+function _wp_export_build_IN_condition( $column_name, $values, $format = '%s' ) {
+	global $wpdb;
+
+	if ( !is_array( $values ) || empty( $values ) ) {
+		return '';
+	}
+	$formats = implode( ', ', array_fill( 0, count( $values ), $format ) );
+	return $wpdb->prepare( "$column_name IN ($formats)", $values );
+}
