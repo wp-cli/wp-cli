@@ -233,7 +233,8 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 * @synopsis [--extra]
 	 */
 	public function version( $args = array(), $assoc_args = array() ) {
-		global $wp_version, $wp_db_version, $tinymce_version;
+		// see https://core.trac.wordpress.org/ticket/23685
+		require ABSPATH . WPINC . '/version.php';
 
 		if ( isset( $assoc_args['extra'] ) ) {
 			preg_match( '/(\d)(\d+)-/', $tinymce_version, $match );
