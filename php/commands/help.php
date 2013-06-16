@@ -171,7 +171,7 @@ class Help_Command extends WP_CLI_Command {
 		$roff = str_replace( ' "January 2012"', '', $roff );
 		file_put_contents( $dest, $roff );
 
-		\WP_CLI::line( "generated " . basename( $dest ) );
+		\WP_CLI::log( "generated " . basename( $dest ) );
 	}
 
 	private static function get_file_name( $args ) {

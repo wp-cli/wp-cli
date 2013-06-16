@@ -161,7 +161,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$status = install_plugin_install_status( $api );
 
-		WP_CLI::line( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
+		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 
 		switch ( $status['status'] ) {
 		case 'update_available':
@@ -170,7 +170,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$result = $upgrader->install( $api->download_link );
 
 			if ( $result && isset( $assoc_args['activate'] ) ) {
-				WP_CLI::line( "Activating '$slug'..." );
+				WP_CLI::log( "Activating '$slug'..." );
 				$this->activate( array( $slug ) );
 			}
 

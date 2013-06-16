@@ -39,7 +39,7 @@ class Media_Command extends WP_CLI_Command {
 		}
 		$count = $images->post_count;
 
-		WP_CLI::line( sprintf( 'Found %1$d %2$s to regenerate.', $count, ngettext('image', 'images', $count) ) );
+		WP_CLI::log( sprintf( 'Found %1$d %2$s to regenerate.', $count, ngettext('image', 'images', $count) ) );
 
 		$not_found = array_diff( $args, $images->posts );
 		if( !empty($not_found) ) {
@@ -162,7 +162,7 @@ class Media_Command extends WP_CLI_Command {
 			return;
 		}
 
-		WP_CLI::line( sprintf( 'Start processing of "%1$s" (ID %2$d).', get_the_title( $image->ID ), $image->ID ) );
+		WP_CLI::log( sprintf( 'Start processing of "%1$s" (ID %2$d).', get_the_title( $image->ID ), $image->ID ) );
 
 		$this->remove_old_images( $image->ID );
 
@@ -198,7 +198,7 @@ class Media_Command extends WP_CLI_Command {
 				continue;
 
 			if ( unlink( $intermediate_path ) ) {
-				WP_CLI::line( sprintf( "Thumbnail %s x %s was deleted.",
+				WP_CLI::log( sprintf( "Thumbnail %s x %s was deleted.",
 					$size_info['width'], $size_info['height'] ) );
 			}
 		}
