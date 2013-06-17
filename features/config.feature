@@ -59,3 +59,16 @@ Feature: Have a config file
       wp-cli.yml
       """
 
+  Scenario: Disabled subcommands
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      disabled_commands:
+        - db drop
+      """
+
+    When I try `wp db drop --yes`
+    Then STDERR should contain:
+      """
+      command has been disabled
+      """
