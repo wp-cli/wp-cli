@@ -31,6 +31,10 @@ to current working directory.
 
 	Export only posts with this post_type.
 
+* `--not_post_type`=<post_type>:
+
+	Omit this post_type from the export.
+
 * `--post__in`=<pid>:
 
 	Export all posts specified as a comma-separated list of IDs.

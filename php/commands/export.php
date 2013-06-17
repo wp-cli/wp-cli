@@ -11,7 +11,7 @@ class Export_Command extends WP_CLI_Command {
 	/**
 	 * Export content to a WXR file.
 	 *
-	 * @synopsis [--dir=<dir>] [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--post__in=<pids>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>] [--verbose]
+	 * @synopsis [--dir=<dir>] [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--not_post_type=<ptype>] [--post_status=<status>] [--post__in=<pids>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>] [--verbose]
 	 */
 	public function __invoke( $_, $assoc_args ) {
 		$defaults = array(
@@ -19,6 +19,7 @@ class Export_Command extends WP_CLI_Command {
 			'start_date'      => NULL,
 			'end_date'        => NULL,
 			'post_type'       => NULL,
+			'not_post_type'   => NULL,
 			'author'          => NULL,
 			'category'        => NULL,
 			'post_status'     => NULL,
@@ -104,10 +105,23 @@ class Export_Command extends WP_CLI_Command {
 
 		$post_types = get_post_types();
 		if ( !in_array( $post_type, $post_types ) ) {
-			WP_CLI::warning( sprintf( 'The post type %s does not exists. Choose "all" or any of these existing post types instead: %s', $post_type, implode( ", ", $post_types ) ) );
+			WP_CLI::warning( sprintf( 'The post type %s does not exist. Choose "all" or any of these existing post types instead: %s', $post_type, implode( ", ", $post_types ) ) );
 			return false;
 		}
 		$this->export_args['post_type'] = $post_type;
+		return true;
+	}
+
+	private function check_not_post_type( $post_type ) {
+		if ( is_null( $post_type ) )
+			return true;
+
+		$post_types = get_post_types();
+		if ( ! in_array( $post_type, $post_types ) ) {
+			WP_CLI::warning( sprintf( 'The post type %s does not exist. Choose "all" or any of these existing post types instead: %s', $post_type, implode( ", ", $post_types ) ) );
+			return false;
+		}
+		$this->export_args['not_post_type'] = $post_type;
 		return true;
 	}
 
@@ -251,7 +265,7 @@ class Export_Command extends WP_CLI_Command {
 		/**
 		 * This is mostly the original code of export_wp defined in wp-admin/includes/export.php
 		 */
-		$defaults = array( 'post_type' => 'all', 'post__in' => false, 'author' => false, 'category' => false,
+		$defaults = array( 'post_type' => 'all', 'not_post_type' => false, 'post__in' => false, 'author' => false, 'category' => false,
 			'start_date' => false, 'end_date' => false, 'status' => false, 'skip_comments' => false, 'file_item_count' => 1000,
 		);
 		$args = wp_parse_args( $args, $defaults );
@@ -281,6 +295,14 @@ class Export_Command extends WP_CLI_Command {
 			$where = $wpdb->prepare( "{$wpdb->posts}.post_type = %s", $args['post_type'] );
 		} else {
 			$post_types = get_post_types( array( 'can_export' => true ) );
+			if ( false !== $args['not_post_type'] && post_type_exists( $args['not_post_type'] ) ) {
+				$_post_types = array();
+				foreach( $post_types as $post_type ) {
+					if ( $post_type != $args['not_post_type'] )
+						$_post_types[] = $post_type;
+				}
+				$post_types = $_post_types;
+			}
 			$esses = array_fill( 0, count( $post_types ), '%s' );
 			$where = $wpdb->prepare( "{$wpdb->posts}.post_type IN (" . implode( ',', $esses ) . ')', $post_types );
 		}
