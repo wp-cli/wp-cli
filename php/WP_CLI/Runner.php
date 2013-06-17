@@ -22,15 +22,14 @@ class Runner {
 	}
 
 	public function register_early_invoke( $when, $command ) {
-		$this->_early_invoke[ $when ][] = $command;
+		$this->_early_invoke[ $when ][] = array_slice( Dispatcher\get_path( $command ), 1 );
 	}
 
 	private function do_early_invoke( $when ) {
 		if ( !isset( $this->_early_invoke[ $when ] ) )
 			return;
 
-		foreach ( $this->_early_invoke[ $when ] as $command ) {
-			$path = array_slice( Dispatcher\get_path( $command ), 1 );
+		foreach ( $this->_early_invoke[ $when ] as $path ) {
 			if ( $this->cmd_starts_with( $path ) ) {
 				$this->_run_command();
 				exit;
