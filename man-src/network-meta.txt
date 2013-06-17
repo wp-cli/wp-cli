@@ -11,4 +11,4 @@
 ## EXAMPLES
 
 	# get a list of super-admins
-	wp site-meta get 1 site_admins
+	wp network-meta get 1 site_admins
