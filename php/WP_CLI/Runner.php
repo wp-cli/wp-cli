@@ -55,6 +55,8 @@ class Runner {
 		}
 
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+
+		$_SERVER['DOCUMENT_ROOT'] = realpath( $path );
 	}
 
 	private static function set_user( $assoc_args ) {
@@ -284,8 +286,6 @@ class Runner {
 				require $path;
 			}
 		}
-
-		$_SERVER['DOCUMENT_ROOT'] = realpath( $this->config['path'] );
 
 		if ( $this->cmd_starts_with( array( '_sys' ) ) ) {
 			$this->_run_command();
