@@ -13,6 +13,8 @@ class Core_Command extends WP_CLI_Command {
 	 * Download core WordPress files.
 	 *
 	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>] [--force]
+	 *
+	 * @when before_wp_load
 	 */
 	public function download( $args, $assoc_args ) {
 		if ( !isset( $assoc_args['force'] ) && is_readable( ABSPATH . 'wp-load.php' ) )

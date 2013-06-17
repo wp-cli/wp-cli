@@ -12,8 +12,30 @@ class Runner {
 
 	private $arguments, $assoc_args;
 
+	private $_early_invoke = array();
+
 	public function __get( $key ) {
+		if ( '_' === $key[0] )
+			return null;
+
 		return $this->$key;
+	}
+
+	public function register_early_invoke( $when, $command ) {
+		$this->_early_invoke[ $when ][] = $command;
+	}
+
+	private function do_early_invoke( $when ) {
+		if ( !isset( $this->_early_invoke[ $when ] ) )
+			return;
+
+		foreach ( $this->_early_invoke[ $when ] as $command ) {
+			$path = array_slice( Dispatcher\get_path( $command ), 1 );
+			if ( $this->cmd_starts_with( $path ) ) {
+				$this->_run_command();
+				exit;
+			}
+		}
 	}
 
 	private static function get_config_path( $runtime_config ) {
@@ -287,11 +309,6 @@ class Runner {
 			}
 		}
 
-		if ( $this->cmd_starts_with( array( '_sys' ) ) ) {
-			$this->_run_command();
-			exit;
-		}
-
 		// First try at showing man page
 		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
 			$this->_run_command();
@@ -303,10 +320,7 @@ class Runner {
 		// Handle --url and --blog parameters
 		self::set_url( $this->config );
 
-		if ( array( 'core', 'download' ) == $this->arguments ) {
-			$this->_run_command();
-			exit;
-		}
+		$this->do_early_invoke( 'before_wp_load' );
 
 		if ( !is_readable( ABSPATH . 'wp-load.php' ) ) {
 			WP_CLI::error(
