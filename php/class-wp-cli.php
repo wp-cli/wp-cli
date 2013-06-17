@@ -74,71 +74,9 @@ class WP_CLI {
 	 * @param string $class The command implementation
 	 */
 	static function add_command( $name, $class ) {
-		if ( in_array( $name, self::get_config('disabled_commands') ) )
-			return;
-
-		$reflection = new \ReflectionClass( $class );
-
-		if ( $reflection->hasMethod( '__invoke' ) ) {
-			$command = self::create_subcommand( self::$root, $name, $reflection->name,
-				$reflection->getMethod( '__invoke' ) );
-		} else {
-			$command = self::create_composite_command( $name, $reflection );
-		}
+		$command = Dispatcher\CommandFactory::create( $name, $class, self::$root );
 
 		self::$root->add_subcommand( $name, $command );
-	}
-
-	private static function create_subcommand( $parent, $name, $class_name, $method ) {
-		$docparser = new \WP_CLI\DocParser( $method );
-
-		if ( !$name )
-			$name = $docparser->get_tag( 'subcommand' );
-
-		if ( !$name )
-			$name = $method->name;
-
-		$method_name = $method->name;
-
-		$when_invoked = function ( $args, $assoc_args ) use ( $class_name, $method_name ) {
-			call_user_func( array( new $class_name, $method_name ), $args, $assoc_args );
-		};
-
-		return new Dispatcher\Subcommand( $parent, $name, $docparser, $when_invoked );
-	}
-
-	private static function create_composite_command( $name, $reflection ) {
-		$docparser = new \WP_CLI\DocParser( $reflection );
-
-		$container = new Dispatcher\CompositeCommand( self::$root, $name, $docparser );
-
-		foreach ( $reflection->getMethods() as $method ) {
-			if ( !self::_is_good_method( $method ) )
-				continue;
-
-			$subcommand = self::create_subcommand( $container, false, $reflection->name, $method );
-
-			$subcommand_name = $subcommand->get_name();
-			$full_name = self::get_full_name( $subcommand );
-
-			if ( in_array( $full_name, self::get_config('disabled_commands') ) )
-				continue;
-
-			$container->add_subcommand( $subcommand_name, $subcommand );
-		}
-
-		return $container;
-	}
-
-	private static function get_full_name( $command ) {
-		$path = Dispatcher\get_path( $command );
-		array_shift( $path );
-
-		return implode( ' ', $path );
-	}
-
-	private static function _is_good_method( $method ) {
-		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
 	}
 
 	static function add_man_dir( $dest_dir, $src_dir ) {
@@ -304,14 +242,26 @@ class WP_CLI {
 
 		$cmd_path = array();
 
+		$disabled_commands = self::get_config('disabled_commands');
+
 		while ( !empty( $args ) && $command->has_subcommands() ) {
 			$cmd_path[] = $args[0];
+			$full_name = implode( ' ', $cmd_path );
 
 			$subcommand = $command->find_subcommand( $args );
 
 			if ( !$subcommand ) {
-				\WP_CLI::error( sprintf( "'%s' is not a registered wp command. See 'wp help'.",
-					implode( ' ', $cmd_path ) ) );
+				\WP_CLI::error( sprintf(
+					"'%s' is not a registered wp command. See 'wp help'.",
+					$full_name
+				) );
+			}
+
+			if ( in_array( $full_name, $disabled_commands ) ) {
+				\WP_CLI::error( sprintf(
+					"The '%s' command has been disabled from the config file.",
+					$full_name
+				) );
 			}
 
 			$command = $subcommand;
