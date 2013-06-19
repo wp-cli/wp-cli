@@ -18,7 +18,7 @@ class DocParser {
 	}
 
 	function get_tag( $name ) {
-		if ( preg_match( '/@' . $name . '\s+([a-z-]+)/', $this->docComment, $matches ) )
+		if ( preg_match( '/@' . $name . '\s+([a-z-_]+)/', $this->docComment, $matches ) )
 			return $matches[1];
 
 		return false;

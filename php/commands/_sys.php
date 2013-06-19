@@ -3,6 +3,9 @@
 use \WP_CLI\Dispatcher,
 	\WP_CLI\Utils;
 
+/**
+ * @when before_wp_load
+ */
 class Sys_Command extends WP_CLI_Command {
 
 	private function command_to_array( $command ) {
