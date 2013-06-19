@@ -159,9 +159,14 @@ class WP_CLI {
 	 * @param mixed $value
 	 * @param array $assoc_args
 	 */
-	static function read_value( $value, $assoc_args = array() ) {
+	static function read_value( $raw_value, $assoc_args = array() ) {
 		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
-			$value = json_decode( $value, true );
+			$value = json_decode( $raw_value, true );
+			if ( null === $value ) {
+				WP_CLI::error( sprintf( 'Invalid JSON: %s', $raw_value ) );
+			}
+		} else {
+			$value = $raw_value;
 		}
 
 		return $value;
