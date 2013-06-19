@@ -265,7 +265,7 @@ class Runner {
 		WP_CLI::set_logger( $logger );
 	}
 
-	public function before_wp_load() {
+	public function start() {
 		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::$configurator->parse_args(
 			array_slice( $GLOBALS['argv'], 1 ) );
 
@@ -353,13 +353,8 @@ class Runner {
 				Utils\set_url_params( 'http://example.com' );
 			}
 		}
-	}
 
-	public function after_wp_load() {
-		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
-
-		// Handle --user parameter
-		self::set_user( $this->config );
+		$this->load_wordpress();
 
 		// Handle --completions parameter
 		if ( isset( $this->assoc_args['completions'] ) ) {
@@ -372,5 +367,35 @@ class Runner {
 		}
 
 		$this->_run_command();
+	}
+
+	private function load_wordpress() {
+		// Explicitly globalize needed variables
+		global
+			$wpdb, $wp, $wp_rewrite, $wp_version,
+			$current_site, $current_blog,
+			$shortcode_tags;
+
+		eval( WP_CLI::$runner->get_wp_config_code() );
+
+		// Simulate a /wp-admin/ page load
+		$_SERVER['PHP_SELF'] = '/wp-admin/index.php';
+		define( 'WP_ADMIN', true );
+		define( 'WP_NETWORK_ADMIN', false );
+		define( 'WP_USER_ADMIN', false );
+
+		// Load Core, mu-plugins, plugins, themes etc.
+		require WP_CLI_ROOT . 'wp-settings-cli.php';
+
+		// Fix memory limit. See http://core.trac.wordpress.org/ticket/14889
+		@ini_set( 'memory_limit', -1 );
+
+		require ABSPATH . 'wp-admin/includes/admin.php';
+		do_action( 'admin_init' );
+
+		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
+
+		// Handle --user parameter
+		self::set_user( $this->config );
 	}
 }
