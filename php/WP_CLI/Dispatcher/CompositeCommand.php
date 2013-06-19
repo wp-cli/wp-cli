@@ -18,6 +18,11 @@ class CompositeCommand {
 
 		$this->shortdesc = $docparser->get_shortdesc();
 		$this->synopsis = $docparser->get_synopsis();
+
+		$when_to_invoke = $docparser->get_tag( 'when' );
+		if ( $when_to_invoke ) {
+			\WP_CLI::$runner->register_early_invoke( $when_to_invoke, $this );
+		}
 	}
 
 	function get_parent() {
