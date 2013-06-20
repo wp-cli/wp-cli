@@ -24,13 +24,14 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function create( $args, $assoc_args ) {
 		if ( ! empty( $args[0] ) ) {
-
 			if ( $args[0] !== '-' ) {
 				$readfile = $args[0];
-				if ( ! file_exists( $readfile ) || ! is_file( $readfile ) )
+				if ( ! file_exists( $readfile ) || ! is_file( $readfile ) ) {
 					\WP_CLI::error( "Unable to read content from $readfile." );
-			} else
+				}
+			} else {
 				$readfile = 'php://stdin';
+			}
 
 			$assoc_args['post_content'] = file_get_contents( $readfile );
 		}
