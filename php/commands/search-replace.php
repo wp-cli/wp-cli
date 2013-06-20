@@ -67,13 +67,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 		if ( !empty( $args ) )
 			return $args;
 
-		if ( !$network ) {
-			$tables = $wpdb->tables( 'blog' );
-		} else {
-			$tables = $wpdb->get_col( "SHOW TABLES LIKE '{$wpdb->base_prefix}%'" );
-		}
+		$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
 
-		return $tables;
+		return $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", like_escape( $prefix ) . '%' ) );
 	}
 
 	private static function handle_col( $col, $primary_key, $table, $old, $new, $dry_run ) {
