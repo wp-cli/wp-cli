@@ -7,7 +7,7 @@
 \fBwp\-core\-install\-network\fR \- Transform a single\-site install into a multi\-site install\.
 .
 .SH "SYNOPSIS"
-wp core install\-network \-\-title=\fInetwork\-title\fR [\-\-base=\fIurl\-path\fR]
+wp core install\-network \-\-title=\fInetwork\-title\fR [\-\-base=\fIurl\-path\fR] [\-\-subdomains]
 .
 .SH "OPTIONS"
 .
@@ -22,4 +22,10 @@ The title of the new network\.
 .
 .IP
 Base path after the domain name that each site url will start with\. Default: \'/\'
+.
+.TP
+\fB\-\-subdomains\fR:
+.
+.IP
+If passed, the network will use subdomains, instead of subdirectories\.
 
