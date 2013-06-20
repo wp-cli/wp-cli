@@ -15,6 +15,9 @@ Feature: Manage WordPress options
     When I run `wp option set foo '[ 1, 2 ]' --format=json`
     Then STDOUT should not be empty
 
+    When I run the previous command again
+    Then STDOUT should not be empty
+
     When I run `wp option get foo --format=json`
     Then STDOUT should be:
     """
