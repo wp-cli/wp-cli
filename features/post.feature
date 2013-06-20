@@ -27,15 +27,23 @@ Feature: Manage WordPress posts
 
   Scenario: Creating/getting posts
     Given a WP install
+    And a content.html file:
+      """
+      This is some content.
 
-    When I run `wp post create --post_title='Test post' --post_content='Test content.' --porcelain`
+      It will be inserted in a post.
+      """
+
+    When I run `wp post create --post_title='Test post' --porcelain - < content.html`
     Then STDOUT should match '%d'
     And save STDOUT as {POST_ID}
 
     When I run `wp post get --format=content {POST_ID}`
     Then STDOUT should be:
       """
-      Test content.
+      This is some content.
+
+      It will be inserted in a post.
       """
 
     When I run `wp post get --format=table {POST_ID}`
@@ -47,7 +55,7 @@ Feature: Manage WordPress posts
     When I run `wp post get --format=json {POST_ID}`
     Then STDOUT should be JSON containing:
       """
-      {"ID":{POST_ID},"post_title":"Test post","post_content":"Test content."}
+      {"ID":{POST_ID},"post_title":"Test post"}
       """
 
   Scenario: Creating/listing posts
