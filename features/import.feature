@@ -2,13 +2,8 @@ Feature: Import content.
 
   Scenario: Basic export then import
     Given a WP install
-
-    When I run `wp post generate --post_type=post --count=3`
-    Then STDOUT should not be empty
-
-    When I run `wp post generate --post_type=page --count=2`
-    Then STDOUT should not be empty
-
+    And I run `wp post generate --post_type=post --count=3`
+    And I run `wp post generate --post_type=page --count=2`
     When I run `wp post list --post_type=any --format=count`
     Then STDOUT should be:
       """
