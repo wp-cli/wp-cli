@@ -23,11 +23,11 @@ class WP_CLI {
 	 */
 	static function init() {
 		self::add_man_dir(
-			WP_CLI_ROOT . "../man",
-			WP_CLI_ROOT . "../man-src"
+			WP_CLI_ROOT . "/man",
+			WP_CLI_ROOT . "/man-src"
 		);
 
-		self::$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/config-spec.php' );
+		self::$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
 		self::$root = new Dispatcher\RootCommand;
 		self::$runner = new WP_CLI\Runner;
 	}
