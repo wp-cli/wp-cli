@@ -67,23 +67,12 @@ class Help_Command extends WP_CLI_Command {
 			$man_path = "$dest_dir/" . $man_file;
 
 			if ( is_readable( $man_path ) ) {
-				self::show_manpage( $man_path );
+				\WP_CLI::launch( "man $man_path" );
 				return true;
 			}
 		}
 
 		return false;
-	}
-
-	private static function show_manpage( $path ) {
-		// man can't read phar://, so need to copy to a temporary file
-		$tmp_path = tempnam( sys_get_temp_dir(), 'wp-cli-man-' );
-
-		copy( $path, $tmp_path );
-
-		\WP_CLI::launch( "man $tmp_path" );
-
-		unlink( $tmp_path );
 	}
 
 	private static function _generate( $src_dir, $dest_dir, $command ) {
