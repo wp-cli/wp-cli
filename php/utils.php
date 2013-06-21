@@ -8,8 +8,8 @@ use \WP_CLI\Dispatcher;
 
 function load_dependencies() {
 	$vendor_paths = array(
-		WP_CLI_ROOT . '../vendor',           // top-level project
-		WP_CLI_ROOT . '../../../../vendor',  // part of a larger project
+		WP_CLI_ROOT . '/vendor',           // top-level project
+		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project
 	);
 
 	$has_autoload = false;
@@ -27,11 +27,11 @@ function load_dependencies() {
 		exit(3);
 	}
 
-	include WP_CLI_ROOT . 'Spyc.php';
+	include WP_CLI_ROOT . '/php/Spyc.php';
 }
 
 function load_command( $name ) {
-	$path = WP_CLI_ROOT . "/commands/$name.php";
+	$path = WP_CLI_ROOT . "/php/commands/$name.php";
 
 	if ( is_readable( $path ) ) {
 		include_once $path;
@@ -39,7 +39,7 @@ function load_command( $name ) {
 }
 
 function load_all_commands() {
-	$cmd_dir = WP_CLI_ROOT . "commands";
+	$cmd_dir = WP_CLI_ROOT . "/php/commands";
 
 	$iterator = new \DirectoryIterator( $cmd_dir );
 
@@ -372,7 +372,7 @@ function run_mysql_command( $cmd, $arg_str, $pass ) {
 }
 
 function mustache_render( $template_name, $data ) {
-	$template = file_get_contents( WP_CLI_ROOT . "../templates/$template_name" );
+	$template = file_get_contents( WP_CLI_ROOT . "/templates/$template_name" );
 
 	$m = new \Mustache_Engine;
 
