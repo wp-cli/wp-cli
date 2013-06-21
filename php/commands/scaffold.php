@@ -260,7 +260,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 
 		foreach ( $to_copy as $file => $dir ) {
-			$wp_filesystem->copy( WP_CLI_ROOT . "../templates/$file", "$dir/$file", true );
+			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", "$dir/$file", true );
 		}
 
 		WP_CLI::success( "Created test files." );

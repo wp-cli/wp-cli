@@ -5,10 +5,10 @@ define( 'WP_CLI', true );
 
 define( 'WP_CLI_VERSION', '0.11.0-alpha' );
 
-include WP_CLI_ROOT . 'utils.php';
-include WP_CLI_ROOT . 'dispatcher.php';
-include WP_CLI_ROOT . 'class-wp-cli.php';
-include WP_CLI_ROOT . 'class-wp-cli-command.php';
+include WP_CLI_ROOT . '/php/utils.php';
+include WP_CLI_ROOT . '/php/dispatcher.php';
+include WP_CLI_ROOT . '/php/class-wp-cli.php';
+include WP_CLI_ROOT . '/php/class-wp-cli-command.php';
 
 \WP_CLI\Utils\load_dependencies();
 
@@ -26,7 +26,7 @@ define( 'WP_NETWORK_ADMIN', false );
 define( 'WP_USER_ADMIN', false );
 
 // Load Core, mu-plugins, plugins, themes etc.
-require WP_CLI_ROOT . 'wp-settings-cli.php';
+require WP_CLI_ROOT . '/php/wp-settings-cli.php';
 
 // Fix memory limit. See http://core.trac.wordpress.org/ticket/14889
 @ini_set( 'memory_limit', -1 );
