@@ -19,4 +19,4 @@ you run the tests.
 
 ## EXAMPLE
 
-wp core init-tests ~/svn/wp-tests --dbname=wp_test --dbuser=wp_test
+	wp core init-tests ~/svn/wp-tests --dbname=wp_test --dbuser=wp_test

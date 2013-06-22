@@ -1,6 +1,6 @@
 ## OPTIONS
 
-* <theme>:
+* `<theme>`:
 
 	A theme slug or the path to a zip file.
 
