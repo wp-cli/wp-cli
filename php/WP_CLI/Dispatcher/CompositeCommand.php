@@ -17,7 +17,6 @@ class CompositeCommand {
 		$this->name = $name;
 
 		$this->shortdesc = $docparser->get_shortdesc();
-		$this->synopsis = $docparser->get_synopsis();
 
 		$when_to_invoke = $docparser->get_tag( 'when' );
 		if ( $when_to_invoke ) {
@@ -52,7 +51,7 @@ class CompositeCommand {
 	}
 
 	function get_synopsis() {
-		return $this->synopsis;
+		return '<subcommand>';
 	}
 
 	function invoke( $args, $assoc_args ) {
