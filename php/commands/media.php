@@ -56,7 +56,7 @@ class Media_Command extends WP_CLI_Command {
 	/**
 	 * Create attachments from local files or from URLs.
 	 *
-	 * @synopsis <file>... [--post_id=<post_id>] [--title=<title>] [--caption=<caption>] [--alt=<alt_text>] [--desc=<description>] [--featured_image]
+	 * @synopsis <file>... [--post_id=<id>] [--title=<title>] [--caption=<caption>] [--alt=<text>] [--desc=<description>] [--featured_image]
 	 */
 	function import( $args, $assoc_args = array() ) {
 
