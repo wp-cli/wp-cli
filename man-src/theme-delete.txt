@@ -1,6 +1,6 @@
 ## OPTIONS
 
-* <theme>:
+* `<theme>`:
 
 	The theme to delete.
 

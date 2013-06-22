@@ -15,4 +15,4 @@ ignored in this case.
 
 ## EXAMPLES
 
-	Download version 3.3: wp core download --version=3.3
+	wp core download --version=3.3
