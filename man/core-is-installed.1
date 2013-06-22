@@ -10,17 +10,12 @@
 wp core is\-installed
 .
 .SH "EXAMPLES"
-if ! $(wp core is\-installed); then
-.
-.IP "" 4
 .
 .nf
 
-wp core install
+if ! $(wp core is\-installed); then
+    wp core install
+fi
 .
 .fi
-.
-.IP "" 0
-.
-.P
-fi
+
