@@ -73,15 +73,37 @@ class Help_Command extends WP_CLI_Command {
 		$binding['synopsis'] = "$name " . $command->get_synopsis();
 
 		if ( $command->has_subcommands() ) {
-			foreach ( $command->get_subcommands() as $subcommand ) {
-				$binding['has-subcommands']['subcommands'][] = array(
-					'name' => $subcommand->get_name(),
-					'desc' => $subcommand->get_shortdesc(),
-				);
-			}
+			$binding['has-subcommands']['subcommands'] = self::render_subcommands( $command );
 		}
 
 		return Utils\mustache_render( 'man.mustache', $binding );
+	}
+
+	private static function render_subcommands( $command ) {
+		$subcommands = array();
+		foreach ( $command->get_subcommands() as $subcommand ) {
+			 $subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
+		}
+
+		$max_len = self::get_max_len( array_keys( $subcommands ) );
+
+		$lines = array();
+		foreach ( $subcommands as $name => $desc ) {
+			$lines[] = str_pad( $name, $max_len ) . "\t\t\t" . $desc;
+		}
+
+		return $lines;
+	}
+
+	private static function get_max_len( $strings ) {
+		$max_len = 0;
+		foreach ( $strings as $str ) {
+			$len = strlen( $str );
+			if ( $len > $max_len )
+				$max_len = $len;
+		}
+
+		return $max_len;
 	}
 }
 
