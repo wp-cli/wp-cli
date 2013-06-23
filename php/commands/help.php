@@ -42,8 +42,9 @@ class Help_Command extends WP_CLI_Command {
 			$out .= file_get_contents( $extra_markdown_path );
 		}
 
+		$out = preg_replace( '/^## ([A-Z]+)/m', '%9\1%n', $out );   // section headers
+		$out = preg_replace( '/^\* `([^`]+)`/m', '\1', $out );      // options
 		$out = str_replace( "\t", '  ', $out );
-		$out = preg_replace( '/^## ([A-Z]+)/m', '%9\1%n', $out );
 
 		echo WP_CLI::colorize( $out );
 	}
