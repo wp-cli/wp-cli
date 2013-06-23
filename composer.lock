@@ -53,12 +53,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/php-cli-tools.git",
-                "reference": "d44e1a9bd32d564a1c77dda0e96b66a199993e5c"
+                "reference": "9c34cb24ddbdec5ae0a56297561acda708890b5c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/d44e1a9bd32d564a1c77dda0e96b66a199993e5c",
-                "reference": "d44e1a9bd32d564a1c77dda0e96b66a199993e5c",
+                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/9c34cb24ddbdec5ae0a56297561acda708890b5c",
+                "reference": "9c34cb24ddbdec5ae0a56297561acda708890b5c",
                 "shasum": ""
             },
             "require": {
@@ -90,7 +90,7 @@
                 "cli",
                 "console"
             ],
-            "time": "2013-05-11 20:20:03"
+            "time": "2013-06-23 11:32:36"
         }
     ],
     "packages-dev": [
@@ -738,17 +738,17 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.3.0",
+            "version": "v2.3.1",
             "target-dir": "Symfony/Component/EventDispatcher",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/EventDispatcher.git",
-                "reference": "v2.3.0-RC1"
+                "reference": "v2.3.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/v2.3.0-RC1",
-                "reference": "v2.3.0-RC1",
+                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/v2.3.1",
+                "reference": "v2.3.1",
                 "shasum": ""
             },
             "require": {
@@ -886,17 +886,17 @@
         },
         {
             "name": "symfony/translation",
-            "version": "v2.3.0",
+            "version": "v2.3.1",
             "target-dir": "Symfony/Component/Translation",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Translation.git",
-                "reference": "v2.3.0-RC1"
+                "reference": "v2.3.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Translation/zipball/v2.3.0-RC1",
-                "reference": "v2.3.0-RC1",
+                "url": "https://api.github.com/repos/symfony/Translation/zipball/v2.3.1",
+                "reference": "v2.3.1",
                 "shasum": ""
             },
             "require": {
@@ -941,17 +941,17 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.3.0",
+            "version": "v2.3.1",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "v2.3.0-RC1"
+                "reference": "v2.3.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/v2.3.0-RC1",
-                "reference": "v2.3.0-RC1",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/v2.3.1",
+                "reference": "v2.3.1",
                 "shasum": ""
             },
             "require": {
