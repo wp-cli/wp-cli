@@ -39,10 +39,10 @@ Global parameters:
 EOB
 	);
 
-		\WP_CLI::line( self::generate_synopsis() );
+		self::show_synopsis();
 	}
 
-	private static function generate_synopsis() {
+	private static function show_synopsis() {
 		$max_len = 0;
 
 		$lines = array();
