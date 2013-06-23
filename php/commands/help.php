@@ -14,13 +14,7 @@ class Help_Command extends WP_CLI_Command {
 		$command = self::find_subcommand( $args );
 
 		if ( $command ) {
-			self::add_initial_markdown( $command );
-
-			$extra_markdown_path = self::find_extra_markdown( $command );
-			if ( $extra_markdown_path ) {
-				echo file_get_contents( $extra_markdown_path );
-			}
-
+			self::show_help( $command );
 			exit;
 		}
 
@@ -40,6 +34,20 @@ class Help_Command extends WP_CLI_Command {
 		return $command;
 	}
 
+	private static function show_help( $command ) {
+		$out = self::get_initial_markdown( $command );
+
+		$extra_markdown_path = self::find_extra_markdown( $command );
+		if ( $extra_markdown_path ) {
+			$out .= file_get_contents( $extra_markdown_path );
+		}
+
+		$out = str_replace( "\t", '  ', $out );
+		$out = preg_replace( '/^## ([A-Z]+)/m', '%9\1%n', $out );
+
+		echo WP_CLI::colorize( $out );
+	}
+
 	private static function find_extra_markdown( $command ) {
 		$cmd_path = Dispatcher\get_path( $command );
 		array_shift( $cmd_path ); // discard 'wp'
@@ -54,7 +62,7 @@ class Help_Command extends WP_CLI_Command {
 		return false;
 	}
 
-	private static function add_initial_markdown( $command ) {
+	private static function get_initial_markdown( $command ) {
 		$name = implode( ' ', Dispatcher\get_path( $command ) );
 
 		$binding = array(
@@ -73,7 +81,7 @@ class Help_Command extends WP_CLI_Command {
 			}
 		}
 
-		echo Utils\mustache_render( 'man.mustache', $binding );
+		return Utils\mustache_render( 'man.mustache', $binding );
 	}
 }
 
