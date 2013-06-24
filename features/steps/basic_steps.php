@@ -126,9 +126,19 @@ $steps->When( '/^I try to import it$/',
 	}
 );
 
-$steps->Given( '/^save (STDOUT|STDERR) as \{(\w+)\}$/',
-	function ( $world, $stream, $key ) {
-		$world->variables[ $key ] = rtrim( $world->result->$stream, "\n" );
+$steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
+	function ( $world, $stream, $output_filter, $key ) {
+	
+		if ( $output_filter ) {
+			$output_filter = '/' . trim( str_replace( '%s', '(.+[^\b])', $output_filter ), "' " ) . '/';
+			if ( false !== preg_match( $output_filter, $world->result->$stream, $matches ) )
+				$output = array_pop( $matches );
+			else
+				$output = '';
+		} else {
+			$output = $world->result->$stream;
+		}
+		$world->variables[ $key ] = trim( $output, "\n" );
 	}
 );
 
