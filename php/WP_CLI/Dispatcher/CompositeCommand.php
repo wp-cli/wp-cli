@@ -17,7 +17,6 @@ class CompositeCommand {
 		$this->name = $name;
 
 		$this->shortdesc = $docparser->get_shortdesc();
-		$this->synopsis = $docparser->get_synopsis();
 
 		$when_to_invoke = $docparser->get_tag( 'when' );
 		if ( $when_to_invoke ) {
@@ -52,7 +51,7 @@ class CompositeCommand {
 	}
 
 	function get_synopsis() {
-		return $this->synopsis;
+		return '<subcommand>';
 	}
 
 	function invoke( $args, $assoc_args ) {
@@ -72,6 +71,28 @@ class CompositeCommand {
 
 		\WP_CLI::line();
 		\WP_CLI::line( "See 'wp help $this->name <subcommand>' for more information on a specific subcommand." );
+	}
+
+	function get_extra_markdown() {
+		$md_file = self::find_extra_markdown_file( $this );
+		if ( !$md_file )
+			return '';
+
+		return file_get_contents( $md_file );
+	}
+
+	private static function find_extra_markdown_file( $command ) {
+		$cmd_path = get_path( $command );
+		array_shift( $cmd_path ); // discard 'wp'
+		$cmd_path = implode( '-', $cmd_path );
+
+		foreach ( \WP_CLI::get_man_dirs() as $src_dir ) {
+			$src_path = "$src_dir/$cmd_path.txt";
+			if ( is_readable( $src_path ) )
+				return $src_path;
+		}
+
+		return false;
 	}
 
 	function find_subcommand( &$args ) {
