@@ -3,7 +3,7 @@
 class Import_Command extends WP_CLI_Command {
 
 	/**
-	 * Import content.
+	 * Import content from a WXR file.
 	 *
 	 * @synopsis <file> --authors=<authors> [--skip=<data-type>]
 	 */
