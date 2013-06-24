@@ -108,14 +108,14 @@ class Site_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Empty a site of its content.
+	 * Empty a site of its content (posts, comments, and terms).
 	 *
 	 * @subcommand empty
 	 * @synopsis [--yes]
 	 */
 	public function _empty( $args, $assoc_args ) {
 
-		WP_CLI::confirm( 'Are you sure you want to empty the site at ' . site_url() . '?', $assoc_args );
+		WP_CLI::confirm( 'Are you sure you want to empty the site at ' . site_url() . ' of all posts, comments, and terms?', $assoc_args );
 
 		$this->_empty_posts();
 		$this->_empty_comments();
