@@ -72,9 +72,15 @@ class WP_CLI {
 	 *
 	 * @param string $name The name of the command that will be used in the cli
 	 * @param string $class The command implementation
+	 * @param array $args An associative array with additional parameters:
+	 *   'before_invoke' => callback to execute before invoking the command
 	 */
-	static function add_command( $name, $class ) {
+	static function add_command( $name, $class, $args = array() ) {
 		$command = Dispatcher\CommandFactory::create( $name, $class, self::$root );
+
+		if ( isset( $args['before_invoke'] ) ) {
+			self::add_action( "before_invoke:$name", $args['before_invoke'] );
+		}
 
 		self::$root->add_subcommand( $name, $command );
 	}
