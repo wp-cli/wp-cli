@@ -37,10 +37,10 @@ class Help_Command extends WP_CLI_Command {
 	private static function show_help( $command ) {
 		$out = self::get_initial_markdown( $command );
 
-		$out .= self::get_extra_markdown( $command );
+		$out .= $command->get_extra_markdown();
 
 		// section headers
-		$out = preg_replace( '/^## ([A-Z]+)/m', '%9\1%n', $out );
+		$out = preg_replace( '/^## ([A-Z ]+)/m', '%9\1%n', $out );
 
 		// old-style options
 		$out = preg_replace( '/\n\* `(.+)`([^\n]*):\n\n/', "\n\t\\1\\2\n\t\t", $out );
@@ -48,28 +48,6 @@ class Help_Command extends WP_CLI_Command {
 		$out = str_replace( "\t", '  ', $out );
 
 		echo WP_CLI::colorize( $out );
-	}
-
-	private static function get_extra_markdown( $command ) {
-		$md_file = self::find_extra_markdown_file( $command );
-		if ( !$md_file )
-			return '';
-
-		return file_get_contents( $md_file );
-	}
-
-	private static function find_extra_markdown_file( $command ) {
-		$cmd_path = Dispatcher\get_path( $command );
-		array_shift( $cmd_path ); // discard 'wp'
-		$cmd_path = implode( '-', $cmd_path );
-
-		foreach ( WP_CLI::get_man_dirs() as $src_dir ) {
-			$src_path = "$src_dir/$cmd_path.txt";
-			if ( is_readable( $src_path ) )
-				return $src_path;
-		}
-
-		return false;
 	}
 
 	private static function get_initial_markdown( $command ) {
