@@ -1,3 +1,9 @@
 ## EXAMPLES
 
 	wp blog empty
+
+## OPTIONS
+
+* `--yes`:
+
+	Proceed to empty the site without a confirmation prompt.
