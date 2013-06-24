@@ -1,6 +1,6 @@
 ## EXAMPLES
 
-	wp blog empty
+	wp site empty
 
 ## OPTIONS
 
