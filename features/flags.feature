@@ -74,10 +74,13 @@ Feature: Global flags
       """
 
   Scenario: Using --require
-    Given a WP install
+    Given an empty directory
     And a custom-cmd.php file:
       """
       <?php
+      /**
+       * @when before_wp_load
+       */
       class Test_Command extends WP_CLI_Command {
 
         function req( $args, $assoc_args ) {
