@@ -37,19 +37,28 @@ class Help_Command extends WP_CLI_Command {
 	private static function show_help( $command ) {
 		$out = self::get_initial_markdown( $command );
 
-		$extra_markdown_path = self::find_extra_markdown( $command );
-		if ( $extra_markdown_path ) {
-			$out .= file_get_contents( $extra_markdown_path );
-		}
+		$out .= self::get_extra_markdown( $command );
 
-		$out = preg_replace( '/^## ([A-Z]+)/m', '%9\1%n', $out );   // section headers
-		$out = preg_replace( '/^\* `([^`]+)`/m', '\1', $out );      // options
+		// section headers
+		$out = preg_replace( '/^## ([A-Z]+)/m', '%9\1%n', $out );
+
+		// old-style options
+		$out = preg_replace( '/\* `(.+)`([^\n]*):\n\n/', "\\1\\2\n\t", $out );
+
 		$out = str_replace( "\t", '  ', $out );
 
 		echo WP_CLI::colorize( $out );
 	}
 
-	private static function find_extra_markdown( $command ) {
+	private static function get_extra_markdown( $command ) {
+		$md_file = self::find_extra_markdown_file( $command );
+		if ( !$md_file )
+			return '';
+
+		return file_get_contents( $md_file );
+	}
+
+	private static function find_extra_markdown_file( $command ) {
 		$cmd_path = Dispatcher\get_path( $command );
 		array_shift( $cmd_path ); // discard 'wp'
 		$cmd_path = implode( '-', $cmd_path );
