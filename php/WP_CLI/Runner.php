@@ -98,14 +98,16 @@ class Runner {
 	}
 
 	private static function set_url( $assoc_args ) {
+		if ( isset( $assoc_args['blog'] ) ) {
+			$assoc_args['url'] = $assoc_args['blog'];
+			unset( $assoc_args['blog'] );
+			WP_CLI::warning( 'The --blog parameter is deprecated. Use --url instead.' );
+		}
+
 		if ( isset( $assoc_args['url'] ) ) {
 			$url = $assoc_args['url'];
-		} elseif ( isset( $assoc_args['blog'] ) ) {
-			WP_CLI::warning( 'The --blog parameter is deprecated. Use --url instead.' );
-
-			$url = $assoc_args['blog'];
 			if ( true === $url ) {
-				WP_CLI::line( 'usage: wp --blog=example.com' );
+				WP_CLI::warning( 'The --url parameter expects a value.' );
 			}
 		} elseif ( is_readable( ABSPATH . 'wp-cli-blog' ) ) {
 			WP_CLI::warning( 'The wp-cli-blog file is deprecated. Use wp-cli.yml instead.' );
