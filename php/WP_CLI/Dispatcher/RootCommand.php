@@ -14,38 +14,11 @@ class RootCommand extends CompositeCommand {
 
 		$this->name = 'wp';
 
-		$this->shortdesc = '';
-		$this->synopsis = '';
+		$this->shortdesc = 'Manage WordPress installations through the command-line.';
 	}
 
-	function show_usage() {
-		\WP_CLI::line( 'Available commands:' );
-
-		foreach ( $this->get_subcommands() as $command ) {
-			if ( '_sys' == $command->get_name() )
-				continue;
-
-			\WP_CLI::line( sprintf( '  %s %s',
-				implode( ' ', get_path( $command ) ),
-				implode( '|', array_keys( $command->get_subcommands() ) )
-			) );
-		}
-
-		\WP_CLI::line(<<<EOB
-
-See 'wp help <command>' for more information on a specific command.
-
-Global parameters:
-EOB
-	);
-
-		self::show_synopsis();
-	}
-
-	private static function show_synopsis() {
-		$max_len = 0;
-
-		$lines = array();
+	function get_extra_markdown() {
+		$binding = array();
 
 		foreach ( \WP_CLI::$configurator->get_spec() as $key => $details ) {
 			if ( false === $details['runtime'] )
@@ -54,23 +27,18 @@ EOB
 			if ( isset( $details['deprecated'] ) )
 				continue;
 
-			$synopsis = ( true === $details['runtime'] )
-				? "--[no-]$key"
-				: "--$key" . $details['runtime'];
+			if ( true === $details['runtime'] )
+				$synopsis = "--[no-]$key";
+			else
+				$synopsis = "--$key" . $details['runtime'];
 
-			$cur_len = strlen( $synopsis );
-
-			if ( $max_len < $cur_len )
-				$max_len = $cur_len;
-
-			$lines[] = array( $synopsis, $details['desc'] );
+			$binding['parameters'][] = array(
+				'synopsis' => $synopsis,
+				'desc' => $details['desc']
+			);
 		}
 
-		foreach ( $lines as $line ) {
-			list( $synopsis, $desc ) = $line;
-
-			\WP_CLI::line( sprintf( '  %s  %s', str_pad( $synopsis, $max_len ), $desc ) );
-		}
+		return Utils\mustache_render( 'man-params.mustache', $binding );
 	}
 
 	function find_subcommand( &$args ) {

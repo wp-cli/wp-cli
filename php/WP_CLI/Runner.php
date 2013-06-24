@@ -299,8 +299,10 @@ class Runner {
 		$this->init_colorization();
 		$this->init_logger();
 
-		if ( !empty( $this->arguments ) )
-			Utils\load_command( $this->arguments[0] );
+		if ( empty( $this->arguments ) )
+			$this->arguments[] = 'help';
+
+		Utils\load_command( $this->arguments[0] );
 
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {
