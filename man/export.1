@@ -7,7 +7,7 @@
 \fBwp\-export\fR \- Export content to a WXR file\.
 .
 .SH "SYNOPSIS"
-wp export [\-\-dir=\fIdir\fR] [\-\-start_date=\fIdate\fR] [\-\-end_date=\fIdate\fR] [\-\-post_type=\fIptype\fR] [\-\-post_status=\fIstatus\fR] [\-\-post__in=\fIpids\fR] [\-\-author=\fIlogin\fR] [\-\-category=\fIcat\fR] [\-\-skip_comments] [\-\-file_item_count=\fIcount\fR] [\-\-verbose]
+wp export [\-\-dir=\fIdir\fR] [\-\-start_date=\fIdate\fR] [\-\-end_date=\fIdate\fR] [\-\-post_type=\fIptype\fR] [\-\-not_post_type=\fIptype\fR] [\-\-post_status=\fIstatus\fR] [\-\-post__in=\fIpids\fR] [\-\-author=\fIlogin\fR] [\-\-category=\fIcat\fR] [\-\-skip_comments] [\-\-file_item_count=\fIcount\fR] [\-\-verbose]
 .
 .SH "OPTIONS"
 .
@@ -54,6 +54,12 @@ Export only posts older than this date, in format YYYY\-MM\-DD\.
 .
 .IP
 Export only posts with this post_type\.
+.
+.TP
+\fB\-\-not_post_type\fR=\fIpost_type\fR:
+.
+.IP
+Omit this post_type from the export\.
 .
 .TP
 \fB\-\-post__in\fR=\fIpid\fR:
