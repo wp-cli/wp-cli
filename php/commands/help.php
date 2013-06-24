@@ -47,7 +47,54 @@ class Help_Command extends WP_CLI_Command {
 
 		$out = str_replace( "\t", '  ', $out );
 
-		echo WP_CLI::colorize( $out );
+		self::pass_through_pager( WP_CLI::colorize( $out ) );
+	}
+
+	private static function launch_pager( $pager, $fd ) {
+		// launch pager
+		$descriptorspec = array(
+			0 => $fd,
+			1 => STDOUT,
+			2 => array( 'pipe', 'w' )
+		);
+
+		$r = proc_close( proc_open( $pager, $descriptorspec, $pipes ) );
+
+		if ( 127 == $r ) {
+			return false;
+		}
+
+		if ( $r ) {
+			fwrite( STDERR, stream_get_contents( $pipes[1] ) );
+			exit( $r );
+		}
+
+		return true;
+	}
+
+	private static function pass_through_pager( $out ) {
+		// convert string to file handle
+		$fd = fopen( "php://temp", "r+" );
+		fputs( $fd, $out );
+		rewind( $fd );
+
+		$pagers = array( 'less -r', 'more -r' );
+		foreach ( $pagers as $pager ) {
+			if ( self::launch_pager( $pager, $fd ) )
+				return;
+		}
+
+		// no pager found
+		echo $out;
+	}
+
+	private static function find( $candidates, $callback ) {
+		foreach ( $candidates as $candidate ) {
+			if ( call_user_func( $callback, $candidate ) )
+				return $candidate;
+		}
+
+		return false;
 	}
 
 	private static function get_initial_markdown( $command ) {
