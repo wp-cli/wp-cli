@@ -43,7 +43,7 @@ class Help_Command extends WP_CLI_Command {
 		$out = preg_replace( '/^## ([A-Z]+)/m', '%9\1%n', $out );
 
 		// old-style options
-		$out = preg_replace( '/\* `(.+)`([^\n]*):\n\n/', "\\1\\2\n\t", $out );
+		$out = preg_replace( '/\n\* `(.+)`([^\n]*):\n\n/', "\n\t\\1\\2\n\t\t", $out );
 
 		$out = str_replace( "\t", '  ', $out );
 
