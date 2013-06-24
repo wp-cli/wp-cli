@@ -22,10 +22,7 @@ class WP_CLI {
 	 * Initialize WP_CLI static variables.
 	 */
 	static function init() {
-		self::add_man_dir(
-			WP_CLI_ROOT . "/man",
-			WP_CLI_ROOT . "/man-src"
-		);
+		self::add_man_dir( null, WP_CLI_ROOT . "/man-src" );
 
 		self::$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
 		self::$root = new Dispatcher\RootCommand;
@@ -79,8 +76,8 @@ class WP_CLI {
 		self::$root->add_subcommand( $name, $command );
 	}
 
-	static function add_man_dir( $dest_dir, $src_dir ) {
-		self::$man_dirs[ $dest_dir ] = $src_dir;
+	static function add_man_dir( $deprecated = null, $src_dir ) {
+		self::$man_dirs[] = $src_dir;
 	}
 
 	static function get_man_dirs() {
