@@ -1,7 +1,3 @@
-## EXAMPLES
-
-	wp site empty
-
 ## OPTIONS
 
 * `--yes`:
