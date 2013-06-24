@@ -14,9 +14,14 @@ class Subcommand extends CompositeCommand {
 	function __construct( $parent, $name, $docparser, $when_invoked ) {
 		$this->when_invoked = $when_invoked;
 
+		$this->synopsis = $docparser->get_synopsis();
 		$this->alias = $docparser->get_tag( 'alias' );
 
 		parent::__construct( $parent, $name, $docparser );
+	}
+
+	function get_synopsis() {
+		return $this->synopsis;
 	}
 
 	function get_alias() {
@@ -24,7 +29,11 @@ class Subcommand extends CompositeCommand {
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
-		\WP_CLI::line( $prefix . get_full_synopsis( $this ) );
+		\WP_CLI::line( sprintf( "%s%s %s",
+			$prefix,
+			implode( ' ', get_path( $this ) ),
+			$this->get_synopsis()
+		) );
 	}
 
 	private function validate_args( $args, &$assoc_args ) {

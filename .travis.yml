@@ -6,12 +6,12 @@ php:
 
 env:
     - WP_VERSION=latest 
-    - WP_VERSION=3.4.2 WITH_RONN=1
+    - WP_VERSION=3.4.2
 
 matrix:
   exclude:
     - php: 5.4
-      env: WP_VERSION=3.4.2 WITH_RONN=1
+      env: WP_VERSION=3.4.2
 
 before_script: ./bin/ci/install_dependencies.sh
 

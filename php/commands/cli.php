@@ -4,9 +4,11 @@ use \WP_CLI\Dispatcher,
 	\WP_CLI\Utils;
 
 /**
+ * Get information about WP-CLI itself.
+ *
  * @when before_wp_load
  */
-class Sys_Command extends WP_CLI_Command {
+class CLI_Command extends WP_CLI_Command {
 
 	private function command_to_array( $command ) {
 		$dump = array(
@@ -55,5 +57,5 @@ class Sys_Command extends WP_CLI_Command {
 	}
 }
 
-WP_CLI::add_command( '_sys', 'Sys_Command' );
+WP_CLI::add_command( 'cli', 'CLI_Command' );
 

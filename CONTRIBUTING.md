@@ -15,17 +15,6 @@ Also, please create or update the appropriate `.txt` file in the `man-src` direc
 
 Lastly, please follow the [WordPress Coding Standards](http://make.wordpress.org/core/handbook/coding-standards/).
 
-Generating man pages
---------------------
-
-To generate a man page, WP-CLI looks for `.txt` files in the `man-src` directory. It also gathers information from the inline comments and the `@synopsis` annotations.
-
-The compiled man page is placed in the `man` directory.
-
-To (re)generate one or more man pages, you first need to have the [ronn](https://rubygems.org/gems/ronn) ruby gem installed.
-
-Then, you can use the `wp help --gen` command.
-
 Running the tests
 -----------------
 
