@@ -231,11 +231,11 @@ class Runner {
 			unset( $assoc_args['json'] );
 		}
 
-		// --{version|info}  ->  _sys {version|info}
+		// --{version|info}  ->  cli {version|info}
 		if ( empty( $args ) ) {
 			foreach ( array( 'version', 'info' ) as $key ) {
 				if ( isset( $assoc_args[ $key ] ) ) {
-					$args = array( '_sys', $key );
+					$args = array( 'cli', $key );
 					break;
 				}
 			}
