@@ -46,6 +46,7 @@ class Import_Command extends WP_CLI_Command {
 		switch( $args['type'] ) {
 			case 'wxr':
 			case 'wordpress':
+				$this->add_wxr_filters();
 				$ret = $this->import_wxr( $args );
 				break;
 			default:
@@ -116,6 +117,65 @@ class Import_Command extends WP_CLI_Command {
 		$wp_import->import( $args['file'] );
 
 		return true;
+	}
+
+	/**
+	 * Useful verbosity filters for the WXR importer
+	 */
+	private function add_wxr_filters() {
+
+		add_filter( 'wp_import_posts', function( $posts ) {
+			global $wpcli_import_counts;
+			$wpcli_import_counts['current_post'] = 0;
+			$wpcli_import_counts['total_posts'] = count( $posts );
+			return $posts;
+		}, 10 );
+
+		add_filter( 'wp_import_post_comments', function( $comments, $post_id, $post ) {
+			global $wpcli_import_counts;
+			$wpcli_import_counts['current_comment'] = 0;
+			$wpcli_import_counts['total_comments'] = count( $comments );
+			return $comments;
+		}, 10, 3 );
+
+		add_filter( 'wp_import_post_data_raw', function( $post ) {
+			global $wpcli_import_counts;
+
+			$wpcli_import_counts['current_post']++;
+			WP_CLI::line();
+			WP_CLI::line();
+			WP_CLI::line( sprintf( 'Processing post #%d ("%s") (post_type: %s)', $post['post_id'], $post['post_title'], $post['post_type'] ) );
+			WP_CLI::line( sprintf( '-- %s of %s', number_format( $wpcli_import_counts['current_post'] ), number_format( $wpcli_import_counts['total_posts'] ) ) );
+			WP_CLI::line( '-- ' . date( 'r' ) );
+
+			return $post;
+		} );
+
+		add_action( 'wp_import_insert_post', function( $post_id, $original_post_ID, $post, $postdata ) {
+			if ( is_wp_error( $post_id ) )
+				WP_CLI::warning( "-- Error importing post: " . $post_id->get_error_code() );
+			else
+				WP_CLI::line( "-- Imported post as post_id #{$post_id}" );
+		}, 10, 4 );
+
+		add_action( 'wp_import_insert_term', function( $t, $import_term, $post_id, $post ) {
+			WP_CLI::line( "-- Created term \"{$import_term['name']}\"" );
+		}, 10, 4 );
+
+		add_action( 'wp_import_set_post_terms', function( $tt_ids, $term_ids, $taxonomy, $post_id, $post ) {
+			WP_CLI::line( "-- Added terms (" . implode( ',', $term_ids ) .") for taxonomy \"{$taxonomy}\"" );
+		}, 10, 5 );
+
+		add_action( 'wp_import_insert_comment', function( $comment_id, $comment, $comment_post_ID, $post ) {
+			global $wpcli_import_counts;
+			$wpcli_import_counts['current_comment']++;
+			WP_CLI::line( sprintf( '-- Added comment #%d (%s of %s)', $comment_id, number_format( $wpcli_import_counts['current_comment'] ), number_format( $wpcli_import_counts['total_comments'] ) ) );
+		}, 10, 4 );
+
+		add_action( 'import_post_meta', function( $post_id, $key, $value ) {
+			WP_CLI::line( "-- Added post_meta $key" );
+		}, 10, 3 );
+
 	}
 
 	/**
