@@ -212,7 +212,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * Set the user role (for a particular blog).
 	 *
 	 * @subcommand set-role
-	 * @synopsis <user-login> [<role>] [--blog=<blog>]
+	 * @synopsis <user-login> [<role>]
 	 */
 	public function set_role( $args, $assoc_args ) {
 		$user = self::get_user_from_first_arg( $args[0] );
@@ -232,7 +232,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * Add a role for a user.
 	 *
 	 * @subcommand add-role
-	 * @synopsis <user-login> <role> [--blog=<blog>]
+	 * @synopsis <user-login> <role>
 	 */
 	public function add_role( $args, $assoc_args ) {
 		$user = self::get_user_from_first_arg( $args[0] );
@@ -248,7 +248,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * Remove a user's role.
 	 *
 	 * @subcommand remove-role
-	 * @synopsis <user-login> [<role>] [--blog=<blog>]
+	 * @synopsis <user-login> [<role>]
 	 */
 	public function remove_role( $args, $assoc_args ) {
 		$user = self::get_user_from_first_arg( $args[0] );
@@ -277,7 +277,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$user = get_user_by( 'login', $id_or_login );
 
 		if ( ! $user )
-			WP_CLI::error( "Please specify a valid user ID or user login to remove from this blog" );
+			WP_CLI::error( "Invalid user ID or login: $id_or_login" );
 
 		return $user;
 	}
@@ -324,7 +324,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 				if ( !in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ) ) &&  $new_user['role'] ) {
 					add_user_to_blog( get_current_blog_id(), $existing_user->ID, $new_user['role'] );
-					WP_CLI::log( "{$existing_user->user_login} added to blog as {$new_user['role']}" );
+					WP_CLI::log( "{$existing_user->user_login} added as {$new_user['role']}." );
 				}
 
 			// Create the user
