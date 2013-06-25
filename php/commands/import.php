@@ -32,10 +32,12 @@ class Import_Command extends WP_CLI_Command {
 
 		$ret = $this->import( $assoc_args );
 
-		if ( is_wp_error( $ret ) )
+		if ( is_wp_error( $ret ) ) {
 			WP_CLI::error( $ret->get_error_message() );
-		else
+		} else {
+			WP_CLI::line(); // WXR import ends with HTML, so make sure message is on next line
 			WP_CLI::success( "Import complete." );
+		}
 	}
 
 	/**
