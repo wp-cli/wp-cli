@@ -78,9 +78,9 @@ class Configurator {
 	 *
 	 * @return array
 	 */
-	function load_config( $path ) {
-		if ( $path )
-			$config = spyc_load_file( $path );
+	function load_config( $yml_file ) {
+		if ( $yml_file )
+			$config = spyc_load_file( $yml_file );
 		else
 			$config = array();
 
@@ -99,7 +99,16 @@ class Configurator {
 			$sanitized_config[ $key ] = $value;
 		}
 
+		// Make sure a config-relative 'path' is made absolute
+		self::absolutize( $sanitized_config['path'], dirname( $yml_file ) );
+
 		return $sanitized_config;
+	}
+
+	private static function absolutize( &$path, $base ) {
+		if ( !empty( $path ) && !\WP_CLI\Utils\is_path_absolute( $path ) ) {
+			$path = $base . DIRECTORY_SEPARATOR . $path;
+		}
 	}
 }
 
