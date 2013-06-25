@@ -1,5 +1,14 @@
 Feature: Global flags
 
+  Scenario: Setting the URL
+    Given a WP install
+
+    When I run `wp --url=localhost:8001 eval 'echo $_SERVER["SERVER_PORT"];'`
+    Then STDOUT should be:
+      """
+      8001
+      """
+
   Scenario: Quiet run
     Given a WP install
 
