@@ -45,7 +45,7 @@ Feature: Global flags
       admin
       """
 
-    When I try `wp --user=non-existing-user`
+    When I try `wp --user=non-existing-user eval 'echo wp_get_current_user()->user_login;'`
     Then the return code should be 1
     And STDERR should be:
       """
@@ -67,7 +67,7 @@ Feature: Global flags
       WP_CLI::set_logger( new Dummy_Logger );
       """
 
-    When I try `wp --require=custom-logger.php`
+    When I try `wp --require=custom-logger.php is-installed`
     Then STDOUT should be:
       """
       log: called 'error' method
