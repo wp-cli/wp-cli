@@ -233,9 +233,10 @@ class Runner {
 			unset( $assoc_args['json'] );
 		}
 
-		// --{version|info}  ->  cli {version|info}
+		// --{version|info|completions}  ->  cli {version|info|completions}
 		if ( empty( $args ) ) {
-			foreach ( array( 'version', 'info' ) as $key ) {
+			$special_flags = array( 'version', 'info', 'completions' );
+			foreach ( $special_flags as $key ) {
 				if ( isset( $assoc_args[ $key ] ) ) {
 					$args = array( 'cli', $key );
 					break;
@@ -358,16 +359,6 @@ class Runner {
 
 		// Handle --user parameter
 		self::set_user( $this->config );
-
-		// Handle --completions parameter
-		if ( isset( $this->assoc_args['completions'] ) ) {
-			foreach ( WP_CLI::$root->get_subcommands() as $name => $command ) {
-				$subcommands = $command->get_subcommands();
-
-				WP_CLI::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
-			}
-			exit;
-		}
 
 		$this->_run_command();
 	}

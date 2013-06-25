@@ -150,3 +150,11 @@ Feature: Global flags
       """
       [31;1mError:
       """
+
+  Scenario: Generate completions
+    Given an empty directory
+    When I run `wp --completions`
+    Then STDOUT should contain:
+      """
+      transient delete get set type
+      """
