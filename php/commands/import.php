@@ -15,10 +15,10 @@ class Import_Command extends WP_CLI_Command {
 			WP_CLI::error( "File to import doesn't exist." );
 
 		$defaults = array(
-			'type'                   => 'wxr',
-			'authors'                => null,
-			'skip'                   => array(),
-			);
+			'type'    => 'wxr',
+			'authors' => null,
+			'skip'    => array(),
+		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
 		$assoc_args['file'] = $file;
@@ -71,7 +71,7 @@ class Import_Command extends WP_CLI_Command {
 		// Prepare the data to be used in process_author_mapping();
 		$wp_import->get_authors_from_import( $import_data );
 		$author_data = array();
-		foreach( $wp_import->authors as $wxr_author ) {
+		foreach ( $wp_import->authors as $wxr_author ) {
 			$author = new \stdClass;
 			// Always in the WXR
 			$author->user_login = $wxr_author['author_login'];
@@ -98,7 +98,7 @@ class Import_Command extends WP_CLI_Command {
 		// $user_select needs to be an array of user IDs
 		$user_select = array();
 		$invalid_user_select = array();
-		foreach( $author_out as $author_login ) {
+		foreach ( $author_out as $author_login ) {
 			$user = get_user_by( 'login', $author_login );
 			if ( $user )
 				$user_select[] = $user->ID;
@@ -109,7 +109,7 @@ class Import_Command extends WP_CLI_Command {
 			return new WP_Error( 'invalid-author-mapping', sprintf( "These user_logins are invalid: %s", implode( ',', $invalid_user_select ) ) );
 
 		// Drive the import
-		$wp_import->fetch_attachments = ( in_array( 'attachment', $args['skip'] ) ) ? false : true;
+		$wp_import->fetch_attachments = !in_array( 'attachment', $args['skip'] );
 		$_GET = array( 'import' => 'wordpress', 'step' => 2 );
 		$_POST = array(
 			'imported_authors'     => $author_in,
@@ -264,11 +264,11 @@ class Import_Command extends WP_CLI_Command {
 
 		if ( touch( $file ) ) {
 			$author_mapping = array();
-			foreach( $author_data as $author ) {
+			foreach ( $author_data as $author ) {
 				$author_mapping[] = array(
-						'old_user_login' => $author->user_login,
-						'new_user_login' => $this->suggest_user( $author->user_login, $author->user_email ),
-					);
+					'old_user_login' => $author->user_login,
+					'new_user_login' => $this->suggest_user( $author->user_login, $author->user_email ),
+				);
 			}
 			$file_resource = fopen( $file, 'w' );
 			\WP_CLI\utils\write_csv( $file_resource, $author_mapping, array( 'old_user_login', 'new_user_login' ) );
@@ -284,14 +284,14 @@ class Import_Command extends WP_CLI_Command {
 	private function create_authors_for_mapping( $author_data ) {
 
 		$author_mapping = array();
-		foreach( $author_data as $author ) {
+		foreach ( $author_data as $author ) {
 
 			if ( isset( $author->user_email ) ) {
 				if ( $user = get_user_by( 'email', $author->user_email ) ) {
 					$author_mapping[] = array(
-							'old_user_login' => $author->user_login,
-							'new_user_login' => $user->user_login,
-						);
+						'old_user_login' => $author->user_login,
+						'new_user_login' => $user->user_login,
+					);
 					continue;
 				}
 			}
@@ -305,10 +305,10 @@ class Import_Command extends WP_CLI_Command {
 			}
 
 			$user = array(
-					'user_login'       => '',
-					'user_email'       => '',
-					'user_pass'        => wp_generate_password(),
-				);
+				'user_login' => '',
+				'user_email' => '',
+				'user_pass'  => wp_generate_password(),
+			);
 			$user = array_merge( $user, (array)$author );
 			$user_id = wp_insert_user( $user );
 			if ( is_wp_error( $user_id ) )
@@ -316,9 +316,9 @@ class Import_Command extends WP_CLI_Command {
 
 			$user = get_user_by( 'id', $user_id );
 			$author_mapping[] = array(
-					'old_user_login' => $author->user_login,
-					'new_user_login' => $user->user_login,
-				);
+				'old_user_login' => $author->user_login,
+				'new_user_login' => $user->user_login,
+			);
 		}
 		return $author_mapping;
 
@@ -334,7 +334,7 @@ class Import_Command extends WP_CLI_Command {
 
 		$shortest = -1;
 		$shortestavg = array();
-	
+
 		$threshold = floor( ( strlen( $author_user_login ) / 100 ) * 10 ); // 10 % of the strlen are valid
 		$closest = '';
 		foreach ( $this->blog_users as $user ) {
@@ -353,13 +353,13 @@ class Import_Command extends WP_CLI_Command {
 				$shortest = 0;
 				break;
 			}
-	
+
 			if ( ( $lev <= $shortest || $shortest < 0 ) && $lev <= $threshold ) {
 				$closest  = $user->user_login;
 				$shortest = $lev;
 			}
 			$shortestavg[] = $lev;
-		}	
+		}
 		// in case all usernames have a common pattern
 		if ( $shortest > ( array_sum( $shortestavg ) / count( $shortestavg ) ) )
 			return '';
@@ -369,3 +369,4 @@ class Import_Command extends WP_CLI_Command {
 }
 
 WP_CLI::add_command( 'import', new Import_Command );
+
