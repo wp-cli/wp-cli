@@ -55,6 +55,14 @@ class CLI_Command extends WP_CLI_Command {
 	function cmd_dump() {
 		echo json_encode( self::command_to_array( WP_CLI::$root ) );
 	}
+
+	function completions() {
+		foreach ( WP_CLI::$root->get_subcommands() as $name => $command ) {
+			$subcommands = $command->get_subcommands();
+
+			WP_CLI::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
+		}
+	}
 }
 
 WP_CLI::add_command( 'cli', 'CLI_Command' );
