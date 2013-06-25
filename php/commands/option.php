@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage WordPress options.
+ * Manage options.
  *
  * @package wp-cli
  */

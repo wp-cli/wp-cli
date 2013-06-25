@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage WordPress transients.
+ * Manage transients.
  *
  * @package wp-cli
  */
