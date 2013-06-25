@@ -1,8 +1,8 @@
 ## OPTIONS
 
-* `<ID>`:
+* `<user>`:
 
-	The ID of the user to update.
+	The user login or ID of the user to update.
 
 * `--<field>`=<value>:
 
@@ -11,3 +11,5 @@
 ## EXAMPLES
 
 	wp user update 123 --user_login=mary --display_name=Mary
+
+	wp user update mary --user_pass=marypass
