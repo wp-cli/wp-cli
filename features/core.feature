@@ -56,7 +56,7 @@ Feature: Manage WordPress installation
     And WP files
     And wp-config.php
 
-    When I try `wp`
+    When I try `wp core is-installed`
     Then the return code should be 1
     And STDERR should not be empty
 
@@ -73,7 +73,7 @@ Feature: Manage WordPress installation
     Then the return code should be 1
     And STDERR should not be empty
 
-    When I try `wp`
+    When I try `wp core is-installed`
     Then the return code should be 1
     And STDERR should be:
       """
