@@ -52,7 +52,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			'wp core config' => self::$db_settings,
 
 			'wp core install' => array(
-				'url' => 'http://example.com',
+				'url' => 'http://localhost:8001',
 				'title' => 'WP CLI Site',
 				'admin_email' => 'admin@example.com',
 				'admin_password' => 'password1'

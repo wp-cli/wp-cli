@@ -84,8 +84,11 @@ Feature: Manage WordPress installation
     When I run `wp core install`
     Then STDOUT should not be empty
 
-    When I run `wp core version`
-    Then STDOUT should not be empty
+    When I run `wp eval 'echo home_url();'`
+    Then STDOUT should be:
+      """
+      http://localhost:8001
+      """
 
   Scenario: Full install
     Given a WP install
