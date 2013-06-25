@@ -163,7 +163,6 @@ function set_url_params( $url ) {
 	}
 
 	$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
-	$_SERVER['REQUEST_URL'] = $f('path');
 	$_SERVER['SERVER_PORT'] = isset( $url_parts['port'] ) ? $url_parts['port'] : '80';
 	$_SERVER['QUERY_STRING'] = $f('query');
 	$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
