@@ -1,6 +1,6 @@
 Feature: Import content.
 
-Scenario: Basic export then import
+  Scenario: Basic export then import
     Given a WP install
 
     When I run `wp post generate --post_type=post --count=3`
@@ -25,7 +25,7 @@ Scenario: Basic export then import
     When I run `wp site empty --yes`
     Then STDOUT should not be empty
 
-   	When I run `wp post list --post_type=any --format=csv | wc -l`
+    When I run `wp post list --post_type=any --format=csv | wc -l`
     Then STDOUT should be:
       """
       1
