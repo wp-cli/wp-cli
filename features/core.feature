@@ -58,10 +58,7 @@ Feature: Manage WordPress installation
 
     When I try `wp core is-installed`
     Then the return code should be 1
-    And STDERR should contain:
-      """
-      Can’t select database
-      """
+    And STDERR should not be empty
 
     When I run `wp db create`
     Then STDOUT should not be empty
