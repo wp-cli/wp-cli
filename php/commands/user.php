@@ -59,13 +59,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Delete one or more users.
 	 *
-	 * @synopsis <id>... [--reassign=<id>]
+	 * @synopsis <user>... [--reassign=<id>]
 	 */
 	public function delete( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'reassign' => null
 		) );
 
+		$args[0] = self::get_user_from_first_arg( $args[0] )->ID;
 		parent::delete( $args, $assoc_args );
 	}
 
@@ -145,9 +146,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Update a user.
 	 *
-	 * @synopsis <id>... --<field>=<value>
+	 * @synopsis <user>... --<field>=<value>
 	 */
 	public function update( $args, $assoc_args ) {
+
+		$args[0] = self::get_user_from_first_arg( $args[0] )->ID;
 		parent::update( $args, $assoc_args, 'user' );
 	}
 
@@ -212,7 +215,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * Set the user role (for a particular blog).
 	 *
 	 * @subcommand set-role
-	 * @synopsis <user-login> [<role>]
+	 * @synopsis <user> [<role>]
 	 */
 	public function set_role( $args, $assoc_args ) {
 		$user = self::get_user_from_first_arg( $args[0] );
@@ -232,7 +235,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * Add a role for a user.
 	 *
 	 * @subcommand add-role
-	 * @synopsis <user-login> <role>
+	 * @synopsis <user> <role>
 	 */
 	public function add_role( $args, $assoc_args ) {
 		$user = self::get_user_from_first_arg( $args[0] );
@@ -248,7 +251,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * Remove a user's role.
 	 *
 	 * @subcommand remove-role
-	 * @synopsis <user-login> [<role>]
+	 * @synopsis <user> [<role>]
 	 */
 	public function remove_role( $args, $assoc_args ) {
 		$user = self::get_user_from_first_arg( $args[0] );
