@@ -68,7 +68,7 @@ class Export_Command extends WP_CLI_Command {
 			define( 'YB_IN_BYTES', 1024 * ZB_IN_BYTES );
 		}
 
-		require WP_CLI_ROOT . '/export/functions.export.php';
+		require WP_CLI_ROOT . '/php/export/functions.export.php';
 	}
 
 	private function validate_args( $args ) {
