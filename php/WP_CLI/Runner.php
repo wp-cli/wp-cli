@@ -278,12 +278,6 @@ class Runner {
 
 		$local_config = \WP_CLI::$configurator->load_config( $this->config_path );
 
-		// When invoking from a subdirectory in the project,
-		// make sure a config-relative 'path' is made absolute
-		if ( !empty( $local_config['path'] ) && !\WP_CLI\Utils\is_path_absolute( $local_config['path'] ) ) {
-			$local_config['path'] = dirname( $this->config_path ) . DIRECTORY_SEPARATOR . $local_config['path'];
-		}
-
 		$this->config = $local_config;
 
 		foreach ( $runtime_config as $key => $value ) {
