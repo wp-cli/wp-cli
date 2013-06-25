@@ -51,13 +51,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		self::$additional_args = array(
 			'wp core config' => self::$db_settings,
 
-			'wp core install' => array(
-				'url' => 'http://localhost:8001',
-				'title' => 'WP CLI Site',
-				'admin_email' => 'admin@example.com',
-				'admin_password' => 'password1'
-			),
-
 			'wp core install-network' => array(
 				'title' => 'WP CLI Network'
 			)
@@ -191,7 +184,14 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		$this->proc( 'wp core config', array( 'dbprefix' => $subdir ? $subdir : 'wp_' ) )->run_check( $subdir );
 
-		$this->proc( 'wp core install' )->run_check( $subdir );
+		$install_args = array(
+			'url' => 'http://example.com',
+			'title' => 'WP CLI Site',
+			'admin_email' => 'admin@example.com',
+			'admin_password' => 'password1'
+		);
+
+		$this->proc( 'wp core install', $install_args )->run_check( $subdir );
 	}
 }
 
