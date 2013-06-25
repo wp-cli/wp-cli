@@ -164,23 +164,29 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 
 		switch ( $status['status'] ) {
-		case 'update_available':
-		case 'install':
-			$upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
-			$result = $upgrader->install( $api->download_link );
 
-			if ( $result && isset( $assoc_args['activate'] ) ) {
-				WP_CLI::log( "Activating '$slug'..." );
-				$this->activate( array( $slug ) );
-			}
+			case 'latest_installed':
+				WP_CLI::error( 'Latest version already installed.' );
+				break;
 
-			break;
-		case 'newer_installed':
-			WP_CLI::error( sprintf( 'Newer version (%s) installed.', $status['version'] ) );
-			break;
-		case 'latest_installed':
-			WP_CLI::error( 'Latest version already installed.' );
-			break;
+			// Newer installed plugin, but we might want the older version
+			case 'newer_installed':
+			case 'update_available':
+				if ( isset( $assoc_args['version'] )
+					&& version_compare( $status['version'], $assoc_args['version'], '>=' ) ) {
+					list( $file, $name ) = $this->parse_name( array( $api->slug ) );
+					$this->_delete( $file );
+				}
+
+			case 'install':
+				$upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
+				$result = $upgrader->install( $api->download_link );
+
+				if ( $result && isset( $assoc_args['activate'] ) ) {
+					WP_CLI::log( "Activating '$slug'..." );
+					$this->activate( array( $slug ) );
+				}
+				break;
 		}
 	}
 
