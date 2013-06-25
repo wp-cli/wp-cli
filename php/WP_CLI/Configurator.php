@@ -99,8 +99,17 @@ class Configurator {
 			$sanitized_config[ $key ] = $value;
 		}
 
-		// Make sure a config-relative 'path' is made absolute
-		self::absolutize( $sanitized_config['path'], dirname( $yml_file ) );
+		// Make sure config-file-relative paths are made absolute.
+		$yml_file_dir = dirname( $yml_file );
+
+		if ( isset( $sanitized_config['path'] ) )
+			self::absolutize( $sanitized_config['path'], $yml_file_dir );
+
+		if ( isset( $sanitized_config['require'] ) ) {
+			foreach ( $sanitized_config['require'] as &$path ) {
+				self::absolutize( $path, $yml_file_dir );
+			}
+		}
 
 		return $sanitized_config;
 	}
