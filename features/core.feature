@@ -77,11 +77,14 @@ Feature: Manage WordPress installation
       Run `wp core install`.
       """
 
-    When I run `wp core install`
+    When I run `wp core install --url='localhost:8001' --title='Test' --admin_email=admin@example.com --admin_password=1`
     Then STDOUT should not be empty
 
-    When I run `wp core version`
-    Then STDOUT should not be empty
+    When I run `wp eval 'echo home_url();'`
+    Then STDOUT should be:
+      """
+      http://localhost:8001
+      """
 
   Scenario: Full install
     Given a WP install
