@@ -353,8 +353,25 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 function run_mysql_query( $query, $args ) {
 	// TODO: use PDO?
 
+  $host_parts = explode( ':',  $args['host'] );
+  if ( count( $host_parts ) == 2 ) {
+    list( $host, $extra ) = $host_parts;
+  } else {
+    $host = $args['host'];
+  }
+
 	$arg_str = esc_cmd( '--host=%s --user=%s --execute=%s',
-		$args['host'], $args['user'], $query );
+		$host, $args['user'], $query );
+
+  if ( isset( $extra ) ) {
+    if ( is_numeric($extra) ) {
+      $arg_str .= esc_cmd( ' --port=%s --protocol=%s', intval( $extra ), 'tcp' );
+    } else if ( trim($extra) !== '' ) {
+      $arg_str .= esc_cmd( ' --socket=%s', trim( $extra ) );
+    }
+  }
+
+  echo $arg_str . "\n";
 
 	run_mysql_command( 'mysql', $arg_str, $args['pass'] );
 }
