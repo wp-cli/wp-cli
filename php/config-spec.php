@@ -63,5 +63,12 @@ return array(
 		'default' => false,
 		'desc' => 'Suppress informational messages',
 	),
+
+	'apache_modules' => array(
+		'file' => '<bool>',
+		'desc' => 'List of Apache Modules that are to be reported as loaded',
+		'multiple' => true,
+		'default' => array(),
+	),
 );
 

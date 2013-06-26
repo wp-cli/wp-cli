@@ -10,16 +10,18 @@ class Rewrite_Command extends WP_CLI_Command {
 	/**
 	 * Flush rewrite rules.
 	 *
-	 * @synopsis [--soft]
+	 * @synopsis [--hard]
 	 */
 	public function flush( $args, $assoc_args ) {
-		flush_rewrite_rules( isset( $assoc_args['soft'] ) );
+		// make sure we detect mod_rewrite if configured in apache_modules in config
+		self::apache_modules();
+		flush_rewrite_rules( isset( $assoc_args['hard'] ) );
 	}
 
 	/**
 	 * Update the permalink structure.
 	 *
-	 * @synopsis <permastruct> [--category-base=<base>] [--tag-base=<base>]
+	 * @synopsis <permastruct> [--category-base=<base>] [--tag-base=<base>] [--hard]
 	 */
 	public function structure( $args, $assoc_args ) {
 		global $wp_rewrite;
@@ -62,7 +64,9 @@ class Rewrite_Command extends WP_CLI_Command {
 			$wp_rewrite->set_tag_base( $tag_base );
 		}
 
-		flush_rewrite_rules( $hard );
+		// make sure we detect mod_rewrite if configured in apache_modules in config
+		self::apache_modules();
+		flush_rewrite_rules( isset( $assoc_args['hard'] ) );
 	}
 
 	/**
@@ -86,6 +90,22 @@ class Rewrite_Command extends WP_CLI_Command {
 		}
 
 	}
+
+	/**
+	 * Expose apache modules if present in config
+	 */
+	public static function apache_modules() {
+		$mods = WP_CLI::get_config('apache_modules');
+		if ( count($mods) > 0 && !function_exists( 'apache_get_modules') ) {
+			global $is_apache;
+			$is_apache = true;
+
+			function apache_get_modules() {
+				return WP_CLI::get_config('apache_modules');
+			}
+		}
+	}
+
 }
 
 WP_CLI:: add_command( 'rewrite', 'Rewrite_Command' );
