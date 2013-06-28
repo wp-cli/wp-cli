@@ -251,7 +251,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$this->create_file( "$tests_dir/bootstrap.php",
 			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) );
-
+		
 		$to_copy = array(
 			'install-wp-tests.sh' => $bin_dir,
 			'.travis.yml' => $plugin_dir,
