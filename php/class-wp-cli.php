@@ -100,6 +100,20 @@ class WP_CLI {
 	}
 
 	/**
+	 * Displays an input prompt. If no default value is provided the prompt will
+	 * continue displaying until input is received.
+	 *
+	 * @param string  $question  The question to ask the user.
+	 * @param string  $default   A default value if the user provides no input.
+	 * @param string  $marker    A string to append to the question and default value
+	 *                           on display.
+	 * @return string  The users input.
+	 */
+	static function prompt( $question, $default = false, $marker = ': ' ) {
+		return \cli\Streams::prompt( $question, $default, $marker );
+	}
+
+	/**
 	 * Log an informational message.
 	 *
 	 * @param string $message
