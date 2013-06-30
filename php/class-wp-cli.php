@@ -40,6 +40,10 @@ class WP_CLI {
 		return self::$configurator;
 	}
 
+	static function get_runner() {
+		return self::$runner;
+	}
+
 	static function colorize( $string ) {
 		return \cli\Colors::colorize( $string, self::$runner->in_color() );
 	}

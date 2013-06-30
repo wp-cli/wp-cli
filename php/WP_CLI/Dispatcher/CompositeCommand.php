@@ -20,7 +20,7 @@ class CompositeCommand {
 
 		$when_to_invoke = $docparser->get_tag( 'when' );
 		if ( $when_to_invoke ) {
-			\WP_CLI::$runner->register_early_invoke( $when_to_invoke, $this );
+			\WP_CLI::get_runner()->register_early_invoke( $when_to_invoke, $this );
 		}
 	}
 
