@@ -11,7 +11,6 @@ class WP_CLI {
 	public static $configurator;
 	public static $runner;
 
-	private static $root;
 	private static $logger;
 
 	private static $hooks = array(), $hooks_passed = array();
@@ -82,11 +81,13 @@ class WP_CLI {
 	}
 
 	static function get_root_command() {
-		if ( !self::$root ) {
-			self::$root = new Dispatcher\RootCommand;
+		static $root;
+
+		if ( !$root ) {
+			$root = new Dispatcher\RootCommand;
 		}
 
-		return self::$root;
+		return $root;
 	}
 
 	static function add_man_dir( $deprecated = null, $src_dir ) {
