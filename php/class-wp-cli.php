@@ -254,7 +254,7 @@ class WP_CLI {
 	}
 
 	private static function find_command_to_run( $args ) {
-		$command = \WP_CLI::get_root_command();
+		$command = self::get_root_command();
 
 		$cmd_path = array();
 
@@ -267,14 +267,14 @@ class WP_CLI {
 			$subcommand = $command->find_subcommand( $args );
 
 			if ( !$subcommand ) {
-				\WP_CLI::error( sprintf(
+				self::error( sprintf(
 					"'%s' is not a registered wp command. See 'wp help'.",
 					$full_name
 				) );
 			}
 
 			if ( in_array( $full_name, $disabled_commands ) ) {
-				\WP_CLI::error( sprintf(
+				self::error( sprintf(
 					"The '%s' command has been disabled from the config file.",
 					$full_name
 				) );
