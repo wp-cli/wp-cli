@@ -9,7 +9,6 @@ use \WP_CLI\Dispatcher;
 class WP_CLI {
 
 	public static $configurator;
-	public static $root;
 	public static $runner;
 
 	private static $logger;
@@ -25,7 +24,6 @@ class WP_CLI {
 		self::add_man_dir( null, WP_CLI_ROOT . "/man-src" );
 
 		self::$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
-		self::$root = new Dispatcher\RootCommand;
 		self::$runner = new WP_CLI\Runner;
 	}
 
@@ -73,13 +71,23 @@ class WP_CLI {
 	 *   'before_invoke' => callback to execute before invoking the command
 	 */
 	static function add_command( $name, $class, $args = array() ) {
-		$command = Dispatcher\CommandFactory::create( $name, $class, self::$root );
+		$command = Dispatcher\CommandFactory::create( $name, $class, self::get_root_command() );
 
 		if ( isset( $args['before_invoke'] ) ) {
 			self::add_action( "before_invoke:$name", $args['before_invoke'] );
 		}
 
-		self::$root->add_subcommand( $name, $command );
+		self::get_root_command()->add_subcommand( $name, $command );
+	}
+
+	static function get_root_command() {
+		static $root;
+
+		if ( !$root ) {
+			$root = new Dispatcher\RootCommand;
+		}
+
+		return $root;
 	}
 
 	static function add_man_dir( $deprecated = null, $src_dir ) {
@@ -246,7 +254,7 @@ class WP_CLI {
 	}
 
 	private static function find_command_to_run( $args ) {
-		$command = \WP_CLI::$root;
+		$command = \WP_CLI::get_root_command();
 
 		$cmd_path = array();
 

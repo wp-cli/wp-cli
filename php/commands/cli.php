@@ -53,11 +53,11 @@ class CLI_Command extends WP_CLI_Command {
 	 * @subcommand cmd-dump
 	 */
 	function cmd_dump() {
-		echo json_encode( self::command_to_array( WP_CLI::$root ) );
+		echo json_encode( self::command_to_array( WP_CLI::get_root_command() ) );
 	}
 
 	function completions() {
-		foreach ( WP_CLI::$root->get_subcommands() as $name => $command ) {
+		foreach ( WP_CLI::get_root_command()->get_subcommands() as $name => $command ) {
 			$subcommands = $command->get_subcommands();
 
 			WP_CLI::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
