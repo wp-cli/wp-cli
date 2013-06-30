@@ -46,7 +46,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * @subcommand param-dump
 	 */
 	function param_dump() {
-		echo json_encode( \WP_CLI::$configurator->get_spec() );
+		echo json_encode( \WP_CLI::get_configurator()->get_spec() );
 	}
 
 	/**

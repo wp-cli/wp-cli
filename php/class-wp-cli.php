@@ -8,7 +8,7 @@ use \WP_CLI\Dispatcher;
  */
 class WP_CLI {
 
-	public static $configurator;
+	private static $configurator;
 	public static $runner;
 
 	private static $logger;
@@ -34,6 +34,10 @@ class WP_CLI {
 	 */
 	static function set_logger( $logger ) {
 		self::$logger = $logger;
+	}
+
+	static function get_configurator() {
+		return self::$configurator;
 	}
 
 	static function colorize( $string ) {
