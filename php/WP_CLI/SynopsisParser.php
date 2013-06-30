@@ -46,7 +46,9 @@ class SynopsisParser {
 					$error_type = ( 'mandatory' == $param['flavour'] ) ? 'fatal' : 'warning';
 					$errors[ $error_type ][] = "--$key parameter needs a value";
 
-					unset( $assoc_args[ $key ] );
+					if ( 'prompt' !== $param['flavour'] ) {
+						unset( $assoc_args[ $key ] );
+					}
 				}
 			}
 		}
@@ -110,17 +112,19 @@ class SynopsisParser {
 		$p_name = '(?P<name>[a-z-_]+)';
 		$p_value = '(?P<value>[a-zA-Z-|]+)';
 
-		self::gen_patterns( 'positional', "<$p_value>",           array( 'mandatory', 'optional', 'repeating' ) );
-		self::gen_patterns( 'generic',    "--<field>=<value>",    array( 'mandatory', 'optional', 'repeating' ) );
-		self::gen_patterns( 'assoc',      "--$p_name=<$p_value>", array( 'mandatory', 'optional' ) );
-		self::gen_patterns( 'flag',       "--$p_name",            array( 'optional' ) );
+		self::gen_patterns( 'positional', "<$p_value>",           array( 'mandatory', 'optional', 'prompt', 'repeating' ) );
+		self::gen_patterns( 'generic',    "--<field>=<value>",    array( 'mandatory', 'optional', 'prompt', 'repeating' ) );
+		self::gen_patterns( 'assoc',      "--$p_name=<$p_value>", array( 'mandatory', 'optional', 'prompt' ) );
+		self::gen_patterns( 'flag',       "--$p_name",            array( 'optional', 'prompt' ) );
 	}
 
 	private static function gen_patterns( $type, $pattern, $flavour_types ) {
 		static $flavours = array(
 			'mandatory' => ':pattern:',
 			'optional' => '\[:pattern:\]',
-			'repeating' => array( ':pattern:...', '\[:pattern:...\]' )
+			'prompt' => '\(:pattern:\)',
+			'repeating' => array( ':pattern:...', '\[:pattern:...\]', '\(:pattern:...\)' ),
+			
 		);
 
 		foreach ( $flavour_types as $flavour_type ) {
