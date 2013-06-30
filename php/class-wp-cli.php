@@ -9,9 +9,9 @@ use \WP_CLI\Dispatcher;
 class WP_CLI {
 
 	public static $configurator;
-	public static $root;
 	public static $runner;
 
+	private static $root;
 	private static $logger;
 
 	private static $hooks = array(), $hooks_passed = array();
@@ -72,17 +72,21 @@ class WP_CLI {
 	 *   'before_invoke' => callback to execute before invoking the command
 	 */
 	static function add_command( $name, $class, $args = array() ) {
-		$command = Dispatcher\CommandFactory::create( $name, $class, self::$root );
+		$command = Dispatcher\CommandFactory::create( $name, $class, self::get_root_command() );
 
 		if ( isset( $args['before_invoke'] ) ) {
 			self::add_action( "before_invoke:$name", $args['before_invoke'] );
 		}
 
+		self::get_root_command()->add_subcommand( $name, $command );
+	}
+
+	static function get_root_command() {
 		if ( !self::$root ) {
 			self::$root = new Dispatcher\RootCommand;
 		}
 
-		self::$root->add_subcommand( $name, $command );
+		return self::$root;
 	}
 
 	static function add_man_dir( $deprecated = null, $src_dir ) {
@@ -249,7 +253,7 @@ class WP_CLI {
 	}
 
 	private static function find_command_to_run( $args ) {
-		$command = \WP_CLI::$root;
+		$command = \WP_CLI::get_root_command();
 
 		$cmd_path = array();
 
