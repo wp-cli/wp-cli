@@ -15,7 +15,6 @@ class WP_CLI {
 	private static $logger;
 
 	private static $hooks = array(), $hooks_passed = array();
-	private static $commands_in_packages = array();
 
 	private static $man_dirs = array();
 
@@ -26,12 +25,7 @@ class WP_CLI {
 		self::add_man_dir( null, WP_CLI_ROOT . "/man-src" );
 
 		self::$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
-		self::$root = new Dispatcher\RootCommand;
 		self::$runner = new WP_CLI\Runner;
-
-		foreach ( self::$commands_in_packages as $args ) {
-			call_user_func_array( array( __CLASS__, 'add_command' ), $args );
-		}
 	}
 
 	/**
@@ -78,18 +72,14 @@ class WP_CLI {
 	 *   'before_invoke' => callback to execute before invoking the command
 	 */
 	static function add_command( $name, $class, $args = array() ) {
-		if ( !self::$root ) {  // Still loading Composer autoloader
-			self::$commands_in_packages[] = func_get_args();
-		} else {
-			self::_add_command( $name, $class, $args );
-		}
-	}
-
-	private static function _add_command( $name, $class, $args ) {
 		$command = Dispatcher\CommandFactory::create( $name, $class, self::$root );
 
 		if ( isset( $args['before_invoke'] ) ) {
 			self::add_action( "before_invoke:$name", $args['before_invoke'] );
+		}
+
+		if ( !self::$root ) {
+			self::$root = new Dispatcher\RootCommand;
 		}
 
 		self::$root->add_subcommand( $name, $command );
