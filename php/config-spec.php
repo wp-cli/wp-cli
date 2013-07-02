@@ -65,7 +65,7 @@ return array(
 	),
 
 	'apache_modules' => array(
-		'file' => '<bool>',
+		'file' => '<list>',
 		'desc' => 'List of Apache Modules that are to be reported as loaded',
 		'multiple' => true,
 		'default' => array(),
