@@ -248,15 +248,21 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 }
 
 /**
- * Output items in a table, JSON, or CSV
+ * Output items in a table, JSON, CSV, ids, or the total count
  *
- * @param string        $format     Format to use: 'table', 'json', 'csv', 'ids'
+ * @param string        $format     Format to use: 'table', 'json', 'csv', 'ids', 'count'
  * @param array         $items      Data to output
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
 function format_items( $format, $items, $fields ) {
-	if ( 'ids' == $format )
+	
+	if ( 'ids' == $format ) {
 		echo implode( ' ', $items );
+		return;
+	} else if ( 'count' == $format ) {
+		echo count( $items );
+		return;
+	}
 
 	if ( ! is_array( $fields ) )
 		$fields = explode( ',', $fields );
