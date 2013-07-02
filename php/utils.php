@@ -371,8 +371,6 @@ function run_mysql_query( $query, $args ) {
     }
   }
 
-  echo $arg_str . "\n";
-
 	run_mysql_command( 'mysql', $arg_str, $args['pass'] );
 }
 
