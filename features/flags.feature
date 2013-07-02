@@ -1,5 +1,14 @@
 Feature: Global flags
 
+  Scenario: Setting the URL
+    Given a WP install
+
+    When I run `wp --url=localhost:8001 eval 'echo $_SERVER["SERVER_PORT"];'`
+    Then STDOUT should be:
+      """
+      8001
+      """
+
   Scenario: Quiet run
     Given a WP install
 
@@ -45,7 +54,7 @@ Feature: Global flags
       admin
       """
 
-    When I try `wp --user=non-existing-user`
+    When I try `wp --user=non-existing-user eval 'echo wp_get_current_user()->user_login;'`
     Then the return code should be 1
     And STDERR should be:
       """
@@ -67,7 +76,7 @@ Feature: Global flags
       WP_CLI::set_logger( new Dummy_Logger );
       """
 
-    When I try `wp --require=custom-logger.php`
+    When I try `wp --require=custom-logger.php is-installed`
     Then STDOUT should be:
       """
       log: called 'error' method
@@ -140,4 +149,12 @@ Feature: Global flags
     Then STDERR should contain:
       """
       [31;1mError:
+      """
+
+  Scenario: Generate completions
+    Given an empty directory
+    When I run `wp --completions`
+    Then STDOUT should contain:
+      """
+      transient delete get set type
       """

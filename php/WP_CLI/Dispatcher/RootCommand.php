@@ -14,13 +14,13 @@ class RootCommand extends CompositeCommand {
 
 		$this->name = 'wp';
 
-		$this->shortdesc = 'Manage WordPress installations through the command-line.';
+		$this->shortdesc = 'Manage WordPress through the command-line.';
 	}
 
 	function get_extra_markdown() {
 		$binding = array();
 
-		foreach ( \WP_CLI::$configurator->get_spec() as $key => $details ) {
+		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
 			if ( false === $details['runtime'] )
 				continue;
 

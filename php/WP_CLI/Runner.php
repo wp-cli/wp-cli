@@ -98,14 +98,16 @@ class Runner {
 	}
 
 	private static function set_url( $assoc_args ) {
+		if ( isset( $assoc_args['blog'] ) ) {
+			$assoc_args['url'] = $assoc_args['blog'];
+			unset( $assoc_args['blog'] );
+			WP_CLI::warning( 'The --blog parameter is deprecated. Use --url instead.' );
+		}
+
 		if ( isset( $assoc_args['url'] ) ) {
 			$url = $assoc_args['url'];
-		} elseif ( isset( $assoc_args['blog'] ) ) {
-			WP_CLI::warning( 'The --blog parameter is deprecated. Use --url instead.' );
-
-			$url = $assoc_args['blog'];
 			if ( true === $url ) {
-				WP_CLI::line( 'usage: wp --blog=example.com' );
+				WP_CLI::warning( 'The --url parameter expects a value.' );
 			}
 		} elseif ( is_readable( ABSPATH . 'wp-cli-blog' ) ) {
 			WP_CLI::warning( 'The wp-cli-blog file is deprecated. Use wp-cli.yml instead.' );
@@ -231,9 +233,10 @@ class Runner {
 			unset( $assoc_args['json'] );
 		}
 
-		// --{version|info}  ->  cli {version|info}
+		// --{version|info|completions}  ->  cli {version|info|completions}
 		if ( empty( $args ) ) {
-			foreach ( array( 'version', 'info' ) as $key ) {
+			$special_flags = array( 'version', 'info', 'completions' );
+			foreach ( $special_flags as $key ) {
 				if ( isset( $assoc_args[ $key ] ) ) {
 					$args = array( 'cli', $key );
 					break;
@@ -266,7 +269,7 @@ class Runner {
 	}
 
 	public function before_wp_load() {
-		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::$configurator->parse_args(
+		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::get_configurator()->parse_args(
 			array_slice( $GLOBALS['argv'], 1 ) );
 
 		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
@@ -274,13 +277,7 @@ class Runner {
 
 		$this->config_path = self::get_config_path( $runtime_config );
 
-		$local_config = \WP_CLI::$configurator->load_config( $this->config_path );
-
-		// When invoking from a subdirectory in the project,
-		// make sure a config-relative 'path' is made absolute
-		if ( !empty( $local_config['path'] ) && !\WP_CLI\Utils\is_path_absolute( $local_config['path'] ) ) {
-			$local_config['path'] = dirname( $this->config_path ) . DIRECTORY_SEPARATOR . $local_config['path'];
-		}
+		$local_config = \WP_CLI::get_configurator()->load_config( $this->config_path );
 
 		$this->config = $local_config;
 
@@ -355,6 +352,12 @@ class Runner {
 				Utils\set_url_params( 'http://example.com' );
 			}
 		}
+
+		if ( $this->cmd_starts_with( array( 'import') ) ) {
+			define( 'WP_LOAD_IMPORTERS', true );
+			define( 'WP_IMPORTING', true );
+		}
+
 	}
 
 	public function after_wp_load() {
@@ -362,16 +365,6 @@ class Runner {
 
 		// Handle --user parameter
 		self::set_user( $this->config );
-
-		// Handle --completions parameter
-		if ( isset( $this->assoc_args['completions'] ) ) {
-			foreach ( WP_CLI::$root->get_subcommands() as $name => $command ) {
-				$subcommands = $command->get_subcommands();
-
-				WP_CLI::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
-			}
-			exit;
-		}
 
 		$this->_run_command();
 	}
