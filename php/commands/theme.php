@@ -113,20 +113,20 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			self::alter_api_response( $api, $assoc_args['version'] );
 		}
 
-		// Check to see if we should update, rather than install.
-		if ( $this->has_update( $slug ) ) {
-			WP_CLI::log( sprintf( 'Updating %s (%s)', $api->name, $api->version ) );
-			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $slug );
-
-			/**
-			 *  Else, if there's no update, it's either not installed,
-			 *  or it's newer than what we've got.
-			 */
-		} else if ( !wp_get_theme( $slug )->exists() ) {
+		$theme_obj = wp_get_theme( $slug );
+		if ( $theme_obj->exists()
+			&& empty( $assoc_args['version'] ) ) {
+			// Theme is already installed to the correct version.
+			WP_CLI::error( 'Theme already installed.' );
+		} else if ( $theme_obj->exists()
+			&& version_compare( $assoc_args['version'], $theme_obj->version, '!=' ) ) {
+			// Theme is installed, but we want a different version
+			WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
+			delete_theme( $theme_obj->stylesheet );
+			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->install( $api->download_link );
+		} else if ( ! $theme_obj->exists() ) {
 			WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->install( $api->download_link );
-		} else {
-			WP_CLI::error( 'Theme already installed and up to date.' );
 		}
 
 		// Finally, activate theme if requested.
