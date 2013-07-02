@@ -9,7 +9,6 @@ use \WP_CLI\Dispatcher;
 class WP_CLI {
 
 	private static $configurator;
-	public static $runner;
 
 	private static $logger;
 
@@ -24,7 +23,6 @@ class WP_CLI {
 		self::add_man_dir( null, WP_CLI_ROOT . "/man-src" );
 
 		self::$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
-		self::$runner = new WP_CLI\Runner;
 	}
 
 	/**
@@ -40,12 +38,28 @@ class WP_CLI {
 		return self::$configurator;
 	}
 
+	static function get_root_command() {
+		static $root;
+
+		if ( !$root ) {
+			$root = new Dispatcher\RootCommand;
+		}
+
+		return $root;
+	}
+
 	static function get_runner() {
-		return self::$runner;
+		static $runner;
+
+		if ( !$runner ) {
+			$runner = new WP_CLI\Runner;
+		}
+
+		return $runner;
 	}
 
 	static function colorize( $string ) {
-		return \cli\Colors::colorize( $string, self::$runner->in_color() );
+		return \cli\Colors::colorize( $string, self::get_runner()->in_color() );
 	}
 
 	/**
@@ -86,16 +100,6 @@ class WP_CLI {
 		}
 
 		self::get_root_command()->add_subcommand( $name, $command );
-	}
-
-	static function get_root_command() {
-		static $root;
-
-		if ( !$root ) {
-			$root = new Dispatcher\RootCommand;
-		}
-
-		return $root;
 	}
 
 	static function add_man_dir( $deprecated = null, $src_dir ) {
@@ -151,7 +155,7 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function error( $message, $label = 'Error' ) {
-		if ( ! isset( self::$runner->assoc_args[ 'completions' ] ) ) {
+		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) ) {
 			self::$logger->error( self::error_to_string( $message ), $label );
 		}
 
@@ -246,19 +250,20 @@ class WP_CLI {
 	}
 
 	static function get_config_path() {
-		return self::$runner->config_path;
+		return self::get_runner()->config_path;
 	}
 
 	static function get_config( $key = null ) {
-		if ( null === $key )
-			return self::$runner->config;
+		if ( null === $key ) {
+			return self::get_runner()->config;
+		}
 
-		if ( !isset( self::$runner->config[ $key ] ) ) {
+		if ( !isset( self::get_runner()->config[ $key ] ) ) {
 			self::warning( "Unknown config option '$key'." );
 			return null;
 		}
 
-		return self::$runner->config[ $key ];
+		return self::get_runner()->config[ $key ];
 	}
 
 	private static function find_command_to_run( $args ) {
