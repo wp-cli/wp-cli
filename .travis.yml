@@ -2,7 +2,7 @@ language: php
 
 php:
     - 5.3
-    - 5.4
+    - 5.5
 
 env:
     - WP_VERSION=latest 
@@ -10,7 +10,7 @@ env:
 
 matrix:
   exclude:
-    - php: 5.4
+    - php: 5.5
       env: WP_VERSION=3.4.2
 
 before_script: ./bin/ci/install_dependencies.sh

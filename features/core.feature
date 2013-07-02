@@ -56,7 +56,7 @@ Feature: Manage WordPress installation
     And WP files
     And wp-config.php
 
-    When I try `wp`
+    When I try `wp core is-installed`
     Then the return code should be 1
     And STDERR should not be empty
 
@@ -71,21 +71,20 @@ Feature: Manage WordPress installation
 
     When I try `wp core is-installed`
     Then the return code should be 1
-    And STDERR should not be empty
-
-    When I try `wp`
-    Then the return code should be 1
     And STDERR should be:
       """
       Error: The site you have requested is not installed.
       Run `wp core install`.
       """
 
-    When I run `wp core install`
+    When I run `wp core install --url='localhost:8001' --title='Test' --admin_email=admin@example.com --admin_password=1`
     Then STDOUT should not be empty
 
-    When I run `wp core version`
-    Then STDOUT should not be empty
+    When I run `wp eval 'echo home_url();'`
+    Then STDOUT should be:
+      """
+      http://localhost:8001
+      """
 
   Scenario: Full install
     Given a WP install

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Perform blog-wide operations.
+ * Perform site-wide operations.
  *
  * @package wp-cli
  */
