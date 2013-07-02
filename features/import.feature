@@ -12,7 +12,7 @@ Feature: Import content.
     When I run `wp post list --post_type=any --format=csv | wc -l`
     Then STDOUT should be:
       """
-      8
+      7
       """
 
     When I run `wp export`
