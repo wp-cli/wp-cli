@@ -9,7 +9,7 @@ Feature: Import content.
     When I run `wp post generate --post_type=page --count=2`
     Then STDOUT should not be empty
 
-    When I run `wp post list --post_type=any --format=csv | wc -l`
+    When I run `wp post list --post_type=any --format=count`
     Then STDOUT should be:
       """
       7
@@ -25,10 +25,10 @@ Feature: Import content.
     When I run `wp site empty --yes`
     Then STDOUT should not be empty
 
-    When I run `wp post list --post_type=any --format=csv | wc -l`
+    When I run `wp post list --post_type=any --format=count`
     Then STDOUT should be:
       """
-      1
+      0
       """
 
     When I run `wp plugin install wordpress-importer --activate`
@@ -37,8 +37,8 @@ Feature: Import content.
     When I run `wp import {EXPORT_FILE} --authors=skip`
     Then STDOUT should not be empty
 
-    When I run `wp post list --post_type=any --format=csv | wc -l`
+    When I run `wp post list --post_type=any --format=count`
     Then STDOUT should be:
       """
-      8
+      7
       """
