@@ -93,6 +93,26 @@ class Rewrite_Command extends WP_CLI_Command {
 
 	/**
 	 * Expose apache modules if present in config
+	 *
+	 * Implementation Notes: This function exposes a global function
+	 * apache_get_modules and also sets the $is_apache global variable.
+	 *
+	 * This is so that flush_rewrite_rules will actually write out the
+	 * .htaccess file for apache wordpress installations. There is a check
+	 * to see:
+	 *
+	 * 1. if the $is_apache variable is set.
+	 * 2. if the mod_rewrite module is returned from the apche_get_modules
+	 *    function.
+	 *
+	 * To get this to work with wp-cli you'll need to add the mod_rewrite module
+	 * to your config.yml. For example
+	 *
+	 * apache_modules:
+	 *   - mod_rewrite
+	 *
+	 * If this isn't done then the .htaccess rewrite rules won't be flushed out
+	 * to disk.
 	 */
 	public static function apache_modules() {
 		$mods = WP_CLI::get_config('apache_modules');
