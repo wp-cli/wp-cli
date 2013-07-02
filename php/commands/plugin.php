@@ -177,6 +177,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 					list( $file, $name ) = $this->parse_name( array( $api->slug ) );
 					$this->_delete( $file );
 				}
+				// fallthrough - need to install the plugin nows
 
 			case 'install':
 				$upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
