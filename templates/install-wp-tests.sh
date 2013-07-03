@@ -32,7 +32,7 @@ sed "${ioption[@]}" "s:dirname( __FILE__ ) . '/wordpress/':'$WP_CORE_DIR':" wp-t
 sed "${ioption[@]}" "s/yourdbnamehere/$DB_NAME/" wp-tests-config.php
 sed "${ioption[@]}" "s/yourusernamehere/$DB_USER/" wp-tests-config.php
 sed "${ioption[@]}" "s/yourpasswordhere/$DB_PASS/" wp-tests-config.php
-sed "${ioption[@]}" "s/localhost/${DB_HOST//\//\\/}/" wp-tests-config.php
+sed "${ioption[@]}" "s|localhost|${DB_HOST}|" wp-tests-config.php
 
 # parse DB_HOST for port or socket references
 PARTS=(${DB_HOST//\:/ })
