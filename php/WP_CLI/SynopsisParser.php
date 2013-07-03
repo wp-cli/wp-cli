@@ -33,20 +33,31 @@ class SynopsisParser {
 
 		foreach ( $assoc as $param ) {
 			$key = $param['name'];
-
+			
 			if ( in_array( $key, $ignored_keys ) )
 				continue;
 
 			if ( !isset( $assoc_args[ $key ] ) ) {
-				if ( 'mandatory' == $param['flavour'] ) {
+				if ( in_array('mandatory', $param['flavour']) ) {
 					$errors['fatal'][] = "missing --$key parameter";
 				}
 			} else {
+				
+				// If the key is passed like --foo
 				if ( true === $assoc_args[ $key ] ) {
-					$error_type = ( 'mandatory' == $param['flavour'] ) ? 'fatal' : 'warning';
-					$errors[ $error_type ][] = "--$key parameter needs a value";
+					
+					/**
+					 * To make it a bit less scary:
+					 * If just passing the --key is enough because the value is optional move along. Else trigger an error because the 
+					 * value is also mandatory.
+					 * Even if the assoc_arg is optional, if you pass just --foo without a value it still has to trigger an error.
+					 * Because IF you gonna pass it, it has to be complete.
+					 */
+					if( ! in_array('value-optional', $param['flavour']) ) {
 
-					if ( 'prompt' !== $param['flavour'] ) {
+						$error_type = ( in_array('mandatory', $param['flavour']) ) ? 'fatal' : 'warning';
+						$errors[ $error_type ][] = "--$key parameter needs a value";
+
 						unset( $assoc_args[ $key ] );
 					}
 				}
@@ -79,20 +90,26 @@ class SynopsisParser {
 	 * @return array List of parameters
 	 */
 	static function parse( $synopsis ) {
+		$tokens = array_filter( preg_split( '/[\s\t]+/', $synopsis ) );
+		
+		$params = array();
+
 		if ( empty( self::$patterns ) )
 			self::init_patterns();
-
-		$tokens = array_filter( preg_split( '/[\s\t]+/', $synopsis ) );
-
-		$params = array();
 
 		foreach ( $tokens as $token ) {
 			$type = false;
 
+			// Check the token against the type patterns
 			foreach ( self::$patterns as $regex => $desc ) {
-				if ( preg_match( $regex, $token, $matches ) ) {
-					$type = $desc['type'];
+				
+				// Cleanup for the regex that expect no brackets
+				$_token = str_replace( array('[', ']'), '', $token );
+				if ( preg_match( $regex, $_token, $matches ) ) {
+					$type = $desc['type']; // Add type of param
+					$desc['flavour'] = self::get_flavour( $token ); // Add flavour of param
 					$params[] = array_merge( $matches, $desc );
+
 					break;
 				}
 			}
@@ -100,7 +117,7 @@ class SynopsisParser {
 			if ( !$type ) {
 				$params[] = array(
 					'type' => 'unknown',
-					'token' => $token
+					'token' => $tmp
 				);
 			}
 		}
@@ -108,35 +125,48 @@ class SynopsisParser {
 		return $params;
 	}
 
+	/**
+	 * @todo check if token is correct
+	 **/
+	private static function get_flavour( $token ){
+		$flavour = false;
+
+		//checking for full optionals [--a], [--a=<a>], [--a[=<a>]].
+		if( substr($token, 0, 1) === '[' && substr($token, -1) === ']' ) {
+			$flavour[] = 'optional';
+			// Alright we know you are fully optional, remove the brackets and check for partial value-optionals.
+			$token = substr($token, 1, -1); 
+		} else {
+			$flavour[] = 'mandatory';
+		}
+
+		// Matches for the remaining --a[=a], [--a[=<a>].
+		// The later matches because we already removed the outer brackets
+		if( preg_match('/[^[\]]+(?=])/', $token, $matches) ) {
+			$flavour[] = 'value-optional';
+		}
+
+		if ( strpos($token, '...') !== false ) {
+			$flavour[] = 'repeating';
+		}
+
+		return $flavour;
+	}
+
 	private static function init_patterns() {
 		$p_name = '(?P<name>[a-z-_]+)';
 		$p_value = '(?P<value>[a-zA-Z-|]+)';
 
-		self::gen_patterns( 'positional', "<$p_value>",           array( 'mandatory', 'optional', 'prompt', 'repeating' ) );
-		self::gen_patterns( 'generic',    "--<field>=<value>",    array( 'mandatory', 'optional', 'prompt', 'repeating' ) );
-		self::gen_patterns( 'assoc',      "--$p_name=<$p_value>", array( 'mandatory', 'optional', 'prompt' ) );
-		self::gen_patterns( 'flag',       "--$p_name",            array( 'optional', 'prompt' ) );
+		self::gen_patterns( 'positional', "<$p_value>");
+		self::gen_patterns( 'generic',    "--<field>=<value>");
+		self::gen_patterns( 'assoc',      "--$p_name=<$p_value>");
+		self::gen_patterns( 'flag',       "--$p_name");
 	}
 
-	private static function gen_patterns( $type, $pattern, $flavour_types ) {
-		static $flavours = array(
-			'mandatory' => ':pattern:',
-			'optional' => '\[:pattern:\]',
-			'prompt' => '\(:pattern:\)',
-			'repeating' => array( ':pattern:...', '\[:pattern:...\]', '\(:pattern:...\)' ),
-			
+	private static function gen_patterns( $type, $pattern ) {
+		self::$patterns[ '/^' . $pattern . '$/' ] = array(
+			'type' => $type,
 		);
-
-		foreach ( $flavour_types as $flavour_type ) {
-			foreach ( (array) $flavours[ $flavour_type ] as $flavour ) {
-				$final_pattern = str_replace( ':pattern:', $pattern, $flavour );
-
-				self::$patterns[ '/^' . $final_pattern . '$/' ] = array(
-					'type' => $type,
-					'flavour' => $flavour_type
-				);
-			}
-		}
 	}
 
 	/**
@@ -168,4 +198,3 @@ class SynopsisParser {
 		return $filtered;
 	}
 }
-
