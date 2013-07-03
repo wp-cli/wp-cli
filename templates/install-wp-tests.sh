@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
 if [ $# -lt 3 ]; then
-	echo "usage: $0 <db-name> <db-user> <db-pass> [wp-version]"
+	echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version]"
 	exit 1
 fi
 
 DB_NAME=$1
 DB_USER=$2
 DB_PASS=$3
-WP_VERSION=${4-master}
+DB_HOST=$4
+WP_VERSION=${5-master}
 
 set -ex
 
@@ -31,6 +32,23 @@ sed "${ioption[@]}" "s:dirname( __FILE__ ) . '/wordpress/':'$WP_CORE_DIR':" wp-t
 sed "${ioption[@]}" "s/yourdbnamehere/$DB_NAME/" wp-tests-config.php
 sed "${ioption[@]}" "s/yourusernamehere/$DB_USER/" wp-tests-config.php
 sed "${ioption[@]}" "s/yourpasswordhere/$DB_PASS/" wp-tests-config.php
+sed "${ioption[@]}" "s/localhost/${DB_HOST//\//\\/}/" wp-tests-config.php
+
+# parse DB_HOST for port or socket references
+PARTS=(${DB_HOST//\:/ })
+DB_HOSTNAME=${PARTS[0]};
+DB_SOCK_OR_PORT=${PARTS[1]};
+EXTRA=""
+
+if ! [ -z $DB_HOSTNAME ] ; then
+  if [[ "$DB_SOCK_OR_PORT" =~ ^[0-9]+$ ]] ; then
+    EXTRA=" --host=$DB_HOSTNAME --port=$DB_SOCK_OR_PORT --protocol=tcp"
+  elif ! [ -z $DB_SOCK_OR_PORT ] ; then
+    EXTRA=" --socket=$DB_SOCK_OR_PORT"
+  elif ! [ -z $DB_HOSTNAME ] ; then
+    EXTRA=" --host=$DB_HOSTNAME --protocol=tcp"
+  fi
+fi
 
 # create database
-mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"
+mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
