@@ -336,7 +336,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 *
 	 * @subcommand init-tests
 	 *
-	 * @synopsis [<path>] --dbname=<name> --dbuser=<user> [--dbpass=<password>]
+	 * @synopsis [<path>] --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>]
 	 */
 	function init_tests( $args, $assoc_args ) {
 		if ( isset( $args[0] ) )
@@ -346,6 +346,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'dbpass' => '',
+			'dbhost' => 'localhost'
 		) );
 
 		// Download the test suite
@@ -355,7 +356,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		$query = sprintf( 'CREATE DATABASE IF NOT EXISTS `%s`', $assoc_args['dbname'] );
 
 		Utils\run_mysql_query( $query, array(
-			'host' => 'localhost',
+			'host' => $assoc_args['dbhost'],
 			'user' => $assoc_args['dbuser'],
 			'pass' => $assoc_args['dbpass'],
 		) );
