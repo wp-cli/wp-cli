@@ -10,16 +10,18 @@ class Rewrite_Command extends WP_CLI_Command {
 	/**
 	 * Flush rewrite rules.
 	 *
-	 * @synopsis [--soft]
+	 * @synopsis [--hard]
 	 */
 	public function flush( $args, $assoc_args ) {
-		flush_rewrite_rules( isset( $assoc_args['soft'] ) );
+		// make sure we detect mod_rewrite if configured in apache_modules in config
+		self::apache_modules();
+		flush_rewrite_rules( isset( $assoc_args['hard'] ) );
 	}
 
 	/**
 	 * Update the permalink structure.
 	 *
-	 * @synopsis <permastruct> [--category-base=<base>] [--tag-base=<base>]
+	 * @synopsis <permastruct> [--category-base=<base>] [--tag-base=<base>] [--hard]
 	 */
 	public function structure( $args, $assoc_args ) {
 		global $wp_rewrite;
@@ -62,7 +64,9 @@ class Rewrite_Command extends WP_CLI_Command {
 			$wp_rewrite->set_tag_base( $tag_base );
 		}
 
-		flush_rewrite_rules( $hard );
+		// make sure we detect mod_rewrite if configured in apache_modules in config
+		self::apache_modules();
+		flush_rewrite_rules( isset( $assoc_args['hard'] ) );
 	}
 
 	/**
@@ -86,6 +90,42 @@ class Rewrite_Command extends WP_CLI_Command {
 		}
 
 	}
+
+	/**
+	 * Expose apache modules if present in config
+	 *
+	 * Implementation Notes: This function exposes a global function
+	 * apache_get_modules and also sets the $is_apache global variable.
+	 *
+	 * This is so that flush_rewrite_rules will actually write out the
+	 * .htaccess file for apache wordpress installations. There is a check
+	 * to see:
+	 *
+	 * 1. if the $is_apache variable is set.
+	 * 2. if the mod_rewrite module is returned from the apche_get_modules
+	 *    function.
+	 *
+	 * To get this to work with wp-cli you'll need to add the mod_rewrite module
+	 * to your config.yml. For example
+	 *
+	 * apache_modules:
+	 *   - mod_rewrite
+	 *
+	 * If this isn't done then the .htaccess rewrite rules won't be flushed out
+	 * to disk.
+	 */
+	public static function apache_modules() {
+		$mods = WP_CLI::get_config('apache_modules');
+		if ( !empty( $mods ) && !function_exists( 'apache_get_modules' ) ) {
+			global $is_apache;
+			$is_apache = true;
+
+			function apache_get_modules() {
+				return WP_CLI::get_config( 'apache_modules' );
+			}
+		}
+	}
+
 }
 
 WP_CLI:: add_command( 'rewrite', 'Rewrite_Command' );
