@@ -117,7 +117,7 @@ class SynopsisParser {
 			if ( !$type ) {
 				$params[] = array(
 					'type' => 'unknown',
-					'token' => $tmp
+					'token' => $token
 				);
 			}
 		}
