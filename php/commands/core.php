@@ -369,6 +369,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			"yourdbnamehere"   => $assoc_args['dbname'],
 			"yourusernamehere" => $assoc_args['dbuser'],
 			"yourpasswordhere" => $assoc_args['dbpass'],
+			"localhost" => $assoc_args['dbhost'],
 		);
 
 		$config_file = str_replace( array_keys( $replacements ), array_values( $replacements ), $config_file );
