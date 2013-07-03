@@ -116,12 +116,12 @@ class Rewrite_Command extends WP_CLI_Command {
 	 */
 	public static function apache_modules() {
 		$mods = WP_CLI::get_config('apache_modules');
-		if ( count($mods) > 0 && !function_exists( 'apache_get_modules') ) {
+		if ( !empty( $mods ) && !function_exists( 'apache_get_modules' ) ) {
 			global $is_apache;
 			$is_apache = true;
 
 			function apache_get_modules() {
-				return WP_CLI::get_config('apache_modules');
+				return WP_CLI::get_config( 'apache_modules' );
 			}
 		}
 	}
