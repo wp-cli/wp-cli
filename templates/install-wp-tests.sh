@@ -21,12 +21,16 @@ tar --strip-components=1 -zxmf /tmp/wordpress.tar.gz -C $WP_CORE_DIR
 # set up testing suite
 svn co --ignore-externals --quiet http://unit-tests.svn.wordpress.org/trunk/ $WP_TESTS_DIR
 
+# portable in-place argument for both GNU sed and Mac OSX sed
+[[ $(uname -s) == 'Darwin' ]] && ioption=(-i "") || ioption=(-i)
+
+# generate testing config file
 cd $WP_TESTS_DIR
 cp wp-tests-config-sample.php wp-tests-config.php
-sed -i "s:dirname( __FILE__ ) . '/wordpress/':'$WP_CORE_DIR':" wp-tests-config.php
-sed -i "s/yourdbnamehere/$DB_NAME/" wp-tests-config.php
-sed -i "s/yourusernamehere/$DB_USER/" wp-tests-config.php
-sed -i "s/yourpasswordhere/$DB_PASS/" wp-tests-config.php
+sed "${ioption[@]}" "s:dirname( __FILE__ ) . '/wordpress/':'$WP_CORE_DIR':" wp-tests-config.php
+sed "${ioption[@]}" "s/yourdbnamehere/$DB_NAME/" wp-tests-config.php
+sed "${ioption[@]}" "s/yourusernamehere/$DB_USER/" wp-tests-config.php
+sed "${ioption[@]}" "s/yourpasswordhere/$DB_PASS/" wp-tests-config.php
 
 # create database
 mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"
