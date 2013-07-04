@@ -30,10 +30,10 @@ Feature: Manage WordPress users
     When I run `wp user generate --count=10`
     Then STDOUT should not be empty
  
-    When I run `wp user list | wc -l | tr -d ' '`
+    When I run `wp user list --format=count`
     Then STDOUT should be:
       """
-      11
+      10
       """
 
   Scenario: Importing users from a CSV file
@@ -49,10 +49,10 @@ Feature: Manage WordPress users
     When I run `wp user import-csv users.csv`
     Then STDOUT should not be empty
 
-    When I run `wp user list | wc -l | tr -d ' '`
+    When I run `wp user list --format=count`
     Then STDOUT should be:
       """
-      4
+      3
       """
 
     When I run `wp user list --format=json`

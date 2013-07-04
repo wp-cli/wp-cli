@@ -25,7 +25,7 @@ class Help_Command extends WP_CLI_Command {
 	}
 
 	private static function find_subcommand( $args ) {
-		$command = \WP_CLI::$root;
+		$command = \WP_CLI::get_root_command();
 
 		while ( !empty( $args ) && $command && $command->has_subcommands() ) {
 			$command = $command->find_subcommand( $args );
