@@ -91,6 +91,7 @@ class SynopsisParser {
 	 */
 	static function parse( $synopsis ) {
 		$tokens = array_filter( preg_split( '/[\s\t]+/', $synopsis ) );
+//		print_r($tokens);
 		
 		$params = array();
 
@@ -100,17 +101,15 @@ class SynopsisParser {
 		foreach ( $tokens as $token ) {
 			$type = false;
 
-			// Check the token against the type patterns
+			// Check each token against all the types of patterns
 			foreach ( self::$patterns as $regex => $desc ) {
-				
 				// Cleanup for the regex that expect no brackets
 				$_token = str_replace( array('[', ']'), '', $token );
+
 				if ( preg_match( $regex, $_token, $matches ) ) {
 					$type = $desc['type']; // Add type of param
-					$desc['flavour'] = self::get_flavour( $token ); // Add flavour of param
+					$desc['flavour'] = self::get_flavour( $token ); // Add flavour of param					
 					$params[] = array_merge( $matches, $desc );
-
-					break;
 				}
 			}
 
@@ -142,7 +141,7 @@ class SynopsisParser {
 
 		// Matches for the remaining --a[=a], [--a[=<a>].
 		// The later matches because we already removed the outer brackets
-		if( preg_match('/[^[\]]+(?=])/', $token, $matches) ) {
+		if( preg_match('/[^[\]]+(?=])/', $token) ) {
 			$flavour[] = 'value-optional';
 		}
 
@@ -164,9 +163,20 @@ class SynopsisParser {
 	}
 
 	private static function gen_patterns( $type, $pattern ) {
-		self::$patterns[ '/^' . $pattern . '$/' ] = array(
-			'type' => $type,
+		// We dont need the optional brackets anymore, because the $token gets stripped from the outer brackets in ::get_flavour()
+		static $flavours = array(
+			'single' => ':pattern:',
+			'repeating' => ':pattern:...'
 		);
+
+
+		foreach ( $flavours as $flavour ) {			
+			$final_pattern = str_replace( ':pattern:', $pattern, $flavour );
+
+			self::$patterns[ '/^' . $final_pattern . '$/' ] = array(
+				'type' => $type
+			);
+		}
 	}
 
 	/**
