@@ -16,10 +16,10 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertCount( 2, $r );
 
 		$this->assertEquals( 'positional', $r[0]['type'] );
-		$this->assertEquals( 'mandatory', $r[0]['flavour'] );
+		$this->assertContains( 'mandatory', $r[0]['flavour'] );
 
 		$this->assertEquals( 'positional', $r[1]['type'] );
-		$this->assertEquals( 'optional', $r[1]['flavour'] );
+		$this->assertContains( 'optional', $r[1]['flavour'] );
 	}
 
 	function testFlag() {
@@ -27,7 +27,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertCount( 1, $r );
 		$this->assertEquals( 'flag', $r[0]['type'] );
-		$this->assertEquals( 'optional', $r[0]['flavour'] );
+		$this->assertContains( 'optional', $r[0]['flavour'] );
 
 		// flags can't be mandatory
 		$r = SynopsisParser::parse( '--foo' );
@@ -42,10 +42,10 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertCount( 2, $r );
 
 		$this->assertEquals( 'generic', $r[0]['type'] );
-		$this->assertEquals( 'mandatory', $r[0]['flavour'] );
+		$this->assertContains( 'mandatory', $r[0]['flavour'] );
 
 		$this->assertEquals( 'generic', $r[1]['type'] );
-		$this->assertEquals( 'optional', $r[1]['flavour'] );
+		$this->assertContains( 'optional', $r[1]['flavour'] );
 	}
 
 	function testAssoc() {
@@ -54,10 +54,10 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertCount( 2, $r );
 
 		$this->assertEquals( 'assoc', $r[0]['type'] );
-		$this->assertEquals( 'mandatory', $r[0]['flavour'] );
+		$this->assertContains( 'mandatory', $r[0]['flavour'] );
 
 		$this->assertEquals( 'assoc', $r[1]['type'] );
-		$this->assertEquals( 'optional', $r[1]['flavour'] );
+		$this->assertContains( 'optional', $r[1]['flavour'] );
 
 		// shouldn't pass defaults to assoc parameters
 		$r = SynopsisParser::parse( '--count=100' );
@@ -71,10 +71,10 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertCount( 2, $r );
 
 		$this->assertEquals( 'positional', $r[0]['type'] );
-		$this->assertEquals( 'repeating', $r[0]['flavour'] );
+		$this->assertContains( 'repeating', $r[0]['flavour'] );
 
 		$this->assertEquals( 'generic', $r[1]['type'] );
-		$this->assertEquals( 'repeating', $r[1]['flavour'] );
+		$this->assertContains( 'repeating', $r[1]['flavour'] );
 	}
 
 	function testCombined() {
@@ -92,13 +92,13 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
         $this->assertCount( 4, $r );
 
         $this->assertEquals( 'assoc', $r[0]['type'] );
-        $this->assertEquals( 'mandatory', $r[0]['flavour'] );
+        $this->assertContains( 'mandatory', $r[0]['flavour'] );
 
         $this->assertEquals( 'assoc', $r[1]['type'] );
-        $this->assertEquals( 'mandatory', $r[1]['flavour'] );
+        $this->assertContains( 'mandatory', $r[1]['flavour'] );
 
         $this->assertEquals( 'assoc', $r[2]['type'] );
-        $this->assertEquals( 'mandatory', $r[2]['flavour'] );
+        $this->assertContains( 'mandatory', $r[2]['flavour'] );
 
         $this->assertEquals( 'unknown', $r[3]['type'] );
     }
