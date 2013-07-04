@@ -91,7 +91,6 @@ class SynopsisParser {
 	 */
 	static function parse( $synopsis ) {
 		$tokens = array_filter( preg_split( '/[\s\t]+/', $synopsis ) );
-//		print_r($tokens);
 		
 		$params = array();
 
@@ -168,7 +167,6 @@ class SynopsisParser {
 			'single' => ':pattern:',
 			'repeating' => ':pattern:...'
 		);
-
 
 		foreach ( $flavours as $flavour ) {			
 			$final_pattern = str_replace( ':pattern:', $pattern, $flavour );
