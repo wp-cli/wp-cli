@@ -120,6 +120,7 @@ class WP_Export_Split_Files_Writer extends WP_Export_Base_Writer {
 		if ( !$this->f ) {
 			throw new WP_Export_Exception( sprintf( __( 'WP Export: error opening %s for writing.' ), $file_path ) );
 		}
+		do_action( 'wp_export_new_file', $file_path );
 		$this->current_file_size = 0;
 		$this->write( $this->before_posts_xml );
 	}

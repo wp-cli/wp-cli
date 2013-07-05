@@ -35,9 +35,13 @@ class Export_Command extends WP_CLI_Command {
 
 		WP_CLI::log( 'Starting export process...' );
 
+		add_action( 'wp_export_new_file', function( $file_path ) {
+			WP_CLI::log( sprintf( "Started writing to %s", $file_path ) );
+		} );
+
 		wp_export( array(
 			'filters' => $this->export_args,
-			'writer' => '\\WP_CLI\\VerboseExportWriter',
+			'writer' => 'WP_Export_Split_Files_Writer',
 			'writer_args' => array(
 				'max_file_size' => $this->max_file_size * MB_IN_BYTES,
 				'destination_directory' => $this->wxr_path,
