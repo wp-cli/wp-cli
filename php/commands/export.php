@@ -36,7 +36,7 @@ class Export_Command extends WP_CLI_Command {
 		WP_CLI::log( 'Starting export process...' );
 
 		add_action( 'wp_export_new_file', function( $file_path ) {
-			WP_CLI::log( sprintf( "Started writing to %s", $file_path ) );
+			WP_CLI::log( sprintf( "Writing to file %s", $file_path ) );
 		} );
 
 		wp_export( array(
