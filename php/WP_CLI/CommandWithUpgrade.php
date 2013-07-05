@@ -101,7 +101,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$slug = stripslashes( $args[0] );
 
-		if ( '.zip' == substr( $slug, -4 ) ) {
+		if ( '.zip' == substr( $slug, strrpos($slug, '.'), 4 ) ) {
 			$file_upgrader = \WP_CLI\Utils\get_upgrader( $this->upgrader );
 
 			if ( $file_upgrader->install( $slug ) ) {
