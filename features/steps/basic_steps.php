@@ -15,7 +15,7 @@ function invoke_proc( $proc, $mode, $subdir = null ) {
 
 $steps->Given( '/^an empty directory$/',
 	function ( $world ) {
-		$world->create_empty_dir();
+		$world->create_run_dir();
 	}
 );
 
@@ -30,7 +30,7 @@ $steps->Given( '/^a ([^\s]+) file:$/',
 
 $steps->Given( '/^WP files$/',
 	function ( $world ) {
-		$world->download_wordpress_files();
+		$world->download_wp();
 	}
 );
 
@@ -48,19 +48,19 @@ $steps->Given( '/^a database$/',
 
 $steps->Given( '/^a WP install$/',
 	function ( $world ) {
-		$world->wp_install();
+		$world->install_wp();
 	}
 );
 
 $steps->Given( "/^a WP install in '([^\s]+)'$/",
 	function ( $world, $subdir ) {
-		$world->wp_install( $subdir );
+		$world->install_wp( $subdir );
 	}
 );
 
 $steps->Given( '/^a WP multisite install$/',
 	function ( $world ) {
-		$world->wp_install();
+		$world->install_wp();
 		$world->proc( 'wp core install-network' )->run_check();
 	}
 );

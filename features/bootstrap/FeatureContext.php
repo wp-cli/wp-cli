@@ -101,7 +101,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		return $cmd;
 	}
 
-	public function create_empty_dir() {
+	public function create_run_dir() {
 		if ( !isset( $this->variables['RUN_DIR'] ) ) {
 			$this->variables['RUN_DIR'] = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-run-", TRUE );
 			mkdir( $this->variables['RUN_DIR'] );
@@ -156,7 +156,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$wp_config_code = str_replace( $token, "$line\n\n$token", $wp_config_code );
 	}
 
-	public function download_wordpress_files( $subdir = '' ) {
+	public function download_wp( $subdir = '' ) {
 		$dest_dir = $this->variables['RUN_DIR'] . "/$subdir";
 
 		if ( $subdir ) mkdir( $dest_dir );
@@ -164,12 +164,13 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		Process::create( Utils\esc_cmd( "cp -r %s/* %s", self::$cache_dir, $dest_dir ) )->run_check();
 	}
 
-	public function wp_install( $subdir = '' ) {
+	public function install_wp( $subdir = '' ) {
 		$this->create_db();
-		$this->create_empty_dir();
-		$this->download_wordpress_files( $subdir );
+		$this->create_run_dir();
+		$this->download_wp( $subdir );
 
-		$this->proc( 'wp core config', array( 'dbprefix' => $subdir ? $subdir : 'wp_' ) )->run_check( $subdir );
+		$dbprefix = $subdir ?: 'wp_';
+		$this->proc( 'wp core config', compact( 'dbprefix' ) )->run_check( $subdir );
 
 		$install_args = array(
 			'url' => 'http://example.com',
