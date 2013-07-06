@@ -26,8 +26,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	private static $additional_args;
 
-	private $install_dir;
-
 	public $variables = array();
 
 	// We cache the results of `wp core download` to improve test performance
@@ -61,11 +59,12 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 * @AfterScenario
 	 */
 	public function afterScenario( $event ) {
-		if ( !$this->install_dir )
+		if ( !isset( $this->variables['RUN_DIR'] ) )
 			return;
 
+		// remove altered WP install, unless there's an error
 		if ( $event->getResult() < 4 ) {
-			Process::create( Utils\esc_cmd( 'rm -r %s', $this->install_dir ) )->run();
+			Process::create( Utils\esc_cmd( 'rm -r %s', $this->variables['RUN_DIR'] ) )->run();
 		}
 	}
 
@@ -103,14 +102,14 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function create_empty_dir() {
-		if ( !$this->install_dir ) {
-			$this->install_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-run-", TRUE );
-			mkdir( $this->install_dir );
+		if ( !isset( $this->variables['RUN_DIR'] ) ) {
+			$this->variables['RUN_DIR'] = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-run-", TRUE );
+			mkdir( $this->variables['RUN_DIR'] );
 		}
 	}
 
 	public function get_path( $file ) {
-		return $this->install_dir . '/' . $file;
+		return $this->variables['RUN_DIR'] . '/' . $file;
 	}
 
 	private function set_cache_dir() {
@@ -148,7 +147,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( !empty( $assoc_args ) )
 			$command .= Utils\assoc_args_to_str( $assoc_args );
 
-		return Process::create( $command, $this->install_dir );
+		return Process::create( $command, $this->variables['RUN_DIR'] );
 	}
 
 	public function move_files( $src, $dest ) {
