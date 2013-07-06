@@ -22,7 +22,7 @@ $steps->Given( '/^an empty directory$/',
 $steps->Given( '/^a ([^\s]+) file:$/',
 	function ( $world, $path, PyStringNode $content ) {
 		$content = (string) $content . "\n";
-		$full_path = $world->get_path( $path );
+		$full_path = $world->variables['RUN_DIR'] . "/$path";
 		Process::create( \WP_CLI\utils\esc_cmd( 'mkdir -p %s', dirname( $full_path ) ) )->run_check();
 		file_put_contents( $full_path, $content );
 	}
@@ -67,7 +67,7 @@ $steps->Given( '/^a WP multisite install$/',
 
 $steps->Given( '/^a custom wp-content directory$/',
 	function ( $world ) {
-		$wp_config_path = $world->get_path( 'wp-config.php' );
+		$wp_config_path = $world->variables['RUN_DIR'] . "/wp-config.php";
 
 		$wp_config_code = file_get_contents( $wp_config_path );
 
@@ -237,7 +237,7 @@ $steps->Then( '/^the (.+) file should (exist|not exist|be:|contain:|not contain:
 
 		// If it's a relative path, make it relative to the current test dir
 		if ( '/' !== $path[0] )
-			$path = $world->get_path( $path );
+			$path = $world->variables['RUN_DIR'] . "/$path";
 
 		switch ( $action ) {
 		case 'exist':

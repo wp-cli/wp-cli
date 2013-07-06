@@ -108,10 +108,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		}
 	}
 
-	public function get_path( $file ) {
-		return $this->variables['RUN_DIR'] . '/' . $file;
-	}
-
 	private function set_cache_dir() {
 		$path = sys_get_temp_dir() . '/wp-cli-test-cache';
 		Process::create( Utils\esc_cmd( 'mkdir -p %s', $path ) )->run_check();
@@ -151,7 +147,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function move_files( $src, $dest ) {
-		rename( $this->get_path( $src ), $this->get_path( $dest ) );
+		rename( $this->variables['RUN_DIR'] . "/$src", $this->variables['RUN_DIR'] . "/$dest" );
 	}
 
 	public function add_line_to_wp_config( &$wp_config_code, $line ) {
@@ -161,7 +157,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function download_wordpress_files( $subdir = '' ) {
-		$dest_dir = $this->get_path( $subdir );
+		$dest_dir = $this->variables['RUN_DIR'] . "/$subdir";
 
 		if ( $subdir ) mkdir( $dest_dir );
 
