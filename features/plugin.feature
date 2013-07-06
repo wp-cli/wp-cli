@@ -60,3 +60,84 @@ Feature: Manage WordPress plugins
       """
       The plugin 'zombieland' could not be found.
       """
+
+  Scenario: Install plugins from WordPress.org repository, a local zip file, and remote zip files
+    Given a WP install
+    And I run `wp plugin path`
+    And save STDOUT as {PLUGIN_DIR}
+    And a local mp6 plugin zip file
+
+    When I run `wp plugin delete akismet`
+    Then STDOUT should contain:
+    """
+    Success: Deleted 'akismet' plugin.
+    """
+    And the {PLUGIN_DIR}/akismet file should not exist
+
+    # Install plugin from WordPress.org repository
+    When I run `wp plugin install akismet`
+    Then STDOUT should contain:
+    """
+    Plugin installed successfully.
+    """
+    And the {PLUGIN_DIR}/akismet/akismet.php file should exist
+
+    When I try the previous command again
+    Then the return code should be 1
+    And STDERR should contain:
+    """
+    Error: Latest version already installed.
+    """
+
+    When I run `wp plugin delete akismet`
+    Then STDOUT should contain:
+    """
+    Success: Deleted 'akismet' plugin.
+    """
+    And the {PLUGIN_DIR}/akismet file should not exist
+
+    # Install plugin from a local zip file
+    When I run `wp plugin install {DOWNLOADED_PLUGIN_FILE}`
+    Then STDOUT should contain:
+    """
+    Plugin installed successfully.
+    """
+    And the {PLUGIN_DIR}/mp6/mp6.php file should exist
+    And the {DOWNLOADED_PLUGIN_FILE} file should exist
+
+    When I run `wp plugin delete mp6`
+    Then STDOUT should contain:
+    """
+    Success: Deleted 'mp6' plugin.
+    """
+    And the {PLUGIN_DIR}/mp6 file should not exist
+
+    # Install plugin from remote ZIP file (standard URL with no GET parameters)
+    When I run `wp plugin install http://downloads.wordpress.org/plugin/akismet.zip`
+    Then STDOUT should contain:
+    """
+    Plugin installed successfully.
+    """
+    And the {PLUGIN_DIR}/akismet/akismet.php file should exist
+
+    When I run `wp plugin delete akismet`
+    Then STDOUT should contain:
+    """
+    Success: Deleted 'akismet' plugin.
+    """
+    And the {PLUGIN_DIR}/akismet file should not exist
+
+    # Install plugin from remote ZIP file (complex URL with GET parameters)
+    When I run `wp plugin install 'http://downloads.wordpress.org/plugin/akismet.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef'`
+    Then STDOUT should contain:
+    """
+    Plugin installed successfully.
+    """
+    And the {PLUGIN_DIR}/akismet/akismet.php file should exist
+
+    When I run `wp plugin delete akismet`
+    Then STDOUT should contain:
+    """
+    Success: Deleted 'akismet' plugin.
+    """
+    And the {PLUGIN_DIR}/akismet file should not exist

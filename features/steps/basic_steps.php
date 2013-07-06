@@ -93,6 +93,26 @@ $steps->Given( '/^a large image file$/',
 	}
 );
 
+$steps->Given( '/^a local mp6 plugin zip file/',
+	function ( $world ) {
+		$image_file = 'http://downloads.wordpress.org/plugin/mp6.zip';
+
+		$world->variables['DOWNLOADED_PLUGIN_FILE'] = $world->get_cache_path( 'mp6.zip' );
+
+		$world->download_file( $image_file, $world->variables['DOWNLOADED_PLUGIN_FILE'] );
+	}
+);
+
+$steps->Given( '/^a local classic theme zip file/',
+	function ( $world ) {
+		$image_file = 'http://wordpress.org/themes/download/classic.1.6.zip';
+
+		$world->variables['DOWNLOADED_THEME_FILE'] = $world->get_cache_path( 'classic.zip' );
+
+		$world->download_file( $image_file, $world->variables['DOWNLOADED_THEME_FILE'] );
+	}
+);
+
 $steps->When( '/^I (run|try) `([^`]+)`$/',
 	function ( $world, $mode, $cmd ) {
 		$cmd = $world->replace_variables( $cmd );
