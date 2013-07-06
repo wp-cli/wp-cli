@@ -77,6 +77,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 */
 	public function __construct( array $parameters ) {
 		$this->drop_db();
+		$this->set_cache_dir();
 	}
 
 	public function getStepDefinitionResources() {
@@ -112,19 +113,10 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		return $this->install_dir . '/' . $file;
 	}
 
-	public function get_cache_path( $file ) {
-		static $path;
-
-		if ( !$path ) {
-			$path = sys_get_temp_dir() . '/wp-cli-test-cache';
-			Process::create( Utils\esc_cmd( 'mkdir -p %s', $path ) )->run_check();
-		}
-
-		return $path . '/' . $file;
-	}
-
-	public function download_file( $url, $path ) {
-		Process::create( Utils\esc_cmd( 'curl -sSL %s > %s', $url, $path ) )->run_check();
+	private function set_cache_dir() {
+		$path = sys_get_temp_dir() . '/wp-cli-test-cache';
+		Process::create( Utils\esc_cmd( 'mkdir -p %s', $path ) )->run_check();
+		$this->variables['CACHE_DIR'] = $path;
 	}
 
 	private static function run_sql( $sql ) {

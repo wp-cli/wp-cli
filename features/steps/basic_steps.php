@@ -83,13 +83,18 @@ $steps->Given( '/^a custom wp-content directory$/',
 	}
 );
 
-$steps->Given( '/^a large image file$/',
-	function ( $world ) {
-		$image_file = 'http://wordpresswallpaper.com/wp-content/gallery/photo-based-wallpaper/1058.jpg';
+$steps->Given( '/^download:$/',
+	function ( $world, TableNode $table ) {
+		foreach ( $table->getHash() as $row ) {
+			$path = $world->replace_variables( $row['path'] );
+			if ( file_exists( $path ) ) {
+				var_dump($path);
+				// assume it's the same file and skip re-download
+				continue;
+			}
 
-		$world->variables['DOWNLOADED_IMAGE'] = $world->get_cache_path( 'wallpaper.jpg' );
-
-		$world->download_file( $image_file, $world->variables['DOWNLOADED_IMAGE'] );
+			\Process::create( \WP_CLI\Utils\esc_cmd( 'curl -sSL %s > %s', $row['url'], $path ) )->run_check();
+		}
 	}
 );
 
@@ -128,7 +133,7 @@ $steps->When( '/^I try to import it$/',
 
 $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 	function ( $world, $stream, $output_filter, $key ) {
-	
+
 		if ( $output_filter ) {
 			$output_filter = '/' . trim( str_replace( '%s', '(.+[^\b])', $output_filter ), "' " ) . '/';
 			if ( false !== preg_match( $output_filter, $world->result->$stream, $matches ) )
