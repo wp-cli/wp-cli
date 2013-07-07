@@ -61,7 +61,7 @@ Feature: Manage WordPress themes
     When I run `wp theme activate p2`
     Then STDOUT should not be empty
 
-    When I run `wp theme install p2 --version=1.4.1`
+    When I run `wp theme install p2 --version=1.4.1 --yes`
     Then STDOUT should not be empty
 
     When I run `wp theme list`
