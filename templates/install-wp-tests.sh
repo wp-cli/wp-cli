@@ -24,19 +24,19 @@ svn co --ignore-externals --quiet http://unit-tests.svn.wordpress.org/trunk/ $WP
 
 # portable in-place argument for both GNU sed and Mac OSX sed
 if [[ $(uname -s) == 'Darwin' ]]; then
-  ioption=(-i "")
+  ioption='-i ""'
 else
-  ioption=(-i)
+  ioption='-i'
 fi
 
 # generate testing config file
 cd $WP_TESTS_DIR
 cp wp-tests-config-sample.php wp-tests-config.php
-sed "${ioption[@]}" "s:dirname( __FILE__ ) . '/wordpress/':'$WP_CORE_DIR':" wp-tests-config.php
-sed "${ioption[@]}" "s/yourdbnamehere/$DB_NAME/" wp-tests-config.php
-sed "${ioption[@]}" "s/yourusernamehere/$DB_USER/" wp-tests-config.php
-sed "${ioption[@]}" "s/yourpasswordhere/$DB_PASS/" wp-tests-config.php
-sed "${ioption[@]}" "s|localhost|${DB_HOST}|" wp-tests-config.php
+sed $ioption "s:dirname( __FILE__ ) . '/wordpress/':'$WP_CORE_DIR':" wp-tests-config.php
+sed $ioption "s/yourdbnamehere/$DB_NAME/" wp-tests-config.php
+sed $ioption "s/yourusernamehere/$DB_USER/" wp-tests-config.php
+sed $ioption "s/yourpasswordhere/$DB_PASS/" wp-tests-config.php
+sed $ioption "s|localhost|${DB_HOST}|" wp-tests-config.php
 
 # parse DB_HOST for port or socket references
 PARTS=(${DB_HOST//\:/ })
