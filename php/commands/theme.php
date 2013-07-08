@@ -29,7 +29,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function status_single( $args ) {
-		$theme = $this->parse_name( $args );
+		$theme = $this->parse_name( $args[0] );
 
 		$status = $this->format_status( $this->get_status( $theme ), 'long' );
 
@@ -60,7 +60,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <theme>
 	 */
 	public function activate( $args = array() ) {
-		$theme = $this->parse_name( $args );
+		$theme = $this->parse_name( $args[0] );
 
 		switch_theme( $theme->get_template(), $theme->get_stylesheet() );
 
@@ -86,7 +86,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( empty( $args ) ) {
 			$path = WP_CONTENT_DIR . '/themes';
 		} else {
-			$theme = $this->parse_name( $args );
+			$theme = $this->parse_name( $args[0] );
 
 			$path = $theme->get_stylesheet_directory();
 
@@ -169,7 +169,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <theme> [--version=<version>]
 	 */
 	function update( $args, $assoc_args ) {
-		$theme = $this->parse_name( $args );
+		$theme = $this->parse_name( $args[0] );
 
 		parent::_update( $theme->get_stylesheet() );
 	}
@@ -190,7 +190,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <theme>
 	 */
 	function delete( $args ) {
-		$theme = $this->parse_name( $args );
+		$theme = $this->parse_name( $args[0] );
 		$theme_slug = $theme->get_stylesheet();
 
 		if ( $this->is_active_theme( $theme ) ) {
@@ -216,9 +216,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		parent::_list( $_, $assoc_args );
 	}
 
-	private function parse_name( $args ) {
-		$name = $args[0];
-
+	/**
+	 * Parse the name of a plugin to a filename; check if it exists.
+	 *
+	 * @param string name
+	 * @return object
+	 */
+	private function parse_name( $name ) {
 		$theme = wp_get_theme( $name );
 
 		if ( !$theme->exists() ) {
