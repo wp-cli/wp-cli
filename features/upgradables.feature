@@ -48,7 +48,7 @@ Feature: Manage WordPress themes and plugins
     And STDERR should not be empty
 
 
-    # Install <item> from local zip file
+    # Install <item> from a local zip file
     When I run `wp <type> install {CACHE_DIR}/<item>.zip`
     Then STDOUT should contain:
     """
@@ -63,7 +63,7 @@ Feature: Manage WordPress themes and plugins
     """
     And the <file_to_check> file should not exist
 
-    # Install plugin from remote ZIP file (standard URL with no GET parameters)
+    # Install <item> from a remote zip file (standard URL with no GET parameters)
     When I run `wp <type> install <zip_file>`
     Then STDOUT should contain:
     """
@@ -78,7 +78,7 @@ Feature: Manage WordPress themes and plugins
     """
     And the <file_to_check> file should not exist
 
-    # Install <item> from remote ZIP file (complex URL with GET parameters)
+    # Install <item> from a remote zip file (complex URL with GET parameters)
     When I run `wp <type> install '<zip_file>?AWSAccessKeyId=123&Expires=456&Signature=abcdef'`
     Then STDOUT should contain:
     """
