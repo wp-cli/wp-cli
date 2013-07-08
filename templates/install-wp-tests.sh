@@ -23,7 +23,11 @@ tar --strip-components=1 -zxmf /tmp/wordpress.tar.gz -C $WP_CORE_DIR
 svn co --ignore-externals --quiet http://unit-tests.svn.wordpress.org/trunk/ $WP_TESTS_DIR
 
 # portable in-place argument for both GNU sed and Mac OSX sed
-[[ $(uname -s) == 'Darwin' ]] && ioption=(-i "") || ioption=(-i)
+if [[ $(uname -s) == 'Darwin' ]]; then
+  ioption=(-i "")
+else
+  ioption=(-i)
+fi
 
 # generate testing config file
 cd $WP_TESTS_DIR
