@@ -46,4 +46,3 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should not be empty
-
