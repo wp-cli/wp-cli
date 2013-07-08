@@ -157,7 +157,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Install a theme.
 	 *
-	 * @synopsis <theme|zip> [--version=<version>] [--activate]
+	 * @synopsis <theme|zip|url> [--version=<version>] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
 		parent::install( $args, $assoc_args );

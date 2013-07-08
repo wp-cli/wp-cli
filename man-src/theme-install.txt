@@ -1,6 +1,6 @@
 ## OPTIONS
 
-* `<theme>`:
+* `<theme|zip|url>`:
 
 	A theme slug, the path to a local zip file, or URL to a remote zip file.
 
@@ -10,10 +10,11 @@
 
 ## EXAMPLES
 
+	# Install the latest version from wordpress.org and activate
 	wp theme install twentytwelve --activate
 
+	# Install from a local zip file
 	wp theme install ../my-theme.zip
 
-	wp theme install http://mydomain.com/my-theme.zip
-
+	# Install from a remote zip file
 	wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
