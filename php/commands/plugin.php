@@ -252,7 +252,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Install a plugin.
 	 *
-	 * @synopsis <plugin|zip> [--version=<version>] [--activate] [--yes]
+	 * @synopsis <plugin|zip|url> [--version=<version>] [--activate] [--yes]
 	 */
 	function install( $args, $assoc_args ) {
 		parent::install( $args, $assoc_args );
