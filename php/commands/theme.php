@@ -216,7 +216,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		parent::_list( $_, $assoc_args );
 	}
 
-	protected function parse_name( $args ) {
+	private function parse_name( $args ) {
 		$name = $args[0];
 
 		$theme = wp_get_theme( $name );

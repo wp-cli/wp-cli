@@ -330,7 +330,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @param array $args
 	 * @return array
 	 */
-	protected function parse_name( $args ) {
+	private function parse_name( $args ) {
 		$name = $args[0];
 
 		$plugins = get_plugins( '/' . $name );

@@ -9,8 +9,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected $upgrade_refresh;
 	protected $upgrade_transient;
 
-	abstract protected function parse_name( $args );
-
 	abstract protected function get_item_list();
 	abstract protected function get_all_items();
 
