@@ -121,7 +121,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		} else if ( $theme_obj->exists()
 			&& version_compare( $assoc_args['version'], $theme_obj->version, '!=' ) ) {
 			// Theme is installed, but we want a different version
-			WP_CLI::confirm( "A different version is installed. Overwrite it?", $assoc_args );
+			if ( !isset( $assoc_args['force'] ) )
+				WP_CLI::confirm( "A different version is installed. Overwrite it?" );
 
 			WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 			delete_theme( $theme_obj->stylesheet );
@@ -159,7 +160,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Install a theme.
 	 *
-	 * @synopsis <theme|zip|url> [--version=<version>] [--activate] [--yes]
+	 * @synopsis <theme|zip|url> [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
 		parent::install( $args, $assoc_args );

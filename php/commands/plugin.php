@@ -175,7 +175,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				if ( isset( $assoc_args['version'] )
 					&& version_compare( $status['version'], $assoc_args['version'], '!=' ) ) {
 
-					WP_CLI::confirm( "A different version is installed. Overwrite it?", $assoc_args );
+					if ( !isset( $assoc_args['force'] ) )
+						WP_CLI::confirm( "A different version is installed. Overwrite it?" );
 
 					list( $file, $name ) = $this->parse_name( array( $api->slug ) );
 					$this->_delete( $file );
@@ -252,7 +253,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Install a plugin.
 	 *
-	 * @synopsis <plugin|zip|url> [--version=<version>] [--activate] [--yes]
+	 * @synopsis <plugin|zip|url> [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
 		parent::install( $args, $assoc_args );
