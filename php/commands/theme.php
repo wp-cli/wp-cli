@@ -8,7 +8,6 @@
 class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 	protected $item_type = 'theme';
-	protected $upgrader = 'Theme_Upgrader';
 	protected $upgrade_refresh = 'wp_update_themes';
 	protected $upgrade_transient = 'update_themes';
 
@@ -18,6 +17,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		'update',
 		'version'
 	);
+
+	protected function get_upgrader_class( $force ) {
+		return $force ? '\\WP_CLI\\DestructiveThemeUpgrader' : 'Theme_Upgrader';
+	}
 
 	/**
 	 * See the status of one or all themes.
@@ -121,16 +124,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		} else if ( $theme_obj->exists()
 			&& version_compare( $assoc_args['version'], $theme_obj->version, '!=' ) ) {
 			// Theme is installed, but we want a different version
-			if ( !isset( $assoc_args['force'] ) )
+			if ( !isset( $assoc_args['force'] ) ) {
 				WP_CLI::confirm( "A different version is installed. Overwrite it?" );
-
-			WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
-			delete_theme( $theme_obj->stylesheet );
-			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->install( $api->download_link );
-		} else if ( ! $theme_obj->exists() ) {
-			WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
-			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->install( $api->download_link );
+				$assoc_args['force'] = true;
+			}
 		}
+
+		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
+		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
 
 		// Finally, activate theme if requested.
 		if ( $result && isset( $assoc_args['activate'] ) ) {
@@ -174,7 +175,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	function update( $args, $assoc_args ) {
 		$theme = $this->parse_name( $args[0] );
 
-		parent::_update( $theme->get_stylesheet() );
+		call_user_func( $this->upgrade_refresh );
+
+		$this->get_upgrader( $assoc_args )->upgrade( $theme->get_stylesheet() );
 	}
 
 	/**

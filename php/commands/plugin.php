@@ -8,7 +8,6 @@
 class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	protected $item_type = 'plugin';
-	protected $upgrader = 'Plugin_Upgrader';
 	protected $upgrade_refresh = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
 
@@ -24,6 +23,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		require_once ABSPATH.'wp-admin/includes/plugin-install.php';
 
 		parent::__construct();
+	}
+
+	protected function get_upgrader_class( $force ) {
+		return $force ? '\\WP_CLI\\DestructivePluginUpgrader' : 'Plugin_Upgrader';
 	}
 
 	/**
@@ -179,16 +182,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				if ( isset( $assoc_args['version'] )
 					&& version_compare( $status['version'], $assoc_args['version'], '!=' ) ) {
 
-					if ( !isset( $assoc_args['force'] ) )
+					if ( !isset( $assoc_args['force'] ) ) {
 						WP_CLI::confirm( "A different version is installed. Overwrite it?" );
-
-					$this->_delete( $this->parse_name( $api->slug ) );
+						$assoc_args['force'] = true;
+					}
 				}
 				// fallthrough - need to install the plugin nows
 
 			case 'install':
-				$upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
-				$result = $upgrader->install( $api->download_link );
+				$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
 
 				if ( $result && isset( $assoc_args['activate'] ) ) {
 					WP_CLI::log( "Activating '$slug'..." );
@@ -214,7 +216,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$was_active = is_plugin_active( $basename );
 			$was_network_active = is_plugin_active_for_network( $basename );
 
-			parent::_update( $basename );
+			call_user_func( $this->upgrade_refresh );
+
+			$this->get_upgrader( $assoc_args )->upgrade( $basename );
 
 			if ( $was_active ) {
 				$new_args = array( $args[0] );
