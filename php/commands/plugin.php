@@ -8,7 +8,6 @@
 class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	protected $item_type = 'plugin';
-	protected $upgrader = 'Plugin_Upgrader';
 	protected $upgrade_refresh = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
 
@@ -24,6 +23,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		require_once ABSPATH.'wp-admin/includes/plugin-install.php';
 
 		parent::__construct();
+	}
+
+	protected function get_upgrader_class( $force ) {
+		return $force ? '\\WP_CLI\\DestructivePluginUpgrader' : 'Plugin_Upgrader';
 	}
 
 	/**
@@ -165,26 +168,17 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$status = install_plugin_install_status( $api );
 
+		if ( !isset( $assoc_args['force'] ) && 'install' != $status['status'] ) {
+			// We know this will fail, so avoid a needless download of the package.
+			WP_CLI::error( 'Plugin already installed.' );
+		}
+
 		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
+		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
 
-		switch ( $status['status'] ) {
-		case 'update_available':
-		case 'install':
-			$upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
-			$result = $upgrader->install( $api->download_link );
-
-			if ( $result && isset( $assoc_args['activate'] ) ) {
-				WP_CLI::log( "Activating '$slug'..." );
-				$this->activate( array( $slug ) );
-			}
-
-			break;
-		case 'newer_installed':
-			WP_CLI::error( sprintf( 'Newer version (%s) installed.', $status['version'] ) );
-			break;
-		case 'latest_installed':
-			WP_CLI::error( 'Latest version already installed.' );
-			break;
+		if ( $result && isset( $assoc_args['activate'] ) ) {
+			WP_CLI::log( "Activating '$slug'..." );
+			$this->activate( array( $slug ) );
 		}
 	}
 
@@ -204,7 +198,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$was_active = is_plugin_active( $basename );
 			$was_network_active = is_plugin_active_for_network( $basename );
 
-			parent::_update( $basename );
+			call_user_func( $this->upgrade_refresh );
+
+			$this->get_upgrader( $assoc_args )->upgrade( $basename );
 
 			if ( $was_active ) {
 				$new_args = array( $args[0] );
@@ -247,7 +243,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Install a plugin.
 	 *
-	 * @synopsis <plugin|zip|url> [--version=<version>] [--activate]
+	 * @synopsis <plugin|zip|url> [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
 		parent::install( $args, $assoc_args );
