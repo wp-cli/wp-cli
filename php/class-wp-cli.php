@@ -165,7 +165,7 @@ class WP_CLI {
 	/**
 	 * Ask for confirmation before running a destructive operation.
 	 */
-	static function confirm( $question, $assoc_args ) {
+	static function confirm( $question, $assoc_args = array() ) {
 		if ( !isset( $assoc_args['yes'] ) ) {
 			echo $question . " [y/n] ";
 
