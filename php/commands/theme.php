@@ -116,18 +116,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			self::alter_api_response( $api, $assoc_args['version'] );
 		}
 
-		$theme_obj = wp_get_theme( $slug );
-		if ( $theme_obj->exists()
-			&& empty( $assoc_args['version'] ) ) {
-			// Theme is already installed to the correct version.
+		if ( !isset( $assoc_args['force'] ) && wp_get_theme( $slug )->exists() ) {
+			// We know this will fail, so avoid a needless download of the package.
 			WP_CLI::error( 'Theme already installed.' );
-		} else if ( $theme_obj->exists()
-			&& version_compare( $assoc_args['version'], $theme_obj->version, '!=' ) ) {
-			// Theme is installed, but we want a different version
-			if ( !isset( $assoc_args['force'] ) ) {
-				WP_CLI::confirm( "A different version is installed. Overwrite it?" );
-				$assoc_args['force'] = true;
-			}
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
