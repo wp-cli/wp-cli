@@ -27,7 +27,7 @@ Feature: Manage WordPress attachments
     When I try `wp media import gobbledygook.png`
     Then STDERR should contain:
       """
-      Error: Unable to import file gobbledygook.png. Reason: File is empty.
+      Unable to import file gobbledygook.png. Reason: File doesn't exist.
       """
 
   @images 

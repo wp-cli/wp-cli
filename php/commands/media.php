@@ -83,28 +83,17 @@ class Media_Command extends WP_CLI_Command {
 			$orig_filename = $file;
 
 			if ( empty( $is_file_remote ) ) {
-				// File appears to be local; make a working copy
-				$tempfile = wp_tempnam( $file );
-				if ( ! $tempfile )
-					WP_CLI::error( 'Could not create temporary file.' );
-
-				copy( $file, $tempfile );
-
+				if ( !file_exists( $file ) ) {
+					WP_CLI::warning( "Unable to import file $file. Reason: File doesn't exist." );
+					break;
+				}
+				$tempfile = $this->_make_copy( $file );
 			} else {
-				// File appears to be remote; download as temp file
 				$tempfile = download_url( $file );
 			}
 
-			// Necessary because temp filename will probably have an extension like
-			// .tmp, which is not in the list of permitted upload extensions
-			// and won't be recognized with the correct mime type
-			$extension = pathinfo( $file, PATHINFO_EXTENSION );
-			$tempfile_extension = pathinfo( $tempfile, PATHINFO_EXTENSION );
-			$file = preg_replace( "/$tempfile_extension$/", $extension, $tempfile );
-			rename( $tempfile, $file );
-
 			$file_array = array(
-				'tmp_name' => $file,
+				'tmp_name' => $tempfile,
 				'name' => basename( $file )
 			);
 
@@ -114,6 +103,7 @@ class Media_Command extends WP_CLI_Command {
 				'post_content' => $assoc_args['desc']
 			);
 
+			// Deletes the temporary file.
 			$success = media_handle_sideload( $file_array, $assoc_args['post_id'], $assoc_args['title'], $post_array );
 
 			// Set alt text
@@ -132,7 +122,7 @@ class Media_Command extends WP_CLI_Command {
 			}
 
 			if ( is_wp_error( $success ) ) {
-				WP_CLI::error( sprintf(
+				WP_CLI::warning( sprintf(
 					'Unable to import file %s. Reason: %s',
 					$orig_filename, implode( ', ', $success->get_error_messages() )
 				) );
@@ -145,6 +135,19 @@ class Media_Command extends WP_CLI_Command {
 		}
 	}
 
+	// wp_tempnam() inexplicably forces a .tmp extension, which spoils MIME type detection
+	private function _make_copy( $path ) {
+		$dir = get_temp_dir();
+		$filename = basename( $path );
+		if ( empty( $filename ) )
+			$filename = time();
+
+		$filename = $dir . wp_unique_filename( $dir, $filename );
+		if ( !copy( $path, $filename ) )
+			WP_CLI::error( "Could not create temporary file for $path" );
+
+		return $filename;
+	}
 
 	private function _process_regeneration( $id ) {
 		$image = get_post( $id );
