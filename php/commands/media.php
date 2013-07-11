@@ -50,7 +50,10 @@ class Media_Command extends WP_CLI_Command {
 			$this->_process_regeneration( $id );
 		}
 
-		WP_CLI::success( sprintf( 'Finished regenerating %1$s.', ngettext('the image', 'all images', $count) ) );
+		WP_CLI::success( sprintf(
+			'Finished regenerating %1$s.',
+			ngettext('the image', 'all images', $count)
+		) );
 	}
 
 	/**
@@ -59,17 +62,13 @@ class Media_Command extends WP_CLI_Command {
 	 * @synopsis <file>... [--post_id=<id>] [--title=<title>] [--caption=<caption>] [--alt=<text>] [--desc=<description>] [--featured_image]
 	 */
 	function import( $args, $assoc_args = array() ) {
-
-		$assoc_args = wp_parse_args(
-			$assoc_args,
-			array(
-				'post_id' => false,
-				'title' => null,
-				'caption' => null,
-				'alt' => null,
-				'desc' => null
-			)
-		);
+		$assoc_args = wp_parse_args( $assoc_args, array(
+			'post_id' => false,
+			'title' => null,
+			'caption' => null,
+			'alt' => null,
+			'desc' => null
+		) );
 
 		if ( !get_post( $assoc_args['post_id'] ) ) {
 			WP_CLI::warning( "Invalid --post_id" );
@@ -77,13 +76,11 @@ class Media_Command extends WP_CLI_Command {
 		}
 
 		foreach ( $args as $file ) {
-
 			$is_file_remote = parse_url( $file, PHP_URL_SCHEME );
 			$orig_filename = $file;
 
 			if ( empty( $is_file_remote ) ) {
-				// File appears to be a local file; make a copy first to work with
-
+				// File appears to be local; make a working copy
 				$tempfile = wp_tempnam( $file );
 				if ( ! $tempfile )
 					WP_CLI::error( 'Could not create temporary file.' );
@@ -91,10 +88,8 @@ class Media_Command extends WP_CLI_Command {
 				copy( $file, $tempfile );
 
 			} else {
-				// File appear to be a remote file; download as temp file
-
+				// File appears to be remote; download as temp file
 				$tempfile = download_url( $file );
-
 			}
 
 			// Necessary because temp filename will probably have an extension like
@@ -133,22 +128,18 @@ class Media_Command extends WP_CLI_Command {
 					$attachment_success_text .= ' as featured image';
 			}
 
-			if ( is_wp_error( $success ) )
-				WP_CLI::error(
-					sprintf(
-						'Unable to import file %s. Reason: %s',
-						$orig_filename, implode( ', ', $success->get_error_messages() )
-					)
-				);
-			else
-				WP_CLI::success(
-					sprintf(
-						'Imported file %s as attachment ID %d%s.',
-						$orig_filename, $success, $attachment_success_text
-					)
-				);
+			if ( is_wp_error( $success ) ) {
+				WP_CLI::error( sprintf(
+					'Unable to import file %s. Reason: %s',
+					$orig_filename, implode( ', ', $success->get_error_messages() )
+				) );
+			} else {
+				WP_CLI::success( sprintf(
+					'Imported file %s as attachment ID %d%s.',
+					$orig_filename, $success, $attachment_success_text
+				) );
+			}
 		}
-
 	}
 
 
