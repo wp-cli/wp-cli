@@ -63,15 +63,18 @@ class Media_Command extends WP_CLI_Command {
 	 */
 	function import( $args, $assoc_args = array() ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
-			'post_id' => false,
 			'title' => null,
 			'caption' => null,
 			'alt' => null,
 			'desc' => null
 		) );
 
-		if ( !get_post( $assoc_args['post_id'] ) ) {
-			WP_CLI::warning( "Invalid --post_id" );
+		if ( isset( $assoc_args['post_id'] ) ) {
+			if ( !get_post( $assoc_args['post_id'] ) ) {
+				WP_CLI::warning( "Invalid --post_id" );
+				$assoc_args['post_id'] = false;
+			}
+		} else {
 			$assoc_args['post_id'] = false;
 		}
 
