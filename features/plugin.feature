@@ -60,3 +60,25 @@ Feature: Manage WordPress plugins
       """
       The plugin 'zombieland' could not be found.
       """
+
+  Scenario: Install a plugin, activate, then force install an older version of the plugin
+    Given a WP install
+
+    When I run `wp plugin install akismet --version=2.5.7 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name       | status   | update    | version   |
+      | akismet    | inactive | available | 2.5.7     |
+
+    When I run `wp plugin activate akismet`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin install akismet --version=2.5.6 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name       | status   | update    | version   |
+      | akismet    | active   | available | 2.5.6     |

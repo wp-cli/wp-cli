@@ -5,9 +5,10 @@ namespace WP_CLI;
 abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected $item_type;
-	protected $upgrader;
 	protected $upgrade_refresh;
 	protected $upgrade_transient;
+
+	abstract protected function get_upgrader_class( $force );
 
 	abstract protected function get_item_list();
 	abstract protected function get_all_items();
@@ -115,7 +116,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( ! empty( $local_or_remote_zip_file ) ) {
 
 			// Install from local or remote zip file
-			$file_upgrader = \WP_CLI\Utils\get_upgrader( $this->upgrader );
+			$file_upgrader = $this->get_upgrader( $assoc_args );
 
 			if ( $file_upgrader->install( $local_or_remote_zip_file ) ) {
 				$slug = $file_upgrader->result['destination_name'];
@@ -168,10 +169,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 	}
 
-	protected function _update( $item ) {
-		call_user_func( $this->upgrade_refresh );
-
-		\WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $item );
+	protected function get_upgrader( $assoc_args ) {
+		$upgrader_class = $this->get_upgrader_class( isset( $assoc_args['force'] ) );
+		return \WP_CLI\Utils\get_upgrader( $upgrader_class );
 	}
 
 	function update_all( $args, $assoc_args ) {
@@ -196,13 +196,13 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			return;
 		}
 
-		$upgrader = \WP_CLI\Utils\get_upgrader( $this->upgrader );
-
 		$result = array();
 
 		// Only attempt to update if there is something to update
-		if ( !empty( $items_to_update ) )
+		if ( !empty( $items_to_update ) ) {
+			$upgrader = $this->get_upgrader( $assoc_args );
 			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
+		}
 
 		// Let the user know the results.
 		$num_to_update = count( $items_to_update );
