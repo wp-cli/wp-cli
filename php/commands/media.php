@@ -123,13 +123,13 @@ class Media_Command extends WP_CLI_Command {
 				update_post_meta( $success, '_wp_attachment_image_alt', $assoc_args['alt'] );
 
 			// Set as featured image, if --post_id and --featured_image are set
-			if ( !is_wp_error( $success ) && $assoc_args['post_id'] && $assoc_args['featured_image'] )
+			if ( !is_wp_error( $success ) && $assoc_args['post_id'] && isset($assoc_args['featured_image']) )
 				update_post_meta( $assoc_args['post_id'], '_thumbnail_id', $success );
 
 			$attachment_success_text = '';
 			if ( $assoc_args['post_id'] ) {
 				$attachment_success_text = " and attached to post {$assoc_args['post_id']}";
-				if ( $assoc_args['featured_image'] )
+				if ( isset($assoc_args['featured_image']) )
 					$attachment_success_text .= ' as featured image';
 			}
 
