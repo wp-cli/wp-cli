@@ -46,14 +46,14 @@ class Core_Command extends WP_CLI_Command {
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
-	private static function _download( $url ) {
+	private static function _read( $url ) {
 		exec( 'curl -s ' . escapeshellarg( $url ), $lines, $r );
 		if ( $r ) exit( $r );
 		return implode( "\n", $lines );
 	}
 
 	private function get_download_offer( $locale ) {
-		$out = unserialize( self::_download(
+		$out = unserialize( self::_read(
 			'https://api.wordpress.org/core/version-check/1.6/?locale=' . $locale ) );
 
 		return $out['offers'][0];
@@ -101,7 +101,7 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		// TODO: adapt more resilient code from wp-admin/setup-config.php
-		$assoc_args['keys-and-salts'] = self::_download(
+		$assoc_args['keys-and-salts'] = self::_read(
 			'https://api.wordpress.org/secret-key/1.1/salt/' );
 
 		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
