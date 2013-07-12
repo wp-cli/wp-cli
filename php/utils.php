@@ -223,13 +223,24 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 		// Submitted by Tina Matter
 		elseif ( is_object( $data ) ) {
 			$dataClass = get_class( $data );
-			$_tmp = new $dataClass( );
-			foreach ( $data as $key => $value ) {
-				$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
+
+			$canReplace = true;
+			if ( method_exists( $dataClass, '__construct' ) ) {
+				$classConstructor = new \ReflectionMethod( $dataClass, '__construct' );
+
+				if ( ! $classConstructor->isPublic() )
+					$canReplace = false;
 			}
 
-			$data = $_tmp;
-			unset( $_tmp );
+			if ( $canReplace ) {
+				$_tmp = new $dataClass();
+				foreach ( $data as $key => $value ) {
+					$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
+				}
+
+				$data = $_tmp;
+				unset( $_tmp );
+			}
 		}
 
 		else {
