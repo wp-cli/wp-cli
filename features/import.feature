@@ -10,11 +10,8 @@ Feature: Import content.
       7
       """
 
-    When I run `wp export`
-    Then STDOUT should contain:
-      """
-      All done with export
-      """
+    When I try `wp export`
+    Then the return code should be 0
     And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
 
     When I run `wp site empty --yes`
