@@ -183,7 +183,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$limit = $count + $total;
 
-		$notify = new \cli\progress\Bar( 'Generating users', $count );
+		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating users', $count );
 
 		for ( $i = $total; $i < $limit; $i++ ) {
 			$login = sprintf( 'user_%d_%d', $blog_id, $i );
