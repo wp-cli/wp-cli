@@ -8,7 +8,6 @@
 class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	protected $item_type = 'plugin';
-	protected $upgrader = 'Plugin_Upgrader';
 	protected $upgrade_refresh = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
 
@@ -26,6 +25,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		parent::__construct();
 	}
 
+	protected function get_upgrader_class( $force ) {
+		return $force ? '\\WP_CLI\\DestructivePluginUpgrader' : 'Plugin_Upgrader';
+	}
+
 	/**
 	 * See the status of one or all plugins.
 	 *
@@ -36,7 +39,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function status_single( $args ) {
-		list( $file, $name ) = $this->parse_name( $args );
+		$name = $args[0];
+		$file = $this->parse_name( $name );
 
 		$details = $this->get_details( $file );
 
@@ -77,7 +81,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin> [--network]
 	 */
 	function activate( $args, $assoc_args = array() ) {
-		list( $file, $name ) = $this->parse_name( $args );
+		$name = $args[0];
+		$file = $this->parse_name( $name );
 
 		$network_wide = isset( $assoc_args['network'] );
 
@@ -96,7 +101,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin> [--network]
 	 */
 	function deactivate( $args, $assoc_args = array() ) {
-		list( $file, $name ) = $this->parse_name( $args );
+		$name = $args[0];
+		$file = $this->parse_name( $name );
 
 		$network_wide = isset( $assoc_args['network'] );
 
@@ -115,7 +121,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin> [--network]
 	 */
 	function toggle( $args, $assoc_args = array() ) {
-		list( $file, $name ) = $this->parse_name( $args );
+		$name = $args[0];
+		$file = $this->parse_name( $name );
 
 		$network_wide = isset( $assoc_args['network'] );
 
@@ -135,7 +142,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$path = untrailingslashit( WP_PLUGIN_DIR );
 
 		if ( !empty( $args ) ) {
-			list( $file, $name ) = $this->parse_name( $args );
+			$file = $this->parse_name( $args[0] );
 			$path .= '/' . $file;
 
 			if ( isset( $assoc_args['dir'] ) )
@@ -161,26 +168,17 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$status = install_plugin_install_status( $api );
 
+		if ( !isset( $assoc_args['force'] ) && 'install' != $status['status'] ) {
+			// We know this will fail, so avoid a needless download of the package.
+			WP_CLI::error( 'Plugin already installed.' );
+		}
+
 		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
+		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
 
-		switch ( $status['status'] ) {
-		case 'update_available':
-		case 'install':
-			$upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
-			$result = $upgrader->install( $api->download_link );
-
-			if ( $result && isset( $assoc_args['activate'] ) ) {
-				WP_CLI::log( "Activating '$slug'..." );
-				$this->activate( array( $slug ) );
-			}
-
-			break;
-		case 'newer_installed':
-			WP_CLI::error( sprintf( 'Newer version (%s) installed.', $status['version'] ) );
-			break;
-		case 'latest_installed':
-			WP_CLI::error( 'Latest version already installed.' );
-			break;
+		if ( $result && isset( $assoc_args['activate'] ) ) {
+			WP_CLI::log( "Activating '$slug'..." );
+			$this->activate( array( $slug ) );
 		}
 	}
 
@@ -190,7 +188,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin> [--version=<version>]
 	 */
 	function update( $args, $assoc_args ) {
-		list( $basename ) = $this->parse_name( $args );
+		$name = $args[0];
+		$basename = $this->parse_name( $name );
 
 		if ( isset( $assoc_args['version'] ) && 'dev' == $assoc_args['version'] ) {
 			$this->_delete( $basename, false );
@@ -199,7 +198,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$was_active = is_plugin_active( $basename );
 			$was_network_active = is_plugin_active_for_network( $basename );
 
-			parent::_update( $basename );
+			call_user_func( $this->upgrade_refresh );
+
+			$this->get_upgrader( $assoc_args )->upgrade( $basename );
 
 			if ( $was_active ) {
 				$new_args = array( $args[0] );
@@ -242,7 +243,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Install a plugin.
 	 *
-	 * @synopsis <plugin|zip> [--version=<version>] [--activate]
+	 * @synopsis <plugin|zip|url> [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
 		parent::install( $args, $assoc_args );
@@ -254,7 +255,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin> [--no-delete]
 	 */
 	function uninstall( $args, $assoc_args = array() ) {
-		list( $file, $name ) = $this->parse_name( $args );
+		$name = $args[0];
+		$file = $this->parse_name( $name );
 
 		if ( is_plugin_active( $file ) ) {
 			WP_CLI::error( 'The plugin is active.' );
@@ -276,7 +278,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin>
 	 */
 	function delete( $args, $assoc_args = array() ) {
-		list( $file, $name ) = $this->parse_name( $args );
+		$name = $args[0];
+		$file = $this->parse_name( $name );
 
 		if ( $this->_delete( $file ) ) {
 			WP_CLI::success( sprintf( "Deleted '%s' plugin.", $name ) );
@@ -325,14 +328,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Parse the name of a plugin to a filename, check if it exists
+	 * Parse the name of a plugin to a filename; check if it exists.
 	 *
-	 * @param array $args
-	 * @return array
+	 * @param string name
+	 * @return string
 	 */
-	protected function parse_name( $args ) {
-		$name = $args[0];
-
+	private function parse_name( $name ) {
 		$plugins = get_plugins( '/' . $name );
 
 		if ( !empty( $plugins ) ) {
@@ -349,9 +350,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			}
 		}
 
-		return array( $file, $name );
+		return $file;
 	}
 
+	/**
+	 * Converts a plugin basename back into a friendly slug.
+	 */
 	private function get_name( $file ) {
 		if ( false === strpos( $file, '/' ) )
 			$name = basename( $file, '.php' );

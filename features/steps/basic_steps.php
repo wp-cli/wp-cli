@@ -15,14 +15,14 @@ function invoke_proc( $proc, $mode, $subdir = null ) {
 
 $steps->Given( '/^an empty directory$/',
 	function ( $world ) {
-		$world->create_empty_dir();
+		$world->create_run_dir();
 	}
 );
 
 $steps->Given( '/^a ([^\s]+) file:$/',
 	function ( $world, $path, PyStringNode $content ) {
 		$content = (string) $content . "\n";
-		$full_path = $world->get_path( $path );
+		$full_path = $world->variables['RUN_DIR'] . "/$path";
 		Process::create( \WP_CLI\utils\esc_cmd( 'mkdir -p %s', dirname( $full_path ) ) )->run_check();
 		file_put_contents( $full_path, $content );
 	}
@@ -30,7 +30,7 @@ $steps->Given( '/^a ([^\s]+) file:$/',
 
 $steps->Given( '/^WP files$/',
 	function ( $world ) {
-		$world->download_wordpress_files();
+		$world->download_wp();
 	}
 );
 
@@ -48,26 +48,26 @@ $steps->Given( '/^a database$/',
 
 $steps->Given( '/^a WP install$/',
 	function ( $world ) {
-		$world->wp_install();
+		$world->install_wp();
 	}
 );
 
 $steps->Given( "/^a WP install in '([^\s]+)'$/",
 	function ( $world, $subdir ) {
-		$world->wp_install( $subdir );
+		$world->install_wp( $subdir );
 	}
 );
 
 $steps->Given( '/^a WP multisite install$/',
 	function ( $world ) {
-		$world->wp_install();
+		$world->install_wp();
 		$world->proc( 'wp core install-network' )->run_check();
 	}
 );
 
 $steps->Given( '/^a custom wp-content directory$/',
 	function ( $world ) {
-		$wp_config_path = $world->get_path( 'wp-config.php' );
+		$wp_config_path = $world->variables['RUN_DIR'] . "/wp-config.php";
 
 		$wp_config_code = file_get_contents( $wp_config_path );
 
@@ -83,13 +83,17 @@ $steps->Given( '/^a custom wp-content directory$/',
 	}
 );
 
-$steps->Given( '/^a large image file$/',
-	function ( $world ) {
-		$image_file = 'http://wordpresswallpaper.com/wp-content/gallery/photo-based-wallpaper/1058.jpg';
+$steps->Given( '/^download:$/',
+	function ( $world, TableNode $table ) {
+		foreach ( $table->getHash() as $row ) {
+			$path = $world->replace_variables( $row['path'] );
+			if ( file_exists( $path ) ) {
+				// assume it's the same file and skip re-download
+				continue;
+			}
 
-		$world->variables['DOWNLOADED_IMAGE'] = $world->get_cache_path( 'wallpaper.jpg' );
-
-		$world->download_file( $image_file, $world->variables['DOWNLOADED_IMAGE'] );
+			\Process::create( \WP_CLI\Utils\esc_cmd( 'curl -sSL %s > %s', $row['url'], $path ) )->run_check();
+		}
 	}
 );
 
@@ -128,7 +132,7 @@ $steps->When( '/^I try to import it$/',
 
 $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 	function ( $world, $stream, $output_filter, $key ) {
-	
+
 		if ( $output_filter ) {
 			$output_filter = '/' . trim( str_replace( '%s', '(.+[^\b])', $output_filter ), "' " ) . '/';
 			if ( false !== preg_match( $output_filter, $world->result->$stream, $matches ) )
@@ -232,7 +236,7 @@ $steps->Then( '/^the (.+) file should (exist|not exist|be:|contain:|not contain:
 
 		// If it's a relative path, make it relative to the current test dir
 		if ( '/' !== $path[0] )
-			$path = $world->get_path( $path );
+			$path = $world->variables['RUN_DIR'] . "/$path";
 
 		switch ( $action ) {
 		case 'exist':

@@ -38,7 +38,8 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::log( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		$silent = WP_CLI::get_config('quiet') ? '--silent ' : '';
+		$silent = WP_CLI::get_config('quiet') || \cli\Shell::isPiped() ?
+			'--silent ' : '';
 
 		$cmd = "curl -f $silent %s | tar xz --strip-components=1 --directory=%s";
 		WP_CLI::launch( Utils\esc_cmd( $cmd, $download_url, ABSPATH ) );
@@ -46,14 +47,14 @@ class Core_Command extends WP_CLI_Command {
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
-	private static function _download( $url ) {
+	private static function _read( $url ) {
 		exec( 'curl -s ' . escapeshellarg( $url ), $lines, $r );
 		if ( $r ) exit( $r );
 		return implode( "\n", $lines );
 	}
 
 	private function get_download_offer( $locale ) {
-		$out = unserialize( self::_download(
+		$out = unserialize( self::_read(
 			'https://api.wordpress.org/core/version-check/1.6/?locale=' . $locale ) );
 
 		return $out['offers'][0];
@@ -101,7 +102,7 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		// TODO: adapt more resilient code from wp-admin/setup-config.php
-		$assoc_args['keys-and-salts'] = self::_download(
+		$assoc_args['keys-and-salts'] = self::_read(
 			'https://api.wordpress.org/secret-key/1.1/salt/' );
 
 		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
@@ -336,7 +337,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 *
 	 * @subcommand init-tests
 	 *
-	 * @synopsis [<path>] --dbname=<name> --dbuser=<user> [--dbpass=<password>]
+	 * @synopsis [<path>] --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>]
 	 */
 	function init_tests( $args, $assoc_args ) {
 		if ( isset( $args[0] ) )
@@ -346,6 +347,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'dbpass' => '',
+			'dbhost' => 'localhost'
 		) );
 
 		// Download the test suite
@@ -355,7 +357,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		$query = sprintf( 'CREATE DATABASE IF NOT EXISTS `%s`', $assoc_args['dbname'] );
 
 		Utils\run_mysql_query( $query, array(
-			'host' => 'localhost',
+			'host' => $assoc_args['dbhost'],
 			'user' => $assoc_args['dbuser'],
 			'pass' => $assoc_args['dbpass'],
 		) );
@@ -368,6 +370,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			"yourdbnamehere"   => $assoc_args['dbname'],
 			"yourusernamehere" => $assoc_args['dbuser'],
 			"yourpasswordhere" => $assoc_args['dbpass'],
+			"localhost" => $assoc_args['dbhost'],
 		);
 
 		$config_file = str_replace( array_keys( $replacements ), array_values( $replacements ), $config_file );

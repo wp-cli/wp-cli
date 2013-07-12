@@ -51,7 +51,7 @@ class Process {
 	public function run_check( $subdir = '' ) {
 		$r = $this->run( $subdir );
 
-		if ( $r->return_code ) {
+		if ( $r->return_code || !empty( $r->STDERR ) ) {
 			throw new \RuntimeException( sprintf( "%s: %s\ncwd: %s",
 				$r->command, $r->STDERR, $r->cwd ) );
 		}
