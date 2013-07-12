@@ -38,7 +38,8 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::log( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		$silent = WP_CLI::get_config('quiet') ? '--silent ' : '';
+		$silent = WP_CLI::get_config('quiet') || \cli\Shell::isPiped() ?
+			'--silent ' : '';
 
 		$cmd = "curl -f $silent %s | tar xz --strip-components=1 --directory=%s";
 		WP_CLI::launch( Utils\esc_cmd( $cmd, $download_url, ABSPATH ) );

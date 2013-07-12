@@ -243,7 +243,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$limit = $count + $total;
 
-		$notify = new \cli\progress\Bar( 'Generating posts', $count );
+		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating posts', $count );
 
 		$current_depth = 1;
 		$current_parent = 0;
