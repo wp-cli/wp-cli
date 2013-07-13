@@ -268,6 +268,26 @@ class Runner {
 		WP_CLI::set_logger( $logger );
 	}
 
+	private function check_wp_version() {
+		if ( !is_readable( ABSPATH . 'wp-includes/version.php' ) ) {
+			WP_CLI::error(
+				"This does not seem to be a WordPress install.\n" .
+				"Pass --path=`path/to/wordpress` or run `wp core download`." );
+		}
+
+		include ABSPATH . 'wp-includes/version.php';
+
+		$minimum_version = '3.4';
+
+		if ( version_compare( $wp_version, $minimum_version, '<' ) ) {
+			WP_CLI::error(
+				"WP-CLI needs WordPress $minimum_version or later to work properly. " .
+				"The version currently installed is $wp_version.\n" .
+				"Try running `wp core download --force`."
+			);
+		}
+	}
+
 	public function before_wp_load() {
 		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::get_configurator()->parse_args(
 			array_slice( $GLOBALS['argv'], 1 ) );
@@ -320,11 +340,7 @@ class Runner {
 
 		$this->do_early_invoke( 'before_wp_load' );
 
-		if ( !is_readable( ABSPATH . 'wp-load.php' ) ) {
-			WP_CLI::error(
-				"This does not seem to be a WordPress install.\n" .
-				"Pass --path=`path/to/wordpress` or run `wp core download`." );
-		}
+		$this->check_wp_version();
 
 		if ( array( 'core', 'config' ) == $this->arguments ) {
 			$this->_run_command();
