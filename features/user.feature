@@ -19,7 +19,7 @@ Feature: Manage WordPress users
     When I run `wp user delete {USER_ID}`
     Then STDOUT should not be empty
 
-  Scenario: Generating users
+  Scenario: Generating and deleting users
     Given a WP install
 
     # Delete all users
@@ -32,6 +32,13 @@ Feature: Manage WordPress users
     Then STDOUT should be:
       """
       10
+      """
+
+    When I try `wp user delete invalid-user $(wp user list --format=ids)`
+    And I run `wp user list --format=count`
+    Then STDOUT should be:
+      """
+      0
       """
 
   Scenario: Importing users from a CSV file

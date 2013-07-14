@@ -1,6 +1,6 @@
 ## OPTIONS
 
-* `<user-login>`:
+* `<user>`:
 
 	User ID or user login.
 
