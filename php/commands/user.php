@@ -59,13 +59,16 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Delete one or more users.
 	 *
-	 * @synopsis <id>... [--reassign=<id>]
+	 * @synopsis <user>... [--reassign=<id>]
 	 */
 	public function delete( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'reassign' => null
 		) );
 
+		foreach( $args as $key => $arg ) {
+			$args[$key] = self::get_user( $arg )->ID;
+		}
 		parent::delete( $args, $assoc_args );
 	}
 
@@ -145,9 +148,13 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Update a user.
 	 *
-	 * @synopsis <id>... --<field>=<value>
+	 * @synopsis <user>... --<field>=<value>
 	 */
 	public function update( $args, $assoc_args ) {
+
+		foreach( $args as $key => $arg ) {
+			$args[$key] = self::get_user( $arg )->ID;
+		}
 		parent::update( $args, $assoc_args, 'user' );
 	}
 
@@ -212,10 +219,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * Set the user role (for a particular blog).
 	 *
 	 * @subcommand set-role
-	 * @synopsis <user-login> [<role>]
+	 * @synopsis <user> [<role>]
 	 */
 	public function set_role( $args, $assoc_args ) {
-		$user = self::get_user_from_first_arg( $args[0] );
+		$user = self::get_user( $args[0] );
 
 		$role = isset( $args[1] ) ? $args[1] : get_option( 'default_role' );
 
@@ -232,10 +239,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * Add a role for a user.
 	 *
 	 * @subcommand add-role
-	 * @synopsis <user-login> <role>
+	 * @synopsis <user> <role>
 	 */
 	public function add_role( $args, $assoc_args ) {
-		$user = self::get_user_from_first_arg( $args[0] );
+		$user = self::get_user( $args[0] );
 
 		$role = $args[1];
 
@@ -248,10 +255,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * Remove a user's role.
 	 *
 	 * @subcommand remove-role
-	 * @synopsis <user-login> [<role>]
+	 * @synopsis <user> [<role>]
 	 */
 	public function remove_role( $args, $assoc_args ) {
-		$user = self::get_user_from_first_arg( $args[0] );
+		$user = self::get_user( $args[0] );
 
 		if ( isset( $args[1] ) ) {
 			$role = $args[1];
@@ -270,14 +277,15 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 	}
 
-	private static function get_user_from_first_arg( $id_or_login ) {
+	private static function get_user( $id_or_login ) {
 		if ( is_numeric( $id_or_login ) )
 			$user = get_user_by( 'id', $id_or_login );
 		else
 			$user = get_user_by( 'login', $id_or_login );
 
-		if ( ! $user )
-			WP_CLI::error( "Invalid user ID or login: $id_or_login" );
+		if ( ! $user ) {
+			WP_CLI::warning( "Invalid user ID or login: $id_or_login" );
+		}
 
 		return $user;
 	}
