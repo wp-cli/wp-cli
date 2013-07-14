@@ -66,7 +66,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			'reassign' => null
 		) );
 
-		$args[0] = self::get_user_from_first_arg( $args[0] )->ID;
+		foreach( $args as $key => $arg ) {
+			$args[$key] = self::get_user_from_first_arg( $arg )->ID;
+		}
 		parent::delete( $args, $assoc_args );
 	}
 
@@ -150,7 +152,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function update( $args, $assoc_args ) {
 
-		$args[0] = self::get_user_from_first_arg( $args[0] )->ID;
+		foreach( $args as $key => $arg ) {
+			$args[$key] = self::get_user_from_first_arg( $arg )->ID;
+		}
 		parent::update( $args, $assoc_args, 'user' );
 	}
 
