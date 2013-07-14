@@ -20,7 +20,7 @@ class RootCommand extends CompositeCommand {
 	function get_extra_markdown() {
 		$binding = array();
 
-		foreach ( \WP_CLI::$configurator->get_spec() as $key => $details ) {
+		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
 			if ( false === $details['runtime'] )
 				continue;
 
