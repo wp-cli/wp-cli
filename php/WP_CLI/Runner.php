@@ -269,7 +269,7 @@ class Runner {
 	}
 
 	public function before_wp_load() {
-		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::$configurator->parse_args(
+		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::get_configurator()->parse_args(
 			array_slice( $GLOBALS['argv'], 1 ) );
 
 		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
@@ -277,7 +277,7 @@ class Runner {
 
 		$this->config_path = self::get_config_path( $runtime_config );
 
-		$local_config = \WP_CLI::$configurator->load_config( $this->config_path );
+		$local_config = \WP_CLI::get_configurator()->load_config( $this->config_path );
 
 		$this->config = $local_config;
 
@@ -352,6 +352,12 @@ class Runner {
 				Utils\set_url_params( 'http://example.com' );
 			}
 		}
+
+		if ( $this->cmd_starts_with( array( 'import') ) ) {
+			define( 'WP_LOAD_IMPORTERS', true );
+			define( 'WP_IMPORTING', true );
+		}
+
 	}
 
 	public function after_wp_load() {

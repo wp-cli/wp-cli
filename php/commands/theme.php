@@ -8,7 +8,6 @@
 class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 	protected $item_type = 'theme';
-	protected $upgrader = 'Theme_Upgrader';
 	protected $upgrade_refresh = 'wp_update_themes';
 	protected $upgrade_transient = 'update_themes';
 
@@ -18,6 +17,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		'update',
 		'version'
 	);
+
+	protected function get_upgrader_class( $force ) {
+		return $force ? '\\WP_CLI\\DestructiveThemeUpgrader' : 'Theme_Upgrader';
+	}
 
 	/**
 	 * See the status of one or all themes.
@@ -29,7 +32,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function status_single( $args ) {
-		$theme = $this->parse_name( $args );
+		$theme = $this->parse_name( $args[0] );
 
 		$status = $this->format_status( $this->get_status( $theme ), 'long' );
 
@@ -60,7 +63,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <theme>
 	 */
 	public function activate( $args = array() ) {
-		$theme = $this->parse_name( $args );
+		$theme = $this->parse_name( $args[0] );
 
 		switch_theme( $theme->get_template(), $theme->get_stylesheet() );
 
@@ -86,7 +89,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( empty( $args ) ) {
 			$path = WP_CONTENT_DIR . '/themes';
 		} else {
-			$theme = $this->parse_name( $args );
+			$theme = $this->parse_name( $args[0] );
 
 			$path = $theme->get_stylesheet_directory();
 
@@ -113,21 +116,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			self::alter_api_response( $api, $assoc_args['version'] );
 		}
 
-		// Check to see if we should update, rather than install.
-		if ( $this->has_update( $slug ) ) {
-			WP_CLI::log( sprintf( 'Updating %s (%s)', $api->name, $api->version ) );
-			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $slug );
-
-			/**
-			 *  Else, if there's no update, it's either not installed,
-			 *  or it's newer than what we've got.
-			 */
-		} else if ( !wp_get_theme( $slug )->exists() ) {
-			WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
-			$result = WP_CLI\Utils\get_upgrader( $this->upgrader )->install( $api->download_link );
-		} else {
-			WP_CLI::error( 'Theme already installed and up to date.' );
+		if ( !isset( $assoc_args['force'] ) && wp_get_theme( $slug )->exists() ) {
+			// We know this will fail, so avoid a needless download of the package.
+			WP_CLI::error( 'Theme already installed.' );
 		}
+
+		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
+		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
 
 		// Finally, activate theme if requested.
 		if ( $result && isset( $assoc_args['activate'] ) ) {
@@ -157,7 +152,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Install a theme.
 	 *
-	 * @synopsis <theme|zip> [--version=<version>] [--activate]
+	 * @synopsis <theme|zip|url> [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
 		parent::install( $args, $assoc_args );
@@ -169,9 +164,11 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <theme> [--version=<version>]
 	 */
 	function update( $args, $assoc_args ) {
-		$theme = $this->parse_name( $args );
+		$theme = $this->parse_name( $args[0] );
 
-		parent::_update( $theme->get_stylesheet() );
+		call_user_func( $this->upgrade_refresh );
+
+		$this->get_upgrader( $assoc_args )->upgrade( $theme->get_stylesheet() );
 	}
 
 	/**
@@ -190,7 +187,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <theme>
 	 */
 	function delete( $args ) {
-		$theme = $this->parse_name( $args );
+		$theme = $this->parse_name( $args[0] );
 		$theme_slug = $theme->get_stylesheet();
 
 		if ( $this->is_active_theme( $theme ) ) {
@@ -216,9 +213,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		parent::_list( $_, $assoc_args );
 	}
 
-	protected function parse_name( $args ) {
-		$name = $args[0];
-
+	/**
+	 * Parse the name of a plugin to a filename; check if it exists.
+	 *
+	 * @param string name
+	 * @return object
+	 */
+	private function parse_name( $name ) {
 		$theme = wp_get_theme( $name );
 
 		if ( !$theme->exists() ) {

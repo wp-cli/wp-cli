@@ -5,11 +5,10 @@ namespace WP_CLI;
 abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected $item_type;
-	protected $upgrader;
 	protected $upgrade_refresh;
 	protected $upgrade_transient;
 
-	abstract protected function parse_name( $args );
+	abstract protected function get_upgrader_class( $force );
 
 	abstract protected function get_item_list();
 	abstract protected function get_all_items();
@@ -101,10 +100,25 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$slug = stripslashes( $args[0] );
 
-		if ( '.zip' == substr( $slug, -4 ) ) {
-			$file_upgrader = \WP_CLI\Utils\get_upgrader( $this->upgrader );
+		$local_or_remote_zip_file = '';
 
-			if ( $file_upgrader->install( $slug ) ) {
+		// Check if a URL to a remote zip file has been specified
+		$url_path = parse_url( $slug, PHP_URL_PATH );
+		if ( ! empty( $url_path ) && '.zip' === substr( $url_path, - 4 ) ) {
+			$local_or_remote_zip_file = $slug;
+		} else {
+			// Check if a local zip file has been specified
+			if ( 'zip' === pathinfo( $slug, PATHINFO_EXTENSION ) && file_exists( $slug ) ) {
+				$local_or_remote_zip_file = $slug;
+			}
+		}
+
+		if ( ! empty( $local_or_remote_zip_file ) ) {
+
+			// Install from local or remote zip file
+			$file_upgrader = $this->get_upgrader( $assoc_args );
+
+			if ( $file_upgrader->install( $local_or_remote_zip_file ) ) {
 				$slug = $file_upgrader->result['destination_name'];
 
 				if ( isset( $assoc_args['activate'] ) ) {
@@ -114,7 +128,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			} else {
 				exit(1);
 			}
+
 		} else {
+			// Assume a plugin/theme slug from the WordPress.org repository has been specified
 			$this->install_from_repo( $slug, $assoc_args );
 		}
 	}
@@ -153,10 +169,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 	}
 
-	protected function _update( $item ) {
-		call_user_func( $this->upgrade_refresh );
-
-		\WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $item );
+	protected function get_upgrader( $assoc_args ) {
+		$upgrader_class = $this->get_upgrader_class( isset( $assoc_args['force'] ) );
+		return \WP_CLI\Utils\get_upgrader( $upgrader_class );
 	}
 
 	function update_all( $args, $assoc_args ) {
@@ -181,13 +196,13 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			return;
 		}
 
-		$upgrader = \WP_CLI\Utils\get_upgrader( $this->upgrader );
-
 		$result = array();
 
 		// Only attempt to update if there is something to update
-		if ( !empty( $items_to_update ) )
+		if ( !empty( $items_to_update ) ) {
+			$upgrader = $this->get_upgrader( $assoc_args );
 			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
+		}
 
 		// Let the user know the results.
 		$num_to_update = count( $items_to_update );
