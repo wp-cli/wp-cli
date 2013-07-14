@@ -22,12 +22,7 @@ Feature: Manage WordPress users
   Scenario: Generating and deleting users
     Given a WP install
 
-    # Delete all users
-    When I run `wp user delete $(wp user list --format=ids)`
-    And I run `wp user list --format=ids`
-    Then STDOUT should be empty
-
-    When I run `wp user generate --count=10`
+    When I run `wp user generate --count=9`
     And I run `wp user list --format=count`
     Then STDOUT should be:
       """
