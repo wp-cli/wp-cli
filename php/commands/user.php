@@ -67,7 +67,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		) );
 
 		foreach( $args as $key => $arg ) {
-			$args[$key] = self::get_user_from_first_arg( $arg )->ID;
+			$args[$key] = self::get_user( $arg )->ID;
 		}
 		parent::delete( $args, $assoc_args );
 	}
@@ -153,7 +153,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	public function update( $args, $assoc_args ) {
 
 		foreach( $args as $key => $arg ) {
-			$args[$key] = self::get_user_from_first_arg( $arg )->ID;
+			$args[$key] = self::get_user( $arg )->ID;
 		}
 		parent::update( $args, $assoc_args, 'user' );
 	}
@@ -222,7 +222,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @synopsis <user> [<role>]
 	 */
 	public function set_role( $args, $assoc_args ) {
-		$user = self::get_user_from_first_arg( $args[0] );
+		$user = self::get_user( $args[0] );
 
 		$role = isset( $args[1] ) ? $args[1] : get_option( 'default_role' );
 
@@ -242,7 +242,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @synopsis <user> <role>
 	 */
 	public function add_role( $args, $assoc_args ) {
-		$user = self::get_user_from_first_arg( $args[0] );
+		$user = self::get_user( $args[0] );
 
 		$role = $args[1];
 
@@ -258,7 +258,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @synopsis <user> [<role>]
 	 */
 	public function remove_role( $args, $assoc_args ) {
-		$user = self::get_user_from_first_arg( $args[0] );
+		$user = self::get_user( $args[0] );
 
 		if ( isset( $args[1] ) ) {
 			$role = $args[1];
@@ -277,7 +277,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 	}
 
-	private static function get_user_from_first_arg( $id_or_login ) {
+	private static function get_user( $id_or_login ) {
 		if ( is_numeric( $id_or_login ) )
 			$user = get_user_by( 'id', $id_or_login );
 		else
