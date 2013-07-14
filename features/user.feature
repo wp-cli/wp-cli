@@ -1,6 +1,6 @@
 Feature: Manage WordPress users
 
-  Scenario: Creating/updating/deleting users
+  Scenario: User CRUD operations
     Given a WP install
 
     When I run `wp user create testuser testuser@example.com --porcelain`
@@ -10,11 +10,12 @@ Feature: Manage WordPress users
     When I try the previous command again
     Then the return code should be 1
 
-    When I run `wp user update {USER_ID} --displayname=Foo`
-    Then STDOUT should be:
-      """
-      Success: Updated user {USER_ID}.
-      """
+    When I run `wp user update {USER_ID} --display_name=Foo`
+    And I run `wp user get {USER_ID}`
+    Then STDOUT should be a table containing rows:
+      | Field        | Value     |
+      | ID           | {USER_ID} |
+      | display_name | Foo       |
 
     When I run `wp user delete {USER_ID}`
     Then STDOUT should not be empty

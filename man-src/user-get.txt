@@ -1,0 +1,19 @@
+## OPTIONS
+
+* `[--format=<format>]`:
+
+	The format to use when printing the user; acceptable values:
+
+	**table**: Outputs all fields of the user as a table.
+
+	**json**: Outputs all fields in JSON format.
+
+* `<user>`:
+
+	User ID or user login.
+
+## EXAMPLES
+
+	wp user get 12
+
+	wp user get bob --format=json > bob.json
