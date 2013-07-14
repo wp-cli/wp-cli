@@ -4,7 +4,11 @@
 
 	User ID or user login.
 
+* `[--role=<role>]`:
+
+	Remove only the specified role. If not passed, all roles will be deleted.
+
 ## EXAMPLES
 
-	wp user remove-role bob
-	wp user remove-role 12
+	# Remove roles for the user with ID '12' and for the user with login 'bob'
+	wp user remove-role 12 bob
