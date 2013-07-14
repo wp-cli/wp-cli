@@ -57,6 +57,35 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
+	 * Get a single user.
+	 *
+	 * @synopsis [--format=<format>] <user>
+	 */
+	public function get( $args, $assoc_args ) {
+		$assoc_args = wp_parse_args( $assoc_args, array(
+			'format' => 'table'
+		) );
+
+		$user = self::get_user( $args[0] )->to_array();
+
+		switch ( $assoc_args['format'] ) {
+
+		case 'table':
+			$this->assoc_array_to_table( $user );
+			break;
+
+		case 'json':
+			WP_CLI::print_value( $user, $assoc_args );
+			break;
+
+		default:
+			\WP_CLI::error( "Invalid value for format: " . $format );
+			break;
+
+		}
+	}
+
+	/**
 	 * Delete one or more users.
 	 *
 	 * @synopsis <user>... [--reassign=<id>]
