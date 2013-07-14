@@ -13,9 +13,9 @@ Feature: Manage WordPress users
     When I run `wp user update {USER_ID} --display_name=Foo`
     And I run `wp user get {USER_ID}`
     Then STDOUT should be a table containing rows:
-      | Field        | Value |
+      | Field        | Value     |
       | ID           | {USER_ID} |
-      | display_name | Foo   |
+      | display_name | Foo       |
 
     When I run `wp user delete {USER_ID}`
     Then STDOUT should not be empty
