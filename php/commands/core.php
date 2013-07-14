@@ -112,10 +112,12 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Determine if the WordPress tables are installed.
 	 *
-	 * @subcommand is-installed
+	 * @subcommand is-installed [--network]
 	 */
-	public function is_installed() {
+	public function is_installed( $args, $assoc_args ) {
 		if ( is_blog_installed() ) {
+			if ( isset( $assoc_args['network'] ) && ! is_multisite() )
+				exit( 1 );
 			exit( 0 );
 		} else {
 			exit( 1 );
