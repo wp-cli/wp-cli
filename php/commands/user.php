@@ -66,16 +66,23 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			'format' => 'table'
 		) );
 
-		$user = self::get_user( $args[0] )->to_array();
+		$user = self::get_user( $args[0] );
+
+		if ( method_exists( $user, 'to_array' ) ) {
+			$user_data = $user->to_array();
+		} else {
+			// WP 3.4 compat
+			$user_data = $user->data;
+		}
 
 		switch ( $assoc_args['format'] ) {
 
 		case 'table':
-			$this->assoc_array_to_table( $user );
+			$this->assoc_array_to_table( $user_data );
 			break;
 
 		case 'json':
-			WP_CLI::print_value( $user, $assoc_args );
+			WP_CLI::print_value( $user_data, $assoc_args );
 			break;
 
 		default:
