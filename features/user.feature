@@ -36,9 +36,12 @@ Feature: Manage WordPress users
       10
       """
 
-    When I run `wp user delete $(wp user list --format=ids)`
-    And I run `wp user list --format=ids`
-    Then STDOUT should be empty
+    When I try `wp user delete invalid-user $(wp user list --format=ids)`
+    And I run `wp user list --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
 
   Scenario: Importing users from a CSV file
     Given a WP install

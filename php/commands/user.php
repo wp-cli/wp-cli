@@ -283,8 +283,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		else
 			$user = get_user_by( 'login', $id_or_login );
 
-		if ( ! $user )
-			WP_CLI::error( "Invalid user ID or login: $id_or_login" );
+		if ( ! $user ) {
+			WP_CLI::warning( "Invalid user ID or login: $id_or_login" );
+		}
 
 		return $user;
 	}
