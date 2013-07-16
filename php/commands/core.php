@@ -131,6 +131,37 @@ class Core_Command extends WP_CLI_Command {
 	 * @synopsis --url=<url> --title=<site-title> [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
 	 */
 	public function install( $args, $assoc_args ) {
+		$this->_install( $assoc_args );
+		WP_CLI::success( 'WordPress installed successfully.' );
+	}
+
+	/**
+	 * Transform a single-site install into a multi-site install.
+	 *
+	 * @subcommand multisite-convert
+	 * @alias install-network
+	 * @synopsis --title=<network-title> [--base=<url-path>]
+	 */
+	public function multisite_convert( $args, $assoc_args ) {
+		if ( is_multisite() )
+			WP_CLI::error( 'This already is a multisite install.' );
+
+		$this->_multisite_convert( $assoc_args );
+	}
+
+	/**
+	 * Install multisite from scratch.
+	 *
+	 * @subcommand multisite-install
+	 * @synopsis --url=<url> [--base=<url-path>] --title=<site-title> [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
+	 */
+	public function multisite_install( $args, $assoc_args ) {
+		$this->_install( $assoc_args );
+		WP_CLI::log( 'Created single site database tables.' );
+		$this->_multisite_convert( $assoc_args );
+	}
+
+	private function _install( $assoc_args ) {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
 		if ( is_blog_installed() ) {
@@ -150,21 +181,10 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( 'Installation failed (' . WP_CLI::error_to_string($result) . ').' );
-		} else {
-			WP_CLI::success( 'WordPress installed successfully.' );
 		}
 	}
 
-	/**
-	 * Transform a single-site install into a multi-site install.
-	 *
-	 * @subcommand install-network
-	 * @synopsis --title=<network-title> [--base=<url-path>] [--subdomains]
-	 */
-	public function install_network( $args, $assoc_args ) {
-		if ( is_multisite() )
-			WP_CLI::error( 'This already is a multisite install.' );
-
+	private function _multisite_convert( $assoc_args ) {
 		global $wpdb;
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -181,17 +201,21 @@ class Core_Command extends WP_CLI_Command {
 		$subdomain_install = isset( $assoc_args['subdomains'] );
 
 		install_network();
+		WP_CLI::log( 'Created multisite database tables.' );
 
 		$result = populate_network( 1, $hostname, get_option( 'admin_email' ), $assoc_args['title'], $base, $subdomain_install );
 
-		if ( is_wp_error( $result ) ) {
+		if ( true === $result ) {
+			WP_CLI::log( 'Populated multisite options.' );
+		} else if ( is_wp_error( $result ) ) {
 			if ( $result->get_error_codes() === array( 'no_wildcard_dns' ) )
 				WP_CLI::warning( __( 'Wildcard DNS may not be configured correctly.' ) );
 			else
 				WP_CLI::error( $result );
 		}
 
-		ob_start();
+		if ( !defined( 'MULTISITE' ) ) {
+			ob_start();
 ?>
 define('MULTISITE', true);
 define('SUBDOMAIN_INSTALL', <?php echo $subdomain_install ? 'true' : 'false'; ?>);
@@ -202,9 +226,11 @@ define('SITE_ID_CURRENT_SITE', 1);
 define('BLOG_ID_CURRENT_SITE', 1);
 
 <?php
-		$ms_config = ob_get_clean();
+			$ms_config = ob_get_clean();
 
-		self::modify_wp_config( $ms_config );
+			self::modify_wp_config( $ms_config );
+			WP_CLI::log( 'Added multisite constants to wp-config.php.' );
+		}
 
 		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
 

@@ -125,6 +125,19 @@ Feature: Manage WordPress installation
     When I try `wp core install-network --title='test network'`
     Then the return code should be 1
 
+  Scenario: Install multisite from scrath
+    Given a WP multisite install
+    And I run `wp db reset --yes`
+
+    When I run `wp core multisite-install --title=Test --admin_email=admin@example.com --admin_password=1`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'var_export( is_multisite() );'`
+    Then STDOUT should be:
+      """
+      true
+      """ 
+
   Scenario: Custom wp-content directory
     Given a WP install
     And a custom wp-content directory
