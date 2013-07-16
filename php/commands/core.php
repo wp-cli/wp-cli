@@ -147,6 +147,7 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::error( 'This already is a multisite install.' );
 
 		$this->_multisite_convert( $assoc_args );
+		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
 	}
 
 	/**
@@ -158,7 +159,20 @@ class Core_Command extends WP_CLI_Command {
 	public function multisite_install( $args, $assoc_args ) {
 		$this->_install( $assoc_args );
 		WP_CLI::log( 'Created single site database tables.' );
+
 		$this->_multisite_convert( $assoc_args );
+
+		// do the steps that were skipped by populate_network(), which checks is_multisite()
+		if ( defined( 'MULTISITE' ) ) {
+			$site_user = get_user_by( 'email', $assoc_args['admin_email'] );
+			self::add_site_admins( $site_user );
+			$domain = self::get_clean_basedomain();
+			$path = isset( $assoc_args['base'] ) ? $assoc_args['base'] : '/';
+			$subdomain_install = isset( $assoc_args['subdomains'] );
+			self::create_initial_blog( 1, 1, $domain, $path, $subdomain_install, $site_user );
+		}
+
+		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
 	}
 
 	private function _install( $assoc_args ) {
@@ -197,13 +211,13 @@ class Core_Command extends WP_CLI_Command {
 			'base' => '/',
 		) ) );
 
-		$hostname = self::get_clean_basedomain();
 		$subdomain_install = isset( $assoc_args['subdomains'] );
 
 		install_network();
 		WP_CLI::log( 'Created multisite database tables.' );
 
-		$result = populate_network( 1, $hostname, get_option( 'admin_email' ), $assoc_args['title'], $base, $subdomain_install );
+		$domain = self::get_clean_basedomain();
+		$result = populate_network( 1, $domain, get_option( 'admin_email' ), $assoc_args['title'], $base, $subdomain_install );
 
 		if ( true === $result ) {
 			WP_CLI::log( 'Populated multisite options.' );
@@ -214,13 +228,13 @@ class Core_Command extends WP_CLI_Command {
 				WP_CLI::error( $result );
 		}
 
-		if ( !defined( 'MULTISITE' ) ) {
+		if ( !is_multisite() ) {
 			ob_start();
 ?>
 define('MULTISITE', true);
 define('SUBDOMAIN_INSTALL', <?php echo $subdomain_install ? 'true' : 'false'; ?>);
 $base = '<?php echo $base; ?>';
-define('DOMAIN_CURRENT_SITE', '<?php echo $hostname; ?>');
+define('DOMAIN_CURRENT_SITE', '<?php echo $domain; ?>');
 define('PATH_CURRENT_SITE', '<?php echo $base; ?>');
 define('SITE_ID_CURRENT_SITE', 1);
 define('BLOG_ID_CURRENT_SITE', 1);
@@ -233,8 +247,47 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		}
 
 		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
+	}
 
-		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
+	// copied from populate_network()
+	private static function create_initial_blog( $network_id, $blog_id, $domain, $path,
+		$subdomain_install, $site_user ) {
+		global $wpdb, $current_site, $wp_rewrite;
+
+		$current_site = new stdClass;
+		$current_site->domain = $domain;
+		$current_site->path = $path;
+		$current_site->site_name = ucfirst( $domain );
+		$wpdb->insert( $wpdb->blogs, array(
+			'site_id' => $network_id,
+			'domain' => $domain,
+			'path' => $path,
+			'registered' => current_time( 'mysql' )
+		) );
+		$current_site->blog_id = $blog_id = $wpdb->insert_id;
+		update_user_meta( $site_user->ID, 'source_domain', $domain );
+		update_user_meta( $site_user->ID, 'primary_blog', $blog_id );
+
+		if ( $subdomain_install )
+			$wp_rewrite->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
+		else
+			$wp_rewrite->set_permalink_structure( '/blog/%year%/%monthnum%/%day%/%postname%/' );
+
+		flush_rewrite_rules();
+	}
+
+	// copied from populate_network()
+	private static function add_site_admins( $site_user ) {
+		$site_admins = array( $site_user->user_login );
+		$users = get_users( array( 'fields' => array( 'ID', 'user_login' ) ) );
+		if ( $users ) {
+			foreach ( $users as $user ) {
+				if ( is_super_admin( $user->ID ) && !in_array( $user->user_login, $site_admins ) )
+					$site_admins[] = $user->user_login;
+			}
+		}
+
+		update_site_option( 'site_admins', $site_admins );
 	}
 
 	private static function modify_wp_config( $content ) {
