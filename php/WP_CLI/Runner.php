@@ -129,10 +129,11 @@ class Runner {
 				}
 			}
 
-			if ( !empty( $hit ) && isset( $hit['domain'] ) )
+			if ( !empty( $hit ) && isset( $hit['domain'] ) ) {
 				$url = $hit['domain'];
-			if ( !empty( $hit ) && isset( $hit['path'] ) )
-				$url .= $hit['path'];
+				if ( isset( $hit['path'] ) )
+					$url .= $hit['path'];
+			}
 		}
 
 		if ( isset( $url ) ) {
