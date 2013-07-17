@@ -140,15 +140,9 @@ function esc_cmd( $cmd ) {
 /**
  * Sets the appropriate $_SERVER keys based on a given string
  *
- * @param string $url The URL
+ * @param array $url_parts The URL, as represented by parse_url()
  */
-function set_url_params( $url ) {
-	$url_parts = parse_url( $url );
-
-	if ( !isset( $url_parts['scheme'] ) ) {
-		$url_parts = parse_url( 'http://' . $url );
-	}
-
+function set_url_params( $url_parts ) {
 	$f = function( $key ) use ( $url_parts ) {
 		return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
 	};
@@ -255,7 +249,7 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
 function format_items( $format, $items, $fields ) {
-	
+
 	if ( 'ids' == $format ) {
 		echo implode( ' ', $items );
 		return;
