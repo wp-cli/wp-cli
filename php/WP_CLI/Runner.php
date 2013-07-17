@@ -404,6 +404,10 @@ class Runner {
 			if ( 'multisite-install' == $this->arguments[1] ) {
 				// need to fake some globals to skip the checks in wp-inclues/ms-settings.php
 				self::fake_current_site_blog( $url_parts );
+
+				if ( !defined( 'COOKIEHASH' ) ) {
+					define( 'COOKIEHASH', md5( $url_parts['host'] ) );
+				}
 			}
 		}
 
