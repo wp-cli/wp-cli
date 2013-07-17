@@ -140,11 +140,13 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand multisite-convert
 	 * @alias install-network
-	 * @synopsis --title=<network-title> [--base=<url-path>]
+	 * @synopsis --title=<network-title> [--base=<url-path>] [--subdomains]
 	 */
 	public function multisite_convert( $args, $assoc_args ) {
 		if ( is_multisite() )
 			WP_CLI::error( 'This already is a multisite install.' );
+
+		$assoc_args = self::_set_multisite_defaults( $assoc_args );
 
 		$this->_multisite_convert( $assoc_args );
 		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
@@ -154,25 +156,58 @@ class Core_Command extends WP_CLI_Command {
 	 * Install multisite from scratch.
 	 *
 	 * @subcommand multisite-install
-	 * @synopsis --url=<url> [--base=<url-path>] --title=<site-title> [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
+	 * @synopsis --url=<url> --title=<site-title> [--base=<url-path>] [--subdomains] [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
 	 */
 	public function multisite_install( $args, $assoc_args ) {
 		$this->_install( $assoc_args );
 		WP_CLI::log( 'Created single site database tables.' );
 
+		$assoc_args = self::_set_multisite_defaults( $assoc_args );
+
+		// Overwrite runtime args, to avoid mismatches.
+		$consts_to_args = array(
+			'SUBDOMAIN_INSTALL' => 'subdomains',
+			'PATH_CURRENT_SITE' => 'base',
+			'SITE_ID_CURRENT_SITE' => 'site_id',
+			'BLOG_ID_CURRENT_SITE' => 'blog_id',
+		);
+
+		foreach ( $consts_to_args as $const => $arg ) {
+			if ( defined( $const ) ) {
+				$assoc_args[ $arg ] = constant( $const );
+			}
+		}
+
 		$this->_multisite_convert( $assoc_args );
 
-		// do the steps that were skipped by populate_network(), which checks is_multisite()
-		if ( defined( 'MULTISITE' ) ) {
+		// Do the steps that were skipped by populate_network(),
+		// which checks is_multisite().
+		if ( is_multisite() ) {
 			$site_user = get_user_by( 'email', $assoc_args['admin_email'] );
 			self::add_site_admins( $site_user );
 			$domain = self::get_clean_basedomain();
-			$path = isset( $assoc_args['base'] ) ? $assoc_args['base'] : '/';
-			$subdomain_install = isset( $assoc_args['subdomains'] );
-			self::create_initial_blog( 1, 1, $domain, $path, $subdomain_install, $site_user );
+			self::create_initial_blog(
+				$assoc_args['site_id'],
+				$assoc_args['blog_id'],
+				$domain,
+				$assoc_args['base'],
+				$assoc_args['subdomains'],
+				$site_user
+			);
 		}
 
 		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
+	}
+
+	private static function _set_multisite_defaults( $assoc_args ) {
+		$defaults = array(
+			'subdomains' => false,
+			'base' => '/',
+			'site_id' => 1,
+			'blog_id' => 1,
+		);
+
+		return array_merge( $defaults, $assoc_args );
 	}
 
 	private function _install( $assoc_args ) {
@@ -207,17 +242,18 @@ class Core_Command extends WP_CLI_Command {
 		foreach ( $wpdb->tables( 'ms_global' ) as $table => $prefixed_table )
 			$wpdb->$table = $prefixed_table;
 
-		extract( wp_parse_args( $assoc_args, array(
-			'base' => '/',
-		) ) );
-
-		$subdomain_install = isset( $assoc_args['subdomains'] );
-
 		install_network();
 		WP_CLI::log( 'Created multisite database tables.' );
 
 		$domain = self::get_clean_basedomain();
-		$result = populate_network( 1, $domain, get_option( 'admin_email' ), $assoc_args['title'], $base, $subdomain_install );
+		$result = populate_network(
+			$assoc_args['site_id'],
+			$domain,
+			get_option( 'admin_email' ),
+			$assoc_args['title'],
+			$assoc_args['base'],
+			$assoc_args['subdomains']
+		);
 
 		if ( true === $result ) {
 			WP_CLI::log( 'Populated multisite options.' );
@@ -232,10 +268,10 @@ class Core_Command extends WP_CLI_Command {
 			ob_start();
 ?>
 define('MULTISITE', true);
-define('SUBDOMAIN_INSTALL', <?php echo $subdomain_install ? 'true' : 'false'; ?>);
-$base = '<?php echo $base; ?>';
+define('SUBDOMAIN_INSTALL', <?php var_export( $assoc_args['subdomains'] ); ?>);
+$base = '<?php echo $assoc_args['base']; ?>';
 define('DOMAIN_CURRENT_SITE', '<?php echo $domain; ?>');
-define('PATH_CURRENT_SITE', '<?php echo $base; ?>');
+define('PATH_CURRENT_SITE', '<?php echo $assoc_args['base']; ?>');
 define('SITE_ID_CURRENT_SITE', 1);
 define('BLOG_ID_CURRENT_SITE', 1);
 
