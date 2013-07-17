@@ -137,33 +137,6 @@ function esc_cmd( $cmd ) {
 	return vsprintf( $cmd, array_map( 'escapeshellarg', $args ) );
 }
 
-/**
- * Sets the appropriate $_SERVER keys based on a given string
- *
- * @param array $url_parts The URL, as represented by parse_url()
- */
-function set_url_params( $url_parts ) {
-	$f = function( $key ) use ( $url_parts ) {
-		return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
-	};
-
-	if ( isset( $url_parts['host'] ) ) {
-		$_SERVER['HTTP_HOST'] = $url_parts['host'];
-		if ( isset( $url_parts['port'] ) ) {
-			$_SERVER['HTTP_HOST'] .= ':' . $url_parts['port'];
-		}
-
-		$_SERVER['SERVER_NAME'] = substr($_SERVER['HTTP_HOST'], 0, strrpos($_SERVER['HTTP_HOST'], '.'));
-	}
-
-	$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
-	$_SERVER['SERVER_PORT'] = isset( $url_parts['port'] ) ? $url_parts['port'] : '80';
-	$_SERVER['QUERY_STRING'] = $f('query');
-	$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
-	$_SERVER['HTTP_USER_AGENT'] = '';
-	$_SERVER['REQUEST_METHOD'] = 'GET';
-}
-
 function locate_wp_config() {
 	static $path;
 

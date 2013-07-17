@@ -143,6 +143,28 @@ class Runner {
 		return false;
 	}
 
+	private static function set_url_params( $url_parts ) {
+		$f = function( $key ) use ( $url_parts ) {
+			return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
+		};
+
+		if ( isset( $url_parts['host'] ) ) {
+			$_SERVER['HTTP_HOST'] = $url_parts['host'];
+			if ( isset( $url_parts['port'] ) ) {
+				$_SERVER['HTTP_HOST'] .= ':' . $url_parts['port'];
+			}
+
+			$_SERVER['SERVER_NAME'] = substr($_SERVER['HTTP_HOST'], 0, strrpos($_SERVER['HTTP_HOST'], '.'));
+		}
+
+		$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
+		$_SERVER['SERVER_PORT'] = isset( $url_parts['port'] ) ? $url_parts['port'] : '80';
+		$_SERVER['QUERY_STRING'] = $f('query');
+		$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
+		$_SERVER['HTTP_USER_AGENT'] = '';
+		$_SERVER['REQUEST_METHOD'] = 'GET';
+	}
+
 	private function cmd_starts_with( $prefix ) {
 		return $prefix == array_slice( $this->arguments, 0, count( $prefix ) );
 	}
@@ -342,7 +364,7 @@ class Runner {
 		$url = self::guess_url( $this->config );
 		if ( $url ) {
 			$url_parts = self::parse_url( $url );
-			Utils\set_url_params( $url_parts );
+			self::set_url_params( $url_parts );
 		}
 
 		$this->do_early_invoke( 'before_wp_load' );
@@ -376,7 +398,7 @@ class Runner {
 			// We really need a URL here
 			if ( !isset( $_SERVER['HTTP_HOST'] ) ) {
 				$url_parts = self::parse_url( 'http://example.com' );
-				Utils\set_url_params( $url_parts );
+				self::set_url_params( $url_parts );
 			}
 
 			if ( 'multisite-install' == $this->arguments[1] ) {
