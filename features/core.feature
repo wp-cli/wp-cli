@@ -144,14 +144,14 @@ Feature: Manage WordPress installation
     Given a WP multisite install
     And I run `wp db reset --yes`
 
-    When I run `wp core multisite-install --url=foobar.org --title=Test --admin_email=admin@example.com --admin_password=1`
+    When I run `wp core multisite-install --title=Test --admin_email=admin@example.com --admin_password=1`
     Then STDOUT should not be empty
 
     When I run `wp eval 'echo $GLOBALS["current_site"]->domain;'`
     Then STDOUT should be:
       """
-      foobar.org
-      """ 
+      example.com
+      """
 
   Scenario: Custom wp-content directory
     Given a WP install
