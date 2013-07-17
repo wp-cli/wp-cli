@@ -59,6 +59,22 @@ require( ABSPATH . WPINC . '/pomo/mo.php' );
 // WP_CLI: Early hooks
 Utils\replace_wp_die_handler();
 add_filter( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
+if ( defined( 'WP_INSTALLING' ) && is_multisite() ) {
+	$values = array(
+		'ms_files_rewriting' => null,
+		'active_sitewide_plugins' => array(),
+		'_site_transient_update_core' => null,
+		'_site_transient_update_themes' => null,
+		'_site_transient_update_plugins' => null,
+		'WPLANG' => '',
+	);
+	foreach ( $values as $key => $value ) {
+		add_filter( "pre_site_option_$key", function () use ( $values, $key ) {
+			return $values[ $key ];
+		} );
+	}
+	unset( $values, $key, $value );
+}
 
 // Include the wpdb class and, if present, a db.php database drop-in.
 require_wp_db();
