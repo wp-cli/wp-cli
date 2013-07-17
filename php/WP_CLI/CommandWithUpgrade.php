@@ -141,7 +141,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * @param object $response wordpress.org API response
 	 * @param string $version The desired version of the package
 	 */
-	protected static function alter_api_response( $response, $version ) {
+	protected static function alter_api_response( $response, $version, $assoc_args = array() ) {
+		$assoc_args = array_merge( $assoc_args, array('strict' => true) );
+		list( $strict ) = $assoc_args;
+
+		$orig_response = clone $response;
+
 		if ( $response->version == $version )
 			return;
 
@@ -160,11 +165,18 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$response->version = $version;
 
 			// check if the requested version exists
-			$response = wp_remote_head( $response->download_link );
-			if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
-				\WP_CLI::error( sprintf(
-					"Can't find the requested %s's version %s in the WordPress.org %s repository.",
-					$download_type, $version, $download_type ) );
+			$check_response = wp_remote_head( $response->download_link );
+			if ( 200 !== wp_remote_retrieve_response_code( $check_response ) ) {
+				if ($strict === true) {
+					\WP_CLI::error( sprintf(
+						"Can't find the requested %s's version %s in the WordPress.org %s repository.",
+						$download_type, $version, $download_type ) );
+				} else {
+					$response->download_link = $orig_response->download_link;
+					$response->version = $orig_response->version;
+					\WP_CLI::warning( sprintf("Can't find version %s of %s in the WordPress.org %s repository. Installing version %s instead",
+												$version, $response->name, $download_type, $response->version ) );
+				}
 			}
 		}
 	}

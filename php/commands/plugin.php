@@ -163,7 +163,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		if ( isset( $assoc_args['version'] ) ) {
-			self::alter_api_response( $api, $assoc_args['version'] );
+			self::alter_api_response( $api, $assoc_args['version'], array('strict' => !isset($assoc_args['force'])) );
 		}
 
 		$status = install_plugin_install_status( $api );
@@ -374,6 +374,27 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		return ! WP_CLI::launch( $command );
 	}
+
+	/**
+	 * Install all plugins from json plugin list
+	 *
+	 * @subcommand install-all
+	 * @synopsis [<plugins.json>]
+	 */
+	function install_all( $args, $assoc_args ) {
+		$json_file = isset($args[0]) ? $args[0] : 'plugins.json';
+		$json_items = $this->get_item_list_from_json($json_file);
+		// Only install items that are marked as active
+		$items_to_install = array_filter($json_items, function($item){ return $item['status'] == 'active'; });
+		foreach ($items_to_install as $item) {
+			$this->install_from_repo( $item['name'], array('version' => $item['version'], 'force' => true) );
+		}
+	}
+
+	protected function get_item_list_from_json($json_file) {
+		return json_decode(file_get_contents($json_file), true);
+	}
+
 }
 
 WP_CLI::add_command( 'plugin', 'Plugin_Command' );
