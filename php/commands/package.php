@@ -5,6 +5,8 @@ use \Composer\Json\JsonFile;
 use \Composer\Json\JsonManipulator;
 use \Composer\Package;
 use \Composer\Repository;
+use \Composer\Repository\CompositeRepository;
+use \Composer\Repository\ComposerRepository;
 use \Composer\Repository\RepositoryManager;
 use \Composer\Util\Filesystem;
 
@@ -27,9 +29,35 @@ class Package_Command extends WP_CLI_Command {
 	 * Browse available WP-CLI community packages.
 	 * 
 	 * @subcommand browse
+	 * @synopsis [--format=<format>]
 	 */
-	public function browse() {
+	public function browse( $args, $assoc_args ) {
 
+		$defaults = array(
+			'fields'    => implode( ',', $this->fields ),
+			'format'    => 'table'
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$composer = $this->get_composer();
+		$repos = $composer->getRepositoryManager()->getRepositories();
+
+		// @todo Is there a better way of getting the WP-CLI repo?
+		// ... there doesn't seem to be a method for getting any unique ID
+		// and right now we're assuming WP-CLI is the first repo listed
+		$wp_cli_repo = array_shift( $repos );
+
+		$packages = array();
+		foreach( $wp_cli_repo->getPackages() as $package ) {
+
+			$package_output = new stdClass;
+			$package_output->name = $package->getName();
+			$package_output->description = $package->getDescription();
+			$package_output->authors = implode( ',', $this->list_pluck( (array)$package->getAuthors(), 'name' ) );
+			$packages[$package_output->name] = $package_output;
+		}
+
+		WP_CLI\Utils\format_items( $assoc_args['format'], $packages, $assoc_args['fields'] );
 	}
 
 	/**
