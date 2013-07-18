@@ -25,6 +25,8 @@ class Package_Command extends WP_CLI_Command {
 	 * Browse available WP-CLI community packages.
 	 * 
 	 * @subcommand browse
+	 * 
+	 * @when before_wp_load
 	 */
 	public function browse() {
 
@@ -35,6 +37,8 @@ class Package_Command extends WP_CLI_Command {
 	 * 
 	 * @subcommand install
 	 * @synopsis <package> [--version=<version>]
+	 * 
+	 * @when before_wp_load
 	 */
 	public function install( $args, $assoc_args ) {
 
@@ -57,6 +61,8 @@ class Package_Command extends WP_CLI_Command {
 	 * 
 	 * @subcommand list
 	 * @synopsis [--format=<format>]
+	 * 
+	 * @when before_wp_load
 	 */
 	public function _list( $args, $assoc_args ) {
 
@@ -84,6 +90,8 @@ class Package_Command extends WP_CLI_Command {
 	 * 
 	 * @subcommand uninstall
 	 * @synopsis <package-name>
+	 * 
+	 * @when before_wp_load
 	 */
 	public function uninstall( $args ) {
 
