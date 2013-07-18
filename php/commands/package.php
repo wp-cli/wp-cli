@@ -123,10 +123,11 @@ class Package_Command extends WP_CLI_Command {
 
 	/**
 	 * Check whether a package is a WP-CLI community package
-	 * WP-CLI community packages always start with 'wp-cli'
+	 * WP-CLI community packages always require 'wp-cli/wp-cli'
 	 */
 	private function is_community_package( $package ) {
-		return false !== stripos( $package->getName(), '/wp-cli' );
+		$requires = array_map( 'strtolower', array_keys( $package->getRequires() ) );
+		return in_array( 'wp-cli/wp-cli', $requires );
 	}
 
 	/**
