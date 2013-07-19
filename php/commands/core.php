@@ -140,13 +140,16 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand multisite-convert
 	 * @alias install-network
-	 * @synopsis --title=<network-title> [--base=<url-path>] [--subdomains]
+	 * @synopsis [--title=<network-title>] [--base=<url-path>] [--subdomains]
 	 */
 	public function multisite_convert( $args, $assoc_args ) {
 		if ( is_multisite() )
 			WP_CLI::error( 'This already is a multisite install.' );
 
 		$assoc_args = self::_set_multisite_defaults( $assoc_args );
+		if ( !isset( $assoc_args['title'] ) ) {
+			$assoc_args['title'] = sprintf( _x('%s Sites', 'Default network name' ), get_option( 'blogname' ) );
+		}
 
 		$this->_multisite_convert( $assoc_args );
 		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
@@ -163,6 +166,7 @@ class Core_Command extends WP_CLI_Command {
 		WP_CLI::log( 'Created single site database tables.' );
 
 		$assoc_args = self::_set_multisite_defaults( $assoc_args );
+		$assoc_args['title'] = sprintf( _x('%s Sites', 'Default network name' ), $assoc_args['title'] );
 
 		// Overwrite runtime args, to avoid mismatches.
 		$consts_to_args = array(
@@ -243,7 +247,6 @@ class Core_Command extends WP_CLI_Command {
 			$wpdb->$table = $prefixed_table;
 
 		install_network();
-		WP_CLI::log( 'Created multisite database tables.' );
 
 		$domain = self::get_clean_basedomain();
 		$result = populate_network(
@@ -256,7 +259,7 @@ class Core_Command extends WP_CLI_Command {
 		);
 
 		if ( true === $result ) {
-			WP_CLI::log( 'Populated multisite options.' );
+			WP_CLI::log( 'Set up multisite database tables.' );
 		} else if ( is_wp_error( $result ) ) {
 			if ( $result->get_error_codes() === array( 'no_wildcard_dns' ) )
 				WP_CLI::warning( __( 'Wildcard DNS may not be configured correctly.' ) );
