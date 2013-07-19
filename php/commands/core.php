@@ -40,8 +40,10 @@ class Core_Command extends WP_CLI_Command {
 
 		$silent = WP_CLI::get_config('quiet') || \cli\Shell::isPiped() ?
 			'--silent ' : '';
-        
-		$temp = tempnam(sys_get_temp_dir(), "wp_");
+
+		// We need to use a temporary file because piping from cURL to tar is flaky
+		// on MinGW (and probably in other environments too).
+		$temp = tempnam( sys_get_temp_dir(), "wp_" );
 		$cmd = "curl -f $silent %s > $temp && tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
 		WP_CLI::launch( Utils\esc_cmd( $cmd, $download_url, ABSPATH ) );
 
