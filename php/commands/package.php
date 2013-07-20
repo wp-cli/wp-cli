@@ -106,6 +106,9 @@ class Package_Command extends WP_CLI_Command {
 			$packages[] = $package_output;
 		}
 
+		if ( empty( $packages ) )
+			WP_CLI::error( "There aren't any WP-CLI community commands installed." );
+
 		WP_CLI\Utils\format_items( $assoc_args['format'], $packages, $assoc_args['fields'] );
 	}
 
