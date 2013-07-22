@@ -39,14 +39,6 @@ class Package_Command extends WP_CLI_Command {
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		$composer = $this->get_composer();
-		$repos = $composer->getRepositoryManager()->getRepositories();
-
-		// @todo Is there a better way of getting the WP-CLI repo?
-		// ... there doesn't seem to be a method for getting any unique ID
-		// and right now we're assuming WP-CLI is the first repo listed
-		$wp_cli_repo = array_shift( $repos );
-
 		$packages = array();
 		foreach( $this->get_community_packages() as $package ) {
 
