@@ -48,7 +48,7 @@ class Package_Command extends WP_CLI_Command {
 		$wp_cli_repo = array_shift( $repos );
 
 		$packages = array();
-		foreach( $wp_cli_repo->getPackages() as $package ) {
+		foreach( $this->get_community_packages() as $package ) {
 
 			$package_output = new stdClass;
 			$package_output->name = $package->getName();
@@ -175,6 +175,22 @@ class Package_Command extends WP_CLI_Command {
 
 		$this->composer = $composer;
 		return $this->composer;
+	}
+
+	/**
+	 * Get all of the community packages
+	 */
+	private function get_community_packages() {
+
+		$composer = $this->get_composer();
+		$repos = $composer->getRepositoryManager()->getRepositories();
+
+		// @todo Is there a better way of getting the WP-CLI repo?
+		// ... there doesn't seem to be a method for getting any unique ID
+		// and right now we're assuming WP-CLI is the first repo listed
+		$wp_cli_repo = array_shift( $repos );
+
+		return $wp_cli_repo->getPackages();
 	}
 
 	/**
