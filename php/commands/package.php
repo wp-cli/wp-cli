@@ -1,9 +1,11 @@
 <?php
 use \Composer\Factory;
 use \Composer\IO\NullIO;
+use \Composer\Installer;
 use \Composer\Json\JsonFile;
 use \Composer\Json\JsonManipulator;
 use \Composer\Package;
+use \Composer\Package\Version\VersionParser;
 use \Composer\Repository;
 use \Composer\Repository\CompositeRepository;
 use \Composer\Repository\ComposerRepository;
@@ -56,21 +58,39 @@ class Package_Command extends WP_CLI_Command {
 	 * Install a WP-CLI community package.
 	 * 
 	 * @subcommand install
-	 * @synopsis <package> [--version=<version>]
+	 * @synopsis <package-name> [--version=<version>]
 	 */
 	public function install( $args, $assoc_args ) {
 
-		list( $package ) = $args;
+		list( $package_name ) = $args;
 
 		$defaults = array(
 				'version' => 'dev-master',
 			);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		if ( ! $this->is_community_package( $package_name ) )
+		if ( ! $this->get_community_package_by_name( $package_name ) )
 			WP_CLI::error( "Invalid package." );
 
 		$composer = $this->get_composer();
+		$composer_json_obj = $this->get_composer_json();
+
+		// Add the 'require' to composer.json
+		$composer_backup = file_get_contents( $composer_json_obj->getPath() );
+		$json_manipulator = new JsonManipulator( $composer_backup );
+		$json_manipulator->addLink( 'require', $package_name, $assoc_args['version'] );
+
+		// Set up the installer
+		$install = Installer::create( new NullIO, $composer );
+
+		// Try running the installer, and save composer.json if successful
+		if ( $install->run() ) {
+			file_put_contents( $composer_json_obj->getPath(), $json_manipulator->getContents() );
+			WP_CLI::success( "Package installed." );
+		} else {
+			file_put_contents( $composer_json_obj->getPath(), $composer_backup );
+			WP_CLI::error( "Package installation failed." );
+		}
 
 	}
 
@@ -183,6 +203,17 @@ class Package_Command extends WP_CLI_Command {
 		$wp_cli_repo = array_shift( $repos );
 
 		return $wp_cli_repo->getPackages();
+	}
+
+	/**
+	 * Get a community package by its name.
+	 */
+	private function get_community_package_by_name( $package_name ) {
+		foreach( $this->get_community_packages() as $package ) {
+			if ( $package_name == $package->getName() )
+				return $package;
+		}
+		return false;
 	}
 
 	/**
