@@ -69,7 +69,7 @@ class Package_Command extends WP_CLI_Command {
 			);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		if ( ! $this->get_community_package_by_name( $package_name ) )
+		if ( ! $this->is_community_package( $package_name ) )
 			WP_CLI::error( "Invalid package." );
 
 		$composer = $this->get_composer();
@@ -159,12 +159,18 @@ class Package_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Check whether a package is a WP-CLI community package
-	 * WP-CLI community packages always require 'wp-cli/wp-cli'
+	 * Check whether a package is a WP-CLI community package based
+	 * on membership in our Packagist repo.
+	 * 
+	 * @param string|object      $package     A package object or name
+	 * @return bool
 	 */
 	private function is_community_package( $package ) {
-		$requires = array_map( 'strtolower', array_keys( $package->getRequires() ) );
-		return in_array( 'wp-cli/wp-cli', $requires );
+
+		if ( is_object( $package ) )
+			$package = $package->getName();
+
+		return (bool)$this->get_community_package_by_name( $package );
 	}
 
 	/**
