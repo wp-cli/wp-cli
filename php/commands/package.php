@@ -194,6 +194,10 @@ class Package_Command extends WP_CLI_Command {
 	 */
 	private function get_community_packages() {
 
+		static $community_packages;
+		if ( ! empty( $community_packages ) )
+			return $community_packages;
+
 		$composer = $this->get_composer();
 		$repos = $composer->getRepositoryManager()->getRepositories();
 
@@ -202,7 +206,8 @@ class Package_Command extends WP_CLI_Command {
 		// and right now we're assuming WP-CLI is the first repo listed
 		$wp_cli_repo = array_shift( $repos );
 
-		return $wp_cli_repo->getPackages();
+		$community_packages = $wp_cli_repo->getPackages();
+		return $community_packages;
 	}
 
 	/**
