@@ -120,7 +120,48 @@ Feature: Manage WordPress installation
     Then STDOUT should be:
       """
       true
-      """ 
+      """
+
+  Scenario: Bootstrap WordPress when config details are tracked in version control
+    Given an empty directory
+    And WP files
+    And a database
+
+    Given a wp-config-extra.php file:
+      """
+      if ( ! defined( 'WP_INSTALLING' ) || ! WP_INSTALLING ) {
+        define('WP_ALLOW_MULTISITE', true);
+        if ( ! defined( 'WP_CLI' )
+          || ( defined( 'WP_CLI' ) && array( 'core', 'install-network' ) != WP_CLI::$runner->arguments ) ) {
+          define('SUBDOMAIN_INSTALL', false);
+          define('PATH_CURRENT_SITE', '/');
+          define('SITE_ID_CURRENT_SITE', 1);
+          define('BLOG_ID_CURRENT_SITE', 1);
+          define( 'MULTISITE', true );
+        }
+      }
+      """
+    When I run `wp core config --extra-php < wp-config-extra.php`
+    Then the wp-config.php file should contain:
+      """
+      define('AUTH_SALT',
+      """
+    And the wp-config.php file should contain:
+      """
+      define('WP_ALLOW_MULTISITE', true);
+      """
+
+    When I run `wp core install`
+    Then STDOUT should not be empty
+
+    When I try `wp core is-installed --multisite`
+    Then the return code should be 1
+
+    When I run `wp core install-network --title='test network'`
+    Then STDOUT should not be empty
+
+    When I try `wp core is-installed --multisite`
+    Then the return code should be 0
 
     When I try `wp core install-network --title='test network'`
     Then the return code should be 1

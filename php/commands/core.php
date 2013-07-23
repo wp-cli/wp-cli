@@ -118,10 +118,12 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Determine if the WordPress tables are installed.
 	 *
-	 * @subcommand is-installed
+	 * @subcommand is-installed [--network]
 	 */
-	public function is_installed() {
+	public function is_installed( $args, $assoc_args ) {
 		if ( is_blog_installed() ) {
+			if ( isset( $assoc_args['network'] ) && ! is_multisite() )
+				exit( 1 );
 			exit( 0 );
 		} else {
 			exit( 1 );
@@ -184,17 +186,24 @@ class Core_Command extends WP_CLI_Command {
 		$subdomain_install = isset( $assoc_args['subdomains'] );
 
 		install_network();
+		WP_CLI::line( "Created multisite database tables." );
 
 		$result = populate_network( 1, $hostname, get_option( 'admin_email' ), $assoc_args['title'], $base, $subdomain_install );
 
-		if ( is_wp_error( $result ) ) {
+		if ( true === $result ) {
+			WP_CLI::line( "Populated multisite options." );
+		} else if ( is_wp_error( $result ) ) {
 			if ( $result->get_error_codes() === array( 'no_wildcard_dns' ) )
 				WP_CLI::warning( __( 'Wildcard DNS may not be configured correctly.' ) );
 			else
 				WP_CLI::error( $result );
 		}
 
-		ob_start();
+		if ( self::wp_config_contains( "/define\(\s*'MULTISITE'/" ) ) {
+			WP_CLI::line( "Found multisite constants in wp-config.php. Skipping." );
+		} else {
+
+			ob_start();
 ?>
 define('MULTISITE', true);
 define('SUBDOMAIN_INSTALL', <?php echo $subdomain_install ? 'true' : 'false'; ?>);
@@ -205,23 +214,34 @@ define('SITE_ID_CURRENT_SITE', 1);
 define('BLOG_ID_CURRENT_SITE', 1);
 
 <?php
-		$ms_config = ob_get_clean();
+			$ms_config = ob_get_clean();
 
-		self::modify_wp_config( $ms_config );
+			self::modify_wp_config( $ms_config );
+
+			WP_CLI::line( "Added multisite constants to wp-config.php." );
+		}
 
 		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
 
 		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
 	}
 
-	private static function modify_wp_config( $content ) {
+	private static function wp_config_contains( $pattern ) {
+		return preg_match( $pattern, self::get_wp_config_content() );
+	}
+
+	private static function get_wp_config_content() {
 		$wp_config_path = Utils\locate_wp_config();
+		return file_get_contents( $wp_config_path );
+	}
+
+	private static function modify_wp_config( $content ) {
 
 		$token = "/* That's all, stop editing!";
 
-		list( $before, $after ) = explode( $token, file_get_contents( $wp_config_path ) );
+		list( $before, $after ) = explode( $token, self::get_wp_config_content() );
 
-		file_put_contents( $wp_config_path, $before . $content . $token . $after );
+		file_put_contents( Utils\locate_wp_config(), $before . $content . $token . $after );
 	}
 
 	private static function get_clean_basedomain() {
