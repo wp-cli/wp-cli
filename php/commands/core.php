@@ -75,7 +75,7 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Set up a wp-config.php file.
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--extra-php]
+	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php]
 	 */
 	public function config( $_, $assoc_args ) {
 		if ( Utils\locate_wp_config() ) {
