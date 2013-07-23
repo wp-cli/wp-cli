@@ -47,3 +47,12 @@ Feature: Get help about WP-CLI commands
       """
       wp test-help
       """
+
+  Scenario: Help for incomplete commands
+    Given an empty directory
+
+    When I run `wp core`
+    Then STDOUT should contain:
+      """
+      usage: wp core
+      """
