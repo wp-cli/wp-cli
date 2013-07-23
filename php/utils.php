@@ -217,19 +217,15 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 			}
 
 			$data = $_tmp;
-			unset( $_tmp );
 		}
 
-		// Submitted by Tina Matter
 		elseif ( is_object( $data ) ) {
-			$dataClass = get_class( $data );
-			$_tmp = new $dataClass( );
+			$_tmp = clone( $data );
 			foreach ( $data as $key => $value ) {
 				$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
 			}
 
 			$data = $_tmp;
-			unset( $_tmp );
 		}
 
 		else {
@@ -255,7 +251,7 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
 function format_items( $format, $items, $fields ) {
-	
+
 	if ( 'ids' == $format ) {
 		echo implode( ' ', $items );
 		return;
