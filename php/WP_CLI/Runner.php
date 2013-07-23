@@ -144,8 +144,47 @@ class Runner {
 		return $prefix == array_slice( $this->arguments, 0, count( $prefix ) );
 	}
 
+	private function find_command_to_run( $args ) {
+		$command = \WP_CLI::get_root_command();
+
+		$cmd_path = array();
+
+		$disabled_commands = $this->config['disabled_commands'];
+
+		while ( !empty( $args ) && $command->has_subcommands() ) {
+			$cmd_path[] = $args[0];
+			$full_name = implode( ' ', $cmd_path );
+
+			$subcommand = $command->find_subcommand( $args );
+
+			if ( !$subcommand ) {
+				\WP_CLI::error( sprintf(
+					"'%s' is not a registered wp command. See 'wp help'.",
+					$full_name
+				) );
+			}
+
+			if ( in_array( $full_name, $disabled_commands ) ) {
+				\WP_CLI::error( sprintf(
+					"The '%s' command has been disabled from the config file.",
+					$full_name
+				) );
+			}
+
+			$command = $subcommand;
+		}
+
+		return array( $command, $args );
+	}
+
+	public function run_command( $args, $assoc_args = array() ) {
+		list( $command, $final_args ) = $this->find_command_to_run( $args );
+
+		$command->invoke( $final_args, $assoc_args );
+	}
+
 	private function _run_command() {
-		WP_CLI::run_command( $this->arguments, $this->assoc_args );
+		$this->run_command( $this->arguments, $this->assoc_args );
 	}
 
 	/**
