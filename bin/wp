@@ -63,4 +63,4 @@ export WP_CLI_PHP_USED=$php
 
 # Pass in the path to php so that wp-cli knows which one
 # to use if it re-launches itself to run subcommands
-exec $php "$SCRIPT_PATH" "$@"
+exec "$php" "$SCRIPT_PATH" "$@"

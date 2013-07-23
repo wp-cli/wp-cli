@@ -184,19 +184,15 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 			}
 
 			$data = $_tmp;
-			unset( $_tmp );
 		}
 
-		// Submitted by Tina Matter
 		elseif ( is_object( $data ) ) {
-			$dataClass = get_class( $data );
-			$_tmp = new $dataClass( );
+			$_tmp = clone( $data );
 			foreach ( $data as $key => $value ) {
 				$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
 			}
 
 			$data = $_tmp;
-			unset( $_tmp );
 		}
 
 		else {

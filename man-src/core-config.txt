@@ -20,6 +20,10 @@
 
 	Set the database table prefix. Default: 'wp_'
 
+* `--locale`=<locale>:
+
+	Set the WPLANG constant. Defaults to $wp_local_package variable.
+
 * `--extra-php`:
 
 	If set, the command reads additional PHP code from STDIN.
@@ -27,7 +31,7 @@
 ## EXAMPLES
 
 	# Standard wp-config.php file
-	wp core config --dbname=testing --dbuser=wp --dbpass=securepswd
+	wp core config --dbname=testing --dbuser=wp --dbpass=securepswd --locale=ro_RO
 
 	# Enable WP_DEBUG and WP_DEBUG_LOG
 	wp core config --dbname=testing --dbuser=wp --dbpass=securepswd --extra-php <<PHP

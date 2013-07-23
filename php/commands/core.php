@@ -41,7 +41,10 @@ class Core_Command extends WP_CLI_Command {
 		$silent = WP_CLI::get_config('quiet') || \cli\Shell::isPiped() ?
 			'--silent ' : '';
 
-		$cmd = "curl -f $silent %s | tar xz --strip-components=1 --directory=%s";
+		// We need to use a temporary file because piping from cURL to tar is flaky
+		// on MinGW (and probably in other environments too).
+		$temp = tempnam( sys_get_temp_dir(), "wp_" );
+		$cmd = "curl -f $silent %s > $temp && tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
 		WP_CLI::launch( Utils\esc_cmd( $cmd, $download_url, ABSPATH ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
@@ -72,7 +75,7 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Set up a wp-config.php file.
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--extra-php]
+	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php]
 	 */
 	public function config( $_, $assoc_args ) {
 		if ( Utils\locate_wp_config() ) {

@@ -169,8 +169,52 @@ class Runner {
 		return $prefix == array_slice( $this->arguments, 0, count( $prefix ) );
 	}
 
+	private function find_command_to_run( $args ) {
+		$command = \WP_CLI::get_root_command();
+
+		$cmd_path = array();
+
+		$disabled_commands = $this->config['disabled_commands'];
+
+		while ( !empty( $args ) && $command->has_subcommands() ) {
+			$cmd_path[] = $args[0];
+			$full_name = implode( ' ', $cmd_path );
+
+			$subcommand = $command->find_subcommand( $args );
+
+			if ( !$subcommand ) {
+				return sprintf(
+					"'%s' is not a registered wp command. See 'wp help'.",
+					$full_name
+				);
+			}
+
+			if ( in_array( $full_name, $disabled_commands ) ) {
+				return sprintf(
+					"The '%s' command has been disabled from the config file.",
+					$full_name
+				);
+			}
+
+			$command = $subcommand;
+		}
+
+		return array( $command, $args );
+	}
+
+	public function run_command( $args, $assoc_args = array() ) {
+		$r = $this->find_command_to_run( $args );
+		if ( is_string( $r ) ) {
+			WP_CLI::error( $r );
+		}
+
+		list( $command, $final_args ) = $r;
+
+		$command->invoke( $final_args, $assoc_args );
+	}
+
 	private function _run_command() {
-		WP_CLI::run_command( $this->arguments, $this->assoc_args );
+		$this->run_command( $this->arguments, $this->assoc_args );
 	}
 
 	/**
@@ -313,7 +357,7 @@ class Runner {
 		}
 	}
 
-	public function before_wp_load() {
+	private function init_config() {
 		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::get_configurator()->parse_args(
 			array_slice( $GLOBALS['argv'], 1 ) );
 
@@ -322,9 +366,7 @@ class Runner {
 
 		$this->config_path = self::get_config_path( $runtime_config );
 
-		$local_config = \WP_CLI::get_configurator()->load_config( $this->config_path );
-
-		$this->config = $local_config;
+		$this->config = \WP_CLI::get_configurator()->load_config( $this->config_path );
 
 		foreach ( $runtime_config as $key => $value ) {
 			if ( isset( $this->config[ $key ] ) && is_array( $this->config[ $key ] ) ) {
@@ -337,18 +379,34 @@ class Runner {
 		if ( !isset( $this->config['path'] ) ) {
 			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
 		}
+	}
 
+	public function before_wp_load() {
+		$this->init_config();
 		$this->init_colorization();
 		$this->init_logger();
 
 		if ( empty( $this->arguments ) )
 			$this->arguments[] = 'help';
 
+		// Load bundled commands early, so that they're forced to use the same
+		// APIs as non-bundled commands.
 		Utils\load_command( $this->arguments[0] );
 
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {
 				require $path;
+			}
+		}
+
+		// Show synopsis if it's a composite command.
+		$r = $this->find_command_to_run( $this->arguments );
+		if ( is_array( $r ) ) {
+			list( $command ) = $r;
+
+			if ( $command->has_subcommands() ) {
+				$command->show_usage();
+				exit;
 			}
 		}
 
@@ -466,3 +524,4 @@ class Runner {
 		$this->_run_command();
 	}
 }
+
