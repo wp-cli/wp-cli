@@ -158,17 +158,17 @@ class Runner {
 			$subcommand = $command->find_subcommand( $args );
 
 			if ( !$subcommand ) {
-				\WP_CLI::error( sprintf(
+				return sprintf(
 					"'%s' is not a registered wp command. See 'wp help'.",
 					$full_name
-				) );
+				);
 			}
 
 			if ( in_array( $full_name, $disabled_commands ) ) {
-				\WP_CLI::error( sprintf(
+				return sprintf(
 					"The '%s' command has been disabled from the config file.",
 					$full_name
-				) );
+				);
 			}
 
 			$command = $subcommand;
@@ -178,7 +178,12 @@ class Runner {
 	}
 
 	public function run_command( $args, $assoc_args = array() ) {
-		list( $command, $final_args ) = $this->find_command_to_run( $args );
+		$r = $this->find_command_to_run( $args );
+		if ( is_string( $r ) ) {
+			WP_CLI::error( $r );
+		}
+
+		list( $command, $final_args ) = $r;
 
 		$command->invoke( $final_args, $assoc_args );
 	}
@@ -365,6 +370,17 @@ class Runner {
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {
 				require $path;
+			}
+		}
+
+		// Show synopsis if it's a composite command.
+		$r = $this->find_command_to_run( $args );
+		if ( is_array( $r ) ) {
+			list( $command ) = $r;
+
+			if ( $command->has_subcommands() ) {
+				$command->show_usage();
+				exit;
 			}
 		}
 
