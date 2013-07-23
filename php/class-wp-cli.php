@@ -266,49 +266,14 @@ class WP_CLI {
 		return self::get_runner()->config[ $key ];
 	}
 
-	private static function find_command_to_run( $args ) {
-		$command = self::get_root_command();
-
-		$cmd_path = array();
-
-		$disabled_commands = self::get_config('disabled_commands');
-
-		while ( !empty( $args ) && $command->has_subcommands() ) {
-			$cmd_path[] = $args[0];
-			$full_name = implode( ' ', $cmd_path );
-
-			$subcommand = $command->find_subcommand( $args );
-
-			if ( !$subcommand ) {
-				self::error( sprintf(
-					"'%s' is not a registered wp command. See 'wp help'.",
-					$full_name
-				) );
-			}
-
-			if ( in_array( $full_name, $disabled_commands ) ) {
-				self::error( sprintf(
-					"The '%s' command has been disabled from the config file.",
-					$full_name
-				) );
-			}
-
-			$command = $subcommand;
-		}
-
-		return array( $command, $args );
-	}
-
 	/**
 	 * Run a given command.
 	 *
 	 * @param array
 	 * @param array
 	 */
-	public static function run_command( $args, $assoc_args = array() ) {
-		list( $command, $final_args ) = self::find_command_to_run( $args );
-
-		$command->invoke( $final_args, $assoc_args );
+	static function run_command( $args, $assoc_args = array() ) {
+		self::get_runner()->run_command( $args, $assoc_args );
 	}
 
 	// back-compat
