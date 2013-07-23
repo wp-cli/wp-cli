@@ -332,7 +332,7 @@ class Runner {
 		}
 	}
 
-	public function before_wp_load() {
+	private function init_config() {
 		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::get_configurator()->parse_args(
 			array_slice( $GLOBALS['argv'], 1 ) );
 
@@ -341,9 +341,7 @@ class Runner {
 
 		$this->config_path = self::get_config_path( $runtime_config );
 
-		$local_config = \WP_CLI::get_configurator()->load_config( $this->config_path );
-
-		$this->config = $local_config;
+		$this->config = \WP_CLI::get_configurator()->load_config( $this->config_path );
 
 		foreach ( $runtime_config as $key => $value ) {
 			if ( isset( $this->config[ $key ] ) && is_array( $this->config[ $key ] ) ) {
@@ -356,7 +354,10 @@ class Runner {
 		if ( !isset( $this->config['path'] ) ) {
 			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
 		}
+	}
 
+	public function before_wp_load() {
+		$this->init_config();
 		$this->init_colorization();
 		$this->init_logger();
 
@@ -374,7 +375,7 @@ class Runner {
 		}
 
 		// Show synopsis if it's a composite command.
-		$r = $this->find_command_to_run( $args );
+		$r = $this->find_command_to_run( $this->arguments );
 		if ( is_array( $r ) ) {
 			list( $command ) = $r;
 
@@ -430,7 +431,6 @@ class Runner {
 			define( 'WP_LOAD_IMPORTERS', true );
 			define( 'WP_IMPORTING', true );
 		}
-
 	}
 
 	public function after_wp_load() {
@@ -442,3 +442,4 @@ class Runner {
 		$this->_run_command();
 	}
 }
+
