@@ -131,8 +131,11 @@ class Core_Command extends WP_CLI_Command {
 	 * @synopsis --url=<url> --title=<site-title> [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
 	 */
 	public function install( $args, $assoc_args ) {
-		$this->_install( $assoc_args );
-		WP_CLI::success( 'WordPress installed successfully.' );
+		if ( $this->_install( $assoc_args ) ) {
+			WP_CLI::success( 'WordPress installed successfully.' );
+		} else {
+			WP_CLI::log( 'WordPress is already installed.' );
+		}
 	}
 
 	/**
@@ -151,8 +154,9 @@ class Core_Command extends WP_CLI_Command {
 			$assoc_args['title'] = sprintf( _x('%s Sites', 'Default network name' ), get_option( 'blogname' ) );
 		}
 
-		$this->_multisite_convert( $assoc_args );
-		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
+		if ( $this->_multisite_convert( $assoc_args ) ) {
+			WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
+		}
 	}
 
 	/**
@@ -162,8 +166,11 @@ class Core_Command extends WP_CLI_Command {
 	 * @synopsis --url=<url> --title=<site-title> [--base=<url-path>] [--subdomains] [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
 	 */
 	public function multisite_install( $args, $assoc_args ) {
-		$this->_install( $assoc_args );
-		WP_CLI::log( 'Created single site database tables.' );
+		if ( $this->_install( $assoc_args ) ) {
+			WP_CLI::log( 'Created single site database tables.' );
+		} else {
+			WP_CLI::log( 'Single site database tables already present.' );
+		}
 
 		$assoc_args = self::_set_multisite_defaults( $assoc_args );
 		$assoc_args['title'] = sprintf( _x('%s Sites', 'Default network name' ), $assoc_args['title'] );
@@ -182,7 +189,9 @@ class Core_Command extends WP_CLI_Command {
 			}
 		}
 
-		$this->_multisite_convert( $assoc_args );
+		if ( !$this->_multisite_convert( $assoc_args ) ) {
+			return;
+		}
 
 		// Do the steps that were skipped by populate_network(),
 		// which checks is_multisite().
@@ -215,11 +224,11 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	private function _install( $assoc_args ) {
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-
 		if ( is_blog_installed() ) {
-			WP_CLI::error( 'WordPress is already installed.' );
+			return false;
 		}
+
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
 		extract( wp_parse_args( $assoc_args, array(
 			'title' => '',
@@ -235,6 +244,8 @@ class Core_Command extends WP_CLI_Command {
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( 'Installation failed (' . WP_CLI::error_to_string($result) . ').' );
 		}
+
+		return true;
 	}
 
 	private function _multisite_convert( $assoc_args ) {
@@ -261,10 +272,19 @@ class Core_Command extends WP_CLI_Command {
 		if ( true === $result ) {
 			WP_CLI::log( 'Set up multisite database tables.' );
 		} else if ( is_wp_error( $result ) ) {
-			if ( $result->get_error_codes() === array( 'no_wildcard_dns' ) )
+			switch ( $result->get_error_code() ) {
+
+			case 'siteid_exists':
+				WP_CLI::log( $result->get_error_message() );
+				return false;
+
+			case 'no_wildcard_dns':
 				WP_CLI::warning( __( 'Wildcard DNS may not be configured correctly.' ) );
-			else
+				break;
+
+			default:
 				WP_CLI::error( $result );
+			}
 		}
 
 		if ( !is_multisite() ) {
@@ -286,6 +306,8 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		}
 
 		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
+
+		return true;
 	}
 
 	// copied from populate_network()
