@@ -97,7 +97,7 @@ class Runner {
 		}
 	}
 
-	private static function set_url( $assoc_args ) {
+	private static function guess_url( $assoc_args ) {
 		if ( isset( $assoc_args['blog'] ) ) {
 			$assoc_args['url'] = $assoc_args['blog'];
 			unset( $assoc_args['blog'] );
@@ -129,15 +129,40 @@ class Runner {
 				}
 			}
 
-			if ( !empty( $hit ) && isset( $hit['domain'] ) )
+			if ( !empty( $hit ) && isset( $hit['domain'] ) ) {
 				$url = $hit['domain'];
-			if ( !empty( $hit ) && isset( $hit['path'] ) )
-				$url .= $hit['path'];
+				if ( isset( $hit['path'] ) )
+					$url .= $hit['path'];
+			}
 		}
 
 		if ( isset( $url ) ) {
-			Utils\set_url_params( $url );
+			return $url;
 		}
+
+		return false;
+	}
+
+	private static function set_url_params( $url_parts ) {
+		$f = function( $key ) use ( $url_parts ) {
+			return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
+		};
+
+		if ( isset( $url_parts['host'] ) ) {
+			$_SERVER['HTTP_HOST'] = $url_parts['host'];
+			if ( isset( $url_parts['port'] ) ) {
+				$_SERVER['HTTP_HOST'] .= ':' . $url_parts['port'];
+			}
+
+			$_SERVER['SERVER_NAME'] = substr($_SERVER['HTTP_HOST'], 0, strrpos($_SERVER['HTTP_HOST'], '.'));
+		}
+
+		$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
+		$_SERVER['SERVER_PORT'] = isset( $url_parts['port'] ) ? $url_parts['port'] : '80';
+		$_SERVER['QUERY_STRING'] = $f('query');
+		$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
+		$_SERVER['HTTP_USER_AGENT'] = '';
+		$_SERVER['REQUEST_METHOD'] = 'GET';
 	}
 
 	private function cmd_starts_with( $prefix ) {
@@ -394,7 +419,11 @@ class Runner {
 		self::set_wp_root( $this->config );
 
 		// Handle --url and --blog parameters
-		self::set_url( $this->config );
+		$url = self::guess_url( $this->config );
+		if ( $url ) {
+			$url_parts = self::parse_url( $url );
+			self::set_url_params( $url_parts );
+		}
 
 		$this->do_early_invoke( 'before_wp_load' );
 
@@ -418,12 +447,25 @@ class Runner {
 		}
 
 		if (
-			$this->cmd_starts_with( array( 'core', 'install' ) )
+			count( $this->arguments ) >= 2 &&
+			$this->arguments[0] == 'core' &&
+			in_array( $this->arguments[1], array( 'install', 'multisite-install' ) )
 		) {
 			define( 'WP_INSTALLING', true );
 
+			// We really need a URL here
 			if ( !isset( $_SERVER['HTTP_HOST'] ) ) {
-				Utils\set_url_params( 'http://example.com' );
+				$url_parts = self::parse_url( 'http://example.com' );
+				self::set_url_params( $url_parts );
+			}
+
+			if ( 'multisite-install' == $this->arguments[1] ) {
+				// need to fake some globals to skip the checks in wp-inclues/ms-settings.php
+				self::fake_current_site_blog( $url_parts );
+
+				if ( !defined( 'COOKIEHASH' ) ) {
+					define( 'COOKIEHASH', md5( $url_parts['host'] ) );
+				}
 			}
 		}
 
@@ -431,6 +473,46 @@ class Runner {
 			define( 'WP_LOAD_IMPORTERS', true );
 			define( 'WP_IMPORTING', true );
 		}
+	}
+
+	private static function parse_url( $url ) {
+		$url_parts = parse_url( $url );
+
+		if ( !isset( $url_parts['scheme'] ) ) {
+			$url_parts = parse_url( 'http://' . $url );
+		}
+
+		return $url_parts;
+	}
+
+	private static function fake_current_site_blog( $url_parts ) {
+		global $current_site, $current_blog;
+
+		if ( !isset( $url_parts['path'] ) ) {
+			$url_parts['path'] = '/';
+		}
+
+		$current_site = (object) array(
+			'id' => 1,
+			'blog_id' => 1,
+			'domain' => $url_parts['host'],
+			'path' => $url_parts['path'],
+			'cookie_domain' => $url_parts['host'],
+			'site_name' => 'Fake Site',
+		);
+
+		$current_blog = (object) array(
+			'blog_id' => 1,
+			'site_id' => 1,
+			'domain' => $url_parts['host'],
+			'path' => $url_parts['path'],
+			'public' => '1',
+			'archived' => '0',
+			'mature' => '0',
+			'spam' => '0',
+			'deleted' => '0',
+			'lang_id' => '0',
+		);
 	}
 
 	public function after_wp_load() {
