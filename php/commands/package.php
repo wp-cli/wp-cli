@@ -84,6 +84,7 @@ class Package_Command extends WP_CLI_Command {
 
 		// Set up the installer
 		$install = Installer::create( new NullIO, $composer );
+		$install->setUpdate( true ); // Installer class will only override composer.lock with this flag
 
 		// Try running the installer, but revert composer.json if failed
 		if ( $install->run() ) {
