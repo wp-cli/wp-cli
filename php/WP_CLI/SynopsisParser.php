@@ -55,7 +55,7 @@ class SynopsisParser {
 					 */
 					if( ! in_array('value-optional', $param['flavour']) ) {
 
-						$error_type = ( in_array('mandatory', $param['flavour']) ) ? 'fatal' : 'warning';
+						$error_type = ( in_array( array('mandatory', 'value-mandatory'), $param['flavour']) ) ? 'fatal' : 'warning';
 						$errors[ $error_type ][] = "--$key parameter needs a value";
 
 						unset( $assoc_args[ $key ] );
@@ -140,8 +140,10 @@ class SynopsisParser {
 
 		// Matches for the remaining --a[=a], [--a[=<a>].
 		// The later matches because we already removed the outer brackets
-		if( preg_match('/[^[\]]+(?=])/', $token) ) {
+		if( preg_match('/[^[\]]+(?=])/', $token, $matches) ) {
 			$flavour[] = 'value-optional';
+		} elseif( strpos($token, '=') !== false ) {
+			$flavour[] = 'value-mandatory'; //these are generics or assocs type
 		}
 
 		if ( strpos($token, '...') !== false ) {
