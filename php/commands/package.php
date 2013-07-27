@@ -79,13 +79,14 @@ class Package_Command extends WP_CLI_Command {
 		$composer_backup = file_get_contents( $composer_json_obj->getPath() );
 		$json_manipulator = new JsonManipulator( $composer_backup );
 		$json_manipulator->addLink( 'require', $package_name, $assoc_args['version'] );
+		file_put_contents( $composer_json_obj->getPath(), $json_manipulator->getContents() );
+		$composer = $this->get_composer();
 
 		// Set up the installer
 		$install = Installer::create( new NullIO, $composer );
 
-		// Try running the installer, and save composer.json if successful
+		// Try running the installer, but revert composer.json if failed
 		if ( $install->run() ) {
-			file_put_contents( $composer_json_obj->getPath(), $json_manipulator->getContents() );
 			WP_CLI::success( "Package installed." );
 		} else {
 			file_put_contents( $composer_json_obj->getPath(), $composer_backup );
