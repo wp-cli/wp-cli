@@ -107,12 +107,12 @@ class SynopsisParser {
 
 				if ( preg_match( $regex, $_token, $matches ) ) {
 					$type = $desc['type']; // Add type of param
-					$desc['flavour'] = self::get_flavour( $token ); // Add flavour of param					
+					$desc['flavour'] = self::get_flavour( $token, $type ); // Add flavour of param					
 					$params[] = array_merge( $matches, $desc );
 				}
 			}
 
-			if ( !$type ) {
+			if ( !$type || 'flag' == $type ) {
 				$params[] = array(
 					'type' => 'unknown',
 					'token' => $token
@@ -126,11 +126,11 @@ class SynopsisParser {
 	/**
 	 * @todo check if token is correct
 	 **/
-	private static function get_flavour( $token ){
+	private static function get_flavour( $token, $type ){
 		$flavour = false;
 
-		//checking for full optionals [--a], [--a=<a>], [--a[=<a>]].
-		if( substr($token, 0, 1) === '[' && substr($token, -1) === ']' ) {
+		//checking for full optionals [--a], [--a=<a>], [--a[=<a>]] || --flag.
+		if( ( substr($token, 0, 1) === '[' && substr($token, -1) === ']' ) || 'flag' == $type ) {
 			$flavour[] = 'optional';
 			// Alright we know you are fully optional, remove the brackets and check for partial value-optionals.
 			$token = substr($token, 1, -1); 
@@ -157,10 +157,10 @@ class SynopsisParser {
 		$p_name = '(?P<name>[a-z-_]+)';
 		$p_value = '(?P<value>[a-zA-Z-|]+)';
 
-		self::gen_patterns( 'positional', "<$p_value>");
-		self::gen_patterns( 'generic',    "--<field>=<value>");
-		self::gen_patterns( 'assoc',      "--$p_name=<$p_value>");
-		self::gen_patterns( 'flag',       "--$p_name");
+		self::gen_patterns( 'positional', "<$p_value>");			// mandatory, optional, repeating
+		self::gen_patterns( 'generic',    "--<field>=<value>");		// mandatory, optional, repeating
+		self::gen_patterns( 'assoc',      "--$p_name=<$p_value>");	// mandatory, optional
+		self::gen_patterns( 'flag',       "--$p_name");				// optional
 	}
 
 	private static function gen_patterns( $type, $pattern ) {
