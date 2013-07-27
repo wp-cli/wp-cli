@@ -146,7 +146,7 @@ class SynopsisParser {
 			$flavour[] = 'value-mandatory'; //these are generics or assocs type
 		}
 
-		if ( strpos($token, '...') !== false ) {
+		if ( strpos($token, '...') !== false && !in_array($type, array('assoc', 'flag')) ) {
 			$flavour[] = 'repeating';
 		}
 
