@@ -13,7 +13,7 @@ use \Composer\Repository\RepositoryManager;
 use \Composer\Util\Filesystem;
 
 /**
- * Manage WP-CLI community commands.
+ * Manage WP-CLI community packages.
  *
  * @package WP-CLI
  * 
@@ -119,7 +119,7 @@ class Package_Command extends WP_CLI_Command {
 		}
 
 		if ( empty( $packages ) )
-			WP_CLI::error( "There aren't any WP-CLI community commands installed." );
+			WP_CLI::error( "There aren't any WP-CLI community packages installed." );
 
 		WP_CLI\Utils\format_items( $assoc_args['format'], $packages, $assoc_args['fields'] );
 	}
