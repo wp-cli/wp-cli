@@ -72,8 +72,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$user_data = $user->to_array();
 		} else {
 			// WP 3.4 compat
-			$user_data = $user->data;
+			$user_data = (array) $user->data;
 		}
+		$user_data['roles'] = implode( ', ', $user->roles );
 
 		switch ( $assoc_args['format'] ) {
 
