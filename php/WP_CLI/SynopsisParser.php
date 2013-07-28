@@ -15,7 +15,7 @@ class SynopsisParser {
 	public function enough_positionals( $args ) {
 		$positional = $this->query_params( array(
 			'type' => 'positional',
-			'flavour' => 'mandatory'
+			'flavour' => array('mandatory')
 		) );
 
 		return count( $args ) >= count( $positional );
