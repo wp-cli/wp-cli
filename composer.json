@@ -28,5 +28,10 @@
 	},
 	"autoload": {
 		"psr-0": { "WP_CLI": "php" }
-	}
+	},
+	"extra": {
+		"installer-paths": {
+			"vendor/{$name}": ["wp-cli/php-cli-tools"]
+		}
+    }
 }

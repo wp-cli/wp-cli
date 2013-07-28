@@ -8,8 +8,8 @@ use \WP_CLI\Dispatcher;
 
 function load_dependencies() {
 	$vendor_paths = array(
-		WP_CLI_ROOT . '/vendor',           // top-level project
 		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project
+		WP_CLI_ROOT . '/vendor',           // top-level project
 	);
 
 	$has_autoload = false;
