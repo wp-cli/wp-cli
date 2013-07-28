@@ -57,15 +57,23 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 	}
 
 	function testAssoc() {
-		$r = SynopsisParser::parse( '--foo=<value> [--bar=<value>]' );
+		$r = SynopsisParser::parse( '--foo=<value> [--bar=<value>] --bar[=<value>] [--bar[=<value>]]' );
 
-		$this->assertCount( 2, $r );
+		$this->assertCount( 4, $r );
 
 		$this->assertEquals( 'assoc', $r[0]['type'] );
 		$this->assertContains( 'mandatory', $r[0]['flavour'] );
 
 		$this->assertEquals( 'assoc', $r[1]['type'] );
 		$this->assertContains( 'optional', $r[1]['flavour'] );
+
+		$this->assertEquals( 'assoc', $r[2]['type'] );
+		$this->assertContains( 'mandatory', $r[2]['flavour'] );
+		$this->assertContains( 'value-optional', $r[2]['flavour'] );
+
+		$this->assertEquals( 'assoc', $r[3]['type'] );
+		$this->assertContains( 'optional', $r[3]['flavour'] );
+		$this->assertContains( 'value-optional', $r[2]['flavour'] );
 
 		// shouldn't pass defaults to assoc parameters
 		$r = SynopsisParser::parse( '--count=100' );
