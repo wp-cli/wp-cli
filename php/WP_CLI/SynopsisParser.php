@@ -148,7 +148,7 @@ class SynopsisParser {
 		// Matches for the remaining --a[=a], [--a[=<a>].
 		// The later matches because we already removed the outer brackets
 		if( preg_match('/[^[\]]+(?=])/', $token, $matches) ) {
-			$flavour[] = 'value-optional';
+			$flavour[] = 'value-optional'; // This one enable us to prompt for a value that was left out on purpose
 		} elseif( strpos($token, '=') !== false ) {
 			$flavour[] = 'value-mandatory'; //these are generics or assocs type
 		}
