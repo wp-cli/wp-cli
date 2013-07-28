@@ -110,22 +110,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			break;
 
 		case 'table':
-			$items = array();
-			foreach ( get_object_vars( $post ) as $field => $value ) {
-				if ( 'post_content' === $field )
-					continue;
-
-				if ( !is_string($value) ) {
-					$value = json_encode($value);
-				}
-
-				$item = new \stdClass;
-				$item->Field = $field;
-				$item->Value = $value;
-				$items[] = $item;
-			}
-
-			\WP_CLI\Utils\format_items( $format, $items, array( 'Field', 'Value' ) );
+			$fields = get_object_vars( $post );
+			unset( $fields['filter'], $fields['post_content'], $fields['format_content'] );
+			$this->assoc_array_to_table( $fields );
 			break;
 
 		case 'json':
@@ -243,7 +230,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$limit = $count + $total;
 
-		$notify = new \cli\progress\Bar( 'Generating posts', $count );
+		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating posts', $count );
 
 		$current_depth = 1;
 		$current_parent = 0;

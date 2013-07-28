@@ -4,10 +4,9 @@
 
 	User ID or user login.
 
-* `[<role>]`:
+* `<role>`:
 
-	Make the user have the specified role. If not passed, the default role is
-used.
+	Add the specified role to the user.
 
 ## EXAMPLES
 
