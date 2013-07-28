@@ -7,14 +7,14 @@ namespace WP_CLI;
  */
 class SynopsisValidator {
 
-	private $params = array();
+	private $spec = array();
 
 	public function __construct( $synopsis ) {
-		$this->params = SynopsisParser::parse( $synopsis );
+		$this->spec = SynopsisParser::parse( $synopsis );
 	}
 
 	public function enough_positionals( $args ) {
-		$positional = $this->query_params( array(
+		$positional = $this->query_spec( array(
 			'type' => 'positional',
 			'flavour' => array('mandatory')
 		) );
@@ -23,7 +23,7 @@ class SynopsisValidator {
 	}
 
 	public function validate_assoc( &$assoc_args, $ignored_keys = array() ) {
-		$assoc = $this->query_params( array(
+		$assoc = $this->query_spec( array(
 			'type' => 'assoc',
 		) );
 
@@ -43,7 +43,6 @@ class SynopsisValidator {
 					$errors['fatal'][] = "missing --$key parameter";
 				}
 			} else {
-
 				// If the key is passed like --foo
 				if ( true === $assoc_args[ $key ] ) {
 
@@ -69,7 +68,7 @@ class SynopsisValidator {
 	}
 
 	public function unknown_assoc( $assoc_args ) {
-		$generic = $this->query_params( array(
+		$generic = $this->query_spec( array(
 			'type' => 'generic',
 		) );
 
@@ -78,7 +77,7 @@ class SynopsisValidator {
 
 		$known_assoc = array();
 
-		foreach ( $this->params as $param ) {
+		foreach ( $this->spec as $param ) {
 			if ( in_array( $param['type'], array( 'assoc', 'flag' ) ) )
 				$known_assoc[] = $param['name'];
 		}
@@ -87,18 +86,18 @@ class SynopsisValidator {
 	}
 
 	/**
-	 * Filters a list of associatve arrays, based on a set of key => value arguments.
+	 * Filters a list of associative arrays, based on a set of key => value arguments.
 	 *
 	 * @param array $args An array of key => value arguments to match against
 	 * @param string $operator
 	 * @return array
 	 */
-	private function query_params( $args, $operator = 'AND' ) {
+	private function query_spec( $args, $operator = 'AND' ) {
 		$operator = strtoupper( $operator );
 		$count = count( $args );
 		$filtered = array();
 
-		foreach ( $this->params as $key => $to_match ) {
+		foreach ( $this->spec as $key => $to_match ) {
 			$matched = 0;
 			foreach ( $args as $m_key => $m_value ) {
 				if ( array_key_exists( $m_key, $to_match ) && $m_value == $to_match[ $m_key ] )
