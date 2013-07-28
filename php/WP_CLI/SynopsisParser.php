@@ -91,7 +91,7 @@ class SynopsisParser {
 	 */
 	static function parse( $synopsis ) {
 		$tokens = array_filter( preg_split( '/[\s\t]+/', $synopsis ) );
-		
+
 		$params = array();
 
 		if ( empty( self::$patterns ) )
@@ -107,18 +107,25 @@ class SynopsisParser {
 
 				if ( preg_match( $regex, $_token, $matches ) ) {
 					$type = $desc['type']; // Add type of param
-					$desc['flavour'] = self::get_flavour( $token, $type ); // Add flavour of param					
-					$params[] = array_merge( $matches, $desc );
+					$desc['flavour'] = self::get_flavour( $token, $type ); // Add flavour of param
+					
+					if ( 'flag' == $type && in_array('invalid', $desc['flavour']) ) {
+						$type = false;
+					} else {
+						$params[] = array_merge( $matches, $desc );
+					}
 				}
 			}
 
-			if ( !$type || 'flag' == $type ) {
+			if ( !$type ) {
 				$params[] = array(
 					'type' => 'unknown',
 					'token' => $token
 				);
 			}
 		}
+
+		//print_r($params);
 
 		return $params;
 	}
@@ -129,13 +136,15 @@ class SynopsisParser {
 	private static function get_flavour( $token, $type ){
 		$flavour = false;
 
-		//checking for full optionals [--a], [--a=<a>], [--a[=<a>]] || --flag.
-		if( ( substr($token, 0, 1) === '[' && substr($token, -1) === ']' ) || 'flag' == $type ) {
+		//checking for full optionals [--a], [--a=<a>], [--a[=<a>]] 
+		if( ( substr($token, 0, 1) === '[' && substr($token, -1) === ']' ) ) {
 			$flavour[] = 'optional';
 			// Alright we know you are fully optional, remove the brackets and check for partial value-optionals.
 			$token = substr($token, 1, -1); 
-		} else {
+		} elseif( 'flag' != $type ) {
 			$flavour[] = 'mandatory';
+		} else {
+			$flavour[] = 'invalid';
 		}
 
 		// Matches for the remaining --a[=a], [--a[=<a>].
