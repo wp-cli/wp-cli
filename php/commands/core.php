@@ -90,7 +90,7 @@ class Core_Command extends WP_CLI_Command {
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		if( isset( $assoc_args['dbpass'] ) && ! empty( $assoc_args['dbpass'] ) ) {
+		if( isset( $assoc_args['dbpass'] ) && empty( $assoc_args['dbpass'] ) ) {
 			$assoc_args['dbpass'] = WP_CLI::prompt('Enter database password', '');
 		}
 
