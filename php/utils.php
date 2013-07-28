@@ -18,7 +18,6 @@ function load_dependencies() {
 		if ( file_exists( $vendor_path . '/autoload.php' ) ) {
 			require $vendor_path . '/autoload.php';
 			$has_autoload = true;
-			break;
 		}
 	}
 
