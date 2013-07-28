@@ -180,7 +180,7 @@ class Package_Command extends WP_CLI_Command {
 	 */
 	private function get_composer() {
 
-		$this->set_composer_json_path( WP_CLI\Utils\find_file_upward( 'composer.json', WP_CLI_ROOT ) );
+		$this->set_composer_json_path( WP_CLI\Utils\find_file_upward( 'composer.json', dirname( WP_CLI_ROOT ) ) );
 	
 		// Composer's auto-load generating code makes some assumptions about where
 		// the 'vendor-dir' is, and where Composer is running from.	
