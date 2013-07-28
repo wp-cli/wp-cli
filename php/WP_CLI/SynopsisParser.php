@@ -125,8 +125,6 @@ class SynopsisParser {
 			}
 		}
 
-		//print_r($params);
-
 		return $params;
 	}
 
@@ -166,25 +164,26 @@ class SynopsisParser {
 		$p_name = '(?P<name>[a-z-_]+)';
 		$p_value = '(?P<value>[a-zA-Z-|]+)';
 
-		self::gen_patterns( 'positional', "<$p_value>");			// mandatory, optional, repeating
-		self::gen_patterns( 'generic',    "--<field>=<value>");		// mandatory, optional, repeating
-		self::gen_patterns( 'assoc',      "--$p_name=<$p_value>");	// mandatory, optional
-		self::gen_patterns( 'flag',       "--$p_name");				// optional
+		self::gen_patterns( 'positional', "<$p_value>",           array( 'single', 'repeating' ) );
+		self::gen_patterns( 'generic',    "--<field>=<value>",    array( 'single', 'repeating' ) );
+		self::gen_patterns( 'assoc',      "--$p_name=<$p_value>", array( 'single' ) );
+		self::gen_patterns( 'flag',       "--$p_name",            array( 'single' ) );
 	}
 
-	private static function gen_patterns( $type, $pattern ) {
-		// We dont need the optional brackets anymore, because the $token gets stripped from the outer brackets in ::get_flavour()
+	private static function gen_patterns( $type, $pattern, $flavour_types ) {
 		static $flavours = array(
 			'single' => ':pattern:',
 			'repeating' => ':pattern:...'
 		);
 
-		foreach ( $flavours as $flavour ) {			
-			$final_pattern = str_replace( ':pattern:', $pattern, $flavour );
+		foreach ( $flavour_types as $flavour_type ) {
+			foreach ( (array) $flavours[ $flavour_type ] as $flavour ) {
+				$final_pattern = str_replace( ':pattern:', $pattern, $flavour );
 
-			self::$patterns[ '/^' . $final_pattern . '$/' ] = array(
-				'type' => $type
-			);
+				self::$patterns[ '/^' . $final_pattern . '$/' ] = array(
+					'type' => $type
+				);
+			}
 		}
 	}
 
