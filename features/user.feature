@@ -61,3 +61,34 @@ Feature: Manage WordPress users
     """
     [{"user_login":"admin","display_name":"Existing User","user_email":"admin@domain.com","roles":"administrator"}]
     """
+
+  Scenario: Managing user roles
+    Given a WP install
+
+    When I run `wp user add-role 1 editor`
+    Then STDOUT should not be empty
+    And I run `wp user get 1`
+    Then STDOUT should be a table containing rows:
+      | Field | Value                 |
+      | roles | administrator, editor |
+
+    When I run `wp user set-role 1 author`
+    Then STDOUT should not be empty
+    And I run `wp user get 1`
+    Then STDOUT should be a table containing rows:
+      | Field | Value  |
+      | roles | author |
+
+    When I run `wp user remove-role 1 editor`
+    Then STDOUT should not be empty
+    And I run `wp user get 1`
+    Then STDOUT should be a table containing rows:
+      | Field | Value  |
+      | roles | author |
+
+    When I run `wp user remove-role 1`
+    Then STDOUT should not be empty
+    And I run `wp user get 1`
+    Then STDOUT should be a table containing rows:
+      | Field | Value |
+      | roles |       |
