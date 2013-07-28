@@ -156,10 +156,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {
-			if ( null === maybe_unserialize( $api->get_error_data() ) )
-				WP_CLI::error( "Can't find the plugin in the WordPress.org repository." );
-			else
-				WP_CLI::error( $api );
+			WP_CLI::error( $api );
 		}
 
 		if ( isset( $assoc_args['version'] ) ) {
