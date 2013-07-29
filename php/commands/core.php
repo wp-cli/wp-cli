@@ -75,7 +75,7 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Set up a wp-config.php file.
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php]
+	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass[=<password>]] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php]
 	 */
 	public function config( $_, $assoc_args ) {
 		if ( Utils\locate_wp_config() ) {
@@ -90,7 +90,7 @@ class Core_Command extends WP_CLI_Command {
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		if( isset( $assoc_args['dbpass'] ) && empty( $assoc_args['dbpass'] ) ) {
+		if( isset( $assoc_args['dbpass'] ) && is_bool( $assoc_args['dbpass'] ) ) {
 			$assoc_args['dbpass'] = WP_CLI::prompt('Enter database password', '');
 		}
 
