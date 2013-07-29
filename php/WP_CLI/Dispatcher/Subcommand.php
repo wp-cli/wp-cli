@@ -42,7 +42,7 @@ class Subcommand extends CompositeCommand {
 		if ( !$synopsis )
 			return;
 
-		$parser = new \WP_CLI\SynopsisParser( $synopsis );
+		$parser = new \WP_CLI\SynopsisValidator( $synopsis );
 		if ( !$parser->enough_positionals( $args ) ) {
 			$this->show_usage();
 			exit(1);
