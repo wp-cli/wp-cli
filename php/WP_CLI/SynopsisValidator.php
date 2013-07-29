@@ -43,7 +43,7 @@ class SynopsisValidator {
 					$errors['fatal'][] = "missing --$key parameter";
 				}
 			} else {
-				// If the key is passed like --foo
+				// If the key is passed like --foo, then pass. But still checkout for the value because it is an assoc.
 				if ( true === $assoc_args[ $key ] ) {
 
 					/**
@@ -54,9 +54,10 @@ class SynopsisValidator {
 					 * Because IF you gonna pass it, it has to be complete.
 					 */
 					if( ! in_array('value-optional', $param['flavour']) ) {
-
-						$error_type = ( count( array_intersect( array('value-mandatory','mandatory'), $param['flavour']) ) ) ? 'fatal' : 'warning';
-						$errors[ $error_type ][] = "--$key parameter needs a value";
+						// If it does have a value, but not a correct one, trigger a warning instead of fatal.
+						if ( in_array('value-mandatory', $param['flavour']) ) {
+							$errors['warning'][] = "--$key parameter needs a value";
+						}
 
 						unset( $assoc_args[ $key ] );
 					}
