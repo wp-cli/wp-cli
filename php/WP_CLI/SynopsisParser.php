@@ -9,7 +9,7 @@ class SynopsisParser {
 	 * @return array List of parameters
 	 */
 	static function parse( $synopsis ) {
-		$tokens = array_filter( preg_split( '/[\s\t]+/', $synopsis ) );
+		$tokens = preg_split( '/[\s\t]+/', $synopsis );
 
 		$params = array();
 		foreach ( $tokens as $token ) {
