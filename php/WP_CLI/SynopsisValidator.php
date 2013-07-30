@@ -16,7 +16,7 @@ class SynopsisValidator {
 	public function enough_positionals( $args ) {
 		$positional = $this->query_spec( array(
 			'type' => 'positional',
-			'flavour' => 'mandatory'
+			'optional' => false
 		) );
 
 		return count( $args ) >= count( $positional );
@@ -39,12 +39,12 @@ class SynopsisValidator {
 				continue;
 
 			if ( !isset( $assoc_args[ $key ] ) ) {
-				if ( 'mandatory' == $param['flavour'] ) {
+				if ( !$param['optional'] ) {
 					$errors['fatal'][] = "missing --$key parameter";
 				}
 			} else {
 				if ( true === $assoc_args[ $key ] ) {
-					$error_type = ( 'mandatory' == $param['flavour'] ) ? 'fatal' : 'warning';
+					$error_type = ( !$param['optional'] ) ? 'fatal' : 'warning';
 					$errors[ $error_type ][] = "--$key parameter needs a value";
 
 					unset( $assoc_args[ $key ] );
