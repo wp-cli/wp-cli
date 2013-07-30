@@ -208,7 +208,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			\WP_CLI::line( "Available {$this->item_type} updates:" );
 
 			\WP_CLI\Utils\format_items( 'table', $items_to_update,
-				array( 'name', 'status', 'version' ) );
+				array( 'name', 'status', 'version', 'update_version' ) );
 
 			return;
 		}
@@ -217,6 +217,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// Only attempt to update if there is something to update
 		if ( !empty( $items_to_update ) ) {
+			$cache_manager = \WP_CLI::get_http_cache_manager();
+			foreach ($items_to_update as $item) {
+				$cache_manager->whitelist_package($item['update_package'], $this->item_type, $item['name'], $item['update_version']);
+			}
 			$upgrader = $this->get_upgrader( $assoc_args );
 			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
 		}
@@ -274,6 +278,18 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$update_list = get_site_transient( $this->upgrade_transient );
 
 		return isset( $update_list->response[ $slug ] );
+	}
+
+	/**
+	 * Get the available update info
+	 *
+	 * @param string $slug The plugin/theme slug
+	 *
+	 * @return array|null
+	 */
+	protected function get_update_info( $slug ) {
+		$update_list = get_site_transient( $this->upgrade_transient );
+		return isset( $update_list->response[ $slug ] ) ?  (array) $update_list->response[ $slug ] : null;
 	}
 
 	private $map = array(
