@@ -17,6 +17,19 @@ To suggest a feature, report a bug, or general discussion, visit the [issues sec
 
 If you're reporting a bug, please also post the output from `wp --info`.
 
+Credits
+-------
+
+Besides the libraries defined in [composer.json](composer.json), we have used code or ideas from the following projects:
+
+* [Drush](http://drush.ws/) for... a lot of things
+* [wpshell](http://code.trac.wordpress.org/browser/wpshell) for `wp shell`
+* [Regenerate Thumbnails](http://wordpress.org/plugins/regenerate-thumbnails/) for `wp media regenerate`
+* [Search-Replace-DB](https://github.com/interconnectit/Search-Replace-DB) for `wp search-replace`
+* [WordPress-CLI-Exporter](https://github.com/Automattic/WordPress-CLI-Exporter) for `wp export`
+* [WordPress-CLI-Importer](https://github.com/Automattic/WordPress-CLI-Importer) for `wp import`
+* [wordpress-plugin-tests](https://github.com/benbalter/wordpress-plugin-tests/) for `wp scaffold plugin-tests`
+
 Who's behind this thing?
 ------------------------
 We are [Andreas Creten](https://github.com/andreascreten) and [Cristi Burcă](https://github.com/scribu), friendly guys from Europe. For more info, see [Governance](https://github.com/wp-cli/wp-cli/wiki/Governance).
