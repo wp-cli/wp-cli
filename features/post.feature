@@ -33,10 +33,22 @@ Feature: Manage WordPress posts
 
       It will be inserted in a post.
       """
+    And a command.sh file:
+      """
+      cat content.html | wp post create --post_title='Test post' --post_excerpt="A multiline
+      excerpt" --porcelain -
+      """
 
-    When I run `wp post create --post_title='Test post' --porcelain - < content.html`
+    When I run `bash command.sh`
     Then STDOUT should match '%d'
     And save STDOUT as {POST_ID}
+
+    When I run `wp eval '$post_id = {POST_ID}; echo get_post( $post_id )->post_excerpt;'`
+    Then STDOUT should be:
+      """
+      A multiline
+      excerpt
+      """
 
     When I run `wp post get --format=content {POST_ID}`
     Then STDOUT should be:
