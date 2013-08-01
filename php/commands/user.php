@@ -87,7 +87,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			break;
 
 		default:
-			\WP_CLI::error( "Invalid value for format: " . $format );
+			\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
 			break;
 
 		}

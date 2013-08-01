@@ -97,7 +97,6 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'format' => 'table'
 		) );
-		$format = $assoc_args['format'];
 
 		$post_id = $args[0];
 		if ( !$post_id || !$post = get_post( $post_id ) )
@@ -122,7 +121,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			break;
 
 		default:
-			\WP_CLI::error( "Invalid value for format: " . $format );
+			\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
 			break;
 
 		}
