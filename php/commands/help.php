@@ -42,8 +42,8 @@ class Help_Command extends WP_CLI_Command {
 		// section headers
 		$out = preg_replace( '/^## ([A-Z ]+)/m', '%9\1%n', $out );
 
-		// old-style options
-		$out = preg_replace( '/\n\* `(.+)`([^\n]*):\n\n/', "\n\t\\1\\2\n\t\t", $out );
+		// definition lists
+		$out = preg_replace( '/\n([^\n]+)\n: (.+?)\n/s', "\n\t\\1\n\t\t\\2\n", $out );
 
 		$out = str_replace( "\t", '  ', $out );
 

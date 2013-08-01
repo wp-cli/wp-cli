@@ -16,7 +16,7 @@ function convert_file( $path ) {
 	$out = preg_replace( '/^\t/m', "  ", $out );
 
 	// prepend docblock notation
-	$out = preg_replace( '/^(.*)/m', "\t* \\1", $out );
+	# $out = preg_replace( '/^(.*)/m', "\t* \\1", $out );
 
 	file_put_contents( $path, $out );
 }
