@@ -17,6 +17,10 @@ class DocParser {
 		return $matches[1];
 	}
 
+	function get_longdesc() {
+		return false;
+	}
+
 	function get_tag( $name ) {
 		if ( preg_match( '/@' . $name . '\s+([a-z-_]+)/', $this->docComment, $matches ) )
 			return $matches[1];
