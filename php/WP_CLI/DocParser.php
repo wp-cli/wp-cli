@@ -6,8 +6,8 @@ class DocParser {
 
 	protected $docComment;
 
-	function __construct( $reflection ) {
-		$this->docComment = $reflection->getDocComment();
+	function __construct( $docComment ) {
+		$this->docComment = $docComment;
 	}
 
 	function get_shortdesc() {
