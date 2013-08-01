@@ -26,7 +26,22 @@ class DocParser {
 	}
 
 	function get_longdesc() {
-		return false;
+		$shortdesc = $this->get_shortdesc();
+		if ( !$shortdesc )
+			return '';
+
+		$longdesc = substr( $this->docComment, strlen( $shortdesc ) );
+
+		$lines = array();
+		foreach ( explode( "\n", $longdesc ) as $line ) {
+			if ( 0 === strpos( $line, '@' ) )
+				break;
+
+			$lines[] = $line;
+		}
+		$longdesc = trim( implode( $lines, "\n" ) );
+
+		return $longdesc;
 	}
 
 	function get_tag( $name ) {
