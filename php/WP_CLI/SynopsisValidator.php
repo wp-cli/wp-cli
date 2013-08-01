@@ -50,7 +50,7 @@ class SynopsisValidator {
 					$errors['fatal'][] = "missing --$key parameter";
 				}
 			} else {
-				if ( true === $assoc_args[ $key ] ) {
+				if ( true === $assoc_args[ $key ] && !$param['value']['optional'] ) {
 					$error_type = ( !$param['optional'] ) ? 'fatal' : 'warning';
 					$errors[ $error_type ][] = "--$key parameter needs a value";
 
