@@ -20,7 +20,7 @@ class DocParser {
 
 	function get_shortdesc() {
 		if ( !preg_match( '|^([^@][^\n]+)\n*|', $this->docComment, $matches ) )
-			return false;
+			return '';
 
 		return $matches[1];
 	}
@@ -33,12 +33,12 @@ class DocParser {
 		if ( preg_match( '|^@' . $name . '\s+([a-z-_]+)|m', $this->docComment, $matches ) )
 			return $matches[1];
 
-		return false;
+		return '';
 	}
 
 	function get_synopsis() {
 		if ( !preg_match( '|^@synopsis\s+(.+)|m', $this->docComment, $matches ) )
-			return false;
+			return '';
 
 		return $matches[1];
 	}

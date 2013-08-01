@@ -4,6 +4,15 @@ use WP_CLI\DocParser;
 
 class DocParserTests extends PHPUnit_Framework_TestCase {
 
+	function test_empty() {
+		$doc = new DocParser( '' );
+
+		$this->assertEquals( '', $doc->get_shortdesc() );
+		$this->assertEquals( '', $doc->get_longdesc() );
+		$this->assertEquals( '', $doc->get_synopsis() );
+		$this->assertEquals( '', $doc->get_tag('alias') );
+	}
+
 	function test_only_tags() {
 		$doc = new DocParser( <<<EOB
 /**
@@ -12,10 +21,10 @@ class DocParserTests extends PHPUnit_Framework_TestCase {
 EOB
 		);
 
-		$this->assertFalse( $doc->get_shortdesc() );
-		$this->assertFalse( $doc->get_longdesc() );
-		$this->assertFalse( $doc->get_synopsis() );
-		$this->assertFalse( $doc->get_tag('foo') );
+		$this->assertEquals( '', $doc->get_shortdesc() );
+		$this->assertEquals( '', $doc->get_longdesc() );
+		$this->assertEquals( '', $doc->get_synopsis() );
+		$this->assertEquals( '', $doc->get_tag('foo') );
 		$this->assertEquals( 'rock-on', $doc->get_tag('alias') );
 	}
 
@@ -29,8 +38,8 @@ EOB
 		);
 
 		$this->assertEquals( 'Rock and roll!', $doc->get_shortdesc() );
-		$this->assertFalse( $doc->get_longdesc() );
-		$this->assertFalse( $doc->get_synopsis() );
+		$this->assertEquals( '', $doc->get_longdesc() );
+		$this->assertEquals( '', $doc->get_synopsis() );
 		$this->assertEquals( 'rock-on', $doc->get_tag('alias') );
 	}
 
