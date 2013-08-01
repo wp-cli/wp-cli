@@ -4,11 +4,11 @@
 
 	User ID or user login.
 
-* `<role>`:
+* `--role=<role>`:
 
 	Add the specified role to the user.
 
 ## EXAMPLES
 
-	wp user set-role bob author
-	wp user set-role 12 author
+	# Add the 'author' role to the user with ID '12' and to the user with login 'bob'
+	wp user add-role 12 bob --role=author

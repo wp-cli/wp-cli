@@ -4,12 +4,12 @@
 
 	User ID or user login.
 
-* `[<role>]`:
+* `[--role=<role>]`:
 
 	Make the user have the specified role. If not passed, the default role is
 used.
 
 ## EXAMPLES
 
-	wp user set-role bob author
-	wp user set-role 12 author
+	# Set the 'author' role for the user with ID '12' and for the user with login 'bob'
+	wp user set-role 12 bob --role=author

@@ -65,21 +65,21 @@ Feature: Manage WordPress users
   Scenario: Managing user roles
     Given a WP install
 
-    When I run `wp user add-role 1 editor`
+    When I run `wp user add-role --role=editor 1`
     Then STDOUT should not be empty
     And I run `wp user get 1`
     Then STDOUT should be a table containing rows:
       | Field | Value                 |
       | roles | administrator, editor |
 
-    When I run `wp user set-role 1 author`
+    When I run `wp user set-role --role=author 1`
     Then STDOUT should not be empty
     And I run `wp user get 1`
     Then STDOUT should be a table containing rows:
       | Field | Value  |
       | roles | author |
 
-    When I run `wp user remove-role 1 editor`
+    When I run `wp user remove-role --role=editor 1`
     Then STDOUT should not be empty
     And I run `wp user get 1`
     Then STDOUT should be a table containing rows:

@@ -18,6 +18,19 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		'roles'
 	);
 
+	private static function get_user( $id_or_login ) {
+		if ( is_numeric( $id_or_login ) )
+			$user = get_user_by( 'id', $id_or_login );
+		else
+			$user = get_user_by( 'login', $id_or_login );
+
+		if ( ! $user ) {
+			WP_CLI::warning( "Invalid user ID or login: $id_or_login" );
+		}
+
+		return $user;
+	}
+
 	/**
 	 * List users.
 	 *
@@ -253,78 +266,71 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Set the user role (for a particular blog).
-	 *
-	 * @subcommand set-role
-	 * @synopsis <user> [<role>]
-	 */
-	public function set_role( $args, $assoc_args ) {
-		$user = self::get_user( $args[0] );
-
-		$role = isset( $args[1] ) ? $args[1] : get_option( 'default_role' );
-
-		// Multisite
-		if ( function_exists( 'add_user_to_blog' ) )
-			add_user_to_blog( get_current_blog_id(), $user->ID, $role );
-		else
-			$user->set_role( $role );
-
-		WP_CLI::success( "Added {$user->user_login} ({$user->ID}) to " . site_url() . " as {$role}" );
-	}
-
-	/**
 	 * Add a role for a user.
 	 *
 	 * @subcommand add-role
-	 * @synopsis <user> <role>
+	 * @synopsis <user>... --role=<role>
 	 */
 	public function add_role( $args, $assoc_args ) {
-		$user = self::get_user( $args[0] );
+		foreach ( $args as $arg ) {
+			$user = self::get_user( $arg );
 
-		$role = $args[1];
+			$user->add_role( $assoc_args['role'] );
 
-		$user->add_role( $role );
-
-		WP_CLI::success( sprintf( "Added '%s' role for %s (%d).", $role, $user->user_login, $user->ID ) );
+			WP_CLI::success( sprintf( "Added '%s' role for %s (%d).",
+				$assoc_args['role'], $user->user_login, $user->ID ) );
+		}
 	}
 
 	/**
-	 * Remove a user's role.
+	 * Set the user role (for a particular blog).
 	 *
-	 * @subcommand remove-role
-	 * @synopsis <user> [<role>]
+	 * @subcommand set-role
+	 * @synopsis <user>... [--role=<role>]
 	 */
-	public function remove_role( $args, $assoc_args ) {
-		$user = self::get_user( $args[0] );
+	public function set_role( $args, $assoc_args ) {
+		foreach ( $args as $arg ) {
+			$user = self::get_user( $arg );
 
-		if ( isset( $args[1] ) ) {
-			$role = $args[1];
+			$role = isset( $assoc_args['role'] ) ? $assoc_args['role'] : get_option( 'default_role' );
 
-			$user->remove_role( $role );
-
-			WP_CLI::success( sprintf( "Removed '%s' role for %s (%d).", $role, $user->user_login, $user->ID ) );
-		} else {
 			// Multisite
-			if ( function_exists( 'remove_user_from_blog' ) )
-				remove_user_from_blog( $user->ID, get_current_blog_id() );
+			if ( function_exists( 'add_user_to_blog' ) )
+				add_user_to_blog( get_current_blog_id(), $user->ID, $role );
 			else
-				$user->remove_all_caps();
+				$user->set_role( $role );
 
-			WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() );
+			WP_CLI::success( sprintf( "Added %s (%d) to %s as %s.",
+				$user->user_login, $user->ID, site_url(), $role ) );
 		}
 	}
 
-	private static function get_user( $id_or_login ) {
-		if ( is_numeric( $id_or_login ) )
-			$user = get_user_by( 'id', $id_or_login );
-		else
-			$user = get_user_by( 'login', $id_or_login );
+	/**
+	 * Remove a user's role (from a particular blog).
+	 *
+	 * @subcommand remove-role
+	 * @synopsis <user>... [--role=<role>]
+	 */
+	public function remove_role( $args, $assoc_args ) {
+		foreach ( $args as $arg ) {
+			$user = self::get_user( $arg );
 
-		if ( ! $user ) {
-			WP_CLI::warning( "Invalid user ID or login: $id_or_login" );
+			if ( isset( $assoc_args['role'] ) ) {
+				$user->remove_role( $assoc_args['role'] );
+
+				WP_CLI::success( sprintf( "Removed '%s' role for %s (%d).",
+					$assoc_args['role'], $user->user_login, $user->ID ) );
+			} else {
+				// Multisite
+				if ( function_exists( 'remove_user_from_blog' ) )
+					remove_user_from_blog( $user->ID, get_current_blog_id() );
+				else
+					$user->remove_all_caps();
+
+				WP_CLI::success( sprintf( "Removed %s (%d) from %s",
+					$user->user_login, $user->ID, site_url() ) );
+			}
 		}
-
-		return $user;
 	}
 
 	/**
