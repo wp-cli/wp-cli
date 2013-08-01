@@ -37,7 +37,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( isset( $assoc_args['edit'] ) ) {
-			$input = ( isset( $assoc_args['post_content'] ) ) ?
+			$input = isset( $assoc_args['post_content'] ) ?
 				$assoc_args['post_content'] : '';
 
 			if ( $output = $this->_edit( $input, 'WP-CLI: New Post' ) )
@@ -116,7 +116,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			break;
 
 		case 'json':
-			WP_CLI::print_value( $post, $assoc_args );
+			$fields = get_object_vars( $post );
+			unset( $fields['filter'] );
+			WP_CLI::print_value( $fields, $assoc_args );
 			break;
 
 		default:
