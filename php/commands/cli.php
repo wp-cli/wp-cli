@@ -14,6 +14,7 @@ class CLI_Command extends WP_CLI_Command {
 		$dump = array(
 			'name' => $command->get_name(),
 			'description' => $command->get_shortdesc(),
+			'longdesc' => $command->get_longdesc(),
 		);
 
 		foreach ( $command->get_subcommands() as $subcommand ) {

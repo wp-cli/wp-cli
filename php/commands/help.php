@@ -37,7 +37,7 @@ class Help_Command extends WP_CLI_Command {
 	private static function show_help( $command ) {
 		$out = self::get_initial_markdown( $command );
 
-		$out .= $command->get_extra_markdown();
+		$out .= $command->get_longdesc();
 
 		// section headers
 		$out = preg_replace( '/^## ([A-Z ]+)/m', '%9\1%n', $out );
