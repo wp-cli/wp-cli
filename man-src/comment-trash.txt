@@ -1,9 +1,0 @@
-## OPTIONS
-
-* `<ID>`:
-
-	The ID of the comment to trash.
-
-## EXAMPLES
-
-	wp comment trash 1337

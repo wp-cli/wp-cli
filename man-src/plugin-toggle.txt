@@ -1,9 +1,0 @@
-## OPTIONS
-
-* `<plugin>`:
-
-	The plugin to toggle.
-
-* `--network`:
-
-	If set, the plugin will be toggled for the entire multisite network.

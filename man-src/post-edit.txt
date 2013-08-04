@@ -1,9 +1,0 @@
-## OPTIONS
-
-* `<id>`:
-
-	The ID of the post to edit.
-
-## EXAMPLES
-
-	wp post edit 123

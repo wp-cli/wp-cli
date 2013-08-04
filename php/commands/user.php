@@ -21,6 +21,25 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * List users.
 	 *
+	 * ## OPTIONS
+	 *
+	 * --role=<role>
+	 * : Only display users with a certain role.
+	 *
+	 * --fields=<fields>
+	 * : Limit the output to specific object fields. Defaults to ID,user_login,display_name,user_email,user_registered,roles
+	 *
+	 * --format=<format>
+	 * : Output list as table, CSV, JSON, or simply IDs. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp user list --format=ids
+	 *
+	 *     wp user list --role=administrator --format=csv
+	 *
+	 *     wp user list --fields=display_name,user_email
+	 *
 	 * @subcommand list
 	 * @synopsis [--role=<role>] [--fields=<fields>] [--format=<format>]
 	 */
@@ -59,6 +78,24 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Get a single user.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <user>
+	 * : User ID or user login.
+	 *
+	 * --format=<format>
+	 * : The format to use when printing the user; acceptable values:
+	 *
+	 *     **table**: Outputs all fields of the user as a table.
+	 *
+	 *     **json**: Outputs all fields in JSON format.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp user get 12
+	 *
+	 *     wp user get bob --format=json > bob.json
+	 *
 	 * @synopsis [--format=<format>] <user>
 	 */
 	public function get( $args, $assoc_args ) {
@@ -96,6 +133,18 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Delete one or more users.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <user>
+	 * : The user login or ID of the user to delete.
+	 *
+	 * --reassign=<ID>
+	 * : User to reassign the posts to.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp user delete 123 --reassign=567
+	 *
 	 * @synopsis <user>... [--reassign=<id>]
 	 */
 	public function delete( $args, $assoc_args ) {
@@ -125,6 +174,33 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Create a user.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <user-login>
+	 * : The login of the user to create.
+	 *
+	 * <user-email>
+	 * : The email address of the user to create.
+	 *
+	 * --role=<role>
+	 * : The role of the user to create. Default: default role
+	 *
+	 * --user_pass=<password>
+	 * : The user password. Default: randomly generated
+	 *
+	 * --user_registered=<yyyy-mm-dd>
+	 * : The date the user registered. Default: current date
+	 *
+	 * --display_name=<name>
+	 * : The display name.
+	 *
+	 * --porcelain
+	 * : Output just the new user id.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp user create bob bob@example.com --role=author
 	 *
 	 * @synopsis <user-login> <user-email> [--role=<role>] [--user_pass=<password>] [--user_registered=<yyyy-mm-dd>] [--display_name=<name>] [--porcelain]
 	 */
@@ -185,6 +261,20 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Update a user.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <user>
+	 * : The user login or ID of the user to update.
+	 *
+	 * --<field>=<value>
+	 * : One or more fields to update. For accepted fields, see wp_update_user().
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp user update 123 --user_login=mary --display_name=Mary
+	 *
+	 *     wp user update mary --user_pass=marypass
+	 *
 	 * @synopsis <user>... --<field>=<value>
 	 */
 	public function update( $args, $assoc_args ) {
@@ -201,6 +291,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Generate users.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --count=<number>
+	 * : How many users to generate. Default: 100
+	 *
+	 * --role=<role>
+	 * : The role of the generated users. Default: default role from WP
 	 *
 	 * @synopsis [--count=<number>] [--role=<role>]
 	 */
@@ -255,6 +353,20 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Set the user role (for a particular blog).
 	 *
+	 * ## OPTIONS
+	 *
+	 * <user>
+	 * : User ID or user login.
+	 *
+	 * [<role>]
+	 * : Make the user have the specified role. If not passed, the default role is
+	 * used.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp user set-role bob author
+	 *     wp user set-role 12 author
+	 *
 	 * @subcommand set-role
 	 * @synopsis <user> [<role>]
 	 */
@@ -275,6 +387,19 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Add a role for a user.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <user>
+	 * : User ID or user login.
+	 *
+	 * <role>
+	 * : Add the specified role to the user.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp user set-role bob author
+	 *     wp user set-role 12 author
+	 *
 	 * @subcommand add-role
 	 * @synopsis <user> <role>
 	 */
@@ -290,6 +415,16 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Remove a user's role.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <user>
+	 * : User ID or user login.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp user remove-role bob
+	 *     wp user remove-role 12
 	 *
 	 * @subcommand remove-role
 	 * @synopsis <user> [<role>]
@@ -329,6 +464,22 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Import users from a CSV file.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <file>
+	 * : The CSV file of users to import.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp user import-csv /path/to/users.csv
+	 *
+	 *     Sample users.csv file:
+	 *
+	 *     user_login,user_email,display_name,role
+	 *     bobjones,bobjones@domain.com,Bob Jones,contributor
+	 *     newuser1,newuser1@domain.com,New User,author
+	 *     existinguser,existinguser@domain.com,Existing User,administrator
 	 *
 	 * @subcommand import-csv
 	 * @synopsis <file>

@@ -1,9 +1,0 @@
-## OPTIONS
-
-* `<ID>`:
-
-	The ID of the comment to check
-
-## EXAMPLES
-
-	wp comment status 1337
