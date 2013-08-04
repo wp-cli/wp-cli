@@ -1,9 +1,22 @@
 <?php
 
 /**
- * Manage WordPress options.
+ * Manage options.
  *
- * @package wp-cli
+ * ## OPTIONS
+ *
+ * --format=json
+ * : Encode/decode values as JSON.
+ *
+ * ## EXAMPLES
+ *
+ *     wp option get siteurl
+ *
+ *     wp option add my_option foobar
+ *
+ *     wp option update my_option '{"foo": "bar"}' --format=json
+ *
+ *     wp option delete my_option
  */
 class Option_Command extends WP_CLI_Command {
 

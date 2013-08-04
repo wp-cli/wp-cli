@@ -1,9 +1,11 @@
 <?php
 
 /**
- * Manage WordPress transients.
+ * Manage transients.
  *
- * @package wp-cli
+ * ## EXAMPLES
+ *
+ *     wp transient set my_key my_value 300
  */
 class Transient_Command extends WP_CLI_Command {
 

@@ -137,32 +137,6 @@ function esc_cmd( $cmd ) {
 	return vsprintf( $cmd, array_map( 'escapeshellarg', $args ) );
 }
 
-/**
- * Sets the appropriate $_SERVER keys based on a given string
- *
- * @param string $url The URL
- */
-function set_url_params( $url ) {
-	$url_parts = parse_url( $url );
-
-	if ( !isset( $url_parts['scheme'] ) ) {
-		$url_parts = parse_url( 'http://' . $url );
-	}
-
-	$f = function( $key ) use ( $url_parts ) {
-		return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
-	};
-
-	$_SERVER['HTTP_HOST'] = $f('host');
-	$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
-	$_SERVER['REQUEST_URL'] = $f('path');
-	$_SERVER['QUERY_STRING'] = $f('query');
-	$_SERVER['SERVER_NAME'] = substr($_SERVER['HTTP_HOST'], 0, strrpos($_SERVER['HTTP_HOST'], '.'));
-	$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
-	$_SERVER['HTTP_USER_AGENT'] = '';
-	$_SERVER['REQUEST_METHOD'] = 'GET';
-}
-
 function locate_wp_config() {
 	static $path;
 
@@ -210,19 +184,15 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 			}
 
 			$data = $_tmp;
-			unset( $_tmp );
 		}
 
-		// Submitted by Tina Matter
 		elseif ( is_object( $data ) ) {
-			$dataClass = get_class( $data );
-			$_tmp = new $dataClass( );
+			$_tmp = clone( $data );
 			foreach ( $data as $key => $value ) {
 				$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
 			}
 
 			$data = $_tmp;
-			unset( $_tmp );
 		}
 
 		else {
@@ -241,15 +211,21 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 }
 
 /**
- * Output items in a table, JSON, or CSV
+ * Output items in a table, JSON, CSV, ids, or the total count
  *
- * @param string        $format     Format to use: 'table', 'json', 'csv', 'ids'
+ * @param string        $format     Format to use: 'table', 'json', 'csv', 'ids', 'count'
  * @param array         $items      Data to output
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
 function format_items( $format, $items, $fields ) {
-	if ( 'ids' == $format )
+
+	if ( 'ids' == $format ) {
 		echo implode( ' ', $items );
+		return;
+	} else if ( 'count' == $format ) {
+		echo count( $items );
+		return;
+	}
 
 	if ( ! is_array( $fields ) )
 		$fields = explode( ',', $fields );
@@ -353,8 +329,23 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 function run_mysql_query( $query, $args ) {
 	// TODO: use PDO?
 
+  $host_parts = explode( ':',  $args['host'] );
+  if ( count( $host_parts ) == 2 ) {
+    list( $host, $extra ) = $host_parts;
+  } else {
+    $host = $args['host'];
+  }
+
 	$arg_str = esc_cmd( '--host=%s --user=%s --execute=%s',
-		$args['host'], $args['user'], $query );
+		$host, $args['user'], $query );
+
+  if ( isset( $extra ) ) {
+    if ( is_numeric($extra) ) {
+      $arg_str .= esc_cmd( ' --port=%s --protocol=%s', intval( $extra ), 'tcp' );
+    } else if ( trim($extra) !== '' ) {
+      $arg_str .= esc_cmd( ' --socket=%s', trim( $extra ) );
+    }
+  }
 
 	run_mysql_command( 'mysql', $arg_str, $args['pass'] );
 }
@@ -377,5 +368,12 @@ function mustache_render( $template_name, $data ) {
 	$m = new \Mustache_Engine;
 
 	return $m->render( $template, $data );
+}
+
+function make_progress_bar( $message, $count ) {
+	if ( \cli\Shell::isPiped() )
+		return new \WP_CLI\NoOp;
+
+	return new \cli\progress\Bar( $message, $count );
 }
 

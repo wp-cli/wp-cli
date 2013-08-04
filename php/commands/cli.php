@@ -14,6 +14,7 @@ class CLI_Command extends WP_CLI_Command {
 		$dump = array(
 			'name' => $command->get_name(),
 			'description' => $command->get_shortdesc(),
+			'longdesc' => $command->get_longdesc(),
 		);
 
 		foreach ( $command->get_subcommands() as $subcommand ) {
@@ -46,14 +47,22 @@ class CLI_Command extends WP_CLI_Command {
 	 * @subcommand param-dump
 	 */
 	function param_dump() {
-		echo json_encode( \WP_CLI::$configurator->get_spec() );
+		echo json_encode( \WP_CLI::get_configurator()->get_spec() );
 	}
 
 	/**
 	 * @subcommand cmd-dump
 	 */
 	function cmd_dump() {
-		echo json_encode( self::command_to_array( WP_CLI::$root ) );
+		echo json_encode( self::command_to_array( WP_CLI::get_root_command() ) );
+	}
+
+	function completions() {
+		foreach ( WP_CLI::get_root_command()->get_subcommands() as $name => $command ) {
+			$subcommands = $command->get_subcommands();
+
+			WP_CLI::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
+		}
 	}
 }
 

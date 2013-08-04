@@ -8,25 +8,17 @@ use \WP_CLI\Dispatcher;
  */
 class WP_CLI {
 
-	public static $configurator;
-	public static $root;
-	public static $runner;
+	private static $configurator;
 
 	private static $logger;
 
 	private static $hooks = array(), $hooks_passed = array();
 
-	private static $man_dirs = array();
-
 	/**
 	 * Initialize WP_CLI static variables.
 	 */
 	static function init() {
-		self::add_man_dir( null, WP_CLI_ROOT . "/man-src" );
-
 		self::$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
-		self::$root = new Dispatcher\RootCommand;
-		self::$runner = new WP_CLI\Runner;
 	}
 
 	/**
@@ -38,8 +30,32 @@ class WP_CLI {
 		self::$logger = $logger;
 	}
 
+	static function get_configurator() {
+		return self::$configurator;
+	}
+
+	static function get_root_command() {
+		static $root;
+
+		if ( !$root ) {
+			$root = new Dispatcher\RootCommand;
+		}
+
+		return $root;
+	}
+
+	static function get_runner() {
+		static $runner;
+
+		if ( !$runner ) {
+			$runner = new WP_CLI\Runner;
+		}
+
+		return $runner;
+	}
+
 	static function colorize( $string ) {
-		return \cli\Colors::colorize( $string, self::$runner->in_color() );
+		return \cli\Colors::colorize( $string, self::get_runner()->in_color() );
 	}
 
 	/**
@@ -73,21 +89,13 @@ class WP_CLI {
 	 *   'before_invoke' => callback to execute before invoking the command
 	 */
 	static function add_command( $name, $class, $args = array() ) {
-		$command = Dispatcher\CommandFactory::create( $name, $class, self::$root );
+		$command = Dispatcher\CommandFactory::create( $name, $class, self::get_root_command() );
 
 		if ( isset( $args['before_invoke'] ) ) {
 			self::add_action( "before_invoke:$name", $args['before_invoke'] );
 		}
 
-		self::$root->add_subcommand( $name, $command );
-	}
-
-	static function add_man_dir( $deprecated = null, $src_dir ) {
-		self::$man_dirs[] = $src_dir;
-	}
-
-	static function get_man_dirs() {
-		return self::$man_dirs;
+		self::get_root_command()->add_subcommand( $name, $command );
 	}
 
 	/**
@@ -135,7 +143,7 @@ class WP_CLI {
 	 * @param string $label
 	 */
 	static function error( $message, $label = 'Error' ) {
-		if ( ! isset( self::$runner->assoc_args[ 'completions' ] ) ) {
+		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) ) {
 			self::$logger->error( self::error_to_string( $message ), $label );
 		}
 
@@ -145,7 +153,7 @@ class WP_CLI {
 	/**
 	 * Ask for confirmation before running a destructive operation.
 	 */
-	static function confirm( $question, $assoc_args ) {
+	static function confirm( $question, $assoc_args = array() ) {
 		if ( !isset( $assoc_args['yes'] ) ) {
 			echo $question . " [y/n] ";
 
@@ -230,52 +238,20 @@ class WP_CLI {
 	}
 
 	static function get_config_path() {
-		return self::$runner->config_path;
+		return self::get_runner()->config_path;
 	}
 
 	static function get_config( $key = null ) {
-		if ( null === $key )
-			return self::$runner->config;
+		if ( null === $key ) {
+			return self::get_runner()->config;
+		}
 
-		if ( !isset( self::$runner->config[ $key ] ) ) {
+		if ( !isset( self::get_runner()->config[ $key ] ) ) {
 			self::warning( "Unknown config option '$key'." );
 			return null;
 		}
 
-		return self::$runner->config[ $key ];
-	}
-
-	private static function find_command_to_run( $args ) {
-		$command = \WP_CLI::$root;
-
-		$cmd_path = array();
-
-		$disabled_commands = self::get_config('disabled_commands');
-
-		while ( !empty( $args ) && $command->has_subcommands() ) {
-			$cmd_path[] = $args[0];
-			$full_name = implode( ' ', $cmd_path );
-
-			$subcommand = $command->find_subcommand( $args );
-
-			if ( !$subcommand ) {
-				\WP_CLI::error( sprintf(
-					"'%s' is not a registered wp command. See 'wp help'.",
-					$full_name
-				) );
-			}
-
-			if ( in_array( $full_name, $disabled_commands ) ) {
-				\WP_CLI::error( sprintf(
-					"The '%s' command has been disabled from the config file.",
-					$full_name
-				) );
-			}
-
-			$command = $subcommand;
-		}
-
-		return array( $command, $args );
+		return self::get_runner()->config[ $key ];
 	}
 
 	/**
@@ -284,10 +260,16 @@ class WP_CLI {
 	 * @param array
 	 * @param array
 	 */
-	public static function run_command( $args, $assoc_args = array() ) {
-		list( $command, $final_args ) = self::find_command_to_run( $args );
+	static function run_command( $args, $assoc_args = array() ) {
+		self::get_runner()->run_command( $args, $assoc_args );
+	}
 
-		$command->invoke( $final_args, $assoc_args );
+
+
+	// DEPRECATED STUFF
+
+	static function add_man_dir() {
+		trigger_error( 'WP_CLI::add_man_dir() is deprecated. Add docs inline.', E_USER_WARNING );
 	}
 
 	// back-compat

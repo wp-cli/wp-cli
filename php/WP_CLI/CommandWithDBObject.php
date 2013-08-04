@@ -68,6 +68,23 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		return $status;
 	}
 
+	protected function assoc_array_to_table( $fields ) {
+		$rows = array();
+
+		foreach ( $fields as $field => $value ) {
+			if ( !is_string($value) ) {
+				$value = json_encode( $value );
+			}
+
+			$rows[] = (object) array(
+				'Field' => $field,
+				'Value' => $value
+			);
+		}
+
+		\WP_CLI\Utils\format_items( 'table', $rows, array( 'Field', 'Value' ) );
+	}
+
 	public function delete( $args, $assoc_args ) {
 		$status = 0;
 
@@ -78,5 +95,6 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 
 		exit( $status );
 	}
+
 }
 

@@ -3,7 +3,7 @@
 // Can be used by plugins/themes to check if wp-cli is running or not
 define( 'WP_CLI', true );
 
-define( 'WP_CLI_VERSION', '0.11.0-alpha' );
+define( 'WP_CLI_VERSION', '0.11.0-alpha2' );
 
 include WP_CLI_ROOT . '/php/utils.php';
 include WP_CLI_ROOT . '/php/dispatcher.php';
@@ -14,10 +14,10 @@ include WP_CLI_ROOT . '/php/class-wp-cli-command.php';
 
 WP_CLI::init();
 
-WP_CLI::$runner->before_wp_load();
+WP_CLI::get_runner()->before_wp_load();
 
 // Load wp-config.php code, in the global scope
-eval( WP_CLI::$runner->get_wp_config_code() );
+eval( WP_CLI::get_runner()->get_wp_config_code() );
 
 // Simulate a /wp-admin/ page load
 $_SERVER['PHP_SELF'] = '/wp-admin/index.php';
@@ -34,5 +34,5 @@ require WP_CLI_ROOT . '/php/wp-settings-cli.php';
 require ABSPATH . 'wp-admin/includes/admin.php';
 do_action( 'admin_init' );
 
-WP_CLI::$runner->after_wp_load();
+WP_CLI::get_runner()->after_wp_load();
 

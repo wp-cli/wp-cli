@@ -47,3 +47,24 @@ Feature: Manage WordPress themes
     When I run `wp theme list`
     Then STDOUT should not be empty
 
+  Scenario: Install a theme, activate, then force install an older version of the theme
+    Given a WP install
+
+    When I run `wp theme install p2 --version=1.4.2`
+    Then STDOUT should not be empty
+
+    When I run `wp theme list`
+    Then STDOUT should be a table containing rows:
+      | name  | status   | update    | version   |
+      | p2    | inactive | available | 1.4.2     |
+
+    When I run `wp theme activate p2`
+    Then STDOUT should not be empty
+
+    When I run `wp theme install p2 --version=1.4.1 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp theme list`
+    Then STDOUT should be a table containing rows:
+      | name  | status   | update    | version   |
+      | p2    | active   | available | 1.4.1     |

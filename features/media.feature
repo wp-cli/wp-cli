@@ -27,15 +27,17 @@ Feature: Manage WordPress attachments
     When I try `wp media import gobbledygook.png`
     Then STDERR should contain:
       """
-      Error: Unable to import file gobbledygook.png. Reason: File is empty.
+      Unable to import file gobbledygook.png. Reason: File doesn't exist.
       """
 
   @images 
   Scenario: Import a file as attachment from a local image
     Given a WP install
-    And a large image file
+    And download:
+      | path                        | url                                                                             |
+      | {CACHE_DIR}/large-image.jpg | http://wordpresswallpaper.com/wp-content/gallery/photo-based-wallpaper/1058.jpg |
 
-    When I run `wp media import {DOWNLOADED_IMAGE} --post_id=1 --featured_image`
+    When I run `wp media import {CACHE_DIR}/large-image.jpg --post_id=1 --featured_image`
     Then STDOUT should contain:
       """
       Success: Imported file
@@ -44,4 +46,4 @@ Feature: Manage WordPress attachments
       """
       and attached to post 1 as featured image
       """
-    And the {DOWNLOADED_IMAGE} file should exist
+    And the {CACHE_DIR}/large-image.jpg file should exist

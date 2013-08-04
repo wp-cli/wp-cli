@@ -12,6 +12,22 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Download core WordPress files.
 	 *
+	 * ## OPTIONS
+	 *
+	 * --locale=<locale>
+	 * : Select which language you want to download. The --version parameter is
+	 * ignored in this case.
+	 *
+	 * --version=<version>
+	 * : Select which version you want to download.
+	 *
+	 * --force
+	 * : Overwrites existing files, if present.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp core download --version=3.3
+	 *
 	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>] [--force]
 	 *
 	 * @when before_wp_load
@@ -38,22 +54,26 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::log( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		$silent = WP_CLI::get_config('quiet') ? '--silent ' : '';
+		$silent = WP_CLI::get_config('quiet') || \cli\Shell::isPiped() ?
+			'--silent ' : '';
 
-		$cmd = "curl -f $silent %s | tar xz --strip-components=1 --directory=%s";
+		// We need to use a temporary file because piping from cURL to tar is flaky
+		// on MinGW (and probably in other environments too).
+		$temp = tempnam( sys_get_temp_dir(), "wp_" );
+		$cmd = "curl -f $silent %s > $temp && tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
 		WP_CLI::launch( Utils\esc_cmd( $cmd, $download_url, ABSPATH ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
-	private static function _download( $url ) {
+	private static function _read( $url ) {
 		exec( 'curl -s ' . escapeshellarg( $url ), $lines, $r );
 		if ( $r ) exit( $r );
 		return implode( "\n", $lines );
 	}
 
 	private function get_download_offer( $locale ) {
-		$out = unserialize( self::_download(
+		$out = unserialize( self::_read(
 			'https://api.wordpress.org/core/version-check/1.6/?locale=' . $locale ) );
 
 		return $out['offers'][0];
@@ -71,7 +91,41 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Set up a wp-config.php file.
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--extra-php]
+	 * ## OPTIONS
+	 *
+	 * --dbname=<dbname>
+	 * : Set the database name.
+	 *
+	 * --dbuser=<dbuser>
+	 * : Set the database user.
+	 *
+	 * --dbpass=<dbpass>
+	 * : Set the database user password.
+	 *
+	 * --dbhost=<dbhost>
+	 * : Set the database host. Default: 'localhost'
+	 *
+	 * --dbprefix=<dbprefix>
+	 * : Set the database table prefix. Default: 'wp_'
+	 *
+	 * --locale=<locale>
+	 * : Set the WPLANG constant. Defaults to $wp_local_package variable.
+	 *
+	 * --extra-php
+	 * : If set, the command reads additional PHP code from STDIN.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Standard wp-config.php file
+	 *     wp core config --dbname=testing --dbuser=wp --dbpass=securepswd --locale=ro_RO
+	 *
+	 *     # Enable WP_DEBUG and WP_DEBUG_LOG
+	 *     wp core config --dbname=testing --dbuser=wp --dbpass=securepswd --extra-php <<PHP
+	 *     define( 'WP_DEBUG', true );
+	 *     define( 'WP_DEBUG_LOG', true );
+	 *     PHP
+	 *
+	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php]
 	 */
 	public function config( $_, $assoc_args ) {
 		if ( Utils\locate_wp_config() ) {
@@ -101,7 +155,7 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		// TODO: adapt more resilient code from wp-admin/setup-config.php
-		$assoc_args['keys-and-salts'] = self::_download(
+		$assoc_args['keys-and-salts'] = self::_read(
 			'https://api.wordpress.org/secret-key/1.1/salt/' );
 
 		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
@@ -113,6 +167,12 @@ class Core_Command extends WP_CLI_Command {
 
 	/**
 	 * Determine if the WordPress tables are installed.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     if ! $(wp core is-installed); then
+	 *         wp core install
+	 *     fi
 	 *
 	 * @subcommand is-installed
 	 */
@@ -127,14 +187,160 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Create the WordPress tables in the database.
 	 *
+	 * ## OPTIONS
+	 *
+	 * --url=<url>
+	 * : The address of the new site.
+	 *
+	 * --title=<site-title>
+	 * : The title of the new site.
+	 *
+	 * --admin_name=<username>
+	 * : The name of the admin user. Default: 'admin'
+	 *
+	 * --admin_password=<password>
+	 * : The password for the admin user.
+	 *
+	 * --admin_email=<email>
+	 * : The email address for the admin user.
+	 *
 	 * @synopsis --url=<url> --title=<site-title> [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
 	 */
 	public function install( $args, $assoc_args ) {
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-
-		if ( is_blog_installed() ) {
-			WP_CLI::error( 'WordPress is already installed.' );
+		if ( $this->_install( $assoc_args ) ) {
+			WP_CLI::success( 'WordPress installed successfully.' );
+		} else {
+			WP_CLI::log( 'WordPress is already installed.' );
 		}
+	}
+
+	/**
+	 * Transform a single-site install into a multi-site install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --title=<site-title>
+	 * : The title of the new network.
+	 *
+	 * --base=<url-path>
+	 * : Base path after the domain name that each site url will start with.
+	 * Default: '/'
+	 *
+	 * --subdomains
+	 * : If passed, the network will use subdomains, instead of subdirectories.
+	 *
+	 * @subcommand multisite-convert
+	 * @alias install-network
+	 * @synopsis [--title=<network-title>] [--base=<url-path>] [--subdomains]
+	 */
+	public function multisite_convert( $args, $assoc_args ) {
+		if ( is_multisite() )
+			WP_CLI::error( 'This already is a multisite install.' );
+
+		$assoc_args = self::_set_multisite_defaults( $assoc_args );
+		if ( !isset( $assoc_args['title'] ) ) {
+			$assoc_args['title'] = sprintf( _x('%s Sites', 'Default network name' ), get_option( 'blogname' ) );
+		}
+
+		if ( $this->_multisite_convert( $assoc_args ) ) {
+			WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
+		}
+	}
+
+	/**
+	 * Install multisite from scratch.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --url=<url>
+	 * : The address of the new site.
+	 *
+	 * --base=<url-path>
+	 * : Base path after the domain name that each site url in the network will start with.
+	 * Default: '/'
+	 *
+	 * --subdomains
+	 * : If passed, the network will use subdomains, instead of subdirectories.
+	 *
+	 * --title=<site-title>
+	 * : The title of the new site.
+	 *
+	 * --admin_name=<username>
+	 * : The name of the admin user. Default: 'admin'
+	 *
+	 * --admin_password=<password>
+	 * : The password for the admin user.
+	 *
+	 * --admin_email=<email>
+	 * : The email address for the admin user.
+	 *
+	 * @subcommand multisite-install
+	 * @synopsis --url=<url> --title=<site-title> [--base=<url-path>] [--subdomains] [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
+	 */
+	public function multisite_install( $args, $assoc_args ) {
+		if ( $this->_install( $assoc_args ) ) {
+			WP_CLI::log( 'Created single site database tables.' );
+		} else {
+			WP_CLI::log( 'Single site database tables already present.' );
+		}
+
+		$assoc_args = self::_set_multisite_defaults( $assoc_args );
+		$assoc_args['title'] = sprintf( _x('%s Sites', 'Default network name' ), $assoc_args['title'] );
+
+		// Overwrite runtime args, to avoid mismatches.
+		$consts_to_args = array(
+			'SUBDOMAIN_INSTALL' => 'subdomains',
+			'PATH_CURRENT_SITE' => 'base',
+			'SITE_ID_CURRENT_SITE' => 'site_id',
+			'BLOG_ID_CURRENT_SITE' => 'blog_id',
+		);
+
+		foreach ( $consts_to_args as $const => $arg ) {
+			if ( defined( $const ) ) {
+				$assoc_args[ $arg ] = constant( $const );
+			}
+		}
+
+		if ( !$this->_multisite_convert( $assoc_args ) ) {
+			return;
+		}
+
+		// Do the steps that were skipped by populate_network(),
+		// which checks is_multisite().
+		if ( is_multisite() ) {
+			$site_user = get_user_by( 'email', $assoc_args['admin_email'] );
+			self::add_site_admins( $site_user );
+			$domain = self::get_clean_basedomain();
+			self::create_initial_blog(
+				$assoc_args['site_id'],
+				$assoc_args['blog_id'],
+				$domain,
+				$assoc_args['base'],
+				$assoc_args['subdomains'],
+				$site_user
+			);
+		}
+
+		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
+	}
+
+	private static function _set_multisite_defaults( $assoc_args ) {
+		$defaults = array(
+			'subdomains' => false,
+			'base' => '/',
+			'site_id' => 1,
+			'blog_id' => 1,
+		);
+
+		return array_merge( $defaults, $assoc_args );
+	}
+
+	private function _install( $assoc_args ) {
+		if ( is_blog_installed() ) {
+			return false;
+		}
+
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
 		extract( wp_parse_args( $assoc_args, array(
 			'title' => '',
@@ -149,21 +355,12 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( 'Installation failed (' . WP_CLI::error_to_string($result) . ').' );
-		} else {
-			WP_CLI::success( 'WordPress installed successfully.' );
 		}
+
+		return true;
 	}
 
-	/**
-	 * Transform a single-site install into a multi-site install.
-	 *
-	 * @subcommand install-network
-	 * @synopsis --title=<network-title> [--base=<url-path>] [--subdomains]
-	 */
-	public function install_network( $args, $assoc_args ) {
-		if ( is_multisite() )
-			WP_CLI::error( 'This already is a multisite install.' );
-
+	private function _multisite_convert( $assoc_args ) {
 		global $wpdb;
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -172,42 +369,98 @@ class Core_Command extends WP_CLI_Command {
 		foreach ( $wpdb->tables( 'ms_global' ) as $table => $prefixed_table )
 			$wpdb->$table = $prefixed_table;
 
-		extract( wp_parse_args( $assoc_args, array(
-			'base' => '/',
-		) ) );
-
-		$hostname = self::get_clean_basedomain();
-		$subdomain_install = isset( $assoc_args['subdomains'] );
-
 		install_network();
 
-		$result = populate_network( 1, $hostname, get_option( 'admin_email' ), $assoc_args['title'], $base, $subdomain_install );
+		$domain = self::get_clean_basedomain();
+		$result = populate_network(
+			$assoc_args['site_id'],
+			$domain,
+			get_option( 'admin_email' ),
+			$assoc_args['title'],
+			$assoc_args['base'],
+			$assoc_args['subdomains']
+		);
 
-		if ( is_wp_error( $result ) ) {
-			if ( $result->get_error_codes() === array( 'no_wildcard_dns' ) )
+		if ( true === $result ) {
+			WP_CLI::log( 'Set up multisite database tables.' );
+		} else if ( is_wp_error( $result ) ) {
+			switch ( $result->get_error_code() ) {
+
+			case 'siteid_exists':
+				WP_CLI::log( $result->get_error_message() );
+				return false;
+
+			case 'no_wildcard_dns':
 				WP_CLI::warning( __( 'Wildcard DNS may not be configured correctly.' ) );
-			else
+				break;
+
+			default:
 				WP_CLI::error( $result );
+			}
 		}
 
-		ob_start();
+		if ( !is_multisite() ) {
+			ob_start();
 ?>
 define('MULTISITE', true);
-define('SUBDOMAIN_INSTALL', <?php echo $subdomain_install ? 'true' : 'false'; ?>);
-$base = '<?php echo $base; ?>';
-define('DOMAIN_CURRENT_SITE', '<?php echo $hostname; ?>');
-define('PATH_CURRENT_SITE', '<?php echo $base; ?>');
+define('SUBDOMAIN_INSTALL', <?php var_export( $assoc_args['subdomains'] ); ?>);
+$base = '<?php echo $assoc_args['base']; ?>';
+define('DOMAIN_CURRENT_SITE', '<?php echo $domain; ?>');
+define('PATH_CURRENT_SITE', '<?php echo $assoc_args['base']; ?>');
 define('SITE_ID_CURRENT_SITE', 1);
 define('BLOG_ID_CURRENT_SITE', 1);
 
 <?php
-		$ms_config = ob_get_clean();
+			$ms_config = ob_get_clean();
 
-		self::modify_wp_config( $ms_config );
+			self::modify_wp_config( $ms_config );
+			WP_CLI::log( 'Added multisite constants to wp-config.php.' );
+		}
 
 		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
 
-		WP_CLI::success( "Network installed. Don't forget to set up rewrite rules." );
+		return true;
+	}
+
+	// copied from populate_network()
+	private static function create_initial_blog( $network_id, $blog_id, $domain, $path,
+		$subdomain_install, $site_user ) {
+		global $wpdb, $current_site, $wp_rewrite;
+
+		$current_site = new stdClass;
+		$current_site->domain = $domain;
+		$current_site->path = $path;
+		$current_site->site_name = ucfirst( $domain );
+		$wpdb->insert( $wpdb->blogs, array(
+			'site_id' => $network_id,
+			'domain' => $domain,
+			'path' => $path,
+			'registered' => current_time( 'mysql' )
+		) );
+		$current_site->blog_id = $blog_id = $wpdb->insert_id;
+		update_user_meta( $site_user->ID, 'source_domain', $domain );
+		update_user_meta( $site_user->ID, 'primary_blog', $blog_id );
+
+		if ( $subdomain_install )
+			$wp_rewrite->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
+		else
+			$wp_rewrite->set_permalink_structure( '/blog/%year%/%monthnum%/%day%/%postname%/' );
+
+		flush_rewrite_rules();
+	}
+
+	// copied from populate_network()
+	private static function add_site_admins( $site_user ) {
+		$site_admins = array( $site_user->user_login );
+		$users = get_users( array( 'fields' => array( 'ID', 'user_login' ) ) );
+		if ( $users ) {
+			foreach ( $users as $user ) {
+				if ( is_super_admin( $user->ID ) && !in_array( $user->user_login, $site_admins ) )
+					$site_admins[] = $user->user_login;
+			}
+		}
+
+		update_site_option( 'site_admins', $site_admins );
 	}
 
 	private static function modify_wp_config( $content ) {
@@ -229,6 +482,11 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 	/**
 	 * Display the WordPress version.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --extra
+	 * : Show extended version information.
 	 *
 	 * @synopsis [--extra]
 	 */
@@ -254,6 +512,24 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 	/**
 	 * Update WordPress.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --version=<new_version> [package/zip]
+	 * : When passed, updates to new_version, optionally using package/zip as
+	 * input.
+	 *
+	 * --force
+	 * : Will update even when current WP version < passed version. Use with
+	 * caution.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp core update
+	 *
+	 *     wp core update --version=3.4 ../latest.zip
+	 *
+	 *     wp core update --version=3.1 --force
 	 *
 	 * @alias upgrade
 	 *
@@ -336,7 +612,26 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 *
 	 * @subcommand init-tests
 	 *
-	 * @synopsis [<path>] --dbname=<name> --dbuser=<user> [--dbpass=<password>]
+	 * ## OPTIONS
+	 *
+	 * <path>
+	 * : The directory in which to download the testing suite files. (Optional)
+	 *
+	 * --dbname=<dbname>
+	 * : Set the database name. **WARNING**: The database will be whipped every time
+	 * you run the tests.
+	 *
+	 * --dbuser=<dbuser>
+	 * : Set the database user.
+	 *
+	 * --dbpass=<dbpass>
+	 * : Set the database user password.
+	 *
+	 * ## EXAMPLE
+	 *
+	 *     wp core init-tests ~/svn/wp-tests --dbname=wp_test --dbuser=wp_test
+	 *
+	 * @synopsis [<path>] --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>]
 	 */
 	function init_tests( $args, $assoc_args ) {
 		if ( isset( $args[0] ) )
@@ -346,6 +641,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'dbpass' => '',
+			'dbhost' => 'localhost'
 		) );
 
 		// Download the test suite
@@ -355,7 +651,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		$query = sprintf( 'CREATE DATABASE IF NOT EXISTS `%s`', $assoc_args['dbname'] );
 
 		Utils\run_mysql_query( $query, array(
-			'host' => 'localhost',
+			'host' => $assoc_args['dbhost'],
 			'user' => $assoc_args['dbuser'],
 			'pass' => $assoc_args['dbpass'],
 		) );
@@ -368,6 +664,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			"yourdbnamehere"   => $assoc_args['dbname'],
 			"yourusernamehere" => $assoc_args['dbuser'],
 			"yourpasswordhere" => $assoc_args['dbpass'],
+			"localhost" => $assoc_args['dbhost'],
 		);
 
 		$config_file = str_replace( array_keys( $replacements ), array_values( $replacements ), $config_file );

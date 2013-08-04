@@ -1,6 +1,6 @@
 Feature: Manage WordPress users
 
-  Scenario: Creating/updating/deleting users
+  Scenario: User CRUD operations
     Given a WP install
 
     When I run `wp user create testuser testuser@example.com --porcelain`
@@ -10,30 +10,31 @@ Feature: Manage WordPress users
     When I try the previous command again
     Then the return code should be 1
 
-    When I run `wp user update {USER_ID} --displayname=Foo`
-    Then STDOUT should be:
-      """
-      Success: Updated user {USER_ID}.
-      """
+    When I run `wp user update {USER_ID} --display_name=Foo`
+    And I run `wp user get {USER_ID}`
+    Then STDOUT should be a table containing rows:
+      | Field        | Value     |
+      | ID           | {USER_ID} |
+      | display_name | Foo       |
 
     When I run `wp user delete {USER_ID}`
     Then STDOUT should not be empty
 
-  Scenario: Generating users
+  Scenario: Generating and deleting users
     Given a WP install
 
-    # Delete all users
-    When I run `wp user delete $(wp user list --format=ids)`
-    And I run `wp user list --format=ids`
-    Then STDOUT should be empty
-
-    When I run `wp user generate --count=10`
-    Then STDOUT should not be empty
- 
-    When I run `wp user list | wc -l | tr -d ' '`
+    When I run `wp user generate --count=9`
+    And I run `wp user list --format=count`
     Then STDOUT should be:
       """
-      11
+      10
+      """
+
+    When I try `wp user delete invalid-user $(wp user list --format=ids)`
+    And I run `wp user list --format=count`
+    Then STDOUT should be:
+      """
+      0
       """
 
   Scenario: Importing users from a CSV file
@@ -49,10 +50,10 @@ Feature: Manage WordPress users
     When I run `wp user import-csv users.csv`
     Then STDOUT should not be empty
 
-    When I run `wp user list | wc -l | tr -d ' '`
+    When I run `wp user list --format=count`
     Then STDOUT should be:
       """
-      4
+      3
       """
 
     When I run `wp user list --format=json`
@@ -60,3 +61,34 @@ Feature: Manage WordPress users
     """
     [{"user_login":"admin","display_name":"Existing User","user_email":"admin@domain.com","roles":"administrator"}]
     """
+
+  Scenario: Managing user roles
+    Given a WP install
+
+    When I run `wp user add-role 1 editor`
+    Then STDOUT should not be empty
+    And I run `wp user get 1`
+    Then STDOUT should be a table containing rows:
+      | Field | Value                 |
+      | roles | administrator, editor |
+
+    When I run `wp user set-role 1 author`
+    Then STDOUT should not be empty
+    And I run `wp user get 1`
+    Then STDOUT should be a table containing rows:
+      | Field | Value  |
+      | roles | author |
+
+    When I run `wp user remove-role 1 editor`
+    Then STDOUT should not be empty
+    And I run `wp user get 1`
+    Then STDOUT should be a table containing rows:
+      | Field | Value  |
+      | roles | author |
+
+    When I run `wp user remove-role 1`
+    Then STDOUT should not be empty
+    And I run `wp user get 1`
+    Then STDOUT should be a table containing rows:
+      | Field | Value |
+      | roles |       |

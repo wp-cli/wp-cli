@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Perform blog-wide operations.
+ * Perform site-wide operations.
  *
  * @package wp-cli
  */
@@ -110,6 +110,11 @@ class Site_Command extends WP_CLI_Command {
 	/**
 	 * Empty a site of its content (posts, comments, and terms).
 	 *
+	 * ## OPTIONS
+	 *
+	 * --yes
+	 * : Proceed to empty the site without a confirmation prompt.
+	 *
 	 * @subcommand empty
 	 * @synopsis [--yes]
 	 */
@@ -127,6 +132,20 @@ class Site_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete a site in a multisite install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <blog-id>
+	 * : The id of the blog to delete. If not provided, you must set the --slug parameter.
+	 *
+	 * --slug=<slug>
+	 * : Path of the blog to be deleted. Subdomain on subdomain installs, directory on subdirectory installs.
+	 *
+	 * --yes
+	 * : Answer yes to the confirmation message.
+	 *
+	 * --keep-tables
+	 * : Delete the blog from the list, but don't drop it's tables.
 	 *
 	 * @synopsis [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
 	 */
@@ -178,6 +197,26 @@ class Site_Command extends WP_CLI_Command {
 
 	/**
 	 * Create a site in a multisite install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --slug=<slug>
+	 * : Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
+	 *
+	 * --title=<title&gt;
+	 * : Title of the new site. Default: prettified slug.
+	 *
+	 * --email=<email>
+	 * : Email for Admin user. User will be created if none exists. Assignement to Super Admin if not included.
+	 *
+	 * --network_id=<network-id>
+	 * : Network to associate new site with. Defaults to current network (typically 1).
+	 *
+	 * --private
+	 * : If set, the new site will be non-public (not indexed)
+	 *
+	 * --porcelain
+	 * : If set, only the site id will be output on success.
 	 *
 	 * @synopsis --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<network-id>] [--private] [--porcelain]
 	 */
