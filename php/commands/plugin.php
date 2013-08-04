@@ -89,7 +89,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		activate_plugin( $file, '', $network_wide );
 
 		if ( $this->check_active( $file, $network_wide ) ) {
-			WP_CLI::success( "Plugin '$name' activated." );
+			if ( $network_wide )
+				WP_CLI::success( "Plugin '$name' network activated." );
+			else
+				WP_CLI::success( "Plugin '$name' activated." );
 		} else {
 			WP_CLI::error( 'Could not activate plugin: ' . $name );
 		}
@@ -109,7 +112,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		deactivate_plugins( $file, false, $network_wide );
 
 		if ( ! $this->check_active( $file, $network_wide ) ) {
-			WP_CLI::success( "Plugin '$name' deactivated." );
+			if ( $network_wide )
+				WP_CLI::success( "Plugin '$name' network deactivated." );
+			else
+				WP_CLI::success( "Plugin '$name' deactivated." );
 		} else {
 			WP_CLI::error( 'Could not deactivate plugin: ' . $name );
 		}
