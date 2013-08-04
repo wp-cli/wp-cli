@@ -58,15 +58,16 @@ class Help_Command extends WP_CLI_Command {
 
 		$out = str_replace( "\t", '  ', $out );
 
-		if ( strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ) {
-			// no paging for Windows cmd.exe; sorry
-			echo $out;
-		} else {
-			self::pass_through_pager( WP_CLI::colorize( $out ) );
-		}
+		self::pass_through_pager( WP_CLI::colorize( $out ) );
 	}
 
 	private static function pass_through_pager( $out ) {
+		if ( strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ) {
+			// no paging for Windows cmd.exe; sorry
+			echo $out;
+			return 0;
+		}
+
 		// convert string to file handle
 		$fd = fopen( "php://temp", "r+" );
 		fputs( $fd, $out );
