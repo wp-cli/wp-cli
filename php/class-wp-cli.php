@@ -34,6 +34,15 @@ class WP_CLI {
 		self::$logger = $logger;
 	}
 
+	/**
+	 * Get the logger instance.
+	 *
+	 * @return object
+	 */
+	static function get_logger() {
+		return self::$logger;
+	}
+
 	static function get_configurator() {
 		return self::$configurator;
 	}
@@ -152,14 +161,9 @@ class WP_CLI {
 	 * Display an error in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @param string $label
 	 */
-	static function error( $message, $label = 'Error' ) {
-		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) ) {
-			self::$logger->error( self::error_to_string( $message ), $label );
-		}
-
-		exit(1);
+	static function error( $message, $deprecated = null ) {
+		throw new \WP_CLI\Exceptions\GeneralError( $message );
 	}
 
 	/**
