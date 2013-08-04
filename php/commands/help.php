@@ -82,15 +82,6 @@ class Help_Command extends WP_CLI_Command {
 		return proc_close( proc_open( 'less -r', $descriptorspec, $pipes ) );
 	}
 
-	private static function find( $candidates, $callback ) {
-		foreach ( $candidates as $candidate ) {
-			if ( call_user_func( $callback, $candidate ) )
-				return $candidate;
-		}
-
-		return false;
-	}
-
 	private static function get_initial_markdown( $command ) {
 		$name = implode( ' ', Dispatcher\get_path( $command ) );
 
