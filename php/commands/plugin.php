@@ -43,6 +43,67 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		parent::status( $args );
 	}
 
+	/**
+	 * Search wordpress.org plugin repo
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : A particular plugin to search for.
+	 *
+	 * --per_page
+	 * : Optional number of results to display. Defaults to 10.
+	 *
+	 * --fields
+	 * : Ask for specific fields from the API. Defaults to name,slug,author_profile,rating. acceptable values:
+	 *
+	 *     **name**: Plugin Name
+    *     **slug**: Plugin Slug
+    *     **version**: Current Version Number
+    *     **author**: Plugin Author
+    *     **author_profile**: Plugin Author Profile
+    *     **contributors**: Plugin Contributors
+    *     **requires**: Plugin Minimum Requirements
+    *     **tested**: Plugin Tested Up To
+    *     **compatibility**: Plugin Compatible With
+    *     **rating**: Plugin Rating
+    *     **num_ratings**: Number of Plugin Ratings
+    *     **homepage**: Plugin Author's Homepage
+    *     **description**: Plugin's Description
+    *     **short_description**: Plugin's Short Description
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin search dsgnwrks --per_page=20
+	 *
+	 *     wp plugin search dsgnwrks --fields=name,version,slug,rating,num_ratings
+	 *
+	 * @synopsis <plugin>
+	 */
+	function search( $args, $assoc_args = array() ) {
+		$term = $args[0];
+		$per_page = isset( $assoc_args['per_page'] ) ? (int) $assoc_args['per_page'] : 10;
+		$fields = isset( $assoc_args['fields'] ) ? $assoc_args['fields'] : array( 'name', 'slug', 'author_profile', 'rating' );
+
+		if ( $term ) {
+			$api = plugins_api( 'query_plugins', array(
+				'per_page' => $per_page,
+				'search' => $term,
+			) );
+
+			if ( is_wp_error( $api ) )
+				WP_CLI::error( $api->get_error_message() . __( ' Try again' ) );
+
+			if ( ! isset( $api->plugins ) )
+				WP_CLI::error( $api->get_error_message() . __( 'API error. Try Again.' ) );
+
+			WP_CLI\Utils\format_items( 'table', $api->plugins, $fields );
+
+			WP_CLI::success( count( $api->plugins ). ' Plugins Found. Use slug for other plugin methods.' );
+		}
+
+	}
+
 	protected function status_single( $args ) {
 		$name = $args[0];
 		$file = $this->parse_name( $name );
