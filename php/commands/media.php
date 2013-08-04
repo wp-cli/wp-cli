@@ -98,19 +98,16 @@ class Media_Command extends WP_CLI_Command {
 	 * --featured_image
 	 * : If set, set the imported image as the Featured Image of the post its attached to.
 	 *
-	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Import all jpgs in the current user's "Pictures" directory, not attached to any post
-	 *     wp media import ~/Pictures/**/*.jpg
+	 *     wp media import ~/Pictures/**\/*.jpg
 	 *
 	 *     # Import a local image and set it to be the post thumbnail for a post
 	 *     wp media import ~/Downloads/image.png --post_id=123 --title="A downloaded picture" --featured_image
 	 *
 	 *     # Import an image from the web
 	 *     wp media import http://s.wordpress.org/style/images/wp-header-logo.png --title='The WordPress logo' --alt="Semantic personal publishing"
-	 *
-	 *
 	 *
 	 * @synopsis <file>... [--post_id=<id>] [--title=<title>] [--caption=<caption>] [--alt=<text>] [--desc=<description>] [--featured_image]
 	 */
