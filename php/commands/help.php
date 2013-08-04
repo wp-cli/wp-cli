@@ -8,6 +8,14 @@ class Help_Command extends WP_CLI_Command {
 	/**
 	 * Get help on a certain command.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     # get help for `core` command
+	 *     wp help core
+	 *
+	 *     # get help for `core download` subcommand
+	 *     wp help core download
+	 *
 	 * @synopsis [<command>]
 	 */
 	function __invoke( $args, $assoc_args ) {
