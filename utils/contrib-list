@@ -9,14 +9,14 @@ prev_version=$1
 linked=$2
 
 githubify() {
-	local url="https://github.com/$name"
-	local response_code=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' $url)
-
-	if [ "200" != "$response_code" ]; then
-		echo "$response_code: $url" 1>&2;
-	fi
-
 	while read name; do
+		local url="https://github.com/$name"
+		local response_code=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' $url)
+
+		if [ "200" != "$response_code" ]; then
+			echo "$response_code: $url" 1>&2;
+		fi
+
 		echo " [$name]($url)"
 	done
 }
