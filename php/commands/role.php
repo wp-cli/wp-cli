@@ -15,6 +15,18 @@ class Role_Command extends WP_CLI_Command {
 	/**
 	 * List all roles.
 	 *
+	 * ## OPTIONS
+	 *
+	 * --fields=<fields>
+	 * : Limit the output to specific object fields. Defaults to name,role.
+	 *
+	 * --format=<format>
+	 * : Output list as table, CSV or JSON. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp role list --fields=role --format=csv
+	 *
 	 * @subcommand list
 	 * @synopsis [--fields=<fields>] [--format=<format>]
 	 */
@@ -45,7 +57,20 @@ class Role_Command extends WP_CLI_Command {
 
 	/**
 	 * Check if a role exists.
-	 * Will return 0 if the role exists, 1 if it does not.
+	 *
+	 * ##DESCRIPTION
+	 *
+	 * Will exit with status 0 if the role exists, 1 if it does not.
+	 *
+	 * ## OPTIONS
+	 *
+	 * * <role-key>:
+	 *
+	 *     The internal name of the role, e.g. editor
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp role exists editor
 	 *
 	 * @synopsis <role-key>
 	 */
@@ -59,6 +84,22 @@ class Role_Command extends WP_CLI_Command {
 
 	/**
 	 * Create a new role.
+	 *
+	 * ## OPTIONS
+	 *
+	 * * <role-key>:
+	 *
+	 *     The internal name of the role, e.g. editor
+	 *
+	 * * <role-name>:
+	 *
+	 *     The publically visible name of the role, e.g. Editor
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp role create approver Approver
+	 *
+	 *     wp role create productadmin "Product Administrator"
 	 *
 	 * @synopsis <role-key> <role-name>
 	 */
@@ -75,11 +116,22 @@ class Role_Command extends WP_CLI_Command {
 			WP_CLI::error( "Role couldn't be created." );
 		else
 			WP_CLI::success( sprintf( "Role with key %s created.", $role_key ) );
-
 	}
 
 	/**
 	 * Delete an existing role.
+	 *
+	 * ## OPTIONS
+	 *
+	 * * <role-key>:
+	 *
+	 *     The internal name of the role, e.g. editor
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp role delete approver
+	 *
+	 *     wp role delete productadmin
 	 *
 	 * @synopsis <role-key>
 	 */
