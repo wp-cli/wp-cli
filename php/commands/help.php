@@ -8,6 +8,14 @@ class Help_Command extends WP_CLI_Command {
 	/**
 	 * Get help on a certain command.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     # get help for `core` command
+	 *     wp help core
+	 *
+	 *     # get help for `core download` subcommand
+	 *     wp help core download
+	 *
 	 * @synopsis [<command>]
 	 */
 	function __invoke( $args, $assoc_args ) {
@@ -37,13 +45,16 @@ class Help_Command extends WP_CLI_Command {
 	private static function show_help( $command ) {
 		$out = self::get_initial_markdown( $command );
 
-		$out .= $command->get_extra_markdown();
+		$longdesc = $command->get_longdesc();
+		if ( $longdesc ) {
+			$out .= $longdesc . "\n";
+		}
 
 		// section headers
 		$out = preg_replace( '/^## ([A-Z ]+)/m', '%9\1%n', $out );
 
-		// old-style options
-		$out = preg_replace( '/\n\* `(.+)`([^\n]*):\n\n/', "\n\t\\1\\2\n\t\t", $out );
+		// definition lists
+		$out = preg_replace( '/\n([^\n]+)\n: (.+?)\n/s', "\n\t\\1\n\t\t\\2\n", $out );
 
 		$out = str_replace( "\t", '  ', $out );
 
