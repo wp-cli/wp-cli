@@ -10,7 +10,7 @@
 	"require": {
 		"php": ">=5.3.2",
 		"wp-cli/php-cli-tools": "0.9.3",
-		"mustache/mustache": "~2.3"
+		"mustache/mustache": "~2.4"
 	},
 	"suggest": {
 		"d11wtq/boris": "Enhanced `wp shell` functionality"
