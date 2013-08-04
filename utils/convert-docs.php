@@ -12,9 +12,6 @@ function convert_file( $path ) {
 		return "\n$arg\n: ";
 	}, $out );
 
-	// convert tabs to spaces
-	$out = preg_replace( '/^\t/m', "  ", $out );
-
 	// prepend docblock notation
 	# $out = preg_replace( '/^(.*)/m', "\t* \\1", $out );
 
