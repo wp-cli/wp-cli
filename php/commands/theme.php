@@ -25,6 +25,11 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * See the status of one or all themes.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : A particular theme to show the status for.
+	 *
 	 * @synopsis [<theme>]
 	 */
 	function status( $args ) {
@@ -60,6 +65,11 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Activate a theme.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : The theme to activate.
+	 *
 	 * @synopsis <theme>
 	 */
 	public function activate( $args = array() ) {
@@ -82,6 +92,20 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Get the path to a theme or to the theme directory.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : The theme to get the path to. If not set, will return the path to the
+	 * themes directory.
+	 *
+	 * --dir
+	 * : If set, get the path to the closest parent directory, instead of the
+	 * theme file.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     cd $(wp theme path)
 	 *
 	 * @synopsis [<theme>] [--dir]
 	 */
@@ -149,6 +173,29 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Install a theme.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <theme|zip|url>
+	 * : A theme slug, the path to a local zip file, or URL to a remote zip file.
+	 *
+	 * --force
+	 * : If set, the command will overwrite any installed version of the theme, without prompting
+	 * for confirmation.
+	 *
+	 * --activate
+	 * : If set, the theme will be activated immediately after install.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Install the latest version from wordpress.org and activate
+	 *     wp theme install twentytwelve --activate
+	 *
+	 *     # Install from a local zip file
+	 *     wp theme install ../my-theme.zip
+	 *
+	 *     # Install from a remote zip file
+	 *     wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
+	 *
 	 * @synopsis <theme|zip|url> [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
@@ -157,6 +204,19 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Update a theme.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : The theme to update.
+	 *
+	 * --version=dev
+	 * : If set, the theme will be updated to the latest development version,
+	 * regardless of what version is currently installed.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme update twentytwelve
 	 *
 	 * @synopsis <theme> [--version=<version>]
 	 */
@@ -171,6 +231,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Update all themes.
 	 *
+	 * ## OPTIONS
+	 *
+	 * --dry-run
+	 * : Pretend to do the updates, to see what would happen.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme update-all
+	 *
 	 * @subcommand update-all
 	 * @synopsis [--dry-run]
 	 */
@@ -180,6 +249,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Delete a theme.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : The theme to delete.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme delete twentyeleven
 	 *
 	 * @synopsis <theme>
 	 */
@@ -202,6 +280,16 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Get a list of themes.
+	 *
+	 * ## OPTIONS
+	 *
+	 * * `--format`=<format>:
+	 *
+	 *     Output list as table, CSV or JSON. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme list --format=csv
 	 *
 	 * @subcommand list
 	 * @synopsis [--format=<format>]

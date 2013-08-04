@@ -10,6 +10,18 @@ class Comment_Command extends WP_CLI_Command {
 	/**
 	 * Insert a comment.
 	 *
+	 * ## OPTIONS
+	 *
+	 * --<field>=<value>
+	 * : Field values for the new comment. See wp_insert_comment().
+	 *
+	 * --porcelain
+	 * : Output just the new comment id.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
+	 *
 	 * @synopsis --<field>=<value> [--porcelain]
 	 */
 	public function create( $args, $assoc_args ) {
@@ -33,6 +45,18 @@ class Comment_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete a comment.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <ID>
+	 * : The ID of the comment to delete.
+	 *
+	 * --force
+	 * : Skip the trash bin.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment delete 1337 --force
 	 *
 	 * @synopsis <id> [--force]
 	 */
@@ -73,6 +97,15 @@ class Comment_Command extends WP_CLI_Command {
 	/**
 	 * Trash a comment.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <ID>
+	 * : The ID of the comment to trash.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment trash 1337
+	 *
 	 * @synopsis <id>
 	 */
 	public function trash( $args, $assoc_args ) {
@@ -81,6 +114,15 @@ class Comment_Command extends WP_CLI_Command {
 
 	/**
 	 * Untrash a comment.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <ID>
+	 * : The ID of the comment to untrash.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment untrash 1337
 	 *
 	 * @synopsis <id>
 	 */
@@ -91,6 +133,15 @@ class Comment_Command extends WP_CLI_Command {
 	/**
 	 * Spam a comment.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <ID>
+	 * : The ID of the comment to mark as spam.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment spam 1337
+	 *
 	 * @synopsis <id>
 	 */
 	public function spam( $args, $assoc_args ) {
@@ -100,6 +151,14 @@ class Comment_Command extends WP_CLI_Command {
 	/**
 	 * Unspam a comment.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <ID>
+	 * : The ID of the comment to unmark as spam.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment unspam 1337
 	 * @synopsis <id>
 	 */
 	public function unspam( $args, $assoc_args ) {
@@ -108,6 +167,15 @@ class Comment_Command extends WP_CLI_Command {
 
 	/**
 	 * Approve a comment.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <ID>
+	 * : The ID of the comment to approve.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment approve 1337
 	 *
 	 * @synopsis <id>
 	 */
@@ -118,6 +186,15 @@ class Comment_Command extends WP_CLI_Command {
 	/**
 	 * Unapprove a comment.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <ID>
+	 * : The ID of the comment to unapprove.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment unapprove 1337
+	 *
 	 * @synopsis <id>
 	 */
 	public function unapprove( $args, $assoc_args ) {
@@ -126,6 +203,16 @@ class Comment_Command extends WP_CLI_Command {
 
 	/**
 	 * Count comments, on whole blog or on a given post.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <ID>
+	 * : The ID of the post to count comments in
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment count
+	 *     wp comment count 42
 	 *
 	 * @synopsis [<post-id>]
 	 */
@@ -147,6 +234,15 @@ class Comment_Command extends WP_CLI_Command {
 	/**
 	 * Get status of a comment.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <ID>
+	 * : The ID of the comment to check
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment status 1337
+	 *
 	 * @synopsis <id>
 	 */
 	public function status( $args, $assoc_args ) {
@@ -163,6 +259,18 @@ class Comment_Command extends WP_CLI_Command {
 
 	/**
 	 * Get last approved comment.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --id
+	 * : Output just the last comment id.
+	 *
+	 * --full
+	 * : Output complete comment information.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment last --full
 	 *
 	 * @synopsis [--id] [--full]
 	 */

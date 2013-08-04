@@ -19,6 +19,23 @@ class Term_Command extends WP_CLI_Command {
 	/**
 	 * List terms in a taxonomy.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <taxonomy>
+	 * : List terms of a given taxonomy.
+	 *
+	 * --fields=<fields>
+	 * : Limit the output to specific object fields. Defaults to all of the term object fields.
+	 *
+	 * --format=<format>
+	 * : Output list as table, CSV, JSON, or simply IDs. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term list category --format=csv
+	 *
+	 *     wp term list post_tag --fields=name,slug
+	 *
 	 * @subcommand list
 	 * @synopsis <taxonomy> [--fields=<fields>] [--format=<format>]
 	 */
@@ -46,6 +63,30 @@ class Term_Command extends WP_CLI_Command {
 
 	/**
 	 * Create a term.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <term>
+	 * : A name for the new term.
+	 *
+	 * <taxonomy>
+	 * : Taxonomy for the new term.
+	 *
+	 * --slug=<slug>
+	 * : A unique slug for the new term. Defaults to sanitized version of name.
+	 *
+	 * --description=<description>
+	 * : A description for the new term.
+	 *
+	 * --parent=<term-id>
+	 * : A parent for the new term.
+	 *
+	 * --porcelain
+	 * : Output just the new term id.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term create Apple category --description="A type of fruit"
 	 *
 	 * @synopsis <term> <taxonomy> [--slug=<slug>] [--description=<description>] [--parent=<term-id>] [--porcelain]
 	 */
@@ -82,6 +123,30 @@ class Term_Command extends WP_CLI_Command {
 	/**
 	 * Update a term.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <term-id>
+	 * : ID for the term to update.
+	 *
+	 * <taxonomy>
+	 * : Taxonomy of the term to update.
+	 *
+	 * --name=<name>
+	 * : A new name for the term.
+	 *
+	 * --slug=<slug>
+	 * : A new slug for the term.
+	 *
+	 * --description=<description>
+	 * : A new description for the term.
+	 *
+	 * --parent=<term-id>
+	 * : A new parent for the term.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term update 15 category --name=Apple
+	 *
 	 * @synopsis <term-id> <taxonomy> [--name=<name>] [--slug=<slug>] [--description=<description>] [--parent=<term-id>]
 	 */
 	public function update( $args, $assoc_args ) {
@@ -111,6 +176,18 @@ class Term_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete a term.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <term-id>
+	 * : ID for the term to delete.
+	 *
+	 * <taxonomy>
+	 * : Taxonomy of the term to delete.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term delete 15 category
 	 *
 	 * @synopsis <term-id> <taxonomy>
 	 */

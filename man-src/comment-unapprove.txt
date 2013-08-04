@@ -1,9 +1,0 @@
-## OPTIONS
-
-* `<ID>`:
-
-	The ID of the comment to unapprove.
-
-## EXAMPLES
-
-	wp comment unapprove 1337

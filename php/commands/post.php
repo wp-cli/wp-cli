@@ -20,6 +20,33 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Create a post.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <filename>
+	 * : Read post content from <filename>. If this value is present, the
+	 *     `--post_content` argument will be ignored.
+	 *
+	 *   Passing `-` as the filename will cause post content to
+	 *   be read from STDIN.
+	 *
+	 * --<field>=<value>
+	 * : Field values for the new post. See wp_insert_post().
+	 *
+	 * --edit
+	 * : Immediately open system's editor to write or edit post content.
+	 *
+	 *   If content is read from a file, from STDIN, or from the `--post_content`
+	 *   argument, that text will be loaded into the editor.
+	 *
+	 * --porcelain
+	 * : Output just the new post id.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp post create --post_type=page --post_status=publish --post_title='A future post' --post-status=future --post_date='2020-12-01 07:00:00'
+	 *
+	 *     wp post create page.txt --post_type=page --post_title='Page from file'
+	 *
 	 * @synopsis [<filename>] --<field>=<value> [--edit] [--porcelain]
 	 */
 	public function create( $args, $assoc_args ) {
@@ -56,6 +83,18 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Update one or more posts.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <ID>
+	 * : The ID of the post to update.
+	 *
+	 * --<field>=<value>
+	 * : One or more fields to update. See wp_update_post().
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp post update 123 --post_name=something --post_status=draft
+	 *
 	 * @synopsis <id>... --<field>=<value>
 	 */
 	public function update( $args, $assoc_args ) {
@@ -68,6 +107,15 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Launch system editor to edit post content.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to edit.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp post edit 123
 	 *
 	 * @synopsis <id>
 	 */
@@ -91,7 +139,28 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Get a post's content by ID.
 	 *
-	 * @synopsis [--format=<format>] <id>
+	 * ## OPTIONS
+	 *
+	 * <ID>
+	 * : The ID of the post to get.
+	 *
+	 * --format=<format>
+	 * : The format to use when printing the post, acceptable values:
+	 *
+	 *   - **content**: Outputs only the post's content.
+	 *
+	 *   - **table**: Outputs all fields of the post as a table. Note that the
+	 *     post_content field is omitted so that the table is readable.
+	 *
+	 *   - **json**: Outputs all fields in JSON format.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp post get 12 --format=content
+	 *
+	 *     wp post get 12 > file.txt
+	 *
+	 * @synopsis [--format=<format>] <ID>
 	 */
 	public function get( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
@@ -130,6 +199,20 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Delete a post by ID.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <ID>
+	 * : The ID of the post to delete.
+	 *
+	 * --force
+	 * : Skip the trash bin.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp post delete 123 --force
+	 *
+	 *     wp post delete $(wp post list --post_type='page' --format=ids)
+	 *
 	 * @synopsis <id>... [--force]
 	 */
 	public function delete( $args, $assoc_args ) {
@@ -154,6 +237,25 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Get a list of posts.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --<field>=<value>
+	 * : One or more args to pass to WP_Query.
+	 *
+	 * --fields=<fields>
+	 * : Limit the output to specific object fields. Defaults to ID,post_title,post_name,post_date,post_status.
+	 *
+	 * --format=<format>
+	 * : Output list as table, CSV, JSON, or simply IDs. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp post list --format=ids
+	 *
+	 *     wp post list --post_type=post --posts_per_page=5 --format=json
+	 *
+	 *     wp post list --post_type=page --fields=post_title,post_status
 	 *
 	 * @subcommand list
 	 * @synopsis [--<field>=<value>] [--fields=<fields>] [--format=<format>]
@@ -194,6 +296,30 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Generate some posts.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --count=<number>
+	 * : How many posts to generate. Default: 100
+	 *
+	 * --post_type=<type>
+	 * : The type of the generated posts. Default: 'post'
+	 *
+	 * --post_status=<status>
+	 * : The status of the generated posts. Default: 'publish'
+	 *
+	 * --post_author=<login>
+	 * : The author of the generated posts. Default: none
+	 *
+	 * --post_date=<yyyy-mm-dd>
+	 * : The date of the generated posts. Default: current date
+	 *
+	 * --max_depth=<number>
+	 * : For hierarchical post types, generate child posts down to a certain depth. Default: 1
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp post generate --count=10 --post_type=page --post_date=1999-01-04
 	 *
 	 * @synopsis [--count=<number>] [--post_type=<type>] [--post_status=<status>] [--post_author=<login>] [--post_date=<yyyy-mm-dd>] [--max_depth=<number>]
 	 */
