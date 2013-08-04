@@ -137,7 +137,7 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * If this isn't done then the .htaccess rewrite rules won't be flushed out
 	 * to disk.
 	 */
-	public static function apache_modules() {
+	private static function apache_modules() {
 		$mods = WP_CLI::get_config('apache_modules');
 		if ( !empty( $mods ) && !function_exists( 'apache_get_modules' ) ) {
 			global $is_apache;
