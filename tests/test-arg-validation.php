@@ -1,11 +1,11 @@
 <?php
 
-use WP_CLI\SynopsisParser;
+use WP_CLI\SynopsisValidator;
 
 class ArgValidationTests extends PHPUnit_Framework_TestCase {
 
 	function testMissingPositional() {
-		$parser = new SynopsisParser( '<foo> <bar> [<baz>]' );
+		$parser = new SynopsisValidator( '<foo> <bar> [<baz>]' );
 
 		$this->assertFalse( $parser->enough_positionals( array() ) );
 		$this->assertTrue( $parser->enough_positionals( array( 1, 2 ) ) );
@@ -13,7 +13,7 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 	}
 
 	function testRepeatingPositional() {
-		$parser = new SynopsisParser( '<foo> [<bar>...]' );
+		$parser = new SynopsisValidator( '<foo> [<bar>...]' );
 
 		$this->assertFalse( $parser->enough_positionals( array() ) );
 		$this->assertTrue( $parser->enough_positionals( array( 1 ) ) );
@@ -21,14 +21,14 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 	}
 
 	function testUnknownAssocEmpty() {
-		$parser = new SynopsisParser( '' );
+		$parser = new SynopsisValidator( '' );
 
 		$assoc_args = array( 'foo' => true, 'bar' => false );
 		$this->assertEquals( array_keys( $assoc_args ), $parser->unknown_assoc( $assoc_args ) );
 	}
 
 	function testUnknownAssoc() {
-		$parser = new SynopsisParser( '--type=<type> [--brand=<brand>] [--flag]' );
+		$parser = new SynopsisValidator( '--type=<type> [--brand=<brand>] [--flag]' );
 
 		$assoc_args = array( 'type' => 'analog', 'brand' => true, 'flag' => true );
 		$this->assertEmpty( $parser->unknown_assoc( $assoc_args ) );
@@ -38,7 +38,7 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 	}
 
 	function testMissingAssoc() {
-		$parser = new SynopsisParser( '--type=<type> [--brand=<brand>] [--flag]' );
+		$parser = new SynopsisValidator( '--type=<type> [--brand=<brand>] [--flag]' );
 
 		$assoc_args = array( 'brand' => true, 'flag' => true );
 		$errors = $parser->validate_assoc( $assoc_args );

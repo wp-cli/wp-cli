@@ -45,7 +45,7 @@ class Configurator {
 				$mixed_args[] = array( $matches[1], false );
 			} elseif ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
 				$mixed_args[] = array( $matches[1], true );
-			} elseif ( preg_match( '|^--([^=]+)=(.+)|', $arg, $matches ) ) {
+			} elseif ( preg_match( '|^--([^=]+)=(.+)|s', $arg, $matches ) ) {
 				$mixed_args[] = array( $matches[1], $matches[2] );
 			} else {
 				$regular_args[] = $arg;
@@ -78,9 +78,9 @@ class Configurator {
 	 *
 	 * @return array
 	 */
-	function load_config( $path ) {
-		if ( $path )
-			$config = spyc_load_file( $path );
+	function load_config( $yml_file ) {
+		if ( $yml_file )
+			$config = spyc_load_file( $yml_file );
 		else
 			$config = array();
 
@@ -99,7 +99,25 @@ class Configurator {
 			$sanitized_config[ $key ] = $value;
 		}
 
+		// Make sure config-file-relative paths are made absolute.
+		$yml_file_dir = dirname( $yml_file );
+
+		if ( isset( $sanitized_config['path'] ) )
+			self::absolutize( $sanitized_config['path'], $yml_file_dir );
+
+		if ( isset( $sanitized_config['require'] ) ) {
+			foreach ( $sanitized_config['require'] as &$path ) {
+				self::absolutize( $path, $yml_file_dir );
+			}
+		}
+
 		return $sanitized_config;
+	}
+
+	private static function absolutize( &$path, $base ) {
+		if ( !empty( $path ) && !\WP_CLI\Utils\is_path_absolute( $path ) ) {
+			$path = $base . DIRECTORY_SEPARATOR . $path;
+		}
 	}
 }
 

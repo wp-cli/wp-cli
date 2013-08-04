@@ -15,54 +15,80 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertCount( 2, $r );
 
-		$this->assertEquals( 'positional', $r[0]['type'] );
-		$this->assertEquals( 'mandatory', $r[0]['flavour'] );
+		$param = $r[0];
+		$this->assertEquals( 'positional', $param['type'] );
+		$this->assertFalse( $param['optional'] );
 
-		$this->assertEquals( 'positional', $r[1]['type'] );
-		$this->assertEquals( 'optional', $r[1]['flavour'] );
+		$param = $r[1];
+		$this->assertEquals( 'positional', $param['type'] );
+		$this->assertTrue( $param['optional'] );
 	}
 
 	function testFlag() {
 		$r = SynopsisParser::parse( '[--foo]' );
 
 		$this->assertCount( 1, $r );
-		$this->assertEquals( 'flag', $r[0]['type'] );
-		$this->assertEquals( 'optional', $r[0]['flavour'] );
+
+		$param = $r[0];
+		$this->assertEquals( 'flag', $param['type'] );
+		$this->assertTrue( $param['optional'] );
 
 		// flags can't be mandatory
 		$r = SynopsisParser::parse( '--foo' );
 
 		$this->assertCount( 1, $r );
-		$this->assertEquals( 'unknown', $r[0]['type'] );
+
+		$param = $r[0];
+		$this->assertEquals( 'unknown', $param['type'] );
 	}
 
 	function testGeneric() {
-		$r = SynopsisParser::parse( '--<field>=<value> [--<field>=<value>]' );
+		$r = SynopsisParser::parse( '--<field>=<value> [--<field>=<value>] --<field>[=<value>] [--<field>[=<value>]]' );
 
-		$this->assertCount( 2, $r );
+		$this->assertCount( 4, $r );
 
-		$this->assertEquals( 'generic', $r[0]['type'] );
-		$this->assertEquals( 'mandatory', $r[0]['flavour'] );
+		$param = $r[0];
+		$this->assertEquals( 'generic', $param['type'] );
+		$this->assertFalse( $param['optional'] );
 
-		$this->assertEquals( 'generic', $r[1]['type'] );
-		$this->assertEquals( 'optional', $r[1]['flavour'] );
+		$param = $r[1];
+		$this->assertEquals( 'generic', $param['type'] );
+		$this->assertTrue( $param['optional'] );
+
+		$param = $r[2];
+		$this->assertEquals( 'unknown', $param['type'] );
+
+		$param = $r[3];
+		$this->assertEquals( 'unknown', $param['type'] );
 	}
 
 	function testAssoc() {
-		$r = SynopsisParser::parse( '--foo=<value> [--bar=<value>]' );
+		$r = SynopsisParser::parse( '--foo=<value> [--bar=<value>] [--bar[=<value>]]' );
 
-		$this->assertCount( 2, $r );
+		$this->assertCount( 3, $r );
 
-		$this->assertEquals( 'assoc', $r[0]['type'] );
-		$this->assertEquals( 'mandatory', $r[0]['flavour'] );
+		$param = $r[0];
+		$this->assertEquals( 'assoc', $param['type'] );
+		$this->assertFalse( $param['optional'] );
 
-		$this->assertEquals( 'assoc', $r[1]['type'] );
-		$this->assertEquals( 'optional', $r[1]['flavour'] );
+		$param = $r[1];
+		$this->assertEquals( 'assoc', $param['type'] );
+		$this->assertTrue( $param['optional'] );
 
-		// shouldn't pass defaults to assoc parameters
-		$r = SynopsisParser::parse( '--count=100' );
-		$this->assertCount( 1, $r );
+		$param = $r[2];
+		$this->assertEquals( 'assoc', $param['type'] );
+		$this->assertTrue( $param['optional'] );
+		$this->assertTrue( $param['value']['optional'] );
+	}
+
+	function testInvalidAssoc() {
+		$r = SynopsisParser::parse( '--bar[=<value>] --bar=[<value>] --count=100' );
+
+		$this->assertCount( 3, $r );
+
 		$this->assertEquals( 'unknown', $r[0]['type'] );
+		$this->assertEquals( 'unknown', $r[1]['type'] );
+		$this->assertEquals( 'unknown', $r[2]['type'] );
 	}
 
 	function testRepeating() {
@@ -70,15 +96,19 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertCount( 2, $r );
 
-		$this->assertEquals( 'positional', $r[0]['type'] );
-		$this->assertEquals( 'repeating', $r[0]['flavour'] );
+		$param = $r[0];
+		$this->assertEquals( 'positional', $param['type'] );
+		$this->assertTrue( $param['repeating'] );
 
-		$this->assertEquals( 'generic', $r[1]['type'] );
-		$this->assertEquals( 'repeating', $r[1]['flavour'] );
+		$param = $r[1];
+		$this->assertEquals( 'generic', $param['type'] );
+		$this->assertTrue( $param['repeating'] );
 	}
 
 	function testCombined() {
 		$r = SynopsisParser::parse( '<positional> --assoc=<someval> --<field>=<value> [--flag]' );
+
+		$this->assertCount( 4, $r );
 
 		$this->assertEquals( 'positional', $r[0]['type'] );
 		$this->assertEquals( 'assoc', $r[1]['type'] );
@@ -86,22 +116,24 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'flag', $r[3]['type'] );
 	}
 
-    function testAllowedValueCharacters() {
-        $r = SynopsisParser::parse( '--capitals=<VALUE> --hyphen=<val-ue> --combined=<VAL-ue> --disallowed=<wrong:char>' );
+	function testAllowedValueCharacters() {
+		$r = SynopsisParser::parse( '--capitals=<VALUE> --hyphen=<val-ue> --combined=<VAL-ue> --disallowed=<wrong:char>' );
 
-        $this->assertCount( 4, $r );
+		$this->assertCount( 4, $r );
 
-        $this->assertEquals( 'assoc', $r[0]['type'] );
-        $this->assertEquals( 'mandatory', $r[0]['flavour'] );
+		$param = $r[0];
+		$this->assertEquals( 'assoc', $param['type'] );
+		$this->assertFalse( $param['optional'] );
 
-        $this->assertEquals( 'assoc', $r[1]['type'] );
-        $this->assertEquals( 'mandatory', $r[1]['flavour'] );
+		$param = $r[1];
+		$this->assertEquals( 'assoc', $param['type'] );
+		$this->assertFalse( $param['optional'] );
 
-        $this->assertEquals( 'assoc', $r[2]['type'] );
-        $this->assertEquals( 'mandatory', $r[2]['flavour'] );
+		$param = $r[2];
+		$this->assertEquals( 'assoc', $param['type'] );
+		$this->assertFalse( $param['optional'] );
 
-        $this->assertEquals( 'unknown', $r[3]['type'] );
-    }
-
+		$this->assertEquals( 'unknown', $r[3]['type'] );
+	}
 }
 
