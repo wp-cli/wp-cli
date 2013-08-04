@@ -78,9 +78,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     wp plugin search dsgnwrks --fields=name,version,slug,rating,num_ratings
 	 *
-	 * @synopsis <plugin>
+	 * @synopsis <plugin> [--per_page=<per_page>] [--fields=<fields>]
 	 */
-	function search( $args, $assoc_args = array() ) {
+	public function search( $args, $assoc_args = array() ) {
 		$term = $args[0];
 		$per_page = isset( $assoc_args['per_page'] ) ? (int) $assoc_args['per_page'] : 10;
 		$fields = isset( $assoc_args['fields'] ) ? $assoc_args['fields'] : array( 'name', 'slug', 'author_profile', 'rating' );
@@ -97,9 +97,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			if ( ! isset( $api->plugins ) )
 				WP_CLI::error( $api->get_error_message() . __( 'API error. Try Again.' ) );
 
-			WP_CLI\Utils\format_items( 'table', $api->plugins, $fields );
-
 			WP_CLI::success( count( $api->plugins ). ' Plugins Found. Use slug for other plugin methods.' );
+
+			WP_CLI\Utils\format_items( 'table', $api->plugins, $fields );
 		}
 
 	}
