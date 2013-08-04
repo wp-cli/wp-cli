@@ -12,8 +12,12 @@ function convert_file( $path ) {
 		return "\n$arg\n: ";
 	}, $out );
 
+	// fix indentation
+	$out = preg_replace( '/^  ([^ ]+)/m', "\t\\1", $out );
+	$out = str_replace( "\t", '    ', $out );
+
 	// prepend docblock notation
-	# $out = preg_replace( '/^(.*)/m', "\t* \\1", $out );
+	$out = preg_replace( '/^/m', "\t * ", $out );
 
 	file_put_contents( $path, $out );
 }
