@@ -47,29 +47,12 @@ class Help_Command extends WP_CLI_Command {
 
 		$out = str_replace( "\t", '  ', $out );
 
-		self::pass_through_pager( WP_CLI::colorize( $out ) );
-	}
-
-	private static function launch_pager( $pager, $fd ) {
-		// launch pager
-		$descriptorspec = array(
-			0 => $fd,
-			1 => STDOUT,
-			2 => array( 'pipe', 'w' )
-		);
-
-		$r = proc_close( proc_open( $pager, $descriptorspec, $pipes ) );
-
-		if ( 127 == $r ) {
-			return false;
+		if ( strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ) {
+			// no paging for Windows cmd.exe; sorry
+			echo $out;
+		} else {
+			self::pass_through_pager( WP_CLI::colorize( $out ) );
 		}
-
-		if ( $r ) {
-			fwrite( STDERR, stream_get_contents( $pipes[1] ) );
-			exit( $r );
-		}
-
-		return true;
 	}
 
 	private static function pass_through_pager( $out ) {
@@ -78,14 +61,13 @@ class Help_Command extends WP_CLI_Command {
 		fputs( $fd, $out );
 		rewind( $fd );
 
-		$pagers = array( 'less -r', 'more -r' );
-		foreach ( $pagers as $pager ) {
-			if ( self::launch_pager( $pager, $fd ) )
-				return;
-		}
+		$descriptorspec = array(
+			0 => $fd,
+			1 => STDOUT,
+			2 => STDERR
+		);
 
-		// no pager found
-		echo $out;
+		return proc_close( proc_open( 'less -r', $descriptorspec, $pipes ) );
 	}
 
 	private static function find( $candidates, $callback ) {
