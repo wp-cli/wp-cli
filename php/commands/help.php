@@ -48,9 +48,6 @@ class Help_Command extends WP_CLI_Command {
 		// definition lists
 		$out = preg_replace( '/\n([^\n]+)\n: (.+?)\n/s', "\n\t\\1\n\t\t\\2\n", $out );
 
-		// convert tabs to spaces
-		$out = preg_replace( '/^\t/m', "  ", $out );
-
 		$out = str_replace( "\t", '  ', $out );
 
 		echo WP_CLI::colorize( $out );
