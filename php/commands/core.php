@@ -75,7 +75,7 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Set up a wp-config.php file.
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php]
+	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass[=<password>]] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php]
 	 */
 	public function config( $_, $assoc_args ) {
 		if ( Utils\locate_wp_config() ) {
@@ -92,6 +92,10 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( preg_match( '|[^a-z0-9_]|i', $assoc_args['dbprefix'] ) )
 			WP_CLI::error( '--dbprefix can only contain numbers, letters, and underscores.' );
+
+		if( isset( $assoc_args['dbpass'] ) && empty( $assoc_args['dbpass'] ) ) {
+			$assoc_args['dbpass'] = WP_CLI::prompt('Enter database password', '');
+		}
 
 		// Check DB connection
 		Utils\run_mysql_query( ';', array(
