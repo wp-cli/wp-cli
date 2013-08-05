@@ -322,7 +322,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$data_type = 'plugin' === $data_type ? 'plugin' : 'theme';
 		$plural = $data_type . 's';
 		$data = $api->$plural;
-		$count = isset( $api->info['results'] ) ? $api->info['results'] : count( $data );
+		$count = isset( $api->info['results'] ) ? $api->info['results'] : 'unknown';
 
 		if ( is_wp_error( $api ) )
 			\WP_CLI::error( $api->get_error_message() . __( ' Try again' ) );
@@ -330,7 +330,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( ! isset( $data ) )
 			\WP_CLI::error( __( 'API error. Try Again.' ) );
 
-		\WP_CLI::success( $count .' '. $plural .' Found. \'search=$key\' in place of slug available for '. $data_type .' commands.' );
+		\WP_CLI::success( 'Showing '. count( $data ) .' of '. $count .' '. $plural .'. \'search=$key\' in place of slug available for '. $data_type .' commands.' );
 
 		foreach ( $data as $key => $item ) {
 			$item->key = $key;
