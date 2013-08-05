@@ -20,10 +20,17 @@ Feature: Get help about WP-CLI commands
     And STDERR should not be empty
 
   Scenario: Help for incomplete commands
-    Given an empty directory
+    Given a WP install
 
     When I run `wp core`
     Then STDOUT should contain:
       """
       usage: wp core
+      """
+
+    # See https://github.com/wp-cli/wp-cli/issues/633
+    When I run `wp plugin install`
+    Then STDOUT should contain:
+      """
+      usage: wp plugin install
       """
