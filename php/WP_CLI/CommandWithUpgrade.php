@@ -317,7 +317,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * @param  array  $assoc_args Data passed in from command.
 	 * @param  string $data_type  Plugin or Theme api endpoint
 	 */
-	public function _search( $api, $fields, $assoc_args, $data_type = 'plugin' ) {
+	protected function _search( $api, $fields, $assoc_args, $data_type = 'plugin' ) {
 
 		// Sanitize to 1 of 2 types
 		$data_type = 'plugin' === $data_type ? 'plugin' : 'theme';
@@ -333,16 +333,22 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		\WP_CLI::success( 'Showing '. count( $data ) .' of '. $count .' '. $plural .'. \'search=$key\' in place of slug available for '. $data_type .' commands.' );
 
-		foreach ( $data as $key => $item ) {
-			$item->key = $key;
-			$data[$key] = $item;
-		}
-
-		$set = set_site_transient( 'wpcli-$data_type-search-data', $data, 60*60 );
-
 		$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
 
-		\WP_CLI\Utils\format_items( $format, $data, array_merge( array( 'key' ), $fields ) );
+		// @TODO https://github.com/wp-cli/wp-cli/issues/635
+		if ( isset( $assoc_args['interactive'] ) ) {
+			// Add key as a field
+			$fields = array_merge( array( 'key' ), $fields ) : $fields;
+			// & infuse object with $key
+			foreach ( $data as $key => $item ) {
+				$item->key = $key;
+				$data[$key] = $item;
+			}
+		}
+
+		$fields = isset( $assoc_args['interactive'] ) ? array_merge( array( 'key' ), $fields ) : $fields;
+
+		\WP_CLI\Utils\format_items( $format, $data, $fields );
 
 	}
 
