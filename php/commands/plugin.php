@@ -61,19 +61,19 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Ask for specific fields from the API. Defaults to name,slug,author_profile,rating. acceptable values:
 	 *
 	 *     **name**: Plugin Name
-    *     **slug**: Plugin Slug
-    *     **version**: Current Version Number
-    *     **author**: Plugin Author
-    *     **author_profile**: Plugin Author Profile
-    *     **contributors**: Plugin Contributors
-    *     **requires**: Plugin Minimum Requirements
-    *     **tested**: Plugin Tested Up To
-    *     **compatibility**: Plugin Compatible With
-    *     **rating**: Plugin Rating
-    *     **num_ratings**: Number of Plugin Ratings
-    *     **homepage**: Plugin Author's Homepage
-    *     **description**: Plugin's Description
-    *     **short_description**: Plugin's Short Description
+	 *     **slug**: Plugin Slug
+	 *     **version**: Current Version Number
+	 *     **author**: Plugin Author
+	 *     **author_profile**: Plugin Author Profile
+	 *     **contributors**: Plugin Contributors
+	 *     **requires**: Plugin Minimum Requirements
+	 *     **tested**: Plugin Tested Up To
+	 *     **compatibility**: Plugin Compatible With
+	 *     **rating**: Plugin Rating
+	 *     **num_ratings**: Number of Plugin Ratings
+	 *     **homepage**: Plugin Author's Homepage
+	 *     **description**: Plugin's Description
+	 *     **short_description**: Plugin's Short Description
 	 *
 	 * ## EXAMPLES
 	 *
