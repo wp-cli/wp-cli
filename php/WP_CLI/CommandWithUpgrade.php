@@ -346,25 +346,4 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	}
 
-	/**
-	 * Parse the name of a plugin to check if 'search=' exists, and check search transient for the key
-	 *
-	 * @param string name
-	 * @return string
-	 */
-	public function _parse_search_key( $name, $data_type = 'plugin' ) {
-
-		// Sanitize to 1 of 2 types
-		$data_type = 'plugin' === $data_type ? 'plugin' : 'theme';
-
-		if ( false !== strpos( $name, 'search=' ) ) {
-			$search_key = (int) str_replace( 'search=', '', $name );
-			if ( ( $trans = get_site_transient( 'wpcli-$data_type-search-data' ) ) && isset( $trans[$search_key] ) )
-				$name = $trans[$search_key]->slug;
-			else
-				\WP_CLI::error( 'There is no recent search with that key.' );
-		}
-		return $name;
-	}
-
 }

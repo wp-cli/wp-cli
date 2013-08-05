@@ -246,7 +246,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <theme|zip|url> [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
-		$args[0] = $this->parse_search_key( $args[0] );
 		parent::install( $args, $assoc_args );
 	}
 
@@ -353,7 +352,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @return object
 	 */
 	private function parse_name( $name ) {
-		$theme = wp_get_theme( $this->parse_search_key( $name ) );
+		$theme = wp_get_theme( $name );
 
 		if ( !$theme->exists() ) {
 			WP_CLI::error( "The theme '$name' could not be found." );
@@ -363,15 +362,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		return $theme;
 	}
 
-	/**
-	 * Parse the name of a theme to check if 'search=' exists, and check search transient for the key
-	 *
-	 * @param string name
-	 * @return string
-	 */
-	public function parse_search_key( $name ) {
-		return parent::_parse_search_key( $name, 'theme' );
-	}
 }
 
 WP_CLI::add_command( 'theme', 'Theme_Command' );
