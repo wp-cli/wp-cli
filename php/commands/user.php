@@ -527,20 +527,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		
 		$user_caps_list = $user->allcaps;
 		$cap_table_titles = array( 'capability', 'status' );
-		
-		// Get all active caps (marked as true)
-		$active_user_caps = array();
+				
+		WP_CLI::success( "User caps (role and individual) are: " );
 		
 		foreach( $user_caps_list as $cap => $active ) {
 			if( $active ) {
-				$active_user_caps[] = $cap;
+				\cli\line( $cap );
 			}
 		}
-		
-		// Omit formatting from the Utils class due to the assoc array format
-		$user_caps = implode( ', ', $active_user_caps );
-
-		WP_CLI::success( sprintf( "User caps (role and individual) are: %s.", $user_caps ) );
 	}
 
 	private static function get_user( $id_or_login ) {
