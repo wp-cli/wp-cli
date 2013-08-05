@@ -42,7 +42,7 @@ class SynopsisParser {
 
 		if ( '--<field>=<value>' === $token ) {
 			$param['type'] = 'generic';
-		} elseif ( preg_match( "/^<$p_name>$/", $token, $matches ) ) {
+		} elseif ( preg_match( "/^<$p_value>$/", $token, $matches ) ) {
 			$param['type'] = 'positional';
 		} elseif ( preg_match( "/^--$p_name/", $token, $matches ) ) {
 			$param['name'] = $matches[1];
