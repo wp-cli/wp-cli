@@ -90,8 +90,12 @@ class Scaffold_Command extends WP_CLI_Command {
 	function taxonomy( $args, $assoc_args ) {
 		$defaults = array(
 			'textdomain' => '',
-			'post_types' => 'post'
+			'post_types' => "'post'"
 		);
+
+		if( isset($assoc_args['post_types']) ) {
+			$assoc_args['post_types'] = $this->quote_comma_list_elements( $assoc_args['post_types'] );
+		}
 
 		$this->_scaffold( $args[0], $assoc_args, $defaults, '/taxonomies/', array(
 			'taxonomy.mustache',
@@ -112,8 +116,6 @@ class Scaffold_Command extends WP_CLI_Command {
 		$vars = $this->extract_args( $assoc_args, $defaults );
 
 		$vars['slug'] = $slug;
-
-		$vars['post_types'] = $this->quote_comma_list_elements( $vars['post_types'] );
 
 		$vars['textdomain'] = $this->get_textdomain( $vars['textdomain'], $control_args );
 
