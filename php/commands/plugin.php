@@ -51,7 +51,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * <plugin>
 	 * : A particular plugin to search for.
 	 *
-	 * --per_page
+	 * --per-page
 	 * : Optional number of results to display. Defaults to 10.
 	 *
 	 * --fields
@@ -74,15 +74,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp plugin search dsgnwrks --per_page=20
+	 *     wp plugin search dsgnwrks --per-page=20
 	 *
 	 *     wp plugin search dsgnwrks --fields=name,version,slug,rating,num_ratings
 	 *
-	 * @synopsis <plugin> [--per_page=<per_page>] [--fields=<fields>]
+	 * @synopsis <plugin> [--per-page=<per-page>] [--fields=<fields>]
 	 */
 	public function search( $args, $assoc_args = array() ) {
 		$term = $args[0];
-		$per_page = isset( $assoc_args['per_page'] ) ? (int) $assoc_args['per_page'] : 10;
+		$per_page = isset( $assoc_args['per-page'] ) ? (int) $assoc_args['per-page'] : 10;
 		$fields = isset( $assoc_args['fields'] ) ? $assoc_args['fields'] : array( 'name', 'slug', 'author_profile', 'rating' );
 
 		$api = plugins_api( 'query_plugins', array(

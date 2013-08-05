@@ -44,7 +44,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * <theme>
 	 * : A particular theme to search for.
 	 *
-	 * --per_page
+	 * --per-page
 	 * : Optional number of results to display. Defaults to 10.
 	 *
 	 * --fields
@@ -63,15 +63,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme search automattic --per_page=20
+	 *     wp theme search automattic --per-page=20
 	 *
 	 *     wp theme search automattic --fields=name,version,slug,rating,num_ratings,description
 	 *
-	 * @synopsis <theme> [--per_page=<per_page>] [--fields=<fields>]
+	 * @synopsis <theme> [--per-page=<per-page>] [--fields=<fields>]
 	 */
 	public function search( $args, $assoc_args = array() ) {
 		$term = $args[0];
-		$per_page = isset( $assoc_args['per_page'] ) ? (int) $assoc_args['per_page'] : 10;
+		$per_page = isset( $assoc_args['per-page'] ) ? (int) $assoc_args['per-page'] : 10;
 		$fields = isset( $assoc_args['fields'] ) ? $assoc_args['fields'] : array( 'name', 'slug', 'author', 'rating' );
 
 		$api = themes_api( 'query_themes', array(
