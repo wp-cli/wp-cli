@@ -448,6 +448,62 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() );
 		}
 	}
+	
+	/**
+	 * Add a capability for a user.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <user>
+	 * : User ID or user login.
+	 *
+	 * <cap>
+	 * : Add the specified capability for the user.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp user add-cap john create_premium_item
+	 *     wp user add-cap 15 edit_product
+	 *
+	 * @subcommand add-cap
+	 * @synopsis <user> <cap>
+	 */
+	public function add_cap( $args, $assoc_args ) {
+		$user = self::get_user( $args[0] );
+		$cap  = $args[1];	
+
+		$user->add_cap( $cap );
+
+		WP_CLI::success( sprintf( "Added '%s' capability for %s (%d).", $cap, $user->user_login, $user->ID ) );
+	}
+	
+	/**
+	 * Remove a user's capability.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <user>
+	 * : User ID or user login.
+	 *
+	 * <cap>
+	 * : Capability to be removed.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp user remove-cap bob edit_themes
+	 *     wp user remove-cap 11 publish_newsletters
+	 *
+	 * @subcommand remove-cap
+	 * @synopsis <user> <cap>
+	 */
+	public function remove_cap( $args, $assoc_args ) {
+		$user = self::get_user( $args[0] );
+		$cap = $args[1];
+
+		$user->remove_cap( $cap );
+
+		WP_CLI::success( sprintf( "Removed '%s' cap for %s (%d).", $cap, $user->user_login, $user->ID ) );
+	}
 
 	private static function get_user( $id_or_login ) {
 		if ( is_numeric( $id_or_login ) )
