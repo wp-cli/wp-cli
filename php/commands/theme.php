@@ -79,7 +79,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			'search' => $term,
 		) );
 
-		parent::search( $api, $fields, 'theme' );
+		parent::_search( $api, $fields, 'theme' );
 
 	}
 

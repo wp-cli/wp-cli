@@ -90,7 +90,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			'search' => $term,
 		) );
 
-		parent::search( $api, $fields, 'plugin' );
+		parent::_search( $api, $fields, 'plugin' );
 
 	}
 

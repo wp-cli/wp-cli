@@ -316,7 +316,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * @param  array  $fields    Data fields to display in table.
 	 * @param  string $data_type Plugin or Theme api endpoint
 	 */
-	public function search( $api, $fields, $data_type = 'plugin' ) {
+	public function _search( $api, $fields, $data_type = 'plugin' ) {
 
 		// Sanitize to 1 of 2 types
 		$data_type = 'plugin' === $data_type ? 'plugin' : 'theme';
