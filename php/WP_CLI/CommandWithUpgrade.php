@@ -349,7 +349,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * @param string name
 	 * @return string
 	 */
-	public function parse_search_key( $name, $data_type = 'plugin' ) {
+	public function _parse_search_key( $name, $data_type = 'plugin' ) {
 
 		// Sanitize to 1 of 2 types
 		$data_type = 'plugin' === $data_type ? 'plugin' : 'theme';

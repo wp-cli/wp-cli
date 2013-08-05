@@ -542,7 +542,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @return string
 	 */
 	public function parse_search_key( $name ) {
-		return parent::parse_search_key( $name, 'plugin' );
+		return parent::_parse_search_key( $name, 'plugin' );
 	}
 
 	/**

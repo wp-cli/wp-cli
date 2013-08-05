@@ -370,7 +370,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @return string
 	 */
 	public function parse_search_key( $name ) {
-		return parent::parse_search_key( $name, 'theme' );
+		return parent::_parse_search_key( $name, 'theme' );
 	}
 }
 
