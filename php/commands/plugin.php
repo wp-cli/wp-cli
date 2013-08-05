@@ -83,7 +83,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	public function search( $args, $assoc_args = array() ) {
 		$term = $args[0];
 		$per_page = isset( $assoc_args['per-page'] ) ? (int) $assoc_args['per-page'] : 10;
-		$fields = isset( $assoc_args['fields'] ) ? $assoc_args['fields'] : array( 'name', 'slug', 'author_profile', 'rating' );
+		$fields = isset( $assoc_args['fields'] ) ? $assoc_args['fields'] : array( 'name', 'slug', 'rating' );
 
 		$api = plugins_api( 'query_plugins', array(
 			'per_page' => $per_page,
