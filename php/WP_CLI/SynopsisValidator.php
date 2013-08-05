@@ -13,6 +13,12 @@ class SynopsisValidator {
 		$this->spec = SynopsisParser::parse( $synopsis );
 	}
 
+	public function get_unknown() {
+		return array_column( $this->query_spec( array(
+			'type' => 'unknown',
+		) ), 'token' );
+	}
+
 	public function enough_positionals( $args ) {
 		$positional = $this->query_spec( array(
 			'type' => 'positional',
