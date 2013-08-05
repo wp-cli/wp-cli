@@ -107,13 +107,14 @@ class Scaffold_Command extends WP_CLI_Command {
 			'theme'  => false,
 			'plugin' => false,
 			'raw'    => false,
+			'post_types' => false,
 		) );
 
 		$vars = $this->extract_args( $assoc_args, $defaults );
 
 		$vars['slug'] = $slug;
 
-		$vars['post_types'] = $this->quote_comma_list_elements( $vars['post_types'] );
+		$vars['post_types'] = $this->quote_comma_list_elements( $control_args['post_types'] );
 
 		$vars['textdomain'] = $this->get_textdomain( $vars['textdomain'], $control_args );
 
