@@ -308,4 +308,60 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		return $colors[ $status ];
 	}
+
+	/**
+	 * Search wordpress.org plugin repo
+	 *
+	 * @param  object $api       data from WP plugin/theme API
+	 * @param  array  $fields    Data fields to display in table.
+	 * @param  string $data_type Plugin or Theme api endpoint
+	 */
+	public function search( $api, $fields, $data_type = 'plugin' ) {
+
+		// Sanitize to 1 of 2 types
+		$data_type = 'plugin' === $data_type ? 'plugin' : 'theme';
+		$plural = $data_type . 's';
+		$data = $api->$plural;
+		$count = isset( $api->info['results'] ) ? $api->info['results'] : count( $data );
+
+		if ( is_wp_error( $api ) )
+			\WP_CLI::error( $api->get_error_message() . __( ' Try again' ) );
+
+		if ( ! isset( $data ) )
+			\WP_CLI::error( __( 'API error. Try Again.' ) );
+
+		\WP_CLI::success( $count .' '. $plural .' Found. \'search=$key\' in place of slug available for '. $data_type .' commands.' );
+
+		foreach ( $data as $key => $item ) {
+			$item->key = $key;
+			$data[$key] = $item;
+		}
+
+		$set = set_site_transient( 'wpcli-$data_type-search-data', $data, 60*60 );
+
+		\WP_CLI\Utils\format_items( 'table', $data, array_merge( array( 'key' ), $fields ) );
+
+	}
+
+	/**
+	 * Parse the name of a plugin to check if 'search=' exists, and check search transient for the key
+	 *
+	 * @param string name
+	 * @return string
+	 */
+	public function parse_search_key( $name, $data_type = 'plugin' ) {
+
+		// Sanitize to 1 of 2 types
+		$data_type = 'plugin' === $data_type ? 'plugin' : 'theme';
+
+		if ( false !== strpos( $name, 'search=' ) ) {
+			$search_key = (int) str_replace( 'search=', '', $name );
+			if ( ( $trans = get_site_transient( 'wpcli-$data_type-search-data' ) ) && isset( $trans[$search_key] ) )
+				$name = $trans[$search_key]->slug;
+			else
+				\WP_CLI::error( 'There is no recent search with that key.' );
+		}
+		return $name;
+	}
+
 }

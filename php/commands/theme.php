@@ -36,6 +36,53 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		parent::status( $args );
 	}
 
+	/**
+	 * Search wordpress.org theme repo
+	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : A particular theme to search for.
+	 *
+	 * --per_page
+	 * : Optional number of results to display. Defaults to 10.
+	 *
+	 * --fields
+	 * : Ask for specific fields from the API. Defaults to name,slug,author,rating. acceptable values:
+	 *
+	 *     **name**: Theme Name
+	 *     **slug**: Theme Slug
+	 *     **version**: Current Version Number
+	 *     **author**: Theme Author
+	 *     **preview_url**: Theme Preview URL
+	 *     **screenshot_url**: Theme Screenshot URL
+	 *     **rating**: Theme Rating
+	 *     **num_ratings**: Number of Theme Ratings
+	 *     **homepage**: Theme Author's Homepage
+	 *     **description**: Theme Description
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme search automattic --per_page=20
+	 *
+	 *     wp theme search automattic --fields=name,version,slug,rating,num_ratings,description
+	 *
+	 * @synopsis <theme> [--per_page=<per_page>] [--fields=<fields>]
+	 */
+	public function search( $args, $assoc_args = array() ) {
+		$term = $args[0];
+		$per_page = isset( $assoc_args['per_page'] ) ? (int) $assoc_args['per_page'] : 10;
+		$fields = isset( $assoc_args['fields'] ) ? $assoc_args['fields'] : array( 'name', 'slug', 'author', 'rating' );
+
+		$api = themes_api( 'query_themes', array(
+			'per_page' => $per_page,
+			'search' => $term,
+		) );
+
+		parent::search( $api, $fields, 'theme' );
+
+	}
+
 	protected function status_single( $args ) {
 		$theme = $this->parse_name( $args[0] );
 
@@ -199,6 +246,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <theme|zip|url> [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
+		$args[0] = $this->parse_search_key( $args[0] );
 		parent::install( $args, $assoc_args );
 	}
 
@@ -305,7 +353,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @return object
 	 */
 	private function parse_name( $name ) {
-		$theme = wp_get_theme( $name );
+		$theme = wp_get_theme( $this->parse_search_key( $name ) );
 
 		if ( !$theme->exists() ) {
 			WP_CLI::error( "The theme '$name' could not be found." );
@@ -313,6 +361,16 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		return $theme;
+	}
+
+	/**
+	 * Parse the name of a theme to check if 'search=' exists, and check search transient for the key
+	 *
+	 * @param string name
+	 * @return string
+	 */
+	public function parse_search_key( $name ) {
+		return parent::parse_search_key( $name, 'theme' );
 	}
 }
 

@@ -85,27 +85,17 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$per_page = isset( $assoc_args['per_page'] ) ? (int) $assoc_args['per_page'] : 10;
 		$fields = isset( $assoc_args['fields'] ) ? $assoc_args['fields'] : array( 'name', 'slug', 'author_profile', 'rating' );
 
-		if ( $term ) {
-			$api = plugins_api( 'query_plugins', array(
-				'per_page' => $per_page,
-				'search' => $term,
-			) );
+		$api = plugins_api( 'query_plugins', array(
+			'per_page' => $per_page,
+			'search' => $term,
+		) );
 
-			if ( is_wp_error( $api ) )
-				WP_CLI::error( $api->get_error_message() . __( ' Try again' ) );
-
-			if ( ! isset( $api->plugins ) )
-				WP_CLI::error( $api->get_error_message() . __( 'API error. Try Again.' ) );
-
-			WP_CLI::success( count( $api->plugins ). ' Plugins Found. Use slug for other plugin methods.' );
-
-			WP_CLI\Utils\format_items( 'table', $api->plugins, $fields );
-		}
+		parent::search( $api, $fields, 'plugin' );
 
 	}
 
 	protected function status_single( $args ) {
-		$name = $args[0];
+		$name = $this->parse_search_key( $args[0] );
 		$file = $this->parse_name( $name );
 
 		$details = $this->get_details( $file );
@@ -155,7 +145,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin> [--network]
 	 */
 	function activate( $args, $assoc_args = array() ) {
-		$name = $args[0];
+		$name = $this->parse_search_key( $args[0] );
 		$file = $this->parse_name( $name );
 
 		$network_wide = isset( $assoc_args['network'] );
@@ -186,7 +176,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin> [--network]
 	 */
 	function deactivate( $args, $assoc_args = array() ) {
-		$name = $args[0];
+		$name = $this->parse_search_key( $args[0] );
 		$file = $this->parse_name( $name );
 
 		$network_wide = isset( $assoc_args['network'] );
@@ -217,7 +207,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin> [--network]
 	 */
 	function toggle( $args, $assoc_args = array() ) {
-		$name = $args[0];
+		$name = $this->parse_search_key( $args[0] );
 		$file = $this->parse_name( $name );
 
 		$network_wide = isset( $assoc_args['network'] );
@@ -308,7 +298,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin> [--version=<version>]
 	 */
 	function update( $args, $assoc_args ) {
-		$name = $args[0];
+		$name = $this->parse_search_key( $args[0] );
 		$basename = $this->parse_name( $name );
 
 		if ( isset( $assoc_args['version'] ) && 'dev' == $assoc_args['version'] ) {
@@ -405,6 +395,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin|zip|url> [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
+		$args[0] = $this->parse_search_key( $args[0] );
 		parent::install( $args, $assoc_args );
 	}
 
@@ -427,7 +418,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin> [--no-delete]
 	 */
 	function uninstall( $args, $assoc_args = array() ) {
-		$name = $args[0];
+		$name = $this->parse_search_key( $args[0] );
 		$file = $this->parse_name( $name );
 
 		if ( is_plugin_active( $file ) ) {
@@ -459,7 +450,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @synopsis <plugin>
 	 */
 	function delete( $args, $assoc_args = array() ) {
-		$name = $args[0];
+		$name = $this->parse_search_key( $args[0] );
 		$file = $this->parse_name( $name );
 
 		if ( $this->_delete( $file ) ) {
@@ -542,6 +533,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		return $file;
+	}
+
+	/**
+	 * Parse the name of a plugin to check if 'search=' exists, and check search transient for the key
+	 *
+	 * @param string name
+	 * @return string
+	 */
+	public function parse_search_key( $name ) {
+		return parent::parse_search_key( $name, 'plugin' );
 	}
 
 	/**
