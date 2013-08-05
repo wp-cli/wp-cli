@@ -504,6 +504,44 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		WP_CLI::success( sprintf( "Removed '%s' cap for %s (%d).", $cap, $user->user_login, $user->ID ) );
 	}
+	
+	/**
+	 * List all user's capabilities.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <user>
+	 * : User ID or user login.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp user list-caps admin
+	 *     wp user list-caps 21
+	 *
+	 * @subcommand list-caps
+	 * @synopsis <user>
+	 */
+	public function list_caps( $args, $assoc_args ) {
+		$user = self::get_user( $args[0] );
+		$user->get_role_caps();
+		
+		$user_caps_list = $user->allcaps;
+		$cap_table_titles = array( 'capability', 'status' );
+		
+		// Get all active caps (marked as true)
+		$active_user_caps = array();
+		
+		foreach( $user_caps_list as $cap => $active ) {
+			if( $active ) {
+				$active_user_caps[] = $cap;
+			}
+		}
+		
+		// Omit formatting from the Utils class due to the assoc array format
+		$user_caps = implode( ', ', $active_user_caps );
+
+		WP_CLI::success( sprintf( "User caps (role and individual) are: %s.", $user_caps ) );
+	}
 
 	private static function get_user( $id_or_login ) {
 		if ( is_numeric( $id_or_login ) )
