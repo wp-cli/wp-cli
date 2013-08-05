@@ -312,11 +312,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	/**
 	 * Search wordpress.org plugin repo
 	 *
-	 * @param  object $api       data from WP plugin/theme API
-	 * @param  array  $fields    Data fields to display in table.
-	 * @param  string $data_type Plugin or Theme api endpoint
+	 * @param  object $api        Data from WP plugin/theme API
+	 * @param  array  $fields     Data fields to display in table.
+	 * @param  array  $assoc_args Data passed in from command.
+	 * @param  string $data_type  Plugin or Theme api endpoint
 	 */
-	public function _search( $api, $fields, $data_type = 'plugin' ) {
+	public function _search( $api, $fields, $assoc_args, $data_type = 'plugin' ) {
 
 		// Sanitize to 1 of 2 types
 		$data_type = 'plugin' === $data_type ? 'plugin' : 'theme';
@@ -339,7 +340,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$set = set_site_transient( 'wpcli-$data_type-search-data', $data, 60*60 );
 
-		\WP_CLI\Utils\format_items( 'table', $data, array_merge( array( 'key' ), $fields ) );
+		$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
+
+		\WP_CLI\Utils\format_items( $format, $data, array_merge( array( 'key' ), $fields ) );
 
 	}
 
