@@ -219,19 +219,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 	}
 
-	protected function _list( $_, $format ) {
+	protected function _list( $_, $assoc_args ) {
 		$values = array(
 			'format' => 'table',
 			'fields' => $this->fields
 		);
-
-		foreach ( $values as $key => &$value ) {
-			if ( isset( $format[ $key ] ) ) {
-				$value = $format[ $key ];
-				unset( $format[ $key ] );
-			}
-		}
-		unset( $value );
+		$values = wp_parse_args( $assoc_args, $values );
 
 		$all_items = $this->get_all_items();
 		$items = $this->create_objects( $all_items );

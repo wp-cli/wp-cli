@@ -168,14 +168,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'format' => 'table',
 			'fields' => $this->fields
 		);
-
-		foreach ( $values as $key => &$value ) {
-			if ( isset( $assoc_args[ $key ] ) ) {
-				$value = $assoc_args[ $key ];
-				unset( $assoc_args[ $key ] );
-			}
-		}
-		unset( $value );
+		$values = wp_parse_args( $assoc_args, $values );
 
 		foreach ( $assoc_args as $key => $value ) {
 			if ( true === $value )
