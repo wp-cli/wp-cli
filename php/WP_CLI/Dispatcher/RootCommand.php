@@ -17,7 +17,7 @@ class RootCommand extends CompositeCommand {
 		$this->shortdesc = 'Manage WordPress through the command-line.';
 	}
 
-	function get_extra_markdown() {
+	function get_longdesc() {
 		$binding = array();
 
 		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
