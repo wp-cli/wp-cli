@@ -1,9 +1,0 @@
-## OPTIONS
-
-* `<theme>`:
-
-	The theme to delete.
-
-## EXAMPLES
-
-	wp theme delete twentyeleven

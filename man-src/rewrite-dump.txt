@@ -1,5 +1,0 @@
-## OPTIONS
-
-* `--format=json`:
-
-	Output rules in JSON format.

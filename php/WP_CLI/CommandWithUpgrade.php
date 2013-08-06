@@ -192,7 +192,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			}
 
-			\WP_CLI::line( $item_list );
+			\WP_CLI::line( \WP_CLI::colorize( $item_list ) );
 			return;
 		}
 
