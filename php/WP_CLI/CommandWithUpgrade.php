@@ -338,7 +338,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// @TODO https://github.com/wp-cli/wp-cli/issues/635
 		if ( isset( $assoc_args['interactive'] ) ) {
 			// Add key as a field
-			$fields = array_merge( array( 'key' ), $fields ) : $fields;
+			$fields = array_merge( array( 'key' ), $fields );
 			// & infuse object with $key
 			foreach ( $data as $key => $item ) {
 				$item->key = $key;
