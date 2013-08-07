@@ -36,9 +36,11 @@ class Core_Command extends WP_CLI_Command {
 		if ( !isset( $assoc_args['force'] ) && is_readable( ABSPATH . 'wp-load.php' ) )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
-		if ( !is_dir( ABSPATH ) ) {
-			WP_CLI::log( sprintf( 'Creating directory %s', ABSPATH ) );
-			WP_CLI::launch( sprintf( 'mkdir -p %s', escapeshellarg( ABSPATH ) ) );
+		$path = (isset($assoc_args['path'])) ? $assoc_args['path'] : ABSPATH;
+
+		if ( !is_dir( $path ) ) {
+			WP_CLI::log( sprintf( 'Creating directory %s', $path ) );
+			WP_CLI::launch( sprintf( 'mkdir -p %s', escapeshellarg( $path ) ) );
 		}
 
 		if ( isset( $assoc_args['locale'] ) ) {
@@ -61,7 +63,7 @@ class Core_Command extends WP_CLI_Command {
 		// on MinGW (and probably in other environments too).
 		$temp = tempnam( sys_get_temp_dir(), "wp_" );
 		$cmd = "curl -f $silent %s > $temp && tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
-		WP_CLI::launch( Utils\esc_cmd( $cmd, $download_url, ABSPATH ) );
+		WP_CLI::launch( Utils\esc_cmd( $cmd, $download_url, $path ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
