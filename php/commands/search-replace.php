@@ -102,7 +102,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$chunk_size = getenv( 'BEHAT_RUN' ) ? 10 : 1000;
 
 		$fields = array( $primary_key, $col );
-		$fields = array_map( function ($v) { return "`$v`"; }, $fields );
 		$args = array(
 			'table' => $table,
 			'fields' => $fields,
