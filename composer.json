@@ -23,6 +23,5 @@
 	},
 	"autoload": {
 		"psr-0": { "WP_CLI": "php", "Requests": "library/" }
-	},
-	"minimum-stability": "dev"
+	}
 }
