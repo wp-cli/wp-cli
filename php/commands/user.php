@@ -470,11 +470,12 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function add_cap( $args, $assoc_args ) {
 		$user = self::get_user( $args[0] );
-		$cap  = $args[1];	
-
-		$user->add_cap( $cap );
-
-		WP_CLI::success( sprintf( "Added '%s' capability for %s (%d).", $cap, $user->user_login, $user->ID ) );
+		if( $user ) {
+			$cap  = $args[1];	
+			$user->add_cap( $cap );
+	
+			WP_CLI::success( sprintf( "Added '%s' capability for %s (%d).", $cap, $user->user_login, $user->ID ) );
+		}
 	}
 	
 	/**
@@ -498,11 +499,12 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function remove_cap( $args, $assoc_args ) {
 		$user = self::get_user( $args[0] );
-		$cap = $args[1];
-
-		$user->remove_cap( $cap );
-
-		WP_CLI::success( sprintf( "Removed '%s' cap for %s (%d).", $cap, $user->user_login, $user->ID ) );
+		if( $user ) {
+			$cap = $args[1];
+			$user->remove_cap( $cap );
+	
+			WP_CLI::success( sprintf( "Removed '%s' cap for %s (%d).", $cap, $user->user_login, $user->ID ) );
+		}
 	}
 	
 	/**
@@ -523,16 +525,19 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function list_caps( $args, $assoc_args ) {
 		$user = self::get_user( $args[0] );
-		$user->get_role_caps();
 		
-		$user_caps_list = $user->allcaps;
-		$cap_table_titles = array( 'capability', 'status' );
-				
-		WP_CLI::success( "User caps (role and individual) are: " );
-		
-		foreach( $user_caps_list as $cap => $active ) {
-			if( $active ) {
-				\cli\line( $cap );
+		if( $user ) { 
+			$user->get_role_caps();
+			
+			$user_caps_list = $user->allcaps;
+			$cap_table_titles = array( 'capability', 'status' );
+					
+			WP_CLI::success( "User caps (role and individual) are: " );
+			
+			foreach( $user_caps_list as $cap => $active ) {
+				if( $active ) {
+					\cli\line( $cap );
+				}
 			}
 		}
 	}
