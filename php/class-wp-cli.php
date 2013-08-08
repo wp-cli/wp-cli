@@ -14,14 +14,10 @@ class WP_CLI {
 
 	private static $hooks = array(), $hooks_passed = array();
 
-	private static $man_dirs = array();
-
 	/**
 	 * Initialize WP_CLI static variables.
 	 */
 	static function init() {
-		self::add_man_dir( null, WP_CLI_ROOT . "/man-src" );
-
 		self::$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
 	}
 
@@ -100,14 +96,6 @@ class WP_CLI {
 		}
 
 		self::get_root_command()->add_subcommand( $name, $command );
-	}
-
-	static function add_man_dir( $deprecated = null, $src_dir ) {
-		self::$man_dirs[] = $src_dir;
-	}
-
-	static function get_man_dirs() {
-		return self::$man_dirs;
 	}
 
 	/**
@@ -266,49 +254,22 @@ class WP_CLI {
 		return self::get_runner()->config[ $key ];
 	}
 
-	private static function find_command_to_run( $args ) {
-		$command = self::get_root_command();
-
-		$cmd_path = array();
-
-		$disabled_commands = self::get_config('disabled_commands');
-
-		while ( !empty( $args ) && $command->has_subcommands() ) {
-			$cmd_path[] = $args[0];
-			$full_name = implode( ' ', $cmd_path );
-
-			$subcommand = $command->find_subcommand( $args );
-
-			if ( !$subcommand ) {
-				self::error( sprintf(
-					"'%s' is not a registered wp command. See 'wp help'.",
-					$full_name
-				) );
-			}
-
-			if ( in_array( $full_name, $disabled_commands ) ) {
-				self::error( sprintf(
-					"The '%s' command has been disabled from the config file.",
-					$full_name
-				) );
-			}
-
-			$command = $subcommand;
-		}
-
-		return array( $command, $args );
-	}
-
 	/**
 	 * Run a given command.
 	 *
 	 * @param array
 	 * @param array
 	 */
-	public static function run_command( $args, $assoc_args = array() ) {
-		list( $command, $final_args ) = self::find_command_to_run( $args );
+	static function run_command( $args, $assoc_args = array() ) {
+		self::get_runner()->run_command( $args, $assoc_args );
+	}
 
-		$command->invoke( $final_args, $assoc_args );
+
+
+	// DEPRECATED STUFF
+
+	static function add_man_dir() {
+		trigger_error( 'WP_CLI::add_man_dir() is deprecated. Add docs inline.', E_USER_WARNING );
 	}
 
 	// back-compat

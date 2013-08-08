@@ -3,7 +3,16 @@
 /**
  * Manage user capabilities.
  *
- * @package wp-cli
+ * ## EXAMPLES
+ *
+ *     # Add 'spectate' capability to 'author' role
+ *     wp cap add 'author' 'spectate'
+ *
+ *     # Add all caps from 'editor' role to 'author' role
+ *     wp cap list 'editor' | xargs wp cap add 'author'
+ *
+ *     # Remove all caps from 'editor' role that also appear in 'author' role
+ *     wp cap list 'author' | xargs wp cap remove 'editor'
  */
 class Capabilities_Command extends WP_CLI_Command {
 

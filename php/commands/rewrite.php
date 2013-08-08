@@ -10,6 +10,11 @@ class Rewrite_Command extends WP_CLI_Command {
 	/**
 	 * Flush rewrite rules.
 	 *
+	 * ## OPTIONS
+	 *
+	 * --hard
+	 * : Perform a hard flush - do not overwrite `.htaccess`. The default is to update `.htaccess` rules as well as rewrite rules in database.
+	 *
 	 * @synopsis [--hard]
 	 */
 	public function flush( $args, $assoc_args ) {
@@ -20,6 +25,21 @@ class Rewrite_Command extends WP_CLI_Command {
 
 	/**
 	 * Update the permalink structure.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <permastruct>
+	 * : The new permalink structure to apply.
+	 *
+	 * --category-base=<categorybase>
+	 * : Set the base for category permalinks, i.e. '/category/'.
+	 *
+	 * --tag-base=<tagbase>
+	 * : Set the base for tag permalinks, i.e. '/tag/'.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp rewrite structure '/%year%/%monthnum%/%postname%'
 	 *
 	 * @synopsis <permastruct> [--category-base=<base>] [--tag-base=<base>] [--hard]
 	 */
@@ -72,10 +92,14 @@ class Rewrite_Command extends WP_CLI_Command {
 	/**
 	 * Print current rewrite rules.
 	 *
-	 * @synopsis [--json]
+	 * ## OPTIONS
+	 *
+	 * --format=json
+	 * : Output rules in JSON format.
+	 *
+	 * @synopsis [--format=<format>]
 	 */
 	public function dump( $args, $assoc_args ) {
-
 		$rules = get_option( 'rewrite_rules' );
 		if ( ! $rules ) {
 			$rules = array();
@@ -88,7 +112,6 @@ class Rewrite_Command extends WP_CLI_Command {
 			foreach ( $rules as $route => $rule )
 				WP_CLI::line( $route . "\t" . $rule );
 		}
-
 	}
 
 	/**
@@ -114,7 +137,7 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * If this isn't done then the .htaccess rewrite rules won't be flushed out
 	 * to disk.
 	 */
-	public static function apache_modules() {
+	private static function apache_modules() {
 		$mods = WP_CLI::get_config('apache_modules');
 		if ( !empty( $mods ) && !function_exists( 'apache_get_modules' ) ) {
 			global $is_apache;
@@ -125,7 +148,6 @@ class Rewrite_Command extends WP_CLI_Command {
 			}
 		}
 	}
-
 }
 
 WP_CLI:: add_command( 'rewrite', 'Rewrite_Command' );

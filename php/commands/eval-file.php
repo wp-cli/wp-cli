@@ -5,6 +5,10 @@ class EvalFile_Command extends WP_CLI_Command {
 	/**
 	 * Load and execute a PHP file after loading WordPress.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp eval-file my-code.php
+	 *
 	 * @synopsis <path>
 	 */
 	public function __invoke( $args, $assoc_args ) {

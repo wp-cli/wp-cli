@@ -1,9 +1,0 @@
-## OPTIONS
-
-* `<ID>`:
-
-	The ID of the comment to approve.
-
-## EXAMPLES
-
-	wp comment approve 1337

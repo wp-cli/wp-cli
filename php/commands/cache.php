@@ -3,7 +3,11 @@
 /**
  * Manage the object cache.
  *
- * @package wp-cli
+ * ## EXAMPLES
+ *
+ *     wp cache set my_key my_value my_group 300
+ *
+ *     wp cache get my_key my_group
  */
 class Cache_Command extends WP_CLI_Command {
 

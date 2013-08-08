@@ -1,12 +1,12 @@
 language: php
 
 php:
-    - 5.3
-    - 5.5
+  - 5.3
+  - 5.5
 
 env:
-    - WP_VERSION=latest 
-    - WP_VERSION=3.4.2
+  - WP_VERSION=latest 
+  - WP_VERSION=3.4.2
 
 matrix:
   exclude:
@@ -16,7 +16,7 @@ matrix:
 before_script: ./bin/ci/install_dependencies.sh
 
 script: ./bin/ci/run_build.sh
-    
+
 notifications:
-    email:
-        on_success: never
+  email:
+    on_success: never

@@ -137,39 +137,6 @@ function esc_cmd( $cmd ) {
 	return vsprintf( $cmd, array_map( 'escapeshellarg', $args ) );
 }
 
-/**
- * Sets the appropriate $_SERVER keys based on a given string
- *
- * @param string $url The URL
- */
-function set_url_params( $url ) {
-	$url_parts = parse_url( $url );
-
-	if ( !isset( $url_parts['scheme'] ) ) {
-		$url_parts = parse_url( 'http://' . $url );
-	}
-
-	$f = function( $key ) use ( $url_parts ) {
-		return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
-	};
-
-	if ( isset( $url_parts['host'] ) ) {
-		$_SERVER['HTTP_HOST'] = $url_parts['host'];
-		if ( isset( $url_parts['port'] ) ) {
-			$_SERVER['HTTP_HOST'] .= ':' . $url_parts['port'];
-		}
-
-		$_SERVER['SERVER_NAME'] = substr($_SERVER['HTTP_HOST'], 0, strrpos($_SERVER['HTTP_HOST'], '.'));
-	}
-
-	$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
-	$_SERVER['SERVER_PORT'] = isset( $url_parts['port'] ) ? $url_parts['port'] : '80';
-	$_SERVER['QUERY_STRING'] = $f('query');
-	$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
-	$_SERVER['HTTP_USER_AGENT'] = '';
-	$_SERVER['REQUEST_METHOD'] = 'GET';
-}
-
 function locate_wp_config() {
 	static $path;
 
@@ -217,19 +184,15 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 			}
 
 			$data = $_tmp;
-			unset( $_tmp );
 		}
 
-		// Submitted by Tina Matter
 		elseif ( is_object( $data ) ) {
-			$dataClass = get_class( $data );
-			$_tmp = new $dataClass( );
+			$_tmp = clone( $data );
 			foreach ( $data as $key => $value ) {
 				$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
 			}
 
 			$data = $_tmp;
-			unset( $_tmp );
 		}
 
 		else {
@@ -255,7 +218,7 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
 function format_items( $format, $items, $fields ) {
-	
+
 	if ( 'ids' == $format ) {
 		echo implode( ' ', $items );
 		return;

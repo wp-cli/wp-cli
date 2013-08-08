@@ -10,6 +10,29 @@ class Search_Replace_Command extends WP_CLI_Command {
 	/**
 	 * Search/replace strings in the database.
 	 *
+	 * ## DESCRIPTION
+	 *
+	 * This command will go through all rows in all tables and will replace all appearances of the old string with the new one.
+	 *
+	 * It will correctly handle serialized values, and will not change primary key values.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --network
+	 * : Search/replace through all the tables in a multisite install.
+	 *
+	 * --skip-columns=<columns>
+	 * : Do not perform the replacement in the comma-separated columns.
+	 *
+	 * --dry-run
+	 * : Show report, but don't perform the changes.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
+	 *
+	 *     wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
+	 *
 	 * @synopsis <old> <new> [<table>...] [--skip-columns=<columns>] [--dry-run] [--network]
 	 */
 	public function __invoke( $args, $assoc_args ) {
@@ -78,10 +101,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 		// We don't want to have to generate thousands of rows when running the test suite
 		$chunk_size = getenv( 'BEHAT_RUN' ) ? 10 : 1000;
 
+		$fields = array( $primary_key, $col );
 		$args = array(
 			'table' => $table,
-			'fields' => array( $primary_key, $col ),
-			'where' => $col . ' LIKE "%' . like_escape( esc_sql( $old ) ) . '%"',
+			'fields' => $fields,
+			'where' => "`$col`" . ' LIKE "%' . like_escape( esc_sql( $old ) ) . '%"',
 			'chunk_size' => $chunk_size
 		);
 

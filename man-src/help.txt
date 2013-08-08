@@ -1,7 +1,0 @@
-## EXAMPLES
-
-	# get help for `core` command
-	wp help core
-
-	# get help for `core download` subcommand
-	wp help core download

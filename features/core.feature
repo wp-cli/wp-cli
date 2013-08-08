@@ -104,6 +104,10 @@ Feature: Manage WordPress installation
       true
       """
 
+    # Can complain that it's already installed, but don't exit with an error code
+    When I try `wp core install --url='localhost:8001' --title='Test' --admin_email=admin@example.com --admin_password=1`
+    Then the return code should be 0
+
   Scenario: Convert install to multisite
     Given a WP install
 
@@ -124,6 +128,38 @@ Feature: Manage WordPress installation
 
     When I try `wp core install-network --title='test network'`
     Then the return code should be 1
+
+  Scenario: Install multisite from scratch
+    Given an empty directory
+    And WP files
+    And wp-config.php
+    And a database
+
+    When I run `wp core multisite-install --url=foobar.org --title=Test --admin_email=admin@example.com --admin_password=1`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo $GLOBALS["current_site"]->domain;'`
+    Then STDOUT should be:
+      """
+      foobar.org
+      """ 
+
+    # Can complain that it's already installed, but don't exit with an error code
+    When I try `wp core multisite-install --url=foobar.org --title=Test --admin_email=admin@example.com --admin_password=1`
+    Then the return code should be 0
+
+  Scenario: Install multisite from scratch, with MULTISITE already set in wp-config.php
+    Given a WP multisite install
+    And I run `wp db reset --yes`
+
+    When I run `wp core multisite-install --title=Test --admin_email=admin@example.com --admin_password=1`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo $GLOBALS["current_site"]->domain;'`
+    Then STDOUT should be:
+      """
+      example.com
+      """
 
   Scenario: Custom wp-content directory
     Given a WP install

@@ -1,9 +1,0 @@
-## OPTIONS
-
-* <plugin>:
-
-	The plugin to delete.
-
-## EXAMPLES
-
-	wp plugin delete hello

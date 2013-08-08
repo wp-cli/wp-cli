@@ -5,7 +5,21 @@ use \WP_CLI\Utils;
 /**
  * Perform basic database operations.
  *
- * @package wp-cli
+ * ## OPTIONS
+ *
+ * --yes
+ * : Answer yes to the confirmation message.
+ *
+ * <file>
+ * : The name of the export file. If omitted, it will be '{dbname}.sql'
+ *
+ * <SQL>
+ * : A SQL query.
+ *
+ * ## EXAMPLES
+ *
+ *     # execute a query stored in a file
+ *     wp db query < debug.sql
  */
 class DB_Command extends WP_CLI_Command {
 
