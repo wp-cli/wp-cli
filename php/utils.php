@@ -6,28 +6,31 @@ namespace WP_CLI\Utils;
 
 use \WP_CLI\Dispatcher;
 
-function load_dependencies() {
+function find_composer_autoloader() {
 	$vendor_paths = array(
 		WP_CLI_ROOT . '/vendor',           // top-level project
 		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project
 	);
 
-	$has_autoload = false;
-
 	foreach ( $vendor_paths as $vendor_path ) {
 		if ( file_exists( $vendor_path . '/autoload.php' ) ) {
-			require $vendor_path . '/autoload.php';
-			$has_autoload = true;
-			break;
+			return $vendor_path . '/autoload.php';
 		}
 	}
 
-	if ( !$has_autoload ) {
+	return false;
+}
+
+function load_dependencies() {
+	$autoloader_path = find_composer_autoloader();
+
+	if ( !$autoloader_path ) {
 		fputs( STDERR, "Internal error: Can't find Composer autoloader.\n" );
 		exit(3);
 	}
 
-	include WP_CLI_ROOT . '/php/Spyc.php';
+	require $autoloader_path;
+	require WP_CLI_ROOT . '/php/Spyc.php';
 }
 
 function load_command( $name ) {
