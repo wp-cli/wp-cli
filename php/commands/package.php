@@ -43,11 +43,10 @@ class Package_Command extends WP_CLI_Command {
 
 		$packages = array();
 		foreach( $this->get_community_packages() as $package ) {
-
 			$package_output = new stdClass;
 			$package_output->name = $package->getName();
 			$package_output->description = $package->getDescription();
-			$package_output->authors = implode( ',', $this->list_pluck( (array)$package->getAuthors(), 'name' ) );
+			$package_output->authors = implode( ',', array_column( (array) $package->getAuthors(), 'name' ) );
 			$packages[$package_output->name] = $package_output;
 		}
 
@@ -300,21 +299,7 @@ class Package_Command extends WP_CLI_Command {
 			'composer'
 		);
 	}
-
-	/**
-	 * Pluck elements from a list, a la wp_list_pluck()
-	 */
-	private function list_pluck( $list, $element ) {
-
-		$elements = array();
-		foreach( (array)$list as $key => $list_item ) {
-
-			$list_item = (array)$list_item;
-			if ( isset( $list_item[$element] ) )
-				$elements[] = $list_item[$element];
-		}
-		return $elements;
-	}
-
 }
+
 WP_CLI::add_command( 'package', 'Package_Command' );
+
