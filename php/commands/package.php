@@ -22,10 +22,10 @@ use \Composer\Util\Filesystem;
 class Package_Command extends WP_CLI_Command {
 
 	private $fields = array(
-			'name',
-			'description',
-			'authors',
-		);
+		'name',
+		'description',
+		'authors',
+	);
 
 	/**
 	 * Browse available WP-CLI community packages.
@@ -34,10 +34,9 @@ class Package_Command extends WP_CLI_Command {
 	 * @synopsis [--format=<format>]
 	 */
 	public function browse( $args, $assoc_args ) {
-
 		$defaults = array(
-			'fields'    => implode( ',', $this->fields ),
-			'format'    => 'table'
+			'fields' => implode( ',', $this->fields ),
+			'format' => 'table'
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
@@ -60,12 +59,11 @@ class Package_Command extends WP_CLI_Command {
 	 * @synopsis <package-name> [--version=<version>]
 	 */
 	public function install( $args, $assoc_args ) {
-
 		list( $package_name ) = $args;
 
 		$defaults = array(
-				'version' => 'dev-master',
-			);
+			'version' => 'dev-master',
+		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		if ( ! $this->is_community_package( $package_name ) )
@@ -92,7 +90,6 @@ class Package_Command extends WP_CLI_Command {
 			file_put_contents( $composer_json_obj->getPath(), $composer_backup );
 			WP_CLI::error( "Package installation failed." );
 		}
-
 	}
 
 	/**
@@ -102,10 +99,9 @@ class Package_Command extends WP_CLI_Command {
 	 * @synopsis [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
-
 		$defaults = array(
-			'fields'    => implode( ',', $this->fields ),
-			'format'    => 'table'
+			'fields' => implode( ',', $this->fields ),
+			'format' => 'table'
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
@@ -132,7 +128,6 @@ class Package_Command extends WP_CLI_Command {
 	 * @synopsis <package-name>
 	 */
 	public function uninstall( $args ) {
-
 		list( $package_name ) = $args;
 
 		$composer = $this->get_composer();
@@ -177,7 +172,6 @@ class Package_Command extends WP_CLI_Command {
 	 * Get a Composer instance.
 	 */
 	private function get_composer() {
-
 		$this->set_composer_json_path( WP_CLI\Utils\find_file_upward( 'composer.json', WP_CLI_ROOT ) );
 
 		// Composer's auto-load generating code makes some assumptions about where
@@ -199,7 +193,6 @@ class Package_Command extends WP_CLI_Command {
 	 * Get all of the community packages
 	 */
 	private function get_community_packages() {
-
 		static $community_packages;
 		if ( ! empty( $community_packages ) )
 			return $community_packages;
@@ -231,15 +224,16 @@ class Package_Command extends WP_CLI_Command {
 	 * Get the installed community packages.
 	 */
 	private function get_installed_packages() {
-
 		$composer = $this->get_composer();
 		$repo = $composer->getRepositoryManager()->getLocalRepository();
+
 		$installed_packages = array();
 		foreach( $repo->getPackages() as $package ) {
 			if ( ! $this->is_community_package( $package ) )
 				continue;
 			$installed_packages[] = $package;
 		}
+
 		return $installed_packages;
 	}
 
@@ -289,7 +283,6 @@ class Package_Command extends WP_CLI_Command {
 	 * Regenerate the Composer autoloader
 	 */
 	private function regenerate_autoloader() {
-		$rm = $this->composer->getRepositoryManager();
 		$this->composer->getAutoloadGenerator()->dump(
 			$this->composer->getConfig(),
 			$this->composer->getRepositoryManager()->getLocalRepository(),
