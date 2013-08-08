@@ -23,6 +23,7 @@ use \Composer\Util\Filesystem;
  */
 class Package_Command extends WP_CLI_Command {
 
+	// TODO: read from composer.json
 	const PACKAGE_INDEX_URL = 'http://wp-cli.org/package-index/';
 
 	private $fields = array(
@@ -200,22 +201,24 @@ class Package_Command extends WP_CLI_Command {
 		static $community_packages;
 
 		if ( null === $community_packages ) {
-			$config = new Config();
-			$config->merge(array('config' => array(
-				'home' => dirname( $this->get_composer_json_path() ),
-				/* 'cache-dir' => $cacheDir */
-			)));
-			$config->setConfigSource( new JsonConfigSource( $this->get_composer_json() ) );
-
-			$package_index = new ComposerRepository(
-				array( 'url' => self::PACKAGE_INDEX_URL ),
-				new NullIO,
-				$config );
-
+			$package_index = $this->_get_repo_instance( self::PACKAGE_INDEX_URL );
 			$community_packages = $package_index->getPackages();
 		}
 
 		return $community_packages;
+	}
+
+	// We need to construct the instance manually, because there's no way to select
+	// a particular instance using $composer->getRepositoryManager()
+	private function _get_repo_instance( $url ) {
+		$config = new Config();
+		$config->merge(array('config' => array(
+			'home' => dirname( $this->get_composer_json_path() ),
+			/* 'cache-dir' => $cacheDir */
+		)));
+		$config->setConfigSource( new JsonConfigSource( $this->get_composer_json() ) );
+
+		return new ComposerRepository( array( 'url' => $url ), new NullIO, $config );
 	}
 
 	/**
