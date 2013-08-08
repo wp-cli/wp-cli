@@ -16,7 +16,7 @@ use \Composer\Util\Filesystem;
  * Manage WP-CLI community packages.
  *
  * @package WP-CLI
- * 
+ *
  * @when before_wp_load
  */
 class Package_Command extends WP_CLI_Command {
@@ -29,7 +29,7 @@ class Package_Command extends WP_CLI_Command {
 
 	/**
 	 * Browse available WP-CLI community packages.
-	 * 
+	 *
 	 * @subcommand browse
 	 * @synopsis [--format=<format>]
 	 */
@@ -55,7 +55,7 @@ class Package_Command extends WP_CLI_Command {
 
 	/**
 	 * Install a WP-CLI community package.
-	 * 
+	 *
 	 * @subcommand install
 	 * @synopsis <package-name> [--version=<version>]
 	 */
@@ -97,7 +97,7 @@ class Package_Command extends WP_CLI_Command {
 
 	/**
 	 * List installed WP-CLI community packages.
-	 * 
+	 *
 	 * @subcommand list
 	 * @synopsis [--format=<format>]
 	 */
@@ -127,7 +127,7 @@ class Package_Command extends WP_CLI_Command {
 
 	/**
 	 * Uninstall a WP-CLI community package.
-	 * 
+	 *
 	 * @subcommand uninstall
 	 * @synopsis <package-name>
 	 */
@@ -162,7 +162,7 @@ class Package_Command extends WP_CLI_Command {
 	/**
 	 * Check whether a package is a WP-CLI community package based
 	 * on membership in our Packagist repo.
-	 * 
+	 *
 	 * @param string|object      $package     A package object or name
 	 * @return bool
 	 */
@@ -180,9 +180,9 @@ class Package_Command extends WP_CLI_Command {
 	private function get_composer() {
 
 		$this->set_composer_json_path( WP_CLI\Utils\find_file_upward( 'composer.json', WP_CLI_ROOT ) );
-	
+
 		// Composer's auto-load generating code makes some assumptions about where
-		// the 'vendor-dir' is, and where Composer is running from.	
+		// the 'vendor-dir' is, and where Composer is running from.
 		// Best to just pretend we're installing a package from ~/.composer or similar
 		chdir( pathinfo( $this->get_composer_json_path(), PATHINFO_DIRNAME ) );
 
