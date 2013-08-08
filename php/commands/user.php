@@ -582,6 +582,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$blog_users = get_users();
 
 		$filename = $args[0];
+		
+		if (! file_exists( $filename ) ) {
+			WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
+		}
 
 		foreach ( new \WP_CLI\Iterators\CSV( $filename ) as $i => $new_user ) {
 			$defaults = array(
