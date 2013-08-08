@@ -161,13 +161,12 @@ class Package_Command extends WP_CLI_Command {
 
 	/**
 	 * Check whether a package is a WP-CLI community package based
-	 * on membership in our Packagist repo.
+	 * on membership in our package index.
 	 *
 	 * @param string|object      $package     A package object or name
 	 * @return bool
 	 */
 	private function is_community_package( $package ) {
-
 		if ( is_object( $package ) )
 			$package = $package->getName();
 
