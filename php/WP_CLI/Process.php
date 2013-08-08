@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Stolen from: https://github.com/reactphp/react/pull/162
+ */
 namespace WP_CLI;
 
 use Evenement\EventEmitter;
