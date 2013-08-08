@@ -1,4 +1,6 @@
 <?php
+use \Composer\Config;
+use \Composer\Config\JsonConfigSource;
 use \Composer\Factory;
 use \Composer\IO\NullIO;
 use \Composer\Installer;
@@ -20,6 +22,8 @@ use \Composer\Util\Filesystem;
  * @when before_wp_load
  */
 class Package_Command extends WP_CLI_Command {
+
+	const PACKAGE_INDEX_URL = 'http://wp-cli.org/package-index/';
 
 	private $fields = array(
 		'name',
@@ -172,20 +176,15 @@ class Package_Command extends WP_CLI_Command {
 	 * Get a Composer instance.
 	 */
 	private function get_composer() {
-		$composer_path = WP_CLI\Utils\find_file_upward( 'composer.json', dirname( WP_CLI_ROOT ) );
-		if ( ! $composer_path ) {
-			WP_CLI::error( "Can't find composer.json file outside of the WP-CLI directory." );
-		}
-
-		$this->set_composer_json_path( $composer_path );
+		$composer_path = $this->get_composer_json_path();
 
 		// Composer's auto-load generating code makes some assumptions about where
 		// the 'vendor-dir' is, and where Composer is running from.
 		// Best to just pretend we're installing a package from ~/.wp-cli or similar
-		chdir( pathinfo( $this->get_composer_json_path(), PATHINFO_DIRNAME ) );
+		chdir( pathinfo( $composer_path, PATHINFO_DIRNAME ) );
 
 		try {
-			$composer = Factory::create( new NullIO, $this->get_composer_json_path() );
+			$composer = Factory::create( new NullIO, $composer_path );
 		} catch( Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}
@@ -201,17 +200,19 @@ class Package_Command extends WP_CLI_Command {
 		static $community_packages;
 
 		if ( null === $community_packages ) {
-			$composer = $this->get_composer();
-			$repos = $composer->getRepositoryManager()->getRepositories();
-			if ( !isset( $repos['wp-cli'] ) ) {
-				// TODO: configure it automatically
-				WP_CLI::error(
-					"WP-CLI package index not configured. Run:\n" .
-				    "php composer.phar config repositories.wp-cli composer http://wp-cli.org/package-index/"
-				);
-			}
+			$config = new Config();
+			$config->merge(array('config' => array(
+				'home' => dirname( $this->get_composer_json_path() ),
+				/* 'cache-dir' => $cacheDir */
+			)));
+			$config->setConfigSource( new JsonConfigSource( $this->get_composer_json() ) );
 
-			$community_packages = $repos['wp-cli']->getPackages();
+			$package_index = new ComposerRepository(
+				array( 'url' => self::PACKAGE_INDEX_URL ),
+				new NullIO,
+				$config );
+
+			$community_packages = $package_index->getPackages();
 		}
 
 		return $community_packages;
@@ -274,17 +275,19 @@ class Package_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Set the path to composer.json
-	 */
-	private function set_composer_json_path( $path ) {
-		$this->composer_json_path = $path;
-	}
-
-	/**
 	 * Get the path to composer.json
 	 */
 	private function get_composer_json_path() {
-		return $this->composer_json_path;
+		static $composer_path;
+
+		if ( null === $composer_path ) {
+			$composer_path = WP_CLI\Utils\find_file_upward( 'composer.json', dirname( WP_CLI_ROOT ) );
+			if ( ! $composer_path ) {
+				WP_CLI::error( "Can't find composer.json file outside of the WP-CLI directory." );
+			}
+		}
+
+		return $composer_path;
 	}
 
 	/**
