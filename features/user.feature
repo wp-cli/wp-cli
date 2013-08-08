@@ -92,3 +92,24 @@ Feature: Manage WordPress users
     Then STDOUT should be a table containing rows:
       | Field | Value |
       | roles |       |
+      
+  Scenario: Managing user capabilities
+    Given a WP install
+    
+    When I run `wp user add-cap 1 edit_vip_product`
+    Then STDOUT should be:
+    """
+    Success: Added 'edit_vip_product' capability for admin (1).
+    """
+    
+    And I run `wp user list-caps 1 | tail -n 1`
+    Then STDOUT should be:
+    """
+    edit_vip_product
+    """
+    
+    And I run `wp user remove-cap 1 edit_vip_product`
+    Then STDOUT should be:
+    """
+    Success: Removed 'edit_vip_product' cap for admin (1).
+    """
