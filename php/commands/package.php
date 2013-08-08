@@ -172,11 +172,16 @@ class Package_Command extends WP_CLI_Command {
 	 * Get a Composer instance.
 	 */
 	private function get_composer() {
-		$this->set_composer_json_path( WP_CLI\Utils\find_file_upward( 'composer.json', WP_CLI_ROOT ) );
+		$composer_path = WP_CLI\Utils\find_file_upward( 'composer.json', dirname( WP_CLI_ROOT ) );
+		if ( ! $composer_path ) {
+			WP_CLI::error( "Can't find composer.json file outside of the WP-CLI directory." );
+		}
+
+		$this->set_composer_json_path( $composer_path );
 
 		// Composer's auto-load generating code makes some assumptions about where
 		// the 'vendor-dir' is, and where Composer is running from.
-		// Best to just pretend we're installing a package from ~/.composer or similar
+		// Best to just pretend we're installing a package from ~/.wp-cli or similar
 		chdir( pathinfo( $this->get_composer_json_path(), PATHINFO_DIRNAME ) );
 
 		try {
