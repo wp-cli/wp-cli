@@ -101,10 +101,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 		// We don't want to have to generate thousands of rows when running the test suite
 		$chunk_size = getenv( 'BEHAT_RUN' ) ? 10 : 1000;
 
+		$fields = array( $primary_key, $col );
 		$args = array(
 			'table' => $table,
-			'fields' => array( $primary_key, $col ),
-			'where' => $col . ' LIKE "%' . like_escape( esc_sql( $old ) ) . '%"',
+			'fields' => $fields,
+			'where' => "`$col`" . ' LIKE "%' . like_escape( esc_sql( $old ) ) . '%"',
 			'chunk_size' => $chunk_size
 		);
 

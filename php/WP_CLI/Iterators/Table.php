@@ -8,7 +8,7 @@ namespace WP_CLI\Iterators;
 class Table extends Query {
 
 	/**
-	 * Creates an iterator over a database table
+	 * Creates an iterator over a database table.
 	 *
 	 * <code>
 	 * foreach( new Iterators\Table( array( 'table' => $wpdb->posts, 'fields' => array( 'ID', 'post_content' ) ) ) as $post ) {
@@ -31,7 +31,7 @@ class Table extends Query {
 	 *
 	 * @param array $args Supported arguments:
 	 *		table – the name of the database table
-	 *		fields – an array of columns to get from the posst table, * is a valid value and the default
+	 *		fields – an array of columns to get from the table, '*' is a valid value and the default
 	 *		where – conditions for filtering rows. Supports two formats:
 	 *			= string – this will be the where clause
 	 *			= array – each element is treated as a condition if it's positional, or as column => value if
@@ -41,7 +41,7 @@ class Table extends Query {
 		global $wpdb;
 
 		$defaults = array(
-			'fields' => array( '*' ),
+			'fields' => '*',
 			'where' => array(),
 			'table' => null,
 			'chunk_size' => 500
@@ -51,14 +51,17 @@ class Table extends Query {
 
 		$fields = self::build_fields( $args['fields'] );
 		$conditions = self::build_where_conditions( $args['where'] );
-		$where_sql = $conditions? " WHERE $conditions" : '';
+		$where_sql = $conditions ? " WHERE $conditions" : '';
 		$query = "SELECT $fields FROM $table $where_sql";
 
 		parent::__construct( $query, $args['chunk_size'] );
 	}
 
 	private static function build_fields( $fields ) {
-		return implode( ', ', $fields );
+		if ( '*' === $fields )
+			return $fields;
+
+		return implode( ', ', array_map( function ($v) { return "`$v`"; }, $fields ) );
 	}
 
 	private static function build_where_conditions( $where ) {
