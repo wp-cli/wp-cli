@@ -27,16 +27,29 @@ All the test dependencies can be installed using [Composer](http://getcomposer.o
 
     php composer.phar install --dev
 
-Before running the tests, you'll need a MySQL user called `wp_cli_test` with the
+### Unit tests
+
+To run the unit tests, just execute:
+
+    vendor/bin/phpunit
+
+### Functional tests
+
+Before running the functional tests, you'll need a MySQL user called `wp_cli_test` with the
 password `password1` that has full privileges on the MySQL database `wp_cli_test`.
 Running the following as root in MySQL should do the trick:
 
     GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"localhost" IDENTIFIED BY "password1";
 
-Finally, to run the tests:
+Then, to run the entire test suite:
 
-    vendor/bin/phpunit
     vendor/bin/behat --expand
+
+Or to test a single feature:
+
+    vendor/bin/behat features/core.feature
+
+More info can be found from `vendor/bin/behat --help`.
 
 Finally...
 ----------
