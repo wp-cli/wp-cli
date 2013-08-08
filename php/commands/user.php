@@ -152,7 +152,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			'reassign' => null
 		) );
 
-		foreach( $args as $key => $arg ) {
+		foreach ( $args as $key => $arg ) {
 			$args[$key] = self::get_user( $arg )->ID;
 		}
 		parent::delete( $args, $assoc_args );
@@ -279,7 +279,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function update( $args, $assoc_args ) {
 
-		foreach( $args as $key => $arg ) {
+		foreach ( $args as $key => $arg ) {
 			$args[$key] = self::get_user( $arg )->ID;
 		}
 		parent::update( $args, $assoc_args, 'user' );
@@ -448,7 +448,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() );
 		}
 	}
-	
+
 	/**
 	 * Add a capability for a user.
 	 *
@@ -470,14 +470,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function add_cap( $args, $assoc_args ) {
 		$user = self::get_user( $args[0] );
-		if( $user ) {
-			$cap  = $args[1];	
+		if ( $user ) {
+			$cap  = $args[1];
 			$user->add_cap( $cap );
 	
 			WP_CLI::success( sprintf( "Added '%s' capability for %s (%d).", $cap, $user->user_login, $user->ID ) );
 		}
 	}
-	
+
 	/**
 	 * Remove a user's capability.
 	 *
@@ -499,14 +499,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function remove_cap( $args, $assoc_args ) {
 		$user = self::get_user( $args[0] );
-		if( $user ) {
+		if ( $user ) {
 			$cap = $args[1];
 			$user->remove_cap( $cap );
 	
 			WP_CLI::success( sprintf( "Removed '%s' cap for %s (%d).", $cap, $user->user_login, $user->ID ) );
 		}
 	}
-	
+
 	/**
 	 * List all user's capabilities.
 	 *
@@ -525,17 +525,15 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function list_caps( $args, $assoc_args ) {
 		$user = self::get_user( $args[0] );
-		
-		if( $user ) { 
+
+		if ( $user ) {
 			$user->get_role_caps();
-			
+
 			$user_caps_list = $user->allcaps;
 			$cap_table_titles = array( 'capability', 'status' );
-					
-			WP_CLI::success( "User caps (role and individual) are: " );
-			
-			foreach( $user_caps_list as $cap => $active ) {
-				if( $active ) {
+
+			foreach ( $user_caps_list as $cap => $active ) {
+				if ( $active ) {
 					\cli\line( $cap );
 				}
 			}
@@ -582,8 +580,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$blog_users = get_users();
 
 		$filename = $args[0];
-		
-		if (! file_exists( $filename ) ) {
+
+		if ( ! file_exists( $filename ) ) {
 			WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
 		}
 
@@ -634,7 +632,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				delete_user_option( $user_id, 'user_level' );
 			}
 
-			if (!empty($existing_user)) {
+			if ( !empty( $existing_user ) ) {
 				WP_CLI::success( $new_user['user_login'] . " updated" );
 			} else {
 				WP_CLI::success( $new_user['user_login'] . " created" );
