@@ -383,6 +383,30 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 	}
 
+
+	/**
+	 * Check if the plugin is installed
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin is-installed hello
+	 *
+	 * @subcommand is-installed
+	 * @synopsis <plugin>
+	 */
+	function is_installed( $args, $assoc_args = array() ) {
+		if ( $this->_parse_name( $args[0] ) ) {
+			exit( 0 );
+		} else {
+			exit( 1 );
+		}
+	}
+
 	/**
 	 * Delete plugin files.
 	 *
@@ -463,7 +487,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @param string name
 	 * @return string
 	 */
-	private function parse_name( $name ) {
+	private function _parse_name( $name ) {
 		$plugins = get_plugins( '/' . $name );
 
 		if ( !empty( $plugins ) ) {
@@ -475,12 +499,20 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$plugins = get_plugins();
 
 			if ( !isset( $plugins[$file] ) ) {
-				WP_CLI::error( "The plugin '$name' could not be found." );
-				exit();
+				return false;
 			}
 		}
 
 		return $file;
+	}
+
+	private function parse_name( $name ) {
+		if ( $file = $this->_parse_name( $name ) ) {
+			return $file;
+		} else {
+			WP_CLI::error( "The plugin '$name' could not be found." );
+			exit();
+		}
 	}
 
 	/**
