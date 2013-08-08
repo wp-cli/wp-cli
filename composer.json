@@ -22,6 +22,6 @@
 		"behat/behat": "~2.4"
 	},
 	"autoload": {
-		"psr-0": { "WP_CLI": "php", "Requests": "library/" }
+		"psr-0": { "WP_CLI": "php" }
 	}
 }
