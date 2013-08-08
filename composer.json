@@ -7,12 +7,6 @@
 	"bin": [
 		"bin/wp"
 	],
-	"repositories": [
-		{
-			"type": "composer",
-			"url": "http://wp-cli.org/package-index/"
-		}
-	],
 	"require": {
 		"php": ">=5.3.2",
 		"wp-cli/php-cli-tools": "0.9.3",
