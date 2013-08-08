@@ -60,16 +60,40 @@ class Core_Command extends WP_CLI_Command {
 		// We need to use a temporary file because piping from cURL to tar is flaky
 		// on MinGW (and probably in other environments too).
 		$temp = tempnam( sys_get_temp_dir(), "wp_" );
-		$cmd = "curl -f $silent %s > $temp && tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
-		WP_CLI::launch( Utils\esc_cmd( $cmd, $download_url, ABSPATH ) );
+		
+		$headers = array('Accept' => 'application/json');
+		$options = array(
+				'verify' => false,
+				'timeout' => 30,
+				'filename' => $temp
+			);
+		
+		try {
+			$request = Requests::get( $download_url, $headers, $options );
+		} catch( Requests_Exception $ex ) {
+			WP_CLI::error( $ex->getMessage() );
+		}
+		
+		$cmd = "tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
+		
+		WP_CLI::launch( sprintf( $cmd, ABSPATH ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
 	private static function _read( $url ) {
-		exec( 'curl -s ' . escapeshellarg( $url ), $lines, $r );
-		if ( $r ) exit( $r );
-		return implode( "\n", $lines );
+		$headers = array('Accept' => 'application/json');
+		$options = array();
+		
+		$r = false;
+		try {
+			$request = Requests::get( $url, $headers, $options );
+			$r = $request->body;
+		} catch( Requests_Exception $ex ) {
+			WP_CLI::error( $ex->getMessage() ); 
+		}
+		
+		return $r;
 	}
 
 	private function get_download_offer( $locale ) {
@@ -155,11 +179,11 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		// TODO: adapt more resilient code from wp-admin/setup-config.php
+
 		$assoc_args['keys-and-salts'] = self::_read(
 			'https://api.wordpress.org/secret-key/1.1/salt/' );
 
 		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
-
 		file_put_contents( ABSPATH . 'wp-config.php', $out );
 
 		WP_CLI::success( 'Generated wp-config.php file.' );
