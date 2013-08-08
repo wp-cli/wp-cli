@@ -11,7 +11,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 	}
 
 	function testPositional() {
-		$r = SynopsisParser::parse( '<foo> [<bar>]' );
+		$r = SynopsisParser::parse( '<plugin|zip> [<bar>]' );
 
 		$this->assertCount( 2, $r );
 
