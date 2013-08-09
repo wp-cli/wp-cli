@@ -331,7 +331,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( ! isset( $data ) )
 			\WP_CLI::error( __( 'API error. Try Again.' ) );
 
-		\WP_CLI::success( 'Showing '. count( $data ) .' of '. $count .' '. $plural .'. \'search=$key\' in place of slug available for '. $data_type .' commands.' );
+		\WP_CLI::success( 'Showing '. count( $data ) .' of '. $count .' '. $plural .'.' );
 
 		$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
 
