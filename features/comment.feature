@@ -7,14 +7,14 @@ Feature: Manage WordPress comments
     Then STDOUT should match '%d'
     And save STDOUT as {COMMENT_ID}
 
-    When I run `wp comment exists {POST_ID}`
+    When I run `wp comment exists {COMMENT_ID}`
     Then STDOUT should be:
       """
-	  Success: Comment with ID {POST_ID} exists.
+	  Success: Comment with ID {COMMENT_ID} exists.
       """
 
-    When I run `wp comment delete {POST_ID}`
+    When I run `wp comment delete {COMMENT_ID}`
     Then STDOUT should be:
       """
-	  Success: Deleted comment {POST_ID}.
+	  Success: Deleted comment {COMMENT_ID}.
       """
