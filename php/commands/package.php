@@ -32,29 +32,33 @@ class Package_Command extends WP_CLI_Command {
 		'authors',
 	);
 
-	/**
-	 * Browse available WP-CLI community packages.
-	 *
-	 * @subcommand browse
-	 * @synopsis [--format=<format>]
-	 */
-	public function browse( $args, $assoc_args ) {
+	private function _show_packages( $packages, $assoc_args ) {
 		$defaults = array(
 			'fields' => implode( ',', $this->fields ),
 			'format' => 'table'
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		$packages = array();
-		foreach( $this->get_community_packages() as $package ) {
+		$list = array();
+		foreach ( $packages as $package ) {
 			$package_output = new stdClass;
 			$package_output->name = $package->getName();
 			$package_output->description = $package->getDescription();
 			$package_output->authors = implode( ',', array_column( (array) $package->getAuthors(), 'name' ) );
-			$packages[$package_output->name] = $package_output;
+			$list[$package_output->name] = $package_output;
 		}
 
-		WP_CLI\Utils\format_items( $assoc_args['format'], $packages, $assoc_args['fields'] );
+		WP_CLI\Utils\format_items( $assoc_args['format'], $list, $assoc_args['fields'] );
+	}
+
+	/**
+	 * Browse available WP-CLI community packages.
+	 *
+	 * @subcommand browse
+	 * @synopsis [--format=<format>]
+	 */
+	public function browse( $_, $assoc_args ) {
+		$this->_show_packages( $this->get_community_packages(), $assoc_args );
 	}
 
 	/**
@@ -105,26 +109,7 @@ class Package_Command extends WP_CLI_Command {
 	 * @synopsis [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
-		$defaults = array(
-			'fields' => implode( ',', $this->fields ),
-			'format' => 'table'
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
-
-		$packages = array();
-		foreach( $this->get_installed_packages() as $package ) {
-
-			$package_output = new stdClass;
-			$package_output->name = $package->getName();
-			$package_output->description = $package->getDescription();
-			$package_output->authors = implode( ',', $this->list_pluck( (array)$package->getAuthors(), 'name' ) );
-			$packages[] = $package_output;
-		}
-
-		if ( empty( $packages ) )
-			WP_CLI::error( "There aren't any WP-CLI community packages installed." );
-
-		WP_CLI\Utils\format_items( $assoc_args['format'], $packages, $assoc_args['fields'] );
+		$this->_show_packages( $this->get_installed_packages(), $assoc_args );
 	}
 
 	/**
