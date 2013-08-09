@@ -525,10 +525,19 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 * --extra
 	 * : Show extended version information.
 	 *
+	 * @when before_wp_load
 	 * @synopsis [--extra]
 	 */
 	public function version( $args = array(), $assoc_args = array() ) {
-		global $wp_version, $wp_db_version, $tinymce_version;
+		$versions_path = ABSPATH . 'wp-includes/version.php';
+
+		if ( !is_readable( $versions_path ) ) {
+			WP_CLI::error(
+				"This does not seem to be a WordPress install.\n" .
+				"Pass --path=`path/to/wordpress` or run `wp core download`." );
+		}
+
+		include $versions_path;
 
 		if ( isset( $assoc_args['extra'] ) ) {
 			preg_match( '/(\d)(\d+)-/', $tinymce_version, $match );
