@@ -98,10 +98,9 @@ Feature: Manage WordPress themes and plugins
       """
       Showing 1 of
       """
-    And STDOUT should contain:
-      """
-      <item_title>
-      """
+    And STDOUT should end with a table containing rows:
+      | name         | slug   |
+      | <item_title> | <item> |
 
     Examples:
       | type   | type_name | item                    | item_title              | version | zip_file                                                              | file_to_check                                                    |

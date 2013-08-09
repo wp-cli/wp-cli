@@ -190,6 +190,40 @@ $steps->Then( '/^STDOUT should be a table containing rows:$/',
 	}
 );
 
+$steps->Then( '/^STDOUT should end with a table containing rows:$/',
+	function ( $world, TableNode $expected ) {
+		$output     = $world->result->STDOUT;
+		$outputRows = explode( "\n", rtrim( $output, "\n" ) );
+
+		$expectedRows = array();
+		foreach ( $expected->getRows() as $row ) {
+			$expectedRows[] = $world->replace_variables( implode( "\t", $row ) );
+		}
+
+		$remainingRows = array();
+		$start = false;
+		foreach( $outputRows as $key => $row ) {
+
+			// the first row is the header and must be present
+			if ( $expectedRows[0] == $row )
+				$start = true;
+
+			if ( $start )
+				$remainingRows[] = $row;
+		}
+
+		if ( ! $start )
+			throw new \Exception( $output );
+
+		unset($remainingRows[0]);
+		unset($expectedRows[0]);
+		$matches = array_intersect( $expectedRows, $remainingRows );
+
+		if ( count( $expectedRows ) != count( $matches ) )
+			throw new \Exception( $output );
+	}
+);
+
 $steps->Then( '/^STDOUT should be JSON containing:$/',
 	function ( $world, PyStringNode $expected ) {
 		$output = $world->result->STDOUT;
