@@ -71,7 +71,8 @@ class Package_Command extends WP_CLI_Command {
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		if ( ! $this->is_community_package( $package_name ) )
+		$package = $this->get_community_package_by_name( $package_name );
+		if ( ! $package )
 			WP_CLI::error( "Invalid package." );
 
 		$composer = $this->get_composer();
@@ -163,14 +164,11 @@ class Package_Command extends WP_CLI_Command {
 	 * Check whether a package is a WP-CLI community package based
 	 * on membership in our package index.
 	 *
-	 * @param string|object      $package     A package object or name
+	 * @param object      $package     A package object
 	 * @return bool
 	 */
 	private function is_community_package( $package ) {
-		if ( is_object( $package ) )
-			$package = $package->getName();
-
-		return (bool)$this->get_community_package_by_name( $package );
+		return $this->package_index()->hasPackage( $package );
 	}
 
 	/**
@@ -201,8 +199,7 @@ class Package_Command extends WP_CLI_Command {
 		static $community_packages;
 
 		if ( null === $community_packages ) {
-			$package_index = $this->_get_repo_instance( self::PACKAGE_INDEX_URL );
-			$community_packages = $package_index->getPackages();
+			$community_packages = $this->package_index()->getPackages();
 		}
 
 		return $community_packages;
@@ -210,15 +207,21 @@ class Package_Command extends WP_CLI_Command {
 
 	// We need to construct the instance manually, because there's no way to select
 	// a particular instance using $composer->getRepositoryManager()
-	private function _get_repo_instance( $url ) {
-		$config = new Config();
-		$config->merge(array('config' => array(
-			'home' => dirname( $this->get_composer_json_path() ),
-			/* 'cache-dir' => $cacheDir */
-		)));
-		$config->setConfigSource( new JsonConfigSource( $this->get_composer_json() ) );
+	private function package_index() {
+		static $package_index;
 
-		return new ComposerRepository( array( 'url' => $url ), new NullIO, $config );
+		if ( !$package_index ) {
+			$config = new Config();
+			$config->merge(array('config' => array(
+				'home' => dirname( $this->get_composer_json_path() ),
+				/* 'cache-dir' => $cacheDir */
+			)));
+			$config->setConfigSource( new JsonConfigSource( $this->get_composer_json() ) );
+
+			$package_index = new ComposerRepository( array( 'url' => self::PACKAGE_INDEX_URL ), new NullIO, $config );
+		}
+
+		return $package_index;
 	}
 
 	/**
