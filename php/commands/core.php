@@ -63,7 +63,6 @@ class Core_Command extends WP_CLI_Command {
 		
 		$headers = array('Accept' => 'application/json');
 		$options = array(
-				'verify' => false,
 				'timeout' => 30,
 				'filename' => $temp
 			);
@@ -71,7 +70,14 @@ class Core_Command extends WP_CLI_Command {
 		try {
 			$request = Requests::get( $download_url, $headers, $options );
 		} catch( Requests_Exception $ex ) {
-			WP_CLI::error( $ex->getMessage() );
+			// Handle SSL certificate issues gracefully
+			$options['verify'] = false;
+			try {
+				$request = Requests::get( $download_url, $headers, $options );
+			}
+			catch( Requests_Exception $ex ) {
+				WP_CLI::error( $ex->getMessage() );
+			}
 		}
 		
 		$cmd = "tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
@@ -90,7 +96,14 @@ class Core_Command extends WP_CLI_Command {
 			$request = Requests::get( $url, $headers, $options );
 			$r = $request->body;
 		} catch( Requests_Exception $ex ) {
-			WP_CLI::error( $ex->getMessage() ); 
+			// Handle SSL certificate issues gracefully
+			$options['verify'] = false;
+			try {
+				$request = Requests::get( $url, $headers, $options );
+				$r = $request->body;
+			} catch( Requests_Exception $ex ) {	
+				WP_CLI::error( $ex->getMessage() );
+			} 
 		}
 		
 		return $r;
