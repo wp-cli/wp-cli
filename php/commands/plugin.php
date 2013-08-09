@@ -43,6 +43,59 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		parent::status( $args );
 	}
 
+	/**
+	 * Search wordpress.org plugin repo
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : A particular plugin to search for.
+	 *
+	 * --per-page
+	 * : Optional number of results to display. Defaults to 10.
+	 *
+	 * --format
+	 * : Output list as table, CSV or JSON. Defaults to table.
+	 *
+	 * --fields
+	 * : Ask for specific fields from the API. Defaults to name,slug,author_profile,rating. acceptable values:
+	 *
+	 *     **name**: Plugin Name
+	 *     **slug**: Plugin Slug
+	 *     **version**: Current Version Number
+	 *     **author**: Plugin Author
+	 *     **author_profile**: Plugin Author Profile
+	 *     **contributors**: Plugin Contributors
+	 *     **requires**: Plugin Minimum Requirements
+	 *     **tested**: Plugin Tested Up To
+	 *     **compatibility**: Plugin Compatible With
+	 *     **rating**: Plugin Rating
+	 *     **num_ratings**: Number of Plugin Ratings
+	 *     **homepage**: Plugin Author's Homepage
+	 *     **description**: Plugin's Description
+	 *     **short_description**: Plugin's Short Description
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin search dsgnwrks --per-page=20 --format=json
+	 *
+	 *     wp plugin search dsgnwrks --fields=name,version,slug,rating,num_ratings
+	 *
+	 * @synopsis <plugin> [--per-page=<per-page>] [--fields=<fields>] [--format=<format>]
+	 */
+	public function search( $args, $assoc_args = array() ) {
+		$term = $args[0];
+		$per_page = isset( $assoc_args['per-page'] ) ? (int) $assoc_args['per-page'] : 10;
+		$fields = isset( $assoc_args['fields'] ) ? $assoc_args['fields'] : array( 'name', 'slug', 'rating' );
+
+		$api = plugins_api( 'query_plugins', array(
+			'per_page' => $per_page,
+			'search' => $term,
+		) );
+
+		parent::_search( $api, $fields, $assoc_args, 'plugin' );
+	}
+
 	protected function status_single( $args ) {
 		$name = $args[0];
 		$file = $this->parse_name( $name );
