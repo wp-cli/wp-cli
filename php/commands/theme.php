@@ -36,6 +36,53 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		parent::status( $args );
 	}
 
+	/**
+	 * Search wordpress.org theme repo
+	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : A particular theme to search for.
+	 *
+	 * --per-page
+	 * : Optional number of results to display. Defaults to 10.
+	 *
+	 * --fields
+	 * : Ask for specific fields from the API. Defaults to name,slug,author,rating. acceptable values:
+	 *
+	 *     **name**: Theme Name
+	 *     **slug**: Theme Slug
+	 *     **version**: Current Version Number
+	 *     **author**: Theme Author
+	 *     **preview_url**: Theme Preview URL
+	 *     **screenshot_url**: Theme Screenshot URL
+	 *     **rating**: Theme Rating
+	 *     **num_ratings**: Number of Theme Ratings
+	 *     **homepage**: Theme Author's Homepage
+	 *     **description**: Theme Description
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme search automattic --per-page=20
+	 *
+	 *     wp theme search automattic --fields=name,version,slug,rating,num_ratings,description
+	 *
+	 * @synopsis <theme> [--per-page=<per-page>] [--fields=<fields>]
+	 */
+	public function search( $args, $assoc_args = array() ) {
+		$term = $args[0];
+		$per_page = isset( $assoc_args['per-page'] ) ? (int) $assoc_args['per-page'] : 10;
+		$fields = isset( $assoc_args['fields'] ) ? $assoc_args['fields'] : array( 'name', 'slug', 'author', 'rating' );
+
+		$api = themes_api( 'query_themes', array(
+			'per_page' => $per_page,
+			'search' => $term,
+		) );
+
+		parent::_search( $api, $fields, $assoc_args, 'theme' );
+
+	}
+
 	protected function status_single( $args ) {
 		$theme = $this->parse_name( $args[0] );
 
@@ -314,6 +361,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		return $theme;
 	}
+
 }
 
 WP_CLI::add_command( 'theme', 'Theme_Command' );
