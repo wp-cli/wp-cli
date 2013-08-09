@@ -60,13 +60,13 @@ class Core_Command extends WP_CLI_Command {
 		// We need to use a temporary file because piping from cURL to tar is flaky
 		// on MinGW (and probably in other environments too).
 		$temp = tempnam( sys_get_temp_dir(), "wp_" );
-		
+
 		$headers = array('Accept' => 'application/json');
 		$options = array(
 				'timeout' => 30,
 				'filename' => $temp
 			);
-		
+
 		try {
 			$request = Requests::get( $download_url, $headers, $options );
 		} catch( Requests_Exception $ex ) {
@@ -79,9 +79,9 @@ class Core_Command extends WP_CLI_Command {
 				WP_CLI::error( $ex->getMessage() );
 			}
 		}
-		
+
 		$cmd = "tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
-		
+
 		WP_CLI::launch( sprintf( $cmd, ABSPATH ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
@@ -90,7 +90,7 @@ class Core_Command extends WP_CLI_Command {
 	private static function _read( $url ) {
 		$headers = array('Accept' => 'application/json');
 		$options = array();
-		
+
 		$r = false;
 		try {
 			$request = Requests::get( $url, $headers, $options );
@@ -101,11 +101,11 @@ class Core_Command extends WP_CLI_Command {
 			try {
 				$request = Requests::get( $url, $headers, $options );
 				$r = $request->body;
-			} catch( Requests_Exception $ex ) {	
+			} catch( Requests_Exception $ex ) {
 				WP_CLI::error( $ex->getMessage() );
-			} 
+			}
 		}
-		
+
 		return $r;
 	}
 
