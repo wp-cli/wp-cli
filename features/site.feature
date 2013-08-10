@@ -7,6 +7,12 @@ Feature: Manage sites in a multisite installation
     Then STDOUT should match '%d'
     And save STDOUT as {SITE_ID}
 
+    When I run `wp site list`
+    Then STDOUT should be a table containing rows:
+      | blog_id | domain      | path    |
+      | 1       | example.com | /       |
+      | 2       | example.com | /first/ |
+
     When I run `wp site delete {SITE_ID} --yes`
     Then STDOUT should not be empty
 
