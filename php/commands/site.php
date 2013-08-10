@@ -324,6 +324,9 @@ class Site_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
+	 * --network=<id>
+	 * : The network to which the sites belong.
+	 *
 	 * --fields=<fields>
 	 * : Comma-separated list of fields to show.
 	 *
@@ -335,7 +338,7 @@ class Site_Command extends WP_CLI_Command {
 	 *     wp site list --fields=domain,path --format=csv
 	 *
 	 * @subcommand list
-	 * @synopsis [--format=<format>] [--fields=<fields>]
+	 * @synopsis [--network=<id>] [--format=<format>] [--fields=<fields>]
 	 */
 	function _list( $_, $assoc_args ) {
 		if ( !is_multisite() ) {
@@ -346,11 +349,20 @@ class Site_Command extends WP_CLI_Command {
 
 		$defaults = array(
 			'format' => 'table',
-			'fields' => array( 'blog_id', 'domain', 'path' )
+			'fields' => array( 'blog_id', 'domain', 'path' ),
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		$it = new \WP_CLI\Iterators\Table( array( 'table' => $wpdb->blogs ) );
+		$where = array();
+		if ( isset( $assoc_args['network'] ) ) {
+			$where['site_id'] = $assoc_args['network'];
+		}
+
+		$iterator_args = array(
+			'table' => $wpdb->blogs,
+			'where' => $where,
+		);
+		$it = new \WP_CLI\Iterators\Table( $iterator_args );
 
 		WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
 	}
