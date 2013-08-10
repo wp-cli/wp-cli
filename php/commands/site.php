@@ -367,6 +367,35 @@ class Site_Command extends WP_CLI_Command {
 
 		WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
 	}
+
+	/**
+	 * Execute a given command on each site in a multisite install.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site foreach plugin status
+	 *
+	 * @subcommand foreach
+	 * @synopsis <cmd>
+	 */
+	function _foreach( $args, $assoc_args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
+		global $wpdb;
+
+		$it = new \WP_CLI\Iterators\Table( array( 'table' => $wpdb->blogs ) );
+
+		foreach ( $it as $blog ) {
+			$blog_id = $blog->blog_id;
+			$blog_url = $blog->domain . $blog->path;
+			WP_CLI::line( "$blog_url:" );
+			switch_to_blog( $blog_id );
+			WP_CLI::run_command( $args, $assoc_args );
+			restore_current_blog();
+		}
+	}
 }
 
 WP_CLI::add_command( 'site', 'Site_Command' );
