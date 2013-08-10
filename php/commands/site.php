@@ -318,6 +318,38 @@ class Site_Command extends WP_CLI_Command {
 		else
 			WP_CLI::success( "Site $id created: $url" );
 	}
+
+	/**
+	 * List all sites in a multisite install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --fields=<fields>
+	 * : Comma-separated list of fields to show.
+	 *
+	 * --format=<format>
+	 * : Output list as table, CSV, JSON. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site list --fields=domain,path --format=csv
+	 *
+	 * @subcommand list
+	 * @synopsis [--format=<format>] [--fields=<fields>]
+	 */
+	function _list( $_, $assoc_args ) {
+		global $wpdb;
+
+		$defaults = array(
+			'format' => 'table',
+			'fields' => array( 'blog_id', 'domain', 'path' )
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$it = new \WP_CLI\Iterators\Table( array( 'table' => $wpdb->blogs ) );
+
+		WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
+	}
 }
 
 WP_CLI::add_command( 'site', 'Site_Command' );
