@@ -338,6 +338,10 @@ class Site_Command extends WP_CLI_Command {
 	 * @synopsis [--format=<format>] [--fields=<fields>]
 	 */
 	function _list( $_, $assoc_args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
 		global $wpdb;
 
 		$defaults = array(
