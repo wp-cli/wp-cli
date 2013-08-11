@@ -241,7 +241,7 @@ class Core_Command extends WP_CLI_Command {
 	 * --admin_email=<email>
 	 * : The email address for the admin user.
 	 *
-	 * @synopsis --url=<url> --title=<site-title> [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
+	 * @synopsis --url=<url> --title=<site-title> --admin_name=<username> --admin_email=<email> --admin_password=<password>
 	 */
 	public function install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
@@ -312,7 +312,7 @@ class Core_Command extends WP_CLI_Command {
 	 * : The email address for the admin user.
 	 *
 	 * @subcommand multisite-install
-	 * @synopsis --url=<url> --title=<site-title> [--base=<url-path>] [--subdomains] [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
+	 * @synopsis --url=<url> --title=<site-title> [--base=<url-path>] [--subdomains] --admin_name=<username> --admin_email=<email> --admin_password=<password>
 	 */
 	public function multisite_install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
