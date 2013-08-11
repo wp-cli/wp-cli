@@ -48,7 +48,11 @@ Feature: Wordpress code scaffolding
     When I run `wp scaffold taxonomy zombie-speed --label="Speed"`
     Then STDOUT should contain:
         """
-        __( 'Speed'
+        __( 'Speeds'
+        """
+    And STDOUT should contain:
+        """
+        _x( 'Speed', 'taxonomy general name',
         """
 
   # Test for all flags but --label, --theme, --plugin and --raw
