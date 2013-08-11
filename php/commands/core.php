@@ -232,8 +232,8 @@ class Core_Command extends WP_CLI_Command {
 	 * --title=<site-title>
 	 * : The title of the new site.
 	 *
-	 * --admin_name=<username>
-	 * : The name of the admin user. Default: 'admin'
+	 * --admin_user=<username>
+	 * : The name of the admin user.
 	 *
 	 * --admin_password=<password>
 	 * : The password for the admin user.
@@ -241,7 +241,7 @@ class Core_Command extends WP_CLI_Command {
 	 * --admin_email=<email>
 	 * : The email address for the admin user.
 	 *
-	 * @synopsis --url=<url> --title=<site-title> [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
+	 * @synopsis --url=<url> --title=<site-title> --admin_user=<username> --admin_email=<email> --admin_password=<password>
 	 */
 	public function install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
@@ -302,7 +302,7 @@ class Core_Command extends WP_CLI_Command {
 	 * --title=<site-title>
 	 * : The title of the new site.
 	 *
-	 * --admin_name=<username>
+	 * --admin_user=<username>
 	 * : The name of the admin user. Default: 'admin'
 	 *
 	 * --admin_password=<password>
@@ -312,7 +312,7 @@ class Core_Command extends WP_CLI_Command {
 	 * : The email address for the admin user.
 	 *
 	 * @subcommand multisite-install
-	 * @synopsis --url=<url> --title=<site-title> [--base=<url-path>] [--subdomains] [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
+	 * @synopsis --url=<url> --title=<site-title> [--base=<url-path>] [--subdomains] --admin_user=<username> --admin_email=<email> --admin_password=<password>
 	 */
 	public function multisite_install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
@@ -381,14 +381,14 @@ class Core_Command extends WP_CLI_Command {
 
 		extract( wp_parse_args( $assoc_args, array(
 			'title' => '',
-			'admin_name' => 'admin',
+			'admin_user' => '',
 			'admin_email' => '',
 			'admin_password' => ''
 		) ), EXTR_SKIP );
 
 		$public = true;
 
-		$result = wp_install( $title, $admin_name, $admin_email, $public, '', $admin_password );
+		$result = wp_install( $title, $admin_user, $admin_email, $public, '', $admin_password );
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( 'Installation failed (' . WP_CLI::error_to_string($result) . ').' );
