@@ -1,9 +1,0 @@
-## OPTIONS
-
-* `--dry-run`:
-
-	Pretend to do the updates, to see what would happen.
-
-## EXAMPLES
-
-	wp plugin update-all

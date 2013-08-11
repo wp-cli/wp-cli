@@ -1,9 +1,0 @@
-## OPTIONS
-
-* `<ID>`:
-
-	The ID of the comment to untrash.
-
-## EXAMPLES
-
-	wp comment untrash 1337

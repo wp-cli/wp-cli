@@ -42,7 +42,16 @@ class Subcommand extends CompositeCommand {
 		if ( !$synopsis )
 			return;
 
-		$parser = new \WP_CLI\SynopsisParser( $synopsis );
+		$parser = new \WP_CLI\SynopsisValidator( $synopsis );
+
+		$cmd_path = implode( ' ', get_path( $this ) );
+		foreach ( $parser->get_unknown() as $token ) {
+			\WP_CLI::warning( sprintf(
+				"The `%s` command has an invalid synopsis part: %s",
+				$cmd_path, $token
+			) );
+		}
+
 		if ( !$parser->enough_positionals( $args ) ) {
 			$this->show_usage();
 			exit(1);

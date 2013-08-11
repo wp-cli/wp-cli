@@ -14,6 +14,7 @@ class CLI_Command extends WP_CLI_Command {
 		$dump = array(
 			'name' => $command->get_name(),
 			'description' => $command->get_shortdesc(),
+			'longdesc' => $command->get_longdesc(),
 		);
 
 		foreach ( $command->get_subcommands() as $subcommand ) {
@@ -27,10 +28,16 @@ class CLI_Command extends WP_CLI_Command {
 		return $dump;
 	}
 
+	/**
+	 * Print WP-CLI version.
+	 */
 	function version() {
 		WP_CLI::line( 'WP-CLI ' . WP_CLI_VERSION );
 	}
 
+	/**
+	 * Print various data about the CLI environment.
+	 */
 	function info() {
 		$php_bin = defined( 'PHP_BINARY' ) ? PHP_BINARY : getenv( 'WP_CLI_PHP_USED' );
 
@@ -43,6 +50,8 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Dump the list of global parameters, as JSON.
+	 *
 	 * @subcommand param-dump
 	 */
 	function param_dump() {
@@ -50,12 +59,17 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Dump the list of installed commands, as JSON.
+	 *
 	 * @subcommand cmd-dump
 	 */
 	function cmd_dump() {
 		echo json_encode( self::command_to_array( WP_CLI::get_root_command() ) );
 	}
 
+	/**
+	 * Generate tab completion strings.
+	 */
 	function completions() {
 		foreach ( WP_CLI::get_root_command()->get_subcommands() as $name => $command ) {
 			$subcommands = $command->get_subcommands();

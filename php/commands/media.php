@@ -10,6 +10,20 @@ class Media_Command extends WP_CLI_Command {
 	/**
 	 * Regenerate thumbnail(s).
 	 *
+	 * ## OPTIONS
+	 *
+	 * --yes
+	 * : Answer yes to the confirmation message.
+	 *
+	 * <attachment-id>
+	 * : One or more IDs of the attachments to regenerate.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp media regenerate 123 1337
+	 *
+	 *     wp media regenerate --yes
+	 *
 	 * @synopsis <attachment-id>... [--yes]
 	 */
 	function regenerate( $args, $assoc_args = array() ) {
@@ -58,6 +72,42 @@ class Media_Command extends WP_CLI_Command {
 
 	/**
 	 * Create attachments from local files or from URLs.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <file>
+	 * : Path to file or files to be imported. Supports the glob(3) capabilities of the current shell.
+	 *     If file is recognized as a URL (for example, with a scheme of http or ftp), the file will be
+	 *     downloaded to a temp file before being sideloaded.
+	 *
+	 * --post_id=<post_id>
+	 * : ID of the post to attach the imported files to
+	 *
+	 * --title=<title>
+	 * : Attachment title (post title field)
+	 *
+	 * --caption=<caption>
+	 * : Caption for attachent (post excerpt field)
+	 *
+	 * --alt=<alt_text>
+	 * : Alt text for image (saved as post meta)
+	 *
+	 * --desc=<description>
+	 * : "Description" field (post content) of attachment post
+	 *
+	 * --featured_image
+	 * : If set, set the imported image as the Featured Image of the post its attached to.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Import all jpgs in the current user's "Pictures" directory, not attached to any post
+	 *     wp media import ~/Pictures/**\/*.jpg
+	 *
+	 *     # Import a local image and set it to be the post thumbnail for a post
+	 *     wp media import ~/Downloads/image.png --post_id=123 --title="A downloaded picture" --featured_image
+	 *
+	 *     # Import an image from the web
+	 *     wp media import http://s.wordpress.org/style/images/wp-header-logo.png --title='The WordPress logo' --alt="Semantic personal publishing"
 	 *
 	 * @synopsis <file>... [--post_id=<id>] [--title=<title>] [--caption=<caption>] [--alt=<text>] [--desc=<description>] [--featured_image]
 	 */
@@ -154,30 +204,30 @@ class Media_Command extends WP_CLI_Command {
 
 		$fullsizepath = get_attached_file( $image->ID );
 
+		$att_desc = sprintf( '"%1$s" (ID %2$d).', get_the_title( $image->ID ), $image->ID );
+
 		if ( false === $fullsizepath || !file_exists( $fullsizepath ) ) {
-			WP_CLI::warning( "{$image->post_title} - Can't find {$fullsizepath}." );
+			WP_CLI::warning( "Can't find $att_desc" );
 			return;
 		}
-
-		WP_CLI::log( sprintf( 'Start processing of "%1$s" (ID %2$d).', get_the_title( $image->ID ), $image->ID ) );
 
 		$this->remove_old_images( $image->ID );
 
 		$metadata = wp_generate_attachment_metadata( $image->ID, $fullsizepath );
-
 		if ( is_wp_error( $metadata ) ) {
 			WP_CLI::warning( $metadata->get_error_message() );
 			return;
 		}
 
 		if ( empty( $metadata ) ) {
-			WP_CLI::warning( "Couldn't regenerate image." );
+			WP_CLI::warning( "Couldn't regenerate thumbnails for $att_desc." );
 			return;
 		}
 
 		wp_update_attachment_metadata( $image->ID, $metadata );
 
-		WP_CLI::success( "All thumbnails were successfully regenerated in " . timer_stop() . " seconds." );
+		WP_CLI::log( "Regenerated thumbnails for $att_desc" );
+
 	}
 
 	private function remove_old_images( $att_id ) {
@@ -194,10 +244,7 @@ class Media_Command extends WP_CLI_Command {
 			if ( $intermediate_path == $original_path )
 				continue;
 
-			if ( unlink( $intermediate_path ) ) {
-				WP_CLI::log( sprintf( "Thumbnail %s x %s was deleted.",
-					$size_info['width'], $size_info['height'] ) );
-			}
+			unlink( $intermediate_path );
 		}
 	}
 

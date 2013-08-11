@@ -1,5 +1,0 @@
-## OPTIONS
-
-* `<theme>`:
-
-	A particular theme to show the status for.

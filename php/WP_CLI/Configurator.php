@@ -45,7 +45,7 @@ class Configurator {
 				$mixed_args[] = array( $matches[1], false );
 			} elseif ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
 				$mixed_args[] = array( $matches[1], true );
-			} elseif ( preg_match( '|^--([^=]+)=(.+)|', $arg, $matches ) ) {
+			} elseif ( preg_match( '|^--([^=]+)=(.+)|s', $arg, $matches ) ) {
 				$mixed_args[] = array( $matches[1], $matches[2] );
 			} else {
 				$regular_args[] = $arg;

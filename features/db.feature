@@ -11,9 +11,6 @@ Feature: Perform database operations
     When I try the previous command again
     Then the return code should be 1
 
-    When I run `wp db reset --yes`
-    Then STDOUT should not be empty
-
     When I run `wp db optimize`
     Then STDOUT should not be empty
 
@@ -38,3 +35,39 @@ Feature: Perform database operations
     """
     total
     """
+
+  Scenario: DB export/import
+    Given a WP install
+
+    When I run `wp post list --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp db export /tmp/wp-cli-behat.sql`
+    Then STDOUT should contain:
+      """
+      Success: Exported
+      """
+
+    When I run `wp db reset --yes`
+    Then STDOUT should contain:
+      """
+      Success: Database reset.
+      """
+
+    When I try `wp post list --format=count`
+    Then STDERR should not be empty
+
+    When I run `wp db import /tmp/wp-cli-behat.sql`
+    Then STDOUT should contain:
+      """
+      Success: Imported
+      """
+
+    When I run `wp post list --format=count`
+    Then STDOUT should contain:
+      """
+      1
+      """

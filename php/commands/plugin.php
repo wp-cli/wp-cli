@@ -32,10 +32,68 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * See the status of one or all plugins.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : A particular plugin to show the status for.
+	 *
 	 * @synopsis [<plugin>]
 	 */
 	function status( $args ) {
 		parent::status( $args );
+	}
+
+	/**
+	 * Search wordpress.org plugin repo
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : A particular plugin to search for.
+	 *
+	 * --per-page
+	 * : Optional number of results to display. Defaults to 10.
+	 *
+	 * --format
+	 * : Output list as table, CSV or JSON. Defaults to table.
+	 *
+	 * --fields
+	 * : Ask for specific fields from the API. Defaults to name,slug,author_profile,rating. acceptable values:
+	 *
+	 *     **name**: Plugin Name
+	 *     **slug**: Plugin Slug
+	 *     **version**: Current Version Number
+	 *     **author**: Plugin Author
+	 *     **author_profile**: Plugin Author Profile
+	 *     **contributors**: Plugin Contributors
+	 *     **requires**: Plugin Minimum Requirements
+	 *     **tested**: Plugin Tested Up To
+	 *     **compatibility**: Plugin Compatible With
+	 *     **rating**: Plugin Rating
+	 *     **num_ratings**: Number of Plugin Ratings
+	 *     **homepage**: Plugin Author's Homepage
+	 *     **description**: Plugin's Description
+	 *     **short_description**: Plugin's Short Description
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin search dsgnwrks --per-page=20 --format=json
+	 *
+	 *     wp plugin search dsgnwrks --fields=name,version,slug,rating,num_ratings
+	 *
+	 * @synopsis <plugin> [--per-page=<per-page>] [--fields=<fields>] [--format=<format>]
+	 */
+	public function search( $args, $assoc_args = array() ) {
+		$term = $args[0];
+		$per_page = isset( $assoc_args['per-page'] ) ? (int) $assoc_args['per-page'] : 10;
+		$fields = isset( $assoc_args['fields'] ) ? $assoc_args['fields'] : array( 'name', 'slug', 'rating' );
+
+		$api = plugins_api( 'query_plugins', array(
+			'per_page' => $per_page,
+			'search' => $term,
+		) );
+
+		parent::_search( $api, $fields, $assoc_args, 'plugin' );
 	}
 
 	protected function status_single( $args ) {
@@ -78,6 +136,14 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Activate a plugin.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to activate.
+	 *
+	 * --network
+	 * : If set, the plugin will be activated for the entire multisite network.
+	 *
 	 * @synopsis <plugin> [--network]
 	 */
 	function activate( $args, $assoc_args = array() ) {
@@ -89,7 +155,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		activate_plugin( $file, '', $network_wide );
 
 		if ( $this->check_active( $file, $network_wide ) ) {
-			WP_CLI::success( "Plugin '$name' activated." );
+			if ( $network_wide )
+				WP_CLI::success( "Plugin '$name' network activated." );
+			else
+				WP_CLI::success( "Plugin '$name' activated." );
 		} else {
 			WP_CLI::error( 'Could not activate plugin: ' . $name );
 		}
@@ -97,6 +166,14 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Deactivate a plugin.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to deactivate.
+	 *
+	 * --network
+	 * : If set, the plugin will be deactivated for the entire multisite network.
 	 *
 	 * @synopsis <plugin> [--network]
 	 */
@@ -109,7 +186,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		deactivate_plugins( $file, false, $network_wide );
 
 		if ( ! $this->check_active( $file, $network_wide ) ) {
-			WP_CLI::success( "Plugin '$name' deactivated." );
+			if ( $network_wide )
+				WP_CLI::success( "Plugin '$name' network deactivated." );
+			else
+				WP_CLI::success( "Plugin '$name' deactivated." );
 		} else {
 			WP_CLI::error( 'Could not deactivate plugin: ' . $name );
 		}
@@ -117,6 +197,14 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Toggle a plugin's activation state.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to toggle.
+	 *
+	 * --network
+	 * : If set, the plugin will be toggled for the entire multisite network.
 	 *
 	 * @synopsis <plugin> [--network]
 	 */
@@ -135,6 +223,20 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Get the path to a plugin or to the plugin directory.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to get the path to. If not set, will return the path to the
+	 * plugins directory.
+	 *
+	 * --dir
+	 * : If set, get the path to the closest parent directory, instead of the
+	 * plugin file.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     cd $(wp theme path)
 	 *
 	 * @synopsis [<plugin>] [--dir]
 	 */
@@ -182,6 +284,19 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Update a plugin.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to update.
+	 *
+	 * --version=dev
+	 * : If set, the plugin will be updated to the latest development version,
+	 * regardless of what version is currently installed.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin update bbpress --version=dev
+	 *
 	 * @synopsis <plugin> [--version=<version>]
 	 */
 	function update( $args, $assoc_args ) {
@@ -214,6 +329,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Update all plugins.
 	 *
+	 * ## OPTIONS
+	 *
+	 * --dry-run
+	 * : Pretend to do the updates, to see what would happen.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin update-all
+	 *
 	 * @subcommand update-all
 	 * @synopsis [--dry-run]
 	 */
@@ -240,6 +364,36 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Install a plugin.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin|zip|url>
+	 * : A plugin slug, the path to a local zip file, or URL to a remote zip file.
+	 *
+	 * --version=<version>
+	 * : If set, get that particular version from wordpress.org, instead of the
+	 * stable version.
+	 *
+	 * --force
+	 * : If set, the command will overwrite any installed version of the plugin, without prompting
+	 * for confirmation.
+	 *
+	 * --activate
+	 * : If set, the plugin will be activated immediately after install.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Install the latest version from wordpress.org and activate
+	 *     wp plugin install bbpress --activate
+	 *
+	 *     # Install the development version from wordpress.org
+	 *     wp plugin install bbpress --version=dev
+	 *
+	 *     # Install from a local zip file
+	 *     wp plugin install ../my-plugin.zip
+	 *
+	 *     # Install from a remote zip file
+	 *     wp plugin install http://s3.amazonaws.com/bucketname/my-plugin.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
+	 *
 	 * @synopsis <plugin|zip|url> [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
@@ -248,6 +402,19 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Uninstall a plugin.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to uninstall.
+	 *
+	 * --no-delete
+	 * : If set, the plugin files will not be deleted. Only the uninstall procedure
+	 * will be run.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin uninstall hello
 	 *
 	 * @synopsis <plugin> [--no-delete]
 	 */
@@ -272,6 +439,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Delete plugin files.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to delete.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin delete hello
+	 *
 	 * @synopsis <plugin>
 	 */
 	function delete( $args, $assoc_args = array() ) {
@@ -285,6 +461,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Get a list of plugins.
+	 *
+	 * ## OPTIONS
+	 *
+	 * * `--format`=<format>:
+	 *
+	 *     Output list as table, CSV or JSON. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin list --format=json
 	 *
 	 * @subcommand list
 	 * @synopsis [--format=<format>]

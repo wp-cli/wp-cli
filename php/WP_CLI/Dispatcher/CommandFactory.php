@@ -21,7 +21,7 @@ class CommandFactory {
 	}
 
 	private static function create_subcommand( $parent, $name, $class_name, $method ) {
-		$docparser = new \WP_CLI\DocParser( $method );
+		$docparser = new \WP_CLI\DocParser( $method->getDocComment() );
 
 		if ( !$name )
 			$name = $docparser->get_tag( 'subcommand' );
@@ -39,7 +39,7 @@ class CommandFactory {
 	}
 
 	private static function create_composite_command( $parent, $name, $reflection ) {
-		$docparser = new \WP_CLI\DocParser( $reflection );
+		$docparser = new \WP_CLI\DocParser( $reflection->getDocComment() );
 
 		$container = new CompositeCommand( $parent, $name, $docparser );
 

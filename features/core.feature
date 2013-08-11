@@ -25,6 +25,9 @@ Feature: Manage WordPress installation
     Then the return code should be 1
     And STDERR should not be empty
 
+    When I run `wp core version`
+    Then STDOUT should not be empty
+
     When I try `wp core install`
     Then the return code should be 1
     And STDERR should be:

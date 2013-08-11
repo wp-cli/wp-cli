@@ -12,6 +12,22 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Download core WordPress files.
 	 *
+	 * ## OPTIONS
+	 *
+	 * --locale=<locale>
+	 * : Select which language you want to download. The --version parameter is
+	 * ignored in this case.
+	 *
+	 * --version=<version>
+	 * : Select which version you want to download.
+	 *
+	 * --force
+	 * : Overwrites existing files, if present.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp core download --version=3.3
+	 *
 	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>] [--force]
 	 *
 	 * @when before_wp_load
@@ -44,16 +60,53 @@ class Core_Command extends WP_CLI_Command {
 		// We need to use a temporary file because piping from cURL to tar is flaky
 		// on MinGW (and probably in other environments too).
 		$temp = tempnam( sys_get_temp_dir(), "wp_" );
-		$cmd = "curl -f $silent %s > $temp && tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
-		WP_CLI::launch( Utils\esc_cmd( $cmd, $download_url, ABSPATH ) );
+
+		$headers = array('Accept' => 'application/json');
+		$options = array(
+				'timeout' => 30,
+				'filename' => $temp
+			);
+
+		try {
+			$request = Requests::get( $download_url, $headers, $options );
+		} catch( Requests_Exception $ex ) {
+			// Handle SSL certificate issues gracefully
+			$options['verify'] = false;
+			try {
+				$request = Requests::get( $download_url, $headers, $options );
+			}
+			catch( Requests_Exception $ex ) {
+				WP_CLI::error( $ex->getMessage() );
+			}
+		}
+
+		$cmd = "tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
+
+		WP_CLI::launch( sprintf( $cmd, ABSPATH ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
 	private static function _read( $url ) {
-		exec( 'curl -s ' . escapeshellarg( $url ), $lines, $r );
-		if ( $r ) exit( $r );
-		return implode( "\n", $lines );
+		$headers = array('Accept' => 'application/json');
+		$options = array();
+
+		$r = false;
+		try {
+			$request = Requests::get( $url, $headers, $options );
+			$r = $request->body;
+		} catch( Requests_Exception $ex ) {
+			// Handle SSL certificate issues gracefully
+			$options['verify'] = false;
+			try {
+				$request = Requests::get( $url, $headers, $options );
+				$r = $request->body;
+			} catch( Requests_Exception $ex ) {
+				WP_CLI::error( $ex->getMessage() );
+			}
+		}
+
+		return $r;
 	}
 
 	private function get_download_offer( $locale ) {
@@ -74,6 +127,40 @@ class Core_Command extends WP_CLI_Command {
 
 	/**
 	 * Set up a wp-config.php file.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --dbname=<dbname>
+	 * : Set the database name.
+	 *
+	 * --dbuser=<dbuser>
+	 * : Set the database user.
+	 *
+	 * --dbpass=<dbpass>
+	 * : Set the database user password.
+	 *
+	 * --dbhost=<dbhost>
+	 * : Set the database host. Default: 'localhost'
+	 *
+	 * --dbprefix=<dbprefix>
+	 * : Set the database table prefix. Default: 'wp_'
+	 *
+	 * --locale=<locale>
+	 * : Set the WPLANG constant. Defaults to $wp_local_package variable.
+	 *
+	 * --extra-php
+	 * : If set, the command reads additional PHP code from STDIN.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Standard wp-config.php file
+	 *     wp core config --dbname=testing --dbuser=wp --dbpass=securepswd --locale=ro_RO
+	 *
+	 *     # Enable WP_DEBUG and WP_DEBUG_LOG
+	 *     wp core config --dbname=testing --dbuser=wp --dbpass=securepswd --extra-php <<PHP
+	 *     define( 'WP_DEBUG', true );
+	 *     define( 'WP_DEBUG_LOG', true );
+	 *     PHP
 	 *
 	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php]
 	 */
@@ -105,11 +192,11 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		// TODO: adapt more resilient code from wp-admin/setup-config.php
+
 		$assoc_args['keys-and-salts'] = self::_read(
 			'https://api.wordpress.org/secret-key/1.1/salt/' );
 
 		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
-
 		file_put_contents( ABSPATH . 'wp-config.php', $out );
 
 		WP_CLI::success( 'Generated wp-config.php file.' );
@@ -117,6 +204,12 @@ class Core_Command extends WP_CLI_Command {
 
 	/**
 	 * Determine if the WordPress tables are installed.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     if ! $(wp core is-installed); then
+	 *         wp core install
+	 *     fi
 	 *
 	 * @subcommand is-installed
 	 */
@@ -131,6 +224,23 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Create the WordPress tables in the database.
 	 *
+	 * ## OPTIONS
+	 *
+	 * --url=<url>
+	 * : The address of the new site.
+	 *
+	 * --title=<site-title>
+	 * : The title of the new site.
+	 *
+	 * --admin_name=<username>
+	 * : The name of the admin user. Default: 'admin'
+	 *
+	 * --admin_password=<password>
+	 * : The password for the admin user.
+	 *
+	 * --admin_email=<email>
+	 * : The email address for the admin user.
+	 *
 	 * @synopsis --url=<url> --title=<site-title> [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
 	 */
 	public function install( $args, $assoc_args ) {
@@ -143,6 +253,18 @@ class Core_Command extends WP_CLI_Command {
 
 	/**
 	 * Transform a single-site install into a multi-site install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --title=<site-title>
+	 * : The title of the new network.
+	 *
+	 * --base=<url-path>
+	 * : Base path after the domain name that each site url will start with.
+	 * Default: '/'
+	 *
+	 * --subdomains
+	 * : If passed, the network will use subdomains, instead of subdirectories.
 	 *
 	 * @subcommand multisite-convert
 	 * @alias install-network
@@ -164,6 +286,30 @@ class Core_Command extends WP_CLI_Command {
 
 	/**
 	 * Install multisite from scratch.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --url=<url>
+	 * : The address of the new site.
+	 *
+	 * --base=<url-path>
+	 * : Base path after the domain name that each site url in the network will start with.
+	 * Default: '/'
+	 *
+	 * --subdomains
+	 * : If passed, the network will use subdomains, instead of subdirectories.
+	 *
+	 * --title=<site-title>
+	 * : The title of the new site.
+	 *
+	 * --admin_name=<username>
+	 * : The name of the admin user. Default: 'admin'
+	 *
+	 * --admin_password=<password>
+	 * : The password for the admin user.
+	 *
+	 * --admin_email=<email>
+	 * : The email address for the admin user.
 	 *
 	 * @subcommand multisite-install
 	 * @synopsis --url=<url> --title=<site-title> [--base=<url-path>] [--subdomains] [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
@@ -374,10 +520,24 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	/**
 	 * Display the WordPress version.
 	 *
+	 * ## OPTIONS
+	 *
+	 * --extra
+	 * : Show extended version information.
+	 *
+	 * @when before_wp_load
 	 * @synopsis [--extra]
 	 */
 	public function version( $args = array(), $assoc_args = array() ) {
-		global $wp_version, $wp_db_version, $tinymce_version;
+		$versions_path = ABSPATH . 'wp-includes/version.php';
+
+		if ( !is_readable( $versions_path ) ) {
+			WP_CLI::error(
+				"This does not seem to be a WordPress install.\n" .
+				"Pass --path=`path/to/wordpress` or run `wp core download`." );
+		}
+
+		include $versions_path;
 
 		if ( isset( $assoc_args['extra'] ) ) {
 			preg_match( '/(\d)(\d+)-/', $tinymce_version, $match );
@@ -398,6 +558,24 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 	/**
 	 * Update WordPress.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --version=<new_version> [package/zip]
+	 * : When passed, updates to new_version, optionally using package/zip as
+	 * input.
+	 *
+	 * --force
+	 * : Will update even when current WP version < passed version. Use with
+	 * caution.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp core update
+	 *
+	 *     wp core update --version=3.4 ../latest.zip
+	 *
+	 *     wp core update --version=3.1 --force
 	 *
 	 * @alias upgrade
 	 *
@@ -479,6 +657,25 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 * Set up the official test suite using the current WordPress instance.
 	 *
 	 * @subcommand init-tests
+	 *
+	 * ## OPTIONS
+	 *
+	 * <path>
+	 * : The directory in which to download the testing suite files. (Optional)
+	 *
+	 * --dbname=<dbname>
+	 * : Set the database name. **WARNING**: The database will be whipped every time
+	 * you run the tests.
+	 *
+	 * --dbuser=<dbuser>
+	 * : Set the database user.
+	 *
+	 * --dbpass=<dbpass>
+	 * : Set the database user password.
+	 *
+	 * ## EXAMPLE
+	 *
+	 *     wp core init-tests ~/svn/wp-tests --dbname=wp_test --dbuser=wp_test
 	 *
 	 * @synopsis [<path>] --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>]
 	 */

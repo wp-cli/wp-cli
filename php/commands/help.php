@@ -8,6 +8,14 @@ class Help_Command extends WP_CLI_Command {
 	/**
 	 * Get help on a certain command.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     # get help for `core` command
+	 *     wp help core
+	 *
+	 *     # get help for `core download` subcommand
+	 *     wp help core download
+	 *
 	 * @synopsis [<command>]
 	 */
 	function __invoke( $args, $assoc_args ) {
@@ -37,17 +45,41 @@ class Help_Command extends WP_CLI_Command {
 	private static function show_help( $command ) {
 		$out = self::get_initial_markdown( $command );
 
-		$out .= $command->get_extra_markdown();
+		$longdesc = $command->get_longdesc();
+		if ( $longdesc ) {
+			$out .= $longdesc . "\n";
+		}
 
 		// section headers
 		$out = preg_replace( '/^## ([A-Z ]+)/m', '%9\1%n', $out );
 
-		// old-style options
-		$out = preg_replace( '/\n\* `(.+)`([^\n]*):\n\n/', "\n\t\\1\\2\n\t\t", $out );
+		// definition lists
+		$out = preg_replace( '/\n([^\n]+)\n: (.+?)\n/s', "\n\t\\1\n\t\t\\2\n", $out );
 
 		$out = str_replace( "\t", '  ', $out );
 
-		echo WP_CLI::colorize( $out );
+		self::pass_through_pager( WP_CLI::colorize( $out ) );
+	}
+
+	private static function pass_through_pager( $out ) {
+		if ( strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ) {
+			// no paging for Windows cmd.exe; sorry
+			echo $out;
+			return 0;
+		}
+
+		// convert string to file handle
+		$fd = fopen( "php://temp", "r+" );
+		fputs( $fd, $out );
+		rewind( $fd );
+
+		$descriptorspec = array(
+			0 => $fd,
+			1 => STDOUT,
+			2 => STDERR
+		);
+
+		return proc_close( proc_open( 'less -r', $descriptorspec, $pipes ) );
 	}
 
 	private static function get_initial_markdown( $command ) {

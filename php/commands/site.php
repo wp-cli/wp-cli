@@ -110,6 +110,11 @@ class Site_Command extends WP_CLI_Command {
 	/**
 	 * Empty a site of its content (posts, comments, and terms).
 	 *
+	 * ## OPTIONS
+	 *
+	 * --yes
+	 * : Proceed to empty the site without a confirmation prompt.
+	 *
 	 * @subcommand empty
 	 * @synopsis [--yes]
 	 */
@@ -127,6 +132,20 @@ class Site_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete a site in a multisite install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <blog-id>
+	 * : The id of the blog to delete. If not provided, you must set the --slug parameter.
+	 *
+	 * --slug=<slug>
+	 * : Path of the blog to be deleted. Subdomain on subdomain installs, directory on subdirectory installs.
+	 *
+	 * --yes
+	 * : Answer yes to the confirmation message.
+	 *
+	 * --keep-tables
+	 * : Delete the blog from the list, but don't drop it's tables.
 	 *
 	 * @synopsis [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
 	 */
@@ -178,6 +197,26 @@ class Site_Command extends WP_CLI_Command {
 
 	/**
 	 * Create a site in a multisite install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --slug=<slug>
+	 * : Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
+	 *
+	 * --title=<title&gt;
+	 * : Title of the new site. Default: prettified slug.
+	 *
+	 * --email=<email>
+	 * : Email for Admin user. User will be created if none exists. Assignement to Super Admin if not included.
+	 *
+	 * --network_id=<network-id>
+	 * : Network to associate new site with. Defaults to current network (typically 1).
+	 *
+	 * --private
+	 * : If set, the new site will be non-public (not indexed)
+	 *
+	 * --porcelain
+	 * : If set, only the site id will be output on success.
 	 *
 	 * @synopsis --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<network-id>] [--private] [--porcelain]
 	 */
@@ -278,6 +317,54 @@ class Site_Command extends WP_CLI_Command {
 			WP_CLI::line( $id );
 		else
 			WP_CLI::success( "Site $id created: $url" );
+	}
+
+	/**
+	 * List all sites in a multisite install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --network=<id>
+	 * : The network to which the sites belong.
+	 *
+	 * --fields=<fields>
+	 * : Comma-separated list of fields to show.
+	 *
+	 * --format=<format>
+	 * : Output list as table, CSV, JSON. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site list --fields=domain,path --format=csv
+	 *
+	 * @subcommand list
+	 * @synopsis [--network=<id>] [--format=<format>] [--fields=<fields>]
+	 */
+	function _list( $_, $assoc_args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
+		global $wpdb;
+
+		$defaults = array(
+			'format' => 'table',
+			'fields' => array( 'blog_id', 'domain', 'path' ),
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$where = array();
+		if ( isset( $assoc_args['network'] ) ) {
+			$where['site_id'] = $assoc_args['network'];
+		}
+
+		$iterator_args = array(
+			'table' => $wpdb->blogs,
+			'where' => $where,
+		);
+		$it = new \WP_CLI\Iterators\Table( $iterator_args );
+
+		WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
 	}
 }
 
