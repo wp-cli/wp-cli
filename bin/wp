@@ -39,28 +39,8 @@ else
 	php=`which php`
 fi
 
-# Check to see if the user has provided a php.ini file or wp-cli.ini file in any conf dir
-# Last found wins, so search in reverse priority order
-for conf_dir in $(dirname "$SELF_PATH") /etc/wp-cli $HOME/.wp-cli ; do
-	if [ -f $conf_dir/php.ini ] ; then
-		wp_cli_php_ini=$conf_dir/php.ini
-	fi
-	if [ -f $conf_dir/wp-cli.ini ] ; then
-		wp_cli_php_override=$conf_dir/wp-cli.ini
-	fi
-done
-
-# Add in the php file location and/or the php override variables as appropriate
-if [ "x$wp_cli_php_ini" != "x" ] ; then
-	php="$php --php-ini $wp_cli_php_ini"
-fi
-if [ "x$wp_cli_php_override" != "x" ] ; then
-	wp_cli_override_vars=`grep '^[a-z_A-Z0-9]\+ *=' $wp_cli_php_override | sed -e 's|\([^ =]*\) *= *\(.*\)|\1="\2"|' -e 's| ||g' -e 's|^|-d |' | tr '\n\r' '  '`
-	php="$php $wp_cli_override_vars"
-fi
-
-export WP_CLI_PHP_USED=$php
-
 # Pass in the path to php so that wp-cli knows which one
 # to use if it re-launches itself to run subcommands
-exec "$php" "$SCRIPT_PATH" "$@"
+export WP_CLI_PHP_USED=$php
+
+exec "$php" $WP_CLI_PHP_ARGS "$SCRIPT_PATH" "$@"
