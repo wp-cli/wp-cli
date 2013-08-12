@@ -25,6 +25,9 @@ Feature: Manage WordPress installation
     Then the return code should be 1
     And STDERR should not be empty
 
+    When I run `wp core version`
+    Then STDOUT should not be empty
+
     When I try `wp core install`
     Then the return code should be 1
     And STDERR should be:
@@ -77,7 +80,7 @@ Feature: Manage WordPress installation
       Run `wp core install`.
       """
 
-    When I run `wp core install --url='localhost:8001' --title='Test' --admin_email=admin@example.com --admin_password=1`
+    When I run `wp core install --url='localhost:8001' --title='Test' --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
     Then STDOUT should not be empty
 
     When I run `wp eval 'echo home_url();'`
@@ -105,7 +108,7 @@ Feature: Manage WordPress installation
       """
 
     # Can complain that it's already installed, but don't exit with an error code
-    When I try `wp core install --url='localhost:8001' --title='Test' --admin_email=admin@example.com --admin_password=1`
+    When I try `wp core install --url='localhost:8001' --title='Test' --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
     Then the return code should be 0
 
   Scenario: Convert install to multisite
@@ -135,7 +138,7 @@ Feature: Manage WordPress installation
     And wp-config.php
     And a database
 
-    When I run `wp core multisite-install --url=foobar.org --title=Test --admin_email=admin@example.com --admin_password=1`
+    When I run `wp core multisite-install --url=foobar.org --title=Test --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
     Then STDOUT should not be empty
 
     When I run `wp eval 'echo $GLOBALS["current_site"]->domain;'`
@@ -145,14 +148,14 @@ Feature: Manage WordPress installation
       """ 
 
     # Can complain that it's already installed, but don't exit with an error code
-    When I try `wp core multisite-install --url=foobar.org --title=Test --admin_email=admin@example.com --admin_password=1`
+    When I try `wp core multisite-install --url=foobar.org --title=Test --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
     Then the return code should be 0
 
   Scenario: Install multisite from scratch, with MULTISITE already set in wp-config.php
     Given a WP multisite install
     And I run `wp db reset --yes`
 
-    When I run `wp core multisite-install --title=Test --admin_email=admin@example.com --admin_password=1`
+    When I run `wp core multisite-install --title=Test --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
     Then STDOUT should not be empty
 
     When I run `wp eval 'echo $GLOBALS["current_site"]->domain;'`

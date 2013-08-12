@@ -204,30 +204,30 @@ class Media_Command extends WP_CLI_Command {
 
 		$fullsizepath = get_attached_file( $image->ID );
 
+		$att_desc = sprintf( '"%1$s" (ID %2$d).', get_the_title( $image->ID ), $image->ID );
+
 		if ( false === $fullsizepath || !file_exists( $fullsizepath ) ) {
-			WP_CLI::warning( "{$image->post_title} - Can't find {$fullsizepath}." );
+			WP_CLI::warning( "Can't find $att_desc" );
 			return;
 		}
-
-		WP_CLI::log( sprintf( 'Start processing of "%1$s" (ID %2$d).', get_the_title( $image->ID ), $image->ID ) );
 
 		$this->remove_old_images( $image->ID );
 
 		$metadata = wp_generate_attachment_metadata( $image->ID, $fullsizepath );
-
 		if ( is_wp_error( $metadata ) ) {
 			WP_CLI::warning( $metadata->get_error_message() );
 			return;
 		}
 
 		if ( empty( $metadata ) ) {
-			WP_CLI::warning( "Couldn't regenerate image." );
+			WP_CLI::warning( "Couldn't regenerate thumbnails for $att_desc." );
 			return;
 		}
 
 		wp_update_attachment_metadata( $image->ID, $metadata );
 
-		WP_CLI::success( "All thumbnails were successfully regenerated in " . timer_stop() . " seconds." );
+		WP_CLI::log( "Regenerated thumbnails for $att_desc" );
+
 	}
 
 	private function remove_old_images( $att_id ) {
@@ -244,10 +244,7 @@ class Media_Command extends WP_CLI_Command {
 			if ( $intermediate_path == $original_path )
 				continue;
 
-			if ( unlink( $intermediate_path ) ) {
-				WP_CLI::log( sprintf( "Thumbnail %s x %s was deleted.",
-					$size_info['width'], $size_info['height'] ) );
-			}
+			unlink( $intermediate_path );
 		}
 	}
 

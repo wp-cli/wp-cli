@@ -262,6 +262,12 @@ class Runner {
 			}
 		}
 
+		// core (multsite-)install --admin_name= -> --admin_user=
+		if ( count( $args ) > 0 && 'core' == $args[0] && isset( $assoc_args['admin_name'] ) ) {
+			$assoc_args['admin_user'] = $assoc_args['admin_name'];
+			unset( $assoc_args['admin_name'] );
+		}
+
 		// site --site_id=  ->  site --network_id=
 		if ( count( $args ) > 0 && 'site' == $args[0] && isset( $assoc_args['site_id'] ) ) {
 			$assoc_args['network_id'] = $assoc_args['site_id'];

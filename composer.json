@@ -13,6 +13,7 @@
 		"mustache/mustache": "~2.4",
 		"rhumsaa/array_column": "~1.1",
 		"composer/composer": "dev-master"
+		"rmccue/requests": "dev-master"
 	},
 	"suggest": {
 		"d11wtq/boris": "Enhanced `wp shell` functionality"

@@ -60,16 +60,53 @@ class Core_Command extends WP_CLI_Command {
 		// We need to use a temporary file because piping from cURL to tar is flaky
 		// on MinGW (and probably in other environments too).
 		$temp = tempnam( sys_get_temp_dir(), "wp_" );
-		$cmd = "curl -f $silent %s > $temp && tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
-		WP_CLI::launch( Utils\esc_cmd( $cmd, $download_url, ABSPATH ) );
+
+		$headers = array('Accept' => 'application/json');
+		$options = array(
+				'timeout' => 30,
+				'filename' => $temp
+			);
+
+		try {
+			$request = Requests::get( $download_url, $headers, $options );
+		} catch( Requests_Exception $ex ) {
+			// Handle SSL certificate issues gracefully
+			$options['verify'] = false;
+			try {
+				$request = Requests::get( $download_url, $headers, $options );
+			}
+			catch( Requests_Exception $ex ) {
+				WP_CLI::error( $ex->getMessage() );
+			}
+		}
+
+		$cmd = "tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
+
+		WP_CLI::launch( sprintf( $cmd, ABSPATH ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
 	private static function _read( $url ) {
-		exec( 'curl -s ' . escapeshellarg( $url ), $lines, $r );
-		if ( $r ) exit( $r );
-		return implode( "\n", $lines );
+		$headers = array('Accept' => 'application/json');
+		$options = array();
+
+		$r = false;
+		try {
+			$request = Requests::get( $url, $headers, $options );
+			$r = $request->body;
+		} catch( Requests_Exception $ex ) {
+			// Handle SSL certificate issues gracefully
+			$options['verify'] = false;
+			try {
+				$request = Requests::get( $url, $headers, $options );
+				$r = $request->body;
+			} catch( Requests_Exception $ex ) {
+				WP_CLI::error( $ex->getMessage() );
+			}
+		}
+
+		return $r;
 	}
 
 	private function get_download_offer( $locale ) {
@@ -155,11 +192,11 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		// TODO: adapt more resilient code from wp-admin/setup-config.php
+
 		$assoc_args['keys-and-salts'] = self::_read(
 			'https://api.wordpress.org/secret-key/1.1/salt/' );
 
 		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
-
 		file_put_contents( ABSPATH . 'wp-config.php', $out );
 
 		WP_CLI::success( 'Generated wp-config.php file.' );
@@ -195,8 +232,8 @@ class Core_Command extends WP_CLI_Command {
 	 * --title=<site-title>
 	 * : The title of the new site.
 	 *
-	 * --admin_name=<username>
-	 * : The name of the admin user. Default: 'admin'
+	 * --admin_user=<username>
+	 * : The name of the admin user.
 	 *
 	 * --admin_password=<password>
 	 * : The password for the admin user.
@@ -204,7 +241,7 @@ class Core_Command extends WP_CLI_Command {
 	 * --admin_email=<email>
 	 * : The email address for the admin user.
 	 *
-	 * @synopsis --url=<url> --title=<site-title> [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
+	 * @synopsis --url=<url> --title=<site-title> --admin_user=<username> --admin_email=<email> --admin_password=<password>
 	 */
 	public function install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
@@ -265,7 +302,7 @@ class Core_Command extends WP_CLI_Command {
 	 * --title=<site-title>
 	 * : The title of the new site.
 	 *
-	 * --admin_name=<username>
+	 * --admin_user=<username>
 	 * : The name of the admin user. Default: 'admin'
 	 *
 	 * --admin_password=<password>
@@ -275,7 +312,7 @@ class Core_Command extends WP_CLI_Command {
 	 * : The email address for the admin user.
 	 *
 	 * @subcommand multisite-install
-	 * @synopsis --url=<url> --title=<site-title> [--base=<url-path>] [--subdomains] [--admin_name=<username>] --admin_email=<email> --admin_password=<password>
+	 * @synopsis --url=<url> --title=<site-title> [--base=<url-path>] [--subdomains] --admin_user=<username> --admin_email=<email> --admin_password=<password>
 	 */
 	public function multisite_install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
@@ -344,14 +381,14 @@ class Core_Command extends WP_CLI_Command {
 
 		extract( wp_parse_args( $assoc_args, array(
 			'title' => '',
-			'admin_name' => 'admin',
+			'admin_user' => '',
 			'admin_email' => '',
 			'admin_password' => ''
 		) ), EXTR_SKIP );
 
 		$public = true;
 
-		$result = wp_install( $title, $admin_name, $admin_email, $public, '', $admin_password );
+		$result = wp_install( $title, $admin_user, $admin_email, $public, '', $admin_password );
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( 'Installation failed (' . WP_CLI::error_to_string($result) . ').' );
@@ -488,10 +525,19 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 * --extra
 	 * : Show extended version information.
 	 *
+	 * @when before_wp_load
 	 * @synopsis [--extra]
 	 */
 	public function version( $args = array(), $assoc_args = array() ) {
-		global $wp_version, $wp_db_version, $tinymce_version;
+		$versions_path = ABSPATH . 'wp-includes/version.php';
+
+		if ( !is_readable( $versions_path ) ) {
+			WP_CLI::error(
+				"This does not seem to be a WordPress install.\n" .
+				"Pass --path=`path/to/wordpress` or run `wp core download`." );
+		}
+
+		include $versions_path;
 
 		if ( isset( $assoc_args['extra'] ) ) {
 			preg_match( '/(\d)(\d+)-/', $tinymce_version, $match );
