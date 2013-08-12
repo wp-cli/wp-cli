@@ -16,34 +16,28 @@ Lastly, please follow the [WordPress Coding Standards](http://make.wordpress.org
 Running and writing tests
 -------------------------
 
-There are two types of tests:
+There are two types of automated tests:
 
 * unit tests, implemented using [PHPUnit](http://phpunit.de/)
 * functional tests, implemented using [Behat](http://behat.org)
 
-### Unit tests
-
-Assuming you have `~/.wp-cli/bin/` in your PATH, you can do:
+To set everything up, just run:
 
 ```bash
-# Install PHPUnit
-curl http://pear.phpunit.de/get/phpunit.phar > ~/.wp-cli/bin/phpunit
-chmod +x ~/.wp-cli/bin/phpunit
+./utils/dev-build
+```
+
+### Unit tests
+
+The unit test files are in the `tests/` directory.
 
 To run the unit tests, just execute:
 
-    phpunit
-
-The test files are in the `tests/` directory.
+    php phpunit.phar
 
 ### Functional tests
 
-Assuming you have `~/.wp-cli/bin/` in your PATH, to install Behat, you can do:
-
-```bash
-curl http://behat.org/downloads/behat.phar > ~/.wp-cli/bin/behat
-chmod +x ~/.wp-cli/bin/behat
-```
+The functional test files are in the `features/` directory.
 
 Before running the functional tests, you'll need a MySQL user called `wp_cli_test` with the
 password `password1` that has full privileges on the MySQL database `wp_cli_test`.
@@ -53,15 +47,13 @@ Running the following as root in MySQL should do the trick:
 
 Then, to run the entire test suite:
 
-    behat --expand
+    php behat.phar --expand
 
 Or to test a single feature:
 
-    behat features/core.feature
+    php behat.phar features/core.feature
 
-More info can be found from `vendor/bin/behat --help`.
-
-The feature files are in the `features/` directory.
+More info can be found from `php behat.phar --help`.
 
 Finally...
 ----------
