@@ -8,6 +8,12 @@ function assertEquals( $expected, $actual ) {
 	}
 }
 
+function assertNumeric( $actual ) {
+	if ( !is_numeric( $actual ) ) {
+		throw new Exception( "Actual value: " . var_export( $actual ) );
+	}
+}
+
 function checkString( $output, $expected, $action ) {
 	switch ( $action ) {
 

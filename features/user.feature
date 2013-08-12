@@ -4,7 +4,7 @@ Feature: Manage WordPress users
     Given a WP install
 
     When I run `wp user create testuser testuser@example.com --porcelain`
-    Then STDOUT should match '%d'
+    Then STDOUT should be a number
     And save STDOUT as {USER_ID}
 
     When I try the previous command again

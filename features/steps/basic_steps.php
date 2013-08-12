@@ -160,9 +160,9 @@ $steps->Then( '/^(STDOUT|STDERR) should (be|contain|not contain):$/',
 	}
 );
 
-$steps->Then( '/^(STDOUT|STDERR) should match \'([^\']+)\'$/',
-	function ( $world, $stream, $format ) {
-		assertStringMatchesFormat( $format, $world->result->$stream );
+$steps->Then( '/^(STDOUT|STDERR) should be a number$/',
+	function ( $world, $stream ) {
+		assertNumeric( $world->result->$stream );
 	}
 );
 
