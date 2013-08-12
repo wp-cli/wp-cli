@@ -16,7 +16,7 @@ class Make_Command extends WP_CLI_Command {
    	 *
    	 * @synopsis <path>
      */
-    protected function __invoke( $args, $assoc_args )
+    public function __invoke( $args, $assoc_args )
     {
         foreach ( $args as $script ) {
             if ( !file_exists( $script ) ) {
@@ -30,12 +30,11 @@ class Make_Command extends WP_CLI_Command {
 
     protected function _processScript($script)
     {
-        foreach( $script as $subCommand ) {
-            $command = self::find_subcommand( $subCommand );
+        foreach( $script as $subCommand => $args) {
+            $command = self::find_subcommand( array($subCommand) );
 
             if ( $command ) {
-                self::show_help( $command );
-                exit;
+                continue;
             }
 
             // WordPress is already loaded, so there's no chance we'll find the command
@@ -43,6 +42,16 @@ class Make_Command extends WP_CLI_Command {
                 \WP_CLI::error( sprintf( "'%s' is not a registered wp command.", $subCommand ) );
             }
         }
+
+        // all fine, time to run the show
+        foreach ( $script as $subCommand ) {
+            self::run_command($subCommand);
+        }
+
+    }
+
+    private static function run_command($subCommand) {
+        echo "Go gadget go!";
     }
 
     private static function find_subcommand( $args ) {
