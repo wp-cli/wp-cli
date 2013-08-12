@@ -42,11 +42,11 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( isset( $assoc_args['locale'] ) &&  isset( $assoc_args['version'] ) ) {
 			$download_url = 'https://'. substr( $assoc_args['locale'],0,2 ) .'.wordpress.org/wordpress-' . $assoc_args['version'] . '-' .$assoc_args['locale']. '.tar.gz';
-			WP_CLI::log( sprintf( 'Downloading WordPress %s ( %s )...', $assoc_args['version'], $assoc_args['locale'] ) );
+			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $assoc_args['locale'] ) );
 		} else if ( isset( $assoc_args['locale'] ) ) {
 			$offer = $this->get_download_offer( $assoc_args['locale'] );
 			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
-			WP_CLI::log( sprintf( 'Downloading WordPress %s ( %s )...',
+			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...',
 				$offer['current'], $offer['locale'] ) );
 		} elseif ( isset( $assoc_args['version'] ) ) {
 			$download_url = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.tar.gz';
