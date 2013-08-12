@@ -48,3 +48,16 @@ Feature: Manage sites in a multisite installation
 
     When I run `wp term list post_tag --format=ids`
     Then STDOUT should be empty
+
+  Scenario: Loop through sites
+    Given a WP multisite install
+    And I run `wp site create --slug=first --porcelain`
+
+    When I run `wp site foreach eval 'WP_CLI::line( home_url() );'`
+    Then STDOUT should be:
+      """
+      example.com/:
+      http://example.com
+      example.com/first/:
+      http://example.com/first
+      """
