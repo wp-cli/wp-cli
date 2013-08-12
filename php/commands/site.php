@@ -335,7 +335,8 @@ class Site_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp site list --fields=domain,path --format=csv
+	 *     # Output the list of site URLs
+	 *     wp site list --fields=domain,path --format=csv | tail -n +2 | sed 's/,//'
 	 *
 	 * @subcommand list
 	 * @synopsis [--network=<id>] [--format=<format>] [--fields=<fields>]
