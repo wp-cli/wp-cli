@@ -260,7 +260,9 @@ $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 
 $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 	function ( $world, $stream ) {
-		assertNotEmpty( rtrim( $world->result->$stream, "\n" ) );
+		if ( '' === rtrim( $world->result->$stream, "\n" ) ) {
+			throw new Exception( "$stream is empty." );
+		}
 	}
 );
 
@@ -274,13 +276,19 @@ $steps->Then( '/^the (.+) file should (exist|not exist|be:|contain:|not contain:
 
 		switch ( $action ) {
 		case 'exist':
-			assertFileExists( $path );
+			if ( !file_exists( $path ) ) {
+				throw new Exception( "$path doesn't exist." );
+			}
 			break;
 		case 'not exist':
-			assertFileNotExists( $path );
+			if ( file_exists( $path ) ) {
+				throw new Exception( "$path exists." );
+			}
 			break;
 		default:
-			assertFileExists( $path );
+			if ( !file_exists( $path ) ) {
+				throw new Exception( "$path doesn't exist." );
+			}
 			$action = substr( $action, 0, -1 );
 			$expected = $world->replace_variables( (string) $expected );
 			checkString( file_get_contents( $path ), $expected, $action );
