@@ -376,7 +376,7 @@ class Site_Command extends WP_CLI_Command {
 	 *     wp site foreach plugin status
 	 *
 	 * @subcommand foreach
-	 * @synopsis <cmd>
+	 * @synopsis <cmd> --<field>=<value>
 	 */
 	function _foreach( $args, $assoc_args ) {
 		if ( !is_multisite() ) {
