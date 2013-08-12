@@ -7,8 +7,6 @@ use Behat\Behat\Context\ClosuredContextInterface,
 
 use \WP_CLI\Utils;
 
-require_once 'PHPUnit/Framework/Assert/Functions.php';
-
 require_once __DIR__ . '/../../php/utils.php';
 
 /**
