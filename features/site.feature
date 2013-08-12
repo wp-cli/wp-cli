@@ -4,7 +4,7 @@ Feature: Manage sites in a multisite installation
     Given a WP multisite install
 
     When I run `wp site create --slug=first --porcelain`
-    Then STDOUT should match '%d'
+    Then STDOUT should be a number
     And save STDOUT as {SITE_ID}
 
     When I run `wp site list`

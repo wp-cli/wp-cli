@@ -15,8 +15,7 @@ class Core_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * --locale=<locale>
-	 * : Select which language you want to download. The --version parameter is
-	 * ignored in this case.
+	 * : Select which language you want to download.
 	 *
 	 * --version=<version>
 	 * : Select which version you want to download.
@@ -41,7 +40,11 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::launch( sprintf( 'mkdir -p %s', escapeshellarg( ABSPATH ) ) );
 		}
 
-		if ( isset( $assoc_args['locale'] ) ) {
+		if ( isset( $assoc_args['locale'] ) &&  isset( $assoc_args['version'] ) ) {
+			$download_url = sprintf( 'https://%s.wordpress.org/wordpress-%s-%s.tar.gz',
+				substr( $assoc_args['locale'], 0, 2 ), $assoc_args['version'], $assoc_args['locale'] );
+			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $assoc_args['locale'] ) );
+		} else if ( isset( $assoc_args['locale'] ) ) {
 			$offer = $this->get_download_offer( $assoc_args['locale'] );
 			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
 			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...',
@@ -63,9 +66,9 @@ class Core_Command extends WP_CLI_Command {
 
 		$headers = array('Accept' => 'application/json');
 		$options = array(
-				'timeout' => 30,
-				'filename' => $temp
-			);
+			'timeout' => 30,
+			'filename' => $temp
+		);
 
 		try {
 			$request = Requests::get( $download_url, $headers, $options );

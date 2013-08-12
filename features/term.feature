@@ -4,7 +4,7 @@ Feature: Manage WordPress terms
     Given a WP install
 
     When I run `wp term create 'Test term' post_tag --slug=test --description='This is a test term' --porcelain`
-    Then STDOUT should match '%d'
+    Then STDOUT should be a number
 
     When I try the previous command again
     Then STDERR should not be empty
@@ -24,7 +24,7 @@ Feature: Manage WordPress terms
     Given a WP install
 
     When I run `wp term create 'Test delete term' post_tag --slug=test-delete --description='This is a test term to be deleted' --porcelain`
-    Then STDOUT should match '%d'
+    Then STDOUT should be a number
     And save STDOUT as {TERM_ID}
 
     When I run `wp term delete {TERM_ID} post_tag`
