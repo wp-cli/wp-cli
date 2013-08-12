@@ -15,8 +15,7 @@ class Core_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * --locale=<locale>
-	 * : Select which language you want to download. The --version parameter is
-	 * ignored in this case.
+	 * : Select which language you want to download.
 	 *
 	 * --version=<version>
 	 * : Select which version you want to download.
@@ -41,7 +40,10 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::launch( sprintf( 'mkdir -p %s', escapeshellarg( ABSPATH ) ) );
 		}
 
-		if ( isset( $assoc_args['locale'] ) ) {
+		if ( isset( $assoc_args['locale'] ) &&  isset( $assoc_args['version']) ) {
+                        $download_url = 'https://'. substr($assoc_args['locale'],0,2) .'.wordpress.org/wordpress-' . $assoc_args['version'] . '-' .$assoc_args['locale']. '.tar.gz';
+                        WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $assoc_args['locale'] ) );
+                } else if ( isset( $assoc_args['locale'] ) ) {
 			$offer = $this->get_download_offer( $assoc_args['locale'] );
 			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
 			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...',
