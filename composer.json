@@ -17,10 +17,6 @@
 	"suggest": {
 		"d11wtq/boris": "Enhanced `wp shell` functionality"
 	},
-	"require-dev": {
-		"phpunit/phpunit": "~3.7",
-		"behat/behat": "~2.4"
-	},
 	"autoload": {
 		"psr-0": { "WP_CLI": "php" }
 	}
