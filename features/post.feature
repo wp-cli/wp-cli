@@ -4,7 +4,7 @@ Feature: Manage WordPress posts
     Given a WP install
 
     When I run `wp post create --post_title='Test post' --porcelain`
-    Then STDOUT should match '%d'
+    Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
     When I run `wp post update {POST_ID} --post_title='Updated post'`
@@ -40,7 +40,7 @@ Feature: Manage WordPress posts
       """
 
     When I run `bash command.sh`
-    Then STDOUT should match '%d'
+    Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
     When I run `wp eval '$post_id = {POST_ID}; echo get_post( $post_id )->post_excerpt;'`
@@ -74,10 +74,10 @@ Feature: Manage WordPress posts
     Given a WP install
 
     When I run `wp post create --post_title='Publish post' --post_content='Publish post content' --post_status='publish' --porcelain`
-    Then STDOUT should match '%d'
+    Then STDOUT should be a number
 
     When I run `wp post create --post_title='Draft post' --post_content='Draft post content' --post_status='draft' --porcelain`
-    Then STDOUT should match '%d'
+    Then STDOUT should be a number
 
     When I run `wp post list --post_type='post' --fields=post_title,post_name,post_status --format=csv`
     Then STDOUT should be CSV containing:

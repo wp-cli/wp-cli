@@ -160,9 +160,9 @@ $steps->Then( '/^(STDOUT|STDERR) should (be|contain|not contain):$/',
 	}
 );
 
-$steps->Then( '/^(STDOUT|STDERR) should match \'([^\']+)\'$/',
-	function ( $world, $stream, $format ) {
-		assertStringMatchesFormat( $format, $world->result->$stream );
+$steps->Then( '/^(STDOUT|STDERR) should be a number$/',
+	function ( $world, $stream ) {
+		assertNumeric( trim( $world->result->$stream, "\n" ) );
 	}
 );
 
@@ -260,7 +260,9 @@ $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 
 $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 	function ( $world, $stream ) {
-		assertNotEmpty( rtrim( $world->result->$stream, "\n" ) );
+		if ( '' === rtrim( $world->result->$stream, "\n" ) ) {
+			throw new Exception( "$stream is empty." );
+		}
 	}
 );
 
@@ -274,13 +276,19 @@ $steps->Then( '/^the (.+) file should (exist|not exist|be:|contain:|not contain:
 
 		switch ( $action ) {
 		case 'exist':
-			assertFileExists( $path );
+			if ( !file_exists( $path ) ) {
+				throw new Exception( "$path doesn't exist." );
+			}
 			break;
 		case 'not exist':
-			assertFileNotExists( $path );
+			if ( file_exists( $path ) ) {
+				throw new Exception( "$path exists." );
+			}
 			break;
 		default:
-			assertFileExists( $path );
+			if ( !file_exists( $path ) ) {
+				throw new Exception( "$path doesn't exist." );
+			}
 			$action = substr( $action, 0, -1 );
 			$expected = $world->replace_variables( (string) $expected );
 			checkString( file_get_contents( $path ), $expected, $action );

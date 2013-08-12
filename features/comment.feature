@@ -4,7 +4,7 @@ Feature: Manage WordPress comments
     Given a WP install
 
     When I run `wp comment create --comment_post_ID=1 --comment_content='Hello' --porcelain`
-    Then STDOUT should match '%d'
+    Then STDOUT should be a number
     And save STDOUT as {COMMENT_ID}
 
     When I run `wp comment exists {COMMENT_ID}`
