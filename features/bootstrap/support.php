@@ -2,6 +2,12 @@
 
 // Utility functions used by Behat steps
 
+function assertEquals( $expected, $actual ) {
+	if ( $expected != $actual ) {
+		throw new Exception( "Actual value: " . var_export( $actual ) );
+	}
+}
+
 function checkString( $output, $expected, $action ) {
 	switch ( $action ) {
 
