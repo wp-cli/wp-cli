@@ -32,7 +32,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin is-installed zombieland && echo "Zombieland"`
     Then STDOUT should contain:
       """
-          Zombieland
+      Zombieland
       """
 
     When I run `wp plugin status`
