@@ -41,7 +41,8 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		if ( isset( $assoc_args['locale'] ) &&  isset( $assoc_args['version'] ) ) {
-			$download_url = 'https://'. substr( $assoc_args['locale'],0,2 ) .'.wordpress.org/wordpress-' . $assoc_args['version'] . '-' .$assoc_args['locale']. '.tar.gz';
+			$download_url = sprintf( 'https://%s.wordpress.org/wordpress-%s-%s.tar.gz',
+				substr( $assoc_args['locale'], 0, 2 ), $assoc_args['version'], $assoc_args['locale'] );
 			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $assoc_args['locale'] ) );
 		} else if ( isset( $assoc_args['locale'] ) ) {
 			$offer = $this->get_download_offer( $assoc_args['locale'] );
@@ -65,9 +66,9 @@ class Core_Command extends WP_CLI_Command {
 
 		$headers = array('Accept' => 'application/json');
 		$options = array(
-				'timeout' => 30,
-				'filename' => $temp
-			);
+			'timeout' => 30,
+			'filename' => $temp
+		);
 
 		try {
 			$request = Requests::get( $download_url, $headers, $options );
