@@ -2,6 +2,6 @@
 
 set -ex
 
-vendor/bin/phpunit
+phpunit
 
-vendor/bin/behat --format progress
+behat --format progress

@@ -4,8 +4,12 @@
 
 set -ex
 
+# install Behat
+sudo curl http://behat.org/downloads/behat.phar > /usr/bin/behat
+chmod +x /usr/bin/behat
+
 # install dependencies
-composer install --dev --no-interaction --prefer-source
+composer install --no-interaction --prefer-source
 composer require d11wtq/boris=dev-master --no-interaction --prefer-source
 
 # set up WP install

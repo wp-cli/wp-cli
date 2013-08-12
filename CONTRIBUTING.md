@@ -21,19 +21,29 @@ There are two types of tests:
 * unit tests, implemented using [PHPUnit](http://phpunit.de/)
 * functional tests, implemented using [Behat](http://behat.org)
 
-All the test dependencies can be installed using [Composer](http://getcomposer.org/):
-
-    php composer.phar install --dev
-
 ### Unit tests
+
+Assuming you have `~/.wp-cli/bin/` in your PATH, you can do:
+
+```bash
+# Install PHPUnit
+curl http://pear.phpunit.de/get/phpunit.phar > ~/.wp-cli/bin/phpunit
+chmod +x ~/.wp-cli/bin/phpunit
 
 To run the unit tests, just execute:
 
-    vendor/bin/phpunit
+    phpunit
 
 The test files are in the `tests/` directory.
 
 ### Functional tests
+
+Assuming you have `~/.wp-cli/bin/` in your PATH, to install Behat, you can do:
+
+```bash
+curl http://behat.org/downloads/behat.phar > ~/.wp-cli/bin/behat
+chmod +x ~/.wp-cli/bin/behat
+```
 
 Before running the functional tests, you'll need a MySQL user called `wp_cli_test` with the
 password `password1` that has full privileges on the MySQL database `wp_cli_test`.
@@ -43,11 +53,11 @@ Running the following as root in MySQL should do the trick:
 
 Then, to run the entire test suite:
 
-    vendor/bin/behat --expand
+    behat --expand
 
 Or to test a single feature:
 
-    vendor/bin/behat features/core.feature
+    behat features/core.feature
 
 More info can be found from `vendor/bin/behat --help`.
 
