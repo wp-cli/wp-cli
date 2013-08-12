@@ -5,8 +5,7 @@
 set -ex
 
 # install Behat
-sudo curl http://behat.org/downloads/behat.phar > /usr/bin/behat
-chmod +x /usr/bin/behat
+curl http://behat.org/downloads/behat.phar > behat.phar
 
 # install dependencies
 composer install --no-interaction --prefer-source

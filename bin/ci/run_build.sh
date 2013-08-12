@@ -4,4 +4,4 @@ set -ex
 
 phpunit
 
-behat --format progress
+php behat.phar --format progress
