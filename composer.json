@@ -15,7 +15,7 @@
 		"rmccue/requests": "dev-master"
 	},
 	"suggest": {
-		"d11wtq/boris": "Enhanced `wp shell` functionality"
+		"psy/psysh": "Enhanced `wp shell` functionality"
 	},
 	"autoload": {
 		"psr-0": { "WP_CLI": "php" }
