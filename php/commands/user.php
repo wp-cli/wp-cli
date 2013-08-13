@@ -18,12 +18,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		'roles'
 	);
 
-	function __construct() {
-		parent::__construct();
-
-		require_once ABSPATH . 'wp-admin/includes/user.php';
-	}
-
 	/**
 	 * List users.
 	 *

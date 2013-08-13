@@ -19,10 +19,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
 
-	function __construct() {
-		require_once ABSPATH . 'wp-admin/includes/file.php';
-	}
-
 	function status( $args ) {
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );

@@ -112,10 +112,6 @@ class Media_Command extends WP_CLI_Command {
 	 * @synopsis <file>... [--post_id=<id>] [--title=<title>] [--caption=<caption>] [--alt=<text>] [--desc=<description>] [--featured_image]
 	 */
 	function import( $args, $assoc_args = array() ) {
-		require_once ABSPATH . 'wp-admin/includes/file.php';
-		require_once ABSPATH . 'wp-admin/includes/image.php';
-		require_once ABSPATH . 'wp-admin/includes/media.php';
-
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'title' => null,
 			'caption' => null,

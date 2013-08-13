@@ -10,7 +10,6 @@ use WP_CLI\Utils;
 class Scaffold_Command extends WP_CLI_Command {
 
 	function __construct() {
-		require_once ABSPATH . 'wp-admin/includes/file.php';
 		WP_Filesystem();
 	}
 
