@@ -154,6 +154,8 @@ class Site_Command extends WP_CLI_Command {
 			WP_CLI::error( 'This is not a multisite install.' );
 		}
 
+		require_once ABSPATH . 'wp-admin/includes/ms.php';
+
 		if ( isset( $assoc_args['slug'] ) ) {
 			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
 		} else {

@@ -22,6 +22,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		return $force ? '\\WP_CLI\\DestructiveThemeUpgrader' : 'Theme_Upgrader';
 	}
 
+	function __construct() {
+		parent::__construct();
+
+		require_once ABSPATH . 'wp-admin/includes/theme.php';
+	}
+
 	/**
 	 * See the status of one or all themes.
 	 *

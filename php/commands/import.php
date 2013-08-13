@@ -19,6 +19,7 @@ class Import_Command extends WP_CLI_Command {
 	 * @synopsis <file> --authors=<authors> [--skip=<data-type>]
 	 */
 	public function __invoke( $args, $assoc_args ) {
+		require_once ABSPATH . 'wp-admin/includes/post.php';
 
 		list( $file ) = $args;
 

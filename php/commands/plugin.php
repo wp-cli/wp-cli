@@ -19,10 +19,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	);
 
 	function __construct() {
-		require_once ABSPATH.'wp-admin/includes/plugin.php';
-		require_once ABSPATH.'wp-admin/includes/plugin-install.php';
-
 		parent::__construct();
+
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
 	}
 
 	protected function get_upgrader_class( $force ) {
