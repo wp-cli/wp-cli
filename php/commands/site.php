@@ -335,8 +335,8 @@ class Site_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Output the list of site URLs
-	 *     wp site list --format=url
+	 *     # Output a simple list of site URLs
+	 *     wp site list --fields=url --format=csv | tail -n +2
 	 *
 	 * @subcommand list
 	 * @synopsis [--network=<id>] [--format=<format>] [--fields=<fields>]
@@ -348,9 +348,13 @@ class Site_Command extends WP_CLI_Command {
 
 		global $wpdb;
 
+		if ( isset( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = preg_split( '/,[ \t]*/', $assoc_args['fields'] );
+		}
+
 		$defaults = array(
 			'format' => 'table',
-			'fields' => array( 'blog_id', 'domain', 'path' ),
+			'fields' => array( 'blog_id', 'url', 'last_updated', 'registered' ),
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
@@ -365,13 +369,14 @@ class Site_Command extends WP_CLI_Command {
 		);
 		$it = new \WP_CLI\Iterators\Table( $iterator_args );
 
-		if ( 'url' == $assoc_args['format'] ) {
-			foreach ( $it as $blog ) {
-				WP_CLI::line( $blog->domain . $blog->path );
-			}
-		} else {
-			WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
+		$list = array();
+		foreach ( $it as $blog ) {
+			print_r($blog);
+			$blog->url = $blog->domain . $blog->path;
+			$list[] = $blog;
 		}
+
+		WP_CLI\Utils\format_items( $assoc_args['format'], $list, $assoc_args['fields'] );
 	}
 }
 
