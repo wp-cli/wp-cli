@@ -371,7 +371,6 @@ class Site_Command extends WP_CLI_Command {
 
 		$list = array();
 		foreach ( $it as $blog ) {
-			print_r($blog);
 			$blog->url = $blog->domain . $blog->path;
 			$list[] = $blog;
 		}
