@@ -7,11 +7,11 @@ Feature: Manage sites in a multisite installation
     Then STDOUT should be a number
     And save STDOUT as {SITE_ID}
 
-    When I run `wp site list`
+    When I run `wp site list --fields=blog_id,url`
     Then STDOUT should be a table containing rows:
-      | blog_id | domain      | path    |
-      | 1       | example.com | /       |
-      | 2       | example.com | /first/ |
+      | blog_id | url                |
+      | 1       | example.com/       |
+      | 2       | example.com/first/ |
 
     When I run `wp site delete {SITE_ID} --yes`
     Then STDOUT should not be empty
