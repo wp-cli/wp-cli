@@ -331,12 +331,12 @@ class Site_Command extends WP_CLI_Command {
 	 * : Comma-separated list of fields to show.
 	 *
 	 * --format=<format>
-	 * : Output list as table, CSV, JSON. Defaults to table.
+	 * : Output list as table, csv, json or url. Defaults to table.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Output the list of site URLs
-	 *     wp site list --fields=domain,path --format=csv | tail -n +2 | sed 's/,//'
+	 *     wp site list --format=url
 	 *
 	 * @subcommand list
 	 * @synopsis [--network=<id>] [--format=<format>] [--fields=<fields>]
@@ -365,7 +365,13 @@ class Site_Command extends WP_CLI_Command {
 		);
 		$it = new \WP_CLI\Iterators\Table( $iterator_args );
 
-		WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
+		if ( 'url' == $assoc_args['format'] ) {
+			foreach ( $it as $blog ) {
+				WP_CLI::line( $blog->domain . $blog->path );
+			}
+		} else {
+			WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
+		}
 	}
 }
 
