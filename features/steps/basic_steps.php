@@ -168,59 +168,34 @@ $steps->Then( '/^(STDOUT|STDERR) should be a number$/',
 
 $steps->Then( '/^STDOUT should be a table containing rows:$/',
 	function ( $world, TableNode $expected ) {
-		$output     = $world->result->STDOUT;
-		$outputRows = explode( "\n", rtrim( $output, "\n" ) );
+		$output      = $world->result->STDOUT;
+		$actual_rows = explode( "\n", rtrim( $output, "\n" ) );
 
-		$expectedRows = array();
+		$expected_rows = array();
 		foreach ( $expected->getRows() as $row ) {
-			$expectedRows[] = $world->replace_variables( implode( "\t", $row ) );
+			$expected_rows[] = $world->replace_variables( implode( "\t", $row ) );
 		}
 
-		// the first row is the header and must be present
-		if ( $expectedRows[0] != $outputRows[0] ) {
-			throw new \Exception( $output );
-		}
-
-		unset($outputRows[0]);
-		unset($expectedRows[0]);
-		$matches = array_intersect( $expectedRows, $outputRows );
-		if ( count( $expectedRows ) != count( $matches ) ) {
-			throw new \Exception( $output );
-		}
+		compareTables( $expected_rows, $actual_rows, $output );
 	}
 );
 
 $steps->Then( '/^STDOUT should end with a table containing rows:$/',
 	function ( $world, TableNode $expected ) {
-		$output     = $world->result->STDOUT;
-		$outputRows = explode( "\n", rtrim( $output, "\n" ) );
+		$output      = $world->result->STDOUT;
+		$actual_rows = explode( "\n", rtrim( $output, "\n" ) );
 
-		$expectedRows = array();
+		$expected_rows = array();
 		foreach ( $expected->getRows() as $row ) {
-			$expectedRows[] = $world->replace_variables( implode( "\t", $row ) );
+			$expected_rows[] = $world->replace_variables( implode( "\t", $row ) );
 		}
 
-		$remainingRows = array();
-		$start = false;
-		foreach( $outputRows as $key => $row ) {
+		$start = array_search( $expected_rows[0], $actual_rows );
 
-			// the first row is the header and must be present
-			if ( $expectedRows[0] == $row )
-				$start = true;
-
-			if ( $start )
-				$remainingRows[] = $row;
-		}
-
-		if ( ! $start )
+		if ( false === $start )
 			throw new \Exception( $output );
 
-		unset($remainingRows[0]);
-		unset($expectedRows[0]);
-		$matches = array_intersect( $expectedRows, $remainingRows );
-
-		if ( count( $expectedRows ) != count( $matches ) )
-			throw new \Exception( $output );
+		compareTables( $expected_rows, array_slice( $actual_rows, $start ), $output );
 	}
 );
 
@@ -235,17 +210,17 @@ $steps->Then( '/^STDOUT should be JSON containing:$/',
 });
 
 $steps->Then( '/^STDOUT should be CSV containing:$/',
-	function( $world, TableNode $expected ) {
+	function ( $world, TableNode $expected ) {
 		$output = $world->result->STDOUT;
 
-		$expectedRows = $expected->getRows();
+		$expected_rows = $expected->getRows();
 		foreach ( $expected as &$row ) {
 			foreach ( $row as &$value ) {
 				$value = $world->replace_variables( $value );
 			}
 		}
 
-		if ( ! checkThatCsvStringContainsValues( $output, $expectedRows ) )
+		if ( ! checkThatCsvStringContainsValues( $output, $expected_rows ) )
 			throw new \Exception( $output );
 	}
 );

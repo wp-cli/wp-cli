@@ -38,6 +38,21 @@ function checkString( $output, $expected, $action ) {
 	}
 }
 
+function compareTables( $expected_rows, $actual_rows, $output ) {
+	// the first row is the header and must be present
+	if ( $expected_rows[0] != $actual_rows[0] ) {
+		throw new \Exception( $output );
+	}
+
+	unset( $actual_rows[0] );
+	unset( $expected_rows[0] );
+
+	$missing_rows = array_diff( $expected_rows, $actual_rows );
+	if ( !empty( $missing_rows ) ) {
+		throw new \Exception( $output );
+	}
+}
+
 function compareContents( $expected, $actual ) {
 	if ( gettype( $expected ) != gettype( $actual ) ) {
 		return false;
