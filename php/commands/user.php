@@ -397,8 +397,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user set-role bob author
-	 *     wp user set-role 12 author
+	 *     wp user add-role bob author
+	 *     wp user add-role 12 author
 	 *
 	 * @subcommand add-role
 	 * @synopsis <user> <role>
