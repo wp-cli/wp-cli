@@ -473,7 +473,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		if ( $user ) {
 			$cap  = $args[1];
 			$user->add_cap( $cap );
-	
+
 			WP_CLI::success( sprintf( "Added '%s' capability for %s (%d).", $cap, $user->user_login, $user->ID ) );
 		}
 	}
@@ -502,7 +502,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		if ( $user ) {
 			$cap = $args[1];
 			$user->remove_cap( $cap );
-	
+
 			WP_CLI::success( sprintf( "Removed '%s' cap for %s (%d).", $cap, $user->user_login, $user->ID ) );
 		}
 	}
