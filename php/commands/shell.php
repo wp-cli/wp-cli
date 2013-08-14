@@ -18,20 +18,27 @@ class Shell_Command extends \WP_CLI_Command {
 	 */
 	public function __invoke( $_, $assoc_args ) {
 		$implementations = array(
+			'\\Psy\\Shell',
 			'\\Boris\\Boris',
 			'\\WP_CLI\\REPL',
 		);
 
 		if ( isset( $assoc_args['basic'] ) ) {
-			unset( $implementations[0] );
+			$class = '\\WP_CLI\\REPL';
+		} else {
+			foreach ( $implementations as $candidate ) {
+				if ( class_exists( $candidate ) ) {
+					$class = $candidate;
+					break;
+				}
+			}
 		}
 
-		foreach ( $implementations as $class ) {
-			if ( class_exists( $class ) ) {
-				$repl = new $class( 'wp> ' );
-				$repl->start();
-				break;
-			}
+		if ( '\\Psy\\Shell' == $class ) {
+			\Psy\Shell::debug();
+		} else {
+			$repl = new $class( 'wp> ' );
+			$repl->start();
 		}
 	}
 }
