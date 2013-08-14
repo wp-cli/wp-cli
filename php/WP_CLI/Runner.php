@@ -262,6 +262,12 @@ class Runner {
 			}
 		}
 
+		// core (multsite-)install --admin_name= -> --admin_user=
+		if ( count( $args ) > 0 && 'core' == $args[0] && isset( $assoc_args['admin_name'] ) ) {
+			$assoc_args['admin_user'] = $assoc_args['admin_name'];
+			unset( $assoc_args['admin_name'] );
+		}
+
 		// site --site_id=  ->  site --network_id=
 		if ( count( $args ) > 0 && 'site' == $args[0] && isset( $assoc_args['site_id'] ) ) {
 			$assoc_args['network_id'] = $assoc_args['site_id'];
@@ -337,8 +343,12 @@ class Runner {
 		WP_CLI::set_logger( $logger );
 	}
 
+	private function wp_exists() {
+		return is_readable( ABSPATH . 'wp-includes/version.php' );
+	}
+
 	private function check_wp_version() {
-		if ( !is_readable( ABSPATH . 'wp-includes/version.php' ) ) {
+		if ( !$this->wp_exists() ) {
 			WP_CLI::error(
 				"This does not seem to be a WordPress install.\n" .
 				"Pass --path=`path/to/wordpress` or run `wp core download`." );
@@ -410,13 +420,14 @@ class Runner {
 			}
 		}
 
-		// First try at showing man page
-		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
-			$this->_run_command();
-		}
-
 		// Handle --path parameter
 		self::set_wp_root( $this->config );
+
+		// First try at showing man page
+		if ( 'help' === $this->arguments[0] &&
+		   ( isset( $this->arguments[1] ) || !$this->wp_exists() ) ) {
+			$this->_run_command();
+		}
 
 		// Handle --url and --blog parameters
 		$url = self::guess_url( $this->config );
