@@ -4,9 +4,11 @@
 
 set -ex
 
+# install Behat
+curl http://behat.org/downloads/behat.phar > behat.phar
+
 # install dependencies
-composer install --dev --no-interaction --prefer-source
-composer require d11wtq/boris=dev-master --no-interaction --prefer-source
+composer install --no-interaction --prefer-source
 
 # set up WP install
 ./bin/wp core download --version=$WP_VERSION --path=/tmp/wp-cli-test-core-download-cache/

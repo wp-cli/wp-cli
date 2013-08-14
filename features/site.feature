@@ -4,8 +4,14 @@ Feature: Manage sites in a multisite installation
     Given a WP multisite install
 
     When I run `wp site create --slug=first --porcelain`
-    Then STDOUT should match '%d'
+    Then STDOUT should be a number
     And save STDOUT as {SITE_ID}
+
+    When I run `wp site list --fields=blog_id,url`
+    Then STDOUT should be a table containing rows:
+      | blog_id | url                |
+      | 1       | example.com/       |
+      | 2       | example.com/first/ |
 
     When I run `wp site delete {SITE_ID} --yes`
     Then STDOUT should not be empty

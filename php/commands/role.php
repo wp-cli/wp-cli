@@ -78,8 +78,10 @@ class Role_Command extends WP_CLI_Command {
 		global $wp_roles;
 
 		if ( ! in_array($args[0], array_keys( $wp_roles->roles ) ) ) {
-			exit(1);
+			WP_CLI::error( "Role with ID $args[0] does not exist." );
 		}
+		
+		WP_CLI::success( "Role with ID $args[0] exists." );
 	}
 
 	/**

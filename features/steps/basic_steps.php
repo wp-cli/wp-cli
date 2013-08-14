@@ -160,33 +160,42 @@ $steps->Then( '/^(STDOUT|STDERR) should (be|contain|not contain):$/',
 	}
 );
 
-$steps->Then( '/^(STDOUT|STDERR) should match \'([^\']+)\'$/',
-	function ( $world, $stream, $format ) {
-		assertStringMatchesFormat( $format, $world->result->$stream );
+$steps->Then( '/^(STDOUT|STDERR) should be a number$/',
+	function ( $world, $stream ) {
+		assertNumeric( trim( $world->result->$stream, "\n" ) );
 	}
 );
 
 $steps->Then( '/^STDOUT should be a table containing rows:$/',
 	function ( $world, TableNode $expected ) {
-		$output     = $world->result->STDOUT;
-		$outputRows = explode( "\n", rtrim( $output, "\n" ) );
+		$output      = $world->result->STDOUT;
+		$actual_rows = explode( "\n", rtrim( $output, "\n" ) );
 
-		$expectedRows = array();
+		$expected_rows = array();
 		foreach ( $expected->getRows() as $row ) {
-			$expectedRows[] = $world->replace_variables( implode( "\t", $row ) );
+			$expected_rows[] = $world->replace_variables( implode( "\t", $row ) );
 		}
 
-		// the first row is the header and must be present
-		if ( $expectedRows[0] != $outputRows[0] ) {
-			throw new \Exception( $output );
+		compareTables( $expected_rows, $actual_rows, $output );
+	}
+);
+
+$steps->Then( '/^STDOUT should end with a table containing rows:$/',
+	function ( $world, TableNode $expected ) {
+		$output      = $world->result->STDOUT;
+		$actual_rows = explode( "\n", rtrim( $output, "\n" ) );
+
+		$expected_rows = array();
+		foreach ( $expected->getRows() as $row ) {
+			$expected_rows[] = $world->replace_variables( implode( "\t", $row ) );
 		}
 
-		unset($outputRows[0]);
-		unset($expectedRows[0]);
-		$matches = array_intersect( $expectedRows, $outputRows );
-		if ( count( $expectedRows ) != count( $matches ) ) {
+		$start = array_search( $expected_rows[0], $actual_rows );
+
+		if ( false === $start )
 			throw new \Exception( $output );
-		}
+
+		compareTables( $expected_rows, array_slice( $actual_rows, $start ), $output );
 	}
 );
 
@@ -201,17 +210,17 @@ $steps->Then( '/^STDOUT should be JSON containing:$/',
 });
 
 $steps->Then( '/^STDOUT should be CSV containing:$/',
-	function( $world, TableNode $expected ) {
+	function ( $world, TableNode $expected ) {
 		$output = $world->result->STDOUT;
 
-		$expectedRows = $expected->getRows();
+		$expected_rows = $expected->getRows();
 		foreach ( $expected as &$row ) {
 			foreach ( $row as &$value ) {
 				$value = $world->replace_variables( $value );
 			}
 		}
 
-		if ( ! checkThatCsvStringContainsValues( $output, $expectedRows ) )
+		if ( ! checkThatCsvStringContainsValues( $output, $expected_rows ) )
 			throw new \Exception( $output );
 	}
 );
@@ -226,7 +235,9 @@ $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 
 $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 	function ( $world, $stream ) {
-		assertNotEmpty( rtrim( $world->result->$stream, "\n" ) );
+		if ( '' === rtrim( $world->result->$stream, "\n" ) ) {
+			throw new Exception( "$stream is empty." );
+		}
 	}
 );
 
@@ -240,13 +251,19 @@ $steps->Then( '/^the (.+) file should (exist|not exist|be:|contain:|not contain:
 
 		switch ( $action ) {
 		case 'exist':
-			assertFileExists( $path );
+			if ( !file_exists( $path ) ) {
+				throw new Exception( "$path doesn't exist." );
+			}
 			break;
 		case 'not exist':
-			assertFileNotExists( $path );
+			if ( file_exists( $path ) ) {
+				throw new Exception( "$path exists." );
+			}
 			break;
 		default:
-			assertFileExists( $path );
+			if ( !file_exists( $path ) ) {
+				throw new Exception( "$path doesn't exist." );
+			}
 			$action = substr( $action, 0, -1 );
 			$expected = $world->replace_variables( (string) $expected );
 			checkString( file_get_contents( $path ), $expected, $action );

@@ -2,6 +2,18 @@
 
 // Utility functions used by Behat steps
 
+function assertEquals( $expected, $actual ) {
+	if ( $expected != $actual ) {
+		throw new Exception( "Actual value: " . var_export( $actual, true ) );
+	}
+}
+
+function assertNumeric( $actual ) {
+	if ( !is_numeric( $actual ) ) {
+		throw new Exception( "Actual value: " . var_export( $actual, true ) );
+	}
+}
+
 function checkString( $output, $expected, $action ) {
 	switch ( $action ) {
 
@@ -23,6 +35,21 @@ function checkString( $output, $expected, $action ) {
 
 	if ( !$r ) {
 		throw new Exception( $output );
+	}
+}
+
+function compareTables( $expected_rows, $actual_rows, $output ) {
+	// the first row is the header and must be present
+	if ( $expected_rows[0] != $actual_rows[0] ) {
+		throw new \Exception( $output );
+	}
+
+	unset( $actual_rows[0] );
+	unset( $expected_rows[0] );
+
+	$missing_rows = array_diff( $expected_rows, $actual_rows );
+	if ( !empty( $missing_rows ) ) {
+		throw new \Exception( $output );
 	}
 }
 

@@ -318,6 +318,65 @@ class Site_Command extends WP_CLI_Command {
 		else
 			WP_CLI::success( "Site $id created: $url" );
 	}
+
+	/**
+	 * List all sites in a multisite install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --network=<id>
+	 * : The network to which the sites belong.
+	 *
+	 * --fields=<fields>
+	 * : Comma-separated list of fields to show.
+	 *
+	 * --format=<format>
+	 * : Output list as table, csv, json or url. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Output a simple list of site URLs
+	 *     wp site list --fields=url --format=csv | tail -n +2
+	 *
+	 * @subcommand list
+	 * @synopsis [--network=<id>] [--format=<format>] [--fields=<fields>]
+	 */
+	function _list( $_, $assoc_args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
+		global $wpdb;
+
+		if ( isset( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = preg_split( '/,[ \t]*/', $assoc_args['fields'] );
+		}
+
+		$defaults = array(
+			'format' => 'table',
+			'fields' => array( 'blog_id', 'url', 'last_updated', 'registered' ),
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$where = array();
+		if ( isset( $assoc_args['network'] ) ) {
+			$where['site_id'] = $assoc_args['network'];
+		}
+
+		$iterator_args = array(
+			'table' => $wpdb->blogs,
+			'where' => $where,
+		);
+		$it = new \WP_CLI\Iterators\Table( $iterator_args );
+
+		$list = array();
+		foreach ( $it as $blog ) {
+			$blog->url = $blog->domain . $blog->path;
+			$list[] = $blog;
+		}
+
+		WP_CLI\Utils\format_items( $assoc_args['format'], $list, $assoc_args['fields'] );
+	}
 }
 
 WP_CLI::add_command( 'site', 'Site_Command' );

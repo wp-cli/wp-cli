@@ -83,9 +83,9 @@ class Comment_Command extends WP_CLI_Command {
 	}
 
 	private function set_status( $args, $status, $success ) {
-		list( $comment_id ) = $args;
-
-		$r = wp_set_comment_status( $comment_id, 'approve', true );
+		$comment = $this->_fetch_comment( $args );
+		
+		$r = wp_set_comment_status( $comment->comment_ID, 'approve', true );
 
 		if ( is_wp_error( $r ) ) {
 			WP_CLI::error( $r );
@@ -295,6 +295,41 @@ class Comment_Command extends WP_CLI_Command {
 		foreach ( $keys as $key ) {
 			WP_CLI::line( str_pad( "$key:", 23 ) . $comment->$key );
 		}
+	}
+	
+	/**
+	 * Verify whether a comment exists.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <ID>
+	 * : The ID of the comment to check from.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment exists 1337
+	 *
+	 * @synopsis <id>
+	 */
+	public function exists( $args ) {
+		if ( $this->_fetch_comment( $args ) ) {
+			WP_CLI::success( "Comment with ID $args[0] exists." );
+		}
+	}
+	
+	/**
+	 * A helper function fetching a comment object from comment_id. 
+	 * 
+	 */
+	private function _fetch_comment( $args ) {
+		$comment_id = (int) $args[0];
+		$comment = get_comment( $comment_id );
+		
+		if ( is_null( $comment ) ) {
+			WP_CLI::error( "Comment with ID $args[0] does not exist." );
+		}
+		
+		return $comment;
 	}
 }
 

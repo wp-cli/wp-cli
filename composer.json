@@ -5,19 +5,17 @@
 	"homepage": "http://wp-cli.org",
 	"license": "MIT",
 	"bin": [
-		"bin/wp"
+		"bin/wp.bat", "bin/wp"
 	],
 	"require": {
 		"php": ">=5.3.2",
 		"wp-cli/php-cli-tools": "0.9.3",
-		"mustache/mustache": "~2.4"
+		"mustache/mustache": "~2.4",
+		"rhumsaa/array_column": "~1.1",
+		"rmccue/requests": "dev-master"
 	},
 	"suggest": {
-		"d11wtq/boris": "Enhanced `wp shell` functionality"
-	},
-	"require-dev": {
-		"phpunit/phpunit": "~3.7",
-		"behat/behat": "~2.4"
+		"psy/psysh": "Enhanced `wp shell` functionality"
 	},
 	"autoload": {
 		"psr-0": { "WP_CLI": "php" }

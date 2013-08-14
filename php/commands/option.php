@@ -67,7 +67,7 @@ class Option_Command extends WP_CLI_Command {
 		$result = update_option( $key, $value );
 
 		// update_option() returns false if the value is the same
-		if ( !$result && $value !== get_option( $key ) ) {
+		if ( !$result && $value != get_option( $key ) ) {
 			WP_CLI::error( "Could not update option '$key'." );
 		} else {
 			WP_CLI::success( "Updated '$key' option." );
