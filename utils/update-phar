@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -ex
+
+current_rev=$(git rev-parse HEAD)
+current_rev=${current_rev:0:10}
+
+packages_repo=../wp-cli-packages
+
+fname="phar/wp-cli.phar"
+
+# generate archive
+php -dphar.readonly=0 ./utils/make-phar.php $packages_repo/$fname --quiet
+
+cd $packages_repo
+
+# smoke test
+php $fname --version
+
+# check which wp-cli commit the previous Phar archive was based on
+# can't use the md5 hash, since it will be different each time the
+# archive is generated
+new_commit_subj="update wp-cli.phar to wp-cli/wp-cli@$current_rev"
+
+current_commit_subj=$(git show -s --pretty=format:%s HEAD)
+
+if [ "$new_commit_subj" = "$current_commit_subj" ]; then
+	echo "already at latest revision"
+	exit 1
+fi
+
+# generate md5 checksum
+if [ command -v md5sum > /dev/null ]
+then
+	md5hash=$(md5sum $fname)
+else
+	md5hash=$(md5 -r $fname)
+fi
+
+echo $md5hash | cut -d ' ' -f 1 > $fname.md5
+
+git add $fname $fname.md5
+
+git commit -m "$new_commit_subj"
+
+git push
