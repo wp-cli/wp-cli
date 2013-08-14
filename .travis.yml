@@ -18,7 +18,7 @@ matrix:
 
 before_script: ./bin/ci/prepare.sh
 
-script: ./bin/ci/build.sh
+script: ./bin/ci/test.sh
 
 notifications:
   email:
