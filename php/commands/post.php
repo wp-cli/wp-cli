@@ -163,9 +163,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * @synopsis [--format=<format>] <ID>
 	 */
 	public function get( $args, $assoc_args ) {
-		$assoc_args = wp_parse_args( $assoc_args, array(
+		$defaults = array(
 			'format' => 'table'
-		) );
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		$post_id = $args[0];
 		if ( !$post_id || !$post = get_post( $post_id ) )
@@ -216,9 +217,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * @synopsis <id>... [--force]
 	 */
 	public function delete( $args, $assoc_args ) {
-		$assoc_args = wp_parse_args( $assoc_args, array(
+		$defaults = array(
 			'force' => false
-		) );
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		parent::delete( $args, $assoc_args );
 	}
@@ -265,19 +267,11 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'posts_per_page'  => -1,
 			'post_status'     => 'any',
 		);
-
-		$values = array(
+		$defaults = array(
 			'format' => 'table',
 			'fields' => $this->fields
 		);
-
-		foreach ( $values as $key => &$value ) {
-			if ( isset( $assoc_args[ $key ] ) ) {
-				$value = $assoc_args[ $key ];
-				unset( $assoc_args[ $key ] );
-			}
-		}
-		unset( $value );
+		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		foreach ( $assoc_args as $key => $value ) {
 			if ( true === $value )
@@ -286,12 +280,12 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$query_args[ $key ] = $value;
 		}
 
-		if ( 'ids' == $values['format'] )
+		if ( 'ids' == $assoc_args['format'] )
 			$query_args['fields'] = 'ids';
 
 		$query = new WP_Query( $query_args );
 
-		WP_CLI\Utils\format_items( $values['format'], $query->posts, $values['fields'] );
+		WP_CLI\Utils\format_items( $assoc_args['format'], $query->posts, $assoc_args['fields'] );
 	}
 
 	/**
@@ -335,7 +329,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'post_date' => current_time( 'mysql' ),
 		);
 
-		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
+		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
 
 		if ( !post_type_exists( $post_type ) ) {
 			WP_CLI::error( sprintf( "'%s' is not a registered post type.", $post_type ) );
