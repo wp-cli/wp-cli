@@ -5,8 +5,11 @@ php:
   - 5.5
 
 env:
-  - WP_VERSION=latest 
-  - WP_VERSION=3.4.2
+  global:
+      - WP_CLI_BIN_DIR=/tmp/wp-cli-phar
+  matrix:
+      - WP_VERSION=latest 
+      - WP_VERSION=3.4.2
 
 matrix:
   exclude:
