@@ -19,7 +19,6 @@ class Import_Command extends WP_CLI_Command {
 	 * @synopsis <file> --authors=<authors> [--skip=<data-type>]
 	 */
 	public function __invoke( $args, $assoc_args ) {
-
 		list( $file ) = $args;
 
 		if ( ! file_exists( $file ) )
@@ -255,14 +254,15 @@ class Import_Command extends WP_CLI_Command {
 	 * Read an author mapping file
 	 */
 	private function read_author_mapping_file( $file ) {
-
 		$author_mapping = array();
+
 		foreach ( new \WP_CLI\Iterators\CSV( $file ) as $i => $author ) {
 			if ( ! array_key_exists( 'old_user_login', $author ) || ! array_key_exists( 'new_user_login', $author ) )
 				return new WP_Error( 'invalid-author-mapping', "Author mapping file isn't properly formatted." );
 
 			$author_mapping[] = $author;
 		}
+
 		return $author_mapping;
 	}
 
