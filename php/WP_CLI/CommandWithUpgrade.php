@@ -220,16 +220,16 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	protected function _list( $_, $assoc_args ) {
-		$values = array(
+		$defaults = array(
 			'format' => 'table',
 			'fields' => $this->fields
 		);
-		$values = wp_parse_args( $assoc_args, $values );
+		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		$all_items = $this->get_all_items();
 		$items = $this->create_objects( $all_items );
 
-		\WP_CLI\Utils\format_items( $values['format'], $items, $values['fields'] );
+		\WP_CLI\Utils\format_items( $assoc_args['format'], $items, $assoc_args['fields'] );
 	}
 
 	/**
