@@ -13,9 +13,9 @@ matrix:
     - php: 5.5
       env: WP_VERSION=3.4.2
 
-before_script: ./bin/ci/install_dependencies.sh
+before_script: ./bin/ci/prepare.sh
 
-script: ./bin/ci/run_build.sh
+script: ./bin/ci/build.sh
 
 notifications:
   email:
