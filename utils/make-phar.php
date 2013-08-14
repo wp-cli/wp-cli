@@ -52,7 +52,7 @@ $finder = new Finder();
 $finder
 	->files()
 	->ignoreVCS(true)
-	->name('*.mustache')
+	->ignoreDotFiles(false)
 	->in('./templates')
 	;
 
