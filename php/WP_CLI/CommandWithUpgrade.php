@@ -220,6 +220,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	protected function _list( $_, $format ) {
+		// Force WordPress to check for updates
+		call_user_func( $this->upgrade_refresh );
+
 		$values = array(
 			'format' => 'table',
 			'fields' => $this->fields
