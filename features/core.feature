@@ -98,14 +98,8 @@ Feature: Manage WordPress installation
     When I run `wp eval 'var_export( is_admin() );'`
     Then STDOUT should be:
       """
-      true
+      false
       """ 
-
-    When I run `wp eval 'var_export( function_exists( 'media_handle_upload' ) );'`
-    Then STDOUT should be:
-      """
-      true
-      """
 
     # Can complain that it's already installed, but don't exit with an error code
     When I try `wp core install --url='localhost:8001' --title='Test' --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
