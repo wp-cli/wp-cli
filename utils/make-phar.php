@@ -1,5 +1,9 @@
 <?php
 
+require './vendor/autoload.php';
+
+use Symfony\Component\Finder\Finder;
+
 if ( !isset( $argv[1] ) ) {
 	echo "usage: php -dphar.readonly=0 $argv[0] <path> [--quiet]\n";
 	exit(1);
@@ -8,12 +12,6 @@ if ( !isset( $argv[1] ) ) {
 define( 'DEST_PATH', $argv[1] );
 
 define( 'BE_QUIET', in_array( '--quiet', $argv ) );
-
-function get_iterator( $dir ) {
-	return new \RecursiveIteratorIterator(
-		new \RecursiveDirectoryIterator( $dir, FilesystemIterator::SKIP_DOTS )
-	);
-}
 
 function add_file( $phar, $path ) {
 	$key = str_replace( './', '', $path );
@@ -28,46 +26,37 @@ $phar = new Phar( DEST_PATH, 0, 'wp-cli.phar' );
 
 $phar->startBuffering();
 
-// php files
-foreach ( get_iterator( './php' ) as $path ) {
-	if ( !preg_match( '/\.php$/', $path ) )
-		continue;
+// PHP files
+$finder = new Finder();
+$finder
+	->files()
+	->ignoreVCS(true)
+	->name('*.php')
+	->in('./php')
+	->in('./vendor/wp-cli')
+	->in('./vendor/mustache')
+	->in('./vendor/rmccue/requests')
+	->in('./vendor/composer')
+	->exclude('test')
+	->exclude('tests')
+	->exclude('php-cli-tools/examples')
+	;
 
-	add_file( $phar, $path );
+foreach ( $finder as $file ) {
+	add_file( $phar, $file );
 }
 
-// non-php files
-$additional_dirs = array(
-	'./templates',
-);
+// other files
+$finder = new Finder();
+$finder
+	->files()
+	->ignoreVCS(true)
+	->name('*.mustache')
+	->in('./templates')
+	;
 
-foreach ( $additional_dirs as $dir ) {
-	foreach ( get_iterator( $dir ) as $path ) {
-		add_file( $phar, $path );
-	}
-}
-
-// dependencies
-$ignored_paths = array(
-	'/.git',
-);
-
-$vendor_dirs = array(
-	'./vendor/mustache',
-	'./vendor/rmccue',
-	'./vendor/wp-cli',
-	'./vendor/composer',
-);
-
-foreach ( $vendor_dirs as $vendor_dir ) {
-	foreach ( get_iterator( $vendor_dir ) as $path ) {
-		foreach ( $ignored_paths as $ignore ) {
-			if ( strpos( $path, $ignore ) )
-				continue 2;
-		}
-
-		add_file( $phar, $path );
-	}
+foreach ( $finder as $file ) {
+	add_file( $phar, $file );
 }
 
 add_file( $phar, './vendor/autoload.php' );
