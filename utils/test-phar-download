@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+actual_checksum=$(curl http://wp-cli.org/packages/phar/wp-cli.phar | md5sum | cut -d ' ' -f 1)
+
+echo "expected:" $(curl -s http://wp-cli.org/packages/phar/wp-cli.phar.md5)
+echo "actual:  " $actual_checksum
