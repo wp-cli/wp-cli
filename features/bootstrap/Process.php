@@ -28,8 +28,10 @@ class Process {
 		);
 
 		// Ensure we're using the expected `wp` binary
+		$bin_dir = getenv( 'WP_CLI_BIN_DIR' ) ?: realpath( __DIR__ . "/../../bin" );
+
 		$proc = proc_open( $this->command, $descriptors, $pipes, $cwd, array(
-			'PATH' => realpath( __DIR__ . "/../../bin" ) . ':' . getenv( 'PATH' ),
+			'PATH' =>  $bin_dir . ':' . getenv( 'PATH' ),
 			'BEHAT_RUN' => 1
 		) );
 
