@@ -95,7 +95,7 @@ Feature: Manage WordPress installation
     When I run `wp eval 'var_export( is_admin() );'`
     Then STDOUT should be:
       """
-      true
+      false
       """ 
 
     When I run `wp eval 'var_export( function_exists( 'media_handle_upload' ) );'`
