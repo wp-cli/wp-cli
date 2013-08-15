@@ -230,42 +230,30 @@ function format_items( $format, $items, $fields ) {
 	if ( ! is_array( $fields ) )
 		$fields = explode( ',', $fields );
 
-	$output_items = array();
-	foreach ( $items as $item ) {
-
-		$output_item = new \stdClass;
-		foreach ( $fields as $key => $field ) {
-
-			if ( ! isset( $item->$field ) ) {
-				unset( $fields[$key] );
-				continue;
-			}
-
-			$output_item->$field = $item->$field;
-		}
-
-		$output_items[] = $output_item;
-	}
-
 	switch ( $format ) {
 		case 'table':
 			$table = new \cli\Table();
 
 			$table->setHeaders( $fields );
 
-			foreach ( $output_items as $item ) {
-				$table->addRow( array_values( (array)$item ) );
+			foreach ( $items as $item ) {
+				$table->addRow( array_values( array_pick( $item, $fields ) ) );
 			}
 
 			$table->display();
 			break;
-		case 'csv':
-		case 'json':
 
-			if ( 'json' == $format )
-				echo json_encode( $output_items );
-			else
-				write_csv( STDOUT, $output_items, $fields );
+		case 'csv':
+			write_csv( STDOUT, $items, $fields );
+			break;
+
+		case 'json':
+			$out = array();
+			foreach ( $items as $item ) {
+				$out[] = array_pick( $item, $fields );
+			}
+
+			echo json_encode( $out );
 			break;
 	}
 }
@@ -278,24 +266,32 @@ function format_items( $format, $items, $fields ) {
  * @param array    $headers    List of CSV columns (optional)
  */
 function write_csv( $fd, $rows, $headers = array() ) {
-
-	// Prepare the headers if they were specified
-	if ( ! empty( $headers ) )
+	if ( ! empty( $headers ) ) {
 		fputcsv( $fd, $headers );
-
-	foreach ( $rows as $row ) {
-		$row = (array) $row;
-
-		if ( ! empty( $headers ) ) {
-			$build_row = array();
-			foreach ( $headers as $key ) {
-				$build_row[] = $row[ $key ];
-			}
-			$row = $build_row;
-		}
-		fputcsv( $fd, $row );
 	}
 
+	foreach ( $rows as $row ) {
+		if ( ! empty( $headers ) ) {
+			$row = array_pick( $row, $headers );
+		}
+
+		fputcsv( $fd, array_values( $row ) );
+	}
+}
+
+/**
+ * Like array_slice(), but for associative arrays.
+ */
+function array_pick( $item, $fields ) {
+	$item = (array) $item;
+
+	$values = array();
+
+	foreach ( $fields as $field ) {
+		$values[ $field ] = isset( $item[ $field ] ) ? $item[ $field ] : null;
+	}
+
+	return $values;
 }
 
 /**
