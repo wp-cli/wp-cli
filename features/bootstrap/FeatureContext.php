@@ -113,7 +113,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	private static function run_sql( $sql ) {
-		Utils\run_mysql_query( $sql, array(
+		Utils\run_mysql_command( 'mysql --no-defaults', array(
+			'execute' => $sql,
 			'host' => 'localhost',
 			'user' => self::$db_settings['dbuser'],
 			'pass' => self::$db_settings['dbpass'],
