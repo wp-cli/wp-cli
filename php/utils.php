@@ -395,13 +395,13 @@ function run_mysql_query( $query, $args ) {
 }
 
 function run_mysql_command( $cmd, $arg_str, $pass ) {
-	$old_val = getenv( 'MYSQL_PWD' );
-
 	$final_cmd = "$cmd --no-defaults $arg_str";
 
-	putenv( 'MYSQL_PWD=' . $pass );
-	$r = proc_close( proc_open( $final_cmd, array( STDIN, STDOUT, STDERR ), $pipes ) );
-	putenv( 'MYSQL_PWD=' . $old_val );
+	$descriptors = array( STDIN, STDOUT, STDERR );
+
+	$r = proc_close( proc_open( $final_cmd, $descriptors, $pipes, null, array(
+		'MYSQL_PWD' => $pass
+	) ) );
 
 	if ( $r ) exit( $r );
 }
