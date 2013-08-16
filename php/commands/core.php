@@ -184,7 +184,8 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::error( '--dbprefix can only contain numbers, letters, and underscores.' );
 
 		// Check DB connection
-		Utils\run_mysql_query( ';', array(
+		Utils\run_mysql_command( 'mysql --no-defaults', array(
+			'execute' => ';',
 			'host' => $assoc_args['dbhost'],
 			'user' => $assoc_args['dbuser'],
 			'pass' => $assoc_args['dbpass'],
@@ -699,7 +700,8 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		// Create the database
 		$query = sprintf( 'CREATE DATABASE IF NOT EXISTS `%s`', $assoc_args['dbname'] );
 
-		Utils\run_mysql_query( $query, array(
+		Utils\run_mysql_command( 'mysql --no-defaults', array(
+			'execute' => $query,
 			'host' => $assoc_args['dbhost'],
 			'user' => $assoc_args['dbuser'],
 			'pass' => $assoc_args['dbpass'],
