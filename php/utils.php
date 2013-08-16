@@ -370,38 +370,50 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 	return $output;
 }
 
-function run_mysql_query( $query, $args ) {
-	// TODO: use PDO?
+/**
+ * @param string MySQL host string, as defined in wp-config.php
+ * @return array
+ */
+function mysql_host_to_cli_args( $raw_host ) {
+	$assoc_args = array();
 
-  $host_parts = explode( ':',  $args['host'] );
-  if ( count( $host_parts ) == 2 ) {
-    list( $host, $extra ) = $host_parts;
-  } else {
-    $host = $args['host'];
-  }
+	$host_parts = explode( ':',  $raw_host );
+	if ( count( $host_parts ) == 2 ) {
+		list( $assoc_args['host'], $extra ) = $host_parts;
+		if ( is_numeric($extra) ) {
+			$assoc_args['port'] = intval( $extra );
+			$assoc_args['protocol'] = 'tcp';
+		} else if ( trim($extra) !== '' ) {
+			$assoc_args['socket'] = trim( $extra );
+		}
+	} else {
+		$assoc_args['host'] = $raw_host;
+	}
 
-	$arg_str = esc_cmd( '--host=%s --user=%s --execute=%s',
-		$host, $args['user'], $query );
-
-  if ( isset( $extra ) ) {
-    if ( is_numeric($extra) ) {
-      $arg_str .= esc_cmd( ' --port=%s --protocol=%s', intval( $extra ), 'tcp' );
-    } else if ( trim($extra) !== '' ) {
-      $arg_str .= esc_cmd( ' --socket=%s', trim( $extra ) );
-    }
-  }
-
-	run_mysql_command( 'mysql', $arg_str, $args['pass'] );
+	return $assoc_args;
 }
 
-function run_mysql_command( $cmd, $arg_str, $pass ) {
-	$final_cmd = "$cmd --no-defaults $arg_str";
+function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
+	if ( !$descriptors )
+		$descriptors = array( STDIN, STDOUT, STDERR );
 
-	$descriptors = array( STDIN, STDOUT, STDERR );
+	if ( isset( $assoc_args['host'] ) ) {
+		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
+	}
 
-	$r = proc_close( proc_open( $final_cmd, $descriptors, $pipes, null, array(
-		'MYSQL_PWD' => $pass
-	) ) );
+	$env = array();
+	if ( isset( $assoc_args['pass'] ) ) {
+		$env['MYSQL_PWD'] = $assoc_args['pass'];
+		unset( $assoc_args['pass'] );
+	}
+
+	$final_cmd = $cmd . assoc_args_to_str( $assoc_args );
+
+	$proc = proc_open( $final_cmd, $descriptors, $pipes, null, $env );
+	if ( !$proc )
+		exit(1);
+
+	$r = proc_close( $proc );
 
 	if ( $r ) exit( $r );
 }
