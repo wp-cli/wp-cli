@@ -369,13 +369,12 @@ class Site_Command extends WP_CLI_Command {
 		);
 		$it = new \WP_CLI\Iterators\Table( $iterator_args );
 
-		$list = array();
-		foreach ( $it as $blog ) {
+		$it = \WP_CLI\Utils\iterator_map( $it, function( $blog ) {
 			$blog->url = $blog->domain . $blog->path;
-			$list[] = $blog;
-		}
+			return $blog;
+		} );
 
-		WP_CLI\Utils\format_items( $assoc_args['format'], $list, $assoc_args['fields'] );
+		WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
 	}
 }
 
