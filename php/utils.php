@@ -5,6 +5,7 @@
 namespace WP_CLI\Utils;
 
 use \WP_CLI\Dispatcher;
+use \WP_CLI\Iterators\Transform;
 
 function load_dependencies() {
 	$vendor_paths = array(
@@ -49,6 +50,37 @@ function load_all_commands() {
 
 		include_once "$cmd_dir/$filename";
 	}
+}
+
+/**
+ * Like array_map(), except it returns a new iterator, instead of a modified array.
+ *
+ * Example:
+ *
+ *     $arr = array('Football', 'Socker');
+ *
+ *     $it = iterator_map($arr, 'strtolower', function($val) {
+ *       return str_replace('foo', 'bar', $val);
+ *     });
+ *
+ *     foreach ( $it as $val ) {
+ *       var_dump($val);
+ *     }
+ *
+ * @param array|object Either a plain array or another iterator
+ * @param callback The function to apply to an element
+ * @return object An iterator that applies the given callback(s)
+ */
+function iterator_map( $it, $fn ) {
+	if ( !is_object( $it ) || !method_exists( $it, 'add_transform' ) ) {
+		$it = new Transform( $it );
+	}
+
+	foreach ( array_slice( func_get_args(), 1 ) as $fn ) {
+		$it->add_transform( $fn );
+	}
+
+	return $it;
 }
 
 /**
