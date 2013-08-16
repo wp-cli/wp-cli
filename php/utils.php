@@ -380,11 +380,12 @@ function mysql_host_to_cli_args( $raw_host ) {
 	$host_parts = explode( ':',  $raw_host );
 	if ( count( $host_parts ) == 2 ) {
 		list( $assoc_args['host'], $extra ) = $host_parts;
-		if ( is_numeric($extra) ) {
+		$extra = trim( $extra );
+		if ( is_numeric( $extra ) ) {
 			$assoc_args['port'] = intval( $extra );
 			$assoc_args['protocol'] = 'tcp';
-		} else if ( trim($extra) !== '' ) {
-			$assoc_args['socket'] = trim( $extra );
+		} else if ( $extra !== '' ) {
+			$assoc_args['socket'] = $extra;
 		}
 	} else {
 		$assoc_args['host'] = $raw_host;
