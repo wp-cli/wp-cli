@@ -278,7 +278,7 @@ function format_items( $format, $items, $fields ) {
 			$table->setHeaders( $fields );
 
 			foreach ( $items as $item ) {
-				$table->addRow( array_values( array_pick( $item, $fields ) ) );
+				$table->addRow( array_values( pick_fields( $item, $fields ) ) );
 			}
 
 			$table->display();
@@ -291,7 +291,7 @@ function format_items( $format, $items, $fields ) {
 		case 'json':
 			$out = array();
 			foreach ( $items as $item ) {
-				$out[] = array_pick( $item, $fields );
+				$out[] = pick_fields( $item, $fields );
 			}
 
 			echo json_encode( $out );
@@ -313,7 +313,7 @@ function write_csv( $fd, $rows, $headers = array() ) {
 
 	foreach ( $rows as $row ) {
 		if ( ! empty( $headers ) ) {
-			$row = array_pick( $row, $headers );
+			$row = pick_fields( $row, $headers );
 		}
 
 		fputcsv( $fd, array_values( $row ) );
@@ -321,15 +321,19 @@ function write_csv( $fd, $rows, $headers = array() ) {
 }
 
 /**
- * Like array_slice(), but for associative arrays.
+ * Pick fields from an associative array or object.
+ *
+ * @param array|object Associative array or object to pick fields from
+ * @param array List of fields to pick
+ * @return array
  */
-function array_pick( $item, $fields ) {
-	$item = (array) $item;
+function pick_fields( $item, $fields ) {
+	$item = (object) $item;
 
 	$values = array();
 
 	foreach ( $fields as $field ) {
-		$values[ $field ] = isset( $item[ $field ] ) ? $item[ $field ] : null;
+		$values[ $field ] = isset( $item->$field ) ? $item->$field : null;
 	}
 
 	return $values;

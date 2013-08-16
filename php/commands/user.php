@@ -70,10 +70,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			if ( !is_object( $user ) )
 				return $user;
 
-			$new_user = $user->to_array();
-			$new_user['roles'] = implode( ',', $user->roles );
+			$user->roles = implode( ',', $user->roles );
 
-			return $new_user;
+			return $user;
 		} );
 
 		WP_CLI\Utils\format_items( $params['format'], $it, $fields );
