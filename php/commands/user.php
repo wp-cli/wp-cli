@@ -66,13 +66,16 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$users = get_users( $params );
 
-		if ( 'ids' != $params['format'] ) {
-			foreach ( $users as $user ) {
-				$user->roles = implode( ',', $user->roles );
-			}
-		}
+		$it = WP_CLI\Utils\iterator_map( $users, function ( $user ) {
+			if ( !is_object( $user ) )
+				return $user;
 
-		WP_CLI\Utils\format_items( $params['format'], $users, $fields );
+			$user->roles = implode( ',', $user->roles );
+
+			return $user;
+		} );
+
+		WP_CLI\Utils\format_items( $params['format'], $it, $fields );
 	}
 
 	/**
