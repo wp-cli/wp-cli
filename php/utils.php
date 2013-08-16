@@ -72,7 +72,11 @@ function load_all_commands() {
  * @return object An iterator that applies the given callback(s)
  */
 function iterator_map( $it, $fn ) {
-	if ( !is_object( $it ) || !method_exists( $it, 'add_transform' ) ) {
+	if ( is_array( $it ) ) {
+		$it = new \ArrayIterator( $it );
+	}
+
+	if ( !method_exists( $it, 'add_transform' ) ) {
 		$it = new Transform( $it );
 	}
 
@@ -250,19 +254,24 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
 function format_items( $format, $items, $fields ) {
-
-	if ( 'ids' == $format ) {
-		echo implode( ' ', $items );
-		return;
-	} else if ( 'count' == $format ) {
-		echo count( $items );
-		return;
-	}
-
 	if ( ! is_array( $fields ) )
 		$fields = explode( ',', $fields );
 
 	switch ( $format ) {
+		case 'count':
+			if ( !is_array( $items ) ) {
+				$items = iterator_to_array( $items );
+			}
+			echo count( $items );
+			break;
+
+		case 'ids':
+			if ( !is_array( $items ) ) {
+				$items = iterator_to_array( $items );
+			}
+			echo implode( ' ', $items );
+			break;
+
 		case 'table':
 			$table = new \cli\Table();
 
