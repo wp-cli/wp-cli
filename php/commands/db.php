@@ -119,17 +119,29 @@ class DB_Command extends WP_CLI_Command {
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
-		if( strpos( DB_HOST, ':' ) !== false ) {
-			// extract port from host
-			$DB_HOST = preg_split("/:/", DB_HOST);
-			self::run( 'mysqldump', Utils\esc_cmd(
-				'%s --user=%s --host=%s --port=%s --result-file %s',
-				DB_NAME, DB_USER, $DB_HOST[0], $DB_HOST[1], $result_file ) );
-		} else {
-			self::run( 'mysqldump', Utils\esc_cmd(
-				'%s --user=%s --host=%s --result-file %s',
-				DB_NAME, DB_USER, DB_HOST, $result_file ) );
-		}
+		$host_parts = explode( ':', DB_HOST );
+		if ( count( $host_parts ) == 2 ) {
+	    list( $host, $extra ) = $host_parts;
+	  } else {
+	    $host = DB_HOST;
+	  }
+
+	  $arg_str = '';
+
+	  if ( isset( $extra ) ) {
+	    if ( is_numeric($extra) ) {
+	      $arg_str .= Utils\esc_cmd( 
+	      	'--port=%s --protocol=%s', intval( $extra ), 'tcp' );
+	    } else if ( trim($extra) !== '' ) {
+	      $arg_str .= Utils\esc_cmd( 
+	      	'--socket=%s', trim( $extra ) );
+	    }
+	  }
+
+	  $arg_str .= Utils\esc_cmd( ' --host=%s --user=%s --result-file=%s %s',
+	  	$host, DB_USER, $result_file, DB_NAME );
+
+	  self::run( 'mysqldump', $arg_str );
 
 		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
 	}
