@@ -5,6 +5,7 @@
 namespace WP_CLI\Utils;
 
 use \WP_CLI\Dispatcher;
+use \WP_CLI\Iterators\Transform;
 
 function load_dependencies() {
 	$vendor_paths = array(
@@ -49,6 +50,41 @@ function load_all_commands() {
 
 		include_once "$cmd_dir/$filename";
 	}
+}
+
+/**
+ * Like array_map(), except it returns a new iterator, instead of a modified array.
+ *
+ * Example:
+ *
+ *     $arr = array('Football', 'Socker');
+ *
+ *     $it = iterator_map($arr, 'strtolower', function($val) {
+ *       return str_replace('foo', 'bar', $val);
+ *     });
+ *
+ *     foreach ( $it as $val ) {
+ *       var_dump($val);
+ *     }
+ *
+ * @param array|object Either a plain array or another iterator
+ * @param callback The function to apply to an element
+ * @return object An iterator that applies the given callback(s)
+ */
+function iterator_map( $it, $fn ) {
+	if ( is_array( $it ) ) {
+		$it = new \ArrayIterator( $it );
+	}
+
+	if ( !method_exists( $it, 'add_transform' ) ) {
+		$it = new Transform( $it );
+	}
+
+	foreach ( array_slice( func_get_args(), 1 ) as $fn ) {
+		$it->add_transform( $fn );
+	}
+
+	return $it;
 }
 
 /**
@@ -218,54 +254,47 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
 function format_items( $format, $items, $fields ) {
-
-	if ( 'ids' == $format ) {
-		echo implode( ' ', $items );
-		return;
-	} else if ( 'count' == $format ) {
-		echo count( $items );
-		return;
-	}
-
 	if ( ! is_array( $fields ) )
 		$fields = explode( ',', $fields );
 
-	$output_items = array();
-	foreach ( $items as $item ) {
-
-		$output_item = new \stdClass;
-		foreach ( $fields as $key => $field ) {
-
-			if ( ! isset( $item->$field ) ) {
-				unset( $fields[$key] );
-				continue;
-			}
-
-			$output_item->$field = $item->$field;
-		}
-
-		$output_items[] = $output_item;
-	}
-
 	switch ( $format ) {
+		case 'count':
+			if ( !is_array( $items ) ) {
+				$items = iterator_to_array( $items );
+			}
+			echo count( $items );
+			break;
+
+		case 'ids':
+			if ( !is_array( $items ) ) {
+				$items = iterator_to_array( $items );
+			}
+			echo implode( ' ', $items );
+			break;
+
 		case 'table':
 			$table = new \cli\Table();
 
 			$table->setHeaders( $fields );
 
-			foreach ( $output_items as $item ) {
-				$table->addRow( array_values( (array)$item ) );
+			foreach ( $items as $item ) {
+				$table->addRow( array_values( pick_fields( $item, $fields ) ) );
 			}
 
 			$table->display();
 			break;
-		case 'csv':
-		case 'json':
 
-			if ( 'json' == $format )
-				echo json_encode( $output_items );
-			else
-				write_csv( STDOUT, $output_items, $fields );
+		case 'csv':
+			write_csv( STDOUT, $items, $fields );
+			break;
+
+		case 'json':
+			$out = array();
+			foreach ( $items as $item ) {
+				$out[] = pick_fields( $item, $fields );
+			}
+
+			echo json_encode( $out );
 			break;
 	}
 }
@@ -278,24 +307,36 @@ function format_items( $format, $items, $fields ) {
  * @param array    $headers    List of CSV columns (optional)
  */
 function write_csv( $fd, $rows, $headers = array() ) {
-
-	// Prepare the headers if they were specified
-	if ( ! empty( $headers ) )
+	if ( ! empty( $headers ) ) {
 		fputcsv( $fd, $headers );
-
-	foreach ( $rows as $row ) {
-		$row = (array) $row;
-
-		if ( ! empty( $headers ) ) {
-			$build_row = array();
-			foreach ( $headers as $key ) {
-				$build_row[] = $row[ $key ];
-			}
-			$row = $build_row;
-		}
-		fputcsv( $fd, $row );
 	}
 
+	foreach ( $rows as $row ) {
+		if ( ! empty( $headers ) ) {
+			$row = pick_fields( $row, $headers );
+		}
+
+		fputcsv( $fd, array_values( $row ) );
+	}
+}
+
+/**
+ * Pick fields from an associative array or object.
+ *
+ * @param array|object Associative array or object to pick fields from
+ * @param array List of fields to pick
+ * @return array
+ */
+function pick_fields( $item, $fields ) {
+	$item = (object) $item;
+
+	$values = array();
+
+	foreach ( $fields as $field ) {
+		$values[ $field ] = isset( $item->$field ) ? $item->$field : null;
+	}
+
+	return $values;
 }
 
 /**
