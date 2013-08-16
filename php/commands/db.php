@@ -119,9 +119,17 @@ class DB_Command extends WP_CLI_Command {
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
-		self::run( 'mysqldump', Utils\esc_cmd(
-			'%s --user=%s --host=%s --result-file %s',
-			DB_NAME, DB_USER, DB_HOST, $result_file ) );
+		if( strpos( DB_HOST, ':' ) !== false ) {
+			// extract port from host
+			$DB_HOST = preg_split("/:/", DB_HOST);
+			self::run( 'mysqldump', Utils\esc_cmd(
+				'%s --user=%s --host=%s --port=%s --result-file %s',
+				DB_NAME, DB_USER, $DB_HOST[0], $DB_HOST[1], $result_file ) );
+		} else {
+			self::run( 'mysqldump', Utils\esc_cmd(
+				'%s --user=%s --host=%s --result-file %s',
+				DB_NAME, DB_USER, DB_HOST, $result_file ) );
+		}
 
 		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
 	}
