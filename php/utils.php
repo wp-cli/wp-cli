@@ -8,6 +8,11 @@ use \WP_CLI\Dispatcher;
 use \WP_CLI\Iterators\Transform;
 
 function load_dependencies() {
+	if ( 0 === strpos( WP_CLI_ROOT, 'phar:' ) ) {
+		require WP_CLI_ROOT . '/vendor/autoload.php';
+		return;
+	}
+
 	$vendor_paths = array(
 		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project / installed via Composer (preferred)
 		WP_CLI_ROOT . '/vendor',           // top-level project / installed as Git clone
@@ -27,8 +32,6 @@ function load_dependencies() {
 		fputs( STDERR, "Internal error: Can't find Composer autoloader.\n" );
 		exit(3);
 	}
-
-	include WP_CLI_ROOT . '/php/Spyc.php';
 }
 
 function load_command( $name ) {

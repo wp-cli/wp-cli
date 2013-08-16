@@ -18,7 +18,8 @@
 		"psy/psysh": "Enhanced `wp shell` functionality"
 	},
 	"autoload": {
-		"psr-0": { "WP_CLI": "php" }
+		"psr-0": { "WP_CLI": "php" },
+		"files": [ "php/Spyc.php" ]
 	},
 	"require-dev": {
 		"symfony/finder": "~2.3"
