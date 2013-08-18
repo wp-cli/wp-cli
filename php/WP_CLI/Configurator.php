@@ -80,7 +80,7 @@ class Configurator {
 	 */
 	function load_config( $yml_file ) {
 		if ( $yml_file )
-			$config = spyc_load_file( $yml_file );
+			$config = \spyc_load_file( $yml_file );
 		else
 			$config = array();
 
