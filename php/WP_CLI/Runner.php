@@ -62,6 +62,16 @@ class Runner {
 			return $path;
 		}
 
+		// See if there is a global config file specified in the Composer
+		// install directory
+		foreach( $config_files as $config_file ) {
+			foreach( WP_CLI\Utils\get_vendor_paths() as $vendor_path ) {
+				$config_path = dirname( $vendor_path ) . '/' . $config_file;
+				if ( file_exists( $config_path ) )
+					return $config_path;
+			}
+		}
+
 		return false;
 	}
 
