@@ -5,6 +5,7 @@ define( 'WP_CLI', true );
 
 define( 'WP_CLI_VERSION', '0.12-alpha2' );
 
+include WP_CLI_ROOT . '/php/Spyc.php';
 include WP_CLI_ROOT . '/php/utils.php';
 include WP_CLI_ROOT . '/php/dispatcher.php';
 include WP_CLI_ROOT . '/php/class-wp-cli.php';
