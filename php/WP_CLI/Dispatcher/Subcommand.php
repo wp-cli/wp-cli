@@ -11,6 +11,8 @@ class Subcommand extends CompositeCommand {
 
 	private $when_invoked;
 
+	private $prompt = false;
+
 	function __construct( $parent, $name, $docparser, $when_invoked ) {
 		$this->when_invoked = $when_invoked;
 
@@ -26,6 +28,14 @@ class Subcommand extends CompositeCommand {
 
 	function get_alias() {
 		return $this->alias;
+	}
+
+	function set_prompt( $value ) {
+		$this->prompt = (bool)$value;
+	}
+
+	function get_prompt() {
+		return $this->prompt;
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
@@ -102,7 +112,7 @@ class Subcommand extends CompositeCommand {
 
 	function invoke( $args, $assoc_args ) {
 
-		if ( ! empty( $assoc_args['prompt'] ) )
+		if ( $this->get_prompt() )
 			list( $args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
 
 		$this->validate_args( $args, $assoc_args );

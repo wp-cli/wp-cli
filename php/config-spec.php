@@ -57,6 +57,13 @@ return array(
 		'desc' => 'Show all PHP errors',
 	),
 
+	'prompt' => array(
+		'runtime' => '',
+		'file' => false,
+		'default' => false,
+		'desc' => 'Prompt the user to enter values for all command arguments',
+	),
+
 	'quiet' => array(
 		'runtime' => '',
 		'file' => '<bool>',
