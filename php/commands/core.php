@@ -172,6 +172,15 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::error( "The 'wp-config.php' file already exists." );
 		}
 		
+		if( ! isset( $assoc_args['prompt'] ) ) {
+			if( ! isset( $assoc_args['dbname'] ) ) {
+				WP_CLI::error( "missing --dbname parameter" );
+			}
+			if( ! isset( $assoc_args['dbuser'] ) ) {
+				WP_CLI::error( "missing --dbuser parameter" );
+			}
+		}
+
 		$defaults = array(
 			'dbhost' => 'localhost',
 			'dbpass' => '',
