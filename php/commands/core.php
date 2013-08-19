@@ -189,12 +189,9 @@ class Core_Command extends WP_CLI_Command {
 		);
 		
 		if( isset( $assoc_args['prompt'] ) ) {
-			WP_CLI::line( '(1/3) --dbname=' );
-			$dbname = WP_CLI::ask();
-			WP_CLI::line( '(2/3) --dbuser=' );
-			$dbuser = WP_CLI::ask();
-			WP_CLI::line( '(3/3) --dbpass=' );
-			$dbpass = WP_CLI::ask();
+			$dbname = WP_CLI::ask( '(1/3) --dbname=' );
+			$dbuser = WP_CLI::ask( '(2/3) --dbuser=' );
+			$dbpass = WP_CLI::ask( '(3/3) --dbpass=' );
 			
 			$assoc_args['dbname'] = $dbname;
 			$assoc_args['dbuser'] = $dbuser;
