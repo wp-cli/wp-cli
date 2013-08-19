@@ -63,9 +63,9 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 	}
 
 	function testAssoc() {
-		$r = SynopsisParser::parse( '--foo=<value> [--bar=<value>] [--bar[=<value>]]' );
+		$r = SynopsisParser::parse( '--foo=<value> [--bar=<value>] [--bar[=<value>]] --bar[=<value>]' );
 
-		$this->assertCount( 3, $r );
+		$this->assertCount( 4, $r );
 
 		$param = $r[0];
 		$this->assertEquals( 'assoc', $param['type'] );
@@ -79,16 +79,20 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'assoc', $param['type'] );
 		$this->assertTrue( $param['optional'] );
 		$this->assertTrue( $param['value']['optional'] );
+
+		$param = $r[3];
+		$this->assertEquals( 'assoc', $param['type'] );
+		$this->assertFalse( $param['optional'] );
+		$this->assertTrue( $param['value']['optional'] );
 	}
 
 	function testInvalidAssoc() {
-		$r = SynopsisParser::parse( '--bar[=<value>] --bar=[<value>] --count=100' );
+		$r = SynopsisParser::parse( '--bar=[<value>] --count=100' );
 
-		$this->assertCount( 3, $r );
+		$this->assertCount( 2, $r );
 
 		$this->assertEquals( 'unknown', $r[0]['type'] );
 		$this->assertEquals( 'unknown', $r[1]['type'] );
-		$this->assertEquals( 'unknown', $r[2]['type'] );
 	}
 
 	function testRepeating() {
@@ -136,4 +140,3 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'unknown', $r[3]['type'] );
 	}
 }
-
