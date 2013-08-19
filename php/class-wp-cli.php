@@ -165,6 +165,25 @@ class WP_CLI {
 	}
 
 	/**
+	 * Prompt a user for some input
+	 */
+	static function prompt( $question, $required = false ) {
+
+		do {
+
+			self::out( $question . ': ' );
+
+			$response = trim( fgets( STDIN ) );
+			if ( $required && $response )
+				$required = false;
+
+		} while( $required );
+
+		return $response;
+	}
+
+
+	/**
 	 * Read a value, from various formats
 	 *
 	 * @param mixed $value
