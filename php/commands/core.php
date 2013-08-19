@@ -153,6 +153,9 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * --extra-php
 	 * : If set, the command reads additional PHP code from STDIN.
+	 * 
+	 * --keys-and-salts
+	 * : Use existing secrets versus generating afresh as the default behavior.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -196,9 +199,10 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		// TODO: adapt more resilient code from wp-admin/setup-config.php
-
-		$assoc_args['keys-and-salts'] = self::_read(
-			'https://api.wordpress.org/secret-key/1.1/salt/' );
+		if ( ! isset( $assoc_args['keys-and-salts'] ) ) {
+			$assoc_args['keys-and-salts'] = self::_read(
+				'https://api.wordpress.org/secret-key/1.1/salt/' );
+		}
 
 		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
 		file_put_contents( ABSPATH . 'wp-config.php', $out );
