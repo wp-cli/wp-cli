@@ -59,13 +59,24 @@ class Subcommand extends CompositeCommand {
 
 		$spec = array_values( $spec );
 
+		// 'positional' arguments are positional (aka zero-indexed)
+		// so $args needs to be reset before prompting for new arguments
+		$args = array();
 		foreach( $spec as $key => $spec_arg ) {
 
 			$required = ! $spec_arg['optional'];
 			$prompt = ( $key + 1 ) . '/' . count( $spec ) . ' ' . $spec_arg['token'];
 			$response = \WP_CLI::prompt( $prompt, $required );
-			if ( $response )
-				$assoc_args[$spec_arg['name']] = $response;
+			if ( $response ) {
+				switch ( $spec_arg['type'] ) {
+					case 'positional':
+						$args[] = $response;
+						break;
+					case 'assoc':
+						$assoc_args[$spec_arg['name']] = $response;
+						break;
+				}
+			}
 		}
 
 		return array( $args, $assoc_args );
