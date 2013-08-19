@@ -36,6 +36,31 @@ class Subcommand extends CompositeCommand {
 		) );
 	}
 
+	private function prompt_args( $args, $assoc_args ) {
+
+		$synopsis = $this->get_synopsis();
+
+		if ( ! $synopsis )
+			return array( $args, $assoc_args );
+
+		$spec = array_filter( \WP_CLI\SynopsisParser::parse( $synopsis ), function( $spec_arg ) {
+			return in_array( $spec_arg['type'], array( 'positional', 'assoc' ) );
+		});
+
+		$spec = array_values( $spec );
+
+		foreach( $spec as $key => $spec_arg ) {
+
+			$required = ! $spec_arg['optional'];
+			$prompt = ( $key + 1 ) . '/' . count( $spec ) . ' ' . $spec_arg['token'];
+			$response = \WP_CLI::prompt( $prompt, $required );
+			if ( $response )
+				$assoc_args[$spec_arg['name']] = $response;
+		}
+
+		return array( $args, $assoc_args );
+	}
+
 	private function validate_args( $args, &$assoc_args ) {
 		$synopsis = $this->get_synopsis();
 
@@ -76,6 +101,10 @@ class Subcommand extends CompositeCommand {
 	}
 
 	function invoke( $args, $assoc_args ) {
+
+		if ( ! empty( $assoc_args['prompt'] ) )
+			list( $args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
+
 		$this->validate_args( $args, $assoc_args );
 
 		\WP_CLI::do_action( 'before_invoke:' . $this->get_parent()->get_name() );
