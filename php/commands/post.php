@@ -141,7 +141,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <ID>
+	 * <id>
 	 * : The ID of the post to get.
 	 *
 	 * --format=<format>
@@ -160,7 +160,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     wp post get 12 > file.txt
 	 *
-	 * @synopsis [--format=<format>] <ID>
+	 * @synopsis <id> [--format=<format>]
 	 */
 	public function get( $args, $assoc_args ) {
 		$defaults = array(

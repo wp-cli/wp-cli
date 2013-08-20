@@ -99,7 +99,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     wp user get bob --format=json > bob.json
 	 *
-	 * @synopsis [--format=<format>] <user>
+	 * @synopsis <user> [--format=<format>]
 	 */
 	public function get( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
