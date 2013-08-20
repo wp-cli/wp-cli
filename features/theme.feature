@@ -69,6 +69,18 @@ Feature: Manage WordPress themes
       | name  | status   | update    | version   |
       | p2    | active   | available | 1.4.1     |
 
+  Scenario: Get the path of an installed theme
+    Given a WP install
+
+    When I run `wp theme install p2`
+    Then STDOUT should not be empty
+
+    When I run `wp theme path p2 --dir`
+    Then STDOUT should contain:
+       """
+       wp-content/themes/p2
+       """
+
   Scenario: Get details about an installed theme
     Given a WP install
 
