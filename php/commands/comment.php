@@ -44,6 +44,56 @@ class Comment_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Get a comment
+	 * 
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The comment to get.
+	 * 
+	 * * --format=<format>
+	 * : The format to use when printing the comment, acceptable values:
+	 *
+	 *   - **table**: Outputs all fields of the comment as a table.
+	 *
+	 *   - **json**: Outputs all fields in JSON format.
+	 * 
+	 * ## EXAMPLES
+	 *
+	 *     wp comment get 1
+	 * 
+	 * @synopsis <id> [--format=<format>]
+	 */
+	public function get( $args, $assoc_args ) {
+
+		$defaults = array(
+			'format' => 'table'
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$comment_id = (int)$args[0];
+		$comment = get_comment( $comment_id );
+		if ( empty( $comment ) )
+			WP_CLI::error( "Invalid comment ID." );
+
+		switch ( $assoc_args['format'] ) {
+
+			case 'table':
+				$fields = get_object_vars( $comment );
+				\WP_CLI\Utils\assoc_array_to_table( $fields );
+				break;
+
+			case 'json':
+				WP_CLI::print_value( $comment, $assoc_args );
+				break;
+
+			default:
+				\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
+				break;
+		}
+	}
+
+	/**
 	 * Delete a comment.
 	 *
 	 * ## OPTIONS
