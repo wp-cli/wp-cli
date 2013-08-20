@@ -72,10 +72,10 @@ Feature: Manage WordPress themes
   Scenario: Get details about an installed theme
     Given a WP install
 
-    When I run `wp theme install twentyeleven`
+    When I run `wp theme install p2`
     Then STDOUT should not be empty
 
-    When I run `wp theme get twentyeleven`
+    When I run `wp theme get p2`
     Then STDOUT should be a table containing rows:
       | Field | Value          |
-      | name  | Twenty Eleven  |
+      | name  | P2             |
