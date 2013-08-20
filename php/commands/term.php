@@ -121,6 +121,60 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Get a taxonomy term
+	 * 
+	 * ## OPTIONS
+	 *
+	 * <term-id>
+	 * : ID of the term to get
+	 * 
+	 * <taxonomy>
+	 * : Taxonomy of the term to get
+	 * 
+	 * --format=<format>
+	 * : The format to use when printing the term, acceptable values:
+	 *
+	 *   - **table**: Outputs all fields of the term as a table.
+	 *
+	 *   - **json**: Outputs all fields in JSON format.
+	 * 
+	 * ## EXAMPLES
+	 *
+	 *     wp term get 1 category
+	 * 
+	 * @synopsis <term-id> <taxonomy> [--format=<format>]
+	 */
+	public function get( $args, $assoc_args ) {
+
+		list( $term_id, $taxonomy ) = $args;
+
+		$defaults = array(
+			'format' => 'table'
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$term = get_term_by( 'id', $term_id, $taxonomy );
+		if ( ! $term )
+			WP_CLI::error( "Term doesn't exist." );
+
+		switch ( $assoc_args['format'] ) {
+
+			case 'table':
+				$fields = get_object_vars( $term );
+				\WP_CLI\Utils\assoc_array_to_table( $fields );
+				break;
+
+			case 'json':
+				WP_CLI::print_value( $term, $assoc_args );
+				break;
+
+			default:
+				\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
+				break;
+		}
+	}
+
+	/**
 	 * Update a term.
 	 *
 	 * ## OPTIONS
