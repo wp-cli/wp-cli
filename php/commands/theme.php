@@ -156,7 +156,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @synopsis [<theme>] [--dir]
 	 */
-	function path( $args, $assoc_args ) {
+	public function path( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
 			$path = WP_CONTENT_DIR . '/themes';
 		} else {
