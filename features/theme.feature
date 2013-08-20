@@ -68,3 +68,15 @@ Feature: Manage WordPress themes
     Then STDOUT should be a table containing rows:
       | name  | status   | update    | version   |
       | p2    | active   | available | 1.4.1     |
+
+  Scenario: Get the path of an installed theme
+    Given a WP install
+
+    When I run `wp theme install twentyeleven`
+    Then STDOUT should not be empty
+
+    When I run `wp theme path twentyeleven --dir`
+    Then STDOUT should contain:
+       """
+       wp-content/themes/twentyeleven
+       """
