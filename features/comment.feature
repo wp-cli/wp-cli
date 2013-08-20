@@ -18,3 +18,11 @@ Feature: Manage WordPress comments
       """
 	  Success: Deleted comment {COMMENT_ID}.
       """
+  
+  Scenario: Get details about an existing comment
+    Given a WP install
+
+    When I run `wp comment get 1`
+    Then STDOUT should be a table containing rows:
+      | Field           | Value          |
+      | comment_author  | Mr WordPress   |
