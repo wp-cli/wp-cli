@@ -165,11 +165,20 @@ class Core_Command extends WP_CLI_Command {
 	 *     define( 'WP_DEBUG_LOG', true );
 	 *     PHP
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php]
+	 * @synopsis [--dbname=<name>] [--dbuser=<user>] [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php] [--prompt]
 	 */
 	public function config( $_, $assoc_args ) {
 		if ( Utils\locate_wp_config() ) {
 			WP_CLI::error( "The 'wp-config.php' file already exists." );
+		}
+		
+		if( ! isset( $assoc_args['prompt'] ) ) {
+			if( ! isset( $assoc_args['dbname'] ) ) {
+				WP_CLI::error( "missing --dbname parameter" );
+			}
+			if( ! isset( $assoc_args['dbuser'] ) ) {
+				WP_CLI::error( "missing --dbuser parameter" );
+			}
 		}
 
 		$defaults = array(
@@ -178,8 +187,19 @@ class Core_Command extends WP_CLI_Command {
 			'dbprefix' => 'wp_',
 			'locale' => self::get_initial_locale()
 		);
+		
+		if( isset( $assoc_args['prompt'] ) ) {
+			$dbname = WP_CLI::ask( '(1/3) --dbname=' );
+			$dbuser = WP_CLI::ask( '(2/3) --dbuser=' );
+			$dbpass = WP_CLI::ask( '(3/3) --dbpass=' );
+			
+			$assoc_args['dbname'] = $dbname;
+			$assoc_args['dbuser'] = $dbuser;
+			$assoc_args['dbpass'] = $dbpass;
+		}
+		
 		$assoc_args = array_merge( $defaults, $assoc_args );
-
+		
 		if ( preg_match( '|[^a-z0-9_]|i', $assoc_args['dbprefix'] ) )
 			WP_CLI::error( '--dbprefix can only contain numbers, letters, and underscores.' );
 

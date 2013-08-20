@@ -163,6 +163,27 @@ class WP_CLI {
 				exit;
 		}
 	}
+	
+	/**
+	 * Function for reading a value from user.
+	 * 
+	 * @see sprintf()
+	 *
+	 * @param string $question the quesiton to be asked
+	 * @param string $format the format for the input - %s, %d, %f etc.
+	 * 
+	 * @return string input from user.
+	 */
+	static function ask( $question, $format = '%s' ) {
+		WP_CLI::line( $question );
+		try {
+			$input = cli\input( $format );
+			
+			return $input;
+		} catch( Exception $ex ) {
+			WP_CLI::error( $ex->getMessage() );
+		}
+	}
 
 	/**
 	 * Read a value, from various formats
