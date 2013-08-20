@@ -181,7 +181,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		case 'table':
 			$fields = get_object_vars( $post );
 			unset( $fields['filter'], $fields['post_content'], $fields['format_content'] );
-			$this->assoc_array_to_table( $fields );
+			\WP_CLI\Utils\assoc_array_to_table( $fields );
 			break;
 
 		case 'json':
