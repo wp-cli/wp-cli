@@ -119,7 +119,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		switch ( $assoc_args['format'] ) {
 
 		case 'table':
-			$this->assoc_array_to_table( $user_data );
+			\WP_CLI\Utils\assoc_array_to_table( $user_data );
 			break;
 
 		case 'json':
