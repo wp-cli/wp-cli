@@ -105,12 +105,22 @@ class Rewrite_Command extends WP_CLI_Command {
 			$rules = array();
 			WP_CLI::warning( 'No rewrite rules.' );
 		}
+		$defaults = array(
+			'format' => ''
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		if ( isset( $assoc_args['json'] ) ) {
-			echo json_encode( $rules );
-		} else {
-			foreach ( $rules as $route => $rule )
-				WP_CLI::line( $route . "\t" . $rule );
+		switch ( $assoc_args['format'] ) {
+
+			case 'json':
+				echo json_encode( $rules );
+				break;
+
+			default:
+				foreach ( $rules as $route => $rule )
+					WP_CLI::line( $route . "\t" . $rule );
+				break;
+
 		}
 	}
 
