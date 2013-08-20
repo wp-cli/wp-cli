@@ -250,6 +250,62 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
+	 * Get a theme
+	 * 
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : The theme to get.
+	 * 
+	 * * --format=<format>
+	 * : The format to use when printing the theme, acceptable values:
+	 *
+	 *   - **table**: Outputs all fields of the theme as a table.
+	 *
+	 *   - **json**: Outputs all fields in JSON format.
+	 * 
+	 * ## EXAMPLES
+	 *
+	 *     wp theme get twentytwelve
+	 * 
+	 * @synopsis <theme> [--format=<format>]
+	 */
+	public function get( $args, $assoc_args ) {
+
+		$defaults = array(
+			'format' => 'table'
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$theme = $this->parse_name( $args[0] );
+
+		// WP_Theme object employs magic getter, unfortunately
+		$theme_vars = array( 'name', 'title', 'version', 'parent_theme', 'template_dir', 'stylesheet_dir', 'template', 'stylesheet', 'screenshot', 'description', 'author', 'tags', 'theme_root', 'theme_root_uri',
+		);
+		$theme_obj = new stdClass;
+		foreach( $theme_vars as $var ) {
+			$theme_obj->$var = $theme->$var;
+		}
+
+		switch ( $assoc_args['format'] ) {
+
+			case 'table':
+				unset( $theme_obj->tags );
+				$fields = get_object_vars( $theme_obj );
+				\WP_CLI\Utils\assoc_array_to_table( $fields );
+				break;
+
+			case 'json':
+				WP_CLI::print_value( $theme_obj, $assoc_args );
+				break;
+
+			default:
+				\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
+				break;
+		}
+	}
+
+	/**
 	 * Update a theme.
 	 *
 	 * ## OPTIONS

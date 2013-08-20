@@ -303,6 +303,28 @@ function format_items( $format, $items, $fields ) {
 }
 
 /**
+ * Format an associative array as a table
+ *
+ * @param array     $fields    Fields and values to format
+ */
+function assoc_array_to_table( $fields ) {
+	$rows = array();
+
+	foreach ( $fields as $field => $value ) {
+		if ( !is_string($value) ) {
+			$value = json_encode( $value );
+		}
+
+		$rows[] = (object) array(
+			'Field' => $field,
+			'Value' => $value
+		);
+	}
+
+	format_items( 'table', $rows, array( 'Field', 'Value' ) );
+}
+
+/**
  * Write data as CSV to a given file.
  *
  * @param resource $fd         File descriptor
