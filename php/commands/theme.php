@@ -143,12 +143,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## OPTIONS
 	 *
 	 * <theme>
-	 * : The theme to get the path to. If not set, will return the path to the
-	 * themes directory.
+	 * : The theme to get the path to. Path includes "style.css" file.
+	 * If not set, will return the path to the themes directory.
 	 *
 	 * --dir
 	 * : If set, get the path to the closest parent directory, instead of the
-	 * theme file.
+	 * theme's "style.css" file.
 	 *
 	 * ## EXAMPLES
 	 *
