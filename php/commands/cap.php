@@ -25,7 +25,10 @@ class Capabilities_Command extends WP_CLI_Command {
 	public function _list( $args ) {
 		$role_obj = self::get_role( $args[0] );
 
-		foreach ( array_keys( $role_obj->capabilities ) as $cap )
+		$caps = array_keys( $role_obj->capabilities );
+		sort( $caps );
+
+		foreach ( $caps as $cap )
 			WP_CLI::line( $cap );
 	}
 
