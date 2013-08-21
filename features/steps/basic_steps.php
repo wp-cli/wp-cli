@@ -36,7 +36,7 @@ $steps->Given( '/^WP files$/',
 
 $steps->Given( '/^wp-config\.php$/',
 	function ( $world ) {
-		$world->proc( 'wp core config' )->run_check();
+		$world->create_config();
 	}
 );
 
@@ -61,7 +61,7 @@ $steps->Given( "/^a WP install in '([^\s]+)'$/",
 $steps->Given( '/^a WP multisite install$/',
 	function ( $world ) {
 		$world->install_wp();
-		$world->proc( 'wp core install-network' )->run_check();
+		$world->proc( 'wp core install-network', array( 'title' => 'WP CLI Network' ) )->run_check();
 	}
 );
 

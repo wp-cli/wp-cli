@@ -22,8 +22,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		'dbpass' => 'password1'
 	);
 
-	private static $additional_args;
-
 	public $variables = array();
 
 	// We cache the results of `wp core download` to improve test performance
@@ -43,14 +41,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 */
 	public static function prepare( SuiteEvent $event ) {
 		self::cache_wp_files();
-
-		self::$additional_args = array(
-			'wp core config' => self::$db_settings,
-
-			'wp core install-network' => array(
-				'title' => 'WP CLI Network'
-			)
-		);
 	}
 
 	/**
@@ -75,6 +65,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function __construct( array $parameters ) {
 		$this->drop_db();
 		$this->set_cache_dir();
+		$this->variables['CORE_CONFIG_SETTINGS'] = Utils\assoc_args_to_str( self::$db_settings );
 	}
 
 	public function getStepDefinitionResources() {
@@ -132,13 +123,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function proc( $command, $assoc_args = array() ) {
-		foreach ( self::$additional_args as $start => $additional_args ) {
-			if ( 0 === strpos( $command, $start ) ) {
-				$assoc_args = array_merge( $additional_args, $assoc_args );
-				break;
-			}
-		}
-
 		if ( !empty( $assoc_args ) )
 			$command .= Utils\assoc_args_to_str( $assoc_args );
 
@@ -167,13 +151,19 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		copy( __DIR__ . '/../extra/no-mail.php', $dest_dir . '/wp-content/mu-plugins/no-mail.php' );
 	}
 
+	public function create_config() {
+		$this->proc( 'wp core config', self::$db_settings )->run_check();
+	}
+
 	public function install_wp( $subdir = '' ) {
 		$this->create_db();
 		$this->create_run_dir();
 		$this->download_wp( $subdir );
 
-		$dbprefix = $subdir ?: 'wp_';
-		$this->proc( 'wp core config', compact( 'dbprefix' ) )->run_check( $subdir );
+		$db_args = self::$db_settings;
+		$db_args['dbprefix'] = $subdir ?: 'wp_';
+
+		$this->proc( 'wp core config', $db_args )->run_check( $subdir );
 
 		$install_args = array(
 			'url' => 'http://example.com',
