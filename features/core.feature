@@ -54,6 +54,20 @@ Feature: Manage WordPress installation
     Then the return code should be 1
     And STDERR should not be empty
 
+  Scenario: Configure with existing salts
+    Given an empty directory
+    And WP files
+
+    Given a wp-config-extra.php file:
+      """
+      define( 'WP_DEBUG_LOG', true );
+      """
+    When I run `wp core config --extra-php --skip-salts < wp-config-extra.php`
+    Then the wp-config.php file should not contain:
+      """
+      define('AUTH_SALT',
+      """
+
   Scenario: Database doesn't exist
     Given an empty directory
     And WP files
