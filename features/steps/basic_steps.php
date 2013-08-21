@@ -148,7 +148,9 @@ $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 
 $steps->Then( '/^the return code should be (\d+)$/',
 	function ( $world, $return_code ) {
-		assertEquals( $return_code, $world->result->return_code );
+		if ( $return_code != $world->result->return_code ) {
+			throw new RuntimeException( $world->result );
+		}
 	}
 );
 

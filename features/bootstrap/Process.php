@@ -41,24 +41,37 @@ class Process {
 		$STDERR = stream_get_contents( $pipes[2] );
 		fclose( $pipes[2] );
 
-		return (object) array(
+		return new ProcessRun( array(
 			'STDOUT' => $STDOUT,
 			'STDERR' => $STDERR,
 			'return_code' => proc_close( $proc ),
 			'command' => $this->command,
 			'cwd' => $cwd
-		);
+		) );
 	}
 
 	public function run_check( $subdir = '' ) {
 		$r = $this->run( $subdir );
 
 		if ( $r->return_code || !empty( $r->STDERR ) ) {
-			throw new \RuntimeException( sprintf( "%s: %s\ncwd: %s",
-				$r->command, $r->STDERR, $r->cwd ) );
+			throw new \RuntimeException( $r );
 		}
 
 		return $r;
+	}
+}
+
+
+class ProcessRun {
+
+	public function __construct( $props ) {
+		foreach ( $props as $key => $value ) {
+			$this->$key = $value;
+		}
+	}
+
+	public function __toString() {
+		return sprintf( "%s: %s\ncwd: %s", $this->command, $this->STDERR, $this->cwd );
 	}
 }
 
