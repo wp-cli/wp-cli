@@ -58,11 +58,7 @@ Feature: Manage WordPress installation
     Given an empty directory
     And WP files
 
-    Given a wp-config-extra.php file:
-      """
-      define( 'WP_DEBUG_LOG', true );
-      """
-    When I run `wp core config --extra-php --skip-salts < wp-config-extra.php`
+    When I run `wp core config {CORE_CONFIG_SETTINGS} --skip-salts --extra-php < /dev/null`
     Then the wp-config.php file should not contain:
       """
       define('AUTH_SALT',
