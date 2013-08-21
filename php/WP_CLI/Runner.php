@@ -440,7 +440,7 @@ class Runner {
 
 		$this->check_wp_version();
 
-		if ( array( 'core', 'config' ) == $this->arguments ) {
+		if ( $this->cmd_starts_with( array( 'core', 'config' ) ) ) {
 			$this->_run_command();
 			exit;
 		}
