@@ -40,7 +40,7 @@ Feature: Manage WordPress installation
       """
       define( 'WP_DEBUG_LOG', true );
       """
-    When I run `wp core config --extra-php < wp-config-extra.php`
+    When I run `wp core config {CORE_CONFIG_SETTINGS} --extra-php < wp-config-extra.php`
     Then the wp-config.php file should contain:
       """
       define('AUTH_SALT',
