@@ -13,7 +13,13 @@ Feature: Manage WordPress terms
     When I run `wp term list post_tag --format=json`
     Then STDOUT should be JSON containing:
       """
-      [{"name":"Test term","slug":"test","description":"This is a test term","parent":"0","count":"0"}]
+      [{
+        "name": "Test term",
+        "slug":"test",
+        "description":"This is a test term",
+        "parent":"0",
+        "count":"0"
+      }]
       """
 
     When I run `wp term list post_tag --fields=name,slug --format=csv`
