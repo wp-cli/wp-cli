@@ -189,17 +189,16 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		) );
 
 		if ( isset( $assoc_args['dry-run'] ) ) {
-			$item_list = "Available {$this->item_type} updates:";
-
 			if ( empty( $items_to_update ) ) {
-				$item_list .= " none";
-			} else {
-				foreach ( $items_to_update as $file => $details ) {
-					$item_list .= "\n\t%y" . $details['name'] . "%n";
-				}
+				\WP_CLI::line( "No {$this->item_type} updates available." );
+				return;
 			}
 
-			\WP_CLI::line( \WP_CLI::colorize( $item_list ) );
+			\WP_CLI::line( "Available {$this->item_type} updates:" );
+
+			\WP_CLI\Utils\format_items( 'table', $items_to_update,
+				array( 'name', 'status', 'version' ) );
+
 			return;
 		}
 
