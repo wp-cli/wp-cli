@@ -334,7 +334,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme update twentytwelve
+	 *     wp theme update twentyeleven twentytwelve
+	 *
+	 *     wp theme update --all
 	 *
 	 * @synopsis <theme>... [--version=<version>] [--all] [--dry-run]
 	 */

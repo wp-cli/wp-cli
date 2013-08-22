@@ -303,6 +303,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     wp plugin update bbpress --version=dev
 	 *
+	 *     wp plugin update --all
+	 *
 	 * @synopsis <plugin>... [--version=<version>] [--all] [--dry-run]
 	 */
 	function update( $args, $assoc_args ) {
