@@ -11,6 +11,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	abstract protected function get_upgrader_class( $force );
 
 	abstract protected function get_item_list();
+	abstract protected function filter_item_list( $items, $args );
 	abstract protected function get_all_items();
 
 	abstract protected function get_status( $file );
@@ -174,10 +175,16 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		return \WP_CLI\Utils\get_upgrader( $upgrader_class );
 	}
 
-	function update_all( $args, $assoc_args ) {
+	protected function update_many( $args, $assoc_args ) {
 		call_user_func( $this->upgrade_refresh );
 
-		$items_to_update = wp_list_filter( $this->get_item_list(), array(
+		$items = $this->get_item_list();
+
+		if ( !isset( $assoc_args['all'] ) ) {
+			$items = $this->filter_item_list( $items, $args );
+		}
+
+		$items_to_update = wp_list_filter( $items, array(
 			'update' => true
 		) );
 

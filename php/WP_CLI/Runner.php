@@ -274,12 +274,12 @@ class Runner {
 			unset( $assoc_args['site_id'] );
 		}
 
-		// {plugin|theme} update --all  ->  {plugin|theme} update-all
+		// {plugin|theme} update-all  ->  {plugin|theme} update --all
 		if ( count( $args ) > 1 && in_array( $args[0], array( 'plugin', 'theme' ) )
-			&& $args[1] == 'update' && isset( $assoc_args['all'] )
+			&& $args[1] == 'update-all'
 		) {
-			$args[1] = 'update-all';
-			unset( $assoc_args['all'] );
+			$args[1] = 'update';
+			$assoc_args['all'] = true;
 		}
 
 		// plugin scaffold  ->  scaffold plugin
