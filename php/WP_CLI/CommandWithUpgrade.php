@@ -11,6 +11,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	abstract protected function get_upgrader_class( $force );
 
 	abstract protected function get_item_list();
+	abstract protected function filter_item_list( $items, $args );
 	abstract protected function get_all_items();
 
 	abstract protected function get_status( $file );
@@ -174,25 +175,30 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		return \WP_CLI\Utils\get_upgrader( $upgrader_class );
 	}
 
-	function update_all( $args, $assoc_args ) {
+	protected function update_many( $args, $assoc_args ) {
 		call_user_func( $this->upgrade_refresh );
 
-		$items_to_update = wp_list_filter( $this->get_item_list(), array(
+		$items = $this->get_item_list();
+
+		if ( !isset( $assoc_args['all'] ) ) {
+			$items = $this->filter_item_list( $items, $args );
+		}
+
+		$items_to_update = wp_list_filter( $items, array(
 			'update' => true
 		) );
 
 		if ( isset( $assoc_args['dry-run'] ) ) {
-			$item_list = "Available {$this->item_type} updates:";
-
 			if ( empty( $items_to_update ) ) {
-				$item_list .= " none";
-			} else {
-				foreach ( $items_to_update as $file => $details ) {
-					$item_list .= "\n\t%y" . $details['name'] . "%n";
-				}
+				\WP_CLI::line( "No {$this->item_type} updates available." );
+				return;
 			}
 
-			\WP_CLI::line( \WP_CLI::colorize( $item_list ) );
+			\WP_CLI::line( "Available {$this->item_type} updates:" );
+
+			\WP_CLI\Utils\format_items( 'table', $items_to_update,
+				array( 'name', 'status', 'version' ) );
+
 			return;
 		}
 

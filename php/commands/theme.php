@@ -217,6 +217,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		return $items;
 	}
 
+	protected function filter_item_list( $items, $args ) {
+		$theme_files = array();
+		foreach ( $args as $arg ) {
+			$theme_files[] = $this->parse_name( $arg )->get_stylesheet_directory();
+		}
+
+		return \WP_CLI\Utils\pick_fields( $items, $theme_files );
+	}
+
 	/**
 	 * Install a theme.
 	 *
@@ -251,23 +260,23 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Get a theme
-	 * 
+	 *
 	 * ## OPTIONS
 	 *
 	 * <theme>
 	 * : The theme to get.
-	 * 
+	 *
 	 * * --format=<format>
 	 * : The format to use when printing the theme, acceptable values:
 	 *
 	 *   - **table**: Outputs all fields of the theme as a table.
 	 *
 	 *   - **json**: Outputs all fields in JSON format.
-	 * 
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp theme get twentytwelve
-	 * 
+	 *
 	 * @synopsis <theme> [--format=<format>]
 	 */
 	public function get( $args, $assoc_args ) {
@@ -306,48 +315,33 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Update a theme.
+	 * Update one or more themes.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <theme>
-	 * : The theme to update.
+	 * : The theme(s) to update.
+	 *
+	 * --all
+	 * : If set, all themes that have updates will be updated.
 	 *
 	 * --version=dev
 	 * : If set, the theme will be updated to the latest development version,
 	 * regardless of what version is currently installed.
 	 *
+	 * --dry-run
+	 * : Preview which themes would be updated.
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme update twentytwelve
+	 *     wp theme update twentyeleven twentytwelve
 	 *
-	 * @synopsis <theme> [--version=<version>]
+	 *     wp theme update --all
+	 *
+	 * @synopsis <theme>... [--version=<version>] [--all] [--dry-run]
 	 */
 	function update( $args, $assoc_args ) {
-		$theme = $this->parse_name( $args[0] );
-
-		call_user_func( $this->upgrade_refresh );
-
-		$this->get_upgrader( $assoc_args )->upgrade( $theme->get_stylesheet() );
-	}
-
-	/**
-	 * Update all themes.
-	 *
-	 * ## OPTIONS
-	 *
-	 * --dry-run
-	 * : Pretend to do the updates, to see what would happen.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp theme update-all
-	 *
-	 * @subcommand update-all
-	 * @synopsis [--dry-run]
-	 */
-	function update_all( $args, $assoc_args ) {
-		parent::update_all( $args, $assoc_args );
+		parent::update_many( $args, $assoc_args );
 	}
 
 	/**
