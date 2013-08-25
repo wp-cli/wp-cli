@@ -169,15 +169,12 @@ class WP_CLI {
 	 */
 	static function prompt( $question, $required = false ) {
 
-		do {
+		if ( ! $required )
+			$default = '';
+		else
+			$default = false;
 
-			$response = \cli\prompt( $question );
-			if ( $required && $response )
-				$required = false;
-
-		} while( $required );
-
-		return $response;
+		return \cli\prompt( $question, $default );
 	}
 
 
