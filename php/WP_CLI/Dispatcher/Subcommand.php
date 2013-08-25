@@ -70,7 +70,11 @@ class Subcommand extends CompositeCommand {
 			if ( $response ) {
 				switch ( $spec_arg['type'] ) {
 					case 'positional':
-						$args[] = $response;
+						if ( $spec_arg['repeating'] )
+							$response = explode( ' ', $response );
+						else
+							$response = array( $response );
+						$args = array_merge( $args, $response );
 						break;
 					case 'assoc':
 						$assoc_args[$spec_arg['name']] = $response;
