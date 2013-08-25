@@ -171,9 +171,7 @@ class WP_CLI {
 
 		do {
 
-			self::out( $question . ': ' );
-
-			$response = trim( fgets( STDIN ) );
+			$response = \cli\prompt( $question );
 			if ( $required && $response )
 				$required = false;
 
