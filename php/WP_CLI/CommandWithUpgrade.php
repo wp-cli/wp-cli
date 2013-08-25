@@ -101,6 +101,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		foreach ( $args as $slug ) {
 			$local_or_remote_zip_file = false;
+			$result = false;
 
 			// Check if a URL to a remote zip file has been specified
 			$url_path = parse_url( $slug, PHP_URL_PATH );
@@ -119,24 +120,20 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 				if ( $file_upgrader->install( $local_or_remote_zip_file ) ) {
 					$slug = $file_upgrader->result['destination_name'];
-
-					if ( isset( $assoc_args['activate'] ) ) {
-						\WP_CLI::log( "Activating '$slug'..." );
-						$this->activate( array( $slug ) );
-					}
+					$result = true;
 				}
 			} else {
 				// Assume a plugin/theme slug from the WordPress.org repository has been specified
 				$result = $this->install_from_repo( $slug, $assoc_args );
 
 				if ( is_wp_error( $result ) ) {
-					\WP_CLI::warning( $result );
+					\WP_CLI::warning( "$slug: " . $result->get_error_message() );
 				}
+			}
 
-				if ( $result && isset( $assoc_args['activate'] ) ) {
-					\WP_CLI::log( "Activating '$slug'..." );
-					$this->activate( array( $slug ) );
-				}
+			if ( $result && isset( $assoc_args['activate'] ) ) {
+				\WP_CLI::log( "Activating '$slug'..." );
+				$this->activate( array( $slug ) );
 			}
 		}
 	}

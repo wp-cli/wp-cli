@@ -184,7 +184,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		if ( !isset( $assoc_args['force'] ) && wp_get_theme( $slug )->exists() ) {
 			// We know this will fail, so avoid a needless download of the package.
-			return new WP_Error( 'already_installed', "$slug already installed." );
+			return new WP_Error( 'already_installed', 'Theme already installed.' );
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
