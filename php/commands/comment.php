@@ -7,6 +7,15 @@
  */
 class Comment_Command extends WP_CLI_Command {
 
+	private $fields = array(
+			'comment_ID',
+			'comment_post_ID',
+			'comment_date',
+			'comment_approved',
+			'comment_author',
+			'comment_author_email',
+		);
+
 	/**
 	 * Insert a comment.
 	 *
@@ -91,6 +100,58 @@ class Comment_Command extends WP_CLI_Command {
 				\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
 				break;
 		}
+	}
+
+	/**
+	 * Get a list of comments.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --<field>=<value>
+	 * : One or more args to pass to WP_Comment_Query.
+	 *
+	 * --fields=<fields>
+	 * : Limit the output to specific object fields. Defaults to comment_ID,comment_post_ID,comment_date,comment_approved,comment_author,comment_author_email
+	 *
+	 * --format=<format>
+	 * : Output list as table, CSV, JSON, or simply IDs. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment list --format=ids
+	 *
+	 *     wp comment list --post_id=2
+	 *
+	 *     wp comment list --number=20 --comment_approved=1
+	 *
+	 * @subcommand list
+	 * @synopsis [--<field>=<value>] [--fields=<fields>] [--format=<format>]
+	 */
+	public function _list( $_, $assoc_args ) {
+		$query_args = array();
+		$defaults = array(
+			'format' => 'table',
+			'fields' => $this->fields
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		foreach ( $assoc_args as $key => $value ) {
+			if ( true === $value )
+				continue;
+
+			$query_args[ $key ] = $value;
+		}
+
+		if ( 'ids' == $assoc_args['format'] )
+			$query_args['fields'] = 'ids';
+
+		$query = new WP_Comment_Query();
+		$comments = $query->query( $query_args );
+
+		if ( 'ids' == $assoc_args['format'] )
+			$comments = wp_list_pluck( $comments, 'comment_ID' );
+
+		WP_CLI\Utils\format_items( $assoc_args['format'], $comments, $assoc_args['fields'] );
 	}
 
 	/**
