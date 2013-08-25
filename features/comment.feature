@@ -26,3 +26,8 @@ Feature: Manage WordPress comments
     Then STDOUT should be a table containing rows:
       | Field           | Value          |
       | comment_author  | Mr WordPress   |
+
+    When I run `wp comment list --fields=comment_approved,comment_author`
+    Then STDOUT should be a table containing rows:
+      | comment_approved | comment_author |
+      | 1                | Mr WordPress   |
