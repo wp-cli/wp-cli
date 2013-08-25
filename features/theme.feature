@@ -6,9 +6,6 @@ Feature: Manage WordPress themes
     When I run `wp theme install p2`
     Then STDOUT should not be empty
 
-    When I try the previous command again
-    Then the return code should be 1
-
     When I run `wp theme status p2`
     Then STDOUT should contain:
       """
