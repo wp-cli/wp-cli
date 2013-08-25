@@ -258,7 +258,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {
-			WP_CLI::error( $api );
+			return $api;
 		}
 
 		if ( isset( $assoc_args['version'] ) ) {
@@ -269,16 +269,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		if ( !isset( $assoc_args['force'] ) && 'install' != $status['status'] ) {
 			// We know this will fail, so avoid a needless download of the package.
-			WP_CLI::error( 'Plugin already installed.' );
+			return new WP_Error( 'already_installed', 'Plugin already installed.' );
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
 
-		if ( $result && isset( $assoc_args['activate'] ) ) {
-			WP_CLI::log( "Activating '$slug'..." );
-			$this->activate( array( $slug ) );
-		}
+		return $result;
 	}
 
 	/**
@@ -372,7 +369,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     # Install from a remote zip file
 	 *     wp plugin install http://s3.amazonaws.com/bucketname/my-plugin.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
 	 *
-	 * @synopsis <plugin|zip|url> [--version=<version>] [--force] [--activate]
+	 * @synopsis <plugin|zip|url>... [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
 		parent::install( $args, $assoc_args );
