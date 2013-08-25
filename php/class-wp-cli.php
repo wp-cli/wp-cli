@@ -174,7 +174,12 @@ class WP_CLI {
 		else
 			$default = false;
 
-		return \cli\prompt( $question, $default );
+		try {
+			$response = \cli\prompt( $question, $default );
+		} catch( Exception $e ) {
+			$response = '';
+		}
+		return $response;
 	}
 
 
