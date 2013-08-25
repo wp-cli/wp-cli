@@ -436,15 +436,6 @@ class Runner {
 			self::set_url_params( $url_parts );
 		}
 
-		// Handle --prompt parameter
-		if ( $this->config['prompt'] ) {
-			$r = $this->find_command_to_run( $this->arguments );
-			if ( is_array( $r ) ) {
-				list( $command ) = $r;
-				$command->set_prompt( true );
-			}
-		}
-
 		$this->do_early_invoke( 'before_wp_load' );
 
 		$this->check_wp_version();

@@ -30,14 +30,6 @@ class Subcommand extends CompositeCommand {
 		return $this->alias;
 	}
 
-	function set_prompt( $value ) {
-		$this->prompt = (bool)$value;
-	}
-
-	function get_prompt() {
-		return $this->prompt;
-	}
-
 	function show_usage( $prefix = 'usage: ' ) {
 		\WP_CLI::line( sprintf( "%s%s %s",
 			$prefix,
@@ -166,7 +158,7 @@ class Subcommand extends CompositeCommand {
 
 	function invoke( $args, $assoc_args ) {
 
-		if ( $this->get_prompt() )
+		if ( \WP_CLI::get_config( 'prompt' ) )
 			list( $args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
 
 		$this->validate_args( $args, $assoc_args );
