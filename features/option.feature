@@ -9,9 +9,9 @@ Feature: Manage WordPress options
 
     When I run `wp option get str_opt`
     Then STDOUT should be:
-    """
-    bar
-    """
+      """
+      bar
+      """
 
     When I run `wp option delete str_opt`
     Then STDOUT should not be empty
@@ -29,9 +29,9 @@ Feature: Manage WordPress options
 
     When I run `wp option get blog_public`
     Then STDOUT should be:
-    """
-    0
-    """
+      """
+      0
+      """
 
 
     # JSON values
@@ -43,6 +43,6 @@ Feature: Manage WordPress options
 
     When I run `wp option get json_opt --format=json`
     Then STDOUT should be:
-    """
-    [1,2]
-    """
+      """
+      [1,2]
+      """

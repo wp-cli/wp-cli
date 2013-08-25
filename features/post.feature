@@ -67,7 +67,10 @@ Feature: Manage WordPress posts
     When I run `wp post get --format=json {POST_ID}`
     Then STDOUT should be JSON containing:
       """
-      {"ID":{POST_ID},"post_title":"Test post"}
+      {
+        "ID": {POST_ID},
+        "post_title": "Test post"
+      }
       """
 
   Scenario: Creating/listing posts

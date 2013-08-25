@@ -258,7 +258,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {
-			WP_CLI::error( $api );
+			return $api;
 		}
 
 		if ( isset( $assoc_args['version'] ) ) {
@@ -269,80 +269,50 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		if ( !isset( $assoc_args['force'] ) && 'install' != $status['status'] ) {
 			// We know this will fail, so avoid a needless download of the package.
-			WP_CLI::error( 'Plugin already installed.' );
+			return new WP_Error( 'already_installed', 'Plugin already installed.' );
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
 
-		if ( $result && isset( $assoc_args['activate'] ) ) {
-			WP_CLI::log( "Activating '$slug'..." );
-			$this->activate( array( $slug ) );
-		}
+		return $result;
 	}
 
 	/**
-	 * Update a plugin.
+	 * Update one or more plugins.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <plugin>
-	 * : The plugin to update.
+	 * : The plugin(s) to update.
+	 *
+	 * --all
+	 * : If set, all plugins that have updates will be updated.
 	 *
 	 * --version=dev
 	 * : If set, the plugin will be updated to the latest development version,
 	 * regardless of what version is currently installed.
 	 *
+	 * --dry-run
+	 * : Preview which plugins would be updated.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp plugin update bbpress --version=dev
 	 *
-	 * @synopsis <plugin> [--version=<version>]
+	 *     wp plugin update --all
+	 *
+	 * @synopsis <plugin>... [--version=<version>] [--all] [--dry-run]
 	 */
 	function update( $args, $assoc_args ) {
-		$name = $args[0];
-		$basename = $this->parse_name( $name );
-
 		if ( isset( $assoc_args['version'] ) && 'dev' == $assoc_args['version'] ) {
-			$this->_delete( $basename, false );
-			$this->install( $args, $assoc_args );
-		} else {
-			$was_active = is_plugin_active( $basename );
-			$was_network_active = is_plugin_active_for_network( $basename );
-
-			call_user_func( $this->upgrade_refresh );
-
-			$this->get_upgrader( $assoc_args )->upgrade( $basename );
-
-			if ( $was_active ) {
-				$new_args = array( $args[0] );
-
-				$new_assoc_args = array();
-				if ( $was_network_active )
-					$new_assoc_args['network'] = true;
-
-				$this->activate( $new_args, $new_assoc_args );
+			foreach ( $args as $arg ) {
+				$this->_delete( $this->parse_name( $arg ) );
+				$this->install( array( $arg ), $assoc_args );
 			}
+		} else {
+			parent::update_many( $args, $assoc_args );
 		}
-	}
-
-	/**
-	 * Update all plugins.
-	 *
-	 * ## OPTIONS
-	 *
-	 * --dry-run
-	 * : Pretend to do the updates, to see what would happen.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp plugin update-all
-	 *
-	 * @subcommand update-all
-	 * @synopsis [--dry-run]
-	 */
-	function update_all( $args, $assoc_args ) {
-		parent::update_all( $args, $assoc_args );
 	}
 
 	protected function get_item_list() {
@@ -359,6 +329,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		return $items;
+	}
+
+	protected function filter_item_list( $items, $args ) {
+		$basenames = array_map( array( $this, 'parse_name' ), $args );
+		return \WP_CLI\Utils\pick_fields( $items, $basenames );
 	}
 
 	/**
@@ -394,7 +369,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     # Install from a remote zip file
 	 *     wp plugin install http://s3.amazonaws.com/bucketname/my-plugin.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
 	 *
-	 * @synopsis <plugin|zip|url> [--version=<version>] [--force] [--activate]
+	 * @synopsis <plugin|zip|url>... [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
 		parent::install( $args, $assoc_args );

@@ -46,5 +46,15 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 		$this->assertCount( 1, $errors['fatal'] );
 		$this->assertCount( 1, $errors['warning'] );
 	}
+
+	function testAssocWithOptionalValue() {
+		$parser = new SynopsisValidator( '[--network[=<id>]]' );
+
+		$assoc_args = array( 'network' => true );
+		$errors = $parser->validate_assoc( $assoc_args );
+
+		$this->assertCount( 0, $errors['fatal'] );
+		$this->assertCount( 0, $errors['warning'] );
+	}
 }
 

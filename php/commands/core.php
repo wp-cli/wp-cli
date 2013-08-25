@@ -153,6 +153,9 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * --extra-php
 	 * : If set, the command reads additional PHP code from STDIN.
+	 * 
+	 * --skip-salts
+	 * : If set, keys and salts won't be generated, but, instead, should be passed via --extra-php.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -165,7 +168,7 @@ class Core_Command extends WP_CLI_Command {
 	 *     define( 'WP_DEBUG_LOG', true );
 	 *     PHP
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php]
+	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php] [--skip-salts]
 	 */
 	public function config( $_, $assoc_args ) {
 		if ( Utils\locate_wp_config() ) {
@@ -196,9 +199,10 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		// TODO: adapt more resilient code from wp-admin/setup-config.php
-
-		$assoc_args['keys-and-salts'] = self::_read(
-			'https://api.wordpress.org/secret-key/1.1/salt/' );
+		if ( ! isset( $assoc_args['skip-salts'] ) ) {
+			$assoc_args['keys-and-salts'] = self::_read(
+				'https://api.wordpress.org/secret-key/1.1/salt/' );
+		}
 
 		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
 		file_put_contents( ABSPATH . 'wp-config.php', $out );

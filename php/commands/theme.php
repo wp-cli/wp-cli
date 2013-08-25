@@ -143,12 +143,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## OPTIONS
 	 *
 	 * <theme>
-	 * : The theme to get the path to. If not set, will return the path to the
-	 * themes directory.
+	 * : The theme to get the path to. Path includes "style.css" file.
+	 * If not set, will return the path to the themes directory.
 	 *
 	 * --dir
 	 * : If set, get the path to the closest parent directory, instead of the
-	 * theme file.
+	 * theme's "style.css" file.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -156,7 +156,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @synopsis [<theme>] [--dir]
 	 */
-	function path( $args, $assoc_args ) {
+	public function path( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
 			$path = WP_CONTENT_DIR . '/themes';
 		} else {
@@ -172,12 +172,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function install_from_repo( $slug, $assoc_args ) {
-		$result = NULL;
-
 		$api = themes_api( 'theme_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {
-			WP_CLI::error( $api );
+			return $api;
 		}
 
 		if ( isset( $assoc_args['version'] ) ) {
@@ -186,17 +184,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		if ( !isset( $assoc_args['force'] ) && wp_get_theme( $slug )->exists() ) {
 			// We know this will fail, so avoid a needless download of the package.
-			WP_CLI::error( 'Theme already installed.' );
+			return new WP_Error( 'already_installed', 'Theme already installed.' );
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
 
-		// Finally, activate theme if requested.
-		if ( $result && isset( $assoc_args['activate'] ) ) {
-			WP_CLI::log( "Activating '$slug'..." );
-			$this->activate( array( $slug ) );
-		}
+		return $result;
 	}
 
 	protected function get_item_list() {
@@ -215,6 +209,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		return $items;
+	}
+
+	protected function filter_item_list( $items, $args ) {
+		$theme_files = array();
+		foreach ( $args as $arg ) {
+			$theme_files[] = $this->parse_name( $arg )->get_stylesheet_directory();
+		}
+
+		return \WP_CLI\Utils\pick_fields( $items, $theme_files );
 	}
 
 	/**
@@ -243,55 +246,96 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     # Install from a remote zip file
 	 *     wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
 	 *
-	 * @synopsis <theme|zip|url> [--version=<version>] [--force] [--activate]
+	 * @synopsis <theme|zip|url>... [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
 		parent::install( $args, $assoc_args );
 	}
 
 	/**
-	 * Update a theme.
+	 * Get a theme
 	 *
 	 * ## OPTIONS
 	 *
 	 * <theme>
-	 * : The theme to update.
+	 * : The theme to get.
+	 *
+	 * * --format=<format>
+	 * : The format to use when printing the theme, acceptable values:
+	 *
+	 *   - **table**: Outputs all fields of the theme as a table.
+	 *
+	 *   - **json**: Outputs all fields in JSON format.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme get twentytwelve
+	 *
+	 * @synopsis <theme> [--format=<format>]
+	 */
+	public function get( $args, $assoc_args ) {
+
+		$defaults = array(
+			'format' => 'table'
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$theme = $this->parse_name( $args[0] );
+
+		// WP_Theme object employs magic getter, unfortunately
+		$theme_vars = array( 'name', 'title', 'version', 'parent_theme', 'template_dir', 'stylesheet_dir', 'template', 'stylesheet', 'screenshot', 'description', 'author', 'tags', 'theme_root', 'theme_root_uri',
+		);
+		$theme_obj = new stdClass;
+		foreach( $theme_vars as $var ) {
+			$theme_obj->$var = $theme->$var;
+		}
+
+		switch ( $assoc_args['format'] ) {
+
+			case 'table':
+				unset( $theme_obj->tags );
+				$fields = get_object_vars( $theme_obj );
+				\WP_CLI\Utils\assoc_array_to_table( $fields );
+				break;
+
+			case 'json':
+				WP_CLI::print_value( $theme_obj, $assoc_args );
+				break;
+
+			default:
+				\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
+				break;
+		}
+	}
+
+	/**
+	 * Update one or more themes.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : The theme(s) to update.
+	 *
+	 * --all
+	 * : If set, all themes that have updates will be updated.
 	 *
 	 * --version=dev
 	 * : If set, the theme will be updated to the latest development version,
 	 * regardless of what version is currently installed.
 	 *
+	 * --dry-run
+	 * : Preview which themes would be updated.
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme update twentytwelve
+	 *     wp theme update twentyeleven twentytwelve
 	 *
-	 * @synopsis <theme> [--version=<version>]
+	 *     wp theme update --all
+	 *
+	 * @synopsis <theme>... [--version=<version>] [--all] [--dry-run]
 	 */
 	function update( $args, $assoc_args ) {
-		$theme = $this->parse_name( $args[0] );
-
-		call_user_func( $this->upgrade_refresh );
-
-		$this->get_upgrader( $assoc_args )->upgrade( $theme->get_stylesheet() );
-	}
-
-	/**
-	 * Update all themes.
-	 *
-	 * ## OPTIONS
-	 *
-	 * --dry-run
-	 * : Pretend to do the updates, to see what would happen.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp theme update-all
-	 *
-	 * @subcommand update-all
-	 * @synopsis [--dry-run]
-	 */
-	function update_all( $args, $assoc_args ) {
-		parent::update_all( $args, $assoc_args );
+		parent::update_many( $args, $assoc_args );
 	}
 
 	/**

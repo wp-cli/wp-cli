@@ -5,6 +5,7 @@ Feature: Manage WordPress terms
 
     When I run `wp term create 'Test term' post_tag --slug=test --description='This is a test term' --porcelain`
     Then STDOUT should be a number
+    And save STDOUT as {TERM_ID}
 
     When I try the previous command again
     Then STDERR should not be empty
@@ -12,13 +13,25 @@ Feature: Manage WordPress terms
     When I run `wp term list post_tag --format=json`
     Then STDOUT should be JSON containing:
       """
-      [{"name":"Test term","slug":"test","description":"This is a test term","parent":"0","count":"0"}]
+      [{
+        "name": "Test term",
+        "slug":"test",
+        "description":"This is a test term",
+        "parent":"0",
+        "count":"0"
+      }]
       """
 
     When I run `wp term list post_tag --fields=name,slug --format=csv`
     Then STDOUT should be CSV containing:
       | name      | slug |
       | Test term | test |
+
+    When I run `wp term get {TERM_ID} post_tag`
+    Then STDOUT should be a table containing rows:
+      | Field     | Value      |
+      | term_id   | {TERM_ID}  |
+      | name      | Test term  |
 
   Scenario: Creating/deleting a term
     Given a WP install

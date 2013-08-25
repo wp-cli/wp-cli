@@ -3,12 +3,12 @@ Feature: Manage WordPress themes and plugins
   Scenario Outline: Installing, upgrading and deleting a theme or plugin
     Given a WP install
     And download:
-      | path                   | url       |
+      | path                   | url        |
       | {CACHE_DIR}/<item>.zip | <zip_file> |
     And I run `wp <type> path`
     And save STDOUT as {CONTENT_DIR}
 
-    # ﻿Install an out of date <item> from WordPress.org repository
+    # Install an out of date <item> from WordPress.org repository
     When I run `wp <type> install <item> --version=<version>`
     Then STDOUT should contain:
       """
@@ -51,46 +51,46 @@ Feature: Manage WordPress themes and plugins
     # Install <item> from a local zip file
     When I run `wp <type> install {CACHE_DIR}/<item>.zip`
     Then STDOUT should contain:
-    """
-    <type_name> installed successfully.
-    """
+      """
+      <type_name> installed successfully.
+      """
     And the <file_to_check> file should exist
 
     When I run `wp <type> delete <item>`
     Then STDOUT should contain:
-    """
-    Success: Deleted '<item>' <type>.
-    """
+      """
+      Success: Deleted '<item>' <type>.
+      """
     And the <file_to_check> file should not exist
 
     # Install <item> from a remote zip file (standard URL with no GET parameters)
     When I run `wp <type> install <zip_file>`
     Then STDOUT should contain:
-    """
-    <type_name> installed successfully.
-    """
+      """
+      <type_name> installed successfully.
+      """
     And the <file_to_check> file should exist
 
     When I run `wp <type> delete <item>`
     Then STDOUT should contain:
-    """
-    Success: Deleted '<item>' <type>.
-    """
+      """
+      Success: Deleted '<item>' <type>.
+      """
     And the <file_to_check> file should not exist
 
     # Install <item> from a remote zip file (complex URL with GET parameters)
     When I run `wp <type> install '<zip_file>?AWSAccessKeyId=123&Expires=456&Signature=abcdef'`
     Then STDOUT should contain:
-    """
-    <type_name> installed successfully.
-    """
+      """
+      <type_name> installed successfully.
+      """
     And the <file_to_check> file should exist
 
     When I run `wp <type> delete <item>`
     Then STDOUT should contain:
-    """
-    Success: Deleted '<item>' <type>.
-    """
+      """
+      Success: Deleted '<item>' <type>.
+      """
     And the <file_to_check> file should not exist
 
     When I run `wp <type> search <item> --per-page=1 --fields=name,slug`
