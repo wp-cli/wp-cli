@@ -172,12 +172,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function install_from_repo( $slug, $assoc_args ) {
-		$result = NULL;
-
 		$api = themes_api( 'theme_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {
-			WP_CLI::error( $api );
+			return $api;
 		}
 
 		if ( isset( $assoc_args['version'] ) ) {
@@ -186,17 +184,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		if ( !isset( $assoc_args['force'] ) && wp_get_theme( $slug )->exists() ) {
 			// We know this will fail, so avoid a needless download of the package.
-			WP_CLI::error( 'Theme already installed.' );
+			return new WP_Error( 'already_installed', "$slug already installed." );
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
 		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
 
-		// Finally, activate theme if requested.
-		if ( $result && isset( $assoc_args['activate'] ) ) {
-			WP_CLI::log( "Activating '$slug'..." );
-			$this->activate( array( $slug ) );
-		}
+		return $result;
 	}
 
 	protected function get_item_list() {
@@ -252,7 +246,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     # Install from a remote zip file
 	 *     wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
 	 *
-	 * @synopsis <theme|zip|url> [--version=<version>] [--force] [--activate]
+	 * @synopsis <theme|zip|url>... [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
 		parent::install( $args, $assoc_args );
