@@ -11,8 +11,6 @@ class Subcommand extends CompositeCommand {
 
 	private $when_invoked;
 
-	private $prompt = false;
-
 	function __construct( $parent, $name, $docparser, $when_invoked ) {
 		$this->when_invoked = $when_invoked;
 
