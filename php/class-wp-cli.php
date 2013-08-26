@@ -165,25 +165,6 @@ class WP_CLI {
 	}
 
 	/**
-	 * Prompt a user for some input
-	 */
-	static function prompt( $question, $required = false ) {
-
-		if ( ! $required )
-			$default = '';
-		else
-			$default = false;
-
-		try {
-			$response = \cli\prompt( $question, $default );
-		} catch( Exception $e ) {
-			$response = '';
-		}
-		return $response;
-	}
-
-
-	/**
 	 * Read a value, from various formats
 	 *
 	 * @param mixed $value

@@ -38,6 +38,18 @@ class Subcommand extends CompositeCommand {
 		) );
 	}
 
+	private function prompt( $question, $default ) {
+
+		try {
+			$response = \cli\prompt( $question, $default );
+		} catch( \Exception $e ) {
+			\WP_CLI::line();
+			return false;
+		}
+
+		return $response;
+	}
+
 	private function prompt_args( $args, $assoc_args ) {
 
 		$synopsis = $this->get_synopsis();
@@ -57,7 +69,7 @@ class Subcommand extends CompositeCommand {
 		foreach( $spec as $key => $spec_arg ) {
 
 			$current_prompt = ( $key + 1 ) . '/' . count( $spec ) . ' ';
-			$required = ! $spec_arg['optional'];
+			$default = ( $spec_arg['optional'] ) ? '' : false;
 
 			// 'generic' permits arbitrary key=value (e.g. [--<field>=<value>] )
 			if ( 'generic' == $spec_arg['type'] ) {
@@ -71,11 +83,18 @@ class Subcommand extends CompositeCommand {
 					else
 						$key_prompt = str_repeat( " ", strlen( $current_prompt ) ) . $key_token;
 
-					$key = \WP_CLI::prompt( $key_prompt, $required );
+					$key = $this->prompt( $key_prompt, $default );
+					if ( false === $key )
+						return array( $args, $assoc_args );
+
 					if ( $key ) {
 						$key_prompt_count = strlen( $key_prompt ) - strlen( $value_token ) - 1;
 						$value_prompt = str_repeat( " ", $key_prompt_count ) . '=' . $value_token;
-						$value = \WP_CLI::prompt( $value_prompt );
+
+						$value = $this->prompt( $value_prompt, $default );
+						if ( false === $value )
+							return array( $args, $assoc_args );
+
 						$assoc_args[$key] = $value;
 
 						$repeat = true;
@@ -92,7 +111,10 @@ class Subcommand extends CompositeCommand {
 				if ( 'flag' == $spec_arg['type'] )
 					$prompt .= ' (Y/n)';
 
-				$response = \WP_CLI::prompt( $prompt, $required );
+				$response = $this->prompt( $prompt, $default );
+				if ( false === $response )
+					return array( $args, $assoc_args );
+
 				if ( $response ) {
 					switch ( $spec_arg['type'] ) {
 						case 'positional':
