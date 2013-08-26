@@ -165,6 +165,38 @@ class WP_CLI {
 	}
 
 	/**
+	 * Ask question return asnwer.
+	 */
+	static function request_input( $question ) {
+	  WP_CLI::line( WP_CLI::colorize( "%Y$question" ) );
+
+	  $answer = trim( fgets( STDIN ) );
+
+	  return $answer;
+	}
+
+	/**
+	 * Ask question with controlled options.
+	 */
+	static function request_options( $question, $assoc_args = array() ) {
+		WP_CLI::line( WP_CLI::colorize( "%Y$question" ) );
+
+		$x=1;
+		foreach($assoc_args as $arg){
+			WP_CLI::line( WP_CLI::colorize( "%Y$x:%n $arg") );
+			$x++;
+		}
+
+		$answer = trim( fgets( STDIN ) );
+
+		if ( ( 0 < $answer ) && ( $x > $answer ) ){
+			return $answer;
+		}else{
+			return WP_CLI::error( sprintf( 'Invalid Option Selected: %s', $answer ) );
+		}
+	}
+
+	/**
 	 * Read a value, from various formats
 	 *
 	 * @param mixed $value
