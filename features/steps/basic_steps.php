@@ -149,7 +149,7 @@ $steps->Then( '/^(STDOUT|STDERR) should (be|contain|not contain):$/',
 	function ( $world, $stream, $action, PyStringNode $expected ) {
 		$expected = $world->replace_variables( (string) $expected );
 
-		checkString( $world->result->$stream, $expected, $action );
+		checkString( $world->result->$stream, $expected, $action, $world->result );
 	}
 );
 
