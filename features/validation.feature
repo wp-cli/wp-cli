@@ -6,7 +6,8 @@ Feature: Argument validation
   Scenario: Passing zero arguments to a variadic command
     Given a WP install
 
-    When I run `wp plugin install`
+    When I try `wp plugin install`
+    Then the return code should be 1
     Then STDOUT should contain:
       """
       usage: wp plugin install
