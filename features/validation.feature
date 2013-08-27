@@ -3,6 +3,16 @@ Feature: Argument validation
   As a user
   I need to see warnings and errors when I pass incorrect arguments
 
+  Scenario: Passing zero arguments to a variadic command
+    Given a WP install
+
+    When I try `wp plugin install`
+    Then the return code should be 1
+    Then STDOUT should contain:
+      """
+      usage: wp plugin install
+      """
+
   Scenario: Validation for early commands
     Given an empty directory
     And WP files
