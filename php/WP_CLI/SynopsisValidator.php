@@ -23,7 +23,6 @@ class SynopsisValidator {
 		$positional = $this->query_spec( array(
 			'type' => 'positional',
 			'optional' => false,
-			'repeating' => false
 		) );
 
 		return count( $args ) >= count( $positional );
