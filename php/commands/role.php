@@ -49,8 +49,10 @@ class Role_Command extends WP_CLI_Command {
 			$output_role->name = $role['name'];
 			$output_role->role = $key;
 
-			$output_roles[] = $output_role;
+			$output_roles[$key] = $output_role;
 		}
+
+		ksort( $output_roles );
 
 		WP_CLI\Utils\format_items( $params['format'], $output_roles, $fields );
 	}
