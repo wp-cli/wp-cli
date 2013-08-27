@@ -121,15 +121,6 @@ $steps->When( '/^I (run|try) the previous command again$/',
 	}
 );
 
-$steps->When( '/^I try to import it$/',
-	function ( $world ) {
-		if ( !isset( $world->variables['DOWNLOADED_IMAGE'] ) )
-			throw new \Exception( 'Cached image not available.' );
-
-		$world->result = $world->proc( 'wp media import ' . $world->variables['DOWNLOADED_IMAGE'] . ' --post_id=1 --featured_image' )->run();
-	}
-);
-
 $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 	function ( $world, $stream, $output_filter, $key ) {
 
