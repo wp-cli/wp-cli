@@ -24,17 +24,14 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 *     wp media regenerate --yes
 	 *
-	 * @synopsis <attachment-id>... [--yes]
+	 * @synopsis [<attachment-id>...] [--yes]
 	 */
 	function regenerate( $args, $assoc_args = array() ) {
 		global $wpdb;
 
-		// If id is given, skip confirm because it is only one file
-		if( !empty( $args ) ) {
-			$assoc_args['yes'] = true;
+		if ( empty( $args ) ) {
+			WP_CLI::confirm( 'Do you realy want to regenerate all images?', $assoc_args );
 		}
-
-		WP_CLI::confirm('Do you realy want to regenerate all images?', $assoc_args);
 
 		$query_args = array(
 			'post_type' => 'attachment',
