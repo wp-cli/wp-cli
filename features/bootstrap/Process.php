@@ -71,7 +71,8 @@ class ProcessRun {
 	}
 
 	public function __toString() {
-		return sprintf( "%s: %s\ncwd: %s", $this->command, $this->STDERR, $this->cwd );
+		return sprintf( "%s: %s\n" . "cwd: %s\n" . "exit status: %d",
+			$this->command, $this->STDERR, $this->cwd, $this->return_code );
 	}
 }
 
