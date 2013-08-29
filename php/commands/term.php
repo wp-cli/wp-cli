@@ -23,6 +23,9 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * <taxonomy>
 	 * : List terms of a given taxonomy.
+	 *  
+	 * --<field>=<value>
+	 * : Filter by one or more fields. For accepted fields, see get_terms().
 	 *
 	 * --fields=<fields>
 	 * : Limit the output to specific object fields. Defaults to all of the term object fields.
@@ -37,7 +40,7 @@ class Term_Command extends WP_CLI_Command {
 	 *     wp term list post_tag --fields=name,slug
 	 *
 	 * @subcommand list
-	 * @synopsis <taxonomy> [--fields=<fields>] [--format=<format>]
+	 * @synopsis <taxonomy> [--<field>=<value>] [--fields=<fields>] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 
