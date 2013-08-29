@@ -588,7 +588,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$filename = $args[0];
 
 		if ( ! file_exists( $filename ) ) {
-			WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
+			WP_CLI::warning( sprintf( "Missing file: %s", $filename ) );
 		}
 
 		foreach ( new \WP_CLI\Iterators\CSV( $filename ) as $i => $new_user ) {
