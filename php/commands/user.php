@@ -25,6 +25,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * --role=<role>
 	 * : Only display users with a certain role.
+	 * 
+	 * * --<field>=<value>
+	 * : Filter by one or more fields. For accepted fields, see get_users().
 	 *
 	 * --fields=<fields>
 	 * : Limit the output to specific object fields. Defaults to ID,user_login,display_name,user_email,user_registered,roles
@@ -41,7 +44,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user list --fields=display_name,user_email
 	 *
 	 * @subcommand list
-	 * @synopsis [--role=<role>] [--fields=<fields>] [--format=<format>]
+	 * @synopsis [--role=<role>] [--<field>=<value>] [--fields=<fields>] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 
