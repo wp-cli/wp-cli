@@ -406,7 +406,7 @@ class Export_Command extends WP_CLI_Command {
 		ob_end_clean();
 
 		WP_CLI::line( 'Exporting ' . count( $all_the_post_ids ) . ' items to be broken into ' . ceil( count( $all_the_post_ids ) / $args['file_item_count'] ) . ' files' );
-		WP_CLI::line( 'Exporting ' . count( $cats ) . ' cateogries' );
+		WP_CLI::line( 'Exporting ' . count( $cats ) . ' categories' );
 		WP_CLI::line( 'Exporting ' . count( $tags ) . ' tags' );
 		WP_CLI::line( 'Exporting ' . count( $terms ) . ' terms' );
 		WP_CLI::line();
