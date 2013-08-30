@@ -44,12 +44,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Search wordpress.org plugin repo
+	 * Search the wordpress.org plugin repository.
 	 *
 	 * ## OPTIONS
 	 *
-	 * <plugin>
-	 * : A particular plugin to search for.
+	 * <search>
+	 * : The string to search for.
 	 *
 	 * --per-page
 	 * : Optional number of results to display. Defaults to 10.
@@ -81,15 +81,19 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     wp plugin search dsgnwrks --fields=name,version,slug,rating,num_ratings
 	 *
-	 * @synopsis <plugin> [--per-page=<per-page>] [--fields=<fields>] [--format=<format>]
+	 * @synopsis <search> [--per-page=<per-page>] [--fields=<fields>] [--format=<format>]
 	 */
 	public function search( $args, $assoc_args = array() ) {
 		$term = $args[0];
-		$per_page = isset( $assoc_args['per-page'] ) ? (int) $assoc_args['per-page'] : 10;
-		$fields = isset( $assoc_args['fields'] ) ? $assoc_args['fields'] : array( 'name', 'slug', 'rating' );
+
+		$defaults = array(
+			'per-page' => 10,
+			'fields' => array( 'name', 'slug', 'rating' )
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		$api = plugins_api( 'query_plugins', array(
-			'per_page' => $per_page,
+			'per_page' => (int) $assoc_args['per-page'],
 			'search' => $term,
 		) );
 

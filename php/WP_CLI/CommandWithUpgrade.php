@@ -321,7 +321,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	/**
-	 * Search wordpress.org plugin repo
+	 * Search wordpress.org repo.
 	 *
 	 * @param  object $api        Data from WP plugin/theme API
 	 * @param  array  $fields     Data fields to display in table.
@@ -329,38 +329,24 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * @param  string $data_type  Plugin or Theme api endpoint
 	 */
 	protected function _search( $api, $fields, $assoc_args, $data_type = 'plugin' ) {
-
-		// Sanitize to 1 of 2 types
-		$data_type = 'plugin' === $data_type ? 'plugin' : 'theme';
-		$plural = $data_type . 's';
-		$data = $api->$plural;
-		$count = isset( $api->info['results'] ) ? $api->info['results'] : 'unknown';
-
 		if ( is_wp_error( $api ) )
 			\WP_CLI::error( $api->get_error_message() . __( ' Try again' ) );
 
-		if ( ! isset( $data ) )
+		// Sanitize to 1 of 2 types
+		$data_type = ( 'plugin' === $data_type ) ? 'plugin' : 'theme';
+		$plural = $data_type . 's';
+
+		if ( ! isset( $api->$plural ) )
 			\WP_CLI::error( __( 'API error. Try Again.' ) );
 
-		\WP_CLI::success( 'Showing '. count( $data ) .' of '. $count .' '. $plural .'.' );
+		$items = $api->$plural;
+
+		$count = isset( $api->info['results'] ) ? $api->info['results'] : 'unknown';
+		\WP_CLI::success( sprintf( 'Showing %s of %s %s.', count( $items ), $count, $plural ) );
 
 		$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
 
-		// @TODO https://github.com/wp-cli/wp-cli/issues/635
-		if ( isset( $assoc_args['interactive'] ) ) {
-			// Add key as a field
-			$fields = array_merge( array( 'key' ), $fields );
-			// & infuse object with $key
-			foreach ( $data as $key => $item ) {
-				$item->key = $key;
-				$data[$key] = $item;
-			}
-		}
-
-		$fields = isset( $assoc_args['interactive'] ) ? array_merge( array( 'key' ), $fields ) : $fields;
-
-		\WP_CLI\Utils\format_items( $format, $data, $fields );
-
+		\WP_CLI\Utils\format_items( $format, $items, $assoc_args['fields'] );
 	}
-
 }
+
