@@ -11,7 +11,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	abstract protected function get_upgrader_class( $force );
 
 	abstract protected function get_item_list();
+
+	/**
+	 * @param array List of update candidates
+	 * @param array List of item names
+	 * @return array List of update candidates
+	 */
 	abstract protected function filter_item_list( $items, $args );
+
 	abstract protected function get_all_items();
 
 	abstract protected function get_status( $file );

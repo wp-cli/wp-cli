@@ -97,20 +97,23 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function status_single( $args ) {
-		$name = $args[0];
-		$file = $this->parse_name( $name );
+		$plugins = $this->validate_plugin_names( $args );
+		if ( empty( $plugins ) )
+			exit(1);
 
-		$details = $this->get_details( $file );
+		list( $plugin ) = $plugins;
 
-		$status = $this->format_status( $this->get_status( $file ), 'long' );
+		$details = $this->get_details( $plugin );
 
-		$version = $details[ 'Version' ];
+		$status = $this->format_status( $this->get_status( $plugin->file ), 'long' );
 
-		if ( $this->has_update( $file ) )
+		$version = $details['Version'];
+
+		if ( $this->has_update( $plugin->file ) )
 			$version .= ' (%gUpdate available%n)';
 
 		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( 'plugin-status.mustache', array(
-			'slug' => $name,
+			'slug' => $plugin->name,
 			'status' => $status,
 			'version' => $version,
 			'name' => $details['Name'],
@@ -144,23 +147,22 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * --network
 	 * : If set, the plugin will be activated for the entire multisite network.
 	 *
-	 * @synopsis <plugin> [--network]
+	 * @synopsis <plugin>... [--network]
 	 */
 	function activate( $args, $assoc_args = array() ) {
-		$name = $args[0];
-		$file = $this->parse_name( $name );
-
 		$network_wide = isset( $assoc_args['network'] );
 
-		activate_plugin( $file, '', $network_wide );
+		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+			activate_plugin( $plugin->file, '', $network_wide );
 
-		if ( $this->check_active( $file, $network_wide ) ) {
-			if ( $network_wide )
-				WP_CLI::success( "Plugin '$name' network activated." );
-			else
-				WP_CLI::success( "Plugin '$name' activated." );
-		} else {
-			WP_CLI::error( 'Could not activate plugin: ' . $name );
+			if ( $this->check_active( $plugin->file, $network_wide ) ) {
+				if ( $network_wide )
+					WP_CLI::success( "Plugin '{$plugin->name}' network activated." );
+				else
+					WP_CLI::success( "Plugin '{$plugin->name}' activated." );
+			} else {
+				WP_CLI::warning( "Could not activate the '{$plugin->name}' plugin." );
+			}
 		}
 	}
 
@@ -175,23 +177,22 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * --network
 	 * : If set, the plugin will be deactivated for the entire multisite network.
 	 *
-	 * @synopsis <plugin> [--network]
+	 * @synopsis <plugin>... [--network]
 	 */
 	function deactivate( $args, $assoc_args = array() ) {
-		$name = $args[0];
-		$file = $this->parse_name( $name );
-
 		$network_wide = isset( $assoc_args['network'] );
 
-		deactivate_plugins( $file, false, $network_wide );
+		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+			deactivate_plugins( $plugin->file, false, $network_wide );
 
-		if ( ! $this->check_active( $file, $network_wide ) ) {
-			if ( $network_wide )
-				WP_CLI::success( "Plugin '$name' network deactivated." );
-			else
-				WP_CLI::success( "Plugin '$name' deactivated." );
-		} else {
-			WP_CLI::error( 'Could not deactivate plugin: ' . $name );
+			if ( ! $this->check_active( $plugin->file, $network_wide ) ) {
+				if ( $network_wide )
+					WP_CLI::success( "Plugin '{$plugin->name}' network deactivated." );
+				else
+					WP_CLI::success( "Plugin '{$plugin->name}' deactivated." );
+			} else {
+				WP_CLI::warning( "Could not deactivate the '{$plugin->name}' plugin." );
+			}
 		}
 	}
 
@@ -206,18 +207,17 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * --network
 	 * : If set, the plugin will be toggled for the entire multisite network.
 	 *
-	 * @synopsis <plugin> [--network]
+	 * @synopsis <plugin>... [--network]
 	 */
 	function toggle( $args, $assoc_args = array() ) {
-		$name = $args[0];
-		$file = $this->parse_name( $name );
-
 		$network_wide = isset( $assoc_args['network'] );
 
-		if ( $this->check_active( $file, $network_wide ) ) {
-			$this->deactivate( $args, $assoc_args );
-		} else {
-			$this->activate( $args, $assoc_args );
+		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+			if ( $this->check_active( $plugin->file, $network_wide ) ) {
+				$this->deactivate( array( $plugin->name ), $assoc_args );
+			} else {
+				$this->activate( array( $plugin->name ), $assoc_args );
+			}
 		}
 	}
 
@@ -244,8 +244,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$path = untrailingslashit( WP_PLUGIN_DIR );
 
 		if ( !empty( $args ) ) {
-			$file = $this->parse_name( $args[0] );
-			$path .= '/' . $file;
+			$plugins = $this->validate_plugin_names( $args );
+			if ( empty( $plugins ) )
+				return;
+
+			list( $plugin ) = $plugins;
+
+			$path .= '/' . $plugin->file;
 
 			if ( isset( $assoc_args['dir'] ) )
 				$path = dirname( $path );
@@ -306,9 +311,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['version'] ) && 'dev' == $assoc_args['version'] ) {
-			foreach ( $args as $arg ) {
-				$this->_delete( $this->parse_name( $arg ) );
-				$this->install( array( $arg ), $assoc_args );
+			foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+				$this->_delete( $plugin );
+				$this->install( array( $plugin->name ), $assoc_args );
 			}
 		} else {
 			parent::update_many( $args, $assoc_args );
@@ -332,7 +337,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function filter_item_list( $items, $args ) {
-		$basenames = array_map( array( $this, 'parse_name' ), $args );
+		$basenames = wp_list_pluck( $this->validate_plugin_names( $args ), 'file' );
 		return \WP_CLI\Utils\pick_fields( $items, $basenames );
 	}
 
@@ -391,26 +396,22 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     wp plugin uninstall hello
 	 *
-	 * @synopsis <plugin> [--no-delete]
+	 * @synopsis <plugin>... [--no-delete]
 	 */
 	function uninstall( $args, $assoc_args = array() ) {
-		$name = $args[0];
-		$file = $this->parse_name( $name );
+		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+			if ( is_plugin_active( $plugin->file ) ) {
+				WP_CLI::warning( "The '{$plugin->name}' plugin is active." );
+				continue;
+			}
 
-		if ( is_plugin_active( $file ) ) {
-			WP_CLI::error( 'The plugin is active.' );
-		}
+			uninstall_plugin( $plugin->file );
 
-		uninstall_plugin( $file );
-
-		if ( isset( $assoc_args['no-delete'] ) )
-			return;
-
-		if ( $this->_delete( $file ) ) {
-			WP_CLI::success( sprintf( "Uninstalled '%s' plugin.", $name ) );
+			if ( !isset( $assoc_args['no-delete'] ) && $this->_delete( $plugin ) ) {
+				WP_CLI::success( "Uninstalled '$plugin->name' plugin." );
+			}
 		}
 	}
-
 
 	/**
 	 * Check if the plugin is installed
@@ -447,14 +448,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     wp plugin delete hello
 	 *
-	 * @synopsis <plugin>
+	 * @synopsis <plugin>...
 	 */
 	function delete( $args, $assoc_args = array() ) {
-		$name = $args[0];
-		$file = $this->parse_name( $name );
-
-		if ( $this->_delete( $file ) ) {
-			WP_CLI::success( sprintf( "Deleted '%s' plugin.", $name ) );
+		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+			if ( $this->_delete( $plugin ) ) {
+				WP_CLI::success( "Deleted '{$plugin->name}' plugin." );
+			}
 		}
 	}
 
@@ -497,14 +497,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Get the details of a plugin
+	 * Get the details of a plugin.
 	 *
-	 * @param string $file
+	 * @param object
 	 * @return array
 	 */
-	protected function get_details( $file ) {
+	private function get_details( $plugin ) {
+		$file = $plugin->file;
+
 		$plugin_folder = get_plugins(  '/' . plugin_basename( dirname( $file ) ) );
-		$plugin_file = basename( ( $file ) );
+		$plugin_file = basename( $file );
 
 		return $plugin_folder[$plugin_file];
 	}
@@ -534,13 +536,22 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		return $file;
 	}
 
-	private function parse_name( $name ) {
-		if ( $file = $this->_parse_name( $name ) ) {
-			return $file;
-		} else {
-			WP_CLI::error( "The plugin '$name' could not be found." );
-			exit();
+	private function validate_plugin_names( $args ) {
+		$plugins = array();
+
+		foreach ( $args as $name ) {
+			$file = $this->_parse_name( $name );
+			if ( $file ) {
+				$plugins[] = (object) array(
+					'name' => $name,
+					'file' => $file
+				);
+			} else {
+				WP_CLI::warning( "The '$name' plugin could not be found." );
+			}
 		}
+
+		return $plugins;
 	}
 
 	/**
@@ -555,8 +566,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		return $name;
 	}
 
-	private function _delete( $file ) {
-		$plugin_dir = dirname( $file );
+	private function _delete( $plugin ) {
+		$plugin_dir = dirname( $plugin->file );
 		if ( '.' == $plugin_dir )
 			$plugin_dir = $file;
 
