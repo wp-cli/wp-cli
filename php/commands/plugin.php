@@ -103,7 +103,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		list( $plugin ) = $plugins;
 
-		$details = $this->get_details( $plugin->file );
+		$details = $this->get_details( $plugin );
 
 		$status = $this->format_status( $this->get_status( $plugin->file ), 'long' );
 
@@ -497,14 +497,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Get the details of a plugin
+	 * Get the details of a plugin.
 	 *
-	 * @param string $file
+	 * @param object
 	 * @return array
 	 */
-	protected function get_details( $file ) {
+	private function get_details( $plugin ) {
+		$file = $plugin->file;
+
 		$plugin_folder = get_plugins(  '/' . plugin_basename( dirname( $file ) ) );
-		$plugin_file = basename( ( $file ) );
+		$plugin_file = basename( $file );
 
 		return $plugin_folder[$plugin_file];
 	}
