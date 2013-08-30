@@ -312,7 +312,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['version'] ) && 'dev' == $assoc_args['version'] ) {
 			foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
-				$this->_delete( $plugin->file );
+				$this->_delete( $plugin );
 				$this->install( array( $plugin->name ), $assoc_args );
 			}
 		} else {
@@ -407,7 +407,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 			uninstall_plugin( $plugin->file );
 
-			if ( !isset( $assoc_args['no-delete'] ) && $this->_delete( $plugin->file ) ) {
+			if ( !isset( $assoc_args['no-delete'] ) && $this->_delete( $plugin ) ) {
 				WP_CLI::success( "Uninstalled '$plugin->name' plugin." );
 			}
 		}
@@ -452,7 +452,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	function delete( $args, $assoc_args = array() ) {
 		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
-			if ( $this->_delete( $plugin->file ) ) {
+			if ( $this->_delete( $plugin ) ) {
 				WP_CLI::success( "Deleted '{$plugin->name}' plugin." );
 			}
 		}
@@ -564,8 +564,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		return $name;
 	}
 
-	private function _delete( $file ) {
-		$plugin_dir = dirname( $file );
+	private function _delete( $plugin ) {
+		$plugin_dir = dirname( $plugin->file );
 		if ( '.' == $plugin_dir )
 			$plugin_dir = $file;
 
