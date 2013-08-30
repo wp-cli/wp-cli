@@ -144,23 +144,26 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * --network
 	 * : If set, the plugin will be activated for the entire multisite network.
 	 *
-	 * @synopsis <plugin> [--network]
+	 * @synopsis <plugin>... [--network]
 	 */
 	function activate( $args, $assoc_args = array() ) {
-		$name = $args[0];
-		$file = $this->parse_name( $name );
-
 		$network_wide = isset( $assoc_args['network'] );
 
-		activate_plugin( $file, '', $network_wide );
+		foreach ( $args as $name ) {
+			$file = $this->parse_name( $name );
+			if ( !$file )
+				continue;
 
-		if ( $this->check_active( $file, $network_wide ) ) {
-			if ( $network_wide )
-				WP_CLI::success( "Plugin '$name' network activated." );
-			else
-				WP_CLI::success( "Plugin '$name' activated." );
-		} else {
-			WP_CLI::error( 'Could not activate plugin: ' . $name );
+			activate_plugin( $file, '', $network_wide );
+
+			if ( $this->check_active( $file, $network_wide ) ) {
+				if ( $network_wide )
+					WP_CLI::success( "Plugin '$name' network activated." );
+				else
+					WP_CLI::success( "Plugin '$name' activated." );
+			} else {
+				WP_CLI::warning( 'Could not activate plugin: ' . $name );
+			}
 		}
 	}
 
@@ -175,23 +178,26 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * --network
 	 * : If set, the plugin will be deactivated for the entire multisite network.
 	 *
-	 * @synopsis <plugin> [--network]
+	 * @synopsis <plugin>... [--network]
 	 */
 	function deactivate( $args, $assoc_args = array() ) {
-		$name = $args[0];
-		$file = $this->parse_name( $name );
-
 		$network_wide = isset( $assoc_args['network'] );
 
-		deactivate_plugins( $file, false, $network_wide );
+		foreach ( $args as $name ) {
+			$file = $this->parse_name( $name );
+			if ( !$file )
+				continue;
 
-		if ( ! $this->check_active( $file, $network_wide ) ) {
-			if ( $network_wide )
-				WP_CLI::success( "Plugin '$name' network deactivated." );
-			else
-				WP_CLI::success( "Plugin '$name' deactivated." );
-		} else {
-			WP_CLI::error( 'Could not deactivate plugin: ' . $name );
+			deactivate_plugins( $file, false, $network_wide );
+
+			if ( ! $this->check_active( $file, $network_wide ) ) {
+				if ( $network_wide )
+					WP_CLI::success( "Plugin '$name' network deactivated." );
+				else
+					WP_CLI::success( "Plugin '$name' deactivated." );
+			} else {
+				WP_CLI::warning( 'Could not deactivate plugin: ' . $name );
+			}
 		}
 	}
 
@@ -206,18 +212,21 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * --network
 	 * : If set, the plugin will be toggled for the entire multisite network.
 	 *
-	 * @synopsis <plugin> [--network]
+	 * @synopsis <plugin>... [--network]
 	 */
 	function toggle( $args, $assoc_args = array() ) {
-		$name = $args[0];
-		$file = $this->parse_name( $name );
-
 		$network_wide = isset( $assoc_args['network'] );
 
-		if ( $this->check_active( $file, $network_wide ) ) {
-			$this->deactivate( $args, $assoc_args );
-		} else {
-			$this->activate( $args, $assoc_args );
+		foreach ( $args as $name ) {
+			$file = $this->parse_name( $name );
+			if ( !$file )
+				continue;
+
+			if ( $this->check_active( $file, $network_wide ) ) {
+				$this->deactivate( array( $name ), $assoc_args );
+			} else {
+				$this->activate( array( $name ), $assoc_args );
+			}
 		}
 	}
 
@@ -245,6 +254,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		if ( !empty( $args ) ) {
 			$file = $this->parse_name( $args[0] );
+			if ( !$file )
+				return;
+
 			$path .= '/' . $file;
 
 			if ( isset( $assoc_args['dir'] ) )
@@ -538,8 +550,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( $file = $this->_parse_name( $name ) ) {
 			return $file;
 		} else {
-			WP_CLI::error( "The plugin '$name' could not be found." );
-			exit();
+			WP_CLI::warning( "The plugin '$name' could not be found." );
+			return false;
 		}
 	}
 
