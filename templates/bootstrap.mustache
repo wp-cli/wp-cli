@@ -1,11 +1,18 @@
 <?php
+$envVar = getenv( 'WP_TESTS_DIR' );
 
-require_once getenv( 'WP_TESTS_DIR' ) . '/includes/functions.php';
+if( strlen( $envVar ) )
+    define( 'WP_TESTS_DIR', $envVar );
+elseif( file_exists( '{{abspath}}unit-tests' ) )
+    define( 'WP_TESTS_DIR', '{{abspath}}unit-tests' );
+else
+    throw new Exception( 'Please set the WP_TESTS_DIR environment variable' );
+
+require_once WP_TESTS_DIR . '/includes/functions.php';
 
 function _manually_load_plugin() {
-	require dirname( __FILE__ ) . '/../{{plugin_slug}}.php';
+    require dirname( __FILE__ ) . '/../{{plugin_slug}}.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
-require getenv( 'WP_TESTS_DIR' ) . '/includes/bootstrap.php';
-
+require WP_TESTS_DIR . '/includes/bootstrap.php';

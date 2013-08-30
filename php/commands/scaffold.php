@@ -355,6 +355,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$plugin_slug = $args[0];
 
+		$abspath = ABSPATH;
 		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 		$tests_dir = "$plugin_dir/tests";
 		$bin_dir = "$plugin_dir/bin";
@@ -363,8 +364,8 @@ class Scaffold_Command extends WP_CLI_Command {
 		$wp_filesystem->mkdir( $bin_dir );
 
 		$this->create_file( "$tests_dir/bootstrap.php",
-			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) );
-
+			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug', 'abspath' ) ) );
+		
 		$to_copy = array(
 			'install-wp-tests.sh' => $bin_dir,
 			'.travis.yml' => $plugin_dir,
