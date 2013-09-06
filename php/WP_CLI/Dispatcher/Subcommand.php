@@ -161,12 +161,12 @@ class Subcommand extends CompositeCommand {
 		$errors = $parser->validate_assoc( $assoc_args, array_keys( \WP_CLI::get_config() ) );
 
 		if ( !empty( $errors['fatal'] ) ) {
-			$out = '';
+			$out = 'Parameter errors:';
 			foreach ( $errors['fatal'] as $error ) {
 				$out .= "\n " . $error;
 			}
 
-			\WP_CLI::error( $out, "Parameter errors" );
+			\WP_CLI::error( $out );
 		}
 
 		array_map( '\\WP_CLI::warning', $errors['warning'] );
