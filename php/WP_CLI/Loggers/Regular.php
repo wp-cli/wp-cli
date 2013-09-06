@@ -4,8 +4,8 @@ namespace WP_CLI\Loggers;
 
 class Regular {
 
-	private function _line( $message, $handle = STDOUT ) {
-		fwrite( $handle, \WP_CLI::colorize( $message . "\n" ) );
+	private function _line( $message, $label, $color, $handle = STDOUT ) {
+		fwrite( $handle, \WP_CLI::colorize( "$color$label:%n" ) . " $message\n" );
 	}
 
 	function info( $message ) {
@@ -13,16 +13,15 @@ class Regular {
 	}
 
 	function success( $message, $label ) {
-		$this->_line( "%G$label:%n $message" );
+		$this->_line( $message, $label, '%G' );
 	}
 
 	function warning( $message, $label ) {
-		$this->_line( "%C$label:%n $message", STDERR );
+		$this->_line( $message, $label, '%C', STDERR );
 	}
 
 	function error( $message, $label ) {
-		$msg = '%R' . $label . ': %n' . $message;
-		$this->_line( $msg, STDERR );
+		$this->_line( $message, $label, '%R', STDERR );
 	}
 }
 
