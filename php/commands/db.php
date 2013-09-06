@@ -167,6 +167,7 @@ class DB_Command extends WP_CLI_Command {
 			'host' => DB_HOST,
 			'user' => DB_USER,
 			'pass' => DB_PASSWORD,
+			'default-character-set' => DB_CHARSET,
 		) );
 
 		Utils\run_mysql_command( $cmd, $final_args, $descriptors );
