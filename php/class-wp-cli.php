@@ -120,31 +120,28 @@ class WP_CLI {
 	 * Display a success in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @param string $label
 	 */
-	static function success( $message, $label = 'Success' ) {
-		self::$logger->success( $message, $label );
+	static function success( $message ) {
+		self::$logger->success( $message );
 	}
 
 	/**
 	 * Display a warning in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @param string $label
 	 */
-	static function warning( $message, $label = 'Warning' ) {
-		self::$logger->warning( self::error_to_string( $message ), $label );
+	static function warning( $message ) {
+		self::$logger->warning( self::error_to_string( $message ) );
 	}
 
 	/**
 	 * Display an error in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @param string $label
 	 */
-	static function error( $message, $label = 'Error' ) {
+	static function error( $message ) {
 		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) ) {
-			self::$logger->error( self::error_to_string( $message ), $label );
+			self::$logger->error( self::error_to_string( $message ) );
 		}
 
 		exit(1);

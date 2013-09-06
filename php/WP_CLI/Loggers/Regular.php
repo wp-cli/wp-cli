@@ -12,16 +12,16 @@ class Regular {
 		fwrite( STDOUT, $message . "\n" );
 	}
 
-	function success( $message, $label ) {
-		$this->_line( $message, $label, '%G' );
+	function success( $message ) {
+		$this->_line( $message, 'Success', '%G' );
 	}
 
-	function warning( $message, $label ) {
-		$this->_line( $message, $label, '%C', STDERR );
+	function warning( $message ) {
+		$this->_line( $message, 'Warning', '%C', STDERR );
 	}
 
-	function error( $message, $label ) {
-		$this->_line( $message, $label, '%R', STDERR );
+	function error( $message ) {
+		$this->_line( $message, 'Error', '%R', STDERR );
 	}
 }
 
