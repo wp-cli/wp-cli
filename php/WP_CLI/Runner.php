@@ -338,7 +338,7 @@ class Runner {
 		if ( $this->config['quiet'] )
 			$logger = new \WP_CLI\Loggers\Quiet;
 		else
-			$logger = new \WP_CLI\Loggers\Regular;
+			$logger = new \WP_CLI\Loggers\Regular( $this->in_color() );
 
 		WP_CLI::set_logger( $logger );
 	}

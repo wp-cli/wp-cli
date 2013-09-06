@@ -4,12 +4,21 @@ namespace WP_CLI\Loggers;
 
 class Regular {
 
+	function __construct( $in_color ) {
+		$this->in_color = $in_color;
+	}
+
+	protected function write( $handle, $str ) {
+		fwrite( $handle, $str );
+	}
+
 	private function _line( $message, $label, $color, $handle = STDOUT ) {
-		fwrite( $handle, \WP_CLI::colorize( "$color$label:%n" ) . " $message\n" );
+		$label = \cli\Colors::colorize( "$color$label:%n", $this->in_color );
+		$this->write( $handle, "$label $message\n" );
 	}
 
 	function info( $message ) {
-		fwrite( STDOUT, $message . "\n" );
+		$this->write( STDOUT, $message . "\n" );
 	}
 
 	function success( $message ) {
