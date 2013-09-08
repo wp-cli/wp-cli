@@ -46,6 +46,9 @@ class Export_Command extends WP_CLI_Command {
 	 * --category=<category-id>
 	 * : Export only posts in this category.
 	 *
+	 * --term=<term-id>
+	 * : Export only posts in this term.
+	 *
 	 * --post_status=<status>
 	 * : Export only posts with this status.
 	 *
@@ -55,7 +58,7 @@ class Export_Command extends WP_CLI_Command {
 	 *
 	 *     wp export --dir=/tmp/ --post__in=123,124,125
 	 *
-	 * @synopsis [--dir=<dir>] [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--post__in=<pids>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>] [--verbose]
+	 * @synopsis [--dir=<dir>] [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--post__in=<pids>] [--author=<login>] [--category=<cat>] [--term=<t>] [--skip_comments] [--file_item_count=<count>] [--verbose]
 	 */
 	public function __invoke( $_, $assoc_args ) {
 		$defaults = array(
@@ -65,6 +68,7 @@ class Export_Command extends WP_CLI_Command {
 			'post_type'       => NULL,
 			'author'          => NULL,
 			'category'        => NULL,
+			'term'        => NULL,
 			'post_status'     => NULL,
 			'post__in'        => NULL,
 			'skip_comments'   => NULL,
@@ -209,6 +213,21 @@ class Export_Command extends WP_CLI_Command {
 		return true;
 	}
 
+	private function check_term( $term ) {
+		if ( is_null( $term ) )
+			return true;
+
+		global $wpdb;
+
+		$t = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->term_taxonomy WHERE term_id='%d'", (int) $term ) );
+		if ( empty( $t ) ) {
+			WP_CLI::warning( sprintf( 'Could not find a term matching %s', $category ) );
+			return false;
+		}
+		$this->export_args['term'] = $term;
+		return true;
+	}
+
 	private function check_post_status( $status ) {
 		if ( is_null( $status ) )
 			return true;
@@ -295,7 +314,7 @@ class Export_Command extends WP_CLI_Command {
 		/**
 		 * This is mostly the original code of export_wp defined in wp-admin/includes/export.php
 		 */
-		$defaults = array( 'post_type' => 'all', 'post__in' => false, 'author' => false, 'category' => false,
+		$defaults = array( 'post_type' => 'all', 'post__in' => false, 'author' => false, 'category' => false, 'term' => false,
 			'start_date' => false, 'end_date' => false, 'status' => false, 'skip_comments' => false, 'file_item_count' => 1000,
 		);
 		$args = wp_parse_args( $args, $defaults );
@@ -335,10 +354,19 @@ class Export_Command extends WP_CLI_Command {
 			$where .= " AND {$wpdb->posts}.post_status != 'auto-draft'";
 
 		$join = '';
-		if ( $args['category'] && 'post' == $args['post_type'] ) {
-			if ( $term = term_exists( $args['category'], 'category' ) ) {
-				$join = "INNER JOIN {$wpdb->term_relationships} ON ({$wpdb->posts}.ID = {$wpdb->term_relationships}.object_id)";
-				$where .= $wpdb->prepare( " AND {$wpdb->term_relationships}.term_taxonomy_id = %d", $term['term_taxonomy_id'] );
+		if ( 'post' == $args['post_type'] ) {
+			if ( $args['category'] ) {
+				if ( $category_term = term_exists( $args['category'], 'category' ) ) {
+					$join = "INNER JOIN {$wpdb->term_relationships} ON ({$wpdb->posts}.ID = {$wpdb->term_relationships}.object_id)";
+					$where .= $wpdb->prepare( " AND {$wpdb->term_relationships}.term_taxonomy_id = %d", $category_term['term_taxonomy_id'] );
+				}
+			} elseif ( $args['term'] ) {
+				$term = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->term_taxonomy WHERE term_id='%d'", (int) $args['term'] ) );
+
+				if ( ! empty( $term ) ) {
+					$join = "INNER JOIN {$wpdb->term_relationships} ON ({$wpdb->posts}.ID = {$wpdb->term_relationships}.object_id)";
+					$where .= $wpdb->prepare( " AND {$wpdb->term_relationships}.term_taxonomy_id = %d", $term->term_taxonomy_id );
+				}
 			}
 		}
 
@@ -370,10 +398,14 @@ class Export_Command extends WP_CLI_Command {
 
 		// get the requested terms ready, empty unless posts filtered by category or all content
 		$cats = $tags = $terms = array();
-		if ( isset( $term ) && $term ) {
-			$cat = get_term( $term['term_id'], 'category' );
+		if ( isset( $category_term ) && $category_term ) {
+			$cat = get_term( $category_term['term_id'], 'category' );
 			$cats = array( $cat->term_id => $cat );
-			unset( $term, $cat );
+			unset( $category_term, $cat );
+		} elseif ( isset( $term ) && $term ) {
+			$t = get_term( $term->term_id, $term->taxonomy );
+			$terms = array( $t->term_id => $t );
+			unset( $term, $t );
 		} else if ( 'all' == $args['post_type'] ) {
 			$categories = (array) get_categories( array( 'get' => 'all' ) );
 			$tags = (array) get_tags( array( 'get' => 'all' ) );
