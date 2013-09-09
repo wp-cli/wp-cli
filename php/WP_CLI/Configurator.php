@@ -64,7 +64,7 @@ class Configurator {
 			} else {
 				if( $value !== $this->spec[$key]['default'] 
 				   && $this->spec[$key]['file'] === '<bool>' 
-				   && is_bool( $value ) ){
+				   && !is_bool( $value ) ){
 					switch( strtolower( $value ) ){
 						case "0":
 						case "no":
