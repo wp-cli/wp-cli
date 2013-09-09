@@ -62,6 +62,21 @@ class Configurator {
 			if ( false === $enabled ) {
 				$assoc_args[ $key ] = $value;
 			} else {
+				if( $value !== $this->spec[$key]['default'] 
+				   && $this->spec[$key]['file'] === '<bool>' 
+				   && is_bool( $value ) ){
+					switch( strtolower( $value ) ){
+						case "0":
+						case "no":
+						case "off":
+						case "false":
+							$value = false;
+							break;
+						default:
+							$value = (bool)$value;
+							break;
+					}
+				}
 				if ( $this->spec[ $key ]['multiple'] ) {
 					$runtime_config[ $key ][] = $value;
 				} else {
