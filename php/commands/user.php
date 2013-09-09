@@ -638,6 +638,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				delete_user_option( $user_id, 'user_level' );
 			}
 
+			do_action( 'wp_cli_import_csv_user', $user_id, $new_user );
+
 			if ( !empty( $existing_user ) ) {
 				WP_CLI::success( $new_user['user_login'] . " updated" );
 			} else {
