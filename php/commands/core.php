@@ -148,12 +148,18 @@ class Core_Command extends WP_CLI_Command {
 	 * --dbprefix=<dbprefix>
 	 * : Set the database table prefix. Default: 'wp_'
 	 *
+	 * --dbcharset=<dbcharset>
+	 * : Set the database charset. Default: 'utf8'
+	 *
+	 * --dbcollate=<dbcollate>
+	 * : Set the database collation. Default: ''
+	 *
 	 * --locale=<locale>
 	 * : Set the WPLANG constant. Defaults to $wp_local_package variable.
 	 *
 	 * --extra-php
 	 * : If set, the command reads additional PHP code from STDIN.
-	 * 
+	 *
 	 * --skip-salts
 	 * : If set, keys and salts won't be generated, but, instead, should be passed via --extra-php.
 	 *
@@ -168,7 +174,7 @@ class Core_Command extends WP_CLI_Command {
 	 *     define( 'WP_DEBUG_LOG', true );
 	 *     PHP
 	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php] [--skip-salts]
+	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--dbcharset=<charset>] [--dbcollate=<collation>] [--locale=<locale>] [--extra-php] [--skip-salts]
 	 */
 	public function config( $_, $assoc_args ) {
 		if ( Utils\locate_wp_config() ) {
@@ -179,6 +185,8 @@ class Core_Command extends WP_CLI_Command {
 			'dbhost' => 'localhost',
 			'dbpass' => '',
 			'dbprefix' => 'wp_',
+			'dbcharset' => 'utf8',
+			'dbcollate' => '',
 			'locale' => self::get_initial_locale()
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
