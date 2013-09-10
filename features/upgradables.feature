@@ -31,6 +31,9 @@ Feature: Manage WordPress themes and plugins
     When I run `wp <type> update <item>`
     Then STDOUT should not be empty
 
+    When I run `wp <type> update --all`
+    Then STDOUT should not be empty
+
     When I run `wp <type> status <item>`
     Then STDOUT should not contain:
       """

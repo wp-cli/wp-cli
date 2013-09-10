@@ -311,7 +311,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     wp plugin update --all
 	 *
-	 * @synopsis <plugin>... [--version=<version>] [--all] [--dry-run]
+	 * @synopsis [<plugin>...] [--version=<version>] [--all] [--dry-run]
 	 */
 	function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['version'] ) && 'dev' == $assoc_args['version'] ) {
