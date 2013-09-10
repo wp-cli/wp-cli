@@ -335,7 +335,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     wp theme update --all
 	 *
-	 * @synopsis <theme>... [--version=<version>] [--all] [--dry-run]
+	 * @synopsis [<theme>...] [--version=<version>] [--all] [--dry-run]
 	 */
 	function update( $args, $assoc_args ) {
 		parent::update_many( $args, $assoc_args );
