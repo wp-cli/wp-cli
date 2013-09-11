@@ -14,20 +14,18 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --locale=<locale>
+	 * [--locale=<locale>]
 	 * : Select which language you want to download.
 	 *
-	 * --version=<version>
+	 * [--version=<version>]
 	 * : Select which version you want to download.
 	 *
-	 * --force
+	 * [--force]
 	 * : Overwrites existing files, if present.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp core download --version=3.3
-	 *
-	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>] [--force]
 	 *
 	 * @when before_wp_load
 	 */
