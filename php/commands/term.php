@@ -23,14 +23,14 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * <taxonomy>
 	 * : List terms of a given taxonomy.
-	 *  
-	 * --<field>=<value>
+	 *
+	 * [--<field>=<value>]
 	 * : Filter by one or more fields. For accepted fields, see get_terms().
 	 *
-	 * --fields=<fields>
+	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields. Defaults to all of the term object fields.
 	 *
-	 * --format=<format>
+	 * [--format=<format>]
 	 * : Output list as table, CSV, JSON, or simply IDs. Defaults to table.
 	 *
 	 * ## EXAMPLES
@@ -40,7 +40,6 @@ class Term_Command extends WP_CLI_Command {
 	 *     wp term list post_tag --fields=name,slug
 	 *
 	 * @subcommand list
-	 * @synopsis <taxonomy> [--<field>=<value>] [--fields=<fields>] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 
@@ -75,23 +74,21 @@ class Term_Command extends WP_CLI_Command {
 	 * <taxonomy>
 	 * : Taxonomy for the new term.
 	 *
-	 * --slug=<slug>
+	 * [--slug=<slug>]
 	 * : A unique slug for the new term. Defaults to sanitized version of name.
 	 *
-	 * --description=<description>
+	 * [--description=<description>]
 	 * : A description for the new term.
 	 *
-	 * --parent=<term-id>
+	 * [--parent=<term-id>]
 	 * : A parent for the new term.
 	 *
-	 * --porcelain
+	 * [--porcelain]
 	 * : Output just the new term id.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp term create Apple category --description="A type of fruit"
-	 *
-	 * @synopsis <term> <taxonomy> [--slug=<slug>] [--description=<description>] [--parent=<term-id>] [--porcelain]
 	 */
 	public function create( $args, $assoc_args ) {
 
@@ -125,27 +122,24 @@ class Term_Command extends WP_CLI_Command {
 
 	/**
 	 * Get a taxonomy term
-	 * 
+	 *
 	 * ## OPTIONS
 	 *
 	 * <term-id>
 	 * : ID of the term to get
-	 * 
+	 *
 	 * <taxonomy>
 	 * : Taxonomy of the term to get
-	 * 
-	 * --format=<format>
+	 *
+	 * [--format=<format>]
 	 * : The format to use when printing the term, acceptable values:
 	 *
 	 *   - **table**: Outputs all fields of the term as a table.
-	 *
 	 *   - **json**: Outputs all fields in JSON format.
-	 * 
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term get 1 category
-	 * 
-	 * @synopsis <term-id> <taxonomy> [--format=<format>]
+	 *     wp term get 1 category --format=json
 	 */
 	public function get( $args, $assoc_args ) {
 
@@ -188,23 +182,21 @@ class Term_Command extends WP_CLI_Command {
 	 * <taxonomy>
 	 * : Taxonomy of the term to update.
 	 *
-	 * --name=<name>
+	 * [--name=<name>]
 	 * : A new name for the term.
 	 *
-	 * --slug=<slug>
+	 * [--slug=<slug>]
 	 * : A new slug for the term.
 	 *
-	 * --description=<description>
+	 * [--description=<description>]
 	 * : A new description for the term.
 	 *
-	 * --parent=<term-id>
+	 * [--parent=<term-id>]
 	 * : A new parent for the term.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp term update 15 category --name=Apple
-	 *
-	 * @synopsis <term-id> <taxonomy> [--name=<name>] [--slug=<slug>] [--description=<description>] [--parent=<term-id>]
 	 */
 	public function update( $args, $assoc_args ) {
 
@@ -245,8 +237,6 @@ class Term_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     wp term delete 15 category
-	 *
-	 * @synopsis <term-id> <taxonomy>
 	 */
 	public function delete( $args ) {
 

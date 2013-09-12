@@ -14,20 +14,18 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --locale=<locale>
+	 * [--locale=<locale>]
 	 * : Select which language you want to download.
 	 *
-	 * --version=<version>
+	 * [--version=<version>]
 	 * : Select which version you want to download.
 	 *
-	 * --force
+	 * [--force]
 	 * : Overwrites existing files, if present.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp core download --version=3.3
-	 *
-	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>] [--force]
 	 *
 	 * @when before_wp_load
 	 */
@@ -139,28 +137,28 @@ class Core_Command extends WP_CLI_Command {
 	 * --dbuser=<dbuser>
 	 * : Set the database user.
 	 *
-	 * --dbpass=<dbpass>
+	 * [--dbpass=<dbpass>]
 	 * : Set the database user password.
 	 *
-	 * --dbhost=<dbhost>
+	 * [--dbhost=<dbhost>]
 	 * : Set the database host. Default: 'localhost'
 	 *
-	 * --dbprefix=<dbprefix>
+	 * [--dbprefix=<dbprefix>]
 	 * : Set the database table prefix. Default: 'wp_'
 	 *
-	 * --dbcharset=<dbcharset>
+	 * [--dbcharset=<dbcharset>]
 	 * : Set the database charset. Default: 'utf8'
 	 *
-	 * --dbcollate=<dbcollate>
+	 * [--dbcollate=<dbcollate>]
 	 * : Set the database collation. Default: ''
 	 *
-	 * --locale=<locale>
+	 * [--locale=<locale>]
 	 * : Set the WPLANG constant. Defaults to $wp_local_package variable.
 	 *
-	 * --extra-php
+	 * [--extra-php]
 	 * : If set, the command reads additional PHP code from STDIN.
 	 *
-	 * --skip-salts
+	 * [--skip-salts]
 	 * : If set, keys and salts won't be generated, but, instead, should be passed via --extra-php.
 	 *
 	 * ## EXAMPLES
@@ -173,8 +171,6 @@ class Core_Command extends WP_CLI_Command {
 	 *     define( 'WP_DEBUG', true );
 	 *     define( 'WP_DEBUG_LOG', true );
 	 *     PHP
-	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--dbcharset=<charset>] [--dbcollate=<collation>] [--locale=<locale>] [--extra-php] [--skip-salts]
 	 */
 	public function config( $_, $assoc_args ) {
 		if ( Utils\locate_wp_config() ) {
@@ -256,8 +252,6 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * --admin_email=<email>
 	 * : The email address for the admin user.
-	 *
-	 * @synopsis --url=<url> --title=<site-title> --admin_user=<username> --admin_email=<email> --admin_password=<password>
 	 */
 	public function install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
@@ -272,19 +266,18 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --title=<site-title>
+	 * [--title=<network-title>]
 	 * : The title of the new network.
 	 *
-	 * --base=<url-path>
+	 * [--base=<url-path>]
 	 * : Base path after the domain name that each site url will start with.
 	 * Default: '/'
 	 *
-	 * --subdomains
+	 * [--subdomains]
 	 * : If passed, the network will use subdomains, instead of subdirectories.
 	 *
 	 * @subcommand multisite-convert
 	 * @alias install-network
-	 * @synopsis [--title=<network-title>] [--base=<url-path>] [--subdomains]
 	 */
 	public function multisite_convert( $args, $assoc_args ) {
 		if ( is_multisite() )
@@ -308,11 +301,11 @@ class Core_Command extends WP_CLI_Command {
 	 * --url=<url>
 	 * : The address of the new site.
 	 *
-	 * --base=<url-path>
+	 * [--base=<url-path>]
 	 * : Base path after the domain name that each site url in the network will start with.
 	 * Default: '/'
 	 *
-	 * --subdomains
+	 * [--subdomains]
 	 * : If passed, the network will use subdomains, instead of subdirectories.
 	 *
 	 * --title=<site-title>
@@ -328,7 +321,6 @@ class Core_Command extends WP_CLI_Command {
 	 * : The email address for the admin user.
 	 *
 	 * @subcommand multisite-install
-	 * @synopsis --url=<url> --title=<site-title> [--base=<url-path>] [--subdomains] --admin_user=<username> --admin_email=<email> --admin_password=<password>
 	 */
 	public function multisite_install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
@@ -538,11 +530,10 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 *
 	 * ## OPTIONS
 	 *
-	 * --extra
+	 * [--extra]
 	 * : Show extended version information.
 	 *
 	 * @when before_wp_load
-	 * @synopsis [--extra]
 	 */
 	public function version( $args = array(), $assoc_args = array() ) {
 		$versions_path = ABSPATH . 'wp-includes/version.php';
@@ -577,11 +568,13 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 *
 	 * ## OPTIONS
 	 *
-	 * --version=<new_version> [package/zip]
-	 * : When passed, updates to new_version, optionally using package/zip as
-	 * input.
+	 * [<zip>]
+	 * : Path to zip file to use, instead of downloading from wordpress.org.
 	 *
-	 * --force
+	 * [--version=<version>]
+	 * : Update to this version, instead of to the latest version.
+	 *
+	 * [--force]
 	 * : Will update even when current WP version < passed version. Use with
 	 * caution.
 	 *
@@ -594,8 +587,6 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 *     wp core update --version=3.1 --force
 	 *
 	 * @alias upgrade
-	 *
-	 * @synopsis [<zip>] [--version=<version>] [--force]
 	 */
 	function update( $args, $assoc_args ) {
 		global $wp_version;
@@ -676,7 +667,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 *
 	 * ## OPTIONS
 	 *
-	 * <path>
+	 * [<path>]
 	 * : The directory in which to download the testing suite files. (Optional)
 	 *
 	 * --dbname=<dbname>
@@ -686,14 +677,15 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 * --dbuser=<dbuser>
 	 * : Set the database user.
 	 *
-	 * --dbpass=<dbpass>
+	 * [--dbpass=<dbpass>]
 	 * : Set the database user password.
+	 *
+	 * [--dbhost=<host>]
+	 * : Set the database host.
 	 *
 	 * ## EXAMPLE
 	 *
 	 *     wp core init-tests ~/svn/wp-tests --dbname=wp_test --dbuser=wp_test
-	 *
-	 * @synopsis [<path>] --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>]
 	 */
 	function init_tests( $args, $assoc_args ) {
 		if ( isset( $args[0] ) )

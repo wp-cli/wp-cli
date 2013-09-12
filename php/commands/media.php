@@ -12,19 +12,17 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --yes
-	 * : Answer yes to the confirmation message.
-	 *
-	 * <attachment-id>
+	 * [<attachment-id>...]
 	 * : One or more IDs of the attachments to regenerate.
+	 *
+	 * [--yes]
+	 * : Answer yes to the confirmation message.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp media regenerate 123 1337
 	 *
 	 *     wp media regenerate --yes
-	 *
-	 * @synopsis [<attachment-id>...] [--yes]
 	 */
 	function regenerate( $args, $assoc_args = array() ) {
 		global $wpdb;

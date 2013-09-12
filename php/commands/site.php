@@ -112,11 +112,10 @@ class Site_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --yes
+	 * [--yes]
 	 * : Proceed to empty the site without a confirmation prompt.
 	 *
 	 * @subcommand empty
-	 * @synopsis [--yes]
 	 */
 	public function _empty( $args, $assoc_args ) {
 
@@ -135,19 +134,17 @@ class Site_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <blog-id>
-	 * : The id of the blog to delete. If not provided, you must set the --slug parameter.
+	 * [<site-id>]
+	 * : The id of the site to delete. If not provided, you must set the --slug parameter.
 	 *
-	 * --slug=<slug>
+	 * [--slug=<slug>]
 	 * : Path of the blog to be deleted. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
-	 * --yes
+	 * [--yes]
 	 * : Answer yes to the confirmation message.
 	 *
-	 * --keep-tables
+	 * [--keep-tables]
 	 * : Delete the blog from the list, but don't drop it's tables.
-	 *
-	 * @synopsis [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
 	 */
 	function delete( $args, $assoc_args ) {
 		if ( !is_multisite() ) {
@@ -324,13 +321,13 @@ class Site_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --network=<id>
+	 * [--network=<id>]
 	 * : The network to which the sites belong.
 	 *
-	 * --fields=<fields>
+	 * [--fields=<fields>]
 	 * : Comma-separated list of fields to show.
 	 *
-	 * --format=<format>
+	 * [--format=<format>]
 	 * : Output list as table, csv, json or url. Defaults to table.
 	 *
 	 * ## EXAMPLES
@@ -339,7 +336,6 @@ class Site_Command extends WP_CLI_Command {
 	 *     wp site list --fields=url --format=csv | tail -n +2
 	 *
 	 * @subcommand list
-	 * @synopsis [--network=<id>] [--format=<format>] [--fields=<fields>]
 	 */
 	function _list( $_, $assoc_args ) {
 		if ( !is_multisite() ) {

@@ -12,10 +12,8 @@ class Rewrite_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --hard
+	 * [--hard]
 	 * : Perform a hard flush - update `.htaccess` rules as well as rewrite rules in database.
-	 *
-	 * @synopsis [--hard]
 	 */
 	public function flush( $args, $assoc_args ) {
 		// make sure we detect mod_rewrite if configured in apache_modules in config
@@ -31,17 +29,18 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * <permastruct>
 	 * : The new permalink structure to apply.
 	 *
-	 * --category-base=<categorybase>
+	 * [--category-base=<base>]
 	 * : Set the base for category permalinks, i.e. '/category/'.
 	 *
-	 * --tag-base=<tagbase>
+	 * [--tag-base=<base>]
 	 * : Set the base for tag permalinks, i.e. '/tag/'.
+	 *
+	 * [--hard]
+	 * : Perform a hard flush - update `.htaccess` rules as well as rewrite rules in database.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp rewrite structure '/%year%/%monthnum%/%postname%'
-	 *
-	 * @synopsis <permastruct> [--category-base=<base>] [--tag-base=<base>] [--hard]
 	 */
 	public function structure( $args, $assoc_args ) {
 		global $wp_rewrite;
@@ -94,10 +93,12 @@ class Rewrite_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --format=json
-	 * : Output rules in JSON format.
+	 * [--format=<format>]
+	 * : Output list as JSON. Defaults to tab-separated lines.
 	 *
-	 * @synopsis [--format=<format>]
+	 * ## EXAMPLES
+	 *
+	 *     wp rewrite dump --format=json
 	 */
 	public function dump( $args, $assoc_args ) {
 		$rules = get_option( 'rewrite_rules' );

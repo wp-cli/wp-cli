@@ -12,12 +12,21 @@ class Subcommand extends CompositeCommand {
 	private $when_invoked;
 
 	function __construct( $parent, $name, $docparser, $when_invoked ) {
+		parent::__construct( $parent, $name, $docparser );
+
 		$this->when_invoked = $when_invoked;
 
-		$this->synopsis = $docparser->get_synopsis();
 		$this->alias = $docparser->get_tag( 'alias' );
 
-		parent::__construct( $parent, $name, $docparser );
+		$this->synopsis = $docparser->get_synopsis();
+		if ( !$this->synopsis && $this->longdesc ) {
+			$this->synopsis = self::extract_synopsis( $this->longdesc );
+		}
+	}
+
+	private static function extract_synopsis( $longdesc ) {
+		preg_match_all( '/(.+)\n:/', $longdesc, $matches );
+		return implode( ' ', $matches[1] );
 	}
 
 	function get_synopsis() {
