@@ -152,7 +152,7 @@ class WP_CLI {
 	 */
 	static function confirm( $question, $assoc_args = array() ) {
 		if ( !isset( $assoc_args['yes'] ) ) {
-			echo $question . " [y/n] ";
+			fwrite( STDOUT, $question . " [y/n] " );
 
 			$answer = trim( fgets( STDIN ) );
 
