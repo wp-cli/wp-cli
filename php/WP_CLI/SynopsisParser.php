@@ -44,7 +44,7 @@ class SynopsisParser {
 			$param['type'] = 'generic';
 		} elseif ( preg_match( "/^<$p_value>$/", $token, $matches ) ) {
 			$param['type'] = 'positional';
-		} elseif ( preg_match( "/^--$p_name/", $token, $matches ) ) {
+		} elseif ( preg_match( "/^--(?:\\[no-\\])?$p_name/", $token, $matches ) ) {
 			$param['name'] = $matches[1];
 
 			$value = substr( $token, strlen( $matches[0] ) );
