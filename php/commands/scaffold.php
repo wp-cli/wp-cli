@@ -18,28 +18,28 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --label=<label>
+	 * <slug>
+	 * : The internal name of the post type.
+	 *
+	 * [--label=<label>]
 	 * : The text used to translate the update messages
 	 *
-	 * --textdomain=<textdomain>
+	 * [--textdomain=<textdomain>]
 	 * : The textdomain to use for the labels.
 	 *
-	 * --theme
+	 * [--theme]
 	 * : Create a file in the active theme directory, instead of sending to
 	 * STDOUT. Specify a theme with `--theme=<theme>` to have the file placed in that theme.
 	 *
-	 * --plugin=<plugin>
-	 * : Create a file in the given plugin's directory, instead of sending to
-	 * STDOUT.
+	 * [--plugin=<plugin>]
+	 * : Create a file in the given plugin's directory, instead of sending to STDOUT.
 	 *
-	 * --raw
+	 * [--raw]
 	 * : Just generate the `register_post_type()` call and nothing else.
 	 *
 	 * @subcommand post-type
 	 *
 	 * @alias cpt
-	 *
-	 * @synopsis <slug> [--label=<label>] [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
 	 */
 	function post_type( $args, $assoc_args ) {
 		$defaults = array(
@@ -57,24 +57,26 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --post_types=<post_types>
+	 * <slug>
+	 * : The internal name of the taxonomy.
+	 *
+	 * [--post_types=<post-types>]
 	 * : Post types to register for use with the taxonomy.
 	 *
-	 * --label=<label>
+	 * [--label=<label>]
 	 * : The text used to translate the update messages
 	 *
-	 * --textdomain=<textdomain>
+	 * [--textdomain=<textdomain>]
 	 * : The textdomain to use for the labels.
 	 *
-	 * --theme
+	 * [--theme]
 	 * : Create a file in the active theme directory, instead of sending to
 	 * STDOUT. Specify a theme with `--theme=<theme>` to have the file placed in that theme.
 	 *
-	 * --plugin=<plugin>
-	 * : Create a file in the given plugin's directory, instead of sending to
-	 * STDOUT.
+	 * [--plugin=<plugin>]
+	 * : Create a file in the given plugin's directory, instead of sending to STDOUT.
 	 *
-	 * --raw
+	 * [--raw]
 	 * : Just generate the `register_taxonomy()` call and nothing else.
 	 *
 	 * ## EXAMPLES
@@ -84,8 +86,6 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * @subcommand taxonomy
 	 *
 	 * @alias tax
-	 *
-	 * @synopsis <slug> [--post_types=<post-types>] [--label=<label>] [--textdomain=<textdomain>] [--theme] [--plugin=<plugin>] [--raw]
 	 */
 	function taxonomy( $args, $assoc_args ) {
 		$defaults = array(
@@ -164,19 +164,17 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * <slug>
 	 * : The slug for the new theme, used for prefixing functions.
 	 *
-	 * --activate
+	 * [--activate]
 	 * : Activate the newly downloaded theme.
 	 *
-	 * --theme_name=<title>
+	 * [--theme_name=<title>]
 	 * : What to put in the 'Theme Name:' header in style.css
 	 *
-	 * --author=<full name>
+	 * [--author=<full-name>]
 	 * : What to put in the 'Author:' header in style.css
 	 *
-	 * --author_uri=<http url>
+	 * [--author_uri=<uri>]
 	 * : What to put in the 'Author URI:' header in style.css
-	 *
-	 * @synopsis <slug> [--theme_name=<title>] [--author=<full-name>] [--author_uri=<http-url>] [--activate]
 	 */
 	function _s( $args, $assoc_args ) {
 
@@ -226,24 +224,22 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * --parent_theme=<slug>
 	 * : What to put in the 'Template:' header in style.css
 	 *
-	 * --theme_name=<title>
+	 * [--theme_name=<title>]
 	 * : What to put in the 'Theme Name:' header in style.css
 	 *
-	 * --author=<full name>
+	 * [--author=<full-name>]
 	 * : What to put in the 'Author:' header in style.css
 	 *
-	 * --author_uri=<http url>
+	 * [--author_uri=<uri>]
 	 * : What to put in the 'Author URI:' header in style.css
 	 *
-	 * --theme_uri=<http url>
+	 * [--theme_uri=<uri>]
 	 * : What to put in the 'Theme URI:' header in style.css
 	 *
-	 * --activate
+	 * [--activate]
 	 * : Activate the newly created child theme.
 	 *
 	 * @subcommand child-theme
-	 *
-	 * @synopsis <slug> --parent_theme=<slug> [--theme_name=<title>] [--author=<full-name>] [--author_uri=<http-url>] [--theme_uri=<http-url>] [--activate]
 	 */
 	function child_theme( $args, $assoc_args ) {
 		$theme_slug = $args[0];
@@ -295,13 +291,14 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --activate
+	 * <slug>
+	 * : The internal name of the plugin.
+	 *
+	 * [--activate]
 	 * : Activate the newly generated plugin.
 	 *
-	 * --plugin_name=<title>
+	 * [--plugin_name=<title>]
 	 * : What to put in the 'Plugin Name:' header
-	 *
-	 * @synopsis <slug> [--plugin_name=<title>] [--activate]
 	 */
 	function plugin( $args, $assoc_args ) {
 		$plugin_slug = $args[0];
@@ -342,13 +339,16 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * The `tests/bootstrap.php` file looks for the WP_TESTS_DIR environment
 	 * variable.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The name of the plugin to generate test files for.
+	 *
 	 * ## EXAMPLE
 	 *
 	 *     wp scaffold plugin-tests hello
 	 *
 	 * @subcommand plugin-tests
-	 *
-	 * @synopsis <plugin>
 	 */
 	function plugin_tests( $args, $assoc_args ) {
 		global $wp_filesystem;

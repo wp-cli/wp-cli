@@ -13,10 +13,8 @@ class Import_Command extends WP_CLI_Command {
 	 * --authors=<authors>
 	 * : How the author mapping should be handled. Options are 'create', 'mapping.csv', or 'skip'. The first will create any non-existent users from the WXR file. The second will read author mapping associations from a CSV, or create a CSV for editing if the file path doesn't exist. The last option will skip any author mapping.
 	 *
-	 * --skip=<data-type>
+	 * [--skip=<data-type>]
 	 * : Skip importing specific data. Supported option is 'attachment'.
-	 *
-	 * @synopsis <file> --authors=<authors> [--skip=<data-type>]
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		list( $file ) = $args;

@@ -11,10 +11,8 @@ class Shell_Command extends \WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --basic
+	 * [--basic]
 	 * : Start in fail-safe mode, even if Boris is available.
-	 *
-	 * @synopsis [--basic]
 	 */
 	public function __invoke( $_, $assoc_args ) {
 		$implementations = array(

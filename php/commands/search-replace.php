@@ -18,13 +18,22 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --network
+	 * <old>
+	 * : The old string.
+	 *
+	 * <new>
+	 * : The new string.
+	 *
+	 * [<table>...]
+	 * : List of database tables to restrict the replacement to.
+	 *
+	 * [--network]
 	 * : Search/replace through all the tables in a multisite install.
 	 *
-	 * --skip-columns=<columns>
+	 * [--skip-columns=<columns>]
 	 * : Do not perform the replacement in the comma-separated columns.
 	 *
-	 * --dry-run
+	 * [--dry-run]
 	 * : Show report, but don't perform the changes.
 	 *
 	 * ## EXAMPLES
@@ -32,8 +41,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
 	 *
 	 *     wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
-	 *
-	 * @synopsis <old> <new> [<table>...] [--skip-columns=<columns>] [--dry-run] [--network]
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$old = array_shift( $args );

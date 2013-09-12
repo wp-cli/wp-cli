@@ -27,10 +27,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <theme>
+	 * [<theme>]
 	 * : A particular theme to show the status for.
-	 *
-	 * @synopsis [<theme>]
 	 */
 	function status( $args ) {
 		parent::status( $args );
@@ -44,11 +42,11 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * <search>
 	 * : The string to search for.
 	 *
-	 * --per-page
+	 * [--per-page=<per-page>]
 	 * : Optional number of results to display. Defaults to 10.
 	 *
-	 * --fields
-	 * : Ask for specific fields from the API. Defaults to name,slug,author,rating. acceptable values:
+	 * [--fields=<fields>]
+	 * : Ask for specific fields from the API. Defaults to name,slug,author,rating. Acceptable values:
 	 *
 	 *     **name**: Theme Name
 	 *     **slug**: Theme Slug
@@ -66,8 +64,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme search automattic --per-page=20
 	 *
 	 *     wp theme search automattic --fields=name,version,slug,rating,num_ratings,description
-	 *
-	 * @synopsis <search> [--per-page=<per-page>] [--fields=<fields>]
 	 */
 	public function search( $args, $assoc_args = array() ) {
 		$term = $args[0];
@@ -119,8 +115,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * <theme>
 	 * : The theme to activate.
-	 *
-	 * @synopsis <theme>
 	 */
 	public function activate( $args = array() ) {
 		$theme = $this->parse_name( $args[0] );
@@ -145,19 +139,17 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <theme>
+	 * [<theme>]
 	 * : The theme to get the path to. Path includes "style.css" file.
 	 * If not set, will return the path to the themes directory.
 	 *
-	 * --dir
+	 * [--dir]
 	 * : If set, get the path to the closest parent directory, instead of the
 	 * theme's "style.css" file.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     cd $(wp theme path)
-	 *
-	 * @synopsis [<theme>] [--dir]
 	 */
 	public function path( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
@@ -228,14 +220,18 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <theme|zip|url>
+	 * <theme|zip|url>...
 	 * : A theme slug, the path to a local zip file, or URL to a remote zip file.
 	 *
-	 * --force
+	 * [--version=<version>]
+	 * : If set, get that particular version from wordpress.org, instead of the
+	 * stable version.
+	 *
+	 * [--force]
 	 * : If set, the command will overwrite any installed version of the theme, without prompting
 	 * for confirmation.
 	 *
-	 * --activate
+	 * [--activate]
 	 * : If set, the theme will be activated immediately after install.
 	 *
 	 * ## EXAMPLES
@@ -248,8 +244,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     # Install from a remote zip file
 	 *     wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
-	 *
-	 * @synopsis <theme|zip|url>... [--version=<version>] [--force] [--activate]
 	 */
 	function install( $args, $assoc_args ) {
 		parent::install( $args, $assoc_args );
@@ -263,21 +257,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * <theme>
 	 * : The theme to get.
 	 *
-	 * * --format=<format>
-	 * : The format to use when printing the theme, acceptable values:
-	 *
-	 *   - **table**: Outputs all fields of the theme as a table.
-	 *
-	 *   - **json**: Outputs all fields in JSON format.
+	 * [--format=<format>]
+	 * : Output list as table or JSON. Defaults to table.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme get twentytwelve
-	 *
-	 * @synopsis <theme> [--format=<format>]
+	 *     wp theme get twentytwelve --format=json
 	 */
 	public function get( $args, $assoc_args ) {
-
 		$defaults = array(
 			'format' => 'table'
 		);
@@ -316,17 +303,17 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <theme>
-	 * : The theme(s) to update.
+	 * [<theme>...]
+	 * : One or more themes to update.
 	 *
-	 * --all
+	 * [--all]
 	 * : If set, all themes that have updates will be updated.
 	 *
-	 * --version=dev
+	 * [--version=<version>]
 	 * : If set, the theme will be updated to the latest development version,
 	 * regardless of what version is currently installed.
 	 *
-	 * --dry-run
+	 * [--dry-run]
 	 * : Preview which themes would be updated.
 	 *
 	 * ## EXAMPLES
@@ -334,8 +321,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme update twentyeleven twentytwelve
 	 *
 	 *     wp theme update --all
-	 *
-	 * @synopsis [<theme>...] [--version=<version>] [--all] [--dry-run]
 	 */
 	function update( $args, $assoc_args ) {
 		parent::update_many( $args, $assoc_args );
@@ -352,8 +337,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     wp theme delete twentyeleven
-	 *
-	 * @synopsis <theme>
 	 */
 	function delete( $args ) {
 		$theme = $this->parse_name( $args[0] );
@@ -377,16 +360,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
-	 * * `--format`=<format>:
-	 *
-	 *     Output list as table, CSV or JSON. Defaults to table.
+	 * [--format=<format>]
+	 * : Output list as table, CSV or JSON. Defaults to table.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp theme list --format=csv
 	 *
 	 * @subcommand list
-	 * @synopsis [--format=<format>]
 	 */
 	function _list( $_, $assoc_args ) {
 		parent::_list( $_, $assoc_args );
@@ -408,7 +389,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		return $theme;
 	}
-
 }
 
 WP_CLI::add_command( 'theme', 'Theme_Command' );
