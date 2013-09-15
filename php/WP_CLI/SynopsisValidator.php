@@ -28,8 +28,9 @@ class SynopsisValidator {
 		return count( $args ) >= count( $positional );
 	}
 
+	// Checks that all required keys are present and that they have values.
 	public function validate_assoc( &$assoc_args, $ignored_keys = array() ) {
-		$assoc = $this->query_spec( array(
+		$assoc_spec = $this->query_spec( array(
 			'type' => 'assoc',
 		) );
 
@@ -38,7 +39,7 @@ class SynopsisValidator {
 			'warning' => array()
 		);
 
-		foreach ( $assoc as $param ) {
+		foreach ( $assoc_spec as $param ) {
 			$key = $param['name'];
 
 			if ( in_array( $key, $ignored_keys ) )
