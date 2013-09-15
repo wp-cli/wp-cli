@@ -41,7 +41,7 @@ class SynopsisValidator {
 		foreach ( $assoc as $param ) {
 			$key = $param['name'];
 
-			if ( in_array( $key, $ignored_keys ) )
+			if ( in_array( $key, $ignored_keys ) && $param['optional'] )
 				continue;
 
 			if ( !isset( $assoc_args[ $key ] ) ) {
