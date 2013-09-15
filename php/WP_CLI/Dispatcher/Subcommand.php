@@ -152,22 +152,22 @@ class Subcommand extends CompositeCommand {
 		if ( !$synopsis )
 			return;
 
-		$parser = new \WP_CLI\SynopsisValidator( $synopsis );
+		$validator = new \WP_CLI\SynopsisValidator( $synopsis );
 
 		$cmd_path = implode( ' ', get_path( $this ) );
-		foreach ( $parser->get_unknown() as $token ) {
+		foreach ( $validator->get_unknown() as $token ) {
 			\WP_CLI::warning( sprintf(
 				"The `%s` command has an invalid synopsis part: %s",
 				$cmd_path, $token
 			) );
 		}
 
-		if ( !$parser->enough_positionals( $args ) ) {
+		if ( !$validator->enough_positionals( $args ) ) {
 			$this->show_usage();
 			exit(1);
 		}
 
-		$errors = $parser->validate_assoc( $assoc_args, array_keys( \WP_CLI::get_config() ) );
+		list( $errors, $to_unset ) = $validator->validate_assoc( array_merge( \WP_CLI::get_config(), $assoc_args ) );
 
 		if ( !empty( $errors['fatal'] ) ) {
 			$out = 'Parameter errors:';
@@ -180,7 +180,11 @@ class Subcommand extends CompositeCommand {
 
 		array_map( '\\WP_CLI::warning', $errors['warning'] );
 
-		foreach ( $parser->unknown_assoc( $assoc_args ) as $key ) {
+		foreach ( $to_unset as $key ) {
+			unset( $assoc_args[ $key ] );
+		}
+
+		foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
 			\WP_CLI::warning( "unknown --$key parameter" );
 		}
 	}

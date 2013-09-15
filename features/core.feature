@@ -90,6 +90,13 @@ Feature: Manage WordPress installation
       Run `wp core install`.
       """
 
+    When I try `wp core install`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      missing --url parameter
+      """
+
     When I run `wp core install --url='localhost:8001' --title='Test' --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
     Then STDOUT should not be empty
 
