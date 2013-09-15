@@ -371,6 +371,10 @@ class Runner {
 		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::get_configurator()->parse_args(
 			array_slice( $GLOBALS['argv'], 1 ) );
 
+		// Allow --url= to be used in subcommands
+		if ( isset( $runtime_config['url'] ) )
+			$assoc_args['url'] = $runtime_config['url'];
+
 		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
 			$args, $assoc_args );
 

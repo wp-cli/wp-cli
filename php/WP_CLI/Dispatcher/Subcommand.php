@@ -167,7 +167,12 @@ class Subcommand extends CompositeCommand {
 			exit(1);
 		}
 
-		$errors = $parser->validate_assoc( $assoc_args, array_keys( \WP_CLI::get_config() ) );
+		$ignored_args = array_keys( \WP_CLI::get_config() );
+		// --url= can be a required key in `core install` and similar
+		if ( false !== ( $key = array_search( 'url', $ignored_args ) ) )
+			unset( $ignored_args[$key] );
+
+		$errors = $parser->validate_assoc( $assoc_args, $ignored_args );
 
 		if ( !empty( $errors['fatal'] ) ) {
 			$out = 'Parameter errors:';
