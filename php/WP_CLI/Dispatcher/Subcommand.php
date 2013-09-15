@@ -167,7 +167,7 @@ class Subcommand extends CompositeCommand {
 			exit(1);
 		}
 
-		$errors = $validator->validate_assoc( $assoc_args, array_keys( \WP_CLI::get_config() ) );
+		list( $errors, $to_unset ) = $validator->validate_assoc( array_merge( \WP_CLI::get_config(), $assoc_args ) );
 
 		if ( !empty( $errors['fatal'] ) ) {
 			$out = 'Parameter errors:';
@@ -179,6 +179,10 @@ class Subcommand extends CompositeCommand {
 		}
 
 		array_map( '\\WP_CLI::warning', $errors['warning'] );
+
+		foreach ( $to_unset as $key ) {
+			unset( $assoc_args[ $key ] );
+		}
 
 		foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
 			\WP_CLI::warning( "unknown --$key parameter" );

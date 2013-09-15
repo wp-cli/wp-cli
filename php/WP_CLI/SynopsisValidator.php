@@ -29,7 +29,7 @@ class SynopsisValidator {
 	}
 
 	// Checks that all required keys are present and that they have values.
-	public function validate_assoc( &$assoc_args, $ignored_keys = array() ) {
+	public function validate_assoc( $assoc_args ) {
 		$assoc_spec = $this->query_spec( array(
 			'type' => 'assoc',
 		) );
@@ -39,11 +39,10 @@ class SynopsisValidator {
 			'warning' => array()
 		);
 
+		$to_unset = array();
+
 		foreach ( $assoc_spec as $param ) {
 			$key = $param['name'];
-
-			if ( in_array( $key, $ignored_keys ) )
-				continue;
 
 			if ( !isset( $assoc_args[ $key ] ) ) {
 				if ( !$param['optional'] ) {
@@ -54,12 +53,12 @@ class SynopsisValidator {
 					$error_type = ( !$param['optional'] ) ? 'fatal' : 'warning';
 					$errors[ $error_type ][] = "--$key parameter needs a value";
 
-					unset( $assoc_args[ $key ] );
+					$to_unset[] = $key;
 				}
 			}
 		}
 
-		return $errors;
+		return array( $errors, $to_unset );
 	}
 
 	public function unknown_assoc( $assoc_args ) {
