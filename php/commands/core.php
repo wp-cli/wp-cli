@@ -298,7 +298,7 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --url=<url>
+	 * [--url=<url>]
 	 * : The address of the new site.
 	 *
 	 * [--base=<url-path>]
