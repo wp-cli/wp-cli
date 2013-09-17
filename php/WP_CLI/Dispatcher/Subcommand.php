@@ -26,7 +26,7 @@ class Subcommand extends CompositeCommand {
 
 	private static function extract_synopsis( $longdesc ) {
 		preg_match_all( '/(.+)\n:/', $longdesc, $matches );
-		return implode( ' ', $matches[1] );
+		return implode( ' ', array_map( 'trim', $matches[1] ) );
 	}
 
 	function get_synopsis() {
