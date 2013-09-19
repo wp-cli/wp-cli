@@ -5,7 +5,10 @@
  *
  * @package wp-cli
  */
-class Comment_Command extends WP_CLI_Command {
+class Comment_Command extends \WP_CLI\CommandWithDBObject {
+
+	protected $obj_type = 'comment';
+	protected $obj_id_key = 'comment_ID';
 
 	private $fields = array(
 		'comment_ID',
@@ -32,22 +35,51 @@ class Comment_Command extends WP_CLI_Command {
 	 *     wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
 	 */
 	public function create( $args, $assoc_args ) {
+		parent::create( $args, $assoc_args );
+	}
+
+	protected function _create( $assoc_args ) {
 		$post = get_post( $assoc_args['comment_post_ID'] );
 		if ( !$post ) {
-			WP_CLI::error( "Cannot find post $comment_post_ID" );
+			return new WP_Error( 'no_post', "Can't find post $comment_post_ID." );
 		}
 
-		// We use wp_insert_comment() instead of wp_new_comment() to stay at a low level and avoid wp_die() formatted messages or notifications
+		// We use wp_insert_comment() instead of wp_new_comment() to stay at a low level and
+		// avoid wp_die() formatted messages or notifications
 		$comment_id = wp_insert_comment( $assoc_args );
 
 		if ( !$comment_id ) {
-			WP_CLI::error( "Could not create comment" );
+			return new WP_Error( 'db_error', 'Could not create comment.' );
 		}
 
-		if ( isset( $assoc_args['porcelain'] ) )
-			WP_CLI::line( $comment_id );
-		else
-			WP_CLI::success( "Inserted comment $comment_id." );
+		return $comment_id;
+	}
+
+	/**
+	 * Update one or more comments.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of comments to update.
+	 *
+	 * --<field>=<value>
+	 * : One or more fields to update. See wp_update_comment().
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment update 123 --comment_author='That Guy'
+	 */
+	public function update( $args, $assoc_args ) {
+		parent::update( $args, $assoc_args );
+	}
+
+	protected function _update( $params ) {
+		if ( !wp_update_comment( $params ) ) {
+			return new WP_Error( 'Could not update comment.' );
+		}
+
+		return true;
 	}
 
 	/**
@@ -164,12 +196,16 @@ class Comment_Command extends WP_CLI_Command {
 	 *     wp comment delete 1337 --force
 	 */
 	public function delete( $args, $assoc_args ) {
-		list( $comment_id ) = $args;
+		parent::delete( $args, $assoc_args );
+	}
 
-		if ( wp_delete_comment( $comment_id, isset( $assoc_args['force'] ) ) ) {
-			WP_CLI::success( "Deleted comment $comment_id." );
+	protected function _delete( $comment_id, $assoc_args ) {
+		$r = wp_delete_comment( $comment_id, isset( $assoc_args['force'] ) );
+
+		if ( $r ) {
+			return array( 'success', "Deleted comment $comment_id." );
 		} else {
-			WP_CLI::error( "Failed deleting comment $comment_id" );
+			return array( 'error', "Failed deleting comment $comment_id" );
 		}
 	}
 
