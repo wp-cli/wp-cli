@@ -43,7 +43,7 @@ function load_command( $name ) {
 }
 
 function load_all_commands() {
-	$cmd_dir = WP_CLI_ROOT . "/php/commands";
+	$cmd_dir = WP_CLI_ROOT . '/php/commands';
 
 	$iterator = new \DirectoryIterator( $cmd_dir );
 
@@ -217,7 +217,7 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 		}
 
 		elseif ( is_array( $data ) ) {
-			$_tmp = array( );
+			$_tmp = array();
 			foreach ( $data as $key => $value ) {
 				$_tmp[ $key ] = recursive_unserialize_replace( $from, $to, $value, false );
 			}
@@ -311,7 +311,7 @@ function assoc_array_to_table( $fields ) {
 	$rows = array();
 
 	foreach ( $fields as $field => $value ) {
-		if ( !is_string($value) ) {
+		if ( ! is_string( $value ) ) {
 			$value = json_encode( $value );
 		}
 
@@ -424,7 +424,7 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
 	}
 
-	$env = array();
+	$env = (array) $_ENV;
 	if ( isset( $assoc_args['pass'] ) ) {
 		$env['MYSQL_PWD'] = $assoc_args['pass'];
 		unset( $assoc_args['pass'] );

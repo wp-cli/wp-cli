@@ -9,12 +9,15 @@ namespace WP_CLI;
  */
 abstract class CommandWithDBObject extends \WP_CLI_Command {
 
+	protected $obj_type;
+	protected $obj_id_key = 'ID';
+
 	abstract protected function _create( $params );
 	abstract protected function _update( $params );
 	abstract protected function _delete( $obj_id, $assoc_args );
 
 	public function create( $args, $assoc_args ) {
-		unset( $assoc_args['ID'] );
+		unset( $assoc_args[ $this->obj_id_key ] );
 
 		$obj_id = $this->_create( $assoc_args );
 
@@ -36,7 +39,7 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		}
 
 		foreach ( $args as $obj_id ) {
-			$params = array_merge( $assoc_args, array( 'ID' => $obj_id ) );
+			$params = array_merge( $assoc_args, array( $this->obj_id_key => $obj_id ) );
 
 			$status = $this->success_or_failure( $this->wp_error_to_resp(
 				$this->_update( $params ),
