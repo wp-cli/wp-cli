@@ -50,7 +50,7 @@ Feature: Manage WordPress posts
       excerpt
       """
 
-    When I run `wp post get --format=content {POST_ID}`
+    When I run `wp post get --field=content {POST_ID}`
     Then STDOUT should be:
       """
       This is some content.
