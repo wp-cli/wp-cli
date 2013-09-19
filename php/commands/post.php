@@ -139,8 +139,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : The ID of the post to get.
 	 *
 	 * [--field=<field>]
-	 * : Instead of returning the whole post, returns the value of a single field. The --format=
-	 *   parameter is ignored in this case.
+	 * : Instead of returning the whole post, returns the value of a single field.
 	 *
 	 * [--format=<format>]
 	 * : The format to use when printing the post, acceptable values:
@@ -152,7 +151,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 * 	   # save the post content to a file
+	 *     # save the post content to a file
 	 *     wp post get 12 --field=content > file.txt
 	 */
 	public function get( $args, $assoc_args ) {
@@ -166,24 +165,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			\WP_CLI::error( "Could not find the post with ID $post_id." );
 
 		if ( isset( $assoc_args['field'] ) ) {
-			self::show_single_field( $post, $assoc_args['field'] );
+			$this->show_single_field( $post, $assoc_args['field'] );
 		} else {
-			self::show_multiple_fields( $post, $assoc_args );
-		}
-	}
-
-	private function show_single_field( $post, $field ) {
-		$value = null;
-
-		foreach ( array( $field, "post_$field" ) as $key ) {
-			if ( isset( $post->$key ) )
-				$value = $post->$key;
-		}
-
-		if ( null === $value ) {
-			\WP_CLI::error( "Invalid post field: $field." );
-		} else {
-			WP_CLI::print_value( $value );
+			$this->show_multiple_fields( $post, $assoc_args );
 		}
 	}
 
