@@ -72,10 +72,11 @@ Feature: Manage WordPress users
 
     When I run `wp user add-role 1 editor`
     Then STDOUT should not be empty
-    And I run `wp user get 1`
-    Then STDOUT should be a table containing rows:
-      | Field | Value                 |
-      | roles | administrator, editor |
+    And I run `wp user get 1 --field=roles`
+    Then STDOUT should be:
+      """
+      administrator, editor
+      """
 
     When I run `wp user set-role 1 author`
     Then STDOUT should not be empty

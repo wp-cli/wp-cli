@@ -50,6 +50,17 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		exit( $status );
 	}
 
+	public function delete( $args, $assoc_args ) {
+		$status = 0;
+
+		foreach ( $args as $obj_id ) {
+			$r = $this->_delete( $obj_id, $assoc_args );
+			$status = $this->success_or_failure( $r );
+		}
+
+		exit( $status );
+	}
+
 	protected function wp_error_to_resp( $r, $success_msg ) {
 		if ( is_wp_error( $r ) )
 			return array( 'error', $r->get_error_message() );
@@ -71,16 +82,21 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		return $status;
 	}
 
-	public function delete( $args, $assoc_args ) {
-		$status = 0;
+	protected function show_single_field( $post, $field ) {
+		$value = null;
 
-		foreach ( $args as $obj_id ) {
-			$r = $this->_delete( $obj_id, $assoc_args );
-			$status = $this->success_or_failure( $r );
+		foreach ( array( $field, $this->obj_type . '_' . $field ) as $key ) {
+			if ( isset( $post->$key ) ) {
+				$value = $post->$key;
+				break;
+			}
 		}
 
-		exit( $status );
+		if ( null === $value ) {
+			\WP_CLI::error( "Invalid $this->obj_type field: $field." );
+		} else {
+			\WP_CLI::print_value( $value );
+		}
 	}
-
 }
 

@@ -16,10 +16,11 @@ Feature: Manage WordPress comments
     When I run `wp comment update {COMMENT_ID} --comment_author='Johnny'`
     Then STDOUT should not be empty
 
-    When I run `wp comment get {COMMENT_ID}`
-    Then STDOUT should be a table containing rows:
-      | Field           | Value  |
-      | comment_author  | Johnny |
+    When I run `wp comment get {COMMENT_ID} --field=author`
+    Then STDOUT should be:
+      """
+      Johnny
+      """
 
     When I run `wp comment delete {COMMENT_ID}`
     Then STDOUT should be:
