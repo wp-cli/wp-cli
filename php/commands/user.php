@@ -88,6 +88,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * <user>
 	 * : User ID or user login.
 	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole user, returns the value of a single field.
+	 *
 	 * [--format=<format>]
 	 * : The format to use when printing the user; acceptable values:
 	 *
@@ -97,7 +100,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user get 12
+	 *     wp user get 12 --field=login
 	 *
 	 *     wp user get bob --format=json > bob.json
 	 */
@@ -116,6 +119,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 		$user_data['roles'] = implode( ', ', $user->roles );
 
+		if ( isset( $assoc_args['field'] ) ) {
+			$this->show_single_field( (object) $user_data, $assoc_args['field'] );
+		} else {
+			$this->show_multiple_fields( $user_data, $assoc_args );
+		}
+	}
+
+	private function show_multiple_fields( $user_data, $assoc_args ) {
 		switch ( $assoc_args['format'] ) {
 
 		case 'table':

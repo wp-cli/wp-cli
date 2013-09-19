@@ -90,6 +90,9 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * <id>
 	 * : The comment to get.
 	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole comment, returns the value of a single field.
+	 *
 	 * [--format=<format>]
 	 * : The format to use when printing the comment, acceptable values:
 	 *
@@ -98,10 +101,9 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment get 1
+	 *     wp comment get 1 --field=content
 	 */
 	public function get( $args, $assoc_args ) {
-
 		$defaults = array(
 			'format' => 'table'
 		);
@@ -112,10 +114,19 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		if ( empty( $comment ) )
 			WP_CLI::error( "Invalid comment ID." );
 
+		if ( isset( $assoc_args['field'] ) ) {
+			$this->show_single_field( $comment, $assoc_args['field'] );
+		} else {
+			$this->show_multiple_fields( $comment, $assoc_args );
+		}
+	}
+
+	private function show_multiple_fields( $comment, $assoc_args ) {
 		switch ( $assoc_args['format'] ) {
 
 			case 'table':
 				$fields = get_object_vars( $comment );
+				unset( $fields['comment_content'] );
 				\WP_CLI\Utils\assoc_array_to_table( $fields );
 				break;
 

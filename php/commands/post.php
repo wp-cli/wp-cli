@@ -138,10 +138,11 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * <id>
 	 * : The ID of the post to get.
 	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole post, returns the value of a single field.
+	 *
 	 * [--format=<format>]
 	 * : The format to use when printing the post, acceptable values:
-	 *
-	 *   - **content**: Outputs only the post's content.
 	 *
 	 *   - **table**: Outputs all fields of the post as a table. Note that the
 	 *     post_content field is omitted so that the table is readable.
@@ -150,9 +151,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp post get 12 --format=content
-	 *
-	 *     wp post get 12 > file.txt
+	 *     # save the post content to a file
+	 *     wp post get 12 --field=content > file.txt
 	 */
 	public function get( $args, $assoc_args ) {
 		$defaults = array(
@@ -162,13 +162,17 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$post_id = $args[0];
 		if ( !$post_id || !$post = get_post( $post_id ) )
-			\WP_CLI::error( "Failed opening post $post_id to get." );
+			\WP_CLI::error( "Could not find the post with ID $post_id." );
 
+		if ( isset( $assoc_args['field'] ) ) {
+			$this->show_single_field( $post, $assoc_args['field'] );
+		} else {
+			$this->show_multiple_fields( $post, $assoc_args );
+		}
+	}
+
+	private function show_multiple_fields( $post, $assoc_args ) {
 		switch ( $assoc_args['format'] ) {
-
-		case 'content':
-			WP_CLI::print_value( $post->post_content );
-			break;
 
 		case 'table':
 			$fields = get_object_vars( $post );
