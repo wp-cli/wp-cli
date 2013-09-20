@@ -1,8 +1,9 @@
 Feature: Manage WordPress posts
 
-  Scenario: Creating/updating/deleting posts
+  Background:
     Given a WP install
 
+  Scenario: Creating/updating/deleting posts
     When I run `wp post create --post_title='Test post' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
@@ -26,8 +27,7 @@ Feature: Manage WordPress posts
     Then the return code should be 1
 
   Scenario: Creating/getting posts
-    Given a WP install
-    And a content.html file:
+    Given a content.html file:
       """
       This is some content.
 
@@ -74,8 +74,6 @@ Feature: Manage WordPress posts
       """
 
   Scenario: Creating/listing posts
-    Given a WP install
-
     When I run `wp post create --post_title='Publish post' --post_content='Publish post content' --post_status='publish' --porcelain`
     Then STDOUT should be a number
 

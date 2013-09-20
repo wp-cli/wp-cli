@@ -1,8 +1,9 @@
 Feature: Manage WordPress users
 
-  Scenario: User CRUD operations
+  Background:
     Given a WP install
 
+  Scenario: User CRUD operations
     When I run `wp user create testuser testuser@example.com --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {USER_ID}
@@ -21,8 +22,6 @@ Feature: Manage WordPress users
     Then STDOUT should not be empty
 
   Scenario: Generating and deleting users
-    Given a WP install
-
     When I run `wp user generate --count=9`
     And I run `wp user list --format=count`
     Then STDOUT should be:
@@ -38,8 +37,7 @@ Feature: Manage WordPress users
       """
 
   Scenario: Importing users from a CSV file
-    Given a WP install
-    And a users.csv file:
+    Given a users.csv file:
       """
       user_login,user_email,display_name,role
       bobjones,bobjones@domain.com,Bob Jones,contributor
@@ -68,8 +66,6 @@ Feature: Manage WordPress users
       """
 
   Scenario: Managing user roles
-    Given a WP install
-
     When I run `wp user add-role 1 editor`
     Then STDOUT should not be empty
     And I run `wp user get 1 --field=roles`
@@ -100,8 +96,6 @@ Feature: Manage WordPress users
       | roles |       |
       
   Scenario: Managing user capabilities
-    Given a WP install
-    
     When I run `wp user add-cap 1 edit_vip_product`
     Then STDOUT should be:
       """
