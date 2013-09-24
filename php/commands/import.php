@@ -126,59 +126,62 @@ class Import_Command extends WP_CLI_Command {
 		);
 
 		if( in_array( 'image_resize', $args['skip'] ) ) {
-			add_filter( 'intermediate_image_sizes_advanced', function ($sizes) {
-				// Save the given sizes so that when the wp_generate_attachment_metadata hook
-				// is called we can place this info on to the $metadata array so that the
-				// info gets saved to the database, but the actual resize processing does
-				// not occur.
-				$this->sizes = $sizes;
-
-				return null;
-			} );
-
-			add_filter( 'wp_generate_attachment_metadata', function ($metadata, $attachment_id) {
-				if( !isset( $metadata['file'] ) )
-					return $metadata;
-
-				$upload_dir = wp_upload_dir();
-				$file_path = $upload_dir['basedir'] . '/' . $metadata['file'];
-				$path_info = pathinfo( $file_path );
-				$mime_type = get_post_mime_type( $attachment_id );
-
-				// Return current meta untouched if can't determine current image mime type.
-				if( !$mime_type )
-					return $metadata;
-
-				$metadata['sizes'] = array( );
-
-				// Now time to generate the image size metadata since some resized files
-				// should already be on disk. We just have to point WordPress to them.
-				// Note: this logic will not find all possibled resized thumbnail files.
-				// To be sure _wp_attachment_metadata gets populated with all possible
-				// custom image sizes, run a command like WP-CLI's 'media regenerate' in order
-				// to re-generate and link to all the various configured image sizes.
-				foreach( $this->sizes as $size => $size_data ) {
-					$file = $path_info['filename'] . '-' . $size_data['width'] . 'x' . $size_data['height'] . '.' . $path_info['extension'];
-
-					// Make sure the file exists before adding a size entry to the meta array.
-					if( !file_exists( $path_info['dirname'] . '/' . $file ) )
-						continue; // File does not exist, don't point to it.
-
-					$metadata['sizes'][$size] = array(
-						'file' => wp_basename( apply_filters( 'image_make_intermediate_size', $file ) ),
-						'width' => $size_data['width'],
-						'height' => $size_data['height'],
-						'mime-type' => $mime_type,
-					);
-				}
-
-				return $metadata;
-			}, 10, 2 );
+			add_filter( 'intermediate_image_sizes_advanced', array( $this, 'filter_set_image_sizes' ) );
+			add_filter( 'wp_generate_attachment_metadata', array( $this, 'filter_set_image_metadata' ), 10, 2 );
 		}
 
 		$wp_import->import( $args['file'] );
 
 		return true;
+	}
+
+	public function filter_set_image_sizes( $sizes ) {
+		// Save the given sizes so that when the wp_generate_attachment_metadata hook
+		// is called we can place this info on to the $metadata array so that the
+		// info gets saved to the database, but the actual resize processing does
+		// not occur.
+		$this->image_sizes = $sizes;
+
+		return null;
+	}
+
+	public function filter_set_image_metadata( $metadata, $attachment_id ) {
+		if( !isset( $metadata['file'] ) )
+			return $metadata;
+
+		$upload_dir = wp_upload_dir();
+		$file_path = $upload_dir['basedir'] . '/' . $metadata['file'];
+		$path_info = pathinfo( $file_path );
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		// Return current meta untouched if can't determine current image mime type.
+		if( !$mime_type )
+			return $metadata;
+
+		$metadata['sizes'] = array( );
+
+		// Now time to generate the image size metadata since some resized files
+		// should already be on disk. We just have to point WordPress to them.
+		// Note: this logic will not find all possibled resized thumbnail files.
+		// To be sure _wp_attachment_metadata gets populated with all possible
+		// custom image sizes, run a command like WP-CLI's 'media regenerate' in order
+		// to re-generate and link to all the various configured image sizes.
+		foreach( $this->image_sizes as $size => $size_data ) {
+			$file = $path_info['filename'] . '-' . $size_data['width'] . 'x' . $size_data['height'] . '.' . $path_info['extension'];
+
+			// Make sure the file exists before adding a size entry to the meta array.
+			if( !file_exists( $path_info['dirname'] . '/' . $file ) )
+				continue; // File does not exist, don't point to it.
+
+			$metadata['sizes'][$size] = array(
+					'file' => wp_basename( apply_filters( 'image_make_intermediate_size', $file ) ),
+					'width' => $size_data['width'],
+					'height' => $size_data['height'],
+					'mime-type' => $mime_type,
+			);
+		}
+
+		return $metadata;
 	}
 
 	/**
