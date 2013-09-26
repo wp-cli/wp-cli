@@ -12,14 +12,10 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	protected $obj_type;
 	protected $obj_id_key = 'ID';
 
-	abstract protected function _create( $params );
-	abstract protected function _update( $params );
-	abstract protected function _delete( $obj_id, $assoc_args );
-
-	public function create( $args, $assoc_args ) {
+	protected function _create( $args, $assoc_args, $callback ) {
 		unset( $assoc_args[ $this->obj_id_key ] );
 
-		$obj_id = $this->_create( $assoc_args );
+		$obj_id = $callback( $assoc_args );
 
 		if ( is_wp_error( $obj_id ) ) {
 			\WP_CLI::error( $obj_id );
@@ -31,7 +27,7 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 			\WP_CLI::success( "Created $this->obj_type $obj_id." );
 	}
 
-	public function update( $args, $assoc_args ) {
+	protected function _update( $args, $assoc_args, $callback ) {
 		$status = 0;
 
 		if ( empty( $assoc_args ) ) {
@@ -42,7 +38,7 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 			$params = array_merge( $assoc_args, array( $this->obj_id_key => $obj_id ) );
 
 			$status = $this->success_or_failure( $this->wp_error_to_resp(
-				$this->_update( $params ),
+				$callback( $params ),
 				"Updated $this->obj_type $obj_id."
 			) );
 		}
@@ -50,11 +46,11 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		exit( $status );
 	}
 
-	public function delete( $args, $assoc_args ) {
+	protected function _delete( $args, $assoc_args, $callback ) {
 		$status = 0;
 
 		foreach ( $args as $obj_id ) {
-			$r = $this->_delete( $obj_id, $assoc_args );
+			$r = $callback( $obj_id, $assoc_args );
 			$status = $this->success_or_failure( $r );
 		}
 

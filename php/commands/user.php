@@ -165,23 +165,22 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		) );
 
 		foreach ( $args as $key => $arg ) {
-			$args[$key] = self::get_user( $arg )->ID;
-		}
-		parent::delete( $args, $assoc_args );
-	}
-
-	protected function _delete( $user_id, $assoc_args ) {
-		if ( is_multisite() ) {
-			$r = wpmu_delete_user( $user_id );
-		} else {
-			$r = wp_delete_user( $user_id, $assoc_args['reassign'] );
+			$args[ $key ] = self::get_user( $arg )->ID;
 		}
 
-		if ( $r ) {
-			return array( 'success', "Deleted user $user_id." );
-		} else {
-			return array( 'error', "Failed deleting user $user_id." );
-		}
+		parent::_delete( $args, $assoc_args, function ( $user_id, $assoc_args ) {
+			if ( is_multisite() ) {
+				$r = wpmu_delete_user( $user_id );
+			} else {
+				$r = wp_delete_user( $user_id, $assoc_args['reassign'] );
+			}
+
+			if ( $r ) {
+				return array( 'success', "Deleted user $user_id." );
+			} else {
+				return array( 'error', "Failed deleting user $user_id." );
+			}
+		} );
 	}
 
 	/**
@@ -237,7 +236,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$generated_pass = true;
 		}
 
-		$user_id = $this->_create( array(
+		$user_id = wp_insert_user( array(
 			'user_email' => $user_email,
 			'user_login' => $user_login,
 			'user_pass' => $user_pass,
@@ -264,10 +263,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 	}
 
-	protected function _create( $params ) {
-		return wp_insert_user( $params );
-	}
-
 	/**
 	 * Update a user.
 	 *
@@ -286,15 +281,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user update mary --user_pass=marypass
 	 */
 	public function update( $args, $assoc_args ) {
-
 		foreach ( $args as $key => $arg ) {
-			$args[$key] = self::get_user( $arg )->ID;
+			$args[ $key ] = self::get_user( $arg )->ID;
 		}
-		parent::update( $args, $assoc_args, 'user' );
-	}
 
-	protected function _update( $params ) {
-		return wp_update_user( $params );
+		parent::_update( $args, $assoc_args, 'wp_update_user' );
 	}
 
 	/**

@@ -35,24 +35,22 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
 	 */
 	public function create( $args, $assoc_args ) {
-		parent::create( $args, $assoc_args );
-	}
+		parent::_create( $args, $assoc_args, function ( $params ) {
+			$post = get_post( $params['comment_post_ID'] );
+			if ( !$post ) {
+				return new WP_Error( 'no_post', "Can't find post $comment_post_ID." );
+			}
 
-	protected function _create( $assoc_args ) {
-		$post = get_post( $assoc_args['comment_post_ID'] );
-		if ( !$post ) {
-			return new WP_Error( 'no_post', "Can't find post $comment_post_ID." );
-		}
+			// We use wp_insert_comment() instead of wp_new_comment() to stay at a low level and
+			// avoid wp_die() formatted messages or notifications
+			$comment_id = wp_insert_comment( $params );
 
-		// We use wp_insert_comment() instead of wp_new_comment() to stay at a low level and
-		// avoid wp_die() formatted messages or notifications
-		$comment_id = wp_insert_comment( $assoc_args );
+			if ( !$comment_id ) {
+				return new WP_Error( 'db_error', 'Could not create comment.' );
+			}
 
-		if ( !$comment_id ) {
-			return new WP_Error( 'db_error', 'Could not create comment.' );
-		}
-
-		return $comment_id;
+			return $comment_id;
+		} );
 	}
 
 	/**
@@ -71,15 +69,13 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp comment update 123 --comment_author='That Guy'
 	 */
 	public function update( $args, $assoc_args ) {
-		parent::update( $args, $assoc_args );
-	}
+		parent::_update( $args, $assoc_args, function ( $params ) {
+			if ( !wp_update_comment( $params ) ) {
+				return new WP_Error( 'Could not update comment.' );
+			}
 
-	protected function _update( $params ) {
-		if ( !wp_update_comment( $params ) ) {
-			return new WP_Error( 'Could not update comment.' );
-		}
-
-		return true;
+			return true;
+		} );
 	}
 
 	/**
@@ -207,17 +203,15 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp comment delete 1337 --force
 	 */
 	public function delete( $args, $assoc_args ) {
-		parent::delete( $args, $assoc_args );
-	}
+		parent::_delete( $args, $assoc_args, function ( $comment_id, $assoc_args ) {
+			$r = wp_delete_comment( $comment_id, isset( $assoc_args['force'] ) );
 
-	protected function _delete( $comment_id, $assoc_args ) {
-		$r = wp_delete_comment( $comment_id, isset( $assoc_args['force'] ) );
-
-		if ( $r ) {
-			return array( 'success', "Deleted comment $comment_id." );
-		} else {
-			return array( 'error', "Failed deleting comment $comment_id" );
-		}
+			if ( $r ) {
+				return array( 'success', "Deleted comment $comment_id." );
+			} else {
+				return array( 'error', "Failed deleting comment $comment_id" );
+			}
+		} );
 	}
 
 	private function call( $args, $status, $success, $failure ) {
