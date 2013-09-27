@@ -39,3 +39,9 @@ Feature: Manage WordPress comments
     Then STDOUT should be a table containing rows:
       | comment_approved | comment_author |
       | 1                | Mr WordPress   |
+
+    When I run `wp comment list --field=approved`
+    Then STDOUT should be:
+      """
+      1
+      """

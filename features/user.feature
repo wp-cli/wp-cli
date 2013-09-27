@@ -29,7 +29,7 @@ Feature: Manage WordPress users
       10
       """
 
-    When I try `wp user delete invalid-user $(wp user list --format=ids)`
+    When I try `wp user list --field=ID | xargs wp user delete invalid-user`
     And I run `wp user list --format=count`
     Then STDOUT should be:
       """

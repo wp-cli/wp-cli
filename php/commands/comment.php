@@ -111,7 +111,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( "Invalid comment ID." );
 
 		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( $comment, $assoc_args['field'] );
+			$this->show_single_field( array( $comment ), $assoc_args['field'] );
 		} else {
 			$this->show_multiple_fields( $comment, $assoc_args );
 		}
@@ -144,6 +144,9 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--<field>=<value>]
 	 * : One or more args to pass to WP_Comment_Query.
 	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each comment.
+	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields. Defaults to comment_ID,comment_post_ID,comment_date,comment_approved,comment_author,comment_author_email
 	 *
@@ -152,7 +155,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment list --format=ids
+	 *     wp comment list --field=ID
 	 *
 	 *     wp comment list --post_id=2
 	 *
@@ -181,10 +184,15 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		$query = new WP_Comment_Query();
 		$comments = $query->query( $query_args );
 
-		if ( 'ids' == $assoc_args['format'] )
+		if ( 'ids' == $assoc_args['format'] ) {
 			$comments = wp_list_pluck( $comments, 'comment_ID' );
+		}
 
-		WP_CLI\Utils\format_items( $assoc_args['format'], $comments, $assoc_args['fields'] );
+		if ( isset( $assoc_args['field'] ) ) {
+			$this->show_single_field( $comments, $assoc_args['field'] );
+		} else {
+			WP_CLI\Utils\format_items( $assoc_args['format'], $comments, $assoc_args['fields'] );
+		}
 	}
 
 	/**
