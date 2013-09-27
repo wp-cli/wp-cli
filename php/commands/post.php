@@ -123,7 +123,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	protected function _edit( $content, $title ) {
-		return \WP_CLI\Utils\launch_editor_for_input( $content, $title );
+		$content = apply_filters( 'the_editor_content', $content );
+		$output = \WP_CLI\Utils\launch_editor_for_input( $content, $title );
+		return apply_filters( 'content_save_pre', $output );
 	}
 
 	/**
