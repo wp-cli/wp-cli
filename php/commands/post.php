@@ -71,11 +71,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				$assoc_args['post_content'] = $input;
 		}
 
-		parent::create( $args, $assoc_args );
-	}
-
-	protected function _create( $params ) {
-		return wp_insert_post( $params, true );
+		parent::_create( $args, $assoc_args, function ( $params ) {
+			return wp_insert_post( $params, true );
+		} );
 	}
 
 	/**
@@ -94,11 +92,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp post update 123 --post_name=something --post_status=draft
 	 */
 	public function update( $args, $assoc_args ) {
-		parent::update( $args, $assoc_args );
-	}
-
-	protected function _update( $params ) {
-		return wp_update_post( $params, true );
+		parent::_update( $args, $assoc_args, function ( $params ) {
+			return wp_update_post( $params, true );
+		} );
 	}
 
 	/**
@@ -216,19 +212,17 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		parent::delete( $args, $assoc_args );
-	}
+		parent::_delete( $args, $assoc_args, function ( $post_id, $assoc_args ) {
+			$r = wp_delete_post( $post_id, $assoc_args['force'] );
 
-	protected function _delete( $post_id, $assoc_args ) {
-		$r = wp_delete_post( $post_id, $assoc_args['force'] );
+			if ( $r ) {
+				$action = $assoc_args['force'] ? 'Deleted' : 'Trashed';
 
-		if ( $r ) {
-			$action = $assoc_args['force'] ? 'Deleted' : 'Trashed';
-
-			return array( 'success', "$action post $post_id." );
-		} else {
-			return array( 'error', "Failed deleting post $post_id." );
-		}
+				return array( 'success', "$action post $post_id." );
+			} else {
+				return array( 'error', "Failed deleting post $post_id." );
+			}
+		} );
 	}
 
 	/**
