@@ -113,3 +113,11 @@ Feature: Manage WordPress users
       """
       Success: Removed 'edit_vip_product' cap for admin (1).
       """
+
+  Scenario: Get details about an existing user
+    When I run `wp user update 1 --first_name="party pants"`
+    And I run `wp user-meta list 1`
+    Then STDOUT should be a table containing rows:
+      | meta_key     | meta_value   |
+      | first_name   | party pants  |
+
