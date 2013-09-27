@@ -5,7 +5,7 @@
  *
  * @package wp-cli
  */
-class Site_Command extends WP_CLI_Command {
+class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Delete comments.
@@ -172,24 +172,6 @@ class Site_Command extends WP_CLI_Command {
 		wpmu_delete_blog( $blog->blog_id, !isset( $assoc_args['keep-tables'] ) );
 
 		WP_CLI::success( "The site at $blog->siteurl was deleted." );
-	}
-
-	/**
-	 * Get site (network) data for a given id.
-	 *
-	 * @param int     $site_id
-	 * @return bool|array False if no network found with given id, array otherwise
-	 */
-	private function _get_site( $site_id ) {
-		global $wpdb;
-		// Load site data
-		$sites = $wpdb->get_results( "SELECT * FROM $wpdb->site WHERE `id` = ".$wpdb->escape( $site_id ) );
-		if ( count( $sites ) > 0 ) {
-			// Only care about domain and path which are set here
-			return $sites[0];
-		}
-
-		return false;
 	}
 
 	/**
@@ -371,6 +353,27 @@ class Site_Command extends WP_CLI_Command {
 		} );
 
 		WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
+	}
+
+	/**
+	 * Get site (network) data for a given id.
+	 *
+	 * @param int     $site_id
+	 * @return bool|array False if no network found with given id, array otherwise
+	 */
+	private function _get_site( $site_id ) {
+		global $wpdb;
+
+		// Load site data
+		$sites = $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM $wpdb->site WHERE id = %d", $site_id ) );
+
+		if ( !empty( $sites ) ) {
+			// Only care about domain and path which are set here
+			return $sites[0];
+		}
+
+		return false;
 	}
 }
 
