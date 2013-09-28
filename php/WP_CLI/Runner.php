@@ -65,6 +65,19 @@ class Runner {
 		return false;
 	}
 
+	public function get_toplevel_dir() {
+		if ( null === $this->config_path ) {
+			trigger_error( __METHOD__ . ' called too early.', E_USER_WARNING );
+			return false;
+		}
+
+		if ( false === $this->config_path ) {
+			return rtrim( ABSPATH, '/' );
+		}
+
+		return dirname( $this->config_path );
+	}
+
 	private static function set_wp_root( $config ) {
 		$path = getcwd();
 

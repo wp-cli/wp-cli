@@ -54,6 +54,13 @@ class WP_CLI {
 		return $runner;
 	}
 
+	/**
+	 * Returns the directory that contains the project's wp-cli.yml file and/or the wp-load.php file.
+	 */
+	static function get_toplevel_dir() {
+		return self::get_runner()->get_toplevel_dir();
+	}
+
 	static function colorize( $string ) {
 		return \cli\Colors::colorize( $string, self::get_runner()->in_color() );
 	}
