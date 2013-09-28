@@ -306,6 +306,9 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--network=<id>]
 	 * : The network to which the sites belong.
 	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each site.
+	 *
 	 * [--fields=<fields>]
 	 * : Comma-separated list of fields to show.
 	 *
@@ -315,7 +318,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     # Output a simple list of site URLs
-	 *     wp site list --fields=url --format=csv | tail -n +2
+	 *     wp site list --field=url
 	 *
 	 * @subcommand list
 	 */
@@ -352,7 +355,18 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			return $blog;
 		} );
 
-		WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
+		if ( isset( $assoc_args['field'] ) ) {
+			$this->show_single_field( $it, $assoc_args['field'] );
+		} else {
+			WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
+		}
+	}
+
+	protected function find_field( $item, $field ) {
+		if ( 'url' == $field )
+			return 'url';
+
+		return parent::find_field( $item, $field );
 	}
 
 	/**

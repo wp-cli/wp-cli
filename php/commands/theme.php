@@ -360,6 +360,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each theme.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to name,status,update,version.
+	 *
 	 * [--format=<format>]
 	 * : Output list as table, CSV or JSON. Defaults to table.
 	 *

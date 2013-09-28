@@ -78,21 +78,27 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		return $status;
 	}
 
-	protected function show_single_field( $post, $field ) {
-		$value = null;
+	protected function show_single_field( $items, $field ) {
+		foreach ( $items as $item ) {
+			if ( !isset( $key ) ) {
+				$key = $this->find_field( $item, $field );
+				if ( !$key ) {
+					\WP_CLI::error( "Invalid $this->obj_type field: $field." );
+				}
+			}
 
+			\WP_CLI::print_value( $item->$key );
+		}
+	}
+
+	protected function find_field( $item, $field ) {
 		foreach ( array( $field, $this->obj_type . '_' . $field ) as $key ) {
-			if ( isset( $post->$key ) ) {
-				$value = $post->$key;
-				break;
+			if ( isset( $item->$key ) ) {
+				return $key;
 			}
 		}
 
-		if ( null === $value ) {
-			\WP_CLI::error( "Invalid $this->obj_type field: $field." );
-		} else {
-			\WP_CLI::print_value( $value );
-		}
+		return false;
 	}
 }
 

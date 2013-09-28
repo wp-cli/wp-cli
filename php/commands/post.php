@@ -163,7 +163,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			\WP_CLI::error( "Could not find the post with ID $post_id." );
 
 		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( $post, $assoc_args['field'] );
+			$this->show_single_field( array( $post ), $assoc_args['field'] );
 		} else {
 			$this->show_multiple_fields( $post, $assoc_args );
 		}
@@ -235,6 +235,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--<field>=<value>]
 	 * : One or more args to pass to WP_Query.
 	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each post.
+	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields. Defaults to ID,post_title,post_name,post_date,post_status.
 	 *
@@ -243,7 +246,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp post list --format=ids
+	 *     wp post list --field=ID
 	 *
 	 *     wp post list --post_type=post --posts_per_page=5 --format=json
 	 *
@@ -252,15 +255,16 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand list
 	 */
 	public function _list( $_, $assoc_args ) {
-		$query_args = array(
-			'posts_per_page'  => -1,
-			'post_status'     => 'any',
-		);
 		$defaults = array(
 			'format' => 'table',
 			'fields' => $this->fields
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$query_args = array(
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+		);
 
 		foreach ( $assoc_args as $key => $value ) {
 			if ( true === $value )
@@ -274,7 +278,11 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$query = new WP_Query( $query_args );
 
-		WP_CLI\Utils\format_items( $assoc_args['format'], $query->posts, $assoc_args['fields'] );
+		if ( isset( $assoc_args['field'] ) ) {
+			$this->show_single_field( $query->posts, $assoc_args['field'] );
+		} else {
+			WP_CLI\Utils\format_items( $assoc_args['format'], $query->posts, $assoc_args['fields'] );
+		}
 	}
 
 	/**
