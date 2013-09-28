@@ -119,7 +119,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		if ( $r === false )
 			\WP_CLI::warning( 'No change made to post content.', 'Aborted' );
 		else
-			parent::update( $args, array( 'post_content' => $r ) );
+			self::update( $args, array( 'post_content' => $r ) );
 	}
 
 	protected function _edit( $content, $title ) {
