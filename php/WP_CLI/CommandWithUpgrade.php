@@ -263,7 +263,18 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			return $item;
 		} );
 
-		\WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
+		if ( isset( $assoc_args['field'] ) ) {
+			$field = $assoc_args['field'];
+
+			foreach ( $it as $item ) {
+				if ( !isset( $item[ $field ] ) ) {
+					\WP_CLI::error( "Invalid $this->item_type field: $field." );
+				}
+				\WP_CLI::print_value( $item[ $field ] );
+			}
+		} else {
+			\WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
+		}
 	}
 
 	/**
