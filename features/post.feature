@@ -85,3 +85,9 @@ Feature: Manage WordPress posts
       | post_title   | post_name    | post_status  |
       | Publish post | publish-post | publish      |
       | Draft post   |              | draft        |
+
+    When I run `wp post list --post_type='page' --field=title`
+    Then STDOUT should be:
+      """
+      Sample Page
+      """

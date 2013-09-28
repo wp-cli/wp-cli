@@ -15,6 +15,17 @@ Feature: Manage WordPress themes and plugins
       <type_name> installed successfully
       """
 
+    When I run `wp <type> list`
+    Then STDOUT should be a table containing rows:
+      | name   | status   | update    | version   |
+      | <item> | inactive | available | <version> |
+
+    When I run `wp <type> list --field=name`
+    Then STDOUT should contain:
+      """
+      <item>
+      """
+
     When I run `wp <type> status`
     Then STDOUT should contain:
       """

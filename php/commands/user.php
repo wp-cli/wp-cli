@@ -29,6 +29,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--<field>=<value>]
 	 * : Filter by one or more fields. For accepted fields, see get_users().
 	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each user.
+	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields. Defaults to ID,user_login,display_name,user_email,user_registered,roles
 	 *
@@ -37,11 +40,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user list --format=ids
+	 *     wp user list --field=ID
 	 *
 	 *     wp user list --role=administrator --format=csv
 	 *
-	 *     wp user list --fields=display_name,user_email
+	 *     wp user list --fields=display_name,user_email --format=json
 	 *
 	 * @subcommand list
 	 */
@@ -77,7 +80,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			return $user;
 		} );
 
-		WP_CLI\Utils\format_items( $params['format'], $it, $fields );
+		if ( isset( $assoc_args['field'] ) ) {
+			$this->show_single_field( $it, $assoc_args['field'] );
+		} else {
+			WP_CLI\Utils\format_items( $params['format'], $it, $fields );
+		}
 	}
 
 	/**
@@ -120,7 +127,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$user_data['roles'] = implode( ', ', $user->roles );
 
 		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( (object) $user_data, $assoc_args['field'] );
+			$this->show_single_field( array( (object) $user_data ), $assoc_args['field'] );
 		} else {
 			$this->show_multiple_fields( $user_data, $assoc_args );
 		}

@@ -245,9 +245,36 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		$all_items = $this->get_all_items();
-		$items = $this->create_objects( $all_items );
+		if ( !is_array( $all_items ) )
+			\WP_CLI::error( "No {$this->item_type}s found." );
 
-		\WP_CLI\Utils\format_items( $assoc_args['format'], $items, $assoc_args['fields'] );
+		$it = \WP_CLI\Utils\iterator_map( $all_items, function( $item ) {
+			if ( empty( $item['version'] ) )
+				$item['version'] = '';
+
+			foreach ( $item as $field => &$value ) {
+				if ( $value === true ) {
+					$value = 'available';
+				} else if ( $value === false ) {
+					$value = 'none';
+				}
+			}
+
+			return $item;
+		} );
+
+		if ( isset( $assoc_args['field'] ) ) {
+			$field = $assoc_args['field'];
+
+			foreach ( $it as $item ) {
+				if ( !isset( $item[ $field ] ) ) {
+					\WP_CLI::error( "Invalid $this->item_type field: $field." );
+				}
+				\WP_CLI::print_value( $item[ $field ] );
+			}
+		} else {
+			\WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
+		}
 	}
 
 	/**
@@ -277,33 +304,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			'must-use' => 'Must Use',
 		)
 	);
-
-	private function create_objects( $items ) {
-		if ( !is_array( $items ) && !empty( $items ) )
-			\WP_CLI::error( sprintf( "No '$this->item_type's found." ) );
-
-		$objects = array();
-
-		foreach ( $items as $item ) {
-			$object = new \stdClass;
-
-			if ( empty( $item['version'] ) )
-				$item['version'] = "";
-
-			foreach ( $item as $field => $value ) {
-				if ( $value === true ) {
-					$value = "available";
-				} else if ( $value === false) {
-					$value = "none";
-				}
-
-				$object->{$field} = $value;
-			}
-			$objects[] = $object;
-		}
-
-		return $objects;
-	}
 
 	protected function format_status( $status, $format ) {
 		return $this->get_color( $status ) . $this->map[ $format ][ $status ];
