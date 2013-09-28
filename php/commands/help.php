@@ -54,15 +54,17 @@ class Help_Command extends WP_CLI_Command {
 		$out = preg_replace( '/^## ([A-Z ]+)/m', '%9\1%n', $out );
 
 		// definition lists
-		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)\n\n/s', function( $matches ) {
-			$param = $matches[1];
-			$desc = self::indent( "\t\t", wordwrap( $matches[2] ) );
-			return "\t$param\n$desc\n\n";
-		}, $out );
+		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)\n\n/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
 
 		$out = str_replace( "\t", '  ', $out );
 
 		self::pass_through_pager( WP_CLI::colorize( $out ) );
+	}
+
+	private static function rewrap_param_desc( $matches ) {
+		$param = $matches[1];
+		$desc = self::indent( "\t\t", wordwrap( $matches[2] ) );
+		return "\t$param\n$desc\n\n";
 	}
 
 	private static function indent( $whitespace, $text ) {
