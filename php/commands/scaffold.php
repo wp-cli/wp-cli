@@ -64,7 +64,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * : Post types to register for use with the taxonomy.
 	 *
 	 * [--label=<label>]
-	 * : The text used to translate the update messages
+	 * : The text used to translate the update messages.
 	 *
 	 * [--textdomain=<textdomain>]
 	 * : The textdomain to use for the labels.
