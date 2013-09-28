@@ -102,7 +102,7 @@ class Help_Command extends WP_CLI_Command {
 			'shortdesc' => $command->get_shortdesc(),
 		);
 
-		$binding['synopsis'] = "$name " . $command->get_synopsis();
+		$binding['synopsis'] = wordwrap( "$name " . $command->get_synopsis(), 79 );
 
 		if ( $command->has_subcommands() ) {
 			$binding['has-subcommands']['subcommands'] = self::render_subcommands( $command );
