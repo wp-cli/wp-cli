@@ -167,6 +167,12 @@ class Subcommand extends CompositeCommand {
 			exit(1);
 		}
 
+		$unknown_positionals = $validator->unknown_positionals( $args );
+		if ( !empty( $unknown_positionals ) ) {
+			\WP_CLI::warning( 'Too many positional arguments: ' .
+				implode( ' ', $unknown_positionals ) );
+		}
+
 		list( $errors, $to_unset ) = $validator->validate_assoc( array_merge( \WP_CLI::get_config(), $assoc_args ) );
 
 		if ( !empty( $errors['fatal'] ) ) {
