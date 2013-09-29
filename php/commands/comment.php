@@ -395,44 +395,6 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get last approved comment.
-	 *
-	 * ## OPTIONS
-	 *
-	 * [--id]
-	 * : Output just the last comment id.
-	 *
-	 * [--full]
-	 * : Output complete comment information.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp comment last --full
-	 */
-	function last( $args = array(), $assoc_args = array() ) {
-		$last = get_comments( array( 'number' => 1, 'status' => 'approve' ) );
-
-		list( $comment ) = $last;
-
-		if ( isset( $assoc_args['id'] ) ) {
-			WP_CLI::line( $comment->comment_ID );
-			exit( 1 );
-		}
-
-		WP_CLI::line( "%yLast approved comment:%n " );
-
-		if ( isset( $assoc_args['full'] ) ) {
-			$keys = array_keys( get_object_vars( $comment ) );
-		} else {
-			$keys = array( 'comment_ID', 'comment_author', 'comment_author_email', 'comment_author_url', 'comment_content' );
-		}
-
-		foreach ( $keys as $key ) {
-			WP_CLI::line( str_pad( "$key:", 23 ) . $comment->$key );
-		}
-	}
-
-	/**
 	 * Verify whether a comment exists.
 	 *
 	 * ## OPTIONS
