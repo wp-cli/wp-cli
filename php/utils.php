@@ -293,7 +293,7 @@ function format_items( $format, $items, $fields ) {
 
 		case 'json':
 
-			if ( is_array( $out ) ) {
+			if ( is_array( $items ) ) {
 				$out = array();
 				foreach ( $items as $item ) {
 					$out[] = pick_fields( $item, $fields );
