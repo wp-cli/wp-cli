@@ -35,10 +35,9 @@ Feature: Manage WordPress themes
     Then STDOUT should not be empty
 
     When I try the previous command again
-    Then the return code should be 1
-    And STDERR should contain:
+    Then STDERR should contain:
       """
-      Error: The theme 'p2' could not be found.
+      The 'p2' theme could not be found.
       """
 
     When I run `wp theme list`

@@ -331,28 +331,29 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <theme>
-	 * : The theme to delete.
+	 * <theme>...
+	 * : One or more themes to delete.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp theme delete twentyeleven
 	 */
 	function delete( $args ) {
-		$theme = $this->parse_name( $args[0] );
-		$theme_slug = $theme->get_stylesheet();
+		foreach ( $this->validate_theme_names( $args ) as $theme ) {
+			$theme_slug = $theme->get_stylesheet();
 
-		if ( $this->is_active_theme( $theme ) ) {
-			WP_CLI::error( "Can't delete the currently active theme." );
+			if ( $this->is_active_theme( $theme ) ) {
+				WP_CLI::warning( "Can't delete the currently active theme: $theme_slug" );
+			}
+
+			$r = delete_theme( $theme_slug );
+
+			if ( is_wp_error( $r ) ) {
+				WP_CLI::warning( $r );
+			} else {
+				WP_CLI::success( "Deleted '$theme_slug' theme." );
+			}
 		}
-
-		$r = delete_theme( $theme_slug );
-
-		if ( is_wp_error( $r ) ) {
-			WP_CLI::error( $r );
-		}
-
-		WP_CLI::success( sprintf( "Deleted '%s' theme.", $theme_slug ) );
 	}
 
 	/**
@@ -394,6 +395,22 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		return $theme;
+	}
+
+	private function validate_theme_names( $args ) {
+		$themes = array();
+
+		foreach ( $args as $name ) {
+			$theme = wp_get_theme( $name );
+
+			if ( !$theme->exists() ) {
+				WP_CLI::warning( "The '$name' theme could not be found." );
+			} else {
+				$themes[] = $theme;
+			}
+		}
+
+		return $themes;
 	}
 }
 
