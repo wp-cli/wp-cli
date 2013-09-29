@@ -181,19 +181,29 @@ class WP_CLI {
 	}
 
 	/**
+	 * Prepare the display of a value, in various formats
+	 *
+	 * @param mixed $value
+	 * @param array $assoc_args
+	 */
+	static function prepare_print_value( $value, $assoc_args = array() ) {
+		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
+			$value = json_encode( $value );
+		} elseif ( is_array( $value ) || is_object( $value ) ) {
+			$value = var_export( $value, true );
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Display a value, in various formats
 	 *
 	 * @param mixed $value
 	 * @param array $assoc_args
 	 */
 	static function print_value( $value, $assoc_args = array() ) {
-		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
-			$value = json_encode( $value );
-		} elseif ( is_array( $value ) || is_object( $value ) ) {
-			$value = var_export( $value );
-		}
-
-		echo $value . "\n";
+		echo self::prepare_print_value( $value, $assoc_args ) . "\n";
 	}
 
 	/**
