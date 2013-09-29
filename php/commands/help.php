@@ -54,7 +54,7 @@ class Help_Command extends WP_CLI_Command {
 		$out = preg_replace( '/^## ([A-Z ]+)/m', '%9\1%n', $out );
 
 		// definition lists
-		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)\n\n/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
+		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
 
 		$out = str_replace( "\t", '  ', $out );
 
