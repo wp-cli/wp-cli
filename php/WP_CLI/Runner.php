@@ -154,7 +154,7 @@ class Runner {
 				$_SERVER['HTTP_HOST'] .= ':' . $url_parts['port'];
 			}
 
-			$_SERVER['SERVER_NAME'] = substr($_SERVER['HTTP_HOST'], 0, strrpos($_SERVER['HTTP_HOST'], '.'));
+			$_SERVER['SERVER_NAME'] = $url_parts['host'];
 		}
 
 		$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );

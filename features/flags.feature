@@ -3,10 +3,14 @@ Feature: Global flags
   Scenario: Setting the URL
     Given a WP install
 
-    When I run `wp --url=localhost:8001 eval 'echo $_SERVER["SERVER_PORT"];'`
-    Then STDOUT should be:
+    When I run `wp --url=localhost:8001 eval 'echo json_encode( $_SERVER );'`
+    Then STDOUT should be JSON containing:
       """
-      8001
+      {
+        "HTTP_HOST": "localhost:8001",
+        "SERVER_NAME": "localhost",
+        "SERVER_PORT": "8001"
+      }
       """
 
   Scenario: Quiet run
