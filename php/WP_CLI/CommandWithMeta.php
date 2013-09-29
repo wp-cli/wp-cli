@@ -116,7 +116,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 				$prepared_single_metadata->meta_key = $key;
 
 				$value = \maybe_unserialize( $value );
-				if ( is_object( $value ) || is_array( $value ) )
+				if ( 'json' != $assoc_args['format'] && ( is_object( $value ) || is_array( $value ) ) )
 					$prepared_single_metadata->meta_value = \WP_CLI::prepare_print_value( $value, array( 'format' => 'json' ) );
 				else
 					$prepared_single_metadata->meta_value = $value;
