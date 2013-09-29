@@ -105,24 +105,49 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 			'fields'      => 'meta_key,meta_value',
 			'format'      => 'table',
 			);
-		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		$metadata = \get_metadata( $this->meta_type, $object_id );
+		if ( 'json' == $assoc_args['format'] )
+			$defaults['fields'] = array_keys( $metadata );
 
-		$prepared_metadata = array();
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		if ( 'json' == $assoc_args['format'] )
+			$prepared_metadata = new \stdClass;
+		else
+			$prepared_metadata = array();
+
 		foreach( $metadata as $key => $values ) {
-			foreach( $values as $value ) {
-				$prepared_single_metadata = new \stdClass;
-				$prepared_single_metadata->meta_key = $key;
 
-				$value = \maybe_unserialize( $value );
-				if ( 'json' != $assoc_args['format'] && ( is_object( $value ) || is_array( $value ) ) )
-					$prepared_single_metadata->meta_value = \WP_CLI::prepare_print_value( $value, array( 'format' => 'json' ) );
-				else
-					$prepared_single_metadata->meta_value = $value;
+			if ( 'json' == $assoc_args['format'] ) {
 
-				$prepared_metadata[] = $prepared_single_metadata;
+				$values = array_map( '\maybe_unserialize', $values );
+				if ( count( $values ) == 1 )
+					$values = $values[0];
+
+				$prepared_metadata->$key = $values;
+
+			} else {
+
+				foreach( $values as $value ) {
+
+					$prepared_single_metadata = new \stdClass;
+					$prepared_single_metadata->meta_key = $key;
+
+					$value = \maybe_unserialize( $value );
+					
+					$prepared_single_metadata->meta_key = $key;
+					if ( is_object( $value ) || is_array( $value ) )
+						$prepared_single_metadata->meta_value = \WP_CLI::prepare_print_value( $value, array( 'format' => 'json' ) );
+					else
+						$prepared_single_metadata->meta_value = $value;
+
+					$prepared_metadata[] = $prepared_single_metadata;
+
+				}
+
 			}
+
 		}
 
 		\WP_CLI\Utils\format_items( $assoc_args['format'], $prepared_metadata, $assoc_args['fields'] );	
