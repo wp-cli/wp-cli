@@ -94,35 +94,31 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--format=<format>]
-	 * : Output list as JSON. Defaults to tab-separated lines.
+	 * : Output list as table, JSON or CSV. Defaults to table.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp rewrite dump --format=json
+	 *     wp rewrite list --format=csv
+	 * @subcommand list
 	 */
-	public function dump( $args, $assoc_args ) {
+	public function _list( $args, $assoc_args ) {
 		$rules = get_option( 'rewrite_rules' );
 		if ( ! $rules ) {
 			$rules = array();
 			WP_CLI::warning( 'No rewrite rules.' );
 		}
+
 		$defaults = array(
-			'format' => ''
+			'format' => 'table'
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		switch ( $assoc_args['format'] ) {
-
-			case 'json':
-				echo json_encode( $rules );
-				break;
-
-			default:
-				foreach ( $rules as $route => $rule )
-					WP_CLI::line( $route . "\t" . $rule );
-				break;
-
+		$rule_list = array();
+		foreach ( $rules as $match => $query ) {
+			$rule_list[] = compact( 'match', 'query' );
 		}
+
+		WP_CLI\Utils\format_items( $assoc_args['format'], $rule_list, array('match', 'query') );
 	}
 
 	/**
