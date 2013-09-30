@@ -283,6 +283,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			$theme_obj->$var = $theme->$var;
 		}
 
+		$theme_obj->description = wordwrap( $theme_obj->description );
+
 		if ( isset( $assoc_args['field'] ) ) {
 			$this->show_single_field( array( $theme_obj ), $assoc_args['field'] );
 		} else {
