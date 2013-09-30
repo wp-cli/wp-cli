@@ -87,3 +87,9 @@ Feature: Manage WordPress themes
     Then STDOUT should be a table containing rows:
       | Field | Value          |
       | name  | P2             |
+
+    When I run `wp theme get p2 --field=title`
+    Then STDOUT should contain:
+       """
+       P2
+       """

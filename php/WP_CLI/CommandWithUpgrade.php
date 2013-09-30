@@ -102,6 +102,47 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		\WP_CLI::line( 'Legend: ' . implode( ', ', \WP_CLI::colorize( $legend_line ) ) );
 	}
 
+	protected function find_field( $item, $field ) {
+		foreach ( array( $field, $this->obj_type . '_' . $field ) as $key ) {
+			if ( isset( $item->$key ) ) {
+				return $key;
+			}
+		}
+
+		return false;
+	}
+
+	protected function show_single_field( $items, $field ) {
+		foreach ( $items as $item ) {
+			if ( !isset( $key ) ) {
+				$key = $this->find_field( $item, $field );
+				if ( !$key ) {
+					\WP_CLI::error( "Invalid $this->obj_type field: $field." );
+				}
+			}
+
+			\WP_CLI::print_value( $item->$key );
+		}
+	}
+
+	protected function show_multiple_fields( $data, $assoc_args ) {
+		switch ( $assoc_args['format'] ) {
+
+		case 'table':
+			\WP_CLI\Utils\assoc_array_to_table( $data );
+			break;
+
+		case 'json':
+			WP_CLI::print_value( $data, $assoc_args );
+			break;
+
+		default:
+			\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
+			break;
+
+		}
+	}
+
 	function install( $args, $assoc_args ) {
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );

@@ -256,6 +256,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * <theme>
 	 * : The theme to get.
+	 * 
+	 * [--field=<field>]
+	 * : Instead of returning the whole theme, returns the value of a single field.
 	 *
 	 * [--format=<format>]
 	 * : Output list as table or JSON. Defaults to table.
@@ -280,21 +283,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			$theme_obj->$var = $theme->$var;
 		}
 
-		switch ( $assoc_args['format'] ) {
-
-			case 'table':
-				unset( $theme_obj->tags );
-				$fields = get_object_vars( $theme_obj );
-				\WP_CLI\Utils\assoc_array_to_table( $fields );
-				break;
-
-			case 'json':
-				WP_CLI::print_value( $theme_obj, $assoc_args );
-				break;
-
-			default:
-				\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
-				break;
+		if ( isset( $assoc_args['field'] ) ) {
+			$this->show_single_field( array( $theme_obj ), $assoc_args['field'] );
+		} else {
+			$this->show_multiple_fields( $theme_obj, $assoc_args );
 		}
 	}
 
