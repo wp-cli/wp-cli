@@ -197,6 +197,7 @@ function locate_wp_config() {
 /**
  * Take a serialised array and unserialise it replacing elements as needed and
  * unserialising any subordinate arrays and performing the replace on those too.
+ * Ignores any serialized objects..
  *
  * @source https://github.com/interconnectit/Search-Replace-DB
  *
@@ -220,15 +221,6 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 			$_tmp = array();
 			foreach ( $data as $key => $value ) {
 				$_tmp[ $key ] = recursive_unserialize_replace( $from, $to, $value, false );
-			}
-
-			$data = $_tmp;
-		}
-
-		elseif ( is_object( $data ) ) {
-			$_tmp = clone( $data );
-			foreach ( $data as $key => $value ) {
-				$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
 			}
 
 			$data = $_tmp;
