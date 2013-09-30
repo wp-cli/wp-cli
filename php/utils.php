@@ -195,53 +195,6 @@ function locate_wp_config() {
 }
 
 /**
- * Take a serialised array and unserialise it replacing elements as needed and
- * unserialising any subordinate arrays and performing the replace on those too.
- * Ignores any serialized objects..
- *
- * @source https://github.com/interconnectit/Search-Replace-DB
- *
- * @param string $from       String we're looking to replace.
- * @param string $to         What we want it to be replaced with
- * @param array  $data       Used to pass any subordinate arrays back to in.
- * @param bool   $serialised Does the array passed via $data need serialising.
- *
- * @return array	The original array with all elements replaced as needed.
- */
-function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
-
-	// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
-	try {
-
-		if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
-			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
-		}
-
-		elseif ( is_array( $data ) ) {
-			$_tmp = array();
-			foreach ( $data as $key => $value ) {
-				$_tmp[ $key ] = recursive_unserialize_replace( $from, $to, $value, false );
-			}
-
-			$data = $_tmp;
-		}
-
-		else {
-			if ( is_string( $data ) )
-				$data = str_replace( $from, $to, $data );
-		}
-
-		if ( $serialised )
-			return serialize( $data );
-
-	} catch( Exception $error ) {
-
-	}
-
-	return $data;
-}
-
-/**
  * Output items in a table, JSON, CSV, ids, or the total count
  *
  * @param string        $format     Format to use: 'table', 'json', 'csv', 'ids', 'count'
