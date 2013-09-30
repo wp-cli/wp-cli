@@ -442,7 +442,10 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 }
 
 function mustache_render( $template_name, $data ) {
-	$template = file_get_contents( WP_CLI_ROOT . "/templates/$template_name" );
+	if ( ! file_exists( $template_name ) )
+		$template_name = WP_CLI_ROOT . "/templates/$template_name";
+
+	$template = file_get_contents( $template_name );
 
 	$m = new \Mustache_Engine;
 
