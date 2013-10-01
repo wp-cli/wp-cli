@@ -202,6 +202,20 @@ $steps->Then( '/^STDOUT should be JSON containing:$/',
 		}
 });
 
+$steps->Then( '/^STDOUT should be a JSON array containing:$/',
+	function ( $world, PyStringNode $expected ) {
+		$output = $world->result->STDOUT;
+		$expected = $world->replace_variables( (string) $expected );
+
+		$actualValues = json_decode( $output );
+		$expectedValues = json_decode( $expected );
+
+		$missing = array_diff( $expectedValues, $actualValues );
+		if ( !empty( $missing ) ) {
+			throw new \Exception( $output );
+		}
+});
+
 $steps->Then( '/^STDOUT should be CSV containing:$/',
 	function ( $world, TableNode $expected ) {
 		$output = $world->result->STDOUT;

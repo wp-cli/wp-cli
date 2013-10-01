@@ -26,6 +26,12 @@ Feature: Manage WordPress themes and plugins
       <item>
       """
 
+    When I run `wp <type> list --field=name --format=json`
+    Then STDOUT should be a JSON array containing:
+      """
+      ["<item>"]
+      """
+
     When I run `wp <type> status`
     Then STDOUT should contain:
       """

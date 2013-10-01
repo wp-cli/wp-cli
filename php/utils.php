@@ -202,71 +202,9 @@ function locate_wp_config() {
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
 function format_items( $format, $items, $fields ) {
-	if ( ! is_array( $fields ) )
-		$fields = explode( ',', $fields );
-
-	switch ( $format ) {
-		case 'count':
-			if ( !is_array( $items ) ) {
-				$items = iterator_to_array( $items );
-			}
-			echo count( $items );
-			break;
-
-		case 'ids':
-			if ( !is_array( $items ) ) {
-				$items = iterator_to_array( $items );
-			}
-			echo implode( ' ', $items );
-			break;
-
-		case 'table':
-			$table = new \cli\Table();
-
-			$table->setHeaders( $fields );
-
-			foreach ( $items as $item ) {
-				$table->addRow( array_values( pick_fields( $item, $fields ) ) );
-			}
-
-			$table->display();
-			break;
-
-		case 'csv':
-			write_csv( STDOUT, $items, $fields );
-			break;
-
-		case 'json':
-			$out = array();
-			foreach ( $items as $item ) {
-				$out[] = pick_fields( $item, $fields );
-			}
-
-			echo json_encode( $out );
-			break;
-	}
-}
-
-/**
- * Format an associative array as a table
- *
- * @param array     $fields    Fields and values to format
- */
-function assoc_array_to_table( $fields ) {
-	$rows = array();
-
-	foreach ( $fields as $field => $value ) {
-		if ( ! is_string( $value ) ) {
-			$value = json_encode( $value );
-		}
-
-		$rows[] = (object) array(
-			'Field' => $field,
-			'Value' => $value
-		);
-	}
-
-	format_items( 'table', $rows, array( 'Field', 'Value' ) );
+	$assoc_args = compact( 'format', 'fields' );
+	$formatter = new \WP_CLI\Formatter( $assoc_args );
+	$formatter->display_items( $items );
 }
 
 /**
@@ -307,64 +245,6 @@ function pick_fields( $item, $fields ) {
 	}
 
 	return $values;
-}
-
-/**
- * Show a single field from a list of items.
- *
- * @param array Array of objects to show fields from
- * @param string The field to show
- * @param string The format to show the field in
- * @param string Whether or not the field is typically prefixed (e.g. "content" => "post_content")
- */
-function show_single_field( $items, $field, $format = '', $field_prefix = '' ) {
-
-	foreach ( $items as $item ) {
-
-		if ( ! isset( $key ) ) {
-
-			foreach ( array( $field, $field_prefix . '_' . $field ) as $maybe_key ) {
-				if ( isset( $item->$maybe_key ) ) {
-					$key = $maybe_key;
-					break;
-				}
-			}
-
-			if ( ! $key ) {
-				\WP_CLI::error( "Invalid field: $field." );
-			}
-
-		}
-
-		\WP_CLI::print_value( $item->$key, array( 'format' => $format ) );
-	}
-
-}
-
-/**
- * Show multiple fields of an object.
- *
- * @param object|array Data to display
- * @param string Format to display the data in
- */
-function show_multiple_fields( $data, $format ) {
-
-	switch ( $format ) {
-
-		case 'table':
-			assoc_array_to_table( $data );
-			break;
-
-		case 'json':
-			\WP_CLI::print_value( $data, array( 'format' => $format ) );
-			break;
-
-		default:
-			\WP_CLI::error( "Invalid format: " . $format );
-			break;
-
-	}
-
 }
 
 /**

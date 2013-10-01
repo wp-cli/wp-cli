@@ -11,6 +11,7 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 
 	protected $obj_type;
 	protected $obj_id_key = 'ID';
+	protected $obj_fields = null;
 
 	protected function _create( $args, $assoc_args, $callback ) {
 		unset( $assoc_args[ $this->obj_id_key ] );
@@ -78,5 +79,8 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		return $status;
 	}
 
+	protected function get_formatter( &$assoc_args ) {
+		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
+	}
 }
 

@@ -11,7 +11,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	protected $upgrade_refresh = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
 
-	protected $fields = array(
+	protected $obj_fields = array(
 		'name',
 		'status',
 		'update',
@@ -387,12 +387,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp plugin get bbpress --format=json
 	 */
 	public function get( $args, $assoc_args ) {
-
-		$defaults = array(
-			'format' => 'table'
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
-
 		$file = $this->_parse_name( $args[0] );
 
 		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
@@ -405,17 +399,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			'description' => wordwrap( $plugin_data['Description'] ),
 			'status'      => $this->get_status( $file ),
 			'update'      => $this->has_update( $file ),
-			);
+		);
 
-		if ( isset( $assoc_args['field'] ) ) {
-
-			\WP_CLI\Utils\show_single_field( array( $plugin_obj ), $assoc_args['field'], $assoc_args['format'] );
-
-		} else {
-
-			\WP_CLI\Utils\show_multiple_fields( $plugin_obj, $assoc_args['format'] );
-
-		}
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $plugin_obj );
 	}
 
 	/**

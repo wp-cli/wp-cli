@@ -8,8 +8,7 @@
 class User_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected $obj_type = 'user';
-
-	private $fields = array(
+	protected $obj_fields = array(
 		'ID',
 		'user_login',
 		'display_name',
@@ -49,27 +48,15 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand list
 	 */
 	public function _list( $args, $assoc_args ) {
+		$formatter = $this->get_formatter( $assoc_args );
 
-		$defaults = array(
-			'blog_id'   => get_current_blog_id(),
-			'fields'    => implode( ',', $this->fields ),
-			'format'    => 'table',
-		);
-		$params = array_merge( $defaults, $assoc_args );
-
-		$fields = $params['fields'];
-		unset( $params['fields'] );
-
-		if ( array_key_exists( 'role', $assoc_args ) ) {
-			$params['role'] = $assoc_args['role'];
+		if ( 'ids' == $formatter->format ) {
+			$assoc_args['fields'] = 'ids';
+		} else {
+			$assoc_args['fields'] = 'all_with_meta';
 		}
 
-		if ( 'ids' == $params['format'] )
-			$params['fields'] = 'ids';
-		else
-			$params['fields'] = 'all_with_meta';
-
-		$users = get_users( $params );
+		$users = get_users( $assoc_args );
 
 		$it = WP_CLI\Utils\iterator_map( $users, function ( $user ) {
 			if ( !is_object( $user ) )
@@ -80,11 +67,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			return $user;
 		} );
 
-		if ( isset( $assoc_args['field'] ) ) {
-			\WP_CLI\Utils\show_single_field( $it, $assoc_args['field'], $assoc_args['format'], 'user' );
-		} else {
-			WP_CLI\Utils\format_items( $params['format'], $it, $fields );
-		}
+		$formatter->display_items( $it );
 	}
 
 	/**
@@ -112,10 +95,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user get bob --format=json > bob.json
 	 */
 	public function get( $args, $assoc_args ) {
-		$assoc_args = wp_parse_args( $assoc_args, array(
-			'format' => 'table'
-		) );
-
 		$user = self::get_user( $args[0] );
 
 		if ( method_exists( $user, 'to_array' ) ) {
@@ -126,11 +105,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 		$user_data['roles'] = implode( ', ', $user->roles );
 
-		if ( isset( $assoc_args['field'] ) ) {
-			\WP_CLI\Utils\show_single_field( array( (object) $user_data ), $assoc_args['field'], $assoc_args['format'], 'user' );
-		} else {
-			\WP_CLI\Utils\show_multiple_fields( $user_data, $assoc_args['format'] );
-		}
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $user_data );
 	}
 
 	/**
