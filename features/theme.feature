@@ -92,5 +92,5 @@ Feature: Manage WordPress themes
     When I run `wp theme get p2 --field=title --format=json`
     Then STDOUT should contain:
        """
-       {"P2"}
+       "P2"
        """

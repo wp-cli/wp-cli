@@ -104,6 +104,6 @@ Feature: Manage WordPress plugins
     When I run `wp plugin get akismet --field=title --format=json`
     Then STDOUT should contain:
        """
-       {"Akismet"}
+       "Akismet"
        """
 
