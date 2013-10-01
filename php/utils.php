@@ -391,15 +391,7 @@ function show_single_field( $items, $field, $format = '', $field_prefix = '' ) {
 
 		}
 
-		// Persist the field name for JSON
-		if ( 'json' == $format ) {
-			$data = new \stdClass;
-			$data->$key = $item->$key;
-		} else {
-			$data = $item->$key;
-		}
-
-		\WP_CLI::print_value( $data, array( 'format' => $format ) );
+		\WP_CLI::print_value( $item->$key, array( 'format' => $format ) );
 	}
 
 }
