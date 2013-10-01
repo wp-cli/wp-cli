@@ -118,13 +118,14 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		if ( $r === false )
 			\WP_CLI::warning( 'No change made to post content.', 'Aborted' );
 		else
-			self::update( $args, array( 'post_content' => $r ) );
+			$this->update( $args, array( 'post_content' => $r ) );
 	}
 
 	protected function _edit( $content, $title ) {
 		$content = apply_filters( 'the_editor_content', $content );
 		$output = \WP_CLI\Utils\launch_editor_for_input( $content, $title );
-		return apply_filters( 'content_save_pre', $output );
+		return ( is_string( $output ) ) ?
+			apply_filters( 'content_save_pre', $output ) : $output;
 	}
 
 	/**

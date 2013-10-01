@@ -26,7 +26,7 @@ Feature: Manage WordPress posts
     When I try the previous command again
     Then the return code should be 1
 
-  Scenario: Creating/getting posts
+  Scenario: Creating/getting/editing posts
     Given a content.html file:
       """
       This is some content.
@@ -72,6 +72,27 @@ Feature: Manage WordPress posts
         "post_title": "Test post"
       }
       """
+
+    When I try `EDITOR='ex -i NONE -c q!' wp post edit {POST_ID}`
+    Then STDERR should contain:
+      """
+      No change made to post content.
+      """
+    And the return code should be 0
+
+    When I try `EDITOR='ex -i NONE -c %s/content/bunkum -c wq' wp post edit {POST_ID}`
+    Then STDERR should be empty
+    Then STDOUT should contain:
+      """
+      Updated post {POST_ID}.
+      """
+
+    When I run `wp post get --field=content {POST_ID}`
+    Then STDOUT should contain:
+      """
+      This is some bunkum.
+      """
+
 
   Scenario: Creating/listing posts
     When I run `wp post create --post_title='Publish post' --post_content='Publish post content' --post_status='publish' --porcelain`
