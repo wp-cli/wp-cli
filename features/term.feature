@@ -39,6 +39,12 @@ Feature: Manage WordPress terms
     Then STDOUT should be a number
     And save STDOUT as {TERM_ID}
 
+    When I run `wp term get {TERM_ID} post_tag --field=slug --format=json`
+    Then STDOUT should contain:
+      """
+      {"slug":"test-delete"}
+      """
+
     When I run `wp term delete {TERM_ID} post_tag`
     Then STDOUT should contain:
       """
