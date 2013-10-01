@@ -80,7 +80,7 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	}
 
 	protected function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->fields, $this->obj_type );
+		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
 	}
 }
 
