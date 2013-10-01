@@ -86,3 +86,24 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name       | status   | update    | version   |
       | akismet    | active   | available | 2.5.6     |
+
+  Scenario: Get details about an installed plugin
+
+    When I run `wp plugin get akismet`
+    Then STDOUT should be a table containing rows:
+      | Field | Value          |
+      | name  | akismet        |
+
+
+    When I run `wp plugin get akismet --field=title`
+    Then STDOUT should contain:
+       """
+       Akismet
+       """
+
+    When I run `wp plugin get akismet --field=title --format=json`
+    Then STDOUT should contain:
+       """
+       {"title":"Akismet"}
+       """
+
