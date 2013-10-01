@@ -310,6 +310,64 @@ function pick_fields( $item, $fields ) {
 }
 
 /**
+ * Show a single field from a list of items
+ * 
+ * @param array Array of objects to show fields from
+ * @param string The field to show
+ * @param string The format to show the field in
+ * @param string Whether or not the field is typically prefixed (e.g. "content" => "post_content")
+ */
+function show_single_field( $items, $field, $format = '', $field_prefix = '' ) {
+
+	foreach ( $items as $item ) {
+
+		if ( ! isset( $key ) ) {
+
+			foreach ( array( $field, $field_prefix . '_' . $field ) as $maybe_key ) {
+				if ( isset( $item->$maybe_key ) ) {
+					$key = $maybe_key;
+					break;
+				}
+			}
+
+			if ( ! $key ) {
+				\WP_CLI::error( "Invalid field: $field." );
+			}
+
+		}
+
+		\WP_CLI::print_value( $item->$key, array( 'format' => $format ) );
+	}
+
+}
+
+/**
+ * Show multiple fields of an object
+ * 
+ * @param object|array Data to display
+ * @param string Format to display the data in
+ */
+function show_multiple_fields( $data, $format ) {
+
+	switch ( $format ) {
+
+		case 'table':
+			assoc_array_to_table( $data );
+			break;
+
+		case 'json':
+			\WP_CLI::print_value( $data, array( 'format' => $format ) );
+			break;
+
+		default:
+			\WP_CLI::error( "Invalid format: " . $format );
+			break;
+
+	}
+
+}
+
+/**
  * Launch system's $EDITOR to edit text
  *
  * @param  str  $content  Text to edit (eg post content)

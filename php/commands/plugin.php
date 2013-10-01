@@ -369,6 +369,56 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
+	 * Get a plugin.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to get.
+	 * 
+	 * [--field=<field>]
+	 * : Instead of returning the whole plugin, returns the value of a single field.
+	 *
+	 * [--format=<format>]
+	 * : Output list as table or JSON. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin get bbpress --format=json
+	 */
+	public function get( $args, $assoc_args ) {
+
+		$defaults = array(
+			'format' => 'table'
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$file = $this->_parse_name( $args[0] );
+
+		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
+
+		$plugin_obj = (object)array(
+			'name'        => $this->get_name( $file ),
+			'title'       => $plugin_data['Name'],
+			'author'      => $plugin_data['Author'],
+			'version'     => $plugin_data['Version'],
+			'description' => wordwrap( $plugin_data['Description'] ),
+			'status'      => $this->get_status( $file ),
+			'update'      => $this->has_update( $file ),
+			);
+
+		if ( isset( $assoc_args['field'] ) ) {
+
+			\WP_CLI\Utils\show_single_field( array( $plugin_obj ), $assoc_args['field'], $assoc_args['format'] );
+
+		} else {
+
+			\WP_CLI\Utils\show_multiple_fields( $plugin_obj, $assoc_args['format'] );
+
+		}
+	}
+
+	/**
 	 * Uninstall a plugin.
 	 *
 	 * ## OPTIONS

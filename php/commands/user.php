@@ -81,7 +81,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		} );
 
 		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( $it, $assoc_args['field'] );
+			\WP_CLI\Utils\show_single_field( $it, $assoc_args['field'], $assoc_args['format'], 'user' );
 		} else {
 			WP_CLI\Utils\format_items( $params['format'], $it, $fields );
 		}
@@ -127,27 +127,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$user_data['roles'] = implode( ', ', $user->roles );
 
 		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( array( (object) $user_data ), $assoc_args['field'] );
+			\WP_CLI\Utils\show_single_field( array( (object) $user_data ), $assoc_args['field'], $assoc_args['format'], 'user' );
 		} else {
-			$this->show_multiple_fields( $user_data, $assoc_args );
-		}
-	}
-
-	private function show_multiple_fields( $user_data, $assoc_args ) {
-		switch ( $assoc_args['format'] ) {
-
-		case 'table':
-			\WP_CLI\Utils\assoc_array_to_table( $user_data );
-			break;
-
-		case 'json':
-			WP_CLI::print_value( $user_data, $assoc_args );
-			break;
-
-		default:
-			\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
-			break;
-
+			\WP_CLI\Utils\show_multiple_fields( $user_data, $assoc_args['format'] );
 		}
 	}
 

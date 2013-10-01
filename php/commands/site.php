@@ -356,17 +356,10 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		} );
 
 		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( $it, $assoc_args['field'] );
+			WP_CLI\Utils\show_single_field( $it, $assoc_args['field'], $assoc_args['format'], 'site' );
 		} else {
 			WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
 		}
-	}
-
-	protected function find_field( $item, $field ) {
-		if ( 'url' == $field )
-			return 'url';
-
-		return parent::find_field( $item, $field );
 	}
 
 	/**

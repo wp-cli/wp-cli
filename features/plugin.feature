@@ -1,7 +1,9 @@
 Feature: Manage WordPress plugins
 
-  Scenario: Create, activate and check plugin status
+  Background:
     Given a WP install
+
+  Scenario: Create, activate and check plugin status
     And I run `wp plugin path`
     And save STDOUT as {PLUGIN_DIR}
 
@@ -66,8 +68,6 @@ Feature: Manage WordPress plugins
       """
 
   Scenario: Install a plugin, activate, then force install an older version of the plugin
-    Given a WP install
-
     When I run `wp plugin install akismet --version=2.5.7 --force`
     Then STDOUT should not be empty
 
@@ -86,3 +86,24 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name       | status   | update    | version   |
       | akismet    | active   | available | 2.5.6     |
+
+  Scenario: Get details about an installed plugin
+
+    When I run `wp plugin get akismet`
+    Then STDOUT should be a table containing rows:
+      | Field | Value          |
+      | name  | akismet        |
+
+
+    When I run `wp plugin get akismet --field=title`
+    Then STDOUT should contain:
+       """
+       Akismet
+       """
+
+    When I run `wp plugin get akismet --field=title --format=json`
+    Then STDOUT should contain:
+       """
+       "Akismet"
+       """
+

@@ -163,31 +163,19 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			\WP_CLI::error( "Could not find the post with ID $post_id." );
 
 		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( array( $post ), $assoc_args['field'] );
+
+			\WP_CLI\Utils\show_single_field( array( $post ), $assoc_args['field'], $assoc_args['format'], 'post' );
+
 		} else {
-			$this->show_multiple_fields( $post, $assoc_args );
-		}
-	}
 
-	private function show_multiple_fields( $post, $assoc_args ) {
-		switch ( $assoc_args['format'] ) {
-
-		case 'table':
 			$fields = get_object_vars( $post );
-			unset( $fields['filter'], $fields['post_content'], $fields['format_content'] );
-			\WP_CLI\Utils\assoc_array_to_table( $fields );
-			break;
 
-		case 'json':
-			$fields = get_object_vars( $post );
-			unset( $fields['filter'] );
-			WP_CLI::print_value( $fields, $assoc_args );
-			break;
-
-		default:
-			\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
-			break;
-
+			if ( 'table' == $assoc_args['format'] )
+				unset( $fields['filter'], $fields['post_content'], $fields['format_content'] );
+			else if ( 'json' == $assoc_args['format'] )
+				unset( $fields['filter'] );
+			
+			\WP_CLI\Utils\show_multiple_fields( $fields, $assoc_args['format'] );
 		}
 	}
 
@@ -279,7 +267,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		$query = new WP_Query( $query_args );
 
 		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( $query->posts, $assoc_args['field'] );
+			WP_CLI\Utils\show_single_field( $query->posts, $assoc_args['field'], $assoc_args['format'], 'post' );
 		} else {
 			WP_CLI\Utils\format_items( $assoc_args['format'], $query->posts, $assoc_args['fields'] );
 		}
