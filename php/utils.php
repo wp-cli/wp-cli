@@ -310,8 +310,8 @@ function pick_fields( $item, $fields ) {
 }
 
 /**
- * Show a single field from a list of items
- * 
+ * Show a single field from a list of items.
+ *
  * @param array Array of objects to show fields from
  * @param string The field to show
  * @param string The format to show the field in
@@ -342,8 +342,8 @@ function show_single_field( $items, $field, $format = '', $field_prefix = '' ) {
 }
 
 /**
- * Show multiple fields of an object
- * 
+ * Show multiple fields of an object.
+ *
  * @param object|array Data to display
  * @param string Format to display the data in
  */
