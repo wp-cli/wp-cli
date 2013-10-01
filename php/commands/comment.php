@@ -111,28 +111,16 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( "Invalid comment ID." );
 
 		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( array( $comment ), $assoc_args['field'] );
+
+			\WP_CLI\Utils\show_single_field( array( $comment ), $assoc_args['field'], $assoc_args['format'], 'comment' );
+
 		} else {
-			$this->show_multiple_fields( $comment, $assoc_args );
-		}
-	}
 
-	private function show_multiple_fields( $comment, $assoc_args ) {
-		switch ( $assoc_args['format'] ) {
+			$comment = get_object_vars( $comment );
+			if ( 'table' == $assoc_args['format'] )
+				unset( $comment['comment_content'] );
 
-			case 'table':
-				$fields = get_object_vars( $comment );
-				unset( $fields['comment_content'] );
-				\WP_CLI\Utils\assoc_array_to_table( $fields );
-				break;
-
-			case 'json':
-				WP_CLI::print_value( $comment, $assoc_args );
-				break;
-
-			default:
-				\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
-				break;
+			\WP_CLI\Utils\show_multiple_fields( $comment, $assoc_args['format'] );
 		}
 	}
 
@@ -189,7 +177,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( $comments, $assoc_args['field'] );
+			\WP_CLI\Utils\show_single_field( $comments, $assoc_args['field'], $assoc_args['format'], 'comment' );
 		} else {
 			WP_CLI\Utils\format_items( $assoc_args['format'], $comments, $assoc_args['fields'] );
 		}

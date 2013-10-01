@@ -26,6 +26,9 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * [--<field>=<value>]
 	 * : Filter by one or more fields. For accepted fields, see get_terms().
+	 * 
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each term.
 	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields. Defaults to all of the term object fields.
@@ -60,7 +63,16 @@ class Term_Command extends WP_CLI_Command {
 		if ( 'ids' == $assoc_args['format'] )
 			$terms = wp_list_pluck( $terms, 'term_id' );
 
-		WP_CLI\Utils\format_items( $assoc_args['format'], $terms, $fields );
+		if ( isset( $assoc_args['field'] ) ) {
+
+			WP_CLI\Utils\show_single_field( $terms, $assoc_args['field'], $assoc_args['format'], 'term' );
+
+		} else {
+
+			WP_CLI\Utils\format_items( $assoc_args['format'], $terms, $fields );
+
+		}
+
 	}
 
 	/**
@@ -130,6 +142,9 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * <taxonomy>
 	 * : Taxonomy of the term to get
+	 * 
+	 * [--field=<field>]
+	 * : Instead of returning the whole term, returns the value of a single field.
 	 *
 	 * [--format=<format>]
 	 * : The format to use when printing the term, acceptable values:
@@ -154,21 +169,17 @@ class Term_Command extends WP_CLI_Command {
 		if ( ! $term )
 			WP_CLI::error( "Term doesn't exist." );
 
-		switch ( $assoc_args['format'] ) {
+		if ( isset( $assoc_args['field'] ) ) {
 
-			case 'table':
-				$fields = get_object_vars( $term );
-				\WP_CLI\Utils\assoc_array_to_table( $fields );
-				break;
+			\WP_CLI\Utils\show_single_field( array( $term ), $assoc_args['field'], $assoc_args['format'], 'term' );
 
-			case 'json':
-				WP_CLI::print_value( $term, $assoc_args );
-				break;
+		} else {
 
-			default:
-				\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
-				break;
+			$term = get_object_vars( $term );
+			
+			\WP_CLI\Utils\show_multiple_fields( $term, $assoc_args['format'] );
 		}
+
 	}
 
 	/**
