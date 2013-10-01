@@ -45,34 +45,18 @@ class Term_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function _list( $args, $assoc_args ) {
-
-		list( $taxonomy ) = $args;
+		$formatter = $this->get_formatter( $assoc_args );
 
 		$defaults = array(
-			'fields'     => implode( ',', $this->fields ),
-			'format'     => 'table',
 			'hide_empty' => false,
 		);
-		$assoc_args = wp_parse_args( $assoc_args, $defaults );
+		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		$fields = $assoc_args['fields'];
-		unset( $assoc_args['fields'] );
-
-		$terms = get_terms( array( $taxonomy ), $assoc_args );
-
-		if ( 'ids' == $assoc_args['format'] )
+		$terms = get_terms( $args, $assoc_args );
+		if ( 'ids' == $formatter->format )
 			$terms = wp_list_pluck( $terms, 'term_id' );
 
-		if ( isset( $assoc_args['field'] ) ) {
-
-			WP_CLI\Utils\show_single_field( $terms, $assoc_args['field'], $assoc_args['format'], 'term' );
-
-		} else {
-
-			WP_CLI\Utils\format_items( $assoc_args['format'], $terms, $fields );
-
-		}
-
+		$formatter->display_items( $terms );
 	}
 
 	/**
@@ -157,29 +141,14 @@ class Term_Command extends WP_CLI_Command {
 	 *     wp term get 1 category --format=json
 	 */
 	public function get( $args, $assoc_args ) {
+		$formatter = $this->get_formatter( $assoc_args );
 
 		list( $term_id, $taxonomy ) = $args;
-
-		$defaults = array(
-			'format' => 'table'
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
-
 		$term = get_term_by( 'id', $term_id, $taxonomy );
 		if ( ! $term )
 			WP_CLI::error( "Term doesn't exist." );
 
-		if ( isset( $assoc_args['field'] ) ) {
-
-			\WP_CLI\Utils\show_single_field( array( $term ), $assoc_args['field'], $assoc_args['format'], 'term' );
-
-		} else {
-
-			$term = get_object_vars( $term );
-
-			\WP_CLI\Utils\show_multiple_fields( $term, $assoc_args['format'] );
-		}
-
+		$formatter->display_item( $term );
 	}
 
 	/**
@@ -263,6 +232,9 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( "Term doesn't exist." );
 	}
 
+	private function get_formatter( &$assoc_args ) {
+		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'term' );
+	}
 }
 
 WP_CLI::add_command( 'term', 'Term_Command' );

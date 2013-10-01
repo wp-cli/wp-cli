@@ -5,6 +5,8 @@ namespace WP_CLI;
 abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected $item_type;
+	protected $obj_fields;
+
 	protected $upgrade_refresh;
 	protected $upgrade_transient;
 
@@ -238,12 +240,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
-		$defaults = array(
-			'format' => 'table',
-			'fields' => $this->fields
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
-
 		$all_items = $this->get_all_items();
 		if ( !is_array( $all_items ) )
 			\WP_CLI::error( "No {$this->item_type}s found." );
@@ -263,18 +259,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			return $item;
 		} );
 
-		if ( isset( $assoc_args['field'] ) ) {
-			$field = $assoc_args['field'];
-
-			foreach ( $it as $item ) {
-				if ( !isset( $item[ $field ] ) ) {
-					\WP_CLI::error( "Invalid $this->item_type field: $field." );
-				}
-				\WP_CLI::print_value( $item[ $field ] );
-			}
-		} else {
-			\WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
-		}
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_items( $it );
 	}
 
 	/**
@@ -347,6 +333,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
 
 		\WP_CLI\Utils\format_items( $format, $items, $assoc_args['fields'] );
+	}
+
+	protected function get_formatter( &$assoc_args ) {
+		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->item_type );
 	}
 }
 
