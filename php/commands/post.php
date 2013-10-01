@@ -8,8 +8,7 @@
 class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected $obj_type = 'post';
-
-	private $fields = array(
+	protected $obj_fields = array(
 		'ID',
 		'post_title',
 		'post_name',
@@ -153,30 +152,15 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp post get 12 --field=content > file.txt
 	 */
 	public function get( $args, $assoc_args ) {
-		$defaults = array(
-			'format' => 'table'
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
-
 		$post_id = $args[0];
 		if ( !$post_id || !$post = get_post( $post_id ) )
 			\WP_CLI::error( "Could not find the post with ID $post_id." );
 
-		if ( isset( $assoc_args['field'] ) ) {
+		$post_arr = get_object_vars( $post );
+		unset( $post_arr['filter'] );
 
-			\WP_CLI\Utils\show_single_field( array( $post ), $assoc_args['field'], $assoc_args['format'], 'post' );
-
-		} else {
-
-			$fields = get_object_vars( $post );
-
-			if ( 'table' == $assoc_args['format'] )
-				unset( $fields['filter'], $fields['post_content'], $fields['format_content'] );
-			else if ( 'json' == $assoc_args['format'] )
-				unset( $fields['filter'] );
-
-			\WP_CLI\Utils\show_multiple_fields( $fields, $assoc_args['format'] );
-		}
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $post_arr );
 	}
 
 	/**
@@ -243,34 +227,20 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand list
 	 */
 	public function _list( $_, $assoc_args ) {
-		$defaults = array(
-			'format' => 'table',
-			'fields' => $this->fields
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
+		$formatter = $this->get_formatter( $assoc_args );
 
-		$query_args = array(
+		$defaults = array(
 			'posts_per_page' => -1,
 			'post_status'    => 'any',
 		);
+		$query_args = array_merge( $defaults, $assoc_args );
 
-		foreach ( $assoc_args as $key => $value ) {
-			if ( true === $value )
-				continue;
-
-			$query_args[ $key ] = $value;
-		}
-
-		if ( 'ids' == $assoc_args['format'] )
+		if ( 'ids' == $formatter->format )
 			$query_args['fields'] = 'ids';
 
 		$query = new WP_Query( $query_args );
 
-		if ( isset( $assoc_args['field'] ) ) {
-			WP_CLI\Utils\show_single_field( $query->posts, $assoc_args['field'], $assoc_args['format'], 'post' );
-		} else {
-			WP_CLI\Utils\format_items( $assoc_args['format'], $query->posts, $assoc_args['fields'] );
-		}
+		$formatter->display_items( $query->posts );
 	}
 
 	/**

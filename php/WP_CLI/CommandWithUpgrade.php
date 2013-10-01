@@ -348,5 +348,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		\WP_CLI\Utils\format_items( $format, $items, $assoc_args['fields'] );
 	}
+
+	protected function get_formatter( &$assoc_args ) {
+		return new \WP_CLI\Formatter( $assoc_args, null, $this->item_type );
+	}
 }
 

@@ -268,11 +268,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme get twentytwelve --format=json
 	 */
 	public function get( $args, $assoc_args ) {
-		$defaults = array(
-			'format' => 'table'
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
-
 		$theme = $this->parse_name( $args[0] );
 
 		// WP_Theme object employs magic getter, unfortunately
@@ -285,11 +280,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$theme_obj->description = wordwrap( $theme_obj->description );
 
-		if ( isset( $assoc_args['field'] ) ) {
-			\WP_CLI\Utils\show_single_field( array( $theme_obj ), $assoc_args['field'], $assoc_args['format'] );
-		} else {
-			\WP_CLI\Utils\show_multiple_fields( $theme_obj, $assoc_args['format'] );
-		}
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $theme_obj );
 	}
 
 	/**
