@@ -286,9 +286,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		$theme_obj->description = wordwrap( $theme_obj->description );
 
 		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( array( $theme_obj ), $assoc_args['field'] );
+			\WP_CLI\Utils\show_single_field( array( $theme_obj ), $assoc_args['field'] );
 		} else {
-			$this->show_multiple_fields( $theme_obj, $assoc_args );
+			\WP_CLI\Utils\show_multiple_fields( $theme_obj, $assoc_args['format'] );
 		}
 	}
 
