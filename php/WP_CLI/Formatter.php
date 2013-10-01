@@ -32,10 +32,8 @@ class Formatter {
 	public function display_items( $items ) {
 		if ( $this->args['field'] ) {
 			self::show_single_field( $items, $this->args['field'], $this->args['format'], $this->prefix );
-		} elseif ( $this->args['fields'] ) {
-			\WP_CLI\Utils\format_items( $this->args['format'], $items, $this->args['fields'] );
 		} else {
-			trigger_error( 'Both --field= and --fields= parameters are missing.', E_USER_ERROR );
+			\WP_CLI\Utils\format_items( $this->args['format'], $items, $this->args['fields'] );
 		}
 	}
 
