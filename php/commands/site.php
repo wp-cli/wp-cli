@@ -362,13 +362,6 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		}
 	}
 
-	protected function find_field( $item, $field ) {
-		if ( 'url' == $field )
-			return 'url';
-
-		return parent::find_field( $item, $field );
-	}
-
 	/**
 	 * Get site (network) data for a given id.
 	 *
