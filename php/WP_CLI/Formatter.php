@@ -43,7 +43,9 @@ class Formatter {
 
 	public function display_item( $item ) {
 		if ( isset( $this->args['field'] ) ) {
-			$this->show_single_field( array( (object) $item ), $this->args['field'] );
+			$item = (object) $item;
+			$key = $this->find_item_key( $item, $this->args['field'] );
+			\WP_CLI::print_value( $item->$key, array( 'format' => $this->args['format'] ) );
 		} else {
 			self::show_multiple_fields( $item, $this->args['format'] );
 		}
@@ -94,11 +96,21 @@ class Formatter {
 	 */
 	private function show_single_field( $items, $field ) {
 		foreach ( $items as $item ) {
+			$item = (object) $item;
+
 			if ( ! isset( $key ) ) {
 				$key = $this->find_item_key( $item, $field );
 			}
 
-			\WP_CLI::print_value( $item->$key, array( 'format' => $this->args['format'] ) );
+			if ( 'json' == $this->args['format'] ) {
+				$values[] = $item->$key;
+			} else {
+				\WP_CLI::print_value( $item->$key, array( 'format' => $this->args['format'] ) );
+			}
+		}
+
+		if ( 'json' == $this->args['format'] ) {
+			echo json_encode( $values );
 		}
 	}
 
