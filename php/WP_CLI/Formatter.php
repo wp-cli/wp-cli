@@ -31,7 +31,7 @@ class Formatter {
 
 	public function display_items( $items ) {
 		if ( $this->args['field'] ) {
-			self::show_single_field( $items, $this->args['field'], $this->args['format'], $this->prefix );
+			$this->show_single_field( $items, $this->args['field'] );
 		} else {
 			\WP_CLI\Utils\format_items( $this->args['format'], $items, $this->args['fields'] );
 		}
@@ -39,7 +39,7 @@ class Formatter {
 
 	public function display_item( $item ) {
 		if ( isset( $this->args['field'] ) ) {
-			self::show_single_field( array( (object) $item ), $this->args['field'], $this->args['format'], $this->prefix );
+			$this->show_single_field( array( (object) $item ), $this->args['field'] );
 		} else {
 			self::show_multiple_fields( $item, $this->args['format'] );
 		}
@@ -50,31 +50,30 @@ class Formatter {
 	 *
 	 * @param array Array of objects to show fields from
 	 * @param string The field to show
-	 * @param string The format to show the field in
-	 * @param string Whether or not the field is typically prefixed (e.g. "content" => "post_content")
 	 */
-	private static function show_single_field( $items, $field, $format = '', $field_prefix = '' ) {
-
+	private function show_single_field( $items, $field ) {
 		foreach ( $items as $item ) {
-
 			if ( ! isset( $key ) ) {
-
-				foreach ( array( $field, $field_prefix . '_' . $field ) as $maybe_key ) {
-					if ( isset( $item->$maybe_key ) ) {
-						$key = $maybe_key;
-						break;
-					}
-				}
-
-				if ( ! $key ) {
-					\WP_CLI::error( "Invalid field: $field." );
-				}
-
+				$key = $this->find_item_key( $item, $field );
 			}
 
-			\WP_CLI::print_value( $item->$key, array( 'format' => $format ) );
+			\WP_CLI::print_value( $item->$key, array( 'format' => $this->args['format'] ) );
+		}
+	}
+
+	private function find_item_key( $item, $field ) {
+		foreach ( array( $field, $this->prefix . '_' . $field ) as $maybe_key ) {
+			if ( isset( $item->$maybe_key ) ) {
+				$key = $maybe_key;
+				break;
+			}
 		}
 
+		if ( ! $key ) {
+			\WP_CLI::error( "Invalid field: $field." );
+		}
+
+		return $key;
 	}
 
 	/**
