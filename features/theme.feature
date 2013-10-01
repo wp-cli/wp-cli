@@ -1,8 +1,9 @@
 Feature: Manage WordPress themes
 
-  Scenario: Installing a theme
+  Background:
     Given a WP install
 
+  Scenario: Installing a theme
     When I run `wp theme install p2`
     Then STDOUT should not be empty
 
@@ -44,8 +45,6 @@ Feature: Manage WordPress themes
     Then STDOUT should not be empty
 
   Scenario: Install a theme, activate, then force install an older version of the theme
-    Given a WP install
-
     When I run `wp theme install p2 --version=1.4.2`
     Then STDOUT should not be empty
 
@@ -66,8 +65,6 @@ Feature: Manage WordPress themes
       | p2    | active   | available | 1.4.1     |
 
   Scenario: Get the path of an installed theme
-    Given a WP install
-
     When I run `wp theme install p2`
     Then STDOUT should not be empty
 
@@ -78,8 +75,6 @@ Feature: Manage WordPress themes
        """
 
   Scenario: Get details about an installed theme
-    Given a WP install
-
     When I run `wp theme install p2`
     Then STDOUT should not be empty
 
