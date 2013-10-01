@@ -26,7 +26,7 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * [--<field>=<value>]
 	 * : Filter by one or more fields. For accepted fields, see get_terms().
-	 * 
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each term.
 	 *
@@ -142,7 +142,7 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * <taxonomy>
 	 * : Taxonomy of the term to get
-	 * 
+	 *
 	 * [--field=<field>]
 	 * : Instead of returning the whole term, returns the value of a single field.
 	 *
@@ -176,7 +176,7 @@ class Term_Command extends WP_CLI_Command {
 		} else {
 
 			$term = get_object_vars( $term );
-			
+
 			\WP_CLI\Utils\show_multiple_fields( $term, $assoc_args['format'] );
 		}
 

@@ -375,7 +375,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * <plugin>
 	 * : The plugin to get.
-	 * 
+	 *
 	 * [--field=<field>]
 	 * : Instead of returning the whole plugin, returns the value of a single field.
 	 *

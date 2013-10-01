@@ -174,7 +174,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				unset( $fields['filter'], $fields['post_content'], $fields['format_content'] );
 			else if ( 'json' == $assoc_args['format'] )
 				unset( $fields['filter'] );
-			
+
 			\WP_CLI\Utils\show_multiple_fields( $fields, $assoc_args['format'] );
 		}
 	}
