@@ -51,7 +51,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		if ( 'ids' == $formatter->format ) {
-			$assoc_args['fields'] =  'ids';
+			$assoc_args['fields'] = 'ids';
+		} else {
+			$assoc_args['fields'] = 'all_with_meta';
 		}
 
 		$users = get_users( $assoc_args );
