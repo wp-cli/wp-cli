@@ -21,6 +21,10 @@ class Formatter {
 			}
 		}
 
+		if ( ! is_array( $format_args['fields'] ) ) {
+			$format_args['fields'] = explode( ',', $format_args['fields'] );
+		}
+
 		$this->args = $format_args;
 		$this->prefix = $prefix;
 	}
@@ -33,7 +37,7 @@ class Formatter {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
-			\WP_CLI\Utils\format_items( $this->args['format'], $items, $this->args['fields'] );
+			$this->format( $items );
 		}
 	}
 
@@ -42,6 +46,43 @@ class Formatter {
 			$this->show_single_field( array( (object) $item ), $this->args['field'] );
 		} else {
 			self::show_multiple_fields( $item, $this->args['format'] );
+		}
+	}
+
+	private function format( $items ) {
+		$fields = $this->args['fields'];
+
+		switch ( $this->args['format'] ) {
+		case 'count':
+			if ( !is_array( $items ) ) {
+				$items = iterator_to_array( $items );
+			}
+			echo count( $items );
+			break;
+
+		case 'ids':
+			if ( !is_array( $items ) ) {
+				$items = iterator_to_array( $items );
+			}
+			echo implode( ' ', $items );
+			break;
+
+		case 'table':
+			self::show_table( $items, $fields );
+			break;
+
+		case 'csv':
+			\WP_CLI\Utils\write_csv( STDOUT, $items, $fields );
+			break;
+
+		case 'json':
+			$out = array();
+			foreach ( $items as $item ) {
+				$out[] = \WP_CLI\Utils\pick_fields( $item, $fields );
+			}
+
+			echo json_encode( $out );
+			break;
 		}
 	}
 
@@ -102,6 +143,18 @@ class Formatter {
 
 	}
 
+	private static function show_table( $items, $fields ) {
+		$table = new \cli\Table();
+
+		$table->setHeaders( $fields );
+
+		foreach ( $items as $item ) {
+			$table->addRow( array_values( \WP_CLI\Utils\pick_fields( $item, $fields ) ) );
+		}
+
+		$table->display();
+	}
+
 	/**
 	 * Format an associative array as a table
 	 *
@@ -121,7 +174,7 @@ class Formatter {
 			);
 		}
 
-		\WP_CLI\Utils\format_items( 'table', $rows, array( 'Field', 'Value' ) );
+		self::show_table( $rows, array( 'Field', 'Value' ) );
 	}
 }
 
