@@ -42,7 +42,7 @@ Feature: Manage WordPress terms
     When I run `wp term get {TERM_ID} post_tag --field=slug --format=json`
     Then STDOUT should contain:
       """
-      {"slug":"test-delete"}
+      {"test-delete"}
       """
 
     When I run `wp term delete {TERM_ID} post_tag`
