@@ -112,7 +112,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( isset( $assoc_args['field'] ) ) {
 
-			\WP_CLI\Utils\show_single_field( array( $comment ), $assoc_args['field'], 'comment' );
+			\WP_CLI\Utils\show_single_field( array( $comment ), $assoc_args['field'], $assoc_args['format'], 'comment' );
 
 		} else {
 
@@ -177,7 +177,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( isset( $assoc_args['field'] ) ) {
-			\WP_CLI\Utils\show_single_field( $comments, $assoc_args['field'], 'comment' );
+			\WP_CLI\Utils\show_single_field( $comments, $assoc_args['field'], $assoc_args['format'], 'comment' );
 		} else {
 			WP_CLI\Utils\format_items( $assoc_args['format'], $comments, $assoc_args['fields'] );
 		}

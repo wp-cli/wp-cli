@@ -369,9 +369,10 @@ function pick_fields( $item, $fields ) {
  * 
  * @param array Array of objects to show fields from
  * @param string The field to show
+ * @param string The format to show the field in
  * @param string Whether or not the field is typically prefixed (e.g. "content" => "post_content")
  */
-function show_single_field( $items, $field, $field_prefix = '' ) {
+function show_single_field( $items, $field, $format = '', $field_prefix = '' ) {
 
 	foreach ( $items as $item ) {
 
@@ -390,7 +391,15 @@ function show_single_field( $items, $field, $field_prefix = '' ) {
 
 		}
 
-		\WP_CLI::print_value( $item->$key );
+		// Persist the field name for JSON
+		if ( 'json' == $format ) {
+			$data = new \stdClass;
+			$data->$key = $item->$key;
+		} else {
+			$data = $item->$key;
+		}
+
+		\WP_CLI::print_value( $data, array( 'format' => $format ) );
 	}
 
 }

@@ -93,3 +93,9 @@ Feature: Manage WordPress themes
        """
        P2
        """
+
+    When I run `wp theme get p2 --field=title --format=json`
+    Then STDOUT should contain:
+       """
+       {"title":"P2"}
+       """
