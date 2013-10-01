@@ -202,49 +202,9 @@ function locate_wp_config() {
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
 function format_items( $format, $items, $fields ) {
-	if ( ! is_array( $fields ) )
-		$fields = explode( ',', $fields );
-
-	switch ( $format ) {
-		case 'count':
-			if ( !is_array( $items ) ) {
-				$items = iterator_to_array( $items );
-			}
-			echo count( $items );
-			break;
-
-		case 'ids':
-			if ( !is_array( $items ) ) {
-				$items = iterator_to_array( $items );
-			}
-			echo implode( ' ', $items );
-			break;
-
-		case 'table':
-			$table = new \cli\Table();
-
-			$table->setHeaders( $fields );
-
-			foreach ( $items as $item ) {
-				$table->addRow( array_values( pick_fields( $item, $fields ) ) );
-			}
-
-			$table->display();
-			break;
-
-		case 'csv':
-			write_csv( STDOUT, $items, $fields );
-			break;
-
-		case 'json':
-			$out = array();
-			foreach ( $items as $item ) {
-				$out[] = pick_fields( $item, $fields );
-			}
-
-			echo json_encode( $out );
-			break;
-	}
+	$assoc_args = compact( 'format', 'fields' );
+	$formatter = new \WP_CLI\Formatter( $assoc_args );
+	$formatter->display_items( $items );
 }
 
 /**
