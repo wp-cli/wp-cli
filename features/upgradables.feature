@@ -8,6 +8,10 @@ Feature: Manage WordPress themes and plugins
     And I run `wp <type> path`
     And save STDOUT as {CONTENT_DIR}
 
+    When I try `wp <type> get <item>`
+    Then the return code should be 1
+    And STDERR should not be empty
+
     # Install an out of date <item> from WordPress.org repository
     When I run `wp <type> install <item> --version=<version>`
     Then STDOUT should contain:
