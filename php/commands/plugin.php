@@ -440,7 +440,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Check if the plugin is installed
+	 * Check if the plugin is installed.
 	 *
 	 * ## OPTIONS
 	 *
