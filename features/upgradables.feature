@@ -8,12 +8,33 @@ Feature: Manage WordPress themes and plugins
     And I run `wp <type> path`
     And save STDOUT as {CONTENT_DIR}
 
+    When I try `wp <type> get <item>`
+    Then the return code should be 1
+    And STDERR should not be empty
+
     # Install an out of date <item> from WordPress.org repository
     When I run `wp <type> install <item> --version=<version>`
     Then STDOUT should contain:
       """
       <type_name> installed successfully
       """
+
+    When I run `wp <type> get <item>`
+    Then STDOUT should be a table containing rows:
+      | Field | Value         |
+      | title  | <item_title> |
+
+    When I run `wp <type> get <item> --field=title`
+    Then STDOUT should contain:
+       """
+       <item_title>
+       """
+
+    When I run `wp <type> get <item> --field=title --format=json`
+    Then STDOUT should contain:
+       """
+       "<item_title>"
+       """
 
     When I run `wp <type> list`
     Then STDOUT should be a table containing rows:
