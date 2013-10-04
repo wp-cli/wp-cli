@@ -388,6 +388,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	public function get( $args, $assoc_args ) {
 		$file = $this->_parse_name( $args[0] );
+		if ( !$file ) {
+			WP_CLI::error( "The '{$args[0]}' plugin could not be found." );
+		}
 
 		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
 

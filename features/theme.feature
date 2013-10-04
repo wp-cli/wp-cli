@@ -73,24 +73,3 @@ Feature: Manage WordPress themes
        """
        wp-content/themes/p2
        """
-
-  Scenario: Get details about an installed theme
-    When I run `wp theme install p2`
-    Then STDOUT should not be empty
-
-    When I run `wp theme get p2`
-    Then STDOUT should be a table containing rows:
-      | Field | Value          |
-      | name  | P2             |
-
-    When I run `wp theme get p2 --field=title`
-    Then STDOUT should contain:
-       """
-       P2
-       """
-
-    When I run `wp theme get p2 --field=title --format=json`
-    Then STDOUT should contain:
-       """
-       "P2"
-       """
