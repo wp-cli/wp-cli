@@ -19,6 +19,23 @@ Feature: Manage WordPress themes and plugins
       <type_name> installed successfully
       """
 
+    When I run `wp <type> get <item>`
+    Then STDOUT should be a table containing rows:
+      | Field | Value         |
+      | title  | <item_title> |
+
+    When I run `wp <type> get <item> --field=title`
+    Then STDOUT should contain:
+       """
+       <item_title>
+       """
+
+    When I run `wp <type> get <item> --field=title --format=json`
+    Then STDOUT should contain:
+       """
+       "<item_title>"
+       """
+
     When I run `wp <type> list`
     Then STDOUT should be a table containing rows:
       | name   | status   | update    | version   |
