@@ -313,6 +313,30 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
+	 * Check if the theme is installed.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : The theme to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme is-installed twentytwelve
+	 *
+	 * @subcommand is-installed
+	 */
+	function is_installed( $args, $assoc_args = array() ) {
+		$theme = wp_get_theme( $args[0] );
+
+		if ( $theme->exists() ) {
+			exit( 0 );
+		} else {
+			exit( 1 );
+		}
+	}
+
+	/**
 	 * Delete a theme.
 	 *
 	 * ## OPTIONS
