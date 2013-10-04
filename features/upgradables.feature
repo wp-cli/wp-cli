@@ -8,6 +8,10 @@ Feature: Manage WordPress themes and plugins
     And I run `wp <type> path`
     And save STDOUT as {CONTENT_DIR}
 
+    When I try `wp <type> is-installed <item>`
+    Then the return code should be 1
+    And STDERR should be empty
+
     When I try `wp <type> get <item>`
     Then the return code should be 1
     And STDERR should not be empty
@@ -18,6 +22,9 @@ Feature: Manage WordPress themes and plugins
       """
       <type_name> installed successfully
       """
+
+    When I try `wp <type> is-installed <item>`
+    Then the return code should be 0
 
     When I run `wp <type> get <item>`
     Then STDOUT should be a table containing rows:

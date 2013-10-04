@@ -31,12 +31,6 @@ Feature: Manage WordPress plugins
           Status: Active
       """
 
-    When I run `wp plugin is-installed zombieland && echo "Zombieland"`
-    Then STDOUT should contain:
-      """
-      Zombieland
-      """
-
     When I run `wp plugin status`
     Then STDOUT should not be empty
 
