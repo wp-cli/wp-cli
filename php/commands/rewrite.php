@@ -96,6 +96,9 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * 
 	 * [--match=<url>]
 	 * : Show rewrite rules matching a particular URL.
+	 * 
+	 * [--source=<source>]
+	 * : Show rewrite rules from a particular source.
 	 *
 	 * [--format=<format>]
 	 * : Output list as table, JSON or CSV. Defaults to table.
@@ -106,6 +109,8 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function _list( $args, $assoc_args ) {
+		global $wp_rewrite;
+
 		$rules = get_option( 'rewrite_rules' );
 		if ( ! $rules ) {
 			$rules = array();
@@ -113,10 +118,40 @@ class Rewrite_Command extends WP_CLI_Command {
 		}
 
 		$defaults = array(
+			'source' => '',
 			'match'  => '',
 			'format' => 'table'
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$rewrite_rules_by_source = array();
+		$rewrite_rules_by_source['post'] = $wp_rewrite->generate_rewrite_rules( $wp_rewrite->permalink_structure, EP_PERMALINK );
+		$rewrite_rules_by_source['date'] = $wp_rewrite->generate_rewrite_rules( $wp_rewrite->get_date_permastruct(), EP_DATE );
+		$rewrite_rules_by_source['root'] = $wp_rewrite->generate_rewrite_rules( $wp_rewrite->root . '/', EP_ROOT );
+		$rewrite_rules_by_source['comments'] = $wp_rewrite->generate_rewrite_rules( $wp_rewrite->root . $wp_rewrite->comments_base, EP_COMMENTS, true, true, true, false );
+		$rewrite_rules_by_source['search'] = $wp_rewrite->generate_rewrite_rules( $wp_rewrite->get_search_permastruct(), EP_SEARCH );
+		$rewrite_rules_by_source['author'] = $wp_rewrite->generate_rewrite_rules($wp_rewrite->get_author_permastruct(), EP_AUTHORS );
+		$rewrite_rules_by_source['page'] = $wp_rewrite->page_rewrite_rules();
+
+		// Extra permastructs including tags, categories, etc.
+		foreach ( $wp_rewrite->extra_permastructs as $permastructname => $permastruct ) {
+			if ( is_array( $permastruct ) ) {
+				// Pre 3.4 compat
+				if ( count( $permastruct ) == 2 )
+					$rewrite_rules_by_source[$permastructname] = $wp_rewrite->generate_rewrite_rules( $permastruct[0], $permastruct[1] );
+				else
+					$rewrite_rules_by_source[$permastructname] = $wp_rewrite->generate_rewrite_rules( $permastruct['struct'], $permastruct['ep_mask'], $permastruct['paged'], $permastruct['feed'], $permastruct['forcomments'], $permastruct['walk_dirs'], $permastruct['endpoints'] );
+			} else {
+				$rewrite_rules_by_source[$permastructname] = $wp_rewrite->generate_rewrite_rules( $permastruct, EP_NONE );
+			}
+		}
+
+		// Apply the filters used in core just in case
+		foreach( $rewrite_rules_by_source as $source => $source_rules ) {
+			$rewrite_rules_by_source[$source] = apply_filters( $source . '_rewrite_rules', $source_rules );
+			if ( 'post_tag' == $source )
+				$rewrite_rules_by_source[$source] = apply_filters( 'tag_rewrite_rules', $source_rules );
+		}
 
 		$rule_list = array();
 		foreach ( $rules as $match => $query ) {
@@ -125,10 +160,20 @@ class Rewrite_Command extends WP_CLI_Command {
 				&& ! preg_match( "!^$match!", trim( $assoc_args['match'], '/' ) ) )
 				continue;
 
-			$rule_list[] = compact( 'match', 'query' );
+			$source = 'other';
+			foreach( $rewrite_rules_by_source as $rules_source => $source_rules ) {
+				if ( array_key_exists( $match, $source_rules ) ) {
+					$source = $rules_source;
+				}
+			}
+
+			if ( ! empty( $assoc_args['source'] ) && $source != $assoc_args['source'] )
+				continue;
+
+			$rule_list[] = compact( 'match', 'query', 'source' );
 		}
 
-		WP_CLI\Utils\format_items( $assoc_args['format'], $rule_list, array('match', 'query') );
+		WP_CLI\Utils\format_items( $assoc_args['format'], $rule_list, array('match', 'query', 'source' ) );
 	}
 
 	/**
