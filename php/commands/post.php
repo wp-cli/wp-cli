@@ -236,6 +236,11 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		);
 		$query_args = array_merge( $defaults, $assoc_args );
 
+		foreach( $query_args as $key => $query_arg ) {
+			if ( false !== strpos( $key, '__' ) )
+				$query_args[$key] = explode( ',', $query_arg );
+		}
+
 		if ( 'ids' == $formatter->format )
 			$query_args['fields'] = 'ids';
 
