@@ -136,11 +136,7 @@ class Rewrite_Command extends WP_CLI_Command {
 		// Extra permastructs including tags, categories, etc.
 		foreach ( $wp_rewrite->extra_permastructs as $permastructname => $permastruct ) {
 			if ( is_array( $permastruct ) ) {
-				// Pre 3.4 compat
-				if ( count( $permastruct ) == 2 )
-					$rewrite_rules_by_source[$permastructname] = $wp_rewrite->generate_rewrite_rules( $permastruct[0], $permastruct[1] );
-				else
-					$rewrite_rules_by_source[$permastructname] = $wp_rewrite->generate_rewrite_rules( $permastruct['struct'], $permastruct['ep_mask'], $permastruct['paged'], $permastruct['feed'], $permastruct['forcomments'], $permastruct['walk_dirs'], $permastruct['endpoints'] );
+				$rewrite_rules_by_source[$permastructname] = $wp_rewrite->generate_rewrite_rules( $permastruct['struct'], $permastruct['ep_mask'], $permastruct['paged'], $permastruct['feed'], $permastruct['forcomments'], $permastruct['walk_dirs'], $permastruct['endpoints'] );
 			} else {
 				$rewrite_rules_by_source[$permastructname] = $wp_rewrite->generate_rewrite_rules( $permastruct, EP_NONE );
 			}
