@@ -115,7 +115,7 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * @alias dump
 	 *
-	 * @synopsis [<file>] [--extended-insert=FALSE] [--comments] [--replace] ...
+	 * @synopsis [<file>] [--extended-insert] [--skip-comments] [--<field>=<value>]
 	 */
 	function export( $args, $assoc_args ) {
 		$assoc_args['result-file'] = $this->get_file_name( $args );
