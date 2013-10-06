@@ -111,20 +111,18 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Exports the database using mysqldump.
+	 * Exports the database using mysqldump. Accepts all of mysqldump's arguments.
 	 *
 	 * @alias dump
 	 *
-	 * @synopsis [<file>]
+	 * @synopsis [<file>] [--extended-insert=FALSE] [--comments] [--replace] ...
 	 */
 	function export( $args, $assoc_args ) {
-		$result_file = $this->get_file_name( $args );
+		$assoc_args['result-file'] = $this->get_file_name( $args );
 
-		self::run( Utils\esc_cmd( 'mysqldump %s', DB_NAME ), array(
-			'result-file' => $result_file
-		) );
+		self::run( Utils\esc_cmd( 'mysqldump %s', DB_NAME ), $assoc_args );
 
-		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
+		WP_CLI::success( sprintf( 'Exported to %s', $assoc_args['result-file'] ) );
 	}
 
 	/**
