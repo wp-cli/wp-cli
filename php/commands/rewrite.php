@@ -86,6 +86,7 @@ class Rewrite_Command extends WP_CLI_Command {
 		// make sure we detect mod_rewrite if configured in apache_modules in config
 		self::apache_modules();
 		flush_rewrite_rules( isset( $assoc_args['hard'] ) );
+		WP_CLI::success( "Rewrite structure set." );
 	}
 
 	/**
