@@ -97,6 +97,7 @@ Feature: Manage WordPress posts
   Scenario: Creating/listing posts
     When I run `wp post create --post_title='Publish post' --post_content='Publish post content' --post_status='publish' --porcelain`
     Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
 
     When I run `wp post create --post_title='Draft post' --post_content='Draft post content' --post_status='draft' --porcelain`
     Then STDOUT should be a number
@@ -106,6 +107,11 @@ Feature: Manage WordPress posts
       | post_title   | post_name    | post_status  |
       | Publish post | publish-post | publish      |
       | Draft post   |              | draft        |
+
+    When I run `wp post list --post_type='post' --post__in={POST_ID} --fields=post_title,post_name,post_status --format=csv`
+    Then STDOUT should be CSV containing:
+      | post_title   | post_name    | post_status  |
+      | Publish post | publish-post | publish      |
 
     When I run `wp post list --post_type='page' --field=title`
     Then STDOUT should be:
