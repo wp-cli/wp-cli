@@ -93,6 +93,9 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * Print current rewrite rules.
 	 *
 	 * ## OPTIONS
+	 * 
+	 * [--match=<url>]
+	 * : Show rewrite rules matching a particular URL.
 	 *
 	 * [--format=<format>]
 	 * : Output list as table, JSON or CSV. Defaults to table.
@@ -110,12 +113,18 @@ class Rewrite_Command extends WP_CLI_Command {
 		}
 
 		$defaults = array(
+			'match'  => '',
 			'format' => 'table'
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		$rule_list = array();
 		foreach ( $rules as $match => $query ) {
+
+			if ( ! empty( $assoc_args['match'] )
+				&& ! preg_match( "!^$match!", trim( $assoc_args['match'], '/' ) ) )
+				continue;
+
 			$rule_list[] = compact( 'match', 'query' );
 		}
 

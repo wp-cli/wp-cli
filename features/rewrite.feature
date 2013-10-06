@@ -31,3 +31,8 @@ Feature: Manage WordPress rewrites
       | blog/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/([^/]+)(/[0-9]+)?/?$ | index.php?year=$matches[1]&monthnum=$matches[2]&day=$matches[3]&name=$matches[4]&page=$matches[5] |
       | topic/([^/]+)/?$ | index.php?tag=$matches[1]           |
       | section/(.+?)/?$ | index.php?category_name=$matches[1] |
+
+   When I run `wp rewrite list --match=/topic/apple/ --format=csv`
+   Then STDOUT should be CSV containing:
+      | match            | query                               |
+      | topic/([^/]+)/?$ | index.php?tag=$matches[1]           |
