@@ -596,7 +596,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	private function _delete( $plugin ) {
 		$plugin_dir = dirname( $plugin->file );
 		if ( '.' == $plugin_dir )
-			$plugin_dir = $file;
+			$plugin_dir = $plugin->file;
 
 		$command = 'rm -rf ' . path_join( WP_PLUGIN_DIR, $plugin_dir );
 
