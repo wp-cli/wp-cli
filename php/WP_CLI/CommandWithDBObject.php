@@ -11,6 +11,7 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 
 	protected $obj_type;
 	protected $obj_id_key = 'ID';
+	protected $obj_fields = null;
 
 	protected function _create( $args, $assoc_args, $callback ) {
 		unset( $assoc_args[ $this->obj_id_key ] );
@@ -78,27 +79,8 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		return $status;
 	}
 
-	protected function show_single_field( $items, $field ) {
-		foreach ( $items as $item ) {
-			if ( !isset( $key ) ) {
-				$key = $this->find_field( $item, $field );
-				if ( !$key ) {
-					\WP_CLI::error( "Invalid $this->obj_type field: $field." );
-				}
-			}
-
-			\WP_CLI::print_value( $item->$key );
-		}
-	}
-
-	protected function find_field( $item, $field ) {
-		foreach ( array( $field, $this->obj_type . '_' . $field ) as $key ) {
-			if ( isset( $item->$key ) ) {
-				return $key;
-			}
-		}
-
-		return false;
+	protected function get_formatter( &$assoc_args ) {
+		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
 	}
 }
 

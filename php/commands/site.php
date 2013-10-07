@@ -7,6 +7,8 @@
  */
 class Site_Command extends \WP_CLI\CommandWithDBObject {
 
+	protected $obj_type = 'site';
+
 	/**
 	 * Delete comments.
 	 */
@@ -355,18 +357,8 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			return $blog;
 		} );
 
-		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( $it, $assoc_args['field'] );
-		} else {
-			WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
-		}
-	}
-
-	protected function find_field( $item, $field ) {
-		if ( 'url' == $field )
-			return 'url';
-
-		return parent::find_field( $item, $field );
+		$formatter = new \WP_CLI\Formatter( $assoc_args, null, 'site' );
+		$formatter->display_items( $it );
 	}
 
 	/**

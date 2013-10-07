@@ -11,7 +11,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	protected $upgrade_refresh = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
 
-	protected $fields = array(
+	protected $obj_fields = array(
 		'name',
 		'status',
 		'update',
@@ -369,6 +369,46 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
+	 * Get a plugin.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to get.
+	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole plugin, returns the value of a single field.
+	 *
+	 * [--format=<format>]
+	 * : Output list as table or JSON. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin get bbpress --format=json
+	 */
+	public function get( $args, $assoc_args ) {
+		$file = $this->_parse_name( $args[0] );
+		if ( !$file ) {
+			WP_CLI::error( "The '{$args[0]}' plugin could not be found." );
+		}
+
+		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
+
+		$plugin_obj = (object)array(
+			'name'        => $this->get_name( $file ),
+			'title'       => $plugin_data['Name'],
+			'author'      => $plugin_data['Author'],
+			'version'     => $plugin_data['Version'],
+			'description' => wordwrap( $plugin_data['Description'] ),
+			'status'      => $this->get_status( $file ),
+			'update'      => $this->has_update( $file ),
+		);
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $plugin_obj );
+	}
+
+	/**
 	 * Uninstall a plugin.
 	 *
 	 * ## OPTIONS
@@ -400,7 +440,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Check if the plugin is installed
+	 * Check if the plugin is installed.
 	 *
 	 * ## OPTIONS
 	 *
@@ -556,7 +596,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	private function _delete( $plugin ) {
 		$plugin_dir = dirname( $plugin->file );
 		if ( '.' == $plugin_dir )
-			$plugin_dir = $file;
+			$plugin_dir = $plugin->file;
 
 		$command = 'rm -rf ' . path_join( WP_PLUGIN_DIR, $plugin_dir );
 

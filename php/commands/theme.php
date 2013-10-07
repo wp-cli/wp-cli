@@ -11,7 +11,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	protected $upgrade_refresh = 'wp_update_themes';
 	protected $upgrade_transient = 'update_themes';
 
-	protected $fields = array(
+	protected $obj_fields = array(
 		'name',
 		'status',
 		'update',
@@ -257,6 +257,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * <theme>
 	 * : The theme to get.
 	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole theme, returns the value of a single field.
+	 *
 	 * [--format=<format>]
 	 * : Output list as table or JSON. Defaults to table.
 	 *
@@ -265,11 +268,6 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme get twentytwelve --format=json
 	 */
 	public function get( $args, $assoc_args ) {
-		$defaults = array(
-			'format' => 'table'
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
-
 		$theme = $this->parse_name( $args[0] );
 
 		// WP_Theme object employs magic getter, unfortunately
@@ -280,22 +278,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			$theme_obj->$var = $theme->$var;
 		}
 
-		switch ( $assoc_args['format'] ) {
+		$theme_obj->description = wordwrap( $theme_obj->description );
 
-			case 'table':
-				unset( $theme_obj->tags );
-				$fields = get_object_vars( $theme_obj );
-				\WP_CLI\Utils\assoc_array_to_table( $fields );
-				break;
-
-			case 'json':
-				WP_CLI::print_value( $theme_obj, $assoc_args );
-				break;
-
-			default:
-				\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
-				break;
-		}
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $theme_obj );
 	}
 
 	/**
@@ -324,6 +310,30 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	function update( $args, $assoc_args ) {
 		parent::update_many( $args, $assoc_args );
+	}
+
+	/**
+	 * Check if the theme is installed.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : The theme to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme is-installed twentytwelve
+	 *
+	 * @subcommand is-installed
+	 */
+	function is_installed( $args, $assoc_args = array() ) {
+		$theme = wp_get_theme( $args[0] );
+
+		if ( $theme->exists() ) {
+			exit( 0 );
+		} else {
+			exit( 1 );
+		}
 	}
 
 	/**

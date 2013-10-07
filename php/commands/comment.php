@@ -9,8 +9,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected $obj_type = 'comment';
 	protected $obj_id_key = 'comment_ID';
-
-	private $fields = array(
+	protected $obj_fields = array(
 		'comment_ID',
 		'comment_post_ID',
 		'comment_date',
@@ -100,40 +99,13 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp comment get 1 --field=content
 	 */
 	public function get( $args, $assoc_args ) {
-		$defaults = array(
-			'format' => 'table'
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
-
 		$comment_id = (int)$args[0];
 		$comment = get_comment( $comment_id );
 		if ( empty( $comment ) )
 			WP_CLI::error( "Invalid comment ID." );
 
-		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( array( $comment ), $assoc_args['field'] );
-		} else {
-			$this->show_multiple_fields( $comment, $assoc_args );
-		}
-	}
-
-	private function show_multiple_fields( $comment, $assoc_args ) {
-		switch ( $assoc_args['format'] ) {
-
-			case 'table':
-				$fields = get_object_vars( $comment );
-				unset( $fields['comment_content'] );
-				\WP_CLI\Utils\assoc_array_to_table( $fields );
-				break;
-
-			case 'json':
-				WP_CLI::print_value( $comment, $assoc_args );
-				break;
-
-			default:
-				\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
-				break;
-		}
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $comment );
 	}
 
 	/**
@@ -164,35 +136,19 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand list
 	 */
 	public function _list( $_, $assoc_args ) {
-		$query_args = array();
-		$defaults = array(
-			'format' => 'table',
-			'fields' => $this->fields
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
+		$formatter = $this->get_formatter( $assoc_args );
 
-		foreach ( $assoc_args as $key => $value ) {
-			if ( true === $value )
-				continue;
-
-			$query_args[ $key ] = $value;
-		}
-
-		if ( 'ids' == $assoc_args['format'] )
-			$query_args['fields'] = 'ids';
+		if ( 'ids' == $formatter->format )
+			$assoc_args['fields'] = 'ids';
 
 		$query = new WP_Comment_Query();
-		$comments = $query->query( $query_args );
+		$comments = $query->query( $assoc_args );
 
-		if ( 'ids' == $assoc_args['format'] ) {
+		if ( 'ids' == $formatter->format ) {
 			$comments = wp_list_pluck( $comments, 'comment_ID' );
 		}
 
-		if ( isset( $assoc_args['field'] ) ) {
-			$this->show_single_field( $comments, $assoc_args['field'] );
-		} else {
-			WP_CLI\Utils\format_items( $assoc_args['format'], $comments, $assoc_args['fields'] );
-		}
+		$formatter->display_items( $comments );
 	}
 
 	/**
