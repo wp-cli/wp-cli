@@ -195,61 +195,6 @@ function locate_wp_config() {
 }
 
 /**
- * Take a serialised array and unserialise it replacing elements as needed and
- * unserialising any subordinate arrays and performing the replace on those too.
- *
- * @source https://github.com/interconnectit/Search-Replace-DB
- *
- * @param string $from       String we're looking to replace.
- * @param string $to         What we want it to be replaced with
- * @param array  $data       Used to pass any subordinate arrays back to in.
- * @param bool   $serialised Does the array passed via $data need serialising.
- *
- * @return array	The original array with all elements replaced as needed.
- */
-function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
-
-	// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
-	try {
-
-		if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
-			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
-		}
-
-		elseif ( is_array( $data ) ) {
-			$_tmp = array();
-			foreach ( $data as $key => $value ) {
-				$_tmp[ $key ] = recursive_unserialize_replace( $from, $to, $value, false );
-			}
-
-			$data = $_tmp;
-		}
-
-		elseif ( is_object( $data ) ) {
-			$_tmp = clone( $data );
-			foreach ( $data as $key => $value ) {
-				$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
-			}
-
-			$data = $_tmp;
-		}
-
-		else {
-			if ( is_string( $data ) )
-				$data = str_replace( $from, $to, $data );
-		}
-
-		if ( $serialised )
-			return serialize( $data );
-
-	} catch( Exception $error ) {
-
-	}
-
-	return $data;
-}
-
-/**
  * Output items in a table, JSON, CSV, ids, or the total count
  *
  * @param string        $format     Format to use: 'table', 'json', 'csv', 'ids', 'count'
@@ -257,71 +202,9 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
 function format_items( $format, $items, $fields ) {
-	if ( ! is_array( $fields ) )
-		$fields = explode( ',', $fields );
-
-	switch ( $format ) {
-		case 'count':
-			if ( !is_array( $items ) ) {
-				$items = iterator_to_array( $items );
-			}
-			echo count( $items );
-			break;
-
-		case 'ids':
-			if ( !is_array( $items ) ) {
-				$items = iterator_to_array( $items );
-			}
-			echo implode( ' ', $items );
-			break;
-
-		case 'table':
-			$table = new \cli\Table();
-
-			$table->setHeaders( $fields );
-
-			foreach ( $items as $item ) {
-				$table->addRow( array_values( pick_fields( $item, $fields ) ) );
-			}
-
-			$table->display();
-			break;
-
-		case 'csv':
-			write_csv( STDOUT, $items, $fields );
-			break;
-
-		case 'json':
-			$out = array();
-			foreach ( $items as $item ) {
-				$out[] = pick_fields( $item, $fields );
-			}
-
-			echo json_encode( $out );
-			break;
-	}
-}
-
-/**
- * Format an associative array as a table
- *
- * @param array     $fields    Fields and values to format
- */
-function assoc_array_to_table( $fields ) {
-	$rows = array();
-
-	foreach ( $fields as $field => $value ) {
-		if ( ! is_string( $value ) ) {
-			$value = json_encode( $value );
-		}
-
-		$rows[] = (object) array(
-			'Field' => $field,
-			'Value' => $value
-		);
-	}
-
-	format_items( 'table', $rows, array( 'Field', 'Value' ) );
+	$assoc_args = compact( 'format', 'fields' );
+	$formatter = new \WP_CLI\Formatter( $assoc_args );
+	$formatter->display_items( $items );
 }
 
 /**
@@ -442,7 +325,10 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 }
 
 function mustache_render( $template_name, $data ) {
-	$template = file_get_contents( WP_CLI_ROOT . "/templates/$template_name" );
+	if ( ! file_exists( $template_name ) )
+		$template_name = WP_CLI_ROOT . "/templates/$template_name";
+
+	$template = file_get_contents( $template_name );
 
 	$m = new \Mustache_Engine;
 
