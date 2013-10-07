@@ -252,6 +252,102 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( "Term doesn't exist." );
 	}
 
+	/**
+	 * Generate some terms.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--count=<number>]
+	 * : How many terms to generate. Default: 100
+	 *
+	 * [--taxonomy=<taxonomy>]
+	 * : The taxonomy of the generated terms. Default: 'category'
+	 *
+	 * [--max_depth=<number>]
+	 * : Generate child terms down to a certain depth. Default: 1
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term generate --count=10
+	 */
+	public function generate( $args, $assoc_args ) {
+		global $wpdb;
+
+		$defaults = array(
+			'count' => 100,
+			'max_depth' => 1,
+			'taxonomy' => 'category',
+		);
+
+		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
+
+		if ( !taxonomy_exists( $taxonomy ) ) {
+			WP_CLI::error( sprintf( "'%s' is not a registered taxonomy.", $taxonomy ) );
+		}
+
+		// Get the total number of terms
+		$total = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->terms" );
+
+		$label = get_taxonomy( $taxonomy )->labels->singular_name;
+		$slug = sanitize_title_with_dashes( $label );
+
+		$hierarchical = get_taxonomy( $taxonomy )->hierarchical;
+
+		$limit = $count + $total;
+
+		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating terms', $count );
+
+		$current_depth = 1;
+		$current_parent = 0;
+
+		$args = array(
+			'orderby' => 'id',
+			'hierarchical' => $hierarchical,
+		);
+
+		for ( $i = $total; $i < $limit; $i++ ) {
+
+			if ( $hierarchical ) {
+
+				if ( $this->maybe_make_child() && $current_depth < $max_depth ) {
+
+					$current_parent = $term['term_id'];
+					$current_depth++;
+
+				} else if ( $this->maybe_reset_depth() ) {
+
+					$current_depth = 1;
+					$current_parent = 0;
+
+				}
+
+			}
+
+			$args = array(
+				'parent' => $current_parent,
+				'slug' => $slug . "-$i",
+			);
+
+			$term = wp_insert_term( "$label $i", $taxonomy, $args );
+
+			$notify->tick();
+		}
+
+		delete_option( $taxonomy . '_children' );
+
+		$notify->finish();
+	}
+
+	private function maybe_make_child() {
+		// 50% chance of making child term
+		return ( mt_rand(1, 2) == 1 );
+	}
+
+	private function maybe_reset_depth() {
+		// 10% chance of reseting to root depth
+		return ( mt_rand(1, 10) == 7 );
+	}
+
 }
 
 WP_CLI::add_command( 'term', 'Term_Command' );
