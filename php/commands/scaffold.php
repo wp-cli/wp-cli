@@ -202,7 +202,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$tmpfname = wp_tempnam($url);
 		$response = wp_remote_post( $url, array( 'timeout' => $timeout, 'body' => $body, 'stream' => true, 'filename' => $tmpfname ) );
 
-		if ( $response['response']['code'] == 200 )
+		if ( !is_wp_error( $response ) && $response['response']['code'] == 200 )
 			WP_CLI::success( "Created theme '".$data['theme_name']."'." );
 
 		unzip_file( $tmpfname, $theme_path );
