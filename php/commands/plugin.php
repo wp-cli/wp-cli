@@ -52,8 +52,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--per-page=<per-page>]
 	 * : Optional number of results to display. Defaults to 10.
 	 *
-	 * [--format=<format>]
-	 * : Output list as table, CSV or JSON. Defaults to table.
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each plugin.
 	 *
 	 * [--fields=<fields>]
 	 * : Ask for specific fields from the API. Defaults to name,slug,author_profile,rating. Acceptable values:
@@ -73,27 +73,17 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **description**: Plugin's Description
 	 *     **short_description**: Plugin's Short Description
 	 *
+	 * [--format=<format>]
+	 * : Output list as table, CSV or JSON. Defaults to table.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp plugin search dsgnwrks --per-page=20 --format=json
 	 *
 	 *     wp plugin search dsgnwrks --fields=name,version,slug,rating,num_ratings
 	 */
-	public function search( $args, $assoc_args = array() ) {
-		$term = $args[0];
-
-		$defaults = array(
-			'per-page' => 10,
-			'fields' => array( 'name', 'slug', 'rating' )
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
-
-		$api = plugins_api( 'query_plugins', array(
-			'per_page' => (int) $assoc_args['per-page'],
-			'search' => $term,
-		) );
-
-		parent::_search( $api, $fields, $assoc_args, 'plugin' );
+	public function search( $args, $assoc_args ) {
+		parent::_search( $args, $assoc_args );
 	}
 
 	protected function status_single( $args ) {

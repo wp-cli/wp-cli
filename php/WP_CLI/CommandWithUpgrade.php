@@ -310,17 +310,34 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * Search wordpress.org repo.
 	 *
 	 * @param  object $api        Data from WP plugin/theme API
-	 * @param  array  $fields     Data fields to display in table.
 	 * @param  array  $assoc_args Data passed in from command.
-	 * @param  string $data_type  Plugin or Theme api endpoint
 	 */
-	protected function _search( $api, $fields, $assoc_args, $data_type = 'plugin' ) {
+	protected function _search( $args, $assoc_args ) {
+		$term = $args[0];
+
+		$defaults = array(
+			'per-page' => 10,
+			'fields' => array( 'name', 'slug', 'rating' )
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$formatter = $this->get_formatter( $assoc_args );
+
+		$api_args = array(
+			'per_page' => (int) $assoc_args['per-page'],
+			'search' => $term,
+		);
+
+		if ( 'plugin' == $this->item_type ) {
+			$api = plugins_api( 'query_plugins', $api_args );
+		} else {
+			$api = themes_api( 'query_themes', $api_args );
+		}
+
 		if ( is_wp_error( $api ) )
 			\WP_CLI::error( $api->get_error_message() . __( ' Try again' ) );
 
-		// Sanitize to 1 of 2 types
-		$data_type = ( 'plugin' === $data_type ) ? 'plugin' : 'theme';
-		$plural = $data_type . 's';
+		$plural = $this->item_type . 's';
 
 		if ( ! isset( $api->$plural ) )
 			\WP_CLI::error( __( 'API error. Try Again.' ) );
@@ -330,9 +347,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$count = isset( $api->info['results'] ) ? $api->info['results'] : 'unknown';
 		\WP_CLI::success( sprintf( 'Showing %s of %s %s.', count( $items ), $count, $plural ) );
 
-		$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
-
-		\WP_CLI\Utils\format_items( $format, $items, $assoc_args['fields'] );
+		$formatter->display_items( $items );
 	}
 
 	protected function get_formatter( &$assoc_args ) {
