@@ -126,7 +126,7 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 
 function is_path_absolute( $path ) {
 	// Windows
-	if ( ':' === $path[1] )
+	if ( isset($path[1]) && ':' === $path[1] )
 		return true;
 
 	return $path[0] === '/';
