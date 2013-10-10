@@ -45,6 +45,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--per-page=<per-page>]
 	 * : Optional number of results to display. Defaults to 10.
 	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each plugin.
+	 *
 	 * [--fields=<fields>]
 	 * : Ask for specific fields from the API. Defaults to name,slug,author,rating. Acceptable values:
 	 *
@@ -59,27 +62,17 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **homepage**: Theme Author's Homepage
 	 *     **description**: Theme Description
 	 *
+	 * [--format=<format>]
+	 * : Output list as table, CSV or JSON. Defaults to table.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp theme search automattic --per-page=20
 	 *
 	 *     wp theme search automattic --fields=name,version,slug,rating,num_ratings,description
 	 */
-	public function search( $args, $assoc_args = array() ) {
-		$term = $args[0];
-
-		$defaults = array(
-			'per-page' => 10,
-			'fields' => array( 'name', 'slug', 'author', 'rating' )
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
-
-		$api = themes_api( 'query_themes', array(
-			'per_page' => (int) $assoc_args['per-page'],
-			'search' => $term,
-		) );
-
-		parent::_search( $api, $fields, $assoc_args, 'theme' );
+	public function search( $args, $assoc_args ) {
+		parent::_search( $args, $assoc_args );
 	}
 
 	protected function status_single( $args ) {
