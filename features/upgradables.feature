@@ -72,7 +72,9 @@ Feature: Manage WordPress themes and plugins
       """
 
     When I run `wp <type> update <item>`
+    And save STDOUT 'Downloading update from .*\/<item>\.%s\.zip' as {NEW_VERSION}
     Then STDOUT should not be empty
+    And the {SUITE_CACHE_DIR}/<type>/<item>-{NEW_VERSION}.zip file should exist
 
     When I run `wp <type> update --all`
     Then STDOUT should not be empty
@@ -104,7 +106,7 @@ Feature: Manage WordPress themes and plugins
     When I run `wp <type> update <item>`
     Then STDOUT should contain:
       """
-      Using cached file '{SUITE_CACHE_DIR}/<type>/<item>-
+      Using cached file '{SUITE_CACHE_DIR}/<type>/<item>-{NEW_VERSION}.zip'...
       """
 
     When I run `wp <type> delete <item>`
