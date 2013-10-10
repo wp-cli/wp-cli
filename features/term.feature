@@ -55,7 +55,7 @@ Feature: Manage WordPress terms
     Then STDERR should not be empty
 
   Scenario: Generating terms
-    When I run `wp term generate --count=10`
+    When I run `wp term generate category --count=10`
     And I run `wp term list category --format=count`
     Then STDOUT should be:
       """
