@@ -14,7 +14,7 @@ require_once __DIR__ . '/../../php/utils.php';
  */
 class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
-	private static $cache_dir;
+	private static $cache_dir, $suite_cache_dir;
 
 	private static $db_settings = array(
 		'dbname' => 'wp_cli_test',
@@ -41,6 +41,15 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 */
 	public static function prepare( SuiteEvent $event ) {
 		self::cache_wp_files();
+		self::$suite_cache_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-suite-cache-", TRUE );
+		mkdir( self::$suite_cache_dir );
+	}
+
+	/**
+	 * @AfterSuite
+	 */
+	public static function afterSuite( SuiteEvent $event ) {
+		Process::create( Utils\esc_cmd( 'rm -r %s', self::$suite_cache_dir ) )->run();
 	}
 
 	/**
@@ -66,6 +75,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->drop_db();
 		$this->set_cache_dir();
 		$this->variables['CORE_CONFIG_SETTINGS'] = Utils\assoc_args_to_str( self::$db_settings );
+		$this->variables['SUITE_CACHE_DIR'] = self::$suite_cache_dir;
 	}
 
 	public function getStepDefinitionResources() {
@@ -126,7 +136,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( !empty( $assoc_args ) )
 			$command .= Utils\assoc_args_to_str( $assoc_args );
 
-		return Process::create( $command, $this->variables['RUN_DIR'] );
+		return Process::create( $command, $this->variables['RUN_DIR'],
+			array( 'WP_CLI_CACHE_DIR' => $this->variables['SUITE_CACHE_DIR'] ) );
 	}
 
 	public function move_files( $src, $dest ) {
