@@ -237,11 +237,11 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
+	 * <taxonomy>
+	 * : The taxonomy for the generated terms.
+	 *
 	 * [--count=<number>]
 	 * : How many terms to generate. Default: 100
-	 *
-	 * [--taxonomy=<taxonomy>]
-	 * : The taxonomy of the generated terms. Default: 'category'
 	 *
 	 * [--max_depth=<number>]
 	 * : Generate child terms down to a certain depth. Default: 1
@@ -253,10 +253,11 @@ class Term_Command extends WP_CLI_Command {
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
 
+		list ( $taxonomy ) = $args;
+
 		$defaults = array(
 			'count' => 100,
 			'max_depth' => 1,
-			'taxonomy' => 'category',
 		);
 
 		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
