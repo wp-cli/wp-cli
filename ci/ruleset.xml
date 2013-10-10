@@ -3,6 +3,8 @@
 	<description>WP-CLI coding standards.</description>
 
 	<rule ref="Generic.CodeAnalysis.VariableAnalysis">
-		<property name="allowUnusedFunctionParameters" value="1"/>
+		<properties>
+			<property name="allowUnusedFunctionParameters" value="1"/>
+		</properties>
 	</rule>
 </ruleset>
