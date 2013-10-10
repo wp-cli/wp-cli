@@ -266,15 +266,10 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( "'%s' is not a registered taxonomy.", $taxonomy ) );
 		}
 
-		// Get the total number of terms
-		$total = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->terms" );
-
 		$label = get_taxonomy( $taxonomy )->labels->singular_name;
 		$slug = sanitize_title_with_dashes( $label );
 
 		$hierarchical = get_taxonomy( $taxonomy )->hierarchical;
-
-		$limit = $count + $total;
 
 		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating terms', $count );
 
@@ -286,7 +281,7 @@ class Term_Command extends WP_CLI_Command {
 			'hierarchical' => $hierarchical,
 		);
 
-		for ( $i = $total; $i < $limit; $i++ ) {
+		for ( $i = 0; $i < $count; $i++ ) {
 
 			if ( $hierarchical ) {
 
