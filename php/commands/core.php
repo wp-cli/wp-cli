@@ -83,6 +83,7 @@ class Core_Command extends WP_CLI_Command {
 			return Requests::get( $url, $headers, $options );
 		} catch( Requests_Exception $ex ) {
 			// Handle SSL certificate issues gracefully
+			WP_CLI::warning( $ex->getMessage() );
 			$options['verify'] = false;
 			try {
 				return Requests::get( $url, $headers, $options );
