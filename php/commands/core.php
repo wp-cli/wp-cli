@@ -70,7 +70,8 @@ class Core_Command extends WP_CLI_Command {
 
 		try {
 			$request = Requests::get( $download_url, $headers, $options );
-		} catch( Requests_Exception $ex ) {
+		} catch ( Requests_Exception $ex ) {
+			WP_CLI::warning( $ex->getMessage() );
 			// Handle SSL certificate issues gracefully
 			$options['verify'] = false;
 			try {
