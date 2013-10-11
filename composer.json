@@ -15,9 +15,6 @@
 		"rmccue/requests": "~1.6",
         "symfony/finder": "~2.3"
 	},
-	"require-dev": {
-		"symfony/finder": "~2.3"
-	},
 	"suggest": {
 		"psy/psysh": "Enhanced `wp shell` functionality"
 	},
