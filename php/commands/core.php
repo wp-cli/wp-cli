@@ -91,7 +91,7 @@ class Core_Command extends WP_CLI_Command {
 
 	private static function _read( $url ) {
 		$headers = array('Accept' => 'application/json');
-		$options = array();
+		$options = array('verify' => true);
 
 		$r = false;
 		try {
