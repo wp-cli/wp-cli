@@ -1,6 +1,6 @@
 <?php
 
-// Can be used by plugins/themes to check if wp-cli is running or not
+// Can be used by plugins/themes to check if WP-CLI is running or not
 define( 'WP_CLI', true );
 
 define( 'WP_CLI_VERSION', '0.13.0-alpha' );
