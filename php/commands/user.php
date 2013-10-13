@@ -191,6 +191,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$role = self::validate_role( $role );
 
+		// @codingStandardsIgnoreStart
 		if ( !$user_pass ) {
 			$user_pass = wp_generate_password();
 			$generated_pass = true;
@@ -221,6 +222,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			if ( isset( $generated_pass ) )
 				WP_CLI::line( "Password: $user_pass" );
 		}
+		// @codingStandardsIgnoreEnd
 	}
 
 	/**
@@ -266,18 +268,15 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			'count' => 100,
 			'role' => get_option('default_role'),
 		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
-
-		$role = self::validate_role( $role );
+		$role = self::validate_role( $assoc_args['role'] );
 
 		$user_count = count_users();
-
 		$total = $user_count['total_users'];
+		$limit = $assoc_args['count'] + $total;
 
-		$limit = $count + $total;
-
-		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating users', $count );
+		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating users', $assoc_args['count'] );
 
 		for ( $i = $total; $i < $limit; $i++ ) {
 			$login = sprintf( 'user_%d_%d', $blog_id, $i );
