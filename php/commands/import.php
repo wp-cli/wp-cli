@@ -351,11 +351,12 @@ class Import_Command extends WP_CLI_Command {
 			if ( $author_user_email && $user->user_email == $author_user_email )
 				return $user->user_login;
 
+			$levs = array();
 			$levs[] = levenshtein( $author_user_login, $user->display_name );
 			$levs[] = levenshtein( $author_user_login, $user->user_login );
 			$levs[] = levenshtein( $author_user_login, $user->user_email );
 			$levs[] = levenshtein( $author_user_login, array_shift( explode( "@", $user->user_email ) ) );
-			arsort( $levs );
+			rsort( $levs );
 			$lev = array_pop( $levs );
 			if ( 0 == $lev ) {
 				$closest = $user->user_login;

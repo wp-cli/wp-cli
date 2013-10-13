@@ -55,9 +55,6 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::log( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		$silent = WP_CLI::get_config('quiet') || \cli\Shell::isPiped() ?
-			'--silent ' : '';
-
 		// We need to use a temporary file because piping from cURL to tar is flaky
 		// on MinGW (and probably in other environments too).
 		$temp = tempnam( sys_get_temp_dir(), "wp_" );
@@ -68,18 +65,7 @@ class Core_Command extends WP_CLI_Command {
 			'filename' => $temp
 		);
 
-		try {
-			$request = Requests::get( $download_url, $headers, $options );
-		} catch( Requests_Exception $ex ) {
-			// Handle SSL certificate issues gracefully
-			$options['verify'] = false;
-			try {
-				$request = Requests::get( $download_url, $headers, $options );
-			}
-			catch( Requests_Exception $ex ) {
-				WP_CLI::error( $ex->getMessage() );
-			}
-		}
+		self::_request( 'GET', $download_url, $headers, $options );
 
 		$cmd = "tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
 
@@ -88,26 +74,25 @@ class Core_Command extends WP_CLI_Command {
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
-	private static function _read( $url ) {
-		$headers = array('Accept' => 'application/json');
-		$options = array();
-
-		$r = false;
+	private static function _request( $method, $url, $headers = array(), $options = array() ) {
 		try {
-			$request = Requests::get( $url, $headers, $options );
-			$r = $request->body;
+			$options['verify'] = true;
+			return Requests::get( $url, $headers, $options );
 		} catch( Requests_Exception $ex ) {
 			// Handle SSL certificate issues gracefully
+			WP_CLI::warning( $ex->getMessage() );
 			$options['verify'] = false;
 			try {
-				$request = Requests::get( $url, $headers, $options );
-				$r = $request->body;
+				return Requests::get( $url, $headers, $options );
 			} catch( Requests_Exception $ex ) {
 				WP_CLI::error( $ex->getMessage() );
 			}
 		}
+	}
 
-		return $r;
+	private static function _read( $url ) {
+		$headers = array('Accept' => 'application/json');
+		return self::_request( 'GET', $url, $headers )->body;
 	}
 
 	private function get_download_offer( $locale ) {

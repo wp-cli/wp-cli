@@ -191,6 +191,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$theme_description = "Custom theme: ".$data['theme_name']." developed by, ".$data['author'];
 
+		$body = array();
 		$body['underscoresme_name'] = $data['theme_name'];
 		$body['underscoresme_slug'] = $theme_slug;
 		$body['underscoresme_author'] = $data['author'];
@@ -265,14 +266,14 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	private function get_output_path( $assoc_args, $subdir ) {
-		extract( $assoc_args, EXTR_SKIP );
-
-		if ( $theme ) {
+		if ( $assoc_args['theme'] ) {
+			$theme = $assoc_args['theme'];
 			if ( is_string( $theme ) )
 				$path = get_theme_root( $theme ) . '/' . $theme;
 			else
 				$path = get_stylesheet_directory();
-		} elseif ( ! empty( $plugin ) ) {
+		} elseif ( $assoc_args['plugin'] ) {
+			$plugin = $assoc_args['plugin'];
 			$path = WP_PLUGIN_DIR . '/' . $plugin;
 			if ( !is_dir( $path ) ) {
 				WP_CLI::error( "Can't find '$plugin' plugin." );
