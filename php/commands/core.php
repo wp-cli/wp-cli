@@ -55,9 +55,6 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::log( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		$silent = WP_CLI::get_config('quiet') || \cli\Shell::isPiped() ?
-			'--silent ' : '';
-
 		// We need to use a temporary file because piping from cURL to tar is flaky
 		// on MinGW (and probably in other environments too).
 		$temp = tempnam( sys_get_temp_dir(), "wp_" );
