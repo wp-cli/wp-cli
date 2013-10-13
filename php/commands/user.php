@@ -187,14 +187,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			'user_registered' => strftime( "%F %T", time() ),
 			'display_name' => false,
 		);
+		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
 
-		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
-
-		if ( 'none' == $role ) {
-			$role = false;
-		} elseif ( is_null( get_role( $role ) ) ) {
-			WP_CLI::error( "Invalid role." );
-		}
+		$role = self::validate_role( $role );
 
 		if ( !$user_pass ) {
 			$user_pass = wp_generate_password();
@@ -274,12 +269,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
 
-		if ( 'none' == $role ) {
-			$role = false;
-		} elseif ( is_null( get_role( $role ) ) ) {
-			WP_CLI::warning( "invalid role." );
-			exit;
-		}
+		$role = self::validate_role( $role );
 
 		$user_count = count_users();
 
@@ -552,9 +542,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			);
 			$new_user = array_merge( $defaults, $new_user );
 
-			if ( 'none' == $new_user['role'] ) {
+			if ( 'none' === $new_user['role'] ) {
 				$new_user['role'] = false;
-
 			} elseif ( is_null( get_role( $new_user['role'] ) ) ) {
 				WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
 				continue;
@@ -595,6 +584,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			} else {
 				WP_CLI::success( $new_user['user_login'] . " created" );
 			}
+		}
+	}
+
+	private static function validate_role( $role ) {
+		if ( 'none' === $role ) {
+			$role = false;
+		} elseif ( is_null( get_role( $role ) ) ) {
+			WP_CLI::error( "Invalid role: $role" );
 		}
 	}
 }
