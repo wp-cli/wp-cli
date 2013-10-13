@@ -93,7 +93,7 @@ class Configurator {
 					$value = array( $value );
 				}
 			} else {
-				 $value = $details['default'];
+				$value = $details['default'];
 			}
 
 			$sanitized_config[ $key ] = $value;
