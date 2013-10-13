@@ -2,7 +2,11 @@
 <ruleset name="WP-CLI">
 	<description>WP-CLI coding standards.</description>
 
+	<exclude-pattern>php/Spyc.php</exclude-pattern>
+
 	<rule ref="Generic.CodeAnalysis.VariableAnalysis">
+		<exclude name="Generic.CodeAnalysis.VariableAnalysis.UnusedVariable"/>
+
 		<properties>
 			<property name="allowUnusedFunctionParameters" value="1"/>
 		</properties>
