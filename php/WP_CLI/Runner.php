@@ -358,6 +358,7 @@ class Runner {
 
 		$minimum_version = '3.4';
 
+		// @codingStandardsIgnoreStart
 		if ( version_compare( $wp_version, $minimum_version, '<' ) ) {
 			WP_CLI::error(
 				"WP-CLI needs WordPress $minimum_version or later to work properly. " .
@@ -365,6 +366,7 @@ class Runner {
 				"Try running `wp core download --force`."
 			);
 		}
+		// @codingStandardsIgnoreEnd
 	}
 
 	private function init_config() {
