@@ -116,7 +116,7 @@ class Help_Command extends WP_CLI_Command {
 	private static function render_subcommands( $command ) {
 		$subcommands = array();
 		foreach ( $command->get_subcommands() as $subcommand ) {
-			 $subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
+			$subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
 		}
 
 		$max_len = self::get_max_len( array_keys( $subcommands ) );
