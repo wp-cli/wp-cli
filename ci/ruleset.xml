@@ -4,6 +4,8 @@
 
 	<exclude-pattern>php/Spyc.php</exclude-pattern>
 
+	<rule ref="Generic.WhiteSpace.DisallowSpaceIndent"/>
+
 	<rule ref="Generic.CodeAnalysis.VariableAnalysis">
 		<exclude name="Generic.CodeAnalysis.VariableAnalysis.UnusedVariable"/>
 
