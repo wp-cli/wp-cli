@@ -9,4 +9,4 @@ phpunit
 php behat.phar --format progress
 
 # Run CodeSniffer
-./codesniffer/scripts/phpcs --standard=./ci/ php/
+./codesniffer/scripts/phpcs --standard=./ci/ --sniffs=Generic.CodeAnalysis.VariableAnalysis.UndefinedVariable php/
