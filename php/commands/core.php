@@ -105,8 +105,10 @@ class Core_Command extends WP_CLI_Command {
 	private static function get_initial_locale() {
 		include ABSPATH . '/wp-includes/version.php';
 
+		// @codingStandardsIgnoreStart
 		if ( isset( $wp_local_package ) )
 			return $wp_local_package;
+		// @codingStandardsIgnoreEnd
 
 		return '';
 	}
@@ -381,11 +383,13 @@ class Core_Command extends WP_CLI_Command {
 
 		$public = true;
 
+		// @codingStandardsIgnoreStart
 		$result = wp_install( $title, $admin_user, $admin_email, $public, '', $admin_password );
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( 'Installation failed (' . WP_CLI::error_to_string($result) . ').' );
 		}
+		// @codingStandardsIgnoreEnd
 
 		return true;
 	}
@@ -531,9 +535,13 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		include $versions_path;
 
+		// @codingStandardsIgnoreStart
 		if ( isset( $assoc_args['extra'] ) ) {
-			preg_match( '/(\d)(\d+)-/', $tinymce_version, $match );
-			$human_readable_tiny_mce = $match ? $match[1] . '.' . $match[2] : '';
+			if ( preg_match( '/(\d)(\d+)-/', $tinymce_version, $match ) ) {
+				$human_readable_tiny_mce = $match[1] . '.' . $match[2];
+			} else {
+				$human_readable_tiny_mce = '';
+			}
 
 			echo \WP_CLI\Utils\mustache_render( 'versions.mustache', array(
 				'wp-version' => $wp_version,
@@ -546,6 +554,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		} else {
 			WP_CLI::line( $wp_version );
 		}
+		// @codingStandardsIgnoreEnd
 	}
 
 	/**
