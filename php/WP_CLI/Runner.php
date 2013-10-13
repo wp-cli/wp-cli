@@ -93,7 +93,7 @@ class Runner {
 		}
 
 		if ( !$user_id || !wp_set_current_user( $user_id ) ) {
-			\WP_CLI::error( sprintf( 'Could not get a user_id for this user: %s', var_export( $user, true ) ) );
+			\WP_CLI::error( "Could not find user: $user" );
 		}
 	}
 
