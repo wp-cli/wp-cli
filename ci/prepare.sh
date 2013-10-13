@@ -15,6 +15,9 @@ chmod +x $WP_CLI_BIN_DIR/wp
 # Travis CI doesn't come with Behat pre-installed
 curl http://behat.org/downloads/behat.phar > behat.phar
 
+# Install CodeSniffer things
+./ci/prepare-codesniffer.sh
+
 ./bin/wp core download --version=$WP_VERSION --path=/tmp/wp-cli-test-core-download-cache/
 
 mysql -e 'CREATE DATABASE wp_cli_test;' -uroot
