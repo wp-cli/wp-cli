@@ -13,7 +13,7 @@
 		"mustache/mustache": "~2.4",
 		"rhumsaa/array_column": "~1.1",
 		"rmccue/requests": "~1.6",
-        "symfony/finder": "~2.3"
+		"symfony/finder": "~2.3"
 	},
 	"suggest": {
 		"psy/psysh": "Enhanced `wp shell` functionality"
