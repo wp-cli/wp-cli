@@ -73,8 +73,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 				if ( in_array( $col, $skip_columns ) )
 					continue;
 
-				$count = self::handle_col( $col, $primary_key, $table, $old, $new,
-					 $dry_run );
+				$count = self::handle_col( $col, $primary_key, $table, $old, $new, $dry_run );
 
 				$report[] = array( $table, $col, $count );
 

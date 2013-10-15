@@ -46,7 +46,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$n = count( $items );
 
 		// Not interested in the translation, just the number logic
-		\WP_CLI::log( sprintf( _n( "%d installed {$this->item_type}:", "%d installed {$this->item_type}s:", $n ), $n ) );
+		\WP_CLI::log( sprintf( _n(
+			"%d installed {$this->item_type}:",
+			"%d installed {$this->item_type}s:",
+		$n ), $n ) );
 
 		$padding = $this->get_padding($items);
 

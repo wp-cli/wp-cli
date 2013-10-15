@@ -35,9 +35,10 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function create( $args, $assoc_args ) {
 		parent::_create( $args, $assoc_args, function ( $params ) {
-			$post = get_post( $params['comment_post_ID'] );
+			$post_id = $params['comment_post_ID'];
+			$post = get_post( $post_id );
 			if ( !$post ) {
-				return new WP_Error( 'no_post', "Can't find post $comment_post_ID." );
+				return new WP_Error( 'no_post', "Can't find post $post_id." );
 			}
 
 			// We use wp_insert_comment() instead of wp_new_comment() to stay at a low level and
@@ -198,7 +199,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		if ( is_wp_error( $r ) ) {
 			WP_CLI::error( $r );
 		} else {
-			WP_CLI::success( "$success comment $comment_id" );
+			WP_CLI::success( "$success comment $comment->comment_ID" );
 		}
 	}
 

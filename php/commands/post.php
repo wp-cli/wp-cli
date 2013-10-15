@@ -287,9 +287,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'post_author' => false,
 			'post_date' => current_time( 'mysql' ),
 		);
-
 		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
 
+		// @codingStandardsIgnoreStart
 		if ( !post_type_exists( $post_type ) ) {
 			WP_CLI::error( sprintf( "'%s' is not a registered post type.", $post_type ) );
 		}
@@ -334,7 +334,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 			$args = array(
 				'post_type' => $post_type,
-				'post_title' =>  "$label $i",
+				'post_title' => "$label $i",
 				'post_status' => $post_status,
 				'post_author' => $post_author,
 				'post_parent' => $current_parent,
@@ -346,8 +346,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 			$notify->tick();
 		}
-
 		$notify->finish();
+		// @codingStandardsIgnoreEnd
 	}
 
 	private function maybe_make_child() {

@@ -173,7 +173,9 @@ class Subcommand extends CompositeCommand {
 				implode( ' ', $unknown_positionals ) );
 		}
 
-		list( $errors, $to_unset ) = $validator->validate_assoc( array_merge( \WP_CLI::get_config(), $assoc_args ) );
+		list( $errors, $to_unset ) = $validator->validate_assoc(
+			array_merge( \WP_CLI::get_config(), $assoc_args )
+		);
 
 		if ( !empty( $errors['fatal'] ) ) {
 			$out = 'Parameter errors:';

@@ -61,6 +61,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		// Empty taxonomies and terms
 		$terms = $wpdb->get_results( "SELECT term_id, taxonomy FROM $wpdb->term_taxonomy" );
 		$ids = array();
+		$taxonomies = array();
 		foreach ( (array) $terms as $term ) {
 			$taxonomies[] = $term->taxonomy;
 			$ids[] = $term->term_id;
@@ -68,6 +69,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$taxonomies = array_unique( $taxonomies );
+		$cleaned = array();
 		foreach ( $taxonomies as $taxonomy ) {
 			if ( isset( $cleaned[$taxonomy] ) )
 				continue;
