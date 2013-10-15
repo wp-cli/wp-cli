@@ -62,7 +62,7 @@ Feature: Global flags
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: Could not get a user_id for this user: 'non-existing-user'
+      Error: Could not find user: non-existing-user
       """
 
   Scenario: Using a custom logger
