@@ -51,14 +51,14 @@ class Help_Command extends WP_CLI_Command {
 		}
 
 		// section headers
-		$out = preg_replace( '/^## ([A-Z ]+)/m', '%9\1%n', $out );
+		$out = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
 
 		// definition lists
 		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
 
 		$out = str_replace( "\t", '  ', $out );
 
-		self::pass_through_pager( WP_CLI::colorize( $out ) );
+		self::pass_through_pager( $out );
 	}
 
 	private static function rewrap_param_desc( $matches ) {
