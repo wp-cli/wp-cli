@@ -13,9 +13,9 @@ If you want to hack on WP-CLI, then clone this repository and run `./utils/dev-b
 
 Where can I get more info?
 --------------------------
-For documentation, usage, and examples, check out [wp-cli.org](http://wp-cli.org/).
+For documentation and examples, check out [wp-cli.org](http://wp-cli.org/) and the [wiki](https://github.com/wp-cli/wp-cli/wiki).
 
-Read our [wiki](https://github.com/wp-cli/wp-cli/wiki) and find out how to create your own commands with our [commands cookbook](https://github.com/wp-cli/wp-cli/wiki/Commands-Cookbook).
+Also, WordPress Answers has a growing list of [WP-CLI related questions](http://wordpress.stackexchange.com/questions/tagged/wp-cli).
 
 I'm running into troubles, what can I do?
 -----------------------------------------
