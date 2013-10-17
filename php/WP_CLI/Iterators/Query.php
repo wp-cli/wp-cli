@@ -73,7 +73,7 @@ class Query implements \Iterator {
 
 		if ( !$this->results ) {
 			if ( $this->db->last_error ) {
-				throw new Iterators\Exception( 'Database error: ' . $this->db->last_error );
+				throw new Exception( 'Database error: ' . $this->db->last_error );
 			} else {
 				return false;
 			}
