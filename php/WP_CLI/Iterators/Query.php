@@ -110,7 +110,11 @@ class Query implements \Iterator {
 		}
 
 		if ( !isset( $this->results[ $this->index_in_results ] ) ) {
-			$items_loaded = $this->load_items_from_db();
+			try {
+				$items_loaded = $this->load_items_from_db();
+			} catch ( WP_CLI\Iterators\Exception $e ) {
+				WP_CLI::error( $e->getMessage() );
+			}
 
 			if ( !$items_loaded ) {
 				$this->rewind();
