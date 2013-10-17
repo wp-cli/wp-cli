@@ -210,7 +210,11 @@ class Runner {
 
 		list( $command, $final_args ) = $r;
 
-		$command->invoke( $final_args, $assoc_args );
+		try {
+			$command->invoke( $final_args, $assoc_args );
+		} catch ( WP_CLI\Iterators\Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
 	}
 
 	private function _run_command() {
