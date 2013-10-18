@@ -7,8 +7,6 @@ use Behat\Behat\Context\ClosuredContextInterface,
 
 use \WP_CLI\Utils;
 
-require_once 'PHPUnit/Framework/Assert/Functions.php';
-
 require_once __DIR__ . '/../../php/utils.php';
 
 /**
@@ -23,10 +21,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		'dbuser' => 'wp_cli_test',
 		'dbpass' => 'password1'
 	);
-
-	private static $additional_args;
-
-	private $install_dir;
 
 	public $variables = array();
 
@@ -47,32 +41,18 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 */
 	public static function prepare( SuiteEvent $event ) {
 		self::cache_wp_files();
-
-		self::$additional_args = array(
-			'wp core config' => self::$db_settings,
-
-			'wp core install' => array(
-				'url' => 'http://example.com',
-				'title' => 'WP CLI Site',
-				'admin_email' => 'admin@example.com',
-				'admin_password' => 'password1'
-			),
-
-			'wp core install-network' => array(
-				'title' => 'WP CLI Network'
-			)
-		);
 	}
 
 	/**
 	 * @AfterScenario
 	 */
 	public function afterScenario( $event ) {
-		if ( !$this->install_dir )
+		if ( !isset( $this->variables['RUN_DIR'] ) )
 			return;
 
+		// remove altered WP install, unless there's an error
 		if ( $event->getResult() < 4 ) {
-			Process::create( Utils\esc_cmd( 'rm -r %s', $this->install_dir ) )->run();
+			Process::create( Utils\esc_cmd( 'rm -r %s', $this->variables['RUN_DIR'] ) )->run();
 		}
 	}
 
@@ -84,6 +64,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 */
 	public function __construct( array $parameters ) {
 		$this->drop_db();
+		$this->set_cache_dir();
+		$this->variables['CORE_CONFIG_SETTINGS'] = Utils\assoc_args_to_str( self::$db_settings );
 	}
 
 	public function getStepDefinitionResources() {
@@ -108,34 +90,22 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		return $cmd;
 	}
 
-	public function create_empty_dir() {
-		if ( !$this->install_dir ) {
-			$this->install_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-", TRUE );
-			mkdir( $this->install_dir );
+	public function create_run_dir() {
+		if ( !isset( $this->variables['RUN_DIR'] ) ) {
+			$this->variables['RUN_DIR'] = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-run-", TRUE );
+			mkdir( $this->variables['RUN_DIR'] );
 		}
 	}
 
-	public function get_path( $file ) {
-		return $this->install_dir . '/' . $file;
-	}
-
-	public function get_cache_path( $file ) {
-		static $path;
-
-		if ( !$path ) {
-			$path = sys_get_temp_dir() . '/wp-cli-test-cache';
-			Process::create( Utils\esc_cmd( 'mkdir -p %s', $path ) )->run_check();
-		}
-
-		return $path . '/' . $file;
-	}
-
-	public function download_file( $url, $path ) {
-		Process::create( Utils\esc_cmd( 'curl -sSL %s > %s', $url, $path ) )->run_check();
+	private function set_cache_dir() {
+		$path = sys_get_temp_dir() . '/wp-cli-test-cache';
+		Process::create( Utils\esc_cmd( 'mkdir -p %s', $path ) )->run_check();
+		$this->variables['CACHE_DIR'] = $path;
 	}
 
 	private static function run_sql( $sql ) {
-		Utils\run_mysql_query( $sql, array(
+		Utils\run_mysql_command( 'mysql --no-defaults', array(
+			'execute' => $sql,
 			'host' => 'localhost',
 			'user' => self::$db_settings['dbuser'],
 			'pass' => self::$db_settings['dbpass'],
@@ -153,21 +123,14 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function proc( $command, $assoc_args = array() ) {
-		foreach ( self::$additional_args as $start => $additional_args ) {
-			if ( 0 === strpos( $command, $start ) ) {
-				$assoc_args = array_merge( $additional_args, $assoc_args );
-				break;
-			}
-		}
-
 		if ( !empty( $assoc_args ) )
 			$command .= Utils\assoc_args_to_str( $assoc_args );
 
-		return Process::create( $command, $this->install_dir );
+		return Process::create( $command, $this->variables['RUN_DIR'] );
 	}
 
 	public function move_files( $src, $dest ) {
-		rename( $this->get_path( $src ), $this->get_path( $dest ) );
+		rename( $this->variables['RUN_DIR'] . "/$src", $this->variables['RUN_DIR'] . "/$dest" );
 	}
 
 	public function add_line_to_wp_config( &$wp_config_code, $line ) {
@@ -176,22 +139,41 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$wp_config_code = str_replace( $token, "$line\n\n$token", $wp_config_code );
 	}
 
-	public function download_wordpress_files( $subdir = '' ) {
-		$dest_dir = $this->get_path( $subdir );
+	public function download_wp( $subdir = '' ) {
+		$dest_dir = $this->variables['RUN_DIR'] . "/$subdir";
 
 		if ( $subdir ) mkdir( $dest_dir );
 
 		Process::create( Utils\esc_cmd( "cp -r %s/* %s", self::$cache_dir, $dest_dir ) )->run_check();
+
+		// disable emailing
+		mkdir( $dest_dir . '/wp-content/mu-plugins' );
+		copy( __DIR__ . '/../extra/no-mail.php', $dest_dir . '/wp-content/mu-plugins/no-mail.php' );
 	}
 
-	public function wp_install( $subdir = '' ) {
+	public function create_config() {
+		$this->proc( 'wp core config', self::$db_settings )->run_check();
+	}
+
+	public function install_wp( $subdir = '' ) {
 		$this->create_db();
-		$this->create_empty_dir();
-		$this->download_wordpress_files( $subdir );
+		$this->create_run_dir();
+		$this->download_wp( $subdir );
 
-		$this->proc( 'wp core config', array( 'dbprefix' => $subdir ? $subdir : 'wp_' ) )->run_check( $subdir );
+		$db_args = self::$db_settings;
+		$db_args['dbprefix'] = $subdir ?: 'wp_';
 
-		$this->proc( 'wp core install' )->run_check( $subdir );
+		$this->proc( 'wp core config', $db_args )->run_check( $subdir );
+
+		$install_args = array(
+			'url' => 'http://example.com',
+			'title' => 'WP CLI Site',
+			'admin_user' => 'admin',
+			'admin_email' => 'admin@example.com',
+			'admin_password' => 'password1'
+		);
+
+		$this->proc( 'wp core install', $install_args )->run_check( $subdir );
 	}
 }
 

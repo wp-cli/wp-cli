@@ -17,7 +17,12 @@ class CompositeCommand {
 		$this->name = $name;
 
 		$this->shortdesc = $docparser->get_shortdesc();
-		$this->synopsis = $docparser->get_synopsis();
+		$this->longdesc = $docparser->get_longdesc();
+
+		$when_to_invoke = $docparser->get_tag( 'when' );
+		if ( $when_to_invoke ) {
+			\WP_CLI::get_runner()->register_early_invoke( $when_to_invoke, $this );
+		}
 	}
 
 	function get_parent() {
@@ -46,8 +51,12 @@ class CompositeCommand {
 		return $this->shortdesc;
 	}
 
+	function get_longdesc() {
+		return $this->longdesc;
+	}
+
 	function get_synopsis() {
-		return $this->synopsis;
+		return '<subcommand>';
 	}
 
 	function invoke( $args, $assoc_args ) {

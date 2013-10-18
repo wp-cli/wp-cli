@@ -1,9 +1,11 @@
 Feature: Wordpress code scaffolding
 
+  Background:
+    Given a WP install
+
   @theme
   Scenario: Scaffold a child theme
-    Given a WP install
-    And I run `wp theme path`
+    Given I run `wp theme path`
     And save STDOUT as {THEME_DIR}
 
     When I run `wp scaffold child-theme zombieland --parent_theme=umbrella --theme_name=Zombieland --author=Tallahassee --author_uri=http://www.wp-cli.org --theme_uri=http://www.zombieland.com --activate`
@@ -12,8 +14,7 @@ Feature: Wordpress code scaffolding
 
   @tax @cpt
   Scenario: Scaffold a Custom Taxonomy and Custom Post Type and write it to active theme
-    Given a WP install
-    And I run `wp eval 'echo STYLESHEETPATH;'`
+    Given I run `wp eval 'echo STYLESHEETPATH;'`
     And save STDOUT as {STYLESHEETPATH}
 
     When I run `wp scaffold taxonomy zombie-speed --theme`
@@ -25,8 +26,6 @@ Feature: Wordpress code scaffolding
   # Test for all flags but --label, --theme, --plugin and --raw
   @tax
   Scenario: Scaffold a Custom Taxonomy and attach it to CPTs including one that is prefixed and has a text domain
-    Given a WP install
-
     When I run `wp scaffold taxonomy zombie-speed --post_types="prefix-zombie,wraith" --textdomain=zombieland`
     Then STDOUT should contain:
       """
@@ -43,19 +42,19 @@ Feature: Wordpress code scaffolding
   
   @tax
   Scenario: Scaffold a Custom Taxonomy with label "Speed"
-    Given a WP install
-
     When I run `wp scaffold taxonomy zombie-speed --label="Speed"`
     Then STDOUT should contain:
         """
-        __( 'Speed'
+        __( 'Speeds'
+        """
+    And STDOUT should contain:
+        """
+        _x( 'Speed', 'taxonomy general name',
         """
 
   # Test for all flags but --label, --theme, --plugin and --raw
   @cpt
   Scenario: Scaffold a Custom Post Type
-    Given a WP install
-
     When I run `wp scaffold post-type zombie --textdomain=zombieland`
     Then STDOUT should contain:
       """
@@ -68,8 +67,6 @@ Feature: Wordpress code scaffolding
 
   @cpt
   Scenario: Scaffold a Custom Post Type with label
-    Given a WP install
-
     When I run `wp scaffold post-type zombie --label="Brain eater"`
     Then STDOUT should contain:
       """

@@ -5,13 +5,22 @@ namespace WP_CLI;
 abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected $item_type;
-	protected $upgrader;
+	protected $obj_fields;
+
 	protected $upgrade_refresh;
 	protected $upgrade_transient;
 
-	abstract protected function parse_name( $args );
+	abstract protected function get_upgrader_class( $force );
 
 	abstract protected function get_item_list();
+
+	/**
+	 * @param array List of update candidates
+	 * @param array List of item names
+	 * @return array List of update candidates
+	 */
+	abstract protected function filter_item_list( $items, $args );
+
 	abstract protected function get_all_items();
 
 	abstract protected function get_status( $file );
@@ -37,7 +46,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$n = count( $items );
 
 		// Not interested in the translation, just the number logic
-		\WP_CLI::line( sprintf( _n( "%d installed {$this->item_type}:", "%d installed {$this->item_type}s:", $n ), $n ) );
+		\WP_CLI::log( sprintf( _n(
+			"%d installed {$this->item_type}:",
+			"%d installed {$this->item_type}s:",
+		$n ), $n ) );
 
 		$padding = $this->get_padding($items);
 
@@ -54,7 +66,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$line .= " " . $details['version'];
 			}
 
-			\WP_CLI::line( $line );
+			\WP_CLI::line( \WP_CLI::colorize( $line ) );
 		}
 
 		\WP_CLI::line();
@@ -92,30 +104,49 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( in_array( true, wp_list_pluck( $items, 'update' ) ) )
 			$legend_line[] = '%yU = Update Available%n';
 
-		\WP_CLI::line( 'Legend: ' . implode( ', ', $legend_line ) );
+		\WP_CLI::line( 'Legend: ' . implode( ', ', \WP_CLI::colorize( $legend_line ) ) );
 	}
 
 	function install( $args, $assoc_args ) {
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
-		$slug = stripslashes( $args[0] );
+		foreach ( $args as $slug ) {
+			$local_or_remote_zip_file = false;
+			$result = false;
 
-		if ( '.zip' == substr( $slug, -4 ) ) {
-			$file_upgrader = \WP_CLI\Utils\get_upgrader( $this->upgrader );
+			// Check if a URL to a remote zip file has been specified
+			$url_path = parse_url( $slug, PHP_URL_PATH );
+			if ( ! empty( $url_path ) && '.zip' === substr( $url_path, - 4 ) ) {
+				$local_or_remote_zip_file = $slug;
+			} else {
+				// Check if a local zip file has been specified
+				if ( 'zip' === pathinfo( $slug, PATHINFO_EXTENSION ) && file_exists( $slug ) ) {
+					$local_or_remote_zip_file = $slug;
+				}
+			}
 
-			if ( $file_upgrader->install( $slug ) ) {
-				$slug = $file_upgrader->result['destination_name'];
+			if ( $local_or_remote_zip_file ) {
+				// Install from local or remote zip file
+				$file_upgrader = $this->get_upgrader( $assoc_args );
 
-				if ( isset( $assoc_args['activate'] ) ) {
-					\WP_CLI::line( "Activating '$slug'..." );
-					$this->activate( array( $slug ) );
+				if ( $file_upgrader->install( $local_or_remote_zip_file ) ) {
+					$slug = $file_upgrader->result['destination_name'];
+					$result = true;
 				}
 			} else {
-				exit(1);
+				// Assume a plugin/theme slug from the WordPress.org repository has been specified
+				$result = $this->install_from_repo( $slug, $assoc_args );
+
+				if ( is_wp_error( $result ) ) {
+					\WP_CLI::warning( "$slug: " . $result->get_error_message() );
+				}
 			}
-		} else {
-			$this->install_from_repo( $slug, $assoc_args );
+
+			if ( $result && isset( $assoc_args['activate'] ) ) {
+				\WP_CLI::log( "Activating '$slug'..." );
+				$this->activate( array( $slug ) );
+			}
 		}
 	}
 
@@ -126,6 +157,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * @param string $version The desired version of the package
 	 */
 	protected static function alter_api_response( $response, $version ) {
+		if ( $response->version == $version )
+			return;
+
 		list( $link ) = explode( $response->slug, $response->download_link );
 
 		if ( false !== strpos( $response->download_link, 'theme' ) )
@@ -150,41 +184,45 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 	}
 
-	protected function _update( $item ) {
-		call_user_func( $this->upgrade_refresh );
-
-		\WP_CLI\Utils\get_upgrader( $this->upgrader )->upgrade( $item );
+	protected function get_upgrader( $assoc_args ) {
+		$upgrader_class = $this->get_upgrader_class( isset( $assoc_args['force'] ) );
+		return \WP_CLI\Utils\get_upgrader( $upgrader_class );
 	}
 
-	function update_all( $args, $assoc_args ) {
+	protected function update_many( $args, $assoc_args ) {
 		call_user_func( $this->upgrade_refresh );
 
-		$items_to_update = wp_list_filter( $this->get_item_list(), array(
+		$items = $this->get_item_list();
+
+		if ( !isset( $assoc_args['all'] ) ) {
+			$items = $this->filter_item_list( $items, $args );
+		}
+
+		$items_to_update = wp_list_filter( $items, array(
 			'update' => true
 		) );
 
 		if ( isset( $assoc_args['dry-run'] ) ) {
-			$item_list = "Available {$this->item_type} updates:";
-
 			if ( empty( $items_to_update ) ) {
-				$item_list .= " none";
-			} else {
-				foreach ( $items_to_update as $file => $details ) {
-					$item_list .= "\n\t%y" . $details['name'] . "%n";
-				}
+				\WP_CLI::line( "No {$this->item_type} updates available." );
+				return;
 			}
 
-			\WP_CLI::line( $item_list );
+			\WP_CLI::line( "Available {$this->item_type} updates:" );
+
+			\WP_CLI\Utils\format_items( 'table', $items_to_update,
+				array( 'name', 'status', 'version' ) );
+
 			return;
 		}
-
-		$upgrader = \WP_CLI\Utils\get_upgrader( $this->upgrader );
 
 		$result = array();
 
 		// Only attempt to update if there is something to update
-		if ( !empty( $items_to_update ) )
+		if ( !empty( $items_to_update ) ) {
+			$upgrader = $this->get_upgrader( $assoc_args );
 			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
+		}
 
 		// Let the user know the results.
 		$num_to_update = count( $items_to_update );
@@ -201,24 +239,31 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 	}
 
-	protected function _list( $_, $format ) {
-		$values = array(
-			'format' => 'table',
-			'fields' => $this->fields
-		);
-
-		foreach ( $values as $key => &$value ) {
-			if ( isset( $format[ $key ] ) ) {
-				$value = $format[ $key ];
-				unset( $format[ $key ] );
-			}
-		}
-		unset( $value );
+	protected function _list( $_, $assoc_args ) {
+		// Force WordPress to check for updates
+		call_user_func( $this->upgrade_refresh );
 
 		$all_items = $this->get_all_items();
-		$items = $this->create_objects( $all_items );
+		if ( !is_array( $all_items ) )
+			\WP_CLI::error( "No {$this->item_type}s found." );
 
-		\WP_CLI\Utils\format_items( $values['format'], $items, $values['fields'] );
+		$it = \WP_CLI\Utils\iterator_map( $all_items, function( $item ) {
+			if ( empty( $item['version'] ) )
+				$item['version'] = '';
+
+			foreach ( $item as $field => &$value ) {
+				if ( $value === true ) {
+					$value = 'available';
+				} else if ( $value === false ) {
+					$value = 'none';
+				}
+			}
+
+			return $item;
+		} );
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_items( $it );
 	}
 
 	/**
@@ -249,33 +294,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		)
 	);
 
-	private function create_objects( $items ) {
-		if ( !is_array( $items ) && !empty( $items ) )
-			\WP_CLI::error( sprintf( "No '$this->item_type's found." ) );
-
-		$objects = array();
-
-		foreach ( $items as $item ) {
-			$object = new \stdClass;
-
-			if ( empty( $item['version'] ) )
-				$item['version'] = "";
-
-			foreach ( $item as $field => $value ) {
-				if ( $value === true ) {
-					$value = "available";
-				} else if ( $value === false) {
-					$value = "none";
-				}
-
-				$object->{$field} = $value;
-			}
-			$objects[] = $object;
-		}
-
-		return $objects;
-	}
-
 	protected function format_status( $status, $format ) {
 		return $this->get_color( $status ) . $this->map[ $format ][ $status ];
 	}
@@ -290,4 +308,53 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		return $colors[ $status ];
 	}
+
+	/**
+	 * Search wordpress.org repo.
+	 *
+	 * @param  object $api        Data from WP plugin/theme API
+	 * @param  array  $assoc_args Data passed in from command.
+	 */
+	protected function _search( $args, $assoc_args ) {
+		$term = $args[0];
+
+		$defaults = array(
+			'per-page' => 10,
+			'fields' => array( 'name', 'slug', 'rating' )
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$formatter = $this->get_formatter( $assoc_args );
+
+		$api_args = array(
+			'per_page' => (int) $assoc_args['per-page'],
+			'search' => $term,
+		);
+
+		if ( 'plugin' == $this->item_type ) {
+			$api = plugins_api( 'query_plugins', $api_args );
+		} else {
+			$api = themes_api( 'query_themes', $api_args );
+		}
+
+		if ( is_wp_error( $api ) )
+			\WP_CLI::error( $api->get_error_message() . __( ' Try again' ) );
+
+		$plural = $this->item_type . 's';
+
+		if ( ! isset( $api->$plural ) )
+			\WP_CLI::error( __( 'API error. Try Again.' ) );
+
+		$items = $api->$plural;
+
+		$count = isset( $api->info['results'] ) ? $api->info['results'] : 'unknown';
+		\WP_CLI::success( sprintf( 'Showing %s of %s %s.', count( $items ), $count, $plural ) );
+
+		$formatter->display_items( $items );
+	}
+
+	protected function get_formatter( &$assoc_args ) {
+		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->item_type );
+	}
 }
+

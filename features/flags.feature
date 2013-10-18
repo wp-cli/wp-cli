@@ -1,14 +1,21 @@
 Feature: Global flags
 
+  Scenario: Setting the URL
+    Given a WP install
+
+    When I run `wp --url=localhost:8001 eval 'echo json_encode( $_SERVER );'`
+    Then STDOUT should be JSON containing:
+      """
+      {
+        "HTTP_HOST": "localhost:8001",
+        "SERVER_NAME": "localhost",
+        "SERVER_PORT": "8001"
+      }
+      """
+
   Scenario: Quiet run
     Given a WP install
 
-    When I run `wp`
-    Then STDOUT should not be empty
-
-    When I run `wp --quiet`
-    Then STDOUT should be empty
- 
     When I try `wp non-existing-command --quiet`
     Then the return code should be 1
     And STDERR should be:
@@ -25,7 +32,7 @@ Feature: Global flags
       CONST_WITHOUT_QUOTES
       """
 
-    When I run `wp eval 'echo CONST_WITHOUT_QUOTES;' --debug`
+    When I try `wp eval 'echo CONST_WITHOUT_QUOTES;' --debug`
     Then the return code should be 0
     And STDOUT should be:
       """
@@ -51,33 +58,87 @@ Feature: Global flags
       admin
       """
 
-    When I try `wp --user=non-existing-user`
+    When I try `wp --user=non-existing-user eval 'echo wp_get_current_user()->user_login;'`
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: Could not get a user_id for this user: 'non-existing-user'
+      Error: Could not find user: non-existing-user
+      """
+
+  Scenario: Using a custom logger
+    Given an empty directory
+    And a custom-logger.php file:
+      """
+      <?php
+      class Dummy_Logger {
+
+        function __call( $method, $args ) {
+          echo "log: called '$method' method";
+        }
+      }
+
+      WP_CLI::set_logger( new Dummy_Logger );
+      """
+
+    When I try `wp --require=custom-logger.php is-installed`
+    Then STDOUT should be:
+      """
+      log: called 'error' method
       """
 
   Scenario: Using --require
-    Given a WP install
+    Given an empty directory
     And a custom-cmd.php file:
-    """
-    <?php
-    class Test_Command extends WP_CLI_Command {
+      """
+      <?php
+      /**
+       * @when before_wp_load
+       */
+      class Test_Command extends WP_CLI_Command {
 
-      function req( $args, $assoc_args ) {
-        WP_CLI::line( $args[0] );
+        function req( $args, $assoc_args ) {
+          WP_CLI::line( $args[0] );
+        }
       }
-    }
 
-    WP_CLI::add_command( 'test', 'Test_Command' );
-    """
+      WP_CLI::add_command( 'test', 'Test_Command' );
+      """
+
+    And a foo.php file:
+      """
+      <?php echo basename(__FILE__) . "\n";
+      """
+
+    And a bar.php file:
+      """
+      <?php echo basename(__FILE__) . "\n";
+      """
+
+    And a wp-cli.yml file:
+      """
+      require:
+        - foo.php
+        - bar.php
+      """
+
+    And a wp-cli2.yml file:
+      """
+      require: custom-cmd.php
+      """
 
     When I run `wp --require=custom-cmd.php test req 'This is a custom command.'`
     Then STDOUT should be:
-    """
-    This is a custom command.
-    """
+      """
+      foo.php
+      bar.php
+      This is a custom command.
+      """
+
+    When I run `wp --config=wp-cli2.yml test req 'This is a custom command.'`
+    Then STDOUT should contain:
+      """
+      This is a custom command.
+      """
 
   Scenario: Enabling/disabling color
     Given a WP install
@@ -92,4 +153,12 @@ Feature: Global flags
     Then STDERR should contain:
       """
       [31;1mError:
+      """
+
+  Scenario: Generate completions
+    Given an empty directory
+    When I run `wp --completions`
+    Then STDOUT should contain:
+      """
+      transient delete get set type
       """

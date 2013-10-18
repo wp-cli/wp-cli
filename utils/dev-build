@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
 
-# check that PHP is available
 command -v php > /dev/null || {
 	echo "can't find PHP binary" >&2
 	exit 1
 }
 
-# install Composer
-command -v composer > /dev/null || {
-	curl -sS https://getcomposer.org/installer | php
-	sudo mv composer.phar /usr/local/bin/composer
-}
+echo "Downloading Composer..."
+curl -sS https://getcomposer.org/installer | php
 
-# install dependencies
-composer install --dev
+echo "Installing dependencies using Composer..."
+php composer.phar install
 
-# add symlink to wp binary
+echo "Downloading PHPUnit..."
+curl -sS http://pear.phpunit.de/get/phpunit.phar > phpunit.phar
+
+echo "Downloading Behat..."
+curl -sS http://behat.org/downloads/behat.phar > behat.phar
+
+echo "Creating symlink for the wp command..."
 for dir in /usr/bin /usr/local/bin; do
 	if [ -d $dir ]; then
 		sudo ln -sf $(pwd)/bin/wp $dir/wp
@@ -23,7 +25,7 @@ for dir in /usr/bin /usr/local/bin; do
 	fi
 done
 
-# install bash completion file
+echo "Installing bash completion file..."
 for dir in /etc/bash_completion.d /usr/local/etc/bash_completion.d; do
 	if [ -d $dir ]; then
 		sudo ln -sf $(pwd)/utils/wp-completion.bash $dir/wp

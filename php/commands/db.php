@@ -5,7 +5,21 @@ use \WP_CLI\Utils;
 /**
  * Perform basic database operations.
  *
- * @package wp-cli
+ * ## OPTIONS
+ *
+ * --yes
+ * : Answer yes to the confirmation message.
+ *
+ * <file>
+ * : The name of the export file. If omitted, it will be '{dbname}.sql'
+ *
+ * <SQL>
+ * : A SQL query.
+ *
+ * ## EXAMPLES
+ *
+ *     # execute a query stored in a file
+ *     wp db query < debug.sql
  */
 class DB_Command extends WP_CLI_Command {
 
@@ -49,9 +63,8 @@ class DB_Command extends WP_CLI_Command {
 	 * Optimize the database.
 	 */
 	function optimize() {
-		self::run( 'mysqlcheck', Utils\esc_cmd(
-			'--optimize --host=%s --user=%s %s',
-			DB_HOST, DB_USER, DB_NAME
+		self::run( Utils\esc_cmd( 'mysqlcheck %s', DB_NAME ), array(
+			'optimize' => true,
 		) );
 
 		WP_CLI::success( "Database optimized." );
@@ -61,9 +74,9 @@ class DB_Command extends WP_CLI_Command {
 	 * Repair the database.
 	 */
 	function repair() {
-		self::run( 'mysqlcheck', Utils\esc_cmd(
-			'--repair --host=%s --user=%s %s',
-			DB_HOST, DB_USER, DB_NAME ) );
+		self::run( Utils\esc_cmd( 'mysqlcheck %s', DB_NAME ), array(
+			'repair' => true,
+		) );
 
 		WP_CLI::success( "Database repaired." );
 	}
@@ -74,9 +87,9 @@ class DB_Command extends WP_CLI_Command {
 	 * @alias connect
 	 */
 	function cli() {
-		self::run( 'mysql', Utils\esc_cmd(
-			'--host=%s --user=%s --database=%s',
-			DB_HOST, DB_USER, DB_NAME ) );
+		self::run( 'mysql --no-defaults', array(
+			'database' => DB_NAME
+		) );
 	}
 
 	/**
@@ -85,14 +98,16 @@ class DB_Command extends WP_CLI_Command {
 	 * @synopsis [<sql>]
 	 */
 	function query( $args ) {
-		$cmd = '--host=%s --user=%s --database=%s';
-		$cmd = Utils\esc_cmd( $cmd, DB_HOST, DB_USER, DB_NAME );
+		$assoc_args = array(
+			'database' => DB_NAME
+		);
 
+		// The query might come from STDIN
 		if ( !empty( $args ) ) {
-			$cmd .= Utils\esc_cmd( ' --execute=%s', $args[0] );
+			$assoc_args['execute'] = $args[0];
 		}
 
-		self::run( 'mysql', $cmd );
+		self::run( 'mysql --no-defaults', $assoc_args );
 	}
 
 	/**
@@ -105,9 +120,9 @@ class DB_Command extends WP_CLI_Command {
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
-		self::run( 'mysqldump', Utils\esc_cmd(
-			'%s --user=%s --host=%s --result-file %s',
-			DB_NAME, DB_USER, DB_HOST, $result_file ) );
+		self::run( Utils\esc_cmd( 'mysqldump %s', DB_NAME ), array(
+			'result-file' => $result_file
+		) );
 
 		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
 	}
@@ -119,10 +134,19 @@ class DB_Command extends WP_CLI_Command {
 	 */
 	function import( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
+		if ( !file_exists( $result_file ) ) {
+			WP_CLI::error( sprintf( 'Import file missing: %s', $result_file ) );
+		}
 
-		self::run( 'mysql', Utils\esc_cmd(
-			'%s --user=%s --host=%s < %s',
-			DB_NAME, DB_USER, DB_HOST, $result_file ) );
+		$descriptors = array(
+			array( 'file', $result_file, 'r' ),
+			STDOUT,
+			STDERR,
+		);
+
+		self::run( 'mysql --no-defaults', array(
+			'database' => DB_NAME
+		), $descriptors );
 
 		WP_CLI::success( sprintf( 'Imported from %s', $result_file ) );
 	}
@@ -135,15 +159,18 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	private static function run_query( $query ) {
-		Utils\run_mysql_query( $query, array(
+		self::run( 'mysql --no-defaults', array( 'execute' => $query ) );
+	}
+
+	private static function run( $cmd, $assoc_args = array(), $descriptors = null ) {
+		$final_args = array_merge( $assoc_args, array(
 			'host' => DB_HOST,
 			'user' => DB_USER,
 			'pass' => DB_PASSWORD,
+			'default-character-set' => DB_CHARSET,
 		) );
-	}
 
-	private static function run( $cmd, $args ) {
-		Utils\run_mysql_command( $cmd, $args, DB_PASSWORD );
+		Utils\run_mysql_command( $cmd, $final_args, $descriptors );
 	}
 }
 

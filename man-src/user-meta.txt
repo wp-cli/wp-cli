@@ -1,9 +1,0 @@
-## OPTIONS
-
-* `--format=json`:
-
-	Encode/decode values as JSON.
-
-## EXAMPLES
-
-	wp user-meta set 123 description "Mary is a WordPress developer."

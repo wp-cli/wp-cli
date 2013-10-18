@@ -14,8 +14,13 @@ Feature: Have a config file
 
   Scenario: Config file in WP Root
     Given a WP install
+    And a sample.php file:
+      """
+      <?php
+      """
     And a wp-cli.yml file:
       """
+      require: sample.php
       """
 
     When I run `wp --info`
@@ -26,6 +31,9 @@ Feature: Have a config file
 
     When I run `wp core is-installed`
     Then STDOUT should be empty
+
+    When I run `wp` from 'wp-content'
+    Then STDOUT should not be empty
 
   Scenario: WP in a subdirectory
     Given a WP install in 'core'
@@ -59,3 +67,16 @@ Feature: Have a config file
       wp-cli.yml
       """
 
+  Scenario: Disabled subcommands
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      disabled_commands:
+        - db drop
+      """
+
+    When I try `wp db drop --yes`
+    Then STDERR should contain:
+      """
+      command has been disabled
+      """

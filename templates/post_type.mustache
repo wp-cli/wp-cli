@@ -1,13 +1,13 @@
 	register_post_type( '{{slug}}', array(
-		'hierarchical'        => false,
-		'public'              => true,
-		'show_in_nav_menus'   => true,
-		'show_ui'             => true,
-		'supports'            => array( 'title', 'editor' ),
-		'has_archive'         => true,
-		'query_var'           => true,
-		'rewrite'             => true,
-		'labels'              => array(
+		'hierarchical'      => false,
+		'public'            => true,
+		'show_in_nav_menus' => true,
+		'show_ui'           => true,
+		'supports'          => array( 'title', 'editor' ),
+		'has_archive'       => true,
+		'query_var'         => true,
+		'rewrite'           => true,
+		'labels'            => array(
 			'name'                => __( '{{label_plural_ucfirst}}', '{{textdomain}}' ),
 			'singular_name'       => __( '{{label_ucfirst}}', '{{textdomain}}' ),
 			'add_new'             => __( 'Add new {{label}}', '{{textdomain}}' ),

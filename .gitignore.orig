@@ -1,0 +1,9 @@
+<<<<<<< HEAD
+.svn
+composer.phar
+=======
+composer.lock
+>>>>>>> upstream/master
+/vendor
+/*.phar
+/phpunit.xml

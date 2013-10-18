@@ -8,25 +8,17 @@ use \WP_CLI\Dispatcher;
  */
 class WP_CLI {
 
-	public static $root;
-
-	public static $runner;
+	private static $configurator;
 
 	private static $logger;
 
-	private static $man_dirs = array();
+	private static $hooks = array(), $hooks_passed = array();
 
 	/**
 	 * Initialize WP_CLI static variables.
 	 */
 	static function init() {
-		self::add_man_dir(
-			WP_CLI_ROOT . "../man",
-			WP_CLI_ROOT . "../man-src"
-		);
-
-		self::$root = new Dispatcher\RootCommand;
-		self::$runner = new WP_CLI\Runner;
+		self::$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
 	}
 
 	/**
@@ -38,86 +30,72 @@ class WP_CLI {
 		self::$logger = $logger;
 	}
 
+	static function get_configurator() {
+		return self::$configurator;
+	}
+
+	static function get_root_command() {
+		static $root;
+
+		if ( !$root ) {
+			$root = new Dispatcher\RootCommand;
+		}
+
+		return $root;
+	}
+
+	static function get_runner() {
+		static $runner;
+
+		if ( !$runner ) {
+			$runner = new WP_CLI\Runner;
+		}
+
+		return $runner;
+	}
+
+	static function colorize( $string ) {
+		return \cli\Colors::colorize( $string, self::get_runner()->in_color() );
+	}
+
 	/**
-	 * Add a command to the WP-CLI list of commands
+	 * Schedule a callback to be executed at a certain point (before WP is loaded).
+	 */
+	static function add_action( $when, $callback ) {
+		if ( in_array( $when, self::$hooks_passed ) )
+			call_user_func( $callback );
+
+		self::$hooks[ $when ][] = $callback;
+	}
+
+	/**
+	 * Execute registered callbacks.
+	 */
+	static function do_action( $when ) {
+		self::$hooks_passed[] = $when;
+
+		if ( !isset( self::$hooks[ $when ] ) )
+			return;
+
+		array_map( 'call_user_func', self::$hooks[ $when ] );
+	}
+
+	/**
+	 * Add a command to the wp-cli list of commands
 	 *
 	 * @param string $name The name of the command that will be used in the cli
 	 * @param string $class The command implementation
+	 * @param array $args An associative array with additional parameters:
+	 *   'before_invoke' => callback to execute before invoking the command
 	 */
-	static function add_command( $name, $class ) {
-		if ( in_array( $name, self::get_config('disabled_commands') ) )
-			return;
+	static function add_command( $name, $class, $args = array() ) {
+		$command = Dispatcher\CommandFactory::create( $name, $class, self::get_root_command() );
 
-		$reflection = new \ReflectionClass( $class );
-
-		if ( $reflection->hasMethod( '__invoke' ) ) {
-			$command = self::create_subcommand( self::$root, $name, $reflection->name,
-				$reflection->getMethod( '__invoke' ) );
-		} else {
-			$command = self::create_composite_command( $name, $reflection );
+		if ( isset( $args['before_invoke'] ) ) {
+			self::add_action( "before_invoke:$name", $args['before_invoke'] );
 		}
 
-		self::$root->add_subcommand( $name, $command );
-	}
-
-	private static function create_subcommand( $parent, $name, $class_name, $method ) {
-		$docparser = new \WP_CLI\DocParser( $method );
-
-		if ( !$name )
-			$name = $docparser->get_tag( 'subcommand' );
-
-		if ( !$name )
-			$name = $method->name;
-
-		$method_name = $method->name;
-
-		$when_invoked = function ( $args, $assoc_args ) use ( $class_name, $method_name ) {
-			call_user_func( array( new $class_name, $method_name ), $args, $assoc_args );
-		};
-
-		return new Dispatcher\Subcommand( $parent, $name, $docparser, $when_invoked );
-	}
-
-	private static function create_composite_command( $name, $reflection ) {
-		$docparser = new \WP_CLI\DocParser( $reflection );
-
-		$container = new Dispatcher\CompositeCommand( self::$root, $name, $docparser );
-
-		foreach ( $reflection->getMethods() as $method ) {
-			if ( !self::_is_good_method( $method ) )
-				continue;
-
-			$subcommand = self::create_subcommand( $container, false, $reflection->name, $method );
-
-			$subcommand_name = $subcommand->get_name();
-			$full_name = self::get_full_name( $subcommand );
-
-			if ( in_array( $full_name, self::get_config('disabled_commands') ) )
-				continue;
-
-			$container->add_subcommand( $subcommand_name, $subcommand );
-		}
-
-		return $container;
-	}
-
-	private static function get_full_name( $command ) {
-		$path = Dispatcher\get_path( $command );
-		array_shift( $path );
-
-		return implode( ' ', $path );
-	}
-
-	private static function _is_good_method( $method ) {
-		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
-	}
-
-	static function add_man_dir( $dest_dir, $src_dir ) {
-		self::$man_dirs[ $dest_dir ] = $src_dir;
-	}
-
-	static function get_man_dirs() {
-		return self::$man_dirs;
+		self::get_root_command()->add_subcommand( $name, $command );
 	}
 
 	/**
@@ -126,38 +104,44 @@ class WP_CLI {
 	 * @param string $message
 	 */
 	static function line( $message = '' ) {
-		self::$logger->line( $message );
+		echo $message . "\n";
+	}
+
+	/**
+	 * Log an informational message.
+	 *
+	 * @param string $message
+	 */
+	static function log( $message ) {
+		self::$logger->info( $message );
 	}
 
 	/**
 	 * Display a success in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @param string $label
 	 */
-	static function success( $message, $label = 'Success' ) {
-		self::$logger->success( $message, $label );
+	static function success( $message ) {
+		self::$logger->success( $message );
 	}
 
 	/**
 	 * Display a warning in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @param string $label
 	 */
-	static function warning( $message, $label = 'Warning' ) {
-		self::$logger->warning( self::error_to_string( $message ), $label );
+	static function warning( $message ) {
+		self::$logger->warning( self::error_to_string( $message ) );
 	}
 
 	/**
 	 * Display an error in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @param string $label
 	 */
-	static function error( $message, $label = 'Error' ) {
-		if ( ! isset( self::$runner->assoc_args[ 'completions' ] ) ) {
-			self::$logger->error( self::error_to_string( $message ), $label );
+	static function error( $message ) {
+		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) ) {
+			self::$logger->error( self::error_to_string( $message ) );
 		}
 
 		exit(1);
@@ -166,9 +150,9 @@ class WP_CLI {
 	/**
 	 * Ask for confirmation before running a destructive operation.
 	 */
-	static function confirm( $question, $assoc_args ) {
+	static function confirm( $question, $assoc_args = array() ) {
 		if ( !isset( $assoc_args['yes'] ) ) {
-			echo $question . " [y/n] ";
+			fwrite( STDOUT, $question . " [y/n] " );
 
 			$answer = trim( fgets( STDIN ) );
 
@@ -183,9 +167,14 @@ class WP_CLI {
 	 * @param mixed $value
 	 * @param array $assoc_args
 	 */
-	static function read_value( $value, $assoc_args = array() ) {
+	static function read_value( $raw_value, $assoc_args = array() ) {
 		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
-			$value = json_decode( $value, true );
+			$value = json_decode( $raw_value, true );
+			if ( null === $value ) {
+				WP_CLI::error( sprintf( 'Invalid JSON: %s', $raw_value ) );
+			}
+		} else {
+			$value = $raw_value;
 		}
 
 		return $value;
@@ -246,40 +235,20 @@ class WP_CLI {
 	}
 
 	static function get_config_path() {
-		return self::$runner->config_path;
+		return self::get_runner()->config_path;
 	}
 
 	static function get_config( $key = null ) {
-		if ( null === $key )
-			return self::$runner->config;
+		if ( null === $key ) {
+			return self::get_runner()->config;
+		}
 
-		if ( !isset( self::$runner->config[ $key ] ) ) {
+		if ( !isset( self::get_runner()->config[ $key ] ) ) {
 			self::warning( "Unknown config option '$key'." );
 			return null;
 		}
 
-		return self::$runner->config[ $key ];
-	}
-
-	private static function find_command_to_run( $args ) {
-		$command = \WP_CLI::$root;
-
-		$cmd_path = array();
-
-		while ( !empty( $args ) && $command->has_subcommands() ) {
-			$cmd_path[] = $args[0];
-
-			$subcommand = $command->find_subcommand( $args );
-
-			if ( !$subcommand ) {
-				\WP_CLI::error( sprintf( "'%s' is not a registered wp command. See 'wp help'.",
-					implode( ' ', $cmd_path ) ) );
-			}
-
-			$command = $subcommand;
-		}
-
-		return array( $command, $args );
+		return self::get_runner()->config[ $key ];
 	}
 
 	/**
@@ -288,10 +257,16 @@ class WP_CLI {
 	 * @param array
 	 * @param array
 	 */
-	public static function run_command( $args, $assoc_args = array() ) {
-		list( $command, $final_args ) = self::find_command_to_run( $args );
+	static function run_command( $args, $assoc_args = array() ) {
+		self::get_runner()->run_command( $args, $assoc_args );
+	}
 
-		$command->invoke( $final_args, $assoc_args );
+
+
+	// DEPRECATED STUFF
+
+	static function add_man_dir() {
+		trigger_error( 'WP_CLI::add_man_dir() is deprecated. Add docs inline.', E_USER_WARNING );
 	}
 
 	// back-compat

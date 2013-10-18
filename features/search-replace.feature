@@ -17,7 +17,7 @@ Feature: Do global search/replace
 
   Scenario: Multisite search/replace
     Given a WP multisite install
-    And I run `wp blog create --slug="foo" --title="foo" --email="foo@example.com"`
+    And I run `wp site create --slug="foo" --title="foo" --email="foo@example.com"`
     And I run `wp search-replace foo bar --network`
     Then STDOUT should be a table containing rows:
       | Table      | Column | Replacements |

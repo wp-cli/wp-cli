@@ -4,32 +4,33 @@ namespace WP_CLI\Loggers;
 
 class Regular {
 
-	private $colorize;
-
-	function __construct( $colorize ) {
-		$this->colorize = $colorize;
+	function __construct( $in_color ) {
+		$this->in_color = $in_color;
 	}
 
-	private function _line( $message, $handle = STDOUT ) {
-		fwrite( $handle, \cli\Colors::colorize( $message . "\n", $this->colorize ) );
+	protected function write( $handle, $str ) {
+		fwrite( $handle, $str );
 	}
 
-	function line( $message ) {
-		$this->_line( $message );
+	private function _line( $message, $label, $color, $handle = STDOUT ) {
+		$label = \cli\Colors::colorize( "$color$label:%n", $this->in_color );
+		$this->write( $handle, "$label $message\n" );
 	}
 
-	function success( $message, $label ) {
-		$this->line( '%G' . $label . ': %n' . $message );
+	function info( $message ) {
+		$this->write( STDOUT, $message . "\n" );
 	}
 
-	function warning( $message, $label ) {
-		$msg = '%C' . $label . ': %n' . $message;
-		$this->_line( $msg, STDERR );
+	function success( $message ) {
+		$this->_line( $message, 'Success', '%G' );
 	}
 
-	function error( $message, $label ) {
-		$msg = '%R' . $label . ': %n' . $message;
-		$this->_line( $msg, STDERR );
+	function warning( $message ) {
+		$this->_line( $message, 'Warning', '%C', STDERR );
+	}
+
+	function error( $message ) {
+		$this->_line( $message, 'Error', '%R', STDERR );
 	}
 }
 

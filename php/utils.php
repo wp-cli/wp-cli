@@ -5,11 +5,17 @@
 namespace WP_CLI\Utils;
 
 use \WP_CLI\Dispatcher;
+use \WP_CLI\Iterators\Transform;
 
 function load_dependencies() {
+	if ( 0 === strpos( WP_CLI_ROOT, 'phar:' ) ) {
+		require WP_CLI_ROOT . '/vendor/autoload.php';
+		return;
+	}
+
 	$vendor_paths = array(
-		WP_CLI_ROOT . '../vendor',           // top-level project
-		WP_CLI_ROOT . '../../../../vendor',  // part of a larger project
+		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project / installed via Composer (preferred)
+		WP_CLI_ROOT . '/vendor',           // top-level project / installed as Git clone
 	);
 
 	$has_autoload = false;
@@ -26,12 +32,10 @@ function load_dependencies() {
 		fputs( STDERR, "Internal error: Can't find Composer autoloader.\n" );
 		exit(3);
 	}
-
-	include WP_CLI_ROOT . 'Spyc.php';
 }
 
 function load_command( $name ) {
-	$path = WP_CLI_ROOT . "/commands/$name.php";
+	$path = WP_CLI_ROOT . "/php/commands/$name.php";
 
 	if ( is_readable( $path ) ) {
 		include_once $path;
@@ -39,7 +43,7 @@ function load_command( $name ) {
 }
 
 function load_all_commands() {
-	$cmd_dir = WP_CLI_ROOT . "commands";
+	$cmd_dir = WP_CLI_ROOT . '/php/commands';
 
 	$iterator = new \DirectoryIterator( $cmd_dir );
 
@@ -51,21 +55,39 @@ function load_all_commands() {
 	}
 }
 
-function get_config_spec() {
-	$spec = include __DIR__ . '/config-spec.php';
-
-	$defaults = array(
-		'runtime' => false,
-		'file' => false,
-		'synopsis' => '',
-		'default' => null,
-	);
-
-	foreach ( $spec as &$option ) {
-		$option = array_merge( $defaults, $option );
+/**
+ * Like array_map(), except it returns a new iterator, instead of a modified array.
+ *
+ * Example:
+ *
+ *     $arr = array('Football', 'Socker');
+ *
+ *     $it = iterator_map($arr, 'strtolower', function($val) {
+ *       return str_replace('foo', 'bar', $val);
+ *     });
+ *
+ *     foreach ( $it as $val ) {
+ *       var_dump($val);
+ *     }
+ *
+ * @param array|object Either a plain array or another iterator
+ * @param callback The function to apply to an element
+ * @return object An iterator that applies the given callback(s)
+ */
+function iterator_map( $it, $fn ) {
+	if ( is_array( $it ) ) {
+		$it = new \ArrayIterator( $it );
 	}
 
-	return $spec;
+	if ( !method_exists( $it, 'add_transform' ) ) {
+		$it = new Transform( $it );
+	}
+
+	foreach ( array_slice( func_get_args(), 1 ) as $fn ) {
+		$it->add_transform( $fn );
+	}
+
+	return $it;
 }
 
 /**
@@ -102,27 +124,12 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	return null;
 }
 
-/**
- * Splits $argv into positional and associative arguments.
- *
- * @param string
- * @return array
- */
-function parse_args( $arguments ) {
-	$regular_args = array();
-	$assoc_args = array();
+function is_path_absolute( $path ) {
+	// Windows
+	if ( isset($path[1]) && ':' === $path[1] )
+		return true;
 
-	foreach ( $arguments as $arg ) {
-		if ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
-			$assoc_args[ $matches[1] ] = true;
-		} elseif ( preg_match( '|^--([^=]+)=(.+)|', $arg, $matches ) ) {
-			$assoc_args[ $matches[1] ] = $matches[2];
-		} else {
-			$regular_args[] = $arg;
-		}
-	}
-
-	return array( $regular_args, $assoc_args );
+	return $path[0] === '/';
 }
 
 /**
@@ -169,32 +176,6 @@ function esc_cmd( $cmd ) {
 	return vsprintf( $cmd, array_map( 'escapeshellarg', $args ) );
 }
 
-/**
- * Sets the appropriate $_SERVER keys based on a given string
- *
- * @param string $url The URL
- */
-function set_url_params( $url ) {
-	$url_parts = parse_url( $url );
-
-	if ( !isset( $url_parts['scheme'] ) ) {
-		$url_parts = parse_url( 'http://' . $url );
-	}
-
-	$f = function( $key ) use ( $url_parts ) {
-		return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
-	};
-
-	$_SERVER['HTTP_HOST'] = $f('host');
-	$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
-	$_SERVER['REQUEST_URL'] = $f('path');
-	$_SERVER['QUERY_STRING'] = $f('query');
-	$_SERVER['SERVER_NAME'] = substr($_SERVER['HTTP_HOST'], 0, strrpos($_SERVER['HTTP_HOST'], '.'));
-	$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
-	$_SERVER['HTTP_USER_AGENT'] = '';
-	$_SERVER['REQUEST_METHOD'] = 'GET';
-}
-
 function locate_wp_config() {
 	static $path;
 
@@ -214,116 +195,16 @@ function locate_wp_config() {
 }
 
 /**
- * Take a serialised array and unserialise it replacing elements as needed and
- * unserialising any subordinate arrays and performing the replace on those too.
+ * Output items in a table, JSON, CSV, ids, or the total count
  *
- * @source https://github.com/interconnectit/Search-Replace-DB
- *
- * @param string $from       String we're looking to replace.
- * @param string $to         What we want it to be replaced with
- * @param array  $data       Used to pass any subordinate arrays back to in.
- * @param bool   $serialised Does the array passed via $data need serialising.
- *
- * @return array	The original array with all elements replaced as needed.
- */
-function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
-
-	// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
-	try {
-
-		if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
-			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
-		}
-
-		elseif ( is_array( $data ) ) {
-			$_tmp = array( );
-			foreach ( $data as $key => $value ) {
-				$_tmp[ $key ] = recursive_unserialize_replace( $from, $to, $value, false );
-			}
-
-			$data = $_tmp;
-			unset( $_tmp );
-		}
-
-		// Submitted by Tina Matter
-		elseif ( is_object( $data ) ) {
-			$dataClass = get_class( $data );
-			$_tmp = new $dataClass( );
-			foreach ( $data as $key => $value ) {
-				$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
-			}
-
-			$data = $_tmp;
-			unset( $_tmp );
-		}
-
-		else {
-			if ( is_string( $data ) )
-				$data = str_replace( $from, $to, $data );
-		}
-
-		if ( $serialised )
-			return serialize( $data );
-
-	} catch( Exception $error ) {
-
-	}
-
-	return $data;
-}
-
-/**
- * Output items in a table, JSON, or CSV
- *
- * @param string        $format     Format to use: 'table', 'json', 'csv', 'ids'
+ * @param string        $format     Format to use: 'table', 'json', 'csv', 'ids', 'count'
  * @param array         $items      Data to output
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
 function format_items( $format, $items, $fields ) {
-	if ( 'ids' == $format )
-		echo implode( ' ', $items );
-
-	if ( ! is_array( $fields ) )
-		$fields = explode( ',', $fields );
-
-	$output_items = array();
-	foreach ( $items as $item ) {
-
-		$output_item = new \stdClass;
-		foreach ( $fields as $key => $field ) {
-
-			if ( ! isset( $item->$field ) ) {
-				unset( $fields[$key] );
-				continue;
-			}
-
-			$output_item->$field = $item->$field;
-		}
-
-		$output_items[] = $output_item;
-	}
-
-	switch ( $format ) {
-		case 'table':
-			$table = new \cli\Table();
-
-			$table->setHeaders( $fields );
-
-			foreach ( $output_items as $item ) {
-				$table->addRow( array_values( (array)$item ) );
-			}
-
-			$table->display();
-			break;
-		case 'csv':
-		case 'json':
-
-			if ( 'json' == $format )
-				echo json_encode( $output_items );
-			else
-				write_csv( STDOUT, $output_items, $fields );
-			break;
-	}
+	$assoc_args = compact( 'format', 'fields' );
+	$formatter = new \WP_CLI\Formatter( $assoc_args );
+	$formatter->display_items( $items );
 }
 
 /**
@@ -334,24 +215,36 @@ function format_items( $format, $items, $fields ) {
  * @param array    $headers    List of CSV columns (optional)
  */
 function write_csv( $fd, $rows, $headers = array() ) {
-
-	// Prepare the headers if they were specified
-	if ( ! empty( $headers ) )
+	if ( ! empty( $headers ) ) {
 		fputcsv( $fd, $headers );
-
-	foreach ( $rows as $row ) {
-		$row = (array) $row;
-
-		if ( ! empty( $headers ) ) {
-			$build_row = array();
-			foreach ( $headers as $key ) {
-				$build_row[] = $row[ $key ];
-			}
-			$row = $build_row;
-		}
-		fputcsv( $fd, $row );
 	}
 
+	foreach ( $rows as $row ) {
+		if ( ! empty( $headers ) ) {
+			$row = pick_fields( $row, $headers );
+		}
+
+		fputcsv( $fd, array_values( $row ) );
+	}
+}
+
+/**
+ * Pick fields from an associative array or object.
+ *
+ * @param array|object Associative array or object to pick fields from
+ * @param array List of fields to pick
+ * @return array
+ */
+function pick_fields( $item, $fields ) {
+	$item = (object) $item;
+
+	$values = array();
+
+	foreach ( $fields as $field ) {
+		$values[ $field ] = isset( $item->$field ) ? $item->$field : null;
+	}
+
+	return $values;
 }
 
 /**
@@ -382,32 +275,70 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 	return $output;
 }
 
-function run_mysql_query( $query, $args ) {
-	// TODO: use PDO?
+/**
+ * @param string MySQL host string, as defined in wp-config.php
+ * @return array
+ */
+function mysql_host_to_cli_args( $raw_host ) {
+	$assoc_args = array();
 
-	$arg_str = esc_cmd( '--host=%s --user=%s --execute=%s',
-		$args['host'], $args['user'], $query );
+	$host_parts = explode( ':',  $raw_host );
+	if ( count( $host_parts ) == 2 ) {
+		list( $assoc_args['host'], $extra ) = $host_parts;
+		$extra = trim( $extra );
+		if ( is_numeric( $extra ) ) {
+			$assoc_args['port'] = intval( $extra );
+			$assoc_args['protocol'] = 'tcp';
+		} else if ( $extra !== '' ) {
+			$assoc_args['socket'] = $extra;
+		}
+	} else {
+		$assoc_args['host'] = $raw_host;
+	}
 
-	run_mysql_command( 'mysql', $arg_str, $args['pass'] );
+	return $assoc_args;
 }
 
-function run_mysql_command( $cmd, $arg_str, $pass ) {
-	$old_val = getenv( 'MYSQL_PWD' );
+function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
+	if ( !$descriptors )
+		$descriptors = array( STDIN, STDOUT, STDERR );
 
-	$final_cmd = "$cmd --no-defaults $arg_str";
+	if ( isset( $assoc_args['host'] ) ) {
+		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
+	}
 
-	putenv( 'MYSQL_PWD=' . $pass );
-	$r = proc_close( proc_open( $final_cmd, array( STDIN, STDOUT, STDERR ), $pipes ) );
-	putenv( 'MYSQL_PWD=' . $old_val );
+	$env = (array) $_ENV;
+	if ( isset( $assoc_args['pass'] ) ) {
+		$env['MYSQL_PWD'] = $assoc_args['pass'];
+		unset( $assoc_args['pass'] );
+	}
+
+	$final_cmd = $cmd . assoc_args_to_str( $assoc_args );
+
+	$proc = proc_open( $final_cmd, $descriptors, $pipes, null, $env );
+	if ( !$proc )
+		exit(1);
+
+	$r = proc_close( $proc );
 
 	if ( $r ) exit( $r );
 }
 
 function mustache_render( $template_name, $data ) {
-	$template = file_get_contents( WP_CLI_ROOT . "../templates/$template_name" );
+	if ( ! file_exists( $template_name ) )
+		$template_name = WP_CLI_ROOT . "/templates/$template_name";
+
+	$template = file_get_contents( $template_name );
 
 	$m = new \Mustache_Engine;
 
 	return $m->render( $template, $data );
+}
+
+function make_progress_bar( $message, $count ) {
+	if ( \cli\Shell::isPiped() )
+		return new \WP_CLI\NoOp;
+
+	return new \cli\progress\Bar( $message, $count );
 }
 

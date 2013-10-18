@@ -6,36 +6,23 @@ use \WP_CLI\Dispatcher;
 class Help_Command extends WP_CLI_Command {
 
 	/**
-	 * Get help on a certain topic.
+	 * Get help on a certain command.
 	 *
-	 * @synopsis [<command>] [--gen]
+	 * ## EXAMPLES
+	 *
+	 *     # get help for `core` command
+	 *     wp help core
+	 *
+	 *     # get help for `core download` subcommand
+	 *     wp help core download
+	 *
+	 * @synopsis [<command>...]
 	 */
 	function __invoke( $args, $assoc_args ) {
-		if ( isset( $assoc_args['gen'] ) )
-			$this->generate( $args );
-		else
-			$this->show( $args );
-	}
-
-	private static function find_subcommand( $args ) {
-		$command = \WP_CLI::$root;
-
-		while ( !empty( $args ) && $command && $command->has_subcommands() ) {
-			$command = $command->find_subcommand( $args );
-		}
-
-		return $command;
-	}
-
-	private function show( $args ) {
-		if ( self::maybe_show_manpage( $args ) ) {
-			exit;
-		}
-
 		$command = self::find_subcommand( $args );
 
 		if ( $command ) {
-			$command->show_usage();
+			self::show_help( $command );
 			exit;
 		}
 
@@ -45,148 +32,112 @@ class Help_Command extends WP_CLI_Command {
 		}
 	}
 
-	private function generate( $args ) {
-		if ( '' === exec( 'which ronn' ) ) {
-			WP_CLI::error( '`ronn` executable not found.' );
+	private static function find_subcommand( $args ) {
+		$command = \WP_CLI::get_root_command();
+
+		while ( !empty( $args ) && $command && $command->has_subcommands() ) {
+			$command = $command->find_subcommand( $args );
 		}
 
-		$arg_copy = $args;
-
-		$command = self::find_subcommand( $args );
-
-		if ( $command ) {
-			foreach ( WP_CLI::get_man_dirs() as $dest_dir => $src_dir ) {
-				self::_generate( $src_dir, $dest_dir, $command );
-			}
-			exit;
-		}
-
-		// WordPress is already loaded, so there's no chance we'll find the command
-		if ( function_exists( 'add_filter' ) ) {
-			WP_CLI::error( sprintf( "'%s' command not found.", implode( ' ', $arg_copy ) ) );
-		}
+		return $command;
 	}
 
-	private static function maybe_show_manpage( $args ) {
-		$man_file = self::get_file_name( $args );
+	private static function show_help( $command ) {
+		$out = self::get_initial_markdown( $command );
 
-		foreach ( \WP_CLI::get_man_dirs() as $dest_dir => $_ ) {
-			$man_path = "$dest_dir/" . $man_file;
-
-			if ( is_readable( $man_path ) ) {
-				self::show_manpage( $man_path );
-				return true;
-			}
+		$longdesc = $command->get_longdesc();
+		if ( $longdesc ) {
+			$out .= $longdesc . "\n";
 		}
 
-		return false;
+		// section headers
+		$out = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
+
+		// definition lists
+		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
+
+		$out = str_replace( "\t", '  ', $out );
+
+		self::pass_through_pager( $out );
 	}
 
-	private static function show_manpage( $path ) {
-		// man can't read phar://, so need to copy to a temporary file
-		$tmp_path = tempnam( sys_get_temp_dir(), 'wp-cli-man-' );
-
-		copy( $path, $tmp_path );
-
-		\WP_CLI::launch( "man $tmp_path" );
-
-		unlink( $tmp_path );
+	private static function rewrap_param_desc( $matches ) {
+		$param = $matches[1];
+		$desc = self::indent( "\t\t", wordwrap( $matches[2] ) );
+		return "\t$param\n$desc\n\n";
 	}
 
-	private static function _generate( $src_dir, $dest_dir, $command ) {
-		$cmd_path = Dispatcher\get_path( $command );
-		array_shift( $cmd_path ); // discard 'wp'
-
-		$src_path = "$src_dir/" . self::get_src_file_name( $cmd_path );
-		$dest_path = "$dest_dir/" . self::get_file_name( $cmd_path );
-
-		self::call_ronn( self::get_markdown( $src_path, $command ), $dest_path );
-
-		if ( $command->has_subcommands() ) {
-			foreach ( $command->get_subcommands() as $subcommand ) {
-				self::_generate( $src_dir, $dest_dir, $subcommand );
-			}
+	private static function indent( $whitespace, $text ) {
+		$lines = explode( "\n", $text );
+		foreach ( $lines as &$line ) {
+			$line = $whitespace . $line;
 		}
+		return implode( $lines, "\n" );
 	}
 
-	// returns a file descriptor or false
-	private static function get_markdown( $doc_path, $command ) {
-		if ( !file_exists( $doc_path ) )
-			return false;
-
-		$fd = fopen( "php://temp", "rw" );
-
-		self::add_initial_markdown( $fd, $command );
-
-		fwrite( $fd, file_get_contents( $doc_path ) );
-
-		if ( 0 === ftell( $fd ) )
-			return false;
-
-		fseek( $fd, 0 );
-
-		return $fd;
-	}
-
-	private static function add_initial_markdown( $fd, $command ) {
-		$path = Dispatcher\get_path( $command );
-
-		$binding = array(
-			'name_m' => implode( '-', $path ),
-			'shortdesc' => $command->get_shortdesc(),
-		);
-
-		$synopsis = Dispatcher\get_full_synopsis( $command, true );
-
-		$synopsis = str_replace( '_', '\_', $synopsis );
-		$synopsis = str_replace( array( '<', '>' ), '_', $synopsis );
-
-		$binding['synopsis'] = $synopsis;
-
-		if ( !$binding['shortdesc'] ) {
-			$name_s = implode( ' ', $path );
-			\WP_CLI::warning( "No shortdesc for $name_s" );
+	private static function pass_through_pager( $out ) {
+		if ( strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ) {
+			// no paging for Windows cmd.exe; sorry
+			echo $out;
+			return 0;
 		}
 
-		if ( $command->has_subcommands() ) {
-			foreach ( $command->get_subcommands() as $subcommand ) {
-				$binding['has-subcommands']['subcommands'][] = array(
-					'name' => $subcommand->get_name(),
-					'desc' => $subcommand->get_shortdesc(),
-				);
-			}
-		}
-
-		fwrite( $fd, Utils\mustache_render( 'man.mustache', $binding ) );
-	}
-
-	private static function call_ronn( $markdown, $dest ) {
-		if ( !$markdown )
-			return;
+		// convert string to file handle
+		$fd = fopen( "php://temp", "r+" );
+		fputs( $fd, $out );
+		rewind( $fd );
 
 		$descriptorspec = array(
-			0 => $markdown,
-			1 => array( 'file', $dest, 'w' ),
+			0 => $fd,
+			1 => STDOUT,
 			2 => STDERR
 		);
 
-		$cmd = "ronn --date=2012-01-01 --roff --manual='WP-CLI'";
-
-		$r = proc_close( proc_open( $cmd, $descriptorspec, $pipes ) );
-
-		$roff = file_get_contents( $dest );
-		$roff = str_replace( ' "January 2012"', '', $roff );
-		file_put_contents( $dest, $roff );
-
-		\WP_CLI::line( "generated " . basename( $dest ) );
+		return proc_close( proc_open( 'less -r', $descriptorspec, $pipes ) );
 	}
 
-	private static function get_file_name( $args ) {
-		return implode( '-', $args ) . '.1';
+	private static function get_initial_markdown( $command ) {
+		$name = implode( ' ', Dispatcher\get_path( $command ) );
+
+		$binding = array(
+			'name' => $name,
+			'shortdesc' => $command->get_shortdesc(),
+		);
+
+		$binding['synopsis'] = wordwrap( "$name " . $command->get_synopsis(), 79 );
+
+		if ( $command->has_subcommands() ) {
+			$binding['has-subcommands']['subcommands'] = self::render_subcommands( $command );
+		}
+
+		return Utils\mustache_render( 'man.mustache', $binding );
 	}
 
-	private static function get_src_file_name( $args ) {
-		return implode( '-', $args ) . '.txt';
+	private static function render_subcommands( $command ) {
+		$subcommands = array();
+		foreach ( $command->get_subcommands() as $subcommand ) {
+			$subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
+		}
+
+		$max_len = self::get_max_len( array_keys( $subcommands ) );
+
+		$lines = array();
+		foreach ( $subcommands as $name => $desc ) {
+			$lines[] = str_pad( $name, $max_len ) . "\t\t\t" . $desc;
+		}
+
+		return $lines;
+	}
+
+	private static function get_max_len( $strings ) {
+		$max_len = 0;
+		foreach ( $strings as $str ) {
+			$len = strlen( $str );
+			if ( $len > $max_len )
+				$max_len = $len;
+		}
+
+		return $max_len;
 	}
 }
 

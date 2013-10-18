@@ -15,14 +15,14 @@ function invoke_proc( $proc, $mode, $subdir = null ) {
 
 $steps->Given( '/^an empty directory$/',
 	function ( $world ) {
-		$world->create_empty_dir();
+		$world->create_run_dir();
 	}
 );
 
 $steps->Given( '/^a ([^\s]+) file:$/',
 	function ( $world, $path, PyStringNode $content ) {
 		$content = (string) $content . "\n";
-		$full_path = $world->get_path( $path );
+		$full_path = $world->variables['RUN_DIR'] . "/$path";
 		Process::create( \WP_CLI\utils\esc_cmd( 'mkdir -p %s', dirname( $full_path ) ) )->run_check();
 		file_put_contents( $full_path, $content );
 	}
@@ -30,13 +30,13 @@ $steps->Given( '/^a ([^\s]+) file:$/',
 
 $steps->Given( '/^WP files$/',
 	function ( $world ) {
-		$world->download_wordpress_files();
+		$world->download_wp();
 	}
 );
 
 $steps->Given( '/^wp-config\.php$/',
 	function ( $world ) {
-		$world->proc( 'wp core config' )->run_check();
+		$world->create_config();
 	}
 );
 
@@ -48,26 +48,26 @@ $steps->Given( '/^a database$/',
 
 $steps->Given( '/^a WP install$/',
 	function ( $world ) {
-		$world->wp_install();
+		$world->install_wp();
 	}
 );
 
 $steps->Given( "/^a WP install in '([^\s]+)'$/",
 	function ( $world, $subdir ) {
-		$world->wp_install( $subdir );
+		$world->install_wp( $subdir );
 	}
 );
 
 $steps->Given( '/^a WP multisite install$/',
 	function ( $world ) {
-		$world->wp_install();
-		$world->proc( 'wp core install-network' )->run_check();
+		$world->install_wp();
+		$world->proc( 'wp core install-network', array( 'title' => 'WP CLI Network' ) )->run_check();
 	}
 );
 
 $steps->Given( '/^a custom wp-content directory$/',
 	function ( $world ) {
-		$wp_config_path = $world->get_path( 'wp-config.php' );
+		$wp_config_path = $world->variables['RUN_DIR'] . "/wp-config.php";
 
 		$wp_config_code = file_get_contents( $wp_config_path );
 
@@ -83,13 +83,17 @@ $steps->Given( '/^a custom wp-content directory$/',
 	}
 );
 
-$steps->Given( '/^a large image file$/',
-	function ( $world ) {
-		$image_file = 'http://wordpresswallpaper.com/wp-content/gallery/photo-based-wallpaper/1058.jpg';
+$steps->Given( '/^download:$/',
+	function ( $world, TableNode $table ) {
+		foreach ( $table->getHash() as $row ) {
+			$path = $world->replace_variables( $row['path'] );
+			if ( file_exists( $path ) ) {
+				// assume it's the same file and skip re-download
+				continue;
+			}
 
-		$world->variables['DOWNLOADED_IMAGE'] = $world->get_cache_path( 'wallpaper.jpg' );
-
-		$world->download_file( $image_file, $world->variables['DOWNLOADED_IMAGE'] );
+			\Process::create( \WP_CLI\Utils\esc_cmd( 'curl -sSL %s > %s', $row['url'], $path ) )->run_check();
+		}
 	}
 );
 
@@ -117,24 +121,27 @@ $steps->When( '/^I (run|try) the previous command again$/',
 	}
 );
 
-$steps->When( '/^I try to import it$/',
-	function ( $world ) {
-		if ( !isset( $world->variables['DOWNLOADED_IMAGE'] ) )
-			throw new \Exception( 'Cached image not available.' );
+$steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
+	function ( $world, $stream, $output_filter, $key ) {
 
-		$world->result = $world->proc( 'wp media import ' . $world->variables['DOWNLOADED_IMAGE'] . ' --post_id=1 --featured_image' )->run();
-	}
-);
-
-$steps->Given( '/^save (STDOUT|STDERR) as \{(\w+)\}$/',
-	function ( $world, $stream, $key ) {
-		$world->variables[ $key ] = rtrim( $world->result->$stream, "\n" );
+		if ( $output_filter ) {
+			$output_filter = '/' . trim( str_replace( '%s', '(.+[^\b])', $output_filter ), "' " ) . '/';
+			if ( false !== preg_match( $output_filter, $world->result->$stream, $matches ) )
+				$output = array_pop( $matches );
+			else
+				$output = '';
+		} else {
+			$output = $world->result->$stream;
+		}
+		$world->variables[ $key ] = trim( $output, "\n" );
 	}
 );
 
 $steps->Then( '/^the return code should be (\d+)$/',
 	function ( $world, $return_code ) {
-		assertEquals( $return_code, $world->result->return_code );
+		if ( $return_code != $world->result->return_code ) {
+			throw new RuntimeException( $world->result );
+		}
 	}
 );
 
@@ -142,37 +149,46 @@ $steps->Then( '/^(STDOUT|STDERR) should (be|contain|not contain):$/',
 	function ( $world, $stream, $action, PyStringNode $expected ) {
 		$expected = $world->replace_variables( (string) $expected );
 
-		checkString( $world->result->$stream, $expected, $action );
+		checkString( $world->result->$stream, $expected, $action, $world->result );
 	}
 );
 
-$steps->Then( '/^(STDOUT|STDERR) should match \'([^\']+)\'$/',
-	function ( $world, $stream, $format ) {
-		assertStringMatchesFormat( $format, $world->result->$stream );
+$steps->Then( '/^(STDOUT|STDERR) should be a number$/',
+	function ( $world, $stream ) {
+		assertNumeric( trim( $world->result->$stream, "\n" ) );
 	}
 );
 
 $steps->Then( '/^STDOUT should be a table containing rows:$/',
 	function ( $world, TableNode $expected ) {
-		$output     = $world->result->STDOUT;
-		$outputRows = explode( "\n", rtrim( $output, "\n" ) );
+		$output      = $world->result->STDOUT;
+		$actual_rows = explode( "\n", rtrim( $output, "\n" ) );
 
-		$expectedRows = array();
+		$expected_rows = array();
 		foreach ( $expected->getRows() as $row ) {
-			$expectedRows[] = $world->replace_variables( implode( "\t", $row ) );
+			$expected_rows[] = $world->replace_variables( implode( "\t", $row ) );
 		}
 
-		// the first row is the header and must be present
-		if ( $expectedRows[0] != $outputRows[0] ) {
-			throw new \Exception( $output );
+		compareTables( $expected_rows, $actual_rows, $output );
+	}
+);
+
+$steps->Then( '/^STDOUT should end with a table containing rows:$/',
+	function ( $world, TableNode $expected ) {
+		$output      = $world->result->STDOUT;
+		$actual_rows = explode( "\n", rtrim( $output, "\n" ) );
+
+		$expected_rows = array();
+		foreach ( $expected->getRows() as $row ) {
+			$expected_rows[] = $world->replace_variables( implode( "\t", $row ) );
 		}
 
-		unset($outputRows[0]);
-		unset($expectedRows[0]);
-		$matches = array_intersect( $expectedRows, $outputRows );
-		if ( count( $expectedRows ) != count( $matches ) ) {
+		$start = array_search( $expected_rows[0], $actual_rows );
+
+		if ( false === $start )
 			throw new \Exception( $output );
-		}
+
+		compareTables( $expected_rows, array_slice( $actual_rows, $start ), $output );
 	}
 );
 
@@ -186,18 +202,32 @@ $steps->Then( '/^STDOUT should be JSON containing:$/',
 		}
 });
 
+$steps->Then( '/^STDOUT should be a JSON array containing:$/',
+	function ( $world, PyStringNode $expected ) {
+		$output = $world->result->STDOUT;
+		$expected = $world->replace_variables( (string) $expected );
+
+		$actualValues = json_decode( $output );
+		$expectedValues = json_decode( $expected );
+
+		$missing = array_diff( $expectedValues, $actualValues );
+		if ( !empty( $missing ) ) {
+			throw new \Exception( $output );
+		}
+});
+
 $steps->Then( '/^STDOUT should be CSV containing:$/',
-	function( $world, TableNode $expected ) {
+	function ( $world, TableNode $expected ) {
 		$output = $world->result->STDOUT;
 
-		$expectedRows = $expected->getRows();
+		$expected_rows = $expected->getRows();
 		foreach ( $expected as &$row ) {
 			foreach ( $row as &$value ) {
 				$value = $world->replace_variables( $value );
 			}
 		}
 
-		if ( ! checkThatCsvStringContainsValues( $output, $expectedRows ) )
+		if ( ! checkThatCsvStringContainsValues( $output, $expected_rows ) )
 			throw new \Exception( $output );
 	}
 );
@@ -212,7 +242,9 @@ $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 
 $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 	function ( $world, $stream ) {
-		assertNotEmpty( rtrim( $world->result->$stream, "\n" ) );
+		if ( '' === rtrim( $world->result->$stream, "\n" ) ) {
+			throw new Exception( "$stream is empty." );
+		}
 	}
 );
 
@@ -222,17 +254,23 @@ $steps->Then( '/^the (.+) file should (exist|not exist|be:|contain:|not contain:
 
 		// If it's a relative path, make it relative to the current test dir
 		if ( '/' !== $path[0] )
-			$path = $world->get_path( $path );
+			$path = $world->variables['RUN_DIR'] . "/$path";
 
 		switch ( $action ) {
 		case 'exist':
-			assertFileExists( $path );
+			if ( !file_exists( $path ) ) {
+				throw new Exception( "$path doesn't exist." );
+			}
 			break;
 		case 'not exist':
-			assertFileNotExists( $path );
+			if ( file_exists( $path ) ) {
+				throw new Exception( "$path exists." );
+			}
 			break;
 		default:
-			assertFileExists( $path );
+			if ( !file_exists( $path ) ) {
+				throw new Exception( "$path doesn't exist." );
+			}
 			$action = substr( $action, 0, -1 );
 			$expected = $world->replace_variables( (string) $expected );
 			checkString( file_get_contents( $path ), $expected, $action );

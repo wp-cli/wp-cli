@@ -32,7 +32,9 @@ return array(
 	'require' => array(
 		'runtime' => '=<path>',
 		'file' => '<path>',
-		'desc' => 'Load given PHP file before running the command',
+		'desc' => 'Load PHP file before running the command (may be used more than once)',
+		'multiple' => true,
+		'default' => array(),
 	),
 
 	'disabled_commands' => array(
@@ -55,11 +57,25 @@ return array(
 		'desc' => 'Show all PHP errors',
 	),
 
+	'prompt' => array(
+		'runtime' => '',
+		'file' => false,
+		'default' => false,
+		'desc' => 'Prompt the user to enter values for all command arguments',
+	),
+
 	'quiet' => array(
 		'runtime' => '',
 		'file' => '<bool>',
 		'default' => false,
 		'desc' => 'Suppress informational messages',
+	),
+
+	'apache_modules' => array(
+		'file' => '<list>',
+		'desc' => 'List of Apache Modules that are to be reported as loaded',
+		'multiple' => true,
+		'default' => array(),
 	),
 );
 

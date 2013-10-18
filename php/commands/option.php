@@ -1,9 +1,22 @@
 <?php
 
 /**
- * Manage WordPress options.
+ * Manage options.
  *
- * @package wp-cli
+ * ## OPTIONS
+ *
+ * [--format=json]
+ * : Encode/decode values as JSON.
+ *
+ * ## EXAMPLES
+ *
+ *     wp option get siteurl
+ *
+ *     wp option add my_option foobar
+ *
+ *     wp option update my_option '{"foo": "bar"}' --format=json
+ *
+ *     wp option delete my_option
  */
 class Option_Command extends WP_CLI_Command {
 
@@ -26,7 +39,7 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Add an option.
 	 *
-	 * @synopsis <key> [--format=<format>]
+	 * @synopsis <key> <value> [--format=<format>]
 	 */
 	public function add( $args, $assoc_args ) {
 		$key = $args[0];
@@ -44,17 +57,17 @@ class Option_Command extends WP_CLI_Command {
 	 * Update an option.
 	 *
 	 * @alias set
-	 * @synopsis <key> [--format=<format>]
+	 * @synopsis <key> <value> [--format=<format>]
 	 */
 	public function update( $args, $assoc_args ) {
 		$key = $args[0];
 
 		$value = WP_CLI::read_value( $args[1], $assoc_args );
 
-		if ( $value === get_option( $key ) )
-			return;
+		$result = update_option( $key, $value );
 
-		if ( !update_option( $key, $value ) ) {
+		// update_option() returns false if the value is the same
+		if ( !$result && $value != get_option( $key ) ) {
 			WP_CLI::error( "Could not update option '$key'." );
 		} else {
 			WP_CLI::success( "Updated '$key' option." );

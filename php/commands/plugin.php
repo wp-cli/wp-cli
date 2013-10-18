@@ -8,11 +8,10 @@
 class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 	protected $item_type = 'plugin';
-	protected $upgrader = 'Plugin_Upgrader';
 	protected $upgrade_refresh = 'wp_update_plugins';
 	protected $upgrade_transient = 'update_plugins';
 
-	protected $fields = array(
+	protected $obj_fields = array(
 		'name',
 		'status',
 		'update',
@@ -28,37 +27,91 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		parent::__construct();
 	}
 
+	protected function get_upgrader_class( $force ) {
+		return $force ? '\\WP_CLI\\DestructivePluginUpgrader' : 'Plugin_Upgrader';
+	}
+
 	/**
 	 * See the status of one or all plugins.
 	 *
-	 * @synopsis [<plugin>]
+	 * ## OPTIONS
+	 *
+	 * [<plugin>]
+	 * : A particular plugin to show the status for.
 	 */
 	function status( $args ) {
 		parent::status( $args );
 	}
 
-	protected function status_single( $args ) {
-		list( $file, $name ) = $this->parse_name( $args );
-
-		$details = $this->get_details( $file );
-
-		$status = $this->format_status( $this->get_status( $file ), 'long' );
-
-		$version = $details[ 'Version' ];
-
-		if ( $this->has_update( $file ) )
-			$version .= ' (%gUpdate available%n)';
-
-		$this->_status_single( $details, $name, $version, $status );
+	/**
+	 * Search the wordpress.org plugin repository.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <search>
+	 * : The string to search for.
+	 *
+	 * [--per-page=<per-page>]
+	 * : Optional number of results to display. Defaults to 10.
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each plugin.
+	 *
+	 * [--fields=<fields>]
+	 * : Ask for specific fields from the API. Defaults to name,slug,author_profile,rating. Acceptable values:
+	 *
+	 *     **name**: Plugin Name
+	 *     **slug**: Plugin Slug
+	 *     **version**: Current Version Number
+	 *     **author**: Plugin Author
+	 *     **author_profile**: Plugin Author Profile
+	 *     **contributors**: Plugin Contributors
+	 *     **requires**: Plugin Minimum Requirements
+	 *     **tested**: Plugin Tested Up To
+	 *     **compatibility**: Plugin Compatible With
+	 *     **rating**: Plugin Rating
+	 *     **num_ratings**: Number of Plugin Ratings
+	 *     **homepage**: Plugin Author's Homepage
+	 *     **description**: Plugin's Description
+	 *     **short_description**: Plugin's Short Description
+	 *
+	 * [--format=<format>]
+	 * : Output list as table, CSV or JSON. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin search dsgnwrks --per-page=20 --format=json
+	 *
+	 *     wp plugin search dsgnwrks --fields=name,version,slug,rating,num_ratings
+	 */
+	public function search( $args, $assoc_args ) {
+		parent::_search( $args, $assoc_args );
 	}
 
-	protected function _status_single( $details, $name, $version, $status ) {
-		WP_CLI::line( 'Plugin %9' . $name . '%n details:' );
-		WP_CLI::line( '    Name: ' . $details[ 'Name' ] );
-		WP_CLI::line( '    Status: ' . $status .'%n' );
-		WP_CLI::line( '    Version: ' . $version );
-		WP_CLI::line( '    Author: ' . $details[ 'Author' ] );
-		WP_CLI::line( '    Description: ' . $details[ 'Description' ] );
+	protected function status_single( $args ) {
+		$plugins = $this->validate_plugin_names( $args );
+		if ( empty( $plugins ) )
+			exit(1);
+
+		list( $plugin ) = $plugins;
+
+		$details = $this->get_details( $plugin );
+
+		$status = $this->format_status( $this->get_status( $plugin->file ), 'long' );
+
+		$version = $details['Version'];
+
+		if ( $this->has_update( $plugin->file ) )
+			$version .= ' (%gUpdate available%n)';
+
+		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( 'plugin-status.mustache', array(
+			'slug' => $plugin->name,
+			'status' => $status,
+			'version' => $version,
+			'name' => $details['Name'],
+			'author' => $details['Author'],
+			'description' => $details['Description']
+		) ) );
 	}
 
 	protected function get_all_items() {
@@ -78,69 +131,110 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Activate a plugin.
 	 *
-	 * @synopsis <plugin> [--network]
+	 * ## OPTIONS
+	 *
+	 * <plugin>...
+	 * : One or more plugins to activate.
+	 *
+	 * [--network]
+	 * : If set, the plugin will be activated for the entire multisite network.
 	 */
 	function activate( $args, $assoc_args = array() ) {
-		list( $file, $name ) = $this->parse_name( $args );
-
 		$network_wide = isset( $assoc_args['network'] );
 
-		activate_plugin( $file, '', $network_wide );
+		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+			activate_plugin( $plugin->file, '', $network_wide );
 
-		if ( $this->check_active( $file, $network_wide ) ) {
-			WP_CLI::success( "Plugin '$name' activated." );
-		} else {
-			WP_CLI::error( 'Could not activate plugin: ' . $name );
+			if ( $this->check_active( $plugin->file, $network_wide ) ) {
+				if ( $network_wide )
+					WP_CLI::success( "Plugin '{$plugin->name}' network activated." );
+				else
+					WP_CLI::success( "Plugin '{$plugin->name}' activated." );
+			} else {
+				WP_CLI::warning( "Could not activate the '{$plugin->name}' plugin." );
+			}
 		}
 	}
 
 	/**
 	 * Deactivate a plugin.
 	 *
-	 * @synopsis <plugin> [--network]
+	 * ## OPTIONS
+	 *
+	 * <plugin>...
+	 * : One or more plugins to deactivate.
+	 *
+	 * [--network]
+	 * : If set, the plugin will be deactivated for the entire multisite network.
 	 */
 	function deactivate( $args, $assoc_args = array() ) {
-		list( $file, $name ) = $this->parse_name( $args );
-
 		$network_wide = isset( $assoc_args['network'] );
 
-		deactivate_plugins( $file, false, $network_wide );
+		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+			deactivate_plugins( $plugin->file, false, $network_wide );
 
-		if ( ! $this->check_active( $file, $network_wide ) ) {
-			WP_CLI::success( "Plugin '$name' deactivated." );
-		} else {
-			WP_CLI::error( 'Could not deactivate plugin: ' . $name );
+			if ( ! $this->check_active( $plugin->file, $network_wide ) ) {
+				if ( $network_wide )
+					WP_CLI::success( "Plugin '{$plugin->name}' network deactivated." );
+				else
+					WP_CLI::success( "Plugin '{$plugin->name}' deactivated." );
+			} else {
+				WP_CLI::warning( "Could not deactivate the '{$plugin->name}' plugin." );
+			}
 		}
 	}
 
 	/**
 	 * Toggle a plugin's activation state.
 	 *
-	 * @synopsis <plugin> [--network]
+	 * ## OPTIONS
+	 *
+	 * <plugin>...
+	 * : One or more plugins to toggle.
+	 *
+	 * [--network]
+	 * : If set, the plugin will be toggled for the entire multisite network.
 	 */
 	function toggle( $args, $assoc_args = array() ) {
-		list( $file, $name ) = $this->parse_name( $args );
-
 		$network_wide = isset( $assoc_args['network'] );
 
-		if ( $this->check_active( $file, $network_wide ) ) {
-			$this->deactivate( $args, $assoc_args );
-		} else {
-			$this->activate( $args, $assoc_args );
+		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+			if ( $this->check_active( $plugin->file, $network_wide ) ) {
+				$this->deactivate( array( $plugin->name ), $assoc_args );
+			} else {
+				$this->activate( array( $plugin->name ), $assoc_args );
+			}
 		}
 	}
 
 	/**
 	 * Get the path to a plugin or to the plugin directory.
 	 *
-	 * @synopsis [<plugin>] [--dir]
+	 * ## OPTIONS
+	 *
+	 * [<plugin>]
+	 * : The plugin to get the path to. If not set, will return the path to the
+	 * plugins directory.
+	 *
+	 * [--dir]
+	 * : If set, get the path to the closest parent directory, instead of the
+	 * plugin file.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     cd $(wp theme path)
 	 */
 	function path( $args, $assoc_args ) {
 		$path = untrailingslashit( WP_PLUGIN_DIR );
 
 		if ( !empty( $args ) ) {
-			list( $file, $name ) = $this->parse_name( $args );
-			$path .= '/' . $file;
+			$plugins = $this->validate_plugin_names( $args );
+			if ( empty( $plugins ) )
+				return;
+
+			list( $plugin ) = $plugins;
+
+			$path .= '/' . $plugin->file;
 
 			if ( isset( $assoc_args['dir'] ) )
 				$path = dirname( $path );
@@ -153,10 +247,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$api = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 
 		if ( is_wp_error( $api ) ) {
-			if ( null === maybe_unserialize( $api->get_error_data() ) )
-				WP_CLI::error( "Can't find the plugin in the WordPress.org repository." );
-			else
-				WP_CLI::error( $api );
+			return $api;
 		}
 
 		if ( isset( $assoc_args['version'] ) ) {
@@ -165,66 +256,50 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$status = install_plugin_install_status( $api );
 
-		WP_CLI::line( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
-
-		switch ( $status['status'] ) {
-		case 'update_available':
-		case 'install':
-			$upgrader = WP_CLI\Utils\get_upgrader( $this->upgrader );
-			$result = $upgrader->install( $api->download_link );
-
-			if ( $result && isset( $assoc_args['activate'] ) ) {
-				WP_CLI::line( "Activating '$slug'..." );
-				$this->activate( array( $slug ) );
-			}
-
-			break;
-		case 'newer_installed':
-			WP_CLI::error( sprintf( 'Newer version (%s) installed.', $status['version'] ) );
-			break;
-		case 'latest_installed':
-			WP_CLI::error( 'Latest version already installed.' );
-			break;
+		if ( !isset( $assoc_args['force'] ) && 'install' != $status['status'] ) {
+			// We know this will fail, so avoid a needless download of the package.
+			return new WP_Error( 'already_installed', 'Plugin already installed.' );
 		}
+
+		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
+		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
+
+		return $result;
 	}
 
 	/**
-	 * Update a plugin.
+	 * Update one or more plugins.
 	 *
-	 * @synopsis <plugin> [--version=<version>]
+	 * ## OPTIONS
+	 *
+	 * [<plugin>...]
+	 * : One or more plugins to update.
+	 *
+	 * [--all]
+	 * : If set, all plugins that have updates will be updated.
+	 *
+	 * [--version=<version>]
+	 * : If set, the plugin will be updated to the latest development version,
+	 * regardless of what version is currently installed.
+	 *
+	 * [--dry-run]
+	 * : Preview which plugins would be updated.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin update bbpress --version=dev
+	 *
+	 *     wp plugin update --all
 	 */
 	function update( $args, $assoc_args ) {
-		list( $basename ) = $this->parse_name( $args );
-
 		if ( isset( $assoc_args['version'] ) && 'dev' == $assoc_args['version'] ) {
-			$this->_delete( $basename, false );
-			$this->install( $args, $assoc_args );
-		} else {
-			$was_active = is_plugin_active( $basename );
-			$was_network_active = is_plugin_active_for_network( $basename );
-
-			parent::_update( $basename );
-
-			if ( $was_active ) {
-				$new_args = array( $args[0] );
-
-				$new_assoc_args = array();
-				if ( $was_network_active )
-					$new_assoc_args['network'] = true;
-
-				$this->activate( $new_args, $new_assoc_args );
+			foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+				$this->_delete( $plugin );
+				$this->install( array( $plugin->name ), $assoc_args );
 			}
+		} else {
+			parent::update_many( $args, $assoc_args );
 		}
-	}
-
-	/**
-	 * Update all plugins.
-	 *
-	 * @subcommand update-all
-	 * @synopsis [--dry-run]
-	 */
-	function update_all( $args, $assoc_args ) {
-		parent::update_all( $args, $assoc_args );
 	}
 
 	protected function get_item_list() {
@@ -243,55 +318,180 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		return $items;
 	}
 
+	protected function filter_item_list( $items, $args ) {
+		$basenames = wp_list_pluck( $this->validate_plugin_names( $args ), 'file' );
+		return \WP_CLI\Utils\pick_fields( $items, $basenames );
+	}
+
 	/**
 	 * Install a plugin.
 	 *
-	 * @synopsis <plugin|zip> [--version=<version>] [--activate]
+	 * ## OPTIONS
+	 *
+	 * <plugin|zip|url>...
+	 * : A plugin slug, the path to a local zip file, or URL to a remote zip file.
+	 *
+	 * [--version=<version>]
+	 * : If set, get that particular version from wordpress.org, instead of the
+	 * stable version.
+	 *
+	 * [--force]
+	 * : If set, the command will overwrite any installed version of the plugin, without prompting
+	 * for confirmation.
+	 *
+	 * [--activate]
+	 * : If set, the plugin will be activated immediately after install.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Install the latest version from wordpress.org and activate
+	 *     wp plugin install bbpress --activate
+	 *
+	 *     # Install the development version from wordpress.org
+	 *     wp plugin install bbpress --version=dev
+	 *
+	 *     # Install from a local zip file
+	 *     wp plugin install ../my-plugin.zip
+	 *
+	 *     # Install from a remote zip file
+	 *     wp plugin install http://s3.amazonaws.com/bucketname/my-plugin.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
 	 */
 	function install( $args, $assoc_args ) {
 		parent::install( $args, $assoc_args );
 	}
 
 	/**
-	 * Uninstall a plugin.
+	 * Get a plugin.
 	 *
-	 * @synopsis <plugin> [--no-delete]
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to get.
+	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole plugin, returns the value of a single field.
+	 *
+	 * [--format=<format>]
+	 * : Output list as table or JSON. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin get bbpress --format=json
 	 */
-	function uninstall( $args, $assoc_args = array() ) {
-		list( $file, $name ) = $this->parse_name( $args );
-
-		if ( is_plugin_active( $file ) ) {
-			WP_CLI::error( 'The plugin is active.' );
+	public function get( $args, $assoc_args ) {
+		$file = $this->_parse_name( $args[0] );
+		if ( !$file ) {
+			WP_CLI::error( "The '{$args[0]}' plugin could not be found." );
 		}
 
-		uninstall_plugin( $file );
+		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
 
-		if ( isset( $assoc_args['no-delete'] ) )
-			return;
+		$plugin_obj = (object)array(
+			'name'        => $this->get_name( $file ),
+			'title'       => $plugin_data['Name'],
+			'author'      => $plugin_data['Author'],
+			'version'     => $plugin_data['Version'],
+			'description' => wordwrap( $plugin_data['Description'] ),
+			'status'      => $this->get_status( $file ),
+			'update'      => $this->has_update( $file ),
+		);
 
-		if ( $this->_delete( $file ) ) {
-			WP_CLI::success( sprintf( "Uninstalled '%s' plugin.", $name ) );
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $plugin_obj );
+	}
+
+	/**
+	 * Uninstall a plugin.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>...
+	 * : One or more plugins to uninstall.
+	 *
+	 * [--no-delete]
+	 * : If set, the plugin files will not be deleted. Only the uninstall procedure
+	 * will be run.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin uninstall hello
+	 */
+	function uninstall( $args, $assoc_args = array() ) {
+		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+			if ( is_plugin_active( $plugin->file ) ) {
+				WP_CLI::warning( "The '{$plugin->name}' plugin is active." );
+				continue;
+			}
+
+			uninstall_plugin( $plugin->file );
+
+			if ( !isset( $assoc_args['no-delete'] ) && $this->_delete( $plugin ) ) {
+				WP_CLI::success( "Uninstalled '$plugin->name' plugin." );
+			}
+		}
+	}
+
+	/**
+	 * Check if the plugin is installed.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>
+	 * : The plugin to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin is-installed hello
+	 *
+	 * @subcommand is-installed
+	 */
+	function is_installed( $args, $assoc_args = array() ) {
+		if ( $this->_parse_name( $args[0] ) ) {
+			exit( 0 );
+		} else {
+			exit( 1 );
 		}
 	}
 
 	/**
 	 * Delete plugin files.
 	 *
-	 * @synopsis <plugin>
+	 * ## OPTIONS
+	 *
+	 * <plugin>...
+	 * : One or more plugins to delete.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin delete hello
 	 */
 	function delete( $args, $assoc_args = array() ) {
-		list( $file, $name ) = $this->parse_name( $args );
-
-		if ( $this->_delete( $file ) ) {
-			WP_CLI::success( sprintf( "Deleted '%s' plugin.", $name ) );
+		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+			if ( $this->_delete( $plugin ) ) {
+				WP_CLI::success( "Deleted '{$plugin->name}' plugin." );
+			}
 		}
 	}
 
 	/**
 	 * Get a list of plugins.
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each plugin.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to name,status,update,version.
+	 *
+	 * [--format=<format>]
+	 * : Output list as table, CSV or JSON. Defaults to table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp plugin list --format=json
+	 *
 	 * @subcommand list
-	 * @synopsis [--format=<format>]
 	 */
 	function _list( $_, $assoc_args ) {
 		parent::_list( $_, $assoc_args );
@@ -316,27 +516,27 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Get the details of a plugin
+	 * Get the details of a plugin.
 	 *
-	 * @param string $file
+	 * @param object
 	 * @return array
 	 */
-	protected function get_details( $file ) {
+	private function get_details( $plugin ) {
+		$file = $plugin->file;
+
 		$plugin_folder = get_plugins(  '/' . plugin_basename( dirname( $file ) ) );
-		$plugin_file = basename( ( $file ) );
+		$plugin_file = basename( $file );
 
 		return $plugin_folder[$plugin_file];
 	}
 
 	/**
-	 * Parse the name of a plugin to a filename, check if it exists
+	 * Parse the name of a plugin to a filename; check if it exists.
 	 *
-	 * @param array $args
-	 * @return array
+	 * @param string name
+	 * @return string
 	 */
-	protected function parse_name( $args ) {
-		$name = $args[0];
-
+	private function _parse_name( $name ) {
 		$plugins = get_plugins( '/' . $name );
 
 		if ( !empty( $plugins ) ) {
@@ -348,14 +548,34 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$plugins = get_plugins();
 
 			if ( !isset( $plugins[$file] ) ) {
-				WP_CLI::error( "The plugin '$name' could not be found." );
-				exit();
+				return false;
 			}
 		}
 
-		return array( $file, $name );
+		return $file;
 	}
 
+	private function validate_plugin_names( $args ) {
+		$plugins = array();
+
+		foreach ( $args as $name ) {
+			$file = $this->_parse_name( $name );
+			if ( $file ) {
+				$plugins[] = (object) array(
+					'name' => $name,
+					'file' => $file
+				);
+			} else {
+				WP_CLI::warning( "The '$name' plugin could not be found." );
+			}
+		}
+
+		return $plugins;
+	}
+
+	/**
+	 * Converts a plugin basename back into a friendly slug.
+	 */
 	private function get_name( $file ) {
 		if ( false === strpos( $file, '/' ) )
 			$name = basename( $file, '.php' );
@@ -365,10 +585,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		return $name;
 	}
 
-	private function _delete( $file ) {
-		$plugin_dir = dirname( $file );
+	private function _delete( $plugin ) {
+		$plugin_dir = dirname( $plugin->file );
 		if ( '.' == $plugin_dir )
-			$plugin_dir = $file;
+			$plugin_dir = $plugin->file;
 
 		$command = 'rm -rf ' . path_join( WP_PLUGIN_DIR, $plugin_dir );
 

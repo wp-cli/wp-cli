@@ -22,8 +22,8 @@ function wp_debug_mode() {
 		\wp_debug_mode();
 	}
 
-	// Never show errors on STDOUT; only on STDERR
-	ini_set( 'display_errors', false );
+	// XDebug already sends errors to STDERR
+	ini_set( 'display_errors', function_exists( 'xdebug_debug_zval' ) ? false : 'STDERR' );
 }
 
 function replace_wp_die_handler() {
@@ -43,6 +43,16 @@ function wp_die_handler( $message ) {
 	$message = html_entity_decode( $message );
 
 	\WP_CLI::error( $message );
+}
+
+function wp_redirect_handler( $url ) {
+	\WP_CLI::warning( 'Some code is trying to do a URL redirect. Backtrace:' );
+
+	ob_start();
+	debug_print_backtrace();
+	fwrite( STDERR, ob_get_clean() );
+
+	return $url;
 }
 
 function maybe_require( $since, $path ) {

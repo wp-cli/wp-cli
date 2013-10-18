@@ -1,9 +1,0 @@
-## OPTIONS
-
-* `<ID>`:
-
-	The ID of the comment to mark as spam.
-
-## EXAMPLES
-
-	wp comment spam 1337
