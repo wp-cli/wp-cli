@@ -122,6 +122,7 @@ require( ABSPATH . WPINC . '/class-wp-ajax-response.php' );
 require( ABSPATH . WPINC . '/formatting.php' );
 require( ABSPATH . WPINC . '/capabilities.php' );
 require( ABSPATH . WPINC . '/query.php' );
+Utils\maybe_require( '3.7-alpha-25139', ABSPATH . WPINC . '/date.php' );
 require( ABSPATH . WPINC . '/theme.php' );
 Utils\maybe_require( '3.4', ABSPATH . WPINC . '/class-wp-theme.php' );
 Utils\maybe_require( '3.4', ABSPATH . WPINC . '/template.php' );
