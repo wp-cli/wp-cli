@@ -66,10 +66,14 @@ class Core_Command extends WP_CLI_Command {
 		);
 
 		self::_request( 'GET', $download_url, $headers, $options );
-
-		$cmd = "tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
-
-		WP_CLI::launch( sprintf( $cmd, ABSPATH ) );
+		
+		if ( class_exists( 'PharData' ) ) {
+			$tar = new PharData( $temp );
+			$tar->extractTo( ABSPATH, null, true );
+		} else {
+			$cmd = "tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
+			WP_CLI::launch( sprintf( $cmd, ABSPATH ) );
+		}
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
