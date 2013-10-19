@@ -57,7 +57,7 @@ class Core_Command extends WP_CLI_Command {
 
 		// We need to use a temporary file because piping from cURL to tar is flaky
 		// on MinGW (and probably in other environments too).
-		$temp = tempnam( sys_get_temp_dir(), "wp_" );
+		$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.tar.gz';
 
 		$headers = array('Accept' => 'application/json');
 		$options = array(
@@ -67,15 +67,27 @@ class Core_Command extends WP_CLI_Command {
 
 		self::_request( 'GET', $download_url, $headers, $options );
 		
-		if ( class_exists( 'PharData' ) ) {
-			$tar = new PharData( $temp );
-			$tar->extractTo( ABSPATH, null, true );
-		} else {
-			$cmd = "tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
-			WP_CLI::launch( sprintf( $cmd, ABSPATH ) );
-		}
+		self::_extract( $temp );
 
 		WP_CLI::success( 'WordPress downloaded.' );
+	}
+	
+	private static function _extract( $tarball ) {
+		if ( ! class_exists( 'PharData' ) ) {
+			$cmd = "tar xz --strip-components=1 --directory=%s -f $tarball && rm $tarball";
+			WP_CLI::launch( sprintf( $cmd, ABSPATH ) );
+			return ABSPATH;
+		}
+		$flags = FilesystemIterator::SKIP_DOTS | FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO;
+		$tempdir = substr( $tarball, 0, -7 );
+		$tempOffset = strlen( $tempdir ) + 10;
+		$phar = new PharData( $tarball );
+		$phar->extractTo( $tempdir, null, true );
+		foreach( new RecursiveDirectoryIterator( $tempdir . '/wordpress', $flags ) as $path ) {
+			rename( $path->getPathName(), ABSPATH . substr( $path, $tempOffset ) );
+		}
+		rmdir( $tempdir . '/wordpress' );
+		rmdir( $tempdir );
 	}
 
 	private static function _request( $method, $url, $headers = array(), $options = array() ) {
