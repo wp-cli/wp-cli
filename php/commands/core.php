@@ -94,8 +94,8 @@ class Core_Command extends WP_CLI_Command {
 	
 	private static function _move_overwrite_files( $source, $dest ) {
 		$flags = FilesystemIterator::SKIP_DOTS
-		       | FilesystemIterator::KEY_AS_PATHNAME
-		       | FilesystemIterator::CURRENT_AS_FILEINFO;
+			| FilesystemIterator::KEY_AS_PATHNAME
+			| FilesystemIterator::CURRENT_AS_FILEINFO;
 		
 		$dstOffset = strlen( $source );
 		
