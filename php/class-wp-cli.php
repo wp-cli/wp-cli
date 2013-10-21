@@ -2,6 +2,8 @@
 
 use \WP_CLI\Utils;
 use \WP_CLI\Dispatcher;
+use \WP_CLI\FileCache;
+use \WP_CLI\WpHttpCacheManager;
 
 /**
  * Various utilities for WP-CLI commands.
@@ -52,6 +54,47 @@ class WP_CLI {
 		}
 
 		return $runner;
+	}
+
+	/**
+	 * @return FileCache
+	 */
+	private static function get_cache() {
+		static $cache;
+
+		if ( !$cache ) {
+			$home = getenv( 'HOME' );
+			if ( !$home ) {
+				// sometime in windows $HOME is not defined
+				$home = getenv( 'HOMEDRIVE' ) . '/' . getenv( 'HOMEPATH' );
+			}
+			$dir = getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
+
+			// 6 months, 300mb
+			$cache = new FileCache( $dir, 15552000, 314572800 );
+
+			// clean older files on shutdown with 1/50 probability
+			if ( 0 === mt_rand( 0, 50 ) ) {
+				register_shutdown_function( function () use ( $cache ) {
+					$cache->clean();
+				} );
+			}
+		}
+
+		return $cache;
+	}
+
+	/**
+	 * @return WpHttpCacheManager
+	 */
+	static function get_http_cache_manager() {
+		static $http_cacher;
+
+		if ( !$http_cacher ) {
+			$http_cacher = new WpHttpCacheManager( self::get_cache() );
+		}
+
+		return $http_cacher;
 	}
 
 	static function colorize( $string ) {

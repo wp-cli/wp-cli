@@ -37,6 +37,7 @@ $finder
 	->in('./vendor/mustache')
 	->in('./vendor/rmccue/requests')
 	->in('./vendor/composer')
+	->in('./vendor/symfony/finder')
 	->in('./vendor/rhumsaa/array_column')
 	->exclude('test')
 	->exclude('tests')

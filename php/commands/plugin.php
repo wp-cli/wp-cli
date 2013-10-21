@@ -260,6 +260,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
+		if ( !isset( $assoc_args['version'] ) || 'dev' !== $assoc_args['version'] ) {
+			WP_CLI::get_http_cache_manager()->whitelist_package( $api->download_link, $this->item_type, $api->slug, $api->version );
+		}
 		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
 
 		return $result;
@@ -304,10 +307,14 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$items = array();
 
 		foreach ( get_plugins() as $file => $details ) {
+			$update_info = $this->get_update_info( $file );
+
 			$items[ $file ] = array(
 				'name' => $this->get_name( $file ),
 				'status' => $this->get_status( $file ),
-				'update' => $this->has_update( $file ),
+				'update' => (bool) $update_info,
+				'update_version' => $update_info['new_version'],
+				'update_package' => $update_info['package'],
 				'version' => $details['Version'],
 				'update_id' => $file,
 			);

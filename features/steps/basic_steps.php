@@ -116,7 +116,7 @@ $steps->When( '/^I (run|try) the previous command again$/',
 		if ( !isset( $world->result ) )
 			throw new \Exception( 'No previous command.' );
 
-		$proc = Process::create( $world->result->command, $world->result->cwd );
+		$proc = Process::create( $world->result->command, $world->result->cwd, $world->result->env );
 		$world->result = invoke_proc( $proc, $mode );
 	}
 );
