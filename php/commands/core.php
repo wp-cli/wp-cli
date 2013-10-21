@@ -35,7 +35,7 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( !is_dir( ABSPATH ) ) {
 			WP_CLI::log( sprintf( 'Creating directory %s', ABSPATH ) );
-			WP_CLI::launch( sprintf( 'mkdir -p %s', escapeshellarg( ABSPATH ) ) );
+			WP_CLI::launch( Utils\esc_cmd( 'mkdir -p %s', ABSPATH ) );
 		}
 
 		if ( isset( $assoc_args['locale'] ) &&  isset( $assoc_args['version'] ) ) {
