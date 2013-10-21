@@ -27,7 +27,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	// We cache the results of `wp core download` to improve test performance
 	// Ideally, we'd cache at the HTTP layer for more reliable tests
 	private static function cache_wp_files() {
-		self::$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
+		self::$cache_dir = sys_get_temp_dir() . '/wp-cli-test core-download-cache';
 
 		if ( is_readable( self::$cache_dir . '/wp-config-sample.php' ) )
 			return;
