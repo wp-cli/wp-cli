@@ -69,7 +69,7 @@ class Core_Command extends WP_CLI_Command {
 
 		$cmd = "tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
 
-		WP_CLI::launch( sprintf( $cmd, ABSPATH ) );
+		WP_CLI::launch( Utils\esc_cmd( $cmd, ABSPATH ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
