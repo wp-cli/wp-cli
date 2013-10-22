@@ -314,7 +314,7 @@ class WP_CLI {
 
 	// back-compat
 	static function out( $str ) {
-		echo $str;
+		fwrite( STDOUT, $str );
 	}
 
 	// back-compat
