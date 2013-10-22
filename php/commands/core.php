@@ -199,7 +199,7 @@ class Core_Command extends WP_CLI_Command {
 
 		$bytes_written = file_put_contents( ABSPATH . 'wp-config.php', $out );
 		if ( ! $bytes_written ) {
-			WP_CLI::error( 'Could not create new config file.' );
+			WP_CLI::error( 'Could not create new wp-config.php file.' );
 		} else {
 			WP_CLI::success( 'Generated wp-config.php file.' );
 		}
