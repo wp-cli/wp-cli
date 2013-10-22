@@ -196,9 +196,13 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
-		file_put_contents( ABSPATH . 'wp-config.php', $out );
 
-		WP_CLI::success( 'Generated wp-config.php file.' );
+		$bytes_written = file_put_contents( ABSPATH . 'wp-config.php', $out );
+		if ( ! $bytes_written ) {
+			WP_CLI::error( 'Could not create new wp-config.php file.' );
+		} else {
+			WP_CLI::success( 'Generated wp-config.php file.' );
+		}
 	}
 
 	/**
