@@ -83,7 +83,7 @@ class Runner {
 		}
 
 		if ( !$user_id || !wp_set_current_user( $user_id ) ) {
-			\WP_CLI::error( sprintf( 'Could not get a user_id for this user: %s', var_export( $user, true ) ) );
+			\WP_CLI::error( "Could not find user: $user" );
 		}
 	}
 
@@ -144,7 +144,7 @@ class Runner {
 				$_SERVER['HTTP_HOST'] .= ':' . $url_parts['port'];
 			}
 
-			$_SERVER['SERVER_NAME'] = substr($_SERVER['HTTP_HOST'], 0, strrpos($_SERVER['HTTP_HOST'], '.'));
+			$_SERVER['SERVER_NAME'] = $url_parts['host'];
 		}
 
 		$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
@@ -264,12 +264,12 @@ class Runner {
 			unset( $assoc_args['site_id'] );
 		}
 
-		// {plugin|theme} update --all  ->  {plugin|theme} update-all
+		// {plugin|theme} update-all  ->  {plugin|theme} update --all
 		if ( count( $args ) > 1 && in_array( $args[0], array( 'plugin', 'theme' ) )
-			&& $args[1] == 'update' && isset( $assoc_args['all'] )
+			&& $args[1] == 'update-all'
 		) {
-			$args[1] = 'update-all';
-			unset( $assoc_args['all'] );
+			$args[1] = 'update';
+			$assoc_args['all'] = true;
 		}
 
 		// plugin scaffold  ->  scaffold plugin
@@ -328,7 +328,7 @@ class Runner {
 		if ( $this->config['quiet'] )
 			$logger = new \WP_CLI\Loggers\Quiet;
 		else
-			$logger = new \WP_CLI\Loggers\Regular;
+			$logger = new \WP_CLI\Loggers\Regular( $this->in_color() );
 
 		WP_CLI::set_logger( $logger );
 	}
@@ -348,6 +348,7 @@ class Runner {
 
 		$minimum_version = '3.4';
 
+		// @codingStandardsIgnoreStart
 		if ( version_compare( $wp_version, $minimum_version, '<' ) ) {
 			WP_CLI::error(
 				"WP-CLI needs WordPress $minimum_version or later to work properly. " .
@@ -355,6 +356,7 @@ class Runner {
 				"Try running `wp core download --force`."
 			);
 		}
+		// @codingStandardsIgnoreEnd
 	}
 
 	private function init_config() {
@@ -420,8 +422,7 @@ class Runner {
 		self::set_wp_root( $this->config );
 
 		// First try at showing man page
-		if ( 'help' === $this->arguments[0] &&
-		   ( isset( $this->arguments[1] ) || !$this->wp_exists() ) ) {
+		if ( 'help' === $this->arguments[0] && ( isset( $this->arguments[1] ) || !$this->wp_exists() ) ) {
 			$this->_run_command();
 		}
 
@@ -436,7 +437,7 @@ class Runner {
 
 		$this->check_wp_version();
 
-		if ( array( 'core', 'config' ) == $this->arguments ) {
+		if ( $this->cmd_starts_with( array( 'core', 'config' ) ) ) {
 			$this->_run_command();
 			exit;
 		}

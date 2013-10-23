@@ -38,8 +38,6 @@ class Table extends Query {
 	 *				it's a key/value pair. In the latter case the value is automatically quoted and escaped
 	 */
 	function __construct( $args = array() ) {
-		global $wpdb;
-
 		$defaults = array(
 			'fields' => '*',
 			'where' => array(),

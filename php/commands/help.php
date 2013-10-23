@@ -16,7 +16,7 @@ class Help_Command extends WP_CLI_Command {
 	 *     # get help for `core download` subcommand
 	 *     wp help core download
 	 *
-	 * @synopsis [<command>]
+	 * @synopsis [<command>...]
 	 */
 	function __invoke( $args, $assoc_args ) {
 		$command = self::find_subcommand( $args );
@@ -51,14 +51,28 @@ class Help_Command extends WP_CLI_Command {
 		}
 
 		// section headers
-		$out = preg_replace( '/^## ([A-Z ]+)/m', '%9\1%n', $out );
+		$out = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
 
 		// definition lists
-		$out = preg_replace( '/\n([^\n]+)\n: (.+?)\n/s', "\n\t\\1\n\t\t\\2\n", $out );
+		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
 
 		$out = str_replace( "\t", '  ', $out );
 
-		self::pass_through_pager( WP_CLI::colorize( $out ) );
+		self::pass_through_pager( $out );
+	}
+
+	private static function rewrap_param_desc( $matches ) {
+		$param = $matches[1];
+		$desc = self::indent( "\t\t", wordwrap( $matches[2] ) );
+		return "\t$param\n$desc\n\n";
+	}
+
+	private static function indent( $whitespace, $text ) {
+		$lines = explode( "\n", $text );
+		foreach ( $lines as &$line ) {
+			$line = $whitespace . $line;
+		}
+		return implode( $lines, "\n" );
 	}
 
 	private static function pass_through_pager( $out ) {
@@ -90,7 +104,7 @@ class Help_Command extends WP_CLI_Command {
 			'shortdesc' => $command->get_shortdesc(),
 		);
 
-		$binding['synopsis'] = "$name " . $command->get_synopsis();
+		$binding['synopsis'] = wordwrap( "$name " . $command->get_synopsis(), 79 );
 
 		if ( $command->has_subcommands() ) {
 			$binding['has-subcommands']['subcommands'] = self::render_subcommands( $command );
@@ -102,7 +116,7 @@ class Help_Command extends WP_CLI_Command {
 	private static function render_subcommands( $command ) {
 		$subcommands = array();
 		foreach ( $command->get_subcommands() as $subcommand ) {
-			 $subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
+			$subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
 		}
 
 		$max_len = self::get_max_len( array_keys( $subcommands ) );
