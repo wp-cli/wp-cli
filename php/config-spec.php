@@ -1,12 +1,6 @@
 <?php
 
 return array(
-	'config' => array(
-		'runtime' => '=<path>',
-		'file' => false,
-		'desc' => 'Path to the wp-cli config file',
-	),
-
 	'path' => array(
 		'runtime' => '=<path>',
 		'file' => '<path>',
