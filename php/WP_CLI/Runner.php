@@ -8,7 +8,7 @@ use WP_CLI\Utils;
 
 class Runner {
 
-	private $config_path, $config;
+	private $global_config_path, $project_config_path, $config;
 
 	private $arguments, $assoc_args;
 
@@ -37,11 +37,7 @@ class Runner {
 		}
 	}
 
-	private static function get_config_path( $runtime_config ) {
-		if ( isset( $runtime_config['config'] ) && file_exists( $runtime_config['config'] ) ) {
-			return $runtime_config['config'];
-		}
-
+	private static function get_project_config_path() {
 		$config_files = array(
 			'wp-cli.local.yml',
 			'wp-cli.yml'
@@ -49,7 +45,7 @@ class Runner {
 
 		// Stop looking upward when we find we have emerged from a subdirectory
 		// install into a parent install
-		$path = Utils\find_file_upward( $config_files, getcwd(), function ( $dir ) {
+		return Utils\find_file_upward( $config_files, getcwd(), function ( $dir ) {
 			static $wp_load_count = 0;
 			$wp_load_path = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
 			if ( file_exists( $wp_load_path ) ) {
@@ -57,22 +53,6 @@ class Runner {
 			}
 			return $wp_load_count > 1;
 		} );
-
-		if ( $path ) {
-			return $path;
-		}
-
-		// See if there is a global config file specified in the Composer
-		// install directory
-		foreach( $config_files as $config_file ) {
-			foreach( WP_CLI\Utils\get_vendor_paths() as $vendor_path ) {
-				$config_path = dirname( $vendor_path ) . '/' . $config_file;
-				if ( file_exists( $config_path ) )
-					return $config_path;
-			}
-		}
-
-		return false;
 	}
 
 	private static function set_wp_root( $config ) {
@@ -378,15 +358,21 @@ class Runner {
 	}
 
 	private function init_config() {
+		$this->global_config_path = getenv( 'WP_CLI_CONFIG_PATH' );
+		$this->project_config_path = self::get_project_config_path();
+
+		$configurator = \WP_CLI::get_configurator();
+		$this->config = array_merge(
+			$configurator->get_defaults(),
+			$configurator->load_config( $this->global_config_path ),
+			$configurator->load_config( $this->project_config_path )
+		);
+
 		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::get_configurator()->parse_args(
 			array_slice( $GLOBALS['argv'], 1 ) );
 
 		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
 			$args, $assoc_args );
-
-		$this->config_path = self::get_config_path( $runtime_config );
-
-		$this->config = \WP_CLI::get_configurator()->load_config( $this->config_path );
 
 		foreach ( $runtime_config as $key => $value ) {
 			if ( isset( $this->config[ $key ] ) && is_array( $this->config[ $key ] ) ) {

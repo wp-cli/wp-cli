@@ -237,10 +237,6 @@ class WP_CLI {
 		return $r;
 	}
 
-	static function get_config_path() {
-		return self::get_runner()->config_path;
-	}
-
 	static function get_config( $key = null ) {
 		if ( null === $key ) {
 			return self::get_runner()->config;

@@ -92,11 +92,9 @@ class Configurator {
 				if ( $details['multiple'] && !is_array( $value ) ) {
 					$value = array( $value );
 				}
-			} else {
-				 $value = $details['default'];
-			}
 
-			$sanitized_config[ $key ] = $value;
+				$sanitized_config[ $key ] = $value;
+			}
 		}
 
 		// Make sure config-file-relative paths are made absolute.
@@ -112,6 +110,14 @@ class Configurator {
 		}
 
 		return $sanitized_config;
+	}
+
+	public function get_defaults() {
+		$defaults = array();
+		foreach ( $this->spec as $key => $details ) {
+			$defaults[ $key ] = $details['default'];
+		}
+		return $defaults;
 	}
 
 	private static function absolutize( &$path, $base ) {
