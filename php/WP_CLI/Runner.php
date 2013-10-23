@@ -90,8 +90,6 @@ class Runner {
 	private static function guess_url( $assoc_args ) {
 		if ( isset( $assoc_args['blog'] ) ) {
 			$assoc_args['url'] = $assoc_args['blog'];
-			unset( $assoc_args['blog'] );
-			WP_CLI::warning( 'The --blog parameter is deprecated. Use --url instead.' );
 		}
 
 		if ( isset( $assoc_args['url'] ) ) {
@@ -430,7 +428,7 @@ class Runner {
 			$this->_run_command();
 		}
 
-		// Handle --url and --blog parameters
+		// Handle --url parameter
 		$url = self::guess_url( $this->config );
 		if ( $url ) {
 			$url_parts = self::parse_url( $url );
