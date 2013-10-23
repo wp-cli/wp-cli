@@ -12,8 +12,6 @@ include WP_CLI_ROOT . '/php/class-wp-cli-command.php';
 
 \WP_CLI\Utils\load_dependencies();
 
-WP_CLI::init();
-
 WP_CLI::get_runner()->before_wp_load();
 
 // Load wp-config.php code, in the global scope
