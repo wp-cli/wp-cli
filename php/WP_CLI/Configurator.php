@@ -5,6 +5,7 @@ namespace WP_CLI;
 class Configurator {
 
 	private $spec;
+	private $config = array();
 
 	function __construct( $path ) {
 		$this->spec = include $path;
@@ -17,9 +18,15 @@ class Configurator {
 			'multiple' => false,
 		);
 
-		foreach ( $this->spec as &$option ) {
-			$option = array_merge( $defaults, $option );
+		foreach ( $this->spec as $key => &$details ) {
+			$details = array_merge( $defaults, $details );
+
+			$this->config[ $key ] = $details['default'];
 		}
+	}
+
+	function to_array() {
+		return $this->config;
 	}
 
 	/**
@@ -80,8 +87,6 @@ class Configurator {
 
 	/**
 	 * Load values from a YML file and sanitize them according to the spec.
-	 *
-	 * @return array
 	 */
 	function load_config( $yml_file ) {
 		if ( $yml_file )
@@ -89,40 +94,32 @@ class Configurator {
 		else
 			$config = array();
 
-		$sanitized_config = array();
-
 		foreach ( $this->spec as $key => $details ) {
 			if ( $details['file'] && isset( $config[ $key ] ) ) {
 				$value = $config[ $key ];
-				if ( $details['multiple'] && !is_array( $value ) ) {
-					$value = array( $value );
-				}
+				if ( $details['multiple'] ) {
+					if ( !is_array( $value ) ) {
+						$value = array( $value );
+					}
 
-				$sanitized_config[ $key ] = $value;
+					$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
+				} else {
+					$this->config[ $key ] = $value;
+				}
 			}
 		}
 
 		// Make sure config-file-relative paths are made absolute.
 		$yml_file_dir = dirname( $yml_file );
 
-		if ( isset( $sanitized_config['path'] ) )
-			self::absolutize( $sanitized_config['path'], $yml_file_dir );
+		if ( isset( $this->config['path'] ) )
+			self::absolutize( $this->config['path'], $yml_file_dir );
 
-		if ( isset( $sanitized_config['require'] ) ) {
-			foreach ( $sanitized_config['require'] as &$path ) {
+		if ( isset( $this->config['require'] ) ) {
+			foreach ( $this->config['require'] as &$path ) {
 				self::absolutize( $path, $yml_file_dir );
 			}
 		}
-
-		return $sanitized_config;
-	}
-
-	public function get_defaults() {
-		$defaults = array();
-		foreach ( $this->spec as $key => $details ) {
-			$defaults[ $key ] = $details['default'];
-		}
-		return $defaults;
 	}
 
 	private static function absolutize( &$path, $base ) {
