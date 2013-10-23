@@ -17,6 +17,11 @@ return array(
 		'runtime' => '',
 	),
 
+	'config' => array(
+		'deprecated' => 'Use the WP_CLI_CONFIG_PATH environment variable instead',
+		'runtime' => '=<path>',
+	),
+
 	'user' => array(
 		'runtime' => '=<id|login>',
 		'file' => '<id|login>',

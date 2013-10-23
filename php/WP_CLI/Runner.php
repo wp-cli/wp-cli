@@ -360,7 +360,17 @@ class Runner {
 	}
 
 	private function init_config() {
+		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::get_configurator()->parse_args(
+			array_slice( $GLOBALS['argv'], 1 ) );
+
+		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
+			$args, $assoc_args );
+
 		$this->global_config_path = getenv( 'WP_CLI_CONFIG_PATH' );
+		if ( isset( $runtime_config['config'] ) ) {
+			$this->global_config_path = $runtime_config['config'];
+		}
+
 		$this->project_config_path = self::get_project_config_path();
 
 		$configurator = \WP_CLI::get_configurator();
@@ -369,12 +379,6 @@ class Runner {
 			$configurator->load_config( $this->global_config_path ),
 			$configurator->load_config( $this->project_config_path )
 		);
-
-		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::get_configurator()->parse_args(
-			array_slice( $GLOBALS['argv'], 1 ) );
-
-		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
-			$args, $assoc_args );
 
 		foreach ( $runtime_config as $key => $value ) {
 			if ( isset( $this->config[ $key ] ) && is_array( $this->config[ $key ] ) ) {
