@@ -372,11 +372,9 @@ class Runner {
 		$this->project_config_path = self::get_project_config_path();
 
 		$configurator = \WP_CLI::get_configurator();
-		$this->config = array_merge(
-			$configurator->get_defaults(),
-			$configurator->load_config( $this->global_config_path ),
-			$configurator->load_config( $this->project_config_path )
-		);
+		$configurator->load_config( $this->global_config_path );
+		$configurator->load_config( $this->project_config_path );
+		$this->config = $configurator->to_array();
 
 		foreach ( $runtime_config as $key => $value ) {
 			if ( isset( $this->config[ $key ] ) && is_array( $this->config[ $key ] ) ) {
