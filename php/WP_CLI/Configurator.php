@@ -57,16 +57,21 @@ class Configurator {
 		foreach ( $mixed_args as $tmp ) {
 			list( $key, $value ) = $tmp;
 
-			$enabled = isset( $this->spec[ $key ] ) ? $this->spec[ $key ]['runtime'] : false;
+			if ( isset( $this->spec[ $key ] ) ) {
+				$details = $this->spec[ $key ];
+				if ( $details['runtime'] ) {
+					if ( isset( $details['deprecated'] ) ) {
+						fwrite( STDERR, "WP-CLI: The --{$key} global parameter is deprecated. {$details['deprecated']}\n" );
+					}
 
-			if ( false === $enabled ) {
-				$assoc_args[ $key ] = $value;
-			} else {
-				if ( $this->spec[ $key ]['multiple'] ) {
-					$runtime_config[ $key ][] = $value;
-				} else {
-					$runtime_config[ $key ] = $value;
+					if ( $details['multiple'] ) {
+						$runtime_config[ $key ][] = $value;
+					} else {
+						$runtime_config[ $key ] = $value;
+					}
 				}
+			} else {
+				$assoc_args[ $key ] = $value;
 			}
 		}
 

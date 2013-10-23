@@ -13,12 +13,12 @@ return array(
 		'desc' => 'Pretend request came from given URL',
 	),
 	'blog' => array(
-		'deprecated' => 'Use --url instead',
-		'runtime' => '',
+		'deprecated' => 'Use --url instead.',
+		'runtime' => '=<url>',
 	),
 
 	'config' => array(
-		'deprecated' => 'Use the WP_CLI_CONFIG_PATH environment variable instead',
+		'deprecated' => 'Use the WP_CLI_CONFIG_PATH environment variable instead.',
 		'runtime' => '=<path>',
 	),
 
