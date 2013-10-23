@@ -8,8 +8,7 @@
 class User_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected $obj_type = 'user';
-
-	private $fields = array(
+	protected $obj_fields = array(
 		'ID',
 		'user_login',
 		'display_name',
@@ -23,48 +22,41 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --role=<role>
+	 * [--role=<role>]
 	 * : Only display users with a certain role.
 	 *
-	 * --fields=<fields>
+	 * [--<field>=<value>]
+	 * : Filter by one or more fields. For accepted fields, see get_users().
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each user.
+	 *
+	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields. Defaults to ID,user_login,display_name,user_email,user_registered,roles
 	 *
-	 * --format=<format>
+	 * [--format=<format>]
 	 * : Output list as table, CSV, JSON, or simply IDs. Defaults to table.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user list --format=ids
+	 *     wp user list --field=ID
 	 *
 	 *     wp user list --role=administrator --format=csv
 	 *
-	 *     wp user list --fields=display_name,user_email
+	 *     wp user list --fields=display_name,user_email --format=json
 	 *
 	 * @subcommand list
-	 * @synopsis [--role=<role>] [--fields=<fields>] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
+		$formatter = $this->get_formatter( $assoc_args );
 
-		$defaults = array(
-			'blog_id'   => get_current_blog_id(),
-			'fields'    => implode( ',', $this->fields ),
-			'format'    => 'table',
-		);
-		$params = array_merge( $defaults, $assoc_args );
-
-		$fields = $params['fields'];
-		unset( $params['fields'] );
-
-		if ( array_key_exists( 'role', $assoc_args ) ) {
-			$params['role'] = $assoc_args['role'];
+		if ( 'ids' == $formatter->format ) {
+			$assoc_args['fields'] = 'ids';
+		} else {
+			$assoc_args['fields'] = 'all_with_meta';
 		}
 
-		if ( 'ids' == $params['format'] )
-			$params['fields'] = 'ids';
-		else
-			$params['fields'] = 'all_with_meta';
-
-		$users = get_users( $params );
+		$users = get_users( $assoc_args );
 
 		$it = WP_CLI\Utils\iterator_map( $users, function ( $user ) {
 			if ( !is_object( $user ) )
@@ -75,7 +67,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			return $user;
 		} );
 
-		WP_CLI\Utils\format_items( $params['format'], $it, $fields );
+		$formatter->display_items( $it );
 	}
 
 	/**
@@ -86,7 +78,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * <user>
 	 * : User ID or user login.
 	 *
-	 * --format=<format>
+	 * [--field=<field>]
+	 * : Instead of returning the whole user, returns the value of a single field.
+	 *
+	 * [--format=<format>]
 	 * : The format to use when printing the user; acceptable values:
 	 *
 	 *     **table**: Outputs all fields of the user as a table.
@@ -95,17 +90,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user get 12
+	 *     wp user get 12 --field=login
 	 *
 	 *     wp user get bob --format=json > bob.json
-	 *
-	 * @synopsis [--format=<format>] <user>
 	 */
 	public function get( $args, $assoc_args ) {
-		$assoc_args = wp_parse_args( $assoc_args, array(
-			'format' => 'table'
-		) );
-
 		$user = self::get_user( $args[0] );
 
 		if ( method_exists( $user, 'to_array' ) ) {
@@ -116,21 +105,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 		$user_data['roles'] = implode( ', ', $user->roles );
 
-		switch ( $assoc_args['format'] ) {
-
-		case 'table':
-			$this->assoc_array_to_table( $user_data );
-			break;
-
-		case 'json':
-			WP_CLI::print_value( $user_data, $assoc_args );
-			break;
-
-		default:
-			\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
-			break;
-
-		}
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $user_data );
 	}
 
 	/**
@@ -138,17 +114,15 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <user>
-	 * : The user login or ID of the user to delete.
+	 * <user>...
+	 * : The user login or ID of the user(s) to update.
 	 *
-	 * --reassign=<ID>
-	 * : User to reassign the posts to.
+	 * [--reassign=<user-id>]
+	 * : User ID to reassign the posts to.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp user delete 123 --reassign=567
-	 *
-	 * @synopsis <user>... [--reassign=<id>]
 	 */
 	public function delete( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
@@ -156,23 +130,22 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		) );
 
 		foreach ( $args as $key => $arg ) {
-			$args[$key] = self::get_user( $arg )->ID;
-		}
-		parent::delete( $args, $assoc_args );
-	}
-
-	protected function _delete( $user_id, $assoc_args ) {
-		if ( is_multisite() ) {
-			$r = wpmu_delete_user( $user_id );
-		} else {
-			$r = wp_delete_user( $user_id, $assoc_args['reassign'] );
+			$args[ $key ] = self::get_user( $arg )->ID;
 		}
 
-		if ( $r ) {
-			return array( 'success', "Deleted user $user_id." );
-		} else {
-			return array( 'error', "Failed deleting user $user_id." );
-		}
+		parent::_delete( $args, $assoc_args, function ( $user_id, $assoc_args ) {
+			if ( is_multisite() ) {
+				$r = wpmu_delete_user( $user_id );
+			} else {
+				$r = wp_delete_user( $user_id, $assoc_args['reassign'] );
+			}
+
+			if ( $r ) {
+				return array( 'success', "Deleted user $user_id." );
+			} else {
+				return array( 'error', "Failed deleting user $user_id." );
+			}
+		} );
 	}
 
 	/**
@@ -186,26 +159,24 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * <user-email>
 	 * : The email address of the user to create.
 	 *
-	 * --role=<role>
+	 * [--role=<role>]
 	 * : The role of the user to create. Default: default role
 	 *
-	 * --user_pass=<password>
+	 * [--user_pass=<password>]
 	 * : The user password. Default: randomly generated
 	 *
-	 * --user_registered=<yyyy-mm-dd>
+	 * [--user_registered=<yyyy-mm-dd>]
 	 * : The date the user registered. Default: current date
 	 *
-	 * --display_name=<name>
+	 * [--display_name=<name>]
 	 * : The display name.
 	 *
-	 * --porcelain
+	 * [--porcelain]
 	 * : Output just the new user id.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp user create bob bob@example.com --role=author
-	 *
-	 * @synopsis <user-login> <user-email> [--role=<role>] [--user_pass=<password>] [--user_registered=<yyyy-mm-dd>] [--display_name=<name>] [--porcelain]
 	 */
 	public function create( $args, $assoc_args ) {
 		list( $user_login, $user_email ) = $args;
@@ -216,21 +187,17 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			'user_registered' => strftime( "%F %T", time() ),
 			'display_name' => false,
 		);
+		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
 
-		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
+		$role = self::validate_role( $role );
 
-		if ( 'none' == $role ) {
-			$role = false;
-		} elseif ( is_null( get_role( $role ) ) ) {
-			WP_CLI::error( "Invalid role." );
-		}
-
+		// @codingStandardsIgnoreStart
 		if ( !$user_pass ) {
 			$user_pass = wp_generate_password();
 			$generated_pass = true;
 		}
 
-		$user_id = $this->_create( array(
+		$user_id = wp_insert_user( array(
 			'user_email' => $user_email,
 			'user_login' => $user_login,
 			'user_pass' => $user_pass,
@@ -255,10 +222,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			if ( isset( $generated_pass ) )
 				WP_CLI::line( "Password: $user_pass" );
 		}
-	}
-
-	protected function _create( $params ) {
-		return wp_insert_user( $params );
+		// @codingStandardsIgnoreEnd
 	}
 
 	/**
@@ -266,8 +230,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <user>
-	 * : The user login or ID of the user to update.
+	 * <user>...
+	 * : The user login or ID of the user(s) to update.
 	 *
 	 * --<field>=<value>
 	 * : One or more fields to update. For accepted fields, see wp_update_user().
@@ -277,19 +241,13 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user update 123 --user_login=mary --display_name=Mary
 	 *
 	 *     wp user update mary --user_pass=marypass
-	 *
-	 * @synopsis <user>... --<field>=<value>
 	 */
 	public function update( $args, $assoc_args ) {
-
 		foreach ( $args as $key => $arg ) {
-			$args[$key] = self::get_user( $arg )->ID;
+			$args[ $key ] = self::get_user( $arg )->ID;
 		}
-		parent::update( $args, $assoc_args, 'user' );
-	}
 
-	protected function _update( $params ) {
-		return wp_update_user( $params );
+		parent::_update( $args, $assoc_args, 'wp_update_user' );
 	}
 
 	/**
@@ -297,13 +255,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --count=<number>
+	 * [--count=<number>]
 	 * : How many users to generate. Default: 100
 	 *
-	 * --role=<role>
+	 * [--role=<role>]
 	 * : The role of the generated users. Default: default role from WP
-	 *
-	 * @synopsis [--count=<number>] [--role=<role>]
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $blog_id;
@@ -312,23 +268,15 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			'count' => 100,
 			'role' => get_option('default_role'),
 		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		extract( wp_parse_args( $assoc_args, $defaults ), EXTR_SKIP );
-
-		if ( 'none' == $role ) {
-			$role = false;
-		} elseif ( is_null( get_role( $role ) ) ) {
-			WP_CLI::warning( "invalid role." );
-			exit;
-		}
+		$role = self::validate_role( $assoc_args['role'] );
 
 		$user_count = count_users();
-
 		$total = $user_count['total_users'];
+		$limit = $assoc_args['count'] + $total;
 
-		$limit = $count + $total;
-
-		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating users', $count );
+		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating users', $assoc_args['count'] );
 
 		for ( $i = $total; $i < $limit; $i++ ) {
 			$login = sprintf( 'user_%d_%d', $blog_id, $i );
@@ -371,7 +319,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user set-role 12 author
 	 *
 	 * @subcommand set-role
-	 * @synopsis <user> [<role>]
 	 */
 	public function set_role( $args, $assoc_args ) {
 		$user = self::get_user( $args[0] );
@@ -404,7 +351,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user add-role 12 author
 	 *
 	 * @subcommand add-role
-	 * @synopsis <user> <role>
 	 */
 	public function add_role( $args, $assoc_args ) {
 		$user = self::get_user( $args[0] );
@@ -424,13 +370,15 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * <user>
 	 * : User ID or user login.
 	 *
+	 * [<role>]
+	 * : A specific role to remove.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp user remove-role bob
-	 *     wp user remove-role 12
+	 *     wp user remove-role 12 editor
 	 *
 	 * @subcommand remove-role
-	 * @synopsis <user> [<role>]
 	 */
 	public function remove_role( $args, $assoc_args ) {
 		$user = self::get_user( $args[0] );
@@ -461,7 +409,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : User ID or user login.
 	 *
 	 * <cap>
-	 * : Add the specified capability for the user.
+	 * : The capability to add.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -469,7 +417,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user add-cap 15 edit_product
 	 *
 	 * @subcommand add-cap
-	 * @synopsis <user> <cap>
 	 */
 	public function add_cap( $args, $assoc_args ) {
 		$user = self::get_user( $args[0] );
@@ -490,7 +437,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : User ID or user login.
 	 *
 	 * <cap>
-	 * : Capability to be removed.
+	 * : The capability to be removed.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -498,7 +445,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user remove-cap 11 publish_newsletters
 	 *
 	 * @subcommand remove-cap
-	 * @synopsis <user> <cap>
 	 */
 	public function remove_cap( $args, $assoc_args ) {
 		$user = self::get_user( $args[0] );
@@ -516,7 +462,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <user>
-	 * : User ID or user login.
+	 * : User ID or login.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -524,7 +470,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user list-caps 21
 	 *
 	 * @subcommand list-caps
-	 * @synopsis <user>
 	 */
 	public function list_caps( $args, $assoc_args ) {
 		$user = self::get_user( $args[0] );
@@ -576,7 +521,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     existinguser,existinguser@domain.com,Existing User,administrator
 	 *
 	 * @subcommand import-csv
-	 * @synopsis <file>
 	 */
 	public function import_csv( $args, $assoc_args ) {
 
@@ -585,7 +529,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$filename = $args[0];
 
 		if ( ! file_exists( $filename ) ) {
-			WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
+			WP_CLI::warning( sprintf( "Missing file: %s", $filename ) );
 		}
 
 		foreach ( new \WP_CLI\Iterators\CSV( $filename ) as $i => $new_user ) {
@@ -597,9 +541,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			);
 			$new_user = array_merge( $defaults, $new_user );
 
-			if ( 'none' == $new_user['role'] ) {
+			if ( 'none' === $new_user['role'] ) {
 				$new_user['role'] = false;
-
 			} elseif ( is_null( get_role( $new_user['role'] ) ) ) {
 				WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
 				continue;
@@ -640,6 +583,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			} else {
 				WP_CLI::success( $new_user['user_login'] . " created" );
 			}
+		}
+	}
+
+	private static function validate_role( $role ) {
+		if ( 'none' === $role ) {
+			$role = false;
+		} elseif ( is_null( get_role( $role ) ) ) {
+			WP_CLI::error( "Invalid role: $role" );
 		}
 	}
 }

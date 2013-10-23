@@ -8,18 +8,18 @@ Feature: Manage post custom fields
 
     When I run `wp post-meta get 1 foo`
     Then STDOUT should be:
-    """
-    bar
-    """
+      """
+      bar
+      """
 
     When I run `wp post-meta set 1 foo '[ "1", "2" ]' --format=json`
     Then STDOUT should not be empty
 
     When I run `wp post-meta get 1 foo --format=json`
     Then STDOUT should be:
-    """
-    ["1","2"]
-    """
+      """
+      ["1","2"]
+      """
 
     When I run `wp post-meta delete 1 foo`
     Then STDOUT should not be empty

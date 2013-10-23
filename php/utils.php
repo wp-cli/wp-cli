@@ -45,7 +45,7 @@ function load_command( $name ) {
 }
 
 function load_all_commands() {
-	$cmd_dir = WP_CLI_ROOT . "/php/commands";
+	$cmd_dir = WP_CLI_ROOT . '/php/commands';
 
 	$iterator = new \DirectoryIterator( $cmd_dir );
 
@@ -128,7 +128,7 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 
 function is_path_absolute( $path ) {
 	// Windows
-	if ( ':' === $path[1] )
+	if ( isset($path[1]) && ':' === $path[1] )
 		return true;
 
 	return $path[0] === '/';
@@ -197,61 +197,6 @@ function locate_wp_config() {
 }
 
 /**
- * Take a serialised array and unserialise it replacing elements as needed and
- * unserialising any subordinate arrays and performing the replace on those too.
- *
- * @source https://github.com/interconnectit/Search-Replace-DB
- *
- * @param string $from       String we're looking to replace.
- * @param string $to         What we want it to be replaced with
- * @param array  $data       Used to pass any subordinate arrays back to in.
- * @param bool   $serialised Does the array passed via $data need serialising.
- *
- * @return array	The original array with all elements replaced as needed.
- */
-function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
-
-	// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
-	try {
-
-		if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
-			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
-		}
-
-		elseif ( is_array( $data ) ) {
-			$_tmp = array( );
-			foreach ( $data as $key => $value ) {
-				$_tmp[ $key ] = recursive_unserialize_replace( $from, $to, $value, false );
-			}
-
-			$data = $_tmp;
-		}
-
-		elseif ( is_object( $data ) ) {
-			$_tmp = clone( $data );
-			foreach ( $data as $key => $value ) {
-				$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
-			}
-
-			$data = $_tmp;
-		}
-
-		else {
-			if ( is_string( $data ) )
-				$data = str_replace( $from, $to, $data );
-		}
-
-		if ( $serialised )
-			return serialize( $data );
-
-	} catch( Exception $error ) {
-
-	}
-
-	return $data;
-}
-
-/**
  * Output items in a table, JSON, CSV, ids, or the total count
  *
  * @param string        $format     Format to use: 'table', 'json', 'csv', 'ids', 'count'
@@ -259,49 +204,9 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
 function format_items( $format, $items, $fields ) {
-	if ( ! is_array( $fields ) )
-		$fields = explode( ',', $fields );
-
-	switch ( $format ) {
-		case 'count':
-			if ( !is_array( $items ) ) {
-				$items = iterator_to_array( $items );
-			}
-			echo count( $items );
-			break;
-
-		case 'ids':
-			if ( !is_array( $items ) ) {
-				$items = iterator_to_array( $items );
-			}
-			echo implode( ' ', $items );
-			break;
-
-		case 'table':
-			$table = new \cli\Table();
-
-			$table->setHeaders( $fields );
-
-			foreach ( $items as $item ) {
-				$table->addRow( array_values( pick_fields( $item, $fields ) ) );
-			}
-
-			$table->display();
-			break;
-
-		case 'csv':
-			write_csv( STDOUT, $items, $fields );
-			break;
-
-		case 'json':
-			$out = array();
-			foreach ( $items as $item ) {
-				$out[] = pick_fields( $item, $fields );
-			}
-
-			echo json_encode( $out );
-			break;
-	}
+	$assoc_args = compact( 'format', 'fields' );
+	$formatter = new \WP_CLI\Formatter( $assoc_args );
+	$formatter->display_items( $items );
 }
 
 /**
@@ -404,7 +309,7 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
 	}
 
-	$env = array();
+	$env = (array) $_ENV;
 	if ( isset( $assoc_args['pass'] ) ) {
 		$env['MYSQL_PWD'] = $assoc_args['pass'];
 		unset( $assoc_args['pass'] );
@@ -422,7 +327,10 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 }
 
 function mustache_render( $template_name, $data ) {
-	$template = file_get_contents( WP_CLI_ROOT . "/templates/$template_name" );
+	if ( ! file_exists( $template_name ) )
+		$template_name = WP_CLI_ROOT . "/templates/$template_name";
+
+	$template = file_get_contents( $template_name );
 
 	$m = new \Mustache_Engine;
 

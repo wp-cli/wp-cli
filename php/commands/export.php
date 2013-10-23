@@ -13,40 +13,40 @@ class Export_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --dir=<dirname>
+	 * [--dir=<dirname>]
 	 * : Full path to directory where WXR export files should be stored. Defaults
 	 * to current working directory.
 	 *
-	 * --skip_comments
+	 * [--skip_comments]
 	 * : Don't export comments.
 	 *
-	 * --file_item_count=<count>
+	 * [--file_item_count=<count>]
 	 * : Break export into files with N posts.
 	 *
-	 * --verbose
+	 * [--verbose]
 	 * : Show more information about the process on STDOUT.
 	 *
 	 * ## FILTERS
 	 *
-	 * --start_date=<date>
+	 * [--start_date=<date>]
 	 * : Export only posts newer than this date, in format YYYY-MM-DD.
 	 *
-	 * --end_date=<date>
+	 * [--end_date=<date>]
 	 * : Export only posts older than this date, in format YYYY-MM-DD.
 	 *
-	 * --post_type=<post_type>
+	 * [--post_type=<post_type>]
 	 * : Export only posts with this post_type.
 	 *
-	 * --post__in=<pid>
+	 * [--post__in=<pid>]
 	 * : Export all posts specified as a comma-separated list of IDs.
 	 *
-	 * --author=<login/id>
+	 * [--author=<login/id>]
 	 * : Export only posts by this author.
 	 *
-	 * --category=<category-id>
+	 * [--category=<category-id>]
 	 * : Export only posts in this category.
 	 *
-	 * --post_status=<status>
+	 * [--post_status=<status>]
 	 * : Export only posts with this status.
 	 *
 	 * ## EXAMPLES
@@ -54,8 +54,6 @@ class Export_Command extends WP_CLI_Command {
 	 *     wp export --dir=/tmp/ --user=admin --post_type=post --start_date=2011-01-01 --end_date=2011-12-31
 	 *
 	 *     wp export --dir=/tmp/ --post__in=123,124,125
-	 *
-	 * @synopsis [--dir=<dir>] [--start_date=<date>] [--end_date=<date>] [--post_type=<ptype>] [--post_status=<status>] [--post__in=<pids>] [--author=<login>] [--category=<cat>] [--skip_comments] [--file_item_count=<count>] [--verbose]
 	 */
 	public function __invoke( $_, $assoc_args ) {
 		$defaults = array(
@@ -406,7 +404,7 @@ class Export_Command extends WP_CLI_Command {
 		ob_end_clean();
 
 		WP_CLI::line( 'Exporting ' . count( $all_the_post_ids ) . ' items to be broken into ' . ceil( count( $all_the_post_ids ) / $args['file_item_count'] ) . ' files' );
-		WP_CLI::line( 'Exporting ' . count( $cats ) . ' cateogries' );
+		WP_CLI::line( 'Exporting ' . count( $cats ) . ' categories' );
 		WP_CLI::line( 'Exporting ' . count( $tags ) . ' tags' );
 		WP_CLI::line( 'Exporting ' . count( $terms ) . ' terms' );
 		WP_CLI::line();

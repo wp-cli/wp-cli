@@ -1,7 +1,9 @@
 Feature: Manage WordPress plugins
 
-  Scenario: Create, activate and check plugin status
+  Background:
     Given a WP install
+
+  Scenario: Create, activate and check plugin status
     And I run `wp plugin path`
     And save STDOUT as {PLUGIN_DIR}
 
@@ -29,12 +31,6 @@ Feature: Manage WordPress plugins
           Status: Active
       """
 
-    When I run `wp plugin is-installed zombieland && echo "Zombieland"`
-    Then STDOUT should contain:
-      """
-      Zombieland
-      """
-
     When I run `wp plugin status`
     Then STDOUT should not be empty
 
@@ -44,10 +40,9 @@ Feature: Manage WordPress plugins
       | zombieland | active | none   | 0.1-alpha |
 
     When I try `wp plugin uninstall zombieland`
-    Then the return code should be 1
-    And STDERR should contain:
+    Then STDERR should contain:
       """
-      The plugin is active.
+      The 'zombieland' plugin is active.
       """
 
     When I run `wp plugin deactivate zombieland`
@@ -61,15 +56,12 @@ Feature: Manage WordPress plugins
     And the {PLUGIN_DIR}/zombieland file should not exist
 
     When I try the previous command again
-    Then the return code should be 1
-    And STDERR should contain:
+    Then STDERR should contain:
       """
-      The plugin 'zombieland' could not be found.
+      The 'zombieland' plugin could not be found.
       """
 
   Scenario: Install a plugin, activate, then force install an older version of the plugin
-    Given a WP install
-
     When I run `wp plugin install akismet --version=2.5.7 --force`
     Then STDOUT should not be empty
 

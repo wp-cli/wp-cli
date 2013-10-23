@@ -17,10 +17,10 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --fields=<fields>
+	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields. Defaults to name,role.
 	 *
-	 * --format=<format>
+	 * [--format=<format>]
 	 * : Output list as table, CSV or JSON. Defaults to table.
 	 *
 	 * ## EXAMPLES
@@ -28,19 +28,9 @@ class Role_Command extends WP_CLI_Command {
 	 *     wp role list --fields=role --format=csv
 	 *
 	 * @subcommand list
-	 * @synopsis [--fields=<fields>] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 		global $wp_roles;
-
-		$defaults = array(
-			'fields'    => implode( ',', $this->fields ),
-			'format'    => 'table',
-		);
-		$params = array_merge( $defaults, $assoc_args );
-
-		$fields = $params['fields'];
-		unset( $params['fields'] );
 
 		$output_roles = array();
 		foreach ( $wp_roles->roles as $key => $role ) {
@@ -52,7 +42,8 @@ class Role_Command extends WP_CLI_Command {
 			$output_roles[] = $output_role;
 		}
 
-		WP_CLI\Utils\format_items( $params['format'], $output_roles, $fields );
+		$formatter = new \WP_CLI\Formatter( $assoc_args, $this->fields );
+		$formatter->display_items( $output_roles );
 	}
 
 	/**
@@ -64,15 +55,12 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * * <role-key>:
-	 *
-	 *     The internal name of the role, e.g. editor
+	 * <role-key>
+	 * : The internal name of the role.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp role exists editor
-	 *
-	 * @synopsis <role-key>
 	 */
 	public function exists( $args ) {
 		global $wp_roles;
@@ -80,7 +68,7 @@ class Role_Command extends WP_CLI_Command {
 		if ( ! in_array($args[0], array_keys( $wp_roles->roles ) ) ) {
 			WP_CLI::error( "Role with ID $args[0] does not exist." );
 		}
-		
+
 		WP_CLI::success( "Role with ID $args[0] exists." );
 	}
 
@@ -89,21 +77,17 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * * <role-key>:
+	 * <role-key>
+	 * : The internal name of the role.
 	 *
-	 *     The internal name of the role, e.g. editor
-	 *
-	 * * <role-name>:
-	 *
-	 *     The publically visible name of the role, e.g. Editor
+	 * <role-name>
+	 * : The publicly visible name of the role.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp role create approver Approver
 	 *
 	 *     wp role create productadmin "Product Administrator"
-	 *
-	 * @synopsis <role-key> <role-name>
 	 */
 	public function create( $args ) {
 		self::persistence_check();
@@ -125,20 +109,16 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * * <role-key>:
-	 *
-	 *     The internal name of the role, e.g. editor
+	 * <role-key>
+	 * : The internal name of the role.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp role delete approver
 	 *
 	 *     wp role delete productadmin
-	 *
-	 * @synopsis <role-key>
 	 */
 	public function delete( $args ) {
-
 		global $wp_roles;
 
 		self::persistence_check();

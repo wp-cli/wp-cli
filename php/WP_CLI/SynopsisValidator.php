@@ -23,14 +23,31 @@ class SynopsisValidator {
 		$positional = $this->query_spec( array(
 			'type' => 'positional',
 			'optional' => false,
-			'repeating' => false
 		) );
 
 		return count( $args ) >= count( $positional );
 	}
 
-	public function validate_assoc( &$assoc_args, $ignored_keys = array() ) {
-		$assoc = $this->query_spec( array(
+	public function unknown_positionals( $args ) {
+		$positional_repeating = $this->query_spec( array(
+			'type' => 'positional',
+			'repeating' => true,
+		) );
+
+		if ( !empty( $positional_repeating ) )
+			return array();
+
+		$positional = $this->query_spec( array(
+			'type' => 'positional',
+			'repeating' => false,
+		) );
+
+		return array_slice( $args, count( $positional ) );
+	}
+
+	// Checks that all required keys are present and that they have values.
+	public function validate_assoc( $assoc_args ) {
+		$assoc_spec = $this->query_spec( array(
 			'type' => 'assoc',
 		) );
 
@@ -39,27 +56,26 @@ class SynopsisValidator {
 			'warning' => array()
 		);
 
-		foreach ( $assoc as $param ) {
-			$key = $param['name'];
+		$to_unset = array();
 
-			if ( in_array( $key, $ignored_keys ) )
-				continue;
+		foreach ( $assoc_spec as $param ) {
+			$key = $param['name'];
 
 			if ( !isset( $assoc_args[ $key ] ) ) {
 				if ( !$param['optional'] ) {
 					$errors['fatal'][] = "missing --$key parameter";
 				}
 			} else {
-				if ( true === $assoc_args[ $key ] ) {
+				if ( true === $assoc_args[ $key ] && !$param['value']['optional'] ) {
 					$error_type = ( !$param['optional'] ) ? 'fatal' : 'warning';
 					$errors[ $error_type ][] = "--$key parameter needs a value";
 
-					unset( $assoc_args[ $key ] );
+					$to_unset[] = $key;
 				}
 			}
 		}
 
-		return $errors;
+		return array( $errors, $to_unset );
 	}
 
 	public function unknown_assoc( $assoc_args ) {

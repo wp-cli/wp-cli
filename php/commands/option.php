@@ -5,7 +5,7 @@
  *
  * ## OPTIONS
  *
- * --format=json
+ * [--format=json]
  * : Encode/decode values as JSON.
  *
  * ## EXAMPLES
@@ -39,7 +39,7 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Add an option.
 	 *
-	 * @synopsis <key> [--format=<format>]
+	 * @synopsis <key> <value> [--format=<format>]
 	 */
 	public function add( $args, $assoc_args ) {
 		$key = $args[0];
@@ -57,7 +57,7 @@ class Option_Command extends WP_CLI_Command {
 	 * Update an option.
 	 *
 	 * @alias set
-	 * @synopsis <key> [--format=<format>]
+	 * @synopsis <key> <value> [--format=<format>]
 	 */
 	public function update( $args, $assoc_args ) {
 		$key = $args[0];

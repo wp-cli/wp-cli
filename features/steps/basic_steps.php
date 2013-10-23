@@ -36,7 +36,7 @@ $steps->Given( '/^WP files$/',
 
 $steps->Given( '/^wp-config\.php$/',
 	function ( $world ) {
-		$world->proc( 'wp core config' )->run_check();
+		$world->create_config();
 	}
 );
 
@@ -61,7 +61,7 @@ $steps->Given( "/^a WP install in '([^\s]+)'$/",
 $steps->Given( '/^a WP multisite install$/',
 	function ( $world ) {
 		$world->install_wp();
-		$world->proc( 'wp core install-network' )->run_check();
+		$world->proc( 'wp core install-network', array( 'title' => 'WP CLI Network' ) )->run_check();
 	}
 );
 
@@ -116,17 +116,8 @@ $steps->When( '/^I (run|try) the previous command again$/',
 		if ( !isset( $world->result ) )
 			throw new \Exception( 'No previous command.' );
 
-		$proc = Process::create( $world->result->command, $world->result->cwd );
+		$proc = Process::create( $world->result->command, $world->result->cwd, $world->result->env );
 		$world->result = invoke_proc( $proc, $mode );
-	}
-);
-
-$steps->When( '/^I try to import it$/',
-	function ( $world ) {
-		if ( !isset( $world->variables['DOWNLOADED_IMAGE'] ) )
-			throw new \Exception( 'Cached image not available.' );
-
-		$world->result = $world->proc( 'wp media import ' . $world->variables['DOWNLOADED_IMAGE'] . ' --post_id=1 --featured_image' )->run();
 	}
 );
 
@@ -148,7 +139,9 @@ $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 
 $steps->Then( '/^the return code should be (\d+)$/',
 	function ( $world, $return_code ) {
-		assertEquals( $return_code, $world->result->return_code );
+		if ( $return_code != $world->result->return_code ) {
+			throw new RuntimeException( $world->result );
+		}
 	}
 );
 
@@ -156,7 +149,7 @@ $steps->Then( '/^(STDOUT|STDERR) should (be|contain|not contain):$/',
 	function ( $world, $stream, $action, PyStringNode $expected ) {
 		$expected = $world->replace_variables( (string) $expected );
 
-		checkString( $world->result->$stream, $expected, $action );
+		checkString( $world->result->$stream, $expected, $action, $world->result );
 	}
 );
 
@@ -205,6 +198,20 @@ $steps->Then( '/^STDOUT should be JSON containing:$/',
 		$expected = $world->replace_variables( (string) $expected );
 
 		if ( !checkThatJsonStringContainsJsonString( $output, $expected ) ) {
+			throw new \Exception( $output );
+		}
+});
+
+$steps->Then( '/^STDOUT should be a JSON array containing:$/',
+	function ( $world, PyStringNode $expected ) {
+		$output = $world->result->STDOUT;
+		$expected = $world->replace_variables( (string) $expected );
+
+		$actualValues = json_decode( $output );
+		$expectedValues = json_decode( $expected );
+
+		$missing = array_diff( $expectedValues, $actualValues );
+		if ( !empty( $missing ) ) {
 			throw new \Exception( $output );
 		}
 });

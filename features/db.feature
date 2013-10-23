@@ -22,19 +22,19 @@ Feature: Perform database operations
 
     When I run `wp db query 'SELECT COUNT(*) as total FROM wp_posts'`
     Then STDOUT should contain:
-    """
-    total
-    """
+      """
+      total
+      """
 
     Given a debug.sql file:
-    """
-    SELECT COUNT(*) as total FROM wp_posts
-    """
+      """
+      SELECT COUNT(*) as total FROM wp_posts
+      """
     When I run `wp db query < debug.sql`
     Then STDOUT should contain:
-    """
-    total
-    """
+      """
+      total
+      """
 
   Scenario: DB export/import
     Given a WP install

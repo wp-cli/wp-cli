@@ -2,6 +2,8 @@
 
 use \WP_CLI\Utils;
 use \WP_CLI\Dispatcher;
+use \WP_CLI\FileCache;
+use \WP_CLI\WpHttpCacheManager;
 
 /**
  * Various utilities for WP-CLI commands.
@@ -52,6 +54,47 @@ class WP_CLI {
 		}
 
 		return $runner;
+	}
+
+	/**
+	 * @return FileCache
+	 */
+	private static function get_cache() {
+		static $cache;
+
+		if ( !$cache ) {
+			$home = getenv( 'HOME' );
+			if ( !$home ) {
+				// sometime in windows $HOME is not defined
+				$home = getenv( 'HOMEDRIVE' ) . '/' . getenv( 'HOMEPATH' );
+			}
+			$dir = getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
+
+			// 6 months, 300mb
+			$cache = new FileCache( $dir, 15552000, 314572800 );
+
+			// clean older files on shutdown with 1/50 probability
+			if ( 0 === mt_rand( 0, 50 ) ) {
+				register_shutdown_function( function () use ( $cache ) {
+					$cache->clean();
+				} );
+			}
+		}
+
+		return $cache;
+	}
+
+	/**
+	 * @return WpHttpCacheManager
+	 */
+	static function get_http_cache_manager() {
+		static $http_cacher;
+
+		if ( !$http_cacher ) {
+			$http_cacher = new WpHttpCacheManager( self::get_cache() );
+		}
+
+		return $http_cacher;
 	}
 
 	static function colorize( $string ) {
@@ -120,31 +163,28 @@ class WP_CLI {
 	 * Display a success in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @param string $label
 	 */
-	static function success( $message, $label = 'Success' ) {
-		self::$logger->success( $message, $label );
+	static function success( $message ) {
+		self::$logger->success( $message );
 	}
 
 	/**
 	 * Display a warning in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @param string $label
 	 */
-	static function warning( $message, $label = 'Warning' ) {
-		self::$logger->warning( self::error_to_string( $message ), $label );
+	static function warning( $message ) {
+		self::$logger->warning( self::error_to_string( $message ) );
 	}
 
 	/**
 	 * Display an error in the CLI and end with a newline
 	 *
 	 * @param string $message
-	 * @param string $label
 	 */
-	static function error( $message, $label = 'Error' ) {
+	static function error( $message ) {
 		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) ) {
-			self::$logger->error( self::error_to_string( $message ), $label );
+			self::$logger->error( self::error_to_string( $message ) );
 		}
 
 		exit(1);
@@ -155,7 +195,7 @@ class WP_CLI {
 	 */
 	static function confirm( $question, $assoc_args = array() ) {
 		if ( !isset( $assoc_args['yes'] ) ) {
-			echo $question . " [y/n] ";
+			fwrite( STDOUT, $question . " [y/n] " );
 
 			$answer = trim( fgets( STDIN ) );
 
@@ -270,7 +310,7 @@ class WP_CLI {
 
 	// back-compat
 	static function out( $str ) {
-		echo $str;
+		fwrite( STDOUT, $str );
 	}
 
 	// back-compat

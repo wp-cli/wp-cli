@@ -40,7 +40,7 @@ Feature: Manage WordPress installation
       """
       define( 'WP_DEBUG_LOG', true );
       """
-    When I run `wp core config --extra-php < wp-config-extra.php`
+    When I run `wp core config {CORE_CONFIG_SETTINGS} --extra-php < wp-config-extra.php`
     Then the wp-config.php file should contain:
       """
       define('AUTH_SALT',
@@ -53,6 +53,16 @@ Feature: Manage WordPress installation
     When I try the previous command again
     Then the return code should be 1
     And STDERR should not be empty
+
+  Scenario: Configure with existing salts
+    Given an empty directory
+    And WP files
+
+    When I run `wp core config {CORE_CONFIG_SETTINGS} --skip-salts --extra-php < /dev/null`
+    Then the wp-config.php file should not contain:
+      """
+      define('AUTH_SALT',
+      """
 
   Scenario: Database doesn't exist
     Given an empty directory
@@ -78,6 +88,13 @@ Feature: Manage WordPress installation
       """
       Error: The site you have requested is not installed.
       Run `wp core install`.
+      """
+
+    When I try `wp core install`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      missing --url parameter
       """
 
     When I run `wp core install --url='localhost:8001' --title='Test' --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`

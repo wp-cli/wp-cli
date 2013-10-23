@@ -14,7 +14,7 @@ function assertNumeric( $actual ) {
 	}
 }
 
-function checkString( $output, $expected, $action ) {
+function checkString( $output, $expected, $action, $message = false ) {
 	switch ( $action ) {
 
 	case 'be':
@@ -34,7 +34,9 @@ function checkString( $output, $expected, $action ) {
 	}
 
 	if ( !$r ) {
-		throw new Exception( $output );
+		if ( false === $message )
+			$message = $output;
+		throw new Exception( $message );
 	}
 }
 

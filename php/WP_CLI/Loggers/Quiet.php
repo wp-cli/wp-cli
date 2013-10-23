@@ -8,16 +8,16 @@ class Quiet {
 		// nothing
 	}
 
-	function success( $message, $label ) {
+	function success( $message ) {
 		// nothing
 	}
 
-	function warning( $message, $label ) {
+	function warning( $message ) {
 		// nothing
 	}
 
-	function error( $message, $label ) {
-		fwrite( STDERR, \WP_CLI::colorize( "%R$label:%n $message\n" ) );
+	function error( $message ) {
+		fwrite( STDERR, \WP_CLI::colorize( "%RError:%n $message\n" ) );
 	}
 }
 
