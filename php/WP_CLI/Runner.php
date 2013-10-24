@@ -372,20 +372,44 @@ class Runner {
 		$this->project_config_path = self::get_project_config_path();
 
 		$configurator = \WP_CLI::get_configurator();
-		$configurator->load_config( $this->global_config_path );
-		$configurator->load_config( $this->project_config_path );
-		$this->config = $configurator->to_array();
-
-		foreach ( $runtime_config as $key => $value ) {
-			if ( isset( $this->config[ $key ] ) && is_array( $this->config[ $key ] ) ) {
-				$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
-			} else {
-				$this->config[ $key ] = $value;
-			}
+		foreach ( array( $this->global_config_path, $this->project_config_path ) as $config_path ) {
+			$configurator->merge_config( self::load_config( $config_path ) );
 		}
+		$configurator->merge_config( $runtime_config );
+		$this->config = $configurator->to_array();
 
 		if ( !isset( $this->config['path'] ) ) {
 			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
+		}
+	}
+
+	/**
+	 * Load values from a YML file.
+	 */
+	private static function load_config( $yml_file ) {
+		if ( !$yml_file )
+			return array();
+
+		$config = spyc_load_file( $yml_file );
+
+		// Make sure config-file-relative paths are made absolute.
+		$yml_file_dir = dirname( $yml_file );
+
+		if ( isset( $config['path'] ) )
+			self::absolutize( $config['path'], $yml_file_dir );
+
+		if ( isset( $config['require'] ) ) {
+			foreach ( $config['require'] as &$path ) {
+				self::absolutize( $path, $yml_file_dir );
+			}
+		}
+
+		return $config;
+	}
+
+	private static function absolutize( &$path, $base ) {
+		if ( !empty( $path ) && !\WP_CLI\Utils\is_path_absolute( $path ) ) {
+			$path = $base . DIRECTORY_SEPARATOR . $path;
 		}
 	}
 

@@ -84,46 +84,20 @@ class Configurator {
 		return array( $regular_args, $assoc_args, $runtime_config );
 	}
 
-	/**
-	 * Load values from a YML file and sanitize them according to the spec.
-	 */
-	function load_config( $yml_file ) {
-		if ( $yml_file )
-			$config = spyc_load_file( $yml_file );
-		else
-			$config = array();
-
+	function merge_config( $config ) {
 		foreach ( $this->spec as $key => $details ) {
 			if ( $details['file'] && isset( $config[ $key ] ) ) {
 				$value = $config[ $key ];
+
 				if ( $details['multiple'] ) {
 					if ( !is_array( $value ) ) {
 						$value = array( $value );
 					}
-
 					$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
 				} else {
 					$this->config[ $key ] = $value;
 				}
 			}
-		}
-
-		// Make sure config-file-relative paths are made absolute.
-		$yml_file_dir = dirname( $yml_file );
-
-		if ( isset( $this->config['path'] ) )
-			self::absolutize( $this->config['path'], $yml_file_dir );
-
-		if ( isset( $this->config['require'] ) ) {
-			foreach ( $this->config['require'] as &$path ) {
-				self::absolutize( $path, $yml_file_dir );
-			}
-		}
-	}
-
-	private static function absolutize( &$path, $base ) {
-		if ( !empty( $path ) && !\WP_CLI\Utils\is_path_absolute( $path ) ) {
-			$path = $base . DIRECTORY_SEPARATOR . $path;
 		}
 	}
 }
