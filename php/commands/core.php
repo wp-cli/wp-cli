@@ -57,7 +57,7 @@ class Core_Command extends WP_CLI_Command {
 
 		// We need to use a temporary file because piping from cURL to tar is flaky
 		// on MinGW (and probably in other environments too).
-		$temp = tempnam( sys_get_temp_dir(), "wp_" );
+		$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.tar.gz';
 
 		$headers = array('Accept' => 'application/json');
 		$options = array(
@@ -67,11 +67,53 @@ class Core_Command extends WP_CLI_Command {
 
 		self::_request( 'GET', $download_url, $headers, $options );
 
-		$cmd = "tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
-
-		WP_CLI::launch( Utils\esc_cmd( $cmd, ABSPATH ) );
+		self::_extract( $temp, ABSPATH );
 
 		WP_CLI::success( 'WordPress downloaded.' );
+	}
+
+	private static function _extract( $tarball, $dest ) {
+		if ( ! class_exists( 'PharData' ) ) {
+			$cmd = "tar xz --strip-components=1 --directory=%s -f $tarball && rm $tarball";
+			WP_CLI::launch( Utils\esc_cmd( $cmd, $dest ) );
+			return;
+		}
+		$phar = new PharData( $tarball );
+		$tempdir = implode( DIRECTORY_SEPARATOR, Array (
+			dirname( $tarball ),
+			basename( $tarball, '.tar.gz' ),
+			$phar->getFileName()
+		) );
+
+		$phar->extractTo( dirname( $tempdir ), null, true );
+
+		self::_move_overwrite_files( $tempdir, $dest );
+
+		rmdir( dirname( $tempdir ) );
+	}
+
+	private static function _move_overwrite_files( $source, $dest ) {
+		$flags = FilesystemIterator::SKIP_DOTS
+			| FilesystemIterator::KEY_AS_PATHNAME
+			| FilesystemIterator::CURRENT_AS_FILEINFO;
+
+		$dstOffset = strlen( $source );
+
+		foreach( new RecursiveIteratorIterator (
+			new RecursiveDirectoryIterator( $source, $flags ),
+			RecursiveIteratorIterator::CHILD_FIRST
+		) as $src ) {
+			$dst = $dest . substr( $src, $dstOffset );
+			$dstdir = dirname( $dst );
+			if ( ! is_dir( $dstdir ) ) continue;
+
+			if ( $src->isDir() && is_dir( $dst ) ) {
+				rmdir( $src );
+				continue;
+			}
+			rename( $src, $dst );
+		}
+		rmdir( $source );
 	}
 
 	private static function _request( $method, $url, $headers = array(), $options = array() ) {
