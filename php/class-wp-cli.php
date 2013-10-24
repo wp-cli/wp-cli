@@ -17,13 +17,6 @@ class WP_CLI {
 	private static $hooks = array(), $hooks_passed = array();
 
 	/**
-	 * Initialize WP_CLI static variables.
-	 */
-	static function init() {
-		self::$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
-	}
-
-	/**
 	 * Set the logger instance.
 	 *
 	 * @param object $logger
@@ -33,7 +26,13 @@ class WP_CLI {
 	}
 
 	static function get_configurator() {
-		return self::$configurator;
+		static $configurator;
+
+		if ( !$configurator ) {
+			$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
+		}
+
+		return $configurator;
 	}
 
 	static function get_root_command() {
@@ -275,10 +274,6 @@ class WP_CLI {
 			exit($r);
 
 		return $r;
-	}
-
-	static function get_config_path() {
-		return self::get_runner()->config_path;
 	}
 
 	static function get_config( $key = null ) {

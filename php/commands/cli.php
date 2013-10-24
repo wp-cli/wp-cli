@@ -41,11 +41,14 @@ class CLI_Command extends WP_CLI_Command {
 	function info() {
 		$php_bin = defined( 'PHP_BINARY' ) ? PHP_BINARY : getenv( 'WP_CLI_PHP_USED' );
 
+		$runner = WP_CLI::get_runner();
+
 		WP_CLI::line( "PHP binary:\t" . $php_bin );
 		WP_CLI::line( "PHP version:\t" . PHP_VERSION );
 		WP_CLI::line( "php.ini used:\t" . get_cfg_var( 'cfg_file_path' ) );
 		WP_CLI::line( "WP-CLI root:\t" . WP_CLI_ROOT );
-		WP_CLI::line( "WP-CLI config:\t" . WP_CLI::get_config_path() );
+		WP_CLI::line( "WP-CLI global config:\t" . $runner->global_config_path );
+		WP_CLI::line( "WP-CLI project config:\t" . $runner->project_config_path );
 		WP_CLI::line( "WP-CLI version:\t" . WP_CLI_VERSION );
 	}
 

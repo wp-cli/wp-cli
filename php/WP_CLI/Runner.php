@@ -8,7 +8,7 @@ use WP_CLI\Utils;
 
 class Runner {
 
-	private $config_path, $config;
+	private $global_config_path, $project_config_path, $config;
 
 	private $arguments, $assoc_args;
 
@@ -37,11 +37,7 @@ class Runner {
 		}
 	}
 
-	private static function get_config_path( $runtime_config ) {
-		if ( isset( $runtime_config['config'] ) && file_exists( $runtime_config['config'] ) ) {
-			return $runtime_config['config'];
-		}
-
+	private static function get_project_config_path() {
 		$config_files = array(
 			'wp-cli.local.yml',
 			'wp-cli.yml'
@@ -49,7 +45,7 @@ class Runner {
 
 		// Stop looking upward when we find we have emerged from a subdirectory
 		// install into a parent install
-		$path = Utils\find_file_upward( $config_files, getcwd(), function ( $dir ) {
+		return Utils\find_file_upward( $config_files, getcwd(), function ( $dir ) {
 			static $wp_load_count = 0;
 			$wp_load_path = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
 			if ( file_exists( $wp_load_path ) ) {
@@ -57,12 +53,6 @@ class Runner {
 			}
 			return $wp_load_count > 1;
 		} );
-
-		if ( $path ) {
-			return $path;
-		}
-
-		return false;
 	}
 
 	private static function set_wp_root( $config ) {
@@ -100,8 +90,6 @@ class Runner {
 	private static function guess_url( $assoc_args ) {
 		if ( isset( $assoc_args['blog'] ) ) {
 			$assoc_args['url'] = $assoc_args['blog'];
-			unset( $assoc_args['blog'] );
-			WP_CLI::warning( 'The --blog parameter is deprecated. Use --url instead.' );
 		}
 
 		if ( isset( $assoc_args['url'] ) ) {
@@ -376,20 +364,59 @@ class Runner {
 		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
 			$args, $assoc_args );
 
-		$this->config_path = self::get_config_path( $runtime_config );
-
-		$this->config = \WP_CLI::get_configurator()->load_config( $this->config_path );
-
-		foreach ( $runtime_config as $key => $value ) {
-			if ( isset( $this->config[ $key ] ) && is_array( $this->config[ $key ] ) ) {
-				$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
-			} else {
-				$this->config[ $key ] = $value;
-			}
+		$this->global_config_path = getenv( 'WP_CLI_CONFIG_PATH' );
+		if ( isset( $runtime_config['config'] ) ) {
+			$this->global_config_path = $runtime_config['config'];
 		}
+
+		$this->project_config_path = self::get_project_config_path();
+
+		$configurator = \WP_CLI::get_configurator();
+		foreach ( array( $this->global_config_path, $this->project_config_path ) as $config_path ) {
+			$configurator->merge_config( self::load_config( $config_path ) );
+		}
+		$configurator->merge_config( $runtime_config );
+		$this->config = $configurator->to_array();
 
 		if ( !isset( $this->config['path'] ) ) {
 			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
+		}
+	}
+
+	/**
+	 * Load values from a YML file.
+	 */
+	private static function load_config( $yml_file ) {
+		if ( !$yml_file )
+			return array();
+
+		$config = spyc_load_file( $yml_file );
+
+		// Make sure config-file-relative paths are made absolute.
+		$yml_file_dir = dirname( $yml_file );
+
+		if ( isset( $config['path'] ) )
+			self::absolutize( $config['path'], $yml_file_dir );
+
+		if ( isset( $config['require'] ) ) {
+			self::arrayify( $config['require'] );
+			foreach ( $config['require'] as &$path ) {
+				self::absolutize( $path, $yml_file_dir );
+			}
+		}
+
+		return $config;
+	}
+
+	private static function arrayify( &$val ) {
+		if ( !is_array( $val ) ) {
+			$val = array( $val );
+		}
+	}
+
+	private static function absolutize( &$path, $base ) {
+		if ( !empty( $path ) && !\WP_CLI\Utils\is_path_absolute( $path ) ) {
+			$path = $base . DIRECTORY_SEPARATOR . $path;
 		}
 	}
 
@@ -430,7 +457,7 @@ class Runner {
 			$this->_run_command();
 		}
 
-		// Handle --url and --blog parameters
+		// Handle --url parameter
 		$url = self::guess_url( $this->config );
 		if ( $url ) {
 			$url_parts = self::parse_url( $url );

@@ -68,14 +68,14 @@ Feature: Have a config file
       """
 
   Scenario: Disabled subcommands
-    Given a WP install
-    And a wp-cli.yml file:
+    Given an empty directory
+    And a config.yml file:
       """
       disabled_commands:
-        - db drop
+        - core version
       """
 
-    When I try `wp db drop --yes`
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp core version`
     Then STDERR should contain:
       """
       command has been disabled

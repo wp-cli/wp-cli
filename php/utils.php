@@ -13,14 +13,9 @@ function load_dependencies() {
 		return;
 	}
 
-	$vendor_paths = array(
-		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project / installed via Composer (preferred)
-		WP_CLI_ROOT . '/vendor',           // top-level project / installed as Git clone
-	);
-
 	$has_autoload = false;
 
-	foreach ( $vendor_paths as $vendor_path ) {
+	foreach ( get_vendor_paths() as $vendor_path ) {
 		if ( file_exists( $vendor_path . '/autoload.php' ) ) {
 			require $vendor_path . '/autoload.php';
 			$has_autoload = true;
@@ -32,6 +27,13 @@ function load_dependencies() {
 		fputs( STDERR, "Internal error: Can't find Composer autoloader.\n" );
 		exit(3);
 	}
+}
+
+function get_vendor_paths() {
+	return array(
+		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project / installed via Composer (preferred)
+		WP_CLI_ROOT . '/vendor',           // top-level project / installed as Git clone
+	);
 }
 
 function load_command( $name ) {

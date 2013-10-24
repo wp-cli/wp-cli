@@ -5,6 +5,7 @@ namespace WP_CLI;
 class Configurator {
 
 	private $spec;
+	private $config = array();
 
 	function __construct( $path ) {
 		$this->spec = include $path;
@@ -17,9 +18,15 @@ class Configurator {
 			'multiple' => false,
 		);
 
-		foreach ( $this->spec as &$option ) {
-			$option = array_merge( $defaults, $option );
+		foreach ( $this->spec as $key => &$details ) {
+			$details = array_merge( $defaults, $details );
+
+			$this->config[ $key ] = $details['default'];
 		}
+	}
+
+	function to_array() {
+		return $this->config;
 	}
 
 	/**
@@ -57,66 +64,40 @@ class Configurator {
 		foreach ( $mixed_args as $tmp ) {
 			list( $key, $value ) = $tmp;
 
-			$enabled = isset( $this->spec[ $key ] ) ? $this->spec[ $key ]['runtime'] : false;
+			if ( isset( $this->spec[ $key ] ) && $this->spec[ $key ]['runtime'] !== false ) {
+				$details = $this->spec[ $key ];
 
-			if ( false === $enabled ) {
-				$assoc_args[ $key ] = $value;
-			} else {
-				if ( $this->spec[ $key ]['multiple'] ) {
+				if ( isset( $details['deprecated'] ) ) {
+					fwrite( STDERR, "WP-CLI: The --{$key} global parameter is deprecated. {$details['deprecated']}\n" );
+				}
+
+				if ( $details['multiple'] ) {
 					$runtime_config[ $key ][] = $value;
 				} else {
 					$runtime_config[ $key ] = $value;
 				}
+			} else {
+				$assoc_args[ $key ] = $value;
 			}
 		}
 
 		return array( $regular_args, $assoc_args, $runtime_config );
 	}
 
-	/**
-	 * Load values from a YML file and sanitize them according to the spec.
-	 *
-	 * @return array
-	 */
-	function load_config( $yml_file ) {
-		if ( $yml_file )
-			$config = spyc_load_file( $yml_file );
-		else
-			$config = array();
-
-		$sanitized_config = array();
-
+	function merge_config( $config ) {
 		foreach ( $this->spec as $key => $details ) {
 			if ( $details['file'] && isset( $config[ $key ] ) ) {
 				$value = $config[ $key ];
-				if ( $details['multiple'] && !is_array( $value ) ) {
-					$value = array( $value );
+
+				if ( $details['multiple'] ) {
+					if ( !is_array( $value ) ) {
+						$value = array( $value );
+					}
+					$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
+				} else {
+					$this->config[ $key ] = $value;
 				}
-			} else {
-				$value = $details['default'];
 			}
-
-			$sanitized_config[ $key ] = $value;
-		}
-
-		// Make sure config-file-relative paths are made absolute.
-		$yml_file_dir = dirname( $yml_file );
-
-		if ( isset( $sanitized_config['path'] ) )
-			self::absolutize( $sanitized_config['path'], $yml_file_dir );
-
-		if ( isset( $sanitized_config['require'] ) ) {
-			foreach ( $sanitized_config['require'] as &$path ) {
-				self::absolutize( $path, $yml_file_dir );
-			}
-		}
-
-		return $sanitized_config;
-	}
-
-	private static function absolutize( &$path, $base ) {
-		if ( !empty( $path ) && !\WP_CLI\Utils\is_path_absolute( $path ) ) {
-			$path = $base . DIRECTORY_SEPARATOR . $path;
 		}
 	}
 }
