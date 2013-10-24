@@ -399,12 +399,19 @@ class Runner {
 			self::absolutize( $config['path'], $yml_file_dir );
 
 		if ( isset( $config['require'] ) ) {
+			self::arrayify( $config['require'] );
 			foreach ( $config['require'] as &$path ) {
 				self::absolutize( $path, $yml_file_dir );
 			}
 		}
 
 		return $config;
+	}
+
+	private static function arrayify( &$val ) {
+		if ( !is_array( $val ) ) {
+			$val = array( $val );
+		}
 	}
 
 	private static function absolutize( &$path, $base ) {
