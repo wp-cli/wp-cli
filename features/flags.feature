@@ -134,7 +134,7 @@ Feature: Global flags
       This is a custom command.
       """
 
-    When I run `wp --config=wp-cli2.yml test req 'This is a custom command.'`
+    When I run `WP_CLI_CONFIG_PATH=wp-cli2.yml wp test req 'This is a custom command.'`
     Then STDOUT should contain:
       """
       This is a custom command.
