@@ -64,7 +64,7 @@ class Configurator {
 		foreach ( $mixed_args as $tmp ) {
 			list( $key, $value ) = $tmp;
 
-			if ( isset( $this->spec[ $key ] ) && $this->spec[ $key ]['runtime'] ) {
+			if ( isset( $this->spec[ $key ] ) && $this->spec[ $key ]['runtime'] !== false ) {
 				$details = $this->spec[ $key ];
 
 				if ( isset( $details['deprecated'] ) ) {
