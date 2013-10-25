@@ -162,8 +162,12 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		copy( __DIR__ . '/../extra/no-mail.php', $dest_dir . '/wp-content/mu-plugins/no-mail.php' );
 	}
 
-	public function create_config() {
-		$this->proc( 'wp core config', self::$db_settings )->run_check();
+	public function create_config( $subdir = '' ) {
+		$params = self::$db_settings;
+		$params['dbprefix'] = $subdir ?: 'wp_';
+
+		$params['skip-salts'] = true;
+		$this->proc( 'wp core config', $params )->run_check( $subdir );
 	}
 
 	public function install_wp( $subdir = '' ) {
@@ -171,10 +175,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->create_run_dir();
 		$this->download_wp( $subdir );
 
-		$db_args = self::$db_settings;
-		$db_args['dbprefix'] = $subdir ?: 'wp_';
-
-		$this->proc( 'wp core config', $db_args )->run_check( $subdir );
+		$this->create_config( $subdir );
 
 		$install_args = array(
 			'url' => 'http://example.com',
