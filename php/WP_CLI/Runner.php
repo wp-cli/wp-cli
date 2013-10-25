@@ -37,6 +37,22 @@ class Runner {
 		}
 	}
 
+	private static function get_global_config_path() {
+		$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
+		if ( isset( $runtime_config['config'] ) ) {
+			$config_path = $runtime_config['config'];
+		}
+
+		if ( !$config_path ) {
+			$config_path = getenv( 'HOME' ) . '/.config/wp-cli.yml';
+		}
+
+		if ( !is_readable( $config_path ) )
+			return false;
+
+		return $config_path;
+	}
+
 	private static function get_project_config_path() {
 		$config_files = array(
 			'wp-cli.local.yml',
@@ -364,11 +380,7 @@ class Runner {
 		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
 			$args, $assoc_args );
 
-		$this->global_config_path = getenv( 'WP_CLI_CONFIG_PATH' );
-		if ( isset( $runtime_config['config'] ) ) {
-			$this->global_config_path = $runtime_config['config'];
-		}
-
+		$this->global_config_path = self::get_global_config_path();
 		$this->project_config_path = self::get_project_config_path();
 
 		$configurator = \WP_CLI::get_configurator();
