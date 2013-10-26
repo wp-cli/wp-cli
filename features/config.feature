@@ -67,7 +67,7 @@ Feature: Have a config file
       wp-cli.yml
       """
 
-  Scenario: Disabled subcommands
+  Scenario: Disabled commands
     Given an empty directory
     And a config.yml file:
       """
