@@ -56,7 +56,7 @@ class CompositeCommand {
 	}
 
 	function get_synopsis() {
-		return '<subcommand>';
+		return '<command>';
 	}
 
 	function invoke( $args, $assoc_args ) {
@@ -75,7 +75,7 @@ class CompositeCommand {
 		}
 
 		\WP_CLI::line();
-		\WP_CLI::line( "See 'wp help $this->name <subcommand>' for more information on a specific subcommand." );
+		\WP_CLI::line( "See 'wp help $this->name <command>' for more information on a specific command." );
 	}
 
 	function find_subcommand( &$args ) {
