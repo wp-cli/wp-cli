@@ -1,4 +1,5 @@
 composer.lock
 /vendor
 /*.phar
+utils/*.phar
 /phpunit.xml
