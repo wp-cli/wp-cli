@@ -79,7 +79,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function getStepDefinitionResources() {
-		return array( __DIR__ . '/../steps/basic_steps.php' );
+		return glob( __DIR__ . '/../steps/*.php' );
 	}
 
 	public function getHookDefinitionResources() {
