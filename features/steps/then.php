@@ -52,7 +52,7 @@ $steps->Then( '/^STDOUT should end with a table containing rows:$/',
 		$start = array_search( $expected_rows[0], $actual_rows );
 
 		if ( false === $start )
-			throw new \Exception( $output );
+			throw new \Exception( $world->result );
 
 		compareTables( $expected_rows, array_slice( $actual_rows, $start ), $output );
 	}
@@ -64,7 +64,7 @@ $steps->Then( '/^STDOUT should be JSON containing:$/',
 		$expected = $world->replace_variables( (string) $expected );
 
 		if ( !checkThatJsonStringContainsJsonString( $output, $expected ) ) {
-			throw new \Exception( $output );
+			throw new \Exception( $world->result );
 		}
 });
 
@@ -78,7 +78,7 @@ $steps->Then( '/^STDOUT should be a JSON array containing:$/',
 
 		$missing = array_diff( $expectedValues, $actualValues );
 		if ( !empty( $missing ) ) {
-			throw new \Exception( $output );
+			throw new \Exception( $world->result );
 		}
 });
 
@@ -94,14 +94,14 @@ $steps->Then( '/^STDOUT should be CSV containing:$/',
 		}
 
 		if ( ! checkThatCsvStringContainsValues( $output, $expected_rows ) )
-			throw new \Exception( $output );
+			throw new \Exception( $world->result );
 	}
 );
 
 $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 	function ( $world, $stream ) {
 		if ( !empty( $world->result->$stream ) ) {
-			throw new \Exception( $world->result->$stream );
+			throw new \Exception( $world->result );
 		}
 	}
 );
@@ -109,7 +109,7 @@ $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 	function ( $world, $stream ) {
 		if ( '' === rtrim( $world->result->$stream, "\n" ) ) {
-			throw new Exception( "$stream is empty." );
+			throw new Exception( $world->result );
 		}
 	}
 );
@@ -125,12 +125,12 @@ $steps->Then( '/^the (.+) file should (exist|not exist|be:|contain:|not contain:
 		switch ( $action ) {
 		case 'exist':
 			if ( !file_exists( $path ) ) {
-				throw new Exception( "$path doesn't exist." );
+				throw new Exception( $world->result );
 			}
 			break;
 		case 'not exist':
 			if ( file_exists( $path ) ) {
-				throw new Exception( "$path exists." );
+				throw new Exception( $world->result );
 			}
 			break;
 		default:
