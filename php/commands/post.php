@@ -123,8 +123,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected function _edit( $content, $title ) {
 		$content = apply_filters( 'the_editor_content', $content );
-		$os = strpos( $_SERVER['OS'], 'indows' )===false ? 'linux' : 'windows';
-		$output = \WP_CLI\Utils\launch_editor_for_input( $content, $title, $os );
+		$output = \WP_CLI\Utils\launch_editor_for_input( $content, $title );
 		return ( is_string( $output ) ) ?
 			apply_filters( 'content_save_pre', $output ) : $output;
 	}

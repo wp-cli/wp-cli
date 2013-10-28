@@ -256,7 +256,7 @@ function pick_fields( $item, $fields ) {
  * @return str|bool       Edited text, if file is saved from editor
  *                        False, if no change to file
  */
-function launch_editor_for_input( $input, $title = 'WP-CLI', $os='linux' ) {
+function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 
 	$tmpfile = wp_tempnam( $title );
 
@@ -266,10 +266,15 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $os='linux' ) {
 	$output = '';
 	file_put_contents( $tmpfile, $input );
 
-	if( $os==='linux' )
-	\WP_CLI::launch( "\${EDITOR:-vi} '$tmpfile'" );
-	else
-		exec("notepad $tmpfile" );
+	$editor = getenv( 'EDITOR' );
+	if ( !$editor ) {
+		if ( isset( $_SERVER['OS'] ) && false !== strpos( $_SERVER['OS'], 'indows' ) )
+			$editor = 'notepad';
+		else
+			$editor = 'vi';
+	}
+
+	\WP_CLI::launch( \WP_CLI\Utils\esc_cmd( "$editor %s", $tmpfile ) );
 
 	$output = file_get_contents( $tmpfile );
 
