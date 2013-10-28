@@ -274,7 +274,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 			$editor = 'vi';
 	}
 
-	\WP_CLI::launch( \WP_CLI\Utils\esc_cmd( "$editor %s", $tmpfile ) );
+	\WP_CLI::launch( "$editor " . escapeshellarg( $tmpfile ) );
 
 	$output = file_get_contents( $tmpfile );
 
