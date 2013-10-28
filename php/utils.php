@@ -256,16 +256,20 @@ function pick_fields( $item, $fields ) {
  * @return str|bool       Edited text, if file is saved from editor
  *                        False, if no change to file
  */
-function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
+function launch_editor_for_input( $input, $title = 'WP-CLI', $os='linux' ) {
 
 	$tmpfile = wp_tempnam( $title );
 
 	if ( !$tmpfile )
 		\WP_CLI::error( 'Error creating temporary file.' );
 
+	$output = '';
 	file_put_contents( $tmpfile, $input );
 
+	if( $os==='linux' )
 	\WP_CLI::launch( "\${EDITOR:-vi} '$tmpfile'" );
+	else
+		exec("notepad $tmpfile" );
 
 	$output = file_get_contents( $tmpfile );
 
