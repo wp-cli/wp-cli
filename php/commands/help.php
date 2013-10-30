@@ -128,7 +128,7 @@ class Help_Command extends WP_CLI_Command {
 				$parent_subcommand = array_shift( $name_parts );
 				if ( empty( $subcommand_tree[$parent_subcommand] ) )
 					$subcommand_tree[$parent_subcommand] = '';
-				$name = '- ' . implode( ' ', $name_parts );
+				$name = '   ' . implode( ' ', $name_parts );
 			}
 			$subcommand_tree[$name] = $desc;
 		}
