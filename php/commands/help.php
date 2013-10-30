@@ -121,8 +121,20 @@ class Help_Command extends WP_CLI_Command {
 
 		$max_len = self::get_max_len( array_keys( $subcommands ) );
 
-		$lines = array();
+		$subcommand_tree = array();
 		foreach ( $subcommands as $name => $desc ) {
+			if ( false !== strpos( $name, ' ' ) ) {
+				$name_parts = explode( ' ', $name );
+				$parent_subcommand = array_shift( $name_parts );
+				if ( empty( $subcommand_tree[$parent_subcommand] ) )
+					$subcommand_tree[$parent_subcommand] = '';
+				$name = '- ' . implode( ' ', $name_parts );
+			}
+			$subcommand_tree[$name] = $desc;
+		}
+
+		$lines = array();
+		foreach( $subcommand_tree as $name => $desc ) {
 			$lines[] = str_pad( $name, $max_len ) . "\t\t\t" . $desc;
 		}
 
