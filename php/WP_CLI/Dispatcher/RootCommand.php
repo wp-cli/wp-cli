@@ -42,11 +42,13 @@ class RootCommand extends CompositeCommand {
 	}
 
 	function find_subcommand( &$args ) {
-		$command = array_shift( $args );
+
+		$command = implode( ' ', $args );
 
 		Utils\load_command( $command );
 
-		if ( !isset( $this->subcommands[ $command ] ) ) {
+		if ( ! isset( $this->subcommands[ $command ] ) ) {
+			array_pop( $args );
 			return false;
 		}
 
