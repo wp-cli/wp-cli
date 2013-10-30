@@ -87,33 +87,38 @@ class Core_Command extends WP_CLI_Command {
 
 		$phar->extractTo( dirname( $tempdir ), null, true );
 
-		self::_move_overwrite_files( $tempdir, $dest );
+		self::_copy_overwrite_files( $tempdir, $dest );
 
-		rmdir( dirname( $tempdir ) );
+		self::_rmdir( dirname( $tempdir ) );
 	}
 
-	private static function _move_overwrite_files( $source, $dest ) {
-		$flags = FilesystemIterator::SKIP_DOTS
-			| FilesystemIterator::KEY_AS_PATHNAME
-			| FilesystemIterator::CURRENT_AS_FILEINFO;
+	private static function _copy_overwrite_files( $source, $dest ) {
+		$iterator = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $source, RecursiveDirectoryIterator::SKIP_DOTS ),
+			RecursiveIteratorIterator::SELF_FIRST);
 
-		$dstOffset = strlen( $source );
-
-		foreach( new RecursiveIteratorIterator (
-			new RecursiveDirectoryIterator( $source, $flags ),
-			RecursiveIteratorIterator::CHILD_FIRST
-		) as $src ) {
-			$dst = $dest . substr( $src, $dstOffset );
-			$dstdir = dirname( $dst );
-			if ( ! is_dir( $dstdir ) ) continue;
-
-			if ( $src->isDir() && is_dir( $dst ) ) {
-				rmdir( $src );
-				continue;
+		foreach ( $iterator as $item ) {
+			if ( $item->isDir() ) {
+				$dest_path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
+				if ( !is_dir( $dest_path ) ) {
+					mkdir( $dest_path );
+				}
+			} else {
+				copy( $item, $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName() );
 			}
-			rename( $src, $dst );
 		}
-		rmdir( $source );
+	}
+
+	private static function _rmdir( $dir ) {
+		$files = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
+			RecursiveIteratorIterator::CHILD_FIRST
+		);
+
+		foreach ( $files as $fileinfo ) {
+			$todo = $fileinfo->isDir() ? 'rmdir' : 'unlink';
+			$todo( $fileinfo->getRealPath() );
+		}
 	}
 
 	private static function _request( $method, $url, $headers = array(), $options = array() ) {
