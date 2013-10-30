@@ -111,7 +111,10 @@ class Core_Command extends WP_CLI_Command {
 				rmdir( $src );
 				continue;
 			}
-			rename( $src, $dst );
+
+			// rename() is not reliable inside VMs: https://github.com/wp-cli/wp-cli/issues/853
+			copy( $src, $dst );
+			unlink( $src );
 		}
 		rmdir( $source );
 	}
