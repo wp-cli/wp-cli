@@ -178,8 +178,6 @@ class Runner {
 		$root_command = \WP_CLI::get_root_command();
 		$command_to_run = false;
 
-		$disabled_commands = $this->config['disabled_commands'];
-
 		$maybe_command_names = $args;
 		while ( ! empty( $maybe_command_names ) && false == $command_to_run ) {
 
@@ -205,7 +203,7 @@ class Runner {
 		}
 
 		$full_name = implode( ' ', $maybe_command_names );
-		if ( in_array( $full_name, $disabled_commands ) ) {
+		if ( in_array( $full_name, $this->config['disabled_commands'] ) ) {
 			return sprintf(
 				"The '%s' command has been disabled from the config file.",
 				$full_name
