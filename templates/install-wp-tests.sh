@@ -16,7 +16,14 @@ set -ex
 # set up a WP install
 WP_CORE_DIR=/tmp/wordpress/
 mkdir -p $WP_CORE_DIR
-wget -nv -O /tmp/wordpress.tar.gz https://github.com/WordPress/WordPress/tarball/$WP_VERSION
+
+if [ $WP_VERSION == 'latest' ]; then 
+	ARCHIVE_NAME='latest'
+else
+	ARCHIVE_NAME="wordpress-$WP_VERSION"
+fi
+
+wget -nv -O /tmp/wordpress.tar.gz http://wordpress.org/${ARCHIVE_NAME}.tar.gz
 tar --strip-components=1 -zxmf /tmp/wordpress.tar.gz -C $WP_CORE_DIR
 
 # set up testing suite
