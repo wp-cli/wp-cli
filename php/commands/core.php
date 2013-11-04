@@ -13,6 +13,9 @@ class Core_Command extends WP_CLI_Command {
 	 * Download core WordPress files.
 	 *
 	 * ## OPTIONS
+	 * 
+	 * [--path=<path>]
+	 * : Specify the path in which to install WordPress.
 	 *
 	 * [--locale=<locale>]
 	 * : Select which language you want to download.
