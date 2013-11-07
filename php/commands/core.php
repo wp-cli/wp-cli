@@ -126,7 +126,6 @@ class Core_Command extends WP_CLI_Command {
 
 	private static function _request( $method, $url, $headers = array(), $options = array() ) {
 		try {
-			$options['verify'] = true;
 			return Requests::get( $url, $headers, $options );
 		} catch( Requests_Exception $ex ) {
 			// Handle SSL certificate issues gracefully
