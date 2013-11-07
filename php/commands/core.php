@@ -13,7 +13,7 @@ class Core_Command extends WP_CLI_Command {
 	 * Download core WordPress files.
 	 *
 	 * ## OPTIONS
-	 * 
+	 *
 	 * [--path=<path>]
 	 * : Specify the path in which to install WordPress.
 	 *
@@ -125,6 +125,16 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	private static function _request( $method, $url, $headers = array(), $options = array() ) {
+		// cURL can't read Phar archives
+		if ( 0 === strpos( WP_CLI_ROOT, 'phar://' ) ) {
+			$options['verify'] = sys_get_temp_dir() . '/wp-cli-cacert.pem';
+
+			copy(
+				WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem',
+				$options['verify']
+			);
+		}
+
 		try {
 			return Requests::get( $url, $headers, $options );
 		} catch( Requests_Exception $ex ) {
