@@ -16,6 +16,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		'post_status'
 	);
 
+	public function __construct() {
+		$this->fetcher = new \WP_CLI\FetcherPost;
+	}
+
 	/**
 	 * Create a post.
 	 *
@@ -109,9 +113,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp post edit 123
 	 */
 	public function edit( $args, $_ ) {
-		$post_id = $args[0];
-		if ( !$post_id || !$post = get_post( $post_id ) )
-			\WP_CLI::error( "Failed opening post $post_id to edit." );
+		$post = $this->fetcher->get_check( $args[0] );
 
 		$r = $this->_edit( $post->post_content, "WP-CLI post $post_id" );
 
@@ -153,9 +155,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp post get 12 --field=content > file.txt
 	 */
 	public function get( $args, $assoc_args ) {
-		$post_id = $args[0];
-		if ( !$post_id || !$post = get_post( $post_id ) )
-			\WP_CLI::error( "Could not find the post with ID $post_id." );
+		$post = $this->fetcher->get_check( $args[0] );
 
 		$post_arr = get_object_vars( $post );
 		unset( $post_arr['filter'] );

@@ -4,6 +4,10 @@ Feature: Manage WordPress users
     Given a WP install
 
   Scenario: User CRUD operations
+    When I try `wp user get bogus-user`
+    Then the return code should be 1
+    And STDOUT should be empty
+
     When I run `wp user create testuser testuser@example.com --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {USER_ID}

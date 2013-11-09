@@ -23,6 +23,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		require_once ABSPATH.'wp-admin/includes/plugin-install.php';
 
 		parent::__construct();
+
+		$this->fetcher = new \WP_CLI\FetcherPlugin;
 	}
 
 	protected function get_upgrader_class( $force ) {
@@ -87,23 +89,20 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function status_single( $args ) {
-		$plugins = $this->validate_plugin_names( $args );
-		if ( empty( $plugins ) )
-			exit(1);
+		$plugin = $this->fetcher->get_check( $args[0] );
+		$file = $plugin->file;
 
-		list( $plugin ) = $plugins;
+		$details = $this->get_details( $file );
 
-		$details = $this->get_details( $plugin );
-
-		$status = $this->format_status( $this->get_status( $plugin->file ), 'long' );
+		$status = $this->format_status( $this->get_status( $file ), 'long' );
 
 		$version = $details['Version'];
 
-		if ( $this->has_update( $plugin->file ) )
+		if ( $this->has_update( $file ) )
 			$version .= ' (%gUpdate available%n)';
 
 		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( 'plugin-status.mustache', array(
-			'slug' => $plugin->name,
+			'slug' => $this->get_name( $file ),
 			'status' => $status,
 			'version' => $version,
 			'name' => $details['Name'],
@@ -140,7 +139,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	function activate( $args, $assoc_args = array() ) {
 		$network_wide = isset( $assoc_args['network'] );
 
-		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			activate_plugin( $plugin->file, '', $network_wide );
 
 			if ( $this->check_active( $plugin->file, $network_wide ) ) {
@@ -168,7 +167,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	function deactivate( $args, $assoc_args = array() ) {
 		$network_wide = isset( $assoc_args['network'] );
 
-		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			deactivate_plugins( $plugin->file, false, $network_wide );
 
 			if ( ! $this->check_active( $plugin->file, $network_wide ) ) {
@@ -196,7 +195,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	function toggle( $args, $assoc_args = array() ) {
 		$network_wide = isset( $assoc_args['network'] );
 
-		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			if ( $this->check_active( $plugin->file, $network_wide ) ) {
 				$this->deactivate( array( $plugin->name ), $assoc_args );
 			} else {
@@ -226,7 +225,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$path = untrailingslashit( WP_PLUGIN_DIR );
 
 		if ( !empty( $args ) ) {
-			$plugins = $this->validate_plugin_names( $args );
+			$plugins = $this->fetcher->get_many( $args );
 			if ( empty( $plugins ) )
 				return;
 
@@ -294,7 +293,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['version'] ) && 'dev' == $assoc_args['version'] ) {
-			foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 				$this->_delete( $plugin );
 				$this->install( array( $plugin->name ), $assoc_args );
 			}
@@ -324,7 +323,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function filter_item_list( $items, $args ) {
-		$basenames = wp_list_pluck( $this->validate_plugin_names( $args ), 'file' );
+		$basenames = wp_list_pluck( $this->fetcher->get_many( $args ), 'file' );
 		return \WP_CLI\Utils\pick_fields( $items, $basenames );
 	}
 
@@ -384,10 +383,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp plugin get bbpress --format=json
 	 */
 	public function get( $args, $assoc_args ) {
-		$file = $this->_parse_name( $args[0] );
-		if ( !$file ) {
-			WP_CLI::error( "The '{$args[0]}' plugin could not be found." );
-		}
+		$plugin = $this->fetcher->get_check( $args[0] );
+		$file = $plugin->file;
 
 		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
 
@@ -422,7 +419,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp plugin uninstall hello
 	 */
 	function uninstall( $args, $assoc_args = array() ) {
-		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			if ( is_plugin_active( $plugin->file ) ) {
 				WP_CLI::warning( "The '{$plugin->name}' plugin is active." );
 				continue;
@@ -451,7 +448,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @subcommand is-installed
 	 */
 	function is_installed( $args, $assoc_args = array() ) {
-		if ( $this->_parse_name( $args[0] ) ) {
+		if ( $this->fetcher->get( $args[0] ) ) {
 			exit( 0 );
 		} else {
 			exit( 1 );
@@ -471,7 +468,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp plugin delete hello
 	 */
 	function delete( $args, $assoc_args = array() ) {
-		foreach ( $this->validate_plugin_names( $args ) as $plugin ) {
+		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			if ( $this->_delete( $plugin ) ) {
 				WP_CLI::success( "Deleted '{$plugin->name}' plugin." );
 			}
@@ -526,56 +523,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * @param object
 	 * @return array
 	 */
-	private function get_details( $plugin ) {
-		$file = $plugin->file;
-
+	private function get_details( $file ) {
 		$plugin_folder = get_plugins(  '/' . plugin_basename( dirname( $file ) ) );
 		$plugin_file = basename( $file );
 
 		return $plugin_folder[$plugin_file];
-	}
-
-	/**
-	 * Parse the name of a plugin to a filename; check if it exists.
-	 *
-	 * @param string name
-	 * @return string
-	 */
-	private function _parse_name( $name ) {
-		$plugins = get_plugins( '/' . $name );
-
-		if ( !empty( $plugins ) ) {
-			$file = $name . '/' . key( $plugins );
-		}
-		else {
-			$file = $name . '.php';
-
-			$plugins = get_plugins();
-
-			if ( !isset( $plugins[$file] ) ) {
-				return false;
-			}
-		}
-
-		return $file;
-	}
-
-	private function validate_plugin_names( $args ) {
-		$plugins = array();
-
-		foreach ( $args as $name ) {
-			$file = $this->_parse_name( $name );
-			if ( $file ) {
-				$plugins[] = (object) array(
-					'name' => $name,
-					'file' => $file
-				);
-			} else {
-				WP_CLI::warning( "The '$name' plugin could not be found." );
-			}
-		}
-
-		return $plugins;
 	}
 
 	/**
