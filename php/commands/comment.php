@@ -19,7 +19,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	);
 
 	public function __construct() {
-		$this->fetcher = new \WP_CLI\FetcherComment( "Comment with ID %s does not exist." );
+		$this->fetcher = new \WP_CLI\FetcherComment;
 	}
 
 	/**

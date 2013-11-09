@@ -4,14 +4,10 @@ namespace WP_CLI;
 
 abstract class Fetcher {
 
-	protected $msg;
-
 	/**
 	 * @param string $msg The message to display when an item is not found
 	 */
-	function __construct( $msg ) {
-		$this->msg = $msg;
-	}
+	protected $msg;
 
 	/**
 	 * @param string $arg The raw CLI argument

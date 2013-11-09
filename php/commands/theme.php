@@ -21,7 +21,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	function __construct() {
 		parent::__construct();
 
-		$this->fetcher = new \WP_CLI\FetcherTheme( "The '%s' theme could not be found." );
+		$this->fetcher = new \WP_CLI\FetcherTheme;
 	}
 
 	protected function get_upgrader_class( $force ) {

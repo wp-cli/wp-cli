@@ -4,6 +4,8 @@ namespace WP_CLI;
 
 class FetcherPlugin extends Fetcher {
 
+	protected $msg = "The '%s' plugin could not be found.";
+
 	public function get( $name ) {
 		$plugins = get_plugins( '/' . $name );
 

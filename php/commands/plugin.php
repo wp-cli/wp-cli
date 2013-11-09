@@ -24,7 +24,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		parent::__construct();
 
-		$this->fetcher = new \WP_CLI\FetcherPlugin( "The '%s' plugin could not be found." );
+		$this->fetcher = new \WP_CLI\FetcherPlugin;
 	}
 
 	protected function get_upgrader_class( $force ) {
