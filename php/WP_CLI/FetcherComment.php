@@ -4,7 +4,7 @@ namespace WP_CLI;
 
 class FetcherComment extends Fetcher {
 
-	protected $msg = "Comment with ID %s does not exist.";
+	protected $msg = "Could not find the comment with ID %d.";
 
 	public function get( $arg ) {
 		$comment_id = (int) $arg;
