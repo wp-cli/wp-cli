@@ -17,6 +17,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		'roles'
 	);
 
+	public function __construct() {
+		$this->fetcher = new \WP_CLI\FetcherUser;
+	}
+
 	/**
 	 * List users.
 	 *
@@ -95,7 +99,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user get bob --format=json > bob.json
 	 */
 	public function get( $args, $assoc_args ) {
-		$user = self::get_user( $args[0] );
+		$user = $this->fetcher->get_check( $args[0] );
 
 		if ( method_exists( $user, 'to_array' ) ) {
 			$user_data = $user->to_array();
@@ -129,11 +133,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			'reassign' => null
 		) );
 
-		foreach ( $args as $key => $arg ) {
-			$args[ $key ] = self::get_user( $arg )->ID;
-		}
+		$users = $this->fetcher->get_many( $args );
 
-		parent::_delete( $args, $assoc_args, function ( $user_id, $assoc_args ) {
+		parent::_delete( $users, $assoc_args, function ( $user, $assoc_args ) {
+			$user_id = $user->ID;
+
 			if ( is_multisite() ) {
 				$r = wpmu_delete_user( $user_id );
 			} else {
@@ -243,11 +247,13 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user update mary --user_pass=marypass
 	 */
 	public function update( $args, $assoc_args ) {
-		foreach ( $args as $key => $arg ) {
-			$args[ $key ] = self::get_user( $arg )->ID;
+		$user_ids = array();
+
+		foreach ( $this->fetcher->get_many( $args ) as $user ) {
+			$user_ids[] = $user->ID;
 		}
 
-		parent::_update( $args, $assoc_args, 'wp_update_user' );
+		parent::_update( $user_ids, $assoc_args, 'wp_update_user' );
 	}
 
 	/**
@@ -321,7 +327,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand set-role
 	 */
 	public function set_role( $args, $assoc_args ) {
-		$user = self::get_user( $args[0] );
+		$user = $this->fetcher->get_check( $args[0] );
 
 		$role = isset( $args[1] ) ? $args[1] : get_option( 'default_role' );
 
@@ -353,7 +359,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand add-role
 	 */
 	public function add_role( $args, $assoc_args ) {
-		$user = self::get_user( $args[0] );
+		$user = $this->fetcher->get_check( $args[0] );
 
 		$role = $args[1];
 
@@ -381,7 +387,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand remove-role
 	 */
 	public function remove_role( $args, $assoc_args ) {
-		$user = self::get_user( $args[0] );
+		$user = $this->fetcher->get_check( $args[0] );
 
 		if ( isset( $args[1] ) ) {
 			$role = $args[1];
@@ -419,7 +425,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand add-cap
 	 */
 	public function add_cap( $args, $assoc_args ) {
-		$user = self::get_user( $args[0] );
+		$user = $this->fetcher->get_check( $args[0] );
 		if ( $user ) {
 			$cap  = $args[1];
 			$user->add_cap( $cap );
@@ -447,7 +453,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand remove-cap
 	 */
 	public function remove_cap( $args, $assoc_args ) {
-		$user = self::get_user( $args[0] );
+		$user = $this->fetcher->get_check( $args[0] );
 		if ( $user ) {
 			$cap = $args[1];
 			$user->remove_cap( $cap );
@@ -472,7 +478,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand list-caps
 	 */
 	public function list_caps( $args, $assoc_args ) {
-		$user = self::get_user( $args[0] );
+		$user = $this->fetcher->get_check( $args[0] );
 
 		if ( $user ) {
 			$user->get_role_caps();
@@ -486,19 +492,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				}
 			}
 		}
-	}
-
-	private static function get_user( $id_or_login ) {
-		if ( is_numeric( $id_or_login ) )
-			$user = get_user_by( 'id', $id_or_login );
-		else
-			$user = get_user_by( 'login', $id_or_login );
-
-		if ( ! $user ) {
-			WP_CLI::warning( "Invalid user ID or login: $id_or_login" );
-		}
-
-		return $user;
 	}
 
 	/**
