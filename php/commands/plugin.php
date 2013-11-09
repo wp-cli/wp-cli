@@ -24,7 +24,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		parent::__construct();
 
-		$this->fetcher = new \WP_CLI\FetcherPlugin;
+		$this->fetcher = new \WP_CLI\FetcherPlugin( "The '%s' plugin could not be found." );
 	}
 
 	protected function get_upgrader_class( $force ) {
@@ -89,7 +89,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function status_single( $args ) {
-		$file = $this->fetcher->get_check( $args[0] );
+		$plugin = $this->fetcher->get_check( $args[0] );
+		$file = $plugin->file;
 
 		$details = $this->get_details( $file );
 
@@ -382,7 +383,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp plugin get bbpress --format=json
 	 */
 	public function get( $args, $assoc_args ) {
-		$file = $this->get_check( $args[0] );
+		$plugin = $this->fetcher->get_check( $args[0] );
+		$file = $plugin->file;
 
 		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
 

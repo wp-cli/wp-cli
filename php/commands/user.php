@@ -18,7 +18,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	);
 
 	public function __construct() {
-		$this->fetcher = new \WP_CLI\FetcherUser;
+		$this->fetcher = new \WP_CLI\FetcherUser( "Invalid user ID or login: '%s'" );
 	}
 
 	/**

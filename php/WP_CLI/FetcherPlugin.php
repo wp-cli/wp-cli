@@ -2,12 +2,8 @@
 
 namespace WP_CLI;
 
-class FetcherPlugin implements Fetcher {
+class FetcherPlugin extends Fetcher {
 
-	/**
-	 * @param string $name The plugin slug
-	 * @return string|false The plugin filename
-	 */
 	public function get( $name ) {
 		$plugins = get_plugins( '/' . $name );
 
@@ -23,35 +19,10 @@ class FetcherPlugin implements Fetcher {
 			}
 		}
 
-		return $file;
-	}
-
-	public function get_check( $name ) {
-		$file = $this->get( $name );
-
-		if ( ! $file ) {
-			\WP_CLI::error( "The '$name' plugin could not be found." );
-		}
-
-		return $file;
-	}
-
-	public function get_many( $args ) {
-		$plugins = array();
-
-		foreach ( $args as $name ) {
-			$file = $this->get( $name );
-			if ( $file ) {
-				$plugins[] = (object) array(
-					'name' => $name,
-					'file' => $file
-				);
-			} else {
-				\WP_CLI::warning( "The '$name' plugin could not be found." );
-			}
-		}
-
-		return $plugins;
+		return (object) array(
+			'name' => $name,
+			'file' => $file
+		);
 	}
 }
 
