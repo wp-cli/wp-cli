@@ -1,8 +1,8 @@
 <?php
 
-namespace WP_CLI;
+namespace WP_CLI\Fetchers;
 
-class FetcherPlugin extends Fetcher {
+class Plugin extends Base {
 
 	protected $msg = "The '%s' plugin could not be found.";
 

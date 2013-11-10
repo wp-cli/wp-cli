@@ -1,8 +1,8 @@
 <?php
 
-namespace WP_CLI;
+namespace WP_CLI\Fetchers;
 
-class FetcherTheme extends Fetcher {
+class Theme extends Base {
 
 	protected $msg = "The '%s' theme could not be found.";
 

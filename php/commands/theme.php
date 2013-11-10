@@ -21,7 +21,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	function __construct() {
 		parent::__construct();
 
-		$this->fetcher = new \WP_CLI\FetcherTheme;
+		$this->fetcher = new \WP_CLI\Fetchers\Theme;
 	}
 
 	protected function get_upgrader_class( $force ) {

@@ -17,7 +17,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	);
 
 	public function __construct() {
-		$this->fetcher = new \WP_CLI\FetcherPost;
+		$this->fetcher = new \WP_CLI\Fetchers\Post;
 	}
 
 	/**

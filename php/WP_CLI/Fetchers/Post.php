@@ -1,8 +1,8 @@
 <?php
 
-namespace WP_CLI;
+namespace WP_CLI\Fetchers;
 
-class FetcherPost extends Fetcher {
+class Post extends Base {
 
 	protected $msg = "Could not find the post with ID %d.";
 

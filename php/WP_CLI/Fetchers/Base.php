@@ -1,8 +1,8 @@
 <?php
 
-namespace WP_CLI;
+namespace WP_CLI\Fetchers;
 
-abstract class Fetcher {
+abstract class Base {
 
 	/**
 	 * @param string $msg The message to display when an item is not found

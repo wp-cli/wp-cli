@@ -24,7 +24,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		parent::__construct();
 
-		$this->fetcher = new \WP_CLI\FetcherPlugin;
+		$this->fetcher = new \WP_CLI\Fetchers\Plugin;
 	}
 
 	protected function get_upgrader_class( $force ) {
