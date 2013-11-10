@@ -1,8 +1,8 @@
 <?php
 
-namespace WP_CLI;
+namespace WP_CLI\Fetchers;
 
-class FetcherUser extends Fetcher {
+class User extends Base {
 
 	protected $msg = "Invalid user ID or login: '%s'";
 

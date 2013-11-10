@@ -1,8 +1,8 @@
 <?php
 
-namespace WP_CLI;
+namespace WP_CLI\Fetchers;
 
-class FetcherComment extends Fetcher {
+class Comment extends Base {
 
 	protected $msg = "Could not find the comment with ID %d.";
 
