@@ -9,22 +9,30 @@ class Plugin extends Base {
 	public function get( $name ) {
 		$plugins = get_plugins( '/' . $name );
 
-		if ( !empty( $plugins ) ) {
-			$file = $name . '/' . key( $plugins );
-		} else {
-			$file = $name . '.php';
+		// some-plugin/the-plugin.php
+		while ( !empty( $plugins ) ) {
+			$file = key( $plugins );
+			array_shift( $plugins );
 
-			$plugins = get_plugins();
-
-			if ( !isset( $plugins[$file] ) ) {
-				return false;
+			// ignore files inside a plugin's subdirectory (like WP does)
+			if ( dirname( $file ) == '.' ) {
+				return (object) array(
+					'name' => $name,
+					'file' => $name . '/' . $file
+				);
 			}
 		}
 
-		return (object) array(
-			'name' => $name,
-			'file' => $file
-		);
+		// some-plugin.php
+		$file = $name . '.php';
+
+		$plugins = get_plugins();
+
+		if ( isset( $plugins[ $file ] ) ) {
+			return (object) compact( 'name', 'file' );
+		}
+
+		return false;
 	}
 }
 
