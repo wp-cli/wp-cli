@@ -17,7 +17,9 @@ Feature: Manage WordPress plugins
     And the {PLUGIN_DIR}/zombieland/zombieland.php file should exist
     And the {PLUGIN_DIR}/zombieland/phpunit.xml file should exist
 
-    When I run `wp plugin status zombieland`
+    # Check that the inner-plugin is not picked up
+    When I run `mv {PLUGIN_DIR}/plugin1 {PLUGIN_DIR}/zombieland/`
+    And I run `wp plugin status zombieland`
     Then STDOUT should contain:
       """
       Plugin zombieland details:
