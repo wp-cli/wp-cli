@@ -303,11 +303,14 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * <slug>
 	 * : The internal name of the plugin.
 	 *
-	 * [--activate]
-	 * : Activate the newly generated plugin.
-	 *
 	 * [--plugin_name=<title>]
 	 * : What to put in the 'Plugin Name:' header
+	 *
+	 * [--skip-tests]
+	 * : Don't generate files for unit testing.
+	 *
+	 * [--activate]
+	 * : Activate the newly generated plugin.
 	 */
 	function plugin( $args, $assoc_args ) {
 		$plugin_slug = $args[0];
@@ -325,10 +328,13 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		WP_CLI::success( "Created $plugin_dir" );
 
-		WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ) );
+		if ( !isset( $assoc_args['skip-tests'] ) ) {
+			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ) );
+		}
 
-		if ( isset( $assoc_args['activate'] ) )
+		if ( isset( $assoc_args['activate'] ) ) {
 			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug ) );
+		}
 	}
 
 	/**
