@@ -64,7 +64,7 @@ class Core_Command extends WP_CLI_Command {
 
 		$headers = array('Accept' => 'application/json');
 		$options = array(
-			'timeout' => 30,
+			'timeout' => 600,  // 10 minutes ought to be enough for everybody
 			'filename' => $temp
 		);
 
