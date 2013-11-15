@@ -73,3 +73,33 @@ Feature: Manage WordPress themes
        """
        wp-content/themes/p2
        """
+
+  Scenario: Deleting a theme
+    When I run `wp theme install p2`
+    Then STDOUT should not be empty
+  
+    When I try `wp theme delete invalid-theme`
+    Then STDERR should contain:
+      """
+      Warning: The 'invalid-theme' theme could not be found.
+      """
+    And STDOUT should be empty
+
+    When I run `wp theme delete p2`
+    Then STDOUT should be:
+      """
+      Success: Deleted 'p2' theme.
+      """
+    And STDERR should be empty
+    
+    When I run `wp theme install p2 --activate`
+    Then STDOUT should not be empty
+    
+    When I try `wp theme delete p2`
+    Then STDERR should be:
+      """
+      Warning: Can't delete the currently active theme: p2
+      """
+    And STDOUT should be empty
+    
+    
