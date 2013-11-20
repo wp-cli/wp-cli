@@ -147,7 +147,7 @@ class Runner {
 		return false;
 	}
 
-	private static function set_url_params( $url_parts ) {
+	public static function set_url_params( $url_parts ) {
 		$f = function( $key ) use ( $url_parts ) {
 			return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
 		};
@@ -534,7 +534,7 @@ class Runner {
 		}
 	}
 
-	private static function parse_url( $url ) {
+	public static function parse_url( $url ) {
 		$url_parts = parse_url( $url );
 
 		if ( !isset( $url_parts['scheme'] ) ) {
