@@ -81,6 +81,22 @@ class Runner {
 				$path = $config['path'];
 			else
 				$path .= '/' . $config['path'];
+		} else {
+			if ( file_exists( './index.php' ) ) {
+				$index_code = explode( "\n", file_get_contents( './index.php' ) );
+
+				foreach ( $index_code as $line ) {
+					if ( preg_match( '/^\s*require.+([\'"])(.*wp-blog-header\.php)\1/', $line, $matches ) ) {
+						$new_path = dirname( $matches[2] );
+						if ( Utils\is_path_absolute( $new_path ) ) {
+							$path = $new_path;
+						} else {
+							$path .= '/' . $new_path;
+						}
+						break;
+					}
+				}
+			}
 		}
 
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
