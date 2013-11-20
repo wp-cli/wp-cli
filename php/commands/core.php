@@ -444,6 +444,13 @@ class Core_Command extends WP_CLI_Command {
 			'admin_password' => ''
 		) ), EXTR_SKIP );
 
+		// Support prompting for the `--url=<url>`,
+		// which is normally a runtime argument
+		if ( isset( $assoc_args['url'] ) ) {
+			$url_parts = \WP_CLI\Runner::parse_url( $assoc_args['url'] );
+			\WP_CLI\Runner::set_url_params( $url_parts );
+		}
+
 		$public = true;
 
 		// @codingStandardsIgnoreStart
