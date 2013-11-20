@@ -394,6 +394,10 @@ class Runner {
 		$configurator->merge_config( $runtime_config );
 		$this->config = $configurator->to_array();
 
+		// --prompt can't be set in file, but is still a valid runtime arg
+		if ( ! empty( $runtime_config['prompt'] ) )
+			$this->config['prompt'] = true;
+
 		if ( !isset( $this->config['path'] ) ) {
 			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
 		}
