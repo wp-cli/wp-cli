@@ -268,7 +268,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--post_date=<yyyy-mm-dd>]
 	 * : The date of the generated posts. Default: current date
-	 *
+	 * 
+	 * [--post_content=<content>]
+	 * : The content of the generated posts. Default: empty
+	 * 
 	 * [--max_depth=<number>]
 	 * : For hierarchical post types, generate child posts down to a certain depth. Default: 1
 	 *
@@ -286,6 +289,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'post_status' => 'publish',
 			'post_author' => false,
 			'post_date' => current_time( 'mysql' ),
+			'post_content' => '',
 		);
 		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
 
@@ -340,6 +344,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				'post_parent' => $current_parent,
 				'post_name' => "post-$i",
 				'post_date' => $post_date,
+				'post_content' => $post_content,
 			);
 
 			wp_insert_post( $args, true );
