@@ -450,7 +450,7 @@ class Runner {
 
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {
-				require $path;
+				Utils\load_file( $path );
 			}
 		}
 
