@@ -322,6 +322,7 @@ class Runner {
 			foreach ( $special_flags as $key ) {
 				if ( isset( $assoc_args[ $key ] ) ) {
 					$args = array( 'cli', $key );
+					unset( $assoc_args[ $key ] );
 					break;
 				}
 			}
