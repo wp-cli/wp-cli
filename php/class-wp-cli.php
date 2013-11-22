@@ -84,6 +84,14 @@ class WP_CLI {
 	}
 
 	/**
+	 * Set the context in which WP-CLI should be run
+	 */
+	static function set_url( $url ) {
+		$url_parts = WP_CLI\Runner::parse_url( $url );
+		WP_CLI\Runner::set_url_params( $url_parts );
+	}
+
+	/**
 	 * @return WpHttpCacheManager
 	 */
 	static function get_http_cache_manager() {

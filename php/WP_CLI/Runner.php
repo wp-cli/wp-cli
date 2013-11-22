@@ -480,10 +480,8 @@ class Runner {
 
 		// Handle --url parameter
 		$url = self::guess_url( $this->config );
-		if ( $url ) {
-			$url_parts = self::parse_url( $url );
-			self::set_url_params( $url_parts );
-		}
+		if ( $url )
+			\WP_CLI::set_url( $url );
 
 		$this->do_early_invoke( 'before_wp_load' );
 
@@ -515,12 +513,13 @@ class Runner {
 
 			// We really need a URL here
 			if ( !isset( $_SERVER['HTTP_HOST'] ) ) {
-				$url_parts = self::parse_url( 'http://example.com' );
-				self::set_url_params( $url_parts );
+				$url = 'http://example.com';
+				\WP_CLI::set_url( $url );
 			}
 
 			if ( 'multisite-install' == $this->arguments[1] ) {
 				// need to fake some globals to skip the checks in wp-includes/ms-settings.php
+				$url_parts = self::parse_url( $url );
 				self::fake_current_site_blog( $url_parts );
 
 				if ( !defined( 'COOKIEHASH' ) ) {
