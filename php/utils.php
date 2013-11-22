@@ -358,3 +358,13 @@ function make_progress_bar( $message, $count ) {
 	return new \cli\progress\Bar( $message, $count );
 }
 
+function parse_url( $url ) {
+	$url_parts = \parse_url( $url );
+
+	if ( !isset( $url_parts['scheme'] ) ) {
+		$url_parts = parse_url( 'http://' . $url );
+	}
+
+	return $url_parts;
+}
+
