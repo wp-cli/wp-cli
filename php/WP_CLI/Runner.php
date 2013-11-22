@@ -497,7 +497,7 @@ class Runner {
 
 			if ( 'multisite-install' == $this->arguments[1] ) {
 				// need to fake some globals to skip the checks in wp-includes/ms-settings.php
-				$url_parts = \WP_CLI::parse_url( $url );
+				$url_parts = Utils\parse_url( $url );
 				self::fake_current_site_blog( $url_parts );
 
 				if ( !defined( 'COOKIEHASH' ) ) {
