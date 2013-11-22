@@ -479,7 +479,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * Get a list of plugins.
 	 *
 	 * ## OPTIONS
-	 * 
+	 *
 	 * [--<field>=<value>]
 	 * : Filter results based on the value of a field.
 	 *
@@ -494,7 +494,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp plugin list --format=json
+	 *     wp plugin list --status=active --format=json
 	 *
 	 * @subcommand list
 	 */

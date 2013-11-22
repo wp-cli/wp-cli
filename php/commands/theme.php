@@ -376,7 +376,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * Get a list of themes.
 	 *
 	 * ## OPTIONS
-	 * 
+	 *
 	 * [--<field>=<value>]
 	 * : Filter results based on the value of a field.
 	 *
@@ -391,7 +391,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme list --format=csv
+	 *     wp theme list --status=inactive --format=csv
 	 *
 	 * @subcommand list
 	 */
