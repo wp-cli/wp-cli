@@ -298,10 +298,17 @@ class WP_CLI {
 				$assoc_args[$key] = $value;
 		}
 
-		$full_command = constant( 'WP_CLI_ROOT' ) . '/bin/wp ' . $command . ' ' . implode( ' ', $args );
-		foreach( $assoc_args as $key => $value ) {
-			$full_command .= ' --' . $key . '=' . $value;
-		}
+		$php_bin = defined( 'PHP_BINARY' ) ? PHP_BINARY : getenv( 'WP_CLI_PHP_USED' );
+
+		$boot_fs_path = $GLOBALS['argv'][0];
+		$wp_cli_root = constant( 'WP_CLI_ROOT' );
+		if ( false === stripos( $boot_fs_path, $wp_cli_root ) )
+			$boot_fs_path = $wp_cli_root . '/' . $boot_fs_path;
+
+		$args = implode( ' ', array_map( 'escapeshellarg', $args ) );
+		$assoc_args = \WP_CLI\Utils\assoc_args_to_str( $assoc_args );
+
+		$full_command = "{$php_bin} {$boot_fs_path} {$command} {$args} {$assoc_args}";
 
 		return self::launch( $full_command, $exit_on_error );
 	} 
