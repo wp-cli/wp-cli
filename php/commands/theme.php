@@ -376,6 +376,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * Get a list of themes.
 	 *
 	 * ## OPTIONS
+	 * 
+	 * [--<field>=<value>]
+	 * : Filter results based on the value of a field.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each theme.

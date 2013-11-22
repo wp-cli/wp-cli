@@ -266,6 +266,18 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			return $item;
 		} );
 
+		foreach( $it as $key => $item ) {
+
+			foreach( $this->obj_fields as $field ) {
+
+				if ( isset( $assoc_args[$field] )
+					&& $assoc_args[$field] != $item[$field] )
+					$it->offsetUnset( $key );
+
+			}
+
+		}
+
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $it );
 	}
