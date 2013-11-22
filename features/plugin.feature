@@ -88,3 +88,16 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name       | status   | update    | version   |
       | akismet    | active   | available | 2.5.6     |
+
+
+  Scenario: List plugins
+    When I run `wp plugin activate akismet hello`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --status=inactive`
+    Then STDOUT should be empty
+
+    When I run `wp plugin list --status=active`
+    Then STDOUT should be a table containing rows:
+      | name       | status   | update    | version   |
+      | akismet    | active   | available | 2.5.6     |
