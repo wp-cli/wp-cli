@@ -87,8 +87,40 @@ class WP_CLI {
 	 * Set the context in which WP-CLI should be run
 	 */
 	static function set_url( $url ) {
-		$url_parts = WP_CLI\Runner::parse_url( $url );
-		WP_CLI\Runner::set_url_params( $url_parts );
+		$url_parts = self::parse_url( $url );
+		self::set_url_params( $url_parts );
+	}
+
+	static function parse_url( $url ) {
+		$url_parts = parse_url( $url );
+
+		if ( !isset( $url_parts['scheme'] ) ) {
+			$url_parts = parse_url( 'http://' . $url );
+		}
+
+		return $url_parts;
+	}
+
+	private static function set_url_params( $url_parts ) {
+		$f = function( $key ) use ( $url_parts ) {
+			return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
+		};
+
+		if ( isset( $url_parts['host'] ) ) {
+			$_SERVER['HTTP_HOST'] = $url_parts['host'];
+			if ( isset( $url_parts['port'] ) ) {
+				$_SERVER['HTTP_HOST'] .= ':' . $url_parts['port'];
+			}
+
+			$_SERVER['SERVER_NAME'] = $url_parts['host'];
+		}
+
+		$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
+		$_SERVER['SERVER_PORT'] = isset( $url_parts['port'] ) ? $url_parts['port'] : '80';
+		$_SERVER['QUERY_STRING'] = $f('query');
+		$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
+		$_SERVER['HTTP_USER_AGENT'] = '';
+		$_SERVER['REQUEST_METHOD'] = 'GET';
 	}
 
 	/**
