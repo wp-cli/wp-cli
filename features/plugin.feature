@@ -94,10 +94,10 @@ Feature: Manage WordPress plugins
     When I run `wp plugin activate akismet hello`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list --status=inactive`
+    When I run `wp plugin list --status=inactive --field=name`
     Then STDOUT should be empty
 
-    When I run `wp plugin list --status=active`
+    When I run `wp plugin list --status=active --fields=name,status`
     Then STDOUT should be a table containing rows:
-      | name       | status   | update    | version   |
-      | akismet    | active   | available | 2.5.6     |
+      | name       | status   |
+      | akismet    | active   |
