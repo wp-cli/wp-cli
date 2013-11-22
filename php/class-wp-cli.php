@@ -87,18 +87,8 @@ class WP_CLI {
 	 * Set the context in which WP-CLI should be run
 	 */
 	static function set_url( $url ) {
-		$url_parts = self::parse_url( $url );
+		$url_parts = Utils\parse_url( $url );
 		self::set_url_params( $url_parts );
-	}
-
-	static function parse_url( $url ) {
-		$url_parts = parse_url( $url );
-
-		if ( !isset( $url_parts['scheme'] ) ) {
-			$url_parts = parse_url( 'http://' . $url );
-		}
-
-		return $url_parts;
 	}
 
 	private static function set_url_params( $url_parts ) {
