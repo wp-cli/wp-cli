@@ -5,7 +5,6 @@ Feature: Manage WordPress rewrites
 
   Scenario: Change site permastructs
     When I run `wp rewrite structure /blog/%year%/%monthnum%/%day%/%postname%/ --category-base=section --tag-base=topic`
-    And I run `wp rewrite flush`
 
    When I run `wp option get permalink_structure`
    Then STDOUT should contain:
