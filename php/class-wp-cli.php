@@ -286,7 +286,7 @@ class WP_CLI {
 	 * 
 	 * @return int The command exit status
 	 */
-	static function launch_wpcli( $command, $args, $assoc_args, $exit_on_error = true ) {
+	static function launch_wpcli( $command, $args = array(), $assoc_args = array(), $exit_on_error = true ) {
 
 		$reused_runtime_args = array(
 			'path',
