@@ -36,6 +36,11 @@ function get_vendor_paths() {
 	);
 }
 
+// Using require() directly inside a class grants access to private methods to the loaded code
+function load_file( $path ) {
+	require $path;
+}
+
 function load_command( $name ) {
 	$path = WP_CLI_ROOT . "/php/commands/$name.php";
 
