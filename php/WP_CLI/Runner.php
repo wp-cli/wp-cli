@@ -174,36 +174,43 @@ class Runner {
 	}
 
 	private function find_command_to_run( $args ) {
-		$command = \WP_CLI::get_root_command();
 
-		$cmd_path = array();
+		$root_command = \WP_CLI::get_root_command();
+		$command_to_run = false;
 
-		$disabled_commands = $this->config['disabled_commands'];
+		$maybe_command_names = $args;
+		while ( ! empty( $maybe_command_names ) && false == $command_to_run ) {
 
-		while ( !empty( $args ) && $command->has_subcommands() ) {
-			$cmd_path[] = $args[0];
-			$full_name = implode( ' ', $cmd_path );
+			$command_to_run = $root_command->find_subcommand( $maybe_command_names );
 
-			$subcommand = $command->find_subcommand( $args );
+		}
+		$args = array_values( array_diff( $args, $maybe_command_names ) );
 
-			if ( !$subcommand ) {
-				return sprintf(
-					"'%s' is not a registered wp command. See 'wp help'.",
-					$full_name
-				);
-			}
-
-			if ( in_array( $full_name, $disabled_commands ) ) {
-				return sprintf(
-					"The '%s' command has been disabled from the config file.",
-					$full_name
-				);
-			}
-
-			$command = $subcommand;
+		if ( ! $command_to_run ) {
+			return sprintf(
+				"'%s' is not a registered wp command. See 'wp help'.",
+				implode( ' ', $args )
+			);
 		}
 
-		return array( $command, $args );
+		if ( ! empty( $args[0] ) ) {
+			$maybe_subcommand = array( $args[0] );
+			$maybe_subcommand_to_run = $command_to_run->find_subcommand( $maybe_subcommand );
+			if ( $maybe_subcommand_to_run ) {
+				$command_to_run = $maybe_subcommand_to_run;
+				array_shift( $args );
+			}
+		}
+
+		$full_name = implode( ' ', $maybe_command_names );
+		if ( in_array( $full_name, $this->config['disabled_commands'] ) ) {
+			return sprintf(
+				"The '%s' command has been disabled from the config file.",
+				$full_name
+			);
+		}
+
+		return array( $command_to_run, $args );
 	}
 
 	public function run_command( $args, $assoc_args = array() ) {
