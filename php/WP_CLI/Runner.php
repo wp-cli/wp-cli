@@ -147,28 +147,6 @@ class Runner {
 		return false;
 	}
 
-	public static function set_url_params( $url_parts ) {
-		$f = function( $key ) use ( $url_parts ) {
-			return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
-		};
-
-		if ( isset( $url_parts['host'] ) ) {
-			$_SERVER['HTTP_HOST'] = $url_parts['host'];
-			if ( isset( $url_parts['port'] ) ) {
-				$_SERVER['HTTP_HOST'] .= ':' . $url_parts['port'];
-			}
-
-			$_SERVER['SERVER_NAME'] = $url_parts['host'];
-		}
-
-		$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
-		$_SERVER['SERVER_PORT'] = isset( $url_parts['port'] ) ? $url_parts['port'] : '80';
-		$_SERVER['QUERY_STRING'] = $f('query');
-		$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
-		$_SERVER['HTTP_USER_AGENT'] = '';
-		$_SERVER['REQUEST_METHOD'] = 'GET';
-	}
-
 	private function cmd_starts_with( $prefix ) {
 		return $prefix == array_slice( $this->arguments, 0, count( $prefix ) );
 	}
@@ -519,7 +497,7 @@ class Runner {
 
 			if ( 'multisite-install' == $this->arguments[1] ) {
 				// need to fake some globals to skip the checks in wp-includes/ms-settings.php
-				$url_parts = self::parse_url( $url );
+				$url_parts = \WP_CLI::parse_url( $url );
 				self::fake_current_site_blog( $url_parts );
 
 				if ( !defined( 'COOKIEHASH' ) ) {
@@ -532,16 +510,6 @@ class Runner {
 			define( 'WP_LOAD_IMPORTERS', true );
 			define( 'WP_IMPORTING', true );
 		}
-	}
-
-	public static function parse_url( $url ) {
-		$url_parts = parse_url( $url );
-
-		if ( !isset( $url_parts['scheme'] ) ) {
-			$url_parts = parse_url( 'http://' . $url );
-		}
-
-		return $url_parts;
 	}
 
 	private static function fake_current_site_blog( $url_parts ) {
