@@ -276,6 +276,36 @@ class WP_CLI {
 		return $r;
 	}
 
+	/**
+	 * Launch another WP-CLI command using the runtime arguments for the current process
+	 * 
+	 * @param string Command to call
+	 * @param array $args Positional arguments to use
+	 * @param array $assoc_args Associative arguments to use
+	 * @param bool Whether to exit if the command returns an error status
+	 * 
+	 * @return int The command exit status
+	 */
+	static function launch_wpcli( $command, $args, $assoc_args, $exit_on_error = true ) {
+
+		$reused_runtime_args = array(
+			'path',
+			'url',
+			'user',
+			);
+		foreach( $reused_runtime_args as $key ) {
+			if ( $value = self::get_runner()->config[ $key ] )
+				$assoc_args[$key] = $value;
+		}
+
+		$full_command = constant( 'WP_CLI_ROOT' ) . '/bin/wp ' . $command . ' ' . implode( ' ', $args );
+		foreach( $assoc_args as $key => $value ) {
+			$full_command .= ' --' . $key . '=' . $value;
+		}
+
+		return self::launch( $full_command, $exit_on_error );
+	} 
+
 	static function get_config( $key = null ) {
 		if ( null === $key ) {
 			return self::get_runner()->config;
