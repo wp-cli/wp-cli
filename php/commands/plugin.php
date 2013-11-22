@@ -480,6 +480,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
+	 * [--<field>=<value>]
+	 * : Filter results based on the value of a field.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each plugin.
 	 *
@@ -491,7 +494,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp plugin list --format=json
+	 *     wp plugin list --status=active --format=json
 	 *
 	 * @subcommand list
 	 */

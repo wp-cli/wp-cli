@@ -251,7 +251,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( !is_array( $all_items ) )
 			\WP_CLI::error( "No {$this->item_type}s found." );
 
-		$it = \WP_CLI\Utils\iterator_map( $all_items, function( $item ) {
+		foreach ( $all_items as $key => &$item ) {
+
 			if ( empty( $item['version'] ) )
 				$item['version'] = '';
 
@@ -263,11 +264,15 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			}
 
-			return $item;
-		} );
+			foreach ( $this->obj_fields as $field ) {
+				if ( isset( $assoc_args[$field] )
+					&& $assoc_args[$field] != $item[$field] )
+					unset( $all_items[$key] );
+			}
+		}
 
 		$formatter = $this->get_formatter( $assoc_args );
-		$formatter->display_items( $it );
+		$formatter->display_items( $all_items );
 	}
 
 	/**
