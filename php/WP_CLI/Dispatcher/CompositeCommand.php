@@ -59,7 +59,7 @@ class CompositeCommand {
 		return '<command>';
 	}
 
-	function invoke( $args, $assoc_args ) {
+	function invoke( $args, $assoc_args, $extra_args ) {
 		$this->show_usage();
 	}
 
