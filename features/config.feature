@@ -87,6 +87,8 @@ Feature: Have a config file
       """
       eval:
         foo: bar
+      post list:
+        format: count
       """
 
     When I run `wp eval 'echo json_encode( $assoc_args );'`
@@ -94,3 +96,9 @@ Feature: Have a config file
       """
       {"foo": "bar"}
       """
+
+    # CLI args should trump config values
+    When I run `wp post list`
+    Then STDOUT should be a number
+    When I run `wp post list --format=json`
+    Then STDOUT should not be a number
