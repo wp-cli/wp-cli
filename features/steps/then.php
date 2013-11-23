@@ -25,6 +25,12 @@ $steps->Then( '/^(STDOUT|STDERR) should be a number$/',
 	}
 );
 
+$steps->Then( '/^(STDOUT|STDERR) should not be a number$/',
+	function ( $world, $stream ) {
+		assertNotNumeric( trim( $world->result->$stream, "\n" ) );
+	}
+);
+
 $steps->Then( '/^STDOUT should be a table containing rows:$/',
 	function ( $world, TableNode $expected ) {
 		$output      = $world->result->STDOUT;
