@@ -368,14 +368,10 @@ class Runner {
 
 		$configurator = \WP_CLI::get_configurator();
 		foreach ( array( $this->global_config_path, $this->project_config_path ) as $config_path ) {
-			$configurator->merge_config( self::load_config( $config_path ) );
+			$configurator->merge_config( self::load_config( $config_path ), 'file' );
 		}
-		$configurator->merge_config( $runtime_config );
+		$configurator->merge_config( $runtime_config, 'runtime' );
 		$this->config = $configurator->to_array();
-
-		// --prompt can't be set in file, but is still a valid runtime arg
-		if ( ! empty( $runtime_config['prompt'] ) )
-			$this->config['prompt'] = true;
 
 		if ( !isset( $this->config['path'] ) ) {
 			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );

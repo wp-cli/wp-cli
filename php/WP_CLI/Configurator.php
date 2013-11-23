@@ -84,9 +84,9 @@ class Configurator {
 		return array( $regular_args, $assoc_args, $runtime_config );
 	}
 
-	function merge_config( $config ) {
+	function merge_config( $config, $type ) {
 		foreach ( $this->spec as $key => $details ) {
-			if ( $details['file'] && isset( $config[ $key ] ) ) {
+			if ( false !== $details[ $type ] && isset( $config[ $key ] ) ) {
 				$value = $config[ $key ];
 
 				if ( $details['multiple'] ) {
