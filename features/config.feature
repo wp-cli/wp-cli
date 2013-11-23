@@ -80,3 +80,25 @@ Feature: Have a config file
       """
       command has been disabled
       """
+
+  Scenario: Command-specific configs
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      eval:
+        foo: bar
+      post list:
+        format: count
+      """
+
+    When I run `wp eval 'echo json_encode( $assoc_args );'`
+    Then STDOUT should be JSON containing:
+      """
+      {"foo": "bar"}
+      """
+
+    # CLI args should trump config values
+    When I run `wp post list`
+    Then STDOUT should be a number
+    When I run `wp post list --format=json`
+    Then STDOUT should not be a number

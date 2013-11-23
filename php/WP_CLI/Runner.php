@@ -4,11 +4,13 @@ namespace WP_CLI;
 
 use WP_CLI;
 use WP_CLI\Utils;
-
+use WP_CLI\Dispatcher;
 
 class Runner {
 
-	private $global_config_path, $project_config_path, $config;
+	private $global_config_path, $project_config_path;
+
+	private $config, $extra_config;
 
 	private $arguments, $assoc_args;
 
@@ -181,7 +183,7 @@ class Runner {
 			$command = $subcommand;
 		}
 
-		return array( $command, $args );
+		return array( $command, $args, $cmd_path );
 	}
 
 	public function run_command( $args, $assoc_args = array() ) {
@@ -190,10 +192,18 @@ class Runner {
 			WP_CLI::error( $r );
 		}
 
-		list( $command, $final_args ) = $r;
+		list( $command, $final_args, $cmd_path ) = $r;
+
+		$name = implode( ' ', $cmd_path );
+
+		if ( isset( $this->extra_config[ $name ] ) ) {
+			$extra_args = $this->extra_config[ $name ];
+		} else {
+			$extra_args = array();
+		}
 
 		try {
-			$command->invoke( $final_args, $assoc_args );
+			$command->invoke( $final_args, $assoc_args, $extra_args );
 		} catch ( WP_CLI\Iterators\Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}
@@ -357,61 +367,32 @@ class Runner {
 	}
 
 	private function init_config() {
-		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::get_configurator()->parse_args(
-			array_slice( $GLOBALS['argv'], 1 ) );
-
-		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
-			$args, $assoc_args );
-
-		$this->global_config_path = self::get_global_config_path();
-		$this->project_config_path = self::get_project_config_path();
-
 		$configurator = \WP_CLI::get_configurator();
-		foreach ( array( $this->global_config_path, $this->project_config_path ) as $config_path ) {
-			$configurator->merge_config( self::load_config( $config_path ), 'file' );
+
+		// File config
+		{
+			$this->global_config_path = self::get_global_config_path();
+			$this->project_config_path = self::get_project_config_path();
+
+			$configurator->merge_yml( $this->global_config_path );
+			$configurator->merge_yml( $this->project_config_path );
 		}
-		$configurator->merge_config( $runtime_config, 'runtime' );
-		$this->config = $configurator->to_array();
+
+		// Runtime config and args
+		{
+			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args(
+				array_slice( $GLOBALS['argv'], 1 ) );
+
+			list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
+				$args, $assoc_args );
+
+			$configurator->merge_array( $runtime_config );
+		}
+
+		list( $this->config, $this->extra_config ) = $configurator->to_array();
 
 		if ( !isset( $this->config['path'] ) ) {
 			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
-		}
-	}
-
-	/**
-	 * Load values from a YML file.
-	 */
-	private static function load_config( $yml_file ) {
-		if ( !$yml_file )
-			return array();
-
-		$config = spyc_load_file( $yml_file );
-
-		// Make sure config-file-relative paths are made absolute.
-		$yml_file_dir = dirname( $yml_file );
-
-		if ( isset( $config['path'] ) )
-			self::absolutize( $config['path'], $yml_file_dir );
-
-		if ( isset( $config['require'] ) ) {
-			self::arrayify( $config['require'] );
-			foreach ( $config['require'] as &$path ) {
-				self::absolutize( $path, $yml_file_dir );
-			}
-		}
-
-		return $config;
-	}
-
-	private static function arrayify( &$val ) {
-		if ( !is_array( $val ) ) {
-			$val = array( $val );
-		}
-	}
-
-	private static function absolutize( &$path, $base ) {
-		if ( !empty( $path ) && !\WP_CLI\Utils\is_path_absolute( $path ) ) {
-			$path = $base . DIRECTORY_SEPARATOR . $path;
 		}
 	}
 
