@@ -197,11 +197,13 @@ class Runner {
 		$name = implode( ' ', $cmd_path );
 
 		if ( isset( $this->extra_config[ $name ] ) ) {
-			$assoc_args = array_merge( $this->extra_config[ $name ], $assoc_args );
+			$extra_args = $this->extra_config[ $name ];
+		} else {
+			$extra_args = array();
 		}
 
 		try {
-			$command->invoke( $final_args, $assoc_args );
+			$command->invoke( $final_args, $assoc_args, $extra_args );
 		} catch ( WP_CLI\Iterators\Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}
