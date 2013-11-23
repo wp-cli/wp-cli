@@ -359,18 +359,25 @@ class Runner {
 	private function init_config() {
 		$configurator = \WP_CLI::get_configurator();
 
-		list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args(
-			array_slice( $GLOBALS['argv'], 1 ) );
+		// File config
+		{
+			$this->global_config_path = self::get_global_config_path();
+			$this->project_config_path = self::get_project_config_path();
 
-		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
-			$args, $assoc_args );
+			$configurator->merge_yml( $this->global_config_path );
+			$configurator->merge_yml( $this->project_config_path );
+		}
 
-		$this->global_config_path = self::get_global_config_path();
-		$this->project_config_path = self::get_project_config_path();
+		// Runtime config and args
+		{
+			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args(
+				array_slice( $GLOBALS['argv'], 1 ) );
 
-		$configurator->merge_yml( $this->global_config_path );
-		$configurator->merge_yml( $this->project_config_path );
-		$configurator->merge_array( $runtime_config );
+			list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
+				$args, $assoc_args );
+
+			$configurator->merge_array( $runtime_config );
+		}
 
 		$this->config = $configurator->to_array();
 
