@@ -197,8 +197,7 @@ class Subcommand extends CompositeCommand {
 		}
 	}
 
-	function invoke( $args, $assoc_args ) {
-
+	function invoke( $args, $assoc_args, $extra_args ) {
 		if ( \WP_CLI::get_config( 'prompt' ) )
 			list( $args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
 
@@ -206,7 +205,7 @@ class Subcommand extends CompositeCommand {
 
 		\WP_CLI::do_action( 'before_invoke:' . $this->get_parent()->get_name() );
 
-		call_user_func( $this->when_invoked, $args, $assoc_args );
+		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 	}
 }
 
