@@ -4,7 +4,7 @@ namespace WP_CLI;
 
 use WP_CLI;
 use WP_CLI\Utils;
-
+use WP_CLI\Dispatcher;
 
 class Runner {
 
@@ -183,7 +183,7 @@ class Runner {
 			$command = $subcommand;
 		}
 
-		return array( $command, $args );
+		return array( $command, $args, $cmd_path );
 	}
 
 	public function run_command( $args, $assoc_args = array() ) {
@@ -192,7 +192,13 @@ class Runner {
 			WP_CLI::error( $r );
 		}
 
-		list( $command, $final_args ) = $r;
+		list( $command, $final_args, $cmd_path ) = $r;
+
+		$name = implode( ' ', $cmd_path );
+
+		if ( isset( $this->extra_config[ $name ] ) ) {
+			$assoc_args = array_merge( $this->extra_config[ $name ], $assoc_args );
+		}
 
 		try {
 			$command->invoke( $final_args, $assoc_args );
