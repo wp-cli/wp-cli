@@ -84,20 +84,63 @@ class Configurator {
 		return array( $regular_args, $assoc_args, $runtime_config );
 	}
 
-	function merge_config( $config, $type ) {
+	function merge_yml( $path ) {
+		$this->merge_config( self::load_yml( $path ), 'file' );
+	}
+
+	function merge_array( $config ) {
+		$this->merge_config( $config, 'runtime' );
+	}
+
+	private function merge_config( $config, $type ) {
 		foreach ( $this->spec as $key => $details ) {
 			if ( false !== $details[ $type ] && isset( $config[ $key ] ) ) {
 				$value = $config[ $key ];
 
 				if ( $details['multiple'] ) {
-					if ( !is_array( $value ) ) {
-						$value = array( $value );
-					}
+					self::arrayify( $value );
 					$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
 				} else {
 					$this->config[ $key ] = $value;
 				}
 			}
+		}
+	}
+
+	/**
+	 * Load values from a YAML file.
+	 */
+	private static function load_yml( $yml_file ) {
+		if ( !$yml_file )
+			return array();
+
+		$config = spyc_load_file( $yml_file );
+
+		// Make sure config-file-relative paths are made absolute.
+		$yml_file_dir = dirname( $yml_file );
+
+		if ( isset( $config['path'] ) )
+			self::absolutize( $config['path'], $yml_file_dir );
+
+		if ( isset( $config['require'] ) ) {
+			self::arrayify( $config['require'] );
+			foreach ( $config['require'] as &$path ) {
+				self::absolutize( $path, $yml_file_dir );
+			}
+		}
+
+		return $config;
+	}
+
+	private static function arrayify( &$val ) {
+		if ( !is_array( $val ) ) {
+			$val = array( $val );
+		}
+	}
+
+	private static function absolutize( &$path, $base ) {
+		if ( !empty( $path ) && !\WP_CLI\Utils\is_path_absolute( $path ) ) {
+			$path = $base . DIRECTORY_SEPARATOR . $path;
 		}
 	}
 }
