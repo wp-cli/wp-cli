@@ -8,7 +8,9 @@ use WP_CLI\Utils;
 
 class Runner {
 
-	private $global_config_path, $project_config_path, $config;
+	private $global_config_path, $project_config_path;
+
+	private $config, $extra_config;
 
 	private $arguments, $assoc_args;
 
@@ -379,7 +381,7 @@ class Runner {
 			$configurator->merge_array( $runtime_config );
 		}
 
-		$this->config = $configurator->to_array();
+		list( $this->config, $this->extra_config ) = $configurator->to_array();
 
 		if ( !isset( $this->config['path'] ) ) {
 			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );

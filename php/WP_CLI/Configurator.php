@@ -5,7 +5,9 @@ namespace WP_CLI;
 class Configurator {
 
 	private $spec;
+
 	private $config = array();
+	private $extra_config = array();
 
 	function __construct( $path ) {
 		$this->spec = include $path;
@@ -26,7 +28,7 @@ class Configurator {
 	}
 
 	function to_array() {
-		return $this->config;
+		return array( $this->config, $this->extra_config );
 	}
 
 	/**
@@ -85,16 +87,21 @@ class Configurator {
 	}
 
 	function merge_yml( $path ) {
-		$this->merge_config( self::load_yml( $path ), 'file' );
+		foreach ( self::load_yml( $path ) as $key => $value ) {
+			if ( !isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
+				$this->extra_config[ $key ] = $value;
+			} elseif ( $this->spec[ $key ]['multiple'] ) {
+				self::arrayify( $value );
+				$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
+			} else {
+				$this->config[ $key ] = $value;
+			}
+		}
 	}
 
 	function merge_array( $config ) {
-		$this->merge_config( $config, 'runtime' );
-	}
-
-	private function merge_config( $config, $type ) {
 		foreach ( $this->spec as $key => $details ) {
-			if ( false !== $details[ $type ] && isset( $config[ $key ] ) ) {
+			if ( false !== $details['runtime'] && isset( $config[ $key ] ) ) {
 				$value = $config[ $key ];
 
 				if ( $details['multiple'] ) {
