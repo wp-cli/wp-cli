@@ -357,7 +357,9 @@ class Runner {
 	}
 
 	private function init_config() {
-		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::get_configurator()->parse_args(
+		$configurator = \WP_CLI::get_configurator();
+
+		list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args(
 			array_slice( $GLOBALS['argv'], 1 ) );
 
 		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
@@ -366,52 +368,14 @@ class Runner {
 		$this->global_config_path = self::get_global_config_path();
 		$this->project_config_path = self::get_project_config_path();
 
-		$configurator = \WP_CLI::get_configurator();
-		foreach ( array( $this->global_config_path, $this->project_config_path ) as $config_path ) {
-			$configurator->merge_config( self::load_config( $config_path ), 'file' );
-		}
-		$configurator->merge_config( $runtime_config, 'runtime' );
+		$configurator->merge_yml( $this->global_config_path );
+		$configurator->merge_yml( $this->project_config_path );
+		$configurator->merge_array( $runtime_config );
+
 		$this->config = $configurator->to_array();
 
 		if ( !isset( $this->config['path'] ) ) {
 			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
-		}
-	}
-
-	/**
-	 * Load values from a YML file.
-	 */
-	private static function load_config( $yml_file ) {
-		if ( !$yml_file )
-			return array();
-
-		$config = spyc_load_file( $yml_file );
-
-		// Make sure config-file-relative paths are made absolute.
-		$yml_file_dir = dirname( $yml_file );
-
-		if ( isset( $config['path'] ) )
-			self::absolutize( $config['path'], $yml_file_dir );
-
-		if ( isset( $config['require'] ) ) {
-			self::arrayify( $config['require'] );
-			foreach ( $config['require'] as &$path ) {
-				self::absolutize( $path, $yml_file_dir );
-			}
-		}
-
-		return $config;
-	}
-
-	private static function arrayify( &$val ) {
-		if ( !is_array( $val ) ) {
-			$val = array( $val );
-		}
-	}
-
-	private static function absolutize( &$path, $base ) {
-		if ( !empty( $path ) && !\WP_CLI\Utils\is_path_absolute( $path ) ) {
-			$path = $base . DIRECTORY_SEPARATOR . $path;
 		}
 	}
 
