@@ -39,7 +39,7 @@ cd $WP_TESTS_DIR
 svn co --quiet http://develop.svn.wordpress.org/trunk/tests/phpunit/includes/
 
 wget -nv -O wp-tests-config.php http://develop.svn.wordpress.org/trunk/wp-tests-config-sample.php
-sed -i "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR':" wp-tests-config.php
+sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR':" wp-tests-config.php
 sed $ioption "s/yourdbnamehere/$DB_NAME/" wp-tests-config.php
 sed $ioption "s/yourusernamehere/$DB_USER/" wp-tests-config.php
 sed $ioption "s/yourpasswordhere/$DB_PASS/" wp-tests-config.php
