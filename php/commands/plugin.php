@@ -142,14 +142,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			activate_plugin( $plugin->file, '', $network_wide );
 
-			if ( $this->check_active( $plugin->file, $network_wide ) ) {
-				if ( $network_wide )
-					WP_CLI::success( "Plugin '{$plugin->name}' network activated." );
-				else
-					WP_CLI::success( "Plugin '{$plugin->name}' activated." );
-			} else {
-				WP_CLI::warning( "Could not activate the '{$plugin->name}' plugin." );
-			}
+			$this->active_output( $plugin->name, $plugin->file, $network_wide, "activate" );
 		}
 	}
 
@@ -172,32 +165,18 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$disable_all = isset( $assoc_args['all'] );
 
 		if ( $disable_all ) {
-			foreach ( get_plugins() as $file => $details ) {	
+			foreach ( get_plugins() as $file => $details ) {
 				$name = $this->get_name( $file );
 
-				deactivate_plugins( $name, false, $network_wide );
+				deactivate_plugins( $file, false, $network_wide );
 
-				if ( ! $this->check_active( $file, $network_wide ) ) {
-					if ( $network_wide )
-						WP_CLI::success( "Plugin '{$name}' network deactivated." );
-					else
-						WP_CLI::success( "Plugin '{$name}' deactivated." );
-				} else {
-					WP_CLI::warning( "Could not deactivate the '{$name}' plugin." );
-				}
+				$this->active_output( $name, $file, $network_wide, "deactivate" );
 			}
 		} else {
 			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 				deactivate_plugins( $plugin->file, false, $network_wide );
 
-				if ( ! $this->check_active( $plugin->file, $network_wide ) ) {
-					if ( $network_wide )
-						WP_CLI::success( "Plugin '{$plugin->name}' network deactivated." );
-					else
-						WP_CLI::success( "Plugin '{$plugin->name}' deactivated." );
-				} else {
-					WP_CLI::warning( "Could not deactivate the '{$plugin->name}' plugin." );
-				}
+				$this->active_output( $plugin->name, $plugin->file, $network_wide, "deactivate" );
 			}
 		}
 	}
@@ -529,6 +508,19 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$required = $network_wide ? 'active-network' : 'active';
 
 		return $required == $this->get_status( $file );
+	}
+
+	private function active_output( $name, $file, $network_wide, $action ) {
+		$check = $this->check_active( $file, $network_wide );
+
+		if ( ( $action == "activate" ) ? $check : ! $check ) {
+			if ( $network_wide )
+				WP_CLI::success( "Plugin '{$name}' network {$action}d." );
+			else
+				WP_CLI::success( "Plugin '{$name}' {$action}d." );
+		} else {
+			WP_CLI::warning( "Could not {$action} the '{$name}' plugin." );
+		}
 	}
 
 	protected function get_status( $file ) {
