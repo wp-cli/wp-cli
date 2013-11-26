@@ -203,7 +203,7 @@ class Subcommand extends CompositeCommand {
 
 		$this->validate_args( $args, $assoc_args );
 
-		\WP_CLI::do_action( 'before_invoke:' . $this->get_parent()->get_name() );
+		\WP_CLI::do_hook( 'before_invoke:' . $this->get_parent()->get_name() );
 
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 	}
