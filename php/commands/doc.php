@@ -62,7 +62,7 @@ class Doc_Command extends WP_CLI_Command {
 			WP_CLI::success(
 				"\n{$intro}\n"
 				. preg_replace( '/./', '=', $intro ) . "\n"
-				. $doc
+				. self::normalize_doc_whitespace( $doc )
 			);
 		}
 	}
@@ -85,6 +85,17 @@ class Doc_Command extends WP_CLI_Command {
 	private static function get_property_doc( $class, $property ) {
 		$r = new ReflectionMethod( $class, $property );
 		return $r->getDocComment();
+	}
+
+
+	/**
+	 * Normalize the leading whitespace for the doc block.
+	 *
+	 * @param  string $doc a PHPDoc doc block.
+	 * @return string
+	 */
+	private static function normalize_doc_whitespace( $doc ) {
+		return preg_replace( '/^\s+(?=\*)/m', ' ', $doc );
 	}
 }
 
