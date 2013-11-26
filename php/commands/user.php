@@ -584,7 +584,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$role = false;
 		} elseif ( is_null( get_role( $role ) ) ) {
 			WP_CLI::error( "Invalid role: $role" );
+			$role = false;
 		}
+		return $role;
 	}
 }
 
