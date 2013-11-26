@@ -54,11 +54,10 @@ class Doc_Command extends WP_CLI_Command {
 			if ( 'function' == $type || 'class method' == $type )
 				$command .= '()';
 			$intro = "Documentation for {$type} '{$command}'";
-			WP_CLI::success(
-				"\n{$intro}\n"
-				. preg_replace( '/./', '=', $intro ) . "\n"
-				. self::normalize_doc_whitespace( $doc )
-			);
+
+			WP_CLI::success( "\n{$intro}" );
+			WP_CLI::line( preg_replace( '/./', '=', $intro ) );
+			WP_CLI::line( self::normalize_doc_whitespace( $doc ) );
 		}
 	}
 
