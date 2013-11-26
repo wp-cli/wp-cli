@@ -80,7 +80,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <user>
-	 * : User ID or user login.
+	 * : User ID, user email, or user login.
 	 *
 	 * [--field=<field>]
 	 * : Instead of returning the whole user, returns the value of a single field.
@@ -119,7 +119,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <user>...
-	 * : The user login or ID of the user(s) to update.
+	 * : The user login, user email, or user ID of the user(s) to update.
 	 *
 	 * [--reassign=<user-id>]
 	 * : User ID to reassign the posts to.
@@ -235,7 +235,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <user>...
-	 * : The user login or ID of the user(s) to update.
+	 * : The user login, user email or user ID of the user(s) to update.
 	 *
 	 * --<field>=<value>
 	 * : One or more fields to update. For accepted fields, see wp_update_user().
@@ -313,7 +313,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <user>
-	 * : User ID or user login.
+	 * : User ID, user email, or user login.
 	 *
 	 * [<role>]
 	 * : Make the user have the specified role. If not passed, the default role is
@@ -346,7 +346,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <user>
-	 * : User ID or user login.
+	 * : User ID, user email, or user login.
 	 *
 	 * <role>
 	 * : Add the specified role to the user.
@@ -374,7 +374,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <user>
-	 * : User ID or user login.
+	 * : User ID, user email, or user login.
 	 *
 	 * [<role>]
 	 * : A specific role to remove.
@@ -412,7 +412,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <user>
-	 * : User ID or user login.
+	 * : User ID, user email, or user login.
 	 *
 	 * <cap>
 	 * : The capability to add.
@@ -440,7 +440,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <user>
-	 * : User ID or user login.
+	 * : User ID, user email, or user login.
 	 *
 	 * <cap>
 	 * : The capability to be removed.
@@ -468,7 +468,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <user>
-	 * : User ID or login.
+	 * : User ID, user email, or login.
 	 *
 	 * ## EXAMPLES
 	 *
