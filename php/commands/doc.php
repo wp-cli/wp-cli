@@ -16,11 +16,6 @@ class Doc_Command extends WP_CLI_Command {
 	 * @synopsis <function-or-class> [<method-or-property>]
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		if ( ! class_exists( 'Reflection' ) ) {
-			WP_CLI::error( 'The Reflection class is not available; you cannot use this command.' );
-			return;
-		}
-
 		# class methods or properties can be passed as either `ClassName method` or `ClassName::method`
 		if ( false !== strpos( $args[0], '::' ) ) {
 			$args = explode( '::', $args[0] );
