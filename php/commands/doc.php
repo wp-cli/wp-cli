@@ -67,21 +67,51 @@ class Doc_Command extends WP_CLI_Command {
 		}
 	}
 
+
+	/**
+	 * Get the PHPDoc block for a function.
+	 *
+	 * @param string $function A function name.
+	 * @return string A PHPDoc doc block.
+	 */
 	private static function get_function_doc( $function ) {
 		$r = new ReflectionFunction( $function );
 		return $r->getDocComment();
 	}
 
+
+	/**
+	 * Get the PHPDoc block for a class.
+	 *
+	 * @param string $class A class name.
+	 * @return string A PHPDoc doc block.
+	 */
 	private static function get_class_doc( $class ) {
 		$r = new ReflectionClass( $class );
 		return $r->getDocComment();
 	}
 
+
+	/**
+	 * Get the PHPDoc block for a given class and method.
+	 *
+	 * @param string $class A class name.
+	 * @param string $method A method name.
+	 * @return string A PHPDoc doc block.
+	 */
 	private static function get_method_doc( $class, $method ) {
 		$r = new ReflectionMethod( $class, $method );
 		return $r->getDocComment();
 	}
 
+
+	/**
+	 * Get the PHPDoc block for a given class and property.
+	 *
+	 * @param string $class A class name.
+	 * @param string $property A property name.
+	 * @return string A PHPDoc doc block.
+	 */
 	private static function get_property_doc( $class, $property ) {
 		$r = new ReflectionMethod( $class, $property );
 		return $r->getDocComment();
