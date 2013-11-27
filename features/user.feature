@@ -8,6 +8,22 @@ Feature: Manage WordPress users
     Then the return code should be 1
     And STDOUT should be empty
 
+    When I run `wp user create testuser2 testuser2@example.com --role=author --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+	And I run `wp user get {USER_ID}`
+	Then STDOUT should be a table containing rows:
+      | Field        | Value      |
+      | ID           | {USER_ID}  |
+      | roles        | author     |
+
+    When I run `wp user delete {USER_ID}`
+    Then STDOUT should not be empty
+
+    When I try `wp user create testuser2 testuser2@example.com --role=wrongrole --porcelain`
+    Then the return code should be 1
+    Then STDOUT should be empty
+
     When I run `wp user create testuser testuser@example.com --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {USER_ID}
