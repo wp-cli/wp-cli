@@ -166,6 +166,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		if ( $disable_all ) {
 			foreach ( get_plugins() as $file => $details ) {
+				if ( $this->get_status( $file ) == "inactive" )
+					continue;
+
 				$name = $this->get_name( $file );
 
 				deactivate_plugins( $file, false, $network_wide );
