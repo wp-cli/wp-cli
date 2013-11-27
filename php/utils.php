@@ -13,14 +13,9 @@ function load_dependencies() {
 		return;
 	}
 
-	$vendor_paths = array(
-		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project / installed via Composer (preferred)
-		WP_CLI_ROOT . '/vendor',           // top-level project / installed as Git clone
-	);
-
 	$has_autoload = false;
 
-	foreach ( $vendor_paths as $vendor_path ) {
+	foreach ( get_vendor_paths() as $vendor_path ) {
 		if ( file_exists( $vendor_path . '/autoload.php' ) ) {
 			require $vendor_path . '/autoload.php';
 			$has_autoload = true;
@@ -32,6 +27,18 @@ function load_dependencies() {
 		fputs( STDERR, "Internal error: Can't find Composer autoloader.\n" );
 		exit(3);
 	}
+}
+
+function get_vendor_paths() {
+	return array(
+		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project / installed via Composer (preferred)
+		WP_CLI_ROOT . '/vendor',           // top-level project / installed as Git clone
+	);
+}
+
+// Using require() directly inside a class grants access to private methods to the loaded code
+function load_file( $path ) {
+	require $path;
 }
 
 function load_command( $name ) {
@@ -261,9 +268,18 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 	if ( !$tmpfile )
 		\WP_CLI::error( 'Error creating temporary file.' );
 
+	$output = '';
 	file_put_contents( $tmpfile, $input );
 
-	\WP_CLI::launch( "\${EDITOR:-vi} '$tmpfile'" );
+	$editor = getenv( 'EDITOR' );
+	if ( !$editor ) {
+		if ( isset( $_SERVER['OS'] ) && false !== strpos( $_SERVER['OS'], 'indows' ) )
+			$editor = 'notepad';
+		else
+			$editor = 'vi';
+	}
+
+	\WP_CLI::launch( "$editor " . escapeshellarg( $tmpfile ) );
 
 	$output = file_get_contents( $tmpfile );
 
@@ -340,5 +356,15 @@ function make_progress_bar( $message, $count ) {
 		return new \WP_CLI\NoOp;
 
 	return new \cli\progress\Bar( $message, $count );
+}
+
+function parse_url( $url ) {
+	$url_parts = \parse_url( $url );
+
+	if ( !isset( $url_parts['scheme'] ) ) {
+		$url_parts = parse_url( 'http://' . $url );
+	}
+
+	return $url_parts;
 }
 

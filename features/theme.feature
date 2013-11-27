@@ -3,7 +3,7 @@ Feature: Manage WordPress themes
   Background:
     Given a WP install
 
-  Scenario: Installing a theme
+  Scenario: Installing and deleting theme
     When I run `wp theme install p2`
     Then STDOUT should not be empty
 
@@ -28,6 +28,13 @@ Feature: Manage WordPress themes
       """
       Success: Switched to 'P2' theme.
       """
+
+    When I try `wp theme delete p2`
+    Then STDERR should be:
+      """
+      Warning: Can't delete the currently active theme: p2
+      """
+    And STDOUT should be empty
 
     When I run `wp theme activate {PREVIOUS_THEME}`
     Then STDOUT should not be empty

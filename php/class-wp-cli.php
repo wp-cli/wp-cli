@@ -2,6 +2,8 @@
 
 use \WP_CLI\Utils;
 use \WP_CLI\Dispatcher;
+use \WP_CLI\FileCache;
+use \WP_CLI\WpHttpCacheManager;
 
 /**
  * Various utilities for WP-CLI commands.
@@ -15,13 +17,6 @@ class WP_CLI {
 	private static $hooks = array(), $hooks_passed = array();
 
 	/**
-	 * Initialize WP_CLI static variables.
-	 */
-	static function init() {
-		self::$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
-	}
-
-	/**
 	 * Set the logger instance.
 	 *
 	 * @param object $logger
@@ -31,7 +26,13 @@ class WP_CLI {
 	}
 
 	static function get_configurator() {
-		return self::$configurator;
+		static $configurator;
+
+		if ( !$configurator ) {
+			$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
+		}
+
+		return $configurator;
 	}
 
 	static function get_root_command() {
@@ -52,6 +53,77 @@ class WP_CLI {
 		}
 
 		return $runner;
+	}
+
+	/**
+	 * @return FileCache
+	 */
+	private static function get_cache() {
+		static $cache;
+
+		if ( !$cache ) {
+			$home = getenv( 'HOME' );
+			if ( !$home ) {
+				// sometime in windows $HOME is not defined
+				$home = getenv( 'HOMEDRIVE' ) . '/' . getenv( 'HOMEPATH' );
+			}
+			$dir = getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
+
+			// 6 months, 300mb
+			$cache = new FileCache( $dir, 15552000, 314572800 );
+
+			// clean older files on shutdown with 1/50 probability
+			if ( 0 === mt_rand( 0, 50 ) ) {
+				register_shutdown_function( function () use ( $cache ) {
+					$cache->clean();
+				} );
+			}
+		}
+
+		return $cache;
+	}
+
+	/**
+	 * Set the context in which WP-CLI should be run
+	 */
+	static function set_url( $url ) {
+		$url_parts = Utils\parse_url( $url );
+		self::set_url_params( $url_parts );
+	}
+
+	private static function set_url_params( $url_parts ) {
+		$f = function( $key ) use ( $url_parts ) {
+			return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
+		};
+
+		if ( isset( $url_parts['host'] ) ) {
+			$_SERVER['HTTP_HOST'] = $url_parts['host'];
+			if ( isset( $url_parts['port'] ) ) {
+				$_SERVER['HTTP_HOST'] .= ':' . $url_parts['port'];
+			}
+
+			$_SERVER['SERVER_NAME'] = $url_parts['host'];
+		}
+
+		$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
+		$_SERVER['SERVER_PORT'] = isset( $url_parts['port'] ) ? $url_parts['port'] : '80';
+		$_SERVER['QUERY_STRING'] = $f('query');
+		$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
+		$_SERVER['HTTP_USER_AGENT'] = '';
+		$_SERVER['REQUEST_METHOD'] = 'GET';
+	}
+
+	/**
+	 * @return WpHttpCacheManager
+	 */
+	static function get_http_cache_manager() {
+		static $http_cacher;
+
+		if ( !$http_cacher ) {
+			$http_cacher = new WpHttpCacheManager( self::get_cache() );
+		}
+
+		return $http_cacher;
 	}
 
 	static function colorize( $string ) {
@@ -234,10 +306,6 @@ class WP_CLI {
 		return $r;
 	}
 
-	static function get_config_path() {
-		return self::get_runner()->config_path;
-	}
-
 	static function get_config( $key = null ) {
 		if ( null === $key ) {
 			return self::get_runner()->config;
@@ -271,7 +339,7 @@ class WP_CLI {
 
 	// back-compat
 	static function out( $str ) {
-		echo $str;
+		fwrite( STDOUT, $str );
 	}
 
 	// back-compat

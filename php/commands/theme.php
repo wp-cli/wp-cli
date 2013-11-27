@@ -18,6 +18,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		'version'
 	);
 
+	function __construct() {
+		parent::__construct();
+
+		$this->fetcher = new \WP_CLI\Fetchers\Theme;
+	}
+
 	protected function get_upgrader_class( $force ) {
 		return $force ? '\\WP_CLI\\DestructiveThemeUpgrader' : 'Theme_Upgrader';
 	}
@@ -76,7 +82,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function status_single( $args ) {
-		$theme = $this->parse_name( $args[0] );
+		$theme = $this->fetcher->get_check( $args[0] );
 
 		$status = $this->format_status( $this->get_status( $theme ), 'long' );
 
@@ -110,7 +116,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : The theme to activate.
 	 */
 	public function activate( $args = array() ) {
-		$theme = $this->parse_name( $args[0] );
+		$theme = $this->fetcher->get_check( $args[0] );
 
 		switch_theme( $theme->get_template(), $theme->get_stylesheet() );
 
@@ -148,7 +154,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( empty( $args ) ) {
 			$path = WP_CONTENT_DIR . '/themes';
 		} else {
-			$theme = $this->parse_name( $args[0] );
+			$theme = $this->fetcher->get_check( $args[0] );
 
 			$path = $theme->get_stylesheet_directory();
 
@@ -176,6 +182,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
+		if ( !isset( $assoc_args['version'] ) || 'dev' !== $assoc_args['version'] ) {
+			WP_CLI::get_http_cache_manager()->whitelist_package( $api->download_link, $this->item_type, $api->slug, $api->version );
+		}
 		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
 
 		return $result;
@@ -186,11 +195,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		foreach ( wp_get_themes() as $key => $theme ) {
 			$file = $theme->get_stylesheet_directory();
+			$update_info = $this->get_update_info( $theme->get_stylesheet() );
 
 			$items[ $file ] = array(
 				'name' => $key,
 				'status' => $this->get_status( $theme ),
-				'update' => $this->has_update( $theme->get_stylesheet() ),
+				'update' => (bool) $update_info,
+				'update_version' => $update_info['new_version'],
+				'update_package' => $update_info['package'],
 				'version' => $theme->get('Version'),
 				'update_id' => $theme->get_stylesheet(),
 			);
@@ -202,7 +214,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	protected function filter_item_list( $items, $args ) {
 		$theme_files = array();
 		foreach ( $args as $arg ) {
-			$theme_files[] = $this->parse_name( $arg )->get_stylesheet_directory();
+			$theme_files[] = $this->fetcher->get_check( $arg )->get_stylesheet_directory();
 		}
 
 		return \WP_CLI\Utils\pick_fields( $items, $theme_files );
@@ -261,7 +273,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme get twentytwelve --format=json
 	 */
 	public function get( $args, $assoc_args ) {
-		$theme = $this->parse_name( $args[0] );
+		$theme = $this->fetcher->get_check( $args[0] );
 
 		// WP_Theme object employs magic getter, unfortunately
 		$theme_vars = array( 'name', 'title', 'version', 'parent_theme', 'template_dir', 'stylesheet_dir', 'template', 'stylesheet', 'screenshot', 'description', 'author', 'tags', 'theme_root', 'theme_root_uri',
@@ -342,11 +354,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme delete twentyeleven
 	 */
 	function delete( $args ) {
-		foreach ( $this->validate_theme_names( $args ) as $theme ) {
+		foreach ( $this->fetcher->get_many( $args ) as $theme ) {
 			$theme_slug = $theme->get_stylesheet();
 
 			if ( $this->is_active_theme( $theme ) ) {
 				WP_CLI::warning( "Can't delete the currently active theme: $theme_slug" );
+				continue;
 			}
 
 			$r = delete_theme( $theme_slug );
@@ -364,6 +377,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
+	 * [--<field>=<value>]
+	 * : Filter results based on the value of a field.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each theme.
 	 *
@@ -375,45 +391,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme list --format=csv
+	 *     wp theme list --status=inactive --format=csv
 	 *
 	 * @subcommand list
 	 */
 	function _list( $_, $assoc_args ) {
 		parent::_list( $_, $assoc_args );
-	}
-
-	/**
-	 * Parse the name of a plugin to a filename; check if it exists.
-	 *
-	 * @param string name
-	 * @return object
-	 */
-	private function parse_name( $name ) {
-		$theme = wp_get_theme( $name );
-
-		if ( !$theme->exists() ) {
-			WP_CLI::error( "The theme '$name' could not be found." );
-			exit;
-		}
-
-		return $theme;
-	}
-
-	private function validate_theme_names( $args ) {
-		$themes = array();
-
-		foreach ( $args as $name ) {
-			$theme = wp_get_theme( $name );
-
-			if ( !$theme->exists() ) {
-				WP_CLI::warning( "The '$name' theme could not be found." );
-			} else {
-				$themes[] = $theme;
-			}
-		}
-
-		return $themes;
 	}
 }
 

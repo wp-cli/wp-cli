@@ -2,9 +2,6 @@ Feature: Manage WordPress themes and plugins
 
   Scenario Outline: Installing, upgrading and deleting a theme or plugin
     Given a WP install
-    And download:
-      | path                   | url        |
-      | {CACHE_DIR}/<item>.zip | <zip_file> |
     And I run `wp <type> path`
     And save STDOUT as {CONTENT_DIR}
 
@@ -22,6 +19,7 @@ Feature: Manage WordPress themes and plugins
       """
       <type_name> installed successfully
       """
+    And the {SUITE_CACHE_DIR}/<type>/<item>-<version>.zip file should exist
 
     When I try `wp <type> is-installed <item>`
     Then the return code should be 0
@@ -74,7 +72,9 @@ Feature: Manage WordPress themes and plugins
       """
 
     When I run `wp <type> update <item>`
+    And save STDOUT 'Downloading update from .*\/<item>\.%s\.zip' as {NEW_VERSION}
     Then STDOUT should not be empty
+    And the {SUITE_CACHE_DIR}/<type>/<item>-{NEW_VERSION}.zip file should exist
 
     When I run `wp <type> update --all`
     Then STDOUT should not be empty
@@ -96,8 +96,29 @@ Feature: Manage WordPress themes and plugins
     And STDERR should not be empty
 
 
+    # Install and update <item> from cache
+    When I run `wp <type> install <item> --version=<version>`
+    Then STDOUT should contain:
+      """
+      Using cached file '{SUITE_CACHE_DIR}/<type>/<item>-<version>.zip'...
+      """
+
+    When I run `wp <type> update <item>`
+    Then STDOUT should contain:
+      """
+      Using cached file '{SUITE_CACHE_DIR}/<type>/<item>-{NEW_VERSION}.zip'...
+      """
+
+    When I run `wp <type> delete <item>`
+    Then STDOUT should contain:
+      """
+      Success: Deleted '<item>' <type>.
+      """
+    And the <file_to_check> file should not exist
+
+
     # Install <item> from a local zip file
-    When I run `wp <type> install {CACHE_DIR}/<item>.zip`
+    When I run `wp <type> install {SUITE_CACHE_DIR}/<type>/<item>-<version>.zip`
     Then STDOUT should contain:
       """
       <type_name> installed successfully.

@@ -203,11 +203,19 @@ class Scaffold_Command extends WP_CLI_Command {
 		$tmpfname = wp_tempnam($url);
 		$response = wp_remote_post( $url, array( 'timeout' => $timeout, 'body' => $body, 'stream' => true, 'filename' => $tmpfname ) );
 
-		if ( $response['response']['code'] == 200 )
-			WP_CLI::success( "Created theme '".$data['theme_name']."'." );
+		if ( is_wp_error( $response ) ) {
+			WP_CLI::error( $response );
+		}
+
+		$response_code = wp_remote_retrieve_response_code( $response );
+		if ( 200 != $response_code ) {
+			WP_CLI::error( "Couldn't create theme (received $response_code response)." );
+		}
 
 		unzip_file( $tmpfname, $theme_path );
 		unlink( $tmpfname );
+
+		WP_CLI::success( "Created theme '{$data['theme_name']}'." );
 
 		if ( isset( $assoc_args['activate'] ) )
 			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
@@ -295,11 +303,14 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * <slug>
 	 * : The internal name of the plugin.
 	 *
-	 * [--activate]
-	 * : Activate the newly generated plugin.
-	 *
 	 * [--plugin_name=<title>]
 	 * : What to put in the 'Plugin Name:' header
+	 *
+	 * [--skip-tests]
+	 * : Don't generate files for unit testing.
+	 *
+	 * [--activate]
+	 * : Activate the newly generated plugin.
 	 */
 	function plugin( $args, $assoc_args ) {
 		$plugin_slug = $args[0];
@@ -317,10 +328,13 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		WP_CLI::success( "Created $plugin_dir" );
 
-		WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ) );
+		if ( !isset( $assoc_args['skip-tests'] ) ) {
+			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ) );
+		}
 
-		if ( isset( $assoc_args['activate'] ) )
+		if ( isset( $assoc_args['activate'] ) ) {
 			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug ) );
+		}
 	}
 
 	/**
