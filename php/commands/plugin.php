@@ -514,6 +514,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	private function active_output( $name, $file, $network_wide, $action ) {
+		$network_wide = $network_wide || is_network_only_plugin( $file );
+
 		$check = $this->check_active( $file, $network_wide );
 
 		if ( ( $action == "activate" ) ? $check : ! $check ) {
