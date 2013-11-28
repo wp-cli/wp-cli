@@ -1,9 +1,7 @@
 Feature: Manage WordPress plugins
 
-  Background:
-    Given a WP install
-
   Scenario: Create, activate and check plugin status
+    Given a WP install
     And I run `wp plugin path`
     And save STDOUT as {PLUGIN_DIR}
 
@@ -70,6 +68,8 @@ Feature: Manage WordPress plugins
       """
 
   Scenario: Install a plugin, activate, then force install an older version of the plugin
+    Given a WP install
+
     When I run `wp plugin install akismet --version=2.5.7 --force`
     Then STDOUT should not be empty
 
@@ -89,8 +89,23 @@ Feature: Manage WordPress plugins
       | name       | status   | update    | version   |
       | akismet    | active   | available | 2.5.6     |
 
+  Scenario: Activate a network-only plugin
+    Given a WP multisite install
+    And a wp-content/plugins/network-only.php file:
+      """
+      // Plugin Name: Example Plugin
+      // Network: true
+      """
+    When I run `wp plugin activate network-only`
+    And I run `wp plugin status network-only`
+    Then STDOUT should contain:
+      """
+          Status: Network Active
+      """
 
   Scenario: List plugins
+    Given a WP install
+
     When I run `wp plugin activate akismet hello`
     Then STDOUT should not be empty
 
