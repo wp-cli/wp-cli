@@ -11,8 +11,8 @@ Feature: Manage WordPress users
     When I run `wp user create testuser2 testuser2@example.com --role=author --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {USER_ID}
-	And I run `wp user get {USER_ID}`
-	Then STDOUT should be a table containing rows:
+    And I run `wp user get {USER_ID}`
+    Then STDOUT should be a table containing rows:
       | Field        | Value      |
       | ID           | {USER_ID}  |
       | roles        | author     |
