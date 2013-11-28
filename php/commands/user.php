@@ -193,7 +193,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		);
 		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
 
-		$role = self::validate_role( $role );
+		if ( !self::validate_role( $role ) ) {
+			WP_CLI::error( "Invalid role: $role" );
+		}
 
 		// @codingStandardsIgnoreStart
 		if ( !$user_pass ) {
@@ -276,7 +278,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		$role = self::validate_role( $assoc_args['role'] );
+		if ( !self::validate_role( $assoc_args['role'] ) ) {
+			WP_CLI::error( "Invalid role: $role" );
+		}
 
 		$user_count = count_users();
 		$total = $user_count['total_users'];
@@ -580,11 +584,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	private static function validate_role( $role ) {
-		if ( 'none' === $role ) {
-			$role = false;
-		} elseif ( is_null( get_role( $role ) ) ) {
-			WP_CLI::error( "Invalid role: $role" );
+		if ( empty( $role ) || ! is_null( get_role( $role ) ) ) {
+			return true;
 		}
+		return false;
 	}
 }
 
