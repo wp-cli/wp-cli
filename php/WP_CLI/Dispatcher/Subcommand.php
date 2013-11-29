@@ -146,10 +146,13 @@ class Subcommand extends CompositeCommand {
 		return array( $args, $assoc_args );
 	}
 
+	/**
+	 * @return array list of invalid $assoc_args keys to unset
+	 */
 	private function validate_args( $args, $assoc_args, $extra_args ) {
 		$synopsis = $this->get_synopsis();
 		if ( !$synopsis )
-			return;
+			return array();
 
 		$validator = new \WP_CLI\SynopsisValidator( $synopsis );
 
