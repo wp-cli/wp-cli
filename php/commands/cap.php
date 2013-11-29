@@ -19,6 +19,11 @@ class Capabilities_Command extends WP_CLI_Command {
 	/**
 	 * List capabilities for a given role.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Display alphabetical list of bbPress moderator capabilities
+	 *     wp cap list 'bbp_moderator' | sort
+	 *
 	 * @subcommand list
 	 * @synopsis <role>
 	 */
