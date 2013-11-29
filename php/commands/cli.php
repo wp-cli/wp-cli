@@ -38,7 +38,10 @@ class CLI_Command extends WP_CLI_Command {
 	/**
 	 * Print various data about the CLI environment.
 	 *
-	 * @synopsis [--format=<format>]
+	 * ## OPTIONS
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: json
 	 */
 	function info( $_, $assoc_args ) {
 		$php_bin = defined( 'PHP_BINARY' ) ? PHP_BINARY : getenv( 'WP_CLI_PHP_USED' );
