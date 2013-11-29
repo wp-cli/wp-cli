@@ -93,15 +93,15 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * Print current rewrite rules.
 	 *
 	 * ## OPTIONS
-	 * 
+	 *
 	 * [--match=<url>]
 	 * : Show rewrite rules matching a particular URL.
-	 * 
+	 *
 	 * [--source=<source>]
 	 * : Show rewrite rules from a particular source.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, JSON or CSV. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *

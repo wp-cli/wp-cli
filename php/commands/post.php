@@ -142,12 +142,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Instead of returning the whole post, returns the value of a single field.
 	 *
 	 * [--format=<format>]
-	 * : The format to use when printing the post, acceptable values:
-	 *
-	 *   - **table**: Outputs all fields of the post as a table. Note that the
-	 *     post_content field is omitted so that the table is readable.
-	 *
-	 *   - **json**: Outputs all fields in JSON format.
+	 * : Accepted values: table, json. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -215,7 +210,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields. Defaults to ID,post_title,post_name,post_date,post_status.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, CSV, JSON, or simply IDs. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -236,7 +231,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		);
 		$query_args = array_merge( $defaults, $assoc_args );
 
-		foreach( $query_args as $key => $query_arg ) {
+		foreach ( $query_args as $key => $query_arg ) {
 			if ( false !== strpos( $key, '__' ) )
 				$query_args[$key] = explode( ',', $query_arg );
 		}

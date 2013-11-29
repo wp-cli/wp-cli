@@ -34,7 +34,7 @@ class Term_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields. Defaults to all of the term object fields.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, CSV, JSON, or simply IDs. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -131,10 +131,7 @@ class Term_Command extends WP_CLI_Command {
 	 * : Instead of returning the whole term, returns the value of a single field.
 	 *
 	 * [--format=<format>]
-	 * : The format to use when printing the term, acceptable values:
-	 *
-	 *   - **table**: Outputs all fields of the term as a table.
-	 *   - **json**: Outputs all fields in JSON format.
+	 * : Accepted values: table, json. Default: table
 	 *
 	 * ## EXAMPLES
 	 *

@@ -317,7 +317,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Comma-separated list of fields to show.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, csv, json or url. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *

@@ -39,7 +39,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields. Defaults to ID,user_login,display_name,user_email,user_registered,roles
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, CSV, JSON, or simply IDs. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -86,11 +86,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Instead of returning the whole user, returns the value of a single field.
 	 *
 	 * [--format=<format>]
-	 * : The format to use when printing the user; acceptable values:
-	 *
-	 *     **table**: Outputs all fields of the user as a table.
-	 *
-	 *     **json**: Outputs all fields in JSON format.
+	 * : Accepted values: table, json. Default: table
 	 *
 	 * ## EXAMPLES
 	 *

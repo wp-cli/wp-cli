@@ -69,7 +69,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **description**: Theme Description
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, CSV or JSON. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -266,7 +266,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Instead of returning the whole theme, returns the value of a single field.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table or JSON. Defaults to table.
+	 * : Accepted values: table, json. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -387,7 +387,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Limit the output to specific object fields. Defaults to name,status,update,version.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, CSV or JSON. Defaults to table.
+	 * : Accepted values: table, json. Default: table
 	 *
 	 * ## EXAMPLES
 	 *

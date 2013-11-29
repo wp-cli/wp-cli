@@ -94,10 +94,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Instead of returning the whole comment, returns the value of a single field.
 	 *
 	 * [--format=<format>]
-	 * : The format to use when printing the comment, acceptable values:
-	 *
-	 *   - **table**: Outputs all fields of the comment as a table.
-	 *   - **json**: Outputs all fields in JSON format.
+	 * : Accepted values: table, json. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -128,7 +125,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields. Defaults to comment_ID,comment_post_ID,comment_date,comment_approved,comment_author,comment_author_email
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, CSV, JSON, or simply IDs. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *

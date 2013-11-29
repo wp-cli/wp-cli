@@ -76,7 +76,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **short_description**: Plugin's Short Description
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, CSV or JSON. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -493,7 +493,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Limit the output to specific object fields. Defaults to name,status,update,version.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, CSV or JSON. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
