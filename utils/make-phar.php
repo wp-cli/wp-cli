@@ -41,6 +41,7 @@ $finder
 	->in('./vendor/rhumsaa/array_column')
 	->exclude('test')
 	->exclude('tests')
+	->exclude('Tests')
 	->exclude('php-cli-tools/examples')
 	;
 
