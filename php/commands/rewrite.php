@@ -91,7 +91,7 @@ class Rewrite_Command extends WP_CLI_Command {
 		$new_assoc_args = array();
 		if ( isset( $assoc_args['hard'] ) )
 			$new_assoc_args['hard'] = true;
-		\WP_CLI::launch_wpcli( 'rewrite flush', array(), $new_assoc_args );
+		\WP_CLI::launch_self( 'rewrite flush', array(), $new_assoc_args );
 
 		WP_CLI::success( "Rewrite structure set." );
 	}
