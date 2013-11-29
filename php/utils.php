@@ -340,13 +340,20 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 	if ( $r ) exit( $r );
 }
 
+/**
+ * Render PHP or other types of files using Mustache templates.
+ *
+ * IMPORTANT: Automatic HTML escaping is disabled!
+ */
 function mustache_render( $template_name, $data ) {
 	if ( ! file_exists( $template_name ) )
 		$template_name = WP_CLI_ROOT . "/templates/$template_name";
 
 	$template = file_get_contents( $template_name );
 
-	$m = new \Mustache_Engine;
+	$m = new \Mustache_Engine( array(
+		'escape' => function ( $val ) { return $val; }
+	) );
 
 	return $m->render( $template, $data );
 }
