@@ -146,9 +146,8 @@ class Subcommand extends CompositeCommand {
 		return array( $args, $assoc_args );
 	}
 
-	private function validate_args( $args, &$assoc_args ) {
+	private function validate_args( $args, $assoc_args, $extra_args ) {
 		$synopsis = $this->get_synopsis();
-
 		if ( !$synopsis )
 			return;
 
@@ -174,7 +173,7 @@ class Subcommand extends CompositeCommand {
 		}
 
 		list( $errors, $to_unset ) = $validator->validate_assoc(
-			array_merge( \WP_CLI::get_config(), $assoc_args )
+			array_merge( \WP_CLI::get_config(), $extra_args, $assoc_args )
 		);
 
 		if ( !empty( $errors['fatal'] ) ) {
@@ -188,22 +187,24 @@ class Subcommand extends CompositeCommand {
 
 		array_map( '\\WP_CLI::warning', $errors['warning'] );
 
-		foreach ( $to_unset as $key ) {
-			unset( $assoc_args[ $key ] );
-		}
-
 		foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
 			\WP_CLI::warning( "unknown --$key parameter" );
 		}
+
+		return $to_unset;
 	}
 
 	function invoke( $args, $assoc_args, $extra_args ) {
 		if ( \WP_CLI::get_config( 'prompt' ) )
 			list( $args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
 
-		$this->validate_args( $args, $assoc_args );
+		$to_unset = $this->validate_args( $args, $assoc_args, $extra_args );
 
-		\WP_CLI::do_hook( 'before_invoke:' . $this->get_parent()->get_name() );
+		foreach ( $to_unset as $key ) {
+			unset( $assoc_args[ $key ] );
+		}
+
+		\WP_CLI::do_action( 'before_invoke:' . $this->get_parent()->get_name() );
 
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 	}
