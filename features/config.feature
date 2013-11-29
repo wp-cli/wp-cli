@@ -85,12 +85,23 @@ Feature: Have a config file
     Given a WP install
     And a wp-cli.yml file:
       """
+      core config:
+        dbname: wordpress
+        dbuser: root
       eval:
         foo: bar
       post list:
         format: count
       """
 
+    # Required parameters should be recognized
+    When I try `wp core config`
+    Then STDERR should not contain:
+      """
+      Parameter errors
+      """
+
+    # Arbitrary values should be passed, without warnings
     When I run `wp eval 'echo json_encode( $assoc_args );'`
     Then STDOUT should be JSON containing:
       """
