@@ -306,6 +306,53 @@ class WP_CLI {
 		return $r;
 	}
 
+	/**
+	 * Launch another WP-CLI command using the runtime arguments for the current process
+	 *
+	 * @param string Command to call
+	 * @param array $args Positional arguments to use
+	 * @param array $assoc_args Associative arguments to use
+	 * @param bool Whether to exit if the command returns an error status
+	 *
+	 * @return int The command exit status
+	 */
+	static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true ) {
+		$reused_runtime_args = array(
+			'path',
+			'url',
+			'user',
+		);
+
+		foreach ( $reused_runtime_args as $key ) {
+			if ( $value = self::get_runner()->config[ $key ] )
+				$assoc_args[ $key ] = $value;
+		}
+
+		$php_bin = self::get_php_binary();
+
+		$script_path = $GLOBALS['argv'][0];
+
+		$args = implode( ' ', array_map( 'escapeshellarg', $args ) );
+		$assoc_args = \WP_CLI\Utils\assoc_args_to_str( $assoc_args );
+
+		$full_command = "{$php_bin} {$script_path} {$command} {$args} {$assoc_args}";
+
+		return self::launch( $full_command, $exit_on_error );
+	}
+
+	private static function get_php_binary() {
+		if ( defined( 'PHP_BINARY' ) )
+			return PHP_BINARY;
+
+		if ( getenv( 'WP_CLI_PHP_USED' ) )
+			return getenv( 'WP_CLI_PHP_USED' );
+
+		if ( getenv( 'WP_CLI_PHP' ) )
+			return getenv( 'WP_CLI_PHP' );
+
+		return 'php';
+	}
+
 	static function get_config( $key = null ) {
 		if ( null === $key ) {
 			return self::get_runner()->config;
