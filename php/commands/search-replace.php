@@ -36,8 +36,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--dry-run]
 	 * : Show report, but don't perform the changes.
 	 *
-	 * [--export=<file>]
-	 * : Write out new SQL to file instead of performing in-place replacements. If <file> is '-', will output to STDOUT.
+	 * [--export[=<file>]]
+	 * : Write out new SQL to file instead of performing in-place replacements. If <file> is '-' or is not supplied, will output to STDOUT.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -47,7 +47,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 *     wp search-replace 'www.example.com' 'staging.example.com' --export=staging.sql
 	 *
-	 *     wp search-replace 'staging.example.com' 'www.example.com' --export=- | mysql
+	 *     wp search-replace 'staging.example.com' 'www.example.com' --export | mysql
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$old = array_shift( $args );
@@ -61,6 +61,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		$export_handle = null;
 		if ( isset( $assoc_args['export'] ) ) {
+			if ( true === $assoc_args['export'] ) {
+				$assoc_args['export'] = '-';
+			}
 			if ( '-' === $assoc_args['export'] ) {
 				$export_handle = STDOUT;
 			}
