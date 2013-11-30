@@ -11,7 +11,7 @@ use \WP_CLI\Utils;
  * : Answer yes to the confirmation message.
  *
  * <file>
- * : The name of the export file. If omitted, it will be '{dbname}.sql'
+ * : The name of the export file. If '-', then outputs to STDOUT. If omitted, it will be '{dbname}.sql'.
  *
  * <SQL>
  * : A SQL query.
