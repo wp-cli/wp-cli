@@ -269,8 +269,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--post_date=<yyyy-mm-dd>]
 	 * : The date of the generated posts. Default: current date
 	 * 
-	 * [--post_content=<content>]
-	 * : The content of the generated posts. Default: empty
+	 * [--post_content]
+	 * : If set, the command reads the post_content from STDIN.
 	 * 
 	 * [--max_depth=<number>]
 	 * : For hierarchical post types, generate child posts down to a certain depth. Default: 1
@@ -278,6 +278,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     wp post generate --count=10 --post_type=page --post_date=1999-01-04
+	 *     curl http://loripsum.net/api/5 | wp post generate --post_content --count=10
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
@@ -303,6 +304,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 			if ( $post_author )
 				$post_author = $post_author->ID;
+		}
+
+		if ( isset( $assoc_args['post_content'] ) ) {
+			$post_content = file_get_contents( 'php://stdin' );
 		}
 
 		// Get the total number of posts
