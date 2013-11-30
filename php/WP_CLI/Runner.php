@@ -46,7 +46,7 @@ class Runner {
 		}
 
 		if ( !$config_path ) {
-			$config_path = getenv( 'HOME' ) . '/.config/wp-cli.yml';
+			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
 		}
 
 		if ( !is_readable( $config_path ) )
