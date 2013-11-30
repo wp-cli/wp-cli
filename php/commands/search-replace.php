@@ -189,21 +189,19 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		$primary_key = null;
 
-		$columns = array();
+		$text_columns = array();
 
 		foreach ( $wpdb->get_results( "DESCRIBE $table" ) as $col ) {
 			if ( 'PRI' === $col->Key ) {
 				$primary_key = $col->Field;
-				continue;
 			}
 
-			if ( !self::is_text_col( $col->Type ) )
-				continue;
-
-			$columns[] = $col->Field;
+			if ( self::is_text_col( $col->Type ) ) {
+				$text_columns[] = $col->Field;
+			}
 		}
 
-		return array( $primary_key, $columns );
+		return array( $primary_key, $text_columns );
 	}
 
 	private static function is_text_col( $type ) {
