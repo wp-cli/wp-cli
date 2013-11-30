@@ -306,17 +306,25 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--plugin_name=<title>]
 	 * : What to put in the 'Plugin Name:' header
 	 *
+	 * [--template_path=<template-path>]
+	 * : Absolute path to template file
+	 *
+	 * [--<field>=<value>]
+	 * : Associative args that will be used to render the {{field}} tag in the plugin template file
+	 *
 	 * [--skip-tests]
 	 * : Don't generate files for unit testing.
 	 *
 	 * [--activate]
 	 * : Activate the newly generated plugin.
+	 *
 	 */
 	function plugin( $args, $assoc_args ) {
 		$plugin_slug = $args[0];
 
 		$data = wp_parse_args( $assoc_args, array(
 			'plugin_name' => ucfirst( $plugin_slug ),
+			'template_path' => 'plugin.mustache'
 		) );
 
 		$data['textdomain'] = $plugin_slug;
@@ -324,7 +332,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
 
-		$this->create_file( $plugin_path, Utils\mustache_render( 'plugin.mustache', $data ) );
+		$this->create_file( $plugin_path, Utils\mustache_render( $data['template_path'], $data ) );
 
 		WP_CLI::success( "Created $plugin_dir" );
 
