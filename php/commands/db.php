@@ -119,14 +119,17 @@ class DB_Command extends WP_CLI_Command {
 	 */
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
+		$stdout = ( '-' === $result_file );
 
 		$cmd_args = array();
-		if ( '-' !== $result_file ) {
+		if ( ! $stdout ) {
 			$cmd_args['result-file'] = $result_file;
 		}
 		self::run( Utils\esc_cmd( 'mysqldump %s', DB_NAME ), $cmd_args );
 
-		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
+		if ( ! $stdout ) {
+			WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
+		}
 	}
 
 	/**
