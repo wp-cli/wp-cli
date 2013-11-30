@@ -46,7 +46,7 @@ class Runner {
 		}
 
 		if ( !$config_path ) {
-			$config_path = getenv( 'HOME' ) . '/.config/wp-cli.yml';
+			$config_path = Utils\get_global_config_dir() . '/wp-cli.yml';
 		}
 
 		if ( !is_readable( $config_path ) )
@@ -371,6 +371,7 @@ class Runner {
 
 		// File config
 		{
+
 			$this->global_config_path = self::get_global_config_path();
 			$this->project_config_path = self::get_project_config_path();
 

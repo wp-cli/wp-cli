@@ -136,7 +136,21 @@ function is_path_absolute( $path ) {
 	if ( isset($path[1]) && ':' === $path[1] )
 		return true;
 
-	return $path[0] === '/';
+	return $path[0] === DIRECTORY_SEPARATOR;
+}
+
+function make_path_absolute ( $path ) {
+	if ( ! is_path_absolute( $path ) )
+		$path .= DIRECTORY_SEPARATOR . $path;
+
+	return realpath( $path );
+}
+
+function absolutize( $path, $base ) {
+	if ( !empty( $path ) && !is_path_absolute( $path ) ) {
+		$path = $base . DIRECTORY_SEPARATOR . $path;
+	}
+	return $path;
 }
 
 /**
@@ -340,11 +354,21 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 	if ( $r ) exit( $r );
 }
 
-function mustache_render( $template_name, $data ) {
-	if ( ! file_exists( $template_name ) )
-		$template_name = WP_CLI_ROOT . "/templates/$template_name";
+function mustache_render( $template_path, $data ) {
+	
+	if ( ! is_path_absolute( $template_path ) )
+		$template_path = absolutize( $template_path, \WP_CLI::get_config( 'path' ) );
 
-	$template = file_get_contents( $template_name );
+	if( ! file_exists( $template_path ) ) {
+		// Add necesary template dir
+		$template_path = "/templates/$template_path";
+
+		if ( ! file_exists( $template_path = get_global_config_dir() . $template_path ) ) {
+			$template_path = WP_CLI_ROOT . $template_path;
+		}
+	}
+
+	$template = file_get_contents( $template_path );
 
 	$m = new \Mustache_Engine;
 
@@ -368,3 +392,16 @@ function parse_url( $url ) {
 	return $url_parts;
 }
 
+function get_home_env(){
+	$home = getenv( 'HOME' );
+	if ( !$home ) {
+		// sometimes in windows $HOME is not defined
+		$home = getenv( 'HOMEDRIVE' ) . DIRECTORY_SEPARATOR . getenv( 'HOMEPATH' );
+	}
+
+	return $home;
+}
+
+function get_global_config_dir() {
+	return get_home_env() . '/.wp-cli/';
+}
