@@ -310,7 +310,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * : Absolute path to template file
 	 *
 	 * [--<field>=<value>]
-	 * : Absolute path to template file
+	 * : Associative args that will be used to render the {{field}} tag in the plugin template file
 	 *
 	 * [--skip-tests]
 	 * : Don't generate files for unit testing.
