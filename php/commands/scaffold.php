@@ -306,7 +306,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--plugin_name=<title>]
 	 * : What to put in the 'Plugin Name:' header
 	 *
-	 * [--template_path=<template_path>]
+	 * [--template_path=<template-path>]
 	 * : Absolute path to template file
 	 *
 	 * [--<field>=<value>]
