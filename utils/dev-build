@@ -12,7 +12,7 @@ echo "Installing dependencies using Composer..."
 php composer.phar install
 
 echo "Downloading PHPUnit..."
-curl -sS http://pear.phpunit.de/get/phpunit.phar > phpunit.phar
+curl -sS https://phar.phpunit.de/phpunit.phar > phpunit.phar
 
 echo "Downloading Behat..."
 curl -sS http://behat.org/downloads/behat.phar > behat.phar
