@@ -40,7 +40,7 @@ Feature: Global flags
       """
     And STDERR should contain:
       """
-      PHP Notice:  Use of undefined constant CONST_WITHOUT_QUOTES
+      Use of undefined constant CONST_WITHOUT_QUOTES
       """
 
   Scenario: Setting the WP user
