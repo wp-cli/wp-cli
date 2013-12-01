@@ -356,19 +356,22 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 
 function mustache_render( $template_path, $data ) {
 	
-	if ( ! is_path_absolute( $template_path ) )
-		$template_path = absolutize( $template_path, \WP_CLI::get_config( 'path' ) );
+	// Project level
+	if ( ! is_path_absolute( $template_path ) ){
+		$template = absolutize( $template_path, \WP_CLI::get_config( 'path' ) );
+	}
 
-	if( ! file_exists( $template_path ) ) {
-		// Add necesary template dir
+	if( ! file_exists( $template ) ) {
+
 		$template_path = "/templates/$template_path";
-
-		if ( ! file_exists( $template_path = get_global_config_dir() . $template_path ) ) {
-			$template_path = WP_CLI_ROOT . $template_path;
+		// Global level
+		if ( ! file_exists( $template = get_global_config_dir() . $template_path ) ) {
+			// Core level
+			$template = WP_CLI_ROOT . $template_path;
 		}
 	}
 
-	$template = file_get_contents( $template_path );
+	$template = file_get_contents( $template );
 
 	$m = new \Mustache_Engine;
 
