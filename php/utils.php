@@ -355,7 +355,6 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 }
 
 function mustache_render( $template_path, $data ) {
-	
 	// Project level
 	if ( ! is_path_absolute( $template_path ) ){
 		$template = absolutize( $template_path, \WP_CLI::get_config( 'path' ) );
@@ -408,3 +407,4 @@ function get_home_env(){
 function get_global_config_dir() {
 	return get_home_env() . '/.wp-cli/';
 }
+
