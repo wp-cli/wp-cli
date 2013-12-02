@@ -23,3 +23,11 @@ Feature: Argument validation
       """
       Parameter errors:
       """
+
+    When I try `wp core config invalid --invalid --other-invalid`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+       unknown --unknown parameter
+       unknown --other-unknown parameter
+      """
