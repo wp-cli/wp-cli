@@ -4,22 +4,6 @@ use \WP_CLI\Utils;
 
 /**
  * Perform basic database operations.
- *
- * ## OPTIONS
- *
- * --yes
- * : Answer yes to the confirmation message.
- *
- * <file>
- * : The name of the SQL file for import/export. If '-', then inputs from STDIN and outputs to STDOUT. If omitted, it will be '{dbname}.sql'.
- *
- * <SQL>
- * : A SQL query.
- *
- * ## EXAMPLES
- *
- *     # execute a query stored in a file
- *     wp db query < debug.sql
  */
 class DB_Command extends WP_CLI_Command {
 
@@ -35,7 +19,10 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Delete the database.
 	 *
-	 * @synopsis [--yes]
+	 * ## OPTIONS
+	 *
+	 * [--yes]
+	 * : Answer yes to the confirmation message.
 	 */
 	function drop( $_, $assoc_args ) {
 		WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args );
@@ -48,7 +35,10 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Remove all tables from the database.
 	 *
-	 * @synopsis [--yes]
+	 * ## OPTIONS
+	 *
+	 * [--yes]
+	 * : Answer yes to the confirmation message.
 	 */
 	function reset( $_, $assoc_args ) {
 		WP_CLI::confirm( "Are you sure you want to reset the database?", $assoc_args );
@@ -95,7 +85,15 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Execute a query against the database.
 	 *
-	 * @synopsis [<sql>]
+	 * ## OPTIONS
+	 *
+	 * [<sql>]
+	 * : A SQL query. If not passed, will try to read from STDIN.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # execute a query stored in a file
+	 *     wp db query < debug.sql
 	 */
 	function query( $args ) {
 		$assoc_args = array(
@@ -111,11 +109,14 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Exports the database using mysqldump.
+	 * Exports the database to a file or to STDOUT.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<file>]
+	 * : The name of the SQL file to export. If '-', then outputs to STDOUT. If omitted, it will be '{dbname}.sql'.
 	 *
 	 * @alias dump
-	 *
-	 * @synopsis [<file>]
 	 */
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
@@ -135,7 +136,8 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Import database from a file or from STDIN.
 	 *
-	 * @synopsis [<file>]
+	 * [<file>]
+	 * : The name of the SQL file to export. If '-', then reads from STDIN. If omitted, it will look for '{dbname}.sql'.
 	 */
 	function import( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
