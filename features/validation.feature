@@ -28,6 +28,9 @@ Feature: Argument validation
     Then the return code should be 1
     And STDERR should contain:
       """
-       unknown --unknown parameter
-       unknown --other-unknown parameter
+      unknown --invalid parameter
+      """
+    And STDERR should contain:
+      """
+      unknown --other-invalid parameter
       """
