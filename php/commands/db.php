@@ -11,7 +11,7 @@ use \WP_CLI\Utils;
  * : Answer yes to the confirmation message.
  *
  * <file>
- * : The name of the export file. If omitted, it will be '{dbname}.sql'
+ * : The name of the SQL file for import/export. If '-', then inputs from STDIN and outputs to STDOUT. If omitted, it will be '{dbname}.sql'.
  *
  * <SQL>
  * : A SQL query.
@@ -119,30 +119,44 @@ class DB_Command extends WP_CLI_Command {
 	 */
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
+		$stdout = ( '-' === $result_file );
 
-		self::run( Utils\esc_cmd( 'mysqldump %s', DB_NAME ), array(
-			'result-file' => $result_file
-		) );
+		$cmd_args = array();
+		if ( ! $stdout ) {
+			$cmd_args['result-file'] = $result_file;
+		}
+		self::run( Utils\esc_cmd( 'mysqldump %s', DB_NAME ), $cmd_args );
 
-		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
+		if ( ! $stdout ) {
+			WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
+		}
 	}
 
 	/**
-	 * Import database from a file.
+	 * Import database from a file or from STDIN.
 	 *
 	 * @synopsis [<file>]
 	 */
 	function import( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
-		if ( !file_exists( $result_file ) ) {
-			WP_CLI::error( sprintf( 'Import file missing: %s', $result_file ) );
-		}
 
-		$descriptors = array(
-			array( 'file', $result_file, 'r' ),
-			STDOUT,
-			STDERR,
-		);
+		if ( '-' === $result_file ) {
+			$descriptors = array(
+				STDIN,
+				STDOUT,
+				STDERR,
+			);
+		} else {
+			if ( ! file_exists( $result_file ) ) {
+				WP_CLI::error( sprintf( 'Import file missing: %s', $result_file ) );
+			}
+
+			$descriptors = array(
+				array( 'file', $result_file, 'r' ),
+				STDOUT,
+				STDERR,
+			);
+		}
 
 		self::run( 'mysql --no-defaults', array(
 			'database' => DB_NAME
