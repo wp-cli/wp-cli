@@ -74,24 +74,15 @@ Feature: Wordpress code scaffolding
       """
 
   @plugin
-  Scenario: Scaffold a plugin 
-    Given an empty directory
-    And WP files
-    When I run `wp scaffold plugin 'Zombieland'`
-    Then the wp-content/plugins/zombieland/zombieland.php file should contain:
-      """
-      Plugin Name: Zombieland
-      """
-
   Scenario: Scaffold plugin with custom template WP-CLI config file in WordPress root directory a.k.a. project level
-    Given an empty directory
-    And WP files
+    And I run `wp plugin path`
+    And save STDOUT as {PLUGIN_DIR}
     And a zombie-plugin.mustache file:
       """
-      Custom plugin template with a written by {{custom_var}}
+      Custom plugin template with written by {{custom_var}}
       """
     When I run `wp scaffold plugin zombieland --template_path=zombie-plugin.mustache --custom_var=Daryl`
-    Then the wp-content/plugins/zombieland/zombieland.php file should contain:
+    Then the {PLUGIN_DIR}/zombieland/zombieland.php file should contain:
       """
       Custom plugin template with written by Daryl
       """
