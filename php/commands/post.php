@@ -115,7 +115,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	public function edit( $args, $_ ) {
 		$post = $this->fetcher->get_check( $args[0] );
 
-		$r = $this->_edit( $post->post_content, "WP-CLI post $post_id" );
+		$r = $this->_edit( $post->post_content, "WP-CLI post {$post->ID}" );
 
 		if ( $r === false )
 			\WP_CLI::warning( 'No change made to post content.', 'Aborted' );
