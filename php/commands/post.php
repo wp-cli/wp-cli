@@ -355,6 +355,22 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		// @codingStandardsIgnoreEnd
 	}
 
+	/**
+	 * Get post url
+	 * 
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to get the URL.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp post url 123
+	 */
+	public function url( $args ) {
+		parent::_url( $args, 'get_permalink' );
+	}
+
 	private function maybe_make_child() {
 		// 50% chance of making child post
 		return ( mt_rand(1, 2) == 1 );

@@ -1,5 +1,14 @@
 Feature: Manage sites in a multisite installation
 
+  Scenario: Create a site
+    Given a WP multisite install
+    
+    When I try `wp site create --slug=first --network_id=1000`
+    Then STDERR should contain:
+      """
+      Network with id 1000 does not exist.
+      """
+
   Scenario: Delete a site by id
     Given a WP multisite install
 
@@ -38,7 +47,7 @@ Feature: Manage sites in a multisite installation
     When I try the previous command again
     Then the return code should be 1
 
- Scenario: Empty a site
+  Scenario: Empty a site
     Given a WP install
 
     When I run `wp post create --post_title='Test post' --post_content='Test content.' --porcelain`
@@ -55,3 +64,12 @@ Feature: Manage sites in a multisite installation
 
     When I run `wp term list post_tag --format=ids`
     Then STDOUT should be empty
+
+  Scenario: Get site info
+    Given a WP multisite install
+    
+    When I run `wp site url 1`
+    Then STDOUT should be:
+      """
+      http://example.com
+      """

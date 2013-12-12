@@ -92,6 +92,12 @@ Feature: Manage WordPress posts
       """
       This is some bunkum.
       """
+      
+    When I run `wp post url {POST_ID}`
+    Then STDOUT should be:
+      """
+      http://example.com/?p=3
+      """
 
 
   Scenario: Creating/listing posts

@@ -45,3 +45,9 @@ Feature: Manage WordPress comments
       """
       1
       """
+
+    When I run `wp comment url 1`
+    Then STDOUT should be:
+      """
+      http://example.com/?p=1#comment-1
+      """

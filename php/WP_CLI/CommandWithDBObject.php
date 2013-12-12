@@ -82,5 +82,10 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	protected function get_formatter( &$assoc_args ) {
 		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
 	}
+	
+	protected function _url( $args, $callback ) {
+		$object = $this->fetcher->get_check( $args[0] );
+		\WP_CLI::print_value( $callback( $object->{$this->obj_id_key} ) );
+	}
 }
 
