@@ -2,3 +2,5 @@ composer.lock
 /vendor
 /*.phar
 /phpunit.xml
+.settings
+.project
