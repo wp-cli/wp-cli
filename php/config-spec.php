@@ -1,6 +1,14 @@
 <?php
 
 return array(
+	'skip-plugin' => array(
+		'runtime' => '=<path>',
+		'file' => '<path>',
+		'desc' => 'Skip loading plugin (plugin path name starting from .../wp-content/plugins/; may be used more than once)',
+		'multiple' => true,
+		'default' => array(),
+	),
+	
 	'path' => array(
 		'runtime' => '=<path>',
 		'file' => '<path>',
@@ -12,6 +20,7 @@ return array(
 		'file' => '<url>',
 		'desc' => 'Pretend request came from given URL',
 	),
+
 	'blog' => array(
 		'deprecated' => 'Use --url instead.',
 		'runtime' => '=<url>',
