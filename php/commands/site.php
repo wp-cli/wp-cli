@@ -5,7 +5,9 @@
  *
  * @package wp-cli
  */
-class Site_Command extends WP_CLI_Command {
+class Site_Command extends \WP_CLI\CommandWithDBObject {
+
+	protected $obj_type = 'site';
 
 	/**
 	 * Delete comments.
@@ -59,6 +61,7 @@ class Site_Command extends WP_CLI_Command {
 		// Empty taxonomies and terms
 		$terms = $wpdb->get_results( "SELECT term_id, taxonomy FROM $wpdb->term_taxonomy" );
 		$ids = array();
+		$taxonomies = array();
 		foreach ( (array) $terms as $term ) {
 			$taxonomies[] = $term->taxonomy;
 			$ids[] = $term->term_id;
@@ -66,6 +69,7 @@ class Site_Command extends WP_CLI_Command {
 		}
 
 		$taxonomies = array_unique( $taxonomies );
+		$cleaned = array();
 		foreach ( $taxonomies as $taxonomy ) {
 			if ( isset( $cleaned[$taxonomy] ) )
 				continue;
@@ -110,8 +114,12 @@ class Site_Command extends WP_CLI_Command {
 	/**
 	 * Empty a site of its content (posts, comments, and terms).
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--yes]
+	 * : Proceed to empty the site without a confirmation prompt.
+	 *
 	 * @subcommand empty
-	 * @synopsis [--yes]
 	 */
 	public function _empty( $args, $assoc_args ) {
 
@@ -128,7 +136,19 @@ class Site_Command extends WP_CLI_Command {
 	/**
 	 * Delete a site in a multisite install.
 	 *
-	 * @synopsis [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
+	 * ## OPTIONS
+	 *
+	 * [<site-id>]
+	 * : The id of the site to delete. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the blog to be deleted. Subdomain on subdomain installs, directory on subdirectory installs.
+	 *
+	 * [--yes]
+	 * : Answer yes to the confirmation message.
+	 *
+	 * [--keep-tables]
+	 * : Delete the blog from the list, but don't drop it's tables.
 	 */
 	function delete( $args, $assoc_args ) {
 		if ( !is_multisite() ) {
@@ -159,25 +179,27 @@ class Site_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get site (network) data for a given id.
-	 *
-	 * @param int     $site_id
-	 * @return bool|array False if no network found with given id, array otherwise
-	 */
-	private function _get_site( $site_id ) {
-		global $wpdb;
-		// Load site data
-		$sites = $wpdb->get_results( "SELECT * FROM $wpdb->site WHERE `id` = ".$wpdb->escape( $site_id ) );
-		if ( count( $sites ) > 0 ) {
-			// Only care about domain and path which are set here
-			return $sites[0];
-		}
-
-		return false;
-	}
-
-	/**
 	 * Create a site in a multisite install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --slug=<slug>
+	 * : Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
+	 *
+	 * --title=<title&gt;
+	 * : Title of the new site. Default: prettified slug.
+	 *
+	 * --email=<email>
+	 * : Email for Admin user. User will be created if none exists. Assignement to Super Admin if not included.
+	 *
+	 * --network_id=<network-id>
+	 * : Network to associate new site with. Defaults to current network (typically 1).
+	 *
+	 * --private
+	 * : If set, the new site will be non-public (not indexed)
+	 *
+	 * --porcelain
+	 * : If set, only the site id will be output on success.
 	 *
 	 * @synopsis --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<network-id>] [--private] [--porcelain]
 	 */
@@ -278,6 +300,88 @@ class Site_Command extends WP_CLI_Command {
 			WP_CLI::line( $id );
 		else
 			WP_CLI::success( "Site $id created: $url" );
+	}
+
+	/**
+	 * List all sites in a multisite install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--network=<id>]
+	 * : The network to which the sites belong.
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each site.
+	 *
+	 * [--fields=<fields>]
+	 * : Comma-separated list of fields to show.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Output a simple list of site URLs
+	 *     wp site list --field=url
+	 *
+	 * @subcommand list
+	 */
+	function _list( $_, $assoc_args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
+		global $wpdb;
+
+		if ( isset( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = preg_split( '/,[ \t]*/', $assoc_args['fields'] );
+		}
+
+		$defaults = array(
+			'format' => 'table',
+			'fields' => array( 'blog_id', 'url', 'last_updated', 'registered' ),
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$where = array();
+		if ( isset( $assoc_args['network'] ) ) {
+			$where['site_id'] = $assoc_args['network'];
+		}
+
+		$iterator_args = array(
+			'table' => $wpdb->blogs,
+			'where' => $where,
+		);
+		$it = new \WP_CLI\Iterators\Table( $iterator_args );
+
+		$it = \WP_CLI\Utils\iterator_map( $it, function( $blog ) {
+			$blog->url = $blog->domain . $blog->path;
+			return $blog;
+		} );
+
+		$formatter = new \WP_CLI\Formatter( $assoc_args, null, 'site' );
+		$formatter->display_items( $it );
+	}
+
+	/**
+	 * Get site (network) data for a given id.
+	 *
+	 * @param int     $site_id
+	 * @return bool|array False if no network found with given id, array otherwise
+	 */
+	private function _get_site( $site_id ) {
+		global $wpdb;
+
+		// Load site data
+		$sites = $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM $wpdb->site WHERE id = %d", $site_id ) );
+
+		if ( !empty( $sites ) ) {
+			// Only care about domain and path which are set here
+			return $sites[0];
+		}
+
+		return false;
 	}
 }
 

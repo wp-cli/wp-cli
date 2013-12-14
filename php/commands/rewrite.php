@@ -10,7 +10,10 @@ class Rewrite_Command extends WP_CLI_Command {
 	/**
 	 * Flush rewrite rules.
 	 *
-	 * @synopsis [--hard]
+	 * ## OPTIONS
+	 *
+	 * [--hard]
+	 * : Perform a hard flush - update `.htaccess` rules as well as rewrite rules in database.
 	 */
 	public function flush( $args, $assoc_args ) {
 		// make sure we detect mod_rewrite if configured in apache_modules in config
@@ -21,7 +24,23 @@ class Rewrite_Command extends WP_CLI_Command {
 	/**
 	 * Update the permalink structure.
 	 *
-	 * @synopsis <permastruct> [--category-base=<base>] [--tag-base=<base>] [--hard]
+	 * ## OPTIONS
+	 *
+	 * <permastruct>
+	 * : The new permalink structure to apply.
+	 *
+	 * [--category-base=<base>]
+	 * : Set the base for category permalinks, i.e. '/category/'.
+	 *
+	 * [--tag-base=<base>]
+	 * : Set the base for tag permalinks, i.e. '/tag/'.
+	 *
+	 * [--hard]
+	 * : Perform a hard flush - update `.htaccess` rules as well as rewrite rules in database.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp rewrite structure '/%year%/%monthnum%/%postname%'
 	 */
 	public function structure( $args, $assoc_args ) {
 		global $wp_rewrite;
@@ -66,15 +85,38 @@ class Rewrite_Command extends WP_CLI_Command {
 
 		// make sure we detect mod_rewrite if configured in apache_modules in config
 		self::apache_modules();
-		flush_rewrite_rules( isset( $assoc_args['hard'] ) );
+
+		// Launch a new process to flush rewrites because core expects flush
+		// to happen after rewrites are set
+		$new_assoc_args = array();
+		if ( isset( $assoc_args['hard'] ) )
+			$new_assoc_args['hard'] = true;
+		\WP_CLI::launch_self( 'rewrite flush', array(), $new_assoc_args );
+
+		WP_CLI::success( "Rewrite structure set." );
 	}
 
 	/**
 	 * Print current rewrite rules.
 	 *
-	 * @synopsis [--json]
+	 * ## OPTIONS
+	 *
+	 * [--match=<url>]
+	 * : Show rewrite rules matching a particular URL.
+	 *
+	 * [--source=<source>]
+	 * : Show rewrite rules from a particular source.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp rewrite list --format=csv
+	 * @subcommand list
 	 */
-	public function dump( $args, $assoc_args ) {
+	public function _list( $args, $assoc_args ) {
+		global $wp_rewrite;
 
 		$rules = get_option( 'rewrite_rules' );
 		if ( ! $rules ) {
@@ -82,13 +124,59 @@ class Rewrite_Command extends WP_CLI_Command {
 			WP_CLI::warning( 'No rewrite rules.' );
 		}
 
-		if ( isset( $assoc_args['json'] ) ) {
-			echo json_encode( $rules );
-		} else {
-			foreach ( $rules as $route => $rule )
-				WP_CLI::line( $route . "\t" . $rule );
+		$defaults = array(
+			'source' => '',
+			'match'  => '',
+			'format' => 'table'
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$rewrite_rules_by_source = array();
+		$rewrite_rules_by_source['post'] = $wp_rewrite->generate_rewrite_rules( $wp_rewrite->permalink_structure, EP_PERMALINK );
+		$rewrite_rules_by_source['date'] = $wp_rewrite->generate_rewrite_rules( $wp_rewrite->get_date_permastruct(), EP_DATE );
+		$rewrite_rules_by_source['root'] = $wp_rewrite->generate_rewrite_rules( $wp_rewrite->root . '/', EP_ROOT );
+		$rewrite_rules_by_source['comments'] = $wp_rewrite->generate_rewrite_rules( $wp_rewrite->root . $wp_rewrite->comments_base, EP_COMMENTS, true, true, true, false );
+		$rewrite_rules_by_source['search'] = $wp_rewrite->generate_rewrite_rules( $wp_rewrite->get_search_permastruct(), EP_SEARCH );
+		$rewrite_rules_by_source['author'] = $wp_rewrite->generate_rewrite_rules($wp_rewrite->get_author_permastruct(), EP_AUTHORS );
+		$rewrite_rules_by_source['page'] = $wp_rewrite->page_rewrite_rules();
+
+		// Extra permastructs including tags, categories, etc.
+		foreach ( $wp_rewrite->extra_permastructs as $permastructname => $permastruct ) {
+			if ( is_array( $permastruct ) ) {
+				$rewrite_rules_by_source[$permastructname] = $wp_rewrite->generate_rewrite_rules( $permastruct['struct'], $permastruct['ep_mask'], $permastruct['paged'], $permastruct['feed'], $permastruct['forcomments'], $permastruct['walk_dirs'], $permastruct['endpoints'] );
+			} else {
+				$rewrite_rules_by_source[$permastructname] = $wp_rewrite->generate_rewrite_rules( $permastruct, EP_NONE );
+			}
 		}
 
+		// Apply the filters used in core just in case
+		foreach( $rewrite_rules_by_source as $source => $source_rules ) {
+			$rewrite_rules_by_source[$source] = apply_filters( $source . '_rewrite_rules', $source_rules );
+			if ( 'post_tag' == $source )
+				$rewrite_rules_by_source[$source] = apply_filters( 'tag_rewrite_rules', $source_rules );
+		}
+
+		$rule_list = array();
+		foreach ( $rules as $match => $query ) {
+
+			if ( ! empty( $assoc_args['match'] )
+				&& ! preg_match( "!^$match!", trim( $assoc_args['match'], '/' ) ) )
+				continue;
+
+			$source = 'other';
+			foreach( $rewrite_rules_by_source as $rules_source => $source_rules ) {
+				if ( array_key_exists( $match, $source_rules ) ) {
+					$source = $rules_source;
+				}
+			}
+
+			if ( ! empty( $assoc_args['source'] ) && $source != $assoc_args['source'] )
+				continue;
+
+			$rule_list[] = compact( 'match', 'query', 'source' );
+		}
+
+		WP_CLI\Utils\format_items( $assoc_args['format'], $rule_list, array('match', 'query', 'source' ) );
 	}
 
 	/**
@@ -114,7 +202,7 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * If this isn't done then the .htaccess rewrite rules won't be flushed out
 	 * to disk.
 	 */
-	public static function apache_modules() {
+	private static function apache_modules() {
 		$mods = WP_CLI::get_config('apache_modules');
 		if ( !empty( $mods ) && !function_exists( 'apache_get_modules' ) ) {
 			global $is_apache;
@@ -125,7 +213,6 @@ class Rewrite_Command extends WP_CLI_Command {
 			}
 		}
 	}
-
 }
 
 WP_CLI:: add_command( 'rewrite', 'Rewrite_Command' );

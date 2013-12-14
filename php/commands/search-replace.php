@@ -10,7 +10,37 @@ class Search_Replace_Command extends WP_CLI_Command {
 	/**
 	 * Search/replace strings in the database.
 	 *
-	 * @synopsis <old> <new> [<table>...] [--skip-columns=<columns>] [--dry-run] [--network]
+	 * ## DESCRIPTION
+	 *
+	 * This command will go through all rows in all tables and will replace all appearances of the old string with the new one.
+	 *
+	 * It will correctly handle serialized values, and will not change primary key values.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <old>
+	 * : The old string.
+	 *
+	 * <new>
+	 * : The new string.
+	 *
+	 * [<table>...]
+	 * : List of database tables to restrict the replacement to.
+	 *
+	 * [--network]
+	 * : Search/replace through all the tables in a multisite install.
+	 *
+	 * [--skip-columns=<columns>]
+	 * : Do not perform the replacement in the comma-separated columns.
+	 *
+	 * [--dry-run]
+	 * : Show report, but don't perform the changes.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
+	 *
+	 *     wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$old = array_shift( $args );
@@ -43,8 +73,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 				if ( in_array( $col, $skip_columns ) )
 					continue;
 
-				$count = self::handle_col( $col, $primary_key, $table, $old, $new,
-					 $dry_run );
+				$count = self::handle_col( $col, $primary_key, $table, $old, $new, $dry_run );
 
 				$report[] = array( $table, $col, $count );
 
@@ -78,10 +107,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 		// We don't want to have to generate thousands of rows when running the test suite
 		$chunk_size = getenv( 'BEHAT_RUN' ) ? 10 : 1000;
 
+		$fields = array( $primary_key, $col );
 		$args = array(
 			'table' => $table,
-			'fields' => array( $primary_key, $col ),
-			'where' => $col . ' LIKE "%' . like_escape( esc_sql( $old ) ) . '%"',
+			'fields' => $fields,
+			'where' => "`$col`" . ' LIKE "%' . like_escape( esc_sql( $old ) ) . '%"',
 			'chunk_size' => $chunk_size
 		);
 
@@ -93,7 +123,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 			if ( '' === $row->$col )
 				continue;
 
-			$value = \WP_CLI\Utils\recursive_unserialize_replace( $old, $new, $row->$col );
+			$value = self::recursive_unserialize_replace( $old, $new, $row->$col );
 
 			if ( $dry_run ) {
 				if ( $value != $row->$col )
@@ -107,6 +137,51 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		return $count;
+	}
+
+	/**
+	 * Take a serialised array and unserialise it replacing elements as needed and
+	 * unserialising any subordinate arrays and performing the replace on those too.
+	 * Ignores any serialized objects.
+	 *
+	 * Initial code from https://github.com/interconnectit/Search-Replace-DB
+	 *
+	 * @param string $from       String we're looking to replace.
+	 * @param string $to         What we want it to be replaced with
+	 * @param array  $data       Used to pass any subordinate arrays back to in.
+	 * @param bool   $serialised Does the array passed via $data need serialising.
+	 *
+	 * @return array	The original array with all elements replaced as needed.
+	 */
+	private static function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
+
+		// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
+		try {
+
+			if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
+				$data = self::recursive_unserialize_replace( $from, $to, $unserialized, true );
+			}
+
+			elseif ( is_array( $data ) ) {
+				$_tmp = array();
+				foreach ( $data as $key => $value ) {
+					$_tmp[ $key ] = self::recursive_unserialize_replace( $from, $to, $value, false );
+				}
+				$data = $_tmp;
+			}
+
+			else if ( is_string( $data ) ) {
+				$data = str_replace( $from, $to, $data );
+			}
+
+			if ( $serialised )
+				return serialize( $data );
+
+		} catch( Exception $error ) {
+
+		}
+
+		return $data;
 	}
 
 	private static function get_columns( $table ) {

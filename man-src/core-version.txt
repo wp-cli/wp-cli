@@ -1,5 +1,0 @@
-## OPTIONS
-
-* `--extra`:
-
-	Show extended version information.

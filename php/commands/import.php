@@ -5,10 +5,18 @@ class Import_Command extends WP_CLI_Command {
 	/**
 	 * Import content from a WXR file.
 	 *
-	 * @synopsis <file> --authors=<authors> [--skip=<data-type>]
+	 * ## OPTIONS
+	 *
+	 * <file>
+	 * : Path to a valid WXR file for importing.
+	 *
+	 * --authors=<authors>
+	 * : How the author mapping should be handled. Options are 'create', 'mapping.csv', or 'skip'. The first will create any non-existent users from the WXR file. The second will read author mapping associations from a CSV, or create a CSV for editing if the file path doesn't exist. The last option will skip any author mapping.
+	 *
+	 * [--skip=<data-type>]
+	 * : Skip importing specific data. Supported options are: 'attachment' and 'image_resize' (skip time-consuming thumbnail generation).
 	 */
 	public function __invoke( $args, $assoc_args ) {
-
 		list( $file ) = $args;
 
 		if ( ! file_exists( $file ) )
@@ -116,9 +124,19 @@ class Import_Command extends WP_CLI_Command {
 			'user_map'             => $user_select,
 			'fetch_attachments'    => $wp_import->fetch_attachments,
 		);
+
+		if( in_array( 'image_resize', $args['skip'] ) ) {
+			add_filter( 'intermediate_image_sizes_advanced', array( $this, 'filter_set_image_sizes' ) );
+		}
+
 		$wp_import->import( $args['file'] );
 
 		return true;
+	}
+
+	public function filter_set_image_sizes( $sizes ) {
+		// Return null here to prevent the core image resizing logic from running.
+		return null;
 	}
 
 	/**
@@ -244,14 +262,15 @@ class Import_Command extends WP_CLI_Command {
 	 * Read an author mapping file
 	 */
 	private function read_author_mapping_file( $file ) {
-
 		$author_mapping = array();
+
 		foreach ( new \WP_CLI\Iterators\CSV( $file ) as $i => $author ) {
 			if ( ! array_key_exists( 'old_user_login', $author ) || ! array_key_exists( 'new_user_login', $author ) )
 				return new WP_Error( 'invalid-author-mapping', "Author mapping file isn't properly formatted." );
 
 			$author_mapping[] = $author;
 		}
+
 		return $author_mapping;
 	}
 
@@ -342,11 +361,12 @@ class Import_Command extends WP_CLI_Command {
 			if ( $author_user_email && $user->user_email == $author_user_email )
 				return $user->user_login;
 
+			$levs = array();
 			$levs[] = levenshtein( $author_user_login, $user->display_name );
 			$levs[] = levenshtein( $author_user_login, $user->user_login );
 			$levs[] = levenshtein( $author_user_login, $user->user_email );
 			$levs[] = levenshtein( $author_user_login, array_shift( explode( "@", $user->user_email ) ) );
-			arsort( $levs );
+			rsort( $levs );
 			$lev = array_pop( $levs );
 			if ( 0 == $lev ) {
 				$closest = $user->user_login;

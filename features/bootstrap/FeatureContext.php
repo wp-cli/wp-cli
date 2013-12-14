@@ -7,8 +7,6 @@ use Behat\Behat\Context\ClosuredContextInterface,
 
 use \WP_CLI\Utils;
 
-require_once 'PHPUnit/Framework/Assert/Functions.php';
-
 require_once __DIR__ . '/../../php/utils.php';
 
 /**
@@ -16,7 +14,7 @@ require_once __DIR__ . '/../../php/utils.php';
  */
 class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
-	private static $cache_dir;
+	private static $cache_dir, $suite_cache_dir;
 
 	private static $db_settings = array(
 		'dbname' => 'wp_cli_test',
@@ -24,14 +22,12 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		'dbpass' => 'password1'
 	);
 
-	private static $additional_args;
-
 	public $variables = array();
 
 	// We cache the results of `wp core download` to improve test performance
 	// Ideally, we'd cache at the HTTP layer for more reliable tests
 	private static function cache_wp_files() {
-		self::$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
+		self::$cache_dir = sys_get_temp_dir() . '/wp-cli-test core-download-cache';
 
 		if ( is_readable( self::$cache_dir . '/wp-config-sample.php' ) )
 			return;
@@ -45,14 +41,15 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 */
 	public static function prepare( SuiteEvent $event ) {
 		self::cache_wp_files();
+		self::$suite_cache_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-suite-cache-", TRUE );
+		mkdir( self::$suite_cache_dir );
+	}
 
-		self::$additional_args = array(
-			'wp core config' => self::$db_settings,
-
-			'wp core install-network' => array(
-				'title' => 'WP CLI Network'
-			)
-		);
+	/**
+	 * @AfterSuite
+	 */
+	public static function afterSuite( SuiteEvent $event ) {
+		Process::create( Utils\esc_cmd( 'rm -r %s', self::$suite_cache_dir ) )->run();
 	}
 
 	/**
@@ -77,10 +74,12 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function __construct( array $parameters ) {
 		$this->drop_db();
 		$this->set_cache_dir();
+		$this->variables['CORE_CONFIG_SETTINGS'] = Utils\assoc_args_to_str( self::$db_settings );
+		$this->variables['SUITE_CACHE_DIR'] = self::$suite_cache_dir;
 	}
 
 	public function getStepDefinitionResources() {
-		return array( __DIR__ . '/../steps/basic_steps.php' );
+		return glob( __DIR__ . '/../steps/*.php' );
 	}
 
 	public function getHookDefinitionResources() {
@@ -115,7 +114,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	private static function run_sql( $sql ) {
-		Utils\run_mysql_query( $sql, array(
+		Utils\run_mysql_command( 'mysql --no-defaults', array(
+			'execute' => $sql,
 			'host' => 'localhost',
 			'user' => self::$db_settings['dbuser'],
 			'pass' => self::$db_settings['dbpass'],
@@ -133,17 +133,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function proc( $command, $assoc_args = array() ) {
-		foreach ( self::$additional_args as $start => $additional_args ) {
-			if ( 0 === strpos( $command, $start ) ) {
-				$assoc_args = array_merge( $additional_args, $assoc_args );
-				break;
-			}
-		}
-
 		if ( !empty( $assoc_args ) )
 			$command .= Utils\assoc_args_to_str( $assoc_args );
 
-		return Process::create( $command, $this->variables['RUN_DIR'] );
+		return Process::create( $command, $this->variables['RUN_DIR'],
+			array( 'WP_CLI_CACHE_DIR' => $this->variables['SUITE_CACHE_DIR'] ) );
 	}
 
 	public function move_files( $src, $dest ) {
@@ -168,17 +162,25 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		copy( __DIR__ . '/../extra/no-mail.php', $dest_dir . '/wp-content/mu-plugins/no-mail.php' );
 	}
 
+	public function create_config( $subdir = '' ) {
+		$params = self::$db_settings;
+		$params['dbprefix'] = $subdir ?: 'wp_';
+
+		$params['skip-salts'] = true;
+		$this->proc( 'wp core config', $params )->run_check( $subdir );
+	}
+
 	public function install_wp( $subdir = '' ) {
 		$this->create_db();
 		$this->create_run_dir();
 		$this->download_wp( $subdir );
 
-		$dbprefix = $subdir ?: 'wp_';
-		$this->proc( 'wp core config', compact( 'dbprefix' ) )->run_check( $subdir );
+		$this->create_config( $subdir );
 
 		$install_args = array(
 			'url' => 'http://example.com',
 			'title' => 'WP CLI Site',
+			'admin_user' => 'admin',
 			'admin_email' => 'admin@example.com',
 			'admin_password' => 'password1'
 		);

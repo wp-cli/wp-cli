@@ -19,35 +19,72 @@ class Term_Command extends WP_CLI_Command {
 	/**
 	 * List terms in a taxonomy.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <taxonomy>
+	 * : List terms of a given taxonomy.
+	 *
+	 * [--<field>=<value>]
+	 * : Filter by one or more fields. For accepted fields, see get_terms().
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each term.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to all of the term object fields.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term list category --format=csv
+	 *
+	 *     wp term list post_tag --fields=name,slug
+	 *
 	 * @subcommand list
-	 * @synopsis <taxonomy> [--fields=<fields>] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
-
-		list( $taxonomy ) = $args;
+		$formatter = $this->get_formatter( $assoc_args );
 
 		$defaults = array(
-			'fields'     => implode( ',', $this->fields ),
-			'format'     => 'table',
 			'hide_empty' => false,
 		);
-		$assoc_args = wp_parse_args( $assoc_args, $defaults );
+		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		$fields = $assoc_args['fields'];
-		unset( $assoc_args['fields'] );
-
-		$terms = get_terms( array( $taxonomy ), $assoc_args );
-
-		if ( 'ids' == $assoc_args['format'] )
+		$terms = get_terms( $args, $assoc_args );
+		if ( 'ids' == $formatter->format )
 			$terms = wp_list_pluck( $terms, 'term_id' );
 
-		WP_CLI\Utils\format_items( $assoc_args['format'], $terms, $fields );
+		$formatter->display_items( $terms );
 	}
 
 	/**
 	 * Create a term.
 	 *
-	 * @synopsis <term> <taxonomy> [--slug=<slug>] [--description=<description>] [--parent=<term-id>] [--porcelain]
+	 * ## OPTIONS
+	 *
+	 * <term>
+	 * : A name for the new term.
+	 *
+	 * <taxonomy>
+	 * : Taxonomy for the new term.
+	 *
+	 * [--slug=<slug>]
+	 * : A unique slug for the new term. Defaults to sanitized version of name.
+	 *
+	 * [--description=<description>]
+	 * : A description for the new term.
+	 *
+	 * [--parent=<term-id>]
+	 * : A parent for the new term.
+	 *
+	 * [--porcelain]
+	 * : Output just the new term id.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term create Apple category --description="A type of fruit"
 	 */
 	public function create( $args, $assoc_args ) {
 
@@ -80,9 +117,63 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Get a taxonomy term
+	 *
+	 * ## OPTIONS
+	 *
+	 * <term-id>
+	 * : ID of the term to get
+	 *
+	 * <taxonomy>
+	 * : Taxonomy of the term to get
+	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole term, returns the value of a single field.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term get 1 category --format=json
+	 */
+	public function get( $args, $assoc_args ) {
+		$formatter = $this->get_formatter( $assoc_args );
+
+		list( $term_id, $taxonomy ) = $args;
+		$term = get_term_by( 'id', $term_id, $taxonomy );
+		if ( ! $term )
+			WP_CLI::error( "Term doesn't exist." );
+
+		$formatter->display_item( $term );
+	}
+
+	/**
 	 * Update a term.
 	 *
-	 * @synopsis <term-id> <taxonomy> [--name=<name>] [--slug=<slug>] [--description=<description>] [--parent=<term-id>]
+	 * ## OPTIONS
+	 *
+	 * <term-id>
+	 * : ID for the term to update.
+	 *
+	 * <taxonomy>
+	 * : Taxonomy of the term to update.
+	 *
+	 * [--name=<name>]
+	 * : A new name for the term.
+	 *
+	 * [--slug=<slug>]
+	 * : A new slug for the term.
+	 *
+	 * [--description=<description>]
+	 * : A new description for the term.
+	 *
+	 * [--parent=<term-id>]
+	 * : A new parent for the term.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term update 15 category --name=Apple
 	 */
 	public function update( $args, $assoc_args ) {
 
@@ -112,7 +203,17 @@ class Term_Command extends WP_CLI_Command {
 	/**
 	 * Delete a term.
 	 *
-	 * @synopsis <term-id> <taxonomy>
+	 * ## OPTIONS
+	 *
+	 * <term-id>
+	 * : ID for the term to delete.
+	 *
+	 * <taxonomy>
+	 * : Taxonomy of the term to delete.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term delete 15 category
 	 */
 	public function delete( $args ) {
 
@@ -128,6 +229,9 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( "Term doesn't exist." );
 	}
 
+	private function get_formatter( &$assoc_args ) {
+		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'term' );
+	}
 }
 
 WP_CLI::add_command( 'term', 'Term_Command' );

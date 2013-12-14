@@ -7,8 +7,8 @@
 # https://github.com/88mph/wpadmin/blob/master/wpadmin.php
 
 # Get the absolute path of this executable
-ORIGDIR=$(pwd)
-SELF_PATH=$(cd -P -- "$(dirname -- "$0")" && pwd -P) && SELF_PATH=$SELF_PATH/$(basename -- "$0")
+ORIGDIR="$(pwd)"
+SELF_PATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" && SELF_PATH="$SELF_PATH/$(basename -- "$0")"
 
 # Resolve symlinks - this is the equivalent of "readlink -f", but also works with non-standard OS X readlink.
 while [ -h "$SELF_PATH" ]; do
@@ -16,18 +16,18 @@ while [ -h "$SELF_PATH" ]; do
 	# 2) cd to the directory of where the symlink points
 	# 3) Get the pwd
 	# 4) Append the basename
-	DIR=$(dirname -- "$SELF_PATH")
-	SYM=$(readlink $SELF_PATH)
-	SELF_PATH=$(cd $DIR && cd $(dirname -- "$SYM") && pwd)/$(basename -- "$SYM")
+	DIR="$(dirname -- "$SELF_PATH")"
+	SYM="$(readlink "$SELF_PATH")"
+	SELF_PATH="$(cd "$DIR" && cd "$(dirname -- "$SYM")" && pwd)/$(basename -- "$SYM")"
 done
 cd "$ORIGDIR"
 
 # Build the path to the root PHP file
-SCRIPT_PATH=$(dirname "$SELF_PATH")/../php/boot-fs.php
+SCRIPT_PATH="$(dirname "$SELF_PATH")/../php/boot-fs.php"
 
 case $(uname -a) in
 	CYGWIN*)
-		SCRIPT_PATH=$(cygpath -w -a -- "$SCRIPT_PATH") ;;
+		SCRIPT_PATH="$(cygpath -w -a -- "$SCRIPT_PATH")" ;;
 esac
 
 if [ ! -z "$WP_CLI_PHP" ] ; then
@@ -36,31 +36,11 @@ if [ ! -z "$WP_CLI_PHP" ] ; then
 else
 	# Default to using the php that we find on the PATH.
 	# Note that we need the full path to php here for Dreamhost, which behaves oddly.  See http://drupal.org/node/662926
-	php=`which php`
+	php="`which php`"
 fi
-
-# Check to see if the user has provided a php.ini file or wp-cli.ini file in any conf dir
-# Last found wins, so search in reverse priority order
-for conf_dir in $(dirname "$SELF_PATH") /etc/wp-cli $HOME/.wp-cli ; do
-	if [ -f $conf_dir/php.ini ] ; then
-		wp_cli_php_ini=$conf_dir/php.ini
-	fi
-	if [ -f $conf_dir/wp-cli.ini ] ; then
-		wp_cli_php_override=$conf_dir/wp-cli.ini
-	fi
-done
-
-# Add in the php file location and/or the php override variables as appropriate
-if [ "x$wp_cli_php_ini" != "x" ] ; then
-	php="$php --php-ini $wp_cli_php_ini"
-fi
-if [ "x$wp_cli_php_override" != "x" ] ; then
-	wp_cli_override_vars=`grep '^[a-z_A-Z0-9]\+ *=' $wp_cli_php_override | sed -e 's|\([^ =]*\) *= *\(.*\)|\1="\2"|' -e 's| ||g' -e 's|^|-d |' | tr '\n\r' '  '`
-	php="$php $wp_cli_override_vars"
-fi
-
-export WP_CLI_PHP_USED=$php
 
 # Pass in the path to php so that wp-cli knows which one
-# to use if it re-launches itself to run subcommands
-exec $php "$SCRIPT_PATH" "$@"
+# to use if it re-launches itself to run other commands.
+export WP_CLI_PHP_USED="$php"
+
+exec "$php" $WP_CLI_PHP_ARGS "$SCRIPT_PATH" "$@"

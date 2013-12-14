@@ -15,20 +15,22 @@ class Role_Command extends WP_CLI_Command {
 	/**
 	 * List all roles.
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to name,role.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp role list --fields=role --format=csv
+	 *
 	 * @subcommand list
-	 * @synopsis [--fields=<fields>] [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 		global $wp_roles;
-
-		$defaults = array(
-			'fields'    => implode( ',', $this->fields ),
-			'format'    => 'table',
-		);
-		$params = array_merge( $defaults, $assoc_args );
-
-		$fields = $params['fields'];
-		unset( $params['fields'] );
 
 		$output_roles = array();
 		foreach ( $wp_roles->roles as $key => $role ) {
@@ -40,27 +42,52 @@ class Role_Command extends WP_CLI_Command {
 			$output_roles[] = $output_role;
 		}
 
-		WP_CLI\Utils\format_items( $params['format'], $output_roles, $fields );
+		$formatter = new \WP_CLI\Formatter( $assoc_args, $this->fields );
+		$formatter->display_items( $output_roles );
 	}
 
 	/**
 	 * Check if a role exists.
-	 * Will return 0 if the role exists, 1 if it does not.
 	 *
-	 * @synopsis <role-key>
+	 * ##DESCRIPTION
+	 *
+	 * Will exit with status 0 if the role exists, 1 if it does not.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <role-key>
+	 * : The internal name of the role.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp role exists editor
 	 */
 	public function exists( $args ) {
 		global $wp_roles;
 
 		if ( ! in_array($args[0], array_keys( $wp_roles->roles ) ) ) {
-			exit(1);
+			WP_CLI::error( "Role with ID $args[0] does not exist." );
 		}
+
+		WP_CLI::success( "Role with ID $args[0] exists." );
 	}
 
 	/**
 	 * Create a new role.
 	 *
-	 * @synopsis <role-key> <role-name>
+	 * ## OPTIONS
+	 *
+	 * <role-key>
+	 * : The internal name of the role.
+	 *
+	 * <role-name>
+	 * : The publicly visible name of the role.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp role create approver Approver
+	 *
+	 *     wp role create productadmin "Product Administrator"
 	 */
 	public function create( $args ) {
 		self::persistence_check();
@@ -75,16 +102,23 @@ class Role_Command extends WP_CLI_Command {
 			WP_CLI::error( "Role couldn't be created." );
 		else
 			WP_CLI::success( sprintf( "Role with key %s created.", $role_key ) );
-
 	}
 
 	/**
 	 * Delete an existing role.
 	 *
-	 * @synopsis <role-key>
+	 * ## OPTIONS
+	 *
+	 * <role-key>
+	 * : The internal name of the role.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp role delete approver
+	 *
+	 *     wp role delete productadmin
 	 */
 	public function delete( $args ) {
-
 		global $wp_roles;
 
 		self::persistence_check();
