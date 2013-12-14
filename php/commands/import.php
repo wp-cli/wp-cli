@@ -34,6 +34,8 @@ class Import_Command extends WP_CLI_Command {
 
 		$this->add_wxr_filters();
 
+		WP_CLI::log( 'Starting the import process...' );
+
 		foreach ( $args as $file ) {
 			if ( ! is_readable( $file ) ) {
 				WP_CLI::warning( "Can't read $file file." );
