@@ -59,16 +59,35 @@ require( ABSPATH . WPINC . '/pomo/mo.php' );
 // WP_CLI: Early hooks
 Utils\replace_wp_die_handler();
 add_filter( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
+if ( defined( 'WP_INSTALLING' ) && is_multisite() ) {
+	$values = array(
+		'ms_files_rewriting' => null,
+		'active_sitewide_plugins' => array(),
+		'_site_transient_update_core' => null,
+		'_site_transient_update_themes' => null,
+		'_site_transient_update_plugins' => null,
+		'WPLANG' => '',
+	);
+	foreach ( $values as $key => $value ) {
+		add_filter( "pre_site_option_$key", function () use ( $values, $key ) {
+			return $values[ $key ];
+		} );
+	}
+	unset( $values, $key, $value );
+}
 
 // Include the wpdb class and, if present, a db.php database drop-in.
 require_wp_db();
 
 // WP-CLI: Handle db error ourselves, instead of waiting for dead_db()
+global $wpdb;
 if ( !empty( $wpdb->error ) )
 	wp_die( $wpdb->error );
 
 // Set the database table prefix and the format specifiers for database table columns.
+// @codingStandardsIgnoreStart
 $GLOBALS['table_prefix'] = $table_prefix;
+// @codingStandardsIgnoreEnd
 wp_set_wpdb_vars();
 
 // Start the WordPress object cache, or an external object cache if the drop-in is present.
@@ -103,6 +122,7 @@ require( ABSPATH . WPINC . '/class-wp-ajax-response.php' );
 require( ABSPATH . WPINC . '/formatting.php' );
 require( ABSPATH . WPINC . '/capabilities.php' );
 require( ABSPATH . WPINC . '/query.php' );
+Utils\maybe_require( '3.7-alpha-25139', ABSPATH . WPINC . '/date.php' );
 require( ABSPATH . WPINC . '/theme.php' );
 Utils\maybe_require( '3.4', ABSPATH . WPINC . '/class-wp-theme.php' );
 Utils\maybe_require( '3.4', ABSPATH . WPINC . '/template.php' );
@@ -282,6 +302,7 @@ require_once( ABSPATH . WPINC . '/locale.php' );
 $GLOBALS['wp_locale'] = new WP_Locale();
 
 // Load the functions for the active theme, for both parent and child theme if applicable.
+global $pagenow;
 if ( ! defined( 'WP_INSTALLING' ) || 'wp-activate.php' === $pagenow ) {
 	if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists( STYLESHEETPATH . '/functions.php' ) )
 		include( STYLESHEETPATH . '/functions.php' );
@@ -304,7 +325,8 @@ $wp->init();
 do_action( 'init' );
 
 // Check site status
-if ( is_multisite() ) {
+# if ( is_multisite() ) {  // WP-CLI
+if ( is_multisite() && !defined('WP_INSTALLING') ) {
 	if ( true !== ( $file = ms_site_check() ) ) {
 		require( $file );
 		die();
