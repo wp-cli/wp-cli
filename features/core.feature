@@ -195,6 +195,9 @@ Feature: Manage WordPress installation
     Given a WP multisite install
     And I run `wp db reset --yes`
 
+    When I try `wp core is-installed`
+    Then the return code should be 1
+
     When I run `wp core multisite-install --title=Test --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
     Then STDOUT should not be empty
 
