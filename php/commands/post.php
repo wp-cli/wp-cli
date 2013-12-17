@@ -360,12 +360,14 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * 
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the post to get the URL.
+	 * <id>...
+	 * : One or more IDs of posts get the URL.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp post url 123
+	 * 
+	 *     wp post url 123 324
 	 */
 	public function url( $args ) {
 		parent::_url( $args, 'get_permalink' );

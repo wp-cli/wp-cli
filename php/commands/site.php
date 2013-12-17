@@ -372,8 +372,8 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * 
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the site to get the URL.
+	 * <id>...
+	 * : One or more IDs of sites to get the URL.
 	 *
 	 * ## EXAMPLES
 	 *

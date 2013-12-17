@@ -92,10 +92,11 @@ Feature: Manage WordPress posts
       """
       This is some bunkum.
       """
-      
-    When I run `wp post url {POST_ID}`
+    
+    When I run `wp post url 1 {POST_ID}`
     Then STDOUT should be:
       """
+      http://example.com/?p=1
       http://example.com/?p=3
       """
 

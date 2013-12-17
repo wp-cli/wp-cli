@@ -375,8 +375,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * 
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to get the URL.
+	 * <id>...
+	 * : One or more IDs of comments to get the URL.
 	 *
 	 * ## EXAMPLES
 	 *

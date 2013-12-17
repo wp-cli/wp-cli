@@ -84,8 +84,9 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	}
 	
 	protected function _url( $args, $callback ) {
-		$object = $this->fetcher->get_check( $args[0] );
-		\WP_CLI::line( $callback( $object->{$this->obj_id_key} ) );
+		foreach ( $args as $obj_id ) {
+			$object = $this->fetcher->get_check( $obj_id );
+			\WP_CLI::line( $callback( $object->{$this->obj_id_key} ) );
+		}
 	}
 }
-
