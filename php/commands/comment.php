@@ -158,8 +158,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to delete.
+	 * <id>...
+	 * : One or more IDs of comments to delete.
 	 *
 	 * [--force]
 	 * : Skip the trash bin.
@@ -167,6 +167,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     wp comment delete 1337 --force
+	 * 
+	 *     wp comment delete 1337 2341 --force
 	 */
 	public function delete( $args, $assoc_args ) {
 		parent::_delete( $args, $assoc_args, function ( $comment_id, $assoc_args ) {
