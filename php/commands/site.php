@@ -9,6 +9,10 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected $obj_type = 'site';
 
+	public function __construct() {
+		$this->fetcher = new \WP_CLI\Fetchers\Site;
+	}
+
 	/**
 	 * Delete comments.
 	 */
@@ -217,7 +221,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 		// Site
 		if ( !empty( $assoc_args['network_id'] ) ) {
-			$site = $this->_get_site( $assoc_args['network_id'] );
+			$site = $this->fetcher->get( $assoc_args['network_id'] );
 			if ( $site === false ) {
 				WP_CLI::error( sprintf( 'Network with id %d does not exist.', $assoc_args['network_id'] ) );
 			}
@@ -364,24 +368,19 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get site (network) data for a given id.
+	 * Get site url
+	 * 
+	 * ## OPTIONS
 	 *
-	 * @param int     $site_id
-	 * @return bool|array False if no network found with given id, array otherwise
+	 * <id>...
+	 * : One or more IDs of sites to get the URL.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site url 123
 	 */
-	private function _get_site( $site_id ) {
-		global $wpdb;
-
-		// Load site data
-		$sites = $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM $wpdb->site WHERE id = %d", $site_id ) );
-
-		if ( !empty( $sites ) ) {
-			// Only care about domain and path which are set here
-			return $sites[0];
-		}
-
-		return false;
+	public function url( $args ) {
+		parent::_url( $args, 'get_site_url' );
 	}
 }
 

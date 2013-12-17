@@ -369,6 +369,22 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::success( "Comment with ID $args[0] exists." );
 		}
 	}
+	
+	/**
+	 * Get comment url
+	 * 
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of comments to get the URL.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment url 123
+	 */
+	public function url( $args ) {
+		parent::_url( $args, 'get_comment_link' );
+	}
 }
 
 WP_CLI::add_command( 'comment', 'Comment_Command' );
