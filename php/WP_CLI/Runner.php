@@ -498,6 +498,10 @@ class Runner {
 			define( 'WP_LOAD_IMPORTERS', true );
 			define( 'WP_IMPORTING', true );
 		}
+
+		if ( $this->cmd_starts_with( array( 'plugin' ) ) ) {
+			$GLOBALS['pagenow'] = 'plugins.php';
+		}
 	}
 
 	private static function fake_current_site_blog( $url_parts ) {
