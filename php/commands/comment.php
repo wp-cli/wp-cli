@@ -373,7 +373,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 	
 	/**
-	 * Get comment url
+	 * Get comment url by ID
 	 * 
 	 * ## OPTIONS
 	 *
@@ -386,6 +386,28 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function url( $args ) {
 		parent::_url( $args, 'get_comment_link' );
+	}
+
+	/**
+	 * Get comment admin url by ID
+	 * 
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of comments to get the admin URL.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment admin-url 123
+	 * 
+	 *     wp comment admin-url 123 324
+	 * 
+	 * @subcommand admin-url
+	 */
+	public function admin_url( $args ) {
+		parent::_url( $args, function ( $comment_id ) {
+			return admin_url( "comment.php?action=editcomment&c={$comment_id}" );
+		} );
 	}
 }
 

@@ -356,12 +356,12 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get post url
+	 * Get post url by ID
 	 * 
 	 * ## OPTIONS
 	 *
 	 * <id>...
-	 * : One or more IDs of posts get the URL.
+	 * : One or more IDs of posts to get the URL.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -371,6 +371,28 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function url( $args ) {
 		parent::_url( $args, 'get_permalink' );
+	}
+
+	/**
+	 * Get post admin url by ID
+	 * 
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of posts to get the admin URL.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp post admin-url 123
+	 * 
+	 *     wp post admin-url 123 324
+	 * 
+	 * @subcommand admin-url
+	 */
+	public function admin_url( $args ) {
+		parent::_url( $args, function ( $post_id ) {
+			return admin_url( "post.php?post={$post_id}&action=edit" );
+		} );
 	}
 
 	private function maybe_make_child() {

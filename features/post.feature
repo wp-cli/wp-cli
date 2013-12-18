@@ -100,6 +100,12 @@ Feature: Manage WordPress posts
       http://example.com/?p=3
       """
 
+    When I run `wp post admin-url 1 {POST_ID}`
+    Then STDOUT should be:
+      """
+      http://example.com/wp-admin/post.php?post=1&action=edit
+      http://example.com/wp-admin/post.php?post=3&action=edit
+      """
 
   Scenario: Creating/listing posts
     When I run `wp post create --post_title='Publish post' --post_content='Publish post content' --post_status='publish' --porcelain`
