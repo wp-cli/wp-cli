@@ -75,11 +75,11 @@ Feature: Manage sites in a multisite installation
     When I run `wp site url {SITE_ID}`
     Then STDOUT should be:
       """
-      http://example.com
+      http://example.com/first
       """
       
     When I run `wp site admin-url {SITE_ID}`
     Then STDOUT should be:
       """
-      http://example.com
+      http://example.com/wp-admin/network/site-info.php?id=2
       """
