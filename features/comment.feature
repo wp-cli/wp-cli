@@ -60,3 +60,9 @@ Feature: Manage WordPress comments
       """
       http://example.com/?p=1#comment-1
       """
+      
+    When I run `wp comment admin-url 1`
+    Then STDOUT should be:
+      """
+      http://example.com/wp-admin/comment.php?action=editcomment&c=1
+      """

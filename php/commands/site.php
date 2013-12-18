@@ -368,7 +368,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get site url
+	 * Get site url by ID
 	 * 
 	 * ## OPTIONS
 	 *
@@ -381,6 +381,28 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function url( $args ) {
 		parent::_url( $args, 'get_site_url' );
+	}
+	
+	/**
+	 * Get site admin url by ID
+	 * 
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to get the admin URL.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site admin-url 123
+	 * 
+	 *     wp site admin-url 123 324
+	 * 
+	 * @subcommand admin-url
+	 */
+	public function admin_url( $args ) {
+		parent::_url( $args, function ( $site_id ) {
+			return network_admin_url( "site-info.php?id={$site_id}" );
+		} );
 	}
 }
 
