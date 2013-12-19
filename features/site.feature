@@ -67,9 +67,14 @@ Feature: Manage sites in a multisite installation
 
   Scenario: Get site info
     Given a WP multisite install
-    
-    When I run `wp site url 1`
+   
+    When I run `wp site create --slug=first --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+ 
+    When I run `wp site url {SITE_ID}`
     Then STDOUT should be:
       """
-      http://example.com
+      http://example.com/first
       """
+
