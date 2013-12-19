@@ -173,7 +173,7 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Set up a wp-config.php file.
+	 * Generate a wp-config.php file.
 	 *
 	 * ## OPTIONS
 	 *
@@ -205,7 +205,7 @@ class Core_Command extends WP_CLI_Command {
 	 * : If set, the command reads additional PHP code from STDIN.
 	 *
 	 * [--skip-salts]
-	 * : If set, keys and salts won't be generated, but, instead, should be passed via --extra-php.
+	 * : If set, keys and salts won't be generated, but should instead be passed via `--extra-php`.
 	 *
 	 * ## EXAMPLES
 	 *
