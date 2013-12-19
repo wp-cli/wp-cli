@@ -270,7 +270,7 @@ class WP_Export_Query {
 				// the remaining terms
 				foreach ( $terms as $other_term ) {
 					if ( $term->parent == $other_term->term_id ) {
-						array_push( $terms, $term );
+						$terms[] = $term;
 						continue;
 					}
 				}
