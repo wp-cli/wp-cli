@@ -265,10 +265,7 @@ class WP_Export_Query {
 		while ( $term = array_shift( $terms ) ) {
 			if ( $term->parent == 0 || isset( $sorted[$term->parent] ) ) {
 				$sorted[$term->term_id] = $term;
-			else
-				$terms[] = $term;
 			} else {
-				WP_CLI::log( "Returning term $term->slug to terms" );
 				// Cope if a term doesn't have a parent in 
 				// the remaining terms
 				foreach ( $terms as $other_term ) {
