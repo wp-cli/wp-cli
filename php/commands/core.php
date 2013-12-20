@@ -519,8 +519,6 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			WP_CLI::log( 'Added multisite constants to wp-config.php.' );
 		}
 
-		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
-
 		return true;
 	}
 
