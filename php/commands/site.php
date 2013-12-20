@@ -402,6 +402,10 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp site url 123
 	 */
 	public function url( $args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
 		parent::_url( $args, 'get_site_url' );
 	}
 }

@@ -50,6 +50,12 @@ Feature: Manage sites in a multisite installation
   Scenario: Empty a site
     Given a WP install
 
+    When I try `wp site url 1`
+    Then STDERR should be:
+      """
+      Error: This is not a multisite install.
+      """
+
     When I run `wp post create --post_title='Test post' --post_content='Test content.' --porcelain`
     Then STDOUT should not be empty
 
