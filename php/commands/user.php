@@ -240,13 +240,15 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user update 123 --user_login=mary --display_name=Mary
-	 *
-	 *     wp user update mary --user_pass=marypass
+	 *     wp user update 123 --display_name=Mary --user_pass=marypass
 	 */
 	public function update( $args, $assoc_args ) {
-		$user_ids = array();
+		if ( isset( $assoc_args['user_login'] ) ) {
+			WP_CLI::warning( "User logins can't be changed." );
+			unset( $assoc_args['user_login'] );
+		}
 
+		$user_ids = array();
 		foreach ( $this->fetcher->get_many( $args ) as $user ) {
 			$user_ids[] = $user->ID;
 		}
