@@ -8,6 +8,7 @@
 class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected $obj_type = 'site';
+	protected $obj_id_key = 'blog_id';
 
 	public function __construct() {
 		$this->fetcher = new \WP_CLI\Fetchers\Site;
@@ -219,15 +220,15 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 		$email = empty( $assoc_args['email'] ) ? '' : $assoc_args['email'];
 
-		// Site
+		// Network
 		if ( !empty( $assoc_args['network_id'] ) ) {
-			$site = $this->fetcher->get( $assoc_args['network_id'] );
-			if ( $site === false ) {
+			$network = $this->_get_network( $assoc_args['network_id'] );
+			if ( $network === false ) {
 				WP_CLI::error( sprintf( 'Network with id %d does not exist.', $assoc_args['network_id'] ) );
 			}
 		}
 		else {
-			$site = wpmu_current_site();
+			$network = wpmu_current_site();
 		}
 
 		$public = !isset( $assoc_args['private'] );
@@ -264,12 +265,12 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( is_subdomain_install() ) {
 			$path = '/';
-			$url = $newdomain = $base.'.'.preg_replace( '|^www\.|', '', $site->domain );
+			$url = $newdomain = $base.'.'.preg_replace( '|^www\.|', '', $network->domain );
 		}
 		else {
-			$newdomain = $site->domain;
+			$newdomain = $network->domain;
 			$path = '/' . trim( $base, '/' ) . '/';
-			$url = $site->domain . $path;
+			$url = $network->domain . $path;
 		}
 
 		$user_id = email_exists( $email );
@@ -285,7 +286,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$wpdb->hide_errors();
-		$id = wpmu_create_blog( $newdomain, $path, $title, $user_id, array( 'public' => $public ), $site->id );
+		$id = wpmu_create_blog( $newdomain, $path, $title, $user_id, array( 'public' => $public ), $network->id );
 		$wpdb->show_errors();
 		if ( !is_wp_error( $id ) ) {
 			if ( !is_super_admin( $user_id ) && !get_user_option( 'primary_blog', $user_id ) ) {
@@ -304,6 +305,27 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::line( $id );
 		else
 			WP_CLI::success( "Site $id created: $url" );
+	}
+
+	/**
+	 * Get network data for a given id.
+	 *
+	 * @param int     $network_id
+	 * @return bool|array False if no network found with given id, array otherwise
+	 */
+	private function _get_network( $network_id ) {
+		global $wpdb;
+
+		// Load network data
+		$networks = $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM $wpdb->site WHERE id = %d", $network_id ) );
+
+		if ( !empty( $networks ) ) {
+			// Only care about domain and path which are set here
+			return $networks[0];
+		}
+
+		return false;
 	}
 
 	/**
@@ -380,6 +402,10 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp site url 123
 	 */
 	public function url( $args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
 		parent::_url( $args, 'get_site_url' );
 	}
 }
