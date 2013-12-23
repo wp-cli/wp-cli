@@ -18,11 +18,19 @@ class Media_Command extends WP_CLI_Command {
 	 * [--yes]
 	 * : Answer yes to the confirmation message.
 	 *
+	 * [--start=<start>]
+	 * : The post id from which to start regeneration of the thumbnail.
+	 *
+	 * [--end=<end>]
+	 * : The last post id for which to regenerate the thumbnail.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp media regenerate 123 1337
 	 *
 	 *     wp media regenerate --yes
+	 *
+	 *     wp media regenerate --start=2000 --end=1000
 	 */
 	function regenerate( $args, $assoc_args = array() ) {
 		global $wpdb;
@@ -46,16 +54,26 @@ class Media_Command extends WP_CLI_Command {
 			//No images, so all keys in $args are not found within WP
 			WP_CLI::error( $this->_not_found_message( $args ) );
 		}
-		$count = $images->post_count;
+
+		$upper = isset( $assoc_args['start'] ) ? $assoc_args['start'] : PHP_MAX_INT;
+		$lower = isset( $assoc_args['end'] ) ? $assoc_args['end'] : 0;
+
+		$filter = function( $id ) use ( $upper, $lower ) {
+			return ( $id <= $upper ) && ( $id >= $lower );
+		};
+
+		$ids = array_filter( $images->posts, $filter );
+
+		$count = count( $ids );
 
 		WP_CLI::log( sprintf( 'Found %1$d %2$s to regenerate.', $count, ngettext('image', 'images', $count) ) );
 
-		$not_found = array_diff( $args, $images->posts );
+		$not_found = array_diff( $args, $ids );
 		if( !empty($not_found) ) {
 			WP_CLI::warning( $this->_not_found_message( $not_found ) );
 		}
 
-		foreach ( $images->posts as $id ) {
+		foreach ( $ids as $id ) {
 			$this->_process_regeneration( $id );
 		}
 
