@@ -7,7 +7,7 @@ Feature: Manage WordPress attachments
     When I try `wp media regenerate --yes`
     Then STDERR should contain:
       """
-      Error: Unable to find the images
+      No images found.
       """
 
   Scenario: Import image from remote URL

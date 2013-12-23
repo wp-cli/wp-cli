@@ -47,11 +47,12 @@ class Media_Command extends WP_CLI_Command {
 		$count = $images->post_count;
 
 		if ( !$count ) {
-			WP_CLI::log( 'No images found.' );
+			WP_CLI::warning( 'No images found.' );
 			return;
 		}
 
-		WP_CLI::log( sprintf( 'Found %1$d %2$s to regenerate.', $count, ngettext('image', 'images', $count) ) );
+		WP_CLI::log( sprintf( 'Found %1$d %2$s to regenerate.', $count,
+			ngettext( 'image', 'images', $count ) ) );
 
 		foreach ( $images->posts as $id ) {
 			$this->_process_regeneration( $id );
