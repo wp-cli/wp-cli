@@ -30,7 +30,7 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 *     wp media regenerate --yes
 	 *
-	 *     wp media regenerate --start=1337 --end=1350
+	 *     wp media regenerate --start=2000 --end=1000
 	 */
 	function regenerate( $args, $assoc_args = array() ) {
 		global $wpdb;
