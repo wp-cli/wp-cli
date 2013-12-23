@@ -20,9 +20,11 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp media regenerate 123 1337
-	 *
+	 *     # re-generate all thumbnails, without confirmation
 	 *     wp media regenerate --yes
+	 *
+	 *     # re-generate all thumbnails that have IDs between 1000 and 2000
+	 *     seq 1000 2000 | xargs wp media regenerate
 	 */
 	function regenerate( $args, $assoc_args = array() ) {
 		global $wpdb;
