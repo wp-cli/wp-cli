@@ -3,10 +3,14 @@ Feature: Global flags
   Scenario: Setting the URL
     Given a WP install
 
-    When I run `wp --url=localhost:8001 eval 'echo $_SERVER["SERVER_PORT"];'`
-    Then STDOUT should be:
+    When I run `wp --url=localhost:8001 eval 'echo json_encode( $_SERVER );'`
+    Then STDOUT should be JSON containing:
       """
-      8001
+      {
+        "HTTP_HOST": "localhost:8001",
+        "SERVER_NAME": "localhost",
+        "SERVER_PORT": "8001"
+      }
       """
 
   Scenario: Quiet run
@@ -58,7 +62,7 @@ Feature: Global flags
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: Could not get a user_id for this user: 'non-existing-user'
+      Error: Could not find user: non-existing-user
       """
 
   Scenario: Using a custom logger
@@ -130,7 +134,7 @@ Feature: Global flags
       This is a custom command.
       """
 
-    When I run `wp --config=wp-cli2.yml test req 'This is a custom command.'`
+    When I run `WP_CLI_CONFIG_PATH=wp-cli2.yml wp test req 'This is a custom command.'`
     Then STDOUT should contain:
       """
       This is a custom command.

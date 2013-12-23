@@ -1,9 +1,10 @@
 Feature: Manage WordPress comments
 
-  Scenario: Creating/updating/deleting comments
+  Background:
     Given a WP install
 
-    When I run `wp comment create --comment_post_ID=1 --comment_content='Hello' --porcelain`
+  Scenario: Creating/updating/deleting comments
+    When I run `wp comment create --comment_post_ID=1 --comment_content='Hello' --comment_author='Billy' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {COMMENT_ID}
 
@@ -13,6 +14,15 @@ Feature: Manage WordPress comments
 	  Success: Comment with ID {COMMENT_ID} exists.
       """
 
+    When I run `wp comment update {COMMENT_ID} --comment_author='Johnny'`
+    Then STDOUT should not be empty
+
+    When I run `wp comment get {COMMENT_ID} --field=author`
+    Then STDOUT should be:
+      """
+      Johnny
+      """
+
     When I run `wp comment delete {COMMENT_ID}`
     Then STDOUT should be:
       """
@@ -20,8 +30,6 @@ Feature: Manage WordPress comments
       """
   
   Scenario: Get details about an existing comment
-    Given a WP install
-
     When I run `wp comment get 1`
     Then STDOUT should be a table containing rows:
       | Field           | Value          |
@@ -31,3 +39,9 @@ Feature: Manage WordPress comments
     Then STDOUT should be a table containing rows:
       | comment_approved | comment_author |
       | 1                | Mr WordPress   |
+
+    When I run `wp comment list --field=approved`
+    Then STDOUT should be:
+      """
+      1
+      """

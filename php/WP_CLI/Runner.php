@@ -4,11 +4,13 @@ namespace WP_CLI;
 
 use WP_CLI;
 use WP_CLI\Utils;
-
+use WP_CLI\Dispatcher;
 
 class Runner {
 
-	private $config_path, $config;
+	private $global_config_path, $project_config_path;
+
+	private $config, $extra_config;
 
 	private $arguments, $assoc_args;
 
@@ -37,11 +39,23 @@ class Runner {
 		}
 	}
 
-	private static function get_config_path( $runtime_config ) {
-		if ( isset( $runtime_config['config'] ) && file_exists( $runtime_config['config'] ) ) {
-			return $runtime_config['config'];
+	private static function get_global_config_path() {
+		$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
+		if ( isset( $runtime_config['config'] ) ) {
+			$config_path = $runtime_config['config'];
 		}
 
+		if ( !$config_path ) {
+			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
+		}
+
+		if ( !is_readable( $config_path ) )
+			return false;
+
+		return $config_path;
+	}
+
+	private static function get_project_config_path() {
 		$config_files = array(
 			'wp-cli.local.yml',
 			'wp-cli.yml'
@@ -49,7 +63,7 @@ class Runner {
 
 		// Stop looking upward when we find we have emerged from a subdirectory
 		// install into a parent install
-		$path = Utils\find_file_upward( $config_files, getcwd(), function ( $dir ) {
+		return Utils\find_file_upward( $config_files, getcwd(), function ( $dir ) {
 			static $wp_load_count = 0;
 			$wp_load_path = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
 			if ( file_exists( $wp_load_path ) ) {
@@ -57,12 +71,6 @@ class Runner {
 			}
 			return $wp_load_count > 1;
 		} );
-
-		if ( $path ) {
-			return $path;
-		}
-
-		return false;
 	}
 
 	private static function set_wp_root( $config ) {
@@ -93,15 +101,13 @@ class Runner {
 		}
 
 		if ( !$user_id || !wp_set_current_user( $user_id ) ) {
-			\WP_CLI::error( sprintf( 'Could not get a user_id for this user: %s', var_export( $user, true ) ) );
+			\WP_CLI::error( "Could not find user: $user" );
 		}
 	}
 
 	private static function guess_url( $assoc_args ) {
 		if ( isset( $assoc_args['blog'] ) ) {
 			$assoc_args['url'] = $assoc_args['blog'];
-			unset( $assoc_args['blog'] );
-			WP_CLI::warning( 'The --blog parameter is deprecated. Use --url instead.' );
 		}
 
 		if ( isset( $assoc_args['url'] ) ) {
@@ -143,28 +149,6 @@ class Runner {
 		return false;
 	}
 
-	private static function set_url_params( $url_parts ) {
-		$f = function( $key ) use ( $url_parts ) {
-			return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
-		};
-
-		if ( isset( $url_parts['host'] ) ) {
-			$_SERVER['HTTP_HOST'] = $url_parts['host'];
-			if ( isset( $url_parts['port'] ) ) {
-				$_SERVER['HTTP_HOST'] .= ':' . $url_parts['port'];
-			}
-
-			$_SERVER['SERVER_NAME'] = substr($_SERVER['HTTP_HOST'], 0, strrpos($_SERVER['HTTP_HOST'], '.'));
-		}
-
-		$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
-		$_SERVER['SERVER_PORT'] = isset( $url_parts['port'] ) ? $url_parts['port'] : '80';
-		$_SERVER['QUERY_STRING'] = $f('query');
-		$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
-		$_SERVER['HTTP_USER_AGENT'] = '';
-		$_SERVER['REQUEST_METHOD'] = 'GET';
-	}
-
 	private function cmd_starts_with( $prefix ) {
 		return $prefix == array_slice( $this->arguments, 0, count( $prefix ) );
 	}
@@ -199,7 +183,7 @@ class Runner {
 			$command = $subcommand;
 		}
 
-		return array( $command, $args );
+		return array( $command, $args, $cmd_path );
 	}
 
 	public function run_command( $args, $assoc_args = array() ) {
@@ -208,9 +192,21 @@ class Runner {
 			WP_CLI::error( $r );
 		}
 
-		list( $command, $final_args ) = $r;
+		list( $command, $final_args, $cmd_path ) = $r;
 
-		$command->invoke( $final_args, $assoc_args );
+		$name = implode( ' ', $cmd_path );
+
+		if ( isset( $this->extra_config[ $name ] ) ) {
+			$extra_args = $this->extra_config[ $name ];
+		} else {
+			$extra_args = array();
+		}
+
+		try {
+			$command->invoke( $final_args, $assoc_args, $extra_args );
+		} catch ( WP_CLI\Iterators\Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
 	}
 
 	private function _run_command() {
@@ -314,6 +310,7 @@ class Runner {
 			foreach ( $special_flags as $key ) {
 				if ( isset( $assoc_args[ $key ] ) ) {
 					$args = array( 'cli', $key );
+					unset( $assoc_args[ $key ] );
 					break;
 				}
 			}
@@ -358,6 +355,7 @@ class Runner {
 
 		$minimum_version = '3.4';
 
+		// @codingStandardsIgnoreStart
 		if ( version_compare( $wp_version, $minimum_version, '<' ) ) {
 			WP_CLI::error(
 				"WP-CLI needs WordPress $minimum_version or later to work properly. " .
@@ -365,26 +363,33 @@ class Runner {
 				"Try running `wp core download --force`."
 			);
 		}
+		// @codingStandardsIgnoreEnd
 	}
 
 	private function init_config() {
-		list( $args, $assoc_args, $runtime_config ) = \WP_CLI::get_configurator()->parse_args(
-			array_slice( $GLOBALS['argv'], 1 ) );
+		$configurator = \WP_CLI::get_configurator();
 
-		list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
-			$args, $assoc_args );
+		// File config
+		{
+			$this->global_config_path = self::get_global_config_path();
+			$this->project_config_path = self::get_project_config_path();
 
-		$this->config_path = self::get_config_path( $runtime_config );
-
-		$this->config = \WP_CLI::get_configurator()->load_config( $this->config_path );
-
-		foreach ( $runtime_config as $key => $value ) {
-			if ( isset( $this->config[ $key ] ) && is_array( $this->config[ $key ] ) ) {
-				$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
-			} else {
-				$this->config[ $key ] = $value;
-			}
+			$configurator->merge_yml( $this->global_config_path );
+			$configurator->merge_yml( $this->project_config_path );
 		}
+
+		// Runtime config and args
+		{
+			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args(
+				array_slice( $GLOBALS['argv'], 1 ) );
+
+			list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
+				$args, $assoc_args );
+
+			$configurator->merge_array( $runtime_config );
+		}
+
+		list( $this->config, $this->extra_config ) = $configurator->to_array();
 
 		if ( !isset( $this->config['path'] ) ) {
 			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
@@ -405,7 +410,7 @@ class Runner {
 
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {
-				require $path;
+				Utils\load_file( $path );
 			}
 		}
 
@@ -424,17 +429,14 @@ class Runner {
 		self::set_wp_root( $this->config );
 
 		// First try at showing man page
-		if ( 'help' === $this->arguments[0] &&
-		   ( isset( $this->arguments[1] ) || !$this->wp_exists() ) ) {
+		if ( 'help' === $this->arguments[0] && ( isset( $this->arguments[1] ) || !$this->wp_exists() ) ) {
 			$this->_run_command();
 		}
 
-		// Handle --url and --blog parameters
+		// Handle --url parameter
 		$url = self::guess_url( $this->config );
-		if ( $url ) {
-			$url_parts = self::parse_url( $url );
-			self::set_url_params( $url_parts );
-		}
+		if ( $url )
+			\WP_CLI::set_url( $url );
 
 		$this->do_early_invoke( 'before_wp_load' );
 
@@ -466,12 +468,13 @@ class Runner {
 
 			// We really need a URL here
 			if ( !isset( $_SERVER['HTTP_HOST'] ) ) {
-				$url_parts = self::parse_url( 'http://example.com' );
-				self::set_url_params( $url_parts );
+				$url = 'http://example.com';
+				\WP_CLI::set_url( $url );
 			}
 
 			if ( 'multisite-install' == $this->arguments[1] ) {
-				// need to fake some globals to skip the checks in wp-inclues/ms-settings.php
+				// need to fake some globals to skip the checks in wp-includes/ms-settings.php
+				$url_parts = Utils\parse_url( $url );
 				self::fake_current_site_blog( $url_parts );
 
 				if ( !defined( 'COOKIEHASH' ) ) {
@@ -484,16 +487,6 @@ class Runner {
 			define( 'WP_LOAD_IMPORTERS', true );
 			define( 'WP_IMPORTING', true );
 		}
-	}
-
-	private static function parse_url( $url ) {
-		$url_parts = parse_url( $url );
-
-		if ( !isset( $url_parts['scheme'] ) ) {
-			$url_parts = parse_url( 'http://' . $url );
-		}
-
-		return $url_parts;
 	}
 
 	private static function fake_current_site_blog( $url_parts ) {

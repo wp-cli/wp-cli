@@ -146,11 +146,13 @@ class Subcommand extends CompositeCommand {
 		return array( $args, $assoc_args );
 	}
 
-	private function validate_args( $args, &$assoc_args ) {
+	/**
+	 * @return array list of invalid $assoc_args keys to unset
+	 */
+	private function validate_args( $args, $assoc_args, $extra_args ) {
 		$synopsis = $this->get_synopsis();
-
 		if ( !$synopsis )
-			return;
+			return array();
 
 		$validator = new \WP_CLI\SynopsisValidator( $synopsis );
 
@@ -167,7 +169,15 @@ class Subcommand extends CompositeCommand {
 			exit(1);
 		}
 
-		list( $errors, $to_unset ) = $validator->validate_assoc( array_merge( \WP_CLI::get_config(), $assoc_args ) );
+		$unknown_positionals = $validator->unknown_positionals( $args );
+		if ( !empty( $unknown_positionals ) ) {
+			\WP_CLI::warning( 'Too many positional arguments: ' .
+				implode( ' ', $unknown_positionals ) );
+		}
+
+		list( $errors, $to_unset ) = $validator->validate_assoc(
+			array_merge( \WP_CLI::get_config(), $extra_args, $assoc_args )
+		);
 
 		if ( !empty( $errors['fatal'] ) ) {
 			$out = 'Parameter errors:';
@@ -180,25 +190,26 @@ class Subcommand extends CompositeCommand {
 
 		array_map( '\\WP_CLI::warning', $errors['warning'] );
 
+		foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
+			\WP_CLI::warning( "unknown --$key parameter" );
+		}
+
+		return $to_unset;
+	}
+
+	function invoke( $args, $assoc_args, $extra_args ) {
+		if ( \WP_CLI::get_config( 'prompt' ) )
+			list( $args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
+
+		$to_unset = $this->validate_args( $args, $assoc_args, $extra_args );
+
 		foreach ( $to_unset as $key ) {
 			unset( $assoc_args[ $key ] );
 		}
 
-		foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
-			\WP_CLI::warning( "unknown --$key parameter" );
-		}
-	}
+		\WP_CLI::do_hook( 'before_invoke:' . $this->get_parent()->get_name() );
 
-	function invoke( $args, $assoc_args ) {
-
-		if ( \WP_CLI::get_config( 'prompt' ) )
-			list( $args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
-
-		$this->validate_args( $args, $assoc_args );
-
-		\WP_CLI::do_action( 'before_invoke:' . $this->get_parent()->get_name() );
-
-		call_user_func( $this->when_invoked, $args, $assoc_args );
+		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 	}
 }
 

@@ -13,14 +13,9 @@ function load_dependencies() {
 		return;
 	}
 
-	$vendor_paths = array(
-		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project / installed via Composer (preferred)
-		WP_CLI_ROOT . '/vendor',           // top-level project / installed as Git clone
-	);
-
 	$has_autoload = false;
 
-	foreach ( $vendor_paths as $vendor_path ) {
+	foreach ( get_vendor_paths() as $vendor_path ) {
 		if ( file_exists( $vendor_path . '/autoload.php' ) ) {
 			require $vendor_path . '/autoload.php';
 			$has_autoload = true;
@@ -32,6 +27,18 @@ function load_dependencies() {
 		fputs( STDERR, "Internal error: Can't find Composer autoloader.\n" );
 		exit(3);
 	}
+}
+
+function get_vendor_paths() {
+	return array(
+		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project / installed via Composer (preferred)
+		WP_CLI_ROOT . '/vendor',           // top-level project / installed as Git clone
+	);
+}
+
+// Using require() directly inside a class grants access to private methods to the loaded code
+function load_file( $path ) {
+	require $path;
 }
 
 function load_command( $name ) {
@@ -126,7 +133,7 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 
 function is_path_absolute( $path ) {
 	// Windows
-	if ( ':' === $path[1] )
+	if ( isset($path[1]) && ':' === $path[1] )
 		return true;
 
 	return $path[0] === '/';
@@ -195,61 +202,6 @@ function locate_wp_config() {
 }
 
 /**
- * Take a serialised array and unserialise it replacing elements as needed and
- * unserialising any subordinate arrays and performing the replace on those too.
- *
- * @source https://github.com/interconnectit/Search-Replace-DB
- *
- * @param string $from       String we're looking to replace.
- * @param string $to         What we want it to be replaced with
- * @param array  $data       Used to pass any subordinate arrays back to in.
- * @param bool   $serialised Does the array passed via $data need serialising.
- *
- * @return array	The original array with all elements replaced as needed.
- */
-function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
-
-	// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
-	try {
-
-		if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
-			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
-		}
-
-		elseif ( is_array( $data ) ) {
-			$_tmp = array();
-			foreach ( $data as $key => $value ) {
-				$_tmp[ $key ] = recursive_unserialize_replace( $from, $to, $value, false );
-			}
-
-			$data = $_tmp;
-		}
-
-		elseif ( is_object( $data ) ) {
-			$_tmp = clone( $data );
-			foreach ( $data as $key => $value ) {
-				$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
-			}
-
-			$data = $_tmp;
-		}
-
-		else {
-			if ( is_string( $data ) )
-				$data = str_replace( $from, $to, $data );
-		}
-
-		if ( $serialised )
-			return serialize( $data );
-
-	} catch( Exception $error ) {
-
-	}
-
-	return $data;
-}
-
-/**
  * Output items in a table, JSON, CSV, ids, or the total count
  *
  * @param string        $format     Format to use: 'table', 'json', 'csv', 'ids', 'count'
@@ -257,71 +209,9 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
  */
 function format_items( $format, $items, $fields ) {
-	if ( ! is_array( $fields ) )
-		$fields = explode( ',', $fields );
-
-	switch ( $format ) {
-		case 'count':
-			if ( !is_array( $items ) ) {
-				$items = iterator_to_array( $items );
-			}
-			echo count( $items );
-			break;
-
-		case 'ids':
-			if ( !is_array( $items ) ) {
-				$items = iterator_to_array( $items );
-			}
-			echo implode( ' ', $items );
-			break;
-
-		case 'table':
-			$table = new \cli\Table();
-
-			$table->setHeaders( $fields );
-
-			foreach ( $items as $item ) {
-				$table->addRow( array_values( pick_fields( $item, $fields ) ) );
-			}
-
-			$table->display();
-			break;
-
-		case 'csv':
-			write_csv( STDOUT, $items, $fields );
-			break;
-
-		case 'json':
-			$out = array();
-			foreach ( $items as $item ) {
-				$out[] = pick_fields( $item, $fields );
-			}
-
-			echo json_encode( $out );
-			break;
-	}
-}
-
-/**
- * Format an associative array as a table
- *
- * @param array     $fields    Fields and values to format
- */
-function assoc_array_to_table( $fields ) {
-	$rows = array();
-
-	foreach ( $fields as $field => $value ) {
-		if ( ! is_string( $value ) ) {
-			$value = json_encode( $value );
-		}
-
-		$rows[] = (object) array(
-			'Field' => $field,
-			'Value' => $value
-		);
-	}
-
-	format_items( 'table', $rows, array( 'Field', 'Value' ) );
+	$assoc_args = compact( 'format', 'fields' );
+	$formatter = new \WP_CLI\Formatter( $assoc_args );
+	$formatter->display_items( $items );
 }
 
 /**
@@ -378,9 +268,18 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 	if ( !$tmpfile )
 		\WP_CLI::error( 'Error creating temporary file.' );
 
+	$output = '';
 	file_put_contents( $tmpfile, $input );
 
-	\WP_CLI::launch( "\${EDITOR:-vi} '$tmpfile'" );
+	$editor = getenv( 'EDITOR' );
+	if ( !$editor ) {
+		if ( isset( $_SERVER['OS'] ) && false !== strpos( $_SERVER['OS'], 'indows' ) )
+			$editor = 'notepad';
+		else
+			$editor = 'vi';
+	}
+
+	\WP_CLI::launch( "$editor " . escapeshellarg( $tmpfile ) );
 
 	$output = file_get_contents( $tmpfile );
 
@@ -441,10 +340,20 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 	if ( $r ) exit( $r );
 }
 
+/**
+ * Render PHP or other types of files using Mustache templates.
+ *
+ * IMPORTANT: Automatic HTML escaping is disabled!
+ */
 function mustache_render( $template_name, $data ) {
-	$template = file_get_contents( WP_CLI_ROOT . "/templates/$template_name" );
+	if ( ! file_exists( $template_name ) )
+		$template_name = WP_CLI_ROOT . "/templates/$template_name";
 
-	$m = new \Mustache_Engine;
+	$template = file_get_contents( $template_name );
+
+	$m = new \Mustache_Engine( array(
+		'escape' => function ( $val ) { return $val; }
+	) );
 
 	return $m->render( $template, $data );
 }
@@ -454,5 +363,15 @@ function make_progress_bar( $message, $count ) {
 		return new \WP_CLI\NoOp;
 
 	return new \cli\progress\Bar( $message, $count );
+}
+
+function parse_url( $url ) {
+	$url_parts = \parse_url( $url );
+
+	if ( !isset( $url_parts['scheme'] ) ) {
+		$url_parts = parse_url( 'http://' . $url );
+	}
+
+	return $url_parts;
 }
 

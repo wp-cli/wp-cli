@@ -34,3 +34,6 @@ Feature: Import content.
       """
       7
       """
+
+    When I run `wp import {EXPORT_FILE} --authors=skip --skip=image_resize`
+    Then STDOUT should not be empty

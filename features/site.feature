@@ -13,6 +13,13 @@ Feature: Manage sites in a multisite installation
       | 1       | example.com/       |
       | 2       | example.com/first/ |
 
+    When I run `wp site list --field=url`
+    Then STDOUT should be:
+      """
+      example.com/
+      example.com/first/
+      """
+
     When I run `wp site delete {SITE_ID} --yes`
     Then STDOUT should not be empty
 

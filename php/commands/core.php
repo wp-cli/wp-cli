@@ -14,6 +14,9 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
+	 * [--path=<path>]
+	 * : Specify the path in which to install WordPress.
+	 *
 	 * [--locale=<locale>]
 	 * : Select which language you want to download.
 	 *
@@ -35,7 +38,7 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( !is_dir( ABSPATH ) ) {
 			WP_CLI::log( sprintf( 'Creating directory %s', ABSPATH ) );
-			WP_CLI::launch( sprintf( 'mkdir -p %s', escapeshellarg( ABSPATH ) ) );
+			WP_CLI::launch( Utils\esc_cmd( 'mkdir -p %s', ABSPATH ) );
 		}
 
 		if ( isset( $assoc_args['locale'] ) &&  isset( $assoc_args['version'] ) ) {
@@ -55,59 +58,100 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::log( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
 		}
 
-		$silent = WP_CLI::get_config('quiet') || \cli\Shell::isPiped() ?
-			'--silent ' : '';
-
 		// We need to use a temporary file because piping from cURL to tar is flaky
 		// on MinGW (and probably in other environments too).
-		$temp = tempnam( sys_get_temp_dir(), "wp_" );
+		$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.tar.gz';
 
 		$headers = array('Accept' => 'application/json');
 		$options = array(
-			'timeout' => 30,
+			'timeout' => 600,  // 10 minutes ought to be enough for everybody
 			'filename' => $temp
 		);
 
-		try {
-			$request = Requests::get( $download_url, $headers, $options );
-		} catch( Requests_Exception $ex ) {
-			// Handle SSL certificate issues gracefully
-			$options['verify'] = false;
-			try {
-				$request = Requests::get( $download_url, $headers, $options );
-			}
-			catch( Requests_Exception $ex ) {
-				WP_CLI::error( $ex->getMessage() );
-			}
-		}
+		self::_request( 'GET', $download_url, $headers, $options );
 
-		$cmd = "tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
-
-		WP_CLI::launch( sprintf( $cmd, ABSPATH ) );
+		self::_extract( $temp, ABSPATH );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
-	private static function _read( $url ) {
-		$headers = array('Accept' => 'application/json');
-		$options = array();
+	private static function _extract( $tarball, $dest ) {
+		if ( ! class_exists( 'PharData' ) ) {
+			$cmd = "tar xz --strip-components=1 --directory=%s -f $tarball && rm $tarball";
+			WP_CLI::launch( Utils\esc_cmd( $cmd, $dest ) );
+			return;
+		}
+		$phar = new PharData( $tarball );
+		$tempdir = implode( DIRECTORY_SEPARATOR, Array (
+			dirname( $tarball ),
+			basename( $tarball, '.tar.gz' ),
+			$phar->getFileName()
+		) );
 
-		$r = false;
+		$phar->extractTo( dirname( $tempdir ), null, true );
+
+		self::_copy_overwrite_files( $tempdir, $dest );
+
+		self::_rmdir( dirname( $tempdir ) );
+	}
+
+	private static function _copy_overwrite_files( $source, $dest ) {
+		$iterator = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $source, RecursiveDirectoryIterator::SKIP_DOTS ),
+			RecursiveIteratorIterator::SELF_FIRST);
+
+		foreach ( $iterator as $item ) {
+			if ( $item->isDir() ) {
+				$dest_path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
+				if ( !is_dir( $dest_path ) ) {
+					mkdir( $dest_path );
+				}
+			} else {
+				copy( $item, $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName() );
+			}
+		}
+	}
+
+	private static function _rmdir( $dir ) {
+		$files = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
+			RecursiveIteratorIterator::CHILD_FIRST
+		);
+
+		foreach ( $files as $fileinfo ) {
+			$todo = $fileinfo->isDir() ? 'rmdir' : 'unlink';
+			$todo( $fileinfo->getRealPath() );
+		}
+	}
+
+	private static function _request( $method, $url, $headers = array(), $options = array() ) {
+		// cURL can't read Phar archives
+		if ( 0 === strpos( WP_CLI_ROOT, 'phar://' ) ) {
+			$options['verify'] = sys_get_temp_dir() . '/wp-cli-cacert.pem';
+
+			copy(
+				WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem',
+				$options['verify']
+			);
+		}
+
 		try {
-			$request = Requests::get( $url, $headers, $options );
-			$r = $request->body;
+			return Requests::get( $url, $headers, $options );
 		} catch( Requests_Exception $ex ) {
 			// Handle SSL certificate issues gracefully
+			WP_CLI::warning( $ex->getMessage() );
 			$options['verify'] = false;
 			try {
-				$request = Requests::get( $url, $headers, $options );
-				$r = $request->body;
+				return Requests::get( $url, $headers, $options );
 			} catch( Requests_Exception $ex ) {
 				WP_CLI::error( $ex->getMessage() );
 			}
 		}
+	}
 
-		return $r;
+	private static function _read( $url ) {
+		$headers = array('Accept' => 'application/json');
+		return self::_request( 'GET', $url, $headers )->body;
 	}
 
 	private function get_download_offer( $locale ) {
@@ -120,8 +164,10 @@ class Core_Command extends WP_CLI_Command {
 	private static function get_initial_locale() {
 		include ABSPATH . '/wp-includes/version.php';
 
+		// @codingStandardsIgnoreStart
 		if ( isset( $wp_local_package ) )
 			return $wp_local_package;
+		// @codingStandardsIgnoreEnd
 
 		return '';
 	}
@@ -209,9 +255,13 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
-		file_put_contents( ABSPATH . 'wp-config.php', $out );
 
-		WP_CLI::success( 'Generated wp-config.php file.' );
+		$bytes_written = file_put_contents( ABSPATH . 'wp-config.php', $out );
+		if ( ! $bytes_written ) {
+			WP_CLI::error( 'Could not create new wp-config.php file.' );
+		} else {
+			WP_CLI::success( 'Generated wp-config.php file.' );
+		}
 	}
 
 	/**
@@ -394,13 +444,20 @@ class Core_Command extends WP_CLI_Command {
 			'admin_password' => ''
 		) ), EXTR_SKIP );
 
+		// Support prompting for the `--url=<url>`,
+		// which is normally a runtime argument
+		if ( isset( $assoc_args['url'] ) )
+			$url_parts = WP_CLI::set_url( $assoc_args['url'] );
+
 		$public = true;
 
+		// @codingStandardsIgnoreStart
 		$result = wp_install( $title, $admin_user, $admin_email, $public, '', $admin_password );
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( 'Installation failed (' . WP_CLI::error_to_string($result) . ').' );
 		}
+		// @codingStandardsIgnoreEnd
 
 		return true;
 	}
@@ -546,9 +603,13 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		include $versions_path;
 
+		// @codingStandardsIgnoreStart
 		if ( isset( $assoc_args['extra'] ) ) {
-			preg_match( '/(\d)(\d+)-/', $tinymce_version, $match );
-			$human_readable_tiny_mce = $match ? $match[1] . '.' . $match[2] : '';
+			if ( preg_match( '/(\d)(\d+)-/', $tinymce_version, $match ) ) {
+				$human_readable_tiny_mce = $match[1] . '.' . $match[2];
+			} else {
+				$human_readable_tiny_mce = '';
+			}
 
 			echo \WP_CLI\Utils\mustache_render( 'versions.mustache', array(
 				'wp-version' => $wp_version,
@@ -561,6 +622,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		} else {
 			WP_CLI::line( $wp_version );
 		}
+		// @codingStandardsIgnoreEnd
 	}
 
 	/**
@@ -658,77 +720,6 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		wp_upgrade();
 		WP_CLI::success( 'WordPress database upgraded successfully.' );
-	}
-
-	/**
-	 * Set up the official test suite using the current WordPress instance.
-	 *
-	 * @subcommand init-tests
-	 *
-	 * ## OPTIONS
-	 *
-	 * [<path>]
-	 * : The directory in which to download the testing suite files. (Optional)
-	 *
-	 * --dbname=<dbname>
-	 * : Set the database name. **WARNING**: The database will be whipped every time
-	 * you run the tests.
-	 *
-	 * --dbuser=<dbuser>
-	 * : Set the database user.
-	 *
-	 * [--dbpass=<dbpass>]
-	 * : Set the database user password.
-	 *
-	 * [--dbhost=<host>]
-	 * : Set the database host.
-	 *
-	 * ## EXAMPLE
-	 *
-	 *     wp core init-tests ~/svn/wp-tests --dbname=wp_test --dbuser=wp_test
-	 */
-	function init_tests( $args, $assoc_args ) {
-		if ( isset( $args[0] ) )
-			$tests_dir = trailingslashit( $args[0] );
-		else
-			$tests_dir = ABSPATH . 'unit-tests/';
-
-		$assoc_args = wp_parse_args( $assoc_args, array(
-			'dbpass' => '',
-			'dbhost' => 'localhost'
-		) );
-
-		// Download the test suite
-		WP_CLI::launch( 'svn co https://unit-test.svn.wordpress.org/trunk/ ' . escapeshellarg( $tests_dir ) );
-
-		// Create the database
-		$query = sprintf( 'CREATE DATABASE IF NOT EXISTS `%s`', $assoc_args['dbname'] );
-
-		Utils\run_mysql_command( 'mysql --no-defaults', array(
-			'execute' => $query,
-			'host' => $assoc_args['dbhost'],
-			'user' => $assoc_args['dbuser'],
-			'pass' => $assoc_args['dbpass'],
-		) );
-
-		// Create the wp-tests-config.php file
-		$config_file = file_get_contents( $tests_dir . 'wp-tests-config-sample.php' );
-
-		$replacements = array(
-			"dirname( __FILE__ ) . '/wordpress/'" => "'" . ABSPATH . "'",
-			"yourdbnamehere"   => $assoc_args['dbname'],
-			"yourusernamehere" => $assoc_args['dbuser'],
-			"yourpasswordhere" => $assoc_args['dbpass'],
-			"localhost" => $assoc_args['dbhost'],
-		);
-
-		$config_file = str_replace( array_keys( $replacements ), array_values( $replacements ), $config_file );
-
-		$config_file_path = $tests_dir . 'wp-tests-config.php';
-
-		file_put_contents( $config_file_path, $config_file );
-
-		WP_CLI::success( "Created $config_file_path" );
 	}
 }
 

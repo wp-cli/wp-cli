@@ -28,6 +28,23 @@ class SynopsisValidator {
 		return count( $args ) >= count( $positional );
 	}
 
+	public function unknown_positionals( $args ) {
+		$positional_repeating = $this->query_spec( array(
+			'type' => 'positional',
+			'repeating' => true,
+		) );
+
+		if ( !empty( $positional_repeating ) )
+			return array();
+
+		$positional = $this->query_spec( array(
+			'type' => 'positional',
+			'repeating' => false,
+		) );
+
+		return array_slice( $args, count( $positional ) );
+	}
+
 	// Checks that all required keys are present and that they have values.
 	public function validate_assoc( $assoc_args ) {
 		$assoc_spec = $this->query_spec( array(

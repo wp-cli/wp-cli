@@ -5,11 +5,19 @@ Feature: Manage WordPress plugins
     And I run `wp plugin path`
     And save STDOUT as {PLUGIN_DIR}
 
+    When I run `wp plugin scaffold --skip-tests plugin1`
+    Then STDOUT should not be empty
+    And the {PLUGIN_DIR}/plugin1/plugin1.php file should exist
+    And the {PLUGIN_DIR}/zombieland/phpunit.xml file should not exist
+
     When I run `wp plugin scaffold zombieland --plugin_name="Zombieland"`
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/zombieland/zombieland.php file should exist
+    And the {PLUGIN_DIR}/zombieland/phpunit.xml file should exist
 
-    When I run `wp plugin status zombieland`
+    # Check that the inner-plugin is not picked up
+    When I run `mv {PLUGIN_DIR}/plugin1 {PLUGIN_DIR}/zombieland/`
+    And I run `wp plugin status zombieland`
     Then STDOUT should contain:
       """
       Plugin zombieland details:
@@ -27,12 +35,6 @@ Feature: Manage WordPress plugins
     Then STDOUT should contain:
       """
           Status: Active
-      """
-
-    When I run `wp plugin is-installed zombieland && echo "Zombieland"`
-    Then STDOUT should contain:
-      """
-      Zombieland
       """
 
     When I run `wp plugin status`
@@ -86,3 +88,31 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name       | status   | update    | version   |
       | akismet    | active   | available | 2.5.6     |
+
+  Scenario: Activate a network-only plugin
+    Given a WP multisite install
+    And a wp-content/plugins/network-only.php file:
+      """
+      // Plugin Name: Example Plugin
+      // Network: true
+      """
+    When I run `wp plugin activate network-only`
+    And I run `wp plugin status network-only`
+    Then STDOUT should contain:
+      """
+          Status: Network Active
+      """
+
+  Scenario: List plugins
+    Given a WP install
+
+    When I run `wp plugin activate akismet hello`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --status=inactive --field=name`
+    Then STDOUT should be empty
+
+    When I run `wp plugin list --status=active --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name       | status   |
+      | akismet    | active   |

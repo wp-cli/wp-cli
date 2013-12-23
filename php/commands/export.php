@@ -43,7 +43,7 @@ class Export_Command extends WP_CLI_Command {
 	 * [--author=<login/id>]
 	 * : Export only posts by this author.
 	 *
-	 * [--category=<category-id>]
+	 * [--category=<name>]
 	 * : Export only posts in this category.
 	 *
 	 * [--post_status=<status>]

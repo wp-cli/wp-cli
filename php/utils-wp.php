@@ -22,8 +22,8 @@ function wp_debug_mode() {
 		\wp_debug_mode();
 	}
 
-	// Never show errors on STDOUT; only on STDERR
-	ini_set( 'display_errors', false );
+	// XDebug already sends errors to STDERR
+	ini_set( 'display_errors', function_exists( 'xdebug_debug_zval' ) ? false : 'STDERR' );
 }
 
 function replace_wp_die_handler() {

@@ -10,6 +10,8 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 		$this->assertFalse( $validator->enough_positionals( array() ) );
 		$this->assertTrue( $validator->enough_positionals( array( 1, 2 ) ) );
 		$this->assertTrue( $validator->enough_positionals( array( 1, 2, 3, 4 ) ) );
+
+		$this->assertEquals( array( 4 ), $validator->unknown_positionals( array( 1, 2, 3, 4 ) ) );
 	}
 
 	function testRepeatingPositional() {
@@ -18,6 +20,8 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 		$this->assertFalse( $validator->enough_positionals( array() ) );
 		$this->assertTrue( $validator->enough_positionals( array( 1 ) ) );
 		$this->assertTrue( $validator->enough_positionals( array( 1, 2, 3 ) ) );
+
+		$this->assertEmpty( $validator->unknown_positionals( array( 1, 2, 3 ) ) );
 	}
 
 	function testUnknownAssocEmpty() {

@@ -5,7 +5,9 @@
  *
  * @package wp-cli
  */
-class Site_Command extends WP_CLI_Command {
+class Site_Command extends \WP_CLI\CommandWithDBObject {
+
+	protected $obj_type = 'site';
 
 	/**
 	 * Delete comments.
@@ -59,6 +61,7 @@ class Site_Command extends WP_CLI_Command {
 		// Empty taxonomies and terms
 		$terms = $wpdb->get_results( "SELECT term_id, taxonomy FROM $wpdb->term_taxonomy" );
 		$ids = array();
+		$taxonomies = array();
 		foreach ( (array) $terms as $term ) {
 			$taxonomies[] = $term->taxonomy;
 			$ids[] = $term->term_id;
@@ -66,6 +69,7 @@ class Site_Command extends WP_CLI_Command {
 		}
 
 		$taxonomies = array_unique( $taxonomies );
+		$cleaned = array();
 		foreach ( $taxonomies as $taxonomy ) {
 			if ( isset( $cleaned[$taxonomy] ) )
 				continue;
@@ -172,24 +176,6 @@ class Site_Command extends WP_CLI_Command {
 		wpmu_delete_blog( $blog->blog_id, !isset( $assoc_args['keep-tables'] ) );
 
 		WP_CLI::success( "The site at $blog->siteurl was deleted." );
-	}
-
-	/**
-	 * Get site (network) data for a given id.
-	 *
-	 * @param int     $site_id
-	 * @return bool|array False if no network found with given id, array otherwise
-	 */
-	private function _get_site( $site_id ) {
-		global $wpdb;
-		// Load site data
-		$sites = $wpdb->get_results( "SELECT * FROM $wpdb->site WHERE `id` = ".$wpdb->escape( $site_id ) );
-		if ( count( $sites ) > 0 ) {
-			// Only care about domain and path which are set here
-			return $sites[0];
-		}
-
-		return false;
 	}
 
 	/**
@@ -324,16 +310,19 @@ class Site_Command extends WP_CLI_Command {
 	 * [--network=<id>]
 	 * : The network to which the sites belong.
 	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each site.
+	 *
 	 * [--fields=<fields>]
 	 * : Comma-separated list of fields to show.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, csv, json or url. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Output a simple list of site URLs
-	 *     wp site list --fields=url --format=csv | tail -n +2
+	 *     wp site list --field=url
 	 *
 	 * @subcommand list
 	 */
@@ -370,7 +359,29 @@ class Site_Command extends WP_CLI_Command {
 			return $blog;
 		} );
 
-		WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
+		$formatter = new \WP_CLI\Formatter( $assoc_args, null, 'site' );
+		$formatter->display_items( $it );
+	}
+
+	/**
+	 * Get site (network) data for a given id.
+	 *
+	 * @param int     $site_id
+	 * @return bool|array False if no network found with given id, array otherwise
+	 */
+	private function _get_site( $site_id ) {
+		global $wpdb;
+
+		// Load site data
+		$sites = $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM $wpdb->site WHERE id = %d", $site_id ) );
+
+		if ( !empty( $sites ) ) {
+			// Only care about domain and path which are set here
+			return $sites[0];
+		}
+
+		return false;
 	}
 }
 

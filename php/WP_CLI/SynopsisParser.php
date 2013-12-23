@@ -17,9 +17,7 @@ class SynopsisParser {
 
 			// Some types of parameters shouldn't be mandatory
 			if ( isset( $param['optional'] ) && !$param['optional'] ) {
-				if ( 'flag' === $param['type'] ||
-				   ( 'assoc' === $param['type'] && $param['value']['optional'] )
-				) {
+				if ( 'flag' === $param['type'] || ( 'assoc' === $param['type'] && $param['value']['optional'] ) ) {
 					$param['type'] = 'unknown';
 				}
 			}

@@ -21,7 +21,7 @@ class Role_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields. Defaults to name,role.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, CSV or JSON. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -31,15 +31,6 @@ class Role_Command extends WP_CLI_Command {
 	 */
 	public function _list( $args, $assoc_args ) {
 		global $wp_roles;
-
-		$defaults = array(
-			'fields'    => implode( ',', $this->fields ),
-			'format'    => 'table',
-		);
-		$params = array_merge( $defaults, $assoc_args );
-
-		$fields = $params['fields'];
-		unset( $params['fields'] );
 
 		$output_roles = array();
 		foreach ( $wp_roles->roles as $key => $role ) {
@@ -51,7 +42,8 @@ class Role_Command extends WP_CLI_Command {
 			$output_roles[] = $output_role;
 		}
 
-		WP_CLI\Utils\format_items( $params['format'], $output_roles, $fields );
+		$formatter = new \WP_CLI\Formatter( $assoc_args, $this->fields );
+		$formatter->display_items( $output_roles );
 	}
 
 	/**

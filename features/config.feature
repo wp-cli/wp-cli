@@ -67,16 +67,49 @@ Feature: Have a config file
       wp-cli.yml
       """
 
-  Scenario: Disabled subcommands
-    Given a WP install
-    And a wp-cli.yml file:
+  Scenario: Disabled commands
+    Given an empty directory
+    And a config.yml file:
       """
       disabled_commands:
-        - db drop
+        - core version
       """
 
-    When I try `wp db drop --yes`
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp core version`
     Then STDERR should contain:
       """
       command has been disabled
       """
+
+  Scenario: Command-specific configs
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      core config:
+        dbname: wordpress
+        dbuser: root
+      eval:
+        foo: bar
+      post list:
+        format: count
+      """
+
+    # Required parameters should be recognized
+    When I try `wp core config`
+    Then STDERR should not contain:
+      """
+      Parameter errors
+      """
+
+    # Arbitrary values should be passed, without warnings
+    When I run `wp eval 'echo json_encode( $assoc_args );'`
+    Then STDOUT should be JSON containing:
+      """
+      {"foo": "bar"}
+      """
+
+    # CLI args should trump config values
+    When I run `wp post list`
+    Then STDOUT should be a number
+    When I run `wp post list --format=json`
+    Then STDOUT should not be a number
