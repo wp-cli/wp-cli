@@ -44,18 +44,14 @@ class Media_Command extends WP_CLI_Command {
 
 		$images = new WP_Query( $query_args );
 
-		if ( $images->post_count == 0 ) {
-			//No images, so all keys in $args are not found within WP
-			WP_CLI::error( $this->_not_found_message( $args ) );
-		}
 		$count = $images->post_count;
 
-		WP_CLI::log( sprintf( 'Found %1$d %2$s to regenerate.', $count, ngettext('image', 'images', $count) ) );
-
-		$not_found = array_diff( $args, $images->posts );
-		if( !empty($not_found) ) {
-			WP_CLI::warning( $this->_not_found_message( $not_found ) );
+		if ( !$count ) {
+			WP_CLI::log( 'No images found.' );
+			return;
 		}
+
+		WP_CLI::log( sprintf( 'Found %1$d %2$s to regenerate.', $count, ngettext('image', 'images', $count) ) );
 
 		foreach ( $images->posts as $id ) {
 			$this->_process_regeneration( $id );
@@ -243,17 +239,6 @@ class Media_Command extends WP_CLI_Command {
 
 			unlink( $intermediate_path );
 		}
-	}
-
-	private function _not_found_message( $not_found_ids ){
-		$count = count( $not_found_ids );
-
-		return vsprintf( 'Unable to find the %1$s (%2$s). Are you sure %3$s %4$s?', array(
-			ngettext('image', 'images', $count),
-			implode(", ", $not_found_ids),
-			ngettext('it', 'they', $count),
-			ngettext('exists', 'exist', $count),
-		) );
 	}
 }
 
