@@ -568,9 +568,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( '.' == $plugin_dir )
 			$plugin_dir = $plugin->file;
 
-		$command = 'rm -rf ' . path_join( WP_PLUGIN_DIR, $plugin_dir );
+		$path = path_join( WP_PLUGIN_DIR, $plugin_dir );
 
-		return ! WP_CLI::launch( $command );
+		if ( \WP_CLI\Utils\is_windows() ) {
+			$command = 'rd /s /q ';
+			$path = str_replace( "/", "\\", $path );
+		} else {
+			$command = 'rm -rf ';
+		}
+
+		return ! WP_CLI::launch( $command . $path );
 	}
 }
 
