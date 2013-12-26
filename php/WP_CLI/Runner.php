@@ -92,19 +92,10 @@ class Runner {
 		if ( !isset( $assoc_args['user'] ) )
 			return;
 
-		$user = $assoc_args['user'];
+		$fetcher = new \WP_CLI\Fetchers\User;
+		$user = $fetcher->get_check( $assoc_args['user'] );
+		wp_set_current_user( $user->ID );
 
-		if ( is_numeric( $user ) ) {
-			$user_id = (int) $user;
-		} else if ( is_email( $user ) ) {
-			$user_id = email_exists( $user );
-		} else {
-			$user_id = (int) username_exists( $user );
-		}
-
-		if ( !$user_id || !wp_set_current_user( $user_id ) ) {
-			\WP_CLI::error( "Could not find user: $user" );
-		}
 	}
 
 	private static function guess_url( $assoc_args ) {
