@@ -96,7 +96,7 @@ class Package_Command extends WP_CLI_Command {
 		try {
 			$res = $install->run();
 		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getErrorMessage() );
+			WP_CLI::error( $e->getMessage() );
 		}
 
 		// Try running the installer, but revert composer.json if failed
