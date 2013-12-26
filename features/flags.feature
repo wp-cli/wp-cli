@@ -58,6 +58,12 @@ Feature: Global flags
       admin
       """
 
+    When I run `wp --user=admin@example.com eval 'echo wp_get_current_user()->user_login;'`
+    Then STDOUT should be:
+      """
+      admin
+      """
+
     When I try `wp --user=non-existing-user eval 'echo wp_get_current_user()->user_login;'`
     Then the return code should be 1
     And STDERR should be:
