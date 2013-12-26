@@ -415,6 +415,10 @@ class Runner {
 		if ( empty( $this->arguments ) )
 			$this->arguments[] = 'help';
 
+		$community_autoload = Utils\get_community_package_dir() . '/vendor/autoload.php';
+		if ( file_exists( $community_autoload ) )
+			require $community_autoload;
+
 		// Load bundled commands early, so that they're forced to use the same
 		// APIs as non-bundled commands.
 		Utils\load_command( $this->arguments[0] );
