@@ -97,8 +97,7 @@ class Runner {
 		if ( is_numeric( $user ) ) {
 			$user_id = (int) $user;
 		} else if ( is_email( $user ) ) {
-			$user_obj = get_user_by( 'email', $user );
-			$user_id = ( $user_obj ) ? $user_obj->ID : 0;
+			$user_id = email_exists( $user );
 		} else {
 			$user_id = (int) username_exists( $user );
 		}
