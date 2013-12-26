@@ -271,15 +271,7 @@ class Package_Command extends WP_CLI_Command {
 
 		if ( null === $composer_path ) {
 
-			$composer_path = WP_CLI::get_config( 'community_packages_dir' );
-			$composer_path = rtrim( $composer_path, '/' ) . '/composer.json';
-
-			// Resolve relative directory path
-			if ( 0 === stripos( $composer_path, '~' ) ) {
-				$composer_path = ltrim( $composer_path, '~/' );
-				$user_info = posix_getpwuid( posix_getuid() );
-				$composer_path = rtrim( $user_info['dir'], '/' ) . '/' . $composer_path;
-			}
+			$composer_path = WP_CLI\Utils\get_community_package_dir() . '/composer.json';
 
 			// `composer.json` and its directory might need to be created
 			if ( ! file_exists( $composer_path ) ) {

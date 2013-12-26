@@ -36,6 +36,19 @@ function get_vendor_paths() {
 	);
 }
 
+function get_community_package_dir() {
+
+	$dir = \WP_CLI::get_config( 'community_packages_dir' );
+
+	// Resolve relative directory path
+	if ( 0 === stripos( $dir, '~' ) ) {
+		$dir = ltrim( $dir, '~/' );
+		$user_info = posix_getpwuid( posix_getuid() );
+		$dir = rtrim( $user_info['dir'], '/' ) . '/' . $dir;
+	}
+	return rtrim( $dir, '/' );
+}
+
 // Using require() directly inside a class grants access to private methods to the loaded code
 function load_file( $path ) {
 	require $path;
