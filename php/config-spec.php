@@ -36,11 +36,6 @@ return array(
 		'default' => array(),
 	),
 
-	'community_packages_dir' => array(
-		'default' => '~/.wp-cli-community-packages',
-		'desc' => 'Location to install community packages',
-	),
-
 	'disabled_commands' => array(
 		'file' => '<list>',
 		'default' => array(),
