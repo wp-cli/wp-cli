@@ -229,6 +229,10 @@ class Package_Command extends WP_CLI_Command {
 
 		$installed_packages = array();
 		foreach( $repo->getPackages() as $package ) {
+
+			if ( ! $this->is_community_package( $package ) )
+				continue;
+
 			$installed_packages[] = $package;
 		}
 
