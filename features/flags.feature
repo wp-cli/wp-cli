@@ -68,7 +68,7 @@ Feature: Global flags
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: Could not find user: non-existing-user
+      Error: Invalid user ID, email or login: 'non-existing-user'
       """
 
   Scenario: Using a custom logger
