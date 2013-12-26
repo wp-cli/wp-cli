@@ -94,7 +94,7 @@ class Package_Command extends WP_CLI_Command {
 		$install->setUpdate( true ); // Installer class will only override composer.lock with this flag
 
 		// Try running the installer, but revert composer.json if failed
-		if ( $install->run() ) {
+		if ( 0 === $install->run() ) {
 			WP_CLI::success( "Package installed." );
 		} else {
 			file_put_contents( $composer_json_obj->getPath(), $composer_backup );
@@ -229,8 +229,6 @@ class Package_Command extends WP_CLI_Command {
 
 		$installed_packages = array();
 		foreach( $repo->getPackages() as $package ) {
-			if ( ! $this->is_community_package( $package ) )
-				continue;
 			$installed_packages[] = $package;
 		}
 
@@ -272,8 +270,44 @@ class Package_Command extends WP_CLI_Command {
 		static $composer_path;
 
 		if ( null === $composer_path ) {
-			$composer_path = WP_CLI\Utils\find_file_upward( 'composer.json', dirname( WP_CLI_ROOT ) );
-			if ( ! $composer_path ) {
+
+			$composer_path = WP_CLI::get_config( 'community_packages_dir' );
+			$composer_path = rtrim( $composer_path, '/' ) . '/composer.json';
+
+			// Resolve relative directory path
+			if ( 0 === stripos( $composer_path, '~' ) ) {
+				$composer_path = ltrim( $composer_path, '~/' );
+				$user_info = posix_getpwuid( posix_getuid() );
+				$composer_path = rtrim( $user_info['dir'], '/' ) . '/' . $composer_path;
+			}
+
+			// `composer.json` and its directory might need to be created
+			if ( ! file_exists( $composer_path ) ) {
+
+				$composer_dir = pathinfo( $composer_path, PATHINFO_DIRNAME );
+				if ( ! is_dir( $composer_dir ) ) {
+					@mkdir( $composer_dir );
+				}
+
+				$json_file = new JsonFile( $composer_path );
+				$author = new stdClass;
+				$author->name = 'WP-CLI';
+				$author->email = 'noreply@wpcli.org';
+				$options = array(
+					'name' => 'wp-cli/wp-cli-community-packages',
+					'description' => 'Installed community packages used by WP-CLI',
+					'authors' => array( $author ),
+					'homepage' => self::PACKAGE_INDEX_URL,
+					'require' => new stdClass,
+					'require-dev' => new stdClass,
+					'minimum-stability' => 'dev',
+					'license' => 'MIT',
+					);
+				$json_file->write( $options );
+			}
+
+			// Something bad happened
+			if ( ! file_exists( $composer_path ) ) {
 				WP_CLI::error( "Can't find composer.json file outside of the WP-CLI directory." );
 			}
 		}
