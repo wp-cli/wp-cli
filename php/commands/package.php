@@ -93,8 +93,14 @@ class Package_Command extends WP_CLI_Command {
 		$install = Installer::create( new NullIO, $composer );
 		$install->setUpdate( true ); // Installer class will only override composer.lock with this flag
 
+		try {
+			$res = $install->run();
+		} catch ( Exception $e ) {
+			WP_CLI::error( $e->getErrorMessage() );
+		}
+
 		// Try running the installer, but revert composer.json if failed
-		if ( 0 === $install->run() ) {
+		if ( 0 === $res ) {
 			WP_CLI::success( "Package installed." );
 		} else {
 			file_put_contents( $composer_json_obj->getPath(), $composer_backup );
@@ -275,7 +281,11 @@ class Package_Command extends WP_CLI_Command {
 
 		if ( null === $composer_path ) {
 
-			$composer_path = WP_CLI\Utils\get_community_package_dir() . '/composer.json';
+			if ( 0 === strpos( WP_CLI_ROOT, 'phar:' ) ) {
+				$composer_path = dirname( WP_CLI_ROOT ) . '/composer.json';
+			} else {
+				$composer_path = dirname( dirname( dirname( WP_CLI_ROOT ) ) ) . '/composer.json';
+			}
 
 			// `composer.json` and its directory might need to be created
 			if ( ! file_exists( $composer_path ) ) {
@@ -305,6 +315,8 @@ class Package_Command extends WP_CLI_Command {
 			// Something bad happened
 			if ( ! file_exists( $composer_path ) ) {
 				WP_CLI::error( "Can't find composer.json file outside of the WP-CLI directory." );
+			} else {
+				@putenv('COMPOSER_HOME=');
 			}
 		}
 
