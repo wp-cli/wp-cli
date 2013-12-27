@@ -153,6 +153,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme enable twentythirteen --activate
 	 */
 	public function enable( $args, $assoc_args ) {
+		if ( ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
 		$theme = $this->fetcher->get_check( $args[0] );
 		$name = $theme->get( 'Name' );
 
@@ -197,6 +201,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme disable twentythirteen --network
 	 */
 	public function disable( $args, $assoc_args ) {
+		if ( ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
 		$theme = $this->fetcher->get_check( $args[0] );
 		$name = $theme->get( 'Name' );
 
