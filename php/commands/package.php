@@ -284,7 +284,7 @@ class Package_Command extends WP_CLI_Command {
 		if ( null === $composer_path ) {
 
 			if ( 0 === strpos( WP_CLI_ROOT, 'phar:' ) ) {
-				$composer_path = dirname( WP_CLI_ROOT ) . '/composer.json';
+				$composer_path = getenv( 'HOME' ) . '/.wp-cli/composer.json';
 			} else {
 				$composer_path = dirname( dirname( dirname( WP_CLI_ROOT ) ) ) . '/composer.json';
 			}
