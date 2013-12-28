@@ -3,6 +3,22 @@
 class Doc_Command extends WP_CLI_Command {
 
 	/**
+	 * The file name containing the function, class, or method found.
+	 *
+	 * @var string
+	 */
+	private static $file;
+
+
+	/**
+	 * The line number where the function, class, or method was found.
+	 *
+	 * @var int
+	 */
+	private static $line;
+
+
+	/**
 	 * Get documentation on a function, class, method, or property.
 	 *
 	 * ## EXAMPLES
@@ -47,7 +63,7 @@ class Doc_Command extends WP_CLI_Command {
 		}
 
 		if ( false === $doc ) {
-			\WP_CLI::error( "Sorry, '{$command}' does not appear to be a function, class, method, or property." );
+			WP_CLI::error( "Sorry, '{$command}' does not appear to be a function, class, method, or property." );
 		} elseif ( empty( $doc ) ) {
 			WP_CLI::error( "No documentation found for {$type} '{$command}'" );
 		} else {
@@ -55,8 +71,11 @@ class Doc_Command extends WP_CLI_Command {
 				$command .= '()';
 			$intro = "Documentation for {$type} '{$command}'";
 
-			WP_CLI::success( "\n{$intro}" );
-			WP_CLI::line( preg_replace( '/./', '=', $intro ) );
+			if ( self::$file && self::$line )
+				$intro .= sprintf( ' at %s:%d', self::$file, self::$line );
+
+			WP_CLI::success( $intro );
+			WP_CLI::line( '=========' . preg_replace( '/./', '=', $intro ) );
 			WP_CLI::line( self::normalize_doc_whitespace( $doc ) );
 		}
 	}
@@ -70,6 +89,7 @@ class Doc_Command extends WP_CLI_Command {
 	 */
 	private static function get_function_doc( $function ) {
 		$r = new ReflectionFunction( $function );
+		self::get_location( $r );
 		return $r->getDocComment();
 	}
 
@@ -82,6 +102,7 @@ class Doc_Command extends WP_CLI_Command {
 	 */
 	private static function get_class_doc( $class ) {
 		$r = new ReflectionClass( $class );
+		self::get_location( $r );
 		return $r->getDocComment();
 	}
 
@@ -95,6 +116,7 @@ class Doc_Command extends WP_CLI_Command {
 	 */
 	private static function get_method_doc( $class, $method ) {
 		$r = new ReflectionMethod( $class, $method );
+		self::get_location( $r );
 		return $r->getDocComment();
 	}
 
@@ -107,7 +129,7 @@ class Doc_Command extends WP_CLI_Command {
 	 * @return string A PHPDoc doc block.
 	 */
 	private static function get_property_doc( $class, $property ) {
-		$r = new ReflectionMethod( $class, $property );
+		$r = new ReflectionProperty( $class, $property );
 		return $r->getDocComment();
 	}
 
@@ -120,6 +142,20 @@ class Doc_Command extends WP_CLI_Command {
 	 */
 	private static function normalize_doc_whitespace( $doc ) {
 		return preg_replace( '/^\s+(?=\*)/m', ' ', $doc );
+	}
+
+
+	/**
+	 * Finds the file and line number of a class, function, or method.
+	 *
+	 * @param object $r A ReflectionFunction, ReflectionClass, or ReflectionMethod object.
+	 * @return void
+	 */
+	private static function get_location( $r ) {
+		if ( method_exists( $r, 'getFileName' ) ) {
+			self::$file = str_replace( ABSPATH, '', $r->getFileName() );
+			self::$line = $r->getStartLine();
+		}
 	}
 }
 
