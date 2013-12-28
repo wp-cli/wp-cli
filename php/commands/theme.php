@@ -130,7 +130,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Enable a theme.
+	 * Enable a theme in a multisite install.
 	 *
 	 * ## OPTIONS
 	 *
@@ -182,7 +182,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Disable a theme.
+	 * Disable a theme in a multisite install.
 	 *
 	 * ## OPTIONS
 	 *
