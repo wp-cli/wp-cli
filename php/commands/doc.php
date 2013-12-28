@@ -52,6 +52,7 @@ class Doc_Command extends WP_CLI_Command {
 				$doc = self::get_class_doc( $args[0] );
 			}
 		} else {
+			$args[1] = ltrim( $args[1], '$' );
 			$command = "{$args[0]}::{$args[1]}";
 			if ( method_exists( $args[0], $args[1] ) ) {
 				$type = 'class method';
