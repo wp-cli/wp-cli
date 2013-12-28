@@ -8,8 +8,14 @@ use \WP_CLI\Dispatcher;
 use \WP_CLI\Iterators\Transform;
 
 function load_dependencies() {
+	
 	if ( 0 === strpos( WP_CLI_ROOT, 'phar:' ) ) {
 		require WP_CLI_ROOT . '/vendor/autoload.php';
+
+		$community_vendor_path = getenv( 'HOME' ) . '/.wp-cli/vendor/autoload.php';
+		if ( file_exists( $community_vendor_path ) )
+			require $community_vendor_path;
+
 		return;
 	}
 
