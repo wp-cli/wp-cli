@@ -21,6 +21,11 @@ class Doc_Command extends WP_CLI_Command {
 	/**
 	 * Get documentation on a function, class, method, or property.
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--raw]
+	 * : Return the raw docblock instead of formatting it
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # get documentation for `get_posts` function
@@ -29,7 +34,7 @@ class Doc_Command extends WP_CLI_Command {
 	 *     # get documentation for `WP_Query::parse_query` method
 	 *     wp doc WP_Query parse_query
 	 *
-	 * @synopsis <function-or-class> [<method-or-property>]
+	 * @synopsis <function-or-class> [<method-or-property>] [--raw]
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		# class methods or properties can be passed as either `ClassName method` or `ClassName::method`
@@ -68,16 +73,20 @@ class Doc_Command extends WP_CLI_Command {
 		} elseif ( empty( $doc ) ) {
 			WP_CLI::error( "No documentation found for {$type} '{$command}'" );
 		} else {
-			if ( 'function' == $type || 'class method' == $type )
-				$command .= '()';
-			$intro = "Documentation for {$type} '{$command}'";
+			if ( ! empty( $assoc_args['raw'] ) ) {
+				WP_CLI::line( preg_replace( '/^\s+(?=\*)/m', ' ', $doc ) );
+			} else {
+				if ( 'function' == $type || 'class method' == $type )
+					$command .= '()';
+				$intro = "Documentation for {$type} '{$command}'";
 
-			if ( self::$file && self::$line )
-				$intro .= sprintf( " in %s:%d", self::$file, self::$line );
+				if ( self::$file && self::$line )
+					$intro .= sprintf( " in %s:%d", self::$file, self::$line );
 
-			$intro .= "\n" . preg_replace( '/./', '=', $intro ) . "\n\n";
+				$intro .= "\n" . preg_replace( '/./', '=', $intro ) . "\n\n";
 
-			self::pass_through_pager( $intro . self::format_comment( $doc ) );
+				self::pass_through_pager( $intro . self::format_comment( $doc ) );
+			}
 		}
 	}
 
