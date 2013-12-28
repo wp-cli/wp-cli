@@ -20,8 +20,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 	function __construct() {
 		if ( is_multisite() ) {
-			$this->obj_fields[] = 'site_enabled';
-			$this->obj_fields[] = 'network_enabled';
+			$this->obj_fields[] = 'enabled';
 		}
 		parent::__construct();
 
@@ -222,8 +221,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			);
 
 			if ( is_multisite() ) {
-				$items[ $file ]['site_enabled'] = ! empty( $site_enabled[ $key ] ) ? 'enabled' : 'disabled';
-				$items[ $file ]['network_enabled'] = ! empty( $network_enabled[ $key ] ) ? 'enabled' : 'disabled';
+				if ( ! empty( $site_enabled[ $key ] ) && ! empty( $network_enabled[ $key ] ) )
+					$items[ $file ]['enabled'] = 'network,site';
+				elseif ( ! empty( $network_enabled[ $key ] ) )
+					$items[ $file ]['enabled'] = 'network';
+				elseif ( ! empty( $site_enabled[ $key ] ) )
+					$items[ $file ]['enabled'] = 'site';
+				else
+					$items[ $file ]['enabled'] = 'no';
 			}
 		}
 
