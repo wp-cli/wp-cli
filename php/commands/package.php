@@ -311,7 +311,12 @@ class Package_Command extends WP_CLI_Command {
 					'minimum-stability' => 'dev',
 					'license' => 'MIT',
 					);
-				$json_file->write( $options );
+
+				try {
+					$json_file->write( $options );
+				} catch( Exception $e ) {
+					WP_CLI::error( $e->getMessage() );	
+				}
 			}
 
 			// Something bad happened
