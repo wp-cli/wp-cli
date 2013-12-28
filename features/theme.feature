@@ -90,16 +90,32 @@ Feature: Manage WordPress themes
     When I run `wp theme install p2`
     Then STDOUT should not be empty
 
+    When I try `wp option get allowedthemes`
+    Then the return code should be 1
+    And STDERR should be empty
+
     When I run `wp theme enable p2`
     Then STDOUT should contain:
        """
        Success: Enabled the 'P2' theme.
        """
 
+    When I run `wp option get allowedthemes`
+    Then STDOUT should contain:
+       """
+       'p2' => true
+       """
+
     When I run `wp theme disable p2`
     Then STDOUT should contain:
        """
        Success: Disabled the 'P2' theme.
+       """
+
+    When I run `wp option get allowedthemes`
+    Then STDOUT should not contain:
+       """
+       'p2' => true
        """
 
     When I run `wp theme enable p2 --activate`
@@ -109,16 +125,34 @@ Feature: Manage WordPress themes
        Success: Switched to 'P2' theme.
        """
 
+    When I run `wp network-meta get 1 allowedthemes`
+    Then STDOUT should not contain:
+       """
+       'p2' => true
+       """
+
     When I run `wp theme enable p2 --network`
     Then STDOUT should contain:
        """
        Success: Network enabled the 'P2' theme.
        """
 
+    When I run `wp network-meta get 1 allowedthemes`
+    Then STDOUT should contain:
+       """
+       'p2' => true
+       """
+
     When I run `wp theme disable p2 --network`
     Then STDOUT should contain:
        """
        Success: Network disabled the 'P2' theme.
+       """
+
+    When I run `wp network-meta get 1 allowedthemes`
+    Then STDOUT should not contain:
+       """
+       'p2' => true
        """
 
   Scenario: Enabling and disabling a theme without multisite
