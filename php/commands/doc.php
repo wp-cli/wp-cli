@@ -57,14 +57,16 @@ class Doc_Command extends WP_CLI_Command {
 				$doc = self::get_class_doc( $args[0] );
 			}
 		} else {
-			$args[1] = ltrim( $args[1], '$' );
 			$command = "{$args[0]}::{$args[1]}";
 			if ( method_exists( $args[0], $args[1] ) ) {
 				$type = 'class method';
 				$doc = self::get_method_doc( $args[0], $args[1] );
-			} elseif ( property_exists( $args[0], $args[1] ) ) {
-				$type = 'class property';
-				$doc = self::get_property_doc( $args[0], $args[1] );
+			} else {
+				$args[1] = ltrim( $args[1], '$' );
+				if ( property_exists( $args[0], $args[1] ) ) {
+					$type = 'class property';
+					$doc = self::get_property_doc( $args[0], $args[1] );
+				}
 			}
 		}
 
