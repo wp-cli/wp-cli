@@ -72,11 +72,11 @@ class Doc_Command extends WP_CLI_Command {
 			$intro = "Documentation for {$type} '{$command}'";
 
 			if ( self::$file && self::$line )
-				$intro .= sprintf( ' at %s:%d', self::$file, self::$line );
+				$intro .= sprintf( " in %s:%d", self::$file, self::$line );
 
-			WP_CLI::success( $intro );
-			WP_CLI::line( '=========' . preg_replace( '/./', '=', $intro ) );
-			WP_CLI::line( self::normalize_doc_whitespace( $doc ) );
+			$intro .= "\n" . preg_replace( '/./', '=', $intro ) . "\n\n";
+
+			self::pass_through_pager( $intro . self::format_comment( $doc ) );
 		}
 	}
 
@@ -135,13 +135,34 @@ class Doc_Command extends WP_CLI_Command {
 
 
 	/**
-	 * Normalize the leading whitespace for the doc block.
+	 * Format the comment for pleasant viewing.
 	 *
 	 * @param  string $doc a PHPDoc doc block.
 	 * @return string
 	 */
-	private static function normalize_doc_whitespace( $doc ) {
-		return preg_replace( '/^\s+(?=\*)/m', ' ', $doc );
+	private static function format_comment( $doc ) {
+		# Remove leading whitespace and comment characters in docs
+		$doc = preg_replace( '/^\s+(?=\*)/m', ' ', $doc );
+		$doc = preg_replace( '#^(/\*\*\R*| \*[ /]?)#m', '', $doc );
+
+		# Pull param and return tags out and format those special
+		$doc = preg_replace( '/^@(param|return)((?: [^ ]+)?(?: \$[_a-z0-9]+)?(?: Optional\.)?)\s+/mi', "\n## $1\t$2\n\n", $doc );
+
+		# Make all the other miscellaneous tags headings
+		$doc = preg_replace( '/^@(\w+)\s+/mi', "\n## $1\n\n", $doc );
+
+		# Indent all text that isn't a heading
+		$doc = preg_replace( '/^(?=[^#]{2})/m', '  ', $doc );
+
+		# Convert the headings to uppercase and colorize
+		$doc = preg_replace_callback( '/^## ([a-z]+)/mi', create_function( '$m', 'return strtoupper( $m[1] );'), $doc );
+		$doc = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $doc );
+
+		# Convert code tags to backticks
+		$doc = preg_replace( '#<code>(.*?)</code>#msi', '`$1`', $doc );
+
+		# Whew! Return the formatted doc
+		return $doc;
 	}
 
 
@@ -157,6 +178,29 @@ class Doc_Command extends WP_CLI_Command {
 			self::$line = $r->getStartLine();
 		}
 	}
+
+
+	private static function pass_through_pager( $out ) {
+		if ( strtoupper( substr( PHP_OS, 0, 3 ) ) === 'WIN' ) {
+			// no paging for Windows cmd.exe; sorry
+			echo $out;
+			return 0;
+		}
+
+		// convert string to file handle
+		$fd = fopen( "php://temp", "r+" );
+		fputs( $fd, $out );
+		rewind( $fd );
+
+		$descriptorspec = array(
+			0 => $fd,
+			1 => STDOUT,
+			2 => STDERR
+		);
+
+		return proc_close( proc_open( 'less -r', $descriptorspec, $pipes ) );
+	}
+
 }
 
 WP_CLI::add_command( 'doc', 'Doc_Command' );
