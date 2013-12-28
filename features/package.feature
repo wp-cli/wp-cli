@@ -12,6 +12,9 @@ Feature: Manage WP-CLI packages
     When I run `wp package install wp-cli/server-command`
     Then STDERR should be empty
 
+    When I run `wp help server`
+    Then STDERR should be empty
+
     When I run `wp package list`
     Then STDOUT should contain:
       """
