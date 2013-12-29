@@ -39,6 +39,7 @@ $finder
 	->in('./vendor/composer')
 	->in('./vendor/symfony/finder')
 	->in('./vendor/nb/oxymel')
+	->in('./vendor/justinrainbow/json-schema')
 	->in('./vendor/rhumsaa/array_column')
 	->exclude('test')
 	->exclude('tests')
