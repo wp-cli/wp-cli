@@ -57,6 +57,7 @@ $finder
 	->ignoreVCS(true)
 	->ignoreDotFiles(false)
 	->in('./templates')
+	->in('./vendor/composer')
 	;
 
 foreach ( $finder as $file ) {
