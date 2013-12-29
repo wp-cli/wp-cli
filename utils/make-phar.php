@@ -37,7 +37,7 @@ $finder
 	->in('./vendor/mustache')
 	->in('./vendor/rmccue/requests')
 	->in('./vendor/composer')
-	->in('./vendor/symfony/finder')
+	->in('./vendor/symfony')
 	->in('./vendor/nb/oxymel')
 	->in('./vendor/justinrainbow/json-schema')
 	->in('./vendor/rhumsaa/array_column')
