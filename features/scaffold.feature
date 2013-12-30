@@ -73,7 +73,7 @@ Feature: Wordpress code scaffolding
       __( 'Brain eaters'
       """
   
-  # Test the custom template with custom variables functionality
+  # Test scaffolding while using custom template and custom variables located in WordPress root directory a.k.a. project level
   @cpt @tax
   Scenario: Scaffold a custom post type and taxonomy based on a custom template
     Given I run `wp eval 'echo STYLESHEETPATH;'`
@@ -95,7 +95,7 @@ Feature: Wordpress code scaffolding
       """
 
   @plugin
-  Scenario: Scaffold plugin with custom template WP-CLI config file in WordPress root directory a.k.a. project level
+  Scenario: Scaffold a plugin based on a custom template
     And I run `wp plugin path`
     And save STDOUT as {PLUGIN_DIR}
     And a zombie-plugin.mustache file:
