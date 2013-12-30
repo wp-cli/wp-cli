@@ -72,6 +72,27 @@ Feature: Wordpress code scaffolding
       """
       __( 'Brain eaters'
       """
+  
+  # Test the custom template with custom variables functionality
+  @cpt @tax
+  Scenario: Scaffold a custom post type and taxonomy based on a custom template
+    Given I run `wp eval 'echo STYLESHEETPATH;'`
+    And save STDOUT as {STYLESHEETPATH}
+    And a custom.mustache file:
+      """
+      Custom template with written by {{custom_var}}
+      """
+    When I run `wp scaffold cpt zombie --template_path=custom.mustache --custom_var=Daryl --theme`
+    Then the {STYLESHEETPATH}/post-types/zombie.php file should contain:
+      """
+      Custom template with written by Daryl
+      """
+
+    When I run `wp scaffold tax zombie --template_path=custom.mustache --custom_var=Daryl --theme`
+    Then the {STYLESHEETPATH}/taxonomies/zombie.php file should contain:
+      """
+      Custom template with written by Daryl
+      """
 
   @plugin
   Scenario: Scaffold plugin with custom template WP-CLI config file in WordPress root directory a.k.a. project level
