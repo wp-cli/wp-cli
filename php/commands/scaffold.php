@@ -82,6 +82,12 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--plugin=<plugin>]
 	 * : Create a file in the given plugin's directory, instead of sending to STDOUT.
 	 *
+	 * [--template_path=<template-path>]
+	 * : Absolute path to single template file
+	 *
+	 * [--<field>=<value>]
+	 * : Associative args that will be used to render the {{field}} tag in the plugin template file
+	 *
 	 * [--raw]
 	 * : Just generate the `register_taxonomy()` call and nothing else.
 	 *
