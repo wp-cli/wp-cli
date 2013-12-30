@@ -136,6 +136,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		if( !empty( $assoc_args['template_path'] ) ) {
 			$templates = array( $assoc_args['template_path'], false );
+			$control_args['raw'] = true; //Because we just want the simple route
 		}
 
 		list( $raw_template, $extended_template ) = $templates;
