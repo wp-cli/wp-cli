@@ -132,7 +132,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$vars['label_plural_ucfirst'] = ucfirst( $vars['label_plural'] );
 
 		// We use the machine name for function declarations
-		$machine_name = preg_replace( '/-/', '_', $slug );
+		$vars['machine_name'] = preg_replace( '/-/', '_', $slug );
 
 		if( !empty( $assoc_args['template_path'] ) ) {
 			$templates = array( $assoc_args['template_path'], false );
@@ -145,7 +145,6 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		if ( ! $control_args['raw'] ) {
 			$vars = array_merge( $vars, array(
-				'machine_name' => $machine_name,
 				'output' => $raw_output
 			) );
 
