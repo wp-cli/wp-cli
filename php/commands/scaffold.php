@@ -133,7 +133,6 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		// We use the machine name for function declarations
 		$machine_name = preg_replace( '/-/', '_', $slug );
-		$machine_name_plural = $this->pluralize( $slug );
 
 		if( !empty( $assoc_args['template_path'] ) ) {
 			$templates = array( $assoc_args['template_path'], false );
