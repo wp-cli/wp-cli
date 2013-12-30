@@ -119,7 +119,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			'raw'    => false,
 		) );
 
-		$vars = wp_parse_args( $defaults, $assoc_args );
+		$vars = wp_parse_args( $assoc_args, $defaults );
 
 		$vars['slug'] = $slug;
 
