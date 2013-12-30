@@ -34,6 +34,12 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--plugin=<plugin>]
 	 * : Create a file in the given plugin's directory, instead of sending to STDOUT.
 	 *
+	 * [--template_path=<template-path>]
+	 * : Absolute path to single template file
+	 *
+	 * [--<field>=<value>]
+	 * : Associative args that will be used to render the {{field}} tag in the plugin template file
+	 *
 	 * [--raw]
 	 * : Just generate the `register_post_type()` call and nothing else.
 	 *
@@ -113,7 +119,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			'raw'    => false,
 		) );
 
-		$vars = $this->extract_args( $assoc_args, $defaults );
+		$vars = wp_parse_args( $defaults, $assoc_args );
 
 		$vars['slug'] = $slug;
 
@@ -128,6 +134,10 @@ class Scaffold_Command extends WP_CLI_Command {
 		// We use the machine name for function declarations
 		$machine_name = preg_replace( '/-/', '_', $slug );
 		$machine_name_plural = $this->pluralize( $slug );
+
+		if( !empty( $assoc_args['template_path'] ) ) {
+			$templates = array( $assoc_args['template_path'], false );
+		}
 
 		list( $raw_template, $extended_template ) = $templates;
 
