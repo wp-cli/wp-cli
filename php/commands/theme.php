@@ -19,6 +19,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	);
 
 	function __construct() {
+		if ( is_multisite() ) {
+			$this->obj_fields[] = 'enabled';
+		}
 		parent::__construct();
 
 		$this->fetcher = new \WP_CLI\Fetchers\Theme;
@@ -287,6 +290,16 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	protected function get_item_list() {
 		$items = array();
 
+		if ( is_multisite() ) {
+			$site_enabled = get_option( 'allowedthemes' );
+			if ( empty( $site_enabled ) )
+				$site_enabled = array();
+
+			$network_enabled = get_site_option( 'allowedthemes' );
+			if ( empty( $network_enabled ) )
+				$network_enabled = array();
+		}
+
 		foreach ( wp_get_themes() as $key => $theme ) {
 			$file = $theme->get_stylesheet_directory();
 			$update_info = $this->get_update_info( $theme->get_stylesheet() );
@@ -300,6 +313,17 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				'version' => $theme->get('Version'),
 				'update_id' => $theme->get_stylesheet(),
 			);
+
+			if ( is_multisite() ) {
+				if ( ! empty( $site_enabled[ $key ] ) && ! empty( $network_enabled[ $key ] ) )
+					$items[ $file ]['enabled'] = 'network,site';
+				elseif ( ! empty( $network_enabled[ $key ] ) )
+					$items[ $file ]['enabled'] = 'network';
+				elseif ( ! empty( $site_enabled[ $key ] ) )
+					$items[ $file ]['enabled'] = 'site';
+				else
+					$items[ $file ]['enabled'] = 'no';
+			}
 		}
 
 		return $items;
