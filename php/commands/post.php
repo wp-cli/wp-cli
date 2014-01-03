@@ -316,6 +316,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating posts', $count );
 
+		$post_ids = array();
 		$current_depth = 1;
 		$current_parent = 0;
 
@@ -347,7 +348,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				'post_content' => $post_content,
 			);
 
-			wp_insert_post( $args, true );
+			$post_ids[$i] = wp_insert_post( $args, true );
 
 			$notify->tick();
 		}
