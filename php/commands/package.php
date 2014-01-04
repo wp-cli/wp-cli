@@ -1,6 +1,7 @@
 <?php
 use \Composer\Config;
 use \Composer\Config\JsonConfigSource;
+use \Composer\EventDispatcher\Event;
 use \Composer\Factory;
 use \Composer\IO\NullIO;
 use \Composer\Installer;
@@ -78,33 +79,41 @@ class Package_Command extends WP_CLI_Command {
 		$package = $this->get_community_package_by_name( $package_name );
 		if ( ! $package )
 			WP_CLI::error( "Invalid package." );
+		else
+			WP_CLI::line( sprintf( "Installing %s (%s)", $package_name, $assoc_args['version'] ) );
 
 		$composer = $this->get_composer();
 		$composer_json_obj = $this->get_composer_json();
 
 		// Add the 'require' to composer.json
+		WP_CLI::line( "Updating composer.json to require the package..." );
 		$composer_backup = file_get_contents( $composer_json_obj->getPath() );
 		$json_manipulator = new JsonManipulator( $composer_backup );
 		$json_manipulator->addLink( 'require', $package_name, $assoc_args['version'] );
 		file_put_contents( $composer_json_obj->getPath(), $json_manipulator->getContents() );
 		$composer = $this->get_composer();
 
+		// Set up the EventSubscriber
+		$event_subscriber = new \WP_CLI\PackageManagerEventSubscriber;
+		$composer->getEventDispatcher()->addSubscriber( $event_subscriber );
+
 		// Set up the installer
 		$install = Installer::create( new NullIO, $composer );
 		$install->setUpdate( true ); // Installer class will only override composer.lock with this flag
 
+		// Try running the installer, but revert composer.json if failed
+		WP_CLI::line( "Downloading the package..." );
 		try {
 			$res = $install->run();
 		} catch ( Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}
 
-		// Try running the installer, but revert composer.json if failed
 		if ( 0 === $res ) {
-			WP_CLI::success( "Package installed." );
+			WP_CLI::success( "Package installed successfully." );
 		} else {
 			file_put_contents( $composer_json_obj->getPath(), $composer_backup );
-			WP_CLI::error( "Package installation failed." );
+			WP_CLI::error( "Package installation failed. Reverted composer.json" );
 		}
 	}
 
