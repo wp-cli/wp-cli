@@ -31,17 +31,19 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 		$reason = $operation->getReason();
 		if ( $reason instanceof Rule ) {
 
-			// switch ( $reason->getReason() ) {
-			// 	case Rule::RULE_JOB_INSTALL:
-			// 		$composer_error = 'Package required by root: ' . $reason->getRequiredPackage();
-			// 		break;
+			switch ( $reason->getReason() ) {
 
-			// 	case Rule::RULE_PACKAGE_REQUIRES:
-			// 		$composer_error = $reason->getPrettyString();
-			// 		break;
-			// }
+				case Rule::RULE_PACKAGE_CONFLICT;
+				case Rule::RULE_PACKAGE_SAME_NAME:
+				case Rule::RULE_PACKAGE_REQUIRES:
+					$composer_error = $reason->getPrettyString();
+					break;
 
-			\WP_CLI::line( sprintf( "Composer error: %s", $reason->getReason() ) );
+			}
+
+			if ( ! empty( $composer_error ) ) {
+				\WP_CLI::line( sprintf( "Composer error: %s", $composer_error ) );
+			}
 		}
 
 	}
