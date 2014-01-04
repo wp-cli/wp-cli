@@ -36,6 +36,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--dry-run]
 	 * : Show report, but don't perform the changes.
 	 *
+	 * [--recurse-objects]
+	 * : Enable recursing into objects to replace strings
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
@@ -48,6 +51,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$total = 0;
 		$report = array();
 		$dry_run = isset( $assoc_args['dry-run'] );
+		$recurse_objects = isset( $assoc_args['recurse-objects'] );
 
 		if ( isset( $assoc_args['skip-columns'] ) )
 			$skip_columns = explode( ',', $assoc_args['skip-columns'] );
@@ -73,7 +77,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 				if ( in_array( $col, $skip_columns ) )
 					continue;
 
-				$count = self::handle_col( $col, $primary_key, $table, $old, $new, $dry_run );
+				$count = self::handle_col( $col, $primary_key, $table, $old, $new, $dry_run, $recurse_objects );
 
 				$report[] = array( $table, $col, $count );
 
@@ -101,7 +105,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		return $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", like_escape( $prefix ) . '%' ) );
 	}
 
-	private static function handle_col( $col, $primary_key, $table, $old, $new, $dry_run ) {
+	private static function handle_col( $col, $primary_key, $table, $old, $new, $dry_run, $recurse_objects ) {
 		global $wpdb;
 
 		// We don't want to have to generate thousands of rows when running the test suite
@@ -123,7 +127,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 			if ( '' === $row->$col )
 				continue;
 
-			$value = self::recursive_unserialize_replace( $old, $new, $row->$col );
+			$value = self::recursive_unserialize_replace( $old, $new, $row->$col, false, $recurse_objects );
 
 			if ( $dry_run ) {
 				if ( $value != $row->$col )
@@ -146,28 +150,60 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * Initial code from https://github.com/interconnectit/Search-Replace-DB
 	 *
-	 * @param string $from       String we're looking to replace.
-	 * @param string $to         What we want it to be replaced with
-	 * @param array  $data       Used to pass any subordinate arrays back to in.
-	 * @param bool   $serialised Does the array passed via $data need serialising.
+	 * @param string       $from            String we're looking to replace.
+	 * @param string       $to              What we want it to be replaced with
+	 * @param array|string $data            Used to pass any subordinate arrays back to in.
+	 * @param bool         $serialised      Does the array passed via $data need serialising.
+	 * @param bool         $recurse_objects Should objects be recursively replaced.
+	 * @param int          $max_recursion   How many levels to recurse into the data, if $recurse_objects is set to true.
+	 * @param int          $recursion_level Current recursion depth within the original data.
+	 * @param array        $visited_data    Data that has been seen in previous recursion iterations.
 	 *
-	 * @return array	The original array with all elements replaced as needed.
+	 * @return array    The original array with all elements replaced as needed.
 	 */
-	private static function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
+	private static function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false, $recurse_objects = false, $max_recursion = -1, $recursion_level = 0, &$visited_data = array() ) {
 
 		// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
 		try {
 
+			if ( $recurse_objects ) {
+
+				// If no maximum recursion level is set, use the XDebug limit if it exists
+				if ( -1 == $max_recursion ) {
+					// Get the XDebug nesting level. Will be zero (no limit) if no value is set
+					$max_recursion = intval( ini_get( 'xdebug.max_nesting_level' ) );
+				}
+
+				// If we've reached the maximum recursion level, short circuit
+				if ( $max_recursion != 0 && $recursion_level >= $max_recursion ) {
+					WP_CLI::warning("Maximum recursion level of $max_recursion reached");
+					return $data;
+				}
+
+				if ( ( is_array( $data ) || is_object( $data ) ) ) {
+					// If we've seen this exact object or array before, short circuit
+					if ( in_array( $data, $visited_data, true ) ) {
+						return $data; // Avoid infinite loops when there's a cycle
+					}
+					// Add this data to the list of
+					$visited_data[] = $data;
+				}
+			}
+
 			if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
-				$data = self::recursive_unserialize_replace( $from, $to, $unserialized, true );
+				$data = self::recursive_unserialize_replace( $from, $to, $unserialized, true, $recurse_objects, $max_recursion, $recursion_level + 1 );
 			}
 
 			elseif ( is_array( $data ) ) {
-				$_tmp = array();
 				foreach ( $data as $key => $value ) {
-					$_tmp[ $key ] = self::recursive_unserialize_replace( $from, $to, $value, false );
+					$data[ $key ] = &self::recursive_unserialize_replace( $from, $to, $value, false, $recurse_objects, $max_recursion, $recursion_level + 1, $visited_data );
 				}
-				$data = $_tmp;
+			}
+
+			elseif ( $recurse_objects && is_object( $data ) ) {
+				foreach ( $data as $key => $value ) {
+					$data->$key = self::recursive_unserialize_replace( $from, $to, $value, false, $recurse_objects, $max_recursion, $recursion_level + 1, $visited_data );
+				}
 			}
 
 			else if ( is_string( $data ) ) {
