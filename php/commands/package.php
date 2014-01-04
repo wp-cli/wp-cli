@@ -307,9 +307,19 @@ class Package_Command extends WP_CLI_Command {
 				}
 
 				$json_file = new JsonFile( $composer_path );
-				$author = new stdClass;
-				$author->name = 'WP-CLI';
-				$author->email = 'noreply@wpcli.org';
+
+				$author = (object)array(
+					'name'   => 'WP-CLI',
+					'email'  => 'noreply@wpcli.org'
+				);
+
+				$repositories = (object)array(
+					'wp-cli' => (object)array(
+						'type'      => 'composer',
+						'url'       => self::PACKAGE_INDEX_URL,
+						),
+					);
+
 				$options = array(
 					'name' => 'wp-cli/wp-cli-community-packages',
 					'description' => 'Installed community packages used by WP-CLI',
@@ -319,6 +329,7 @@ class Package_Command extends WP_CLI_Command {
 					'require-dev' => new stdClass,
 					'minimum-stability' => 'dev',
 					'license' => 'MIT',
+					'repositories' => $repositories,
 					);
 
 				try {
