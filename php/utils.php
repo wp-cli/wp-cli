@@ -370,6 +370,10 @@ function mustache_render( $template_path, $data ) {
 		}
 	}
 
+	if( ! file_exists( $template ) ) {
+		\WP_CLI::error( "Can't find template file: " . $template );
+	}
+
 	$template = file_get_contents( $template );
 
 	$m = new \Mustache_Engine;
