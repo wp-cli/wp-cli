@@ -84,11 +84,6 @@ Feature: Manage WordPress installation
 
     When I try `wp core is-installed`
     Then the return code should be 1
-    And STDERR should be:
-      """
-      Error: The site you have requested is not installed.
-      Run `wp core install`.
-      """
 
     When I try `wp core install`
     Then the return code should be 1
