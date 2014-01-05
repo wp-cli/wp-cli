@@ -463,6 +463,10 @@ class Runner {
 			exit;
 		}
 
+		if ( $this->cmd_starts_with( array( 'core', 'is-installed' ) ) ) {
+			define( 'WP_INSTALLING', true );
+		}
+
 		if (
 			count( $this->arguments ) >= 2 &&
 			$this->arguments[0] == 'core' &&
