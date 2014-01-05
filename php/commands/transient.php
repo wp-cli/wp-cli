@@ -62,7 +62,7 @@ class Transient_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * See wether the transients API is using an object cache or the options table.
+	 * See whether the transients API is using an object cache or the options table.
 	 */
 	public function type() {
 		global $_wp_using_ext_object_cache, $wpdb;
