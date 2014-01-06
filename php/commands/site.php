@@ -191,7 +191,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * --slug=<slug>
 	 * : Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
-	 * --title=<title&gt;
+	 * --title=<title>
 	 * : Title of the new site. Default: prettified slug.
 	 *
 	 * --email=<email>
@@ -391,7 +391,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Get site url
-	 * 
+	 *
 	 * ## OPTIONS
 	 *
 	 * <id>...
