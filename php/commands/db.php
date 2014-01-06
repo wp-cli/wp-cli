@@ -134,9 +134,15 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Output WordPress credentials as mysql command arguments.
+	 * Output WordPress credentials as MySQL command arguments.
+	 *
+	 * The output will include the hostname, username and password needed to
+	 * connect to the MySQL database for WordPress.
+	 *
+	 * Useful with MySQL CLI commands, for example with mysqldump:
+	 * $ mysqldump $(wp db args) --lock-tables false
 	 */
-	function str() {
+	function args() {
 		WP_CLI::out( WP_CLI\Utils\assoc_args_to_str( self::get_mysql_credentials() ) );
 	}
 
