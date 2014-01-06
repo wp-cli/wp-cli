@@ -134,6 +134,13 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Output WordPress credentials as mysql command arguments.
+	 */
+	function str() {
+		WP_CLI::out( WP_CLI\Utils\assoc_args_to_str( self::get_mysql_credentials() ) );
+	}
+
+	/**
 	 * Import database from a file or from STDIN.
 	 *
 	 * [<file>]
@@ -179,14 +186,18 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	private static function run( $cmd, $assoc_args = array(), $descriptors = null ) {
-		$final_args = array_merge( $assoc_args, array(
+		$final_args = array_merge( $assoc_args, self::get_mysql_credentials() );
+
+		Utils\run_mysql_command( $cmd, $final_args, $descriptors );
+	}
+
+	private static function get_mysql_credentials() {
+		return array(
 			'host' => DB_HOST,
 			'user' => DB_USER,
 			'pass' => DB_PASSWORD,
 			'default-character-set' => DB_CHARSET,
-		) );
-
-		Utils\run_mysql_command( $cmd, $final_args, $descriptors );
+		);
 	}
 }
 
