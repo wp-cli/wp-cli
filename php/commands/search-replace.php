@@ -146,7 +146,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	/**
 	 * Take a serialised array and unserialise it replacing elements as needed and
 	 * unserialising any subordinate arrays and performing the replace on those too.
-	 * Ignores any serialized objects.
+	 * Ignores any serialized objects unless $recurse_objects is set to true.
 	 *
 	 * Initial code from https://github.com/interconnectit/Search-Replace-DB
 	 *
