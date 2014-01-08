@@ -161,7 +161,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * @return array    The original array with all elements replaced as needed.
 	 */
-	private static function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false, $recurse_objects = false, $max_recursion = -1, $recursion_level = 0, &$visited_data = array() ) {
+	private static function recursive_unserialize_replace( $from = '', $to = '', &$data = '', $serialised = false, $recurse_objects = false, $max_recursion = -1, $recursion_level = 0, &$visited_data = array() ) {
 
 		// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
 		try {
@@ -195,8 +195,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 			}
 
 			elseif ( is_array( $data ) ) {
-				foreach ( $data as $key => $value ) {
-					$data[ $key ] = &self::recursive_unserialize_replace( $from, $to, $value, false, $recurse_objects, $max_recursion, $recursion_level + 1, $visited_data );
+				$keys = array_keys( $data );
+				foreach ( $keys as $key ) {
+					$data[ $key ]= self::recursive_unserialize_replace( $from, $to, $data[$key], false, $recurse_objects, $max_recursion, $recursion_level + 1, $visited_data );
 				}
 			}
 
