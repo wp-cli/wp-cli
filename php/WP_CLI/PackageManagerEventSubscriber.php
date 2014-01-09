@@ -22,7 +22,7 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 	}
 
 	public static function pre_install( PackageEvent $event ) {
-		\WP_CLI::line( 'Installing via Composer...' );
+		\WP_CLI::line( ' - Installing package' );
 	}
 
 	public static function post_install( PackageEvent $event ) {
@@ -42,7 +42,7 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 			}
 
 			if ( ! empty( $composer_error ) ) {
-				\WP_CLI::line( sprintf( "Composer error: %s", $composer_error ) );
+				\WP_CLI::line( sprintf( " - Error: %s", $composer_error ) );
 			}
 		}
 
