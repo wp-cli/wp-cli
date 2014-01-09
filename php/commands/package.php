@@ -14,6 +14,7 @@ use \Composer\Repository\CompositeRepository;
 use \Composer\Repository\ComposerRepository;
 use \Composer\Repository\RepositoryManager;
 use \Composer\Util\Filesystem;
+use \WP_CLI\ComposerIO;
 
 /**
  * Manage WP-CLI community packages.
@@ -98,11 +99,11 @@ class Package_Command extends WP_CLI_Command {
 		$composer->getEventDispatcher()->addSubscriber( $event_subscriber );
 
 		// Set up the installer
-		$install = Installer::create( new NullIO, $composer );
+		$install = Installer::create( new ComposerIO, $composer );
 		$install->setUpdate( true ); // Installer class will only override composer.lock with this flag
 
 		// Try running the installer, but revert composer.json if failed
-		WP_CLI::line( "Downloading the package..." );
+		WP_CLI::line( "Using Composer to install the package..." );
 		try {
 			$res = $install->run();
 		} catch ( Exception $e ) {
