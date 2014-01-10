@@ -15,7 +15,7 @@
 		"rmccue/requests": "~1.6",
 		"symfony/finder": "~2.3",
 		"nb/oxymel": "0.1.0",
-		"composer/composer": "dev-master"
+		"composer/composer": "1.0.0-alpha8"
 	},
 	"suggest": {
 		"psy/psysh": "Enhanced `wp shell` functionality"
