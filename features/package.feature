@@ -12,7 +12,7 @@ Feature: Manage WP-CLI packages
     When I run `wp package install danielbachhuber/wp-cli-reset-post-date-command`
     Then STDERR should be empty
 
-    When I run `wp help server`
+    When I run `wp help reset-post-date`
     Then STDERR should be empty
 
     When I run `wp package list`
