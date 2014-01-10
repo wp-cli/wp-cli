@@ -19,7 +19,7 @@ class ComposerIO extends NullIO {
 	/**
      * {@inheritDoc}
      */
-    public function write($messages, $newline = true) {
+	public function write($messages, $newline = true) {
 		\WP_CLI::line( " - " . strip_tags( $messages ) );
 	}
 
