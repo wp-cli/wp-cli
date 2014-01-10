@@ -315,7 +315,7 @@ class Package_Command extends WP_CLI_Command {
 				);
 
 				$repositories = (object)array(
-					'wp-cli' => (object)array(
+					'wp-cli'     => (object)array(
 						'type'      => 'composer',
 						'url'       => self::PACKAGE_INDEX_URL,
 						),
