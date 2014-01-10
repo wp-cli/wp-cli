@@ -181,9 +181,7 @@ class Package_Command extends WP_CLI_Command {
 		// Composer's auto-load generating code makes some assumptions about where
 		// the 'vendor-dir' is, and where Composer is running from.
 		// Best to just pretend we're installing a package from ~/.wp-cli or similar
-		$composer_dir = pathinfo( $composer_path, PATHINFO_DIRNAME );
-		chdir( $composer_dir );
-		@putenv('COMPOSER_HOME=' . $composer_dir );
+		chdir( pathinfo( $composer_path, PATHINFO_DIRNAME ) );
 
 		try {
 			$composer = Factory::create( new NullIO, $composer_path );
