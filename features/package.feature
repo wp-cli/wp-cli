@@ -6,10 +6,10 @@ Feature: Manage WP-CLI packages
     When I run `wp package browse`
     Then STDOUT should contain:
       """
-      wp-cli/server-command
+      danielbachhuber/wp-cli-reset-post-date-command
       """
 
-    When I run `wp package install wp-cli/server-command`
+    When I run `wp package install danielbachhuber/wp-cli-reset-post-date-command`
     Then STDERR should be empty
 
     When I run `wp help server`
@@ -18,8 +18,8 @@ Feature: Manage WP-CLI packages
     When I run `wp package list`
     Then STDOUT should contain:
       """
-      wp-cli/server-command
+      danielbachhuber/wp-cli-reset-post-date-command
       """
 
-    When I run `wp package uninstall wp-cli/server-command`
+    When I run `wp package uninstall danielbachhuber/wp-cli-reset-post-date-command`
     Then STDERR should be empty
