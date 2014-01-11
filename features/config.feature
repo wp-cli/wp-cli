@@ -64,9 +64,6 @@ Feature: Have a config file
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
-    When I run `wp core is-installed`
-    Then STDOUT should be empty
-
   Scenario: Nested installs
     Given a WP install
     And a WP install in 'subsite'
