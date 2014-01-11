@@ -390,17 +390,17 @@ function is_windows() {
  * Initial code from https://github.com/interconnectit/Search-Replace-DB
  *
  * @param string       $from            String we're looking to replace.
- * @param string       $to              What we want it to be replaced with
- * @param array|string $data            Used to pass any subordinate arrays back to in.
- * @param bool         $serialised      Does the array passed via $data need serialising.
- * @param bool         $recurse_objects Should objects be recursively replaced.
+ * @param string       $to              What we want it to be replaced with.
+ * @param array|string $data            The data to operate on.
+ * @param bool         $serialised      Does the value of $data need to be unserialized?
+ * @param bool         $recurse_objects Should objects be recursively replaced?
  * @param int          $max_recursion   How many levels to recurse into the data, if $recurse_objects is set to true.
  * @param int          $recursion_level Current recursion depth within the original data.
  * @param array        $visited_data    Data that has been seen in previous recursion iterations.
  *
  * @return array    The original array with all elements replaced as needed.
  */
-function recursive_unserialize_replace( $from = '', $to = '', &$data = '', $serialised = false, $recurse_objects = false, $max_recursion = -1, $recursion_level = 0, &$visited_data = array() ) {
+function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false, $recurse_objects = false, $max_recursion = -1, $recursion_level = 0, &$visited_data = array() ) {
 
 	// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
 	try {
