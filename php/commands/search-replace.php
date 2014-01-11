@@ -12,7 +12,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * ## DESCRIPTION
 	 *
-	 * This command will go through all rows in all tables and will replace all appearances of the old string with the new one.
+	 * This command will go through all rows in all tables and will replace all
+	 * appearances of the old string with the new one.
 	 *
 	 * It will correctly handle serialized values, and will not change primary key values.
 	 *
