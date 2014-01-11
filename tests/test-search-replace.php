@@ -1,9 +1,5 @@
 <?php
 
-require_once getcwd() . '/php/class-wp-cli.php';
-require_once getcwd() . '/php/class-wp-cli-command.php';
-require_once getcwd() . '/php/commands/search-replace.php';
-
 class UnserializeReplaceTest extends PHPUnit_Framework_TestCase {
 
 	function testReplaceString() {
