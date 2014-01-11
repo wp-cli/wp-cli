@@ -124,11 +124,13 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		$count = 0;
 
+		$replacer = new \WP_CLI\SearchReplacer( $old, $new, $recurse_objects );
+
 		foreach ( $it as $row ) {
 			if ( '' === $row->$col )
 				continue;
 
-			$value = WP_CLI\Utils\recursive_unserialize_replace( $old, $new, $row->$col, false, $recurse_objects );
+			$value = $replacer->run( $row->$col );
 
 			if ( $dry_run ) {
 				if ( $value != $row->$col )
