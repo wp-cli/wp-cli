@@ -127,7 +127,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 			if ( '' === $row->$col )
 				continue;
 
-			$value = self::recursive_unserialize_replace( $old, $new, $row->$col, false, $recurse_objects );
+			$value = WP_CLI\Utils\recursive_unserialize_replace( $old, $new, $row->$col, false, $recurse_objects );
 
 			if ( $dry_run ) {
 				if ( $value != $row->$col )
@@ -141,84 +141,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		return $count;
-	}
-
-	/**
-	 * Take a serialised array and unserialise it replacing elements as needed and
-	 * unserialising any subordinate arrays and performing the replace on those too.
-	 * Ignores any serialized objects unless $recurse_objects is set to true.
-	 *
-	 * Initial code from https://github.com/interconnectit/Search-Replace-DB
-	 *
-	 * @param string       $from            String we're looking to replace.
-	 * @param string       $to              What we want it to be replaced with
-	 * @param array|string $data            Used to pass any subordinate arrays back to in.
-	 * @param bool         $serialised      Does the array passed via $data need serialising.
-	 * @param bool         $recurse_objects Should objects be recursively replaced.
-	 * @param int          $max_recursion   How many levels to recurse into the data, if $recurse_objects is set to true.
-	 * @param int          $recursion_level Current recursion depth within the original data.
-	 * @param array        $visited_data    Data that has been seen in previous recursion iterations.
-	 *
-	 * @return array    The original array with all elements replaced as needed.
-	 */
-	private static function recursive_unserialize_replace( $from = '', $to = '', &$data = '', $serialised = false, $recurse_objects = false, $max_recursion = -1, $recursion_level = 0, &$visited_data = array() ) {
-
-		// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
-		try {
-
-			if ( $recurse_objects ) {
-
-				// If no maximum recursion level is set, use the XDebug limit if it exists
-				if ( -1 == $max_recursion ) {
-					// Get the XDebug nesting level. Will be zero (no limit) if no value is set
-					$max_recursion = intval( ini_get( 'xdebug.max_nesting_level' ) );
-				}
-
-				// If we've reached the maximum recursion level, short circuit
-				if ( $max_recursion != 0 && $recursion_level >= $max_recursion ) {
-					WP_CLI::warning("Maximum recursion level of $max_recursion reached");
-					return $data;
-				}
-
-				if ( ( is_array( $data ) || is_object( $data ) ) ) {
-					// If we've seen this exact object or array before, short circuit
-					if ( in_array( $data, $visited_data, true ) ) {
-						return $data; // Avoid infinite loops when there's a cycle
-					}
-					// Add this data to the list of
-					$visited_data[] = $data;
-				}
-			}
-
-			if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
-				$data = self::recursive_unserialize_replace( $from, $to, $unserialized, true, $recurse_objects, $max_recursion, $recursion_level + 1 );
-			}
-
-			elseif ( is_array( $data ) ) {
-				$keys = array_keys( $data );
-				foreach ( $keys as $key ) {
-					$data[ $key ]= self::recursive_unserialize_replace( $from, $to, $data[$key], false, $recurse_objects, $max_recursion, $recursion_level + 1, $visited_data );
-				}
-			}
-
-			elseif ( $recurse_objects && is_object( $data ) ) {
-				foreach ( $data as $key => $value ) {
-					$data->$key = self::recursive_unserialize_replace( $from, $to, $value, false, $recurse_objects, $max_recursion, $recursion_level + 1, $visited_data );
-				}
-			}
-
-			else if ( is_string( $data ) ) {
-				$data = str_replace( $from, $to, $data );
-			}
-
-			if ( $serialised )
-				return serialize( $data );
-
-		} catch( Exception $error ) {
-
-		}
-
-		return $data;
 	}
 
 	private static function get_columns( $table ) {
