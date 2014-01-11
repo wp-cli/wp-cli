@@ -36,6 +36,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--dry-run]
 	 * : Show report, but don't perform the changes.
 	 *
+	 * [--recurse-objects]
+	 * : Enable recursing into objects to replace strings
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
@@ -48,6 +51,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$total = 0;
 		$report = array();
 		$dry_run = isset( $assoc_args['dry-run'] );
+		$recurse_objects = isset( $assoc_args['recurse-objects'] );
 
 		if ( isset( $assoc_args['skip-columns'] ) )
 			$skip_columns = explode( ',', $assoc_args['skip-columns'] );
@@ -73,7 +77,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 				if ( in_array( $col, $skip_columns ) )
 					continue;
 
-				$count = self::handle_col( $col, $primary_key, $table, $old, $new, $dry_run );
+				$count = self::handle_col( $col, $primary_key, $table, $old, $new, $dry_run, $recurse_objects );
 
 				$report[] = array( $table, $col, $count );
 
@@ -101,7 +105,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		return $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", like_escape( $prefix ) . '%' ) );
 	}
 
-	private static function handle_col( $col, $primary_key, $table, $old, $new, $dry_run ) {
+	private static function handle_col( $col, $primary_key, $table, $old, $new, $dry_run, $recurse_objects ) {
 		global $wpdb;
 
 		// We don't want to have to generate thousands of rows when running the test suite
@@ -123,7 +127,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 			if ( '' === $row->$col )
 				continue;
 
-			$value = self::recursive_unserialize_replace( $old, $new, $row->$col );
+			$value = WP_CLI\Utils\recursive_unserialize_replace( $old, $new, $row->$col, false, $recurse_objects );
 
 			if ( $dry_run ) {
 				if ( $value != $row->$col )
@@ -137,51 +141,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		return $count;
-	}
-
-	/**
-	 * Take a serialised array and unserialise it replacing elements as needed and
-	 * unserialising any subordinate arrays and performing the replace on those too.
-	 * Ignores any serialized objects.
-	 *
-	 * Initial code from https://github.com/interconnectit/Search-Replace-DB
-	 *
-	 * @param string $from       String we're looking to replace.
-	 * @param string $to         What we want it to be replaced with
-	 * @param array  $data       Used to pass any subordinate arrays back to in.
-	 * @param bool   $serialised Does the array passed via $data need serialising.
-	 *
-	 * @return array	The original array with all elements replaced as needed.
-	 */
-	private static function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
-
-		// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
-		try {
-
-			if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
-				$data = self::recursive_unserialize_replace( $from, $to, $unserialized, true );
-			}
-
-			elseif ( is_array( $data ) ) {
-				$_tmp = array();
-				foreach ( $data as $key => $value ) {
-					$_tmp[ $key ] = self::recursive_unserialize_replace( $from, $to, $value, false );
-				}
-				$data = $_tmp;
-			}
-
-			else if ( is_string( $data ) ) {
-				$data = str_replace( $from, $to, $data );
-			}
-
-			if ( $serialised )
-				return serialize( $data );
-
-		} catch( Exception $error ) {
-
-		}
-
-		return $data;
 	}
 
 	private static function get_columns( $table ) {
