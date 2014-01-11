@@ -394,10 +394,6 @@ class Runner {
 		}
 
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
-
-		if ( !isset( $this->config['path'] ) ) {
-			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
-		}
 	}
 
 	public function before_wp_load() {
@@ -430,6 +426,13 @@ class Runner {
 		}
 
 		// Handle --path parameter
+		if ( !isset( $this->config['path'] ) ) {
+			if ( $this->cmd_starts_with( array( 'core', 'download' ) ) ) {
+				$this->config['path'] = getcwd();
+			} else {
+				$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
+			}
+		}
 		self::set_wp_root( $this->config );
 
 		// First try at showing man page

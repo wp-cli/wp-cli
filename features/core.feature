@@ -8,8 +8,12 @@ Feature: Manage WordPress installation
     Then the return code should be 1
     And STDERR should not be empty
 
-    When I run `wp core download --quiet`
+    When I run `wp core download`
     Then the wp-settings.php file should exist
+
+    When I run `mkdir inner`
+    And I run `cd inner && wp core download`
+    Then the inner/wp-settings.php file should exist
 
   @download
   Scenario: Localized install
