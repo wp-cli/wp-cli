@@ -54,6 +54,16 @@ Feature: Have a config file
     When I run `wp core is-installed` from 'core/wp-content'
     Then STDOUT should be empty
 
+  Scenario: WP in a subdirectory (autodetected)
+    Given a WP install in 'core'
+    And a index.php file:
+    """
+    require('./core/wp-blog-header.php');
+    """
+
+    When I run `wp core is-installed`
+    Then STDOUT should be empty
+
   Scenario: Nested installs
     Given a WP install
     And a WP install in 'subsite'

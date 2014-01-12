@@ -12,7 +12,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * ## DESCRIPTION
 	 *
-	 * This command will go through all rows in all tables and will replace all appearances of the old string with the new one.
+	 * This command will go through all rows in all tables and will replace all
+	 * appearances of the old string with the new one.
 	 *
 	 * It will correctly handle serialized values, and will not change primary key values.
 	 *
@@ -39,6 +40,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--export[=<file>]]
 	 * : Write out new SQL to file instead of performing in-place replacements. If <file> is '-' or is not supplied, will output to STDOUT.
 	 *
+	 * [--recurse-objects]
+	 * : Enable recursing into objects to replace strings
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
@@ -58,6 +62,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 			WP_CLI::error( 'You cannot supply --dry-run and --export at the same time.' );
 		}
 		$dry_run = isset( $assoc_args['dry-run'] );
+		$recurse_objects = isset( $assoc_args['recurse-objects'] );
 
 		$export_handle = null;
 		if ( isset( $assoc_args['export'] ) ) {
@@ -86,7 +91,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$tables = self::get_table_list( $args, isset( $assoc_args['network'] ) );
 
 		foreach ( $tables as $table ) {
-			$table_report = self::handle_table( $table, $skip_columns, $old, $new, $dry_run, $export_handle );
+			$table_report = self::handle_table( $table, $skip_columns, $old, $new, $dry_run, $export_handle, $recurse_objects );
 			foreach ( $table_report as $col_report ) {
 				if ( 'skipped' !== $col_report[2] ) {
 					$total += $col_report[2];
@@ -118,7 +123,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		return $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", like_escape( $prefix ) . '%' ) );
 	}
 
-	private static function handle_table( $table, $skip_columns, $old, $new, $dry_run, $export_handle ) {
+	private static function handle_table( $table, $skip_columns, $old, $new, $dry_run, $export_handle, $recurse_objects ) {
 		global $wpdb;
 
 		$table_report = array();
@@ -175,6 +180,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 		$col_counts = array_fill_keys( $target_cols, 0 );
 
+		$replacer = new \WP_CLI\SearchReplacer( $old, $new, $recurse_objects );
+
 		foreach ( $it as $row ) {
 			$row_fields = array();
 			foreach ( $target_cols as $col ) {
@@ -186,7 +193,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 				$old_value = $row->$col;
 				$new_value = $old_value;
 				if ( '' !== $old_value && ! $is_skipped ) {
-					$new_value = self::recursive_unserialize_replace( $old, $new, $old_value );
+					$new_value = $replacer->run( $old_value );
 				}
 
 				if ( $export_handle || $dry_run ) {
@@ -223,51 +230,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		return $table_report;
-	}
-
-	/**
-	 * Take a serialised array and unserialise it replacing elements as needed and
-	 * unserialising any subordinate arrays and performing the replace on those too.
-	 * Ignores any serialized objects.
-	 *
-	 * Initial code from https://github.com/interconnectit/Search-Replace-DB
-	 *
-	 * @param string $from       String we're looking to replace.
-	 * @param string $to         What we want it to be replaced with
-	 * @param mixed  $data       Used to pass any subordinate arrays back to in.
-	 * @param bool   $serialised Does the array passed via $data need serialising.
-	 *
-	 * @return array	The original array with all elements replaced as needed.
-	 */
-	private static function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
-
-		// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
-		try {
-
-			if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
-				$data = self::recursive_unserialize_replace( $from, $to, $unserialized, true );
-			}
-
-			elseif ( is_array( $data ) ) {
-				$_tmp = array();
-				foreach ( $data as $key => $value ) {
-					$_tmp[ $key ] = self::recursive_unserialize_replace( $from, $to, $value, false );
-				}
-				$data = $_tmp;
-			}
-
-			else if ( is_string( $data ) ) {
-				$data = str_replace( $from, $to, $data );
-			}
-
-			if ( $serialised )
-				return serialize( $data );
-
-		} catch( Exception $error ) {
-
-		}
-
-		return $data;
 	}
 
 	private static function get_columns( $table ) {

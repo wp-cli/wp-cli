@@ -7,72 +7,58 @@ class Import_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <file>
-	 * : Path to a valid WXR file for importing.
+	 * <file>...
+	 * : Path to one or more valid WXR files for importing.
 	 *
 	 * --authors=<authors>
-	 * : How the author mapping should be handled. Options are 'create', 'mapping.csv', or 'skip'. The first will create any non-existent users from the WXR file. The second will read author mapping associations from a CSV, or create a CSV for editing if the file path doesn't exist. The last option will skip any author mapping.
+	 * : How the author mapping should be handled. Options are 'create', 'mapping.csv', or 'skip'. The first will create any non-existent users from the WXR file. The second will read author mapping associations from a CSV, or create a CSV for editing if the file path doesn't exist. The CSV requires two columns, and a header row like "old_user_login,new_user_login". The last option will skip any author mapping.
 	 *
 	 * [--skip=<data-type>]
 	 * : Skip importing specific data. Supported options are: 'attachment' and 'image_resize' (skip time-consuming thumbnail generation).
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		list( $file ) = $args;
-
-		if ( ! file_exists( $file ) )
-			WP_CLI::error( "File to import doesn't exist." );
-
 		$defaults = array(
-			'type'    => 'wxr',
 			'authors' => null,
 			'skip'    => array(),
 		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
-		$assoc_args['file'] = $file;
-
-		if ( ! empty( $assoc_args['skip'] ) )
+		if ( ! is_array( $assoc_args['skip'] ) ) {
 			$assoc_args['skip'] = explode( ',', $assoc_args['skip'] );
-
-		$importer = $this->is_importer_available( $assoc_args['type'] );
-		if ( is_wp_error( $importer ) )
-			WP_CLI::error( $importer->get_error_message() );
-
-		$ret = $this->import( $assoc_args );
-
-		if ( is_wp_error( $ret ) ) {
-			WP_CLI::error( $ret->get_error_message() );
-		} else {
-			WP_CLI::line(); // WXR import ends with HTML, so make sure message is on next line
-			WP_CLI::success( "Import complete." );
 		}
-	}
 
-	/**
-	 * Import a file into WordPress.
-	 */
-	private function import( $args ) {
-
-		switch( $args['type'] ) {
-			case 'wxr':
-			case 'wordpress':
-				$this->add_wxr_filters();
-				$ret = $this->import_wxr( $args );
-				break;
-			default:
-				$ret = new WP_Error( 'missing-import-type', "Import type doesn't exist." );
-				break;
+		$importer = $this->is_importer_available();
+		if ( is_wp_error( $importer ) ) {
+			WP_CLI::error( $importer );
 		}
-		return $ret;
+
+		$this->add_wxr_filters();
+
+		WP_CLI::log( 'Starting the import process...' );
+
+		foreach ( $args as $file ) {
+			if ( ! is_readable( $file ) ) {
+				WP_CLI::warning( "Can't read $file file." );
+			}
+
+			$ret = $this->import_wxr( $file, $assoc_args );
+
+			if ( is_wp_error( $ret ) ) {
+				WP_CLI::warning( $ret );
+			} else {
+				WP_CLI::line(); // WXR import ends with HTML, so make sure message is on next line
+				WP_CLI::success( "Finished importing from $file file." );
+			}
+		}
 	}
 
 	/**
 	 * Import a WXR file
 	 */
-	private function import_wxr( $args ) {
+	private function import_wxr( $file, $args ) {
 
 		$wp_import = new WP_Import;
-		$import_data = $wp_import->parse( $args['file'] );
+		$import_data = $wp_import->parse( $file );
 		if ( is_wp_error( $import_data ) )
 			return $import_data;
 
@@ -125,11 +111,11 @@ class Import_Command extends WP_CLI_Command {
 			'fetch_attachments'    => $wp_import->fetch_attachments,
 		);
 
-		if( in_array( 'image_resize', $args['skip'] ) ) {
+		if ( in_array( 'image_resize', $args['skip'] ) ) {
 			add_filter( 'intermediate_image_sizes_advanced', array( $this, 'filter_set_image_sizes' ) );
 		}
 
-		$wp_import->import( $args['file'] );
+		$wp_import->import( $file );
 
 		return true;
 	}
@@ -201,30 +187,21 @@ class Import_Command extends WP_CLI_Command {
 	/**
 	 * Is the requested importer available?
 	 */
-	private function is_importer_available( $importer ) {
-
+	private function is_importer_available() {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 
-		switch ( $importer ) {
-			case 'wxr':
-			case 'wordpress':
-				if ( class_exists( 'WP_Import' ) ) {
-					$ret = true;
-				} else {
-					$plugins = get_plugins();
-					$wordpress_importer = 'wordpress-importer/wordpress-importer.php';
-					if ( array_key_exists( $wordpress_importer, $plugins ) )
-						$error_msg = "WordPress Importer needs to be activated. Try 'wp plugin activate wordpress-importer'.";
-					else
-						$error_msg = "WordPress Importer needs to be installed. Try 'wp plugin install wordpress-importer --activate'.";
-					$ret = new WP_Error( 'importer-missing', $error_msg );
-				}
-				break;
-			default:
-				$ret = new WP_Error( 'missing-import-type', "Import type doesn't exist." );
-				break;
+		if ( class_exists( 'WP_Import' ) ) {
+			return true;
 		}
-		return $ret;
+
+		$plugins = get_plugins();
+		$wordpress_importer = 'wordpress-importer/wordpress-importer.php';
+		if ( array_key_exists( $wordpress_importer, $plugins ) )
+			$error_msg = "WordPress Importer needs to be activated. Try 'wp plugin activate wordpress-importer'.";
+		else
+			$error_msg = "WordPress Importer needs to be installed. Try 'wp plugin install wordpress-importer --activate'.";
+
+		return new WP_Error( 'importer-missing', $error_msg );
 	}
 
 	/**

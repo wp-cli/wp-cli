@@ -133,7 +133,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     wp comment list --post_id=2
 	 *
-	 *     wp comment list --number=20 --comment_approved=1
+	 *     wp comment list --number=20 --status=approve
 	 *
 	 * @subcommand list
 	 */
@@ -158,8 +158,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to delete.
+	 * <id>...
+	 * : One or more IDs of comments to delete.
 	 *
 	 * [--force]
 	 * : Skip the trash bin.
@@ -167,6 +167,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     wp comment delete 1337 --force
+	 * 
+	 *     wp comment delete 1337 2341 --force
 	 */
 	public function delete( $args, $assoc_args ) {
 		parent::_delete( $args, $assoc_args, function ( $comment_id, $assoc_args ) {
@@ -368,6 +370,22 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		if ( $this->fetcher->get( $args[0] ) ) {
 			WP_CLI::success( "Comment with ID $args[0] exists." );
 		}
+	}
+	
+	/**
+	 * Get comment url
+	 * 
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of comments to get the URL.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment url 123
+	 */
+	public function url( $args ) {
+		parent::_url( $args, 'get_comment_link' );
 	}
 }
 

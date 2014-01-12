@@ -115,7 +115,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	public function edit( $args, $_ ) {
 		$post = $this->fetcher->get_check( $args[0] );
 
-		$r = $this->_edit( $post->post_content, "WP-CLI post $post_id" );
+		$r = $this->_edit( $post->post_content, "WP-CLI post {$post->ID}" );
 
 		if ( $r === false )
 			\WP_CLI::warning( 'No change made to post content.', 'Aborted' );
@@ -263,13 +263,17 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--post_date=<yyyy-mm-dd>]
 	 * : The date of the generated posts. Default: current date
-	 *
+	 * 
+	 * [--post_content]
+	 * : If set, the command reads the post_content from STDIN.
+	 * 
 	 * [--max_depth=<number>]
 	 * : For hierarchical post types, generate child posts down to a certain depth. Default: 1
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp post generate --count=10 --post_type=page --post_date=1999-01-04
+	 *     curl http://loripsum.net/api/5 | wp post generate --post_content --count=10
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
@@ -281,6 +285,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'post_status' => 'publish',
 			'post_author' => false,
 			'post_date' => current_time( 'mysql' ),
+			'post_content' => '',
 		);
 		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
 
@@ -296,6 +301,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				$post_author = $post_author->ID;
 		}
 
+		if ( isset( $assoc_args['post_content'] ) ) {
+			$post_content = file_get_contents( 'php://stdin' );
+		}
+
 		// Get the total number of posts
 		$total = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = %s", $post_type ) );
 
@@ -307,6 +316,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating posts', $count );
 
+		$post_ids = array();
 		$current_depth = 1;
 		$current_parent = 0;
 
@@ -335,14 +345,33 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				'post_parent' => $current_parent,
 				'post_name' => "post-$i",
 				'post_date' => $post_date,
+				'post_content' => $post_content,
 			);
 
-			wp_insert_post( $args, true );
+			$post_ids[$i] = wp_insert_post( $args, true );
 
 			$notify->tick();
 		}
 		$notify->finish();
 		// @codingStandardsIgnoreEnd
+	}
+
+	/**
+	 * Get post url
+	 * 
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of posts get the URL.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp post url 123
+	 * 
+	 *     wp post url 123 324
+	 */
+	public function url( $args ) {
+		parent::_url( $args, 'get_permalink' );
 	}
 
 	private function maybe_make_child() {

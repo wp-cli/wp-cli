@@ -38,6 +38,12 @@ Feature: Manage WordPress users
       | ID           | {USER_ID} |
       | display_name | Foo       |
 
+    When I run `wp user get testuser@example.com`
+    Then STDOUT should be a table containing rows:
+      | Field        | Value     |
+      | ID           | {USER_ID} |
+      | display_name | Foo       |
+
     When I run `wp user delete {USER_ID}`
     Then STDOUT should not be empty
 

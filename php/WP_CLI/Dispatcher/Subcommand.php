@@ -171,13 +171,17 @@ class Subcommand extends CompositeCommand {
 
 		$unknown_positionals = $validator->unknown_positionals( $args );
 		if ( !empty( $unknown_positionals ) ) {
-			\WP_CLI::warning( 'Too many positional arguments: ' .
+			\WP_CLI::error( 'Too many positional arguments: ' .
 				implode( ' ', $unknown_positionals ) );
 		}
 
 		list( $errors, $to_unset ) = $validator->validate_assoc(
 			array_merge( \WP_CLI::get_config(), $extra_args, $assoc_args )
 		);
+
+		foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
+			$errors['fatal'][] = "unknown --$key parameter";
+		}
 
 		if ( !empty( $errors['fatal'] ) ) {
 			$out = 'Parameter errors:';
@@ -189,10 +193,6 @@ class Subcommand extends CompositeCommand {
 		}
 
 		array_map( '\\WP_CLI::warning', $errors['warning'] );
-
-		foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
-			\WP_CLI::warning( "unknown --$key parameter" );
-		}
 
 		return $to_unset;
 	}

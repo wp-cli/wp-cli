@@ -47,7 +47,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$longdesc = $command->get_longdesc();
 		if ( $longdesc ) {
-			$out .= $longdesc . "\n";
+			$out .= wordwrap( $longdesc, 79 ) . "\n";
 		}
 
 		// section headers
@@ -76,7 +76,7 @@ class Help_Command extends WP_CLI_Command {
 	}
 
 	private static function pass_through_pager( $out ) {
-		if ( strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ) {
+		if ( Utils\is_windows() ) {
 			// no paging for Windows cmd.exe; sorry
 			echo $out;
 			return 0;

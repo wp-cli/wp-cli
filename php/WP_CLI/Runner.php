@@ -46,7 +46,7 @@ class Runner {
 		}
 
 		if ( !$config_path ) {
-			$config_path = getenv( 'HOME' ) . '/.config/wp-cli.yml';
+			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
 		}
 
 		if ( !is_readable( $config_path ) )
@@ -81,6 +81,17 @@ class Runner {
 				$path = $config['path'];
 			else
 				$path .= '/' . $config['path'];
+		} elseif ( file_exists( './index.php' ) ) {
+			$index_code = file_get_contents( './index.php' );
+
+			if ( preg_match( '/^\s*require.+([\'"])(.*wp-blog-header\.php)\1/m', $index_code, $matches ) ) {
+				$new_path = dirname( $matches[2] );
+				if ( Utils\is_path_absolute( $new_path ) ) {
+					$path = $new_path;
+				} else {
+					$path .= '/' . $new_path;
+				}
+			}
 		}
 
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
@@ -92,17 +103,10 @@ class Runner {
 		if ( !isset( $assoc_args['user'] ) )
 			return;
 
-		$user = $assoc_args['user'];
+		$fetcher = new \WP_CLI\Fetchers\User;
+		$user = $fetcher->get_check( $assoc_args['user'] );
+		wp_set_current_user( $user->ID );
 
-		if ( is_numeric( $user ) ) {
-			$user_id = (int) $user;
-		} else {
-			$user_id = (int) username_exists( $user );
-		}
-
-		if ( !$user_id || !wp_set_current_user( $user_id ) ) {
-			\WP_CLI::error( "Could not find user: $user" );
-		}
 	}
 
 	private static function guess_url( $assoc_args ) {
@@ -390,10 +394,6 @@ class Runner {
 		}
 
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
-
-		if ( !isset( $this->config['path'] ) ) {
-			$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
-		}
 	}
 
 	public function before_wp_load() {
@@ -426,6 +426,13 @@ class Runner {
 		}
 
 		// Handle --path parameter
+		if ( !isset( $this->config['path'] ) ) {
+			if ( $this->cmd_starts_with( array( 'core', 'download' ) ) ) {
+				$this->config['path'] = getcwd();
+			} else {
+				$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
+			}
+		}
 		self::set_wp_root( $this->config );
 
 		// First try at showing man page
@@ -459,6 +466,10 @@ class Runner {
 			exit;
 		}
 
+		if ( $this->cmd_starts_with( array( 'core', 'is-installed' ) ) ) {
+			define( 'WP_INSTALLING', true );
+		}
+
 		if (
 			count( $this->arguments ) >= 2 &&
 			$this->arguments[0] == 'core' &&
@@ -486,6 +497,10 @@ class Runner {
 		if ( $this->cmd_starts_with( array( 'import') ) ) {
 			define( 'WP_LOAD_IMPORTERS', true );
 			define( 'WP_IMPORTING', true );
+		}
+
+		if ( $this->cmd_starts_with( array( 'plugin' ) ) ) {
+			$GLOBALS['pagenow'] = 'plugins.php';
 		}
 	}
 

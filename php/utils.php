@@ -375,3 +375,10 @@ function parse_url( $url ) {
 	return $url_parts;
 }
 
+/**
+ * Check if we're running in a Windows environment (cmd.exe).
+ */
+function is_windows() {
+	return strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+}
+
