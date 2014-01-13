@@ -9,17 +9,29 @@ Feature: Manage WordPress installation
     And STDERR should not be empty
 
     When I run `wp core download`
+    And save STDOUT 'Downloading WordPress ([\d\.]+)' as {VERSION}
     Then the wp-settings.php file should exist
+    And the {SUITE_CACHE_DIR}/core/en_US-{VERSION}.tar.gz file should exist
 
     When I run `mkdir inner`
     And I run `cd inner && wp core download`
     Then the inner/wp-settings.php file should exist
 
+    # test core tarball cache
+    When I run `wp core download --force`
+    Then the wp-settings.php file should exist
+    And STDOUT should contain:
+    """
+    Using cached file '{SUITE_CACHE_DIR}/core/en_US-{VERSION}.tar.gz'...
+    """
+
   @download
   Scenario: Localized install
     Given an empty directory
     When I run `wp core download --locale=de_DE`
+    And save STDOUT 'Downloading WordPress ([\d\.]+)' as {VERSION}
     Then the wp-settings.php file should exist
+    And the {SUITE_CACHE_DIR}/core/de_DE-{VERSION}.tar.gz file should exist
 
   Scenario: No wp-config.php
     Given an empty directory
