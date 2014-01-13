@@ -300,42 +300,11 @@ class Package_Command extends WP_CLI_Command {
 			// `composer.json` and its directory might need to be created
 			if ( ! file_exists( $composer_path ) ) {
 
-				$composer_dir = pathinfo( $composer_path, PATHINFO_DIRNAME );
-				if ( ! is_dir( $composer_dir ) ) {
-					@mkdir( $composer_dir );
+				$retval = $this->create_default_composer_json( $composer_path );
+				if ( is_wp_error( $retval ) ) {
+					WP_CLI::error( $retval->get_error_message() );
 				}
 
-				$json_file = new JsonFile( $composer_path );
-
-				$author = (object)array(
-					'name'   => 'WP-CLI',
-					'email'  => 'noreply@wpcli.org'
-				);
-
-				$repositories = (object)array(
-					'wp-cli'     => (object)array(
-						'type'      => 'composer',
-						'url'       => self::PACKAGE_INDEX_URL,
-						),
-					);
-
-				$options = array(
-					'name' => 'wp-cli/wp-cli-community-packages',
-					'description' => 'Installed community packages used by WP-CLI',
-					'authors' => array( $author ),
-					'homepage' => self::PACKAGE_INDEX_URL,
-					'require' => new stdClass,
-					'require-dev' => new stdClass,
-					'minimum-stability' => 'dev',
-					'license' => 'MIT',
-					'repositories' => $repositories,
-					);
-
-				try {
-					$json_file->write( $options );
-				} catch( Exception $e ) {
-					WP_CLI::error( $e->getMessage() );	
-				}
 			}
 
 			// Something bad happened
@@ -345,6 +314,54 @@ class Package_Command extends WP_CLI_Command {
 		}
 
 		return $composer_path;
+	}
+
+	/**
+	 * Create a default composer.json, should one not already exist
+	 *
+	 * @param string $composer_path Where the composer.json should be created
+	 * @return true|WP_Error
+	 */
+	private function create_default_composer_json( $composer_path ) {
+
+		$composer_dir = pathinfo( $composer_path, PATHINFO_DIRNAME );
+		if ( ! is_dir( $composer_dir ) ) {
+			@mkdir( $composer_dir );
+		}
+
+		$json_file = new JsonFile( $composer_path );
+
+		$author = (object)array(
+			'name'   => 'WP-CLI',
+			'email'  => 'noreply@wpcli.org'
+		);
+
+		$repositories = (object)array(
+			'wp-cli'     => (object)array(
+				'type'      => 'composer',
+				'url'       => self::PACKAGE_INDEX_URL,
+				),
+			);
+
+		$options = array(
+			'name' => 'wp-cli/wp-cli-community-packages',
+			'description' => 'Installed community packages used by WP-CLI',
+			'authors' => array( $author ),
+			'homepage' => self::PACKAGE_INDEX_URL,
+			'require' => new stdClass,
+			'require-dev' => new stdClass,
+			'minimum-stability' => 'dev',
+			'license' => 'MIT',
+			'repositories' => $repositories,
+			);
+
+		try {
+			$json_file->write( $options );
+		} catch( Exception $e ) {
+			return new WP_Error( 'composer-json-write', $e->getMessage() );
+		}
+
+		return true;
 	}
 
 	/**
