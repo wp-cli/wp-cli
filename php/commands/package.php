@@ -32,6 +32,7 @@ class Package_Command extends WP_CLI_Command {
 		'name',
 		'description',
 		'authors',
+		'version',
 	);
 
 	private function _show_packages( $packages, $assoc_args ) {
@@ -47,6 +48,7 @@ class Package_Command extends WP_CLI_Command {
 			$package_output->name = $package->getName();
 			$package_output->description = $package->getDescription();
 			$package_output->authors = implode( ',', array_column( (array) $package->getAuthors(), 'name' ) );
+			$package_output->version = $package->getPrettyVersion();
 			$list[$package_output->name] = $package_output;
 		}
 
