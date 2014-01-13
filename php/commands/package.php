@@ -307,10 +307,6 @@ class Package_Command extends WP_CLI_Command {
 
 			}
 
-			// Something bad happened
-			if ( ! file_exists( $composer_path ) ) {
-				WP_CLI::error( "Can't find composer.json file outside of the WP-CLI directory." );
-			}
 		}
 
 		return $composer_path;
