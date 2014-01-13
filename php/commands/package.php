@@ -296,10 +296,7 @@ class Package_Command extends WP_CLI_Command {
 			// `composer.json` and its directory might need to be created
 			if ( ! file_exists( $composer_path ) ) {
 
-				$retval = $this->create_default_composer_json( $composer_path );
-				if ( is_wp_error( $retval ) ) {
-					WP_CLI::error( $retval->get_error_message() );
-				}
+				$this->create_default_composer_json( $composer_path );
 
 			}
 
@@ -371,7 +368,7 @@ class Package_Command extends WP_CLI_Command {
 		try {
 			$json_file->write( $options );
 		} catch( Exception $e ) {
-			return new WP_Error( 'composer-json-write', $e->getMessage() );
+			WP_CLI::error( $e->getMessage() );
 		}
 
 		return true;
