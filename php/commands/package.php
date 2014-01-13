@@ -291,7 +291,7 @@ class Package_Command extends WP_CLI_Command {
 
 		if ( null === $composer_path ) {
 
-			$composer_path = $this->find_composer_path();
+			$composer_path = $this->find_composer_json_path();
 
 			// `composer.json` and its directory might need to be created
 			if ( ! file_exists( $composer_path ) ) {
@@ -314,7 +314,7 @@ class Package_Command extends WP_CLI_Command {
 	 * 
 	 * @return string
 	 */
-	private function find_composer_path() {
+	private function find_composer_json_path() {
 
 		// Phar-based installs use a standalone WP-CLI directory
 		if ( 0 === strpos( WP_CLI_ROOT, 'phar:' ) ) {
