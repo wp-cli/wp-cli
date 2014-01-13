@@ -339,6 +339,10 @@ class Package_Command extends WP_CLI_Command {
 			@mkdir( $composer_dir );
 		}
 
+		if ( ! is_dir( $composer_dir ) ) {
+			WP_CLI::error( "Composer directory couldn't be created." );
+		}
+
 		$json_file = new JsonFile( $composer_path );
 
 		$author = (object)array(
