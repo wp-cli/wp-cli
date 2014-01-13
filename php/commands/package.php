@@ -89,7 +89,7 @@ class Package_Command extends WP_CLI_Command {
 		$composer_json_obj = $this->get_composer_json();
 
 		// Add the 'require' to composer.json
-		WP_CLI::line( "Updating composer.json to require the package..." );
+		WP_CLI::line( sprintf( "Updating %s to require the package...", $composer_json_obj->getPath() ) );
 		$composer_backup = file_get_contents( $composer_json_obj->getPath() );
 		$json_manipulator = new JsonManipulator( $composer_backup );
 		$json_manipulator->addLink( 'require', $package_name, $assoc_args['version'] );
