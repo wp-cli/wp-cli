@@ -316,8 +316,11 @@ class Package_Command extends WP_CLI_Command {
 	 */
 	private function find_composer_json_path() {
 
-		// Phar-based installs use a standalone WP-CLI directory
-		if ( 0 === strpos( WP_CLI_ROOT, 'phar:' ) ) {
+		// Phar-based installs and straight git clones
+		// use a standalone WP-CLI directory
+		$parent_composer_json = dirname( dirname( dirname( WP_CLI_ROOT ) ) ) . '/composer.json';
+		if ( 0 === strpos( WP_CLI_ROOT, 'phar:' )
+			|| ! file_exists( $parent_composer_json ) ) {
 			$composer_path = getenv( 'HOME' ) . '/.wp-cli/composer.json';
 		} else {
 			$composer_path = dirname( dirname( dirname( WP_CLI_ROOT ) ) ) . '/composer.json';
