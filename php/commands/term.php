@@ -205,28 +205,31 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <term-id>
-	 * : ID for the term to delete.
-	 *
 	 * <taxonomy>
 	 * : Taxonomy of the term to delete.
 	 *
+	 * <term-id>...
+	 * : One or more IDs of terms to delete.
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term delete 15 category
+	 *     # delete all post tags
+	 *     wp term list post_tag --field=ID | xargs wp term delete post_tag
 	 */
 	public function delete( $args ) {
+		$taxonomy = array_shift( $args );
 
-		list( $term_id, $taxonomy ) = $args;
+		foreach ( $args as $term_id ) {
+			$ret = wp_delete_term( $term_id, $taxonomy );
 
-		$ret = wp_delete_term( $term_id, $taxonomy );
-
-		if ( is_wp_error( $ret ) )
-			WP_CLI::error( $ret->get_error_message() );
-		else if ( $ret )
-			WP_CLI::success( sprintf( "Deleted %s %d.", $taxonomy, $term_id ) );
-		else
-			WP_CLI::error( "Term doesn't exist." );
+			if ( is_wp_error( $ret ) ) {
+				WP_CLI::warning( $ret );
+			} else if ( $ret ) {
+				WP_CLI::success( sprintf( "Deleted %s %d.", $taxonomy, $term_id ) );
+			} else {
+				WP_CLI::warning( sprintf( "%s %d doesn't exist.", $taxonomy, $term_id ) );
+			}
+		}
 	}
 
 	/**

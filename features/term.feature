@@ -45,7 +45,7 @@ Feature: Manage WordPress terms
       "test-delete"
       """
 
-    When I run `wp term delete {TERM_ID} post_tag`
+    When I run `wp term delete post_tag {TERM_ID}`
     Then STDOUT should contain:
       """
       Deleted post_tag {TERM_ID}.
