@@ -53,3 +53,11 @@ Feature: Manage WordPress terms
 
     When I try the previous command again
     Then STDERR should not be empty
+
+  Scenario: Generating terms
+    When I run `wp term generate category --count=10`
+    And I run `wp term list category --format=count`
+    Then STDOUT should be:
+      """
+      11
+      """
