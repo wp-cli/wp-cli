@@ -41,43 +41,54 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::launch( Utils\esc_cmd( 'mkdir -p %s', ABSPATH ) );
 		}
 
-		if ( isset( $assoc_args['locale'] ) &&  isset( $assoc_args['version'] ) ) {
-			$download_url = sprintf( 'https://%s.wordpress.org/wordpress-%s-%s.tar.gz',
-				substr( $assoc_args['locale'], 0, 2 ), $assoc_args['version'], $assoc_args['locale'] );
-			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $assoc_args['locale'] ) );
-		} else if ( isset( $assoc_args['locale'] ) ) {
-			$offer = $this->get_download_offer( $assoc_args['locale'] );
-			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
-			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...',
-				$offer['current'], $offer['locale'] ) );
-		} elseif ( isset( $assoc_args['version'] ) ) {
-			$download_url = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.tar.gz';
-			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
+		$locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : 'en_US';
+
+		if ( isset( $assoc_args['version'] ) ) {
+			$version = $assoc_args['version'];
+			if ( 'en_US' === $locale ) {
+				$download_url = 'https://wordpress.org/wordpress-' . $version . '.tar.gz';
+			} else {
+				$download_url = sprintf( 'https://%s.wordpress.org/wordpress-%s-%s.tar.gz',
+					substr( $assoc_args['locale'], 0, 2 ), $version, $locale );
+			}
 		} else {
-			$download_url = 'https://wordpress.org/latest.tar.gz';
-			WP_CLI::log( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
+			$offer = $this->get_download_offer( $locale );
+			$version = $offer['current'];
+			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
 		}
 
-		// We need to use a temporary file because piping from cURL to tar is flaky
-		// on MinGW (and probably in other environments too).
-		$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.tar.gz';
+		WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $version, $locale ) );
 
-		$headers = array('Accept' => 'application/json');
-		$options = array(
-			'timeout' => 600,  // 10 minutes ought to be enough for everybody
-			'filename' => $temp
-		);
+		$cache = WP_CLI::get_cache();
+		$cache_key = "core/$locale-$version.tar.gz";
+		$cache_file = $cache->has($cache_key);
 
-		self::_request( 'GET', $download_url, $headers, $options );
+		if ( $cache_file ) {
+			WP_CLI::log( "Using cached file '$cache_file'..." );
+			self::_extract( $cache_file, ABSPATH );
+		} else {
+			// We need to use a temporary file because piping from cURL to tar is flaky
+			// on MinGW (and probably in other environments too).
+			$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.tar.gz';
 
-		self::_extract( $temp, ABSPATH );
+			$headers = array('Accept' => 'application/json');
+			$options = array(
+				'timeout' => 600,  // 10 minutes ought to be enough for everybody
+				'filename' => $temp
+			);
+
+			self::_request( 'GET', $download_url, $headers, $options );
+			self::_extract( $temp, ABSPATH );
+			$cache->import( $cache_key, $temp );
+			unlink($temp);
+		}
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
 	private static function _extract( $tarball, $dest ) {
 		if ( ! class_exists( 'PharData' ) ) {
-			$cmd = "tar xz --strip-components=1 --directory=%s -f $tarball && rm $tarball";
+			$cmd = "tar xz --strip-components=1 --directory=%s -f $tarball";
 			WP_CLI::launch( Utils\esc_cmd( $cmd, $dest ) );
 			return;
 		}
@@ -122,6 +133,7 @@ class Core_Command extends WP_CLI_Command {
 			$todo = $fileinfo->isDir() ? 'rmdir' : 'unlink';
 			$todo( $fileinfo->getRealPath() );
 		}
+		rmdir( $dir );
 	}
 
 	private static function _request( $method, $url, $headers = array(), $options = array() ) {

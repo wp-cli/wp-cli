@@ -58,7 +58,7 @@ class WP_CLI {
 	/**
 	 * @return FileCache
 	 */
-	private static function get_cache() {
+	public static function get_cache() {
 		static $cache;
 
 		if ( !$cache ) {
