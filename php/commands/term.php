@@ -64,11 +64,11 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <term>
-	 * : A name for the new term.
-	 *
 	 * <taxonomy>
 	 * : Taxonomy for the new term.
+	 *
+	 * <term>
+	 * : A name for the new term.
 	 *
 	 * [--slug=<slug>]
 	 * : A unique slug for the new term. Defaults to sanitized version of name.
@@ -84,11 +84,11 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term create Apple category --description="A type of fruit"
+	 *     wp term create category Apple --description="A type of fruit"
 	 */
 	public function create( $args, $assoc_args ) {
 
-		list( $term, $taxonomy ) = $args;
+		list( $taxonomy, $term ) = $args;
 
 		$defaults = array(
 			'slug'        => sanitize_title( $term ),
@@ -121,11 +121,11 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <term-id>
-	 * : ID of the term to get
-	 *
 	 * <taxonomy>
 	 * : Taxonomy of the term to get
+	 *
+	 * <term-id>
+	 * : ID of the term to get
 	 *
 	 * [--field=<field>]
 	 * : Instead of returning the whole term, returns the value of a single field.
@@ -135,12 +135,12 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term get 1 category --format=json
+	 *     wp term get category 1 --format=json
 	 */
 	public function get( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
-		list( $term_id, $taxonomy ) = $args;
+		list( $taxonomy, $term_id ) = $args;
 		$term = get_term_by( 'id', $term_id, $taxonomy );
 		if ( ! $term )
 			WP_CLI::error( "Term doesn't exist." );
@@ -153,11 +153,11 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <term-id>
-	 * : ID for the term to update.
-	 *
 	 * <taxonomy>
 	 * : Taxonomy of the term to update.
+	 *
+	 * <term-id>
+	 * : ID for the term to update.
 	 *
 	 * [--name=<name>]
 	 * : A new name for the term.
@@ -173,11 +173,11 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term update 15 category --name=Apple
+	 *     wp term update category 15 --name=Apple
 	 */
 	public function update( $args, $assoc_args ) {
 
-		list( $term_id, $taxonomy ) = $args;
+		list( $taxonomy, $term_id ) = $args;
 
 		$defaults = array(
 			'name'        => null,
