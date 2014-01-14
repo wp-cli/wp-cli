@@ -87,7 +87,7 @@ $steps->Given( '/^download:$/',
 	}
 );
 
-$steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
+$steps->Given( '/^save (STDOUT|STDERR)( [\'].+[^\'])? as \{(\w+)\}$/',
 	function ( $world, $stream, $output_filter, $key ) {
 
 		if ( $output_filter ) {
