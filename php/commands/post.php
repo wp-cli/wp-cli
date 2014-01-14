@@ -263,10 +263,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--post_date=<yyyy-mm-dd>]
 	 * : The date of the generated posts. Default: current date
-	 * 
+	 *
 	 * [--post_content]
 	 * : If set, the command reads the post_content from STDIN.
-	 * 
+	 *
 	 * [--max_depth=<number>]
 	 * : For hierarchical post types, generate child posts down to a certain depth. Default: 1
 	 *
@@ -316,7 +316,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating posts', $count );
 
-		$post_ids = array();
+		$previous_post_id = 0;
 		$current_depth = 1;
 		$current_parent = 0;
 
@@ -348,7 +348,12 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				'post_content' => $post_content,
 			);
 
-			$post_ids[$i] = wp_insert_post( $args, true );
+			$post_id = wp_insert_post( $args, true );
+			if ( is_wp_error( $post_id ) ) {
+				WP_CLI::warning( $post_id );
+			} else {
+				$previous_post_id = $post_id;
+			}
 
 			$notify->tick();
 		}
@@ -358,7 +363,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Get post url
-	 * 
+	 *
 	 * ## OPTIONS
 	 *
 	 * <id>...
@@ -367,7 +372,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     wp post url 123
-	 * 
+	 *
 	 *     wp post url 123 324
 	 */
 	public function url( $args ) {

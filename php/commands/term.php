@@ -270,27 +270,28 @@ class Term_Command extends WP_CLI_Command {
 
 		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating terms', $count );
 
-		$current_depth = 1;
-		$current_parent = 0;
-
 		$args = array(
 			'orderby' => 'id',
 			'hierarchical' => $hierarchical,
 		);
 
+		$previous_term_id = 0;
+		$current_parent = 0;
+		$current_depth = 1;
+
 		for ( $i = 0; $i < $count; $i++ ) {
 
 			if ( $hierarchical ) {
 
-				if ( $this->maybe_make_child() && $current_depth < $max_depth ) {
+				if ( $previous_term_id && $this->maybe_make_child() && $current_depth < $max_depth ) {
 
-					$current_parent = $term['term_id'];
+					$current_parent = $previous_term_id;
 					$current_depth++;
 
 				} else if ( $this->maybe_reset_depth() ) {
 
-					$current_depth = 1;
 					$current_parent = 0;
+					$current_depth = 1;
 
 				}
 
@@ -302,6 +303,11 @@ class Term_Command extends WP_CLI_Command {
 			);
 
 			$term = wp_insert_term( "$label $i", $taxonomy, $args );
+			if ( is_wp_error( $term ) ) {
+				WP_CLI::warning( $term );
+			} else {
+				$previous_term_id = $term['term_id'];
+			}
 
 			$notify->tick();
 		}
