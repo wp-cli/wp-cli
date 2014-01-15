@@ -561,6 +561,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 			// Create the user
 			} else {
+				unset( $new_user['ID'] ); // Unset else it will just return the ID 
 				$user_id = wp_insert_user( $new_user );
 			}
 
