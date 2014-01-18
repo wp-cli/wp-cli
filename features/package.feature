@@ -23,3 +23,9 @@ Feature: Manage WP-CLI packages
 
     When I run `wp package uninstall danielbachhuber/wp-cli-reset-post-date-command`
     Then STDERR should be empty
+
+    When I run `wp package list`
+    Then STDOUT should not contain:
+      """
+      danielbachhuber/wp-cli-reset-post-date-command
+      """
