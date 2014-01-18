@@ -58,8 +58,10 @@ class Package_Command extends WP_CLI_Command {
 	/**
 	 * Browse available WP-CLI community packages.
 	 *
-	 * @subcommand browse
-	 * @synopsis [--format=<format>]
+	 * ## OPTIONS
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json. Default: table
 	 */
 	public function browse( $_, $assoc_args ) {
 		$this->_show_packages( $this->get_community_packages(), $assoc_args );
@@ -68,8 +70,13 @@ class Package_Command extends WP_CLI_Command {
 	/**
 	 * Install a WP-CLI community package.
 	 *
-	 * @subcommand install
-	 * @synopsis <package-name> [--version=<version>]
+	 * ## OPTIONS
+	 *
+	 * <package-name>
+	 * : The name of the package to install.
+	 *
+	 * [--version=<version>]
+	 * : Select which version you want to download.
 	 */
 	public function install( $args, $assoc_args ) {
 		list( $package_name ) = $args;
@@ -123,8 +130,12 @@ class Package_Command extends WP_CLI_Command {
 	/**
 	 * List installed WP-CLI community packages.
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json. Default: table
+	 *
 	 * @subcommand list
-	 * @synopsis [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 		$this->_show_packages( $this->get_installed_packages(), $assoc_args );
@@ -133,8 +144,10 @@ class Package_Command extends WP_CLI_Command {
 	/**
 	 * Uninstall a WP-CLI community package.
 	 *
-	 * @subcommand uninstall
-	 * @synopsis <package-name>
+	 * ## OPTIONS
+	 *
+	 * <package-name>
+	 * : The name of the package to uninstall.
 	 */
 	public function uninstall( $args ) {
 		list( $package_name ) = $args;
@@ -310,7 +323,7 @@ class Package_Command extends WP_CLI_Command {
 	/**
 	 * Depending on how WP-CLI is installed, find where composer.json
 	 * should exist.
-	 * 
+	 *
 	 * @return string
 	 */
 	private function find_composer_json_path() {
