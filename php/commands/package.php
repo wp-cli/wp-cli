@@ -72,25 +72,30 @@ class Package_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <package-name>
-	 * : The name of the package to install.
+	 * <package>
+	 * : The name of the package to install. Can optionally contain a version constraint.
 	 *
-	 * [--version=<version>]
-	 * : Select which version you want to download.
+	 * ## EXAMPLES
+	 *
+	 *     # install the latest development version
+	 *     wp package install wp-cli/server-command
+	 *
+	 *     # install the latest stable version
+	 *     wp package install wp-cli/server-command:@stable
 	 */
 	public function install( $args, $assoc_args ) {
 		list( $package_name ) = $args;
 
-		$defaults = array(
-			'version' => 'dev-master',
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
+		if ( false !== strpos( $package_name, ':' ) )
+			list( $package_name, $version ) = explode( ':', $package_name );
+		else
+			$version = 'dev-master';
 
 		$package = $this->get_community_package_by_name( $package_name );
 		if ( ! $package )
 			WP_CLI::error( "Invalid package." );
 		else
-			WP_CLI::line( sprintf( "Installing %s (%s)", $package_name, $assoc_args['version'] ) );
+			WP_CLI::line( sprintf( "Installing %s (%s)", $package_name, $version ) );
 
 		$composer = $this->get_composer();
 		$composer_json_obj = $this->get_composer_json();
@@ -99,7 +104,7 @@ class Package_Command extends WP_CLI_Command {
 		WP_CLI::line( sprintf( "Updating %s to require the package...", $composer_json_obj->getPath() ) );
 		$composer_backup = file_get_contents( $composer_json_obj->getPath() );
 		$json_manipulator = new JsonManipulator( $composer_backup );
-		$json_manipulator->addLink( 'require', $package_name, $assoc_args['version'] );
+		$json_manipulator->addLink( 'require', $package_name, $version );
 		file_put_contents( $composer_json_obj->getPath(), $json_manipulator->getContents() );
 		$composer = $this->get_composer();
 
@@ -146,7 +151,7 @@ class Package_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <package-name>
+	 * <package>
 	 * : The name of the package to uninstall.
 	 */
 	public function uninstall( $args ) {
