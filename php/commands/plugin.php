@@ -228,12 +228,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$path = untrailingslashit( WP_PLUGIN_DIR );
 
 		if ( !empty( $args ) ) {
-			$plugins = $this->fetcher->get_many( $args );
-			if ( empty( $plugins ) )
-				return;
-
-			list( $plugin ) = $plugins;
-
+			$plugin = $this->fetcher->get_check( $args[0] );
 			$path .= '/' . $plugin->file;
 
 			if ( isset( $assoc_args['dir'] ) )

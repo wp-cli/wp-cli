@@ -10,6 +10,18 @@ Feature: Manage WordPress plugins
     And the {PLUGIN_DIR}/plugin1/plugin1.php file should exist
     And the {PLUGIN_DIR}/zombieland/phpunit.xml file should not exist
 
+    When I run `wp plugin path plugin1`
+    Then STDOUT should be:
+      """
+      {PLUGIN_DIR}/plugin1/plugin1.php
+      """
+
+    When I run `wp plugin path plugin1 --dir`
+    Then STDOUT should be:
+      """
+      {PLUGIN_DIR}/plugin1
+      """
+
     When I run `wp plugin scaffold zombieland --plugin_name="Zombieland"`
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/zombieland/zombieland.php file should exist
