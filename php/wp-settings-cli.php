@@ -172,16 +172,42 @@ if ( is_multisite() ) {
 // Define must-use plugin directory constants, which may be overridden in the sunrise.php drop-in.
 wp_plugin_directory_constants( );
 
+// Should we load plugins?
+$enabled_plugins = array();
+foreach( $argv as $k => $v ) {
+	if ( 0 === stripos( $v, '--enable-plugins' ) ) {
+		list( $junk, $enabled_plugins ) = explode( '=', $v );
+		$enabled_plugins = explode( ',', $enabled_plugins );
+		$enabled_plugins = array_map( 'trim', $enabled_plugins );
+		$_enabled_plugins = array();
+		foreach ( $enabled_plugins as $k => $v ) {
+			$_enabled_plugins[] = '*/' . basename( strtolower( $v ) ) . '.php';
+			$_enabled_plugins[] = '*/' . basename( strtolower( $v ) ) . '/*.php';
+		}
+		$enabled_plugins = $_enabled_plugins;
+	}
+}
+
 // Load must-use plugins.
 foreach ( wp_get_mu_plugins() as $mu_plugin ) {
-	include_once( $mu_plugin );
+	foreach ( $enabled_plugins as $enabled_plugin ) {
+		if ( fnmatch( $enabled_plugin, $mu_plugin ) ) {
+			include_once( $mu_plugin );
+			break;
+		}
+	}
 }
 unset( $mu_plugin );
 
 // Load network activated plugins.
 if ( is_multisite() ) {
 	foreach( wp_get_active_network_plugins() as $network_plugin ) {
-		include_once( $network_plugin );
+		foreach ( $enabled_plugins as $enabled_plugin ) {
+			if ( fnmatch( $enabled_plugin, $network_plugin ) ) {
+				include_once( $network_plugin );
+				break;
+			}
+		}
 	}
 	unset( $network_plugin );
 }
@@ -209,8 +235,14 @@ create_initial_post_types();
 register_theme_directory( get_theme_root() );
 
 // Load active plugins.
-foreach ( wp_get_active_and_valid_plugins() as $plugin )
-	include_once( $plugin );
+foreach ( wp_get_active_and_valid_plugins() as $plugin ) {
+	foreach ( $enabled_plugins as $enabled_plugin ) {
+		if ( fnmatch( $enabled_plugin, $plugin ) ) {
+			include_once( $plugin );
+			break;
+		}
+	}
+}
 unset( $plugin );
 
 // Load pluggable functions.

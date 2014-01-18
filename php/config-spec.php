@@ -7,6 +7,12 @@ return array(
 		'desc' => 'Path to the WordPress files',
 	),
 
+	'enable-plugins' => array(
+		'runtime' => '=<enable-plugins>',
+		'file' => '<enable-plugins>',
+		'desc' => 'Enable these plugins at runtime. By default, no user plugins are enabled.',
+	),
+	
 	'url' => array(
 		'runtime' => '=<url>',
 		'file' => '<url>',

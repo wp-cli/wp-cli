@@ -37,13 +37,13 @@ Feature: Get help about WP-CLI commands
       """
     And I run `wp plugin activate test-cli`
 
-    When I run `wp help`
+    When I run `wp help --enable-plugins=test-cli`
     Then STDOUT should contain:
       """
       A dummy command.
       """
 
-    When I run `wp help test-help`
+    When I run `wp help test-help --enable-plugins=test-cli`
     Then STDOUT should contain:
       """
       wp test-help
