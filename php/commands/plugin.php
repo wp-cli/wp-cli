@@ -393,7 +393,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			'version'     => $plugin_data['Version'],
 			'description' => wordwrap( $plugin_data['Description'] ),
 			'status'      => $this->get_status( $file ),
-			'update'      => $this->has_update( $file ),
 		);
 
 		$formatter = $this->get_formatter( $assoc_args );
