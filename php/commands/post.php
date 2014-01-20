@@ -210,7 +210,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields. Defaults to ID,post_title,post_name,post_date,post_status.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, ids. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -219,6 +219,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp post list --post_type=post --posts_per_page=5 --format=json
 	 *
 	 *     wp post list --post_type=page --fields=post_title,post_status
+	 * 
+	 *     wp post list --post_type=page,post --format=ids 
 	 *
 	 * @subcommand list
 	 */
