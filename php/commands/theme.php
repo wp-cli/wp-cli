@@ -513,7 +513,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @subcommand list
 	 */
-	function _list( $_, $assoc_args ) {
+	public function list_( $_, $assoc_args ) {
 		parent::_list( $_, $assoc_args );
 	}
 }

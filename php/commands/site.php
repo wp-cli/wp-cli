@@ -352,7 +352,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * @subcommand list
 	 */
-	function _list( $_, $assoc_args ) {
+	public function list_( $_, $assoc_args ) {
 		if ( !is_multisite() ) {
 			WP_CLI::error( 'This is not a multisite install.' );
 		}
