@@ -235,7 +235,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		foreach ( $query_args as $key => $query_arg ) {
 			if ( false !== strpos( $key, '__' )
-				|| 'post_type' == $key ) {
+				|| ( 'post_type' == $key && 'any' != $query_arg ) ) {
 				$query_args[$key] = explode( ',', $query_arg );
 			}
 		}
