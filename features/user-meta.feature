@@ -12,10 +12,10 @@ Feature: Manage user custom fields
       bar
       """
 
-    When I run `wp user-meta set 1 foo '[ "1", "2" ]' --format=json`
+    When I run `wp user-meta set admin foo '[ "1", "2" ]' --format=json`
     Then STDOUT should not be empty
 
-    When I run `wp user-meta get 1 foo --format=json`
+    When I run `wp user-meta get admin foo --format=json`
     Then STDOUT should be:
       """
       ["1","2"]
