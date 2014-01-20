@@ -44,7 +44,7 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand list
 	 */
-	public function _list( $args, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		$defaults = array(

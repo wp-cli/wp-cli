@@ -224,7 +224,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * @subcommand list
 	 */
-	public function _list( $_, $assoc_args ) {
+	public function list_( $_, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		$defaults = array(
