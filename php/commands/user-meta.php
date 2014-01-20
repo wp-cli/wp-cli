@@ -23,6 +23,17 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 
 	/**
 	 * Get meta field value.
+	 * 
+	 * ## OPTIONS
+	 *
+	 * <user>
+	 * : The user login, user email, or user ID of the user to get metadata for.
+	 * 
+	 * <key>
+	 * : The metadata key.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json. Default: table
 	 *
 	 * @synopsis <user> <key> [--format=<format>]
 	 */
@@ -33,6 +44,12 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 
 	/**
 	 * Delete a meta field.
+	 * 
+	 * <user>
+	 * : The user login, user email, or user ID of the user to delete metadata from.
+	 * 
+	 * <key>
+	 * : The metadata key.
 	 *
 	 * @synopsis <user> <key>
 	 */
@@ -43,6 +60,15 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 
 	/**
 	 * Add a meta field.
+	 * 
+	 * <user>
+	 * : The user login, user email, or user ID of the user to add metadata for.
+	 * 
+	 * <key>
+	 * : The metadata key.
+	 * 
+	 * <value>
+	 * : The new metadata value.
 	 *
 	 * @synopsis <user> <key> <value> [--format=<format>]
 	 */
@@ -53,6 +79,15 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 
 	/**
 	 * Update a meta field.
+	 * 
+	 * <user>
+	 * : The user login, user email, or user ID of the user to update metadata for.
+	 * 
+	 * <key>
+	 * : The metadata key.
+	 * 
+	 * <value>
+	 * : The new metadata value.
 	 *
 	 * @alias set
 	 * @synopsis <user> <key> <value> [--format=<format>]
