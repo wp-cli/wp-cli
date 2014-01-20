@@ -209,8 +209,27 @@ create_initial_post_types();
 register_theme_directory( get_theme_root() );
 
 // Load active plugins.
-foreach ( wp_get_active_and_valid_plugins() as $plugin )
-	include_once( $plugin );
+// ... but only, if not member of --skip-plugin
+list( $this_config, $this_extra_config ) = \WP_CLI::get_configurator()->to_array();
+
+foreach ( wp_get_active_and_valid_plugins() as $plugin ) {
+	$skip_this_plugin = false;
+	$plugin_path_parts = pathinfo( $plugin );
+
+	foreach ( $this_config['skip-plugin'] as $plugin_to_skip )
+		if ( $plugin_path_parts['dirname'] == WP_PLUGIN_DIR.'/' . trim($plugin_to_skip, '/') )
+			$skip_this_plugin = true;
+	
+	unset( $plugin_to_skip );
+	
+	if ( !$skip_this_plugin )
+		include_once( $plugin );
+}
+
+unset( $skip_this_plugin );
+unset( $plugin_path_parts );
+unset( $this_config );
+unset( $this_extra_config );
 unset( $plugin );
 
 // Load pluggable functions.
