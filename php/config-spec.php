@@ -76,5 +76,11 @@ return array(
 		'multiple' => true,
 		'default' => array(),
 	),
+
+	'allow_root' => array(
+		'runtime' => '=<allow_root>',
+		'desc' => '(NOT RECCOMENDED) Allow wp-cli to run as root. This poses a security risk, so you probably do not want to do this.',
+	),
+
 );
 
