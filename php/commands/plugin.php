@@ -1,5 +1,7 @@
 <?php
 
+use \WP_CLI\Utils;
+
 /**
  * Manage plugins.
  *
@@ -102,7 +104,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$version .= ' (%gUpdate available%n)';
 
 		echo WP_CLI::colorize( \WP_CLI\Utils\mustache_render( 'plugin-status.mustache', array(
-			'slug' => $this->get_name( $file ),
+			'slug' => Utils\get_plugin_name( $file ),
 			'status' => $status,
 			'version' => $version,
 			'name' => $details['Name'],
@@ -116,7 +118,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		foreach ( get_mu_plugins() as $file => $mu_plugin ) {
 			$items[ $file ] = array(
-				'name' => $this->get_name( $file ),
+				'name' => Utils\get_plugin_name( $file ),
 				'status' => 'must-use',
 				'update' => false
 			);
@@ -169,7 +171,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				if ( $this->get_status( $file ) == "inactive" )
 					continue;
 
-				$name = $this->get_name( $file );
+				$name = Utils\get_plugin_name( $file );
 
 				deactivate_plugins( $file, false, $network_wide );
 
@@ -307,7 +309,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$update_info = $this->get_update_info( $file );
 
 			$items[ $file ] = array(
-				'name' => $this->get_name( $file ),
+				'name' => Utils\get_plugin_name( $file ),
 				'status' => $this->get_status( $file ),
 				'update' => (bool) $update_info,
 				'update_version' => $update_info['new_version'],
@@ -387,7 +389,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false, false );
 
 		$plugin_obj = (object)array(
-			'name'        => $this->get_name( $file ),
+			'name'        => Utils\get_plugin_name( $file ),
 			'title'       => $plugin_data['Name'],
 			'author'      => $plugin_data['Author'],
 			'version'     => $plugin_data['Version'],
@@ -543,18 +545,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$plugin_file = basename( $file );
 
 		return $plugin_folder[$plugin_file];
-	}
-
-	/**
-	 * Converts a plugin basename back into a friendly slug.
-	 */
-	private function get_name( $file ) {
-		if ( false === strpos( $file, '/' ) )
-			$name = basename( $file, '.php' );
-		else
-			$name = dirname( $file );
-
-		return $name;
 	}
 
 	private function _delete( $plugin ) {
