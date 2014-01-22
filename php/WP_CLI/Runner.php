@@ -397,7 +397,7 @@ class Runner {
 	}
 
 	private function check_root() {
-		if ( $this->config['allow_root'] )
+		if ( $this->config['allow-root'] )
 			return; # they're aware of the risks!
 		if ( !function_exists( 'posix_geteuid') )
 			return; # posix functions not available
@@ -413,7 +413,7 @@ class Runner {
 			"your server, making it quite DANGEROUS.\n" .
 			"\n" .
 			"If you'd like to continue as root, please run this again, adding this " .
-			"flag:  --allow_root\n" .
+			"flag:  --allow-root\n" .
 			"\n" .
 			"If you'd like to run it as the user that this site is under, you can " .
 			"run the following to become the respective user:\n" .
