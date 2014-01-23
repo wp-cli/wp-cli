@@ -78,7 +78,8 @@ return array(
 	),
 
 	'allow-root' => array(
-		'runtime' => '=<allow-root>',
+		'file' => false, # Explicit. Just in case the default changes.
+		'runtime' => '',
 		'desc' => '(NOT RECCOMENDED) Allow wp-cli to run as root. This poses a security risk, so you probably do not want to do this.',
 	),
 
