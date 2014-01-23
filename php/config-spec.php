@@ -28,6 +28,14 @@ return array(
 		'desc' => 'Set the WordPress user',
 	),
 
+	'skip-plugins' => array(
+		'runtime' => '[=<plugin>]',
+		'file' => false,
+		'desc' => 'Skip loading all or some plugins',
+		'multiple' => false,
+		'default' => '',
+	),
+
 	'require' => array(
 		'runtime' => '=<path>',
 		'file' => '<path>',
