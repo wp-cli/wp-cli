@@ -45,12 +45,7 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( isset( $assoc_args['version'] ) ) {
 			$version = $assoc_args['version'];
-			if ( 'en_US' === $locale ) {
-				$download_url = 'https://wordpress.org/wordpress-' . $version . '.tar.gz';
-			} else {
-				$download_url = sprintf( 'https://%s.wordpress.org/wordpress-%s-%s.tar.gz',
-					substr( $assoc_args['locale'], 0, 2 ), $version, $locale );
-			}
+			$download_url = $this->get_download_url($version, $locale, 'tar.gz');
 		} else {
 			$offer = $this->get_download_offer( $locale );
 			$version = $offer['current'];
@@ -684,15 +679,10 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			$new_package = null;
 
 			if ( empty( $args[0] ) ) {
-                $version = $assoc_args['version'];
-                $locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : 'en_US';
+				$version = $assoc_args['version'];
+				$locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : 'en_US';
 
-                if ( 'en_US' === $locale ) {
-                    $new_package = 'https://wordpress.org/wordpress-' . $version . '.zip';
-                } else {
-                    $new_package = sprintf( 'https://%s.wordpress.org/wordpress-%s-%s.zip',
-                        substr( $assoc_args['locale'], 0, 2 ), $version, $locale );
-                }
+				$new_package = $this->get_download_url($version, $locale);
 
 				WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $locale ) );
 			} else {
@@ -742,6 +732,32 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		wp_upgrade();
 		WP_CLI::success( 'WordPress database upgraded successfully.' );
+	}
+
+	/**
+	 * Gets download url based on version, locale and desired file type.
+	 *
+	 * @param $version
+	 * @param string $locale
+	 * @param string $file_type
+	 * @return string
+	 */
+	private function get_download_url($version, $locale = 'en_US', $file_type = 'zip')
+	{
+		if ('en_US' === $locale) {
+			$url = 'https://wordpress.org/wordpress-' . $version . '.' . $file_type;
+
+			return $url;
+		} else {
+			$url = sprintf(
+				'https://%s.wordpress.org/wordpress-%s-%s.' . $file_type,
+				substr($locale, 0, 2),
+				$version,
+				$locale
+			);
+
+			return $url;
+		}
 	}
 }
 
