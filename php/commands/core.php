@@ -649,6 +649,9 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 * [--force]
 	 * : Will update even when current WP version < passed version. Use with
 	 * caution.
+     *
+     * [--locale=<locale>]
+     * : Select which language you want to download.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -681,7 +684,16 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			$new_package = null;
 
 			if ( empty( $args[0] ) ) {
-				$new_package = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
+                $version = $assoc_args['version'];
+                $locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : 'en_US';
+
+                if ( 'en_US' === $locale ) {
+                    $new_package = 'https://wordpress.org/wordpress-' . $version . '.zip';
+                } else {
+                    $new_package = sprintf( 'https://%s.wordpress.org/wordpress-%s-%s.zip',
+                        substr( $assoc_args['locale'], 0, 2 ), $version, $locale );
+                }
+
 				WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
 			} else {
 				$new_package = $args[0];
