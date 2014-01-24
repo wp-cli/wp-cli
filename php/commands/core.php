@@ -694,7 +694,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
                         substr( $assoc_args['locale'], 0, 2 ), $version, $locale );
                 }
 
-				WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
+				WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $locale ) );
 			} else {
 				$new_package = $args[0];
 				$upgrader = 'WP_CLI\\NonDestructiveCoreUpgrader';
