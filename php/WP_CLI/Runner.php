@@ -405,7 +405,7 @@ class Runner {
 			return; # not root
 
 		WP_CLI::error(
-			"YIKES! It looks like you're running this as root. You probably meant to" .
+			"YIKES! It looks like you're running this as root. You probably meant to " .
 			"run this as the user that your WordPress install exists under.\n" .
 			"\n" .
 			"If you REALLY mean to run this as root, we won't stop you, but just " .
