@@ -56,11 +56,18 @@ Feature: Have a config file
 
   Scenario: WP in a subdirectory (autodetected)
     Given a WP install in 'core'
-    And a index.php file:
+
+    Given an index.php file:
     """
     require('./core/wp-blog-header.php');
     """
+    When I run `wp core is-installed`
+    Then STDOUT should be empty
 
+    Given an index.php file:
+    """
+    require dirname(__FILE__) . '/core/wp-blog-header.php';
+    """
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
