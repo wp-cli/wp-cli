@@ -225,14 +225,6 @@ class Runner {
 	public function get_wp_config_code() {
 		$wp_config_path = Utils\locate_wp_config();
 
-		$replacements = array(
-			'__FILE__' => "'$wp_config_path'",
-			'__DIR__'  => "'" . dirname( $wp_config_path ) . "'"
-		);
-
-		$old = array_keys( $replacements );
-		$new = array_values( $replacements );
-
 		$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
 
 		$lines_to_run = array();
@@ -241,10 +233,12 @@ class Runner {
 			if ( preg_match( '/^\s*require.+wp-settings\.php/', $line ) )
 				continue;
 
-			$lines_to_run[] = str_replace( $old, $new, $line );
+			$lines_to_run[] = $line;
 		}
 
-		return preg_replace( '|^\s*\<\?php\s*|', '', implode( "\n", $lines_to_run ) );
+		$source = implode( "\n", $lines_to_run );
+		$source = Utils\replace_path_consts( $source, $wp_config_path );
+		return preg_replace( '|^\s*\<\?php\s*|', '', $source );
 	}
 
 	// Transparently convert old syntaxes
