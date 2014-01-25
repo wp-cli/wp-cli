@@ -73,6 +73,30 @@ class Runner {
 		} );
 	}
 
+	/**
+	 * Attempts to find the path to the WP install inside index.php
+	 */
+	private static function extract_subdir_path( $index_path ) {
+		if ( !file_exists( $index_path ) )
+			return false;
+
+		$index_code = file_get_contents( $index_path );
+
+		if ( !preg_match( '|^\s*require\s*\(?\s*(.+?)/wp-blog-header\.php([\'"])|m', $index_code, $matches ) ) {
+			return false;
+		}
+
+		$wp_path_src = $matches[1] . $matches[2];
+		$wp_path_src = Utils\replace_path_consts( $wp_path_src, $index_path );
+		$wp_path = eval( "return $wp_path_src;" );
+
+		if ( !Utils\is_path_absolute( $wp_path ) ) {
+			$wp_path = dirname( $index_path ) . "/$wp_path";
+		}
+
+		return $wp_path;
+	}
+
 	private static function set_wp_root( $config ) {
 		$path = getcwd();
 
@@ -81,17 +105,8 @@ class Runner {
 				$path = $config['path'];
 			else
 				$path .= '/' . $config['path'];
-		} elseif ( file_exists( './index.php' ) ) {
-			$index_code = file_get_contents( './index.php' );
-
-			if ( preg_match( '/^\s*require.+([\'"])(.*wp-blog-header\.php)\1/m', $index_code, $matches ) ) {
-				$new_path = dirname( $matches[2] );
-				if ( Utils\is_path_absolute( $new_path ) ) {
-					$path = $new_path;
-				} else {
-					$path .= '/' . $new_path;
-				}
-			}
+		} elseif ( $wp_path = self::extract_subdir_path( $path . '/index.php' ) ) {
+			$path = $wp_path;
 		}
 
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
