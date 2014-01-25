@@ -9,7 +9,7 @@ $steps->Given( '/^an empty directory$/',
 	}
 );
 
-$steps->Given( '/^a ([^\s]+) file:$/',
+$steps->Given( '/^an? ([^\s]+) file:$/',
 	function ( $world, $path, PyStringNode $content ) {
 		$content = (string) $content . "\n";
 		$full_path = $world->variables['RUN_DIR'] . "/$path";
