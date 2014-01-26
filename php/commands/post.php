@@ -219,8 +219,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp post list --post_type=post --posts_per_page=5 --format=json
 	 *
 	 *     wp post list --post_type=page --fields=post_title,post_status
-	 * 
-	 *     wp post list --post_type=page,post --format=ids 
+	 *
+	 *     wp post list --post_type=page,post --format=ids
 	 *
 	 * @subcommand list
 	 */
@@ -330,7 +330,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 				if( $this->maybe_make_child() && $current_depth < $max_depth ) {
 
-					$current_parent = $post_ids[$i-1];
+					$current_parent = $previous_post_id;
 					$current_depth++;
 
 				} else if( $this->maybe_reset_depth() ) {
