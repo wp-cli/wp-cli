@@ -27,6 +27,9 @@ class RootCommand extends CompositeCommand {
 			if ( isset( $details['deprecated'] ) )
 				continue;
 
+			if ( isset( $details['hidden'] ) )
+				continue;
+
 			if ( true === $details['runtime'] )
 				$synopsis = "--[no-]$key";
 			else
