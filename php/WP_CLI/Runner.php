@@ -97,18 +97,32 @@ class Runner {
 		return $wp_path;
 	}
 
-	private static function set_wp_root( $config ) {
-		$path = getcwd();
+	/**
+	 * Find the directory that contains the WordPress files. Defaults to the current working dir.
+	 *
+	 * @return string An absolute path
+	 */
+	private function find_wp_root() {
+		if ( !empty( $this->config['path'] ) ) {
+			$path = $this->config['path'];
+			if ( !Utils\is_path_absolute( $path ) )
+				$path = getcwd() . '/' . $path;
 
-		if ( !empty( $config['path'] ) ) {
-			if ( Utils\is_path_absolute( $config['path'] ) )
-				$path = $config['path'];
-			else
-				$path .= '/' . $config['path'];
-		} elseif ( $wp_path = self::extract_subdir_path( $path . '/index.php' ) ) {
-			$path = $wp_path;
+			return $path;
 		}
 
+		if ( $this->cmd_starts_with( array( 'core', 'download' ) ) ) {
+			return getcwd();
+		}
+
+		if ( $wp_load_path = Utils\find_file_upward( 'wp-load.php' ) ) {
+			return dirname( $wp_load_path );
+		}
+
+		return self::extract_subdir_path( getcwd() . '/index.php' );
+	}
+
+	private static function set_wp_root( $path ) {
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
 
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $path );
@@ -464,14 +478,7 @@ class Runner {
 		}
 
 		// Handle --path parameter
-		if ( !isset( $this->config['path'] ) ) {
-			if ( $this->cmd_starts_with( array( 'core', 'download' ) ) ) {
-				$this->config['path'] = getcwd();
-			} else {
-				$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
-			}
-		}
-		self::set_wp_root( $this->config );
+		self::set_wp_root( $this->find_wp_root() );
 
 		// First try at showing man page
 		if ( 'help' === $this->arguments[0] && ( isset( $this->arguments[1] ) || !$this->wp_exists() ) ) {
