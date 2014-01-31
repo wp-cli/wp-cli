@@ -77,9 +77,6 @@ class Runner {
 	 * Attempts to find the path to the WP install inside index.php
 	 */
 	private static function extract_subdir_path( $index_path ) {
-		if ( !file_exists( $index_path ) )
-			return false;
-
 		$index_code = file_get_contents( $index_path );
 
 		if ( !preg_match( '|^\s*require\s*\(?\s*(.+?)/wp-blog-header\.php([\'"])|m', $index_code, $matches ) ) {
@@ -115,11 +112,24 @@ class Runner {
 			return getcwd();
 		}
 
-		if ( $wp_load_path = Utils\find_file_upward( 'wp-load.php' ) ) {
-			return dirname( $wp_load_path );
-		}
+		$dir = getcwd();
 
-		return self::extract_subdir_path( Utils\find_file_upward( 'index.php' ) );
+		while ( is_readable( $dir ) ) {
+			if ( file_exists( "$dir/wp-load.php" ) ) {
+				return $dir;
+			}
+
+			if ( file_exists( "$dir/index.php" ) ) {
+				if ( $path = self::extract_subdir_path( "$dir/index.php" ) )
+					return $path;
+			}
+
+			$parent_dir = dirname( $dir );
+			if ( empty($parent_dir) || $parent_dir === $dir ) {
+				break;
+			}
+			$dir = $parent_dir;
+		}
 	}
 
 	private static function set_wp_root( $path ) {
