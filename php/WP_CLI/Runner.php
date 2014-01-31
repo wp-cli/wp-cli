@@ -158,10 +158,6 @@ class Runner {
 			if ( true === $url ) {
 				WP_CLI::warning( 'The --url parameter expects a value.' );
 			}
-		} elseif ( is_readable( ABSPATH . 'wp-cli-blog' ) ) {
-			WP_CLI::warning( 'The wp-cli-blog file is deprecated. Use wp-cli.yml instead.' );
-
-			$url = trim( file_get_contents( ABSPATH . 'wp-cli-blog' ) );
 		} elseif ( $wp_config_path = Utils\locate_wp_config() ) {
 			// Try to find the blog parameter in the wp-config file
 			$wp_config_file = file_get_contents( $wp_config_path );
