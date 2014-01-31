@@ -234,7 +234,30 @@ class WP_CLI {
 	}
 
 	/**
-	 * Read a value, from various formats
+	 * Read value from a positional argument or from STDIN.
+	 *
+	 * @param array $args The list of positional arguments.
+	 * @param int $index At which position to check for the value.
+	 *
+	 * @return string
+	 */
+	public static function get_value_from_arg_or_stdin( $args, $index ) {
+		if ( isset( $args[ $index ] ) ) {
+			$raw_value = $args[ $index ];
+		} else {
+			// We don't use file_get_contents() here because it doesn't handle
+			// Ctrl-D properly, when typing in the value interactively.
+			$raw_value = '';
+			while ( ( $line = fgets( STDIN ) ) !== false ) {
+				$raw_value .= $line;
+			}
+		}
+
+		return $raw_value;
+	}
+
+	/**
+	 * Read a value, from various formats.
 	 *
 	 * @param mixed $value
 	 * @param array $assoc_args
