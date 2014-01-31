@@ -119,7 +119,7 @@ class Runner {
 			return dirname( $wp_load_path );
 		}
 
-		return self::extract_subdir_path( getcwd() . '/index.php' );
+		return self::extract_subdir_path( Utils\find_file_upward( 'index.php' ) );
 	}
 
 	private static function set_wp_root( $path ) {
