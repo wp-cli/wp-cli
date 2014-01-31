@@ -77,9 +77,6 @@ class Runner {
 	 * Attempts to find the path to the WP install inside index.php
 	 */
 	private static function extract_subdir_path( $index_path ) {
-		if ( !file_exists( $index_path ) )
-			return false;
-
 		$index_code = file_get_contents( $index_path );
 
 		if ( !preg_match( '|^\s*require\s*\(?\s*(.+?)/wp-blog-header\.php([\'"])|m', $index_code, $matches ) ) {
@@ -97,18 +94,45 @@ class Runner {
 		return $wp_path;
 	}
 
-	private static function set_wp_root( $config ) {
-		$path = getcwd();
+	/**
+	 * Find the directory that contains the WordPress files. Defaults to the current working dir.
+	 *
+	 * @return string An absolute path
+	 */
+	private function find_wp_root() {
+		if ( !empty( $this->config['path'] ) ) {
+			$path = $this->config['path'];
+			if ( !Utils\is_path_absolute( $path ) )
+				$path = getcwd() . '/' . $path;
 
-		if ( !empty( $config['path'] ) ) {
-			if ( Utils\is_path_absolute( $config['path'] ) )
-				$path = $config['path'];
-			else
-				$path .= '/' . $config['path'];
-		} elseif ( $wp_path = self::extract_subdir_path( $path . '/index.php' ) ) {
-			$path = $wp_path;
+			return $path;
 		}
 
+		if ( $this->cmd_starts_with( array( 'core', 'download' ) ) ) {
+			return getcwd();
+		}
+
+		$dir = getcwd();
+
+		while ( is_readable( $dir ) ) {
+			if ( file_exists( "$dir/wp-load.php" ) ) {
+				return $dir;
+			}
+
+			if ( file_exists( "$dir/index.php" ) ) {
+				if ( $path = self::extract_subdir_path( "$dir/index.php" ) )
+					return $path;
+			}
+
+			$parent_dir = dirname( $dir );
+			if ( empty($parent_dir) || $parent_dir === $dir ) {
+				break;
+			}
+			$dir = $parent_dir;
+		}
+	}
+
+	private static function set_wp_root( $path ) {
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
 
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $path );
@@ -464,14 +488,7 @@ class Runner {
 		}
 
 		// Handle --path parameter
-		if ( !isset( $this->config['path'] ) ) {
-			if ( $this->cmd_starts_with( array( 'core', 'download' ) ) ) {
-				$this->config['path'] = getcwd();
-			} else {
-				$this->config['path'] = dirname( Utils\find_file_upward( 'wp-load.php' ) );
-			}
-		}
-		self::set_wp_root( $this->config );
+		self::set_wp_root( $this->find_wp_root() );
 
 		// First try at showing man page
 		if ( 'help' === $this->arguments[0] && ( isset( $this->arguments[1] ) || !$this->wp_exists() ) ) {

@@ -54,6 +54,10 @@ Feature: Have a config file
     When I run `wp core is-installed` from 'core/wp-content'
     Then STDOUT should be empty
 
+    When I run `mkdir -p other/subdir`
+    And I run `wp core is-installed` from 'other/subdir'
+    Then STDOUT should be empty
+
   Scenario: WP in a subdirectory (autodetected)
     Given a WP install in 'core'
 
@@ -69,6 +73,11 @@ Feature: Have a config file
     require dirname(__FILE__) . '/core/wp-blog-header.php';
     """
     When I run `wp core is-installed`
+    Then STDOUT should be empty
+
+    When I run `mkdir -p other/subdir`
+    And I run `echo '<?php // Silence is golden' > other/subdir/index.php`
+    And I run `wp core is-installed` from 'other/subdir'
     Then STDOUT should be empty
 
   Scenario: Nested installs
