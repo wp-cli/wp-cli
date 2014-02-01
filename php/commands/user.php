@@ -276,7 +276,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		if ( !self::validate_role( $assoc_args['role'] ) ) {
+		$role = $assoc_args['role'];
+
+		if ( !self::validate_role( $role ) ) {
 			WP_CLI::error( "Invalid role: $role" );
 		}
 
