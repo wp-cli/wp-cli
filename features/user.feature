@@ -48,8 +48,14 @@ Feature: Manage WordPress users
     Then STDOUT should not be empty
 
   Scenario: Generating and deleting users
-    When I run `wp user generate --count=9`
-    And I run `wp user list --format=count`
+    When I run `wp user list --role=editor --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp user generate --count=10 --role=editor`
+    And I run `wp user list --role=editor --format=count`
     Then STDOUT should be:
       """
       10
