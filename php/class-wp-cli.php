@@ -108,9 +108,6 @@ class WP_CLI {
 		$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
 		$_SERVER['SERVER_PORT'] = isset( $url_parts['port'] ) ? $url_parts['port'] : '80';
 		$_SERVER['QUERY_STRING'] = $f('query');
-		$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
-		$_SERVER['HTTP_USER_AGENT'] = '';
-		$_SERVER['REQUEST_METHOD'] = 'GET';
 	}
 
 	/**
