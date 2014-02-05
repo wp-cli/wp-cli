@@ -312,6 +312,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_package' => $update_info['package'],
 				'version' => $theme->get('Version'),
 				'update_id' => $theme->get_stylesheet(),
+				'title' => $theme->get('Name'),
+				'description' => $theme->get('Description'),
 			);
 
 			if ( is_multisite() ) {
