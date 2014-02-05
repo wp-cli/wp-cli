@@ -316,6 +316,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_package' => $update_info['package'],
 				'version' => $details['Version'],
 				'update_id' => $file,
+				'title' => $details['Name'],
+				'description' => $details['Description'],
 			);
 		}
 
