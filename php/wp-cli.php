@@ -2,7 +2,7 @@
 
 // Can be used by plugins/themes to check if WP-CLI is running or not
 define( 'WP_CLI', true );
-define( 'WP_CLI_VERSION', '0.14.0-beta' );
+define( 'WP_CLI_VERSION', '0.14.0' );
 
 // Set common headers, to prevent warnings from plugins
 $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
