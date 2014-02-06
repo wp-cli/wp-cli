@@ -341,6 +341,7 @@ class WP_CLI {
 			'path',
 			'url',
 			'user',
+			'allow-root',
 		);
 
 		foreach ( $reused_runtime_args as $key ) {
