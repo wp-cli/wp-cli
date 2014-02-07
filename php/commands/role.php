@@ -213,25 +213,23 @@ class Role_Command extends WP_CLI_Command {
 			$role->add_cap('read_private_pages');
 			$role->add_cap('delete_users');
 			$role->add_cap('create_users');
-			$role->add_cap( 'unfiltered_upload' );
-			$role->add_cap( 'edit_dashboard' );
-			$role->add_cap( 'update_plugins' );
-			$role->add_cap( 'delete_plugins' );
-			$role->add_cap( 'install_plugins' );
-			$role->add_cap( 'update_themes' );
-			$role->add_cap( 'install_themes' );
-			$role->add_cap( 'update_core' );
-			$role->add_cap( 'list_users' );
-			$role->add_cap( 'remove_users' );
-
-			// Never used, will be removed. create_users or
-			// promote_users is the capability you're looking for.
-			$role->add_cap( 'add_users' );
-
+			$role->add_cap('unfiltered_upload');
+			$role->add_cap('edit_dashboard');
+			$role->add_cap('update_plugins');
+			$role->add_cap('delete_plugins');
+			$role->add_cap('install_plugins');
+			$role->add_cap('update_themes');
+			$role->add_cap('install_themes');
+			$role->add_cap('update_core');
+			$role->add_cap('list_users');
+			$role->add_cap('remove_users');
 			$role->add_cap( 'promote_users' );
 			$role->add_cap( 'edit_theme_options' );
 			$role->add_cap( 'delete_themes' );
 			$role->add_cap( 'export' );
+			// Never used, will be removed. create_users or
+			// promote_users is the capability you're looking for.
+			$role->add_cap( 'add_users' );
 
 		}
 		if ( 'editor' == $role_key ) {
