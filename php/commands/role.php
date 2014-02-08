@@ -162,155 +162,61 @@ class Role_Command extends WP_CLI_Command {
 		if ( empty( $role_key ) )
 			WP_CLI::error( "Role key not provided, or is invalid." );
 
-		switch ( $role_key ) {
-			case 'administrator':
-			remove_role( $role_key );
-			add_role('administrator', 'Administrator');
-			$role = get_role('administrator');
-			$role->add_cap('switch_themes');
-			$role->add_cap('edit_themes');
-			$role->add_cap('activate_plugins');
-			$role->add_cap('edit_plugins');
-			$role->add_cap('edit_users');
-			$role->add_cap('edit_files');
-			$role->add_cap('manage_options');
-			$role->add_cap('moderate_comments');
-			$role->add_cap('manage_categories');
-			$role->add_cap('manage_links');
-			$role->add_cap('upload_files');
-			$role->add_cap('import');
-			$role->add_cap('unfiltered_html');
-			$role->add_cap('edit_posts');
-			$role->add_cap('edit_others_posts');
-			$role->add_cap('edit_published_posts');
-			$role->add_cap('publish_posts');
-			$role->add_cap('edit_pages');
-			$role->add_cap('read');
-			$role->add_cap('level_10');
-			$role->add_cap('level_9');
-			$role->add_cap('level_8');
-			$role->add_cap('level_7');
-			$role->add_cap('level_6');
-			$role->add_cap('level_5');
-			$role->add_cap('level_4');
-			$role->add_cap('level_3');
-			$role->add_cap('level_2');
-			$role->add_cap('level_1');
-			$role->add_cap('level_0');
-			$role->add_cap('edit_others_pages');
-			$role->add_cap('edit_published_pages');
-			$role->add_cap('publish_pages');
-			$role->add_cap('delete_pages');
-			$role->add_cap('delete_others_pages');
-			$role->add_cap('delete_published_pages');
-			$role->add_cap('delete_posts');
-			$role->add_cap('delete_others_posts');
-			$role->add_cap('delete_published_posts');
-			$role->add_cap('delete_private_posts');
-			$role->add_cap('edit_private_posts');
-			$role->add_cap('read_private_posts');
-			$role->add_cap('delete_private_pages');
-			$role->add_cap('edit_private_pages');
-			$role->add_cap('read_private_pages');
-			$role->add_cap('delete_users');
-			$role->add_cap('create_users');
-			$role->add_cap('unfiltered_upload');
-			$role->add_cap('edit_dashboard');
-			$role->add_cap('update_plugins');
-			$role->add_cap('delete_plugins');
-			$role->add_cap('install_plugins');
-			$role->add_cap('update_themes');
-			$role->add_cap('install_themes');
-			$role->add_cap('update_core');
-			$role->add_cap('list_users');
-			$role->add_cap('remove_users');
-			$role->add_cap( 'promote_users' );
-			$role->add_cap( 'edit_theme_options' );
-			$role->add_cap( 'delete_themes' );
-			$role->add_cap( 'export' );
-			// Never used, will be removed. create_users or
-			// promote_users is the capability you're looking for.
-			$role->add_cap( 'add_users' );
-			break;
+		// WP_CLI::error( ABSPATH.'wp-admin/includes/schema.php' );
+		if ( ! function_exists( 'populate_roles' ) ) {
+			require_once( ABSPATH.'wp-admin/includes/schema.php' );
+		}
 
-			case 'editor':
-			remove_role( $role_key );
-			add_role('editor', 'Editor');
-			$role = get_role('editor');
-			$role->add_cap('moderate_comments');
-			$role->add_cap('manage_categories');
-			$role->add_cap('manage_links');
-			$role->add_cap('upload_files');
-			$role->add_cap('unfiltered_html');
-			$role->add_cap('edit_posts');
-			$role->add_cap('edit_others_posts');
-			$role->add_cap('edit_published_posts');
-			$role->add_cap('publish_posts');
-			$role->add_cap('edit_pages');
-			$role->add_cap('read');
-			$role->add_cap('level_7');
-			$role->add_cap('level_6');
-			$role->add_cap('level_5');
-			$role->add_cap('level_4');
-			$role->add_cap('level_3');
-			$role->add_cap('level_2');
-			$role->add_cap('level_1');
-			$role->add_cap('level_0');
-			$role->add_cap('edit_others_pages');
-			$role->add_cap('edit_published_pages');
-			$role->add_cap('publish_pages');
-			$role->add_cap('delete_pages');
-			$role->add_cap('delete_others_pages');
-			$role->add_cap('delete_published_pages');
-			$role->add_cap('delete_posts');
-			$role->add_cap('delete_others_posts');
-			$role->add_cap('delete_published_posts');
-			$role->add_cap('delete_private_posts');
-			$role->add_cap('edit_private_posts');
-			$role->add_cap('read_private_posts');
-			$role->add_cap('delete_private_pages');
-			$role->add_cap('edit_private_pages');
-			$role->add_cap('read_private_pages');
-			break;
+		// get our default roles
+		$preserve = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' );
 
-			case 'author':
-			remove_role( $role_key );
-			add_role('author', 'Author');
-			$role = get_role('author');
-			$role->add_cap('upload_files');
-			$role->add_cap('edit_posts');
-			$role->add_cap('edit_published_posts');
-			$role->add_cap('publish_posts');
-			$role->add_cap('read');
-			$role->add_cap('level_2');
-			$role->add_cap('level_1');
-			$role->add_cap('level_0');
-			$role->add_cap('delete_posts');
-			$role->add_cap('delete_published_posts');
-			break;
+		if ( 'all' == $role_key ) {
+			foreach( $preserve as $role ) {
+				remove_role( $role );
+			}
+			populate_roles();
 
-			case 'contributor':
-			remove_role( $role_key );
-			add_role('contributor', 'Contributor');
-			$role = get_role('contributor');
-			$role->add_cap('edit_posts');
-			$role->add_cap('read');
-			$role->add_cap('level_1');
-			$role->add_cap('level_0');
-			$role->add_cap('delete_posts');
-			break;
+			WP_CLI::success( sprintf( "All default roles reset.", $role_key ) );
+			return;
 
-			case 'subscriber':
-			remove_role( $role_key );
-			add_role('subscriber', 'Subscriber');
-			$role = get_role('subscriber');
-			$role->add_cap('read');
-			$role->add_cap('level_0');
-			break;
+		}
 
-			default:
+		// if key not found, bail
+		$key = array_search( $role_key, $preserve );
+		if ( false === $key ) {
 			WP_CLI::error( 'Must specify a default role to reset.' );
+		}
 
+		// remove the one to reset
+		unset( $preserve[ $key ] );
+
+		// for the roles we're not resetting
+		foreach( $preserve as $k => $role ) {
+			/* save roles
+			 * if get_role is null
+			 * save role name for re-removal
+			 */
+			$roleobj = get_role( $role );
+			$preserve[$k] = is_null( $roleobj ) ? $role : $roleobj;
+
+			remove_role( $role );
+		}
+
+		remove_role( $role_key );
+
+		// put back all default roles and capabilities
+		populate_roles();
+
+		// restore the preserved roles
+		foreach( $preserve as $k => $roleobj ) {
+			// re-remove after populating
+			if ( is_a( $roleobj, 'WP_Role' ) ) {
+				remove_role( $roleobj->name );
+				add_role( $roleobj->name, ucwords( $roleobj->name ), $roleobj->capabilities );
+			} else {
+				// when not an object, that means the role didn't exist before
+				remove_role( $roleobj );
+			}
 		}
 
 		WP_CLI::success( sprintf( "Role with key %s reset.", $role_key ) );
