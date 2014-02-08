@@ -154,7 +154,6 @@ class Role_Command extends WP_CLI_Command {
 	 *     wp role reset author
 	 */
 	public function reset( $args ) {
-		global $wp_roles;
 
 		self::persistence_check();
 
