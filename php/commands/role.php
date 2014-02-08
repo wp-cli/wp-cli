@@ -162,7 +162,6 @@ class Role_Command extends WP_CLI_Command {
 		if ( empty( $role_key ) )
 			WP_CLI::error( "Role key not provided, or is invalid." );
 
-		// WP_CLI::error( ABSPATH.'wp-admin/includes/schema.php' );
 		if ( ! function_exists( 'populate_roles' ) ) {
 			require_once( ABSPATH.'wp-admin/includes/schema.php' );
 		}
@@ -176,7 +175,7 @@ class Role_Command extends WP_CLI_Command {
 			}
 			populate_roles();
 
-			WP_CLI::success( sprintf( "All default roles reset.", $role_key ) );
+			WP_CLI::success( 'All default roles reset.' );
 			return;
 
 		}
