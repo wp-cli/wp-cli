@@ -154,15 +154,17 @@ class Role_Command extends WP_CLI_Command {
 	 *     wp role reset author
 	 */
 	public function reset( $args ) {
+		global $wp_roles;
 
 		self::persistence_check();
 
 		$role_key = array_shift( $args );
 
-		if ( empty( $role_key ) || ! in_array($role_key, array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' ) ) )
+		if ( empty( $role_key ) )
 			WP_CLI::error( "Role key not provided, or is invalid." );
 
-		if ( $role_key == 'administrator') {
+		switch ( $role_key ) {
+			case 'administrator':
 			remove_role( $role_key );
 			add_role('administrator', 'Administrator');
 			$role = get_role('administrator');
@@ -230,9 +232,9 @@ class Role_Command extends WP_CLI_Command {
 			// Never used, will be removed. create_users or
 			// promote_users is the capability you're looking for.
 			$role->add_cap( 'add_users' );
+			break;
 
-		}
-		if ( 'editor' == $role_key ) {
+			case 'editor':
 			remove_role( $role_key );
 			add_role('editor', 'Editor');
 			$role = get_role('editor');
@@ -270,9 +272,9 @@ class Role_Command extends WP_CLI_Command {
 			$role->add_cap('delete_private_pages');
 			$role->add_cap('edit_private_pages');
 			$role->add_cap('read_private_pages');
+			break;
 
-		}
-		if ( 'author' == $role_key ) {
+			case 'author':
 			remove_role( $role_key );
 			add_role('author', 'Author');
 			$role = get_role('author');
@@ -286,8 +288,9 @@ class Role_Command extends WP_CLI_Command {
 			$role->add_cap('level_0');
 			$role->add_cap('delete_posts');
 			$role->add_cap('delete_published_posts');
-		}
-		if ( 'contributor' == $role_key ) {
+			break;
+
+			case 'contributor':
 			remove_role( $role_key );
 			add_role('contributor', 'Contributor');
 			$role = get_role('contributor');
@@ -296,13 +299,19 @@ class Role_Command extends WP_CLI_Command {
 			$role->add_cap('level_1');
 			$role->add_cap('level_0');
 			$role->add_cap('delete_posts');
-		}
-		if ( 'subscriber' == $role_key ) {
+			break;
+
+			case 'subscriber':
 			remove_role( $role_key );
 			add_role('subscriber', 'Subscriber');
 			$role = get_role('subscriber');
 			$role->add_cap('read');
 			$role->add_cap('level_0');
+			break;
+
+			default:
+			WP_CLI::error( 'Must specify a default role to reset.' );
+
 		}
 
 		WP_CLI::success( sprintf( "Role with key %s reset.", $role_key ) );
