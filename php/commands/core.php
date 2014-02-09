@@ -656,7 +656,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 *
 	 *     wp core update
 	 *
-	 *     wp core update --version=3.4 ../latest.zip
+	 *     wp core update --version=3.8 ../latest.zip
 	 *
 	 *     wp core update --version=3.1 --force
 	 *

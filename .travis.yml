@@ -33,12 +33,12 @@ env:
     - secure: "OqbgLy6Rn+NvhjpYygNZDWf6rj8sVejRZJBmssNi5fHRXopEtfIHids2FjSXZUVPs3ShqNuczo1jzgt7N3JHbcSaiedHlc7ONqDK0SyyOcsv1oKOR81bvYcL/KIoGiMRvkQI5IW01YWfSZlS0wgL2NYdJvYanCnSUUv6nNZAF7E="
   matrix:
     - WP_VERSION=latest
-    - WP_VERSION=3.4.2 DEPLOY_BRANCH=master
+    - WP_VERSION=3.5.2 DEPLOY_BRANCH=master
 
 matrix:
   exclude:
     - php: 5.5
-      env: WP_VERSION=3.4.2 DEPLOY_BRANCH=master
+      env: WP_VERSION=3.5.2 DEPLOY_BRANCH=master
 
 before_script: ./ci/prepare.sh
 
