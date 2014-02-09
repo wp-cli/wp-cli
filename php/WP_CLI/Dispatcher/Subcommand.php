@@ -29,6 +29,10 @@ class Subcommand extends CompositeCommand {
 		return implode( ' ', $matches[1] );
 	}
 
+	function can_have_subcommands() {
+		return false;
+	}
+
 	function get_synopsis() {
 		return $this->synopsis;
 	}

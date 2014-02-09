@@ -33,8 +33,8 @@ class CompositeCommand {
 		$this->subcommands[ $name ] = $command;
 	}
 
-	function has_subcommands() {
-		return !empty( $this->subcommands );
+	function can_have_subcommands() {
+		return true;
 	}
 
 	function get_subcommands() {
