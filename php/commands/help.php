@@ -35,7 +35,7 @@ class Help_Command extends WP_CLI_Command {
 	private static function find_subcommand( $args ) {
 		$command = \WP_CLI::get_root_command();
 
-		while ( !empty( $args ) && $command && $command->has_subcommands() ) {
+		while ( !empty( $args ) && $command && $command->can_have_subcommands() ) {
 			$command = $command->find_subcommand( $args );
 		}
 
@@ -106,7 +106,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$binding['synopsis'] = wordwrap( "$name " . $command->get_synopsis(), 79 );
 
-		if ( $command->has_subcommands() ) {
+		if ( $command->can_have_subcommands() ) {
 			$binding['has-subcommands']['subcommands'] = self::render_subcommands( $command );
 		}
 

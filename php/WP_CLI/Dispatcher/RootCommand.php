@@ -61,10 +61,5 @@ class RootCommand extends CompositeCommand {
 
 		return parent::get_subcommands();
 	}
-
-	function has_subcommands() {
-		// Commands are lazy-loaded, so we need to assume there will be some
-		return true;
-	}
 }
 
