@@ -199,7 +199,7 @@ class Runner {
 
 		$disabled_commands = $this->config['disabled_commands'];
 
-		while ( !empty( $args ) && $command->has_subcommands() ) {
+		while ( !empty( $args ) && $command->can_have_subcommands() ) {
 			$cmd_path[] = $args[0];
 			$full_name = implode( ' ', $cmd_path );
 
@@ -477,7 +477,7 @@ class Runner {
 		if ( is_array( $r ) ) {
 			list( $command ) = $r;
 
-			if ( $command->has_subcommands() ) {
+			if ( $command->can_have_subcommands() ) {
 				$command->show_usage();
 				exit;
 			}

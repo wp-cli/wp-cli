@@ -165,6 +165,7 @@ class WP_CLI {
 		$path = preg_split( '/\s+/', $name );
 
 		$leaf_name = array_pop( $path );
+		$full_path = $path;
 
 		$command = self::get_root_command();
 
@@ -183,6 +184,11 @@ class WP_CLI {
 		}
 
 		$leaf_command = Dispatcher\CommandFactory::create( $leaf_name, $class, $command );
+
+		if ( ! $command->can_have_subcommands() ) {
+			throw new Exception( sprintf( "'%s' can't have subcommands.",
+				implode( ' ' , Dispatcher\get_path( $command ) ) ) );
+		}
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
 	}
