@@ -179,34 +179,38 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user create bob bob@example.com --role=author
 	 */
 	public function create( $args, $assoc_args ) {
-		list( $user_login, $user_email ) = $args;
+		$user = new stdClass;
 
-		$defaults = array(
-			'role' => get_option('default_role'),
-			'user_pass' => false,
-			'user_registered' => strftime( "%F %T", time() ),
-			'display_name' => false,
-		);
-		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
+		list( $user->user_login, $user->user_email ) = $args;
 
-		if ( !self::validate_role( $role ) ) {
-			WP_CLI::error( "Invalid role: $role" );
+		if ( username_exists( $user->user_login ) ) {
+			WP_CLI::error( "The '{$user->user_login}' username is already registered." );
 		}
 
-		// @codingStandardsIgnoreStart
-		if ( !$user_pass ) {
-			$user_pass = wp_generate_password();
-			$generated_pass = true;
+		if ( !is_email( $user->user_email ) ) {
+			WP_CLI::error( "The '{$user->user_email}' email address is invalid." );
 		}
 
-		$user_id = wp_insert_user( array(
-			'user_email' => $user_email,
-			'user_login' => $user_login,
-			'user_pass' => $user_pass,
-			'user_registered' => $user_registered,
-			'display_name' => $display_name,
-			'role' => $role,
-		) );
+		$user->user_registered = isset( $assoc_args['user_registered'] )
+			? $assoc_args['user_registered'] : strftime( "%F %T", current_time('timestamp') );
+
+		$user->display_name = isset( $assoc_args['display_name'] )
+			? $assoc_args['display_name'] : false;
+
+		$user->user_pass = isset( $assoc_args['user_pass'] )
+			? $assoc_args['user_pass'] : wp_generate_password();
+
+		if ( isset( $assoc_args['role'] ) ) {
+			$role = $assoc_args['role'];
+			if ( !self::validate_role( $role ) ) {
+				WP_CLI::error( "Invalid role: $role" );
+			}
+		} else {
+			$role = get_option('default_role');
+		}
+		$user->role = $role;
+
+		$user_id = wp_insert_user( $user );
 
 		if ( is_wp_error( $user_id ) ) {
 			WP_CLI::error( $user_id );
@@ -224,7 +228,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			if ( isset( $generated_pass ) )
 				WP_CLI::line( "Password: $user_pass" );
 		}
-		// @codingStandardsIgnoreEnd
 	}
 
 	/**
