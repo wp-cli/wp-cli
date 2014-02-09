@@ -96,13 +96,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function get( $args, $assoc_args ) {
 		$user = $this->fetcher->get_check( $args[0] );
-
-		if ( method_exists( $user, 'to_array' ) ) {
-			$user_data = $user->to_array();
-		} else {
-			// WP 3.4 compat
-			$user_data = (array) $user->data;
-		}
+		$user_data = $user->to_array();
 		$user_data['roles'] = implode( ', ', $user->roles );
 
 		$formatter = $this->get_formatter( $assoc_args );
@@ -566,7 +560,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 			// Create the user
 			} else {
-				unset( $new_user['ID'] ); // Unset else it will just return the ID 
+				unset( $new_user['ID'] ); // Unset else it will just return the ID
 				$user_id = wp_insert_user( $new_user );
 			}
 
