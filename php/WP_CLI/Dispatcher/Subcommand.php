@@ -38,11 +38,15 @@ class Subcommand extends CompositeCommand {
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
-		\WP_CLI::line( sprintf( "%s%s %s",
+		\WP_CLI::line( $this->get_usage( $prefix ) );
+	}
+
+	function get_usage( $prefix ) {
+		return sprintf( "%s%s %s",
 			$prefix,
 			implode( ' ', get_path( $this ) ),
 			$this->get_synopsis()
-		) );
+		);
 	}
 
 	private function prompt( $question, $default ) {
