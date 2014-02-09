@@ -152,19 +152,39 @@ class WP_CLI {
 	/**
 	 * Add a command to the wp-cli list of commands
 	 *
-	 * @param string $name The name of the command that will be used in the cli
+	 * @param string $name The name of the command that will be used in the CLI
 	 * @param string $class The command implementation
 	 * @param array $args An associative array with additional parameters:
 	 *   'before_invoke' => callback to execute before invoking the command
 	 */
 	static function add_command( $name, $class, $args = array() ) {
-		$command = Dispatcher\CommandFactory::create( $name, $class, self::get_root_command() );
-
 		if ( isset( $args['before_invoke'] ) ) {
 			self::add_hook( "before_invoke:$name", $args['before_invoke'] );
 		}
 
-		self::get_root_command()->add_subcommand( $name, $command );
+		$path = preg_split( '/\s+/', $name );
+
+		$leaf_name = array_pop( $path );
+
+		$command = self::get_root_command();
+
+		while ( !empty( $path ) ) {
+			$subcommand_name = $path[0];
+			$subcommand = $command->find_subcommand( $path );
+
+			// create an empty container
+			if ( !$subcommand ) {
+				$subcommand = new Dispatcher\CompositeCommand( $command, $subcommand_name,
+					new \WP_CLI\DocParser( '' ) );
+				$command->add_subcommand( $subcommand_name, $subcommand );
+			}
+
+			$command = $subcommand;
+		}
+
+		$leaf_command = Dispatcher\CommandFactory::create( $leaf_name, $class, $command );
+
+		$command->add_subcommand( $leaf_name, $leaf_command );
 	}
 
 	/**
