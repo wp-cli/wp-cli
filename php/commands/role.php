@@ -144,22 +144,23 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <role-key>
-	 * : The internal name of the role.
+	 * [<role-key>...]
+	 * : The internal name of one or more roles to reset.
+	 *
+	 * [--all]
+	 * : If set, all default roles will be reset.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp role reset administrator
+	 *     wp role reset administrator author contributor
 	 *
-	 *     wp role reset author
+	 *     wp role reset --all
 	 */
-	public function reset( $args ) {
+	public function reset( $args, $assoc_args ) {
 
 		self::persistence_check();
 
-		$role_key = array_shift( $args );
-
-		if ( empty( $role_key ) )
+		if ( ! isset( $assoc_args['all'] ) && empty( $args ) )
 			WP_CLI::error( "Role key not provided, or is invalid." );
 
 		if ( ! function_exists( 'populate_roles' ) ) {
@@ -167,10 +168,10 @@ class Role_Command extends WP_CLI_Command {
 		}
 
 		// get our default roles
-		$preserve = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' );
+		$default_roles = $preserve = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' );
 
-		if ( 'all' == $role_key ) {
-			foreach( $preserve as $role ) {
+		if ( isset( $assoc_args['all'] ) ) {
+			foreach( $default_roles as $role ) {
 				remove_role( $role );
 			}
 			populate_roles();
@@ -180,14 +181,23 @@ class Role_Command extends WP_CLI_Command {
 
 		}
 
-		// if key not found, bail
-		$key = array_search( $role_key, $preserve );
-		if ( false === $key ) {
-			WP_CLI::error( 'Must specify a default role to reset.' );
+		foreach( $args as $k => $role_key ) {
+			$key = array_search( $role_key, $default_roles );
+			if ( false !== $key ) {
+				unset( $preserve[ $key ] );
+				$before[ $role_key ] = get_role( $role_key );
+				remove_role( $role_key );
+			} else {
+				unset( $args[ $k ] );
+			}
 		}
 
-		// remove the one to reset
-		unset( $preserve[ $key ] );
+		$num_to_reset = count( $args );
+
+		// no roles were unset, bail
+		if ( count( $default_roles ) == count( $preserve ) ) {
+			WP_CLI::error( 'Must specify a default role to reset.' );
+		}
 
 		// for the roles we're not resetting
 		foreach( $preserve as $k => $role ) {
@@ -200,8 +210,6 @@ class Role_Command extends WP_CLI_Command {
 
 			remove_role( $role );
 		}
-
-		remove_role( $role_key );
 
 		// put back all default roles and capabilities
 		populate_roles();
@@ -218,7 +226,16 @@ class Role_Command extends WP_CLI_Command {
 			}
 		}
 
-		WP_CLI::success( sprintf( "Role with key %s reset.", $role_key ) );
+		$num_reset = 0;
+		foreach( $args as $role_key ) {
+			$after[ $role_key ] = get_role( $role_key );
+
+			if ( $after[ $role_key ] != $before[ $role_key ] ) {
+				++$num_reset;
+			}
+		}
+
+		WP_CLI::success( "Reset $num_reset/$num_to_reset roles" );
 
 	}
 
