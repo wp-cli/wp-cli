@@ -192,7 +192,7 @@ class Runner {
 		return $prefix == array_slice( $this->arguments, 0, count( $prefix ) );
 	}
 
-	private function find_command_to_run( $args ) {
+	public function find_command_to_run( $args ) {
 		$command = \WP_CLI::get_root_command();
 
 		$cmd_path = array();
@@ -337,9 +337,9 @@ class Runner {
 			unset( $assoc_args['json'] );
 		}
 
-		// --{version|info|completions}  ->  cli {version|info|completions}
+		// --{version|info}  ->  cli {version|info}
 		if ( empty( $args ) ) {
-			$special_flags = array( 'version', 'info', 'completions' );
+			$special_flags = array( 'version', 'info' );
 			foreach ( $special_flags as $key ) {
 				if ( isset( $assoc_args[ $key ] ) ) {
 					$args = array( 'cli', $key );

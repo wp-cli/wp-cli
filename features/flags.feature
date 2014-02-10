@@ -212,8 +212,32 @@ Feature: Global flags
 
   Scenario: Generate completions
     Given an empty directory
-    When I run `wp --completions`
+
+    When I run `wp cli completions --line='wp bogus-comand ' --point=100`
+    Then STDOUT should be empty
+
+    When I run `wp cli completions --line='wp eva' --point=100`
+    Then STDOUT should be:
+      """
+      eval 
+      eval-file 
+      """
+
+    When I run `wp cli completions --line='wp core config --dbname=' --point=100`
+    Then STDOUT should be empty
+
+    When I run `wp cli completions --line='wp core config --dbname=foo ' --point=100`
+    Then STDOUT should not contain:
+      """
+      --dbname=
+      """
+    And STDOUT should contain:
+      """
+      --extra-php 
+      """
+
+    When I run `wp cli completions --line='wp media import ' --point=100`
     Then STDOUT should contain:
       """
-      transient delete get set type
+      <file> 
       """

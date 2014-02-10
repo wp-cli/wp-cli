@@ -97,7 +97,7 @@ class SynopsisValidator {
 	}
 
 	/**
-	 * Filters a list of associatve arrays, based on a set of key => value arguments.
+	 * Filters a list of associative arrays, based on a set of key => value arguments.
 	 *
 	 * @param array $args An array of key => value arguments to match against
 	 * @param string $operator
