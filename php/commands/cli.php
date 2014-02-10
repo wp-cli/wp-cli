@@ -101,7 +101,12 @@ class CLI_Command extends WP_CLI_Command {
 	function completions( $_, $assoc_args ) {
 		$line = substr( $assoc_args['line'], 0, $assoc_args['point'] );
 
-		list( $command, $args, $assoc_args ) = self::parse_line( $line );
+		$r = self::parse_line( $line );
+		if ( !is_array( $r ) ) {
+			return;
+		}
+
+		list( $command, $args, $assoc_args ) = $r;
 
 		$spec = \WP_CLI\SynopsisParser::parse( $command->get_synopsis() );
 
@@ -127,7 +132,13 @@ class CLI_Command extends WP_CLI_Command {
 		array_pop( $words );  // last word is either a space or an incomplete subcommand
 
 		list( $positional_args, $assoc_args ) = \WP_CLI\Configurator::extract_assoc( $words );
-		list( $command, $args ) = \WP_CLI::get_runner()->find_command_to_run( $positional_args );
+
+		$r = \WP_CLI::get_runner()->find_command_to_run( $positional_args );
+		if ( !is_array( $r ) ) {
+			return $r;
+		}
+
+		list( $command, $args ) = $r;
 
 		return array( $command, $args, $assoc_args );
 	}

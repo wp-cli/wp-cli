@@ -212,8 +212,18 @@ Feature: Global flags
 
   Scenario: Generate completions
     Given an empty directory
-    When I run `wp --completions`
+
+    When I run `wp cli completions --line='wp bogus-comand ' --point=100`
+    Then STDOUT should be empty
+
+    When I run `wp cli completions --line='wp media ' --point=100`
     Then STDOUT should contain:
       """
-      transient delete get set type
+      import regenerate
+      """
+
+    When I run `wp cli completions --line='wp media import ' --point=100`
+    Then STDOUT should contain:
+      """
+      <file>
       """
