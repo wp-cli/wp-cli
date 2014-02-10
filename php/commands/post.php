@@ -25,8 +25,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * [<filename>]
-	 * : Read post content from <filename>. If this value is present, the
+	 * [<file>]
+	 * : Read post content from <file>. If this value is present, the
 	 *     `--post_content` argument will be ignored.
 	 *
 	 *   Passing `-` as the filename will cause post content to

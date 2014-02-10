@@ -100,6 +100,24 @@ class CLI_Command extends WP_CLI_Command {
 	 */
 	function completions( $_, $assoc_args ) {
 		$line = substr( $assoc_args['line'], 0, $assoc_args['point'] );
+
+		list( $command, $args, $assoc_args ) = self::parse_line( $line );
+
+		$spec = \WP_CLI\SynopsisParser::parse( $command->get_synopsis() );
+
+		foreach ( $spec as $arg ) {
+			if ( $arg['type'] == 'positional' && $arg['name'] == 'file' ) {
+				WP_CLI::line( '<file>' );
+				return;
+			}
+		}
+
+		$subcommands = $command->get_subcommands();
+
+		WP_CLI::line( implode( ' ', array_keys( $subcommands ) ) );
+	}
+
+	private static function parse_line( $line ) {
 		$ends_with_space = ( ' ' === substr( $line, -1 ) );
 
 		// TODO: properly parse single and double quotes
@@ -109,11 +127,9 @@ class CLI_Command extends WP_CLI_Command {
 		array_pop( $words );  // last word is either a space or an incomplete subcommand
 
 		list( $positional_args, $assoc_args ) = \WP_CLI\Configurator::extract_assoc( $words );
-		list( $command ) = \WP_CLI::get_runner()->find_command_to_run( $positional_args );
+		list( $command, $args ) = \WP_CLI::get_runner()->find_command_to_run( $positional_args );
 
-		$subcommands = $command->get_subcommands();
-
-		WP_CLI::line( implode( ' ', array_keys( $subcommands ) ) );
+		return array( $command, $args, $assoc_args );
 	}
 }
 
