@@ -216,14 +216,28 @@ Feature: Global flags
     When I run `wp cli completions --line='wp bogus-comand ' --point=100`
     Then STDOUT should be empty
 
-    When I run `wp cli completions --line='wp media ' --point=100`
-    Then STDOUT should contain:
+    When I run `wp cli completions --line='wp eva' --point=100`
+    Then STDOUT should be:
       """
-      import regenerate
+      eval 
+      eval-file 
+      """
+
+    When I run `wp cli completions --line='wp core config --dbname=' --point=100`
+    Then STDOUT should be empty
+
+    When I run `wp cli completions --line='wp core config --dbname=foo ' --point=100`
+    Then STDOUT should not contain:
+      """
+      --dbname=
+      """
+    And STDOUT should contain:
+      """
+      --extra-php 
       """
 
     When I run `wp cli completions --line='wp media import ' --point=100`
     Then STDOUT should contain:
       """
-      <file>
+      <file> 
       """
