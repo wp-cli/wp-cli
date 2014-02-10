@@ -192,7 +192,7 @@ class Runner {
 		return $prefix == array_slice( $this->arguments, 0, count( $prefix ) );
 	}
 
-	private function find_command_to_run( $args ) {
+	public function find_command_to_run( $args ) {
 		$command = \WP_CLI::get_root_command();
 
 		$cmd_path = array();

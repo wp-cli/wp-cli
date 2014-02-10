@@ -89,13 +89,31 @@ class CLI_Command extends WP_CLI_Command {
 
 	/**
 	 * Generate tab completion strings.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --line=<line>
+	 * : The current command line to be executed
+	 *
+	 * --point=<point>
+	 * : The index to the current cursor position relative to the beginning of the command
 	 */
-	function completions() {
-		foreach ( WP_CLI::get_root_command()->get_subcommands() as $name => $command ) {
-			$subcommands = $command->get_subcommands();
+	function completions( $_, $assoc_args ) {
+		$line = substr( $assoc_args['line'], 0, $assoc_args['point'] );
+		$ends_with_space = ( ' ' === substr( $line, -1 ) );
 
-			WP_CLI::line( $name . ' ' . implode( ' ', array_keys( $subcommands ) ) );
-		}
+		// TODO: properly parse single and double quotes
+		$words = explode( ' ', $line );
+
+		array_shift( $words );  // first word is always `wp`
+		array_pop( $words );  // last word is either a space or an incomplete subcommand
+
+		list( $positional_args, $assoc_args ) = \WP_CLI\Configurator::extract_assoc( $words );
+		list( $command ) = \WP_CLI::get_runner()->find_command_to_run( $positional_args );
+
+		$subcommands = $command->get_subcommands();
+
+		WP_CLI::line( implode( ' ', array_keys( $subcommands ) ) );
 	}
 }
 
