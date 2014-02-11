@@ -95,10 +95,13 @@ class Formatter {
 	 * @param string The field to show
 	 */
 	private function show_single_field( $items, $field ) {
+		$key = null;
+		$values = array();
+
 		foreach ( $items as $item ) {
 			$item = (object) $item;
 
-			if ( ! isset( $key ) ) {
+			if ( null === $key ) {
 				$key = $this->find_item_key( $item, $field );
 			}
 
@@ -122,7 +125,7 @@ class Formatter {
 			}
 		}
 
-		if ( ! $key ) {
+		if ( ! isset( $key ) ) {
 			\WP_CLI::error( "Invalid field: $field." );
 		}
 

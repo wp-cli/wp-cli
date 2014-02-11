@@ -17,9 +17,7 @@ class SynopsisParser {
 
 			// Some types of parameters shouldn't be mandatory
 			if ( isset( $param['optional'] ) && !$param['optional'] ) {
-				if ( 'flag' === $param['type'] ||
-				   ( 'assoc' === $param['type'] && $param['value']['optional'] )
-				) {
+				if ( 'flag' === $param['type'] || ( 'assoc' === $param['type'] && $param['value']['optional'] ) ) {
 					$param['type'] = 'unknown';
 				}
 			}
@@ -42,8 +40,9 @@ class SynopsisParser {
 
 		if ( '--<field>=<value>' === $token ) {
 			$param['type'] = 'generic';
-		} elseif ( preg_match( "/^<$p_value>$/", $token, $matches ) ) {
+		} elseif ( preg_match( "/^<($p_value)>$/", $token, $matches ) ) {
 			$param['type'] = 'positional';
+			$param['name'] = $matches[1];
 		} elseif ( preg_match( "/^--(?:\\[no-\\])?$p_name/", $token, $matches ) ) {
 			$param['name'] = $matches[1];
 
