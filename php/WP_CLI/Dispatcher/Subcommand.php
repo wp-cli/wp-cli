@@ -215,7 +215,8 @@ class Subcommand extends CompositeCommand {
 			unset( $assoc_args[ $key ] );
 		}
 
-		\WP_CLI::do_hook( 'before_invoke:' . $this->get_parent()->get_name() );
+		$path = get_path( $this->get_parent() );
+		\WP_CLI::do_hook( 'before_invoke:' . implode( ' ', array_slice( $path, 1 ) ) );
 
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 	}
