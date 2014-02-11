@@ -291,7 +291,14 @@ class Runner {
 			}
 		}
 
-		// core (multsite-)install --admin_name= -> --admin_user=
+		// *-meta  ->  * meta
+		if ( !empty( $args ) && preg_match( '/(post|comment|user|network)-meta/', $args[0], $matches ) ) {
+			array_shift( $args );
+			array_unshift( $args, 'meta' );
+			array_unshift( $args, $matches[1] );
+		}
+
+		// core (multsite-)install --admin_name=  ->  --admin_user=
 		if ( count( $args ) > 0 && 'core' == $args[0] && isset( $assoc_args['admin_name'] ) ) {
 			$assoc_args['admin_user'] = $assoc_args['admin_name'];
 			unset( $assoc_args['admin_name'] );
