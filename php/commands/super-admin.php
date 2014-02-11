@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * List, add, and remove super admins from a network.
+ */
 class Super_Admin_Command extends WP_CLI_Command {
 
 	/**
