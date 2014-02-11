@@ -6,7 +6,7 @@ Feature: Manage network-wide custom fields.
     When I try `wp network-meta`
     Then STDOUT should contain:
       """
-      usage: wp network-meta
+      usage: wp network meta
       """
 
     When I try `wp network-meta get 1 site_admins`

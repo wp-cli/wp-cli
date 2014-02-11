@@ -85,7 +85,14 @@ class Rewrite_Command extends WP_CLI_Command {
 
 		// make sure we detect mod_rewrite if configured in apache_modules in config
 		self::apache_modules();
-		flush_rewrite_rules( isset( $assoc_args['hard'] ) );
+
+		// Launch a new process to flush rewrites because core expects flush
+		// to happen after rewrites are set
+		$new_assoc_args = array();
+		if ( isset( $assoc_args['hard'] ) )
+			$new_assoc_args['hard'] = true;
+		\WP_CLI::launch_self( 'rewrite flush', array(), $new_assoc_args );
+
 		WP_CLI::success( "Rewrite structure set." );
 	}
 
@@ -93,22 +100,22 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * Print current rewrite rules.
 	 *
 	 * ## OPTIONS
-	 * 
+	 *
 	 * [--match=<url>]
 	 * : Show rewrite rules matching a particular URL.
-	 * 
+	 *
 	 * [--source=<source>]
 	 * : Show rewrite rules from a particular source.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, JSON or CSV. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp rewrite list --format=csv
 	 * @subcommand list
 	 */
-	public function _list( $args, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 		global $wp_rewrite;
 
 		$rules = get_option( 'rewrite_rules' );

@@ -14,6 +14,12 @@ function assertNumeric( $actual ) {
 	}
 }
 
+function assertNotNumeric( $actual ) {
+	if ( is_numeric( $actual ) ) {
+		throw new Exception( "Actual value: " . var_export( $actual, true ) );
+	}
+}
+
 function checkString( $output, $expected, $action, $message = false ) {
 	switch ( $action ) {
 

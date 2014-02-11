@@ -28,6 +28,15 @@ Feature: Manage WordPress comments
       """
 	  Success: Deleted comment {COMMENT_ID}.
       """
+      
+    When I run `wp comment create --comment_post_ID=1`
+    And I run `wp comment create --comment_post_ID=1`
+    And I run `wp comment delete 3 4`
+    Then STDOUT should be:
+      """
+      Success: Deleted comment 3.
+      Success: Deleted comment 4.
+      """
   
   Scenario: Get details about an existing comment
     When I run `wp comment get 1`
@@ -44,4 +53,10 @@ Feature: Manage WordPress comments
     Then STDOUT should be:
       """
       1
+      """
+
+    When I run `wp comment url 1`
+    Then STDOUT should be:
+      """
+      http://example.com/?p=1#comment-1
       """

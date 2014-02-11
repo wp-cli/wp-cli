@@ -80,11 +80,14 @@ if ( defined( 'WP_INSTALLING' ) && is_multisite() ) {
 require_wp_db();
 
 // WP-CLI: Handle db error ourselves, instead of waiting for dead_db()
+global $wpdb;
 if ( !empty( $wpdb->error ) )
 	wp_die( $wpdb->error );
 
 // Set the database table prefix and the format specifiers for database table columns.
+// @codingStandardsIgnoreStart
 $GLOBALS['table_prefix'] = $table_prefix;
+// @codingStandardsIgnoreEnd
 wp_set_wpdb_vars();
 
 // Start the WordPress object cache, or an external object cache if the drop-in is present.
@@ -119,9 +122,10 @@ require( ABSPATH . WPINC . '/class-wp-ajax-response.php' );
 require( ABSPATH . WPINC . '/formatting.php' );
 require( ABSPATH . WPINC . '/capabilities.php' );
 require( ABSPATH . WPINC . '/query.php' );
+Utils\maybe_require( '3.7-alpha-25139', ABSPATH . WPINC . '/date.php' );
 require( ABSPATH . WPINC . '/theme.php' );
-Utils\maybe_require( '3.4', ABSPATH . WPINC . '/class-wp-theme.php' );
-Utils\maybe_require( '3.4', ABSPATH . WPINC . '/template.php' );
+require( ABSPATH . WPINC . '/class-wp-theme.php' );
+require( ABSPATH . WPINC . '/template.php' );
 require( ABSPATH . WPINC . '/user.php' );
 require( ABSPATH . WPINC . '/meta.php' );
 require( ABSPATH . WPINC . '/general-template.php' );
@@ -177,7 +181,8 @@ unset( $mu_plugin );
 // Load network activated plugins.
 if ( is_multisite() ) {
 	foreach( wp_get_active_network_plugins() as $network_plugin ) {
-		include_once( $network_plugin );
+		if ( !Utils\is_plugin_skipped( $network_plugin ) )
+			include_once( $network_plugin );
 	}
 	unset( $network_plugin );
 }
@@ -194,7 +199,7 @@ wp_cookie_constants( );
 wp_ssl_constants( );
 
 // Create common globals.
-require( ABSPATH . WPINC . '/vars.php' );
+// require( ABSPATH . WPINC . '/vars.php' );
 
 // Make taxonomies and posts available to plugins and themes.
 // @plugin authors: warning: these get registered again on the init hook.
@@ -206,7 +211,8 @@ register_theme_directory( get_theme_root() );
 
 // Load active plugins.
 foreach ( wp_get_active_and_valid_plugins() as $plugin )
-	include_once( $plugin );
+	if ( !Utils\is_plugin_skipped( $plugin ) )
+		include_once( $plugin );
 unset( $plugin );
 
 // Load pluggable functions.
@@ -298,6 +304,7 @@ require_once( ABSPATH . WPINC . '/locale.php' );
 $GLOBALS['wp_locale'] = new WP_Locale();
 
 // Load the functions for the active theme, for both parent and child theme if applicable.
+global $pagenow;
 if ( ! defined( 'WP_INSTALLING' ) || 'wp-activate.php' === $pagenow ) {
 	if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists( STYLESHEETPATH . '/functions.php' ) )
 		include( STYLESHEETPATH . '/functions.php' );

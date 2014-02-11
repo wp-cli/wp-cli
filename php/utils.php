@@ -13,14 +13,9 @@ function load_dependencies() {
 		return;
 	}
 
-	$vendor_paths = array(
-		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project / installed via Composer (preferred)
-		WP_CLI_ROOT . '/vendor',           // top-level project / installed as Git clone
-	);
-
 	$has_autoload = false;
 
-	foreach ( $vendor_paths as $vendor_path ) {
+	foreach ( get_vendor_paths() as $vendor_path ) {
 		if ( file_exists( $vendor_path . '/autoload.php' ) ) {
 			require $vendor_path . '/autoload.php';
 			$has_autoload = true;
@@ -32,6 +27,18 @@ function load_dependencies() {
 		fputs( STDERR, "Internal error: Can't find Composer autoloader.\n" );
 		exit(3);
 	}
+}
+
+function get_vendor_paths() {
+	return array(
+		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project / installed via Composer (preferred)
+		WP_CLI_ROOT . '/vendor',           // top-level project / installed as Git clone
+	);
+}
+
+// Using require() directly inside a class grants access to private methods to the loaded code
+function load_file( $path ) {
+	require $path;
 }
 
 function load_command( $name ) {
@@ -126,7 +133,7 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 
 function is_path_absolute( $path ) {
 	// Windows
-	if ( ':' === $path[1] )
+	if ( isset($path[1]) && ':' === $path[1] )
 		return true;
 
 	return $path[0] === '/';
@@ -261,9 +268,18 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 	if ( !$tmpfile )
 		\WP_CLI::error( 'Error creating temporary file.' );
 
+	$output = '';
 	file_put_contents( $tmpfile, $input );
 
-	\WP_CLI::launch( "\${EDITOR:-vi} '$tmpfile'" );
+	$editor = getenv( 'EDITOR' );
+	if ( !$editor ) {
+		if ( isset( $_SERVER['OS'] ) && false !== strpos( $_SERVER['OS'], 'indows' ) )
+			$editor = 'notepad';
+		else
+			$editor = 'vi';
+	}
+
+	\WP_CLI::launch( "$editor " . escapeshellarg( $tmpfile ) );
 
 	$output = file_get_contents( $tmpfile );
 
@@ -324,13 +340,20 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 	if ( $r ) exit( $r );
 }
 
+/**
+ * Render PHP or other types of files using Mustache templates.
+ *
+ * IMPORTANT: Automatic HTML escaping is disabled!
+ */
 function mustache_render( $template_name, $data ) {
 	if ( ! file_exists( $template_name ) )
 		$template_name = WP_CLI_ROOT . "/templates/$template_name";
 
 	$template = file_get_contents( $template_name );
 
-	$m = new \Mustache_Engine;
+	$m = new \Mustache_Engine( array(
+		'escape' => function ( $val ) { return $val; }
+	) );
 
 	return $m->render( $template, $data );
 }
@@ -340,5 +363,40 @@ function make_progress_bar( $message, $count ) {
 		return new \WP_CLI\NoOp;
 
 	return new \cli\progress\Bar( $message, $count );
+}
+
+function parse_url( $url ) {
+	$url_parts = \parse_url( $url );
+
+	if ( !isset( $url_parts['scheme'] ) ) {
+		$url_parts = parse_url( 'http://' . $url );
+	}
+
+	return $url_parts;
+}
+
+/**
+ * Check if we're running in a Windows environment (cmd.exe).
+ */
+function is_windows() {
+	return strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+}
+
+/**
+ * Replace magic constants in some PHP source code.
+ *
+ * @param string $source The PHP code to manipulate.
+ * @param string $path The path to use instead of the magic constants
+ */
+function replace_path_consts( $source, $path ) {
+	$replacements = array(
+		'__FILE__' => "'$path'",
+		'__DIR__'  => "'" . dirname( $path ) . "'"
+	);
+
+	$old = array_keys( $replacements );
+	$new = array_values( $replacements );
+
+	return str_replace( $old, $new, $source );
 }
 

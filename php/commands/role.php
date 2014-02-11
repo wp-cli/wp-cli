@@ -21,7 +21,7 @@ class Role_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields. Defaults to name,role.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, CSV or JSON. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -29,7 +29,7 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand list
 	 */
-	public function _list( $args, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 		global $wp_roles;
 
 		$output_roles = array();

@@ -4,22 +4,6 @@ use \WP_CLI\Utils;
 
 /**
  * Perform basic database operations.
- *
- * ## OPTIONS
- *
- * --yes
- * : Answer yes to the confirmation message.
- *
- * <file>
- * : The name of the export file. If omitted, it will be '{dbname}.sql'
- *
- * <SQL>
- * : A SQL query.
- *
- * ## EXAMPLES
- *
- *     # execute a query stored in a file
- *     wp db query < debug.sql
  */
 class DB_Command extends WP_CLI_Command {
 
@@ -35,7 +19,10 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Delete the database.
 	 *
-	 * @synopsis [--yes]
+	 * ## OPTIONS
+	 *
+	 * [--yes]
+	 * : Answer yes to the confirmation message.
 	 */
 	function drop( $_, $assoc_args ) {
 		WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args );
@@ -48,7 +35,10 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Remove all tables from the database.
 	 *
-	 * @synopsis [--yes]
+	 * ## OPTIONS
+	 *
+	 * [--yes]
+	 * : Answer yes to the confirmation message.
 	 */
 	function reset( $_, $assoc_args ) {
 		WP_CLI::confirm( "Are you sure you want to reset the database?", $assoc_args );
@@ -95,7 +85,15 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Execute a query against the database.
 	 *
-	 * @synopsis [<sql>]
+	 * ## OPTIONS
+	 *
+	 * [<sql>]
+	 * : A SQL query. If not passed, will try to read from STDIN.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # execute a query stored in a file
+	 *     wp db query < debug.sql
 	 */
 	function query( $args ) {
 		$assoc_args = array(
@@ -111,38 +109,63 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Exports the database using mysqldump.
+	 * Exports the database to a file or to STDOUT.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<file>]
+	 * : The name of the SQL file to export. If '-', then outputs to STDOUT. If omitted, it will be '{dbname}.sql'.
+	 *
+	 * [--<field>=<value>]
+	 * : Extra arguments to pass to mysqldump
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp db dump --add-drop-table
 	 *
 	 * @alias dump
-	 *
-	 * @synopsis [<file>]
 	 */
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
+		$stdout = ( '-' === $result_file );
 
-		self::run( Utils\esc_cmd( 'mysqldump %s', DB_NAME ), array(
-			'result-file' => $result_file
-		) );
+		if ( ! $stdout ) {
+			$assoc_args['result-file'] = $result_file;
+		}
 
-		WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
+		self::run( Utils\esc_cmd( 'mysqldump %s', DB_NAME ), $assoc_args );
+
+		if ( ! $stdout ) {
+			WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
+		}
 	}
 
 	/**
-	 * Import database from a file.
+	 * Import database from a file or from STDIN.
 	 *
-	 * @synopsis [<file>]
+	 * [<file>]
+	 * : The name of the SQL file to import. If '-', then reads from STDIN. If omitted, it will look for '{dbname}.sql'.
 	 */
 	function import( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
-		if ( !file_exists( $result_file ) ) {
-			WP_CLI::error( sprintf( 'Import file missing: %s', $result_file ) );
-		}
 
-		$descriptors = array(
-			array( 'file', $result_file, 'r' ),
-			STDOUT,
-			STDERR,
-		);
+		if ( '-' === $result_file ) {
+			$descriptors = array(
+				STDIN,
+				STDOUT,
+				STDERR,
+			);
+		} else {
+			if ( ! file_exists( $result_file ) ) {
+				WP_CLI::error( sprintf( 'Import file missing: %s', $result_file ) );
+			}
+
+			$descriptors = array(
+				array( 'file', $result_file, 'r' ),
+				STDOUT,
+				STDERR,
+			);
+		}
 
 		self::run( 'mysql --no-defaults', array(
 			'database' => DB_NAME

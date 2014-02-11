@@ -46,3 +46,22 @@ Feature: Manage WordPress options
       """
       [1,2]
       """
+
+
+    # Reading from files
+    Given a value.json file:
+      """
+      {
+        "foo": "bar",
+        "list": [1, 2, 3]
+      }
+      """
+    When I run `wp option set foo --format=json < value.json`
+    And I run `wp option get foo --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {
+        "foo": "bar",
+        "list": [1, 2, 3]
+      }
+      """

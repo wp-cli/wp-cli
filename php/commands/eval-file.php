@@ -7,9 +7,8 @@ class EvalFile_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp eval-file my-code.php
-	 *
-	 * @synopsis <path>
+	 * [<file>]
+	 * : The path to the PHP file to execute.
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		foreach ( $args as $file ) {

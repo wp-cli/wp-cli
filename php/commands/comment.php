@@ -18,6 +18,10 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		'comment_author_email',
 	);
 
+	public function __construct() {
+		$this->fetcher = new \WP_CLI\Fetchers\Comment;
+	}
+
 	/**
 	 * Insert a comment.
 	 *
@@ -35,9 +39,10 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function create( $args, $assoc_args ) {
 		parent::_create( $args, $assoc_args, function ( $params ) {
-			$post = get_post( $params['comment_post_ID'] );
+			$post_id = $params['comment_post_ID'];
+			$post = get_post( $post_id );
 			if ( !$post ) {
-				return new WP_Error( 'no_post', "Can't find post $comment_post_ID." );
+				return new WP_Error( 'no_post', "Can't find post $post_id." );
 			}
 
 			// We use wp_insert_comment() instead of wp_new_comment() to stay at a low level and
@@ -89,10 +94,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Instead of returning the whole comment, returns the value of a single field.
 	 *
 	 * [--format=<format>]
-	 * : The format to use when printing the comment, acceptable values:
-	 *
-	 *   - **table**: Outputs all fields of the comment as a table.
-	 *   - **json**: Outputs all fields in JSON format.
+	 * : Accepted values: table, json. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -123,7 +125,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields. Defaults to comment_ID,comment_post_ID,comment_date,comment_approved,comment_author,comment_author_email
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, CSV, JSON, or simply IDs. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -131,11 +133,11 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     wp comment list --post_id=2
 	 *
-	 *     wp comment list --number=20 --comment_approved=1
+	 *     wp comment list --number=20 --status=approve
 	 *
 	 * @subcommand list
 	 */
-	public function _list( $_, $assoc_args ) {
+	public function list_( $_, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		if ( 'ids' == $formatter->format )
@@ -156,8 +158,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to delete.
+	 * <id>...
+	 * : One or more IDs of comments to delete.
 	 *
 	 * [--force]
 	 * : Skip the trash bin.
@@ -165,6 +167,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     wp comment delete 1337 --force
+	 *
+	 *     wp comment delete 1337 2341 --force
 	 */
 	public function delete( $args, $assoc_args ) {
 		parent::_delete( $args, $assoc_args, function ( $comment_id, $assoc_args ) {
@@ -191,14 +195,14 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	private function set_status( $args, $status, $success ) {
-		$comment = $this->_fetch_comment( $args );
+		$comment = $this->fetcher->get_check( $args[0] );
 
 		$r = wp_set_comment_status( $comment->comment_ID, 'approve', true );
 
 		if ( is_wp_error( $r ) ) {
 			WP_CLI::error( $r );
 		} else {
-			WP_CLI::success( "$success comment $comment_id" );
+			WP_CLI::success( "$success comment $comment->comment_ID" );
 		}
 	}
 
@@ -363,25 +367,44 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp comment exists 1337
 	 */
 	public function exists( $args ) {
-		if ( $this->_fetch_comment( $args ) ) {
+		if ( $this->fetcher->get( $args[0] ) ) {
 			WP_CLI::success( "Comment with ID $args[0] exists." );
 		}
 	}
 
 	/**
-	 * A helper function fetching a comment object from comment_id.
+	 * Get comment url
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of comments to get the URL.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp comment url 123
 	 */
-	private function _fetch_comment( $args ) {
-		$comment_id = (int) $args[0];
-		$comment = get_comment( $comment_id );
-
-		if ( is_null( $comment ) ) {
-			WP_CLI::error( "Comment with ID $args[0] does not exist." );
-		}
-
-		return $comment;
+	public function url( $args ) {
+		parent::_url( $args, 'get_comment_link' );
 	}
 }
 
+/**
+ * Manage comment custom fields.
+ *
+ * ## OPTIONS
+ *
+ * --format=json
+ * : Encode/decode values as JSON.
+ *
+ * ## EXAMPLES
+ *
+ *     wp comment meta set 123 description "Mary is a WordPress developer."
+ */
+class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
+	protected $meta_type = 'comment';
+}
+
 WP_CLI::add_command( 'comment', 'Comment_Command' );
+WP_CLI::add_command( 'comment meta', 'Comment_Meta_Command' );
 

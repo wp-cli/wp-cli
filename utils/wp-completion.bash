@@ -1,21 +1,16 @@
-# bash completion for the wp command
+# bash completion for the `wp` command
 
-_wp() {
-	local cur prev opts
+_wp_complete() {
+	local cur=${COMP_WORDS[COMP_CWORD]}
 
-	cur=${COMP_WORDS[COMP_CWORD]}
-	prev=${COMP_WORDS[COMP_CWORD-1]}
+	IFS=$'\n';  # want to preserve spaces at the end
+	local opts=( $(wp cli completions --line="$COMP_LINE" --point="$COMP_POINT") )
 
-	if [[ 'wp' = $prev ]]; then
-		opts=$(wp --completions | cut -d ' ' -f 1 | tr '\n' ' ')
+	if [[ $opts = "<file>" ]]
+	then
+		COMPREPLY=( $(compgen -f -- $cur) )
 	else
-		opts=$(wp --completions | grep ^$prev | cut -d ' ' -f 2- | tr '\n' ' ')
-	fi
-
-	if [[ 'create' = $prev ]]; then
-		COMPREPLY=( $(compgen -f "$cur") )
-	else
-		COMPREPLY=( $(compgen -W "$opts" -- $cur) )
+		COMPREPLY=$opts
 	fi
 }
-complete -F _wp wp
+complete -o nospace -F _wp_complete wp
