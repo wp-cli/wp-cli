@@ -60,14 +60,10 @@ class Menu_Command extends WP_CLI_Command {
 
 		$ret = wp_delete_nav_menu( $args[0] );
 
-		if ( is_wp_error( $ret ) ) {
-
-			WP_CLI::error( $ret->get_error_message() );
-
-		} else if ( ! $ret ) {
+		if ( ! $ret || is_wp_error( $ret ) ) {
 
 			WP_CLI::error( "Error deleting menu." );
-			
+
 		} else {
 
 			WP_CLI::success( "Menu deleted." );
