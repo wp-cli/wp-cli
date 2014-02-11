@@ -167,7 +167,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     wp comment delete 1337 --force
-	 * 
+	 *
 	 *     wp comment delete 1337 2341 --force
 	 */
 	public function delete( $args, $assoc_args ) {
@@ -371,10 +371,10 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::success( "Comment with ID $args[0] exists." );
 		}
 	}
-	
+
 	/**
 	 * Get comment url
-	 * 
+	 *
 	 * ## OPTIONS
 	 *
 	 * <id>...
@@ -389,5 +389,22 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 }
 
+/**
+ * Manage comment custom fields.
+ *
+ * ## OPTIONS
+ *
+ * --format=json
+ * : Encode/decode values as JSON.
+ *
+ * ## EXAMPLES
+ *
+ *     wp comment meta set 123 description "Mary is a WordPress developer."
+ */
+class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
+	protected $meta_type = 'comment';
+}
+
 WP_CLI::add_command( 'comment', 'Comment_Command' );
+WP_CLI::add_command( 'comment meta', 'Comment_Meta_Command' );
 
