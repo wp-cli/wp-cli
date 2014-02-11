@@ -74,4 +74,4 @@ WP_CLI::add_command( 'super-admin', 'Super_Admin_Command', array(
 			WP_CLI::error( 'This is not a multisite install.' );
 		}
 	}
-	) );
+) );
