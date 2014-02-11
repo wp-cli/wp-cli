@@ -1,6 +1,6 @@
 <?php
 
-class SuperAdminCommand extends WP_CLI_Command {
+class Super_Admin_Command extends WP_CLI_Command {
 
 	/**
 	 * Show a list of users with super-admin capabilities.
@@ -55,5 +55,5 @@ class SuperAdminCommand extends WP_CLI_Command {
 	}
 }
 
-WP_CLI::add_command( 'super-admin', 'SuperAdminCommand' );
+WP_CLI::add_command( 'super-admin', 'Super_Admin_Command' );
 
