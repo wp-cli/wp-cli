@@ -5,6 +5,10 @@
  */
 class Super_Admin_Command extends WP_CLI_Command {
 
+	public function __construct() {
+		$this->fetcher = new \WP_CLI\Fetchers\User;
+	}
+
 	/**
 	 * Show a list of users with super-admin capabilities.
 	 *
@@ -21,12 +25,15 @@ class Super_Admin_Command extends WP_CLI_Command {
 	 * Grant super-admin privileges to one or more users.
 	 *
 	 * <user>...
-	 * : One or more user logins.
+	 * : One or more user IDs, user emails, or user logins.
 	 */
 	public function add( $args, $_ ) {
+
+		$users = $this->fetcher->get_many( $args );
+		$user_logins = wp_list_pluck( $users, 'user_login' );
 		$super_admins = self::get_admins();
 
-		foreach ( $args as $user_login ) {
+		foreach ( $user_logins as $user_login ) {
 			$user = get_user_by( 'login', $user_login );
 			if ( !$user ) {
 				WP_CLI::warning( "Couldn't find {$user_login} user." );
@@ -43,11 +50,14 @@ class Super_Admin_Command extends WP_CLI_Command {
 	 * Revoke super-admin privileges to one or more users.
 	 *
 	 * <user>...
-	 * : One or more user logins.
+	 * : One or more user IDs, user emails, or user logins.
 	 */
 	public function remove( $args, $_ ) {
+		$users = $this->fetcher->get_many( $args );
+		$user_logins = wp_list_pluck( $users, 'user_login' );
+
 		$super_admins = self::get_admins();
-		$super_admins = array_diff( $super_admins, $args );
+		$super_admins = array_diff( $super_admins, $user_logins );
 		update_site_option( 'site_admins' , $super_admins );
 		WP_CLI::success( 'Revoked super-admin capabilities.' );
 	}
