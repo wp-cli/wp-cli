@@ -10,6 +10,7 @@ class Menu_Command extends WP_CLI_Command {
 		'term_id',
 		'name',
 		'slug',
+		'locations',
 		'count',
 	);
 
@@ -94,6 +95,25 @@ class Menu_Command extends WP_CLI_Command {
 	public function list_( $_, $assoc_args ) {
 
 		$menus = wp_get_nav_menus();
+
+		$menu_locations = get_nav_menu_locations();
+		foreach( $menus as &$menu ) {
+
+			$menu->locations = array();
+			foreach( $menu_locations as $location => $term_id ) {
+
+				if ( $term_id == $menu->term_id  ) {
+					$menu->locations[] = $location;
+				}
+
+			}
+			
+			// Normalize the data for some output formats
+			if ( ! isset( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'csv', 'table' ) ) ) {
+				$menu->locations = implode( ',', $menu->locations );
+			}
+		}
+
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $menus );
 
