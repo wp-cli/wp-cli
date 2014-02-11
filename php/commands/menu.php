@@ -121,4 +121,55 @@ class Menu_Command extends WP_CLI_Command {
 
 }
 
+/**
+ * List, add, and delete items associated with a menu
+ */
+class Menu_Item_Command extends WP_CLI_Command {
+
+	protected $obj_fields = array(
+		'db_id',
+		'type',
+		'title',
+		'url',
+	);
+
+	/**
+	 * Get a list of items associated with a menu
+	 *
+	 * ## OPTIONS
+	 * 
+	 * <menu>
+	 * : The name, slug, or term ID for the menu
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to db_id,type,title,url
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp menu item list <menu>
+	 *
+	 * @subcommand list
+	 */
+	public function list_( $args, $assoc_args ) {
+
+		$items = wp_get_nav_menu_items( $args[0] );
+		if ( false === $items || is_wp_error( $items ) ) {
+			WP_CLI::error( "Invalid menu" );
+		}
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_items( $items );
+
+	}
+
+	protected function get_formatter( &$assoc_args ) {
+		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields );
+	}
+
+}
+
 WP_CLI::add_command( 'menu', 'Menu_Command' );
+WP_CLI::add_command( 'menu item', 'Menu_Item_Command' );
