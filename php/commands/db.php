@@ -116,17 +116,24 @@ class DB_Command extends WP_CLI_Command {
 	 * [<file>]
 	 * : The name of the SQL file to export. If '-', then outputs to STDOUT. If omitted, it will be '{dbname}.sql'.
 	 *
+	 * [--<field>=<value>]
+	 * : Extra arguments to pass to mysqldump
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp db dump --add-drop-table
+	 *
 	 * @alias dump
 	 */
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 		$stdout = ( '-' === $result_file );
 
-		$cmd_args = array();
 		if ( ! $stdout ) {
-			$cmd_args['result-file'] = $result_file;
+			$assoc_args['result-file'] = $result_file;
 		}
-		self::run( Utils\esc_cmd( 'mysqldump %s', DB_NAME ), $cmd_args );
+
+		self::run( Utils\esc_cmd( 'mysqldump %s', DB_NAME ), $assoc_args );
 
 		if ( ! $stdout ) {
 			WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );

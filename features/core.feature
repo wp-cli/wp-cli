@@ -8,14 +8,30 @@ Feature: Manage WordPress installation
     Then the return code should be 1
     And STDERR should not be empty
 
-    When I run `wp core download --quiet`
+    When I run `wp core download`
+    And save STDOUT 'Downloading WordPress ([\d\.]+)' as {VERSION}
     Then the wp-settings.php file should exist
+    And the {SUITE_CACHE_DIR}/core/en_US-{VERSION}.tar.gz file should exist
+
+    When I run `mkdir inner`
+    And I run `cd inner && wp core download`
+    Then the inner/wp-settings.php file should exist
+
+    # test core tarball cache
+    When I run `wp core download --force`
+    Then the wp-settings.php file should exist
+    And STDOUT should contain:
+    """
+    Using cached file '{SUITE_CACHE_DIR}/core/en_US-{VERSION}.tar.gz'...
+    """
 
   @download
   Scenario: Localized install
     Given an empty directory
     When I run `wp core download --locale=de_DE`
+    And save STDOUT 'Downloading WordPress ([\d\.]+)' as {VERSION}
     Then the wp-settings.php file should exist
+    And the {SUITE_CACHE_DIR}/core/de_DE-{VERSION}.tar.gz file should exist
 
   Scenario: No wp-config.php
     Given an empty directory
@@ -84,11 +100,6 @@ Feature: Manage WordPress installation
 
     When I try `wp core is-installed`
     Then the return code should be 1
-    And STDERR should be:
-      """
-      Error: The site you have requested is not installed.
-      Run `wp core install`.
-      """
 
     When I try `wp core install`
     Then the return code should be 1
@@ -194,6 +205,9 @@ Feature: Manage WordPress installation
   Scenario: Install multisite from scratch, with MULTISITE already set in wp-config.php
     Given a WP multisite install
     And I run `wp db reset --yes`
+
+    When I try `wp core is-installed`
+    Then the return code should be 1
 
     When I run `wp core multisite-install --title=Test --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
     Then STDOUT should not be empty

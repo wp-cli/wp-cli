@@ -375,3 +375,28 @@ function parse_url( $url ) {
 	return $url_parts;
 }
 
+/**
+ * Check if we're running in a Windows environment (cmd.exe).
+ */
+function is_windows() {
+	return strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+}
+
+/**
+ * Replace magic constants in some PHP source code.
+ *
+ * @param string $source The PHP code to manipulate.
+ * @param string $path The path to use instead of the magic constants
+ */
+function replace_path_consts( $source, $path ) {
+	$replacements = array(
+		'__FILE__' => "'$path'",
+		'__DIR__'  => "'" . dirname( $path ) . "'"
+	);
+
+	$old = array_keys( $replacements );
+	$new = array_values( $replacements );
+
+	return str_replace( $old, $new, $source );
+}
+

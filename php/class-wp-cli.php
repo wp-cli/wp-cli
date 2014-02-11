@@ -58,7 +58,7 @@ class WP_CLI {
 	/**
 	 * @return FileCache
 	 */
-	private static function get_cache() {
+	public static function get_cache() {
 		static $cache;
 
 		if ( !$cache ) {
@@ -108,9 +108,6 @@ class WP_CLI {
 		$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
 		$_SERVER['SERVER_PORT'] = isset( $url_parts['port'] ) ? $url_parts['port'] : '80';
 		$_SERVER['QUERY_STRING'] = $f('query');
-		$_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
-		$_SERVER['HTTP_USER_AGENT'] = '';
-		$_SERVER['REQUEST_METHOD'] = 'GET';
 	}
 
 	/**
@@ -155,19 +152,45 @@ class WP_CLI {
 	/**
 	 * Add a command to the wp-cli list of commands
 	 *
-	 * @param string $name The name of the command that will be used in the cli
+	 * @param string $name The name of the command that will be used in the CLI
 	 * @param string $class The command implementation
 	 * @param array $args An associative array with additional parameters:
 	 *   'before_invoke' => callback to execute before invoking the command
 	 */
 	static function add_command( $name, $class, $args = array() ) {
-		$command = Dispatcher\CommandFactory::create( $name, $class, self::get_root_command() );
-
 		if ( isset( $args['before_invoke'] ) ) {
 			self::add_hook( "before_invoke:$name", $args['before_invoke'] );
 		}
 
-		self::get_root_command()->add_subcommand( $name, $command );
+		$path = preg_split( '/\s+/', $name );
+
+		$leaf_name = array_pop( $path );
+		$full_path = $path;
+
+		$command = self::get_root_command();
+
+		while ( !empty( $path ) ) {
+			$subcommand_name = $path[0];
+			$subcommand = $command->find_subcommand( $path );
+
+			// create an empty container
+			if ( !$subcommand ) {
+				$subcommand = new Dispatcher\CompositeCommand( $command, $subcommand_name,
+					new \WP_CLI\DocParser( '' ) );
+				$command->add_subcommand( $subcommand_name, $subcommand );
+			}
+
+			$command = $subcommand;
+		}
+
+		$leaf_command = Dispatcher\CommandFactory::create( $leaf_name, $class, $command );
+
+		if ( ! $command->can_have_subcommands() ) {
+			throw new Exception( sprintf( "'%s' can't have subcommands.",
+				implode( ' ' , Dispatcher\get_path( $command ) ) ) );
+		}
+
+		$command->add_subcommand( $leaf_name, $leaf_command );
 	}
 
 	/**
@@ -234,7 +257,30 @@ class WP_CLI {
 	}
 
 	/**
-	 * Read a value, from various formats
+	 * Read value from a positional argument or from STDIN.
+	 *
+	 * @param array $args The list of positional arguments.
+	 * @param int $index At which position to check for the value.
+	 *
+	 * @return string
+	 */
+	public static function get_value_from_arg_or_stdin( $args, $index ) {
+		if ( isset( $args[ $index ] ) ) {
+			$raw_value = $args[ $index ];
+		} else {
+			// We don't use file_get_contents() here because it doesn't handle
+			// Ctrl-D properly, when typing in the value interactively.
+			$raw_value = '';
+			while ( ( $line = fgets( STDIN ) ) !== false ) {
+				$raw_value .= $line;
+			}
+		}
+
+		return $raw_value;
+	}
+
+	/**
+	 * Read a value, from various formats.
 	 *
 	 * @param mixed $value
 	 * @param array $assoc_args
@@ -321,6 +367,7 @@ class WP_CLI {
 			'path',
 			'url',
 			'user',
+			'allow-root',
 		);
 
 		foreach ( $reused_runtime_args as $key ) {

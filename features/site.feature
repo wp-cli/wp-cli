@@ -50,10 +50,16 @@ Feature: Manage sites in a multisite installation
   Scenario: Empty a site
     Given a WP install
 
+    When I try `wp site url 1`
+    Then STDERR should be:
+      """
+      Error: This is not a multisite install.
+      """
+
     When I run `wp post create --post_title='Test post' --post_content='Test content.' --porcelain`
     Then STDOUT should not be empty
 
-    When I run `wp term create 'Test term' post_tag --slug=test --description='This is a test term'`
+    When I run `wp term create post_tag 'Test term' --slug=test --description='This is a test term'`
     Then STDOUT should not be empty
 
     When I run `wp site empty --yes`
@@ -67,9 +73,14 @@ Feature: Manage sites in a multisite installation
 
   Scenario: Get site info
     Given a WP multisite install
-    
-    When I run `wp site url 1`
+   
+    When I run `wp site create --slug=first --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+ 
+    When I run `wp site url {SITE_ID}`
     Then STDOUT should be:
       """
-      http://example.com
+      http://example.com/first
       """
+

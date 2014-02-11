@@ -124,8 +124,8 @@ require( ABSPATH . WPINC . '/capabilities.php' );
 require( ABSPATH . WPINC . '/query.php' );
 Utils\maybe_require( '3.7-alpha-25139', ABSPATH . WPINC . '/date.php' );
 require( ABSPATH . WPINC . '/theme.php' );
-Utils\maybe_require( '3.4', ABSPATH . WPINC . '/class-wp-theme.php' );
-Utils\maybe_require( '3.4', ABSPATH . WPINC . '/template.php' );
+require( ABSPATH . WPINC . '/class-wp-theme.php' );
+require( ABSPATH . WPINC . '/template.php' );
 require( ABSPATH . WPINC . '/user.php' );
 require( ABSPATH . WPINC . '/meta.php' );
 require( ABSPATH . WPINC . '/general-template.php' );
@@ -181,7 +181,8 @@ unset( $mu_plugin );
 // Load network activated plugins.
 if ( is_multisite() ) {
 	foreach( wp_get_active_network_plugins() as $network_plugin ) {
-		include_once( $network_plugin );
+		if ( !Utils\is_plugin_skipped( $network_plugin ) )
+			include_once( $network_plugin );
 	}
 	unset( $network_plugin );
 }
@@ -210,7 +211,8 @@ register_theme_directory( get_theme_root() );
 
 // Load active plugins.
 foreach ( wp_get_active_and_valid_plugins() as $plugin )
-	include_once( $plugin );
+	if ( !Utils\is_plugin_skipped( $plugin ) )
+		include_once( $plugin );
 unset( $plugin );
 
 // Load pluggable functions.

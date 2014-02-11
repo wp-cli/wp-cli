@@ -28,7 +28,7 @@ cd builds
 
 git config user.name "Travis CI"
 git config user.email "travis@travis-ci.org"
-git config push.default "simple"
+git config push.default "current"
 
 mv $WP_CLI_BIN_DIR/wp phar/wp-cli-nightly.phar
 chmod -x phar/wp-cli-nightly.phar

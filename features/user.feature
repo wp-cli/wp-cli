@@ -38,12 +38,24 @@ Feature: Manage WordPress users
       | ID           | {USER_ID} |
       | display_name | Foo       |
 
+    When I run `wp user get testuser@example.com`
+    Then STDOUT should be a table containing rows:
+      | Field        | Value     |
+      | ID           | {USER_ID} |
+      | display_name | Foo       |
+
     When I run `wp user delete {USER_ID}`
     Then STDOUT should not be empty
 
   Scenario: Generating and deleting users
-    When I run `wp user generate --count=9`
-    And I run `wp user list --format=count`
+    When I run `wp user list --role=editor --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp user generate --count=10 --role=editor`
+    And I run `wp user list --role=editor --format=count`
     Then STDOUT should be:
       """
       10

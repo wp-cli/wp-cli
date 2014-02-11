@@ -115,7 +115,7 @@ class Rewrite_Command extends WP_CLI_Command {
 	 *     wp rewrite list --format=csv
 	 * @subcommand list
 	 */
-	public function _list( $args, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 		global $wp_rewrite;
 
 		$rules = get_option( 'rewrite_rules' );

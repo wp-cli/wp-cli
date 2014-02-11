@@ -10,17 +10,36 @@ Feature: Manage WordPress plugins
     And the {PLUGIN_DIR}/plugin1/plugin1.php file should exist
     And the {PLUGIN_DIR}/zombieland/phpunit.xml file should not exist
 
-    When I run `wp plugin scaffold zombieland --plugin_name="Zombieland"`
+    When I run `wp plugin path plugin1`
+    Then STDOUT should be:
+      """
+      {PLUGIN_DIR}/plugin1/plugin1.php
+      """
+
+    When I run `wp plugin path plugin1 --dir`
+    Then STDOUT should be:
+      """
+      {PLUGIN_DIR}/plugin1
+      """
+
+    When I run `wp plugin scaffold Zombieland`
     Then STDOUT should not be empty
-    And the {PLUGIN_DIR}/zombieland/zombieland.php file should exist
-    And the {PLUGIN_DIR}/zombieland/phpunit.xml file should exist
+    And the {PLUGIN_DIR}/Zombieland/Zombieland.php file should exist
+    And the {PLUGIN_DIR}/Zombieland/phpunit.xml file should exist
+
+    # Ensure case sensitivity
+    When I try `wp plugin status zombieLand`
+    Then STDERR should contain:
+      """
+      The 'zombieLand' plugin could not be found.
+      """
 
     # Check that the inner-plugin is not picked up
-    When I run `mv {PLUGIN_DIR}/plugin1 {PLUGIN_DIR}/zombieland/`
-    And I run `wp plugin status zombieland`
+    When I run `mv {PLUGIN_DIR}/plugin1 {PLUGIN_DIR}/Zombieland/`
+    And I run `wp plugin status Zombieland`
     Then STDOUT should contain:
       """
-      Plugin zombieland details:
+      Plugin Zombieland details:
           Name: Zombieland
           Status: Inactive
           Version: 0.1-alpha
@@ -28,10 +47,10 @@ Feature: Manage WordPress plugins
           Description: PLUGIN DESCRIPTION HERE
       """
 
-    When I run `wp plugin activate zombieland`
+    When I run `wp plugin activate Zombieland`
     Then STDOUT should not be empty
 
-    When I run `wp plugin status zombieland`
+    When I run `wp plugin status Zombieland`
     Then STDOUT should contain:
       """
           Status: Active
@@ -43,28 +62,28 @@ Feature: Manage WordPress plugins
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
       | name       | status | update | version   |
-      | zombieland | active | none   | 0.1-alpha |
+      | Zombieland | active | none   | 0.1-alpha |
 
-    When I try `wp plugin uninstall zombieland`
+    When I try `wp plugin uninstall Zombieland`
     Then STDERR should contain:
       """
-      The 'zombieland' plugin is active.
+      The 'Zombieland' plugin is active.
       """
 
-    When I run `wp plugin deactivate zombieland`
+    When I run `wp plugin deactivate Zombieland`
     Then STDOUT should not be empty
 
-    When I run `wp plugin uninstall zombieland`
+    When I run `wp plugin uninstall Zombieland`
     Then STDOUT should contain:
       """
-      Success: Uninstalled 'zombieland' plugin.
+      Success: Uninstalled 'Zombieland' plugin.
       """
     And the {PLUGIN_DIR}/zombieland file should not exist
 
     When I try the previous command again
     Then STDERR should contain:
       """
-      The 'zombieland' plugin could not be found.
+      The 'Zombieland' plugin could not be found.
       """
 
   Scenario: Install a plugin, activate, then force install an older version of the plugin

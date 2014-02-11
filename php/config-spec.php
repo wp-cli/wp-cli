@@ -28,6 +28,14 @@ return array(
 		'desc' => 'Set the WordPress user',
 	),
 
+	'skip-plugins' => array(
+		'runtime' => '[=<plugin>]',
+		'file' => false,
+		'desc' => 'Skip loading all or some plugins',
+		'multiple' => false,
+		'default' => '',
+	),
+
 	'require' => array(
 		'runtime' => '=<path>',
 		'file' => '<path>',
@@ -76,5 +84,14 @@ return array(
 		'multiple' => true,
 		'default' => array(),
 	),
+
+	# --allow-root => (NOT RECCOMENDED) Allow wp-cli to run as root. This poses
+	# a security risk, so you probably do not want to do this.
+	'allow-root' => array(
+		'file' => false, # Explicit. Just in case the default changes.
+		'runtime' => '',
+		'hidden'  => true,
+	),
+
 );
 

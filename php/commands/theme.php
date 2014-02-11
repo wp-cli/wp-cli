@@ -19,6 +19,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	);
 
 	function __construct() {
+		if ( is_multisite() ) {
+			$this->obj_fields[] = 'enabled';
+		}
 		parent::__construct();
 
 		$this->fetcher = new \WP_CLI\Fetchers\Theme;
@@ -129,6 +132,100 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 	}
 
+	/**
+	 * Enable a theme in a multisite install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : The theme to enable.
+	 *
+	 * [--network]
+	 * : If set, the theme is enabled for the entire network
+	 *
+	 * [--activate]
+	 * : If set, the theme is activated for the current site. Note that
+	 * the "network" flag has no influence on this.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme enable twentythirteen
+	 *
+	 *     wp theme enable twentythirteen --network
+	 *
+	 *     wp theme enable twentythirteen --activate
+	 */
+	public function enable( $args, $assoc_args ) {
+		if ( ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
+		$theme = $this->fetcher->get_check( $args[0] );
+		$name = $theme->get( 'Name' );
+
+		# If the --network flag is set, we'll be calling the (get|update)_site_option functions
+		$_site = ! empty( $assoc_args['network'] ) ? '_site' : '';
+
+		# Add the current theme to the allowed themes option or site option
+		$allowed_themes = call_user_func( "get{$_site}_option", 'allowedthemes' );
+		if ( empty( $allowed_themes ) )
+			$allowed_themes = array();
+		$allowed_themes[ $theme->get_template() ] = true;
+		call_user_func( "update{$_site}_option", 'allowedthemes', $allowed_themes );
+
+		if ( ! empty( $assoc_args['network'] ) )
+			WP_CLI::success( "Network enabled the '$name' theme." );
+		else
+			WP_CLI::success( "Enabled the '$name' theme." );
+
+		# If the --activate flag is set, activate the theme for the current site
+		if ( ! empty( $assoc_args['activate'] ) ) {
+			$this->activate( $args );
+		}
+	}
+
+	/**
+	 * Disable a theme in a multisite install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : The theme to disable.
+	 *
+	 * [--network]
+	 * : If set, the theme is disabled on the network level. Note that
+	 * individual sites may still have this theme enabled if it was
+	 * enabled for them independently.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme disable twentythirteen
+	 *
+	 *     wp theme disable twentythirteen --network
+	 */
+	public function disable( $args, $assoc_args ) {
+		if ( ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
+		$theme = $this->fetcher->get_check( $args[0] );
+		$name = $theme->get( 'Name' );
+
+		# If the --network flag is set, we'll be calling the (get|update)_site_option functions
+		$_site = ! empty( $assoc_args['network'] ) ? '_site' : '';
+
+		# Add the current theme to the allowed themes option or site option
+		$allowed_themes = call_user_func( "get{$_site}_option", 'allowedthemes' );
+		if ( ! empty( $allowed_themes[ $theme->get_template() ] ) )
+			unset( $allowed_themes[ $theme->get_template() ] );
+		call_user_func( "update{$_site}_option", 'allowedthemes', $allowed_themes );
+
+		if ( ! empty( $assoc_args['network'] ) )
+			WP_CLI::success( "Network disabled the '$name' theme." );
+		else
+			WP_CLI::success( "Disabled the '$name' theme." );
+	}
+
 	private function is_active_theme( $theme ) {
 		return $theme->get_stylesheet_directory() == get_stylesheet_directory();
 	}
@@ -193,6 +290,16 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	protected function get_item_list() {
 		$items = array();
 
+		if ( is_multisite() ) {
+			$site_enabled = get_option( 'allowedthemes' );
+			if ( empty( $site_enabled ) )
+				$site_enabled = array();
+
+			$network_enabled = get_site_option( 'allowedthemes' );
+			if ( empty( $network_enabled ) )
+				$network_enabled = array();
+		}
+
 		foreach ( wp_get_themes() as $key => $theme ) {
 			$file = $theme->get_stylesheet_directory();
 			$update_info = $this->get_update_info( $theme->get_stylesheet() );
@@ -205,7 +312,20 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_package' => $update_info['package'],
 				'version' => $theme->get('Version'),
 				'update_id' => $theme->get_stylesheet(),
+				'title' => $theme->get('Name'),
+				'description' => $theme->get('Description'),
 			);
+
+			if ( is_multisite() ) {
+				if ( ! empty( $site_enabled[ $key ] ) && ! empty( $network_enabled[ $key ] ) )
+					$items[ $file ]['enabled'] = 'network,site';
+				elseif ( ! empty( $network_enabled[ $key ] ) )
+					$items[ $file ]['enabled'] = 'network';
+				elseif ( ! empty( $site_enabled[ $key ] ) )
+					$items[ $file ]['enabled'] = 'site';
+				else
+					$items[ $file ]['enabled'] = 'no';
+			}
 		}
 
 		return $items;
@@ -395,7 +515,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @subcommand list
 	 */
-	function _list( $_, $assoc_args ) {
+	public function list_( $_, $assoc_args ) {
 		parent::_list( $_, $assoc_args );
 	}
 }
