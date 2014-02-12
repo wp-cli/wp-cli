@@ -320,6 +320,32 @@ class Term_Command extends WP_CLI_Command {
 		$notify->finish();
 	}
 
+	/**
+	 * Get term url
+	 *
+	 * ## OPTIONS
+	 * 
+	 * <taxonomy>
+	 * : Taxonomy of the term(s) to get.
+	 *
+	 * <term-id>...
+	 * : One or more IDs of terms to get the URL.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term url post_tag 123
+	 *
+	 *     wp term url post_tag 123 324
+	 */
+	public function url( $args ) {
+		$term_link = get_term_link( (int)$args[1], $args[0] );
+		if ( $term_link && ! is_wp_error( $term_link ) ) {
+			WP_CLI::line( $term_link );
+		} else {
+			WP_CLI::error( "Invalid term." );
+		}
+	}
+
 	private function maybe_make_child() {
 		// 50% chance of making child term
 		return ( mt_rand(1, 2) == 1 );
