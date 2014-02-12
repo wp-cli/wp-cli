@@ -253,6 +253,12 @@ class Menu_Item_Command extends WP_CLI_Command {
 			WP_CLI::error( "Invalid menu" );
 		}
 
+		// Correct position inconsistency
+		$items = array_map( function( $item ) {
+			$item->position = $item->menu_order;
+			return $item;
+		}, $items );
+
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
 

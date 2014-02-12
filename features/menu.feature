@@ -62,12 +62,12 @@ Feature: Manage WordPress menus
     And I run `wp menu item add-custom sidebar-menu Apple http://apple.com --porcelain`
     Then save STDOUT as {ITEM_ID}
 
-    When I run `wp menu item list sidebar-menu --fields=type,title,url`
+    When I run `wp menu item list sidebar-menu --fields=type,title,position,url`
     Then STDOUT should be a table containing rows:
-      | type      | title            | url                |
-      | post_type | Custom Test Post | {POST_LINK}        |
-      | taxonomy  | Test term        | {TERM_LINK}        |
-      | custom    | Apple            | http://apple.com   |
+      | type      | title            | position | url                |
+      | post_type | Custom Test Post | 1        | {POST_LINK}        |
+      | taxonomy  | Test term        | 2        | {TERM_LINK}        |
+      | custom    | Apple            | 3        | http://apple.com   |
 
     When I run `wp menu item remove {ITEM_ID}`
     And I run `wp menu item list sidebar-menu --format=count`
