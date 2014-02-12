@@ -39,3 +39,39 @@ Feature: Manage WordPress menus
       | slug            | locations       |
       | primary-menu    |                 |
 
+
+  Scenario: Add / remove items from a menu
+
+    When I run `wp post create --post_title='Test post' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post url {POST_ID}`
+    Then save STDOUT as {POST_LINK}
+
+    When I run `wp term create post_tag 'Test term' --slug=test --description='This is a test term' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID}
+
+    When I run `wp term url post_tag {TERM_ID}`
+    Then save STDOUT as {TERM_LINK}
+
+    When I run `wp menu create "Sidebar Menu"`
+    And I run `wp menu item add-post sidebar-menu {POST_ID} --title="Custom Test Post"`
+    And I run `wp menu item add-term sidebar-menu post_tag {TERM_ID}`
+    And I run `wp menu item add-custom sidebar-menu Apple http://apple.com --porcelain`
+    Then save STDOUT as {ITEM_ID}
+
+    When I run `wp menu item list sidebar-menu --fields=type,title,url`
+    Then STDOUT should be a table containing rows:
+      | type      | title            | url                |
+      | post_type | Custom Test Post | {POST_LINK}        |
+      | taxonomy  | Test term        | {TERM_LINK}        |
+      | custom    | Apple            | http://apple.com   |
+
+    When I run `wp menu item remove {ITEM_ID}`
+    And I run `wp menu item list sidebar-menu --format=count`
+    Then STDOUT should be:
+    """
+    2
+    """

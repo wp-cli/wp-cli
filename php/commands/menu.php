@@ -223,6 +223,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 		'type',
 		'title',
 		'url',
+		'position',
 	);
 
 	/**
@@ -254,6 +255,194 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
+
+	}
+
+	/**
+	 * Add a post as a menu item
+	 * 
+	 * <menu>
+	 * : The name, slug, or term ID for the menu
+	 * 
+	 * <post-id>
+	 * : Post ID to add to the menu
+	 * 
+	 * [--title=<title>]
+	 * : Set a custom title for the menu item
+	 * 
+	 * [--description=<description>]
+	 * : Set a custom description for the menu item
+	 * 
+	 * [--position=<position>]
+	 * : Specify the position of this menu item.
+	 * 
+	 * [--parent-id=<parent-id>]
+	 * : Make this menu item a child of another menu item
+	 * 
+	 * [--porcelain]
+	 * : Output just the new menu item id.
+	 * 
+	 * @subcommand add-post
+	 */
+	public function add_post( $args, $assoc_args ) {
+
+		$assoc_args['object-id'] = $args[1];
+		unset( $args[1] );
+		$post = get_post( $assoc_args['object-id'] );
+		if ( ! $post ) {
+			WP_CLI::error( "Invalid post." );
+		}
+		$assoc_args['object'] = $post->post_type;
+
+		$this->add_or_update_item( 'post_type', $args, $assoc_args );
+	}
+
+	/**
+	 * Add a taxonomy term as a menu item
+	 * 
+	 * <menu>
+	 * : The name, slug, or term ID for the menu
+	 * 
+	 * <taxonomy>
+	 * : Taxonomy of the term to be added
+	 * 
+	 * <term-id>
+	 * : Term ID of the term to be added
+	 * 
+	 * [--porcelain]
+	 * : Output just the new menu item id.
+	 * 
+	 * @subcommand add-term
+	 */
+	public function add_term( $args, $assoc_args ) {
+
+		$assoc_args['object'] = $args[1];
+		unset( $args[1] );
+		$assoc_args['object-id'] = $args[2];
+		unset( $args[2] );
+
+		if ( ! get_term_by( 'id', $assoc_args['object-id'], $assoc_args['object'] ) ) {
+			WP_CLI::error( "Invalid term." );
+		}
+
+		$this->add_or_update_item( 'taxonomy', $args, $assoc_args );
+	}
+
+	/**
+	 * Add a custom menu item
+	 * 
+	 * <menu>
+	 * : The name, slug, or term ID for the menu
+	 * 
+	 * <title>
+	 * : Title for the link
+	 * 
+	 * <url>
+	 * : Target URL for the link
+	 * 
+	 * [--porcelain]
+	 * : Output just the new menu item id.
+	 * 
+	 * @subcommand add-custom
+	 */
+	public function add_custom( $args, $assoc_args ) {
+
+		$assoc_args['title'] = $args[1];
+		unset( $args[1] );
+		$assoc_args['url'] = $args[2];
+		unset( $args[2] );
+		$this->add_or_update_item( 'custom', $args, $assoc_args );
+	}
+
+	/**
+	 * Remove an item from a menu
+	 * 
+	 * <db-id>
+	 * : Database ID for the menu item.
+	 * 
+	 * @subcommand remove
+	 */
+	public function remove( $args, $_ ) {
+
+		$ret = wp_delete_post( $args[0], true );
+		if ( $ret ) {
+			WP_CLI::success( "Menu item deleted." );
+		} else {
+			WP_CLI::error( "Couldn't delete menu item." );
+		}
+
+	}
+
+	/**
+	 * Worker method to create new items or update existing ones
+	 */
+	private function add_or_update_item( $type, $args, $assoc_args ) {
+
+		$menu = $args[0];
+		$menu_item_db_id = ( isset( $args[1] ) ) ? $args[1] : 0;
+
+		$menu = wp_get_nav_menu_object( $menu );
+		if ( ! $menu || is_wp_error( $menu ) ) {
+			WP_CLI::error( "Invalid menu." );
+		}
+
+		$default_args = array(
+			'position'     => 0,
+			'title'        => '',
+			'url'          => '',
+			'description'  => '',
+			'object'       => '',
+			'object-id'    => '',
+			'attr-title'   => '',
+			'target'       => '',
+			'classes'      => '',
+			'xfn'          => '',
+			'status'       => '',
+			);
+		$menu_item_args = array();
+		foreach( $default_args as $key => $default_value ) {
+			// wp_update_nav_menu_item() has a weird argument prefix 
+			$new_key = 'menu-item-' . $key;
+			if ( isset( $assoc_args[ $key ] ) ) {
+				$menu_item_args[ $new_key ] = $assoc_args[ $key ];
+			}
+		}
+
+		// Core oddly defaults to 'draft' for create,
+		// and 'publish' for update
+		// Easiest to always work with publish
+		if ( ! isset( $menu_item_args['menu-item-status'] ) ) {
+			$menu_item_args['menu-item-status'] = 'publish';
+		}
+
+		$menu_item_args['menu-item-type'] = $type;
+		$ret = wp_update_nav_menu_item( $menu->term_id, $menu_item_db_id, $menu_item_args );
+
+		if ( is_wp_error( $ret ) ) {
+			WP_CLI::error( $ret->get_error_message() );
+		} else if ( ! $ret ) {
+			WP_CLI::error( "Couldn't add menu item." );
+		} else {
+
+			/**
+			 * Set the menu
+			 * 
+			 * wp_update_nav_menu_item() *should* take care of this, but
+			 * depends on wp_insert_post()'s "tax_input" argument, which
+			 * is ignored if the user can't edit the taxonomy
+			 * 
+			 * @see https://core.trac.wordpress.org/ticket/27113
+			 */
+			if ( ! is_object_in_term( $ret, 'nav_menu', (int) $menu->term_id ) ) {
+				wp_set_object_terms( $ret, array( (int)$menu->term_id ), 'nav_menu' );
+			}
+
+			if ( ! empty( $assoc_args['porcelain'] ) ) {
+				WP_CLI::line( $ret );
+			} else {
+				WP_CLI::success( "Menu item added." );
+			}
+		}
 
 	}
 
