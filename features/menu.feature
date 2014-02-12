@@ -40,7 +40,7 @@ Feature: Manage WordPress menus
       | primary-menu    |                 |
 
 
-  Scenario: Add / remove items from a menu
+  Scenario: Add / update / remove items from a menu
 
     When I run `wp post create --post_title='Test post' --porcelain`
     Then STDOUT should be a number
@@ -62,12 +62,15 @@ Feature: Manage WordPress menus
     And I run `wp menu item add-custom sidebar-menu Apple http://apple.com --porcelain`
     Then save STDOUT as {ITEM_ID}
 
+    When I run `wp menu item update {ITEM_ID} --title=WordPress --url='http://wordpress.org' --target=_blank --position=2`
+    Then STDERR should be empty
+
     When I run `wp menu item list sidebar-menu --fields=type,title,position,url`
     Then STDOUT should be a table containing rows:
-      | type      | title            | position | url                |
-      | post_type | Custom Test Post | 1        | {POST_LINK}        |
-      | taxonomy  | Test term        | 2        | {TERM_LINK}        |
-      | custom    | Apple            | 3        | http://apple.com   |
+      | type      | title            | position | url                  |
+      | post_type | Custom Test Post | 1        | {POST_LINK}          |
+      | custom    | WordPress        | 2        | http://wordpress.org |
+      | taxonomy  | Test term        | 3        | {TERM_LINK}          |
 
     When I run `wp menu item remove {ITEM_ID}`
     And I run `wp menu item list sidebar-menu --format=count`

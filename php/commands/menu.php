@@ -276,8 +276,20 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * [--title=<title>]
 	 * : Set a custom title for the menu item
 	 * 
+	 * [--url=<url>]
+	 * : Set a custom url for the menu item
+	 * 
 	 * [--description=<description>]
 	 * : Set a custom description for the menu item
+	 * 
+	 * [--attr-title=<attr-title>]
+	 * : Set a custom title attribute for the menu item
+	 * 
+	 * [--target=<target>]
+	 * : Set a custom link target for the menu item
+	 * 
+	 * [--classes=<classes>]
+	 * : Set a custom link classes for the menu item
 	 * 
 	 * [--position=<position>]
 	 * : Specify the position of this menu item.
@@ -300,7 +312,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 		}
 		$assoc_args['object'] = $post->post_type;
 
-		$this->add_or_update_item( 'post_type', $args, $assoc_args );
+		$this->add_or_update_item( 'add', 'post_type', $args, $assoc_args );
 	}
 
 	/**
@@ -314,6 +326,30 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * 
 	 * <term-id>
 	 * : Term ID of the term to be added
+	 * 
+	 * [--title=<title>]
+	 * : Set a custom title for the menu item
+	 * 
+	 * [--url=<url>]
+	 * : Set a custom url for the menu item
+	 * 
+	 * [--description=<description>]
+	 * : Set a custom description for the menu item
+	 * 
+	 * [--attr-title=<attr-title>]
+	 * : Set a custom title attribute for the menu item
+	 * 
+	 * [--target=<target>]
+	 * : Set a custom link target for the menu item
+	 * 
+	 * [--classes=<classes>]
+	 * : Set a custom link classes for the menu item
+	 * 
+	 * [--position=<position>]
+	 * : Specify the position of this menu item.
+	 * 
+	 * [--parent-id=<parent-id>]
+	 * : Make this menu item a child of another menu item
 	 * 
 	 * [--porcelain]
 	 * : Output just the new menu item id.
@@ -331,7 +367,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			WP_CLI::error( "Invalid term." );
 		}
 
-		$this->add_or_update_item( 'taxonomy', $args, $assoc_args );
+		$this->add_or_update_item( 'add', 'taxonomy', $args, $assoc_args );
 	}
 
 	/**
@@ -346,6 +382,24 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * <url>
 	 * : Target URL for the link
 	 * 
+	 * [--description=<description>]
+	 * : Set a custom description for the menu item
+	 * 
+	 * [--attr-title=<attr-title>]
+	 * : Set a custom title attribute for the menu item
+	 * 
+	 * [--target=<target>]
+	 * : Set a custom link target for the menu item
+	 * 
+	 * [--classes=<classes>]
+	 * : Set a custom link classes for the menu item
+	 * 
+	 * [--position=<position>]
+	 * : Specify the position of this menu item.
+	 * 
+	 * [--parent-id=<parent-id>]
+	 * : Make this menu item a child of another menu item
+	 * 
 	 * [--porcelain]
 	 * : Output just the new menu item id.
 	 * 
@@ -357,7 +411,54 @@ class Menu_Item_Command extends WP_CLI_Command {
 		unset( $args[1] );
 		$assoc_args['url'] = $args[2];
 		unset( $args[2] );
-		$this->add_or_update_item( 'custom', $args, $assoc_args );
+		$this->add_or_update_item( 'add', 'custom', $args, $assoc_args );
+	}
+
+	/**
+	 * Update a menu item
+	 * 
+	 * <db-id>
+	 * : Database ID for the menu item.
+	 * 
+	 * [--title=<title>]
+	 * : Set a custom title for the menu item
+	 * 
+	 * [--url=<url>]
+	 * : Set a custom url for the menu item
+	 * 
+	 * [--description=<description>]
+	 * : Set a custom description for the menu item
+	 * 
+	 * [--attr-title=<attr-title>]
+	 * : Set a custom title attribute for the menu item
+	 * 
+	 * [--target=<target>]
+	 * : Set a custom link target for the menu item
+	 * 
+	 * [--classes=<classes>]
+	 * : Set a custom link classes for the menu item
+	 * 
+	 * [--position=<position>]
+	 * : Specify the position of this menu item.
+	 * 
+	 * [--parent-id=<parent-id>]
+	 * : Make this menu item a child of another menu item
+	 * 
+	 * @subcommand update
+	 */
+	public function update( $args, $assoc_args ) {
+
+		// Shuffle the position of these
+		$args[1] = $args[0];
+		$terms = get_the_terms( $args[1], 'nav_menu' );
+		if ( $terms && ! is_wp_error( $terms ) ) {
+			$args[0] = (int)$terms[0]->term_id;
+		} else {
+			$args[0] = 0;
+		}
+		$type = get_post_meta( $args[1], '_menu_item_type', true );
+		$this->add_or_update_item( 'update', $type, $args, $assoc_args );
+
 	}
 
 	/**
@@ -382,7 +483,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	/**
 	 * Worker method to create new items or update existing ones
 	 */
-	private function add_or_update_item( $type, $args, $assoc_args ) {
+	private function add_or_update_item( $method, $type, $args, $assoc_args ) {
 
 		$menu = $args[0];
 		$menu_item_db_id = ( isset( $args[1] ) ) ? $args[1] : 0;
@@ -405,6 +506,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			'xfn'          => '',
 			'status'       => '',
 			);
+
 		$menu_item_args = array();
 		foreach( $default_args as $key => $default_value ) {
 			// wp_update_nav_menu_item() has a weird argument prefix 
@@ -427,7 +529,11 @@ class Menu_Item_Command extends WP_CLI_Command {
 		if ( is_wp_error( $ret ) ) {
 			WP_CLI::error( $ret->get_error_message() );
 		} else if ( ! $ret ) {
-			WP_CLI::error( "Couldn't add menu item." );
+			if ( 'add' == $method ) {
+				WP_CLI::error( "Couldn't add menu item." );
+			} else if ( 'update' == $method ) {
+				WP_CLI::error( "Couldn't update menu item." );
+			}
 		} else {
 
 			/**
@@ -443,10 +549,14 @@ class Menu_Item_Command extends WP_CLI_Command {
 				wp_set_object_terms( $ret, array( (int)$menu->term_id ), 'nav_menu' );
 			}
 
-			if ( ! empty( $assoc_args['porcelain'] ) ) {
+			if ( 'add' == $method && ! empty( $assoc_args['porcelain'] ) ) {
 				WP_CLI::line( $ret );
 			} else {
-				WP_CLI::success( "Menu item added." );
+				if ( 'add' == $method ) {
+					WP_CLI::success( "Menu item added." );
+				} else if ( 'update' == $method ) {
+					WP_CLI::success( "Menu item updated." );
+				}
 			}
 		}
 
