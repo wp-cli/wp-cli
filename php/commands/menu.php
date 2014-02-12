@@ -47,6 +47,94 @@ class Menu_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * List locations for the current theme.
+	 * 
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 * 
+	 * @subcommand theme-locations
+	 */
+	public function theme_locations( $_, $assoc_args ) {
+
+		$locations = get_registered_nav_menus();
+		$location_objs = array();
+		foreach( $locations as $location => $description ) {
+			$location_obj = new \stdClass;
+			$location_obj->location = $location;
+			$location_obj->description = $description;
+			$location_objs[] = $location_obj;
+		}
+
+		$formatter = new \WP_CLI\Formatter( $assoc_args, array( 'location', 'description' ) );
+		$formatter->display_items( $location_objs );
+	}
+
+	/**
+	 * Assign a location to a menu
+	 * 
+	 * <menu>
+	 * : The name, slug, or term ID for the menu
+	 * 
+	 * <location>
+	 * : Location's slug
+	 *
+	 * @subcommand assign-location
+	 */
+	public function assign_location( $args, $_ ) {
+
+		list( $menu, $location ) = $args;
+
+		$menu = wp_get_nav_menu_object( $menu );
+		if ( ! $menu || is_wp_error( $menu ) ) {
+			WP_CLI::error( "Invalid menu." );
+		} 
+
+		$locations = get_registered_nav_menus();
+		if ( ! array_key_exists( $location, $locations ) ) {
+			WP_CLI::error( "Invalid location." );
+		}
+
+		$locations = get_nav_menu_locations();
+		$locations[ $location ] = $menu->term_id; 
+
+		set_theme_mod( 'nav_menu_locations', $locations );
+
+		WP_CLI::success( "Assigned location to menu." );
+	}
+
+	/**
+	 * Remove a location from a menu
+	 * 
+	 * <menu>
+	 * : The name, slug, or term ID for the menu
+	 * 
+	 * <location>
+	 * : Location's slug
+	 *
+	 * @subcommand remove-location
+	 */
+	public function remove_location( $args, $_ ) {
+
+		list( $menu, $location ) = $args;
+
+		$menu = wp_get_nav_menu_object( $menu );
+		if ( ! $menu || is_wp_error( $menu ) ) {
+			WP_CLI::error( "Invalid menu." );
+		} 
+
+		$locations = get_nav_menu_locations();
+		if ( ! isset( $locations[ $location ] ) || $locations[ $location ] != $menu->term_id ) {
+			WP_CLI::error( "Menu isn't assigned to location." );
+		}
+
+		$locations[ $location ] = 0; 
+		set_theme_mod( 'nav_menu_locations', $locations );
+
+		WP_CLI::success( "Removed location from menu." );
+
+	}
+
+	/**
 	 * Delete a menu
 	 * 
 	 * <menu>
