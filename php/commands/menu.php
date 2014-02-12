@@ -222,7 +222,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 		'db_id',
 		'type',
 		'title',
-		'url',
+		'link',
 		'position',
 	);
 
@@ -235,7 +235,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * : The name, slug, or term ID for the menu
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to db_id,type,title,url
+	 * : Limit the output to specific object fields. Defaults to db_id,type,title,link
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count, ids. Default: table
@@ -253,9 +253,11 @@ class Menu_Item_Command extends WP_CLI_Command {
 			WP_CLI::error( "Invalid menu" );
 		}
 
-		// Correct position inconsistency
+		// Correct position inconsistency and
+		// protected `url` param in WP-CLI
 		$items = array_map( function( $item ) {
 			$item->position = $item->menu_order;
+			$item->link = $item->url;
 			return $item;
 		}, $items );
 
@@ -276,7 +278,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * [--title=<title>]
 	 * : Set a custom title for the menu item
 	 * 
-	 * [--url=<url>]
+	 * [--link=<link>]
 	 * : Set a custom url for the menu item
 	 * 
 	 * [--description=<description>]
@@ -330,7 +332,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * [--title=<title>]
 	 * : Set a custom title for the menu item
 	 * 
-	 * [--url=<url>]
+	 * [--link=<link>]
 	 * : Set a custom url for the menu item
 	 * 
 	 * [--description=<description>]
@@ -379,7 +381,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * <title>
 	 * : Title for the link
 	 * 
-	 * <url>
+	 * <link>
 	 * : Target URL for the link
 	 * 
 	 * [--description=<description>]
@@ -409,7 +411,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		$assoc_args['title'] = $args[1];
 		unset( $args[1] );
-		$assoc_args['url'] = $args[2];
+		$assoc_args['link'] = $args[2];
 		unset( $args[2] );
 		$this->add_or_update_item( 'add', 'custom', $args, $assoc_args );
 	}
@@ -423,7 +425,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * [--title=<title>]
 	 * : Set a custom title for the menu item
 	 * 
-	 * [--url=<url>]
+	 * [--link=<link>]
 	 * : Set a custom url for the menu item
 	 * 
 	 * [--description=<description>]
@@ -491,6 +493,11 @@ class Menu_Item_Command extends WP_CLI_Command {
 		$menu = wp_get_nav_menu_object( $menu );
 		if ( ! $menu || is_wp_error( $menu ) ) {
 			WP_CLI::error( "Invalid menu." );
+		}
+
+		// `url` is protected in WP-CLI, so we use `link` instead
+		if ( isset( $assoc_args['link'] ) ) {
+			$assoc_args['url'] = $assoc_args['link'];
 		}
 
 		$default_args = array(
