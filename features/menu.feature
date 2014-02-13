@@ -20,7 +20,7 @@ Feature: Manage WordPress menus
 
   Scenario: Assign / remove location from a menu
 
-    When I run `wp theme activate twentyeleven`
+    When I run `wp theme install p2 --activate`
     And I run `wp menu theme-locations`
     Then STDOUT should be a table containing rows:
       | location       | description        |
