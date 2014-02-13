@@ -20,11 +20,11 @@ Feature: Manage WordPress menus
 
   Scenario: Assign / remove location from a menu
 
-    When I run `wp theme activate twentythirteen`
+    When I run `wp theme activate twentyeleven`
     And I run `wp menu theme-locations`
     Then STDOUT should be a table containing rows:
       | location       | description        |
-      | primary        | Navigation Menu    |
+      | primary        | Primary Menu       |
 
     When I run `wp menu create "Primary Menu"`
     And I run `wp menu assign-location primary-menu primary`
@@ -38,7 +38,6 @@ Feature: Manage WordPress menus
     Then STDOUT should be a table containing rows:
       | slug            | locations       |
       | primary-menu    |                 |
-
 
   Scenario: Add / update / remove items from a menu
 
