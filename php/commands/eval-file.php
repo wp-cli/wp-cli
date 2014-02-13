@@ -7,7 +7,7 @@ class EvalFile_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 * [<file>]
+	 * [<file>...]
 	 * : The path to the PHP file to execute.
 	 */
 	public function __invoke( $args, $assoc_args ) {
