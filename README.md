@@ -9,7 +9,7 @@ Installing
 ------------
 If you just want to use WP-CLI, see <http://wp-cli.org/#install>.
 
-If you want to hack on WP-CLI, then clone this repository and run `./utils/dev-build`.
+If you want to hack on WP-CLI, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Where can I get more info?
 --------------------------
@@ -24,10 +24,6 @@ I'm running into troubles, what can I do?
 To suggest a feature, report a bug, or general discussion, visit the [issues section](https://github.com/wp-cli/wp-cli/issues).
 
 If you're reporting a bug, please also post the output from `wp --info`.
-
-How can I help?
----------------
-See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Credits
 -------
