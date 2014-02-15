@@ -172,6 +172,8 @@ if ( is_multisite() ) {
 // Define must-use plugin directory constants, which may be overridden in the sunrise.php drop-in.
 wp_plugin_directory_constants( );
 
+$GLOBALS['wp_plugin_paths'] = array();
+
 // Load must-use plugins.
 foreach ( wp_get_mu_plugins() as $mu_plugin ) {
 	include_once( $mu_plugin );
