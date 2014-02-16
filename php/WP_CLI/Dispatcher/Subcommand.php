@@ -29,6 +29,10 @@ class Subcommand extends CompositeCommand {
 		return implode( ' ', $matches[1] );
 	}
 
+	function can_have_subcommands() {
+		return false;
+	}
+
 	function get_synopsis() {
 		return $this->synopsis;
 	}
@@ -38,11 +42,15 @@ class Subcommand extends CompositeCommand {
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
-		\WP_CLI::line( sprintf( "%s%s %s",
+		\WP_CLI::line( $this->get_usage( $prefix ) );
+	}
+
+	function get_usage( $prefix ) {
+		return sprintf( "%s%s %s",
 			$prefix,
 			implode( ' ', get_path( $this ) ),
 			$this->get_synopsis()
-		) );
+		);
 	}
 
 	private function prompt( $question, $default ) {
@@ -207,7 +215,8 @@ class Subcommand extends CompositeCommand {
 			unset( $assoc_args[ $key ] );
 		}
 
-		\WP_CLI::do_hook( 'before_invoke:' . $this->get_parent()->get_name() );
+		$path = get_path( $this->get_parent() );
+		\WP_CLI::do_hook( 'before_invoke:' . implode( ' ', array_slice( $path, 1 ) ) );
 
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 	}

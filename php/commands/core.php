@@ -459,6 +459,10 @@ class Core_Command extends WP_CLI_Command {
 		$public = true;
 
 		// @codingStandardsIgnoreStart
+		if ( !is_email( $admin_email ) ) {
+			WP_CLI::error( "The '{$admin_email}' email address is invalid." );
+		}
+
 		$result = wp_install( $title, $admin_user, $admin_email, $public, '', $admin_password );
 
 		if ( is_wp_error( $result ) ) {
@@ -652,7 +656,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 *
 	 *     wp core update
 	 *
-	 *     wp core update --version=3.4 ../latest.zip
+	 *     wp core update --version=3.8 ../latest.zip
 	 *
 	 *     wp core update --version=3.1 --force
 	 *

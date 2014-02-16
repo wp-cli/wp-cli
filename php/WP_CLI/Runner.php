@@ -192,14 +192,14 @@ class Runner {
 		return $prefix == array_slice( $this->arguments, 0, count( $prefix ) );
 	}
 
-	private function find_command_to_run( $args ) {
+	public function find_command_to_run( $args ) {
 		$command = \WP_CLI::get_root_command();
 
 		$cmd_path = array();
 
 		$disabled_commands = $this->config['disabled_commands'];
 
-		while ( !empty( $args ) && $command->has_subcommands() ) {
+		while ( !empty( $args ) && $command->can_have_subcommands() ) {
 			$cmd_path[] = $args[0];
 			$full_name = implode( ' ', $cmd_path );
 
@@ -291,7 +291,14 @@ class Runner {
 			}
 		}
 
-		// core (multsite-)install --admin_name= -> --admin_user=
+		// *-meta  ->  * meta
+		if ( !empty( $args ) && preg_match( '/(post|comment|user|network)-meta/', $args[0], $matches ) ) {
+			array_shift( $args );
+			array_unshift( $args, 'meta' );
+			array_unshift( $args, $matches[1] );
+		}
+
+		// core (multsite-)install --admin_name=  ->  --admin_user=
 		if ( count( $args ) > 0 && 'core' == $args[0] && isset( $assoc_args['admin_name'] ) ) {
 			$assoc_args['admin_user'] = $assoc_args['admin_name'];
 			unset( $assoc_args['admin_name'] );
@@ -337,9 +344,9 @@ class Runner {
 			unset( $assoc_args['json'] );
 		}
 
-		// --{version|info|completions}  ->  cli {version|info|completions}
+		// --{version|info}  ->  cli {version|info}
 		if ( empty( $args ) ) {
-			$special_flags = array( 'version', 'info', 'completions' );
+			$special_flags = array( 'version', 'info' );
 			foreach ( $special_flags as $key ) {
 				if ( isset( $assoc_args[ $key ] ) ) {
 					$args = array( 'cli', $key );
@@ -386,7 +393,7 @@ class Runner {
 
 		include ABSPATH . 'wp-includes/version.php';
 
-		$minimum_version = '3.4';
+		$minimum_version = '3.5.2';
 
 		// @codingStandardsIgnoreStart
 		if ( version_compare( $wp_version, $minimum_version, '<' ) ) {
@@ -477,7 +484,7 @@ class Runner {
 		if ( is_array( $r ) ) {
 			list( $command ) = $r;
 
-			if ( $command->has_subcommands() ) {
+			if ( $command->can_have_subcommands() ) {
 				$command->show_usage();
 				exit;
 			}

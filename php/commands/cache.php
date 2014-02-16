@@ -209,6 +209,11 @@ class Cache_Command extends WP_CLI_Command {
 			// Test for APC object cache (http://wordpress.org/extend/plugins/apc/)
 			} elseif ( class_exists( 'APC_Object_Cache' ) ) {
 				$message = 'APC';
+
+			// Test for Redis Object Cache (https://github.com/alleyinteractive/wp-redis)
+			} elseif ( isset( $wp_object_cache->redis ) && is_a( $wp_object_cache->redis, 'Redis' ) ) {
+				$message = 'Redis';
+
 			} else {
 				$message = 'Unknown';
 			}

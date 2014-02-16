@@ -25,8 +25,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * [<filename>]
-	 * : Read post content from <filename>. If this value is present, the
+	 * [<file>]
+	 * : Read post content from <file>. If this value is present, the
 	 *     `--post_content` argument will be ignored.
 	 *
 	 *   Passing `-` as the filename will cause post content to
@@ -394,4 +394,22 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 }
 
+/**
+ * Manage post custom fields.
+ *
+ * ## OPTIONS
+ *
+ * [--format=json]
+ * : Encode/decode values as JSON.
+ *
+ * ## EXAMPLES
+ *
+ *     wp post meta set 123 _wp_page_template about.php
+ */
+class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
+	protected $meta_type = 'post';
+}
+
 WP_CLI::add_command( 'post', 'Post_Command' );
+WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );
+
