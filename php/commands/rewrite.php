@@ -208,6 +208,9 @@ class Rewrite_Command extends WP_CLI_Command {
 			global $is_apache;
 			$is_apache = true;
 
+			// needed for get_home_path() and .htaccess location
+			$_SERVER['SCRIPT_FILENAME'] = ABSPATH;
+
 			function apache_get_modules() {
 				return WP_CLI::get_config( 'apache_modules' );
 			}

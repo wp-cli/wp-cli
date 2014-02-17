@@ -33,3 +33,14 @@ Feature: Manage WordPress rewrites
     Then STDOUT should be CSV containing:
       | match            | query                               | source   |
       | topic/([^/]+)/?$ | index.php?tag=$matches[1]           | post_tag |
+
+  Scenario: Generate .htaccess on hard flush
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      apache_modules: [mod_rewrite]
+      """
+
+    When I run `wp rewrite structure /%year%/%monthnum%/%day%/%postname%/`
+    And I run `wp rewrite flush --hard`
+    Then the .htaccess file should exist
