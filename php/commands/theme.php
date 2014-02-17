@@ -399,7 +399,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		$theme_vars = array( 'name', 'title', 'version', 'parent_theme', 'template_dir', 'stylesheet_dir', 'template', 'stylesheet', 'screenshot', 'description', 'author', 'tags', 'theme_root', 'theme_root_uri',
 		);
 		$theme_obj = new stdClass;
-		foreach( $theme_vars as $var ) {
+		foreach ( $theme_vars as $var ) {
 			$theme_obj->$var = $theme->$var;
 		}
 
@@ -537,10 +537,13 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 * [--all]
 	 * : List all theme mods
 	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json. Default: table
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp theme mod get --all
-	 *     wp theme mod get background_color
+	 *     wp theme mod get background_color --format=json
 	 *     wp theme mod get background_color header_textcolor
 	 */
 	public function get( $args = array(), $assoc_args = array() ) {
@@ -555,14 +558,17 @@ class Theme_Mod_command extends WP_CLI_Command {
 
 		$list = array();
 		$mods = get_theme_mods();
-		if ( ! empty( $mods ) )
-		foreach( $mods as $k => $v ) {
+		if ( ! is_array( $mods ) ) {
+			// if no mods are set (perhaps new theme), make sure foreach still works
+			$mods = array();
+		}
+		foreach ( $mods as $k => $v ) {
 			// if mods were given, skip the others
 			if ( ! empty( $args ) && ! in_array( $k, $args ) ) continue;
 
 			if ( is_array( $v ) ) {
 				$list[] = array( 'key' => $k, 'value' => '=>' );
-				foreach( $v as $_k => $_v ) {
+				foreach ( $v as $_k => $_v ) {
 					$list[] = array( 'key' => "    $_k", 'value' => $_v );
 				}
 			} else {
@@ -572,7 +578,7 @@ class Theme_Mod_command extends WP_CLI_Command {
 		}
 
 		// For unset mods, show blank value
-		foreach( $args as $mod ) {
+		foreach ( $args as $mod ) {
 			if ( ! isset( $mods[ $mod ] ) ) {
 				$list[] = array( 'key' => $mod, 'value' => '' );
 			}
@@ -612,7 +618,7 @@ class Theme_Mod_command extends WP_CLI_Command {
 			return;
 		}
 
-		foreach( $args as $mod ) {
+		foreach ( $args as $mod ) {
 			remove_theme_mod( $mod );
 		}
 
@@ -626,10 +632,10 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * <mod>
-	 * : Theme mod to set.
+	 * : The name of the theme mod to set or update.
 	 *
-	 * <value>
-	 * : Value to for mod.
+	 * [<value>]
+	 * : The new value.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -637,10 +643,14 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 */
 	public function set( $args = array(), $assoc_args = array() ) {
 		list( $mod, $value ) = $args;
+
 		set_theme_mod( $mod, $value );
 
-		if ( $value == get_theme_mod( $mod ) )
-		WP_CLI::success( sprintf( "Theme mod %s set to %s", $mod, $value ) );
+		if ( $value == get_theme_mod( $mod ) ) {
+			WP_CLI::success( sprintf( "Theme mod %s set to %s", $mod, $value ) );
+		} else {
+			WP_CLI::success( sprintf( "Could not update theme mod %s", $mod ) );
+		}
 	}
 
 }
