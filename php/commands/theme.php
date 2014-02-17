@@ -589,7 +589,7 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [<mod>...]
-	 * : One or more mods to get.
+	 * : One or more mods to remove.
 	 *
 	 * [--all]
 	 * : Remove all theme mods
