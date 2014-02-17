@@ -634,7 +634,7 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 * <mod>
 	 * : The name of the theme mod to set or update.
 	 *
-	 * [<value>]
+	 * <value>
 	 * : The new value.
 	 *
 	 * ## EXAMPLES
