@@ -53,7 +53,7 @@ class DB_Command extends WP_CLI_Command {
 	 * Optimize the database.
 	 */
 	function optimize() {
-		self::run( Utils\esc_cmd( 'mysqlcheck %s', DB_NAME ), array(
+		self::run( Utils\esc_cmd( 'mysqlcheck --no-defaults %s', DB_NAME ), array(
 			'optimize' => true,
 		) );
 
@@ -64,7 +64,7 @@ class DB_Command extends WP_CLI_Command {
 	 * Repair the database.
 	 */
 	function repair() {
-		self::run( Utils\esc_cmd( 'mysqlcheck %s', DB_NAME ), array(
+		self::run( Utils\esc_cmd( 'mysqlcheck --no-defaults %s', DB_NAME ), array(
 			'repair' => true,
 		) );
 
@@ -133,7 +133,7 @@ class DB_Command extends WP_CLI_Command {
 			$assoc_args['result-file'] = $result_file;
 		}
 
-		self::run( Utils\esc_cmd( 'mysqldump %s', DB_NAME ), $assoc_args );
+		self::run( Utils\esc_cmd( 'mysqldump --no-defaults %s', DB_NAME ), $assoc_args );
 
 		if ( ! $stdout ) {
 			WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
