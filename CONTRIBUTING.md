@@ -8,8 +8,6 @@ Setting up
 2. Install [Composer](https://getcomposer.org/) if you don't already have it.
 2. Run `composer install` to fetch all the dependencies.
 3. Run `./bin/wp --info` to test if everything was installed properly.
-4. Download PHPUnit: `curl -L https://phar.phpunit.de/phpunit.phar > phpunit.phar`
-5. Download Behat: `curl -L http://behat.org/downloads/behat.phar > behat.phar`
 
 Submitting patches
 ------------------
@@ -41,7 +39,7 @@ The unit test files are in the `tests/` directory.
 
 To run the unit tests, just execute:
 
-    php phpunit.phar
+    vendor/bin/phpunit
 
 ### Functional tests
 
@@ -55,13 +53,13 @@ Running the following as root in MySQL should do the trick:
 
 Then, to run the entire test suite:
 
-    php behat.phar --expand
+    vendor/bin/behat --expand
 
 Or to test a single feature:
 
-    php behat.phar features/core.feature
+    vendor/bin/behat features/core.feature
 
-More info can be found from `php behat.phar --help`.
+More info can be found from `vendor/behat/behat/bin/behat --help`.
 
 Finally...
 ----------
