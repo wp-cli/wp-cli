@@ -18,7 +18,7 @@
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",
-		"behat/behat": "2.5.*@dev"
+		"behat/behat": "2.5.*"
 	},
 	"suggest": {
 		"psy/psysh": "Enhanced `wp shell` functionality"
