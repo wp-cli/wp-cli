@@ -465,7 +465,9 @@ class Runner {
 		$this->init_logger();
 
 		$this->check_root();
-
+		if ($this->config['debug']) {
+				WP_CLI::log("Executing: " . join(" ", $_SERVER['argv']));
+		}
 		if ( empty( $this->arguments ) )
 			$this->arguments[] = 'help';
 
