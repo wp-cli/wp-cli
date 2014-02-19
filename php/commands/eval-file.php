@@ -11,7 +11,11 @@ class EvalFile_Command extends WP_CLI_Command {
 	 * : The path to the PHP file to execute.
 	 *
 	 * [<arg>...]
-	 * : One or more arguments to pass to the file.
+	 * : One or more arguments to pass to the file. They are placed in the $args variable.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp eval-file my-code.php value1 value2
 	 */
 	public function __invoke( $args ) {
 		$file = array_shift( $args );
