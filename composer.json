@@ -16,6 +16,10 @@
 		"symfony/finder": "~2.3",
 		"nb/oxymel": "0.1.0"
 	},
+	"require-dev": {
+		"phpunit/phpunit": "3.7.*",
+		"behat/behat": "2.5.*@dev"
+	},
 	"suggest": {
 		"psy/psysh": "Enhanced `wp shell` functionality"
 	},
