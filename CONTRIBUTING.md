@@ -39,7 +39,7 @@ The unit test files are in the `tests/` directory.
 
 To run the unit tests, just execute:
 
-    vendor/bin/phpunit
+    ./vendor/bin/phpunit
 
 ### Functional tests
 
@@ -53,13 +53,13 @@ Running the following as root in MySQL should do the trick:
 
 Then, to run the entire test suite:
 
-    vendor/bin/behat --expand
+    ./vendor/bin/behat --expand
 
 Or to test a single feature:
 
-    vendor/bin/behat features/core.feature
+    ./vendor/bin/behat features/core.feature
 
-More info can be found from `vendor/behat/behat/bin/behat --help`.
+More info can be found by using `./vendor/bin/behat --help`.
 
 Finally...
 ----------
