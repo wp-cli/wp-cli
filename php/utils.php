@@ -329,6 +329,7 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 		unset( $assoc_args['pass'] );
 	}
 
+	$env['PATH'] = getenv('PATH');
 	$final_cmd = $cmd . assoc_args_to_str( $assoc_args );
 
 	$proc = proc_open( $final_cmd, $descriptors, $pipes, null, $env );
