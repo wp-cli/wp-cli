@@ -323,15 +323,14 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
 	}
 
-	$env = (array) $_ENV;
 	if ( isset( $assoc_args['pass'] ) ) {
-		$env['MYSQL_PWD'] = $assoc_args['pass'];
+		$cmd = esc_cmd( 'MYSQL_PWD=%s ', $assoc_args['pass'] ) . $cmd;
 		unset( $assoc_args['pass'] );
 	}
 
 	$final_cmd = $cmd . assoc_args_to_str( $assoc_args );
 
-	$proc = proc_open( $final_cmd, $descriptors, $pipes, null, $env );
+	$proc = proc_open( $final_cmd, $descriptors, $pipes );
 	if ( !$proc )
 		exit(1);
 
