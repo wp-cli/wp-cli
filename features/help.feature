@@ -1,7 +1,7 @@
 Feature: Get help about WP-CLI commands
 
   Scenario: Help for internal commands
-    Given a WP install
+    Given an empty directory
 
     When I run `wp help`
     Then STDOUT should not be empty
@@ -15,6 +15,9 @@ Feature: Get help about WP-CLI commands
     When I run `wp help help`
     Then STDOUT should not be empty
 
+  Scenario: Help for nonexistent commands
+    Given a WP install
+    
     When I try `wp help non-existent-command`
     Then the return code should be 1
     And STDERR should be:
