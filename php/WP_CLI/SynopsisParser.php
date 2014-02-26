@@ -36,7 +36,7 @@ class SynopsisParser {
 		list( $param['repeating'], $token ) = self::is_repeating( $token );
 
 		$p_name = '([a-z-_]+)';
-		$p_value = '([a-zA-Z-|,]+)';
+		$p_value = '([a-zA-Z-_|,]+)';
 
 		if ( '--<field>=<value>' === $token ) {
 			$param['type'] = 'generic';
