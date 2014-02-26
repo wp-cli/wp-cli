@@ -119,9 +119,13 @@ class DB_Command extends WP_CLI_Command {
 	 * [--<field>=<value>]
 	 * : Extra arguments to pass to mysqldump
 	 *
+	 * [--tables=<tables>]
+	 * : The comma separated list of specific tables to export. Excluding this parameter will export all tables
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp db dump --add-drop-table
+	 *     wp db dump --tables=wp_options,wp_users
 	 *
 	 * @alias dump
 	 */
@@ -133,7 +137,22 @@ class DB_Command extends WP_CLI_Command {
 			$assoc_args['result-file'] = $result_file;
 		}
 
-		self::run( Utils\esc_cmd( 'mysqldump --no-defaults %s', DB_NAME ), $assoc_args );
+		$command = 'mysqldump --no-defaults %s';
+		$command_esc_args = array( DB_NAME );
+
+		if ( isset( $assoc_args['tables'] ) ) {
+			$tables = explode( ',', $assoc_args['tables'] );
+			unset( $assoc_args['tables'] );
+			$command .= ' --tables';
+			foreach ( $tables as $table ) {
+				$command .= ' %s';
+				$command_esc_args[] = trim( $table );
+			}
+		}
+
+		$escaped_command = call_user_func_array( '\WP_CLI\Utils\esc_cmd', array_merge( array( $command ), $command_esc_args ) );
+
+		self::run( $escaped_command, $assoc_args );
 
 		if ( ! $stdout ) {
 			WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
