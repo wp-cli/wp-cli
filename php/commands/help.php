@@ -48,7 +48,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$longdesc = $command->get_longdesc();
 		if ( $longdesc ) {
-			$out .= wordwrap( $longdesc, 79 ) . "\n";
+			$out .= wordwrap( $longdesc, 90 ) . "\n";
 		}
 
 		// section headers
