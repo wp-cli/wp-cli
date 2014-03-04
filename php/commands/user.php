@@ -273,7 +273,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$role = $assoc_args['role'];
 
-		self::validate_role( $role );
+		if ( ! empty( $role ) ) {
+			self::validate_role( $role );
+		}
 
 		$user_count = count_users();
 		$total = $user_count['total_users'];
