@@ -393,6 +393,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		if ( isset( $args[1] ) ) {
 			$role = $args[1];
 
+			self::validate_role( $role );
+
 			$user->remove_role( $role );
 
 			WP_CLI::success( sprintf( "Removed '%s' role for %s (%d).", $role, $user->user_login, $user->ID ) );
