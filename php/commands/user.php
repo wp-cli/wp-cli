@@ -196,9 +196,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( isset( $assoc_args['role'] ) ) {
 			$role = $assoc_args['role'];
-			if ( !self::validate_role( $role ) ) {
-				WP_CLI::error( "Invalid role: $role" );
-			}
+			self::validate_role( $role );
 		} else {
 			$role = get_option('default_role');
 		}
@@ -275,9 +273,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$role = $assoc_args['role'];
 
-		if ( !self::validate_role( $role ) ) {
-			WP_CLI::error( "Invalid role: $role" );
-		}
+		self::validate_role( $role );
 
 		$user_count = count_users();
 		$total = $user_count['total_users'];
@@ -332,6 +328,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$role = isset( $args[1] ) ? $args[1] : get_option( 'default_role' );
 
+		self::validate_role( $role );
+
 		// Multisite
 		if ( function_exists( 'add_user_to_blog' ) )
 			add_user_to_blog( get_current_blog_id(), $user->ID, $role );
@@ -363,6 +361,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$user = $this->fetcher->get_check( $args[0] );
 
 		$role = $args[1];
+
+		self::validate_role( $role );
 
 		$user->add_role( $role );
 
@@ -581,12 +581,19 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 	}
 
+	/**
+	 * Check whether the role is valid
+	 *
+	 * @param string
+	 */
 	private static function validate_role( $role ) {
-		if ( empty( $role ) || ! is_null( get_role( $role ) ) ) {
-			return true;
+
+		if ( ! empty( $role ) && is_null( get_role( $role ) ) ) {
+			WP_CLI::error( sprintf( "Role doesn't exist: %s", $role ) );
 		}
-		return false;
+
 	}
+
 }
 
 /**
@@ -698,6 +705,7 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 		$args[0] = $user->ID;
 		return $args;
 	}
+
 }
 
 WP_CLI::add_command( 'user', 'User_Command' );
