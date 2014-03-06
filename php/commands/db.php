@@ -124,8 +124,8 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp db dump --add-drop-table
-	 *     wp db dump --tables=wp_options,wp_users
+	 *     wp db export --add-drop-table
+	 *     wp db export --tables=wp_options,wp_users
 	 *
 	 * @alias dump
 	 */
