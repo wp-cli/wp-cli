@@ -4,6 +4,7 @@
 
 namespace WP_CLI\Utils;
 
+use WP_CLI;
 use \WP_CLI\Dispatcher;
 use \WP_CLI\Iterators\Transform;
 
@@ -198,6 +199,7 @@ function locate_wp_config() {
 			$path = realpath( $path );
 	}
 
+	WP_CLI::debug( "WP SETTINGS : $path" );
 	return $path;
 }
 
