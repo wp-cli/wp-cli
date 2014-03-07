@@ -85,6 +85,9 @@ class Formatter {
 
 			echo json_encode( $out );
 			break;
+
+		default:
+			\WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
 		}
 	}
 
