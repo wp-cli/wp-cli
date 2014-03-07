@@ -107,13 +107,22 @@ Feature: Manage WordPress users
       """
 
     When I try `wp user add-role 1 edit`
-    Then STDERR should not be empty
+    Then STDERR should contain:
+      """
+      Role doesn't exist
+      """
 
     When I try `wp user set-role 1 edit`
-    Then STDERR should not be empty
+    Then STDERR should contain:
+      """
+      Role doesn't exist
+      """
 
     When I try `wp user remove-role 1 edit`
-    Then STDERR should not be empty
+    Then STDERR should contain:
+      """
+      Role doesn't exist
+      """
 
     When I run `wp user set-role 1 author`
     Then STDOUT should not be empty
