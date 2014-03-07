@@ -240,12 +240,14 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			}
 		}
 
-		if ( 'ids' == $formatter->format )
+		if ( 'ids' == $formatter->format ) {
 			$query_args['fields'] = 'ids';
-
-		$query = new WP_Query( $query_args );
-
-		$formatter->display_items( $query->posts );
+			$query = new WP_Query( $query_args );
+			echo implode( ' ', $query->posts );
+		} else {
+			$query = new WP_Query( $query_args );
+			$formatter->display_items( $query->posts );
+		}
 	}
 
 	/**
