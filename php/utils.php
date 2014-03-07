@@ -199,7 +199,7 @@ function locate_wp_config() {
 			$path = realpath( $path );
 	}
 
-	WP_CLI::debug( "WP SETTINGS : $path" );
+	WP_CLI::debug( "WP CONFIG : $path" );
 	return $path;
 }
 
