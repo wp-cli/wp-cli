@@ -62,16 +62,20 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$users = get_users( $assoc_args );
 
-		$it = WP_CLI\Utils\iterator_map( $users, function ( $user ) {
-			if ( !is_object( $user ) )
+		if ( 'ids' == $formatter->format ) {
+			echo implode( ' ', $users );
+		} else {
+			$it = WP_CLI\Utils\iterator_map( $users, function ( $user ) {
+				if ( !is_object( $user ) )
+					return $user;
+
+				$user->roles = implode( ',', $user->roles );
+
 				return $user;
+			} );
 
-			$user->roles = implode( ',', $user->roles );
-
-			return $user;
-		} );
-
-		$formatter->display_items( $it );
+			$formatter->display_items( $it );
+		}
 	}
 
 	/**
