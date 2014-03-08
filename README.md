@@ -1,120 +1,44 @@
-WP-CLI: WordPress Command Line Tools
-============================
+WP-CLI
+======
 
-What is wp-cli
---------------
+[![Build Status](https://travis-ci.org/wp-cli/wp-cli.png?branch=master)](https://travis-ci.org/wp-cli/wp-cli)
 
-A tool to control WordPress installations from the command line.
+WP-CLI is a set of command-line tools for managing WordPress installations.
 
 Installing
-----------
-
-**Via package manager:**
-
-* Ubuntu, Debian: [.deb package](https://github.com/downloads/andreascreten/wp-cli/wp-cli_0.1.deb)
-* Mac: install [Homebrew](http://mxcl.github.com/homebrew/) and run `brew install wp-cli`.
-
-**From source:**
-
-First, make sure you have `php-cli` version 5.3 or newer installed.
-
-Clone the project:
-
-```
-git clone --recurse-submodules https://github.com/andreascreten/wp-cli.git
-```
-
-Make a symlink to the executable:
-
-```
-sudo ln -s /path-to-wp-cli-dir/bin/wp /usr/local/bin/
-```
-
-Make a symlink to the autocomplete file (Linux):
-
-```
-sudo ln -s /path-to-wp-cli-dir/bin/wp-completion.bash /etc/bash_completion.d/wp
-```
-
-Usage
------
-
-Go into a WordPress root folder:
-
-```
-cd /var/www/wp/
-```
-
-Typing `wp help` should show you an output similar to this:
-
-```
-Example usage:
-	wp google-sitemap [build|help] ...
-	wp core [update|help] ...
-	wp home [help] ...
-	wp option [add|update|delete|get|help] ...
-	wp plugin [status|activate|deactivate|install|delete|update|help] ...
-	wp theme [status|details|activate|help] ...
-```
-
-So this tells us which commands are installed: eg. google-sitemap, core, home, ...
-Between brackets you can see their sub commands. 
-
-Let's for example try to install the hello dolly plugin from wordpress.org:
-
-```
-wp plugin install hello-dolly
-```
-
-Output:
-
-```
-Installing Hello Dolly (1.5)
-
-Downloading install package from http://downloads.WordPress.org/plugin/hello-dolly.1.5.zip ...
-Unpacking the package ...
-Installing the plugin ...
-
-Success: The plugin is successfully installed
-```
-
-Multisite
----------
-
-On a multisite installation, you need to pass a --blog parameter, so that WP knows which site it's supposed to be operating on:
-
-```
-wp theme status --blog=localhost/wp/test
-```
-
-If you have a subdomain installation, it would look like this:
-
-```
-wp theme status --blog=test.example.com
-```
-
-If you're usually working on the same site most of the time, you can put the url of that site in a file called 'wp-cli-blog' in your root WP dir:
-
-```
-echo 'test.example.com' > wp-cli-blog
-```
-
-Then, you can call `wp` without the --blog parameter again:
-
-```
-wp theme status
-```
-
-Adding commands
----------------
-
-Adding commands to wp-cli is very easy. You can even add them from within your own plugin.
-You can find more information about adding commands in the [Commands Cookbook](https://github.com/andreascreten/wp-cli/wiki/Commands-Cookbook) on our Wiki.
-
-**Please share the commands you make, issue a pull request to get them included in wp-cli by default.**
-
-Contributors
 ------------
+If you just want to use WP-CLI, see <http://wp-cli.org/#install>.
 
-- [Contributor list](https://github.com/andreascreten/wp-cli/contributors)
-- [Contributor impact](https://github.com/andreascreten/wp-cli/graphs/impact)
+If you want to hack on WP-CLI, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Where can I get more info?
+--------------------------
+For documentation and examples, check out [wp-cli.org](http://wp-cli.org/) and the [wiki](https://github.com/wp-cli/wp-cli/wiki).
+
+Also, WordPress Answers has a growing list of [WP-CLI related questions](http://wordpress.stackexchange.com/questions/tagged/wp-cli).
+
+If you want to receive an email for every single commit, you can subscribe to the [wp-cli-commits](https://groups.google.com/forum/?fromgroups=#!forum/wp-cli-commits) mailing list.
+
+I'm running into troubles, what can I do?
+-----------------------------------------
+To suggest a feature, report a bug, or general discussion, visit the [issues section](https://github.com/wp-cli/wp-cli/issues).
+
+If you're reporting a bug, please also post the output from `wp --info`.
+
+Credits
+-------
+Besides the libraries defined in [composer.json](composer.json), we have used code or ideas from the following projects:
+
+* [Drush](http://drush.ws/) for... a lot of things
+* [wpshell](http://code.trac.wordpress.org/browser/wpshell) for `wp shell`
+* [Regenerate Thumbnails](http://wordpress.org/plugins/regenerate-thumbnails/) for `wp media regenerate`
+* [Search-Replace-DB](https://github.com/interconnectit/Search-Replace-DB) for `wp search-replace`
+* [WordPress-CLI-Exporter](https://github.com/Automattic/WordPress-CLI-Exporter) for `wp export`
+* [WordPress-CLI-Importer](https://github.com/Automattic/WordPress-CLI-Importer) for `wp import`
+* [wordpress-plugin-tests](https://github.com/benbalter/wordpress-plugin-tests/) for `wp scaffold plugin-tests`
+
+Who's behind this thing?
+------------------------
+We are [Andreas Creten](https://github.com/andreascreten) and [Cristi Burcă](https://github.com/scribu), friendly guys from Europe. For more info, see [Governance](https://github.com/wp-cli/wp-cli/wiki/Governance).
+
+A complete list of contributors can be found [here](https://github.com/wp-cli/wp-cli/contributors).

@@ -1,3 +1,0 @@
-[submodule "php-cli-tools"]
-	path = php-cli-tools
-	url = git://github.com/jlogsdon/php-cli-tools.git

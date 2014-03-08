@@ -1,0 +1,105 @@
+<?php
+
+use Behat\Gherkin\Node\PyStringNode,
+    Behat\Gherkin\Node\TableNode;
+
+$steps->Given( '/^an empty directory$/',
+	function ( $world ) {
+		$world->create_run_dir();
+	}
+);
+
+$steps->Given( '/^an? ([^\s]+) file:$/',
+	function ( $world, $path, PyStringNode $content ) {
+		$content = (string) $content . "\n";
+		$full_path = $world->variables['RUN_DIR'] . "/$path";
+		Process::create( \WP_CLI\utils\esc_cmd( 'mkdir -p %s', dirname( $full_path ) ) )->run_check();
+		file_put_contents( $full_path, $content );
+	}
+);
+
+$steps->Given( '/^WP files$/',
+	function ( $world ) {
+		$world->download_wp();
+	}
+);
+
+$steps->Given( '/^wp-config\.php$/',
+	function ( $world ) {
+		$world->create_config();
+	}
+);
+
+$steps->Given( '/^a database$/',
+	function ( $world ) {
+		$world->create_db();
+	}
+);
+
+$steps->Given( '/^a WP install$/',
+	function ( $world ) {
+		$world->install_wp();
+	}
+);
+
+$steps->Given( "/^a WP install in '([^\s]+)'$/",
+	function ( $world, $subdir ) {
+		$world->install_wp( $subdir );
+	}
+);
+
+$steps->Given( '/^a WP multisite install$/',
+	function ( $world ) {
+		$world->install_wp();
+		$world->proc( 'wp core install-network', array( 'title' => 'WP CLI Network' ) )->run_check();
+	}
+);
+
+$steps->Given( '/^a custom wp-content directory$/',
+	function ( $world ) {
+		$wp_config_path = $world->variables['RUN_DIR'] . "/wp-config.php";
+
+		$wp_config_code = file_get_contents( $wp_config_path );
+
+		$world->move_files( 'wp-content', 'my-content' );
+		$world->add_line_to_wp_config( $wp_config_code,
+			"define( 'WP_CONTENT_DIR', dirname(__FILE__) . '/my-content' );" );
+
+		$world->move_files( 'my-content/plugins', 'my-plugins' );
+		$world->add_line_to_wp_config( $wp_config_code,
+			"define( 'WP_PLUGIN_DIR', __DIR__ . '/my-plugins' );" );
+
+		file_put_contents( $wp_config_path, $wp_config_code );
+	}
+);
+
+$steps->Given( '/^download:$/',
+	function ( $world, TableNode $table ) {
+		foreach ( $table->getHash() as $row ) {
+			$path = $world->replace_variables( $row['path'] );
+			if ( file_exists( $path ) ) {
+				// assume it's the same file and skip re-download
+				continue;
+			}
+
+			\Process::create( \WP_CLI\Utils\esc_cmd( 'curl -sSL %s > %s', $row['url'], $path ) )->run_check();
+		}
+	}
+);
+
+$steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
+	function ( $world, $stream, $output_filter, $key ) {
+
+		if ( $output_filter ) {
+			$output_filter = '/' . trim( str_replace( '%s', '(.+[^\b])', $output_filter ), "' " ) . '/';
+			if ( false !== preg_match( $output_filter, $world->result->$stream, $matches ) )
+				$output = array_pop( $matches );
+			else
+				$output = '';
+		} else {
+			$output = $world->result->$stream;
+		}
+		$world->variables[ $key ] = trim( $output, "\n" );
+	}
+);
+

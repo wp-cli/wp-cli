@@ -1,0 +1,5 @@
+/Applications/MAMP/bin/php/php5.3*/bin/php
+/Applications/MAMP/bin/php5*/bin/php
+/Applications/MAMP/bin/php/php5.[34]*/bin/php
+/Applications/xampp/xamppfiles/bin/php;
+/opt/lampp/bin/php

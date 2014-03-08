@@ -1,109 +1,46 @@
 #!/usr/bin/env sh
 #
-# This script has been adapted from the drush wrapper script
+# This wrapper script has been adapted from the equivalent drush wrapper
 # and 99.9% of all credit should go to the authors of that project:
 # http://drupal.org/project/drush
 # And 0.09% to the author of this project:
 # https://github.com/88mph/wpadmin/blob/master/wpadmin.php
-#
-# This is a wrapper script that will run wp-cli.php with the most appropriate
-# php executable it can find on your system.
-#
-
-# Set the required PHP version
-CHECK_VERSION='5.3.0'
 
 # Get the absolute path of this executable
-ORIGDIR=$(pwd)
-SELF_PATH=$(cd -P -- "$(dirname -- "$0")" && pwd -P) && SELF_PATH=$SELF_PATH/$(basename -- "$0")
+ORIGDIR="$(pwd)"
+SELF_PATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" && SELF_PATH="$SELF_PATH/$(basename -- "$0")"
 
 # Resolve symlinks - this is the equivalent of "readlink -f", but also works with non-standard OS X readlink.
 while [ -h "$SELF_PATH" ]; do
-    # 1) cd to directory of the symlink
-    # 2) cd to the directory of where the symlink points
-    # 3) Get the pwd
-    # 4) Append the basename
-    DIR=$(dirname -- "$SELF_PATH")
-    SYM=$(readlink $SELF_PATH)
-    SELF_PATH=$(cd $DIR && cd $(dirname -- "$SYM") && pwd)/$(basename -- "$SYM")
+	# 1) cd to directory of the symlink
+	# 2) cd to the directory of where the symlink points
+	# 3) Get the pwd
+	# 4) Append the basename
+	DIR="$(dirname -- "$SELF_PATH")"
+	SYM="$(readlink "$SELF_PATH")"
+	SELF_PATH="$(cd "$DIR" && cd "$(dirname -- "$SYM")" && pwd)/$(basename -- "$SYM")"
 done
 cd "$ORIGDIR"
 
-# Build the path to wp-cli.php.
-SCRIPT_PATH=$(dirname "$SELF_PATH")/../core/wp-cli.php
+# Build the path to the root PHP file
+SCRIPT_PATH="$(dirname "$SELF_PATH")/../php/boot-fs.php"
+
 case $(uname -a) in
-  CYGWIN*)
-    SCRIPT_PATH=$(cygpath -w -a -- "$SCRIPT_PATH") ;;
+	CYGWIN*)
+		SCRIPT_PATH="$(cygpath -w -a -- "$SCRIPT_PATH")" ;;
 esac
 
-# If not exported, try to determine and export the number of columns.
-# We do not want to run $(tput cols) if $TERM is empty or "dumb", because
-# if we do, tput will output an undesirable error message to stderr.  If
-# we redirect stderr in any way, e.g. $(tput cols 2>/dev/null), then the
-# error message is suppressed, but tput cols becomes confused about the
-# terminal and prints out the default value (80).
-if [ -z $COLUMNS ] && [ -n "$TERM" ] && [ "$TERM" != dumb ] ; then
-  # Note to cygwin users: install the ncurses package to get tput command.
-  if COLUMNS=$(tput cols); then
-    export COLUMNS
-  fi
-fi
-
 if [ ! -z "$WP_CLI_PHP" ] ; then
-  # Use the WP_CLI_PHP environment variable if it is available.
-  php="$WP_CLI_PHP"
+	# Use the WP_CLI_PHP environment variable if it is available.
+	php="$WP_CLI_PHP"
 else
-  # Default to using the php that we find on the PATH.
-  # Note that we need the full path to php here for Dreamhost, which behaves oddly.  See http://drupal.org/node/662926
-  php=`which php`
-
-  # We check for a command line (cli) version of php, and if found use that.
-  which php-cli >/dev/null 2>&1
-  if [ "$?" = 0 ] ; then
-    php=`which php-cli`
-  fi
-
-  # Special case for *AMP installers, since they normally don't set themselves as the default cli php out of the box.
-  for amp_php in /Applications/MAMP/bin/php5/bin/php /Applications/MAMP/bin/php5.2/bin/php /Applications/MAMP/bin/php5.3/bin/php /opt/lampp/bin/php /Applications/xampp/xamppfiles/bin/php; do
-    if [ -x $amp_php ]; then
-      php=$amp_php
-    fi
-  done
-fi
-
-# Check to see if the user has provided a php.ini file or wp-cli.ini file in any conf dir
-# Last found wins, so search in reverse priority order
-for conf_dir in $(dirname "$SELF_PATH") /etc/wp-cli $HOME/.wp-cli ; do
-  if [ -f $conf_dir/php.ini ] ; then
-    wp_cli_php_ini=$conf_dir/php.ini
-  fi
-  if [ -f $conf_dir/wp-cli.ini ] ; then
-    wp_cli_php_override=$conf_dir/wp-cli.ini
-  fi
-done
-
-# Add in the php file location and/or the php override variables as appropriate
-if [ "x$wp_cli_php_ini" != "x" ] ; then
-  php="$php --php-ini $wp_cli_php_ini"
-fi
-if [ "x$wp_cli_php_override" != "x" ] ; then
-  wp_cli_override_vars=`grep '^[a-z_A-Z0-9]\+ *=' $wp_cli_php_override | sed -e 's|\([^ =]*\) *= *\(.*\)|\1="\2"|' -e 's| ||g' -e 's|^|-d |' | tr '\n\r' '  '`
-  php="$php $wp_cli_override_vars"
-fi
-
-# Get the php version
-PHP_VERSION=$(php -v | awk '/^PHP / {print $2}' | cut -d '-' -f 1)
-
-# Format version numbers
-CURRENT_NUMBER=$(echo "$PHP_VERSION" | tr -d '.')
-NEW_NUMBER=$(echo "$CHECK_VERSION" | tr -d '.')
-
-# Compare version numbers and exit if needed
-if [ "$CURRENT_NUMBER" -lt "$NEW_NUMBER" ] ; then
-    echo "Error: PHP version $CHECK_VERSION is required to run wp-cli. You are running version $PHP_VERSION.";
-    exit
+	# Default to using the php that we find on the PATH.
+	# Note that we need the full path to php here for Dreamhost, which behaves oddly.  See http://drupal.org/node/662926
+	php="`which php`"
 fi
 
 # Pass in the path to php so that wp-cli knows which one
-# to use if it re-launches itself to run subcommands
-exec $php "$SCRIPT_PATH" "$@"
+# to use if it re-launches itself to run other commands.
+export WP_CLI_PHP_USED="$php"
+
+exec "$php" $WP_CLI_PHP_ARGS "$SCRIPT_PATH" "$@"
