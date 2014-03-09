@@ -78,8 +78,10 @@ class CompositeCommand {
 			\WP_CLI::line( $subcommand->get_usage( $prefix ) );
 		}
 
+		$cmd_name = implode( ' ', array_slice( get_path( $this ), 1 ) );
+
 		\WP_CLI::line();
-		\WP_CLI::line( "See 'wp help $this->name <command>' for more information on a specific command." );
+		\WP_CLI::line( "See 'wp help $cmd_name <command>' for more information on a specific command." );
 	}
 
 	function invoke( $args, $assoc_args, $extra_args ) {
