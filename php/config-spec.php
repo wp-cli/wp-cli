@@ -30,9 +30,8 @@ return array(
 
 	'skip-plugins' => array(
 		'runtime' => '[=<plugin>]',
-		'file' => false,
+		'file' => '<list>',
 		'desc' => 'Skip loading all or some plugins',
-		'multiple' => false,
 		'default' => '',
 	),
 
