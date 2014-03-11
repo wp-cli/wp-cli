@@ -88,6 +88,10 @@ function is_plugin_skipped( $file ) {
 	if ( true === $skipped_plugins )
 		return true;
 
-	return in_array( $name, array_filter( explode( ',', $skipped_plugins ) ) );
+	if ( ! is_array( $skipped_plugins ) ) {
+		$skipped_plugins = explode( ',', $skipped_plugins );
+	}
+
+	return in_array( $name, array_filter( $skipped_plugins ) );
 }
 
