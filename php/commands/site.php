@@ -213,7 +213,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( 'This is not a multisite install.' );
 		}
 
-		global $wpdb;
+		global $wpdb, $current_site;
 
 		$base = $assoc_args['slug'];
 		$title = isset( $assoc_args['title'] ) ? $assoc_args['title'] : ucfirst( $base );
@@ -228,7 +228,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			}
 		}
 		else {
-			$network = wpmu_current_site();
+			$network = $current_site;
 		}
 
 		$public = !isset( $assoc_args['private'] );
