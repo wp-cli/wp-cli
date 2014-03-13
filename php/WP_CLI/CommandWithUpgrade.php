@@ -144,7 +144,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 
 			if ( isset( $assoc_args['activate-network'] ) ) {
-				$assoc_args['activate'] = true;
 				$assoc_args['network'] = true;
 				unset( $assoc_args['activate-network'] );
 			}
