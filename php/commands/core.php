@@ -215,7 +215,7 @@ class Core_Command extends WP_CLI_Command {
 	 * : If set, keys and salts won't be generated, but should instead be passed via `--extra-php`.
 	 *
 	 * [--skip-check]
-	 * : If set, the datbase connection is not checked.
+	 * : If set, the database connection is not checked.
 	 *
 	 * ## EXAMPLES
 	 *
