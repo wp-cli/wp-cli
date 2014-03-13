@@ -139,7 +139,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : If set, the plugin will be activated for the entire multisite network.
 	 */
 	function activate( $args, $assoc_args = array() ) {
-		$network_wide = ( isset( $assoc_args['network'] ) || isset( $assoc_args['activate-network'] ) );
+		$network_wide = isset( $assoc_args['network'] );
 
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			activate_plugin( $plugin->file, '', $network_wide );
