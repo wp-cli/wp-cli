@@ -122,6 +122,17 @@ Feature: Manage WordPress plugins
           Status: Network Active
       """
 
+  Scenario: Network activate a plugin
+    Given a WP multisite install
+
+    When I run `wp plugin install user-switching --activate-network`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name            | status           |
+      | user-switching  | active-network   |
+
   Scenario: List plugins
     Given a WP install
 

@@ -347,6 +347,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--activate]
 	 * : If set, the plugin will be activated immediately after install.
+	 * 
+	 * [--activate-network]
+	 * : If set, the plugin will be network activated immediately after install
 	 *
 	 * ## EXAMPLES
 	 *
