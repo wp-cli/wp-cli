@@ -47,6 +47,27 @@ Feature: Manage WordPress users
     When I run `wp user delete {USER_ID}`
     Then STDOUT should not be empty
 
+  Scenario: Reassigning user posts
+    When I run `wp user create bob bob@example.com --role=author --porcelain`
+    And save STDOUT as {BOB_ID}
+
+    And I run `wp user create sally sally@example.com --role=editor --porcelain`
+    And save STDOUT as {SALLY_ID}
+
+    When I run `wp post generate --count=3 --post_author=bob`
+    And I run `wp post list --author={BOB_ID} --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp user delete bob --reassign={SALLY_ID}`
+    And I run `wp post list --author={SALLY_ID} --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
   Scenario: Generating and deleting users
     When I run `wp user list --role=editor --format=count`
     Then STDOUT should be:
