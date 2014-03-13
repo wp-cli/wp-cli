@@ -125,7 +125,7 @@ Feature: Manage WordPress plugins
   Scenario: Network activate a plugin
     Given a WP multisite install
 
-    When I run `wp plugin install user-switching --network`
+    When I run `wp plugin install user-switching --activate-network`
     Then STDOUT should not be empty
 
     When I run `wp plugin list --fields=name,status`

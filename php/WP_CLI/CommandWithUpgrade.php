@@ -143,7 +143,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			}
 
-			if ( $result && ( isset( $assoc_args['activate'] ) || isset( $assoc_args['network'] ) ) ) {
+			if ( $result && ( isset( $assoc_args['activate'] ) || isset( $assoc_args['activate-network'] ) ) ) {
 				\WP_CLI::log( "Activating '$slug'..." );
 				$this->activate( array( $slug ), $assoc_args );
 			}
