@@ -132,13 +132,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		parent::_delete( $users, $assoc_args, function ( $user, $assoc_args ) {
 			$user_id = $user->ID;
 
-			if ( is_multisite() ) {
-				$r = wpmu_delete_user( $user_id );
-			} else {
-				$r = wp_delete_user( $user_id, $assoc_args['reassign'] );
-			}
-
-			if ( $r ) {
+			if ( wp_delete_user( $user_id, $assoc_args['reassign'] ) ) {
 				return array( 'success', "Deleted user $user_id." );
 			} else {
 				return array( 'error', "Failed deleting user $user_id." );
