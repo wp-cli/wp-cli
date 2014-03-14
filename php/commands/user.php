@@ -108,7 +108,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Delete one or more users.
+	 * Delete one or more users from the current site.
 	 *
 	 * ## OPTIONS
 	 *
