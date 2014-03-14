@@ -241,3 +241,89 @@ Feature: Global flags
       """
       <file> 
       """
+
+  Scenario: Not skipping a plugin
+    Given a WP install
+
+    When I run `wp plugin activate hello`
+    And I run `wp eval 'echo hello_dolly();'`
+    Then STDOUT should contain:
+      """
+      id='dolly'
+      """
+
+  Scenario: Skipping a plugin
+    Given a WP install
+
+    When I run `wp plugin activate hello`
+    And I try `wp eval 'echo hello_dolly();' --skip-plugins=hello`
+    Then STDERR should contain:
+      """
+      Call to undefined function hello_dolly()
+      """
+
+  Scenario: Skipping multiple plugins
+    Given a WP install
+
+    When I run `wp plugin activate hello`
+    And I try `wp eval 'echo hello_dolly();' --skip-plugins=hello,akismet`
+    Then STDERR should contain:
+      """
+      Call to undefined function hello_dolly()
+      """
+
+  Scenario: Skipping all plugins
+    Given a WP install
+
+    When I run `wp plugin activate hello`
+    And I try `wp eval 'echo hello_dolly();' --skip-plugins`
+    Then STDERR should contain:
+      """
+      Call to undefined function hello_dolly()
+      """
+
+  Scenario: Skipping a plugin with wp-cli.yml
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      skip-plugins:
+        - hello
+      """
+
+    When I run `wp plugin activate hello`
+    And I try `wp eval 'echo hello_dolly();'`
+    Then STDERR should contain:
+      """
+      Call to undefined function hello_dolly()
+      """
+
+  Scenario: Skipping multiple plugins with wp-cli.yml
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      skip-plugins:
+        - hello
+        - akismet
+      """
+
+    When I run `wp plugin activate hello`
+    And I try `wp eval 'echo hello_dolly();'`
+    Then STDERR should contain:
+      """
+      Call to undefined function hello_dolly()
+      """
+
+  Scenario: Skipping all plugins with wp-cli.yml
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      skip-plugins: true
+      """
+
+    When I run `wp plugin activate hello`
+    And I try `wp eval 'echo hello_dolly();'`
+    Then STDERR should contain:
+      """
+      Call to undefined function hello_dolly()
+      """
+
