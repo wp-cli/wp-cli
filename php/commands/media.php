@@ -208,15 +208,17 @@ class Media_Command extends WP_CLI_Command {
 		$domain_str = '%' . esc_url_raw( $assoc_args['domain'] ) . '%';
 		$where_parts[] = $wpdb->prepare( "post_content LIKE %s", $domain_str );
 
-		if ( ! empty( $assoc_args['post_type'] ) )
+		if ( ! empty( $assoc_args['post_type'] ) ) {
 			$where_parts[] = $wpdb->prepare( "post_type = %s", sanitize_key( $assoc_args['post_type'] ) );
-		else
+		} else {
 			$where_parts[] = "post_type NOT IN ('revision')";
+		}
 
-		if ( ! empty( $where_parts ) )
+		if ( ! empty( $where_parts ) ) {
 			$where = 'WHERE ' . implode( ' AND ', $where_parts );
-		else
+		} else {
 			$where = '';
+		}
 
 		$query = "SELECT ID, post_content FROM $wpdb->posts $where";
 
@@ -225,8 +227,9 @@ class Media_Command extends WP_CLI_Command {
 
 			$num_sideloaded_images = 0;
 
-			if ( empty( $post->post_content ) )
+			if ( empty( $post->post_content ) ) {
 				continue;
+			}
 
 			$document = new DOMDocument;
 			@$document->loadHTML( $post->post_content );
@@ -236,12 +239,14 @@ class Media_Command extends WP_CLI_Command {
 
 				// Sometimes old content management systems put spaces in the URLs
 				$img_src = esc_url_raw( str_replace( ' ', '%20', $img->getAttribute( 'src' ) ) );
-				if ( ! empty( $assoc_args['domain'] ) && $assoc_args['domain'] != parse_url( $img_src, PHP_URL_HOST ) )
+				if ( ! empty( $assoc_args['domain'] ) && $assoc_args['domain'] != parse_url( $img_src, PHP_URL_HOST ) ) {
 					continue;
+				}
 
 				// Don't permit the same media to be sideloaded twice for this post
-				if ( in_array( $img_src, $img_srcs ) )
+				if ( in_array( $img_src, $img_srcs ) ) {
 					continue;
+				}
 
 				// Most of this was stolen from media_sideload_image
 				$tmp = download_url( $img_src );
@@ -275,8 +280,9 @@ class Media_Command extends WP_CLI_Command {
 				$num_sideloaded_images++;
 				$img_srcs[] = $img_src;
 
-				if ( $assoc_args['verbose'] )
+				if ( $assoc_args['verbose'] ) {
 					WP_CLI::line( sprintf( "Replaced '%s' with '%s' for post #%d", $img_src, $new_img[0], $post->ID ) );
+				}
 
 			}
 
@@ -284,8 +290,9 @@ class Media_Command extends WP_CLI_Command {
 				$num_updated_posts++;
 				$wpdb->update( $wpdb->posts, array( 'post_content' => $post->post_content ), array( 'ID' => $post->ID ) );
 				clean_post_cache( $post->ID );
-				if ( $assoc_args['verbose'] )
+				if ( $assoc_args['verbose'] ) {
 					WP_CLI::line( sprintf( "Sideloaded %d media references for post #%d", $num_sideloaded_images, $post->ID ) );
+				}
 			} else if ( ! $num_sideloaded_images && $assoc_args['verbose'] ) {
 				WP_CLI::line( sprintf( "No media sideloading necessary for post #%d", $post->ID ) );
 			}
