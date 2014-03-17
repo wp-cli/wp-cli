@@ -239,7 +239,7 @@ class Media_Command extends WP_CLI_Command {
 				continue;
 
 			$document = new DOMDocument;
-			$document->loadHTML( $post->post_content );
+			@$document->loadHTML( $post->post_content );
 
 			$img_srcs = array();
 			foreach( $document->getElementsByTagName( 'img' ) as $img ) {
