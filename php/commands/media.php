@@ -185,14 +185,13 @@ class Media_Command extends WP_CLI_Command {
 	 * --domain=<domain>
 	 * : Only sideload media hosted on a specific domain.
 	 * 
-	 * --post_type=<post-type>
+	 * [--post_type=<post-type>]
 	 * : Only sideload media embedded in a specific post type.
 	 * 
-	 * --verbose
+	 * [--verbose]
 	 * : Show more information about the process on STDOUT.
 	 * 
 	 * @subcommand sideload
-	 * @synopsis [--domain=<domain>] [--post_type=<post-type>] [--verbose]
 	 */
 	public function sideload( $args, $assoc_args ) {
 		global $wpdb;
@@ -206,10 +205,8 @@ class Media_Command extends WP_CLI_Command {
 
 		$where_parts = array();
 
-		if ( ! empty( $assoc_args['domain'] ) ) {
-			$domain_str = '%' . esc_url_raw( $assoc_args['domain'] ) . '%';
-			$where_parts[] = $wpdb->prepare( "post_content LIKE %s", $domain_str );
-		}
+		$domain_str = '%' . esc_url_raw( $assoc_args['domain'] ) . '%';
+		$where_parts[] = $wpdb->prepare( "post_content LIKE %s", $domain_str );
 
 		if ( ! empty( $assoc_args['post_type'] ) )
 			$where_parts[] = $wpdb->prepare( "post_type = %s", sanitize_key( $assoc_args['post_type'] ) );
