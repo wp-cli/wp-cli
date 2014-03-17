@@ -3,10 +3,14 @@ Feature: Global flags
   Scenario: Setting the URL
     Given a WP install
 
-    When I run `wp --url=localhost:8001 eval 'echo $_SERVER["SERVER_PORT"];'`
-    Then STDOUT should be:
+    When I run `wp --url=localhost:8001 eval 'echo json_encode( $_SERVER );'`
+    Then STDOUT should be JSON containing:
       """
-      8001
+      {
+        "HTTP_HOST": "localhost:8001",
+        "SERVER_NAME": "localhost",
+        "SERVER_PORT": "8001"
+      }
       """
 
   Scenario: Quiet run
@@ -36,7 +40,7 @@ Feature: Global flags
       """
     And STDERR should contain:
       """
-      PHP Notice:  Use of undefined constant CONST_WITHOUT_QUOTES
+      Use of undefined constant CONST_WITHOUT_QUOTES
       """
 
   Scenario: Setting the WP user
@@ -54,11 +58,17 @@ Feature: Global flags
       admin
       """
 
+    When I run `wp --user=admin@example.com eval 'echo wp_get_current_user()->user_login;'`
+    Then STDOUT should be:
+      """
+      admin
+      """
+
     When I try `wp --user=non-existing-user eval 'echo wp_get_current_user()->user_login;'`
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: Could not get a user_id for this user: 'non-existing-user'
+      Error: Invalid user ID, email or login: 'non-existing-user'
       """
 
   Scenario: Using a custom logger
@@ -130,7 +140,7 @@ Feature: Global flags
       This is a custom command.
       """
 
-    When I run `wp --config=wp-cli2.yml test req 'This is a custom command.'`
+    When I run `WP_CLI_CONFIG_PATH=wp-cli2.yml wp test req 'This is a custom command.'`
     Then STDOUT should contain:
       """
       This is a custom command.
@@ -153,8 +163,32 @@ Feature: Global flags
 
   Scenario: Generate completions
     Given an empty directory
-    When I run `wp --completions`
+
+    When I run `wp cli completions --line='wp bogus-comand ' --point=100`
+    Then STDOUT should be empty
+
+    When I run `wp cli completions --line='wp eva' --point=100`
+    Then STDOUT should be:
+      """
+      eval 
+      eval-file 
+      """
+
+    When I run `wp cli completions --line='wp core config --dbname=' --point=100`
+    Then STDOUT should be empty
+
+    When I run `wp cli completions --line='wp core config --dbname=foo ' --point=100`
+    Then STDOUT should not contain:
+      """
+      --dbname=
+      """
+    And STDOUT should contain:
+      """
+      --extra-php 
+      """
+
+    When I run `wp cli completions --line='wp media import ' --point=100`
     Then STDOUT should contain:
       """
-      transient delete get set type
+      <file> 
       """

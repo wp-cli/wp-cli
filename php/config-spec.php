@@ -1,12 +1,6 @@
 <?php
 
 return array(
-	'config' => array(
-		'runtime' => '=<path>',
-		'file' => false,
-		'desc' => 'Path to the wp-cli config file',
-	),
-
 	'path' => array(
 		'runtime' => '=<path>',
 		'file' => '<path>',
@@ -19,14 +13,26 @@ return array(
 		'desc' => 'Pretend request came from given URL',
 	),
 	'blog' => array(
-		'deprecated' => 'Use --url instead',
-		'runtime' => '',
+		'deprecated' => 'Use --url instead.',
+		'runtime' => '=<url>',
+	),
+
+	'config' => array(
+		'deprecated' => 'Use the WP_CLI_CONFIG_PATH environment variable instead.',
+		'runtime' => '=<path>',
 	),
 
 	'user' => array(
 		'runtime' => '=<id|login>',
 		'file' => '<id|login>',
 		'desc' => 'Set the WordPress user',
+	),
+
+	'skip-plugins' => array(
+		'runtime' => '[=<plugin>]',
+		'file' => '<list>',
+		'desc' => 'Skip loading all or some plugins',
+		'default' => '',
 	),
 
 	'require' => array(
@@ -77,5 +83,14 @@ return array(
 		'multiple' => true,
 		'default' => array(),
 	),
+
+	# --allow-root => (NOT RECCOMENDED) Allow wp-cli to run as root. This poses
+	# a security risk, so you probably do not want to do this.
+	'allow-root' => array(
+		'file' => false, # Explicit. Just in case the default changes.
+		'runtime' => '',
+		'hidden'  => true,
+	),
+
 );
 

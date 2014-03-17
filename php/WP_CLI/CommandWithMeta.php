@@ -47,12 +47,25 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	/**
 	 * Add a meta field.
 	 *
-	 * @synopsis <id> <key> <value> [--format=<format>]
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the object.
+	 *
+	 * <key>
+	 * : The name of the meta field to create.
+	 *
+	 * [<value>]
+	 * : The value of the meta field. If ommited, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
 	 */
 	public function add( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
 
-		$meta_value = \WP_CLI::read_value( $args[2], $assoc_args );
+		$meta_value = \WP_CLI::get_value_from_arg_or_stdin( $args, 2 );
+		$meta_value = \WP_CLI::read_value( $meta_value, $assoc_args );
 
 		$success = \add_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
 
@@ -66,13 +79,27 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	/**
 	 * Update a meta field.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the object.
+	 *
+	 * <key>
+	 * : The name of the meta field to update.
+	 *
+	 * [<value>]
+	 * : The new value. If ommited, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
+	 *
 	 * @alias set
-	 * @synopsis <id> <key> <value> [--format=<format>]
 	 */
 	public function update( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
 
-		$meta_value = \WP_CLI::read_value( $args[2], $assoc_args );
+		$meta_value = \WP_CLI::get_value_from_arg_or_stdin( $args, 2 );
+		$meta_value = \WP_CLI::read_value( $meta_value, $assoc_args );
 
 		$success = \update_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
 

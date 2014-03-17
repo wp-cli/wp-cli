@@ -10,8 +10,7 @@ Feature: Import content.
       7
       """
 
-    When I try `wp export`
-    Then the return code should be 0
+    When I run `wp export`
     And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
 
     When I run `wp site empty --yes`
@@ -34,3 +33,6 @@ Feature: Import content.
       """
       7
       """
+
+    When I run `wp import {EXPORT_FILE} --authors=skip --skip=image_resize`
+    Then STDOUT should not be empty

@@ -1,6 +1,6 @@
 Feature: Manage WordPress themes
 
-  Scenario: Installing a theme
+  Scenario: Installing and deleting theme
     Given a WP install
 
     When I run `wp theme install p2`
@@ -28,6 +28,13 @@ Feature: Manage WordPress themes
       Success: Switched to 'P2' theme.
       """
 
+    When I try `wp theme delete p2`
+    Then STDERR should be:
+      """
+      Warning: Can't delete the currently active theme: p2
+      """
+    And STDOUT should be empty
+
     When I run `wp theme activate {PREVIOUS_THEME}`
     Then STDOUT should not be empty
 
@@ -35,10 +42,9 @@ Feature: Manage WordPress themes
     Then STDOUT should not be empty
 
     When I try the previous command again
-    Then the return code should be 1
-    And STDERR should contain:
+    Then STDERR should contain:
       """
-      Error: The theme 'p2' could not be found.
+      The 'p2' theme could not be found.
       """
 
     When I run `wp theme list`
@@ -78,13 +84,88 @@ Feature: Manage WordPress themes
        wp-content/themes/p2
        """
 
-  Scenario: Get details about an installed theme
-    Given a WP install
+  Scenario: Enabling and disabling a theme
+  	Given a WP multisite install
 
     When I run `wp theme install p2`
     Then STDOUT should not be empty
 
-    When I run `wp theme get p2`
-    Then STDOUT should be a table containing rows:
-      | Field | Value          |
-      | name  | P2             |
+    When I try `wp option get allowedthemes`
+    Then the return code should be 1
+    And STDERR should be empty
+
+    When I run `wp theme enable p2`
+    Then STDOUT should contain:
+       """
+       Success: Enabled the 'P2' theme.
+       """
+
+    When I run `wp option get allowedthemes`
+    Then STDOUT should contain:
+       """
+       'p2' => true
+       """
+
+    When I run `wp theme disable p2`
+    Then STDOUT should contain:
+       """
+       Success: Disabled the 'P2' theme.
+       """
+
+    When I run `wp option get allowedthemes`
+    Then STDOUT should not contain:
+       """
+       'p2' => true
+       """
+
+    When I run `wp theme enable p2 --activate`
+    Then STDOUT should contain:
+       """
+       Success: Enabled the 'P2' theme.
+       Success: Switched to 'P2' theme.
+       """
+
+    When I run `wp network-meta get 1 allowedthemes`
+    Then STDOUT should not contain:
+       """
+       'p2' => true
+       """
+
+    When I run `wp theme enable p2 --network`
+    Then STDOUT should contain:
+       """
+       Success: Network enabled the 'P2' theme.
+       """
+
+    When I run `wp network-meta get 1 allowedthemes`
+    Then STDOUT should contain:
+       """
+       'p2' => true
+       """
+
+    When I run `wp theme disable p2 --network`
+    Then STDOUT should contain:
+       """
+       Success: Network disabled the 'P2' theme.
+       """
+
+    When I run `wp network-meta get 1 allowedthemes`
+    Then STDOUT should not contain:
+       """
+       'p2' => true
+       """
+
+  Scenario: Enabling and disabling a theme without multisite
+  	Given a WP install
+
+    When I try `wp theme enable p2`
+    Then STDERR should be:
+      """
+      Error: This is not a multisite install.
+      """
+
+    When I try `wp theme disable p2`
+    Then STDERR should be:
+      """
+      Error: This is not a multisite install.
+      """

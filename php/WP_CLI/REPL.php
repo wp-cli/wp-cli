@@ -26,7 +26,10 @@ class REPL {
 				if ( !self::starts_with( 'return', $line ) )
 					$line = 'return ' . $line;
 
+				// Write directly to STDOUT, to sidestep any output buffers created by plugins
+				ob_start();
 				var_dump( eval( $line ) );
+				fwrite( STDOUT, ob_get_clean() );
 			}
 		}
 	}

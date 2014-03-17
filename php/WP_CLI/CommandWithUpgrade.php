@@ -5,6 +5,8 @@ namespace WP_CLI;
 abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected $item_type;
+	protected $obj_fields;
+
 	protected $upgrade_refresh;
 	protected $upgrade_transient;
 
@@ -44,7 +46,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$n = count( $items );
 
 		// Not interested in the translation, just the number logic
-		\WP_CLI::log( sprintf( _n( "%d installed {$this->item_type}:", "%d installed {$this->item_type}s:", $n ), $n ) );
+		\WP_CLI::log( sprintf( _n(
+			"%d installed {$this->item_type}:",
+			"%d installed {$this->item_type}s:",
+		$n ), $n ) );
 
 		$padding = $this->get_padding($items);
 
@@ -138,9 +143,16 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			}
 
-			if ( $result && isset( $assoc_args['activate'] ) ) {
-				\WP_CLI::log( "Activating '$slug'..." );
-				$this->activate( array( $slug ) );
+			if ( $result ) {
+				if ( isset( $assoc_args['activate-network'] ) ) {
+					\WP_CLI::log( "Network-activating '$slug'..." );
+					$this->activate( array( $slug ), array( 'network' => true ) );
+				}
+
+				if ( isset( $assoc_args['activate'] ) ) {
+					\WP_CLI::log( "Activating '$slug'..." );
+					$this->activate( array( $slug ) );
+				}
 			}
 		}
 	}
@@ -206,7 +218,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			\WP_CLI::line( "Available {$this->item_type} updates:" );
 
 			\WP_CLI\Utils\format_items( 'table', $items_to_update,
-				array( 'name', 'status', 'version' ) );
+				array( 'name', 'status', 'version', 'update_version' ) );
 
 			return;
 		}
@@ -215,6 +227,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		// Only attempt to update if there is something to update
 		if ( !empty( $items_to_update ) ) {
+			$cache_manager = \WP_CLI::get_http_cache_manager();
+			foreach ($items_to_update as $item) {
+				$cache_manager->whitelist_package($item['update_package'], $this->item_type, $item['name'], $item['update_version']);
+			}
 			$upgrader = $this->get_upgrader( $assoc_args );
 			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
 		}
@@ -238,16 +254,32 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
-		$defaults = array(
-			'format' => 'table',
-			'fields' => $this->fields
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
-
 		$all_items = $this->get_all_items();
-		$items = $this->create_objects( $all_items );
+		if ( !is_array( $all_items ) )
+			\WP_CLI::error( "No {$this->item_type}s found." );
 
-		\WP_CLI\Utils\format_items( $assoc_args['format'], $items, $assoc_args['fields'] );
+		foreach ( $all_items as $key => &$item ) {
+
+			if ( empty( $item['version'] ) )
+				$item['version'] = '';
+
+			foreach ( $item as $field => &$value ) {
+				if ( $value === true ) {
+					$value = 'available';
+				} else if ( $value === false ) {
+					$value = 'none';
+				}
+			}
+
+			foreach ( $this->obj_fields as $field ) {
+				if ( isset( $assoc_args[$field] )
+					&& $assoc_args[$field] != $item[$field] )
+					unset( $all_items[$key] );
+			}
+		}
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_items( $all_items );
 	}
 
 	/**
@@ -261,6 +293,22 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$update_list = get_site_transient( $this->upgrade_transient );
 
 		return isset( $update_list->response[ $slug ] );
+	}
+
+	/**
+	 * Get the available update info
+	 *
+	 * @param string $slug The plugin/theme slug
+	 *
+	 * @return array|null
+	 */
+	protected function get_update_info( $slug ) {
+		$update_list = get_site_transient( $this->upgrade_transient );
+
+		if ( !isset( $update_list->response[ $slug ] ) )
+			return null;
+
+		return (array) $update_list->response[ $slug ];
 	}
 
 	private $map = array(
@@ -277,33 +325,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			'must-use' => 'Must Use',
 		)
 	);
-
-	private function create_objects( $items ) {
-		if ( !is_array( $items ) && !empty( $items ) )
-			\WP_CLI::error( sprintf( "No '$this->item_type's found." ) );
-
-		$objects = array();
-
-		foreach ( $items as $item ) {
-			$object = new \stdClass;
-
-			if ( empty( $item['version'] ) )
-				$item['version'] = "";
-
-			foreach ( $item as $field => $value ) {
-				if ( $value === true ) {
-					$value = "available";
-				} else if ( $value === false) {
-					$value = "none";
-				}
-
-				$object->{$field} = $value;
-			}
-			$objects[] = $object;
-		}
-
-		return $objects;
-	}
 
 	protected function format_status( $status, $format ) {
 		return $this->get_color( $status ) . $this->map[ $format ][ $status ];
@@ -324,17 +345,34 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 * Search wordpress.org repo.
 	 *
 	 * @param  object $api        Data from WP plugin/theme API
-	 * @param  array  $fields     Data fields to display in table.
 	 * @param  array  $assoc_args Data passed in from command.
-	 * @param  string $data_type  Plugin or Theme api endpoint
 	 */
-	protected function _search( $api, $fields, $assoc_args, $data_type = 'plugin' ) {
+	protected function _search( $args, $assoc_args ) {
+		$term = $args[0];
+
+		$defaults = array(
+			'per-page' => 10,
+			'fields' => array( 'name', 'slug', 'rating' )
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$formatter = $this->get_formatter( $assoc_args );
+
+		$api_args = array(
+			'per_page' => (int) $assoc_args['per-page'],
+			'search' => $term,
+		);
+
+		if ( 'plugin' == $this->item_type ) {
+			$api = plugins_api( 'query_plugins', $api_args );
+		} else {
+			$api = themes_api( 'query_themes', $api_args );
+		}
+
 		if ( is_wp_error( $api ) )
 			\WP_CLI::error( $api->get_error_message() . __( ' Try again' ) );
 
-		// Sanitize to 1 of 2 types
-		$data_type = ( 'plugin' === $data_type ) ? 'plugin' : 'theme';
-		$plural = $data_type . 's';
+		$plural = $this->item_type . 's';
 
 		if ( ! isset( $api->$plural ) )
 			\WP_CLI::error( __( 'API error. Try Again.' ) );
@@ -344,9 +382,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$count = isset( $api->info['results'] ) ? $api->info['results'] : 'unknown';
 		\WP_CLI::success( sprintf( 'Showing %s of %s %s.', count( $items ), $count, $plural ) );
 
-		$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
+		$formatter->display_items( $items );
+	}
 
-		\WP_CLI\Utils\format_items( $format, $items, $assoc_args['fields'] );
+	protected function get_formatter( &$assoc_args ) {
+		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->item_type );
 	}
 }
 

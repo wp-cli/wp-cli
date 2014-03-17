@@ -33,8 +33,8 @@ class CompositeCommand {
 		$this->subcommands[ $name ] = $command;
 	}
 
-	function has_subcommands() {
-		return !empty( $this->subcommands );
+	function can_have_subcommands() {
+		return true;
 	}
 
 	function get_subcommands() {
@@ -56,11 +56,15 @@ class CompositeCommand {
 	}
 
 	function get_synopsis() {
-		return '<subcommand>';
+		return '<command>';
 	}
 
-	function invoke( $args, $assoc_args ) {
-		$this->show_usage();
+	function get_usage( $prefix ) {
+		return sprintf( "%s%s %s",
+			$prefix,
+			implode( ' ', get_path( $this ) ),
+			$this->get_synopsis()
+		);
 	}
 
 	function show_usage() {
@@ -71,11 +75,17 @@ class CompositeCommand {
 		foreach ( $methods as $name => $subcommand ) {
 			$prefix = ( 0 == $i++ ) ? 'usage: ' : '   or: ';
 
-			$subcommand->show_usage( $prefix );
+			\WP_CLI::line( $subcommand->get_usage( $prefix ) );
 		}
 
+		$cmd_name = implode( ' ', array_slice( get_path( $this ), 1 ) );
+
 		\WP_CLI::line();
-		\WP_CLI::line( "See 'wp help $this->name <subcommand>' for more information on a specific subcommand." );
+		\WP_CLI::line( "See 'wp help $cmd_name <command>' for more information on a specific command." );
+	}
+
+	function invoke( $args, $assoc_args, $extra_args ) {
+		$this->show_usage();
 	}
 
 	function find_subcommand( &$args ) {
@@ -107,6 +117,10 @@ class CompositeCommand {
 		}
 
 		return $aliases;
+	}
+
+	function get_alias() {
+		return false;
 	}
 }
 

@@ -12,12 +12,25 @@ class Subcommand extends CompositeCommand {
 	private $when_invoked;
 
 	function __construct( $parent, $name, $docparser, $when_invoked ) {
+		parent::__construct( $parent, $name, $docparser );
+
 		$this->when_invoked = $when_invoked;
 
-		$this->synopsis = $docparser->get_synopsis();
 		$this->alias = $docparser->get_tag( 'alias' );
 
-		parent::__construct( $parent, $name, $docparser );
+		$this->synopsis = $docparser->get_synopsis();
+		if ( !$this->synopsis && $this->longdesc ) {
+			$this->synopsis = self::extract_synopsis( $this->longdesc );
+		}
+	}
+
+	private static function extract_synopsis( $longdesc ) {
+		preg_match_all( '/(.+?)[\r\n]+:/', $longdesc, $matches );
+		return implode( ' ', $matches[1] );
+	}
+
+	function can_have_subcommands() {
+		return false;
 	}
 
 	function get_synopsis() {
@@ -29,11 +42,15 @@ class Subcommand extends CompositeCommand {
 	}
 
 	function show_usage( $prefix = 'usage: ' ) {
-		\WP_CLI::line( sprintf( "%s%s %s",
+		\WP_CLI::line( $this->get_usage( $prefix ) );
+	}
+
+	function get_usage( $prefix ) {
+		return sprintf( "%s%s %s",
 			$prefix,
 			implode( ' ', get_path( $this ) ),
 			$this->get_synopsis()
-		) );
+		);
 	}
 
 	private function prompt( $question, $default ) {
@@ -137,28 +154,42 @@ class Subcommand extends CompositeCommand {
 		return array( $args, $assoc_args );
 	}
 
-	private function validate_args( $args, &$assoc_args ) {
+	/**
+	 * @return array list of invalid $assoc_args keys to unset
+	 */
+	private function validate_args( $args, $assoc_args, $extra_args ) {
 		$synopsis = $this->get_synopsis();
-
 		if ( !$synopsis )
-			return;
+			return array();
 
-		$parser = new \WP_CLI\SynopsisValidator( $synopsis );
+		$validator = new \WP_CLI\SynopsisValidator( $synopsis );
 
 		$cmd_path = implode( ' ', get_path( $this ) );
-		foreach ( $parser->get_unknown() as $token ) {
+		foreach ( $validator->get_unknown() as $token ) {
 			\WP_CLI::warning( sprintf(
 				"The `%s` command has an invalid synopsis part: %s",
 				$cmd_path, $token
 			) );
 		}
 
-		if ( !$parser->enough_positionals( $args ) ) {
+		if ( !$validator->enough_positionals( $args ) ) {
 			$this->show_usage();
 			exit(1);
 		}
 
-		$errors = $parser->validate_assoc( $assoc_args, array_keys( \WP_CLI::get_config() ) );
+		$unknown_positionals = $validator->unknown_positionals( $args );
+		if ( !empty( $unknown_positionals ) ) {
+			\WP_CLI::error( 'Too many positional arguments: ' .
+				implode( ' ', $unknown_positionals ) );
+		}
+
+		list( $errors, $to_unset ) = $validator->validate_assoc(
+			array_merge( \WP_CLI::get_config(), $extra_args, $assoc_args )
+		);
+
+		foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
+			$errors['fatal'][] = "unknown --$key parameter";
+		}
 
 		if ( !empty( $errors['fatal'] ) ) {
 			$out = 'Parameter errors:';
@@ -171,21 +202,23 @@ class Subcommand extends CompositeCommand {
 
 		array_map( '\\WP_CLI::warning', $errors['warning'] );
 
-		foreach ( $parser->unknown_assoc( $assoc_args ) as $key ) {
-			\WP_CLI::warning( "unknown --$key parameter" );
-		}
+		return $to_unset;
 	}
 
-	function invoke( $args, $assoc_args ) {
-
+	function invoke( $args, $assoc_args, $extra_args ) {
 		if ( \WP_CLI::get_config( 'prompt' ) )
 			list( $args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
 
-		$this->validate_args( $args, $assoc_args );
+		$to_unset = $this->validate_args( $args, $assoc_args, $extra_args );
 
-		\WP_CLI::do_action( 'before_invoke:' . $this->get_parent()->get_name() );
+		foreach ( $to_unset as $key ) {
+			unset( $assoc_args[ $key ] );
+		}
 
-		call_user_func( $this->when_invoked, $args, $assoc_args );
+		$path = get_path( $this->get_parent() );
+		\WP_CLI::do_hook( 'before_invoke:' . implode( ' ', array_slice( $path, 1 ) ) );
+
+		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 	}
 }
 

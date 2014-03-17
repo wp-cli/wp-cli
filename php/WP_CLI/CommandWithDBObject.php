@@ -9,14 +9,14 @@ namespace WP_CLI;
  */
 abstract class CommandWithDBObject extends \WP_CLI_Command {
 
-	abstract protected function _create( $params );
-	abstract protected function _update( $params );
-	abstract protected function _delete( $obj_id, $assoc_args );
+	protected $obj_type;
+	protected $obj_id_key = 'ID';
+	protected $obj_fields = null;
 
-	public function create( $args, $assoc_args ) {
-		unset( $assoc_args['ID'] );
+	protected function _create( $args, $assoc_args, $callback ) {
+		unset( $assoc_args[ $this->obj_id_key ] );
 
-		$obj_id = $this->_create( $assoc_args );
+		$obj_id = $callback( $assoc_args );
 
 		if ( is_wp_error( $obj_id ) ) {
 			\WP_CLI::error( $obj_id );
@@ -28,7 +28,7 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 			\WP_CLI::success( "Created $this->obj_type $obj_id." );
 	}
 
-	public function update( $args, $assoc_args ) {
+	protected function _update( $args, $assoc_args, $callback ) {
 		$status = 0;
 
 		if ( empty( $assoc_args ) ) {
@@ -36,12 +36,23 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		}
 
 		foreach ( $args as $obj_id ) {
-			$params = array_merge( $assoc_args, array( 'ID' => $obj_id ) );
+			$params = array_merge( $assoc_args, array( $this->obj_id_key => $obj_id ) );
 
 			$status = $this->success_or_failure( $this->wp_error_to_resp(
-				$this->_update( $params ),
+				$callback( $params ),
 				"Updated $this->obj_type $obj_id."
 			) );
+		}
+
+		exit( $status );
+	}
+
+	protected function _delete( $args, $assoc_args, $callback ) {
+		$status = 0;
+
+		foreach ( $args as $obj_id ) {
+			$r = $callback( $obj_id, $assoc_args );
+			$status = $this->success_or_failure( $r );
 		}
 
 		exit( $status );
@@ -68,16 +79,14 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		return $status;
 	}
 
-	public function delete( $args, $assoc_args ) {
-		$status = 0;
-
-		foreach ( $args as $obj_id ) {
-			$r = $this->_delete( $obj_id, $assoc_args );
-			$status = $this->success_or_failure( $r );
-		}
-
-		exit( $status );
+	protected function get_formatter( &$assoc_args ) {
+		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
 	}
-
+	
+	protected function _url( $args, $callback ) {
+		foreach ( $args as $obj_id ) {
+			$object = $this->fetcher->get_check( $obj_id );
+			\WP_CLI::line( $callback( $object->{$this->obj_id_key} ) );
+		}
+	}
 }
-

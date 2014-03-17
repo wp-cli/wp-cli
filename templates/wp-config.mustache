@@ -23,10 +23,10 @@ define('DB_PASSWORD', '{{dbpass}}');
 define('DB_HOST', '{{dbhost}}');
 
 /** Database Charset to use in creating database tables. */
-define('DB_CHARSET', 'utf8');
+define('DB_CHARSET', '{{dbcharset}}');
 
 /** The Database Collate type. Don't change this if in doubt. */
-define('DB_COLLATE', '');
+define('DB_COLLATE', '{{dbcollate}}');
 
 {{#keys-and-salts}}
 /**#@+
@@ -36,7 +36,7 @@ define('DB_COLLATE', '');
  * You can generate these using the {@link https://api.wordpress.org/secret-key/1.1/salt/ WordPress.org secret-key service}
  * You can change these at any point in time to invalidate all existing cookies. This will force all users to have to log in again.
  */
-{{{keys-and-salts}}}
+{{keys-and-salts}}
 /**#@-*/
 {{/keys-and-salts}}
 
@@ -58,7 +58,7 @@ $table_prefix = '{{dbprefix}}';
  */
 define('WPLANG', '{{locale}}');
 
-{{{extra-php}}}
+{{extra-php}}
 
 /* That's all, stop editing! Happy blogging. */
 

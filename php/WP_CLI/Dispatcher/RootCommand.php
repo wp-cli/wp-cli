@@ -27,6 +27,9 @@ class RootCommand extends CompositeCommand {
 			if ( isset( $details['deprecated'] ) )
 				continue;
 
+			if ( isset( $details['hidden'] ) )
+				continue;
+
 			if ( true === $details['runtime'] )
 				$synopsis = "--[no-]$key";
 			else
@@ -57,11 +60,6 @@ class RootCommand extends CompositeCommand {
 		Utils\load_all_commands();
 
 		return parent::get_subcommands();
-	}
-
-	function has_subcommands() {
-		// Commands are lazy-loaded, so we need to assume there will be some
-		return true;
 	}
 }
 

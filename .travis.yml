@@ -32,19 +32,19 @@ env:
     - secure: "TVMYSuxuZojZUHn3R9me8FCA1V6RaOTNE6A5gta7LSTtqZFLAQOer6tfLVof5fB3SHh2ANcOYPpjO729Mcrg195p1I/0nS18WZ0BVYvsN0Dob1I79rqYvsaW8syxCd/6TZvr7XZYdd1fDtt7kxsv74SljkliYwI2mTniQDxMONE="
     - secure: "OqbgLy6Rn+NvhjpYygNZDWf6rj8sVejRZJBmssNi5fHRXopEtfIHids2FjSXZUVPs3ShqNuczo1jzgt7N3JHbcSaiedHlc7ONqDK0SyyOcsv1oKOR81bvYcL/KIoGiMRvkQI5IW01YWfSZlS0wgL2NYdJvYanCnSUUv6nNZAF7E="
   matrix:
-    - WP_VERSION=latest 
-    - WP_VERSION=3.4.2 DEPLOY_BRANCH=master
+    - WP_VERSION=3.9-beta1
+    - WP_VERSION=3.5.2 DEPLOY_BRANCH=master
 
 matrix:
   exclude:
     - php: 5.5
-      env: WP_VERSION=3.4.2 DEPLOY_BRANCH=master
+      env: WP_VERSION=3.5.2 DEPLOY_BRANCH=master
 
-before_script: ./bin/ci/prepare.sh
+before_script: ./ci/prepare.sh
 
-script: ./bin/ci/test.sh
+script: ./ci/test.sh
 
-after_success: ./bin/ci/deploy.sh
+after_success: ./ci/deploy.sh
 
 notifications:
   email:

@@ -37,9 +37,12 @@ $finder
 	->in('./vendor/mustache')
 	->in('./vendor/rmccue/requests')
 	->in('./vendor/composer')
+	->in('./vendor/symfony/finder')
+	->in('./vendor/nb/oxymel')
 	->in('./vendor/rhumsaa/array_column')
 	->exclude('test')
 	->exclude('tests')
+	->exclude('Tests')
 	->exclude('php-cli-tools/examples')
 	;
 
@@ -61,6 +64,7 @@ foreach ( $finder as $file ) {
 }
 
 add_file( $phar, './vendor/autoload.php' );
+add_file( $phar, './vendor/rmccue/requests/library/Requests/Transport/cacert.pem' );
 
 $phar->setStub( <<<EOB
 #!/usr/bin/env php

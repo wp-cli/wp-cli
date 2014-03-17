@@ -14,20 +14,21 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --locale=<locale>
+	 * [--path=<path>]
+	 * : Specify the path in which to install WordPress.
+	 *
+	 * [--locale=<locale>]
 	 * : Select which language you want to download.
 	 *
-	 * --version=<version>
+	 * [--version=<version>]
 	 * : Select which version you want to download.
 	 *
-	 * --force
+	 * [--force]
 	 * : Overwrites existing files, if present.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp core download --version=3.3
-	 *
-	 * @synopsis [--locale=<locale>] [--version=<version>] [--path=<path>] [--force]
 	 *
 	 * @when before_wp_load
 	 */
@@ -37,79 +38,127 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( !is_dir( ABSPATH ) ) {
 			WP_CLI::log( sprintf( 'Creating directory %s', ABSPATH ) );
-			WP_CLI::launch( sprintf( 'mkdir -p %s', escapeshellarg( ABSPATH ) ) );
+			WP_CLI::launch( Utils\esc_cmd( 'mkdir -p %s', ABSPATH ) );
 		}
 
-		if ( isset( $assoc_args['locale'] ) &&  isset( $assoc_args['version'] ) ) {
-			$download_url = sprintf( 'https://%s.wordpress.org/wordpress-%s-%s.tar.gz',
-				substr( $assoc_args['locale'], 0, 2 ), $assoc_args['version'], $assoc_args['locale'] );
-			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $assoc_args['locale'] ) );
-		} else if ( isset( $assoc_args['locale'] ) ) {
-			$offer = $this->get_download_offer( $assoc_args['locale'] );
-			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
-			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...',
-				$offer['current'], $offer['locale'] ) );
-		} elseif ( isset( $assoc_args['version'] ) ) {
-			$download_url = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.tar.gz';
-			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
+		$locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : 'en_US';
+
+		if ( isset( $assoc_args['version'] ) ) {
+			$version = $assoc_args['version'];
+			$download_url = $this->get_download_url($version, $locale, 'tar.gz');
 		} else {
-			$download_url = 'https://wordpress.org/latest.tar.gz';
-			WP_CLI::log( sprintf( 'Downloading latest WordPress (%s)...', 'en_US' ) );
+			$offer = $this->get_download_offer( $locale );
+			$version = $offer['current'];
+			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
 		}
 
-		$silent = WP_CLI::get_config('quiet') || \cli\Shell::isPiped() ?
-			'--silent ' : '';
+		WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $version, $locale ) );
 
-		// We need to use a temporary file because piping from cURL to tar is flaky
-		// on MinGW (and probably in other environments too).
-		$temp = tempnam( sys_get_temp_dir(), "wp_" );
+		$cache = WP_CLI::get_cache();
+		$cache_key = "core/$locale-$version.tar.gz";
+		$cache_file = $cache->has($cache_key);
 
-		$headers = array('Accept' => 'application/json');
-		$options = array(
-			'timeout' => 30,
-			'filename' => $temp
-		);
+		if ( $cache_file ) {
+			WP_CLI::log( "Using cached file '$cache_file'..." );
+			self::_extract( $cache_file, ABSPATH );
+		} else {
+			// We need to use a temporary file because piping from cURL to tar is flaky
+			// on MinGW (and probably in other environments too).
+			$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.tar.gz';
 
-		try {
-			$request = Requests::get( $download_url, $headers, $options );
-		} catch( Requests_Exception $ex ) {
-			// Handle SSL certificate issues gracefully
-			$options['verify'] = false;
-			try {
-				$request = Requests::get( $download_url, $headers, $options );
-			}
-			catch( Requests_Exception $ex ) {
-				WP_CLI::error( $ex->getMessage() );
-			}
+			$headers = array('Accept' => 'application/json');
+			$options = array(
+				'timeout' => 600,  // 10 minutes ought to be enough for everybody
+				'filename' => $temp
+			);
+
+			self::_request( 'GET', $download_url, $headers, $options );
+			self::_extract( $temp, ABSPATH );
+			$cache->import( $cache_key, $temp );
+			unlink($temp);
 		}
-
-		$cmd = "tar xz --strip-components=1 --directory=%s -f $temp && rm $temp";
-
-		WP_CLI::launch( sprintf( $cmd, ABSPATH ) );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
-	private static function _read( $url ) {
-		$headers = array('Accept' => 'application/json');
-		$options = array();
+	private static function _extract( $tarball, $dest ) {
+		if ( ! class_exists( 'PharData' ) ) {
+			$cmd = "tar xz --strip-components=1 --directory=%s -f $tarball";
+			WP_CLI::launch( Utils\esc_cmd( $cmd, $dest ) );
+			return;
+		}
+		$phar = new PharData( $tarball );
+		$tempdir = implode( DIRECTORY_SEPARATOR, Array (
+			dirname( $tarball ),
+			basename( $tarball, '.tar.gz' ),
+			$phar->getFileName()
+		) );
 
-		$r = false;
+		$phar->extractTo( dirname( $tempdir ), null, true );
+
+		self::_copy_overwrite_files( $tempdir, $dest );
+
+		self::_rmdir( dirname( $tempdir ) );
+	}
+
+	private static function _copy_overwrite_files( $source, $dest ) {
+		$iterator = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $source, RecursiveDirectoryIterator::SKIP_DOTS ),
+			RecursiveIteratorIterator::SELF_FIRST);
+
+		foreach ( $iterator as $item ) {
+			if ( $item->isDir() ) {
+				$dest_path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
+				if ( !is_dir( $dest_path ) ) {
+					mkdir( $dest_path );
+				}
+			} else {
+				copy( $item, $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName() );
+			}
+		}
+	}
+
+	private static function _rmdir( $dir ) {
+		$files = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
+			RecursiveIteratorIterator::CHILD_FIRST
+		);
+
+		foreach ( $files as $fileinfo ) {
+			$todo = $fileinfo->isDir() ? 'rmdir' : 'unlink';
+			$todo( $fileinfo->getRealPath() );
+		}
+		rmdir( $dir );
+	}
+
+	private static function _request( $method, $url, $headers = array(), $options = array() ) {
+		// cURL can't read Phar archives
+		if ( 0 === strpos( WP_CLI_ROOT, 'phar://' ) ) {
+			$options['verify'] = sys_get_temp_dir() . '/wp-cli-cacert.pem';
+
+			copy(
+				WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem',
+				$options['verify']
+			);
+		}
+
 		try {
-			$request = Requests::get( $url, $headers, $options );
-			$r = $request->body;
+			return Requests::get( $url, $headers, $options );
 		} catch( Requests_Exception $ex ) {
 			// Handle SSL certificate issues gracefully
+			WP_CLI::warning( $ex->getMessage() );
 			$options['verify'] = false;
 			try {
-				$request = Requests::get( $url, $headers, $options );
-				$r = $request->body;
+				return Requests::get( $url, $headers, $options );
 			} catch( Requests_Exception $ex ) {
 				WP_CLI::error( $ex->getMessage() );
 			}
 		}
+	}
 
-		return $r;
+	private static function _read( $url ) {
+		$headers = array('Accept' => 'application/json');
+		return self::_request( 'GET', $url, $headers )->body;
 	}
 
 	private function get_download_offer( $locale ) {
@@ -122,14 +171,16 @@ class Core_Command extends WP_CLI_Command {
 	private static function get_initial_locale() {
 		include ABSPATH . '/wp-includes/version.php';
 
+		// @codingStandardsIgnoreStart
 		if ( isset( $wp_local_package ) )
 			return $wp_local_package;
+		// @codingStandardsIgnoreEnd
 
 		return '';
 	}
 
 	/**
-	 * Set up a wp-config.php file.
+	 * Generate a wp-config.php file.
 	 *
 	 * ## OPTIONS
 	 *
@@ -139,23 +190,32 @@ class Core_Command extends WP_CLI_Command {
 	 * --dbuser=<dbuser>
 	 * : Set the database user.
 	 *
-	 * --dbpass=<dbpass>
+	 * [--dbpass=<dbpass>]
 	 * : Set the database user password.
 	 *
-	 * --dbhost=<dbhost>
+	 * [--dbhost=<dbhost>]
 	 * : Set the database host. Default: 'localhost'
 	 *
-	 * --dbprefix=<dbprefix>
+	 * [--dbprefix=<dbprefix>]
 	 * : Set the database table prefix. Default: 'wp_'
 	 *
-	 * --locale=<locale>
+	 * [--dbcharset=<dbcharset>]
+	 * : Set the database charset. Default: 'utf8'
+	 *
+	 * [--dbcollate=<dbcollate>]
+	 * : Set the database collation. Default: ''
+	 *
+	 * [--locale=<locale>]
 	 * : Set the WPLANG constant. Defaults to $wp_local_package variable.
 	 *
-	 * --extra-php
+	 * [--extra-php]
 	 * : If set, the command reads additional PHP code from STDIN.
-	 * 
-	 * --skip-salts
-	 * : If set, keys and salts won't be generated, but, instead, should be passed via --extra-php.
+	 *
+	 * [--skip-salts]
+	 * : If set, keys and salts won't be generated, but should instead be passed via `--extra-php`.
+	 *
+	 * [--skip-check]
+	 * : If set, the database connection is not checked.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -167,8 +227,6 @@ class Core_Command extends WP_CLI_Command {
 	 *     define( 'WP_DEBUG', true );
 	 *     define( 'WP_DEBUG_LOG', true );
 	 *     PHP
-	 *
-	 * @synopsis --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>] [--dbprefix=<prefix>] [--locale=<locale>] [--extra-php] [--skip-salts]
 	 */
 	public function config( $_, $assoc_args ) {
 		if ( Utils\locate_wp_config() ) {
@@ -179,6 +237,8 @@ class Core_Command extends WP_CLI_Command {
 			'dbhost' => 'localhost',
 			'dbpass' => '',
 			'dbprefix' => 'wp_',
+			'dbcharset' => 'utf8',
+			'dbcollate' => '',
 			'locale' => self::get_initial_locale()
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
@@ -187,12 +247,14 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::error( '--dbprefix can only contain numbers, letters, and underscores.' );
 
 		// Check DB connection
-		Utils\run_mysql_command( 'mysql --no-defaults', array(
-			'execute' => ';',
-			'host' => $assoc_args['dbhost'],
-			'user' => $assoc_args['dbuser'],
-			'pass' => $assoc_args['dbpass'],
-		) );
+		if ( !isset( $assoc_args['skip-check'] ) ) {
+			Utils\run_mysql_command( 'mysql --no-defaults', array(
+				'execute' => ';',
+				'host' => $assoc_args['dbhost'],
+				'user' => $assoc_args['dbuser'],
+				'pass' => $assoc_args['dbpass'],
+			) );
+		}
 
 		if ( isset( $assoc_args['extra-php'] ) ) {
 			$assoc_args['extra-php'] = file_get_contents( 'php://stdin' );
@@ -205,9 +267,13 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
-		file_put_contents( ABSPATH . 'wp-config.php', $out );
 
-		WP_CLI::success( 'Generated wp-config.php file.' );
+		$bytes_written = file_put_contents( ABSPATH . 'wp-config.php', $out );
+		if ( ! $bytes_written ) {
+			WP_CLI::error( 'Could not create new wp-config.php file.' );
+		} else {
+			WP_CLI::success( 'Generated wp-config.php file.' );
+		}
 	}
 
 	/**
@@ -248,8 +314,6 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * --admin_email=<email>
 	 * : The email address for the admin user.
-	 *
-	 * @synopsis --url=<url> --title=<site-title> --admin_user=<username> --admin_email=<email> --admin_password=<password>
 	 */
 	public function install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
@@ -264,19 +328,18 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --title=<site-title>
+	 * [--title=<network-title>]
 	 * : The title of the new network.
 	 *
-	 * --base=<url-path>
+	 * [--base=<url-path>]
 	 * : Base path after the domain name that each site url will start with.
 	 * Default: '/'
 	 *
-	 * --subdomains
+	 * [--subdomains]
 	 * : If passed, the network will use subdomains, instead of subdirectories.
 	 *
 	 * @subcommand multisite-convert
 	 * @alias install-network
-	 * @synopsis [--title=<network-title>] [--base=<url-path>] [--subdomains]
 	 */
 	public function multisite_convert( $args, $assoc_args ) {
 		if ( is_multisite() )
@@ -297,14 +360,14 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --url=<url>
+	 * [--url=<url>]
 	 * : The address of the new site.
 	 *
-	 * --base=<url-path>
+	 * [--base=<url-path>]
 	 * : Base path after the domain name that each site url in the network will start with.
 	 * Default: '/'
 	 *
-	 * --subdomains
+	 * [--subdomains]
 	 * : If passed, the network will use subdomains, instead of subdirectories.
 	 *
 	 * --title=<site-title>
@@ -320,7 +383,6 @@ class Core_Command extends WP_CLI_Command {
 	 * : The email address for the admin user.
 	 *
 	 * @subcommand multisite-install
-	 * @synopsis --url=<url> --title=<site-title> [--base=<url-path>] [--subdomains] --admin_user=<username> --admin_email=<email> --admin_password=<password>
 	 */
 	public function multisite_install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
@@ -394,13 +456,24 @@ class Core_Command extends WP_CLI_Command {
 			'admin_password' => ''
 		) ), EXTR_SKIP );
 
+		// Support prompting for the `--url=<url>`,
+		// which is normally a runtime argument
+		if ( isset( $assoc_args['url'] ) )
+			$url_parts = WP_CLI::set_url( $assoc_args['url'] );
+
 		$public = true;
+
+		// @codingStandardsIgnoreStart
+		if ( !is_email( $admin_email ) ) {
+			WP_CLI::error( "The '{$admin_email}' email address is invalid." );
+		}
 
 		$result = wp_install( $title, $admin_user, $admin_email, $public, '', $admin_password );
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( 'Installation failed (' . WP_CLI::error_to_string($result) . ').' );
 		}
+		// @codingStandardsIgnoreEnd
 
 		return true;
 	}
@@ -461,8 +534,6 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			self::modify_wp_config( $ms_config );
 			WP_CLI::log( 'Added multisite constants to wp-config.php.' );
 		}
-
-		wp_mkdir_p( WP_CONTENT_DIR . '/blogs.dir' );
 
 		return true;
 	}
@@ -530,11 +601,10 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 *
 	 * ## OPTIONS
 	 *
-	 * --extra
+	 * [--extra]
 	 * : Show extended version information.
 	 *
 	 * @when before_wp_load
-	 * @synopsis [--extra]
 	 */
 	public function version( $args = array(), $assoc_args = array() ) {
 		$versions_path = ABSPATH . 'wp-includes/version.php';
@@ -547,9 +617,13 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		include $versions_path;
 
+		// @codingStandardsIgnoreStart
 		if ( isset( $assoc_args['extra'] ) ) {
-			preg_match( '/(\d)(\d+)-/', $tinymce_version, $match );
-			$human_readable_tiny_mce = $match ? $match[1] . '.' . $match[2] : '';
+			if ( preg_match( '/(\d)(\d+)-/', $tinymce_version, $match ) ) {
+				$human_readable_tiny_mce = $match[1] . '.' . $match[2];
+			} else {
+				$human_readable_tiny_mce = '';
+			}
 
 			echo \WP_CLI\Utils\mustache_render( 'versions.mustache', array(
 				'wp-version' => $wp_version,
@@ -562,6 +636,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		} else {
 			WP_CLI::line( $wp_version );
 		}
+		// @codingStandardsIgnoreEnd
 	}
 
 	/**
@@ -569,25 +644,28 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 *
 	 * ## OPTIONS
 	 *
-	 * --version=<new_version> [package/zip]
-	 * : When passed, updates to new_version, optionally using package/zip as
-	 * input.
+	 * [<zip>]
+	 * : Path to zip file to use, instead of downloading from wordpress.org.
 	 *
-	 * --force
+	 * [--version=<version>]
+	 * : Update to this version, instead of to the latest version.
+	 *
+	 * [--force]
 	 * : Will update even when current WP version < passed version. Use with
 	 * caution.
+     *
+     * [--locale=<locale>]
+     * : Select which language you want to download.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp core update
 	 *
-	 *     wp core update --version=3.4 ../latest.zip
+	 *     wp core update --version=3.8 ../latest.zip
 	 *
 	 *     wp core update --version=3.1 --force
 	 *
 	 * @alias upgrade
-	 *
-	 * @synopsis [<zip>] [--version=<version>] [--force]
 	 */
 	function update( $args, $assoc_args ) {
 		global $wp_version;
@@ -610,8 +688,12 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			$new_package = null;
 
 			if ( empty( $args[0] ) ) {
-				$new_package = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
-				WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
+				$version = $assoc_args['version'];
+				$locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : 'en_US';
+
+				$new_package = $this->get_download_url($version, $locale);
+
+				WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $locale ) );
 			} else {
 				$new_package = $args[0];
 				$upgrader = 'WP_CLI\\NonDestructiveCoreUpgrader';
@@ -662,73 +744,29 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	}
 
 	/**
-	 * Set up the official test suite using the current WordPress instance.
+	 * Gets download url based on version, locale and desired file type.
 	 *
-	 * @subcommand init-tests
-	 *
-	 * ## OPTIONS
-	 *
-	 * <path>
-	 * : The directory in which to download the testing suite files. (Optional)
-	 *
-	 * --dbname=<dbname>
-	 * : Set the database name. **WARNING**: The database will be whipped every time
-	 * you run the tests.
-	 *
-	 * --dbuser=<dbuser>
-	 * : Set the database user.
-	 *
-	 * --dbpass=<dbpass>
-	 * : Set the database user password.
-	 *
-	 * ## EXAMPLE
-	 *
-	 *     wp core init-tests ~/svn/wp-tests --dbname=wp_test --dbuser=wp_test
-	 *
-	 * @synopsis [<path>] --dbname=<name> --dbuser=<user> [--dbpass=<password>] [--dbhost=<host>]
+	 * @param $version
+	 * @param string $locale
+	 * @param string $file_type
+	 * @return string
 	 */
-	function init_tests( $args, $assoc_args ) {
-		if ( isset( $args[0] ) )
-			$tests_dir = trailingslashit( $args[0] );
-		else
-			$tests_dir = ABSPATH . 'unit-tests/';
+	private function get_download_url($version, $locale = 'en_US', $file_type = 'zip')
+	{
+		if ('en_US' === $locale) {
+			$url = 'https://wordpress.org/wordpress-' . $version . '.' . $file_type;
 
-		$assoc_args = wp_parse_args( $assoc_args, array(
-			'dbpass' => '',
-			'dbhost' => 'localhost'
-		) );
+			return $url;
+		} else {
+			$url = sprintf(
+				'https://%s.wordpress.org/wordpress-%s-%s.' . $file_type,
+				substr($locale, 0, 2),
+				$version,
+				$locale
+			);
 
-		// Download the test suite
-		WP_CLI::launch( 'svn co https://unit-test.svn.wordpress.org/trunk/ ' . escapeshellarg( $tests_dir ) );
-
-		// Create the database
-		$query = sprintf( 'CREATE DATABASE IF NOT EXISTS `%s`', $assoc_args['dbname'] );
-
-		Utils\run_mysql_command( 'mysql --no-defaults', array(
-			'execute' => $query,
-			'host' => $assoc_args['dbhost'],
-			'user' => $assoc_args['dbuser'],
-			'pass' => $assoc_args['dbpass'],
-		) );
-
-		// Create the wp-tests-config.php file
-		$config_file = file_get_contents( $tests_dir . 'wp-tests-config-sample.php' );
-
-		$replacements = array(
-			"dirname( __FILE__ ) . '/wordpress/'" => "'" . ABSPATH . "'",
-			"yourdbnamehere"   => $assoc_args['dbname'],
-			"yourusernamehere" => $assoc_args['dbuser'],
-			"yourpasswordhere" => $assoc_args['dbpass'],
-			"localhost" => $assoc_args['dbhost'],
-		);
-
-		$config_file = str_replace( array_keys( $replacements ), array_values( $replacements ), $config_file );
-
-		$config_file_path = $tests_dir . 'wp-tests-config.php';
-
-		file_put_contents( $config_file_path, $config_file );
-
-		WP_CLI::success( "Created $config_file_path" );
+			return $url;
+		}
 	}
 }
 

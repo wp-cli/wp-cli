@@ -5,7 +5,14 @@
  *
  * @package wp-cli
  */
-class Site_Command extends WP_CLI_Command {
+class Site_Command extends \WP_CLI\CommandWithDBObject {
+
+	protected $obj_type = 'site';
+	protected $obj_id_key = 'blog_id';
+
+	public function __construct() {
+		$this->fetcher = new \WP_CLI\Fetchers\Site;
+	}
 
 	/**
 	 * Delete comments.
@@ -59,6 +66,7 @@ class Site_Command extends WP_CLI_Command {
 		// Empty taxonomies and terms
 		$terms = $wpdb->get_results( "SELECT term_id, taxonomy FROM $wpdb->term_taxonomy" );
 		$ids = array();
+		$taxonomies = array();
 		foreach ( (array) $terms as $term ) {
 			$taxonomies[] = $term->taxonomy;
 			$ids[] = $term->term_id;
@@ -66,6 +74,7 @@ class Site_Command extends WP_CLI_Command {
 		}
 
 		$taxonomies = array_unique( $taxonomies );
+		$cleaned = array();
 		foreach ( $taxonomies as $taxonomy ) {
 			if ( isset( $cleaned[$taxonomy] ) )
 				continue;
@@ -112,11 +121,10 @@ class Site_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --yes
+	 * [--yes]
 	 * : Proceed to empty the site without a confirmation prompt.
 	 *
 	 * @subcommand empty
-	 * @synopsis [--yes]
 	 */
 	public function _empty( $args, $assoc_args ) {
 
@@ -135,19 +143,17 @@ class Site_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <blog-id>
-	 * : The id of the blog to delete. If not provided, you must set the --slug parameter.
+	 * [<site-id>]
+	 * : The id of the site to delete. If not provided, you must set the --slug parameter.
 	 *
-	 * --slug=<slug>
+	 * [--slug=<slug>]
 	 * : Path of the blog to be deleted. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
-	 * --yes
+	 * [--yes]
 	 * : Answer yes to the confirmation message.
 	 *
-	 * --keep-tables
+	 * [--keep-tables]
 	 * : Delete the blog from the list, but don't drop it's tables.
-	 *
-	 * @synopsis [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
 	 */
 	function delete( $args, $assoc_args ) {
 		if ( !is_multisite() ) {
@@ -178,24 +184,6 @@ class Site_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get site (network) data for a given id.
-	 *
-	 * @param int     $site_id
-	 * @return bool|array False if no network found with given id, array otherwise
-	 */
-	private function _get_site( $site_id ) {
-		global $wpdb;
-		// Load site data
-		$sites = $wpdb->get_results( "SELECT * FROM $wpdb->site WHERE `id` = ".$wpdb->escape( $site_id ) );
-		if ( count( $sites ) > 0 ) {
-			// Only care about domain and path which are set here
-			return $sites[0];
-		}
-
-		return false;
-	}
-
-	/**
 	 * Create a site in a multisite install.
 	 *
 	 * ## OPTIONS
@@ -203,7 +191,7 @@ class Site_Command extends WP_CLI_Command {
 	 * --slug=<slug>
 	 * : Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
-	 * --title=<title&gt;
+	 * --title=<title>
 	 * : Title of the new site. Default: prettified slug.
 	 *
 	 * --email=<email>
@@ -225,22 +213,22 @@ class Site_Command extends WP_CLI_Command {
 			WP_CLI::error( 'This is not a multisite install.' );
 		}
 
-		global $wpdb;
+		global $wpdb, $current_site;
 
 		$base = $assoc_args['slug'];
 		$title = isset( $assoc_args['title'] ) ? $assoc_args['title'] : ucfirst( $base );
 
 		$email = empty( $assoc_args['email'] ) ? '' : $assoc_args['email'];
 
-		// Site
+		// Network
 		if ( !empty( $assoc_args['network_id'] ) ) {
-			$site = $this->_get_site( $assoc_args['network_id'] );
-			if ( $site === false ) {
+			$network = $this->_get_network( $assoc_args['network_id'] );
+			if ( $network === false ) {
 				WP_CLI::error( sprintf( 'Network with id %d does not exist.', $assoc_args['network_id'] ) );
 			}
 		}
 		else {
-			$site = wpmu_current_site();
+			$network = $current_site;
 		}
 
 		$public = !isset( $assoc_args['private'] );
@@ -277,12 +265,12 @@ class Site_Command extends WP_CLI_Command {
 
 		if ( is_subdomain_install() ) {
 			$path = '/';
-			$url = $newdomain = $base.'.'.preg_replace( '|^www\.|', '', $site->domain );
+			$url = $newdomain = $base.'.'.preg_replace( '|^www\.|', '', $network->domain );
 		}
 		else {
-			$newdomain = $site->domain;
+			$newdomain = $network->domain;
 			$path = '/' . trim( $base, '/' ) . '/';
-			$url = $site->domain . $path;
+			$url = $network->domain . $path;
 		}
 
 		$user_id = email_exists( $email );
@@ -298,7 +286,7 @@ class Site_Command extends WP_CLI_Command {
 		}
 
 		$wpdb->hide_errors();
-		$id = wpmu_create_blog( $newdomain, $path, $title, $user_id, array( 'public' => $public ), $site->id );
+		$id = wpmu_create_blog( $newdomain, $path, $title, $user_id, array( 'public' => $public ), $network->id );
 		$wpdb->show_errors();
 		if ( !is_wp_error( $id ) ) {
 			if ( !is_super_admin( $user_id ) && !get_user_option( 'primary_blog', $user_id ) ) {
@@ -320,28 +308,51 @@ class Site_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Get network data for a given id.
+	 *
+	 * @param int     $network_id
+	 * @return bool|array False if no network found with given id, array otherwise
+	 */
+	private function _get_network( $network_id ) {
+		global $wpdb;
+
+		// Load network data
+		$networks = $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM $wpdb->site WHERE id = %d", $network_id ) );
+
+		if ( !empty( $networks ) ) {
+			// Only care about domain and path which are set here
+			return $networks[0];
+		}
+
+		return false;
+	}
+
+	/**
 	 * List all sites in a multisite install.
 	 *
 	 * ## OPTIONS
 	 *
-	 * --network=<id>
+	 * [--network=<id>]
 	 * : The network to which the sites belong.
 	 *
-	 * --fields=<fields>
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each site.
+	 *
+	 * [--fields=<fields>]
 	 * : Comma-separated list of fields to show.
 	 *
-	 * --format=<format>
-	 * : Output list as table, csv, json or url. Defaults to table.
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Output a simple list of site URLs
-	 *     wp site list --fields=url --format=csv | tail -n +2
+	 *     wp site list --field=url
 	 *
 	 * @subcommand list
-	 * @synopsis [--network=<id>] [--format=<format>] [--fields=<fields>]
 	 */
-	function _list( $_, $assoc_args ) {
+	public function list_( $_, $assoc_args ) {
 		if ( !is_multisite() ) {
 			WP_CLI::error( 'This is not a multisite install.' );
 		}
@@ -374,7 +385,28 @@ class Site_Command extends WP_CLI_Command {
 			return $blog;
 		} );
 
-		WP_CLI\Utils\format_items( $assoc_args['format'], $it, $assoc_args['fields'] );
+		$formatter = new \WP_CLI\Formatter( $assoc_args, null, 'site' );
+		$formatter->display_items( $it );
+	}
+
+	/**
+	 * Get site url
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to get the URL.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site url 123
+	 */
+	public function url( $args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
+		parent::_url( $args, 'get_site_url' );
 	}
 }
 

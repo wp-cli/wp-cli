@@ -22,8 +22,8 @@ function wp_debug_mode() {
 		\wp_debug_mode();
 	}
 
-	// Never show errors on STDOUT; only on STDERR
-	ini_set( 'display_errors', false );
+	// XDebug already sends errors to STDERR
+	ini_set( 'display_errors', function_exists( 'xdebug_debug_zval' ) ? false : 'STDERR' );
 }
 
 function replace_wp_die_handler() {
@@ -67,5 +67,31 @@ function get_upgrader( $class ) {
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
 	return new $class( new \WP_CLI\UpgraderSkin );
+}
+
+/**
+ * Converts a plugin basename back into a friendly slug.
+ */
+function get_plugin_name( $basename ) {
+	if ( false === strpos( $basename, '/' ) )
+		$name = basename( $basename, '.php' );
+	else
+		$name = dirname( $basename );
+
+	return $name;
+}
+
+function is_plugin_skipped( $file ) {
+	$name = get_plugin_name( str_replace( WP_PLUGIN_DIR . '/', '', $file ) );
+
+	$skipped_plugins = \WP_CLI::get_runner()->config['skip-plugins'];
+	if ( true === $skipped_plugins )
+		return true;
+
+	if ( ! is_array( $skipped_plugins ) ) {
+		$skipped_plugins = explode( ',', $skipped_plugins );
+	}
+
+	return in_array( $name, array_filter( $skipped_plugins ) );
 }
 

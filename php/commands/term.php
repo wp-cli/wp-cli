@@ -23,15 +23,18 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * <taxonomy>
 	 * : List terms of a given taxonomy.
-	 *  
-	 * --<field>=<value>
+	 *
+	 * [--<field>=<value>]
 	 * : Filter by one or more fields. For accepted fields, see get_terms().
 	 *
-	 * --fields=<fields>
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each term.
+	 *
+	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields. Defaults to all of the term object fields.
 	 *
-	 * --format=<format>
-	 * : Output list as table, CSV, JSON, or simply IDs. Defaults to table.
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -40,28 +43,23 @@ class Term_Command extends WP_CLI_Command {
 	 *     wp term list post_tag --fields=name,slug
 	 *
 	 * @subcommand list
-	 * @synopsis <taxonomy> [--<field>=<value>] [--fields=<fields>] [--format=<format>]
 	 */
-	public function _list( $args, $assoc_args ) {
-
-		list( $taxonomy ) = $args;
+	public function list_( $args, $assoc_args ) {
+		$formatter = $this->get_formatter( $assoc_args );
 
 		$defaults = array(
-			'fields'     => implode( ',', $this->fields ),
-			'format'     => 'table',
 			'hide_empty' => false,
 		);
-		$assoc_args = wp_parse_args( $assoc_args, $defaults );
+		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		$fields = $assoc_args['fields'];
-		unset( $assoc_args['fields'] );
+		$terms = get_terms( $args, $assoc_args );
 
-		$terms = get_terms( array( $taxonomy ), $assoc_args );
-
-		if ( 'ids' == $assoc_args['format'] )
+		if ( 'ids' == $formatter->format ) {
 			$terms = wp_list_pluck( $terms, 'term_id' );
-
-		WP_CLI\Utils\format_items( $assoc_args['format'], $terms, $fields );
+			echo implode( ' ', $terms );
+		} else {
+			$formatter->display_items( $terms );
+		}
 	}
 
 	/**
@@ -69,33 +67,31 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <term>
-	 * : A name for the new term.
-	 *
 	 * <taxonomy>
 	 * : Taxonomy for the new term.
 	 *
-	 * --slug=<slug>
+	 * <term>
+	 * : A name for the new term.
+	 *
+	 * [--slug=<slug>]
 	 * : A unique slug for the new term. Defaults to sanitized version of name.
 	 *
-	 * --description=<description>
+	 * [--description=<description>]
 	 * : A description for the new term.
 	 *
-	 * --parent=<term-id>
+	 * [--parent=<term-id>]
 	 * : A parent for the new term.
 	 *
-	 * --porcelain
+	 * [--porcelain]
 	 * : Output just the new term id.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term create Apple category --description="A type of fruit"
-	 *
-	 * @synopsis <term> <taxonomy> [--slug=<slug>] [--description=<description>] [--parent=<term-id>] [--porcelain]
+	 *     wp term create category Apple --description="A type of fruit"
 	 */
 	public function create( $args, $assoc_args ) {
 
-		list( $term, $taxonomy ) = $args;
+		list( $taxonomy, $term ) = $args;
 
 		$defaults = array(
 			'slug'        => sanitize_title( $term ),
@@ -125,56 +121,34 @@ class Term_Command extends WP_CLI_Command {
 
 	/**
 	 * Get a taxonomy term
-	 * 
+	 *
 	 * ## OPTIONS
+	 *
+	 * <taxonomy>
+	 * : Taxonomy of the term to get
 	 *
 	 * <term-id>
 	 * : ID of the term to get
-	 * 
-	 * <taxonomy>
-	 * : Taxonomy of the term to get
-	 * 
-	 * --format=<format>
-	 * : The format to use when printing the term, acceptable values:
 	 *
-	 *   - **table**: Outputs all fields of the term as a table.
+	 * [--field=<field>]
+	 * : Instead of returning the whole term, returns the value of a single field.
 	 *
-	 *   - **json**: Outputs all fields in JSON format.
-	 * 
+	 * [--format=<format>]
+	 * : Accepted values: table, json. Default: table
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term get 1 category
-	 * 
-	 * @synopsis <term-id> <taxonomy> [--format=<format>]
+	 *     wp term get category 1 --format=json
 	 */
 	public function get( $args, $assoc_args ) {
+		$formatter = $this->get_formatter( $assoc_args );
 
-		list( $term_id, $taxonomy ) = $args;
-
-		$defaults = array(
-			'format' => 'table'
-		);
-		$assoc_args = array_merge( $defaults, $assoc_args );
-
+		list( $taxonomy, $term_id ) = $args;
 		$term = get_term_by( 'id', $term_id, $taxonomy );
 		if ( ! $term )
 			WP_CLI::error( "Term doesn't exist." );
 
-		switch ( $assoc_args['format'] ) {
-
-			case 'table':
-				$fields = get_object_vars( $term );
-				\WP_CLI\Utils\assoc_array_to_table( $fields );
-				break;
-
-			case 'json':
-				WP_CLI::print_value( $term, $assoc_args );
-				break;
-
-			default:
-				\WP_CLI::error( "Invalid format: " . $assoc_args['format'] );
-				break;
-		}
+		$formatter->display_item( $term );
 	}
 
 	/**
@@ -182,33 +156,31 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <term-id>
-	 * : ID for the term to update.
-	 *
 	 * <taxonomy>
 	 * : Taxonomy of the term to update.
 	 *
-	 * --name=<name>
+	 * <term-id>
+	 * : ID for the term to update.
+	 *
+	 * [--name=<name>]
 	 * : A new name for the term.
 	 *
-	 * --slug=<slug>
+	 * [--slug=<slug>]
 	 * : A new slug for the term.
 	 *
-	 * --description=<description>
+	 * [--description=<description>]
 	 * : A new description for the term.
 	 *
-	 * --parent=<term-id>
+	 * [--parent=<term-id>]
 	 * : A new parent for the term.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term update 15 category --name=Apple
-	 *
-	 * @synopsis <term-id> <taxonomy> [--name=<name>] [--slug=<slug>] [--description=<description>] [--parent=<term-id>]
+	 *     wp term update category 15 --name=Apple
 	 */
 	public function update( $args, $assoc_args ) {
 
-		list( $term_id, $taxonomy ) = $args;
+		list( $taxonomy, $term_id ) = $args;
 
 		$defaults = array(
 			'name'        => null,
@@ -236,32 +208,134 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <term-id>
-	 * : ID for the term to delete.
-	 *
 	 * <taxonomy>
 	 * : Taxonomy of the term to delete.
 	 *
+	 * <term-id>...
+	 * : One or more IDs of terms to delete.
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term delete 15 category
-	 *
-	 * @synopsis <term-id> <taxonomy>
+	 *     # delete all post tags
+	 *     wp term list post_tag --field=ID | xargs wp term delete post_tag
 	 */
 	public function delete( $args ) {
+		$taxonomy = array_shift( $args );
 
-		list( $term_id, $taxonomy ) = $args;
+		foreach ( $args as $term_id ) {
+			$ret = wp_delete_term( $term_id, $taxonomy );
 
-		$ret = wp_delete_term( $term_id, $taxonomy );
-
-		if ( is_wp_error( $ret ) )
-			WP_CLI::error( $ret->get_error_message() );
-		else if ( $ret )
-			WP_CLI::success( sprintf( "Deleted %s %d.", $taxonomy, $term_id ) );
-		else
-			WP_CLI::error( "Term doesn't exist." );
+			if ( is_wp_error( $ret ) ) {
+				WP_CLI::warning( $ret );
+			} else if ( $ret ) {
+				WP_CLI::success( sprintf( "Deleted %s %d.", $taxonomy, $term_id ) );
+			} else {
+				WP_CLI::warning( sprintf( "%s %d doesn't exist.", $taxonomy, $term_id ) );
+			}
+		}
 	}
 
+	/**
+	 * Generate some terms.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <taxonomy>
+	 * : The taxonomy for the generated terms.
+	 *
+	 * [--count=<number>]
+	 * : How many terms to generate. Default: 100
+	 *
+	 * [--max_depth=<number>]
+	 * : Generate child terms down to a certain depth. Default: 1
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term generate --count=10
+	 */
+	public function generate( $args, $assoc_args ) {
+		global $wpdb;
+
+		list ( $taxonomy ) = $args;
+
+		$defaults = array(
+			'count' => 100,
+			'max_depth' => 1,
+		);
+
+		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
+
+		if ( !taxonomy_exists( $taxonomy ) ) {
+			WP_CLI::error( sprintf( "'%s' is not a registered taxonomy.", $taxonomy ) );
+		}
+
+		$label = get_taxonomy( $taxonomy )->labels->singular_name;
+		$slug = sanitize_title_with_dashes( $label );
+
+		$hierarchical = get_taxonomy( $taxonomy )->hierarchical;
+
+		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating terms', $count );
+
+		$args = array(
+			'orderby' => 'id',
+			'hierarchical' => $hierarchical,
+		);
+
+		$previous_term_id = 0;
+		$current_parent = 0;
+		$current_depth = 1;
+
+		for ( $i = 0; $i < $count; $i++ ) {
+
+			if ( $hierarchical ) {
+
+				if ( $previous_term_id && $this->maybe_make_child() && $current_depth < $max_depth ) {
+
+					$current_parent = $previous_term_id;
+					$current_depth++;
+
+				} else if ( $this->maybe_reset_depth() ) {
+
+					$current_parent = 0;
+					$current_depth = 1;
+
+				}
+
+			}
+
+			$args = array(
+				'parent' => $current_parent,
+				'slug' => $slug . "-$i",
+			);
+
+			$term = wp_insert_term( "$label $i", $taxonomy, $args );
+			if ( is_wp_error( $term ) ) {
+				WP_CLI::warning( $term );
+			} else {
+				$previous_term_id = $term['term_id'];
+			}
+
+			$notify->tick();
+		}
+
+		delete_option( $taxonomy . '_children' );
+
+		$notify->finish();
+	}
+
+	private function maybe_make_child() {
+		// 50% chance of making child term
+		return ( mt_rand(1, 2) == 1 );
+	}
+
+	private function maybe_reset_depth() {
+		// 10% chance of reseting to root depth
+		return ( mt_rand(1, 10) == 7 );
+	}
+
+	private function get_formatter( &$assoc_args ) {
+		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'term' );
+	}
 }
 
 WP_CLI::add_command( 'term', 'Term_Command' );
