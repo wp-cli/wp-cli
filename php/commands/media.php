@@ -219,13 +219,6 @@ class Media_Command extends WP_CLI_Command {
 			$where = '';
 
 		$query = "SELECT ID, post_content FROM $wpdb->posts $where";
-		$posts = $wpdb->get_results( $query );
-		if ( empty( $posts ) ) {
-			WP_CLI::success( "No posts need media to be sideloaded." );
-			exit;
-		} else if ( $assoc_args['verbose'] ) {
-			WP_CLI::line( sprintf( "Found %d posts to potentially sideload media for.", count( $posts ) ) );
-		}
 
 		$num_updated_posts = 0;
 		foreach( new WP_CLI\Iterators\Query( $query ) as $post ) {
