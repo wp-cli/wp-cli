@@ -291,6 +291,7 @@ class Media_Command extends WP_CLI_Command {
 			}
 
 			if ( $num_sideloaded_images ) {
+				$num_updated_posts++;
 				$wpdb->update( $wpdb->posts, array( 'post_content' => $post->post_content ), array( 'ID' => $post->ID ) );
 				clean_post_cache( $post->ID );
 				if ( $assoc_args['verbose'] )
