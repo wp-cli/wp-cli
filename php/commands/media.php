@@ -231,7 +231,7 @@ class Media_Command extends WP_CLI_Command {
 		}
 
 		$num_updated_posts = 0;
-		foreach( $posts as $post ) {
+		foreach( new WP_CLI\Iterators\Query( $query ) as $post ) {
 
 			$num_sideloaded_images = 0;
 
