@@ -288,6 +288,9 @@ class Core_Command extends WP_CLI_Command {
 	 * @subcommand is-installed
 	 */
 	public function is_installed() {
+
+		wp_cache_delete( 'is_blog_installed' );
+
 		if ( is_blog_installed() ) {
 			exit( 0 );
 		} else {
@@ -443,6 +446,9 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	private function _install( $assoc_args ) {
+
+		wp_cache_delete( 'is_blog_installed' );
+
 		if ( is_blog_installed() ) {
 			return false;
 		}
