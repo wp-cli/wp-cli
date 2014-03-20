@@ -44,8 +44,14 @@ Feature: Do global search/replace
   Scenario: Identical search and replace terms
     Given a WP install
 
-    When I run `wp search-replace wp wp`
-    Then STDOUT should be:
+    When I try `wp search-replace wp wp`
+    Then STDERR should be:
       """
       Warning: Use --dry-run for test replacements. Identical <old> and <new> values will not give proper replacement counts.
+      """
+
+    When I try `wp search-replace wp wp --dry-run`
+    Then STDERR should be:
+      """
+      Warning: Identical <old> and <new> values will not give proper replacement counts.
       """
