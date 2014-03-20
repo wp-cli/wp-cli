@@ -55,7 +55,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 				$msg = 'Use --dry-run for test replacements. ' . $msg;
 			}
 			WP_CLI::warning( $msg );
-			return;
+			exit;
 		}
 		$total = 0;
 		$report = array();
