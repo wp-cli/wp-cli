@@ -50,7 +50,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$old = array_shift( $args );
 		$new = array_shift( $args );
 		if ( $old == $new ) {
-			$msg = 'Identical <old> and <new> values will not give proper replacment counts.';
+			$msg = 'Identical <old> and <new> values will not give proper replacement counts.';
 			if ( ! isset( $assoc_args['dry-run'] ) ) {
 				$msg = 'Use --dry-run for test replacements. ' . $msg;
 			}
