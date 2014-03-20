@@ -49,6 +49,14 @@ class Search_Replace_Command extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$old = array_shift( $args );
 		$new = array_shift( $args );
+		if ( $old == $new ) {
+			$msg = 'Identical <old> and <new> values will not give proper replacment counts.';
+			if ( ! isset( $assoc_args['dry-run'] ) ) {
+				$msg = 'Use --dry-run for test replacements. ' . $msg;
+			}
+			WP_CLI::warning( $msg );
+			return;
+		}
 		$total = 0;
 		$report = array();
 		$dry_run = isset( $assoc_args['dry-run'] );
