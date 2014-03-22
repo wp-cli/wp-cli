@@ -394,6 +394,40 @@ class Scaffold_Command extends WP_CLI_Command {
 		WP_CLI::success( "Created test files." );
 	}
 
+	/**
+	 * Generate files needed for running Behat tests against a package
+	 *
+	 * ## OPTIONS
+	 *
+	 * <package-path>
+	 * : Path to the WP-CLI package to generate test files for
+	 * 
+	 * @subcommand package-tests
+	 */
+	public function package_tests( $args, $assoc_args ) {
+		global $wp_filesystem;
+
+		list( $package_path ) = $args;
+
+		$package_path = rtrim( $package_path, '/' );
+
+		$wp_filesystem->mkdir( $package_path . '/bin' );
+		$wp_filesystem->mkdir( $package_path . '/features' );
+
+		$to_copy = array(
+			'.travis-package.yml'      => '.travis.yml',
+			'test-package.sh'          => 'bin/test.sh',
+			'install-package-tests.sh' => 'bin/install-package-tests.sh',
+			'load-wp-cli.feature'      => 'features/load-wp-cli.feature',
+			);
+		foreach( $to_copy as $file => $new_path ) {
+			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", "$package_path/$new_path", true );
+		}
+
+		WP_CLI::success( "Created test files." );
+
+	}
+
 	private function create_file( $filename, $contents ) {
 		global $wp_filesystem;
 
