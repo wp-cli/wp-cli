@@ -162,6 +162,8 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Import database from a file or from STDIN.
 	 *
+	 * ## OPTIONS
+	 *
 	 * [<file>]
 	 * : The name of the SQL file to import. If '-', then reads from STDIN. If omitted, it will look for '{dbname}.sql'.
 	 */
