@@ -526,7 +526,7 @@ class Runner {
 				"Either create one manually or use `wp core config`." );
 		}
 
-		if ( $this->cmd_starts_with( array( 'db' ) ) ) {
+		if ( $this->cmd_starts_with( array( 'db' ) ) && !$this->cmd_starts_with( array( 'db', 'tables' ) ) ) {
 			eval( $this->get_wp_config_code() );
 			$this->_run_command();
 			exit;

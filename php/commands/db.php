@@ -195,6 +195,31 @@ class DB_Command extends WP_CLI_Command {
 		WP_CLI::success( sprintf( 'Imported from %s', $result_file ) );
 	}
 
+	/**
+	 * List the database tables.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--scope=<scope>]
+	 * : Can be all, global, ms_global, blog, or old tables. Defaults to all.
+	 *
+	 * ## EXAMPLES
+	 *
+	 * # Export only tables for a single site
+	 * wp db export --tables=$(wp db tables --url=sub.example.com | tr '\n' ',')
+	 */
+	function tables( $args, $assoc_args ) {
+		global $wpdb;
+
+		$scope = isset( $assoc_args['scope'] ) ? $assoc_args['scope'] : 'all';
+
+		$tables = $wpdb->tables( $scope );
+
+		foreach ( $tables as $table ) {
+			WP_CLI::line( $table );
+		}
+	}
+
 	private function get_file_name( $args ) {
 		if ( empty( $args ) )
 			return sprintf( '%s.sql', DB_NAME );
