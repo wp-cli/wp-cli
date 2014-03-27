@@ -94,7 +94,7 @@ wp_set_wpdb_vars();
 wp_start_object_cache();
 
 // WP-CLI: the APC cache is not available on the command-line, so bail, to prevent cache poisoning
-if ( wp_using_ext_object_cache() && class_exists( 'APC_Object_Cache' ) ) {
+if ( $GLOBALS['_wp_using_ext_object_cache'] && class_exists( 'APC_Object_Cache' ) ) {
 	WP_CLI::error( 'WP-CLI is not compatible with the APC object cache.' );
 }
 
