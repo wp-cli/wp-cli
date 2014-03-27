@@ -323,10 +323,11 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
 	}
 
-	if ( isset( $assoc_args['pass'] ) ) {
-		$cmd = esc_cmd( 'MYSQL_PWD=%s ', $assoc_args['pass'] ) . $cmd;
-		unset( $assoc_args['pass'] );
-	}
+	$pass = $assoc_args['pass'];
+	unset( $assoc_args['pass'] );
+
+	$old_pass = getenv( 'MYSQL_PWD' );
+	putenv( 'MYSQL_PWD=' . $pass );
 
 	$final_cmd = $cmd . assoc_args_to_str( $assoc_args );
 
@@ -335,6 +336,8 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 		exit(1);
 
 	$r = proc_close( $proc );
+
+	putenv( 'MYSQL_PWD=' . $old_pass );
 
 	if ( $r ) exit( $r );
 }
