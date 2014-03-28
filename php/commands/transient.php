@@ -93,7 +93,11 @@ class Transient_Command extends WP_CLI_Command {
 			AND b.option_value < $time"
 		);
 
-		WP_CLI::success( "$count expired transients deleted from the database." );
+		if ( $count > 0 ) {
+			WP_CLI::success( "$count expired transients deleted from the database." );
+		} else {
+			WP_CLI::success( "No transients found" );
+		}
 
 		if ( $_wp_using_ext_object_cache ) {
 			WP_CLI::warning( 'Transients are stored in an external object cache, and this command only deletes those stored in the database. You must flush the cache to delete all transients.');
@@ -115,7 +119,11 @@ class Transient_Command extends WP_CLI_Command {
 			OR option_name LIKE '\_site\_transient\_%'"
 		);
 
-		WP_CLI::success( "$count expired transients deleted from the database." );
+		if ( $count > 0 ) {
+			WP_CLI::success( "$count transients deleted from the database." );
+		} else {
+			WP_CLI::success( "No transients found" );
+		}
 
 		if ( $_wp_using_ext_object_cache ) {
 			WP_CLI::warning( 'Transients are stored in an external object cache, and this command only deletes those stored in the database. You must flush the cache to delete all transients.');
