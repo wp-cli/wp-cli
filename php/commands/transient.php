@@ -74,6 +74,62 @@ class Transient_Command extends WP_CLI_Command {
 
 		WP_CLI::line( $message );
 	}
+
+	/**
+	 * Delete all expired transients.
+	 *
+	 * @subcommand delete-expired
+	 */
+	public function delete_expired() {
+		global $wpdb, $_wp_using_ext_object_cache;
+
+		// Always delete all transients from DB too.
+		$time = current_time('timestamp');
+		$count = $wpdb->query(
+			"DELETE a, b FROM $wpdb->options a, $wpdb->options b WHERE
+			a.option_name LIKE '\_transient\_%' AND
+			a.option_name NOT LIKE '\_transient\_timeout\_%' AND
+			b.option_name = CONCAT( '_transient_timeout_', SUBSTRING( a.option_name, 12 ) )
+			AND b.option_value < $time"
+		);
+
+		if ( $count > 0 ) {
+			WP_CLI::success( "$count expired transients deleted from the database." );
+		} else {
+			WP_CLI::success( "No expired transients found" );
+		}
+
+		if ( $_wp_using_ext_object_cache ) {
+			WP_CLI::warning( 'Transients are stored in an external object cache, and this command only deletes those stored in the database. You must flush the cache to delete all transients.');
+		}
+	}
+
+	/**
+	 * Delete all transients.
+	 *
+	 * @subcommand delete-all
+	 */
+	public function delete_all() {
+		global $wpdb, $_wp_using_ext_object_cache;
+
+		// Always delete all transients from DB too.
+		$count = $wpdb->query(
+			"DELETE FROM $wpdb->options
+			WHERE option_name LIKE '\_transient\_%'
+			OR option_name LIKE '\_site\_transient\_%'"
+		);
+
+		if ( $count > 0 ) {
+			WP_CLI::success( "$count transients deleted from the database." );
+		} else {
+			WP_CLI::success( "No transients found" );
+		}
+
+		if ( $_wp_using_ext_object_cache ) {
+			WP_CLI::warning( 'Transients are stored in an external object cache, and this command only deletes those stored in the database. You must flush the cache to delete all transients.');
+		}
+	}
+
 }
 
 WP_CLI::add_command( 'transient', 'Transient_Command' );
