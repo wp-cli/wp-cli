@@ -81,7 +81,7 @@ class Transient_Command extends WP_CLI_Command {
 	 * @subcommand delete-expired
 	 */
 	public function delete_expired() {
-		global $wpdb;			
+		global $wpdb, $_wp_using_ext_object_cache;
 
 		// Always delete all transients from DB too.
 		$time = time();
@@ -95,7 +95,7 @@ class Transient_Command extends WP_CLI_Command {
 
 		WP_CLI::success( 'Expired transients deleted from the database.' );
 
-		if ( wp_using_ext_object_cache() ) {
+		if ( $_wp_using_ext_object_cache ) {
 			WP_CLI::warning( 'Transients are stored in an external object cache, and this command only deletes those stored in the database. You must flush the cache to delete all transients.');
 		}
 	}
@@ -106,7 +106,7 @@ class Transient_Command extends WP_CLI_Command {
 	 * @subcommand delete-all
 	 */
 	public function delete_all() {
-		global $wpdb;
+		global $wpdb, $_wp_using_ext_object_cache;
 
 		// Always delete all transients from DB too.
 		$wpdb->query(
@@ -117,7 +117,7 @@ class Transient_Command extends WP_CLI_Command {
 
 		WP_CLI::success( 'All transients deleted from the database.' );
 
-		if ( wp_using_ext_object_cache() ) {
+		if ( $_wp_using_ext_object_cache ) {
 			WP_CLI::warning( 'Transients are stored in an external object cache, and this command only deletes those stored in the database. You must flush the cache to delete all transients.');
 		}
 	}
