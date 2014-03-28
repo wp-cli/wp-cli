@@ -84,8 +84,8 @@ class Transient_Command extends WP_CLI_Command {
 		global $wpdb, $_wp_using_ext_object_cache;
 
 		// Always delete all transients from DB too.
-		$time = time();
-		$wpdb->query(
+		$time = current_time();
+		$count = $wpdb->query(
 			"DELETE a, b FROM $wpdb->options a, $wpdb->options b WHERE
 			a.option_name LIKE '\_transient\_%' AND
 			a.option_name NOT LIKE '\_transient\_timeout\_%' AND
