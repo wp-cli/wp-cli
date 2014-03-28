@@ -96,7 +96,7 @@ class Transient_Command extends WP_CLI_Command {
 		if ( $count > 0 ) {
 			WP_CLI::success( "$count expired transients deleted from the database." );
 		} else {
-			WP_CLI::success( "No transients found" );
+			WP_CLI::success( "No expired transients found" );
 		}
 
 		if ( $_wp_using_ext_object_cache ) {
