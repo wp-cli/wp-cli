@@ -307,7 +307,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <post-id>
+	 * [<post-id>]
 	 * : The ID of the post to count comments in.
 	 *
 	 * ## EXAMPLES
