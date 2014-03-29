@@ -60,3 +60,26 @@ Feature: Manage WordPress comments
       """
       http://example.com/?p=1#comment-1
       """
+
+  Scenario: Count  comments
+    When I run `wp comment count 1`
+    Then STDOUT should be:
+      """
+      approved:        1
+      moderated:       0
+      spam:            0
+      trash:           0
+      post-trashed:    0
+      total_comments:  1
+      """
+
+    When I run `wp comment count`
+    Then STDOUT should be:
+      """
+      approved:        1
+      moderated:       0
+      spam:            0
+      trash:           0
+      post-trashed:    0
+      total_comments:  1
+      """
