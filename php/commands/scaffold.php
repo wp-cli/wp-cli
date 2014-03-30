@@ -34,6 +34,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--plugin=<plugin>]
 	 * : Create a file in the given plugin's directory, instead of sending to STDOUT.
 	 *
+	 * [--yes]
+	 * : Answer yes to the confirmation message.
+	 *
 	 * [--raw]
 	 * : Just generate the `register_post_type()` call and nothing else.
 	 *
@@ -76,6 +79,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--plugin=<plugin>]
 	 * : Create a file in the given plugin's directory, instead of sending to STDOUT.
 	 *
+	 * [--yes]
+	 * : Answer yes to the confirmation message.
+	 *
 	 * [--raw]
 	 * : Just generate the `register_taxonomy()` call and nothing else.
 	 *
@@ -110,6 +116,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			'label'  => preg_replace( '/_|-/', ' ', strtolower( $slug ) ),
 			'theme'  => false,
 			'plugin' => false,
+			'yes'    => false,
 			'raw'    => false,
 		) );
 
@@ -146,10 +153,11 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		if ( $path = $this->get_output_path( $control_args, $subdir ) ) {
 			$filename = $path . $slug .'.php';
-
-			$this->create_file( $filename, $final_output );
+			
+			$this->create_file( $filename, $final_output, $control_args['yes'] );
 
 			WP_CLI::success( "Created $filename" );
+
 		} else {
 			// STDOUT
 			echo $final_output;
@@ -175,6 +183,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * [--author_uri=<uri>]
 	 * : What to put in the 'Author URI:' header in style.css
+	 *
 	 */
 	function _s( $args, $assoc_args ) {
 
@@ -394,8 +403,16 @@ class Scaffold_Command extends WP_CLI_Command {
 		WP_CLI::success( "Created test files." );
 	}
 
-	private function create_file( $filename, $contents ) {
+	private function create_file( $filename, $contents, $overwrite ) {
 		global $wp_filesystem;
+
+		if ( file_exists( $filename ) && empty( $overwrite ) ) {
+			WP_CLI::confirm( "Overwrite existsing file? $filename", $overwrite );
+		}
+
+		//if( file_exists( $filename ) && !$overwrite ){
+		//	WP_CLI::error( "File already exists: $filename." );
+		//}
 
 		$wp_filesystem->mkdir( dirname( $filename ) );
 

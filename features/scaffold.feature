@@ -72,3 +72,29 @@ Feature: Wordpress code scaffolding
       """
       __( 'Brain eaters'
       """
+
+  # Test for --yes flags
+  @tax @cpt @test
+  Scenario: Scaffold commands should ask for confirmation to overwrite if file already exists which can be overruled by passing --yes flag 
+    When I run `wp scaffold cpt zombie-speed --theme`
+    And I run `wp scaffold taxonomy zombie-speed --theme --yes`
+    Then STDOUT should contain:
+      """
+      Created
+      """
+    When I run `wp scaffold post-type zombie --theme`
+    When I run `wp scaffold post-type zombie --theme --yes`
+    Then STDOUT should contain:
+      """
+      Created
+      """
+
+# Not working....
+#    When I run `wp scaffold taxonomy zombie-speed --theme`
+#    And I run `wp scaffold taxonomy zombie-speed --theme`
+#    And STDERR should be:
+#      """
+#      Error: File already exists
+#      """
+#    Then the return code should be 1
+ 
