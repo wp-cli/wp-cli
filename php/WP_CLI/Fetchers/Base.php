@@ -2,6 +2,9 @@
 
 namespace WP_CLI\Fetchers;
 
+/**
+ * Fetch a WordPress entity for use in a subcommand.
+ */
 abstract class Base {
 
 	/**
