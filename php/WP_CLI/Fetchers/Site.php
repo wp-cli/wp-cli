@@ -2,10 +2,22 @@
 
 namespace WP_CLI\Fetchers;
 
+/**
+ * Fetch a WordPress site based on one of its attributes.
+ */
 class Site extends Base {
 
+	/**
+	 * @param string $msg Error message to use when invalid data is provided
+	 */
 	protected $msg = "Could not find the site with ID %d.";
 
+	/**
+	 * Get a site object by ID
+	 * 
+	 * @param int $site_id
+	 * @return object|false
+	 */
 	public function get( $site_id ) {
 		return $this->_get_site( $site_id );
 	}
