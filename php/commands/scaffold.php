@@ -417,6 +417,10 @@ class Scaffold_Command extends WP_CLI_Command {
 		$wp_filesystem->mkdir( $package_path . '/bin' );
 		$wp_filesystem->mkdir( $package_path . '/features' );
 
+		if ( ! file_exists( $package_path . '/composer.json' ) ) {
+			WP_CLI::warning( "composer.json required for package. Create one with `composer init`" );
+		}
+
 		$to_copy = array(
 			'.travis-package.yml'      => '.travis.yml',
 			'test-package.sh'          => 'bin/test.sh',
