@@ -424,7 +424,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", "$package_path/$new_path", true );
 		}
 
-		WP_CLI::success( "Created test files." );
+		WP_CLI::success( "Created package test files." );
 
 	}
 
