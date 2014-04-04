@@ -72,3 +72,36 @@ Feature: WordPress code scaffolding
       """
       __( 'Brain eaters'
       """
+
+  Scenario: Scaffold package tests
+    Given a wp-cli-package directory
+    And a wp-cli-package/composer.json file:
+      """
+      {
+          "name": "wp-cli/wp-cli-package",
+          "description": "Just another test command",
+          "license": "MIT",
+          "authors": [
+              {
+                  "name": "WP-CLI",
+                  "email": "wp-cli@wp-cli.org",
+                  "homepage": "http://wp-cli.org",
+                  "role": "Developer"
+              }
+          ],
+          "minimum-stability": "dev",
+          "require": {
+
+          },
+          "autoload": {
+              "files": [ "wp-cli-package.php" ]
+          }
+      }
+      """
+
+    When I run `wp scaffold package-tests wp-cli-package`
+    Then STDOUT should not be empty
+    And the wp-cli-package/.travis.yml file should exist
+    And the wp-cli-package/bin/install-package-tests.sh file should exist
+    And the wp-cli-package/bin/test.sh file should exist
+    And the wp-cli-package/features/load-wp-cli.feature file should exist

@@ -18,6 +18,13 @@ $steps->Given( '/^an? ([^\s]+) file:$/',
 	}
 );
 
+$steps->Given( '/^an? ([^\s]+) directory$/',
+	function ( $world, $path ) {
+		$full_path = $world->variables['RUN_DIR'] . "/$path";
+		Process::create( \WP_CLI\utils\esc_cmd( 'mkdir -p %s', dirname( $full_path ) ) )->run_check();
+	}
+);
+
 $steps->Given( '/^WP files$/',
 	function ( $world ) {
 		$world->download_wp();
