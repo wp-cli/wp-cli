@@ -11,7 +11,7 @@ install_wp_cli_suite() {
 	# Set up WP-CLI
 	if [ ! -d $WP_CLI_DIR ]
 		then
-			git clone --quiet -b scaffold-package-tests https://github.com/wp-cli/wp-cli.git $WP_CLI_DIR
+			git clone --quiet --depth=1 -b scaffold-package-tests https://github.com/wp-cli/wp-cli.git $WP_CLI_DIR
 			cd $WP_CLI_DIR
 			curl -sS https://getcomposer.org/installer | php
 			chmod +x composer.phar
