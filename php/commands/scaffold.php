@@ -402,6 +402,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * <package-path>
 	 * : Path to the WP-CLI package to generate test files for
 	 * 
+	 * [--yes]
+	 * : Answer yes to the confirmation message.
+	 * 
 	 * @subcommand package-tests
 	 */
 	public function package_tests( $args, $assoc_args ) {
@@ -421,7 +424,19 @@ class Scaffold_Command extends WP_CLI_Command {
 			'load-wp-cli.feature'      => 'features/load-wp-cli.feature',
 			);
 		foreach( $to_copy as $file => $new_path ) {
-			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", "$package_path/$new_path", true );
+
+			$full_path = "$package_path/$new_path";
+			if ( empty( $assoc_args['yes'] ) && file_exists( $full_path ) ) {
+				fwrite( STDOUT, $question . sprintf( "Do you want to update '%s'? [y/n] ", $new_path ) );
+				$answer = trim( fgets( STDIN ) );
+				if ( 'y' != $answer ) {
+					WP_CLI::warning( sprintf( "Skipped updating '%s'", $new_path ) );
+					continue;
+				}
+			}
+
+			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", $full_path, true );
+			WP_CLI::line( sprintf( "Created '%s'", $new_path ) );
 		}
 
 		WP_CLI::success( "Created package test files." );
