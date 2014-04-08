@@ -269,6 +269,23 @@ class Widget_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Get a widget's instantiated object based on its name
+	 * 
+	 * @param string $id_base Name of the widget
+	 * @return WP_Widget|false
+	 */
+	private function get_widget_obj( $id_base ) {
+		global $wp_widget_factory;
+
+		$widget = wp_filter_object_list( $wp_widget_factory->widgets, array( 'id_base' => $id_base ) );
+		if ( empty( $widget ) ) {
+			false;
+		}
+
+		return array_pop( $widget );
+	}
+
+	/**
 	 * Clean up a widget's options based on its update callback
 	 * 
 	 * @param string $id_base Name of the widget
@@ -277,14 +294,12 @@ class Widget_Command extends WP_CLI_Command {
 	 * @return mixed
 	 */
 	private function sanitize_widget_options( $id_base, $dirty_options, $old_options ) {
-		global $wp_widget_factory;
 
-		$widget = wp_filter_object_list( $wp_widget_factory->widgets, array( 'id_base' => $id_base ) );
+		$widget = $this->get_widget_obj( $id_base );
 		if ( empty( $widget ) ) {
 			return array();
 		}
 
-		$widget = array_pop( $widget );
 		return $widget->update( $dirty_options, $old_options );
 
 	}
