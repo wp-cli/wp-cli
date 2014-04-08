@@ -78,11 +78,8 @@ class Widget_Command extends WP_CLI_Command {
 		$option_key = 'widget_' . $name;
 		$option_index = $this->get_widget_option_index( $sidebar_id, $name, $position );
 		$widget_options = get_option( $option_key );
-		if ( ! isset( $widget_options[ $option_index ] ) ) {
-			$widget_options[ $option_index ] = $assoc_args;
-		} else {
-			$widget_options[ $option_index ] = array_merge( $widget_options[ $option_index ], $assoc_args );
-		}
+		$clean_options = $this->sanitize_widget_options( $name, $assoc_args, $widget_options[ $option_index ] );
+		$widget_options[ $option_index ] = array_merge( (array)$widget_options[ $option_index ], $clean_options );
 		update_option( $option_key, $widget_options );
 
 		WP_CLI::success( "Widget updated." );
@@ -269,6 +266,27 @@ class Widget_Command extends WP_CLI_Command {
 		$option_index = array_pop( $parts );
 
 		return $option_index;
+	}
+
+	/**
+	 * Clean up a widget's options based on its update callback
+	 * 
+	 * @param string $id_base Name of the widget
+	 * @param mixed $dirty_options
+	 * @param mixed $old_options
+	 * @return mixed
+	 */
+	private function sanitize_widget_options( $id_base, $dirty_options, $old_options ) {
+		global $wp_widget_factory;
+
+		$widget = wp_filter_object_list( $wp_widget_factory->widgets, array( 'id_base' => $id_base ) );
+		if ( empty( $widget ) ) {
+			return array();
+		}
+
+		$widget = array_pop( $widget );
+		return $widget->update( $dirty_options, $old_options );
+
 	}
 
 }
