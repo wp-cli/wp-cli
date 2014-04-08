@@ -90,6 +90,51 @@ class Widget_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Move a widget from one position on a sidebar to another.
+	 * 
+	 * <sidebar-id>
+	 * : ID for the corresponding sidebar.
+	 * 
+	 * <name>
+	 * : Widget name.
+	 * 
+	 * <current-position>
+	 * : Widget's current position within the sidebar.
+	 * 
+	 * <new-position>
+	 * : Widget's new position within the sidebar.
+	 * 
+	 * @subcommand move
+	 */
+	public function move( $args, $assoc_args ) {
+
+		list( $sidebar_id, $name, $current_position, $new_position ) = $args;
+		$this->validate_sidebar_widget( $sidebar_id, $name, $current_position );
+
+		if ( $new_position < -1 ) {
+			$new_position = 1;
+		}
+
+		// Human-readable positions are different than numerically indexed array
+		$current_position--;
+		$new_position--;
+
+		// Reposition and update
+		$all_widgets = wp_get_sidebars_widgets();
+		$sidebar_widgets = $all_widgets[ $sidebar_id ];
+		$part = array_splice( $sidebar_widgets, $current_position, 1 );
+		array_splice( $sidebar_widgets, $new_position, 0, $part );
+		$all_widgets[ $sidebar_id ] = array_values( $sidebar_widgets );
+		update_option( 'sidebars_widgets', $all_widgets );
+
+		// Reset the global just in case
+		wp_get_sidebars_widgets();
+
+		WP_CLI::success( "Widget moved." );
+
+	}
+
+	/**
 	 * Remove a widget from a sidebar.
 	 * 
 	 * <sidebar-id>
