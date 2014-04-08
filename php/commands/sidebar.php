@@ -24,7 +24,7 @@ class Sidebar_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp sidebar list --fields=role --format=csv
+	 *     wp sidebar list --fields=name,id --format=csv
 	 *
 	 * @subcommand list
 	 */
