@@ -119,6 +119,7 @@ class Widget_Command extends WP_CLI_Command {
 		$all_widgets = wp_get_sidebars_widgets();
 		$position--;
 		unset( $all_widgets[ $sidebar_id ][ $position ] );
+		$all_widgets[ $sidebar_id ] = array_values( $all_widgets[ $sidebar_id ] );
 		update_option( 'sidebars_widgets', $all_widgets );
 
 		// Reset the global just in case
