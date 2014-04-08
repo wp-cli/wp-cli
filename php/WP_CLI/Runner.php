@@ -479,7 +479,7 @@ class Runner {
 
 		// Load bundled commands early, so that they're forced to use the same
 		// APIs as non-bundled commands.
-		Utils\load_command( $this->arguments[0] );
+		Utils\load_command( $this->arguments );
 
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {

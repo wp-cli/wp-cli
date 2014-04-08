@@ -41,12 +41,30 @@ function load_file( $path ) {
 	require $path;
 }
 
+/**
+ * Load a given internal WP-CLI command
+ * 
+ * @param mixed
+ */
 function load_command( $name ) {
-	$path = WP_CLI_ROOT . "/php/commands/$name.php";
 
-	if ( is_readable( $path ) ) {
-		include_once $path;
+	if ( is_string( $name ) ) {
+		$name = array( $name );
 	}
+
+	do {
+
+		$file_name = implode( '-', $name );
+		$path = WP_CLI_ROOT . "/php/commands/{$file_name}.php";
+
+		if ( is_readable( $path ) ) {
+			include_once $path;
+		}
+
+		array_pop( $name );
+
+	} while( $name );
+
 }
 
 function load_all_commands() {
