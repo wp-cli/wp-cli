@@ -181,6 +181,8 @@ class Widget_Command extends WP_CLI_Command {
 	private function validate_sidebar( $sidebar_id ) {
 		global $wp_registered_sidebars;
 
+		Sidebar_Command::register_unused_sidebar();
+
 		if ( ! array_key_exists( $sidebar_id, $wp_registered_sidebars ) ) {
 			WP_CLI::error( "Invalid sidebar." );
 		}
