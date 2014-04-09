@@ -48,7 +48,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     wp post create --post_type=page --post_status=publish --post_title='A future post' --post-status=future --post_date='2020-12-01 07:00:00'
 	 *
-	 *     wp post create page.txt --post_type=page --post_title='Page from file'
+	 *     wp post create ./post-content.txt --post_category=201,345 --post_title='Post from file'
 	 */
 	public function create( $args, $assoc_args ) {
 		if ( ! empty( $args[0] ) ) {
@@ -72,6 +72,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				$assoc_args['post_content'] = $output;
 			else
 				$assoc_args['post_content'] = $input;
+		}
+
+		if ( isset( $assoc_args['post_category'] ) ) {
+			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
 		}
 
 		parent::_create( $args, $assoc_args, function ( $params ) {
@@ -240,12 +244,14 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			}
 		}
 
-		if ( 'ids' == $formatter->format )
+		if ( 'ids' == $formatter->format ) {
 			$query_args['fields'] = 'ids';
-
-		$query = new WP_Query( $query_args );
-
-		$formatter->display_items( $query->posts );
+			$query = new WP_Query( $query_args );
+			echo implode( ' ', $query->posts );
+		} else {
+			$query = new WP_Query( $query_args );
+			$formatter->display_items( $query->posts );
+		}
 	}
 
 	/**

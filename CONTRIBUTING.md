@@ -1,11 +1,22 @@
 Contribute
 ==========
 
+Setting up
+----------
+
+1. Clone this git repository on your local machine.
+2. Install [Composer](https://getcomposer.org/) if you don't already have it.
+2. Run `composer install` to fetch all the dependencies.
+3. Run `./bin/wp --info` to test if everything was installed properly.
+
+Submitting patches
+------------------
+
 Whether you want to fix a bug or implement a new feature, the process is pretty much the same:
 
 0. [Search existing issues](https://github.com/wp-cli/wp-cli/issues); if you can't find anything related to what you want to work on, open a new issue so that you can get some initial feedback.
 1. [Fork](https://github.com/wp-cli/wp-cli/fork) the repository.
-2. Make the code changes in your fork.
+2. Push the code changes from your local clone to your fork.
 3. Open a pull request.
 
 It doesn't matter if the code isn't perfect. The idea is to get it reviewed early and iterate on it.
@@ -22,19 +33,13 @@ There are two types of automated tests:
 * unit tests, implemented using [PHPUnit](http://phpunit.de/)
 * functional tests, implemented using [Behat](http://behat.org)
 
-To set everything up, just run:
-
-```bash
-./utils/dev-build
-```
-
 ### Unit tests
 
 The unit test files are in the `tests/` directory.
 
 To run the unit tests, just execute:
 
-    php phpunit.phar
+    ./vendor/bin/phpunit
 
 ### Functional tests
 
@@ -48,13 +53,13 @@ Running the following as root in MySQL should do the trick:
 
 Then, to run the entire test suite:
 
-    php behat.phar --expand
+    ./vendor/bin/behat --expand
 
 Or to test a single feature:
 
-    php behat.phar features/core.feature
+    ./vendor/bin/behat features/core.feature
 
-More info can be found from `php behat.phar --help`.
+More info can be found by using `./vendor/bin/behat --help`.
 
 Finally...
 ----------

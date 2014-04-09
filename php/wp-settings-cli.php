@@ -93,6 +93,11 @@ wp_set_wpdb_vars();
 // Start the WordPress object cache, or an external object cache if the drop-in is present.
 wp_start_object_cache();
 
+// WP-CLI: the APC cache is not available on the command-line, so bail, to prevent cache poisoning
+if ( $GLOBALS['_wp_using_ext_object_cache'] && class_exists( 'APC_Object_Cache' ) ) {
+	WP_CLI::error( 'WP-CLI is not compatible with the APC object cache.' );
+}
+
 // Attach the default filters.
 require( ABSPATH . WPINC . '/default-filters.php' );
 
@@ -172,6 +177,11 @@ if ( is_multisite() ) {
 // Define must-use plugin directory constants, which may be overridden in the sunrise.php drop-in.
 wp_plugin_directory_constants( );
 
+$symlinked_plugins_supported = function_exists( 'wp_register_plugin_realpath' );
+if ( $symlinked_plugins_supported ) {
+	$GLOBALS['wp_plugin_paths'] = array();
+}
+
 // Load must-use plugins.
 foreach ( wp_get_mu_plugins() as $mu_plugin ) {
 	include_once( $mu_plugin );
@@ -181,8 +191,11 @@ unset( $mu_plugin );
 // Load network activated plugins.
 if ( is_multisite() ) {
 	foreach( wp_get_active_network_plugins() as $network_plugin ) {
-		if ( !Utils\is_plugin_skipped( $network_plugin ) )
+		if ( !Utils\is_plugin_skipped( $network_plugin ) ) {
+			if ( $symlinked_plugins_supported )
+				wp_register_plugin_realpath( $network_plugin );
 			include_once( $network_plugin );
+		}
 	}
 	unset( $network_plugin );
 }
@@ -210,10 +223,14 @@ create_initial_post_types();
 register_theme_directory( get_theme_root() );
 
 // Load active plugins.
-foreach ( wp_get_active_and_valid_plugins() as $plugin )
-	if ( !Utils\is_plugin_skipped( $plugin ) )
+foreach ( wp_get_active_and_valid_plugins() as $plugin ) {
+	if ( !Utils\is_plugin_skipped( $plugin ) ) {
+		if ( $symlinked_plugins_supported )
+			wp_register_plugin_realpath( $plugin );
 		include_once( $plugin );
-unset( $plugin );
+	}
+}
+unset( $plugin, $symlinked_plugins_supported );
 
 // Load pluggable functions.
 require( ABSPATH . WPINC . '/pluggable.php' );

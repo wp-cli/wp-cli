@@ -236,7 +236,8 @@ class Media_Command extends WP_CLI_Command {
 			if ( $intermediate_path == $original_path )
 				continue;
 
-			unlink( $intermediate_path );
+			if ( file_exists( $intermediate_path ) )
+				unlink( $intermediate_path );
 		}
 	}
 }

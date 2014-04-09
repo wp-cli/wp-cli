@@ -139,6 +139,106 @@ class Role_Command extends WP_CLI_Command {
 
 	}
 
+	/**
+	 * Reset any default role to default capabilities.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<role-key>...]
+	 * : The internal name of one or more roles to reset.
+	 *
+	 * [--all]
+	 * : If set, all default roles will be reset.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp role reset administrator author contributor
+	 *
+	 *     wp role reset --all
+	 */
+	public function reset( $args, $assoc_args ) {
+
+		self::persistence_check();
+
+		if ( ! isset( $assoc_args['all'] ) && empty( $args ) )
+			WP_CLI::error( "Role key not provided, or is invalid." );
+
+		if ( ! function_exists( 'populate_roles' ) ) {
+			require_once( ABSPATH.'wp-admin/includes/schema.php' );
+		}
+
+		// get our default roles
+		$default_roles = $preserve = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' );
+
+		if ( isset( $assoc_args['all'] ) ) {
+			foreach( $default_roles as $role ) {
+				remove_role( $role );
+			}
+			populate_roles();
+
+			WP_CLI::success( 'All default roles reset.' );
+			return;
+
+		}
+
+		foreach( $args as $k => $role_key ) {
+			$key = array_search( $role_key, $default_roles );
+			if ( false !== $key ) {
+				unset( $preserve[ $key ] );
+				$before[ $role_key ] = get_role( $role_key );
+				remove_role( $role_key );
+			} else {
+				unset( $args[ $k ] );
+			}
+		}
+
+		$num_to_reset = count( $args );
+
+		// no roles were unset, bail
+		if ( count( $default_roles ) == count( $preserve ) ) {
+			WP_CLI::error( 'Must specify a default role to reset.' );
+		}
+
+		// for the roles we're not resetting
+		foreach( $preserve as $k => $role ) {
+			/* save roles
+			 * if get_role is null
+			 * save role name for re-removal
+			 */
+			$roleobj = get_role( $role );
+			$preserve[$k] = is_null( $roleobj ) ? $role : $roleobj;
+
+			remove_role( $role );
+		}
+
+		// put back all default roles and capabilities
+		populate_roles();
+
+		// restore the preserved roles
+		foreach( $preserve as $k => $roleobj ) {
+			// re-remove after populating
+			if ( is_a( $roleobj, 'WP_Role' ) ) {
+				remove_role( $roleobj->name );
+				add_role( $roleobj->name, ucwords( $roleobj->name ), $roleobj->capabilities );
+			} else {
+				// when not an object, that means the role didn't exist before
+				remove_role( $roleobj );
+			}
+		}
+
+		$num_reset = 0;
+		foreach( $args as $role_key ) {
+			$after[ $role_key ] = get_role( $role_key );
+
+			if ( $after[ $role_key ] != $before[ $role_key ] ) {
+				++$num_reset;
+			}
+		}
+
+		WP_CLI::success( "Reset $num_reset/$num_to_reset roles" );
+
+	}
+
 	private static function persistence_check() {
 		global $wp_roles;
 

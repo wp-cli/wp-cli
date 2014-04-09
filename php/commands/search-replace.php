@@ -65,11 +65,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$tables = self::get_table_list( $args, isset( $assoc_args['network'] ) );
 
 		foreach ( $tables as $table ) {
-			list( $primary_key, $columns ) = self::get_columns( $table );
+			list( $primary_keys, $columns ) = self::get_columns( $table );
 
 			// since we'll be updating one row at a time,
 			// we need a primary key to identify the row
-			if ( null === $primary_key ) {
+			if ( empty( $primary_keys ) ) {
 				$report[] = array( $table, '', 'skipped' );
 				continue;
 			}
@@ -78,7 +78,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 				if ( in_array( $col, $skip_columns ) )
 					continue;
 
-				$count = self::handle_col( $col, $primary_key, $table, $old, $new, $dry_run, $recurse_objects );
+				$count = self::handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects );
 
 				$report[] = array( $table, $col, $count );
 
@@ -106,13 +106,15 @@ class Search_Replace_Command extends WP_CLI_Command {
 		return $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", like_escape( $prefix ) . '%' ) );
 	}
 
-	private static function handle_col( $col, $primary_key, $table, $old, $new, $dry_run, $recurse_objects ) {
+	private static function handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects ) {
 		global $wpdb;
 
 		// We don't want to have to generate thousands of rows when running the test suite
 		$chunk_size = getenv( 'BEHAT_RUN' ) ? 10 : 1000;
 
-		$fields = array( $primary_key, $col );
+		$fields = $primary_keys;
+		$fields[] = $col;
+
 		$args = array(
 			'table' => $table,
 			'fields' => $fields,
@@ -136,10 +138,12 @@ class Search_Replace_Command extends WP_CLI_Command {
 				if ( $value != $row->$col )
 					$count++;
 			} else {
-				$count += $wpdb->update( $table,
-					array( $col => $value ),
-					array( $primary_key => $row->$primary_key )
-				);
+				$where = array();
+				foreach ( $primary_keys as $primary_key ) {
+					$where[ $primary_key ] = $row->$primary_key;
+				}
+
+				$count += $wpdb->update( $table, array( $col => $value ), $where );
 			}
 		}
 
@@ -149,13 +153,13 @@ class Search_Replace_Command extends WP_CLI_Command {
 	private static function get_columns( $table ) {
 		global $wpdb;
 
-		$primary_key = null;
+		$primary_keys = array();
 
 		$columns = array();
 
 		foreach ( $wpdb->get_results( "DESCRIBE $table" ) as $col ) {
 			if ( 'PRI' === $col->Key ) {
-				$primary_key = $col->Field;
+				$primary_keys[] = $col->Field;
 				continue;
 			}
 
@@ -165,7 +169,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 			$columns[] = $col->Field;
 		}
 
-		return array( $primary_key, $columns );
+		return array( $primary_keys, $columns );
 	}
 
 	private static function is_text_col( $type ) {

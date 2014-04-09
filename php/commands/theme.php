@@ -399,7 +399,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		$theme_vars = array( 'name', 'title', 'version', 'parent_theme', 'template_dir', 'stylesheet_dir', 'template', 'stylesheet', 'screenshot', 'description', 'author', 'tags', 'theme_root', 'theme_root_uri',
 		);
 		$theme_obj = new stdClass;
-		foreach( $theme_vars as $var ) {
+		foreach ( $theme_vars as $var ) {
 			$theme_obj->$var = $theme->$var;
 		}
 
@@ -520,5 +520,141 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 }
 
+/**
+ * Manage theme mods.
+ *
+ */
+class Theme_Mod_command extends WP_CLI_Command {
+
+	/**
+	 * Get theme mod(s).
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<mod>...]
+	 * : One or more mods to get.
+	 *
+	 * [--all]
+	 * : List all theme mods
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme mod get --all
+	 *     wp theme mod get background_color --format=json
+	 *     wp theme mod get background_color header_textcolor
+	 */
+	public function get( $args = array(), $assoc_args = array() ) {
+
+		if ( ! isset( $assoc_args['all'] ) && empty( $args ) ) {
+			WP_CLI::error( "You must specify at least one mod or use --all." );
+		}
+
+		if ( isset( $assoc_args['all'] ) && $assoc_args['all'] ) {
+			$args = array();
+		}
+
+		$list = array();
+		$mods = get_theme_mods();
+		if ( ! is_array( $mods ) ) {
+			// if no mods are set (perhaps new theme), make sure foreach still works
+			$mods = array();
+		}
+		foreach ( $mods as $k => $v ) {
+			// if mods were given, skip the others
+			if ( ! empty( $args ) && ! in_array( $k, $args ) ) continue;
+
+			if ( is_array( $v ) ) {
+				$list[] = array( 'key' => $k, 'value' => '=>' );
+				foreach ( $v as $_k => $_v ) {
+					$list[] = array( 'key' => "    $_k", 'value' => $_v );
+				}
+			} else {
+				$list[] = array( 'key' => $k, 'value' => $v );
+			}
+
+		}
+
+		// For unset mods, show blank value
+		foreach ( $args as $mod ) {
+			if ( ! isset( $mods[ $mod ] ) ) {
+				$list[] = array( 'key' => $mod, 'value' => '' );
+			}
+		}
+
+		$formatter = new \WP_CLI\Formatter( $assoc_args, array('key', 'value'), 'thememods' );
+		$formatter->display_items( $list );
+
+	}
+
+	/**
+	 * Remove theme mod(s).
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<mod>...]
+	 * : One or more mods to remove.
+	 *
+	 * [--all]
+	 * : Remove all theme mods
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme mod remove --all
+	 *     wp theme mod remove background_color
+	 *     wp theme mod remove background_color header_textcolor
+	 */
+	public function remove( $args = array(), $assoc_args = array() ) {
+
+		if ( ! isset( $assoc_args['all'] ) && empty( $args ) ) {
+			WP_CLI::error( "You must specify at least one mod or use --all." );
+		}
+
+		if ( isset( $assoc_args['all'] ) && $assoc_args['all'] ) {
+			remove_theme_mods();
+			WP_CLI::success( 'Theme mods removed.' );
+			return;
+		}
+
+		foreach ( $args as $mod ) {
+			remove_theme_mod( $mod );
+		}
+
+		WP_CLI::success( sprintf( '%d mods removed.', count( $args ) ) );
+
+	}
+
+	/**
+	 * Set a theme mod.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <mod>
+	 * : The name of the theme mod to set or update.
+	 *
+	 * <value>
+	 * : The new value.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme mod set background_color 000000
+	 */
+	public function set( $args = array(), $assoc_args = array() ) {
+		list( $mod, $value ) = $args;
+
+		set_theme_mod( $mod, $value );
+
+		if ( $value == get_theme_mod( $mod ) ) {
+			WP_CLI::success( sprintf( "Theme mod %s set to %s", $mod, $value ) );
+		} else {
+			WP_CLI::success( sprintf( "Could not update theme mod %s", $mod ) );
+		}
+	}
+
+}
+
 WP_CLI::add_command( 'theme', 'Theme_Command' );
+WP_CLI::add_command( 'theme mod', 'Theme_Mod_Command' );
 

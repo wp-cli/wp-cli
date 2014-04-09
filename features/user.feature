@@ -1,9 +1,8 @@
 Feature: Manage WordPress users
 
-  Background:
+  Scenario: User CRUD operations
     Given a WP install
 
-  Scenario: User CRUD operations
     When I try `wp user get bogus-user`
     Then the return code should be 1
     And STDOUT should be empty
@@ -11,7 +10,8 @@ Feature: Manage WordPress users
     When I run `wp user create testuser2 testuser2@example.com --role=author --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {USER_ID}
-    And I run `wp user get {USER_ID}`
+
+    When I run `wp user get {USER_ID}`
     Then STDOUT should be a table containing rows:
       | Field        | Value      |
       | ID           | {USER_ID}  |
@@ -47,7 +47,32 @@ Feature: Manage WordPress users
     When I run `wp user delete {USER_ID}`
     Then STDOUT should not be empty
 
+  Scenario: Reassigning user posts
+    Given a WP multisite install
+
+    When I run `wp user create bob bob@example.com --role=author --porcelain`
+    And save STDOUT as {BOB_ID}
+
+    And I run `wp user create sally sally@example.com --role=editor --porcelain`
+    And save STDOUT as {SALLY_ID}
+
+    When I run `wp post generate --count=3 --post_author=bob`
+    And I run `wp post list --author={BOB_ID} --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp user delete bob --reassign={SALLY_ID}`
+    And I run `wp post list --author={SALLY_ID} --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
   Scenario: Generating and deleting users
+    Given a WP install
+
     When I run `wp user list --role=editor --format=count`
     Then STDOUT should be:
       """
@@ -69,7 +94,8 @@ Feature: Manage WordPress users
       """
 
   Scenario: Importing users from a CSV file
-    Given a users.csv file:
+    Given a WP install
+    And a users.csv file:
       """
       user_login,user_email,display_name,role
       bobjones,bobjones@domain.com,Bob Jones,contributor
@@ -98,12 +124,32 @@ Feature: Manage WordPress users
       """
 
   Scenario: Managing user roles
+    Given a WP install
+
     When I run `wp user add-role 1 editor`
     Then STDOUT should not be empty
     And I run `wp user get 1 --field=roles`
     Then STDOUT should be:
       """
       administrator, editor
+      """
+
+    When I try `wp user add-role 1 edit`
+    Then STDERR should contain:
+      """
+      Role doesn't exist
+      """
+
+    When I try `wp user set-role 1 edit`
+    Then STDERR should contain:
+      """
+      Role doesn't exist
+      """
+
+    When I try `wp user remove-role 1 edit`
+    Then STDERR should contain:
+      """
+      Role doesn't exist
       """
 
     When I run `wp user set-role 1 author`
@@ -128,6 +174,8 @@ Feature: Manage WordPress users
       | roles |       |
       
   Scenario: Managing user capabilities
+    Given a WP install
+
     When I run `wp user add-cap 1 edit_vip_product`
     Then STDOUT should be:
       """

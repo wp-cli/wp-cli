@@ -3,10 +3,10 @@
 set -ex
 
 # Run the unit tests
-phpunit
+vendor/bin/phpunit
 
 # Run the functional tests
-php behat.phar --format progress
+vendor/bin/behat --format progress
 
 # Run CodeSniffer
 ./codesniffer/scripts/phpcs --standard=./ci/ php/

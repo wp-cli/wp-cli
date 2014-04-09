@@ -12,9 +12,6 @@ php -dphar.readonly=0 utils/make-phar.php wp-cli.phar --quiet
 mv wp-cli.phar $WP_CLI_BIN_DIR/wp
 chmod +x $WP_CLI_BIN_DIR/wp
 
-# Travis CI doesn't come with Behat pre-installed
-curl http://behat.org/downloads/behat.phar > behat.phar
-
 # Install CodeSniffer things
 ./ci/prepare-codesniffer.sh
 
