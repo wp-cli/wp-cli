@@ -53,3 +53,16 @@ Feature: Manage widgets in WordPress sidebar
       | archives        | 3        |
       | categories      | 4        |
       | meta            | 5        |
+
+    When I run `wp sidebar widget add sidebar-1 calendar 2 --title="Calendar"`
+    Then STDOUT should not be empty
+
+    When I run `wp sidebar widget list sidebar-1 --fields=name,position`
+    Then STDOUT should be a table containing rows:
+      | name            | position |
+      | search          | 1        |
+      | calendar        | 2        |
+      | recent-posts    | 3        |
+      | archives        | 4        |
+      | categories      | 5        |
+      | meta            | 6        |

@@ -50,6 +50,68 @@ class Widget_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Add a widget to a sidebar.
+	 * 
+	 * <sidebar-id>
+	 * : ID for the corresponding sidebar.
+	 * 
+	 * <name>
+	 * : Widget name.
+	 * 
+	 * [<position>]
+	 * : Widget's current position within the sidebar. Defaults to last
+	 * 
+	 * [--<field>=<value>]
+	 * : Widget option to add, with its new value
+	 * 
+	 * @subcommand add
+	 */
+	public function add( $args, $assoc_args ) {
+
+		list( $sidebar_id, $name ) = $args;
+		if ( isset( $args[2] ) ) {
+			$position = (int) $args[2];
+		} else {
+			$position = false;
+		}
+		$this->validate_sidebar( $sidebar_id );
+
+		if ( false == ( $widget = $this->get_widget_obj( $name ) ) ) {
+			WP_CLI::error( "Invalid widget type." );
+		}
+
+		/**
+		 * Adding a widget is as easy as:
+		 * 1. Creating a new widget option
+		 * 2. Adding the widget to the sidebar
+		 * 3. Positioning appropriately
+		 */
+		$widget_options = $option_keys = $this->get_widget_options( $name );
+		unset( $option_keys['_multiwidget'] );
+		$option_keys = array_keys( $option_keys );
+		$last_key = array_pop( $option_keys );
+		$option_index = $last_key + 1;
+		$widget_options[ $option_index ] = $this->sanitize_widget_options( $name, $assoc_args, array() );
+		$this->update_widget_options( $name, $widget_options );
+
+		$all_widgets = wp_get_sidebars_widgets();
+		$sidebar_widgets = $all_widgets[ $sidebar_id ];
+		$sidebar_widgets[] = $name . '-' . $option_index;
+
+		$current_position = count( $sidebar_widgets ) - 1;
+		if ( $position ) {
+			$new_position = $position - 1;
+			$part = array_splice( $sidebar_widgets, $current_position, 1 );
+			array_splice( $sidebar_widgets, $new_position, 0, $part );
+			$all_widgets[ $sidebar_id ] = array_values( $sidebar_widgets );
+		}
+		update_option( 'sidebars_widgets', $all_widgets );
+
+		WP_CLI::success( "Added widget." );
+
+	}
+
+	/**
 	 * Update a given widget's options.
 	 * 
 	 * <sidebar-id>
