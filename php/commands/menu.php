@@ -16,13 +16,13 @@ class Menu_Command extends WP_CLI_Command {
 
 	/**
 	 * Create a new menu
-	 * 
+	 *
 	 * <menu-name>
 	 * : A descriptive name for the menu
 	 *
 	 * [--porcelain]
-	 * : Output just the new menu id. 
-	 * 
+	 * : Output just the new menu id.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp menu create "My Menu"
@@ -48,10 +48,10 @@ class Menu_Command extends WP_CLI_Command {
 
 	/**
 	 * List locations for the current theme.
-	 * 
+	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count, ids. Default: table
-	 * 
+	 *
 	 * @subcommand theme-locations
 	 */
 	public function theme_locations( $_, $assoc_args ) {
@@ -71,10 +71,10 @@ class Menu_Command extends WP_CLI_Command {
 
 	/**
 	 * Assign a location to a menu
-	 * 
+	 *
 	 * <menu>
 	 * : The name, slug, or term ID for the menu
-	 * 
+	 *
 	 * <location>
 	 * : Location's slug
 	 *
@@ -87,7 +87,7 @@ class Menu_Command extends WP_CLI_Command {
 		$menu = wp_get_nav_menu_object( $menu );
 		if ( ! $menu || is_wp_error( $menu ) ) {
 			WP_CLI::error( "Invalid menu." );
-		} 
+		}
 
 		$locations = get_registered_nav_menus();
 		if ( ! array_key_exists( $location, $locations ) ) {
@@ -95,7 +95,7 @@ class Menu_Command extends WP_CLI_Command {
 		}
 
 		$locations = get_nav_menu_locations();
-		$locations[ $location ] = $menu->term_id; 
+		$locations[ $location ] = $menu->term_id;
 
 		set_theme_mod( 'nav_menu_locations', $locations );
 
@@ -104,10 +104,10 @@ class Menu_Command extends WP_CLI_Command {
 
 	/**
 	 * Remove a location from a menu
-	 * 
+	 *
 	 * <menu>
 	 * : The name, slug, or term ID for the menu
-	 * 
+	 *
 	 * <location>
 	 * : Location's slug
 	 *
@@ -120,14 +120,14 @@ class Menu_Command extends WP_CLI_Command {
 		$menu = wp_get_nav_menu_object( $menu );
 		if ( ! $menu || is_wp_error( $menu ) ) {
 			WP_CLI::error( "Invalid menu." );
-		} 
+		}
 
 		$locations = get_nav_menu_locations();
 		if ( ! isset( $locations[ $location ] ) || $locations[ $location ] != $menu->term_id ) {
 			WP_CLI::error( "Menu isn't assigned to location." );
 		}
 
-		$locations[ $location ] = 0; 
+		$locations[ $location ] = 0;
 		set_theme_mod( 'nav_menu_locations', $locations );
 
 		WP_CLI::success( "Removed location from menu." );
@@ -136,10 +136,10 @@ class Menu_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete a menu
-	 * 
+	 *
 	 * <menu>
 	 * : The name, slug, or term ID for the menu
-	 * 
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp menu delete "My Menu"
@@ -195,7 +195,7 @@ class Menu_Command extends WP_CLI_Command {
 				}
 
 			}
-			
+
 			// Normalize the data for some output formats
 			if ( ! isset( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'csv', 'table' ) ) ) {
 				$menu->locations = implode( ',', $menu->locations );
@@ -230,7 +230,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * Get a list of items associated with a menu
 	 *
 	 * ## OPTIONS
-	 * 
+	 *
 	 * <menu>
 	 * : The name, slug, or term ID for the menu
 	 *
@@ -268,40 +268,40 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 	/**
 	 * Add a post as a menu item
-	 * 
+	 *
 	 * <menu>
 	 * : The name, slug, or term ID for the menu
-	 * 
+	 *
 	 * <post-id>
 	 * : Post ID to add to the menu
-	 * 
+	 *
 	 * [--title=<title>]
 	 * : Set a custom title for the menu item
-	 * 
+	 *
 	 * [--link=<link>]
 	 * : Set a custom url for the menu item
-	 * 
+	 *
 	 * [--description=<description>]
 	 * : Set a custom description for the menu item
-	 * 
+	 *
 	 * [--attr-title=<attr-title>]
 	 * : Set a custom title attribute for the menu item
-	 * 
+	 *
 	 * [--target=<target>]
 	 * : Set a custom link target for the menu item
-	 * 
+	 *
 	 * [--classes=<classes>]
 	 * : Set a custom link classes for the menu item
-	 * 
+	 *
 	 * [--position=<position>]
 	 * : Specify the position of this menu item.
-	 * 
+	 *
 	 * [--parent-id=<parent-id>]
 	 * : Make this menu item a child of another menu item
-	 * 
+	 *
 	 * [--porcelain]
 	 * : Output just the new menu item id.
-	 * 
+	 *
 	 * @subcommand add-post
 	 */
 	public function add_post( $args, $assoc_args ) {
@@ -319,43 +319,43 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 	/**
 	 * Add a taxonomy term as a menu item
-	 * 
+	 *
 	 * <menu>
 	 * : The name, slug, or term ID for the menu
-	 * 
+	 *
 	 * <taxonomy>
 	 * : Taxonomy of the term to be added
-	 * 
+	 *
 	 * <term-id>
 	 * : Term ID of the term to be added
-	 * 
+	 *
 	 * [--title=<title>]
 	 * : Set a custom title for the menu item
-	 * 
+	 *
 	 * [--link=<link>]
 	 * : Set a custom url for the menu item
-	 * 
+	 *
 	 * [--description=<description>]
 	 * : Set a custom description for the menu item
-	 * 
+	 *
 	 * [--attr-title=<attr-title>]
 	 * : Set a custom title attribute for the menu item
-	 * 
+	 *
 	 * [--target=<target>]
 	 * : Set a custom link target for the menu item
-	 * 
+	 *
 	 * [--classes=<classes>]
 	 * : Set a custom link classes for the menu item
-	 * 
+	 *
 	 * [--position=<position>]
 	 * : Specify the position of this menu item.
-	 * 
+	 *
 	 * [--parent-id=<parent-id>]
 	 * : Make this menu item a child of another menu item
-	 * 
+	 *
 	 * [--porcelain]
 	 * : Output just the new menu item id.
-	 * 
+	 *
 	 * @subcommand add-term
 	 */
 	public function add_term( $args, $assoc_args ) {
@@ -374,37 +374,37 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 	/**
 	 * Add a custom menu item
-	 * 
+	 *
 	 * <menu>
 	 * : The name, slug, or term ID for the menu
-	 * 
+	 *
 	 * <title>
 	 * : Title for the link
-	 * 
+	 *
 	 * <link>
 	 * : Target URL for the link
-	 * 
+	 *
 	 * [--description=<description>]
 	 * : Set a custom description for the menu item
-	 * 
+	 *
 	 * [--attr-title=<attr-title>]
 	 * : Set a custom title attribute for the menu item
-	 * 
+	 *
 	 * [--target=<target>]
 	 * : Set a custom link target for the menu item
-	 * 
+	 *
 	 * [--classes=<classes>]
 	 * : Set a custom link classes for the menu item
-	 * 
+	 *
 	 * [--position=<position>]
 	 * : Specify the position of this menu item.
-	 * 
+	 *
 	 * [--parent-id=<parent-id>]
 	 * : Make this menu item a child of another menu item
-	 * 
+	 *
 	 * [--porcelain]
 	 * : Output just the new menu item id.
-	 * 
+	 *
 	 * @subcommand add-custom
 	 */
 	public function add_custom( $args, $assoc_args ) {
@@ -418,34 +418,34 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 	/**
 	 * Update a menu item
-	 * 
+	 *
 	 * <db-id>
 	 * : Database ID for the menu item.
-	 * 
+	 *
 	 * [--title=<title>]
 	 * : Set a custom title for the menu item
-	 * 
+	 *
 	 * [--link=<link>]
 	 * : Set a custom url for the menu item
-	 * 
+	 *
 	 * [--description=<description>]
 	 * : Set a custom description for the menu item
-	 * 
+	 *
 	 * [--attr-title=<attr-title>]
 	 * : Set a custom title attribute for the menu item
-	 * 
+	 *
 	 * [--target=<target>]
 	 * : Set a custom link target for the menu item
-	 * 
+	 *
 	 * [--classes=<classes>]
 	 * : Set a custom link classes for the menu item
-	 * 
+	 *
 	 * [--position=<position>]
 	 * : Specify the position of this menu item.
-	 * 
+	 *
 	 * [--parent-id=<parent-id>]
 	 * : Make this menu item a child of another menu item
-	 * 
+	 *
 	 * @subcommand update
 	 */
 	public function update( $args, $assoc_args ) {
@@ -465,10 +465,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 	/**
 	 * Remove an item from a menu
-	 * 
+	 *
 	 * <db-id>
 	 * : Database ID for the menu item.
-	 * 
+	 *
 	 * @subcommand remove
 	 */
 	public function remove( $args, $_ ) {
@@ -516,7 +516,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		$menu_item_args = array();
 		foreach( $default_args as $key => $default_value ) {
-			// wp_update_nav_menu_item() has a weird argument prefix 
+			// wp_update_nav_menu_item() has a weird argument prefix
 			$new_key = 'menu-item-' . $key;
 			if ( isset( $assoc_args[ $key ] ) ) {
 				$menu_item_args[ $new_key ] = $assoc_args[ $key ];
@@ -545,11 +545,11 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 			/**
 			 * Set the menu
-			 * 
+			 *
 			 * wp_update_nav_menu_item() *should* take care of this, but
 			 * depends on wp_insert_post()'s "tax_input" argument, which
 			 * is ignored if the user can't edit the taxonomy
-			 * 
+			 *
 			 * @see https://core.trac.wordpress.org/ticket/27113
 			 */
 			if ( ! is_object_in_term( $ret, 'nav_menu', (int) $menu->term_id ) ) {
