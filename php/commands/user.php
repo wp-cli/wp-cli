@@ -163,6 +163,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--display_name=<name>]
 	 * : The display name.
 	 *
+	 * [--send-email]
+	 * : Send an email to the user with their new account details.
+	 *
 	 * [--porcelain]
 	 * : Output just the new user id.
 	 *
@@ -201,6 +204,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$user->role = $role;
 
 		$user_id = wp_insert_user( $user );
+		if ( isset( $assoc_args['send-email'] ) ) {
+			wp_new_user_notification( $user_id, $user->user_pass );
+		}
 
 		if ( is_wp_error( $user_id ) ) {
 			WP_CLI::error( $user_id );
@@ -505,6 +511,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * <file>
 	 * : The CSV file of users to import.
 	 *
+	 * [--send-email]
+	 * : Send an email to new users with their account details.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp user import-csv /path/to/users.csv
@@ -564,6 +573,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			} else {
 				unset( $new_user['ID'] ); // Unset else it will just return the ID
 				$user_id = wp_insert_user( $new_user );
+				if ( isset( $assoc_args['send-email'] ) ) {
+					wp_new_user_notification( $user_id, $new_user['user_pass'] );
+				}
 			}
 
 			if ( is_wp_error( $user_id ) ) {
