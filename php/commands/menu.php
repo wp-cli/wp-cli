@@ -43,18 +43,18 @@ class Menu_Command extends WP_CLI_Command {
 	 */
 	public function create( $args, $assoc_args ) {
 
-		$ret = wp_create_nav_menu( $args[0] );
+		$menu_id = wp_create_nav_menu( $args[0] );
 
-		if ( is_wp_error( $ret ) ) {
+		if ( is_wp_error( $menu_id ) ) {
 
-			WP_CLI::error( $ret->get_error_message() );
+			WP_CLI::error( $menu_id->get_error_message() );
 
 		} else {
 
 			if ( isset( $assoc_args['porcelain'] ) ) {
-				WP_CLI::line( $ret->term_id );
+				WP_CLI::line( $menu_id );
 			} else {
-				WP_CLI::success( "Created menu $ret->term_id." );
+				WP_CLI::success( "Created menu $menu_id." );
 			}
 
 		}
