@@ -244,16 +244,26 @@ class WP_CLI {
 
 	/**
 	 * Ask for confirmation before running a destructive operation.
+	 * 
+	 * @param string $question
+	 * @param array $assoc_args
 	 */
 	static function confirm( $question, $assoc_args = array() ) {
-		if ( !isset( $assoc_args['yes'] ) ) {
+		if ( ! isset( $assoc_args['yes'] ) ) {
 			fwrite( STDOUT, $question . " [y/n] " );
 
 			$answer = trim( fgets( STDIN ) );
 
-			if ( 'y' != $answer )
-				exit;
+			if ( 'y' != $answer ){
+				if( isset( $assoc_args['return'] ) && true !== $assoc_args['return'] ){
+					return false;
+				} else {
+					exit;
+				}
+			}
 		}
+
+		return true;
 	}
 
 	/**
