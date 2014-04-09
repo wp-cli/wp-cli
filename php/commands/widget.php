@@ -2,6 +2,20 @@
 
 /**
  * Manage sidebar widgets.
+ *
+ * ## EXAMPLES
+ *
+ *     # List widgets on a given sidebar
+ *     wp widget list sidebar-1
+ *
+ *     # Add a calendar widget to the second position on the sidebar
+ *     wp widget add calendar sidebar-1 2
+ *
+ *     # Update option(s) associated with a given widget
+ *     wp widget update calendar-1 --title="Calendar"
+ *
+ *     # Delete one or more widgets entirely
+ *     wp widget delete calendar-2 archive-1
  */
 
 class Widget_Command extends WP_CLI_Command {
@@ -27,7 +41,7 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp sidebar widget list <sidebar> --fields=name --format=csv
+	 *     wp sidebar widget list <sidebar-id> --fields=name --format=csv
 	 *
 	 * @subcommand list
 	 */
@@ -64,6 +78,10 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * [--<field>=<value>]
 	 * : Widget option to add, with its new value
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp widget add calendar sidebar-1 2 --title="Calendar"
 	 *
 	 * @subcommand add
 	 */
@@ -111,6 +129,10 @@ class Widget_Command extends WP_CLI_Command {
 	 * [--<field>=<value>]
 	 * : Field to update, with its new value
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp widget update calendar-1 --title="Calendar"
+	 *
 	 * @subcommand update
 	 */
 	public function update( $args, $assoc_args ) {
@@ -144,6 +166,12 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * [--sidebar-id=<sidebar-id>]
 	 * : Assign the widget to a new sidebar
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp widget move recent-comments-2 --position=2
+	 *
+	 *     wp widget move recent-comments-2 --sidebar-id=wp_inactive_widgets
 	 *
 	 * @subcommand move
 	 */
@@ -179,6 +207,10 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * <widget-id>...
 	 * : Unique ID for the widget(s)
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp widget delete recent-comments-2
 	 *
 	 * @subcommand delete
 	 */
