@@ -68,7 +68,7 @@ Feature: Wordpress code scaffolding
       """
 
   Scenario: Scaffold commands should ask for confirmation to overwrite if file already exists which can be overruled by passing --yes flag 
-    When I run `wp scaffold cpt zombie-speed --theme`
+    When I run `wp scaffold taxonomy zombie-speed --theme`
     And I run `wp scaffold taxonomy zombie-speed --theme --yes`
     Then STDOUT should contain:
       """
