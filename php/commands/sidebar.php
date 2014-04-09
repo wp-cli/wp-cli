@@ -13,7 +13,7 @@ class Sidebar_Command extends WP_CLI_Command {
 
 	/**
 	 * List registered sidebars.
-	 * 
+	 *
 	 * ## OPTIONS
 	 *
 	 * [--fields=<fields>]
@@ -33,14 +33,8 @@ class Sidebar_Command extends WP_CLI_Command {
 
 		\WP_CLI\Utils\wp_register_unused_sidebar();
 
-		$output_sidebars = array();
-		foreach( $wp_registered_sidebars as $registered_sidebar ) {
-			$output_sidebars[] = (object)$registered_sidebar;
-		}
-
 		$formatter = new \WP_CLI\Formatter( $assoc_args, $this->fields );
-		$formatter->display_items( $output_sidebars );
-
+		$formatter->display_items( $wp_registered_sidebars );
 	}
 
 }
