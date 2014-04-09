@@ -37,14 +37,32 @@ class Subcommand extends CompositeCommand {
 		return $this->synopsis;
 	}
 
+	/**
+	 * If an alias is set, grant access to it
+	 * Aliases permit subcommands to be instantiated
+	 * with a secondary identity
+	 * 
+	 * @return string
+	 */
 	function get_alias() {
 		return $this->alias;
 	}
 
+	/**
+	 * Print the usage details to the end user
+	 * 
+	 * @param string $prefix
+	 */
 	function show_usage( $prefix = 'usage: ' ) {
 		\WP_CLI::line( $this->get_usage( $prefix ) );
 	}
 
+	/**
+	 * Get the usage of the subcommand as a formatted string
+	 * 
+	 * @param string $prefix
+	 * @return string
+	 */
 	function get_usage( $prefix ) {
 		return sprintf( "%s%s %s",
 			$prefix,

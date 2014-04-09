@@ -262,13 +262,21 @@ class Runner {
 
 		$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
 
+		$found_wp_settings = false;
+
 		$lines_to_run = array();
 
 		foreach ( $wp_config_code as $line ) {
-			if ( preg_match( '/^\s*require.+wp-settings\.php/', $line ) )
+			if ( preg_match( '/^\s*require.+wp-settings\.php/', $line ) ) {
+				$found_wp_settings = true;
 				continue;
+			}
 
 			$lines_to_run[] = $line;
+		}
+
+		if ( !$found_wp_settings ) {
+			WP_CLI::error( 'Strange wp-config.php file: wp-settings.php is not loaded directly.' );
 		}
 
 		$source = implode( "\n", $lines_to_run );
@@ -518,7 +526,7 @@ class Runner {
 				"Either create one manually or use `wp core config`." );
 		}
 
-		if ( $this->cmd_starts_with( array( 'db' ) ) ) {
+		if ( $this->cmd_starts_with( array( 'db' ) ) && !$this->cmd_starts_with( array( 'db', 'tables' ) ) ) {
 			eval( $this->get_wp_config_code() );
 			$this->_run_command();
 			exit;
