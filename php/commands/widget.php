@@ -289,6 +289,7 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Re-implementation of wp_get_sidebars_widgets()
+	 * because the original has a nasty global component
 	 */ 
 	private function wp_get_sidebars_widgets() {
 		$sidebars_widgets = get_option( 'sidebars_widgets', array() );
