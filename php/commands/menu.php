@@ -10,6 +10,12 @@
  *
  *     # List existing menus
  *     wp menu list
+ *
+ *     # Create a new menu link item
+ *     wp menu item add-custom sidebar-menu Apple http://apple.com --porcelain
+ *
+ *     # Assign the 'primary-menu' menu to the 'primary' location
+ *     wp menu location assign primary-menu primary
  */
 class Menu_Command extends WP_CLI_Command {
 
