@@ -137,12 +137,11 @@ class Widget_Command extends WP_CLI_Command {
 			WP_CLI::error( "No options specified to update." );
 		}
 
-		$option_key = 'widget_' . $name;
 		$option_index = $this->get_widget_option_index( $sidebar_id, $name, $position );
-		$widget_options = get_option( $option_key );
+		$widget_options = $this->get_widget_options( $name );
 		$clean_options = $this->sanitize_widget_options( $name, $assoc_args, $widget_options[ $option_index ] );
 		$widget_options[ $option_index ] = array_merge( (array)$widget_options[ $option_index ], $clean_options );
-		update_option( $option_key, $widget_options );
+		$this->update_widget_options( $name, $widget_options );
 
 		WP_CLI::success( "Widget updated." );
 
@@ -174,20 +173,7 @@ class Widget_Command extends WP_CLI_Command {
 			$new_position = 1;
 		}
 
-		// Human-readable positions are different than numerically indexed array
-		$current_position--;
-		$new_position--;
-
-		// Reposition and update
-		$all_widgets = wp_get_sidebars_widgets();
-		$sidebar_widgets = $all_widgets[ $sidebar_id ];
-		$part = array_splice( $sidebar_widgets, $current_position, 1 );
-		array_splice( $sidebar_widgets, $new_position, 0, $part );
-		$all_widgets[ $sidebar_id ] = array_values( $sidebar_widgets );
-		update_option( 'sidebars_widgets', $all_widgets );
-
-		// Reset the global just in case
-		wp_get_sidebars_widgets();
+		$this->reposition_sidebar_widget( $sidebar_id, $current_position, $new_position );
 
 		WP_CLI::success( "Widget moved." );
 
@@ -213,21 +199,17 @@ class Widget_Command extends WP_CLI_Command {
 		$this->validate_sidebar_widget( $sidebar_id, $name, $position );
 
 		// Remove the widget's settings
-		$option_key = 'widget_' . $name;
 		$option_index = $this->get_widget_option_index( $sidebar_id, $name, $position );
-		$widget_options = get_option( $option_key );
+		$widget_options = $this->get_widget_options( $name );
 		unset( $widget_options[ $option_index ] );
-		update_option( $option_key, $widget_options );
+		$this->update_widget_options( $name, $widget_options );
 
 		// Remove the widget from the sidebar
-		$all_widgets = wp_get_sidebars_widgets();
+		$all_widgets = $this->wp_get_sidebars_widgets();
 		$position--;
 		unset( $all_widgets[ $sidebar_id ][ $position ] );
 		$all_widgets[ $sidebar_id ] = array_values( $all_widgets[ $sidebar_id ] );
 		update_option( 'sidebars_widgets', $all_widgets );
-
-		// Reset the global just in case
-		wp_get_sidebars_widgets();
 
 		WP_CLI::success( "Widget removed from sidebar." );
 	}
@@ -284,7 +266,7 @@ class Widget_Command extends WP_CLI_Command {
 	 */
 	private function get_sidebar_widgets( $sidebar_id ) {
 
-		$all_widgets = wp_get_sidebars_widgets();
+		$all_widgets = $this->wp_get_sidebars_widgets();
 
 		if ( empty( $all_widgets[ $sidebar_id ] ) ) {
 			return array();
@@ -311,6 +293,19 @@ class Widget_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Re-implementation of wp_get_sidebars_widgets()
+	 */ 
+	private function wp_get_sidebars_widgets() {
+		$sidebars_widgets = get_option( 'sidebars_widgets', array() );
+
+		if ( is_array( $sidebars_widgets ) && isset( $sidebars_widgets['array_version'] ) ) {
+			unset( $sidebars_widgets['array_version'] );
+		}
+
+		return $sidebars_widgets;
+	}
+
+	/**
 	 * Get the widget's option index from its location on the sidebar
 	 *
 	 * @param string $sidebar_id
@@ -320,7 +315,7 @@ class Widget_Command extends WP_CLI_Command {
 	 */
 	private function get_widget_option_index( $sidebar_id, $name, $position ) {
 
-		$all_widgets = wp_get_sidebars_widgets();
+		$all_widgets = $this->wp_get_sidebars_widgets();
 		$sidebar_widgets = $all_widgets[ $sidebar_id ];
 		$position--;
 		$widget_real_name = $sidebar_widgets[ $position ];
@@ -348,6 +343,29 @@ class Widget_Command extends WP_CLI_Command {
 	 */
 	private function update_widget_options( $name, $value ) {
 		update_option( 'widget_' . $name, $value );
+	}
+
+	/**
+	 * Reposition a widget within a sidebar
+	 * 
+	 * @param string $sidebar_id
+	 * @param int $current_position
+	 * @param int $new_position
+	 */
+	private function reposition_sidebar_widget( $sidebar_id, $current_position, $new_position ) {
+
+		// Human-readable positions are different than numerically indexed array
+		$current_position--;
+		$new_position--;
+
+		// Reposition and update
+		$all_widgets = $this->wp_get_sidebars_widgets();
+		$sidebar_widgets = $all_widgets[ $sidebar_id ];
+		$part = array_splice( $sidebar_widgets, $current_position, 1 );
+		array_splice( $sidebar_widgets, $new_position, 0, $part );
+		$all_widgets[ $sidebar_id ] = array_values( $sidebar_widgets );
+		update_option( 'sidebars_widgets', $all_widgets );
+
 	}
 
 	/**
