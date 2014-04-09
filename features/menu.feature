@@ -71,7 +71,7 @@ Feature: Manage WordPress menus
       | custom    | WordPress        | 2        | http://wordpress.org |
       | taxonomy  | Test term        | 3        | {TERM_LINK}          |
 
-    When I run `wp menu item remove {ITEM_ID}`
+    When I run `wp menu item delete {ITEM_ID}`
     And I run `wp menu item list sidebar-menu --format=count`
     Then STDOUT should be:
     """

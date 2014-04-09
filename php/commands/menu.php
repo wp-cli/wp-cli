@@ -414,7 +414,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Remove an item from a menu
+	 * Delete an item from a menu
 	 *
 	 * <db-id>
 	 * : Database ID for the menu item.
@@ -423,9 +423,9 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 *
 	 *     wp menu item remove 45
 	 *
-	 * @subcommand remove
+	 * @subcommand delete
 	 */
-	public function remove( $args, $_ ) {
+	public function delete( $args, $_ ) {
 
 		$ret = wp_delete_post( $args[0], true );
 		if ( $ret ) {
