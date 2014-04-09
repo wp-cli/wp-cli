@@ -2,8 +2,6 @@
 <ruleset name="WP-CLI">
 	<description>WP-CLI coding standards.</description>
 
-	<exclude-pattern>php/Spyc.php</exclude-pattern>
-
 	<rule ref="Generic.WhiteSpace.DisallowSpaceIndent"/>
 	<rule ref="Generic.Files.EndFileNewline"/>
 
