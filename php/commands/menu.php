@@ -61,10 +61,10 @@ class Menu_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete a menu
+	 * Delete one or more menus
 	 *
-	 * <menu>
-	 * : The name, slug, or term ID for the menu
+	 * <menu>...
+	 * : The name, slug, or term ID for the menu(s)
 	 *
 	 * ## EXAMPLES
 	 *
@@ -72,17 +72,20 @@ class Menu_Command extends WP_CLI_Command {
 	 */
 	public function delete( $args, $_ ) {
 
-		$ret = wp_delete_nav_menu( $args[0] );
+		foreach( $args as $arg ) {
 
-		if ( ! $ret || is_wp_error( $ret ) ) {
+			$ret = wp_delete_nav_menu( $args[0] );
 
-			WP_CLI::error( "Error deleting menu." );
+			if ( ! $ret || is_wp_error( $ret ) ) {
 
-		} else {
+				WP_CLI::warning( "Error deleting menu." );
 
-			WP_CLI::success( "Menu deleted." );
+			}
 
 		}
+
+		WP_CLI::success( "Menu(s) deleted." );
+
 	}
 
 	/**
@@ -414,10 +417,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete an item from a menu
+	 * Delete one or more items from a menu
 	 *
-	 * <db-id>
-	 * : Database ID for the menu item.
+	 * <db-id>...
+	 * : Database ID for the menu item(s).
 	 *
 	 * ## EXAMPLES
 	 *
@@ -427,12 +430,15 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 */
 	public function delete( $args, $_ ) {
 
-		$ret = wp_delete_post( $args[0], true );
-		if ( $ret ) {
-			WP_CLI::success( "Menu item deleted." );
-		} else {
-			WP_CLI::error( "Couldn't delete menu item." );
+		foreach( $args as $arg ) {
+
+			$ret = wp_delete_post( $arg, true );
+			if ( ! $ret ) {
+				WP_CLI::warning( "Couldn't delete menu item." );
+			}
+
 		}
+		WP_CLI::success( "Menu item(s) deleted." );
 
 	}
 
