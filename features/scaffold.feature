@@ -67,6 +67,7 @@ Feature: Wordpress code scaffolding
       __( 'Brain eaters'
       """
 
+  # Test for the overwrite --yes flags
   Scenario: Scaffold commands should ask for confirmation to overwrite if file already exists which can be overruled by passing --yes flag 
     When I run `wp scaffold taxonomy zombie-speed --theme`
     And I run `wp scaffold taxonomy zombie-speed --theme --yes`
@@ -76,6 +77,12 @@ Feature: Wordpress code scaffolding
       """
     When I run `wp scaffold post-type zombie --theme`
     When I run `wp scaffold post-type zombie --theme --yes`
+    Then STDOUT should contain:
+      """
+      Created
+      """
+    When I run `wp scaffold plugin zombieland`
+    When I run `wp scaffold plugin zombieland --yes`
     Then STDOUT should contain:
       """
       Created
