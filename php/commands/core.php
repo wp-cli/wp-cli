@@ -306,6 +306,25 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Determine if the WordPress tables are installed.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     if ! $(wp core is-multisite); then
+	 *         wp core multisite-convert
+	 *     fi
+	 *
+	 * @subcommand is-multisite
+	 */
+	public function is_multisite() {
+		if ( is_blog_installed() && is_multisite() ) {
+			exit( 0 );
+		} else {
+			exit( 1 );
+		}
+	}
+
+	/**
 	 * Create the WordPress tables in the database.
 	 *
 	 * ## OPTIONS
