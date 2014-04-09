@@ -25,7 +25,6 @@
 	},
 	"autoload": {
 		"psr-0": { "WP_CLI": "php" },
-		"files": [ "php/Spyc.php" ],
 		"classmap": [ "php/export" ]
 	}
 }
