@@ -2,6 +2,14 @@
 
 /**
  * List, create, assign, and delete menus
+ *
+ * ## EXAMPLES
+ *
+ *     # Create a new menu
+ *     wp menu create "My Menu"
+ *
+ *     # List existing menus
+ *     wp menu list
  */
 class Menu_Command extends WP_CLI_Command {
 
@@ -127,6 +135,14 @@ class Menu_Command extends WP_CLI_Command {
 
 /**
  * List, add, and delete items associated with a menu
+ *
+ * ## EXAMPLES
+ *
+ *     # Add an existing post to an existing menu
+ *     wp menu item add-post sidebar-menu 33 --title="Custom Test Post"
+ *
+ *     # Create a new menu link item
+ *     wp menu item add-custom sidebar-menu Apple http://apple.com --porcelain
  */
 class Menu_Item_Command extends WP_CLI_Command {
 
@@ -509,6 +525,17 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 /**
  * Manage a menu's assignment to locations.
+ *
+ * ## EXAMPLES
+ *
+ *     # List available menu locations
+ *     wp menu location list
+ *
+ *     # Assign the 'primary-menu' menu to the 'primary' location
+ *     wp menu location assign primary-menu primary
+ *
+ *     # Remove the 'primary-menu' menu from the 'primary' location
+ *     wp menu location remove primary-menu primary
  */
 class Menu_Location_Command extends WP_CLI_Command {
 
@@ -517,6 +544,10 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp menu location list
 	 *
 	 * @subcommand list
 	 */
@@ -543,6 +574,10 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *
 	 * <location>
 	 * : Location's slug
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp menu location assign primary-menu primary
 	 *
 	 * @subcommand assign
 	 */
@@ -576,6 +611,10 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *
 	 * <location>
 	 * : Location's slug
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp menu location remove primary-menu primary
 	 *
 	 * @subcommand remove
 	 */
