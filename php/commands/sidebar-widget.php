@@ -269,6 +269,26 @@ class Widget_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Get the options for a given widget
+	 * 
+	 * @param string $name
+	 * @return array
+	 */
+	private function get_widget_options( $name ) {
+		return get_option( 'widget_' . $name, array() );
+	}
+
+	/**
+	 * Update the options for a given widget
+	 * 
+	 * @param string $name
+	 * @param mixed
+	 */
+	private function update_widget_options( $name, $value ) {
+		update_option( 'widget_' . $name, $value );
+	}
+
+	/**
 	 * Get a widget's instantiated object based on its name
 	 * 
 	 * @param string $id_base Name of the widget
