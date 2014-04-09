@@ -69,11 +69,7 @@ class Widget_Command extends WP_CLI_Command {
 	public function add( $args, $assoc_args ) {
 
 		list( $sidebar_id, $name ) = $args;
-		if ( isset( $args[2] ) ) {
-			$position = (int) $args[2];
-		} else {
-			$position = false;
-		}
+		$new_position = ( isset( $args[2] ) ) ? (int) $args[2] : false;
 		$this->validate_sidebar( $sidebar_id );
 
 		if ( false == ( $widget = $this->get_widget_obj( $name ) ) ) {
@@ -87,6 +83,9 @@ class Widget_Command extends WP_CLI_Command {
 		 * 3. Positioning appropriately
 		 */
 		$widget_options = $option_keys = $this->get_widget_options( $name );
+		if ( ! isset( $widget_options['_multiwidget'] ) ) {
+			$widget_options['_multiwidget'] = 1;
+		}
 		unset( $option_keys['_multiwidget'] );
 		$option_keys = array_keys( $option_keys );
 		$last_key = array_pop( $option_keys );
@@ -94,18 +93,14 @@ class Widget_Command extends WP_CLI_Command {
 		$widget_options[ $option_index ] = $this->sanitize_widget_options( $name, $assoc_args, array() );
 		$this->update_widget_options( $name, $widget_options );
 
-		$all_widgets = wp_get_sidebars_widgets();
-		$sidebar_widgets = $all_widgets[ $sidebar_id ];
-		$sidebar_widgets[] = $name . '-' . $option_index;
-
-		$current_position = count( $sidebar_widgets ) - 1;
-		if ( $position ) {
-			$new_position = $position - 1;
-			$part = array_splice( $sidebar_widgets, $current_position, 1 );
-			array_splice( $sidebar_widgets, $new_position, 0, $part );
-			$all_widgets[ $sidebar_id ] = array_values( $sidebar_widgets );
-		}
+		$all_widgets = $this->wp_get_sidebars_widgets();
+		$all_widgets[ $sidebar_id ][] = $name . '-' . $option_index;
 		update_option( 'sidebars_widgets', $all_widgets );
+
+		$current_position = count( $all_widgets[ $sidebar_id ] );
+		if ( $new_position ) {
+			$this->reposition_sidebar_widget( $sidebar_id, $current_position, $new_position );
+		}
 
 		WP_CLI::success( "Added widget." );
 
