@@ -317,6 +317,10 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * [--activate]
 	 * : Activate the newly generated plugin.
+	 *
+	 * [--yes]
+	 * : Answer yes to the confirmation message.
+	 *
 	 */
 	function plugin( $args, $assoc_args ) {
 		$plugin_slug = $args[0];
@@ -329,13 +333,15 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
+		
+		$assoc_args['return'] = true;
+		
+		$this->create_file( $plugin_path, Utils\mustache_render( 'plugin.mustache', $data ), $assoc_args );
 
-		$this->create_file( $plugin_path, Utils\mustache_render( 'plugin.mustache', $data ) );
-
-		WP_CLI::success( "Created $plugin_dir" );
+		unset( $assoc_args['return'] );
 
 		if ( !isset( $assoc_args['skip-tests'] ) ) {
-			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ) );
+			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), $assoc_args );
 		}
 
 		if ( isset( $assoc_args['activate'] ) ) {
@@ -365,6 +371,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * <plugin>
 	 * : The name of the plugin to generate test files for.
 	 *
+	 * [--yes]
+	 * : Answer yes to the confirmation message.
+	 *
 	 * ## EXAMPLE
 	 *
 	 *     wp scaffold plugin-tests hello
@@ -383,8 +392,10 @@ class Scaffold_Command extends WP_CLI_Command {
 		$wp_filesystem->mkdir( $tests_dir );
 		$wp_filesystem->mkdir( $bin_dir );
 
+		$assoc_args['return'] = true;
+
 		$this->create_file( "$tests_dir/bootstrap.php",
-			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) );
+			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ), $assoc_args );
 
 		$to_copy = array(
 			'install-wp-tests.sh' => $bin_dir,
@@ -394,7 +405,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 
 		foreach ( $to_copy as $file => $dir ) {
-			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", "$dir/$file", true );
+			$this->copy( WP_CLI_ROOT . "/templates/$file", "$dir/$file", $assoc_args );
 		}
 
 		WP_CLI::success( "Created test files." );
@@ -421,8 +432,21 @@ class Scaffold_Command extends WP_CLI_Command {
 
 	}
 
-		if ( !$wp_filesystem->put_contents( $filename, $contents ) ) {
-			WP_CLI::error( "Error creating file: $filename" );
+	private function copy( $source, $destination, $assoc_args ) {
+		global $wp_filesystem;
+
+		if ( file_exists( $destination ) ) {
+			$overwrite = WP_CLI::confirm( "Overwrite existsing file? $destination", $assoc_args );
+		} else {
+			$overwrite = true; //because it doesn't exists so proceed
+		}
+
+		if( $overwrite ){ 
+			if ( $wp_filesystem->copy( $source, $destination, $overwrite ) ){
+				WP_CLI::success( "Copied file: $destination" );
+			} else {
+				WP_CLI::error( "Error copying file: $destination" );
+			}
 		}
 	}
 
