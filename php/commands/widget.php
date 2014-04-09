@@ -8,6 +8,7 @@ class Widget_Command extends WP_CLI_Command {
 
 	private $fields = array(
 		'name',
+		'id',
 		'position',
 		'options',
 		);
@@ -52,11 +53,11 @@ class Widget_Command extends WP_CLI_Command {
 	/**
 	 * Add a widget to a sidebar.
 	 * 
-	 * <sidebar-id>
-	 * : ID for the corresponding sidebar.
-	 * 
 	 * <name>
 	 * : Widget name.
+	 * 
+	 * <sidebar-id>
+	 * : ID for the corresponding sidebar.
 	 * 
 	 * [<position>]
 	 * : Widget's current position within the sidebar. Defaults to last
@@ -68,8 +69,8 @@ class Widget_Command extends WP_CLI_Command {
 	 */
 	public function add( $args, $assoc_args ) {
 
-		list( $sidebar_id, $name ) = $args;
-		$new_position = ( isset( $args[2] ) ) ? (int) $args[2] : false;
+		list( $name, $sidebar_id ) = $args;
+		$position = ( isset( $args[2] ) ) ? (int) $args[2] - 1 : 0;
 		$this->validate_sidebar( $sidebar_id );
 
 		if ( false == ( $widget = $this->get_widget_obj( $name ) ) ) {
@@ -93,30 +94,19 @@ class Widget_Command extends WP_CLI_Command {
 		$widget_options[ $option_index ] = $this->sanitize_widget_options( $name, $assoc_args, array() );
 		$this->update_widget_options( $name, $widget_options );
 
-		$all_widgets = $this->wp_get_sidebars_widgets();
-		$all_widgets[ $sidebar_id ][] = $name . '-' . $option_index;
-		update_option( 'sidebars_widgets', $all_widgets );
+		$widget_id = $name . '-' . $option_index;
+		$this->move_sidebar_widget( $widget_id, null, $sidebar_id, null, $position );
 
-		$current_position = count( $all_widgets[ $sidebar_id ] );
-		if ( $new_position ) {
-			$this->reposition_sidebar_widget( $sidebar_id, $current_position, $new_position );
-		}
-
-		WP_CLI::success( "Added widget." );
+		WP_CLI::success( "Added widget to sidebar." );
+		
 
 	}
 
 	/**
 	 * Update a given widget's options.
 	 * 
-	 * <sidebar-id>
-	 * : ID for the corresponding sidebar.
-	 * 
-	 * <name>
-	 * : Widget name.
-	 * 
-	 * <position>
-	 * : Widget's current position within the sidebar.
+	 * <widget-id>
+	 * : Unique ID for the widget
 	 * 
 	 * [--<field>=<value>]
 	 * : Field to update, with its new value
@@ -125,14 +115,15 @@ class Widget_Command extends WP_CLI_Command {
 	 */
 	public function update( $args, $assoc_args ) {
 
-		list( $sidebar_id, $name, $position ) = $args;
-		$this->validate_sidebar_widget( $sidebar_id, $name, $position );
+		list( $widget_id ) = $args;
+		$this->validate_sidebar_widget( $widget_id );
 
 		if ( empty( $assoc_args ) ) {
 			WP_CLI::error( "No options specified to update." );
 		}
 
-		$option_index = $this->get_widget_option_index( $sidebar_id, $name, $position );
+		list( $name, $option_index ) = $this->get_widget_data( $widget_id );
+
 		$widget_options = $this->get_widget_options( $name );
 		$clean_options = $this->sanitize_widget_options( $name, $assoc_args, $widget_options[ $option_index ] );
 		$widget_options[ $option_index ] = array_merge( (array)$widget_options[ $option_index ], $clean_options );
@@ -145,64 +136,66 @@ class Widget_Command extends WP_CLI_Command {
 	/**
 	 * Move a widget from one position on a sidebar to another.
 	 * 
-	 * <sidebar-id>
-	 * : ID for the corresponding sidebar.
+	 * <widget-id>
+	 * : Unique ID for the widget
 	 * 
-	 * <name>
-	 * : Widget name.
+	 * [--position=<position>]
+	 * : Assign the widget to a new position.
 	 * 
-	 * <current-position>
-	 * : Widget's current position within the sidebar.
-	 * 
-	 * <new-position>
-	 * : Widget's new position within the sidebar.
+	 * [--sidebar-id=<sidebar-id>]
+	 * : Assign the widget to a new sidebar
 	 * 
 	 * @subcommand move
 	 */
 	public function move( $args, $assoc_args ) {
 
-		list( $sidebar_id, $name, $current_position, $new_position ) = $args;
-		$this->validate_sidebar_widget( $sidebar_id, $name, $current_position );
+		list( $widget_id ) = $args;
+		$this->validate_sidebar_widget( $widget_id );
 
-		if ( $new_position < -1 ) {
-			$new_position = 1;
+		if ( empty( $assoc_args['position'] ) && empty( $assoc_args['sidebar-id'] ) ) {
+			WP_CLI::error( "A new position or new sidebar must be specified." );
 		}
 
-		$this->reposition_sidebar_widget( $sidebar_id, $current_position, $new_position );
+		list( $name, $option_index, $current_sidebar_id, $current_sidebar_index ) = $this->get_widget_data( $widget_id );
+
+		$new_sidebar_id = ! empty( $assoc_args['sidebar-id'] ) ? $assoc_args['sidebar-id'] : $current_sidebar_id;
+		$this->validate_sidebar( $new_sidebar_id );
+
+		$new_sidebar_index = ! empty( $assoc_args['position'] ) ? $assoc_args['position'] - 1 : $current_sidebar_index;
+		// Moving between sidebars adds to the top
+		if ( $new_sidebar_id != $current_sidebar_id && $new_sidebar_index == $current_sidebar_index ) {
+			// Human-readable positions are different than numerically indexed array
+			$new_sidebar_index = 0;
+		}
+
+		$this->move_sidebar_widget( $widget_id, $current_sidebar_id, $new_sidebar_id, $current_sidebar_index, $new_sidebar_index );
 
 		WP_CLI::success( "Widget moved." );
 
 	}
 
 	/**
-	 * Remove a widget from a sidebar.
+	 * Delete a widget from a sidebar.
 	 * 
-	 * <sidebar-id>
-	 * : ID for the corresponding sidebar.
+	 * <widget-id>
+	 * : Unique ID for the widget
 	 * 
-	 * <name>
-	 * : Widget name.
-	 * 
-	 * <position>
-	 * : Widget's current position within the sidebar.
-	 * 
-	 * @subcommand
+	 * @subcommand delete
 	 */
-	public function remove( $args, $assoc_args ) {
+	public function delete( $args, $assoc_args ) {
 
-		list( $sidebar_id, $name, $position ) = $args;
-		$this->validate_sidebar_widget( $sidebar_id, $name, $position );
+		list( $widget_id ) = $args;
+		$this->validate_sidebar_widget( $widget_id );
 
 		// Remove the widget's settings
-		$option_index = $this->get_widget_option_index( $sidebar_id, $name, $position );
+		list( $name, $option_index, $sidebar_id, $sidebar_index ) = $this->get_widget_data( $widget_id );
 		$widget_options = $this->get_widget_options( $name );
 		unset( $widget_options[ $option_index ] );
 		$this->update_widget_options( $name, $widget_options );
 
 		// Remove the widget from the sidebar
 		$all_widgets = $this->wp_get_sidebars_widgets();
-		$position--;
-		unset( $all_widgets[ $sidebar_id ][ $position ] );
+		unset( $all_widgets[ $sidebar_id ][ $sidebar_index ] );
 		$all_widgets[ $sidebar_id ] = array_values( $all_widgets[ $sidebar_id ] );
 		update_option( 'sidebars_widgets', $all_widgets );
 
@@ -227,20 +220,16 @@ class Widget_Command extends WP_CLI_Command {
 	/**
 	 * Check whether the specified widget is on the sidebar
 	 *
-	 * @param string $sidebar_id
-	 * @param string $name
-	 * @param int $position
+	 * @param string $widget_id
 	 */
-	private function validate_sidebar_widget( $sidebar_id, $name, $position ) {
+	private function validate_sidebar_widget( $widget_id ) {
 
-		$this->validate_sidebar( $sidebar_id );
-
-		$sidebar_widgets = $this->get_sidebar_widgets( $sidebar_id );
+		$sidebars_widgets = $this->wp_get_sidebars_widgets();
 
 		$widget_exists = false;
-		foreach( $sidebar_widgets as $sidebar_widget ) {
+		foreach( $sidebars_widgets as $sidebar_id => $widgets ) {
 
-			if ( $name == $sidebar_widget->name && $position == $sidebar_widget->position ) {
+			if ( in_array( $widget_id, $widgets ) ) {
 				$widget_exists = true;
 				break;
 			}
@@ -268,15 +257,16 @@ class Widget_Command extends WP_CLI_Command {
 		}
 
 		$prepared_widgets = array();
-		foreach( $all_widgets[ $sidebar_id ] as $key => $widget_name ) {
+		foreach( $all_widgets[ $sidebar_id ] as $key => $widget_id ) {
 
 			$prepared_widget = new stdClass;
 
-			$parts = explode( '-', $widget_name );
+			$parts = explode( '-', $widget_id );
 			$option_index = array_pop( $parts );
 			$widget_name = implode( '-', $parts );
 
 			$prepared_widget->name = $widget_name;
+			$prepared_widget->id = $widget_id;
 			$prepared_widget->position = $key + 1;
 			$widget_options = get_option( 'widget_' . $widget_name );
 			$prepared_widget->options = $widget_options[ $option_index ];
@@ -302,23 +292,31 @@ class Widget_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get the widget's option index from its location on the sidebar
-	 *
-	 * @param string $sidebar_id
-	 * @param string $name
-	 * @param int $position
-	 * @return int
+	 * Get the widget's name, option index, sidebar, and sidebar index from its ID
+	 * 
+	 * @param string $widget_id
+	 * @return array
 	 */
-	private function get_widget_option_index( $sidebar_id, $name, $position ) {
+	private function get_widget_data( $widget_id ) {
 
-		$all_widgets = $this->wp_get_sidebars_widgets();
-		$sidebar_widgets = $all_widgets[ $sidebar_id ];
-		$position--;
-		$widget_real_name = $sidebar_widgets[ $position ];
-		$parts = explode( '-', $widget_real_name );
+		$parts = explode( '-', $widget_id );
 		$option_index = array_pop( $parts );
+		$name = implode( '-', $parts );
 
-		return $option_index;
+		$sidebar_id = false;
+		$sidebar_index = false;
+		$all_widgets = $this->wp_get_sidebars_widgets();
+		foreach( $all_widgets as $s_id => &$widgets ) {
+
+			if ( false !== ( $key = array_search( $widget_id, $widgets ) ) ) {
+				$sidebar_id = $s_id;
+				$sidebar_index = $key;
+				break;
+			}
+
+		}
+
+		return array( $name, $option_index, $sidebar_id, $sidebar_index );
 	}
 
 	/**
@@ -344,22 +342,45 @@ class Widget_Command extends WP_CLI_Command {
 	/**
 	 * Reposition a widget within a sidebar
 	 * 
-	 * @param string $sidebar_id
-	 * @param int $current_position
-	 * @param int $new_position
+	 * @param string $widget_id
+	 * @param string $current_sidebar_id
+	 * @param string $new_sidebar_id
+	 * @param int $current_index
+	 * @param int $new_index
 	 */
-	private function reposition_sidebar_widget( $sidebar_id, $current_position, $new_position ) {
+	private function move_sidebar_widget( $widget_id, $current_sidebar_id, $new_sidebar_id, $current_index, $new_index ) {
 
-		// Human-readable positions are different than numerically indexed array
-		$current_position--;
-		$new_position--;
-
-		// Reposition and update
 		$all_widgets = $this->wp_get_sidebars_widgets();
-		$sidebar_widgets = $all_widgets[ $sidebar_id ];
-		$part = array_splice( $sidebar_widgets, $current_position, 1 );
-		array_splice( $sidebar_widgets, $new_position, 0, $part );
-		$all_widgets[ $sidebar_id ] = array_values( $sidebar_widgets );
+		$needs_placement = true;
+		// Existing widget
+		if ( $current_sidebar_id && $current_index ) {
+
+			$widgets = $all_widgets[ $current_sidebar_id ];
+			if ( $current_sidebar_id != $new_sidebar_id ) {
+
+				unset( $widgets[ $current_index ] );
+
+			} else {
+
+				$part = array_splice( $widgets, $current_index, 1 );
+				array_splice( $widgets, $new_index, 0, $part );
+
+				$needs_placement = false;
+
+			}
+
+			$all_widgets[ $current_sidebar_id ] = array_values( $widgets );
+
+		}
+
+		if ( $needs_placement ) {
+			$widgets = $all_widgets[ $new_sidebar_id ];
+			$before = array_slice( $widgets, 0, $new_index, true );
+			$after = array_slice( $widgets, $new_index, count( $widgets ), true );
+			$widgets = array_merge( $before, array( $widget_id ), $after );
+			$all_widgets[ $new_sidebar_id ] = array_values( $widgets );
+		}
+
 		update_option( 'sidebars_widgets', $all_widgets );
 
 	}
