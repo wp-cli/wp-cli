@@ -116,7 +116,6 @@ class Scaffold_Command extends WP_CLI_Command {
 			'label'  => preg_replace( '/_|-/', ' ', strtolower( $slug ) ),
 			'theme'  => false,
 			'plugin' => false,
-			'yes'    => false,
 			'raw'    => false,
 		) );
 
@@ -154,9 +153,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		if ( $path = $this->get_output_path( $control_args, $subdir ) ) {
 			$filename = $path . $slug .'.php';
 			
-			$this->create_file( $filename, $final_output, $control_args['yes'] );
-
-			WP_CLI::success( "Created $filename" );
+			$this->create_file( $filename, $final_output, $assoc_args );
 
 		} else {
 			// STDOUT
@@ -403,18 +400,26 @@ class Scaffold_Command extends WP_CLI_Command {
 		WP_CLI::success( "Created test files." );
 	}
 
-	private function create_file( $filename, $contents, $overwrite ) {
+	private function create_file( $filename, $contents, $assoc_args = array() ) {
 		global $wp_filesystem;
 
-		if ( file_exists( $filename ) && empty( $overwrite ) ) {
-			WP_CLI::confirm( "Overwrite existsing file? $filename", $overwrite );
+		if ( file_exists( $filename ) ) {
+			$overwrite = WP_CLI::confirm( "Overwrite existsing file? $filename", $assoc_args );
+		} else {
+			$overwrite = true; //because it doesn't exists so proceed
 		}
 
-		//if( file_exists( $filename ) && !$overwrite ){
-		//	WP_CLI::error( "File already exists: $filename." );
-		//}
+		if( $overwrite ){ 
+			$wp_filesystem->mkdir( dirname( $filename ) );
 
-		$wp_filesystem->mkdir( dirname( $filename ) );
+			if ( !$wp_filesystem->put_contents( $filename, $contents ) ) {
+				WP_CLI::error( "Error creating file: $filename" );
+			} else {
+				WP_CLI::success( "Created $filename" );
+			}
+		}
+
+	}
 
 		if ( !$wp_filesystem->put_contents( $filename, $contents ) ) {
 			WP_CLI::error( "Error creating file: $filename" );
