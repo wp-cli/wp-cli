@@ -15,10 +15,10 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * List widgets associated with a sidebar.
-	 * 
+	 *
 	 * <sidebar-id>
 	 * : ID for the corresponding sidebar.
-	 * 
+	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields. Defaults to name, id, description
 	 *
@@ -31,7 +31,7 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand list
 	 */
-	public function _list( $args, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 
 		list( $sidebar_id ) = $args;
 
@@ -52,19 +52,19 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Add a widget to a sidebar.
-	 * 
+	 *
 	 * <name>
 	 * : Widget name.
-	 * 
+	 *
 	 * <sidebar-id>
 	 * : ID for the corresponding sidebar.
-	 * 
+	 *
 	 * [<position>]
 	 * : Widget's current position within the sidebar. Defaults to last
-	 * 
+	 *
 	 * [--<field>=<value>]
 	 * : Widget option to add, with its new value
-	 * 
+	 *
 	 * @subcommand add
 	 */
 	public function add( $args, $assoc_args ) {
@@ -98,19 +98,19 @@ class Widget_Command extends WP_CLI_Command {
 		$this->move_sidebar_widget( $widget_id, null, $sidebar_id, null, $position );
 
 		WP_CLI::success( "Added widget to sidebar." );
-		
+
 
 	}
 
 	/**
 	 * Update a given widget's options.
-	 * 
+	 *
 	 * <widget-id>
 	 * : Unique ID for the widget
-	 * 
+	 *
 	 * [--<field>=<value>]
 	 * : Field to update, with its new value
-	 * 
+	 *
 	 * @subcommand update
 	 */
 	public function update( $args, $assoc_args ) {
@@ -135,16 +135,16 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Move a widget from one position on a sidebar to another.
-	 * 
+	 *
 	 * <widget-id>
 	 * : Unique ID for the widget
-	 * 
+	 *
 	 * [--position=<position>]
 	 * : Assign the widget to a new position.
-	 * 
+	 *
 	 * [--sidebar-id=<sidebar-id>]
 	 * : Assign the widget to a new sidebar
-	 * 
+	 *
 	 * @subcommand move
 	 */
 	public function move( $args, $assoc_args ) {
@@ -176,10 +176,10 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete a widget from a sidebar.
-	 * 
+	 *
 	 * <widget-id>
 	 * : Unique ID for the widget
-	 * 
+	 *
 	 * @subcommand delete
 	 */
 	public function delete( $args, $assoc_args ) {
@@ -204,7 +204,7 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Check whether a sidebar is a valid sidebar
-	 * 
+	 *
 	 * @param string $sidebar_id
 	 */
 	private function validate_sidebar( $sidebar_id ) {
@@ -244,7 +244,7 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Get the widgets (and their associated data) for a given sidebar
-	 * 
+	 *
 	 * @param string $sidebar_id
 	 * @return array
 	 */
@@ -280,7 +280,7 @@ class Widget_Command extends WP_CLI_Command {
 	/**
 	 * Re-implementation of wp_get_sidebars_widgets()
 	 * because the original has a nasty global component
-	 */ 
+	 */
 	private function wp_get_sidebars_widgets() {
 		$sidebars_widgets = get_option( 'sidebars_widgets', array() );
 
@@ -293,7 +293,7 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Get the widget's name, option index, sidebar, and sidebar index from its ID
-	 * 
+	 *
 	 * @param string $widget_id
 	 * @return array
 	 */
@@ -321,7 +321,7 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Get the options for a given widget
-	 * 
+	 *
 	 * @param string $name
 	 * @return array
 	 */
@@ -331,7 +331,7 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Update the options for a given widget
-	 * 
+	 *
 	 * @param string $name
 	 * @param mixed
 	 */
@@ -341,7 +341,7 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Reposition a widget within a sidebar
-	 * 
+	 *
 	 * @param string $widget_id
 	 * @param string $current_sidebar_id
 	 * @param string $new_sidebar_id
@@ -387,7 +387,7 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Get a widget's instantiated object based on its name
-	 * 
+	 *
 	 * @param string $id_base Name of the widget
 	 * @return WP_Widget|false
 	 */
@@ -404,7 +404,7 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Clean up a widget's options based on its update callback
-	 * 
+	 *
 	 * @param string $id_base Name of the widget
 	 * @param mixed $dirty_options
 	 * @param mixed $old_options

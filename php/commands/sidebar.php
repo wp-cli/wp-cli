@@ -28,7 +28,7 @@ class Sidebar_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand list
 	 */
-	public function _list( $args, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 		global $wp_registered_sidebars;
 
 		\WP_CLI\Utils\wp_register_unused_sidebar();
