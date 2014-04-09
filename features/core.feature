@@ -101,6 +101,9 @@ Feature: Manage WordPress installation
     When I try `wp core is-installed`
     Then the return code should be 1
 
+    When I try `wp core is-installed --network`
+    Then the return code should be 1
+
     When I try `wp core install`
     Then the return code should be 1
     And STDERR should contain:
@@ -116,6 +119,9 @@ Feature: Manage WordPress installation
       """
       http://localhost:8001
       """
+
+    When I try `wp core is-installed --network`
+    Then the return code should be 1
 
   Scenario: Install WordPress by prompting
     Given an empty directory
@@ -169,7 +175,10 @@ Feature: Manage WordPress installation
     Then STDOUT should be:
       """
       false
-      """ 
+      """
+
+    When I try `wp core is-installed --network`
+    Then the return code should be 1
 
     When I run `wp core install-network --title='test network'`
     Then STDOUT should not be empty
@@ -178,7 +187,10 @@ Feature: Manage WordPress installation
     Then STDOUT should be:
       """
       true
-      """ 
+      """
+
+    When I run `wp core is-installed --network`
+    Then the return code should be 0
 
     When I try `wp core install-network --title='test network'`
     Then the return code should be 1
