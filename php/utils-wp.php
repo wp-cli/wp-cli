@@ -95,3 +95,21 @@ function is_plugin_skipped( $file ) {
 	return in_array( $name, array_filter( $skipped_plugins ) );
 }
 
+/**
+ * Register the sidebar for unused widgets
+ * Core does this in /wp-admin/widgets.php, which isn't helpful
+ */
+function wp_register_unused_sidebar() {
+
+	register_sidebar(array(
+		'name' => __('Inactive Widgets'),
+		'id' => 'wp_inactive_widgets',
+		'class' => 'inactive-sidebar',
+		'description' => __( 'Drag widgets here to remove them from the sidebar but keep their settings.' ),
+		'before_widget' => '',
+		'after_widget' => '',
+		'before_title' => '',
+		'after_title' => '',
+	));
+
+}

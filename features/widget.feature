@@ -6,7 +6,7 @@ Feature: Manage widgets in WordPress sidebar
     When I run `wp theme install p2 --activate`
     Then STDOUT should not be empty
 
-    When I run `wp sidebar widget list sidebar-1 --fields=name,position`
+    When I run `wp widget list sidebar-1 --fields=name,position`
     Then STDOUT should be a table containing rows:
       | name            | position |
       | search          | 1        |
@@ -16,10 +16,10 @@ Feature: Manage widgets in WordPress sidebar
       | categories      | 5        |
       | meta            | 6        |
 
-    When I run `wp sidebar widget move sidebar-1 recent-comments 3 2`
+    When I run `wp widget move sidebar-1 recent-comments 3 2`
     Then STDOUT should not be empty
 
-    When I run `wp sidebar widget list sidebar-1 --fields=name,position`
+    When I run `wp widget list sidebar-1 --fields=name,position`
     Then STDOUT should be a table containing rows:
       | name            | position |
       | search          | 1        |
@@ -29,10 +29,10 @@ Feature: Manage widgets in WordPress sidebar
       | categories      | 5        |
       | meta            | 6        |
 
-    When I run `wp sidebar widget move sidebar-1 recent-comments 2 5`
+    When I run `wp widget move sidebar-1 recent-comments 2 5`
     Then STDOUT should not be empty
 
-    When I run `wp sidebar widget list sidebar-1 --fields=name,position`
+    When I run `wp widget list sidebar-1 --fields=name,position`
     Then STDOUT should be a table containing rows:
       | name            | position |
       | search          | 1        |
@@ -42,10 +42,10 @@ Feature: Manage widgets in WordPress sidebar
       | recent-comments | 5        |
       | meta            | 6        |
 
-    When I run `wp sidebar widget remove sidebar-1 recent-comments 5`
+    When I run `wp widget remove sidebar-1 recent-comments 5`
     Then STDOUT should not be empty
 
-    When I run `wp sidebar widget list sidebar-1 --fields=name,position`
+    When I run `wp widget list sidebar-1 --fields=name,position`
     Then STDOUT should be a table containing rows:
       | name            | position |
       | search          | 1        |
@@ -54,10 +54,10 @@ Feature: Manage widgets in WordPress sidebar
       | categories      | 4        |
       | meta            | 5        |
 
-    When I run `wp sidebar widget add sidebar-1 calendar 2`
+    When I run `wp widget add sidebar-1 calendar 2`
     Then STDOUT should not be empty
 
-    When I run `wp sidebar widget list sidebar-1 --fields=name,position`
+    When I run `wp widget list sidebar-1 --fields=name,position`
     Then STDOUT should be a table containing rows:
       | name            | position |
       | search          | 1        |
@@ -67,10 +67,10 @@ Feature: Manage widgets in WordPress sidebar
       | categories      | 5        |
       | meta            | 6        |
 
-    When I run `wp sidebar widget update sidebar-1 calendar 2 --title="Calendar"`
+    When I run `wp widget update sidebar-1 calendar 2 --title="Calendar"`
     Then STDOUT should not be empty
 
-    When I run `wp sidebar widget list sidebar-1 --fields=name,position,options`
+    When I run `wp widget list sidebar-1 --fields=name,position,options`
     Then STDOUT should be a table containing rows:
       | name            | position | options               |
       | calendar        | 2        | {"title":"Calendar"}  |
