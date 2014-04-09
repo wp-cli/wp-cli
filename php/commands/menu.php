@@ -214,6 +214,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * [--porcelain]
 	 * : Output just the new menu item id.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp menu item add-post sidebar-menu 33 --title="Custom Test Post"
+	 *
 	 * @subcommand add-post
 	 */
 	public function add_post( $args, $assoc_args ) {
@@ -268,6 +272,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * [--porcelain]
 	 * : Output just the new menu item id.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp menu item add-term sidebar-menu post_tag 24
+	 *
 	 * @subcommand add-term
 	 */
 	public function add_term( $args, $assoc_args ) {
@@ -317,6 +325,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * [--porcelain]
 	 * : Output just the new menu item id.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp menu item add-custom sidebar-menu Apple http://apple.com --porcelain
+	 *
 	 * @subcommand add-custom
 	 */
 	public function add_custom( $args, $assoc_args ) {
@@ -358,6 +370,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * [--parent-id=<parent-id>]
 	 * : Make this menu item a child of another menu item
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp menu item update 45 --title=WordPress --link='http://wordpress.org' --target=_blank --position=2
+	 *
 	 * @subcommand update
 	 */
 	public function update( $args, $assoc_args ) {
@@ -380,6 +396,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 *
 	 * <db-id>
 	 * : Database ID for the menu item.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp menu item remove 45
 	 *
 	 * @subcommand remove
 	 */
