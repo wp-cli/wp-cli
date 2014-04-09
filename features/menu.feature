@@ -21,19 +21,19 @@ Feature: Manage WordPress menus
   Scenario: Assign / remove location from a menu
 
     When I run `wp theme install p2 --activate`
-    And I run `wp menu theme-locations`
+    And I run `wp menu location list`
     Then STDOUT should be a table containing rows:
       | location       | description        |
       | primary        | Primary Menu       |
 
     When I run `wp menu create "Primary Menu"`
-    And I run `wp menu assign-location primary-menu primary`
+    And I run `wp menu location assign primary-menu primary`
     And I run `wp menu list --fields=slug,locations`
     Then STDOUT should be a table containing rows:
       | slug            | locations       |
       | primary-menu    | primary         |
 
-    When I run `wp menu remove-location primary-menu primary`
+    When I run `wp menu location remove primary-menu primary`
     And I run `wp menu list --fields=slug,locations`
     Then STDOUT should be a table containing rows:
       | slug            | locations       |
