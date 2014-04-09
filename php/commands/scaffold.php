@@ -152,7 +152,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		if ( $path = $this->get_output_path( $control_args, $subdir ) ) {
 			$filename = $path . $slug .'.php';
-			
+
 			$this->create_file( $filename, $final_output, $assoc_args );
 
 		} else {
@@ -333,12 +333,8 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
-		
-		$assoc_args['return'] = true;
-		
-		$this->create_file( $plugin_path, Utils\mustache_render( 'plugin.mustache', $data ), $assoc_args );
 
-		unset( $assoc_args['return'] );
+		$this->create_file( $plugin_path, Utils\mustache_render( 'plugin.mustache', $data ), $assoc_args );
 
 		if ( !isset( $assoc_args['skip-tests'] ) ) {
 			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), $assoc_args );
@@ -392,8 +388,6 @@ class Scaffold_Command extends WP_CLI_Command {
 		$wp_filesystem->mkdir( $tests_dir );
 		$wp_filesystem->mkdir( $bin_dir );
 
-		$assoc_args['return'] = true;
-
 		$this->create_file( "$tests_dir/bootstrap.php",
 			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ), $assoc_args );
 
@@ -414,13 +408,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	private function create_file( $filename, $contents, $assoc_args = array() ) {
 		global $wp_filesystem;
 
-		if ( file_exists( $filename ) ) {
-			$overwrite = WP_CLI::confirm( "Overwrite existsing file? $filename", $assoc_args );
-		} else {
-			$overwrite = true; //because it doesn't exists so proceed
-		}
-
-		if( $overwrite ){ 
+		if ( self::check_overwrite( $filename, $assoc_args ) ) {
 			$wp_filesystem->mkdir( dirname( $filename ) );
 
 			if ( !$wp_filesystem->put_contents( $filename, $contents ) ) {
@@ -429,25 +417,25 @@ class Scaffold_Command extends WP_CLI_Command {
 				WP_CLI::success( "Created $filename" );
 			}
 		}
-
 	}
 
 	private function copy( $source, $destination, $assoc_args ) {
 		global $wp_filesystem;
 
-		if ( file_exists( $destination ) ) {
-			$overwrite = WP_CLI::confirm( "Overwrite existsing file? $destination", $assoc_args );
-		} else {
-			$overwrite = true; //because it doesn't exists so proceed
-		}
-
-		if( $overwrite ){ 
+		if ( self::check_overwrite( $filename, $assoc_args ) ) {
 			if ( $wp_filesystem->copy( $source, $destination, $overwrite ) ){
 				WP_CLI::success( "Copied file: $destination" );
 			} else {
 				WP_CLI::error( "Error copying file: $destination" );
 			}
 		}
+	}
+
+	private static function check_overwrite( $file, $assoc_args ) {
+		if ( !file_exists( $file ) )
+			return true;
+
+		return WP_CLI::confirm( "Overwrite existing file? $filename", $assoc_args );
 	}
 
 	/**

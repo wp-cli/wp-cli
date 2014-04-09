@@ -128,7 +128,10 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function _empty( $args, $assoc_args ) {
 
-		WP_CLI::confirm( 'Are you sure you want to empty the site at ' . site_url() . ' of all posts, comments, and terms?', $assoc_args );
+		if ( !WP_CLI::confirm(
+			'Are you sure you want to empty ' . site_url() . ' of all posts, comments, and terms?', $assoc_args ) ) {
+			return;
+		}
 
 		$this->_empty_posts();
 		$this->_empty_comments();
@@ -176,7 +179,10 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( "Site not found." );
 		}
 
-		WP_CLI::confirm( "Are you sure you want to delete the $blog->siteurl site?", $assoc_args );
+		if ( !WP_CLI::confirm(
+			"Are you sure you want to delete the $blog->siteurl site?", $assoc_args ) ) {
+			return;
+		}
 
 		wpmu_delete_blog( $blog->blog_id, !isset( $assoc_args['keep-tables'] ) );
 
