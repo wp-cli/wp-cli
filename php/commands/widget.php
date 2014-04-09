@@ -203,6 +203,36 @@ class Widget_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Deactivate one or more widgets from an active sidebar.
+	 *
+	 * <widget-id>...
+	 * : Unique ID for the widget(s)
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp widget deactivate recent-comments-2
+	 *
+	 * @subcommand deactivate
+	 */
+	public function deactivate( $args, $assoc_args ) {
+
+		foreach( $args as $widget_id ) {
+			$this->validate_sidebar_widget( $widget_id );
+
+			list( $name, $option_index, $sidebar_id, $sidebar_index ) = $this->get_widget_data( $widget_id );
+			if ( 'wp_inactive_widgets' == $sidebar_id ) {
+				WP_CLI::warning( sprintf( "'%s' is already deactivated.", $widget_id ) );
+				continue;
+			}
+
+			$this->move_sidebar_widget( $widget_id, $sidebar_id, 'wp_inactive_widgets', $sidebar_index, 0 );
+
+		}
+
+		WP_CLI::success( "Widget(s) deactivated" );
+	}
+
+	/**
 	 * Delete one or more widgets from a sidebar.
 	 *
 	 * <widget-id>...

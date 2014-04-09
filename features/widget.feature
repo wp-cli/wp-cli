@@ -32,6 +32,9 @@ Feature: Manage widgets in WordPress sidebar
     When I run `wp widget move recent-comments-2 --sidebar-id=wp_inactive_widgets`
     Then STDOUT should not be empty
 
+    When I run `wp widget deactivate meta-2`
+    Then STDOUT should not be empty
+
     When I run `wp widget list sidebar-1 --fields=name,id,position`
     Then STDOUT should be a table containing rows:
       | name            | id                | position |
@@ -39,12 +42,12 @@ Feature: Manage widgets in WordPress sidebar
       | recent-posts    | recent-posts-2    | 2        |
       | archives        | archives-2        | 3        |
       | categories      | categories-2      | 4        |
-      | meta            | meta-2            | 5        |
 
     When I run `wp widget list wp_inactive_widgets --fields=name,id,position`
     Then STDOUT should be a table containing rows:
       | name            | id                | position |
-      | recent-comments | recent-comments-2 | 1        |
+      | meta            | meta-2            | 1        |
+      | recent-comments | recent-comments-2 | 2        |
 
     When I run `wp widget delete archives-2 recent-posts-2`
     Then STDOUT should not be empty
@@ -54,7 +57,6 @@ Feature: Manage widgets in WordPress sidebar
       | name            | id                | position |
       | search          | search-2          | 1        |
       | categories      | categories-2      | 2        |
-      | meta            | meta-2            | 3        |
 
     When I run `wp widget add calendar sidebar-1 2`
     Then STDOUT should not be empty
@@ -65,7 +67,6 @@ Feature: Manage widgets in WordPress sidebar
       | search          | search-2          | 1        |
       | calendar        | calendar-1        | 2        |
       | categories      | categories-2      | 3        |
-      | meta            | meta-2            | 4        |
 
     When I run `wp widget update calendar-1 --title="Calendar"`
     Then STDOUT should not be empty
