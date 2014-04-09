@@ -3,18 +3,23 @@
 use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
 
-$steps->Given( '/^an empty directory$/',
-	function ( $world ) {
-		$world->create_run_dir();
-	}
-);
-
 $steps->Given( '/^an? ([^\s]+) file:$/',
 	function ( $world, $path, PyStringNode $content ) {
 		$content = (string) $content . "\n";
 		$full_path = $world->variables['RUN_DIR'] . "/$path";
 		Process::create( \WP_CLI\utils\esc_cmd( 'mkdir -p %s', dirname( $full_path ) ) )->run_check();
 		file_put_contents( $full_path, $content );
+	}
+);
+
+$steps->Given( '/^an? ([^\s]+) directory$/',
+	function ( $world, $path ) {
+		if ( $path === 'empty' ) {
+			$world->create_run_dir();
+		} else {
+			$full_path = $world->variables['RUN_DIR'] . "/$path";
+			Process::create( \WP_CLI\utils\esc_cmd( 'mkdir -p %s', dirname( $full_path ) ) )->run_check();
+		}
 	}
 );
 

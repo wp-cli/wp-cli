@@ -394,6 +394,59 @@ class Scaffold_Command extends WP_CLI_Command {
 		WP_CLI::success( "Created test files." );
 	}
 
+	/**
+	 * Generate files needed for running Behat tests against a package
+	 *
+	 * ## OPTIONS
+	 *
+	 * <package-path>
+	 * : Path to the WP-CLI package to generate test files for
+	 * 
+	 * [--yes]
+	 * : Answer yes to the confirmation message.
+	 * 
+	 * @subcommand package-tests
+	 */
+	public function package_tests( $args, $assoc_args ) {
+		global $wp_filesystem;
+
+		list( $package_path ) = $args;
+
+		$package_path = rtrim( $package_path, '/' );
+
+		$wp_filesystem->mkdir( $package_path . '/bin' );
+		$wp_filesystem->mkdir( $package_path . '/features' );
+
+		if ( ! file_exists( $package_path . '/composer.json' ) ) {
+			WP_CLI::warning( "composer.json required for package. Create one with `composer init`" );
+		}
+
+		$to_copy = array(
+			'.travis-package.yml'      => '.travis.yml',
+			'test-package.sh'          => 'bin/test.sh',
+			'install-package-tests.sh' => 'bin/install-package-tests.sh',
+			'load-wp-cli.feature'      => 'features/load-wp-cli.feature',
+			);
+		foreach( $to_copy as $file => $new_path ) {
+
+			$full_path = "$package_path/$new_path";
+			if ( empty( $assoc_args['yes'] ) && file_exists( $full_path ) ) {
+				fwrite( STDOUT, $question . sprintf( "Do you want to update '%s'? [y/n] ", $new_path ) );
+				$answer = trim( fgets( STDIN ) );
+				if ( 'y' != $answer ) {
+					WP_CLI::warning( sprintf( "Skipped updating '%s'", $new_path ) );
+					continue;
+				}
+			}
+
+			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", $full_path, true );
+			WP_CLI::line( sprintf( "Created '%s'", $new_path ) );
+		}
+
+		WP_CLI::success( "Created package test files." );
+
+	}
+
 	private function create_file( $filename, $contents ) {
 		global $wp_filesystem;
 
