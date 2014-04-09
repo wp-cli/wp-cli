@@ -9,6 +9,12 @@ $steps->Given( '/^an empty directory$/',
 	}
 );
 
+$steps->Given( '/^an empty cache/',
+	function ( $world ) {
+		$world->variables['SUITE_CACHE_DIR'] = FeatureContext::create_cache_dir();
+	}
+);
+
 $steps->Given( '/^an? ([^\s]+) file:$/',
 	function ( $world, $path, PyStringNode $content ) {
 		$content = (string) $content . "\n";

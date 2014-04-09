@@ -3,6 +3,7 @@ Feature: Manage WordPress installation
   @download
   Scenario: Empty dir
     Given an empty directory
+    And an empty cache
 
     When I try `wp core is-installed`
     Then the return code should be 1
@@ -28,6 +29,7 @@ Feature: Manage WordPress installation
   @download
   Scenario: Localized install
     Given an empty directory
+    And an empty cache
     When I run `wp core download --locale=de_DE`
     And save STDOUT 'Downloading WordPress ([\d\.]+)' as {VERSION}
     Then the wp-settings.php file should exist
