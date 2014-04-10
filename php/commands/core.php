@@ -685,6 +685,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		if ( empty( $assoc_args['version'] ) ) {
 			wp_version_check();
 			$from_api = get_site_transient( 'update_core' );
+
 			if ( empty( $from_api->updates ) )
 				$update = false;
 			else
