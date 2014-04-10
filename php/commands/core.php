@@ -661,8 +661,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 * : Update to this version, instead of to the latest version.
 	 *
 	 * [--force]
-	 * : Will update even when current WP version < passed version. Use with
-	 * caution.
+	 * : Update even when installed WP version is greater than the requested version.
      *
      * [--locale=<locale>]
      * : Select which language you want to download.
