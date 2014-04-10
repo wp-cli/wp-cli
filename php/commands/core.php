@@ -685,7 +685,6 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		if ( empty( $assoc_args['version'] ) ) {
 			wp_version_check();
 			$from_api = get_site_transient( 'update_core' );
-
 			if ( empty( $from_api->updates ) )
 				$update = false;
 			else
@@ -698,7 +697,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 			if ( empty( $args[0] ) ) {
 				$version = $assoc_args['version'];
-				$locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : 'en_US';
+				$locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : get_locale();
 
 				$new_package = $this->get_download_url($version, $locale);
 
