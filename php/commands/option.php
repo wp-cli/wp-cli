@@ -50,6 +50,9 @@ class Option_Command extends WP_CLI_Command {
 	 * [--format=<format>]
 	 * : The serialization format for the value. Default is plaintext.
 	 *
+	 * [--autoload=<autoload>]
+	 * : Should this option be automatically loaded. Accepted values: yes, no. Default: yes
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Create an option by reading a JSON file
@@ -61,7 +64,13 @@ class Option_Command extends WP_CLI_Command {
 		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
 		$value = WP_CLI::read_value( $value, $assoc_args );
 
-		if ( !add_option( $key, $value ) ) {
+		if ( isset( $assoc_args['autoload'] ) && $assoc_args['autoload'] == 'no' ) {
+			$autoload = 'no';
+		} else {
+			$autoload = 'yes';
+		}
+
+		if ( !add_option( $key, $value, '', $autoload ) ) {
 			WP_CLI::error( "Could not add option '$key'. Does it already exist?" );
 		} else {
 			WP_CLI::success( "Added '$key' option." );
