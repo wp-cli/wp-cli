@@ -115,25 +115,40 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * <user>...
 	 * : The user login, user email, or user ID of the user(s) to update.
 	 *
+	 * [--network]
+	 * : On multisite, delete the user from the entire network.
+	 *
 	 * [--reassign=<user-id>]
 	 * : User ID to reassign the posts to.
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Delete user 123 and reassign posts to user 567
 	 *     wp user delete 123 --reassign=567
 	 */
 	public function delete( $args, $assoc_args ) {
-		$assoc_args = wp_parse_args( $assoc_args, array(
-			'reassign' => null
-		) );
+		$network = isset( $assoc_args['network'] ) && is_multisite();
+		$reassign = isset( $assoc_args['reassign'] ) ? $assoc_args['reassign'] : null;
+
+		if ( $network && $reassign ) {
+			WP_CLI::error('Reassigning content to a different user is not supported on multisite.');
+		}
 
 		$users = $this->fetcher->get_many( $args );
 
-		parent::_delete( $users, $assoc_args, function ( $user, $assoc_args ) {
+		parent::_delete( $users, $assoc_args, function ( $user ) use ( $network, $reassign ) {
 			$user_id = $user->ID;
 
-			if ( wp_delete_user( $user_id, $assoc_args['reassign'] ) ) {
-				return array( 'success', "Deleted user $user_id." );
+			if ( $network ) {
+				$r = wpmu_delete_user( $user_id );
+				$message = "Deleted user $user_id.";
+			} else {
+				$r = wp_delete_user( $user_id, $reassign );
+				$message = "Removed user $user_id from " . home_url();
+			}
+
+			if ( $r ) {
+				return array( 'success', $message );
 			} else {
 				return array( 'error', "Failed deleting user $user_id." );
 			}
