@@ -28,7 +28,7 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp core download --version=3.3
+	 *     wp core download --locale=nl_NL
 	 *
 	 * @when before_wp_load
 	 */
@@ -48,6 +48,9 @@ class Core_Command extends WP_CLI_Command {
 			$download_url = $this->get_download_url($version, $locale, 'tar.gz');
 		} else {
 			$offer = $this->get_download_offer( $locale );
+			if ( !$offer ) {
+				WP_CLI::error( "The requested locale ($locale) was not found." );
+			}
 			$version = $offer['current'];
 			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
 		}
@@ -165,7 +168,13 @@ class Core_Command extends WP_CLI_Command {
 		$out = unserialize( self::_read(
 			'https://api.wordpress.org/core/version-check/1.6/?locale=' . $locale ) );
 
-		return $out['offers'][0];
+		$offer = $out['offers'][0];
+
+		if ( $offer['locale'] != $locale ) {
+			return false;
+		}
+
+		return $offer;
 	}
 
 	private static function get_initial_locale() {
