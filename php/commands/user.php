@@ -121,6 +121,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--reassign=<user-id>]
 	 * : User ID to reassign the posts to.
 	 *
+	 * [--yes]
+	 * : Answer yes to any confirmation propmts.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Delete user 123 and reassign posts to user 567
@@ -132,6 +135,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( $network && $reassign ) {
 			WP_CLI::error('Reassigning content to a different user is not supported on multisite.');
+		}
+
+		if ( !$reassign ) {
+			WP_CLI::confirm( '--reassign parameter not passed. All associated posts will be deleted. Proceed?', $assoc_args );
 		}
 
 		$users = $this->fetcher->get_many( $args );

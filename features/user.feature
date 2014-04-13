@@ -17,7 +17,7 @@ Feature: Manage WordPress users
       | ID           | {USER_ID}  |
       | roles        | author     |
 
-    When I run `wp user delete {USER_ID}`
+    When I run `wp user delete {USER_ID} --yes`
     Then STDOUT should not be empty
 
     When I try `wp user create testuser2 testuser2@example.com --role=wrongrole --porcelain`
@@ -44,7 +44,7 @@ Feature: Manage WordPress users
       | ID           | {USER_ID} |
       | display_name | Foo       |
 
-    When I run `wp user delete {USER_ID}`
+    When I run `wp user delete {USER_ID} --yes`
     Then STDOUT should not be empty
 
   Scenario: Reassigning user posts
@@ -79,7 +79,7 @@ Feature: Manage WordPress users
     When I run `wp user get bob`
     Then STDOUT should not be empty
 
-    When I run `wp user delete bob --network`
+    When I run `wp user delete bob --network --yes`
     Then STDOUT should not be empty
 
     When I try `wp user get bob`
@@ -101,7 +101,7 @@ Feature: Manage WordPress users
       10
       """
 
-    When I try `wp user list --field=ID | xargs wp user delete invalid-user`
+    When I try `wp user list --field=ID | xargs wp user delete invalid-user --yes`
     And I run `wp user list --format=count`
     Then STDOUT should be:
       """
