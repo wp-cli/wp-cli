@@ -70,6 +70,21 @@ Feature: Manage WordPress users
       3
       """
 
+  Scenario: Deleting user from the whole network
+    Given a WP multisite install
+
+    When I run `wp user create bob bob@example.com --role=author --porcelain`
+    And save STDOUT as {BOB_ID}
+
+    When I run `wp user get bob`
+    Then STDOUT should not be empty
+
+    When I run `wp user delete bob --network`
+    Then STDOUT should not be empty
+
+    When I try `wp user get bob`
+    Then STDERR should not be empty
+
   Scenario: Generating and deleting users
     Given a WP install
 
