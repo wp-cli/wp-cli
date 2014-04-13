@@ -265,7 +265,7 @@ class Core_Command extends WP_CLI_Command {
 			) );
 		}
 
-		if ( isset( $assoc_args['extra-php'] ) ) {
+		if ( isset( $assoc_args['extra-php'] ) && $assoc_args['extra-php'] === true ) {
 			$assoc_args['extra-php'] = file_get_contents( 'php://stdin' );
 		}
 

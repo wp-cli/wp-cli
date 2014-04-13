@@ -107,24 +107,31 @@ Feature: Have a config file
       command has been disabled
       """
 
-  Scenario: Command-specific configs
-    Given a WP install
+  Scenario: 'core config' parameters
+    Given an empty directory
+    And WP files
     And a wp-cli.yml file:
       """
       core config:
         dbname: wordpress
         dbuser: root
+        extra-php: |
+          define( 'WP_DEBUG', true );
+          define( 'WP_POST_REVISIONS', 50 );
+      """
+
+    When I run `wp core config --skip-check`
+    And I run `grep WP_POST_REVISIONS wp-config.php`
+    Then STDOUT should not be empty
+
+  Scenario: Command-specific configs
+    Given a WP install
+    And a wp-cli.yml file:
+      """
       eval:
         foo: bar
       post list:
         format: count
-      """
-
-    # Required parameters should be recognized
-    When I try `wp core config`
-    Then STDERR should not contain:
-      """
-      Parameter errors
       """
 
     # Arbitrary values should be passed, without warnings
