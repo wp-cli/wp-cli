@@ -31,7 +31,9 @@ Feature: Manage WordPress posts
       """
       This is some content.
 
-      It will be inserted in a post.
+      <script>
+      alert('This should not be stripped.');
+      </script>
       """
     And a command.sh file:
       """
@@ -43,20 +45,15 @@ Feature: Manage WordPress posts
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
-    When I run `wp eval '$post_id = {POST_ID}; echo get_post( $post_id )->post_excerpt;'`
+    When I run `wp post get --field=excerpt {POST_ID}`
     Then STDOUT should be:
       """
       A multiline
       excerpt
       """
 
-    When I run `wp post get --field=content {POST_ID}`
-    Then STDOUT should be:
-      """
-      This is some content.
-
-      It will be inserted in a post.
-      """
+    When I run `wp post get --field=content {POST_ID} | diff -Bu content.html -`
+    Then STDOUT should be empty
 
     When I run `wp post get --format=table {POST_ID}`
     Then STDOUT should be a table containing rows:
