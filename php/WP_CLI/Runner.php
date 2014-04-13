@@ -139,13 +139,13 @@ class Runner {
 	}
 
 	private static function set_user( $assoc_args ) {
-		if ( !isset( $assoc_args['user'] ) )
-			return;
-
-		$fetcher = new \WP_CLI\Fetchers\User;
-		$user = $fetcher->get_check( $assoc_args['user'] );
-		wp_set_current_user( $user->ID );
-
+		if ( isset( $assoc_args['user'] ) ) {
+			$fetcher = new \WP_CLI\Fetchers\User;
+			$user = $fetcher->get_check( $assoc_args['user'] );
+			wp_set_current_user( $user->ID );
+		} else {
+			kses_remove_filters();
+		}
 	}
 
 	private static function guess_url( $assoc_args ) {
