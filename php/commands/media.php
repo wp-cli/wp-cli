@@ -28,7 +28,9 @@ class Media_Command extends WP_CLI_Command {
 	 */
 	function regenerate( $args, $assoc_args = array() ) {
 		if ( empty( $args ) ) {
-			WP_CLI::confirm( 'Do you realy want to regenerate all images?', $assoc_args );
+			if ( !WP_CLI::confirm( 'Do you realy want to regenerate all images?', $assoc_args ) ) {
+				return;
+			}
 		}
 
 		$query_args = array(

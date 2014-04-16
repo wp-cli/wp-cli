@@ -25,7 +25,9 @@ class DB_Command extends WP_CLI_Command {
 	 * : Answer yes to the confirmation message.
 	 */
 	function drop( $_, $assoc_args ) {
-		WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args );
+		if ( !WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args ) ) {
+			return;
+		}
 
 		self::run_query( sprintf( 'DROP DATABASE `%s`', DB_NAME ) );
 
@@ -41,7 +43,9 @@ class DB_Command extends WP_CLI_Command {
 	 * : Answer yes to the confirmation message.
 	 */
 	function reset( $_, $assoc_args ) {
-		WP_CLI::confirm( "Are you sure you want to reset the database?", $assoc_args );
+		if ( !WP_CLI::confirm( "Are you sure you want to reset the database?", $assoc_args ) ) {
+			return;
+		}
 
 		self::run_query( sprintf( 'DROP DATABASE IF EXISTS `%s`', DB_NAME ) );
 		self::run_query( sprintf( 'CREATE DATABASE `%s`', DB_NAME ) );

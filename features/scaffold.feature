@@ -3,7 +3,6 @@ Feature: Wordpress code scaffolding
   Background:
     Given a WP install
 
-  @theme
   Scenario: Scaffold a child theme
     Given I run `wp theme path`
     And save STDOUT as {THEME_DIR}
@@ -12,7 +11,6 @@ Feature: Wordpress code scaffolding
     Then STDOUT should not be empty
     And the {THEME_DIR}/zombieland/style.css file should exist
 
-  @tax @cpt
   Scenario: Scaffold a Custom Taxonomy and Custom Post Type and write it to active theme
     Given I run `wp eval 'echo STYLESHEETPATH;'`
     And save STDOUT as {STYLESHEETPATH}
@@ -24,7 +22,6 @@ Feature: Wordpress code scaffolding
     Then the {STYLESHEETPATH}/post-types/zombie.php file should exist
 
   # Test for all flags but --label, --theme, --plugin and --raw
-  @tax
   Scenario: Scaffold a Custom Taxonomy and attach it to CPTs including one that is prefixed and has a text domain
     When I run `wp scaffold taxonomy zombie-speed --post_types="prefix-zombie,wraith" --textdomain=zombieland`
     Then STDOUT should contain:
@@ -40,7 +37,6 @@ Feature: Wordpress code scaffolding
       __( 'Zombie speeds', 'zombieland'
       """
   
-  @tax
   Scenario: Scaffold a Custom Taxonomy with label "Speed"
     When I run `wp scaffold taxonomy zombie-speed --label="Speed"`
     Then STDOUT should contain:
@@ -53,7 +49,6 @@ Feature: Wordpress code scaffolding
         """
 
   # Test for all flags but --label, --theme, --plugin and --raw
-  @cpt
   Scenario: Scaffold a Custom Post Type
     When I run `wp scaffold post-type zombie --textdomain=zombieland`
     Then STDOUT should contain:
@@ -65,10 +60,40 @@ Feature: Wordpress code scaffolding
       __( 'Zombies', 'zombieland'
       """
 
-  @cpt
   Scenario: Scaffold a Custom Post Type with label
     When I run `wp scaffold post-type zombie --label="Brain eater"`
     Then STDOUT should contain:
       """
       __( 'Brain eaters'
       """
+
+  # Test for the overwrite --yes flags
+  Scenario: Scaffold commands should ask for confirmation to overwrite if file already exists which can be overruled by passing --yes flag 
+    When I run `wp scaffold taxonomy zombie-speed --theme`
+    And I run `wp scaffold taxonomy zombie-speed --theme --yes`
+    Then STDOUT should contain:
+      """
+      Created
+      """
+    When I run `wp scaffold post-type zombie --theme`
+    When I run `wp scaffold post-type zombie --theme --yes`
+    Then STDOUT should contain:
+      """
+      Created
+      """
+    When I run `wp scaffold plugin zombieland`
+    When I run `wp scaffold plugin zombieland --yes`
+    Then STDOUT should contain:
+      """
+      Created
+      """
+
+# Not working....
+#    When I run `wp scaffold taxonomy zombie-speed --theme`
+#    And I run `wp scaffold taxonomy zombie-speed --theme`
+#    And STDERR should be:
+#      """
+#      Error: File already exists
+#      """
+#    Then the return code should be 1
+ 
