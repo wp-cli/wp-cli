@@ -703,7 +703,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		} else if (	version_compare( $wp_version, $assoc_args['version'], '<' )
 					|| isset( $assoc_args['force'] ) ) {
 
-			$new_package = null;
+			$new_package = $version = null;
 
 			if ( empty( $args[0] ) ) {
 				$version = $assoc_args['version'];
@@ -727,6 +727,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 					'no_content' => null,
 					'full' => $new_package,
 				),
+				'version' => $version,
 			);
 
 		} else {
