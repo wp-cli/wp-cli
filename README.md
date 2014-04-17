@@ -39,6 +39,10 @@ Besides the libraries defined in [composer.json](composer.json), we have used co
 
 Who's behind this thing?
 ------------------------
-We are [Andreas Creten](https://github.com/andreascreten) and [Cristi Burcă](https://github.com/scribu), friendly guys from Europe. For more info, see [Governance](https://github.com/wp-cli/wp-cli/wiki/Governance).
+* [Andreas Creten](https://github.com/andreascreten) - founder
+* [Cristi Burcă](https://github.com/scribu) - previous maintainer
+* [Daniel Bachhuber](https://github.com/danielbachhuber/) - current maintainer
+
+For more info, see [Governance](https://github.com/wp-cli/wp-cli/wiki/Governance).
 
 A complete list of contributors can be found [here](https://github.com/wp-cli/wp-cli/contributors).
