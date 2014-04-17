@@ -27,7 +27,7 @@ Feature: Manage WordPress attachments
   Scenario: Import a file as attachment from a local image
     Given download:
       | path                        | url                                                                             |
-      | {CACHE_DIR}/large-image.jpg | http://wordpresswallpaper.com/wp-content/gallery/photo-based-wallpaper/1058.jpg |
+      | {CACHE_DIR}/large-image.jpg | https://d262ilb51hltx0.cloudfront.net/fit/t/1800/1440/gradv/29/81/55/1*qUF3hZQFAFtqyYO1pRS0Tw.png |
 
     When I run `wp media import {CACHE_DIR}/large-image.jpg --post_id=1 --featured_image`
     Then STDOUT should contain:
