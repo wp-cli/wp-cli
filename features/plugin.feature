@@ -108,6 +108,15 @@ Feature: Manage WordPress plugins
       | name       | status   | update    | version   |
       | akismet    | active   | available | 2.5.6     |
 
+    When I try `wp plugin update`
+    Then STDERR should be:
+      """
+      Error: Please specify one or more plugins, or use --all.
+      """
+
+    When I run `wp plugin update --all`
+    Then STDOUT should not be empty
+
   Scenario: Activate a network-only plugin
     Given a WP multisite install
     And a wp-content/plugins/network-only.php file:
