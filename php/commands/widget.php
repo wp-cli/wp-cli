@@ -480,7 +480,9 @@ class Widget_Command extends WP_CLI_Command {
 			return array();
 		}
 
-		return $widget->update( $dirty_options, $old_options );
+		// No easy way to determine expected array keys for $dirty_options
+		// because Widget API dependent on the form fields
+		return @$widget->update( $dirty_options, $old_options );
 
 	}
 
