@@ -2,6 +2,8 @@
 
 namespace WP_CLI;
 
+use Symfony\Component\Yaml\Parser as YamlParser;
+
 class Configurator {
 
 	private $spec;
@@ -134,16 +136,24 @@ class Configurator {
 	 * Load values from a YAML file.
 	 */
 	private static function load_yml( $yml_file ) {
-		if ( !$yml_file )
+		if ( !$yml_file ) {
 			return array();
-
-		$config = spyc_load_file( $yml_file );
+		}
+			
+	 	$yaml = new YamlParser();
+	
+	        try {
+	            $config = $yaml->parse(file_get_contents($yml_file));
+	        } catch (\Symfony\Component\Yaml\Exception\ParseException $e) {
+	            printf("Unable to parse the YAML string: %s", $e->getMessage());
+	        }
 
 		// Make sure config-file-relative paths are made absolute.
 		$yml_file_dir = dirname( $yml_file );
 
-		if ( isset( $config['path'] ) )
+		if ( isset( $config['path'] ) ) {
 			self::absolutize( $config['path'], $yml_file_dir );
+		}
 
 		if ( isset( $config['require'] ) ) {
 			self::arrayify( $config['require'] );
