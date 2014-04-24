@@ -8,7 +8,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 
 	private $fields = array(
 		'hook',
-		'next_run',
+	//	'next_run',
 		'next_run_gmt',
 		'next_run_relative',
 		'recurrence',
