@@ -3,15 +3,18 @@
 /**
  * Manage WP-Cron events.
  *
- * @package wp-cli
  */
 class Cron_Event_Command extends WP_CLI_Command {
 
 	/**
 	 * List scheduled cron events.
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to all of the cron event fields.
+	 *
 	 * @subcommand list
-	 * @synopsis [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 
@@ -213,8 +216,12 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 	/**
 	 * List available cron schedules.
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to all of the cron schedule fields.
+	 *
 	 * @subcommand list
-	 * @synopsis [--format=<format>]
 	 */
 	public function _list( $args, $assoc_args ) {
 
