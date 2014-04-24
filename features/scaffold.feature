@@ -1,4 +1,4 @@
-Feature: Wordpress code scaffolding
+Feature: WordPress code scaffolding
 
   Background:
     Given a WP install
