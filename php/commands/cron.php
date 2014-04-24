@@ -31,8 +31,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 		$events = self::get_cron_events();
 
 		if ( is_wp_error( $events ) ) {
-			WP_CLI::line( WP_CLI::error_to_string( $events ) );
-			exit;
+			$events = array();
 		}
 
 		if ( 'ids' == $formatter->format ) {
