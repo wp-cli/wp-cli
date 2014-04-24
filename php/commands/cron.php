@@ -13,6 +13,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 		'next_run_relative',
 		'recurrence',
 	);
+	private static $time_format = 'Y-m-d H:i:s';
 
 	/**
 	 * List scheduled cron events.
@@ -156,10 +157,9 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * @return stdClass The formatted event object.
 	 */
 	protected static function format_event( stdClass $event ) {
-		$time_format = 'Y-m-d H:i:s';
 
-		$event->next_run          = get_date_from_gmt( date( 'Y-m-d H:i:s', $event->time ), $time_format );
-		$event->next_run_gmt      = date( $time_format, $event->time );
+		$event->next_run          = get_date_from_gmt( date( 'Y-m-d H:i:s', $event->time ), self::$time_format );
+		$event->next_run_gmt      = date( self::$time_format, $event->time );
 		$event->next_run_relative = \WP_CLI\Utils\time_since( time(), $event->time );
 		$event->recurrence        = ( $event->schedule ) ? \WP_CLI\Utils\interval( $event->interval ) : 'Non-repeating';
 
