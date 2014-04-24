@@ -23,6 +23,9 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields. Defaults to all of the cron event fields.
 	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json, csv, ids. Default: table.
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
@@ -301,6 +304,9 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields. Defaults to all of the cron schedule fields.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json, csv, ids. Default: table.
 	 *
 	 * @subcommand list
 	 */
