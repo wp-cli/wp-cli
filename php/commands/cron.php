@@ -6,6 +6,15 @@
  */
 class Cron_Event_Command extends WP_CLI_Command {
 
+	private $fields = array(
+		'hook',
+		'next_run',
+		'next_run_gmt',
+		'next_run_relative',
+		'next_run_diff',
+		'recurrence',
+	);
+
 	/**
 	 * List scheduled cron events.
 	 *
@@ -17,10 +26,8 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function _list( $args, $assoc_args ) {
+		$formatter = $this->get_formatter( $assoc_args );
 
-		$values = array_merge( array(
-			'format' => 'table',
-		), $assoc_args );
 		$events = self::get_cron_events();
 
 		if ( is_wp_error( $events ) ) {
@@ -28,15 +35,11 @@ class Cron_Event_Command extends WP_CLI_Command {
 			exit;
 		}
 
-		$fields = array(
-			'hook',
-			'next_run',
-			'next_run_gmt',
-			'next_run_relative',
-			'recurrence',
-		);
-
-		\WP_CLI\Utils\format_items( $values['format'], $events, $fields );
+		if ( 'ids' == $formatter->format ) {
+			echo implode( ' ', wp_list_pluck( $events, 'hook' ) );
+		} else {
+			$formatter->display_items( $events );
+		}
 
 	}
 
@@ -206,12 +209,22 @@ class Cron_Event_Command extends WP_CLI_Command {
 
 	}
 
+	private function get_formatter( &$assoc_args ) {
+		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'event' );
+	}
+
 }
 
 /**
  * Manage WP-Cron schedules.
  */
 class Cron_Schedule_Command extends WP_CLI_Command {
+
+	private $fields = array(
+		'name',
+		'display',
+		'interval',
+	);
 
 	/**
 	 * List available cron schedules.
@@ -224,20 +237,15 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function _list( $args, $assoc_args ) {
-
-		$values = array_merge( array(
-			'format' => 'table',
-		), $assoc_args );
+		$formatter = $this->get_formatter( $assoc_args );
 
 		$schedules = self::get_schedules();
 
-		$fields = array(
-			'name',
-			'display',
-			'interval',
-		);
-
-		\WP_CLI\Utils\format_items( $values['format'], $schedules, $fields );
+		if ( 'ids' == $formatter->format ) {
+			echo implode( ' ', wp_list_pluck( $schedules, 'name' ) );
+		} else {
+			$formatter->display_items( $schedules );
+		}
 
 	}
 
@@ -273,6 +281,10 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 	 */
 	protected static function sort( array $a, array $b ) {
 		return $a['interval'] - $b['interval'];
+	}
+
+	private function get_formatter( &$assoc_args ) {
+		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'schedule' );
 	}
 
 }
