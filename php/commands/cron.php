@@ -43,6 +43,76 @@ class Cron_Event_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Schedule a new cron event.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <hook>
+	 * : The hook name
+	 *
+	 * [--next_run=<value>]
+	 * : A Unix timestamp or an English textual datetime description compatible with `strtotime()`. Defaults to now.
+	 *
+	 * [--recurrence=<value>]
+	 * : How often the event should recur. See `wp cron schedule list` for available schedule names. Defaults to no recurrence.
+	 *
+	 * [--<field>=<value>]
+	 * : Associative args for the event.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp cron event schedule cron_test
+	 *
+	 *     wp cron event schedule cron_test --next_run='+1 hour' --recurrence=hourly
+	 *
+	 *     wp cron event schedule cron_test --recurrence=daily --foo=1 --bar=2
+	 */
+	public function schedule( $args, $assoc_args ) {
+
+		list( $hook ) = $args;
+
+		if ( !isset( $assoc_args['next_run'] ) ) {
+			$timestamp = time();
+		} else if ( is_numeric( $assoc_args['next_run'] ) ) {
+			$timestamp = absint( $assoc_args['next_run'] );
+		} else {
+			$timestamp = strtotime( $assoc_args['next_run'] );
+		}
+
+		if ( ! $timestamp ) {
+			WP_CLI::error( sprintf( "'%s' is not a valid datetime.", $assoc_args['next_run'] ) );
+		}
+
+		$event_args = array_diff_key( $assoc_args, array_flip( array(
+			'next_run', 'recurrence'
+		) ) );
+
+		if ( isset( $assoc_args['recurrence'] ) ) {
+
+			$recurrence = $assoc_args['recurrence'];
+			$schedules  = wp_get_schedules();
+
+			if ( ! isset( $schedules[$recurrence] ) ) {
+				WP_CLI::error( sprintf( "'%s' is not a valid schedule name for recurrence.", $recurrence ) );
+			}
+
+			$event = wp_schedule_event( $timestamp, $recurrence, $hook, $event_args );
+
+		} else {
+
+			$event = wp_schedule_single_event( $timestamp, $hook, $event_args );
+
+		}
+
+		if ( false !== $event ) {
+			WP_CLI::success( sprintf( "Scheduled event with hook '%s' for %s.", $hook, date( self::$time_format, $timestamp ) ) );
+		} else {
+			WP_CLI::error( 'Event not scheduled' );
+		}
+
+	}
+
+	/**
 	 * Run the next scheduled cron event for the given hook.
 	 *
 	 * ## OPTIONS
