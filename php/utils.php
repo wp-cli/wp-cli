@@ -412,7 +412,7 @@ function replace_path_consts( $source, $path ) {
  */
 function interval( $since ) {
 	if ( $since <= 0 ) {
-	    return 'now';
+		return 'now';
 	}
 
 	$since = absint( $since );
@@ -469,5 +469,5 @@ function interval( $since ) {
  * @return string The time difference in a human-readable format
  */
 function time_since( $older_date, $newer_date ) {
-    return interval( $newer_date - $older_date );
+	return interval( $newer_date - $older_date );
 }
