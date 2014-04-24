@@ -24,7 +24,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand list
 	 */
-	public function _list( $args, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		$events = self::get_cron_events();
@@ -234,7 +234,7 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand list
 	 */
-	public function _list( $args, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		$schedules = self::get_schedules();
