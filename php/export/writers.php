@@ -26,14 +26,34 @@ class WP_Export_XML_Over_HTTP extends WP_Export_Base_Writer {
 	}
 
 	public function export() {
-		header( 'Content-Description: File Transfer' );
-		header( 'Content-Disposition: attachment; filename=' . $this->file_name );
-		header( 'Content-Type: text/xml; charset=' . get_option( 'blog_charset' ), true );
-		parent::export();
+		try {
+			$export = $this->get_export();
+			$this->send_headers();
+			echo $export;
+		} catch ( WP_Export_Exception $e ) {
+			$message = apply_filters( 'export_error_message', $e->getMessage() );
+			wp_die( $message, __( 'Export Error' ), array( 'back_link' => true ) );
+		} catch ( WP_Export_Term_Exception $e ) {
+			do_action( 'export_term_orphaned', $this->formatter->export->missing_parents );
+			$message = apply_filters( 'export_term_error_message', $e->getMessage() );
+			wp_die( $message, __( 'Export Error' ), array( 'back_link' => true ) );
+		}
 	}
 
 	protected function write( $xml ) {
-		echo $xml;
+		$this->result .= $xml;
+	}
+
+	protected function get_export() {
+		$this->result = '';
+		parent::export();
+		return $this->result;
+	}
+
+	protected function send_headers() {
+		header( 'Content-Description: File Transfer' );
+		header( 'Content-Disposition: attachment; filename=' . $this->file_name );
+		header( 'Content-Type: text/xml; charset=' . get_option( 'blog_charset' ), true );
 	}
 }
 
@@ -42,7 +62,17 @@ class WP_Export_Returner extends WP_Export_Base_Writer {
 
 	public function export() {
 		$this->private = '';
-		parent::export();
+		try { 
+			parent::export();
+		} catch ( WP_Export_Exception $e ) {
+			$message = apply_filters( 'export_error_message', $e->getMessage() );
+			return new WP_Error( 'wp-export-error', $message );
+			
+		} catch ( WP_Export_Term_Exception $e ) {
+			do_action( 'export_term_orphaned', $this->formatter->export->missing_parents );
+			$message = apply_filters( 'export_term_error_message', $e->getMessage() );
+			return new WP_Error( 'wp-export-error', $message );
+		}
 		return $this->result;
 	}
 	protected function write( $xml ) {
@@ -64,7 +94,15 @@ class WP_Export_File_Writer extends WP_Export_Base_Writer {
 		if ( !$this->f ) {
 			throw new WP_Export_Exception( sprintf( __( 'WP Export: error opening %s for writing.' ), $this->file_name ) );
 		}
-		parent::export();
+
+		try { 
+			parent::export();
+		} catch ( WP_Export_Exception $e ) {
+			throw $e;
+		} catch ( WP_Export_Term_Exception $e ) {
+			throw $e;
+		}
+
 		fclose( $this->f );
 	}
 
@@ -85,7 +123,7 @@ class WP_Export_Split_Files_Writer extends WP_Export_Base_Writer {
 	function __construct( $formatter, $writer_args = array() ) {
 		parent::__construct( $formatter );
 		//TODO: check if args are not missing
-		$this->max_file_size = is_null( $writer_args['max_file_size'] ) ? 15 * MB_IN_BYTES : $writer_args['max_file_size'];
+		$this->max_file_size = is_null( $writer_args['max_file_size'] ) ? 15 * MB_IN_BYTES : $max_file_size;
 		$this->destination_directory = $writer_args['destination_directory'];
 		$this->filename_template = $writer_args['filename_template'];
 		$this->before_posts_xml = $this->formatter->before_posts();
@@ -95,7 +133,7 @@ class WP_Export_Split_Files_Writer extends WP_Export_Base_Writer {
 	public function export() {
 		$this->start_new_file();
 		foreach( $this->formatter->posts() as $post_xml ) {
-			if ( ( $this->current_file_size + strlen( $post_xml ) ) > $this->max_file_size ) {
+			if ( $this->current_file_size + strlen( $post_xml ) > $this->max_file_size ) {
 				$this->start_new_file();
 			}
 			$this->write( $post_xml );

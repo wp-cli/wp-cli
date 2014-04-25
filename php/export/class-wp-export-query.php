@@ -27,6 +27,8 @@ class WP_Export_Query {
 	private $author;
 	private $category;
 
+	public $missing_parents = false;
+
 	public function __construct( $filters = array() ) {
 		$this->filters = wp_parse_args( $filters, self::$defaults );
 		$this->post_ids = $this->calculate_post_ids();
@@ -70,13 +72,17 @@ class WP_Export_Query {
 
 	public function categories() {
 		if ( $this->category ) {
-			return array( $this->category );
+			return $this->category;
 		}
 		if ( $this->filters['post_type'] ) {
 			return array();
 		}
 		$categories = (array) get_categories( array( 'get' => 'all' ) );
+
+		$this->check_for_orphaned_terms( $categories );
+
 		$categories = self::topologically_sort_terms( $categories );
+
 		return $categories;
 	}
 
@@ -85,6 +91,9 @@ class WP_Export_Query {
 			return array();
 		}
 		$tags = (array) get_tags( array( 'get' => 'all' ) );
+
+		$this->check_for_orphaned_terms( $tags );
+
 		return $tags;
 	}
 
@@ -94,6 +103,7 @@ class WP_Export_Query {
 		}
 		$custom_taxonomies = get_taxonomies( array( '_builtin' => false ) );
 		$custom_terms = (array) get_terms( $custom_taxonomies, array( 'get' => 'all' ) );
+		$this->check_for_orphaned_terms( $custom_terms );
 		$custom_terms = self::topologically_sort_terms( $custom_terms );
 		return $custom_terms;
 	}
@@ -271,6 +281,24 @@ class WP_Export_Query {
 		return $sorted;
 	}
 
+	private function check_for_orphaned_terms( $terms ) {
+		$term_ids = array();
+		$have_parent = array();
+
+		foreach ( $terms as $term ) {
+			$term_ids[ $term->term_id ] = true;
+			if ( $term->parent != 0 )
+				$have_parent[] = $term;
+		}
+
+		foreach ( $have_parent as $has_parent ) {
+			if ( ! isset( $term_ids[ $has_parent->parent ] ) ) {
+				$this->missing_parents = $has_parent;
+				throw new WP_Export_Term_Exception( __( 'Term is missing a parent.' ) );
+			}
+		}
+	}
+
 	private static function get_terms_for_post( $post ) {
 		$taxonomies = get_object_taxonomies( $post->post_type );
 		if ( empty( $taxonomies ) )
@@ -308,4 +336,7 @@ class WP_Export_Query {
 }
 
 class WP_Export_Exception extends RuntimeException {
+}
+
+class WP_Export_Term_Exception extends RuntimeException {
 }
