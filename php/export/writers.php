@@ -123,7 +123,7 @@ class WP_Export_Split_Files_Writer extends WP_Export_Base_Writer {
 	function __construct( $formatter, $writer_args = array() ) {
 		parent::__construct( $formatter );
 		//TODO: check if args are not missing
-		$this->max_file_size = is_null( $writer_args['max_file_size'] ) ? 15 * MB_IN_BYTES : $max_file_size;
+		$this->max_file_size = is_null( $writer_args['max_file_size'] ) ? 15 * MB_IN_BYTES : $writer_args['max_file_size'];
 		$this->destination_directory = $writer_args['destination_directory'];
 		$this->filename_template = $writer_args['filename_template'];
 		$this->before_posts_xml = $this->formatter->before_posts();
