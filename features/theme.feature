@@ -72,6 +72,15 @@ Feature: Manage WordPress themes
       | name  | status   | update    | version   |
       | p2    | active   | available | 1.4.1     |
 
+    When I try `wp theme update`
+    Then STDERR should be:
+      """
+      Error: Please specify one or more themes, or use --all.
+      """
+
+    When I run `wp theme update --all`
+    Then STDOUT should not be empty
+
   Scenario: Get the path of an installed theme
     Given a WP install
 
