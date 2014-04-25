@@ -6,6 +6,11 @@ use WP_CLI;
 use WP_CLI\Utils;
 use WP_CLI\Dispatcher;
 
+/**
+ * Performs the execution of a command.
+ *
+ * @package WP_CLI
+ */
 class Runner {
 
 	private $global_config_path, $project_config_path;
@@ -23,10 +28,21 @@ class Runner {
 		return $this->$key;
 	}
 
+	/**
+	 * Register a command for early invocation, generally before WordPress loads.
+	 *
+	 * @param string $when Named execution hook
+	 * @param WP_CLI\Dispatcher\Subcommand $command
+	 */
 	public function register_early_invoke( $when, $command ) {
 		$this->_early_invoke[ $when ][] = array_slice( Dispatcher\get_path( $command ), 1 );
 	}
 
+	/**
+	 * Perform the early invocation of a command.
+	 *
+	 * @param string $when Named execution hook
+	 */
 	private function do_early_invoke( $when ) {
 		if ( !isset( $this->_early_invoke[ $when ] ) )
 			return;
@@ -39,6 +55,11 @@ class Runner {
 		}
 	}
 
+	/**
+	 * Get the path to the global configuration YAML file.
+	 *
+	 * @return string|false
+	 */
 	private static function get_global_config_path() {
 		$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
 		if ( isset( $runtime_config['config'] ) ) {
@@ -55,6 +76,13 @@ class Runner {
 		return $config_path;
 	}
 
+	/**
+	 * Get the path to the project-specific configuration
+	 * YAML file.
+	 * wp-cli.local.yml takes priority over wp-cli.yml.
+	 *
+	 * @return string|false
+	 */
 	private static function get_project_config_path() {
 		$config_files = array(
 			'wp-cli.local.yml',
@@ -75,6 +103,9 @@ class Runner {
 
 	/**
 	 * Attempts to find the path to the WP install inside index.php
+	 *
+	 * @param string $index_path
+	 * @return string|false
 	 */
 	private static function extract_subdir_path( $index_path ) {
 		$index_code = file_get_contents( $index_path );
@@ -95,7 +126,8 @@ class Runner {
 	}
 
 	/**
-	 * Find the directory that contains the WordPress files. Defaults to the current working dir.
+	 * Find the directory that contains the WordPress files.
+	 * Defaults to the current working dir.
 	 *
 	 * @return string An absolute path
 	 */
@@ -132,12 +164,22 @@ class Runner {
 		}
 	}
 
+	/**
+	 * Set WordPress root as a given path.
+	 *
+	 * @param string $path
+	 */
 	private static function set_wp_root( $path ) {
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
 
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $path );
 	}
 
+	/**
+	 * Set a specific user context for WordPress.
+	 *
+	 * @param array $assoc_args
+	 */
 	private static function set_user( $assoc_args ) {
 		if ( isset( $assoc_args['user'] ) ) {
 			$fetcher = new \WP_CLI\Fetchers\User;
@@ -148,6 +190,12 @@ class Runner {
 		}
 	}
 
+	/**
+	 * Guess which URL context WP-CLI has been invoked under.
+	 *
+	 * @param array $assoc_args
+	 * @return string|false
+	 */
 	private static function guess_url( $assoc_args ) {
 		if ( isset( $assoc_args['blog'] ) ) {
 			$assoc_args['url'] = $assoc_args['blog'];
@@ -192,6 +240,12 @@ class Runner {
 		return $prefix == array_slice( $this->arguments, 0, count( $prefix ) );
 	}
 
+	/**
+	 * Given positional arguments, find the command to execute.
+	 *
+	 * @param array $args
+	 * @return array|string Command, args, and path on success; error message on failure
+	 */
 	public function find_command_to_run( $args ) {
 		$command = \WP_CLI::get_root_command();
 
@@ -225,6 +279,13 @@ class Runner {
 		return array( $command, $args, $cmd_path );
 	}
 
+	/**
+	 * Find the WP-CLI command to run given arguments,
+	 * and invoke it.
+	 *
+	 * @param array $args Positional arguments including command name
+	 * @param array $assoc_args
+	 */
 	public function run_command( $args, $assoc_args = array() ) {
 		$r = $this->find_command_to_run( $args );
 		if ( is_string( $r ) ) {
@@ -284,7 +345,13 @@ class Runner {
 		return preg_replace( '|^\s*\<\?php\s*|', '', $source );
 	}
 
-	// Transparently convert old syntaxes
+	/**
+	 * Transparently convert deprecated syntaxes
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 * @return array
+	 */
 	private static function back_compat_conversions( $args, $assoc_args ) {
 		$top_level_aliases = array(
 			'sql' => 'db',
@@ -367,6 +434,11 @@ class Runner {
 		return array( $args, $assoc_args );
 	}
 
+	/**
+	 * Whether or not the output should be rendered in color
+	 *
+	 * @return bool
+	 */
 	public function in_color() {
 		return $this->colorize;
 	}
@@ -388,6 +460,11 @@ class Runner {
 		WP_CLI::set_logger( $logger );
 	}
 
+	/**
+	 * Do WordPress core files exist?
+	 *
+	 * @return bool
+	 */
 	private function wp_exists() {
 		return is_readable( ABSPATH . 'wp-includes/version.php' );
 	}
