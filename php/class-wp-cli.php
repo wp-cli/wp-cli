@@ -25,6 +25,11 @@ class WP_CLI {
 		self::$logger = $logger;
 	}
 
+	/**
+	 * Get the Configurator instance
+	 *
+	 * @return \WP_CLI\Configurator
+	 */
 	static function get_configurator() {
 		static $configurator;
 
