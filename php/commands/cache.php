@@ -25,7 +25,6 @@ class Cache_Command extends WP_CLI_Command {
 
 		if ( ! wp_cache_add( $key, $value, $group, $expiration ) ) {
 			WP_CLI::error( "Could not add object '$key' in group '$group'. Does it already exist?" );
-			exit;
 		}
 
 		WP_CLI::success( "Added object '$key' in group '$group'." );
@@ -66,7 +65,6 @@ class Cache_Command extends WP_CLI_Command {
 
 		if ( false === $result ) {
 			WP_CLI::error( 'The object was not deleted.' );
-			exit;
 		}
 
 		WP_CLI::success( 'Object deleted.' );
@@ -80,7 +78,6 @@ class Cache_Command extends WP_CLI_Command {
 
 		if ( false === $value ) {
 			WP_CLI::error( 'The object cache could not be flushed.' );
-			exit;
 		}
 
 		WP_CLI::success( 'The cache was flushed.' );
@@ -100,7 +97,6 @@ class Cache_Command extends WP_CLI_Command {
 
 		if ( false === $value ) {
 			WP_CLI::error( "Object with key '$key' and group '$group' not found." );
-			exit;
 		}
 
 		WP_CLI::print_value( $value, $assoc_args );
@@ -122,7 +118,6 @@ class Cache_Command extends WP_CLI_Command {
 
 		if ( false === $value ) {
 			WP_CLI::error( 'The value was not incremented.' );
-			exit;
 		}
 
 		WP_CLI::print_value( $value, $assoc_args );
@@ -144,7 +139,6 @@ class Cache_Command extends WP_CLI_Command {
 
 		if ( false === $result ) {
 			WP_CLI::error( "Could not replace object '$key' in group '$group'. Does it already exist?" );
-			exit;
 		}
 
 		WP_CLI::success( "Replaced object '$key' in group '$group'." );
@@ -166,7 +160,6 @@ class Cache_Command extends WP_CLI_Command {
 
 		if ( false === $result ) {
 			WP_CLI::error( "Could not add object '$key' in group '$group'." );
-			exit;
 		}
 
 		WP_CLI::success( "Set object '$key' in group '$group'." );
@@ -209,6 +202,11 @@ class Cache_Command extends WP_CLI_Command {
 			// Test for APC object cache (http://wordpress.org/extend/plugins/apc/)
 			} elseif ( class_exists( 'APC_Object_Cache' ) ) {
 				$message = 'APC';
+
+			// Test for Redis Object Cache (https://github.com/alleyinteractive/wp-redis)
+			} elseif ( isset( $wp_object_cache->redis ) && is_a( $wp_object_cache->redis, 'Redis' ) ) {
+				$message = 'Redis';
+
 			} else {
 				$message = 'Unknown';
 			}
@@ -216,7 +214,7 @@ class Cache_Command extends WP_CLI_Command {
 			$message = 'Default';
 		}
 
-		WP_CLI::print_value( $message );
+		WP_CLI::line( $message );
 	}
 }
 

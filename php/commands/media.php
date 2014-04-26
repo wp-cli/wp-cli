@@ -27,8 +27,6 @@ class Media_Command extends WP_CLI_Command {
 	 *     seq 1000 2000 | xargs wp media regenerate
 	 */
 	function regenerate( $args, $assoc_args = array() ) {
-		global $wpdb;
-
 		if ( empty( $args ) ) {
 			WP_CLI::confirm( 'Do you realy want to regenerate all images?', $assoc_args );
 		}
@@ -52,7 +50,7 @@ class Media_Command extends WP_CLI_Command {
 		}
 
 		WP_CLI::log( sprintf( 'Found %1$d %2$s to regenerate.', $count,
-			ngettext( 'image', 'images', $count ) ) );
+			_n( 'image', 'images', $count ) ) );
 
 		foreach ( $images->posts as $id ) {
 			$this->_process_regeneration( $id );
@@ -60,7 +58,7 @@ class Media_Command extends WP_CLI_Command {
 
 		WP_CLI::success( sprintf(
 			'Finished regenerating %1$s.',
-			ngettext('the image', 'all images', $count)
+			_n('the image', 'all images', $count)
 		) );
 	}
 
@@ -238,10 +236,18 @@ class Media_Command extends WP_CLI_Command {
 			if ( $intermediate_path == $original_path )
 				continue;
 
-			unlink( $intermediate_path );
+			if ( file_exists( $intermediate_path ) )
+				unlink( $intermediate_path );
 		}
 	}
 }
 
-WP_CLI::add_command( 'media', 'Media_Command' );
+WP_CLI::add_command( 'media', 'Media_Command', array(
+	'before_invoke' => function () {
+		if ( !wp_image_editor_supports() ) {
+			WP_CLI::error( 'No support for generating images found. ' .
+				'Please install the Imagick or GD PHP extensions.' );
+		}
+	}
+) );
 

@@ -93,6 +93,11 @@ wp_set_wpdb_vars();
 // Start the WordPress object cache, or an external object cache if the drop-in is present.
 wp_start_object_cache();
 
+// WP-CLI: the APC cache is not available on the command-line, so bail, to prevent cache poisoning
+if ( $GLOBALS['_wp_using_ext_object_cache'] && class_exists( 'APC_Object_Cache' ) ) {
+	WP_CLI::error( 'WP-CLI is not compatible with the APC object cache.' );
+}
+
 // Attach the default filters.
 require( ABSPATH . WPINC . '/default-filters.php' );
 
@@ -124,8 +129,8 @@ require( ABSPATH . WPINC . '/capabilities.php' );
 require( ABSPATH . WPINC . '/query.php' );
 Utils\maybe_require( '3.7-alpha-25139', ABSPATH . WPINC . '/date.php' );
 require( ABSPATH . WPINC . '/theme.php' );
-Utils\maybe_require( '3.4', ABSPATH . WPINC . '/class-wp-theme.php' );
-Utils\maybe_require( '3.4', ABSPATH . WPINC . '/template.php' );
+require( ABSPATH . WPINC . '/class-wp-theme.php' );
+require( ABSPATH . WPINC . '/template.php' );
 require( ABSPATH . WPINC . '/user.php' );
 require( ABSPATH . WPINC . '/meta.php' );
 require( ABSPATH . WPINC . '/general-template.php' );
@@ -172,41 +177,24 @@ if ( is_multisite() ) {
 // Define must-use plugin directory constants, which may be overridden in the sunrise.php drop-in.
 wp_plugin_directory_constants( );
 
-// Should we load plugins?
-$enabled_plugins = array();
-foreach( $argv as $k => $v ) {
-	if ( 0 === stripos( $v, '--enable-plugins' ) ) {
-		list( $junk, $enabled_plugins ) = explode( '=', $v );
-		$enabled_plugins = explode( ',', $enabled_plugins );
-		$enabled_plugins = array_map( 'trim', $enabled_plugins );
-		$_enabled_plugins = array();
-		foreach ( $enabled_plugins as $k => $v ) {
-			$_enabled_plugins[] = '*/' . basename( strtolower( $v ) ) . '.php';
-			$_enabled_plugins[] = '*/' . basename( strtolower( $v ) ) . '/*.php';
-		}
-		$enabled_plugins = $_enabled_plugins;
-	}
+$symlinked_plugins_supported = function_exists( 'wp_register_plugin_realpath' );
+if ( $symlinked_plugins_supported ) {
+	$GLOBALS['wp_plugin_paths'] = array();
 }
 
 // Load must-use plugins.
 foreach ( wp_get_mu_plugins() as $mu_plugin ) {
-	foreach ( $enabled_plugins as $enabled_plugin ) {
-		if ( fnmatch( $enabled_plugin, $mu_plugin ) ) {
-			include_once( $mu_plugin );
-			break;
-		}
-	}
+	include_once( $mu_plugin );
 }
 unset( $mu_plugin );
 
 // Load network activated plugins.
 if ( is_multisite() ) {
 	foreach( wp_get_active_network_plugins() as $network_plugin ) {
-		foreach ( $enabled_plugins as $enabled_plugin ) {
-			if ( fnmatch( $enabled_plugin, $network_plugin ) ) {
-				include_once( $network_plugin );
-				break;
-			}
+		if ( !Utils\is_plugin_skipped( $network_plugin ) ) {
+			if ( $symlinked_plugins_supported )
+				wp_register_plugin_realpath( $network_plugin );
+			include_once( $network_plugin );
 		}
 	}
 	unset( $network_plugin );
@@ -236,14 +224,13 @@ register_theme_directory( get_theme_root() );
 
 // Load active plugins.
 foreach ( wp_get_active_and_valid_plugins() as $plugin ) {
-	foreach ( $enabled_plugins as $enabled_plugin ) {
-		if ( fnmatch( $enabled_plugin, $plugin ) ) {
-			include_once( $plugin );
-			break;
-		}
+	if ( !Utils\is_plugin_skipped( $plugin ) ) {
+		if ( $symlinked_plugins_supported )
+			wp_register_plugin_realpath( $plugin );
+		include_once( $plugin );
 	}
 }
-unset( $plugin );
+unset( $plugin, $symlinked_plugins_supported );
 
 // Load pluggable functions.
 require( ABSPATH . WPINC . '/pluggable.php' );

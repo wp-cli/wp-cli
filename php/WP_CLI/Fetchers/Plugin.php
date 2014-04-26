@@ -2,34 +2,28 @@
 
 namespace WP_CLI\Fetchers;
 
+/**
+ * Fetch a WordPress plugin based on one of its attributes.
+ */
 class Plugin extends Base {
 
+	/**
+	 * @param string $msg Error message to use when invalid data is provided
+	 */
 	protected $msg = "The '%s' plugin could not be found.";
 
+	/**
+	 * Get a plugin object by name
+	 * 
+	 * @param string $name
+	 * @return object|false
+	 */
 	public function get( $name ) {
-		$plugins = get_plugins( '/' . $name );
-
-		// some-plugin/the-plugin.php
-		while ( !empty( $plugins ) ) {
-			$file = key( $plugins );
-			array_shift( $plugins );
-
-			// ignore files inside a plugin's subdirectory (like WP does)
-			if ( dirname( $file ) == '.' ) {
-				return (object) array(
-					'name' => $name,
-					'file' => $name . '/' . $file
-				);
+		foreach ( get_plugins() as $file => $_ ) {
+			if ( $file === "$name.php" ||
+				( dirname( $file ) === $name && $name !== '.' ) ) {
+				return (object) compact( 'name', 'file' );
 			}
-		}
-
-		// some-plugin.php
-		$file = $name . '.php';
-
-		$plugins = get_plugins();
-
-		if ( isset( $plugins[ $file ] ) ) {
-			return (object) compact( 'name', 'file' );
 		}
 
 		return false;

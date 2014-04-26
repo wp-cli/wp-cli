@@ -10,6 +10,16 @@ class Rewrite_Command extends WP_CLI_Command {
 	/**
 	 * Flush rewrite rules.
 	 *
+	 * ## DESCRIPTION
+	 *
+	 * Resets WordPress' rewrite rules based on registered post types, etc.
+	 *
+	 * To regenerate a .htaccess file with WP-CLI, you'll need to add the mod_rewrite module
+	 * to your wp-cli.yml or config.yml. For example:
+	 *
+	 * apache_modules:
+	 *   - mod_rewrite
+	 *
 	 * ## OPTIONS
 	 *
 	 * [--hard]
@@ -18,11 +28,24 @@ class Rewrite_Command extends WP_CLI_Command {
 	public function flush( $args, $assoc_args ) {
 		// make sure we detect mod_rewrite if configured in apache_modules in config
 		self::apache_modules();
+		if ( isset( $assoc_args['hard'] ) && ! in_array( 'mod_rewrite', (array) WP_CLI::get_config( 'apache_modules' ) ) ) {
+			WP_CLI::warning( "Regenerating a .htaccess file requires special configuration. See usage docs." );
+		}
 		flush_rewrite_rules( isset( $assoc_args['hard'] ) );
 	}
 
 	/**
 	 * Update the permalink structure.
+	 *
+	 * ## DESCRIPTION
+	 *
+	 * Updates the post permalink structure.
+	 *
+	 * To regenerate a .htaccess file with WP-CLI, you'll need to add the mod_rewrite module
+	 * to your wp-cli.yml or config.yml. For example:
+	 *
+	 * apache_modules:
+	 *   - mod_rewrite
 	 *
 	 * ## OPTIONS
 	 *
@@ -89,8 +112,13 @@ class Rewrite_Command extends WP_CLI_Command {
 		// Launch a new process to flush rewrites because core expects flush
 		// to happen after rewrites are set
 		$new_assoc_args = array();
-		if ( isset( $assoc_args['hard'] ) )
+		if ( isset( $assoc_args['hard'] ) ) {
 			$new_assoc_args['hard'] = true;
+			if ( ! in_array( 'mod_rewrite', (array) WP_CLI::get_config( 'apache_modules' ) ) ) {
+				WP_CLI::warning( "Regenerating a .htaccess file requires special configuration. See usage docs." );
+			}
+		}
+
 		\WP_CLI::launch_self( 'rewrite flush', array(), $new_assoc_args );
 
 		WP_CLI::success( "Rewrite structure set." );
@@ -115,7 +143,7 @@ class Rewrite_Command extends WP_CLI_Command {
 	 *     wp rewrite list --format=csv
 	 * @subcommand list
 	 */
-	public function _list( $args, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 		global $wp_rewrite;
 
 		$rules = get_option( 'rewrite_rules' );
@@ -207,6 +235,9 @@ class Rewrite_Command extends WP_CLI_Command {
 		if ( !empty( $mods ) && !function_exists( 'apache_get_modules' ) ) {
 			global $is_apache;
 			$is_apache = true;
+
+			// needed for get_home_path() and .htaccess location
+			$_SERVER['SCRIPT_FILENAME'] = ABSPATH;
 
 			function apache_get_modules() {
 				return WP_CLI::get_config( 'apache_modules' );

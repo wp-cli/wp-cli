@@ -85,6 +85,9 @@ class Formatter {
 
 			echo json_encode( $out );
 			break;
+
+		default:
+			\WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
 		}
 	}
 
@@ -125,7 +128,7 @@ class Formatter {
 			}
 		}
 
-		if ( ! $key ) {
+		if ( ! isset( $key ) ) {
 			\WP_CLI::error( "Invalid field: $field." );
 		}
 

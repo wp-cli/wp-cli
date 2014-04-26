@@ -1,5 +1,8 @@
 Feature: Manage WordPress themes and plugins
 
+  Background:
+    Given an empty cache
+
   Scenario Outline: Installing, upgrading and deleting a theme or plugin
     Given a WP install
     And I run `wp <type> path`

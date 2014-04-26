@@ -51,7 +51,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * @subcommand list
 	 */
-	public function _list( $args, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		if ( 'ids' == $formatter->format ) {
@@ -62,16 +62,20 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$users = get_users( $assoc_args );
 
-		$it = WP_CLI\Utils\iterator_map( $users, function ( $user ) {
-			if ( !is_object( $user ) )
+		if ( 'ids' == $formatter->format ) {
+			echo implode( ' ', $users );
+		} else {
+			$it = WP_CLI\Utils\iterator_map( $users, function ( $user ) {
+				if ( !is_object( $user ) )
+					return $user;
+
+				$user->roles = implode( ',', $user->roles );
+
 				return $user;
+			} );
 
-			$user->roles = implode( ',', $user->roles );
-
-			return $user;
-		} );
-
-		$formatter->display_items( $it );
+			$formatter->display_items( $it );
+		}
 	}
 
 	/**
@@ -96,13 +100,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function get( $args, $assoc_args ) {
 		$user = $this->fetcher->get_check( $args[0] );
-
-		if ( method_exists( $user, 'to_array' ) ) {
-			$user_data = $user->to_array();
-		} else {
-			// WP 3.4 compat
-			$user_data = (array) $user->data;
-		}
+		$user_data = $user->to_array();
 		$user_data['roles'] = implode( ', ', $user->roles );
 
 		$formatter = $this->get_formatter( $assoc_args );
@@ -110,38 +108,54 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Delete one or more users.
+	 * Delete one or more users from the current site.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <user>...
 	 * : The user login, user email, or user ID of the user(s) to update.
 	 *
+	 * [--network]
+	 * : On multisite, delete the user from the entire network.
+	 *
 	 * [--reassign=<user-id>]
 	 * : User ID to reassign the posts to.
 	 *
+	 * [--yes]
+	 * : Answer yes to any confirmation propmts.
+	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Delete user 123 and reassign posts to user 567
 	 *     wp user delete 123 --reassign=567
 	 */
 	public function delete( $args, $assoc_args ) {
-		$assoc_args = wp_parse_args( $assoc_args, array(
-			'reassign' => null
-		) );
+		$network = isset( $assoc_args['network'] ) && is_multisite();
+		$reassign = isset( $assoc_args['reassign'] ) ? $assoc_args['reassign'] : null;
+
+		if ( $network && $reassign ) {
+			WP_CLI::error('Reassigning content to a different user is not supported on multisite.');
+		}
+
+		if ( !$reassign ) {
+			WP_CLI::confirm( '--reassign parameter not passed. All associated posts will be deleted. Proceed?', $assoc_args );
+		}
 
 		$users = $this->fetcher->get_many( $args );
 
-		parent::_delete( $users, $assoc_args, function ( $user, $assoc_args ) {
+		parent::_delete( $users, $assoc_args, function ( $user ) use ( $network, $reassign ) {
 			$user_id = $user->ID;
 
-			if ( is_multisite() ) {
+			if ( $network ) {
 				$r = wpmu_delete_user( $user_id );
+				$message = "Deleted user $user_id.";
 			} else {
-				$r = wp_delete_user( $user_id, $assoc_args['reassign'] );
+				$r = wp_delete_user( $user_id, $reassign );
+				$message = "Removed user $user_id from " . home_url();
 			}
 
 			if ( $r ) {
-				return array( 'success', "Deleted user $user_id." );
+				return array( 'success', $message );
 			} else {
 				return array( 'error', "Failed deleting user $user_id." );
 			}
@@ -171,6 +185,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--display_name=<name>]
 	 * : The display name.
 	 *
+	 * [--send-email]
+	 * : Send an email to the user with their new account details.
+	 *
 	 * [--porcelain]
 	 * : Output just the new user id.
 	 *
@@ -179,34 +196,39 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user create bob bob@example.com --role=author
 	 */
 	public function create( $args, $assoc_args ) {
-		list( $user_login, $user_email ) = $args;
+		$user = new stdClass;
 
-		$defaults = array(
-			'role' => get_option('default_role'),
-			'user_pass' => false,
-			'user_registered' => strftime( "%F %T", time() ),
-			'display_name' => false,
-		);
-		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
+		list( $user->user_login, $user->user_email ) = $args;
 
-		if ( !self::validate_role( $role ) ) {
-			WP_CLI::error( "Invalid role: $role" );
+		if ( username_exists( $user->user_login ) ) {
+			WP_CLI::error( "The '{$user->user_login}' username is already registered." );
 		}
 
-		// @codingStandardsIgnoreStart
-		if ( !$user_pass ) {
-			$user_pass = wp_generate_password();
-			$generated_pass = true;
+		if ( !is_email( $user->user_email ) ) {
+			WP_CLI::error( "The '{$user->user_email}' email address is invalid." );
 		}
 
-		$user_id = wp_insert_user( array(
-			'user_email' => $user_email,
-			'user_login' => $user_login,
-			'user_pass' => $user_pass,
-			'user_registered' => $user_registered,
-			'display_name' => $display_name,
-			'role' => $role,
-		) );
+		$user->user_registered = isset( $assoc_args['user_registered'] )
+			? $assoc_args['user_registered'] : strftime( "%F %T", current_time('timestamp') );
+
+		$user->display_name = isset( $assoc_args['display_name'] )
+			? $assoc_args['display_name'] : false;
+
+		$user->user_pass = isset( $assoc_args['user_pass'] )
+			? $assoc_args['user_pass'] : wp_generate_password();
+
+		if ( isset( $assoc_args['role'] ) ) {
+			$role = $assoc_args['role'];
+			self::validate_role( $role );
+		} else {
+			$role = get_option('default_role');
+		}
+		$user->role = $role;
+
+		$user_id = wp_insert_user( $user );
+		if ( isset( $assoc_args['send-email'] ) ) {
+			wp_new_user_notification( $user_id, $user->user_pass );
+		}
 
 		if ( is_wp_error( $user_id ) ) {
 			WP_CLI::error( $user_id );
@@ -224,7 +246,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			if ( isset( $generated_pass ) )
 				WP_CLI::line( "Password: $user_pass" );
 		}
-		// @codingStandardsIgnoreEnd
 	}
 
 	/**
@@ -276,8 +297,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		if ( !self::validate_role( $assoc_args['role'] ) ) {
-			WP_CLI::error( "Invalid role: $role" );
+		$role = $assoc_args['role'];
+
+		if ( ! empty( $role ) ) {
+			self::validate_role( $role );
 		}
 
 		$user_count = count_users();
@@ -333,6 +356,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$role = isset( $args[1] ) ? $args[1] : get_option( 'default_role' );
 
+		self::validate_role( $role );
+
 		// Multisite
 		if ( function_exists( 'add_user_to_blog' ) )
 			add_user_to_blog( get_current_blog_id(), $user->ID, $role );
@@ -365,6 +390,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$role = $args[1];
 
+		self::validate_role( $role );
+
 		$user->add_role( $role );
 
 		WP_CLI::success( sprintf( "Added '%s' role for %s (%d).", $role, $user->user_login, $user->ID ) );
@@ -393,6 +420,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( isset( $args[1] ) ) {
 			$role = $args[1];
+
+			self::validate_role( $role );
 
 			$user->remove_role( $role );
 
@@ -504,6 +533,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * <file>
 	 * : The CSV file of users to import.
 	 *
+	 * [--send-email]
+	 * : Send an email to new users with their account details.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp user import-csv /path/to/users.csv
@@ -561,8 +593,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 			// Create the user
 			} else {
-				unset( $new_user['ID'] ); // Unset else it will just return the ID 
+				unset( $new_user['ID'] ); // Unset else it will just return the ID
 				$user_id = wp_insert_user( $new_user );
+				if ( isset( $assoc_args['send-email'] ) ) {
+					wp_new_user_notification( $user_id, $new_user['user_pass'] );
+				}
 			}
 
 			if ( is_wp_error( $user_id ) ) {
@@ -582,13 +617,133 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 	}
 
+	/**
+	 * Check whether the role is valid
+	 *
+	 * @param string
+	 */
 	private static function validate_role( $role ) {
-		if ( empty( $role ) || ! is_null( get_role( $role ) ) ) {
-			return true;
+
+		if ( ! empty( $role ) && is_null( get_role( $role ) ) ) {
+			WP_CLI::error( sprintf( "Role doesn't exist: %s", $role ) );
 		}
-		return false;
+
 	}
+
+}
+
+/**
+ * Manage user custom fields.
+ *
+ * ## OPTIONS
+ *
+ * --format=json
+ * : Encode/decode values as JSON.
+ *
+ * ## EXAMPLES
+ *
+ *     wp user meta set 123 description "Mary is a WordPress developer."
+ *
+ *     wp user meta update admin first_name "George"
+ */
+class User_Meta_Command extends \WP_CLI\CommandWithMeta {
+	protected $meta_type = 'user';
+
+	public function __construct() {
+		$this->fetcher = new \WP_CLI\Fetchers\User;
+	}
+
+	/**
+	 * Get meta field value.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <user>
+	 * : The user login, user email, or user ID of the user to get metadata for.
+	 *
+	 * <key>
+	 * : The metadata key.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json. Default: table
+	 *
+	 * @synopsis <user> <key> [--format=<format>]
+	 */
+	public function get( $args, $assoc_args ) {
+		$args = $this->replace_login_with_user_id( $args );
+		parent::get( $args, $assoc_args );
+	}
+
+	/**
+	 * Delete a meta field.
+	 *
+	 * <user>
+	 * : The user login, user email, or user ID of the user to delete metadata from.
+	 *
+	 * <key>
+	 * : The metadata key.
+	 *
+	 * @synopsis <user> <key>
+	 */
+	public function delete( $args, $assoc_args ) {
+		$args = $this->replace_login_with_user_id( $args );
+		parent::delete( $args, $assoc_args );
+	}
+
+	/**
+	 * Add a meta field.
+	 *
+	 * <user>
+	 * : The user login, user email, or user ID of the user to add metadata for.
+	 *
+	 * <key>
+	 * : The metadata key.
+	 *
+	 * <value>
+	 * : The new metadata value.
+	 *
+	 * @synopsis <user> <key> <value> [--format=<format>]
+	 */
+	public function add( $args, $assoc_args ) {
+		$args = $this->replace_login_with_user_id( $args );
+		parent::add( $args, $assoc_args );
+	}
+
+	/**
+	 * Update a meta field.
+	 *
+	 * <user>
+	 * : The user login, user email, or user ID of the user to update metadata for.
+	 *
+	 * <key>
+	 * : The metadata key.
+	 *
+	 * <value>
+	 * : The new metadata value.
+	 *
+	 * @alias set
+	 * @synopsis <user> <key> <value> [--format=<format>]
+	 */
+	public function update( $args, $assoc_args ) {
+		$args = $this->replace_login_with_user_id( $args );
+		parent::update( $args, $assoc_args );
+	}
+
+	/**
+	 * Replace user_login value with user ID
+	 * user meta is a special case that also supports user_login
+	 *
+	 * @param array
+	 * @return array
+	 */
+	private function replace_login_with_user_id( $args ) {
+		$user = $this->fetcher->get_check( $args[0] );
+		$args[0] = $user->ID;
+		return $args;
+	}
+
 }
 
 WP_CLI::add_command( 'user', 'User_Command' );
+WP_CLI::add_command( 'user meta', 'User_Meta_Command' );
 

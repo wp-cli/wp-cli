@@ -54,14 +54,30 @@ Feature: Have a config file
     When I run `wp core is-installed` from 'core/wp-content'
     Then STDOUT should be empty
 
+    When I run `mkdir -p other/subdir`
+    And I run `wp core is-installed` from 'other/subdir'
+    Then STDOUT should be empty
+
   Scenario: WP in a subdirectory (autodetected)
     Given a WP install in 'core'
-    And a index.php file:
+
+    Given an index.php file:
     """
     require('./core/wp-blog-header.php');
     """
-
     When I run `wp core is-installed`
+    Then STDOUT should be empty
+
+    Given an index.php file:
+    """
+    require dirname(__FILE__) . '/core/wp-blog-header.php';
+    """
+    When I run `wp core is-installed`
+    Then STDOUT should be empty
+
+    When I run `mkdir -p other/subdir`
+    And I run `echo '<?php // Silence is golden' > other/subdir/index.php`
+    And I run `wp core is-installed` from 'other/subdir'
     Then STDOUT should be empty
 
   Scenario: Nested installs
@@ -91,24 +107,31 @@ Feature: Have a config file
       command has been disabled
       """
 
-  Scenario: Command-specific configs
-    Given a WP install
+  Scenario: 'core config' parameters
+    Given an empty directory
+    And WP files
     And a wp-cli.yml file:
       """
       core config:
         dbname: wordpress
         dbuser: root
+        extra-php: |
+          define( 'WP_DEBUG', true );
+          define( 'WP_POST_REVISIONS', 50 );
+      """
+
+    When I run `wp core config --skip-check`
+    And I run `grep WP_POST_REVISIONS wp-config.php`
+    Then STDOUT should not be empty
+
+  Scenario: Command-specific configs
+    Given a WP install
+    And a wp-cli.yml file:
+      """
       eval:
         foo: bar
       post list:
         format: count
-      """
-
-    # Required parameters should be recognized
-    When I try `wp core config`
-    Then STDERR should not contain:
-      """
-      Parameter errors
       """
 
     # Arbitrary values should be passed, without warnings

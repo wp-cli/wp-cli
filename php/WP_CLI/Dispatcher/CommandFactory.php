@@ -4,9 +4,18 @@ namespace WP_CLI\Dispatcher;
 
 /**
  * Creates CompositeCommand or Subcommand instances.
+ *
+ * @package WP_CLI
  */
 class CommandFactory {
 
+	/**
+	 * Create a new CompositeCommand (or Subcommand if class has __invoke())
+	 *
+	 * @param string $name Represents how the command should be invoked
+	 * @param string $class A subclass of WP_CLI_Command
+	 * @param mixed $parent The new command's parent Composite (or Root) command
+	 */
 	public static function create( $name, $class, $parent ) {
 		$reflection = new \ReflectionClass( $class );
 
@@ -20,6 +29,14 @@ class CommandFactory {
 		return $command;
 	}
 
+	/**
+	 * Create a new Subcommand instance.
+	 *
+	 * @param mixed $parent The new command's parent Composite command
+	 * @param string $name Represents how the command should be invoked
+	 * @param string $class A subclass of WP_CLI_Command
+	 * @param string $method Class method to be called upon invocation.
+	 */
 	private static function create_subcommand( $parent, $name, $class_name, $method ) {
 		$docparser = new \WP_CLI\DocParser( $method->getDocComment() );
 
@@ -38,6 +55,13 @@ class CommandFactory {
 		return new Subcommand( $parent, $name, $docparser, $when_invoked );
 	}
 
+	/**
+	 * Create a new Composite command instance.
+	 *
+	 * @param mixed $parent The new command's parent Root or Composite command
+	 * @param string $name Represents how the command should be invoked
+	 * @param ReflectionClass $reflection
+	 */
 	private static function create_composite_command( $parent, $name, $reflection ) {
 		$docparser = new \WP_CLI\DocParser( $reflection->getDocComment() );
 
@@ -57,6 +81,12 @@ class CommandFactory {
 		return $container;
 	}
 
+	/**
+	 * Check whether a method is actually callable.
+	 *
+	 * @param ReflectionMethod $method
+	 * @return bool
+	 */
 	private static function is_good_method( $method ) {
 		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
 	}

@@ -4,6 +4,8 @@ namespace WP_CLI\Dispatcher;
 
 /**
  * A leaf node in the command tree.
+ *
+ * @package WP_CLI
  */
 class Subcommand extends CompositeCommand {
 
@@ -24,27 +26,79 @@ class Subcommand extends CompositeCommand {
 		}
 	}
 
+	/**
+	 * Extract the synopsis from PHPdoc string.
+	 *
+	 * @param string $longdesc Command docs via PHPdoc
+	 * @return string
+	 */
 	private static function extract_synopsis( $longdesc ) {
 		preg_match_all( '/(.+?)[\r\n]+:/', $longdesc, $matches );
 		return implode( ' ', $matches[1] );
 	}
 
+	/**
+	 * Subcommands can't have subcommands because they
+	 * represent code to be executed.
+	 *
+	 * @return bool
+	 */
+	function can_have_subcommands() {
+		return false;
+	}
+
+	/**
+	 * Get the synopsis string for this subcommand.
+	 * A synopsis defines what runtime arguments are
+	 * expected, useful to humans and argument validation.
+	 *
+	 * @return string
+	 */
 	function get_synopsis() {
 		return $this->synopsis;
 	}
 
+	/**
+	 * If an alias is set, grant access to it.
+	 * Aliases permit subcommands to be instantiated
+	 * with a secondary identity.
+	 *
+	 * @return string
+	 */
 	function get_alias() {
 		return $this->alias;
 	}
 
+	/**
+	 * Print the usage details to the end user.
+	 *
+	 * @param string $prefix
+	 */
 	function show_usage( $prefix = 'usage: ' ) {
-		\WP_CLI::line( sprintf( "%s%s %s",
+		\WP_CLI::line( $this->get_usage( $prefix ) );
+	}
+
+	/**
+	 * Get the usage of the subcommand as a formatted string.
+	 *
+	 * @param string $prefix
+	 * @return string
+	 */
+	function get_usage( $prefix ) {
+		return sprintf( "%s%s %s",
 			$prefix,
 			implode( ' ', get_path( $this ) ),
 			$this->get_synopsis()
-		) );
+		);
 	}
 
+	/**
+	 * Wrapper for CLI Tools' prompt() method.
+	 *
+	 * @param string $question
+	 * @param string $default
+	 * @return string|false
+	 */
 	private function prompt( $question, $default ) {
 
 		try {
@@ -57,6 +111,14 @@ class Subcommand extends CompositeCommand {
 		return $response;
 	}
 
+	/**
+	 * Interactively prompt the user for input
+	 * based on defined synopsis and passed arguments.
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 * @return array
+	 */
 	private function prompt_args( $args, $assoc_args ) {
 
 		$synopsis = $this->get_synopsis();
@@ -147,6 +209,13 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Validate the supplied arguments to the command.
+	 * Throws warnings or errors if arguments are missing
+	 * or invalid.
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 * @param array $extra_args
 	 * @return array list of invalid $assoc_args keys to unset
 	 */
 	private function validate_args( $args, $assoc_args, $extra_args ) {
@@ -197,7 +266,15 @@ class Subcommand extends CompositeCommand {
 		return $to_unset;
 	}
 
-	function invoke( $args, $assoc_args, $extra_args ) {
+	/**
+	 * Invoke the subcommand with the supplied arguments.
+	 * Given a --prompt argument, interactively request input
+	 * from the end user.
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 */
+	public function invoke( $args, $assoc_args, $extra_args ) {
 		if ( \WP_CLI::get_config( 'prompt' ) )
 			list( $args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
 
@@ -207,7 +284,8 @@ class Subcommand extends CompositeCommand {
 			unset( $assoc_args[ $key ] );
 		}
 
-		\WP_CLI::do_hook( 'before_invoke:' . $this->get_parent()->get_name() );
+		$path = get_path( $this->get_parent() );
+		\WP_CLI::do_hook( 'before_invoke:' . implode( ' ', array_slice( $path, 1 ) ) );
 
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 	}

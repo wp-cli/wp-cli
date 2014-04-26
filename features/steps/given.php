@@ -9,7 +9,13 @@ $steps->Given( '/^an empty directory$/',
 	}
 );
 
-$steps->Given( '/^a ([^\s]+) file:$/',
+$steps->Given( '/^an empty cache/',
+	function ( $world ) {
+		$world->variables['SUITE_CACHE_DIR'] = FeatureContext::create_cache_dir();
+	}
+);
+
+$steps->Given( '/^an? ([^\s]+) file:$/',
 	function ( $world, $path, PyStringNode $content ) {
 		$content = (string) $content . "\n";
 		$full_path = $world->variables['RUN_DIR'] . "/$path";
@@ -87,7 +93,7 @@ $steps->Given( '/^download:$/',
 	}
 );
 
-$steps->Given( '/^save (STDOUT|STDERR)( [\'].+[^\'])? as \{(\w+)\}$/',
+$steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 	function ( $world, $stream, $output_filter, $key ) {
 
 		if ( $output_filter ) {

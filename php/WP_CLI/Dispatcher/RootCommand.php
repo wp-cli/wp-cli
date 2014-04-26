@@ -6,10 +6,12 @@ use \WP_CLI\Utils;
 
 /**
  * The root node in the command tree.
+ *
+ * @package WP_CLI
  */
 class RootCommand extends CompositeCommand {
 
-	function __construct() {
+	public function __construct() {
 		$this->parent = false;
 
 		$this->name = 'wp';
@@ -17,7 +19,12 @@ class RootCommand extends CompositeCommand {
 		$this->shortdesc = 'Manage WordPress through the command-line.';
 	}
 
-	function get_longdesc() {
+	/**
+	 * Get the human-readable long description.
+	 *
+	 * @return string
+	 */
+	public function get_longdesc() {
 		$binding = array();
 
 		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
@@ -25,6 +32,9 @@ class RootCommand extends CompositeCommand {
 				continue;
 
 			if ( isset( $details['deprecated'] ) )
+				continue;
+
+			if ( isset( $details['hidden'] ) )
 				continue;
 
 			if ( true === $details['runtime'] )
@@ -41,7 +51,14 @@ class RootCommand extends CompositeCommand {
 		return Utils\mustache_render( 'man-params.mustache', $binding );
 	}
 
-	function find_subcommand( &$args ) {
+	/**
+	 * Find a subcommand registered on the root
+	 * command.
+	 *
+	 * @param array $args
+	 * @return \WP_CLI\Dispatcher\Subcommand|false
+	 */
+	public function find_subcommand( &$args ) {
 		$command = array_shift( $args );
 
 		Utils\load_command( $command );
@@ -53,15 +70,15 @@ class RootCommand extends CompositeCommand {
 		return $this->subcommands[ $command ];
 	}
 
-	function get_subcommands() {
+	/**
+	 * Get all registered subcommands.
+	 *
+	 * @return array
+	 */
+	public function get_subcommands() {
 		Utils\load_all_commands();
 
 		return parent::get_subcommands();
-	}
-
-	function has_subcommands() {
-		// Commands are lazy-loaded, so we need to assume there will be some
-		return true;
 	}
 }
 

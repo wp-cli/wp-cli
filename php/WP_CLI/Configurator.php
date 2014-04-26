@@ -2,6 +2,11 @@
 
 namespace WP_CLI;
 
+/**
+ * Handles file- and runtime-based configuration values.
+ *
+ * @package WP_CLI
+ */
 class Configurator {
 
 	private $spec;
@@ -27,6 +32,11 @@ class Configurator {
 		}
 	}
 
+	/**
+	 * Get declared configuration values as an array.
+	 *
+	 * @return array
+	 */
 	function to_array() {
 		return array( $this->config, $this->extra_config );
 	}
@@ -43,24 +53,40 @@ class Configurator {
 	/**
 	 * Splits a list of arguments into positional, associative and config.
 	 *
-	 * @param string
-	 * @return array
+	 * @param array(string)
+	 * @return array(array)
 	 */
-	function parse_args( $arguments ) {
-		$regular_args = $mixed_args = array();
+	public function parse_args( $arguments ) {
+		list( $positional_args, $mixed_args ) = self::extract_assoc( $arguments );
+		list( $assoc_args, $runtime_config ) = $this->unmix_assoc_args( $mixed_args );
+		return array( $positional_args, $assoc_args, $runtime_config );
+	}
+
+	/**
+	 * Splits positional args from associative args.
+	 *
+	 * @param array
+	 * @return array(array)
+	 */
+	public static function extract_assoc( $arguments ) {
+		$positional_args = $assoc_args = array();
 
 		foreach ( $arguments as $arg ) {
 			if ( preg_match( '|^--no-([^=]+)$|', $arg, $matches ) ) {
-				$mixed_args[] = array( $matches[1], false );
+				$assoc_args[] = array( $matches[1], false );
 			} elseif ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
-				$mixed_args[] = array( $matches[1], true );
+				$assoc_args[] = array( $matches[1], true );
 			} elseif ( preg_match( '|^--([^=]+)=(.+)|s', $arg, $matches ) ) {
-				$mixed_args[] = array( $matches[1], $matches[2] );
+				$assoc_args[] = array( $matches[1], $matches[2] );
 			} else {
-				$regular_args[] = $arg;
+				$positional_args[] = $arg;
 			}
 		}
 
+		return array( $positional_args, $assoc_args );
+	}
+
+	private function unmix_assoc_args( $mixed_args ) {
 		$assoc_args = $runtime_config = array();
 
 		foreach ( $mixed_args as $tmp ) {
@@ -83,7 +109,7 @@ class Configurator {
 			}
 		}
 
-		return array( $regular_args, $assoc_args, $runtime_config );
+		return array( $assoc_args, $runtime_config );
 	}
 
 	function merge_yml( $path ) {
@@ -116,6 +142,9 @@ class Configurator {
 
 	/**
 	 * Load values from a YAML file.
+	 *
+	 * @param string $yml_file Path to the YAML file
+	 * @return array $config Declared configuration values
 	 */
 	private static function load_yml( $yml_file ) {
 		if ( !$yml_file )
@@ -139,6 +168,11 @@ class Configurator {
 		return $config;
 	}
 
+	/**
+	 * Conform a variable to an array.
+	 *
+	 * @param mixed $val A string or an array
+	 */
 	private static function arrayify( &$val ) {
 		if ( !is_array( $val ) ) {
 			$val = array( $val );

@@ -25,8 +25,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * [<filename>]
-	 * : Read post content from <filename>. If this value is present, the
+	 * [<file>]
+	 * : Read post content from <file>. If this value is present, the
 	 *     `--post_content` argument will be ignored.
 	 *
 	 *   Passing `-` as the filename will cause post content to
@@ -48,7 +48,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     wp post create --post_type=page --post_status=publish --post_title='A future post' --post-status=future --post_date='2020-12-01 07:00:00'
 	 *
-	 *     wp post create page.txt --post_type=page --post_title='Page from file'
+	 *     wp post create ./post-content.txt --post_category=201,345 --post_title='Post from file'
 	 */
 	public function create( $args, $assoc_args ) {
 		if ( ! empty( $args[0] ) ) {
@@ -72,6 +72,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				$assoc_args['post_content'] = $output;
 			else
 				$assoc_args['post_content'] = $input;
+		}
+
+		if ( isset( $assoc_args['post_category'] ) ) {
+			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
 		}
 
 		parent::_create( $args, $assoc_args, function ( $params ) {
@@ -210,7 +214,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields. Defaults to ID,post_title,post_name,post_date,post_status.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, ids. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -220,9 +224,11 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     wp post list --post_type=page --fields=post_title,post_status
 	 *
+	 *     wp post list --post_type=page,post --format=ids
+	 *
 	 * @subcommand list
 	 */
-	public function _list( $_, $assoc_args ) {
+	public function list_( $_, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		$defaults = array(
@@ -232,16 +238,20 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		$query_args = array_merge( $defaults, $assoc_args );
 
 		foreach ( $query_args as $key => $query_arg ) {
-			if ( false !== strpos( $key, '__' ) )
+			if ( false !== strpos( $key, '__' )
+				|| ( 'post_type' == $key && 'any' != $query_arg ) ) {
 				$query_args[$key] = explode( ',', $query_arg );
+			}
 		}
 
-		if ( 'ids' == $formatter->format )
+		if ( 'ids' == $formatter->format ) {
 			$query_args['fields'] = 'ids';
-
-		$query = new WP_Query( $query_args );
-
-		$formatter->display_items( $query->posts );
+			$query = new WP_Query( $query_args );
+			echo implode( ' ', $query->posts );
+		} else {
+			$query = new WP_Query( $query_args );
+			$formatter->display_items( $query->posts );
+		}
 	}
 
 	/**
@@ -326,7 +336,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 				if( $this->maybe_make_child() && $current_depth < $max_depth ) {
 
-					$current_parent = $post_ids[$i-1];
+					$current_parent = $previous_post_id;
 					$current_depth++;
 
 				} else if( $this->maybe_reset_depth() ) {
@@ -390,4 +400,22 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 }
 
+/**
+ * Manage post custom fields.
+ *
+ * ## OPTIONS
+ *
+ * [--format=json]
+ * : Encode/decode values as JSON.
+ *
+ * ## EXAMPLES
+ *
+ *     wp post meta set 123 _wp_page_template about.php
+ */
+class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
+	protected $meta_type = 'post';
+}
+
 WP_CLI::add_command( 'post', 'Post_Command' );
+WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );
+

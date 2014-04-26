@@ -28,7 +28,7 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp core download --version=3.3
+	 *     wp core download --locale=nl_NL
 	 *
 	 * @when before_wp_load
 	 */
@@ -45,14 +45,12 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( isset( $assoc_args['version'] ) ) {
 			$version = $assoc_args['version'];
-			if ( 'en_US' === $locale ) {
-				$download_url = 'https://wordpress.org/wordpress-' . $version . '.tar.gz';
-			} else {
-				$download_url = sprintf( 'https://%s.wordpress.org/wordpress-%s-%s.tar.gz',
-					substr( $assoc_args['locale'], 0, 2 ), $version, $locale );
-			}
+			$download_url = $this->get_download_url($version, $locale, 'tar.gz');
 		} else {
 			$offer = $this->get_download_offer( $locale );
+			if ( !$offer ) {
+				WP_CLI::error( "The requested locale ($locale) was not found." );
+			}
 			$version = $offer['current'];
 			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
 		}
@@ -170,7 +168,13 @@ class Core_Command extends WP_CLI_Command {
 		$out = unserialize( self::_read(
 			'https://api.wordpress.org/core/version-check/1.6/?locale=' . $locale ) );
 
-		return $out['offers'][0];
+		$offer = $out['offers'][0];
+
+		if ( $offer['locale'] != $locale ) {
+			return false;
+		}
+
+		return $offer;
 	}
 
 	private static function get_initial_locale() {
@@ -219,6 +223,9 @@ class Core_Command extends WP_CLI_Command {
 	 * [--skip-salts]
 	 * : If set, keys and salts won't be generated, but should instead be passed via `--extra-php`.
 	 *
+	 * [--skip-check]
+	 * : If set, the database connection is not checked.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Standard wp-config.php file
@@ -249,14 +256,16 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::error( '--dbprefix can only contain numbers, letters, and underscores.' );
 
 		// Check DB connection
-		Utils\run_mysql_command( 'mysql --no-defaults', array(
-			'execute' => ';',
-			'host' => $assoc_args['dbhost'],
-			'user' => $assoc_args['dbuser'],
-			'pass' => $assoc_args['dbpass'],
-		) );
+		if ( !isset( $assoc_args['skip-check'] ) ) {
+			Utils\run_mysql_command( 'mysql --no-defaults', array(
+				'execute' => ';',
+				'host' => $assoc_args['dbhost'],
+				'user' => $assoc_args['dbuser'],
+				'pass' => $assoc_args['dbpass'],
+			) );
+		}
 
-		if ( isset( $assoc_args['extra-php'] ) ) {
+		if ( isset( $assoc_args['extra-php'] ) && $assoc_args['extra-php'] === true ) {
 			$assoc_args['extra-php'] = file_get_contents( 'php://stdin' );
 		}
 
@@ -279,6 +288,9 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Determine if the WordPress tables are installed.
 	 *
+	 * [--network]
+	 * : Check if this is a multisite install
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     if ! $(wp core is-installed); then
@@ -287,8 +299,15 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand is-installed
 	 */
-	public function is_installed() {
-		if ( is_blog_installed() ) {
+	public function is_installed( $_, $assoc_args ) {
+
+		if ( isset( $assoc_args['network'] ) ) {
+			if ( is_blog_installed() && is_multisite() ) {
+				exit( 0 );
+			} else {
+				exit( 1 );
+			}
+		} else if ( is_blog_installed() ) {
 			exit( 0 );
 		} else {
 			exit( 1 );
@@ -464,6 +483,10 @@ class Core_Command extends WP_CLI_Command {
 		$public = true;
 
 		// @codingStandardsIgnoreStart
+		if ( !is_email( $admin_email ) ) {
+			WP_CLI::error( "The '{$admin_email}' email address is invalid." );
+		}
+
 		$result = wp_install( $title, $admin_user, $admin_email, $public, '', $admin_password );
 
 		if ( is_wp_error( $result ) ) {
@@ -647,14 +670,16 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 * : Update to this version, instead of to the latest version.
 	 *
 	 * [--force]
-	 * : Will update even when current WP version < passed version. Use with
-	 * caution.
+	 * : Update even when installed WP version is greater than the requested version.
+     *
+     * [--locale=<locale>]
+     * : Select which language you want to download.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp core update
 	 *
-	 *     wp core update --version=3.4 ../latest.zip
+	 *     wp core update --version=3.8 ../latest.zip
 	 *
 	 *     wp core update --version=3.1 --force
 	 *
@@ -678,11 +703,15 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		} else if (	version_compare( $wp_version, $assoc_args['version'], '<' )
 					|| isset( $assoc_args['force'] ) ) {
 
-			$new_package = null;
+			$new_package = $version = null;
 
 			if ( empty( $args[0] ) ) {
-				$new_package = 'https://wordpress.org/wordpress-' . $assoc_args['version'] . '.zip';
-				WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], 'en_US' ) );
+				$version = $assoc_args['version'];
+				$locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : get_locale();
+
+				$new_package = $this->get_download_url($version, $locale);
+
+				WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $locale ) );
 			} else {
 				$new_package = $args[0];
 				$upgrader = 'WP_CLI\\NonDestructiveCoreUpgrader';
@@ -698,6 +727,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 					'no_content' => null,
 					'full' => $new_package,
 				),
+				'version' => $version,
 			);
 
 		} else {
@@ -730,6 +760,32 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		wp_upgrade();
 		WP_CLI::success( 'WordPress database upgraded successfully.' );
+	}
+
+	/**
+	 * Gets download url based on version, locale and desired file type.
+	 *
+	 * @param $version
+	 * @param string $locale
+	 * @param string $file_type
+	 * @return string
+	 */
+	private function get_download_url($version, $locale = 'en_US', $file_type = 'zip')
+	{
+		if ('en_US' === $locale) {
+			$url = 'https://wordpress.org/wordpress-' . $version . '.' . $file_type;
+
+			return $url;
+		} else {
+			$url = sprintf(
+				'https://%s.wordpress.org/wordpress-%s-%s.' . $file_type,
+				substr($locale, 0, 2),
+				$version,
+				$locale
+			);
+
+			return $url;
+		}
 	}
 }
 

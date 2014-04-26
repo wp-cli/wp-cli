@@ -4,6 +4,9 @@ namespace WP_CLI\Dispatcher;
 
 /**
  * A non-leaf node in the command tree.
+ * Contains one or more Subcommands.
+ *
+ * @package WP_CLI
  */
 class CompositeCommand {
 
@@ -11,6 +14,13 @@ class CompositeCommand {
 
 	protected $parent, $subcommands = array();
 
+	/**
+	 * Instantiate a new CompositeCommand
+	 *
+	 * @param mixed $parent Parent command (either Root or Composite)
+	 * @param string $name Represents how command should be invoked
+	 * @param \WP_CLI\DocParser
+	 */
 	public function __construct( $parent, $name, $docparser ) {
 		$this->parent = $parent;
 
@@ -25,45 +35,106 @@ class CompositeCommand {
 		}
 	}
 
-	function get_parent() {
+	/**
+	 * Get the parent composite (or root) command
+	 *
+	 * @return mixed
+	 */
+	public function get_parent() {
 		return $this->parent;
 	}
 
-	function add_subcommand( $name, $command ) {
+	/**
+	 * Add a named subcommand to this composite command's
+	 * set of contained subcommands.
+	 *
+	 * @param string $name Represents how subcommand should be invoked
+	 * @param \WP_CLI\Dispatcher\Subcommand
+	 */
+	public function add_subcommand( $name, $command ) {
 		$this->subcommands[ $name ] = $command;
 	}
 
-	function has_subcommands() {
-		return !empty( $this->subcommands );
+	/**
+	 * Composite commands always contain subcommands.
+	 *
+	 * @return true
+	 */
+	public function can_have_subcommands() {
+		return true;
 	}
 
-	function get_subcommands() {
+	/**
+	 * Get the subcommands contained by this composite
+	 * command.
+	 *
+	 * @return array
+	 */
+	public function get_subcommands() {
 		ksort( $this->subcommands );
 
 		return $this->subcommands;
 	}
 
-	function get_name() {
+	/**
+	 * Get the name of this composite command.
+	 *
+	 * @return string
+	 */
+	public function get_name() {
 		return $this->name;
 	}
 
-	function get_shortdesc() {
+	/**
+	 * Get the short description for this composite
+	 * command.
+	 *
+	 * @return string
+	 */
+	public function get_shortdesc() {
 		return $this->shortdesc;
 	}
 
-	function get_longdesc() {
+	/**
+	 * Get the long description for this composite
+	 * command.
+	 *
+	 * @return string
+	 */
+	public function get_longdesc() {
 		return $this->longdesc;
 	}
 
-	function get_synopsis() {
+	/**
+	 * Get the synopsis for this composite command.
+	 * As a collection of subcommands, the composite
+	 * command is only intended to invoke those
+	 * subcommands.
+	 *
+	 * @return string
+	 */
+	public function get_synopsis() {
 		return '<command>';
 	}
 
-	function invoke( $args, $assoc_args, $extra_args ) {
-		$this->show_usage();
+	/**
+	 * Get the usage for this composite command.
+	 *
+	 * @return string
+	 */
+	public function get_usage( $prefix ) {
+		return sprintf( "%s%s %s",
+			$prefix,
+			implode( ' ', get_path( $this ) ),
+			$this->get_synopsis()
+		);
 	}
 
-	function show_usage() {
+	/**
+	 * Show the usage for all subcommands contained
+	 * by the composite command.
+	 */
+	public function show_usage() {
 		$methods = $this->get_subcommands();
 
 		$i = 0;
@@ -71,14 +142,35 @@ class CompositeCommand {
 		foreach ( $methods as $name => $subcommand ) {
 			$prefix = ( 0 == $i++ ) ? 'usage: ' : '   or: ';
 
-			$subcommand->show_usage( $prefix );
+			\WP_CLI::line( $subcommand->get_usage( $prefix ) );
 		}
 
+		$cmd_name = implode( ' ', array_slice( get_path( $this ), 1 ) );
+
 		\WP_CLI::line();
-		\WP_CLI::line( "See 'wp help $this->name <command>' for more information on a specific command." );
+		\WP_CLI::line( "See 'wp help $cmd_name <command>' for more information on a specific command." );
 	}
 
-	function find_subcommand( &$args ) {
+	/**
+	 * When a composite command is invoked, it shows usage
+	 * docs for its subcommands.
+	 *
+	 * @param array $args
+	 * @param array $assoc_args
+	 * @param array $extra_args
+	 */
+	public function invoke( $args, $assoc_args, $extra_args ) {
+		$this->show_usage();
+	}
+
+	/**
+	 * Given supplied arguments, find a contained
+	 * subcommand
+	 *
+	 * @param array $args
+	 * @return \WP_CLI\Dispatcher\Subcommand|false
+	 */
+	public function find_subcommand( &$args ) {
 		$name = array_shift( $args );
 
 		$subcommands = $this->get_subcommands();
@@ -97,6 +189,13 @@ class CompositeCommand {
 		return $subcommands[ $name ];
 	}
 
+	/**
+	 * Get any registered aliases for this composite command's
+	 * subcommands.
+	 *
+	 * @param array $subcommands
+	 * @return array
+	 */
 	private static function get_aliases( $subcommands ) {
 		$aliases = array();
 
@@ -107,6 +206,15 @@ class CompositeCommand {
 		}
 
 		return $aliases;
+	}
+
+	/**
+	 * Composite commands can only be known by one name.
+	 *
+	 * @return false
+	 */
+	public function get_alias() {
+		return false;
 	}
 }
 

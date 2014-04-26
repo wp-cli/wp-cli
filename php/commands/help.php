@@ -28,14 +28,15 @@ class Help_Command extends WP_CLI_Command {
 
 		// WordPress is already loaded, so there's no chance we'll find the command
 		if ( function_exists( 'add_filter' ) ) {
-			\WP_CLI::error( sprintf( "'%s' is not a registered wp command.", $args[0] ) );
+			$command_string = implode( ' ', $args );
+			\WP_CLI::error( sprintf( "'%s' is not a registered wp command.", $command_string ) );
 		}
 	}
 
 	private static function find_subcommand( $args ) {
 		$command = \WP_CLI::get_root_command();
 
-		while ( !empty( $args ) && $command && $command->has_subcommands() ) {
+		while ( !empty( $args ) && $command && $command->can_have_subcommands() ) {
 			$command = $command->find_subcommand( $args );
 		}
 
@@ -47,7 +48,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$longdesc = $command->get_longdesc();
 		if ( $longdesc ) {
-			$out .= wordwrap( $longdesc, 79 ) . "\n";
+			$out .= wordwrap( $longdesc, 90 ) . "\n";
 		}
 
 		// section headers
@@ -106,7 +107,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$binding['synopsis'] = wordwrap( "$name " . $command->get_synopsis(), 79 );
 
-		if ( $command->has_subcommands() ) {
+		if ( $command->can_have_subcommands() ) {
 			$binding['has-subcommands']['subcommands'] = self::render_subcommands( $command );
 		}
 

@@ -323,19 +323,21 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
 	}
 
-	$env = (array) $_ENV;
-	if ( isset( $assoc_args['pass'] ) ) {
-		$env['MYSQL_PWD'] = $assoc_args['pass'];
-		unset( $assoc_args['pass'] );
-	}
+	$pass = $assoc_args['pass'];
+	unset( $assoc_args['pass'] );
+
+	$old_pass = getenv( 'MYSQL_PWD' );
+	putenv( 'MYSQL_PWD=' . $pass );
 
 	$final_cmd = $cmd . assoc_args_to_str( $assoc_args );
 
-	$proc = proc_open( $final_cmd, $descriptors, $pipes, null, $env );
+	$proc = proc_open( $final_cmd, $descriptors, $pipes );
 	if ( !$proc )
 		exit(1);
 
 	$r = proc_close( $proc );
+
+	putenv( 'MYSQL_PWD=' . $old_pass );
 
 	if ( $r ) exit( $r );
 }
@@ -380,5 +382,23 @@ function parse_url( $url ) {
  */
 function is_windows() {
 	return strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+}
+
+/**
+ * Replace magic constants in some PHP source code.
+ *
+ * @param string $source The PHP code to manipulate.
+ * @param string $path The path to use instead of the magic constants
+ */
+function replace_path_consts( $source, $path ) {
+	$replacements = array(
+		'__FILE__' => "'$path'",
+		'__DIR__'  => "'" . dirname( $path ) . "'"
+	);
+
+	$old = array_keys( $replacements );
+	$new = array_values( $replacements );
+
+	return str_replace( $old, $new, $source );
 }
 
