@@ -1,6 +1,6 @@
 %define source0    wp-cli.tar.gz
 %define name       wpaas-wp-cli
-%define version    0.14.0
+%define version    0.15.0
 
 Name:          %{name}
 Summary:       wp-cli %{version} for WordPress
