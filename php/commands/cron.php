@@ -8,7 +8,6 @@ class Cron_Event_Command extends WP_CLI_Command {
 
 	private $fields = array(
 		'hook',
-	//	'next_run',
 		'next_run_gmt',
 		'next_run_relative',
 		'recurrence',
@@ -21,7 +20,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to all of the cron event fields.
+	 * : Limit the output to specific object fields. Available fields: hook, next_run, next_run_gmt, next_run_relative, recurrence.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json, csv, ids. Default: table.
@@ -122,8 +121,6 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 *
 	 * <hook>
 	 * : The hook name
-	 *
-	 * @synopsis <hook>
 	 */
 	public function run( $args, $assoc_args ) {
 
@@ -178,8 +175,6 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 *
 	 * <hook>
 	 * : The hook name
-	 *
-	 * @synopsis <hook>
 	 */
 	public function delete( $args, $assoc_args ) {
 
@@ -303,7 +298,7 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to all of the cron schedule fields.
+	 * : Limit the output to specific object fields. Available fields: name, display, interval.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json, csv, ids. Default: table.
