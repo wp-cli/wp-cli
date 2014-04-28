@@ -25,6 +25,12 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * [--format=<format>]
 	 * : Accepted values: table, json, csv, ids. Default: table.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp cron event list
+	 *
+	 *     wp cron event list --fields=hook,next_run --format=json
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
@@ -302,6 +308,12 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json, csv, ids. Default: table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp cron schedule list
+	 *
+	 *     wp cron schedule list --fields=name --format=ids
 	 *
 	 * @subcommand list
 	 */
