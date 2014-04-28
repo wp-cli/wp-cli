@@ -234,8 +234,8 @@ class Cron_Event_Command extends WP_CLI_Command {
 
 		$event->next_run          = get_date_from_gmt( date( 'Y-m-d H:i:s', $event->time ), self::$time_format );
 		$event->next_run_gmt      = date( self::$time_format, $event->time );
-		$event->next_run_relative = \WP_CLI\Utils\time_since( time(), $event->time );
-		$event->recurrence        = ( $event->schedule ) ? \WP_CLI\Utils\interval( $event->interval ) : 'Non-repeating';
+		$event->next_run_relative = self::interval( $event->time - time() );
+		$event->recurrence        = ( $event->schedule ) ? self::interval( $event->interval ) : 'Non-repeating';
 
 		return $event;
 	}
@@ -279,6 +279,65 @@ class Cron_Event_Command extends WP_CLI_Command {
 
 		return $events;
 
+	}
+
+	/**
+	 * Convert a time interval into human-readable format.
+	 *
+	 * Similar to WordPress' built-in `human_time_diff()` but returns two time period chunks instead of just one.
+	 *
+	 * @param int $since An interval of time in seconds
+	 * @return string The interval in human readable format
+	 */
+	private static function interval( $since ) {
+		if ( $since <= 0 ) {
+			return 'now';
+		}
+
+		$since = absint( $since );
+
+		// array of time period chunks
+		$chunks = array(
+			array( 60 * 60 * 24 * 365 , \_n_noop( '%s year', '%s years' ) ),
+			array( 60 * 60 * 24 * 30 , \_n_noop( '%s month', '%s months' ) ),
+			array( 60 * 60 * 24 * 7, \_n_noop( '%s week', '%s weeks' ) ),
+			array( 60 * 60 * 24 , \_n_noop( '%s day', '%s days' ) ),
+			array( 60 * 60 , \_n_noop( '%s hour', '%s hours' ) ),
+			array( 60 , \_n_noop( '%s minute', '%s minutes' ) ),
+			array(  1 , \_n_noop( '%s second', '%s seconds' ) ),
+		);
+
+		// we only want to output two chunks of time here, eg:
+		// x years, xx months
+		// x days, xx hours
+		// so there's only two bits of calculation below:
+
+		// step one: the first chunk
+		for ( $i = 0, $j = count( $chunks ); $i < $j; $i++ ) {
+			$seconds = $chunks[$i][0];
+			$name = $chunks[$i][1];
+
+			// finding the biggest chunk (if the chunk fits, break)
+			if ( ( $count = floor( $since / $seconds ) ) != 0 ){
+				break;
+			}
+		}
+
+		// set output var
+		$output = sprintf( \_n( $name[0], $name[1], $count ), $count );
+
+		// step two: the second chunk
+		if ( $i + 1 < $j ) {
+			$seconds2 = $chunks[$i + 1][0];
+			$name2    = $chunks[$i + 1][1];
+
+			if ( ( $count2 = floor( ( $since - ( $seconds * $count ) ) / $seconds2 ) ) != 0 ) {
+				// add to output var
+				$output .= ' ' . sprintf( \_n( $name2[0], $name2[1], $count2 ), $count2 );
+			}
+		}
+
+		return $output;
 	}
 
 	private function get_formatter( &$assoc_args ) {
