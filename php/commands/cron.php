@@ -58,10 +58,10 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * <hook>
 	 * : The hook name
 	 *
-	 * [--next_run=<value>]
+	 * [<next-run>]
 	 * : A Unix timestamp or an English textual datetime description compatible with `strtotime()`. Defaults to now.
 	 *
-	 * [--recurrence=<value>]
+	 * [<recurrence>]
 	 * : How often the event should recur. See `wp cron schedule list` for available schedule names. Defaults to no recurrence.
 	 *
 	 * [--<field>=<value>]
@@ -71,44 +71,39 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 *
 	 *     wp cron event schedule cron_test
 	 *
-	 *     wp cron event schedule cron_test --next_run='+1 hour' --recurrence=hourly
+	 *     wp cron event schedule cron_test now hourly
 	 *
-	 *     wp cron event schedule cron_test --recurrence=daily --foo=1 --bar=2
+	 *     wp cron event schedule cron_test '+1 hour' --foo=1 --bar=2
 	 */
 	public function schedule( $args, $assoc_args ) {
 
-		list( $hook ) = $args;
+		list( $hook, $next_run, $recurrence ) = $args;
 
-		if ( !isset( $assoc_args['next_run'] ) ) {
+		if ( !isset( $next_run ) ) {
 			$timestamp = time();
-		} else if ( is_numeric( $assoc_args['next_run'] ) ) {
-			$timestamp = absint( $assoc_args['next_run'] );
+		} else if ( is_numeric( $next_run ) ) {
+			$timestamp = absint( $next_run );
 		} else {
-			$timestamp = strtotime( $assoc_args['next_run'] );
+			$timestamp = strtotime( $next_run );
 		}
 
 		if ( ! $timestamp ) {
-			WP_CLI::error( sprintf( "'%s' is not a valid datetime.", $assoc_args['next_run'] ) );
+			WP_CLI::error( sprintf( "'%s' is not a valid datetime.", $next_run ) );
 		}
 
-		$event_args = array_diff_key( $assoc_args, array_flip( array(
-			'next_run', 'recurrence'
-		) ) );
+		if ( isset( $recurrence ) ) {
 
-		if ( isset( $assoc_args['recurrence'] ) ) {
-
-			$recurrence = $assoc_args['recurrence'];
-			$schedules  = wp_get_schedules();
+			$schedules = wp_get_schedules();
 
 			if ( ! isset( $schedules[$recurrence] ) ) {
 				WP_CLI::error( sprintf( "'%s' is not a valid schedule name for recurrence.", $recurrence ) );
 			}
 
-			$event = wp_schedule_event( $timestamp, $recurrence, $hook, $event_args );
+			$event = wp_schedule_event( $timestamp, $recurrence, $hook, $assoc_args );
 
 		} else {
 
-			$event = wp_schedule_single_event( $timestamp, $hook, $event_args );
+			$event = wp_schedule_single_event( $timestamp, $hook, $assoc_args );
 
 		}
 
