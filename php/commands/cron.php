@@ -252,10 +252,9 @@ class Cron_Event_Command extends WP_CLI_Command {
 			);
 		}
 
-		// @TODO rename these vars a bit more better nicely nicer:
-		foreach ( $crons as $time => $cron ) {
-			foreach ( $cron as $hook => $dings ) {
-				foreach ( $dings as $sig => $data ) {
+		foreach ( $crons as $time => $hooks ) {
+			foreach ( $hooks as $hook => $hook_events ) {
+				foreach ( $hook_events as $sig => $data ) {
 
 					$events["$hook-$sig"] = (object) array(
 						'hook'     => $hook,
