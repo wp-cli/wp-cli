@@ -108,7 +108,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 		}
 
 		if ( false !== $event ) {
-			WP_CLI::success( sprintf( "Scheduled event with hook '%s' for %s.", $hook, date( self::$time_format, $timestamp ) ) );
+			WP_CLI::success( sprintf( "Scheduled event with hook '%s' for %s GMT.", $hook, date( self::$time_format, $timestamp ) ) );
 		} else {
 			WP_CLI::error( 'Event not scheduled' );
 		}
