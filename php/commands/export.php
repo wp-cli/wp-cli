@@ -130,12 +130,6 @@ class Export_Command extends WP_CLI_Command {
 		}
 	}
 
-	private function check_verbose( $verbose ) {
-		$this->verbose = $verbose;
-
-		return true;
-	}
-
 	private function check_dir( $path ) {
 		if ( empty( $path ) ) {
 			$path = getcwd();
