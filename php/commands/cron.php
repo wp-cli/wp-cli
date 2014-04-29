@@ -457,6 +457,10 @@ class Cron_Command extends WP_CLI_Command {
 			return true;
 		}
 
+		if ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) {
+			return new WP_Error( 'disable_wp_cron', 'The DISABLE_WP_CRON constant is set to true. WP-Cron is disabled.' );
+		}
+
 		$doing_wp_cron = sprintf( '%.22F', microtime( true ) );
 
 		$cron_request = apply_filters( 'cron_request', array(
