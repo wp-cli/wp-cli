@@ -2,6 +2,11 @@
 
 namespace WP_CLI;
 
+/**
+ * Handles file- and runtime-based configuration values.
+ *
+ * @package WP_CLI
+ */
 class Configurator {
 
 	private $spec;
@@ -27,6 +32,11 @@ class Configurator {
 		}
 	}
 
+	/**
+	 * Get declared configuration values as an array.
+	 *
+	 * @return array
+	 */
 	function to_array() {
 		return array( $this->config, $this->extra_config );
 	}
@@ -132,6 +142,9 @@ class Configurator {
 
 	/**
 	 * Load values from a YAML file.
+	 *
+	 * @param string $yml_file Path to the YAML file
+	 * @return array $config Declared configuration values
 	 */
 	private static function load_yml( $yml_file ) {
 		if ( !$yml_file )
@@ -155,6 +168,11 @@ class Configurator {
 		return $config;
 	}
 
+	/**
+	 * Conform a variable to an array.
+	 *
+	 * @param mixed $val A string or an array
+	 */
 	private static function arrayify( &$val ) {
 		if ( !is_array( $val ) ) {
 			$val = array( $val );
