@@ -212,6 +212,8 @@ class Scaffold_Command extends WP_CLI_Command {
 			WP_CLI::error( "Couldn't create theme (received $response_code response)." );
 		}
 
+		$this->maybe_create_themes_dir();
+
 		unzip_file( $tmpfname, $theme_path );
 		unlink( $tmpfname );
 
@@ -264,6 +266,8 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$theme_dir = WP_CONTENT_DIR . "/themes" . "/$theme_slug";
 		$theme_style_path = "$theme_dir/style.css";
+
+		$this->maybe_create_themes_dir();
 
 		$this->create_file( $theme_style_path, Utils\mustache_render( 'child_theme.mustache', $data ) );
 
@@ -323,8 +327,12 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
+		$plugin_readme_path = "$plugin_dir/readme.txt";
+
+		$this->maybe_create_plugins_dir();
 
 		$this->create_file( $plugin_path, Utils\mustache_render( 'plugin.mustache', $data ) );
+		$this->create_file( $plugin_readme_path, Utils\mustache_render( 'plugin-readme.mustache', $data ) );
 
 		WP_CLI::success( "Created $plugin_dir" );
 
@@ -491,6 +499,30 @@ class Scaffold_Command extends WP_CLI_Command {
 	protected function quote_comma_list_elements( $comma_list ) {
 		return "'" . implode( "', '", explode( ',', $comma_list ) ) . "'";
 	}
+
+	/**
+	 * Create the themes directory if it doesn't already exist
+	 */
+	protected function maybe_create_themes_dir() {
+
+		$themes_dir = WP_CONTENT_DIR . '/themes';
+		if ( ! is_dir( $themes_dir ) ) {
+			wp_mkdir_p( $themes_dir );
+		}
+
+	}
+
+	/**
+	 * Create the plugins directory if it doesn't already exist
+	 */
+	protected function maybe_create_plugins_dir() {
+
+		if ( ! is_dir( WP_PLUGIN_DIR ) ) {
+			wp_mkdir_p( WP_PLUGIN_DIR );
+		}
+
+	}
+
 }
 
 WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );

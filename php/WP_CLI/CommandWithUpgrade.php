@@ -199,6 +199,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected function update_many( $args, $assoc_args ) {
 		call_user_func( $this->upgrade_refresh );
 
+		if ( ! isset( $assoc_args['all'] ) && empty( $args ) ) {
+			\WP_CLI::error( "Please specify one or more {$this->item_type}s, or use --all." );
+		}
+
 		$items = $this->get_item_list();
 
 		if ( !isset( $assoc_args['all'] ) ) {

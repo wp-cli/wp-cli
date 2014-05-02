@@ -7,7 +7,7 @@ Feature: Manage WordPress users
     Then the return code should be 1
     And STDOUT should be empty
 
-    When I run `wp user create testuser2 testuser2@example.com --role=author --porcelain`
+    When I run `wp user create testuser2 testuser2@example.com --first_name=test --last_name=user --role=author --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {USER_ID}
 
@@ -16,6 +16,18 @@ Feature: Manage WordPress users
       | Field        | Value      |
       | ID           | {USER_ID}  |
       | roles        | author     |
+
+    When I run `wp user meta get {USER_ID} first_name`
+    Then STDOUT should be:
+      """
+      test
+      """
+
+    When I run `wp user meta get {USER_ID} last_name`
+    Then STDOUT should be:
+      """
+      user
+      """
 
     When I run `wp user delete {USER_ID} --yes`
     Then STDOUT should not be empty
@@ -136,6 +148,39 @@ Feature: Manage WordPress users
         "user_email":"admin@domain.com",
         "roles":"administrator"
       }]
+      """
+
+  Scenario: Import new users but don't update existing
+    Given a WP install
+    And a users.csv file:
+      """
+      user_login,user_email,display_name,role
+      bobjones,bobjones@domain.com,Bob Jones,contributor
+      newuser1,newuser1@domain.com,New User,author
+      admin,admin@domain.com,Existing User,administrator
+      """
+
+    When I run `wp user create bobjones bobjones@domain.com --display_name="Robert Jones" --role=administrator`
+    Then STDOUT should not be empty
+
+    When I run `wp user import-csv users.csv --skip-update`
+    Then STDOUT should not be empty
+
+    When I run `wp user list --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp user get bobjones --fields=user_login,display_name,user_email,roles --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {
+        "user_login":"bobjones",
+        "display_name":"Robert Jones",
+        "user_email":"bobjones@domain.com",
+        "roles":"administrator"
+      }
       """
 
   Scenario: Managing user roles
