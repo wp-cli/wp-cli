@@ -427,37 +427,44 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 class Cron_Command extends WP_CLI_Command {
 
 	/**
-	 * Test the WP Cron spawning system and report back any errors.
+	 * Test the WP Cron spawning system and report back its status.
 	 */
 	public function test() {
 
-		$status = self::test_cron_spawn();
+		if ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) {
+			WP_CLI::error( 'The DISABLE_WP_CRON constant is set to true. WP-Cron spawning is disabled.' );
+		}
 
-		if ( is_wp_error( $status ) ) {
-			WP_CLI::error( $status );
+		if ( defined( 'ALTERNATE_WP_CRON' ) && ALTERNATE_WP_CRON ) {
+			WP_CLI::warning( 'The ALTERNATE_WP_CRON constant is set to true. WP-Cron spawning is not asynchronous.' );
+		}
+
+		$spawn = self::get_cron_spawn();
+
+		if ( is_wp_error( $spawn ) ) {
+			WP_CLI::error( sprintf( 'WP-Cron spawn failed with error: %s', $spawn->get_error_message() ) );
+		}
+
+		$code    = wp_remote_retrieve_response_code( $spawn );
+		$message = wp_remote_retrieve_response_message( $spawn );
+
+		if ( 200 === $code ) {
+			WP_CLI::success( 'WP-Cron spawning is working as expected.' );
 		} else {
-			WP_CLI::success( 'WP-Cron is working as expected.' );
+			WP_CLI::warning( sprintf( 'WP-Cron spawn succeeded but returned HTTP status code: %1$s %2$s', $code, $message ) );
 		}
 
 	}
 
 	/**
-	 * Gets the status of WP-Cron functionality on the site by performing a test spawn.
+	 * Spawn a request to `wp-cron.php` and return the response.
 	 *
-	 * This function is designed to mimic the functionality in `spawn_cron()` with the addition of checking
-	 * the return value of the call to `wp_remote_post()`.
+	 * This function is designed to mimic the functionality in `spawn_cron()` with the addition of returning
+	 * the result of the `wp_remote_post()` request.
 	 *
-	 * @return bool|WP_Error Boolean true if the cron spawn test is successful, WP_Error object if not.
+	 * @return WP_Error|array The response or WP_Error on failure.
 	 */
-	protected static function test_cron_spawn() {
-
-		if ( defined( 'ALTERNATE_WP_CRON' ) && ALTERNATE_WP_CRON ) {
-			return true;
-		}
-
-		if ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) {
-			return new WP_Error( 'disable_wp_cron', 'The DISABLE_WP_CRON constant is set to true. WP-Cron is disabled.' );
-		}
+	protected static function get_cron_spawn() {
 
 		$doing_wp_cron = sprintf( '%.22F', microtime( true ) );
 
@@ -476,11 +483,7 @@ class Cron_Command extends WP_CLI_Command {
 
 		$result = wp_remote_post( $cron_request['url'], $cron_request['args'] );
 
-		if ( is_wp_error( $result ) ) {
-			return $result;
-		} else {
-			return true;
-		}
+		return $result;
 
 	}
 
