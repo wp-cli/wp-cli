@@ -89,6 +89,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--field=<field>]
 	 * : Instead of returning the whole user, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Get a specific subset of the user's fields.
+	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json. Default: table
 	 *
