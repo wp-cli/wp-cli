@@ -3,10 +3,10 @@
 set -ex
 
 # Run the unit tests
-vendor/bin/phpunit
+# vendor/bin/phpunit
 
 # Run the functional tests
-vendor/bin/behat --format progress
+gdb --eval-command="set env MALLOC_CHECK_=3" --eval-command=run --eval-command="backtrace full" --eval-command=quit  --args "bash vendor/bin/behat --format progress features/media.feature"
 
 # Run CodeSniffer
-./codesniffer/scripts/phpcs --standard=./ci/ php/
+# ./codesniffer/scripts/phpcs --standard=./ci/ php/
