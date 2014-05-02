@@ -7,7 +7,7 @@ Feature: Manage WordPress users
     Then the return code should be 1
     And STDOUT should be empty
 
-    When I run `wp user create testuser2 testuser2@example.com --role=author --porcelain`
+    When I run `wp user create testuser2 testuser2@example.com --first_name=test --last_name=user --role=author --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {USER_ID}
 
@@ -16,6 +16,18 @@ Feature: Manage WordPress users
       | Field        | Value      |
       | ID           | {USER_ID}  |
       | roles        | author     |
+
+    When I run `wp user meta get {USER_ID} first_name`
+    Then STDOUT should be:
+      """
+      test
+      """
+
+    When I run `wp user meta get {USER_ID} last_name`
+    Then STDOUT should be:
+      """
+      user
+      """
 
     When I run `wp user delete {USER_ID} --yes`
     Then STDOUT should not be empty

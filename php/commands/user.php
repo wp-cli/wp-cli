@@ -185,6 +185,12 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--display_name=<name>]
 	 * : The display name.
 	 *
+	 * [--first_name=<first_name>]
+	 * : The user's first name.
+	 *
+	 * [--last_name=<last_name>]
+	 * : The user's last name.
+	 *
 	 * [--send-email]
 	 * : Send an email to the user with their new account details.
 	 *
@@ -213,6 +219,12 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$user->display_name = isset( $assoc_args['display_name'] )
 			? $assoc_args['display_name'] : false;
+
+		$user->first_name = isset( $assoc_args['first_name'] )
+			? $assoc_args['first_name'] : false;
+
+		$user->last_name = isset( $assoc_args['last_name'] )
+			? $assoc_args['last_name'] : false;
 
 		$user->user_pass = isset( $assoc_args['user_pass'] )
 			? $assoc_args['user_pass'] : wp_generate_password();
