@@ -3,7 +3,7 @@ Feature: Manage WP-Cron events and schedules
   Background:
     Given a WP install
 
-  Scenario: Scheduling an event
+  Scenario: Scheduling and then deleting an event
     When I run `wp cron event schedule wp_cli_test_event_1 '+1 hour'`
     Then STDOUT should contain:
       """
@@ -21,7 +21,13 @@ Feature: Manage WP-Cron events and schedules
       Success: Successfully deleted the cron event 'wp_cli_test_event_1'
       """
 
-  Scenario: Scheduling a recurring event
+    When I run `wp cron event list`
+    Then STDOUT should not contain:
+      """
+      wp_cli_test_event_1
+      """
+
+  Scenario: Scheduling and then deleting a recurring event
     When I run `wp cron event schedule wp_cli_test_event_2 now daily`
     Then STDOUT should contain:
       """
@@ -37,6 +43,12 @@ Feature: Manage WP-Cron events and schedules
     Then STDOUT should contain:
       """
       Success: Successfully deleted the cron event 'wp_cli_test_event_2'
+      """
+
+    When I run `wp cron event list`
+    Then STDOUT should not contain:
+      """
+      wp_cli_test_event_2
       """
 
   Scenario: Listing cron schedules
