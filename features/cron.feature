@@ -47,7 +47,7 @@ Feature: Manage WP-Cron events and schedules
 
   Scenario: Testing WP-Cron
     When I run `wp cron test`
-    Then STDOUT should contain:
+    Then STDOUT should not contain:
       """
-      Success: WP-Cron is working as expected
+      Error:
       """
