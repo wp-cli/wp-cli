@@ -12,7 +12,7 @@ Feature: Manage WP-Cron events and schedules
 
     When I run `wp cron event list --format=csv --fields=hook,recurrence`
     Then STDOUT should be CSV containing:
-      | hook                | recurrence |
+      | hook                | recurrence    |
       | wp_cli_test_event_1 | Non-repeating |
 
     When I run `wp cron event delete wp_cli_test_event_1`
