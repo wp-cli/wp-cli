@@ -72,3 +72,11 @@ Feature: WordPress code scaffolding
       """
       __( 'Brain eaters'
       """
+
+  Scenario: Scaffold a plugin
+    Given I run `wp plugin path`
+    And save STDOUT as {PLUGIN_DIR}
+
+    When I run `wp scaffold plugin hello-world`
+    Then STDOUT should not be empty
+    And the {PLUGIN_DIR}/hello-world/hello-world.php file should exist
