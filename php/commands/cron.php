@@ -141,6 +141,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 		}
 
 		if ( $result ) {
+			WP_CLI::line( '' );
 			WP_CLI::success( sprintf( "Successfully executed the cron event '%s'", $hook ) );
 		} else {
 			WP_CLI::error( sprintf( "Failed to the execute the cron event '%s'", $hook ) );
@@ -149,21 +150,18 @@ class Cron_Event_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Executes an event immediately by scheduling a new single event with the same arguments.
+	 * Executes an event immediately.
 	 *
 	 * @param stdClass $event The event
 	 * @return bool Whether the event was successfully executed or not.
 	 */
 	protected static function run_event( stdClass $event ) {
 
-		delete_transient( 'doing_cron' );
-		$scheduled = wp_schedule_single_event( time()-1, $event->hook, $event->args );
-
-		if ( false === $scheduled ) {
-			return false;
+		if ( ! defined( 'DOING_CRON' ) ) {
+			define( 'DOING_CRON', true );
 		}
 
-		spawn_cron();
+		do_action_ref_array( $event->hook, $event->args );
 
 		return true;
 
