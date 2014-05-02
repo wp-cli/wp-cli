@@ -2,6 +2,8 @@
 
 set -ex
 
+cat script.gdb | sudo gdb –args ~/.phpenv/versions/$(phpenv version-name)/bin/php ~/.phpenv/versions/$(phpenv version-name)/bin/phpunit
+
 # Run the unit tests
 vendor/bin/phpunit
 

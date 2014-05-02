@@ -40,9 +40,12 @@ matrix:
     - php: 5.5
       env: WP_VERSION=3.5.2 DEPLOY_BRANCH=master
 
-before_script: ./ci/prepare.sh
+before_script:
+  - sudo apt-get install gdb
+  - ./ci/prepare.sh
 
-script: ./ci/test.sh
+script:
+  - ./ci/test.sh
 
 after_success: ./ci/deploy.sh
 
