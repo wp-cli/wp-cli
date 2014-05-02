@@ -80,3 +80,4 @@ Feature: WordPress code scaffolding
     When I run `wp scaffold plugin hello-world`
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/hello-world/hello-world.php file should exist
+    And the {PLUGIN_DIR}/hello-world/readme.txt file should exist
