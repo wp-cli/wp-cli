@@ -327,10 +327,12 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
+		$plugin_readme_path = "$plugin_dir/readme.txt";
 
 		$this->maybe_create_plugins_dir();
 
 		$this->create_file( $plugin_path, Utils\mustache_render( 'plugin.mustache', $data ) );
+		$this->create_file( $plugin_readme_path, Utils\mustache_render( 'plugin-readme.mustache', $data ) );
 
 		WP_CLI::success( "Created $plugin_dir" );
 
