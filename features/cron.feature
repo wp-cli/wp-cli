@@ -46,8 +46,8 @@ Feature: Manage WP-Cron events and schedules
       | hourly | 3600     |
 
   Scenario: Testing WP-Cron
-    When I run `wp cron test`
-    Then STDOUT should not contain:
+    When I try `wp cron test`
+    Then STDERR should not contain:
       """
       Error:
       """
