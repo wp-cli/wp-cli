@@ -150,6 +150,39 @@ Feature: Manage WordPress users
       }]
       """
 
+  Scenario: Import new users but don't update existing
+    Given a WP install
+    And a users.csv file:
+      """
+      user_login,user_email,display_name,role
+      bobjones,bobjones@domain.com,Bob Jones,contributor
+      newuser1,newuser1@domain.com,New User,author
+      admin,admin@domain.com,Existing User,administrator
+      """
+
+    When I run `wp user create bobjones bobjones@domain.com --display_name="Robert Jones" --role=administrator`
+    Then STDOUT should not be empty
+
+    When I run `wp user import-csv users.csv --skip-update`
+    Then STDOUT should not be empty
+
+    When I run `wp user list --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp user get bobjones --fields=user_login,display_name,user_email,roles --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {
+        "user_login":"bobjones",
+        "display_name":"Robert Jones",
+        "user_email":"bobjones@domain.com",
+        "roles":"administrator"
+      }
+      """
+
   Scenario: Managing user roles
     Given a WP install
 

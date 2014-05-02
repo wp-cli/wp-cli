@@ -89,6 +89,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--field=<field>]
 	 * : Instead of returning the whole user, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Get a specific subset of the user's fields.
+	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json. Default: table
 	 *
@@ -548,6 +551,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--send-email]
 	 * : Send an email to new users with their account details.
 	 *
+	 * [--skip-update]
+	 * : Don't update users that already exist.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp user import-csv /path/to/users.csv
@@ -594,7 +600,13 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				$existing_user = get_user_by( 'login', $new_user['user_login'] );
 			}
 
-			if ( $existing_user ) {
+			if ( $existing_user && isset( $assoc_args['skip-update'] ) ) {
+
+				WP_CLI::log( "{$existing_user->user_login} exists and has been skipped" );
+				continue;
+
+			} else if ( $existing_user ) {
+
 				$new_user['ID'] = $existing_user->ID;
 				$user_id = wp_update_user( $new_user );
 
