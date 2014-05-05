@@ -238,3 +238,22 @@ Feature: Manage WordPress installation
 
     When I run `wp plugin status hello`
     Then STDOUT should not be empty
+
+  Scenario: User defined in wp-cli.yml
+    Given an empty directory
+    And WP files
+    And wp-config.php
+    And a database
+    And a wp-cli.yml file:
+      """
+      user: wpcli
+      """
+
+    When I run `wp core install --url='localhost:8001' --title='Test' --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo home_url();'`
+    Then STDOUT should be:
+      """
+      http://localhost:8001
+      """
