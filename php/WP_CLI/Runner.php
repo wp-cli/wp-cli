@@ -681,7 +681,9 @@ class Runner {
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
 		// Handle --user parameter
-		self::set_user( $this->config );
+		if ( ! defined( 'WP_INSTALLING' ) ) {
+			self::set_user( $this->config );
+		}
 
 		$this->_run_command();
 	}
