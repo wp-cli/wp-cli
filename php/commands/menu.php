@@ -466,8 +466,11 @@ class Menu_Item_Command extends WP_CLI_Command {
 			$menu_item_obj = get_post( $menu_item_db_id );
 			$menu_item_obj = wp_setup_nav_menu_item( $menu_item_obj );
 
+			// Correct the menu position if this was the first item. See https://core.trac.wordpress.org/ticket/28140
+			$position = ( 0 === $menu_item_obj->menu_order ) ? 1 : $menu_item_obj->menu_order;
+
 			$default_args = array(
-				'position'     => $menu_item_obj->menu_order,
+				'position'     => $position,
 				'title'        => $menu_item_obj->title,
 				'url'          => $menu_item_obj->url,
 				'description'  => $menu_item_obj->description,
@@ -480,8 +483,6 @@ class Menu_Item_Command extends WP_CLI_Command {
 				'xfn'          => $menu_item_obj->xfn,
 				'status'       => $menu_item_obj->post_status,
 				);
-
-			error_log( var_export( $default_args, true ) );
 
 		} else {
 
