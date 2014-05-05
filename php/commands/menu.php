@@ -486,7 +486,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		} else {
 
-			 $default_args = array(
+			$default_args = array(
 				'position'     => 0,
 				'title'        => '',
 				'url'          => '',
