@@ -58,8 +58,11 @@ Feature: Manage WordPress menus
     When I run `wp menu create "Sidebar Menu"`
     Then STDOUT should not be empty
 
-    When I run `wp menu item add-post sidebar-menu {POST_ID} --title="Custom Test Post" --porcelain`
+    When I run `wp menu item add-post sidebar-menu {POST_ID} --title="Custom Test Post" --description="Georgia peaches" --porcelain`
     Then save STDOUT as {POST_ITEM_ID}
+
+    When I run `wp menu item update {POST_ITEM_ID} --description="Washington Apples"`
+    Then STDERR should be empty
 
     When I run `wp menu item add-term sidebar-menu post_tag {TERM_ID} --porcelain`
     Then save STDOUT as {TERM_ITEM_ID}
@@ -70,12 +73,12 @@ Feature: Manage WordPress menus
     When I run `wp menu item update {CUSTOM_ITEM_ID} --title=WordPress --link='http://wordpress.org' --target=_blank --position=2`
     Then STDERR should be empty
 
-    When I run `wp menu item list sidebar-menu --fields=type,title,position,link,menu_item_parent`
+    When I run `wp menu item list sidebar-menu --fields=type,title,description,position,link,menu_item_parent`
     Then STDOUT should be a table containing rows:
-      | type      | title            | position | link                 | menu_item_parent |
-      | post_type | Custom Test Post | 1        | {POST_LINK}          | 0                |
-      | custom    | WordPress        | 2        | http://wordpress.org | {POST_ITEM_ID}   |
-      | taxonomy  | Test term        | 3        | {TERM_LINK}          | 0                |
+      | type      | title            | description       | position | link                 | menu_item_parent |
+      | post_type | Custom Test Post | Washington Apples | 1        | {POST_LINK}          | 0                |
+      | custom    | WordPress        |                   | 2        | http://wordpress.org | {POST_ITEM_ID}   |
+      | taxonomy  | Test term        |                   | 3        | {TERM_LINK}          | 0                |
 
     When I run `wp menu item delete {CUSTOM_ITEM_ID}`
     And I run `wp menu item list sidebar-menu --format=count`
