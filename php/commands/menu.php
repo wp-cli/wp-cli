@@ -467,6 +467,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			'description'  => '',
 			'object'       => '',
 			'object-id'    => '',
+			'parent-id'    => '',
 			'attr-title'   => '',
 			'target'       => '',
 			'classes'      => '',
