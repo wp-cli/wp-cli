@@ -205,8 +205,8 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 * # Export only tables for a single site
-	 * wp db export --tables=$(wp db tables --url=sub.example.com | tr '\n' ',')
+	 *     # Export only tables for a single site
+	 *     wp db export --tables=$(wp db tables --url=sub.example.com | tr '\n' ',')
 	 */
 	function tables( $args, $assoc_args ) {
 		global $wpdb;
