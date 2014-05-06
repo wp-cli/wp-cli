@@ -141,7 +141,6 @@ class Cron_Event_Command extends WP_CLI_Command {
 		}
 
 		if ( $result ) {
-			WP_CLI::line( '' );
 			WP_CLI::success( sprintf( "Successfully executed the cron event '%s'", $hook ) );
 		} else {
 			WP_CLI::error( sprintf( "Failed to the execute the cron event '%s'", $hook ) );
