@@ -23,8 +23,8 @@ return array(
 	),
 
 	'user' => array(
-		'runtime' => '=<id|login>',
-		'file' => '<id|login>',
+		'runtime' => '=<id|login|email>',
+		'file' => '<id|login|email>',
 		'desc' => 'Set the WordPress user',
 	),
 
