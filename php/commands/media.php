@@ -90,6 +90,9 @@ class Media_Command extends WP_CLI_Command {
 	 * [--featured_image]
 	 * : If set, set the imported image as the Featured Image of the post its attached to.
 	 *
+	 * [--porcelain]
+	 * : Output just the new attachment id.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Import all jpgs in the current user's "Pictures" directory, not attached to any post
@@ -170,10 +173,14 @@ class Media_Command extends WP_CLI_Command {
 					$attachment_success_text .= ' as featured image';
 			}
 
-			WP_CLI::success( sprintf(
-				'Imported file %s as attachment ID %d%s.',
-				$orig_filename, $success, $attachment_success_text
-			) );
+			if ( isset( $assoc_args['porcelain'] ) ) {
+				WP_CLI::line( $success );
+			} else {
+				WP_CLI::success( sprintf(
+					'Imported file %s as attachment ID %d%s.',
+					$orig_filename, $success, $attachment_success_text
+				) );
+			}
 		}
 	}
 
