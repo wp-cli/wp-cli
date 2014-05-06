@@ -94,14 +94,39 @@ Feature: Have a config file
       """
 
   Scenario: Disabled commands
-    Given an empty directory
+    Given a WP install
     And a config.yml file:
       """
       disabled_commands:
-        - core version
+        - eval-file
+        - core multisite-convert
       """
 
-    When I try `WP_CLI_CONFIG_PATH=config.yml wp core version`
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp`
+    Then STDOUT should not contain:
+      """
+      eval-file
+      """
+
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp help eval-file`
+    Then STDERR should be:
+      """
+      Error: The 'eval-file' command has been disabled from the config file.
+      """
+
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp core`
+    Then STDOUT should not contain:
+      """
+      or: wp core multisite-convert
+      """
+
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp help core`
+    Then STDOUT should not contain:
+      """
+      multisite-convert
+      """
+
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp core multisite-convert`
     Then STDERR should contain:
       """
       command has been disabled
