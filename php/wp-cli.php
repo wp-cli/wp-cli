@@ -20,7 +20,8 @@ include WP_CLI_ROOT . '/php/class-wp-cli-command.php';
 WP_CLI::get_runner()->before_wp_load();
 
 // Load wp-config.php code, in the global scope
-eval( WP_CLI::get_runner()->get_wp_config_code() );
+$wp_config = WP_CLI::get_runner()->get_wp_config_code();
+eval( $wp_config );
 
 // Load Core, mu-plugins, plugins, themes etc.
 require WP_CLI_ROOT . '/php/wp-settings-cli.php';
