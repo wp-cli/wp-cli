@@ -22,6 +22,15 @@ class Help_Command extends WP_CLI_Command {
 		$command = self::find_subcommand( $args );
 
 		if ( $command ) {
+
+			$full_name = implode( ' ', array_slice( WP_CLI\Dispatcher\get_path( $command ), 1 ) );
+			if ( in_array( $full_name , self::get_disabled_commands() ) ) {
+				WP_CLI::error( sprintf(
+					"The '%s' command has been disabled from the config file.",
+					$full_name
+				) );
+			}
+
 			self::show_help( $command );
 			exit;
 		}
@@ -117,6 +126,12 @@ class Help_Command extends WP_CLI_Command {
 	private static function render_subcommands( $command ) {
 		$subcommands = array();
 		foreach ( $command->get_subcommands() as $subcommand ) {
+
+			$path = implode( ' ', array_slice( WP_CLI\Dispatcher\get_path( $subcommand ), 1 ) );
+			if ( in_array( $path , self::get_disabled_commands() ) ) {
+				continue;
+			}
+
 			$subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
 		}
 
@@ -139,6 +154,10 @@ class Help_Command extends WP_CLI_Command {
 		}
 
 		return $max_len;
+	}
+
+	private static function get_disabled_commands() {
+		return WP_CLI::get_runner()->config['disabled_commands'];
 	}
 }
 
