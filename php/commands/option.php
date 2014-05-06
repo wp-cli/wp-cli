@@ -21,6 +21,37 @@
 class Option_Command extends WP_CLI_Command {
 
 	/**
+	 * List all options.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--include-transients]
+	 * : Include transients in results
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * @subcommand list
+	 */
+	public function list_( $args, $assoc_args ) {
+		global $wpdb;
+
+		$query = "SELECT * FROM $wpdb->options";
+
+		if ( ! isset( $assoc_args['with-transients'] ) ) {
+			$query .= " WHERE option_name NOT LIKE '\_transient\_%' AND option_name NOT LIKE '\_transient\_timeout\_%' AND option_name NOT LIKE '\_site\_transient_%'";
+		}
+
+		$options = array();
+		foreach ( new \WP_CLI\Iterators\Query( $query ) as $option ) {
+			$options[] = $option;
+		}
+
+		$formatter = new \WP_CLI\Formatter( $assoc_args, array( 'option_id', 'option_name', 'option_value', 'autoload' ), 'option' );
+		$formatter->display_items( $options );
+	}
+
+	/**
 	 * Get an option.
 	 *
 	 * @synopsis <key> [--format=<format>]
