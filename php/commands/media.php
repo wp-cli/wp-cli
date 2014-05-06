@@ -145,14 +145,23 @@ class Media_Command extends WP_CLI_Command {
 
 			// Deletes the temporary file.
 			$success = media_handle_sideload( $file_array, $assoc_args['post_id'], $assoc_args['title'], $post_array );
+			if ( is_wp_error( $success ) ) {
+				WP_CLI::warning( sprintf(
+					'Unable to import file %s. Reason: %s',
+					$orig_filename, implode( ', ', $success->get_error_messages() )
+				) );
+				continue;
+			}
 
 			// Set alt text
-			if ( !is_wp_error( $success ) && $assoc_args['alt'] )
+			if ( $assoc_args['alt'] ) {
 				update_post_meta( $success, '_wp_attachment_image_alt', $assoc_args['alt'] );
+			}
 
 			// Set as featured image, if --post_id and --featured_image are set
-			if ( !is_wp_error( $success ) && $assoc_args['post_id'] && isset($assoc_args['featured_image']) )
+			if ( $assoc_args['post_id'] && isset( $assoc_args['featured_image'] ) ) {
 				update_post_meta( $assoc_args['post_id'], '_thumbnail_id', $success );
+			}
 
 			$attachment_success_text = '';
 			if ( $assoc_args['post_id'] ) {
@@ -161,17 +170,10 @@ class Media_Command extends WP_CLI_Command {
 					$attachment_success_text .= ' as featured image';
 			}
 
-			if ( is_wp_error( $success ) ) {
-				WP_CLI::warning( sprintf(
-					'Unable to import file %s. Reason: %s',
-					$orig_filename, implode( ', ', $success->get_error_messages() )
-				) );
-			} else {
-				WP_CLI::success( sprintf(
-					'Imported file %s as attachment ID %d%s.',
-					$orig_filename, $success, $attachment_success_text
-				) );
-			}
+			WP_CLI::success( sprintf(
+				'Imported file %s as attachment ID %d%s.',
+				$orig_filename, $success, $attachment_success_text
+			) );
 		}
 	}
 
