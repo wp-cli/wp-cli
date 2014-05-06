@@ -67,27 +67,27 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <file>
+	 * <file>...
 	 * : Path to file or files to be imported. Supports the glob(3) capabilities of the current shell.
 	 *     If file is recognized as a URL (for example, with a scheme of http or ftp), the file will be
 	 *     downloaded to a temp file before being sideloaded.
 	 *
-	 * --post_id=<post_id>
+	 * [--post_id=<post_id>]
 	 * : ID of the post to attach the imported files to
 	 *
-	 * --title=<title>
+	 * [--title=<title>]
 	 * : Attachment title (post title field)
 	 *
-	 * --caption=<caption>
+	 * [--caption=<caption>]
 	 * : Caption for attachent (post excerpt field)
 	 *
-	 * --alt=<alt_text>
+	 * [--alt=<alt_text>]
 	 * : Alt text for image (saved as post meta)
 	 *
-	 * --desc=<description>
+	 * [--desc=<description>]
 	 * : "Description" field (post content) of attachment post
 	 *
-	 * --featured_image
+	 * [--featured_image]
 	 * : If set, set the imported image as the Featured Image of the post its attached to.
 	 *
 	 * ## EXAMPLES
@@ -100,8 +100,6 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 *     # Import an image from the web
 	 *     wp media import http://s.wordpress.org/style/images/wp-header-logo.png --title='The WordPress logo' --alt="Semantic personal publishing"
-	 *
-	 * @synopsis <file>... [--post_id=<id>] [--title=<title>] [--caption=<caption>] [--alt=<text>] [--desc=<description>] [--featured_image]
 	 */
 	function import( $args, $assoc_args = array() ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
