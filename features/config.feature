@@ -132,6 +132,12 @@ Feature: Have a config file
       command has been disabled
       """
 
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp help core multisite-convert`
+    Then STDERR should contain:
+      """
+      Error: The 'core multisite-convert' command has been disabled from the config file.
+      """
+
   Scenario: 'core config' parameters
     Given an empty directory
     And WP files
