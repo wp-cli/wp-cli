@@ -10,7 +10,7 @@ _wp_complete() {
 	then
 		COMPREPLY=( $(compgen -f -- $cur) )
 	else
-		COMPREPLY=$opts
+		COMPREPLY=( ${opts[*]} )
 	fi
 }
 complete -o nospace -F _wp_complete wp
