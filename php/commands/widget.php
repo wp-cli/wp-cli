@@ -403,7 +403,7 @@ class Widget_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Reposition a widget within a sidebar
+	 * Reposition a widget within a sidebar or move to another sidebar.
 	 *
 	 * @param string $widget_id
 	 * @param string|null $current_sidebar_id
