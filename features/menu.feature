@@ -86,3 +86,10 @@ Feature: Manage WordPress menus
     """
     2
     """
+
+    When I run `wp menu item delete {POST_ITEM_ID} {TERM_ITEM_ID}`
+    And I run `wp menu item list sidebar-menu --format=count`
+    Then STDOUT should be:
+    """
+    0
+    """
