@@ -4,6 +4,7 @@ php:
   - 5.3
   # WP-CLI currently fails on PHP 5.5.11, which Travis is using
   - 5.4
+  - 5.5
 
 env:
   global:
