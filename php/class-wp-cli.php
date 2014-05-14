@@ -146,7 +146,9 @@ class WP_CLI {
 		if ( !isset( self::$hooks[ $when ] ) )
 			return;
 
-		array_map( 'call_user_func', self::$hooks[ $when ] );
+		foreach ( self::$hooks[ $when ] as $callback ) {
+			call_user_func( $callback );
+		}
 	}
 
 	/**
