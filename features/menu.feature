@@ -18,6 +18,21 @@ Feature: Manage WordPress menus
     0
     """
 
+    When I run `wp menu create "First Menu"`
+    And I run `wp menu create "Second Menu"`
+    And I run `wp menu list --fields=name,slug`
+    Then STDOUT should be a table containing rows:
+      | name           | slug           |
+      | First Menu     | first-menu     |
+      | Second Menu    | second-menu    |
+
+    When I run `wp menu delete "First Menu" "Second Menu"`
+    And I run `wp menu list --format=count`
+    Then STDOUT should be:
+    """
+    0
+    """
+
   Scenario: Assign / remove location from a menu
 
     When I run `wp theme install p2 --activate`
@@ -85,4 +100,11 @@ Feature: Manage WordPress menus
     Then STDOUT should be:
     """
     2
+    """
+
+    When I run `wp menu item delete {POST_ITEM_ID} {TERM_ITEM_ID}`
+    And I run `wp menu item list sidebar-menu --format=count`
+    Then STDOUT should be:
+    """
+    0
     """

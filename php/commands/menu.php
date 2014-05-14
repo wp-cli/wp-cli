@@ -74,7 +74,7 @@ class Menu_Command extends WP_CLI_Command {
 
 		foreach( $args as $arg ) {
 
-			$ret = wp_delete_nav_menu( $args[0] );
+			$ret = wp_delete_nav_menu( $arg );
 
 			if ( ! $ret || is_wp_error( $ret ) ) {
 
