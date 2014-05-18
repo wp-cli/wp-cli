@@ -141,7 +141,6 @@ class Cron_Event_Command extends WP_CLI_Command {
 		}
 
 		if ( $result ) {
-			WP_CLI::line( '' );
 			WP_CLI::success( sprintf( "Successfully executed the cron event '%s'", $hook ) );
 		} else {
 			WP_CLI::error( sprintf( "Failed to the execute the cron event '%s'", $hook ) );
@@ -160,6 +159,13 @@ class Cron_Event_Command extends WP_CLI_Command {
 		if ( ! defined( 'DOING_CRON' ) ) {
 			define( 'DOING_CRON', true );
 		}
+
+		if ( $event->schedule != false ) {
+			$new_args = array( $event->time, $event->schedule, $event->hook, $event->args );
+			call_user_func_array( 'wp_reschedule_event', $new_args );
+		}
+
+		wp_unschedule_event( $event->time, $event->hook, $event->args );
 
 		do_action_ref_array( $event->hook, $event->args );
 
