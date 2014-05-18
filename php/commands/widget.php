@@ -37,7 +37,7 @@ class Widget_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields. Defaults to name, id, description
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, ids. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -57,6 +57,10 @@ class Widget_Command extends WP_CLI_Command {
 			foreach( $output_widgets as &$output_widget ) {
 				$output_widget->options = json_encode( $output_widget->options );
 			}
+		}
+
+		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
+			$output_widgets = wp_list_pluck( $output_widgets, 'id' );
 		}
 
 		$formatter = new \WP_CLI\Formatter( $assoc_args, $this->fields );

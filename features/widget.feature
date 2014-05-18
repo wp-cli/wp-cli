@@ -68,6 +68,12 @@ Feature: Manage widgets in WordPress sidebar
       | calendar        | calendar-1        | 2        |
       | categories      | categories-2      | 3        |
 
+    When I run `wp widget list sidebar-1 --format=ids`
+    Then STDOUT should be:
+      """
+      search-2 calendar-1 categories-2
+      """
+
     When I run `wp widget update calendar-1 --title="Calendar"`
     Then STDOUT should not be empty
 
