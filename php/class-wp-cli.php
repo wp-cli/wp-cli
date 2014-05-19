@@ -70,7 +70,7 @@ class WP_CLI {
 			$home = getenv( 'HOME' );
 			if ( !$home ) {
 				// sometime in windows $HOME is not defined
-				$home = getenv( 'HOMEDRIVE' ) . '/' . getenv( 'HOMEPATH' );
+				$home = getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' );
 			}
 			$dir = getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
 
