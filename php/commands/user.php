@@ -30,7 +30,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Only display users with a certain role.
 	 *
 	 * [--<field>=<value>]
-	 * : Filter by one or more fields. For accepted fields, see get_users().
+	 * : Control output by one or more arguments of get_users().
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each user.
