@@ -97,7 +97,9 @@ class Export_Command extends WP_CLI_Command {
 
 	private static function get_filename_template() {
 		$sitename = sanitize_key( get_bloginfo( 'name' ) );
-		if ( ! empty($sitename) ) $sitename .= '.';
+		if ( ! empty( $sitename ) ) {
+			$sitename .= '.';
+		}
 		return $sitename . 'wordpress.' . date( 'Y-m-d' ) . '.%d.xml';
 	}
 
