@@ -181,7 +181,7 @@ class Export_Command extends WP_CLI_Command {
 
 		$post_types = get_post_types();
 		if ( !in_array( $post_type, $post_types ) ) {
-			WP_CLI::warning( sprintf( 'The post type %s does not exists. Choose "all" or any of these existing post types instead: %s', $post_type, implode( ", ", $post_types ) ) );
+			WP_CLI::warning( sprintf( 'The post type %s does not exist. Choose "all" or any of these existing post types instead: %s', $post_type, implode( ", ", $post_types ) ) );
 			return false;
 		}
 		$this->export_args['post_type'] = $post_type;
