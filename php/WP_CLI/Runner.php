@@ -251,8 +251,6 @@ class Runner {
 
 		$cmd_path = array();
 
-		$disabled_commands = $this->config['disabled_commands'];
-
 		while ( !empty( $args ) && $command->can_have_subcommands() ) {
 			$cmd_path[] = $args[0];
 			$full_name = implode( ' ', $cmd_path );
@@ -266,7 +264,7 @@ class Runner {
 				);
 			}
 
-			if ( in_array( $full_name, $disabled_commands ) ) {
+			if ( $this->is_command_disabled( $subcommand ) ) {
 				return sprintf(
 					"The '%s' command has been disabled from the config file.",
 					$full_name
@@ -311,6 +309,16 @@ class Runner {
 
 	private function _run_command() {
 		$this->run_command( $this->arguments, $this->assoc_args );
+	}
+
+	/**
+	 * Check whether a given command is disabled by the config
+	 *
+	 * @return bool
+	 */
+	public function is_command_disabled( $command ) {
+		$path = implode( ' ', array_slice( \WP_CLI\Dispatcher\get_path( $command ), 1 ) );
+		return in_array( $path, $this->config['disabled_commands'] );
 	}
 
 	/**
@@ -681,7 +689,9 @@ class Runner {
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
 		// Handle --user parameter
-		self::set_user( $this->config );
+		if ( ! defined( 'WP_INSTALLING' ) ) {
+			self::set_user( $this->config );
+		}
 
 		$this->_run_command();
 	}
