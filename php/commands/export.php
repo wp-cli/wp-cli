@@ -26,10 +26,10 @@ class Export_Command extends WP_CLI_Command {
 	 * ## FILTERS
 	 *
 	 * [--start_date=<date>]
-	 * : Export only posts newer than this date, in format YYYY-MM-DD.
+	 * : Export only posts published after this date, in format YYYY-MM-DD.
 	 *
 	 * [--end_date=<date>]
-	 * : Export only posts older than this date, in format YYYY-MM-DD.
+	 * : Export only posts published before this date, in format YYYY-MM-DD.
 	 *
 	 * [--post_type=<post-type>]
 	 * : Export only posts with this post_type. Defaults to all.
