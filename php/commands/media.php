@@ -67,28 +67,31 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <file>
+	 * <file>...
 	 * : Path to file or files to be imported. Supports the glob(3) capabilities of the current shell.
 	 *     If file is recognized as a URL (for example, with a scheme of http or ftp), the file will be
 	 *     downloaded to a temp file before being sideloaded.
 	 *
-	 * --post_id=<post_id>
+	 * [--post_id=<post_id>]
 	 * : ID of the post to attach the imported files to
 	 *
-	 * --title=<title>
+	 * [--title=<title>]
 	 * : Attachment title (post title field)
 	 *
-	 * --caption=<caption>
+	 * [--caption=<caption>]
 	 * : Caption for attachent (post excerpt field)
 	 *
-	 * --alt=<alt_text>
+	 * [--alt=<alt_text>]
 	 * : Alt text for image (saved as post meta)
 	 *
-	 * --desc=<description>
+	 * [--desc=<description>]
 	 * : "Description" field (post content) of attachment post
 	 *
-	 * --featured_image
+	 * [--featured_image]
 	 * : If set, set the imported image as the Featured Image of the post its attached to.
+	 *
+	 * [--porcelain]
+	 * : Output just the new attachment id.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -100,8 +103,6 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 *     # Import an image from the web
 	 *     wp media import http://s.wordpress.org/style/images/wp-header-logo.png --title='The WordPress logo' --alt="Semantic personal publishing"
-	 *
-	 * @synopsis <file>... [--post_id=<id>] [--title=<title>] [--caption=<caption>] [--alt=<text>] [--desc=<description>] [--featured_image]
 	 */
 	function import( $args, $assoc_args = array() ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
@@ -147,14 +148,23 @@ class Media_Command extends WP_CLI_Command {
 
 			// Deletes the temporary file.
 			$success = media_handle_sideload( $file_array, $assoc_args['post_id'], $assoc_args['title'], $post_array );
+			if ( is_wp_error( $success ) ) {
+				WP_CLI::warning( sprintf(
+					'Unable to import file %s. Reason: %s',
+					$orig_filename, implode( ', ', $success->get_error_messages() )
+				) );
+				continue;
+			}
 
 			// Set alt text
-			if ( !is_wp_error( $success ) && $assoc_args['alt'] )
+			if ( $assoc_args['alt'] ) {
 				update_post_meta( $success, '_wp_attachment_image_alt', $assoc_args['alt'] );
+			}
 
 			// Set as featured image, if --post_id and --featured_image are set
-			if ( !is_wp_error( $success ) && $assoc_args['post_id'] && isset($assoc_args['featured_image']) )
+			if ( $assoc_args['post_id'] && isset( $assoc_args['featured_image'] ) ) {
 				update_post_meta( $assoc_args['post_id'], '_thumbnail_id', $success );
+			}
 
 			$attachment_success_text = '';
 			if ( $assoc_args['post_id'] ) {
@@ -163,11 +173,8 @@ class Media_Command extends WP_CLI_Command {
 					$attachment_success_text .= ' as featured image';
 			}
 
-			if ( is_wp_error( $success ) ) {
-				WP_CLI::warning( sprintf(
-					'Unable to import file %s. Reason: %s',
-					$orig_filename, implode( ', ', $success->get_error_messages() )
-				) );
+			if ( isset( $assoc_args['porcelain'] ) ) {
+				WP_CLI::line( $success );
 			} else {
 				WP_CLI::success( sprintf(
 					'Imported file %s as attachment ID %d%s.',

@@ -133,6 +133,18 @@ Feature: Manage WordPress posts
       """
     And STDERR should be empty
 
+  Scenario: Generating posts by a specific author
+
+    When I run `wp user create dummyuser dummy@example.com --porcelain`
+    Then save STDOUT as {AUTHOR_ID}
+
+    When I run `wp post generate --post_author={AUTHOR_ID} --post_type=post --count=16`
+    And I run `wp post list --post_type=post --author={AUTHOR_ID} --format=count`
+    Then STDOUT should contain:
+      """
+      16
+      """
+
   Scenario: Generating pages
     When I run `wp post generate --post_type=page --max_depth=10`
     And I run `wp post list --post_type=page --field=post_parent`

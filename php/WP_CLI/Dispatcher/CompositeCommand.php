@@ -142,6 +142,10 @@ class CompositeCommand {
 		foreach ( $methods as $name => $subcommand ) {
 			$prefix = ( 0 == $i++ ) ? 'usage: ' : '   or: ';
 
+			if ( \WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
+				continue;
+			}
+
 			\WP_CLI::line( $subcommand->get_usage( $prefix ) );
 		}
 
