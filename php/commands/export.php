@@ -78,15 +78,19 @@ class Export_Command extends WP_CLI_Command {
 			WP_CLI::log( sprintf( "Writing to file %s", $file_path ) );
 		} );
 
-		wp_export( array(
-			'filters' => $this->export_args,
-			'writer' => 'WP_Export_Split_Files_Writer',
-			'writer_args' => array(
-				'max_file_size' => $this->max_file_size * MB_IN_BYTES,
-				'destination_directory' => $this->wxr_path,
-				'filename_template' => self::get_filename_template()
-			)
-		) );
+		try {
+			wp_export( array(
+				'filters' => $this->export_args,
+				'writer' => 'WP_Export_Split_Files_Writer',
+				'writer_args' => array(
+					'max_file_size' => $this->max_file_size * MB_IN_BYTES,
+					'destination_directory' => $this->wxr_path,
+					'filename_template' => self::get_filename_template()
+				)
+			) );
+		} catch ( Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
 
 		WP_CLI::success( 'All done with export.' );
 	}
