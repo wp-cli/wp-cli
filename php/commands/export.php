@@ -32,7 +32,7 @@ class Export_Command extends WP_CLI_Command {
 	 * : Export only posts older than this date, in format YYYY-MM-DD.
 	 *
 	 * [--post_type=<post-type>]
-	 * : Export only posts with this post_type.
+	 * : Export only posts with this post_type. Defaults to all.
 	 *
 	 * [--post__in=<pid>]
 	 * : Export all posts specified as a comma-separated list of IDs.
