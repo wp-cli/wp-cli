@@ -26,13 +26,13 @@ class Export_Command extends WP_CLI_Command {
 	 * ## FILTERS
 	 *
 	 * [--start_date=<date>]
-	 * : Export only posts newer than this date, in format YYYY-MM-DD.
+	 * : Export only posts published after this date, in format YYYY-MM-DD.
 	 *
 	 * [--end_date=<date>]
-	 * : Export only posts older than this date, in format YYYY-MM-DD.
+	 * : Export only posts published before this date, in format YYYY-MM-DD.
 	 *
 	 * [--post_type=<post-type>]
-	 * : Export only posts with this post_type.
+	 * : Export only posts with this post_type. Defaults to all.
 	 *
 	 * [--post__in=<pid>]
 	 * : Export all posts specified as a comma-separated list of IDs.
@@ -78,22 +78,28 @@ class Export_Command extends WP_CLI_Command {
 			WP_CLI::log( sprintf( "Writing to file %s", $file_path ) );
 		} );
 
-		wp_export( array(
-			'filters' => $this->export_args,
-			'writer' => 'WP_Export_Split_Files_Writer',
-			'writer_args' => array(
-				'max_file_size' => $this->max_file_size * MB_IN_BYTES,
-				'destination_directory' => $this->wxr_path,
-				'filename_template' => self::get_filename_template()
-			)
-		) );
+		try {
+			wp_export( array(
+				'filters' => $this->export_args,
+				'writer' => 'WP_Export_Split_Files_Writer',
+				'writer_args' => array(
+					'max_file_size' => $this->max_file_size * MB_IN_BYTES,
+					'destination_directory' => $this->wxr_path,
+					'filename_template' => self::get_filename_template()
+				)
+			) );
+		} catch ( Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
 
 		WP_CLI::success( 'All done with export.' );
 	}
 
 	private static function get_filename_template() {
 		$sitename = sanitize_key( get_bloginfo( 'name' ) );
-		if ( ! empty($sitename) ) $sitename .= '.';
+		if ( ! empty( $sitename ) ) {
+			$sitename .= '.';
+		}
 		return $sitename . 'wordpress.' . date( 'Y-m-d' ) . '.%d.xml';
 	}
 
@@ -175,7 +181,7 @@ class Export_Command extends WP_CLI_Command {
 
 		$post_types = get_post_types();
 		if ( !in_array( $post_type, $post_types ) ) {
-			WP_CLI::warning( sprintf( 'The post type %s does not exists. Choose "all" or any of these existing post types instead: %s', $post_type, implode( ", ", $post_types ) ) );
+			WP_CLI::warning( sprintf( 'The post type %s does not exist. Choose "all" or any of these existing post types instead: %s', $post_type, implode( ", ", $post_types ) ) );
 			return false;
 		}
 		$this->export_args['post_type'] = $post_type;

@@ -61,6 +61,13 @@ $steps->Given( '/^a WP multisite install$/',
 	}
 );
 
+$steps->Given( '/^these installed and active plugins:$/',
+	function( $world, $stream ) {
+		$plugins = implode( ' ', array_map( 'trim', explode( PHP_EOL, (string)$stream ) ) );
+		$world->proc( "wp plugin install $plugins --activate" )->run_check();
+	}
+);
+
 $steps->Given( '/^a custom wp-content directory$/',
 	function ( $world ) {
 		$wp_config_path = $world->variables['RUN_DIR'] . "/wp-config.php";
