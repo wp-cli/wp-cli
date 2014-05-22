@@ -50,7 +50,10 @@ Feature: Export content.
 
   Scenario: Export with post_type and post_status argument
     Given a WP install
-    And these installed and active plugins: wordpress-importer
+    And these installed and active plugins:
+      """
+      wordpress-importer
+      """
 
     When I run `wp site empty --yes`
     And I run `wp post generate --post_type=page --post_status=draft --count=10`
@@ -83,7 +86,10 @@ Feature: Export content.
 
   Scenario: Export posts within a given date range
     Given a WP install
-    And these installed and active plugins: wordpress-importer
+    And these installed and active plugins:
+      """
+      wordpress-importer
+      """
 
     When I run `wp site empty --yes`
     And I run `wp post generate --post_type=post --post_date=2013-08-01 --count=10`

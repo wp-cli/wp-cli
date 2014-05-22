@@ -61,9 +61,9 @@ $steps->Given( '/^a WP multisite install$/',
 	}
 );
 
-$steps->Given( '/^these installed and active plugins:(.+)$/',
-	function( $world, $plugins ) {
-		$plugins = implode( ' ', array_map( 'trim', explode( ',', $plugins ) ) );
+$steps->Given( '/^these installed and active plugins:$/',
+	function( $world, $stream ) {
+		$plugins = implode( ' ', array_map( 'trim', explode( PHP_EOL, (string)$stream ) ) );
 		$world->proc( "wp plugin install $plugins --activate" )->run_check();
 	}
 );
