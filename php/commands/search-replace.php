@@ -78,7 +78,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 				if ( in_array( $col, $skip_columns ) )
 					continue;
 
-				$count = self::handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects );
+				if ( substr( $table, -9 ) == '_comments'  || substr( $table, -6 ) == '_posts' ) {
+					$count = self::fast_handle_col( $col, $table, $old, $new, $dry_run );
+				} else
+					$count = self::handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects );
 
 				$report[] = array( $table, $col, $count );
 
@@ -104,6 +107,15 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
 
 		return $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", like_escape( $prefix ) . '%' ) );
+	}
+
+	private static function fast_handle_col( $col, $table, $old, $new, $dry_run ) {
+		global $wpdb;
+
+		if ( $dry_run )
+			return $wpdb->get_var( $wpdb->prepare( "SELECT COUNT($col) FROM $table WHERE $col LIKE %s;", '%' . like_escape( esc_sql( $old ) ) . '%' ) );
+		else
+			return $wpdb->query( $wpdb->prepare( "UPDATE $table SET $col = REPLACE($col, %s, %s);", $old, $new ) );
 	}
 
 	private static function handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects ) {
