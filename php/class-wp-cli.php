@@ -394,6 +394,12 @@ class WP_CLI {
 		return self::launch( $full_command, $exit_on_error );
 	}
 
+	/**
+	 * Get the path to the PHP binary used when executing WP-CLI.
+	 * Environment values permit specific binaries to be indicated.
+	 *
+	 * @return string
+	 */
 	private static function get_php_binary() {
 		if ( defined( 'PHP_BINARY' ) )
 			return PHP_BINARY;
