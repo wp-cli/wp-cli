@@ -155,3 +155,18 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name       | status   |
       | akismet    | active   |
+
+  Scenario: Install a plugin when directory doesn't yet exist
+    Given a WP install
+
+    When I run `rm -rf wp-content/plugins`
+    And I run `if test -d wp-content/plugins; then echo "fail"; fi`
+    Then STDOUT should be empty
+
+    When I run `wp plugin activate akismet hello`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --status=active --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name       | status   |
+      | akismet    | active   |
