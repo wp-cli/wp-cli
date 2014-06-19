@@ -163,7 +163,7 @@ Feature: Manage WordPress plugins
     And I run `if test -d wp-content/plugins; then echo "fail"; fi`
     Then STDOUT should be empty
 
-    When I run `wp plugin activate akismet hello`
+    When I run `wp plugin install akismet hello`
     Then STDOUT should not be empty
 
     When I run `wp plugin list --status=active --fields=name,status`
