@@ -371,6 +371,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
 	 */
 	function install( $args, $assoc_args ) {
+
+		$theme_root = get_theme_root();
+		if ( $theme_root && ! is_dir( $theme_root ) ) {
+			wp_mkdir_p( $theme_root );
+		}
+
 		parent::install( $args, $assoc_args );
 	}
 
