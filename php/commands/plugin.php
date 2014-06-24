@@ -366,6 +366,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp plugin install http://s3.amazonaws.com/bucketname/my-plugin.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
 	 */
 	function install( $args, $assoc_args ) {
+
+		if ( ! is_dir( WP_PLUGIN_DIR ) ) {
+			wp_mkdir_p( WP_PLUGIN_DIR );
+		}
+
 		parent::install( $args, $assoc_args );
 	}
 
