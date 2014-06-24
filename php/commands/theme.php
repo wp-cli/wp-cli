@@ -375,6 +375,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		$theme_root = get_theme_root();
 		if ( $theme_root && ! is_dir( $theme_root ) ) {
 			wp_mkdir_p( $theme_root );
+			register_theme_directory( $theme_root );
 		}
 
 		parent::install( $args, $assoc_args );
