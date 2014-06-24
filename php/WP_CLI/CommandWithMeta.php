@@ -12,6 +12,26 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	protected $meta_type;
 
 	/**
+	 * List all metadata associated with an object.
+	 *
+	 * <id>
+	 * : ID for the object.
+	 *
+	 * @subcommand list
+	 */
+	public function list_( $args, $assoc_args ) {
+
+		list( $object_id ) = $args;
+
+		$values = get_metadata( $this->meta_type, $object_id );
+
+		$values = wp_cache_get( $object_id, 'post_meta' );
+
+		error_log( var_export( $values, true ) );
+
+	}
+
+	/**
 	 * Get meta field value.
 	 *
 	 * @synopsis <id> <key> [--format=<format>]
