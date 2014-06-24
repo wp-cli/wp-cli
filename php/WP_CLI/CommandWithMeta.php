@@ -17,17 +17,60 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * <id>
 	 * : ID for the object.
 	 *
+	 * [--keys=<keys>]
+	 * : Limit output to metadata of specific keys.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count. Default: table
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
 
 		list( $object_id ) = $args;
 
+		$keys = ! empty( $assoc_args['keys'] ) ? explode( ',', $assoc_args['keys'] ) : array();
+
 		$values = get_metadata( $this->meta_type, $object_id );
 
-		$values = wp_cache_get( $object_id, 'post_meta' );
+		foreach( $values as $meta_key => $meta_value ) {
 
-		error_log( var_export( $values, true ) );
+			if ( ! empty( $keys ) && ! in_array( $meta_key, $keys ) ) {
+				unset( $values[ $meta_key ] );
+				continue;
+			}
+
+			if ( count( $values[ $meta_key ] ) == 1 ) {
+				$values[ $meta_key ] = $values[ $meta_key ][ 0 ];
+			}
+
+		}
+
+		// Special treatment for JSON
+		if ( ! empty( $assoc_args['format'] ) && 'json' === $assoc_args['format'] ) {
+
+			echo json_encode( $values );
+
+		} else {
+
+			foreach( $values as $meta_key => $meta_value ) {
+
+				$items = array();
+				if ( empty( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'table', 'csv' ) ) ) {
+					$meta_value = json_encode( $meta_value );
+				}
+
+				$items[] = (object) array(
+					'meta_key'      => $meta_key,
+					'meta_value'    => $meta_value,
+					);
+
+			}
+
+			$formatter = new \WP_CLI\Formatter( $assoc_args, array( 'meta_key', 'meta_value' ), $this->meta_type );
+			$formatter->display_items( $items );
+
+		}
 
 	}
 
