@@ -187,29 +187,5 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		return $fields;
 	}
 
-	/**
-	 * Non-lossy getter for metadata.
-	 * get_metadata loses track of the meta_id
-	 *
-	 * @param int $object_id
-	 * @return array
-	 */
-	private function get_metadata( $object_id, $keys = false ) {
-		global $wpdb;
-
-		$fields = implode( ', ', $this->get_fields() );
-		$table = "{$this->meta_type}meta";
-		$query = $wpdb->prepare( "SELECT {$fields} FROM {$wpdb->$table} WHERE {$this->meta_type}_id = %d", $object_id );
-		if ( $keys ) {
-			$query .= " AND meta_key IN ( '" . implode( "','", $keys ) . "')";
-		}
-		$results = $wpdb->get_results( $query );
-
-		$results = array_map( function( $row ) {
-			$row->meta_value = maybe_unserialize( $row->meta_value );
-			return $row;
-		}, $results );
-		return $results;
-	}
 }
 
