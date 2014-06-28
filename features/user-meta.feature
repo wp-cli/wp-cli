@@ -26,3 +26,21 @@ Feature: Manage user custom fields
 
     When I try `wp user-meta get 1 foo`
     Then the return code should be 1
+
+  Scenario: List user meta
+    Given a WP install
+
+    When I run `wp user meta set 1 foo '[ "1", "2" ]' --format=json`
+    Then STDOUT should not be empty
+
+    When I run `wp user meta list 1 --format=json --keys=nickname,foo --fields=meta_key,meta_value`
+    Then STDOUT should be JSON containing:
+      """
+      [{"meta_key":"nickname","meta_value":"admin"},{"meta_key":"foo","meta_value":["1","2"]}]
+      """
+
+    When I run `wp user meta list 1 --keys=nickname,foo`
+    Then STDOUT should be a table containing rows:
+      | user_id | meta_key | meta_value     |
+      | 1       | nickname | admin          |
+      | 1       | foo      | ["1","2"]      |
