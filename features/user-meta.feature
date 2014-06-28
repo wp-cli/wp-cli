@@ -27,6 +27,25 @@ Feature: Manage user custom fields
     When I try `wp user-meta get 1 foo`
     Then the return code should be 1
 
+    When I run `wp user meta add 1 foo bar`
+    And I run `wp user meta add 1 foo bar2`
+    And I run `wp user meta add 1 foo bar3`
+    Then STDOUT should not be empty
+
+    When I run `wp user meta delete 1 foo bar2`
+    And I run `wp user meta list 1 --keys=foo --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp user meta delete 1 foo`
+    And I run `wp user meta list 1 --keys=foo --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
   Scenario: List user meta
     Given a WP install
 

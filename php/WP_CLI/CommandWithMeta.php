@@ -35,6 +35,9 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		$keys = ! empty( $assoc_args['keys'] ) ? explode( ',', $assoc_args['keys'] ) : array();
 
 		$metadata = get_metadata( $this->meta_type, $object_id );
+		if ( ! $metadata ) {
+			$metadata = array();
+		}
 
 		$items = array();
 		foreach( $metadata as $key => $values ) {
@@ -92,12 +95,21 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	/**
 	 * Delete a meta field.
 	 *
-	 * @synopsis <id> <key>
+	 * <id>
+	 * : The ID of the object.
+	 *
+	 * <key>
+	 * : The name of the meta field to create.
+	 *
+	 * [<value>]
+	 * : The value to delete. If omitted, all rows with key will deleted.
 	 */
 	public function delete( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
 
-		$success = \delete_metadata( $this->meta_type, $object_id, $meta_key );
+		$meta_value = ! empty( $args[2] ) ? $args[2] : '';
+
+		$success = \delete_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
 
 		if ( $success ) {
 			\WP_CLI::success( "Deleted custom field." );
