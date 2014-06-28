@@ -117,15 +117,41 @@ Feature: Manage WordPress plugins
     When I run `wp plugin update --all`
     Then STDOUT should not be empty
 
-  Scenario: Activate a network-only plugin
+  Scenario: Activate a network-only plugin on single site
+    Given a WP install
+    And a wp-content/plugins/network-only.php file:
+      """
+      // Plugin Name: Example Plugin
+      // Network: true
+      """
+
+    When I run `wp plugin activate network-only`
+    Then STDOUT should be:
+      """
+      Success: Plugin 'network-only' activated.
+      """
+
+    When I run `wp plugin status network-only`
+    Then STDOUT should contain:
+      """
+          Status: Active
+      """
+
+  Scenario: Activate a network-only plugin on multisite
     Given a WP multisite install
     And a wp-content/plugins/network-only.php file:
       """
       // Plugin Name: Example Plugin
       // Network: true
       """
+
     When I run `wp plugin activate network-only`
-    And I run `wp plugin status network-only`
+    Then STDOUT should be:
+      """
+      Success: Plugin 'network-only' network activated.
+      """
+
+    When I run `wp plugin status network-only`
     Then STDOUT should contain:
       """
           Status: Network Active
