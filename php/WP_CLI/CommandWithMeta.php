@@ -178,13 +178,11 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * @return array
 	 */
 	private function get_fields() {
-
-		$fields = array();
-		$fields[] = "{$this->meta_type}_id";
-		$fields[] = 'meta_key';
-		$fields[] = 'meta_value';
-
-		return $fields;
+		return array(
+			"{$this->meta_type}_id",
+			'meta_key',
+			'meta_value',
+		);
 	}
 
 }
