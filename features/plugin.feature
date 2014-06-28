@@ -170,3 +170,36 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name       | status   |
       | akismet    | active   |
+
+  Scenario: Activate a plugin which is already active
+    Given a WP multisite install
+
+    When I run `wp plugin activate akismet`
+    Then STDOUT should be:
+      """
+      Success: Plugin 'akismet' activated.
+      """
+
+    When I try `wp plugin activate akismet`
+    Then STDERR should be:
+      """
+      Warning: Plugin 'akismet' is already active.
+      """
+
+    When I run `wp plugin deactivate akismet`
+    Then STDOUT should be:
+      """
+      Success: Plugin 'akismet' deactivated.
+      """
+
+    When I run `wp plugin activate akismet --network`
+    Then STDOUT should be:
+      """
+      Success: Plugin 'akismet' network activated.
+      """
+
+    When I try `wp plugin activate akismet --network`
+    Then STDERR should be:
+      """
+      Warning: Plugin 'akismet' is already network active.
+      """

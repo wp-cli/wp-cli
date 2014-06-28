@@ -142,6 +142,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$network_wide = isset( $assoc_args['network'] );
 
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
+
+			$status = $this->get_status( $plugin->file );
+			if ( ! $network_wide && 'active' === $status ) {
+				WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
+				continue;
+			} else if ( $network_wide && 'active-network' === $status ) {
+				WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
+				continue;
+			}
+
 			activate_plugin( $plugin->file, '', $network_wide );
 
 			$this->active_output( $plugin->name, $plugin->file, $network_wide, "activate" );

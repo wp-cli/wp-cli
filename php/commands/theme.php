@@ -121,9 +121,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	public function activate( $args = array() ) {
 		$theme = $this->fetcher->get_check( $args[0] );
 
-		switch_theme( $theme->get_template(), $theme->get_stylesheet() );
-
 		$name = $theme->get('Name');
+
+		if ( 'active' === $this->get_status( $theme ) ) {
+			WP_CLI::success( "The '$name' theme is already active." );
+			exit;
+		}
+
+		switch_theme( $theme->get_template(), $theme->get_stylesheet() );
 
 		if ( $this->is_active_theme( $theme ) ) {
 			WP_CLI::success( "Switched to '$name' theme." );
