@@ -707,7 +707,8 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * <key>
 	 * : The metadata key.
 	 *
-	 * @synopsis <user> <key>
+	 * [<value>]
+	 * : The value to delete. If omitted, all rows with key will deleted.
 	 */
 	public function delete( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );
