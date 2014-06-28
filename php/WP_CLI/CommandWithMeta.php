@@ -20,6 +20,9 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * [--keys=<keys>]
 	 * : Limit output to metadata of specific keys.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific row fields. Defaults to meta_key,meta_value.
+	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
 	 *
@@ -29,48 +32,26 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		list( $object_id ) = $args;
 
-		$keys = ! empty( $assoc_args['keys'] ) ? explode( ',', $assoc_args['keys'] ) : array();
+		$keys = ! empty( $assoc_args['keys'] ) ? explode( ',', $assoc_args['keys'] ) : false;
 
-		$values = get_metadata( $this->meta_type, $object_id );
+		$values = $this->get_metadata( $object_id, $keys );
 
-		foreach( $values as $meta_key => $meta_value ) {
+		foreach( $values as &$value ) {
 
-			if ( ! empty( $keys ) && ! in_array( $meta_key, $keys ) ) {
-				unset( $values[ $meta_key ] );
-				continue;
-			}
-
-			if ( count( $values[ $meta_key ] ) == 1 ) {
-				$values[ $meta_key ] = $values[ $meta_key ][ 0 ];
+			if ( ( empty( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'table', 'csv' ) ) ) && ( is_object( $value->meta_value ) || is_array( $value->meta_value ) ) ) {
+				$value->meta_value = json_encode( $value->meta_value );
 			}
 
 		}
 
-		// Special treatment for JSON
-		if ( ! empty( $assoc_args['format'] ) && 'json' === $assoc_args['format'] ) {
-
-			echo json_encode( $values );
-
+		if ( ! empty( $assoc_args['fields'] ) ) {
+			$fields = explode( ',', $assoc_args['fields'] );
 		} else {
-
-			foreach( $values as $meta_key => $meta_value ) {
-
-				$items = array();
-				if ( empty( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'table', 'csv' ) ) ) {
-					$meta_value = json_encode( $meta_value );
-				}
-
-				$items[] = (object) array(
-					'meta_key'      => $meta_key,
-					'meta_value'    => $meta_value,
-					);
-
-			}
-
-			$formatter = new \WP_CLI\Formatter( $assoc_args, array( 'meta_key', 'meta_value' ), $this->meta_type );
-			$formatter->display_items( $items );
-
+			$fields = array( 'meta_key', 'meta_value' );
 		}
+
+		$formatter = new \WP_CLI\Formatter( $assoc_args, $fields, $this->meta_type );
+		$formatter->display_items( $values );
 
 	}
 
@@ -171,6 +152,51 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		} else {
 			\WP_CLI::error( "Failed to update custom field." );
 		}
+	}
+
+	/**
+	 * Get the fields for this object's meta
+	 *
+	 * @return array
+	 */
+	private function get_fields() {
+
+		$fields = array();
+		if ( 'user' === $this->meta_type ) {
+			$fields[] = 'umeta_id';
+		} else {
+			$fields[] = 'meta_id';
+		}
+		$fields[] = "{$this->meta_type}_id";
+		$fields[] = 'meta_key';
+		$fields[] = 'meta_value';
+
+		return $fields;
+	}
+
+	/**
+	 * Non-lossy getter for metadata.
+	 * get_metadata loses track of the meta_id
+	 *
+	 * @param int $object_id
+	 * @return array
+	 */
+	private function get_metadata( $object_id, $keys = false ) {
+		global $wpdb;
+
+		$fields = implode( ', ', $this->get_fields() );
+		$table = "{$this->meta_type}meta";
+		$query = $wpdb->prepare( "SELECT {$fields} FROM {$wpdb->$table} WHERE {$this->meta_type}_id = %d", $object_id );
+		if ( $keys ) {
+			$query .= " AND meta_key IN ( '" . implode( "','", $keys ) . "')";
+		}
+		$results = $wpdb->get_results( $query );
+
+		$results = array_map( function( $row ) {
+			$row->meta_value = maybe_unserialize( $row->meta_value );
+			return $row;
+		}, $results );
+		return $results;
 	}
 }
 
