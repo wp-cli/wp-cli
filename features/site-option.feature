@@ -1,7 +1,7 @@
 Feature: Manage WordPress site options
 
   Scenario: Site Option CRUD
-    Given a WP install
+    Given a WP multisite install
 
     # String values
     When I run `wp site option add str_opt 'bar'`
