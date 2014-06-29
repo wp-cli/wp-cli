@@ -401,4 +401,3 @@ function replace_path_consts( $source, $path ) {
 
 	return str_replace( $old, $new, $source );
 }
-

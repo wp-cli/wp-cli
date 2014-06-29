@@ -205,8 +205,8 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 * # Export only tables for a single site
-	 * wp db export --tables=$(wp db tables --url=sub.example.com | tr '\n' ',')
+	 *     # Export only tables for a single site
+	 *     wp db export --tables=$(wp db tables --url=sub.example.com | tr '\n' ',')
 	 */
 	function tables( $args, $assoc_args ) {
 		global $wpdb;
@@ -232,12 +232,17 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	private static function run( $cmd, $assoc_args = array(), $descriptors = null ) {
-		$final_args = array_merge( $assoc_args, array(
+		$required = array(
 			'host' => DB_HOST,
 			'user' => DB_USER,
 			'pass' => DB_PASSWORD,
-			'default-character-set' => DB_CHARSET,
-		) );
+		);
+
+		if ( defined( 'DB_CHARSET' ) && constant( 'DB_CHARSET' ) ) {
+			$required['default-character-set'] = constant( 'DB_CHARSET' );
+		}
+
+		$final_args = array_merge( $assoc_args, $required );
 
 		Utils\run_mysql_command( $cmd, $final_args, $descriptors );
 	}

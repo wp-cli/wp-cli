@@ -117,15 +117,41 @@ Feature: Manage WordPress plugins
     When I run `wp plugin update --all`
     Then STDOUT should not be empty
 
-  Scenario: Activate a network-only plugin
+  Scenario: Activate a network-only plugin on single site
+    Given a WP install
+    And a wp-content/plugins/network-only.php file:
+      """
+      // Plugin Name: Example Plugin
+      // Network: true
+      """
+
+    When I run `wp plugin activate network-only`
+    Then STDOUT should be:
+      """
+      Success: Plugin 'network-only' activated.
+      """
+
+    When I run `wp plugin status network-only`
+    Then STDOUT should contain:
+      """
+          Status: Active
+      """
+
+  Scenario: Activate a network-only plugin on multisite
     Given a WP multisite install
     And a wp-content/plugins/network-only.php file:
       """
       // Plugin Name: Example Plugin
       // Network: true
       """
+
     When I run `wp plugin activate network-only`
-    And I run `wp plugin status network-only`
+    Then STDOUT should be:
+      """
+      Success: Plugin 'network-only' network activated.
+      """
+
+    When I run `wp plugin status network-only`
     Then STDOUT should contain:
       """
           Status: Network Active
@@ -155,3 +181,51 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name       | status   |
       | akismet    | active   |
+
+  Scenario: Install a plugin when directory doesn't yet exist
+    Given a WP install
+
+    When I run `rm -rf wp-content/plugins`
+    And I run `if test -d wp-content/plugins; then echo "fail"; fi`
+    Then STDOUT should be empty
+
+    When I run `wp plugin install akismet --activate`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --status=active --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name       | status   |
+      | akismet    | active   |
+
+  Scenario: Activate a plugin which is already active
+    Given a WP multisite install
+
+    When I run `wp plugin activate akismet`
+    Then STDOUT should be:
+      """
+      Success: Plugin 'akismet' activated.
+      """
+
+    When I try `wp plugin activate akismet`
+    Then STDERR should be:
+      """
+      Warning: Plugin 'akismet' is already active.
+      """
+
+    When I run `wp plugin deactivate akismet`
+    Then STDOUT should be:
+      """
+      Success: Plugin 'akismet' deactivated.
+      """
+
+    When I run `wp plugin activate akismet --network`
+    Then STDOUT should be:
+      """
+      Success: Plugin 'akismet' network activated.
+      """
+
+    When I try `wp plugin activate akismet --network`
+    Then STDERR should be:
+      """
+      Warning: Plugin 'akismet' is already network active.
+      """

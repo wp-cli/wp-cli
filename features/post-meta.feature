@@ -33,3 +33,20 @@ Feature: Manage post custom fields
 
     When I try `wp post-meta get 1 foo`
     Then the return code should be 1
+
+  Scenario: List post meta
+    Given a WP install
+
+    When I run `wp post meta add 1 apple banana`
+    And I run `wp post meta add 1 apple banana`
+    Then STDOUT should not be empty
+
+    When I run `wp post meta set 1 banana '["apple", "apple"]' --format=json`
+    Then STDOUT should not be empty
+
+    When I run `wp post meta list 1`
+    Then STDOUT should be a table containing rows:
+      | post_id | meta_key | meta_value         |
+      | 1       | apple    | banana             |
+      | 1       | apple    | banana             |
+      | 1       | banana   | ["apple","apple"]  |

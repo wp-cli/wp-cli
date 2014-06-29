@@ -71,3 +71,23 @@ Feature: Perform database operations
       """
       1
       """
+
+  Scenario: DB export no charset
+    Given a WP install
+    And a replace-script.php file:
+      """
+      <?php
+      $wp_config = file_get_contents( 'wp-config.php' );
+      $wp_config = str_replace( 'utf8', '', $wp_config );
+      file_put_contents( 'wp-config.php', $wp_config );
+      WP_CLI::success( "Replaced charset" );
+      """
+
+    When I run `wp eval-file replace-script.php`
+    Then STDOUT should not be empty
+
+    When I run `wp db export /tmp/wp-cli-behat.sql`
+    Then STDOUT should contain:
+      """
+      Success: Exported
+      """

@@ -3,6 +3,11 @@
 /**
  * Manage comments.
  *
+ * ## EXAMPLES
+ *
+ *     # delete all spam comments.
+ *     wp comment delete $(wp comment list --status=spam --format=ids)
+ *
  * @package wp-cli
  */
 class Comment_Command extends \WP_CLI\CommandWithDBObject {

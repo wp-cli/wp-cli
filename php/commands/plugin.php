@@ -142,6 +142,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$network_wide = isset( $assoc_args['network'] );
 
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
+
+			$status = $this->get_status( $plugin->file );
+			if ( ! $network_wide && 'active' === $status ) {
+				WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
+				continue;
+			} else if ( $network_wide && 'active-network' === $status ) {
+				WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
+				continue;
+			}
+
 			activate_plugin( $plugin->file, '', $network_wide );
 
 			$this->active_output( $plugin->name, $plugin->file, $network_wide, "activate" );
@@ -366,6 +376,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp plugin install http://s3.amazonaws.com/bucketname/my-plugin.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
 	 */
 	function install( $args, $assoc_args ) {
+
+		if ( ! is_dir( WP_PLUGIN_DIR ) ) {
+			wp_mkdir_p( WP_PLUGIN_DIR );
+		}
+
 		parent::install( $args, $assoc_args );
 	}
 
@@ -515,7 +530,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	private function active_output( $name, $file, $network_wide, $action ) {
-		$network_wide = $network_wide || is_network_only_plugin( $file );
+		$network_wide = $network_wide || ( is_multisite() && is_network_only_plugin( $file ) );
 
 		$check = $this->check_active( $file, $network_wide );
 

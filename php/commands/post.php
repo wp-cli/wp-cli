@@ -305,10 +305,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( $post_author ) {
-			$post_author = get_user_by( 'login', $post_author );
-
-			if ( $post_author )
-				$post_author = $post_author->ID;
+			$user_fetcher = new \WP_CLI\Fetchers\User;
+			$post_author = $user_fetcher->get_check( $post_author )->ID;
 		}
 
 		if ( isset( $assoc_args['post_content'] ) ) {

@@ -232,9 +232,56 @@ Feature: Manage WordPress installation
       example.com
       """
 
+  Scenario: Update from a ZIP file
+    Given a WP install
+
+    When I run `wp core download --version=3.8 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo $GLOBALS["wp_version"];'`
+    Then STDOUT should be:
+      """
+      3.8
+      """
+
+    When I run `wget http://wordpress.org/wordpress-3.9.zip --quiet`
+    Then STDOUT should be empty
+
+    When I run `wp core update wordpress-3.9.zip`
+    Then STDOUT should be:
+      """
+      Unpacking the update...
+      Success: WordPress updated successfully.
+      """
+
+    When I run `wp eval 'echo $GLOBALS["wp_version"];'`
+    Then STDOUT should be:
+      """
+      3.9
+      """
+
   Scenario: Custom wp-content directory
     Given a WP install
     And a custom wp-content directory
 
     When I run `wp plugin status hello`
     Then STDOUT should not be empty
+
+  Scenario: User defined in wp-cli.yml
+    Given an empty directory
+    And WP files
+    And wp-config.php
+    And a database
+    And a wp-cli.yml file:
+      """
+      user: wpcli
+      """
+
+    When I run `wp core install --url='localhost:8001' --title='Test' --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo home_url();'`
+    Then STDOUT should be:
+      """
+      http://localhost:8001
+      """

@@ -30,7 +30,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Only display users with a certain role.
 	 *
 	 * [--<field>=<value>]
-	 * : Filter by one or more fields. For accepted fields, see get_users().
+	 * : Control output by one or more arguments of get_users().
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each user.
@@ -88,6 +88,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--field=<field>]
 	 * : Instead of returning the whole user, returns the value of a single field.
+	 *
+	 * [--fields=<fields>]
+	 * : Get a specific subset of the user's fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json. Default: table
@@ -185,6 +188,12 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--display_name=<name>]
 	 * : The display name.
 	 *
+	 * [--first_name=<first_name>]
+	 * : The user's first name.
+	 *
+	 * [--last_name=<last_name>]
+	 * : The user's last name.
+	 *
 	 * [--send-email]
 	 * : Send an email to the user with their new account details.
 	 *
@@ -213,6 +222,12 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$user->display_name = isset( $assoc_args['display_name'] )
 			? $assoc_args['display_name'] : false;
+
+		$user->first_name = isset( $assoc_args['first_name'] )
+			? $assoc_args['first_name'] : false;
+
+		$user->last_name = isset( $assoc_args['last_name'] )
+			? $assoc_args['last_name'] : false;
 
 		$user->user_pass = isset( $assoc_args['user_pass'] )
 			? $assoc_args['user_pass'] : wp_generate_password();
@@ -536,6 +551,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--send-email]
 	 * : Send an email to new users with their account details.
 	 *
+	 * [--skip-update]
+	 * : Don't update users that already exist.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp user import-csv /path/to/users.csv
@@ -582,7 +600,13 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				$existing_user = get_user_by( 'login', $new_user['user_login'] );
 			}
 
-			if ( $existing_user ) {
+			if ( $existing_user && isset( $assoc_args['skip-update'] ) ) {
+
+				WP_CLI::log( "{$existing_user->user_login} exists and has been skipped" );
+				continue;
+
+			} else if ( $existing_user ) {
+
 				$new_user['ID'] = $existing_user->ID;
 				$user_id = wp_update_user( $new_user );
 
@@ -683,7 +707,8 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * <key>
 	 * : The metadata key.
 	 *
-	 * @synopsis <user> <key>
+	 * [<value>]
+	 * : The value to delete. If omitted, all rows with key will deleted.
 	 */
 	public function delete( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );

@@ -39,3 +39,17 @@ Feature: Manage WordPress attachments
       and attached to post 1 as featured image
       """
     And the {CACHE_DIR}/large-image.jpg file should exist
+
+  Scenario: Import a file as an attachment but porcelain style
+    Given download:
+      | path                        | url                                              |
+      | {CACHE_DIR}/large-image.jpg | http://wp-cli.org/behat-data/large-image.jpg     |
+
+    When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My imported attachment" --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID}
+
+    When I run `wp post get {ATTACHMENT_ID} --field=title`
+    Then STDOUT should be:
+      """
+      My imported attachment
+      """

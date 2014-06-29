@@ -74,7 +74,7 @@ class Menu_Command extends WP_CLI_Command {
 
 		foreach( $args as $arg ) {
 
-			$ret = wp_delete_nav_menu( $args[0] );
+			$ret = wp_delete_nav_menu( $arg );
 
 			if ( ! $ret || is_wp_error( $ret ) ) {
 
@@ -460,34 +460,57 @@ class Menu_Item_Command extends WP_CLI_Command {
 			$assoc_args['url'] = $assoc_args['link'];
 		}
 
-		$default_args = array(
-			'position'     => 0,
-			'title'        => '',
-			'url'          => '',
-			'description'  => '',
-			'object'       => '',
-			'object-id'    => '',
-			'attr-title'   => '',
-			'target'       => '',
-			'classes'      => '',
-			'xfn'          => '',
-			'status'       => '',
-			);
+		// Need to persist the menu item data. See https://core.trac.wordpress.org/ticket/28138
+		if ( 'update' == $method ) {
+
+			$menu_item_obj = get_post( $menu_item_db_id );
+			$menu_item_obj = wp_setup_nav_menu_item( $menu_item_obj );
+
+			// Correct the menu position if this was the first item. See https://core.trac.wordpress.org/ticket/28140
+			$position = ( 0 === $menu_item_obj->menu_order ) ? 1 : $menu_item_obj->menu_order;
+
+			$default_args = array(
+				'position'     => $position,
+				'title'        => $menu_item_obj->title,
+				'url'          => $menu_item_obj->url,
+				'description'  => $menu_item_obj->description,
+				'object'       => $menu_item_obj->object,
+				'object-id'    => $menu_item_obj->object_id,
+				'parent-id'    => $menu_item_obj->menu_item_parent,
+				'attr-title'   => $menu_item_obj->attr_title,
+				'target'       => $menu_item_obj->target,
+				'classes'      => implode( ' ', $menu_item_obj->classes ), // stored in the database as array
+				'xfn'          => $menu_item_obj->xfn,
+				'status'       => $menu_item_obj->post_status,
+				);
+
+		} else {
+
+			$default_args = array(
+				'position'     => 0,
+				'title'        => '',
+				'url'          => '',
+				'description'  => '',
+				'object'       => '',
+				'object-id'    => 0,
+				'parent-id'    => 0,
+				'attr-title'   => '',
+				'target'       => '',
+				'classes'      => '',
+				'xfn'          => '',
+				// Core oddly defaults to 'draft' for create,
+				// and 'publish' for update
+				// Easiest to always work with publish
+				'status'       => 'publish',
+				);
+
+		}
 
 		$menu_item_args = array();
 		foreach( $default_args as $key => $default_value ) {
 			// wp_update_nav_menu_item() has a weird argument prefix
 			$new_key = 'menu-item-' . $key;
-			if ( isset( $assoc_args[ $key ] ) ) {
-				$menu_item_args[ $new_key ] = $assoc_args[ $key ];
-			}
-		}
-
-		// Core oddly defaults to 'draft' for create,
-		// and 'publish' for update
-		// Easiest to always work with publish
-		if ( ! isset( $menu_item_args['menu-item-status'] ) ) {
-			$menu_item_args['menu-item-status'] = 'publish';
+			$menu_item_args[ $new_key ] = isset( $assoc_args[ $key ] ) ? $assoc_args[ $key ] : $default_value;
 		}
 
 		$menu_item_args['menu-item-type'] = $type;

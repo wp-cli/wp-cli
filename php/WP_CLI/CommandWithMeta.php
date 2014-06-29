@@ -12,6 +12,71 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	protected $meta_type;
 
 	/**
+	 * List all metadata associated with an object.
+	 *
+	 * <id>
+	 * : ID for the object.
+	 *
+	 * [--keys=<keys>]
+	 * : Limit output to metadata of specific keys.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific row fields. Defaults to id,meta_key,meta_value.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * @subcommand list
+	 */
+	public function list_( $args, $assoc_args ) {
+
+		list( $object_id ) = $args;
+
+		$keys = ! empty( $assoc_args['keys'] ) ? explode( ',', $assoc_args['keys'] ) : array();
+
+		$metadata = get_metadata( $this->meta_type, $object_id );
+		if ( ! $metadata ) {
+			$metadata = array();
+		}
+
+		$items = array();
+		foreach( $metadata as $key => $values ) {
+
+			// Skip if not requested
+			if ( ! empty( $keys ) && ! in_array( $key, $keys ) ) {
+				continue;
+			}
+
+			foreach( $values as $item_value ) {
+
+				$item_value = maybe_unserialize( $item_value );
+
+				if ( ( empty( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'table', 'csv' ) ) )&& ( is_object( $item_value ) || is_array( $item_value ) ) ) {
+					$item_value = json_encode( $item_value );
+				}
+
+				$items[] = (object) array(
+					"{$this->meta_type}_id" => $object_id,
+					'meta_key'              => $key,
+					'meta_value'            => $item_value,
+					);
+
+			}
+
+		}
+
+		if ( ! empty( $assoc_args['fields'] ) ) {
+			$fields = explode( ',', $assoc_args['fields'] );
+		} else {
+			$fields = $this->get_fields();
+		}
+
+		$formatter = new \WP_CLI\Formatter( $assoc_args, $fields, $this->meta_type );
+		$formatter->display_items( $items );
+
+	}
+
+	/**
 	 * Get meta field value.
 	 *
 	 * @synopsis <id> <key> [--format=<format>]
@@ -30,12 +95,21 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	/**
 	 * Delete a meta field.
 	 *
-	 * @synopsis <id> <key>
+	 * <id>
+	 * : The ID of the object.
+	 *
+	 * <key>
+	 * : The name of the meta field to create.
+	 *
+	 * [<value>]
+	 * : The value to delete. If omitted, all rows with key will deleted.
 	 */
 	public function delete( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
 
-		$success = \delete_metadata( $this->meta_type, $object_id, $meta_key );
+		$meta_value = ! empty( $args[2] ) ? $args[2] : '';
+
+		$success = \delete_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
 
 		if ( $success ) {
 			\WP_CLI::success( "Deleted custom field." );
@@ -109,5 +183,19 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 			\WP_CLI::error( "Failed to update custom field." );
 		}
 	}
+
+	/**
+	 * Get the fields for this object's meta
+	 *
+	 * @return array
+	 */
+	private function get_fields() {
+		return array(
+			"{$this->meta_type}_id",
+			'meta_key',
+			'meta_value',
+		);
+	}
+
 }
 

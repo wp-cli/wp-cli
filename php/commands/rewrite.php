@@ -32,6 +32,9 @@ class Rewrite_Command extends WP_CLI_Command {
 			WP_CLI::warning( "Regenerating a .htaccess file requires special configuration. See usage docs." );
 		}
 		flush_rewrite_rules( isset( $assoc_args['hard'] ) );
+		if ( ! get_option( 'rewrite_rules' ) ) {
+			WP_CLI::warning( "Rewrite rules are empty, possibly because of a missing permalink_structure option. Use 'wp rewrite list' to verify, or 'wp rewrite structure' to update permalink_structure." );
+		}
 	}
 
 	/**

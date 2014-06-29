@@ -37,7 +37,7 @@ class Widget_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields. Defaults to name, id, description
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, ids. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -57,6 +57,10 @@ class Widget_Command extends WP_CLI_Command {
 			foreach( $output_widgets as &$output_widget ) {
 				$output_widget->options = json_encode( $output_widget->options );
 			}
+		}
+
+		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
+			$output_widgets = wp_list_pluck( $output_widgets, 'id' );
 		}
 
 		$formatter = new \WP_CLI\Formatter( $assoc_args, $this->fields );
@@ -403,12 +407,12 @@ class Widget_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Reposition a widget within a sidebar
+	 * Reposition a widget within a sidebar or move to another sidebar.
 	 *
 	 * @param string $widget_id
-	 * @param string $current_sidebar_id
+	 * @param string|null $current_sidebar_id
 	 * @param string $new_sidebar_id
-	 * @param int $current_index
+	 * @param int|null $current_index
 	 * @param int $new_index
 	 */
 	private function move_sidebar_widget( $widget_id, $current_sidebar_id, $new_sidebar_id, $current_index, $new_index ) {
@@ -416,10 +420,10 @@ class Widget_Command extends WP_CLI_Command {
 		$all_widgets = $this->wp_get_sidebars_widgets();
 		$needs_placement = true;
 		// Existing widget
-		if ( $current_sidebar_id && $current_index ) {
+		if ( $current_sidebar_id && ! is_null( $current_index ) ) {
 
 			$widgets = $all_widgets[ $current_sidebar_id ];
-			if ( $current_sidebar_id != $new_sidebar_id ) {
+			if ( $current_sidebar_id !== $new_sidebar_id ) {
 
 				unset( $widgets[ $current_index ] );
 

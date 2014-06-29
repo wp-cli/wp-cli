@@ -70,7 +70,7 @@ class WP_CLI {
 			$home = getenv( 'HOME' );
 			if ( !$home ) {
 				// sometime in windows $HOME is not defined
-				$home = getenv( 'HOMEDRIVE' ) . '/' . getenv( 'HOMEPATH' );
+				$home = getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' );
 			}
 			$dir = getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
 
@@ -151,7 +151,9 @@ class WP_CLI {
 		if ( !isset( self::$hooks[ $when ] ) )
 			return;
 
-		array_map( 'call_user_func', self::$hooks[ $when ] );
+		foreach ( self::$hooks[ $when ] as $callback ) {
+			call_user_func( $callback );
+		}
 	}
 
 	/**
@@ -392,6 +394,12 @@ class WP_CLI {
 		return self::launch( $full_command, $exit_on_error );
 	}
 
+	/**
+	 * Get the path to the PHP binary used when executing WP-CLI.
+	 * Environment values permit specific binaries to be indicated.
+	 *
+	 * @return string
+	 */
 	private static function get_php_binary() {
 		if ( defined( 'PHP_BINARY' ) )
 			return PHP_BINARY;

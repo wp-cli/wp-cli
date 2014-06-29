@@ -691,31 +691,44 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		$update = $from_api = null;
 		$upgrader = 'Core_Upgrader';
 
-		if ( empty( $assoc_args['version'] ) ) {
+		if ( ! empty( $args[0] ) ) {
+
+			$upgrader = 'WP_CLI\\NonDestructiveCoreUpgrader';
+			$version = ! empty( $assoc_args['version'] ) ? $assoc_args['version'] : null;
+
+			$update = (object) array(
+				'response'      => 'upgrade',
+				'current'       => $version,
+				'download'      => $args[0],
+				'packages'      => (object) array (
+									'partial' => null,
+									'new_bundled' => null,
+									'no_content' => null,
+									'full' => $args[0],
+								),
+				'version' => $version,
+			);
+
+		} else if ( empty( $assoc_args['version'] ) ) {
+
 			wp_version_check();
 			$from_api = get_site_transient( 'update_core' );
 
-			if ( empty( $from_api->updates ) )
+			if ( empty( $from_api->updates ) ) {
 				$update = false;
-			else
+			} else {
 				list( $update ) = $from_api->updates;
+			}
 
 		} else if (	version_compare( $wp_version, $assoc_args['version'], '<' )
 					|| isset( $assoc_args['force'] ) ) {
 
-			$new_package = $version = null;
+			$version = $assoc_args['version'];
+			$locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : get_locale();
 
-			if ( empty( $args[0] ) ) {
-				$version = $assoc_args['version'];
-				$locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : get_locale();
+			$new_package = $this->get_download_url($version, $locale);
 
-				$new_package = $this->get_download_url($version, $locale);
-
-				WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $locale ) );
-			} else {
-				$new_package = $args[0];
-				$upgrader = 'WP_CLI\\NonDestructiveCoreUpgrader';
-			}
+			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $locale ) );
 
 			$update = (object) array(
 				'response' => 'upgrade',
