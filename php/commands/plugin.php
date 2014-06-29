@@ -422,7 +422,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Uninstall a plugin.
+	 * Uninstall a plugin. Will deactivate the plugin for you if it is currently active
 	 *
 	 * ## OPTIONS
 	 *
@@ -438,10 +438,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp plugin uninstall hello
 	 */
 	function uninstall( $args, $assoc_args = array() ) {
+
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			if ( is_plugin_active( $plugin->file ) ) {
-				WP_CLI::warning( "The '{$plugin->name}' plugin is active." );
-				continue;
+				WP_CLI::warning( "Deactivating '{$plugin->name}' plugin ." );
+				$this->deactivate( $plugin->file );
 			}
 
 			uninstall_plugin( $plugin->file );
