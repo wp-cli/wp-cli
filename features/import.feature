@@ -2,8 +2,8 @@ Feature: Import content.
 
   Scenario: Basic export then import
     Given a WP install
-    And I run `wp post generate --post_type=post --count=3`
-    And I run `wp post generate --post_type=page --count=2`
+    And I run `wp post generate --post_type=post --count=3 --post_author=1`
+    And I run `wp post generate --post_type=page --count=2 --post_author=1`
     When I run `wp post list --post_type=any --format=count`
     Then STDOUT should be:
       """
