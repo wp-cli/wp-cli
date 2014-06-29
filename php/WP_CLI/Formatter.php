@@ -37,6 +37,15 @@ class Formatter {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
+			if ( in_array( $this->args['format'], array( 'csv', 'json', 'table' ) ) ) {
+				$item = is_array( $items ) && ! empty( $items ) ? array_shift( $items ) : false;
+				if ( $item && ! empty( $this->args['fields'] ) ) {
+					foreach( $this->args['fields'] as &$field ) {
+						$field = $this->find_item_key( $item, $field );
+					}
+					array_unshift( $items, $item );
+				}
+			}
 			$this->format( $items );
 		}
 	}
@@ -122,7 +131,7 @@ class Formatter {
 
 	private function find_item_key( $item, $field ) {
 		foreach ( array( $field, $this->prefix . '_' . $field ) as $maybe_key ) {
-			if ( isset( $item->$maybe_key ) ) {
+			if ( ( is_object( $item ) && isset( $item->$maybe_key ) ) || ( is_array( $item ) && isset( $item[$maybe_key] ) ) ) {
 				$key = $maybe_key;
 				break;
 			}
