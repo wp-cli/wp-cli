@@ -439,6 +439,10 @@ class Site_Option_Command extends WP_CLI_Command {
 	 * @synopsis <key> [--format=<format>]
 	 */
 	public function get( $args, $assoc_args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
 		list( $key ) = $args;
 
 		$value = get_site_option( $key );
@@ -469,6 +473,10 @@ class Site_Option_Command extends WP_CLI_Command {
 	 *     wp site option add my_option --format=json < config.json
 	 */
 	public function add( $args, $assoc_args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
 		$key = $args[0];
 
 		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
@@ -503,6 +511,10 @@ class Site_Option_Command extends WP_CLI_Command {
 	 * @alias set
 	 */
 	public function update( $args, $assoc_args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
 		$key = $args[0];
 
 		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
@@ -524,6 +536,10 @@ class Site_Option_Command extends WP_CLI_Command {
 	 * @synopsis <key>
 	 */
 	public function delete( $args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
 		list( $key ) = $args;
 
 		if ( !delete_site_option( $key ) ) {
