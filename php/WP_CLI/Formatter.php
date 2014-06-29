@@ -37,8 +37,8 @@ class Formatter {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
-			$item = ! empty( $items ) ? array_shift( $items ) : array();
-			if ( ! empty( $item ) && ! empty( $this->args['fields'] ) ) {
+			$item = is_array( $items ) && ! empty( $items ) ? array_shift( $items ) : false;
+			if ( $item && ! empty( $this->args['fields'] ) ) {
 				foreach( $this->args['fields'] as &$field ) {
 					$field = $this->find_item_key( $item, $field );
 				}
