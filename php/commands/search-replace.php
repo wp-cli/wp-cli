@@ -89,10 +89,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 				}
 
 				if ( $safe_only || NULL !== $serialRow ) {
-					$safe = 'Y';
+					$safe = 'No';
 					$count = self::handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects );
 				} else {
-					$safe = 'N';
+					$safe = 'Yes';
 					$count = self::fast_handle_col( $col, $table, $old, $new, $dry_run );
 				}
 
@@ -103,7 +103,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		$table = new \cli\Table();
-		$table->setHeaders( array( 'Table', 'Column', 'Replacements', 'Safe Replace' ) );
+		$table->setHeaders( array( 'Table', 'Column', 'Replacements', 'Fast Replace' ) );
 		$table->setRows( $report );
 		$table->display();
 
