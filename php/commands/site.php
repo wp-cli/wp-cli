@@ -412,3 +412,127 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 WP_CLI::add_command( 'site', 'Site_Command' );
 
+
+/**
+ * Manage Site Options
+ *
+ * ## OPTIONS
+ *
+ * [--format=json]
+ * : Encode/decode values as JSON.
+ *
+ * ## EXAMPLES
+ *
+ *     wp site option get site_name
+ *
+ *     wp site option add my_option foobar
+ *
+ *     wp site option update my_option '{"foo": "bar"}' --format=json
+ *
+ *     wp site option delete my_option
+ */
+class Site_Option_Command extends WP_CLI_Command {
+
+	/**
+	 * Get an option.
+	 *
+	 * @synopsis <key> [--format=<format>]
+	 */
+	public function get( $args, $assoc_args ) {
+		list( $key ) = $args;
+
+		$value = get_site_option( $key );
+
+		if ( false === $value )
+			die(1);
+
+		WP_CLI::print_value( $value, $assoc_args );
+	}
+
+	/**
+	 * Add an option.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <key>
+	 * : The name of the option to add.
+	 *
+	 * [<value>]
+	 * : The value of the option to add. If ommited, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Create an option by reading a JSON file
+	 *     wp site option add my_option --format=json < config.json
+	 */
+	public function add( $args, $assoc_args ) {
+		$key = $args[0];
+
+		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
+		$value = WP_CLI::read_value( $value, $assoc_args );
+
+		if ( !add_site_option( $key, $value ) ) {
+			WP_CLI::error( "Could not add site option '$key'. Does it already exist?" );
+		} else {
+			WP_CLI::success( "Added '$key' site option." );
+		}
+	}
+
+	/**
+	 * Update an option.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <key>
+	 * : The name of the option to add.
+	 *
+	 * [<value>]
+	 * : The new value. If ommited, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Update an option by reading from a file
+	 *     wp site option update my_option < value.txt
+	 *
+	 * @alias set
+	 */
+	public function update( $args, $assoc_args ) {
+		$key = $args[0];
+
+		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
+		$value = WP_CLI::read_value( $value, $assoc_args );
+
+		$result = update_site_option( $key, $value );
+
+		// update_option() returns false if the value is the same
+		if ( !$result && $value != get_site_option( $key ) ) {
+			WP_CLI::error( "Could not update site option '$key'." );
+		} else {
+			WP_CLI::success( "Updated '$key' site option." );
+		}
+	}
+
+	/**
+	 * Delete an option.
+	 *
+	 * @synopsis <key>
+	 */
+	public function delete( $args ) {
+		list( $key ) = $args;
+
+		if ( !delete_site_option( $key ) ) {
+			WP_CLI::error( "Could not delete '$key' site option. Does it exist?" );
+		} else {
+			WP_CLI::success( "Deleted '$key' site option." );
+		}
+	}
+}
+
+WP_CLI::add_command( 'site option', 'Site_Option_Command' );
+
