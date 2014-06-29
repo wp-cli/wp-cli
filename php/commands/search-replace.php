@@ -82,10 +82,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 				$serialRow = $wpdb->get_col( "SELECT * FROM $table WHERE '$col' REGEXP '^[aiO]:[1-9]' LIMIT 1" );
 
-				if ( 0 < count( $serialized ) ) {
+				if ( 0 < count( $serialRow ) ) {
 					$count = self::fast_handle_col( $col, $table, $old, $new, $dry_run );
-				} else
+				} else {
 					$count = self::handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects );
+				}
 
 				$report[] = array( $table, $col, $count );
 
