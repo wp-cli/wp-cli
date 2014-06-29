@@ -446,7 +446,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			if ( is_plugin_active( $plugin->file ) ) {
 				if ( isset( $assoc_args['deactivate'] ) ) {
-					WP_CLI::warning( "Deactivating '{$plugin->name}' plugin ." );
+					WP_CLI::warning( "Deactivating '{$plugin->name}' plugin." );
 					$this->deactivate( $plugin->file );
 				} else {
 					WP_CLI::warning( "The '{$plugin->name}' plugin is active." );
