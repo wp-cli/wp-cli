@@ -37,6 +37,12 @@ class Formatter {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
+			$item = isset( $items[0] ) ? $items[0] : array();
+			if ( ! empty( $this->args['fields'] ) ) {
+				foreach( $this->args['fields'] as &$field ) {
+					$field = $this->find_item_key( $item, $field );
+				}
+			}
 			$this->format( $items );
 		}
 	}
