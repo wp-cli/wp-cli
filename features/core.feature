@@ -270,6 +270,9 @@ Feature: Manage WordPress installation
   Scenario: Verify core checksums
     Given a WP install
 
+    When I run `wp core update`
+    Then STDOUT should not be empty
+
     When I run `wp core verify-checksums`
     Then STDOUT should be:
       """

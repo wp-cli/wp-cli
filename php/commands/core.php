@@ -666,7 +666,12 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	public function verify_checksums( $args, $assoc_args ) {
 		global $wp_version, $wp_local_package;
 
-		$checksums = get_core_checksums( $wp_version, isset( $wp_local_package ) ? $wp_local_package : 'en_US' );
+		// Introduced in 3.7
+		if ( function_exists( 'get_core_checksums' ) ) {
+			$checksums = get_core_checksums( $wp_version, isset( $wp_local_package ) ? $wp_local_package : 'en_US' );
+		} else {
+			$checksums = false;
+		}
 
 		if ( ! is_array( $checksums ) ) {
 			WP_CLI::error( "Couldn't get checksums from WordPress.org." );
