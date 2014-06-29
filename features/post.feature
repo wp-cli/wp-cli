@@ -112,6 +112,12 @@ Feature: Manage WordPress posts
       | Publish post | publish-post | publish      |
       | Draft post   |              | draft        |
 
+    When I run `wp post list --post_type='post' --fields=title,name,status --format=csv`
+    Then STDOUT should be CSV containing:
+      | post_title   | post_name    | post_status  |
+      | Publish post | publish-post | publish      |
+      | Draft post   |              | draft        |
+
     When I run `wp post list --post__in={POST_ID} --format=count`
     Then STDOUT should be:
       """
