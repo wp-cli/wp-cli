@@ -47,6 +47,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *     wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
 	 */
 	public function __invoke( $args, $assoc_args ) {
+		global $wpdb;
 		$old = array_shift( $args );
 		$new = array_shift( $args );
 		$total = 0;
@@ -75,10 +76,13 @@ class Search_Replace_Command extends WP_CLI_Command {
 			}
 
 			foreach ( $columns as $col ) {
-				if ( in_array( $col, $skip_columns ) )
+				if ( in_array( $col, $skip_columns ) ) {
 					continue;
+				}
 
-				if ( substr( $table, -9 ) == '_comments'  || substr( $table, -6 ) == '_posts' ) {
+				$serialRow = $wpdb->get_col( "SELECT * FROM $table WHERE $col REGEXP '^[aiO]:[1-9]' LIMIT 1" );
+
+				if ( 0 < cont( $serialized ) ) {
 					$count = self::fast_handle_col( $col, $table, $old, $new, $dry_run );
 				} else
 					$count = self::handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects );
