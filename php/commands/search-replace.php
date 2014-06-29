@@ -82,10 +82,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 				$serialRow = $wpdb->get_row( "SELECT * FROM `$table` WHERE `$col` REGEXP '^[aiO]:[1-9]' LIMIT 1" );
 				if ( NULL !== $serialRow ) {
-					WP_CLI::line( 'safe-replace' );
+					WP_CLI::line( "safe-replace-$table:$col" );
 					$count = self::handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects );
 				} else {
-					WP_CLI::line( 'fast-replace' );
+					WP_CLI::line( "fast-replace-$table:$col" );
 					$count = self::fast_handle_col( $col, $table, $old, $new, $dry_run );
 				}
 
@@ -119,9 +119,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 		global $wpdb;
 
 		if ( $dry_run ) {
-			return $wpdb->get_var( $wpdb->prepare( "SELECT COUNT($col) FROM $table WHERE $col LIKE %s;", '%' . like_escape( esc_sql( $old ) ) . '%' ) );
+			return $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(`$col`) FROM `$table` WHERE `$col` LIKE %s;", '%' . like_escape( esc_sql( $old ) ) . '%' ) );
 		} else {
-			return $wpdb->query( $wpdb->prepare( "UPDATE $table SET $col = REPLACE($col, %s, %s);", $old, $new ) );
+			return $wpdb->query( $wpdb->prepare( "UPDATE `$table` SET `$col` = REPLACE(`$col`, %s, %s);", $old, $new ) );
 		}
 	}
 
