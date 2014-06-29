@@ -267,6 +267,35 @@ Feature: Manage WordPress installation
     When I run `wp plugin status hello`
     Then STDOUT should not be empty
 
+  Scenario: Verify core checksums
+    Given a WP install
+
+    When I run `wp core verify-checksums`
+    Then STDOUT should be:
+      """
+      Success: WordPress install verifies against checksums.
+      """
+
+    When I run `sed -i.bak s/WordPress/Wordpress/g readme.html`
+    Then STDERR should be empty
+
+    When I try `wp core verify-checksums`
+    Then STDERR should be:
+      """
+      Warning: File doesn't verify against checksum: readme.html
+      Error: WordPress install doesn't verify against checksums.
+      """
+
+    When I run `rm readme.html`
+    Then STDERR should be empty
+
+    When I try `wp core verify-checksums`
+    Then STDERR should be:
+      """
+      Warning: File doesn't exist: readme.html
+      Error: WordPress install doesn't verify against checksums.
+      """
+
   Scenario: User defined in wp-cli.yml
     Given an empty directory
     And WP files
