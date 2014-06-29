@@ -2,6 +2,8 @@
 
 class Import_Command extends WP_CLI_Command {
 
+	private $buffer_val = '';
+
 	/**
 	 * Import content from a WXR file.
 	 *
@@ -63,9 +65,12 @@ class Import_Command extends WP_CLI_Command {
 			return $import_data;
 
 		// Prepare the data to be used in process_author_mapping();
+		ob_start( array( $this, 'handle_ob' ), 1 );
 		$wp_import->get_authors_from_import( $import_data );
+		ob_end_flush();
 		$author_data = array();
 		foreach ( $wp_import->authors as $wxr_author ) {
+
 			$author = new \stdClass;
 			// Always in the WXR
 			$author->user_login = $wxr_author['author_login'];
@@ -115,7 +120,9 @@ class Import_Command extends WP_CLI_Command {
 			add_filter( 'intermediate_image_sizes_advanced', array( $this, 'filter_set_image_sizes' ) );
 		}
 
+		ob_start( array( $this, 'handle_ob' ), 1 );
 		$wp_import->import( $file );
+		ob_end_flush();
 
 		return true;
 	}
@@ -361,6 +368,58 @@ class Import_Command extends WP_CLI_Command {
 		if ( $shortest > ( array_sum( $shortestavg ) / count( $shortestavg ) ) )
 			return '';
 		return $closest;
+	}
+
+	/**
+	 * Handle output buffering of the importer plugin
+	 */
+	private function handle_ob( $buffer ) {
+
+		if ( WP_CLI::get_config( 'quiet' ) ) {
+			return true;
+		}
+
+		$this->buffer_val .= $buffer;
+
+		if ( '<br />' === substr( $this->buffer_val, -6 ) ) {
+			$this->print_buffer_val();
+		}
+
+		return true;
+	}
+
+	/**
+	 * Print the buffer value.
+	 */
+	private function print_buffer_val() {
+
+		$type = 'log';
+		$out = html_entity_decode( strip_tags( $this->buffer_val ) );
+
+		$failed_to_import = substr( __( 'Failed to import %s &#8220;%s&#8221;', 'wordpress-importer' ), 0, 16 );
+		$already_exists = substr( __('%s &#8220;%s&#8221; already exists.', 'wordpress-importer' ), -15 );
+		$item_skipped = substr( __( 'Menu item skipped due to invalid menu slug: %s', 'wordpress-importer' ), 0, 16 );
+
+		if ( false !== stripos( $out, $failed_to_import )
+			|| false !== stripos( $out, $item_skipped ) ) {
+			$type = 'warning';
+		} else if ( false !== stripos( $out, $already_exists ) ) {
+			$out = '-- ' . $out;
+		}
+
+		switch( $type ) {
+
+			case 'log':
+				WP_CLI::log( $out );
+				break;
+
+			case 'warning':
+				WP_CLI::warning( $out );
+				break;
+
+		}
+		$this->buffer_val = '';
+
 	}
 
 }
