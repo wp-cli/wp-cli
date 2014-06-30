@@ -68,7 +68,7 @@ class Import_Command extends WP_CLI_Command {
 		$this->buffer_val = '';
 		ob_start( array( $this, 'handle_ob' ), 1 );
 		$wp_import->get_authors_from_import( $import_data );
-		ob_end_flush();
+		ob_end_clean();
 		$author_data = array();
 		foreach ( $wp_import->authors as $wxr_author ) {
 
@@ -124,7 +124,7 @@ class Import_Command extends WP_CLI_Command {
 		$this->buffer_val = '';
 		ob_start( array( $this, 'handle_ob' ), 1 );
 		$wp_import->import( $file );
-		ob_end_flush();
+		ob_end_clean();
 
 		return true;
 	}
