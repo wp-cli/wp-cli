@@ -103,6 +103,9 @@ require( ABSPATH . WPINC . '/default-filters.php' );
 
 // Initialize multisite if enabled.
 if ( is_multisite() ) {
+	// require_once because introduced in 4.0-ish https://core.trac.wordpress.org/changeset/28910/trunk/src
+	require_once( ABSPATH . WPINC . '/ms-load.php' );
+	require_once( ABSPATH . WPINC . '/ms-default-constants.php' );
 	require( ABSPATH . WPINC . '/ms-blogs.php' );
 	require( ABSPATH . WPINC . '/ms-settings.php' );
 } elseif ( ! defined( 'MULTISITE' ) ) {
