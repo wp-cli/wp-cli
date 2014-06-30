@@ -659,36 +659,38 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	}
 
 	/**
-	 * Security copy of the core funtion - Gets and caches the checksums for the given version of WordPress.
-	 *
-	 * @since 3.7.0
+	 * Security copy of the core function with Requests - Gets the checksums for the given version of WordPress.
 	 *
 	 * @param string $version Version string to query.
 	 * @param string $locale  Locale to query.
 	 * @return bool|array False on failure. An array of checksums on success.
 	 */
-	private static function _get_core_checksums( $version, $locale ) {
+	private static function get_core_checksums( $version, $locale ) {
 		$return = array();
 
 		$url = $http_url = 'http://api.wordpress.org/core/checksums/1.0/?' . http_build_query( compact( 'version', 'locale' ), null, '&' );
 
 		if ( $ssl = wp_http_supports( array( 'ssl' ) ) )
-			$url = set_url_scheme( $url, 'https' );
+			$url = 'https' . substr( $url, 4 );
 
 		$options = array(
-			'timeout' => ( ( defined('DOING_CRON') && DOING_CRON ) ? 30 : 3 ),
+			'timeout' => ( ( defined('DOING_CRON') && DOING_CRON ) ? 30 : 3 )
 		);
 
-		$response = wp_remote_get( $url, $options );
-		if ( $ssl && is_wp_error( $response ) ) {
+		$headers = array(
+			'Accept' => 'application/json'
+		);
+		$response = self::_request( 'GET', $url, $headers, $options );
+
+		if ( $ssl && ! $response->success ) {
 			trigger_error( __( 'An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="https://wordpress.org/support/">support forums</a>.' ) . ' ' . __( '(WordPress could not establish a secure connection to WordPress.org. Please contact your server administrator.)' ), headers_sent() || WP_DEBUG ? E_USER_WARNING : E_USER_NOTICE );
-			$response = wp_remote_get( $http_url, $options );
+			$response = self::_request( 'GET', $http_url, $headers, $options );
 		}
 
-		if ( is_wp_error( $response ) || 200 != wp_remote_retrieve_response_code( $response ) )
+		if ( ! $response->success || 200 != $response->status_code )
 			return false;
 
-		$body = trim( wp_remote_retrieve_body( $response ) );
+		$body = trim( $response->body );
 		$body = json_decode( $body, true );
 
 		if ( ! is_array( $body ) || ! isset( $body['checksums'] ) || ! is_array( $body['checksums'] ) )
@@ -705,12 +707,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	public function verify_checksums( $args, $assoc_args ) {
 		global $wp_version, $wp_local_package;
 
-		// Introduced in 3.7
-		if ( function_exists( 'get_core_checksums' ) ) {
-			$checksums = self::_get_core_checksums( $wp_version, isset( $wp_local_package ) ? $wp_local_package : 'en_US' );
-		} else {
-			$checksums = false;
-		}
+		$checksums = self::get_core_checksums( $wp_version, isset( $wp_local_package ) ? $wp_local_package : 'en_US' );
 
 		if ( ! is_array( $checksums ) ) {
 			WP_CLI::error( "Couldn't get checksums from WordPress.org." );
