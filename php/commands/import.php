@@ -65,6 +65,7 @@ class Import_Command extends WP_CLI_Command {
 			return $import_data;
 
 		// Prepare the data to be used in process_author_mapping();
+		$this->buffer_val = '';
 		ob_start( array( $this, 'handle_ob' ), 1 );
 		$wp_import->get_authors_from_import( $import_data );
 		ob_end_flush();
@@ -120,6 +121,7 @@ class Import_Command extends WP_CLI_Command {
 			add_filter( 'intermediate_image_sizes_advanced', array( $this, 'filter_set_image_sizes' ) );
 		}
 
+		$this->buffer_val = '';
 		ob_start( array( $this, 'handle_ob' ), 1 );
 		$wp_import->import( $file );
 		ob_end_flush();
