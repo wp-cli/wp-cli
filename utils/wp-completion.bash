@@ -9,6 +9,9 @@ _wp_complete() {
 	if [[ $opts = "<file>" ]]
 	then
 		COMPREPLY=( $(compgen -f -- $cur) )
+	elif [[ $opts = "" ]]
+	then
+		COMPREPLY=( $(compgen -f -- $cur) )
 	else
 		COMPREPLY=( ${opts[*]} )
 	fi
