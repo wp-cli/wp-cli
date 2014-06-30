@@ -439,6 +439,14 @@ class Runner {
 			}
 		}
 
+		// user create --user_role=role -> user create --role=role
+		if ( count( $args ) > 1 && $args[0] == 'user'
+			&& $args[1] == 'create' && isset( $assoc_args['user_role'] )
+		) {
+			$assoc_args['role'] = $assoc_args['user_role'];
+			unset( $assoc_args['user_role'] );
+		}
+
 		return array( $args, $assoc_args );
 	}
 

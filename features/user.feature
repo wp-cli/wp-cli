@@ -160,7 +160,7 @@ Feature: Manage WordPress users
       admin,admin@domain.com,Existing User,administrator
       """
 
-    When I run `wp user create bobjones bobjones@domain.com --display_name="Robert Jones" --role=administrator`
+    When I run `wp user create bobjones bobjones@domain.com --display_name="Robert Jones" --user_role=administrator`
     Then STDOUT should not be empty
 
     When I run `wp user import-csv users.csv --skip-update`
