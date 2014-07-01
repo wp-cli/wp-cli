@@ -141,7 +141,7 @@ class DB_Command extends WP_CLI_Command {
 		$command_esc_args = array( DB_NAME );
 
 		if ( isset( $assoc_args['tables'] ) ) {
-			$tables = explode( ',', $assoc_args['tables'] );
+			$tables = explode( ',', trim( $assoc_args['tables'], ',' ) );
 			unset( $assoc_args['tables'] );
 			$command .= ' --tables';
 			foreach ( $tables as $table ) {
