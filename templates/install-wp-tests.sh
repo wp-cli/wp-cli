@@ -43,6 +43,8 @@ install_test_suite() {
 	mkdir -p $WP_TESTS_DIR
 	cd $WP_TESTS_DIR
 	svn co --quiet http://develop.svn.wordpress.org/trunk/tests/phpunit/includes/
+	# apply patch (see ticket https://core.trac.wordpress.org/ticket/28738)
+	curl https://gist.githubusercontent.com/ziodave/10fdc7ebfb2288be2876/raw/2649d21d4255e0487ae9c19afaaa9263ebb14999/r28965-patch | patch -p0
 
 	wget -nv -O wp-tests-config.php http://develop.svn.wordpress.org/trunk/wp-tests-config-sample.php
 	sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR':" wp-tests-config.php
