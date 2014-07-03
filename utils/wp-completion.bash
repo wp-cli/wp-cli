@@ -6,7 +6,7 @@ _wp_complete() {
 	IFS=$'\n';  # want to preserve spaces at the end
 	local opts="$(wp cli completions --line="$COMP_LINE" --point="$COMP_POINT")"
 
-	if [[ $opts = "<file>" ]]
+	if [[ "$opts" =~ \<file\>\s* ]]
 	then
 		COMPREPLY=( $(compgen -f -- $cur) )
 	elif [[ $opts = "" ]]
