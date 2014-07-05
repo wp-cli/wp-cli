@@ -79,24 +79,27 @@ class Search_Replace_Command extends WP_CLI_Command {
 				continue;
 			}
 
+			// Can we do everything with a fast replace?
+			$fast_only = ( ! $safe_only && mb_strlen( $old ) === mb_strlen( $new ) );
+
 			foreach ( $columns as $col ) {
 				if ( in_array( $col, $skip_columns ) ) {
 					continue;
 				}
 
-				if ( ! $safe_only ) {
+				if ( ! $safe_only && ! $fast_only ) {
 					$serialRow = $wpdb->get_row( "SELECT * FROM `$table` WHERE `$col` REGEXP '^[aiO]:[1-9]' LIMIT 1" );
 				}
 
-				if ( $safe_only || NULL !== $serialRow ) {
-					$safe = 'No';
+				if ( $safe_only || ! $fast_only || NULL !== $serialRow ) {
+					$fast = 'No';
 					$count = self::handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects );
 				} else {
-					$safe = 'Yes';
+					$fast = 'Yes';
 					$count = self::fast_handle_col( $col, $table, $old, $new, $dry_run );
 				}
 
-				$report[] = array( $table, $col, $count, $safe );
+				$report[] = array( $table, $col, $count, $fast );
 
 				$total += $count;
 			}
