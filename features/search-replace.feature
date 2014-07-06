@@ -33,7 +33,7 @@ Feature: Do global search/replace
     When I run `wp search-replace <flags> {SITEURL} <replacement>`
     Then STDOUT should be a table containing rows:
       | Table    | Column | Replacements | Fast Replace |
-      | wp_posts | guid   | 22           | No           |
+      | wp_posts | guid   | 22           | Yes          |
 
     Examples:
       | replacement          | flags     |
