@@ -50,10 +50,11 @@ Feature: Do global search/replace
     When I run `wp search-replace <flags> {SITEURL}/teststring <replacement>`
     Then STDOUT should be a table containing rows:
       | Table      | Column       | Replacements | Fast Replace |
-      | wp_options | option_value | 2            | <fast>       |
+      | wp_options | option_value | 2            | <serial>     |
+      | wp_posts   | post_title   | 0            | <noserial>   |
 
     Examples:
-      | replacement          | flags  | fast |
-      | {SITEURL}/different  |        | No   |
-      | {SITEURL}/samelength | --safe | No   |
-      | {SITEURL}/samelength |        | Yes  |
+      | replacement          | flags  | serial | noserial |
+      | {SITEURL}/different  |        | No     | Yes      |
+      | {SITEURL}/samelength | --safe | No     | No       |
+      | {SITEURL}/samelength |        | Yes    | Yes      |
