@@ -16,8 +16,9 @@ Whether you want to fix a bug or implement a new feature, the process is pretty 
 
 0. [Search existing issues](https://github.com/wp-cli/wp-cli/issues); if you can't find anything related to what you want to work on, open a new issue so that you can get some initial feedback.
 1. [Fork](https://github.com/wp-cli/wp-cli/fork) the repository.
-2. Push the code changes from your local clone to your fork.
-3. Open a pull request.
+2. Create a branch for each issue you'd like to address. Commit your changes.
+3. Push the code changes from your local clone to your fork.
+4. Open a pull request.
 
 It doesn't matter if the code isn't perfect. The idea is to get it reviewed early and iterate on it.
 
