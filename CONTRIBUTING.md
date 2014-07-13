@@ -45,9 +45,7 @@ To run the unit tests, just execute:
 
 The functional test files are in the `features/` directory.
 
-Before running the functional tests, you'll need a MySQL user called `wp_cli_test` with the
-password `password1` that has full privileges on the MySQL database `wp_cli_test`.
-Running the following as root in MySQL should do the trick:
+Before running the functional tests, you'll need a MySQL user called `wp_cli_test` with the password `password1` that has full privileges on the MySQL database `wp_cli_test`. Running the following as root in MySQL should do the trick:
 
     GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"localhost" IDENTIFIED BY "password1";
 
@@ -64,5 +62,4 @@ More info can be found by using `./vendor/bin/behat --help`.
 Finally...
 ----------
 
-Thanks! Hacking on WP-CLI should be fun. If you find any of this hard to figure
-out, let us know so we can improve our process or documentation!
+Thanks! Hacking on WP-CLI should be fun. If you find any of this hard to figure out, let us know so we can improve our process or documentation!
