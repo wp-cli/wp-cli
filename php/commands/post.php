@@ -46,7 +46,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp post create --post_type=page --post_status=publish --post_title='A future post' --post-status=future --post_date='2020-12-01 07:00:00'
+	 *     wp post create --post_type=page --post_title='A future post' --post_status=future --post_date='2020-12-01 07:00:00'
 	 *
 	 *     wp post create ./post-content.txt --post_category=201,345 --post_title='Post from file'
 	 */
