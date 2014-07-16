@@ -40,3 +40,18 @@ Feature: Do global search/replace
       | {SITEURL}/subdir     |           |
       | http://newdomain.com |           |
       | http://newdomain.com | --dry-run |
+
+  Scenario: Identical search and replace terms
+    Given a WP install
+
+    When I try `wp search-replace foo foo`
+    Then STDERR should be:
+      """
+      Warning: Use --dry-run for test replacements. Identical <old> and <new> values will not give proper replacement counts.
+      """
+
+    When I try `wp search-replace foo foo --dry-run`
+    Then STDERR should be:
+      """
+      Warning: Identical <old> and <new> values will not give proper replacement counts.
+      """
