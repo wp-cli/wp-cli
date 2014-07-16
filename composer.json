@@ -14,7 +14,8 @@
 		"rhumsaa/array_column": "~1.1",
 		"rmccue/requests": "~1.6",
 		"symfony/finder": "~2.3",
-		"nb/oxymel": "0.1.0"
+		"nb/oxymel": "0.1.0",
+		"composer/composer": "1.0.0-alpha8"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",
