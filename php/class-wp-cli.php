@@ -347,16 +347,42 @@ class WP_CLI {
 	 *
 	 * @param string Command to call
 	 * @param bool Whether to exit if the command returns an error status
+	 * @param bool Whether to return an exit status (default) or detailed execution results
 	 *
 	 * @return int The command exit status
 	 */
-	static function launch( $command, $exit_on_error = true ) {
-		$r = proc_close( proc_open( $command, array( STDIN, STDOUT, STDERR ), $pipes ) );
+	static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
+
+		if ( $return_detailed ) {
+			$descriptorspec = array(
+				0 => array( 'file', 'php://stdin', 'r' ),
+				1 => array( 'pipe', 'w' ),
+				2 => array( 'pipe', 'w' ),
+			);
+		} else {
+			$descriptorspec = array( STDIN, STDOUT, STDERR );
+		}
+
+		$process = proc_open( $command, $descriptorspec, $pipes );
+
+		if ( $return_detailed ) {
+			$ret_val = array(
+				'stdout'     => stream_get_contents( $pipes[1] ),
+				'stderr'     => stream_get_contents( $pipes[2] ),
+				);
+		}
+
+		$r = proc_close( $process );
 
 		if ( $r && $exit_on_error )
 			exit($r);
 
-		return $r;
+		if ( $return_detailed ) {
+			$ret_val['exit_status'] = $r;
+			return $ret_val;
+		} else {
+			return $r;
+		}
 	}
 
 	/**
@@ -366,10 +392,11 @@ class WP_CLI {
 	 * @param array $args Positional arguments to use
 	 * @param array $assoc_args Associative arguments to use
 	 * @param bool Whether to exit if the command returns an error status
+	 * @param bool Whether to return an exit status (default) or detailed execution results
 	 *
 	 * @return int The command exit status
 	 */
-	static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true ) {
+	static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true, $return_detailed = false ) {
 		$reused_runtime_args = array(
 			'path',
 			'url',
@@ -391,7 +418,7 @@ class WP_CLI {
 
 		$full_command = "{$php_bin} {$script_path} {$command} {$args} {$assoc_args}";
 
-		return self::launch( $full_command, $exit_on_error );
+		return self::launch( $full_command, $exit_on_error, $return_detailed );
 	}
 
 	/**
