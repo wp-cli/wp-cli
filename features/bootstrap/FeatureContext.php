@@ -153,7 +153,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		self::run_sql( "DROP DATABASE IF EXISTS $dbname" );
 	}
 
-	public function proc( $command, $assoc_args = array() ) {
+	public function proc( $command, $assoc_args = array(), $path = '' ) {
 		if ( !empty( $assoc_args ) )
 			$command .= Utils\assoc_args_to_str( $assoc_args );
 
@@ -162,7 +162,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$env['WP_CLI_CACHE_DIR'] = $this->variables['SUITE_CACHE_DIR'];
 		}
 
-		return Process::create( $command, $this->variables['RUN_DIR'], $env );
+		$path = $this->variables['RUN_DIR'] + $path;
+		return Process::create( $command, $path, $env );
 	}
 
 	public function move_files( $src, $dest ) {
@@ -192,7 +193,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$params['dbprefix'] = $subdir ?: 'wp_';
 
 		$params['skip-salts'] = true;
-		$this->proc( 'wp core config', $params )->run_check( $subdir );
+		$this->proc( 'wp core config', $params, $subdir )->run_check();
 	}
 
 	public function install_wp( $subdir = '' ) {
@@ -210,7 +211,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			'admin_password' => 'password1'
 		);
 
-		$this->proc( 'wp core install', $install_args )->run_check( $subdir );
+		$this->proc( 'wp core install', $install_args, $subdir )->run_check();
 	}
 }
 

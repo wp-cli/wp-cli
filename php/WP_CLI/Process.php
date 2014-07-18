@@ -18,11 +18,8 @@ class Process {
 
 	private function __construct() {}
 
-	public function run( $subdir = '' ) {
+	public function run() {
 		$cwd = $this->cwd;
-		if ( $subdir ) {
-			$cwd .= '/' . $subdir;
-		}
 
 		$descriptors = array(
 			0 => STDIN,
@@ -48,8 +45,8 @@ class Process {
 		) );
 	}
 
-	public function run_check( $subdir = '' ) {
-		$r = $this->run( $subdir );
+	public function run_check() {
+		$r = $this->run();
 
 		if ( $r->return_code || !empty( $r->stderr ) ) {
 			throw new \RuntimeException( $r );
