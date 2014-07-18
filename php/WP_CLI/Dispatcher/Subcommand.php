@@ -254,8 +254,11 @@ class Subcommand extends CompositeCommand {
 
 		if ( !empty( $errors['fatal'] ) ) {
 			$out = 'Parameter errors:';
-			foreach ( $errors['fatal'] as $error ) {
-				$out .= "\n " . $error;
+			foreach ( $errors['fatal'] as $key => $error ) {
+				$out .= "\n {$error}";
+				if ( $desc = $this->docparser->get_paramdesc( $key ) ) {
+					$out .= " ({$desc})";
+				}
 			}
 
 			\WP_CLI::error( $out );
