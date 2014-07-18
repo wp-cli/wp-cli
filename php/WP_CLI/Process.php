@@ -62,11 +62,6 @@ class ProcessRun {
 	public function __construct( $props ) {
 		foreach ( $props as $key => $value ) {
 			$this->$key = $value;
-			// Backwards compat
-			if ( in_array( $key, array( 'stdout', 'stderr' ) ) ) {
-				$key = strtoupper( $key );
-				$this->$key = $value;
-			}
 		}
 	}
 
