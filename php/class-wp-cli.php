@@ -350,20 +350,20 @@ class WP_CLI {
 	 * @param bool Whether to exit if the command returns an error status
 	 * @param bool Whether to return an exit status (default) or detailed execution results
 	 *
-	 * @return int The command exit status
+	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
 	 */
 	static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 
 		$proc = Process::create( $command );
-		$results = (array)$proc->run();
+		$results = $proc->run();
 
-		if ( $results['return_code'] && $exit_on_error )
-			exit( $results['return_code'] );
+		if ( $results->return_code && $exit_on_error )
+			exit( $results->return_code );
 
 		if ( $return_detailed ) {
 			return $results;
 		} else {
-			return $results['return_code'];
+			return $results->return_code;
 		}
 	}
 
@@ -376,7 +376,7 @@ class WP_CLI {
 	 * @param bool Whether to exit if the command returns an error status
 	 * @param bool Whether to return an exit status (default) or detailed execution results
 	 *
-	 * @return int The command exit status
+	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
 	 */
 	static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true, $return_detailed = false ) {
 		$reused_runtime_args = array(
