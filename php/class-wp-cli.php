@@ -3,6 +3,7 @@
 use \WP_CLI\Utils;
 use \WP_CLI\Dispatcher;
 use \WP_CLI\FileCache;
+use \WP_CLI\Process;
 use \WP_CLI\WpHttpCacheManager;
 
 /**
@@ -353,8 +354,8 @@ class WP_CLI {
 	 */
 	static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 
-		$proc = new Process( $command );
-		$results = $proc->run();
+		$proc = Process::create( $command );
+		$results = (array)$proc->run();
 
 		if ( $results['return_code'] && $exit_on_error )
 			exit( $results['return_code'] );
