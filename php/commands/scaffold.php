@@ -42,6 +42,11 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * @alias cpt
 	 */
 	function post_type( $args, $assoc_args ) {
+
+		if ( strlen( $args[0] ) > 20 ) {
+			WP_CLI::error( "Post type slugs cannot exceed 20 characters in length." );
+		}
+
 		$defaults = array(
 			'textdomain' => '',
 		);

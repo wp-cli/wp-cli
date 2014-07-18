@@ -65,6 +65,13 @@ Feature: WordPress code scaffolding
       __( 'Zombies', 'zombieland'
       """
 
+  Scenario: CPT slug is too long
+    When I try `wp scaffold post-type slugiswaytoolonginfact`
+    Then STDERR should be:
+      """
+      Error: Post type slugs cannot exceed 20 characters in length.
+      """
+
   @cpt
   Scenario: Scaffold a Custom Post Type with label
     When I run `wp scaffold post-type zombie --label="Brain eater"`
