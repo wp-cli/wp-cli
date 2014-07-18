@@ -48,7 +48,7 @@ class Process {
 	public function run_check() {
 		$r = $this->run();
 
-		if ( $r->return_code || !empty( $r->stderr ) ) {
+		if ( $r->return_code || !empty( $r->STDERR ) ) {
 			throw new \RuntimeException( $r );
 		}
 
@@ -72,7 +72,7 @@ class ProcessRun {
 
 	public function __toString() {
 		$out  = "$ $this->command\n";
-		$out .= "$this->stdout\n$this->stderr";
+		$out .= "$this->STDOUT\n$this->STDERR";
 		$out .= "cwd: $this->cwd\n";
 		$out .= "exit status: $this->return_code";
 
