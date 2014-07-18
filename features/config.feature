@@ -185,10 +185,10 @@ Feature: Have a config file
       <?php
       define( 'FOOBUG', 'BAR' );
       """
-    And a config.yml file:
+    And a test-dir/config.yml file:
       """
       require:
-        - custom-file.php
+        - ../custom-file.php
       """
     And a wp-cli.yml file:
       """
@@ -196,5 +196,5 @@ Feature: Have a config file
         - custom-file.php
       """
 
-    When I run `WP_CLI_CONFIG_PATH=config.yml wp help`
+    When I run `WP_CLI_CONFIG_PATH=test-dir/config.yml wp help`
     Then STDERR should be empty
