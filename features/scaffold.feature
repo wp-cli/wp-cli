@@ -81,3 +81,33 @@ Feature: WordPress code scaffolding
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/hello-world/hello-world.php file should exist
     And the {PLUGIN_DIR}/hello-world/readme.txt file should exist
+
+  Scenario: Scaffold plugin tests
+    When I run `wp plugin path`
+    Then save STDOUT as {PLUGIN_DIR}
+
+    When I run `wp scaffold plugin hello-world --skip-tests`
+    Then STDOUT should not be empty
+    And the {PLUGIN_DIR}/hello-world/hello-world.php file should exist
+    And the {PLUGIN_DIR}/hello-world/readme.txt file should exist
+    And the {PLUGIN_DIR}/hello-world/tests directory should not exist
+
+    When I run `wp scaffold plugin-tests hello-world`
+    Then STDOUT should not be empty
+    And the {PLUGIN_DIR}/hello-world/tests directory should contain:
+      """
+      bootstrap.php
+      test-sample.php
+      """
+    And the {PLUGIN_DIR}/hello-world/bin directory should contain:
+      """
+      install-wp-tests.sh
+      """
+    And the {PLUGIN_DIR}/hello-world/phpunit.xml file should exist
+    And the {PLUGIN_DIR}/hello-world/.travis.yml file should exist
+
+    When I run `wp eval "if ( is_executable( '{PLUGIN_DIR}/hello-world/bin/install-wp-tests.sh' ) ) { echo 'executable'; } else { exit( 1 ); }"`
+    Then STDOUT should be:
+      """
+      executable
+      """
