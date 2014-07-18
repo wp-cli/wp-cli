@@ -64,7 +64,7 @@ class DocParser {
 	 * @param string $name Argument's doc name.
 	 * @return string
 	 */
-	public function get_argdesc( $name ) {
+	public function get_arg_desc( $name ) {
 
 		if ( preg_match( "/\[?<{$name}>.+\n: (.+?)(\n|$)/", $this->docComment, $matches ) ) {
 			return $matches[1];
@@ -80,7 +80,7 @@ class DocParser {
 	 * @param string $key Parameter's key.
 	 * @return string
 	 */
-	public function get_paramdesc( $key ) {
+	public function get_param_desc( $key ) {
 
 		if ( preg_match( "/\[?--{$key}=.+\n: (.+?)(\n|$)/", $this->docComment, $matches ) ) {
 			return $matches[1];
