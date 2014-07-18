@@ -1,5 +1,7 @@
 <?php
 
+namespace WP_CLI;
+
 class Process {
 
 	public static function create( $command, $cwd = null, $env = array() ) {

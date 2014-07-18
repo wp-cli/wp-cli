@@ -5,9 +5,11 @@ use Behat\Behat\Context\ClosuredContextInterface,
     Behat\Behat\Context\BehatContext,
     Behat\Behat\Event\SuiteEvent;
 
+use \WP_CLI\Process;
 use \WP_CLI\Utils;
 
 require_once __DIR__ . '/../../php/utils.php';
+require_once __DIR__ . '/../../php/WP_CLI/Process.php';
 
 /**
  * Features context.
