@@ -66,7 +66,7 @@ class DocParser {
 	 */
 	public function get_argdesc( $name ) {
 
-		if ( preg_match( "/\[?<{$name}>[\S]+\n: (.+?)(\n|$)/s", $this->docComment, $matches ) ) {
+		if ( preg_match( "/\[?<{$name}>.+\n: (.+?)(\n|$)/", $this->docComment, $matches ) ) {
 			return $matches[1];
 		}
 
@@ -82,7 +82,7 @@ class DocParser {
 	 */
 	public function get_paramdesc( $key ) {
 
-		if ( preg_match( "/\[?--{$key}=[\S]+\n: (.+?)(\n|$)/s", $this->docComment, $matches ) ) {
+		if ( preg_match( "/\[?--{$key}=.+\n: (.+?)(\n|$)/", $this->docComment, $matches ) ) {
 			return $matches[1];
 		}
 
