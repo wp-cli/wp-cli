@@ -96,7 +96,7 @@ $steps->Given( '/^download:$/',
 				continue;
 			}
 
-			\Process::create( \WP_CLI\Utils\esc_cmd( 'curl -sSL %s > %s', $row['url'], $path ) )->run_check();
+			Process::create( \WP_CLI\Utils\esc_cmd( 'curl -sSL %s > %s', $row['url'], $path ) )->run_check();
 		}
 	}
 );
