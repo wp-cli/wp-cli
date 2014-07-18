@@ -63,12 +63,12 @@ class SynopsisValidator {
 
 			if ( !isset( $assoc_args[ $key ] ) ) {
 				if ( !$param['optional'] ) {
-					$errors['fatal'][] = "missing --$key parameter";
+					$errors['fatal'][$key] = "missing --$key parameter";
 				}
 			} else {
 				if ( true === $assoc_args[ $key ] && !$param['value']['optional'] ) {
 					$error_type = ( !$param['optional'] ) ? 'fatal' : 'warning';
-					$errors[ $error_type ][] = "--$key parameter needs a value";
+					$errors[ $error_type ][$key] = "--$key parameter needs a value";
 
 					$to_unset[] = $key;
 				}
