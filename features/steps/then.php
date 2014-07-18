@@ -120,32 +120,47 @@ $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 	}
 );
 
-$steps->Then( '/^the (.+) file should (exist|not exist|be:|contain:|not contain:)$/',
-	function ( $world, $path, $action, $expected = null ) {
+$steps->Then( '/^the (.+) (file|directory) should (exist|not exist|be:|contain:|not contain:)$/',
+	function ( $world, $path, $type, $action, $expected = null ) {
 		$path = $world->replace_variables( $path );
 
 		// If it's a relative path, make it relative to the current test dir
 		if ( '/' !== $path[0] )
 			$path = $world->variables['RUN_DIR'] . "/$path";
 
+		if ( 'file' == $type ) {
+			$test = 'file_exists';
+		} else if ( 'directory' == $type ) {
+			$test = 'is_dir';
+		}
+
 		switch ( $action ) {
 		case 'exist':
-			if ( !file_exists( $path ) ) {
+			if ( ! $test( $path ) ) {
 				throw new Exception( $world->result );
 			}
 			break;
 		case 'not exist':
-			if ( file_exists( $path ) ) {
+			if ( $test( $path ) ) {
 				throw new Exception( $world->result );
 			}
 			break;
 		default:
-			if ( !file_exists( $path ) ) {
+			if ( ! $test( $path ) ) {
 				throw new Exception( "$path doesn't exist." );
 			}
 			$action = substr( $action, 0, -1 );
 			$expected = $world->replace_variables( (string) $expected );
-			checkString( file_get_contents( $path ), $expected, $action );
+			if ( 'file' == $type ) {
+				$contents = file_get_contents( $path );
+			} else if ( 'directory' == $type ) {
+				$files = glob( rtrim( $path, '/' ) . '/*' );
+				foreach( $files as &$file ) {
+					$file = str_replace( $path . '/', '', $file );
+				}
+				$contents = implode( PHP_EOL, $files );
+			}
+			checkString( $contents, $expected, $action );
 		}
 	}
 );
