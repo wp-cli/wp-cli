@@ -57,5 +57,36 @@ class DocParser {
 
 		return $matches[1];
 	}
+
+	/**
+	 * Get the description for a given argument.
+	 *
+	 * @param string $name Argument's doc name.
+	 * @return string
+	 */
+	public function get_arg_desc( $name ) {
+
+		if ( preg_match( "/\[?<{$name}>.+\n: (.+?)(\n|$)/", $this->docComment, $matches ) ) {
+			return $matches[1];
+		}
+
+		return '';
+
+	}
+
+	/**
+	 * Get the description for a given parameter.
+	 *
+	 * @param string $key Parameter's key.
+	 * @return string
+	 */
+	public function get_param_desc( $key ) {
+
+		if ( preg_match( "/\[?--{$key}=.+\n: (.+?)(\n|$)/", $this->docComment, $matches ) ) {
+			return $matches[1];
+		}
+
+		return '';
+	}
 }
 

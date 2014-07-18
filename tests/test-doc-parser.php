@@ -50,8 +50,14 @@ EOB
  *
  * ## OPTIONS
  *
+ * <genre>...
+ * : Start with one or more genres.
+ *
  * --volume=<number>
  * : Sets the volume.
+ *
+ * --artist=<artist-name>
+ * : Limit to a specific artist.
  *
  * ## EXAMPLES
  *
@@ -65,13 +71,21 @@ EOB
 
 		$this->assertEquals( 'Rock and roll!', $doc->get_shortdesc() );
 		$this->assertEquals( '[--volume=<number>]', $doc->get_synopsis() );
+		$this->assertEquals( 'Start with one or more genres.', $doc->get_arg_desc( 'genre' ) );
+		$this->assertEquals( 'Sets the volume.', $doc->get_param_desc( 'volume' ) );
 		$this->assertEquals( 'rock-on', $doc->get_tag('alias') );
 
 		$longdesc = <<<EOB
 ## OPTIONS
 
+<genre>...
+: Start with one or more genres.
+
 --volume=<number>
 : Sets the volume.
+
+--artist=<artist-name>
+: Limit to a specific artist.
 
 ## EXAMPLES
 
