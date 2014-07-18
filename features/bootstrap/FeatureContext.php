@@ -26,6 +26,20 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	public $variables = array();
 
+	/**
+	 * Get the environment variables required for launched `wp` processes
+	 * @beforeSuite
+	 */
+	private static function get_process_env_variables() {
+		// Ensure we're using the expected `wp` binary
+		$bin_dir = getenv( 'WP_CLI_BIN_DIR' ) ?: realpath( __DIR__ . "/../../bin" );
+		$env = array(
+			'PATH' =>  $bin_dir . ':' . getenv( 'PATH' ),
+			'BEHAT_RUN' => 1
+		);
+		return $env;
+	}
+
 	// We cache the results of `wp core download` to improve test performance
 	// Ideally, we'd cache at the HTTP layer for more reliable tests
 	private static function cache_wp_files() {
@@ -35,7 +49,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			return;
 
 		$cmd = Utils\esc_cmd( 'wp core download --force --path=%s', self::$cache_dir );
-		Process::create( $cmd )->run_check();
+		Process::create( $cmd, null, self::get_process_env_variables() )->run_check();
 	}
 
 	/**
@@ -50,7 +64,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 */
 	public static function afterSuite( SuiteEvent $event ) {
 		if ( self::$suite_cache_dir ) {
-			Process::create( Utils\esc_cmd( 'rm -r %s', self::$suite_cache_dir ) )->run();
+			Process::create( Utils\esc_cmd( 'rm -r %s', self::$suite_cache_dir ), null, self::get_process_env_variables() )->run();
 		}
 	}
 
@@ -63,7 +77,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		// remove altered WP install, unless there's an error
 		if ( $event->getResult() < 4 ) {
-			Process::create( Utils\esc_cmd( 'rm -r %s', $this->variables['RUN_DIR'] ) )->run();
+			Process::create( Utils\esc_cmd( 'rm -r %s', $this->variables['RUN_DIR'] ), null, self::get_process_env_variables() )->run();
 		}
 	}
 
@@ -116,7 +130,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	private function set_cache_dir() {
 		$path = sys_get_temp_dir() . '/wp-cli-test-cache';
-		Process::create( Utils\esc_cmd( 'mkdir -p %s', $path ) )->run_check();
+		Process::create( Utils\esc_cmd( 'mkdir -p %s', $path ), null, self::get_process_env_variables() )->run_check();
 		$this->variables['CACHE_DIR'] = $path;
 	}
 
@@ -143,7 +157,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( !empty( $assoc_args ) )
 			$command .= Utils\assoc_args_to_str( $assoc_args );
 
-		$env = array();
+		$env = self::get_process_env_variables();
 		if ( isset( $this->variables['SUITE_CACHE_DIR'] ) ) {
 			$env['WP_CLI_CACHE_DIR'] = $this->variables['SUITE_CACHE_DIR'];
 		}
@@ -166,7 +180,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		if ( $subdir ) mkdir( $dest_dir );
 
-		Process::create( Utils\esc_cmd( "cp -r %s/* %s", self::$cache_dir, $dest_dir ) )->run_check();
+		Process::create( Utils\esc_cmd( "cp -r %s/* %s", self::$cache_dir, $dest_dir ), null, self::get_process_env_variables() )->run_check();
 
 		// disable emailing
 		mkdir( $dest_dir . '/wp-content/mu-plugins' );
