@@ -29,15 +29,15 @@ class Process {
 
 		$proc = proc_open( $this->command, $descriptors, $pipes, $cwd, $this->env );
 
-		$stdout = stream_get_contents( $pipes[1] );
+		$STDOUT = stream_get_contents( $pipes[1] );
 		fclose( $pipes[1] );
 
-		$stderr = stream_get_contents( $pipes[2] );
+		$STDERR = stream_get_contents( $pipes[2] );
 		fclose( $pipes[2] );
 
 		return new ProcessRun( array(
-			'stdout' => $stdout,
-			'stderr' => $stderr,
+			'STDOUT' => $STDOUT,
+			'STDERR' => $STDERR,
 			'return_code' => proc_close( $proc ),
 			'command' => $this->command,
 			'cwd' => $cwd,
