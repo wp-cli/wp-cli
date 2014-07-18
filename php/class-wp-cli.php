@@ -353,35 +353,16 @@ class WP_CLI {
 	 */
 	static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 
+		$proc = new Process( $command );
+		$results = $proc->run();
+
+		if ( $results['return_code'] && $exit_on_error )
+			exit( $results['return_code'] );
+
 		if ( $return_detailed ) {
-			$descriptorspec = array(
-				0 => array( 'file', 'php://stdin', 'r' ),
-				1 => array( 'pipe', 'w' ),
-				2 => array( 'pipe', 'w' ),
-			);
+			return $results;
 		} else {
-			$descriptorspec = array( STDIN, STDOUT, STDERR );
-		}
-
-		$process = proc_open( $command, $descriptorspec, $pipes );
-
-		if ( $return_detailed ) {
-			$ret_val = array(
-				'stdout'     => stream_get_contents( $pipes[1] ),
-				'stderr'     => stream_get_contents( $pipes[2] ),
-				);
-		}
-
-		$r = proc_close( $process );
-
-		if ( $r && $exit_on_error )
-			exit($r);
-
-		if ( $return_detailed ) {
-			$ret_val['exit_status'] = $r;
-			return $ret_val;
-		} else {
-			return $r;
+			return $results['return_code'];
 		}
 	}
 
