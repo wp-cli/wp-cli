@@ -397,6 +397,11 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		foreach ( $to_copy as $file => $dir ) {
 			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", "$dir/$file", true );
+			if ( 'install-wp-tests.sh' === $file ) {
+				if ( ! $wp_filesystem->chmod( "$dir/$file", '0755' ) ) {
+					WP_CLI::warning( "Couldn't mark install-wp-tests.sh as executable." );
+				}
+			}
 		}
 
 		WP_CLI::success( "Created test files." );
