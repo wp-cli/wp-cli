@@ -153,7 +153,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		self::run_sql( "DROP DATABASE IF EXISTS $dbname" );
 	}
 
-	public function proc( $command, $assoc_args = array(), $path = null ) {
+	public function proc( $command, $assoc_args = array(), $path = '' ) {
 		if ( !empty( $assoc_args ) )
 			$command .= Utils\assoc_args_to_str( $assoc_args );
 
@@ -162,12 +162,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$env['WP_CLI_CACHE_DIR'] = $this->variables['SUITE_CACHE_DIR'];
 		}
 
-		if ( $path ) {
-			$path = rtrim( $this->variables['RUN_DIR'], '/' ) . '/' . $path;
-		} else {
-			$path = $this->variables['RUN_DIR'];
-		}
-
+		$path = "{$this->variables['RUN_DIR']}/{$path}";
 		return Process::create( $command, $path, $env );
 	}
 
