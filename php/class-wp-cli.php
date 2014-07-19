@@ -3,6 +3,7 @@
 use \WP_CLI\Utils;
 use \WP_CLI\Dispatcher;
 use \WP_CLI\FileCache;
+use \WP_CLI\Process;
 use \WP_CLI\WpHttpCacheManager;
 
 /**
@@ -347,16 +348,23 @@ class WP_CLI {
 	 *
 	 * @param string Command to call
 	 * @param bool Whether to exit if the command returns an error status
+	 * @param bool Whether to return an exit status (default) or detailed execution results
 	 *
-	 * @return int The command exit status
+	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
 	 */
-	static function launch( $command, $exit_on_error = true ) {
-		$r = proc_close( proc_open( $command, array( STDIN, STDOUT, STDERR ), $pipes ) );
+	static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 
-		if ( $r && $exit_on_error )
-			exit($r);
+		$proc = Process::create( $command );
+		$results = $proc->run();
 
-		return $r;
+		if ( $results->return_code && $exit_on_error )
+			exit( $results->return_code );
+
+		if ( $return_detailed ) {
+			return $results;
+		} else {
+			return $results->return_code;
+		}
 	}
 
 	/**
@@ -366,10 +374,11 @@ class WP_CLI {
 	 * @param array $args Positional arguments to use
 	 * @param array $assoc_args Associative arguments to use
 	 * @param bool Whether to exit if the command returns an error status
+	 * @param bool Whether to return an exit status (default) or detailed execution results
 	 *
-	 * @return int The command exit status
+	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
 	 */
-	static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true ) {
+	static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true, $return_detailed = false ) {
 		$reused_runtime_args = array(
 			'path',
 			'url',
@@ -391,7 +400,7 @@ class WP_CLI {
 
 		$full_command = "{$php_bin} {$script_path} {$command} {$args} {$assoc_args}";
 
-		return self::launch( $full_command, $exit_on_error );
+		return self::launch( $full_command, $exit_on_error, $return_detailed );
 	}
 
 	/**
