@@ -4,14 +4,14 @@ use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode,
     WP_CLI\Process;
 
-function invoke_proc( $proc, $mode, $subdir = null ) {
+function invoke_proc( $proc, $mode ) {
 	$map = array(
 		'run' => 'run_check',
 		'try' => 'run'
 	);
 	$method = $map[ $mode ];
 
-	return $proc->$method( $subdir );
+	return $proc->$method();
 }
 
 $steps->When( '/^I (run|try) `([^`]+)`$/',
@@ -24,7 +24,7 @@ $steps->When( '/^I (run|try) `([^`]+)`$/',
 $steps->When( "/^I (run|try) `([^`]+)` from '([^\s]+)'$/",
 	function ( $world, $mode, $cmd, $subdir ) {
 		$cmd = $world->replace_variables( $cmd );
-		$world->result = invoke_proc( $world->proc( $cmd ), $mode, $subdir );
+		$world->result = invoke_proc( $world->proc( $cmd, array(), $subdir ), $mode );
 	}
 );
 
