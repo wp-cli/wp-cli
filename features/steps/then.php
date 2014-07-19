@@ -42,7 +42,7 @@ $steps->Then( '/^(STDOUT|STDERR) should not be a number$/',
 
 $steps->Then( '/^STDOUT should be a table containing rows:$/',
 	function ( $world, TableNode $expected ) {
-		$output      = $world->result->STDOUT;
+		$output      = $world->result->stdout;
 		$actual_rows = explode( "\n", rtrim( $output, "\n" ) );
 
 		$expected_rows = array();
@@ -56,7 +56,7 @@ $steps->Then( '/^STDOUT should be a table containing rows:$/',
 
 $steps->Then( '/^STDOUT should end with a table containing rows:$/',
 	function ( $world, TableNode $expected ) {
-		$output      = $world->result->STDOUT;
+		$output      = $world->result->stdout;
 		$actual_rows = explode( "\n", rtrim( $output, "\n" ) );
 
 		$expected_rows = array();
@@ -75,7 +75,7 @@ $steps->Then( '/^STDOUT should end with a table containing rows:$/',
 
 $steps->Then( '/^STDOUT should be JSON containing:$/',
 	function ( $world, PyStringNode $expected ) {
-		$output = $world->result->STDOUT;
+		$output = $world->result->stdout;
 		$expected = $world->replace_variables( (string) $expected );
 
 		if ( !checkThatJsonStringContainsJsonString( $output, $expected ) ) {
@@ -85,7 +85,7 @@ $steps->Then( '/^STDOUT should be JSON containing:$/',
 
 $steps->Then( '/^STDOUT should be a JSON array containing:$/',
 	function ( $world, PyStringNode $expected ) {
-		$output = $world->result->STDOUT;
+		$output = $world->result->stdout;
 		$expected = $world->replace_variables( (string) $expected );
 
 		$actualValues = json_decode( $output );
@@ -99,7 +99,7 @@ $steps->Then( '/^STDOUT should be a JSON array containing:$/',
 
 $steps->Then( '/^STDOUT should be CSV containing:$/',
 	function ( $world, TableNode $expected ) {
-		$output = $world->result->STDOUT;
+		$output = $world->result->stdout;
 
 		$expected_rows = $expected->getRows();
 		foreach ( $expected as &$row ) {
