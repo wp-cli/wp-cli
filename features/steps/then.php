@@ -13,6 +13,9 @@ $steps->Then( '/^the return code should be (\d+)$/',
 
 $steps->Then( '/^(STDOUT|STDERR) should (be|contain|not contain):$/',
 	function ( $world, $stream, $action, PyStringNode $expected ) {
+
+		$stream = strtolower( $stream );
+
 		$expected = $world->replace_variables( (string) $expected );
 
 		checkString( $world->result->$stream, $expected, $action, $world->result );
@@ -21,12 +24,18 @@ $steps->Then( '/^(STDOUT|STDERR) should (be|contain|not contain):$/',
 
 $steps->Then( '/^(STDOUT|STDERR) should be a number$/',
 	function ( $world, $stream ) {
+
+		$stream = strtolower( $stream );
+
 		assertNumeric( trim( $world->result->$stream, "\n" ) );
 	}
 );
 
 $steps->Then( '/^(STDOUT|STDERR) should not be a number$/',
 	function ( $world, $stream ) {
+
+		$stream = strtolower( $stream );
+
 		assertNotNumeric( trim( $world->result->$stream, "\n" ) );
 	}
 );
@@ -106,6 +115,9 @@ $steps->Then( '/^STDOUT should be CSV containing:$/',
 
 $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 	function ( $world, $stream ) {
+
+		$stream = strtolower( $stream );
+
 		if ( !empty( $world->result->$stream ) ) {
 			throw new \Exception( $world->result );
 		}
@@ -114,6 +126,9 @@ $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 
 $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 	function ( $world, $stream ) {
+
+		$stream = strtolower( $stream );
+
 		if ( '' === rtrim( $world->result->$stream, "\n" ) ) {
 			throw new Exception( $world->result );
 		}
