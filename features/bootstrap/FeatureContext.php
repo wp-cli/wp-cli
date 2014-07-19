@@ -184,7 +184,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function download_wp( $subdir = '' ) {
 		$dest_dir = $this->variables['RUN_DIR'] . "/$subdir";
 
-		if ( $subdir ) mkdir( $dest_dir );
+		if ( $subdir ) {
+			mkdir( $dest_dir );
+		}
 
 		Process::create( Utils\esc_cmd( "cp -r %s/* %s", self::$cache_dir, $dest_dir ), null, self::get_process_env_variables() )->run_check();
 
