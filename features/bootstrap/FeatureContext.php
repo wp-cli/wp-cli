@@ -163,7 +163,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		}
 
 		if ( $path ) {
-			$path = $this->variables['RUN_DIR'] + $path;
+			$path = rtrim( $this->variables['RUN_DIR'], '/' ) . '/' . $path;
 		} else {
 			$path = $this->variables['RUN_DIR'];
 		}
