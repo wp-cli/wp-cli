@@ -4,6 +4,8 @@ namespace WP_CLI;
 
 /**
  * Generate a synopsis from a command's PHPdoc arguments.
+ * Turns something like "<object-id>..."
+ * into [ optional=>false, type=>positional, repeating=>true, name=>object-id ]
  */
 class SynopsisParser {
 
