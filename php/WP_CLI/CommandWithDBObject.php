@@ -9,8 +9,19 @@ namespace WP_CLI;
  */
 abstract class CommandWithDBObject extends \WP_CLI_Command {
 
+	/**
+	 * @param string $object_type WordPress' expected name for the object.
+	 */
 	protected $obj_type;
+
+	/**
+	 * @param string $obj_id_key Key representing object's PK field in db.
+	 */
 	protected $obj_id_key = 'ID';
+
+	/**
+	 * @param array $obj_fields Default fields to display for each object.
+	 */
 	protected $obj_fields = null;
 
 	/**
