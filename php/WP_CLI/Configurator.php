@@ -10,17 +10,17 @@ namespace WP_CLI;
 class Configurator {
 
 	/**
-	 * @param array $spec Configurator argument specification.
+	 * @var array $spec Configurator argument specification.
 	 */
 	private $spec;
 
 	/**
-	 * @param array $config Values for keys defined in Configurator spec.
+	 * @var array $config Values for keys defined in Configurator spec.
 	 */
 	private $config = array();
 
 	/**
-	 * @param array $extra_config Extra config values not specified in spec.
+	 * @var array $extra_config Extra config values not specified in spec.
 	 */
 	private $extra_config = array();
 

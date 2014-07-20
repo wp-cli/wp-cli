@@ -9,7 +9,7 @@ namespace WP_CLI;
 class DocParser {
 
 	/**
-	 * @param string $docComment PHPdoc command for the command.
+	 * @var string $docComment PHPdoc command for the command.
 	 */
 	protected $docComment;
 
