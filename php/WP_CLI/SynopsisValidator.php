@@ -7,18 +7,35 @@ namespace WP_CLI;
  */
 class SynopsisValidator {
 
+	/**
+	 * @var array $spec Structured representation of command synopsis.
+	 */
 	private $spec = array();
 
+	/**
+	 * @param string $synopsis Command's synopsis.
+	 */
 	public function __construct( $synopsis ) {
 		$this->spec = SynopsisParser::parse( $synopsis );
 	}
 
+	/**
+	 * Get any unknown arugments.
+	 *
+	 * @return array
+	 */
 	public function get_unknown() {
 		return array_column( $this->query_spec( array(
 			'type' => 'unknown',
 		) ), 'token' );
 	}
 
+	/**
+	 * Check whether there are enough positional arguments.
+	 *
+	 * @param array $args Positional arguments.
+	 * @return bool
+	 */
 	public function enough_positionals( $args ) {
 		$positional = $this->query_spec( array(
 			'type' => 'positional',
@@ -28,12 +45,19 @@ class SynopsisValidator {
 		return count( $args ) >= count( $positional );
 	}
 
+	/**
+	 * Check for any unknown positionals.
+	 *
+	 * @param array $args Positional arguments.
+	 * @return array
+	 */
 	public function unknown_positionals( $args ) {
 		$positional_repeating = $this->query_spec( array(
 			'type' => 'positional',
 			'repeating' => true,
 		) );
 
+		// At least one positional supports as many as possible.
 		if ( !empty( $positional_repeating ) )
 			return array();
 
@@ -45,7 +69,12 @@ class SynopsisValidator {
 		return array_slice( $args, count( $positional ) );
 	}
 
-	// Checks that all required keys are present and that they have values.
+	/**
+	 * Check that all required keys are present and that they have values.
+	 *
+	 * @param array $assoc_args Parameters passed to command.
+	 * @return array
+	 */
 	public function validate_assoc( $assoc_args ) {
 		$assoc_spec = $this->query_spec( array(
 			'type' => 'assoc',
@@ -78,6 +107,12 @@ class SynopsisValidator {
 		return array( $errors, $to_unset );
 	}
 
+	/**
+	 * Check whether there are unknown parameters supplied.
+	 *
+	 * @param array $assoc_args Parameters passed to command.
+	 * @return array|false
+	 */
 	public function unknown_assoc( $assoc_args ) {
 		$generic = $this->query_spec( array(
 			'type' => 'generic',
@@ -124,5 +159,5 @@ class SynopsisValidator {
 
 		return $filtered;
 	}
-}
 
+}
