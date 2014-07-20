@@ -2,8 +2,16 @@
 
 namespace WP_CLI;
 
+/**
+ * Run a system process, and learn what happened.
+ */
 class Process {
 
+	/**
+	 * @param string $command Command to execute.
+	 * @param string $cwd Directory to execute the command in.
+	 * @param array $env Environment variables to set when running the command.
+	 */
 	public static function create( $command, $cwd = null, $env = array() ) {
 		$proc = new self;
 
@@ -18,6 +26,11 @@ class Process {
 
 	private function __construct() {}
 
+	/**
+	 * Run the command.
+	 *
+	 * @return ProcessRun
+	 */
 	public function run() {
 		$cwd = $this->cwd;
 
@@ -45,6 +58,11 @@ class Process {
 		) );
 	}
 
+	/**
+	 * Run the command, but throw an Exception on error.
+	 *
+	 * @return ProcessRun
+	 */
 	public function run_check() {
 		$r = $this->run();
 
@@ -56,15 +74,25 @@ class Process {
 	}
 }
 
-
+/**
+ * Results of an executed command.
+ */
 class ProcessRun {
 
+	/**
+	 * @var array $props Properties of executed command.
+	 */
 	public function __construct( $props ) {
 		foreach ( $props as $key => $value ) {
 			$this->$key = $value;
 		}
 	}
 
+	/**
+	 * Return properties of executed command as a string.
+	 *
+	 * @return string
+	 */
 	public function __toString() {
 		$out  = "$ $this->command\n";
 		$out .= "$this->stdout\n$this->stderr";
@@ -73,5 +101,5 @@ class ProcessRun {
 
 		return $out;
 	}
-}
 
+}

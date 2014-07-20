@@ -2,22 +2,45 @@
 
 namespace WP_CLI\Loggers;
 
+/**
+ * Quiet logger only logs errors.
+ */
 class Quiet {
 
-	function info( $message ) {
+	/**
+	 * Informational messages aren't logged.
+	 *
+	 * @param string $message Message to write.
+	 */
+	public function info( $message ) {
 		// nothing
 	}
 
-	function success( $message ) {
+	/**
+	 * Success messages aren't logged.
+	 *
+	 * @param string $message Message to write.
+	 */
+	public function success( $message ) {
 		// nothing
 	}
 
-	function warning( $message ) {
+	/**
+	 * Warning messages aren't logged.
+	 *
+	 * @param string $message Message to write.
+	 */
+	public function warning( $message ) {
 		// nothing
 	}
 
-	function error( $message ) {
+	/**
+	 * Write an error message to STDERR, prefixed with "Error: ".
+	 *
+	 * @param string $message Message to write.
+	 */
+	public function error( $message ) {
 		fwrite( STDERR, \WP_CLI::colorize( "%RError:%n $message\n" ) );
 	}
-}
 
+}
