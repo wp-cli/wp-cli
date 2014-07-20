@@ -112,7 +112,7 @@ class Configurator {
 		return array( $assoc_args, $runtime_config );
 	}
 
-	function merge_yml( $path ) {
+	public function merge_yml( $path ) {
 		foreach ( self::load_yml( $path ) as $key => $value ) {
 			if ( !isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
 				$this->extra_config[ $key ] = $value;
@@ -125,7 +125,7 @@ class Configurator {
 		}
 	}
 
-	function merge_array( $config ) {
+	public function merge_array( $config ) {
 		foreach ( $this->spec as $key => $details ) {
 			if ( false !== $details['runtime'] && isset( $config[ $key ] ) ) {
 				$value = $config[ $key ];
