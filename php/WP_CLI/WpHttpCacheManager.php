@@ -16,6 +16,7 @@ class WpHttpCacheManager {
 	 * @var array map whitelisted urls to keys and ttls
 	 */
 	protected $whitelist = array();
+
 	/**
 	 * @var FileCache
 	 */
@@ -31,7 +32,6 @@ class WpHttpCacheManager {
 		add_filter( 'pre_http_request', array($this, 'filter_pre_http_request'), 10, 3 );
 		add_filter( 'http_response', array($this, 'filter_http_response'), 10, 3 );
 	}
-
 
 	/**
 	 * short circuit wp http api with cached file
@@ -65,6 +65,10 @@ class WpHttpCacheManager {
 
 	/**
 	 * cache wp http api downloads
+	 *
+	 * @param array $response
+	 * @param array $args
+	 * @param string $url
 	 */
 	public function filter_http_response( $response, $args, $url ) {
 		// check if whitelisted
@@ -121,4 +125,5 @@ class WpHttpCacheManager {
 	public function is_whitelisted( $url ) {
 		return isset( $this->whitelist[$url] );
 	}
+
 }
