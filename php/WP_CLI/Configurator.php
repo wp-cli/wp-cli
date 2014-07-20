@@ -9,11 +9,24 @@ namespace WP_CLI;
  */
 class Configurator {
 
+	/**
+	 * @param array $spec Configurator argument specification.
+	 */
 	private $spec;
 
+	/**
+	 * @param array $config Values for keys defined in Configurator spec.
+	 */
 	private $config = array();
+
+	/**
+	 * @param array $extra_config Extra config values not specified in spec.
+	 */
 	private $extra_config = array();
 
+	/**
+	 * @param string $path Path to config spec file.
+	 */
 	function __construct( $path ) {
 		$this->spec = include $path;
 
@@ -86,6 +99,12 @@ class Configurator {
 		return array( $positional_args, $assoc_args );
 	}
 
+	/**
+	 * Separate runtime parameters from command-specific parameters.
+	 *
+	 * @param array $mixed_args
+	 * @return array
+	 */
 	private function unmix_assoc_args( $mixed_args ) {
 		$assoc_args = $runtime_config = array();
 
@@ -112,6 +131,11 @@ class Configurator {
 		return array( $assoc_args, $runtime_config );
 	}
 
+	/**
+	 * Load a YAML file of parameters into scope.
+	 *
+	 * @param string $path Path to YAML file.
+	 */
 	public function merge_yml( $path ) {
 		foreach ( self::load_yml( $path ) as $key => $value ) {
 			if ( !isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
@@ -125,6 +149,11 @@ class Configurator {
 		}
 	}
 
+	/**
+	 * Merge an array of values into the configurator config.
+	 *
+	 * @param array $config
+	 */
 	public function merge_array( $config ) {
 		foreach ( $this->spec as $key => $details ) {
 			if ( false !== $details['runtime'] && isset( $config[ $key ] ) ) {
@@ -179,10 +208,16 @@ class Configurator {
 		}
 	}
 
+	/**
+	 * Make a path absolute.
+	 *
+	 * @param string $path Path to file.
+	 * @param string $base Base path to prepend.
+	 */
 	private static function absolutize( &$path, $base ) {
 		if ( !empty( $path ) && !\WP_CLI\Utils\is_path_absolute( $path ) ) {
 			$path = $base . DIRECTORY_SEPARATOR . $path;
 		}
 	}
-}
 
+}
