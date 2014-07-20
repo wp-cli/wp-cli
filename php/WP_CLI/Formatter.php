@@ -2,11 +2,26 @@
 
 namespace WP_CLI;
 
+/**
+ * Output one or more items in a given format (e.g. table, JSON).
+ */
 class Formatter {
 
+	/**
+	 * @var array $args How the items should be output.
+	 */
 	private $args;
+
+	/**
+	 * @var string $prefix Standard prefix for object fields.
+	 */
 	private $prefix;
 
+	/**
+	 * @param array $assoc_args Output format arguments.
+	 * @param array $fields Fields to display of each item.
+	 * @param string $prefix Check if fields have a standard prefix.
+	 */
 	public function __construct( &$assoc_args, $fields = null, $prefix = false ) {
 		$format_args = array(
 			'format' => 'table',
@@ -29,10 +44,21 @@ class Formatter {
 		$this->prefix = $prefix;
 	}
 
+	/**
+	 * Magic getter for arguments.
+	 *
+	 * @param string $key
+	 * @return mixed
+	 */
 	public function __get( $key ) {
 		return $this->args[ $key ];
 	}
 
+	/**
+	 * Display multiple items according to the output arguments.
+	 *
+	 * @param array $items
+	 */
 	public function display_items( $items ) {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
@@ -50,6 +76,11 @@ class Formatter {
 		}
 	}
 
+	/**
+	 * Display a single item according to the output arguments.
+	 *
+	 * @param mixed $item
+	 */
 	public function display_item( $item ) {
 		if ( isset( $this->args['field'] ) ) {
 			$item = (object) $item;
@@ -60,6 +91,11 @@ class Formatter {
 		}
 	}
 
+	/**
+	 * Format items according to arguments.
+	 *
+	 * @param array $items
+	 */
 	private function format( $items ) {
 		$fields = $this->args['fields'];
 
@@ -129,6 +165,14 @@ class Formatter {
 		}
 	}
 
+	/**
+	 * Find an object's key.
+	 * If $prefix is set, a key with that prefix will be prioritized.
+	 *
+	 * @param object $item
+	 * @param string $field
+	 * @return string $key
+	 */
 	private function find_item_key( $item, $field ) {
 		foreach ( array( $field, $this->prefix . '_' . $field ) as $maybe_key ) {
 			if ( ( is_object( $item ) && isset( $item->$maybe_key ) ) || ( is_array( $item ) && isset( $item[$maybe_key] ) ) ) {
@@ -170,6 +214,12 @@ class Formatter {
 
 	}
 
+	/**
+	 * Show items in a \cli\Table.
+	 *
+	 * @param array $items
+	 * @param array $fields
+	 */
 	private static function show_table( $items, $fields ) {
 		$table = new \cli\Table();
 
@@ -183,7 +233,7 @@ class Formatter {
 	}
 
 	/**
-	 * Format an associative array as a table
+	 * Format an associative array as a table.
 	 *
 	 * @param array     $fields    Fields and values to format
 	 */
@@ -203,5 +253,5 @@ class Formatter {
 
 		self::show_table( $rows, array( 'Field', 'Value' ) );
 	}
-}
 
+}
