@@ -218,7 +218,7 @@ class Core_Command extends WP_CLI_Command {
 	 * : Set the WPLANG constant. Defaults to $wp_local_package variable.
 	 *
 	 * [--extra-php]
-	 * : If set, the command reads additional PHP code from STDIN.
+	 * : If set, the command copies additional PHP code into wp-config.php from STDIN.
 	 *
 	 * [--skip-salts]
 	 * : If set, keys and salts won't be generated, but should instead be passed via `--extra-php`.
