@@ -494,6 +494,12 @@ class Core_Command extends WP_CLI_Command {
 		}
 		// @codingStandardsIgnoreEnd
 
+		// Confirm the uploads directory exists
+		$upload_dir = wp_upload_dir();
+		if ( ! empty( $upload_dir['error'] ) ) {
+			WP_CLI::warning( $upload_dir['error'] );
+		}
+
 		return true;
 	}
 
