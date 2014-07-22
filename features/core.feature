@@ -153,6 +153,7 @@ Feature: Manage WordPress installation
 
     When I run `wp core is-installed`
     Then STDOUT should be empty
+    And the wp-content/uploads directory should exist
 
     When I run `wp eval 'var_export( is_admin() );'`
     Then STDOUT should be:
