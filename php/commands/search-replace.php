@@ -40,6 +40,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--recurse-objects]
 	 * : Enable recursing into objects to replace strings
 	 *
+	 * [--quiet]
+	 * : Suppress show table of results
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
@@ -52,6 +55,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$total = 0;
 		$report = array();
 		$dry_run = isset( $assoc_args['dry-run'] );
+		$quiet = isset( $assoc_args['quiet'] );
 		$recurse_objects = isset( $assoc_args['recurse-objects'] );
 
 		if ( isset( $assoc_args['skip-columns'] ) )
@@ -85,11 +89,12 @@ class Search_Replace_Command extends WP_CLI_Command {
 				$total += $count;
 			}
 		}
-
-		$table = new \cli\Table();
-		$table->setHeaders( array( 'Table', 'Column', 'Replacements' ) );
-		$table->setRows( $report );
-		$table->display();
+		if( !$quiet ){
+			$table = new \cli\Table();
+			$table->setHeaders( array( 'Table', 'Column', 'Replacements' ) );
+			$table->setRows( $report );
+			$table->display();
+		}
 
 		if ( !$dry_run )
 			WP_CLI::success( "Made $total replacements." );
