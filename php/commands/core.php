@@ -681,7 +681,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		$response = self::_request( 'GET', $url, $headers, $options );
 
 		if ( $ssl && ! $response->success ) {
-			trigger_error( __( '(WordPress could not establish a secure connection to WordPress.org. Please contact your server administrator.)' ), headers_sent() || WP_DEBUG ? E_USER_WARNING : E_USER_NOTICE );
+			WP_CLI::warning( 'wp-cli could not establish a secure connection to WordPress.org. Please contact your server administrator.' );
 			$response = self::_request( 'GET', $http_url, $headers, $options );
 		}
 
