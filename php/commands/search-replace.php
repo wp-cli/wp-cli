@@ -37,8 +37,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--dry-run]
 	 * : Show report, but don't perform the changes.
 	 *
-	 * [--safe]
-	 * : Use only serialization safe replacement method.
+	 * [--precise]
+	 * : Force the use of PHP (instead of SQL) which is more thorough, but slower. Use if you see issues with serialized data.
 	 *
 	 * [--recurse-objects]
 	 * : Enable recursing into objects to replace strings
@@ -56,7 +56,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$total = 0;
 		$report = array();
 		$dry_run = isset( $assoc_args['dry-run'] );
-		$safe_only = isset( $assoc_args['safe'] );
+		$php_only = isset( $assoc_args['precise'] );
 		$recurse_objects = isset( $assoc_args['recurse-objects'] );
 
 		if ( isset( $assoc_args['skip-columns'] ) )
@@ -79,34 +79,31 @@ class Search_Replace_Command extends WP_CLI_Command {
 				continue;
 			}
 
-			// Can we do everything with a fast replace?
-			$fast_only = ( ! $safe_only && mb_strlen( $old ) === mb_strlen( $new ) );
-
 			foreach ( $columns as $col ) {
 				if ( in_array( $col, $skip_columns ) ) {
 					continue;
 				}
 
-				if ( ! $safe_only && ! $fast_only ) {
+				if ( ! $php_only ) {
 					$serialRow = $wpdb->get_row( "SELECT * FROM `$table` WHERE `$col` REGEXP '^[aiO]:[1-9]' LIMIT 1" );
 				}
 
-				if ( $safe_only || ( ! $fast_only && NULL !== $serialRow ) ) {
-					$fast = 'No';
-					$count = self::handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects );
+				if ( $php_only || NULL !== $serialRow ) {
+					$type = 'PHP';
+					$count = self::php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects );
 				} else {
-					$fast = 'Yes';
-					$count = self::fast_handle_col( $col, $table, $old, $new, $dry_run );
+					$type = 'SQL';
+					$count = self::sql_handle_col( $col, $table, $old, $new, $dry_run );
 				}
 
-				$report[] = array( $table, $col, $count, $fast );
+				$report[] = array( $table, $col, $count, $type );
 
 				$total += $count;
 			}
 		}
 
 		$table = new \cli\Table();
-		$table->setHeaders( array( 'Table', 'Column', 'Replacements', 'Fast Replace' ) );
+		$table->setHeaders( array( 'Table', 'Column', 'Replacements', 'Type' ) );
 		$table->setRows( $report );
 		$table->display();
 
@@ -125,7 +122,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		return $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", like_escape( $prefix ) . '%' ) );
 	}
 
-	private static function fast_handle_col( $col, $table, $old, $new, $dry_run ) {
+	private static function sql_handle_col( $col, $table, $old, $new, $dry_run ) {
 		global $wpdb;
 
 		if ( $dry_run ) {
@@ -135,7 +132,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 	}
 
-	private static function handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects ) {
+	private static function php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects ) {
 		global $wpdb;
 
 		// We don't want to have to generate thousands of rows when running the test suite
