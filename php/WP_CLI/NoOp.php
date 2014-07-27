@@ -2,6 +2,9 @@
 
 namespace WP_CLI;
 
+/**
+ * Escape route for not doing anything.
+ */
 final class NoOp {
 
 	function __set( $key, $value ) {

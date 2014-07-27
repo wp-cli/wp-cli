@@ -175,7 +175,7 @@ if ( is_multisite() ) {
 
 // Define constants that rely on the API to obtain the default value.
 // Define must-use plugin directory constants, which may be overridden in the sunrise.php drop-in.
-wp_plugin_directory_constants( );
+wp_plugin_directory_constants();
 
 $symlinked_plugins_supported = function_exists( 'wp_register_plugin_realpath' );
 if ( $symlinked_plugins_supported ) {

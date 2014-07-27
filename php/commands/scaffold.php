@@ -42,6 +42,11 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * @alias cpt
 	 */
 	function post_type( $args, $assoc_args ) {
+
+		if ( strlen( $args[0] ) > 20 ) {
+			WP_CLI::error( "Post type slugs cannot exceed 20 characters in length." );
+		}
+
 		$defaults = array(
 			'textdomain' => '',
 		);
@@ -397,6 +402,11 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		foreach ( $to_copy as $file => $dir ) {
 			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", "$dir/$file", true );
+			if ( 'install-wp-tests.sh' === $file ) {
+				if ( ! $wp_filesystem->chmod( "$dir/$file", '0755' ) ) {
+					WP_CLI::warning( "Couldn't mark install-wp-tests.sh as executable." );
+				}
+			}
 		}
 
 		WP_CLI::success( "Created test files." );

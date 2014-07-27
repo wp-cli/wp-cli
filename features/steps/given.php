@@ -1,7 +1,8 @@
 <?php
 
 use Behat\Gherkin\Node\PyStringNode,
-    Behat\Gherkin\Node\TableNode;
+    Behat\Gherkin\Node\TableNode,
+    WP_CLI\Process;
 
 $steps->Given( '/^an empty directory$/',
 	function ( $world ) {
@@ -95,13 +96,15 @@ $steps->Given( '/^download:$/',
 				continue;
 			}
 
-			\Process::create( \WP_CLI\Utils\esc_cmd( 'curl -sSL %s > %s', $row['url'], $path ) )->run_check();
+			Process::create( \WP_CLI\Utils\esc_cmd( 'curl -sSL %s > %s', $row['url'], $path ) )->run_check();
 		}
 	}
 );
 
 $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 	function ( $world, $stream, $output_filter, $key ) {
+
+		$stream = strtolower( $stream );
 
 		if ( $output_filter ) {
 			$output_filter = '/' . trim( str_replace( '%s', '(.+[^\b])', $output_filter ), "' " ) . '/';
