@@ -8,7 +8,7 @@ namespace WP_CLI\Fetchers;
 abstract class Base {
 
 	/**
-	 * @param string $msg The message to display when an item is not found
+	 * @var string $msg The message to display when an item is not found
 	 */
 	protected $msg;
 

@@ -3,6 +3,7 @@
 use \WP_CLI\Utils;
 use \WP_CLI\Dispatcher;
 use \WP_CLI\FileCache;
+use \WP_CLI\Process;
 use \WP_CLI\WpHttpCacheManager;
 
 /**
@@ -21,7 +22,7 @@ class WP_CLI {
 	 *
 	 * @param object $logger
 	 */
-	static function set_logger( $logger ) {
+	public static function set_logger( $logger ) {
 		self::$logger = $logger;
 	}
 
@@ -30,7 +31,7 @@ class WP_CLI {
 	 *
 	 * @return \WP_CLI\Configurator
 	 */
-	static function get_configurator() {
+	public static function get_configurator() {
 		static $configurator;
 
 		if ( !$configurator ) {
@@ -40,7 +41,7 @@ class WP_CLI {
 		return $configurator;
 	}
 
-	static function get_root_command() {
+	public static function get_root_command() {
 		static $root;
 
 		if ( !$root ) {
@@ -50,7 +51,7 @@ class WP_CLI {
 		return $root;
 	}
 
-	static function get_runner() {
+	public static function get_runner() {
 		static $runner;
 
 		if ( !$runner ) {
@@ -91,7 +92,7 @@ class WP_CLI {
 	/**
 	 * Set the context in which WP-CLI should be run
 	 */
-	static function set_url( $url ) {
+	public static function set_url( $url ) {
 		$url_parts = Utils\parse_url( $url );
 		self::set_url_params( $url_parts );
 	}
@@ -118,7 +119,7 @@ class WP_CLI {
 	/**
 	 * @return WpHttpCacheManager
 	 */
-	static function get_http_cache_manager() {
+	public static function get_http_cache_manager() {
 		static $http_cacher;
 
 		if ( !$http_cacher ) {
@@ -128,14 +129,14 @@ class WP_CLI {
 		return $http_cacher;
 	}
 
-	static function colorize( $string ) {
+	public static function colorize( $string ) {
 		return \cli\Colors::colorize( $string, self::get_runner()->in_color() );
 	}
 
 	/**
 	 * Schedule a callback to be executed at a certain point (before WP is loaded).
 	 */
-	static function add_hook( $when, $callback ) {
+	public static function add_hook( $when, $callback ) {
 		if ( in_array( $when, self::$hooks_passed ) )
 			call_user_func( $callback );
 
@@ -145,7 +146,7 @@ class WP_CLI {
 	/**
 	 * Execute registered callbacks.
 	 */
-	static function do_hook( $when ) {
+	public static function do_hook( $when ) {
 		self::$hooks_passed[] = $when;
 
 		if ( !isset( self::$hooks[ $when ] ) )
@@ -164,7 +165,7 @@ class WP_CLI {
 	 * @param array $args An associative array with additional parameters:
 	 *   'before_invoke' => callback to execute before invoking the command
 	 */
-	static function add_command( $name, $class, $args = array() ) {
+	public static function add_command( $name, $class, $args = array() ) {
 		if ( isset( $args['before_invoke'] ) ) {
 			self::add_hook( "before_invoke:$name", $args['before_invoke'] );
 		}
@@ -205,7 +206,7 @@ class WP_CLI {
 	 *
 	 * @param string $message
 	 */
-	static function line( $message = '' ) {
+	public static function line( $message = '' ) {
 		echo $message . "\n";
 	}
 
@@ -214,7 +215,7 @@ class WP_CLI {
 	 *
 	 * @param string $message
 	 */
-	static function log( $message ) {
+	public static function log( $message ) {
 		self::$logger->info( $message );
 	}
 
@@ -223,7 +224,7 @@ class WP_CLI {
 	 *
 	 * @param string $message
 	 */
-	static function success( $message ) {
+	public static function success( $message ) {
 		self::$logger->success( $message );
 	}
 
@@ -232,7 +233,7 @@ class WP_CLI {
 	 *
 	 * @param string $message
 	 */
-	static function warning( $message ) {
+	public static function warning( $message ) {
 		self::$logger->warning( self::error_to_string( $message ) );
 	}
 
@@ -241,7 +242,7 @@ class WP_CLI {
 	 *
 	 * @param string $message
 	 */
-	static function error( $message ) {
+	public static function error( $message ) {
 		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) ) {
 			self::$logger->error( self::error_to_string( $message ) );
 		}
@@ -252,7 +253,7 @@ class WP_CLI {
 	/**
 	 * Ask for confirmation before running a destructive operation.
 	 */
-	static function confirm( $question, $assoc_args = array() ) {
+	public static function confirm( $question, $assoc_args = array() ) {
 		if ( !isset( $assoc_args['yes'] ) ) {
 			fwrite( STDOUT, $question . " [y/n] " );
 
@@ -292,7 +293,7 @@ class WP_CLI {
 	 * @param mixed $value
 	 * @param array $assoc_args
 	 */
-	static function read_value( $raw_value, $assoc_args = array() ) {
+	public static function read_value( $raw_value, $assoc_args = array() ) {
 		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
 			$value = json_decode( $raw_value, true );
 			if ( null === $value ) {
@@ -311,7 +312,7 @@ class WP_CLI {
 	 * @param mixed $value
 	 * @param array $assoc_args
 	 */
-	static function print_value( $value, $assoc_args = array() ) {
+	public static function print_value( $value, $assoc_args = array() ) {
 		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
 			$value = json_encode( $value );
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
@@ -327,7 +328,7 @@ class WP_CLI {
 	 * @param mixed $errors
 	 * @return string
 	 */
-	static function error_to_string( $errors ) {
+	public static function error_to_string( $errors ) {
 		if ( is_string( $errors ) ) {
 			return $errors;
 		}
@@ -347,16 +348,23 @@ class WP_CLI {
 	 *
 	 * @param string Command to call
 	 * @param bool Whether to exit if the command returns an error status
+	 * @param bool Whether to return an exit status (default) or detailed execution results
 	 *
-	 * @return int The command exit status
+	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
 	 */
-	static function launch( $command, $exit_on_error = true ) {
-		$r = proc_close( proc_open( $command, array( STDIN, STDOUT, STDERR ), $pipes ) );
+	public static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 
-		if ( $r && $exit_on_error )
-			exit($r);
+		$proc = Process::create( $command );
+		$results = $proc->run();
 
-		return $r;
+		if ( $results->return_code && $exit_on_error )
+			exit( $results->return_code );
+
+		if ( $return_detailed ) {
+			return $results;
+		} else {
+			return $results->return_code;
+		}
 	}
 
 	/**
@@ -366,10 +374,11 @@ class WP_CLI {
 	 * @param array $args Positional arguments to use
 	 * @param array $assoc_args Associative arguments to use
 	 * @param bool Whether to exit if the command returns an error status
+	 * @param bool Whether to return an exit status (default) or detailed execution results
 	 *
-	 * @return int The command exit status
+	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
 	 */
-	static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true ) {
+	public static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true, $return_detailed = false ) {
 		$reused_runtime_args = array(
 			'path',
 			'url',
@@ -391,7 +400,7 @@ class WP_CLI {
 
 		$full_command = "{$php_bin} {$script_path} {$command} {$args} {$assoc_args}";
 
-		return self::launch( $full_command, $exit_on_error );
+		return self::launch( $full_command, $exit_on_error, $return_detailed );
 	}
 
 	/**
@@ -413,7 +422,7 @@ class WP_CLI {
 		return 'php';
 	}
 
-	static function get_config( $key = null ) {
+	public static function get_config( $key = null ) {
 		if ( null === $key ) {
 			return self::get_runner()->config;
 		}
@@ -432,7 +441,7 @@ class WP_CLI {
 	 * @param array
 	 * @param array
 	 */
-	static function run_command( $args, $assoc_args = array() ) {
+	public static function run_command( $args, $assoc_args = array() ) {
 		self::get_runner()->run_command( $args, $assoc_args );
 	}
 
@@ -440,17 +449,17 @@ class WP_CLI {
 
 	// DEPRECATED STUFF
 
-	static function add_man_dir() {
+	public static function add_man_dir() {
 		trigger_error( 'WP_CLI::add_man_dir() is deprecated. Add docs inline.', E_USER_WARNING );
 	}
 
 	// back-compat
-	static function out( $str ) {
+	public static function out( $str ) {
 		fwrite( STDOUT, $str );
 	}
 
 	// back-compat
-	static function addCommand( $name, $class ) {
+	public static function addCommand( $name, $class ) {
 		trigger_error( sprintf( 'wp %s: %s is deprecated. use WP_CLI::add_command() instead.',
 			$name, __FUNCTION__ ), E_USER_WARNING );
 		self::add_command( $name, $class );
