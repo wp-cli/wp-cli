@@ -57,7 +57,7 @@ Feature: Do global search/replace
       |           | PHP    | SQL      |
       | --precise | PHP    | PHP      |
 
-Scenario Outline: Ensure search and replace uses PHP (precise) mode when serialized data is found
+  Scenario Outline: Ensure search and replace uses PHP (precise) mode when serialized data is found
     Given a WP install
     And I run `wp post create --post_content='<input>' --porcelain`
     And save STDOUT as {CONTROLPOST}
