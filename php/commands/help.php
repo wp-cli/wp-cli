@@ -86,8 +86,9 @@ class Help_Command extends WP_CLI_Command {
 	}
 
 	private static function pass_through_pager( $out ) {
-		if ( Utils\is_windows() ) {
-			// no paging for Windows cmd.exe; sorry
+		// no paging for Windows cmd.exe; sorry
+		// proc_open disable by system
+		if ( Utils\is_windows() || ! function_exists( 'proc_open' ) ) {
 			echo $out;
 			return 0;
 		}
