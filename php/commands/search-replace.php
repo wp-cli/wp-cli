@@ -122,8 +122,44 @@ class Search_Replace_Command extends WP_CLI_Command {
 			return $args;
 
 		$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
+		$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", like_escape( $prefix ) . '%' ) );
 
-		return $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", like_escape( $prefix ) . '%' ) );
+		$allowed_tables = array();
+		$allowed_table_types = array( 'tables', 'global_tables' );
+		if ( $network ) {
+			$allowed_table_types[] = 'ms_global_tables';
+		}
+		foreach( $allowed_table_types as $table_type ) {
+			foreach( $wpdb->$table_type as $table ) {
+				$allowed_tables[] = $prefix . $table;
+			}
+		}
+
+		// Given our matching tables, also allow site-specific tables on the network
+		foreach( $matching_tables as $key => $matched_table ) {
+
+			if ( in_array( $matched_table, $allowed_tables ) ) {
+				continue;
+			}
+
+			if ( $network ) {
+				$valid_table = false;
+				foreach( array_merge( $wpdb->tables, $wpdb->old_tables ) as $maybe_site_table ) {
+					if ( preg_match( "#{$prefix}([\d]+)_{$maybe_site_table}#", $matched_table ) ) {
+						$valid_table = true;
+					}
+				}
+				if ( $valid_table ) {
+					continue;
+				}
+			}
+
+			unset( $matching_tables[ $key ] );
+
+		}
+
+		return array_values( $matching_tables );
+
 	}
 
 	private static function sql_handle_col( $col, $table, $old, $new, $dry_run ) {
