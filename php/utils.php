@@ -425,12 +425,12 @@ function request( $method, $url, $headers = array(), $options = array() ) {
 		return \Requests::get( $url, $headers, $options );
 	} catch( \Requests_Exception $ex ) {
 		// Handle SSL certificate issues gracefully
-		WP_CLI::warning( $ex->getMessage() );
+		\WP_CLI::warning( $ex->getMessage() );
 		$options['verify'] = false;
 		try {
 			return \Requests::get( $url, $headers, $options );
 		} catch( \Requests_Exception $ex ) {
-			WP_CLI::error( $ex->getMessage() );
+			\WP_CLI::error( $ex->getMessage() );
 		}
 	}
 }
