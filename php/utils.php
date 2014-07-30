@@ -401,3 +401,37 @@ function replace_path_consts( $source, $path ) {
 
 	return str_replace( $old, $new, $source );
 }
+
+/**
+ * Initiate a HTTP request.
+ *
+ * @param string $method The request method.
+ * @param string $url The path for the request.
+ * @param array  $headers The HTTP request headers (optional)
+ * @param array  $options Options for Requests::get (optional)
+ */
+function request( $method, $url, $headers = array(), $options = array() ) {
+	// cURL can't read Phar archives
+	if ( 0 === strpos( WP_CLI_ROOT, 'phar://' ) ) {
+		$options['verify'] = sys_get_temp_dir() . '/wp-cli-cacert.pem';
+
+		copy(
+			WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem',
+			$options['verify']
+		);
+	}
+
+	try {
+		return \Requests::get( $url, $headers, $options );
+	} catch( \Requests_Exception $ex ) {
+		// Handle SSL certificate issues gracefully
+		WP_CLI::warning( $ex->getMessage() );
+		$options['verify'] = false;
+		try {
+			return \Requests::get( $url, $headers, $options );
+		} catch( \Requests_Exception $ex ) {
+			WP_CLI::error( $ex->getMessage() );
+		}
+	}
+}
+

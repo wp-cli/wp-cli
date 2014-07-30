@@ -70,6 +70,54 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Check for update via Github API. Returns latest version if there's an update, or empty if no update available.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--major]
+	 * : Compare only the first two parts of the version number.
+	 *
+	 * @subcommand check-update
+	 */
+	function check_update( $_, $assoc_args ) {
+		$url = 'https://api.github.com/repos/wp-cli/wp-cli/releases';
+
+		$options = array(
+			'timeout' => 30
+		);
+
+		$headers = array(
+			'Accept' => 'application/json'
+		);
+		$response = Utils\request( 'GET', $url, $headers, $options );
+
+		if ( ! $response->success || 200 !== $response->status_code ) {
+			WP_CLI::error( "Failed to get latest version." );
+		}
+
+		$release_data = json_decode( $response->body );
+
+		$latest = $release_data[0]->tag_name;
+
+		// get rid of leading "v"
+		if ( 'v' === substr( $latest, 0, 1 ) ) {
+			$latest = ltrim( $latest, 'v' );
+		}
+
+		if ( isset( $assoc_args['major'] ) ) {
+			$latest_major = explode( '.', $latest );
+			$current_major = explode( '.', WP_CLI_VERSION );
+			if ( $latest_major[0] !== $current_major[0]
+				|| $latest_major[1] !== $current_major[1] ) {
+				WP_CLI::line( $latest );
+			}
+
+		} else {
+			WP_CLI::line( $latest );
+		}
+	}
+
+	/**
 	 * Dump the list of global parameters, as JSON.
 	 *
 	 * @subcommand param-dump
