@@ -24,6 +24,12 @@ Feature: Do global search/replace
       | wp_2_posts | guid   | 2            | SQL  |
       | wp_blogs   | path   | 1            | SQL  |
 
+  Scenario: Quiet search/replace
+    Given a WP install
+
+    When I run `wp search-replace foo bar --quiet`
+    Then STDOUT should be empty
+
   Scenario Outline: Large guid search/replace where replacement contains search (or not)
     Given a WP install
     And I run `wp option get siteurl`

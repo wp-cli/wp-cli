@@ -102,13 +102,17 @@ class Search_Replace_Command extends WP_CLI_Command {
 			}
 		}
 
-		$table = new \cli\Table();
-		$table->setHeaders( array( 'Table', 'Column', 'Replacements', 'Type' ) );
-		$table->setRows( $report );
-		$table->display();
+		if ( ! WP_CLI::get_config( 'quiet' ) ) {
 
-		if ( !$dry_run )
-			WP_CLI::success( "Made $total replacements." );
+			$table = new \cli\Table();
+			$table->setHeaders( array( 'Table', 'Column', 'Replacements', 'Type' ) );
+			$table->setRows( $report );
+			$table->display();
+
+			if ( !$dry_run )
+				WP_CLI::success( "Made $total replacements." );
+
+		}
 	}
 
 	private static function get_table_list( $args, $network ) {
