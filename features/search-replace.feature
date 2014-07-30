@@ -24,6 +24,16 @@ Feature: Do global search/replace
       | wp_2_posts | guid   | 2            | SQL  |
       | wp_blogs   | path   | 1            | SQL  |
 
+  Scenario: Don't run on unregistered tables
+    Given a WP install
+    And I run `wp db query "CREATE TABLE wp_awesome ( id int(11) unsigned NOT NULL AUTO_INCREMENT, PRIMARY KEY (id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;"`
+
+    When I run `wp search-replace foo bar`
+    Then STDOUT should not contain:
+      """
+      wp_awesome
+      """
+
   Scenario: Quiet search/replace
     Given a WP install
 
