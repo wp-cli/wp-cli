@@ -9,10 +9,6 @@ use WP_CLI\Utils;
  */
 class Scaffold_Command extends WP_CLI_Command {
 
-	function __construct() {
-		WP_Filesystem();
-	}
-
 	/**
 	 * Generate PHP code for registering a custom post type.
 	 *
@@ -109,7 +105,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	private function _scaffold( $slug, $assoc_args, $defaults, $subdir, $templates ) {
-		global $wp_filesystem;
+		$wp_filesystem = $this->init_wp_filesystem();
 
 		$control_args = $this->extract_args( $assoc_args, array(
 			'label'  => preg_replace( '/_|-/', ' ', strtolower( $slug ) ),
@@ -379,7 +375,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * @subcommand plugin-tests
 	 */
 	function plugin_tests( $args, $assoc_args ) {
-		global $wp_filesystem;
+		$wp_filesystem = $this->init_wp_filesystem();
 
 		$plugin_slug = $args[0];
 
@@ -413,7 +409,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	private function create_file( $filename, $contents ) {
-		global $wp_filesystem;
+		$wp_filesystem = $this->init_wp_filesystem();
 
 		$wp_filesystem->mkdir( dirname( $filename ) );
 
@@ -531,6 +527,15 @@ class Scaffold_Command extends WP_CLI_Command {
 			wp_mkdir_p( WP_PLUGIN_DIR );
 		}
 
+	}
+
+	/**
+	 * Initialize WP Filesystem
+	 */
+	private function init_wp_filesystem() {
+		global $wp_filesystem;
+		WP_Filesystem();
+		return $wp_filesystem;
 	}
 
 }
