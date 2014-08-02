@@ -118,3 +118,36 @@ Feature: WordPress code scaffolding
       """
       executable
       """
+
+  Scenario: Scaffold package tests
+    Given a community-command/command.php file:
+      """
+      <?php
+      """
+
+    When I run `wp scaffold package-tests community-command`
+    Then STDOUT should not be empty
+    And the community-command/features directory should contain:
+      """
+      bootstrap
+      extra
+      load-wp-cli.feature
+      steps
+      """
+    And the community-command/features/bootstrap directory should contain:
+      """
+      FeatureContext.php
+      Process.php
+      support.php
+      utils.php
+      """
+    And the community-command/features/steps directory should contain:
+      """
+      given.php
+      then.php
+      when.php
+      """
+    And the community-command/features/extra directory should contain:
+      """
+      no-mail.php
+      """

@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\Utils;
+use WP_CLI\Process;
 
 /**
  * Generate code for post types, taxonomies, etc.
@@ -298,6 +299,66 @@ class Scaffold_Command extends WP_CLI_Command {
 		$path .= $subdir;
 
 		return $path;
+	}
+
+	/**
+	 * Generate files needed for running PHPUnit tests.
+	 *
+	 * ## DESCRIPTION
+	 *
+	 * These are the files that are generated:
+	 *
+	 * * `.travis.yml` is the configuration file for Travis CI
+	 *
+	 * ## OPTIONS
+	 *
+	 * <dir>
+	 * : The package directory to generate tests for
+	 *
+	 * ## EXAMPLE
+	 *
+	 *     wp scaffold package-tests /path/to/command/dir/
+	 *
+	 * @when before_wp_load
+	 * @subcommand package-tests
+	 */
+	public function package_tests( $args, $assoc_args ) {
+
+		list( $package_dir ) = $args;
+
+		$package_dir = rtrim( $package_dir, '/' ) . '/';
+		$features_dir = $package_dir . 'features/';
+		$bootstrap_dir = $features_dir . 'bootstrap/';
+		$steps_dir = $features_dir . 'steps/';
+		$extra_dir = $features_dir . 'extra/';
+		foreach( array( $features_dir, $bootstrap_dir, $steps_dir, $extra_dir ) as $dir ) {
+			if ( ! is_dir( $dir ) ) {
+				Process::create( Utils\esc_cmd( 'mkdir %s', $dir ) )->run();
+			}
+		}
+
+		$to_copy = array(
+			'templates/load-wp-cli.feature' => $features_dir,
+			'features/bootstrap/FeatureContext.php' => $bootstrap_dir,
+			'features/bootstrap/support.php' => $bootstrap_dir,
+			'php/WP_CLI/Process.php' => $bootstrap_dir,
+			'php/utils.php' => $bootstrap_dir,
+			'features/steps/given.php' => $steps_dir,
+			'features/steps/when.php' => $steps_dir,
+			'features/steps/then.php' => $steps_dir,
+			'features/extra/no-mail.php' => $extra_dir,
+		);
+
+		foreach ( $to_copy as $file => $dir ) {
+			// file_get_contents() works with Phar-archived files
+			$contents = file_get_contents( WP_CLI_ROOT . "/{$file}" );
+			$file_path = $dir . basename( $file );
+			$result = Process::create( Utils\esc_cmd( 'touch %s', $file_path ) )->run();
+			file_put_contents( $file_path, $contents );
+		}
+
+		WP_CLI::success( "Created test files." );
+
 	}
 
 	/**

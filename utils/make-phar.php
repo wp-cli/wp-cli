@@ -33,6 +33,7 @@ $finder
 	->ignoreVCS(true)
 	->name('*.php')
 	->in('./php')
+	->in('./features')
 	->in('./vendor/wp-cli')
 	->in('./vendor/mustache')
 	->in('./vendor/rmccue/requests')
