@@ -327,6 +327,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		list( $package_dir ) = $args;
 
 		$package_dir = rtrim( $package_dir, '/' ) . '/';
+		$bin_dir = $package_dir . 'bin/';
 		$utils_dir = $package_dir . 'utils/';
 		$features_dir = $package_dir . 'features/';
 		$bootstrap_dir = $features_dir . 'bootstrap/';
@@ -341,6 +342,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$to_copy = array(
 			'templates/.travis.package.yml' => $package_dir,
 			'templates/load-wp-cli.feature' => $features_dir,
+			'templates/install-package-tests.sh' => $bin_dir,
 			'features/bootstrap/FeatureContext.php' => $bootstrap_dir,
 			'features/bootstrap/support.php' => $bootstrap_dir,
 			'php/WP_CLI/Process.php' => $bootstrap_dir,
