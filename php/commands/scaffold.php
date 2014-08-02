@@ -338,6 +338,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		}
 
 		$to_copy = array(
+			'templates/.travis.package.yml' => $package_dir,
 			'templates/load-wp-cli.feature' => $features_dir,
 			'features/bootstrap/FeatureContext.php' => $bootstrap_dir,
 			'features/bootstrap/support.php' => $bootstrap_dir,
@@ -353,6 +354,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			// file_get_contents() works with Phar-archived files
 			$contents = file_get_contents( WP_CLI_ROOT . "/{$file}" );
 			$file_path = $dir . basename( $file );
+			$file_path = str_replace( array( '.travis.package.yml' ), array( '.travis.yml'), $file_path );
 			$result = Process::create( Utils\esc_cmd( 'touch %s', $file_path ) )->run();
 			file_put_contents( $file_path, $contents );
 		}
