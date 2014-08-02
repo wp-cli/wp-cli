@@ -327,11 +327,12 @@ class Scaffold_Command extends WP_CLI_Command {
 		list( $package_dir ) = $args;
 
 		$package_dir = rtrim( $package_dir, '/' ) . '/';
+		$utils_dir = $package_dir . 'utils/';
 		$features_dir = $package_dir . 'features/';
 		$bootstrap_dir = $features_dir . 'bootstrap/';
 		$steps_dir = $features_dir . 'steps/';
 		$extra_dir = $features_dir . 'extra/';
-		foreach( array( $features_dir, $bootstrap_dir, $steps_dir, $extra_dir ) as $dir ) {
+		foreach( array( $features_dir, $bootstrap_dir, $steps_dir, $extra_dir, $utils_dir ) as $dir ) {
 			if ( ! is_dir( $dir ) ) {
 				Process::create( Utils\esc_cmd( 'mkdir %s', $dir ) )->run();
 			}
@@ -344,6 +345,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			'features/bootstrap/support.php' => $bootstrap_dir,
 			'php/WP_CLI/Process.php' => $bootstrap_dir,
 			'php/utils.php' => $bootstrap_dir,
+			'utils/get-package-require-from-composer.php' => $utils_dir,
 			'features/steps/given.php' => $steps_dir,
 			'features/steps/when.php' => $steps_dir,
 			'features/steps/then.php' => $steps_dir,

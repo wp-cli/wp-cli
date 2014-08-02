@@ -65,6 +65,7 @@ foreach ( $finder as $file ) {
 }
 
 add_file( $phar, './vendor/autoload.php' );
+add_file( $phar, './utils/get-package-require-from-composer.php' );
 add_file( $phar, './vendor/rmccue/requests/library/Requests/Transport/cacert.pem' );
 
 $phar->setStub( <<<EOB

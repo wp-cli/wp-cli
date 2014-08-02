@@ -128,6 +128,7 @@ Feature: WordPress code scaffolding
     When I run `wp scaffold package-tests community-command`
     Then STDOUT should not be empty
     And the community-command/.travis.yml file should exist
+    And the community-command/utils/get-package-require-from-composer.php file should exist
     And the community-command/features directory should contain:
       """
       bootstrap
