@@ -44,6 +44,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			'PATH' =>  $bin_dir . ':' . getenv( 'PATH' ),
 			'BEHAT_RUN' => 1
 		);
+		if ( $config_path = getenv( 'WP_CLI_CONFIG_PATH' ) ) {
+			$env['WP_CLI_CONFIG_PATH'] = $config_path;
+		}
 		return $env;
 	}
 
