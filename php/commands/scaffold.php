@@ -333,7 +333,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$bootstrap_dir = $features_dir . 'bootstrap/';
 		$steps_dir = $features_dir . 'steps/';
 		$extra_dir = $features_dir . 'extra/';
-		foreach( array( $features_dir, $bootstrap_dir, $steps_dir, $extra_dir, $utils_dir ) as $dir ) {
+		foreach( array( $features_dir, $bootstrap_dir, $steps_dir, $extra_dir, $utils_dir, $bin_dir ) as $dir ) {
 			if ( ! is_dir( $dir ) ) {
 				Process::create( Utils\esc_cmd( 'mkdir %s', $dir ) )->run();
 			}
