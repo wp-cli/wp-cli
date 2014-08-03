@@ -381,6 +381,9 @@ class Scaffold_Command extends WP_CLI_Command {
 			$file_path = str_replace( array( '.travis.package.yml' ), array( '.travis.yml'), $file_path );
 			$result = Process::create( Utils\esc_cmd( 'touch %s', $file_path ) )->run();
 			file_put_contents( $file_path, $contents );
+			if ( 'templates/install-package-tests.sh' === $file ) {
+				Process::create( Utils\esc_cmd( 'chmod +x %s', $file_path ) )->run();
+			}
 		}
 
 		WP_CLI::success( "Created test files." );

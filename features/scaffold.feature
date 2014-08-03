@@ -176,6 +176,12 @@ Feature: WordPress code scaffolding
       no-mail.php
       """
 
+    When I run `wp eval "if ( is_executable( 'community-command/bin/install-package-tests.sh' ) ) { echo 'executable'; } else { exit( 1 ); }"`
+    Then STDOUT should be:
+      """
+      executable
+      """
+
     When I try `wp scaffold package-tests invalid-command`
     Then STDERR should be:
       """
