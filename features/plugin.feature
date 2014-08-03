@@ -229,3 +229,11 @@ Feature: Manage WordPress plugins
       """
       Warning: Plugin 'akismet' is already network active.
       """
+
+  Scenario: Search WordPress.org plugins
+    Given a WP install
+
+    When I run `wp plugin search Akismet --fields=name,slug`
+    Then STDOUT should be a table containing rows:
+      | name             | slug           |
+      | Akismet          | akismet        |
