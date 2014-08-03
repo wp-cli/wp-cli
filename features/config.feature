@@ -177,3 +177,24 @@ Feature: Have a config file
     Then STDOUT should be a number
     When I run `wp post list --format=json`
     Then STDOUT should not be a number
+
+  Scenario: Required files should not be loaded twice
+    Given an empty directory
+    And a custom-file.php file:
+      """
+      <?php
+      define( 'FOOBUG', 'BAR' );
+      """
+    And a test-dir/config.yml file:
+      """
+      require:
+        - ../custom-file.php
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - custom-file.php
+      """
+
+    When I run `WP_CLI_CONFIG_PATH=test-dir/config.yml wp help`
+    Then STDERR should be empty
