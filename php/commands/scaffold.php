@@ -336,7 +336,17 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		list( $package_dir ) = $args;
 
-		$package_dir = rtrim( $package_dir, '/' ) . '/';
+		if ( is_file( $package_dir ) ) {
+			$package_dir = dirname( $package_dir );
+		} else if ( is_dir( $package_dir ) ) {
+			$package_dir = rtrim( $package_dir, '/' );
+		}
+
+		if ( ! is_dir( $package_dir ) || ! file_exists( $package_dir . '/composer.json' ) ) {
+			WP_CLI::error( "Invalid package directory. composer.json file must be present." );
+		}
+
+		$package_dir .= '/';
 		$bin_dir = $package_dir . 'bin/';
 		$utils_dir = $package_dir . 'utils/';
 		$features_dir = $package_dir . 'features/';

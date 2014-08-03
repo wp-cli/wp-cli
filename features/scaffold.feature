@@ -124,6 +124,27 @@ Feature: WordPress code scaffolding
       """
       <?php
       """
+    And a community-command/composer.json file:
+      """
+      {
+        "name": "wp-cli/community-command",
+        "description": "A demo community command.",
+        "license": "MIT",
+        "minimum-stability": "dev",
+        "require": {
+        },
+        "autoload": {
+          "files": [ "dictator.php" ]
+        },
+        "require-dev": {
+          "behat/behat": "~2.5"
+        }
+      }
+      """
+    And a invalid-command/command.php file:
+      """
+      <?php
+      """
 
     When I run `wp scaffold package-tests community-command`
     Then STDOUT should not be empty
@@ -153,4 +174,10 @@ Feature: WordPress code scaffolding
     And the community-command/features/extra directory should contain:
       """
       no-mail.php
+      """
+
+    When I try `wp scaffold package-tests invalid-command`
+    Then STDERR should be:
+      """
+      Error: Invalid package directory. composer.json file must be present.
       """
