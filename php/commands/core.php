@@ -218,7 +218,7 @@ class Core_Command extends WP_CLI_Command {
 	 * : Set the WPLANG constant. Defaults to $wp_local_package variable.
 	 *
 	 * [--extra-php]
-	 * : If set, the command reads additional PHP code from STDIN.
+	 * : If set, the command copies additional PHP code into wp-config.php from STDIN.
 	 *
 	 * [--skip-salts]
 	 * : If set, keys and salts won't be generated, but should instead be passed via `--extra-php`.
@@ -494,6 +494,12 @@ class Core_Command extends WP_CLI_Command {
 		}
 		// @codingStandardsIgnoreEnd
 
+		// Confirm the uploads directory exists
+		$upload_dir = wp_upload_dir();
+		if ( ! empty( $upload_dir['error'] ) ) {
+			WP_CLI::warning( $upload_dir['error'] );
+		}
+
 		return true;
 	}
 
@@ -656,6 +662,86 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			WP_CLI::line( $wp_version );
 		}
 		// @codingStandardsIgnoreEnd
+	}
+
+	/**
+	 * Security copy of the core function with Requests - Gets the checksums for the given version of WordPress.
+	 *
+	 * @param string $version Version string to query.
+	 * @param string $locale  Locale to query.
+	 * @return bool|array False on failure. An array of checksums on success.
+	 */
+	private static function get_core_checksums( $version, $locale ) {
+		$url = $http_url = 'http://api.wordpress.org/core/checksums/1.0/?' . http_build_query( compact( 'version', 'locale' ), null, '&' );
+
+		if ( $ssl = wp_http_supports( array( 'ssl' ) ) )
+			$url = 'https' . substr( $url, 4 );
+
+		$options = array(
+			'timeout' => 30
+		);
+
+		$headers = array(
+			'Accept' => 'application/json'
+		);
+		$response = self::_request( 'GET', $url, $headers, $options );
+
+		if ( $ssl && ! $response->success ) {
+			WP_CLI::warning( 'wp-cli could not establish a secure connection to WordPress.org. Please contact your server administrator.' );
+			$response = self::_request( 'GET', $http_url, $headers, $options );
+		}
+
+		if ( ! $response->success || 200 != $response->status_code )
+			return false;
+
+		$body = trim( $response->body );
+		$body = json_decode( $body, true );
+
+		if ( ! is_array( $body ) || ! isset( $body['checksums'] ) || ! is_array( $body['checksums'] ) )
+			return false;
+
+		return $body['checksums'];
+	}
+
+	/**
+	 * Verify WordPress files against WordPress.org's checksums.
+	 *
+	 * @subcommand verify-checksums
+	 */
+	public function verify_checksums( $args, $assoc_args ) {
+		global $wp_version, $wp_local_package;
+
+		$checksums = self::get_core_checksums( $wp_version, isset( $wp_local_package ) ? $wp_local_package : 'en_US' );
+
+		if ( ! is_array( $checksums ) ) {
+			WP_CLI::error( "Couldn't get checksums from WordPress.org." );
+		}
+
+		$has_errors = false;
+		foreach ( $checksums as $file => $checksum ) {
+			// Skip files which get updated
+			if ( 'wp-content' == substr( $file, 0, 10 ) ) {
+				continue;
+			}
+
+			if ( ! file_exists( ABSPATH . $file ) ) {
+				WP_CLI::warning( "File doesn't exist: {$file}" );
+				$has_errors = true;
+				continue;
+			}
+
+			$md5_file = md5_file( ABSPATH . $file );
+			if ( $md5_file !== $checksum ) {
+				WP_CLI::warning( "File doesn't verify against checksum: {$file}" );
+				$has_errors = true;
+			}
+		}
+
+		if ( ! $has_errors ) {
+			WP_CLI::success( "WordPress install verifies against checksums." );
+		} else {
+			WP_CLI::error( "WordPress install doesn't verify against checksums." );
+		}
 	}
 
 	/**

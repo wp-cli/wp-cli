@@ -10,7 +10,7 @@ namespace WP_CLI\Dispatcher;
  */
 class CompositeCommand {
 
-	protected $name, $shortdesc, $synopsis;
+	protected $name, $shortdesc, $synopsis, $docparser;
 
 	protected $parent, $subcommands = array();
 
@@ -28,6 +28,7 @@ class CompositeCommand {
 
 		$this->shortdesc = $docparser->get_shortdesc();
 		$this->longdesc = $docparser->get_longdesc();
+		$this->docparser = $docparser;
 
 		$when_to_invoke = $docparser->get_tag( 'when' );
 		if ( $when_to_invoke ) {

@@ -253,3 +253,18 @@ Feature: Manage WordPress users
       """
       Success: Removed 'edit_vip_product' cap for admin (1).
       """
+
+  Scenario: Show password when creating a user
+    Given a WP install
+
+    When I run `wp user create testrandompass testrandompass@example.com`
+    Then STDOUT should contain:
+       """
+       Password:
+       """
+
+    When I run `wp user create testsuppliedpass testsuppliedpass@example.com --user_pass=suppliedpass`
+    Then STDOUT should not contain:
+       """
+       Password:
+       """

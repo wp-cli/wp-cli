@@ -37,6 +37,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--dry-run]
 	 * : Show report, but don't perform the changes.
 	 *
+	 * [--precise]
+	 * : Force the use of PHP (instead of SQL) which is more thorough, but slower. Use if you see issues with serialized data.
+	 *
 	 * [--recurse-objects]
 	 * : Enable recursing into objects to replace strings
 	 *
@@ -47,11 +50,13 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *     wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
 	 */
 	public function __invoke( $args, $assoc_args ) {
+		global $wpdb;
 		$old = array_shift( $args );
 		$new = array_shift( $args );
 		$total = 0;
 		$report = array();
 		$dry_run = isset( $assoc_args['dry-run'] );
+		$php_only = isset( $assoc_args['precise'] );
 		$recurse_objects = isset( $assoc_args['recurse-objects'] );
 
 		if ( isset( $assoc_args['skip-columns'] ) )
@@ -75,24 +80,39 @@ class Search_Replace_Command extends WP_CLI_Command {
 			}
 
 			foreach ( $columns as $col ) {
-				if ( in_array( $col, $skip_columns ) )
+				if ( in_array( $col, $skip_columns ) ) {
 					continue;
+				}
 
-				$count = self::handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects );
+				if ( ! $php_only ) {
+					$serialRow = $wpdb->get_row( "SELECT * FROM `$table` WHERE `$col` REGEXP '^[aiO]:[1-9]' LIMIT 1" );
+				}
 
-				$report[] = array( $table, $col, $count );
+				if ( $php_only || NULL !== $serialRow ) {
+					$type = 'PHP';
+					$count = self::php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects );
+				} else {
+					$type = 'SQL';
+					$count = self::sql_handle_col( $col, $table, $old, $new, $dry_run );
+				}
+
+				$report[] = array( $table, $col, $count, $type );
 
 				$total += $count;
 			}
 		}
 
-		$table = new \cli\Table();
-		$table->setHeaders( array( 'Table', 'Column', 'Replacements' ) );
-		$table->setRows( $report );
-		$table->display();
+		if ( ! WP_CLI::get_config( 'quiet' ) ) {
 
-		if ( !$dry_run )
-			WP_CLI::success( "Made $total replacements." );
+			$table = new \cli\Table();
+			$table->setHeaders( array( 'Table', 'Column', 'Replacements', 'Type' ) );
+			$table->setRows( $report );
+			$table->display();
+
+			if ( !$dry_run )
+				WP_CLI::success( "Made $total replacements." );
+
+		}
 	}
 
 	private static function get_table_list( $args, $network ) {
@@ -102,11 +122,57 @@ class Search_Replace_Command extends WP_CLI_Command {
 			return $args;
 
 		$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
+		$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", like_escape( $prefix ) . '%' ) );
 
-		return $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", like_escape( $prefix ) . '%' ) );
+		$allowed_tables = array();
+		$allowed_table_types = array( 'tables', 'global_tables' );
+		if ( $network ) {
+			$allowed_table_types[] = 'ms_global_tables';
+		}
+		foreach( $allowed_table_types as $table_type ) {
+			foreach( $wpdb->$table_type as $table ) {
+				$allowed_tables[] = $prefix . $table;
+			}
+		}
+
+		// Given our matching tables, also allow site-specific tables on the network
+		foreach( $matching_tables as $key => $matched_table ) {
+
+			if ( in_array( $matched_table, $allowed_tables ) ) {
+				continue;
+			}
+
+			if ( $network ) {
+				$valid_table = false;
+				foreach( array_merge( $wpdb->tables, $wpdb->old_tables ) as $maybe_site_table ) {
+					if ( preg_match( "#{$prefix}([\d]+)_{$maybe_site_table}#", $matched_table ) ) {
+						$valid_table = true;
+					}
+				}
+				if ( $valid_table ) {
+					continue;
+				}
+			}
+
+			unset( $matching_tables[ $key ] );
+
+		}
+
+		return array_values( $matching_tables );
+
 	}
 
-	private static function handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects ) {
+	private static function sql_handle_col( $col, $table, $old, $new, $dry_run ) {
+		global $wpdb;
+
+		if ( $dry_run ) {
+			return $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(`$col`) FROM `$table` WHERE `$col` LIKE %s;", '%' . like_escape( esc_sql( $old ) ) . '%' ) );
+		} else {
+			return $wpdb->query( $wpdb->prepare( "UPDATE `$table` SET `$col` = REPLACE(`$col`, %s, %s);", $old, $new ) );
+		}
+	}
+
+	private static function php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects ) {
 		global $wpdb;
 
 		// We don't want to have to generate thousands of rows when running the test suite

@@ -229,8 +229,12 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$user->last_name = isset( $assoc_args['last_name'] )
 			? $assoc_args['last_name'] : false;
 
-		$user->user_pass = isset( $assoc_args['user_pass'] )
-			? $assoc_args['user_pass'] : wp_generate_password();
+		if ( isset( $assoc_args['user_pass'] ) ) {
+			$user->user_pass = $assoc_args['user_pass'];
+		} else {
+			$user->user_pass = wp_generate_password();
+			$generated_pass = true;
+		}
 
 		if ( isset( $assoc_args['role'] ) ) {
 			$role = $assoc_args['role'];
@@ -259,7 +263,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		} else {
 			WP_CLI::success( "Created user $user_id." );
 			if ( isset( $generated_pass ) )
-				WP_CLI::line( "Password: $user_pass" );
+				WP_CLI::line( "Password: $user->user_pass" );
 		}
 	}
 

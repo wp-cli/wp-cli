@@ -11,7 +11,8 @@ class DB_Command extends WP_CLI_Command {
 	 * Create the database, as specified in wp-config.php
 	 */
 	function create( $_, $assoc_args ) {
-		self::run_query( sprintf( 'CREATE DATABASE `%s`', DB_NAME ) );
+
+		self::run_query( self::get_create_query() );
 
 		WP_CLI::success( "Database created." );
 	}
@@ -44,7 +45,7 @@ class DB_Command extends WP_CLI_Command {
 		WP_CLI::confirm( "Are you sure you want to reset the database?", $assoc_args );
 
 		self::run_query( sprintf( 'DROP DATABASE IF EXISTS `%s`', DB_NAME ) );
-		self::run_query( sprintf( 'CREATE DATABASE `%s`', DB_NAME ) );
+		self::run_query( self::get_create_query() );
 
 		WP_CLI::success( "Database reset." );
 	}
@@ -141,7 +142,7 @@ class DB_Command extends WP_CLI_Command {
 		$command_esc_args = array( DB_NAME );
 
 		if ( isset( $assoc_args['tables'] ) ) {
-			$tables = explode( ',', $assoc_args['tables'] );
+			$tables = explode( ',', trim( $assoc_args['tables'], ',' ) );
 			unset( $assoc_args['tables'] );
 			$command .= ' --tables';
 			foreach ( $tables as $table ) {
@@ -225,6 +226,18 @@ class DB_Command extends WP_CLI_Command {
 			return sprintf( '%s.sql', DB_NAME );
 
 		return $args[0];
+	}
+
+	private static function get_create_query() {
+
+		$create_query = sprintf( 'CREATE DATABASE `%s`', DB_NAME );
+		if ( defined( 'DB_CHARSET' ) && constant( 'DB_CHARSET' ) ) {
+			$create_query .= sprintf( ' DEFAULT CHARSET `%s`', constant( 'DB_CHARSET' ) );
+		}
+		if ( defined( 'DB_COLLATE' ) && constant( 'DB_COLLATE' ) ) {
+			$create_query .= sprintf( ' DEFAULT COLLATE `%s`', constant( 'DB_COLLATE' ) );
+		}
+		return $create_query;
 	}
 
 	private static function run_query( $query ) {

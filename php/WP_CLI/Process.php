@@ -1,7 +1,17 @@
 <?php
 
+namespace WP_CLI;
+
+/**
+ * Run a system process, and learn what happened.
+ */
 class Process {
 
+	/**
+	 * @param string $command Command to execute.
+	 * @param string $cwd Directory to execute the command in.
+	 * @param array $env Environment variables to set when running the command.
+	 */
 	public static function create( $command, $cwd = null, $env = array() ) {
 		$proc = new self;
 
@@ -16,11 +26,13 @@ class Process {
 
 	private function __construct() {}
 
-	public function run( $subdir = '' ) {
+	/**
+	 * Run the command.
+	 *
+	 * @return ProcessRun
+	 */
+	public function run() {
 		$cwd = $this->cwd;
-		if ( $subdir ) {
-			$cwd .= '/' . $subdir;
-		}
 
 		$descriptors = array(
 			0 => STDIN,
@@ -28,33 +40,31 @@ class Process {
 			2 => array( 'pipe', 'w' ),
 		);
 
-		// Ensure we're using the expected `wp` binary
-		$bin_dir = getenv( 'WP_CLI_BIN_DIR' ) ?: realpath( __DIR__ . "/../../bin" );
-		$env = array_merge( $this->env, array(
-			'PATH' =>  $bin_dir . ':' . getenv( 'PATH' ),
-			'BEHAT_RUN' => 1
-		) );
+		$proc = proc_open( $this->command, $descriptors, $pipes, $cwd, $this->env );
 
-		$proc = proc_open( $this->command, $descriptors, $pipes, $cwd, $env );
-
-		$STDOUT = stream_get_contents( $pipes[1] );
+		$stdout = stream_get_contents( $pipes[1] );
 		fclose( $pipes[1] );
 
-		$STDERR = stream_get_contents( $pipes[2] );
+		$stderr = stream_get_contents( $pipes[2] );
 		fclose( $pipes[2] );
 
 		return new ProcessRun( array(
-			'STDOUT' => $STDOUT,
-			'STDERR' => $STDERR,
+			'stdout' => $stdout,
+			'stderr' => $stderr,
 			'return_code' => proc_close( $proc ),
 			'command' => $this->command,
 			'cwd' => $cwd,
-			'env' => $env
+			'env' => $this->env
 		) );
 	}
 
-	public function run_check( $subdir = '' ) {
-		$r = $this->run( $subdir );
+	/**
+	 * Run the command, but throw an Exception on error.
+	 *
+	 * @return ProcessRun
+	 */
+	public function run_check() {
+		$r = $this->run();
 
 		if ( $r->return_code || !empty( $r->STDERR ) ) {
 			throw new \RuntimeException( $r );
@@ -64,22 +74,32 @@ class Process {
 	}
 }
 
-
+/**
+ * Results of an executed command.
+ */
 class ProcessRun {
 
+	/**
+	 * @var array $props Properties of executed command.
+	 */
 	public function __construct( $props ) {
 		foreach ( $props as $key => $value ) {
 			$this->$key = $value;
 		}
 	}
 
+	/**
+	 * Return properties of executed command as a string.
+	 *
+	 * @return string
+	 */
 	public function __toString() {
 		$out  = "$ $this->command\n";
-		$out .= "$this->STDOUT\n$this->STDERR";
+		$out .= "$this->stdout\n$this->stderr";
 		$out .= "cwd: $this->cwd\n";
 		$out .= "exit status: $this->return_code";
 
 		return $out;
 	}
-}
 
+}
