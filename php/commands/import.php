@@ -8,7 +8,7 @@ class Import_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * <file>...
-	 * : Path to one or more valid WXR files for importing.
+	 * : Path to one or more valid WXR files for importing. Directories are also accepted.
 	 *
 	 * --authors=<authors>
 	 * : How the author mapping should be handled. Options are 'create', 'mapping.csv', or 'skip'. The first will create any non-existent users from the WXR file. The second will read author mapping associations from a CSV, or create a CSV for editing if the file path doesn't exist. The CSV requires two columns, and a header row like "old_user_login,new_user_login". The last option will skip any author mapping.
@@ -35,6 +35,17 @@ class Import_Command extends WP_CLI_Command {
 		$this->add_wxr_filters();
 
 		WP_CLI::log( 'Starting the import process...' );
+
+		$new_args = array();
+		foreach( $args as $arg ) {
+			if ( is_dir( $arg ) ) {
+				$files = glob( rtrim( $arg, '/' ) . '/*.{wxr,xml}', GLOB_BRACE );
+				$new_args = array_merge( $new_args, $files );
+			} else {
+				$new_args[] = $arg;
+			}
+		}
+		$args = $new_args;
 
 		foreach ( $args as $file ) {
 			if ( ! is_readable( $file ) ) {
