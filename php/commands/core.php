@@ -836,6 +836,8 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
+		WP_CLI::log( "Updating to version {$update->version} ({$update->locale})..." );
+
 		$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 
 		if ( is_wp_error($result) ) {
