@@ -84,6 +84,39 @@ Feature: Export content.
       10
       """
 
+  Scenario: Export only one post
+    Given a WP install
+    And these installed and active plugins:
+      """
+      wordpress-importer
+      """
+
+    When I run `wp post generate --count=10`
+    And I run `wp post list --format=count`
+    Then STDOUT should be:
+      """
+      11
+      """
+
+    When I run `wp post create --post_title='Test post' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp export --post__in={POST_ID}`
+    And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
+
+    When I run `wp site empty --yes`
+    Then STDOUT should not be empty
+
+    When I run `wp import {EXPORT_FILE} --authors=skip`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --post_type=post --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
   Scenario: Export posts within a given date range
     Given a WP install
     And these installed and active plugins:
