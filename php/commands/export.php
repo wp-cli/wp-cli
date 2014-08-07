@@ -197,7 +197,8 @@ class Export_Command extends WP_CLI_Command {
 			WP_CLI::warning( "post__in should be comma-separated post IDs" );
 			return false;
 		}
-		$this->export_args['post__in'] = implode( ',', $post__in );
+		// New exporter uses a different argument
+		$this->export_args['post_ids'] = $post__in;
 		return true;
 	}
 
