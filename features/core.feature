@@ -246,11 +246,10 @@ Feature: Manage WordPress installation
       """
 
     When I run `wget http://wordpress.org/wordpress-3.9.zip --quiet`
-    Then STDOUT should be empty
-
-    When I run `wp core update wordpress-3.9.zip`
+    And I run `wp core update wordpress-3.9.zip`
     Then STDOUT should be:
       """
+      Starting update...
       Unpacking the update...
       Success: WordPress updated successfully.
       """
