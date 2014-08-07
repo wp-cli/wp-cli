@@ -793,6 +793,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 									'full' => $args[0],
 								),
 				'version' => $version,
+				'locale' => null
 			);
 
 		} else if ( empty( $assoc_args['version'] ) ) {
@@ -827,6 +828,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 					'full' => $new_package,
 				),
 				'version' => $version,
+				'locale' => $locale
 			);
 
 		} else {
@@ -836,7 +838,11 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
-		WP_CLI::log( "Updating to version {$update->version} ({$update->locale})..." );
+		if ( $update->version ) {
+			WP_CLI::log( "Updating to version {$update->version} ({$update->locale})..." );
+		} else {
+			WP_CLI::log( "Starting update..." );
+		}
 
 		$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 
