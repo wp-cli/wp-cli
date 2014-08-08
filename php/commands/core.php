@@ -146,10 +146,13 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		try {
-			return Requests::get( $url, $headers, $options );
+			$request = Requests::get( $url, $headers, $options );
+			unlink( $options['verify'] );
+			return $request;
 		} catch( Requests_Exception $ex ) {
 			// Handle SSL certificate issues gracefully
 			WP_CLI::warning( $ex->getMessage() );
+			unlink( $options['verify'] );
 			$options['verify'] = false;
 			try {
 				return Requests::get( $url, $headers, $options );
