@@ -1,5 +1,6 @@
 composer.lock
 config.yml
+/cache
 /vendor
 /*.phar
 /phpunit.xml
