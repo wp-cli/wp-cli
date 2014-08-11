@@ -166,7 +166,7 @@ COMMENT;
 			->link( esc_url( apply_filters('the_permalink_rss', get_permalink() ) ) )
 			->pubDate( mysql2date( 'D, d M Y H:i:s +0000', get_post_time( 'Y-m-d H:i:s', true ), false ) )
 			->tag( 'dc:creator', get_the_author_meta( 'login' ) )
-			->guid( get_the_guid(), array( 'isPermaLink' => 'false' ) )
+			->guid( esc_url( get_the_guid() ), array( 'isPermaLink' => 'false' ) )
 			->description( '' )
 			->tag( 'content:encoded' )->contains->cdata( $post->post_content )->end
 			->tag( 'excerpt:encoded' )->contains->cdata( $post->post_excerpt )->end
