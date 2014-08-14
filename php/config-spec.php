@@ -10,7 +10,7 @@ return array(
 	'url' => array(
 		'runtime' => '=<url>',
 		'file' => '<url>',
-		'desc' => 'Pretend request came from given URL',
+		'desc' => 'Pretend request came from given URL. In multisite, this argument is how the target site is specified.',
 	),
 	'blog' => array(
 		'deprecated' => 'Use --url instead.',
