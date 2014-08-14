@@ -21,8 +21,8 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <taxonomy>
-	 * : List terms of a given taxonomy.
+	 * <taxonomy>...
+	 * : List terms of one or more taxonomies
 	 *
 	 * [--<field>=<value>]
 	 * : Filter by one or more fields. For accepted fields, see get_terms().
