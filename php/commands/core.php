@@ -135,6 +135,8 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	private static function _request( $method, $url, $headers = array(), $options = array() ) {
+		$pem_copied = false;
+
 		// cURL can't read Phar archives
 		if ( 0 === strpos( WP_CLI_ROOT, 'phar://' ) ) {
 			$options['verify'] = sys_get_temp_dir() . '/wp-cli-cacert.pem';
@@ -143,13 +145,21 @@ class Core_Command extends WP_CLI_Command {
 				WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem',
 				$options['verify']
 			);
+			$pem_copied = true;
 		}
 
 		try {
-			return Requests::get( $url, $headers, $options );
+			$request = Requests::get( $url, $headers, $options );
+			if ( $pem_copied ) {
+				unlink( $options['verify'] );
+			}
+			return $request;
 		} catch( Requests_Exception $ex ) {
 			// Handle SSL certificate issues gracefully
 			WP_CLI::warning( $ex->getMessage() );
+			if ( $pem_copied ) {
+				unlink( $options['verify'] );
+			}
 			$options['verify'] = false;
 			try {
 				return Requests::get( $url, $headers, $options );
