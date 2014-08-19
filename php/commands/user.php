@@ -582,7 +582,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$response = wp_remote_head( $filename );
 			$response_code = (string)wp_remote_retrieve_response_code( $response );
 			if ( in_array( $response_code[0], array( 4, 5 ) ) ) {
-				WP_CLI::error( "Couldn't access remote CSV file." );
+				WP_CLI::error( "Couldn't access remote CSV file (HTTP {$response_code} response)." );
 			}
 		} else if ( ! file_exists( $filename ) ) {
 			WP_CLI::error( sprintf( "Missing file: %s", $filename ) );
