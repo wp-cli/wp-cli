@@ -550,7 +550,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <file>
-	 * : The CSV file of users to import.
+	 * : The local or remote CSV file of users to import.
 	 *
 	 * [--send-email]
 	 * : Send an email to new users with their account details.
@@ -561,6 +561,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     wp user import-csv /path/to/users.csv
+	 *     wp user import-csv http://example.com/users.csv
 	 *
 	 *     Sample users.csv file:
 	 *
@@ -577,8 +578,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$filename = $args[0];
 
-		if ( ! file_exists( $filename ) ) {
-			WP_CLI::warning( sprintf( "Missing file: %s", $filename ) );
+		if ( 0 === stripos( $filename, 'http://' ) || 0 === stripos( $filename, 'https://' ) ) {
+			$response = wp_remote_head( $filename );
+			$response_code = (string)wp_remote_retrieve_response_code( $response );
+			if ( in_array( $response_code[0], array( 4, 5 ) ) ) {
+				WP_CLI::error( "Couldn't access remote CSV file (HTTP {$response_code} response)." );
+			}
+		} else if ( ! file_exists( $filename ) ) {
+			WP_CLI::error( sprintf( "Missing file: %s", $filename ) );
 		}
 
 		foreach ( new \WP_CLI\Iterators\CSV( $filename ) as $i => $new_user ) {
