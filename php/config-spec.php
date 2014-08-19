@@ -6,6 +6,12 @@ return array(
 		'file' => '<path>',
 		'desc' => 'Path to the WordPress files',
 	),
+	'wp-config-path' => array(
+        'runtime' => '=<path>',
+        'file' => '<path>',
+        'desc' => 'Path to the WordPress config file',
+        'default' => false,
+    ),
 
 	'url' => array(
 		'runtime' => '=<url>',

@@ -187,7 +187,11 @@ function locate_wp_config() {
 	static $path;
 
 	if ( null === $path ) {
-		if ( file_exists( ABSPATH . 'wp-config.php' ) )
+		$custom_path = \WP_CLI::get_config('wp-config-path');
+
+        if ( ! empty( $custom_path ) && file_exists( $custom_path . '/wp-config.php' ) )
+            $path = $custom_path . '/wp-config.php';
+        elseif ( file_exists( ABSPATH . 'wp-config.php' ) )
 			$path = ABSPATH . 'wp-config.php';
 		elseif ( file_exists( ABSPATH . '../wp-config.php' ) && ! file_exists( ABSPATH . '/../wp-settings.php' ) )
 			$path = ABSPATH . '../wp-config.php';
