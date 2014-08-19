@@ -130,6 +130,12 @@ Feature: Manage WordPress users
       admin,admin@domain.com,Existing User,administrator
       """
 
+    When I try `wp user import-csv users-incorrect.csv --skip-update`
+    Then STDERR should be:
+      """
+      Error: Missing file: users-incorrect.csv
+      """
+
     When I run `wp user import-csv users.csv`
     Then STDOUT should not be empty
 
