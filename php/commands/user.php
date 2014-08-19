@@ -585,7 +585,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				WP_CLI::error( "Couldn't access remote CSV file." );
 			}
 		} else if ( ! file_exists( $filename ) ) {
-			WP_CLI::warning( sprintf( "Missing file: %s", $filename ) );
+			WP_CLI::error( sprintf( "Missing file: %s", $filename ) );
 		}
 
 		foreach ( new \WP_CLI\Iterators\CSV( $filename ) as $i => $new_user ) {
