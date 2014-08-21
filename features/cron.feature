@@ -4,16 +4,16 @@ Feature: Manage WP-Cron events and schedules
     Given a WP install
 
   Scenario: Scheduling and then deleting an event
-    When I run `wp cron event schedule wp_cli_test_event_1 '+1 hour'`
+    When I run `wp cron event schedule wp_cli_test_event_1 '+1 hour' --apple=banana`
     Then STDOUT should contain:
       """
       Success: Scheduled event with hook 'wp_cli_test_event_1'
       """
 
-    When I run `wp cron event list --format=csv --fields=hook,recurrence`
+    When I run `wp cron event list --format=csv --fields=hook,recurrence,args`
     Then STDOUT should be CSV containing:
-      | hook                | recurrence    |
-      | wp_cli_test_event_1 | Non-repeating |
+      | hook                | recurrence    | args                |
+      | wp_cli_test_event_1 | Non-repeating | {"apple":"banana"}  |
 
     When I run `wp cron event delete wp_cli_test_event_1`
     Then STDOUT should contain:
