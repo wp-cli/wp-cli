@@ -414,6 +414,13 @@ function replace_path_consts( $source, $path ) {
 function http_request( $method, $url, $headers = array(), $options = array() ) {
 	$pem_copied = false;
 
+	$method = strtolower( $method );
+
+	if ( ! in_array( $method, array( 'get', 'post', 'put', 'delete', 'head', 'patch' ) ) ) {
+		$method = strtoupper( $method );
+		WP_CLI::error( "Invalid method: {$method}" );
+	}
+
 	// cURL can't read Phar archives
 	if ( 0 === strpos( WP_CLI_ROOT, 'phar://' ) ) {
 		$options['verify'] = sys_get_temp_dir() . '/wp-cli-cacert.pem';
@@ -424,8 +431,6 @@ function http_request( $method, $url, $headers = array(), $options = array() ) {
 		);
 		$pem_copied = true;
 	}
-
-	$method = strtolower( $method );
 
 	try {
 		$request = \Requests::$method( $url, $headers, $options );
