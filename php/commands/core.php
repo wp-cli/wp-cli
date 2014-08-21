@@ -824,13 +824,16 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			if ( ! preg_match('!^(http|https|ftp)://!i', $package) && file_exists( $package ) ) //Local file or remote?
 				return $reply; //must be a local file..
 
+			$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.tar.gz';
+
 			$cache = WP_CLI::get_cache();
 			$cache_key = "core/{$update->locale}-{$update->version}.tar.gz";
 			$cache_file = $cache->has( $cache_key );
 
 			if ( $cache_file ) {
 				WP_CLI::log( "Using cached file '$cache_file'..." );
-				return $cache_file;
+				copy( $cache_file, $temp );
+				return $temp;
 			} else {
 				// We need to use a temporary file because piping from cURL to tar is flaky
 				// on MinGW (and probably in other environments too).
@@ -844,8 +847,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 				Utils\get_request( $package, $headers, $options );
 				$cache->import( $cache_key, $temp );
-				unlink($temp);
-				return $cache->has( $cache_key );
+				return $temp;
 			}
 		};
 		add_filter( 'upgrader_pre_download', $defer_cached_file, 10, 3 );
