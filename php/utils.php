@@ -403,13 +403,15 @@ function replace_path_consts( $source, $path ) {
 }
 
 /**
- * Download a remote URL
+ * Make a HTTP request to a remote URL
  *
+ * @param string $method
  * @param string $url
  * @param array $headers
  * @param array $options
+ * @return object
  */
-function get_request( $url, $headers = array(), $options = array() ) {
+function http_request( $method, $url, $headers = array(), $options = array() ) {
 	$pem_copied = false;
 
 	// cURL can't read Phar archives
@@ -423,8 +425,10 @@ function get_request( $url, $headers = array(), $options = array() ) {
 		$pem_copied = true;
 	}
 
+	$method = strtolower( $method );
+
 	try {
-		$request = \Requests::get( $url, $headers, $options );
+		$request = \Requests::$method( $url, $headers, $options );
 		if ( $pem_copied ) {
 			unlink( $options['verify'] );
 		}
