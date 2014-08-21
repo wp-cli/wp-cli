@@ -299,6 +299,26 @@ Feature: Manage WordPress installation
       Error: WordPress install doesn't verify against checksums.
       """
 
+  Scenario: Core update from cache
+    Given a WP install
+    And an empty cache
+
+    When I run `wp core update --version=3.8.1 --force`
+    Then STDOUT should not contain:
+      """
+      Using cached file
+      """
+
+    When I run `wp core update --version=3.9 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp core update --version=3.8.1 --force`
+    Then STDOUT should contain:
+      """
+      Using cached file '{SUITE_CACHE_DIR}/core/en_US-3.8.1.tar.gz'...
+      """
+
+
   Scenario: User defined in wp-cli.yml
     Given an empty directory
     And WP files
