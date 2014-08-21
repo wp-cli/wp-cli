@@ -790,8 +790,6 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 			$new_package = $this->get_download_url($version, $locale);
 
-			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $locale ) );
-
 			$update = (object) array(
 				'response' => 'upgrade',
 				'current' => $assoc_args['version'],

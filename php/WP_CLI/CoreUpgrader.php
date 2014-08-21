@@ -32,8 +32,6 @@ class CoreUpgrader extends \Core_Upgrader {
 		if ( empty( $package ) )
 			return new WP_Error( 'no_package', $this->strings['no_package'] );
 
-		$this->skin->feedback( 'downloading_package', $package );
-
 		$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.tar.gz';
 
 		$cache = WP_CLI::get_cache();
@@ -55,6 +53,8 @@ class CoreUpgrader extends \Core_Upgrader {
 				'timeout' => 600,  // 10 minutes ought to be enough for everybody
 				'filename' => $temp
 			);
+
+			$this->skin->feedback( 'downloading_package', $package );
 
 			Utils\get_request( $package, $headers, $options );
 			$cache->import( $cache_key, $temp );

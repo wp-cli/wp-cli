@@ -308,6 +308,10 @@ Feature: Manage WordPress installation
       """
       Using cached file
       """
+    And STDOUT should contain:
+      """
+      Downloading
+      """
 
     When I run `wp core update --version=3.9 --force`
     Then STDOUT should not be empty
@@ -316,6 +320,10 @@ Feature: Manage WordPress installation
     Then STDOUT should contain:
       """
       Using cached file '{SUITE_CACHE_DIR}/core/en_US-3.8.1.tar.gz'...
+      """
+    And STDOUT should not contain:
+      """
+      Downloading
       """
 
 
