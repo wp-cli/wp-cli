@@ -32,6 +32,7 @@ if (!function_exists('spyc_load_file')) {
   }
 }
 
+if ( ! class_exists( 'Spyc' ) ) :
 /**
    * The Simple PHP YAML Class.
    *
@@ -1031,3 +1032,4 @@ class Spyc {
   }
 }
 
+endif;
