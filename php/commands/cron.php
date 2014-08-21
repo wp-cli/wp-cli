@@ -20,10 +20,26 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Available fields: hook, next_run, next_run_gmt, next_run_relative, recurrence.
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json, csv, ids. Default: table.
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each cron event:
+	 * * hook
+	 * * next_run_gmt
+	 * * next_run_relative
+	 * * recurrence
+	 *
+	 * These fields are optionally available:
+	 * * time
+	 * * sig
+	 * * args
+	 * * schedule
+	 * * interval
+	 * * next_run
 	 *
 	 * ## EXAMPLES
 	 *
