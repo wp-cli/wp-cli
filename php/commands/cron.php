@@ -58,6 +58,13 @@ class Cron_Event_Command extends WP_CLI_Command {
 			$events = array();
 		}
 
+		if ( in_array( $formatter->format, array( 'table', 'csv' ) ) ) {
+			$events = array_map( function( $event ){
+				$event->args = json_encode( $event->args );
+				return $event;
+			}, $events );
+		}
+
 		if ( 'ids' == $formatter->format ) {
 			echo implode( ' ', wp_list_pluck( $events, 'hook' ) );
 		} else {
@@ -93,9 +100,11 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 */
 	public function schedule( $args, $assoc_args ) {
 
-		list( $hook, $next_run, $recurrence ) = $args;
+		$hook = $args[0];
+		$next_run = ( isset( $args[1] ) ) ? $args[1] : false;
+		$recurrence = ( isset( $args[2] ) ) ? $args[2] : false;
 
-		if ( !isset( $next_run ) ) {
+		if ( ! empty( $next_run ) ) {
 			$timestamp = time();
 		} else if ( is_numeric( $next_run ) ) {
 			$timestamp = absint( $next_run );
@@ -107,7 +116,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( "'%s' is not a valid datetime.", $next_run ) );
 		}
 
-		if ( isset( $recurrence ) ) {
+		if ( ! empty( $recurrence ) ) {
 
 			$schedules = wp_get_schedules();
 
