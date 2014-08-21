@@ -75,7 +75,7 @@ class Core_Command extends WP_CLI_Command {
 				'filename' => $temp
 			);
 
-			Utils\http_request( 'GET', $download_url, $headers, $options );
+			Utils\http_request( 'GET', $download_url, null, $headers, $options );
 			self::_extract( $temp, ABSPATH );
 			$cache->import( $cache_key, $temp );
 			unlink($temp);
@@ -136,7 +136,7 @@ class Core_Command extends WP_CLI_Command {
 
 	private static function _read( $url ) {
 		$headers = array('Accept' => 'application/json');
-		return Utils\http_request( 'GET', $url, $headers )->body;
+		return Utils\http_request( 'GET', $url, null, $headers )->body;
 	}
 
 	private function get_download_offer( $locale ) {
@@ -659,11 +659,11 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		$headers = array(
 			'Accept' => 'application/json'
 		);
-		$response = Utils\http_request( 'GET', $url, $headers, $options );
+		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
 
 		if ( $ssl && ! $response->success ) {
 			WP_CLI::warning( 'wp-cli could not establish a secure connection to WordPress.org. Please contact your server administrator.' );
-			$response = Utils\http_request( 'GET', $http_url, $headers, $options );
+			$response = Utils\http_request( 'GET', $http_url, null, $headers, $options );
 		}
 
 		if ( ! $response->success || 200 != $response->status_code )

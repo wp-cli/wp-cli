@@ -411,7 +411,7 @@ function replace_path_consts( $source, $path ) {
  * @param array $options
  * @return object
  */
-function http_request( $method, $url, $headers = array(), $options = array() ) {
+function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
 	$pem_copied = false;
 
 	// cURL can't read Phar archives
@@ -426,7 +426,7 @@ function http_request( $method, $url, $headers = array(), $options = array() ) {
 	}
 
 	try {
-		$request = \Requests::request( $url, null, $method, $headers, $options );
+		$request = \Requests::request( $url, $headers, $data, $method, $options );
 		if ( $pem_copied ) {
 			unlink( $options['verify'] );
 		}
@@ -439,7 +439,7 @@ function http_request( $method, $url, $headers = array(), $options = array() ) {
 		}
 		$options['verify'] = false;
 		try {
-			return \Requests::request( $url, null, $method, $headers, $options );
+			return \Requests::request( $url, $headers, $data, $method, $options );
 		} catch( \Requests_Exception $ex ) {
 			\WP_CLI::error( $ex->getMessage() );
 		}

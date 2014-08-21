@@ -56,7 +56,7 @@ class CoreUpgrader extends \Core_Upgrader {
 
 			$this->skin->feedback( 'downloading_package', $package );
 
-			Utils\http_request( 'GET', $package, $headers, $options );
+			Utils\http_request( 'GET', $package, null, $headers, $options );
 			$cache->import( $cache_key, $temp );
 			return $temp;
 		}
