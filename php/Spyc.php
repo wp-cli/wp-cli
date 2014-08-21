@@ -10,7 +10,7 @@
    * @package Spyc
    */
 
-if (!function_exists('spyc_load')) {
+if (!function_exists('spyc_load')) :
   /**
    * Parses YAML to array.
    * @param string $string YAML string.
@@ -19,9 +19,9 @@ if (!function_exists('spyc_load')) {
   function spyc_load ($string) {
     return Spyc::YAMLLoadString($string);
   }
-}
+endif;
 
-if (!function_exists('spyc_load_file')) {
+if (!function_exists('spyc_load_file')) :
   /**
    * Parses YAML to array.
    * @param string $file Path to YAML file.
@@ -30,7 +30,7 @@ if (!function_exists('spyc_load_file')) {
   function spyc_load_file ($file) {
     return Spyc::YAMLLoad($file);
   }
-}
+endif;
 
 if ( ! class_exists( 'Spyc' ) ) :
 /**
