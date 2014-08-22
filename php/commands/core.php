@@ -75,7 +75,7 @@ class Core_Command extends WP_CLI_Command {
 				'filename' => $temp
 			);
 
-			self::_request( 'GET', $download_url, $headers, $options );
+			Utils\http_request( 'GET', $download_url, null, $headers, $options );
 			self::_extract( $temp, ABSPATH );
 			$cache->import( $cache_key, $temp );
 			unlink($temp);
@@ -134,44 +134,9 @@ class Core_Command extends WP_CLI_Command {
 		rmdir( $dir );
 	}
 
-	private static function _request( $method, $url, $headers = array(), $options = array() ) {
-		$pem_copied = false;
-
-		// cURL can't read Phar archives
-		if ( 0 === strpos( WP_CLI_ROOT, 'phar://' ) ) {
-			$options['verify'] = sys_get_temp_dir() . '/wp-cli-cacert.pem';
-
-			copy(
-				WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem',
-				$options['verify']
-			);
-			$pem_copied = true;
-		}
-
-		try {
-			$request = Requests::get( $url, $headers, $options );
-			if ( $pem_copied ) {
-				unlink( $options['verify'] );
-			}
-			return $request;
-		} catch( Requests_Exception $ex ) {
-			// Handle SSL certificate issues gracefully
-			WP_CLI::warning( $ex->getMessage() );
-			if ( $pem_copied ) {
-				unlink( $options['verify'] );
-			}
-			$options['verify'] = false;
-			try {
-				return Requests::get( $url, $headers, $options );
-			} catch( Requests_Exception $ex ) {
-				WP_CLI::error( $ex->getMessage() );
-			}
-		}
-	}
-
 	private static function _read( $url ) {
 		$headers = array('Accept' => 'application/json');
-		return self::_request( 'GET', $url, $headers )->body;
+		return Utils\http_request( 'GET', $url, null, $headers )->body;
 	}
 
 	private function get_download_offer( $locale ) {
@@ -694,11 +659,11 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		$headers = array(
 			'Accept' => 'application/json'
 		);
-		$response = self::_request( 'GET', $url, $headers, $options );
+		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
 
 		if ( $ssl && ! $response->success ) {
 			WP_CLI::warning( 'wp-cli could not establish a secure connection to WordPress.org. Please contact your server administrator.' );
-			$response = self::_request( 'GET', $http_url, $headers, $options );
+			$response = Utils\http_request( 'GET', $http_url, null, $headers, $options );
 		}
 
 		if ( ! $response->success || 200 != $response->status_code )
@@ -785,7 +750,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		global $wp_version;
 
 		$update = $from_api = null;
-		$upgrader = 'Core_Upgrader';
+		$upgrader = 'WP_CLI\\CoreUpgrader';
 
 		if ( ! empty( $args[0] ) ) {
 
@@ -825,8 +790,6 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 			$new_package = $this->get_download_url($version, $locale);
 
-			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $locale ) );
-
 			$update = (object) array(
 				'response' => 'upgrade',
 				'current' => $assoc_args['version'],
@@ -854,7 +817,9 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			WP_CLI::log( "Starting update..." );
 		}
 
+		$GLOBALS['wp_cli_update_obj'] = $update;
 		$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
+		unset( $GLOBALS['wp_cli_update_obj'] );
 
 		if ( is_wp_error($result) ) {
 			$msg = WP_CLI::error_to_string( $result );
