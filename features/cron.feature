@@ -18,7 +18,7 @@ Feature: Manage WP-Cron events and schedules
     When I run `wp cron event delete wp_cli_test_event_1`
     Then STDOUT should contain:
       """
-      Success: Deleted 1 instances of the cron event 'wp_cli_test_event_1'
+      Success: Deleted the cron event 'wp_cli_test_event_1'
       """
 
     When I run `wp cron event list`
@@ -141,7 +141,7 @@ Feature: Manage WP-Cron events and schedules
     When I run `wp cron event delete wp_cli_test_event_2`
     Then STDOUT should contain:
       """
-      Success: Deleted 1 instances of the cron event 'wp_cli_test_event_2'
+      Success: Deleted the cron event 'wp_cli_test_event_2'
       """
 
     When I run `wp cron event list`
