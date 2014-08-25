@@ -170,7 +170,8 @@ class Cron_Event_Command extends WP_CLI_Command {
 		}
 
 		if ( $executed ) {
-			WP_CLI::success( sprintf( "Executed %d instances of the cron event '%s'", $executed, $hook ) );
+			$message = ( 1 == $executed ) ? "Executed the cron event '%2\$s'" : "Executed %1\$d instances of the cron event '%2\$s'";
+			WP_CLI::success( sprintf( $message, $executed, $hook ) );
 		} else {
 			WP_CLI::error( sprintf( "Invalid cron event '%s'", $hook ) );
 		}
@@ -232,7 +233,8 @@ class Cron_Event_Command extends WP_CLI_Command {
 		}
 
 		if ( $deleted ) {
-			WP_CLI::success( sprintf( "Deleted %d instances of the cron event '%s'", $deleted, $hook ) );
+			$message = ( 1 == $deleted ) ? "Deleted the cron event '%2\$s'" : "Deleted %1\$d instances of the cron event '%2\$s'";
+			WP_CLI::success( sprintf( $message, $deleted, $hook ) );
 		} else {
 			WP_CLI::error( sprintf( "Invalid cron event '%s'", $hook ) );
 		}
