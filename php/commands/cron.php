@@ -151,24 +151,28 @@ class Cron_Event_Command extends WP_CLI_Command {
 	public function run( $args, $assoc_args ) {
 
 		$hook   = $args[0];
-		$result = false;
 		$events = self::get_cron_events();
 
 		if ( is_wp_error( $events ) ) {
 			WP_CLI::error( $events );
 		}
 
+		$executed = 0;
 		foreach ( $events as $id => $event ) {
 			if ( $event->hook == $hook ) {
 				$result = self::run_event( $event );
-				break;
+				if ( $result ) {
+					$executed++;
+				} else {
+					WP_CLI::warning( sprintf( "Failed to the execute the cron event '%s'", $hook ) );
+				}
 			}
 		}
 
-		if ( $result ) {
-			WP_CLI::success( sprintf( "Successfully executed the cron event '%s'", $hook ) );
+		if ( $executed ) {
+			WP_CLI::success( sprintf( "Executed %d instances of the cron event '%s'", $executed, $hook ) );
 		} else {
-			WP_CLI::error( sprintf( "Failed to the execute the cron event '%s'", $hook ) );
+			WP_CLI::error( sprintf( "Invalid cron event '%s'", $hook ) );
 		}
 
 	}
@@ -209,24 +213,28 @@ class Cron_Event_Command extends WP_CLI_Command {
 	public function delete( $args, $assoc_args ) {
 
 		$hook   = $args[0];
-		$result = false;
 		$events = self::get_cron_events();
 
 		if ( is_wp_error( $events ) ) {
 			WP_CLI::error( $events );
 		}
 
+		$deleted = 0;
 		foreach ( $events as $id => $event ) {
 			if ( $event->hook == $hook ) {
 				$result = self::delete_event( $event );
-				break;
+				if ( $result ) {
+					$deleted++;
+				} else {
+					WP_CLI::warning( sprintf( "Failed to the delete the cron event '%s'", $hook ) );
+				}
 			}
 		}
 
-		if ( $result ) {
-			WP_CLI::success( sprintf( "Successfully deleted the cron event '%s'", $hook ) );
+		if ( $deleted ) {
+			WP_CLI::success( sprintf( "Deleted %d instances of the cron event '%s'", $deleted, $hook ) );
 		} else {
-			WP_CLI::error( sprintf( "Failed to the delete the cron event '%s'", $hook ) );
+			WP_CLI::error( sprintf( "Invalid cron event '%s'", $hook ) );
 		}
 
 	}
