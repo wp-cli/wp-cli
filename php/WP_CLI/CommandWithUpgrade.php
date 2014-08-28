@@ -104,7 +104,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( in_array( true, wp_list_pluck( $items, 'update' ) ) )
 			$legend_line[] = '%yU = Update Available%n';
 
-		\WP_CLI::line( 'Legend: ' . implode( ', ', \WP_CLI::colorize( $legend_line ) ) );
+		\WP_CLI::line( 'Legend: ' . \WP_CLI::colorize( implode( ', ', $legend_line ) ) );
 	}
 
 	function install( $args, $assoc_args ) {
