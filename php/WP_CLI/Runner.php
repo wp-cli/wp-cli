@@ -196,7 +196,7 @@ class Runner {
 	 * @param array $assoc_args
 	 * @return string|false
 	 */
-	private static function guess_url( $assoc_args ) {
+	private static function load_url( $assoc_args ) {
 		if ( isset( $assoc_args['blog'] ) ) {
 			$assoc_args['url'] = $assoc_args['blog'];
 		}
@@ -206,30 +206,6 @@ class Runner {
 			if ( true === $url ) {
 				WP_CLI::warning( 'The --url parameter expects a value.' );
 			}
-		} elseif ( $wp_config_path = Utils\locate_wp_config() ) {
-			// Try to find the blog parameter in the wp-config file
-			$wp_config_file = file_get_contents( $wp_config_path );
-			$hit = array();
-
-			$re_define = "#.*define\s*\(\s*(['|\"]{1})(.+)(['|\"]{1})\s*,\s*(['|\"]{1})(.+)(['|\"]{1})\s*\)\s*;#iU";
-
-			if ( preg_match_all( $re_define, $wp_config_file, $matches ) ) {
-				foreach ( $matches[2] as $def_key => $def_name ) {
-					if ( 'DOMAIN_CURRENT_SITE' == $def_name )
-						$hit['domain'] = $matches[5][$def_key];
-					if ( 'PATH_CURRENT_SITE' == $def_name )
-						$hit['path'] = $matches[5][$def_key];
-				}
-			}
-
-			if ( !empty( $hit ) && isset( $hit['domain'] ) ) {
-				$url = $hit['domain'];
-				if ( isset( $hit['path'] ) )
-					$url .= $hit['path'];
-			}
-		}
-
-		if ( isset( $url ) ) {
 			return $url;
 		}
 
@@ -592,7 +568,7 @@ class Runner {
 		}
 
 		// Handle --url parameter
-		$url = self::guess_url( $this->config );
+		$url = self::load_url( $this->config );
 		if ( $url )
 			\WP_CLI::set_url( $url );
 
@@ -652,6 +628,18 @@ class Runner {
 
 		if ( $this->cmd_starts_with( array( 'plugin' ) ) ) {
 			$GLOBALS['pagenow'] = 'plugins.php';
+		}
+	}
+
+	public function maybe_update_url() {
+		if ( empty( $this->config['url'] ) && empty( $this->config['blog'] ) ) {
+			if ( defined( 'DOMAIN_CURRENT_SITE' ) ) {
+				$url = DOMAIN_CURRENT_SITE;
+				if ( defined( 'PATH_CURRENT_SITE' ) ) {
+					$url .= PATH_CURRENT_SITE;
+				}
+				\WP_CLI::set_url( $url );
+			}
 		}
 	}
 
