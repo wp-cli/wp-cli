@@ -70,12 +70,34 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Dump the list of global parameters, as JSON.
+	 * Dump the list of global parameters, as JSON or by var_export.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: var_export
 	 *
 	 * @subcommand param-dump
 	 */
-	function param_dump() {
-		echo json_encode( \WP_CLI::get_configurator()->get_spec() );
+	function param_dump( $_, $assoc_args ) {
+		$spec = \WP_CLI::get_configurator()->get_spec();
+		$config = \WP_CLI::get_configurator()->to_array();
+
+		// copy current config values to $spec
+		foreach ( $spec as $key => $value ) {
+			if ( isset( $config[0][$key] ) ) {
+				$current = $config[0][$key];
+			} else {
+				$current = NULL;
+			}
+			$spec[$key]['current'] = $current;
+		}
+
+		if ( isset( $assoc_args['format'] ) && 'var_export' === $assoc_args['format'] ) {
+			var_export( $spec );
+		} else {
+			echo json_encode( $spec );
+		}
 	}
 
 	/**
