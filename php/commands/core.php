@@ -10,6 +10,59 @@ use \WP_CLI\Utils;
 class Core_Command extends WP_CLI_Command {
 
 	/**
+	 * Check for update via Version Check API. Returns latest version if there's an update, or empty if no update available.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--major]
+	 * : Compare only the first two parts of the version numbers.
+	 *
+	 * @subcommand check-update
+	 */
+	function check_update( $_, $assoc_args ) {
+		$versions_path = ABSPATH . 'wp-includes/version.php';
+
+		if ( ! is_readable( $versions_path ) ) {
+			WP_CLI::error(
+				"This does not seem to be a WordPress install.\n" .
+				"Pass --path=`path/to/wordpress` or run `wp core download`." );
+		}
+
+		include $versions_path;
+
+		$url = 'http://api.wordpress.org/core/version-check/1.7/';
+
+		$options = array(
+			'timeout' => 30
+		);
+
+		$headers = array(
+			'Accept' => 'application/json'
+		);
+		$response = Utils\request( 'GET', $url, $headers, $options );
+
+		if ( ! $response->success || 200 !== $response->status_code ) {
+			WP_CLI::error( "Failed to get latest version." );
+		}
+
+		$latest_data = json_decode( $response->body );
+
+		$latest = $latest_data->offers[0]->current;
+
+		if ( isset( $assoc_args['major'] ) ) {
+			$latest_major = explode( '.', $latest );
+			$current_major = explode( '.', $wp_version );
+			if ( $latest_major[0] !== $current_major[0]
+				|| $latest_major[1] !== $current_major[1] ) {
+				WP_CLI::line( $latest );
+			}
+
+		} else {
+			WP_CLI::line( $latest );
+		}
+	}
+
+	/**
 	 * Download core WordPress files.
 	 *
 	 * ## OPTIONS
