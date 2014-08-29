@@ -39,7 +39,7 @@ class Core_Command extends WP_CLI_Command {
 		$headers = array(
 			'Accept' => 'application/json'
 		);
-		$response = Utils\request( 'GET', $url, $headers, $options );
+		$response = Utils\http_request( 'GET', $url, $headers, $options );
 
 		if ( ! $response->success || 200 !== $response->status_code ) {
 			WP_CLI::error( "Failed to get latest version." );
@@ -57,7 +57,7 @@ class Core_Command extends WP_CLI_Command {
 				WP_CLI::line( $latest );
 			}
 
-		} else {
+		} elseif ( $wp_version !== $latest ) {
 			WP_CLI::line( $latest );
 		}
 	}
