@@ -216,6 +216,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$this->maybe_create_themes_dir();
 
+		$this->init_wp_filesystem();
 		unzip_file( $tmpfname, $theme_path );
 		unlink( $tmpfname );
 
