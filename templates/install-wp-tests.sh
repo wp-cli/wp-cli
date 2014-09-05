@@ -12,15 +12,9 @@ DB_PASS=$3
 DB_HOST=${4-localhost}
 WP_VERSION=${5-latest}
 DB_EXISTS=0
-WP_TAR_EXISTS=0
-HAS_WGET=0
-HAS_MYSQLADMIN=0
-HAS_SVN=0
-HAS_TAR=0
-
-
 WP_TESTS_DIR=${WP_TESTS_DIR-/tmp/wordpress-tests-lib}
 WP_CORE_DIR=/tmp/wordpress/
+HAS_CURL=0
 
 set -e
 
@@ -28,42 +22,26 @@ set -e
 
 precheck() {
 
-	if hash wget 2>/dev/null ; then
-		HAS_WGET=1
+	if ! hash wget 2>/dev/null ; then
+		echo "This requires wget to be installed"
+		exit
 	fi
 
 	if hash curl 2>/dev/null ; then
 		HAS_CURL=1
 	fi
 
-	if hash svn 2>/dev/null ; then
-		HAS_SVN=1
-	fi
-
-	if hash tar 2>/dev/null ; then
-		HAS_TAR=1
-	fi
-
-	if hash mysqladmin 2>/dev/null ; then
-		HAS_MYSQLADMIN=1
-	fi
-
-	if [ "$HAS_WGET" != 1 ]; then
-		echo "This requires either wget to be installed"
-		exit
-	fi
-
-	if [ "$HAS_TAR" != 1 ]; then
-		echo "This requires tar to be installed"
-		exit
-	fi
-
-	if [ "$HAS_SVN" != 1 ]; then
+	if ! hash svn 2>/dev/null ; then
 		echo "This requires svn to be installed"
 		exit
 	fi
 
-	if [ "$HAS_MYSQLADMIN" != 1 ]; then
+	if ! hash tar 2>/dev/null ; then
+		echo "This requires tar to be installed"
+		exit
+	fi
+
+	if ! hash mysqladmin 2>/dev/null ; then
 		echo "This requires mysqladmin to be installed"
 		exit
 	fi
