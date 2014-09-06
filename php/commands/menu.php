@@ -190,10 +190,33 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * : The name, slug, or term ID for the menu
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to db_id,type,title,link
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each menu item:
+	 *
+	 * * db_id
+	 * * type
+	 * * title
+	 * * link
+	 * * position
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * menu_item_parent
+	 * * object_id
+	 * * object
+	 * * type
+	 * * type_label
+	 * * target
+	 * * attr_title
+	 * * description
+	 * * classes
+	 * * xfn
 	 *
 	 * ## EXAMPLES
 	 *
