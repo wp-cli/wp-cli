@@ -36,10 +36,35 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Prints the value of a single field for each user.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to ID,user_login,display_name,user_email,user_registered,roles
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each user:
+	 *
+	 * * ID
+	 * * user_login
+	 * * display_name
+	 * * user_email
+	 * * user_registered
+	 * * roles
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * user_pass
+	 * * user_nicename
+	 * * user_url
+	 * * user_activation_key
+	 * * user_status
+	 * * spam
+	 * * deleted
+	 * * caps
+	 * * cap_key
+	 * * allcaps
+	 * * filter
 	 *
 	 * ## EXAMPLES
 	 *

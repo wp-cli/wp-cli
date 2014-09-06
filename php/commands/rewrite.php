@@ -144,6 +144,7 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     wp rewrite list --format=csv
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
