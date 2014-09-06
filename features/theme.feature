@@ -211,3 +211,11 @@ Feature: Manage WordPress themes
       """
       Error: This is not a multisite install.
       """
+
+  Scenario: Search WordPress.org themes
+    Given a WP install
+
+    When I run `wp theme search Twenty --fields=name,slug`
+    Then STDOUT should be a table containing rows:
+      | name             | slug           |
+      | Twenty Twelve    | twentytwelve   |
