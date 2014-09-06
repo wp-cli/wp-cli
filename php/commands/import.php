@@ -77,7 +77,7 @@ class Import_Command extends WP_CLI_Command {
 
 		// Prepare the data to be used in process_author_mapping();
 		$this->buffer_val = '';
-		ob_start( array( $this, 'handle_ob' ), 1 );
+		ob_start( array( $this, 'handle_ob' ), 2 );
 		$wp_import->get_authors_from_import( $import_data );
 		ob_end_clean();
 		$author_data = array();
@@ -133,7 +133,7 @@ class Import_Command extends WP_CLI_Command {
 		}
 
 		$this->buffer_val = '';
-		ob_start( array( $this, 'handle_ob' ), 1 );
+		ob_start( array( $this, 'handle_ob' ), 2 );
 		$wp_import->import( $file );
 		ob_end_clean();
 
