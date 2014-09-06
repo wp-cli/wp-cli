@@ -246,11 +246,10 @@ Feature: Manage WordPress installation
       """
 
     When I run `wget http://wordpress.org/wordpress-3.9.zip --quiet`
-    Then STDOUT should be empty
-
-    When I run `wp core update wordpress-3.9.zip`
+    And I run `wp core update wordpress-3.9.zip`
     Then STDOUT should be:
       """
+      Starting update...
       Unpacking the update...
       Success: WordPress updated successfully.
       """
@@ -299,6 +298,34 @@ Feature: Manage WordPress installation
       Warning: File doesn't exist: readme.html
       Error: WordPress install doesn't verify against checksums.
       """
+
+  Scenario: Core update from cache
+    Given a WP install
+    And an empty cache
+
+    When I run `wp core update --version=3.8.1 --force`
+    Then STDOUT should not contain:
+      """
+      Using cached file
+      """
+    And STDOUT should contain:
+      """
+      Downloading
+      """
+
+    When I run `wp core update --version=3.9 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp core update --version=3.8.1 --force`
+    Then STDOUT should contain:
+      """
+      Using cached file '{SUITE_CACHE_DIR}/core/en_US-3.8.1.tar.gz'...
+      """
+    And STDOUT should not contain:
+      """
+      Downloading
+      """
+
 
   Scenario: User defined in wp-cli.yml
     Given an empty directory

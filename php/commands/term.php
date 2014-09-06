@@ -21,8 +21,8 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <taxonomy>
-	 * : List terms of a given taxonomy.
+	 * <taxonomy>...
+	 * : List terms of one or more taxonomies
 	 *
 	 * [--<field>=<value>]
 	 * : Filter by one or more fields. For accepted fields, see get_terms().
@@ -217,7 +217,7 @@ class Term_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # delete all post tags
-	 *     wp term list post_tag --field=ID | xargs wp term delete post_tag
+	 *     wp term list post_tag --field=term_id | xargs wp term delete post_tag
 	 */
 	public function delete( $args ) {
 		$taxonomy = array_shift( $args );
@@ -327,7 +327,7 @@ class Term_Command extends WP_CLI_Command {
 	 * Get term url
 	 *
 	 * ## OPTIONS
-	 * 
+	 *
 	 * <taxonomy>
 	 * : Taxonomy of the term(s) to get.
 	 *

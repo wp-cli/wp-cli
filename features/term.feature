@@ -28,6 +28,15 @@ Feature: Manage WordPress terms
       | name      | slug |
       | Test term | test |
 
+    When I run `wp term create category 'Test category' --slug=test-category --description='This is a test category'`
+    Then STDOUT should not be empty
+
+    When I run `wp term list post_tag category --fields=name,slug --format=csv`
+    Then STDOUT should be CSV containing:
+      | name           | slug           |
+      | Test term      | test           |
+      | Test category  | test-category  |
+
     When I run `wp term get post_tag {TERM_ID}`
     Then STDOUT should be a table containing rows:
       | Field     | Value      |

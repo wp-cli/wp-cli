@@ -401,3 +401,47 @@ function replace_path_consts( $source, $path ) {
 
 	return str_replace( $old, $new, $source );
 }
+
+/**
+ * Make a HTTP request to a remote URL
+ *
+ * @param string $method
+ * @param string $url
+ * @param array $headers
+ * @param array $options
+ * @return object
+ */
+function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
+	$pem_copied = false;
+
+	// cURL can't read Phar archives
+	if ( 0 === strpos( WP_CLI_ROOT, 'phar://' ) ) {
+		$options['verify'] = sys_get_temp_dir() . '/wp-cli-cacert.pem';
+
+		copy(
+			WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem',
+			$options['verify']
+		);
+		$pem_copied = true;
+	}
+
+	try {
+		$request = \Requests::request( $url, $headers, $data, $method, $options );
+		if ( $pem_copied ) {
+			unlink( $options['verify'] );
+		}
+		return $request;
+	} catch( \Requests_Exception $ex ) {
+		// Handle SSL certificate issues gracefully
+		\WP_CLI::warning( $ex->getMessage() );
+		if ( $pem_copied ) {
+			unlink( $options['verify'] );
+		}
+		$options['verify'] = false;
+		try {
+			return \Requests::request( $url, $headers, $data, $method, $options );
+		} catch( \Requests_Exception $ex ) {
+			\WP_CLI::error( $ex->getMessage() );
+		}
+	}
+}
