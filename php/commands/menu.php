@@ -624,6 +624,13 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count, ids. Default: table
 	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each location:
+	 *
+	 * * name
+	 * * description
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp menu location list
