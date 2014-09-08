@@ -345,3 +345,13 @@ Feature: Manage WordPress installation
       """
       http://localhost:8001
       """
+
+  @require-wp-4.0
+  Scenario: Core translation CRUD
+    Given a WP install
+
+    When I run `wp core i18n list --fields=language,english_name,status`
+    Then STDOUT should be a table containing rows:
+      | language  | english_name     | status        |
+      | ar        | Arabic           | uninstalled   |
+      | az        | Azerbaijani      | uninstalled   |

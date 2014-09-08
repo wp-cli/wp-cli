@@ -873,3 +873,10 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 WP_CLI::add_command( 'core', 'Core_Command' );
 
+class Core_i18n_Command extends WP_CLI\CommandWithTranslation {
+
+	protected $object_type = 'core';
+
+}
+
+WP_CLI::add_command( 'core i18n', 'Core_i18n_Command' );
