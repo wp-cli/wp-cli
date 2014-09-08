@@ -6,9 +6,7 @@ set -ex
 vendor/bin/phpunit
 
 # http://stackoverflow.com/questions/4023830/bash-how-compare-two-strings-in-version-format
-function vercomp () {
-	echo $1
-	echo $2
+vercomp() {
     if [[ $1 == $2 ]]
     then
         return 0
@@ -44,13 +42,16 @@ if [[ ! -z "$WP_VERSION" ]]; then
     skip_tags="--tags='"
     requires=($(grep "@require-wp-[0-9\.]*" -h -o features/*.feature | uniq))
     for (( i = 0; i < ${#requires[@]}; i++ )); do
-        version=${requires[$i]:12}
-        comp=$(vercomp $version $WP_VERSION)
-        if [[ 1 == $comp ]]; then
-            skip_tags="$skip_tags~$tag,"
+        version=${requires[$i]:13}
+        require=${requires[$i]}
+        vercomp $version $WP_VERSION
+        compare="$?"
+        if [[ 1 == $compare ]]; then
+            skip_tags="$skip_tags~$require,"
         fi
     done
-    skip_tags="$skip_tags'"
+    skip_tags=$(echo $skip_tags| sed 's/\,$//') # trim trailing ','
+    skip_tags="$skip_tags'" # close the argument
 
 fi
 
