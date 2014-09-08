@@ -355,3 +355,16 @@ Feature: Manage WordPress installation
       | language  | english_name     | status        |
       | ar        | Arabic           | uninstalled   |
       | az        | Azerbaijani      | uninstalled   |
+      | en_GB     | English (UK)     | uninstalled   |
+
+    When I run `wp core i18n install en_GB`
+    Then STDOUT should be:
+      """
+      Success: Language installed.
+      """
+
+    When I run `wp core i18n install en_GB`
+    Then STDOUT should be:
+      """
+      Warning: Language already installed.
+      """

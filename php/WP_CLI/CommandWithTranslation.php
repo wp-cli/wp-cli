@@ -66,6 +66,35 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	}
 
 	/**
+	 * Install a given language.
+	 *
+	 * <language>
+	 * : Language code to install.
+	 *
+	 * @subcommand install
+	 */
+	public function install( $args, $assoc_args ) {
+
+		list( $language_code ) = $args;
+
+		$available = get_available_languages();
+		if ( in_array( $language_code, $available ) ) {
+			\WP_CLI::warning( "Language already installed." );
+			exit;
+		}
+
+		require_once ABSPATH . '/wp-admin/includes/translation-install.php';
+
+		$response = wp_download_language_pack( $language_code );
+		if ( $response == $language_code ) {
+			\WP_CLI::success( "Language installed." );
+		} else {
+			\WP_CLI::error( "Couldn't install language." );
+		}
+
+	}
+
+	/**
 	 * Get Formatter object based on supplied parameters.
 	 *
 	 * @param array $assoc_args Parameters passed to command. Determines formatting.
