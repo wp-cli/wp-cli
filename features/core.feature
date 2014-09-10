@@ -363,8 +363,8 @@ Feature: Manage WordPress installation
       Success: Language installed.
       """
 
-    When I run `wp core i18n install en_GB`
-    Then STDOUT should be:
+    When I try `wp core i18n install en_GB`
+    Then STDERR should be:
       """
       Warning: Language already installed.
       """
