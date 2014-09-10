@@ -10,28 +10,6 @@ use \WP_CLI\Utils;
 class Core_Command extends WP_CLI_Command {
 
 	/**
-	 * Compare processed releases to the current one, and delete older one. Return remaining updates.
-	 *
-	 */
-	private function remove_same_minor_releases( $release_parts, $updates ) {
-		if ( empty( $updates ) )
-			return false;
-
-		$differents = array();
-		foreach ( $updates as $processed ) {
-			$processed_parts = explode( '.', $processed['version'] );
-
-			// later releases are always later in the array
-			if ( $processed_parts[0] !== $release_parts[0]
-				|| $processed_parts[1] !== $release_parts[1] ) {
-				$differents[] = $processed;
-			}
-		}
-
-	return $differents;
-	}
-
-	/**
 	 * Check for update via Version Check API. Returns latest version if there's an update, or empty if no update available.
 	 *
 	 * ## OPTIONS
@@ -973,6 +951,29 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			return $url;
 		}
 	}
+
+	/**
+	 * Compare processed releases to the current one, and delete older one. Return remaining updates.
+	 *
+	 */
+	private function remove_same_minor_releases( $release_parts, $updates ) {
+		if ( empty( $updates ) )
+			return false;
+
+		$difference = array();
+		foreach ( $updates as $processed ) {
+			$processed_parts = explode( '.', $processed['version'] );
+
+			// later releases are always later in the array
+			if ( $processed_parts[0] !== $release_parts[0]
+				|| $processed_parts[1] !== $release_parts[1] ) {
+				$difference[] = $processed;
+			}
+		}
+
+		return $difference;
+	}
+
 }
 
 WP_CLI::add_command( 'core', 'Core_Command' );
