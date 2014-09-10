@@ -396,10 +396,20 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Available fields: name, display, interval.
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json, csv, ids. Default: table.
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each cron schedule:
+	 *
+	 * * name
+	 * * display
+	 * * interval
+	 *
+	 * There are no additional fields.
 	 *
 	 * ## EXAMPLES
 	 *

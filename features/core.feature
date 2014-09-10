@@ -345,3 +345,68 @@ Feature: Manage WordPress installation
       """
       http://localhost:8001
       """
+
+  @require-wp-4.0
+  Scenario: Core translation CRUD
+    Given a WP install
+
+    When I run `wp core language list --fields=language,english_name,status`
+    Then STDOUT should be a table containing rows:
+      | language  | english_name     | status        |
+      | ar        | Arabic           | uninstalled   |
+      | az        | Azerbaijani      | uninstalled   |
+      | en_GB     | English (UK)     | uninstalled   |
+
+    When I run `wp core language install en_GB`
+    Then the wp-content/languages/admin-en_GB.po file should exist
+    And the wp-content/languages/en_GB.po file should exist
+    And STDOUT should be:
+      """
+      Success: Language installed.
+      """
+
+    When I try `wp core language install en_GB`
+    Then STDERR should be:
+      """
+      Warning: Language already installed.
+      """
+
+    When I run `wp core language list --fields=language,english_name,status`
+    Then STDOUT should be a table containing rows:
+      | language  | english_name     | status        |
+      | ar        | Arabic           | uninstalled   |
+      | az        | Azerbaijani      | uninstalled   |
+      | en_GB     | English (UK)     | installed     |
+
+    When I run `wp core language activate en_GB`
+    Then STDOUT should be:
+      """
+      Success: Language activated.
+      """
+
+    When I run `wp core language list --fields=language,english_name,status`
+    Then STDOUT should be a table containing rows:
+      | language  | english_name     | status        |
+      | ar        | Arabic           | uninstalled   |
+      | az        | Azerbaijani      | uninstalled   |
+      | en_GB     | English (UK)     | active        |
+
+    When I try `wp core language activate invalid_lang`
+    Then STDERR should be:
+      """
+      Error: Language not installed.
+      """
+
+    When I run `wp core language uninstall en_GB`
+    Then the wp-content/languages/admin-en_GB.po file should not exist
+    And the wp-content/languages/en_GB.po file should not exist
+    And STDOUT should be:
+      """
+      Success: Language uninstalled.
+      """
+
+    When I try `wp core language uninstall en_GB`
+    Then STDERR should be:
+      """
+      Error: Language not installed.
+      """

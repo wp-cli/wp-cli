@@ -70,3 +70,10 @@ Feature: Manage WordPress terms
       """
       11
       """
+
+  Scenario: Term with a non-existent parent
+    When I try `wp term create category Apple --parent=99 --porcelain`
+    Then STDERR should be:
+      """
+      Error: Parent term does not exist.
+      """

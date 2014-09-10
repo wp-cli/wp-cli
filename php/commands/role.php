@@ -18,10 +18,19 @@ class Role_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to name,role.
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each role:
+	 *
+	 * * name
+	 * * role
+	 *
+	 * There are no optional fields.
 	 *
 	 * ## EXAMPLES
 	 *

@@ -12,8 +12,12 @@ Feature: Export content.
   Scenario: Term with a non-existent parent
     Given a WP install
 
-    When I run `wp term create category Apple --parent=99 --porcelain`
+    When I run `wp term create category Apple --porcelain`
     Then STDOUT should be a number
+    And save STDOUT as {TERM_ID}
+
+    When I run `wp term update category {TERM_ID} --parent=99`
+    Then STDOUT should not be empty
 
     When I try `wp export`
     Then STDERR should be:
