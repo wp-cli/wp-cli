@@ -110,7 +110,7 @@ class Term_Command extends WP_CLI_Command {
 		$defaults = array(
 			'slug'        => sanitize_title( $term ),
 			'description' => '',
-			'parent'      => '',
+			'parent'      => 0,
 		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
@@ -119,6 +119,11 @@ class Term_Command extends WP_CLI_Command {
 			unset( $assoc_args['porcelain'] );
 		} else {
 			$porcelain = false;
+		}
+
+		// Compatibility for < WP 4.0
+		if ( $assoc_args['parent'] > 0 && ! term_exists( (int) $assoc_args['parent'] ) ) {
+			WP_CLI::error( 'Parent term does not exist.' );
 		}
 
 		$ret = wp_insert_term( $term, $taxonomy, $assoc_args );
