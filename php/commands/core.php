@@ -14,17 +14,11 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * [--minor]
-	 * : Compare only the first two parts of the version number.
-	 *
-	 * [--major]
-	 * : Compare only the first part of the version number.
-	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each update.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to version,type,package_url.
+	 * : Limit the output to specific object fields. Defaults to version,package_url.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
@@ -32,9 +26,7 @@ class Core_Command extends WP_CLI_Command {
 	 * @subcommand check-update
 	 */
 	function check_update( $_, $assoc_args ) {
-		$versions_path = ABSPATH . 'wp-includes/version.php';
-		include $versions_path;
-
+		//TODO all versions: http://api.wordpress.org/core/stable-check/1.0/
 		$url = 'http://api.wordpress.org/core/version-check/1.7/';
 
 		$options = array(
@@ -52,45 +44,16 @@ class Core_Command extends WP_CLI_Command {
 
 		$release_data = json_decode( $response->body );
 
-		$current_parts = explode( '.', $wp_version );
-		$updates = array();
+		$updates[] = array(
+			'version' => $release_data->offers[0]->version,
+			'package_url' => $release_data->offers[0]->packages->no_content
+		);
 
-		foreach ( $release_data as $release ) {
-			$release_version = $release->tag_name;
-			// get rid of leading "v"
-			if ( 'v' === substr( $release_version, 0, 1 ) ) {
-				$release_version = ltrim( $release_version, 'v' );
-			}
-			// don't list the current version
-			if ( version_compare( $release_version, $wp_version '<=' ) )
-				continue;
-			$release_parts = explode( '.', $release_version );
-			$release_type = 'major';
-
-			if ( $release_parts[0] === $current_parts[0]
-				&& $release_parts[1] === $current_parts[1] ) {
-				$release_type = 'minor';
-			}
-
-			if ( ! ( isset( $assoc_args['minor'] ) && 'minor' !== $release_type )
-				&& ! ( isset( $assoc_args['major'] ) && 'major' !== $release_type )
-				) {
-				$updates[] = array(
-					'version' => $release_version,
-					'type' => $release_type,
-					// there's onyl one version on WP.org
-					'package_url' => $release->assets[0]->browser_download_url
-				);
-			}
-		}
-
-		if ( $updates ) {
-			$formatter = new \WP_CLI\Formatter(
-				$assoc_args,
-				array( 'version', 'type', 'package_url' )
-			);
-			$formatter->display_items( $updates );
-		}
+		$formatter = new \WP_CLI\Formatter(
+			$assoc_args,
+			array( 'version', 'package_url' )
+		);
+		$formatter->display_items( $updates );
 	}
 
 	/**
