@@ -70,6 +70,21 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Compare the last processed release to the current one, return true if it's the same minor version.
+	 *
+	 */
+	private function same_minor_release( $release_parts, $updates ) {
+		$previous = end( $updates );
+		if ( false === $previous )
+			return false;
+
+		$previous_parts = explode( '.', $previous['version'] );
+
+		return ( $previous_parts[0] === $release_parts[0]
+			&& $previous_parts[1] === $release_parts[1] );
+	}
+
+	/**
 	 * Check for update via Github API. Returns the available versions if there are updates, or empty if no update available.
 	 *
 	 * ## OPTIONS
@@ -117,7 +132,7 @@ class CLI_Command extends WP_CLI_Command {
 			if ( 'v' === substr( $release_version, 0, 1 ) ) {
 				$release_version = ltrim( $release_version, 'v' );
 			}
-			// don't list the current version
+			// don't list earlier releases
 			if ( version_compare( $release_version, WP_CLI_VERSION, '<=' ) )
 				continue;
 			$release_parts = explode( '.', $release_version );
@@ -130,6 +145,7 @@ class CLI_Command extends WP_CLI_Command {
 
 			if ( ! ( isset( $assoc_args['patch'] ) && 'patch' !== $update_type )
 				&& ! ( isset( $assoc_args['minor'] ) && 'minor' !== $update_type )
+				&& ! $this->same_minor_release( $release_parts, $updates )
 				) {
 				$updates[] = array(
 					'version' => $release_version,
