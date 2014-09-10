@@ -75,11 +75,7 @@ class Core_Command extends WP_CLI_Command {
 				'filename' => $temp
 			);
 
-<<<<<<< HEAD
-			Utils\request( 'GET', $download_url, $headers, $options );
-=======
 			Utils\http_request( 'GET', $download_url, null, $headers, $options );
->>>>>>> upstream/master
 			self::_extract( $temp, ABSPATH );
 			$cache->import( $cache_key, $temp );
 			unlink($temp);
@@ -140,11 +136,7 @@ class Core_Command extends WP_CLI_Command {
 
 	private static function _read( $url ) {
 		$headers = array('Accept' => 'application/json');
-<<<<<<< HEAD
-		return Utils\request( 'GET', $url, $headers )->body;
-=======
 		return Utils\http_request( 'GET', $url, null, $headers )->body;
->>>>>>> upstream/master
 	}
 
 	private function get_download_offer( $locale ) {
@@ -667,19 +659,11 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		$headers = array(
 			'Accept' => 'application/json'
 		);
-<<<<<<< HEAD
-		$response = Utils\request( 'GET', $url, $headers, $options );
-
-		if ( $ssl && ! $response->success ) {
-			WP_CLI::warning( 'wp-cli could not establish a secure connection to WordPress.org. Please contact your server administrator.' );
-			$response = Utils\request( 'GET', $http_url, $headers, $options );
-=======
 		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
 
 		if ( $ssl && ! $response->success ) {
 			WP_CLI::warning( 'wp-cli could not establish a secure connection to WordPress.org. Please contact your server administrator.' );
 			$response = Utils\http_request( 'GET', $http_url, null, $headers, $options );
->>>>>>> upstream/master
 		}
 
 		if ( ! $response->success || 200 != $response->status_code )
@@ -889,3 +873,16 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 WP_CLI::add_command( 'core', 'Core_Command' );
 
+class Core_Language_Command extends WP_CLI\CommandWithTranslation {
+
+	protected $obj_type = 'core';
+
+}
+
+WP_CLI::add_command( 'core language', 'Core_Language_Command', array(
+	'before_invoke' => function() {
+		if ( version_compare( $GLOBALS['wp_version'], '4.0', '<' ) ) {
+			WP_CLI::error( "Requires WordPress 4.0 or greater." );
+		}
+	})
+);
