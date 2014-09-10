@@ -23,7 +23,7 @@ class Core_Command extends WP_CLI_Command {
 
 			// later releases are always later in the array
 			if ( $processed_parts[0] !== $release_parts[0]
-				&& $processed_parts[1] !== $release_parts[1] ) {
+				|| $processed_parts[1] !== $release_parts[1] ) {
 				$differents[] = $processed;
 			}
 		}
@@ -46,10 +46,10 @@ class Core_Command extends WP_CLI_Command {
 	 * : Prints the value of a single field for each update.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to version,type,package_url.
+	 * : Limit the output to specific object fields. Defaults to version,update_type,package_url.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json. Default: table
 	 *
 	 * @subcommand check-update
 	 */
@@ -96,7 +96,7 @@ class Core_Command extends WP_CLI_Command {
 				$updates = $this->remove_same_minor_releases( $release_parts, $updates );
 				$updates[] = array(
 					'version' => $release_version,
-					'type' => $update_type,
+					'update_type' => $update_type,
 					'package_url' => $this->get_download_url( $release_version, $locale )
 				);
 			}
@@ -105,9 +105,11 @@ class Core_Command extends WP_CLI_Command {
 		if ( $updates ) {
 			$formatter = new \WP_CLI\Formatter(
 				$assoc_args,
-				array( 'version', 'type', 'package_url' )
+				array( 'version', 'update_type', 'package_url' )
 			);
 			$formatter->display_items( $updates );
+		} else if ( empty( $assoc_args['format'] ) || 'table' == $assoc_args['format'] ) {
+			WP_CLI::success( "WordPress is at the latest version." );
 		}
 	}
 

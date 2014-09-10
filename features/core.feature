@@ -260,6 +260,37 @@ Feature: Manage WordPress installation
       3.9
       """
 
+  @download
+  Scenario: Check for update via Version Check API
+    Given a WP install
+
+    When I run `wp core download --version=3.8 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp core check-update`
+    Then STDOUT should be:
+      """
+      version	update_type	package_url
+      3.8.4	minor	https://wordpress.org/wordpress-3.8.4.zip
+      3.9.2	major	https://wordpress.org/wordpress-3.9.2.zip
+      4.0	major	https://wordpress.org/wordpress-4.0.zip
+      """
+
+    When I run `wp core check-update --major`
+    Then STDOUT should be:
+      """
+      version	update_type	package_url
+      3.9.2	major	https://wordpress.org/wordpress-3.9.2.zip
+      4.0	major	https://wordpress.org/wordpress-4.0.zip
+      """
+
+    When I run `wp core check-update --minor`
+    Then STDOUT should be:
+      """
+      version	update_type	package_url
+      3.8.4	minor	https://wordpress.org/wordpress-3.8.4.zip
+      """
+
   Scenario: Custom wp-content directory
     Given a WP install
     And a custom wp-content directory
