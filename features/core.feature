@@ -368,3 +368,11 @@ Feature: Manage WordPress installation
       """
       Warning: Language already installed.
       """
+
+    When I run `wp core i18n list --fields=language,english_name,status`
+    Then STDOUT should be a table containing rows:
+      | language  | english_name     | status        |
+      | ar        | Arabic           | uninstalled   |
+      | az        | Azerbaijani      | uninstalled   |
+      | en_GB     | English (UK)     | installed     |
+
