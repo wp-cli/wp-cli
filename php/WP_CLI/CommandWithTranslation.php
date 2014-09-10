@@ -22,14 +22,11 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	/**
 	 * List all languages available.
 	 *
-	 * [--keys=<keys>]
-	 * : Limit output to metadata of specific keys.
-	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
