@@ -52,7 +52,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 
 		require_once ABSPATH . '/wp-admin/includes/translation-install.php';
 
-		$response = translations_api( $this->object_type );
+		$response = translations_api( $this->obj_type );
 		$translations = ! empty( $response['translations'] ) ? $response['translations'] : array();
 		$available = get_available_languages();
 		$translations = array_map( function( $translation ) use ( $available ) {

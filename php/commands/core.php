@@ -875,7 +875,7 @@ WP_CLI::add_command( 'core', 'Core_Command' );
 
 class Core_i18n_Command extends WP_CLI\CommandWithTranslation {
 
-	protected $object_type = 'core';
+	protected $obj_type = 'core';
 
 }
 
