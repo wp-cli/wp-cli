@@ -74,10 +74,10 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * [--minor]
+	 * [--patch]
 	 * : Compare only the first two parts of the version number.
 	 *
-	 * [--major]
+	 * [--minor]
 	 * : Compare only the first part of the version number.
 	 *
 	 * [--field=<field>]
@@ -121,15 +121,15 @@ class CLI_Command extends WP_CLI_Command {
 			if ( version_compare( $release_version, WP_CLI_VERSION, '<=' ) )
 				continue;
 			$release_parts = explode( '.', $release_version );
-			$update_type = 'major';
+			$update_type = 'minor';
 
 			if ( $release_parts[0] === $current_parts[0]
 				&& $release_parts[1] === $current_parts[1] ) {
-				$update_type = 'minor';
+				$update_type = 'patch';
 			}
 
-			if ( ! ( isset( $assoc_args['minor'] ) && 'minor' !== $update_type )
-				&& ! ( isset( $assoc_args['major'] ) && 'major' !== $update_type )
+			if ( ! ( isset( $assoc_args['patch'] ) && 'patch' !== $update_type )
+				&& ! ( isset( $assoc_args['minor'] ) && 'minor' !== $update_type )
 				) {
 				$updates[] = array(
 					'version' => $release_version,
