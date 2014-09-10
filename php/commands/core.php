@@ -10,6 +10,110 @@ use \WP_CLI\Utils;
 class Core_Command extends WP_CLI_Command {
 
 	/**
+	 * Compare processed releases to the current one, and delete older one. Return remaining updates.
+	 *
+	 */
+	private function remove_same_minor_releases( $release_parts, $updates ) {
+		if ( empty( $updates ) )
+			return false;
+
+		$differents = array();
+		foreach ( $updates as $processed ) {
+			$processed_parts = explode( '.', $processed['version'] );
+
+			// later releases are always later in the array
+			if ( $processed_parts[0] !== $release_parts[0]
+				|| $processed_parts[1] !== $release_parts[1] ) {
+				$differents[] = $processed;
+			}
+		}
+
+	return $differents;
+	}
+
+	/**
+	 * Check for update via Version Check API. Returns latest version if there's an update, or empty if no update available.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--minor]
+	 * : Compare only the first two parts of the version number.
+	 *
+	 * [--major]
+	 * : Compare only the first part of the version number.
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each update.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to version,update_type,package_url.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json. Default: table
+	 *
+	 * @subcommand check-update
+	 */
+	function check_update( $_, $assoc_args ) {
+		$versions_path = ABSPATH . 'wp-includes/version.php';
+		include $versions_path;
+
+		$url = 'http://api.wordpress.org/core/stable-check/1.0/';
+
+		$options = array(
+			'timeout' => 30
+		);
+		$headers = array(
+			'Accept' => 'application/json'
+		);
+		$response = Utils\http_request( 'GET', $url, $headers, $options );
+
+		if ( ! $response->success || 200 !== $response->status_code ) {
+			WP_CLI::error( "Failed to get latest version." );
+		}
+
+		$release_data = json_decode( $response->body );
+		$locale = get_locale();
+
+		$current_parts = explode( '.', $wp_version );
+		$updates = array();
+
+		foreach ( $release_data as $release_version => $release ) {
+			// don't list earliers versions
+			if ( version_compare( $release_version, $wp_version, '<=' ) )
+				continue;
+
+			$release_parts = explode( '.', $release_version );
+			$update_type = 'major';
+
+			if ( $release_parts[0] === $current_parts[0]
+				&& $release_parts[1] === $current_parts[1] ) {
+				$update_type = 'minor';
+			}
+
+			if ( ! ( isset( $assoc_args['minor'] ) && 'minor' !== $update_type )
+				&& ! ( isset( $assoc_args['major'] ) && 'major' !== $update_type )
+				) {
+				$updates = $this->remove_same_minor_releases( $release_parts, $updates );
+				$updates[] = array(
+					'version' => $release_version,
+					'update_type' => $update_type,
+					'package_url' => $this->get_download_url( $release_version, $locale )
+				);
+			}
+		}
+
+		if ( $updates ) {
+			$formatter = new \WP_CLI\Formatter(
+				$assoc_args,
+				array( 'version', 'update_type', 'package_url' )
+			);
+			$formatter->display_items( $updates );
+		} else if ( empty( $assoc_args['format'] ) || 'table' == $assoc_args['format'] ) {
+			WP_CLI::success( "WordPress is at the latest version." );
+		}
+	}
+
+	/**
 	 * Download core WordPress files.
 	 *
 	 * ## OPTIONS
