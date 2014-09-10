@@ -350,14 +350,14 @@ Feature: Manage WordPress installation
   Scenario: Core translation CRUD
     Given a WP install
 
-    When I run `wp core i18n list --fields=language,english_name,status`
+    When I run `wp core language list --fields=language,english_name,status`
     Then STDOUT should be a table containing rows:
       | language  | english_name     | status        |
       | ar        | Arabic           | uninstalled   |
       | az        | Azerbaijani      | uninstalled   |
       | en_GB     | English (UK)     | uninstalled   |
 
-    When I run `wp core i18n install en_GB`
+    When I run `wp core language install en_GB`
     Then the wp-content/languages/admin-en_GB.po file should exist
     And the wp-content/languages/en_GB.po file should exist
     And STDOUT should be:
@@ -365,20 +365,20 @@ Feature: Manage WordPress installation
       Success: Language installed.
       """
 
-    When I try `wp core i18n install en_GB`
+    When I try `wp core language install en_GB`
     Then STDERR should be:
       """
       Warning: Language already installed.
       """
 
-    When I run `wp core i18n list --fields=language,english_name,status`
+    When I run `wp core language list --fields=language,english_name,status`
     Then STDOUT should be a table containing rows:
       | language  | english_name     | status        |
       | ar        | Arabic           | uninstalled   |
       | az        | Azerbaijani      | uninstalled   |
       | en_GB     | English (UK)     | installed     |
 
-    When I run `wp core i18n uninstall en_GB`
+    When I run `wp core language uninstall en_GB`
     Then the wp-content/languages/admin-en_GB.po file should not exist
     And the wp-content/languages/en_GB.po file should not exist
     And STDOUT should be:
@@ -386,7 +386,7 @@ Feature: Manage WordPress installation
       Success: Language uninstalled.
       """
 
-    When I try `wp core i18n uninstall en_GB`
+    When I try `wp core language uninstall en_GB`
     Then STDERR should be:
       """
       Error: Language not installed.

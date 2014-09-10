@@ -873,13 +873,13 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 WP_CLI::add_command( 'core', 'Core_Command' );
 
-class Core_i18n_Command extends WP_CLI\CommandWithTranslation {
+class Core_Language_Command extends WP_CLI\CommandWithTranslation {
 
 	protected $obj_type = 'core';
 
 }
 
-WP_CLI::add_command( 'core i18n', 'Core_i18n_Command', array(
+WP_CLI::add_command( 'core language', 'Core_Language_Command', array(
 	'before_invoke' => function() {
 		if ( version_compare( $GLOBALS['wp_version'], '4.0', '<' ) ) {
 			WP_CLI::error( "Requires WordPress 4.0 or greater." );
