@@ -70,12 +70,24 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Check for update via Github API. Returns latest version if there's an update, or empty if no update available.
+	 * Check for update via Github API. Returns the available versions if there are updates, or empty if no update available.
 	 *
 	 * ## OPTIONS
 	 *
-	 * [--major]
+	 * [--minor]
 	 * : Compare only the first two parts of the version number.
+	 *
+	 * [--major]
+	 * : Compare only the first part of the version number.
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each update.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to version,type,package_url.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * @subcommand check-update
 	 */
@@ -96,24 +108,43 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		$release_data = json_decode( $response->body );
+		$current_parts = explode( '.', WP_CLI_VERSION );
+		$updates = array();
 
-		$latest = $release_data[0]->tag_name;
+		foreach ( $release_data as $release ) {
+			$release_version = $release->tag_name;
+			// get rid of leading "v"
+			if ( 'v' === substr( $release_version, 0, 1 ) ) {
+				$release_version = ltrim( $release_version, 'v' );
+			}
+			// don't list the current version
+			if ( version_compare( $release_version, WP_CLI_VERSION, '<=' ) )
+				continue;
+			$release_parts = explode( '.', $release_version );
+			$release_type = 'major';
 
-		// get rid of leading "v"
-		if ( 'v' === substr( $latest, 0, 1 ) ) {
-			$latest = ltrim( $latest, 'v' );
-		}
-
-		if ( isset( $assoc_args['major'] ) ) {
-			$latest_major = explode( '.', $latest );
-			$current_major = explode( '.', WP_CLI_VERSION );
-			if ( $latest_major[0] !== $current_major[0]
-				|| $latest_major[1] !== $current_major[1] ) {
-				WP_CLI::line( $latest );
+			if ( $release_parts[0] === $current_parts[0]
+				&& $release_parts[1] === $current_parts[1] ) {
+				$release_type = 'minor';
 			}
 
-		} else {
-			WP_CLI::line( $latest );
+			if ( ! ( isset( $assoc_args['minor'] ) && 'minor' !== $release_type )
+				&& ! ( isset( $assoc_args['major'] ) && 'major' !== $release_type )
+				) {
+				$updates[] = array(
+					'version' => $release_version,
+					'type' => $release_type,
+					'package_url' => $release->assets[0]->browser_download_url
+				);
+			}
+		}
+
+		if ( $updates ) {
+			$formatter = new \WP_CLI\Formatter(
+				$assoc_args,
+				array( 'version', 'type', 'package_url' )
+			);
+			$formatter->display_items( $updates );
 		}
 	}
 
