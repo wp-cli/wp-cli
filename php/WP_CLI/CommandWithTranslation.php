@@ -54,7 +54,8 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 
 		$response = translations_api( $this->obj_type );
 		$translations = ! empty( $response['translations'] ) ? $response['translations'] : array();
-		$available = get_available_languages();
+		$available = wp_get_installed_translations( $this->obj_type );
+		$available = ! empty( $available['default'] ) ? array_keys( $available['default'] ) : array();
 		$translations = array_map( function( $translation ) use ( $available ) {
 			$translation['status'] = ( in_array( $translation['language'], $available ) ) ? 'installed' : 'uninstalled';
 			return $translation;
