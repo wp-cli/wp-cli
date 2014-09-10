@@ -10,6 +10,28 @@ use \WP_CLI\Utils;
 class Core_Command extends WP_CLI_Command {
 
 	/**
+	 * Compare processed releases to the current one, and delete older one. Return remaining updates.
+	 *
+	 */
+	private function remove_same_minor_releases( $release_parts, $updates ) {
+		if ( empty( $updates ) )
+			return false;
+
+		$differents = array();
+		foreach ( $updates as $processed ) {
+			$processed_parts = explode( '.', $processed['version'] );
+
+			// later releases are always later in the array
+			if ( $processed_parts[0] !== $release_parts[0]
+				&& $processed_parts[1] !== $release_parts[1] ) {
+				$differents[] = $processed;
+			}
+		}
+
+	return $differents;
+	}
+
+	/**
 	 * Check for update via Version Check API. Returns latest version if there's an update, or empty if no update available.
 	 *
 	 * ## OPTIONS
@@ -35,12 +57,11 @@ class Core_Command extends WP_CLI_Command {
 		$versions_path = ABSPATH . 'wp-includes/version.php';
 		include $versions_path;
 
-		$url = 'http://api.wordpress.org/core/version-check/1.7/';
+		$url = 'http://api.wordpress.org/core/stable-check/1.0/';
 
 		$options = array(
 			'timeout' => 30
 		);
-
 		$headers = array(
 			'Accept' => 'application/json'
 		);
@@ -51,35 +72,32 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		$release_data = json_decode( $response->body );
+		$locale = get_locale();
 
 		$current_parts = explode( '.', $wp_version );
 		$updates = array();
 
-		foreach ( $release_data as $release ) {
-			$release_version = $release->tag_name;
-			// get rid of leading "v"
-			if ( 'v' === substr( $release_version, 0, 1 ) ) {
-				$release_version = ltrim( $release_version, 'v' );
-			}
-			// don't list the current version
-			if ( version_compare( $release_version, $wp_version '<=' ) )
+		foreach ( $release_data as $release_version => $release ) {
+			// don't list earliers versions
+			if ( version_compare( $release_version, $wp_version, '<=' ) )
 				continue;
+
 			$release_parts = explode( '.', $release_version );
-			$release_type = 'major';
+			$update_type = 'major';
 
 			if ( $release_parts[0] === $current_parts[0]
 				&& $release_parts[1] === $current_parts[1] ) {
-				$release_type = 'minor';
+				$update_type = 'minor';
 			}
 
 			if ( ! ( isset( $assoc_args['minor'] ) && 'minor' !== $release_type )
 				&& ! ( isset( $assoc_args['major'] ) && 'major' !== $release_type )
 				) {
+				$updates = $this->remove_same_minor_releases( $release_parts, $updates );
 				$updates[] = array(
 					'version' => $release_version,
-					'type' => $release_type,
-					// there's onyl one version on WP.org
-					'package_url' => $release->assets[0]->browser_download_url
+					'type' => $update_type,
+					'package_url' => $this->get_download_url( $release_version, $locale )
 				);
 			}
 		}
