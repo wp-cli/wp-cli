@@ -121,19 +121,19 @@ class CLI_Command extends WP_CLI_Command {
 			if ( version_compare( $release_version, WP_CLI_VERSION, '<=' ) )
 				continue;
 			$release_parts = explode( '.', $release_version );
-			$release_type = 'major';
+			$update_type = 'major';
 
 			if ( $release_parts[0] === $current_parts[0]
 				&& $release_parts[1] === $current_parts[1] ) {
-				$release_type = 'minor';
+				$update_type = 'minor';
 			}
 
-			if ( ! ( isset( $assoc_args['minor'] ) && 'minor' !== $release_type )
-				&& ! ( isset( $assoc_args['major'] ) && 'major' !== $release_type )
+			if ( ! ( isset( $assoc_args['minor'] ) && 'minor' !== $update_type )
+				&& ! ( isset( $assoc_args['major'] ) && 'major' !== $update_type )
 				) {
 				$updates[] = array(
 					'version' => $release_version,
-					'type' => $release_type,
+					'type' => $update_type,
 					'package_url' => $release->assets[0]->browser_download_url
 				);
 			}
