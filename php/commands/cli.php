@@ -161,6 +161,8 @@ class CLI_Command extends WP_CLI_Command {
 				array( 'version', 'update_type', 'package_url' )
 			);
 			$formatter->display_items( $updates );
+		} else if ( empty( $assoc_args['format'] ) || 'table' == $assoc_args['format'] ) {
+			WP_CLI::success( "WP-CLI is at the latest version." );
 		}
 	}
 
