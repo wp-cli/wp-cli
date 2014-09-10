@@ -78,7 +78,8 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 
 		list( $language_code ) = $args;
 
-		$available = get_available_languages();
+		$available = wp_get_installed_translations( $this->obj_type );
+		$available = ! empty( $available['default'] ) ? array_keys( $available['default'] ) : array();
 		if ( in_array( $language_code, $available ) ) {
 			\WP_CLI::warning( "Language already installed." );
 			exit;
