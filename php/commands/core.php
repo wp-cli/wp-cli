@@ -50,12 +50,17 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		$release_data = json_decode( $response->body );
+		$release_versions = array_keys( (array) $release_data );
+		usort( $release_versions, function( $a, $b ){
+			return ! version_compare( $a, $b );
+		});
+
 		$locale = get_locale();
 
 		$current_parts = explode( '.', $wp_version );
 		$updates = array();
 
-		foreach ( $release_data as $release_version => $release ) {
+		foreach ( $release_versions as $release_version ) {
 			// don't list earliers versions
 			if ( version_compare( $release_version, $wp_version, '<=' ) )
 				continue;

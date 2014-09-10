@@ -268,27 +268,39 @@ Feature: Manage WordPress installation
     Then STDOUT should not be empty
 
     When I run `wp core check-update`
+    Then STDOUT should be a table containing rows:
+      | version | update_type | package_url                               |
+      | 4.0     | major       | https://wordpress.org/wordpress-4.0.zip   |
+      | 3.9.2   | major       | https://wordpress.org/wordpress-3.9.2.zip |
+      | 3.8.4   | minor       | https://wordpress.org/wordpress-3.8.4.zip |
+
+    When I run `wp core check-update --field=version | wc -l`
     Then STDOUT should be:
       """
-      version	update_type	package_url
-      3.8.4	minor	https://wordpress.org/wordpress-3.8.4.zip
-      3.9.2	major	https://wordpress.org/wordpress-3.9.2.zip
-      4.0	major	https://wordpress.org/wordpress-4.0.zip
+      3
       """
 
     When I run `wp core check-update --major`
+    Then STDOUT should be a table containing rows:
+      | version | update_type | package_url                               |
+      | 4.0     | major       | https://wordpress.org/wordpress-4.0.zip   |
+      | 3.9.2   | major       | https://wordpress.org/wordpress-3.9.2.zip |
+
+    When I run `wp core check-update --major --field=version | wc -l`
     Then STDOUT should be:
       """
-      version	update_type	package_url
-      3.9.2	major	https://wordpress.org/wordpress-3.9.2.zip
-      4.0	major	https://wordpress.org/wordpress-4.0.zip
+      2
       """
 
     When I run `wp core check-update --minor`
+    Then STDOUT should be a table containing rows:
+      | version | update_type | package_url                               |
+      | 3.8.4   | minor       | https://wordpress.org/wordpress-3.8.4.zip |
+
+    When I run `wp core check-update --minor --field=version | wc -l`
     Then STDOUT should be:
       """
-      version	update_type	package_url
-      3.8.4	minor	https://wordpress.org/wordpress-3.8.4.zip
+      1
       """
 
   Scenario: Custom wp-content directory
