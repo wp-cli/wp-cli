@@ -36,17 +36,11 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * [--minor]
-	 * : Compare only the first two parts of the version number.
-	 *
-	 * [--major]
-	 * : Compare only the first part of the version number.
-	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each update.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to version,type,package_url.
+	 * : Limit the output to specific object fields. Defaults to version,package_url.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
@@ -54,10 +48,15 @@ class Core_Command extends WP_CLI_Command {
 	 * @subcommand check-update
 	 */
 	function check_update( $_, $assoc_args ) {
+<<<<<<< HEAD
 		$versions_path = ABSPATH . 'wp-includes/version.php';
 		include $versions_path;
 
 		$url = 'http://api.wordpress.org/core/stable-check/1.0/';
+=======
+		//TODO all versions: http://api.wordpress.org/core/stable-check/1.0/
+		$url = 'http://api.wordpress.org/core/version-check/1.7/';
+>>>>>>> cd1ed9cd58cb4c4b0f238881bacd0f378c0d610f
 
 		$options = array(
 			'timeout' => 30
@@ -74,6 +73,7 @@ class Core_Command extends WP_CLI_Command {
 		$release_data = json_decode( $response->body );
 		$locale = get_locale();
 
+<<<<<<< HEAD
 		$current_parts = explode( '.', $wp_version );
 		$updates = array();
 
@@ -101,14 +101,18 @@ class Core_Command extends WP_CLI_Command {
 				);
 			}
 		}
+=======
+		$updates[] = array(
+			'version' => $release_data->offers[0]->version,
+			'package_url' => $release_data->offers[0]->packages->no_content
+		);
+>>>>>>> cd1ed9cd58cb4c4b0f238881bacd0f378c0d610f
 
-		if ( $updates ) {
-			$formatter = new \WP_CLI\Formatter(
-				$assoc_args,
-				array( 'version', 'type', 'package_url' )
-			);
-			$formatter->display_items( $updates );
-		}
+		$formatter = new \WP_CLI\Formatter(
+			$assoc_args,
+			array( 'version', 'package_url' )
+		);
+		$formatter->display_items( $updates );
 	}
 
 	/**
