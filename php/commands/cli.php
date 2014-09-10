@@ -149,7 +149,7 @@ class CLI_Command extends WP_CLI_Command {
 				) {
 				$updates[] = array(
 					'version' => $release_version,
-					'type' => $update_type,
+					'update_type' => $update_type,
 					'package_url' => $release->assets[0]->browser_download_url
 				);
 			}
@@ -158,7 +158,7 @@ class CLI_Command extends WP_CLI_Command {
 		if ( $updates ) {
 			$formatter = new \WP_CLI\Formatter(
 				$assoc_args,
-				array( 'version', 'type', 'package_url' )
+				array( 'version', 'update_type', 'package_url' )
 			);
 			$formatter->display_items( $updates );
 		}
