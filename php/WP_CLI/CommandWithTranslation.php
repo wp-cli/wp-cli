@@ -53,8 +53,12 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		$translations = ! empty( $response['translations'] ) ? $response['translations'] : array();
 		$available = wp_get_installed_translations( $this->obj_type );
 		$available = ! empty( $available['default'] ) ? array_keys( $available['default'] ) : array();
-		$translations = array_map( function( $translation ) use ( $available ) {
+		$current_locale = get_locale();
+		$translations = array_map( function( $translation ) use ( $available, $current_locale ) {
 			$translation['status'] = ( in_array( $translation['language'], $available ) ) ? 'installed' : 'uninstalled';
+			if ( $current_locale == $translation['language'] ) {
+				$translation['status'] = 'active';
+			}
 			return $translation;
 		}, $translations );
 
@@ -91,6 +95,28 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			\WP_CLI::error( "Couldn't install language." );
 		}
 
+	}
+
+	/**
+	 * Activate a given language.
+	 *
+	 * <language>
+	 * : Language code to activate.
+	 *
+	 * @subcommand activate
+	 */
+	public function activate( $args, $assoc_args ) {
+
+		list( $language_code ) = $args;
+
+		$available = wp_get_installed_translations( $this->obj_type );
+		$available = ! empty( $available['default'] ) ? array_keys( $available['default'] ) : array();
+		if ( ! in_array( $language_code, $available ) ) {
+			\WP_CLI::error( "Language not installed." );
+		}
+
+		update_option( 'WPLANG', $language_code );
+		\WP_CLI::success( "Language activated." );
 	}
 
 	/**
