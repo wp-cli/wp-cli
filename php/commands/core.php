@@ -14,20 +14,25 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
+	 * [--minor]
+	 * : Compare only the first two parts of the version number.
+	 *
 	 * [--major]
-	 * : Compare only the first two parts of the version numbers.
+	 * : Compare only the first part of the version number.
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each update.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields. Defaults to version,type,package_url.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * @subcommand check-update
 	 */
 	function check_update( $_, $assoc_args ) {
 		$versions_path = ABSPATH . 'wp-includes/version.php';
-
-		if ( ! is_readable( $versions_path ) ) {
-			WP_CLI::error(
-				"This does not seem to be a WordPress install.\n" .
-				"Pass --path=`path/to/wordpress` or run `wp core download`." );
-		}
-
 		include $versions_path;
 
 		$url = 'http://api.wordpress.org/core/version-check/1.7/';
@@ -45,20 +50,46 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::error( "Failed to get latest version." );
 		}
 
-		$latest_data = json_decode( $response->body );
+		$release_data = json_decode( $response->body );
 
-		$latest = $latest_data->offers[0]->current;
+		$current_parts = explode( '.', $wp_version );
+		$updates = array();
 
-		if ( isset( $assoc_args['major'] ) ) {
-			$latest_major = explode( '.', $latest );
-			$current_major = explode( '.', $wp_version );
-			if ( $latest_major[0] !== $current_major[0]
-				|| $latest_major[1] !== $current_major[1] ) {
-				WP_CLI::line( $latest );
+		foreach ( $release_data as $release ) {
+			$release_version = $release->tag_name;
+			// get rid of leading "v"
+			if ( 'v' === substr( $release_version, 0, 1 ) ) {
+				$release_version = ltrim( $release_version, 'v' );
+			}
+			// don't list the current version
+			if ( version_compare( $release_version, $wp_version '<=' ) )
+				continue;
+			$release_parts = explode( '.', $release_version );
+			$release_type = 'major';
+
+			if ( $release_parts[0] === $current_parts[0]
+				&& $release_parts[1] === $current_parts[1] ) {
+				$release_type = 'minor';
 			}
 
-		} elseif ( $wp_version !== $latest ) {
-			WP_CLI::line( $latest );
+			if ( ! ( isset( $assoc_args['minor'] ) && 'minor' !== $release_type )
+				&& ! ( isset( $assoc_args['major'] ) && 'major' !== $release_type )
+				) {
+				$updates[] = array(
+					'version' => $release_version,
+					'type' => $release_type,
+					// there's onyl one version on WP.org
+					'package_url' => $release->assets[0]->browser_download_url
+				);
+			}
+		}
+
+		if ( $updates ) {
+			$formatter = new \WP_CLI\Formatter(
+				$assoc_args,
+				array( 'version', 'type', 'package_url' )
+			);
+			$formatter->display_items( $updates );
 		}
 	}
 
