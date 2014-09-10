@@ -97,6 +97,54 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	}
 
 	/**
+	 * Uninstall a given language.
+	 *
+	 * <language>
+	 * : Language code to uninstall.
+	 *
+	 * @subcommand uninstall
+	 */
+	public function uninstall( $args, $assoc_args ) {
+		global $wp_filesystem;
+
+		list( $language_code ) = $args;
+
+		$available = wp_get_installed_translations( $this->obj_type );
+		$available = ! empty( $available['default'] ) ? array_keys( $available['default'] ) : array();
+		if ( ! in_array( $language_code, $available ) ) {
+			\WP_CLI::error( "Language not installed." );
+		}
+
+		$dir = 'core' === $this->obj_type ? '' : "/$this->obj_type";
+		$files = scandir( WP_LANG_DIR . $dir );
+		if ( ! $files ) {
+			\WP_CLI::error( "No files found in language directory." );
+		}
+
+		// As of WP 4.0, no API for deleting a language pack
+		WP_Filesystem();
+		$deleted = false;
+		foreach ( $files as $file ) {
+			if ( '.' === $file[0] || is_dir( $file ) ) {
+				continue;
+			}
+			$extension_length = strlen( $language_code ) + 4;
+			$ending = substr( $file, -$extension_length );
+			if ( ! in_array( $file, array( $language_code . '.po', $language_code . '.mo' ) ) && ! in_array( $ending, array( '-' . $language_code . '.po', '-' . $language_code . '.mo' ) ) ) {
+				continue;
+			}
+			$deleted = $wp_filesystem->delete( WP_LANG_DIR . $dir . '/' . $file );
+		}
+
+		if ( $deleted ) {
+			\WP_CLI::success( "Language uninstalled." );
+		} else {
+			\WP_CLI::error( "Couldn't uninstall language." );
+		}
+
+	}
+
+	/**
 	 * Get Formatter object based on supplied parameters.
 	 *
 	 * @param array $assoc_args Parameters passed to command. Determines formatting.

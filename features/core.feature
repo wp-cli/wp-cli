@@ -358,7 +358,9 @@ Feature: Manage WordPress installation
       | en_GB     | English (UK)     | uninstalled   |
 
     When I run `wp core i18n install en_GB`
-    Then STDOUT should be:
+    Then the wp-content/languages/admin-en_GB.po file should exist
+    And the wp-content/languages/en_GB.po file should exist
+    And STDOUT should be:
       """
       Success: Language installed.
       """
@@ -376,3 +378,16 @@ Feature: Manage WordPress installation
       | az        | Azerbaijani      | uninstalled   |
       | en_GB     | English (UK)     | installed     |
 
+    When I run `wp core i18n uninstall en_GB`
+    Then the wp-content/languages/admin-en_GB.po file should not exist
+    And the wp-content/languages/en_GB.po file should not exist
+    And STDOUT should be:
+      """
+      Success: Language uninstalled.
+      """
+
+    When I try `wp core i18n uninstall en_GB`
+    Then STDERR should be:
+      """
+      Error: Language not installed.
+      """
