@@ -90,8 +90,8 @@ class Core_Command extends WP_CLI_Command {
 				$update_type = 'minor';
 			}
 
-			if ( ! ( isset( $assoc_args['minor'] ) && 'minor' !== $release_type )
-				&& ! ( isset( $assoc_args['major'] ) && 'major' !== $release_type )
+			if ( ! ( isset( $assoc_args['minor'] ) && 'minor' !== $update_type )
+				&& ! ( isset( $assoc_args['major'] ) && 'major' !== $update_type )
 				) {
 				$updates = $this->remove_same_minor_releases( $release_parts, $updates );
 				$updates[] = array(
