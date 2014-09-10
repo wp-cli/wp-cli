@@ -96,6 +96,9 @@ class Option_Command extends WP_CLI_Command {
 	 *     # Update an option by reading from a file
 	 *     wp option update my_option < value.txt
 	 *
+	 *     # Update one option on multiple sites using xargs
+	 *     wp site list --field=url | xargs -n1 -I {} sh -c 'wp --url={} option update <key> <value>'
+	 *
 	 * @alias set
 	 */
 	public function update( $args, $assoc_args ) {

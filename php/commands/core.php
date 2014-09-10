@@ -75,7 +75,11 @@ class Core_Command extends WP_CLI_Command {
 				'filename' => $temp
 			);
 
+<<<<<<< HEAD
 			Utils\request( 'GET', $download_url, $headers, $options );
+=======
+			Utils\http_request( 'GET', $download_url, null, $headers, $options );
+>>>>>>> upstream/master
 			self::_extract( $temp, ABSPATH );
 			$cache->import( $cache_key, $temp );
 			unlink($temp);
@@ -136,7 +140,11 @@ class Core_Command extends WP_CLI_Command {
 
 	private static function _read( $url ) {
 		$headers = array('Accept' => 'application/json');
+<<<<<<< HEAD
 		return Utils\request( 'GET', $url, $headers )->body;
+=======
+		return Utils\http_request( 'GET', $url, null, $headers )->body;
+>>>>>>> upstream/master
 	}
 
 	private function get_download_offer( $locale ) {
@@ -659,11 +667,19 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		$headers = array(
 			'Accept' => 'application/json'
 		);
+<<<<<<< HEAD
 		$response = Utils\request( 'GET', $url, $headers, $options );
 
 		if ( $ssl && ! $response->success ) {
 			WP_CLI::warning( 'wp-cli could not establish a secure connection to WordPress.org. Please contact your server administrator.' );
 			$response = Utils\request( 'GET', $http_url, $headers, $options );
+=======
+		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
+
+		if ( $ssl && ! $response->success ) {
+			WP_CLI::warning( 'wp-cli could not establish a secure connection to WordPress.org. Please contact your server administrator.' );
+			$response = Utils\http_request( 'GET', $http_url, null, $headers, $options );
+>>>>>>> upstream/master
 		}
 
 		if ( ! $response->success || 200 != $response->status_code )
@@ -750,7 +766,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		global $wp_version;
 
 		$update = $from_api = null;
-		$upgrader = 'Core_Upgrader';
+		$upgrader = 'WP_CLI\\CoreUpgrader';
 
 		if ( ! empty( $args[0] ) ) {
 
@@ -768,6 +784,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 									'full' => $args[0],
 								),
 				'version' => $version,
+				'locale' => null
 			);
 
 		} else if ( empty( $assoc_args['version'] ) ) {
@@ -789,8 +806,6 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 			$new_package = $this->get_download_url($version, $locale);
 
-			WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $assoc_args['version'], $locale ) );
-
 			$update = (object) array(
 				'response' => 'upgrade',
 				'current' => $assoc_args['version'],
@@ -802,6 +817,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 					'full' => $new_package,
 				),
 				'version' => $version,
+				'locale' => $locale
 			);
 
 		} else {
@@ -811,7 +827,15 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
+		if ( $update->version ) {
+			WP_CLI::log( "Updating to version {$update->version} ({$update->locale})..." );
+		} else {
+			WP_CLI::log( "Starting update..." );
+		}
+
+		$GLOBALS['wp_cli_update_obj'] = $update;
 		$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
+		unset( $GLOBALS['wp_cli_update_obj'] );
 
 		if ( is_wp_error($result) ) {
 			$msg = WP_CLI::error_to_string( $result );

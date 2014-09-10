@@ -8,8 +8,15 @@ use Behat\Behat\Context\ClosuredContextInterface,
 use \WP_CLI\Process;
 use \WP_CLI\Utils;
 
-require_once __DIR__ . '/../../php/utils.php';
-require_once __DIR__ . '/../../php/WP_CLI/Process.php';
+// Inside a community package
+if ( file_exists( __DIR__ . '/utils.php' ) ) {
+	require_once __DIR__ . '/utils.php';
+	require_once __DIR__ . '/Process.php';
+// Inside WP-CLI
+} else {
+	require_once __DIR__ . '/../../php/utils.php';
+	require_once __DIR__ . '/../../php/WP_CLI/Process.php';
+}
 
 /**
  * Features context.
@@ -37,6 +44,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			'PATH' =>  $bin_dir . ':' . getenv( 'PATH' ),
 			'BEHAT_RUN' => 1
 		);
+		if ( $config_path = getenv( 'WP_CLI_CONFIG_PATH' ) ) {
+			$env['WP_CLI_CONFIG_PATH'] = $config_path;
+		}
 		return $env;
 	}
 

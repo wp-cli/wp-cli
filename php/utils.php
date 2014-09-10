@@ -38,7 +38,7 @@ function get_vendor_paths() {
 
 // Using require() directly inside a class grants access to private methods to the loaded code
 function load_file( $path ) {
-	require $path;
+	require_once $path;
 }
 
 function load_command( $name ) {
@@ -403,6 +403,7 @@ function replace_path_consts( $source, $path ) {
 }
 
 /**
+<<<<<<< HEAD
  * Initiate a HTTP request.
  *
  * @param string $method The request method.
@@ -411,6 +412,19 @@ function replace_path_consts( $source, $path ) {
  * @param array  $options Options for Requests::get (optional)
  */
 function request( $method, $url, $headers = array(), $options = array() ) {
+=======
+ * Make a HTTP request to a remote URL
+ *
+ * @param string $method
+ * @param string $url
+ * @param array $headers
+ * @param array $options
+ * @return object
+ */
+function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
+	$pem_copied = false;
+
+>>>>>>> upstream/master
 	// cURL can't read Phar archives
 	if ( 0 === strpos( WP_CLI_ROOT, 'phar://' ) ) {
 		$options['verify'] = sys_get_temp_dir() . '/wp-cli-cacert.pem';
@@ -419,6 +433,7 @@ function request( $method, $url, $headers = array(), $options = array() ) {
 			WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem',
 			$options['verify']
 		);
+<<<<<<< HEAD
 	}
 
 	try {
@@ -429,9 +444,32 @@ function request( $method, $url, $headers = array(), $options = array() ) {
 		$options['verify'] = false;
 		try {
 			return \Requests::get( $url, $headers, $options );
+=======
+		$pem_copied = true;
+	}
+
+	try {
+		$request = \Requests::request( $url, $headers, $data, $method, $options );
+		if ( $pem_copied ) {
+			unlink( $options['verify'] );
+		}
+		return $request;
+	} catch( \Requests_Exception $ex ) {
+		// Handle SSL certificate issues gracefully
+		\WP_CLI::warning( $ex->getMessage() );
+		if ( $pem_copied ) {
+			unlink( $options['verify'] );
+		}
+		$options['verify'] = false;
+		try {
+			return \Requests::request( $url, $headers, $data, $method, $options );
+>>>>>>> upstream/master
 		} catch( \Requests_Exception $ex ) {
 			\WP_CLI::error( $ex->getMessage() );
 		}
 	}
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/master

@@ -516,10 +516,27 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Prints the value of a single field for each theme.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to name,status,update,version.
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each theme:
+	 *
+	 * * name
+	 * * status
+	 * * update
+	 * * version
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * update_version
+	 * * update_package
+	 * * update_id
+	 * * title
+	 * * description
 	 *
 	 * ## EXAMPLES
 	 *

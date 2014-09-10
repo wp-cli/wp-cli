@@ -20,10 +20,26 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Available fields: hook, next_run, next_run_gmt, next_run_relative, recurrence.
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json, csv, ids. Default: table.
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each cron event:
+	 * * hook
+	 * * next_run_gmt
+	 * * next_run_relative
+	 * * recurrence
+	 *
+	 * These fields are optionally available:
+	 * * time
+	 * * sig
+	 * * args
+	 * * schedule
+	 * * interval
+	 * * next_run
 	 *
 	 * ## EXAMPLES
 	 *
@@ -40,6 +56,13 @@ class Cron_Event_Command extends WP_CLI_Command {
 
 		if ( is_wp_error( $events ) ) {
 			$events = array();
+		}
+
+		if ( in_array( $formatter->format, array( 'table', 'csv' ) ) ) {
+			$events = array_map( function( $event ){
+				$event->args = json_encode( $event->args );
+				return $event;
+			}, $events );
 		}
 
 		if ( 'ids' == $formatter->format ) {
@@ -77,9 +100,11 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 */
 	public function schedule( $args, $assoc_args ) {
 
-		list( $hook, $next_run, $recurrence ) = $args;
+		$hook = $args[0];
+		$next_run = ( isset( $args[1] ) ) ? $args[1] : false;
+		$recurrence = ( isset( $args[2] ) ) ? $args[2] : false;
 
-		if ( !isset( $next_run ) ) {
+		if ( ! empty( $next_run ) ) {
 			$timestamp = time();
 		} else if ( is_numeric( $next_run ) ) {
 			$timestamp = absint( $next_run );
@@ -91,7 +116,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( "'%s' is not a valid datetime.", $next_run ) );
 		}
 
-		if ( isset( $recurrence ) ) {
+		if ( ! empty( $recurrence ) ) {
 
 			$schedules = wp_get_schedules();
 
@@ -126,24 +151,29 @@ class Cron_Event_Command extends WP_CLI_Command {
 	public function run( $args, $assoc_args ) {
 
 		$hook   = $args[0];
-		$result = false;
 		$events = self::get_cron_events();
 
 		if ( is_wp_error( $events ) ) {
 			WP_CLI::error( $events );
 		}
 
+		$executed = 0;
 		foreach ( $events as $id => $event ) {
 			if ( $event->hook == $hook ) {
 				$result = self::run_event( $event );
-				break;
+				if ( $result ) {
+					$executed++;
+				} else {
+					WP_CLI::warning( sprintf( "Failed to the execute the cron event '%s'", $hook ) );
+				}
 			}
 		}
 
-		if ( $result ) {
-			WP_CLI::success( sprintf( "Successfully executed the cron event '%s'", $hook ) );
+		if ( $executed ) {
+			$message = ( 1 == $executed ) ? "Executed the cron event '%2\$s'" : "Executed %1\$d instances of the cron event '%2\$s'";
+			WP_CLI::success( sprintf( $message, $executed, $hook ) );
 		} else {
-			WP_CLI::error( sprintf( "Failed to the execute the cron event '%s'", $hook ) );
+			WP_CLI::error( sprintf( "Invalid cron event '%s'", $hook ) );
 		}
 
 	}
@@ -184,24 +214,29 @@ class Cron_Event_Command extends WP_CLI_Command {
 	public function delete( $args, $assoc_args ) {
 
 		$hook   = $args[0];
-		$result = false;
 		$events = self::get_cron_events();
 
 		if ( is_wp_error( $events ) ) {
 			WP_CLI::error( $events );
 		}
 
+		$deleted = 0;
 		foreach ( $events as $id => $event ) {
 			if ( $event->hook == $hook ) {
 				$result = self::delete_event( $event );
-				break;
+				if ( $result ) {
+					$deleted++;
+				} else {
+					WP_CLI::warning( sprintf( "Failed to the delete the cron event '%s'", $hook ) );
+				}
 			}
 		}
 
-		if ( $result ) {
-			WP_CLI::success( sprintf( "Successfully deleted the cron event '%s'", $hook ) );
+		if ( $deleted ) {
+			$message = ( 1 == $deleted ) ? "Deleted the cron event '%2\$s'" : "Deleted %1\$d instances of the cron event '%2\$s'";
+			WP_CLI::success( sprintf( $message, $deleted, $hook ) );
 		} else {
-			WP_CLI::error( sprintf( "Failed to the delete the cron event '%s'", $hook ) );
+			WP_CLI::error( sprintf( "Invalid cron event '%s'", $hook ) );
 		}
 
 	}
@@ -361,10 +396,20 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Available fields: name, display, interval.
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json, csv, ids. Default: table.
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each cron schedule:
+	 *
+	 * * name
+	 * * display
+	 * * interval
+	 *
+	 * There are no additional fields.
 	 *
 	 * ## EXAMPLES
 	 *
