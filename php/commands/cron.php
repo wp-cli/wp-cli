@@ -101,7 +101,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 	public function schedule( $args, $assoc_args ) {
 
 		$hook = $args[0];
-		$next_run = ( isset( $args[1] ) ) ? $args[1] : false;
+		$next_run = ( isset( $args[1] ) ) ? $args[1] : 'now';
 		$recurrence = ( isset( $args[2] ) ) ? $args[2] : false;
 
 		if ( ! empty( $next_run ) ) {
