@@ -147,6 +147,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			if ( ! $network_wide && 'active' === $status ) {
 				WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
 				continue;
+			} else if( $network_wide && !is_multisite() ) {
+				WP_CLI::warning( "Plugin '{$plugin->name}' cannot be network actived. This is not a network." );
+				continue;
 			} else if ( $network_wide && 'active-network' === $status ) {
 				WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
 				continue;
@@ -178,8 +181,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		if ( $disable_all ) {
 			foreach ( get_plugins() as $file => $details ) {
-				if ( $this->get_status( $file ) == "inactive" )
+				if ( $this->get_status( $file ) == "inactive" ) {
 					continue;
+				} else if( $network_wide && !is_multisite() ) {
+					WP_CLI::warning( "Plugins cannot be network deactived. This is not a network." );
+					continue;
+				}
 
 				$name = Utils\get_plugin_name( $file );
 
@@ -189,6 +196,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			}
 		} else {
 			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
+				if( $network_wide && !is_multisite() ) {
+					WP_CLI::warning( "Plugin '{$plugin->name}' cannot be network deactived. This is not a network." );
+					continue;
+				}
+
 				deactivate_plugins( $plugin->file, false, $network_wide );
 
 				$this->active_output( $plugin->name, $plugin->file, $network_wide, "deactivate" );
