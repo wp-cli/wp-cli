@@ -122,7 +122,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 			return $args;
 
 		$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
-		$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", like_escape( $prefix ) . '%' ) );
+		$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $prefix . '%' ) );
 
 		$allowed_tables = array();
 		$allowed_table_types = array( 'tables', 'global_tables' );
@@ -166,7 +166,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		global $wpdb;
 
 		if ( $dry_run ) {
-			return $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(`$col`) FROM `$table` WHERE `$col` LIKE %s;", '%' . like_escape( esc_sql( $old ) ) . '%' ) );
+			return $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(`$col`) FROM `$table` WHERE `$col` LIKE %s;", '%' . self::esc_like( $old ) . '%' ) );
 		} else {
 			return $wpdb->query( $wpdb->prepare( "UPDATE `$table` SET `$col` = REPLACE(`$col`, %s, %s);", $old, $new ) );
 		}
@@ -184,7 +184,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$args = array(
 			'table' => $table,
 			'fields' => $fields,
-			'where' => "`$col`" . ' LIKE "%' . like_escape( esc_sql( $old ) ) . '%"',
+			'where' => "`$col`" . ' LIKE "%' . self::esc_like( $old ) . '%"',
 			'chunk_size' => $chunk_size
 		);
 
@@ -245,6 +245,21 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		return false;
+	}
+
+	private static function esc_like( $old ) {
+		global $wpdb;
+
+		// Remove notices in 4.0 and support backwards compatibility
+		if( method_exists( $wpdb, 'esc_like' ) ) {
+			// 4.0
+			$old = $wpdb->esc_like( $old );
+		} else {
+			// 3.9 or less
+			$old = like_escape( esc_sql( $old ) );
+		}
+
+		return $old;
 	}
 }
 
