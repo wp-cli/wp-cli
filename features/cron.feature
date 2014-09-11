@@ -34,6 +34,12 @@ Feature: Manage WP-Cron events and schedules
       Success: Scheduled event with hook 'wp_cli_test_event_3'
       """
 
+    When I run `wp cron event schedule wp_cli_test_event_4`
+    Then STDOUT should contain:
+      """
+      Success: Scheduled event with hook 'wp_cli_test_event_4'
+      """
+
     When I run `wp cron event list --format=csv --fields=hook,recurrence`
     Then STDOUT should be CSV containing:
       | hook                | recurrence    |
