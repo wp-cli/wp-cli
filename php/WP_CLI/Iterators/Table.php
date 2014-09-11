@@ -70,7 +70,7 @@ class Table extends Query {
 				if ( is_numeric( $key ) )
 					$conditions[] = $value;
 				else
-					$conditions[] = $key . ' = "' . $wpdb->escape( $value ) .'"';
+					$conditions[] = $key . ' = "' . esc_sql( $value ) .'"';
 			}
 			$where = implode( ' AND ', $conditions );
 		}
