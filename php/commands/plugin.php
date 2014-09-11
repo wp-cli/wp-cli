@@ -220,6 +220,54 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
+	 * Activates a plugin after a deactivation.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>...
+	 * : One or more plugins to reactivate.
+	 *
+	 * [--network]
+	 * : If set, the plugin will be reactivated for the entire multisite network.
+	 */
+	function reactivate( $args, $assoc_args = array() ) {
+		$network_wide = isset( $assoc_args['network'] );
+
+		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
+			if ( $this->check_active( $plugin->file, $network_wide ) ) {
+				$this->deactivate( array( $plugin->name ), $assoc_args );
+				$this->activate( array( $plugin->name ), $assoc_args );
+			} else {
+				$this->activate( array( $plugin->name ), $assoc_args );
+			}
+		}
+	}
+
+	/**
+	 * Deactivates a plugin after an activation.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <plugin>...
+	 * : One or more plugins to redeactivate.
+	 *
+	 * [--network]
+	 * : If set, the plugin will be redeactivated for the entire multisite network.
+	 */
+	function redeactivate( $args, $assoc_args = array() ) {
+		$network_wide = isset( $assoc_args['network'] );
+
+		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
+			if ( $this->check_active( $plugin->file, $network_wide ) ) {
+				$this->deactivate( array( $plugin->name ), $assoc_args );
+			} else {
+				$this->activate( array( $plugin->name ), $assoc_args );
+				$this->deactivate( array( $plugin->name ), $assoc_args );
+			}
+		}
+	}
+
+	/**
 	 * Get the path to a plugin or to the plugin directory.
 	 *
 	 * ## OPTIONS
