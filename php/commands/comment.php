@@ -169,7 +169,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		if ( 'ids' == $formatter->format )
-			$assoc_args['fields'] = 'ids';
+			$assoc_args['fields'] = 'comment_ID';
 
 		$query = new WP_Comment_Query();
 		$comments = $query->query( $assoc_args );
