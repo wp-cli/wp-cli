@@ -1,2 +1,2 @@
 @ECHO OFF
-php "%~dp0../php/boot-fs.php" %*
+php --define disable_functions= "%~dp0../php/boot-fs.php" %*

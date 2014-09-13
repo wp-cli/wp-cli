@@ -43,4 +43,4 @@ fi
 # to use if it re-launches itself to run other commands.
 export WP_CLI_PHP_USED="$php"
 
-exec "$php" $WP_CLI_PHP_ARGS "$SCRIPT_PATH" "$@"
+exec "$php" --define disable_functions= $WP_CLI_PHP_ARGS "$SCRIPT_PATH" "$@"
