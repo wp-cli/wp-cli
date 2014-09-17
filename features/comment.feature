@@ -55,6 +55,12 @@ Feature: Manage WordPress comments
       1
       """
 
+    When I run `wp comment list --format=ids`
+    Then STDOUT should be:
+      """
+      1
+      """
+
     When I run `wp comment url 1`
     Then STDOUT should be:
       """
