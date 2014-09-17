@@ -48,6 +48,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
 	 *
 	 *     wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
+	 *
+	 *     # Turn your production database into a local database
+	 *     wp search-replace --url=example.com example.com example.dev
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		global $wpdb;
