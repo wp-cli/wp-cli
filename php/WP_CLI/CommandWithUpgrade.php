@@ -167,6 +167,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( $response->version == $version )
 			return;
 
+		// WordPress.org forces https, but still sometimes returns http
+		// See https://twitter.com/nacin/status/512362694205140992
+		$response->download_link = str_replace( 'http://', 'https://', $response->download_link );
+
 		list( $link ) = explode( $response->slug, $response->download_link );
 
 		if ( false !== strpos( $response->download_link, 'theme' ) )

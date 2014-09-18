@@ -35,7 +35,7 @@ class Core_Command extends WP_CLI_Command {
 		$versions_path = ABSPATH . 'wp-includes/version.php';
 		include $versions_path;
 
-		$url = 'http://api.wordpress.org/core/stable-check/1.0/';
+		$url = 'https://api.wordpress.org/core/stable-check/1.0/';
 
 		$options = array(
 			'timeout' => 30
