@@ -248,8 +248,10 @@ class Subcommand extends CompositeCommand {
 			array_merge( \WP_CLI::get_config(), $extra_args, $assoc_args )
 		);
 
-		foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
-			$errors['fatal'][] = "unknown --$key parameter";
+		if ( $this->name != 'help' ) {
+			foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
+				$errors['fatal'][] = "unknown --$key parameter";
+			}
 		}
 
 		if ( !empty( $errors['fatal'] ) ) {
