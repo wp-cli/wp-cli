@@ -51,6 +51,17 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 
 		$response = translations_api( $this->obj_type );
 		$translations = ! empty( $response['translations'] ) ? $response['translations'] : array();
+
+		$en_us = array(
+			'language' => 'en_US',
+			'english_name' => 'English (United States)',
+			'native_name' => 'English (United States)',
+			'status' => ( empty( $current_locale ) ) ? 'active' : 'installed',
+		);
+
+		array_push( $translations, $en_us );
+		uasort( $translations, array( $this, '_sort_translations_callback' ) );
+
 		$available = wp_get_installed_translations( $this->obj_type );
 		$available = ! empty( $available['default'] ) ? array_keys( $available['default'] ) : array();
 		$current_locale = get_locale();
@@ -65,6 +76,13 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $translations );
 
+	}
+
+	/**
+	 * Callback to sort array by a 'language' key.
+	 */
+	protected function _sort_translations_callback( $a, $b ) {
+		return strnatcasecmp( $a['language'], $b['language'] );
 	}
 
 	/**
