@@ -73,6 +73,9 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 * <language>
 	 * : Language code to install.
 	 *
+	 * [--activate]
+	 * : If set, the language will be activated immediately after install.
+	 *
 	 * @subcommand install
 	 */
 	public function install( $args, $assoc_args ) {
@@ -91,6 +94,10 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		$response = wp_download_language_pack( $language_code );
 		if ( $response == $language_code ) {
 			\WP_CLI::success( "Language installed." );
+
+			if ( isset( $assoc_args['activate'] ) ) {
+				$this->activate( array( $language_code ), array() );
+			}
 		} else {
 			\WP_CLI::error( "Couldn't install language." );
 		}
