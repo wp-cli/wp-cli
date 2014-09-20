@@ -462,3 +462,4 @@ Feature: Manage WordPress installation
       Success: Language installed.
       Success: Language activated.
       """
+
