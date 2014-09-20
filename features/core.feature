@@ -468,3 +468,12 @@ Feature: Manage WordPress installation
       """
       Error: Language not installed.
       """
+
+    When I run `wp core language list --fields=language,english_name,status --status=active`
+    Then STDOUT should be a table containing rows:
+      | language  | english_name            | status        |
+      | en_US     | English (United States) | active        |
+    And STDOUT should not contain:
+      """
+      English (UK)
+      """
