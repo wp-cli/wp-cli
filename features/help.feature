@@ -16,7 +16,6 @@ Feature: Get help about WP-CLI commands
     Then STDOUT should not be empty
 
     When I run `wp post list --post_type=post --posts_per_page=5 --help`
-    Then STDERR should be empty
     And STDOUT should contain:
       """
       wp post list
