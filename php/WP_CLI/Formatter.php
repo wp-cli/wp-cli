@@ -74,25 +74,10 @@ class Formatter {
 			}
 
 			if ( in_array( $this->args['format'], array( 'table', 'csv' ) ) ) {
-				$fields = $this->args['fields'];
-				$callback = function( $item ) use ( $fields ) {
-					foreach( $fields as $field ) {
-						$true_field = $this->find_item_key( $item, $field );
-						$value = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
-						if ( is_array( $value ) || is_object( $value ) ) {
-							if ( is_object( $item ) ) {
-								$item->$true_field = json_encode( $value );
-							} else if ( is_array( $item ) ) {
-								$item[ $true_field ] = json_encode( $value );
-							}
-						}
-					}
-					return $item;
-				};
 				if ( is_object( $items ) && is_a( $items, 'Iterator' ) ) {
-					$items = \WP_CLI\Utils\iterator_map( $items, $callback );
+					$items = \WP_CLI\Utils\iterator_map( $items, array( $this, 'transform_item_values_to_json' ) );
 				} else {
-					$items = array_map( $callback, $items );
+					$items = array_map( array( $this, 'transform_item_values_to_json' ), $items );
 				}
 			}
 
@@ -304,6 +289,27 @@ class Formatter {
 		}
 
 		return $rows;
+	}
+
+	/**
+	 * Transforms objects and arrays to JSON as necessary
+	 *
+	 * @param mixed $item
+	 * @return mixed
+	 */
+	public function transform_item_values_to_json( $item ) {
+		foreach( $this->args['fields'] as $field ) {
+			$true_field = $this->find_item_key( $item, $field );
+			$value = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
+			if ( is_array( $value ) || is_object( $value ) ) {
+				if ( is_object( $item ) ) {
+					$item->$true_field = json_encode( $value );
+				} else if ( is_array( $item ) ) {
+					$item[ $true_field ] = json_encode( $value );
+				}
+			}
+		}
+		return $item;
 	}
 
 }
