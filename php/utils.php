@@ -30,10 +30,18 @@ function load_dependencies() {
 }
 
 function get_vendor_paths() {
-	return array(
+	$vendor_paths = array(
 		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project / installed via Composer (preferred)
 		WP_CLI_ROOT . '/vendor',           // top-level project / installed as Git clone
 	);
+	$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
+	if ( file_exists( $maybe_composer_json ) && is_readable( $maybe_composer_json ) ) {
+		$composer = json_decode( file_get_contents( $maybe_composer_json ) );
+		if ( ! empty( $composer->{'vendor-dir'} ) ) {
+			array_unshift( $vendor_paths, WP_CLI_ROOT . '/../../../' . $composer->{'vendor-dir'} );
+		}
+	}
+	return $vendor_paths;
 }
 
 // Using require() directly inside a class grants access to private methods to the loaded code
