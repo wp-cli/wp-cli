@@ -223,7 +223,7 @@ class Core_Command extends WP_CLI_Command {
 
 	private static function _read( $url ) {
 		$headers = array('Accept' => 'application/json');
-		return Utils\http_request( 'GET', $url, null, $headers )->body;
+		return Utils\http_request( 'GET', $url, null, $headers, array( 'timeout' => 30 ) )->body;
 	}
 
 	private function get_download_offer( $locale ) {
