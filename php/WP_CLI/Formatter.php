@@ -74,22 +74,10 @@ class Formatter {
 			}
 
 			if ( in_array( $this->args['format'], array( 'table', 'csv' ) ) ) {
-				$callback = function( $item ){
-					foreach( (array)$item as $key => $value ) {
-						if ( is_array( $value ) || is_object( $value ) ) {
-							if ( is_object( $item ) ) {
-								$item->$key = json_encode( $value );
-							} else if ( is_array( $item ) ) {
-								$item[ $key ] = json_encode( $value );
-							}
-						}
-					}
-					return $item;
-				};
 				if ( is_object( $items ) && is_a( $items, 'Iterator' ) ) {
-					$items = \WP_CLI\Utils\iterator_map( $items, $callback );
+					$items = \WP_CLI\Utils\iterator_map( $items, array( $this, 'transform_item_values_to_json' ) );
 				} else {
-					$items = array_map( $callback, $items );
+					$items = array_map( array( $this, 'transform_item_values_to_json' ), $items );
 				}
 			}
 
@@ -200,7 +188,7 @@ class Formatter {
 	 */
 	private function find_item_key( $item, $field ) {
 		foreach ( array( $field, $this->prefix . '_' . $field ) as $maybe_key ) {
-			if ( ( is_object( $item ) && property_exists( $item, $maybe_key ) ) || ( is_array( $item ) && array_key_exists( $maybe_key, $item ) ) ) {
+			if ( ( is_object( $item ) && isset( $item->$maybe_key ) ) || ( is_array( $item ) && array_key_exists( $maybe_key, $item ) ) ) {
 				$key = $maybe_key;
 				break;
 			}
@@ -301,6 +289,27 @@ class Formatter {
 		}
 
 		return $rows;
+	}
+
+	/**
+	 * Transforms objects and arrays to JSON as necessary
+	 *
+	 * @param mixed $item
+	 * @return mixed
+	 */
+	public function transform_item_values_to_json( $item ) {
+		foreach( $this->args['fields'] as $field ) {
+			$true_field = $this->find_item_key( $item, $field );
+			$value = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
+			if ( is_array( $value ) || is_object( $value ) ) {
+				if ( is_object( $item ) ) {
+					$item->$true_field = json_encode( $value );
+				} else if ( is_array( $item ) ) {
+					$item[ $true_field ] = json_encode( $value );
+				}
+			}
+		}
+		return $item;
 	}
 
 }
