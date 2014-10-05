@@ -74,7 +74,7 @@ class Formatter {
 			}
 
 			if ( in_array( $this->args['format'], array( 'table', 'csv' ) ) ) {
-				$items = array_map( function( $item ){
+				$callback = function( $item ){
 					foreach( (array)$item as $key => $value ) {
 						if ( is_array( $value ) || is_object( $value ) ) {
 							if ( is_object( $item ) ) {
@@ -85,7 +85,12 @@ class Formatter {
 						}
 					}
 					return $item;
-				}, $items );
+				};
+				if ( is_object( $items ) && is_a( $items, 'Iterator' ) ) {
+					$items = \WP_CLI\Utils\iterator_map( $items, $callback );
+				} else {
+					$items = array_map( $callback, $items );
+				}
 			}
 
 			$this->format( $items );
