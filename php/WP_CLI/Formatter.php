@@ -112,7 +112,7 @@ class Formatter {
 			}
 			\WP_CLI::print_value( $value, array( 'format' => $this->args['format'] ) );
 		} else {
-			self::show_multiple_fields( $item, $this->args['format'] );
+			$this->show_multiple_fields( $item, $this->args['format'] );
 		}
 	}
 
@@ -219,12 +219,34 @@ class Formatter {
 	 * @param object|array Data to display
 	 * @param string Format to display the data in
 	 */
-	private static function show_multiple_fields( $data, $format ) {
+	private function show_multiple_fields( $data, $format ) {
+
+		$true_fields = array();
+		foreach( $this->args['fields'] as $field ) {
+			$true_fields[] = $this->find_item_key( $data, $field );
+		}
+
+		foreach( $data as $key => $value ) {
+			if ( ! in_array( $key, $true_fields ) ) {
+				if ( is_array( $data ) ) {
+					unset( $data[ $key ] );
+				} else if ( is_object( $data ) ) {
+					unset( $data->$key );
+				}
+			}
+		}
 
 		switch ( $format ) {
 
 		case 'table':
-			self::assoc_array_to_table( $data );
+		case 'csv':
+			$rows = $this->assoc_array_to_rows( $data );
+			$fields = array( 'Field', 'Value' );
+			if ( 'table' == $format ) {
+				self::show_table( $rows, $fields );
+			} else if ( 'csv' == $format ) {
+				\WP_CLI\Utils\write_csv( STDOUT, $rows, $fields );
+			}
 			break;
 
 		case 'json':
@@ -261,11 +283,13 @@ class Formatter {
 	 * Format an associative array as a table.
 	 *
 	 * @param array     $fields    Fields and values to format
+	 * @return array    $rows
 	 */
-	private static function assoc_array_to_table( $fields ) {
+	private function assoc_array_to_rows( $fields ) {
 		$rows = array();
 
 		foreach ( $fields as $field => $value ) {
+
 			if ( ! is_string( $value ) ) {
 				$value = json_encode( $value );
 			}
@@ -276,7 +300,7 @@ class Formatter {
 			);
 		}
 
-		self::show_table( $rows, array( 'Field', 'Value' ) );
+		return $rows;
 	}
 
 }
