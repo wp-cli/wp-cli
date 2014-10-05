@@ -23,6 +23,11 @@ Feature: Manage WordPress users
       test
       """
 
+    When I run `wp user list --fields=user_login,roles`
+    Then STDOUT should be a table containing rows:
+      | user_login        | roles      |
+      | testuser2         | author     |
+
     When I run `wp user meta get {USER_ID} last_name`
     Then STDOUT should be:
       """
