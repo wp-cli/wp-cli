@@ -118,9 +118,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		foreach ( get_mu_plugins() as $file => $mu_plugin ) {
 			$items[ $file ] = array(
-				'name' => Utils\get_plugin_name( $file ),
-				'status' => 'must-use',
-				'update' => false
+				'name'           => Utils\get_plugin_name( $file ),
+				'status'         => 'must-use',
+				'update'         => false,
+				'update_version' => NULL,
+				'update_package' => NULL,
+				'version'        => '',
+				'update_id'      => '',
+				'title'          => '',
+				'description'    => '',
 			);
 		}
 
