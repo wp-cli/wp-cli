@@ -395,8 +395,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--field=<field>]
 	 * : Instead of returning the whole plugin, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
 	 * [--format=<format>]
-	 * : Output list as table or JSON. Defaults to table.
+	 * : Output list as table, json, CSV. Defaults to table.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -416,6 +419,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			'description' => wordwrap( $plugin_data['Description'] ),
 			'status'      => $this->get_status( $file ),
 		);
+
+		if ( empty( $assoc_args['fields'] ) ) {
+			$plugin_array = get_object_vars( $plugin_obj );
+			$assoc_args['fields'] = array_keys( $plugin_array );
+		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $plugin_obj );
