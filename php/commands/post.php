@@ -145,8 +145,11 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--field=<field>]
 	 * : Instead of returning the whole post, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, csv. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -158,6 +161,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$post_arr = get_object_vars( $post );
 		unset( $post_arr['filter'] );
+
+		if ( empty( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = array_keys( $post_arr );
+		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $post_arr );
