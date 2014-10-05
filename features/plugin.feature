@@ -233,3 +233,12 @@ Feature: Manage WordPress plugins
       """
       Warning: Plugin 'akismet' is already network active.
       """
+
+  Scenario: Plugin name with HTML entities
+    Given a WP install
+
+    When I run `wp plugin install debug-bar-list-dependencies`
+    Then STDOUT should contain:
+      """
+      Installing Debug Bar List Script & Style Dependencies
+      """
