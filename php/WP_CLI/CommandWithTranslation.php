@@ -22,6 +22,12 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	/**
 	 * List all languages available.
 	 *
+	 * [--field=<field>]
+	 * : Display the value of a single field
+	 *
+	 * [--<field>=<value>]
+	 * : Filter results by key=value pairs.
+	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific fields.
 	 *
@@ -61,6 +67,16 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			}
 			return $translation;
 		}, $translations );
+
+		foreach( $translations as $key => $translation ) {
+
+			$fields = array_keys( $translation );
+			foreach( $fields as $field ) {
+				if ( isset( $assoc_args[ $field ] ) && $assoc_args[ $field ] != $translation[ $field ] ) {
+					unset( $translations[ $key ] );
+				}
+			}
+		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $translations );
