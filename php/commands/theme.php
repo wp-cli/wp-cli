@@ -397,8 +397,11 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--field=<field>]
 	 * : Instead of returning the whole theme, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, csv. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -416,6 +419,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		$theme_obj->description = wordwrap( $theme_obj->description );
+
+		if ( empty( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = $theme_vars;
+		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $theme_obj );

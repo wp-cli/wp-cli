@@ -60,6 +60,14 @@ Feature: Manage WordPress posts
       | Field      | Value     |
       | ID         | {POST_ID} |
       | post_title | Test post |
+      | post_name  |           |
+      | post_type  | post      |
+
+    When I run `wp post get {POST_ID} --format=csv --fields=post_title,type | wc -l`
+    Then STDOUT should be:
+      """
+      3
+      """
 
     When I run `wp post get --format=json {POST_ID}`
     Then STDOUT should be JSON containing:

@@ -44,6 +44,12 @@ Feature: Manage WordPress comments
       | Field           | Value          |
       | comment_author  | Mr WordPress   |
 
+    When I run `wp comment get 1 --fields=comment_author,comment_author_email --format=json`
+    Then STDOUT should be:
+      """
+      {"comment_author":"Mr WordPress","comment_author_email":""}
+      """
+
     When I run `wp comment list --fields=comment_approved,comment_author`
     Then STDOUT should be a table containing rows:
       | comment_approved | comment_author |
