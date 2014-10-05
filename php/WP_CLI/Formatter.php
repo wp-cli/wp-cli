@@ -74,13 +74,16 @@ class Formatter {
 			}
 
 			if ( in_array( $this->args['format'], array( 'table', 'csv' ) ) ) {
-				$callback = function( $item ){
-					foreach( (array)$item as $key => $value ) {
+				$fields = $this->args['fields'];
+				$callback = function( $item ) use ( $fields ) {
+					foreach( $fields as $field ) {
+						$true_field = $this->find_item_key( $item, $field );
+						$value = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
 						if ( is_array( $value ) || is_object( $value ) ) {
 							if ( is_object( $item ) ) {
-								$item->$key = json_encode( $value );
+								$item->$true_field = json_encode( $value );
 							} else if ( is_array( $item ) ) {
-								$item[ $key ] = json_encode( $value );
+								$item[ $true_field ] = json_encode( $value );
 							}
 						}
 					}
@@ -200,7 +203,7 @@ class Formatter {
 	 */
 	private function find_item_key( $item, $field ) {
 		foreach ( array( $field, $this->prefix . '_' . $field ) as $maybe_key ) {
-			if ( ( is_object( $item ) && property_exists( $item, $maybe_key ) ) || ( is_array( $item ) && array_key_exists( $maybe_key, $item ) ) ) {
+			if ( ( is_object( $item ) && isset( $item->$maybe_key ) ) || ( is_array( $item ) && array_key_exists( $maybe_key, $item ) ) ) {
 				$key = $maybe_key;
 				break;
 			}
