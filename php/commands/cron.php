@@ -58,13 +58,6 @@ class Cron_Event_Command extends WP_CLI_Command {
 			$events = array();
 		}
 
-		if ( in_array( $formatter->format, array( 'table', 'csv' ) ) ) {
-			$events = array_map( function( $event ){
-				$event->args = json_encode( $event->args );
-				return $event;
-			}, $events );
-		}
-
 		if ( 'ids' == $formatter->format ) {
 			echo implode( ' ', wp_list_pluck( $events, 'hook' ) );
 		} else {

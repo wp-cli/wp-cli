@@ -51,10 +51,6 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 				$item_value = maybe_unserialize( $item_value );
 
-				if ( ( empty( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'table', 'csv' ) ) )&& ( is_object( $item_value ) || is_array( $item_value ) ) ) {
-					$item_value = json_encode( $item_value );
-				}
-
 				$items[] = (object) array(
 					"{$this->meta_type}_id" => $object_id,
 					'meta_key'              => $key,
