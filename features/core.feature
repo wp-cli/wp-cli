@@ -459,3 +459,13 @@ Feature: Manage WordPress installation
       """
       Error: Language not installed.
       """
+
+    When I run `wp core language install --activate en_GB`
+    Then the wp-content/languages/admin-en_GB.po file should exist
+    And the wp-content/languages/en_GB.po file should exist
+    And STDOUT should be:
+      """
+      Success: Language installed.
+      Success: Language activated.
+      """
+
