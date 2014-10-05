@@ -236,9 +236,6 @@ class Menu_Item_Command extends WP_CLI_Command {
 		$items = array_map( function( $item ) use ( $assoc_args ) {
 			$item->position = $item->menu_order;
 			$item->link = $item->url;
-			if ( empty( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'csv', 'json' ) ) ) {
-				$item->classes = json_encode( $item->classes );
-			}
 			return $item;
 		}, $items );
 

@@ -72,6 +72,27 @@ class Formatter {
 					array_unshift( $items, $item );
 				}
 			}
+
+			if ( in_array( $this->args['format'], array( 'table', 'csv' ) ) ) {
+				$callback = function( $item ){
+					foreach( (array)$item as $key => $value ) {
+						if ( is_array( $value ) || is_object( $value ) ) {
+							if ( is_object( $item ) ) {
+								$item->$key = json_encode( $value );
+							} else if ( is_array( $item ) ) {
+								$item[ $key ] = json_encode( $value );
+							}
+						}
+					}
+					return $item;
+				};
+				if ( is_object( $items ) && is_a( $items, 'Iterator' ) ) {
+					$items = \WP_CLI\Utils\iterator_map( $items, $callback );
+				} else {
+					$items = array_map( $callback, $items );
+				}
+			}
+
 			$this->format( $items );
 		}
 	}
@@ -85,7 +106,11 @@ class Formatter {
 		if ( isset( $this->args['field'] ) ) {
 			$item = (object) $item;
 			$key = $this->find_item_key( $item, $this->args['field'] );
-			\WP_CLI::print_value( $item->$key, array( 'format' => $this->args['format'] ) );
+			$value = $item->$key;
+			if ( in_array( $this->args['format'], array( 'table', 'csv' ) ) && ( is_object( $value ) || is_array( $value ) ) ) {
+				$value = json_encode( $value );
+			}
+			\WP_CLI::print_value( $value, array( 'format' => $this->args['format'] ) );
 		} else {
 			self::show_multiple_fields( $item, $this->args['format'] );
 		}

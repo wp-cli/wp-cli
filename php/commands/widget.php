@@ -64,12 +64,6 @@ class Widget_Command extends WP_CLI_Command {
 
 		$output_widgets = $this->get_sidebar_widgets( $sidebar_id );
 
-		if ( empty( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'table', 'csv') ) ) {
-			foreach( $output_widgets as &$output_widget ) {
-				$output_widget->options = json_encode( $output_widget->options );
-			}
-		}
-
 		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
 			$output_widgets = wp_list_pluck( $output_widgets, 'id' );
 		}
