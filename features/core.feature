@@ -427,6 +427,12 @@ Feature: Manage WordPress installation
       Success: Language activated.
       """
 
+    When I run `wp core language list --field=language --status=active`
+    Then STDOUT should be:
+      """
+      en_GB
+      """
+
     When I run `wp core language list --fields=language,english_name,status`
     Then STDOUT should be a table containing rows:
       | language  | english_name     | status        |
