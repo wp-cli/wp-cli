@@ -627,7 +627,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				$roles = array_map( 'trim', explode( ',', $new_user['roles'] ) );
 				$invalid_role = false;
 				foreach( $roles as $role ) {
-					 if ( is_null( get_role( $role ) ) ) {
+					if ( is_null( get_role( $role ) ) ) {
 						WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
 						$invalid_role = true;
 						break;
