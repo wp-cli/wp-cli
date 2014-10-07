@@ -395,10 +395,11 @@ Feature: Manage WordPress installation
 
     When I run `wp core language list --fields=language,english_name,status`
     Then STDOUT should be a table containing rows:
-      | language  | english_name     | status        |
-      | ar        | Arabic           | uninstalled   |
-      | az        | Azerbaijani      | uninstalled   |
-      | en_GB     | English (UK)     | uninstalled   |
+      | language  | english_name            | status        |
+      | ar        | Arabic                  | uninstalled   |
+      | az        | Azerbaijani             | uninstalled   |
+      | en_US     | English (United States) | active        |
+      | en_GB     | English (UK)            | uninstalled   |
 
     When I run `wp core language install en_GB`
     Then the wp-content/languages/admin-en_GB.po file should exist
@@ -439,6 +440,20 @@ Feature: Manage WordPress installation
       | ar        | Arabic           | uninstalled   |
       | az        | Azerbaijani      | uninstalled   |
       | en_GB     | English (UK)     | active        |
+
+    When I run `wp core language activate en_US`
+    Then STDOUT should be:
+      """
+      Success: Language activated.
+      """
+
+    When I run `wp core language list --fields=language,english_name,status`
+    Then STDOUT should be a table containing rows:
+      | language  | english_name            | status        |
+      | ar        | Arabic                  | uninstalled   |
+      | en_US     | English (United States) | active        |
+      | en_GB     | English (UK)            | installed     |
+
 
     When I try `wp core language activate invalid_lang`
     Then STDERR should be:
