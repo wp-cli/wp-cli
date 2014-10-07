@@ -622,7 +622,23 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			);
 			$new_user = array_merge( $defaults, $new_user );
 
-			if ( 'none' === $new_user['role'] ) {
+			$secondary_roles = array();
+			if ( ! empty( $new_user['roles'] ) ) {
+				$roles = array_map( 'trim', explode( ',', $new_user['roles'] ) );
+				$invalid_role = false;
+				foreach( $roles as $role ) {
+					if ( is_null( get_role( $role ) ) ) {
+						WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
+						$invalid_role = true;
+						break;
+					}
+				}
+				if ( $invalid_role ) {
+					continue;
+				}
+				$new_user['role'] = array_shift( $roles );
+				$secondary_roles = $roles;
+			} else if ( 'none' === $new_user['role'] ) {
 				$new_user['role'] = false;
 			} elseif ( is_null( get_role( $new_user['role'] ) ) ) {
 				WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
@@ -667,6 +683,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			} else if ( $new_user['role'] === false ) {
 				delete_user_option( $user_id, 'capabilities' );
 				delete_user_option( $user_id, 'user_level' );
+			}
+
+			$user = get_user_by( 'id', $user_id );
+			foreach( $secondary_roles as $secondary_role ) {
+				$user->add_role( $secondary_role );
 			}
 
 			if ( !empty( $existing_user ) ) {
