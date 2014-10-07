@@ -178,6 +178,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			'language' => 'en_US',
 			'english_name' => 'English (United States)',
 			'native_name' => 'English (United States)',
+			'updated' => '',
 		);
 
 		array_push( $translations, $en_us );
