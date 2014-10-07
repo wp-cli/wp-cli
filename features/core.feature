@@ -473,9 +473,7 @@ Feature: Manage WordPress installation
     Then STDOUT should be a table containing rows:
       | language  | english_name            | status        |
       | en_US     | English (United States) | active        |
-
-    When I run `wp core language list --fields=language,english_name,status --status=active | wc -l`
-    Then STDOUT should be:
+    And STDOUT should not contain:
       """
-      2
+      English (UK)
       """
