@@ -59,6 +59,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			if ( $current_locale == $translation['language'] ) {
 				$translation['status'] = 'active';
 			}
+
 			return $translation;
 		}, $translations );
 
