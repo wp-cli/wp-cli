@@ -22,9 +22,6 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	/**
 	 * List all languages available.
 	 *
- 	 * [--<field>=<value>]
-	 * : Filter results based on the value of a field.
-	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific fields.
 	 *
@@ -59,20 +56,12 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			if ( $current_locale == $translation['language'] ) {
 				$translation['status'] = 'active';
 			}
-
 			return $translation;
 		}, $translations );
 
-		foreach ( $translations as $key => $translation ) {
-			foreach ( $this->obj_fields as $field ) {
-				if ( isset( $assoc_args[$field] ) && $assoc_args[$field] != $translation[$field] ) {
-					unset( $translations[$key] );
-				}
-			}
-		}
-
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $translations );
+
 	}
 
 	/**
