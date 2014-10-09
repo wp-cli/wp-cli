@@ -97,8 +97,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	public function remove( $args, $assoc_args ) {
 		list( $object_id, $term, $taxonomy ) = $args;
 
+        $terms = explode(",",$term);
 
-		$success = wp_remove_object_terms( $object_id, $term, $taxonomy );
+		$success = wp_remove_object_terms( $object_id, $terms, $taxonomy );
 
         if ( !is_wp_error( $success ) ) {
 			\WP_CLI::success( "Deleted term." );
@@ -122,7 +123,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	public function add( $args, $assoc_args ) {
 		list( $object_id, $term, $taxonomy ) = $args;
 
-		$success = wp_set_object_terms( $object_id, $term, $taxonomy, false );
+        $terms = explode(",",$term);
+
+		$success = wp_set_object_terms( $object_id, $terms, $taxonomy, false );
 
         if ( !is_wp_error( $success ) ) {
 			\WP_CLI::success( "Added term." );
@@ -148,7 +151,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	public function update( $args, $assoc_args ) {
         list( $object_id, $term, $taxonomy ) = $args;
 
-        $success = wp_set_object_terms( $object_id, $term, $taxonomy, true );
+        $terms = explode(",",$term);
+
+        $success = wp_set_object_terms( $object_id, $terms, $taxonomy, true );
 
 		if ( !is_wp_error( $success ) ) {
 			\WP_CLI::success( "Updated term." );
