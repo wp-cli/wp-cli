@@ -492,8 +492,8 @@ class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
  *
  *     wp post term set 123 test category
  */
-class Post_Term_Command extends \WP_CLI\CommandWithTerm {
-    protected $meta_type = 'post';
+class Post_Term_Command extends \WP_CLI\CommandWithTerms {
+    protected $obj_type = 'post';
 
     public function __construct() {
         $this->fetcher = new \WP_CLI\Fetchers\Post;
