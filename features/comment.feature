@@ -106,10 +106,21 @@ Feature: Manage WordPress comments
       Approved comment {COMMENT_ID}
       """
 
+    When I run `wp comment get --field=comment_approved {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      1
+      """
+
     When I run `wp comment unapprove {COMMENT_ID}`
     Then STDOUT should contain:
       """
       Unapproved comment {COMMENT_ID}
       """
 
+    When I run `wp comment get --field=comment_approved {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      0
+      """
 
