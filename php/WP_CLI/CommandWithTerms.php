@@ -21,7 +21,6 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
         "term_id",
         "name",
         "slug",
-        "term_group",
         "taxonomy"
     );
 
@@ -47,13 +46,13 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
      * * term_id
      * * name
      * * slug
-     * * term_group
      * * taxonomy
      *
      * These fields are optionally available:
      *
      * * term_taxonomy_id
      * * description
+     * * term_group
      * * parent
      * * count
      *
