@@ -109,7 +109,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	}
 
     /**
-     * Add a term.
+     * Add a term. Appends to existed
      *
      * <id>
      * : The ID of the object.
@@ -125,7 +125,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
         $terms = explode(",",$term);
 
-		$success = wp_set_object_terms( $object_id, $terms, $taxonomy, false );
+		$success = wp_set_object_terms( $object_id, $terms, $taxonomy, true );
 
         if ( !is_wp_error( $success ) ) {
 			\WP_CLI::success( "Added term." );
@@ -135,7 +135,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	}
 
     /**
-     * Update a term.
+     * Update terms. Replaces existing terms
      *
      * <id>
      * : The ID of the object.
@@ -153,7 +153,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
         $terms = explode(",",$term);
 
-        $success = wp_set_object_terms( $object_id, $terms, $taxonomy, true );
+        $success = wp_set_object_terms( $object_id, $terms, $taxonomy, false );
 
 		if ( !is_wp_error( $success ) ) {
 			\WP_CLI::success( "Updated term." );
