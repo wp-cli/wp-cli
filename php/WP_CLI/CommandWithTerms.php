@@ -10,8 +10,8 @@ namespace WP_CLI;
 abstract class CommandWithTerms extends \WP_CLI_Command {
 
     /**
-     * @var string $object_type WordPress' expected name for the object.
-     */
+    * @var string $object_type WordPress' expected name for the object.
+    */
 	protected $obj_type;
 
     /**
@@ -81,21 +81,6 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
 	}
 
-	/**
-	 * Get terms values.
-	 *
-	 * @synopsis <id> <taxonomy> [--format=<format>]
-	 */
-	public function get( $args, $assoc_args ) {
-		list( $object_id, $taxonomy ) = $args;
-
-		$value = wp_get_object_terms( $object_id, $taxonomy );
-
-		if ( '' === $value )
-			die(1);
-
-		\WP_CLI::print_value( $value, $assoc_args );
-	}
 
 	/**
 	 * Remove a term.
@@ -115,7 +100,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
 		$success = wp_remove_object_terms( $object_id, $term, $taxonomy );
 
-		if ( $success ) {
+        if ( !is_wp_error( $success ) ) {
 			\WP_CLI::success( "Deleted term." );
 		} else {
 			\WP_CLI::error( "Failed to delete term." );
@@ -139,7 +124,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
 		$success = wp_set_object_terms( $object_id, $term, $taxonomy, false );
 
-		if ( $success ) {
+        if ( !is_wp_error( $success ) ) {
 			\WP_CLI::success( "Added term." );
 		} else {
 			\WP_CLI::error( "Failed to add term." );
@@ -165,7 +150,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
         $success = wp_set_object_terms( $object_id, $term, $taxonomy, true );
 
-		if ( $success ) {
+		if ( !is_wp_error( $success ) ) {
 			\WP_CLI::success( "Updated term." );
 		} else {
 			\WP_CLI::error( "Failed to update term." );
@@ -177,7 +162,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
      * @param  int $object_id
      * @return string $obj_type
      */
-    public function get_type($object_id){
+    protected function get_type($object_id){
         return $this->obj_type;
     }
 

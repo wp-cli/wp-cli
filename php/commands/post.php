@@ -499,7 +499,7 @@ class Post_Term_Command extends \WP_CLI\CommandWithTerms {
         $this->fetcher = new \WP_CLI\Fetchers\Post;
     }
 
-    public function get_type($object_id){
+    protected function get_type($object_id){
         $post = $this->fetcher->get_check( $object_id );
         return $post->post_type;
     }
