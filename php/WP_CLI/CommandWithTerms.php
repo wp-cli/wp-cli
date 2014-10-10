@@ -15,6 +15,11 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	protected $obj_type;
 
     /**
+     * @var string $object_id WordPress' object id.
+     */
+    protected $obj_id;
+
+    /**
      * @var array $obj_fields Default fields to display for each object.
      */
     protected $obj_fields = array(
@@ -62,6 +67,8 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
         list( $object_id ) = $args;
 
+        $this->setObjId($object_id);
+
         $taxonomy_names = ! empty( $assoc_args['taxonomies'] ) ? explode( ',', $assoc_args['taxonomies'] ) : get_object_taxonomies( $this->get_type($object_id) );
 
         $items = array();
@@ -96,6 +103,10 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	public function remove( $args, $assoc_args ) {
 		list( $object_id, $term, $taxonomy ) = $args;
 
+        $this->setObjId($object_id);
+
+        $this->taxonomy_exists($taxonomy);
+
         $terms = explode(",",$term);
 
 		$success = wp_remove_object_terms( $object_id, $terms, $taxonomy );
@@ -121,6 +132,10 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
      */
 	public function add( $args, $assoc_args ) {
 		list( $object_id, $term, $taxonomy ) = $args;
+
+        $this->setObjId($object_id);
+
+        $this->taxonomy_exists($taxonomy);
 
         $terms = explode(",",$term);
 
@@ -150,6 +165,10 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	public function update( $args, $assoc_args ) {
         list( $object_id, $term, $taxonomy ) = $args;
 
+        $this->setObjId($object_id);
+
+        $this->taxonomy_exists($taxonomy);
+
         $terms = explode(",",$term);
 
         $success = wp_set_object_terms( $object_id, $terms, $taxonomy, false );
@@ -162,11 +181,46 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	}
 
     /**
+     * Check if taxonomy exists
+     *
+     * @param $taxonomy
+     */
+    protected function taxonomy_exists($taxonomy){
+
+        $taxonomy_names = get_object_taxonomies( $this->get_type() );
+
+        if(!in_array($taxonomy, $taxonomy_names)){
+            \WP_CLI::error('Invalid taxonomy.');
+        }
+    }
+
+    /**
+     * Set ObjId Class variable
+     *
+     * @param string $obj_id
+     */
+    protected function setObjId($obj_id)
+    {
+        $this->obj_id = $obj_id;
+    }
+
+    /**
+     * Get ObjId Class variable
+     *
+     * @return string
+     */
+    protected function getObjId()
+    {
+        return $this->obj_id;
+    }
+
+
+    /**
      *
      * @param  int $object_id
      * @return string $obj_type
      */
-    protected function get_type($object_id){
+    protected function get_type(){
         return $this->obj_type;
     }
 
