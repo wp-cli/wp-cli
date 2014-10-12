@@ -840,7 +840,7 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
  *     wp user term set 123 test category
  */
 class User_Term_Command extends \WP_CLI\CommandWithTerms {
-    protected $obj_type = 'user';
+	protected $obj_type = 'user';
 }
 
 
