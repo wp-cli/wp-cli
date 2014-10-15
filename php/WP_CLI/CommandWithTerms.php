@@ -165,9 +165,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		$result = wp_set_object_terms( $object_id, $terms, $taxonomy, false );
 
 		if ( ! is_wp_error( $result ) ) {
-			\WP_CLI::success( "Updated term." );
+			\WP_CLI::success( "Set terms." );
 		} else {
-			\WP_CLI::error( "Failed to update term." );
+			\WP_CLI::error( "Failed to set terms." );
 		}
 	}
 
