@@ -96,7 +96,7 @@ Feature: Manage user term
 
     When I try `wp user term add 1 foo2 boo`
     Then the return code should be 1
-    And STDERR should contain:
+    And STDERR should be:
     """
-      Error: Invalid taxonomy
-    """
+      Error: Invalid taxonomy.
+	  """
