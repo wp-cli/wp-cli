@@ -10,12 +10,12 @@ namespace WP_CLI;
 abstract class CommandWithTerms extends \WP_CLI_Command {
 
 	/**
-	 * @var string $object_type WordPress' expected name for the object.
+	 * @var string $object_type WordPress expected name for the object.
 	 */
 	protected $obj_type;
 
 	/**
-	 * @var string $object_id WordPress' object id.
+	 * @var string $object_id WordPress object id.
 	 */
 	protected $obj_id;
 
