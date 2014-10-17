@@ -6,7 +6,7 @@
  * ## EXAMPLES
  *
  *     # delete all spam comments.
- *     wp comment delete $(wp comment list --status=spam --format=ids)
+ *     wp comment delete $(wp comment list --status=spam --field=ID)
  *
  * @package wp-cli
  */
