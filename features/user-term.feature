@@ -2,7 +2,7 @@ Feature: Manage user term
 
   Scenario: Userterm CRUD
     Given a WP install
-    And a wp-content/plugins/test-add-tax/command.php file:
+    And a wp-content/plugins/test-add-tax/plugin.php file:
       """
       <?php
       // Plugin Name: Test Add Tax
@@ -16,7 +16,7 @@ Feature: Manage user term
     And I run `wp plugin activate test-add-tax`
 
 
-    When I run `wp user term add 1 foo user_type`
+    When I run `wp user term add 1 user_type foo`
     Then STDOUT should be:
       """
       Success: Added term.
@@ -27,7 +27,7 @@ Feature: Manage user term
       | name | slug | taxonomy |
       | foo  | foo  | user_type |
 
-    When I run `wp user term add 1 bar user_type`
+    When I run `wp user term add 1 user_type bar`
     Then STDOUT should be:
       """
       Success: Added term.
@@ -39,7 +39,7 @@ Feature: Manage user term
       | foo  | foo  | user_type |
       | bar  | bar  | user_type |
 
-    When I run `wp user term set 1 new user_type`
+    When I run `wp user term set 1 user_type new`
     Then STDOUT should be:
       """
       Success: Set terms.
@@ -50,7 +50,7 @@ Feature: Manage user term
       | name | slug | taxonomy |
       | new  | new  | user_type |
 
-    When I run `wp user term remove 1 new user_type`
+    When I run `wp user term remove 1 user_type new`
     Then STDOUT should be:
       """
       Success: Deleted term.
@@ -59,7 +59,7 @@ Feature: Manage user term
   Scenario: Multiple user term
     Given a WP install
 
-    And a wp-content/plugins/test-add-tax/command.php file:
+    And a wp-content/plugins/test-add-tax/plugin.php file:
       """
       <?php
       // Plugin Name: Test Add Tax
@@ -72,14 +72,14 @@ Feature: Manage user term
       """
     And I run `wp plugin activate test-add-tax`
 
-    When I run `wp user term add 1 apple user_type`
-    And I run `wp user term add 1 apple user_type`
+    When I run `wp user term add 1 user_type apple`
+    And I run `wp user term add 1 user_type apple`
     Then STDOUT should contain:
       """
       Success: Added term.
       """
 
-    When I run `wp user term set 1 'apple1, apple2' user_type`
+    When I run `wp user term set 1 user_type 'apple1, apple2'`
     Then STDOUT should contain:
       """
       Success: Set terms.
@@ -94,9 +94,9 @@ Feature: Manage user term
   Scenario: Userterm Add invalid tax
     Given a WP install
 
-    When I try `wp user term add 1 foo2 boo`
+    When I try `wp user term add 1 boo foo2`
     Then the return code should be 1
     And STDERR should be:
-    """
-    Error: Invalid taxonomy.
+      """
+      Error: Invalid taxonomy.
 	  """

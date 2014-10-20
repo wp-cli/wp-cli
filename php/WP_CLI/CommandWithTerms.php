@@ -2,6 +2,8 @@
 
 namespace WP_CLI;
 
+use WP_CLI;
+
 /**
  * Base class for WP-CLI commands that deal with terms
  *
@@ -10,12 +12,12 @@ namespace WP_CLI;
 abstract class CommandWithTerms extends \WP_CLI_Command {
 
 	/**
-	 * @var string $object_type WordPress expected name for the object.
+	 * @var string $object_type WordPress' expected name for the object.
 	 */
 	protected $obj_type;
 
 	/**
-	 * @var string $object_id WordPress object id.
+	 * @var string $object_id WordPress' object id.
 	 */
 	protected $obj_id;
 
@@ -85,14 +87,14 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * <id>
 	 * : The ID of the object.
 	 *
-	 * <term>
-	 * : The name of the term to deleted.
-	 *
 	 * <taxonomy>
 	 * : The name of the taxonomy type to deleted.
+	 *
+	 * <term>
+	 * : The name of the term to deleted.
 	 */
 	public function remove( $args, $assoc_args ) {
-		list( $object_id, $term, $taxonomy ) = $args;
+		list( $object_id, $taxonomy, $term ) = $args;
 
 		$this->set_obj_id( $object_id );
 
@@ -103,9 +105,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		$result = wp_remove_object_terms( $object_id, $terms, $taxonomy );
 
 		if ( ! is_wp_error( $result ) ) {
-			\WP_CLI::success( "Deleted term." );
+			WP_CLI::success( "Deleted term." );
 		} else {
-			\WP_CLI::error( "Failed to delete term." );
+			WP_CLI::error( "Failed to delete term." );
 		}
 	}
 
@@ -115,14 +117,14 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * <id>
 	 * : The ID of the object.
 	 *
-	 * <term>
-	 * : The name of the term to be added.
-	 *
 	 * <taxonomy>
 	 * : The name of the taxonomy type to be added.
+	 *
+	 * <term>
+	 * : The name of the term to be added.
 	 */
 	public function add( $args, $assoc_args ) {
-		list( $object_id, $term, $taxonomy ) = $args;
+		list( $object_id, $taxonomy, $term ) = $args;
 
 		$this->set_obj_id( $object_id );
 
@@ -133,9 +135,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		$result = wp_set_object_terms( $object_id, $terms, $taxonomy, true );
 
 		if ( ! is_wp_error( $result ) ) {
-			\WP_CLI::success( "Added term." );
+			WP_CLI::success( "Added term." );
 		} else {
-			\WP_CLI::error( "Failed to add term." );
+			WP_CLI::error( "Failed to add term." );
 		}
 	}
 
@@ -145,16 +147,14 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * <id>
 	 * : The ID of the object.
 	 *
-	 * <term>
-	 * : The name of the term to be updated.
-	 *
 	 * <taxonomy>
 	 * : The name of the taxonomy type to be updated.
 	 *
-	 * @alias set
+	 * <term>
+	 * : The name of the term to be updated.
 	 */
 	public function set( $args, $assoc_args ) {
-		list( $object_id, $term, $taxonomy ) = $args;
+		list( $object_id, $taxonomy, $term ) = $args;
 
 		$this->set_obj_id( $object_id );
 
@@ -165,9 +165,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		$result = wp_set_object_terms( $object_id, $terms, $taxonomy, false );
 
 		if ( ! is_wp_error( $result ) ) {
-			\WP_CLI::success( "Set terms." );
+			WP_CLI::success( "Set terms." );
 		} else {
-			\WP_CLI::error( "Failed to set terms." );
+			WP_CLI::error( "Failed to set terms." );
 		}
 	}
 
@@ -181,7 +181,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		$taxonomy_names = get_object_taxonomies( $this->get_object_type() );
 
 		if ( ! in_array( $taxonomy, $taxonomy_names ) ) {
-			\WP_CLI::error( 'Invalid taxonomy.' );
+			WP_CLI::error( 'Invalid taxonomy.' );
 		}
 	}
 
@@ -218,10 +218,10 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 *
 	 * @param array $assoc_args Parameters passed to command. Determines formatting.
 	 *
-	 * @return \WP_CLI\Formatter
+	 * @return WP_CLI\Formatter
 	 */
 	protected function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
+		return new WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
 	}
 }
 
