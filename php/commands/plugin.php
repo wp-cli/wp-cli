@@ -177,6 +177,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--network]
 	 * : If set, the plugin will be deactivated for the entire multisite network.
+	 *
+	 * [--delete]
+	 * : If set, the plugin will be deactivated and uninstalled/deleted.
 	 */
 	function deactivate( $args, $assoc_args = array() ) {
 		$network_wide = isset( $assoc_args['network'] );
@@ -192,12 +195,32 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				deactivate_plugins( $file, false, $network_wide );
 
 				$this->active_output( $name, $file, $network_wide, "deactivate" );
+				
+				if ( isset( $assoc_args['delete']) ) {
+					if ( is_plugin_active( $plugin->file ) ) {
+						WP_CLI::warning( "The '{$plugin->name}' plugin is active." );
+						continue;
+					}
+
+					uninstall_plugin( $plugin->file );
+					WP_CLI::success( "'$plugin->name' Deleted." );
+				}
 			}
 		} else {
 			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 				deactivate_plugins( $plugin->file, false, $network_wide );
 
 				$this->active_output( $plugin->name, $plugin->file, $network_wide, "deactivate" );
+
+				if ( isset( $assoc_args['delete']) ) {
+					if ( is_plugin_active( $plugin->file ) ) {
+						WP_CLI::warning( "The '{$plugin->name}' plugin is active." );
+						continue;
+					}
+
+					uninstall_plugin( $plugin->file );
+					WP_CLI::success( "'$plugin->name' Deleted." );
+				}
 			}
 		}
 	}

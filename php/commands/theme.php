@@ -403,6 +403,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--format=<format>]
 	 * : Accepted values: table, json, csv. Default: table
 	 *
+	 * [--long]
+	 * : Include values: description, tags
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp theme get twentytwelve --format=json
@@ -411,14 +414,20 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		$theme = $this->fetcher->get_check( $args[0] );
 
 		// WP_Theme object employs magic getter, unfortunately
-		$theme_vars = array( 'name', 'title', 'version', 'parent_theme', 'template_dir', 'stylesheet_dir', 'template', 'stylesheet', 'screenshot', 'description', 'author', 'tags', 'theme_root', 'theme_root_uri',
-		);
+		if (isset( $assoc_args['long'])){
+			$theme_vars = array( 'name', 'title', 'version', 'parent_theme', 'template_dir', 'stylesheet_dir', 'template', 'stylesheet', 'screenshot', 'description', 'author', 'tags', 'theme_root', 'theme_root_uri',);
+		}else {
+			$theme_vars = array( 'name', 'title', 'version', 'parent_theme', 'template_dir', 'stylesheet_dir', 'template', 'stylesheet', 'screenshot', 'author', 'theme_root', 'theme_root_uri',);
+		}
+
 		$theme_obj = new stdClass;
 		foreach ( $theme_vars as $var ) {
 			$theme_obj->$var = $theme->$var;
 		}
-
-		$theme_obj->description = wordwrap( $theme_obj->description );
+		
+		if (isset( $assoc_args['long'])){
+			$theme_obj->description = wordwrap( $theme_obj->description );
+		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
 			$assoc_args['fields'] = $theme_vars;
