@@ -237,6 +237,10 @@ class Media_Command extends WP_CLI_Command {
 		$dir_path = $wud['basedir'] . '/' . dirname( $metadata['file'] ) . '/';
 		$original_path = $dir_path . basename( $metadata['file'] );
 
+		if ( empty( $metadata['sizes'] ) ) {
+			return;
+		}
+
 		foreach ( $metadata['sizes'] as $size => $size_info ) {
 			$intermediate_path = $dir_path . $size_info['file'];
 
