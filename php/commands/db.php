@@ -125,6 +125,7 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     wp db export --db_name=<db_name>
 	 *     wp db export --add-drop-table
 	 *     wp db export --tables=wp_options,wp_users
 	 *
@@ -139,7 +140,8 @@ class DB_Command extends WP_CLI_Command {
 		}
 
 		$command = 'mysqldump --no-defaults %s';
-		$command_esc_args = array( DB_NAME );
+		$command_esc_args = array();
+		$command_esc_args[] = isset( $assoc_args['db_name'] ) ? $assoc_args['db_name'] : DB_NAME;
 
 		if ( isset( $assoc_args['tables'] ) ) {
 			$tables = explode( ',', trim( $assoc_args['tables'], ',' ) );
