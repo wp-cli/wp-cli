@@ -559,7 +559,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$user->get_role_caps();
 
 			$user_caps_list = $user->allcaps;
-			$cap_table_titles = array( 'capability', 'status' );
 
 			foreach ( $user_caps_list as $cap => $active ) {
 				if ( $active ) {

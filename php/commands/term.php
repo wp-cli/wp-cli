@@ -282,8 +282,6 @@ class Term_Command extends WP_CLI_Command {
 	 *     wp term generate --count=10
 	 */
 	public function generate( $args, $assoc_args ) {
-		global $wpdb;
-
 		list ( $taxonomy ) = $args;
 
 		$defaults = array(
@@ -303,11 +301,6 @@ class Term_Command extends WP_CLI_Command {
 		$hierarchical = get_taxonomy( $taxonomy )->hierarchical;
 
 		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating terms', $count );
-
-		$args = array(
-			'orderby' => 'id',
-			'hierarchical' => $hierarchical,
-		);
 
 		$previous_term_id = 0;
 		$current_parent = 0;
