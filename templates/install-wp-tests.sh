@@ -31,27 +31,11 @@ precheck() {
 		HAS_CURL=1
 	fi
 
-	if ! hash svn 2>/dev/null ; then
-		echo "This requires svn to be installed"
-		exit
-	fi
-
-	if ! hash tar 2>/dev/null ; then
-		echo "This requires tar to be installed"
-		exit
-	fi
-
-	if ! hash mysqladmin 2>/dev/null ; then
-		echo "This requires mysqladmin to be installed"
-		exit
-	fi
-
-	printf "\033c" #clear the screen
 	echo "This script installs an instance of WordPress to use in your unit testing. The script will only work if one of the following are true:" 
 	echo ""
 	echo "- $DB_NAME exists, is empty and $DB_USER/$DB_PASS has write permissions to it"
 	echo "                                 -or-"
-	echo "- $DB_NAME *not* exist and $DB_USER/$DB_PASS has permissions to create it"
+	echo "- $DB_NAME *does not* exist and $DB_USER/$DB_PASS has permissions to create it"
 	echo ""
 }
 
@@ -85,7 +69,7 @@ install_wp() {
 	else
 		local ARCHIVE_NAME="wordpress-$WP_VERSION"
 	fi
-	HTTP_TAR_FILE="http://wordpress.org/${ARCHIVE_NAME}.tar.gz"
+	HTTP_TAR_FILE="https://wordpress.org/${ARCHIVE_NAME}.tar.gz"
 
 	check_http_status #check if $HTTP_TAR_FILE returns a 200
 
