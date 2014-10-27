@@ -579,13 +579,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	private function update_plugins_status( $action, $network_wide ) {
 		$status = ( $action == "activate" ) ? "active" : "inactive";
 		foreach ( get_plugins() as $file => $details ) {
-			if ( $this->get_status( $file ) == $status )
+			if ( $this->get_status( $file ) == $status ) {
 				continue;
+			}
 
-			if ( $action == "activate" )
+			if ( $action == "activate" ) {
 				activate_plugins( $file, false, $network_wide );
-			else
+			} else {
 				deactivate_plugins( $file, false, $network_wide );
+			}
 
 			$name = Utils\get_plugin_name( $file );
 			$this->active_output( $name, $file, $network_wide, $action );
