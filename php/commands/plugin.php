@@ -138,29 +138,36 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <plugin>...
+	 * [<plugin>...]
 	 * : One or more plugins to activate.
+	 *
+	 * [--all]
+	 * : If set, all plugins will be activated.
 	 *
 	 * [--network]
 	 * : If set, the plugin will be activated for the entire multisite network.
 	 */
 	function activate( $args, $assoc_args = array() ) {
 		$network_wide = isset( $assoc_args['network'] );
+		$enable_all = isset( $assoc_args['all'] );
 
-		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
+		if ( $enable_all ) {
+			$this->update_plugins_status( "activate", $network_wide );
+		} else {
+			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
+				$status = $this->get_status( $plugin->file );
+				if ( ! $network_wide && 'active' === $status ) {
+					WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
+					continue;
+				} else if ( $network_wide && 'active-network' === $status ) {
+					WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
+					continue;
+				}
 
-			$status = $this->get_status( $plugin->file );
-			if ( ! $network_wide && 'active' === $status ) {
-				WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
-				continue;
-			} else if ( $network_wide && 'active-network' === $status ) {
-				WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
-				continue;
+				activate_plugin( $plugin->file, '', $network_wide );
+
+				$this->active_output( $plugin->name, $plugin->file, $network_wide, "activate" );
 			}
-
-			activate_plugin( $plugin->file, '', $network_wide );
-
-			$this->active_output( $plugin->name, $plugin->file, $network_wide, "activate" );
 		}
 	}
 
@@ -183,16 +190,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$disable_all = isset( $assoc_args['all'] );
 
 		if ( $disable_all ) {
-			foreach ( get_plugins() as $file => $details ) {
-				if ( $this->get_status( $file ) == "inactive" )
-					continue;
-
-				$name = Utils\get_plugin_name( $file );
-
-				deactivate_plugins( $file, false, $network_wide );
-
-				$this->active_output( $name, $file, $network_wide, "deactivate" );
-			}
+			$this->update_plugins_status( "deactivate", $network_wide );
 		} else {
 			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 				deactivate_plugins( $plugin->file, false, $network_wide );
@@ -363,7 +361,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--activate]
 	 * : If set, the plugin will be activated immediately after install.
-	 * 
+	 *
 	 * [--activate-network]
 	 * : If set, the plugin will be network activated immediately after install
 	 *
@@ -575,6 +573,27 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 	}
 
+	/**
+	 * Enable or disable all plugins.
+	 */
+	private function update_plugins_status( $action, $network_wide ) {
+		$status = ( $action == "activate" ) ? "active" : "inactive";
+		foreach ( get_plugins() as $file => $details ) {
+			if ( $this->get_status( $file ) == $status ) {
+				continue;
+			}
+
+			if ( $action == "activate" ) {
+				activate_plugins( $file, false, $network_wide );
+			} else {
+				deactivate_plugins( $file, false, $network_wide );
+			}
+
+			$name = Utils\get_plugin_name( $file );
+			$this->active_output( $name, $file, $network_wide, $action );
+		}
+	}
+
 	protected function get_status( $file ) {
 		if ( is_plugin_active_for_network( $file ) )
 			return 'active-network';
@@ -617,4 +636,3 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 }
 
 WP_CLI::add_command( 'plugin', 'Plugin_Command' );
-
