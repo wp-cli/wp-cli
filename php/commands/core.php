@@ -540,8 +540,9 @@ class Core_Command extends WP_CLI_Command {
 
 		// Support prompting for the `--url=<url>`,
 		// which is normally a runtime argument
-		if ( isset( $assoc_args['url'] ) )
-			$url_parts = WP_CLI::set_url( $assoc_args['url'] );
+		if ( isset( $assoc_args['url'] ) ) {
+			WP_CLI::set_url( $assoc_args['url'] );
+		}
 
 		$public = true;
 

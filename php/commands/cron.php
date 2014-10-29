@@ -151,7 +151,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 		}
 
 		$executed = 0;
-		foreach ( $events as $id => $event ) {
+		foreach ( $events as $event ) {
 			if ( $event->hook == $hook ) {
 				$result = self::run_event( $event );
 				if ( $result ) {
@@ -214,7 +214,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 		}
 
 		$deleted = 0;
-		foreach ( $events as $id => $event ) {
+		foreach ( $events as $event ) {
 			if ( $event->hook == $hook ) {
 				$result = self::delete_event( $event );
 				if ( $result ) {
