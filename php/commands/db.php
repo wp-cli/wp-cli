@@ -95,6 +95,7 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 *     # execute a query stored in a file
 	 *     wp db query < debug.sql
+	 *     # check all tables in the database
 	 *     wp db query "CHECK TABLE $(wp db tables | paste -s -d',');"
 	 */
 	function query( $args ) {
