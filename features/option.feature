@@ -13,6 +13,12 @@ Feature: Manage WordPress options
       bar
       """
 
+    When I run `wp option list
+    Then STDOUT should not be empty
+
+    When I run `wp option list --autoload=on
+    Then STDOUT should not be empty
+
     When I run `wp option list --search='str_o*'`
     Then STDOUT should be:
       """
@@ -20,7 +26,7 @@ Feature: Manage WordPress options
       str_opt
       """
 
-    When I run `wp option list --search='str_o*' --total`
+    When I run `wp option list --search='str_o*' --format=total_bytes`
     Then STDOUT should be:
       """
       size

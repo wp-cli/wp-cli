@@ -83,22 +83,24 @@ class Option_Command extends WP_CLI_Command {
 	 * [--search=<pattern>]
 	 * : Use wildcards ( * and ? ) to match option name.
 	 *
-	 * [--autoload]
-	 * : Match only autoload options.
-	 *
-	 * [--total]
-	 * : Display only the total size of matching options in bytes.
+	 * [--autoload=<value>]
+	 * : Match only autoload options when value is on, and only not-autoload option when off.
 	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : The serialization format for the value. Default is table.
+	 * : The serialization format for the value.
+	 * : total_bytes displays the total size of matching options in bytes.
+	 * : Accepted values: table, json, csv, count, total_bytes. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
 	 * # Get the total size of all autoload options
-	 * wp option list --total --autoload
+	 * wp option list --autoload=on --format=total_bytes
+	 *
+	 * # Find biggest transients
+	 * wp option list --search="*_transient_*" --fields=option_name,size_bytes | sort -n -k 2 | tail
 	 *
 	 * # List all options begining with "i2f_"
 	 * wp option list --search "i2f_*"
@@ -108,22 +110,22 @@ class Option_Command extends WP_CLI_Command {
 	 * This field will be displayed by default for each matching option:
 	 *
 	 * * option_name
+	 * * option_value
 	 *
 	 * These fields are optionally available:
 	 *
-	 * * option_value
 	 * * autoload
-	 * * size
+	 * * size_bytes
 	 *
 	 * @subcommand list
-	 * @synopsis [--search=<sql-like-pattern>] [--total] [--autoload] [--fields=<fields>] [--format=<format>]
+	 * @synopsis [--search=<sql-like-pattern>] [--autoload=<value>] [--fields=<fields>] [--format=<format>]
 	 */
 	public function list_( $args, $assoc_args ) {
 
 		global $wpdb;
 		$pattern = '%';
-		$fields = array( 'option_name' );
-		$size_query = ",LENGTH(option_value) AS size";
+		$fields = array( 'option_name', 'option_value' );
+		$size_query = ",LENGTH(option_value) AS `size_bytes`";
 		$autoload_query = '';
 
 		if ( isset( $assoc_args['search'] ) ) {
@@ -137,13 +139,19 @@ class Option_Command extends WP_CLI_Command {
 			$fields = explode( ',', $assoc_args['fields'] );
 		}
 
-		if ( isset( $assoc_args['total'] ) ) {
-			$fields = array( 'size' );
-			$size_query = ",SUM(LENGTH(option_value)) AS `size`";
+		if ( isset( $assoc_args['format'] ) && 'total_bytes' === $assoc_args['format'] ) {
+			$fields = array( 'size_bytes' );
+			$size_query = ",SUM(LENGTH(option_value)) AS `size_bytes`";
 		}
 
 		if ( isset( $assoc_args['autoload'] ) ) {
-			$autoload_query = " AND autoload='yes'";
+			if ( 'on' === $assoc_args['autoload'] ) {
+				$autoload_query = " AND autoload='yes'";
+			} elseif ( 'off' === $assoc_args['autoload'] ) {
+				$autoload_query = " AND autoload='no'";
+			} else {
+				WP_CLI::error( "Value of '--autoload' should be on or off." );
+			}
 		}
 
 		$results = $wpdb->get_results(
@@ -154,11 +162,15 @@ class Option_Command extends WP_CLI_Command {
 			)
 		);
 
-		$formatter = new \WP_CLI\Formatter(
-			$assoc_args,
-			$fields
-		);
-		$formatter->display_items( $results );
+		if ( isset( $assoc_args['format'] ) && 'total_bytes' === $assoc_args['format'] ) {
+			WP_CLI::line( $results[0]->size_bytes );
+		} else {
+			$formatter = new \WP_CLI\Formatter(
+				$assoc_args,
+				$fields
+			);
+			$formatter->display_items( $results );
+		}
 	}
 
 	/**
