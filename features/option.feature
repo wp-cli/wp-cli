@@ -13,6 +13,29 @@ Feature: Manage WordPress options
       bar
       """
 
+    When I run `wp option list --search='str_o*'`
+    Then STDOUT should be:
+      """
+      option_name
+      str_opt
+      """
+
+    When I run `wp option list --search='str_o*' --total`
+    Then STDOUT should be:
+      """
+      size
+      3
+      """
+
+    When I run `wp option add auto_opt --autoload=no 'bar'`
+    Then STDOUT should not be empty
+
+    When I run `wp option list --search='auto_opt' --autoload`
+    Then STDOUT should not be empty
+
+    When I run `wp option list | grep -q "str_opt"`
+    Then the return code should be 0
+
     When I run `wp option delete str_opt`
     Then STDOUT should not be empty
 

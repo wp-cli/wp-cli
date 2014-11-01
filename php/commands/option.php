@@ -80,20 +80,28 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * List options.
 	 *
-	 * [--search=<sql-like-pattern>]
-	 * : SQL pattern matching enables you to use "_" to match any single character and "%" to match an arbitrary number of characters.
-	 *
-	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields.
+	 * [--search=<pattern>]
+	 * : Use wildcards ( * and ? ) to match option name.
 	 *
 	 * [--autoload]
 	 * : Match only autoload options.
 	 *
 	 * [--total]
-	 * : Display only the total size of matching options.
+	 * : Display only the total size of matching options in bytes.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : The serialization format for the value. Default is table.
+	 *
+	 * ## EXAMPLES
+	 *
+	 * # Get the total size of all autoload options
+	 * wp option list --total --autoload
+	 *
+	 * # List all options begining with "i2f_"
+	 * wp option list --search "i2f_*"
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -103,7 +111,7 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * These fields are optionally available:
 	 *
-	 * * option_name
+	 * * option_value
 	 * * autoload
 	 * * size
 	 *
@@ -113,24 +121,25 @@ class Option_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 
 		global $wpdb;
-		$size_query = "LENGTH(option_value) AS size";
+		$pattern = '%';
+		$fields = array( 'option_name' );
+		$size_query = ",LENGTH(option_value) AS size";
 		$autoload_query = '';
 
 		if ( isset( $assoc_args['search'] ) ) {
-			$pattern = $assoc_args['search'];
-		} else {
-			$pattern = '%';
+			$pattern = self::esc_like( esc_sql( $assoc_args['search'] ) );
+			// substitute wildcards
+			$pattern = str_replace( '*', '%', $pattern );
+			$pattern = str_replace( '?', '_', $pattern );
 		}
 
 		if ( isset( $assoc_args['fields'] ) ) {
 			$fields = explode( ',', $assoc_args['fields'] );
-		} else {
-			$fields = array( 'option_name' );
 		}
 
 		if ( isset( $assoc_args['total'] ) ) {
 			$fields = array( 'size' );
-			$size_query = "SUM(LENGTH(option_value)) AS size";
+			$size_query = ",SUM(LENGTH(option_value)) AS `size`";
 		}
 
 		if ( isset( $assoc_args['autoload'] ) ) {
@@ -139,8 +148,8 @@ class Option_Command extends WP_CLI_Command {
 
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT option_name,option_value,autoload," . $size_query
-					. " FROM $wpdb->options WHERE option_name LIKE %s" . $autoload_query,
+				"SELECT `option_name`,`option_value`,`autoload`" . $size_query
+					. " FROM `$wpdb->options` WHERE `option_name` LIKE %s" . $autoload_query,
 				$pattern
 			)
 		);
@@ -205,6 +214,21 @@ class Option_Command extends WP_CLI_Command {
 		} else {
 			WP_CLI::success( "Deleted '$key' option." );
 		}
+	}
+
+	private static function esc_like( $old ) {
+		global $wpdb;
+
+		// Remove notices in 4.0 and support backwards compatibility
+		if( method_exists( $wpdb, 'esc_like' ) ) {
+			// 4.0
+			$old = $wpdb->esc_like( $old );
+		} else {
+			// 3.9 or less
+			$old = like_escape( esc_sql( $old ) );
+		}
+
+		return $old;
 	}
 }
 
