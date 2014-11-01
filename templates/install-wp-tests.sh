@@ -17,6 +17,11 @@ WP_CORE_DIR=/tmp/wordpress/
 set -ex
 
 install_wp() {
+
+	if [ -d $WP_CORE_DIR ]; then
+		return;
+	fi
+
 	mkdir -p $WP_CORE_DIR
 
 	if [ $WP_VERSION == 'latest' ]; then 
