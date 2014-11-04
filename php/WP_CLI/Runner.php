@@ -547,7 +547,7 @@ class Runner {
 			"If you'd like to run it as the user that this site is under, you can " .
 			"run the following to become the respective user:\n" .
 			"\n" .
-			"    sudo -u USER -i -- wp ...\n" .
+			"    sudo -u USER -i -- wp <command>\n" .
 			"\n"
 		);
 	}
