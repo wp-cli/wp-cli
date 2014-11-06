@@ -118,8 +118,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		foreach ( get_mu_plugins() as $file => $mu_plugin ) {
 			$mu_version = '';
-			if ( ! empty( $mu_plugin['Version'] ) )
+			if ( ! empty( $mu_plugin['Version'] ) ) {
 				$mu_version = $mu_plugin['Version'];
+			}
 
 			$items[ $file ] = array(
 				'name'           => Utils\get_plugin_name( $file ),
