@@ -283,7 +283,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			return new WP_Error( 'already_installed', 'Theme already installed.' );
 		}
 
-		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
+		WP_CLI::log( sprintf( 'Installing %s (%s)', html_entity_decode( $api->name, ENT_QUOTES ), $api->version ) );
 		if ( !isset( $assoc_args['version'] ) || 'dev' !== $assoc_args['version'] ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $api->download_link, $this->item_type, $api->slug, $api->version );
 		}
