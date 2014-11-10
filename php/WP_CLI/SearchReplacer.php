@@ -35,6 +35,20 @@ class SearchReplacer {
 	function run( $data, $serialised = false ) {
 		return $this->_run( $data, $serialised );
 	}
+	
+	private function base64_check_and_decode($s){
+	    // Check if there are valid base64 characters
+	    if (!preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $s)) return false;
+	
+	    // Decode the string in strict mode and check the results
+	    $decoded = base64_decode($s, true);
+	    if(false === $decoded) return false;
+	
+	    // Encode the string again
+	    if(base64_encode($decoded) != $s) return false;
+	
+	    return $decoded;
+	}
 
 	/**
 	 * @param int          $recursion_level Current recursion depth within the original data.
@@ -64,6 +78,14 @@ class SearchReplacer {
 
 			if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
 				$data = $this->_run( $unserialized, true, $recursion_level + 1 );
+			}
+			
+			elseif ( is_string( $data ) && ( $unserialized = $this->base64_check_and_decode( $data ) ) !== false ) {
+				$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
+			}
+		    
+		    	elseif ( is_string( $data ) && ( $unserialized = json_decode( $data, true ) ) !== null ) {
+				$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
 			}
 
 			elseif ( is_array( $data ) ) {
