@@ -224,7 +224,12 @@ class Core_Command extends WP_CLI_Command {
 
 	private static function _read( $url ) {
 		$headers = array('Accept' => 'application/json');
-		return Utils\http_request( 'GET', $url, null, $headers )->body;
+		$response = Utils\http_request( 'GET', $url, null, $headers, array( 'timeout' => 30 ) );
+		if ( 200 === $response->status_code ) {
+			return $response->body;
+		} else {
+			WP_CLI::error( "Couldn't fetch response from {$url} (HTTP code {$response->status_code})" );
+		}
 	}
 
 	private function get_download_offer( $locale ) {
