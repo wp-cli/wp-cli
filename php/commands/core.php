@@ -897,7 +897,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			);
 
 		}
-	   
+
 		if ( ! empty( $update ) && ( $update->version != $wp_version || isset( $assoc_args['force'] ) ) ) {
 
 			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
