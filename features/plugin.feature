@@ -76,7 +76,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin uninstall Zombieland`
     Then STDOUT should contain:
       """
-      Success: Uninstalled 'Zombieland' plugin.
+      Success: Uninstalled and deleted 'Zombieland' plugin.
       """
     And the {PLUGIN_DIR}/zombieland file should not exist
 
