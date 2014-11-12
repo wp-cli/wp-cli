@@ -367,7 +367,20 @@ Feature: Manage WordPress installation
     And STDOUT should not contain:
       """
       Downloading
-      """
+	  """
+
+  Scenario: Don't run update when up-to-date
+	Given a WP install
+
+	When I run `wp core update`
+	Then STDOUT should contain:
+	  """
+      WordPress is at the latest version
+	  """
+	And STDOUT should not contain:
+	  """
+      Updating
+	  """
 
 
   Scenario: User defined in wp-cli.yml
