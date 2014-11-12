@@ -274,4 +274,14 @@ Feature: Manage WordPress plugins
       inactive
       inactive
       must-use
-      """
+	  """
+
+  Scenario: Uninstall a plugin without deleting
+    Given a WP install
+
+	When I run `wp plugin install akismet --version=2.5.7 --force`
+	Then STDOUT should not be empty
+
+	When I run `wp plugin uninstall akismet --no-delete`
+	Then STDOUT should not be empty
+
