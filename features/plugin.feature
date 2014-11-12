@@ -296,7 +296,7 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name                             | status   |
       | handbook/handbook                | inactive |
-	  | handbook/functionality-for-pages | inactive |
+      | handbook/functionality-for-pages | inactive |
 
 	When I run `wp plugin activate handbook/functionality-for-pages`
 	Then STDOUT should not be empty
@@ -305,5 +305,5 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name                             | status   |
       | handbook/handbook                | inactive |
-	  | handbook/functionality-for-pages | active   |
+      | handbook/functionality-for-pages | active   |
 
