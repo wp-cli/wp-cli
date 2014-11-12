@@ -562,6 +562,12 @@ class Runner {
 		if ( empty( $this->arguments ) )
 			$this->arguments[] = 'help';
 
+		// Protect 'cli info' from most of the runtime
+		if ( 'cli' === $this->arguments[0] && ! empty( $this->arguments[1] ) && 'info' === $this->arguments[1] ) {
+			$this->_run_command();
+			exit;
+		}
+
 		// Load bundled commands early, so that they're forced to use the same
 		// APIs as non-bundled commands.
 		Utils\load_command( $this->arguments[0] );
