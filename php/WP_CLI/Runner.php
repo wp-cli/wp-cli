@@ -568,6 +568,9 @@ class Runner {
 
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {
+				if ( ! file_exists( $path ) ) {
+					WP_CLI::error( sprintf( "Required file '%s' doesn't exist", basename( $path ) ) );
+				}
 				Utils\load_file( $path );
 			}
 		}
