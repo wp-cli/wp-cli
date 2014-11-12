@@ -282,6 +282,10 @@ Feature: Manage WordPress plugins
 	When I run `wp plugin install akismet --version=2.5.7 --force`
 	Then STDOUT should not be empty
 
-	When I run `wp plugin uninstall akismet --no-delete`
-	Then STDOUT should not be empty
+	When I run `wp plugin uninstall akismet --skip-delete`
+	Then STDOUT should contain:
+	  """
+	  Success: Ran uninstall procedure for
+	  """
+
 
