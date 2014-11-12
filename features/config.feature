@@ -213,3 +213,9 @@ Feature: Have a config file
 	  Error: Required file 'missing-file.php' doesn't exist
 	  """
 
+    When I run `wp cli info`
+	Then STDOUT should not be empty
+
+    When I run `wp --info`
+	Then STDOUT should not be empty
+
