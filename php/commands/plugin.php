@@ -429,7 +429,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * <plugin>...
 	 * : One or more plugins to uninstall.
 	 *
-	 * [--no-delete]
+	 * [--skip-delete]
 	 * : If set, the plugin files will not be deleted. Only the uninstall procedure
 	 * will be run.
 	 *
@@ -446,8 +446,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 			uninstall_plugin( $plugin->file );
 
-			if ( !isset( $assoc_args['no-delete'] ) && $this->_delete( $plugin ) ) {
-				WP_CLI::success( "Uninstalled '$plugin->name' plugin." );
+			if ( !isset( $assoc_args['skip-delete'] ) && $this->_delete( $plugin ) ) {
+				WP_CLI::success( "Uninstalled and deleted '$plugin->name' plugin." );
+			} else {
+				WP_CLI::success( "Ran uninstall procedure for '$plugin->name' plugin without deleting." );
 			}
 		}
 	}
