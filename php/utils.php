@@ -279,7 +279,12 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 			$editor = 'vi';
 	}
 
-	\WP_CLI::launch( "$editor " . escapeshellarg( $tmpfile ) );
+	$descriptorspec = array( STDIN, STDOUT, STDERR );
+	$process = proc_open( "$editor " . escapeshellarg( $tmpfile ), $descriptorspec, $pipes );
+	$r = proc_close( $process );
+	if ( $r ) {
+		exit( $r );
+	}
 
 	$output = file_get_contents( $tmpfile );
 
