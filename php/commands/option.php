@@ -96,14 +96,14 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 * # Get the total size of all autoload options
-	 * wp option list --autoload=on --format=total_bytes
+	 *     # Get the total size of all autoload options
+	 *     wp option list --autoload=on --format=total_bytes
 	 *
-	 * # Find biggest transients
-	 * wp option list --search="*_transient_*" --fields=option_name,size_bytes | sort -n -k 2 | tail
+	 *     # Find biggest transients
+	 *     wp option list --search="*_transient_*" --fields=option_name,size_bytes | sort -n -k 2 | tail
 	 *
-	 * # List all options begining with "i2f_"
-	 * wp option list --search "i2f_*"
+	 *     # List all options begining with "i2f_"
+	 *     wp option list --search "i2f_*"
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
