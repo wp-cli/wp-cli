@@ -274,34 +274,34 @@ Feature: Manage WordPress plugins
       inactive
       inactive
       must-use
-	  """
+      """
 
   Scenario: Uninstall a plugin without deleting
     Given a WP install
 
-	When I run `wp plugin install akismet --version=2.5.7 --force`
-	Then STDOUT should not be empty
+    When I run `wp plugin install akismet --version=2.5.7 --force`
+    Then STDOUT should not be empty
 
-	When I run `wp plugin uninstall akismet --skip-delete`
-	Then STDOUT should contain:
-	  """
-	  Success: Ran uninstall procedure for
-	  """
+    When I run `wp plugin uninstall akismet --skip-delete`
+    Then STDOUT should contain:
+      """
+      Success: Ran uninstall procedure for
+      """
 
   Scenario: Two plugins, one directory
     Given a WP install
     And I run `svn co https://meta.svn.wordpress.org/sites/trunk/wordpress.org/public_html/wp-content/plugins/handbook wp-content/plugins/handbook`
 
-	When I run `wp plugin list --fields=name,status`
+    When I run `wp plugin list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name                             | status   |
       | handbook/handbook                | inactive |
       | handbook/functionality-for-pages | inactive |
 
-	When I run `wp plugin activate handbook/functionality-for-pages`
-	Then STDOUT should not be empty
+    When I run `wp plugin activate handbook/functionality-for-pages`
+    Then STDOUT should not be empty
 
-	When I run `wp plugin list --fields=name,status`
+    When I run `wp plugin list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name                             | status   |
       | handbook/handbook                | inactive |
