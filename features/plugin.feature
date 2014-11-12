@@ -243,39 +243,6 @@ Feature: Manage WordPress plugins
       Installing Debug Bar List Script & Style Dependencies
       """
 
-  Scenario: Enable and disable all plugins
-    Given a WP install
-
-    When I run `wp plugin activate --all`
-    Then STDOUT should be:
-      """
-      Success: Plugin 'akismet' activated.
-      Success: Plugin 'hello' activated.
-      """
-
-    When I run `wp plugin list --field=status`
-    Then STDOUT should be:
-      """
-      active
-      active
-      must-use
-      """
-
-    When I run `wp plugin deactivate --all`
-    Then STDOUT should be:
-      """
-      Success: Plugin 'akismet' deactivated.
-      Success: Plugin 'hello' deactivated.
-      """
-
-    When I run `wp plugin list --field=status`
-    Then STDOUT should be:
-      """
-      inactive
-      inactive
-      must-use
-	  """
-
   Scenario: Uninstall a plugin without deleting
     Given a WP install
 
@@ -288,5 +255,3 @@ Feature: Manage WordPress plugins
 	  Success: Ran uninstall procedure for
 	  """
 
-
->>>>>>> 3b03f2f... Merge pull request #1489 from wp-cli/1489-uninstall-skip-delete
