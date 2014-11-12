@@ -375,13 +375,18 @@ Feature: Manage WordPress installation
 	When I run `wp core update`
 	Then STDOUT should contain:
 	  """
-      WordPress is at the latest version
+	  WordPress is up to date
 	  """
 	And STDOUT should not contain:
 	  """
-      Updating
+	  Updating
 	  """
 
+	When I run `wp core update --force`
+	Then STDOUT should contain:
+	  """
+	  Updating
+	  """
 
   Scenario: User defined in wp-cli.yml
     Given an empty directory
