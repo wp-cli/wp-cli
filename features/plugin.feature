@@ -288,4 +288,22 @@ Feature: Manage WordPress plugins
 	  Success: Ran uninstall procedure for
 	  """
 
+  Scenario: Two plugins, one directory
+    Given a WP install
+    And I run `svn co https://meta.svn.wordpress.org/sites/trunk/wordpress.org/public_html/wp-content/plugins/handbook wp-content/plugins/handbook`
+
+	When I run `wp plugin list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name                             | status   |
+      | handbook/handbook                | inactive |
+	  | handbook/functionality-for-pages | inactive |
+
+	When I run `wp plugin activate handbook/functionality-for-pages`
+	Then STDOUT should not be empty
+
+	When I run `wp plugin list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name                             | status   |
+      | handbook/handbook                | inactive |
+	  | handbook/functionality-for-pages | active   |
 
