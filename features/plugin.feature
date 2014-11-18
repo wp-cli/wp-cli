@@ -290,7 +290,24 @@ Feature: Manage WordPress plugins
 
   Scenario: Two plugins, one directory
     Given a WP install
-    And I run `svn co https://meta.svn.wordpress.org/sites/trunk/wordpress.org/public_html/wp-content/plugins/handbook wp-content/plugins/handbook`
+    And a wp-content/plugins/handbook/handbook.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Handbook
+       * Description: Features for a handbook, complete with glossary and table of contents
+       * Author: Nacin
+       */
+      """
+    And a wp-content/plugins/handbook/functionality-for-pages.php file:
+      """
+      <?php
+	  /**
+	   * Plugin Name: Handbook Functionality for Pages
+       * Description: Adds handbook-like table of contents to all Pages for a site. Covers Table of Contents and the "watch this page" widget
+       * Author: Nacin
+       */
+      """
 
     When I run `wp plugin list --fields=name,status`
     Then STDOUT should be a table containing rows:
