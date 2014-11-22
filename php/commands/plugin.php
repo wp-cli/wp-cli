@@ -298,8 +298,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : If set, all plugins that have updates will be updated.
 	 *
 	 * [--version=<version>]
-	 * : If set, the plugin will be updated to the latest development version,
-	 * regardless of what version is currently installed.
+	 * : If set, the plugin will be updated to the specified version.
 	 *
 	 * [--dry-run]
 	 * : Preview which plugins would be updated.
@@ -311,9 +310,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp plugin update --all
 	 */
 	function update( $args, $assoc_args ) {
-		if ( isset( $assoc_args['version'] ) && 'dev' == $assoc_args['version'] ) {
+		if ( isset( $assoc_args['version'] ) ) {
 			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 				$this->_delete( $plugin );
+
+				$assoc_args['force'] = 1;
 				$this->install( array( $plugin->name ), $assoc_args );
 			}
 		} else {
