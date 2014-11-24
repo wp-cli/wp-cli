@@ -324,3 +324,16 @@ Feature: Manage WordPress plugins
       | handbook/handbook                | inactive |
       | handbook/functionality-for-pages | active   |
 
+  Scenario: Install a plugin, then update to a specific version of that plugin
+    Given a WP install
+
+    When I run `wp plugin install akismet --version=2.5.7 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin update akismet --version=2.6.0`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --fields=name,version`
+    Then STDOUT should be a table containing rows:
+      | name       | version   |
+      | akismet    | 2.6.0     |
