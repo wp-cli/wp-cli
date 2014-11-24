@@ -52,7 +52,7 @@ class Core_Command extends WP_CLI_Command {
 		$release_data = json_decode( $response->body );
 		$release_versions = array_keys( (array) $release_data );
 		usort( $release_versions, function( $a, $b ){
-			return ! version_compare( $a, $b );
+			return 1 === version_compare( $a, $b );
 		});
 
 		$locale = get_locale();
@@ -86,6 +86,7 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		if ( $updates ) {
+			$updates = array_reverse( $updates );
 			$formatter = new \WP_CLI\Formatter(
 				$assoc_args,
 				array( 'version', 'update_type', 'package_url' )
