@@ -211,3 +211,17 @@ Feature: Manage WordPress themes
       """
       Error: This is not a multisite install.
       """
+
+  Scenario: Install a theme, then update to a specific version of that theme
+    Given a WP install
+
+    When I run `wp theme install p2 --version=1.4.1`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update p2 --version=1.4.2`
+    Then STDOUT should not be empty
+
+    When I run `wp theme list --fields=name,version`
+    Then STDOUT should be a table containing rows:
+      | name       | version   |
+      | p2         | 1.4.2     |
