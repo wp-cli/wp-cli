@@ -445,7 +445,7 @@ class Core_Command extends WP_CLI_Command {
 
 	/**
 	 * Install multisite from scratch.
-	 * (subdomains will not work on localhost)
+	 * ( subdomains will not work on localhost )
 	 *
 	 * ## OPTIONS
 	 *
