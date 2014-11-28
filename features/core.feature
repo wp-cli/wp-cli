@@ -498,3 +498,15 @@ Feature: Manage WordPress installation
       Success: Language activated.
       """
 
+  @require-wp-4.0
+  Scenario: Don't allow active language to be uninstalled
+    Given a WP install
+
+    When I run `wp core language install en_GB --activate`
+    Then STDOUT should not be empty
+
+    When I try `wp core language uninstall en_GB`
+    Then STDERR should be:
+      """
+      Warning: The 'en_GB' language is active.
+      """
