@@ -63,6 +63,13 @@ return array(
 		'desc' => 'Show all PHP errors',
 	),
 
+	'pager' => array(
+		'runtime' => '',
+		'file' => false,
+		'default' => 'less -r',
+		'desc' => 'Pager to use when displaying help',
+	),
+
 	'prompt' => array(
 		'runtime' => '',
 		'file' => false,
