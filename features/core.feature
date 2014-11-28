@@ -67,6 +67,10 @@ Feature: Manage WordPress installation
       """
       define( 'WP_DEBUG_LOG', true );
       """
+    And the wp-config.php file should not contain:
+      """
+      define( 'WPLANG', '' );
+      """
 
     When I try the previous command again
     Then the return code should be 1
@@ -80,6 +84,16 @@ Feature: Manage WordPress installation
     Then the wp-config.php file should not contain:
       """
       define('AUTH_SALT',
+      """
+
+  Scenario: Define WPLANG when running WP < 4.0
+    Given an empty directory
+    And I run `wp core download --version=3.9 --force`
+
+    When I run `wp core config {CORE_CONFIG_SETTINGS}`
+    Then the wp-config.php file should contain:
+      """
+      define('WPLANG', '');
       """
 
   Scenario: Database doesn't exist
