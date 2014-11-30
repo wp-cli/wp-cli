@@ -106,7 +106,8 @@ class Help_Command extends WP_CLI_Command {
 			2 => STDERR
 		);
 
-		return proc_close( proc_open( 'less -r', $descriptorspec, $pipes ) );
+		$pager = WP_CLI::get_config( 'pager' );
+		return proc_close( proc_open( $pager, $descriptorspec, $pipes ) );
 	}
 
 	private static function get_initial_markdown( $command ) {
