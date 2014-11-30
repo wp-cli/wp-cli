@@ -825,6 +825,24 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 
 }
 
+
+/**
+ * Manage user terms.
+ *
+ * ## OPTIONS
+ *
+ * [--format=json]
+ * : Encode/decode values as JSON.
+ *
+ * ## EXAMPLES
+ *
+ *     wp user term set 123 test category
+ */
+class User_Term_Command extends \WP_CLI\CommandWithTerms {
+	protected $obj_type = 'user';
+}
+
+
 WP_CLI::add_command( 'user', 'User_Command' );
 WP_CLI::add_command( 'user meta', 'User_Meta_Command' );
-
+WP_CLI::add_command( 'user term', 'User_Term_Command' );
