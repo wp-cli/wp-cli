@@ -45,15 +45,22 @@ Feature: Manage user term
       Success: Set terms.
       """
 
-    When I run `wp user term list 1 user_type --fields=name,slug,taxonomy`
-    Then STDOUT should be a table containing rows:
-      | name | slug | taxonomy |
-      | new  | new  | user_type |
+    When I run `wp user term list 1 user_type --fields=name,slug,taxonomy --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
 
     When I run `wp user term remove 1 user_type new`
     Then STDOUT should be:
       """
       Success: Deleted term.
+      """
+
+    When I run `wp user term list 1 user_type --fields=name,slug,taxonomy --format=count`
+    Then STDOUT should be:
+      """
+      0
       """
 
   Scenario: Multiple user term
@@ -79,7 +86,7 @@ Feature: Manage user term
       Success: Added term.
       """
 
-    When I run `wp user term set 1 user_type 'apple1, apple2'`
+    When I run `wp user term set 1 user_type apple1 apple2`
     Then STDOUT should contain:
       """
       Success: Set terms.
@@ -99,4 +106,4 @@ Feature: Manage user term
     And STDERR should be:
       """
       Error: Invalid taxonomy.
-	  """
+      """

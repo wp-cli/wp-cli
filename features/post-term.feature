@@ -32,15 +32,22 @@ Feature: Manage post term
       Success: Set terms.
       """
 
-    When I run `wp post term list 1 category --fields=name,slug,taxonomy`
-    Then STDOUT should be a table containing rows:
-      | name | slug | taxonomy |
-      | new  | new  | category |
+    When I run `wp post term list 1 category --fields=name,slug,taxonomy --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
 
     When I run `wp post term remove 1 category new`
     Then STDOUT should be:
       """
       Success: Deleted term.
+      """
+
+    When I run `wp post term list 1 category --fields=name,slug,taxonomy --format=count`
+    Then STDOUT should be:
+      """
+      0
       """
 
   Scenario: Multiple post term
@@ -53,7 +60,7 @@ Feature: Manage post term
       Success: Added term.
       """
 
-    When I run `wp post term set 1 category 'apple1, apple2'`
+    When I run `wp post term set 1 category apple1 apple2`
     Then STDOUT should be:
       """
       Success: Set terms.
@@ -73,7 +80,7 @@ Feature: Manage post term
     And STDERR should be:
       """
       Error: Could not find the post with ID 99999.
-	  """
+      """
 
   Scenario: Postterm Add invalid tax
     Given a WP install
@@ -83,4 +90,4 @@ Feature: Manage post term
     And STDERR should be:
       """
       Error: Invalid taxonomy.
-	  """
+      """

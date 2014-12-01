@@ -828,10 +828,6 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 /**
  * Manage user terms.
  *
- * ## OPTIONS
- *
- * [--format=json]
- * : Encode/decode values as JSON.
  *
  * ## EXAMPLES
  *

@@ -483,10 +483,6 @@ class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
 /**
  * Manage post terms.
  *
- * ## OPTIONS
- *
- * [--format=json]
- * : Encode/decode values as JSON.
  *
  * ## EXAMPLES
  *
