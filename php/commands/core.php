@@ -150,10 +150,18 @@ class Core_Command extends WP_CLI_Command {
 		$cache_key = "core/$locale-$version.tar.gz";
 		$cache_file = $cache->has($cache_key);
 
+		$bad_cache = false;
 		if ( $cache_file ) {
 			WP_CLI::log( "Using cached file '$cache_file'..." );
-			self::_extract( $cache_file, ABSPATH );
-		} else {
+			try{
+				self::_extract( $cache_file, ABSPATH );
+			} catch ( Exception $e ) {
+				WP_CLI::warning( "Extraction failed, downloading a new copy..." );
+				$bad_cache = true;
+			}
+		}
+
+		if ( ! $cache_file || $bad_cache ) {
 			// We need to use a temporary file because piping from cURL to tar is flaky
 			// on MinGW (and probably in other environments too).
 			$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.tar.gz';

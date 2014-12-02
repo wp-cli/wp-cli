@@ -376,7 +376,7 @@ Feature: Manage WordPress installation
     When I run `wp core update --version=3.8.1 --force`
     Then STDOUT should contain:
       """
-      Using cached file '{SUITE_CACHE_DIR}/core/en_US-3.8.1.tar.gz'...
+      Using cached file '{SUITE_CACHE_DIR}/core/en_US-3.8.1.zip'...
       """
     And STDOUT should not contain:
       """
@@ -509,4 +509,53 @@ Feature: Manage WordPress installation
     Then STDERR should be:
       """
       Warning: The 'en_GB' language is active.
+      """
+
+  Scenario: Ensure file cache isn't corrupted by a ZIP masquerading as a gzipped TAR, part one
+    Given a WP install
+    And an empty cache
+    And I run `mkdir -p {SUITE_CACHE_DIR}/core; wget -O {SUITE_CACHE_DIR}/core/en_US-4.0.tar.gz https://wordpress.org/wordpress-4.0.zip`
+
+    When I run `wp core download --version=4.0 --force`
+    Then STDOUT should contain:
+      """
+      Success: WordPress downloaded
+      """
+    And STDERR should contain:
+      """
+      Warning: Extraction failed, downloading a new copy...
+      """
+
+    When I run `wp core version`
+    Then STDOUT should be:
+      """
+      4.0
+      """
+
+  Scenario: Ensure file cache isn't corrupted by core update, part two
+    Given a WP install
+    And an empty cache
+
+    When I run `wp core download --version=4.0 --force`
+    Then STDOUT should contain:
+      """
+      Success: WordPress downloaded
+      """
+
+    When I run `wp core version`
+    Then STDOUT should be:
+      """
+      4.0
+      """
+
+    When I run `wp core update --version=4.0 --force`
+    Then STDOUT should contain:
+      """
+      Success: WordPress updated successfully
+      """
+
+    When I run `wp core version`
+    Then STDOUT should be:
+      """
+      4.0
       """
