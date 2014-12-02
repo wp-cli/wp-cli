@@ -311,6 +311,9 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::error( "The 'wp-config.php' file already exists." );
 		}
 
+		$versions_path = ABSPATH . 'wp-includes/version.php';
+		include $versions_path;
+
 		$defaults = array(
 			'dbhost' => 'localhost',
 			'dbpass' => '',
@@ -342,6 +345,12 @@ class Core_Command extends WP_CLI_Command {
 		if ( ! isset( $assoc_args['skip-salts'] ) ) {
 			$assoc_args['keys-and-salts'] = self::_read(
 				'https://api.wordpress.org/secret-key/1.1/salt/' );
+		}
+
+		if ( version_compare( $wp_version, '4.0', '<' ) ) {
+			$assoc_args['add-wplang'] = true;
+		} else {
+			$assoc_args['add-wplang'] = false;
 		}
 
 		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );

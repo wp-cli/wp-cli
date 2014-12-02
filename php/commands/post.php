@@ -480,6 +480,29 @@ class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
 	protected $meta_type = 'post';
 }
 
+/**
+ * Manage post terms.
+ *
+ *
+ * ## EXAMPLES
+ *
+ *     wp post term set 123 test category
+ */
+class Post_Term_Command extends \WP_CLI\CommandWithTerms {
+	protected $obj_type = 'post';
+
+	public function __construct() {
+		$this->fetcher = new \WP_CLI\Fetchers\Post;
+	}
+
+	protected function get_object_type() {
+		$post = $this->fetcher->get_check( $this->get_obj_id() );
+
+		return $post->post_type;
+	}
+}
+
 WP_CLI::add_command( 'post', 'Post_Command' );
 WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );
+WP_CLI::add_command( 'post term', 'Post_Term_Command' );
 

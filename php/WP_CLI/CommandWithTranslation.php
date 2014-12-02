@@ -212,6 +212,12 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			\WP_CLI::error( "No files found in language directory." );
 		}
 
+		$current_locale = get_locale();
+		if ( $language_code === $current_locale ) {
+			\WP_CLI::warning( "The '{$language_code}' language is active." );
+			exit;
+		}
+
 		// As of WP 4.0, no API for deleting a language pack
 		WP_Filesystem();
 		$deleted = false;
