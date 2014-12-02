@@ -107,6 +107,97 @@ class CLI_Command extends WP_CLI_Command {
 	 * @subcommand check-update
 	 */
 	function check_update( $_, $assoc_args ) {
+		$updates = $this->get_updates( $assoc_args );
+
+		if ( $updates ) {
+			$formatter = new \WP_CLI\Formatter(
+				$assoc_args,
+				array( 'version', 'update_type', 'package_url' )
+			);
+			$formatter->display_items( $updates );
+		} else if ( empty( $assoc_args['format'] ) || 'table' == $assoc_args['format'] ) {
+			WP_CLI::success( "WP-CLI is at the latest version." );
+		}
+	}
+
+	/**
+	 * Fetch most recent update matching the requirements. Returns the available versions if there are updates, or empty if no update available.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--patch]
+	 * : Compare only the first two parts of the version number.
+	 *
+	 * [--minor]
+	 * : Compare only the first part of the version number.
+	 *
+	 * [--yes]
+	 * : Do not prompt for confirmation
+	 *
+	 * @subcommand self-update
+	 */
+	function self_update( $_, $assoc_args ) {
+		if ( 0 !== strpos( WP_CLI_ROOT, 'phar://' ) ) {
+			WP_CLI::error( "You can only self-update PHARs" );
+		}
+
+		$old_phar = realpath( $_SERVER['argv'][0] );
+
+		if ( ! is_writable( $old_phar ) ) {
+			WP_CLI::error( sprintf( "%s is not writable by current user", $old_phar ) );
+		}
+
+		$updates = $this->get_updates( $assoc_args );
+
+		if ( $updates ) {
+			$newest = $updates[0];
+
+			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to %s?', WP_CLI_VERSION, $newest['version'] ), $assoc_args );
+
+			$download_url = $newest['package_url'];
+
+			WP_CLI::log( sprintf( 'Downloading from %s...', $download_url ) );
+
+			$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.phar';
+
+			$headers = array();
+			$options = array(
+				'timeout' => 600,  // 10 minutes ought to be enough for everybody
+				'filename' => $temp
+			);
+
+			Utils\http_request( 'GET', $download_url, null, $headers, $options );
+
+			exec( "php $temp --version", $output, $status );
+
+			if ( 0 !== $status ) {
+				WP_CLI::error( 'The downloaded PHAR is broken, try running wp cli self-update again.' );
+			}
+
+			WP_CLI::log( 'New version works. Proceeding to replace.' );
+
+			$mode = fileperms( $old_phar ) & 511;
+
+			if ( false === @chmod( $temp, $mode ) ) {
+				WP_CLI::error( sprintf( "Cannot chmod %s", $temp ) );
+			}
+
+			class_exists( '\cli\Colors' ); // this autoloads \cli\Colors - after we move the file we no longer have access to this class
+
+			if ( false === @rename( $temp, $old_phar ) ) {
+				WP_CLI::error( sprintf( "Cannot move %s to %s", $temp, $old_phar ) );
+			}
+
+			WP_CLI::success( sprintf( 'Successfully update WP-CLI to %s', $newest['version'] ) );
+		} else if ( empty( $assoc_args['format'] ) || 'table' == $assoc_args['format'] ) {
+			WP_CLI::success( "WP-CLI is at the latest version." );
+		}
+	}
+
+	/**
+	 * Returns update information
+	 */
+	private function get_updates( $assoc_args ) {
 		$url = 'https://api.github.com/repos/wp-cli/wp-cli/releases';
 
 		$options = array(
@@ -155,15 +246,7 @@ class CLI_Command extends WP_CLI_Command {
 			}
 		}
 
-		if ( $updates ) {
-			$formatter = new \WP_CLI\Formatter(
-				$assoc_args,
-				array( 'version', 'update_type', 'package_url' )
-			);
-			$formatter->display_items( $updates );
-		} else if ( empty( $assoc_args['format'] ) || 'table' == $assoc_args['format'] ) {
-			WP_CLI::success( "WP-CLI is at the latest version." );
-		}
+		return $updates;
 	}
 
 	/**
