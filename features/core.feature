@@ -511,21 +511,10 @@ Feature: Manage WordPress installation
       Warning: The 'en_GB' language is active.
       """
 
-  Scenario: Ensure file cache isn't corrupted by core update, part one
+  Scenario: Ensure file cache isn't corrupted by a ZIP masquerading as a gzipped TAR, part one
     Given a WP install
     And an empty cache
-
-    When I run `wp core update --version=4.0 --force`
-    Then STDOUT should contain:
-      """
-      Success: WordPress updated successfully
-      """
-
-    When I run `wp core version`
-    Then STDOUT should be:
-      """
-      4.0
-      """
+    And I run `mkdir -p {SUITE_CACHE_DIR}/core; wget -O {SUITE_CACHE_DIR}/core/en_US-4.0.tar.gz https://wordpress.org/wordpress-4.0.zip`
 
     When I run `wp core download --version=4.0 --force`
     Then STDOUT should contain:
