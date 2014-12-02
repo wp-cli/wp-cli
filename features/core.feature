@@ -376,7 +376,7 @@ Feature: Manage WordPress installation
     When I run `wp core update --version=3.8.1 --force`
     Then STDOUT should contain:
       """
-      Using cached file '{SUITE_CACHE_DIR}/core/en_US-3.8.1.tar.gz'...
+      Using cached file '{SUITE_CACHE_DIR}/core/en_US-3.8.1.zip'...
       """
     And STDOUT should not contain:
       """
