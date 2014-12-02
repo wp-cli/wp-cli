@@ -532,6 +532,10 @@ Feature: Manage WordPress installation
       """
       Success: WordPress downloaded
       """
+    And STDERR should contain:
+      """
+      Warning: Extraction failed, downloading a new copy...
+      """
 
     When I run `wp core version`
     Then STDOUT should be:
