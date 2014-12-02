@@ -510,3 +510,59 @@ Feature: Manage WordPress installation
       """
       Warning: The 'en_GB' language is active.
       """
+
+  Scenario: Ensure file cache isn't corrupted by core update, part one
+    Given a WP install
+    And an empty cache
+
+    When I run `wp core update --version=4.0 --force`
+    Then STDOUT should contain:
+      """
+      Success: WordPress updated successfully
+      """
+
+    When I run `wp core version`
+    Then STDOUT should be:
+      """
+      4.0
+      """
+
+    When I run `wp core download --version=4.0 --force`
+    Then STDOUT should contain:
+      """
+      Success: WordPress downloaded
+      """
+
+    When I run `wp core version`
+    Then STDOUT should be:
+      """
+      4.0
+      """
+
+  Scenario: Ensure file cache isn't corrupted by core update, part two
+    Given a WP install
+    And an empty cache
+
+    When I run `wp core download --version=4.0 --force`
+    Then STDOUT should contain:
+      """
+      Success: WordPress downloaded
+      """
+
+    When I run `wp core version`
+    Then STDOUT should be:
+      """
+      4.0
+      """
+
+    When I run `wp core update --version=4.0 --force`
+    Then STDOUT should contain:
+      """
+      Success: WordPress updated successfully
+      """
+
+    When I run `wp core version`
+    Then STDOUT should be:
+      """
+      4.0
+      """
