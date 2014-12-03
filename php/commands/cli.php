@@ -163,6 +163,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		if ( empty( $updates ) ) {
 			WP_CLI::success( "WP-CLI is at the latest version." );
+			exit(0);
 		}
 
 		$newest = $updates[0];
@@ -186,7 +187,7 @@ class CLI_Command extends WP_CLI_Command {
 		exec( "php $temp --version", $output, $status );
 
 		if ( 0 !== $status ) {
-			WP_CLI::error( $output, false );
+			WP_CLI::error_multi_line( $output );
 
 			WP_CLI::error( 'The downloaded PHAR is broken, try running wp cli self-update again.' );
 		}
