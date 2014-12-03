@@ -1,7 +1,7 @@
 {
 	"name": "wp-cli/wp-cli",
 	"description": "A command line interface for WordPress",
-	"keywords": [ "cli", "wordpress" ], 
+	"keywords": [ "cli", "wordpress" ],
 	"homepage": "http://wp-cli.org",
 	"license": "MIT",
 	"bin": [
@@ -18,7 +18,8 @@
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",
-		"behat/behat": "2.5.*"
+		"behat/behat": "2.5.*",
+		"ulrichsg/getopt-php": "2.2.*"
 	},
 	"suggest": {
 		"psy/psysh": "Enhanced `wp shell` functionality"
