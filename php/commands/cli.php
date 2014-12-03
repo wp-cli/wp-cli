@@ -193,7 +193,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( "Cannot move %s to %s", $temp, $old_phar ) );
 		}
 
-		WP_CLI::success( sprintf( 'Successfully update WP-CLI to %s', $newest['version'] ) );
+		WP_CLI::success( sprintf( 'Updated WP-CLI to %s', $newest['version'] ) );
 	}
 
 	/**
