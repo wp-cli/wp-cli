@@ -90,10 +90,16 @@ class CLI_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--patch]
-	 * : Compare only the first two parts of the version number.
+	 * : Only list patch updates
+	 *
+	 * [--ignore-patch]
+	 * : Do not list patch updates
 	 *
 	 * [--minor]
-	 * : Compare only the first part of the version number.
+	 * : Only list minor updates
+	 *
+	 * [--ignore-minor]
+	 * : Do not list minor updates
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each update.
@@ -126,10 +132,16 @@ class CLI_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--patch]
-	 * : Compare only the first two parts of the version number.
+	 * : Only list patch updates
+	 *
+	 * [--ignore-patch]
+	 * : Do not list patch updates
 	 *
 	 * [--minor]
-	 * : Compare only the first part of the version number.
+	 * : Only list minor updates
+	 *
+	 * [--ignore-minor]
+	 * : Do not list minor updates
 	 *
 	 * [--yes]
 	 * : Do not prompt for confirmation
@@ -237,7 +249,9 @@ class CLI_Command extends WP_CLI_Command {
 			}
 
 			if ( ! ( isset( $assoc_args['patch'] ) && 'patch' !== $update_type )
+				&& ! ( isset( $assoc_args['ignore-patch'] ) && 'patch' === $update_type )
 				&& ! ( isset( $assoc_args['minor'] ) && 'minor' !== $update_type )
+				&& ! ( isset( $assoc_args['ignore-minor'] ) && 'minor' === $update_type )
 				&& ! $this->same_minor_release( $release_parts, $updates )
 				) {
 				$updates[] = array(
