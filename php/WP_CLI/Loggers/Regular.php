@@ -78,7 +78,7 @@ class Regular {
 	 *
 	 * @param  array $message Message to write.
 	 */
-	public function error_box( $message_lines ) {
+	public function error_multi_line( $message_lines ) {
 		// convert tabs to four spaces, as some shells will output the tabs as variable-length
 		$message_lines = array_map( function( $line ) {
 			return str_replace( "\t", '    ', $line );
