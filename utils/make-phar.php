@@ -1,10 +1,12 @@
 <?php
 
 require './vendor/autoload.php';
+require './php/utils.php';
 
 use Symfony\Component\Finder\Finder;
 use Ulrichsg\Getopt\Getopt;
 use Ulrichsg\Getopt\Option;
+use WP_CLI\Utils;
 
 $getopt = new Getopt( array(
 	new Option( null, 'version', Getopt::REQUIRED_ARGUMENT ),
@@ -24,45 +26,10 @@ define( 'DEST_PATH', $getopt['output'] ?: $getopt->getOperand(0) );
 define( 'BE_QUIET', (bool) $getopt['quiet'] );
 
 if ( $getopt['version'] ) {
-	// split version ussuming the format is x.y.z-pre
-	$current_version    = explode( '-', file_get_contents( './VERSION' ), 2 );
-	$current_version[0] = explode( '.', $current_version[0] );
+	$current_version = file_get_contents( './VERSION' );
+	$new_version     = $getopt['version'];
 
-	switch ( $getopt['version'] ) {
-		case 'same':
-			// do nothing
-		break;
-
-		case 'patch':
-			$current_version[0][2]++;
-
-			$current_version = array( $current_version[0] ); // drop possible pre-release info
-		break;
-
-		case 'minor':
-			$current_version[0][1]++;
-			$current_version[0][2] = 0;
-
-			$current_version = array( $current_version[0] ); // drop possible pre-release info
-		break;
-
-		case 'major':
-			$current_version[0][0]++;
-			$current_version[0][1] = 0;
-			$current_version[0][2] = 0;
-
-			$current_version = array( $current_version[0] ); // drop possible pre-release info
-		break;
-
-		default:
-			$current_version = array( array( $getopt['version'] ) );
-		break;
-	}
-
-	// reconstruct version string
-	$current_version[0] = implode( '.', $current_version[0] );
-	$current_version    = implode( '-', $current_version );
-	file_put_contents( './VERSION', $current_version );
+	file_put_contents( './VERSION', utils\increment_version( $current_version, $new_version ) );
 }
 
 function add_file( $phar, $path ) {
