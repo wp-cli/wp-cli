@@ -4,30 +4,25 @@ require './vendor/autoload.php';
 require './php/utils.php';
 
 use Symfony\Component\Finder\Finder;
-use Ulrichsg\Getopt\Getopt;
-use Ulrichsg\Getopt\Option;
 use WP_CLI\Utils;
+use WP_CLI\Configurator;
 
-$getopt = new Getopt( array(
-	new Option( null, 'version', Getopt::REQUIRED_ARGUMENT ),
-	new Option( null, 'quiet' ),
-	new Option( 'o', 'output', Getopt::REQUIRED_ARGUMENT ),
-) );
+$configurator = new Configurator( './utils/make-phar-spec.php' );
 
-$getopt->parse();
+list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
-if ( ! $getopt['output'] && ! $getopt->getOperand(0) ) {
-	echo "usage: php -dphar.readonly=0 $argv[0] -o <path> [--quiet] [--version=same|patch|minor|major|x.y.z]\n";
+if ( ! isset( $args[0] ) || empty( $args[0] ) ) {
+	echo "usage: php -dphar.readonly=0 $argv[0] <path> [--quiet] [--version=same|patch|minor|major|x.y.z]\n";
 	exit(1);
 }
 
-define( 'DEST_PATH', $getopt['output'] ?: $getopt->getOperand(0) );
+define( 'DEST_PATH', $args[0] );
 
-define( 'BE_QUIET', (bool) $getopt['quiet'] );
+define( 'BE_QUIET', isset( $runtime_config['quiet'] ) && $runtime_config['quiet'] );
 
-if ( $getopt['version'] ) {
+if ( isset( $runtime_config['version'] ) ) {
 	$current_version = file_get_contents( './VERSION' );
-	$new_version     = $getopt['version'];
+	$new_version     = $runtime_config['version'];
 
 	file_put_contents( './VERSION', utils\increment_version( $current_version, $new_version ) );
 }
