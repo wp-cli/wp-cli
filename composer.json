@@ -1,7 +1,7 @@
 {
 	"name": "wp-cli/wp-cli",
 	"description": "A command line interface for WordPress",
-	"keywords": [ "cli", "wordpress" ], 
+	"keywords": [ "cli", "wordpress" ],
 	"homepage": "http://wp-cli.org",
 	"license": "MIT",
 	"bin": [
