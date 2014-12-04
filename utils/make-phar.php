@@ -1,17 +1,31 @@
 <?php
 
 require './vendor/autoload.php';
+require './php/utils.php';
 
 use Symfony\Component\Finder\Finder;
+use WP_CLI\Utils;
+use WP_CLI\Configurator;
 
-if ( !isset( $argv[1] ) ) {
-	echo "usage: php -dphar.readonly=0 $argv[0] <path> [--quiet]\n";
+$configurator = new Configurator( './utils/make-phar-spec.php' );
+
+list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( array_slice( $GLOBALS['argv'], 1 ) );
+
+if ( ! isset( $args[0] ) || empty( $args[0] ) ) {
+	echo "usage: php -dphar.readonly=0 $argv[0] <path> [--quiet] [--version=same|patch|minor|major|x.y.z]\n";
 	exit(1);
 }
 
-define( 'DEST_PATH', $argv[1] );
+define( 'DEST_PATH', $args[0] );
 
-define( 'BE_QUIET', in_array( '--quiet', $argv ) );
+define( 'BE_QUIET', isset( $runtime_config['quiet'] ) && $runtime_config['quiet'] );
+
+if ( isset( $runtime_config['version'] ) ) {
+	$current_version = file_get_contents( './VERSION' );
+	$new_version     = $runtime_config['version'];
+
+	file_put_contents( './VERSION', utils\increment_version( $current_version, $new_version ) );
+}
 
 function add_file( $phar, $path ) {
 	$key = str_replace( './', '', $path );
@@ -67,6 +81,7 @@ foreach ( $finder as $file ) {
 add_file( $phar, './vendor/autoload.php' );
 add_file( $phar, './utils/get-package-require-from-composer.php' );
 add_file( $phar, './vendor/rmccue/requests/library/Requests/Transport/cacert.pem' );
+add_file( $phar, './VERSION' );
 
 $phar->setStub( <<<EOB
 #!/usr/bin/env php
