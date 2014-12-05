@@ -146,7 +146,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function build_phar( $version = 'same' ) {
-		$this->variables['PHAR_PATH']    = $this->variables['RUN_DIR'] . '/' . uniqid( "wp-cli-build-", TRUE ) . '.phar';
+		$this->variables['PHAR_PATH'] = $this->variables['RUN_DIR'] . '/' . uniqid( "wp-cli-build-", TRUE ) . '.phar';
 
 		Process::create(
 			Utils\esc_cmd(
