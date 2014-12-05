@@ -125,15 +125,21 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * [--tables=<tables>]
 	 * : The comma separated list of specific tables to export. Excluding this parameter will export all tables
+	 * 
+	 * [--prefix]
+	 * : Export only prefixed tables.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp db export --add-drop-table
 	 *     wp db export --tables=wp_options,wp_users
+	 *     wp db export --prefix
 	 *
 	 * @alias dump
 	 */
 	function export( $args, $assoc_args ) {
+		global $wpdb;
+
 		$result_file = $this->get_file_name( $args );
 		$stdout = ( '-' === $result_file );
 
@@ -144,7 +150,15 @@ class DB_Command extends WP_CLI_Command {
 		$command = 'mysqldump --no-defaults %s';
 		$command_esc_args = array( DB_NAME );
 
-		if ( isset( $assoc_args['tables'] ) ) {
+	        if ( isset( $assoc_args['prefix'] ) ) {
+            		$tables = $wpdb->get_col( "SHOW TABLES LIKE '$wpdb->prefix%';" );
+            		unset( $assoc_args['prefix'] );
+            		$command .= ' --tables';
+            		foreach ( $tables as $table ) {
+                		$command .= ' %s';
+                		$command_esc_args[] = trim( $table );
+            		}
+        	} elseif ( isset( $assoc_args['tables'] ) ) {
 			$tables = explode( ',', trim( $assoc_args['tables'], ',' ) );
 			unset( $assoc_args['tables'] );
 			$command .= ' --tables';
