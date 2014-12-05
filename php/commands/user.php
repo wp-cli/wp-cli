@@ -32,6 +32,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--<field>=<value>]
 	 * : Control output by one or more arguments of get_users().
 	 *
+	 * [--network]
+	 * : List all users in the network for multisite.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each user.
 	 *
@@ -83,6 +86,13 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$assoc_args['fields'] = 'ids';
 		} else {
 			$assoc_args['fields'] = 'all_with_meta';
+		}
+
+		if ( isset( $assoc_args['network'] ) ) {
+			if ( ! is_multisite() ) {
+				WP_CLI::error( 'This is not a multisite install.' );
+			}
+			$assoc_args['blog_id'] = 0;
 		}
 
 		$users = get_users( $assoc_args );
