@@ -12,7 +12,7 @@ packages_repo=../wp-cli-packages
 fname="phar/wp-cli.phar"
 
 # generate archive
-php -dphar.readonly=0 ./utils/make-phar.php $packages_repo/$fname --quiet --version=$version
+php -dphar.readonly=0 ./utils/make-phar.php $packages_repo/$fname --quiet --version=$version --store-version
 
 cd $packages_repo
 
