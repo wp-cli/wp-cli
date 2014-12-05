@@ -1,5 +1,20 @@
 Feature: `wp cli` tasks
 
+  Scenario: Ability to set a custom version when building
+    Given an empty directory
+    And save the {SRC_DIR}/VERSION file as {TRUE_VERSION}
+    And a new Phar with version "1.2.3"
+
+    When I run `{PHAR_PATH} cli version`
+    Then STDOUT should be:
+    """
+    WP-CLI 1.2.3
+    """
+    And the {SRC_DIR}/VERSION file should be:
+    """
+    {TRUE_VERSION}
+    """
+
   Scenario: Check for updates
     Given an empty directory
     And a new Phar with version "0.0.0"
