@@ -91,6 +91,24 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		}
 	}
 
+	/**
+	 * @BeforeScenario @cli-update
+	 */
+	public function setLowVersion( $scope )
+	{
+		$this->variables['TRUE_VERSION'] = file_get_contents( './VERSION' );
+		file_put_contents( './VERSION', '0.0.0' );
+	}
+
+	/**
+	 * @AfterScenario @cli-update
+	 */
+	public function restoreVersion( $scope )
+	{
+		file_put_contents( './VERSION', $this->variables['TRUE_VERSION'] );
+		unset( $this->variables['TRUE_VERSION'] );
+	}
+
 	public static function create_cache_dir() {
 		self::$suite_cache_dir = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-suite-cache-", TRUE );
 		mkdir( self::$suite_cache_dir );
@@ -136,6 +154,17 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$this->variables['RUN_DIR'] = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-run-", TRUE );
 			mkdir( $this->variables['RUN_DIR'] );
 		}
+	}
+
+	public function build_phar() {
+		$this->variables['PHAR_PATH'] = $this->variables['RUN_DIR'] . '/' . uniqid( "wp-cli-build-", TRUE ) . '.phar';
+
+		Process::create(
+			Utils\esc_cmd( 'php -dphar.readonly=0 %s %2$s && chmod +x %2$s', __DIR__ . '/../../utils/make-phar.php', $this->variables['PHAR_PATH'] ),
+			null,
+			self::get_process_env_variables()
+		)->run_check();
+		// passthru( 'php -dphar.readonly=0 ' .  . $this->variables['PHAR_PATH'] . ' && chmod +x ' . $this->variables['PHAR_PATH'] );
 	}
 
 	private function set_cache_dir() {

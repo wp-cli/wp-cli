@@ -119,3 +119,8 @@ $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 	}
 );
 
+$steps->Given( '/^a new Phar$/',
+	function ( $world ) {
+		$world->build_phar();
+	}
+);
