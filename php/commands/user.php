@@ -80,19 +80,26 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
-		$formatter = $this->get_formatter( $assoc_args );
-
-		if ( 'ids' == $formatter->format ) {
-			$assoc_args['fields'] = 'ids';
-		} else {
-			$assoc_args['fields'] = 'all_with_meta';
-		}
 
 		if ( isset( $assoc_args['network'] ) ) {
 			if ( ! is_multisite() ) {
 				WP_CLI::error( 'This is not a multisite install.' );
 			}
 			$assoc_args['blog_id'] = 0;
+			if ( isset( $assoc_args['fields'] ) ) {
+				$fields = explode( ',', $assoc_args['fields'] );
+				$assoc_args['fields'] = array_diff( $fields, array( 'roles' ) );
+			} else {
+				$assoc_args['fields'] = array_diff( $this->obj_fields, array( 'roles' ) );
+			}
+		}
+
+		$formatter = $this->get_formatter( $assoc_args );
+
+		if ( 'ids' == $formatter->format ) {
+			$assoc_args['fields'] = 'ids';
+		} else {
+			$assoc_args['fields'] = 'all_with_meta';
 		}
 
 		$users = get_users( $assoc_args );
