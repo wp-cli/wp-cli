@@ -119,8 +119,8 @@ $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 	}
 );
 
-$steps->Given( '/^a new Phar$/',
-	function ( $world ) {
-		$world->build_phar();
+$steps->Given( '/^a new Phar(?: with version "([^"]+)")$/',
+	function ( $world, $version ) {
+		$world->build_phar( $version );
 	}
 );

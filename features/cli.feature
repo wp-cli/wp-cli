@@ -1,9 +1,8 @@
 Feature: `wp cli` tasks
 
-  @cli-update
   Scenario: Check for updates
     Given an empty directory
-    And a new Phar
+    And a new Phar with version "0.0.0"
 
     When I run `{PHAR_PATH} cli check-update`
     Then STDOUT should contain:
@@ -12,10 +11,9 @@ Feature: `wp cli` tasks
     """
     And STDERR should be empty
 
-  @cli-update
   Scenario: Do WP-CLI Update
     Given an empty directory
-    And a new Phar
+    And a new Phar with version "0.0.0"
 
     When I run `{PHAR_PATH} cli update --yes`
     Then STDOUT should contain:
