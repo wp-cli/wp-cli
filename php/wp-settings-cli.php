@@ -211,8 +211,11 @@ wp_cookie_constants( );
 // Define and enforce our SSL constants
 wp_ssl_constants( );
 
-// Create common globals.
+// Don't create common globals, but we still need wp_is_mobile()
 // require( ABSPATH . WPINC . '/vars.php' );
+function wp_is_mobile() {
+	return false;
+}
 
 // Make taxonomies and posts available to plugins and themes.
 // @plugin authors: warning: these get registered again on the init hook.
