@@ -37,3 +37,31 @@ Feature: `wp cli` tasks
     """
     And STDERR should be empty
     And the return code should be 0
+
+  Scenario: Patch update from 0.14.0 to 0.14.1
+    Given an empty directory
+    And a new Phar with version "0.14.0"
+
+    When I run `{PHAR_PATH} cli update --patch --yes`
+    Then STDOUT should contain:
+    """
+    Success: Updated WP-CLI to 0.14.1
+    """
+    And STDERR should be empty
+    And the return code should be 0
+
+  Scenario: Not a patch update from 0.14.0
+    Given an empty directory
+    And a new Phar with version "0.14.0"
+
+    When I run `{PHAR_PATH} cli update --no-patch --yes`
+    Then STDOUT should contain:
+    """
+    Success:
+    """
+    And STDOUT should not contain:
+    """
+    0.14.1
+    """
+    And STDERR should be empty
+    And the return code should be 0
