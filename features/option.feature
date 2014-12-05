@@ -21,11 +21,20 @@ Feature: Manage WordPress options
 
 
     # Integer values
-    When I run `wp option update blog_public 0`
+    When I run `wp option update blog_public 1`
     Then STDOUT should not be empty
 
+    When I run `wp option update blog_public 0`
+    Then STDOUT should contain:
+      """
+      Success: Updated 'blog_public' option.
+      """
+
     When I run the previous command again
-    Then STDOUT should not be empty
+    Then STDOUT should contain:
+      """
+      Success: Value passed for 'blog_public' option is unchanged.
+      """
 
     When I run `wp option get blog_public`
     Then STDOUT should be:
