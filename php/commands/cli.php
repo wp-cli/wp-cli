@@ -92,14 +92,8 @@ class CLI_Command extends WP_CLI_Command {
 	 * [--patch]
 	 * : Only list patch updates
 	 *
-	 * [--ignore-patch]
-	 * : Do not list patch updates
-	 *
 	 * [--minor]
 	 * : Only list minor updates
-	 *
-	 * [--ignore-minor]
-	 * : Do not list minor updates
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each update.
@@ -132,16 +126,10 @@ class CLI_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--patch]
-	 * : Only list patch updates
-	 *
-	 * [--ignore-patch]
-	 * : Do not list patch updates
+	 * : Only perform patch updates
 	 *
 	 * [--minor]
-	 * : Only list minor updates
-	 *
-	 * [--ignore-minor]
-	 * : Do not list minor updates
+	 * : Only perform minor updates
 	 *
 	 * [--yes]
 	 * : Do not prompt for confirmation
@@ -249,10 +237,10 @@ class CLI_Command extends WP_CLI_Command {
 				$update_type = 'patch';
 			}
 
-			if ( ! ( isset( $assoc_args['patch'] ) && 'patch' !== $update_type )
-				&& ! ( isset( $assoc_args['ignore-patch'] ) && 'patch' === $update_type )
-				&& ! ( isset( $assoc_args['minor'] ) && 'minor' !== $update_type )
-				&& ! ( isset( $assoc_args['ignore-minor'] ) && 'minor' === $update_type )
+			if ( ! ( isset( $assoc_args['patch'] ) && $assoc_args['patch'] && 'patch' !== $update_type )
+				&& ! ( isset( $assoc_args['patch'] ) && ! $assoc_args['patch'] && 'patch' === $update_type )
+				&& ! ( isset( $assoc_args['minor'] ) && $assoc_args['minor'] && 'minor' !== $update_type )
+				&& ! ( isset( $assoc_args['minor'] ) && ! $assoc_args['minor'] && 'minor' === $update_type )
 				&& ! $this->same_minor_release( $release_parts, $updates )
 				) {
 				$updates[] = array(
