@@ -1,7 +1,7 @@
 Feature: Manage WordPress roles
 
   Background:
-    Given a WP install
+    Given a recycled WP install
 
   Scenario: Role CRUD operations
     When I run `wp role list`

@@ -1,7 +1,9 @@
 Feature: Manage post custom fields
 
+  Background:
+    Given a recycled WP install
+
   Scenario: Postmeta CRUD
-    Given a WP install
 
     When I run `wp post-meta add 1 foo 'bar'`
     Then STDOUT should not be empty
@@ -35,7 +37,6 @@ Feature: Manage post custom fields
     Then the return code should be 1
 
   Scenario: List post meta
-    Given a WP install
 
     When I run `wp post meta add 1 apple banana`
     And I run `wp post meta add 1 apple banana`

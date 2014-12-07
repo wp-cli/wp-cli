@@ -1,7 +1,9 @@
 Feature: Manage post term
 
+  Background:
+    Given a recycled WP install
+
   Scenario: Postterm CRUD
-    Given a WP install
 
     When I run `wp post term add 1 category foo`
     Then STDOUT should be:
@@ -51,7 +53,6 @@ Feature: Manage post term
       """
 
   Scenario: Multiple post term
-    Given a WP install
 
     When I run `wp post term add 1 category apple`
     And I run `wp post term add 1 category apple`
@@ -73,7 +74,6 @@ Feature: Manage post term
       | apple2 | apple2 | category |
 
   Scenario: Invalid Post ID
-    Given a WP install
 
     When I try `wp post term add 99999 category boo`
     Then the return code should be 1
@@ -83,7 +83,6 @@ Feature: Manage post term
       """
 
   Scenario: Postterm Add invalid tax
-    Given a WP install
 
     When I try `wp post term add 1 foo2 boo`
     Then the return code should be 1

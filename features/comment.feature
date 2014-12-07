@@ -1,7 +1,7 @@
 Feature: Manage WordPress comments
 
   Background:
-    Given a WP install
+    Given a recycled WP install
 
   Scenario: Creating/updating/deleting comments
     When I run `wp comment create --comment_post_ID=1 --comment_content='Hello' --comment_author='Billy' --porcelain`

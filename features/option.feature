@@ -1,7 +1,7 @@
 Feature: Manage WordPress options
 
   Scenario: Option CRUD
-    Given a WP install
+    Given a recycled WP install
 
     # String values
     When I run `wp option add str_opt 'bar'`

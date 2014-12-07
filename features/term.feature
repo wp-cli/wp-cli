@@ -1,7 +1,7 @@
 Feature: Manage WordPress terms
 
   Background:
-    Given a WP install
+    Given a recycled WP install
 
   Scenario: Creating/listing a term
     When I run `wp term create post_tag 'Test term' --slug=test --description='This is a test term' --porcelain`

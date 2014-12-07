@@ -85,8 +85,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( !isset( $this->variables['RUN_DIR'] ) )
 			return;
 
-		// remove altered WP install, unless there's an error
-		if ( $event->getResult() < 4 ) {
+		// remove altered WP install, unless there's an error or it's using the recycled dir
+		if ( $event->getResult() < 4 && false === stripos( $this->variables['RUN_DIR'],  'wp-cli-recycled-wp-test-dir' ) ) {
 			Process::create( Utils\esc_cmd( 'rm -r %s', $this->variables['RUN_DIR'] ), null, self::get_process_env_variables() )->run();
 		}
 	}
@@ -135,6 +135,15 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( !isset( $this->variables['RUN_DIR'] ) ) {
 			$this->variables['RUN_DIR'] = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-run-", TRUE );
 			mkdir( $this->variables['RUN_DIR'] );
+		}
+	}
+
+	public function recycle_run_dir() {
+		if ( !isset( $this->variables['RUN_DIR'] ) ) {
+			$this->variables['RUN_DIR'] = sys_get_temp_dir() . '/wp-cli-recycled-wp-test-dir';
+			if ( ! is_dir( $this->variables['RUN_DIR'] ) ) {
+				mkdir( $this->variables['RUN_DIR'] );
+			}
 		}
 	}
 
@@ -225,5 +234,27 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		$this->proc( 'wp core install', $install_args, $subdir )->run_check();
 	}
+
+	public function recycle_wp_install( $subdir = '' ) {
+		$this->create_db();
+		$this->recycle_run_dir();
+		$dest_dir = $this->variables['RUN_DIR'] . "/$subdir";
+		if ( ! file_exists( $dest_dir . '/wp-config-sample.php' ) ) {
+			$this->download_wp( $subdir );
+			$this->create_config( $subdir );
+		}
+
+		$install_args = array(
+			'url' => 'http://example.com',
+			'title' => 'WP CLI Site',
+			'admin_user' => 'admin',
+			'admin_email' => 'admin@example.com',
+			'admin_password' => 'password1'
+		);
+
+		$this->proc( 'wp core install', $install_args, $subdir )->run_check();
+
+	}
+
 }
 
