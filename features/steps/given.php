@@ -49,6 +49,12 @@ $steps->Given( '/^a WP install$/',
 	}
 );
 
+$steps->Given( '/^a recycled WP install$/',
+	function ( $world ) {
+		$world->recycle_wp_install();
+	}
+);
+
 $steps->Given( "/^a WP install in '([^\s]+)'$/",
 	function ( $world, $subdir ) {
 		$world->install_wp( $subdir );

@@ -1,7 +1,9 @@
 Feature: Manage WordPress rewrites
 
+  Background:
+    Given a recycled WP install
+
   Scenario: Change site permastructs
-    Given a WP install
 
     When I run `wp rewrite structure /blog/%year%/%monthnum%/%day%/%postname%/ --category-base=section --tag-base=topic`
     And I run `wp option get permalink_structure`
@@ -35,7 +37,6 @@ Feature: Manage WordPress rewrites
       | topic/([^/]+)/?$ | index.php?tag=$matches[1]           | post_tag |
 
   Scenario: Missing permalink_structure
-    Given a WP install
 
     When I run `wp option delete permalink_structure`
     And I try `wp option get permalink_structure`
@@ -53,8 +54,7 @@ Feature: Manage WordPress rewrites
     Then STDOUT should be empty
 
   Scenario: Generate .htaccess on hard flush
-    Given a WP install
-    And a wp-cli.yml file:
+    Given a wp-cli.yml file:
       """
       apache_modules: [mod_rewrite]
       """

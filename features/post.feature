@@ -1,7 +1,7 @@
 Feature: Manage WordPress posts
 
   Background:
-    Given a WP install
+    Given a recycled WP install
 
   Scenario: Creating/updating/deleting posts
     When I run `wp post create --post_title='Test post' --porcelain`

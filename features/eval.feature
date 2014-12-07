@@ -1,7 +1,7 @@
 Feature: Evaluating PHP code and files.
 
   Scenario: Basics
-    Given a WP install
+    Given a recycled WP install
 
     When I run `wp eval 'var_dump(defined("WP_CONTENT_DIR"));'`
     Then STDOUT should be:

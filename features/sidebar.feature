@@ -1,7 +1,7 @@
 Feature: Manage WordPress sidebars
 
   Scenario: List available sidebars
-    Given a WP install
+    Given a recycled WP install
 
     When I run `wp theme install p2 --activate`
     Then STDOUT should not be empty

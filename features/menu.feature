@@ -1,7 +1,7 @@
 Feature: Manage WordPress menus
 
   Background:
-    Given a WP install
+    Given a recycled WP install
 
   Scenario: Menu CRUD operations
 

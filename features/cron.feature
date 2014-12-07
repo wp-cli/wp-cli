@@ -1,7 +1,7 @@
 Feature: Manage WP-Cron events and schedules
 
   Background:
-    Given a WP install
+    Given a recycled WP install
 
   Scenario: Scheduling and then deleting an event
     When I run `wp cron event schedule wp_cli_test_event_1 '+1 hour' --apple=banana`
