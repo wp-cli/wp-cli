@@ -239,6 +239,12 @@ class Menu_Item_Command extends WP_CLI_Command {
 			return $item;
 		}, $items );
 
+		if ( ! empty( $assoc_args['format'] ) && 'ids' == $assoc_args['format'] ) {
+			$items = array_map( function( $item ) {
+				return $item->db_id;
+			}, $items );
+		}
+
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
 

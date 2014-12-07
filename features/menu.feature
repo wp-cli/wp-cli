@@ -95,6 +95,9 @@ Feature: Manage WordPress menus
       | custom    | WordPress        |                   | 2        | http://wordpress.org | {POST_ITEM_ID}   |
       | taxonomy  | Test term        |                   | 3        | {TERM_LINK}          | 0                |
 
+    When I run `wp menu item list sidebar-menu --format=ids`
+    Then STDOUT should not be empty
+
     When I run `wp menu item delete {CUSTOM_ITEM_ID}`
     And I run `wp menu item list sidebar-menu --format=count`
     Then STDOUT should be:
