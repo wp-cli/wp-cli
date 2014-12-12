@@ -119,3 +119,25 @@ $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 	}
 );
 
+$steps->Given( '/^a new Phar(?: with version "([^"]+)")$/',
+	function ( $world, $version ) {
+		$world->build_phar( $version );
+	}
+);
+
+$steps->Given( '/^save the (.+) file ([\'].+[^\'])?as \{(\w+)\}$/',
+	function ( $world, $filepath, $output_filter, $key ) {
+		$full_file = file_get_contents( $world->replace_variables( $filepath ) );
+
+		if ( $output_filter ) {
+			$output_filter = '/' . trim( str_replace( '%s', '(.+[^\b])', $output_filter ), "' " ) . '/';
+			if ( false !== preg_match( $output_filter, $full_file, $matches ) )
+				$output = array_pop( $matches );
+			else
+				$output = '';
+		} else {
+			$output = $full_file;
+		}
+		$world->variables[ $key ] = trim( $output, "\n" );
+	}
+);
