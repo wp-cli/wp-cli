@@ -187,6 +187,10 @@ Feature: Export content.
 
     When I run `wp export --post_type=post --category=apple`
     And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
+    Then the {EXPORT_FILE} file should contain:
+      """
+      <wp:category_nicename>apple</wp:category_nicename>
+      """
 
     When I run `wp site empty --yes`
     Then STDOUT should not be empty

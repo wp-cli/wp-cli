@@ -72,7 +72,7 @@ class WP_Export_Query {
 
 	public function categories() {
 		if ( $this->category ) {
-			return $this->category;
+			return array( $this->category );
 		}
 		if ( $this->filters['post_type'] ) {
 			return array();
