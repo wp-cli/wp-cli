@@ -4,21 +4,21 @@ Feature: Manage WP-Cron events and schedules
     Given a WP install
 
   Scenario: Scheduling and then deleting an event
-    When I run `wp cron event schedule wp_cli_test_event_1 '+1 hour'`
+    When I run `wp cron event schedule wp_cli_test_event_1 '+1 hour' --apple=banana`
     Then STDOUT should contain:
       """
       Success: Scheduled event with hook 'wp_cli_test_event_1'
       """
 
-    When I run `wp cron event list --format=csv --fields=hook,recurrence`
+    When I run `wp cron event list --format=csv --fields=hook,recurrence,args`
     Then STDOUT should be CSV containing:
-      | hook                | recurrence    |
-      | wp_cli_test_event_1 | Non-repeating |
+      | hook                | recurrence    | args                |
+      | wp_cli_test_event_1 | Non-repeating | {"apple":"banana"}  |
 
     When I run `wp cron event delete wp_cli_test_event_1`
     Then STDOUT should contain:
       """
-      Success: Successfully deleted the cron event 'wp_cli_test_event_1'
+      Success: Deleted the cron event 'wp_cli_test_event_1'
       """
 
     When I run `wp cron event list`
@@ -34,6 +34,12 @@ Feature: Manage WP-Cron events and schedules
       Success: Scheduled event with hook 'wp_cli_test_event_3'
       """
 
+    When I run `wp cron event schedule wp_cli_test_event_4`
+    Then STDOUT should contain:
+      """
+      Success: Scheduled event with hook 'wp_cli_test_event_4'
+      """
+
     When I run `wp cron event list --format=csv --fields=hook,recurrence`
     Then STDOUT should be CSV containing:
       | hook                | recurrence    |
@@ -46,6 +52,63 @@ Feature: Manage WP-Cron events and schedules
     Then STDOUT should not contain:
       """
       wp_cli_test_event_3
+      """
+
+  Scenario: Scheduling, running, and deleting duplicate events
+    When I run `wp cron event schedule wp_cli_test_event_5 '+20 minutes' --apple=banana`
+    When I run `wp cron event schedule wp_cli_test_event_5 '+20 minutes' --foo=bar`
+    Then STDOUT should not be empty
+
+    When I run `wp cron event list --format=csv --fields=hook,recurrence,args`
+    Then STDOUT should be CSV containing:
+      | hook                | recurrence    | args                |
+      | wp_cli_test_event_5 | Non-repeating | {"apple":"banana"}  |
+      | wp_cli_test_event_5 | Non-repeating | {"foo":"bar"}       |
+
+    When I run `wp cron event run wp_cli_test_event_5`
+    Then STDOUT should be:
+      """
+      Success: Executed 2 instances of the cron event 'wp_cli_test_event_5'
+      """
+
+    When I run `wp cron event list`
+    Then STDOUT should not contain:
+      """
+      wp_cli_test_event_5
+      """
+
+    When I try `wp cron event run wp_cli_test_event_5`
+    Then STDERR should be:
+      """
+      Error: Invalid cron event 'wp_cli_test_event_5'
+      """
+
+    When I run `wp cron event schedule wp_cli_test_event_5 '+20 minutes' --apple=banana`
+    When I run `wp cron event schedule wp_cli_test_event_5 '+20 minutes' --foo=bar`
+    Then STDOUT should not be empty
+
+    When I run `wp cron event list`
+    Then STDOUT should contain:
+      """
+      wp_cli_test_event_5
+      """
+
+    When I run `wp cron event delete wp_cli_test_event_5`
+    Then STDOUT should be:
+      """
+      Success: Deleted 2 instances of the cron event 'wp_cli_test_event_5'
+      """
+
+    When I run `wp cron event list`
+    Then STDOUT should not contain:
+      """
+      wp_cli_test_event_5
+      """
+
+    When I try `wp cron event delete wp_cli_test_event_5`
+    Then STDERR should be:
+      """
+      Error: Invalid cron event 'wp_cli_test_event_5'
       """
 
   Scenario: Scheduling and then running a re-occurring event
@@ -84,7 +147,7 @@ Feature: Manage WP-Cron events and schedules
     When I run `wp cron event delete wp_cli_test_event_2`
     Then STDOUT should contain:
       """
-      Success: Successfully deleted the cron event 'wp_cli_test_event_2'
+      Success: Deleted the cron event 'wp_cli_test_event_2'
       """
 
     When I run `wp cron event list`

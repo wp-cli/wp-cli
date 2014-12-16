@@ -60,11 +60,14 @@ class Help_Command extends WP_CLI_Command {
 			$out .= wordwrap( $longdesc, 90 ) . "\n";
 		}
 
-		// section headers
-		$out = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
-
 		// definition lists
 		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
+
+		// Ensure all non-section headers are indented
+		$out = preg_replace( '#^([^\s^\#])#m', "\t$1", $out );
+
+		// section headers
+		$out = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
 
 		$out = str_replace( "\t", '  ', $out );
 

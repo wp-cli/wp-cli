@@ -80,9 +80,11 @@ class Import_Command extends WP_CLI_Command {
 			$author = new \stdClass;
 			// Always in the WXR
 			$author->user_login = $wxr_author['author_login'];
-			$author->user_email = $wxr_author['author_email'];
 
 			// Should be in the WXR; no guarantees
+			if ( isset ( $wxr_author['author_email'] ) ) {
+				$author->user_email = $wxr_author['author_email'];
+			}
 			if ( isset( $wxr_author['author_display_name'] ) )
 				$author->display_name = $wxr_author['author_display_name'];
 			if ( isset( $wxr_author['author_first_name'] ) )

@@ -25,16 +25,30 @@ class Term_Command extends WP_CLI_Command {
 	 * : List terms of one or more taxonomies
 	 *
 	 * [--<field>=<value>]
-	 * : Filter by one or more fields. For accepted fields, see get_terms().
+	 * : Filter by one or more fields.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each term.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to all of the term object fields.
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each term:
+	 *
+	 * * term_id
+	 * * term_taxonomy_id
+	 * * name
+	 * * slug
+	 * * description
+	 * * parent
+	 * * count
+	 *
+	 * There are no optionally available fields.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -96,7 +110,7 @@ class Term_Command extends WP_CLI_Command {
 		$defaults = array(
 			'slug'        => sanitize_title( $term ),
 			'description' => '',
-			'parent'      => '',
+			'parent'      => 0,
 		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
@@ -105,6 +119,11 @@ class Term_Command extends WP_CLI_Command {
 			unset( $assoc_args['porcelain'] );
 		} else {
 			$porcelain = false;
+		}
+
+		// Compatibility for < WP 4.0
+		if ( $assoc_args['parent'] > 0 && ! term_exists( (int) $assoc_args['parent'] ) ) {
+			WP_CLI::error( 'Parent term does not exist.' );
 		}
 
 		$ret = wp_insert_term( $term, $taxonomy, $assoc_args );
@@ -133,21 +152,30 @@ class Term_Command extends WP_CLI_Command {
 	 * [--field=<field>]
 	 * : Instead of returning the whole term, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, csv. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp term get category 1 --format=json
 	 */
 	public function get( $args, $assoc_args ) {
-		$formatter = $this->get_formatter( $assoc_args );
 
 		list( $taxonomy, $term_id ) = $args;
 		$term = get_term_by( 'id', $term_id, $taxonomy );
-		if ( ! $term )
+		if ( ! $term ) {
 			WP_CLI::error( "Term doesn't exist." );
+		}
 
+		if ( empty( $assoc_args['fields'] ) ) {
+			$term_array = get_object_vars( $term );
+			$assoc_args['fields'] = array_keys( $term_array );
+		}
+
+		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $term );
 	}
 
@@ -217,7 +245,7 @@ class Term_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # delete all post tags
-	 *     wp term list post_tag --field=ID | xargs wp term delete post_tag
+	 *     wp term list post_tag --field=term_id | xargs wp term delete post_tag
 	 */
 	public function delete( $args ) {
 		$taxonomy = array_shift( $args );
@@ -254,8 +282,6 @@ class Term_Command extends WP_CLI_Command {
 	 *     wp term generate --count=10
 	 */
 	public function generate( $args, $assoc_args ) {
-		global $wpdb;
-
 		list ( $taxonomy ) = $args;
 
 		$defaults = array(
@@ -275,11 +301,6 @@ class Term_Command extends WP_CLI_Command {
 		$hierarchical = get_taxonomy( $taxonomy )->hierarchical;
 
 		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating terms', $count );
-
-		$args = array(
-			'orderby' => 'id',
-			'hierarchical' => $hierarchical,
-		);
 
 		$previous_term_id = 0;
 		$current_parent = 0;
@@ -327,7 +348,7 @@ class Term_Command extends WP_CLI_Command {
 	 * Get term url
 	 *
 	 * ## OPTIONS
-	 * 
+	 *
 	 * <taxonomy>
 	 * : Taxonomy of the term(s) to get.
 	 *

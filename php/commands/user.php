@@ -32,14 +32,42 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--<field>=<value>]
 	 * : Control output by one or more arguments of get_users().
 	 *
+	 * [--network]
+	 * : List all users in the network for multisite.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each user.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to ID,user_login,display_name,user_email,user_registered,roles
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each user:
+	 *
+	 * * ID
+	 * * user_login
+	 * * display_name
+	 * * user_email
+	 * * user_registered
+	 * * roles
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * user_pass
+	 * * user_nicename
+	 * * user_url
+	 * * user_activation_key
+	 * * user_status
+	 * * spam
+	 * * deleted
+	 * * caps
+	 * * cap_key
+	 * * allcaps
+	 * * filter
 	 *
 	 * ## EXAMPLES
 	 *
@@ -52,6 +80,20 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
+
+		if ( isset( $assoc_args['network'] ) ) {
+			if ( ! is_multisite() ) {
+				WP_CLI::error( 'This is not a multisite install.' );
+			}
+			$assoc_args['blog_id'] = 0;
+			if ( isset( $assoc_args['fields'] ) ) {
+				$fields = explode( ',', $assoc_args['fields'] );
+				$assoc_args['fields'] = array_diff( $fields, array( 'roles' ) );
+			} else {
+				$assoc_args['fields'] = array_diff( $this->obj_fields, array( 'roles' ) );
+			}
+		}
+
 		$formatter = $this->get_formatter( $assoc_args );
 
 		if ( 'ids' == $formatter->format ) {
@@ -93,7 +135,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Get a specific subset of the user's fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, csv. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -534,7 +576,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$user->get_role_caps();
 
 			$user_caps_list = $user->allcaps;
-			$cap_table_titles = array( 'capability', 'status' );
 
 			foreach ( $user_caps_list as $cap => $active ) {
 				if ( $active ) {
@@ -550,7 +591,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <file>
-	 * : The CSV file of users to import.
+	 * : The local or remote CSV file of users to import.
 	 *
 	 * [--send-email]
 	 * : Send an email to new users with their account details.
@@ -561,6 +602,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     wp user import-csv /path/to/users.csv
+	 *     wp user import-csv http://example.com/users.csv
 	 *
 	 *     Sample users.csv file:
 	 *
@@ -577,8 +619,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$filename = $args[0];
 
-		if ( ! file_exists( $filename ) ) {
-			WP_CLI::warning( sprintf( "Missing file: %s", $filename ) );
+		if ( 0 === stripos( $filename, 'http://' ) || 0 === stripos( $filename, 'https://' ) ) {
+			$response = wp_remote_head( $filename );
+			$response_code = (string)wp_remote_retrieve_response_code( $response );
+			if ( in_array( $response_code[0], array( 4, 5 ) ) ) {
+				WP_CLI::error( "Couldn't access remote CSV file (HTTP {$response_code} response)." );
+			}
+		} else if ( ! file_exists( $filename ) ) {
+			WP_CLI::error( sprintf( "Missing file: %s", $filename ) );
 		}
 
 		foreach ( new \WP_CLI\Iterators\CSV( $filename ) as $i => $new_user ) {
@@ -590,7 +638,23 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			);
 			$new_user = array_merge( $defaults, $new_user );
 
-			if ( 'none' === $new_user['role'] ) {
+			$secondary_roles = array();
+			if ( ! empty( $new_user['roles'] ) ) {
+				$roles = array_map( 'trim', explode( ',', $new_user['roles'] ) );
+				$invalid_role = false;
+				foreach( $roles as $role ) {
+					if ( is_null( get_role( $role ) ) ) {
+						WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
+						$invalid_role = true;
+						break;
+					}
+				}
+				if ( $invalid_role ) {
+					continue;
+				}
+				$new_user['role'] = array_shift( $roles );
+				$secondary_roles = $roles;
+			} else if ( 'none' === $new_user['role'] ) {
 				$new_user['role'] = false;
 			} elseif ( is_null( get_role( $new_user['role'] ) ) ) {
 				WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
@@ -635,6 +699,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			} else if ( $new_user['role'] === false ) {
 				delete_user_option( $user_id, 'capabilities' );
 				delete_user_option( $user_id, 'user_level' );
+			}
+
+			$user = get_user_by( 'id', $user_id );
+			foreach( $secondary_roles as $secondary_role ) {
+				$user->add_role( $secondary_role );
 			}
 
 			if ( !empty( $existing_user ) ) {
@@ -773,6 +842,20 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 
 }
 
+/**
+ * Manage user terms.
+ *
+ *
+ * ## EXAMPLES
+ *
+ *     wp user term set 123 test category
+ */
+class User_Term_Command extends \WP_CLI\CommandWithTerms {
+	protected $obj_type = 'user';
+}
+
+
 WP_CLI::add_command( 'user', 'User_Command' );
 WP_CLI::add_command( 'user meta', 'User_Meta_Command' );
+WP_CLI::add_command( 'user term', 'User_Term_Command' );
 

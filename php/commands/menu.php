@@ -94,10 +94,28 @@ class Menu_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to term_id,name,slug,count
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each menu:
+	 *
+	 * * term_id
+	 * * name
+	 * * slug
+	 * * count
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * term_group
+	 * * term_taxonomy_id
+	 * * taxonomy
+	 * * description
+	 * * parent
+	 * * locations
 	 *
 	 * ## EXAMPLES
 	 *
@@ -172,10 +190,33 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * : The name, slug, or term ID for the menu
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to db_id,type,title,link
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each menu item:
+	 *
+	 * * db_id
+	 * * type
+	 * * title
+	 * * link
+	 * * position
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * menu_item_parent
+	 * * object_id
+	 * * object
+	 * * type
+	 * * type_label
+	 * * target
+	 * * attr_title
+	 * * description
+	 * * classes
+	 * * xfn
 	 *
 	 * ## EXAMPLES
 	 *
@@ -192,11 +233,17 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		// Correct position inconsistency and
 		// protected `url` param in WP-CLI
-		$items = array_map( function( $item ) {
+		$items = array_map( function( $item ) use ( $assoc_args ) {
 			$item->position = $item->menu_order;
 			$item->link = $item->url;
 			return $item;
 		}, $items );
+
+		if ( ! empty( $assoc_args['format'] ) && 'ids' == $assoc_args['format'] ) {
+			$items = array_map( function( $item ) {
+				return $item->db_id;
+			}, $items );
+		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
@@ -579,6 +626,13 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each location:
+	 *
+	 * * name
+	 * * description
 	 *
 	 * ## EXAMPLES
 	 *

@@ -279,7 +279,12 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 			$editor = 'vi';
 	}
 
-	\WP_CLI::launch( "$editor " . escapeshellarg( $tmpfile ) );
+	$descriptorspec = array( STDIN, STDOUT, STDERR );
+	$process = proc_open( "$editor " . escapeshellarg( $tmpfile ), $descriptorspec, $pipes );
+	$r = proc_close( $process );
+	if ( $r ) {
+		exit( $r );
+	}
 
 	$output = file_get_contents( $tmpfile );
 
@@ -400,4 +405,102 @@ function replace_path_consts( $source, $path ) {
 	$new = array_values( $replacements );
 
 	return str_replace( $old, $new, $source );
+}
+
+/**
+ * Make a HTTP request to a remote URL
+ *
+ * @param string $method
+ * @param string $url
+ * @param array $headers
+ * @param array $options
+ * @return object
+ */
+function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
+	$pem_copied = false;
+
+	// cURL can't read Phar archives
+	if ( 0 === strpos( WP_CLI_ROOT, 'phar://' ) ) {
+		$options['verify'] = sys_get_temp_dir() . '/wp-cli-cacert.pem';
+
+		copy(
+			WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem',
+			$options['verify']
+		);
+		$pem_copied = true;
+	}
+
+	try {
+		$request = \Requests::request( $url, $headers, $data, $method, $options );
+		if ( $pem_copied ) {
+			unlink( $options['verify'] );
+		}
+		return $request;
+	} catch( \Requests_Exception $ex ) {
+		// Handle SSL certificate issues gracefully
+		\WP_CLI::warning( $ex->getMessage() );
+		if ( $pem_copied ) {
+			unlink( $options['verify'] );
+		}
+		$options['verify'] = false;
+		try {
+			return \Requests::request( $url, $headers, $data, $method, $options );
+		} catch( \Requests_Exception $ex ) {
+			\WP_CLI::error( $ex->getMessage() );
+		}
+	}
+}
+
+/**
+ * Increments a version string using the "x.y.z-pre" format
+ *
+ * Can increment the major, minor or patch number by one
+ * If $new_version == "same" the version string is not changed
+ * If $new_version is not a known keyword, it will be used as the new version string directly
+ *
+ * @param  string $current_version
+ * @param  string $new_version
+ * @return string
+ */
+function increment_version( $current_version, $new_version ) {
+	// split version assuming the format is x.y.z-pre
+	$current_version    = explode( '-', $current_version, 2 );
+	$current_version[0] = explode( '.', $current_version[0] );
+
+	switch ( $new_version ) {
+		case 'same':
+			// do nothing
+		break;
+
+		case 'patch':
+			$current_version[0][2]++;
+
+			$current_version = array( $current_version[0] ); // drop possible pre-release info
+		break;
+
+		case 'minor':
+			$current_version[0][1]++;
+			$current_version[0][2] = 0;
+
+			$current_version = array( $current_version[0] ); // drop possible pre-release info
+		break;
+
+		case 'major':
+			$current_version[0][0]++;
+			$current_version[0][1] = 0;
+			$current_version[0][2] = 0;
+
+			$current_version = array( $current_version[0] ); // drop possible pre-release info
+		break;
+
+		default: // not a keyword
+			$current_version = array( array( $new_version ) );
+		break;
+	}
+
+	// reconstruct version string
+	$current_version[0] = implode( '.', $current_version[0] );
+	$current_version    = implode( '-', $current_version );
+
+	return $current_version;
 }

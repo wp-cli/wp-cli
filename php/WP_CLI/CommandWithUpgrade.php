@@ -104,7 +104,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( in_array( true, wp_list_pluck( $items, 'update' ) ) )
 			$legend_line[] = '%yU = Update Available%n';
 
-		\WP_CLI::line( 'Legend: ' . implode( ', ', \WP_CLI::colorize( $legend_line ) ) );
+		\WP_CLI::line( 'Legend: ' . \WP_CLI::colorize( implode( ', ', $legend_line ) ) );
 	}
 
 	function install( $args, $assoc_args ) {
@@ -167,6 +167,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( $response->version == $version )
 			return;
 
+		// WordPress.org forces https, but still sometimes returns http
+		// See https://twitter.com/nacin/status/512362694205140992
+		$response->download_link = str_replace( 'http://', 'https://', $response->download_link );
+
 		list( $link ) = explode( $response->slug, $response->download_link );
 
 		if ( false !== strpos( $response->download_link, 'theme' ) )
@@ -183,10 +187,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 			// check if the requested version exists
 			$response = wp_remote_head( $response->download_link );
-			if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			$response_code = wp_remote_retrieve_response_code( $response );
+			if ( 200 !== $response_code ) {
 				\WP_CLI::error( sprintf(
-					"Can't find the requested %s's version %s in the WordPress.org %s repository.",
-					$download_type, $version, $download_type ) );
+					"Can't find the requested %s's version %s in the WordPress.org %s repository (HTTP code %d).",
+					$download_type, $version, $download_type, $response_code ) );
 			}
 		}
 	}

@@ -134,7 +134,17 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	 * @return \WP_CLI\Formatter
 	 */
 	protected function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
+
+		if ( ! empty( $assoc_args['fields'] ) ) {
+			if ( is_string( $assoc_args['fields'] ) ) {
+				$fields = explode( ',', $assoc_args['fields'] );
+			} else {
+				$fields = $assoc_args['fields'];
+			}
+		} else {
+			$fields = $this->obj_fields;
+		}
+		return new \WP_CLI\Formatter( $assoc_args, $fields, $this->obj_type );
 	}
 
 	/**

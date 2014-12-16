@@ -34,10 +34,21 @@ class Widget_Command extends WP_CLI_Command {
 	 * : ID for the corresponding sidebar.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to name, id, description
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each widget:
+	 *
+	 * * name
+	 * * id
+	 * * position
+	 * * options
+	 *
+	 * There are no optionally available fields.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -52,12 +63,6 @@ class Widget_Command extends WP_CLI_Command {
 		$this->validate_sidebar( $sidebar_id );
 
 		$output_widgets = $this->get_sidebar_widgets( $sidebar_id );
-
-		if ( empty( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'table', 'csv') ) ) {
-			foreach( $output_widgets as &$output_widget ) {
-				$output_widget->options = json_encode( $output_widget->options );
-			}
-		}
 
 		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
 			$output_widgets = wp_list_pluck( $output_widgets, 'id' );

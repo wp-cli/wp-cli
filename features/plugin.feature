@@ -76,7 +76,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin uninstall Zombieland`
     Then STDOUT should contain:
       """
-      Success: Uninstalled 'Zombieland' plugin.
+      Success: Uninstalled and deleted 'Zombieland' plugin.
       """
     And the {PLUGIN_DIR}/zombieland file should not exist
 
@@ -92,10 +92,14 @@ Feature: Manage WordPress plugins
     When I run `wp plugin install akismet --version=2.5.7 --force`
     Then STDOUT should not be empty
 
-    When I run `wp plugin list`
+    When I run `wp plugin list --name=akismet --field=update_version`
+    Then STDOUT should not be empty
+    And save STDOUT as {UPDATE_VERSION}
+
+    When I run `wp plugin list --fields=name,status,update,version,update_version`
     Then STDOUT should be a table containing rows:
-      | name       | status   | update    | version   |
-      | akismet    | inactive | available | 2.5.7     |
+      | name       | status   | update    | version   | update_version   |
+      | akismet    | inactive | available | 2.5.7     | {UPDATE_VERSION} |
 
     When I run `wp plugin activate akismet`
     Then STDOUT should not be empty
@@ -229,3 +233,107 @@ Feature: Manage WordPress plugins
       """
       Warning: Plugin 'akismet' is already network active.
       """
+
+  Scenario: Plugin name with HTML entities
+    Given a WP install
+
+    When I run `wp plugin install debug-bar-list-dependencies`
+    Then STDOUT should contain:
+      """
+      Installing Debug Bar List Script & Style Dependencies
+      """
+
+  Scenario: Enable and disable all plugins
+    Given a WP install
+
+    When I run `wp plugin activate --all`
+    Then STDOUT should be:
+      """
+      Success: Plugin 'akismet' activated.
+      Success: Plugin 'hello' activated.
+      """
+
+    When I run `wp plugin list --field=status`
+    Then STDOUT should be:
+      """
+      active
+      active
+      must-use
+      """
+
+    When I run `wp plugin deactivate --all`
+    Then STDOUT should be:
+      """
+      Success: Plugin 'akismet' deactivated.
+      Success: Plugin 'hello' deactivated.
+      """
+
+    When I run `wp plugin list --field=status`
+    Then STDOUT should be:
+      """
+      inactive
+      inactive
+      must-use
+      """
+
+  Scenario: Uninstall a plugin without deleting
+    Given a WP install
+
+    When I run `wp plugin install akismet --version=2.5.7 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin uninstall akismet --skip-delete`
+    Then STDOUT should contain:
+      """
+      Success: Ran uninstall procedure for
+      """
+
+  Scenario: Two plugins, one directory
+    Given a WP install
+    And a wp-content/plugins/handbook/handbook.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Handbook
+       * Description: Features for a handbook, complete with glossary and table of contents
+       * Author: Nacin
+       */
+      """
+    And a wp-content/plugins/handbook/functionality-for-pages.php file:
+      """
+      <?php
+	  /**
+	   * Plugin Name: Handbook Functionality for Pages
+       * Description: Adds handbook-like table of contents to all Pages for a site. Covers Table of Contents and the "watch this page" widget
+       * Author: Nacin
+       */
+      """
+
+    When I run `wp plugin list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name                             | status   |
+      | handbook/handbook                | inactive |
+      | handbook/functionality-for-pages | inactive |
+
+    When I run `wp plugin activate handbook/functionality-for-pages`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name                             | status   |
+      | handbook/handbook                | inactive |
+      | handbook/functionality-for-pages | active   |
+
+  Scenario: Install a plugin, then update to a specific version of that plugin
+    Given a WP install
+
+    When I run `wp plugin install akismet --version=2.5.7 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin update akismet --version=2.6.0`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --fields=name,version`
+    Then STDOUT should be a table containing rows:
+      | name       | version   |
+      | akismet    | 2.6.0     |

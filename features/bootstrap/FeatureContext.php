@@ -79,6 +79,13 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	/**
+	 * @BeforeScenario
+	 */
+	public function beforeScenario( $event ) {
+		$this->variables['SRC_DIR'] = realpath( __DIR__ . '/../..' );
+	}
+
+	/**
 	 * @AfterScenario
 	 */
 	public function afterScenario( $event ) {
@@ -136,6 +143,21 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$this->variables['RUN_DIR'] = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-run-", TRUE );
 			mkdir( $this->variables['RUN_DIR'] );
 		}
+	}
+
+	public function build_phar( $version = 'same' ) {
+		$this->variables['PHAR_PATH'] = $this->variables['RUN_DIR'] . '/' . uniqid( "wp-cli-build-", TRUE ) . '.phar';
+
+		Process::create(
+			Utils\esc_cmd(
+				'php -dphar.readonly=0 %1$s %2$s --version=%3$s && chmod +x %2$s',
+				__DIR__ . '/../../utils/make-phar.php',
+				$this->variables['PHAR_PATH'],
+				$version
+			),
+			null,
+			self::get_process_env_variables()
+		)->run_check();
 	}
 
 	private function set_cache_dir() {

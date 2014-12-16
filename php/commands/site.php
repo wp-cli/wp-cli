@@ -345,6 +345,27 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
 	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each site:
+	 *
+	 * * blog_id
+	 * * url
+	 * * last_updated
+	 * * registered
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * site_id
+	 * * domain
+	 * * path
+	 * * public
+	 * * archived
+	 * * mature
+	 * * spam
+	 * * deleted
+	 * * lang_id
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Output a simple list of site URLs

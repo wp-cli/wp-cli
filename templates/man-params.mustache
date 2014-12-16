@@ -1,3 +1,7 @@
+{{^root_command}}
+
+
+{{/root_command}}
 ## GLOBAL PARAMETERS
 
 {{#parameters}}
@@ -5,4 +9,6 @@
       {{desc}}
 
 {{/parameters}}
-Run 'wp help <command>' to get more information on a specific command.
+{{#root_command}}
+  Run 'wp help <command>' to get more information on a specific command.
+{{/root_command}}
