@@ -240,14 +240,26 @@ class WP_CLI {
 	/**
 	 * Display an error in the CLI and end with a newline
 	 *
-	 * @param string $message
+	 * @param string|WP_Error $message
+	 * @param bool            $exit    if true, the script will exit()
 	 */
-	public static function error( $message ) {
+	public static function error( $message, $exit = true ) {
 		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) ) {
 			self::$logger->error( self::error_to_string( $message ) );
 		}
 
 		exit(1);
+	}
+
+	/**
+	 * Display an error in the CLI and end with a newline
+	 *
+	 * @param array $message  each element from the array will be printed on its own line
+	 */
+	public static function error_multi_line( $message_lines ) {
+		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) && is_array( $message_lines ) ) {
+			self::$logger->error_multi_line( array_map( array( __CLASS__, 'error_to_string' ), $message_lines ) );
+		}
 	}
 
 	/**

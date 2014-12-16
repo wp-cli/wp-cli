@@ -25,30 +25,7 @@ class RootCommand extends CompositeCommand {
 	 * @return string
 	 */
 	public function get_longdesc() {
-		$binding = array();
-
-		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
-			if ( false === $details['runtime'] )
-				continue;
-
-			if ( isset( $details['deprecated'] ) )
-				continue;
-
-			if ( isset( $details['hidden'] ) )
-				continue;
-
-			if ( true === $details['runtime'] )
-				$synopsis = "--[no-]$key";
-			else
-				$synopsis = "--$key" . $details['runtime'];
-
-			$binding['parameters'][] = array(
-				'synopsis' => $synopsis,
-				'desc' => $details['desc']
-			);
-		}
-
-		return Utils\mustache_render( 'man-params.mustache', $binding );
+		return $this->get_global_params( true );
 	}
 
 	/**

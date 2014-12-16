@@ -72,6 +72,15 @@ class Formatter {
 					array_unshift( $items, $item );
 				}
 			}
+
+			if ( in_array( $this->args['format'], array( 'table', 'csv' ) ) ) {
+				if ( is_object( $items ) && is_a( $items, 'Iterator' ) ) {
+					$items = \WP_CLI\Utils\iterator_map( $items, array( $this, 'transform_item_values_to_json' ) );
+				} else {
+					$items = array_map( array( $this, 'transform_item_values_to_json' ), $items );
+				}
+			}
+
 			$this->format( $items );
 		}
 	}
@@ -85,9 +94,13 @@ class Formatter {
 		if ( isset( $this->args['field'] ) ) {
 			$item = (object) $item;
 			$key = $this->find_item_key( $item, $this->args['field'] );
-			\WP_CLI::print_value( $item->$key, array( 'format' => $this->args['format'] ) );
+			$value = $item->$key;
+			if ( in_array( $this->args['format'], array( 'table', 'csv' ) ) && ( is_object( $value ) || is_array( $value ) ) ) {
+				$value = json_encode( $value );
+			}
+			\WP_CLI::print_value( $value, array( 'format' => $this->args['format'] ) );
 		} else {
-			self::show_multiple_fields( $item, $this->args['format'] );
+			$this->show_multiple_fields( $item, $this->args['format'] );
 		}
 	}
 
@@ -175,7 +188,7 @@ class Formatter {
 	 */
 	private function find_item_key( $item, $field ) {
 		foreach ( array( $field, $this->prefix . '_' . $field ) as $maybe_key ) {
-			if ( ( is_object( $item ) && isset( $item->$maybe_key ) ) || ( is_array( $item ) && isset( $item[$maybe_key] ) ) ) {
+			if ( ( is_object( $item ) && isset( $item->$maybe_key ) ) || ( is_array( $item ) && array_key_exists( $maybe_key, $item ) ) ) {
 				$key = $maybe_key;
 				break;
 			}
@@ -194,12 +207,34 @@ class Formatter {
 	 * @param object|array Data to display
 	 * @param string Format to display the data in
 	 */
-	private static function show_multiple_fields( $data, $format ) {
+	private function show_multiple_fields( $data, $format ) {
+
+		$true_fields = array();
+		foreach( $this->args['fields'] as $field ) {
+			$true_fields[] = $this->find_item_key( $data, $field );
+		}
+
+		foreach( $data as $key => $value ) {
+			if ( ! in_array( $key, $true_fields ) ) {
+				if ( is_array( $data ) ) {
+					unset( $data[ $key ] );
+				} else if ( is_object( $data ) ) {
+					unset( $data->$key );
+				}
+			}
+		}
 
 		switch ( $format ) {
 
 		case 'table':
-			self::assoc_array_to_table( $data );
+		case 'csv':
+			$rows = $this->assoc_array_to_rows( $data );
+			$fields = array( 'Field', 'Value' );
+			if ( 'table' == $format ) {
+				self::show_table( $rows, $fields );
+			} else if ( 'csv' == $format ) {
+				\WP_CLI\Utils\write_csv( STDOUT, $rows, $fields );
+			}
 			break;
 
 		case 'json':
@@ -236,11 +271,13 @@ class Formatter {
 	 * Format an associative array as a table.
 	 *
 	 * @param array     $fields    Fields and values to format
+	 * @return array    $rows
 	 */
-	private static function assoc_array_to_table( $fields ) {
+	private function assoc_array_to_rows( $fields ) {
 		$rows = array();
 
 		foreach ( $fields as $field => $value ) {
+
 			if ( ! is_string( $value ) ) {
 				$value = json_encode( $value );
 			}
@@ -251,7 +288,28 @@ class Formatter {
 			);
 		}
 
-		self::show_table( $rows, array( 'Field', 'Value' ) );
+		return $rows;
+	}
+
+	/**
+	 * Transforms objects and arrays to JSON as necessary
+	 *
+	 * @param mixed $item
+	 * @return mixed
+	 */
+	public function transform_item_values_to_json( $item ) {
+		foreach( $this->args['fields'] as $field ) {
+			$true_field = $this->find_item_key( $item, $field );
+			$value = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
+			if ( is_array( $value ) || is_object( $value ) ) {
+				if ( is_object( $item ) ) {
+					$item->$true_field = json_encode( $value );
+				} else if ( is_array( $item ) ) {
+					$item[ $true_field ] = json_encode( $value );
+				}
+			}
+		}
+		return $item;
 	}
 
 }
