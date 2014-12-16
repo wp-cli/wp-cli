@@ -478,6 +478,17 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
  */
 class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
 	protected $meta_type = 'post';
+
+	/**
+	 * Check that the post ID exists
+	 *
+	 * @param int
+	 */
+	protected function check_object_id( $object_id ) {
+		$fetcher = new \WP_CLI\Fetchers\Post;
+		$post = $fetcher->get_check( $object_id );
+		return $post->ID;
+	}
 }
 
 /**
