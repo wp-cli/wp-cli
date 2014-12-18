@@ -284,6 +284,7 @@ Feature: Manage WordPress installation
     When I run `wp core check-update`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                               |
+      | 4.1     | major       | https://wordpress.org/wordpress-4.1.zip   |
       | 4.0.1   | major       | https://wordpress.org/wordpress-4.0.1.zip |
       | 3.9.3   | major       | https://wordpress.org/wordpress-3.9.3.zip |
       | 3.8.5   | minor       | https://wordpress.org/wordpress-3.8.5.zip |
@@ -291,19 +292,20 @@ Feature: Manage WordPress installation
     When I run `wp core check-update --format=count`
     Then STDOUT should be:
       """
-      3
+      4
       """
 
     When I run `wp core check-update --major`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                               |
+      | 4.1     | major       | https://wordpress.org/wordpress-4.1.zip   |
       | 4.0.1   | major       | https://wordpress.org/wordpress-4.0.1.zip |
       | 3.9.3   | major       | https://wordpress.org/wordpress-3.9.3.zip |
 
     When I run `wp core check-update --major --format=count`
     Then STDOUT should be:
       """
-      2
+      3
       """
 
     When I run `wp core check-update --minor`
