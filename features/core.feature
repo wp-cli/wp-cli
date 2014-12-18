@@ -288,7 +288,7 @@ Feature: Manage WordPress installation
       | 3.9.3   | major       | https://wordpress.org/wordpress-3.9.3.zip |
       | 3.8.5   | minor       | https://wordpress.org/wordpress-3.8.5.zip |
 
-    When I run `wp core check-update --field=version | wc -l`
+    When I run `wp core check-update --format=count`
     Then STDOUT should be:
       """
       3
@@ -300,7 +300,7 @@ Feature: Manage WordPress installation
       | 4.0.1   | major       | https://wordpress.org/wordpress-4.0.1.zip |
       | 3.9.3   | major       | https://wordpress.org/wordpress-3.9.3.zip |
 
-    When I run `wp core check-update --major --field=version | wc -l`
+    When I run `wp core check-update --major --format=count`
     Then STDOUT should be:
       """
       2
@@ -311,7 +311,7 @@ Feature: Manage WordPress installation
       | version | update_type | package_url                               |
       | 3.8.5   | minor       | https://wordpress.org/wordpress-3.8.5.zip |
 
-    When I run `wp core check-update --minor --field=version | wc -l`
+    When I run `wp core check-update --minor --format=count`
     Then STDOUT should be:
       """
       1
