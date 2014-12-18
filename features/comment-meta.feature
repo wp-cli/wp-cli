@@ -12,6 +12,12 @@ Feature: Manage comment custom fields
       bar
       """
 
+    When I try `wp comment meta get 999999 foo`
+    Then STDERR should be:
+      """
+      Error: Invalid comment ID.
+      """
+
     When I run `wp comment-meta set 1 foo '[ "1", "2" ]' --format=json`
     Then STDOUT should not be empty
 
