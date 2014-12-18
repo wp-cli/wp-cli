@@ -111,6 +111,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		// Force WordPress to check for updates
 		call_user_func( $this->upgrade_refresh );
 
+		$exit_code = 0;
 		foreach ( $args as $slug ) {
 			$local_or_remote_zip_file = false;
 			$result = false;
@@ -140,6 +141,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 				if ( is_wp_error( $result ) ) {
 					\WP_CLI::warning( "$slug: " . $result->get_error_message() );
+					$exit_code = 1;
 				}
 			}
 
@@ -155,6 +157,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			}
 		}
+		exit( $exit_code );
 	}
 
 	/**
