@@ -9,22 +9,6 @@ Feature: Export content.
       All done with export
       """
 
-  Scenario: Term with a non-existent parent
-    Given a WP install
-
-    When I run `wp term create category Apple --porcelain`
-    Then STDOUT should be a number
-    And save STDOUT as {TERM_ID}
-
-    When I run `wp term update category {TERM_ID} --parent=99`
-    Then STDOUT should not be empty
-
-    When I try `wp export`
-    Then STDERR should be:
-      """
-      Error: Term is missing a parent.
-      """
-
   Scenario: Export argument validator
     Given a WP install
 
