@@ -15,7 +15,7 @@ Feature: Manage comment custom fields
     When I try `wp comment meta get 999999 foo`
     Then STDERR should be:
       """
-      Error: Invalid comment ID.
+      Error: Could not find the comment with ID 999999.
       """
 
     When I run `wp comment-meta set 1 foo '[ "1", "2" ]' --format=json`
