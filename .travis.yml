@@ -46,6 +46,10 @@ script: ./ci/test.sh
 
 after_success: ./ci/deploy.sh
 
+cache:
+  directories:
+  - vendor
+
 notifications:
   email:
     on_success: never
