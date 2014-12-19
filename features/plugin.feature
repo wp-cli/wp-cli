@@ -193,6 +193,24 @@ Feature: Manage WordPress plugins
       Warning: Plugin 'akismet' is already network active.
       """
 
+    When I run `wp plugin deactivate akismet`
+    Then STDERR should contain:
+      """
+      Warning: Plugin 'akismet' is network active and must be deactivated with --network flag.
+      """
+
+    When I run `wp plugin deactivate akismet --network`
+    Then STDOUT should contain:
+      """
+      Success: Plugin 'akismet' network deactivated.
+      """
+
+    When I run `wp plugin deactivate akismet`
+    Then STDERR should contain:
+      """
+      Warning: Plugin 'akismet' isn't active.
+      """
+
   Scenario: List plugins
     Given a WP install
 
