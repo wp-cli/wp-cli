@@ -164,13 +164,13 @@ Feature: Manage WordPress plugins
   Scenario: Network activate a plugin
     Given a WP multisite install
 
-    When I run `wp plugin install user-switching --activate-network`
+    When I run `wp plugin activate akismet --network`
     Then STDOUT should not be empty
 
     When I run `wp plugin list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name            | status           |
-      | user-switching  | active-network   |
+      | akismet         | active-network   |
 
   Scenario: List plugins
     Given a WP install
