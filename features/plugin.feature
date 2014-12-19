@@ -161,7 +161,6 @@ Feature: Manage WordPress plugins
           Status: Network Active
       """
 
-  @daniel
   Scenario: Network activate a plugin
     Given a WP multisite install
 
