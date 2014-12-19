@@ -161,16 +161,38 @@ Feature: Manage WordPress plugins
           Status: Network Active
       """
 
+  @daniel
   Scenario: Network activate a plugin
     Given a WP multisite install
 
-    When I run `wp plugin activate akismet --network`
-    Then STDOUT should not be empty
+    When I run `wp plugin activate akismet`
+    Then STDOUT should contain:
+      """
+      Success: Plugin 'akismet' activated.
+      """
 
     When I run `wp plugin list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name            | status           |
-      | akismet         | active-network   |
+      | akismet         | active           |
+
+    When I run `wp plugin activate akismet`
+    Then STDERR should contain:
+      """
+      Warning: Plugin 'akismet' is already active.
+      """
+
+    When I run `wp plugin activate akismet --network`
+    Then STDOUT should contain:
+      """
+      Success: Plugin 'akismet' network activated.
+      """
+
+    When I run `wp plugin activate akismet --network`
+    Then STDERR should contain:
+      """
+      Warning: Plugin 'akismet' is already network active.
+      """
 
   Scenario: List plugins
     Given a WP install

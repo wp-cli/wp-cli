@@ -161,11 +161,14 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		} else {
 			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 				$status = $this->get_status( $plugin->file );
+				// Network-active is the highest level of activation status
+				if ( 'active-network' === $status ) {
+					WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
+					continue;
+				}
+				// Don't reactivate active plugins, but do let them become network-active
 				if ( ! $network_wide && 'active' === $status ) {
 					WP_CLI::warning( "Plugin '{$plugin->name}' is already active." );
-					continue;
-				} else if ( $network_wide && 'active-network' === $status ) {
-					WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
 					continue;
 				}
 
