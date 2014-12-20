@@ -1,3 +1,5 @@
+sudo: false
+
 language: php
 
 php:
@@ -45,6 +47,10 @@ before_script: ./ci/prepare.sh
 script: ./ci/test.sh
 
 after_success: ./ci/deploy.sh
+
+cache:
+  directories:
+  - vendor
 
 notifications:
   email:

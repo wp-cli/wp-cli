@@ -440,6 +440,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
  */
 class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 	protected $meta_type = 'comment';
+
+	/**
+	 * Check that the comment ID exists
+	 *
+	 * @param int
+	 */
+	protected function check_object_id( $object_id ) {
+		$fetcher = new \WP_CLI\Fetchers\Comment;
+		$comment = $fetcher->get_check( $object_id );
+		return $comment->comment_ID;
+	}
 }
 
 WP_CLI::add_command( 'comment', 'Comment_Command' );

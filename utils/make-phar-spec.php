@@ -13,6 +13,13 @@ return array(
 		'desc' => 'New package version',
 	),
 
+	'store-version' => array(
+		'runtime' => '',
+		'file' => '<bool>',
+		'default' => false,
+		'desc' => 'If true the contents of ./VERSION will be set to the value passed to --version',
+	),
+
 	'quiet' => array(
 		'runtime' => '',
 		'file' => '<bool>',

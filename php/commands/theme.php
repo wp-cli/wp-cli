@@ -502,6 +502,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     wp theme delete twentyeleven
+	 *
+	 * @alias uninstall
 	 */
 	function delete( $args ) {
 		foreach ( $this->fetcher->get_many( $args ) as $theme ) {

@@ -34,6 +34,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		$keys = ! empty( $assoc_args['keys'] ) ? explode( ',', $assoc_args['keys'] ) : array();
 
+		$object_id = $this->check_object_id( $object_id );
+
 		$metadata = get_metadata( $this->meta_type, $object_id );
 		if ( ! $metadata ) {
 			$metadata = array();
@@ -80,6 +82,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	public function get( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
 
+		$object_id = $this->check_object_id( $object_id );
+
 		$value = \get_metadata( $this->meta_type, $object_id, $meta_key, true );
 
 		if ( '' === $value )
@@ -104,6 +108,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		list( $object_id, $meta_key ) = $args;
 
 		$meta_value = ! empty( $args[2] ) ? $args[2] : '';
+
+		$object_id = $this->check_object_id( $object_id );
 
 		$success = \delete_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
 
@@ -136,6 +142,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		$meta_value = \WP_CLI::get_value_from_arg_or_stdin( $args, 2 );
 		$meta_value = \WP_CLI::read_value( $meta_value, $assoc_args );
+
+		$object_id = $this->check_object_id( $object_id );
 
 		$success = \add_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
 
@@ -171,6 +179,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		$meta_value = \WP_CLI::get_value_from_arg_or_stdin( $args, 2 );
 		$meta_value = \WP_CLI::read_value( $meta_value, $assoc_args );
 
+		$object_id = $this->check_object_id( $object_id );
+
 		$success = \update_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
 
 		if ( $success ) {
@@ -191,6 +201,16 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 			'meta_key',
 			'meta_value',
 		);
+	}
+
+	/**
+	 * Check that the object ID exists
+	 *
+	 * @param int
+	 */
+	protected function check_object_id( $object_id ) {
+		// Needs to be set in subclass
+		return $object_id;
 	}
 
 }
