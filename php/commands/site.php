@@ -471,6 +471,12 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 		foreach ( $ids as $site_id ) {
 			$site = $this->fetcher->get_check( $site_id );
+
+			if ( is_main_site( $site->blog_id ) ) {
+				WP_CLI::warning( "You are not allowed to change the main site." );
+				continue;
+			}
+
 			$old_value = get_blog_status( $site->blog_id, $pref );
 
 			if ( $value == $old_value ) {

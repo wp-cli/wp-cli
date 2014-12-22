@@ -127,3 +127,9 @@ Feature: Manage sites in a multisite installation
     Then STDOUT should be a table containing rows:
       | blog_id      | archived |
       | {FIRST_SITE} | 0        |
+
+    When I run `wp site archive 1`
+    Then STDERR should be:
+      """
+      Warning: You are not allowed to change the main site.
+      """
