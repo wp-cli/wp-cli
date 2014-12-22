@@ -462,6 +462,7 @@ class Core_Command extends WP_CLI_Command {
 
 	/**
 	 * Install multisite from scratch.
+	 * ( subdomains will not work on localhost )
 	 *
 	 * ## OPTIONS
 	 *
@@ -602,6 +603,8 @@ class Core_Command extends WP_CLI_Command {
 		install_network();
 
 		$domain = self::get_clean_basedomain();
+		if ( 'localhost'==$domain && $assoc_args['subdomains']==1 )
+			WP_CLI::error( 'Subdomains cannot be installed on localhost.' );
 		$result = populate_network(
 			$assoc_args['site_id'],
 			$domain,
