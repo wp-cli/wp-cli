@@ -133,3 +133,53 @@ Feature: Manage sites in a multisite installation
       """
       Warning: You are not allowed to change the main site.
       """
+
+  Scenario: Activate/deactivate a site
+    Given a WP multisite install
+    And I run `wp site create --slug=first --porcelain`
+    And save STDOUT as {FIRST_SITE}
+    And I run `wp site create --slug=second --porcelain`
+    And save STDOUT as {SECOND_SITE}
+
+    When I run `wp site deactivate {FIRST_SITE}`
+    Then STDOUT should be:
+      """
+      Success: Site {FIRST_SITE} deactivated.
+      """
+
+    When I run `wp site list --fields=blog_id,deleted`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | deleted |
+      | {FIRST_SITE} | 1       |
+
+    When I run `wp site deactivate {FIRST_SITE} {SECOND_SITE}`
+    Then STDERR should be:
+      """
+      Warning: Site {FIRST_SITE} already deactivated.
+      """
+    And STDOUT should be:
+      """
+      Success: Site {SECOND_SITE} deactivated.
+      """
+
+    When I run `wp site list --fields=blog_id,deleted`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | deleted |
+      | {FIRST_SITE} | 1       |
+
+    When I run `wp site activate {FIRST_SITE}`
+    Then STDOUT should be:
+      """
+      Success: Site {FIRST_SITE} activated.
+      """
+
+    When I run `wp site list --fields=blog_id,deleted`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | deleted |
+      | {FIRST_SITE} | 0       |
+
+    When I run `wp site deactivate 1`
+    Then STDERR should be:
+      """
+      Warning: You are not allowed to change the main site.
+      """

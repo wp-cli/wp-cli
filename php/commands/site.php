@@ -462,11 +462,47 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		$this->update_site_status( $args, 'archived', 0 );
 	}
 
+	/**
+	 * Activate one or more sites
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to activate.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site activate 123
+	 */
+	public function activate( $args ) {
+		$this->update_site_status( $args, 'deleted', 0 );
+	}
+
+	/**
+	 * Deactivate one or more sites
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to deactivate.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site deactivate 123
+	 */
+	public function deactivate( $args ) {
+		$this->update_site_status( $args, 'deleted', 1 );
+	}
+
 	private function update_site_status( $ids, $pref, $value ) {
 		if ( $pref == 'archived' && $value == 1 ) {
 			$action = 'archived';
 		} else if ( $pref == 'archived' && $value == 0) {
 			$action = 'unarchived';
+		} else if ( $pref == 'deleted' && $value == 1 ) {
+			$action = 'deactivated';
+		} else if ( $pref == 'deleted' && $value == 0 ) {
+			$action = 'activated';
 		}
 
 		foreach ( $ids as $site_id ) {
