@@ -494,6 +494,40 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		$this->update_site_status( $args, 'deleted', 1 );
 	}
 
+	/**
+	 * Mark one or more sites as spam
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to be marked as spam.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site spam 123
+	 */
+	public function spam( $args ) {
+		$this->update_site_status( $args, 'spam', 1 );
+	}
+
+	/**
+	 * Remove one or more sites from spam
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to remove from spam.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site not-spam 123
+	 *
+	 * @subcommand not-spam
+	 */
+	public function not_spam( $args ) {
+		$this->update_site_status( $args, 'spam', 0 );
+	}
+
 	private function update_site_status( $ids, $pref, $value ) {
 		if ( $pref == 'archived' && $value == 1 ) {
 			$action = 'archived';
@@ -503,6 +537,10 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			$action = 'deactivated';
 		} else if ( $pref == 'deleted' && $value == 0 ) {
 			$action = 'activated';
+		} else if ( $pref == 'spam' && $value == 1 ) {
+			$action = 'marked as spam';
+		} else if ( $pref == 'spam' && $value == 0 ) {
+			$action = 'removed from spam';
 		}
 
 		foreach ( $ids as $site_id ) {
