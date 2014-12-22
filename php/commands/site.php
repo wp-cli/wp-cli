@@ -429,6 +429,52 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 		parent::_url( $args, 'get_site_url' );
 	}
+
+	/**
+	 * Archive one or more sites
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to archive.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site archive 123
+	 */
+	public function archive( $args ) {
+		$this->update_site_status( $args, 'archived', 1 );
+	}
+
+	/**
+	 * Unarchive one or more sites
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to unarchive.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site unarchive 123
+	 */
+	public function unarchive( $args ) {
+		$this->update_site_status( $args, 'archived', 0 );
+	}
+
+	private function update_site_status( $ids, $pref, $value ) {
+		if ( $pref == 'archived' && $value == 1 ) {
+			$action = 'archived';
+		} else if ( $pref == 'archived' && $value == 0) {
+			$action = 'unarchived';
+		}
+
+		foreach ( $ids as $site_id ) {
+			$site = $this->fetcher->get_check( $site_id );
+			update_blog_status( $site->blog_id, $pref, $value );
+			WP_CLI::success( "Site {$site->blog_id} $action." );
+		}
+	}
 }
 
 WP_CLI::add_command( 'site', 'Site_Command' );

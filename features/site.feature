@@ -84,3 +84,29 @@ Feature: Manage sites in a multisite installation
       http://example.com/first
       """
 
+  Scenario: Archive/unarchive a site
+    Given a WP multisite install
+    And I run `wp site create --slug=first --porcelain`
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site archive {SITE_ID}`
+    Then STDOUT should be:
+      """
+      Success: Site {SITE_ID} archived.
+      """
+
+    When I run `wp site list --fields=blog_id,archived`
+    Then STDOUT should be a table containing rows:
+      | blog_id   | archived |
+      | {SITE_ID} | 1        |
+
+    When I run `wp site unarchive {SITE_ID}`
+    Then STDOUT should be:
+      """
+      Success: Site {SITE_ID} unarchived.
+      """
+
+    When I run `wp site list --fields=blog_id,archived`
+    Then STDOUT should be a table containing rows:
+      | blog_id   | archived |
+      | {SITE_ID} | 0        |
