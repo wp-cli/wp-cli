@@ -441,7 +441,7 @@ class Core_Command extends WP_CLI_Command {
 	 * Default: '/'
 	 *
 	 * [--subdomains]
-	 * : If passed, the network will use subdomains, instead of subdirectories.
+	 * : If passed, the network will use subdomains, instead of subdirectories. Doesn't work with 'localhost'.
 	 *
 	 * @subcommand multisite-convert
 	 * @alias install-network
@@ -473,7 +473,7 @@ class Core_Command extends WP_CLI_Command {
 	 * Default: '/'
 	 *
 	 * [--subdomains]
-	 * : If passed, the network will use subdomains, instead of subdirectories.
+	 * : If passed, the network will use subdomains, instead of subdirectories. Doesn't work with 'localhost'.
 	 *
 	 * --title=<site-title>
 	 * : The title of the new site.
@@ -595,13 +595,17 @@ class Core_Command extends WP_CLI_Command {
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
+		$domain = self::get_clean_basedomain();
+		if ( 'localhost' === $domain && ! empty( $assoc_args['subdomains'] ) ) {
+			WP_CLI::error( "Multisite with subdomains cannot be configured when domain is 'localhost'." );
+		}
+
 		// need to register the multisite tables manually for some reason
 		foreach ( $wpdb->tables( 'ms_global' ) as $table => $prefixed_table )
 			$wpdb->$table = $prefixed_table;
 
 		install_network();
 
-		$domain = self::get_clean_basedomain();
 		$result = populate_network(
 			$assoc_args['site_id'],
 			$domain,
