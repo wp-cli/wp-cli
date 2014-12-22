@@ -471,6 +471,13 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 		foreach ( $ids as $site_id ) {
 			$site = $this->fetcher->get_check( $site_id );
+			$old_value = get_blog_status( $site->blog_id, $pref );
+
+			if ( $value == $old_value ) {
+				WP_CLI::warning( "Site {$site->blog_id} already $action." );
+				continue;
+			}
+
 			update_blog_status( $site->blog_id, $pref, $value );
 			WP_CLI::success( "Site {$site->blog_id} $action." );
 		}
