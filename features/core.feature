@@ -247,6 +247,18 @@ Feature: Manage WordPress installation
       example.com
       """
 
+  Scenario: Install multisite with subdomains on localhost
+    Given an empty directory
+    And WP files
+    And wp-config.php
+    And a database
+
+    When I try `wp core multisite-install --url=http://localhost/ --title=Test --admin_user=wpcli --admin_email=admin@example.com --admin_password=1 --subdomains`
+    Then STDERR should contain:
+      """
+      Error: Multisite with subdomains cannot be configured when domain is 'localhost'.
+      """
+
   Scenario: Update from a ZIP file
     Given a WP install
 
