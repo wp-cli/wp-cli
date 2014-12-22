@@ -651,7 +651,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$path = path_join( WP_PLUGIN_DIR, $plugin_dir );
 
 		if ( \WP_CLI\Utils\is_windows() ) {
-			$command = 'rd /s /q ';
+			// Handles plugins that are not in own folders 
+			// e.g. Hello Dolly -> plugins/hello.php
+			if ( is_file( $path ) ) {			 
+				$command = 'del /f /q ';
+			} else {
+				$command = 'rd /s /q ';			
+			}
 			$path = str_replace( "/", "\\", $path );
 		} else {
 			$command = 'rm -rf ';
