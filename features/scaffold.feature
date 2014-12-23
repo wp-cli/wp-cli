@@ -64,6 +64,10 @@ Feature: WordPress code scaffolding
       """
       __( 'Zombies', 'zombieland'
       """
+    And STDOUT should contain:
+      """
+      'menu_icon'         => 'dashicons-admin-post',
+      """
 
   Scenario: CPT slug is too long
     When I try `wp scaffold post-type slugiswaytoolonginfact`
@@ -78,6 +82,13 @@ Feature: WordPress code scaffolding
     Then STDOUT should contain:
       """
       __( 'Brain eaters'
+      """
+
+  Scenario: Scaffold a Custom Post Type with icon
+    When I run `wp scaffold post-type zombie --icon="art"`
+    Then STDOUT should contain:
+      """
+      'menu_icon'         => 'dashicons-art',
       """
 
   Scenario: Scaffold a plugin
