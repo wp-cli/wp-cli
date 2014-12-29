@@ -133,6 +133,9 @@ class Package_Command extends WP_CLI_Command {
 	private function remove_package( $package ) {
 		chdir( $this->home );
 
+		// let composer know where to find this package
+		exec( "composer config --unset repositories.{$package} vcs {$repo_url}" );
+
 		exec( "composer remove {$package}" );
 
 		exec( 'composer update' );
