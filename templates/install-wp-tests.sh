@@ -60,7 +60,7 @@ install_db() {
 	local EXTRA=""
 
 	if ! [ -z $DB_HOSTNAME ] ; then
-		if [[ "$DB_SOCK_OR_PORT" =~ ^[0-9]+$ ]] ; then
+		if [ $(echo $DB_SOCK_OR_PORT | grep -e '^[0-9]\{1,\}$') ]; then
 			EXTRA=" --host=$DB_HOSTNAME --port=$DB_SOCK_OR_PORT --protocol=tcp"
 		elif ! [ -z $DB_SOCK_OR_PORT ] ; then
 			EXTRA=" --socket=$DB_SOCK_OR_PORT"
