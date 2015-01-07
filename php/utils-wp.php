@@ -95,6 +95,24 @@ function is_plugin_skipped( $file ) {
 	return in_array( $name, array_filter( $skipped_plugins ) );
 }
 
+function get_theme_name( $path ) {
+	return basename( $path );
+}
+
+function is_theme_skipped( $path ) {
+	$name = get_theme_name( $path );
+
+	$skipped_themes = \WP_CLI::get_runner()->config['skip-themes'];
+	if ( true === $skipped_themes )
+		return true;
+
+	if ( ! is_array( $skipped_themes ) ) {
+		$skipped_themes = explode( ',', $skipped_themes );
+	}
+
+	return in_array( $name, array_filter( $skipped_themes ) );
+}
+
 /**
  * Register the sidebar for unused widgets
  * Core does this in /wp-admin/widgets.php, which isn't helpful
