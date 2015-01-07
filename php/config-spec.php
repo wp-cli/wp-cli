@@ -34,6 +34,13 @@ return array(
 		'desc' => 'Skip loading all or some plugins',
 		'default' => '',
 	),
+	
+	'skip-themes' => array(
+		'runtime' => '[=<theme>]',
+		'file' => '<list>',
+		'desc' => 'Skip loading all or some themes',
+		'default' => '',
+	),
 
 	'require' => array(
 		'runtime' => '=<path>',
