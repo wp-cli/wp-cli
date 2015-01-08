@@ -3,7 +3,7 @@ Feature: Skipping themes
   Scenario: Skipping themes via global flag
     Given a WP install
     And I run `wp theme install classic`
-	And I run `wp theme install default --activate`
+    And I run `wp theme install default --activate`
 
     When I run `wp eval 'var_export( function_exists( "kubrick_head" ) );'`
     Then STDOUT should be:
@@ -17,14 +17,14 @@ Feature: Skipping themes
       """
       false
       """
-	
-    # All themes should be not skipped
+    
+    # All themes should be skipped
     When I run `wp --skip-themes eval 'var_export( function_exists( "kubrick_head" ) );'`
     Then STDOUT should be:
       """
       false
       """
-	
+    
     # Skip another theme
     When I run `wp --skip-themes=classic eval 'var_export( function_exists( "kubrick_head" ) );'`
     Then STDOUT should be:
@@ -54,9 +54,9 @@ Feature: Skipping themes
         - classic
         - default
       """
-	And I run `wp theme install classic --activate`
-	And I run `wp theme install default`
-	
+    And I run `wp theme install classic --activate`
+    And I run `wp theme install default`
+    
     # The classic theme should show up as an active theme
     When I run `wp theme status`
     Then STDOUT should contain:
@@ -70,9 +70,10 @@ Feature: Skipping themes
       """
       I default
       """
-	
-	And I run `wp theme activate default`
-    # The specified theme should be skipped
+    
+    And I run `wp theme activate default`
+
+    # The default theme should be skipped
     When I run `wp eval 'var_export( function_exists( "kubrick_head" ) );'`
     Then STDOUT should be:
       """
