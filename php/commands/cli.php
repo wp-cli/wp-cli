@@ -31,7 +31,7 @@ class CLI_Command extends WP_CLI_Command {
 	/**
 	 * Print WP-CLI version.
 	 */
-	function version() {
+	public function version() {
 		WP_CLI::line( 'WP-CLI ' . WP_CLI_VERSION );
 	}
 
@@ -43,7 +43,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * [--format=<format>]
 	 * : Accepted values: json
 	 */
-	function info( $_, $assoc_args ) {
+	public function info( $_, $assoc_args ) {
 		$php_bin = defined( 'PHP_BINARY' ) ? PHP_BINARY : getenv( 'WP_CLI_PHP_USED' );
 
 		$runner = WP_CLI::get_runner();
@@ -136,7 +136,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand update
 	 */
-	function update( $_, $assoc_args ) {
+	public function update( $_, $assoc_args ) {
 		if ( 0 !== strpos( WP_CLI_ROOT, 'phar://' ) ) {
 			WP_CLI::error( "You can only self-update PHARs" );
 		}
@@ -259,7 +259,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand param-dump
 	 */
-	function param_dump() {
+	public function param_dump() {
 		echo json_encode( \WP_CLI::get_configurator()->get_spec() );
 	}
 
@@ -268,7 +268,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand cmd-dump
 	 */
-	function cmd_dump() {
+	public function cmd_dump() {
 		echo json_encode( self::command_to_array( WP_CLI::get_root_command() ) );
 	}
 
@@ -283,7 +283,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * --point=<point>
 	 * : The index to the current cursor position relative to the beginning of the command
 	 */
-	function completions( $_, $assoc_args ) {
+	public function completions( $_, $assoc_args ) {
 		$line = substr( $assoc_args['line'], 0, $assoc_args['point'] );
 		$compl = new \WP_CLI\Completions( $line );
 		$compl->render();
