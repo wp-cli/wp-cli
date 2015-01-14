@@ -371,6 +371,7 @@ Feature: Manage WordPress installation
 
   Scenario: Don't run update when up-to-date
     Given a WP install
+    And I run `wp core update`
 
     When I run `wp core update`
     Then STDOUT should contain:
