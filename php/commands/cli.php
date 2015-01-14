@@ -106,7 +106,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand check-update
 	 */
-	function check_update( $_, $assoc_args ) {
+	public function check_update( $_, $assoc_args ) {
 		$updates = $this->get_updates( $assoc_args );
 
 		if ( $updates ) {
