@@ -370,23 +370,23 @@ Feature: Manage WordPress installation
 	  """
 
   Scenario: Don't run update when up-to-date
-	Given a WP install
+    Given a WP install
 
-	When I run `wp core update`
-	Then STDOUT should contain:
-	  """
-	  WordPress is up to date
-	  """
-	And STDOUT should not contain:
-	  """
-	  Updating
-	  """
+    When I run `wp core update`
+    Then STDOUT should contain:
+      """
+      WordPress is up to date
+      """
+    And STDOUT should not contain:
+      """
+      Updating
+      """
 
-	When I run `wp core update --force`
-	Then STDOUT should contain:
-	  """
-	  Updating
-	  """
+    When I run `wp core update --force`
+    Then STDOUT should contain:
+      """
+      Updating
+      """
 
   Scenario: User defined in wp-cli.yml
     Given an empty directory
