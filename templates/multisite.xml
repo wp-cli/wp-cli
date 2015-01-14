@@ -1,0 +1,15 @@
+<phpunit
+		bootstrap="../../tests/bootstrap.php"
+        backupGlobals="false"
+        colors="true"
+        >
+    <php>
+        <const name="WP_TESTS_MULTISITE" value="1" />
+    </php>
+    <testsuites>
+        <!-- Default test suite to run all tests -->
+        <testsuite>
+            <directory suffix=".php">../../tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

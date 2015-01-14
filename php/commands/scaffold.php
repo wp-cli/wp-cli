@@ -472,10 +472,12 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 		$tests_dir = "$plugin_dir/tests";
+		$phpunit_dir = "$plugin_dir/tests/phpunit";
 		$bin_dir = "$plugin_dir/bin";
 
 		$wp_filesystem->mkdir( $tests_dir );
 		$wp_filesystem->mkdir( $bin_dir );
+		$wp_filesystem->mkdir( $phpunit_dir );
 
 		$this->create_file( "$tests_dir/bootstrap.php",
 			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) );
@@ -484,6 +486,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			'install-wp-tests.sh' => $bin_dir,
 			'.travis.yml' => $plugin_dir,
 			'phpunit.xml' => $plugin_dir,
+			'multisite.xml' => $phpunit_dir,
 			'test-sample.php' => $tests_dir,
 		);
 
