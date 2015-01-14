@@ -20,7 +20,7 @@ define( 'DEST_PATH', $args[0] );
 
 define( 'BE_QUIET', isset( $runtime_config['quiet'] ) && $runtime_config['quiet'] );
 
-$current_version = file_get_contents( './VERSION' );
+$current_version = trim( file_get_contents( './VERSION' ) );
 
 if ( isset( $runtime_config['version'] ) ) {
 	$new_version = $runtime_config['version'];
