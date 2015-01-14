@@ -213,7 +213,7 @@ class CLI_Command extends WP_CLI_Command {
 		$response = Utils\http_request( 'GET', $url, $headers, $options );
 
 		if ( ! $response->success || 200 !== $response->status_code ) {
-			WP_CLI::error( "Failed to get latest version." );
+			WP_CLI::error( sprintf( "Failed to get latest version (HTTP code %d)", $response->status_code ) );
 		}
 
 		$release_data = json_decode( $response->body );
