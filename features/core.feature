@@ -247,6 +247,18 @@ Feature: Manage WordPress installation
       example.com
       """
 
+  Scenario: Install multisite with subdomains on localhost
+    Given an empty directory
+    And WP files
+    And wp-config.php
+    And a database
+
+    When I try `wp core multisite-install --url=http://localhost/ --title=Test --admin_user=wpcli --admin_email=admin@example.com --admin_password=1 --subdomains`
+    Then STDERR should contain:
+      """
+      Error: Multisite with subdomains cannot be configured when domain is 'localhost'.
+      """
+
   Scenario: Update from a ZIP file
     Given a WP install
 
@@ -383,8 +395,27 @@ Feature: Manage WordPress installation
     And STDOUT should not contain:
       """
       Downloading
+	  """
+
+  Scenario: Don't run update when up-to-date
+    Given a WP install
+    And I run `wp core update`
+
+    When I run `wp core update`
+    Then STDOUT should contain:
+      """
+      WordPress is up to date
+      """
+    And STDOUT should not contain:
+      """
+      Updating
       """
 
+    When I run `wp core update --force`
+    Then STDOUT should contain:
+      """
+      Updating
+      """
 
   Scenario: User defined in wp-cli.yml
     Given an empty directory

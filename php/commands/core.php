@@ -441,7 +441,7 @@ class Core_Command extends WP_CLI_Command {
 	 * Default: '/'
 	 *
 	 * [--subdomains]
-	 * : If passed, the network will use subdomains, instead of subdirectories.
+	 * : If passed, the network will use subdomains, instead of subdirectories. Doesn't work with 'localhost'.
 	 *
 	 * @subcommand multisite-convert
 	 * @alias install-network
@@ -473,7 +473,7 @@ class Core_Command extends WP_CLI_Command {
 	 * Default: '/'
 	 *
 	 * [--subdomains]
-	 * : If passed, the network will use subdomains, instead of subdirectories.
+	 * : If passed, the network will use subdomains, instead of subdirectories. Doesn't work with 'localhost'.
 	 *
 	 * --title=<site-title>
 	 * : The title of the new site.
@@ -595,13 +595,17 @@ class Core_Command extends WP_CLI_Command {
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
+		$domain = self::get_clean_basedomain();
+		if ( 'localhost' === $domain && ! empty( $assoc_args['subdomains'] ) ) {
+			WP_CLI::error( "Multisite with subdomains cannot be configured when domain is 'localhost'." );
+		}
+
 		// need to register the multisite tables manually for some reason
 		foreach ( $wpdb->tables( 'ms_global' ) as $table => $prefixed_table )
 			$wpdb->$table = $prefixed_table;
 
 		install_network();
 
-		$domain = self::get_clean_basedomain();
 		$result = populate_network(
 			$assoc_args['site_id'],
 			$domain,
@@ -888,9 +892,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			wp_version_check();
 			$from_api = get_site_transient( 'update_core' );
 
-			if ( empty( $from_api->updates ) ) {
-				$update = false;
-			} else {
+			if ( ! empty( $from_api->updates ) ) {
 				list( $update ) = $from_api->updates;
 			}
 
@@ -916,32 +918,35 @@ define('BLOG_ID_CURRENT_SITE', 1);
 				'locale' => $locale
 			);
 
+		}
+
+		if ( ! empty( $update ) && ( $update->version != $wp_version || isset( $assoc_args['force'] ) ) ) {
+
+			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
+			if ( $update->version ) {
+				WP_CLI::log( "Updating to version {$update->version} ({$update->locale})..." );
+			} else {
+				WP_CLI::log( "Starting update..." );
+			}
+
+			$GLOBALS['wp_cli_update_obj'] = $update;
+			$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
+			unset( $GLOBALS['wp_cli_update_obj'] );
+
+			if ( is_wp_error($result) ) {
+				$msg = WP_CLI::error_to_string( $result );
+				if ( 'up_to_date' != $result->get_error_code() ) {
+					WP_CLI::error( $msg );
+				} else {
+					WP_CLI::success( $msg );
+				}
+			} else {
+				WP_CLI::success( 'WordPress updated successfully.' );
+			}
+
 		} else {
 			WP_CLI::success( 'WordPress is up to date.' );
-			return;
-		}
-
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-
-		if ( $update->version ) {
-			WP_CLI::log( "Updating to version {$update->version} ({$update->locale})..." );
-		} else {
-			WP_CLI::log( "Starting update..." );
-		}
-
-		$GLOBALS['wp_cli_update_obj'] = $update;
-		$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
-		unset( $GLOBALS['wp_cli_update_obj'] );
-
-		if ( is_wp_error($result) ) {
-			$msg = WP_CLI::error_to_string( $result );
-			if ( 'up_to_date' != $result->get_error_code() ) {
-				WP_CLI::error( $msg );
-			} else {
-				WP_CLI::success( $msg );
-			}
-		} else {
-			WP_CLI::success( 'WordPress updated successfully.' );
 		}
 	}
 

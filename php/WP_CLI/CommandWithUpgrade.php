@@ -108,8 +108,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	function install( $args, $assoc_args ) {
-		// Force WordPress to check for updates
-		call_user_func( $this->upgrade_refresh );
 
 		foreach ( $args as $slug ) {
 			$local_or_remote_zip_file = false;
