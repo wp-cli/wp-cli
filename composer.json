@@ -1,7 +1,7 @@
 {
 	"name": "wp-cli/wp-cli",
 	"description": "A command line interface for WordPress",
-	"keywords": [ "cli", "wordpress" ], 
+	"keywords": [ "cli", "wordpress" ],
 	"homepage": "http://wp-cli.org",
 	"license": "MIT",
 	"bin": [
@@ -9,7 +9,7 @@
 	],
 	"require": {
 		"php": ">=5.3.2",
-		"wp-cli/php-cli-tools": "0.10.2",
+		"wp-cli/php-cli-tools": "0.10.3",
 		"mustache/mustache": "~2.4",
 		"rhumsaa/array_column": "~1.1",
 		"rmccue/requests": "~1.6",

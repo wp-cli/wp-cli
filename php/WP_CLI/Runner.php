@@ -453,7 +453,7 @@ class Runner {
 
 	private function init_colorization() {
 		if ( 'auto' === $this->config['color'] ) {
-			$this->colorize = !\cli\Shell::isPiped();
+			$this->colorize = ( !\cli\Shell::isPiped() && !\WP_CLI\Utils\is_windows() );
 		} else {
 			$this->colorize = $this->config['color'];
 		}
@@ -561,6 +561,12 @@ class Runner {
 
 		if ( empty( $this->arguments ) )
 			$this->arguments[] = 'help';
+
+		// Protect 'cli info' from most of the runtime
+		if ( 'cli' === $this->arguments[0] && ! empty( $this->arguments[1] ) && 'info' === $this->arguments[1] ) {
+			$this->_run_command();
+			exit;
+		}
 
 		// Load bundled commands early, so that they're forced to use the same
 		// APIs as non-bundled commands.
