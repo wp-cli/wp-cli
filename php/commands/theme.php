@@ -440,8 +440,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : If set, all themes that have updates will be updated.
 	 *
 	 * [--version=<version>]
-	 * : If set, the theme will be updated to the latest development version,
-	 * regardless of what version is currently installed.
+	 * : If set, the plugin will be updated to the specified version.
 	 *
 	 * [--dry-run]
 	 * : Preview which themes would be updated.
@@ -453,7 +452,19 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme update --all
 	 */
 	function update( $args, $assoc_args ) {
-		parent::update_many( $args, $assoc_args );
+		if ( isset( $assoc_args['version'] ) ) {
+			foreach ( $this->fetcher->get_many( $args ) as $theme ) {
+				$r = delete_theme( $theme->stylesheet );
+				if ( is_wp_error( $r ) ) {
+					WP_CLI::warning( $r );
+				} else {
+					$assoc_args['force'] = 1;
+					$this->install( array( $theme->stylesheet ), $assoc_args );
+				}
+			}
+		} else {
+			parent::update_many( $args, $assoc_args );
+		}
 	}
 
 	/**
@@ -491,6 +502,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     wp theme delete twentyeleven
+	 *
+	 * @alias uninstall
 	 */
 	function delete( $args ) {
 		foreach ( $this->fetcher->get_many( $args ) as $theme ) {

@@ -108,8 +108,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	function install( $args, $assoc_args ) {
-		// Force WordPress to check for updates
-		call_user_func( $this->upgrade_refresh );
 
 		foreach ( $args as $slug ) {
 			$local_or_remote_zip_file = false;
@@ -187,10 +185,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 			// check if the requested version exists
 			$response = wp_remote_head( $response->download_link );
-			if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			$response_code = wp_remote_retrieve_response_code( $response );
+			if ( 200 !== $response_code ) {
 				\WP_CLI::error( sprintf(
-					"Can't find the requested %s's version %s in the WordPress.org %s repository.",
-					$download_type, $version, $download_type ) );
+					"Can't find the requested %s's version %s in the WordPress.org %s repository (HTTP code %d).",
+					$download_type, $version, $download_type, $response_code ) );
 			}
 		}
 	}

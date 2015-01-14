@@ -12,7 +12,7 @@ DB_HOST=${4-localhost}
 WP_VERSION=${5-latest}
 
 WP_TESTS_DIR=${WP_TESTS_DIR-/tmp/wordpress-tests-lib}
-WP_CORE_DIR=/tmp/wordpress/
+WP_CORE_DIR=${WP_CORE_DIR-/tmp/wordpress/}
 
 set -ex
 
@@ -25,7 +25,7 @@ install_wp() {
 		local ARCHIVE_NAME="wordpress-$WP_VERSION"
 	fi
 
-	wget -nv -O /tmp/wordpress.tar.gz http://wordpress.org/${ARCHIVE_NAME}.tar.gz
+	wget -nv -O /tmp/wordpress.tar.gz https://wordpress.org/${ARCHIVE_NAME}.tar.gz
 	tar --strip-components=1 -zxmf /tmp/wordpress.tar.gz -C $WP_CORE_DIR
 
 	wget -nv -O $WP_CORE_DIR/wp-content/db.php https://raw.github.com/markoheijnen/wp-mysqli/master/db.php
@@ -42,9 +42,9 @@ install_test_suite() {
 	# set up testing suite
 	mkdir -p $WP_TESTS_DIR
 	cd $WP_TESTS_DIR
-	svn co --quiet http://develop.svn.wordpress.org/trunk/tests/phpunit/includes/
+	svn co --quiet https://develop.svn.wordpress.org/trunk/tests/phpunit/includes/
 
-	wget -nv -O wp-tests-config.php http://develop.svn.wordpress.org/trunk/wp-tests-config-sample.php
+	wget -nv -O wp-tests-config.php https://develop.svn.wordpress.org/trunk/wp-tests-config-sample.php
 	sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR':" wp-tests-config.php
 	sed $ioption "s/youremptytestdbnamehere/$DB_NAME/" wp-tests-config.php
 	sed $ioption "s/yourusernamehere/$DB_USER/" wp-tests-config.php
@@ -60,7 +60,7 @@ install_db() {
 	local EXTRA=""
 
 	if ! [ -z $DB_HOSTNAME ] ; then
-		if [[ "$DB_SOCK_OR_PORT" =~ ^[0-9]+$ ]] ; then
+		if [ $(echo $DB_SOCK_OR_PORT | grep -e '^[0-9]\{1,\}$') ]; then
 			EXTRA=" --host=$DB_HOSTNAME --port=$DB_SOCK_OR_PORT --protocol=tcp"
 		elif ! [ -z $DB_SOCK_OR_PORT ] ; then
 			EXTRA=" --socket=$DB_SOCK_OR_PORT"

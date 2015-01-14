@@ -321,3 +321,36 @@ Feature: Manage WordPress users
        """
        Password:
        """
+
+  Scenario: List network users
+    Given a WP multisite install
+
+    When I run `wp user create testsubscriber testsubscriber@example.com`
+    Then STDOUT should contain:
+      """
+      Success: Created user
+      """
+
+    When I run `wp user list --field=user_login`
+    Then STDOUT should contain:
+      """
+      testsubscriber
+      """
+
+    When I run `wp user delete testsubscriber --yes`
+    Then STDOUT should contain:
+      """
+      Success: Removed user
+      """
+
+    When I run `wp user list --field=user_login`
+    Then STDOUT should not contain:
+      """
+      testsubscriber
+      """
+
+    When I run `wp user list --field=user_login --network`
+    Then STDOUT should contain:
+      """
+      testsubscriber
+      """

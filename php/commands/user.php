@@ -32,6 +32,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--<field>=<value>]
 	 * : Control output by one or more arguments of get_users().
 	 *
+	 * [--network]
+	 * : List all users in the network for multisite.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each user.
 	 *
@@ -77,6 +80,20 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
+
+		if ( isset( $assoc_args['network'] ) ) {
+			if ( ! is_multisite() ) {
+				WP_CLI::error( 'This is not a multisite install.' );
+			}
+			$assoc_args['blog_id'] = 0;
+			if ( isset( $assoc_args['fields'] ) ) {
+				$fields = explode( ',', $assoc_args['fields'] );
+				$assoc_args['fields'] = array_diff( $fields, array( 'roles' ) );
+			} else {
+				$assoc_args['fields'] = array_diff( $this->obj_fields, array( 'roles' ) );
+			}
+		}
+
 		$formatter = $this->get_formatter( $assoc_args );
 
 		if ( 'ids' == $formatter->format ) {
@@ -825,6 +842,20 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 
 }
 
+/**
+ * Manage user terms.
+ *
+ *
+ * ## EXAMPLES
+ *
+ *     wp user term set 123 test category
+ */
+class User_Term_Command extends \WP_CLI\CommandWithTerms {
+	protected $obj_type = 'user';
+}
+
+
 WP_CLI::add_command( 'user', 'User_Command' );
 WP_CLI::add_command( 'user meta', 'User_Meta_Command' );
+WP_CLI::add_command( 'user term', 'User_Term_Command' );
 
