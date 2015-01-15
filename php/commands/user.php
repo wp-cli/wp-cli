@@ -607,9 +607,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Sample users.csv file:
 	 *
 	 *     user_login,user_email,display_name,role
-	 *     bobjones,bobjones@domain.com,Bob Jones,contributor
-	 *     newuser1,newuser1@domain.com,New User,author
-	 *     existinguser,existinguser@domain.com,Existing User,administrator
+	 *     bobjones,bobjones@example.com,Bob Jones,contributor
+	 *     newuser1,newuser1@example.com,New User,author
+	 *     existinguser,existinguser@example.com,Existing User,administrator
 	 *
 	 * @subcommand import-csv
 	 */

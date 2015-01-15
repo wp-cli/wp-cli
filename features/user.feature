@@ -130,9 +130,9 @@ Feature: Manage WordPress users
     And a users.csv file:
       """
       user_login,user_email,display_name,role
-      bobjones,bobjones@domain.com,Bob Jones,contributor
-      newuser1,newuser1@domain.com,New User,author
-      admin,admin@domain.com,Existing User,administrator
+      bobjones,bobjones@example.com,Bob Jones,contributor
+      newuser1,newuser1@example.com,New User,author
+      admin,admin@example.com,Existing User,administrator
       """
 
     When I try `wp user import-csv users-incorrect.csv --skip-update`
@@ -162,7 +162,7 @@ Feature: Manage WordPress users
       [{
         "user_login":"admin",
         "display_name":"Existing User",
-        "user_email":"admin@domain.com",
+        "user_email":"admin@example.com",
         "roles":"administrator"
       }]
       """
@@ -172,12 +172,12 @@ Feature: Manage WordPress users
     And a users.csv file:
       """
       user_login,user_email,display_name,role
-      bobjones,bobjones@domain.com,Bob Jones,contributor
-      newuser1,newuser1@domain.com,New User,author
-      admin,admin@domain.com,Existing User,administrator
+      bobjones,bobjones@example.com,Bob Jones,contributor
+      newuser1,newuser1@example.com,New User,author
+      admin,admin@example.com,Existing User,administrator
       """
 
-    When I run `wp user create bobjones bobjones@domain.com --display_name="Robert Jones" --role=administrator`
+    When I run `wp user create bobjones bobjones@example.com --display_name="Robert Jones" --role=administrator`
     Then STDOUT should not be empty
 
     When I run `wp user import-csv users.csv --skip-update`
@@ -195,7 +195,7 @@ Feature: Manage WordPress users
       {
         "user_login":"bobjones",
         "display_name":"Robert Jones",
-        "user_email":"bobjones@domain.com",
+        "user_email":"bobjones@example.com",
         "roles":"administrator"
       }
       """
@@ -204,8 +204,8 @@ Feature: Manage WordPress users
     Given a WP install
 
     When I run `wp user delete 1 --yes`
-    And I run `wp user create bobjones bobjones@domain.com --display_name="Bob Jones" --role=contributor`
-    And I run `wp user create billjones billjones@domain.com --display_name="Bill Jones" --role=administrator`
+    And I run `wp user create bobjones bobjones@example.com --display_name="Bob Jones" --role=contributor`
+    And I run `wp user create billjones billjones@example.com --display_name="Bill Jones" --role=administrator`
     And I run `wp user add-role billjones author`
     Then STDOUT should not be empty
 
