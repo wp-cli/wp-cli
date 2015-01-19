@@ -269,10 +269,12 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$theme_dir = WP_CONTENT_DIR . "/themes" . "/$theme_slug";
 		$theme_style_path = "$theme_dir/style.css";
+		$theme_functions_path = "$theme_dir/functions.php";
 
 		$this->maybe_create_themes_dir();
 
 		$this->create_file( $theme_style_path, Utils\mustache_render( 'child_theme.mustache', $data ) );
+		$this->create_file( $theme_functions_path, Utils\mustache_render( 'child_theme_functions.mustache', $data ) );
 
 		WP_CLI::success( "Created $theme_dir" );
 
