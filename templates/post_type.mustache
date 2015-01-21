@@ -1,12 +1,4 @@
 	register_post_type( '{{slug}}', array(
-		'hierarchical'      => false,
-		'public'            => true,
-		'show_in_nav_menus' => true,
-		'show_ui'           => true,
-		'supports'          => array( 'title', 'editor' ),
-		'has_archive'       => true,
-		'query_var'         => true,
-		'rewrite'           => true,
 		'labels'            => array(
 			'name'                => __( '{{label_plural_ucfirst}}', '{{textdomain}}' ),
 			'singular_name'       => __( '{{label_ucfirst}}', '{{textdomain}}' ),
@@ -22,4 +14,12 @@
 			'parent_item_colon'   => __( 'Parent {{label}}', '{{textdomain}}' ),
 			'menu_name'           => __( '{{label_plural_ucfirst}}', '{{textdomain}}' ),
 		),
+		'public'            => true,
+		'hierarchical'      => false,
+		'show_ui'           => true,
+		'show_in_nav_menus' => true,
+		'supports'          => array( 'title', 'editor' ),
+		'has_archive'       => true,
+		'rewrite'           => true,
+		'query_var'         => true,
 	) );

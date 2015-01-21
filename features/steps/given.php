@@ -1,7 +1,8 @@
 <?php
 
 use Behat\Gherkin\Node\PyStringNode,
-    Behat\Gherkin\Node\TableNode;
+    Behat\Gherkin\Node\TableNode,
+    WP_CLI\Process;
 
 $steps->Given( '/^an empty directory$/',
 	function ( $world ) {
@@ -9,7 +10,13 @@ $steps->Given( '/^an empty directory$/',
 	}
 );
 
-$steps->Given( '/^a ([^\s]+) file:$/',
+$steps->Given( '/^an empty cache/',
+	function ( $world ) {
+		$world->variables['SUITE_CACHE_DIR'] = FeatureContext::create_cache_dir();
+	}
+);
+
+$steps->Given( '/^an? ([^\s]+) file:$/',
 	function ( $world, $path, PyStringNode $content ) {
 		$content = (string) $content . "\n";
 		$full_path = $world->variables['RUN_DIR'] . "/$path";
@@ -55,6 +62,13 @@ $steps->Given( '/^a WP multisite install$/',
 	}
 );
 
+$steps->Given( '/^these installed and active plugins:$/',
+	function( $world, $stream ) {
+		$plugins = implode( ' ', array_map( 'trim', explode( PHP_EOL, (string)$stream ) ) );
+		$world->proc( "wp plugin install $plugins --activate" )->run_check();
+	}
+);
+
 $steps->Given( '/^a custom wp-content directory$/',
 	function ( $world ) {
 		$wp_config_path = $world->variables['RUN_DIR'] . "/wp-config.php";
@@ -82,13 +96,15 @@ $steps->Given( '/^download:$/',
 				continue;
 			}
 
-			\Process::create( \WP_CLI\Utils\esc_cmd( 'curl -sSL %s > %s', $row['url'], $path ) )->run_check();
+			Process::create( \WP_CLI\Utils\esc_cmd( 'curl -sSL %s > %s', $row['url'], $path ) )->run_check();
 		}
 	}
 );
 
 $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 	function ( $world, $stream, $output_filter, $key ) {
+
+		$stream = strtolower( $stream );
 
 		if ( $output_filter ) {
 			$output_filter = '/' . trim( str_replace( '%s', '(.+[^\b])', $output_filter ), "' " ) . '/';
@@ -103,3 +119,25 @@ $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 	}
 );
 
+$steps->Given( '/^a new Phar(?: with version "([^"]+)")$/',
+	function ( $world, $version ) {
+		$world->build_phar( $version );
+	}
+);
+
+$steps->Given( '/^save the (.+) file ([\'].+[^\'])?as \{(\w+)\}$/',
+	function ( $world, $filepath, $output_filter, $key ) {
+		$full_file = file_get_contents( $world->replace_variables( $filepath ) );
+
+		if ( $output_filter ) {
+			$output_filter = '/' . trim( str_replace( '%s', '(.+[^\b])', $output_filter ), "' " ) . '/';
+			if ( false !== preg_match( $output_filter, $full_file, $matches ) )
+				$output = array_pop( $matches );
+			else
+				$output = '';
+		} else {
+			$output = $full_file;
+		}
+		$world->variables[ $key ] = trim( $output, "\n" );
+	}
+);

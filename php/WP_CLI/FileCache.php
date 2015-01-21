@@ -47,7 +47,7 @@ class FileCache {
 	 * @param int    $maxSize    max total cache size
 	 * @param string $whitelist  List of characters that are allowed in path names (used in a regex character class)
 	 */
-	public function __construct( $cacheDir, $ttl, $maxSize, $whitelist = 'a-z0-9.' ) {
+	public function __construct( $cacheDir, $ttl, $maxSize, $whitelist = 'a-z0-9._-' ) {
 		$this->root = rtrim( $cacheDir, '/\\' ) . '/';
 		$this->ttl = (int) $ttl;
 		$this->maxSize = (int) $maxSize;
@@ -220,7 +220,11 @@ class FileCache {
 
 		// unlink expired files
 		if ( $ttl > 0 ) {
-			$expire = new \DateTime();
+			try {
+				$expire = new \DateTime();
+			} catch ( \Exception $e ) {
+				\WP_CLI::error( $e->getMessage() );
+			}
 			$expire->modify( '-' . $ttl . ' seconds' );
 
 			$finder = $this->get_finder()->date( 'until ' . $expire->format( 'Y-m-d H:i:s' ) );

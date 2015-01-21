@@ -69,3 +69,65 @@ function get_upgrader( $class ) {
 	return new $class( new \WP_CLI\UpgraderSkin );
 }
 
+/**
+ * Converts a plugin basename back into a friendly slug.
+ */
+function get_plugin_name( $basename ) {
+	if ( false === strpos( $basename, '/' ) )
+		$name = basename( $basename, '.php' );
+	else
+		$name = dirname( $basename );
+
+	return $name;
+}
+
+function is_plugin_skipped( $file ) {
+	$name = get_plugin_name( str_replace( WP_PLUGIN_DIR . '/', '', $file ) );
+
+	$skipped_plugins = \WP_CLI::get_runner()->config['skip-plugins'];
+	if ( true === $skipped_plugins )
+		return true;
+
+	if ( ! is_array( $skipped_plugins ) ) {
+		$skipped_plugins = explode( ',', $skipped_plugins );
+	}
+
+	return in_array( $name, array_filter( $skipped_plugins ) );
+}
+
+function get_theme_name( $path ) {
+	return basename( $path );
+}
+
+function is_theme_skipped( $path ) {
+	$name = get_theme_name( $path );
+
+	$skipped_themes = \WP_CLI::get_runner()->config['skip-themes'];
+	if ( true === $skipped_themes )
+		return true;
+
+	if ( ! is_array( $skipped_themes ) ) {
+		$skipped_themes = explode( ',', $skipped_themes );
+	}
+
+	return in_array( $name, array_filter( $skipped_themes ) );
+}
+
+/**
+ * Register the sidebar for unused widgets
+ * Core does this in /wp-admin/widgets.php, which isn't helpful
+ */
+function wp_register_unused_sidebar() {
+
+	register_sidebar(array(
+		'name' => __('Inactive Widgets'),
+		'id' => 'wp_inactive_widgets',
+		'class' => 'inactive-sidebar',
+		'description' => __( 'Drag widgets here to remove them from the sidebar but keep their settings.' ),
+		'before_widget' => '',
+		'after_widget' => '',
+		'before_title' => '',
+		'after_title' => '',
+	));
+
+}

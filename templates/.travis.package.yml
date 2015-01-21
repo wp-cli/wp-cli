@@ -1,0 +1,15 @@
+language: php
+
+php:
+    - 5.3
+    - 5.5
+
+env:
+    global:
+         - WP_CLI_BIN_DIR=/tmp/wp-cli-phar
+         - WP_CLI_CONFIG_PATH=/tmp/wp-cli-phar/config.yml
+
+before_script:
+    - bash bin/install-package-tests.sh
+
+script: ./vendor/bin/behat

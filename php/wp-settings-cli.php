@@ -93,6 +93,11 @@ wp_set_wpdb_vars();
 // Start the WordPress object cache, or an external object cache if the drop-in is present.
 wp_start_object_cache();
 
+// WP-CLI: the APC cache is not available on the command-line, so bail, to prevent cache poisoning
+if ( $GLOBALS['_wp_using_ext_object_cache'] && class_exists( 'APC_Object_Cache' ) ) {
+	WP_CLI::error( 'WP-CLI is not compatible with the APC object cache.' );
+}
+
 // Attach the default filters.
 require( ABSPATH . WPINC . '/default-filters.php' );
 
@@ -124,8 +129,8 @@ require( ABSPATH . WPINC . '/capabilities.php' );
 require( ABSPATH . WPINC . '/query.php' );
 Utils\maybe_require( '3.7-alpha-25139', ABSPATH . WPINC . '/date.php' );
 require( ABSPATH . WPINC . '/theme.php' );
-Utils\maybe_require( '3.4', ABSPATH . WPINC . '/class-wp-theme.php' );
-Utils\maybe_require( '3.4', ABSPATH . WPINC . '/template.php' );
+require( ABSPATH . WPINC . '/class-wp-theme.php' );
+require( ABSPATH . WPINC . '/template.php' );
 require( ABSPATH . WPINC . '/user.php' );
 require( ABSPATH . WPINC . '/meta.php' );
 require( ABSPATH . WPINC . '/general-template.php' );
@@ -173,7 +178,12 @@ require( ABSPATH . WPINC . '/wpcom.php' );
 
 // Define constants that rely on the API to obtain the default value.
 // Define must-use plugin directory constants, which may be overridden in the sunrise.php drop-in.
-wp_plugin_directory_constants( );
+wp_plugin_directory_constants();
+
+$symlinked_plugins_supported = function_exists( 'wp_register_plugin_realpath' );
+if ( $symlinked_plugins_supported ) {
+	$GLOBALS['wp_plugin_paths'] = array();
+}
 
 // Load must-use plugins.
 foreach ( wp_get_mu_plugins() as $mu_plugin ) {
@@ -184,7 +194,11 @@ unset( $mu_plugin );
 // Load network activated plugins.
 if ( is_multisite() ) {
 	foreach( wp_get_active_network_plugins() as $network_plugin ) {
-		include_once( $network_plugin );
+		if ( !Utils\is_plugin_skipped( $network_plugin ) ) {
+			if ( $symlinked_plugins_supported )
+				wp_register_plugin_realpath( $network_plugin );
+			include_once( $network_plugin );
+		}
 	}
 	unset( $network_plugin );
 }
@@ -200,8 +214,11 @@ wp_cookie_constants( );
 // Define and enforce our SSL constants
 wp_ssl_constants( );
 
-// Create common globals.
-require( ABSPATH . WPINC . '/vars.php' );
+// Don't create common globals, but we still need wp_is_mobile()
+// require( ABSPATH . WPINC . '/vars.php' );
+function wp_is_mobile() {
+	return false;
+}
 
 // Make taxonomies and posts available to plugins and themes.
 // @plugin authors: warning: these get registered again on the init hook.
@@ -212,9 +229,14 @@ create_initial_post_types();
 register_theme_directory( get_theme_root() );
 
 // Load active plugins.
-foreach ( wp_get_active_and_valid_plugins() as $plugin )
-	include_once( $plugin );
-unset( $plugin );
+foreach ( wp_get_active_and_valid_plugins() as $plugin ) {
+	if ( !Utils\is_plugin_skipped( $plugin ) ) {
+		if ( $symlinked_plugins_supported )
+			wp_register_plugin_realpath( $plugin );
+		include_once( $plugin );
+	}
+}
+unset( $plugin, $symlinked_plugins_supported );
 
 // Load pluggable functions.
 require( ABSPATH . WPINC . '/pluggable.php' );
@@ -307,10 +329,12 @@ $GLOBALS['wp_locale'] = new WP_Locale();
 // Load the functions for the active theme, for both parent and child theme if applicable.
 global $pagenow;
 if ( ! defined( 'WP_INSTALLING' ) || 'wp-activate.php' === $pagenow ) {
-	if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists( STYLESHEETPATH . '/functions.php' ) )
-		include( STYLESHEETPATH . '/functions.php' );
-	if ( file_exists( TEMPLATEPATH . '/functions.php' ) )
-		include( TEMPLATEPATH . '/functions.php' );
+	if ( !Utils\is_theme_skipped( TEMPLATEPATH ) ) {
+		if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists( STYLESHEETPATH . '/functions.php' ) )
+			include( STYLESHEETPATH . '/functions.php' );
+		if ( file_exists( TEMPLATEPATH . '/functions.php' ) )
+			include( TEMPLATEPATH . '/functions.php' );
+	}
 }
 
 do_action( 'after_setup_theme' );

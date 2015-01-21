@@ -2,13 +2,18 @@
 
 namespace WP_CLI;
 
+/**
+ * Generate a synopsis from a command's PHPdoc arguments.
+ * Turns something like "<object-id>..."
+ * into [ optional=>false, type=>positional, repeating=>true, name=>object-id ]
+ */
 class SynopsisParser {
 
 	/**
 	 * @param string A synopsis
 	 * @return array List of parameters
 	 */
-	static function parse( $synopsis ) {
+	public static function parse( $synopsis ) {
 		$tokens = array_filter( preg_split( '/[\s\t]+/', $synopsis ) );
 
 		$params = array();
@@ -29,6 +34,12 @@ class SynopsisParser {
 		return $params;
 	}
 
+	/**
+	 * Classify argument attributes based on its syntax.
+	 *
+	 * @param string $token
+	 * @return array $param
+	 */
 	private static function classify_token( $token ) {
 		$param = array();
 
@@ -36,12 +47,13 @@ class SynopsisParser {
 		list( $param['repeating'], $token ) = self::is_repeating( $token );
 
 		$p_name = '([a-z-_]+)';
-		$p_value = '([a-zA-Z-|]+)';
+		$p_value = '([a-zA-Z-_|,]+)';
 
 		if ( '--<field>=<value>' === $token ) {
 			$param['type'] = 'generic';
-		} elseif ( preg_match( "/^<$p_value>$/", $token, $matches ) ) {
+		} elseif ( preg_match( "/^<($p_value)>$/", $token, $matches ) ) {
 			$param['type'] = 'positional';
+			$param['name'] = $matches[1];
 		} elseif ( preg_match( "/^--(?:\\[no-\\])?$p_name/", $token, $matches ) ) {
 			$param['name'] = $matches[1];
 
@@ -69,6 +81,9 @@ class SynopsisParser {
 
 	/**
 	 * An optional parameter is surrounded by square brackets.
+	 *
+	 * @param string $token
+	 * @return array
 	 */
 	private static function is_optional( $token ) {
 		if ( '[' == substr( $token, 0, 1 ) && ']' == substr( $token, -1 ) ) {
@@ -80,6 +95,9 @@ class SynopsisParser {
 
 	/**
 	 * A repeating parameter is followed by an ellipsis.
+	 *
+	 * @param string $token
+	 * @return array
 	 */
 	private static function is_repeating( $token ) {
 		if ( '...' === substr( $token, -3 ) ) {

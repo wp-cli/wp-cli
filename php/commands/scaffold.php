@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\Utils;
+use WP_CLI\Process;
 
 /**
  * Generate code for post types, taxonomies, etc.
@@ -8,10 +9,6 @@ use WP_CLI\Utils;
  * @package wp-cli
  */
 class Scaffold_Command extends WP_CLI_Command {
-
-	function __construct() {
-		WP_Filesystem();
-	}
 
 	/**
 	 * Generate PHP code for registering a custom post type.
@@ -42,6 +39,11 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * @alias cpt
 	 */
 	function post_type( $args, $assoc_args ) {
+
+		if ( strlen( $args[0] ) > 20 ) {
+			WP_CLI::error( "Post type slugs cannot exceed 20 characters in length." );
+		}
+
 		$defaults = array(
 			'textdomain' => '',
 		);
@@ -104,7 +106,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	private function _scaffold( $slug, $assoc_args, $defaults, $subdir, $templates ) {
-		global $wp_filesystem;
+		$wp_filesystem = $this->init_wp_filesystem();
 
 		$control_args = $this->extract_args( $assoc_args, array(
 			'label'  => preg_replace( '/_|-/', ' ', strtolower( $slug ) ),
@@ -212,6 +214,9 @@ class Scaffold_Command extends WP_CLI_Command {
 			WP_CLI::error( "Couldn't create theme (received $response_code response)." );
 		}
 
+		$this->maybe_create_themes_dir();
+
+		$this->init_wp_filesystem();
 		unzip_file( $tmpfname, $theme_path );
 		unlink( $tmpfname );
 
@@ -265,6 +270,8 @@ class Scaffold_Command extends WP_CLI_Command {
 		$theme_dir = WP_CONTENT_DIR . "/themes" . "/$theme_slug";
 		$theme_style_path = "$theme_dir/style.css";
 
+		$this->maybe_create_themes_dir();
+
 		$this->create_file( $theme_style_path, Utils\mustache_render( 'child_theme.mustache', $data ) );
 
 		WP_CLI::success( "Created $theme_dir" );
@@ -296,6 +303,95 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Generate files needed for writing Behat tests for your command.
+	 *
+	 * ## DESCRIPTION
+	 *
+	 * These are the files that are generated:
+	 *
+	 * * `.travis.yml` is the configuration file for Travis CI
+	 * * `bin/install-package-tests.sh` will configure environment to run tests. Script expects WP_CLI_BIN_DIR and WP_CLI_CONFIG_PATH environment variables.
+	 * * `features/load-wp-cli.feature` is a basic test to confirm WP-CLI can load.
+	 * * `features/bootstrap`, `features/steps`, `features/extra` are Behat configuration files.
+	 * * `utils/generate-package-require-from-composer.php` generates a test config.yml file from your package's composer.json
+	 *
+	 * ## ENVIRONMENT
+	 *
+	 * The `features/bootstrap/FeatureContext.php` file expects the WP_CLI_BIN_DIR and WP_CLI_CONFIG_PATH environment variables.
+	 *
+	 * WP-CLI Behat framework uses Behat ~2.5.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <dir>
+	 * : The package directory to generate tests for.
+	 *
+	 * ## EXAMPLE
+	 *
+	 *     wp scaffold package-tests /path/to/command/dir/
+	 *
+	 * @when before_wp_load
+	 * @subcommand package-tests
+	 */
+	public function package_tests( $args, $assoc_args ) {
+
+		list( $package_dir ) = $args;
+
+		if ( is_file( $package_dir ) ) {
+			$package_dir = dirname( $package_dir );
+		} else if ( is_dir( $package_dir ) ) {
+			$package_dir = rtrim( $package_dir, '/' );
+		}
+
+		if ( ! is_dir( $package_dir ) || ! file_exists( $package_dir . '/composer.json' ) ) {
+			WP_CLI::error( "Invalid package directory. composer.json file must be present." );
+		}
+
+		$package_dir .= '/';
+		$bin_dir = $package_dir . 'bin/';
+		$utils_dir = $package_dir . 'utils/';
+		$features_dir = $package_dir . 'features/';
+		$bootstrap_dir = $features_dir . 'bootstrap/';
+		$steps_dir = $features_dir . 'steps/';
+		$extra_dir = $features_dir . 'extra/';
+		foreach( array( $features_dir, $bootstrap_dir, $steps_dir, $extra_dir, $utils_dir, $bin_dir ) as $dir ) {
+			if ( ! is_dir( $dir ) ) {
+				Process::create( Utils\esc_cmd( 'mkdir %s', $dir ) )->run();
+			}
+		}
+
+		$to_copy = array(
+			'templates/.travis.package.yml' => $package_dir,
+			'templates/load-wp-cli.feature' => $features_dir,
+			'templates/install-package-tests.sh' => $bin_dir,
+			'features/bootstrap/FeatureContext.php' => $bootstrap_dir,
+			'features/bootstrap/support.php' => $bootstrap_dir,
+			'php/WP_CLI/Process.php' => $bootstrap_dir,
+			'php/utils.php' => $bootstrap_dir,
+			'utils/get-package-require-from-composer.php' => $utils_dir,
+			'features/steps/given.php' => $steps_dir,
+			'features/steps/when.php' => $steps_dir,
+			'features/steps/then.php' => $steps_dir,
+			'features/extra/no-mail.php' => $extra_dir,
+		);
+
+		foreach ( $to_copy as $file => $dir ) {
+			// file_get_contents() works with Phar-archived files
+			$contents = file_get_contents( WP_CLI_ROOT . "/{$file}" );
+			$file_path = $dir . basename( $file );
+			$file_path = str_replace( array( '.travis.package.yml' ), array( '.travis.yml'), $file_path );
+			$result = Process::create( Utils\esc_cmd( 'touch %s', $file_path ) )->run();
+			file_put_contents( $file_path, $contents );
+			if ( 'templates/install-package-tests.sh' === $file ) {
+				Process::create( Utils\esc_cmd( 'chmod +x %s', $file_path ) )->run();
+			}
+		}
+
+		WP_CLI::success( "Created test files." );
+
+	}
+
+	/**
 	 * Generate starter code for a plugin.
 	 *
 	 * ## OPTIONS
@@ -323,8 +419,12 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
+		$plugin_readme_path = "$plugin_dir/readme.txt";
+
+		$this->maybe_create_plugins_dir();
 
 		$this->create_file( $plugin_path, Utils\mustache_render( 'plugin.mustache', $data ) );
+		$this->create_file( $plugin_readme_path, Utils\mustache_render( 'plugin-readme.mustache', $data ) );
 
 		WP_CLI::success( "Created $plugin_dir" );
 
@@ -366,7 +466,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * @subcommand plugin-tests
 	 */
 	function plugin_tests( $args, $assoc_args ) {
-		global $wp_filesystem;
+		$wp_filesystem = $this->init_wp_filesystem();
 
 		$plugin_slug = $args[0];
 
@@ -389,13 +489,18 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		foreach ( $to_copy as $file => $dir ) {
 			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", "$dir/$file", true );
+			if ( 'install-wp-tests.sh' === $file ) {
+				if ( ! $wp_filesystem->chmod( "$dir/$file", 0755 ) ) {
+					WP_CLI::warning( "Couldn't mark install-wp-tests.sh as executable." );
+				}
+			}
 		}
 
 		WP_CLI::success( "Created test files." );
 	}
 
 	private function create_file( $filename, $contents ) {
-		global $wp_filesystem;
+		$wp_filesystem = $this->init_wp_filesystem();
 
 		$wp_filesystem->mkdir( dirname( $filename ) );
 
@@ -491,7 +596,39 @@ class Scaffold_Command extends WP_CLI_Command {
 	protected function quote_comma_list_elements( $comma_list ) {
 		return "'" . implode( "', '", explode( ',', $comma_list ) ) . "'";
 	}
+
+	/**
+	 * Create the themes directory if it doesn't already exist
+	 */
+	protected function maybe_create_themes_dir() {
+
+		$themes_dir = WP_CONTENT_DIR . '/themes';
+		if ( ! is_dir( $themes_dir ) ) {
+			wp_mkdir_p( $themes_dir );
+		}
+
+	}
+
+	/**
+	 * Create the plugins directory if it doesn't already exist
+	 */
+	protected function maybe_create_plugins_dir() {
+
+		if ( ! is_dir( WP_PLUGIN_DIR ) ) {
+			wp_mkdir_p( WP_PLUGIN_DIR );
+		}
+
+	}
+
+	/**
+	 * Initialize WP Filesystem
+	 */
+	private function init_wp_filesystem() {
+		global $wp_filesystem;
+		WP_Filesystem();
+		return $wp_filesystem;
+	}
+
 }
 
 WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );
-

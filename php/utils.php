@@ -38,7 +38,7 @@ function get_vendor_paths() {
 
 // Using require() directly inside a class grants access to private methods to the loaded code
 function load_file( $path ) {
-	require $path;
+	require_once $path;
 }
 
 function load_command( $name ) {
@@ -279,7 +279,12 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 			$editor = 'vi';
 	}
 
-	\WP_CLI::launch( "$editor " . escapeshellarg( $tmpfile ) );
+	$descriptorspec = array( STDIN, STDOUT, STDERR );
+	$process = proc_open( "$editor " . escapeshellarg( $tmpfile ), $descriptorspec, $pipes );
+	$r = proc_close( $process );
+	if ( $r ) {
+		exit( $r );
+	}
 
 	$output = file_get_contents( $tmpfile );
 
@@ -323,30 +328,39 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
 	}
 
-	$env = (array) $_ENV;
-	if ( isset( $assoc_args['pass'] ) ) {
-		$env['MYSQL_PWD'] = $assoc_args['pass'];
-		unset( $assoc_args['pass'] );
-	}
+	$pass = $assoc_args['pass'];
+	unset( $assoc_args['pass'] );
+
+	$old_pass = getenv( 'MYSQL_PWD' );
+	putenv( 'MYSQL_PWD=' . $pass );
 
 	$final_cmd = $cmd . assoc_args_to_str( $assoc_args );
 
-	$proc = proc_open( $final_cmd, $descriptors, $pipes, null, $env );
+	$proc = proc_open( $final_cmd, $descriptors, $pipes );
 	if ( !$proc )
 		exit(1);
 
 	$r = proc_close( $proc );
 
+	putenv( 'MYSQL_PWD=' . $old_pass );
+
 	if ( $r ) exit( $r );
 }
 
+/**
+ * Render PHP or other types of files using Mustache templates.
+ *
+ * IMPORTANT: Automatic HTML escaping is disabled!
+ */
 function mustache_render( $template_name, $data ) {
 	if ( ! file_exists( $template_name ) )
 		$template_name = WP_CLI_ROOT . "/templates/$template_name";
 
 	$template = file_get_contents( $template_name );
 
-	$m = new \Mustache_Engine;
+	$m = new \Mustache_Engine( array(
+		'escape' => function ( $val ) { return $val; }
+	) );
 
 	return $m->render( $template, $data );
 }
@@ -368,3 +382,125 @@ function parse_url( $url ) {
 	return $url_parts;
 }
 
+/**
+ * Check if we're running in a Windows environment (cmd.exe).
+ */
+function is_windows() {
+	return strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+}
+
+/**
+ * Replace magic constants in some PHP source code.
+ *
+ * @param string $source The PHP code to manipulate.
+ * @param string $path The path to use instead of the magic constants
+ */
+function replace_path_consts( $source, $path ) {
+	$replacements = array(
+		'__FILE__' => "'$path'",
+		'__DIR__'  => "'" . dirname( $path ) . "'"
+	);
+
+	$old = array_keys( $replacements );
+	$new = array_values( $replacements );
+
+	return str_replace( $old, $new, $source );
+}
+
+/**
+ * Make a HTTP request to a remote URL
+ *
+ * @param string $method
+ * @param string $url
+ * @param array $headers
+ * @param array $options
+ * @return object
+ */
+function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
+	$pem_copied = false;
+
+	// cURL can't read Phar archives
+	if ( 0 === strpos( WP_CLI_ROOT, 'phar://' ) ) {
+		$options['verify'] = sys_get_temp_dir() . '/wp-cli-cacert.pem';
+
+		copy(
+			WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem',
+			$options['verify']
+		);
+		$pem_copied = true;
+	}
+
+	try {
+		$request = \Requests::request( $url, $headers, $data, $method, $options );
+		if ( $pem_copied ) {
+			unlink( $options['verify'] );
+		}
+		return $request;
+	} catch( \Requests_Exception $ex ) {
+		// Handle SSL certificate issues gracefully
+		\WP_CLI::warning( $ex->getMessage() );
+		if ( $pem_copied ) {
+			unlink( $options['verify'] );
+		}
+		$options['verify'] = false;
+		try {
+			return \Requests::request( $url, $headers, $data, $method, $options );
+		} catch( \Requests_Exception $ex ) {
+			\WP_CLI::error( $ex->getMessage() );
+		}
+	}
+}
+
+/**
+ * Increments a version string using the "x.y.z-pre" format
+ *
+ * Can increment the major, minor or patch number by one
+ * If $new_version == "same" the version string is not changed
+ * If $new_version is not a known keyword, it will be used as the new version string directly
+ *
+ * @param  string $current_version
+ * @param  string $new_version
+ * @return string
+ */
+function increment_version( $current_version, $new_version ) {
+	// split version assuming the format is x.y.z-pre
+	$current_version    = explode( '-', $current_version, 2 );
+	$current_version[0] = explode( '.', $current_version[0] );
+
+	switch ( $new_version ) {
+		case 'same':
+			// do nothing
+		break;
+
+		case 'patch':
+			$current_version[0][2]++;
+
+			$current_version = array( $current_version[0] ); // drop possible pre-release info
+		break;
+
+		case 'minor':
+			$current_version[0][1]++;
+			$current_version[0][2] = 0;
+
+			$current_version = array( $current_version[0] ); // drop possible pre-release info
+		break;
+
+		case 'major':
+			$current_version[0][0]++;
+			$current_version[0][1] = 0;
+			$current_version[0][2] = 0;
+
+			$current_version = array( $current_version[0] ); // drop possible pre-release info
+		break;
+
+		default: // not a keyword
+			$current_version = array( array( $new_version ) );
+		break;
+	}
+
+	// reconstruct version string
+	$current_version[0] = implode( '.', $current_version[0] );
+	$current_version    = implode( '-', $current_version );
+
+	return $current_version;
+}

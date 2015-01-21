@@ -54,6 +54,32 @@ Feature: Have a config file
     When I run `wp core is-installed` from 'core/wp-content'
     Then STDOUT should be empty
 
+    When I run `mkdir -p other/subdir`
+    And I run `wp core is-installed` from 'other/subdir'
+    Then STDOUT should be empty
+
+  Scenario: WP in a subdirectory (autodetected)
+    Given a WP install in 'core'
+
+    Given an index.php file:
+    """
+    require('./core/wp-blog-header.php');
+    """
+    When I run `wp core is-installed`
+    Then STDOUT should be empty
+
+    Given an index.php file:
+    """
+    require dirname(__FILE__) . '/core/wp-blog-header.php';
+    """
+    When I run `wp core is-installed`
+    Then STDOUT should be empty
+
+    When I run `mkdir -p other/subdir`
+    And I run `echo '<?php // Silence is golden' > other/subdir/index.php`
+    And I run `wp core is-installed` from 'other/subdir'
+    Then STDOUT should be empty
+
   Scenario: Nested installs
     Given a WP install
     And a WP install in 'subsite'
@@ -68,18 +94,66 @@ Feature: Have a config file
       """
 
   Scenario: Disabled commands
-    Given an empty directory
+    Given a WP install
     And a config.yml file:
       """
       disabled_commands:
-        - core version
+        - eval-file
+        - core multisite-convert
       """
 
-    When I try `WP_CLI_CONFIG_PATH=config.yml wp core version`
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp`
+    Then STDOUT should not contain:
+      """
+      eval-file
+      """
+
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp help eval-file`
+    Then STDERR should be:
+      """
+      Error: The 'eval-file' command has been disabled from the config file.
+      """
+
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp core`
+    Then STDOUT should not contain:
+      """
+      or: wp core multisite-convert
+      """
+
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp help core`
+    Then STDOUT should not contain:
+      """
+      multisite-convert
+      """
+
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp core multisite-convert`
     Then STDERR should contain:
       """
       command has been disabled
       """
+
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp help core multisite-convert`
+    Then STDERR should contain:
+      """
+      Error: The 'core multisite-convert' command has been disabled from the config file.
+      """
+
+  Scenario: 'core config' parameters
+    Given an empty directory
+    And WP files
+    And a wp-cli.yml file:
+      """
+      core config:
+        dbname: wordpress
+        dbuser: root
+        extra-php: |
+          define( 'WP_DEBUG', true );
+          define( 'WP_POST_REVISIONS', 50 );
+      """
+
+    When I run `wp core config --skip-check`
+    And I run `grep WP_POST_REVISIONS wp-config.php`
+    Then STDOUT should not be empty
 
   Scenario: Command-specific configs
     Given a WP install
@@ -91,6 +165,7 @@ Feature: Have a config file
         format: count
       """
 
+    # Arbitrary values should be passed, without warnings
     When I run `wp eval 'echo json_encode( $assoc_args );'`
     Then STDOUT should be JSON containing:
       """
@@ -102,3 +177,45 @@ Feature: Have a config file
     Then STDOUT should be a number
     When I run `wp post list --format=json`
     Then STDOUT should not be a number
+
+  Scenario: Required files should not be loaded twice
+    Given an empty directory
+    And a custom-file.php file:
+      """
+      <?php
+      define( 'FOOBUG', 'BAR' );
+      """
+    And a test-dir/config.yml file:
+      """
+      require:
+        - ../custom-file.php
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - custom-file.php
+      """
+
+    When I run `WP_CLI_CONFIG_PATH=test-dir/config.yml wp help`
+	Then STDERR should be empty
+
+  Scenario: Missing required files should not fatal WP-CLI
+    Given an empty directory
+    And a wp-cli.yml file:
+	  """
+	  require:
+	    - missing-file.php
+	  """
+
+	When I try `wp help`
+	Then STDERR should contain:
+	  """
+	  Error: Required file 'missing-file.php' doesn't exist
+	  """
+
+    When I run `wp cli info`
+	Then STDOUT should not be empty
+
+    When I run `wp --info`
+	Then STDOUT should not be empty
+

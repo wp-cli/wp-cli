@@ -22,20 +22,30 @@ class Help_Command extends WP_CLI_Command {
 		$command = self::find_subcommand( $args );
 
 		if ( $command ) {
+
+			if ( WP_CLI::get_runner()->is_command_disabled( $command ) ) {
+				$path = implode( ' ', array_slice( \WP_CLI\Dispatcher\get_path( $command ), 1 ) );
+				WP_CLI::error( sprintf(
+					"The '%s' command has been disabled from the config file.",
+					$path
+				) );
+			}
+
 			self::show_help( $command );
 			exit;
 		}
 
 		// WordPress is already loaded, so there's no chance we'll find the command
 		if ( function_exists( 'add_filter' ) ) {
-			\WP_CLI::error( sprintf( "'%s' is not a registered wp command.", $args[0] ) );
+			$command_string = implode( ' ', $args );
+			\WP_CLI::error( sprintf( "'%s' is not a registered wp command.", $command_string ) );
 		}
 	}
 
 	private static function find_subcommand( $args ) {
 		$command = \WP_CLI::get_root_command();
 
-		while ( !empty( $args ) && $command && $command->has_subcommands() ) {
+		while ( !empty( $args ) && $command && $command->can_have_subcommands() ) {
 			$command = $command->find_subcommand( $args );
 		}
 
@@ -47,14 +57,17 @@ class Help_Command extends WP_CLI_Command {
 
 		$longdesc = $command->get_longdesc();
 		if ( $longdesc ) {
-			$out .= $longdesc . "\n";
+			$out .= wordwrap( $longdesc, 90 ) . "\n";
 		}
-
-		// section headers
-		$out = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
 
 		// definition lists
 		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
+
+		// Ensure all non-section headers are indented
+		$out = preg_replace( '#^([^\s^\#])#m', "\t$1", $out );
+
+		// section headers
+		$out = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
 
 		$out = str_replace( "\t", '  ', $out );
 
@@ -76,7 +89,7 @@ class Help_Command extends WP_CLI_Command {
 	}
 
 	private static function pass_through_pager( $out ) {
-		if ( strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ) {
+		if ( Utils\is_windows() ) {
 			// no paging for Windows cmd.exe; sorry
 			echo $out;
 			return 0;
@@ -106,7 +119,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$binding['synopsis'] = wordwrap( "$name " . $command->get_synopsis(), 79 );
 
-		if ( $command->has_subcommands() ) {
+		if ( $command->can_have_subcommands() ) {
 			$binding['has-subcommands']['subcommands'] = self::render_subcommands( $command );
 		}
 
@@ -116,6 +129,11 @@ class Help_Command extends WP_CLI_Command {
 	private static function render_subcommands( $command ) {
 		$subcommands = array();
 		foreach ( $command->get_subcommands() as $subcommand ) {
+
+			if ( WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
+				continue;
+			}
+
 			$subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
 		}
 
@@ -139,6 +157,7 @@ class Help_Command extends WP_CLI_Command {
 
 		return $max_len;
 	}
+
 }
 
 WP_CLI::add_command( 'help', 'Help_Command' );

@@ -20,13 +20,13 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp media regenerate 123 1337
-	 *
+	 *     # re-generate all thumbnails, without confirmation
 	 *     wp media regenerate --yes
+	 *
+	 *     # re-generate all thumbnails that have IDs between 1000 and 2000
+	 *     seq 1000 2000 | xargs wp media regenerate
 	 */
 	function regenerate( $args, $assoc_args = array() ) {
-		global $wpdb;
-
 		if ( empty( $args ) ) {
 			WP_CLI::confirm( 'Do you realy want to regenerate all images?', $assoc_args );
 		}
@@ -42,18 +42,15 @@ class Media_Command extends WP_CLI_Command {
 
 		$images = new WP_Query( $query_args );
 
-		if ( $images->post_count == 0 ) {
-			//No images, so all keys in $args are not found within WP
-			WP_CLI::error( $this->_not_found_message( $args ) );
-		}
 		$count = $images->post_count;
 
-		WP_CLI::log( sprintf( 'Found %1$d %2$s to regenerate.', $count, ngettext('image', 'images', $count) ) );
-
-		$not_found = array_diff( $args, $images->posts );
-		if( !empty($not_found) ) {
-			WP_CLI::warning( $this->_not_found_message( $not_found ) );
+		if ( !$count ) {
+			WP_CLI::warning( 'No images found.' );
+			return;
 		}
+
+		WP_CLI::log( sprintf( 'Found %1$d %2$s to regenerate.', $count,
+			_n( 'image', 'images', $count ) ) );
 
 		foreach ( $images->posts as $id ) {
 			$this->_process_regeneration( $id );
@@ -61,7 +58,7 @@ class Media_Command extends WP_CLI_Command {
 
 		WP_CLI::success( sprintf(
 			'Finished regenerating %1$s.',
-			ngettext('the image', 'all images', $count)
+			_n('the image', 'all images', $count)
 		) );
 	}
 
@@ -70,28 +67,31 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <file>
+	 * <file>...
 	 * : Path to file or files to be imported. Supports the glob(3) capabilities of the current shell.
 	 *     If file is recognized as a URL (for example, with a scheme of http or ftp), the file will be
 	 *     downloaded to a temp file before being sideloaded.
 	 *
-	 * --post_id=<post_id>
+	 * [--post_id=<post_id>]
 	 * : ID of the post to attach the imported files to
 	 *
-	 * --title=<title>
+	 * [--title=<title>]
 	 * : Attachment title (post title field)
 	 *
-	 * --caption=<caption>
+	 * [--caption=<caption>]
 	 * : Caption for attachent (post excerpt field)
 	 *
-	 * --alt=<alt_text>
+	 * [--alt=<alt_text>]
 	 * : Alt text for image (saved as post meta)
 	 *
-	 * --desc=<description>
+	 * [--desc=<description>]
 	 * : "Description" field (post content) of attachment post
 	 *
-	 * --featured_image
+	 * [--featured_image]
 	 * : If set, set the imported image as the Featured Image of the post its attached to.
+	 *
+	 * [--porcelain]
+	 * : Output just the new attachment id.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -103,8 +103,6 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 *     # Import an image from the web
 	 *     wp media import http://s.wordpress.org/style/images/wp-header-logo.png --title='The WordPress logo' --alt="Semantic personal publishing"
-	 *
-	 * @synopsis <file>... [--post_id=<id>] [--title=<title>] [--caption=<caption>] [--alt=<text>] [--desc=<description>] [--featured_image]
 	 */
 	function import( $args, $assoc_args = array() ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
@@ -150,14 +148,23 @@ class Media_Command extends WP_CLI_Command {
 
 			// Deletes the temporary file.
 			$success = media_handle_sideload( $file_array, $assoc_args['post_id'], $assoc_args['title'], $post_array );
+			if ( is_wp_error( $success ) ) {
+				WP_CLI::warning( sprintf(
+					'Unable to import file %s. Reason: %s',
+					$orig_filename, implode( ', ', $success->get_error_messages() )
+				) );
+				continue;
+			}
 
 			// Set alt text
-			if ( !is_wp_error( $success ) && $assoc_args['alt'] )
+			if ( $assoc_args['alt'] ) {
 				update_post_meta( $success, '_wp_attachment_image_alt', $assoc_args['alt'] );
+			}
 
 			// Set as featured image, if --post_id and --featured_image are set
-			if ( !is_wp_error( $success ) && $assoc_args['post_id'] && isset($assoc_args['featured_image']) )
+			if ( $assoc_args['post_id'] && isset( $assoc_args['featured_image'] ) ) {
 				update_post_meta( $assoc_args['post_id'], '_thumbnail_id', $success );
+			}
 
 			$attachment_success_text = '';
 			if ( $assoc_args['post_id'] ) {
@@ -166,11 +173,8 @@ class Media_Command extends WP_CLI_Command {
 					$attachment_success_text .= ' as featured image';
 			}
 
-			if ( is_wp_error( $success ) ) {
-				WP_CLI::warning( sprintf(
-					'Unable to import file %s. Reason: %s',
-					$orig_filename, implode( ', ', $success->get_error_messages() )
-				) );
+			if ( isset( $assoc_args['porcelain'] ) ) {
+				WP_CLI::line( $success );
 			} else {
 				WP_CLI::success( sprintf(
 					'Imported file %s as attachment ID %d%s.',
@@ -233,27 +237,28 @@ class Media_Command extends WP_CLI_Command {
 		$dir_path = $wud['basedir'] . '/' . dirname( $metadata['file'] ) . '/';
 		$original_path = $dir_path . basename( $metadata['file'] );
 
-		foreach ( $metadata['sizes'] as $size => $size_info ) {
+		if ( empty( $metadata['sizes'] ) ) {
+			return;
+		}
+
+		foreach ( $metadata['sizes'] as $size_info ) {
 			$intermediate_path = $dir_path . $size_info['file'];
 
 			if ( $intermediate_path == $original_path )
 				continue;
 
-			unlink( $intermediate_path );
+			if ( file_exists( $intermediate_path ) )
+				unlink( $intermediate_path );
 		}
-	}
-
-	private function _not_found_message( $not_found_ids ){
-		$count = count( $not_found_ids );
-
-		return vsprintf( 'Unable to find the %1$s (%2$s). Are you sure %3$s %4$s?', array(
-			ngettext('image', 'images', $count),
-			implode(", ", $not_found_ids),
-			ngettext('it', 'they', $count),
-			ngettext('exists', 'exist', $count),
-		) );
 	}
 }
 
-WP_CLI::add_command( 'media', 'Media_Command' );
+WP_CLI::add_command( 'media', 'Media_Command', array(
+	'before_invoke' => function () {
+		if ( !wp_image_editor_supports() ) {
+			WP_CLI::error( 'No support for generating images found. ' .
+				'Please install the Imagick or GD PHP extensions.' );
+		}
+	}
+) );
 

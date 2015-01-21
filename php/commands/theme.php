@@ -19,6 +19,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	);
 
 	function __construct() {
+		if ( is_multisite() ) {
+			$this->obj_fields[] = 'enabled';
+		}
 		parent::__construct();
 
 		$this->fetcher = new \WP_CLI\Fetchers\Theme;
@@ -69,7 +72,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **description**: Theme Description
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, CSV or JSON. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -118,15 +121,114 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	public function activate( $args = array() ) {
 		$theme = $this->fetcher->get_check( $args[0] );
 
-		switch_theme( $theme->get_template(), $theme->get_stylesheet() );
-
 		$name = $theme->get('Name');
+
+		if ( 'active' === $this->get_status( $theme ) ) {
+			WP_CLI::success( "The '$name' theme is already active." );
+			exit;
+		}
+
+		switch_theme( $theme->get_template(), $theme->get_stylesheet() );
 
 		if ( $this->is_active_theme( $theme ) ) {
 			WP_CLI::success( "Switched to '$name' theme." );
 		} else {
 			WP_CLI::error( "Could not switch to '$name' theme." );
 		}
+	}
+
+	/**
+	 * Enable a theme in a multisite install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : The theme to enable.
+	 *
+	 * [--network]
+	 * : If set, the theme is enabled for the entire network
+	 *
+	 * [--activate]
+	 * : If set, the theme is activated for the current site. Note that
+	 * the "network" flag has no influence on this.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme enable twentythirteen
+	 *
+	 *     wp theme enable twentythirteen --network
+	 *
+	 *     wp theme enable twentythirteen --activate
+	 */
+	public function enable( $args, $assoc_args ) {
+		if ( ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
+		$theme = $this->fetcher->get_check( $args[0] );
+		$name = $theme->get( 'Name' );
+
+		# If the --network flag is set, we'll be calling the (get|update)_site_option functions
+		$_site = ! empty( $assoc_args['network'] ) ? '_site' : '';
+
+		# Add the current theme to the allowed themes option or site option
+		$allowed_themes = call_user_func( "get{$_site}_option", 'allowedthemes' );
+		if ( empty( $allowed_themes ) )
+			$allowed_themes = array();
+		$allowed_themes[ $theme->get_template() ] = true;
+		call_user_func( "update{$_site}_option", 'allowedthemes', $allowed_themes );
+
+		if ( ! empty( $assoc_args['network'] ) )
+			WP_CLI::success( "Network enabled the '$name' theme." );
+		else
+			WP_CLI::success( "Enabled the '$name' theme." );
+
+		# If the --activate flag is set, activate the theme for the current site
+		if ( ! empty( $assoc_args['activate'] ) ) {
+			$this->activate( $args );
+		}
+	}
+
+	/**
+	 * Disable a theme in a multisite install.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <theme>
+	 * : The theme to disable.
+	 *
+	 * [--network]
+	 * : If set, the theme is disabled on the network level. Note that
+	 * individual sites may still have this theme enabled if it was
+	 * enabled for them independently.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme disable twentythirteen
+	 *
+	 *     wp theme disable twentythirteen --network
+	 */
+	public function disable( $args, $assoc_args ) {
+		if ( ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
+		$theme = $this->fetcher->get_check( $args[0] );
+		$name = $theme->get( 'Name' );
+
+		# If the --network flag is set, we'll be calling the (get|update)_site_option functions
+		$_site = ! empty( $assoc_args['network'] ) ? '_site' : '';
+
+		# Add the current theme to the allowed themes option or site option
+		$allowed_themes = call_user_func( "get{$_site}_option", 'allowedthemes' );
+		if ( ! empty( $allowed_themes[ $theme->get_template() ] ) )
+			unset( $allowed_themes[ $theme->get_template() ] );
+		call_user_func( "update{$_site}_option", 'allowedthemes', $allowed_themes );
+
+		if ( ! empty( $assoc_args['network'] ) )
+			WP_CLI::success( "Network disabled the '$name' theme." );
+		else
+			WP_CLI::success( "Disabled the '$name' theme." );
 	}
 
 	private function is_active_theme( $theme ) {
@@ -181,7 +283,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			return new WP_Error( 'already_installed', 'Theme already installed.' );
 		}
 
-		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
+		WP_CLI::log( sprintf( 'Installing %s (%s)', html_entity_decode( $api->name, ENT_QUOTES ), $api->version ) );
 		if ( !isset( $assoc_args['version'] ) || 'dev' !== $assoc_args['version'] ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $api->download_link, $this->item_type, $api->slug, $api->version );
 		}
@@ -192,6 +294,16 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 	protected function get_item_list() {
 		$items = array();
+
+		if ( is_multisite() ) {
+			$site_enabled = get_option( 'allowedthemes' );
+			if ( empty( $site_enabled ) )
+				$site_enabled = array();
+
+			$network_enabled = get_site_option( 'allowedthemes' );
+			if ( empty( $network_enabled ) )
+				$network_enabled = array();
+		}
 
 		foreach ( wp_get_themes() as $key => $theme ) {
 			$file = $theme->get_stylesheet_directory();
@@ -205,7 +317,20 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_package' => $update_info['package'],
 				'version' => $theme->get('Version'),
 				'update_id' => $theme->get_stylesheet(),
+				'title' => $theme->get('Name'),
+				'description' => $theme->get('Description'),
 			);
+
+			if ( is_multisite() ) {
+				if ( ! empty( $site_enabled[ $key ] ) && ! empty( $network_enabled[ $key ] ) )
+					$items[ $file ]['enabled'] = 'network,site';
+				elseif ( ! empty( $network_enabled[ $key ] ) )
+					$items[ $file ]['enabled'] = 'network';
+				elseif ( ! empty( $site_enabled[ $key ] ) )
+					$items[ $file ]['enabled'] = 'site';
+				else
+					$items[ $file ]['enabled'] = 'no';
+			}
 		}
 
 		return $items;
@@ -251,6 +376,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
 	 */
 	function install( $args, $assoc_args ) {
+
+		$theme_root = get_theme_root();
+		if ( $theme_root && ! is_dir( $theme_root ) ) {
+			wp_mkdir_p( $theme_root );
+			register_theme_directory( $theme_root );
+		}
+
 		parent::install( $args, $assoc_args );
 	}
 
@@ -265,8 +397,11 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--field=<field>]
 	 * : Instead of returning the whole theme, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
 	 * [--format=<format>]
-	 * : Output list as table or JSON. Defaults to table.
+	 * : Accepted values: table, json, csv. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -279,11 +414,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		$theme_vars = array( 'name', 'title', 'version', 'parent_theme', 'template_dir', 'stylesheet_dir', 'template', 'stylesheet', 'screenshot', 'description', 'author', 'tags', 'theme_root', 'theme_root_uri',
 		);
 		$theme_obj = new stdClass;
-		foreach( $theme_vars as $var ) {
+		foreach ( $theme_vars as $var ) {
 			$theme_obj->$var = $theme->$var;
 		}
 
 		$theme_obj->description = wordwrap( $theme_obj->description );
+
+		if ( empty( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = $theme_vars;
+		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $theme_obj );
@@ -301,8 +440,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : If set, all themes that have updates will be updated.
 	 *
 	 * [--version=<version>]
-	 * : If set, the theme will be updated to the latest development version,
-	 * regardless of what version is currently installed.
+	 * : If set, the plugin will be updated to the specified version.
 	 *
 	 * [--dry-run]
 	 * : Preview which themes would be updated.
@@ -314,7 +452,19 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme update --all
 	 */
 	function update( $args, $assoc_args ) {
-		parent::update_many( $args, $assoc_args );
+		if ( isset( $assoc_args['version'] ) ) {
+			foreach ( $this->fetcher->get_many( $args ) as $theme ) {
+				$r = delete_theme( $theme->stylesheet );
+				if ( is_wp_error( $r ) ) {
+					WP_CLI::warning( $r );
+				} else {
+					$assoc_args['force'] = 1;
+					$this->install( array( $theme->stylesheet ), $assoc_args );
+				}
+			}
+		} else {
+			parent::update_many( $args, $assoc_args );
+		}
 	}
 
 	/**
@@ -352,6 +502,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     wp theme delete twentyeleven
+	 *
+	 * @alias uninstall
 	 */
 	function delete( $args ) {
 		foreach ( $this->fetcher->get_many( $args ) as $theme ) {
@@ -384,10 +536,27 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Prints the value of a single field for each theme.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to name,status,update,version.
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, CSV or JSON. Defaults to table.
+	 * : Accepted values: table, json. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each theme:
+	 *
+	 * * name
+	 * * status
+	 * * update
+	 * * version
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * update_version
+	 * * update_package
+	 * * update_id
+	 * * title
+	 * * description
 	 *
 	 * ## EXAMPLES
 	 *
@@ -395,10 +564,146 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @subcommand list
 	 */
-	function _list( $_, $assoc_args ) {
+	public function list_( $_, $assoc_args ) {
 		parent::_list( $_, $assoc_args );
 	}
 }
 
+/**
+ * Manage theme mods.
+ *
+ */
+class Theme_Mod_command extends WP_CLI_Command {
+
+	/**
+	 * Get theme mod(s).
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<mod>...]
+	 * : One or more mods to get.
+	 *
+	 * [--all]
+	 * : List all theme mods
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme mod get --all
+	 *     wp theme mod get background_color --format=json
+	 *     wp theme mod get background_color header_textcolor
+	 */
+	public function get( $args = array(), $assoc_args = array() ) {
+
+		if ( ! isset( $assoc_args['all'] ) && empty( $args ) ) {
+			WP_CLI::error( "You must specify at least one mod or use --all." );
+		}
+
+		if ( isset( $assoc_args['all'] ) && $assoc_args['all'] ) {
+			$args = array();
+		}
+
+		$list = array();
+		$mods = get_theme_mods();
+		if ( ! is_array( $mods ) ) {
+			// if no mods are set (perhaps new theme), make sure foreach still works
+			$mods = array();
+		}
+		foreach ( $mods as $k => $v ) {
+			// if mods were given, skip the others
+			if ( ! empty( $args ) && ! in_array( $k, $args ) ) continue;
+
+			if ( is_array( $v ) ) {
+				$list[] = array( 'key' => $k, 'value' => '=>' );
+				foreach ( $v as $_k => $_v ) {
+					$list[] = array( 'key' => "    $_k", 'value' => $_v );
+				}
+			} else {
+				$list[] = array( 'key' => $k, 'value' => $v );
+			}
+
+		}
+
+		// For unset mods, show blank value
+		foreach ( $args as $mod ) {
+			if ( ! isset( $mods[ $mod ] ) ) {
+				$list[] = array( 'key' => $mod, 'value' => '' );
+			}
+		}
+
+		$formatter = new \WP_CLI\Formatter( $assoc_args, array('key', 'value'), 'thememods' );
+		$formatter->display_items( $list );
+
+	}
+
+	/**
+	 * Remove theme mod(s).
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<mod>...]
+	 * : One or more mods to remove.
+	 *
+	 * [--all]
+	 * : Remove all theme mods
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme mod remove --all
+	 *     wp theme mod remove background_color
+	 *     wp theme mod remove background_color header_textcolor
+	 */
+	public function remove( $args = array(), $assoc_args = array() ) {
+
+		if ( ! isset( $assoc_args['all'] ) && empty( $args ) ) {
+			WP_CLI::error( "You must specify at least one mod or use --all." );
+		}
+
+		if ( isset( $assoc_args['all'] ) && $assoc_args['all'] ) {
+			remove_theme_mods();
+			WP_CLI::success( 'Theme mods removed.' );
+			return;
+		}
+
+		foreach ( $args as $mod ) {
+			remove_theme_mod( $mod );
+		}
+
+		WP_CLI::success( sprintf( '%d mods removed.', count( $args ) ) );
+
+	}
+
+	/**
+	 * Set a theme mod.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <mod>
+	 * : The name of the theme mod to set or update.
+	 *
+	 * <value>
+	 * : The new value.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp theme mod set background_color 000000
+	 */
+	public function set( $args = array(), $assoc_args = array() ) {
+		list( $mod, $value ) = $args;
+
+		set_theme_mod( $mod, $value );
+
+		if ( $value == get_theme_mod( $mod ) ) {
+			WP_CLI::success( sprintf( "Theme mod %s set to %s", $mod, $value ) );
+		} else {
+			WP_CLI::success( sprintf( "Could not update theme mod %s", $mod ) );
+		}
+	}
+
+}
+
 WP_CLI::add_command( 'theme', 'Theme_Command' );
+WP_CLI::add_command( 'theme mod', 'Theme_Mod_Command' );
 

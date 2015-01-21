@@ -10,7 +10,7 @@ return array(
 	'url' => array(
 		'runtime' => '=<url>',
 		'file' => '<url>',
-		'desc' => 'Pretend request came from given URL',
+		'desc' => 'Pretend request came from given URL. In multisite, this argument is how the target site is specified.',
 	),
 	'blog' => array(
 		'deprecated' => 'Use --url instead.',
@@ -23,9 +23,23 @@ return array(
 	),
 
 	'user' => array(
-		'runtime' => '=<id|login>',
-		'file' => '<id|login>',
+		'runtime' => '=<id|login|email>',
+		'file' => '<id|login|email>',
 		'desc' => 'Set the WordPress user',
+	),
+
+	'skip-plugins' => array(
+		'runtime' => '[=<plugin>]',
+		'file' => '<list>',
+		'desc' => 'Skip loading all or some plugins',
+		'default' => '',
+	),
+	
+	'skip-themes' => array(
+		'runtime' => '[=<theme>]',
+		'file' => '<list>',
+		'desc' => 'Skip loading all or some themes',
+		'default' => '',
 	),
 
 	'require' => array(
@@ -76,5 +90,14 @@ return array(
 		'multiple' => true,
 		'default' => array(),
 	),
+
+	# --allow-root => (NOT RECCOMENDED) Allow wp-cli to run as root. This poses
+	# a security risk, so you probably do not want to do this.
+	'allow-root' => array(
+		'file' => false, # Explicit. Just in case the default changes.
+		'runtime' => '',
+		'hidden'  => true,
+	),
+
 );
 

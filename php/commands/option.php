@@ -39,14 +39,38 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Add an option.
 	 *
-	 * @synopsis <key> <value> [--format=<format>]
+	 * ## OPTIONS
+	 *
+	 * <key>
+	 * : The name of the option to add.
+	 *
+	 * [<value>]
+	 * : The value of the option to add. If ommited, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
+	 *
+	 * [--autoload=<autoload>]
+	 * : Should this option be automatically loaded. Accepted values: yes, no. Default: yes
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Create an option by reading a JSON file
+	 *     wp option add my_option --format=json < config.json
 	 */
 	public function add( $args, $assoc_args ) {
 		$key = $args[0];
 
-		$value = WP_CLI::read_value( $args[1], $assoc_args );
+		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
+		$value = WP_CLI::read_value( $value, $assoc_args );
 
-		if ( !add_option( $key, $value ) ) {
+		if ( isset( $assoc_args['autoload'] ) && $assoc_args['autoload'] == 'no' ) {
+			$autoload = 'no';
+		} else {
+			$autoload = 'yes';
+		}
+
+		if ( !add_option( $key, $value, '', $autoload ) ) {
 			WP_CLI::error( "Could not add option '$key'. Does it already exist?" );
 		} else {
 			WP_CLI::success( "Added '$key' option." );
@@ -56,21 +80,41 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Update an option.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <key>
+	 * : The name of the option to add.
+	 *
+	 * [<value>]
+	 * : The new value. If ommited, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Update an option by reading from a file
+	 *     wp option update my_option < value.txt
+	 *
+	 *     # Update one option on multiple sites using xargs
+	 *     wp site list --field=url | xargs -n1 -I {} sh -c 'wp --url={} option update <key> <value>'
+	 *
 	 * @alias set
-	 * @synopsis <key> <value> [--format=<format>]
 	 */
 	public function update( $args, $assoc_args ) {
 		$key = $args[0];
 
-		$value = WP_CLI::read_value( $args[1], $assoc_args );
+		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
+		$value = WP_CLI::read_value( $value, $assoc_args );
 
-		$result = update_option( $key, $value );
-
-		// update_option() returns false if the value is the same
-		if ( !$result && $value != get_option( $key ) ) {
-			WP_CLI::error( "Could not update option '$key'." );
+		if ( $value === get_option( $key ) ) {
+			WP_CLI::success( "Value passed for '$key' option is unchanged." );
 		} else {
-			WP_CLI::success( "Updated '$key' option." );
+			if ( update_option( $key, $value ) ) {
+				WP_CLI::success( "Updated '$key' option." );
+			} else {
+				WP_CLI::error( "Could not update option '$key'." );
+			}
 		}
 	}
 

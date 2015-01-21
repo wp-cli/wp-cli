@@ -5,11 +5,11 @@ WP-CLI
 
 WP-CLI is a set of command-line tools for managing WordPress installations.
 
-Installation
+Installing
 ------------
 If you just want to use WP-CLI, see <http://wp-cli.org/#install>.
 
-If you want to hack on WP-CLI, then clone this repository and run `./utils/dev-build`.
+If you want to hack on WP-CLI, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Where can I get more info?
 --------------------------
@@ -25,10 +25,6 @@ To suggest a feature, report a bug, or general discussion, visit the [issues sec
 
 If you're reporting a bug, please also post the output from `wp --info`.
 
-How can I help?
----------------
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-
 Credits
 -------
 Besides the libraries defined in [composer.json](composer.json), we have used code or ideas from the following projects:
@@ -43,6 +39,10 @@ Besides the libraries defined in [composer.json](composer.json), we have used co
 
 Who's behind this thing?
 ------------------------
-We are [Andreas Creten](https://github.com/andreascreten) and [Cristi Burcă](https://github.com/scribu), friendly guys from Europe. For more info, see [Governance](https://github.com/wp-cli/wp-cli/wiki/Governance).
+* [Andreas Creten](https://github.com/andreascreten) - founder
+* [Cristi Burcă](https://github.com/scribu) - previous maintainer
+* [Daniel Bachhuber](https://github.com/danielbachhuber/) - current maintainer
+
+For more info, see [Governance](https://github.com/wp-cli/wp-cli/wiki/Governance).
 
 A complete list of contributors can be found [here](https://github.com/wp-cli/wp-cli/contributors).

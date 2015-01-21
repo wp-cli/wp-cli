@@ -104,12 +104,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( in_array( true, wp_list_pluck( $items, 'update' ) ) )
 			$legend_line[] = '%yU = Update Available%n';
 
-		\WP_CLI::line( 'Legend: ' . implode( ', ', \WP_CLI::colorize( $legend_line ) ) );
+		\WP_CLI::line( 'Legend: ' . \WP_CLI::colorize( implode( ', ', $legend_line ) ) );
 	}
 
 	function install( $args, $assoc_args ) {
-		// Force WordPress to check for updates
-		call_user_func( $this->upgrade_refresh );
 
 		foreach ( $args as $slug ) {
 			$local_or_remote_zip_file = false;
@@ -143,9 +141,16 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			}
 
-			if ( $result && isset( $assoc_args['activate'] ) ) {
-				\WP_CLI::log( "Activating '$slug'..." );
-				$this->activate( array( $slug ) );
+			if ( $result ) {
+				if ( isset( $assoc_args['activate-network'] ) ) {
+					\WP_CLI::log( "Network-activating '$slug'..." );
+					$this->activate( array( $slug ), array( 'network' => true ) );
+				}
+
+				if ( isset( $assoc_args['activate'] ) ) {
+					\WP_CLI::log( "Activating '$slug'..." );
+					$this->activate( array( $slug ) );
+				}
 			}
 		}
 	}
@@ -159,6 +164,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected static function alter_api_response( $response, $version ) {
 		if ( $response->version == $version )
 			return;
+
+		// WordPress.org forces https, but still sometimes returns http
+		// See https://twitter.com/nacin/status/512362694205140992
+		$response->download_link = str_replace( 'http://', 'https://', $response->download_link );
 
 		list( $link ) = explode( $response->slug, $response->download_link );
 
@@ -176,10 +185,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 			// check if the requested version exists
 			$response = wp_remote_head( $response->download_link );
-			if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			$response_code = wp_remote_retrieve_response_code( $response );
+			if ( 200 !== $response_code ) {
 				\WP_CLI::error( sprintf(
-					"Can't find the requested %s's version %s in the WordPress.org %s repository.",
-					$download_type, $version, $download_type ) );
+					"Can't find the requested %s's version %s in the WordPress.org %s repository (HTTP code %d).",
+					$download_type, $version, $download_type, $response_code ) );
 			}
 		}
 	}
@@ -191,6 +201,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected function update_many( $args, $assoc_args ) {
 		call_user_func( $this->upgrade_refresh );
+
+		if ( ! isset( $assoc_args['all'] ) && empty( $args ) ) {
+			\WP_CLI::error( "Please specify one or more {$this->item_type}s, or use --all." );
+		}
 
 		$items = $this->get_item_list();
 
@@ -297,7 +311,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	 */
 	protected function get_update_info( $slug ) {
 		$update_list = get_site_transient( $this->upgrade_transient );
-		return isset( $update_list->response[ $slug ] ) ?  (array) $update_list->response[ $slug ] : null;
+
+		if ( !isset( $update_list->response[ $slug ] ) )
+			return null;
+
+		return (array) $update_list->response[ $slug ];
 	}
 
 	private $map = array(

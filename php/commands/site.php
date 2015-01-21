@@ -8,6 +8,11 @@
 class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 	protected $obj_type = 'site';
+	protected $obj_id_key = 'blog_id';
+
+	public function __construct() {
+		$this->fetcher = new \WP_CLI\Fetchers\Site;
+	}
 
 	/**
 	 * Delete comments.
@@ -186,7 +191,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * --slug=<slug>
 	 * : Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
-	 * --title=<title&gt;
+	 * --title=<title>
 	 * : Title of the new site. Default: prettified slug.
 	 *
 	 * --email=<email>
@@ -208,22 +213,22 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( 'This is not a multisite install.' );
 		}
 
-		global $wpdb;
+		global $wpdb, $current_site;
 
 		$base = $assoc_args['slug'];
 		$title = isset( $assoc_args['title'] ) ? $assoc_args['title'] : ucfirst( $base );
 
 		$email = empty( $assoc_args['email'] ) ? '' : $assoc_args['email'];
 
-		// Site
+		// Network
 		if ( !empty( $assoc_args['network_id'] ) ) {
-			$site = $this->_get_site( $assoc_args['network_id'] );
-			if ( $site === false ) {
+			$network = $this->_get_network( $assoc_args['network_id'] );
+			if ( $network === false ) {
 				WP_CLI::error( sprintf( 'Network with id %d does not exist.', $assoc_args['network_id'] ) );
 			}
 		}
 		else {
-			$site = wpmu_current_site();
+			$network = $current_site;
 		}
 
 		$public = !isset( $assoc_args['private'] );
@@ -260,12 +265,12 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( is_subdomain_install() ) {
 			$path = '/';
-			$url = $newdomain = $base.'.'.preg_replace( '|^www\.|', '', $site->domain );
+			$url = $newdomain = $base.'.'.preg_replace( '|^www\.|', '', $network->domain );
 		}
 		else {
-			$newdomain = $site->domain;
+			$newdomain = $network->domain;
 			$path = '/' . trim( $base, '/' ) . '/';
-			$url = $site->domain . $path;
+			$url = $network->domain . $path;
 		}
 
 		$user_id = email_exists( $email );
@@ -281,7 +286,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$wpdb->hide_errors();
-		$id = wpmu_create_blog( $newdomain, $path, $title, $user_id, array( 'public' => $public ), $site->id );
+		$id = wpmu_create_blog( $newdomain, $path, $title, $user_id, array( 'public' => $public ), $network->id );
 		$wpdb->show_errors();
 		if ( !is_wp_error( $id ) ) {
 			if ( !is_super_admin( $user_id ) && !get_user_option( 'primary_blog', $user_id ) ) {
@@ -303,6 +308,27 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
+	 * Get network data for a given id.
+	 *
+	 * @param int     $network_id
+	 * @return bool|array False if no network found with given id, array otherwise
+	 */
+	private function _get_network( $network_id ) {
+		global $wpdb;
+
+		// Load network data
+		$networks = $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM $wpdb->site WHERE id = %d", $network_id ) );
+
+		if ( !empty( $networks ) ) {
+			// Only care about domain and path which are set here
+			return $networks[0];
+		}
+
+		return false;
+	}
+
+	/**
 	 * List all sites in a multisite install.
 	 *
 	 * ## OPTIONS
@@ -317,7 +343,28 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Comma-separated list of fields to show.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, csv, json or url. Defaults to table.
+	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each site:
+	 *
+	 * * blog_id
+	 * * url
+	 * * last_updated
+	 * * registered
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * site_id
+	 * * domain
+	 * * path
+	 * * public
+	 * * archived
+	 * * mature
+	 * * spam
+	 * * deleted
+	 * * lang_id
 	 *
 	 * ## EXAMPLES
 	 *
@@ -326,7 +373,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * @subcommand list
 	 */
-	function _list( $_, $assoc_args ) {
+	public function list_( $_, $assoc_args ) {
 		if ( !is_multisite() ) {
 			WP_CLI::error( 'This is not a multisite install.' );
 		}
@@ -364,24 +411,23 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get site (network) data for a given id.
+	 * Get site url
 	 *
-	 * @param int     $site_id
-	 * @return bool|array False if no network found with given id, array otherwise
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to get the URL.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site url 123
 	 */
-	private function _get_site( $site_id ) {
-		global $wpdb;
-
-		// Load site data
-		$sites = $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM $wpdb->site WHERE id = %d", $site_id ) );
-
-		if ( !empty( $sites ) ) {
-			// Only care about domain and path which are set here
-			return $sites[0];
+	public function url( $args ) {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
 		}
 
-		return false;
+		parent::_url( $args, 'get_site_url' );
 	}
 }
 

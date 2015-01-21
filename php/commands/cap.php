@@ -19,10 +19,15 @@ class Capabilities_Command extends WP_CLI_Command {
 	/**
 	 * List capabilities for a given role.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Display alphabetical list of bbPress moderator capabilities
+	 *     wp cap list 'bbp_moderator' | sort
+	 *
 	 * @subcommand list
 	 * @synopsis <role>
 	 */
-	public function _list( $args ) {
+	public function list_( $args ) {
 		$role_obj = self::get_role( $args[0] );
 
 		foreach ( array_keys( $role_obj->capabilities ) as $cap )

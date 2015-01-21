@@ -71,3 +71,66 @@ Feature: Perform database operations
       """
       1
       """
+
+  Scenario: DB export no charset
+    Given a WP install
+    And a replace-script.php file:
+      """
+      <?php
+      $wp_config = file_get_contents( 'wp-config.php' );
+      $wp_config = str_replace( 'utf8', '', $wp_config );
+      file_put_contents( 'wp-config.php', $wp_config );
+      WP_CLI::success( "Replaced charset" );
+      """
+
+    When I run `wp eval-file replace-script.php`
+    Then STDOUT should not be empty
+
+    When I run `wp db export /tmp/wp-cli-behat.sql`
+    Then STDOUT should contain:
+      """
+      Success: Exported
+      """
+
+  Scenario: Persist DB charset and collation
+    Given an empty directory
+    And WP files
+
+    When I run `wp core config {CORE_CONFIG_SETTINGS} --dbcharset=latin1 --dbcollate=latin1_spanish_ci`
+    Then STDOUT should not be empty
+
+    When I run `wp db create`
+    Then STDERR should be empty
+
+    When I run `wp core install --title="WP-CLI Test" --url=example.com --admin_user=admin --admin_password=admin --admin_email=admin@example.com`
+    Then STDOUT should not be empty
+
+    When I run `wp db query 'SHOW variables LIKE "character_set_database";'`
+    Then STDOUT should contain:
+      """
+      latin1
+      """
+
+    When I run `wp db query 'SHOW variables LIKE "collation_database";'`
+    Then STDOUT should contain:
+      """
+      latin1_spanish_ci
+      """
+
+    When I run `wp db reset --yes`
+    Then STDOUT should not be empty
+
+    When I run `wp core install --title="WP-CLI Test" --url=example.com --admin_user=admin --admin_password=admin --admin_email=admin@example.com`
+    Then STDOUT should not be empty
+
+    When I run `wp db query 'SHOW variables LIKE "character_set_database";'`
+    Then STDOUT should contain:
+      """
+      latin1
+      """
+
+    When I run `wp db query 'SHOW variables LIKE "collation_database";'`
+    Then STDOUT should contain:
+      """
+      latin1_spanish_ci
+      """
