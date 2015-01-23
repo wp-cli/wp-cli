@@ -50,15 +50,11 @@ function load_command( $name ) {
 }
 
 function load_all_commands() {
-	$cmd_dir = WP_CLI_ROOT . '/php/commands';
-
-	$iterator = new \DirectoryIterator( $cmd_dir );
-
-	foreach ( $iterator as $filename ) {
-		if ( '.php' != substr( $filename, -4 ) )
-			continue;
-
-		include_once "$cmd_dir/$filename";
+	$files = new \FilesystemIterator( WP_CLI_ROOT . '/php/commands', \FilesystemIterator::SKIP_DOTS );
+	foreach ( $files as $file )
+	{
+		/** @noinspection PhpIncludeInspection */
+		! $files->isDir() and include_once $files->getRealPath();
 	}
 }
 
