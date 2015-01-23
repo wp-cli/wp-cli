@@ -435,6 +435,9 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 	if ( $cache_dir = getenv( 'WP_CLI_REQUESTS_CACHE_DIR' ) ) {
 		$cache_key = hash_hmac( 'sha256', 'requests_' . $url . serialize( $headers ) . serialize( $data ) . serialize( $options ), '' );
 		error_log( 'cache_key: ' . $cache_key );
+		error_log( var_export( $headers, true ) );
+		error_log( var_export( $data, true ) );
+		error_log( var_export( $options, true ) );
 		$cache_file = rtrim( $cache_dir, '/' ) . '/' . $cache_key;
 		error_log( 'file exists: ' . var_export( file_exists( $cache_file ), true ) );
 		if ( file_exists( $cache_file ) && is_readable( $cache_file ) ) {
