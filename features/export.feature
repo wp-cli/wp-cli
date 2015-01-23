@@ -40,7 +40,10 @@ Feature: Export content.
     Given a WP install
 
     When I run `wp plugin install wordpress-importer --activate`
-    Then STDOUT should not be empty
+    Then STDERR should not contain:
+      """
+      Warning:
+      """
 
     When I run `wp site empty --yes`
     And I run `wp post generate --post_type=page --post_status=draft --count=10`
@@ -75,7 +78,10 @@ Feature: Export content.
     Given a WP install
 
     When I run `wp plugin install wordpress-importer --activate`
-    Then STDOUT should not be empty
+    Then STDERR should not contain:
+      """
+      Warning:
+      """
 
     When I run `wp post generate --count=10`
     And I run `wp post list --format=count`
@@ -107,7 +113,10 @@ Feature: Export content.
     Given a WP install
 
     When I run `wp plugin install wordpress-importer --activate`
-    Then STDOUT should not be empty
+    Then STDERR should not contain:
+      """
+      Warning:
+      """
 
     When I run `wp site empty --yes`
     And I run `wp post generate --post_type=post --post_date=2013-08-01 --count=10`
@@ -144,7 +153,10 @@ Feature: Export content.
     Given a WP install
 
     When I run `wp plugin install wordpress-importer --activate`
-    Then STDOUT should not be empty
+    Then STDERR should not contain:
+      """
+      Warning:
+      """
 
     When I run `wp term create category Apple --porcelain`
     Then STDOUT should be a number
