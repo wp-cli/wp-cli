@@ -15,6 +15,7 @@ Feature: `wp cli` tasks
     {TRUE_VERSION}
     """
 
+  @debug
   Scenario: Check for updates
     Given an empty directory
     And a new Phar with version "0.0.0"

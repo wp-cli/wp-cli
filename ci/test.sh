@@ -3,12 +3,12 @@
 set -ex
 
 # Run the unit tests
-vendor/bin/phpunit
+# vendor/bin/phpunit
 
-eval $(./ci/set-behat-tags.sh)
+# eval $(./ci/set-behat-tags.sh)
 
 # Run the functional tests
-vendor/bin/behat --format progress $behat_tags
+vendor/bin/behat features/cli.feature --format progress --tags="debug"
 
 # Run CodeSniffer
-./codesniffer/scripts/phpcs --standard=./ci/ php/
+# ./codesniffer/scripts/phpcs --standard=./ci/ php/
