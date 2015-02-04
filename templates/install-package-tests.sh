@@ -8,7 +8,7 @@ install_wp_cli() {
 
 	# the Behat test suite will pick up the executable found in $WP_CLI_BIN_DIR
 	mkdir -p $WP_CLI_BIN_DIR
-	wget https://github.com/wp-cli/builds/raw/gh-pages/phar/wp-cli-nightly.phar
+	curl -s https://github.com/wp-cli/builds/raw/gh-pages/phar/wp-cli-nightly.phar
 	mv wp-cli-nightly.phar $WP_CLI_BIN_DIR/wp
 	chmod +x $WP_CLI_BIN_DIR/wp
 
