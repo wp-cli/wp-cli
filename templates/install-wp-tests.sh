@@ -17,11 +17,11 @@ WP_CORE_DIR=${WP_CORE_DIR-/tmp/wordpress/}
 set -ex
 
 download() {
-	if [ `which curl` ]; then
-		curl -s "$1" > "$2";
+    if [ `which curl` ]; then
+        curl -s "$1" > "$2";
     elif [ `which wget` ]; then
-    	wget -nv -O "$2" "$1"
-	fi
+        wget -nv -O "$2" "$1"
+    fi
 }
 
 install_wp() {
