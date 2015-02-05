@@ -4,12 +4,19 @@ set -ex
 
 PACKAGE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/../ && pwd )"
 
+download() {
+    if [ `which curl` ]; then
+        curl -s "$1" > "$2";
+    elif [ `which wget` ]; then
+        wget -nv -O "$2" "$1"
+    fi
+}
+
 install_wp_cli() {
 
 	# the Behat test suite will pick up the executable found in $WP_CLI_BIN_DIR
 	mkdir -p $WP_CLI_BIN_DIR
-	curl -s https://github.com/wp-cli/builds/raw/gh-pages/phar/wp-cli-nightly.phar
-	mv wp-cli-nightly.phar $WP_CLI_BIN_DIR/wp
+	download https://github.com/wp-cli/builds/raw/gh-pages/phar/wp-cli-nightly.phar $WP_CLI_BIN_DIR/wp
 	chmod +x $WP_CLI_BIN_DIR/wp
 
 }
@@ -30,7 +37,8 @@ set_package_context() {
 download_behat() {
 
 	cd $PACKAGE_DIR
-	curl -s https://getcomposer.org/installer | php
+	download https://getcomposer.org/installer installer
+	php installer
 	php composer.phar require --dev behat/behat='~2.5'
 
 }
