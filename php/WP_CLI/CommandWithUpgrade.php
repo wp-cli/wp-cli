@@ -351,8 +351,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	/**
 	 * Search wordpress.org repo.
 	 *
-	 * @param  object $api        Data from WP plugin/theme API
-	 * @param  array  $assoc_args Data passed in from command.
+	 * @param  array $args       A arguments array containing the search term in the first element.
+	 * @param  array $assoc_args Data passed in from command.
 	 */
 	protected function _search( $args, $assoc_args ) {
 		$term = $args[0];
