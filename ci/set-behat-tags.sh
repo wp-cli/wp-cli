@@ -32,6 +32,8 @@ vercomp() {
     return 0
 }
 
+# Skip Github API tests by default because of rate limiting. See https://github.com/wp-cli/wp-cli/issues/1612
+skip_tags="--tags='~github-api,"
 if [[ ! -z "$WP_VERSION" ]]; then
 
     skip_tags="--tags='"
@@ -45,13 +47,10 @@ if [[ ! -z "$WP_VERSION" ]]; then
             skip_tags="$skip_tags~$require,"
         fi
     done
-    if [[ "--tags='" != $skip_tags ]]; then
-        skip_tags=$(echo $skip_tags| sed 's/\,$//') # trim trailing ','
-        skip_tags="$skip_tags'" # close the argument
-    else
-        skip_tags=''
-    fi
 
 fi
 
-echo export behat_tags=$skip_tags
+skip_tags=$(echo $skip_tags| sed 's/\,$//') # trim trailing ','
+skip_tags="$skip_tags'" # close the argument
+
+echo export behat_tags=$skip_tags,~github-api
