@@ -84,8 +84,8 @@ Feature: WordPress code scaffolding
       __( 'Brain eaters'
       """
 
-  Scenario: Scaffold a Custom Post Type with icon
-    When I run `wp scaffold post-type zombie --icon="art"`
+  Scenario: Scaffold a Custom Post Type with dashicon
+    When I run `wp scaffold post-type zombie --dashicon="art"`
     Then STDOUT should contain:
       """
       'menu_icon'         => 'dashicons-art',

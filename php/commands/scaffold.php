@@ -24,7 +24,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--textdomain=<textdomain>]
 	 * : The textdomain to use for the labels.
 	 *
-	 * [--icon=<icon>]
+	 * [--dashicon=<dashicon>]
 	 * : The dashicon to use in the menu.
 	 *
 	 * [--theme]
@@ -49,7 +49,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$defaults = array(
 			'textdomain' => '',
-			'icon'       => 'admin-post',
+			'dashicon'   => 'admin-post',
 		);
 
 		$this->_scaffold( $args[0], $assoc_args, $defaults, '/post-types/', array(
