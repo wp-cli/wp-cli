@@ -34,7 +34,7 @@ Feature: Do global search/replace
       wp_awesome
       """
 
-    When I run `wp search-replace foo bar --all-tables`
+    When I run `wp search-replace foo bar --all-tables-with-prefix`
     Then STDOUT should contain:
       """
       wp_awesome
