@@ -166,7 +166,7 @@ class WP_CLI {
 	 *   'before_invoke' => callback to execute before invoking the command
 	 */
 	public static function add_command( $name, $class, $args = array() ) {
-		if ( ! class_exists( $class ) ) {
+		if ( is_string( $class ) && ! class_exists( (string) $class ) ) {
 			WP_CLI::error( sprintf( "Class '%s' does not exist.", $class ) );
 		}
 
