@@ -9,7 +9,6 @@ php:
 env:
   global:
     - WP_CLI_BIN_DIR=/tmp/wp-cli-phar
-    - WP_CLI_REQUESTS_CACHE_DIR=/tmp/wp-cli-requests-cache-dir
       # Encripted deploy key. See https://gist.github.com/scribu/6241271
     - secure: "U8gOPW2m9fkJW8omnPjFHFZutGIqAAfVs0H1izpSKJhclUfYAGjAGl1Cb6ZiUp3jZE11iWa+fAZ5mmmLAQ5L9ijta40igfFw0s+o/Vt3WBM4a3Vdqpg6civ0rDi9tJYuwtMaEi/kF/yuhKzUT80EAMqVix5xPnf963iIUPyarfY="
     - secure: "W9t7pG5h/Khoi+TrxplpSeTWxaTr7r6cYRVJBsXgghZLDXsU/qn/OhGDdY+IMfSgzO49wjFyLh2EOs8zZSujY75fgFffK2+jd/882NUlpvpXoW9C3yEfZhLJVQZI/1idnpDe9f6zA0XlpBn3bQ2QeS3i2a/JwOGCD8BQjNobk1M="

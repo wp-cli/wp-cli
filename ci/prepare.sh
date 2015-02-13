@@ -18,7 +18,5 @@ chmod +x $WP_CLI_BIN_DIR/wp
 ./bin/wp core download --version=$WP_VERSION --path='/tmp/wp-cli-test core-download-cache/'
 ./bin/wp core version --path='/tmp/wp-cli-test core-download-cache/'
 
-cp -r ./ci/requests-cache $WP_CLI_REQUESTS_CACHE_DIR
-
 mysql -e 'CREATE DATABASE wp_cli_test;' -uroot
 mysql -e 'GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"localhost" IDENTIFIED BY "password1"' -uroot
