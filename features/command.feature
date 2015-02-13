@@ -9,8 +9,9 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'command example', 'Non_Existent_Class' );
       """
 
-    When I run `wp --require=custom-cmd.php help`
-    Then STDOUT should contain:
+    When I try `wp --require=custom-cmd.php help`
+    Then the return code should be 1
+    And STDERR should contain:
       """
-      Error: Class 'Non_Existent_Class' does not exist.
+      Class 'Non_Existent_Class' does not exist.
       """
