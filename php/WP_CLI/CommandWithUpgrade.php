@@ -405,7 +405,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 
 		if ( is_wp_error( $api ) )
-			\WP_CLI::error( $api->get_error_message() . __( ' Try again' ) );
+			\WP_CLI::error( $api->get_error_message() );
 
 		$plural = $this->item_type . 's';
 
