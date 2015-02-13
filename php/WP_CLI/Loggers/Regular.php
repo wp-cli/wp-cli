@@ -21,7 +21,17 @@ class Regular {
 	 * @param string $str Message to write.
 	 */
 	protected function write( $handle, $str ) {
-		fwrite( $handle, $str );
+		fwrite( $handle, self::format( $str ) );
+	}
+
+	/**
+	 * Format a string for output.
+	 *
+	 * @param  string $str Message to output.
+	 * @return string      Formatted message to output.
+	 */
+	protected function format( $str ) {
+		return html_entity_decode( strip_tags( $str ) );
 	}
 
 	/**
