@@ -24,6 +24,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--textdomain=<textdomain>]
 	 * : The textdomain to use for the labels.
 	 *
+	 * [--icon=<icon>]
+	 * : The dashicon to use in the menu.
+	 *
 	 * [--theme]
 	 * : Create a file in the active theme directory, instead of sending to
 	 * STDOUT. Specify a theme with `--theme=<theme>` to have the file placed in that theme.
@@ -46,6 +49,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$defaults = array(
 			'textdomain' => '',
+			'icon'       => 'admin-post',
 		);
 
 		$this->_scaffold( $args[0], $assoc_args, $defaults, '/post-types/', array(
