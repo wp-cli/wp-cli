@@ -210,3 +210,13 @@ Feature: WordPress code scaffolding
       """
     And the {THEME_DIR}/starter-theme/style.css file should exist
 
+  Scenario: Scaffold starter code for a theme with sass
+    Given I run `wp theme path`
+    And save STDOUT as {THEME_DIR}
+
+    When I run `wp scaffold _s starter-theme --sassify`
+    Then STDOUT should contain:
+      """
+      Success: Created theme 'Starter-theme'.
+      """
+    And the {THEME_DIR}/starter-theme/sass directory should exist

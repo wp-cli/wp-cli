@@ -181,6 +181,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * [--author_uri=<uri>]
 	 * : What to put in the 'Author URI:' header in style.css
+	 *
+	 * [--sassify]
+	 * : Include stylesheets as SASS
 	 */
 	function _s( $args, $assoc_args ) {
 
@@ -205,6 +208,9 @@ class Scaffold_Command extends WP_CLI_Command {
 		$body['underscoresme_description'] = $theme_description;
 		$body['underscoresme_generate_submit'] = "Generate";
 		$body['underscoresme_generate'] = "1";
+		if ( isset( $assoc_args['sassify'] ) ) {
+			$body['underscoresme_sass'] = 1;
+		}
 
 		$tmpfname = wp_tempnam($url);
 		$response = wp_remote_post( $url, array( 'timeout' => $timeout, 'body' => $body, 'stream' => true, 'filename' => $tmpfname ) );
