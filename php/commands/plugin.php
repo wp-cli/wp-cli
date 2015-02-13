@@ -24,6 +24,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		require_once ABSPATH.'wp-admin/includes/plugin.php';
 		require_once ABSPATH.'wp-admin/includes/plugin-install.php';
 
+		add_filter( 'plugins_api_result', array( $this, '_filter_wordpress_api_result' ), 10, 3 );
+
 		parent::__construct();
 
 		$this->fetcher = new \WP_CLI\Fetchers\Plugin;
