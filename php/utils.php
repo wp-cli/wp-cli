@@ -430,26 +430,10 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 		$pem_copied = true;
 	}
 
-	$cache_file = false;
-	if ( $cache_dir = getenv( 'WP_CLI_REQUESTS_CACHE_DIR' ) ) {
-		$cache_key = hash_hmac( 'sha256', 'requests_' . $url . serialize( $headers ) . serialize( $data ) . serialize( $options ), '' );
-		$cache_file = rtrim( $cache_dir, '/' ) . '/' . $cache_key;
-		if ( file_exists( $cache_file ) && is_readable( $cache_file ) ) {
-			return json_decode( file_get_contents( $cache_file ) );
-		}
-	}
-
 	try {
 		$request = \Requests::request( $url, $headers, $data, $method, $options );
 		if ( $pem_copied ) {
 			unlink( $options['verify'] );
-		}
-		if ( ! empty( $cache_file ) ) {
-			$cache_dir = dirname( $cache_file );
-			if ( ! is_dir( $cache_dir ) ) {
-				mkdir( $cache_dir, 0755, true );
-			}
-			file_put_contents( $cache_file, json_encode( $request ) );
 		}
 		return $request;
 	} catch( \Requests_Exception $ex ) {

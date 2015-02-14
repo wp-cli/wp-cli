@@ -1,3 +1,4 @@
+@github-api
 Feature: `wp cli` tasks
 
   Scenario: Ability to set a custom version when building
