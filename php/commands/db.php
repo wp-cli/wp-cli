@@ -124,7 +124,7 @@ class DB_Command extends WP_CLI_Command {
 	 * : Extra arguments to pass to mysqldump
 	 *
 	 * [--tables=<tables>]
-	 * : The comma separated list of specific tables to export. Excluding this parameter will export all tables
+	 * : The comma separated list of specific tables to export. Excluding this parameter will export all tables in the database.
 	 *
 	 * ## EXAMPLES
 	 *
