@@ -165,10 +165,10 @@ Feature: Manage WordPress themes and plugins
       """
     And the <file_to_check> file should not exist
 
-    When I run `wp <type> search <item> --per-page=1 --fields=name,slug`
+    When I run `wp <type> search <item> --per-page=2 --fields=name,slug`
     Then STDOUT should contain:
       """
-      Showing 1 of
+      Showing 2 of
       """
     And STDOUT should end with a table containing rows:
       | name         | slug   |
@@ -176,5 +176,5 @@ Feature: Manage WordPress themes and plugins
 
     Examples:
       | type   | type_name | item                    | item_title              | version | zip_file                                                              | file_to_check                                                    |
-      | theme  | Theme     | p2                      | P2                      | 1.0.1   | http://wordpress.org/themes/download/p2.1.0.1.zip                     | {CONTENT_DIR}/p2/style.css                                        |
-      | plugin | Plugin    | category-checklist-tree | Category Checklist Tree | 1.2     | http://downloads.wordpress.org/plugin/category-checklist-tree.1.2.zip | {CONTENT_DIR}/category-checklist-tree/category-checklist-tree.php |
+      | theme  | Theme     | p2                      | P2                      | 1.0.1   | https://wordpress.org/themes/download/p2.1.0.1.zip                     | {CONTENT_DIR}/p2/style.css                                        |
+      | plugin | Plugin    | category-checklist-tree | Category Checklist Tree | 1.2     | https://downloads.wordpress.org/plugin/category-checklist-tree.1.2.zip | {CONTENT_DIR}/category-checklist-tree/category-checklist-tree.php |

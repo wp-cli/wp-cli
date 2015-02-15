@@ -35,13 +35,13 @@ Feature: Manage WordPress posts
       alert('This should not be stripped.');
       </script>
       """
-    And a command.sh file:
+    And a create-post.sh file:
       """
       cat content.html | wp post create --post_title='Test post' --post_excerpt="A multiline
       excerpt" --porcelain -
       """
 
-    When I run `bash command.sh`
+    When I run `bash create-post.sh`
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
@@ -60,6 +60,14 @@ Feature: Manage WordPress posts
       | Field      | Value     |
       | ID         | {POST_ID} |
       | post_title | Test post |
+      | post_name  |           |
+      | post_type  | post      |
+
+    When I run `wp post get {POST_ID} --format=csv --fields=post_title,type | wc -l`
+    Then STDOUT should be:
+      """
+      3
+      """
 
     When I run `wp post get --format=json {POST_ID}`
     Then STDOUT should be JSON containing:
@@ -97,6 +105,53 @@ Feature: Manage WordPress posts
       http://example.com/?p=3
       """
 
+  Scenario: Update a post from file or STDIN
+    Given a content.html file:
+      """
+      Oh glorious CLI
+      """
+    And a content-2.html file:
+      """
+      Let it be the weekend
+      """
+
+    When I run `wp post create --post_title="Testing update via STDIN" --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `cat content.html | wp post update {POST_ID} -`
+    Then STDOUT should contain:
+      """
+      Success: Updated post {POST_ID}
+      """
+
+    When I run `wp post get --field=post_content {POST_ID}`
+    Then STDOUT should be:
+      """
+      Oh glorious CLI
+      """
+
+    When I run `wp post create --post_title="Testing update via STDIN. Again!" --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID_TWO}
+
+    When I run `wp post update {POST_ID} {POST_ID_TWO} content-2.html`
+    Then STDOUT should contain:
+      """
+      Success: Updated post {POST_ID_TWO}
+      """
+
+    When I run `wp post get --field=post_content {POST_ID_TWO}`
+    Then STDOUT should be:
+      """
+      Let it be the weekend
+      """
+
+    When I try `wp post update {POST_ID} invalid-file.html`
+    Then STDERR should be:
+      """
+      Error: Unable to read content from invalid-file.html.
+      """
 
   Scenario: Creating/listing posts
     When I run `wp post create --post_title='Publish post' --post_content='Publish post content' --post_status='publish' --porcelain`

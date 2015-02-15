@@ -67,6 +67,10 @@ Feature: Manage WordPress installation
       """
       define( 'WP_DEBUG_LOG', true );
       """
+    And the wp-config.php file should not contain:
+      """
+      define( 'WPLANG', '' );
+      """
 
     When I try the previous command again
     Then the return code should be 1
@@ -80,6 +84,16 @@ Feature: Manage WordPress installation
     Then the wp-config.php file should not contain:
       """
       define('AUTH_SALT',
+      """
+
+  Scenario: Define WPLANG when running WP < 4.0
+    Given an empty directory
+    And I run `wp core download --version=3.9 --force`
+
+    When I run `wp core config {CORE_CONFIG_SETTINGS}`
+    Then the wp-config.php file should contain:
+      """
+      define('WPLANG', '');
       """
 
   Scenario: Database doesn't exist
@@ -233,6 +247,18 @@ Feature: Manage WordPress installation
       example.com
       """
 
+  Scenario: Install multisite with subdomains on localhost
+    Given an empty directory
+    And WP files
+    And wp-config.php
+    And a database
+
+    When I try `wp core multisite-install --url=http://localhost/ --title=Test --admin_user=wpcli --admin_email=admin@example.com --admin_password=1 --subdomains`
+    Then STDERR should contain:
+      """
+      Error: Multisite with subdomains cannot be configured when domain is 'localhost'.
+      """
+
   Scenario: Update from a ZIP file
     Given a WP install
 
@@ -270,34 +296,36 @@ Feature: Manage WordPress installation
     When I run `wp core check-update`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                               |
-      | 4.0     | major       | https://wordpress.org/wordpress-4.0.zip   |
-      | 3.9.2   | major       | https://wordpress.org/wordpress-3.9.2.zip |
-      | 3.8.4   | minor       | https://wordpress.org/wordpress-3.8.4.zip |
+      | 4.1     | major       | https://wordpress.org/wordpress-4.1.zip   |
+      | 4.0.1   | major       | https://wordpress.org/wordpress-4.0.1.zip |
+      | 3.9.3   | major       | https://wordpress.org/wordpress-3.9.3.zip |
+      | 3.8.5   | minor       | https://wordpress.org/wordpress-3.8.5.zip |
 
-    When I run `wp core check-update --field=version | wc -l`
+    When I run `wp core check-update --format=count`
     Then STDOUT should be:
       """
-      3
+      4
       """
 
     When I run `wp core check-update --major`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                               |
-      | 4.0     | major       | https://wordpress.org/wordpress-4.0.zip   |
-      | 3.9.2   | major       | https://wordpress.org/wordpress-3.9.2.zip |
+      | 4.1     | major       | https://wordpress.org/wordpress-4.1.zip   |
+      | 4.0.1   | major       | https://wordpress.org/wordpress-4.0.1.zip |
+      | 3.9.3   | major       | https://wordpress.org/wordpress-3.9.3.zip |
 
-    When I run `wp core check-update --major --field=version | wc -l`
+    When I run `wp core check-update --major --format=count`
     Then STDOUT should be:
       """
-      2
+      3
       """
 
     When I run `wp core check-update --minor`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                               |
-      | 3.8.4   | minor       | https://wordpress.org/wordpress-3.8.4.zip |
+      | 3.8.5   | minor       | https://wordpress.org/wordpress-3.8.5.zip |
 
-    When I run `wp core check-update --minor --field=version | wc -l`
+    When I run `wp core check-update --minor --format=count`
     Then STDOUT should be:
       """
       1
@@ -362,13 +390,32 @@ Feature: Manage WordPress installation
     When I run `wp core update --version=3.8.1 --force`
     Then STDOUT should contain:
       """
-      Using cached file '{SUITE_CACHE_DIR}/core/en_US-3.8.1.tar.gz'...
+      Using cached file '{SUITE_CACHE_DIR}/core/en_US-3.8.1.zip'...
       """
     And STDOUT should not contain:
       """
       Downloading
+	  """
+
+  Scenario: Don't run update when up-to-date
+    Given a WP install
+    And I run `wp core update`
+
+    When I run `wp core update`
+    Then STDOUT should contain:
+      """
+      WordPress is up to date
+      """
+    And STDOUT should not contain:
+      """
+      Updating
       """
 
+    When I run `wp core update --force`
+    Then STDOUT should contain:
+      """
+      Updating
+      """
 
   Scenario: User defined in wp-cli.yml
     Given an empty directory
@@ -395,10 +442,11 @@ Feature: Manage WordPress installation
 
     When I run `wp core language list --fields=language,english_name,status`
     Then STDOUT should be a table containing rows:
-      | language  | english_name     | status        |
-      | ar        | Arabic           | uninstalled   |
-      | az        | Azerbaijani      | uninstalled   |
-      | en_GB     | English (UK)     | uninstalled   |
+      | language  | english_name            | status        |
+      | ar        | Arabic                  | uninstalled   |
+      | az        | Azerbaijani             | uninstalled   |
+      | en_US     | English (United States) | active        |
+      | en_GB     | English (UK)            | uninstalled   |
 
     When I run `wp core language install en_GB`
     Then the wp-content/languages/admin-en_GB.po file should exist
@@ -427,12 +475,32 @@ Feature: Manage WordPress installation
       Success: Language activated.
       """
 
+    When I run `wp core language list --field=language --status=active`
+    Then STDOUT should be:
+      """
+      en_GB
+      """
+
     When I run `wp core language list --fields=language,english_name,status`
     Then STDOUT should be a table containing rows:
       | language  | english_name     | status        |
       | ar        | Arabic           | uninstalled   |
       | az        | Azerbaijani      | uninstalled   |
       | en_GB     | English (UK)     | active        |
+
+    When I run `wp core language activate en_US`
+    Then STDOUT should be:
+      """
+      Success: Language activated.
+      """
+
+    When I run `wp core language list --fields=language,english_name,status`
+    Then STDOUT should be a table containing rows:
+      | language  | english_name            | status        |
+      | ar        | Arabic                  | uninstalled   |
+      | en_US     | English (United States) | active        |
+      | en_GB     | English (UK)            | installed     |
+
 
     When I try `wp core language activate invalid_lang`
     Then STDERR should be:
@@ -452,4 +520,75 @@ Feature: Manage WordPress installation
     Then STDERR should be:
       """
       Error: Language not installed.
+      """
+
+    When I run `wp core language install --activate en_GB`
+    Then the wp-content/languages/admin-en_GB.po file should exist
+    And the wp-content/languages/en_GB.po file should exist
+    And STDOUT should be:
+      """
+      Success: Language installed.
+      Success: Language activated.
+      """
+
+  @require-wp-4.0
+  Scenario: Don't allow active language to be uninstalled
+    Given a WP install
+
+    When I run `wp core language install en_GB --activate`
+    Then STDOUT should not be empty
+
+    When I try `wp core language uninstall en_GB`
+    Then STDERR should be:
+      """
+      Warning: The 'en_GB' language is active.
+      """
+
+  Scenario: Ensure file cache isn't corrupted by a ZIP masquerading as a gzipped TAR, part one
+    Given a WP install
+    And an empty cache
+    And I run `mkdir -p {SUITE_CACHE_DIR}/core; wget -O {SUITE_CACHE_DIR}/core/en_US-4.0.tar.gz https://wordpress.org/wordpress-4.0.zip`
+
+    When I run `wp core download --version=4.0 --force`
+    Then STDOUT should contain:
+      """
+      Success: WordPress downloaded
+      """
+    And STDERR should contain:
+      """
+      Warning: Extraction failed, downloading a new copy...
+      """
+
+    When I run `wp core version`
+    Then STDOUT should be:
+      """
+      4.0
+      """
+
+  Scenario: Ensure file cache isn't corrupted by core update, part two
+    Given a WP install
+    And an empty cache
+
+    When I run `wp core download --version=4.0 --force`
+    Then STDOUT should contain:
+      """
+      Success: WordPress downloaded
+      """
+
+    When I run `wp core version`
+    Then STDOUT should be:
+      """
+      4.0
+      """
+
+    When I run `wp core update --version=4.0 --force`
+    Then STDOUT should contain:
+      """
+      Success: WordPress updated successfully
+      """
+
+    When I run `wp core version`
+    Then STDOUT should be:
+      """
+      4.0
       """

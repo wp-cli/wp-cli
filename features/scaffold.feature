@@ -64,6 +64,10 @@ Feature: WordPress code scaffolding
       """
       __( 'Zombies', 'zombieland'
       """
+    And STDOUT should contain:
+      """
+      'menu_icon'         => 'dashicons-admin-post',
+      """
 
   Scenario: CPT slug is too long
     When I try `wp scaffold post-type slugiswaytoolonginfact`
@@ -78,6 +82,13 @@ Feature: WordPress code scaffolding
     Then STDOUT should contain:
       """
       __( 'Brain eaters'
+      """
+
+  Scenario: Scaffold a Custom Post Type with dashicon
+    When I run `wp scaffold post-type zombie --dashicon="art"`
+    Then STDOUT should contain:
+      """
+      'menu_icon'         => 'dashicons-art',
       """
 
   Scenario: Scaffold a plugin
@@ -199,3 +210,13 @@ Feature: WordPress code scaffolding
       """
     And the {THEME_DIR}/starter-theme/style.css file should exist
 
+  Scenario: Scaffold starter code for a theme with sass
+    Given I run `wp theme path`
+    And save STDOUT as {THEME_DIR}
+
+    When I run `wp scaffold _s starter-theme --sassify`
+    Then STDOUT should contain:
+      """
+      Success: Created theme 'Starter-theme'.
+      """
+    And the {THEME_DIR}/starter-theme/sass directory should exist

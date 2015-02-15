@@ -43,6 +43,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--recurse-objects]
 	 * : Enable recursing into objects to replace strings
 	 *
+	 * [--all-tables-with-prefix]
+	 * : Enable replacement on any tables that match the table prefix even if not registered on wpdb
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
@@ -70,7 +73,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';
 
-		$tables = self::get_table_list( $args, isset( $assoc_args['network'] ) );
+		$tables = self::get_table_list( $args, isset( $assoc_args['network'] ), isset( $assoc_args['all-tables-with-prefix'] ) );
 
 		foreach ( $tables as $table ) {
 			list( $primary_keys, $columns ) = self::get_columns( $table );
@@ -118,7 +121,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 	}
 
-	private static function get_table_list( $args, $network ) {
+	private static function get_table_list( $args, $network, $all_with_prefix ) {
 		global $wpdb;
 
 		if ( !empty( $args ) )
@@ -126,6 +129,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
 		$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $prefix . '%' ) );
+
+		if ( $all_with_prefix ) {
+			return $matching_tables;
+		}
 
 		$allowed_tables = array();
 		$allowed_table_types = array( 'tables', 'global_tables' );

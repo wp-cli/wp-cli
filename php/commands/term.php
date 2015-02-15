@@ -152,21 +152,30 @@ class Term_Command extends WP_CLI_Command {
 	 * [--field=<field>]
 	 * : Instead of returning the whole term, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, csv. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp term get category 1 --format=json
 	 */
 	public function get( $args, $assoc_args ) {
-		$formatter = $this->get_formatter( $assoc_args );
 
 		list( $taxonomy, $term_id ) = $args;
 		$term = get_term_by( 'id', $term_id, $taxonomy );
-		if ( ! $term )
+		if ( ! $term ) {
 			WP_CLI::error( "Term doesn't exist." );
+		}
 
+		if ( empty( $assoc_args['fields'] ) ) {
+			$term_array = get_object_vars( $term );
+			$assoc_args['fields'] = array_keys( $term_array );
+		}
+
+		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $term );
 	}
 
@@ -273,8 +282,6 @@ class Term_Command extends WP_CLI_Command {
 	 *     wp term generate --count=10
 	 */
 	public function generate( $args, $assoc_args ) {
-		global $wpdb;
-
 		list ( $taxonomy ) = $args;
 
 		$defaults = array(
@@ -294,11 +301,6 @@ class Term_Command extends WP_CLI_Command {
 		$hierarchical = get_taxonomy( $taxonomy )->hierarchical;
 
 		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating terms', $count );
-
-		$args = array(
-			'orderby' => 'id',
-			'hierarchical' => $hierarchical,
-		);
 
 		$previous_term_id = 0;
 		$current_parent = 0;

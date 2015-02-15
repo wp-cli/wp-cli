@@ -52,16 +52,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function create( $args, $assoc_args ) {
 		if ( ! empty( $args[0] ) ) {
-			if ( $args[0] !== '-' ) {
-				$readfile = $args[0];
-				if ( ! file_exists( $readfile ) || ! is_file( $readfile ) ) {
-					\WP_CLI::error( "Unable to read content from $readfile." );
-				}
-			} else {
-				$readfile = 'php://stdin';
-			}
-
-			$assoc_args['post_content'] = file_get_contents( $readfile );
+			$assoc_args['post_content'] = $this->read_from_file_or_stdin( $args[0] );
 		}
 
 		if ( isset( $assoc_args['edit'] ) ) {
@@ -91,6 +82,13 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * <id>...
 	 * : One or more IDs of posts to update.
 	 *
+	 * [<file>]
+	 * : Read post content from <file>. If this value is present, the
+	 *     `--post_content` argument will be ignored.
+	 *
+	 *   Passing `-` as the filename will cause post content to
+	 *   be read from STDIN.
+	 *
 	 * --<field>=<value>
 	 * : One or more fields to update. See wp_update_post().
 	 *
@@ -99,6 +97,17 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp post update 123 --post_name=something --post_status=draft
 	 */
 	public function update( $args, $assoc_args ) {
+
+		foreach( $args as $key => $arg ) {
+			if ( is_numeric( $arg ) ) {
+				continue;
+			}
+
+			$assoc_args['post_content'] = $this->read_from_file_or_stdin( $arg );
+			unset( $args[ $key ] );
+			break;
+		}
+
 		parent::_update( $args, $assoc_args, function ( $params ) {
 			return wp_update_post( $params, true );
 		} );
@@ -145,8 +154,11 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--field=<field>]
 	 * : Instead of returning the whole post, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, csv. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -158,6 +170,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$post_arr = get_object_vars( $post );
 		unset( $post_arr['filter'] );
+
+		if ( empty( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = array_keys( $post_arr );
+		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $post_arr );
@@ -428,6 +444,24 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		// 10% chance of reseting to root depth
 		return ( mt_rand(1, 10) == 7 );
 	}
+
+	/**
+	 * Read post content from file or STDIN
+	 *
+	 * @param string $arg Supplied argument
+	 * @return string
+	 */
+	private function read_from_file_or_stdin( $arg ) {
+		if ( $arg !== '-' ) {
+			$readfile = $arg;
+			if ( ! file_exists( $readfile ) || ! is_file( $readfile ) ) {
+				\WP_CLI::error( "Unable to read content from $readfile." );
+			}
+		} else {
+			$readfile = 'php://stdin';
+		}
+		return file_get_contents( $readfile );
+	}
 }
 
 /**
@@ -444,8 +478,42 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
  */
 class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
 	protected $meta_type = 'post';
+
+	/**
+	 * Check that the post ID exists
+	 *
+	 * @param int
+	 */
+	protected function check_object_id( $object_id ) {
+		$fetcher = new \WP_CLI\Fetchers\Post;
+		$post = $fetcher->get_check( $object_id );
+		return $post->ID;
+	}
+}
+
+/**
+ * Manage post terms.
+ *
+ *
+ * ## EXAMPLES
+ *
+ *     wp post term set 123 test category
+ */
+class Post_Term_Command extends \WP_CLI\CommandWithTerms {
+	protected $obj_type = 'post';
+
+	public function __construct() {
+		$this->fetcher = new \WP_CLI\Fetchers\Post;
+	}
+
+	protected function get_object_type() {
+		$post = $this->fetcher->get_check( $this->get_obj_id() );
+
+		return $post->post_type;
+	}
 }
 
 WP_CLI::add_command( 'post', 'Post_Command' );
 WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );
+WP_CLI::add_command( 'post term', 'Post_Term_Command' );
 

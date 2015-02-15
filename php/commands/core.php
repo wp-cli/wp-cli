@@ -52,7 +52,7 @@ class Core_Command extends WP_CLI_Command {
 		$release_data = json_decode( $response->body );
 		$release_versions = array_keys( (array) $release_data );
 		usort( $release_versions, function( $a, $b ){
-			return ! version_compare( $a, $b );
+			return 1 === version_compare( $a, $b );
 		});
 
 		$locale = get_locale();
@@ -86,6 +86,7 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		if ( $updates ) {
+			$updates = array_reverse( $updates );
 			$formatter = new \WP_CLI\Formatter(
 				$assoc_args,
 				array( 'version', 'update_type', 'package_url' )
@@ -125,7 +126,8 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( !is_dir( ABSPATH ) ) {
 			WP_CLI::log( sprintf( 'Creating directory %s', ABSPATH ) );
-			WP_CLI::launch( Utils\esc_cmd( 'mkdir -p %s', ABSPATH ) );
+			$mkdir = \WP_CLI\Utils\is_windows() ? 'mkdir %s' : 'mkdir -p %s';
+			WP_CLI::launch( Utils\esc_cmd( $mkdir, ABSPATH ) );
 		}
 
 		$locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : 'en_US';
@@ -148,10 +150,18 @@ class Core_Command extends WP_CLI_Command {
 		$cache_key = "core/$locale-$version.tar.gz";
 		$cache_file = $cache->has($cache_key);
 
+		$bad_cache = false;
 		if ( $cache_file ) {
 			WP_CLI::log( "Using cached file '$cache_file'..." );
-			self::_extract( $cache_file, ABSPATH );
-		} else {
+			try{
+				self::_extract( $cache_file, ABSPATH );
+			} catch ( Exception $e ) {
+				WP_CLI::warning( "Extraction failed, downloading a new copy..." );
+				$bad_cache = true;
+			}
+		}
+
+		if ( ! $cache_file || $bad_cache ) {
 			// We need to use a temporary file because piping from cURL to tar is flaky
 			// on MinGW (and probably in other environments too).
 			$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.tar.gz';
@@ -223,7 +233,12 @@ class Core_Command extends WP_CLI_Command {
 
 	private static function _read( $url ) {
 		$headers = array('Accept' => 'application/json');
-		return Utils\http_request( 'GET', $url, null, $headers )->body;
+		$response = Utils\http_request( 'GET', $url, null, $headers, array( 'timeout' => 30 ) );
+		if ( 200 === $response->status_code ) {
+			return $response->body;
+		} else {
+			WP_CLI::error( "Couldn't fetch response from {$url} (HTTP code {$response->status_code})" );
+		}
 	}
 
 	private function get_download_offer( $locale ) {
@@ -304,6 +319,9 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::error( "The 'wp-config.php' file already exists." );
 		}
 
+		$versions_path = ABSPATH . 'wp-includes/version.php';
+		include $versions_path;
+
 		$defaults = array(
 			'dbhost' => 'localhost',
 			'dbpass' => '',
@@ -335,6 +353,12 @@ class Core_Command extends WP_CLI_Command {
 		if ( ! isset( $assoc_args['skip-salts'] ) ) {
 			$assoc_args['keys-and-salts'] = self::_read(
 				'https://api.wordpress.org/secret-key/1.1/salt/' );
+		}
+
+		if ( version_compare( $wp_version, '4.0', '<' ) ) {
+			$assoc_args['add-wplang'] = true;
+		} else {
+			$assoc_args['add-wplang'] = false;
 		}
 
 		$out = Utils\mustache_render( 'wp-config.mustache', $assoc_args );
@@ -417,7 +441,7 @@ class Core_Command extends WP_CLI_Command {
 	 * Default: '/'
 	 *
 	 * [--subdomains]
-	 * : If passed, the network will use subdomains, instead of subdirectories.
+	 * : If passed, the network will use subdomains, instead of subdirectories. Doesn't work with 'localhost'.
 	 *
 	 * @subcommand multisite-convert
 	 * @alias install-network
@@ -449,7 +473,7 @@ class Core_Command extends WP_CLI_Command {
 	 * Default: '/'
 	 *
 	 * [--subdomains]
-	 * : If passed, the network will use subdomains, instead of subdirectories.
+	 * : If passed, the network will use subdomains, instead of subdirectories. Doesn't work with 'localhost'.
 	 *
 	 * --title=<site-title>
 	 * : The title of the new site.
@@ -539,8 +563,9 @@ class Core_Command extends WP_CLI_Command {
 
 		// Support prompting for the `--url=<url>`,
 		// which is normally a runtime argument
-		if ( isset( $assoc_args['url'] ) )
-			$url_parts = WP_CLI::set_url( $assoc_args['url'] );
+		if ( isset( $assoc_args['url'] ) ) {
+			WP_CLI::set_url( $assoc_args['url'] );
+		}
 
 		$public = true;
 
@@ -570,13 +595,17 @@ class Core_Command extends WP_CLI_Command {
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
+		$domain = self::get_clean_basedomain();
+		if ( 'localhost' === $domain && ! empty( $assoc_args['subdomains'] ) ) {
+			WP_CLI::error( "Multisite with subdomains cannot be configured when domain is 'localhost'." );
+		}
+
 		// need to register the multisite tables manually for some reason
 		foreach ( $wpdb->tables( 'ms_global' ) as $table => $prefixed_table )
 			$wpdb->$table = $prefixed_table;
 
 		install_network();
 
-		$domain = self::get_clean_basedomain();
 		$result = populate_network(
 			$assoc_args['site_id'],
 			$domain,
@@ -863,9 +892,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			wp_version_check();
 			$from_api = get_site_transient( 'update_core' );
 
-			if ( empty( $from_api->updates ) ) {
-				$update = false;
-			} else {
+			if ( ! empty( $from_api->updates ) ) {
 				list( $update ) = $from_api->updates;
 			}
 
@@ -891,32 +918,35 @@ define('BLOG_ID_CURRENT_SITE', 1);
 				'locale' => $locale
 			);
 
+		}
+
+		if ( ! empty( $update ) && ( $update->version != $wp_version || isset( $assoc_args['force'] ) ) ) {
+
+			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
+			if ( $update->version ) {
+				WP_CLI::log( "Updating to version {$update->version} ({$update->locale})..." );
+			} else {
+				WP_CLI::log( "Starting update..." );
+			}
+
+			$GLOBALS['wp_cli_update_obj'] = $update;
+			$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
+			unset( $GLOBALS['wp_cli_update_obj'] );
+
+			if ( is_wp_error($result) ) {
+				$msg = WP_CLI::error_to_string( $result );
+				if ( 'up_to_date' != $result->get_error_code() ) {
+					WP_CLI::error( $msg );
+				} else {
+					WP_CLI::success( $msg );
+				}
+			} else {
+				WP_CLI::success( 'WordPress updated successfully.' );
+			}
+
 		} else {
 			WP_CLI::success( 'WordPress is up to date.' );
-			return;
-		}
-
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-
-		if ( $update->version ) {
-			WP_CLI::log( "Updating to version {$update->version} ({$update->locale})..." );
-		} else {
-			WP_CLI::log( "Starting update..." );
-		}
-
-		$GLOBALS['wp_cli_update_obj'] = $update;
-		$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
-		unset( $GLOBALS['wp_cli_update_obj'] );
-
-		if ( is_wp_error($result) ) {
-			$msg = WP_CLI::error_to_string( $result );
-			if ( 'up_to_date' != $result->get_error_code() ) {
-				WP_CLI::error( $msg );
-			} else {
-				WP_CLI::success( $msg );
-			}
-		} else {
-			WP_CLI::success( 'WordPress updated successfully.' );
 		}
 	}
 

@@ -9,22 +9,6 @@ Feature: Export content.
       All done with export
       """
 
-  Scenario: Term with a non-existent parent
-    Given a WP install
-
-    When I run `wp term create category Apple --porcelain`
-    Then STDOUT should be a number
-    And save STDOUT as {TERM_ID}
-
-    When I run `wp term update category {TERM_ID} --parent=99`
-    Then STDOUT should not be empty
-
-    When I try `wp export`
-    Then STDERR should be:
-      """
-      Error: Term is missing a parent.
-      """
-
   Scenario: Export argument validator
     Given a WP install
 
@@ -54,9 +38,11 @@ Feature: Export content.
 
   Scenario: Export with post_type and post_status argument
     Given a WP install
-    And these installed and active plugins:
+
+    When I run `wp plugin install wordpress-importer --activate`
+    Then STDERR should not contain:
       """
-      wordpress-importer
+      Warning:
       """
 
     When I run `wp site empty --yes`
@@ -90,9 +76,11 @@ Feature: Export content.
 
   Scenario: Export only one post
     Given a WP install
-    And these installed and active plugins:
+
+    When I run `wp plugin install wordpress-importer --activate`
+    Then STDERR should not contain:
       """
-      wordpress-importer
+      Warning:
       """
 
     When I run `wp post generate --count=10`
@@ -123,9 +111,11 @@ Feature: Export content.
 
   Scenario: Export posts within a given date range
     Given a WP install
-    And these installed and active plugins:
+
+    When I run `wp plugin install wordpress-importer --activate`
+    Then STDERR should not contain:
       """
-      wordpress-importer
+      Warning:
       """
 
     When I run `wp site empty --yes`
@@ -157,4 +147,57 @@ Feature: Export content.
     Then STDOUT should be:
       """
       10
+      """
+
+  Scenario: Export posts from a given category
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --activate`
+    Then STDERR should not contain:
+      """
+      Warning:
+      """
+
+    When I run `wp term create category Apple --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID}
+
+    When I run `wp site empty --yes`
+    And I run `wp post generate --post_type=post --count=10`
+    And I run `wp post list --post_type=post --format=count`
+    Then STDOUT should be:
+      """
+      10
+      """
+
+    When I run `for id in $(wp post list --posts_per_page=5 --ids); do wp post term add $id category Apple; done`
+    And I run `wp post list --post_type=post --cat={TERM_ID} --format=count`
+    Then STDOUT should be:
+      """
+      5
+      """
+
+    When I run `wp export --post_type=post --category=apple`
+    And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
+    Then the {EXPORT_FILE} file should contain:
+      """
+      <wp:category_nicename>apple</wp:category_nicename>
+      """
+
+    When I run `wp site empty --yes`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --post_type=post --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp import {EXPORT_FILE} --authors=skip`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --post_type=post --format=count`
+    Then STDOUT should be:
+      """
+      5
       """

@@ -98,8 +98,11 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--field=<field>]
 	 * : Instead of returning the whole comment, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, csv. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -108,8 +111,14 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	public function get( $args, $assoc_args ) {
 		$comment_id = (int)$args[0];
 		$comment = get_comment( $comment_id );
-		if ( empty( $comment ) )
+		if ( empty( $comment ) ) {
 			WP_CLI::error( "Invalid comment ID." );
+		}
+
+		if ( empty( $assoc_args['fields'] ) ) {
+			$comment_array = get_object_vars( $comment );
+			$assoc_args['fields'] = array_keys( $comment_array );
+		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $comment );
@@ -225,7 +234,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	private function set_status( $args, $status, $success ) {
 		$comment = $this->fetcher->get_check( $args[0] );
 
-		$r = wp_set_comment_status( $comment->comment_ID, 'approve', true );
+		$r = wp_set_comment_status( $comment->comment_ID, $status, true );
 
 		if ( is_wp_error( $r ) ) {
 			WP_CLI::error( $r );
@@ -431,6 +440,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
  */
 class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 	protected $meta_type = 'comment';
+
+	/**
+	 * Check that the comment ID exists
+	 *
+	 * @param int
+	 */
+	protected function check_object_id( $object_id ) {
+		$fetcher = new \WP_CLI\Fetchers\Comment;
+		$comment = $fetcher->get_check( $object_id );
+		return $comment->comment_ID;
+	}
 }
 
 WP_CLI::add_command( 'comment', 'Comment_Command' );

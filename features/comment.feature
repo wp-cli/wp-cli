@@ -44,6 +44,12 @@ Feature: Manage WordPress comments
       | Field           | Value          |
       | comment_author  | Mr WordPress   |
 
+    When I run `wp comment get 1 --fields=comment_author,comment_author_email --format=json`
+    Then STDOUT should be:
+      """
+      {"comment_author":"Mr WordPress","comment_author_email":""}
+      """
+
     When I run `wp comment list --fields=comment_approved,comment_author`
     Then STDOUT should be a table containing rows:
       | comment_approved | comment_author |
@@ -89,3 +95,32 @@ Feature: Manage WordPress comments
       post-trashed:    0
       total_comments:  1
       """
+
+  Scenario: Approving/unapproving comments
+    Given I run `wp comment create --comment_post_ID=1 --comment_approved=0 --porcelain`
+    And save STDOUT as {COMMENT_ID}
+
+    When I run `wp comment approve {COMMENT_ID}`
+    Then STDOUT should contain:
+      """
+      Approved comment {COMMENT_ID}
+      """
+
+    When I run `wp comment get --field=comment_approved {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp comment unapprove {COMMENT_ID}`
+    Then STDOUT should contain:
+      """
+      Unapproved comment {COMMENT_ID}
+      """
+
+    When I run `wp comment get --field=comment_approved {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      0
+      """
+

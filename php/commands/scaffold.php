@@ -24,6 +24,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--textdomain=<textdomain>]
 	 * : The textdomain to use for the labels.
 	 *
+	 * [--dashicon=<dashicon>]
+	 * : The dashicon to use in the menu.
+	 *
 	 * [--theme]
 	 * : Create a file in the active theme directory, instead of sending to
 	 * STDOUT. Specify a theme with `--theme=<theme>` to have the file placed in that theme.
@@ -46,6 +49,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$defaults = array(
 			'textdomain' => '',
+			'dashicon'   => 'admin-post',
 		);
 
 		$this->_scaffold( $args[0], $assoc_args, $defaults, '/post-types/', array(
@@ -177,6 +181,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * [--author_uri=<uri>]
 	 * : What to put in the 'Author URI:' header in style.css
+	 *
+	 * [--sassify]
+	 * : Include stylesheets as SASS
 	 */
 	function _s( $args, $assoc_args ) {
 
@@ -201,6 +208,9 @@ class Scaffold_Command extends WP_CLI_Command {
 		$body['underscoresme_description'] = $theme_description;
 		$body['underscoresme_generate_submit'] = "Generate";
 		$body['underscoresme_generate'] = "1";
+		if ( isset( $assoc_args['sassify'] ) ) {
+			$body['underscoresme_sass'] = 1;
+		}
 
 		$tmpfname = wp_tempnam($url);
 		$response = wp_remote_post( $url, array( 'timeout' => $timeout, 'body' => $body, 'stream' => true, 'filename' => $tmpfname ) );
@@ -269,10 +279,12 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$theme_dir = WP_CONTENT_DIR . "/themes" . "/$theme_slug";
 		$theme_style_path = "$theme_dir/style.css";
+		$theme_functions_path = "$theme_dir/functions.php";
 
 		$this->maybe_create_themes_dir();
 
 		$this->create_file( $theme_style_path, Utils\mustache_render( 'child_theme.mustache', $data ) );
+		$this->create_file( $theme_functions_path, Utils\mustache_render( 'child_theme_functions.mustache', $data ) );
 
 		WP_CLI::success( "Created $theme_dir" );
 
@@ -490,7 +502,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		foreach ( $to_copy as $file => $dir ) {
 			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", "$dir/$file", true );
 			if ( 'install-wp-tests.sh' === $file ) {
-				if ( ! $wp_filesystem->chmod( "$dir/$file", '0755' ) ) {
+				if ( ! $wp_filesystem->chmod( "$dir/$file", 0755 ) ) {
 					WP_CLI::warning( "Couldn't mark install-wp-tests.sh as executable." );
 				}
 			}
@@ -632,4 +644,3 @@ class Scaffold_Command extends WP_CLI_Command {
 }
 
 WP_CLI::add_command( 'scaffold', 'Scaffold_Command' );
-
