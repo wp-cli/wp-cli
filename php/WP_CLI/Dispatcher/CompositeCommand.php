@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Dispatcher;
 
+use \WP_CLI\Utils;
+
 /**
  * A non-leaf node in the command tree.
  * Contains one or more Subcommands.
@@ -28,6 +30,7 @@ class CompositeCommand {
 
 		$this->shortdesc = $docparser->get_shortdesc();
 		$this->longdesc = $docparser->get_longdesc();
+		$this->longdesc .= $this->get_global_params();
 		$this->docparser = $docparser;
 
 		$when_to_invoke = $docparser->get_tag( 'when' );
@@ -220,6 +223,40 @@ class CompositeCommand {
 	 */
 	public function get_alias() {
 		return false;
+	}
+
+	/***
+	 * Get the list of global parameters
+	 *
+	 * @param string $root_command whether to include or not root command specific description
+	 * @return string
+	 */
+	protected function get_global_params( $root_command = false ) {
+		$binding = array();
+		$binding['root_command'] = $root_command;
+
+		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
+			if ( false === $details['runtime'] )
+				continue;
+
+			if ( isset( $details['deprecated'] ) )
+				continue;
+
+			if ( isset( $details['hidden'] ) )
+				continue;
+
+			if ( true === $details['runtime'] )
+				$synopsis = "--[no-]$key";
+			else
+				$synopsis = "--$key" . $details['runtime'];
+
+			$binding['parameters'][] = array(
+				'synopsis' => $synopsis,
+				'desc' => $details['desc']
+			);
+		}
+
+		return Utils\mustache_render( 'man-params.mustache', $binding );
 	}
 }
 

@@ -43,4 +43,15 @@ class Quiet {
 		fwrite( STDERR, \WP_CLI::colorize( "%RError:%n $message\n" ) );
 	}
 
+	/**
+	 * Similar to error( $message ), but outputs $message in a red box
+	 *
+	 * @param  array $message Message to write.
+	 */
+	public function error_multi_line( $message_lines ) {
+		$message = implode( "\n", $message_lines );
+
+		fwrite( STDERR, \WP_CLI::colorize( "%RError:%n\n$message\n" ) );
+		fwrite( STDERR, \WP_CLI::colorize( "%R---------%n\n\n" ) );
+	}
 }
