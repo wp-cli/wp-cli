@@ -19,11 +19,14 @@ Feature: Manage WordPress options
     When I run `wp option list`
     Then STDOUT should contain:
       """
-      bar
+      str_opt	bar
       """
 
-    When I run `wp option list --autoload=on`
-    Then STDOUT should not be empty
+    When I run `wp option list --autoload=off`
+    Then STDOUT should not contain:
+      """
+      str_opt	bar
+      """
 
     When I run `wp option list --search='str_o*'`
     Then STDOUT should be a table containing rows:
@@ -34,6 +37,12 @@ Feature: Manage WordPress options
     Then STDOUT should be:
       """
       3
+      """
+
+    When I run `wp option list`
+    Then STDOUT should contain:
+      """
+      home	http://example.com
       """
 
     When I run `wp option add auto_opt --autoload=no 'bar'`
@@ -51,7 +60,7 @@ Feature: Manage WordPress options
     When I run `wp option list`
     Then STDOUT should not contain:
       """
-      str_opt
+      str_opt	bar
       """
 
     When I try `wp option get str_opt`

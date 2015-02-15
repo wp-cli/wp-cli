@@ -118,7 +118,7 @@ class Option_Command extends WP_CLI_Command {
 	 * * size_bytes
 	 *
 	 * @subcommand list
-	 * @synopsis [--search=<sql-like-pattern>] [--autoload=<value>] [--fields=<fields>] [--format=<format>]
+	 * @synopsis [--search=<glob-style-pattern>] [--autoload=<value>] [--fields=<fields>] [--format=<format>]
 	 */
 	public function list_( $args, $assoc_args ) {
 
