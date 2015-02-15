@@ -120,8 +120,14 @@ class DB_Command extends WP_CLI_Command {
 	 * [<file>]
 	 * : The name of the SQL file to export. If '-', then outputs to STDOUT. If omitted, it will be '{dbname}.sql'.
 	 *
+	 * [--all-tables-with-prefix]
+	 * : Export only tables with prefix.
+	 *
+	 * [--network]
+	 * : Use base prefix in a multisite install when exporting tables with prefix.
+	 *
 	 * [--<field>=<value>]
-	 * : Extra arguments to pass to mysqldump
+	 * : Extra arguments to pass to mysqldump.
 	 *
 	 * [--tables=<tables>]
 	 * : The comma separated list of specific tables to export. Excluding this parameter will export all tables in the database.
@@ -130,6 +136,7 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 *     wp db export --add-drop-table
 	 *     wp db export --tables=wp_options,wp_users
+	 *     wp db export --all-tables-with-prefix
 	 *
 	 * @alias dump
 	 */
@@ -144,9 +151,22 @@ class DB_Command extends WP_CLI_Command {
 		$command = 'mysqldump --no-defaults %s';
 		$command_esc_args = array( DB_NAME );
 
-		if ( isset( $assoc_args['tables'] ) ) {
-			$tables = explode( ',', trim( $assoc_args['tables'], ',' ) );
-			unset( $assoc_args['tables'] );
+		if ( isset( $assoc_args['all-tables-with-prefix'] )
+			|| isset( $assoc_args['tables'] ) ) {
+
+			if ( isset( $assoc_args['all-tables-with-prefix'] ) ) {
+				unset( $assoc_args['all-tables-with-prefix'] );
+
+				$network = isset( $assoc_args['network'] );
+				if ( $network ) {
+					unset( $assoc_args['network'] );
+				}
+				$tables = $this->get_table_names( $network );
+			} elseif ( isset( $assoc_args['tables'] ) ) {
+				$tables = explode( ',', trim( $assoc_args['tables'], ',' ) );
+				unset( $assoc_args['tables'] );
+			}
+
 			$command .= ' --tables';
 			foreach ( $tables as $table ) {
 				$command .= ' %s';
@@ -207,6 +227,12 @@ class DB_Command extends WP_CLI_Command {
 	 * [--scope=<scope>]
 	 * : Can be all, global, ms_global, blog, or old tables. Defaults to all.
 	 *
+	 * [--all-tables-with-prefix]
+	 * : List only tables with prefix.
+	 *
+	 * [--network]
+	 * : Use base prefix in a multisite install when listing tables with prefix.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Export only tables for a single site
@@ -217,7 +243,15 @@ class DB_Command extends WP_CLI_Command {
 
 		$scope = isset( $assoc_args['scope'] ) ? $assoc_args['scope'] : 'all';
 
-		$tables = $wpdb->tables( $scope );
+		if ( isset( $assoc_args['all-tables-with-prefix'] ) ) {
+			$network = isset( $assoc_args['network'] );
+			if ( $network ) {
+				unset( $assoc_args['network'] );
+			}
+			$tables = $this->get_table_names( $network );
+		} else {
+			$tables = $wpdb->tables( $scope );
+		}
 
 		foreach ( $tables as $table ) {
 			WP_CLI::line( $table );
@@ -262,7 +296,14 @@ class DB_Command extends WP_CLI_Command {
 
 		Utils\run_mysql_command( $cmd, $final_args, $descriptors );
 	}
+
+	private function get_table_names( $network ) {
+		global $wpdb;
+
+		$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
+
+		return $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', like_escape( $wpdb->prefix ) . '%' ) );
+	}
 }
 
 WP_CLI::add_command( 'db', 'DB_Command' );
-
