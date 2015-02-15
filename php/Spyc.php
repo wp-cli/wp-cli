@@ -216,13 +216,13 @@ class Spyc {
     // and options soon.  And better support for folding.
 
     // New features and options.
-    if ($indent === false or !is_numeric($indent)) {
+    if ($indent === false || !is_numeric($indent)) {
       $this->_dumpIndent = 2;
     } else {
       $this->_dumpIndent = $indent;
     }
 
-    if ($wordwrap === false or !is_numeric($wordwrap)) {
+    if ($wordwrap === false || !is_numeric($wordwrap)) {
       $this->_dumpWordWrap = 40;
     } else {
       $this->_dumpWordWrap = $wordwrap;
