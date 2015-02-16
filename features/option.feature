@@ -13,12 +13,58 @@ Feature: Manage WordPress options
       bar
       """
 
+    When I run `wp option list`
+    Then STDOUT should not be empty
+
+    When I run `wp option list`
+    Then STDOUT should contain:
+      """
+      str_opt	bar
+      """
+
+    When I run `wp option list --autoload=off`
+    Then STDOUT should not contain:
+      """
+      str_opt	bar
+      """
+
+    When I run `wp option list --search='str_o*'`
+    Then STDOUT should be a table containing rows:
+      | option_name  | option_value  |
+      | str_opt      | bar           |
+
+    When I run `wp option list --search='str_o*' --format=total_bytes`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp option list`
+    Then STDOUT should contain:
+      """
+      home	http://example.com
+      """
+
+    When I run `wp option add auto_opt --autoload=no 'bar'`
+    Then STDOUT should not be empty
+
+    When I run `wp option list --search='auto_opt' --autoload`
+    Then STDOUT should not be empty
+
+    When I run `wp option list | grep -q "str_opt"`
+    Then the return code should be 0
+
     When I run `wp option delete str_opt`
     Then STDOUT should not be empty
 
+    When I run `wp option list`
+    Then STDOUT should not contain:
+      """
+      str_opt	bar
+      """
+
     When I try `wp option get str_opt`
     Then the return code should be 1
-
 
     # Integer values
     When I run `wp option update blog_public 1`
