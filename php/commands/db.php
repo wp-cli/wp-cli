@@ -78,7 +78,7 @@ class DB_Command extends WP_CLI_Command {
 	 * @alias connect
 	 */
 	function cli() {
-		self::run( 'mysql --no-defaults', array(
+		self::run( 'mysql --no-defaults --no-auto-rehash', array(
 			'database' => DB_NAME
 		) );
 	}
@@ -109,7 +109,7 @@ class DB_Command extends WP_CLI_Command {
 			$assoc_args['execute'] = $args[0];
 		}
 
-		self::run( 'mysql --no-defaults', $assoc_args );
+		self::run( 'mysql --no-defaults --no-auto-rehash', $assoc_args );
 	}
 
 	/**
@@ -192,7 +192,7 @@ class DB_Command extends WP_CLI_Command {
 			);
 		}
 
-		self::run( 'mysql --no-defaults', array(
+		self::run( 'mysql --no-defaults --no-auto-rehash', array(
 			'database' => DB_NAME
 		), $descriptors );
 
@@ -244,7 +244,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	private static function run_query( $query ) {
-		self::run( 'mysql --no-defaults', array( 'execute' => $query ) );
+		self::run( 'mysql --no-defaults --no-auto-rehash', array( 'execute' => $query ) );
 	}
 
 	private static function run( $cmd, $assoc_args = array(), $descriptors = null ) {
