@@ -53,8 +53,6 @@ function set_file_contents( $phar, $path, $content ) {
 
 $phar = new Phar( DEST_PATH, 0, 'wp-cli.phar' );
 
-$phar->setSignatureAlgorithm( Phar::SHA512 );
-
 $phar->startBuffering();
 
 // PHP files
@@ -114,6 +112,3 @@ EOB
 $phar->stopBuffering();
 
 echo "Generated " . DEST_PATH . "\n";
-
-$signature = $phar->getSignature();
-echo "{$signature['hash_type']} signature: {$signature['hash']}\n";
