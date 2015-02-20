@@ -175,7 +175,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		$allowed_themes = call_user_func( "get{$_site}_option", 'allowedthemes' );
 		if ( empty( $allowed_themes ) )
 			$allowed_themes = array();
-		$allowed_themes[ $theme->get_template() ] = true;
+		$allowed_themes[ $theme->get_stylesheet() ] = true;
 		call_user_func( "update{$_site}_option", 'allowedthemes', $allowed_themes );
 
 		if ( ! empty( $assoc_args['network'] ) )
@@ -221,8 +221,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		# Add the current theme to the allowed themes option or site option
 		$allowed_themes = call_user_func( "get{$_site}_option", 'allowedthemes' );
-		if ( ! empty( $allowed_themes[ $theme->get_template() ] ) )
-			unset( $allowed_themes[ $theme->get_template() ] );
+		if ( ! empty( $allowed_themes[ $theme->get_stylesheet() ] ) )
+			unset( $allowed_themes[ $theme->get_stylesheet() ] );
 		call_user_func( "update{$_site}_option", 'allowedthemes', $allowed_themes );
 
 		if ( ! empty( $assoc_args['network'] ) )
