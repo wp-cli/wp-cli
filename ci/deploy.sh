@@ -38,7 +38,7 @@ chmod -x $fname
 md5sum $fname | cut -d ' ' -f 1 > $fname.md5
 sha512sum $fname | cut -d ' ' -f 1 > $fname.sha512
 
-git add $fname.phar $fname.md5 $fname.sha512
+git add $fname $fname.md5 $fname.sha512
 git commit -m "phar build: $TRAVIS_REPO_SLUG@$TRAVIS_COMMIT"
 
 git push
