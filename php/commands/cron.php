@@ -509,7 +509,9 @@ class Cron_Command extends WP_CLI_Command {
 	 * @return WP_Error|array The response or WP_Error on failure.
 	 */
 	protected static function get_cron_spawn() {
+		global $wp_version;
 
+		$sslverify     = version_compare( $wp_version, 4.0, '<' );
 		$doing_wp_cron = sprintf( '%.22F', microtime( true ) );
 
 		$cron_request = apply_filters( 'cron_request', array(
@@ -518,7 +520,7 @@ class Cron_Command extends WP_CLI_Command {
 			'args' => array(
 				'timeout'   => 3,
 				'blocking'  => true,
-				'sslverify' => apply_filters( 'https_local_ssl_verify', true )
+				'sslverify' => apply_filters( 'https_local_ssl_verify', $sslverify )
 			)
 		) );
 
