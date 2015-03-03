@@ -24,7 +24,7 @@ function load_dependencies() {
 	}
 
 	if ( !$has_autoload ) {
-		fputs( STDERR, "Internal error: Can't find Composer autoloader.\n" );
+		fputs( STDERR, "Internal error: Can't find Composer autoloader.\nTry running: composer install\n" );
 		exit(3);
 	}
 }
