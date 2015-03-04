@@ -547,7 +547,7 @@ Feature: Manage WordPress installation
   Scenario: Ensure file cache isn't corrupted by a ZIP masquerading as a gzipped TAR, part one
     Given a WP install
     And an empty cache
-    And I run `mkdir -p {SUITE_CACHE_DIR}/core; wget -O {SUITE_CACHE_DIR}/core/en_US-4.0.tar.gz https://wordpress.org/wordpress-4.0.zip`
+    And I run `mkdir -p {SUITE_CACHE_DIR}/core; wget -O {SUITE_CACHE_DIR}/core/en_US-4.0.tar.gz https://wordpress.org/wordpress-4.0.zip; touch {SUITE_CACHE_DIR}/core/en_US-4.0.tar.gz`
 
     When I run `wp core download --version=4.0 --force`
     Then STDOUT should contain:
