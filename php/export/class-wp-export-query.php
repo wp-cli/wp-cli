@@ -294,7 +294,7 @@ class WP_Export_Query {
 		foreach ( $have_parent as $has_parent ) {
 			if ( ! isset( $term_ids[ $has_parent->parent ] ) ) {
 				$this->missing_parents = $has_parent;
-				throw new WP_Export_Term_Exception( __( 'Term is missing a parent.' ) );
+				throw new WP_Export_Term_Exception( sprintf( __( 'Term is missing a parent: %s (%d)' ), $has_parent->slug, $has_parent->term_taxonomy_id ) );
 			}
 		}
 	}
