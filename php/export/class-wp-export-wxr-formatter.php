@@ -252,7 +252,7 @@ COMMENT;
 		foreach( $metas as $meta ) {
 			$oxymel->tag( 'wp:commentmeta' )->contains
 				->tag( 'wp:meta_key', $meta->meta_key )
-				->tag( 'wp:meta_value', $meta->meta_value )
+				->tag( 'wp:meta_value' )->contains->cdata( $meta->meta_value )->end
 			->end;
 		}
 		return $oxymel;
