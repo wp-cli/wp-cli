@@ -723,15 +723,9 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 * @when before_wp_load
 	 */
 	public function version( $args = array(), $assoc_args = array() ) {
-		$versions_path = ABSPATH . 'wp-includes/version.php';
+		global $wp_version, $wp_db_version, $tinymce_version;
 
-		if ( !is_readable( $versions_path ) ) {
-			WP_CLI::error(
-				"This does not seem to be a WordPress install.\n" .
-				"Pass --path=`path/to/wordpress` or run `wp core download`." );
-		}
-
-		include $versions_path;
+		$this->load_core_wp_version();
 
 		// @codingStandardsIgnoreStart
 		if ( isset( $assoc_args['extra'] ) ) {
@@ -756,6 +750,21 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	}
 
 	/**
+	 * Load the core $wp_version global variable
+	 */
+	private function load_core_wp_version() {
+		global $wp_version, $wp_db_version, $tinymce_version;
+
+		$versions_path = ABSPATH . 'wp-includes/version.php';
+		if ( !is_readable( $versions_path ) ) {
+			WP_CLI::error(
+				"This does not seem to be a WordPress install.\n" .
+				"Pass --path=`path/to/wordpress` or run `wp core download`." );
+		}
+		include $versions_path;
+	}
+
+	/**
 	 * Security copy of the core function with Requests - Gets the checksums for the given version of WordPress.
 	 *
 	 * @param string $version Version string to query.
@@ -763,10 +772,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 * @return bool|array False on failure. An array of checksums on success.
 	 */
 	private static function get_core_checksums( $version, $locale ) {
-		$url = $http_url = 'http://api.wordpress.org/core/checksums/1.0/?' . http_build_query( compact( 'version', 'locale' ), null, '&' );
-
-		if ( $ssl = wp_http_supports( array( 'ssl' ) ) )
-			$url = 'https' . substr( $url, 4 );
+		$url = 'https://api.wordpress.org/core/checksums/1.0/?' . http_build_query( compact( 'version', 'locale' ), null, '&' );
 
 		$options = array(
 			'timeout' => 30
@@ -777,19 +783,16 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		);
 		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
 
-		if ( $ssl && ! $response->success ) {
-			WP_CLI::warning( 'wp-cli could not establish a secure connection to WordPress.org. Please contact your server administrator.' );
-			$response = Utils\http_request( 'GET', $http_url, null, $headers, $options );
-		}
-
-		if ( ! $response->success || 200 != $response->status_code )
+		if ( ! $response->success || 200 != $response->status_code ) {
 			return false;
+		}
 
 		$body = trim( $response->body );
 		$body = json_decode( $body, true );
 
-		if ( ! is_array( $body ) || ! isset( $body['checksums'] ) || ! is_array( $body['checksums'] ) )
+		if ( ! is_array( $body ) || ! isset( $body['checksums'] ) || ! is_array( $body['checksums'] ) ) {
 			return false;
+		}
 
 		return $body['checksums'];
 	}
@@ -797,12 +800,16 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	/**
 	 * Verify WordPress files against WordPress.org's checksums.
 	 *
+	 * @when before_wp_load
+	 *
 	 * @subcommand verify-checksums
 	 */
 	public function verify_checksums( $args, $assoc_args ) {
-		global $wp_version, $wp_local_package;
+		global $wp_version;
 
-		$checksums = self::get_core_checksums( $wp_version, isset( $wp_local_package ) ? $wp_local_package : 'en_US' );
+		$this->load_core_wp_version();
+
+		$checksums = self::get_core_checksums( $wp_version, 'en_US' );
 
 		if ( ! is_array( $checksums ) ) {
 			WP_CLI::error( "Couldn't get checksums from WordPress.org." );
