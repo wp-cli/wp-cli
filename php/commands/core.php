@@ -636,6 +636,7 @@ class Core_Command extends WP_CLI_Command {
 		if ( !is_multisite() ) {
 			ob_start();
 ?>
+define( 'WP_ALLOW_MULTISITE', true );
 define('MULTISITE', true);
 define('SUBDOMAIN_INSTALL', <?php var_export( $assoc_args['subdomains'] ); ?>);
 $base = '<?php echo $assoc_args['base']; ?>';
