@@ -22,7 +22,10 @@ Feature: Manage post custom fields
     Then STDOUT should not be empty
 
     When I run the previous command again
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      Success: Value passed for custom field 'foo' is unchanged.
+      """
 
     When I run `wp post-meta get 1 foo --format=json`
     Then STDOUT should be:
