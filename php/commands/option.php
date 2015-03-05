@@ -204,8 +204,9 @@ class Option_Command extends WP_CLI_Command {
 		$value = WP_CLI::read_value( $value, $assoc_args );
 
 		$value = sanitize_option( $key, $value );
+		$old_value = sanitize_option( $key, get_option( $key ) );
 
-		if ( $value === get_option( $key ) ) {
+		if ( $value === $old_value ) {
 			WP_CLI::success( "Value passed for '$key' option is unchanged." );
 		} else {
 			if ( update_option( $key, $value ) ) {
