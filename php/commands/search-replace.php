@@ -46,6 +46,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--all-tables-with-prefix]
 	 * : Enable replacement on any tables that match the table prefix even if not registered on wpdb
 	 *
+	 * [--all-tables]
+	 * : Enable replacement on ALL tables in the database, regardless of the prefix. Overrides --network and --all-tables-with-prefix.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
@@ -64,6 +67,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$dry_run = isset( $assoc_args['dry-run'] );
 		$php_only = isset( $assoc_args['precise'] );
 		$recurse_objects = isset( $assoc_args['recurse-objects'] );
+		$all_tables = isset( $assoc_args['all-tables'] );
 
 		if ( isset( $assoc_args['skip-columns'] ) )
 			$skip_columns = explode( ',', $assoc_args['skip-columns'] );
@@ -73,7 +77,16 @@ class Search_Replace_Command extends WP_CLI_Command {
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';
 
-		$tables = self::get_table_list( $args, isset( $assoc_args['network'] ), isset( $assoc_args['all-tables-with-prefix'] ) );
+		if ( $all_tables ) {
+			WP_CLI::confirm( "Will run against ALL tables in the database, not only WordPress tables. Continue?" );
+			$tables = $wpdb->get_col( 'SHOW TABLES' );
+		} else {
+			$tables = self::get_table_list(
+				$args,
+				isset( $assoc_args['network'] ),
+				isset( $assoc_args['all-tables-with-prefix'] )
+			);
+		}
 
 		foreach ( $tables as $table ) {
 			list( $primary_keys, $columns ) = self::get_columns( $table );
