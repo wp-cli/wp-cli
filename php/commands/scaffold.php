@@ -213,11 +213,12 @@ class Scaffold_Command extends WP_CLI_Command {
 		}
 
 		$tmpfname = wp_tempnam( $url );
-		$response = wp_remote_post( $url, array( 'timeout'  => $timeout,
-		                                         'body'     => $body,
-		                                         'stream'   => TRUE,
-		                                         'filename' => $tmpfname
-			) );
+		$response = wp_remote_post( $url, array(
+			'timeout'  => $timeout,
+			'body'     => $body,
+			'stream'   => TRUE,
+			'filename' => $tmpfname
+		) );
 
 		if ( is_wp_error( $response ) ) {
 			WP_CLI::error( $response );
