@@ -103,6 +103,10 @@ class WP_CLI {
 		};
 
 		if ( isset( $url_parts['host'] ) ) {
+			if ( isset( $url_parts['scheme'] ) && 'https' === strtolower( $url_parts['scheme'] ) ) {
+				$_SERVER['HTTPS'] = 'on';
+			}
+
 			$_SERVER['HTTP_HOST'] = $url_parts['host'];
 			if ( isset( $url_parts['port'] ) ) {
 				$_SERVER['HTTP_HOST'] .= ':' . $url_parts['port'];
