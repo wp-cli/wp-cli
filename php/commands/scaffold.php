@@ -114,9 +114,9 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$control_args = $this->extract_args( $assoc_args, array(
 			'label'  => preg_replace( '/_|-/', ' ', strtolower( $slug ) ),
-			'theme'  => FALSE,
-			'plugin' => FALSE,
-			'raw'    => FALSE,
+			'theme'  => false,
+			'plugin' => false,
+			'raw'    => false,
 		) );
 
 		$vars = $this->extract_args( $assoc_args, $defaults );
@@ -216,7 +216,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$response = wp_remote_post( $url, array(
 			'timeout'  => $timeout,
 			'body'     => $body,
-			'stream'   => TRUE,
+			'stream'   => true,
 			'filename' => $tmpfname
 		) );
 
@@ -235,11 +235,10 @@ class Scaffold_Command extends WP_CLI_Command {
 		$unzip_result = unzip_file( $tmpfname, $theme_path );
 		unlink( $tmpfname );
 
-		if ( TRUE === $unzip_result ) {
+		if ( true === $unzip_result ) {
 			WP_CLI::success( "Created theme '{$data['theme_name']}'." );
 		} else {
-			WP_CLI::error( "Could not decompress your theme files ('$tmpfname') at '$theme_path': " . $unzip_result->get_error_message() );
-			print_r( $unzip_result );
+			WP_CLI::error( "Could not decompress your theme files ('{$tmpfname}') at '{$theme_path}': {$unzip_result->get_error_message()}" );
 		}
 
 		if ( isset( $assoc_args['activate'] ) ) {
@@ -319,7 +318,7 @@ class Scaffold_Command extends WP_CLI_Command {
 				WP_CLI::error( "Can't find '$plugin' plugin." );
 			}
 		} else {
-			return FALSE;
+			return false;
 		}
 
 		$path .= $subdir;
@@ -513,7 +512,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 
 		foreach ( $to_copy as $file => $dir ) {
-			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", "$dir/$file", TRUE );
+			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", "$dir/$file", true );
 			if ( 'install-wp-tests.sh' === $file ) {
 				if ( ! $wp_filesystem->chmod( "$dir/$file", 0755 ) ) {
 					WP_CLI::warning( "Couldn't mark install-wp-tests.sh as executable." );
@@ -547,7 +546,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			return strtolower( wp_get_theme()->template );
 		}
 
-		if ( $args['plugin'] && TRUE !== $args['plugin'] ) {
+		if ( $args['plugin'] && true !== $args['plugin'] ) {
 			return $args['plugin'];
 		}
 
@@ -607,7 +606,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			}
 		}
 
-		return FALSE;
+		return false;
 	}
 
 	protected function extract_args( $assoc_args, $defaults ) {
