@@ -105,5 +105,5 @@ Feature: Manage user term
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: Invalid taxonomy.
+      Error: Invalid taxonomy boo.
       """

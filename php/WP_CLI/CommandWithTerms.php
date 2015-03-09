@@ -72,6 +72,10 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
 		$this->set_obj_id( $object_id );
 
+		foreach ( $taxonomy_names as $taxonomy ) {
+			$this->taxonomy_exists( $taxonomy );
+		}
+
 		$items = wp_get_object_terms( $object_id, $taxonomy_names );
 
 		$formatter = $this->get_formatter( $assoc_args );
@@ -263,7 +267,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		$taxonomy_names = get_object_taxonomies( $this->get_object_type() );
 
 		if ( ! in_array( $taxonomy, $taxonomy_names ) ) {
-			WP_CLI::error( 'Invalid taxonomy.' );
+			WP_CLI::error( "Invalid taxonomy {$taxonomy}." );
 		}
 	}
 
