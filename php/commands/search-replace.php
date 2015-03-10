@@ -129,6 +129,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 	/**
 	 * Retrieve a list of tables from the database.
 	 *
+	 * @global wpdb $wpdb
+	 *
 	 * @param array $assoc_args Array of options passed to this command.
 	 *
 	 * @return array The array of table names.
