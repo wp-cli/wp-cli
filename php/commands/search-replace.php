@@ -69,10 +69,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$recurse_objects = isset( $assoc_args['recurse-objects'] );
 		$all_tables = isset( $assoc_args['all-tables'] );
 
-		if ( isset( $assoc_args['skip-columns'] ) )
+		if ( isset( $assoc_args['skip-columns'] ) ) {
 			$skip_columns = explode( ',', $assoc_args['skip-columns'] );
-		else
+		} else {
 			$skip_columns = array();
+		}
 
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';
@@ -128,8 +129,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 			$table->setRows( $report );
 			$table->display();
 
-			if ( !$dry_run )
+			if ( ! $dry_run ) {
 				WP_CLI::success( "Made $total replacements." );
+			}
 
 		}
 	}
