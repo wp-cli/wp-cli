@@ -78,7 +78,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$skip_columns[] = 'user_pass';
 
 		// Get the array of tables to work with. If there is anything left in $args, assume those are table names to use
-		$tables = empty( $args ) ? self::get_table_list( $args, $assoc_args ) : $args;
+		$tables = empty( $args ) ? self::get_table_list( $assoc_args ) : $args;
 		foreach ( $tables as $table ) {
 			list( $primary_keys, $columns ) = self::get_columns( $table );
 
