@@ -60,12 +60,12 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		global $wpdb;
-		$old = array_shift( $args );
-		$new = array_shift( $args );
-		$total = 0;
-		$report = array();
-		$dry_run = \WP_CLI\Utils\flag( $assoc_args, 'dry-run' );
-		$php_only = \WP_CLI\Utils\flag( $assoc_args, 'precise' );
+		$old             = array_shift( $args );
+		$new             = array_shift( $args );
+		$total           = 0;
+		$report          = array();
+		$dry_run         = \WP_CLI\Utils\flag( $assoc_args, 'dry-run' );
+		$php_only        = \WP_CLI\Utils\flag( $assoc_args, 'precise' );
 		$recurse_objects = \WP_CLI\Utils\flag( $assoc_args, 'recurse-objects' );
 
 		if ( isset( $assoc_args['skip-columns'] ) ) {
