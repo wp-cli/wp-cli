@@ -77,17 +77,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';
 
-		if ( $all_tables ) {
-			WP_CLI::confirm( "Will run against ALL tables in the database, not only WordPress tables. Continue?" );
-			$tables = $wpdb->get_col( 'SHOW TABLES' );
-		} else {
-			$tables = self::get_table_list(
-				$args,
-				isset( $assoc_args['network'] ),
-				isset( $assoc_args['all-tables-with-prefix'] )
-			);
-		}
-
+		// Get the array of tables to work with. If there is anything left in $args, assume those are table names to use
+		$tables = empty( $args ) ? self::get_table_list( $args, $assoc_args ) : $args;
 		foreach ( $tables as $table ) {
 			list( $primary_keys, $columns ) = self::get_columns( $table );
 
