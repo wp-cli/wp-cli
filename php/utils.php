@@ -504,3 +504,18 @@ function increment_version( $current_version, $new_version ) {
 
 	return $current_version;
 }
+
+/**
+ * Determine the boolean value of a flag in an array.
+ *
+ * Primarily useful for determining the status of a boolean flag for a command. This is needed because a flag can be
+ * prefixed with --no- to set it to false. Therefore it is not sufficient to only check whether a flag is set.
+ *
+ * @param array  $array The array to check.
+ * @param string $key   The key to check for.
+ *
+ * @return bool True if the key is set in the array and is truthy, false otherwise.
+ */
+function flag( $array, $key ) {
+	return isset( $array[ $key ] ) && $array[ $key ];
+}
