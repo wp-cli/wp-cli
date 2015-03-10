@@ -136,11 +136,23 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 	}
 
-	private static function get_table_list( $args, $network, $all_with_prefix ) {
+	/**
+	 * Retrieve a list of tables from the database.
+	 *
+	 * @param array $assoc_args Array of options passed to this command.
+	 *
+	 * @return array The array of table names.
+	 */
+	private static function get_table_list( $assoc_args ) {
 		global $wpdb;
 
-		if ( !empty( $args ) )
-			return $args;
+		$network         = \WP_CLI\Utils\flag( $assoc_args, 'network' );
+		$all_tables      = \WP_CLI\Utils\flag( $assoc_args, 'all-tables' );
+		$all_with_prefix = \WP_CLI\Utils\flag( $assoc_args, 'all-tables-with-prefix' );
+
+		if ( $all_tables ) {
+			return $wpdb->get_col( 'SHOW TABLES' );
+		}
 
 		$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
 		$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $prefix . '%' ) );
