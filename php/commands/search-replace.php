@@ -77,8 +77,20 @@ class Search_Replace_Command extends WP_CLI_Command {
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';
 
+		// Determine how to limit the list of tables. Defaults to 'wordpress'
+		$table_type = 'wordpress';
+		if ( self::check_flag( $assoc_args, 'network' ) ) {
+			$table_type = 'network';
+		}
+		if ( self::check_flag( $assoc_args, 'all-tables-with-prefix' ) ) {
+			$table_type = 'all-tables-with-prefix';
+		}
+		if ( self::check_flag( $assoc_args, 'all-tables' ) ) {
+			$table_type = 'all-tables';
+		}
+
 		// Get the array of tables to work with. If there is anything left in $args, assume those are table names to use
-		$tables = empty( $args ) ? self::get_table_list( $assoc_args ) : $args;
+		$tables = empty( $args ) ? self::get_table_list( $table_type ) : $args;
 		foreach ( $tables as $table ) {
 			list( $primary_keys, $columns ) = self::get_columns( $table );
 
@@ -131,25 +143,27 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * @global wpdb $wpdb
 	 *
-	 * @param array $assoc_args Array of options passed to this command.
+	 * @param string $limit_to Sting defining how to limit the list of tables to retrieve. Acceptable vales are:
+	 *                         - 'wordpress' for default WordPress tables only
+	 *                         - 'network' for default Multisite tables only
+	 *                         - 'all-tables-with-prefix' for all tables using the WordPress DB prefix
+	 *                         - 'all-tables' for all tables in the DB
 	 *
 	 * @return array The array of table names.
 	 */
-	private static function get_table_list( $assoc_args ) {
+	private static function get_table_list( $limit_to ) {
 		global $wpdb;
 
-		$network         = self::check_flag( $assoc_args, 'network' );
-		$all_tables      = self::check_flag( $assoc_args, 'all-tables' );
-		$all_with_prefix = self::check_flag( $assoc_args, 'all-tables-with-prefix' );
+		$network = 'network' == $limit_to;
 
-		if ( $all_tables ) {
+		if ( 'all-tables' == $limit_to ) {
 			return $wpdb->get_col( 'SHOW TABLES' );
 		}
 
 		$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
 		$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $prefix . '%' ) );
 
-		if ( $all_with_prefix ) {
+		if ( 'all-tables-with-prefix' == $limit_to ) {
 			return $matching_tables;
 		}
 
