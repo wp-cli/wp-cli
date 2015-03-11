@@ -40,6 +40,22 @@ Feature: Do global search/replace
       wp_awesome
       """
 
+  Scenario: Run on unregistered, unprefixed tables with --all-tables flag
+    Given a WP install
+    And I run `wp db query "CREATE TABLE awesome_table ( id int(11) unsigned NOT NULL AUTO_INCREMENT, awesome_stuff TEXT, PRIMARY KEY (id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;"`
+
+    When I run `wp search-replace foo bar`
+    Then STDOUT should not contain:
+      """
+      awesome_table
+      """
+
+    When I run `wp search-replace foo bar --all-tables`
+    Then STDOUT should contain:
+      """
+      awesome_table
+      """
+
   Scenario: Quiet search/replace
     Given a WP install
 

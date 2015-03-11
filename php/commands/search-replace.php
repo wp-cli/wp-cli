@@ -46,6 +46,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--all-tables-with-prefix]
 	 * : Enable replacement on any tables that match the table prefix even if not registered on wpdb
 	 *
+	 * [--all-tables]
+	 * : Enable replacement on ALL tables in the database, regardless of the prefix. Overrides --network and --all-tables-with-prefix.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
@@ -57,24 +60,37 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		global $wpdb;
-		$old = array_shift( $args );
-		$new = array_shift( $args );
-		$total = 0;
-		$report = array();
-		$dry_run = isset( $assoc_args['dry-run'] );
-		$php_only = isset( $assoc_args['precise'] );
-		$recurse_objects = isset( $assoc_args['recurse-objects'] );
+		$old             = array_shift( $args );
+		$new             = array_shift( $args );
+		$total           = 0;
+		$report          = array();
+		$dry_run         = self::check_flag( $assoc_args, 'dry-run' );
+		$php_only        = self::check_flag( $assoc_args, 'precise' );
+		$recurse_objects = self::check_flag( $assoc_args, 'recurse-objects' );
 
-		if ( isset( $assoc_args['skip-columns'] ) )
+		if ( isset( $assoc_args['skip-columns'] ) ) {
 			$skip_columns = explode( ',', $assoc_args['skip-columns'] );
-		else
+		} else {
 			$skip_columns = array();
+		}
 
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';
 
-		$tables = self::get_table_list( $args, isset( $assoc_args['network'] ), isset( $assoc_args['all-tables-with-prefix'] ) );
+		// Determine how to limit the list of tables. Defaults to 'wordpress'
+		$table_type = 'wordpress';
+		if ( self::check_flag( $assoc_args, 'network' ) ) {
+			$table_type = 'network';
+		}
+		if ( self::check_flag( $assoc_args, 'all-tables-with-prefix' ) ) {
+			$table_type = 'all-tables-with-prefix';
+		}
+		if ( self::check_flag( $assoc_args, 'all-tables' ) ) {
+			$table_type = 'all-tables';
+		}
 
+		// Get the array of tables to work with. If there is anything left in $args, assume those are table names to use
+		$tables = empty( $args ) ? self::get_table_list( $table_type ) : $args;
 		foreach ( $tables as $table ) {
 			list( $primary_keys, $columns ) = self::get_columns( $table );
 
@@ -115,22 +131,39 @@ class Search_Replace_Command extends WP_CLI_Command {
 			$table->setRows( $report );
 			$table->display();
 
-			if ( !$dry_run )
+			if ( ! $dry_run ) {
 				WP_CLI::success( "Made $total replacements." );
+			}
 
 		}
 	}
 
-	private static function get_table_list( $args, $network, $all_with_prefix ) {
+	/**
+	 * Retrieve a list of tables from the database.
+	 *
+	 * @global wpdb $wpdb
+	 *
+	 * @param string $limit_to Sting defining how to limit the list of tables to retrieve. Acceptable vales are:
+	 *                         - 'wordpress' for default WordPress tables only
+	 *                         - 'network' for default Multisite tables only
+	 *                         - 'all-tables-with-prefix' for all tables using the WordPress DB prefix
+	 *                         - 'all-tables' for all tables in the DB
+	 *
+	 * @return array The array of table names.
+	 */
+	private static function get_table_list( $limit_to ) {
 		global $wpdb;
 
-		if ( !empty( $args ) )
-			return $args;
+		$network = 'network' == $limit_to;
+
+		if ( 'all-tables' == $limit_to ) {
+			return $wpdb->get_col( 'SHOW TABLES' );
+		}
 
 		$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
 		$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $prefix . '%' ) );
 
-		if ( $all_with_prefix ) {
+		if ( 'all-tables-with-prefix' == $limit_to ) {
 			return $matching_tables;
 		}
 
@@ -270,6 +303,21 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		return $old;
+	}
+
+	/**
+	 * Determine the boolean value of a flag in an array.
+	 *
+	 * Primarily useful for determining the status of a boolean flag for a command. This is needed because a flag can be
+	 * prefixed with --no- to set it to false. Therefore it is not sufficient to only check whether a flag is set.
+	 *
+	 * @param array  $array The array to check.
+	 * @param string $key   The key to check for.
+	 *
+	 * @return bool True if the key is set in the array and is truthy, false otherwise.
+	 */
+	private static function check_flag( $array, $key ) {
+		return isset( $array[ $key ] ) && $array[ $key ];
 	}
 }
 
