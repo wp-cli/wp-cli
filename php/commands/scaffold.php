@@ -449,9 +449,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		if ( isset( $assoc_args['activate'] ) ) {
 			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug ) );
-		}
-
-		if ( isset( $assoc_args['activate-network'] ) ) {
+		} else if ( isset( $assoc_args['activate-network'] ) ) {
 			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug), array( 'network' => true ) );
 		}
 	}
