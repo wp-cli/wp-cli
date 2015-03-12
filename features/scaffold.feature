@@ -39,7 +39,7 @@ Feature: WordPress code scaffolding
       """
       __( 'Zombie speeds', 'zombieland'
       """
-  
+
   @tax
   Scenario: Scaffold a Custom Taxonomy with label "Speed"
     When I run `wp scaffold taxonomy zombie-speed --label="Speed"`
@@ -220,3 +220,10 @@ Feature: WordPress code scaffolding
       Success: Created theme 'Starter-theme'.
       """
     And the {THEME_DIR}/starter-theme/sass directory should exist
+
+  Scenario: Scaffold starter code for a theme and activate it
+    When I run `wp scaffold _s starter-theme --activate`
+    Then STDOUT should contain:
+      """
+      Switched to 'Starter-theme' theme.
+      """
