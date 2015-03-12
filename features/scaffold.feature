@@ -100,6 +100,13 @@ Feature: WordPress code scaffolding
     And the {PLUGIN_DIR}/hello-world/hello-world.php file should exist
     And the {PLUGIN_DIR}/hello-world/readme.txt file should exist
 
+  Scenario: Scaffold a plugin and activate it
+    When I run `wp scaffold plugin hello-world --activate`
+    Then STDOUT should contain:
+      """
+      Plugin 'hello-world' activated.
+      """
+
   Scenario: Scaffold plugin tests
     When I run `wp plugin path`
     Then save STDOUT as {PLUGIN_DIR}
