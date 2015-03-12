@@ -107,6 +107,13 @@ Feature: WordPress code scaffolding
       Plugin 'hello-world' activated.
       """
 
+  Scenario: Scaffold a plugin and network activate it
+    When I run `wp scaffold plugin hello-world --activate-network`
+    Then STDOUT should contain:
+      """
+      Plugin 'hello-world' network activated.
+      """
+
   Scenario: Scaffold plugin tests
     When I run `wp plugin path`
     Then save STDOUT as {PLUGIN_DIR}
