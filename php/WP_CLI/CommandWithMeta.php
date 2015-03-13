@@ -181,13 +181,22 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		$object_id = $this->check_object_id( $object_id );
 
-		$success = \update_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
+		$meta_value = sanitize_meta( $meta_key, $meta_value, $this->meta_type );
+		$old_value = sanitize_meta( $meta_key, get_metadata( $this->meta_type, $object_id, $meta_key, true ), $this->meta_type );
 
-		if ( $success ) {
-			\WP_CLI::success( "Updated custom field." );
+		if ( $meta_value === $old_value ) {
+			\WP_CLI::success( "Value passed for custom field '$meta_key' is unchanged." );
 		} else {
-			\WP_CLI::error( "Failed to update custom field." );
+			$success = \update_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
+
+			if ( $success ) {
+				\WP_CLI::success( "Updated custom field '$meta_key'." );
+			} else {
+				\WP_CLI::error( "Failed to update custom field '$meta_key'." );
+			}
+
 		}
+
 	}
 
 	/**
@@ -214,4 +223,3 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	}
 
 }
-
