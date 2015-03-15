@@ -100,6 +100,7 @@ COMMENT;
 		foreach ( $authors as $author ) {
 			$oxymel
 				->tag( 'wp:wp_author' )->contains
+					->tag( 'wp:author_id', $author->ID )
 					->tag( 'wp:author_login', $author->user_login )
 					->tag( 'wp:author_email', $author->user_email )
 					->tag( 'wp:author_display_name' )->contains->cdata( $author->display_name )->end
