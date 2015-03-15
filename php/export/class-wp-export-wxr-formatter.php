@@ -103,8 +103,8 @@ COMMENT;
 					->tag( 'wp:author_login', $author->user_login )
 					->tag( 'wp:author_email', $author->user_email )
 					->tag( 'wp:author_display_name' )->contains->cdata( $author->display_name )->end
-					->tag( 'wp:author_first_name' )->contains->cdata( $author->user_first_name )->end
-					->tag( 'wp:author_last_name' )->contains->cdata( $author->user_last_name )->end
+					->tag( 'wp:author_first_name' )->contains->cdata( $author->user_firstname )->end
+					->tag( 'wp:author_last_name' )->contains->cdata( $author->user_lastname )->end
 					->end;
 		}
 		return $oxymel->to_string();
