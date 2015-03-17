@@ -99,7 +99,7 @@ COMMENT;
 		$authors = $this->export->authors();
 		foreach ( $authors as $author ) {
 			$oxymel
-				->tag( 'wp:wp_author' )->contains
+				->tag( 'wp:author' )->contains
 					->tag( 'wp:author_id', $author->ID )
 					->tag( 'wp:author_login', $author->user_login )
 					->tag( 'wp:author_email', $author->user_email )
