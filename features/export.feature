@@ -201,3 +201,29 @@ Feature: Export content.
       """
       5
       """
+
+  Scenario: Export posts should include user information
+    Given a WP install
+    And I run `wp plugin install wordpress-importer --activate`
+    And I run `wp user create user user@user.com --role=editor --display_name="Test User"`
+    And I run `wp post generate --post_type=post --count=10 --post_author=user`
+
+    When I run `wp export`
+    And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
+    Then the {EXPORT_FILE} file should contain:
+      """
+      <wp:author_display_name><![CDATA[Test User]]></wp:author_display_name>
+      """
+
+    When I run `wp site empty --yes`
+    And I run `wp user list --field=user_login | xargs -n 1 wp user delete --yes`
+    Then STDOUT should not be empty
+
+    When I run `wp import {EXPORT_FILE} --authors=create`
+    Then STDOUT should not be empty
+
+    When I run `wp user get user --field=display_name`
+    Then STDOUT should be:
+      """
+      Test User
+      """
