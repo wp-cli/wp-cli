@@ -252,5 +252,5 @@ Feature: WordPress code scaffolding
     When I run `wp scaffold _s starter-theme --activate`
     Then STDOUT should contain:
       """
-      Switched to 'Starter-theme' theme.
+      Success: Switched to 'Starter-theme' theme.
       """
