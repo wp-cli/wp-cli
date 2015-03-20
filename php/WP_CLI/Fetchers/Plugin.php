@@ -27,6 +27,16 @@ class Plugin extends Base {
 			}
 		}
 
+		$active_plugins = (array) get_option('active_plugins');
+		$network_plugins = (array) get_site_option('active_sitewide_plugins');
+		$all_plugins = array_unique( array_merge( array_values( $active_plugins ), array_keys( $network_plugins ) ) );
+
+		foreach ( $all_plugins as $plugin ) {
+			if ( dirname( $plugin ) === $name && $name !== '.' ) {
+				return (object) array('name' => $plugin, 'file' => $plugin);
+			}
+		}
+
 		return false;
 	}
 }
