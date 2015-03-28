@@ -505,6 +505,17 @@ Feature: Manage WordPress installation
       Success: Language activated.
       """
 
+    When I run `wp core language update --dry-run`
+    Then save STDOUT 'Available (\d+) translations updates' as {UPDATES}
+
+    When I run `wp core language update`
+    Then STDOUT should contain:
+      """
+      Success: Updated {UPDATES}/{UPDATES} translations.
+      """
+    And the wp-content/languages/plugins directory should exist
+    And the wp-content/languages/themes directory should exist
+
     When I run `wp core language list --field=language --status=active`
     Then STDOUT should be:
       """

@@ -125,6 +125,95 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	}
 
 	/**
+	 * Updates the active translation of core, plugins, and themes.
+	 *
+	 * [--dry-run]
+	 * : Preview which translations would be updated.
+	 *
+	 * @subcommand update
+	 */
+	public function update( $args, $assoc_args ) {
+
+		// Ignore updates for the default locale.
+		if ( 'en_US' == get_locale() ) {
+			\WP_CLI::line( "Translations updates are not needed for the default locale." );
+
+			return;
+		}
+
+		wp_version_check();  // Check for Core updates.
+		wp_update_themes();  // Check for Theme updates.
+		wp_update_plugins(); // Check for Plugin updates.
+
+		$updates = wp_get_translation_updates(); // Retrieves a list of all translations updates available.
+
+		if ( empty( $updates ) ) {
+			\WP_CLI::line( "No translations updates available." );
+
+			return;
+		}
+
+		// Gets a list of all languages.
+		$all_languages = $this->get_all_languages();
+
+		// Formats the updates list.
+		foreach ( $updates as $update ) {
+			if ( 'plugin' == $update->type ) {
+				$plugin_data = array_shift( get_plugins( '/' . $update->slug ) );
+				$name		 = $plugin_data['Name'];
+			} elseif ( 'theme' == $update->type ) {
+				$theme_data	 = wp_get_theme( $update->slug );
+				$name		 = $theme_data['Name'];
+			} else { // Core
+				$name = 'WordPress';
+			}
+
+			// Gets the translation data.
+			$translation = (object) reset( wp_list_filter( $all_languages, array(
+				'language' => $update->language
+			) ) );
+
+			$update->Type		 = ucfirst( $update->type );
+			$update->Name		 = $name;
+			$update->Version	 = $update->version;
+			$update->Language	 = $translation->english_name;
+		}
+
+		// Only preview which translations would be updated.
+		if ( isset( $assoc_args['dry-run'] ) ) {
+			\WP_CLI::line( sprintf( 'Available %d translations updates:', count( $updates ) ) );
+			\WP_CLI\Utils\format_items( 'table', $updates, array( 'Type', 'Name', 'Version', 'Language' ) );
+
+			return;
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+
+		$upgrader	 = new \Language_Pack_Upgrader( new \Automatic_Upgrader_Skin() );
+		$results	 = array();
+
+		// Update translations.
+		foreach ( $updates as $update ) {
+			\WP_CLI::line( "Updating '{$update->Language}' translations for {$update->Name} {$update->Version}..." );
+			$results[] = $upgrader->upgrade( $update );
+		}
+
+		$num_to_update	 = count( $updates );
+		$num_updated	 = count( array_filter( $results ) );
+
+		$line = "Updated $num_updated/$num_to_update translations.";
+
+		if ( $num_to_update == $num_updated ) {
+			\WP_CLI::success( $line );
+		} else if ( $num_updated > 0 ) {
+			\WP_CLI::warning( $line );
+		} else {
+			\WP_CLI::error( $line );
+		}
+
+	}
+
+	/**
 	 * Activate a given language.
 	 *
 	 * <language>
