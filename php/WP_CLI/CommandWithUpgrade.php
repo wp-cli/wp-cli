@@ -10,6 +10,13 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected $upgrade_refresh;
 	protected $upgrade_transient;
 
+	function __construct() {
+		// Do not automatically check translations updates after updating plugins/themes.
+		add_action( 'upgrader_process_complete', function() {
+			remove_action( 'upgrader_process_complete', array( 'Language_Pack_Upgrader', 'async_upgrade' ), 20 );
+		}, 1 );
+	}
+
 	abstract protected function get_upgrader_class( $force );
 
 	abstract protected function get_item_list();
