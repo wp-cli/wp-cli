@@ -16,7 +16,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		'english_name',
 		'native_name',
 		'status',
-		'updated',
+		'update',
 		);
 
 	/**
@@ -42,7 +42,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 * * english_name
 	 * * native_name
 	 * * status
-	 * * updated
+	 * * update
 	 *
 	 * These fields are optionally available:
 	 *
@@ -56,12 +56,27 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		$translations = $this->get_all_languages();
 		$available = $this->get_installed_languages();
 
+		wp_version_check();  // Check for Core updates.
+		wp_update_themes();  // Check for Theme updates.
+		wp_update_plugins(); // Check for Plugin updates.
+		$updates = wp_get_translation_updates(); // Retrieves a list of all translations updates available.
+
 		$current_locale = get_locale();
-		$translations = array_map( function( $translation ) use ( $available, $current_locale ) {
+		$translations = array_map( function( $translation ) use ( $available, $current_locale, $updates ) {
 			$translation['status'] = ( in_array( $translation['language'], $available ) ) ? 'installed' : 'uninstalled';
 			if ( $current_locale == $translation['language'] ) {
 				$translation['status'] = 'active';
 			}
+
+			$update = wp_list_filter( $updates, array(
+				'language' => $translation['language']
+			) );
+			if ( $update ) {
+				$translation['update'] = 'available';
+			} else {
+				$translation['update'] = 'none';
+			}
+
 			return $translation;
 		}, $translations );
 
