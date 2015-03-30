@@ -136,7 +136,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 
 		// Ignore updates for the default locale.
 		if ( 'en_US' == get_locale() ) {
-			\WP_CLI::line( "Translations updates are not needed for the default locale." );
+			\WP_CLI::success( "Translations updates are not needed for the 'English (US)' locale." );
 
 			return;
 		}
@@ -148,7 +148,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		$updates = wp_get_translation_updates(); // Retrieves a list of all translations updates available.
 
 		if ( empty( $updates ) ) {
-			\WP_CLI::line( "No translations updates available." );
+			\WP_CLI::success( 'Translations are up to date.' );
 
 			return;
 		}
@@ -194,8 +194,18 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 
 		// Update translations.
 		foreach ( $updates as $update ) {
-			\WP_CLI::line( "Updating '{$update->Language}' translations for {$update->Name} {$update->Version}..." );
-			$results[] = $upgrader->upgrade( $update );
+			\WP_CLI::line( "Updating '{$update->Language}' translation for {$update->Name} {$update->Version}..." );
+			\WP_CLI::line( "Downloading translation from {$update->package}..." );
+
+			$result = $upgrader->upgrade( $update );
+
+			if ( $result ) {
+				\WP_CLI::line( 'Translation updated successfully.' );
+			} else {
+				\WP_CLI::line( 'Translation update failed.' );
+			}
+
+			$results[] = $result;
 		}
 
 		$num_to_update	 = count( $updates );
