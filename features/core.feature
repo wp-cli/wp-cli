@@ -505,7 +505,7 @@ Feature: Manage WordPress installation
       Success: Language activated.
       """
 
-    When I run `wp core language update --dry-run`
+    When I run `wp core language update --dry-run --force`
     Then save STDOUT 'Available (\d+) translations updates' as {UPDATES}
 
     When I run `wp core language update`

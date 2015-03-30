@@ -145,6 +145,9 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 * [--dry-run]
 	 * : Preview which translations would be updated.
 	 *
+	 * [--force]
+	 * : Force the check for updates.
+	 *
 	 * @subcommand update
 	 */
 	public function update( $args, $assoc_args ) {
@@ -154,6 +157,10 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			\WP_CLI::success( "Translations updates are not needed for the 'English (US)' locale." );
 
 			return;
+		}
+
+		if ( isset( $assoc_args['force'] ) && $assoc_args['force'] ) {
+			wp_clean_update_cache(); // Clear existing update caches.
 		}
 
 		wp_version_check();  // Check for Core updates.
