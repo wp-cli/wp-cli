@@ -26,6 +26,12 @@ Feature: Manage post term
       | foo  | foo  | category |
       | bar  | bar  | category |
 
+    When I run `wp post term list 1 category --format=ids`
+    Then STDOUT should be:
+      """
+      3 2 1
+      """
+
     When I try `wp post term list 1 foo2`
     Then STDERR should be:
       """

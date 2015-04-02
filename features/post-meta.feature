@@ -21,6 +21,12 @@ Feature: Manage post custom fields
     When I run `wp post-meta set 1 foo '[ "1", "2" ]' --format=json`
     Then STDOUT should not be empty
 
+    When I run the previous command again
+    Then STDOUT should be:
+      """
+      Success: Value passed for custom field 'foo' is unchanged.
+      """
+
     When I run `wp post-meta get 1 foo --format=json`
     Then STDOUT should be:
       """
