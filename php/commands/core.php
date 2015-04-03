@@ -447,11 +447,12 @@ class Core_Command extends WP_CLI_Command {
 	 * @alias install-network
 	 */
 	public function multisite_convert( $args, $assoc_args ) {
-		if ( is_multisite() )
+		if ( is_multisite() ) {
 			WP_CLI::error( 'This already is a multisite install.' );
+		}
 
 		$assoc_args = self::_set_multisite_defaults( $assoc_args );
-		if ( !isset( $assoc_args['title'] ) ) {
+		if ( ! isset( $assoc_args['title'] ) ) {
 			$assoc_args['title'] = sprintf( _x('%s Sites', 'Default network name' ), get_option( 'blogname' ) );
 		}
 
@@ -539,9 +540,9 @@ class Core_Command extends WP_CLI_Command {
 	private static function _set_multisite_defaults( $assoc_args ) {
 		$defaults = array(
 			'subdomains' => false,
-			'base' => '/',
-			'site_id' => 1,
-			'blog_id' => 1,
+			'base'       => '/',
+			'site_id'    => 1,
+			'blog_id'    => 1,
 		);
 
 		return array_merge( $defaults, $assoc_args );
