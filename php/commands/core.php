@@ -443,6 +443,9 @@ class Core_Command extends WP_CLI_Command {
 	 * [--subdomains]
 	 * : If passed, the network will use subdomains, instead of subdirectories. Doesn't work with 'localhost'.
 	 *
+	 * [--token=<unique-token>]
+	 * : The unique line in the wp-config.php file where the Multisite constants should be added immediately ABOVE. Defaults to "/* That's all, stop editing!".
+	 *
 	 * @subcommand multisite-convert
 	 * @alias install-network
 	 */
@@ -543,6 +546,7 @@ class Core_Command extends WP_CLI_Command {
 			'base'       => '/',
 			'site_id'    => 1,
 			'blog_id'    => 1,
+			'token'      => "/* That's all, stop editing!",
 		);
 
 		return array_merge( $defaults, $assoc_args );
