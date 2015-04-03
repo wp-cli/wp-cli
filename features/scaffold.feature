@@ -263,3 +263,11 @@ Feature: WordPress code scaffolding
       """
       Success: Switched to 'Starter-theme' theme.
       """
+
+  Scenario: Scaffold starter code for a theme and network enable it
+    Given a WP multisite install
+    When I run `wp scaffold _s starter-theme --enable-network`
+    Then STDOUT should contain:
+      """
+      Success: Network enabled the 'Starter-theme' theme.
+      """
