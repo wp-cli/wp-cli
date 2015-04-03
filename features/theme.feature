@@ -225,3 +225,18 @@ Feature: Manage WordPress themes
     Then STDOUT should be a table containing rows:
       | name       | version   |
       | p2         | 1.4.2     |
+
+  Scenario: Attempt to search for a theme when an HTTP connection is not available
+    Given a WP install
+    And a wp-content/mu-plugins/http-breaker.php file:
+      """
+      <?php
+      define( 'WP_PROXY_HOST', '127.0.0.1' );
+      define( 'WP_PROXY_PORT', 54321 );
+      """
+
+    When I try `wp theme search foo`
+    Then STDERR should contain:
+      """
+      Error: Failed to connect to 127.0.0.1
+      """

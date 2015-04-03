@@ -22,6 +22,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		if ( is_multisite() ) {
 			$this->obj_fields[] = 'enabled';
 		}
+
+		add_filter( 'themes_api_result', array( $this, '_filter_wordpress_api_result' ), 10, 3 );
+
 		parent::__construct();
 
 		$this->fetcher = new \WP_CLI\Fetchers\Theme;

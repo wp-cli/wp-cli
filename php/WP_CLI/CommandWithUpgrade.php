@@ -10,6 +10,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected $upgrade_refresh;
 	protected $upgrade_transient;
 
+	protected $http_error;
+
 	abstract protected function get_upgrader_class( $force );
 
 	abstract protected function get_item_list();
@@ -28,6 +30,32 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	abstract protected function status_single( $args );
 
 	abstract protected function install_from_repo( $slug, $assoc_args );
+
+	public function __construct() {
+		// hook into wp http api
+		add_action( 'http_api_debug', array( $this, '_action_http_api_debug' ), 10, 5 );
+
+		parent::__construct();
+	}
+
+	public function _action_http_api_debug( $response, $context, $class, $args = null, $url = null ) {
+		if ( 'response' !== $context ) {
+			return $response;
+		}
+		if ( is_wp_error( $response ) ) {
+			$this->http_error = $response;
+		} else {
+			$this->http_error = null;
+		}
+		return $response;
+	}
+
+	public function _filter_wordpress_api_result( $res, $action, $args ) {
+		if ( !empty( $this->http_error ) ) {
+			return $this->http_error;
+		}
+		return $res;
+	}
 
 	function status( $args ) {
 		// Force WordPress to check for updates
@@ -377,7 +405,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		}
 
 		if ( is_wp_error( $api ) )
-			\WP_CLI::error( $api->get_error_message() . __( ' Try again' ) );
+			\WP_CLI::error( $api->get_error_message() );
 
 		$plural = $this->item_type . 's';
 
