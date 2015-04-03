@@ -653,8 +653,12 @@ define('BLOG_ID_CURRENT_SITE', 1);
 <?php
 			$ms_config = ob_get_clean();
 
-			self::modify_wp_config( $ms_config );
-			WP_CLI::log( 'Added multisite constants to wp-config.php.' );
+			$result = self::modify_wp_config( $ms_config, $assoc_args['token'] );
+			if ( $result ) {
+				WP_CLI::log( 'Added multisite constants to wp-config.php.' );
+			} else {
+				WP_CLI::warning( "You must manually add these lines to your wp-config.php file:\n{$ms_config}" );
+			}
 		}
 
 		return true;
