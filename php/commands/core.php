@@ -701,14 +701,37 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		update_site_option( 'site_admins', $site_admins );
 	}
 
-	private static function modify_wp_config( $content ) {
+	/**
+	 * Modify the wp-config.php file.
+	 *
+	 * @param string $content The content that should be added to the file.
+	 * @param string $token   The unique line in the file where the content should be added immediately above. This is
+	 *                        normally the "/* That's all, stop editing!" line.
+	 *
+	 * @return bool Whether we successfully wrote to the wp-config.php file.
+	 */
+	private static function modify_wp_config( $content, $token ) {
+
 		$wp_config_path = Utils\locate_wp_config();
 
-		$token = "/* That's all, stop editing!";
+		// If we can't find token, warn and exit early to prevent writing $content to the very end of the file.
+		$file_contents = file_get_contents($wp_config_path);
+		if ( false === strpos( $file_contents, $token ) ) {
+			WP_CLI::warning( "Token '{$token}' not found in wp-config.php file." );
+			return false;
+		}
 
-		list( $before, $after ) = explode( $token, file_get_contents( $wp_config_path ) );
+		// If $token is found more than once, the content could be added in the wrong place. Warn and exit early.
+		if ( 1 < substr_count( $file_contents, $token ) ) {
+			WP_CLI::warning( "Token '{$token}' found more than once in wp-config.php file." );
+			return false;
+		}
 
-		file_put_contents( $wp_config_path, $before . $content . $token . $after );
+		list( $before, $after ) = explode( $token, $file_contents );
+
+		$result = file_put_contents( $wp_config_path, $before . $content . $token . $after );
+
+		return false !== $result;
 	}
 
 	private static function get_clean_basedomain() {
