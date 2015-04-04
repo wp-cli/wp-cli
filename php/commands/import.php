@@ -355,7 +355,9 @@ class Import_Command extends WP_CLI_Command {
 			$levs[] = levenshtein( $author_user_login, $user->display_name );
 			$levs[] = levenshtein( $author_user_login, $user->user_login );
 			$levs[] = levenshtein( $author_user_login, $user->user_email );
-			$levs[] = levenshtein( $author_user_login, array_shift( explode( "@", $user->user_email ) ) );
+			$email_parts = explode( "@", $user->user_email );
+			$email_login = array_shift( $email_parts );
+			$levs[] = levenshtein( $author_user_login, $email_login );
 			rsort( $levs );
 			$lev = array_pop( $levs );
 			if ( 0 == $lev ) {

@@ -44,7 +44,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * : Limit the output to specific row fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, ids. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -69,10 +69,19 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
 		$object_id      = array_shift( $args );
 		$taxonomy_names = $args;
+		$taxonomy_args = array();
 
 		$this->set_obj_id( $object_id );
 
-		$items = wp_get_object_terms( $object_id, $taxonomy_names );
+		foreach ( $taxonomy_names as $taxonomy ) {
+			$this->taxonomy_exists( $taxonomy );
+		}
+
+		if ( $assoc_args['format'] == 'ids' ) {
+			$taxonomy_args['fields'] = 'ids';
+		}
+
+		$items = wp_get_object_terms( $object_id, $taxonomy_names, $taxonomy_args );
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
@@ -263,7 +272,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		$taxonomy_names = get_object_taxonomies( $this->get_object_type() );
 
 		if ( ! in_array( $taxonomy, $taxonomy_names ) ) {
-			WP_CLI::error( 'Invalid taxonomy.' );
+			WP_CLI::error( "Invalid taxonomy {$taxonomy}." );
 		}
 	}
 

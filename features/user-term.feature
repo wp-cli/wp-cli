@@ -39,6 +39,12 @@ Feature: Manage user term
       | foo  | foo  | user_type |
       | bar  | bar  | user_type |
 
+    When I run `wp user term list 1 user_type --format=ids`
+    Then STDOUT should be:
+      """
+      3 2
+      """
+
     When I run `wp user term set 1 user_type new`
     Then STDOUT should be:
       """
@@ -105,5 +111,5 @@ Feature: Manage user term
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: Invalid taxonomy.
+      Error: Invalid taxonomy boo.
       """

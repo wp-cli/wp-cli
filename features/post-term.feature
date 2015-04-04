@@ -26,6 +26,18 @@ Feature: Manage post term
       | foo  | foo  | category |
       | bar  | bar  | category |
 
+    When I run `wp post term list 1 category --format=ids`
+    Then STDOUT should be:
+      """
+      3 2 1
+      """
+
+    When I try `wp post term list 1 foo2`
+    Then STDERR should be:
+      """
+      Error: Invalid taxonomy foo2.
+      """
+
     When I run `wp post term set 1 category new`
     Then STDOUT should be:
       """
@@ -89,5 +101,5 @@ Feature: Manage post term
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: Invalid taxonomy.
+      Error: Invalid taxonomy foo2.
       """

@@ -53,7 +53,7 @@ Feature: Manage WordPress installation
       Error: wp-config.php not found.
       Either create one manually or use `wp core config`.
       """
-    
+
     Given a wp-config-extra.php file:
       """
       define( 'WP_DEBUG_LOG', true );
@@ -162,6 +162,36 @@ Feature: Manage WordPress installation
       http://localhost:8001
       """
 
+  Scenario: Install WordPress with an https scheme
+    Given an empty directory
+    And WP files
+    And wp-config.php
+    And a database
+
+    When I run `wp core install --url='https://localhost' --title='Test' --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
+    Then the return code should be 0
+
+    When I run `wp eval 'echo home_url();'`
+    Then STDOUT should be:
+      """
+      https://localhost
+      """
+
+  Scenario: Install WordPress with an https scheme and non-standard port
+    Given an empty directory
+    And WP files
+    And wp-config.php
+    And a database
+
+    When I run `wp core install --url='https://localhost:8443' --title='Test' --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
+    Then the return code should be 0
+
+    When I run `wp eval 'echo home_url();'`
+    Then STDOUT should be:
+      """
+      https://localhost:8443
+      """
+
   Scenario: Full install
     Given a WP install
 
@@ -173,7 +203,7 @@ Feature: Manage WordPress installation
     Then STDOUT should be:
       """
       false
-      """ 
+      """
 
     When I run `wp eval 'var_export( function_exists( 'media_handle_upload' ) );'`
     Then STDOUT should be:
@@ -225,7 +255,7 @@ Feature: Manage WordPress installation
     Then STDOUT should be:
       """
       foobar.org
-      """ 
+      """
 
     # Can complain that it's already installed, but don't exit with an error code
     When I try `wp core multisite-install --url=foobar.org --title=Test --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
