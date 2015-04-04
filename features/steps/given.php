@@ -141,3 +141,16 @@ $steps->Given( '/^save the (.+) file ([\'].+[^\'])?as \{(\w+)\}$/',
 		$world->variables[ $key ] = trim( $output, "\n" );
 	}
 );
+
+$steps->Given('/^a misconfigured WP_CONTENT_DIR constant directory$/',
+	function($world) {
+		$wp_config_path = $world->variables['RUN_DIR'] . "/wp-config.php";
+
+		$wp_config_code = file_get_contents( $wp_config_path );
+
+		$world->add_line_to_wp_config( $wp_config_code,
+			"define( 'WP_CONTENT_DIR', '' );" );
+
+		file_put_contents( $wp_config_path, $wp_config_code );
+	}
+);
