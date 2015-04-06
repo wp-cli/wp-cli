@@ -56,6 +56,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		$translations = $this->get_all_languages();
 		$available = $this->get_installed_languages();
 
+		wp_clean_update_cache(); // Clear existing update caches.
 		wp_version_check();  // Check for Core updates.
 		wp_update_themes();  // Check for Theme updates.
 		wp_update_plugins(); // Check for Plugin updates.
@@ -145,9 +146,6 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 * [--dry-run]
 	 * : Preview which translations would be updated.
 	 *
-	 * [--force]
-	 * : Force the check for updates.
-	 *
 	 * @subcommand update
 	 */
 	public function update( $args, $assoc_args ) {
@@ -159,10 +157,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			return;
 		}
 
-		if ( isset( $assoc_args['force'] ) && $assoc_args['force'] ) {
-			wp_clean_update_cache(); // Clear existing update caches.
-		}
-
+		wp_clean_update_cache(); // Clear existing update caches.
 		wp_version_check();  // Check for Core updates.
 		wp_update_themes();  // Check for Theme updates.
 		wp_update_plugins(); // Check for Plugin updates.
