@@ -17,6 +17,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		'native_name',
 		'status',
 		'update',
+		'updated',
 		);
 
 	/**
@@ -43,6 +44,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 * * native_name
 	 * * status
 	 * * update
+	 * * updated
 	 *
 	 * These fields are optionally available:
 	 *
