@@ -505,6 +505,14 @@ Feature: Manage WordPress installation
       Success: Language activated.
       """
 
+    When I run `wp core language list --fields=language,english_name,update`
+    Then STDOUT should be a table containing rows:
+      | language  | english_name            | update        |
+      | ar        | Arabic                  | none          |
+      | az        | Azerbaijani             | none          |
+      | en_US     | English (United States) | none          |
+      | en_GB     | English (UK)            | available     |
+
     When I run `wp core language update --dry-run`
     Then save STDOUT 'Available (\d+) translations updates' as {UPDATES}
 
