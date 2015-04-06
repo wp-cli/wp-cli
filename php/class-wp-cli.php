@@ -465,18 +465,6 @@ class WP_CLI {
 		self::get_runner()->run_command( $args, $assoc_args );
 	}
 
-	/**
-	 * Check if the flag is set and has the expected value.
-	 *
-	 * @param array	 $args The arguments array to check.
-	 * @param string $flag The flag to check for.
-	 * @param mixed	 $expected The expected value for the flag. Default: TRUE
-	 * @return bool
-	 */
-	public static function check_flag( $args, $flag, $expected = true ) {
-		return isset( $args[ $flag ] ) && $args[ $flag ] == $expected;
-	}
-
 
 
 	// DEPRECATED STUFF
