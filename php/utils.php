@@ -201,6 +201,24 @@ function locate_wp_config() {
 	return $path;
 }
 
+function locate_wp_config_sample() {
+	static $path;
+
+	if ( null === $path ) {
+		if ( file_exists( ABSPATH . 'wp-config-sample.php' ) )
+			$path = ABSPATH . 'wp-config-sample.php';
+		elseif ( file_exists( ABSPATH . '../wp-config-sample.php' ) && ! file_exists( ABSPATH . '/../wp-settings.php' ) )
+			$path = ABSPATH . '../wp-config-sample.php';
+		else
+			$path = false;
+
+		if ( $path )
+			$path = realpath( $path );
+	}
+
+	return $path;
+}
+
 /**
  * Output items in a table, JSON, CSV, ids, or the total count
  *
