@@ -178,7 +178,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 		WP_CLI::confirm( "Are you sure you want to delete the $blog->siteurl site?", $assoc_args );
 
-		wpmu_delete_blog( $blog->blog_id, !isset( $assoc_args['keep-tables'] ) );
+		wpmu_delete_blog( $blog->blog_id, ! \WP_CLI\Utils\check_flag( $assoc_args, 'keep-tables' ) );
 
 		WP_CLI::success( "The site at $blog->siteurl was deleted." );
 	}
@@ -231,7 +231,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			$network = $current_site;
 		}
 
-		$public = !isset( $assoc_args['private'] );
+		$public = ! \WP_CLI\Utils\check_flag( $assoc_args, 'private' );
 
 		// Sanitize
 		if ( preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
@@ -301,7 +301,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( $id->get_error_message() );
 		}
 
-		if ( isset( $assoc_args['porcelain'] ) )
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'porcelain' ) )
 			WP_CLI::line( $id );
 		else
 			WP_CLI::success( "Site $id created: $url" );

@@ -64,9 +64,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$new             = array_shift( $args );
 		$total           = 0;
 		$report          = array();
-		$dry_run         = self::check_flag( $assoc_args, 'dry-run' );
-		$php_only        = self::check_flag( $assoc_args, 'precise' );
-		$recurse_objects = self::check_flag( $assoc_args, 'recurse-objects' );
+		$dry_run         = \WP_CLI\Utils\check_flag( $assoc_args, 'dry-run' );
+		$php_only        = \WP_CLI\Utils\check_flag( $assoc_args, 'precise' );
+		$recurse_objects = \WP_CLI\Utils\check_flag( $assoc_args, 'recurse-objects' );
 
 		if ( isset( $assoc_args['skip-columns'] ) ) {
 			$skip_columns = explode( ',', $assoc_args['skip-columns'] );
@@ -79,13 +79,13 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		// Determine how to limit the list of tables. Defaults to 'wordpress'
 		$table_type = 'wordpress';
-		if ( self::check_flag( $assoc_args, 'network' ) ) {
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'network' ) ) {
 			$table_type = 'network';
 		}
-		if ( self::check_flag( $assoc_args, 'all-tables-with-prefix' ) ) {
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'all-tables-with-prefix' ) ) {
 			$table_type = 'all-tables-with-prefix';
 		}
-		if ( self::check_flag( $assoc_args, 'all-tables' ) ) {
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'all-tables' ) ) {
 			$table_type = 'all-tables';
 		}
 
@@ -305,20 +305,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 		return $old;
 	}
 
-	/**
-	 * Determine the boolean value of a flag in an array.
-	 *
-	 * Primarily useful for determining the status of a boolean flag for a command. This is needed because a flag can be
-	 * prefixed with --no- to set it to false. Therefore it is not sufficient to only check whether a flag is set.
-	 *
-	 * @param array  $array The array to check.
-	 * @param string $key   The key to check for.
-	 *
-	 * @return bool True if the key is set in the array and is truthy, false otherwise.
-	 */
-	private static function check_flag( $array, $key ) {
-		return isset( $array[ $key ] ) && $array[ $key ];
-	}
 }
 
 WP_CLI::add_command( 'search-replace', 'Search_Replace_Command' );

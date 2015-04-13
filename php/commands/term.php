@@ -114,12 +114,8 @@ class Term_Command extends WP_CLI_Command {
 		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
-		if ( isset( $assoc_args['porcelain'] ) ) {
-			$porcelain = true;
-			unset( $assoc_args['porcelain'] );
-		} else {
-			$porcelain = false;
-		}
+		$porcelain = \WP_CLI\Utils\check_flag( $assoc_args, 'porcelain' );
+		unset( $assoc_args['porcelain'] );
 
 		// Compatibility for < WP 4.0
 		if ( $assoc_args['parent'] > 0 && ! term_exists( (int) $assoc_args['parent'] ) ) {

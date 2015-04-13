@@ -153,9 +153,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : If set, the plugin will be activated for the entire multisite network.
 	 */
 	function activate( $args, $assoc_args = array() ) {
-		$network_wide = isset( $assoc_args['network'] );
+		$network_wide = \WP_CLI\Utils\check_flag( $assoc_args, 'network' );
 
-		if ( isset( $assoc_args['all'] ) ) {
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'all' ) ) {
 			$args = array_map( function( $file ){
 				return Utils\get_plugin_name( $file );
 			}, array_keys( get_plugins() ) );
@@ -201,10 +201,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : If set, the plugin will be deactivated for the entire multisite network.
 	 */
 	function deactivate( $args, $assoc_args = array() ) {
-		$network_wide = isset( $assoc_args['network'] );
-		$disable_all = isset( $assoc_args['all'] );
+		$network_wide = \WP_CLI\Utils\check_flag( $assoc_args, 'network' );
+		$disable_all = \WP_CLI\Utils\check_flag( $assoc_args, 'all' );
 
-		if ( isset( $assoc_args['all'] ) ) {
+		if ( $disable_all ) {
 			$args = array_map( function( $file ){
 				return Utils\get_plugin_name( $file );
 			}, array_keys( get_plugins() ) );
@@ -242,7 +242,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : If set, the plugin will be toggled for the entire multisite network.
 	 */
 	function toggle( $args, $assoc_args = array() ) {
-		$network_wide = isset( $assoc_args['network'] );
+		$network_wide = \WP_CLI\Utils\check_flag( $assoc_args, 'network' );
 
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			if ( $this->check_active( $plugin->file, $network_wide ) ) {
@@ -277,7 +277,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			$plugin = $this->fetcher->get_check( $args[0] );
 			$path .= '/' . $plugin->file;
 
-			if ( isset( $assoc_args['dir'] ) )
+			if ( \WP_CLI\Utils\check_flag( $assoc_args, 'dir' ) )
 				$path = dirname( $path );
 		}
 
@@ -297,13 +297,13 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$status = install_plugin_install_status( $api );
 
-		if ( !isset( $assoc_args['force'] ) && 'install' != $status['status'] ) {
+		if ( ! \WP_CLI\Utils\check_flag( $assoc_args, 'force' ) && 'install' != $status['status'] ) {
 			// We know this will fail, so avoid a needless download of the package.
 			return new WP_Error( 'already_installed', 'Plugin already installed.' );
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', html_entity_decode( $api->name, ENT_QUOTES ), $api->version ) );
-		if ( !isset( $assoc_args['version'] ) || 'dev' !== $assoc_args['version'] ) {
+		if ( ! \WP_CLI\Utils\check_flag( $assoc_args, 'version', 'dev' ) ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $api->download_link, $this->item_type, $api->slug, $api->version );
 		}
 		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
@@ -503,7 +503,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 
 			uninstall_plugin( $plugin->file );
 
-			if ( !isset( $assoc_args['skip-delete'] ) && $this->_delete( $plugin ) ) {
+			if ( ! \WP_CLI\Utils\check_flag( $assoc_args, 'skip-delete' ) && $this->_delete( $plugin ) ) {
 				WP_CLI::success( "Uninstalled and deleted '$plugin->name' plugin." );
 			} else {
 				WP_CLI::success( "Ran uninstall procedure for '$plugin->name' plugin without deleting." );

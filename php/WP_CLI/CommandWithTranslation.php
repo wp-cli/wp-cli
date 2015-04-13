@@ -133,7 +133,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		if ( $response == $language_code ) {
 			\WP_CLI::success( "Language installed." );
 
-			if ( isset( $assoc_args['activate'] ) ) {
+			if ( \WP_CLI\Utils\check_flag( $assoc_args, 'activate' ) ) {
 				$this->activate( array( $language_code ), array() );
 			}
 		} else {
@@ -199,7 +199,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		}
 
 		// Only preview which translations would be updated.
-		if ( isset( $assoc_args['dry-run'] ) && $assoc_args['dry-run'] ) {
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'dry-run' ) ) {
 			\WP_CLI::line( sprintf( 'Available %d translations updates:', count( $updates ) ) );
 			\WP_CLI\Utils\format_items( 'table', $updates, array( 'Type', 'Name', 'Version', 'Language' ) );
 

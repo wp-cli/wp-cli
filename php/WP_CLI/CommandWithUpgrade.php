@@ -150,12 +150,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 
 			if ( $result ) {
-				if ( isset( $assoc_args['activate-network'] ) ) {
+				if ( \WP_CLI\Utils\check_flag( $assoc_args, 'activate-network' ) ) {
 					\WP_CLI::log( "Network-activating '$slug'..." );
 					$this->activate( array( $slug ), array( 'network' => true ) );
 				}
 
-				if ( isset( $assoc_args['activate'] ) ) {
+				if ( \WP_CLI\Utils\check_flag( $assoc_args, 'activate' ) ) {
 					\WP_CLI::log( "Activating '$slug'..." );
 					$this->activate( array( $slug ) );
 				}
@@ -203,20 +203,20 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	}
 
 	protected function get_upgrader( $assoc_args ) {
-		$upgrader_class = $this->get_upgrader_class( isset( $assoc_args['force'] ) );
+		$upgrader_class = $this->get_upgrader_class( \WP_CLI\Utils\check_flag( $assoc_args, 'force' ) );
 		return \WP_CLI\Utils\get_upgrader( $upgrader_class );
 	}
 
 	protected function update_many( $args, $assoc_args ) {
 		call_user_func( $this->upgrade_refresh );
 
-		if ( ! isset( $assoc_args['all'] ) && empty( $args ) ) {
+		if ( ! \WP_CLI\Utils\check_flag( $assoc_args, 'all' ) && empty( $args ) ) {
 			\WP_CLI::error( "Please specify one or more {$this->item_type}s, or use --all." );
 		}
 
 		$items = $this->get_item_list();
 
-		if ( !isset( $assoc_args['all'] ) ) {
+		if ( ! \WP_CLI\Utils\check_flag( $assoc_args, 'all' ) ) {
 			$items = $this->filter_item_list( $items, $args );
 		}
 
@@ -224,7 +224,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			'update' => true
 		) );
 
-		if ( isset( $assoc_args['dry-run'] ) ) {
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'dry-run' ) ) {
 			if ( empty( $items_to_update ) ) {
 				\WP_CLI::line( "No {$this->item_type} updates available." );
 				return;

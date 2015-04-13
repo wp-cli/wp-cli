@@ -211,7 +211,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$body['underscoresme_description'] = $theme_description;
 		$body['underscoresme_generate_submit'] = "Generate";
 		$body['underscoresme_generate'] = "1";
-		if ( isset( $assoc_args['sassify'] ) ) {
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'sassify' ) ) {
 			$body['underscoresme_sass'] = 1;
 		}
 
@@ -235,9 +235,9 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		WP_CLI::success( "Created theme '{$data['theme_name']}'." );
 
-		if ( isset( $assoc_args['activate'] ) ) {
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'activate' ) ) {
 			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
-		} else if ( isset( $assoc_args['enable-network'] ) ) {
+		} else if ( \WP_CLI\Utils\check_flag( $assoc_args, 'enable-network' ) ) {
 			WP_CLI::run_command( array( 'theme', 'enable', $theme_slug ), array( 'network' => true ) );
 		}
 	}
@@ -296,9 +296,9 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		WP_CLI::success( "Created $theme_dir" );
 
-		if ( isset( $assoc_args['activate'] ) ) {
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'activate' ) ) {
 			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
-		} else if ( isset( $assoc_args['enable-network'] ) ) {
+		} else if ( \WP_CLI\Utils\check_flag( $assoc_args, 'enable-network' ) ) {
 			WP_CLI::run_command( array( 'theme', 'enable', $theme_slug ), array( 'network' => true ) );
 		}
 	}
@@ -454,13 +454,13 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		WP_CLI::success( "Created $plugin_dir" );
 
-		if ( !isset( $assoc_args['skip-tests'] ) ) {
+		if ( ! \WP_CLI\Utils\check_flag( $assoc_args, 'skip-tests' ) ) {
 			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ) );
 		}
 
-		if ( isset( $assoc_args['activate'] ) ) {
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'activate' ) ) {
 			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug ) );
-		} else if ( isset( $assoc_args['activate-network'] ) ) {
+		} else if ( \WP_CLI\Utils\check_flag( $assoc_args, 'activate-network' ) ) {
 			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug), array( 'network' => true ) );
 		}
 	}

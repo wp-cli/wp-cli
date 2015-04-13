@@ -51,7 +51,7 @@ class Menu_Command extends WP_CLI_Command {
 
 		} else {
 
-			if ( isset( $assoc_args['porcelain'] ) ) {
+			if ( \WP_CLI\Utils\check_flag( $assoc_args, 'porcelain' ) ) {
 				WP_CLI::line( $menu_id );
 			} else {
 				WP_CLI::success( "Created menu $menu_id." );
