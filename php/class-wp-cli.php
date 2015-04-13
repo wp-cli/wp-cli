@@ -274,7 +274,7 @@ class WP_CLI {
 	 * Ask for confirmation before running a destructive operation.
 	 */
 	public static function confirm( $question, $assoc_args = array() ) {
-		if ( !isset( $assoc_args['yes'] ) ) {
+		if ( ! \WP_CLI\Utils\check_flag( $assoc_args, 'yes' ) ) {
 			fwrite( STDOUT, $question . " [y/n] " );
 
 			$answer = trim( fgets( STDIN ) );
@@ -314,7 +314,7 @@ class WP_CLI {
 	 * @param array $assoc_args
 	 */
 	public static function read_value( $raw_value, $assoc_args = array() ) {
-		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'format', 'json' ) ) {
 			$value = json_decode( $raw_value, true );
 			if ( null === $value ) {
 				WP_CLI::error( sprintf( 'Invalid JSON: %s', $raw_value ) );
@@ -333,7 +333,7 @@ class WP_CLI {
 	 * @param array $assoc_args
 	 */
 	public static function print_value( $value, $assoc_args = array() ) {
-		if ( isset( $assoc_args['format'] ) && 'json' == $assoc_args['format'] ) {
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'format', 'json' ) ) {
 			$value = json_encode( $value );
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
 			$value = var_export( $value );

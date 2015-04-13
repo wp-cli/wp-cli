@@ -48,7 +48,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		$runner = WP_CLI::get_runner();
 
-		if ( isset( $assoc_args['format'] ) && 'json' === $assoc_args['format'] ) {
+		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'format', 'json' ) ) {
 			$info = array(
 				'php_binary_path' => $php_bin,
 				'global_config_path' => $runner->global_config_path,
@@ -237,10 +237,10 @@ class CLI_Command extends WP_CLI_Command {
 				$update_type = 'patch';
 			}
 
-			if ( ! ( isset( $assoc_args['patch'] ) && $assoc_args['patch'] && 'patch' !== $update_type )
-				&& ! ( isset( $assoc_args['patch'] ) && ! $assoc_args['patch'] && 'patch' === $update_type )
-				&& ! ( isset( $assoc_args['minor'] ) && $assoc_args['minor'] && 'minor' !== $update_type )
-				&& ! ( isset( $assoc_args['minor'] ) && ! $assoc_args['minor'] && 'minor' === $update_type )
+			if ( ! ( \WP_CLI\Utils\check_flag( $assoc_args, 'patch' ) && 'patch' !== $update_type )
+				&& ! ( \WP_CLI\Utils\check_flag( $assoc_args, 'patch', false ) && 'patch' === $update_type )
+				&& ! ( \WP_CLI\Utils\check_flag( $assoc_args, 'minor' ) && 'minor' !== $update_type )
+				&& ! ( \WP_CLI\Utils\check_flag( $assoc_args, 'minor', false ) && 'minor' === $update_type )
 				&& ! $this->same_minor_release( $release_parts, $updates )
 				) {
 				$updates[] = array(
