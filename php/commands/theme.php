@@ -458,7 +458,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				if ( is_wp_error( $r ) ) {
 					WP_CLI::warning( $r );
 				} else {
-					$assoc_args['force'] = 1;
+					$assoc_args['force'] = true;
 					$this->install( array( $theme->stylesheet ), $assoc_args );
 				}
 			}
