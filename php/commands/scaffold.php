@@ -173,6 +173,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--activate]
 	 * : Activate the newly downloaded theme.
 	 *
+	 * [--enable-network]
+	 * : Enable the newly downloaded theme for the entire network.
+	 *
 	 * [--theme_name=<title>]
 	 * : What to put in the 'Theme Name:' header in style.css
 	 *
@@ -232,9 +235,11 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		WP_CLI::success( "Created theme '{$data['theme_name']}'." );
 
-		if ( isset( $assoc_args['activate'] ) )
+		if ( isset( $assoc_args['activate'] ) ) {
 			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
-
+		} else if ( isset( $assoc_args['enable-network'] ) ) {
+			WP_CLI::run_command( array( 'theme', 'enable', $theme_slug ), array( 'network' => true ) );
+		}
 	}
 
 	/**
@@ -263,6 +268,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--activate]
 	 * : Activate the newly created child theme.
 	 *
+	 * [--enable-network]
+	 * : Enable the newly created child theme for the entire network.
+	 *
 	 * @subcommand child-theme
 	 */
 	function child_theme( $args, $assoc_args ) {
@@ -288,8 +296,11 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		WP_CLI::success( "Created $theme_dir" );
 
-		if ( isset( $assoc_args['activate'] ) )
+		if ( isset( $assoc_args['activate'] ) ) {
 			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
+		} else if ( isset( $assoc_args['enable-network'] ) ) {
+			WP_CLI::run_command( array( 'theme', 'enable', $theme_slug ), array( 'network' => true ) );
+		}
 	}
 
 	private function get_output_path( $assoc_args, $subdir ) {
@@ -419,6 +430,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * [--activate]
 	 * : Activate the newly generated plugin.
+	 *
+	 * [--activate-network]
+	 * : Network activate the newly generated plugin.
 	 */
 	function plugin( $args, $assoc_args ) {
 		$plugin_slug = $args[0];
@@ -446,6 +460,8 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		if ( isset( $assoc_args['activate'] ) ) {
 			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug ) );
+		} else if ( isset( $assoc_args['activate-network'] ) ) {
+			WP_CLI::run_command( array( 'plugin', 'activate', $plugin_slug), array( 'network' => true ) );
 		}
 	}
 

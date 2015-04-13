@@ -1,10 +1,8 @@
 Feature: WordPress code scaffolding
 
-  Background:
-    Given a WP install
-
   @theme
   Scenario: Scaffold a child theme
+    Given a WP install
     Given I run `wp theme path`
     And save STDOUT as {THEME_DIR}
 
@@ -12,8 +10,18 @@ Feature: WordPress code scaffolding
     Then STDOUT should not be empty
     And the {THEME_DIR}/zombieland/style.css file should exist
 
+  Scenario: Scaffold a child theme and network enable it
+    Given a WP multisite install
+
+    When I run `wp scaffold child-theme zombieland --parent_theme=umbrella --theme_name=Zombieland --author=Tallahassee --author_uri=http://www.wp-cli.org --theme_uri=http://www.zombieland.com --enable-network`
+    Then STDOUT should contain:
+      """
+      Success: Network enabled the 'Zombieland' theme.
+      """
+
   @tax @cpt
   Scenario: Scaffold a Custom Taxonomy and Custom Post Type and write it to active theme
+    Given a WP install
     Given I run `wp eval 'echo STYLESHEETPATH;'`
     And save STDOUT as {STYLESHEETPATH}
 
@@ -26,6 +34,7 @@ Feature: WordPress code scaffolding
   # Test for all flags but --label, --theme, --plugin and --raw
   @tax
   Scenario: Scaffold a Custom Taxonomy and attach it to CPTs including one that is prefixed and has a text domain
+    Given a WP install
     When I run `wp scaffold taxonomy zombie-speed --post_types="prefix-zombie,wraith" --textdomain=zombieland`
     Then STDOUT should contain:
       """
@@ -39,9 +48,10 @@ Feature: WordPress code scaffolding
       """
       __( 'Zombie speeds', 'zombieland'
       """
-  
+
   @tax
   Scenario: Scaffold a Custom Taxonomy with label "Speed"
+    Given a WP install
     When I run `wp scaffold taxonomy zombie-speed --label="Speed"`
     Then STDOUT should contain:
         """
@@ -55,6 +65,7 @@ Feature: WordPress code scaffolding
   # Test for all flags but --label, --theme, --plugin and --raw
   @cpt
   Scenario: Scaffold a Custom Post Type
+    Given a WP install
     When I run `wp scaffold post-type zombie --textdomain=zombieland`
     Then STDOUT should contain:
       """
@@ -70,6 +81,7 @@ Feature: WordPress code scaffolding
       """
 
   Scenario: CPT slug is too long
+    Given a WP install
     When I try `wp scaffold post-type slugiswaytoolonginfact`
     Then STDERR should be:
       """
@@ -78,6 +90,7 @@ Feature: WordPress code scaffolding
 
   @cpt
   Scenario: Scaffold a Custom Post Type with label
+    Given a WP install
     When I run `wp scaffold post-type zombie --label="Brain eater"`
     Then STDOUT should contain:
       """
@@ -85,6 +98,7 @@ Feature: WordPress code scaffolding
       """
 
   Scenario: Scaffold a Custom Post Type with dashicon
+    Given a WP install
     When I run `wp scaffold post-type zombie --dashicon="art"`
     Then STDOUT should contain:
       """
@@ -92,6 +106,7 @@ Feature: WordPress code scaffolding
       """
 
   Scenario: Scaffold a plugin
+    Given a WP install
     Given I run `wp plugin path`
     And save STDOUT as {PLUGIN_DIR}
 
@@ -100,7 +115,24 @@ Feature: WordPress code scaffolding
     And the {PLUGIN_DIR}/hello-world/hello-world.php file should exist
     And the {PLUGIN_DIR}/hello-world/readme.txt file should exist
 
+  Scenario: Scaffold a plugin and activate it
+    Given a WP install
+    When I run `wp scaffold plugin hello-world --activate`
+    Then STDOUT should contain:
+      """
+      Plugin 'hello-world' activated.
+      """
+
+  Scenario: Scaffold a plugin and network activate it
+    Given a WP multisite install
+    When I run `wp scaffold plugin hello-world --activate-network`
+    Then STDOUT should contain:
+      """
+      Plugin 'hello-world' network activated.
+      """
+
   Scenario: Scaffold plugin tests
+    Given a WP install
     When I run `wp plugin path`
     Then save STDOUT as {PLUGIN_DIR}
 
@@ -131,6 +163,7 @@ Feature: WordPress code scaffolding
       """
 
   Scenario: Scaffold package tests
+    Given a WP install
     Given a community-command/command.php file:
       """
       <?php
@@ -200,6 +233,7 @@ Feature: WordPress code scaffolding
       """
 
   Scenario: Scaffold starter code for a theme
+    Given a WP install
     Given I run `wp theme path`
     And save STDOUT as {THEME_DIR}
 
@@ -211,6 +245,7 @@ Feature: WordPress code scaffolding
     And the {THEME_DIR}/starter-theme/style.css file should exist
 
   Scenario: Scaffold starter code for a theme with sass
+    Given a WP install
     Given I run `wp theme path`
     And save STDOUT as {THEME_DIR}
 
@@ -220,3 +255,19 @@ Feature: WordPress code scaffolding
       Success: Created theme 'Starter-theme'.
       """
     And the {THEME_DIR}/starter-theme/sass directory should exist
+
+  Scenario: Scaffold starter code for a theme and activate it
+    Given a WP install
+    When I run `wp scaffold _s starter-theme --activate`
+    Then STDOUT should contain:
+      """
+      Success: Switched to 'Starter-theme' theme.
+      """
+
+  Scenario: Scaffold starter code for a theme and network enable it
+    Given a WP multisite install
+    When I run `wp scaffold _s starter-theme --enable-network`
+    Then STDOUT should contain:
+      """
+      Success: Network enabled the 'Starter-theme' theme.
+      """
