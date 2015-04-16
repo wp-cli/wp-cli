@@ -254,3 +254,24 @@ Feature: WordPress code scaffolding
       """
       Success: Switched to 'Starter-theme' theme.
       """
+
+  Scenario: Scaffold plugin and tests for non-standard plugin directory
+    Given a WP install
+
+    When I run `wp scaffold plugin custom-plugin --dir=wp-content/mu-plugins --skip-tests`
+    Then STDOUT should not be empty
+    And the wp-content/mu-plugins/custom-plugin/custom-plugin.php file should exist
+    And the wp-content/mu-plugins/custom-plugin/tests directory should not exist
+
+    When I try `wp scaffold plugin-tests --dir=wp-content/mu-plugins/incorrect-custom-plugin`
+    Then STDERR should contain:
+      """
+      Error: Invalid plugin specified.
+      """
+
+    When I run `wp scaffold plugin-tests --dir=wp-content/mu-plugins/custom-plugin`
+    Then STDOUT should contain:
+      """
+      Success: Created test files.
+      """
+    And the wp-content/mu-plugins/custom-plugin/tests directory should exist
