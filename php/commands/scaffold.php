@@ -422,6 +422,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * <slug>
 	 * : The internal name of the plugin.
 	 *
+	 * [--dir=<dirname>]
+	 * : Put the new plugin in some arbitrary directory path. Plugin directory will be path plus supplied slug.
+	 *
 	 * [--plugin_name=<title>]
 	 * : What to put in the 'Plugin Name:' header
 	 *
@@ -443,11 +446,18 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$data['textdomain'] = $plugin_slug;
 
-		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
+		if ( ! empty( $assoc_args['dir'] ) ) {
+			if ( ! is_dir( $assoc_args['dir'] ) ) {
+				WP_CLI::error( "Cannot create plugin in directory that doesn't exist." );
+			}
+			$plugin_dir = $assoc_args['dir'] . "/$plugin_slug";
+		} else {
+			$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
+			$this->maybe_create_plugins_dir();
+		}
+
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
 		$plugin_readme_path = "$plugin_dir/readme.txt";
-
-		$this->maybe_create_plugins_dir();
 
 		$this->create_file( $plugin_path, Utils\mustache_render( 'plugin.mustache', $data ) );
 		$this->create_file( $plugin_readme_path, Utils\mustache_render( 'plugin-readme.mustache', $data ) );
@@ -455,7 +465,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		WP_CLI::success( "Created $plugin_dir" );
 
 		if ( !isset( $assoc_args['skip-tests'] ) ) {
-			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ) );
+			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), array( 'dir' => $plugin_dir ) );
 		}
 
 		if ( isset( $assoc_args['activate'] ) ) {
@@ -484,8 +494,11 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <plugin>
+	 * [<plugin>]
 	 * : The name of the plugin to generate test files for.
+	 *
+	 * [--dir=<dirname>]
+	 * : Generate test files for a non-standard plugin path.
 	 *
 	 * ## EXAMPLE
 	 *
@@ -496,9 +509,18 @@ class Scaffold_Command extends WP_CLI_Command {
 	function plugin_tests( $args, $assoc_args ) {
 		$wp_filesystem = $this->init_wp_filesystem();
 
-		$plugin_slug = $args[0];
+		if ( ! empty( $assoc_args['dir'] ) ) {
+			$plugin_dir = $assoc_args['dir'];
+			if ( ! is_dir( $plugin_dir ) ) {
+				WP_CLI::error( 'Invalid plugin specified.' );
+			}
+		} else if ( ! empty( $args[0] ) ) {
+			$plugin_slug = $args[0];
+			$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
+		} else {
+			WP_CLI::error( 'Invalid plugin specified.' );
+		}
 
-		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 		$tests_dir = "$plugin_dir/tests";
 		$bin_dir = "$plugin_dir/bin";
 
