@@ -195,6 +195,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp post delete 123 --force
 	 *
 	 *     wp post delete $(wp post list --post_type='page' --format=ids)
+	 *
+	 *     # delete all posts in the trash
+	 *     wp post delete $(wp post list --post_status=trash --format=ids)
 	 */
 	public function delete( $args, $assoc_args ) {
 		$defaults = array(
