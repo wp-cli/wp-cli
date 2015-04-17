@@ -23,7 +23,7 @@ Feature: Manage WordPress posts
     When I run the previous command again
     Then STDOUT should be:
       """
-      Success: Deleted post {POST_ID}
+      Success: Deleted post {POST_ID}.
       """
 
     When I try the previous command again
