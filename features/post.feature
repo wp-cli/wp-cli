@@ -21,7 +21,10 @@ Feature: Manage WordPress posts
       """
 
     When I run the previous command again
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      Success: Deleted post {POST_ID}
+      """
 
     When I try the previous command again
     Then the return code should be 1
