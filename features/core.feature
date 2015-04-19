@@ -641,3 +641,12 @@ Feature: Manage WordPress installation
       """
       4.0
       """
+
+  Scenario: Catch download of non-existent WP version
+    Given an empty directory
+
+    When I try `wp core download --version=4.1.0 --force`
+    Then STDERR should contain:
+      """
+      Error: Release not found.
+      """

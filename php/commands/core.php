@@ -172,7 +172,12 @@ class Core_Command extends WP_CLI_Command {
 				'filename' => $temp
 			);
 
-			Utils\http_request( 'GET', $download_url, null, $headers, $options );
+			$response = Utils\http_request( 'GET', $download_url, null, $headers, $options );
+			if ( 404 == $response->status_code ) {
+				WP_CLI::error( "Release not found. Double-check locale or version." );
+			} else if ( 20 != substr( $response->status_code, 0, 2 ) ) {
+				WP_CLI::error( "Couldn't access download URL (HTTP code {$response->status_code})" );
+			}
 			self::_extract( $temp, ABSPATH );
 			$cache->import( $cache_key, $temp );
 			unlink($temp);
