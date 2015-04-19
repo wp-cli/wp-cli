@@ -35,6 +35,25 @@ Feature: Manage sites in a multisite installation
     When I try the previous command again
     Then the return code should be 1
 
+  Scenario: Filter site list
+    Given a WP multisite install
+
+    When I run `wp site create --slug=first --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site list --fields=blog_id,url`
+    Then STDOUT should be a table containing rows:
+      | blog_id | url                |
+      | 1       | example.com/       |
+      | 2       | example.com/first/ |
+
+    When I run `wp site list --field=url --blog_id=2`
+    Then STDOUT should be:
+      """
+      example.com/first/
+      """
+
   Scenario: Delete a site by slug
     Given a WP multisite install
 
