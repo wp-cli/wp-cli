@@ -429,6 +429,139 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 		parent::_url( $args, 'get_site_url' );
 	}
+
+	/**
+	 * Archive one or more sites
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to archive.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site archive 123
+	 */
+	public function archive( $args ) {
+		$this->update_site_status( $args, 'archived', 1 );
+	}
+
+	/**
+	 * Unarchive one or more sites
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to unarchive.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site unarchive 123
+	 */
+	public function unarchive( $args ) {
+		$this->update_site_status( $args, 'archived', 0 );
+	}
+
+	/**
+	 * Activate one or more sites
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to activate.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site activate 123
+	 */
+	public function activate( $args ) {
+		$this->update_site_status( $args, 'deleted', 0 );
+	}
+
+	/**
+	 * Deactivate one or more sites
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to deactivate.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site deactivate 123
+	 */
+	public function deactivate( $args ) {
+		$this->update_site_status( $args, 'deleted', 1 );
+	}
+
+	/**
+	 * Mark one or more sites as spam
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to be marked as spam.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site spam 123
+	 */
+	public function spam( $args ) {
+		$this->update_site_status( $args, 'spam', 1 );
+	}
+
+	/**
+	 * Remove one or more sites from spam
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to remove from spam.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site not-spam 123
+	 *
+	 * @subcommand not-spam
+	 */
+	public function not_spam( $args ) {
+		$this->update_site_status( $args, 'spam', 0 );
+	}
+
+	private function update_site_status( $ids, $pref, $value ) {
+		if ( $pref == 'archived' && $value == 1 ) {
+			$action = 'archived';
+		} else if ( $pref == 'archived' && $value == 0) {
+			$action = 'unarchived';
+		} else if ( $pref == 'deleted' && $value == 1 ) {
+			$action = 'deactivated';
+		} else if ( $pref == 'deleted' && $value == 0 ) {
+			$action = 'activated';
+		} else if ( $pref == 'spam' && $value == 1 ) {
+			$action = 'marked as spam';
+		} else if ( $pref == 'spam' && $value == 0 ) {
+			$action = 'removed from spam';
+		}
+
+		foreach ( $ids as $site_id ) {
+			$site = $this->fetcher->get_check( $site_id );
+
+			if ( is_main_site( $site->blog_id ) ) {
+				WP_CLI::warning( "You are not allowed to change the main site." );
+				continue;
+			}
+
+			$old_value = get_blog_status( $site->blog_id, $pref );
+
+			if ( $value == $old_value ) {
+				WP_CLI::warning( "Site {$site->blog_id} already $action." );
+				continue;
+			}
+
+			update_blog_status( $site->blog_id, $pref, $value );
+			WP_CLI::success( "Site {$site->blog_id} $action." );
+		}
+	}
 }
 
 WP_CLI::add_command( 'site', 'Site_Command' );

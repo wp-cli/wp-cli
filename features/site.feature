@@ -84,3 +84,152 @@ Feature: Manage sites in a multisite installation
       http://example.com/first
       """
 
+  Scenario: Archive/unarchive a site
+    Given a WP multisite install
+    And I run `wp site create --slug=first --porcelain`
+    And save STDOUT as {FIRST_SITE}
+    And I run `wp site create --slug=second --porcelain`
+    And save STDOUT as {SECOND_SITE}
+
+    When I run `wp site archive {FIRST_SITE}`
+    Then STDOUT should be:
+      """
+      Success: Site {FIRST_SITE} archived.
+      """
+
+    When I run `wp site list --fields=blog_id,archived`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | archived |
+      | {FIRST_SITE} | 1        |
+
+    When I run `wp site archive {FIRST_SITE} {SECOND_SITE}`
+    Then STDERR should be:
+      """
+      Warning: Site {FIRST_SITE} already archived.
+      """
+    And STDOUT should be:
+      """
+      Success: Site {SECOND_SITE} archived.
+      """
+
+    When I run `wp site list --fields=blog_id,archived`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | archived |
+      | {FIRST_SITE} | 1        |
+
+    When I run `wp site unarchive {FIRST_SITE}`
+    Then STDOUT should be:
+      """
+      Success: Site {FIRST_SITE} unarchived.
+      """
+
+    When I run `wp site list --fields=blog_id,archived`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | archived |
+      | {FIRST_SITE} | 0        |
+
+    When I run `wp site archive 1`
+    Then STDERR should be:
+      """
+      Warning: You are not allowed to change the main site.
+      """
+
+  Scenario: Activate/deactivate a site
+    Given a WP multisite install
+    And I run `wp site create --slug=first --porcelain`
+    And save STDOUT as {FIRST_SITE}
+    And I run `wp site create --slug=second --porcelain`
+    And save STDOUT as {SECOND_SITE}
+
+    When I run `wp site deactivate {FIRST_SITE}`
+    Then STDOUT should be:
+      """
+      Success: Site {FIRST_SITE} deactivated.
+      """
+
+    When I run `wp site list --fields=blog_id,deleted`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | deleted |
+      | {FIRST_SITE} | 1       |
+
+    When I run `wp site deactivate {FIRST_SITE} {SECOND_SITE}`
+    Then STDERR should be:
+      """
+      Warning: Site {FIRST_SITE} already deactivated.
+      """
+    And STDOUT should be:
+      """
+      Success: Site {SECOND_SITE} deactivated.
+      """
+
+    When I run `wp site list --fields=blog_id,deleted`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | deleted |
+      | {FIRST_SITE} | 1       |
+
+    When I run `wp site activate {FIRST_SITE}`
+    Then STDOUT should be:
+      """
+      Success: Site {FIRST_SITE} activated.
+      """
+
+    When I run `wp site list --fields=blog_id,deleted`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | deleted |
+      | {FIRST_SITE} | 0       |
+
+    When I run `wp site deactivate 1`
+    Then STDERR should be:
+      """
+      Warning: You are not allowed to change the main site.
+      """
+
+  Scenario: Mark/remove a site from spam
+    Given a WP multisite install
+    And I run `wp site create --slug=first --porcelain`
+    And save STDOUT as {FIRST_SITE}
+    And I run `wp site create --slug=second --porcelain`
+    And save STDOUT as {SECOND_SITE}
+
+    When I run `wp site spam {FIRST_SITE}`
+    Then STDOUT should be:
+      """
+      Success: Site {FIRST_SITE} marked as spam.
+      """
+
+    When I run `wp site list --fields=blog_id,spam`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | spam |
+      | {FIRST_SITE} | 1    |
+
+    When I run `wp site spam {FIRST_SITE} {SECOND_SITE}`
+    Then STDERR should be:
+      """
+      Warning: Site {FIRST_SITE} already marked as spam.
+      """
+    And STDOUT should be:
+      """
+      Success: Site {SECOND_SITE} marked as spam.
+      """
+
+    When I run `wp site list --fields=blog_id,spam`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | spam |
+      | {FIRST_SITE} | 1    |
+
+    When I run `wp site not-spam {FIRST_SITE}`
+    Then STDOUT should be:
+      """
+      Success: Site {FIRST_SITE} removed from spam.
+      """
+
+    When I run `wp site list --fields=blog_id,spam`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | spam |
+      | {FIRST_SITE} | 0    |
+
+    When I run `wp site spam 1`
+    Then STDERR should be:
+      """
+      Warning: You are not allowed to change the main site.
+      """
