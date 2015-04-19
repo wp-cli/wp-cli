@@ -441,6 +441,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$plugin_slug = $args[0];
 
 		$data = wp_parse_args( $assoc_args, array(
+			'plugin_slug' => $plugin_slug,
 			'plugin_name' => ucfirst( $plugin_slug ),
 		) );
 
@@ -461,6 +462,8 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$this->create_file( $plugin_path, Utils\mustache_render( 'plugin.mustache', $data ) );
 		$this->create_file( $plugin_readme_path, Utils\mustache_render( 'plugin-readme.mustache', $data ) );
+		$this->create_file( "$plugin_dir/package.json", Utils\mustache_render( 'plugin-packages.mustache', $data ) );
+		$this->create_file( "$plugin_dir/Gruntfile.js", Utils\mustache_render( 'plugin-gruntfile.mustache', $data ) );
 
 		WP_CLI::success( "Created $plugin_dir" );
 

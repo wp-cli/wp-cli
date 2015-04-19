@@ -114,6 +114,8 @@ Feature: WordPress code scaffolding
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/hello-world/hello-world.php file should exist
     And the {PLUGIN_DIR}/hello-world/readme.txt file should exist
+    And the {PLUGIN_DIR}/hello-world/package.json file should exist
+    And the {PLUGIN_DIR}/hello-world/Gruntfile.js file should exist
 
   Scenario: Scaffold a plugin and activate it
     Given a WP install
