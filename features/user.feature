@@ -167,6 +167,52 @@ Feature: Manage WordPress users
       }]
       """
 
+  Scenario: Import new users on multisite
+    Given a WP multisite install
+    And a user-invalid.csv file:
+      """
+      user_login,user_email,display_name,role
+      bob-jones,bobjones@example.com,Bob Jones,contributor
+      """
+    And a user-valid.csv file:
+      """
+      user_login,user_email,display_name,role
+      bobjones,bobjones@example.com,Bob Jones,contributor
+      """
+
+    When I try `wp user import-csv user-invalid.csv`
+    Then STDERR should contain:
+      """
+      Warning: Only lowercase letters (a-z) and numbers are allowed.
+      """
+
+    When I run `wp user import-csv user-valid.csv`
+    Then STDOUT should not be empty
+
+    When I run `wp user get bobjones --field=display_name`
+    Then STDOUT should be:
+      """
+      Bob Jones
+      """
+
+  Scenario: Create new users on multisite
+    Given a WP multisite install
+
+    When I try `wp user create bob-jones bobjones@example.com`
+    Then STDERR should contain:
+      """
+      Warning: Only lowercase letters (a-z) and numbers are allowed.
+      """
+
+    When I run `wp user create bobjones bobjones@example.com --display_name="Bob Jones"`
+    Then STDOUT should not be empty
+
+    When I run `wp user get bobjones --field=display_name`
+    Then STDOUT should be:
+      """
+      Bob Jones
+      """
+
   Scenario: Import new users but don't update existing
     Given a WP install
     And a users.csv file:
