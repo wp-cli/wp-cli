@@ -520,11 +520,11 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp site not-spam 123
+	 *     wp site unspam 123
 	 *
-	 * @subcommand not-spam
+	 * @subcommand unspam
 	 */
-	public function not_spam( $args ) {
+	public function unspam( $args ) {
 		$this->update_site_status( $args, 'spam', 0 );
 	}
 
