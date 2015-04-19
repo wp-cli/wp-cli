@@ -225,3 +225,12 @@ Feature: Manage WordPress themes
     Then STDOUT should be a table containing rows:
       | name       | version   |
       | p2         | 1.4.2     |
+
+  Scenario: Install and attempt to activate a child theme without its parent
+    Given a WP install
+
+    When I try `wp theme install biker --activate`
+    Then STDERR should contain:
+      """
+      Error: The 'biker' theme cannot be activated without its parent, 'jolene'.
+      """
