@@ -336,6 +336,9 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--network=<id>]
 	 * : The network to which the sites belong.
 	 *
+	 * [--<field>=<value>]
+	 * : Filter by one or more fields.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each site.
 	 *
@@ -391,6 +394,14 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		$where = array();
+
+		$site_cols = array( 'blog_id', 'url', 'last_updated', 'registered', 'site_id', 'domain', 'path', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' );
+		foreach( $site_cols as $col ) {
+			if ( isset( $assoc_args[ $col ] ) ) {
+				$where[ $col ] = $assoc_args[ $col ];
+			}
+		}
+
 		if ( isset( $assoc_args['network'] ) ) {
 			$where['site_id'] = $assoc_args['network'];
 		}
