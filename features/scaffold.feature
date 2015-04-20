@@ -10,6 +10,15 @@ Feature: WordPress code scaffolding
     Then STDOUT should not be empty
     And the {THEME_DIR}/zombieland/style.css file should exist
 
+  Scenario: Scaffold a child theme and network enable it
+    Given a WP multisite install
+
+    When I run `wp scaffold child-theme zombieland --parent_theme=umbrella --theme_name=Zombieland --author=Tallahassee --author_uri=http://www.wp-cli.org --theme_uri=http://www.zombieland.com --enable-network`
+    Then STDOUT should contain:
+      """
+      Success: Network enabled the 'Zombieland' theme.
+      """
+
   @tax @cpt
   Scenario: Scaffold a Custom Taxonomy and Custom Post Type and write it to active theme
     Given a WP install
@@ -105,6 +114,8 @@ Feature: WordPress code scaffolding
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/hello-world/hello-world.php file should exist
     And the {PLUGIN_DIR}/hello-world/readme.txt file should exist
+    And the {PLUGIN_DIR}/hello-world/package.json file should exist
+    And the {PLUGIN_DIR}/hello-world/Gruntfile.js file should exist
 
   Scenario: Scaffold a plugin and activate it
     Given a WP install
@@ -253,6 +264,35 @@ Feature: WordPress code scaffolding
     Then STDOUT should contain:
       """
       Success: Switched to 'Starter-theme' theme.
+      """
+
+  Scenario: Scaffold plugin and tests for non-standard plugin directory
+    Given a WP install
+
+    When I run `wp scaffold plugin custom-plugin --dir=wp-content/mu-plugins --skip-tests`
+    Then STDOUT should not be empty
+    And the wp-content/mu-plugins/custom-plugin/custom-plugin.php file should exist
+    And the wp-content/mu-plugins/custom-plugin/tests directory should not exist
+
+    When I try `wp scaffold plugin-tests --dir=wp-content/mu-plugins/incorrect-custom-plugin`
+    Then STDERR should contain:
+      """
+      Error: Invalid plugin specified.
+      """
+
+    When I run `wp scaffold plugin-tests --dir=wp-content/mu-plugins/custom-plugin`
+    Then STDOUT should contain:
+      """
+      Success: Created test files.
+      """
+    And the wp-content/mu-plugins/custom-plugin/tests directory should exist
+
+  Scenario: Scaffold starter code for a theme and network enable it
+    Given a WP multisite install
+    When I run `wp scaffold _s starter-theme --enable-network`
+    Then STDOUT should contain:
+      """
+      Success: Network enabled the 'Starter-theme' theme.
       """
 
   Scenario: Scaffold starter code for a theme, but can't unzip theme files

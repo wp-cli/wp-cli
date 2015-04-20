@@ -505,6 +505,25 @@ Feature: Manage WordPress installation
       Success: Language activated.
       """
 
+    When I run `wp core language list --fields=language,english_name,update`
+    Then STDOUT should be a table containing rows:
+      | language  | english_name            | update        |
+      | ar        | Arabic                  | none          |
+      | az        | Azerbaijani             | none          |
+      | en_US     | English (United States) | none          |
+      | en_GB     | English (UK)            | available     |
+
+    When I run `wp core language update --dry-run`
+    Then save STDOUT 'Available (\d+) translations updates' as {UPDATES}
+
+    When I run `wp core language update`
+    Then STDOUT should contain:
+      """
+      Success: Updated {UPDATES}/{UPDATES} translations.
+      """
+    And the wp-content/languages/plugins directory should exist
+    And the wp-content/languages/themes directory should exist
+
     When I run `wp core language list --field=language --status=active`
     Then STDOUT should be:
       """
@@ -621,4 +640,13 @@ Feature: Manage WordPress installation
     Then STDOUT should be:
       """
       4.0
+      """
+
+  Scenario: Catch download of non-existent WP version
+    Given an empty directory
+
+    When I try `wp core download --version=4.1.0 --force`
+    Then STDERR should contain:
+      """
+      Error: Release not found.
       """
