@@ -294,3 +294,12 @@ Feature: WordPress code scaffolding
       """
       Success: Network enabled the 'Starter-theme' theme.
       """
+
+  Scenario: Scaffold starter code for a theme, but can't unzip theme files
+    Given a WP install
+    And a misconfigured WP_CONTENT_DIR constant directory
+    When I try `wp scaffold _s starter-theme`
+    Then STDERR should contain:
+    """
+    Error: Could not decompress your theme files
+    """
