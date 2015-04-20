@@ -67,20 +67,20 @@ Feature: Manage WordPress users
   Scenario: Reassigning user posts
     Given a WP multisite install
 
-    When I run `wp user create bob bob@example.com --role=author --porcelain`
+    When I run `wp user create bobjones bob@example.com --role=author --porcelain`
     And save STDOUT as {BOB_ID}
 
     And I run `wp user create sally sally@example.com --role=editor --porcelain`
     And save STDOUT as {SALLY_ID}
 
-    When I run `wp post generate --count=3 --post_author=bob`
+    When I run `wp post generate --count=3 --post_author=bobjones`
     And I run `wp post list --author={BOB_ID} --format=count`
     Then STDOUT should be:
       """
       3
       """
 
-    When I run `wp user delete bob --reassign={SALLY_ID}`
+    When I run `wp user delete bobjones --reassign={SALLY_ID}`
     And I run `wp post list --author={SALLY_ID} --format=count`
     Then STDOUT should be:
       """
@@ -90,16 +90,16 @@ Feature: Manage WordPress users
   Scenario: Deleting user from the whole network
     Given a WP multisite install
 
-    When I run `wp user create bob bob@example.com --role=author --porcelain`
+    When I run `wp user create bobjones bob@example.com --role=author --porcelain`
     And save STDOUT as {BOB_ID}
 
-    When I run `wp user get bob`
+    When I run `wp user get bobjones`
     Then STDOUT should not be empty
 
-    When I run `wp user delete bob --network --yes`
+    When I run `wp user delete bobjones --network --yes`
     Then STDOUT should not be empty
 
-    When I try `wp user get bob`
+    When I try `wp user get bobjones`
     Then STDERR should not be empty
 
   Scenario: Generating and deleting users
@@ -201,7 +201,7 @@ Feature: Manage WordPress users
     When I try `wp user create bob-jones bobjones@example.com`
     Then STDERR should contain:
       """
-      Warning: Only lowercase letters (a-z) and numbers are allowed.
+      Error: Only lowercase letters (a-z) and numbers are allowed.
       """
 
     When I run `wp user create bobjones bobjones@example.com --display_name="Bob Jones"`
