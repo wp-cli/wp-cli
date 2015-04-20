@@ -236,7 +236,7 @@ Feature: Manage sites in a multisite installation
       | blog_id      | spam |
       | {FIRST_SITE} | 1    |
 
-    When I run `wp site not-spam {FIRST_SITE}`
+    When I run `wp site unspam {FIRST_SITE}`
     Then STDOUT should be:
       """
       Success: Site {FIRST_SITE} removed from spam.

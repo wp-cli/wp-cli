@@ -531,11 +531,11 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp site not-spam 123
+	 *     wp site unspam 123
 	 *
-	 * @subcommand not-spam
+	 * @subcommand unspam
 	 */
-	public function not_spam( $args ) {
+	public function unspam( $args ) {
 		$this->update_site_status( $args, 'spam', 0 );
 	}
 
@@ -565,12 +565,12 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			$old_value = get_blog_status( $site->blog_id, $pref );
 
 			if ( $value == $old_value ) {
-				WP_CLI::warning( "Site {$site->blog_id} already $action." );
+				WP_CLI::warning( "Site {$site->blog_id} already {$action}." );
 				continue;
 			}
 
 			update_blog_status( $site->blog_id, $pref, $value );
-			WP_CLI::success( "Site {$site->blog_id} $action." );
+			WP_CLI::success( "Site {$site->blog_id} {$action}." );
 		}
 	}
 }
