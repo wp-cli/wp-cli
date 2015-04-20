@@ -289,19 +289,16 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		if ( is_multisite() ) {
 			$ret = wpmu_validate_user_signup( $user->user_login, $user->user_email );
 			if ( is_wp_error( $ret['errors'] ) && ! empty( $ret['errors']->errors ) ) {
-				WP_CLI::warning( $ret['errors'] );
-				continue;
+				WP_CLI::error( $ret['errors'] );
 			}
 			$user_id = wpmu_create_user( $user->user_login, $user->user_email, $user->user_login, $user->user_pass );
 			if ( ! $user_id ) {
-				WP_CLI::warning( "Unknown error creating new user" );
-				continue;
+				WP_CLI::error( "Unknown error creating new user" );
 			}
 			$user->ID = $user_id;
 			$user_id = wp_update_user( $user );
 			if ( is_wp_error( $user_id ) ) {
-				 WP_CLI::warning( $user_id );
-				 continue;
+				 WP_CLI::error( $user_id );
 			}
 		} else {
 			$user_id = wp_insert_user( $user );
