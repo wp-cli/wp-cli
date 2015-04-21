@@ -506,13 +506,13 @@ function increment_version( $current_version, $new_version ) {
 }
 
 /**
- * Check if the flag is set and has the expected value.
+ * Return the flag value or, if it's not set, the $default value.
  *
- * @param array  $args The arguments array to check.
- * @param string $flag The flag to check for.
- * @param mixed  $expected The expected value for the flag. Default: TRUE
- * @return bool
+ * @param array  $args    Arguments array.
+ * @param string $flag    Flag to get the value.
+ * @param mixed  $default Default value for the flag. Default: NULL
+ * @return mixed
  */
-function check_flag( $args, $flag, $expected = true ) {
-	return isset( $args[ $flag ] ) && ( $args[ $flag ] === $expected );
+function get_flag_value( $args, $flag, $default = null ) {
+    return isset( $args[ $flag ] ) ? $args[ $flag ] : $default;
 }
