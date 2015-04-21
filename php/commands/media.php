@@ -234,6 +234,10 @@ class Media_Command extends WP_CLI_Command {
 
 		$metadata = wp_get_attachment_metadata( $att_id );
 
+		if ( empty( $metadata['file'] ) ) {
+			return;
+		}
+
 		$dir_path = $wud['basedir'] . '/' . dirname( $metadata['file'] ) . '/';
 		$original_path = $dir_path . basename( $metadata['file'] );
 
