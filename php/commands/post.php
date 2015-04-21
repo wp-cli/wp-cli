@@ -56,8 +56,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'edit' ) ) {
-			$input = isset( $assoc_args['post_content'] ) ?
-				$assoc_args['post_content'] : '';
+			$input = \WP_CLI\Utils\get_flag_value( $assoc_args, 'post_content', '' );
 
 			if ( $output = $this->_edit( $input, 'WP-CLI: New Post' ) )
 				$assoc_args['post_content'] = $output;

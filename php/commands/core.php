@@ -130,7 +130,7 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::launch( Utils\esc_cmd( $mkdir, ABSPATH ) );
 		}
 
-		$locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : 'en_US';
+		$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', 'en_US' );
 
 		if ( isset( $assoc_args['version'] ) ) {
 			$version = $assoc_args['version'];
@@ -877,7 +877,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		if ( ! empty( $args[0] ) ) {
 
 			$upgrader = 'WP_CLI\\NonDestructiveCoreUpgrader';
-			$version = ! empty( $assoc_args['version'] ) ? $assoc_args['version'] : null;
+			$version = \WP_CLI\Utils\get_flag_value( $assoc_args, 'version' );
 
 			$update = (object) array(
 				'response'      => 'upgrade',
@@ -906,7 +906,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 					|| \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) {
 
 			$version = $assoc_args['version'];
-			$locale = isset( $assoc_args['locale'] ) ? $assoc_args['locale'] : get_locale();
+			$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', get_locale() );
 
 			$new_package = $this->get_download_url($version, $locale);
 

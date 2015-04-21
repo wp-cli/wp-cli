@@ -215,7 +215,7 @@ class DB_Command extends WP_CLI_Command {
 	function tables( $args, $assoc_args ) {
 		global $wpdb;
 
-		$scope = isset( $assoc_args['scope'] ) ? $assoc_args['scope'] : 'all';
+		$scope = \WP_CLI\Utils\get_flag_value( $assoc_args, 'scope', 'all' );
 
 		$tables = $wpdb->tables( $scope );
 

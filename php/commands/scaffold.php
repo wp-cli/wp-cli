@@ -652,9 +652,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$out = array();
 
 		foreach ( $defaults as $key => $value ) {
-			$out[ $key ] = isset( $assoc_args[ $key ] )
-				? $assoc_args[ $key ]
-				: $value;
+			$out[ $key ] = \WP_CLI\Utils\get_flag_value( $assoc_args, $key, $value );
 		}
 
 		return $out;

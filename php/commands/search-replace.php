@@ -68,11 +68,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$php_only        = \WP_CLI\Utils\get_flag_value( $assoc_args, 'precise' );
 		$recurse_objects = \WP_CLI\Utils\get_flag_value( $assoc_args, 'recurse-objects' );
 
-		if ( isset( $assoc_args['skip-columns'] ) ) {
-			$skip_columns = explode( ',', $assoc_args['skip-columns'] );
-		} else {
-			$skip_columns = array();
-		}
+		$skip_columns = explode( ',', \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-columns' ) );
 
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';

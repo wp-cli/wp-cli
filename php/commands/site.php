@@ -216,7 +216,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		global $wpdb, $current_site;
 
 		$base = $assoc_args['slug'];
-		$title = isset( $assoc_args['title'] ) ? $assoc_args['title'] : ucfirst( $base );
+		$title = \WP_CLI\Utils\get_flag_value( $assoc_args, 'title', ucfirst( $base ) );
 
 		$email = empty( $assoc_args['email'] ) ? '' : $assoc_args['email'];
 

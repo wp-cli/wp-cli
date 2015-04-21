@@ -353,7 +353,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp comment count 42
 	 */
 	public function count( $args, $assoc_args ) {
-		$post_id = isset( $args[0] ) ? $args[0] : 0;
+		$post_id = \WP_CLI\Utils\get_flag_value( $args, 0, 0 );
 
 		$count = wp_count_comments( $post_id );
 
