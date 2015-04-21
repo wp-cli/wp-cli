@@ -286,7 +286,24 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 		$user->role = $role;
 
-		$user_id = wp_insert_user( $user );
+		if ( is_multisite() ) {
+			$ret = wpmu_validate_user_signup( $user->user_login, $user->user_email );
+			if ( is_wp_error( $ret['errors'] ) && ! empty( $ret['errors']->errors ) ) {
+				WP_CLI::error( $ret['errors'] );
+			}
+			$user_id = wpmu_create_user( $user->user_login, $user->user_email, $user->user_login, $user->user_pass );
+			if ( ! $user_id ) {
+				WP_CLI::error( "Unknown error creating new user" );
+			}
+			$user->ID = $user_id;
+			$user_id = wp_update_user( $user );
+			if ( is_wp_error( $user_id ) ) {
+				WP_CLI::error( $user_id );
+			}
+		} else {
+			$user_id = wp_insert_user( $user );
+		}
+
 		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'send-email' ) ) {
 			wp_new_user_notification( $user_id, $user->user_pass );
 		}
@@ -686,7 +703,28 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			// Create the user
 			} else {
 				unset( $new_user['ID'] ); // Unset else it will just return the ID
-				$user_id = wp_insert_user( $new_user );
+
+				if ( is_multisite() ) {
+					$ret = wpmu_validate_user_signup( $new_user['user_login'], $new_user['user_email'] );
+					if ( is_wp_error( $ret['errors'] ) && ! empty( $ret['errors']->errors ) ) {
+						WP_CLI::warning( $ret['errors'] );
+						continue;
+					}
+					$user_id = wpmu_create_user( $new_user['user_login'], $new_user['user_email'], $new_user['user_pass'] );
+					if ( ! $user_id ) {
+						WP_CLI::warning( "Unknown error creating new user" );
+						continue;
+					}
+					$new_user['ID'] = $user_id;
+					$user_id = wp_update_user( $new_user );
+					if ( is_wp_error( $user_id ) ) {
+						WP_CLI::warning( $user_id );
+						continue;
+					}
+				} else {
+					$user_id = wp_insert_user( $new_user );
+				}
+
 				if ( \WP_CLI\Utils\check_flag( $assoc_args, 'send-email' ) ) {
 					wp_new_user_notification( $user_id, $new_user['user_pass'] );
 				}

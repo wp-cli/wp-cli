@@ -39,7 +39,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand post-type
 	 *
-	 * @alias cpt
+	 * @alias      cpt
 	 */
 	function post_type( $args, $assoc_args ) {
 
@@ -91,7 +91,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand taxonomy
 	 *
-	 * @alias tax
+	 * @alias      tax
 	 */
 	function taxonomy( $args, $assoc_args ) {
 		$defaults = array(
@@ -99,7 +99,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			'post_types' => "'post'"
 		);
 
-		if( isset($assoc_args['post_types']) ) {
+		if ( isset( $assoc_args['post_types'] ) ) {
 			$assoc_args['post_types'] = $this->quote_comma_list_elements( $assoc_args['post_types'] );
 		}
 
@@ -132,7 +132,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$vars['label_plural_ucfirst'] = ucfirst( $vars['label_plural'] );
 
 		// We use the machine name for function declarations
-		$machine_name = preg_replace( '/-/', '_', $slug );
+		$machine_name        = preg_replace( '/-/', '_', $slug );
 		$machine_name_plural = $this->pluralize( $slug );
 
 		list( $raw_template, $extended_template ) = $templates;
@@ -142,7 +142,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		if ( ! $control_args['raw'] ) {
 			$vars = array_merge( $vars, array(
 				'machine_name' => $machine_name,
-				'output' => $raw_output
+				'output'       => $raw_output
 			) );
 
 			$final_output = Utils\mustache_render( $extended_template, $vars );
@@ -151,7 +151,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		}
 
 		if ( $path = $this->get_output_path( $control_args, $subdir ) ) {
-			$filename = $path . $slug .'.php';
+			$filename = $path . $slug . '.php';
 
 			$this->create_file( $filename, $final_output );
 
@@ -192,31 +192,36 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$theme_slug = $args[0];
 		$theme_path = WP_CONTENT_DIR . "/themes";
-		$url = "http://underscores.me";
-		$timeout = 30;
+		$url        = "http://underscores.me";
+		$timeout    = 30;
 
 		$data = wp_parse_args( $assoc_args, array(
 			'theme_name' => ucfirst( $theme_slug ),
-			'author' => "Me",
+			'author'     => "Me",
 			'author_uri' => "",
 		) );
 
-		$theme_description = "Custom theme: ".$data['theme_name']." developed by, ".$data['author'];
+		$theme_description = "Custom theme: " . $data['theme_name'] . " developed by, " . $data['author'];
 
-		$body = array();
-		$body['underscoresme_name'] = $data['theme_name'];
-		$body['underscoresme_slug'] = $theme_slug;
-		$body['underscoresme_author'] = $data['author'];
-		$body['underscoresme_author_uri'] = $data['author_uri'];
-		$body['underscoresme_description'] = $theme_description;
+		$body                                  = array();
+		$body['underscoresme_name']            = $data['theme_name'];
+		$body['underscoresme_slug']            = $theme_slug;
+		$body['underscoresme_author']          = $data['author'];
+		$body['underscoresme_author_uri']      = $data['author_uri'];
+		$body['underscoresme_description']     = $theme_description;
 		$body['underscoresme_generate_submit'] = "Generate";
-		$body['underscoresme_generate'] = "1";
+		$body['underscoresme_generate']        = "1";
 		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'sassify' ) ) {
 			$body['underscoresme_sass'] = 1;
 		}
 
-		$tmpfname = wp_tempnam($url);
-		$response = wp_remote_post( $url, array( 'timeout' => $timeout, 'body' => $body, 'stream' => true, 'filename' => $tmpfname ) );
+		$tmpfname = wp_tempnam( $url );
+		$response = wp_remote_post( $url, array(
+			'timeout'  => $timeout,
+			'body'     => $body,
+			'stream'   => true,
+			'filename' => $tmpfname
+		) );
 
 		if ( is_wp_error( $response ) ) {
 			WP_CLI::error( $response );
@@ -230,10 +235,14 @@ class Scaffold_Command extends WP_CLI_Command {
 		$this->maybe_create_themes_dir();
 
 		$this->init_wp_filesystem();
-		unzip_file( $tmpfname, $theme_path );
+		$unzip_result = unzip_file( $tmpfname, $theme_path );
 		unlink( $tmpfname );
 
-		WP_CLI::success( "Created theme '{$data['theme_name']}'." );
+		if ( true === $unzip_result ) {
+			WP_CLI::success( "Created theme '{$data['theme_name']}'." );
+		} else {
+			WP_CLI::error( "Could not decompress your theme files ('{$tmpfname}') at '{$theme_path}': {$unzip_result->get_error_message()}" );
+		}
 
 		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'activate' ) ) {
 			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
@@ -278,15 +287,15 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$data = wp_parse_args( $assoc_args, array(
 			'theme_name' => ucfirst( $theme_slug ),
-			'author' => "Me",
+			'author'     => "Me",
 			'author_uri' => "",
-			'theme_uri' => ""
+			'theme_uri'  => ""
 		) );
 
 		$data['description'] = ucfirst( $data['parent_theme'] ) . " child theme.";
 
-		$theme_dir = WP_CONTENT_DIR . "/themes" . "/$theme_slug";
-		$theme_style_path = "$theme_dir/style.css";
+		$theme_dir            = WP_CONTENT_DIR . "/themes" . "/$theme_slug";
+		$theme_style_path     = "$theme_dir/style.css";
 		$theme_functions_path = "$theme_dir/functions.php";
 
 		$this->maybe_create_themes_dir();
@@ -306,14 +315,15 @@ class Scaffold_Command extends WP_CLI_Command {
 	private function get_output_path( $assoc_args, $subdir ) {
 		if ( $assoc_args['theme'] ) {
 			$theme = $assoc_args['theme'];
-			if ( is_string( $theme ) )
+			if ( is_string( $theme ) ) {
 				$path = get_theme_root( $theme ) . '/' . $theme;
-			else
+			} else {
 				$path = get_stylesheet_directory();
+			}
 		} elseif ( $assoc_args['plugin'] ) {
 			$plugin = $assoc_args['plugin'];
-			$path = WP_PLUGIN_DIR . '/' . $plugin;
-			if ( !is_dir( $path ) ) {
+			$path   = WP_PLUGIN_DIR . '/' . $plugin;
+			if ( ! is_dir( $path ) ) {
 				WP_CLI::error( "Can't find '$plugin' plugin." );
 			}
 		} else {
@@ -353,7 +363,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 *     wp scaffold package-tests /path/to/command/dir/
 	 *
-	 * @when before_wp_load
+	 * @when       before_wp_load
 	 * @subcommand package-tests
 	 */
 	public function package_tests( $args, $assoc_args ) {
@@ -371,39 +381,39 @@ class Scaffold_Command extends WP_CLI_Command {
 		}
 
 		$package_dir .= '/';
-		$bin_dir = $package_dir . 'bin/';
-		$utils_dir = $package_dir . 'utils/';
-		$features_dir = $package_dir . 'features/';
+		$bin_dir       = $package_dir . 'bin/';
+		$utils_dir     = $package_dir . 'utils/';
+		$features_dir  = $package_dir . 'features/';
 		$bootstrap_dir = $features_dir . 'bootstrap/';
-		$steps_dir = $features_dir . 'steps/';
-		$extra_dir = $features_dir . 'extra/';
-		foreach( array( $features_dir, $bootstrap_dir, $steps_dir, $extra_dir, $utils_dir, $bin_dir ) as $dir ) {
+		$steps_dir     = $features_dir . 'steps/';
+		$extra_dir     = $features_dir . 'extra/';
+		foreach ( array( $features_dir, $bootstrap_dir, $steps_dir, $extra_dir, $utils_dir, $bin_dir ) as $dir ) {
 			if ( ! is_dir( $dir ) ) {
 				Process::create( Utils\esc_cmd( 'mkdir %s', $dir ) )->run();
 			}
 		}
 
 		$to_copy = array(
-			'templates/.travis.package.yml' => $package_dir,
-			'templates/load-wp-cli.feature' => $features_dir,
-			'templates/install-package-tests.sh' => $bin_dir,
-			'features/bootstrap/FeatureContext.php' => $bootstrap_dir,
-			'features/bootstrap/support.php' => $bootstrap_dir,
-			'php/WP_CLI/Process.php' => $bootstrap_dir,
-			'php/utils.php' => $bootstrap_dir,
+			'templates/.travis.package.yml'               => $package_dir,
+			'templates/load-wp-cli.feature'               => $features_dir,
+			'templates/install-package-tests.sh'          => $bin_dir,
+			'features/bootstrap/FeatureContext.php'       => $bootstrap_dir,
+			'features/bootstrap/support.php'              => $bootstrap_dir,
+			'php/WP_CLI/Process.php'                      => $bootstrap_dir,
+			'php/utils.php'                               => $bootstrap_dir,
 			'utils/get-package-require-from-composer.php' => $utils_dir,
-			'features/steps/given.php' => $steps_dir,
-			'features/steps/when.php' => $steps_dir,
-			'features/steps/then.php' => $steps_dir,
-			'features/extra/no-mail.php' => $extra_dir,
+			'features/steps/given.php'                    => $steps_dir,
+			'features/steps/when.php'                     => $steps_dir,
+			'features/steps/then.php'                     => $steps_dir,
+			'features/extra/no-mail.php'                  => $extra_dir,
 		);
 
 		foreach ( $to_copy as $file => $dir ) {
 			// file_get_contents() works with Phar-archived files
-			$contents = file_get_contents( WP_CLI_ROOT . "/{$file}" );
+			$contents  = file_get_contents( WP_CLI_ROOT . "/{$file}" );
 			$file_path = $dir . basename( $file );
-			$file_path = str_replace( array( '.travis.package.yml' ), array( '.travis.yml'), $file_path );
-			$result = Process::create( Utils\esc_cmd( 'touch %s', $file_path ) )->run();
+			$file_path = str_replace( array( '.travis.package.yml' ), array( '.travis.yml' ), $file_path );
+			$result    = Process::create( Utils\esc_cmd( 'touch %s', $file_path ) )->run();
 			file_put_contents( $file_path, $contents );
 			if ( 'templates/install-package-tests.sh' === $file ) {
 				Process::create( Utils\esc_cmd( 'chmod +x %s', $file_path ) )->run();
@@ -422,6 +432,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * <slug>
 	 * : The internal name of the plugin.
 	 *
+	 * [--dir=<dirname>]
+	 * : Put the new plugin in some arbitrary directory path. Plugin directory will be path plus supplied slug.
+	 *
 	 * [--plugin_name=<title>]
 	 * : What to put in the 'Plugin Name:' header
 	 *
@@ -438,24 +451,34 @@ class Scaffold_Command extends WP_CLI_Command {
 		$plugin_slug = $args[0];
 
 		$data = wp_parse_args( $assoc_args, array(
+			'plugin_slug' => $plugin_slug,
 			'plugin_name' => ucfirst( $plugin_slug ),
 		) );
 
 		$data['textdomain'] = $plugin_slug;
 
-		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
+		if ( ! empty( $assoc_args['dir'] ) ) {
+			if ( ! is_dir( $assoc_args['dir'] ) ) {
+				WP_CLI::error( "Cannot create plugin in directory that doesn't exist." );
+			}
+			$plugin_dir = $assoc_args['dir'] . "/$plugin_slug";
+		} else {
+			$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
+			$this->maybe_create_plugins_dir();
+		}
+
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
 		$plugin_readme_path = "$plugin_dir/readme.txt";
 
-		$this->maybe_create_plugins_dir();
-
 		$this->create_file( $plugin_path, Utils\mustache_render( 'plugin.mustache', $data ) );
 		$this->create_file( $plugin_readme_path, Utils\mustache_render( 'plugin-readme.mustache', $data ) );
+		$this->create_file( "$plugin_dir/package.json", Utils\mustache_render( 'plugin-packages.mustache', $data ) );
+		$this->create_file( "$plugin_dir/Gruntfile.js", Utils\mustache_render( 'plugin-gruntfile.mustache', $data ) );
 
 		WP_CLI::success( "Created $plugin_dir" );
 
 		if ( ! \WP_CLI\Utils\check_flag( $assoc_args, 'skip-tests' ) ) {
-			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ) );
+			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), array( 'dir' => $plugin_dir ) );
 		}
 
 		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'activate' ) ) {
@@ -484,8 +507,11 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <plugin>
+	 * [<plugin>]
 	 * : The name of the plugin to generate test files for.
+	 *
+	 * [--dir=<dirname>]
+	 * : Generate test files for a non-standard plugin path.
 	 *
 	 * ## EXAMPLE
 	 *
@@ -496,9 +522,18 @@ class Scaffold_Command extends WP_CLI_Command {
 	function plugin_tests( $args, $assoc_args ) {
 		$wp_filesystem = $this->init_wp_filesystem();
 
-		$plugin_slug = $args[0];
+		if ( ! empty( $assoc_args['dir'] ) ) {
+			$plugin_dir = $assoc_args['dir'];
+			if ( ! is_dir( $plugin_dir ) ) {
+				WP_CLI::error( 'Invalid plugin specified.' );
+			}
+		} else if ( ! empty( $args[0] ) ) {
+			$plugin_slug = $args[0];
+			$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
+		} else {
+			WP_CLI::error( 'Invalid plugin specified.' );
+		}
 
-		$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 		$tests_dir = "$plugin_dir/tests";
 		$bin_dir = "$plugin_dir/bin";
 
@@ -510,9 +545,9 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$to_copy = array(
 			'install-wp-tests.sh' => $bin_dir,
-			'.travis.yml' => $plugin_dir,
-			'phpunit.xml' => $plugin_dir,
-			'test-sample.php' => $tests_dir,
+			'.travis.yml'         => $plugin_dir,
+			'phpunit.xml'         => $plugin_dir,
+			'test-sample.php'     => $tests_dir,
 		);
 
 		foreach ( $to_copy as $file => $dir ) {
@@ -532,7 +567,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$wp_filesystem->mkdir( dirname( $filename ) );
 
-		if ( !$wp_filesystem->put_contents( $filename, $contents ) ) {
+		if ( ! $wp_filesystem->put_contents( $filename, $contents ) ) {
 			WP_CLI::error( "Error creating file: $filename" );
 		}
 	}
@@ -542,62 +577,65 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * Same goes for when plugin is being used.
 	 */
 	private function get_textdomain( $textdomain, $args ) {
-		if ( strlen( $textdomain ) )
+		if ( strlen( $textdomain ) ) {
 			return $textdomain;
+		}
 
-		if ( $args['theme'] )
+		if ( $args['theme'] ) {
 			return strtolower( wp_get_theme()->template );
+		}
 
-		if ( $args['plugin'] && true !== $args['plugin'] )
+		if ( $args['plugin'] && true !== $args['plugin'] ) {
 			return $args['plugin'];
+		}
 
 		return 'YOUR-TEXTDOMAIN';
 	}
 
 	private function pluralize( $word ) {
 		$plural = array(
-			'/(quiz)$/i'                => '\1zes',
-			'/^(ox)$/i'                 => '\1en',
-			'/([m|l])ouse$/i'           => '\1ice',
-			'/(matr|vert|ind)ix|ex$/i'  => '\1ices',
-			'/(x|ch|ss|sh)$/i'          => '\1es',
-			'/([^aeiouy]|qu)ies$/i'     => '\1y',
-			'/([^aeiouy]|qu)y$/i'       => '\1ies',
-			'/(hive)$/i'                => '\1s',
-			'/(?:([^f])fe|([lr])f)$/i'  => '\1\2ves',
-			'/sis$/i'                   => 'ses',
-			'/([ti])um$/i'              => '\1a',
-			'/(buffal|tomat)o$/i'       => '\1oes',
-			'/(bu)s$/i'                 => '1ses',
-			'/(alias|status)/i'         => '\1es',
-			'/(octop|vir)us$/i'         => '1i',
-			'/(ax|test)is$/i'           => '\1es',
-			'/s$/i'                     => 's',
-			'/$/'                       => 's'
+			'/(quiz)$/i'               => '\1zes',
+			'/^(ox)$/i'                => '\1en',
+			'/([m|l])ouse$/i'          => '\1ice',
+			'/(matr|vert|ind)ix|ex$/i' => '\1ices',
+			'/(x|ch|ss|sh)$/i'         => '\1es',
+			'/([^aeiouy]|qu)ies$/i'    => '\1y',
+			'/([^aeiouy]|qu)y$/i'      => '\1ies',
+			'/(hive)$/i'               => '\1s',
+			'/(?:([^f])fe|([lr])f)$/i' => '\1\2ves',
+			'/sis$/i'                  => 'ses',
+			'/([ti])um$/i'             => '\1a',
+			'/(buffal|tomat)o$/i'      => '\1oes',
+			'/(bu)s$/i'                => '1ses',
+			'/(alias|status)/i'        => '\1es',
+			'/(octop|vir)us$/i'        => '1i',
+			'/(ax|test)is$/i'          => '\1es',
+			'/s$/i'                    => 's',
+			'/$/'                      => 's'
 		);
 
 		$uncountable = array( 'equipment', 'information', 'rice', 'money', 'species', 'series', 'fish', 'sheep' );
 
 		$irregular = array(
-			'person'    => 'people',
-			'man'       => 'men',
-			'woman'     => 'women',
-			'child'     => 'children',
-			'sex'       => 'sexes',
-			'move'      => 'moves'
+			'person' => 'people',
+			'man'    => 'men',
+			'woman'  => 'women',
+			'child'  => 'children',
+			'sex'    => 'sexes',
+			'move'   => 'moves'
 		);
 
 		$lowercased_word = strtolower( $word );
 
 		foreach ( $uncountable as $_uncountable ) {
-			if ( substr( $lowercased_word, ( -1 * strlen( $_uncountable ) ) ) == $_uncountable ) {
+			if ( substr( $lowercased_word, ( - 1 * strlen( $_uncountable ) ) ) == $_uncountable ) {
 				return $word;
 			}
 		}
 
-		foreach ( $irregular as $_plural=> $_singular ) {
-			if ( preg_match( '/('.$_plural.')$/i', $word, $arr ) ) {
-				return preg_replace( '/('.$_plural.')$/i', substr( $arr[0], 0, 1 ).substr( $_singular, 1 ), $word );
+		foreach ( $irregular as $_plural => $_singular ) {
+			if ( preg_match( '/(' . $_plural . ')$/i', $word, $arr ) ) {
+				return preg_replace( '/(' . $_plural . ')$/i', substr( $arr[0], 0, 1 ) . substr( $_singular, 1 ), $word );
 			}
 		}
 
@@ -606,6 +644,7 @@ class Scaffold_Command extends WP_CLI_Command {
 				return preg_replace( $rule, $replacement, $word );
 			}
 		}
+
 		return false;
 	}
 
@@ -654,6 +693,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	private function init_wp_filesystem() {
 		global $wp_filesystem;
 		WP_Filesystem();
+
 		return $wp_filesystem;
 	}
 

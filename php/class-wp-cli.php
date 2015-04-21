@@ -256,7 +256,9 @@ class WP_CLI {
 			self::$logger->error( self::error_to_string( $message ) );
 		}
 
-		exit(1);
+		if ( $exit ) {
+			exit(1);
+		}
 	}
 
 	/**

@@ -97,7 +97,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 		$next_run = ( isset( $args[1] ) ) ? $args[1] : 'now';
 		$recurrence = ( isset( $args[2] ) ) ? $args[2] : false;
 
-		if ( ! empty( $next_run ) ) {
+		if ( empty( $next_run ) ) {
 			$timestamp = time();
 		} else if ( is_numeric( $next_run ) ) {
 			$timestamp = absint( $next_run );
