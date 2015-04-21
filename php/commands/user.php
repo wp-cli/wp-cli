@@ -81,7 +81,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function list_( $args, $assoc_args ) {
 
-		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'network' ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ) {
 			if ( ! is_multisite() ) {
 				WP_CLI::error( 'This is not a multisite install.' );
 			}
@@ -175,7 +175,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user delete 123 --reassign=567
 	 */
 	public function delete( $args, $assoc_args ) {
-		$network = \WP_CLI\Utils\check_flag( $assoc_args, 'network' ) && is_multisite();
+		$network = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) && is_multisite();
 		$reassign = isset( $assoc_args['reassign'] ) ? $assoc_args['reassign'] : null;
 
 		if ( $network && $reassign ) {
@@ -304,7 +304,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$user_id = wp_insert_user( $user );
 		}
 
-		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'send-email' ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
 			wp_new_user_notification( $user_id, $user->user_pass );
 		}
 
@@ -317,7 +317,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			}
 		}
 
-		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'porcelain' ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 			WP_CLI::line( $user_id );
 		} else {
 			WP_CLI::success( "Created user $user_id." );
@@ -685,7 +685,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				$existing_user = get_user_by( 'login', $new_user['user_login'] );
 			}
 
-			if ( $existing_user && \WP_CLI\Utils\check_flag( $assoc_args, 'skip-update' ) ) {
+			if ( $existing_user && \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-update' ) ) {
 
 				WP_CLI::log( "{$existing_user->user_login} exists and has been skipped" );
 				continue;
@@ -725,7 +725,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 					$user_id = wp_insert_user( $new_user );
 				}
 
-				if ( \WP_CLI\Utils\check_flag( $assoc_args, 'send-email' ) ) {
+				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
 					wp_new_user_notification( $user_id, $new_user['user_pass'] );
 				}
 			}

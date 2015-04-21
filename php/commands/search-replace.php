@@ -64,9 +64,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$new             = array_shift( $args );
 		$total           = 0;
 		$report          = array();
-		$dry_run         = \WP_CLI\Utils\check_flag( $assoc_args, 'dry-run' );
-		$php_only        = \WP_CLI\Utils\check_flag( $assoc_args, 'precise' );
-		$recurse_objects = \WP_CLI\Utils\check_flag( $assoc_args, 'recurse-objects' );
+		$dry_run         = \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' );
+		$php_only        = \WP_CLI\Utils\get_flag_value( $assoc_args, 'precise' );
+		$recurse_objects = \WP_CLI\Utils\get_flag_value( $assoc_args, 'recurse-objects' );
 
 		if ( isset( $assoc_args['skip-columns'] ) ) {
 			$skip_columns = explode( ',', $assoc_args['skip-columns'] );
@@ -79,13 +79,13 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		// Determine how to limit the list of tables. Defaults to 'wordpress'
 		$table_type = 'wordpress';
-		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'network' ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ) {
 			$table_type = 'network';
 		}
-		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'all-tables-with-prefix' ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all-tables-with-prefix' ) ) {
 			$table_type = 'all-tables-with-prefix';
 		}
-		if ( \WP_CLI\Utils\check_flag( $assoc_args, 'all-tables' ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all-tables' ) ) {
 			$table_type = 'all-tables';
 		}
 
