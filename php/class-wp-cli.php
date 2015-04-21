@@ -99,7 +99,7 @@ class WP_CLI {
 
 	private static function set_url_params( $url_parts ) {
 		$f = function( $key ) use ( $url_parts ) {
-			return isset( $url_parts[ $key ] ) ? $url_parts[ $key ] : '';
+			return \WP_CLI\Utils\get_flag_value( $url_parts, $key, '' );
 		};
 
 		if ( isset( $url_parts['host'] ) ) {
@@ -116,7 +116,7 @@ class WP_CLI {
 		}
 
 		$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
-		$_SERVER['SERVER_PORT'] = isset( $url_parts['port'] ) ? $url_parts['port'] : '80';
+		$_SERVER['SERVER_PORT'] = \WP_CLI\Utils\get_flag_value( $url_parts, 'port', '80' );
 		$_SERVER['QUERY_STRING'] = $f('query');
 	}
 
@@ -295,15 +295,12 @@ class WP_CLI {
 	 * @return string
 	 */
 	public static function get_value_from_arg_or_stdin( $args, $index ) {
-		if ( isset( $args[ $index ] ) ) {
-			$raw_value = $args[ $index ];
-		} else {
-			// We don't use file_get_contents() here because it doesn't handle
-			// Ctrl-D properly, when typing in the value interactively.
-			$raw_value = '';
-			while ( ( $line = fgets( STDIN ) ) !== false ) {
-				$raw_value .= $line;
-			}
+		$raw_value = \WP_CLI\Utils\get_flag_value( $args, $index, '' );
+
+		// We don't use file_get_contents() here because it doesn't handle
+		// Ctrl-D properly, when typing in the value interactively.
+		while ( ( $line = fgets( STDIN ) ) !== false ) {
+			$raw_value .= $line;
 		}
 
 		return $raw_value;
