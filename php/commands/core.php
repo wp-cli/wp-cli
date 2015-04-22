@@ -350,7 +350,7 @@ class Core_Command extends WP_CLI_Command {
 			) );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'extra-php' ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'extra-php' ) === true ) {
 			$assoc_args['extra-php'] = file_get_contents( 'php://stdin' );
 		}
 

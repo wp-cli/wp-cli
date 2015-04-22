@@ -284,7 +284,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', html_entity_decode( $api->name, ENT_QUOTES ), $api->version ) );
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'version' ) === 'dev' ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'version' ) != 'dev' ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $api->download_link, $this->item_type, $api->slug, $api->version );
 		}
 		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );

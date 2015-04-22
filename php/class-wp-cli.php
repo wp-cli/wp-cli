@@ -295,12 +295,15 @@ class WP_CLI {
 	 * @return string
 	 */
 	public static function get_value_from_arg_or_stdin( $args, $index ) {
-		$raw_value = \WP_CLI\Utils\get_flag_value( $args, $index, '' );
-
-		// We don't use file_get_contents() here because it doesn't handle
-		// Ctrl-D properly, when typing in the value interactively.
-		while ( ( $line = fgets( STDIN ) ) !== false ) {
-			$raw_value .= $line;
+		if ( isset( $args[ $index ] ) ) {
+			$raw_value = $args[ $index ];
+		} else {
+			// We don't use file_get_contents() here because it doesn't handle
+			// Ctrl-D properly, when typing in the value interactively.
+			$raw_value = '';
+			while ( ( $line = fgets( STDIN ) ) !== false ) {
+				$raw_value .= $line;
+			}
 		}
 
 		return $raw_value;
