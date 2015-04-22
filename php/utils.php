@@ -514,5 +514,5 @@ function increment_version( $current_version, $new_version ) {
  * @return mixed
  */
 function get_flag_value( $args, $flag, $default = null ) {
-    return isset( $args[ $flag ] ) ? $args[ $flag ] : $default;
+	return isset( $args[ $flag ] ) ? $args[ $flag ] : $default;
 }
