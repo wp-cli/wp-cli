@@ -194,6 +194,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [<plugin>...]
 	 * : One or more plugins to deactivate.
 	 *
+	 * [--uninstall]
+	 * : Uninstall the plugin after deactivation.
+	 *
 	 * [--all]
 	 * : If set, all plugins will be deactivated.
 	 *
@@ -227,6 +230,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			deactivate_plugins( $plugin->file, false, $network_wide );
 
 			$this->active_output( $plugin->name, $plugin->file, $network_wide, "deactivate" );
+
+			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'uninstall' ) ) {
+				WP_CLI::log( "Uninstalling '{$plugin->name}'..." );
+				$this->uninstall( array( $plugin->name ) );
+			}
+
 		}
 	}
 
