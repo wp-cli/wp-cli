@@ -293,6 +293,8 @@ class Subcommand extends CompositeCommand {
 		\WP_CLI::do_hook( 'before_invoke:' . implode( ' ', array_slice( $path, 1 ) ) );
 
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
+
+		\WP_CLI::do_hook( 'after_invoke:' . implode( ' ', array_slice( $path, 1 ) ) );
 	}
 }
 
