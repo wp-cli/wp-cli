@@ -228,8 +228,10 @@ Feature: Manage WordPress themes
 
   Scenario: Install and attempt to activate a child theme without its parent
     Given a WP install
+    And I run `wp theme install biker`
+    And I run `rm -rf wp-content/themes/jolene`
 
-    When I try `wp theme install biker --activate`
+    When I try `wp theme activate biker`
     Then STDERR should contain:
       """
       Error: The 'biker' theme cannot be activated without its parent, 'jolene'.
