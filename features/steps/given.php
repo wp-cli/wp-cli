@@ -119,3 +119,38 @@ $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 	}
 );
 
+$steps->Given( '/^a new Phar(?: with version "([^"]+)")$/',
+	function ( $world, $version ) {
+		$world->build_phar( $version );
+	}
+);
+
+$steps->Given( '/^save the (.+) file ([\'].+[^\'])?as \{(\w+)\}$/',
+	function ( $world, $filepath, $output_filter, $key ) {
+		$full_file = file_get_contents( $world->replace_variables( $filepath ) );
+
+		if ( $output_filter ) {
+			$output_filter = '/' . trim( str_replace( '%s', '(.+[^\b])', $output_filter ), "' " ) . '/';
+			if ( false !== preg_match( $output_filter, $full_file, $matches ) )
+				$output = array_pop( $matches );
+			else
+				$output = '';
+		} else {
+			$output = $full_file;
+		}
+		$world->variables[ $key ] = trim( $output, "\n" );
+	}
+);
+
+$steps->Given('/^a misconfigured WP_CONTENT_DIR constant directory$/',
+	function($world) {
+		$wp_config_path = $world->variables['RUN_DIR'] . "/wp-config.php";
+
+		$wp_config_code = file_get_contents( $wp_config_path );
+
+		$world->add_line_to_wp_config( $wp_config_code,
+			"define( 'WP_CONTENT_DIR', '' );" );
+
+		file_put_contents( $wp_config_path, $wp_config_code );
+	}
+);

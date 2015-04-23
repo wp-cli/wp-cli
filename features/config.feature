@@ -197,4 +197,25 @@ Feature: Have a config file
       """
 
     When I run `WP_CLI_CONFIG_PATH=test-dir/config.yml wp help`
-    Then STDERR should be empty
+	Then STDERR should be empty
+
+  Scenario: Missing required files should not fatal WP-CLI
+    Given an empty directory
+    And a wp-cli.yml file:
+	  """
+	  require:
+	    - missing-file.php
+	  """
+
+	When I try `wp help`
+	Then STDERR should contain:
+	  """
+	  Error: Required file 'missing-file.php' doesn't exist
+	  """
+
+    When I run `wp cli info`
+	Then STDOUT should not be empty
+
+    When I run `wp --info`
+	Then STDOUT should not be empty
+

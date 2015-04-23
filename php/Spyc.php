@@ -755,7 +755,7 @@ class Spyc {
       return $this->addArrayInline ($incoming_data, $incoming_indent);
 
     $key = key ($incoming_data);
-    $value = isset($incoming_data[$key]) ? $incoming_data[$key] : null;
+    $value = \WP_CLI\Utils\get_flag_value( $incoming_data, $key );
     if ($key === '__!YAMLZero') $key = '0';
 
     if ($incoming_indent == 0 && !$this->_containsGroupAlias && !$this->_containsGroupAnchor) { // Shortcut for root-level values.

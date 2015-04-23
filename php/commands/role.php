@@ -18,10 +18,19 @@ class Role_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to name,role.
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each role:
+	 *
+	 * * name
+	 * * role
+	 *
+	 * There are no optional fields.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -160,7 +169,7 @@ class Role_Command extends WP_CLI_Command {
 
 		self::persistence_check();
 
-		if ( ! isset( $assoc_args['all'] ) && empty( $args ) )
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) )
 			WP_CLI::error( "Role key not provided, or is invalid." );
 
 		if ( ! function_exists( 'populate_roles' ) ) {
@@ -170,7 +179,7 @@ class Role_Command extends WP_CLI_Command {
 		// get our default roles
 		$default_roles = $preserve = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' );
 
-		if ( isset( $assoc_args['all'] ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			foreach( $default_roles as $role ) {
 				remove_role( $role );
 			}

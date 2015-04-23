@@ -88,7 +88,7 @@ class CommandFactory {
 	 * @return bool
 	 */
 	private static function is_good_method( $method ) {
-		return $method->isPublic() && !$method->isConstructor() && !$method->isStatic();
+		return $method->isPublic() && !$method->isStatic() && 0 !== strpos( $method->getName(), '__' );
 	}
 }
 

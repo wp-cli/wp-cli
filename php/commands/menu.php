@@ -51,7 +51,7 @@ class Menu_Command extends WP_CLI_Command {
 
 		} else {
 
-			if ( isset( $assoc_args['porcelain'] ) ) {
+			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 				WP_CLI::line( $menu_id );
 			} else {
 				WP_CLI::success( "Created menu $menu_id." );
@@ -94,10 +94,28 @@ class Menu_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to term_id,name,slug,count
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each menu:
+	 *
+	 * * term_id
+	 * * name
+	 * * slug
+	 * * count
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * term_group
+	 * * term_taxonomy_id
+	 * * taxonomy
+	 * * description
+	 * * parent
+	 * * locations
 	 *
 	 * ## EXAMPLES
 	 *
@@ -172,10 +190,33 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * : The name, slug, or term ID for the menu
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to db_id,type,title,link
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each menu item:
+	 *
+	 * * db_id
+	 * * type
+	 * * title
+	 * * link
+	 * * position
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * menu_item_parent
+	 * * object_id
+	 * * object
+	 * * type
+	 * * type_label
+	 * * target
+	 * * attr_title
+	 * * description
+	 * * classes
+	 * * xfn
 	 *
 	 * ## EXAMPLES
 	 *
@@ -192,11 +233,17 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		// Correct position inconsistency and
 		// protected `url` param in WP-CLI
-		$items = array_map( function( $item ) {
+		$items = array_map( function( $item ) use ( $assoc_args ) {
 			$item->position = $item->menu_order;
 			$item->link = $item->url;
 			return $item;
 		}, $items );
+
+		if ( ! empty( $assoc_args['format'] ) && 'ids' == $assoc_args['format'] ) {
+			$items = array_map( function( $item ) {
+				return $item->db_id;
+			}, $items );
+		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
@@ -448,7 +495,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	private function add_or_update_item( $method, $type, $args, $assoc_args ) {
 
 		$menu = $args[0];
-		$menu_item_db_id = ( isset( $args[1] ) ) ? $args[1] : 0;
+		$menu_item_db_id = \WP_CLI\Utils\get_flag_value( $args, 1, 0 );
 
 		$menu = wp_get_nav_menu_object( $menu );
 		if ( ! $menu || is_wp_error( $menu ) ) {
@@ -456,9 +503,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 		}
 
 		// `url` is protected in WP-CLI, so we use `link` instead
-		if ( isset( $assoc_args['link'] ) ) {
-			$assoc_args['url'] = $assoc_args['link'];
-		}
+		$assoc_args['url'] = \WP_CLI\Utils\get_flag_value( $assoc_args, 'link' );
 
 		// Need to persist the menu item data. See https://core.trac.wordpress.org/ticket/28138
 		if ( 'update' == $method ) {
@@ -510,7 +555,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 		foreach( $default_args as $key => $default_value ) {
 			// wp_update_nav_menu_item() has a weird argument prefix
 			$new_key = 'menu-item-' . $key;
-			$menu_item_args[ $new_key ] = isset( $assoc_args[ $key ] ) ? $assoc_args[ $key ] : $default_value;
+			$menu_item_args[ $new_key ] = \WP_CLI\Utils\get_flag_value( $assoc_args, $key, $default_value );
 		}
 
 		$menu_item_args['menu-item-type'] = $type;
@@ -579,6 +624,13 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each location:
+	 *
+	 * * name
+	 * * description
 	 *
 	 * ## EXAMPLES
 	 *
@@ -663,7 +715,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 		}
 
 		$locations = get_nav_menu_locations();
-		if ( ! isset( $locations[ $location ] ) || $locations[ $location ] != $menu->term_id ) {
+		if ( \WP_CLI\Utils\get_flag_value( $locations, $location ) != $menu->term_id ) {
 			WP_CLI::error( "Menu isn't assigned to location." );
 		}
 

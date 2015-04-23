@@ -78,7 +78,7 @@ class DB_Command extends WP_CLI_Command {
 	 * @alias connect
 	 */
 	function cli() {
-		self::run( 'mysql --no-defaults', array(
+		self::run( 'mysql --no-defaults --no-auto-rehash', array(
 			'database' => DB_NAME
 		) );
 	}
@@ -95,6 +95,9 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 *     # execute a query stored in a file
 	 *     wp db query < debug.sql
+	 *
+	 *     # check all tables in the database
+	 *     wp db query "CHECK TABLE $(wp db tables | paste -s -d',');"
 	 */
 	function query( $args ) {
 		$assoc_args = array(
@@ -106,7 +109,7 @@ class DB_Command extends WP_CLI_Command {
 			$assoc_args['execute'] = $args[0];
 		}
 
-		self::run( 'mysql --no-defaults', $assoc_args );
+		self::run( 'mysql --no-defaults --no-auto-rehash', $assoc_args );
 	}
 
 	/**
@@ -121,7 +124,7 @@ class DB_Command extends WP_CLI_Command {
 	 * : Extra arguments to pass to mysqldump
 	 *
 	 * [--tables=<tables>]
-	 * : The comma separated list of specific tables to export. Excluding this parameter will export all tables
+	 * : The comma separated list of specific tables to export. Excluding this parameter will export all tables in the database.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -189,7 +192,7 @@ class DB_Command extends WP_CLI_Command {
 			);
 		}
 
-		self::run( 'mysql --no-defaults', array(
+		self::run( 'mysql --no-defaults --no-auto-rehash', array(
 			'database' => DB_NAME
 		), $descriptors );
 
@@ -212,7 +215,7 @@ class DB_Command extends WP_CLI_Command {
 	function tables( $args, $assoc_args ) {
 		global $wpdb;
 
-		$scope = isset( $assoc_args['scope'] ) ? $assoc_args['scope'] : 'all';
+		$scope = \WP_CLI\Utils\get_flag_value( $assoc_args, 'scope', 'all' );
 
 		$tables = $wpdb->tables( $scope );
 
@@ -241,7 +244,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	private static function run_query( $query ) {
-		self::run( 'mysql --no-defaults', array( 'execute' => $query ) );
+		self::run( 'mysql --no-defaults --no-auto-rehash', array( 'execute' => $query ) );
 	}
 
 	private static function run( $cmd, $assoc_args = array(), $descriptors = null ) {

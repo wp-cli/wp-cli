@@ -43,13 +43,19 @@ Feature: Manage WordPress terms
       | term_id   | {TERM_ID}  |
       | name      | Test term  |
 
+    When I run `wp term get post_tag {TERM_ID} --format=csv --fields=name,taxonomy`
+    Then STDOUT should be CSV containing:
+      | Field     | Value      |
+      | name      | Test term  |
+      | taxonomy  | post_tag   |
+
   Scenario: Creating/deleting a term
     When I run `wp term create post_tag 'Test delete term' --slug=test-delete --description='This is a test term to be deleted' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {TERM_ID}
 
     When I run `wp term get post_tag {TERM_ID} --field=slug --format=json`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
       "test-delete"
       """
@@ -69,4 +75,11 @@ Feature: Manage WordPress terms
     Then STDOUT should be:
       """
       11
+      """
+
+  Scenario: Term with a non-existent parent
+    When I try `wp term create category Apple --parent=99 --porcelain`
+    Then STDERR should be:
+      """
+      Error: Parent term does not exist.
       """

@@ -24,14 +24,36 @@ Feature: Do global search/replace
       | wp_2_posts | guid   | 2            | SQL  |
       | wp_blogs   | path   | 1            | SQL  |
 
-  Scenario: Don't run on unregistered tables
+  Scenario: Don't run on unregistered tables by default
     Given a WP install
-    And I run `wp db query "CREATE TABLE wp_awesome ( id int(11) unsigned NOT NULL AUTO_INCREMENT, PRIMARY KEY (id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;"`
+    And I run `wp db query "CREATE TABLE wp_awesome ( id int(11) unsigned NOT NULL AUTO_INCREMENT, awesome_stuff TEXT, PRIMARY KEY (id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;"`
 
     When I run `wp search-replace foo bar`
     Then STDOUT should not contain:
       """
       wp_awesome
+      """
+
+    When I run `wp search-replace foo bar --all-tables-with-prefix`
+    Then STDOUT should contain:
+      """
+      wp_awesome
+      """
+
+  Scenario: Run on unregistered, unprefixed tables with --all-tables flag
+    Given a WP install
+    And I run `wp db query "CREATE TABLE awesome_table ( id int(11) unsigned NOT NULL AUTO_INCREMENT, awesome_stuff TEXT, PRIMARY KEY (id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;"`
+
+    When I run `wp search-replace foo bar`
+    Then STDOUT should not contain:
+      """
+      awesome_table
+      """
+
+    When I run `wp search-replace foo bar --all-tables`
+    Then STDOUT should contain:
+      """
+      awesome_table
       """
 
   Scenario: Quiet search/replace

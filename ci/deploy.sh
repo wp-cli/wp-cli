@@ -30,10 +30,15 @@ git config user.name "Travis CI"
 git config user.email "travis@travis-ci.org"
 git config push.default "current"
 
-mv $WP_CLI_BIN_DIR/wp phar/wp-cli-nightly.phar
-chmod -x phar/wp-cli-nightly.phar
+fname="phar/wp-cli-nightly.phar"
 
-git add phar/wp-cli-nightly.phar
+mv $WP_CLI_BIN_DIR/wp $fname
+chmod -x $fname
+
+md5sum $fname | cut -d ' ' -f 1 > $fname.md5
+sha512sum $fname | cut -d ' ' -f 1 > $fname.sha512
+
+git add $fname $fname.md5 $fname.sha512
 git commit -m "phar build: $TRAVIS_REPO_SLUG@$TRAVIS_COMMIT"
 
 git push

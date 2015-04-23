@@ -12,6 +12,12 @@ Feature: Manage user custom fields
       bar
       """
 
+    When I try `wp user-meta get 2 foo`
+    Then STDERR should be:
+      """
+      Error: Invalid user ID, email or login: '2'
+      """
+
     When I run `wp user-meta set admin foo '[ "1", "2" ]' --format=json`
     Then STDOUT should not be empty
 

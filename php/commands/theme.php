@@ -128,6 +128,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			exit;
 		}
 
+		if ( $theme->get_stylesheet() != $theme->get_template() && ! $this->fetcher->get( $theme->get_template() ) ) {
+			WP_CLI::error( "The '{$theme->get_stylesheet()}' theme cannot be activated without its parent, '{$theme->get_template()}'." );
+		}
+
 		switch_theme( $theme->get_template(), $theme->get_stylesheet() );
 
 		if ( $this->is_active_theme( $theme ) ) {
@@ -260,7 +264,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 			$path = $theme->get_stylesheet_directory();
 
-			if ( !isset( $assoc_args['dir'] ) )
+			if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'dir' ) )
 				$path .= '/style.css';
 		}
 
@@ -278,13 +282,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			self::alter_api_response( $api, $assoc_args['version'] );
 		}
 
-		if ( !isset( $assoc_args['force'] ) && wp_get_theme( $slug )->exists() ) {
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && wp_get_theme( $slug )->exists() ) {
 			// We know this will fail, so avoid a needless download of the package.
 			return new WP_Error( 'already_installed', 'Theme already installed.' );
 		}
 
-		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
-		if ( !isset( $assoc_args['version'] ) || 'dev' !== $assoc_args['version'] ) {
+		WP_CLI::log( sprintf( 'Installing %s (%s)', html_entity_decode( $api->name, ENT_QUOTES ), $api->version ) );
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'version' ) != 'dev' ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $api->download_link, $this->item_type, $api->slug, $api->version );
 		}
 		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
@@ -397,8 +401,11 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--field=<field>]
 	 * : Instead of returning the whole theme, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, csv. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -417,6 +424,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		$theme_obj->description = wordwrap( $theme_obj->description );
 
+		if ( empty( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = $theme_vars;
+		}
+
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $theme_obj );
 	}
@@ -433,8 +444,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : If set, all themes that have updates will be updated.
 	 *
 	 * [--version=<version>]
-	 * : If set, the theme will be updated to the latest development version,
-	 * regardless of what version is currently installed.
+	 * : If set, the plugin will be updated to the specified version.
 	 *
 	 * [--dry-run]
 	 * : Preview which themes would be updated.
@@ -446,7 +456,19 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme update --all
 	 */
 	function update( $args, $assoc_args ) {
-		parent::update_many( $args, $assoc_args );
+		if ( isset( $assoc_args['version'] ) ) {
+			foreach ( $this->fetcher->get_many( $args ) as $theme ) {
+				$r = delete_theme( $theme->stylesheet );
+				if ( is_wp_error( $r ) ) {
+					WP_CLI::warning( $r );
+				} else {
+					$assoc_args['force'] = true;
+					$this->install( array( $theme->stylesheet ), $assoc_args );
+				}
+			}
+		} else {
+			parent::update_many( $args, $assoc_args );
+		}
 	}
 
 	/**
@@ -484,6 +506,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     wp theme delete twentyeleven
+	 *
+	 * @alias uninstall
 	 */
 	function delete( $args ) {
 		foreach ( $this->fetcher->get_many( $args ) as $theme ) {
@@ -516,10 +540,27 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Prints the value of a single field for each theme.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to name,status,update,version.
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each theme:
+	 *
+	 * * name
+	 * * status
+	 * * update
+	 * * version
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * update_version
+	 * * update_package
+	 * * update_id
+	 * * title
+	 * * description
 	 *
 	 * ## EXAMPLES
 	 *
@@ -560,11 +601,11 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 */
 	public function get( $args = array(), $assoc_args = array() ) {
 
-		if ( ! isset( $assoc_args['all'] ) && empty( $args ) ) {
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
 			WP_CLI::error( "You must specify at least one mod or use --all." );
 		}
 
-		if ( isset( $assoc_args['all'] ) && $assoc_args['all'] ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			$args = array();
 		}
 
@@ -620,11 +661,11 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 */
 	public function remove( $args = array(), $assoc_args = array() ) {
 
-		if ( ! isset( $assoc_args['all'] ) && empty( $args ) ) {
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
 			WP_CLI::error( "You must specify at least one mod or use --all." );
 		}
 
-		if ( isset( $assoc_args['all'] ) && $assoc_args['all'] ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			remove_theme_mods();
 			WP_CLI::success( 'Theme mods removed.' );
 			return;

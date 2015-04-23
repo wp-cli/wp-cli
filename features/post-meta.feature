@@ -12,8 +12,20 @@ Feature: Manage post custom fields
       bar
       """
 
+    When I try `wp post meta get 999999 foo`
+    Then STDERR should be:
+      """
+      Error: Could not find the post with ID 999999.
+      """
+
     When I run `wp post-meta set 1 foo '[ "1", "2" ]' --format=json`
     Then STDOUT should not be empty
+
+    When I run the previous command again
+    Then STDOUT should be:
+      """
+      Success: Value passed for custom field 'foo' is unchanged.
+      """
 
     When I run `wp post-meta get 1 foo --format=json`
     Then STDOUT should be:

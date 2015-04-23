@@ -76,7 +76,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin uninstall Zombieland`
     Then STDOUT should contain:
       """
-      Success: Uninstalled 'Zombieland' plugin.
+      Success: Uninstalled and deleted 'Zombieland' plugin.
       """
     And the {PLUGIN_DIR}/zombieland file should not exist
 
@@ -164,13 +164,52 @@ Feature: Manage WordPress plugins
   Scenario: Network activate a plugin
     Given a WP multisite install
 
-    When I run `wp plugin install user-switching --activate-network`
-    Then STDOUT should not be empty
+    When I run `wp plugin activate akismet`
+    Then STDOUT should contain:
+      """
+      Success: Plugin 'akismet' activated.
+      """
 
     When I run `wp plugin list --fields=name,status`
     Then STDOUT should be a table containing rows:
       | name            | status           |
-      | user-switching  | active-network   |
+      | akismet         | active           |
+
+    When I run `wp plugin activate akismet`
+    Then STDERR should contain:
+      """
+      Warning: Plugin 'akismet' is already active.
+      """
+
+    When I run `wp plugin activate akismet --network`
+    Then STDOUT should contain:
+      """
+      Success: Plugin 'akismet' network activated.
+      """
+
+    When I run `wp plugin activate akismet --network`
+    Then STDERR should contain:
+      """
+      Warning: Plugin 'akismet' is already network active.
+      """
+
+    When I run `wp plugin deactivate akismet`
+    Then STDERR should contain:
+      """
+      Warning: Plugin 'akismet' is network active and must be deactivated with --network flag.
+      """
+
+    When I run `wp plugin deactivate akismet --network`
+    Then STDOUT should contain:
+      """
+      Success: Plugin 'akismet' network deactivated.
+      """
+
+    When I run `wp plugin deactivate akismet`
+    Then STDERR should contain:
+      """
+      Warning: Plugin 'akismet' isn't active.
+      """
 
   Scenario: List plugins
     Given a WP install
@@ -201,35 +240,149 @@ Feature: Manage WordPress plugins
       | name       | status   |
       | akismet    | active   |
 
-  Scenario: Activate a plugin which is already active
-    Given a WP multisite install
+  Scenario: Plugin name with HTML entities
+    Given a WP install
 
-    When I run `wp plugin activate akismet`
+    When I run `wp plugin install debug-bar-list-dependencies`
+    Then STDOUT should contain:
+      """
+      Installing Debug Bar List Script & Style Dependencies
+      """
+
+  Scenario: Enable and disable all plugins
+    Given a WP install
+
+    When I run `wp plugin activate --all`
     Then STDOUT should be:
       """
       Success: Plugin 'akismet' activated.
+      Success: Plugin 'hello' activated.
       """
 
-    When I try `wp plugin activate akismet`
-    Then STDERR should be:
+    When I run `wp plugin list --field=status`
+    Then STDOUT should be:
       """
-      Warning: Plugin 'akismet' is already active.
+      active
+      active
+      must-use
       """
 
-    When I run `wp plugin deactivate akismet`
+    When I run `wp plugin deactivate --all`
     Then STDOUT should be:
       """
       Success: Plugin 'akismet' deactivated.
+      Success: Plugin 'hello' deactivated.
       """
 
-    When I run `wp plugin activate akismet --network`
+    When I run `wp plugin list --field=status`
     Then STDOUT should be:
       """
-      Success: Plugin 'akismet' network activated.
+      inactive
+      inactive
+      must-use
       """
 
-    When I try `wp plugin activate akismet --network`
+  Scenario: Deactivate and uninstall a plugin, part one
+    Given a WP install
+    And these installed and active plugins:
+      """
+      akismet
+      """
+
+    When I run `wp plugin deactivate akismet --uninstall`
+    Then STDOUT should contain:
+      """
+      Success: Plugin 'akismet' deactivated.
+      Uninstalling 'akismet'...
+      Success: Uninstalled and deleted 'akismet' plugin.
+      """
+
+    When I try `wp plugin get akismet`
     Then STDERR should be:
       """
-      Warning: Plugin 'akismet' is already network active.
+      Error: The 'akismet' plugin could not be found.
       """
+
+  Scenario: Deactivate and uninstall a plugin, part two
+    Given a WP install
+    And these installed and active plugins:
+      """
+      akismet
+      """
+
+    When I run `wp plugin uninstall akismet --deactivate`
+    Then STDOUT should contain:
+      """
+      Deactivating 'akismet'...
+      Success: Plugin 'akismet' deactivated.
+      Success: Uninstalled and deleted 'akismet' plugin.
+      """
+
+    When I try `wp plugin get akismet`
+    Then STDERR should be:
+      """
+      Error: The 'akismet' plugin could not be found.
+      """
+
+
+  Scenario: Uninstall a plugin without deleting
+    Given a WP install
+
+    When I run `wp plugin install akismet --version=2.5.7 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin uninstall akismet --skip-delete`
+    Then STDOUT should contain:
+      """
+      Success: Ran uninstall procedure for
+      """
+
+  Scenario: Two plugins, one directory
+    Given a WP install
+    And a wp-content/plugins/handbook/handbook.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Handbook
+       * Description: Features for a handbook, complete with glossary and table of contents
+       * Author: Nacin
+       */
+      """
+    And a wp-content/plugins/handbook/functionality-for-pages.php file:
+      """
+      <?php
+	  /**
+	   * Plugin Name: Handbook Functionality for Pages
+       * Description: Adds handbook-like table of contents to all Pages for a site. Covers Table of Contents and the "watch this page" widget
+       * Author: Nacin
+       */
+      """
+
+    When I run `wp plugin list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name                             | status   |
+      | handbook/handbook                | inactive |
+      | handbook/functionality-for-pages | inactive |
+
+    When I run `wp plugin activate handbook/functionality-for-pages`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name                             | status   |
+      | handbook/handbook                | inactive |
+      | handbook/functionality-for-pages | active   |
+
+  Scenario: Install a plugin, then update to a specific version of that plugin
+    Given a WP install
+
+    When I run `wp plugin install akismet --version=2.5.7 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin update akismet --version=2.6.0`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list --fields=name,version`
+    Then STDOUT should be a table containing rows:
+      | name       | version   |
+      | akismet    | 2.6.0     |

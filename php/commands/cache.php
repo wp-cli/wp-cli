@@ -19,9 +19,9 @@ class Cache_Command extends WP_CLI_Command {
 	public function add( $args, $assoc_args ) {
 		list( $key, $value ) = $args;
 
-		$group = ( isset( $args[2] ) ) ? $args[2] : '';
+		$group = \WP_CLI\Utils\get_flag_value( $args, 2, '' );
 
-		$expiration = ( isset( $args[3] ) ) ? $args[3] : 0;
+		$expiration = \WP_CLI\Utils\get_flag_value( $args, 3, 0 );
 
 		if ( ! wp_cache_add( $key, $value, $group, $expiration ) ) {
 			WP_CLI::error( "Could not add object '$key' in group '$group'. Does it already exist?" );
@@ -38,9 +38,9 @@ class Cache_Command extends WP_CLI_Command {
 	public function decr( $args, $assoc_args ) {
 		$key = $args[0];
 
-		$offset = ( isset( $args[1] ) ) ? $args[1] : 1;
+		$offset = \WP_CLI\Utils\get_flag_value( $args, 1, 1 );
 
-		$group = ( isset( $args[2] ) ) ? $args[2] : '';
+		$group = \WP_CLI\Utils\get_flag_value( $args, 2, '' );
 
 		$value = wp_cache_decr( $key, $offset, $group );
 
@@ -59,7 +59,7 @@ class Cache_Command extends WP_CLI_Command {
 	public function delete( $args, $assoc_args ) {
 		$key = $args[0];
 
-		$group = ( isset( $args[1] ) ) ? $args[1] : '';
+		$group = \WP_CLI\Utils\get_flag_value( $args, 1, '' );
 
 		$result = wp_cache_delete( $key, $group );
 
@@ -91,7 +91,7 @@ class Cache_Command extends WP_CLI_Command {
 	public function get( $args, $assoc_args ) {
 		$key = $args[0];
 
-		$group = ( isset( $args[1] ) ) ? $args[1] : '';
+		$group = \WP_CLI\Utils\get_flag_value( $args, 1, '' );
 
 		$value = wp_cache_get( $key, $group );
 
@@ -110,9 +110,9 @@ class Cache_Command extends WP_CLI_Command {
 	public function incr( $args, $assoc_args ) {
 		$key = $args[0];
 
-		$offset = ( isset( $args[1] ) ) ? $args[1] : 1;
+		$offset = \WP_CLI\Utils\get_flag_value( $args, 1, 1 );
 
-		$group = ( isset( $args[2] ) ) ? $args[2] : '';
+		$group = \WP_CLI\Utils\get_flag_value( $args, 2, '' );
 
 		$value = wp_cache_incr( $key, $offset, $group );
 
@@ -131,9 +131,9 @@ class Cache_Command extends WP_CLI_Command {
 	public function replace( $args, $assoc_args ) {
 		list( $key, $value ) = $args;
 
-		$group = ( isset( $args[2] ) ) ? $args[2] : '';
+		$group = \WP_CLI\Utils\get_flag_value( $args, 2, '' );
 
-		$expiration = ( isset( $args[3] ) ) ? $args[3] : 0;
+		$expiration = \WP_CLI\Utils\get_flag_value( $args, 3, 0 );
 
 		$result = wp_cache_replace( $key, $value, $group, $expiration );
 
@@ -152,9 +152,9 @@ class Cache_Command extends WP_CLI_Command {
 	public function set( $args, $assoc_args ) {
 		list( $key, $value ) = $args;
 
-		$group = ( isset( $args[2] ) ) ? $args[2] : '';
+		$group = \WP_CLI\Utils\get_flag_value( $args, 2, '' );
 
-		$expiration = ( isset( $args[3] ) ) ? $args[3] : 0;
+		$expiration = \WP_CLI\Utils\get_flag_value( $args, 3, 0 );
 
 		$result = wp_cache_set( $key, $value, $group, $expiration );
 
