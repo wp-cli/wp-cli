@@ -40,6 +40,10 @@ abstract class Base {
 	public function get_many( $args ) {
 		$items = array();
 
+		if ( is_string( $args ) ) {
+			$args = (array) $args;
+		}
+
 		foreach ( $args as $arg ) {
 			$item = $this->get( $arg );
 

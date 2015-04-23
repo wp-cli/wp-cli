@@ -86,6 +86,21 @@ Feature: Manage WordPress plugins
       The 'Zombieland' plugin could not be found.
       """
 
+  Scenario: test the  uninstall --deactivate a plugin
+    Given a WP install
+
+    When I run `wp plugin activate akismet`
+    Then STDOUT should contain:
+      """
+      Success: Plugin 'akismet' activated.
+      """
+
+    When I run `wp plugin uninstall akismet --deactivate`
+    Then STDOUT should contain:
+      """
+      Warning: Deactivating 'akismet' plugin.
+      """
+
   Scenario: Install a plugin, activate, then force install an older version of the plugin
     Given a WP install
 
