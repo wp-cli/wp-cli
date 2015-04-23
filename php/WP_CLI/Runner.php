@@ -570,7 +570,14 @@ class Runner {
 
 		// Load bundled commands early, so that they're forced to use the same
 		// APIs as non-bundled commands.
+
 		Utils\load_command( $this->arguments[0] );
+
+		$packages_autoloader = getenv( 'HOME' ) . '/.wp-cli/vendor/autoload.php';
+
+		if ( file_exists( $packages_autoloader ) ) {
+			Utils\load_file( $packages_autoloader );
+		}
 
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {
