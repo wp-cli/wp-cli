@@ -25,6 +25,11 @@ download() {
 }
 
 install_wp() {
+
+	if [ -d $WP_CORE_DIR ]; then
+		return;
+	fi
+
 	mkdir -p $WP_CORE_DIR
 
 	if [ $WP_VERSION == 'latest' ]; then 
@@ -47,17 +52,24 @@ install_test_suite() {
 		local ioption='-i'
 	fi
 
-	# set up testing suite
-	mkdir -p $WP_TESTS_DIR
-	cd $WP_TESTS_DIR
-	svn co --quiet https://develop.svn.wordpress.org/trunk/tests/phpunit/includes/
+	# set up testing suite if it doesn't yet exist
+	if [ ! "$(ls -A $WP_TESTS_DIR)" ]; then
+		# set up testing suite
+		mkdir -p $WP_TESTS_DIR
+		svn co --quiet http://develop.svn.wordpress.org/trunk/tests/phpunit/includes/ $WP_TESTS_DIR
+	fi
 
-	download https://develop.svn.wordpress.org/trunk/wp-tests-config-sample.php wp-tests-config.php
-	sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR':" wp-tests-config.php
-	sed $ioption "s/youremptytestdbnamehere/$DB_NAME/" wp-tests-config.php
-	sed $ioption "s/yourusernamehere/$DB_USER/" wp-tests-config.php
-	sed $ioption "s/yourpasswordhere/$DB_PASS/" wp-tests-config.php
-	sed $ioption "s|localhost|${DB_HOST}|" wp-tests-config.php
+	cd $WP_TESTS_DIR
+
+	if [ ! -f wp-tests-config.php ]; then
+		download https://develop.svn.wordpress.org/trunk/wp-tests-config-sample.php wp-tests-config.php
+		sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR':" wp-tests-config.php
+		sed $ioption "s/youremptytestdbnamehere/$DB_NAME/" wp-tests-config.php
+		sed $ioption "s/yourusernamehere/$DB_USER/" wp-tests-config.php
+		sed $ioption "s/yourpasswordhere/$DB_PASS/" wp-tests-config.php
+		sed $ioption "s|localhost|${DB_HOST}|" wp-tests-config.php
+	fi
+
 }
 
 install_db() {
