@@ -171,10 +171,18 @@ class Import_Command extends WP_CLI_Command {
 		} );
 
 		add_action( 'wp_import_insert_post', function( $post_id, $original_post_ID, $post, $postdata ) {
-			if ( is_wp_error( $post_id ) )
+			global $wpcli_import_counts;
+			if ( is_wp_error( $post_id ) ) {
 				WP_CLI::warning( "-- Error importing post: " . $post_id->get_error_code() );
-			else
+			} else {
 				WP_CLI::line( "-- Imported post as post_id #{$post_id}" );
+			}
+
+			if ( $wpcli_import_counts['current_post'] % 500 === 0 ) {
+				WP_CLI\Utils\wp_clear_object_cache();
+				WP_CLI::line( "-- Cleared object cache." );
+			}
+
 		}, 10, 4 );
 
 		add_action( 'wp_import_insert_term', function( $t, $import_term, $post_id, $post ) {
