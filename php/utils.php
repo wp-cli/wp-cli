@@ -504,3 +504,15 @@ function increment_version( $current_version, $new_version ) {
 
 	return $current_version;
 }
+
+/**
+ * Return the flag value or, if it's not set, the $default value.
+ *
+ * @param array  $args    Arguments array.
+ * @param string $flag    Flag to get the value.
+ * @param mixed  $default Default value for the flag. Default: NULL
+ * @return mixed
+ */
+function get_flag_value( $args, $flag, $default = null ) {
+	return isset( $args[ $flag ] ) ? $args[ $flag ] : $default;
+}
