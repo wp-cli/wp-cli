@@ -211,8 +211,11 @@ wp_cookie_constants( );
 // Define and enforce our SSL constants
 wp_ssl_constants( );
 
-// Create common globals.
+// Don't create common globals, but we still need wp_is_mobile()
 // require( ABSPATH . WPINC . '/vars.php' );
+function wp_is_mobile() {
+	return false;
+}
 
 // Make taxonomies and posts available to plugins and themes.
 // @plugin authors: warning: these get registered again on the init hook.
@@ -323,10 +326,12 @@ $GLOBALS['wp_locale'] = new WP_Locale();
 // Load the functions for the active theme, for both parent and child theme if applicable.
 global $pagenow;
 if ( ! defined( 'WP_INSTALLING' ) || 'wp-activate.php' === $pagenow ) {
-	if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists( STYLESHEETPATH . '/functions.php' ) )
-		include( STYLESHEETPATH . '/functions.php' );
-	if ( file_exists( TEMPLATEPATH . '/functions.php' ) )
-		include( TEMPLATEPATH . '/functions.php' );
+	if ( !Utils\is_theme_skipped( TEMPLATEPATH ) ) {
+		if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists( STYLESHEETPATH . '/functions.php' ) )
+			include( STYLESHEETPATH . '/functions.php' );
+		if ( file_exists( TEMPLATEPATH . '/functions.php' ) )
+			include( TEMPLATEPATH . '/functions.php' );
+	}
 }
 
 do_action( 'after_setup_theme' );

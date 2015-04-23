@@ -15,6 +15,18 @@ Feature: Get help about WP-CLI commands
     When I run `wp help help`
     Then STDOUT should not be empty
 
+    When I run `wp help help`
+    Then STDOUT should contain:
+      """
+      GLOBAL PARAMETERS
+      """
+
+    When I run `wp post list --post_type=post --posts_per_page=5 --help`
+    Then STDOUT should contain:
+      """
+      wp post list
+      """
+
   Scenario: Help for nonexistent commands
     Given a WP install
     
