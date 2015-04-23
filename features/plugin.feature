@@ -282,6 +282,49 @@ Feature: Manage WordPress plugins
       must-use
       """
 
+  Scenario: Deactivate and uninstall a plugin, part one
+    Given a WP install
+    And these installed and active plugins:
+      """
+      akismet
+      """
+
+    When I run `wp plugin deactivate akismet --uninstall`
+    Then STDOUT should contain:
+      """
+      Success: Plugin 'akismet' deactivated.
+      Uninstalling 'akismet'...
+      Success: Uninstalled and deleted 'akismet' plugin.
+      """
+
+    When I try `wp plugin get akismet`
+    Then STDERR should be:
+      """
+      Error: The 'akismet' plugin could not be found.
+      """
+
+  Scenario: Deactivate and uninstall a plugin, part two
+    Given a WP install
+    And these installed and active plugins:
+      """
+      akismet
+      """
+
+    When I run `wp plugin uninstall akismet --deactivate`
+    Then STDOUT should contain:
+      """
+      Deactivating 'akismet'...
+      Success: Plugin 'akismet' deactivated.
+      Success: Uninstalled and deleted 'akismet' plugin.
+      """
+
+    When I try `wp plugin get akismet`
+    Then STDERR should be:
+      """
+      Error: The 'akismet' plugin could not be found.
+      """
+
+
   Scenario: Uninstall a plugin without deleting
     Given a WP install
 

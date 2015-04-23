@@ -194,6 +194,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [<plugin>...]
 	 * : One or more plugins to deactivate.
 	 *
+	 * [--uninstall]
+	 * : Uninstall the plugin after deactivation.
+	 *
 	 * [--all]
 	 * : If set, all plugins will be deactivated.
 	 *
@@ -227,6 +230,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			deactivate_plugins( $plugin->file, false, $network_wide );
 
 			$this->active_output( $plugin->name, $plugin->file, $network_wide, "deactivate" );
+
+			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'uninstall' ) ) {
+				WP_CLI::log( "Uninstalling '{$plugin->name}'..." );
+				$this->uninstall( array( $plugin->name ) );
+			}
+
 		}
 	}
 
@@ -486,6 +495,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * <plugin>...
 	 * : One or more plugins to uninstall.
 	 *
+	 * [--deactivate]
+	 * : Deactivate the plugin before uninstalling. Default behavior is to warn and skip if the plugin is active.
+	 *
 	 * [--skip-delete]
 	 * : If set, the plugin files will not be deleted. Only the uninstall procedure
 	 * will be run.
@@ -496,9 +508,14 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	function uninstall( $args, $assoc_args = array() ) {
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
-			if ( is_plugin_active( $plugin->file ) ) {
+			if ( is_plugin_active( $plugin->file ) && ! WP_CLI\Utils\get_flag_value( $assoc_args, 'deactivate' ) ) {
 				WP_CLI::warning( "The '{$plugin->name}' plugin is active." );
 				continue;
+			}
+
+			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'deactivate' ) ) {
+				WP_CLI::log( "Deactivating '{$plugin->name}'..." );
+				$this->deactivate( array( $plugin->name ) );
 			}
 
 			uninstall_plugin( $plugin->file );
