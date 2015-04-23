@@ -15,6 +15,9 @@ class Media_Command extends WP_CLI_Command {
 	 * [<attachment-id>...]
 	 * : One or more IDs of the attachments to regenerate.
 	 *
+	 * [--skip-delete]
+	 * : Skip deletion of the original thumbnails. If your thumbnails are linked from sources outside your control, it's likely best to leave them around. Defaults to false.
+	 *
 	 * [--yes]
 	 * : Answer yes to the confirmation message.
 	 *
@@ -30,6 +33,8 @@ class Media_Command extends WP_CLI_Command {
 		if ( empty( $args ) ) {
 			WP_CLI::confirm( 'Do you realy want to regenerate all images?', $assoc_args );
 		}
+
+		$skip_delete = \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-delete' );
 
 		$query_args = array(
 			'post_type' => 'attachment',
@@ -53,7 +58,7 @@ class Media_Command extends WP_CLI_Command {
 			_n( 'image', 'images', $count ) ) );
 
 		foreach ( $images->posts as $id ) {
-			$this->_process_regeneration( $id );
+			$this->_process_regeneration( $id, $skip_delete );
 		}
 
 		WP_CLI::success( sprintf(
@@ -198,7 +203,7 @@ class Media_Command extends WP_CLI_Command {
 		return $filename;
 	}
 
-	private function _process_regeneration( $id ) {
+	private function _process_regeneration( $id, $skip_delete = false ) {
 		$image = get_post( $id );
 
 		$fullsizepath = get_attached_file( $image->ID );
@@ -210,7 +215,9 @@ class Media_Command extends WP_CLI_Command {
 			return;
 		}
 
-		$this->remove_old_images( $image->ID );
+		if ( ! $skip_delete ) {
+			$this->remove_old_images( $image->ID );
+		}
 
 		$metadata = wp_generate_attachment_metadata( $image->ID, $fullsizepath );
 		if ( is_wp_error( $metadata ) ) {
