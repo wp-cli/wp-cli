@@ -128,6 +128,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			exit;
 		}
 
+		if ( $theme->get_stylesheet() != $theme->get_template() && ! $this->fetcher->get( $theme->get_template() ) ) {
+			WP_CLI::error( "The '{$theme->get_stylesheet()}' theme cannot be activated without its parent, '{$theme->get_template()}'." );
+		}
+
 		switch_theme( $theme->get_template(), $theme->get_stylesheet() );
 
 		if ( $this->is_active_theme( $theme ) ) {
