@@ -114,6 +114,8 @@ Feature: WordPress code scaffolding
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/hello-world/hello-world.php file should exist
     And the {PLUGIN_DIR}/hello-world/readme.txt file should exist
+    And the {PLUGIN_DIR}/hello-world/package.json file should exist
+    And the {PLUGIN_DIR}/hello-world/Gruntfile.js file should exist
 
   Scenario: Scaffold a plugin and activate it
     Given a WP install
@@ -292,3 +294,12 @@ Feature: WordPress code scaffolding
       """
       Success: Network enabled the 'Starter-theme' theme.
       """
+
+  Scenario: Scaffold starter code for a theme, but can't unzip theme files
+    Given a WP install
+    And a misconfigured WP_CONTENT_DIR constant directory
+    When I try `wp scaffold _s starter-theme`
+    Then STDERR should contain:
+    """
+    Error: Could not decompress your theme files
+    """
