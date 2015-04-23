@@ -97,7 +97,7 @@ class Widget_Command extends WP_CLI_Command {
 	public function add( $args, $assoc_args ) {
 
 		list( $name, $sidebar_id ) = $args;
-		$position = ( isset( $args[2] ) ) ? (int) $args[2] - 1 : 0;
+		$position = \WP_CLI\Utils\get_flag_value( $args, 2, 1 ) - 1;
 		$this->validate_sidebar( $sidebar_id );
 
 		if ( false == ( $widget = $this->get_widget_obj( $name ) ) ) {

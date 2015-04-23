@@ -114,12 +114,8 @@ class Term_Command extends WP_CLI_Command {
 		);
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
-		if ( isset( $assoc_args['porcelain'] ) ) {
-			$porcelain = true;
-			unset( $assoc_args['porcelain'] );
-		} else {
-			$porcelain = false;
-		}
+		$porcelain = \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' );
+		unset( $assoc_args['porcelain'] );
 
 		// Compatibility for < WP 4.0
 		if ( $assoc_args['parent'] > 0 && ! term_exists( (int) $assoc_args['parent'] ) ) {
@@ -282,8 +278,6 @@ class Term_Command extends WP_CLI_Command {
 	 *     wp term generate --count=10
 	 */
 	public function generate( $args, $assoc_args ) {
-		global $wpdb;
-
 		list ( $taxonomy ) = $args;
 
 		$defaults = array(
@@ -303,11 +297,6 @@ class Term_Command extends WP_CLI_Command {
 		$hierarchical = get_taxonomy( $taxonomy )->hierarchical;
 
 		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating terms', $count );
-
-		$args = array(
-			'orderby' => 'id',
-			'hierarchical' => $hierarchical,
-		);
 
 		$previous_term_id = 0;
 		$current_parent = 0;

@@ -95,6 +95,24 @@ function is_plugin_skipped( $file ) {
 	return in_array( $name, array_filter( $skipped_plugins ) );
 }
 
+function get_theme_name( $path ) {
+	return basename( $path );
+}
+
+function is_theme_skipped( $path ) {
+	$name = get_theme_name( $path );
+
+	$skipped_themes = \WP_CLI::get_runner()->config['skip-themes'];
+	if ( true === $skipped_themes )
+		return true;
+
+	if ( ! is_array( $skipped_themes ) ) {
+		$skipped_themes = explode( ',', $skipped_themes );
+	}
+
+	return in_array( $name, array_filter( $skipped_themes ) );
+}
+
 /**
  * Register the sidebar for unused widgets
  * Core does this in /wp-admin/widgets.php, which isn't helpful
@@ -112,4 +130,26 @@ function wp_register_unused_sidebar() {
 		'after_title' => '',
 	));
 
+}
+
+/**
+ * Clear all of the caches for memory management
+ */
+function wp_clear_object_cache() {
+	global $wpdb, $wp_object_cache;
+
+	$wpdb->queries = array(); // or define( 'WP_IMPORTING', true );
+
+	if ( ! is_object( $wp_object_cache ) ) {
+		return;
+	}
+
+	$wp_object_cache->group_ops = array();
+	$wp_object_cache->stats = array();
+	$wp_object_cache->memcache_debug = array();
+	$wp_object_cache->cache = array();
+
+	if ( is_callable( $wp_object_cache, '__remoteset' ) ) {
+		$wp_object_cache->__remoteset(); // important
+	}
 }

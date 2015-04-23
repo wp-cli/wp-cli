@@ -28,10 +28,10 @@ class Rewrite_Command extends WP_CLI_Command {
 	public function flush( $args, $assoc_args ) {
 		// make sure we detect mod_rewrite if configured in apache_modules in config
 		self::apache_modules();
-		if ( isset( $assoc_args['hard'] ) && ! in_array( 'mod_rewrite', (array) WP_CLI::get_config( 'apache_modules' ) ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'hard' ) && ! in_array( 'mod_rewrite', (array) WP_CLI::get_config( 'apache_modules' ) ) ) {
 			WP_CLI::warning( "Regenerating a .htaccess file requires special configuration. See usage docs." );
 		}
-		flush_rewrite_rules( isset( $assoc_args['hard'] ) );
+		flush_rewrite_rules( \WP_CLI\Utils\get_flag_value( $assoc_args, 'hard' ) );
 		if ( ! get_option( 'rewrite_rules' ) ) {
 			WP_CLI::warning( "Rewrite rules are empty, possibly because of a missing permalink_structure option. Use 'wp rewrite list' to verify, or 'wp rewrite structure' to update permalink_structure." );
 		}
@@ -115,7 +115,7 @@ class Rewrite_Command extends WP_CLI_Command {
 		// Launch a new process to flush rewrites because core expects flush
 		// to happen after rewrites are set
 		$new_assoc_args = array();
-		if ( isset( $assoc_args['hard'] ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'hard' ) ) {
 			$new_assoc_args['hard'] = true;
 			if ( ! in_array( 'mod_rewrite', (array) WP_CLI::get_config( 'apache_modules' ) ) ) {
 				WP_CLI::warning( "Regenerating a .htaccess file requires special configuration. See usage docs." );

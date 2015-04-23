@@ -100,7 +100,7 @@ class Export_Command extends WP_CLI_Command {
 		if ( ! empty( $sitename ) ) {
 			$sitename .= '.';
 		}
-		return $sitename . 'wordpress.' . date( 'Y-m-d' ) . '.%d.xml';
+		return $sitename . 'wordpress.' . date( 'Y-m-d' ) . '.%03d.xml';
 	}
 
 	private static function load_export_api() {

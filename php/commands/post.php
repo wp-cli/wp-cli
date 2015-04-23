@@ -55,9 +55,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$assoc_args['post_content'] = $this->read_from_file_or_stdin( $args[0] );
 		}
 
-		if ( isset( $assoc_args['edit'] ) ) {
-			$input = isset( $assoc_args['post_content'] ) ?
-				$assoc_args['post_content'] : '';
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'edit' ) ) {
+			$input = \WP_CLI\Utils\get_flag_value( $assoc_args, 'post_content', '' );
 
 			if ( $output = $this->_edit( $input, 'WP-CLI: New Post' ) )
 				$assoc_args['post_content'] = $output;
@@ -195,6 +194,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp post delete 123 --force
 	 *
 	 *     wp post delete $(wp post list --post_type='page' --format=ids)
+	 *
+	 *     # delete all posts in the trash
+	 *     wp post delete $(wp post list --post_status=trash --format=ids)
 	 */
 	public function delete( $args, $assoc_args ) {
 		$defaults = array(
@@ -203,10 +205,11 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		parent::_delete( $args, $assoc_args, function ( $post_id, $assoc_args ) {
+			$status = get_post_status( $post_id );
 			$r = wp_delete_post( $post_id, $assoc_args['force'] );
 
 			if ( $r ) {
-				$action = $assoc_args['force'] ? 'Deleted' : 'Trashed';
+				$action = $assoc_args['force'] || 'trash' === $status ? 'Deleted' : 'Trashed';
 
 				return array( 'success', "$action post $post_id." );
 			} else {
@@ -357,7 +360,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$post_author = $user_fetcher->get_check( $post_author )->ID;
 		}
 
-		if ( isset( $assoc_args['post_content'] ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'post_content' ) ) {
 			$post_content = file_get_contents( 'php://stdin' );
 		}
 
@@ -478,8 +481,42 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
  */
 class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
 	protected $meta_type = 'post';
+
+	/**
+	 * Check that the post ID exists
+	 *
+	 * @param int
+	 */
+	protected function check_object_id( $object_id ) {
+		$fetcher = new \WP_CLI\Fetchers\Post;
+		$post = $fetcher->get_check( $object_id );
+		return $post->ID;
+	}
+}
+
+/**
+ * Manage post terms.
+ *
+ *
+ * ## EXAMPLES
+ *
+ *     wp post term set 123 test category
+ */
+class Post_Term_Command extends \WP_CLI\CommandWithTerms {
+	protected $obj_type = 'post';
+
+	public function __construct() {
+		$this->fetcher = new \WP_CLI\Fetchers\Post;
+	}
+
+	protected function get_object_type() {
+		$post = $this->fetcher->get_check( $this->get_obj_id() );
+
+		return $post->post_type;
+	}
 }
 
 WP_CLI::add_command( 'post', 'Post_Command' );
 WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );
+WP_CLI::add_command( 'post term', 'Post_Term_Command' );
 

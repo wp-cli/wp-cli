@@ -165,10 +165,10 @@ Feature: Manage WordPress themes and plugins
       """
     And the <file_to_check> file should not exist
 
-    When I run `wp <type> search <item> --per-page=1 --fields=name,slug`
+    When I run `wp <type> search <item> --per-page=2 --fields=name,slug`
     Then STDOUT should contain:
       """
-      Showing 1 of
+      Showing 2 of
       """
     And STDOUT should end with a table containing rows:
       | name         | slug   |

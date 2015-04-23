@@ -94,10 +94,10 @@ class Cron_Event_Command extends WP_CLI_Command {
 	public function schedule( $args, $assoc_args ) {
 
 		$hook = $args[0];
-		$next_run = ( isset( $args[1] ) ) ? $args[1] : 'now';
-		$recurrence = ( isset( $args[2] ) ) ? $args[2] : false;
+		$next_run = \WP_CLI\Utils\get_flag_value( $args, 1, 'now' );
+		$recurrence = \WP_CLI\Utils\get_flag_value( $args, 2, false );
 
-		if ( ! empty( $next_run ) ) {
+		if ( empty( $next_run ) ) {
 			$timestamp = time();
 		} else if ( is_numeric( $next_run ) ) {
 			$timestamp = absint( $next_run );
@@ -151,7 +151,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 		}
 
 		$executed = 0;
-		foreach ( $events as $id => $event ) {
+		foreach ( $events as $event ) {
 			if ( $event->hook == $hook ) {
 				$result = self::run_event( $event );
 				if ( $result ) {
@@ -214,7 +214,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 		}
 
 		$deleted = 0;
-		foreach ( $events as $id => $event ) {
+		foreach ( $events as $event ) {
 			if ( $event->hook == $hook ) {
 				$result = self::delete_event( $event );
 				if ( $result ) {
@@ -294,7 +294,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 						'sig'      => $sig,
 						'args'     => $data['args'],
 						'schedule' => $data['schedule'],
-						'interval' => isset( $data['interval'] ) ? $data['interval'] : null,
+						'interval' => \WP_CLI\Utils\get_flag_value( $data, 'interval' ),
 					);
 
 				}
@@ -509,7 +509,9 @@ class Cron_Command extends WP_CLI_Command {
 	 * @return WP_Error|array The response or WP_Error on failure.
 	 */
 	protected static function get_cron_spawn() {
+		global $wp_version;
 
+		$sslverify     = version_compare( $wp_version, 4.0, '<' );
 		$doing_wp_cron = sprintf( '%.22F', microtime( true ) );
 
 		$cron_request = apply_filters( 'cron_request', array(
@@ -518,7 +520,7 @@ class Cron_Command extends WP_CLI_Command {
 			'args' => array(
 				'timeout'   => 3,
 				'blocking'  => true,
-				'sslverify' => apply_filters( 'https_local_ssl_verify', true )
+				'sslverify' => apply_filters( 'https_local_ssl_verify', $sslverify )
 			)
 		) );
 

@@ -209,7 +209,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function delete( $args, $assoc_args ) {
 		parent::_delete( $args, $assoc_args, function ( $comment_id, $assoc_args ) {
-			$r = wp_delete_comment( $comment_id, isset( $assoc_args['force'] ) );
+			$r = wp_delete_comment( $comment_id, \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) );
 
 			if ( $r ) {
 				return array( 'success', "Deleted comment $comment_id." );
@@ -353,7 +353,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp comment count 42
 	 */
 	public function count( $args, $assoc_args ) {
-		$post_id = isset( $args[0] ) ? $args[0] : 0;
+		$post_id = \WP_CLI\Utils\get_flag_value( $args, 0, 0 );
 
 		$count = wp_count_comments( $post_id );
 
@@ -440,6 +440,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
  */
 class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 	protected $meta_type = 'comment';
+
+	/**
+	 * Check that the comment ID exists
+	 *
+	 * @param int
+	 */
+	protected function check_object_id( $object_id ) {
+		$fetcher = new \WP_CLI\Fetchers\Comment;
+		$comment = $fetcher->get_check( $object_id );
+		return $comment->comment_ID;
+	}
 }
 
 WP_CLI::add_command( 'comment', 'Comment_Command' );

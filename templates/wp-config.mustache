@@ -26,7 +26,9 @@ define('DB_COLLATE', '{{dbcollate}}');
 
 $table_prefix = '{{dbprefix}}';
 
+{{#add-wplang}}
 define('WPLANG', '{{locale}}');
+{{/add-wplang}}
 
 {{extra-php}}
 
