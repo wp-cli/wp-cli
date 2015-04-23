@@ -51,7 +51,7 @@ class Menu_Command extends WP_CLI_Command {
 
 		} else {
 
-			if ( isset( $assoc_args['porcelain'] ) ) {
+			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 				WP_CLI::line( $menu_id );
 			} else {
 				WP_CLI::success( "Created menu $menu_id." );
@@ -495,7 +495,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	private function add_or_update_item( $method, $type, $args, $assoc_args ) {
 
 		$menu = $args[0];
-		$menu_item_db_id = ( isset( $args[1] ) ) ? $args[1] : 0;
+		$menu_item_db_id = \WP_CLI\Utils\get_flag_value( $args, 1, 0 );
 
 		$menu = wp_get_nav_menu_object( $menu );
 		if ( ! $menu || is_wp_error( $menu ) ) {
@@ -503,9 +503,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 		}
 
 		// `url` is protected in WP-CLI, so we use `link` instead
-		if ( isset( $assoc_args['link'] ) ) {
-			$assoc_args['url'] = $assoc_args['link'];
-		}
+		$assoc_args['url'] = \WP_CLI\Utils\get_flag_value( $assoc_args, 'link' );
 
 		// Need to persist the menu item data. See https://core.trac.wordpress.org/ticket/28138
 		if ( 'update' == $method ) {
@@ -557,7 +555,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 		foreach( $default_args as $key => $default_value ) {
 			// wp_update_nav_menu_item() has a weird argument prefix
 			$new_key = 'menu-item-' . $key;
-			$menu_item_args[ $new_key ] = isset( $assoc_args[ $key ] ) ? $assoc_args[ $key ] : $default_value;
+			$menu_item_args[ $new_key ] = \WP_CLI\Utils\get_flag_value( $assoc_args, $key, $default_value );
 		}
 
 		$menu_item_args['menu-item-type'] = $type;
@@ -717,7 +715,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 		}
 
 		$locations = get_nav_menu_locations();
-		if ( ! isset( $locations[ $location ] ) || $locations[ $location ] != $menu->term_id ) {
+		if ( \WP_CLI\Utils\get_flag_value( $locations, $location ) != $menu->term_id ) {
 			WP_CLI::error( "Menu isn't assigned to location." );
 		}
 

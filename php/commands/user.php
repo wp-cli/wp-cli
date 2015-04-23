@@ -81,7 +81,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function list_( $args, $assoc_args ) {
 
-		if ( isset( $assoc_args['network'] ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ) {
 			if ( ! is_multisite() ) {
 				WP_CLI::error( 'This is not a multisite install.' );
 			}
@@ -175,8 +175,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp user delete 123 --reassign=567
 	 */
 	public function delete( $args, $assoc_args ) {
-		$network = isset( $assoc_args['network'] ) && is_multisite();
-		$reassign = isset( $assoc_args['reassign'] ) ? $assoc_args['reassign'] : null;
+		$network = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) && is_multisite();
+		$reassign = \WP_CLI\Utils\get_flag_value( $assoc_args, 'reassign' );
 
 		if ( $network && $reassign ) {
 			WP_CLI::error('Reassigning content to a different user is not supported on multisite.');
@@ -259,17 +259,17 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( "The '{$user->user_email}' email address is invalid." );
 		}
 
-		$user->user_registered = isset( $assoc_args['user_registered'] )
-			? $assoc_args['user_registered'] : strftime( "%F %T", current_time('timestamp') );
+		$user->user_registered = \WP_CLI\Utils\get_flag_value(
+			$assoc_args,
+			'user_registered',
+			strftime( "%F %T", current_time('timestamp') )
+		);
 
-		$user->display_name = isset( $assoc_args['display_name'] )
-			? $assoc_args['display_name'] : false;
+		$user->display_name = \WP_CLI\Utils\get_flag_value( $assoc_args, 'display_name', false );
 
-		$user->first_name = isset( $assoc_args['first_name'] )
-			? $assoc_args['first_name'] : false;
+		$user->first_name = \WP_CLI\Utils\get_flag_value( $assoc_args, 'first_name', false );
 
-		$user->last_name = isset( $assoc_args['last_name'] )
-			? $assoc_args['last_name'] : false;
+		$user->last_name = \WP_CLI\Utils\get_flag_value( $assoc_args, 'last_name', false );
 
 		if ( isset( $assoc_args['user_pass'] ) ) {
 			$user->user_pass = $assoc_args['user_pass'];
@@ -278,13 +278,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$generated_pass = true;
 		}
 
-		if ( isset( $assoc_args['role'] ) ) {
-			$role = $assoc_args['role'];
-			self::validate_role( $role );
-		} else {
-			$role = get_option('default_role');
-		}
-		$user->role = $role;
+		$user->role = \WP_CLI\Utils\get_flag_value( $assoc_args, 'role', get_option('default_role') );
+		self::validate_role( $user->role );
 
 		if ( is_multisite() ) {
 			$ret = wpmu_validate_user_signup( $user->user_login, $user->user_email );
@@ -304,7 +299,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$user_id = wp_insert_user( $user );
 		}
 
-		if ( isset( $assoc_args['send-email'] ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
 			wp_new_user_notification( $user_id, $user->user_pass );
 		}
 
@@ -317,7 +312,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			}
 		}
 
-		if ( isset( $assoc_args['porcelain'] ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 			WP_CLI::line( $user_id );
 		} else {
 			WP_CLI::success( "Created user $user_id." );
@@ -432,7 +427,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	public function set_role( $args, $assoc_args ) {
 		$user = $this->fetcher->get_check( $args[0] );
 
-		$role = isset( $args[1] ) ? $args[1] : get_option( 'default_role' );
+		$role = \WP_CLI\Utils\get_flag_value( $args, 1, get_option('default_role') );
 
 		self::validate_role( $role );
 
@@ -685,7 +680,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				$existing_user = get_user_by( 'login', $new_user['user_login'] );
 			}
 
-			if ( $existing_user && isset( $assoc_args['skip-update'] ) ) {
+			if ( $existing_user && \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-update' ) ) {
 
 				WP_CLI::log( "{$existing_user->user_login} exists and has been skipped" );
 				continue;
@@ -725,7 +720,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 					$user_id = wp_insert_user( $new_user );
 				}
 
-				if ( isset( $assoc_args['send-email'] ) ) {
+				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
 					wp_new_user_notification( $user_id, $new_user['user_pass'] );
 				}
 			}

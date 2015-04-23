@@ -64,7 +64,7 @@ class Option_Command extends WP_CLI_Command {
 		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
 		$value = WP_CLI::read_value( $value, $assoc_args );
 
-		if ( isset( $assoc_args['autoload'] ) && $assoc_args['autoload'] == 'no' ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'autoload' ) === 'no' ) {
 			$autoload = 'no';
 		} else {
 			$autoload = 'yes';
@@ -139,7 +139,7 @@ class Option_Command extends WP_CLI_Command {
 			$fields = explode( ',', $assoc_args['fields'] );
 		}
 
-		if ( isset( $assoc_args['format'] ) && 'total_bytes' === $assoc_args['format'] ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
 			$fields = array( 'size_bytes' );
 			$size_query = ",SUM(LENGTH(option_value)) AS `size_bytes`";
 		}
@@ -162,7 +162,7 @@ class Option_Command extends WP_CLI_Command {
 			)
 		);
 
-		if ( isset( $assoc_args['format'] ) && 'total_bytes' === $assoc_args['format'] ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
 			WP_CLI::line( $results[0]->size_bytes );
 		} else {
 			$formatter = new \WP_CLI\Formatter(

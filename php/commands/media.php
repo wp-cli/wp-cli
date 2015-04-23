@@ -162,18 +162,18 @@ class Media_Command extends WP_CLI_Command {
 			}
 
 			// Set as featured image, if --post_id and --featured_image are set
-			if ( $assoc_args['post_id'] && isset( $assoc_args['featured_image'] ) ) {
+			if ( $assoc_args['post_id'] && \WP_CLI\Utils\get_flag_value( $assoc_args, 'featured_image' ) ) {
 				update_post_meta( $assoc_args['post_id'], '_thumbnail_id', $success );
 			}
 
 			$attachment_success_text = '';
 			if ( $assoc_args['post_id'] ) {
 				$attachment_success_text = " and attached to post {$assoc_args['post_id']}";
-				if ( isset($assoc_args['featured_image']) )
+				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'featured_image' ) )
 					$attachment_success_text .= ' as featured image';
 			}
 
-			if ( isset( $assoc_args['porcelain'] ) ) {
+			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 				WP_CLI::line( $success );
 			} else {
 				WP_CLI::success( sprintf(
