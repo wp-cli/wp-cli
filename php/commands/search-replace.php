@@ -26,7 +26,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * : The new string.
 	 *
 	 * [<table>...]
-	 * : List of database tables to restrict the replacement to.
+	 * : List of database tables to restrict the replacement to. Wildcards are support, e.g. wp_*_options
 	 *
 	 * [--network]
 	 * : Search/replace through all the tables in a multisite install.
