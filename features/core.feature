@@ -327,10 +327,10 @@ Feature: Manage WordPress installation
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                               |
       | 4.2     | major       | https://wordpress.org/wordpress-4.2.zip   |
-      | 4.1.2   | major       | https://wordpress.org/wordpress-4.1.2.zip |
-      | 4.0.2   | major       | https://wordpress.org/wordpress-4.0.2.zip |
-      | 3.9.4   | major       | https://wordpress.org/wordpress-3.9.4.zip |
-      | 3.8.6   | minor       | https://wordpress.org/wordpress-3.8.6.zip |
+      | 4.1.3   | major       | https://wordpress.org/wordpress-4.1.3.zip |
+      | 4.0.3   | major       | https://wordpress.org/wordpress-4.0.3.zip |
+      | 3.9.5   | major       | https://wordpress.org/wordpress-3.9.5.zip |
+      | 3.8.7   | minor       | https://wordpress.org/wordpress-3.8.7.zip |
 
     When I run `wp core check-update --format=count`
     Then STDOUT should be:
@@ -342,9 +342,9 @@ Feature: Manage WordPress installation
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                               |
       | 4.2     | major       | https://wordpress.org/wordpress-4.2.zip   |
-      | 4.1.2   | major       | https://wordpress.org/wordpress-4.1.2.zip |
-      | 4.0.2   | major       | https://wordpress.org/wordpress-4.0.2.zip |
-      | 3.9.4   | major       | https://wordpress.org/wordpress-3.9.4.zip |
+      | 4.1.3   | major       | https://wordpress.org/wordpress-4.1.3.zip |
+      | 4.0.3   | major       | https://wordpress.org/wordpress-4.0.3.zip |
+      | 3.9.5   | major       | https://wordpress.org/wordpress-3.9.5.zip |
 
     When I run `wp core check-update --major --format=count`
     Then STDOUT should be:
@@ -355,7 +355,7 @@ Feature: Manage WordPress installation
     When I run `wp core check-update --minor`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                               |
-      | 3.8.6   | minor       | https://wordpress.org/wordpress-3.8.6.zip |
+      | 3.8.7   | minor       | https://wordpress.org/wordpress-3.8.7.zip |
 
     When I run `wp core check-update --minor --format=count`
     Then STDOUT should be:
