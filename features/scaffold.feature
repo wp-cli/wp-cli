@@ -6,7 +6,7 @@ Feature: WordPress code scaffolding
     Given I run `wp theme path`
     And save STDOUT as {THEME_DIR}
 
-    When I run `wp scaffold child-theme zombieland --parent_theme=umbrella --theme_name=Zombieland --author=Tallahassee --author_uri=http://www.wp-cli.org --theme_uri=http://www.zombieland.com --activate`
+    When I run `wp scaffold child-theme zombieland --parent_theme=umbrella --theme_name=Zombieland --author=Tallahassee --author_uri=http://www.wp-cli.org --theme_uri=http://www.zombieland.com`
     Then STDOUT should not be empty
     And the {THEME_DIR}/zombieland/style.css file should exist
 
