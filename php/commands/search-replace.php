@@ -87,6 +87,17 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		// Get the array of tables to work with. If there is anything left in $args, assume those are table names to use
 		$tables = empty( $args ) ? self::get_table_list( $table_type ) : $args;
+		$expanded_tables = array();
+
+		// support globs in table names
+		foreach ( $tables as $key => $table ) {
+			if ( strpos( $table, '*' ) !== false ) {
+				$expanded_tables = array_merge( $expanded_tables, self::get_tables_for_glob( $table ) );
+			}
+		}
+
+		$tables = $expanded_tables;
+
 		foreach ( $tables as $table ) {
 			list( $primary_keys, $columns ) = self::get_columns( $table );
 
@@ -199,6 +210,31 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		return array_values( $matching_tables );
 
+	}
+
+	/**
+	 * Get all the tables that match a glob pattern
+	 * 
+	 * @param  string $glob
+	 * @return array
+	 */
+	private static function get_tables_for_glob( $glob ) {
+
+		static $all_tables = array();
+
+		if ( ! $all_tables ) {
+			$all_tables = self::get_table_list( 'all-tables' );
+		}
+
+		$tables = array();
+
+		foreach ( $all_tables as $table) {
+			if ( fnmatch( $glob, $table ) ) {
+				$tables[] = $table;
+			}
+		}
+
+		return $tables;
 	}
 
 	private static function sql_handle_col( $col, $table, $old, $new, $dry_run ) {
