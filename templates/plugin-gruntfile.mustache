@@ -1,7 +1,6 @@
 module.exports = function( grunt ) {
 
 	'use strict';
-	var remapify = require('remapify');
 	var banner = '/**\n * <%= pkg.homepage %>\n * Copyright (c) <%= grunt.template.today("yyyy") %>\n * This file is generated automatically. Do not edit.\n */\n';
 	// Project configuration
 	grunt.initConfig( {
