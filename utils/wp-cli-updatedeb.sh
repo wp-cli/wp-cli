@@ -61,7 +61,7 @@ wget -nv -O usr/bin/wp "$PHAR" || die 3 "Phar download failure"
 chmod +x usr/bin/wp || die 4 "chmod failure"
 
 # get version
-WPCLI_VER="$(grep -ao "define.*WP_CLI_VERSION.*;" usr/bin/wp | cut -d"'" -f4)"
+WPCLI_VER="$(usr/bin/wp cli version|cut -d" " -f2)"
 [ -z "$WPCLI_VER" ] && die 5 "Cannot get wp-cli version"
 echo "Current version: ${WPCLI_VER}"
 
