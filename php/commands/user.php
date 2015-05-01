@@ -306,7 +306,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		if ( is_wp_error( $user_id ) ) {
 			WP_CLI::error( $user_id );
 		} else {
-			if ( false === $role ) {
+			if ( false === $user->role ) {
 				delete_user_option( $user_id, 'capabilities' );
 				delete_user_option( $user_id, 'user_level' );
 			}
