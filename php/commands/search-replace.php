@@ -43,32 +43,50 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--recurse-objects]
 	 * : Enable recursing into objects to replace strings
 	 *
+	 * [--all-tables-with-prefix]
+	 * : Enable replacement on any tables that match the table prefix even if not registered on wpdb
+	 *
+	 * [--all-tables]
+	 * : Enable replacement on ALL tables in the database, regardless of the prefix. Overrides --network and --all-tables-with-prefix.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
 	 *
 	 *     wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
+	 *
+	 *     # Turn your production database into a local database
+	 *     wp search-replace --url=example.com example.com example.dev
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		global $wpdb;
-		$old = array_shift( $args );
-		$new = array_shift( $args );
-		$total = 0;
-		$report = array();
-		$dry_run = isset( $assoc_args['dry-run'] );
-		$php_only = isset( $assoc_args['precise'] );
-		$recurse_objects = isset( $assoc_args['recurse-objects'] );
+		$old             = array_shift( $args );
+		$new             = array_shift( $args );
+		$total           = 0;
+		$report          = array();
+		$dry_run         = \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' );
+		$php_only        = \WP_CLI\Utils\get_flag_value( $assoc_args, 'precise' );
+		$recurse_objects = \WP_CLI\Utils\get_flag_value( $assoc_args, 'recurse-objects' );
 
-		if ( isset( $assoc_args['skip-columns'] ) )
-			$skip_columns = explode( ',', $assoc_args['skip-columns'] );
-		else
-			$skip_columns = array();
+		$skip_columns = explode( ',', \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-columns' ) );
 
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';
 
-		$tables = self::get_table_list( $args, isset( $assoc_args['network'] ) );
+		// Determine how to limit the list of tables. Defaults to 'wordpress'
+		$table_type = 'wordpress';
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ) {
+			$table_type = 'network';
+		}
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all-tables-with-prefix' ) ) {
+			$table_type = 'all-tables-with-prefix';
+		}
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all-tables' ) ) {
+			$table_type = 'all-tables';
+		}
 
+		// Get the array of tables to work with. If there is anything left in $args, assume those are table names to use
+		$tables = empty( $args ) ? self::get_table_list( $table_type ) : $args;
 		foreach ( $tables as $table ) {
 			list( $primary_keys, $columns ) = self::get_columns( $table );
 
@@ -109,20 +127,41 @@ class Search_Replace_Command extends WP_CLI_Command {
 			$table->setRows( $report );
 			$table->display();
 
-			if ( !$dry_run )
+			if ( ! $dry_run ) {
 				WP_CLI::success( "Made $total replacements." );
+			}
 
 		}
 	}
 
-	private static function get_table_list( $args, $network ) {
+	/**
+	 * Retrieve a list of tables from the database.
+	 *
+	 * @global wpdb $wpdb
+	 *
+	 * @param string $limit_to Sting defining how to limit the list of tables to retrieve. Acceptable vales are:
+	 *                         - 'wordpress' for default WordPress tables only
+	 *                         - 'network' for default Multisite tables only
+	 *                         - 'all-tables-with-prefix' for all tables using the WordPress DB prefix
+	 *                         - 'all-tables' for all tables in the DB
+	 *
+	 * @return array The array of table names.
+	 */
+	private static function get_table_list( $limit_to ) {
 		global $wpdb;
 
-		if ( !empty( $args ) )
-			return $args;
+		$network = 'network' == $limit_to;
+
+		if ( 'all-tables' == $limit_to ) {
+			return $wpdb->get_col( 'SHOW TABLES' );
+		}
 
 		$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
-		$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", like_escape( $prefix ) . '%' ) );
+		$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $prefix . '%' ) );
+
+		if ( 'all-tables-with-prefix' == $limit_to ) {
+			return $matching_tables;
+		}
 
 		$allowed_tables = array();
 		$allowed_table_types = array( 'tables', 'global_tables' );
@@ -166,7 +205,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		global $wpdb;
 
 		if ( $dry_run ) {
-			return $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(`$col`) FROM `$table` WHERE `$col` LIKE %s;", '%' . like_escape( esc_sql( $old ) ) . '%' ) );
+			return $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(`$col`) FROM `$table` WHERE `$col` LIKE %s;", '%' . self::esc_like( $old ) . '%' ) );
 		} else {
 			return $wpdb->query( $wpdb->prepare( "UPDATE `$table` SET `$col` = REPLACE(`$col`, %s, %s);", $old, $new ) );
 		}
@@ -184,7 +223,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$args = array(
 			'table' => $table,
 			'fields' => $fields,
-			'where' => "`$col`" . ' LIKE "%' . like_escape( esc_sql( $old ) ) . '%"',
+			'where' => "`$col`" . ' LIKE "%' . self::esc_like( $old ) . '%"',
 			'chunk_size' => $chunk_size
 		);
 
@@ -246,6 +285,22 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		return false;
 	}
+
+	private static function esc_like( $old ) {
+		global $wpdb;
+
+		// Remove notices in 4.0 and support backwards compatibility
+		if( method_exists( $wpdb, 'esc_like' ) ) {
+			// 4.0
+			$old = $wpdb->esc_like( $old );
+		} else {
+			// 3.9 or less
+			$old = like_escape( esc_sql( $old ) );
+		}
+
+		return $old;
+	}
+
 }
 
 WP_CLI::add_command( 'search-replace', 'Search_Replace_Command' );

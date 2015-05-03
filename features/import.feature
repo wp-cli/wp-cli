@@ -23,7 +23,10 @@ Feature: Import content.
       """
 
     When I run `wp plugin install wordpress-importer --activate`
-    Then STDOUT should not be empty
+    Then STDERR should not contain:
+      """
+      Warning:
+      """
 
     When I run `wp import {EXPORT_FILE} --authors=skip`
     Then STDOUT should not be empty
@@ -70,7 +73,12 @@ Feature: Import content.
       """
 
     When I run `wp plugin install wordpress-importer --activate`
-    And I run `wp import export-posts --authors=skip --skip=image_resize`
+    Then STDERR should not contain:
+      """
+      Warning:
+      """
+
+    When I run `wp import export-posts --authors=skip --skip=image_resize`
     And I run `wp import export-pages --authors=skip --skip=image_resize`
     Then STDOUT should not be empty
 

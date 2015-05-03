@@ -15,6 +15,9 @@ class Media_Command extends WP_CLI_Command {
 	 * [<attachment-id>...]
 	 * : One or more IDs of the attachments to regenerate.
 	 *
+	 * [--skip-delete]
+	 * : Skip deletion of the original thumbnails. If your thumbnails are linked from sources outside your control, it's likely best to leave them around. Defaults to false.
+	 *
 	 * [--yes]
 	 * : Answer yes to the confirmation message.
 	 *
@@ -30,6 +33,8 @@ class Media_Command extends WP_CLI_Command {
 		if ( empty( $args ) ) {
 			WP_CLI::confirm( 'Do you realy want to regenerate all images?', $assoc_args );
 		}
+
+		$skip_delete = \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-delete' );
 
 		$query_args = array(
 			'post_type' => 'attachment',
@@ -53,7 +58,7 @@ class Media_Command extends WP_CLI_Command {
 			_n( 'image', 'images', $count ) ) );
 
 		foreach ( $images->posts as $id ) {
-			$this->_process_regeneration( $id );
+			$this->_process_regeneration( $id, $skip_delete );
 		}
 
 		WP_CLI::success( sprintf(
@@ -162,18 +167,18 @@ class Media_Command extends WP_CLI_Command {
 			}
 
 			// Set as featured image, if --post_id and --featured_image are set
-			if ( $assoc_args['post_id'] && isset( $assoc_args['featured_image'] ) ) {
+			if ( $assoc_args['post_id'] && \WP_CLI\Utils\get_flag_value( $assoc_args, 'featured_image' ) ) {
 				update_post_meta( $assoc_args['post_id'], '_thumbnail_id', $success );
 			}
 
 			$attachment_success_text = '';
 			if ( $assoc_args['post_id'] ) {
 				$attachment_success_text = " and attached to post {$assoc_args['post_id']}";
-				if ( isset($assoc_args['featured_image']) )
+				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'featured_image' ) )
 					$attachment_success_text .= ' as featured image';
 			}
 
-			if ( isset( $assoc_args['porcelain'] ) ) {
+			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 				WP_CLI::line( $success );
 			} else {
 				WP_CLI::success( sprintf(
@@ -198,7 +203,7 @@ class Media_Command extends WP_CLI_Command {
 		return $filename;
 	}
 
-	private function _process_regeneration( $id ) {
+	private function _process_regeneration( $id, $skip_delete = false ) {
 		$image = get_post( $id );
 
 		$fullsizepath = get_attached_file( $image->ID );
@@ -210,7 +215,9 @@ class Media_Command extends WP_CLI_Command {
 			return;
 		}
 
-		$this->remove_old_images( $image->ID );
+		if ( ! $skip_delete ) {
+			$this->remove_old_images( $image->ID );
+		}
 
 		$metadata = wp_generate_attachment_metadata( $image->ID, $fullsizepath );
 		if ( is_wp_error( $metadata ) ) {
@@ -234,10 +241,18 @@ class Media_Command extends WP_CLI_Command {
 
 		$metadata = wp_get_attachment_metadata( $att_id );
 
+		if ( empty( $metadata['file'] ) ) {
+			return;
+		}
+
 		$dir_path = $wud['basedir'] . '/' . dirname( $metadata['file'] ) . '/';
 		$original_path = $dir_path . basename( $metadata['file'] );
 
-		foreach ( $metadata['sizes'] as $size => $size_info ) {
+		if ( empty( $metadata['sizes'] ) ) {
+			return;
+		}
+
+		foreach ( $metadata['sizes'] as $size_info ) {
 			$intermediate_path = $dir_path . $size_info['file'];
 
 			if ( $intermediate_path == $original_path )

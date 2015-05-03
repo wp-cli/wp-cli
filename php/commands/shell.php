@@ -21,7 +21,7 @@ class Shell_Command extends \WP_CLI_Command {
 			'\\WP_CLI\\REPL',
 		);
 
-		if ( isset( $assoc_args['basic'] ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'basic' ) ) {
 			$class = '\\WP_CLI\\REPL';
 		} else {
 			foreach ( $implementations as $candidate ) {

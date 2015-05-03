@@ -178,7 +178,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 		WP_CLI::confirm( "Are you sure you want to delete the $blog->siteurl site?", $assoc_args );
 
-		wpmu_delete_blog( $blog->blog_id, !isset( $assoc_args['keep-tables'] ) );
+		wpmu_delete_blog( $blog->blog_id, ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
 
 		WP_CLI::success( "The site at $blog->siteurl was deleted." );
 	}
@@ -216,7 +216,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		global $wpdb, $current_site;
 
 		$base = $assoc_args['slug'];
-		$title = isset( $assoc_args['title'] ) ? $assoc_args['title'] : ucfirst( $base );
+		$title = \WP_CLI\Utils\get_flag_value( $assoc_args, 'title', ucfirst( $base ) );
 
 		$email = empty( $assoc_args['email'] ) ? '' : $assoc_args['email'];
 
@@ -231,7 +231,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			$network = $current_site;
 		}
 
-		$public = !isset( $assoc_args['private'] );
+		$public = ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'private' );
 
 		// Sanitize
 		if ( preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
@@ -301,7 +301,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( $id->get_error_message() );
 		}
 
-		if ( isset( $assoc_args['porcelain'] ) )
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) )
 			WP_CLI::line( $id );
 		else
 			WP_CLI::success( "Site $id created: $url" );
@@ -336,6 +336,9 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--network=<id>]
 	 * : The network to which the sites belong.
 	 *
+	 * [--<field>=<value>]
+	 * : Filter by one or more fields.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each site.
 	 *
@@ -344,6 +347,27 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each site:
+	 *
+	 * * blog_id
+	 * * url
+	 * * last_updated
+	 * * registered
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * site_id
+	 * * domain
+	 * * path
+	 * * public
+	 * * archived
+	 * * mature
+	 * * spam
+	 * * deleted
+	 * * lang_id
 	 *
 	 * ## EXAMPLES
 	 *
@@ -370,6 +394,14 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		$where = array();
+
+		$site_cols = array( 'blog_id', 'url', 'last_updated', 'registered', 'site_id', 'domain', 'path', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' );
+		foreach( $site_cols as $col ) {
+			if ( isset( $assoc_args[ $col ] ) ) {
+				$where[ $col ] = $assoc_args[ $col ];
+			}
+		}
+
 		if ( isset( $assoc_args['network'] ) ) {
 			$where['site_id'] = $assoc_args['network'];
 		}
@@ -407,6 +439,139 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		parent::_url( $args, 'get_site_url' );
+	}
+
+	/**
+	 * Archive one or more sites
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to archive.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site archive 123
+	 */
+	public function archive( $args ) {
+		$this->update_site_status( $args, 'archived', 1 );
+	}
+
+	/**
+	 * Unarchive one or more sites
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to unarchive.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site unarchive 123
+	 */
+	public function unarchive( $args ) {
+		$this->update_site_status( $args, 'archived', 0 );
+	}
+
+	/**
+	 * Activate one or more sites
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to activate.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site activate 123
+	 */
+	public function activate( $args ) {
+		$this->update_site_status( $args, 'deleted', 0 );
+	}
+
+	/**
+	 * Deactivate one or more sites
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to deactivate.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site deactivate 123
+	 */
+	public function deactivate( $args ) {
+		$this->update_site_status( $args, 'deleted', 1 );
+	}
+
+	/**
+	 * Mark one or more sites as spam
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to be marked as spam.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site spam 123
+	 */
+	public function spam( $args ) {
+		$this->update_site_status( $args, 'spam', 1 );
+	}
+
+	/**
+	 * Remove one or more sites from spam
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to remove from spam.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp site unspam 123
+	 *
+	 * @subcommand unspam
+	 */
+	public function unspam( $args ) {
+		$this->update_site_status( $args, 'spam', 0 );
+	}
+
+	private function update_site_status( $ids, $pref, $value ) {
+		if ( $pref == 'archived' && $value == 1 ) {
+			$action = 'archived';
+		} else if ( $pref == 'archived' && $value == 0) {
+			$action = 'unarchived';
+		} else if ( $pref == 'deleted' && $value == 1 ) {
+			$action = 'deactivated';
+		} else if ( $pref == 'deleted' && $value == 0 ) {
+			$action = 'activated';
+		} else if ( $pref == 'spam' && $value == 1 ) {
+			$action = 'marked as spam';
+		} else if ( $pref == 'spam' && $value == 0 ) {
+			$action = 'removed from spam';
+		}
+
+		foreach ( $ids as $site_id ) {
+			$site = $this->fetcher->get_check( $site_id );
+
+			if ( is_main_site( $site->blog_id ) ) {
+				WP_CLI::warning( "You are not allowed to change the main site." );
+				continue;
+			}
+
+			$old_value = get_blog_status( $site->blog_id, $pref );
+
+			if ( $value == $old_value ) {
+				WP_CLI::warning( "Site {$site->blog_id} already {$action}." );
+				continue;
+			}
+
+			update_blog_status( $site->blog_id, $pref, $value );
+			WP_CLI::success( "Site {$site->blog_id} {$action}." );
+		}
 	}
 }
 

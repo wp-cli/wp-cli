@@ -35,7 +35,7 @@ class Transient_Command extends WP_CLI_Command {
 	public function set( $args ) {
 		list( $key, $value ) = $args;
 
-		$expiration = isset( $args[2] ) ? $args[2] : 0;
+		$expiration = \WP_CLI\Utils\get_flag_value( $args, 2, 0 );
 
 		if ( set_transient( $key, $value, $expiration ) )
 			WP_CLI::success( 'Transient added.' );

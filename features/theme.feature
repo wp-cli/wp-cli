@@ -128,73 +128,72 @@ Feature: Manage WordPress themes
 
   Scenario: Enabling and disabling a theme
   	Given a WP multisite install
-
-    When I run `wp theme install p2`
-    Then STDOUT should not be empty
+    And I run `wp theme install jolene`
+    And I run `wp theme install biker`
 
     When I try `wp option get allowedthemes`
     Then the return code should be 1
     And STDERR should be empty
 
-    When I run `wp theme enable p2`
+    When I run `wp theme enable biker`
     Then STDOUT should contain:
        """
-       Success: Enabled the 'P2' theme.
+       Success: Enabled the 'Biker' theme.
        """
 
     When I run `wp option get allowedthemes`
     Then STDOUT should contain:
        """
-       'p2' => true
+       'biker' => true
        """
 
-    When I run `wp theme disable p2`
+    When I run `wp theme disable biker`
     Then STDOUT should contain:
        """
-       Success: Disabled the 'P2' theme.
+       Success: Disabled the 'Biker' theme.
        """
 
     When I run `wp option get allowedthemes`
     Then STDOUT should not contain:
        """
-       'p2' => true
+       'biker' => true
        """
 
-    When I run `wp theme enable p2 --activate`
+    When I run `wp theme enable biker --activate`
     Then STDOUT should contain:
        """
-       Success: Enabled the 'P2' theme.
-       Success: Switched to 'P2' theme.
+       Success: Enabled the 'Biker' theme.
+       Success: Switched to 'Biker' theme.
        """
 
     When I run `wp network-meta get 1 allowedthemes`
     Then STDOUT should not contain:
        """
-       'p2' => true
+       'biker' => true
        """
 
-    When I run `wp theme enable p2 --network`
+    When I run `wp theme enable biker --network`
     Then STDOUT should contain:
        """
-       Success: Network enabled the 'P2' theme.
+       Success: Network enabled the 'Biker' theme.
        """
 
     When I run `wp network-meta get 1 allowedthemes`
     Then STDOUT should contain:
        """
-       'p2' => true
+       'biker' => true
        """
 
-    When I run `wp theme disable p2 --network`
+    When I run `wp theme disable biker --network`
     Then STDOUT should contain:
        """
-       Success: Network disabled the 'P2' theme.
+       Success: Network disabled the 'Biker' theme.
        """
 
     When I run `wp network-meta get 1 allowedthemes`
     Then STDOUT should not contain:
        """
-       'p2' => true
+       'biker' => true
        """
 
   Scenario: Enabling and disabling a theme without multisite
@@ -210,4 +209,29 @@ Feature: Manage WordPress themes
     Then STDERR should be:
       """
       Error: This is not a multisite install.
+      """
+
+  Scenario: Install a theme, then update to a specific version of that theme
+    Given a WP install
+
+    When I run `wp theme install p2 --version=1.4.1`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update p2 --version=1.4.2`
+    Then STDOUT should not be empty
+
+    When I run `wp theme list --fields=name,version`
+    Then STDOUT should be a table containing rows:
+      | name       | version   |
+      | p2         | 1.4.2     |
+
+  Scenario: Install and attempt to activate a child theme without its parent
+    Given a WP install
+    And I run `wp theme install biker`
+    And I run `rm -rf wp-content/themes/jolene`
+
+    When I try `wp theme activate biker`
+    Then STDERR should contain:
+      """
+      Error: The 'biker' theme cannot be activated without its parent, 'jolene'.
       """

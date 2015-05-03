@@ -2,6 +2,8 @@
 
 set -ex
 
+version=${1-"same"}
+
 current_rev=$(git rev-parse HEAD)
 current_rev=${current_rev:0:10}
 
@@ -10,7 +12,7 @@ packages_repo=../wp-cli-packages
 fname="phar/wp-cli.phar"
 
 # generate archive
-php -dphar.readonly=0 ./utils/make-phar.php $packages_repo/$fname --quiet
+php -dphar.readonly=0 ./utils/make-phar.php $packages_repo/$fname --quiet --version=$version --store-version
 
 cd $packages_repo
 
@@ -39,7 +41,9 @@ fi
 
 echo $md5hash | cut -d ' ' -f 1 > $fname.md5
 
-git add $fname $fname.md5
+sha512sum $fname | cut -d ' ' -f 1 > $fname.sha512
+
+git add $fname $fname.md5 $fname.sha512
 
 git commit -m "$new_commit_subj"
 

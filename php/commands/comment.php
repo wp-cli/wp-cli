@@ -98,8 +98,11 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--field=<field>]
 	 * : Instead of returning the whole comment, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, csv. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -108,8 +111,14 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	public function get( $args, $assoc_args ) {
 		$comment_id = (int)$args[0];
 		$comment = get_comment( $comment_id );
-		if ( empty( $comment ) )
+		if ( empty( $comment ) ) {
 			WP_CLI::error( "Invalid comment ID." );
+		}
+
+		if ( empty( $assoc_args['fields'] ) ) {
+			$comment_array = get_object_vars( $comment );
+			$assoc_args['fields'] = array_keys( $comment_array );
+		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $comment );
@@ -127,10 +136,33 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Prints the value of a single field for each comment.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to comment_ID,comment_post_ID,comment_date,comment_approved,comment_author,comment_author_email
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each comment:
+	 *
+	 * * comment_ID
+	 * * comment_post_ID
+	 * * comment_date
+	 * * comment_approved
+	 * * comment_author
+	 * * comment_author_email
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * comment_author_url
+	 * * comment_author_IP
+	 * * comment_date_gmt
+	 * * comment_content
+	 * * comment_karma
+	 * * comment_agent
+	 * * comment_type
+	 * * comment_parent
+	 * * user_id
 	 *
 	 * ## EXAMPLES
 	 *
@@ -146,7 +178,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		if ( 'ids' == $formatter->format )
-			$assoc_args['fields'] = 'ids';
+			$assoc_args['fields'] = 'comment_ID';
 
 		$query = new WP_Comment_Query();
 		$comments = $query->query( $assoc_args );
@@ -177,7 +209,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function delete( $args, $assoc_args ) {
 		parent::_delete( $args, $assoc_args, function ( $comment_id, $assoc_args ) {
-			$r = wp_delete_comment( $comment_id, isset( $assoc_args['force'] ) );
+			$r = wp_delete_comment( $comment_id, \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) );
 
 			if ( $r ) {
 				return array( 'success', "Deleted comment $comment_id." );
@@ -202,7 +234,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	private function set_status( $args, $status, $success ) {
 		$comment = $this->fetcher->get_check( $args[0] );
 
-		$r = wp_set_comment_status( $comment->comment_ID, 'approve', true );
+		$r = wp_set_comment_status( $comment->comment_ID, $status, true );
 
 		if ( is_wp_error( $r ) ) {
 			WP_CLI::error( $r );
@@ -321,7 +353,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     wp comment count 42
 	 */
 	public function count( $args, $assoc_args ) {
-		$post_id = isset( $args[0] ) ? $args[0] : 0;
+		$post_id = \WP_CLI\Utils\get_flag_value( $args, 0, 0 );
 
 		$count = wp_count_comments( $post_id );
 
@@ -408,6 +440,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
  */
 class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 	protected $meta_type = 'comment';
+
+	/**
+	 * Check that the comment ID exists
+	 *
+	 * @param int
+	 */
+	protected function check_object_id( $object_id ) {
+		$fetcher = new \WP_CLI\Fetchers\Comment;
+		$comment = $fetcher->get_check( $object_id );
+		return $comment->comment_ID;
+	}
 }
 
 WP_CLI::add_command( 'comment', 'Comment_Command' );

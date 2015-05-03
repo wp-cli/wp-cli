@@ -31,7 +31,7 @@ class CLI_Command extends WP_CLI_Command {
 	/**
 	 * Print WP-CLI version.
 	 */
-	function version() {
+	public function version() {
 		WP_CLI::line( 'WP-CLI ' . WP_CLI_VERSION );
 	}
 
@@ -43,12 +43,12 @@ class CLI_Command extends WP_CLI_Command {
 	 * [--format=<format>]
 	 * : Accepted values: json
 	 */
-	function info( $_, $assoc_args ) {
+	public function info( $_, $assoc_args ) {
 		$php_bin = defined( 'PHP_BINARY' ) ? PHP_BINARY : getenv( 'WP_CLI_PHP_USED' );
 
 		$runner = WP_CLI::get_runner();
 
-		if ( isset( $assoc_args['format'] ) && 'json' === $assoc_args['format'] ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$info = array(
 				'php_binary_path' => $php_bin,
 				'global_config_path' => $runner->global_config_path,
@@ -110,7 +110,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand cmd-dump
 	 */
-	function cmd_dump() {
+	public function cmd_dump() {
 		echo json_encode( self::command_to_array( WP_CLI::get_root_command() ) );
 	}
 
@@ -125,7 +125,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * --point=<point>
 	 * : The index to the current cursor position relative to the beginning of the command
 	 */
-	function completions( $_, $assoc_args ) {
+	public function completions( $_, $assoc_args ) {
 		$line = substr( $assoc_args['line'], 0, $assoc_args['point'] );
 		$compl = new \WP_CLI\Completions( $line );
 		$compl->render();

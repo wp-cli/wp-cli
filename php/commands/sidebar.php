@@ -17,10 +17,26 @@ class Sidebar_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to name, id, description
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each sidebar:
+	 *
+	 * * name
+	 * * id
+	 * * description
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * class
+	 * * before_widget
+	 * * after_widget
+	 * * before_title
+	 * * after_title
 	 *
 	 * ## EXAMPLES
 	 *

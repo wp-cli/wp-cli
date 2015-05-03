@@ -55,7 +55,7 @@ class Import_Command extends WP_CLI_Command {
 			$ret = $this->import_wxr( $file, $assoc_args );
 
 			if ( is_wp_error( $ret ) ) {
-				WP_CLI::warning( $ret );
+				WP_CLI::error( $ret );
 			} else {
 				WP_CLI::line(); // WXR import ends with HTML, so make sure message is on next line
 				WP_CLI::success( "Finished importing from $file file." );
@@ -80,9 +80,11 @@ class Import_Command extends WP_CLI_Command {
 			$author = new \stdClass;
 			// Always in the WXR
 			$author->user_login = $wxr_author['author_login'];
-			$author->user_email = $wxr_author['author_email'];
 
 			// Should be in the WXR; no guarantees
+			if ( isset ( $wxr_author['author_email'] ) ) {
+				$author->user_email = $wxr_author['author_email'];
+			}
 			if ( isset( $wxr_author['author_display_name'] ) )
 				$author->display_name = $wxr_author['author_display_name'];
 			if ( isset( $wxr_author['author_first_name'] ) )
@@ -169,10 +171,18 @@ class Import_Command extends WP_CLI_Command {
 		} );
 
 		add_action( 'wp_import_insert_post', function( $post_id, $original_post_ID, $post, $postdata ) {
-			if ( is_wp_error( $post_id ) )
+			global $wpcli_import_counts;
+			if ( is_wp_error( $post_id ) ) {
 				WP_CLI::warning( "-- Error importing post: " . $post_id->get_error_code() );
-			else
+			} else {
 				WP_CLI::line( "-- Imported post as post_id #{$post_id}" );
+			}
+
+			if ( $wpcli_import_counts['current_post'] % 500 === 0 ) {
+				WP_CLI\Utils\wp_clear_object_cache();
+				WP_CLI::line( "-- Cleared object cache." );
+			}
+
 		}, 10, 4 );
 
 		add_action( 'wp_import_insert_term', function( $t, $import_term, $post_id, $post ) {
@@ -353,7 +363,9 @@ class Import_Command extends WP_CLI_Command {
 			$levs[] = levenshtein( $author_user_login, $user->display_name );
 			$levs[] = levenshtein( $author_user_login, $user->user_login );
 			$levs[] = levenshtein( $author_user_login, $user->user_email );
-			$levs[] = levenshtein( $author_user_login, array_shift( explode( "@", $user->user_email ) ) );
+			$email_parts = explode( "@", $user->user_email );
+			$email_login = array_shift( $email_parts );
+			$levs[] = levenshtein( $author_user_login, $email_login );
 			rsort( $levs );
 			$lev = array_pop( $levs );
 			if ( 0 == $lev ) {
@@ -376,5 +388,5 @@ class Import_Command extends WP_CLI_Command {
 
 }
 
-WP_CLI::add_command( 'import', new Import_Command );
+WP_CLI::add_command( 'import', 'Import_Command' );
 
