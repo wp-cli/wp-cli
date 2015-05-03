@@ -453,7 +453,7 @@ class Runner {
 
 	private function init_colorization() {
 		if ( 'auto' === $this->config['color'] ) {
-			$this->colorize = !\cli\Shell::isPiped();
+			$this->colorize = ( !\cli\Shell::isPiped() && !\WP_CLI\Utils\is_windows() );
 		} else {
 			$this->colorize = $this->config['color'];
 		}
@@ -547,7 +547,7 @@ class Runner {
 			"If you'd like to run it as the user that this site is under, you can " .
 			"run the following to become the respective user:\n" .
 			"\n" .
-			"    sudo -u USER -i -- wp ...\n" .
+			"    sudo -u USER -i -- wp <command>\n" .
 			"\n"
 		);
 	}
@@ -562,12 +562,21 @@ class Runner {
 		if ( empty( $this->arguments ) )
 			$this->arguments[] = 'help';
 
+		// Protect 'cli info' from most of the runtime
+		if ( 'cli' === $this->arguments[0] && ! empty( $this->arguments[1] ) && 'info' === $this->arguments[1] ) {
+			$this->_run_command();
+			exit;
+		}
+
 		// Load bundled commands early, so that they're forced to use the same
 		// APIs as non-bundled commands.
 		Utils\load_command( $this->arguments[0] );
 
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {
+				if ( ! file_exists( $path ) ) {
+					WP_CLI::error( sprintf( "Required file '%s' doesn't exist", basename( $path ) ) );
+				}
 				Utils\load_file( $path );
 			}
 		}
