@@ -263,7 +263,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * : Display current values also.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: var_export, json. Default: var_export.
+	 * : Accepted values: var_export, json. Default: json.
 	 *
 	 * @subcommand param-dump
 	 */
