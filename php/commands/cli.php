@@ -270,7 +270,7 @@ class CLI_Command extends WP_CLI_Command {
 	function param_dump( $_, $assoc_args ) {
 		$spec = \WP_CLI::get_configurator()->get_spec();
 
-		if ( isset( $assoc_args['with-values'] ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'with-values' ) ) {
 			$config = \WP_CLI::get_configurator()->to_array();
 			// Copy current config values to $spec
 			foreach ( $spec as $key => $value ) {
@@ -283,7 +283,7 @@ class CLI_Command extends WP_CLI_Command {
 			}
 		}
 
-		if ( isset( $assoc_args['format'] ) && 'var_export' === $assoc_args['format'] ) {
+		if ( 'var_export' === \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) ) {
 			var_export( $spec );
 		} else {
 			echo json_encode( $spec );
