@@ -124,3 +124,10 @@ Feature: Manage WordPress comments
       0
       """
 
+  Scenario: Generate comments
+    When I run `wp comment generate --count=20`
+    And I run `wp comment list --format=count`
+    Then STDOUT should be:
+      """
+      21
+      """

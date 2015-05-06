@@ -88,6 +88,37 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
+	 * Generate comments.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--count=<number>]
+	 * : How many comments to generate. Default: 100
+	 */
+	public function generate( $args, $assoc_args ) {
+
+		$defaults = array(
+			'count' => 100,
+		);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating comments', $assoc_args['count'] );
+		$comment_count = wp_count_comments();
+		$total = (int )$comment_count->total_comments;
+		$limit = $total + $assoc_args['count'];
+
+		for ( $i = $total; $i < $limit; $i++ ) {
+			wp_insert_comment( array(
+				'comment_content'       => "Comment {$i}",
+				) );
+			$notify->tick();
+		}
+
+		$notify->finish();
+
+	}
+
+	/**
 	 * Get a single comment.
 	 *
 	 * ## OPTIONS
