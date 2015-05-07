@@ -278,6 +278,8 @@ class Term_Command extends WP_CLI_Command {
 	 *     wp term generate --count=10
 	 */
 	public function generate( $args, $assoc_args ) {
+		global $wpdb;
+
 		list ( $taxonomy ) = $args;
 
 		$defaults = array(
@@ -302,6 +304,8 @@ class Term_Command extends WP_CLI_Command {
 		$current_parent = 0;
 		$current_depth = 1;
 
+		$max_id = (int) $wpdb->get_var( "SELECT term_taxonomy_id FROM $wpdb->term_taxonomy ORDER BY term_taxonomy_id DESC LIMIT 1" );
+
 		for ( $i = 0; $i < $count; $i++ ) {
 
 			if ( $hierarchical ) {
@@ -325,7 +329,9 @@ class Term_Command extends WP_CLI_Command {
 				'slug' => $slug . "-$i",
 			);
 
-			$term = wp_insert_term( "$label $i", $taxonomy, $args );
+			// Try to generate a unique term name.
+			$name = $label . ' ' . ( $max_id + $i + 1 );
+			$term = wp_insert_term( $name, $taxonomy, $args );
 			if ( is_wp_error( $term ) ) {
 				WP_CLI::warning( $term );
 			} else {

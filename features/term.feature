@@ -77,6 +77,15 @@ Feature: Manage WordPress terms
       11
       """
 
+  Scenario: Generating terms when terms already exist
+    When I run `wp term generate category --count=10`
+    And I run `wp term generate category --count=10`
+    And I run `wp term list category --format=count`
+    Then STDOUT should be:
+      """
+      21
+      """
+
   Scenario: Term with a non-existent parent
     When I try `wp term create category Apple --parent=99 --porcelain`
     Then STDERR should be:
