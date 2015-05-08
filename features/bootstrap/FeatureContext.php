@@ -28,7 +28,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	private static $db_settings = array(
 		'dbname' => 'wp_cli_test',
 		'dbuser' => 'wp_cli_test',
-		'dbpass' => 'password1'
+		'dbpass' => 'password1',
+		'dbhost' => '127.0.0.1',
 	);
 
 	public $variables = array();
@@ -169,7 +170,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	private static function run_sql( $sql ) {
 		Utils\run_mysql_command( 'mysql --no-defaults', array(
 			'execute' => $sql,
-			'host' => 'localhost',
+			'host' => self::$db_settings['dbhost'],
 			'user' => self::$db_settings['dbuser'],
 			'pass' => self::$db_settings['dbpass'],
 		) );
