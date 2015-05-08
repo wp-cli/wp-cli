@@ -306,7 +306,7 @@ class Term_Command extends WP_CLI_Command {
 
 		$max_id = (int) $wpdb->get_var( "SELECT term_taxonomy_id FROM $wpdb->term_taxonomy ORDER BY term_taxonomy_id DESC LIMIT 1" );
 
-		for ( $i = $max_id; $i <= $max_id + $count; $i++ ) {
+		for ( $i = $max_id + 1; $i <= $max_id + $count; $i++ ) {
 
 			if ( $hierarchical ) {
 
