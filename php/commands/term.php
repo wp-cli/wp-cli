@@ -306,7 +306,7 @@ class Term_Command extends WP_CLI_Command {
 
 		$max_id = (int) $wpdb->get_var( "SELECT term_taxonomy_id FROM $wpdb->term_taxonomy ORDER BY term_taxonomy_id DESC LIMIT 1" );
 
-		for ( $i = 0; $i < $count; $i++ ) {
+		for ( $i = $max_id; $i <= $max_id + $count; $i++ ) {
 
 			if ( $hierarchical ) {
 
@@ -329,8 +329,7 @@ class Term_Command extends WP_CLI_Command {
 				'slug' => $slug . "-$i",
 			);
 
-			// Try to generate a unique term name.
-			$name = $label . ' ' . ( $max_id + $i + 1 );
+			$name = "$label $i";
 			$term = wp_insert_term( $name, $taxonomy, $args );
 			if ( is_wp_error( $term ) ) {
 				WP_CLI::warning( $term );
