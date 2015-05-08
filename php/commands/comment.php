@@ -446,14 +446,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <id>...
-	 * : One or more IDs of comments to get the URL.
+	 * : One or more IDs of comments to get the URL for.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json, csv. Default: none
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp comment url 123
 	 */
-	public function url( $args ) {
-		parent::_url( $args, 'get_comment_link' );
+	public function url( $args, $assoc_args ) {
+		parent::_url( $args, $assoc_args, 'get_comment_link' );
 	}
 }
 

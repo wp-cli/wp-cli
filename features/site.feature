@@ -103,6 +103,18 @@ Feature: Manage sites in a multisite installation
       http://example.com/first
       """
 
+    When I run `wp site url {SITE_ID}`
+    Then STDOUT should be:
+      """
+      http://example.com/first
+      """
+
+    When I run `wp site url --format=table 1 {SITE_ID}`
+    Then STDOUT should be a table containing rows:
+      | id         | url                       |
+      | 1  | http://example.com  |
+      | {SITE_ID}  | http://example.com/first  |
+
   Scenario: Archive/unarchive a site
     Given a WP multisite install
     And I run `wp site create --slug=first --porcelain`
