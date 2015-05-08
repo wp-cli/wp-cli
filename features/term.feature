@@ -49,6 +49,16 @@ Feature: Manage WordPress terms
       | name      | Test term  |
       | taxonomy  | post_tag   |
 
+    When I run `wp term create post_tag 'Another term' --slug=another --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID2}
+
+    When I run `wp term url post_tag {TERM_ID} {TERM_ID2} --format=table`
+    Then STDOUT should be a table containing rows:
+      | id        | url                              |
+      | {TERM_ID} | http://example.com/?tag=test     |
+      | {TERM_ID2} | http://example.com/?tag=another |
+
   Scenario: Creating/deleting a term
     When I run `wp term create post_tag 'Test delete term' --slug=test-delete --description='This is a test term to be deleted' --porcelain`
     Then STDOUT should be a number
