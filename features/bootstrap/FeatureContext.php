@@ -126,7 +126,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function replace_variables( $str ) {
-		return preg_replace_callback( '/\{([A-Z_]+)\}/', array( $this, '_replace_var' ), $str );
+		return preg_replace_callback( '/\{([A-Z_0-9]+)\}/', array( $this, '_replace_var' ), $str );
 	}
 
 	private function _replace_var( $matches ) {
