@@ -151,6 +151,10 @@ Feature: WordPress code scaffolding
       bootstrap.php
       test-sample.php
       """
+    And the {PLUGIN_DIR}/hello-world/tests/bootstrap.php file should contain:
+      """
+      hello-world.php
+      """
     And the {PLUGIN_DIR}/hello-world/bin directory should contain:
       """
       install-wp-tests.sh

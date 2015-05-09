@@ -527,10 +527,14 @@ class Scaffold_Command extends WP_CLI_Command {
 			if ( ! is_dir( $plugin_dir ) ) {
 				WP_CLI::error( 'Invalid plugin specified.' );
 			}
-		} else if ( ! empty( $args[0] ) ) {
+		}
+		
+		if ( ! empty( $args[0] ) ) {
 			$plugin_slug = $args[0];
 			$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
-		} else {
+		}
+		
+		if ( empty( $assoc_args['dir'] ) && empty( $args[0] ) ) {
 			WP_CLI::error( 'Invalid plugin specified.' );
 		}
 
