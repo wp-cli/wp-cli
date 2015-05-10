@@ -153,7 +153,7 @@ Feature: WordPress code scaffolding
       """
     And the {PLUGIN_DIR}/hello-world/tests/bootstrap.php file should contain:
       """
-      hello-world.php
+      require dirname( __FILE__ ) . '/../hello-world.php';
       """
     And the {PLUGIN_DIR}/hello-world/bin directory should contain:
       """
