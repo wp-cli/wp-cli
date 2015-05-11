@@ -91,7 +91,7 @@ return array(
 		'default' => array(),
 	),
 
-	# --allow-root => (NOT RECCOMENDED) Allow wp-cli to run as root. This poses
+	# --allow-root => (NOT RECOMMENDED) Allow wp-cli to run as root. This poses
 	# a security risk, so you probably do not want to do this.
 	'allow-root' => array(
 		'file' => false, # Explicit. Just in case the default changes.
