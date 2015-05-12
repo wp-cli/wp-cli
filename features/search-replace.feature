@@ -15,6 +15,7 @@ Feature: Do global search/replace
       guid
       """
 
+
   Scenario: Multisite search/replace
     Given a WP multisite install
     And I run `wp site create --slug="foo" --title="foo" --email="foo@example.com"`
@@ -61,6 +62,29 @@ Feature: Do global search/replace
 
     When I run `wp search-replace foo bar --quiet`
     Then STDOUT should be empty
+
+  Scenario: Verbose search/replace
+    Given a WP install
+    And I run `wp post create --post_title='Replace this text' --porcelain`
+    And save STDOUT as {POSTID}
+
+    When I run `wp search-replace 'Replace' 'Replaced' --verbose`
+    Then STDOUT should contain:
+      """
+      Updating wp_posts.post_title from 'Replace' to 'Replaced'
+      """
+
+    When I run `wp search-replace 'Replace' 'Replaced' --verbose --dry-run`
+    Then STDOUT should contain:
+      """
+      This would update wp_posts.post_title from 'Replace' to 'Replaced'
+      """
+
+    When I run `wp search-replace 'Replace' 'Replaced' --verbose --precise`
+    Then STDOUT should contain:
+      """
+      Updating wp_posts.post_title from 'Replace' to 'Replaced'
+      """
 
   Scenario Outline: Large guid search/replace where replacement contains search (or not)
     Given a WP install
