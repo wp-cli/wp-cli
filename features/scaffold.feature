@@ -281,7 +281,7 @@ Feature: WordPress code scaffolding
     When I try `wp scaffold plugin-tests --dir=wp-content/mu-plugins/incorrect-custom-plugin`
     Then STDERR should contain:
       """
-      Error: Invalid plugin specified.
+      Error: Invalid plugin directory specified.
       """
 
     When I run `wp scaffold plugin-tests --dir=wp-content/mu-plugins/custom-plugin`
@@ -294,6 +294,30 @@ Feature: WordPress code scaffolding
     And the wp-content/mu-plugins/custom-plugin/tests/bootstrap.php file should contain:
     """
     require dirname( dirname( __FILE__ ) ) . '/custom-plugin.php';
+    """
+
+  Scenario: Scaffold tests for a plugin with a different slug than plugin directory
+    Given a WP install
+    And a wp-content/mu-plugins/custom-plugin2/custom-plugin-slug.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Handbook
+       * Description: Features for a handbook, complete with glossary and table of contents
+       * Author: Nacin
+       */
+      """
+
+    When I run `wp scaffold plugin-tests custom-plugin-slug --dir=wp-content/mu-plugins/custom-plugin2`
+    Then STDOUT should contain:
+      """
+      Success: Created test files.
+      """
+    And the wp-content/mu-plugins/custom-plugin2/tests directory should exist
+    And the wp-content/mu-plugins/custom-plugin2/tests/bootstrap.php file should exist
+    And the wp-content/mu-plugins/custom-plugin2/tests/bootstrap.php file should contain:
+    """
+    require dirname( dirname( __FILE__ ) ) . '/custom-plugin-slug.php';
     """
 
   Scenario: Scaffold starter code for a theme and network enable it
