@@ -306,6 +306,9 @@ class Term_Command extends WP_CLI_Command {
 
 		$max_id = (int) $wpdb->get_var( "SELECT term_taxonomy_id FROM $wpdb->term_taxonomy ORDER BY term_taxonomy_id DESC LIMIT 1" );
 
+		$suspend_cache_invalidation = wp_suspend_cache_invalidation( true );
+		$created = array();
+
 		for ( $i = $max_id + 1; $i <= $max_id + $count; $i++ ) {
 
 			if ( $hierarchical ) {
@@ -334,13 +337,15 @@ class Term_Command extends WP_CLI_Command {
 			if ( is_wp_error( $term ) ) {
 				WP_CLI::warning( $term );
 			} else {
+				$created[] = $term['term_id'];
 				$previous_term_id = $term['term_id'];
 			}
 
 			$notify->tick();
 		}
 
-		delete_option( $taxonomy . '_children' );
+		wp_suspend_cache_invalidation( $suspend_cache_invalidation );
+		clean_term_cache( $created, $taxonomy );
 
 		$notify->finish();
 	}
