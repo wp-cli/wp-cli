@@ -511,7 +511,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * : The name of the plugin to generate test files for.
 	 *
 	 * [--dir=<dirname>]
-	 * : Generate test files for a non-standard plugin path.
+	 * : Generate test files for a non-standard plugin path. If no plugin slug is specified, the directory name is used.
 	 *
 	 * ## EXAMPLE
 	 *
@@ -522,16 +522,22 @@ class Scaffold_Command extends WP_CLI_Command {
 	function plugin_tests( $args, $assoc_args ) {
 		$wp_filesystem = $this->init_wp_filesystem();
 
+		if ( ! empty( $args[0] ) ) {
+			$plugin_slug = $args[0];
+			$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
+		}
+
 		if ( ! empty( $assoc_args['dir'] ) ) {
 			$plugin_dir = $assoc_args['dir'];
 			if ( ! is_dir( $plugin_dir ) ) {
-				WP_CLI::error( 'Invalid plugin specified.' );
+				WP_CLI::error( 'Invalid plugin directory specified.' );
 			}
-			$plugin_slug =  basename( $plugin_dir );
-		} else if ( ! empty( $args[0] ) ) {
-			$plugin_slug = $args[0];
-			$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
-		} else {
+			if ( empty( $plugin_slug ) ) {
+				$plugin_slug = basename( $plugin_dir );
+			}
+		}
+
+		if ( empty( $plugin_slug ) || empty( $plugin_dir ) ) {
 			WP_CLI::error( 'Invalid plugin specified.' );
 		}
 
