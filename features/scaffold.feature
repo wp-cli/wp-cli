@@ -151,6 +151,10 @@ Feature: WordPress code scaffolding
       bootstrap.php
       test-sample.php
       """
+    And the {PLUGIN_DIR}/hello-world/tests/bootstrap.php file should contain:
+      """
+      require dirname( dirname( __FILE__ ) ) . '/hello-world.php';
+      """
     And the {PLUGIN_DIR}/hello-world/bin directory should contain:
       """
       install-wp-tests.sh
@@ -286,6 +290,11 @@ Feature: WordPress code scaffolding
       Success: Created test files.
       """
     And the wp-content/mu-plugins/custom-plugin/tests directory should exist
+    And the wp-content/mu-plugins/custom-plugin/tests/bootstrap.php file should exist
+    And the wp-content/mu-plugins/custom-plugin/tests/bootstrap.php file should contain:
+    """
+    require dirname( dirname( __FILE__ ) ) . '/custom-plugin.php';
+    """
 
   Scenario: Scaffold starter code for a theme and network enable it
     Given a WP multisite install

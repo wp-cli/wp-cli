@@ -527,6 +527,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			if ( ! is_dir( $plugin_dir ) ) {
 				WP_CLI::error( 'Invalid plugin specified.' );
 			}
+			$plugin_slug =  basename( $plugin_dir );
 		} else if ( ! empty( $args[0] ) ) {
 			$plugin_slug = $args[0];
 			$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
