@@ -49,6 +49,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--all-tables]
 	 * : Enable replacement on ALL tables in the database, regardless of the prefix. Overrides --network and --all-tables-with-prefix.
 	 *
+	 * [--verbose]
+	 * : Prints rows to the console as they're updated.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
@@ -67,6 +70,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$dry_run         = \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' );
 		$php_only        = \WP_CLI\Utils\get_flag_value( $assoc_args, 'precise' );
 		$recurse_objects = \WP_CLI\Utils\get_flag_value( $assoc_args, 'recurse-objects' );
+		$verbose         =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'verbose' );
 
 		$skip_columns = explode( ',', \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-columns' ) );
 
@@ -108,10 +112,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 				if ( $php_only || NULL !== $serialRow ) {
 					$type = 'PHP';
-					$count = self::php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects );
+					$count = self::php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects, $verbose );
 				} else {
 					$type = 'SQL';
-					$count = self::sql_handle_col( $col, $table, $old, $new, $dry_run );
+					$count = self::sql_handle_col( $col, $table, $old, $new, $dry_run, $verbose );
 				}
 
 				$report[] = array( $table, $col, $count, $type );
@@ -201,17 +205,21 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 	}
 
-	private static function sql_handle_col( $col, $table, $old, $new, $dry_run ) {
+	private static function sql_handle_col( $col, $table, $old, $new, $dry_run, $verbose ) {
 		global $wpdb;
 
 		if ( $dry_run ) {
-			return $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(`$col`) FROM `$table` WHERE `$col` LIKE %s;", '%' . self::esc_like( $old ) . '%' ) );
+			$count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(`$col`) FROM `$table` WHERE `$col` LIKE %s;", '%' . self::esc_like( $old ) . '%' ) );
 		} else {
-			return $wpdb->query( $wpdb->prepare( "UPDATE `$table` SET `$col` = REPLACE(`$col`, %s, %s);", $old, $new ) );
+			$count = $wpdb->query( $wpdb->prepare( "UPDATE `$table` SET `$col` = REPLACE(`$col`, %s, %s);", $old, $new ) );
 		}
+		if ( $verbose ) {
+			self::log_verbose_details( $table, $col, $count );
+		}
+		return $count;
 	}
 
-	private static function php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects ) {
+	private static function php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects, $verbose ) {
 		global $wpdb;
 
 		// We don't want to have to generate thousands of rows when running the test suite
@@ -250,6 +258,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 				$count += $wpdb->update( $table, array( $col => $value ), $where );
 			}
+		}
+
+		if ( $verbose ) {
+			self::log_verbose_details( $table, $col, $count );
 		}
 
 		return $count;
@@ -299,6 +311,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		return $old;
+	}
+
+	private static function log_verbose_details( $table, $col, $count ) {
+		WP_CLI::log( sprintf( 'Checking: %s.%s' . PHP_EOL . '%d rows affected', $table, $col, $count ) );
 	}
 
 }
