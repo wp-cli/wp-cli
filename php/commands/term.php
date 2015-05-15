@@ -66,7 +66,12 @@ class Term_Command extends WP_CLI_Command {
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		$terms = get_terms( $args, $assoc_args );
+		if ( ! empty( $assoc_args['term_id'] ) ) {
+			$term = get_term_by( 'id', $assoc_args['term_id'], $args[0] );
+			$terms = array( $term );
+		} else {
+			$terms = get_terms( $args, $assoc_args );
+		}
 
 		if ( 'ids' == $formatter->format ) {
 			$terms = wp_list_pluck( $terms, 'term_id' );
