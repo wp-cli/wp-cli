@@ -71,19 +71,15 @@ Feature: Do global search/replace
     When I run `wp search-replace 'Replace' 'Replaced' --verbose`
     Then STDOUT should contain:
       """
-      Updating wp_posts.post_title from 'Replace' to 'Replaced'
-      """
-
-    When I run `wp search-replace 'Replace' 'Replaced' --verbose --dry-run`
-    Then STDOUT should contain:
-      """
-      This would update wp_posts.post_title from 'Replace' to 'Replaced'
+      Checking wp_posts.post_title
+      1 rows affected
       """
 
     When I run `wp search-replace 'Replace' 'Replaced' --verbose --precise`
     Then STDOUT should contain:
       """
-      Updating wp_posts.post_title from 'Replace' to 'Replaced'
+      Checking wp_posts.post_title
+      1 rows affected
       """
 
   Scenario Outline: Large guid search/replace where replacement contains search (or not)

@@ -209,14 +209,14 @@ class Search_Replace_Command extends WP_CLI_Command {
 		global $wpdb;
 
 		if ( $dry_run ) {
-			$result = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(`$col`) FROM `$table` WHERE `$col` LIKE %s;", '%' . self::esc_like( $old ) . '%' ) );
+			$count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(`$col`) FROM `$table` WHERE `$col` LIKE %s;", '%' . self::esc_like( $old ) . '%' ) );
 		} else {
-			$result = $wpdb->query( $wpdb->prepare( "UPDATE `$table` SET `$col` = REPLACE(`$col`, %s, %s);", $old, $new ) );
+			$count = $wpdb->query( $wpdb->prepare( "UPDATE `$table` SET `$col` = REPLACE(`$col`, %s, %s);", $old, $new ) );
 		}
-		if ( $result && $verbose ) {
-			self::log_verbose_details( $table, $col, $old, $new, $dry_run );
+		if ( $count && $verbose ) {
+			self::log_verbose_details( $table, $col, $count );
 		}
-		return $result;
+		return $count;
 	}
 
 	private static function php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects, $verbose ) {
@@ -261,7 +261,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		if ( $count && $verbose ) {
-			self::log_verbose_details( $table, $col, $old, $new, $dry_run );
+			self::log_verbose_details( $table, $col, $count );
 		}
 
 		return $count;
@@ -313,10 +313,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 		return $old;
 	}
 
-	private static function log_verbose_details( $table, $col, $old, $new, $dry_run ) {
-		$action = $dry_run ? 'This would update' : 'Updating';
-		$verbose_output = "$action $table.$col from '$old' to '$new'\r\n";
-		WP_CLI::log( $verbose_output );
+	private static function log_verbose_details( $table, $col, $count ) {
+		WP_CLI::log( sprintf( 'Checking: %s.%s' . PHP_EOL . '%d rows affected', $table, $col, $count ) );
 	}
 
 }
