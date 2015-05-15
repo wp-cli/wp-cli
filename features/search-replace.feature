@@ -71,14 +71,14 @@ Feature: Do global search/replace
     When I run `wp search-replace 'Replace' 'Replaced' --verbose`
     Then STDOUT should contain:
       """
-      Checking wp_posts.post_title
+      Checking: wp_posts.post_title
       1 rows affected
       """
 
     When I run `wp search-replace 'Replace' 'Replaced' --verbose --precise`
     Then STDOUT should contain:
       """
-      Checking wp_posts.post_title
+      Checking: wp_posts.post_title
       1 rows affected
       """
 

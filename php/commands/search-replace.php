@@ -213,7 +213,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		} else {
 			$count = $wpdb->query( $wpdb->prepare( "UPDATE `$table` SET `$col` = REPLACE(`$col`, %s, %s);", $old, $new ) );
 		}
-		if ( $count && $verbose ) {
+		if ( $verbose ) {
 			self::log_verbose_details( $table, $col, $count );
 		}
 		return $count;
@@ -260,7 +260,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 			}
 		}
 
-		if ( $count && $verbose ) {
+		if ( $verbose ) {
 			self::log_verbose_details( $table, $col, $count );
 		}
 
