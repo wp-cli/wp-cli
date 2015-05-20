@@ -5,6 +5,7 @@ language: php
 php:
   - 5.3
   - 5.5
+  - '7'
 
 env:
   global:
