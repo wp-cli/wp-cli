@@ -58,7 +58,11 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		$translations = $this->get_all_languages();
 		$available = $this->get_installed_languages();
 
-		wp_clean_update_cache(); // Clear existing update caches.
+		//This function is only available in Wordpress >= 4.1.0
+		include ABSPATH . 'wp-includes/version.php';
+		if( version_compare( $wp_version, '4.1.0', '>=' ) ) {
+			wp_clean_update_cache(); // Clear existing update caches.
+		}
 		wp_version_check();      // Check for Core translation updates.
 		wp_update_themes();      // Check for Theme translation updates.
 		wp_update_plugins();     // Check for Plugin translation updates.
@@ -159,7 +163,11 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			return;
 		}
 
-		wp_clean_update_cache(); // Clear existing update caches.
+		//This function is only available in Wordpress >= 4.1.0
+		include ABSPATH . 'wp-includes/version.php';
+		if( version_compare( $wp_version, '4.1.0', '>=' ) ) {
+			wp_clean_update_cache(); // Clear existing update caches.
+		}
 		wp_version_check();      // Check for Core translation updates.
 		wp_update_themes();      // Check for Theme translation updates.
 		wp_update_plugins();     // Check for Plugin translation updates.
