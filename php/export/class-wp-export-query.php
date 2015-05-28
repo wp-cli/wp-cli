@@ -159,12 +159,30 @@ class WP_Export_Query {
 
 	private function post_type_where() {
 		global $wpdb;
-		$post_types_filters = array( 'can_export' => true );
+		$post_types_filters = array( 'can_export' => true, 'name' => null );
 		if ( $this->filters['post_type'] ) {
-			$post_types_filters = array_merge( $post_types_filters, array( 'name' => $this->filters['post_type'] ) );
+			$post_types = $this->filters['post_type'];
+
+			// Flatten single post types
+			if ( is_array( $post_types ) && 1 === count( $post_types ) ) {
+				$post_types = array_shift( $post_types );
+			}
+			$post_types_filters = array_merge( $post_types_filters, array( 'name' => $post_types ) );
 		}
-		$post_types = get_post_types( $post_types_filters );
-		if ( !$post_types ) {
+
+		// Multiple post types
+		if ( is_array( $post_types_filters['name'] ) ) {
+			$post_types = array();
+			foreach ( $post_types_filters['name'] as $post_type ) {
+				if ( post_type_exists( $post_type ) ) {
+					$post_types[] = $post_type;
+				}
+			}
+		} else {
+			$post_types = get_post_types( $post_types_filters );
+		}
+
+		if ( ! $post_types ) {
 			$this->wheres[] = 'p.post_type IS NULL';
 			return;
 		}
