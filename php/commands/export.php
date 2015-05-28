@@ -207,6 +207,10 @@ class Export_Command extends WP_CLI_Command {
 	}
 
 	private function check_start_id( $start_id ) {
+		if ( is_null( $start_id ) ) {
+			return true;
+		}
+
 		$start_id = intval( $start_id );
 
 		// Post IDs must be greater than 0
