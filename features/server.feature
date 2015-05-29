@@ -1,3 +1,4 @@
+@require-php-5.4
 Feature: Serve WordPress locally
 
   Scenario: Vanilla install
