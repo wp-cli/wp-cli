@@ -739,6 +739,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				$user->add_role( $secondary_role );
 			}
 
+			//User meta: meta_key_{meta_key}
+			foreach( $new_user as $column => $meta_value ) {
+				if ( preg_match( '/^meta_key_([A-Za-z0-9_]+)$/', $column, $matches ) ) {
+					$meta_key = $matches[1];
+					add_user_meta( $user_id, $meta_key, $meta_value );
+				}
+			}
+
 			if ( !empty( $existing_user ) ) {
 				WP_CLI::success( $new_user['user_login'] . " updated" );
 			} else {
