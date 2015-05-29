@@ -32,6 +32,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		'dbhost' => '127.0.0.1',
 	);
 
+	private $running_procs = array();
+
 	public $variables = array();
 
 	/**
@@ -97,6 +99,36 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( $event->getResult() < 4 ) {
 			Process::create( Utils\esc_cmd( 'rm -r %s', $this->variables['RUN_DIR'] ), null, self::get_process_env_variables() )->run();
 		}
+
+		foreach ( $this->running_procs as $proc ) {
+			self::terminate_proc( $proc );
+		}
+	}
+
+	/**
+	 * Terminate a process and any of its children.
+	 */
+	private static function terminate_proc( $proc ) {
+		$status = proc_get_status( $proc );
+
+		$master_pid = $status['pid'];
+
+		$output = `ps -o ppid,pid,command | grep ^$master_pid`;
+
+		foreach ( explode( "\n", $output ) as $line ) {
+			if ( preg_match( '/^(\d+)\s+(\d+)/', $line, $matches ) ) {
+				$parent = $matches[1];
+				$child = $matches[2];
+
+				if ( $parent == $master_pid ) {
+					if ( ! posix_kill( $child, 9 ) ) {
+						throw new RuntimeException( posix_strerror( posix_get_last_error() ) );
+					}
+				}
+			}
+		}
+
+		proc_close( $proc );
 	}
 
 	public static function create_cache_dir() {
@@ -197,6 +229,29 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		$path = "{$this->variables['RUN_DIR']}/{$path}";
 		return Process::create( $command, $path, $env );
+	}
+
+	/**
+	 * Start a background process. Will automatically be closed when the tests finish.
+	 */
+	public function background_proc( $cmd ) {
+		$descriptors = array(
+			0 => STDIN,
+			1 => array( 'pipe', 'w' ),
+			2 => array( 'pipe', 'w' ),
+		);
+
+		$proc = proc_open( $cmd, $descriptors, $pipes, $this->variables['RUN_DIR'], self::get_process_env_variables() );
+
+		sleep(1);
+
+		$status = proc_get_status( $proc );
+
+		if ( !$status['running'] ) {
+			throw new RuntimeException( stream_get_contents( $pipes[2] ) );
+		} else {
+			$this->running_procs[] = $proc;
+		}
 	}
 
 	public function move_files( $src, $dest ) {

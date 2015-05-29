@@ -14,6 +14,12 @@ function invoke_proc( $proc, $mode ) {
 	return $proc->$method();
 }
 
+$steps->When( '/^I start `([^`]+)`$/',
+	function ( $world, $cmd ) {
+		$world->background_proc( $cmd );
+	}
+);
+
 $steps->When( '/^I (run|try) `([^`]+)`$/',
 	function ( $world, $mode, $cmd ) {
 		$cmd = $world->replace_variables( $cmd );
