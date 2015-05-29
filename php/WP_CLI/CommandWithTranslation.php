@@ -58,7 +58,9 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		$translations = $this->get_all_languages();
 		$available = $this->get_installed_languages();
 
-		wp_clean_update_cache(); // Clear existing update caches.
+		if ( $this->wp_version_min_410() ) {
+			wp_clean_update_cache(); // Clear existing update caches.
+		}
 		wp_version_check();      // Check for Core translation updates.
 		wp_update_themes();      // Check for Theme translation updates.
 		wp_update_plugins();     // Check for Plugin translation updates.
@@ -159,7 +161,9 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			return;
 		}
 
-		wp_clean_update_cache(); // Clear existing update caches.
+		if ( $this->wp_version_min_410() ) {
+			wp_clean_update_cache(); // Clear existing update caches.
+		}
 		wp_version_check();      // Check for Core translation updates.
 		wp_update_themes();      // Check for Theme translation updates.
 		wp_update_plugins();     // Check for Plugin translation updates.
@@ -369,4 +373,14 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
 	}
 
+	/**
+	* Test for WordPress version 4.1.0+
+	*
+	* @return boolean
+	*/
+	private function wp_version_min_410() {
+		include_once ABSPATH . 'wp-includes/version.php';
+		$min410 = version_compare( $wp_version, '4.1.0', '>=' );
+		return $min410;
+	}
 }
