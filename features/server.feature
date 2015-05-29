@@ -11,4 +11,6 @@ Feature: Serve WordPress locally
     Just another WordPress site
     """
 
-    When I run `test "$(curl -sS localhost:8181/license.txt)" == "$(cat license.txt)"`
+    When I run `curl -sS localhost:8181/license.txt > /tmp/license.txt`
+    And I run `cmp /tmp/license.txt license.txt`
+    Then STDOUT should be empty
