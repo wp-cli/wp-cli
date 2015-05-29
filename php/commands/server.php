@@ -47,7 +47,7 @@ class Server_Command extends WP_CLI_Command {
 		$cmd = \WP_CLI\Utils\esc_cmd( PHP_BINARY . ' -S %s -t %s %s',
 			$assoc_args['host'] . ':' . $assoc_args['port'],
 			$docroot,
-			WP_CLI_ROOT . '/php/router.php'
+			\WP_CLI\Utils\extract_from_phar( WP_CLI_ROOT . '/php/router.php' )
 		);
 
 		$descriptors = array( STDIN, STDOUT, STDERR );
