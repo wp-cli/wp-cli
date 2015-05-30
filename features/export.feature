@@ -74,6 +74,58 @@ Feature: Export content.
       10
       """
 
+  Scenario: Export a comma-separated list of post types
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --activate`
+    Then STDERR should not contain:
+      """
+      Warning:
+      """
+
+    When I run `wp site empty --yes`
+    And I run `wp post generate --post_type=page --count=10`
+    And I run `wp post generate --post_type=post --count=10`
+    And I run `wp post generate --post_type=attachment --count=10`
+    And I run `wp post list --post_type=page,post,attachment --format=count`
+    Then STDOUT should be:
+      """
+      30
+      """
+
+    When I run `wp export --post_type=page,post`
+    And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
+
+    When I run `wp site empty --yes`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp import {EXPORT_FILE} --authors=skip`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --post_type=page,post --format=count`
+    Then STDOUT should be:
+      """
+      20
+      """
+
+    When I run `wp post list --post_type=page --format=count`
+    Then STDOUT should be:
+      """
+      10
+      """
+
+    When I run `wp post list --post_type=post --format=count`
+    Then STDOUT should be:
+      """
+      10
+      """
+
   Scenario: Export only one post
     Given a WP install
 
