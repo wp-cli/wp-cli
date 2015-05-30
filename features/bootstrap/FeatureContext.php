@@ -127,7 +127,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			}
 		}
 
-		proc_close( $proc );
+		posix_kill( $master_pid, 9 );
 	}
 
 	public static function create_cache_dir() {
