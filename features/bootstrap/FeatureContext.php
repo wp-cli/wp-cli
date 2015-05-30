@@ -92,12 +92,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 * @AfterScenario
 	 */
 	public function afterScenario( $event ) {
-		if ( !isset( $this->variables['RUN_DIR'] ) )
-			return;
-
-		// remove altered WP install, unless there's an error
-		if ( $event->getResult() < 4 ) {
-			Process::create( Utils\esc_cmd( 'rm -r %s', $this->variables['RUN_DIR'] ), null, self::get_process_env_variables() )->run();
+		if ( isset( $this->variables['RUN_DIR'] ) ) {
+			// remove altered WP install, unless there's an error
+			if ( $event->getResult() < 4 ) {
+				$this->proc( Utils\esc_cmd( 'rm -r %s', $this->variables['RUN_DIR'] ) )->run();
+			}
 		}
 
 		foreach ( $this->running_procs as $proc ) {
@@ -181,21 +180,17 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function build_phar( $version = 'same' ) {
 		$this->variables['PHAR_PATH'] = $this->variables['RUN_DIR'] . '/' . uniqid( "wp-cli-build-", TRUE ) . '.phar';
 
-		Process::create(
-			Utils\esc_cmd(
-				'php -dphar.readonly=0 %1$s %2$s --version=%3$s && chmod +x %2$s',
-				__DIR__ . '/../../utils/make-phar.php',
-				$this->variables['PHAR_PATH'],
-				$version
-			),
-			null,
-			self::get_process_env_variables()
-		)->run_check();
+		$this->proc( Utils\esc_cmd(
+			'php -dphar.readonly=0 %1$s %2$s --version=%3$s && chmod +x %2$s',
+			__DIR__ . '/../../utils/make-phar.php',
+			$this->variables['PHAR_PATH'],
+			$version
+		) )->run_check();
 	}
 
 	private function set_cache_dir() {
 		$path = sys_get_temp_dir() . '/wp-cli-test-cache';
-		Process::create( Utils\esc_cmd( 'mkdir -p %s', $path ), null, self::get_process_env_variables() )->run_check();
+		$this->proc( Utils\esc_cmd( 'mkdir -p %s', $path ) )->run_check();
 		$this->variables['CACHE_DIR'] = $path;
 	}
 
@@ -227,8 +222,13 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$env['WP_CLI_CACHE_DIR'] = $this->variables['SUITE_CACHE_DIR'];
 		}
 
-		$path = "{$this->variables['RUN_DIR']}/{$path}";
-		return Process::create( $command, $path, $env );
+		if ( isset( $this->variables['RUN_DIR'] ) ) {
+			$cwd = "{$this->variables['RUN_DIR']}/{$path}";
+		} else {
+			$cwd = null;
+		}
+
+		return Process::create( $command, $cwd, $env );
 	}
 
 	/**
@@ -271,7 +271,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			mkdir( $dest_dir );
 		}
 
-		Process::create( Utils\esc_cmd( "cp -r %s/* %s", self::$cache_dir, $dest_dir ), null, self::get_process_env_variables() )->run_check();
+		$this->proc( Utils\esc_cmd( "cp -r %s/* %s", self::$cache_dir, $dest_dir ) )->run_check();
 
 		// disable emailing
 		mkdir( $dest_dir . '/wp-content/mu-plugins' );
