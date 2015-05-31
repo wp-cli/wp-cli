@@ -51,7 +51,6 @@ class Table extends Query {
 		$conditions = self::build_where_conditions( $args['where'] );
 		$where_sql = $conditions ? " WHERE $conditions" : '';
 		$query = "SELECT $fields FROM $table $where_sql";
-
 		parent::__construct( $query, $args['chunk_size'] );
 	}
 
