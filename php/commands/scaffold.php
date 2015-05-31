@@ -574,6 +574,9 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$wp_filesystem->mkdir( dirname( $filename ) );
 
+		if ( file_exists( $filename ) ) {
+			WP_CLI::confirm( 'Scaffold will overwrite "' . $filename . '". Continue?' );
+		}
 		if ( ! $wp_filesystem->put_contents( $filename, $contents ) ) {
 			WP_CLI::error( "Error creating file: $filename" );
 		}
