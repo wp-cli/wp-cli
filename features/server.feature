@@ -3,7 +3,7 @@ Feature: Serve WordPress locally
 
   Scenario: Vanilla install
     Given a WP install
-    And I start `wp server --host=localhost --port=8181`
+    And I launch in the background `wp server --host=localhost --port=8181`
 
     When I run `curl -sS localhost:8181`
     Then STDOUT should contain:
