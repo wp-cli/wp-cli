@@ -9,11 +9,14 @@ class Server_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --host=<host>
+	 * [--host=<host>]
 	 * : The hostname to bind the server to. Default: localhost
 	 *
-	 * --port=<port>
+	 * [--port=<port>]
 	 * : The port number to bind the server to. Default: 8080
+	 *
+	 * [--docroot=<path>]
+	 * : The path to use as the document root.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -34,16 +37,21 @@ class Server_Command extends WP_CLI_Command {
 
 		$defaults = array(
 			'host' => 'localhost',
-			'port' => 8080
+			'port' => 8080,
+			'docroot' => false
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		$config_path = WP_CLI::get_runner()->project_config_path;
+		$docroot = $assoc_args['docroot'];
 
-		if ( !$config_path ) {
-			$docroot = ABSPATH;
-		} else {
-			$docroot = dirname( $config_path );
+		if ( !$docroot ) {
+			$config_path = WP_CLI::get_runner()->project_config_path;
+
+			if ( !$config_path ) {
+				$docroot = ABSPATH;
+			} else {
+				$docroot = dirname( $config_path );
+			}
 		}
 
 		$cmd = \WP_CLI\Utils\esc_cmd( PHP_BINARY . ' -S %s -t %s %s',
