@@ -3,7 +3,9 @@
 class Server_Command extends WP_CLI_Command {
 
 	/**
-	 * Start a development server.
+	 * Launch PHP's built-in web server for this specific WordPress installation.
+	 *
+	 * <http://php.net/manual/en/features.commandline.webserver.php>
 	 *
 	 * ## OPTIONS
 	 *
