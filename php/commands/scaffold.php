@@ -153,7 +153,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		if ( $path = $this->get_output_path( $control_args, $subdir ) ) {
 			$filename = $path . $slug . '.php';
 
-			$this->create_file( $filename, $final_output );
+			$this->create_files( array( $filename => $final_output ) );
 
 			WP_CLI::success( "Created $filename" );
 		} else {
@@ -300,8 +300,10 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$this->maybe_create_themes_dir();
 
-		$this->create_file( $theme_style_path, Utils\mustache_render( 'child_theme.mustache', $data ) );
-		$this->create_file( $theme_functions_path, Utils\mustache_render( 'child_theme_functions.mustache', $data ) );
+		$this->create_files( array(
+			$theme_style_path => Utils\mustache_render( 'child_theme.mustache', $data ),
+			$theme_functions_path => Utils\mustache_render( 'child_theme_functions.mustache', $data )
+		) );
 
 		WP_CLI::success( "Created $theme_dir" );
 
@@ -470,11 +472,12 @@ class Scaffold_Command extends WP_CLI_Command {
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
 		$plugin_readme_path = "$plugin_dir/readme.txt";
 
-		$this->create_file( $plugin_path, Utils\mustache_render( 'plugin.mustache', $data ) );
-		$this->create_file( $plugin_readme_path, Utils\mustache_render( 'plugin-readme.mustache', $data ) );
-		$this->create_file( "$plugin_dir/package.json", Utils\mustache_render( 'plugin-packages.mustache', $data ) );
-		$this->create_file( "$plugin_dir/Gruntfile.js", Utils\mustache_render( 'plugin-gruntfile.mustache', $data ) );
-
+		$this->create_files( array(
+			$plugin_path => Utils\mustache_render( 'plugin.mustache', $data ),
+			$plugin_readme_path => Utils\mustache_render( 'plugin-readme.mustache', $data ),
+			"$plugin_dir/package.json" => Utils\mustache_render( 'plugin-packages.mustache', $data ),
+			"$plugin_dir/Gruntfile.js" => Utils\mustache_render( 'plugin-gruntfile.mustache', $data ),
+		) );
 		WP_CLI::success( "Created $plugin_dir" );
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-tests' ) ) {
@@ -547,8 +550,8 @@ class Scaffold_Command extends WP_CLI_Command {
 		$wp_filesystem->mkdir( $tests_dir );
 		$wp_filesystem->mkdir( $bin_dir );
 
-		$this->create_file( "$tests_dir/bootstrap.php",
-			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) );
+		$this->create_files( array( "$tests_dir/bootstrap.php" =>
+			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) ) );
 
 		$to_copy = array(
 			'install-wp-tests.sh' => $bin_dir,
@@ -569,16 +572,21 @@ class Scaffold_Command extends WP_CLI_Command {
 		WP_CLI::success( "Created test files." );
 	}
 
-	private function create_file( $filename, $contents ) {
+	private function create_files( $files_and_contents ) {
 		$wp_filesystem = $this->init_wp_filesystem();
 
-		$wp_filesystem->mkdir( dirname( $filename ) );
-
-		if ( file_exists( $filename ) ) {
-			WP_CLI::confirm( 'Scaffold will overwrite "' . $filename . '". Continue?' );
+		$pre_existing_files = array_filter( array_keys( $files_and_contents ), 'file_exists' );
+		if ( ! empty( $pre_existing_files ) ) {
+			WP_CLI::warning( 'Scaffold will overwrite: ' . PHP_EOL . implode( PHP_EOL, $pre_existing_files ) );
+			WP_CLI::confirm( 'Overwrite files and continue?' );
 		}
-		if ( ! $wp_filesystem->put_contents( $filename, $contents ) ) {
-			WP_CLI::error( "Error creating file: $filename" );
+
+		foreach ( $files_and_contents as $filename => $contents ) {
+			$wp_filesystem->mkdir( dirname( $filename ) );
+
+			if ( ! $wp_filesystem->put_contents( $filename, $contents ) ) {
+				WP_CLI::error( "Error creating file: $filename" );
+			}
 		}
 	}
 
