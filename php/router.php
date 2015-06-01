@@ -70,6 +70,7 @@ function _get_full_host( $url ) {
 	return $host;
 }
 
+// We need to trick WordPress into using the URL set by `wp server`, especially on multisite.
 add_filter( 'option_home', function ( $url ) {
 	$GLOBALS['_wp_cli_original_url'] = $url;
 
@@ -78,7 +79,7 @@ add_filter( 'option_home', function ( $url ) {
 
 add_filter( 'option_siteurl', function ( $url ) {
 	if ( !isset( $GLOBALS['_wp_cli_original_url'] ) )
-		get_option('home');
+		get_option('home');  // trigger the option_home filter
 
 	$home_url_host = _get_full_host( $GLOBALS['_wp_cli_original_url'] );
 	$site_url_host = _get_full_host( $url );
