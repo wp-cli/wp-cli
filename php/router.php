@@ -3,37 +3,11 @@
 
 namespace WP_CLI\Router;
 
-function get_full_host( $url ) {
-	$parsed_url = parse_url( $url );
-
-	$host = $parsed_url['host'];
-	if ( isset( $parsed_url['port'] ) && $parsed_url['port'] != 80 )
-		$host .= ':' . $parsed_url['port'];
-
-	return $host;
-}
-
-function option_home( $url ) {
-	$GLOBALS['_wp_cli_original_url'] = $url;
-
-	return 'http://' . $_SERVER['HTTP_HOST'];
-}
-
-function option_siteurl( $url ) {
-	if ( !isset( $GLOBALS['_wp_cli_original_url'] ) )
-		get_option('home');
-
-	$home_url_host = get_full_host( $GLOBALS['_wp_cli_original_url'] );
-	$site_url_host = get_full_host( $url );
-
-	if ( $site_url_host == $home_url_host ) {
-		$url = str_replace( $site_url_host, $_SERVER['HTTP_HOST'], $url );
-	}
-
-	return $url;
-}
-
-// This should be identical to the normal WordPress add_filter() function.
+/**
+ * This is a copy of WordPress's add_filter() function.
+ *
+ * We duplicate it because WordPress is not loaded yet.
+ */
 function add_filter($tag, $function_to_add, $priority = 10, $accepted_args = 1) {
 	global $wp_filter, $merged_filters;
 
@@ -43,6 +17,11 @@ function add_filter($tag, $function_to_add, $priority = 10, $accepted_args = 1) 
 	return true;
 }
 
+/**
+ * This is a copy of WordPress's _wp_filter_build_unique_id() function.
+ *
+ * We duplicate it because WordPress is not loaded yet.
+ */
 function _wp_filter_build_unique_id($tag, $function, $priority) {
 	global $wp_filter;
 	static $filter_id_count = 0;
@@ -81,8 +60,35 @@ function _wp_filter_build_unique_id($tag, $function, $priority) {
 	}
 }
 
-add_filter( 'option_home', '\\WP_CLI\\Router\\option_home', 20 );
-add_filter( 'option_siteurl', '\\WP_CLI\\Router\\option_siteurl', 20 );
+function _get_full_host( $url ) {
+	$parsed_url = parse_url( $url );
+
+	$host = $parsed_url['host'];
+	if ( isset( $parsed_url['port'] ) && $parsed_url['port'] != 80 )
+		$host .= ':' . $parsed_url['port'];
+
+	return $host;
+}
+
+add_filter( 'option_home', function ( $url ) {
+	$GLOBALS['_wp_cli_original_url'] = $url;
+
+	return 'http://' . $_SERVER['HTTP_HOST'];
+}, 20 );
+
+add_filter( 'option_siteurl', function ( $url ) {
+	if ( !isset( $GLOBALS['_wp_cli_original_url'] ) )
+		get_option('home');
+
+	$home_url_host = _get_full_host( $GLOBALS['_wp_cli_original_url'] );
+	$site_url_host = _get_full_host( $url );
+
+	if ( $site_url_host == $home_url_host ) {
+		$url = str_replace( $site_url_host, $_SERVER['HTTP_HOST'], $url );
+	}
+
+	return $url;
+}, 20 );
 
 $root = $_SERVER['DOCUMENT_ROOT'];
 $path = '/'. ltrim( parse_url( urldecode( $_SERVER['REQUEST_URI'] ) )['path'], '/' );
