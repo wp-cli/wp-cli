@@ -472,13 +472,20 @@ class Scaffold_Command extends WP_CLI_Command {
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
 		$plugin_readme_path = "$plugin_dir/readme.txt";
 
-		$this->create_files( array(
+		$files_written = $this->create_files( array(
 			$plugin_path => Utils\mustache_render( 'plugin.mustache', $data ),
 			$plugin_readme_path => Utils\mustache_render( 'plugin-readme.mustache', $data ),
 			"$plugin_dir/package.json" => Utils\mustache_render( 'plugin-packages.mustache', $data ),
 			"$plugin_dir/Gruntfile.js" => Utils\mustache_render( 'plugin-gruntfile.mustache', $data ),
 		) );
-		WP_CLI::success( "Created $plugin_dir" );
+
+		if ( empty( $files_written ) ) {
+			WP_CLI::log( 'All files skipped' );
+		} else {
+			WP_CLI::log( PHP_EOL );
+			WP_CLI::success( "Created plugin files:" );
+			WP_CLI::log( implode( PHP_EOL, $files_written ) );
+		}
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-tests' ) ) {
 			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), array( 'dir' => $plugin_dir ) );
@@ -550,7 +557,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$wp_filesystem->mkdir( $tests_dir );
 		$wp_filesystem->mkdir( $bin_dir );
 
-		$this->create_files( array( "$tests_dir/bootstrap.php" =>
+		$files_written = $this->create_files( array( "$tests_dir/bootstrap.php" =>
 			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) ) );
 
 		$to_copy = array(
@@ -569,25 +576,42 @@ class Scaffold_Command extends WP_CLI_Command {
 			}
 		}
 
+		if ( empty( $files_written ) ) {
+			WP_CLI::log( 'All files skipped' );
+		} else {
+			WP_CLI::log( PHP_EOL );
+			WP_CLI::success( "Created plugin files:" );
+			WP_CLI::log( implode( PHP_EOL, $files_written ) );
+		}
+
 		WP_CLI::success( "Created test files." );
 	}
 
 	private function create_files( $files_and_contents ) {
 		$wp_filesystem = $this->init_wp_filesystem();
-
-		$pre_existing_files = array_filter( array_keys( $files_and_contents ), 'file_exists' );
-		if ( ! empty( $pre_existing_files ) ) {
-			WP_CLI::warning( 'Scaffold will overwrite: ' . PHP_EOL . implode( PHP_EOL, $pre_existing_files ) );
-			WP_CLI::confirm( 'Overwrite files and continue?' );
-		}
+		$wrote_files = array();
 
 		foreach ( $files_and_contents as $filename => $contents ) {
-			$wp_filesystem->mkdir( dirname( $filename ) );
+			$should_write_file = true;
+
+			if ( file_exists( $filename ) ) {
+				WP_CLI::log( PHP_EOL );
+				WP_CLI::warning( 'File already exists:' );
+				WP_CLI::log( $filename );
+				$should_write_file = WP_CLI::prompt( 'Skip this file, or replace it with scaffolding?' );
+			}
+
+			if ( $should_write_file ) {
+				$wp_filesystem->mkdir( dirname( $filename ) );
+			}
 
 			if ( ! $wp_filesystem->put_contents( $filename, $contents ) ) {
 				WP_CLI::error( "Error creating file: $filename" );
+			} elseif ( $should_write_file ) {
+				$wrote_files[] = $filename;
 			}
 		}
+		return $wrote_files;
 	}
 
 	/**
