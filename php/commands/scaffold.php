@@ -201,6 +201,13 @@ class Scaffold_Command extends WP_CLI_Command {
 			'author_uri' => "",
 		) );
 
+		$_s_theme_path = "$theme_path/$data[theme_name]";
+		$should_write_file = $this->prompt_if_files_will_be_overwritten( $_s_theme_path );
+		if ( ! $should_write_file ) {
+			WP_CLI::log( 'No files created' );
+			die;
+		}
+
 		$theme_description = "Custom theme: " . $data['theme_name'] . " developed by, " . $data['author'];
 
 		$body                                  = array();
@@ -235,6 +242,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$this->maybe_create_themes_dir();
 
 		$this->init_wp_filesystem();
+			
 		$unzip_result = unzip_file( $tmpfname, $theme_path );
 		unlink( $tmpfname );
 
@@ -415,6 +423,10 @@ class Scaffold_Command extends WP_CLI_Command {
 			$contents  = file_get_contents( WP_CLI_ROOT . "/{$file}" );
 			$file_path = $dir . basename( $file );
 			$file_path = str_replace( array( '.travis.package.yml' ), array( '.travis.yml' ), $file_path );
+
+			$should_write_file = $this->prompt_if_files_will_be_overwritten( $file_path );
+			if ( ! $should_write_file ) continue;
+
 			$result    = Process::create( Utils\esc_cmd( 'touch %s', $file_path ) )->run();
 			file_put_contents( $file_path, $contents );
 			if ( 'templates/install-package-tests.sh' === $file ) {
@@ -483,8 +495,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			WP_CLI::log( 'All files skipped' );
 		} else {
 			WP_CLI::log( PHP_EOL );
-			WP_CLI::success( "Created plugin files:" );
-			WP_CLI::log( implode( PHP_EOL, $files_written ) );
+			WP_CLI::success( "Created plugin files." );
 		}
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-tests' ) ) {
@@ -568,7 +579,13 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 
 		foreach ( $to_copy as $file => $dir ) {
-			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", "$dir/$file", true );
+			$file_name = "$dir/$file";
+			
+			$should_write_file = $this->prompt_if_files_will_be_overwritten( $file_name );
+			if ( ! $should_write_file ) continue;
+			$files_written[] = $file_name;
+
+			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", $file_name, true );
 			if ( 'install-wp-tests.sh' === $file ) {
 				if ( ! $wp_filesystem->chmod( "$dir/$file", 0755 ) ) {
 					WP_CLI::warning( "Couldn't mark install-wp-tests.sh as executable." );
@@ -580,11 +597,8 @@ class Scaffold_Command extends WP_CLI_Command {
 			WP_CLI::log( 'All files skipped' );
 		} else {
 			WP_CLI::log( PHP_EOL );
-			WP_CLI::success( "Created plugin files:" );
-			WP_CLI::log( implode( PHP_EOL, $files_written ) );
+			WP_CLI::success( "Created test files." );
 		}
-
-		WP_CLI::success( "Created test files." );
 	}
 
 	private function create_files( $files_and_contents ) {
@@ -592,14 +606,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$wrote_files = array();
 
 		foreach ( $files_and_contents as $filename => $contents ) {
-			$should_write_file = true;
-
-			if ( file_exists( $filename ) ) {
-				WP_CLI::log( PHP_EOL );
-				WP_CLI::warning( 'File already exists:' );
-				WP_CLI::log( $filename );
-				$should_write_file = WP_CLI::prompt( 'Skip this file, or replace it with scaffolding?' );
-			}
+			$should_write_file = $this->prompt_if_files_will_be_overwritten( $filename );
 
 			if ( $should_write_file ) {
 				$wp_filesystem->mkdir( dirname( $filename ) );
@@ -612,6 +619,17 @@ class Scaffold_Command extends WP_CLI_Command {
 			}
 		}
 		return $wrote_files;
+	}
+
+	private function prompt_if_files_will_be_overwritten( $filename ) {
+		$should_write_file = true;
+		if ( file_exists( $filename ) ) {
+			WP_CLI::log( PHP_EOL );
+			WP_CLI::warning( 'File already exists:' );
+			WP_CLI::log( $filename );
+			$should_write_file = WP_CLI::prompt( 'Skip this file, or replace it with scaffolding?' );
+		}
+		return $should_write_file;
 	}
 
 	/**
