@@ -154,7 +154,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			$filename = $path . $slug . '.php';
 
 			$files_written = $this->create_files( array( $filename => $final_output ) );
-			log_whether_files_written(
+			$this->log_whether_files_written(
 				$files_written, 
 				$skip_message = "Skipped creating $filename",
 				$success_message = "Created $filename"
@@ -316,7 +316,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			$theme_style_path => Utils\mustache_render( 'child_theme.mustache', $data ),
 			$theme_functions_path => Utils\mustache_render( 'child_theme_functions.mustache', $data )
 		) );
-		log_whether_files_written(
+		$this->log_whether_files_written(
 			$files_written, 
 			$skip_message = 'All theme files were skipped.',
 			$success_message = "Created $theme_dir."
@@ -442,7 +442,7 @@ class Scaffold_Command extends WP_CLI_Command {
 				Process::create( Utils\esc_cmd( 'chmod +x %s', $file_path ) )->run();
 			}
 		}
-		log_whether_files_written(
+		$this->log_whether_files_written(
 			$files_written, 
 			$skip_message = 'All package tests were skipped.',
 			$success_message = 'Created test files.'
@@ -503,7 +503,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			"$plugin_dir/Gruntfile.js" => Utils\mustache_render( 'plugin-gruntfile.mustache', $data ),
 		) );
 
-		log_whether_files_written(
+		$this->log_whether_files_written(
 			$files_written, 
 			$skip_message = 'All plugin files were skipped.',
 			$success_message = 'Created plugin files.'
@@ -603,7 +603,7 @@ class Scaffold_Command extends WP_CLI_Command {
 				}
 			}
 		}
-		log_whether_files_written(
+		$this->log_whether_files_written(
 			$files_written, 
 			$skip_message = 'All test files were skipped.',
 			$success_message = 'Created test files.'
