@@ -53,7 +53,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * : Prints rows to the console as they're updated.
 	 *
 	 * [--regex]
-	 * : Runs the search using a regular expression. Using --regex slows the search-replace down significantly.
+	 * : Runs the search using a regular expression. Warning: search-replace will take about 15-20x longer when using --regex.
 	 *
 	 * ## EXAMPLES
 	 *
