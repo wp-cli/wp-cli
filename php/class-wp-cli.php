@@ -287,6 +287,19 @@ class WP_CLI {
 	}
 
 	/**
+	 * Prompt before continuing.
+	 */
+	public static function prompt( $question, $assoc_args = array() ) {
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) {
+			fwrite( STDOUT, $question . " [s/r] " );
+
+			$answer = trim( fgets( STDIN ) );
+
+			return ( 'r' == $answer );
+		}
+	}
+
+	/**
 	 * Read value from a positional argument or from STDIN.
 	 *
 	 * @param array $args The list of positional arguments.
