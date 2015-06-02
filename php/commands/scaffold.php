@@ -153,9 +153,13 @@ class Scaffold_Command extends WP_CLI_Command {
 		if ( $path = $this->get_output_path( $control_args, $subdir ) ) {
 			$filename = $path . $slug . '.php';
 
-			$this->create_files( array( $filename => $final_output ) );
+			$files_written = $this->create_files( array( $filename => $final_output ) );
+			log_whether_files_written(
+				$files_written, 
+				$skip_message = "Skipped creating $filename",
+				$success_message = "Created $filename"
+			);
 
-			WP_CLI::success( "Created $filename" );
 		} else {
 			// STDOUT
 			echo $final_output;
@@ -308,12 +312,15 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$this->maybe_create_themes_dir();
 
-		$this->create_files( array(
+		$files_written = $this->create_files( array(
 			$theme_style_path => Utils\mustache_render( 'child_theme.mustache', $data ),
 			$theme_functions_path => Utils\mustache_render( 'child_theme_functions.mustache', $data )
 		) );
-
-		WP_CLI::success( "Created $theme_dir" );
+		log_whether_files_written(
+			$files_written, 
+			$skip_message = 'All theme files were skipped.',
+			$success_message = "Created $theme_dir."
+		);
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate' ) ) {
 			WP_CLI::run_command( array( 'theme', 'activate', $theme_slug ) );
@@ -418,6 +425,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			'features/extra/no-mail.php'                  => $extra_dir,
 		);
 
+		$files_written = array();
 		foreach ( $to_copy as $file => $dir ) {
 			// file_get_contents() works with Phar-archived files
 			$contents  = file_get_contents( WP_CLI_ROOT . "/{$file}" );
@@ -426,6 +434,7 @@ class Scaffold_Command extends WP_CLI_Command {
 
 			$should_write_file = $this->prompt_if_files_will_be_overwritten( $file_path );
 			if ( ! $should_write_file ) continue;
+			$files_written[] = $file_path;
 
 			$result    = Process::create( Utils\esc_cmd( 'touch %s', $file_path ) )->run();
 			file_put_contents( $file_path, $contents );
@@ -433,8 +442,11 @@ class Scaffold_Command extends WP_CLI_Command {
 				Process::create( Utils\esc_cmd( 'chmod +x %s', $file_path ) )->run();
 			}
 		}
-
-		WP_CLI::success( "Created test files." );
+		log_whether_files_written(
+			$files_written, 
+			$skip_message = 'All package tests were skipped.',
+			$success_message = 'Created test files.'
+		);
 
 	}
 
@@ -491,12 +503,11 @@ class Scaffold_Command extends WP_CLI_Command {
 			"$plugin_dir/Gruntfile.js" => Utils\mustache_render( 'plugin-gruntfile.mustache', $data ),
 		) );
 
-		if ( empty( $files_written ) ) {
-			WP_CLI::log( 'All files skipped' );
-		} else {
-			WP_CLI::log( PHP_EOL );
-			WP_CLI::success( "Created plugin files." );
-		}
+		log_whether_files_written(
+			$files_written, 
+			$skip_message = 'All plugin files were skipped.',
+			$success_message = 'Created plugin files.'
+		);
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-tests' ) ) {
 			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), array( 'dir' => $plugin_dir ) );
@@ -592,13 +603,11 @@ class Scaffold_Command extends WP_CLI_Command {
 				}
 			}
 		}
-
-		if ( empty( $files_written ) ) {
-			WP_CLI::log( 'All files skipped' );
-		} else {
-			WP_CLI::log( PHP_EOL );
-			WP_CLI::success( "Created test files." );
-		}
+		log_whether_files_written(
+			$files_written, 
+			$skip_message = 'All test files were skipped.',
+			$success_message = 'Created test files.'
+		);
 	}
 
 	private function create_files( $files_and_contents ) {
@@ -624,12 +633,20 @@ class Scaffold_Command extends WP_CLI_Command {
 	private function prompt_if_files_will_be_overwritten( $filename ) {
 		$should_write_file = true;
 		if ( file_exists( $filename ) ) {
-			WP_CLI::log( PHP_EOL );
 			WP_CLI::warning( 'File already exists:' );
 			WP_CLI::log( $filename );
 			$should_write_file = WP_CLI::prompt( 'Skip this file, or replace it with scaffolding?' );
+			WP_CLI::log( PHP_EOL );
 		}
 		return $should_write_file;
+	}
+
+	private function log_whether_files_written( $files_written, $skip_message, $success_message ) {
+		if ( empty( $files_written ) ) {
+			WP_CLI::log( $skip_message );
+		} else {
+			WP_CLI::success( $success_message );
+		}
 	}
 
 	/**
