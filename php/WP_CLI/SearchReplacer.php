@@ -81,7 +81,11 @@ class SearchReplacer {
 			}
 
 			else if ( is_string( $data ) ) {
-				$data = $this->str_replace( $this->from, $this->to, $data );
+				if ( $this->regex ) {
+					$data = preg_replace( "/$from/", $to, $data );
+				} else {
+					$data = str_replace( $from, $to, $data );
+				}
 			}
 
 			if ( $serialised )
@@ -92,14 +96,6 @@ class SearchReplacer {
 		}
 
 		return $data;
-	}
-
-	private function str_replace( $from, $to, $data ) {
-		if ( $this->regex ) {
-			return preg_replace( "/$from/", $to, $data );
-		} else {
-			return str_replace( $from, $to, $data );
-		}
 	}
 }
 
