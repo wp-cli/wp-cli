@@ -286,17 +286,23 @@ class WP_CLI {
 		}
 	}
 
-	/**
-	 * Prompt before continuing.
-	 */
-	public static function prompt( $question, $assoc_args = array() ) {
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) {
-			fwrite( STDOUT, $question . " [s/r] " );
+    /**
+     * Prompt before continuing.
+     *
+     * @param string $question The question to pose
+     * @param bool $default The default response
+     * @param array $answers when the users responds with $answers[0] return false, with $answers[1] return true
+     * @param bool $hide Hide the user's response
+     * @return bool
+     */
+	public static function prompt( $question, $default = false, $answers = array( 'no', 'yes' ), $hide = false ) {
+        $marker = '[' . implode( '/', $answers ) . ']: ';
 
-			$answer = trim( fgets( STDIN ) );
+        do {
+            $answer = cli\prompt( $question, $default, $marker, $hide );
+        } while ( ! in_array( $answer, $answers ) );
 
-			return ( 'r' == $answer );
-		}
+		return $answers[ 1 ] === $answer;
 	}
 
 	/**
