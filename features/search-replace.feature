@@ -81,7 +81,7 @@ Feature: Do global search/replace
       Checking: wp_posts.post_title
       1 rows affected
       """
-  @wip
+
   Scenario: Regex search/replace
     Given a WP install
     When I run `wp search-replace '(Hello)\s(world)' '$2, $1' --regex`
