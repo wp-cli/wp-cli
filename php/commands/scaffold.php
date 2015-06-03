@@ -37,6 +37,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--raw]
 	 * : Just generate the `register_post_type()` call and nothing else.
 	 *
+	 * [--force]
+	 * : Overwrite files that already exist.
+	 *
 	 * @subcommand post-type
 	 *
 	 * @alias      cpt
@@ -84,6 +87,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * [--raw]
 	 * : Just generate the `register_taxonomy()` call and nothing else.
+	 *
+	 * [--force]
+	 * : Overwrite files that already exist.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -153,7 +159,8 @@ class Scaffold_Command extends WP_CLI_Command {
 		if ( $path = $this->get_output_path( $control_args, $subdir ) ) {
 			$filename = $path . $slug . '.php';
 
-			$files_written = $this->create_files( array( $filename => $final_output ) );
+			$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
+			$files_written = $this->create_files( array( $filename => $final_output ), $force );
 			$this->log_whether_files_written(
 				$files_written, 
 				$skip_message = "Skipped creating $filename",
@@ -191,6 +198,10 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * [--sassify]
 	 * : Include stylesheets as SASS
+	 *
+	 * [--force]
+	 * : Overwrite files that already exist.
+	 *
 	 */
 	function _s( $args, $assoc_args ) {
 
@@ -206,7 +217,8 @@ class Scaffold_Command extends WP_CLI_Command {
 		) );
 
 		$_s_theme_path = "$theme_path/$data[theme_name]";
-		$should_write_file = $this->prompt_if_files_will_be_overwritten( $_s_theme_path );
+		$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
+		$should_write_file = $this->prompt_if_files_will_be_overwritten( $_s_theme_path, $force );
 		if ( ! $should_write_file ) {
 			WP_CLI::log( 'No files created' );
 			die;
@@ -292,6 +304,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--enable-network]
 	 * : Enable the newly created child theme for the entire network.
 	 *
+	 * [--force]
+	 * : Overwrite files that already exist.
+	 *
 	 * @subcommand child-theme
 	 */
 	function child_theme( $args, $assoc_args ) {
@@ -312,10 +327,11 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$this->maybe_create_themes_dir();
 
+		$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
 		$files_written = $this->create_files( array(
 			$theme_style_path => Utils\mustache_render( 'child_theme.mustache', $data ),
 			$theme_functions_path => Utils\mustache_render( 'child_theme_functions.mustache', $data )
-		) );
+		), $force );
 		$this->log_whether_files_written(
 			$files_written, 
 			$skip_message = 'All theme files were skipped.',
@@ -376,6 +392,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * <dir>
 	 * : The package directory to generate tests for.
 	 *
+	 * [--force]
+	 * : Overwrite files that already exist.
+	 *
 	 * ## EXAMPLE
 	 *
 	 *     wp scaffold package-tests /path/to/command/dir/
@@ -432,7 +451,8 @@ class Scaffold_Command extends WP_CLI_Command {
 			$file_path = $dir . basename( $file );
 			$file_path = str_replace( array( '.travis.package.yml' ), array( '.travis.yml' ), $file_path );
 
-			$should_write_file = $this->prompt_if_files_will_be_overwritten( $file_path );
+			$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
+			$should_write_file = $this->prompt_if_files_will_be_overwritten( $file_path, $force );
 			if ( ! $should_write_file ) continue;
 			$files_written[] = $file_path;
 
@@ -472,6 +492,10 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * [--activate-network]
 	 * : Network activate the newly generated plugin.
+	 *
+	 * [--force]
+	 * : Overwrite files that already exist.
+	 *
 	 */
 	function plugin( $args, $assoc_args ) {
 		$plugin_slug = $args[0];
@@ -496,12 +520,13 @@ class Scaffold_Command extends WP_CLI_Command {
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
 		$plugin_readme_path = "$plugin_dir/readme.txt";
 
+		$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
 		$files_written = $this->create_files( array(
 			$plugin_path => Utils\mustache_render( 'plugin.mustache', $data ),
 			$plugin_readme_path => Utils\mustache_render( 'plugin-readme.mustache', $data ),
 			"$plugin_dir/package.json" => Utils\mustache_render( 'plugin-packages.mustache', $data ),
 			"$plugin_dir/Gruntfile.js" => Utils\mustache_render( 'plugin-gruntfile.mustache', $data ),
-		) );
+		), $force );
 
 		$this->log_whether_files_written(
 			$files_written, 
@@ -510,7 +535,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-tests' ) ) {
-			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), array( 'dir' => $plugin_dir ) );
+			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), array( 'dir' => $plugin_dir, 'force' => $force ) );
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate' ) ) {
@@ -544,6 +569,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * [--dir=<dirname>]
 	 * : Generate test files for a non-standard plugin path. If no plugin slug is specified, the directory name is used.
+	 *
+	 * [--force]
+	 * : Overwrite files that already exist.
 	 *
 	 * ## EXAMPLE
 	 *
@@ -579,8 +607,9 @@ class Scaffold_Command extends WP_CLI_Command {
 		$wp_filesystem->mkdir( $tests_dir );
 		$wp_filesystem->mkdir( $bin_dir );
 
+		$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
 		$files_written = $this->create_files( array( "$tests_dir/bootstrap.php" =>
-			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) ) );
+			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) ), $force );
 
 		$to_copy = array(
 			'install-wp-tests.sh' => $bin_dir,
@@ -591,8 +620,8 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		foreach ( $to_copy as $file => $dir ) {
 			$file_name = "$dir/$file";
-			
-			$should_write_file = $this->prompt_if_files_will_be_overwritten( $file_name );
+			$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
+			$should_write_file = $this->prompt_if_files_will_be_overwritten( $file_name, $force );
 			if ( ! $should_write_file ) continue;
 			$files_written[] = $file_name;
 
@@ -610,12 +639,12 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 	}
 
-	private function create_files( $files_and_contents ) {
+	private function create_files( $files_and_contents, $force ) {
 		$wp_filesystem = $this->init_wp_filesystem();
 		$wrote_files = array();
 
 		foreach ( $files_and_contents as $filename => $contents ) {
-			$should_write_file = $this->prompt_if_files_will_be_overwritten( $filename );
+			$should_write_file = $this->prompt_if_files_will_be_overwritten( $filename, $force );
 
 			if ( $should_write_file ) {
 				$wp_filesystem->mkdir( dirname( $filename ) );
@@ -630,14 +659,23 @@ class Scaffold_Command extends WP_CLI_Command {
 		return $wrote_files;
 	}
 
-	private function prompt_if_files_will_be_overwritten( $filename ) {
+	private function prompt_if_files_will_be_overwritten( $filename, $force ) {
 		$should_write_file = true;
-		if ( file_exists( $filename ) ) {
-			WP_CLI::warning( 'File already exists:' );
-			WP_CLI::log( $filename );
-			$should_write_file = WP_CLI::prompt( 'Skip this file, or replace it with scaffolding?' );
-			WP_CLI::log( PHP_EOL );
+		if ( ! file_exists( $filename ) ) {
+			return true;
 		}
+
+		WP_CLI::warning( $filename . ' already exists.' );
+		if ( ! $force ) {
+			$should_write_file = WP_CLI::prompt(
+				$question = 'Skip this file, or replace it with scaffolding?',
+				$default = false,
+				$answers = array( 's', 'r' ),
+				$hide = false
+			);
+		}
+		WP_CLI::log( $should_write_file ? 'Replaced' : 'Skipped' );
+
 		return $should_write_file;
 	}
 
