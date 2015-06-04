@@ -129,7 +129,7 @@ class Role_Command extends WP_CLI_Command {
 			WP_CLI::success( sprintf( "Role with key %s created.", $role_key ) );
 		}
 
-		if ( isset( $clone ) ) {
+		if ( null !== $clone ) {
 			$target_role_obj = get_role( $role_key );
 			$count = 0;
 
