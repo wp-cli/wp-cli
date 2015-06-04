@@ -125,15 +125,15 @@ class Role_Command extends WP_CLI_Command {
 		if ( ! add_role( $role_key, $role_name ) ) {
 			WP_CLI::error( "Role couldn't be created." );
 		}
-
-		else
+		else {
 			WP_CLI::success( sprintf( "Role with key %s created.", $role_key ) );
+		}
 
-		if ( isset( $assoc_args['clone'] ) ) {
+		if ( isset( $clone ) ) {
 			$target_role_obj = get_role( $role_key );
 			$count = 0;
 
-			foreach ( $source_role_obj->capabilities as $cap=>$value ) {
+			foreach ( $source_role_obj->capabilities as $cap => $value ) {
 				$target_role_obj->add_cap( $cap );
 				$count++;
 			}
