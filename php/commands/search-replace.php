@@ -52,6 +52,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--verbose]
 	 * : Prints rows to the console as they're updated.
 	 *
+	 * [--regex]
+	 * : Runs the search using a regular expression. Warning: search-replace will take about 15-20x longer when using --regex.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
@@ -71,6 +74,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$php_only        = \WP_CLI\Utils\get_flag_value( $assoc_args, 'precise' );
 		$recurse_objects = \WP_CLI\Utils\get_flag_value( $assoc_args, 'recurse-objects' );
 		$verbose         =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'verbose' );
+		$regex           =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'regex' );
 
 		$skip_columns = explode( ',', \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-columns' ) );
 
@@ -110,9 +114,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 					$serialRow = $wpdb->get_row( "SELECT * FROM `$table` WHERE `$col` REGEXP '^[aiO]:[1-9]' LIMIT 1" );
 				}
 
-				if ( $php_only || NULL !== $serialRow ) {
+				if ( $php_only || $regex || NULL !== $serialRow ) {
 					$type = 'PHP';
-					$count = self::php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects, $verbose );
+					$count = self::php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects, $verbose, $regex );
 				} else {
 					$type = 'SQL';
 					$count = self::sql_handle_col( $col, $table, $old, $new, $dry_run, $verbose );
@@ -219,7 +223,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		return $count;
 	}
 
-	private static function php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects, $verbose ) {
+	private static function php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects, $verbose, $regex ) {
 		global $wpdb;
 
 		// We don't want to have to generate thousands of rows when running the test suite
@@ -231,7 +235,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$args = array(
 			'table' => $table,
 			'fields' => $fields,
-			'where' => "`$col`" . ' LIKE "%' . self::esc_like( $old ) . '%"',
+			'where' => $regex ? '' : "`$col`" . ' LIKE "%' . self::esc_like( $old ) . '%"',
 			'chunk_size' => $chunk_size
 		);
 
@@ -239,7 +243,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		$count = 0;
 
-		$replacer = new \WP_CLI\SearchReplacer( $old, $new, $recurse_objects );
+		$replacer = new \WP_CLI\SearchReplacer( $old, $new, $recurse_objects, $regex );
 
 		foreach ( $it as $row ) {
 			if ( '' === $row->$col )
