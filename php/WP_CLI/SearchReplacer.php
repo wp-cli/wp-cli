@@ -82,9 +82,9 @@ class SearchReplacer {
 
 			else if ( is_string( $data ) ) {
 				if ( $this->regex ) {
-					$data = preg_replace( "/$from/", $to, $data );
+					$data = preg_replace( "/$this->from/", $this->to, $data );
 				} else {
-					$data = str_replace( $from, $to, $data );
+					$data = str_replace( $this->from, $this->to, $data );
 				}
 			}
 
