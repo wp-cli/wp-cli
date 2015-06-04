@@ -681,7 +681,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			$should_write_file = 'r' === $answer;
 		}
 
-		$outcome = $should_write_file ? 'Replaced' : 'Skipped';
+		$outcome = $should_write_file ? 'Replacing' : 'Skipping';
 		WP_CLI::log( $outcome . PHP_EOL );
 
 		return $should_write_file;

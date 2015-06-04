@@ -347,5 +347,5 @@ Feature: WordPress code scaffolding
     """
     And STDOUT should contain:
     """
-    Replaced
+    Replacing
     """
