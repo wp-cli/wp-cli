@@ -453,7 +453,9 @@ class Scaffold_Command extends WP_CLI_Command {
 
 			$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
 			$should_write_file = $this->prompt_if_files_will_be_overwritten( $file_path, $force );
-			if ( ! $should_write_file ) continue;
+			if ( ! $should_write_file ) {
+				continue;
+			}
 			$files_written[] = $file_path;
 
 			$result    = Process::create( Utils\esc_cmd( 'touch %s', $file_path ) )->run();
