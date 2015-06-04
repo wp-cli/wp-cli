@@ -58,10 +58,14 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		$translations = $this->get_all_languages();
 		$available = $this->get_installed_languages();
 
-		wp_clean_update_cache(); // Clear existing update caches.
-		wp_version_check();      // Check for Core translation updates.
-		wp_update_themes();      // Check for Theme translation updates.
-		wp_update_plugins();     // Check for Plugin translation updates.
+		// Clear existing update caches.
+		$this->wp_clean_update_cache_version_min_410();
+		// Check for Core translation updates.
+		wp_version_check();
+		// Check for Theme translation updates.
+		wp_update_themes();
+		// Check for Plugin translation updates.
+		wp_update_plugins();
 		$updates = wp_get_translation_updates(); // Retrieves a list of all translations updates available.
 
 		$current_locale = get_locale();
@@ -159,10 +163,14 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			return;
 		}
 
-		wp_clean_update_cache(); // Clear existing update caches.
-		wp_version_check();      // Check for Core translation updates.
-		wp_update_themes();      // Check for Theme translation updates.
-		wp_update_plugins();     // Check for Plugin translation updates.
+		// Clear existing update caches.
+		$this->wp_clean_update_cache_version_min_410();
+		// Check for Core translation updates.
+		wp_version_check();
+		// Check for Theme translation updates.
+		wp_update_themes();
+		// Check for Plugin translation updates.
+		wp_update_plugins();
 
 		$updates = wp_get_translation_updates(); // Retrieves a list of all translations updates available.
 
@@ -369,4 +377,16 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
 	}
 
+	/**
+	* Clear existing update caches in WordPress 4.1.0+
+	*
+	* @return boolean
+	*/
+	private function wp_clean_update_cache_version_min_410() {
+		include_once ABSPATH . 'wp-includes/version.php';
+		$min410 = version_compare( $wp_version, '4.1.0', '>=' );
+		if ( $min410 ) {
+			wp_clean_update_cache();
+		}
+	}
 }
