@@ -665,7 +665,8 @@ class Scaffold_Command extends WP_CLI_Command {
 			return true;
 		}
 
-		WP_CLI::warning( $filename . ' already exists.' );
+		WP_CLI::warning( 'File already exists' );
+		WP_CLI::log( $filename );
 		if ( ! $force ) {
 			$should_write_file = WP_CLI::prompt(
 				$question = 'Skip this file, or replace it with scaffolding?',
@@ -674,7 +675,8 @@ class Scaffold_Command extends WP_CLI_Command {
 				$hide = false
 			);
 		}
-		WP_CLI::log( $should_write_file ? 'Replaced' : 'Skipped' );
+		$outcome = $should_write_file ? 'Replaced' : 'Skipped';
+		WP_CLI::log( $outcome . PHP_EOL );
 
 		return $should_write_file;
 	}
