@@ -647,10 +647,11 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		foreach ( $files_and_contents as $filename => $contents ) {
 			$should_write_file = $this->prompt_if_files_will_be_overwritten( $filename, $force );
-
-			if ( $should_write_file ) {
-				$wp_filesystem->mkdir( dirname( $filename ) );
+			if ( ! $should_write_file ) {
+				continue;
 			}
+
+			$wp_filesystem->mkdir( dirname( $filename ) );
 
 			if ( ! $wp_filesystem->put_contents( $filename, $contents ) ) {
 				WP_CLI::error( "Error creating file: $filename" );
@@ -670,13 +671,16 @@ class Scaffold_Command extends WP_CLI_Command {
 		WP_CLI::warning( 'File already exists' );
 		WP_CLI::log( $filename );
 		if ( ! $force ) {
-			$should_write_file = WP_CLI::prompt(
-				$question = 'Skip this file, or replace it with scaffolding?',
-				$default = false,
-				$answers = array( 's', 'r' ),
-				$hide = false
-			);
+			do {
+				$answer = cli\prompt(
+					'Skip this file, or replace it with scaffolding?',
+					$default = false,
+					$marker = '[s/r]: '
+				);
+			} while ( ! in_array( $answer, array( 's', 'r' ) ) );
+			$should_write_file = 'r' === $answer;
 		}
+
 		$outcome = $should_write_file ? 'Replaced' : 'Skipped';
 		WP_CLI::log( $outcome . PHP_EOL );
 
