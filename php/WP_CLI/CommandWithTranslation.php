@@ -58,7 +58,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		$translations = $this->get_all_languages();
 		$available = $this->get_installed_languages();
 
-		wp_clean_update_cache(); // Clear existing update caches.
+		$this->wp_clean_update_cache(); // Clear existing update caches.
 		wp_version_check();      // Check for Core translation updates.
 		wp_update_themes();      // Check for Theme translation updates.
 		wp_update_plugins();     // Check for Plugin translation updates.
@@ -159,7 +159,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			return;
 		}
 
-		wp_clean_update_cache(); // Clear existing update caches.
+		$this->wp_clean_update_cache(); // Clear existing update caches.
 		wp_version_check();      // Check for Core translation updates.
 		wp_update_themes();      // Check for Theme translation updates.
 		wp_update_plugins();     // Check for Plugin translation updates.
@@ -367,6 +367,19 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 */
 	protected function get_formatter( &$assoc_args ) {
 		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
+	}
+
+	/**
+	 * Replicates wp_clean_update_cache() for use in WP 4.0
+	 */
+	private static function wp_clean_update_cache() {
+		if ( function_exists( 'wp_clean_plugins_cache' ) ) {
+			wp_clean_plugins_cache();
+		} else {
+			delete_site_transient( 'update_plugins' );
+		}
+		wp_clean_themes_cache();
+		delete_site_transient( 'update_core' );
 	}
 
 }
