@@ -270,36 +270,35 @@ class Media_Command extends WP_CLI_Command {
 		}
 	}
 
-	private function need_regeneration( $att_id ) {
-                $wud = wp_upload_dir();
+	private function need_regeneration($att_id) {
+		$wud = wp_upload_dir();
 
-                $metadata = wp_get_attachment_metadata( $att_id );
+		$metadata = wp_get_attachment_metadata($att_id);
 
-                if ( empty( $metadata['file'] ) ) {
-                        return false;
-                }
+		if (empty($metadata['file'])) {
+			return false;
+		}
 
-                $dir_path = $wud['basedir'] . '/' . dirname( $metadata['file'] ) . '/';
-                $original_path = $dir_path . basename( $metadata['file'] );
+		$dir_path = $wud['basedir'] . '/' . dirname($metadata['file']) . '/';
+		$original_path = $dir_path . basename($metadata['file']);
 
-                if ( empty( $metadata['sizes'] ) ) {
-                        return false;
-                }
+		if (empty($metadata['sizes'])) {
+			return false;
+		}
 
-                foreach ( $metadata['sizes'] as $size_info ) {
-                        $intermediate_path = $dir_path . $size_info['file'];
+		foreach ($metadata['sizes'] as $size_info) {
+			$intermediate_path = $dir_path . $size_info['file'];
 
-                        if ( $intermediate_path == $original_path )
-                                continue;
+			if ($intermediate_path == $original_path)
+				continue;
 
-                        if ( ! file_exists( $intermediate_path ) ) {
-				$need_regeneration = true;
+			if (!file_exists($intermediate_path)) {
 				return true;
 			}
-                }
+		}
 
 		return false;
-        }
+	}
 }
 
 WP_CLI::add_command( 'media', 'Media_Command', array(
