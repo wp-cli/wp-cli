@@ -177,7 +177,7 @@ class CLI_Command extends WP_CLI_Command {
 		if ( 0 !== $status ) {
 			WP_CLI::error_multi_line( $output );
 
-			WP_CLI::error( 'The downloaded PHAR is broken, try running wp cli self-update again.' );
+			WP_CLI::error( 'The downloaded PHAR is broken, try running wp cli update again.' );
 		}
 
 		WP_CLI::log( 'New version works. Proceeding to replace.' );
