@@ -36,7 +36,7 @@ class Query implements \Iterator {
 	 */
 	public function __construct( $query, $chunk_size = 500 ) {
 		$this->query = $query;
-		
+
 		$this->count_query = preg_replace( '/^.*? FROM /', 'SELECT COUNT(*) FROM ', $query, 1, $replacements );
 		if ( $replacements != 1 )
 			$this->count_query = '';

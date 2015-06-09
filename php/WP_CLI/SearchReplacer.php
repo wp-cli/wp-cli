@@ -13,10 +13,11 @@ class SearchReplacer {
 	 * @param string  $to              What we want it to be replaced with.
 	 * @param bool    $recurse_objects Should objects be recursively replaced?
 	 */
-	function __construct( $from, $to, $recurse_objects = false ) {
+	function __construct( $from, $to, $recurse_objects = false, $regex = false ) {
 		$this->from = $from;
 		$this->to = $to;
 		$this->recurse_objects = $recurse_objects;
+		$this->regex = $regex;
 
 		// Get the XDebug nesting level. Will be zero (no limit) if no value is set
 		$this->max_recursion = intval( ini_get( 'xdebug.max_nesting_level' ) );
@@ -80,7 +81,11 @@ class SearchReplacer {
 			}
 
 			else if ( is_string( $data ) ) {
-				$data = str_replace( $this->from, $this->to, $data );
+				if ( $this->regex ) {
+					$data = preg_replace( "/$this->from/", $this->to, $data );
+				} else {
+					$data = str_replace( $this->from, $this->to, $data );
+				}
 			}
 
 			if ( $serialised )

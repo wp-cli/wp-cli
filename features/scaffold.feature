@@ -151,6 +151,10 @@ Feature: WordPress code scaffolding
       bootstrap.php
       test-sample.php
       """
+    And the {PLUGIN_DIR}/hello-world/tests/bootstrap.php file should contain:
+      """
+      require dirname( dirname( __FILE__ ) ) . '/hello-world.php';
+      """
     And the {PLUGIN_DIR}/hello-world/bin directory should contain:
       """
       install-wp-tests.sh
@@ -277,7 +281,7 @@ Feature: WordPress code scaffolding
     When I try `wp scaffold plugin-tests --dir=wp-content/mu-plugins/incorrect-custom-plugin`
     Then STDERR should contain:
       """
-      Error: Invalid plugin specified.
+      Error: Invalid plugin directory specified.
       """
 
     When I run `wp scaffold plugin-tests --dir=wp-content/mu-plugins/custom-plugin`
@@ -286,6 +290,35 @@ Feature: WordPress code scaffolding
       Success: Created test files.
       """
     And the wp-content/mu-plugins/custom-plugin/tests directory should exist
+    And the wp-content/mu-plugins/custom-plugin/tests/bootstrap.php file should exist
+    And the wp-content/mu-plugins/custom-plugin/tests/bootstrap.php file should contain:
+    """
+    require dirname( dirname( __FILE__ ) ) . '/custom-plugin.php';
+    """
+
+  Scenario: Scaffold tests for a plugin with a different slug than plugin directory
+    Given a WP install
+    And a wp-content/mu-plugins/custom-plugin2/custom-plugin-slug.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Handbook
+       * Description: Features for a handbook, complete with glossary and table of contents
+       * Author: Nacin
+       */
+      """
+
+    When I run `wp scaffold plugin-tests custom-plugin-slug --dir=wp-content/mu-plugins/custom-plugin2`
+    Then STDOUT should contain:
+      """
+      Success: Created test files.
+      """
+    And the wp-content/mu-plugins/custom-plugin2/tests directory should exist
+    And the wp-content/mu-plugins/custom-plugin2/tests/bootstrap.php file should exist
+    And the wp-content/mu-plugins/custom-plugin2/tests/bootstrap.php file should contain:
+    """
+    require dirname( dirname( __FILE__ ) ) . '/custom-plugin-slug.php';
+    """
 
   Scenario: Scaffold starter code for a theme and network enable it
     Given a WP multisite install
@@ -302,4 +335,17 @@ Feature: WordPress code scaffolding
     Then STDERR should contain:
     """
     Error: Could not decompress your theme files
+    """
+
+  Scenario: Overwrite existing files
+    Given a WP install
+    When I run `wp scaffold plugin test`
+    And I run `wp scaffold plugin test --force`
+    Then STDERR should contain:
+    """
+    already exists
+    """
+    And STDOUT should contain:
+    """
+    Replacing
     """
