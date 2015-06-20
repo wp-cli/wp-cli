@@ -1,8 +1,9 @@
 language: php
 
 notifications:
-  on_success: never
-  on_failure: change
+  email:
+    on_success: never
+    on_failure: change
 
 php:
   - 5.3
