@@ -320,6 +320,16 @@ Feature: WordPress code scaffolding
     require dirname( dirname( __FILE__ ) ) . '/custom-plugin-slug.php';
     """
 
+    When I run `bash wp-content/mu-plugins/custom-plugin2/bin/install-wp-tests.sh wordpress_custom_plugin_test_1 root '' localhost latest`
+    And the /tmp/wordpress-tests-lib/includes/bootstrap.php file should exist
+    And the /tmp/wordpress-tests-lib/wp-tests-config.php file should exist
+    And the /tmp/wordpress/index.php file should exist
+
+    When I run `WP_TESTS_DIR=/tmp/wordpress-tests-lib-2 WP_CORE_DIR=/tmp/wordpress-2 bash wp-content/mu-plugins/custom-plugin2/bin/install-wp-tests.sh wordpress_custom_plugin_test_2 root '' localhost latest`
+    And the /tmp/wordpress-tests-lib-2/includes/bootstrap.php file should exist
+    And the /tmp/wordpress-tests-lib-2/wp-tests-config.php file should exist
+    And the /tmp/wordpress-2/index.php file should exist
+
   Scenario: Scaffold starter code for a theme and network enable it
     Given a WP multisite install
     When I run `wp scaffold _s starter-theme --enable-network`
