@@ -458,10 +458,6 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 		}
 	}
 
-	// cURL can't read Phar archives
-	$options['verify'] = extract_from_phar(
-		WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem' );
-
 	try {
 		$request = \Requests::request( $url, $headers, $data, $method, $options );
 		return $request;
