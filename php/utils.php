@@ -440,9 +440,23 @@ function replace_path_consts( $source, $path ) {
  * @return object
  */
 function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
-	// cURL can't read Phar archives
-	$options['verify'] = extract_from_phar(
-		WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem' );
+
+	$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
+	if ( inside_phar() ) {
+		// cURL can't read Phar archives
+		$options['verify'] = extract_from_phar(
+		WP_CLI_ROOT . '/vendor' . $cert_path );
+	} else {
+		foreach( get_vendor_paths() as $vendor_path ) {
+			if ( file_exists( $vendor_path . $cert_path ) ) {
+				$options['verify'] = $vendor_path . $cert_path;
+				break;
+			}
+		}
+		if ( empty( $options['verify'] ) ){
+			WP_CLI::error_log( "Cannot find SSL certificate." );
+		}
+	}
 
 	try {
 		$request = \Requests::request( $url, $headers, $data, $method, $options );
