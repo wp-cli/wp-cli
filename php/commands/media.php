@@ -31,7 +31,7 @@ class Media_Command extends WP_CLI_Command {
 	 */
 	function regenerate( $args, $assoc_args = array() ) {
 		if ( empty( $args ) ) {
-			WP_CLI::confirm( 'Do you realy want to regenerate all images?', $assoc_args );
+			WP_CLI::confirm( 'Do you really want to regenerate all images?', $assoc_args );
 		}
 
 		$skip_delete = \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-delete' );
