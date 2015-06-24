@@ -608,6 +608,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     wp plugin list --status=active --format=json
 	 *
+	 *     # List plugins on each site in a network
+	 *     wp site list --field=url | xargs -n 1 -I % wp plugin list --url=%
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $_, $assoc_args ) {
