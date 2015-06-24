@@ -652,3 +652,19 @@ Feature: Manage WordPress installation
       """
       Error: Release not found.
       """
+
+  Scenario: Ensure cached partial upgrades aren't used in full upgrade
+    Given a WP install
+    And an empty cache
+
+    When I run `wp core download --version=4.2.1 --force`
+    And I run `wp core update`
+    Then STDOUT should not be empty
+
+    When I run `wp core download --version=4.1.1 --force`
+    And I run `wp core update`
+    And I run `wp core verify-checksums`
+    Then STDOUT should be:
+      """
+      Success: WordPress install verifies against checksums.
+      """
