@@ -76,6 +76,13 @@ if ( defined( 'WP_INSTALLING' ) && is_multisite() ) {
 	unset( $values, $key, $value );
 }
 
+// In a multisite install, die if unable to find site given in --url parameter
+if ( is_multisite() ) {
+	add_action( 'ms_site_not_found', function( $current_site, $domain, $path ) {
+		WP_CLI::error( "Site {$domain}{$path} not found." );
+	}, 10, 3 );
+}
+
 // Include the wpdb class and, if present, a db.php database drop-in.
 require_wp_db();
 
