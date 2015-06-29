@@ -13,6 +13,7 @@ Feature: Global flags
       }
       """
 
+  @require-wp-3.9
   Scenario: Invalid URL
     Given a WP multisite install
 
