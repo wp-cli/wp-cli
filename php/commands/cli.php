@@ -133,8 +133,6 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * [--yes]
 	 * : Do not prompt for confirmation
-	 *
-	 * @subcommand update
 	 */
 	public function update( $_, $assoc_args ) {
 		if ( ! Utils\inside_phar() ) {
