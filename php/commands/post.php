@@ -108,7 +108,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		parent::_update( $args, $assoc_args, function ( $params ) {
-			return wp_update_post( $params, true );
+			return wp_update_post( $this->escape( $params ), true );
 		} );
 	}
 
@@ -464,6 +464,15 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$readfile = 'php://stdin';
 		}
 		return file_get_contents( $readfile );
+	}
+
+	/**
+	 * Preserve text content by escaping backslashes that get unescaped by wp_unslash() down the line.
+	 * @param string $str  The string to be escaped
+	 * @return string  The escaped string
+	 */
+	private function escape($str) {
+		return str_replace( '\\', '\\\\', $str );
 	}
 }
 
