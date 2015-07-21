@@ -170,11 +170,11 @@ class CLI_Command extends WP_CLI_Command {
 
 		Utils\http_request( 'GET', $download_url, null, $headers, $options );
 
-		exec( "php $temp --version", $output, $status );
-
-		if ( 0 !== $status ) {
-			WP_CLI::error_multi_line( $output );
-
+		$process = WP_CLI\Process::create( "php $temp --version" );
+		$result = $process->run();
+		if ( 0 !== $result->return_code ) {
+			$multi_line = explode( PHP_EOL, $result->stderr );
+			WP_CLI::error_multi_line( $multi_line );
 			WP_CLI::error( 'The downloaded PHAR is broken, try running wp cli update again.' );
 		}
 
