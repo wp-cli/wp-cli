@@ -24,7 +24,7 @@ function extract_from_phar( $path ) {
 	copy( $path, $tmp_path );
 
 	register_shutdown_function( function() use ( $tmp_path ) {
-		unlink( $tmp_path );
+		@unlink( $tmp_path );
 	} );
 
 	return $tmp_path;
