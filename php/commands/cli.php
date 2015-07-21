@@ -170,7 +170,8 @@ class CLI_Command extends WP_CLI_Command {
 
 		Utils\http_request( 'GET', $download_url, null, $headers, $options );
 
-		$process = WP_CLI\Process::create( "php $temp --version" );
+		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
+		$process = WP_CLI\Process::create( "php $temp --version {$allow_root}" );
 		$result = $process->run();
 		if ( 0 !== $result->return_code ) {
 			$multi_line = explode( PHP_EOL, $result->stderr );
