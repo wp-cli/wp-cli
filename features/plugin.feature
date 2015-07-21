@@ -118,8 +118,11 @@ Feature: Manage WordPress plugins
       Error: Please specify one or more plugins, or use --all.
       """
 
-    When I run `wp plugin update --all`
-    Then STDOUT should not be empty
+    When I run `wp plugin update --all --format=summary | grep 'updated successfully from'`
+    Then STDOUT should contain:
+      """
+      Akismet updated successfully from version 2.5.6 to version
+      """
 
   Scenario: Activate a network-only plugin on single site
     Given a WP install

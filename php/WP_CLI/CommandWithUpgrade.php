@@ -264,18 +264,24 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			\WP_CLI::error( $line );
 		}
 
-		if ($num_to_update > 0) {
-			$status = array();
-			foreach($items_to_update as $item_to_update => $info) {
-				$status[$item_to_update] = array(
-					'name' => $info['name'],
-					'old_version' => $info['version'],
-					'new_version' => $info['update_version'],
-					'status' => $result[$item_to_update] !== null ? 'Updated' : 'Error',
-				);
+		if ( $num_to_update > 0 ) {
+			if ( ! empty( $assoc_args['format'] ) && 'summary' === $assoc_args['format'] ) {
+				foreach( $items_to_update as $item_to_update => $info ) {
+					$message = $result[$item_to_update] !== null ? 'updated successfully' : 'did not update';
+					\WP_CLI::log( "{$info['title']} {$message} from version {$info['version']} to version {$info['update_version']}" );
+				}
+			} else {
+				$status = array();
+				foreach($items_to_update as $item_to_update => $info) {
+					$status[$item_to_update] = array(
+						'name' => $info['name'],
+						'old_version' => $info['version'],
+						'new_version' => $info['update_version'],
+						'status' => $result[$item_to_update] !== null ? 'Updated' : 'Error',
+					);
+				}
+				\WP_CLI\Utils\format_items( 'table', $status, array( 'name', 'old_version', 'new_version', 'status' ) );
 			}
-			\WP_CLI\Utils\format_items( 'table', $status,
-				array( 'name', 'old_version', 'new_version', 'status' ) );
 		}
 	}
 

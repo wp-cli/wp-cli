@@ -331,6 +331,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--all]
 	 * : If set, all plugins that have updates will be updated.
 	 *
+	 * [--format=<format>]
+	 * : Output summary as table or summary. Defaults to table.
+	 *
 	 * [--version=<version>]
 	 * : If set, the plugin will be updated to the specified version.
 	 *
