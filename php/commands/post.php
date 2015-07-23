@@ -108,7 +108,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		parent::_update( $args, $assoc_args, function ( $params ) {
-			return wp_update_post( self::escape( $params ), true );
+			return wp_update_post( Post_Command::escape( $params ), true );
 		} );
 	}
 
