@@ -471,7 +471,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * @param string $str  The string to be escaped
 	 * @return string  The escaped string
 	 */
-	private static function escape($str) {
+	public static function escape($str) {
 		return str_replace( '\\', '\\\\', $str );
 	}
 }
