@@ -108,7 +108,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		parent::_update( $args, $assoc_args, function ( $params ) {
-			return wp_update_post( $this->escape( $params ), true );
+			return wp_update_post( self::escape( $params ), true );
 		} );
 	}
 
@@ -471,7 +471,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * @param string $str  The string to be escaped
 	 * @return string  The escaped string
 	 */
-	private function escape($str) {
+	private static function escape($str) {
 		return str_replace( '\\', '\\\\', $str );
 	}
 }
