@@ -353,7 +353,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * These fields will be displayed by default for each site:
 	 *
 	 * * blog_id
-	 * * url
+	 * * site_url
 	 * * last_updated
 	 * * registered
 	 *
@@ -361,7 +361,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * * site_id
 	 * * domain
-	 * * path
+	 * * site_path
 	 * * public
 	 * * archived
 	 * * mature
@@ -372,7 +372,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     # Output a simple list of site URLs
-	 *     wp site list --field=url
+	 *     wp site list --field=site_url
 	 *
 	 * @subcommand list
 	 */
@@ -389,13 +389,23 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 		$defaults = array(
 			'format' => 'table',
-			'fields' => array( 'blog_id', 'url', 'last_updated', 'registered' ),
+			'fields' => array( 'blog_id', 'site_url', 'last_updated', 'registered' ),
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		$where = array();
 
-		$site_cols = array( 'blog_id', 'url', 'last_updated', 'registered', 'site_id', 'domain', 'path', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' );
+		// Translate site_path to path, and site_url to domain + path
+		if ( isset( $assoc_args['site_path'] ) ) {
+			$where['path'] = $assoc_args['site_path'];
+		}
+		if ( isset( $assoc_args['site_url'] ) ) {
+			$parsed_url = parse_url( $assoc_args['site_url'] );
+			$where['domain'] = $parsed_url->host;
+			$where['path'] = $parsed_url->path;
+		}
+
+		$site_cols = array( 'blog_id', 'last_updated', 'registered', 'site_id', 'domain', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' );
 		foreach( $site_cols as $col ) {
 			if ( isset( $assoc_args[ $col ] ) ) {
 				$where[ $col ] = $assoc_args[ $col ];
@@ -413,7 +423,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		$it = new \WP_CLI\Iterators\Table( $iterator_args );
 
 		$it = \WP_CLI\Utils\iterator_map( $it, function( $blog ) {
-			$blog->url = $blog->domain . $blog->path;
+			$blog->site_url = $blog->domain . $blog->path;
 			return $blog;
 		} );
 

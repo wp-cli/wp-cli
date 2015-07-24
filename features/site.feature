@@ -22,7 +22,7 @@ Feature: Manage sites in a multisite installation
       | 1       | example.com/       |
       | 2       | example.com/first/ |
 
-    When I run `wp site list --field=url`
+    When I run `wp site list --field=site_url`
     Then STDOUT should be:
       """
       example.com/
@@ -42,13 +42,13 @@ Feature: Manage sites in a multisite installation
     Then STDOUT should be a number
     And save STDOUT as {SITE_ID}
 
-    When I run `wp site list --fields=blog_id,url`
+    When I run `wp site list --fields=blog_id,site_url`
     Then STDOUT should be a table containing rows:
-      | blog_id | url                |
+      | blog_id | site_url           |
       | 1       | example.com/       |
       | 2       | example.com/first/ |
 
-    When I run `wp site list --field=url --blog_id=2`
+    When I run `wp site list --field=site_url --blog_id=2`
     Then STDOUT should be:
       """
       example.com/first/
