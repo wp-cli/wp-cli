@@ -107,6 +107,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			break;
 		}
 
+		if ( isset( $assoc_args['post_category'] ) ) {
+			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
+		}
+
 		parent::_update( $args, $assoc_args, function ( $params ) {
 			return wp_update_post( $params, true );
 		} );
