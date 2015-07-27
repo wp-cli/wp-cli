@@ -92,25 +92,55 @@ class Role_Command extends WP_CLI_Command {
 	 * <role-name>
 	 * : The publicly visible name of the role.
 	 *
+	 * [--clone=<role-key>]
+	 * : Copy capabilities from an existing role
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp role create approver Approver
 	 *
 	 *     wp role create productadmin "Product Administrator"
+	 *
+	 *     wp role create senioreditor "Senior Editor" --clone=editor
 	 */
-	public function create( $args ) {
+	public function create( $args, $assoc_args ) {
 		self::persistence_check();
 
 		$role_key = array_shift( $args );
 		$role_name = array_shift( $args );
+		$clone = \WP_CLI\Utils\get_flag_value( $assoc_args, 'clone' );
+		$source_role_obj = null;
+
+		if ( ! empty($clone) ) {
+			$source_role_obj = get_role( $clone );
+			if ( ! $source_role_obj ) {
+				WP_CLI::error( sprintf( 'Role with key %s does not exist.', $clone ), true );
+			}
+
+		}
 
 		if ( empty( $role_key ) || empty( $role_name ) )
 			WP_CLI::error( "Can't create role, insufficient information provided.");
 
-		if ( ! add_role( $role_key, $role_name ) )
+		if ( ! add_role( $role_key, $role_name ) ) {
 			WP_CLI::error( "Role couldn't be created." );
-		else
+		}
+		else {
 			WP_CLI::success( sprintf( "Role with key %s created.", $role_key ) );
+		}
+
+		if ( null !== $clone ) {
+			$target_role_obj = get_role( $role_key );
+			$count = 0;
+
+			foreach ( $source_role_obj->capabilities as $cap => $value ) {
+				$target_role_obj->add_cap( $cap );
+				$count++;
+			}
+
+			WP_CLI::success( sprintf( 'Copied %d capabilities from role with key %s to role with key %s ', $count, $clone, $role_key ) );
+
+		}
 	}
 
 	/**
