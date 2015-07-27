@@ -695,6 +695,8 @@ class Runner {
 	}
 
 	public function after_wp_load() {
+		WP_CLI::do_hook( 'after_wp_load' );
+
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
 		// Handle --user parameter
