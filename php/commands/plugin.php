@@ -561,6 +561,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     wp plugin delete hello
+	 *
+	 *     # Delete inactive plugins
+	 *     wp plugin delete $(wp plugin list --status=inactive --field=name)
 	 */
 	function delete( $args, $assoc_args = array() ) {
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
