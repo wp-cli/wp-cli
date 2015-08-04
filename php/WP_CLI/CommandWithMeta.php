@@ -77,7 +77,14 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	/**
 	 * Get meta field value.
 	 *
-	 * @synopsis <id> <key> [--format=<format>]
+	 * <id>
+	 * : The ID of the object.
+	 *
+	 * <key>
+	 * : The name of the meta field to get.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json. Default: table
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
@@ -99,7 +106,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * : The ID of the object.
 	 *
 	 * <key>
-	 * : The name of the meta field to create.
+	 * : The name of the meta field to delete.
 	 *
 	 * [<value>]
 	 * : The value to delete. If omitted, all rows with key will deleted.
