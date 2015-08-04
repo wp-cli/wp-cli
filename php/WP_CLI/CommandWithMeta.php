@@ -105,7 +105,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * : The ID of the object.
 	 *
 	 * <key>
-	 * : The name of the meta field to create.
+	 * : The name of the meta field to delete.
 	 *
 	 * [<value>]
 	 * : The value to delete. If omitted, all rows with key will deleted.
