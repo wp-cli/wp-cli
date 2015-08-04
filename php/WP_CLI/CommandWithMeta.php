@@ -83,6 +83,9 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * <key>
 	 * : The name of the meta field to get.
 	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json. Default: table
+	 *
 	 * @synopsis <id> <key> [--format=<format>]
 	 */
 	public function get( $args, $assoc_args ) {
