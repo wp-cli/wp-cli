@@ -633,7 +633,7 @@ class Runner {
 		if (
 			count( $this->arguments ) >= 2 &&
 			$this->arguments[0] == 'core' &&
-			in_array( $this->arguments[1], array( 'install', 'multisite-install' ) )
+			in_array( $this->arguments[1], array( 'install', 'multisite-install', 'secure_install' ) )
 		) {
 			define( 'WP_INSTALLING', true );
 
