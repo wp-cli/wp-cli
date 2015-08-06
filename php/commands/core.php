@@ -469,13 +469,6 @@ class Core_Command extends WP_CLI_Command {
 			\WP_CLI::error( "\nWP_ADMIN_PASSWORD must be defined in ENV" );
 		}
 		$this->install($args, $assoc_args);
-/*
-		if ( $this->_install( $assoc_args ) ) {
-			WP_CLI::success( 'WordPress installed successfully.' );
-		} else {
-			WP_CLI::log( 'WordPress is already installed.' );
-		}
-*/
 	}
 
 	/**
