@@ -161,7 +161,7 @@ class WP_Export_Query {
 
 	private function post_type_where() {
 		global $wpdb;
-		$post_types_filters = array( 'can_export' => true, 'name' => null );
+		$post_types_filters = array( 'can_export' => true );
 		if ( $this->filters['post_type'] ) {
 			$post_types = $this->filters['post_type'];
 
@@ -248,7 +248,7 @@ class WP_Export_Query {
 
 	private function category_where() {
 		global $wpdb;
-		if ( 'post' != $this->filters['post_type'] ) {
+		if ( 'post' != $this->filters['post_type'] && ! in_array( 'post', (array) $this->filters['post_type'] ) ) {
 			return;
 		}
 		$category = $this->find_category_from_any_object( $this->filters['category'] );
