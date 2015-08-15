@@ -130,9 +130,9 @@ Feature: Export content.
     Given a WP install
 
     When I run `wp plugin install wordpress-importer --activate`
-    Then STDERR should not contain:
+    Then STDERR should contain:
       """
-      Warning:
+      Success:
       """
 
     When I run `wp post generate --count=10`
