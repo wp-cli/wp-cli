@@ -33,7 +33,7 @@ class Export_Command extends WP_CLI_Command {
 	 *
 	 * [--post_type=<post-type>]
 	 * : Export only posts with this post_type. Separate multiple post types with a
-	 * comma. Defaults to all.
+	 * comma. Defaults to "any".
 	 *
 	 * [--post__in=<pid>]
 	 * : Export all posts specified as a comma-separated list of IDs.
@@ -181,7 +181,7 @@ class Export_Command extends WP_CLI_Command {
 	}
 
 	private function check_post_type( $post_type ) {
-		if ( is_null( $post_type ) )
+		if ( is_null( $post_type ) || 'any' === $post_type )
 			return true;
 
 		$post_type = array_unique( array_filter( explode( ',', $post_type ) ) );
@@ -190,7 +190,7 @@ class Export_Command extends WP_CLI_Command {
 		foreach ( $post_type as $type ) {
 			if ( ! in_array( $type, $post_types ) ) {
 				WP_CLI::warning( sprintf(
-					'The post type %s does not exist. Choose "all" or any of these existing post types instead: %s',
+					'The post type %s does not exist. Choose "any" or any of these existing post types instead: %s',
 					$type,
 					implode( ", ", $post_types )
 				) );
