@@ -78,9 +78,9 @@ Feature: Export content.
     Given a WP install
 
     When I run `wp plugin install wordpress-importer --activate`
-    Then STDERR should not contain:
+    Then STDOUT should contain:
       """
-      Warning:
+      Success:
       """
 
     When I run `wp site empty --yes`
@@ -130,7 +130,7 @@ Feature: Export content.
     Given a WP install
 
     When I run `wp plugin install wordpress-importer --activate`
-    Then STDERR should contain:
+    Then STDOUT should contain:
       """
       Success:
       """
@@ -233,7 +233,7 @@ Feature: Export content.
     And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
     Then the {EXPORT_FILE} file should contain:
       """
-      <wp:category_nicename>apple</wp:category_nicename>
+      <category domain="category" nicename="apple"><![CDATA[Apple]]></category>
       """
 
     When I run `wp site empty --yes`
