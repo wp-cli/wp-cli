@@ -7,8 +7,31 @@ namespace WP_CLI\Utils;
 use \WP_CLI\Dispatcher;
 use \WP_CLI\Iterators\Transform;
 
+function inside_phar() {
+	return 0 === strpos( WP_CLI_ROOT, 'phar://' );
+}
+
+// Files that need to be read by external programs have to be extracted from the Phar archive.
+function extract_from_phar( $path ) {
+	if ( ! inside_phar() ) {
+		return $path;
+	}
+
+	$fname = basename( $path );
+
+	$tmp_path = sys_get_temp_dir() . "/wp-cli-$fname";
+
+	copy( $path, $tmp_path );
+
+	register_shutdown_function( function() use ( $tmp_path ) {
+		@unlink( $tmp_path );
+	} );
+
+	return $tmp_path;
+}
+
 function load_dependencies() {
-	if ( 0 === strpos( WP_CLI_ROOT, 'phar:' ) ) {
+	if ( inside_phar() ) {
 		require WP_CLI_ROOT . '/vendor/autoload.php';
 		return;
 	}
@@ -417,31 +440,30 @@ function replace_path_consts( $source, $path ) {
  * @return object
  */
 function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
-	$pem_copied = false;
 
-	// cURL can't read Phar archives
-	if ( 0 === strpos( WP_CLI_ROOT, 'phar://' ) ) {
-		$options['verify'] = sys_get_temp_dir() . '/wp-cli-cacert.pem';
-
-		copy(
-			WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem',
-			$options['verify']
-		);
-		$pem_copied = true;
+	$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
+	if ( inside_phar() ) {
+		// cURL can't read Phar archives
+		$options['verify'] = extract_from_phar(
+		WP_CLI_ROOT . '/vendor' . $cert_path );
+	} else {
+		foreach( get_vendor_paths() as $vendor_path ) {
+			if ( file_exists( $vendor_path . $cert_path ) ) {
+				$options['verify'] = $vendor_path . $cert_path;
+				break;
+			}
+		}
+		if ( empty( $options['verify'] ) ){
+			WP_CLI::error_log( "Cannot find SSL certificate." );
+		}
 	}
 
 	try {
 		$request = \Requests::request( $url, $headers, $data, $method, $options );
-		if ( $pem_copied ) {
-			unlink( $options['verify'] );
-		}
 		return $request;
 	} catch( \Requests_Exception $ex ) {
 		// Handle SSL certificate issues gracefully
 		\WP_CLI::warning( $ex->getMessage() );
-		if ( $pem_copied ) {
-			unlink( $options['verify'] );
-		}
 		$options['verify'] = false;
 		try {
 			return \Requests::request( $url, $headers, $data, $method, $options );

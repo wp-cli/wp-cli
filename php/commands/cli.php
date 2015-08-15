@@ -133,12 +133,10 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * [--yes]
 	 * : Do not prompt for confirmation
-	 *
-	 * @subcommand update
 	 */
 	public function update( $_, $assoc_args ) {
-		if ( 0 !== strpos( WP_CLI_ROOT, 'phar://' ) ) {
-			WP_CLI::error( "You can only self-update PHARs" );
+		if ( ! Utils\inside_phar() ) {
+			WP_CLI::error( "You can only self-update Phar files." );
 		}
 
 		$old_phar = realpath( $_SERVER['argv'][0] );
@@ -172,12 +170,13 @@ class CLI_Command extends WP_CLI_Command {
 
 		Utils\http_request( 'GET', $download_url, null, $headers, $options );
 
-		exec( "php $temp --version", $output, $status );
-
-		if ( 0 !== $status ) {
-			WP_CLI::error_multi_line( $output );
-
-			WP_CLI::error( 'The downloaded PHAR is broken, try running wp cli self-update again.' );
+		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
+		$process = WP_CLI\Process::create( "php $temp --version {$allow_root}" );
+		$result = $process->run();
+		if ( 0 !== $result->return_code ) {
+			$multi_line = explode( PHP_EOL, $result->stderr );
+			WP_CLI::error_multi_line( $multi_line );
+			WP_CLI::error( 'The downloaded PHAR is broken, try running wp cli update again.' );
 		}
 
 		WP_CLI::log( 'New version works. Proceeding to replace.' );

@@ -129,3 +129,31 @@ Feature: Get help about WP-CLI commands
       """
       __destruct
       """
+
+  Scenario: Help for commands loaded into existing namespaces
+    Given a WP install
+    And a wp-content/plugins/test-cli/command.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI Extra Site Command
+
+      class Test_CLI_Extra_Site_Command extends WP_CLI_Command {
+
+        /**
+         * A dummy command.
+         *
+         * @subcommand my-command
+         */
+        function my_command() {}
+
+      }
+
+      WP_CLI::add_command( 'site test-extra', 'Test_CLI_Extra_Site_Command' );
+      """
+    And I run `wp plugin activate test-cli`
+
+    When I run `wp help site`
+    Then STDOUT should contain:
+      """
+      test-extra
+      """
