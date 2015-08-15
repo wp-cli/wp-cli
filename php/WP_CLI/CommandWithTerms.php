@@ -67,6 +67,11 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 */
 	public function list_( $args, $assoc_args ) {
 
+		$defaults = array(
+			'format'      => 'table',
+			);
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
 		$object_id      = array_shift( $args );
 		$taxonomy_names = $args;
 		$taxonomy_args = array();

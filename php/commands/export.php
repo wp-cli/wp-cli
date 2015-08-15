@@ -38,6 +38,9 @@ class Export_Command extends WP_CLI_Command {
 	 * [--post__in=<pid>]
 	 * : Export all posts specified as a comma-separated list of IDs.
 	 *
+	 * [--start_id=<pid>]
+	 * : Export only posts with IDs greater than or equal to this post ID.
+	 *
 	 * [--author=<author>]
 	 * : Export only posts by this author. Can be either user login or user ID.
 	 *
@@ -63,6 +66,7 @@ class Export_Command extends WP_CLI_Command {
 			'category'        => NULL,
 			'post_status'     => NULL,
 			'post__in'        => NULL,
+			'start_id'        => NULL,
 			'skip_comments'   => NULL,
 			'max_file_size'   => 15,
 		);
@@ -208,6 +212,23 @@ class Export_Command extends WP_CLI_Command {
 		}
 		// New exporter uses a different argument
 		$this->export_args['post_ids'] = $post__in;
+		return true;
+	}
+
+	private function check_start_id( $start_id ) {
+		if ( is_null( $start_id ) ) {
+			return true;
+		}
+
+		$start_id = intval( $start_id );
+
+		// Post IDs must be greater than 0
+		if ( 0 >= $start_id ) {
+			WP_CLI::warning( sprintf( __( 'Invalid start ID: %d' ), $start_id ) );
+			return false;
+		}
+
+		$this->export_args['start_id'] = $start_id;
 		return true;
 	}
 

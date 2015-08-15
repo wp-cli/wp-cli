@@ -279,3 +279,41 @@ Feature: Export content.
       """
       Test User
       """
+
+  Scenario: Export posts from a given starting post ID
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --activate`
+    Then STDERR should not contain:
+      """
+      Warning:
+      """
+
+    When I run `wp site empty --yes`
+    And I run `wp post generate --post_type=post --count=10`
+    And I run `wp post list --post_type=post --format=count`
+    Then STDOUT should be:
+      """
+      10
+      """
+
+    When I run `wp export --start_id=6`
+    And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
+
+    When I run `wp site empty --yes`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --post_type=post --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp import {EXPORT_FILE} --authors=skip`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --post_type=post --format=count`
+    Then STDOUT should be:
+      """
+      5
+      """

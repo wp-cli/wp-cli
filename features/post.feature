@@ -216,3 +216,14 @@ Feature: Manage WordPress posts
       """
       1
       """
+
+  Scenario: Update categories on a post
+    When I run `wp term create category "Test Category" --porcelain`
+    Then save STDOUT as {TERM_ID}
+
+    When I run `wp post update 1 --post_category={TERM_ID}`
+    And I run `wp post term list 1 category --format=json --fields=name`
+    Then STDOUT should be:
+      """
+      [{"name":"Test Category"}]
+      """

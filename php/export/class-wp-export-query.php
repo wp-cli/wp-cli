@@ -14,6 +14,7 @@ class WP_Export_Query {
 		'author' => null,
 		'start_date' => null,
 		'end_date' => null,
+		'start_id' => null,
 		'category' => null,
 	);
 
@@ -146,6 +147,7 @@ class WP_Export_Query {
 		$this->author_where();
 		$this->start_date_where();
 		$this->end_date_where();
+		$this->start_id_where();
 		$this->category_where();
 
 		$where = implode( ' AND ', array_filter( $this->wheres ) );
@@ -228,6 +230,16 @@ class WP_Export_Query {
 			return;
 		}
 		$this->wheres[] = $wpdb->prepare( 'p.post_date <= %s', date( 'Y-m-d 23:59:59', $timestamp ) );
+	}
+
+	private function start_id_where() {
+		global $wpdb;
+
+		$start_id = absint( $this->filters['start_id'] );
+		if ( 0 === $start_id ) {
+			return;
+		}
+		$this->wheres[] = $wpdb->prepare( 'p.ID >= %d', $start_id );
 	}
 
 	private function get_timestamp_for_the_last_day_of_a_month( $yyyy_mm ) {

@@ -336,3 +336,16 @@ Feature: WordPress code scaffolding
     """
     Error: Could not decompress your theme files
     """
+
+  Scenario: Overwrite existing files
+    Given a WP install
+    When I run `wp scaffold plugin test`
+    And I run `wp scaffold plugin test --force`
+    Then STDERR should contain:
+    """
+    already exists
+    """
+    And STDOUT should contain:
+    """
+    Replacing
+    """
