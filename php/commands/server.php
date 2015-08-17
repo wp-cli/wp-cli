@@ -27,7 +27,6 @@ class Server_Command extends WP_CLI_Command {
 	 *     sudo wp server --host=localhost.localdomain --port=80
 	 *
 	 * @when before_wp_load
-	 * @synopsis [--host=<host>] [--port=<port>] [--docroot=<docroot>]
 	 */
 	function __invoke( $_, $assoc_args ) {
 		$min_version = '5.4';
