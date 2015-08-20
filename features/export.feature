@@ -74,13 +74,65 @@ Feature: Export content.
       10
       """
 
+  Scenario: Export a comma-separated list of post types
+    Given a WP install
+
+    When I run `wp plugin install wordpress-importer --activate`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I run `wp site empty --yes`
+    And I run `wp post generate --post_type=page --count=10`
+    And I run `wp post generate --post_type=post --count=10`
+    And I run `wp post generate --post_type=attachment --count=10`
+    And I run `wp post list --post_type=page,post,attachment --format=count`
+    Then STDOUT should be:
+      """
+      30
+      """
+
+    When I run `wp export --post_type=page,post`
+    And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
+
+    When I run `wp site empty --yes`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp import {EXPORT_FILE} --authors=skip`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --post_type=page,post --format=count`
+    Then STDOUT should be:
+      """
+      20
+      """
+
+    When I run `wp post list --post_type=page --format=count`
+    Then STDOUT should be:
+      """
+      10
+      """
+
+    When I run `wp post list --post_type=post --format=count`
+    Then STDOUT should be:
+      """
+      10
+      """
+
   Scenario: Export only one post
     Given a WP install
 
     When I run `wp plugin install wordpress-importer --activate`
-    Then STDERR should not contain:
+    Then STDOUT should contain:
       """
-      Warning:
+      Success:
       """
 
     When I run `wp post generate --count=10`
@@ -181,7 +233,7 @@ Feature: Export content.
     And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
     Then the {EXPORT_FILE} file should contain:
       """
-      <wp:category_nicename>apple</wp:category_nicename>
+      <category domain="category" nicename="apple"><![CDATA[Apple]]></category>
       """
 
     When I run `wp site empty --yes`

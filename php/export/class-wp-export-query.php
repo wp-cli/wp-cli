@@ -163,10 +163,28 @@ class WP_Export_Query {
 		global $wpdb;
 		$post_types_filters = array( 'can_export' => true );
 		if ( $this->filters['post_type'] ) {
-			$post_types_filters = array_merge( $post_types_filters, array( 'name' => $this->filters['post_type'] ) );
+			$post_types = $this->filters['post_type'];
+
+			// Flatten single post types
+			if ( is_array( $post_types ) && 1 === count( $post_types ) ) {
+				$post_types = array_shift( $post_types );
+			}
+			$post_types_filters = array_merge( $post_types_filters, array( 'name' => $post_types ) );
 		}
-		$post_types = get_post_types( $post_types_filters );
-		if ( !$post_types ) {
+
+		// Multiple post types
+		if ( is_array( $post_types_filters['name'] ) ) {
+			$post_types = array();
+			foreach ( $post_types_filters['name'] as $post_type ) {
+				if ( post_type_exists( $post_type ) ) {
+					$post_types[] = $post_type;
+				}
+			}
+		} else {
+			$post_types = get_post_types( $post_types_filters );
+		}
+
+		if ( ! $post_types ) {
 			$this->wheres[] = 'p.post_type IS NULL';
 			return;
 		}
@@ -230,7 +248,7 @@ class WP_Export_Query {
 
 	private function category_where() {
 		global $wpdb;
-		if ( 'post' != $this->filters['post_type'] ) {
+		if ( 'post' != $this->filters['post_type'] && ! in_array( 'post', (array) $this->filters['post_type'] ) ) {
 			return;
 		}
 		$category = $this->find_category_from_any_object( $this->filters['category'] );
