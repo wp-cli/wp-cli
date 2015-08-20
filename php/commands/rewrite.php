@@ -222,7 +222,7 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * to see:
 	 *
 	 * 1. if the $is_apache variable is set.
-	 * 2. if the mod_rewrite module is returned from the apche_get_modules
+	 * 2. if the mod_rewrite module is returned from the apache_get_modules
 	 *    function.
 	 *
 	 * To get this to work with wp-cli you'll need to add the mod_rewrite module
