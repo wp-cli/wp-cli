@@ -125,7 +125,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	}
 
 	/**
-	 * Add a term. Appends to existed
+	 * Add a term. Appends to existing set of terms on the object.
 	 *
 	 * <id>
 	 * : The ID of the object.
@@ -134,7 +134,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * : The name of the taxonomy type to be added.
 	 *
 	 * <term>...
-	 * : The name of the term or terms to be added.
+	 * : The slug of the term or terms to be added.
 	 */
 	public function add( $args, $assoc_args ) {
 		$object_id      = array_shift( $args );
@@ -155,7 +155,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	}
 
 	/**
-	 * Set terms. Replaces existing terms
+	 * Set terms. Replaces existing terms on the object.
 	 *
 	 * <id>
 	 * : The ID of the object.
@@ -164,7 +164,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * : The name of the taxonomy type to be updated.
 	 *
 	 * <term>...
-	 * : The name of the term or terms to be updated.
+	 * : The slug of the term or terms to be updated.
 	 */
 	public function set( $args, $assoc_args ) {
 		$object_id      = array_shift( $args );
