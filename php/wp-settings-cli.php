@@ -218,8 +218,9 @@ wp_cookie_constants( );
 // Define and enforce our SSL constants
 wp_ssl_constants( );
 
-// Don't create common globals, but we still need wp_is_mobile()
+// Don't create common globals, but we still need wp_is_mobile() and $pagenow
 // require( ABSPATH . WPINC . '/vars.php' );
+$GLOBALS['pagenow'] = null;
 function wp_is_mobile() {
 	return false;
 }
