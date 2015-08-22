@@ -660,11 +660,11 @@ Feature: Manage WordPress installation
     And an empty cache
 
     When I run `wp core download --version=4.2.1 --force`
-    And I run `wp core update`
+    And I run `wp core update --version=4.2.2`
     Then STDOUT should not be empty
 
     When I run `wp core download --version=4.1.1 --force`
-    And I run `wp core update`
+    And I run `wp core update --version=4.2.2`
     And I run `wp core verify-checksums`
     Then STDOUT should be:
       """
