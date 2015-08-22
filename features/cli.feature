@@ -67,6 +67,19 @@ Feature: `wp cli` tasks
     And STDERR should be empty
     And the return code should be 0
 
+  Scenario: Install WP-CLI nightly
+    Given an empty directory
+    And a new Phar with version "0.14.0"
+
+    When I run `{PHAR_PATH} cli update --nightly --yes`
+    Then STDOUT should contain:
+      """
+      Success: Updated WP-CLI to the latest nightly release
+      """
+
+    And STDERR should be empty
+    And the return code should be 0
+
   Scenario: Dump the list of global parameters with values
     Given a WP install
 
