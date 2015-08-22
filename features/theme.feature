@@ -78,8 +78,11 @@ Feature: Manage WordPress themes
       Error: Please specify one or more themes, or use --all.
       """
 
-    When I run `wp theme update --all`
-    Then STDOUT should not be empty
+    When I run `wp theme update --all --format=summary | grep 'updated successfully from'`
+    Then STDOUT should contain:
+      """
+      P2 updated successfully from version 1.4.1 to version
+      """
 
   Scenario: Get the path of an installed theme
     Given a WP install
