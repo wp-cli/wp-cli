@@ -92,25 +92,49 @@ class Role_Command extends WP_CLI_Command {
 	 * <role-name>
 	 * : The publicly visible name of the role.
 	 *
+	 * [--clone=<role>]
+	 * : Clone capabilities from an existing role.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp role create approver Approver
 	 *
 	 *     wp role create productadmin "Product Administrator"
 	 */
-	public function create( $args ) {
+	public function create( $args, $assoc_args ) {
+		global $wp_roles;
+
 		self::persistence_check();
 
 		$role_key = array_shift( $args );
 		$role_name = array_shift( $args );
 
-		if ( empty( $role_key ) || empty( $role_name ) )
+		if ( empty( $role_key ) || empty( $role_name ) ) {
 			WP_CLI::error( "Can't create role, insufficient information provided.");
+		}
 
-		if ( ! add_role( $role_key, $role_name ) )
+		$capabilities = false;
+		if ( ! empty( $assoc_args['clone'] ) ) {
+			$role_obj = $wp_roles->get_role( $assoc_args['clone'] );
+			if ( ! $role_obj ) {
+				WP_CLI::error( "'{$assoc_args['clone']}' role not found." );
+			}
+			$capabilities = array_keys( $role_obj->capabilities );
+		}
+
+		if ( add_role( $role_key, $role_name ) ) {
+			if ( ! empty( $capabilities ) ) {
+				$role_obj = $wp_roles->get_role( $role_key );
+				foreach( $capabilities as $cap ) {
+					$role_obj->add_cap( $cap );
+				}
+				WP_CLI::success( sprintf( "Role with key %s created. Cloned capabilities from %s.", $role_key, $assoc_args['clone'] ) );
+			} else {
+				WP_CLI::success( sprintf( "Role with key %s created.", $role_key ) );
+			}
+		} else {
 			WP_CLI::error( "Role couldn't be created." );
-		else
-			WP_CLI::success( sprintf( "Role with key %s created.", $role_key ) );
+		}
 	}
 
 	/**

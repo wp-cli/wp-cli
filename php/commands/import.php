@@ -75,6 +75,11 @@ class Import_Command extends WP_CLI_Command {
 
 		// Prepare the data to be used in process_author_mapping();
 		$wp_import->get_authors_from_import( $import_data );
+
+		// We no longer need the original data, so unset to avoid using excess
+		// memory.
+		unset( $import_data );
+
 		$author_data = array();
 		foreach ( $wp_import->authors as $wxr_author ) {
 			$author = new \stdClass;
@@ -102,6 +107,8 @@ class Import_Command extends WP_CLI_Command {
 
 		$author_in = wp_list_pluck( $author_mapping, 'old_user_login' );
 		$author_out = wp_list_pluck( $author_mapping, 'new_user_login' );
+		unset( $author_mapping, $author_data );
+
 		// $user_select needs to be an array of user IDs
 		$user_select = array();
 		$invalid_user_select = array();
@@ -114,6 +121,8 @@ class Import_Command extends WP_CLI_Command {
 		}
 		if ( ! empty( $invalid_user_select ) )
 			return new WP_Error( 'invalid-author-mapping', sprintf( "These user_logins are invalid: %s", implode( ',', $invalid_user_select ) ) );
+
+		unset( $author_out );
 
 		// Drive the import
 		$wp_import->fetch_attachments = !in_array( 'attachment', $args['skip'] );
