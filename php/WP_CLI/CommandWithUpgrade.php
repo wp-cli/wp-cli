@@ -267,7 +267,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		if ( $num_to_update > 0 ) {
 			if ( ! empty( $assoc_args['format'] ) && 'summary' === $assoc_args['format'] ) {
 				foreach( $items_to_update as $item_to_update => $info ) {
-					$message = $result[$item_to_update] !== null ? 'updated successfully' : 'did not update';
+					$message = $result[ $info['update_id'] ] !== null ? 'updated successfully' : 'did not update';
 					\WP_CLI::log( "{$info['title']} {$message} from version {$info['version']} to version {$info['update_version']}" );
 				}
 			} else {
