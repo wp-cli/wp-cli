@@ -131,6 +131,9 @@ class CLI_Command extends WP_CLI_Command {
 	 * [--minor]
 	 * : Only perform minor updates
 	 *
+	 * [--nightly]
+	 * : Update to the latest built version of the master branch. Potentially unstable.
+	 *
 	 * [--yes]
 	 * : Do not prompt for confirmation
 	 */
@@ -145,18 +148,28 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( "%s is not writable by current user", $old_phar ) );
 		}
 
-		$updates = $this->get_updates( $assoc_args );
+		if ( isset( $assoc_args['nightly'] ) ) {
 
-		if ( empty( $updates ) ) {
-			WP_CLI::success( "WP-CLI is at the latest version." );
-			exit(0);
+			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest nightly?', WP_CLI_VERSION ), $assoc_args );
+
+			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar';
+
+		} else {
+
+			$updates = $this->get_updates( $assoc_args );
+
+			if ( empty( $updates ) ) {
+				WP_CLI::success( "WP-CLI is at the latest version." );
+				exit(0);
+			}
+
+			$newest = $updates[0];
+
+			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to %s?', WP_CLI_VERSION, $newest['version'] ), $assoc_args );
+
+			$download_url = $newest['package_url'];
+
 		}
-
-		$newest = $updates[0];
-
-		WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to %s?', WP_CLI_VERSION, $newest['version'] ), $assoc_args );
-
-		$download_url = $newest['package_url'];
 
 		WP_CLI::log( sprintf( 'Downloading from %s...', $download_url ) );
 
@@ -193,7 +206,12 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( "Cannot move %s to %s", $temp, $old_phar ) );
 		}
 
-		WP_CLI::success( sprintf( 'Updated WP-CLI to %s', $newest['version'] ) );
+		if ( isset( $assoc_args['nightly'] ) ) {
+			$updated_version = 'the latest nightly release';
+		} else {
+			$updated_version = $newest['version'];
+		}
+		WP_CLI::success( sprintf( 'Updated WP-CLI to %s', $updated_version ) );
 	}
 
 	/**
