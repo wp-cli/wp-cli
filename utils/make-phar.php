@@ -1,13 +1,15 @@
 <?php
 
-require './vendor/autoload.php';
-require './php/utils.php';
+define( 'WP_CLI_ROOT', dirname( dirname( __FILE__ ) ) );
+
+require WP_CLI_ROOT . '/vendor/autoload.php';
+require WP_CLI_ROOT . '/php/utils.php';
 
 use Symfony\Component\Finder\Finder;
 use WP_CLI\Utils;
 use WP_CLI\Configurator;
 
-$configurator = new Configurator( './utils/make-phar-spec.php' );
+$configurator = new Configurator( WP_CLI_ROOT . '/utils/make-phar-spec.php' );
 
 list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( array_slice( $GLOBALS['argv'], 1 ) );
 
@@ -20,21 +22,21 @@ define( 'DEST_PATH', $args[0] );
 
 define( 'BE_QUIET', isset( $runtime_config['quiet'] ) && $runtime_config['quiet'] );
 
-$current_version = trim( file_get_contents( './VERSION' ) );
+$current_version = trim( file_get_contents( WP_CLI_ROOT . '/VERSION' ) );
 
 if ( isset( $runtime_config['version'] ) ) {
 	$new_version = $runtime_config['version'];
 	$new_version = Utils\increment_version( $current_version, $new_version );
 
 	if ( isset( $runtime_config['store-version'] ) && $runtime_config['store-version'] ) {
-		file_put_contents( './VERSION', $new_version );
+		file_put_contents( WP_CLI_ROOT . '/VERSION', $new_version );
 	}
 
 	$current_version = $new_version;
 }
 
 function add_file( $phar, $path ) {
-	$key = str_replace( './', '', $path );
+	$key = str_replace( WP_CLI_ROOT, '', $path );
 
 	if ( !BE_QUIET )
 		echo "$key - $path\n";
@@ -43,7 +45,7 @@ function add_file( $phar, $path ) {
 }
 
 function set_file_contents( $phar, $path, $content ) {
-	$key = str_replace( './', '', $path );
+	$key = str_replace( WP_CLI_ROOT, '', $path );
 
 	if ( !BE_QUIET )
 		echo "$key - $path\n";
@@ -61,15 +63,15 @@ $finder
 	->files()
 	->ignoreVCS(true)
 	->name('*.php')
-	->in('./php')
-	->in('./features')
-	->in('./vendor/wp-cli')
-	->in('./vendor/mustache')
-	->in('./vendor/rmccue/requests')
-	->in('./vendor/composer')
-	->in('./vendor/symfony/finder')
-	->in('./vendor/nb/oxymel')
-	->in('./vendor/ramsey/array_column')
+	->in(WP_CLI_ROOT . '/php')
+	->in(WP_CLI_ROOT . '/features')
+	->in(WP_CLI_ROOT . '/vendor/wp-cli')
+	->in(WP_CLI_ROOT . '/vendor/mustache')
+	->in(WP_CLI_ROOT . '/vendor/rmccue/requests')
+	->in(WP_CLI_ROOT . '/vendor/composer')
+	->in(WP_CLI_ROOT . '/vendor/symfony/finder')
+	->in(WP_CLI_ROOT . '/vendor/nb/oxymel')
+	->in(WP_CLI_ROOT . '/vendor/ramsey/array_column')
 	->exclude('test')
 	->exclude('tests')
 	->exclude('Tests')
@@ -86,18 +88,18 @@ $finder
 	->files()
 	->ignoreVCS(true)
 	->ignoreDotFiles(false)
-	->in('./templates')
+	->in( WP_CLI_ROOT . '/templates')
 	;
 
 foreach ( $finder as $file ) {
 	add_file( $phar, $file );
 }
 
-add_file( $phar, './vendor/autoload.php' );
-add_file( $phar, './utils/get-package-require-from-composer.php' );
-add_file( $phar, './vendor/rmccue/requests/library/Requests/Transport/cacert.pem' );
+add_file( $phar, WP_CLI_ROOT . '/vendor/autoload.php' );
+add_file( $phar, WP_CLI_ROOT . '/utils/get-package-require-from-composer.php' );
+add_file( $phar, WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem' );
 
-set_file_contents( $phar, './VERSION', $current_version );
+set_file_contents( $phar, WP_CLI_ROOT . '/VERSION', $current_version );
 
 $phar->setStub( <<<EOB
 #!/usr/bin/env php
