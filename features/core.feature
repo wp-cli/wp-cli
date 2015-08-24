@@ -12,7 +12,7 @@ Feature: Manage WordPress installation
     When I run `wp core download`
     And save STDOUT 'Downloading WordPress ([\d\.]+)' as {VERSION}
     Then the wp-settings.php file should exist
-    And the {SUITE_CACHE_DIR}/core/en_US-{VERSION}.tar.gz file should exist
+    And the {SUITE_CACHE_DIR}/core/wordpress-{VERSION}-en_US.tar.gz file should exist
 
     When I run `mkdir inner`
     And I run `cd inner && wp core download`
@@ -23,7 +23,7 @@ Feature: Manage WordPress installation
     Then the wp-settings.php file should exist
     And STDOUT should contain:
     """
-    Using cached file '{SUITE_CACHE_DIR}/core/en_US-{VERSION}.tar.gz'...
+    Using cached file '{SUITE_CACHE_DIR}/core/wordpress-{VERSION}-en_US.tar.gz'...
     """
 
   @download
@@ -33,7 +33,7 @@ Feature: Manage WordPress installation
     When I run `wp core download --locale=de_DE`
     And save STDOUT 'Downloading WordPress ([\d\.]+)' as {VERSION}
     Then the wp-settings.php file should exist
-    And the {SUITE_CACHE_DIR}/core/de_DE-{VERSION}.tar.gz file should exist
+    And the {SUITE_CACHE_DIR}/core/wordpress-{VERSION}-de_DE.tar.gz file should exist
 
   Scenario: No wp-config.php
     Given an empty directory
@@ -424,7 +424,7 @@ Feature: Manage WordPress installation
     When I run `wp core update --version=3.8.1 --force`
     Then STDOUT should contain:
       """
-      Using cached file '{SUITE_CACHE_DIR}/core/en_US-3.8.1.zip'...
+      Using cached file '{SUITE_CACHE_DIR}/core/wordpress-3.8.1-en_US.zip'...
       """
     And STDOUT should not contain:
       """
@@ -597,55 +597,6 @@ Feature: Manage WordPress installation
       Warning: The 'en_GB' language is active.
       """
 
-  Scenario: Ensure file cache isn't corrupted by a ZIP masquerading as a gzipped TAR, part one
-    Given a WP install
-    And an empty cache
-    And I run `mkdir -p {SUITE_CACHE_DIR}/core; wget -O {SUITE_CACHE_DIR}/core/en_US-4.0.tar.gz https://wordpress.org/wordpress-4.0.zip; touch {SUITE_CACHE_DIR}/core/en_US-4.0.tar.gz`
-
-    When I run `wp core download --version=4.0 --force`
-    Then STDOUT should contain:
-      """
-      Success: WordPress downloaded
-      """
-    And STDERR should contain:
-      """
-      Warning: Extraction failed, downloading a new copy...
-      """
-
-    When I run `wp core version`
-    Then STDOUT should be:
-      """
-      4.0
-      """
-
-  Scenario: Ensure file cache isn't corrupted by core update, part two
-    Given a WP install
-    And an empty cache
-
-    When I run `wp core download --version=4.0 --force`
-    Then STDOUT should contain:
-      """
-      Success: WordPress downloaded
-      """
-
-    When I run `wp core version`
-    Then STDOUT should be:
-      """
-      4.0
-      """
-
-    When I run `wp core update --version=4.0 --force`
-    Then STDOUT should contain:
-      """
-      Success: WordPress updated successfully
-      """
-
-    When I run `wp core version`
-    Then STDOUT should be:
-      """
-      4.0
-      """
-
   Scenario: Catch download of non-existent WP version
     Given an empty directory
 
@@ -653,4 +604,62 @@ Feature: Manage WordPress installation
     Then STDERR should contain:
       """
       Error: Release not found.
+      """
+
+  Scenario: Ensure cached partial upgrades aren't used in full upgrade
+    Given a WP install
+    And an empty cache
+    And a wp-content/mu-plugins/upgrade-override.php file:
+      """
+      <?php
+      add_filter( 'pre_site_transient_update_core', function(){
+        return (object) array(
+          'updates' => array(
+              (object) array(
+                'response' => 'autoupdate',
+                'download' => 'https://downloads.wordpress.org/release/wordpress-4.2.4.zip',
+                'locale' => 'en_US',
+                'packages' => (object) array(
+                  'full' => 'https://downloads.wordpress.org/release/wordpress-4.2.4.zip',
+                  'no_content' => 'https://downloads.wordpress.org/release/wordpress-4.2.4-no-content.zip',
+                  'new_bundled' => 'https://downloads.wordpress.org/release/wordpress-4.2.4-new-bundled.zip',
+                  'partial' => 'https://downloads.wordpress.org/release/wordpress-4.2.4-partial-1.zip',
+                  'rollback' => 'https://downloads.wordpress.org/release/wordpress-4.2.4-rollback-1.zip',
+                ),
+                'current' => '4.2.4',
+                'version' => '4.2.4',
+                'php_version' => '5.2.4',
+                'mysql_version' => '5.0',
+                'new_bundled' => '4.1',
+                'partial_version' => '4.2.1',
+                'support_email' => 'updatehelp42@wordpress.org',
+                'new_files' => '',
+             ),
+          ),
+        );
+      });
+      """
+
+    When I run `wp core download --version=4.2.1 --force`
+    And I run `wp core update`
+    Then STDOUT should not be empty
+    And the {SUITE_CACHE_DIR}/core directory should contain:
+      """
+      wordpress-4.2.1-en_US.tar.gz
+      wordpress-4.2.4-partial-1-en_US.zip
+      """
+
+    When I run `wp core download --version=4.1.1 --force`
+    And I run `wp core update`
+    And I run `wp core verify-checksums`
+    Then STDOUT should be:
+      """
+      Success: WordPress install verifies against checksums.
+      """
+    And the {SUITE_CACHE_DIR}/core directory should contain:
+      """
+      wordpress-4.1.1-en_US.tar.gz
+      wordpress-4.2.1-en_US.tar.gz
+      wordpress-4.2.4-no-content-en_US.zip
+      wordpress-4.2.4-partial-1-en_US.zip
       """
