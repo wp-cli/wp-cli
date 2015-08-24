@@ -658,13 +658,43 @@ Feature: Manage WordPress installation
   Scenario: Ensure cached partial upgrades aren't used in full upgrade
     Given a WP install
     And an empty cache
+    And a wp-content/mu-plugins/upgrade-override.php file:
+      """
+      <?php
+      add_filter( 'pre_site_transient_update_core', function(){
+        return (object) array(
+          'updates' => array(
+              (object) array(
+                'response' => 'autoupdate',
+                'download' => 'https://downloads.wordpress.org/release/wordpress-4.2.4.zip',
+                'locale' => 'en_US',
+                'packages' => (object) array(
+                  'full' => 'https://downloads.wordpress.org/release/wordpress-4.2.4.zip',
+                  'no_content' => 'https://downloads.wordpress.org/release/wordpress-4.2.4-no-content.zip',
+                  'new_bundled' => 'https://downloads.wordpress.org/release/wordpress-4.2.4-new-bundled.zip',
+                  'partial' => 'https://downloads.wordpress.org/release/wordpress-4.2.4-partial-1.zip',
+                  'rollback' => 'https://downloads.wordpress.org/release/wordpress-4.2.4-rollback-1.zip',
+                ),
+                'current' => '4.2.4',
+                'version' => '4.2.4',
+                'php_version' => '5.2.4',
+                'mysql_version' => '5.0',
+                'new_bundled' => '4.1',
+                'partial_version' => '4.2.1',
+                'support_email' => 'updatehelp42@wordpress.org',
+                'new_files' => '',
+             ),
+          ),
+        );
+      });
+      """
 
     When I run `wp core download --version=4.2.1 --force`
-    And I run `wp core update --version=4.2.2`
+    And I run `wp core update`
     Then STDOUT should not be empty
 
     When I run `wp core download --version=4.1.1 --force`
-    And I run `wp core update --version=4.2.2`
+    And I run `wp core update`
     And I run `wp core verify-checksums`
     Then STDOUT should be:
       """
