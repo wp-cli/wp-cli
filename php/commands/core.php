@@ -145,8 +145,10 @@ class Core_Command extends WP_CLI_Command {
 
 		WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $version, $locale ) );
 
+		$filename = str_replace( '.tar', '', pathinfo( $download_url, PATHINFO_FILENAME ) );
+
 		$cache = WP_CLI::get_cache();
-		$cache_key = "core/$locale-$version.tar.gz";
+		$cache_key = "core/{$filename}-{$locale}.tar.gz";
 		$cache_file = $cache->has($cache_key);
 
 		if ( $cache_file ) {

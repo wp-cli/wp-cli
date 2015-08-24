@@ -32,11 +32,14 @@ class CoreUpgrader extends \Core_Upgrader {
 		if ( empty( $package ) )
 			return new WP_Error( 'no_package', $this->strings['no_package'] );
 
-		$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.tar.gz';
+		$filename = pathinfo( $package, PATHINFO_FILENAME );
+		$ext = pathinfo( $package, PATHINFO_EXTENSION );
+
+		$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.' . $ext;
 
 		$cache = WP_CLI::get_cache();
 		$update = $GLOBALS['wp_cli_update_obj'];
-		$cache_key = "core/{$update->locale}-{$update->version}.tar.gz";
+		$cache_key = "core/{$filename}-{$update->locale}.{$ext}";
 		$cache_file = $cache->has( $cache_key );
 
 		if ( $cache_file ) {
@@ -46,7 +49,7 @@ class CoreUpgrader extends \Core_Upgrader {
 		} else {
 			// We need to use a temporary file because piping from cURL to tar is flaky
 			// on MinGW (and probably in other environments too).
-			$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.tar.gz';
+			$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.' . $ext;
 
 			$headers = array('Accept' => 'application/json');
 			$options = array(

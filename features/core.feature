@@ -12,7 +12,7 @@ Feature: Manage WordPress installation
     When I run `wp core download`
     And save STDOUT 'Downloading WordPress ([\d\.]+)' as {VERSION}
     Then the wp-settings.php file should exist
-    And the {SUITE_CACHE_DIR}/core/en_US-{VERSION}.tar.gz file should exist
+    And the {SUITE_CACHE_DIR}/core/wordpress-{VERSION}-en_US.tar.gz file should exist
 
     When I run `mkdir inner`
     And I run `cd inner && wp core download`
@@ -23,7 +23,7 @@ Feature: Manage WordPress installation
     Then the wp-settings.php file should exist
     And STDOUT should contain:
     """
-    Using cached file '{SUITE_CACHE_DIR}/core/en_US-{VERSION}.tar.gz'...
+    Using cached file '{SUITE_CACHE_DIR}/core/wordpress-{VERSION}-en_US.tar.gz'...
     """
 
   @download
@@ -33,7 +33,7 @@ Feature: Manage WordPress installation
     When I run `wp core download --locale=de_DE`
     And save STDOUT 'Downloading WordPress ([\d\.]+)' as {VERSION}
     Then the wp-settings.php file should exist
-    And the {SUITE_CACHE_DIR}/core/de_DE-{VERSION}.tar.gz file should exist
+    And the {SUITE_CACHE_DIR}/core/wordpress-{VERSION}-de_DE.tar.gz file should exist
 
   Scenario: No wp-config.php
     Given an empty directory
@@ -269,33 +269,39 @@ Feature: Manage WordPress installation
 
     When I run `wp core check-update`
     Then STDOUT should be a table containing rows:
-      | version | update_type | package_url                               |
-      | 4.0     | major       | https://wordpress.org/wordpress-4.0.zip   |
-      | 3.9.2   | major       | https://wordpress.org/wordpress-3.9.2.zip |
-      | 3.8.4   | minor       | https://wordpress.org/wordpress-3.8.4.zip |
+      | version | update_type | package_url                                |
+      | 4.2.4   | major       | https://wordpress.org/wordpress-4.2.4.zip  |
+      | 4.3     | major       | https://wordpress.org/wordpress-4.3.zip    |
+      | 3.8.10  | minor       | https://wordpress.org/wordpress-3.8.10.zip |
+      | 3.9.4   | major       | https://wordpress.org/wordpress-3.9.4.zip  |
+      | 4.1.1   | major       | https://wordpress.org/wordpress-4.1.1.zip  |
+      | 4.0.4   | major       | https://wordpress.org/wordpress-4.0.4.zip  |
 
     When I run `wp core check-update --field=version | wc -l`
     Then STDOUT should be:
       """
-      3
+      6
       """
 
     When I run `wp core check-update --major`
     Then STDOUT should be a table containing rows:
-      | version | update_type | package_url                               |
-      | 4.0     | major       | https://wordpress.org/wordpress-4.0.zip   |
-      | 3.9.2   | major       | https://wordpress.org/wordpress-3.9.2.zip |
+      | version | update_type | package_url                                |
+      | 4.2.4   | major       | https://wordpress.org/wordpress-4.2.4.zip  |
+      | 4.3     | major       | https://wordpress.org/wordpress-4.3.zip    |
+      | 3.9.4   | major       | https://wordpress.org/wordpress-3.9.4.zip  |
+      | 4.1.1   | major       | https://wordpress.org/wordpress-4.1.1.zip  |
+      | 4.0.4   | major       | https://wordpress.org/wordpress-4.0.4.zip  |
 
     When I run `wp core check-update --major --field=version | wc -l`
     Then STDOUT should be:
       """
-      2
+      5
       """
 
     When I run `wp core check-update --minor`
     Then STDOUT should be a table containing rows:
-      | version | update_type | package_url                               |
-      | 3.8.4   | minor       | https://wordpress.org/wordpress-3.8.4.zip |
+      | version | update_type | package_url                                |
+      | 3.8.10  | minor       | https://wordpress.org/wordpress-3.8.10.zip |
 
     When I run `wp core check-update --minor --field=version | wc -l`
     Then STDOUT should be:
@@ -362,7 +368,7 @@ Feature: Manage WordPress installation
     When I run `wp core update --version=3.8.1 --force`
     Then STDOUT should contain:
       """
-      Using cached file '{SUITE_CACHE_DIR}/core/en_US-3.8.1.tar.gz'...
+      Using cached file '{SUITE_CACHE_DIR}/core/wordpress-3.8.1-en_US.zip'...
       """
     And STDOUT should not contain:
       """
@@ -452,4 +458,62 @@ Feature: Manage WordPress installation
     Then STDERR should be:
       """
       Error: Language not installed.
+      """
+
+  Scenario: Ensure cached partial upgrades aren't used in full upgrade
+    Given a WP install
+    And an empty cache
+    And a wp-content/mu-plugins/upgrade-override.php file:
+      """
+      <?php
+      add_filter( 'pre_site_transient_update_core', function(){
+        return (object) array(
+          'updates' => array(
+              (object) array(
+                'response' => 'autoupdate',
+                'download' => 'https://downloads.wordpress.org/release/wordpress-4.2.4.zip',
+                'locale' => 'en_US',
+                'packages' => (object) array(
+                  'full' => 'https://downloads.wordpress.org/release/wordpress-4.2.4.zip',
+                  'no_content' => 'https://downloads.wordpress.org/release/wordpress-4.2.4-no-content.zip',
+                  'new_bundled' => 'https://downloads.wordpress.org/release/wordpress-4.2.4-new-bundled.zip',
+                  'partial' => 'https://downloads.wordpress.org/release/wordpress-4.2.4-partial-1.zip',
+                  'rollback' => 'https://downloads.wordpress.org/release/wordpress-4.2.4-rollback-1.zip',
+                ),
+                'current' => '4.2.4',
+                'version' => '4.2.4',
+                'php_version' => '5.2.4',
+                'mysql_version' => '5.0',
+                'new_bundled' => '4.1',
+                'partial_version' => '4.2.1',
+                'support_email' => 'updatehelp42@wordpress.org',
+                'new_files' => '',
+             ),
+          ),
+        );
+      });
+      """
+
+    When I run `wp core download --version=4.2.1 --force`
+    And I run `wp core update`
+    Then STDOUT should not be empty
+    And the {SUITE_CACHE_DIR}/core directory should contain:
+      """
+      wordpress-4.2.1-en_US.tar.gz
+      wordpress-4.2.4-partial-1-en_US.zip
+      """
+
+    When I run `wp core download --version=4.1.1 --force`
+    And I run `wp core update`
+    And I run `wp core verify-checksums`
+    Then STDOUT should be:
+      """
+      Success: WordPress install verifies against checksums.
+      """
+    And the {SUITE_CACHE_DIR}/core directory should contain:
+      """
+      wordpress-4.1.1-en_US.tar.gz
+      wordpress-4.2.1-en_US.tar.gz
+      wordpress-4.2.4-no-content-en_US.zip
+      wordpress-4.2.4-partial-1-en_US.zip
       """
