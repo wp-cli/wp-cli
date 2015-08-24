@@ -127,17 +127,15 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			exit;
 		}
 
-		require_once ABSPATH . '/wp-admin/includes/translation-install.php';
-
-		$response = wp_download_language_pack( $language_code );
-		if ( $response == $language_code ) {
+		$response = $this->download_language_pack( $language_code );
+		if ( ! is_wp_error( $response ) ) {
 			\WP_CLI::success( "Language installed." );
 
 			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate' ) ) {
 				$this->activate( array( $language_code ), array() );
 			}
 		} else {
-			\WP_CLI::error( "Couldn't install language." );
+			\WP_CLI::error( $response );
 		}
 
 	}
@@ -266,6 +264,45 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 
 		update_option( 'WPLANG', $language_code );
 		\WP_CLI::success( "Language activated." );
+	}
+
+	/**
+	 * Download a language pack.
+	 *
+	 * @see wp_download_language_pack()
+	 *
+	 * @param string $download Language code to download.
+	 * @return string|WP_Error Returns the language code if successfully downloaded, or a WP_Error object on failure.
+	 */
+	protected function download_language_pack( $download ) {
+
+		$translations = $this->get_all_languages();
+
+		foreach ( $translations as $translation ) {
+			if ( $translation['language'] === $download ) {
+				$translation_to_load = true;
+				break;
+			}
+		}
+
+		if ( empty( $translation_to_load ) ) {
+			return new \WP_Error( 'not_found', "Language '{$download}' not found." );
+		}
+		$translation = (object) $translation;
+
+		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		$skin = new \Automatic_Upgrader_Skin;
+		$upgrader = new \Language_Pack_Upgrader( $skin );
+		$translation->type = 'core';
+		$result = $upgrader->upgrade( $translation, array( 'clear_update_cache' => false ) );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		} else if ( ! $result ) {
+			return new \WP_Error( 'not_installed', "Could not install language '{$download}'." );
+		}
+
+		return $translation->language;
 	}
 
 	/**

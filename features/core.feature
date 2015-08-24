@@ -584,6 +584,12 @@ Feature: Manage WordPress installation
       Success: Language activated.
       """
 
+    When I try `wp core language install invalid_lang`
+    Then STDERR should be:
+      """
+      Error: Language 'invalid_lang' not found.
+      """
+
   @require-wp-4.0
   Scenario: Don't allow active language to be uninstalled
     Given a WP install
