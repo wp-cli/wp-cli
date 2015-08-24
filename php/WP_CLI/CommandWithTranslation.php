@@ -274,7 +274,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 * @param string $download Language code to download.
 	 * @return string|WP_Error Returns the language code if successfully downloaded, or a WP_Error object on failure.
 	 */
-	protected function download_language_pack( $download ) {
+	private function download_language_pack( $download ) {
 
 		$translations = $this->get_all_languages();
 
