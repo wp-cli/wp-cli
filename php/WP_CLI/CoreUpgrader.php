@@ -32,13 +32,14 @@ class CoreUpgrader extends \Core_Upgrader {
 		if ( empty( $package ) )
 			return new WP_Error( 'no_package', $this->strings['no_package'] );
 
+		$filename = pathinfo( $package, PATHINFO_FILENAME );
 		$ext = pathinfo( $package, PATHINFO_EXTENSION );
 
 		$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.' . $ext;
 
 		$cache = WP_CLI::get_cache();
 		$update = $GLOBALS['wp_cli_update_obj'];
-		$cache_key = "core/{$update->locale}-{$update->version}.{$ext}";
+		$cache_key = "core/{$filename}-{$update->locale}.{$ext}";
 		$cache_file = $cache->has( $cache_key );
 
 		if ( $cache_file ) {
