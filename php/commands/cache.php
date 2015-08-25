@@ -14,7 +14,19 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Add a value to the object cache.
 	 *
-	 * @synopsis <key> <value> [<group>] [<expiration>]
+	 * If a value already exists for the key, the value isn't added.
+	 *
+	 * <key>
+	 * : Cache key.
+	 *
+	 * <value>
+	 * : Value to add to the key.
+	 *
+	 * [<group>]
+	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 *
+	 * [<expiration>]
+	 * : Define how long to keep the value, in seconds. Defaults to 0 (as long as possible).
 	 */
 	public function add( $args, $assoc_args ) {
 		list( $key, $value ) = $args;
@@ -33,7 +45,14 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Decrement a value in the object cache.
 	 *
-	 * @synopsis <key> [<offset>] [<group>]
+	 * <key>
+	 * : Cache key.
+	 *
+	 * [<offset>]
+	 * : The amount by which to decrement the item's value. Default is 1.
+	 *
+	 * [<group>]
+	 * : Method for grouping data within the cache which allows the same key to be used across groups.
 	 */
 	public function decr( $args, $assoc_args ) {
 		$key = $args[0];
@@ -54,7 +73,11 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Remove a value from the object cache.
 	 *
-	 * @synopsis <key> [<group>]
+	 * <key>
+	 * : Cache key.
+	 *
+	 * [<group>]
+	 * : Method for grouping data within the cache which allows the same key to be used across groups.
 	 */
 	public function delete( $args, $assoc_args ) {
 		$key = $args[0];
@@ -86,7 +109,11 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Get a value from the object cache.
 	 *
-	 * @synopsis <key> [<group>]
+	 * <key>
+	 * : Cache key.
+	 *
+	 * [<group>]
+	 * : Method for grouping data within the cache which allows the same key to be used across groups.
 	 */
 	public function get( $args, $assoc_args ) {
 		$key = $args[0];
@@ -105,7 +132,14 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Increment a value in the object cache.
 	 *
-	 * @synopsis <key> [<offset>] [<group>]
+	 * <key>
+	 * : Cache key.
+	 *
+	 * [<offset>]
+	 * : The amount by which to increment the item's value. Default is 1.
+	 *
+	 * [<group>]
+	 * : Method for grouping data within the cache which allows the same key to be used across groups.
 	 */
 	public function incr( $args, $assoc_args ) {
 		$key = $args[0];
@@ -124,9 +158,19 @@ class Cache_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Replace an existing value in the object cache.
+	 * Replace a value in the object cache, if the value already exists.
 	 *
-	 * @synopsis <key> <value> [<group>] [<expiration>]
+	 * <key>
+	 * : Cache key.
+	 *
+	 * <value>
+	 * : Value to replace.
+	 *
+	 * [<group>]
+	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 *
+	 * [<expiration>]
+	 * : Define how long to keep the value, in seconds. Defaults to 0 (as long as possible).
 	 */
 	public function replace( $args, $assoc_args ) {
 		list( $key, $value ) = $args;
@@ -145,9 +189,19 @@ class Cache_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Set a value to the object cache.
+	 * Set a value to the object cache, regardless of whether it already exists.
 	 *
-	 * @synopsis <key> <value> [<group>] [<expiration>]
+	 * <key>
+	 * : Cache key.
+	 *
+	 * <value>
+	 * : Value to set on the key.
+	 *
+	 * [<group>]
+	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 *
+	 * [<expiration>]
+	 * : Define how long to keep the value, in seconds. Defaults to 0 (as long as possible).
 	 */
 	public function set( $args, $assoc_args ) {
 		list( $key, $value ) = $args;
