@@ -146,6 +146,8 @@ class CLI_Command extends WP_CLI_Command {
 
 		if ( ! is_writable( $old_phar ) ) {
 			WP_CLI::error( sprintf( "%s is not writable by current user", $old_phar ) );
+		} else if ( ! is_writeable( dirname( $old_phar ) ) ) {
+			WP_CLI::error( sprintf( "%s is not writable by current user", dirname( $old_phar ) ) );
 		}
 
 		if ( isset( $assoc_args['nightly'] ) ) {
