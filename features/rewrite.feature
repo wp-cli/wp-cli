@@ -73,5 +73,5 @@ Feature: Manage WordPress rewrites
     When I try `wp rewrite flush --hard`
     Then STDERR should be:
       """
-      Error: WordPress can't generate .htaccess file for a multisite install.
+      Warning: WordPress can't generate .htaccess file for a multisite install.
       """

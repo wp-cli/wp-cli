@@ -34,7 +34,7 @@ class Rewrite_Command extends WP_CLI_Command {
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'hard' ) && is_multisite() ) {
-			WP_CLI::error( "WordPress can't generate .htaccess file for a multisite install." );
+			WP_CLI::warning( "WordPress can't generate .htaccess file for a multisite install." );
 		}
 
 		flush_rewrite_rules( \WP_CLI\Utils\get_flag_value( $assoc_args, 'hard' ) );
