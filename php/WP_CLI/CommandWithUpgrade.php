@@ -277,7 +277,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						'name' => $info['name'],
 						'old_version' => $info['version'],
 						'new_version' => $info['update_version'],
-						'status' => $result[$item_to_update] !== null ? 'Updated' : 'Error',
+						'status' => $result[ $info['update_id'] ] !== null ? 'Updated' : 'Error',
 					);
 				}
 				\WP_CLI\Utils\format_items( 'table', $status, array( 'name', 'old_version', 'new_version', 'status' ) );
