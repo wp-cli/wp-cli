@@ -62,3 +62,16 @@ Feature: Manage WordPress rewrites
     When I run `wp rewrite structure /%year%/%monthnum%/%day%/%postname%/`
     And I run `wp rewrite flush --hard`
     Then the .htaccess file should exist
+
+  Scenario: Error when trying to generate .htaccess on a multisite install
+    Given a WP multisite install
+    And a wp-cli.yml file:
+      """
+      apache_modules: [mod_rewrite]
+      """
+
+    When I try `wp rewrite flush --hard`
+    Then STDERR should be:
+      """
+      Error: WordPress can't generate .htaccess file for a multisite install.
+      """

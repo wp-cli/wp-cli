@@ -23,15 +23,22 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--hard]
-	 * : Perform a hard flush - update `.htaccess` rules as well as rewrite rules in database.
+	 * : Perform a hard flush - update `.htaccess` rules as well as rewrite rules in database. Works only on single site installs.
 	 */
 	public function flush( $args, $assoc_args ) {
 		// make sure we detect mod_rewrite if configured in apache_modules in config
 		self::apache_modules();
+
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'hard' ) && ! in_array( 'mod_rewrite', (array) WP_CLI::get_config( 'apache_modules' ) ) ) {
 			WP_CLI::warning( "Regenerating a .htaccess file requires special configuration. See usage docs." );
 		}
+
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'hard' ) && is_multisite() ) {
+			WP_CLI::error( "WordPress can't generate .htaccess file for a multisite install." );
+		}
+
 		flush_rewrite_rules( \WP_CLI\Utils\get_flag_value( $assoc_args, 'hard' ) );
+
 		if ( ! get_option( 'rewrite_rules' ) ) {
 			WP_CLI::warning( "Rewrite rules are empty, possibly because of a missing permalink_structure option. Use 'wp rewrite list' to verify, or 'wp rewrite structure' to update permalink_structure." );
 		}
