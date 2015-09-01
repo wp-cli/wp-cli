@@ -211,14 +211,17 @@ class Runner {
 			$wp_config_file = file_get_contents( $wp_config_path );
 			$hit = array();
 
-			$re_define = "#.*define\s*\(\s*(['|\"]{1})(.+)(['|\"]{1})\s*,\s*(['|\"]{1})(.+)(['|\"]{1})\s*\)\s*;#iU";
+			$re_define = "~(.*)define\s*\(\s*(['|\"]{1})(.+)(['|\"]{1})\s*,\s*(['|\"]{1})(.+)(['|\"]{1})\s*\)\s*;~iU";
 
 			if ( preg_match_all( $re_define, $wp_config_file, $matches ) ) {
-				foreach ( $matches[2] as $def_key => $def_name ) {
+				foreach ( $matches[3] as $def_key => $def_name ) {
+					if ( false !== strpos( $matches[1][$def_key], '#' ) || false !== strpos( $matches[1][$def_key], '//' ) ) {
+						continue;
+					}
 					if ( 'DOMAIN_CURRENT_SITE' == $def_name )
-						$hit['domain'] = $matches[5][$def_key];
+						$hit['domain'] = $matches[6][$def_key];
 					if ( 'PATH_CURRENT_SITE' == $def_name )
-						$hit['path'] = $matches[5][$def_key];
+						$hit['path'] = $matches[6][$def_key];
 				}
 			}
 
