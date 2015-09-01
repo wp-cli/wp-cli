@@ -219,3 +219,106 @@ Feature: Have a config file
     When I run `wp --info`
 	Then STDOUT should not be empty
 
+  Scenario: WordPress install with commented out DOMAIN_CURRENT_SITE, first style
+    Given a WP multisite install
+    And a wp-config.php file:
+      """
+<?php
+// ** MySQL settings ** //
+/** The name of the database for WordPress */
+define('DB_NAME', 'wp_cli_test');
+
+/** MySQL database username */
+define('DB_USER', 'wp_cli_test');
+
+/** MySQL database password */
+define('DB_PASSWORD', 'password1');
+
+/** MySQL hostname */
+define('DB_HOST', '127.0.0.1');
+
+/** Database Charset to use in creating database tables. */
+define('DB_CHARSET', 'utf8');
+
+/** The Database Collate type. Don't change this if in doubt. */
+define('DB_COLLATE', '');
+
+$table_prefix = 'wp_';
+
+define( 'WP_ALLOW_MULTISITE', true );
+define('MULTISITE', true);
+define('SUBDOMAIN_INSTALL', false);
+$base = '/';
+define('DOMAIN_CURRENT_SITE', 'example.com');
+# define('DOMAIN_CURRENT_SITE', 'bta.example.com');
+define('PATH_CURRENT_SITE', '/');
+define('SITE_ID_CURRENT_SITE', 1);
+define('BLOG_ID_CURRENT_SITE', 1);
+
+/* That's all, stop editing! Happy blogging. */
+
+/** Absolute path to the WordPress directory. */
+if ( !defined('ABSPATH') )
+  define('ABSPATH', dirname(__FILE__) . '/');
+
+/** Sets up WordPress vars and included files. */
+require_once(ABSPATH . 'wp-settings.php');
+      """
+
+    When I run `wp option get home`
+    Then STDOUT should be:
+      """
+      http://example.com
+      """
+
+  Scenario: WordPress install with commented out DOMAIN_CURRENT_SITE, second style
+    Given a WP multisite install
+    And a wp-config.php file:
+      """
+<?php
+// ** MySQL settings ** //
+/** The name of the database for WordPress */
+define('DB_NAME', 'wp_cli_test');
+
+/** MySQL database username */
+define('DB_USER', 'wp_cli_test');
+
+/** MySQL database password */
+define('DB_PASSWORD', 'password1');
+
+/** MySQL hostname */
+define('DB_HOST', '127.0.0.1');
+
+/** Database Charset to use in creating database tables. */
+define('DB_CHARSET', 'utf8');
+
+/** The Database Collate type. Don't change this if in doubt. */
+define('DB_COLLATE', '');
+
+$table_prefix = 'wp_';
+
+define( 'WP_ALLOW_MULTISITE', true );
+define('MULTISITE', true);
+define('SUBDOMAIN_INSTALL', false);
+$base = '/';
+define('DOMAIN_CURRENT_SITE', 'example.com');
+//define('DOMAIN_CURRENT_SITE', 'bta.example.com');
+define('PATH_CURRENT_SITE', '/');
+define('SITE_ID_CURRENT_SITE', 1);
+define('BLOG_ID_CURRENT_SITE', 1);
+
+/* That's all, stop editing! Happy blogging. */
+
+/** Absolute path to the WordPress directory. */
+if ( !defined('ABSPATH') )
+  define('ABSPATH', dirname(__FILE__) . '/');
+
+/** Sets up WordPress vars and included files. */
+require_once(ABSPATH . 'wp-settings.php');
+      """
+
+    When I run `wp option get home`
+    Then STDOUT should be:
+      """
+      http://example.com
+      """
