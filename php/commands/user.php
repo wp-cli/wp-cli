@@ -167,7 +167,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : User ID to reassign the posts to.
 	 *
 	 * [--yes]
-	 * : Answer yes to any confirmation propmts.
+	 * : Answer yes to any confirmation prompts.
 	 *
 	 * ## EXAMPLES
 	 *
