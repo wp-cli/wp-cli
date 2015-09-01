@@ -13,6 +13,7 @@ Feature: Manage translation files for a WordPress install
       | en_GB     | English (UK)            | uninstalled   |
 
     When I run `wp core language install en_GB`
+    And I run `wp core language install en_AU`
     Then the wp-content/languages/admin-en_GB.po file should exist
     And the wp-content/languages/en_GB.po file should exist
     And STDOUT should be:
@@ -44,6 +45,7 @@ Feature: Manage translation files for a WordPress install
       | language  | english_name            | update        |
       | ar        | Arabic                  | none          |
       | az        | Azerbaijani             | none          |
+      | en_AU     | English (Australia)     | available     |
       | en_US     | English (United States) | none          |
       | en_GB     | English (UK)            | available     |
 
