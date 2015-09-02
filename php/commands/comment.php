@@ -399,6 +399,24 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
+	 * Recount the comment_count value for one or more posts.
+	 *
+	 * <id>...
+	 * : IDs for one or more posts to update.
+	 */
+	public function recount( $args ) {
+		foreach( $args as $id ) {
+			wp_update_comment_count( $id );
+			$post = get_post( $id );
+			if ( $post ) {
+				WP_CLI::log( sprintf( "Updated post %d comment count to %d", $post->ID, $post->comment_count ) );
+			} else {
+				WP_CLI::warning( sprintf( "Post %d doesn't exist", $post->ID ) );
+			}
+		}
+	}
+
+	/**
 	 * Get status of a comment.
 	 *
 	 * ## OPTIONS
