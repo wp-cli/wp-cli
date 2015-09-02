@@ -458,7 +458,10 @@ class WP_CLI {
 	}
 
 	/**
-	 * Run a given command.
+	 * Run a given command within the current process using the same global parameters.
+	 *
+	 * To run a command using a new process with the same global parameters, use WP_CLI::launch_self()
+	 * To run a command using a new process with different global parameters, use WP_CLI::launch()
 	 *
 	 * @param array
 	 * @param array
