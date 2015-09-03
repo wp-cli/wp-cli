@@ -355,5 +355,5 @@ Feature: WordPress code scaffolding
     When I try `wp scaffold plugin-tests incorrect-custom-plugin`
     Then STDERR should contain:
       """
-      Error: Invalid plugin directory specified.
+      Error: Invalid plugin slug specified.
       """
