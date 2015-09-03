@@ -349,3 +349,11 @@ Feature: WordPress code scaffolding
     """
     Replacing
     """
+  Scenario: Scaffold tests for invalid plugin directory
+    Given a WP install
+  
+    When I try `wp scaffold plugin-tests incorrect-custom-plugin`
+    Then STDERR should contain:
+      """
+      Error: Invalid plugin directory specified.
+      """
