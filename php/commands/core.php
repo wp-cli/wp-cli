@@ -708,8 +708,13 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 	private static function modify_wp_config( $content ) {
 		$wp_config_path = Utils\locate_wp_config();
+		$wp_config_sample_path = Utils\locate_wp_config_sample();
 
-		$token = "/* That's all, stop editing!";
+		// first, find the right token in wp-config-sample.php as it is language-dependant
+		$string_to_match = "define('WP_DEBUG', false);";
+		$match = explode( $string_to_match, file_get_contents( $wp_config_sample_path ) );
+		$match2 = explode( "*/", trim( $match[1] ) );
+		$token = trim( $match2[0] );
 
 		list( $before, $after ) = explode( $token, file_get_contents( $wp_config_path ) );
 
