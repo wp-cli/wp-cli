@@ -453,15 +453,19 @@ class Core_Command extends WP_CLI_Command {
 	 * [--subdomains]
 	 * : If passed, the network will use subdomains, instead of subdirectories. Doesn't work with 'localhost'.
 	 *
+	 * [--token=<unique-token>]
+	 * : The unique line in the wp-config.php file where the Multisite constants should be added immediately ABOVE. Defaults to "/* That's all, stop editing!".
+	 *
 	 * @subcommand multisite-convert
 	 * @alias install-network
 	 */
 	public function multisite_convert( $args, $assoc_args ) {
-		if ( is_multisite() )
+		if ( is_multisite() ) {
 			WP_CLI::error( 'This already is a multisite install.' );
+		}
 
 		$assoc_args = self::_set_multisite_defaults( $assoc_args );
-		if ( !isset( $assoc_args['title'] ) ) {
+		if ( ! isset( $assoc_args['title'] ) ) {
 			$assoc_args['title'] = sprintf( _x('%s Sites', 'Default network name' ), get_option( 'blogname' ) );
 		}
 
@@ -549,9 +553,10 @@ class Core_Command extends WP_CLI_Command {
 	private static function _set_multisite_defaults( $assoc_args ) {
 		$defaults = array(
 			'subdomains' => false,
-			'base' => '/',
-			'site_id' => 1,
-			'blog_id' => 1,
+			'base'       => '/',
+			'site_id'    => 1,
+			'blog_id'    => 1,
+			'token'      => "/* That's all, stop editing!",
 		);
 
 		return array_merge( $defaults, $assoc_args );
@@ -658,8 +663,12 @@ define('BLOG_ID_CURRENT_SITE', 1);
 <?php
 			$ms_config = ob_get_clean();
 
-			self::modify_wp_config( $ms_config );
-			WP_CLI::log( 'Added multisite constants to wp-config.php.' );
+			$result = self::modify_wp_config( $ms_config, $assoc_args['token'] );
+			if ( $result ) {
+				WP_CLI::log( 'Added multisite constants to wp-config.php.' );
+			} else {
+				WP_CLI::warning( "You must manually add these lines to your wp-config.php file:\n{$ms_config}" );
+			}
 		}
 
 		return true;
@@ -706,14 +715,37 @@ define('BLOG_ID_CURRENT_SITE', 1);
 		update_site_option( 'site_admins', $site_admins );
 	}
 
-	private static function modify_wp_config( $content ) {
+	/**
+	 * Modify the wp-config.php file.
+	 *
+	 * @param string $content The content that should be added to the file.
+	 * @param string $token   The unique line in the file where the content should be added immediately above. This is
+	 *                        normally the "/* That's all, stop editing!" line.
+	 *
+	 * @return bool Whether we successfully wrote to the wp-config.php file.
+	 */
+	private static function modify_wp_config( $content, $token ) {
+
 		$wp_config_path = Utils\locate_wp_config();
 
-		$token = "/* That's all, stop editing!";
+		// If we can't find token, warn and exit early to prevent writing $content to the very end of the file.
+		$file_contents = file_get_contents($wp_config_path);
+		if ( false === strpos( $file_contents, $token ) ) {
+			WP_CLI::warning( "Token '{$token}' not found in wp-config.php file." );
+			return false;
+		}
 
-		list( $before, $after ) = explode( $token, file_get_contents( $wp_config_path ) );
+		// If $token is found more than once, the content could be added in the wrong place. Warn and exit early.
+		if ( 1 < substr_count( $file_contents, $token ) ) {
+			WP_CLI::warning( "Token '{$token}' found more than once in wp-config.php file." );
+			return false;
+		}
 
-		file_put_contents( $wp_config_path, $before . $content . $token . $after );
+		list( $before, $after ) = explode( $token, $file_contents );
+
+		$result = file_put_contents( $wp_config_path, $before . $content . $token . $after );
+
+		return false !== $result;
 	}
 
 	private static function get_clean_basedomain() {
