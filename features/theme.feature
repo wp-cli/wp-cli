@@ -238,3 +238,14 @@ Feature: Manage WordPress themes
       """
       Error: The 'biker' theme cannot be activated without its parent, 'jolene'.
       """
+
+  Scenario: List an active theme with its parent
+    Given a WP install
+    And I run `wp theme install jolene`
+    And I run `wp theme install --activate biker`
+
+    When I run `wp theme list --fields=name,status`
+    Then STDOUT should be a table containing rows:
+      | name          | status   |
+      | biker         | active   |
+      | jolene        | parent   |
