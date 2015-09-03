@@ -603,6 +603,10 @@ class Scaffold_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Invalid plugin specified.' );
 		}
 
+		if ( ! is_dir( $plugin_dir ) ) {
+			WP_CLI::error( 'Invalid plugin directory specified.' );
+		}
+
 		$tests_dir = "$plugin_dir/tests";
 		$bin_dir = "$plugin_dir/bin";
 
