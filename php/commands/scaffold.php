@@ -587,6 +587,9 @@ class Scaffold_Command extends WP_CLI_Command {
 		if ( ! empty( $args[0] ) ) {
 			$plugin_slug = $args[0];
 			$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
+			if ( empty( $assoc_args['dir'] ) && ! is_dir( $plugin_dir ) ) {
+				WP_CLI::error( 'Invalid plugin slug specified.' );
+			}
 		}
 
 		if ( ! empty( $assoc_args['dir'] ) ) {
@@ -601,10 +604,6 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		if ( empty( $plugin_slug ) || empty( $plugin_dir ) ) {
 			WP_CLI::error( 'Invalid plugin specified.' );
-		}
-
-		if ( ! is_dir( $plugin_dir ) ) {
-			WP_CLI::error( 'Invalid plugin directory specified.' );
 		}
 
 		$tests_dir = "$plugin_dir/tests";
