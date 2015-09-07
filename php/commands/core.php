@@ -661,7 +661,7 @@ EOT;
 				self::modify_wp_config( $ms_config );
 				WP_CLI::log( 'Added multisite constants to wp-config.php.' );
 			} else {
-				WP_CLI::warning( 'Multisite constants could not be written to wp-config.php:' );
+				WP_CLI::warning( 'Multisite constants could not be written to wp-config.php. You may need to add them manually:' );
 				WP_CLI::log( $ms_config );
 			}
 		}
