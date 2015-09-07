@@ -644,22 +644,26 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		if ( !is_multisite() ) {
-			ob_start();
-?>
+			$subdomain_export = Utils\get_flag_value( $assoc_args, 'subdomains' ) ? 'true' : 'false';
+			$ms_config = <<<EOT
 define( 'WP_ALLOW_MULTISITE', true );
-define('MULTISITE', true);
-define('SUBDOMAIN_INSTALL', <?php var_export( $assoc_args['subdomains'] ); ?>);
-$base = '<?php echo $assoc_args['base']; ?>';
-define('DOMAIN_CURRENT_SITE', '<?php echo $domain; ?>');
-define('PATH_CURRENT_SITE', '<?php echo $assoc_args['base']; ?>');
-define('SITE_ID_CURRENT_SITE', 1);
-define('BLOG_ID_CURRENT_SITE', 1);
+define( 'MULTISITE', true );
+define( 'SUBDOMAIN_INSTALL', {$subdomain_export} );
+\$base = '{$assoc_args['base']}';
+define( 'DOMAIN_CURRENT_SITE', '{$domain}' );
+define( 'PATH_CURRENT_SITE', '{$assoc_args['base']}' );
+define( 'SITE_ID_CURRENT_SITE', 1 );
+define( 'BLOG_ID_CURRENT_SITE', 1 );
+EOT;
 
-<?php
-			$ms_config = ob_get_clean();
-
-			self::modify_wp_config( $ms_config );
-			WP_CLI::log( 'Added multisite constants to wp-config.php.' );
+			$wp_config_path = Utils\locate_wp_config();
+			if ( is_writable( $wp_config_path ) ) {
+				self::modify_wp_config( $ms_config );
+				WP_CLI::log( 'Added multisite constants to wp-config.php.' );
+			} else {
+				WP_CLI::warning( 'Multisite constants could not be written to wp-config.php:' );
+				WP_CLI::log( $ms_config );
+			}
 		}
 
 		return true;
