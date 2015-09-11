@@ -15,7 +15,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * This command will go through all rows in a selection of tables
 	 * and will replace all appearances of the old string with the new one.  The
 	 * default tables are those registered on the $wpdb object (usually
-	 * just Wordpress core tables).
+	 * just WordPress core tables).
 	 *
 	 * It will correctly handle serialized values, and will not change primary key values.
 	 *
