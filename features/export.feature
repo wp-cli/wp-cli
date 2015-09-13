@@ -317,3 +317,63 @@ Feature: Export content.
       """
       5
       """
+
+  Scenario: Exclude a specific post type from export
+    Given a WP install
+    And I run `wp post generate --post_type=post --count=10`
+    And I run `wp plugin install wordpress-importer --activate`
+
+    When I run `wp post list --post_type=any --format=count`
+    Then STDOUT should be:
+      """
+      12
+      """
+
+    When I run `wp export --post_type__not_in=post`
+    And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
+
+    When I run `wp site empty --yes`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --post_type=any --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp import {EXPORT_FILE} --authors=skip`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --post_type=any --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post generate --post_type=post --count=10`
+    And I run `wp post list --post_type=any --format=count`
+    Then STDOUT should be:
+      """
+      11
+      """
+
+    When I run `wp export --post_type__not_in=post,page`
+    And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
+
+    When I run `wp site empty --yes`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --post_type=any --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp import {EXPORT_FILE} --authors=skip`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --post_type=any --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
