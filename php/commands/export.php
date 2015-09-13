@@ -35,6 +35,10 @@ class Export_Command extends WP_CLI_Command {
 	 * : Export only posts with this post_type. Separate multiple post types with a
 	 * comma. Defaults to all.
 	 *
+	 * [--post_type__not_in=<post-type>]
+	 * : Export all post types except those identified. Seperate multiple post types
+	 * with a comma. Defaults to none.
+	 *
 	 * [--post__in=<pid>]
 	 * : Export all posts specified as a comma-separated list of IDs.
 	 *
@@ -58,17 +62,18 @@ class Export_Command extends WP_CLI_Command {
 	 */
 	public function __invoke( $_, $assoc_args ) {
 		$defaults = array(
-			'dir'             => NULL,
-			'start_date'      => NULL,
-			'end_date'        => NULL,
-			'post_type'       => NULL,
-			'author'          => NULL,
-			'category'        => NULL,
-			'post_status'     => NULL,
-			'post__in'        => NULL,
-			'start_id'        => NULL,
-			'skip_comments'   => NULL,
-			'max_file_size'   => 15,
+			'dir'               => NULL,
+			'start_date'        => NULL,
+			'end_date'          => NULL,
+			'post_type'         => NULL,
+			'post_type__not_in' => NULL,
+			'author'            => NULL,
+			'category'          => NULL,
+			'post_status'       => NULL,
+			'post__in'          => NULL,
+			'start_id'          => NULL,
+			'skip_comments'     => NULL,
+			'max_file_size'     => 15,
 		);
 
 		$this->validate_args( wp_parse_args( $assoc_args, $defaults ) );
@@ -198,6 +203,29 @@ class Export_Command extends WP_CLI_Command {
 			}
 		}
 		$this->export_args['post_type'] = $post_type;
+		return true;
+	}
+
+	private function check_post_type__not_in( $post_type ) {
+		if ( is_null( $post_type ) ) {
+			return true;
+		}
+
+		$post_type = array_unique( array_filter( explode( ',', $post_type ) ) );
+		$post_types = get_post_types();
+
+		$keep_post_types = array();
+		foreach ( $post_type as $type ) {
+			if ( ! in_array( $type, $post_types ) ) {
+				WP_CLI::warning( sprintf(
+					'The post type %s does not exist. Use any of these existing post types instead: %s',
+					$type,
+					implode( ", ", $post_types )
+				) );
+				return false;
+			}
+		}
+		$this->export_args['post_type'] = array_diff( $post_types, $post_type );
 		return true;
 	}
 
