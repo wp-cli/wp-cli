@@ -968,12 +968,42 @@ EOT;
 	/**
 	 * Update the WordPress database.
 	 *
+	 * [--network]
+	 * : Update databases for all sites on a network
+	 *
 	 * @subcommand update-db
 	 */
-	function update_db() {
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		wp_upgrade();
-		WP_CLI::success( 'WordPress database upgraded successfully.' );
+	function update_db( $_, $assoc_args ) {
+		global $wpdb;
+
+		$network = Utils\get_flag_value( $assoc_args, 'network' );
+		if ( $network && ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
+		if ( $network ) {
+			$iterator_args = array(
+				'table' => $wpdb->blogs,
+			);
+			$it = new \WP_CLI\Iterators\Table( $iterator_args );
+			$success = $total = 0;
+			foreach( $it as $blog ) {
+				$total++;
+				$url = $blog->domain . $blog->path;
+				$process = WP_CLI::launch_self( 'core update-db', array(), array(), false, true, array( 'url' => $url ) );
+				if ( 0 == $process->return_code ) {
+					WP_CLI::log( "Database upgraded successfully on {$url}" );
+					$success++;
+				} else {
+					WP_CLI::warning( "Database failed to upgrade on {$url}" );
+				}
+			}
+			WP_CLI::success( sprintf( 'WordPress database upgraded on %d/%d sites.', $success, $total ) );
+		} else {
+			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+			wp_upgrade();
+			WP_CLI::success( 'WordPress database upgraded successfully.' );
+		}
 	}
 
 	/**

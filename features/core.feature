@@ -289,6 +289,17 @@ Feature: Manage WordPress installation
       Error: Multisite with subdomains cannot be configured when domain is 'localhost'.
       """
 
+  Scenario: Update db across network
+    Given a WP multisite install
+    And I run `wp site create --slug=foo`
+    And I run `wp site create --slug=bar`
+
+    When I run `wp core update-db --network`
+    Then STDOUT should contain:
+      """
+      Success: WordPress database upgraded on 3/3 sites.
+      """
+
   Scenario: Update from a ZIP file
     Given a WP install
 
