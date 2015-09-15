@@ -974,7 +974,7 @@ EOT;
 	 * @subcommand update-db
 	 */
 	function update_db( $_, $assoc_args ) {
-		global $wpdb;
+		global $wpdb, $wp_db_version;
 
 		$network = Utils\get_flag_value( $assoc_args, 'network' );
 		if ( $network && ! is_multisite() ) {
@@ -997,6 +997,9 @@ EOT;
 				} else {
 					WP_CLI::warning( "Database failed to upgrade on {$url}" );
 				}
+			}
+			if ( $total && $success == $total ) {
+				update_site_option( 'wpmu_upgrade_site', $wp_db_version );
 			}
 			WP_CLI::success( sprintf( 'WordPress database upgraded on %d/%d sites.', $success, $total ) );
 		} else {
