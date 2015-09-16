@@ -397,10 +397,11 @@ class WP_CLI {
 	 * @param array $assoc_args Associative arguments to use
 	 * @param bool Whether to exit if the command returns an error status
 	 * @param bool Whether to return an exit status (default) or detailed execution results
+	 * @param array $runtime_args Override one or more global args (path,url,user,allow-root)
 	 *
 	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
 	 */
-	public static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true, $return_detailed = false ) {
+	public static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true, $return_detailed = false, $runtime_args = array() ) {
 		$reused_runtime_args = array(
 			'path',
 			'url',
@@ -409,7 +410,9 @@ class WP_CLI {
 		);
 
 		foreach ( $reused_runtime_args as $key ) {
-			if ( $value = self::get_runner()->config[ $key ] )
+			if ( isset( $runtime_args[ $key ] ) ) {
+				$assoc_args[ $key ] = $runtime_args[ $key ];
+			} else if ( $value = self::get_runner()->config[ $key ] )
 				$assoc_args[ $key ] = $value;
 		}
 
