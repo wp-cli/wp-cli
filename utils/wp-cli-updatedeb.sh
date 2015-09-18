@@ -24,7 +24,7 @@ die() {
 }
 
 dump_control() {
-    cat > DEBIAN/control <<CTRL
+    cat > DEBIAN/control <<EOF
 Package: php-wpcli
 Version: 0.0.0
 Architecture: all
@@ -37,7 +37,7 @@ Description: wp-cli is a set of command-line tools for managing
  WordPress installations. You can update plugins, set up multisite
  installs and much more, without using a web browser.
 
-CTRL
+EOF
 }
 
 # deb's dir
@@ -78,6 +78,6 @@ WPCLI_PKG="${PWD}/php-wpcli_${WPCLI_VER}_all.deb"
 fakeroot dpkg-deb --build "$DIR" "$WPCLI_PKG" || die 8 "Packaging failed"
 
 # optional steps
-echo "sign it:  dpkg-sig -k <YOUR-KEY> -s builder \"$WPCLI_PKG\""
-echo "include in your repo:  pushd /var/www/<REPO-DIR>"
-echo "reprepro includedeb wheezy \"$WPCLI_PKG\" && popd"
+echo "sign it:               dpkg-sig -k YOUR-KEY -s builder \"${WPCLI_PKG}\""
+echo "include in your repo:  pushd /var/www/REPO-DIR"
+echo "                       reprepro includedeb jessie \"${WPCLI_PKG}\" && popd"
