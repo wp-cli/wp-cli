@@ -129,7 +129,11 @@ class Rewrite_Command extends WP_CLI_Command {
 			}
 		}
 
-		\WP_CLI::launch_self( 'rewrite flush', array(), $new_assoc_args );
+		$process_run = WP_CLI::launch_self( 'rewrite flush', array(), $new_assoc_args, true, true, array( 'apache_modules', WP_CLI::get_config( 'apache_modules' ) ) );
+		if ( ! empty( $process_run->stderr ) ) {
+			// Strip "Warning: "
+			WP_CLI::warning( substr( $process_run->stderr, 9 ) );
+		}
 
 		WP_CLI::success( "Rewrite structure set." );
 	}
