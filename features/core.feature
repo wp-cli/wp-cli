@@ -490,6 +490,32 @@ Feature: Manage WordPress installation
       Error: Release not found.
       """
 
+  Scenario: Core download to a directory specified by `--path` in custom command
+    Given a WP install
+    And a download-command.php file:
+      """
+      <?php
+      class Download_Command extends WP_CLI_Command {
+          public function __invoke() {
+              WP_CLI::run_command( array( 'core', 'download' ), array( 'path' => 'src/' ) );
+          }
+      }
+      WP_CLI::add_command( 'custom-download', 'Download_Command' );
+      """
+
+    When I run `wp --require=download-command.php custom-download`
+    Then STDOUT should not be empty
+    And the src directory should contain:
+      """
+      wp-load.php
+      """
+
+    When I try `wp --require=download-command.php custom-download`
+    Then STDERR should be:
+      """
+      Error: WordPress files seem to already be present here.
+      """
+
   Scenario: Ensure cached partial upgrades aren't used in full upgrade
     Given a WP install
     And an empty cache
