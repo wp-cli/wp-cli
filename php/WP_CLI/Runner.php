@@ -261,10 +261,21 @@ class Runner {
 			$subcommand = $command->find_subcommand( $args );
 
 			if ( !$subcommand ) {
-				return sprintf(
-					"'%s' is not a registered wp command. See 'wp help'.",
-					$full_name
-				);
+				if ( count( $cmd_path ) > 1 ) {
+					$child = array_pop( $cmd_path );
+					$parent_name = implode( ' ', $cmd_path );
+					return sprintf(
+						"'%s' is not a registered subcommand of '%s'. See 'wp help %s'.",
+						$child,
+						$parent_name,
+						$parent_name
+					);
+				} else {
+					return sprintf(
+						"'%s' is not a registered wp command. See 'wp help'.",
+						$full_name
+					);
+				}
 			}
 
 			if ( $this->is_command_disabled( $subcommand ) ) {
