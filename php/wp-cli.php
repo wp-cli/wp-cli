@@ -4,6 +4,14 @@
 define( 'WP_CLI', true );
 define( 'WP_CLI_VERSION', trim( file_get_contents( WP_CLI_ROOT . '/VERSION' ) ) );
 
+// PHP7 compat
+if ( ! defined( 'STDOUT' ) ) {
+	define( 'STDOUT', fopen( 'php://stdout', 'w' ) );
+}
+if ( ! defined( 'STDERR' ) ) {
+	define( 'STDERR', fopen( 'php://stderr', 'w' ) );
+}
+
 // Set common headers, to prevent warnings from plugins
 $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.0';
 $_SERVER['HTTP_USER_AGENT'] = '';
