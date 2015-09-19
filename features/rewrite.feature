@@ -75,3 +75,9 @@ Feature: Manage WordPress rewrites
       """
       Warning: WordPress can't generate .htaccess file for a multisite install.
       """
+
+    When I try `wp rewrite structure /%year%/%monthnum%/%day%/%postname%/ --hard`
+    Then STDERR should contain:
+      """
+      Warning: WordPress can't generate .htaccess file for a multisite install.
+      """
