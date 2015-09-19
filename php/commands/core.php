@@ -121,13 +121,16 @@ class Core_Command extends WP_CLI_Command {
 	 * @when before_wp_load
 	 */
 	public function download( $args, $assoc_args ) {
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && is_readable( ABSPATH . 'wp-load.php' ) )
+
+		$download_dir = ! empty( $assoc_args['path'] ) ? $assoc_args['path'] : ABSPATH;
+
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && is_readable( $download_dir . 'wp-load.php' ) )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
-		if ( !is_dir( ABSPATH ) ) {
-			WP_CLI::log( sprintf( 'Creating directory %s', ABSPATH ) );
+		if ( !is_dir( $download_dir ) ) {
+			WP_CLI::log( sprintf( 'Creating directory %s', $download_dir ) );
 			$mkdir = \WP_CLI\Utils\is_windows() ? 'mkdir %s' : 'mkdir -p %s';
-			WP_CLI::launch( Utils\esc_cmd( $mkdir, ABSPATH ) );
+			WP_CLI::launch( Utils\esc_cmd( $mkdir, $download_dir ) );
 		}
 
 		$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', 'en_US' );
@@ -154,7 +157,7 @@ class Core_Command extends WP_CLI_Command {
 		if ( $cache_file ) {
 			WP_CLI::log( "Using cached file '$cache_file'..." );
 			try{
-				self::_extract( $cache_file, ABSPATH );
+				self::_extract( $cache_file, $download_dir );
 			} catch ( Exception $e ) {
 				WP_CLI::warning( "Extraction failed, downloading a new copy..." );
 				$bad_cache = true;
@@ -180,7 +183,7 @@ class Core_Command extends WP_CLI_Command {
 			}
 
 			try {
-				self::_extract( $temp, ABSPATH );
+				self::_extract( $temp, $download_dir );
 			} catch ( Exception $e ) {
 				WP_CLI::error( "Couldn't extract WordPress archive. " . $e->getMessage() );
 			}
