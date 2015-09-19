@@ -473,7 +473,16 @@ class WP_CLI {
 		self::get_runner()->run_command( $args, $assoc_args );
 	}
 
-
+	/**
+	 * Prints text to STDERR.
+	 *
+	 * @param $str
+	 */
+	static function debug( $str) {
+		if ( self::get_runner()->config['debug'] ) {
+			fwrite( STDERR, $str . "\n");
+		}
+	}
 
 	// DEPRECATED STUFF
 

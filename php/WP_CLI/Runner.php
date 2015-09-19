@@ -171,6 +171,7 @@ class Runner {
 	 */
 	private static function set_wp_root( $path ) {
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+		WP_CLI::debug("ABSPATH : " . ABSPATH);
 
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $path );
 	}
@@ -233,6 +234,7 @@ class Runner {
 		}
 
 		if ( isset( $url ) ) {
+			WP_CLI::debug("URL : " . $url);
 			return $url;
 		}
 
@@ -572,7 +574,7 @@ class Runner {
 		$this->init_logger();
 
 		$this->check_root();
-
+		WP_CLI::debug('Executing: ' . join(' ', $_SERVER['argv']));
 		if ( empty( $this->arguments ) )
 			$this->arguments[] = 'help';
 

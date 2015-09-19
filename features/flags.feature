@@ -44,7 +44,7 @@ Feature: Global flags
 
     When I try `wp eval 'echo CONST_WITHOUT_QUOTES;' --debug`
     Then the return code should be 0
-    And STDOUT should be:
+    And STDOUT should contain:
       """
       CONST_WITHOUT_QUOTES
       """
