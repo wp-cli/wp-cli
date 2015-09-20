@@ -219,6 +219,7 @@ Feature: Have a config file
     When I run `wp --info`
 	  Then STDOUT should not be empty
 
+  @require-wp-3.9
   Scenario: WordPress install with local dev DOMAIN_CURRENT_SITE
     Given a WP multisite install
     And a local-dev.php file:
