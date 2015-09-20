@@ -114,10 +114,6 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
-			wp_defer_term_counting( true );
-		}
-
 		parent::_update( $args, $assoc_args, function ( $params ) {
 			return wp_update_post( $params, true );
 		} );
@@ -217,10 +213,6 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'force' => false
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
-
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
-			wp_defer_term_counting( true );
-		}
 
 		parent::_delete( $args, $assoc_args, function ( $post_id, $assoc_args ) {
 			$status = get_post_status( $post_id );
