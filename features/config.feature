@@ -276,7 +276,10 @@ require_once(ABSPATH . 'wp-settings.php');
       """
 
     When I try `wp option get home`
-    Then STDERR should not be empty
+    Then STDERR should be:
+      """
+      Error: Site example.dev/ not found.
+      """
 
     When I run `wp option get home --url=example.com`
     Then STDOUT should be:
