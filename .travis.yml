@@ -5,6 +5,7 @@ language: php
 php:
   - 5.3
   - 5.6
+  - '7'
 
 env:
   global:
@@ -40,6 +41,8 @@ env:
 matrix:
   exclude:
     - php: 5.6
+      env: WP_VERSION=3.5.2 DEPLOY_BRANCH=master
+    - php: '7'
       env: WP_VERSION=3.5.2 DEPLOY_BRANCH=master
 
 before_script: ./ci/prepare.sh
