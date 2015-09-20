@@ -394,12 +394,18 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		$where = array();
+		$append = '';
 
 		$site_cols = array( 'blog_id', 'url', 'last_updated', 'registered', 'site_id', 'domain', 'path', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' );
 		foreach( $site_cols as $col ) {
 			if ( isset( $assoc_args[ $col ] ) ) {
 				$where[ $col ] = $assoc_args[ $col ];
 			}
+		}
+
+		if ( isset( $assoc_args['site__in'] ) ) {
+			$where['blog_id'] = explode( ',', $assoc_args['site__in'] );
+			$append = "ORDER BY FIELD( blog_id, " . implode( ',', array_map( 'intval', $where['blog_id'] ) ) . " )";
 		}
 
 		if ( isset( $assoc_args['network'] ) ) {
@@ -409,36 +415,17 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		$iterator_args = array(
 			'table' => $wpdb->blogs,
 			'where' => $where,
+			'append' => $append,
 		);
 		$it = new \WP_CLI\Iterators\Table( $iterator_args );
 
 		$it = \WP_CLI\Utils\iterator_map( $it, function( $blog ) {
-			$blog->url = $blog->domain . $blog->path;
+			$blog->url = trailingslashit( get_site_url( $blog->blog_id ) );
 			return $blog;
 		} );
 
 		$formatter = new \WP_CLI\Formatter( $assoc_args, null, 'site' );
 		$formatter->display_items( $it );
-	}
-
-	/**
-	 * Get site url
-	 *
-	 * ## OPTIONS
-	 *
-	 * <id>...
-	 * : One or more IDs of sites to get the URL.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp site url 123
-	 */
-	public function url( $args ) {
-		if ( !is_multisite() ) {
-			WP_CLI::error( 'This is not a multisite install.' );
-		}
-
-		parent::_url( $args, 'get_site_url' );
 	}
 
 	/**
