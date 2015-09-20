@@ -91,6 +91,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * --<field>=<value>
 	 * : One or more fields to update. See wp_update_post().
 	 *
+	 * [--defer-term-counting]
+	 * : Recalculate term count in batch, for a performance boost.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp post update 123 --post_name=something --post_status=draft
@@ -192,6 +195,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--force]
 	 * : Skip the trash bin.
+	 *
+	 * [--defer-term-counting]
+	 * : Recalculate term count in batch, for a performance boost.
 	 *
 	 * ## EXAMPLES
 	 *
