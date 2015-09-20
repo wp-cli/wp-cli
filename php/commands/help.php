@@ -6,7 +6,10 @@ use \WP_CLI\Dispatcher;
 class Help_Command extends WP_CLI_Command {
 
 	/**
-	 * Get help on a certain command.
+	 * Get help on WP-CLI, or on a specific. command.
+	 *
+	 * [<command>...]
+	 * : Get help on a specific command.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -15,8 +18,6 @@ class Help_Command extends WP_CLI_Command {
 	 *
 	 *     # get help for `core download` subcommand
 	 *     wp help core download
-	 *
-	 * @synopsis [<command>...]
 	 */
 	function __invoke( $args, $assoc_args ) {
 		$command = self::find_subcommand( $args );
