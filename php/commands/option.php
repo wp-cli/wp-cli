@@ -23,7 +23,11 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Get an option.
 	 *
-	 * @synopsis <key> [--format=<format>]
+	 * <key>
+	 * : Key for the option
+	 *
+	 * [--format=<format>]
+	 * : Get value as var_export() or JSON. Default: var_export()
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $key ) = $args;
@@ -118,7 +122,6 @@ class Option_Command extends WP_CLI_Command {
 	 * * size_bytes
 	 *
 	 * @subcommand list
-	 * @synopsis [--search=<glob-style-pattern>] [--autoload=<value>] [--fields=<fields>] [--format=<format>]
 	 */
 	public function list_( $args, $assoc_args ) {
 
@@ -220,7 +223,8 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Delete an option.
 	 *
-	 * @synopsis <key>
+	 * <key>
+	 * : Key for the option.
 	 */
 	public function delete( $args ) {
 		list( $key ) = $args;

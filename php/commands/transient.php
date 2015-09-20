@@ -12,7 +12,11 @@ class Transient_Command extends WP_CLI_Command {
 	/**
 	 * Get a transient value.
 	 *
-	 * @synopsis <key> [--json]
+	 * <key>
+	 * : Key for the transient.
+	 *
+	 * [--json]
+	 * : Format output as JSON.
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $key ) = $args;
@@ -30,7 +34,14 @@ class Transient_Command extends WP_CLI_Command {
 	/**
 	 * Set a transient value. <expiration> is the time until expiration, in seconds.
 	 *
-	 * @synopsis <key> <value> [<expiration>]
+	 * <key>
+	 * : Key for the transient.
+	 *
+	 * <value>
+	 * : Value to be set for the transient.
+	 *
+	 * [<expiration]
+	 * : Time until expiration, in seconds.
 	 */
 	public function set( $args ) {
 		list( $key, $value ) = $args;
@@ -46,7 +57,8 @@ class Transient_Command extends WP_CLI_Command {
 	/**
 	 * Delete a transient value.
 	 *
-	 * @synopsis <key>
+	 * <key>
+	 * : Key for the transient.
 	 */
 	public function delete( $args ) {
 		list( $key ) = $args;

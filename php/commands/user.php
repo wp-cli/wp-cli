@@ -796,8 +796,6 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json. Default: table
-	 *
-	 * @synopsis <user> <key> [--format=<format>]
 	 */
 	public function get( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );
@@ -833,7 +831,8 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * <value>
 	 * : The new metadata value.
 	 *
-	 * @synopsis <user> <key> <value> [--format=<format>]
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
 	 */
 	public function add( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );
@@ -852,8 +851,10 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * <value>
 	 * : The new metadata value.
 	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
+	 *
 	 * @alias set
-	 * @synopsis <user> <key> <value> [--format=<format>]
 	 */
 	public function update( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );

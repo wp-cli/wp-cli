@@ -5,11 +5,12 @@ class Eval_Command extends WP_CLI_Command {
 	/**
 	 * Execute arbitrary PHP code after loading WordPress.
 	 *
+	 * <php-code>
+	 * : The code to execute, as a string.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp eval 'echo WP_CONTENT_DIR;'
-	 *
-	 * @synopsis <php-code>
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		eval( $args[0] );

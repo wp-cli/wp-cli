@@ -191,22 +191,20 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * --slug=<slug>
 	 * : Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
-	 * --title=<title>
+	 * [--title=<title>]
 	 * : Title of the new site. Default: prettified slug.
 	 *
-	 * --email=<email>
+	 * [--email=<email>]
 	 * : Email for Admin user. User will be created if none exists. Assignement to Super Admin if not included.
 	 *
-	 * --network_id=<network-id>
+	 * [--network_id=<network-id>]
 	 * : Network to associate new site with. Defaults to current network (typically 1).
 	 *
-	 * --private
+	 * [--private]
 	 * : If set, the new site will be non-public (not indexed)
 	 *
-	 * --porcelain
+	 * [--porcelain]
 	 * : If set, only the site id will be output on success.
-	 *
-	 * @synopsis --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<network-id>] [--private] [--porcelain]
 	 */
 	public function create( $_, $assoc_args ) {
 		if ( !is_multisite() ) {
