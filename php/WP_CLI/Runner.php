@@ -461,7 +461,6 @@ class Runner {
 			$assoc_args['post_type'] = 'any';
 			$assoc_args['orderby'] = 'post__in';
 			$assoc_args['field'] = 'url';
-			break;
 		}
 
 		return array( $args, $assoc_args );
