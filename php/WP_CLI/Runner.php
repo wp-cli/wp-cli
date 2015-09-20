@@ -453,6 +453,17 @@ class Runner {
 			}
 		}
 
+		// post url  -->  post list --post__in --field=url
+		if ( count( $args ) >= 2 && 'post' === $args[0] && 'url' === $args[1] ) {
+			$post_ids = array_slice( $args, 2 );
+			$args = array( 'post', 'list' );
+			$assoc_args['post__in'] = implode( ',', $post_ids );
+			$assoc_args['post_type'] = 'any';
+			$assoc_args['orderby'] = 'post__in';
+			$assoc_args['field'] = 'url';
+			break;
+		}
+
 		return array( $args, $assoc_args );
 	}
 
