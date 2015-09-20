@@ -195,7 +195,7 @@ class Formatter {
 		}
 
 		if ( ! isset( $key ) ) {
-			\WP_CLI::error( "Invalid field: $field." );
+			throw new \Exception( "Invalid field: $field." );
 		}
 
 		return $key;

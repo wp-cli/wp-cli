@@ -364,7 +364,10 @@ class Term_Command extends WP_CLI_Command {
 	 * : Taxonomy of the term(s) to get.
 	 *
 	 * <term-id>...
-	 * : One or more IDs of terms to get the URL.
+	 * : One or more IDs of terms to get the URL for.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json, csv. Default: none
 	 *
 	 * ## EXAMPLES
 	 *
@@ -372,12 +375,34 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 *     wp term url post_tag 123 324
 	 */
-	public function url( $args ) {
-		$term_link = get_term_link( (int)$args[1], $args[0] );
-		if ( $term_link && ! is_wp_error( $term_link ) ) {
-			WP_CLI::line( $term_link );
+	public function url( $args, $assoc_args ) {
+		$taxonomy = array_shift( $args );
+
+		$rows = array();
+
+		foreach ( $args as $obj_ref ) {
+			$obj_id = (int) $obj_ref;
+
+			$url = get_term_link( $obj_id, $taxonomy );
+
+			if ( is_wp_error( $url ) ) {
+				WP_CLI::warning( "Invalid term: $obj_ref" );
+				continue;
+			}
+
+			$rows[] = array(
+				'id' => $obj_id,
+				'url' => $url
+			);
+		}
+
+		if ( empty( $assoc_args['format'] ) ) {
+			foreach ( $rows as $row ) {
+				\WP_CLI::line( $row['url'] );
+			}
 		} else {
-			WP_CLI::error( "Invalid term." );
+			$formatter = new \WP_CLI\Formatter( $assoc_args, array( 'id', 'url' ), 'term' );
+			$formatter->display_items( $rows );
 		}
 	}
 

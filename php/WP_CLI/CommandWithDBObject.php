@@ -153,10 +153,26 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	 * @param array $args One or more object references.
 	 * @param string $callback Function to get URL for the object.
 	 */
-	protected function _url( $args, $callback ) {
-		foreach ( $args as $obj_id ) {
-			$object = $this->fetcher->get_check( $obj_id );
-			\WP_CLI::line( $callback( $object->{$this->obj_id_key} ) );
+	protected function _url( $args, $assoc_args, $callback ) {
+		$rows = array();
+
+		foreach ( $args as $obj_ref ) {
+			$object = $this->fetcher->get_check( $obj_ref );
+			$obj_id = $object->{$this->obj_id_key};
+
+			$rows[] = array(
+				'id' => $obj_id,
+				'url' => $callback( $obj_id ),
+			);
+		}
+
+		if ( empty( $assoc_args['format'] ) ) {
+			foreach ( $rows as $row ) {
+				\WP_CLI::line( $row['url'] );
+			}
+		} else {
+			$formatter = new \WP_CLI\Formatter( $assoc_args, array( 'id', 'url' ), $this->obj_type );
+			$formatter->display_items( $rows );
 		}
 	}
 }

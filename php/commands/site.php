@@ -427,18 +427,21 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <id>...
-	 * : One or more IDs of sites to get the URL.
+	 * : One or more IDs of sites to get the URL for.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json, csv. Default: none
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp site url 123
 	 */
-	public function url( $args ) {
+	public function url( $args, $assoc_args ) {
 		if ( !is_multisite() ) {
 			WP_CLI::error( 'This is not a multisite install.' );
 		}
 
-		parent::_url( $args, 'get_site_url' );
+		parent::_url( $args, $assoc_args, 'get_site_url' );
 	}
 
 	/**

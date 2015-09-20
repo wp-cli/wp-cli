@@ -108,6 +108,12 @@ Feature: Manage WordPress posts
       http://example.com/?p=3
       """
 
+    When I run `wp post url --format=table 1 {POST_ID}`
+    Then STDOUT should be a table containing rows:
+      | id        | url                     |
+      | 1         | http://example.com/?p=1 |
+      | {POST_ID} | http://example.com/?p=3 |
+
   Scenario: Update a post from file or STDIN
     Given a content.html file:
       """

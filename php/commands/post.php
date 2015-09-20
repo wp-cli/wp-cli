@@ -430,16 +430,19 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <id>...
-	 * : One or more IDs of posts get the URL.
+	 * : One or more IDs of posts to get the URL for.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json, csv. Default: none
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp post url 123
 	 *
-	 *     wp post url 123 324
+	 *     wp post url --format=csv $(wp post list --format=ids)
 	 */
-	public function url( $args ) {
-		parent::_url( $args, 'get_permalink' );
+	public function url( $args, $assoc_args ) {
+		parent::_url( $args, $assoc_args, 'get_permalink' );
 	}
 
 	private function maybe_make_child() {
