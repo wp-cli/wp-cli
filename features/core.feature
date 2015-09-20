@@ -490,6 +490,16 @@ Feature: Manage WordPress installation
       Error: Release not found.
       """
 
+  Scenario: Test output in a multisite install with custom base path
+    Given a WP install
+
+    When I run `wp core multisite-convert --title=Test --base=/test/`
+    And I run `wp post list`
+    Then STDOUT should contain:
+      """
+      Hello world!
+      """
+
   Scenario: Core download to a directory specified by `--path` in custom command
     Given a WP install
     And a download-command.php file:
