@@ -830,6 +830,9 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 *
 	 * <value>
 	 * : The new metadata value.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
 	 */
 	public function add( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );
@@ -847,6 +850,9 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 *
 	 * <value>
 	 * : The new metadata value.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
 	 *
 	 * @alias set
 	 */
