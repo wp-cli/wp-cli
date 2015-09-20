@@ -22,6 +22,8 @@ WP_CLI::get_runner()->before_wp_load();
 // Load wp-config.php code, in the global scope
 eval( WP_CLI::get_runner()->get_wp_config_code() );
 
+WP_CLI::get_runner()->maybe_update_url_from_domain_constant();
+
 // Load Core, mu-plugins, plugins, themes etc.
 require WP_CLI_ROOT . '/php/wp-settings-cli.php';
 
