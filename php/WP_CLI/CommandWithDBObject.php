@@ -71,6 +71,10 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 			) );
 		}
 
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
+			wp_defer_term_counting( false );
+		}
+
 		exit( $status );
 	}
 
@@ -88,6 +92,10 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		foreach ( $args as $obj_id ) {
 			$r = $callback( $obj_id, $assoc_args );
 			$status = $this->success_or_failure( $r );
+		}
+
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
+			wp_defer_term_counting( false );
 		}
 
 		exit( $status );

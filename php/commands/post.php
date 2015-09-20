@@ -91,6 +91,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * --<field>=<value>
 	 * : One or more fields to update. See wp_update_post().
 	 *
+	 * [--defer-term-counting]
+	 * : Recalculate term count in batch, for a performance boost.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp post update 123 --post_name=something --post_status=draft
@@ -109,6 +112,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( isset( $assoc_args['post_category'] ) ) {
 			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
+		}
+
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
+			wp_defer_term_counting( true );
 		}
 
 		parent::_update( $args, $assoc_args, function ( $params ) {
@@ -193,6 +200,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--force]
 	 * : Skip the trash bin.
 	 *
+	 * [--defer-term-counting]
+	 * : Recalculate term count in batch, for a performance boost.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp post delete 123 --force
@@ -207,6 +217,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'force' => false
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
+			wp_defer_term_counting( true );
+		}
 
 		parent::_delete( $args, $assoc_args, function ( $post_id, $assoc_args ) {
 			$status = get_post_status( $post_id );
