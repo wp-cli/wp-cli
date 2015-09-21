@@ -121,6 +121,7 @@ Feature: Manage WordPress options
       }
       """
 
+  @require-wp-4.2
   Scenario: Update autoload value for custom option
     Given a WP install
     And I run `wp option add hello world --autoload=no`

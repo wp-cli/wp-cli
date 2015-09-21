@@ -188,7 +188,7 @@ class Option_Command extends WP_CLI_Command {
 	 * : The new value. If ommited, the value is read from STDIN.
 	 *
 	 * [--autoload=<autoload>]
-	 * : Should this option be automatically loaded. Accepted values: yes, no. Default: yes
+	 * : Requires WP 4.2. Should this option be automatically loaded. Accepted values: yes, no. Default: yes
 	 *
 	 * [--format=<format>]
 	 * : The serialization format for the value. Default is plaintext.
