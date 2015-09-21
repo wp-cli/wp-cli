@@ -120,3 +120,23 @@ Feature: Manage WordPress options
         "list": [1, 2, 3]
       }
       """
+
+  Scenario: Update autoload value for custom option
+    Given a WP install
+    And I run `wp option add hello world --autoload=no`
+
+    When I run `wp option update hello universe`
+    Then STDOUT should not be empty
+
+    When I run `wp option list --search='hello' --fields=option_name,option_value,autoload`
+    Then STDOUT should be a table containing rows:
+      | option_name  | option_value   | autoload |
+      | hello        | universe       | no       |
+
+    When I run `wp option update hello island --autoload=yes`
+    Then STDOUT should not be empty
+
+    When I run `wp option list --search='hello' --fields=option_name,option_value,autoload`
+    Then STDOUT should be a table containing rows:
+      | option_name  | option_value   | autoload |
+      | hello        | island         | yes      |
