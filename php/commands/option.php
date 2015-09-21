@@ -187,6 +187,9 @@ class Option_Command extends WP_CLI_Command {
 	 * [<value>]
 	 * : The new value. If ommited, the value is read from STDIN.
 	 *
+	 * [--autoload=<autoload>]
+	 * : Requires WP 4.2. Should this option be automatically loaded. Accepted values: yes, no. Default: yes
+	 *
 	 * [--format=<format>]
 	 * : The serialization format for the value. Default is plaintext.
 	 *
@@ -206,13 +209,18 @@ class Option_Command extends WP_CLI_Command {
 		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
 		$value = WP_CLI::read_value( $value, $assoc_args );
 
+		$autoload = \WP_CLI\Utils\get_flag_value( $assoc_args, 'autoload' );
+		if ( ! in_array( $autoload, array( 'yes', 'no' ) ) ) {
+			$autoload = null;
+		}
+
 		$value = sanitize_option( $key, $value );
 		$old_value = sanitize_option( $key, get_option( $key ) );
 
-		if ( $value === $old_value ) {
+		if ( $value === $old_value && is_null( $autoload ) ) {
 			WP_CLI::success( "Value passed for '$key' option is unchanged." );
 		} else {
-			if ( update_option( $key, $value ) ) {
+			if ( update_option( $key, $value, $autoload ) ) {
 				WP_CLI::success( "Updated '$key' option." );
 			} else {
 				WP_CLI::error( "Could not update option '$key'." );
