@@ -94,9 +94,7 @@ class Option_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : The serialization format for the value.
-	 * : total_bytes displays the total size of matching options in bytes.
-	 * : Accepted values: table, json, csv, count, total_bytes. Default: table
+	 * : The serialization format for the value. total_bytes displays the total size of matching options in bytes. Accepted values: table, json, csv, count, total_bytes. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
