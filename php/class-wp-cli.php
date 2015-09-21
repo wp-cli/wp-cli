@@ -434,7 +434,7 @@ class WP_CLI {
 	 *
 	 * @return string
 	 */
-	private static function get_php_binary() {
+	public static function get_php_binary() {
 		if ( defined( 'PHP_BINARY' ) )
 			return PHP_BINARY;
 
