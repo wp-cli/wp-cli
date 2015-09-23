@@ -332,7 +332,7 @@ class Runner {
 			}
 
 			// exclude potential problems by only running variable definitions (issue:1631)
-        		if ( preg_match( '/(define\(.*,.*\)|\$\w+\s*=\s['"].*['"];)/', $line ) ) {
+        		if ( preg_match( '/(define\(.*,.*\)|\$\w+\s*=\s[\'"].*[\'"];)/', $line ) ) {
                 		$lines_to_run[] = $line;
         		}
 		}
