@@ -331,7 +331,10 @@ class Runner {
 				continue;
 			}
 
-			$lines_to_run[] = $line;
+			// exclude potential problems by only running variable definitions (issue:1631)
+        		if ( preg_match( '/(define\(.*,.*\)|\$\w+\s*=\s['"].*['"];)/', $line ) ) {
+                		$lines_to_run[] = $line;
+        		}
 		}
 
 		if ( !$found_wp_settings ) {
