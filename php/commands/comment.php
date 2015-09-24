@@ -281,15 +281,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to trash.
+	 * <id>...
+	 * : The IDs of the comments to trash.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp comment trash 1337
 	 */
 	public function trash( $args, $assoc_args ) {
-		$this->call( $args, __FUNCTION__, 'Trashed', 'Failed trashing' );
+		foreach( $args as $id ) {
+			$this->call( $id, __FUNCTION__, 'Trashed', 'Failed trashing' );
+		}
 	}
 
 	/**
@@ -297,15 +299,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to untrash.
+	 * <id>...
+	 * : The IDs of the comments to untrash.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp comment untrash 1337
 	 */
 	public function untrash( $args, $assoc_args ) {
-		$this->call( $args, __FUNCTION__, 'Untrashed', 'Failed untrashing' );
+		foreach( $args as $id ) {
+			$this->call( $id, __FUNCTION__, 'Untrashed', 'Failed untrashing' );
+		}
 	}
 
 	/**
@@ -313,15 +317,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to mark as spam.
+	 * <id>...
+	 * : The IDs of the comments to mark as spam.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp comment spam 1337
 	 */
 	public function spam( $args, $assoc_args ) {
-		$this->call( $args, __FUNCTION__, 'Marked as spam', 'Failed marking as spam' );
+		foreach( $args as $id ) {
+			$this->call( $id, __FUNCTION__, 'Marked as spam', 'Failed marking as spam' );
+		}
 	}
 
 	/**
@@ -329,15 +335,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to unmark as spam.
+	 * <id>...
+	 * : The IDs of the comments to unmark as spam.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp comment unspam 1337
 	 */
 	public function unspam( $args, $assoc_args ) {
-		$this->call( $args, __FUNCTION__, 'Unspammed', 'Failed unspamming' );
+		foreach( $args as $id ) {
+			$this->call( $args, __FUNCTION__, 'Unspammed', 'Failed unspamming' );
+		}
 	}
 
 	/**
@@ -345,15 +353,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to approve.
+	 * <id>...
+	 * : The IDs of the comments to approve.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp comment approve 1337
 	 */
 	public function approve( $args, $assoc_args ) {
-		$this->set_status( $args, 'approve', "Approved" );
+		foreach( $args as $id ) {
+			$this->set_status( $id, 'approve', "Approved" );
+		}
 	}
 
 	/**
@@ -361,15 +371,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to unapprove.
+	 * <id>...
+	 * : The IDs of the comments to unapprove.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp comment unapprove 1337
 	 */
 	public function unapprove( $args, $assoc_args ) {
-		$this->set_status( $args, 'hold', "Unapproved" );
+		foreach( $args as $id ) {
+			$this->set_status( $id, 'hold', "Unapproved" );
+		}
 	}
 
 	/**
