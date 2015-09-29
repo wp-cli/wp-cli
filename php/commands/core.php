@@ -987,6 +987,7 @@ EOT;
 		if ( $network ) {
 			$iterator_args = array(
 				'table' => $wpdb->blogs,
+				'where' => array( 'spam' => 0, 'deleted' => 0, 'archived' => 0 ),
 			);
 			$it = new \WP_CLI\Iterators\Table( $iterator_args );
 			$success = $total = 0;
