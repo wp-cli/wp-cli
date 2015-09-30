@@ -90,11 +90,8 @@ class Help_Command extends WP_CLI_Command {
 	}
 
 	private static function pass_through_pager( $out ) {
-		if ( Utils\is_windows() ) {
-			// no paging for Windows cmd.exe; sorry
-			echo $out;
-			return 0;
-		}
+
+		$pager = Utils\is_windows() ? 'more' : 'less -r';
 
 		// convert string to file handle
 		$fd = fopen( "php://temp", "r+" );
@@ -107,7 +104,7 @@ class Help_Command extends WP_CLI_Command {
 			2 => STDERR
 		);
 
-		return proc_close( proc_open( 'less -r', $descriptorspec, $pipes ) );
+		return proc_close( proc_open( $pager, $descriptorspec, $pipes ) );
 	}
 
 	private static function get_initial_markdown( $command ) {
