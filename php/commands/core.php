@@ -10,7 +10,9 @@ use \WP_CLI\Utils;
 class Core_Command extends WP_CLI_Command {
 
 	/**
-	 * Check for update via Version Check API. Returns latest version if there's an update, or empty if no update available.
+	 * Check for update via Version Check API.
+	 *
+	 * Lists the most recent versions when there are updates available, or success message when up to date.
 	 *
 	 * ## OPTIONS
 	 *
