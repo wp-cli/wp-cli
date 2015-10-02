@@ -40,7 +40,7 @@ class Export_Command extends WP_CLI_Command {
 	 * with a comma. Defaults to none.
 	 *
 	 * [--post__in=<pid>]
-	 * : Export all posts specified as a comma-separated list of IDs.
+	 * : Export all posts specified as a comma- or space-separated list of IDs.
 	 *
 	 * [--start_id=<pid>]
 	 * : Export only posts with IDs greater than or equal to this post ID.
@@ -233,7 +233,8 @@ class Export_Command extends WP_CLI_Command {
 		if ( is_null( $post__in ) )
 			return true;
 
-		$post__in = array_unique( array_map( 'intval', explode( ',', $post__in ) ) );
+		$separator = false !== stripos( $post__in, ' ' ) ? ' ' : ',';
+		$post__in = array_unique( array_map( 'intval', explode( $separator, $post__in ) ) );
 		if ( empty( $post__in ) ) {
 			WP_CLI::warning( "post__in should be comma-separated post IDs" );
 			return false;
