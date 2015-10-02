@@ -230,7 +230,9 @@ class Core_Command extends WP_CLI_Command {
 					mkdir( $dest_path );
 				}
 			} else {
-				if ( is_writable( $dest_path ) ) {
+				if ( file_exists( $dest_path ) && is_writable( $dest_path ) ) {
+					copy( $item, $dest_path );
+				} elseif ( ! file_exists( $dest_path ) ) {
 					copy( $item, $dest_path );
 				} else {
 					$error = 1;
