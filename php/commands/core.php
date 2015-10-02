@@ -229,7 +229,7 @@ class Core_Command extends WP_CLI_Command {
 				}
 			} else {
 				if ( ! $item->isWritable() ) {
-					copy( $item, $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName() ) ) {
+					copy( $item, $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName() );
 				} else {
 					$error = 1;
 					WP_CLI::warning( 'Unable to copy ' . $iterator->getSubPathName() . ' to current directory.' );
