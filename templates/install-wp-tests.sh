@@ -11,24 +11,35 @@ DB_PASS=$3
 DB_HOST=${4-localhost}
 WP_VERSION=${5-latest}
 
-WP_TESTS_DIR=${WP_TESTS_DIR-/tmp/wordpress-tests-lib}
+WP_TESTS_DIR=/tmp/wordpress-tests-lib
 WP_CORE_DIR=${WP_CORE_DIR-/tmp/wordpress/}
+
+#remove trailing slash
+WP_CORE_DIR=${WP_CORE_DIR%/}
 
 set -ex
 
 download() {
-    if [ `which curl` ]; then
-        curl -s "$1" > "$2";
-    elif [ `which wget` ]; then
-        wget -nv -O "$2" "$1"
-    fi
+	if [ `which curl` ]; then
+		curl -s "$1" > "$2";
+	elif [ `which wget` ]; then
+		wget -nv -O "$2" "$1"
+	fi
+}
+
+wp_core_version(){
+	local version='trunk'
+
+	if [ -f $WP_CORE_DIR/wp-includes/version.php ]; then
+		if grep -q "wp_version = " $WP_CORE_DIR/wp-includes/version.php; then
+			version=$(grep "wp_version = " $WP_CORE_DIR/wp-includes/version.php|awk -F\' '{print $2}')
+		fi
+	fi
+
+	echo $version
 }
 
 install_wp() {
-
-	if [ -d $WP_CORE_DIR ]; then
-		return;
-	fi
 
 	mkdir -p $WP_CORE_DIR
 
@@ -52,18 +63,23 @@ install_test_suite() {
 		local ioption='-i'
 	fi
 
-	# set up testing suite if it doesn't yet exist
-	if [ ! -d $WP_TESTS_DIR ]; then
-		# set up testing suite
-		mkdir -p $WP_TESTS_DIR
-		svn co --quiet https://develop.svn.wordpress.org/trunk/tests/phpunit/includes/ $WP_TESTS_DIR/includes
+	# get the version from the installed WordPress version
+	local core_version=$(wp_core_version)
+
+	if [ $core_version != 'trunk' ]; then
+		core_version="tags/"$core_version
 	fi
+
+	# Set up the testing suite from the core version
+	mkdir -p $WP_TESTS_DIR
+
+	svn export --quiet --force https://develop.svn.wordpress.org/$core_version/tests/phpunit/includes/ $WP_TESTS_DIR/includes
 
 	cd $WP_TESTS_DIR
 
 	if [ ! -f wp-tests-config.php ]; then
-		download https://develop.svn.wordpress.org/trunk/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
-		sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR':" "$WP_TESTS_DIR"/wp-tests-config.php
+		download https://develop.svn.wordpress.org/$core_version/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
+		sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR/':" "$WP_TESTS_DIR"/wp-tests-config.php
 		sed $ioption "s/youremptytestdbnamehere/$DB_NAME/" "$WP_TESTS_DIR"/wp-tests-config.php
 		sed $ioption "s/yourusernamehere/$DB_USER/" "$WP_TESTS_DIR"/wp-tests-config.php
 		sed $ioption "s/yourpasswordhere/$DB_PASS/" "$WP_TESTS_DIR"/wp-tests-config.php
