@@ -221,15 +221,30 @@ class Core_Command extends WP_CLI_Command {
 			new RecursiveDirectoryIterator( $source, RecursiveDirectoryIterator::SKIP_DOTS ),
 			RecursiveIteratorIterator::SELF_FIRST);
 
+		$error = 0;
+
 		foreach ( $iterator as $item ) {
+
+			$dest_path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
+
 			if ( $item->isDir() ) {
-				$dest_path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
 				if ( !is_dir( $dest_path ) ) {
 					mkdir( $dest_path );
 				}
 			} else {
-				copy( $item, $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName() );
+				if ( file_exists( $dest_path ) && is_writable( $dest_path ) ) {
+					copy( $item, $dest_path );
+				} elseif ( ! file_exists( $dest_path ) ) {
+					copy( $item, $dest_path );
+				} else {
+					$error = 1;
+					WP_CLI::warning( 'Unable to copy ' . $iterator->getSubPathName() . ' to current directory.' );
+				}
 			}
+		}
+
+		if ( $error ) {
+			WP_CLI::error( 'There was an error downloading all WordPress files.' );
 		}
 	}
 
