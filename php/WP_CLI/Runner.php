@@ -693,6 +693,14 @@ class Runner {
 
 		$wp_cli_is_loaded = true;
 
+		$this->check_wp_version();
+
+		if ( !Utils\locate_wp_config() ) {
+			WP_CLI::error(
+				"wp-config.php not found.\n" .
+				"Either create one manually or use `wp core config`." );
+		}
+
 		// Load wp-config.php code, in the global scope
 		eval( $this->get_wp_config_code() );
 
