@@ -44,7 +44,14 @@ Feature: Have a config file
       """
       url: example.com/foo
       """
-    And a wp-cli.yml file:
+
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp option get home`
+    Then STDOUT should be:
+      """
+      http://example.com/foo
+      """
+
+    Given a wp-cli.yml file:
       """
       url: example.com/bar
       """
@@ -59,12 +66,6 @@ Feature: Have a config file
     Then STDOUT should be:
       """
       http://example.com/burrito
-      """
-
-    When I run `WP_CLI_CONFIG_PATH=config.yml wp option get home`
-    Then STDOUT should be:
-      """
-      http://example.com/foo
       """
 
   Scenario: WP in a subdirectory
