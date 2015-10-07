@@ -562,7 +562,7 @@ class Runner {
 		);
 	}
 
-	public function before_wp_load() {
+	public function start() {
 		$this->init_config();
 		$this->init_colorization();
 		$this->init_logger();
@@ -672,6 +672,50 @@ class Runner {
 		if ( $this->cmd_starts_with( array( 'plugin' ) ) ) {
 			$GLOBALS['pagenow'] = 'plugins.php';
 		}
+
+		$this->load_wordpress();
+
+		$this->_run_command();
+
+	}
+
+	/**
+	 * Load WordPress, if it hasn't already been loaded
+	 */
+	public function load_wordpress() {
+		static $wp_cli_is_loaded;
+		// Globals not explicitly globalized in WordPress
+		global $wpdb, $wp, $wp_rewrite, $wp_version, $wp_db_version,
+			$current_site, $current_blog, $tinymce_version, $required_php_version,
+			$shortcode_tags, $required_mysql_version, $wp_local_package;
+
+		if ( ! empty( $wp_cli_is_loaded ) ) {
+			return;
+		}
+
+		$wp_cli_is_loaded = true;
+
+		// Load wp-config.php code, in the global scope
+		eval( $this->get_wp_config_code() );
+
+		$this->maybe_update_url_from_domain_constant();
+
+		// Load Core, mu-plugins, plugins, themes etc.
+		require WP_CLI_ROOT . '/php/wp-settings-cli.php';
+
+		// Fix memory limit. See http://core.trac.wordpress.org/ticket/14889
+		@ini_set( 'memory_limit', -1 );
+
+		// Load all the admin APIs, for convenience
+		require ABSPATH . 'wp-admin/includes/admin.php';
+
+		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
+
+		// Handle --user parameter
+		if ( ! defined( 'WP_INSTALLING' ) ) {
+			self::set_user( $this->config );
+		}
+
 	}
 
 	private static function fake_current_site_blog( $url_parts ) {
@@ -707,7 +751,7 @@ class Runner {
 	/**
 	 * Called after wp-config.php is eval'd, to potentially reset `--url`
 	 */
-	public function maybe_update_url_from_domain_constant() {
+	private function maybe_update_url_from_domain_constant() {
 		if ( ! empty( $this->config['url'] ) || ! empty( $this->config['blog'] ) ) {
 			return;
 		}
@@ -721,15 +765,5 @@ class Runner {
 		}
 	}
 
-	public function after_wp_load() {
-		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
-
-		// Handle --user parameter
-		if ( ! defined( 'WP_INSTALLING' ) ) {
-			self::set_user( $this->config );
-		}
-
-		$this->_run_command();
-	}
 }
 
