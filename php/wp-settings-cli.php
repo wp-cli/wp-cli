@@ -15,6 +15,13 @@ define( 'WPINC', 'wp-includes' );
 // Include files required for initialization.
 require( ABSPATH . WPINC . '/load.php' );
 require( ABSPATH . WPINC . '/default-constants.php' );
+
+/*
+ * These can't be directly globalized in version.php. When updating,
+ * we're including version.php from another install and don't want
+ * these values to be overridden if already set.
+ */
+global $wp_version, $wp_db_version, $tinymce_version, $required_php_version, $required_mysql_version;
 require( ABSPATH . WPINC . '/version.php' );
 
 // Set initial default constants including WP_MEMORY_LIMIT, WP_MAX_MEMORY_LIMIT, WP_DEBUG, WP_CONTENT_DIR and WP_CACHE.
@@ -271,7 +278,7 @@ do_action( 'sanitize_comment_cookies' );
  * @global object $wp_the_query
  * @since 2.0.0
  */
-$wp_the_query = new WP_Query();
+$GLOBALS['wp_the_query'] = new WP_Query();
 
 /**
  * Holds the reference to @see $wp_the_query
@@ -279,7 +286,7 @@ $wp_the_query = new WP_Query();
  * @global object $wp_query
  * @since 1.5.0
  */
-$wp_query = $wp_the_query;
+$GLOBALS['wp_query'] = $wp_the_query;
 
 /**
  * Holds the WordPress Rewrite object for creating pretty URLs
@@ -293,7 +300,7 @@ $GLOBALS['wp_rewrite'] = new WP_Rewrite();
  * @global object $wp
  * @since 2.0.0
  */
-$wp = new WP();
+$GLOBALS['wp'] = new WP();
 
 /**
  * WordPress Widget Factory Object
@@ -347,7 +354,7 @@ if ( ! defined( 'WP_INSTALLING' ) || 'wp-activate.php' === $pagenow ) {
 do_action( 'after_setup_theme' );
 
 // Set up current user.
-$wp->init();
+$GLOBALS['wp']->init();
 
 /**
  * Most of WP is loaded at this stage, and the user is authenticated. WP continues
