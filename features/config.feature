@@ -35,6 +35,38 @@ Feature: Have a config file
     When I run `wp` from 'wp-content'
     Then STDOUT should not be empty
 
+  Scenario: Passed --url sets the URL context
+    Given a WP multisite install
+    And I run `wp site create --slug=foo`
+    And I run `wp site create --slug=bar`
+    And I run `wp site create --slug=burrito`
+    And a config.yml file:
+      """
+      url: example.com/foo
+      """
+    And a wp-cli.yml file:
+      """
+      url: example.com/bar
+      """
+
+    When I run `wp option get home`
+    Then STDOUT should be:
+      """
+      http://example.com/bar
+      """
+
+    When I run `wp option get home --url=example.com/burrito`
+    Then STDOUT should be:
+      """
+      http://example.com/burrito
+      """
+
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp option get home`
+    Then STDOUT should be:
+      """
+      http://example.com/foo
+      """
+
   Scenario: WP in a subdirectory
     Given a WP install in 'core'
     And a wp-cli.yml file:
