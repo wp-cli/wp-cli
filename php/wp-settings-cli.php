@@ -182,6 +182,7 @@ require( ABSPATH . WPINC . '/widgets.php' );
 require( ABSPATH . WPINC . '/nav-menu.php' );
 require( ABSPATH . WPINC . '/nav-menu-template.php' );
 require( ABSPATH . WPINC . '/admin-bar.php' );
+Utils\maybe_require( '4.4-alpha-34928', ABSPATH . WPINC . '/rest-api.php' );
 
 // Load multisite-specific files.
 if ( is_multisite() ) {
