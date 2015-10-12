@@ -306,6 +306,7 @@ class Runner {
 			$extra_args = array();
 		}
 
+		WP_CLI::debug( 'Running command: ' . $name );
 		try {
 			$command->invoke( $final_args, $assoc_args, $extra_args );
 		} catch ( WP_CLI\Iterators\Exception $e ) {
