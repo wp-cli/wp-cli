@@ -21,6 +21,10 @@ class Runner {
 
 	private $_early_invoke = array();
 
+	private $_global_config_path_debug;
+
+	private $_project_config_path_debug;
+
 	public function __get( $key ) {
 		if ( '_' === $key[0] )
 			return null;
@@ -60,20 +64,25 @@ class Runner {
 	 *
 	 * @return string|false
 	 */
-	private static function get_global_config_path() {
-		$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
+	private function get_global_config_path() {
+
 		if ( isset( $runtime_config['config'] ) ) {
 			$config_path = $runtime_config['config'];
-		}
-
-		if ( !$config_path ) {
+			$this->_global_config_path_debug = 'Using global config from config runtime arg: ' . $config_path;
+		} else if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
+			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
+			$this->_global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
+		} else {
 			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
+			$this->_global_config_path_debug = 'Using default global config: ' . $config_path;
 		}
 
-		if ( !is_readable( $config_path ) )
+		if ( is_readable( $config_path ) ) {
+			return $config_path;
+		} else {
+			$this->_global_config_path_debug = 'No readable global config found';
 			return false;
-
-		return $config_path;
+		}
 	}
 
 	/**
@@ -83,7 +92,7 @@ class Runner {
 	 *
 	 * @return string|false
 	 */
-	private static function get_project_config_path() {
+	private function get_project_config_path() {
 		$config_files = array(
 			'wp-cli.local.yml',
 			'wp-cli.yml'
@@ -91,7 +100,7 @@ class Runner {
 
 		// Stop looking upward when we find we have emerged from a subdirectory
 		// install into a parent install
-		return Utils\find_file_upward( $config_files, getcwd(), function ( $dir ) {
+		$project_config_path = Utils\find_file_upward( $config_files, getcwd(), function ( $dir ) {
 			static $wp_load_count = 0;
 			$wp_load_path = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
 			if ( file_exists( $wp_load_path ) ) {
@@ -99,6 +108,12 @@ class Runner {
 			}
 			return $wp_load_count > 1;
 		} );
+		if ( ! empty( $project_config_path ) ) {
+			$this->_project_config_path_debug = 'Using project config: ' . $project_config_path;
+		} else {
+			$this->_project_config_path_debug = 'No project config found';
+		}
+		return $project_config_path;
 	}
 
 	/**
@@ -171,6 +186,7 @@ class Runner {
 	 */
 	private static function set_wp_root( $path ) {
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+		WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH );
 
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $path );
 	}
@@ -290,6 +306,7 @@ class Runner {
 			$extra_args = array();
 		}
 
+		WP_CLI::debug( 'Running command: ' . $name );
 		try {
 			$command->invoke( $final_args, $assoc_args, $extra_args );
 		} catch ( WP_CLI\Iterators\Exception $e ) {
@@ -514,8 +531,8 @@ class Runner {
 
 		// File config
 		{
-			$this->global_config_path = self::get_global_config_path();
-			$this->project_config_path = self::get_project_config_path();
+			$this->global_config_path = $this->get_global_config_path();
+			$this->project_config_path = $this->get_project_config_path();
 
 			$configurator->merge_yml( $this->global_config_path );
 			$configurator->merge_yml( $this->project_config_path );
@@ -567,6 +584,9 @@ class Runner {
 		$this->init_colorization();
 		$this->init_logger();
 
+		WP_CLI::debug( $this->_global_config_path_debug );
+		WP_CLI::debug( $this->_project_config_path_debug );
+
 		$this->check_root();
 
 		if ( empty( $this->arguments ) )
@@ -588,6 +608,7 @@ class Runner {
 					WP_CLI::error( sprintf( "Required file '%s' doesn't exist", basename( $path ) ) );
 				}
 				Utils\load_file( $path );
+				WP_CLI::debug( 'Required file from config: ' . $path );
 			}
 		}
 
@@ -693,13 +714,18 @@ class Runner {
 
 		$wp_cli_is_loaded = true;
 
+		WP_CLI::debug( 'Begin WordPress load' );
+
 		$this->check_wp_version();
 
-		if ( !Utils\locate_wp_config() ) {
+		$wp_config_path = Utils\locate_wp_config();
+		if ( ! $wp_config_path ) {
 			WP_CLI::error(
 				"wp-config.php not found.\n" .
 				"Either create one manually or use `wp core config`." );
 		}
+
+		WP_CLI::debug( 'wp-config.php path: ' . $wp_config_path );
 
 		// Load wp-config.php code, in the global scope
 		eval( $this->get_wp_config_code() );
@@ -721,6 +747,8 @@ class Runner {
 		if ( ! defined( 'WP_INSTALLING' ) ) {
 			self::set_user( $this->config );
 		}
+
+		WP_CLI::debug( 'Loaded WordPress' );
 
 	}
 

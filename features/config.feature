@@ -199,6 +199,35 @@ Feature: Have a config file
     When I run `WP_CLI_CONFIG_PATH=test-dir/config.yml wp help`
 	  Then STDERR should be empty
 
+  Scenario: Load WordPress with `--debug`
+    Given a WP install
+
+    When I run `wp option get home --debug`
+    Then STDERR should contain:
+      """
+      No readable global config found
+      """
+    Then STDERR should contain:
+      """
+      No project config found
+      """
+    And STDERR should contain:
+      """
+      Begin WordPress load
+      """
+    And STDERR should contain:
+      """
+      wp-config.php path:
+      """
+    And STDERR should contain:
+      """
+      Loaded WordPress
+      """
+    And STDERR should contain:
+      """
+      Running command: option get
+      """
+
   Scenario: Missing required files should not fatal WP-CLI
     Given an empty directory
     And a wp-cli.yml file:

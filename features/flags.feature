@@ -97,7 +97,7 @@ Feature: Global flags
       """
 
     When I try `wp --require=custom-logger.php is-installed`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       log: called 'error' method
       """
