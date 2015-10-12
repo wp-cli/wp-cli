@@ -1,7 +1,6 @@
 <?php
 
 use \Composer\Semver\Comparator;
-use \Composer\Semver\Semver;
 use \WP_CLI\Dispatcher;
 use \WP_CLI\Utils;
 
@@ -246,7 +245,7 @@ class CLI_Command extends WP_CLI_Command {
 				$release_version = ltrim( $release_version, 'v' );
 			}
 
-			$update_type = $this->get_named_sem_ver( $release_version );
+			$update_type = Utils\get_named_sem_ver( $release_version, WP_CLI_VERSION );
 			if ( ! $update_type ) {
 				continue;
 			}
@@ -336,30 +335,6 @@ class CLI_Command extends WP_CLI_Command {
 		$line = substr( $assoc_args['line'], 0, $assoc_args['point'] );
 		$compl = new \WP_CLI\Completions( $line );
 		$compl->render();
-	}
-
-	/**
-	 * Get the named semantic version
-	 *
-	 * @param string $version
-	 * @return string $name 'major', 'minor', 'patch'
-	 */
-	private function get_named_sem_ver( $version ) {
-
-		if ( ! Comparator::greaterThan( $version, WP_CLI_VERSION ) ) {
-			return '';
-		}
-
-		$parts = explode( '-', WP_CLI_VERSION );
-		list( $major, $minor, $patch ) = explode( '.', $parts[0] );
-
-		if ( Semver::satisfies( $version, "{$major}.{$minor}.x" ) ) {
-			return 'patch';
-		} else if ( Semver::satisfies( $version, "{$major}.x.x" ) ) {
-			return 'minor';
-		} else {
-			return 'major';
-		}
 	}
 
 	/**
