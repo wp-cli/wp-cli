@@ -93,6 +93,7 @@ class WP_CLI {
 	 * Set the context in which WP-CLI should be run
 	 */
 	public static function set_url( $url ) {
+		WP_CLI::debug( 'Set URL: ' . $url );
 		$url_parts = Utils\parse_url( $url );
 		self::set_url_params( $url_parts );
 	}
@@ -234,6 +235,15 @@ class WP_CLI {
 	 */
 	public static function success( $message ) {
 		self::$logger->success( $message );
+	}
+
+	/**
+	 * Log debug information
+	 *
+	 * @param string $message
+	 */
+	public static function debug( $message ) {
+		self::$logger->debug( self::error_to_string( $message ) );
 	}
 
 	/**
