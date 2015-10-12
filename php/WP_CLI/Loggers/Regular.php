@@ -56,6 +56,18 @@ class Regular {
 	}
 
 	/**
+	 * Write a message to STDERR, prefixed with "Debug: ".
+	 *
+	 * @param string $message Message to write.
+	 */
+	public function debug( $message ) {
+		if ( \WP_CLI::get_runner()->config['debug'] ) {
+			$time = round( microtime( true ) - WP_CLI_START_MICROTIME, 3 );
+			$this->_line( "$message ({$time}s)", 'Debug', '%B', STDERR );
+		}
+	}
+
+	/**
 	 * Write a warning message to STDERR, prefixed with "Warning: ".
 	 *
 	 * @param string $message Message to write.
