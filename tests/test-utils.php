@@ -33,5 +33,16 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		);
 	}
 
+	public function testGetSemVer() {
+		$original_version = '0.19.1';
+		$this->assertEmpty( Utils\get_named_sem_ver( '0.18.0', $original_version ) );
+		$this->assertEmpty( Utils\get_named_sem_ver( '0.19.1', $original_version ) );
+		$this->assertEquals( 'patch', Utils\get_named_sem_ver( '0.19.2', $original_version ) );
+		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '0.20.0', $original_version ) );
+		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '0.20.3', $original_version ) );
+		$this->assertEquals( 'major', Utils\get_named_sem_ver( '1.0.0', $original_version ) );
+		$this->assertEquals( 'major', Utils\get_named_sem_ver( '1.1.1', $original_version ) );
+	}
+
 }
 
