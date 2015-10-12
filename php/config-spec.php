@@ -67,7 +67,7 @@ return array(
 		'runtime' => '',
 		'file' => '<bool>',
 		'default' => false,
-		'desc' => 'Show all PHP errors',
+		'desc' => 'Show all PHP errors; add verbosity to WP-CLI bootstrap',
 	),
 
 	'prompt' => array(
