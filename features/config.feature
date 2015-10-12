@@ -223,6 +223,10 @@ Feature: Have a config file
       """
       Loaded WordPress
       """
+    And STDERR should contain:
+      """
+      Running command: option get
+      """
 
   Scenario: Missing required files should not fatal WP-CLI
     Given an empty directory
