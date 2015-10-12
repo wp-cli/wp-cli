@@ -141,12 +141,6 @@ Feature: Manage WordPress users
       Error: Missing file: users-incorrect.csv
       """
 
-    When I try `wp user import-csv http://example.com/users.csv --skip-update`
-    Then STDERR should be:
-      """
-      Error: Couldn't access remote CSV file (HTTP 404 response).
-      """
-
     When I run `wp user import-csv users.csv`
     Then STDOUT should not be empty
 
