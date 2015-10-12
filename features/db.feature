@@ -73,17 +73,19 @@ Feature: Perform database operations
       """
 
   Scenario: DB export no charset
-    Given a WP install
-    And a replace-script.php file:
+    Given an empty directory
+    And WP files
+
+    When I run `wp core config {CORE_CONFIG_SETTINGS} --dbcharset=""`
+    Then STDOUT should not be empty
+
+    When I run `cat wp-config.php`
+    Then STDOUT should contain:
       """
-      <?php
-      $wp_config = file_get_contents( 'wp-config.php' );
-      $wp_config = str_replace( 'utf8', '', $wp_config );
-      file_put_contents( 'wp-config.php', $wp_config );
-      WP_CLI::success( "Replaced charset" );
+      define('DB_CHARSET', '');
       """
 
-    When I run `wp eval-file replace-script.php`
+    When I run `wp db create`
     Then STDOUT should not be empty
 
     When I run `wp db export /tmp/wp-cli-behat.sql`

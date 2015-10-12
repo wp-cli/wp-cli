@@ -206,30 +206,6 @@ class Runner {
 			if ( true === $url ) {
 				WP_CLI::warning( 'The --url parameter expects a value.' );
 			}
-		} elseif ( $wp_config_path = Utils\locate_wp_config() ) {
-			// Try to find the blog parameter in the wp-config file
-			$wp_config_file = file_get_contents( $wp_config_path );
-			$hit = array();
-
-			$re_define = "~(.*)define\s*\(\s*(['|\"]{1})(.+)(['|\"]{1})\s*,\s*(['|\"]{1})(.+)(['|\"]{1})\s*\)\s*;~iU";
-
-			if ( preg_match_all( $re_define, $wp_config_file, $matches ) ) {
-				foreach ( $matches[3] as $def_key => $def_name ) {
-					if ( false !== strpos( $matches[1][$def_key], '#' ) || false !== strpos( $matches[1][$def_key], '//' ) ) {
-						continue;
-					}
-					if ( 'DOMAIN_CURRENT_SITE' == $def_name )
-						$hit['domain'] = $matches[6][$def_key];
-					if ( 'PATH_CURRENT_SITE' == $def_name )
-						$hit['path'] = $matches[6][$def_key];
-				}
-			}
-
-			if ( !empty( $hit ) && isset( $hit['domain'] ) ) {
-				$url = $hit['domain'];
-				if ( isset( $hit['path'] ) )
-					$url .= $hit['path'];
-			}
 		}
 
 		if ( isset( $url ) ) {
@@ -453,6 +429,26 @@ class Runner {
 			}
 		}
 
+		// (post|site) url  --> (post|site) list --*__in --field=url
+		if ( count( $args ) >= 2 && in_array( $args[0], array( 'post', 'site' ) ) && 'url' === $args[1] ) {
+			switch ( $args[0] ) {
+				case 'post':
+					$post_ids = array_slice( $args, 2 );
+					$args = array( 'post', 'list' );
+					$assoc_args['post__in'] = implode( ',', $post_ids );
+					$assoc_args['post_type'] = 'any';
+					$assoc_args['orderby'] = 'post__in';
+					$assoc_args['field'] = 'url';
+					break;
+				case 'site':
+					$site_ids = array_slice( $args, 2 );
+					$args = array( 'site', 'list' );
+					$assoc_args['site__in'] = implode( ',', $site_ids );
+					$assoc_args['field'] = 'url';
+					break;
+			}
+		}
+
 		return array( $args, $assoc_args );
 	}
 
@@ -566,7 +562,7 @@ class Runner {
 		);
 	}
 
-	public function before_wp_load() {
+	public function start() {
 		$this->init_config();
 		$this->init_colorization();
 		$this->init_logger();
@@ -676,6 +672,56 @@ class Runner {
 		if ( $this->cmd_starts_with( array( 'plugin' ) ) ) {
 			$GLOBALS['pagenow'] = 'plugins.php';
 		}
+
+		$this->load_wordpress();
+
+		$this->_run_command();
+
+	}
+
+	/**
+	 * Load WordPress, if it hasn't already been loaded
+	 */
+	public function load_wordpress() {
+		static $wp_cli_is_loaded;
+		// Globals not explicitly globalized in WordPress
+		global $blog_id, $site_id, $public, $current_site, $current_blog, $shortcode_tags;
+
+		if ( ! empty( $wp_cli_is_loaded ) ) {
+			return;
+		}
+
+		$wp_cli_is_loaded = true;
+
+		$this->check_wp_version();
+
+		if ( !Utils\locate_wp_config() ) {
+			WP_CLI::error(
+				"wp-config.php not found.\n" .
+				"Either create one manually or use `wp core config`." );
+		}
+
+		// Load wp-config.php code, in the global scope
+		eval( $this->get_wp_config_code() );
+
+		$this->maybe_update_url_from_domain_constant();
+
+		// Load Core, mu-plugins, plugins, themes etc.
+		require WP_CLI_ROOT . '/php/wp-settings-cli.php';
+
+		// Fix memory limit. See http://core.trac.wordpress.org/ticket/14889
+		@ini_set( 'memory_limit', -1 );
+
+		// Load all the admin APIs, for convenience
+		require ABSPATH . 'wp-admin/includes/admin.php';
+
+		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
+
+		// Handle --user parameter
+		if ( ! defined( 'WP_INSTALLING' ) ) {
+			self::set_user( $this->config );
+		}
+
 	}
 
 	private static function fake_current_site_blog( $url_parts ) {
@@ -708,15 +754,22 @@ class Runner {
 		);
 	}
 
-	public function after_wp_load() {
-		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
-
-		// Handle --user parameter
-		if ( ! defined( 'WP_INSTALLING' ) ) {
-			self::set_user( $this->config );
+	/**
+	 * Called after wp-config.php is eval'd, to potentially reset `--url`
+	 */
+	private function maybe_update_url_from_domain_constant() {
+		if ( ! empty( $this->config['url'] ) || ! empty( $this->config['blog'] ) ) {
+			return;
 		}
 
-		$this->_run_command();
+		if ( defined( 'DOMAIN_CURRENT_SITE' ) ) {
+			$url = DOMAIN_CURRENT_SITE;
+			if ( defined( 'PATH_CURRENT_SITE' ) ) {
+				$url .= PATH_CURRENT_SITE;
+			}
+			\WP_CLI::set_url( $url );
+		}
 	}
+
 }
 

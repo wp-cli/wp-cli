@@ -19,13 +19,15 @@ class Capabilities_Command extends WP_CLI_Command {
 	/**
 	 * List capabilities for a given role.
 	 *
+	 * <role>
+	 * : Key for the role.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Display alphabetical list of bbPress moderator capabilities
 	 *     wp cap list 'bbp_moderator' | sort
 	 *
 	 * @subcommand list
-	 * @synopsis <role>
 	 */
 	public function list_( $args ) {
 		$role_obj = self::get_role( $args[0] );
@@ -37,7 +39,11 @@ class Capabilities_Command extends WP_CLI_Command {
 	/**
 	 * Add capabilities to a given role.
 	 *
-	 * @synopsis <role> <cap>...
+	 * <role>
+	 * : Key for the role.
+	 *
+	 * <cap>...
+	 * : One or more capabilities to add.
 	 */
 	public function add( $args ) {
 		self::persistence_check();
@@ -63,7 +69,11 @@ class Capabilities_Command extends WP_CLI_Command {
 	/**
 	 * Remove capabilities from a given role.
 	 *
-	 * @synopsis <role> <cap>...
+	 * <role>
+	 * : Key for the role.
+	 *
+	 * <cap>...
+	 * : One or more capabilities to remove.
 	 */
 	public function remove( $args ) {
 		self::persistence_check();

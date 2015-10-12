@@ -463,6 +463,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme update twentyeleven twentytwelve
 	 *
 	 *     wp theme update --all
+	 *
+	 * @alias upgrade
 	 */
 	function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['version'] ) ) {

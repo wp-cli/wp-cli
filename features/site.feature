@@ -18,15 +18,15 @@ Feature: Manage sites in a multisite installation
 
     When I run `wp site list --fields=blog_id,url`
     Then STDOUT should be a table containing rows:
-      | blog_id | url                |
-      | 1       | example.com/       |
-      | 2       | example.com/first/ |
+      | blog_id | url                       |
+      | 1       | http://example.com/       |
+      | 2       | http://example.com/first/ |
 
     When I run `wp site list --field=url`
     Then STDOUT should be:
       """
-      example.com/
-      example.com/first/
+      http://example.com/
+      http://example.com/first/
       """
 
     When I run `wp site delete {SITE_ID} --yes`
@@ -44,14 +44,14 @@ Feature: Manage sites in a multisite installation
 
     When I run `wp site list --fields=blog_id,url`
     Then STDOUT should be a table containing rows:
-      | blog_id | url                |
-      | 1       | example.com/       |
-      | 2       | example.com/first/ |
+      | blog_id | url                       |
+      | 1       | http://example.com/       |
+      | 2       | http://example.com/first/ |
 
     When I run `wp site list --field=url --blog_id=2`
     Then STDOUT should be:
       """
-      example.com/first/
+      http://example.com/first/
       """
 
   Scenario: Delete a site by slug
@@ -100,7 +100,18 @@ Feature: Manage sites in a multisite installation
     When I run `wp site url {SITE_ID}`
     Then STDOUT should be:
       """
-      http://example.com/first
+      http://example.com/first/
+      """
+
+    When I run `wp site create --slug=second --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SECOND_ID}
+
+    When I run `wp site url {SECOND_ID} {SITE_ID}`
+    Then STDOUT should be:
+      """
+      http://example.com/second/
+      http://example.com/first/
       """
 
   Scenario: Archive/unarchive a site

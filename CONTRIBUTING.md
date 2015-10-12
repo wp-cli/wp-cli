@@ -40,7 +40,9 @@ The unit test files are in the `tests/` directory.
 
 To run the unit tests, just execute:
 
-    ./vendor/bin/phpunit
+```bash
+./vendor/bin/phpunit
+```
 
 ### Functional tests
 
@@ -48,15 +50,21 @@ The functional test files are in the `features/` directory.
 
 Before running the functional tests, you'll need a MySQL user called `wp_cli_test` with the password `password1` that has full privileges on the MySQL database `wp_cli_test`. Running the following as root in MySQL should do the trick:
 
-    GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"localhost" IDENTIFIED BY "password1";
+```sql
+GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"localhost" IDENTIFIED BY "password1";
+```
 
 Then, to run the entire test suite:
 
-    ./vendor/bin/behat --expand
+```bash
+./vendor/bin/behat --expand
+```
 
 Or to test a single feature:
 
-    ./vendor/bin/behat features/core.feature
+```bash    
+./vendor/bin/behat features/core.feature
+```
 
 More info can be found by using `./vendor/bin/behat --help`.
 
