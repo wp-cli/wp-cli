@@ -685,7 +685,7 @@ class Runner {
 	public function load_wordpress() {
 		static $wp_cli_is_loaded;
 		// Globals not explicitly globalized in WordPress
-		global $blog_id, $site_id, $public, $current_site, $current_blog, $shortcode_tags;
+		global $site_id, $public, $current_site, $current_blog, $shortcode_tags;
 
 		if ( ! empty( $wp_cli_is_loaded ) ) {
 			return;
