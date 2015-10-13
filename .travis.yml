@@ -40,6 +40,8 @@ matrix:
      env: WP_VERSION=4.3.1
    - php: 7.0
      env: WP_VERSION=4.3.1
+  allow_failures:
+   - php: 7.0
 
 before_script: ./ci/prepare.sh
 
