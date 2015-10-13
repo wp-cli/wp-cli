@@ -2,11 +2,6 @@ sudo: false
 
 language: php
 
-php:
-  - 5.3
-  - 5.6
-  - '7'
-
 env:
   global:
     - WP_CLI_BIN_DIR=/tmp/wp-cli-phar
@@ -34,16 +29,17 @@ env:
     - secure: "XS4lJJSZ2+4rB+zkt9lsdhG+pZEQ6nUjRSdLcVAgS7f7yvFCOjJYWRXlQ5zP/Gl3/XVe/L8EuGLYZsztauLSd6Ob7nEwnb5vIegLaqzbZd7Yizp9TnBj0AFCqo/ZPY+ZhnURY9OLFqknfQMWhrTeVvGRT94nhnnIF+sxokQgv0M="
     - secure: "TVMYSuxuZojZUHn3R9me8FCA1V6RaOTNE6A5gta7LSTtqZFLAQOer6tfLVof5fB3SHh2ANcOYPpjO729Mcrg195p1I/0nS18WZ0BVYvsN0Dob1I79rqYvsaW8syxCd/6TZvr7XZYdd1fDtt7kxsv74SljkliYwI2mTniQDxMONE="
     - secure: "OqbgLy6Rn+NvhjpYygNZDWf6rj8sVejRZJBmssNi5fHRXopEtfIHids2FjSXZUVPs3ShqNuczo1jzgt7N3JHbcSaiedHlc7ONqDK0SyyOcsv1oKOR81bvYcL/KIoGiMRvkQI5IW01YWfSZlS0wgL2NYdJvYanCnSUUv6nNZAF7E="
-  matrix:
-    - WP_VERSION=4.3.1
-    - WP_VERSION=3.5.2 DEPLOY_BRANCH=master
 
 matrix:
-  exclude:
-    - php: 5.6
-      env: WP_VERSION=3.5.2 DEPLOY_BRANCH=master
-    - php: '7'
-      env: WP_VERSION=3.5.2 DEPLOY_BRANCH=master
+  include:
+   - php: 5.3
+     env: WP_VERSION=3.5.2 DEPLOY_BRANCH=master
+   - php: 5.6
+     env: WP_VERSION=3.5.2
+   - php: 5.6
+     env: WP_VERSION=4.3.1
+   - php: 7.0
+     env: WP_VERSION=4.3.1
 
 before_script: ./ci/prepare.sh
 
