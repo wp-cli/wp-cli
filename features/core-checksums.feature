@@ -31,3 +31,25 @@ Feature: Validate checksums for WordPress install
       Warning: File doesn't exist: readme.html
       Error: WordPress install doesn't verify against checksums.
       """
+
+  Scenario: Verify core checksums without loading WordPress
+    Given an empty directory
+    And I run `wp core download --version=4.3`
+
+    When I try `wp core verify-checksums`
+    Then STDERR should contain:
+      """
+      Error: wp-config.php not found.
+      """
+
+    When I run `wp core verify-checksums --version=4.3 --locale=en_US`
+    Then STDOUT should be:
+      """
+      Success: WordPress install verifies against checksums.
+      """
+
+    When I try `wp core verify-checksums --version=4.2 --locale=en_US`
+    Then STDERR should contain:
+      """
+      Error: WordPress install doesn't verify against checksums.
+      """
