@@ -25,7 +25,7 @@ class Term_Command extends WP_CLI_Command {
 	 * : List terms of one or more taxonomies
 	 *
 	 * [--<field>=<value>]
-	 * : Filter by one or more fields.
+	 * : Filter by one or more fields (see get_terms() $args parameter for a list of fields).
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each term.
