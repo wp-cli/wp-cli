@@ -9,7 +9,6 @@ class Taxonomy_Command extends WP_CLI_Command {
 	private $fields = array(
 		'name',
 		'label',
-		'description',
 		'public',
 		'hierarchical'
 	);
