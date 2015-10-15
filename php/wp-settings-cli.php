@@ -185,6 +185,7 @@ require( ABSPATH . WPINC . '/shortcodes.php' );
 Utils\maybe_require( '3.5-alpha-22024', ABSPATH . WPINC . '/class-wp-embed.php' );
 require( ABSPATH . WPINC . '/media.php' );
 Utils\maybe_require( '4.4-alpha-34851', ABSPATH . WPINC . '/embed-functions.php' );
+Utils\maybe_require( '4.4-alpha-34903', ABSPATH . WPINC . '/class-wp-oembed-controller.php' );
 require( ABSPATH . WPINC . '/http.php' );
 require_once( ABSPATH . WPINC . '/class-http.php' );
 require( ABSPATH . WPINC . '/widgets.php' );
