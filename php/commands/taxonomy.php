@@ -9,9 +9,23 @@ class Taxonomy_Command extends WP_CLI_Command {
 	private $fields = array(
 		'name',
 		'label',
+		'description',
+		'object_type',
+		'show_tagcloud',
+		'hierarchical',
 		'public',
-		'hierarchical'
 	);
+
+	public function __construct() {
+		global $wp_version;
+
+		if ( version_compare( $wp_version, 3.7, '<' ) ) {
+			// remove description for wp <= 3.7
+			$this->fields = array_values( array_diff( $this->fields, array( 'description' ) ) );
+		}
+
+		parent::__construct();
+	}
 
 	/**
 	 * List taxonomies.
@@ -58,6 +72,11 @@ class Taxonomy_Command extends WP_CLI_Command {
 		}
 
 		$taxonomies = get_taxonomies( $assoc_args, 'objects' );
+
+		$taxonomies = array_map( function( $taxonomy ) {
+			$taxonomy->object_type = implode( ', ', $taxonomy->object_type );
+			return $taxonomy;
+		}, $taxonomies );
 
 		$formatter->display_items( $taxonomies );
 	}
