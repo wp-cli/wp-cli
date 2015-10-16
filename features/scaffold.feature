@@ -161,7 +161,6 @@ Feature: WordPress code scaffolding
       """
     And the {PLUGIN_DIR}/hello-world/phpunit.xml file should exist
     And the {PLUGIN_DIR}/hello-world/.travis.yml file should exist
-    And the {PLUGIN_DIR}/hello-world/.editorconfig file should exist
 
     When I run `wp eval "if ( is_executable( '{PLUGIN_DIR}/hello-world/bin/install-wp-tests.sh' ) ) { echo 'executable'; } else { exit( 1 ); }"`
     Then STDOUT should be:
@@ -200,7 +199,6 @@ Feature: WordPress code scaffolding
     When I run `wp scaffold package-tests community-command`
     Then STDOUT should not be empty
     And the community-command/.travis.yml file should exist
-    And the community-command/.editorconfig file should exist
     And the community-command/bin/install-package-tests.sh file should exist
     And the community-command/utils/get-package-require-from-composer.php file should exist
     And the community-command/features directory should contain:
@@ -353,7 +351,7 @@ Feature: WordPress code scaffolding
     """
   Scenario: Scaffold tests for invalid plugin directory
     Given a WP install
-
+  
     When I try `wp scaffold plugin-tests incorrect-custom-plugin`
     Then STDERR should contain:
       """
