@@ -798,10 +798,7 @@ EOT;
 	 * @return bool|array False on failure. An array of checksums on success.
 	 */
 	private static function get_core_checksums( $version, $locale ) {
-		$url = $http_url = 'http://api.wordpress.org/core/checksums/1.0/?' . http_build_query( compact( 'version', 'locale' ), null, '&' );
-
-		if ( $ssl = wp_http_supports( array( 'ssl' ) ) )
-			$url = 'https' . substr( $url, 4 );
+		$url = 'https://api.wordpress.org/core/checksums/1.0/?' . http_build_query( compact( 'version', 'locale' ), null, '&' );
 
 		$options = array(
 			'timeout' => 30
@@ -811,11 +808,6 @@ EOT;
 			'Accept' => 'application/json'
 		);
 		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
-
-		if ( $ssl && ! $response->success ) {
-			WP_CLI::warning( 'wp-cli could not establish a secure connection to WordPress.org. Please contact your server administrator.' );
-			$response = Utils\http_request( 'GET', $http_url, null, $headers, $options );
-		}
 
 		if ( ! $response->success || 200 != $response->status_code )
 			return false;
@@ -832,10 +824,32 @@ EOT;
 	/**
 	 * Verify WordPress files against WordPress.org's checksums.
 	 *
+	 * Specify version to verify checksums without loading WordPress.
+	 *
+	 * [--version=<version>]
+	 * : Verify checksums against a specific version of WordPress.
+	 *
+	 * [--locale=<locale>]
+	 * : Verify checksums against a specific locale of WordPress.
+	 *
+	 * @when before_wp_load
+	 *
 	 * @subcommand verify-checksums
 	 */
 	public function verify_checksums( $args, $assoc_args ) {
 		global $wp_version, $wp_local_package;
+
+		if ( ! empty( $assoc_args['version'] ) ) {
+			$wp_version = $assoc_args['version'];
+		}
+
+		if ( ! empty( $assoc_args['locale'] ) ) {
+			$wp_local_package = $assoc_args['locale'];
+		}
+
+		if ( empty( $wp_version ) ) {
+			WP_CLI::get_runner()->load_wordpress();
+		}
 
 		$checksums = self::get_core_checksums( $wp_version, isset( $wp_local_package ) ? $wp_local_package : 'en_US' );
 
