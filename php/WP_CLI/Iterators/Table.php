@@ -70,7 +70,9 @@ class Table extends Query {
 			$conditions = array();
 			foreach( $where as $key => $value ) {
 				if ( is_array( $value ) ) {
-					$conditions[]  = $key . ' IN (' . implode( ',', $wpdb->prepare( '%s', $value ) ) . ')';
+					$conditions[]  = $key . ' IN (' . implode( ',', array_map(function( $value ){
+						return $wpdb->prepare( '"%s"', $value );
+					}, $value ) ) . ')';
 				} else if ( is_numeric( $key ) ) {
 					$conditions[] = $value;
 				} else {
