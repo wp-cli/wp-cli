@@ -300,7 +300,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
-			wp_new_user_notification( $user_id, $user->user_pass );
+			self::wp_new_user_notification( $user_id, $user->user_pass );
 		}
 
 		if ( is_wp_error( $user_id ) ) {
@@ -721,7 +721,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				}
 
 				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
-					wp_new_user_notification( $user_id, $new_user['user_pass'] );
+					self::wp_new_user_notification( $user_id, $new_user['user_pass'] );
 				}
 			}
 
@@ -758,6 +758,27 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( sprintf( "Role doesn't exist: %s", $role ) );
 		}
 
+	}
+
+	/**
+	 * Acommodate three different behaviors for wp_new_user_notification()
+	 * - 4.3.1 and above: expect second argument to be deprecated
+	 * - 4.3: Second argument was repurposed as $notify
+	 * - Below 4.3: Send the password in the notification
+	 *
+	 * @param string $user_id
+	 * @param string $password
+	 */
+	private static function wp_new_user_notification( $user_id, $password ) {
+		global $wp_version;
+		$version = str_replace( '-src', '', $wp_version );
+		if ( version_compare( $version, '4.3.1', '>=' ) ) {
+			wp_new_user_notification( $user_id, null, 'both' );
+		} else if ( version_compare( $version, '4.3', '>=' ) ) {
+			wp_new_user_notification( $user_id, 'both' );
+		} else {
+			wp_new_user_notification( $user_id, $password );
+		}
 	}
 
 }
