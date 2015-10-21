@@ -774,7 +774,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$version = str_replace( '-src', '', $wp_version );
 		if ( version_compare( $version, '4.3.1', '>=' ) ) {
 			wp_new_user_notification( $user_id, null, 'both' );
-		} else if ( version_compare( $version, '4.3', '>' ) ) {
+		} else if ( version_compare( $version, '4.3', '>=' ) ) {
 			wp_new_user_notification( $user_id, 'both' );
 		} else {
 			wp_new_user_notification( $user_id, $password );
