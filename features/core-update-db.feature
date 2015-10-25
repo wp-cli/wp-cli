@@ -8,13 +8,13 @@ Feature: Update core's database
     When I run `wp core update-db`
     Then STDOUT should contain:
       """
-      Success: WordPress database upgraded successfully from 29630 to 30133
+      Success: WordPress database upgraded successfully from db version 29630 to 30133
       """
 
     When I run `wp core update-db`
     Then STDOUT should contain:
       """
-      Success: WordPress database already at latest version 30133
+      Success: WordPress database already at latest db version 30133
       """
 
   Scenario: Update db across network
