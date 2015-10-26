@@ -65,6 +65,7 @@ class Table extends Query {
 	}
 
 	private static function build_where_conditions( $where ) {
+		global $wpdb;
 		if ( is_array( $where ) ) {
 			$conditions = array();
 			foreach( $where as $key => $value ) {
