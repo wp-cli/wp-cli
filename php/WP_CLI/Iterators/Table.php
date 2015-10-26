@@ -65,16 +65,15 @@ class Table extends Query {
 	}
 
 	private static function build_where_conditions( $where ) {
-		global $wpdb;
 		if ( is_array( $where ) ) {
 			$conditions = array();
 			foreach( $where as $key => $value ) {
 				if ( is_array( $value ) ) {
-					$conditions[]  = $key . ' IN (' . $wpdb->escape( implode( ',', $value ) ) . ')';
+					$conditions[]  = $key . ' IN (' . esc_sql( implode( ',', $value ) ) . ')';
 				} else if ( is_numeric( $key ) ) {
 					$conditions[] = $value;
 				} else {
-					$conditions[] = $key . ' = "' . $wpdb->escape( $value ) .'"';
+					$conditions[] = $key . $wpdb->prepare( ' = %s', $value );
 				}
 			}
 			$where = implode( ' AND ', $conditions );
