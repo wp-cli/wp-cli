@@ -130,7 +130,7 @@ class Option_Command extends WP_CLI_Command {
 		$autoload_query = '';
 
 		if ( isset( $assoc_args['search'] ) ) {
-			$pattern = self::esc_like( esc_sql( $assoc_args['search'] ) );
+			$pattern = self::esc_like( $assoc_args['search'] );
 			// substitute wildcards
 			$pattern = str_replace( '*', '%', $pattern );
 			$pattern = str_replace( '?', '_', $pattern );
