@@ -72,6 +72,7 @@ $finder
 	->in(WP_CLI_ROOT . '/vendor/symfony/finder')
 	->in(WP_CLI_ROOT . '/vendor/nb/oxymel')
 	->in(WP_CLI_ROOT . '/vendor/ramsey/array_column')
+	->in(WP_CLI_ROOT . '/vendor/composer/semver')
 	->exclude('test')
 	->exclude('tests')
 	->exclude('Tests')

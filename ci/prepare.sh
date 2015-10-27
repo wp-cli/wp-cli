@@ -23,7 +23,15 @@ chmod +x $WP_CLI_BIN_DIR/wp
 # Install CodeSniffer things
 ./ci/prepare-codesniffer.sh
 
-./bin/wp core download --version=$WP_VERSION --path='/tmp/wp-cli-test core-download-cache/'
+if [[ $WP_VERSION == "trunk" ]]
+then
+	wget https://wordpress.org/nightly-builds/wordpress-latest.zip
+	unzip wordpress-latest.zip
+	mv wordpress '/tmp/wp-cli-test core-download-cache/'
+else
+	./bin/wp core download --version=$WP_VERSION --path='/tmp/wp-cli-test core-download-cache/'
+fi
+
 ./bin/wp core version --path='/tmp/wp-cli-test core-download-cache/'
 
 mysql -e 'CREATE DATABASE wp_cli_test;' -uroot

@@ -23,7 +23,11 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Get an option.
 	 *
-	 * @synopsis <key> [--format=<format>]
+	 * <key>
+	 * : Key for the option
+	 *
+	 * [--format=<format>]
+	 * : Get value as var_export() or JSON. Default: var_export()
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $key ) = $args;
@@ -90,9 +94,7 @@ class Option_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : The serialization format for the value.
-	 * : total_bytes displays the total size of matching options in bytes.
-	 * : Accepted values: table, json, csv, count, total_bytes. Default: table
+	 * : The serialization format for the value. total_bytes displays the total size of matching options in bytes. Accepted values: table, json, csv, count, total_bytes. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -118,7 +120,6 @@ class Option_Command extends WP_CLI_Command {
 	 * * size_bytes
 	 *
 	 * @subcommand list
-	 * @synopsis [--search=<glob-style-pattern>] [--autoload=<value>] [--fields=<fields>] [--format=<format>]
 	 */
 	public function list_( $args, $assoc_args ) {
 
@@ -129,7 +130,7 @@ class Option_Command extends WP_CLI_Command {
 		$autoload_query = '';
 
 		if ( isset( $assoc_args['search'] ) ) {
-			$pattern = self::esc_like( esc_sql( $assoc_args['search'] ) );
+			$pattern = self::esc_like( $assoc_args['search'] );
 			// substitute wildcards
 			$pattern = str_replace( '*', '%', $pattern );
 			$pattern = str_replace( '?', '_', $pattern );
@@ -184,6 +185,9 @@ class Option_Command extends WP_CLI_Command {
 	 * [<value>]
 	 * : The new value. If ommited, the value is read from STDIN.
 	 *
+	 * [--autoload=<autoload>]
+	 * : Requires WP 4.2. Should this option be automatically loaded. Accepted values: yes, no. Default: yes
+	 *
 	 * [--format=<format>]
 	 * : The serialization format for the value. Default is plaintext.
 	 *
@@ -203,13 +207,18 @@ class Option_Command extends WP_CLI_Command {
 		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
 		$value = WP_CLI::read_value( $value, $assoc_args );
 
+		$autoload = \WP_CLI\Utils\get_flag_value( $assoc_args, 'autoload' );
+		if ( ! in_array( $autoload, array( 'yes', 'no' ) ) ) {
+			$autoload = null;
+		}
+
 		$value = sanitize_option( $key, $value );
 		$old_value = sanitize_option( $key, get_option( $key ) );
 
-		if ( $value === $old_value ) {
+		if ( $value === $old_value && is_null( $autoload ) ) {
 			WP_CLI::success( "Value passed for '$key' option is unchanged." );
 		} else {
-			if ( update_option( $key, $value ) ) {
+			if ( update_option( $key, $value, $autoload ) ) {
 				WP_CLI::success( "Updated '$key' option." );
 			} else {
 				WP_CLI::error( "Could not update option '$key'." );
@@ -220,7 +229,8 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Delete an option.
 	 *
-	 * @synopsis <key>
+	 * <key>
+	 * : Key for the option.
 	 */
 	public function delete( $args ) {
 		list( $key ) = $args;

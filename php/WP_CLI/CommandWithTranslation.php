@@ -58,11 +58,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		$translations = $this->get_all_languages();
 		$available = $this->get_installed_languages();
 
-		$this->wp_clean_update_cache(); // Clear existing update caches.
-		wp_version_check();      // Check for Core translation updates.
-		wp_update_themes();      // Check for Theme translation updates.
-		wp_update_plugins();     // Check for Plugin translation updates.
-		$updates = wp_get_translation_updates(); // Retrieves a list of all translations updates available.
+		$updates = $this->get_translation_updates();
 
 		$current_locale = get_locale();
 		$translations = array_map( function( $translation ) use ( $available, $current_locale, $updates ) {
@@ -157,13 +153,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			return;
 		}
 
-		$this->wp_clean_update_cache(); // Clear existing update caches.
-		wp_version_check();      // Check for Core translation updates.
-		wp_update_themes();      // Check for Theme translation updates.
-		wp_update_plugins();     // Check for Plugin translation updates.
-
-		$updates = wp_get_translation_updates(); // Retrieves a list of all translations updates available.
-
+		$updates = $this->get_translation_updates();
 		if ( empty( $updates ) ) {
 			\WP_CLI::success( 'Translations are up to date.' );
 
@@ -264,6 +254,31 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 
 		update_option( 'WPLANG', $language_code );
 		\WP_CLI::success( "Language activated." );
+	}
+
+	/**
+	 * Get all updates available for all translations
+	 *
+	 * @return array
+	 */
+	private function get_translation_updates() {
+		$available = $this->get_installed_languages();
+		$func = function() use ( $available ) {
+			return $available;
+		};
+		$filters = array( 'plugins_update_check_locales', 'themes_update_check_locales' );
+		foreach( $filters as $filter ) {
+			add_filter( $filter, $func );
+		}
+		$this->wp_clean_update_cache(); // Clear existing update caches.
+		wp_version_check();      // Check for Core translation updates.
+		wp_update_themes();      // Check for Theme translation updates.
+		wp_update_plugins();     // Check for Plugin translation updates.
+		foreach( $filters as $filter ) {
+			remove_filter( $filter, $func );
+		}
+		$updates = wp_get_translation_updates(); // Retrieves a list of all translations updates available.
+		return $updates;
 	}
 
 	/**

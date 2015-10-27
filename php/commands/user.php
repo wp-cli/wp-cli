@@ -167,7 +167,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : User ID to reassign the posts to.
 	 *
 	 * [--yes]
-	 * : Answer yes to any confirmation propmts.
+	 * : Answer yes to any confirmation prompts.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -300,7 +300,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
-			wp_new_user_notification( $user_id, $user->user_pass );
+			self::wp_new_user_notification( $user_id, $user->user_pass );
 		}
 
 		if ( is_wp_error( $user_id ) ) {
@@ -721,7 +721,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				}
 
 				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
-					wp_new_user_notification( $user_id, $new_user['user_pass'] );
+					self::wp_new_user_notification( $user_id, $new_user['user_pass'] );
 				}
 			}
 
@@ -760,6 +760,27 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 	}
 
+	/**
+	 * Acommodate three different behaviors for wp_new_user_notification()
+	 * - 4.3.1 and above: expect second argument to be deprecated
+	 * - 4.3: Second argument was repurposed as $notify
+	 * - Below 4.3: Send the password in the notification
+	 *
+	 * @param string $user_id
+	 * @param string $password
+	 */
+	private static function wp_new_user_notification( $user_id, $password ) {
+		global $wp_version;
+		$version = str_replace( '-src', '', $wp_version );
+		if ( version_compare( $version, '4.3.1', '>=' ) ) {
+			wp_new_user_notification( $user_id, null, 'both' );
+		} else if ( version_compare( $version, '4.3', '>=' ) ) {
+			wp_new_user_notification( $user_id, 'both' );
+		} else {
+			wp_new_user_notification( $user_id, $password );
+		}
+	}
+
 }
 
 /**
@@ -796,8 +817,6 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json. Default: table
-	 *
-	 * @synopsis <user> <key> [--format=<format>]
 	 */
 	public function get( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );
@@ -833,7 +852,8 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * <value>
 	 * : The new metadata value.
 	 *
-	 * @synopsis <user> <key> <value> [--format=<format>]
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
 	 */
 	public function add( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );
@@ -852,8 +872,10 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * <value>
 	 * : The new metadata value.
 	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
+	 *
 	 * @alias set
-	 * @synopsis <user> <key> <value> [--format=<format>]
 	 */
 	public function update( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );

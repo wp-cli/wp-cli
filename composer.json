@@ -11,6 +11,7 @@
 		"php": ">=5.3.2",
 		"wp-cli/php-cli-tools": "0.10.5",
 		"mustache/mustache": "~2.4",
+		"composer/semver": "1.0.0",
 		"ramsey/array_column": "~1.1",
 		"rmccue/requests": "~1.6",
 		"symfony/finder": "~2.3",

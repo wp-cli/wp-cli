@@ -32,7 +32,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --<field>=<value>
+	 * [--<field>=<value>]
 	 * : Associative args for the new comment. See wp_insert_comment().
 	 *
 	 * [--porcelain]
@@ -44,10 +44,12 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function create( $args, $assoc_args ) {
 		parent::_create( $args, $assoc_args, function ( $params ) {
-			$post_id = $params['comment_post_ID'];
-			$post = get_post( $post_id );
-			if ( !$post ) {
-				return new WP_Error( 'no_post', "Can't find post $post_id." );
+			if ( isset( $params['comment_post_ID'] ) ) {
+				$post_id = $params['comment_post_ID'];
+				$post = get_post( $post_id );
+				if ( !$post ) {
+					return new WP_Error( 'no_post', "Can't find post $post_id." );
+				}
 			}
 
 			// We use wp_insert_comment() instead of wp_new_comment() to stay at a low level and
@@ -279,15 +281,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to trash.
+	 * <id>...
+	 * : The IDs of the comments to trash.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp comment trash 1337
 	 */
 	public function trash( $args, $assoc_args ) {
-		$this->call( $args, __FUNCTION__, 'Trashed', 'Failed trashing' );
+		foreach( $args as $id ) {
+			$this->call( $id, __FUNCTION__, 'Trashed', 'Failed trashing' );
+		}
 	}
 
 	/**
@@ -295,15 +299,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to untrash.
+	 * <id>...
+	 * : The IDs of the comments to untrash.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp comment untrash 1337
 	 */
 	public function untrash( $args, $assoc_args ) {
-		$this->call( $args, __FUNCTION__, 'Untrashed', 'Failed untrashing' );
+		foreach( $args as $id ) {
+			$this->call( $id, __FUNCTION__, 'Untrashed', 'Failed untrashing' );
+		}
 	}
 
 	/**
@@ -311,15 +317,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to mark as spam.
+	 * <id>...
+	 * : The IDs of the comments to mark as spam.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp comment spam 1337
 	 */
 	public function spam( $args, $assoc_args ) {
-		$this->call( $args, __FUNCTION__, 'Marked as spam', 'Failed marking as spam' );
+		foreach( $args as $id ) {
+			$this->call( $id, __FUNCTION__, 'Marked as spam', 'Failed marking as spam' );
+		}
 	}
 
 	/**
@@ -327,15 +335,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to unmark as spam.
+	 * <id>...
+	 * : The IDs of the comments to unmark as spam.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp comment unspam 1337
 	 */
 	public function unspam( $args, $assoc_args ) {
-		$this->call( $args, __FUNCTION__, 'Unspammed', 'Failed unspamming' );
+		foreach( $args as $id ) {
+			$this->call( $args, __FUNCTION__, 'Unspammed', 'Failed unspamming' );
+		}
 	}
 
 	/**
@@ -343,15 +353,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to approve.
+	 * <id>...
+	 * : The IDs of the comments to approve.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp comment approve 1337
 	 */
 	public function approve( $args, $assoc_args ) {
-		$this->set_status( $args, 'approve', "Approved" );
+		foreach( $args as $id ) {
+			$this->set_status( $id, 'approve', "Approved" );
+		}
 	}
 
 	/**
@@ -359,15 +371,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : The ID of the comment to unapprove.
+	 * <id>...
+	 * : The IDs of the comments to unapprove.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp comment unapprove 1337
 	 */
 	public function unapprove( $args, $assoc_args ) {
-		$this->set_status( $args, 'hold', "Unapproved" );
+		foreach( $args as $id ) {
+			$this->set_status( $id, 'hold', "Unapproved" );
+		}
 	}
 
 	/**
@@ -395,6 +409,24 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 
 		foreach ( $count as $status => $count ) {
 			WP_CLI::line( str_pad( "$status:", 17 ) . $count );
+		}
+	}
+
+	/**
+	 * Recount the comment_count value for one or more posts.
+	 *
+	 * <id>...
+	 * : IDs for one or more posts to update.
+	 */
+	public function recount( $args ) {
+		foreach( $args as $id ) {
+			wp_update_comment_count( $id );
+			$post = get_post( $id );
+			if ( $post ) {
+				WP_CLI::log( sprintf( "Updated post %d comment count to %d", $post->ID, $post->comment_count ) );
+			} else {
+				WP_CLI::warning( sprintf( "Post %d doesn't exist", $post->ID ) );
+			}
 		}
 	}
 

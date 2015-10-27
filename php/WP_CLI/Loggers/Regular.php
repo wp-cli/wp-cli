@@ -5,36 +5,13 @@ namespace WP_CLI\Loggers;
 /**
  * Default logger for success, warning, error, and standard messages.
  */
-class Regular {
+class Regular extends Base {
 
 	/**
 	 * @param bool $in_color Whether or not to Colorize strings.
 	 */
 	function __construct( $in_color ) {
 		$this->in_color = $in_color;
-	}
-
-	/**
-	 * Write a string to a resource.
-	 *
-	 * @param resource $handle Commonly STDOUT or STDERR.
-	 * @param string $str Message to write.
-	 */
-	protected function write( $handle, $str ) {
-		fwrite( $handle, $str );
-	}
-
-	/**
-	 * Output one line of message to a resource.
-	 *
-	 * @param string $message Message to write.
-	 * @param string $label Prefix message with a label.
-	 * @param string $color Colorize label with a given color.
-	 * @param resource $handle Resource to write to. Defaults to STDOUT.
-	 */
-	private function _line( $message, $label, $color, $handle = STDOUT ) {
-		$label = \cli\Colors::colorize( "$color$label:%n", $this->in_color );
-		$this->write( $handle, "$label $message\n" );
 	}
 
 	/**

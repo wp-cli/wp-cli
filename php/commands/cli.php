@@ -1,7 +1,8 @@
 <?php
 
-use \WP_CLI\Dispatcher,
-	\WP_CLI\Utils;
+use \Composer\Semver\Comparator;
+use \WP_CLI\Dispatcher;
+use \WP_CLI\Utils;
 
 /**
  * Get information about WP-CLI itself.
@@ -44,7 +45,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * : Accepted values: json
 	 */
 	public function info( $_, $assoc_args ) {
-		$php_bin = defined( 'PHP_BINARY' ) ? PHP_BINARY : getenv( 'WP_CLI_PHP_USED' );
+		$php_bin = WP_CLI::get_php_binary();
 
 		$runner = WP_CLI::get_runner();
 
@@ -70,21 +71,6 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Compare the last processed release to the current one, return true if it's the same minor version.
-	 *
-	 */
-	private function same_minor_release( $release_parts, $updates ) {
-		$previous = end( $updates );
-		if ( false === $previous )
-			return false;
-
-		$previous_parts = explode( '.', $previous['version'] );
-
-		return ( $previous_parts[0] === $release_parts[0]
-			&& $previous_parts[1] === $release_parts[1] );
-	}
-
-	/**
 	 * Check for update via Github API. Returns the available versions if there are updates, or empty if no update available.
 	 *
 	 * ## OPTIONS
@@ -94,6 +80,9 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * [--minor]
 	 * : Only list minor updates
+	 *
+	 * [--major]
+	 * : Only list major updates
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each update.
@@ -116,7 +105,8 @@ class CLI_Command extends WP_CLI_Command {
 			);
 			$formatter->display_items( $updates );
 		} else if ( empty( $assoc_args['format'] ) || 'table' == $assoc_args['format'] ) {
-			WP_CLI::success( "WP-CLI is at the latest version." );
+			$update_type = $this->get_update_type_str( $assoc_args );
+			WP_CLI::success( "WP-CLI is at the latest{$update_type}version." );
 		}
 	}
 
@@ -130,6 +120,9 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * [--minor]
 	 * : Only perform minor updates
+	 *
+	 * [--major]
+	 * : Only perform major updates
 	 *
 	 * [--nightly]
 	 * : Update to the latest built version of the master branch. Potentially unstable.
@@ -161,7 +154,8 @@ class CLI_Command extends WP_CLI_Command {
 			$updates = $this->get_updates( $assoc_args );
 
 			if ( empty( $updates ) ) {
-				WP_CLI::success( "WP-CLI is at the latest version." );
+				$update_type = $this->get_update_type_str( $assoc_args );
+				WP_CLI::success( "WP-CLI is at the latest{$update_type}version." );
 				exit(0);
 			}
 
@@ -186,7 +180,8 @@ class CLI_Command extends WP_CLI_Command {
 		Utils\http_request( 'GET', $download_url, null, $headers, $options );
 
 		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
-		$process = WP_CLI\Process::create( "php $temp --version {$allow_root}" );
+		$php_binary = WP_CLI::get_php_binary();
+		$process = WP_CLI\Process::create( "{$php_binary} $temp --version {$allow_root}" );
 		$result = $process->run();
 		if ( 0 !== $result->return_code ) {
 			$multi_line = explode( PHP_EOL, $result->stderr );
@@ -236,41 +231,48 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		$release_data = json_decode( $response->body );
-		$current_parts = explode( '.', WP_CLI_VERSION );
-		$updates = array();
 
+		$updates = array(
+			'major'      => false,
+			'minor'      => false,
+			'patch'      => false,
+			);
 		foreach ( $release_data as $release ) {
+
+			// get rid of leading "v" if there is one set
 			$release_version = $release->tag_name;
-			// get rid of leading "v"
 			if ( 'v' === substr( $release_version, 0, 1 ) ) {
 				$release_version = ltrim( $release_version, 'v' );
 			}
-			// don't list earlier releases
-			if ( version_compare( $release_version, WP_CLI_VERSION, '<=' ) )
-				continue;
-			$release_parts = explode( '.', $release_version );
-			$update_type = 'minor';
 
-			if ( $release_parts[0] === $current_parts[0]
-				&& $release_parts[1] === $current_parts[1] ) {
-				$update_type = 'patch';
+			$update_type = Utils\get_named_sem_ver( $release_version, WP_CLI_VERSION );
+			if ( ! $update_type ) {
+				continue;
 			}
 
-			if ( ! ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'patch' ) && 'patch' !== $update_type )
-				&& ! ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'patch' ) === false && 'patch' === $update_type )
-				&& ! ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'minor' ) && 'minor' !== $update_type )
-				&& ! ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'minor' ) === false && 'minor' === $update_type )
-				&& ! $this->same_minor_release( $release_parts, $updates )
-				) {
-				$updates[] = array(
-					'version' => $release_version,
-					'update_type' => $update_type,
-					'package_url' => $release->assets[0]->browser_download_url
-				);
+			if ( ! empty( $updates[ $update_type ] ) && ! Comparator::greaterThan( $release_version, $updates[ $update_type ]['version'] ) ) {
+				continue;
+			}
+
+			$updates[ $update_type ] = array(
+				'version' => $release_version,
+				'update_type' => $update_type,
+				'package_url' => $release->assets[0]->browser_download_url
+			);
+		}
+
+		foreach( $updates as $type => $value ) {
+			if ( empty( $value ) ) {
+				unset( $updates[ $type ] );
 			}
 		}
 
-		return $updates;
+		foreach( array( 'major', 'minor', 'patch' ) as $type ) {
+			if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, $type ) ) {
+				return ! empty( $updates[ $type ] ) ? array( $updates[ $type ] ) : false;
+			}
+		}
+		return array_values( $updates );
 	}
 
 	/**
@@ -334,6 +336,21 @@ class CLI_Command extends WP_CLI_Command {
 		$compl = new \WP_CLI\Completions( $line );
 		$compl->render();
 	}
+
+	/**
+	 * Get a string representing the type of update being checked for
+	 */
+	private function get_update_type_str( $assoc_args ) {
+		$update_type = ' ';
+		foreach( array( 'major', 'minor', 'patch' ) as $type ) {
+			if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, $type ) ) {
+				$update_type = ' ' . $type . ' ';
+				break;
+			}
+		}
+		return $update_type;
+	}
+
 }
 
 WP_CLI::add_command( 'cli', 'CLI_Command' );

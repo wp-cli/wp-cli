@@ -12,8 +12,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * ## DESCRIPTION
 	 *
-	 * This command will go through all rows in all tables and will replace all
-	 * appearances of the old string with the new one.
+	 * This command will go through all rows in a selection of tables
+	 * and will replace all appearances of the old string with the new one.  The
+	 * default tables are those registered on the $wpdb object (usually
+	 * just WordPress core tables).
 	 *
 	 * It will correctly handle serialized values, and will not change primary key values.
 	 *
@@ -47,7 +49,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * : Enable replacement on any tables that match the table prefix even if not registered on wpdb
 	 *
 	 * [--all-tables]
-	 * : Enable replacement on ALL tables in the database, regardless of the prefix. Overrides --network and --all-tables-with-prefix.
+	 * : Enable replacement on ALL tables in the database, regardless of the prefix, and even if not registered on $wpdb. Overrides --network and --all-tables-with-prefix.
 	 *
 	 * [--verbose]
 	 * : Prints rows to the console as they're updated.

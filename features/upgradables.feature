@@ -76,7 +76,11 @@ Feature: Manage WordPress themes and plugins
 
     When I run `wp <type> update <item>`
     And save STDOUT 'Downloading update from .*\/<item>\.%s\.zip' as {NEW_VERSION}
-    Then STDOUT should not be empty
+    And STDOUT should not be empty
+    Then STDOUT should not contain:
+      """
+      Error
+      """
     And the {SUITE_CACHE_DIR}/<type>/<item>-{NEW_VERSION}.zip file should exist
 
     When I run `wp <type> update --all`
@@ -170,9 +174,6 @@ Feature: Manage WordPress themes and plugins
       """
       Showing 2 of
       """
-    And STDOUT should end with a table containing rows:
-      | name         | slug   |
-      | <item_title> | <item> |
 
     Examples:
       | type   | type_name | item                    | item_title              | version | zip_file                                                              | file_to_check                                                    |

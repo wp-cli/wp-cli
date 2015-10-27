@@ -316,7 +316,7 @@ Feature: Manage WordPress installation
       3.9
       """
 
-  @download
+  @download @update-check
   Scenario: Check for update via Version Check API
     Given a WP install
 
@@ -326,12 +326,12 @@ Feature: Manage WordPress installation
     When I run `wp core check-update`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                |
-      | 4.3     | major       | https://wordpress.org/wordpress-4.3.zip    |
-      | 4.2.4   | major       | https://wordpress.org/wordpress-4.2.4.zip  |
-      | 4.1.7   | major       | https://wordpress.org/wordpress-4.1.7.zip  |
-      | 4.0.7   | major       | https://wordpress.org/wordpress-4.0.7.zip  |
-      | 3.9.8   | major       | https://wordpress.org/wordpress-3.9.8.zip  |
-      | 3.8.10  | minor       | https://wordpress.org/wordpress-3.8.10.zip |
+      | 4.3.1   | major       | https://wordpress.org/wordpress-4.3.1.zip  |
+      | 4.2.5   | major       | https://wordpress.org/wordpress-4.2.5.zip  |
+      | 4.1.8   | major       | https://wordpress.org/wordpress-4.1.8.zip  |
+      | 4.0.8   | major       | https://wordpress.org/wordpress-4.0.8.zip  |
+      | 3.9.9   | major       | https://wordpress.org/wordpress-3.9.9.zip  |
+      | 3.8.11  | minor       | https://wordpress.org/wordpress-3.8.11.zip |
 
     When I run `wp core check-update --format=count`
     Then STDOUT should be:
@@ -342,11 +342,11 @@ Feature: Manage WordPress installation
     When I run `wp core check-update --major`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                |
-      | 4.3     | major       | https://wordpress.org/wordpress-4.3.zip    |
-      | 4.2.4   | major       | https://wordpress.org/wordpress-4.2.4.zip  |
-      | 4.1.7   | major       | https://wordpress.org/wordpress-4.1.7.zip  |
-      | 4.0.7   | major       | https://wordpress.org/wordpress-4.0.7.zip  |
-      | 3.9.8   | major       | https://wordpress.org/wordpress-3.9.8.zip  |
+      | 4.3.1   | major       | https://wordpress.org/wordpress-4.3.1.zip  |
+      | 4.2.5   | major       | https://wordpress.org/wordpress-4.2.5.zip  |
+      | 4.1.8   | major       | https://wordpress.org/wordpress-4.1.8.zip  |
+      | 4.0.8   | major       | https://wordpress.org/wordpress-4.0.8.zip  |
+      | 3.9.9   | major       | https://wordpress.org/wordpress-3.9.9.zip  |
 
     When I run `wp core check-update --major --format=count`
     Then STDOUT should be:
@@ -357,7 +357,7 @@ Feature: Manage WordPress installation
     When I run `wp core check-update --minor`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                |
-      | 3.8.10  | minor       | https://wordpress.org/wordpress-3.8.10.zip |
+      | 3.8.11  | minor       | https://wordpress.org/wordpress-3.8.11.zip |
 
     When I run `wp core check-update --minor --format=count`
     Then STDOUT should be:
@@ -371,38 +371,6 @@ Feature: Manage WordPress installation
 
     When I run `wp plugin status hello`
     Then STDOUT should not be empty
-
-  Scenario: Verify core checksums
-    Given a WP install
-
-    When I run `wp core update`
-    Then STDOUT should not be empty
-
-    When I run `wp core verify-checksums`
-    Then STDOUT should be:
-      """
-      Success: WordPress install verifies against checksums.
-      """
-
-    When I run `sed -i.bak s/WordPress/Wordpress/g readme.html`
-    Then STDERR should be empty
-
-    When I try `wp core verify-checksums`
-    Then STDERR should be:
-      """
-      Warning: File doesn't verify against checksum: readme.html
-      Error: WordPress install doesn't verify against checksums.
-      """
-
-    When I run `rm readme.html`
-    Then STDERR should be empty
-
-    When I try `wp core verify-checksums`
-    Then STDERR should be:
-      """
-      Warning: File doesn't exist: readme.html
-      Error: WordPress install doesn't verify against checksums.
-      """
 
   Scenario: Core update from cache
     Given a WP install
@@ -470,139 +438,6 @@ Feature: Manage WordPress installation
       http://localhost:8001
       """
 
-  @require-wp-4.0
-  Scenario: Core translation CRUD
-    Given a WP install
-
-    When I run `wp core language list --fields=language,english_name,status`
-    Then STDOUT should be a table containing rows:
-      | language  | english_name            | status        |
-      | ar        | Arabic                  | uninstalled   |
-      | az        | Azerbaijani             | uninstalled   |
-      | en_US     | English (United States) | active        |
-      | en_GB     | English (UK)            | uninstalled   |
-
-    When I run `wp core language install en_GB`
-    Then the wp-content/languages/admin-en_GB.po file should exist
-    And the wp-content/languages/en_GB.po file should exist
-    And STDOUT should be:
-      """
-      Success: Language installed.
-      """
-
-    When I try `wp core language install en_GB`
-    Then STDERR should be:
-      """
-      Warning: Language already installed.
-      """
-
-    When I run `wp core language list --fields=language,english_name,status`
-    Then STDOUT should be a table containing rows:
-      | language  | english_name     | status        |
-      | ar        | Arabic           | uninstalled   |
-      | az        | Azerbaijani      | uninstalled   |
-      | en_GB     | English (UK)     | installed     |
-
-    When I run `wp core language activate en_GB`
-    Then STDOUT should be:
-      """
-      Success: Language activated.
-      """
-
-    When I run `wp core language list --fields=language,english_name,update`
-    Then STDOUT should be a table containing rows:
-      | language  | english_name            | update        |
-      | ar        | Arabic                  | none          |
-      | az        | Azerbaijani             | none          |
-      | en_US     | English (United States) | none          |
-      | en_GB     | English (UK)            | available     |
-
-    When I run `wp core language update --dry-run`
-    Then save STDOUT 'Available (\d+) translations updates' as {UPDATES}
-
-    When I run `wp core language update`
-    Then STDOUT should contain:
-      """
-      Success: Updated {UPDATES}/{UPDATES} translations.
-      """
-    And the wp-content/languages/plugins directory should exist
-    And the wp-content/languages/themes directory should exist
-
-    When I run `wp core language list --field=language --status=active`
-    Then STDOUT should be:
-      """
-      en_GB
-      """
-
-    When I run `wp core language list --fields=language,english_name,status`
-    Then STDOUT should be a table containing rows:
-      | language  | english_name     | status        |
-      | ar        | Arabic           | uninstalled   |
-      | az        | Azerbaijani      | uninstalled   |
-      | en_GB     | English (UK)     | active        |
-
-    When I run `wp core language activate en_US`
-    Then STDOUT should be:
-      """
-      Success: Language activated.
-      """
-
-    When I run `wp core language list --fields=language,english_name,status`
-    Then STDOUT should be a table containing rows:
-      | language  | english_name            | status        |
-      | ar        | Arabic                  | uninstalled   |
-      | en_US     | English (United States) | active        |
-      | en_GB     | English (UK)            | installed     |
-
-
-    When I try `wp core language activate invalid_lang`
-    Then STDERR should be:
-      """
-      Error: Language not installed.
-      """
-
-    When I run `wp core language uninstall en_GB`
-    Then the wp-content/languages/admin-en_GB.po file should not exist
-    And the wp-content/languages/en_GB.po file should not exist
-    And STDOUT should be:
-      """
-      Success: Language uninstalled.
-      """
-
-    When I try `wp core language uninstall en_GB`
-    Then STDERR should be:
-      """
-      Error: Language not installed.
-      """
-
-    When I run `wp core language install --activate en_GB`
-    Then the wp-content/languages/admin-en_GB.po file should exist
-    And the wp-content/languages/en_GB.po file should exist
-    And STDOUT should be:
-      """
-      Success: Language installed.
-      Success: Language activated.
-      """
-
-    When I try `wp core language install invalid_lang`
-    Then STDERR should be:
-      """
-      Error: Language 'invalid_lang' not found.
-      """
-
-  @require-wp-4.0
-  Scenario: Don't allow active language to be uninstalled
-    Given a WP install
-
-    When I run `wp core language install en_GB --activate`
-    Then STDOUT should not be empty
-
-    When I try `wp core language uninstall en_GB`
-    Then STDERR should be:
-      """
-      Warning: The 'en_GB' language is active.
-      """
-
   Scenario: Catch download of non-existent WP version
     Given an empty directory
 
@@ -610,6 +445,42 @@ Feature: Manage WordPress installation
     Then STDERR should contain:
       """
       Error: Release not found.
+      """
+
+  Scenario: Test output in a multisite install with custom base path
+    Given a WP install
+
+    When I run `wp core multisite-convert --title=Test --base=/test/`
+    And I run `wp post list`
+    Then STDOUT should contain:
+      """
+      Hello world!
+      """
+
+  Scenario: Core download to a directory specified by `--path` in custom command
+    Given a WP install
+    And a download-command.php file:
+      """
+      <?php
+      class Download_Command extends WP_CLI_Command {
+          public function __invoke() {
+              WP_CLI::run_command( array( 'core', 'download' ), array( 'path' => 'src/' ) );
+          }
+      }
+      WP_CLI::add_command( 'custom-download', 'Download_Command' );
+      """
+
+    When I run `wp --require=download-command.php custom-download`
+    Then STDOUT should not be empty
+    And the src directory should contain:
+      """
+      wp-load.php
+      """
+
+    When I try `wp --require=download-command.php custom-download`
+    Then STDERR should be:
+      """
+      Error: WordPress files seem to already be present here.
       """
 
   Scenario: Ensure cached partial upgrades aren't used in full upgrade

@@ -107,7 +107,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function get_status( $theme ) {
-		return ( $this->is_active_theme( $theme ) ) ? 'active' : 'inactive';
+		if ( $this->is_active_theme( $theme ) ) {
+			return 'active';
+		} else if ( $theme->get_stylesheet_directory() === get_template_directory() ) {
+			return 'parent';
+		} else {
+			return 'inactive';
+		}
 	}
 
 	/**
@@ -457,6 +463,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     wp theme update twentyeleven twentytwelve
 	 *
 	 *     wp theme update --all
+	 *
+	 * @alias upgrade
 	 */
 	function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['version'] ) ) {

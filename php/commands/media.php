@@ -204,11 +204,10 @@ class Media_Command extends WP_CLI_Command {
 	}
 
 	private function _process_regeneration( $id, $skip_delete = false ) {
-		$image = get_post( $id );
 
-		$fullsizepath = get_attached_file( $image->ID );
+		$fullsizepath = get_attached_file( $id );
 
-		$att_desc = sprintf( '"%1$s" (ID %2$d).', get_the_title( $image->ID ), $image->ID );
+		$att_desc = sprintf( '"%1$s" (ID %2$d).', get_the_title( $id ), $id );
 
 		if ( false === $fullsizepath || !file_exists( $fullsizepath ) ) {
 			WP_CLI::warning( "Can't find $att_desc" );
@@ -216,10 +215,10 @@ class Media_Command extends WP_CLI_Command {
 		}
 
 		if ( ! $skip_delete ) {
-			$this->remove_old_images( $image->ID );
+			$this->remove_old_images( $id );
 		}
 
-		$metadata = wp_generate_attachment_metadata( $image->ID, $fullsizepath );
+		$metadata = wp_generate_attachment_metadata( $id, $fullsizepath );
 		if ( is_wp_error( $metadata ) ) {
 			WP_CLI::warning( $metadata->get_error_message() );
 			return;
@@ -230,7 +229,7 @@ class Media_Command extends WP_CLI_Command {
 			return;
 		}
 
-		wp_update_attachment_metadata( $image->ID, $metadata );
+		wp_update_attachment_metadata( $id, $metadata );
 
 		WP_CLI::log( "Regenerated thumbnails for $att_desc" );
 

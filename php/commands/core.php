@@ -10,7 +10,9 @@ use \WP_CLI\Utils;
 class Core_Command extends WP_CLI_Command {
 
 	/**
-	 * Check for update via Version Check API. Returns latest version if there's an update, or empty if no update available.
+	 * Check for update via Version Check API.
+	 *
+	 * Lists the most recent versions when there are updates available, or success message when up to date.
 	 *
 	 * ## OPTIONS
 	 *
@@ -121,13 +123,16 @@ class Core_Command extends WP_CLI_Command {
 	 * @when before_wp_load
 	 */
 	public function download( $args, $assoc_args ) {
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && is_readable( ABSPATH . 'wp-load.php' ) )
+
+		$download_dir = ! empty( $assoc_args['path'] ) ? $assoc_args['path'] : ABSPATH;
+
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && is_readable( $download_dir . 'wp-load.php' ) )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
-		if ( !is_dir( ABSPATH ) ) {
-			WP_CLI::log( sprintf( 'Creating directory %s', ABSPATH ) );
+		if ( !is_dir( $download_dir ) ) {
+			WP_CLI::log( sprintf( 'Creating directory %s', $download_dir ) );
 			$mkdir = \WP_CLI\Utils\is_windows() ? 'mkdir %s' : 'mkdir -p %s';
-			WP_CLI::launch( Utils\esc_cmd( $mkdir, ABSPATH ) );
+			WP_CLI::launch( Utils\esc_cmd( $mkdir, $download_dir ) );
 		}
 
 		$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', 'en_US' );
@@ -154,7 +159,7 @@ class Core_Command extends WP_CLI_Command {
 		if ( $cache_file ) {
 			WP_CLI::log( "Using cached file '$cache_file'..." );
 			try{
-				self::_extract( $cache_file, ABSPATH );
+				self::_extract( $cache_file, $download_dir );
 			} catch ( Exception $e ) {
 				WP_CLI::warning( "Extraction failed, downloading a new copy..." );
 				$bad_cache = true;
@@ -180,7 +185,7 @@ class Core_Command extends WP_CLI_Command {
 			}
 
 			try {
-				self::_extract( $temp, ABSPATH );
+				self::_extract( $temp, $download_dir );
 			} catch ( Exception $e ) {
 				WP_CLI::error( "Couldn't extract WordPress archive. " . $e->getMessage() );
 			}
@@ -216,15 +221,30 @@ class Core_Command extends WP_CLI_Command {
 			new RecursiveDirectoryIterator( $source, RecursiveDirectoryIterator::SKIP_DOTS ),
 			RecursiveIteratorIterator::SELF_FIRST);
 
+		$error = 0;
+
 		foreach ( $iterator as $item ) {
+
+			$dest_path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
+
 			if ( $item->isDir() ) {
-				$dest_path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
 				if ( !is_dir( $dest_path ) ) {
 					mkdir( $dest_path );
 				}
 			} else {
-				copy( $item, $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName() );
+				if ( file_exists( $dest_path ) && is_writable( $dest_path ) ) {
+					copy( $item, $dest_path );
+				} elseif ( ! file_exists( $dest_path ) ) {
+					copy( $item, $dest_path );
+				} else {
+					$error = 1;
+					WP_CLI::warning( 'Unable to copy ' . $iterator->getSubPathName() . ' to current directory.' );
+				}
 			}
+		}
+
+		if ( $error ) {
+			WP_CLI::error( 'There was an error downloading all WordPress files.' );
 		}
 	}
 
@@ -644,22 +664,26 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		if ( !is_multisite() ) {
-			ob_start();
-?>
+			$subdomain_export = Utils\get_flag_value( $assoc_args, 'subdomains' ) ? 'true' : 'false';
+			$ms_config = <<<EOT
 define( 'WP_ALLOW_MULTISITE', true );
-define('MULTISITE', true);
-define('SUBDOMAIN_INSTALL', <?php var_export( $assoc_args['subdomains'] ); ?>);
-$base = '<?php echo $assoc_args['base']; ?>';
-define('DOMAIN_CURRENT_SITE', '<?php echo $domain; ?>');
-define('PATH_CURRENT_SITE', '<?php echo $assoc_args['base']; ?>');
-define('SITE_ID_CURRENT_SITE', 1);
-define('BLOG_ID_CURRENT_SITE', 1);
+define( 'MULTISITE', true );
+define( 'SUBDOMAIN_INSTALL', {$subdomain_export} );
+\$base = '{$assoc_args['base']}';
+define( 'DOMAIN_CURRENT_SITE', '{$domain}' );
+define( 'PATH_CURRENT_SITE', '{$assoc_args['base']}' );
+define( 'SITE_ID_CURRENT_SITE', 1 );
+define( 'BLOG_ID_CURRENT_SITE', 1 );
+EOT;
 
-<?php
-			$ms_config = ob_get_clean();
-
-			self::modify_wp_config( $ms_config );
-			WP_CLI::log( 'Added multisite constants to wp-config.php.' );
+			$wp_config_path = Utils\locate_wp_config();
+			if ( is_writable( $wp_config_path ) ) {
+				self::modify_wp_config( $ms_config );
+				WP_CLI::log( 'Added multisite constants to wp-config.php.' );
+			} else {
+				WP_CLI::warning( 'Multisite constants could not be written to wp-config.php. You may need to add them manually:' );
+				WP_CLI::log( $ms_config );
+			}
 		}
 
 		return true;
@@ -774,10 +798,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	 * @return bool|array False on failure. An array of checksums on success.
 	 */
 	private static function get_core_checksums( $version, $locale ) {
-		$url = $http_url = 'http://api.wordpress.org/core/checksums/1.0/?' . http_build_query( compact( 'version', 'locale' ), null, '&' );
-
-		if ( $ssl = wp_http_supports( array( 'ssl' ) ) )
-			$url = 'https' . substr( $url, 4 );
+		$url = 'https://api.wordpress.org/core/checksums/1.0/?' . http_build_query( compact( 'version', 'locale' ), null, '&' );
 
 		$options = array(
 			'timeout' => 30
@@ -787,11 +808,6 @@ define('BLOG_ID_CURRENT_SITE', 1);
 			'Accept' => 'application/json'
 		);
 		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
-
-		if ( $ssl && ! $response->success ) {
-			WP_CLI::warning( 'wp-cli could not establish a secure connection to WordPress.org. Please contact your server administrator.' );
-			$response = Utils\http_request( 'GET', $http_url, null, $headers, $options );
-		}
 
 		if ( ! $response->success || 200 != $response->status_code )
 			return false;
@@ -808,10 +824,32 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	/**
 	 * Verify WordPress files against WordPress.org's checksums.
 	 *
+	 * Specify version to verify checksums without loading WordPress.
+	 *
+	 * [--version=<version>]
+	 * : Verify checksums against a specific version of WordPress.
+	 *
+	 * [--locale=<locale>]
+	 * : Verify checksums against a specific locale of WordPress.
+	 *
+	 * @when before_wp_load
+	 *
 	 * @subcommand verify-checksums
 	 */
 	public function verify_checksums( $args, $assoc_args ) {
 		global $wp_version, $wp_local_package;
+
+		if ( ! empty( $assoc_args['version'] ) ) {
+			$wp_version = $assoc_args['version'];
+		}
+
+		if ( ! empty( $assoc_args['locale'] ) ) {
+			$wp_local_package = $assoc_args['locale'];
+		}
+
+		if ( empty( $wp_version ) ) {
+			WP_CLI::get_runner()->load_wordpress();
+		}
 
 		$checksums = self::get_core_checksums( $wp_version, isset( $wp_local_package ) ? $wp_local_package : 'en_US' );
 
@@ -964,12 +1002,57 @@ define('BLOG_ID_CURRENT_SITE', 1);
 	/**
 	 * Update the WordPress database.
 	 *
+	 * [--network]
+	 * : Update databases for all sites on a network
+	 *
 	 * @subcommand update-db
 	 */
-	function update_db() {
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		wp_upgrade();
-		WP_CLI::success( 'WordPress database upgraded successfully.' );
+	function update_db( $_, $assoc_args ) {
+		global $wpdb, $wp_db_version, $wp_current_db_version;
+
+		$network = Utils\get_flag_value( $assoc_args, 'network' );
+		if ( $network && ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
+		if ( $network ) {
+			$iterator_args = array(
+				'table' => $wpdb->blogs,
+				'where' => array( 'spam' => 0, 'deleted' => 0, 'archived' => 0 ),
+			);
+			$it = new \WP_CLI\Iterators\Table( $iterator_args );
+			$success = $total = 0;
+			foreach( $it as $blog ) {
+				$total++;
+				$url = $blog->domain . $blog->path;
+				$process = WP_CLI::launch_self( 'core update-db', array(), array(), false, true, array( 'url' => $url ) );
+				if ( 0 == $process->return_code ) {
+					// See if we can parse the stdout
+					if ( preg_match( '#Success: (.+)#', $process->stdout, $matches ) ) {
+						$message = "{$matches[1]} on {$url}";
+					} else {
+						$message = "Database upgraded successfully on {$url}";
+					}
+					WP_CLI::log( $message );
+					$success++;
+				} else {
+					WP_CLI::warning( "Database failed to upgrade on {$url}" );
+				}
+			}
+			if ( $total && $success == $total ) {
+				update_site_option( 'wpmu_upgrade_site', $wp_db_version );
+			}
+			WP_CLI::success( sprintf( 'WordPress database upgraded on %d/%d sites', $success, $total ) );
+		} else {
+			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+			$wp_current_db_version = __get_option( 'db_version' );
+			if ( $wp_db_version != $wp_current_db_version ) {
+				wp_upgrade();
+				WP_CLI::success( "WordPress database upgraded successfully from db version {$wp_current_db_version} to {$wp_db_version}" );
+			} else {
+				WP_CLI::success( "WordPress database already at latest db version {$wp_db_version}" );
+			}
+		}
 	}
 
 	/**

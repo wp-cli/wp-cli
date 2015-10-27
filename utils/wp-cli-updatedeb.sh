@@ -24,20 +24,20 @@ die() {
 }
 
 dump_control() {
-    cat > DEBIAN/control <<CTRL
+    cat > DEBIAN/control <<EOF
 Package: php-wpcli
 Version: 0.0.0
 Architecture: all
 Maintainer: Daniel Bachhuber <daniel@handbuilt.co>
 Section: php
 Priority: optional
-Depends: php5-cli, php5-mysql | php5-mysqlnd, mysql-client
+Depends: php5-cli, php5-mysql | php5-mysqlnd, mysql-client | mariadb-client
 Homepage: http://wp-cli.org/
 Description: wp-cli is a set of command-line tools for managing
  WordPress installations. You can update plugins, set up multisite
  installs and much more, without using a web browser.
 
-CTRL
+EOF
 }
 
 # deb's dir
@@ -51,6 +51,31 @@ pushd "$DIR"
 if ! [ -r DEBIAN/control ]; then
     mkdir DEBIAN
     dump_control
+fi
+
+# copyright
+if ! [ -r usr/share/doc/php-wpcli/copyright ];then
+    mkdir -p usr/share/doc/php-wpcli &> /dev/null
+    wget -nv -O usr/share/doc/php-wpcli/copyright https://github.com/wp-cli/wp-cli/raw/master/LICENSE.txt
+fi
+
+# changelog
+if ! [ -r usr/share/doc/php-wpcli/changelog.gz ];then
+    mkdir -p usr/share/doc/php-wpcli &> /dev/null
+    echo "Changelog can be found in the blog: http://wp-cli.org/blog/" \
+        | gzip -9 > usr/share/doc/php-wpcli/changelog.gz
+fi
+
+# minimal man page
+if ! [ -r usr/share/man/man1/wp.1.gz ];then
+    mkdir -p usr/share/man/man1 &> /dev/null
+    {
+        echo '.TH "WP" "1"'
+        wp --help
+    } \
+        | sed 's/^\([A-Z ]\+\)$/.SH "\1"/' \
+        | sed 's/^  wp$/wp \\- A command line interface for WordPress/' \
+        | gzip -9 > usr/share/man/man1/wp.1.gz
 fi
 
 # content dirs
@@ -78,6 +103,6 @@ WPCLI_PKG="${PWD}/php-wpcli_${WPCLI_VER}_all.deb"
 fakeroot dpkg-deb --build "$DIR" "$WPCLI_PKG" || die 8 "Packaging failed"
 
 # optional steps
-echo "sign it:  dpkg-sig -k <YOUR-KEY> -s builder \"$WPCLI_PKG\""
-echo "include in your repo:  pushd /var/www/<REPO-DIR>"
-echo "reprepro includedeb wheezy \"$WPCLI_PKG\" && popd"
+echo "sign it:               dpkg-sig -k YOUR-KEY -s builder \"${WPCLI_PKG}\""
+echo "include in your repo:  pushd /var/www/REPO-DIR"
+echo "                       reprepro includedeb jessie \"${WPCLI_PKG}\" && popd"

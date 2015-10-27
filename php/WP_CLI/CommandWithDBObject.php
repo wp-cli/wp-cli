@@ -62,6 +62,10 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 			\WP_CLI::error( "Need some fields to update." );
 		}
 
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
+			wp_defer_term_counting( true );
+		}
+
 		foreach ( $args as $obj_id ) {
 			$params = array_merge( $assoc_args, array( $this->obj_id_key => $obj_id ) );
 
@@ -69,6 +73,10 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 				$callback( $params ),
 				"Updated $this->obj_type $obj_id."
 			) );
+		}
+
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
+			wp_defer_term_counting( false );
 		}
 
 		exit( $status );
@@ -85,9 +93,17 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	protected function _delete( $args, $assoc_args, $callback ) {
 		$status = 0;
 
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
+			wp_defer_term_counting( true );
+		}
+
 		foreach ( $args as $obj_id ) {
 			$r = $callback( $obj_id, $assoc_args );
 			$status = $this->success_or_failure( $r );
+		}
+
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
+			wp_defer_term_counting( false );
 		}
 
 		exit( $status );

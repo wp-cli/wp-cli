@@ -471,7 +471,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp menu item remove 45
+	 *     wp menu item delete 45
 	 *
 	 * @subcommand delete
 	 */

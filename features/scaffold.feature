@@ -112,6 +112,7 @@ Feature: WordPress code scaffolding
 
     When I run `wp scaffold plugin hello-world`
     Then STDOUT should not be empty
+    And the {PLUGIN_DIR}/hello-world/.editorconfig file should exist
     And the {PLUGIN_DIR}/hello-world/hello-world.php file should exist
     And the {PLUGIN_DIR}/hello-world/readme.txt file should exist
     And the {PLUGIN_DIR}/hello-world/package.json file should exist
@@ -140,6 +141,7 @@ Feature: WordPress code scaffolding
 
     When I run `wp scaffold plugin hello-world --skip-tests`
     Then STDOUT should not be empty
+    And the {PLUGIN_DIR}/hello-world/.editorconfig file should exist
     And the {PLUGIN_DIR}/hello-world/hello-world.php file should exist
     And the {PLUGIN_DIR}/hello-world/readme.txt file should exist
     And the {PLUGIN_DIR}/hello-world/tests directory should not exist
@@ -349,3 +351,11 @@ Feature: WordPress code scaffolding
     """
     Replacing
     """
+  Scenario: Scaffold tests for invalid plugin directory
+    Given a WP install
+
+    When I try `wp scaffold plugin-tests incorrect-custom-plugin`
+    Then STDERR should contain:
+      """
+      Error: Invalid plugin slug specified.
+      """
