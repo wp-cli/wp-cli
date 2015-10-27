@@ -197,7 +197,36 @@ Feature: Have a config file
       """
 
     When I run `WP_CLI_CONFIG_PATH=test-dir/config.yml wp help`
-	Then STDERR should be empty
+	  Then STDERR should be empty
+
+  Scenario: Load WordPress with `--debug`
+    Given a WP install
+
+    When I run `wp option get home --debug`
+    Then STDERR should contain:
+      """
+      No readable global config found
+      """
+    Then STDERR should contain:
+      """
+      No project config found
+      """
+    And STDERR should contain:
+      """
+      Begin WordPress load
+      """
+    And STDERR should contain:
+      """
+      wp-config.php path:
+      """
+    And STDERR should contain:
+      """
+      Loaded WordPress
+      """
+    And STDERR should contain:
+      """
+      Running command: option get
+      """
 
   Scenario: Missing required files should not fatal WP-CLI
     Given an empty directory
@@ -207,15 +236,83 @@ Feature: Have a config file
 	    - missing-file.php
 	  """
 
-	When I try `wp help`
-	Then STDERR should contain:
-	  """
-	  Error: Required file 'missing-file.php' doesn't exist
-	  """
+	  When I try `wp help`
+	  Then STDERR should contain:
+	    """
+	    Error: Required file 'missing-file.php' doesn't exist
+	    """
 
     When I run `wp cli info`
-	Then STDOUT should not be empty
+	  Then STDOUT should not be empty
 
     When I run `wp --info`
-	Then STDOUT should not be empty
+	  Then STDOUT should not be empty
 
+  @require-wp-3.9
+  Scenario: WordPress install with local dev DOMAIN_CURRENT_SITE
+    Given a WP multisite install
+    And a local-dev.php file:
+      """
+      <?php
+      define( 'DOMAIN_CURRENT_SITE', 'example.dev' );
+      """
+    And a wp-config.php file:
+      """
+<?php
+if ( file_exists( __DIR__ . '/local-dev.php' ) ) {
+  require_once __DIR__ . '/local-dev.php';
+}
+
+// ** MySQL settings ** //
+/** The name of the database for WordPress */
+define('DB_NAME', 'wp_cli_test');
+
+/** MySQL database username */
+define('DB_USER', 'wp_cli_test');
+
+/** MySQL database password */
+define('DB_PASSWORD', 'password1');
+
+/** MySQL hostname */
+define('DB_HOST', '127.0.0.1');
+
+/** Database Charset to use in creating database tables. */
+define('DB_CHARSET', 'utf8');
+
+/** The Database Collate type. Don't change this if in doubt. */
+define('DB_COLLATE', '');
+
+$table_prefix = 'wp_';
+
+define( 'WP_ALLOW_MULTISITE', true );
+define('MULTISITE', true);
+define('SUBDOMAIN_INSTALL', false);
+$base = '/';
+if ( ! defined( 'DOMAIN_CURRENT_SITE' ) ) {
+  define('DOMAIN_CURRENT_SITE', 'example.com');
+}
+define('PATH_CURRENT_SITE', '/');
+define('SITE_ID_CURRENT_SITE', 1);
+define('BLOG_ID_CURRENT_SITE', 1);
+
+/* That's all, stop editing! Happy blogging. */
+
+/** Absolute path to the WordPress directory. */
+if ( !defined('ABSPATH') )
+  define('ABSPATH', dirname(__FILE__) . '/');
+
+/** Sets up WordPress vars and included files. */
+require_once(ABSPATH . 'wp-settings.php');
+      """
+
+    When I try `wp option get home`
+    Then STDERR should be:
+      """
+      Error: Site example.dev/ not found.
+      """
+
+    When I run `wp option get home --url=example.com`
+    Then STDOUT should be:
+      """
+      http://example.com
+      """

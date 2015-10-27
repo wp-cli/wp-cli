@@ -36,11 +36,13 @@ class Table extends Query {
 	 *			= string – this will be the where clause
 	 *			= array – each element is treated as a condition if it's positional, or as column => value if
 	 *				it's a key/value pair. In the latter case the value is automatically quoted and escaped
+	 *      append - add arbitrary extra SQL
 	 */
 	function __construct( $args = array() ) {
 		$defaults = array(
 			'fields' => '*',
 			'where' => array(),
+			'append' => '',
 			'table' => null,
 			'chunk_size' => 500
 		);
@@ -50,7 +52,7 @@ class Table extends Query {
 		$fields = self::build_fields( $args['fields'] );
 		$conditions = self::build_where_conditions( $args['where'] );
 		$where_sql = $conditions ? " WHERE $conditions" : '';
-		$query = "SELECT $fields FROM $table $where_sql";
+		$query = "SELECT $fields FROM $table $where_sql {$args['append']}";
 
 		parent::__construct( $query, $args['chunk_size'] );
 	}
@@ -67,10 +69,13 @@ class Table extends Query {
 		if ( is_array( $where ) ) {
 			$conditions = array();
 			foreach( $where as $key => $value ) {
-				if ( is_numeric( $key ) )
+				if ( is_array( $value ) ) {
+					$conditions[]  = $key . ' IN (' . esc_sql( implode( ',', $value ) ) . ')';
+				} else if ( is_numeric( $key ) ) {
 					$conditions[] = $value;
-				else
-					$conditions[] = $key . ' = "' . $wpdb->escape( $value ) .'"';
+				} else {
+					$conditions[] = $key . $wpdb->prepare( ' = %s', $value );
+				}
 			}
 			$where = implode( ' AND ', $conditions );
 		}

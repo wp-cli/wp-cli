@@ -93,6 +93,7 @@ class WP_CLI {
 	 * Set the context in which WP-CLI should be run
 	 */
 	public static function set_url( $url ) {
+		WP_CLI::debug( 'Set URL: ' . $url );
 		$url_parts = Utils\parse_url( $url );
 		self::set_url_params( $url_parts );
 	}
@@ -234,6 +235,15 @@ class WP_CLI {
 	 */
 	public static function success( $message ) {
 		self::$logger->success( $message );
+	}
+
+	/**
+	 * Log debug information
+	 *
+	 * @param string $message
+	 */
+	public static function debug( $message ) {
+		self::$logger->debug( self::error_to_string( $message ) );
 	}
 
 	/**
@@ -397,10 +407,11 @@ class WP_CLI {
 	 * @param array $assoc_args Associative arguments to use
 	 * @param bool Whether to exit if the command returns an error status
 	 * @param bool Whether to return an exit status (default) or detailed execution results
+	 * @param array $runtime_args Override one or more global args (path,url,user,allow-root)
 	 *
 	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
 	 */
-	public static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true, $return_detailed = false ) {
+	public static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true, $return_detailed = false, $runtime_args = array() ) {
 		$reused_runtime_args = array(
 			'path',
 			'url',
@@ -409,7 +420,9 @@ class WP_CLI {
 		);
 
 		foreach ( $reused_runtime_args as $key ) {
-			if ( $value = self::get_runner()->config[ $key ] )
+			if ( isset( $runtime_args[ $key ] ) ) {
+				$assoc_args[ $key ] = $runtime_args[ $key ];
+			} else if ( $value = self::get_runner()->config[ $key ] )
 				$assoc_args[ $key ] = $value;
 		}
 
@@ -431,7 +444,7 @@ class WP_CLI {
 	 *
 	 * @return string
 	 */
-	private static function get_php_binary() {
+	public static function get_php_binary() {
 		if ( defined( 'PHP_BINARY' ) )
 			return PHP_BINARY;
 
@@ -458,7 +471,10 @@ class WP_CLI {
 	}
 
 	/**
-	 * Run a given command.
+	 * Run a given command within the current process using the same global parameters.
+	 *
+	 * To run a command using a new process with the same global parameters, use WP_CLI::launch_self()
+	 * To run a command using a new process with different global parameters, use WP_CLI::launch()
 	 *
 	 * @param array
 	 * @param array
