@@ -81,6 +81,59 @@ class Taxonomy_Command extends WP_CLI_Command {
 		$formatter->display_items( $taxonomies );
 	}
 
+	/**
+	 * Get a taxonomy
+	 *
+	 * ## OPTIONS
+	 *
+	 * <taxonomy>
+	 * : Taxonomy slug
+	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole taxonomy, returns the value of a single field.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json, csv. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp taxonomy get post_tag --format=json
+	 */
+	public function get( $args, $assoc_args ) {
+		$taxonomy = get_taxonomy( $args[0] );
+
+		if ( ! $taxonomy ) {
+			WP_CLI::error( "Taxonomy {$args[0]} doesn't exist." );
+		}
+
+		if ( empty( $assoc_args['fields'] ) ) {
+			$default_fields = array_merge( $this->fields, array(
+				'labels',
+				'cap'
+			) );
+
+			$assoc_args['fields'] = $default_fields;
+		}
+
+		$data = array(
+			'name'          => $taxonomy->name,
+			'label'         => $taxonomy->label,
+			'description'   => $taxonomy->description,
+			'object_type'   => $taxonomy->object_type,
+			'show_tagcloud' => $taxonomy->show_tagcloud,
+			'hierarchical'  => $taxonomy->hierarchical,
+			'public'        => $taxonomy->public,
+			'labels'        => $taxonomy->labels,
+			'cap'           => $taxonomy->cap,
+		);
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $data );
+	}
+
 	private function get_formatter( &$assoc_args ) {
 		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'taxonomy' );
 	}

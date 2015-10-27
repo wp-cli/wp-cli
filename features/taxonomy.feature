@@ -15,3 +15,17 @@ Feature: Manage WordPress taxonomies
     Then STDOUT should be CSV containing:
       | name          | label            | description | object_type | show_tagcloud | hierarchical | public |
       | link_category | Link Categories  |             | link        |               |              |        |
+
+  Scenario: Get taxonomy
+    When I try `wp taxonomy get invalid-taxonomy`
+    Then STDERR should be:
+      """
+      Error: Taxonomy invalid-taxonomy doesn't exist.
+      """
+
+    When I run `wp taxonomy get category`
+    Then STDOUT should be a table containing rows:
+      | Field       | Value      |
+      | name        | category   |
+      | object_type | ["post"]   |
+      | label       | Categories |
