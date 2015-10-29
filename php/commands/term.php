@@ -73,6 +73,12 @@ class Term_Command extends WP_CLI_Command {
 			$terms = get_terms( $args, $assoc_args );
 		}
 
+		$terms = array_map( function( $term ){
+			$term->count = (int)$term->count;
+			$term->parent = (int)$term->parent;
+			return $term;
+		}, $terms );
+
 		if ( 'ids' == $formatter->format ) {
 			$terms = wp_list_pluck( $terms, 'term_id' );
 			echo implode( ' ', $terms );
@@ -175,6 +181,9 @@ class Term_Command extends WP_CLI_Command {
 			$term_array = get_object_vars( $term );
 			$assoc_args['fields'] = array_keys( $term_array );
 		}
+
+		$term->count = (int) $term->count;
+		$term->parent = (int) $term->parent;
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $term );
