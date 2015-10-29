@@ -177,7 +177,7 @@ Feature: Manage WordPress users
     When I try `wp user import-csv user-invalid.csv`
     Then STDERR should contain:
       """
-      Warning: Only lowercase letters (a-z) and numbers are allowed.
+      lowercase letters (a-z) and numbers
       """
 
     When I run `wp user import-csv user-valid.csv`
@@ -195,7 +195,7 @@ Feature: Manage WordPress users
     When I try `wp user create bob-jones bobjones@example.com`
     Then STDERR should contain:
       """
-      Error: Only lowercase letters (a-z) and numbers are allowed.
+      lowercase letters (a-z) and numbers
       """
 
     When I run `wp user create bobjones bobjones@example.com --display_name="Bob Jones"`
