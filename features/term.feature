@@ -18,8 +18,8 @@ Feature: Manage WordPress terms
         "name": "Test term",
         "slug":"test",
         "description":"This is a test term",
-        "parent":"0",
-        "count":"0"
+        "parent":0,
+        "count":0
       }]
       """
 

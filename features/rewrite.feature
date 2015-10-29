@@ -25,7 +25,7 @@ Feature: Manage WordPress rewrites
     When I run `wp rewrite list --format=csv`
     Then STDOUT should be CSV containing:
       | match            | query                               | source   |
-      | blog/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/([^/]+)(/[0-9]+)?/?$ | index.php?year=$matches[1]&monthnum=$matches[2]&day=$matches[3]&name=$matches[4]&page=$matches[5] | post |
+      | blog/[0-9]{4}/[0-9]{1,2}/[0-9]{1,2}/[^/]+/attachment/([^/]+)/trackback/?$ | index.php?attachment=$matches[1]&tb=1 | post |
       | topic/([^/]+)/?$ | index.php?tag=$matches[1]           | post_tag |
       | section/(.+?)/?$ | index.php?category_name=$matches[1] | category |
 
