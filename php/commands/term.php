@@ -182,6 +182,9 @@ class Term_Command extends WP_CLI_Command {
 			$assoc_args['fields'] = array_keys( $term_array );
 		}
 
+		$term->count = (int) $term->count;
+		$term->parent = (int) $term->parent;
+
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $term );
 	}
