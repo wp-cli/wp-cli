@@ -68,9 +68,9 @@ Feature: Manage WordPress comments
       """
 
     When I run `wp comment url 1`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
-      http://example.com/?p=1#comment-1
+      #comment-1
       """
 
   Scenario: Count  comments
