@@ -75,24 +75,30 @@ Feature: Manage WordPress comments
 
   Scenario: Count  comments
     When I run `wp comment count 1`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       approved:        1
+      """
+    And STDOUT should contain:
+      """
       moderated:       0
-      spam:            0
-      trash:           0
-      post-trashed:    0
+      """
+    And STDOUT should contain:
+      """
       total_comments:  1
       """
 
     When I run `wp comment count`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       approved:        1
+      """
+    And STDOUT should contain:
+      """
       moderated:       0
-      spam:            0
-      trash:           0
-      post-trashed:    0
+      """
+    And STDOUT should contain:
+      """
       total_comments:  1
       """
 
