@@ -111,10 +111,10 @@ class Media_Command extends WP_CLI_Command {
 	 */
 	function import( $args, $assoc_args = array() ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
-			'title' => null,
-			'caption' => null,
-			'alt' => null,
-			'desc' => null
+			'title' => '',
+			'caption' => '',
+			'alt' => '',
+			'desc' => '',
 		) );
 
 		if ( isset( $assoc_args['post_id'] ) ) {
