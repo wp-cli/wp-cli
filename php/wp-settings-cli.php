@@ -167,15 +167,21 @@ require( ABSPATH . WPINC . '/canonical.php' );
 require( ABSPATH . WPINC . '/shortcodes.php' );
 Utils\maybe_require( '3.5-alpha-22024', ABSPATH . WPINC . '/class-wp-embed.php' );
 require( ABSPATH . WPINC . '/media.php' );
-Utils\maybe_require( '4.4-alpha-34851', ABSPATH . WPINC . '/embed-functions.php' );
-Utils\maybe_require( '4.4-alpha-34903', ABSPATH . WPINC . '/class-wp-oembed-controller.php' );
+if ( file_exists( ABSPATH . WPINC . '/embed-functions.php' ) ) {
+	require_once ABSPATH . WPINC . '/embed-functions.php';
+}
+if ( file_exists( ABSPATH . WPINC . '/class-wp-oembed-controller.php' ) ) {
+	require_once ABSPATH . WPINC . '/class-wp-oembed-controller.php';
+}
 require( ABSPATH . WPINC . '/http.php' );
 require_once( ABSPATH . WPINC . '/class-http.php' );
 require( ABSPATH . WPINC . '/widgets.php' );
 require( ABSPATH . WPINC . '/nav-menu.php' );
 require( ABSPATH . WPINC . '/nav-menu-template.php' );
 require( ABSPATH . WPINC . '/admin-bar.php' );
-Utils\maybe_require( '4.4-alpha-34928', ABSPATH . WPINC . '/rest-api.php' );
+if ( file_exists( ABSPATH . WPINC . '/rest-api.php' ) ) {
+	require_once ABSPATH . WPINC . '/rest-api.php';
+}
 
 // Load multisite-specific files.
 if ( is_multisite() ) {
