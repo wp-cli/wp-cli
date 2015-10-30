@@ -15,6 +15,12 @@ define( 'WPINC', 'wp-includes' );
 // Include files required for initialization.
 require( ABSPATH . WPINC . '/load.php' );
 require( ABSPATH . WPINC . '/default-constants.php' );
+/*
+ * These can't be directly globalized in version.php. When updating,
+ * we're including version.php from another install and don't want
+ * these values to be overridden if already set.
+ */
+global $wp_version, $wp_db_version, $tinymce_version, $required_php_version, $required_mysql_version;
 require( ABSPATH . WPINC . '/version.php' );
 
 // Set initial default constants including WP_MEMORY_LIMIT, WP_MAX_MEMORY_LIMIT, WP_DEBUG, WP_CONTENT_DIR and WP_CACHE.
@@ -167,10 +173,10 @@ require( ABSPATH . WPINC . '/canonical.php' );
 require( ABSPATH . WPINC . '/shortcodes.php' );
 Utils\maybe_require( '3.5-alpha-22024', ABSPATH . WPINC . '/class-wp-embed.php' );
 require( ABSPATH . WPINC . '/media.php' );
-if ( file_exists( ABSPATH . WPINC . '/embed-functions.php' ) ) {
+if ( version_compare( $wp_version, '4.4-alpha-34851', '>=' ) && file_exists( ABSPATH . WPINC . '/embed-functions.php' ) ) {
 	require_once ABSPATH . WPINC . '/embed-functions.php';
 }
-if ( file_exists( ABSPATH . WPINC . '/class-wp-oembed-controller.php' ) ) {
+if ( version_compare( $wp_version, '4.4-alpha-34903', '>=' ) && file_exists( ABSPATH . WPINC . '/class-wp-oembed-controller.php' ) ) {
 	require_once ABSPATH . WPINC . '/class-wp-oembed-controller.php';
 }
 require( ABSPATH . WPINC . '/http.php' );
@@ -179,7 +185,7 @@ require( ABSPATH . WPINC . '/widgets.php' );
 require( ABSPATH . WPINC . '/nav-menu.php' );
 require( ABSPATH . WPINC . '/nav-menu-template.php' );
 require( ABSPATH . WPINC . '/admin-bar.php' );
-if ( file_exists( ABSPATH . WPINC . '/rest-api.php' ) ) {
+if ( version_compare( $wp_version, '4.4-alpha-34928', '>=' ) && file_exists( ABSPATH . WPINC . '/rest-api.php' ) ) {
 	require_once ABSPATH . WPINC . '/rest-api.php';
 }
 
