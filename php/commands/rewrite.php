@@ -41,6 +41,8 @@ class Rewrite_Command extends WP_CLI_Command {
 
 		if ( ! get_option( 'rewrite_rules' ) ) {
 			WP_CLI::warning( "Rewrite rules are empty, possibly because of a missing permalink_structure option. Use 'wp rewrite list' to verify, or 'wp rewrite structure' to update permalink_structure." );
+		} else {
+			WP_CLI::success( 'Rewrite rules flushed.' );
 		}
 	}
 

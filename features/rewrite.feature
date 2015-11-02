@@ -50,7 +50,10 @@ Feature: Manage WordPress rewrites
 
     When I run `wp rewrite structure /%year%/%monthnum%/%day%/%postname%/`
     Then I run `wp rewrite flush`
-    Then STDOUT should be empty
+    Then STDOUT should be:
+      """
+      Success: Rewrite rules flushed.
+      """
 
   Scenario: Generate .htaccess on hard flush
     Given a WP install
