@@ -20,6 +20,7 @@ function wp_debug_mode() {
 		error_reporting( E_ALL & ~E_DEPRECATED & ~E_STRICT );
 	} else {
 		\wp_debug_mode();
+		error_reporting( E_ALL & ~E_DEPRECATED & ~E_STRICT );
 	}
 
 	// XDebug already sends errors to STDERR
