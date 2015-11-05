@@ -27,6 +27,16 @@ Feature: Get help about WP-CLI commands
       wp post list
       """
 
+  Scenario: Help when WordPress is downloaded but not installed
+    Given an empty directory
+
+    When I run `wp core download`
+    And I run `wp help core config`
+    Then STDOUT should contain:
+      """
+      wp core config
+      """
+
   Scenario: Help for nonexistent commands
     Given a WP install
     
