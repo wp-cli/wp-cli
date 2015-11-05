@@ -627,7 +627,7 @@ class Runner {
 		self::set_wp_root( $this->find_wp_root() );
 
 		// First try at showing man page
-		if ( 'help' === $this->arguments[0] && ! $this->wp_exists() ) {
+		if ( 'help' === $this->arguments[0] && ( ! $this->wp_exists() || ! Utils\locate_wp_config() ) ) {
 			$this->_run_command();
 		}
 
