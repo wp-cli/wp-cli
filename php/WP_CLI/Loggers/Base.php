@@ -16,12 +16,17 @@ abstract class Base {
 	/**
 	 * Write a message to STDERR, prefixed with "Debug: ".
 	 *
+	 * Appends time sense last debug() call, and total execution time (e.g. "(3.095s/38.057s)")
+	 *
 	 * @param string $message Message to write.
 	 */
 	public function debug( $message ) {
+		static $last_call;
 		if ( \WP_CLI::get_runner()->config['debug'] ) {
-			$time = round( microtime( true ) - WP_CLI_START_MICROTIME, 3 );
-			$this->_line( "$message ({$time}s)", 'Debug', '%B', STDERR );
+			$total_time = round( microtime( true ) - WP_CLI_START_MICROTIME, 3 );
+			$since_last = isset( $last_call ) ? round( microtime( true ) - $last_call, 3 ) : 0.000;
+			$last_call = microtime( true );
+			$this->_line( "$message ({$since_last}s/{$total_time}s)", 'Debug', '%B', STDERR );
 		}
 	}
 
