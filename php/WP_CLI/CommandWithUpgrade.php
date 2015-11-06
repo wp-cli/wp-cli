@@ -121,15 +121,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			$local_or_remote_zip_file = false;
 			$result = false;
 
-			// Check if a URL to a remote zip file has been specified
-			$url_path = parse_url( $slug, PHP_URL_PATH );
-			if ( ! empty( $url_path ) && '.zip' === substr( $url_path, - 4 ) ) {
+			// Check if a URL to a remote or local zip has been specified
+			if ( strpos( $slug, '://' ) || ( pathinfo( $slug, PATHINFO_EXTENSION ) === 'zip' && is_file( $slug ) ) ) {
 				$local_or_remote_zip_file = $slug;
-			} else {
-				// Check if a local zip file has been specified
-				if ( 'zip' === pathinfo( $slug, PATHINFO_EXTENSION ) && file_exists( $slug ) ) {
-					$local_or_remote_zip_file = $slug;
-				}
 			}
 
 			if ( $local_or_remote_zip_file ) {
