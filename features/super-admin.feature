@@ -21,8 +21,8 @@ Feature: Manage super admins associated with a multisite instance
     And I run `wp super-admin list`
     Then STDOUT should be:
     """
-		admin
-		superadmin
+    admin
+    superadmin
     """
 
     When I run `wp super-admin remove admin`
