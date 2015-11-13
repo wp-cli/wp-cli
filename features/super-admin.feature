@@ -17,6 +17,14 @@ Feature: Manage super admins associated with a multisite instance
     superadmin
     """
 
+    When I run `wp super-admin add superadmin`
+    And I run `wp super-admin list`
+    Then STDOUT should be:
+    """
+		admin
+		superadmin
+    """
+
     When I run `wp super-admin remove admin`
     And I run `wp super-admin list`
     Then STDOUT should be:
