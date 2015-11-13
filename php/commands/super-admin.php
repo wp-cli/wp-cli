@@ -49,8 +49,9 @@ class Super_Admin_Command extends WP_CLI_Command {
 			$super_admins[] = $user->user_login;
 		}
 
-		update_site_option( 'site_admins' , $super_admins );
-		WP_CLI::success( 'Granted super-admin capabilities.' );
+		if ( update_site_option( 'site_admins' , $super_admins ) ) {
+			WP_CLI::success( 'Granted super-admin capabilities.' );
+		}
 	}
 
 	/**
