@@ -35,11 +35,18 @@ class Super_Admin_Command extends WP_CLI_Command {
 
 		foreach ( $user_logins as $user_login ) {
 			$user = get_user_by( 'login', $user_login );
+
 			if ( !$user ) {
 				WP_CLI::warning( "Couldn't find {$user_login} user." );
-			} else {
-				$super_admins[] = $user->user_login;
+				continue;
 			}
+
+			if ( in_array( $user->user_login, $super_admins ) ) {
+				WP_CLI::warning( "User {$user_login} already has super-admin capabilities." );
+				continue;
+			}
+
+			$super_admins[] = $user->user_login;
 		}
 
 		update_site_option( 'site_admins' , $super_admins );
