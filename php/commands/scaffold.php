@@ -318,6 +318,8 @@ class Scaffold_Command extends WP_CLI_Command {
 			'author_uri' => "",
 			'theme_uri'  => ""
 		) );
+		$data['slug'] = $theme_slug;
+		$data['parent_theme_function_safe'] = str_replace( '-', '_', $data['parent_theme'] );
 
 		$data['description'] = ucfirst( $data['parent_theme'] ) . " child theme.";
 
