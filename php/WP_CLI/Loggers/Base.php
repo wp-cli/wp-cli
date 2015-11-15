@@ -7,6 +7,8 @@ namespace WP_CLI\Loggers;
  */
 abstract class Base {
 
+	protected $in_color = false;
+
 	abstract public function info( $message );
 
 	abstract public function success( $message );
@@ -14,12 +16,22 @@ abstract class Base {
 	abstract public function warning( $message );
 
 	/**
+	 * Retrieve the runner instance from the base CLI object. This facilitates
+	 * unit testing, where the WP_CLI instance isn't available
+	 *
+	 * @return Runner Instance of the runner class
+	 */
+	protected function getRunner() {
+		return \WP_CLI::get_runner();
+	}
+
+	/**
 	 * Write a message to STDERR, prefixed with "Debug: ".
 	 *
 	 * @param string $message Message to write.
 	 */
 	public function debug( $message ) {
-		if ( \WP_CLI::get_runner()->config['debug'] ) {
+		if ( $this->getRunner()->config['debug'] ) {
 			$time = round( microtime( true ) - WP_CLI_START_MICROTIME, 3 );
 			$this->_line( "$message ({$time}s)", 'Debug', '%B', STDERR );
 		}
