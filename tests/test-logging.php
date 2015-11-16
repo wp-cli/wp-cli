@@ -2,7 +2,7 @@
 
 class MockRegularLogger extends WP_CLI\Loggers\Regular {
 
-	protected function getRunner() {
+	protected function get_runner() {
 		return (object) array (
 			'config' => array (
 				'debug' => true
@@ -17,7 +17,7 @@ class MockRegularLogger extends WP_CLI\Loggers\Regular {
 
 class MockQuietLogger extends WP_CLI\Loggers\Quiet {
 
-	protected function getRunner() {
+	protected function get_runner() {
 		return (object) array (
 			'config' => array (
 				'debug' => true
