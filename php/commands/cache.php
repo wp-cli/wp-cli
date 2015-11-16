@@ -95,6 +95,9 @@ class Cache_Command extends WP_CLI_Command {
 
 	/**
 	 * Flush the object cache.
+	 *
+	 * For sites using a persistent object cache, because WordPress Multisite simply adds a blog id
+	 * to the cache key, flushing cache is typically a global operation.
 	 */
 	public function flush( $args, $assoc_args ) {
 		$value = wp_cache_flush();
