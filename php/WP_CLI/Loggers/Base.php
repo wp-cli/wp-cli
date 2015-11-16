@@ -21,7 +21,7 @@ abstract class Base {
 	 *
 	 * @return Runner Instance of the runner class
 	 */
-	protected function getRunner() {
+	protected function get_runner() {
 		return \WP_CLI::get_runner();
 	}
 
@@ -31,7 +31,7 @@ abstract class Base {
 	 * @param string $message Message to write.
 	 */
 	public function debug( $message ) {
-		if ( $this->getRunner()->config['debug'] ) {
+		if ( $this->get_runner()->config['debug'] ) {
 			$time = round( microtime( true ) - WP_CLI_START_MICROTIME, 3 );
 			$this->_line( "$message ({$time}s)", 'Debug', '%B', STDERR );
 		}
