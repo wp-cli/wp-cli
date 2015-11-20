@@ -25,9 +25,9 @@ chmod +x $WP_CLI_BIN_DIR/wp
 
 if [[ $WP_VERSION == "trunk" ]]
 then
-	git clone --depth 1 git@github.com:WordPress/WordPress.git wordpress
-	rm -rf wordpress/.git
-	mv wordpress '/tmp/wp-cli-test core-download-cache/'
+	wget https://github.com/WordPress/WordPress/archive/master.zip
+	unzip -q master.zip
+	mv WordPress-master '/tmp/wp-cli-test core-download-cache/'
 else
 	./bin/wp core download --version=$WP_VERSION --path='/tmp/wp-cli-test core-download-cache/'
 fi
