@@ -118,6 +118,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 				if ( $php_only || $regex || NULL !== $serialRow ) {
 					$type = 'PHP';
+					if ( ! empty( $serialRow ) && null === $recurse_objects ) {
+						$recurse_objects = true;
+					}
 					$count = self::php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects, $verbose, $regex );
 				} else {
 					$type = 'SQL';

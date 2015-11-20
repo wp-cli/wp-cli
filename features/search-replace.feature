@@ -109,8 +109,12 @@ Feature: Do global search/replace
       | key               | value                                              |
       | header_image_data | {"url":"http:\/\/subdomain.example.com\/foo.jpg"}  |
 
+    When I run `wp search-replace subdomain.example.com example.com --no-recurse-objects`
+    Then STDOUT should be a table containing rows:
+      | Table      | Column       | Replacements | Type       |
+      | wp_options | option_value | 0            | PHP        |
+
     When I run `wp search-replace subdomain.example.com example.com`
-    Then STDERR should be empty
     Then STDOUT should be a table containing rows:
       | Table      | Column       | Replacements | Type       |
       | wp_options | option_value | 1            | PHP        |
