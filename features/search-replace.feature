@@ -95,6 +95,30 @@ Feature: Do global search/replace
       world, Hello
       """
 
+  Scenario: Search and replace within theme mods
+    Given a WP install
+    And a setup-theme-mod.php file:
+      """
+      <?php
+      set_theme_mod( 'header_image_data', (object) array( 'url' => 'http://subdomain.example.com/foo.jpg' ) );
+      """
+    And I run `wp eval-file setup-theme-mod.php`
+
+    When I run `wp theme mod get header_image_data`
+    Then STDOUT should be a table containing rows:
+      | key               | value                                              |
+      | header_image_data | {"url":"http:\/\/subdomain.example.com\/foo.jpg"}  |
+
+    When I run `wp search-replace subdomain.example.com example.com`
+    Then STDERR should be empty
+    Then STDOUT should be a table containing rows:
+      | Table      | Column       | Replacements | Type       |
+      | wp_options | option_value | 1            | PHP        |
+
+    When I run `wp theme mod get header_image_data`
+    Then STDOUT should be a table containing rows:
+      | key               | value                                           |
+      | header_image_data | {"url":"http:\/\/example.com\/foo.jpg"}  |
 
   Scenario Outline: Large guid search/replace where replacement contains search (or not)
     Given a WP install
