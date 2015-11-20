@@ -74,7 +74,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$report          = array();
 		$dry_run         = \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' );
 		$php_only        = \WP_CLI\Utils\get_flag_value( $assoc_args, 'precise' );
-		$recurse_objects = \WP_CLI\Utils\get_flag_value( $assoc_args, 'recurse-objects' );
+		$recurse_objects = \WP_CLI\Utils\get_flag_value( $assoc_args, 'recurse-objects', true );
 		$verbose         =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'verbose' );
 		$regex           =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'regex' );
 
@@ -118,9 +118,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 				if ( $php_only || $regex || NULL !== $serialRow ) {
 					$type = 'PHP';
-					if ( ! empty( $serialRow ) && null === $recurse_objects ) {
-						$recurse_objects = true;
-					}
 					$count = self::php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects, $verbose, $regex );
 				} else {
 					$type = 'SQL';
