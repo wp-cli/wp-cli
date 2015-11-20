@@ -25,9 +25,9 @@ chmod +x $WP_CLI_BIN_DIR/wp
 
 if [[ $WP_VERSION == "trunk" ]]
 then
-	wget https://github.com/WordPress/WordPress/archive/master.zip
-	unzip -q master.zip
-	mv WordPress-master '/tmp/wp-cli-test core-download-cache/'
+	wget https://wordpress.org/nightly-builds/wordpress-latest.zip
+	unzip wordpress-latest.zip
+	mv wordpress '/tmp/wp-cli-test core-download-cache/'
 else
 	./bin/wp core download --version=$WP_VERSION --path='/tmp/wp-cli-test core-download-cache/'
 fi
