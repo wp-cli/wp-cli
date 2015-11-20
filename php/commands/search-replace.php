@@ -43,7 +43,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * : Force the use of PHP (instead of SQL) which is more thorough, but slower. Use if you see issues with serialized data.
 	 *
 	 * [--recurse-objects]
-	 * : Enable recursing into objects to replace strings
+	 * : Enable recursing into objects to replace strings. Defaults to true; pass --no-recurse-objects to disable.
 	 *
 	 * [--all-tables-with-prefix]
 	 * : Enable replacement on any tables that match the table prefix even if not registered on wpdb
@@ -74,7 +74,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$report          = array();
 		$dry_run         = \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' );
 		$php_only        = \WP_CLI\Utils\get_flag_value( $assoc_args, 'precise' );
-		$recurse_objects = \WP_CLI\Utils\get_flag_value( $assoc_args, 'recurse-objects' );
+		$recurse_objects = \WP_CLI\Utils\get_flag_value( $assoc_args, 'recurse-objects', true );
 		$verbose         =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'verbose' );
 		$regex           =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'regex' );
 
