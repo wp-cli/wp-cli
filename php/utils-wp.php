@@ -56,10 +56,9 @@ function wp_redirect_handler( $url ) {
 }
 
 function maybe_require( $since, $path ) {
-	global $wp_version;
-
-	if ( version_compare( $wp_version, $since, '>=' ) )
+	if ( version_compare( str_replace( array( '-src' ), '', $GLOBALS['wp_version'] ), $since, '>=' ) ) {
 		require $path;
+	}
 }
 
 function get_upgrader( $class ) {
