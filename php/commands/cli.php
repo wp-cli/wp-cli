@@ -208,6 +208,14 @@ class CLI_Command extends WP_CLI_Command {
 		} else {
 			$updated_version = $newest['version'];
 		}
+
+		// clear the flag for available updates
+		$flag = WP_CLI::get_home() . "/has-new-version";
+
+		if ( file_exists( $flag ) ) {
+			unlink( $flag );
+		}
+
 		WP_CLI::success( sprintf( 'Updated WP-CLI to %s', $updated_version ) );
 	}
 
@@ -272,6 +280,12 @@ class CLI_Command extends WP_CLI_Command {
 				return ! empty( $updates[ $type ] ) ? array( $updates[ $type ] ) : false;
 			}
 		}
+
+		// if there are any updates, set a persistent flag which should only be cleared after a successful update
+		if ( count( $updates ) > 0 ) {
+			touch( WP_CLI::get_home() . '/has-new-version' );
+		}
+
 		return array_values( $updates );
 	}
 

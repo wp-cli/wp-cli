@@ -33,6 +33,12 @@ class Help_Command extends WP_CLI_Command {
 			}
 
 			self::show_help( $command );
+
+			// new version notification
+			if ( file_exists( WP_CLI::get_home() . '/has-new-version' ) ) {
+				\WP_CLI::error( 'Your wp-cli is outdated. Please run `wp cli check-update` for more information.' );
+			}
+
 			exit;
 		}
 
