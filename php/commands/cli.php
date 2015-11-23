@@ -84,6 +84,9 @@ class CLI_Command extends WP_CLI_Command {
 	 * [--major]
 	 * : Only list major updates
 	 *
+	 * [--latest]
+	 * : Only show the latest version
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each update.
 	 *
@@ -103,6 +106,11 @@ class CLI_Command extends WP_CLI_Command {
 				$assoc_args,
 				array( 'version', 'update_type', 'package_url' )
 			);
+
+			if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, 'latest' ) ) {
+				$updates = array( $updates[0] );
+			}
+
 			$formatter->display_items( $updates );
 		} else if ( empty( $assoc_args['format'] ) || 'table' == $assoc_args['format'] ) {
 			$update_type = $this->get_update_type_str( $assoc_args );
