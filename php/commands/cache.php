@@ -230,47 +230,7 @@ class Cache_Command extends WP_CLI_Command {
 	 * problems with this function's ability to determine which object cache is being used.
 	 */
 	public function type( $args, $assoc_args ) {
-		global $_wp_using_ext_object_cache, $wp_object_cache;
-
-		if ( false !== $_wp_using_ext_object_cache ) {
-			// Test for Memcached PECL extension memcached object cache (https://github.com/tollmanz/wordpress-memcached-backend)
-			if ( isset( $wp_object_cache->m ) && is_a( $wp_object_cache->m, 'Memcached' ) ) {
-				$message = 'Memcached';
-
-			// Test for Memcache PECL extension memcached object cache (http://wordpress.org/extend/plugins/memcached/)
-			} elseif ( isset( $wp_object_cache->mc ) ) {
-				$is_memcache = true;
-				foreach ( $wp_object_cache->mc as $bucket ) {
-					if ( ! is_a( $bucket, 'Memcache' ) )
-						$is_memcache = false;
-				}
-
-				if ( $is_memcache )
-					$message = 'Memcache';
-
-			// Test for Xcache object cache (http://plugins.svn.wordpress.org/xcache/trunk/object-cache.php)
-			} elseif ( is_a( $wp_object_cache, 'XCache_Object_Cache' ) ) {
-				$message = 'Xcache';
-
-			// Test for WinCache object cache (http://wordpress.org/extend/plugins/wincache-object-cache-backend/)
-			} elseif ( class_exists( 'WinCache_Object_Cache' ) ) {
-				$message = 'WinCache';
-
-			// Test for APC object cache (http://wordpress.org/extend/plugins/apc/)
-			} elseif ( class_exists( 'APC_Object_Cache' ) ) {
-				$message = 'APC';
-
-			// Test for Redis Object Cache (https://github.com/alleyinteractive/wp-redis)
-			} elseif ( isset( $wp_object_cache->redis ) && is_a( $wp_object_cache->redis, 'Redis' ) ) {
-				$message = 'Redis';
-
-			} else {
-				$message = 'Unknown';
-			}
-		} else {
-			$message = 'Default';
-		}
-
+		$message = WP_CLI\Utils\wp_get_cache_type();
 		WP_CLI::line( $message );
 	}
 }

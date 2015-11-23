@@ -154,7 +154,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 			$table->display();
 
 			if ( ! $dry_run ) {
-				WP_CLI::success( "Made $total replacements." );
+				$success_message = "Made $total replacements.";
+				if ( $total && 'Default' !== WP_CLI\Utils\wp_get_cache_type() ) {
+					$success_message .= ' Please remember to flush your persistent object cache with `wp cache flush`.';
+				}
+				WP_CLI::success( $success_message );
 			}
 
 		}
