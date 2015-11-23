@@ -28,7 +28,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * : The new string.
 	 *
 	 * [<table>...]
-	 * : List of database tables to restrict the replacement to.
+	 * : List of database tables to restrict the replacement to. Wildcards are supported, e.g. wp_\*_options or wp_post\?.
 	 *
 	 * [--network]
 	 * : Search/replace through all the tables in a multisite install.
@@ -64,7 +64,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *     wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
 	 *
 	 *     # Turn your production database into a local database
-	 *     wp search-replace --url=example.com example.com example.dev
+	 *     wp search-replace --url=example.com example.com example.dev wp_\*_options
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		global $wpdb;
@@ -80,6 +80,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		$skip_columns = explode( ',', \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-columns' ) );
 
+		if ( $old === $new && ! $regex ) {
+			WP_CLI::warning( "Replacement value '{$old}' is identical to search value '{$new}'. Skipping operation." );
+			exit;
+		}
+
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';
 
@@ -93,6 +98,22 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all-tables' ) ) {
 			$table_type = 'all-tables';
+		}
+
+		if ( ! empty( $args ) ) {
+			$new_tables = array();
+			foreach( $args as $key => $table ) {
+				if ( false !== strpos( $table, '*' ) || false !== strpos( $table, '?' ) ) {
+					$expanded_tables = self::get_tables_for_glob( $table );
+					if ( empty( $expanded_tables ) ) {
+						WP_CLI::error( "Couldn't find any tables matching: {$table}" );
+					}
+					$new_tables = array_merge( $new_tables, $expanded_tables );
+				} else {
+					$new_tables[] = $table;
+				}
+			}
+			$args = $new_tables;
 		}
 
 		// Get the array of tables to work with. If there is anything left in $args, assume those are table names to use
@@ -138,7 +159,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 			$table->display();
 
 			if ( ! $dry_run ) {
-				WP_CLI::success( "Made $total replacements." );
+				$success_message = "Made $total replacements.";
+				if ( $total && 'Default' !== WP_CLI\Utils\wp_get_cache_type() ) {
+					$success_message .= ' Please remember to flush your persistent object cache with `wp cache flush`.';
+				}
+				WP_CLI::success( $success_message );
 			}
 
 		}
@@ -293,6 +318,31 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		return array( $primary_keys, $columns );
+	}
+
+	/**
+	 * Get all the tables that match a glob pattern
+	 *
+	 * @param  string $glob
+	 * @return array
+	 */
+	private static function get_tables_for_glob( $glob ) {
+
+		static $all_tables = array();
+
+		if ( ! $all_tables ) {
+			$all_tables = self::get_table_list( 'all-tables' );
+		}
+
+		$tables = array();
+
+		foreach ( $all_tables as $table) {
+			if ( fnmatch( $glob, $table ) ) {
+				$tables[] = $table;
+			}
+		}
+
+		return $tables;
 	}
 
 	private static function is_text_col( $type ) {
