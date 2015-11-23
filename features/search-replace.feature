@@ -136,10 +136,15 @@ Feature: Do global search/replace
       <a href="http://apple.com">Apple</a>
       """
 
+    When I run `wp search-replace '<a href="http://apple.com">Apple</a>' '<a href="http://google.com">Google</a>' --dry-run`
+    Then STDOUT should be a table containing rows:
+      | Table      | Column       | Replacements | Type       |
+      | wp_posts   | post_content | 1            | SQL        |
+
     When I run `wp search-replace '<a href="http://apple.com">Apple</a>' '<a href="http://google.com">Google</a>'`
     Then STDOUT should be a table containing rows:
       | Table      | Column       | Replacements | Type       |
-      | wp_posts   | post_content | 1            | PHP        |
+      | wp_posts   | post_content | 1            | SQL        |
 
     When I run `wp post get {POST_ID} --field=content`
     Then STDOUT should be:
