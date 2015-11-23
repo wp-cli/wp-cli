@@ -61,10 +61,6 @@ function maybe_require( $since, $path ) {
 	}
 }
 
-function wp_version_compare( $since, $operator ) {
-	return version_compare( str_replace( array( '-src' ), '', $GLOBALS['wp_version'] ), $since, $operator );
-}
-
 function get_upgrader( $class ) {
 	if ( !class_exists( '\WP_Upgrader' ) )
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
