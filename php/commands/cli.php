@@ -210,7 +210,7 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		// clear the flag for available updates
-		$flag = WP_CLI::get_home() . "/has-new-version";
+		$flag = WP_CLI::home_path( 'has-new-version' );
 
 		if ( file_exists( $flag ) ) {
 			unlink( $flag );
@@ -244,7 +244,8 @@ class CLI_Command extends WP_CLI_Command {
 			'major'      => false,
 			'minor'      => false,
 			'patch'      => false,
-			);
+		);
+
 		foreach ( $release_data as $release ) {
 
 			// get rid of leading "v" if there is one set
@@ -281,9 +282,14 @@ class CLI_Command extends WP_CLI_Command {
 			}
 		}
 
-		// if there are any updates, set a persistent flag which should only be cleared after a successful update
-		if ( count( $updates ) > 0 ) {
-			touch( WP_CLI::get_home() . '/has-new-version' );
+		if ( is_writable( WP_CLI::home_path() ) ) {
+			// if there are any updates, set a persistent flag which should only be cleared after a successful update
+			if ( count( $updates ) > 0 ) {
+				touch( WP_CLI::home_path( 'has-new-version' ) );
+			}
+
+			// no automatic updates for the next 24 hours
+			file_put_contents( WP_CLI::home_path( 'next-update-check' ), time() + 24*60*60 );
 		}
 
 		return array_values( $updates );

@@ -18,15 +18,15 @@ include WP_CLI_ROOT . '/php/class-wp-cli-command.php';
 
 \WP_CLI\Utils\load_dependencies();
 
-// check for updates on shutdown with 1/50 probability
-// disabled for Behat as we are limited to 60 request per hour
-if ( getenv('BEHAT_RUN') && 0 === mt_rand( 0, 50 ) ) {
-	register_shutdown_function( function() {
-		// prevent unnecessary checks - we don't care what updates are available, only that there is an update
-		if ( file_exists( \WP_CLI::get_home() . "/has-new-version" ) ) {
-			return;
-		}
+// check for updates on shutdown unless:
+// - we've already checked in the last 24 hours,
+// - ~/.wp-cli is not writable, or
+// - we already know that an update is available
 
+$next_update_check = file_exists( \WP_CLI::home_path( 'next-update-check' ) ) ? file_get_contents( \WP_CLI::home_path( 'next-update-check' ) ) : 0;
+
+if ( is_writable( \WP_CLI::home_path() ) && ! file_exists( \WP_CLI::home_path( 'has-new-version' ) ) && time() >= $next_update_check ) {
+	register_shutdown_function( function() {
 		// prevent infinite loops
 		if ( ! isset( $GLOBALS['argv'][1] ) || 'cli' !== $GLOBALS['argv'][1] || ! isset( $GLOBALS['argv'][2] ) || 'check-update' !== $GLOBALS['argv'][1] ) {
 

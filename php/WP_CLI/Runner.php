@@ -73,7 +73,7 @@ class Runner {
 			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
 			$this->_global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
 		} else {
-			$config_path = WP_CLI::get_home() . '/config.yml';
+			$config_path = WP_CLI::home_path( 'config.yml' );
 			$this->_global_config_path_debug = 'Using default global config: ' . $config_path;
 		}
 
