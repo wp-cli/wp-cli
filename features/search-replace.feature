@@ -95,6 +95,25 @@ Feature: Do global search/replace
       world, Hello
       """
 
+  Scenario: Precise search/replace when detecting JSON
+    Given a WP install
+    And a wp-set-post-meta.php file:
+      """
+      <?php
+      add_post_meta( $GLOBALS['argv'][3], 'urls', json_encode( array( 'https://hmn.imgix.net/humanmade-production/uploads/2015/05/airbnb-header4.png?w=940&h=400&fit=crop' ) ) );
+      """
+
+    When I run `wp post create --post_title="foo" --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I run `wp eval-file wp-set-post-meta.php {POST_ID}`
+    And I run `wp eval 'global $wpdb; $results = $wpdb->get_results( "SELECT meta_value FROM $wpdb->postmeta WHERE post_id={POST_ID} AND meta_key=\"urls\"" ); echo $results[0]->meta_value;'`
+    Then STDOUT should be:
+      """
+      ["https:\/\/hmn.imgix.net\/humanmade-production\/uploads\/2015\/05\/airbnb-header4.png?w=940&h=400&fit=crop"]
+      """
+
+
   Scenario: Search and replace within theme mods
     Given a WP install
     And a setup-theme-mod.php file:
