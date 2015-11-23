@@ -139,27 +139,41 @@ require( ABSPATH . WPINC . '/class-wp-walker.php' );
 require( ABSPATH . WPINC . '/class-wp-ajax-response.php' );
 require( ABSPATH . WPINC . '/formatting.php' );
 require( ABSPATH . WPINC . '/capabilities.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-roles.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-role.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-user.php' );
 require( ABSPATH . WPINC . '/query.php' );
 Utils\maybe_require( '3.7-alpha-25139', ABSPATH . WPINC . '/date.php' );
 require( ABSPATH . WPINC . '/theme.php' );
 require( ABSPATH . WPINC . '/class-wp-theme.php' );
 require( ABSPATH . WPINC . '/template.php' );
 require( ABSPATH . WPINC . '/user.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-user-query.php' );
 Utils\maybe_require( '4.0', ABSPATH . WPINC . '/session.php' );
 require( ABSPATH . WPINC . '/meta.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-meta-query.php' );
 require( ABSPATH . WPINC . '/general-template.php' );
 require( ABSPATH . WPINC . '/link-template.php' );
 require( ABSPATH . WPINC . '/author-template.php' );
 require( ABSPATH . WPINC . '/post.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-walker-page.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-walker-page-dropdown.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-post.php' );
 require( ABSPATH . WPINC . '/post-template.php' );
 Utils\maybe_require( '3.6-alpha-23451', ABSPATH . WPINC . '/revision.php' );
 Utils\maybe_require( '3.6-alpha-23451', ABSPATH . WPINC . '/post-formats.php' );
 require( ABSPATH . WPINC . '/post-thumbnail-template.php' );
 require( ABSPATH . WPINC . '/category.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-walker-category.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-walker-category-dropdown.php' );
 require( ABSPATH . WPINC . '/category-template.php' );
 require( ABSPATH . WPINC . '/comment.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-comment.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-comment-query.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-walker-comment.php' );
 require( ABSPATH . WPINC . '/comment-template.php' );
 require( ABSPATH . WPINC . '/rewrite.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-rewrite.php' );
 require( ABSPATH . WPINC . '/feed.php' );
 require( ABSPATH . WPINC . '/bookmark.php' );
 require( ABSPATH . WPINC . '/bookmark-template.php' );
@@ -168,26 +182,33 @@ require( ABSPATH . WPINC . '/cron.php' );
 require( ABSPATH . WPINC . '/deprecated.php' );
 require( ABSPATH . WPINC . '/script-loader.php' );
 require( ABSPATH . WPINC . '/taxonomy.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-term.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-tax-query.php' );
 require( ABSPATH . WPINC . '/update.php' );
 require( ABSPATH . WPINC . '/canonical.php' );
 require( ABSPATH . WPINC . '/shortcodes.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/embed.php' );
 Utils\maybe_require( '3.5-alpha-22024', ABSPATH . WPINC . '/class-wp-embed.php' );
 require( ABSPATH . WPINC . '/media.php' );
-if ( version_compare( $wp_version, '4.4-alpha-34851', '>=' ) && file_exists( ABSPATH . WPINC . '/embed-functions.php' ) ) {
-	require_once ABSPATH . WPINC . '/embed-functions.php';
-}
-if ( version_compare( $wp_version, '4.4-alpha-34903', '>=' ) && file_exists( ABSPATH . WPINC . '/class-wp-oembed-controller.php' ) ) {
-	require_once ABSPATH . WPINC . '/class-wp-oembed-controller.php';
-}
+Utils\maybe_require( '4.4-alpha-34903', ABSPATH . WPINC . '/class-wp-oembed-controller.php' );
 require( ABSPATH . WPINC . '/http.php' );
 require_once( ABSPATH . WPINC . '/class-http.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-http-streams.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-http-curl.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-http-proxy.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-http-cookie.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-http-encoding.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-http-response.php' );
 require( ABSPATH . WPINC . '/widgets.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-widget.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-widget-factory.php' );
 require( ABSPATH . WPINC . '/nav-menu.php' );
 require( ABSPATH . WPINC . '/nav-menu-template.php' );
 require( ABSPATH . WPINC . '/admin-bar.php' );
-if ( version_compare( $wp_version, '4.4-alpha-34928', '>=' ) && file_exists( ABSPATH . WPINC . '/rest-api.php' ) ) {
-	require_once ABSPATH . WPINC . '/rest-api.php';
-}
+Utils\maybe_require( '4.4-alpha-34928', ABSPATH . WPINC . '/rest-api.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/rest-api/class-wp-rest-server.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/rest-api/class-wp-rest-response.php' );
+Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/rest-api/class-wp-rest-request.php' );
 
 // Load multisite-specific files.
 if ( is_multisite() ) {
