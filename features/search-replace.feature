@@ -57,6 +57,78 @@ Feature: Do global search/replace
       awesome_table
       """
 
+  @daniel
+  Scenario: Run on all tables matching string with wildcard
+    Given a WP install
+
+    When I run `wp option set bar foo`
+    And I run `wp option get bar`
+    Then STDOUT should be:
+      """
+      foo
+      """
+
+    When I run `wp post create --post_title=bar --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I run `wp post meta add {POST_ID} foo bar`
+    Then STDOUT should not be empty
+
+    When I run `wp search-replace bar burrito wp_post\?`
+    And STDOUT should be a table containing rows:
+      | Table         | Column      | Replacements | Type |
+      | wp_posts      | post_title  | 1            | SQL  |
+    And STDOUT should not contain:
+      """
+      wp_options
+      """
+
+    When I run `wp post get {POST_ID} --field=title`
+    Then STDOUT should be:
+      """
+      burrito
+      """
+
+    When I run `wp post meta get {POST_ID} foo`
+    Then STDOUT should be:
+      """
+      bar
+      """
+
+    When I run `wp option get bar`
+    Then STDOUT should be:
+      """
+      foo
+      """
+
+    When I try `wp search-replace foo burrito wp_opt\*on`
+    Then STDERR should be:
+      """
+      Error: Couldn't find any tables matching: wp_opt*on
+      """
+
+    When I run `wp search-replace foo burrito wp_opt\* wp_postme\*`
+    Then STDOUT should be a table containing rows:
+      | Table         | Column       | Replacements | Type |
+      | wp_options    | option_value | 1            | PHP  |
+      | wp_postmeta   | meta_key     | 1            | SQL  |
+    And STDOUT should not contain:
+      """
+      wp_posts
+      """
+
+    When I run `wp option get bar`
+    Then STDOUT should be:
+      """
+      burrito
+      """
+
+    When I run `wp post meta get {POST_ID} burrito`
+    Then STDOUT should be:
+      """
+      bar
+      """
+
   Scenario: Quiet search/replace
     Given a WP install
 
