@@ -100,7 +100,8 @@ Feature: Do global search/replace
     And a wp-set-post-meta.php file:
       """
       <?php
-      add_post_meta( $GLOBALS['argv'][3], 'urls', json_encode( array( 'https://hmn.imgix.net/humanmade-production/uploads/2015/05/airbnb-header4.png?w=940&h=400&fit=crop' ) ) );
+      global $wpdb;
+      $wpdb->query( "INSERT INTO $wpdb->postmeta (post_id,meta_key,meta_value) VALUES ({$GLOBALS['argv'][3]},'urls','[\"https:\\/\\/hmn.imgix.net\\/humanmade-production\\/uploads\\/2015\\/05\\/airbnb-header4.png?w=940&h=400&fit=crop\"]')");
       """
 
     When I run `wp post create --post_title="foo" --porcelain`
