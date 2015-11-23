@@ -224,6 +224,16 @@ Feature: Do global search/replace
       <a href="http://google.com">Google</a>
       """
 
+  Scenario: Search and replace with the same terms
+    Given a WP install
+
+    When I run `wp search-replace foo foo`
+    Then STDERR should be:
+      """
+      Warning: Replacement value 'foo' is identical to search value 'foo'. Skipping operation.
+      """
+    And STDOUT should be empty
+
   Scenario Outline: Large guid search/replace where replacement contains search (or not)
     Given a WP install
     And I run `wp option get siteurl`
