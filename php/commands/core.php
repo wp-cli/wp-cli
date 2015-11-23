@@ -663,6 +663,10 @@ class Core_Command extends WP_CLI_Command {
 			}
 		}
 
+		// delete_site_option() cleans the alloptions cache to prevent dupe option
+		delete_site_option( 'upload_space_check_disabled' );
+		update_site_option( 'upload_space_check_disabled', 1 );
+
 		if ( !is_multisite() ) {
 			$subdomain_export = Utils\get_flag_value( $assoc_args, 'subdomains' ) ? 'true' : 'false';
 			$ms_config = <<<EOT

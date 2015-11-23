@@ -242,6 +242,12 @@ Feature: Manage WordPress installation
     When I try `wp core install-network --title='test network'`
     Then the return code should be 1
 
+    When I run `wp network meta get 1 upload_space_check_disabled`
+    Then STDOUT should be:
+      """
+      1
+      """
+
   Scenario: Install multisite from scratch
     Given an empty directory
     And WP files
@@ -260,6 +266,12 @@ Feature: Manage WordPress installation
     # Can complain that it's already installed, but don't exit with an error code
     When I try `wp core multisite-install --url=foobar.org --title=Test --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
     Then the return code should be 0
+
+    When I run `wp network meta get 1 upload_space_check_disabled`
+    Then STDOUT should be:
+      """
+      1
+      """
 
   Scenario: Install multisite from scratch, with MULTISITE already set in wp-config.php
     Given a WP multisite install
