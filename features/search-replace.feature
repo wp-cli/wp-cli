@@ -124,6 +124,34 @@ Feature: Do global search/replace
       | key               | value                                           |
       | header_image_data | {"url":"http:\/\/example.com\/foo.jpg"}  |
 
+  Scenario: Search and replace with quoted strings
+    Given a WP install
+
+    When I run `wp post create --post_content='<a href="http://apple.com">Apple</a>' --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=content`
+    Then STDOUT should be:
+      """
+      <a href="http://apple.com">Apple</a>
+      """
+
+    When I run `wp search-replace '<a href="http://apple.com">Apple</a>' '<a href="http://google.com">Google</a>' --dry-run`
+    Then STDOUT should be a table containing rows:
+      | Table      | Column       | Replacements | Type       |
+      | wp_posts   | post_content | 1            | SQL        |
+
+    When I run `wp search-replace '<a href="http://apple.com">Apple</a>' '<a href="http://google.com">Google</a>'`
+    Then STDOUT should be a table containing rows:
+      | Table      | Column       | Replacements | Type       |
+      | wp_posts   | post_content | 1            | SQL        |
+
+    When I run `wp post get {POST_ID} --field=content`
+    Then STDOUT should be:
+      """
+      <a href="http://google.com">Google</a>
+      """
+
   Scenario Outline: Large guid search/replace where replacement contains search (or not)
     Given a WP install
     And I run `wp option get siteurl`

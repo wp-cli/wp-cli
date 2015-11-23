@@ -237,7 +237,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$args = array(
 			'table' => $table,
 			'fields' => $fields,
-			'where' => $regex ? '' : "`$col`" . ' LIKE "%' . self::esc_like( $old ) . '%"',
+			'where' => $regex ? '' : "`$col`" . $wpdb->prepare( ' LIKE %s', '%' . self::esc_like( $old ) . '%' ),
 			'chunk_size' => $chunk_size
 		);
 
