@@ -80,6 +80,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		$skip_columns = explode( ',', \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-columns' ) );
 
+		if ( $old === $new && ! $regex ) {
+			WP_CLI::warning( "Replacement value '{$old}' is identical to search value '{$new}'. Skipping operation." );
+			exit;
+		}
+
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';
 
