@@ -57,14 +57,21 @@ class Media_Command extends WP_CLI_Command {
 		WP_CLI::log( sprintf( 'Found %1$d %2$s to regenerate.', $count,
 			_n( 'image', 'images', $count ) ) );
 
+		$errored = false;
 		foreach ( $images->posts as $id ) {
-			$this->_process_regeneration( $id, $skip_delete );
+			if ( ! $this->_process_regeneration( $id, $skip_delete ) ) {
+				$errored = true;
+			}
 		}
 
-		WP_CLI::success( sprintf(
-			'Finished regenerating %1$s.',
-			_n('the image', 'all images', $count)
-		) );
+		if ( $errored ) {
+			WP_CLI::log( _n( 'An error occurred with image regeneration.', 'An error occurred regenerating one or more images.', $count ) );
+		} else {
+			WP_CLI::success( sprintf(
+				'Finished regenerating %1$s.',
+				_n('the image', 'all images', $count)
+			) );
+		}
 	}
 
 	/**
@@ -211,7 +218,7 @@ class Media_Command extends WP_CLI_Command {
 
 		if ( false === $fullsizepath || !file_exists( $fullsizepath ) ) {
 			WP_CLI::warning( "Can't find $att_desc" );
-			return;
+			return false;
 		}
 
 		if ( ! $skip_delete ) {
@@ -221,18 +228,18 @@ class Media_Command extends WP_CLI_Command {
 		$metadata = wp_generate_attachment_metadata( $id, $fullsizepath );
 		if ( is_wp_error( $metadata ) ) {
 			WP_CLI::warning( $metadata->get_error_message() );
-			return;
+			return false;
 		}
 
 		if ( empty( $metadata ) ) {
 			WP_CLI::warning( "Couldn't regenerate thumbnails for $att_desc." );
-			return;
+			return false;
 		}
 
 		wp_update_attachment_metadata( $id, $metadata );
 
 		WP_CLI::log( "Regenerated thumbnails for $att_desc" );
-
+		return true;
 	}
 
 	private function remove_old_images( $att_id ) {

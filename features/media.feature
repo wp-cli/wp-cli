@@ -79,7 +79,10 @@ Feature: Manage WordPress attachments
       });
       """
     When I run `wp media regenerate --yes`
-    Then STDOUT should not be empty
+    Then STDOUT should contain:
+      """
+      Success: Finished regenerating the image.
+      """
     And the wp-content/uploads/large-image-100x100.jpg file should not exist
     And the wp-content/uploads/large-image-200x200.jpg file should exist
 
@@ -108,7 +111,39 @@ Feature: Manage WordPress attachments
       });
       """
     When I run `wp media regenerate --skip-delete --yes`
-    Then STDOUT should not be empty
+    Then STDOUT should contain:
+      """
+      Success: Finished regenerating the image.
+      """
     And the wp-content/uploads/large-image-100x100.jpg file should exist
     And the wp-content/uploads/large-image-200x200.jpg file should exist
 
+  Scenario: Provide helpful error messages when media can't be regenerated
+    Given download:
+      | path                        | url                                              |
+      | {CACHE_DIR}/large-image.jpg | http://wp-cli.org/behat-data/large-image.jpg     |
+    And a wp-content/mu-plugins/media-settings.php file:
+      """
+      <?php
+      add_action( 'after_setup_theme', function(){
+        add_image_size( 'test1', 100, 100, true );
+      });
+      """
+    And I run `wp option update uploads_use_yearmonth_folders 0`
+
+    When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My imported attachment" --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID}
+    And the wp-content/uploads/large-image-100x100.jpg file should exist
+
+    When I run `rm wp-content/uploads/large-image.jpg`
+    Then STDOUT should be empty
+
+    When I run `wp media regenerate --yes`
+    Then STDOUT should contain:
+      """
+      An error occurred with image regeneration.
+      """
+    And STDERR should contain:
+      """
+      Warning: Can't find
+      """
