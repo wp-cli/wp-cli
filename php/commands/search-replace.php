@@ -133,16 +133,21 @@ class Search_Replace_Command extends WP_CLI_Command {
 					continue;
 				}
 
+				if ( $verbose ) {
+					$this->start_time = microtime( true );
+					WP_CLI::log( sprintf( 'Checking: %s.%s', $table, $col ) );
+				}
+
 				if ( ! $php_only ) {
 					$serialRow = $wpdb->get_row( "SELECT * FROM `$table` WHERE `$col` REGEXP '^[aiO]:[1-9]' LIMIT 1" );
 				}
 
 				if ( $php_only || $regex || NULL !== $serialRow ) {
 					$type = 'PHP';
-					$count = self::php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects, $verbose, $regex );
+					$count = $this->php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects, $verbose, $regex );
 				} else {
 					$type = 'SQL';
-					$count = self::sql_handle_col( $col, $table, $old, $new, $dry_run, $verbose );
+					$count = $this->sql_handle_col( $col, $table, $old, $new, $dry_run, $verbose );
 				}
 
 				$report[] = array( $table, $col, $count, $type );
@@ -236,13 +241,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 	}
 
-	private static function sql_handle_col( $col, $table, $old, $new, $dry_run, $verbose ) {
+	private function sql_handle_col( $col, $table, $old, $new, $dry_run, $verbose ) {
 		global $wpdb;
-
-		if ( $verbose ) {
-			$time = microtime( true );
-			WP_CLI::log( sprintf( 'Checking: %s.%s', $table, $col ) );
-		}
 
 		if ( $dry_run ) {
 			$count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(`$col`) FROM `$table` WHERE `$col` LIKE %s;", '%' . self::esc_like( $old ) . '%' ) );
@@ -251,13 +251,13 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		if ( $verbose ) {
-			$time = round( microtime( true ) - $time, 3 );
+			$time = round( microtime( true ) - $this->start_time, 3 );
 			WP_CLI::log( sprintf( '%d rows affected (%ss)', $count, $time ) );
 		}
 		return $count;
 	}
 
-	private static function php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects, $verbose, $regex ) {
+	private function php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run, $recurse_objects, $verbose, $regex ) {
 		global $wpdb;
 
 		// We don't want to have to generate thousands of rows when running the test suite
@@ -265,11 +265,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		$fields = $primary_keys;
 		$fields[] = $col;
-
-		if ( $verbose ) {
-			$time = microtime( true );
-			WP_CLI::log( sprintf( 'Checking: %s.%s', $table, $col ) );
-		}
 
 		$args = array(
 			'table' => $table,
@@ -304,7 +299,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		if ( $verbose ) {
-			$time = round( microtime( true ) - $time, 3 );
+			$time = round( microtime( true ) - $this->start_time, 3 );
 			WP_CLI::log( sprintf( '%d rows affected (%ss)', $count, $time ) );
 		}
 
