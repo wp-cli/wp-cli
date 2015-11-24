@@ -239,13 +239,20 @@ class Search_Replace_Command extends WP_CLI_Command {
 	private static function sql_handle_col( $col, $table, $old, $new, $dry_run, $verbose ) {
 		global $wpdb;
 
+		if ( $verbose ) {
+			$time = microtime( true );
+			WP_CLI::log( sprintf( 'Checking: %s.%s', $table, $col ) );
+		}
+
 		if ( $dry_run ) {
 			$count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(`$col`) FROM `$table` WHERE `$col` LIKE %s;", '%' . self::esc_like( $old ) . '%' ) );
 		} else {
 			$count = $wpdb->query( $wpdb->prepare( "UPDATE `$table` SET `$col` = REPLACE(`$col`, %s, %s);", $old, $new ) );
 		}
+
 		if ( $verbose ) {
-			self::log_verbose_details( $table, $col, $count );
+			$time = round( microtime( true ) - $time, 3 );
+			WP_CLI::log( sprintf( '%d rows affected (%ss)', $count, $time ) );
 		}
 		return $count;
 	}
@@ -258,6 +265,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		$fields = $primary_keys;
 		$fields[] = $col;
+
+		if ( $verbose ) {
+			$time = microtime( true );
+			WP_CLI::log( sprintf( 'Checking: %s.%s', $table, $col ) );
+		}
 
 		$args = array(
 			'table' => $table,
@@ -292,7 +304,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		if ( $verbose ) {
-			self::log_verbose_details( $table, $col, $count );
+			$time = round( microtime( true ) - $time, 3 );
+			WP_CLI::log( sprintf( '%d rows affected (%ss)', $count, $time ) );
 		}
 
 		return $count;
@@ -367,10 +380,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		return $old;
-	}
-
-	private static function log_verbose_details( $table, $col, $count ) {
-		WP_CLI::log( sprintf( 'Checking: %s.%s' . PHP_EOL . '%d rows affected', $table, $col, $count ) );
 	}
 
 }
