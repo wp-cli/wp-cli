@@ -34,6 +34,7 @@ class Core_Command extends WP_CLI_Command {
 	 * @subcommand check-update
 	 */
 	function check_update( $_, $assoc_args ) {
+		global $wp_version;
 		$versions_path = ABSPATH . 'wp-includes/version.php';
 		include $versions_path;
 
@@ -345,6 +346,7 @@ class Core_Command extends WP_CLI_Command {
 	 *     PHP
 	 */
 	public function config( $_, $assoc_args ) {
+		global $wp_version;
 		if ( Utils\locate_wp_config() ) {
 			WP_CLI::error( "The 'wp-config.php' file already exists." );
 		}
