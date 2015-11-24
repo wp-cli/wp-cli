@@ -252,7 +252,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		if ( $verbose ) {
 			$time = round( microtime( true ) - $this->start_time, 3 );
-			WP_CLI::log( sprintf( '%d rows affected (%ss)', $count, $time ) );
+			WP_CLI::log( sprintf( '%d rows affected (in %ss)', $count, $time ) );
 		}
 		return $count;
 	}
@@ -300,7 +300,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		if ( $verbose ) {
 			$time = round( microtime( true ) - $this->start_time, 3 );
-			WP_CLI::log( sprintf( '%d rows affected (%ss)', $count, $time ) );
+			WP_CLI::log( sprintf( '%d rows affected (in %ss)', $count, $time ) );
 		}
 
 		return $count;
