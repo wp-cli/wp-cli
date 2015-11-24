@@ -770,11 +770,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @param string $password
 	 */
 	private static function wp_new_user_notification( $user_id, $password ) {
-		global $wp_version;
-		$version = str_replace( '-src', '', $wp_version );
-		if ( version_compare( $version, '4.3.1', '>=' ) ) {
+		if ( \WP_CLI\Utils\wp_version_compare( '4.3.1', '>=' ) ) {
 			wp_new_user_notification( $user_id, null, 'both' );
-		} else if ( version_compare( $version, '4.3', '>=' ) ) {
+		} else if ( \WP_CLI\Utils\wp_version_compare( '4.3', '>=' ) ) {
 			wp_new_user_notification( $user_id, 'both' );
 		} else {
 			wp_new_user_notification( $user_id, $password );

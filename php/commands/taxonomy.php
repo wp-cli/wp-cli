@@ -17,9 +17,8 @@ class Taxonomy_Command extends WP_CLI_Command {
 	);
 
 	public function __construct() {
-		global $wp_version;
 
-		if ( version_compare( $wp_version, 3.7, '<' ) ) {
+		if ( \WP_CLI\Utils\wp_version_compare( 3.7, '<' ) ) {
 			// remove description for wp <= 3.7
 			$this->fields = array_values( array_diff( $this->fields, array( 'description' ) ) );
 		}

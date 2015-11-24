@@ -64,7 +64,7 @@ class Core_Command extends WP_CLI_Command {
 
 		foreach ( $release_versions as $release_version ) {
 			// don't list earliers versions
-			if ( version_compare( $release_version, $wp_version, '<=' ) )
+			if ( \WP_CLI\Utils\wp_version_compare( $release_version, '>=' ) )
 				continue;
 
 			$release_parts = explode( '.', $release_version );
@@ -385,7 +385,7 @@ class Core_Command extends WP_CLI_Command {
 				'https://api.wordpress.org/secret-key/1.1/salt/' );
 		}
 
-		if ( version_compare( $wp_version, '4.0', '<' ) ) {
+		if ( \WP_CLI\Utils\wp_version_compare( '4.0', '<' ) ) {
 			$assoc_args['add-wplang'] = true;
 		} else {
 			$assoc_args['add-wplang'] = false;
@@ -949,7 +949,7 @@ EOT;
 				list( $update ) = $from_api->updates;
 			}
 
-		} else if (	version_compare( $wp_version, $assoc_args['version'], '<' )
+		} else if (	\WP_CLI\Utils\wp_version_compare( $assoc_args['version'], '<' )
 					|| \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) {
 
 			$version = $assoc_args['version'];
@@ -1119,7 +1119,7 @@ class Core_Language_Command extends WP_CLI\CommandWithTranslation {
 
 WP_CLI::add_command( 'core language', 'Core_Language_Command', array(
 	'before_invoke' => function() {
-		if ( version_compare( $GLOBALS['wp_version'], '4.0', '<' ) ) {
+		if ( \WP_CLI\Utils\wp_version_compare( '4.0', '<' ) ) {
 			WP_CLI::error( "Requires WordPress 4.0 or greater." );
 		}
 	})

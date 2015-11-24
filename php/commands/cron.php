@@ -509,9 +509,8 @@ class Cron_Command extends WP_CLI_Command {
 	 * @return WP_Error|array The response or WP_Error on failure.
 	 */
 	protected static function get_cron_spawn() {
-		global $wp_version;
 
-		$sslverify     = version_compare( $wp_version, 4.0, '<' );
+		$sslverify     = \WP_CLI\Utils\wp_version_compare( 4.0, '<' );
 		$doing_wp_cron = sprintf( '%.22F', microtime( true ) );
 
 		$cron_request = apply_filters( 'cron_request', array(
