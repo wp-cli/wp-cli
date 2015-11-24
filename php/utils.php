@@ -234,6 +234,10 @@ function locate_wp_config() {
 	return $path;
 }
 
+function wp_version_compare( $since, $operator ) {
+	return version_compare( str_replace( array( '-src' ), '', $GLOBALS['wp_version'] ), $since, $operator );
+}
+
 /**
  * Output items in a table, JSON, CSV, ids, or the total count
  *
