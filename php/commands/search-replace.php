@@ -285,6 +285,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 			$value = $replacer->run( $row->$col );
 
+			if ( $value === $row->$col ) {
+				continue;
+			}
+
 			if ( $dry_run ) {
 				if ( $value != $row->$col )
 					$count++;
