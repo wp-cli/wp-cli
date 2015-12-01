@@ -161,7 +161,7 @@ Feature: WordPress code scaffolding
       """
       install-wp-tests.sh
       """
-    And the {PLUGIN_DIR}/hello-world/phpunit.xml file should exist
+    And the {PLUGIN_DIR}/hello-world/phpunit.xml.dist file should exist
     And the {PLUGIN_DIR}/hello-world/.travis.yml file should exist
 
     When I run `wp eval "if ( is_executable( '{PLUGIN_DIR}/hello-world/bin/install-wp-tests.sh' ) ) { echo 'executable'; } else { exit( 1 ); }"`

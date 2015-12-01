@@ -8,7 +8,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin scaffold --skip-tests plugin1`
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/plugin1/plugin1.php file should exist
-    And the {PLUGIN_DIR}/zombieland/phpunit.xml file should not exist
+    And the {PLUGIN_DIR}/zombieland/phpunit.xml.dist file should not exist
 
     When I run `wp plugin path plugin1`
     Then STDOUT should be:
@@ -25,7 +25,7 @@ Feature: Manage WordPress plugins
     When I run `wp plugin scaffold Zombieland`
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/Zombieland/Zombieland.php file should exist
-    And the {PLUGIN_DIR}/Zombieland/phpunit.xml file should exist
+    And the {PLUGIN_DIR}/Zombieland/phpunit.xml.dist file should exist
 
     # Ensure case sensitivity
     When I try `wp plugin status zombieLand`

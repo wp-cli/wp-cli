@@ -557,7 +557,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * These are the files that are generated:
 	 *
-	 * * `phpunit.xml` is the configuration file for PHPUnit
+	 * * `phpunit.xml.dist` is the configuration file for PHPUnit
 	 * * `.travis.yml` is the configuration file for Travis CI
 	 * * `tests/bootstrap.php` is the file that makes the current plugin active when running the test suite
 	 * * `tests/test-sample.php` is a sample file containing the actual tests
@@ -622,7 +622,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$to_copy = array(
 			'install-wp-tests.sh' => $bin_dir,
 			'.travis.yml'         => $plugin_dir,
-			'phpunit.xml'         => $plugin_dir,
+			'phpunit.xml.dist'    => $plugin_dir,
 			'test-sample.php'     => $tests_dir,
 		);
 
