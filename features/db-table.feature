@@ -18,6 +18,18 @@ Feature: List database tables
       wp_term_relationships
       """
 
+    When I run `wp db tables --format=csv`
+    Then STDOUT should contain:
+      """
+      wp_terms,wp_usermeta,wp_users
+      """
+
+    When I run `wp db tables 'wp_post*' --format=csv`
+    Then STDOUT should be:
+      """
+      wp_postmeta,wp_posts
+      """
+
   Scenario: List database tables on a multisite WordPress install
     Given a WP multisite install
 

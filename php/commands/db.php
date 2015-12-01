@@ -131,6 +131,12 @@ class DB_Command extends WP_CLI_Command {
 	 *     wp db export --add-drop-table
 	 *     wp db export --tables=wp_options,wp_users
 	 *
+	 *     # Export all tables matching a wildcard
+	 *     wp db export --tables=$(wp db tables 'wp_user*' --format=csv)
+	 *
+	 *     # Export all tables matching prefix
+	 *     wp db export --tables=$(wp db tables --all-tables-with-prefix --format=csv)
+	 *
 	 * @alias dump
 	 */
 	function export( $args, $assoc_args ) {
@@ -206,6 +212,9 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
+	 * [<table>...]
+	 * : List tables based on wildcard search, e.g. 'wp_*_options' or 'wp_post?'.
+	 *
 	 * [--scope=<scope>]
 	 * : Can be all, global, ms_global, blog, or old tables. Defaults to all.
 	 *
@@ -218,21 +227,31 @@ class DB_Command extends WP_CLI_Command {
 	 * [--all-tables]
 	 * : List all tables in the database, regardless of the prefix, and even if not registered on $wpdb. Overrides --all-tables-with-prefix.
 	 *
+	 * [--format=<format>]
+	 * : Accepted values: list, csv. Default: list
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Export only tables for a single site
-	 *     wp db export --tables=$(wp db tables --url=sub.example.com | tr '\n' ',')
+	 *     wp db export --tables=$(wp db tables --url=sub.example.com --format=csv)
+	 *
+	 *     # Export all tables matching prefix
+	 *     wp db export --tables=$(wp db tables --all-tables-with-prefix --format=csv)
 	 */
 	function tables( $args, $assoc_args ) {
 
-		if ( empty( $assoc_args ) ) {
+		if ( empty( $args ) && empty( $assoc_args ) ) {
 			$assoc_args['scope'] = 'all';
 		}
 
 		$tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
 
-		foreach ( $tables as $table ) {
-			WP_CLI::line( $table );
+		if ( ! empty( $assoc_args['format'] ) && 'csv' === $assoc_args['format'] ) {
+			WP_CLI::line( implode( ',', $tables ) );
+		} else {
+			foreach ( $tables as $table ) {
+				WP_CLI::line( $table );
+			}
 		}
 	}
 
