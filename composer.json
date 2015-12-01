@@ -14,7 +14,14 @@
 		"composer/semver": "1.0.0",
 		"ramsey/array_column": "~1.1",
 		"rmccue/requests": "~1.6",
-		"symfony/finder": "~2.3",
+		"symfony/finder": "2.7.*",
+		"symfony/yaml": "2.7.*",
+		"symfony/filesystem": "2.7.*",
+		"symfony/config": "2.7.*",
+		"symfony/console": "2.7.*",
+		"symfony/dependency-injection": "2.7.*",
+		"symfony/event-dispatcher": "2.7.*",
+		"symfony/translation": "2.7.*",
 		"nb/oxymel": "0.1.0"
 	},
 	"require-dev": {
