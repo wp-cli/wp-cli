@@ -30,6 +30,7 @@ Feature: List database tables
       wp_postmeta,wp_posts
       """
 
+  @require-wp-3.9
   Scenario: List database tables on a multisite WordPress install
     Given a WP multisite install
 
