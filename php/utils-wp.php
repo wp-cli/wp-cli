@@ -274,6 +274,10 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 		return $matching_tables;
 	}
 
+	if ( $scope = get_flag_value( $assoc_args, 'scope' ) ) {
+		return $wpdb->tables( $scope );
+	}
+
 	$allowed_tables = array();
 	$allowed_table_types = array( 'tables', 'global_tables' );
 	if ( $network ) {
