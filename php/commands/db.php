@@ -202,10 +202,21 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * List the database tables.
 	 *
+	 * Defaults to all tables registered to $wpdb.
+	 *
 	 * ## OPTIONS
 	 *
 	 * [--scope=<scope>]
 	 * : Can be all, global, ms_global, blog, or old tables. Defaults to all.
+	 *
+	 * [--network]
+	 * : List all the tables in a multisite install. Overrides --scope=<scope>.
+	 *
+	 * [--all-tables-with-prefix]
+	 * : List all tables that match the table prefix even if not registered on $wpdb. Overrides --network.
+	 *
+	 * [--all-tables]
+	 * : List all tables in the database, regardless of the prefix, and even if not registered on $wpdb. Overrides --all-tables-with-prefix.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -213,11 +224,12 @@ class DB_Command extends WP_CLI_Command {
 	 *     wp db export --tables=$(wp db tables --url=sub.example.com | tr '\n' ',')
 	 */
 	function tables( $args, $assoc_args ) {
-		global $wpdb;
 
-		$scope = \WP_CLI\Utils\get_flag_value( $assoc_args, 'scope', 'all' );
+		if ( empty( $assoc_args ) ) {
+			$assoc_args['scope'] = 'all';
+		}
 
-		$tables = $wpdb->tables( $scope );
+		$tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
 
 		foreach ( $tables as $table ) {
 			WP_CLI::line( $table );
