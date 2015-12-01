@@ -57,7 +57,6 @@ Feature: Do global search/replace
       awesome_table
       """
 
-  @daniel
   Scenario: Run on all tables matching string with wildcard
     Given a WP install
 

@@ -88,36 +88,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';
 
-		// Determine how to limit the list of tables. Defaults to 'wordpress'
-		$table_type = 'wordpress';
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ) {
-			$table_type = 'network';
-		}
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all-tables-with-prefix' ) ) {
-			$table_type = 'all-tables-with-prefix';
-		}
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all-tables' ) ) {
-			$table_type = 'all-tables';
-		}
-
-		if ( ! empty( $args ) ) {
-			$new_tables = array();
-			foreach( $args as $key => $table ) {
-				if ( false !== strpos( $table, '*' ) || false !== strpos( $table, '?' ) ) {
-					$expanded_tables = self::get_tables_for_glob( $table );
-					if ( empty( $expanded_tables ) ) {
-						WP_CLI::error( "Couldn't find any tables matching: {$table}" );
-					}
-					$new_tables = array_merge( $new_tables, $expanded_tables );
-				} else {
-					$new_tables[] = $table;
-				}
-			}
-			$args = $new_tables;
-		}
-
-		// Get the array of tables to work with. If there is anything left in $args, assume those are table names to use
-		$tables = empty( $args ) ? self::get_table_list( $table_type ) : $args;
+		// Get table names based on leftover $args or supplied $assoc_args
+		$tables = \WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
 		foreach ( $tables as $table ) {
 			list( $primary_keys, $columns ) = self::get_columns( $table );
 
@@ -172,73 +144,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 			}
 
 		}
-	}
-
-	/**
-	 * Retrieve a list of tables from the database.
-	 *
-	 * @global wpdb $wpdb
-	 *
-	 * @param string $limit_to Sting defining how to limit the list of tables to retrieve. Acceptable vales are:
-	 *                         - 'wordpress' for default WordPress tables only
-	 *                         - 'network' for default Multisite tables only
-	 *                         - 'all-tables-with-prefix' for all tables using the WordPress DB prefix
-	 *                         - 'all-tables' for all tables in the DB
-	 *
-	 * @return array The array of table names.
-	 */
-	private static function get_table_list( $limit_to ) {
-		global $wpdb;
-
-		$network = 'network' == $limit_to;
-
-		if ( 'all-tables' == $limit_to ) {
-			return $wpdb->get_col( 'SHOW TABLES' );
-		}
-
-		$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
-		$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $prefix . '%' ) );
-
-		if ( 'all-tables-with-prefix' == $limit_to ) {
-			return $matching_tables;
-		}
-
-		$allowed_tables = array();
-		$allowed_table_types = array( 'tables', 'global_tables' );
-		if ( $network ) {
-			$allowed_table_types[] = 'ms_global_tables';
-		}
-		foreach( $allowed_table_types as $table_type ) {
-			foreach( $wpdb->$table_type as $table ) {
-				$allowed_tables[] = $prefix . $table;
-			}
-		}
-
-		// Given our matching tables, also allow site-specific tables on the network
-		foreach( $matching_tables as $key => $matched_table ) {
-
-			if ( in_array( $matched_table, $allowed_tables ) ) {
-				continue;
-			}
-
-			if ( $network ) {
-				$valid_table = false;
-				foreach( array_merge( $wpdb->tables, $wpdb->old_tables ) as $maybe_site_table ) {
-					if ( preg_match( "#{$prefix}([\d]+)_{$maybe_site_table}#", $matched_table ) ) {
-						$valid_table = true;
-					}
-				}
-				if ( $valid_table ) {
-					continue;
-				}
-			}
-
-			unset( $matching_tables[ $key ] );
-
-		}
-
-		return array_values( $matching_tables );
-
 	}
 
 	private function sql_handle_col( $col, $table, $old, $new, $dry_run, $verbose ) {
@@ -330,31 +235,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		return array( $primary_keys, $columns );
-	}
-
-	/**
-	 * Get all the tables that match a glob pattern
-	 *
-	 * @param  string $glob
-	 * @return array
-	 */
-	private static function get_tables_for_glob( $glob ) {
-
-		static $all_tables = array();
-
-		if ( ! $all_tables ) {
-			$all_tables = self::get_table_list( 'all-tables' );
-		}
-
-		$tables = array();
-
-		foreach ( $all_tables as $table) {
-			if ( fnmatch( $glob, $table ) ) {
-				$tables[] = $table;
-			}
-		}
-
-		return $tables;
 	}
 
 	private static function is_text_col( $type ) {
