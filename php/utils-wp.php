@@ -205,3 +205,112 @@ function wp_clear_object_cache() {
 		$wp_object_cache->__remoteset(); // important
 	}
 }
+
+/**
+ * Get a set of tables in the database.
+ *
+ * Interprets common command-line options into a resolved set of table names.
+ *
+ * @param array $args Provided table names, or tables with wildcards.
+ * @param array $assoc_args Optional flags for groups of tables (e.g. --network)
+ * @return array $tables
+ */
+function wp_get_table_names( $args, $assoc_args = array() ) {
+	global $wpdb;
+
+	// Prioritize any supplied $args as tables
+	if ( ! empty( $args ) ) {
+		$new_tables = array();
+		$get_tables_for_glob = function( $glob ) {
+			global $wpdb;
+			static $all_tables = array();
+			if ( ! $all_tables ) {
+				$all_tables = $wpdb->get_col( 'SHOW TABLES' );
+			}
+			$tables = array();
+			foreach ( $all_tables as $table) {
+				if ( fnmatch( $glob, $table ) ) {
+					$tables[] = $table;
+				}
+			}
+			return $tables;
+		};
+		foreach( $args as $key => $table ) {
+			if ( false !== strpos( $table, '*' ) || false !== strpos( $table, '?' ) ) {
+				$expanded_tables = $get_tables_for_glob( $table );
+				if ( empty( $expanded_tables ) ) {
+					\WP_CLI::error( "Couldn't find any tables matching: {$table}" );
+				}
+				$new_tables = array_merge( $new_tables, $expanded_tables );
+			} else {
+				$new_tables[] = $table;
+			}
+		}
+		return $new_tables;
+	}
+
+	// Fall back to flag if no tables were passed
+	$table_type = 'wordpress';
+	if ( get_flag_value( $assoc_args, 'network' ) ) {
+		$table_type = 'network';
+	}
+	if ( get_flag_value( $assoc_args, 'all-tables-with-prefix' ) ) {
+		$table_type = 'all-tables-with-prefix';
+	}
+	if ( get_flag_value( $assoc_args, 'all-tables' ) ) {
+		$table_type = 'all-tables';
+	}
+
+	$network = 'network' == $table_type;
+
+	if ( 'all-tables' == $table_type ) {
+		return $wpdb->get_col( 'SHOW TABLES' );
+	}
+
+	$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
+	$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $prefix . '%' ) );
+
+	if ( 'all-tables-with-prefix' == $table_type ) {
+		return $matching_tables;
+	}
+
+	if ( $scope = get_flag_value( $assoc_args, 'scope' ) ) {
+		return $wpdb->tables( $scope );
+	}
+
+	$allowed_tables = array();
+	$allowed_table_types = array( 'tables', 'global_tables' );
+	if ( $network ) {
+		$allowed_table_types[] = 'ms_global_tables';
+	}
+	foreach( $allowed_table_types as $table_type ) {
+		foreach( $wpdb->$table_type as $table ) {
+			$allowed_tables[] = $prefix . $table;
+		}
+	}
+
+	// Given our matching tables, also allow site-specific tables on the network
+	foreach( $matching_tables as $key => $matched_table ) {
+
+		if ( in_array( $matched_table, $allowed_tables ) ) {
+			continue;
+		}
+
+		if ( $network ) {
+			$valid_table = false;
+			foreach( array_merge( $wpdb->tables, $wpdb->old_tables ) as $maybe_site_table ) {
+				if ( preg_match( "#{$prefix}([\d]+)_{$maybe_site_table}#", $matched_table ) ) {
+					$valid_table = true;
+				}
+			}
+			if ( $valid_table ) {
+				continue;
+			}
+		}
+
+		unset( $matching_tables[ $key ] );
+
+	}
+
+	return array_values( $matching_tables );
+}
