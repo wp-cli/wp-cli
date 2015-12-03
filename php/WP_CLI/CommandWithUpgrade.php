@@ -173,10 +173,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		list( $link ) = explode( $response->slug, $response->download_link );
 
-		if ( false !== strpos( $response->download_link, 'theme' ) )
+		if ( false !== strpos( $response->download_link, '/theme/' ) )
 			$download_type = 'theme';
-		else
+		else if ( false !== strpos( $response->download_link, '/plugin/' ) )
 			$download_type = 'plugin';
+		else
+			$download_type = 'plugin/theme';
 
 		if ( 'dev' == $version ) {
 			$response->download_link = $link . $response->slug . '.zip';
