@@ -15,7 +15,6 @@ Feature: Do global search/replace
       guid
       """
 
-
   Scenario: Multisite search/replace
     Given a WP multisite install
     And I run `wp site create --slug="foo" --title="foo" --email="foo@example.com"`
