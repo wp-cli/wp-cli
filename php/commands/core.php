@@ -1,5 +1,6 @@
 <?php
 
+use \Composer\Semver\Comparator;
 use \WP_CLI\Utils;
 
 /**
@@ -34,60 +35,8 @@ class Core_Command extends WP_CLI_Command {
 	 * @subcommand check-update
 	 */
 	function check_update( $_, $assoc_args ) {
-		global $wp_version;
-		$versions_path = ABSPATH . 'wp-includes/version.php';
-		include $versions_path;
 
-		$url = 'https://api.wordpress.org/core/stable-check/1.0/';
-
-		$options = array(
-			'timeout' => 30
-		);
-		$headers = array(
-			'Accept' => 'application/json'
-		);
-		$response = Utils\http_request( 'GET', $url, $headers, $options );
-
-		if ( ! $response->success || 200 !== $response->status_code ) {
-			WP_CLI::error( "Failed to get latest version." );
-		}
-
-		$release_data = json_decode( $response->body );
-		$release_versions = array_keys( (array) $release_data );
-		usort( $release_versions, function( $a, $b ){
-			return 1 === version_compare( $a, $b );
-		});
-
-		$locale = get_locale();
-
-		$current_parts = explode( '.', $wp_version );
-		$updates = array();
-
-		foreach ( $release_versions as $release_version ) {
-			// don't list earliers versions
-			if ( \WP_CLI\Utils\wp_version_compare( $release_version, '>=' ) )
-				continue;
-
-			$release_parts = explode( '.', $release_version );
-			$update_type = 'major';
-
-			if ( $release_parts[0] === $current_parts[0]
-				&& $release_parts[1] === $current_parts[1] ) {
-				$update_type = 'minor';
-			}
-
-			if ( ! ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'minor' ) && 'minor' !== $update_type )
-				&& ! ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'major' ) && 'major' !== $update_type )
-				) {
-				$updates = $this->remove_same_minor_releases( $release_parts, $updates );
-				$updates[] = array(
-					'version' => $release_version,
-					'update_type' => $update_type,
-					'package_url' => $this->get_download_url( $release_version, $locale )
-				);
-			}
-		}
-
+		$updates = $this->get_updates( $assoc_args );
 		if ( $updates ) {
 			$updates = array_reverse( $updates );
 			$formatter = new \WP_CLI\Formatter(
@@ -1088,25 +1037,77 @@ EOT;
 	}
 
 	/**
-	 * Compare processed releases to the current one, and delete older one. Return remaining updates.
-	 *
+	 * Returns update information
 	 */
-	private function remove_same_minor_releases( $release_parts, $updates ) {
-		if ( empty( $updates ) )
-			return false;
+	private function get_updates( $assoc_args ) {
+		global $wp_version;
+		$versions_path = ABSPATH . 'wp-includes/version.php';
+		include $versions_path;
 
-		$difference = array();
-		foreach ( $updates as $processed ) {
-			$processed_parts = explode( '.', $processed['version'] );
+		$url = 'https://api.wordpress.org/core/stable-check/1.0/';
 
-			// later releases are always later in the array
-			if ( $processed_parts[0] !== $release_parts[0]
-				|| $processed_parts[1] !== $release_parts[1] ) {
-				$difference[] = $processed;
+		$options = array(
+			'timeout' => 30
+		);
+		$headers = array(
+			'Accept' => 'application/json'
+		);
+		$response = Utils\http_request( 'GET', $url, $headers, $options );
+
+		if ( ! $response->success || 200 !== $response->status_code ) {
+			WP_CLI::error( "Failed to get latest version list." );
+		}
+
+		$release_data = json_decode( $response->body );
+		$release_versions = array_keys( (array) $release_data );
+		usort( $release_versions, function( $a, $b ){
+			return 1 === version_compare( $a, $b );
+		});
+
+		$locale = get_locale();
+		$compare_version = str_replace( '-src', '', $GLOBALS['wp_version'] );
+
+		$updates = array(
+			'major'      => false,
+			'minor'      => false,
+			);
+		foreach ( $release_versions as $release_version ) {
+
+			$update_type = Utils\get_named_sem_ver( $release_version, $compare_version );
+			if ( ! $update_type ) {
+				continue;
+			}
+
+			// WordPress follow its own versioning which is roughly equivalent to semver
+			if ( 'minor' === $update_type ) {
+				$update_type = 'major';
+			} else if ( 'patch' === $update_type ) {
+				$update_type = 'minor';
+			}
+
+			if ( ! empty( $updates[ $update_type ] ) && ! Comparator::greaterThan( $release_version, $updates[ $update_type ]['version'] ) ) {
+				continue;
+			}
+
+			$updates[ $update_type ] = array(
+				'version'     => $release_version,
+				'update_type' => $update_type,
+				'package_url' => $this->get_download_url( $release_version, $locale )
+			);
+		}
+
+		foreach( $updates as $type => $value ) {
+			if ( empty( $value ) ) {
+				unset( $updates[ $type ] );
 			}
 		}
 
-		return $difference;
+		foreach( array( 'major', 'minor' ) as $type ) {
+			if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, $type ) ) {
+				return ! empty( $updates[ $type ] ) ? array( $updates[ $type ] ) : false;
+			}
+		}
+		return array_values( $updates );
 	}
 
 }
