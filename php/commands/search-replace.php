@@ -160,21 +160,22 @@ class Search_Replace_Command extends WP_CLI_Command {
 			fclose( $this->export_handle );
 		}
 
-		if ( ! WP_CLI::get_config( 'quiet' ) && STDOUT !== $this->export_handle ) {
+		// Only informational output after this point
+		if ( WP_CLI::get_config( 'quiet' ) || STDOUT === $this->export_handle ) {
+			return;
+		}
 
-			$table = new \cli\Table();
-			$table->setHeaders( array( 'Table', 'Column', 'Replacements', 'Type' ) );
-			$table->setRows( $report );
-			$table->display();
+		$table = new \cli\Table();
+		$table->setHeaders( array( 'Table', 'Column', 'Replacements', 'Type' ) );
+		$table->setRows( $report );
+		$table->display();
 
-			if ( ! $dry_run ) {
-				$success_message = "Made $total replacements.";
-				if ( $total && 'Default' !== WP_CLI\Utils\wp_get_cache_type() ) {
-					$success_message .= ' Please remember to flush your persistent object cache with `wp cache flush`.';
-				}
-				WP_CLI::success( $success_message );
+		if ( ! $dry_run ) {
+			$success_message = "Made $total replacements.";
+			if ( $total && 'Default' !== WP_CLI\Utils\wp_get_cache_type() ) {
+				$success_message .= ' Please remember to flush your persistent object cache with `wp cache flush`.';
 			}
-
+			WP_CLI::success( $success_message );
 		}
 	}
 
