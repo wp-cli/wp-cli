@@ -144,3 +144,37 @@ Feature: Search / replace with file export
       """
       Error: Unable to open "foo/bar.sql" for writing.
       """
+
+  Scenario: Search / replace specific table
+    Given a WP install
+
+    When I run `wp post create --post_title=foo --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I run `wp option update bar foo`
+    Then STDOUT should not be empty
+
+    When I run `wp search-replace foo burrito wp_posts --export=wordpress.sql --verbose`
+    Then STDOUT should contain:
+      """
+      Checking: wp_posts
+      """
+    And STDOUT should contain:
+      """
+      Success: Made 1 replacements and exported to wordpress.sql.
+      """
+
+    When I run `wp db import wordpress.sql`
+    Then STDOUT should not be empty
+
+    When I run `wp post get {POST_ID} --field=title`
+    Then STDOUT should be:
+      """
+      burrito
+      """
+
+    When I run `wp option get bar`
+    Then STDOUT should be:
+      """
+      foo
+      """
