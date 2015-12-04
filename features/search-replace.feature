@@ -15,32 +15,6 @@ Feature: Do global search/replace
       guid
       """
 
-  Scenario: Search/replace with export
-    Given a WP install
-
-    When I run `wp search-replace example.com example.net --export`
-    Then STDOUT should contain:
-      """
-      DROP TABLE IF EXISTS `wp_commentmeta`;
-      CREATE TABLE `wp_commentmeta`
-      """
-    And STDOUT should contain:
-      """
-      INSERT INTO `wp_options` (`option_id`, `option_name`, `option_value`, `autoload`) VALUES ('1', 'siteurl', 'http://example.org', 'yes');
-      """
-
-    When I run `wp search-replace example.com example.org --skip-columns=option_value --export`
-    Then STDOUT should contain:
-      """
-      INSERT INTO `wp_options` (`option_id`, `option_name`, `option_value`, `autoload`) VALUES ('1', 'siteurl', 'http://example.com', 'yes');
-      """
-
-    When I run `wp search-replace foo bar --export | tail -n 1`
-    Then STDOUT should not contain:
-      """
-      Success: Made
-      """
-
   Scenario: Multisite search/replace
     Given a WP multisite install
     And I run `wp site create --slug="foo" --title="foo" --email="foo@example.com"`
