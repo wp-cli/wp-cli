@@ -7,6 +7,7 @@
  */
 class Search_Replace_Command extends WP_CLI_Command {
 
+	private $dry_run;
 	private $export_handle = false;
 	private $recurse_objects;
 	private $regex;
@@ -80,7 +81,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$new             = array_shift( $args );
 		$total           = 0;
 		$report          = array();
-		$dry_run         = \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' );
+		$this->dry_run         = \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' );
 		$php_only        = \WP_CLI\Utils\get_flag_value( $assoc_args, 'precise' );
 		$this->recurse_objects = \WP_CLI\Utils\get_flag_value( $assoc_args, 'recurse-objects', true );
 		$this->verbose         =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'verbose' );
@@ -94,7 +95,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		}
 
 		if ( null !== ( $export = \WP_CLI\Utils\get_flag_value( $assoc_args, 'export' ) ) ) {
-			if ( $dry_run ) {
+			if ( $this->dry_run ) {
 				WP_CLI::error( 'You cannot supply --dry-run and --export at the same time.' );
 			}
 			if ( true === $export ) {
@@ -152,10 +153,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 				if ( $php_only || $this->regex || NULL !== $serialRow ) {
 					$type = 'PHP';
-					$count = $this->php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run );
+					$count = $this->php_handle_col( $col, $primary_keys, $table, $old, $new );
 				} else {
 					$type = 'SQL';
-					$count = $this->sql_handle_col( $col, $table, $old, $new, $dry_run );
+					$count = $this->sql_handle_col( $col, $table, $old, $new );
 				}
 
 				$report[] = array( $table, $col, $count, $type );
@@ -178,7 +179,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$table->setRows( $report );
 		$table->display();
 
-		if ( ! $dry_run ) {
+		if ( ! $this->dry_run ) {
 			$success_message = ! empty( $assoc_args['export'] ) ? "Made {$total} replacements and exported to {$assoc_args['export']}." : "Made $total replacements.";
 			if ( $total && 'Default' !== WP_CLI\Utils\wp_get_cache_type() ) {
 				$success_message .= ' Please remember to flush your persistent object cache with `wp cache flush`.';
@@ -236,10 +237,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 		return array( $table_report, $total_rows );
 	}
 
-	private function sql_handle_col( $col, $table, $old, $new, $dry_run ) {
+	private function sql_handle_col( $col, $table, $old, $new ) {
 		global $wpdb;
 
-		if ( $dry_run ) {
+		if ( $this->dry_run ) {
 			$count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(`$col`) FROM `$table` WHERE `$col` LIKE %s;", '%' . self::esc_like( $old ) . '%' ) );
 		} else {
 			$count = $wpdb->query( $wpdb->prepare( "UPDATE `$table` SET `$col` = REPLACE(`$col`, %s, %s);", $old, $new ) );
@@ -252,7 +253,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		return $count;
 	}
 
-	private function php_handle_col( $col, $primary_keys, $table, $old, $new, $dry_run ) {
+	private function php_handle_col( $col, $primary_keys, $table, $old, $new ) {
 		global $wpdb;
 
 		// We don't want to have to generate thousands of rows when running the test suite
@@ -284,7 +285,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 				continue;
 			}
 
-			if ( $dry_run ) {
+			if ( $this->dry_run ) {
 				if ( $value != $row->$col )
 					$count++;
 			} else {
