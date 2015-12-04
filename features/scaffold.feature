@@ -322,6 +322,23 @@ Feature: WordPress code scaffolding
     require dirname( dirname( __FILE__ ) ) . '/custom-plugin-slug.php';
     """
 
+  Scenario: Scaffold tests parses plugin readme.txt
+    Given a WP install
+    When I run `wp plugin path`
+    Then save STDOUT as {PLUGIN_DIR}
+
+    When I run `wp scaffold plugin hello-world`
+    Then STDOUT should not be empty
+    And the {PLUGIN_DIR}/hello-world/readme.txt file should exist
+    And the {PLUGIN_DIR}/hello-world/.travis.yml file should exist
+    And the {PLUGIN_DIR}/hello-world/.travis.yml file should contain:
+      """
+      env:
+        - WP_VERSION=latest WP_MULTISITE=0
+        - WP_VERSION=3.0.1 WP_MULTISITE=0
+        - WP_VERSION=3.4 WP_MULTISITE=0
+      """
+
   Scenario: Scaffold starter code for a theme and network enable it
     Given a WP multisite install
     When I run `wp scaffold _s starter-theme --enable-network`
