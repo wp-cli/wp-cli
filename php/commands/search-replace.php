@@ -74,6 +74,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 *     # Turn your production database into a local database
 	 *     wp search-replace --url=example.com example.com example.dev wp_\*_options
+	 *
+	 *     # Search/replace to a SQL file without transforming the database
+	 *     wp search-replace foo bar --export=database.sql
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		global $wpdb;
