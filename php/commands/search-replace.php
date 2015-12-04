@@ -183,9 +183,13 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$table->display();
 
 		if ( ! $this->dry_run ) {
-			$success_message = ! empty( $assoc_args['export'] ) ? "Made {$total} replacements and exported to {$assoc_args['export']}." : "Made $total replacements.";
-			if ( $total && 'Default' !== WP_CLI\Utils\wp_get_cache_type() ) {
-				$success_message .= ' Please remember to flush your persistent object cache with `wp cache flush`.';
+			if ( ! empty( $assoc_args['export'] ) ) {
+				$success_message = "Made {$total} replacements and exported to {$assoc_args['export']}.";
+			} else {
+				$success_message = "Made $total replacements.";
+				if ( $total && 'Default' !== WP_CLI\Utils\wp_get_cache_type() ) {
+					$success_message .= ' Please remember to flush your persistent object cache with `wp cache flush`.';
+				}
 			}
 			WP_CLI::success( $success_message );
 		}
