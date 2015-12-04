@@ -369,6 +369,25 @@ Feature: Manage WordPress installation
       1
       """
 
+  @download
+  Scenario: Update to the latest minor release
+    Given a WP install
+
+    When I run `wp core download --version=3.8 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp core update --minor`
+    Then STDOUT should contain:
+      """
+      Downloading update
+      """
+
+    When I run `wp core update --minor`
+    Then STDOUT should be:
+      """
+      Success: WordPress is at the latest minor release.
+      """
+
   Scenario: Custom wp-content directory
     Given a WP install
     And a custom wp-content directory

@@ -847,8 +847,11 @@ EOT;
 	 * [<zip>]
 	 * : Path to zip file to use, instead of downloading from wordpress.org.
 	 *
+	 * [--minor]
+	 * : Only perform updates for minor releases.
+	 *
 	 * [--version=<version>]
-	 * : Update to this version, instead of to the latest version.
+	 * : Update to a specific version, instead of to the latest version.
 	 *
 	 * [--force]
 	 * : Update even when installed WP version is greater than the requested version.
@@ -871,6 +874,16 @@ EOT;
 
 		$update = $from_api = null;
 		$upgrader = 'WP_CLI\\CoreUpgrader';
+
+		if ( empty( $args[0] ) && empty( $assoc_args['version'] ) && \WP_CLI\Utils\get_flag_value( $assoc_args, 'minor' ) ) {
+			$updates = $this->get_updates( array( 'minor' => true ) );
+			if ( ! empty( $updates ) ) {
+				$assoc_args['version'] = $updates['version'];
+			} else {
+				WP_CLI::success( 'WordPress is at the latest minor release.' );
+				return;
+			}
+		}
 
 		if ( ! empty( $args[0] ) ) {
 
