@@ -10,7 +10,9 @@ php:
   - 5.6
 
 env:
-  - WP_VERSION=latest WP_MULTISITE=0
+{{#wp_versions_to_test}}
+  - WP_VERSION={{.}} WP_MULTISITE=0
+{{/wp_versions_to_test}}
 
 matrix:
   include:
