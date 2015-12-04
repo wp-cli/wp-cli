@@ -615,13 +615,29 @@ class Scaffold_Command extends WP_CLI_Command {
 		$wp_filesystem->mkdir( $tests_dir );
 		$wp_filesystem->mkdir( $bin_dir );
 
+		$wp_versions_to_test = array('latest');
+		// Parse plugin readme.txt
+		if ( file_exists( $plugin_dir . '/readme.txt' ) ) {
+			$readme_content = file_get_contents( $plugin_dir . '/readme.txt' );
+
+			preg_match( '/Requires at least\:(.*)\n/m', $readme_content, $matches );
+			if ( isset( $matches[1] ) && $matches[1] ) {
+				$wp_versions_to_test[] = trim( $matches[1] );
+			}
+			preg_match( '/Tested up to\:(.*)\n/m', $readme_content, $matches );
+			if ( isset( $matches[1] ) && $matches[1] ) {
+				$wp_versions_to_test[] = trim( $matches[1] );
+			}
+		}
+
 		$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
-		$files_written = $this->create_files( array( "$tests_dir/bootstrap.php" =>
-			Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ) ), $force );
+		$files_written = $this->create_files( array(
+			"$tests_dir/bootstrap.php" => Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ),
+			"$plugin_dir/.travis.yml" => Utils\mustache_render( '.travis.mustache', compact( 'wp_versions_to_test' ) )
+		), $force );
 
 		$to_copy = array(
 			'install-wp-tests.sh' => $bin_dir,
-			'.travis.yml'         => $plugin_dir,
 			'phpunit.xml.dist'    => $plugin_dir,
 			'test-sample.php'     => $tests_dir,
 		);
