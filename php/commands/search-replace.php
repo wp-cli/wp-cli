@@ -7,6 +7,8 @@
  */
 class Search_Replace_Command extends WP_CLI_Command {
 
+	private $export_handle = false;
+
 	/**
 	 * Search/replace strings in the database.
 	 *
@@ -57,6 +59,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--regex]
 	 * : Runs the search using a regular expression. Warning: search-replace will take about 15-20x longer when using --regex.
 	 *
+	 * [--export[=<file>]]
+	 * : Write transformed data as SQL file instead of performing in-place replacements. If <file> is not supplied, will output to STDOUT.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
@@ -85,12 +90,35 @@ class Search_Replace_Command extends WP_CLI_Command {
 			exit;
 		}
 
+		if ( null !== ( $export = \WP_CLI\Utils\get_flag_value( $assoc_args, 'export' ) ) ) {
+			if ( $dry_run ) {
+				WP_CLI::error( 'You cannot supply --dry-run and --export at the same time.' );
+			}
+			if ( true === $export ) {
+				$this->export_handle = STDOUT;
+				$verbose = false;
+			} else {
+				$this->export_handle = fopen( $assoc_args['export'], 'w' );
+				if ( false === $this->export_handle ) {
+					WP_CLI::error( sprintf( 'Unable to open "%s" for writing', $assoc_args['export'] ) );
+				}
+			}
+			$php_only = true;
+		}
+
 		// never mess with hashed passwords
 		$skip_columns[] = 'user_pass';
 
 		// Get table names based on leftover $args or supplied $assoc_args
 		$tables = \WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
 		foreach ( $tables as $table ) {
+
+			if ( $this->export_handle ) {
+				fwrite( $this->export_handle, "\nDROP TABLE IF EXISTS `$table`;\n" );
+				$row = $wpdb->get_row( "SHOW CREATE TABLE `$table`", ARRAY_N );
+				fwrite( $this->export_handle, $row[1] . ";\n" );
+			}
+
 			list( $primary_keys, $columns ) = self::get_columns( $table );
 
 			// since we'll be updating one row at a time,
@@ -128,7 +156,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 			}
 		}
 
-		if ( ! WP_CLI::get_config( 'quiet' ) ) {
+		if ( $this->export_handle && STDOUT !== $this->export_handle ) {
+			fclose( $this->export_handle );
+		}
+
+		if ( ! WP_CLI::get_config( 'quiet' ) && STDOUT !== $this->export_handle ) {
 
 			$table = new \cli\Table();
 			$table->setHeaders( array( 'Table', 'Column', 'Replacements', 'Type' ) );
