@@ -111,3 +111,32 @@ Feature: Manage WordPress menus
     """
     0
     """
+
+  Scenario: Preserve grandparent item as ancestor of child item when parent item is removed.
+
+    When I run `wp menu create "Grandparent Test"`
+    Then STDOUT should not be empty
+
+    When I run `wp menu item add-custom grandparent-test Grandparent http://example.com/grandparent --porcelain`
+    Then save STDOUT as {GRANDPARENT_ID}
+
+    When I run `wp menu item add-custom grandparent-test  Parent   http://example.com/parent   --porcelain  --parent-id={GRANDPARENT_ID}`
+    Then save STDOUT as {PARENT_ID}
+
+    When I run `wp menu item add-custom grandparent-test  Child http://example.com/child   --porcelain  --parent-id={PARENT_ID}`
+    Then save STDOUT as {CHILD_ID}
+
+    When I run `wp menu item list grandparent-test --fields=title,db_id,menu_item_parent`
+    Then STDOUT should be a table containing rows:
+      | title       | db_id            | menu_item_parent |
+      | Grandparent | {GRANDPARENT_ID} | 0                |
+      | Parent      | {PARENT_ID}      | {GRANDPARENT_ID} |
+      | Child       | {CHILD_ID}       | {PARENT_ID}      |
+
+    When I run `wp menu item delete {PARENT_ID}`
+
+    When I run `wp menu item list grandparent-test --fields=title,db_id,menu_item_parent`
+    Then STDOUT should be a table containing rows:
+      | title       | db_id            | menu_item_parent |
+      | Grandparent | {GRANDPARENT_ID} | 0                |
+      | Child       | {CHILD_ID}       | {GRANDPARENT_ID} |
