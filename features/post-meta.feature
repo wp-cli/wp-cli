@@ -62,3 +62,36 @@ Feature: Manage post custom fields
       | 1       | apple    | banana             |
       | 1       | apple    | banana             |
       | 1       | banana   | ["apple","apple"]  |
+
+  Scenario: Delete all post meta
+    Given a WP install
+
+    When I run `wp post meta add 1 apple banana`
+    And I run `wp post meta add 1 _foo banana`
+    Then STDOUT should not be empty
+
+    When I run `wp post meta list 1 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I try `wp post meta delete 1`
+    Then STDERR should be:
+      """
+      Error: Please specify a meta key, or use the --all flag.
+      """
+
+    When I run `wp post meta delete 1 --all`
+    Then STDOUT should contain:
+      """
+      Deleted 'apple' custom field.
+      Deleted '_foo' custom field.
+      Success: Deleted all custom fields.
+      """
+
+    When I run `wp post meta list 1 --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
