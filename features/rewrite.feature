@@ -29,10 +29,14 @@ Feature: Manage WordPress rewrites
       | topic/([^/]+)/?$ | index.php?tag=$matches[1]           | post_tag |
       | section/(.+?)/?$ | index.php?category_name=$matches[1] | category |
 
-    When I run `wp rewrite list --match=/topic/apple/ --format=csv`
+    When I run `wp rewrite list --match=/topic/apple/ --format=csv --fields=match,query`
     Then STDOUT should be CSV containing:
-      | match            | query                               | source   |
-      | topic/([^/]+)/?$ | index.php?tag=$matches[1]           | post_tag |
+      | match            | query                               |
+      | topic/([^/]+)/?$ | index.php?tag=$matches[1]           |
+    And STDOUT should not contain:
+      """
+      source
+      """
 
   Scenario: Missing permalink_structure
     Given a WP install
