@@ -288,6 +288,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     wp post list --post_type=page,post --format=ids
 	 *
+	 *     wp post list --post__in=1,3
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $_, $assoc_args ) {
