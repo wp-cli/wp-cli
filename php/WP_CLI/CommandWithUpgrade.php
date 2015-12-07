@@ -141,7 +141,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$result = $this->install_from_repo( $slug, $assoc_args );
 
 				if ( is_wp_error( $result ) ) {
-					\WP_CLI::warning( "$slug: " . $result->get_error_message() );
+
+					$key = $result->get_error_code();
+					if ( in_array( $result->get_error_code(), array( 'plugins_api_failed', 'themes_api_failed' ) )
+						&& ! empty( $result->error_data[ $key ] ) && in_array( $result->error_data[ $key ], array( 'N;', 'b:0;' ) ) ) {
+						\WP_CLI::warning( "Couldn't find '$slug' in the WordPress.org {$this->item_type} directory." );
+					} else {
+						\WP_CLI::warning( "$slug: " . $result->get_error_message() );
+					}
 				}
 			}
 
