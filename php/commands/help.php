@@ -91,7 +91,9 @@ class Help_Command extends WP_CLI_Command {
 
 	private static function pass_through_pager( $out ) {
 
-		$pager = Utils\is_windows() ? 'more' : 'less -r';
+		if ( false === ( $pager = getenv( 'PAGER' ) ) ) {
+			$pager = Utils\is_windows() ? 'more' : 'less -r';
+		}
 
 		// convert string to file handle
 		$fd = fopen( "php://temp", "r+" );
