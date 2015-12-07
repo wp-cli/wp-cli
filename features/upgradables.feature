@@ -175,6 +175,12 @@ Feature: Manage WordPress themes and plugins
       Showing 2 of
       """
 
+    When I try `wp <type> install an-impossible-slug-because-abc3fr`
+    Then STDERR should contain:
+      """
+      Warning: Couldn't find 'an-impossible-slug-because-abc3fr' in the WordPress.org <type> directory.
+      """
+
     Examples:
       | type   | type_name | item                    | item_title              | version | zip_file                                                              | file_to_check                                                    |
       | theme  | Theme     | p2                      | P2                      | 1.0.1   | https://wordpress.org/themes/download/p2.1.0.1.zip                     | {CONTENT_DIR}/p2/style.css                                        |
