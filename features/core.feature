@@ -339,31 +339,23 @@ Feature: Manage WordPress installation
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                |
       | 4.3.1   | major       | https://wordpress.org/wordpress-4.3.1.zip  |
-      | 4.2.5   | major       | https://wordpress.org/wordpress-4.2.5.zip  |
-      | 4.1.8   | major       | https://wordpress.org/wordpress-4.1.8.zip  |
-      | 4.0.8   | major       | https://wordpress.org/wordpress-4.0.8.zip  |
-      | 3.9.9   | major       | https://wordpress.org/wordpress-3.9.9.zip  |
       | 3.8.11  | minor       | https://wordpress.org/wordpress-3.8.11.zip |
 
     When I run `wp core check-update --format=count`
     Then STDOUT should be:
       """
-      6
+      2
       """
 
     When I run `wp core check-update --major`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                |
       | 4.3.1   | major       | https://wordpress.org/wordpress-4.3.1.zip  |
-      | 4.2.5   | major       | https://wordpress.org/wordpress-4.2.5.zip  |
-      | 4.1.8   | major       | https://wordpress.org/wordpress-4.1.8.zip  |
-      | 4.0.8   | major       | https://wordpress.org/wordpress-4.0.8.zip  |
-      | 3.9.9   | major       | https://wordpress.org/wordpress-3.9.9.zip  |
 
     When I run `wp core check-update --major --format=count`
     Then STDOUT should be:
       """
-      5
+      1
       """
 
     When I run `wp core check-update --minor`
@@ -375,6 +367,25 @@ Feature: Manage WordPress installation
     Then STDOUT should be:
       """
       1
+      """
+
+  @download
+  Scenario: Update to the latest minor release
+    Given a WP install
+
+    When I run `wp core download --version=3.8 --force`
+    Then STDOUT should not be empty
+
+    When I run `wp core update --minor`
+    Then STDOUT should contain:
+      """
+      Downloading update
+      """
+
+    When I run `wp core update --minor`
+    Then STDOUT should be:
+      """
+      Success: WordPress is at the latest minor release.
       """
 
   Scenario: Custom wp-content directory
