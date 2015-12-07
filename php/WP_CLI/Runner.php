@@ -513,7 +513,7 @@ class Runner {
 
 		include ABSPATH . 'wp-includes/version.php';
 
-		$minimum_version = '3.5.2';
+		$minimum_version = '3.7';
 
 		// @codingStandardsIgnoreStart
 		if ( version_compare( $wp_version, $minimum_version, '<' ) ) {
