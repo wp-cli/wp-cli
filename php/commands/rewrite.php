@@ -151,6 +151,9 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * [--source=<source>]
 	 * : Show rewrite rules from a particular source.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to match,query,source.
+	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
 	 *
@@ -172,7 +175,8 @@ class Rewrite_Command extends WP_CLI_Command {
 		$defaults = array(
 			'source' => '',
 			'match'  => '',
-			'format' => 'table'
+			'format' => 'table',
+			'fields' => 'match,query,source',
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
@@ -221,7 +225,7 @@ class Rewrite_Command extends WP_CLI_Command {
 			$rule_list[] = compact( 'match', 'query', 'source' );
 		}
 
-		WP_CLI\Utils\format_items( $assoc_args['format'], $rule_list, array('match', 'query', 'source' ) );
+		WP_CLI\Utils\format_items( $assoc_args['format'], $rule_list, explode( ',', $assoc_args['fields'] ) );
 	}
 
 	/**
