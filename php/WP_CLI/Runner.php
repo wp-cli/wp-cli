@@ -732,6 +732,9 @@ class Runner {
 
 		$this->maybe_update_url_from_domain_constant();
 
+		// Load WP-CLI utilities
+		require WP_CLI_ROOT . '/php/utils-wp.php';
+
 		// Load Core, mu-plugins, plugins, themes etc.
 		require WP_CLI_ROOT . '/php/wp-settings-cli.php';
 
