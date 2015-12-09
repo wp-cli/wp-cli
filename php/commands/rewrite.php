@@ -81,12 +81,8 @@ class Rewrite_Command extends WP_CLI_Command {
 		global $wp_rewrite;
 
 		// copypasta from /wp-admin/options-permalink.php
-		$home_path = get_home_path();
-		$iis7_permalinks = iis7_supports_permalinks();
 
 		$prefix = $blog_prefix = '';
-		if ( ! got_mod_rewrite() && ! $iis7_permalinks )
-			$prefix = '/index.php';
 		if ( is_multisite() && !is_subdomain_install() && is_main_site() )
 			$blog_prefix = '/blog';
 
