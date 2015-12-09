@@ -14,7 +14,7 @@ Submitting patches
 
 Whether you want to fix a bug or implement a new feature, the process is pretty much the same:
 
-0. [Search existing issues](https://github.com/wp-cli/wp-cli/issues); if you can't find anything related to what you want to work on, open a new issue so that you can get some initial feedback.
+0. [Search existing issues](https://github.com/wp-cli/wp-cli/issues); if you can't find anything related to what you want to work on, [open a new issue](https://github.com/wp-cli/wp-cli/wiki/How-to-solve-an-issue) so that you can get some initial feedback.
 1. [Fork](https://github.com/wp-cli/wp-cli/fork) the repository.
 2. Create a branch for each issue you'd like to address. Commit your changes.
 3. Push the code changes from your local clone to your fork.
