@@ -40,7 +40,7 @@ class Transient_Command extends WP_CLI_Command {
 	 * <value>
 	 * : Value to be set for the transient.
 	 *
-	 * [<expiration]
+	 * [<expiration>]
 	 * : Time until expiration, in seconds.
 	 */
 	public function set( $args ) {
