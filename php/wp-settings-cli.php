@@ -55,9 +55,6 @@ wp_fix_server_vars();
 // Start loading timer.
 timer_start();
 
-// Load WP-CLI utilities
-require WP_CLI_ROOT . '/php/utils-wp.php';
-
 // Check if we're in WP_DEBUG mode.
 Utils\wp_debug_mode();
 
