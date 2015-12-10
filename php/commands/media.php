@@ -18,6 +18,9 @@ class Media_Command extends WP_CLI_Command {
 	 * [--skip-delete]
 	 * : Skip deletion of the original thumbnails. If your thumbnails are linked from sources outside your control, it's likely best to leave them around. Defaults to false.
 	 *
+	 * [--only-missing]
+	 * : Only generate thumbnails for images missing image sizes.
+	 *
 	 * [--yes]
 	 * : Answer yes to the confirmation message.
 	 *
@@ -35,6 +38,10 @@ class Media_Command extends WP_CLI_Command {
 		}
 
 		$skip_delete = \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-delete' );
+		$only_missing = \WP_CLI\Utils\get_flag_value( $assoc_args, 'only-missing' );
+		if ( $only_missing ) {
+			$skip_delete = true;
+		}
 
 		$query_args = array(
 			'post_type' => 'attachment',
@@ -59,7 +66,7 @@ class Media_Command extends WP_CLI_Command {
 
 		$errored = false;
 		foreach ( $images->posts as $id ) {
-			if ( ! $this->_process_regeneration( $id, $skip_delete ) ) {
+			if ( ! $this->_process_regeneration( $id, $skip_delete, $only_missing ) ) {
 				$errored = true;
 			}
 		}
@@ -210,7 +217,7 @@ class Media_Command extends WP_CLI_Command {
 		return $filename;
 	}
 
-	private function _process_regeneration( $id, $skip_delete = false ) {
+	private function _process_regeneration( $id, $skip_delete = false, $only_missing = false ) {
 
 		$fullsizepath = get_attached_file( $id );
 
@@ -225,21 +232,27 @@ class Media_Command extends WP_CLI_Command {
 			$this->remove_old_images( $id );
 		}
 
-		$metadata = wp_generate_attachment_metadata( $id, $fullsizepath );
-		if ( is_wp_error( $metadata ) ) {
-			WP_CLI::warning( $metadata->get_error_message() );
-			return false;
+		if ( ! $only_missing || $this->needs_regeneration( $id ) ) {
+
+			$metadata = wp_generate_attachment_metadata( $id, $fullsizepath );
+			if ( is_wp_error( $metadata ) ) {
+				WP_CLI::warning( $metadata->get_error_message() );
+				return false;
+			}
+
+			if ( empty( $metadata ) ) {
+				WP_CLI::warning( "Couldn't regenerate thumbnails for $att_desc." );
+				return false;
+			}
+
+			wp_update_attachment_metadata( $id, $metadata );
+
+			WP_CLI::log( "Regenerated thumbnails for $att_desc" );
+			return true;
+		} else {
+			WP_CLI::log( "No thumbnail regeneration needed for $att_desc" );
+			return true;
 		}
-
-		if ( empty( $metadata ) ) {
-			WP_CLI::warning( "Couldn't regenerate thumbnails for $att_desc." );
-			return false;
-		}
-
-		wp_update_attachment_metadata( $id, $metadata );
-
-		WP_CLI::log( "Regenerated thumbnails for $att_desc" );
-		return true;
 	}
 
 	private function remove_old_images( $att_id ) {
@@ -267,6 +280,35 @@ class Media_Command extends WP_CLI_Command {
 			if ( file_exists( $intermediate_path ) )
 				unlink( $intermediate_path );
 		}
+	}
+
+	private function needs_regeneration( $att_id ) {
+		$wud = wp_upload_dir();
+
+		$metadata = wp_get_attachment_metadata($att_id);
+
+		if ( empty($metadata['file'] ) ) {
+			return false;
+		}
+
+		$dir_path = $wud['basedir'] . '/' . dirname( $metadata['file'] ) . '/';
+		$original_path = $dir_path . basename( $metadata['file'] );
+
+		if ( empty( $metadata['sizes'] ) ) {
+			return false;
+		}
+
+		foreach( $metadata['sizes'] as $size_info ) {
+			$intermediate_path = $dir_path . $size_info['file'];
+
+			if ( $intermediate_path == $original_path )
+				continue;
+
+			if ( ! file_exists( $intermediate_path ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
 
