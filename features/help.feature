@@ -27,6 +27,20 @@ Feature: Get help about WP-CLI commands
       wp post list
       """
 
+  Scenario: Validate parameters with help, but warn instead of error
+    Given a WP install
+
+    When I run `wp option get home --url-foo.com --help`
+    Then STDOUT should contain:
+      """
+      wp option get
+      """
+    And STDERR should contain:
+      """
+      Warning: Parameter errors:
+       unknown --url-foo.com parameter
+      """
+
   Scenario: Help when WordPress is downloaded but not installed
     Given an empty directory
 

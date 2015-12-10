@@ -248,10 +248,8 @@ class Subcommand extends CompositeCommand {
 			array_merge( \WP_CLI::get_config(), $extra_args, $assoc_args )
 		);
 
-		if ( $this->name != 'help' ) {
-			foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
-				$errors['fatal'][] = "unknown --$key parameter";
-			}
+		foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
+			$errors['fatal'][] = "unknown --$key parameter";
 		}
 
 		if ( !empty( $errors['fatal'] ) ) {
@@ -263,7 +261,11 @@ class Subcommand extends CompositeCommand {
 				}
 			}
 
-			\WP_CLI::error( $out );
+			if ( 'help' === $this->name ) {
+				\WP_CLI::warning( $out );
+			} else {
+				\WP_CLI::error( $out );
+			}
 		}
 
 		array_map( '\\WP_CLI::warning', $errors['warning'] );
