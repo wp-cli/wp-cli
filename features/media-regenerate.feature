@@ -123,7 +123,6 @@ Feature: Regenerate WordPress attachments
 
     When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My second imported attachment" --porcelain`
     Then save STDOUT as {ATTACHMENT_ID2}
-    And the wp-content/uploads/large-image-1-100x100.jpg file should exist
 
     When I run `rm wp-content/uploads/large-image-100x100.jpg`
     Then the wp-content/uploads/large-image-100x100.jpg file should not exist
