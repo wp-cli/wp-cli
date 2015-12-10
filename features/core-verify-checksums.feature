@@ -53,3 +53,13 @@ Feature: Validate checksums for WordPress install
       """
       Error: WordPress install doesn't verify against checksums.
       """
+
+  Scenario: Verify core checksums for a non US local
+    Given a WP install
+    And I run `wp core download --locale=en_GB --version=4.3.1 --force`
+
+    When I run `wp core verify-checksums`
+    Then STDOUT should be:
+      """
+      Success: WordPress install verifies against checksums.
+      """
