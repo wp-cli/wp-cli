@@ -973,6 +973,9 @@ EOT;
 	 * [--network]
 	 * : Update databases for all sites on a network
 	 *
+	 * [--dry-run]
+	 * : Compare database versions without performing the update.
+	 *
 	 * @subcommand update-db
 	 */
 	function update_db( $_, $assoc_args ) {
@@ -981,6 +984,11 @@ EOT;
 		$network = Utils\get_flag_value( $assoc_args, 'network' );
 		if ( $network && ! is_multisite() ) {
 			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
+		$dry_run = Utils\get_flag_value( $assoc_args, 'dry-run' );
+		if ( $dry_run ) {
+			WP_CLI::log( 'Performing a dry run, with no database modification.' );
 		}
 
 		if ( $network ) {
@@ -993,7 +1001,7 @@ EOT;
 			foreach( $it as $blog ) {
 				$total++;
 				$url = $blog->domain . $blog->path;
-				$process = WP_CLI::launch_self( 'core update-db', array(), array(), false, true, array( 'url' => $url ) );
+				$process = WP_CLI::launch_self( 'core update-db', array(), array(), false, true, array( 'url' => $url, 'dry-run' => $dry_run ) );
 				if ( 0 == $process->return_code ) {
 					// See if we can parse the stdout
 					if ( preg_match( '#Success: (.+)#', $process->stdout, $matches ) ) {
@@ -1007,7 +1015,7 @@ EOT;
 					WP_CLI::warning( "Database failed to upgrade on {$url}" );
 				}
 			}
-			if ( $total && $success == $total ) {
+			if ( ! $dry_run && $total && $success == $total ) {
 				update_site_option( 'wpmu_upgrade_site', $wp_db_version );
 			}
 			WP_CLI::success( sprintf( 'WordPress database upgraded on %d/%d sites', $success, $total ) );
@@ -1015,7 +1023,9 @@ EOT;
 			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 			$wp_current_db_version = __get_option( 'db_version' );
 			if ( $wp_db_version != $wp_current_db_version ) {
-				wp_upgrade();
+				if ( ! $dry_run ) {
+					wp_upgrade();
+				}
 				WP_CLI::success( "WordPress database upgraded successfully from db version {$wp_current_db_version} to {$wp_db_version}" );
 			} else {
 				WP_CLI::success( "WordPress database already at latest db version {$wp_db_version}" );
