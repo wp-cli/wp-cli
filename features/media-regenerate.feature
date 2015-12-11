@@ -103,3 +103,44 @@ Feature: Regenerate WordPress attachments
       """
       Warning: Can't find
       """
+
+  Scenario: Only regenerate images which are missing sizes
+    Given download:
+      | path                        | url                                              |
+      | {CACHE_DIR}/large-image.jpg | http://wp-cli.org/behat-data/large-image.jpg     |
+    And a wp-content/mu-plugins/media-settings.php file:
+      """
+      <?php
+      add_action( 'after_setup_theme', function(){
+        add_image_size( 'test1', 100, 100, true );
+      });
+      """
+    And I run `wp option update uploads_use_yearmonth_folders 0`
+
+    When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My imported attachment" --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID}
+    And the wp-content/uploads/large-image-100x100.jpg file should exist
+
+    When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My second imported attachment" --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID2}
+
+    When I run `rm wp-content/uploads/large-image-100x100.jpg`
+    Then the wp-content/uploads/large-image-100x100.jpg file should not exist
+
+    When I run `wp media regenerate --only-missing --yes`
+    Then STDOUT should contain:
+      """
+      Found 2 images to regenerate.
+      """
+    And STDOUT should contain:
+      """
+      No thumbnail regeneration needed for "My second imported attachment"
+      """
+    And STDOUT should contain:
+      """
+      Regenerated thumbnails for "My imported attachment"
+      """
+    And STDOUT should contain:
+      """
+      Success: Finished regenerating all images.
+      """
