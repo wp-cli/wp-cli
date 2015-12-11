@@ -224,7 +224,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			die;
 		}
 
-		$theme_description = "Custom theme: " . $data['theme_name'] . " developed by, " . $data['author'];
+		$theme_description = "Custom theme: " . $data['theme_name'] . ", developed by " . $data['author'];
 
 		$body                                  = array();
 		$body['underscoresme_name']            = $data['theme_name'];
