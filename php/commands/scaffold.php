@@ -530,6 +530,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			$plugin_readme_path => Utils\mustache_render( 'plugin-readme.mustache', $data ),
 			"$plugin_dir/package.json" => Utils\mustache_render( 'plugin-packages.mustache', $data ),
 			"$plugin_dir/Gruntfile.js" => Utils\mustache_render( 'plugin-gruntfile.mustache', $data ),
+			"$plugin_dir/.gitignore" => Utils\mustache_render( 'plugin-gitignore.mustache', $data ),
 			"$plugin_dir/.editorconfig" => file_get_contents( WP_CLI_ROOT . "/templates/.editorconfig" ),
 		), $force );
 
