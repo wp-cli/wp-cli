@@ -29,6 +29,12 @@ Feature: Update core's database
       Success: WordPress database upgraded successfully from db version 29630 to 30133
       """
 
+    When I run `wp option get db_version`
+    Then STDOUT should be:
+      """
+      29630
+      """
+
   Scenario: Update db across network
     Given a WP multisite install
     And I run `wp site create --slug=foo`
