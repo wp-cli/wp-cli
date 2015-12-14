@@ -150,7 +150,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 					WP_CLI::log( sprintf( 'Checking: %s.%s', $table, $col ) );
 				}
 
-				if ( ! $php_only ) {
+				if ( ! $php_only && ! $this->regex ) {
 					$serialRow = $wpdb->get_row( "SELECT * FROM `$table` WHERE `$col` REGEXP '^[aiO]:[1-9]' LIMIT 1" );
 				}
 
