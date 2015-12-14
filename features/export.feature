@@ -409,3 +409,16 @@ Feature: Export content.
       """
       0
       """
+
+  Scenario: Export a site with a custom filename format
+    Given a WP install
+
+    When I run `wp export --filename_format='foo-bar.{date}.{n}.xml'`
+    Then STDOUT should contain:
+      """
+      foo-bar.
+      """
+    And STDOUT should contain:
+      """
+      000.xml
+      """

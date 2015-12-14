@@ -54,6 +54,9 @@ class Export_Command extends WP_CLI_Command {
 	 * [--post_status=<status>]
 	 * : Export only posts with this status.
 	 *
+	 * [--filename_format=<format>]
+	 * : Use a custom format for export filenames. Defaults to '{site}.wordpress.{date}.{n}.xml'.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp export --dir=/tmp/ --user=admin --post_type=post --start_date=2011-01-01 --end_date=2011-12-31
@@ -74,9 +77,11 @@ class Export_Command extends WP_CLI_Command {
 			'start_id'          => NULL,
 			'skip_comments'     => NULL,
 			'max_file_size'     => 15,
+			'filename_format'   => '{site}.wordpress.{date}.{n}.xml',
 		);
 
-		$this->validate_args( wp_parse_args( $assoc_args, $defaults ) );
+		$assoc_args = wp_parse_args( $assoc_args, $defaults );
+		$this->validate_args( $assoc_args );
 
 		if ( !function_exists( 'wp_export' ) ) {
 			self::load_export_api();
@@ -95,7 +100,7 @@ class Export_Command extends WP_CLI_Command {
 				'writer_args' => array(
 					'max_file_size' => $this->max_file_size * MB_IN_BYTES,
 					'destination_directory' => $this->wxr_path,
-					'filename_template' => self::get_filename_template()
+					'filename_template' => self::get_filename_template( $assoc_args['filename_format'] ),
 				)
 			) );
 		} catch ( Exception $e ) {
@@ -105,12 +110,12 @@ class Export_Command extends WP_CLI_Command {
 		WP_CLI::success( 'All done with export.' );
 	}
 
-	private static function get_filename_template() {
+	private static function get_filename_template( $filename_format ) {
 		$sitename = sanitize_key( get_bloginfo( 'name' ) );
-		if ( ! empty( $sitename ) ) {
-			$sitename .= '.';
+		if ( empty( $sitename ) ) {
+			$sitename = 'site';
 		}
-		return $sitename . 'wordpress.' . date( 'Y-m-d' ) . '.%03d.xml';
+		return str_replace( array( '{site}', '{date}', '{n}' ), array( $sitename, date( 'Y-m-d' ), '%03d' ), $filename_format );
 	}
 
 	private static function load_export_api() {
