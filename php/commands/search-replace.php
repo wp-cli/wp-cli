@@ -263,42 +263,36 @@ class Search_Replace_Command extends WP_CLI_Command {
 	private function php_handle_col( $col, $primary_keys, $table, $old, $new ) {
 		global $wpdb;
 
-		// We don't want to have to generate thousands of rows when running the test suite
-		$chunk_size = getenv( 'BEHAT_RUN' ) ? 10 : 1000;
-
-		$fields = $primary_keys;
-		$fields[] = $col;
-
-		$args = array(
-			'table' => $table,
-			'fields' => $fields,
-			'where' => $this->regex ? '' : "`$col`" . $wpdb->prepare( ' LIKE %s', '%' . self::esc_like( $old ) . '%' ),
-			'chunk_size' => $chunk_size
-		);
-
-		$it = new \WP_CLI\Iterators\Table( $args );
-
 		$count = 0;
-
 		$replacer = new \WP_CLI\SearchReplacer( $old, $new, $this->recurse_objects, $this->regex );
 
-		foreach ( $it as $row ) {
-			if ( '' === $row->$col )
+		$where = $this->regex ? '' : " WHERE `$col`" . $wpdb->prepare( ' LIKE %s', '%' . self::esc_like( $old ) . '%' );
+		$primary_keys_sql = esc_sql( implode( ',', $primary_keys ) );
+		$col_sql = esc_sql( $col );
+		$table_sql = esc_sql( $table );
+		$rows = $wpdb->get_results( "SELECT {$primary_keys_sql} FROM {$table_sql}{$where}" );
+		foreach ( $rows as $keys ) {
+			$where_sql = '';
+			foreach( (array) $keys as $k => $v ) {
+				$where_sql .= "{$k}={$v}";
+			}
+			$col_value = $wpdb->get_var( "SELECT {$col_sql} FROM {$table_sql} WHERE {$where_sql}" );
+			if ( '' === $col_value )
 				continue;
 
-			$value = $replacer->run( $row->$col );
+			$value = $replacer->run( $col_value );
 
-			if ( $value === $row->$col ) {
+			if ( $value === $col_value ) {
 				continue;
 			}
 
 			if ( $this->dry_run ) {
-				if ( $value != $row->$col )
+				if ( $value != $col_value )
 					$count++;
 			} else {
 				$where = array();
-				foreach ( $primary_keys as $primary_key ) {
-					$where[ $primary_key ] = $row->$primary_key;
+				foreach( (array) $keys as $k => $v ) {
+					$where[ $k ] = $v;
 				}
 
 				$count += $wpdb->update( $table, array( $col => $value ), $where );
