@@ -235,6 +235,10 @@ class CompositeCommand {
 		$binding = array();
 		$binding['root_command'] = $root_command;
 
+		if (! $this->can_have_subcommands() || ( is_object( $this->parent ) && get_class( $this->parent ) == 'WP_CLI\Dispatcher\CompositeCommand' )) {
+			$binding['is_subcommand'] = true;
+		}
+
 		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
 			if ( false === $details['runtime'] )
 				continue;
