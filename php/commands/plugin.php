@@ -556,7 +556,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Delete plugin files.
+	 * Delete plugin files without deactivating or uninstalling.
 	 *
 	 * ## OPTIONS
 	 *
