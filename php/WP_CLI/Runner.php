@@ -728,7 +728,14 @@ class Runner {
 		WP_CLI::debug( 'wp-config.php path: ' . $wp_config_path );
 
 		// Load wp-config.php code, in the global scope
+		$wp_cli_original_defined_vars = get_defined_vars();
 		eval( $this->get_wp_config_code() );
+		foreach( get_defined_vars() as $key => $var ) {
+			if ( array_key_exists( $key, $wp_cli_original_defined_vars ) || 'wp_cli_original_defined_vars' === $key ) {
+				continue;
+			}
+			$GLOBALS[ $key ] = $var;
+		}
 
 		$this->maybe_update_url_from_domain_constant();
 
