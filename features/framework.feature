@@ -83,3 +83,27 @@ Feature: Load WP-CLI
       """
       Error: This does not seem to be a WordPress install.
       """
+
+  Scenario: Globalize global variables in wp-config.php
+    Given an empty directory
+    And WP files
+    And a wp-config-extra.php file:
+      """
+      $redis_server = 'foo';
+      """
+
+    When I run `wp core config {CORE_CONFIG_SETTINGS} --extra-php < wp-config-extra.php`
+    Then the wp-config.php file should contain:
+      """
+      $redis_server = 'foo';
+      """
+
+    When I run `wp db create`
+    And I run `wp core install --url='localhost:8001' --title='Test' --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo $GLOBALS["redis_server"];'`
+    Then STDOUT should be:
+      """
+      foo
+      """
