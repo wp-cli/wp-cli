@@ -317,7 +317,7 @@ function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
 	}
 
 	$descriptorspec = array( STDIN, STDOUT, STDERR );
-	$process = proc_open( "$editor " . escapeshellarg( $tmpfile ), $descriptorspec, $pipes );
+	$process = proc_open( "$editor " . escapeshellarg( $tmpfile ), $descriptorspec );
 	$r = proc_close( $process );
 	if ( $r ) {
 		exit( $r );
@@ -373,7 +373,7 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 
 	$final_cmd = $cmd . assoc_args_to_str( $assoc_args );
 
-	$proc = proc_open( $final_cmd, $descriptors, $pipes );
+	$proc = proc_open( $final_cmd, $descriptors );
 	if ( !$proc )
 		exit(1);
 
