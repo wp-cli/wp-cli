@@ -138,37 +138,49 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <hook>
-	 * : The hook name
+	 * [<hook>...]
+	 * : One or more hooks to run.
+	 *
+	 * [--all]
+	 * : Run all hooks.
 	 */
 	public function run( $args, $assoc_args ) {
 
-		$hook   = $args[0];
+		if ( empty( $args ) && ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
+			WP_CLI::error( 'Please specify one or more cron events, or use --all.' );
+		}
+
 		$events = self::get_cron_events();
 
 		if ( is_wp_error( $events ) ) {
 			WP_CLI::error( $events );
 		}
 
-		$executed = 0;
-		foreach ( $events as $event ) {
-			if ( $event->hook == $hook ) {
-				$result = self::run_event( $event );
-				if ( $result ) {
-					$executed++;
-				} else {
-					WP_CLI::warning( sprintf( "Failed to the execute the cron event '%s'", $hook ) );
+
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
+			$hooks = wp_list_pluck( $events, 'hook' );
+			foreach( $args as $hook ) {
+				if ( ! in_array( $hook, $hooks ) ) {
+					WP_CLI::error( sprintf( "Invalid cron event '%s'", $hook ) );
 				}
 			}
 		}
 
-		if ( $executed ) {
-			$message = ( 1 == $executed ) ? "Executed the cron event '%2\$s'" : "Executed %1\$d instances of the cron event '%2\$s'";
-			WP_CLI::success( sprintf( $message, $executed, $hook ) );
-		} else {
-			WP_CLI::error( sprintf( "Invalid cron event '%s'", $hook ) );
+		$executed = 0;
+		foreach ( $events as $event ) {
+			if ( in_array( $event->hook, $args ) || \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
+				$result = self::run_event( $event );
+				if ( $result ) {
+					$executed++;
+					WP_CLI::log( sprintf( "Executed the cron event '%s'.", $event->hook ) );
+				} else {
+					WP_CLI::warning( sprintf( "Failed to the execute the cron event '%s'.", $event->hook ) );
+				}
+			}
 		}
 
+		$message = 'Executed a total of %d cron event(s).';
+		WP_CLI::success( sprintf( $message, $executed ) );
 	}
 
 	/**
