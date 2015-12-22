@@ -101,14 +101,13 @@ class Subcommand extends CompositeCommand {
 	 */
 	private function prompt( $question, $default ) {
 
-		try {
-			$response = \cli\prompt( $question, $default );
-		} catch( \Exception $e ) {
-			\WP_CLI::line();
-			return false;
+		$question .= ': ';
+		if ( function_exists( 'readline' ) ) {
+			return readline( $question );
+		} else {
+			echo $question;
+			return stream_get_line( STDIN, 1024, PHP_EOL );
 		}
-
-		return $response;
 	}
 
 	/**
