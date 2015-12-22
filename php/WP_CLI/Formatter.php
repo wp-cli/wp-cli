@@ -188,7 +188,7 @@ class Formatter {
 	 */
 	private function find_item_key( $item, $field ) {
 		foreach ( array( $field, $this->prefix . '_' . $field ) as $maybe_key ) {
-			if ( ( is_object( $item ) && isset( $item->$maybe_key ) ) || ( is_array( $item ) && array_key_exists( $maybe_key, $item ) ) ) {
+			if ( ( is_object( $item ) && property_exists( $item, $maybe_key ) ) || ( is_array( $item ) && array_key_exists( $maybe_key, $item ) ) ) {
 				$key = $maybe_key;
 				break;
 			}
