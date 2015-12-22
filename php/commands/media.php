@@ -141,7 +141,7 @@ class Media_Command extends WP_CLI_Command {
 		}
 
 		foreach ( $args as $file ) {
-			$is_file_remote = parse_url( $file, PHP_URL_SCHEME );
+			$is_file_remote = parse_url( $file, PHP_URL_HOST );
 			$orig_filename = $file;
 
 			if ( empty( $is_file_remote ) ) {
