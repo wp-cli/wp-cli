@@ -125,6 +125,35 @@ require( ABSPATH . WPINC . '/default-filters.php' );
 // Initialize multisite if enabled.
 if ( is_multisite() ) {
 	require( ABSPATH . WPINC . '/ms-blogs.php' );
+
+	// Check if url already defined
+	if ( ! WP_CLI::get_runner()->config['url'] ) {
+
+		// Attempt to load current site/blog using current WP configuration
+		require_once( ABSPATH . WPINC . '/ms-load.php' );
+		require_once( ABSPATH . WPINC . '/ms-default-constants.php' );
+		if ( defined( 'SUNRISE' ) ) {
+			include_once( WP_CONTENT_DIR . '/sunrise.php' );
+		}
+
+		// Check if current site/blog has been already loaded (if it hasn't by now then it will likely fail)
+		if ( ! isset( $current_site ) || ! isset( $current_blog ) ) {
+
+			// Find whats in the DB as the defautl siteurl
+			$default_siteurl = parse_url( trim( WP_CLI\Process::create( 'mysql -sN' . Utils\assoc_args_to_str( array(
+				'host' => DB_HOST,
+				'user' => DB_USER,
+				'pass' => DB_PASSWORD,
+				'database' => DB_NAME,
+				'execute' => sprintf(
+					"SELECT option_value AS '' FROM %soptions WHERE option_name='siteurl';", $table_prefix)
+			) ) )->run()->stdout ) );
+
+			// Fake this request (if not already defined) so WP can find correct current site/blog
+			$_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?: $default_siteurl['host'];
+			$_SERVER['REQUEST_URI'] = $_SERVER['REQUEST_URI'] ?: $default_siteurl['path'];
+		}
+	}
 	require( ABSPATH . WPINC . '/ms-settings.php' );
 } elseif ( ! defined( 'MULTISITE' ) ) {
 	define( 'MULTISITE', false );
