@@ -95,3 +95,17 @@ Feature: Manage post custom fields
       """
       0
       """
+
+  Scenario: List post meta with a null value
+    Given a WP install
+    And a setup.php file:
+      """
+      <?php
+      update_post_meta( 1, 'foo', NULL );
+      """
+    And I run `wp eval-file setup.php`
+
+    When I run `wp post meta list 1`
+    Then STDOUT should be a table containing rows:
+      | post_id | meta_key | meta_value         |
+      | 1       | foo      |                    |
