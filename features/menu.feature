@@ -77,7 +77,10 @@ Feature: Manage WordPress menus
     Then save STDOUT as {POST_ITEM_ID}
 
     When I run `wp menu item update {POST_ITEM_ID} --description="Washington Apples"`
-    Then STDERR should be empty
+    Then STDOUT should be:
+      """
+      Success: Menu item updated.
+      """
 
     When I run `wp menu item add-term sidebar-menu post_tag {TERM_ID} --porcelain`
     Then save STDOUT as {TERM_ITEM_ID}
@@ -86,7 +89,16 @@ Feature: Manage WordPress menus
     Then save STDOUT as {CUSTOM_ITEM_ID}
 
     When I run `wp menu item update {CUSTOM_ITEM_ID} --title=WordPress --link='http://wordpress.org' --target=_blank --position=2`
-    Then STDERR should be empty
+    Then STDOUT should be:
+      """
+      Success: Menu item updated.
+      """
+
+    When I run `wp menu item update {TERM_ITEM_ID} --position=3`
+    Then STDOUT should be:
+      """
+      Success: Menu item updated.
+      """
 
     When I run `wp menu item list sidebar-menu --fields=type,title,description,position,link,menu_item_parent`
     Then STDOUT should be a table containing rows:
