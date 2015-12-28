@@ -1,5 +1,6 @@
 Feature: Update WordPress core
 
+  @less-than-php-7
   Scenario: Update from a ZIP file
     Given a WP install
 
@@ -27,6 +28,7 @@ Feature: Update WordPress core
       3.9
       """
 
+  @less-than-php-7
   Scenario: Update to the latest minor release
     Given a WP install
 
@@ -45,6 +47,7 @@ Feature: Update WordPress core
       Success: WordPress is at the latest minor release.
       """
 
+  @less-than-php-7
   Scenario: Core update from cache
     Given a WP install
     And an empty cache
