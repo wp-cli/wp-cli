@@ -18,53 +18,67 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * ## DESCRIPTION
 	 *
-	 * This command will go through all rows in a selection of tables
-	 * and will replace all appearances of the old string with the new one.  The
-	 * default tables are those registered on the $wpdb object (usually
-	 * just WordPress core tables).
+	 * This command will searches through all rows in a selection of tables
+	 * and replaces appearances of the first string with the second string.
 	 *
-	 * It will correctly handle serialized values, and will not change primary key values.
+	 * By default, the command uses tables registered to the $wpdb object. On
+	 * multisite, this will just be the tables for the current site unless
+	 * --network is specified.
+	 *
+	 * Search/replace intelligently handles PHP serialized data, and does not
+	 * change primary key values.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <old>
-	 * : The old string.
+	 * : A string to search for within the database.
 	 *
 	 * <new>
-	 * : The new string.
+	 * : Replace instances of the first string with this new string.
 	 *
 	 * [<table>...]
-	 * : List of database tables to restrict the replacement to. Wildcards are supported, e.g. wp_\*_options or wp_post\?.
-	 *
-	 * [--network]
-	 * : Search/replace through all the tables in a multisite install.
-	 *
-	 * [--skip-columns=<columns>]
-	 * : Do not perform the replacement in the comma-separated columns.
+	 * : List of database tables to restrict the replacement to. Wildcards are
+	 * supported, e.g. 'wp_*_options' or 'wp_post*'.
 	 *
 	 * [--dry-run]
-	 * : Show report, but don't perform the changes.
+	 * : Run the entire search/replace operation and show report, but don't save
+	 * changes to the database.
 	 *
-	 * [--precise]
-	 * : Force the use of PHP (instead of SQL) which is more thorough, but slower. Use if you see issues with serialized data.
-	 *
-	 * [--recurse-objects]
-	 * : Enable recursing into objects to replace strings. Defaults to true; pass --no-recurse-objects to disable.
+	 * [--network]
+	 * : Search/replace through all the tables registered to $wpdb in a
+	 * multisite install.
 	 *
 	 * [--all-tables-with-prefix]
-	 * : Enable replacement on any tables that match the table prefix even if not registered on wpdb
+	 * : Enable replacement on any tables that match the table prefix even if
+	 * not registered on $wpdb.
 	 *
 	 * [--all-tables]
-	 * : Enable replacement on ALL tables in the database, regardless of the prefix, and even if not registered on $wpdb. Overrides --network and --all-tables-with-prefix.
+	 * : Enable replacement on ALL tables in the database, regardless of the
+	 * prefix, and even if not registered on $wpdb. Overrides --network
+	 * and --all-tables-with-prefix.
+	 *
+	 * [--export[=<file>]]
+	 * : Write transformed data as SQL file instead of saving replacements to
+	 * the database. If <file> is not supplied, will output to STDOUT.
+	 *
+	 * [--skip-columns=<columns>]
+	 * : Do not perform the replacement on specific columns. Use commas to
+	 * specify multiple columns. 'guid' is skipped by default.
+	 *
+	 * [--precise]
+	 * : Force the use of PHP (instead of SQL) which is more thorough,
+	 * but slower.
+	 *
+	 * [--recurse-objects]
+	 * : Enable recursing into objects to replace strings. Defaults to true;
+	 * pass --no-recurse-objects to disable.
 	 *
 	 * [--verbose]
 	 * : Prints rows to the console as they're updated.
 	 *
 	 * [--regex]
-	 * : Runs the search using a regular expression. Warning: search-replace will take about 15-20x longer when using --regex.
-	 *
-	 * [--export[=<file>]]
-	 * : Write transformed data as SQL file instead of performing in-place replacements. If <file> is not supplied, will output to STDOUT.
+	 * : Runs the search using a regular expression. Warning: search-replace
+	 * will take about 15-20x longer when using --regex.
 	 *
 	 * ## EXAMPLES
 	 *
