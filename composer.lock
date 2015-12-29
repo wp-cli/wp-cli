@@ -692,16 +692,16 @@
         },
         {
             "name": "wp-cli/php-cli-tools",
-            "version": "v0.10.5",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/php-cli-tools.git",
-                "reference": "037a010441a5c220cd1df26cdc9b20ad73408356"
+                "reference": "c6f72ea088518ffda711634e46589c2dbc0036cb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/037a010441a5c220cd1df26cdc9b20ad73408356",
-                "reference": "037a010441a5c220cd1df26cdc9b20ad73408356",
+                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/c6f72ea088518ffda711634e46589c2dbc0036cb",
+                "reference": "c6f72ea088518ffda711634e46589c2dbc0036cb",
                 "shasum": ""
             },
             "require": {
@@ -1230,7 +1230,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "wp-cli/php-cli-tools": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
