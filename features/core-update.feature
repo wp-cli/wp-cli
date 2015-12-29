@@ -32,19 +32,25 @@ Feature: Update WordPress core
   Scenario: Update to the latest minor release
     Given a WP install
 
-    When I run `wp core download --version=3.8 --force`
+    When I run `wp core download --version=3.7.9 --force`
     Then STDOUT should not be empty
 
     When I run `wp core update --minor`
     Then STDOUT should contain:
       """
-      Downloading update
+      Updating to version 3.7.11
       """
 
     When I run `wp core update --minor`
     Then STDOUT should be:
       """
       Success: WordPress is at the latest minor release.
+      """
+
+    When I run `wp core version`
+    Then STDOUT should be:
+      """
+      3.7.11
       """
 
   @less-than-php-7
