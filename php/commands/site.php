@@ -121,6 +121,9 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
+	 * [--uploads]
+	 * : Also delete *all* files in the site's in the uploads directory.
+	 *
 	 * [--yes]
 	 * : Proceed to empty the site without a confirmation prompt.
 	 *
@@ -128,12 +131,36 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function _empty( $args, $assoc_args ) {
 
-		WP_CLI::confirm( 'Are you sure you want to empty the site at ' . site_url() . ' of all posts, comments, and terms?', $assoc_args );
+		$upload_message = '';
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'uploads' ) ) {
+			$upload_message = ', and delete its uploads directory';
+		}
+
+		WP_CLI::confirm( 'Are you sure you want to empty the site at ' . site_url() . ' of all posts, comments, and terms' . $upload_message . '?', $assoc_args );
 
 		$this->_empty_posts();
 		$this->_empty_comments();
 		$this->_empty_taxonomies();
 		$this->_insert_default_terms();
+
+		if ( ! empty( $upload_message ) ) {
+			$upload_dir = wp_upload_dir();
+			$files = new RecursiveIteratorIterator(
+				new RecursiveDirectoryIterator( $upload_dir['basedir'], RecursiveDirectoryIterator::SKIP_DOTS ),
+				RecursiveIteratorIterator::CHILD_FIRST
+			);
+
+			foreach ( $files as $fileinfo ) {
+				$realpath = $fileinfo->getRealPath();
+				// Don't clobber subsites when operating on the main site
+				if ( is_main_site() && false !== stripos( $realpath, '/sites/' ) ) {
+					continue;
+				}
+				$todo = $fileinfo->isDir() ? 'rmdir' : 'unlink';
+				$todo( $realpath );
+			}
+			rmdir( $upload_dir['basedir'] );
+		}
 
 		WP_CLI::success( 'The site at ' . site_url() . ' was emptied.' );
 	}
