@@ -562,6 +562,10 @@ class Core_Command extends WP_CLI_Command {
 		}
 		// @codingStandardsIgnoreEnd
 
+		if ( ! empty( $GLOBALS['wpdb']->last_error ) ) {
+			WP_CLI::error( 'Installation produced database errors, and may have partially or completely failed.' );
+		}
+
 		// Confirm the uploads directory exists
 		$upload_dir = wp_upload_dir();
 		if ( ! empty( $upload_dir['error'] ) ) {
