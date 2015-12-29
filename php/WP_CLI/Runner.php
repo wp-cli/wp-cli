@@ -25,6 +25,8 @@ class Runner {
 
 	private $_project_config_path_debug;
 
+	private $_required_files;
+
 	public function __get( $key ) {
 		if ( '_' === $key[0] )
 			return null;
@@ -535,7 +537,11 @@ class Runner {
 			$this->project_config_path = $this->get_project_config_path();
 
 			$configurator->merge_yml( $this->global_config_path );
+			$config = $configurator->to_array();
+			$this->_required_files['global'] = $config[0]['require'];
 			$configurator->merge_yml( $this->project_config_path );
+			$config = $configurator->to_array();
+			$this->_required_files['project'] = $config[0]['require'];
 		}
 
 		// Runtime config and args
@@ -550,6 +556,7 @@ class Runner {
 		}
 
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
+		$this->_required_files['runtime'] = $this->config['require'];
 	}
 
 	private function check_root() {
@@ -605,7 +612,24 @@ class Runner {
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {
 				if ( ! file_exists( $path ) ) {
-					WP_CLI::error( sprintf( "Required file '%s' doesn't exist", basename( $path ) ) );
+					$context = '';
+					foreach( array( 'global', 'project', 'runtime' ) as $scope ) {
+						if ( in_array( $path, $this->_required_files[ $scope ] ) ) {
+							switch ( $scope ) {
+								case 'global':
+									$context = ' (from global ' . basename( $this->global_config_path ) . ')';
+									break;
+								case 'project':
+									$context = ' (from project\'s ' . basename( $this->project_config_path ) . ')';
+									break;
+								case 'runtime':
+									$context = ' (from runtime argument)';
+									break;
+							}
+							break;
+						}
+					}
+					WP_CLI::error( sprintf( "Required file '%s' doesn't exist%s.", basename( $path ), $context ) );
 				}
 				Utils\load_file( $path );
 				WP_CLI::debug( 'Required file from config: ' . $path );

@@ -231,22 +231,45 @@ Feature: Have a config file
   Scenario: Missing required files should not fatal WP-CLI
     Given an empty directory
     And a wp-cli.yml file:
-	  """
-	  require:
-	    - missing-file.php
-	  """
+    """
+    require:
+      - missing-file.php
+    """
 
-	  When I try `wp help`
-	  Then STDERR should contain:
-	    """
-	    Error: Required file 'missing-file.php' doesn't exist
-	    """
+    When I try `wp help`
+    Then STDERR should contain:
+      """
+      Error: Required file 'missing-file.php' doesn't exist (from project's wp-cli.yml).
+      """
 
     When I run `wp cli info`
-	  Then STDOUT should not be empty
+    Then STDOUT should not be empty
 
     When I run `wp --info`
-	  Then STDOUT should not be empty
+    Then STDOUT should not be empty
+
+  Scenario: Missing required file in global config
+    Given an empty directory
+    And a config.yml file:
+      """
+      require:
+        - /foo/baz.php
+      """
+
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp help`
+    Then STDERR should contain:
+      """
+      Error: Required file 'baz.php' doesn't exist (from global config.yml).
+      """
+
+  Scenario: Missing required file as runtime argument
+    Given an empty directory
+
+    When I try `wp help --require=foo.php`
+    Then STDERR should contain:
+      """
+      Error: Required file 'foo.php' doesn't exist (from runtime argument).
+      """
 
   @require-wp-3.9
   Scenario: WordPress install with local dev DOMAIN_CURRENT_SITE
