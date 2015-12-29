@@ -488,6 +488,18 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--plugin_name=<title>]
 	 * : What to put in the 'Plugin Name:' header
 	 *
+	 * [--plugin_description=<description>]
+	 * : What to put in the 'Description:' header.
+	 *
+	 * [--plugin_author=<author>]
+	 * : What to put in the 'Author:' header.
+	 *
+	 * [--plugin_author_uri=<url>]
+	 * : What to put in the 'Author URI:' header.
+	 *
+	 * [--plugin_uri=<url>]
+	 * : What to put in the 'Plugin URI:' header.
+	 *
 	 * [--skip-tests]
 	 * : Don't generate files for unit testing.
 	 *
@@ -505,8 +517,12 @@ class Scaffold_Command extends WP_CLI_Command {
 		$plugin_slug = $args[0];
 
 		$data = wp_parse_args( $assoc_args, array(
-			'plugin_slug' => $plugin_slug,
-			'plugin_name' => ucfirst( $plugin_slug ),
+			'plugin_slug'        => $plugin_slug,
+			'plugin_name'        => ucfirst( $plugin_slug ),
+			'plugin_description' => 'PLUGIN DESCRIPTION HERE',
+			'plugin_author'      => 'YOUR NAME HERE',
+			'plugin_author_uri'  => 'YOUR SITE HERE',
+			'plugin_uri'         => 'PLUGIN SITE HERE',
 		) );
 
 		$data['textdomain'] = $plugin_slug;
