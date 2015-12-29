@@ -4,7 +4,7 @@ Feature: Evaluating PHP code and files.
     Given a WP install
 
     When I run `wp eval 'var_dump(defined("WP_CONTENT_DIR"));'`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       bool(true)
       """
@@ -16,7 +16,7 @@ Feature: Evaluating PHP code and files.
       """
 
     When I run `wp eval-file script.php foo bar`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       foo bar
       """
@@ -31,7 +31,7 @@ Feature: Evaluating PHP code and files.
       """
 
     When I run `wp eval 'var_dump(defined("WP_CONTENT_DIR"));' --skip-wordpress`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       bool(false)
       """
@@ -51,7 +51,7 @@ Feature: Evaluating PHP code and files.
       """
 
     When I run `wp eval-file script.php --skip-wordpress`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       bool(false)
       """

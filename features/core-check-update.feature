@@ -1,5 +1,6 @@
 Feature: Check for more recent versions
 
+  @less-than-php-7
   Scenario: Check for update via Version Check API
     Given a WP install
 
