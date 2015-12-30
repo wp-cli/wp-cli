@@ -66,30 +66,6 @@ Feature: Manage sites in a multisite installation
     When I try the previous command again
     Then the return code should be 1
 
-  Scenario: Empty a site
-    Given a WP install
-
-    When I try `wp site url 1`
-    Then STDERR should be:
-      """
-      Error: This is not a multisite install.
-      """
-
-    When I run `wp post create --post_title='Test post' --post_content='Test content.' --porcelain`
-    Then STDOUT should not be empty
-
-    When I run `wp term create post_tag 'Test term' --slug=test --description='This is a test term'`
-    Then STDOUT should not be empty
-
-    When I run `wp site empty --yes`
-    Then STDOUT should not be empty
-
-    When I run `wp post list --format=ids`
-    Then STDOUT should be empty
-
-    When I run `wp term list post_tag --format=ids`
-    Then STDOUT should be empty
-
   Scenario: Get site info
     Given a WP multisite install
    
