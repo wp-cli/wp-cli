@@ -13,6 +13,16 @@ Feature: Global flags
       }
       """
 
+  Scenario: Setting the URL on multisite
+    Given a WP multisite install
+    And I run `wp site create --slug=foo`
+
+    When I run `wp --url=example.com/foo option get home`
+    Then STDOUT should be:
+      """
+      http://example.com/foo
+      """
+
   @require-wp-3.9
   Scenario: Invalid URL
     Given a WP multisite install

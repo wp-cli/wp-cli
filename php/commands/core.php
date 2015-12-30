@@ -562,6 +562,10 @@ class Core_Command extends WP_CLI_Command {
 		}
 		// @codingStandardsIgnoreEnd
 
+		if ( ! empty( $GLOBALS['wpdb']->last_error ) ) {
+			WP_CLI::error( 'Installation produced database errors, and may have partially or completely failed.' );
+		}
+
 		// Confirm the uploads directory exists
 		$upload_dir = wp_upload_dir();
 		if ( ! empty( $upload_dir['error'] ) ) {
@@ -878,7 +882,7 @@ EOT;
 		if ( empty( $args[0] ) && empty( $assoc_args['version'] ) && \WP_CLI\Utils\get_flag_value( $assoc_args, 'minor' ) ) {
 			$updates = $this->get_updates( array( 'minor' => true ) );
 			if ( ! empty( $updates ) ) {
-				$assoc_args['version'] = $updates['version'];
+				$assoc_args['version'] = $updates[0]['version'];
 			} else {
 				WP_CLI::success( 'WordPress is at the latest minor release.' );
 				return;
