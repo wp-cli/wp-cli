@@ -55,10 +55,11 @@ $steps->Given( "/^a WP install in '([^\s]+)'$/",
 	}
 );
 
-$steps->Given( '/^a WP multisite install$/',
-	function ( $world ) {
+$steps->Given( '/^a WP multisite (subdirectory|subdomain)?\s?install$/',
+	function ( $world, $type = 'subdirectory' ) {
 		$world->install_wp();
-		$world->proc( 'wp core install-network', array( 'title' => 'WP CLI Network' ) )->run_check();
+		$subdomains = ! empty( $type ) && 'subdomain' === $type ? 1 : 0;
+		$world->proc( 'wp core install-network', array( 'title' => 'WP CLI Network', 'subdomains' => $subdomains ) )->run_check();
 	}
 );
 
