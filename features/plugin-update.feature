@@ -6,6 +6,10 @@ Feature: Update WordPress plugins
     When I run `wp plugin install akismet --version=2.5.6 --force`
     Then STDOUT should not be empty
 
+    When I run `wp plugin list --name=akismet --field=update_version`
+    Then STDOUT should not be empty
+    And save STDOUT as {UPDATE_VERSION}
+
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
       | name       | status   | update    | version   |
@@ -21,3 +25,11 @@ Feature: Update WordPress plugins
     Then STDOUT should be a table containing rows:
       | name       | status   | update    | version   |
       | akismet    | inactive | available | 2.5.6     |
+
+    When I run `wp plugin update akismet`
+    Then STDOUT should not be empty
+
+    When I run `wp plugin list`
+    Then STDOUT should be a table containing rows:
+      | name       | status   | update    | version           |
+      | akismet    | inactive | none      | {UPDATE_VERSION}  |
