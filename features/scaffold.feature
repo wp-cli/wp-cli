@@ -208,6 +208,10 @@ Feature: WordPress code scaffolding
     Then STDOUT should not be empty
     And the community-command/.travis.yml file should exist
     And the community-command/bin/install-package-tests.sh file should exist
+    And the community-command/utils/behat-tags.php file should contain:
+      """
+      require-wp
+      """
     And the community-command/utils/get-package-require-from-composer.php file should exist
     And the community-command/features directory should contain:
       """
