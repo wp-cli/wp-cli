@@ -299,17 +299,20 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$user_id = wp_insert_user( $user );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
-			self::wp_new_user_notification( $user_id, $user->user_pass );
-		}
-
-		if ( is_wp_error( $user_id ) ) {
+		if ( ! $user_id || is_wp_error( $user_id ) ) {
+			if ( ! $user_id ) {
+				$user_id = 'Unknown error creating new user.';
+			}
 			WP_CLI::error( $user_id );
 		} else {
 			if ( false === $user->role ) {
 				delete_user_option( $user_id, 'capabilities' );
 				delete_user_option( $user_id, 'user_level' );
 			}
+		}
+
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
+			self::wp_new_user_notification( $user_id, $user->user_pass );
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
