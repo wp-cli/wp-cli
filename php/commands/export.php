@@ -62,6 +62,9 @@ class Export_Command extends WP_CLI_Command {
 	 *     wp export --dir=/tmp/ --user=admin --post_type=post --start_date=2011-01-01 --end_date=2011-12-31
 	 *
 	 *     wp export --dir=/tmp/ --post__in=123,124,125
+	 *
+	 *     # Export a random subset of content
+	 *     wp export --post__in=$(wp post list --post_type=post --orderby=rand --posts_per_page=8 --format=ids)
 	 */
 	public function __invoke( $_, $assoc_args ) {
 		$defaults = array(
