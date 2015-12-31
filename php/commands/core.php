@@ -400,6 +400,9 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * --admin_email=<email>
 	 * : The email address for the admin user.
+	 *
+	 * [--skip-email]
+	 * : Don't send an email notification to the new admin user.
 	 */
 	public function install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
@@ -468,6 +471,9 @@ class Core_Command extends WP_CLI_Command {
 	 * --admin_email=<email>
 	 * : The email address for the admin user.
 	 *
+	 * [--skip-email]
+	 * : Don't send an email notification to the new admin user.
+	 *
 	 * @subcommand multisite-install
 	 */
 	public function multisite_install( $args, $assoc_args ) {
@@ -531,6 +537,12 @@ class Core_Command extends WP_CLI_Command {
 	private function _install( $assoc_args ) {
 		if ( is_blog_installed() ) {
 			return false;
+		}
+
+		if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-email' ) ) {
+			function wp_new_blog_notification() {
+				// Silence is golden
+			}
 		}
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
