@@ -1,4 +1,17 @@
 <?php
+/**
+ * Generate a list of tags to skip during the test run.
+ *
+ * Require a minimum version of WordPress:
+ *
+ *   @require-wp-4.0
+ *   Scenario: Core translation CRUD
+ *
+ * Then use in bash script:
+ *
+ *   BEHAT_TAGS=$(php behat-tags.php)
+ *   vendor/bin/behat --format progress $BEHAT_TAGS
+ */
 
 function version_tags( $prefix, $current, $operator = '<' ) {
 	if ( ! $current )
