@@ -539,7 +539,8 @@ class Core_Command extends WP_CLI_Command {
 			return false;
 		}
 
-		if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-email' ) ) {
+		if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-email' )
+			&& ! function_exists( 'wp_new_blog_notification' ) ) {
 			function wp_new_blog_notification() {
 				// Silence is golden
 			}
