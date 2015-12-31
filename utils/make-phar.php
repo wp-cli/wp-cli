@@ -97,6 +97,7 @@ foreach ( $finder as $file ) {
 }
 
 add_file( $phar, WP_CLI_ROOT . '/vendor/autoload.php' );
+add_file( $phar, WP_CLI_ROOT . '/ci/behat-tags.php' );
 add_file( $phar, WP_CLI_ROOT . '/utils/get-package-require-from-composer.php' );
 add_file( $phar, WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem' );
 
