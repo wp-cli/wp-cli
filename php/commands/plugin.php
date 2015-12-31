@@ -351,8 +351,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['version'] ) ) {
 			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
-				$this->_delete( $plugin );
-
 				$assoc_args['force'] = 1;
 				$this->install( array( $plugin->name ), $assoc_args );
 			}
