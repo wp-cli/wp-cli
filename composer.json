@@ -11,6 +11,7 @@
 		"php": ">=5.3.2",
 		"wp-cli/php-cli-tools": "dev-master",
 		"mustache/mustache": "~2.4",
+		"mustangostang/spyc": "0.5.1",
 		"composer/semver": "1.0.0",
 		"ramsey/array_column": "~1.1",
 		"rmccue/requests": "~1.6",
@@ -33,7 +34,6 @@
 	},
 	"autoload": {
 		"psr-0": { "WP_CLI": "php" },
-		"files": [ "php/Spyc.php" ],
 		"classmap": [ "php/export" ]
 	}
 }
