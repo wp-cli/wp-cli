@@ -73,6 +73,7 @@ $finder
 	->in(WP_CLI_ROOT . '/vendor/nb/oxymel')
 	->in(WP_CLI_ROOT . '/vendor/ramsey/array_column')
 	->in(WP_CLI_ROOT . '/vendor/composer/semver')
+	->in(WP_CLI_ROOT . '/vendor/mustangostang')
 	->exclude('test')
 	->exclude('tests')
 	->exclude('Tests')
