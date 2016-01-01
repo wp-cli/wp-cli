@@ -743,12 +743,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/php-cli-tools.git",
-                "reference": "c6f72ea088518ffda711634e46589c2dbc0036cb"
+                "reference": "d0564da283585c7289e18877ed2f9c35c1b67013"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/c6f72ea088518ffda711634e46589c2dbc0036cb",
-                "reference": "c6f72ea088518ffda711634e46589c2dbc0036cb",
+                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/d0564da283585c7289e18877ed2f9c35c1b67013",
+                "reference": "d0564da283585c7289e18877ed2f9c35c1b67013",
                 "shasum": ""
             },
             "require": {
