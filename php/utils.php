@@ -21,7 +21,7 @@ function extract_from_phar( $path ) {
 
 	$fname = basename( $path );
 
-	$tmp_path = sys_get_temp_dir() . "/wp-cli-$fname";
+	$tmp_path = get_temp_dir() . "wp-cli-$fname";
 
 	copy( $path, $tmp_path );
 
@@ -576,4 +576,34 @@ function get_named_sem_ver( $new_version, $original_version ) {
  */
 function get_flag_value( $args, $flag, $default = null ) {
 	return isset( $args[ $flag ] ) ? $args[ $flag ] : $default;
+}
+
+/**
+ * Get the temp directory, and let the user know if it isn't writable.
+ *
+ * @return string
+ */
+function get_temp_dir() {
+	static $temp = '';
+
+	$trailingslashit = function( $path ) {
+		return rtrim( $path ) . '/';
+	};
+
+	if ( $temp )
+		return $trailingslashit( $temp );
+
+	if ( function_exists( 'sys_get_temp_dir' ) ) {
+		$temp = sys_get_temp_dir();
+	} else if ( ini_get( 'upload_tmp_dir' ) ) {
+		$temp = ini_get( 'upload_tmp_dir' );
+	} else {
+		$temp = '/tmp/';
+	}
+
+	if ( ! @is_writable( $temp ) ) {
+		WP_CLI::warning( "Temp directory isn't writable: {$temp}" );
+	}
+
+	return $trailingslashit( $temp );
 }
