@@ -10,8 +10,8 @@ Feature: Check for more recent versions
     When I run `wp core check-update`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                |
-      | 4.4     | major       | https://wordpress.org/wordpress-4.4.zip    |
-      | 3.8.11  | minor       | https://wordpress.org/wordpress-3.8.11.zip |
+      | 4.4.1   | major       | https://wordpress.org/wordpress-4.4.1.zip  |
+      | 3.8.12  | minor       | https://wordpress.org/wordpress-3.8.12.zip |
 
     When I run `wp core check-update --format=count`
     Then STDOUT should be:
@@ -22,7 +22,7 @@ Feature: Check for more recent versions
     When I run `wp core check-update --major`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                |
-      | 4.4     | major       | https://wordpress.org/wordpress-4.4.zip    |
+      | 4.4.1   | major       | https://wordpress.org/wordpress-4.4.1.zip  |
 
     When I run `wp core check-update --major --format=count`
     Then STDOUT should be:
@@ -33,7 +33,7 @@ Feature: Check for more recent versions
     When I run `wp core check-update --minor`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                |
-      | 3.8.11  | minor       | https://wordpress.org/wordpress-3.8.11.zip |
+      | 3.8.12  | minor       | https://wordpress.org/wordpress-3.8.12.zip |
 
     When I run `wp core check-update --minor --format=count`
     Then STDOUT should be:
