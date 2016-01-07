@@ -739,7 +739,7 @@
         },
         {
             "name": "wp-cli/php-cli-tools",
-            "version": "dev-master",
+            "version": "0.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/php-cli-tools.git",
