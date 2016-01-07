@@ -53,6 +53,10 @@ cache:
   directories:
   - vendor
 
+branches:
+  only:
+    - master
+
 notifications:
   email:
     on_success: never
