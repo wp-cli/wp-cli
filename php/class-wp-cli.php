@@ -289,7 +289,7 @@ class WP_CLI {
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'yes' ) ) {
 			fwrite( STDOUT, $question . " [y/n] " );
 
-			$answer = trim( fgets( STDIN ) );
+			$answer = strtolower( trim( fgets( STDIN ) ) );
 
 			if ( 'y' != $answer )
 				exit;
