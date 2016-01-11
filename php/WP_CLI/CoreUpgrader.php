@@ -59,7 +59,11 @@ class CoreUpgrader extends \Core_Upgrader {
 
 			$this->skin->feedback( 'downloading_package', $package );
 
-			Utils\http_request( 'GET', $package, null, $headers, $options );
+			/** @var \Requests_Response|null $req */
+			$req = Utils\http_request( 'GET', $package, null, $headers, $options );
+			if ( ! is_null( $req ) && $req->status_code !== 200 ) {
+				return new \WP_Error( 'download_failed', $this->strings['download_failed'] );
+			}
 			$cache->import( $cache_key, $temp );
 			return $temp;
 		}
@@ -67,4 +71,3 @@ class CoreUpgrader extends \Core_Upgrader {
 	}
 
 }
-
