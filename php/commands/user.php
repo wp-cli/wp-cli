@@ -96,16 +96,19 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$formatter = $this->get_formatter( $assoc_args );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( in_array( $formatter->format, array( 'ids', 'count' ) ) ) {
 			$assoc_args['fields'] = 'ids';
 		} else {
 			$assoc_args['fields'] = 'all_with_meta';
 		}
 
+		$assoc_args['count_total'] = false;
 		$users = get_users( $assoc_args );
 
 		if ( 'ids' == $formatter->format ) {
 			echo implode( ' ', $users );
+		} else if ( 'count' === $formatter->format ) {
+			$formatter->display_items( $users );
 		} else {
 			$it = WP_CLI\Utils\iterator_map( $users, function ( $user ) {
 				if ( !is_object( $user ) )
