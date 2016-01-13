@@ -739,6 +739,7 @@ class Runner {
 		$wp_cli_is_loaded = true;
 
 		WP_CLI::debug( 'Begin WordPress load' );
+		WP_CLI::do_hook( 'before_wp_load' );
 
 		$this->check_wp_version();
 
@@ -750,6 +751,7 @@ class Runner {
 		}
 
 		WP_CLI::debug( 'wp-config.php path: ' . $wp_config_path );
+		WP_CLI::do_hook( 'before_wp_config_load' );
 
 		// Load wp-config.php code, in the global scope
 		$wp_cli_original_defined_vars = get_defined_vars();
@@ -762,6 +764,7 @@ class Runner {
 		}
 
 		$this->maybe_update_url_from_domain_constant();
+		WP_CLI::do_hook( 'after_wp_config_load' );
 
 		// Load WP-CLI utilities
 		require WP_CLI_ROOT . '/php/utils-wp.php';
@@ -783,6 +786,7 @@ class Runner {
 		}
 
 		WP_CLI::debug( 'Loaded WordPress' );
+		WP_CLI::do_hook( 'after_wp_load' );
 
 	}
 
