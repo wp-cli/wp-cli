@@ -166,13 +166,28 @@ class WP_CLI {
 	 * Add a command to the wp-cli list of commands
 	 *
 	 * @param string $name The name of the command that will be used in the CLI
-	 * @param string $class The command implementation
+	 * @param string $callable The command implementation as a class, function or closure
 	 * @param array $args An associative array with additional parameters:
 	 *   'before_invoke' => callback to execute before invoking the command
 	 */
-	public static function add_command( $name, $class, $args = array() ) {
-		if ( is_string( $class ) && ! class_exists( (string) $class ) ) {
-			WP_CLI::error( sprintf( "Class '%s' does not exist.", $class ) );
+	public static function add_command( $name, $callable, $args = array() ) {
+		$valid = false;
+		if ( is_object( $callable ) && ( $callable instanceof \Closure ) ) {
+			$valid = true;
+		} else if ( is_string( $callable ) && function_exists( $callable ) ) {
+			$valid = true;
+		} else if ( is_string( $callable ) && class_exists( (string) $callable ) ) {
+			$valid = true;
+		} else if ( is_object( $callable ) ) {
+			$valid = true;
+		} else if ( is_array( $callable ) && is_callable( $callable ) ) {
+			$valid = true;
+		}
+		if ( ! $valid ) {
+			if ( is_array( $callable ) ) {
+				$callable = array( get_class( $callable[0] ), $callable[1] );
+			}
+			WP_CLI::error( sprintf( "Callable %s does not exist, and cannot be registered as `wp %s`.", json_encode( $callable ), $name ) );
 		}
 
 		if ( isset( $args['before_invoke'] ) ) {
@@ -200,7 +215,7 @@ class WP_CLI {
 			$command = $subcommand;
 		}
 
-		$leaf_command = Dispatcher\CommandFactory::create( $leaf_name, $class, $command );
+		$leaf_command = Dispatcher\CommandFactory::create( $leaf_name, $callable, $command );
 
 		if ( ! $command->can_have_subcommands() ) {
 			throw new Exception( sprintf( "'%s' can't have subcommands.",
