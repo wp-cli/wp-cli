@@ -218,5 +218,5 @@ class Rewrite_Command extends WP_CLI_Command {
 	}
 }
 
-WP_CLI:: add_command( 'rewrite', 'Rewrite_Command' );
+WP_CLI::add_command( 'rewrite', 'Rewrite_Command' );
 
