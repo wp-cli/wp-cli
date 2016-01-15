@@ -1189,6 +1189,7 @@ EOT;
 					unlink( ABSPATH . $file );
 				}
 			}
+			WP_CLI::log( count($files_to_remove) . ' files cleaned up' );
 		}
 	}
 
