@@ -1174,19 +1174,19 @@ EOT;
 			return;
 		}
 
-		$files_to_remove = array();
-		$includes_folder = defined( 'WPINC' ) ? WPINC : '/wp-includes';
+		$old_checksums = self::get_core_checksums( $version_from, $locale ? $locale : 'en_US' );
+		$new_checksums = self::get_core_checksums( $version_to, $locale ? $locale : 'en_US' );
 
-		if ( version_compare( $version_from, '4.4', '>=' ) && version_compare( $version_to, '4.4', '<' ) ) {
-			$files_to_remove[] = ABSPATH . $includes_folder . '/embed-functions.php';
-			$files_to_remove[] = ABSPATH . $includes_folder . '/class-wp-oembed-controller.php';
-			$files_to_remove[] = ABSPATH . $includes_folder . '/rest-api.php';
+		if ( empty( $old_checksums ) || empty( $new_checksums ) ) {
+			return;
 		}
+
+		$files_to_remove = array_diff( array_keys( $old_checksums ), array_keys( $new_checksums ) );
 
 		if ( ! empty( $files_to_remove ) ) {
 			foreach ( $files_to_remove as $file ) {
-				if ( file_exists( $file ) ) {
-					unlink( $file );
+				if ( file_exists( ABSPATH . $file ) ) {
+					unlink( ABSPATH . $file );
 				}
 			}
 		}
