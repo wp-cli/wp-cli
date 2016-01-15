@@ -1184,14 +1184,18 @@ EOT;
 		if ( ! empty( $files_to_remove ) ) {
 			WP_CLI::log( 'Cleaning up unused files...' );
 
+			$count = 0;
 			foreach ( $files_to_remove as $file ) {
 				if ( file_exists( ABSPATH . $file ) ) {
 					unlink( ABSPATH . $file );
 					WP_CLI::log( 'File removed: ' . $file );
+					$count++;
 				}
 			}
 
-			WP_CLI::success( count( $files_to_remove ) . ' unused files cleaned up' );
+			if ( $count ) {
+				WP_CLI::success( number_format( $count ) . ' unused files cleaned up' );
+			}
 		}
 	}
 
