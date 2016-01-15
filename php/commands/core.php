@@ -99,6 +99,14 @@ class Core_Command extends WP_CLI_Command {
 			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
 		}
 
+		$from_version = '';
+		$includes_folder = defined( 'WPINC' ) ? WPINC : '/wp-includes';
+		if ( file_exists( $download_dir . $includes_folder . '/version.php' ) ) {
+			global $wp_version;
+			require_once( $download_dir . $includes_folder . '/version.php' );
+			$from_version = $wp_version;
+		}
+
 		WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $version, $locale ) );
 
 		$cache = WP_CLI::get_cache();
@@ -142,6 +150,8 @@ class Core_Command extends WP_CLI_Command {
 			$cache->import( $cache_key, $temp );
 			unlink($temp);
 		}
+
+		$this->_maybe_remove_unused_files( $from_version, $assoc_args['version'] );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
@@ -964,9 +974,13 @@ EOT;
 				WP_CLI::log( "Starting update..." );
 			}
 
+			$from_version = $wp_version;
+
 			$GLOBALS['wp_cli_update_obj'] = $update;
 			$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 			unset( $GLOBALS['wp_cli_update_obj'] );
+
+			$this->_maybe_remove_unused_files( $from_version, $update->version );
 
 			if ( is_wp_error($result) ) {
 				$msg = WP_CLI::error_to_string( $result );
@@ -1148,6 +1162,29 @@ EOT;
 			}
 		}
 		return array_values( $updates );
+	}
+
+	private function _maybe_remove_unused_files( $version_from, $version_to) {
+		if ( ! $version_from || ! $version_to ) {
+			return;
+		}
+
+		$files_to_remove = array();
+		$includes_folder = defined( 'WPINC' ) ? WPINC : '/wp-includes';
+
+		if ( version_compare( $version_from, '4.4', '>=' ) && version_compare( $version_to, '4.4', '<' ) ) {
+			$files_to_remove[] = ABSPATH . $includes_folder . '/embed-functions.php';
+			$files_to_remove[] = ABSPATH . $includes_folder . '/class-wp-oembed-controller.php';
+			$files_to_remove[] = ABSPATH . $includes_folder . '/rest-api.php';
+		}
+
+		if ( ! empty( $files_to_remove ) ) {
+			foreach ( $files_to_remove as $file ) {
+				if ( file_exists( $file ) ) {
+					unlink( $file );
+				}
+			}
+		}
 	}
 
 }
