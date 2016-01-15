@@ -100,7 +100,7 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		$from_version = '';
-		$includes_folder = defined( 'WPINC' ) ? WPINC : '/wp-includes';
+		$includes_folder = defined( 'WPINC' ) ? WPINC : 'wp-includes';
 		if ( file_exists( $download_dir . $includes_folder . '/version.php' ) ) {
 			global $wp_version;
 			require_once( $download_dir . $includes_folder . '/version.php' );
