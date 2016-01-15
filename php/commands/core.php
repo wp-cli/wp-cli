@@ -151,9 +151,7 @@ class Core_Command extends WP_CLI_Command {
 			unlink($temp);
 		}
 
-		if ( version_compare( $from_version, '4.4', '>=' ) && version_compare( $assoc_args['version'], '4.4', '<' ) ) {
-			$this->remove_unused_files( $from_version, $assoc_args['version'], $locale );
-		}
+		$this->remove_unused_files( $from_version, $assoc_args['version'], $locale );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
@@ -982,10 +980,8 @@ EOT;
 			$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 			unset( $GLOBALS['wp_cli_update_obj'] );
 
-			if ( version_compare( $from_version, '4.4', '>=' ) && version_compare( $update->version, '4.4', '<' ) ) {
-				$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', get_locale() );
-				$this->remove_unused_files( $from_version, $update->version, $locale );
-			}
+			$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', get_locale() );
+			$this->remove_unused_files( $from_version, $update->version, $locale );
 
 			if ( is_wp_error($result) ) {
 				$msg = WP_CLI::error_to_string( $result );
