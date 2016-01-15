@@ -1167,6 +1167,7 @@ EOT;
 
 	private function remove_unused_files( $version_from, $version_to, $locale ) {
 		if ( ! $version_from || ! $version_to ) {
+			WP_CLI::warning( 'Failed to find WordPress version. Please cleanup unused files manually.' );
 			return;
 		}
 
@@ -1174,18 +1175,23 @@ EOT;
 		$new_checksums = self::get_core_checksums( $version_to, $locale ? $locale : 'en_US' );
 
 		if ( empty( $old_checksums ) || empty( $new_checksums ) ) {
+			WP_CLI::warning( 'Failed to fetch checksums. Please cleanup unused files manually.' );
 			return;
 		}
 
 		$files_to_remove = array_diff( array_keys( $old_checksums ), array_keys( $new_checksums ) );
 
 		if ( ! empty( $files_to_remove ) ) {
+			WP_CLI::log( 'Cleaning up unused files...' );
+
 			foreach ( $files_to_remove as $file ) {
 				if ( file_exists( ABSPATH . $file ) ) {
 					unlink( ABSPATH . $file );
+					WP_CLI::log( 'File removed: ' . $file );
 				}
 			}
-			WP_CLI::log( count($files_to_remove) . ' files cleaned up' );
+
+			WP_CLI::success( count( $files_to_remove ) . ' unused files cleaned up' );
 		}
 	}
 
