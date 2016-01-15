@@ -151,7 +151,7 @@ class Core_Command extends WP_CLI_Command {
 			unlink($temp);
 		}
 
-		$this->_maybe_remove_unused_files( $from_version, $assoc_args['version'] );
+		$this->maybe_remove_unused_files( $from_version, $assoc_args['version'] );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
@@ -980,7 +980,7 @@ EOT;
 			$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 			unset( $GLOBALS['wp_cli_update_obj'] );
 
-			$this->_maybe_remove_unused_files( $from_version, $update->version );
+			$this->maybe_remove_unused_files( $from_version, $update->version );
 
 			if ( is_wp_error($result) ) {
 				$msg = WP_CLI::error_to_string( $result );
@@ -1164,7 +1164,7 @@ EOT;
 		return array_values( $updates );
 	}
 
-	private function _maybe_remove_unused_files( $version_from, $version_to) {
+	private function maybe_remove_unused_files( $version_from, $version_to) {
 		if ( ! $version_from || ! $version_to ) {
 			return;
 		}
