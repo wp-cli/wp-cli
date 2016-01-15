@@ -158,3 +158,11 @@ Feature: Update WordPress core
       wordpress-4.2.4-no-content-en_US.zip
       wordpress-4.2.4-partial-1-en_US.zip
       """
+
+  Scenario: Downgrade from 4.4 to 4.3.2 cleans up files
+    Given a WP install
+    When I run `wp core update --version=4.4 --force`
+    Then the wp-includes/rest-api.php file should exist
+
+    When I run `wp core update --version=4.3.2 --force`
+    Then the wp-includes/rest-api.php file should not exist
