@@ -68,7 +68,7 @@ Feature: Download WordPress
       Error: WordPress files seem to already be present here.
       """
 
-  Scenario: Downgrade from 4.4 to 4.3.2 cleans up files
+  Scenario: Make sure unused files are cleaned up
     Given an empty directory
     When I run `wp core download --version=4.4`
     Then the wp-includes/rest-api.php file should exist

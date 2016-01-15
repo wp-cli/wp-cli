@@ -159,10 +159,15 @@ Feature: Update WordPress core
       wordpress-4.2.4-partial-1-en_US.zip
       """
 
-  Scenario: Downgrade from 4.4 to 4.3.2 cleans up files
+  Scenario: Make sure unused files are cleaned up
     Given a WP install
     When I run `wp core update --version=4.4 --force`
     Then the wp-includes/rest-api.php file should exist
 
     When I run `wp core update --version=4.3.2 --force`
     Then the wp-includes/rest-api.php file should not exist
+
+    When I run `wp option add str_opt 'bar'`
+    Then STDOUT should not be empty
+    When I run `wp post create --post_title='Test post' --porcelain`
+    Then STDOUT should be a number
