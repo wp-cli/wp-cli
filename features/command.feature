@@ -199,3 +199,56 @@ Feature: WP-CLI Commands
       """
       Error: Callable ["Foo_Class","bar"] does not exist, and cannot be registered as `wp bar`.
       """
+
+  Scenario: Register a synopsis for a given command
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      function foo( $args ) {
+        $message = array_shift( $args );
+        WP_CLI::log( 'Message is: ' . $message );
+        WP_CLI::success( $args[0] );
+      }
+      WP_CLI::add_command( 'foo', 'foo', array(
+        'shortdesc'   => 'My awesome function command',
+        'when'        => 'before_wp_load',
+        'synopsis'    => array(
+          array(
+            'type'          => 'positional',
+            'name'          => 'message',
+            'description'   => 'An awesome message to display',
+            'optional'      => false,
+          ),
+          array(
+            'type'          => 'assoc',
+            'name'          => 'apple',
+            'description'   => 'A type of fruit.',
+            'optional'      => false,
+          ),
+          array(
+            'type'          => 'assoc',
+            'name'          => 'meal',
+            'description'   => 'A type of meal.',
+            'optional'      => true,
+          ),
+        ),
+      ) );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - custom-cmd.php
+      """
+
+    When I try `wp foo`
+    Then STDOUT should contain:
+      """
+      usage: wp foo <message> --apple=<apple> [--meal=<meal>]
+      """
+
+    When I run `wp help foo`
+    Then STDOUT should contain:
+      """
+      My awesome function command
+      """

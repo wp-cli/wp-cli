@@ -35,6 +35,47 @@ class SynopsisParser {
 	}
 
 	/**
+	 * @param array A structured synopsis
+	 * @return string Rendered synopsis
+	 */
+	public static function render( $synopsis ) {
+		if ( ! is_array( $synopsis ) ) {
+			return '';
+		}
+		$bits = array( 'positional' => '', 'assoc' => '', 'flag' => '' );
+		foreach( $bits as $key => &$value ) {
+			foreach( $synopsis as $arg ) {
+				if ( empty( $arg['type'] )
+					|| empty( $arg['name'] )
+					|| $key !== $arg['type'] ) {
+					continue;
+				}
+				if ( 'positional' === $key ) {
+					$rendered_arg = "<{$arg['name']}>";
+				} else if ( 'assoc' === $key ) {
+					$rendered_arg = "--{$arg['name']}=<{$arg['name']}>";
+				} else if ( 'flag' === $key ) {
+					$rendered_arg = "--{$arg['name']}";
+				}
+				if ( ! empty( $arg['repeating'] ) ) {
+					$rendered_arg = "{$rendered_arg}...";
+				}
+				if ( ! empty( $arg['optional'] ) ) {
+					$rendered_arg = "[{$rendered_arg}]";
+				}
+				$value .= "{$rendered_arg} ";
+			}
+		}
+		$rendered = '';
+		foreach( $bits as $v ) {
+			if ( ! empty( $v ) ) {
+				$rendered .= $v;
+			}
+		}
+		return rtrim( $rendered, ' ' );
+	}
+
+	/**
 	 * Classify argument attributes based on its syntax.
 	 *
 	 * @param string $token
