@@ -188,7 +188,8 @@ class WP_CLI {
 		}
 		if ( ! $valid ) {
 			if ( is_array( $callable ) ) {
-				$callable = array( get_class( $callable[0] ), $callable[1] );
+				$callable[0] = is_object( $callable[0] ) ? get_class( $callable[0] ) : $callable[0];
+				$callable = array( $callable[0], $callable[1] );
 			}
 			WP_CLI::error( sprintf( "Callable %s does not exist, and cannot be registered as `wp %s`.", json_encode( $callable ), $name ) );
 		}
