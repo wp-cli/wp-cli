@@ -132,6 +132,56 @@ Feature: WP-CLI Commands
       """
       <?php
       class Foo_Class extends WP_CLI_Command {
+
+        public function __construct( $prefix ) {
+          $this->prefix = $prefix;
+        }
+        /**
+         * My awesome class method command
+         *
+         * <message>
+         * : An awesome message to display
+         *
+         * @when before_wp_load
+         */
+        function foo( $args ) {
+          WP_CLI::success( $this->prefix . ':' . $args[0] );
+        }
+      }
+      $foo = new Foo_Class( 'boo' );
+      WP_CLI::add_command( 'foo', array( $foo, 'foo' ) );
+      """
+
+    When I run `wp --require=custom-cmd.php help`
+    Then STDOUT should contain:
+      """
+      foo
+      """
+
+    When I run `wp --require=custom-cmd.php help foo`
+    Then STDOUT should contain:
+      """
+      My awesome class method command
+      """
+
+    When I try `wp --require=custom-cmd.php foo bar --burrito`
+    Then STDERR should contain:
+      """
+      unknown --burrito parameter
+      """
+
+    When I run `wp --require=custom-cmd.php foo bar`
+    Then STDOUT should contain:
+      """
+      Success: boo:bar
+      """
+
+  Scenario: Use a class method as a command
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      class Foo_Class extends WP_CLI_Command {
         /**
          * My awesome class method command
          *
@@ -144,8 +194,7 @@ Feature: WP-CLI Commands
           WP_CLI::success( $args[0] );
         }
       }
-      $foo = new Foo_Class;
-      WP_CLI::add_command( 'foo', array( $foo, 'foo' ) );
+      WP_CLI::add_command( 'foo', array( 'Foo_Class', 'foo' ) );
       """
 
     When I run `wp --require=custom-cmd.php help`
