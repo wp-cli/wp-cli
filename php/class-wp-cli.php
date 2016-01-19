@@ -168,7 +168,10 @@ class WP_CLI {
 	 * @param string $name The name of the command that will be used in the CLI
 	 * @param string $callable The command implementation as a class, function or closure
 	 * @param array $args An associative array with additional parameters:
-	 *   'before_invoke' => callback to execute before invoking the command
+	 *   'before_invoke' => callback to execute before invoking the command,
+	 *   'shortdesc' => short description (80 char or less) for the command,
+	 *   'synopsis' => the synopsis for the command (string or array)
+	 *   'when' => execute callback on a named WP-CLI hook (e.g. before_wp_load)
 	 */
 	public static function add_command( $name, $callable, $args = array() ) {
 		$valid = false;
@@ -220,6 +223,22 @@ class WP_CLI {
 		if ( ! $command->can_have_subcommands() ) {
 			throw new Exception( sprintf( "'%s' can't have subcommands.",
 				implode( ' ' , Dispatcher\get_path( $command ) ) ) );
+		}
+
+		if ( isset( $args['shortdesc'] ) ) {
+			$leaf_command->set_shortdesc( $args['shortdesc'] );
+		}
+
+		if ( isset( $args['synopsis'] ) ) {
+			if ( is_string( $args['synopsis'] ) ) {
+				$leaf_command->set_synopsis( $args['synopsis'] );
+			} else if ( is_array( $args['synopsis'] ) ) {
+				$leaf_command->set_synopsis( \WP_CLI\SynopsisParser::render( $args['synopsis'] ) );
+			}
+		}
+
+		if ( isset( $args['when'] ) ) {
+			self::get_runner()->register_early_invoke( $args['when'], $leaf_command );
 		}
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
