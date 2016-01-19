@@ -5,30 +5,6 @@ language: php
 env:
   global:
     - WP_CLI_BIN_DIR=/tmp/wp-cli-phar
-      # Encripted deploy key. See https://gist.github.com/scribu/6241271
-    - secure: "U8gOPW2m9fkJW8omnPjFHFZutGIqAAfVs0H1izpSKJhclUfYAGjAGl1Cb6ZiUp3jZE11iWa+fAZ5mmmLAQ5L9ijta40igfFw0s+o/Vt3WBM4a3Vdqpg6civ0rDi9tJYuwtMaEi/kF/yuhKzUT80EAMqVix5xPnf963iIUPyarfY="
-    - secure: "W9t7pG5h/Khoi+TrxplpSeTWxaTr7r6cYRVJBsXgghZLDXsU/qn/OhGDdY+IMfSgzO49wjFyLh2EOs8zZSujY75fgFffK2+jd/882NUlpvpXoW9C3yEfZhLJVQZI/1idnpDe9f6zA0XlpBn3bQ2QeS3i2a/JwOGCD8BQjNobk1M="
-    - secure: "YsVv3AKeHyr6nwkjhB+VingCdWIzfNP2VYMMHf841rnH6HsAXNw8PJcinnVYeMd15kgjA3Yk8PbITOmzZkf9yjAmbgJTvNempEElF/KG42FkoCACtZ2Wc/jIL9zEi5o47qUicwiS6LLWYx1uQa6vActpE4KdrcDLJ6pQHp/s7ss="
-    - secure: "Qsx9+R7VBSdk3st1yVyRMYgAHV58lUUSqXJjvxAkUFXsumCEVFiNpuKepvA5+EZHHnpo7zQOK6EzrIDgUBHGfwEvVumI5eur8G1RKdHnvotuz4D7YCdoRnnrzbhJkAPnVcGrIBIHd5GlDHPTVBij77JwMq5kg2tfKoKcW3RuQTc="
-    - secure: "NY3grWJVgnRcA7jQW0/DbPrSkIHVkGxfhdmVSVuSfhsRq5j4kA8/zhWTIwuQ4RtkE88GWye6NarJfjFYnz2KgnCUeaFPFdnB0VE3C3OUeWIsbitjYeqycUd1+JOikPREDZaXjBb79Ve6PGTHv7CUQ+R8vBYSR7eXGqNF9SBDTEw="
-    - secure: "XuKAHb35W5vN/JX8iV4FipVdxUH8GbrfheOpOAwgZ0WS5+ua79farr6q73BIPzW8AMAg3p+p1UWNoKLFEaszKuW/mT7dQExsQO04aZ7ESeLbaoKS28EMUCVeOJl0Vo+AxNSruUAIbanvggyAcxq1ILGqH9iaHLpb9BgPei3LdEc="
-    - secure: "GSPAeXVhSz5MQ/FRoGFQ7As6a3w/hsq5CslpSCvNz3q7jXUjK+HPzhq3MpWF8sBd6j5IS5YUn1Pl383BDfWj/RYhIzruzIwZhgD+M7VaFFHXcS7y6i9ritXKaw2g4u+16DYQC0zg0jBODXd5NspzyeB6IA5RSecqZeuPW7z/kJc="
-    - secure: "BneSPyRBtN8BPNU//rAqFmma0HfVW2GXTgRf/vuTWDnkQ9aE3Uz4S8mlA4lcVpNigvVgRop7MltLVvpWNPDk4tVPu19CkhzKXIEj6Ny6UgD6f4ZHXid/T7I6T50dtJOfcj6leDih92M2JMNaBLPRxOvAUv6yN5FrSV2LNE/0XOw="
-    - secure: "URrY5IoJxf40PX+UAldnJK5HZgL5EhJ/n+ildhltyFxDu3E29Ic8Unx89M4Cb09buv1sFBFMC59q3jxck9XOWBsxiRct9y/lvnzI1R1GmVoNiTssg7wLqL6MuD2iy/4fFHFgne2mg7DVDtujCUwTQgtdz7yoh8fQeF/6lBmge1U="
-    - secure: "AlNVx6gd7x7lBgrk1Dcna3yfUgdx0wZEdH8V/5NaGirfGMnO7x7ZB1pQ2LVS4EIDCZSELqUCWirFzloJtxOyUJ5AZWCu2YSGzn0cxsHkZDdBsQ1J/oPYpO8PZ9bRBDhGqqqq96F4bPxav1e8G4TH165wBB6MsR1M/He0gPrL57g="
-    - secure: "JOvovCe2mKyX6/Ihvqzu93px0RdE/RsNnyDJ6EYTJjFMOhpTP/GTQQcLhMVYq62pM6Ng9/jCQl5VMWEk0f7SGL7X/RW6Rz8HaL1KWy2U9/z67FQPMz+WlJMLTP77PXJouqVemG7Om8Mheg8vMUcgXV1W/vgoljzgeBf1zseQODg="
-    - secure: "H7caXIeMS7r6mLuD2aombGuGskD3VwdptcPaY2X/natpMtvHHjbyonUFE26prTWsxFc29wT9Ot705w+yo0DK42SNGaqACpy1tjq6v6xwTCjIIYeGenfnb4FiFjOROCfCXdigJ9ANDS9ufvEd2pgB12BChyLvDVX8pn3FqVzO/wQ="
-    - secure: "HbyEWzWOK/dtyYY4J6BcwwCy5EWKzRI1K51Qgsc7nyN6ZlQ4P7vvFmQuLX79zTX9k3PJb58/7Ahl0xQe2mhnpK3awAEuW4ZyqL9CFQnsn7FXAAm7DWcnD8WZvOR0BitiVOEAziuh9dM7FQYBkaq6vSU+Og7NC48osDX/y4PkmG8="
-    - secure: "OtXKQFf7ef/1R67U+923TJwx8uafHkhIT3wUmw3QQFkimUDHAH3tPmEk5Qy6a59aMDEO0ESIZdTfwUcMcmfgqhAxNlvmDFSnfOgJmRxzeCD036/sU/8td8VNwRW93iCu48LoGcBfVcP3lM7EJVPK2NGjneBKjna8ekLMcSx8tmE="
-    - secure: "G1+MwEPgBswGI3CGtvpwV6ELauqBgBo5b5QLDd44ijqhTOYiUZz5tzU2iKR+5sMm1TqVQjGpSNC/+Hpi4WTKnKCPfKnJh/Z4/859a90GlBytsEGLGK9kAduVeLiJ1T5aOA5lHAhHsWe+CL5+d4LVlFdzBeggcXjJj5+DHHZe7+s="
-    - secure: "Z6jHEwZCotrkAvIbj7/fY2fNFvDK6CTZgkpRp+VRdTk8/krWBIBGpTXgSOPXxcx+yNWooRw/mS3sazFQzZ0cv2kqGFtKxTThfAHnWNf2wMlxXvk+FGGGlIOpwt6sB5Eh3N7sF/ZkfioYE66jIVWZg4AiXJ+iEH+DKNFKVrSkwk0="
-    - secure: "BzGrbJOSRsuvPrHsSY3zwOn05G9qYq/l8mBltGikRgjMGLEJpH+9+vO5YyCSgS4tDsihSw+SFpNQojS3wDUyNFT7pe0IRnCukletOVp+gwPHdqD8NoEw1gKlWFhgFZNRrc/Ma6bQqPgaQmTV+HKbSM/oAIyW5NKA/+66WTESCrg="
-    - secure: "JWzwwyjbZqrCki9ijj75+X2xRS7eLJDahiAS9x87GDz8wbCMuTpWzkA+lbrj5Za3wTRUe5S4wcAELhal2x0CTRO8wUQkxSo2cATN9Bk2p00SJtCBxRJrq2H5QmmYaLIluOmyIQNDpaNS/O+TQGgUCpVg2x8KzqgiCYYGXewgJ1g="
-    - secure: "g1QgDqGFAYJqxv3qyT2tQplT62o/3xA19SAjO4sAzgEp8t/h6J9K+ehbyz3tlsGJhOP/b7VGyjvnUKLZ+4BlaRhSsS1TND753+YhWGD2PKhIZ58hdW4m4ARY0yrRkVFMQqEyyIj8D+TBC713yDc58L/tmehf8ZljZpFG2PICidE="
-    - secure: "Gj9fw1wM3dfgZab0XqULeR9loDj9Gsa99z8bPgfAEWS7cWqoTitF2Y9SolUX1WZyOJUZ+5Shrl7jnihl8EOlm13wxt680Kmt7jTVX5DUH+NvzWVwkYDrZV7zSFayYZJTdx3FjEvSs+GIVrpzBeBvVFvCTQUuIphPkbxwR0JHonI="
-    - secure: "XS4lJJSZ2+4rB+zkt9lsdhG+pZEQ6nUjRSdLcVAgS7f7yvFCOjJYWRXlQ5zP/Gl3/XVe/L8EuGLYZsztauLSd6Ob7nEwnb5vIegLaqzbZd7Yizp9TnBj0AFCqo/ZPY+ZhnURY9OLFqknfQMWhrTeVvGRT94nhnnIF+sxokQgv0M="
-    - secure: "TVMYSuxuZojZUHn3R9me8FCA1V6RaOTNE6A5gta7LSTtqZFLAQOer6tfLVof5fB3SHh2ANcOYPpjO729Mcrg195p1I/0nS18WZ0BVYvsN0Dob1I79rqYvsaW8syxCd/6TZvr7XZYdd1fDtt7kxsv74SljkliYwI2mTniQDxMONE="
-    - secure: "OqbgLy6Rn+NvhjpYygNZDWf6rj8sVejRZJBmssNi5fHRXopEtfIHids2FjSXZUVPs3ShqNuczo1jzgt7N3JHbcSaiedHlc7ONqDK0SyyOcsv1oKOR81bvYcL/KIoGiMRvkQI5IW01YWfSZlS0wgL2NYdJvYanCnSUUv6nNZAF7E="
 
 matrix:
   include:
@@ -42,6 +18,10 @@ matrix:
       env: WP_VERSION=trunk
     - php: 7.0
       env: WP_VERSION=latest
+
+before_install:
+  - openssl aes-256-cbc -K $encrypted_a8125246a581_key -iv $encrypted_a8125246a581_iv -in ci/id_rsa.enc -out ~/.ssh/id_rsa -d
+  - chmod 600 ~/.ssh/id_rsa
 
 before_script: ./ci/prepare.sh
 

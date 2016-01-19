@@ -12,11 +12,6 @@ if [[ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]]; then
 	exit
 fi
 
-# extract private key from decrypted environment variables stored in .travis.yml
-echo -n $id_rsa_{00..30} >> ~/.ssh/id_rsa_base64
-base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
-chmod 600 ~/.ssh/id_rsa
-
 # anyone can read the build log, so it MUST NOT contain any sensitive data
 set -x
 
