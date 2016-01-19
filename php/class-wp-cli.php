@@ -401,10 +401,11 @@ class WP_CLI {
 
 		if ( is_object( $errors ) && is_a( $errors, 'WP_Error' ) ) {
 			foreach ( $errors->get_error_messages() as $message ) {
-				if ( $errors->get_error_data() )
-					return $message . ' ' . $errors->get_error_data();
-				else
+				if ( $errors->get_error_data() ) {
+					return $message . ' ' . json_encode( $errors->get_error_data() );
+				} else {
 					return $message;
+				}
 			}
 		}
 	}
