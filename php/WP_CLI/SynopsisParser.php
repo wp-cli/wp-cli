@@ -42,18 +42,24 @@ class SynopsisParser {
 		if ( ! is_array( $synopsis ) ) {
 			return '';
 		}
-		$bits = array( 'positional' => '', 'assoc' => '', 'flag' => '' );
+		$bits = array( 'positional' => '', 'assoc' => '', 'generic' => '', 'flag' => '' );
 		foreach( $bits as $key => &$value ) {
 			foreach( $synopsis as $arg ) {
 				if ( empty( $arg['type'] )
-					|| empty( $arg['name'] )
 					|| $key !== $arg['type'] ) {
 					continue;
 				}
+
+				if ( empty( $arg['name'] ) && 'generic' !== $arg['type'] ) {
+					continue;
+				}
+
 				if ( 'positional' === $key ) {
 					$rendered_arg = "<{$arg['name']}>";
 				} else if ( 'assoc' === $key ) {
 					$rendered_arg = "--{$arg['name']}=<{$arg['name']}>";
+				} else if ( 'generic' === $key ) {
+					$rendered_arg = "--<field>=<value>";
 				} else if ( 'flag' === $key ) {
 					$rendered_arg = "--{$arg['name']}";
 				}
@@ -149,4 +155,3 @@ class SynopsisParser {
 		}
 	}
 }
-
