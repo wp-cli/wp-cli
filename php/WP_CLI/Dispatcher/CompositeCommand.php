@@ -100,6 +100,15 @@ class CompositeCommand {
 	}
 
 	/**
+	 * Set the short description for this composite command.
+	 *
+	 * @param string
+	 */
+	public function set_shortdesc( $shortdesc ) {
+		$this->shortdesc = $shortdesc;
+	}
+
+	/**
 	 * Get the long description for this composite
 	 * command.
 	 *
