@@ -150,7 +150,7 @@ class Core_Command extends WP_CLI_Command {
 			unlink($temp);
 		}
 
-		$this->remove_unused_files( $from_version, $assoc_args['version'], $locale );
+		$this->cleanup_extra_files( $from_version, $assoc_args['version'], $locale );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
@@ -980,7 +980,7 @@ EOT;
 			unset( $GLOBALS['wp_cli_update_obj'] );
 
 			$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', get_locale() );
-			$this->remove_unused_files( $from_version, $update->version, $locale );
+			$this->cleanup_extra_files( $from_version, $update->version, $locale );
 
 			if ( is_wp_error($result) ) {
 				$msg = WP_CLI::error_to_string( $result );
@@ -1164,7 +1164,7 @@ EOT;
 		return array_values( $updates );
 	}
 
-	private function remove_unused_files( $version_from, $version_to, $locale ) {
+	private function cleanup_extra_files( $version_from, $version_to, $locale ) {
 		if ( ! $version_from || ! $version_to ) {
 			WP_CLI::warning( 'Failed to find WordPress version. Please cleanup unused files manually.' );
 			return;
