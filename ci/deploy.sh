@@ -12,6 +12,9 @@ if [[ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]]; then
 	exit
 fi
 
+openssl aes-256-cbc -K $encrypted_a8125246a581_key -iv $encrypted_a8125246a581_iv -in id_rsa.enc -out ~/.ssh/id_rsa -d
+chmod 600 ~/.ssh/id_rsa
+
 # anyone can read the build log, so it MUST NOT contain any sensitive data
 set -x
 

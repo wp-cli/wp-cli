@@ -19,10 +19,6 @@ matrix:
     - php: 7.0
       env: WP_VERSION=latest
 
-before_install:
-  - openssl aes-256-cbc -K $encrypted_a8125246a581_key -iv $encrypted_a8125246a581_iv -in ci/id_rsa.enc -out ~/.ssh/id_rsa -d
-  - chmod 600 ~/.ssh/id_rsa
-
 before_script: ./ci/prepare.sh
 
 script: ./ci/test.sh
