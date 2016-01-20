@@ -1194,6 +1194,8 @@ EOT;
 
 			if ( $count ) {
 				WP_CLI::log( number_format( $count ) . ' files cleaned up' );
+			} else {
+				WP_CLI::log( 'No files found that need cleaned up' );
 			}
 		}
 	}
