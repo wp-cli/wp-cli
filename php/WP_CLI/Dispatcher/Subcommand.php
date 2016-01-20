@@ -288,8 +288,11 @@ class Subcommand extends CompositeCommand {
 	 * @param array $assoc_args
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) {
-		if ( \WP_CLI::get_config( 'prompt' ) )
+		static $prompted_once = false;
+		if ( \WP_CLI::get_config( 'prompt' ) && ! $prompted_once ) {
 			list( $args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
+			$prompted_once = true;
+		}
 
 		$to_unset = $this->validate_args( $args, $assoc_args, $extra_args );
 
