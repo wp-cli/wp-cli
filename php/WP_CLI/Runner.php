@@ -383,7 +383,7 @@ class Runner {
 			}
 		}
 
-		// *-meta  ->  * meta
+		// moves *-meta  ->  * meta
 		if ( !empty( $args ) && preg_match( '/(post|comment|user|network)-meta/', $args[0], $matches ) ) {
 			array_shift( $args );
 			array_unshift( $args, 'meta' );
