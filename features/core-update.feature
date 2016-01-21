@@ -177,7 +177,6 @@ Feature: Update WordPress core
       File removed: wp-includes/class-wp-http-response.php
       File removed: wp-includes/class-walker-category-dropdown.php
       File removed: wp-includes/rest-api.php
-      150 files cleaned up
       """
 
     When I run `wp option add str_opt 'bar'`
