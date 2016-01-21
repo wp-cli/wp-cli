@@ -124,6 +124,43 @@ Feature: WordPress code scaffolding
       node_modules/
       """
 
+  Scenario: Scaffold a plugin by prompting
+    Given a WP install
+    And a session file:
+      """
+      hello-world
+
+      Hello World
+      An awesome introductory plugin for WordPress
+      WP-CLI
+      http://wp-cli.org
+      http://wp-cli.org
+      n
+      Y
+      n
+      n
+      """
+
+    When I run `wp scaffold plugin --prompt < session`
+    Then STDOUT should not be empty
+    And the wp-content/plugins/hello-world/hello-world.php file should exist
+    And the wp-content/plugins/hello-world/readme.txt file should exist
+    And the wp-content/plugins/hello-world/tests directory should exist
+
+    When I run `wp plugin status hello-world`
+    Then STDOUT should contain:
+      """
+      Status: Active
+      """
+    And STDOUT should contain:
+      """
+      Name: Hello World
+      """
+    And STDOUT should contain:
+      """
+      Description: An awesome introductory plugin for WordPress
+      """
+
   Scenario: Scaffold a plugin and activate it
     Given a WP install
     When I run `wp scaffold plugin hello-world --activate`
