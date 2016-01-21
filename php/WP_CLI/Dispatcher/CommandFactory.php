@@ -24,7 +24,7 @@ class CommandFactory {
 			$command = self::create_subcommand( $parent, $name, $callable, $reflection );
 		} else if ( is_array( $callable ) && is_callable( $callable ) ) {
 			$reflection = new \ReflectionClass( $callable[0] );
-			$command = self::create_subcommand( $parent, $name, array( $reflection->name, $callable[1] ),
+			$command = self::create_subcommand( $parent, $name, array( $callable[0], $callable[1] ),
 					$reflection->getMethod( $callable[1] ) );
 		} else {
 			$reflection = new \ReflectionClass( $callable );
@@ -62,7 +62,8 @@ class CommandFactory {
 
 		$when_invoked = function ( $args, $assoc_args ) use ( $callable ) {
 			if ( is_array( $callable ) ) {
-				call_user_func( array( new $callable[0], $callable[1] ), $args, $assoc_args );
+				$callable[0] = is_object( $callable[0] ) ? $callable[0] : new $callable[0];
+				call_user_func( array( $callable[0], $callable[1] ), $args, $assoc_args );
 			} else {
 				call_user_func( $callable, $args, $assoc_args );
 			}
