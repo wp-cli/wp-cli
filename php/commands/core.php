@@ -99,6 +99,13 @@ class Core_Command extends WP_CLI_Command {
 			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
 		}
 
+		$from_version = '';
+		if ( file_exists( $download_dir . 'wp-includes/version.php' ) ) {
+			global $wp_version;
+			require_once( $download_dir . 'wp-includes/version.php' );
+			$from_version = $wp_version;
+		}
+
 		WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $version, $locale ) );
 
 		$cache = WP_CLI::get_cache();
@@ -142,6 +149,8 @@ class Core_Command extends WP_CLI_Command {
 			$cache->import( $cache_key, $temp );
 			unlink($temp);
 		}
+
+		$this->cleanup_extra_files( $from_version, $assoc_args['version'], $locale );
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
@@ -964,9 +973,14 @@ EOT;
 				WP_CLI::log( "Starting update..." );
 			}
 
+			$from_version = $wp_version;
+
 			$GLOBALS['wp_cli_update_obj'] = $update;
 			$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 			unset( $GLOBALS['wp_cli_update_obj'] );
+
+			$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', get_locale() );
+			$this->cleanup_extra_files( $from_version, $update->version, $locale );
 
 			if ( is_wp_error($result) ) {
 				$msg = WP_CLI::error_to_string( $result );
@@ -1148,6 +1162,42 @@ EOT;
 			}
 		}
 		return array_values( $updates );
+	}
+
+	private function cleanup_extra_files( $version_from, $version_to, $locale ) {
+		if ( ! $version_from || ! $version_to ) {
+			WP_CLI::warning( 'Failed to find WordPress version. Please cleanup files manually.' );
+			return;
+		}
+
+		$old_checksums = self::get_core_checksums( $version_from, $locale ? $locale : 'en_US' );
+		$new_checksums = self::get_core_checksums( $version_to, $locale ? $locale : 'en_US' );
+
+		if ( empty( $old_checksums ) || empty( $new_checksums ) ) {
+			WP_CLI::warning( 'Failed to fetch checksums. Please cleanup files manually.' );
+			return;
+		}
+
+		$files_to_remove = array_diff( array_keys( $old_checksums ), array_keys( $new_checksums ) );
+
+		if ( ! empty( $files_to_remove ) ) {
+			WP_CLI::log( 'Cleaning up files...' );
+
+			$count = 0;
+			foreach ( $files_to_remove as $file ) {
+				if ( file_exists( ABSPATH . $file ) ) {
+					unlink( ABSPATH . $file );
+					WP_CLI::log( 'File removed: ' . $file );
+					$count++;
+				}
+			}
+
+			if ( $count ) {
+				WP_CLI::log( number_format( $count ) . ' files cleaned up' );
+			} else {
+				WP_CLI::log( 'No files found that need cleaned up' );
+			}
+		}
 	}
 
 }

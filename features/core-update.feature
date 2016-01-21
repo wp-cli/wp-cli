@@ -158,3 +158,28 @@ Feature: Update WordPress core
       wordpress-4.2.4-no-content-en_US.zip
       wordpress-4.2.4-partial-1-en_US.zip
       """
+
+  Scenario: Make sure files are cleaned up
+    Given a WP install
+    When I run `wp core update --version=4.4 --force`
+    Then the wp-includes/rest-api.php file should exist
+    Then the wp-includes/class-wp-comment.php file should exist
+
+    When I run `wp core update --version=4.3.2 --force`
+    Then the wp-includes/rest-api.php file should not exist
+    Then the wp-includes/class-wp-comment.php file should not exist
+    Then STDOUT should contain:
+      """
+      File removed: wp-includes/class-walker-comment.php
+      File removed: wp-includes/class-wp-network.php
+      File removed: wp-includes/embed-template.php
+      File removed: wp-includes/class-wp-comment.php
+      File removed: wp-includes/class-wp-http-response.php
+      File removed: wp-includes/class-walker-category-dropdown.php
+      File removed: wp-includes/rest-api.php
+      """
+
+    When I run `wp option add str_opt 'bar'`
+    Then STDOUT should not be empty
+    When I run `wp post create --post_title='Test post' --porcelain`
+    Then STDOUT should be a number

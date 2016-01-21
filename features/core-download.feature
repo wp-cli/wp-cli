@@ -67,3 +67,13 @@ Feature: Download WordPress
       """
       Error: WordPress files seem to already be present here.
       """
+
+  Scenario: Make sure files are cleaned up
+    Given an empty directory
+    When I run `wp core download --version=4.4`
+    Then the wp-includes/rest-api.php file should exist
+    Then the wp-includes/class-wp-comment.php file should exist
+
+    When I run `wp core download --version=4.3.2 --force`
+    Then the wp-includes/rest-api.php file should not exist
+    Then the wp-includes/class-wp-comment.php file should not exist
