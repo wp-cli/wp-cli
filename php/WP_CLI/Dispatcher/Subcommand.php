@@ -59,6 +59,15 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Set the synopsis string for this subcommand.
+	 *
+	 * @param string
+	 */
+	public function set_synopsis( $synopsis ) {
+		$this->synopsis = $synopsis;
+	}
+
+	/**
 	 * If an alias is set, grant access to it.
 	 * Aliases permit subcommands to be instantiated
 	 * with a secondary identity.

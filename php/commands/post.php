@@ -312,6 +312,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$query_args['fields'] = 'ids';
 			$query = new WP_Query( $query_args );
 			echo implode( ' ', $query->posts );
+		} else if ( 'count' === $formatter->format ) {
+			$query_args['fields'] = 'ids';
+			$query = new WP_Query( $query_args );
+			$formatter->display_items( $query->posts );
 		} else {
 			$query = new WP_Query( $query_args );
 			$posts = array_map( function( $post ) {
