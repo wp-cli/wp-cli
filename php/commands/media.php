@@ -214,20 +214,25 @@ class Media_Command extends WP_CLI_Command {
 	 * [--media_author=<login>]
 	 * : The author of the generated media. Default: none
 	 *
+	 * [--media_date=<yyyy-mm-dd|random>]
+	 * : The date of the generated media. Default: current date
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp media generate --count=10
+	 *     wp media generate --media_date=random
 	 */
 	function generate( $args, $assoc_args = array() ) {
 		$defaults = array(
 			'count'        => 100,
 			'media_author' => false,
+			'media_date'   => current_time( 'mysql' ),
 		);
 		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
 
 		if ( $media_author ) {
 			$user_fetcher = new \WP_CLI\Fetchers\User;
-			$media_author  = $user_fetcher->get_check( $media_author )->ID;
+			$media_author = $user_fetcher->get_check( $media_author )->ID;
 		}
 
 		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating media', $count );
@@ -236,7 +241,7 @@ class Media_Command extends WP_CLI_Command {
 			$tmp_file = download_url( 'https://source.unsplash.com/random' );
 
 			if ( ! is_wp_error( $tmp_file ) ) {
-				$this->_process_generate( $tmp_file, $media_author );
+				$this->_process_generate( $tmp_file, $media_author, $media_date );
 			} else {
 				WP_CLI::warning( 'Could not download image from Unsplash API.' );
 			}
@@ -256,10 +261,11 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 * @param string   $tmp_file
 	 * @param int|bool $media_author
+	 * @param string   $media_date
 	 *
 	 * @return bool
 	 */
-	private function _process_generate( $tmp_file, $media_author ) {
+	private function _process_generate( $tmp_file, $media_author, $media_date ) {
 		if ( 'image/jpeg' !== ( $mime = mime_content_type( $tmp_file ) ) ) {
 			// Bail, Unsplash only serves jpeg files
 			return false;
@@ -275,7 +281,12 @@ class Media_Command extends WP_CLI_Command {
 			'size'     => filesize( $tmp_file ),
 		);
 
-		$file = wp_handle_sideload( $file_array, array( 'test_form' => false ) );
+		if ( 'random' === $media_date ) {
+			$timestamp  = current_time( 'timestamp' ) - mt_rand( 0, 315576000 ); // In last 10 years
+			$media_date = gmdate( 'Y-m-d H:i:s', $timestamp );
+		}
+
+		$file = wp_handle_sideload( $file_array, array( 'test_form' => false ), $media_date );
 
 		if ( isset( $file['error'] ) ) {
 			return new WP_Error( 'upload_error', $file['error'] );
@@ -286,6 +297,7 @@ class Media_Command extends WP_CLI_Command {
 			'guid'           => $file['url'],
 			'post_title'     => $name,
 			'post_author'    => $media_author,
+			'post_date'      => $media_date,
 		);
 
 		// Save the attachment metadata
