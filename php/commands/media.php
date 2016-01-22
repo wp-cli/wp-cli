@@ -203,6 +203,76 @@ class Media_Command extends WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * Generate some media.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--count=<number>]
+	 * : How many posts to generate. Default: 100
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp media generate --count=10
+	 */
+	function generate( $args, $assoc_args = array() ) {
+		$defaults = array(
+			'count' => 100,
+		);
+		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
+
+		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating media', $count );
+
+		for ( $i = 0; $i < $count; $i++ ) {
+			$tmp_file = download_url( 'https://source.unsplash.com/random' );
+
+			if ( ! is_wp_error( $tmp_file ) ) {
+				$this->_process_generate( $tmp_file );
+			} else {
+				WP_CLI::warning( 'Could not download image from Unsplash API.' );
+			}
+
+			if ( file_exists( $tmp_file ) ) {
+				unlink( $tmp_file );
+			}
+
+			$notify->tick();
+		}
+
+		$notify->finish();
+	}
+
+	/**
+	 * Process generate
+	 *
+	 * @param string $tmp_file
+	 *
+	 * @return bool
+	 */
+	private function _process_generate( $tmp_file ) {
+		if ( 'image/jpeg' !== ( $mime = mime_content_type( $tmp_file ) ) ) {
+			// Bail, Unsplash only serves jpeg files
+			return false;
+		}
+
+		$info = pathinfo( $tmp_file );
+		$file = array(
+			'name' => ( isset( $info['filename'] ) ? $info['filename'] : 'unsplash' ) . '.jpeg',
+			'type' => $mime,
+			'tmp_name' => $tmp_file,
+			'error' => 0,
+			'size' => filesize($tmp_file),
+		);
+
+		$result = media_handle_sideload( $file, 0 );
+
+		if ( is_wp_error( $result ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
 	// wp_tempnam() inexplicably forces a .tmp extension, which spoils MIME type detection
 	private function _make_copy( $path ) {
 		$dir = get_temp_dir();
