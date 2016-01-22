@@ -226,7 +226,7 @@ class Media_Command extends WP_CLI_Command {
 	 *     wp media generate --media_date=random
 	 *     wp media generate --media_dimensions=1080x720
 	 */
-	function generate( $args, $assoc_args = array() ) {
+	public function generate( $args, $assoc_args = array() ) {
 		$defaults = array(
 			'count'            => 10,
 			'media_author'     => false,
@@ -252,7 +252,7 @@ class Media_Command extends WP_CLI_Command {
 			$tmp_file = download_url( $url );
 
 			if ( ! is_wp_error( $tmp_file ) ) {
-				$this->_process_generate( $tmp_file, $media_author, $media_date );
+				$this->_process_downloaded_image( $tmp_file, $media_author, $media_date );
 			} else {
 				WP_CLI::warning( 'Could not download image from Unsplash API.' );
 			}
@@ -268,7 +268,7 @@ class Media_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Process generate
+	 * Process downloaded image
 	 *
 	 * @param string   $tmp_file
 	 * @param int|bool $media_author
@@ -276,9 +276,10 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 * @return bool
 	 */
-	private function _process_generate( $tmp_file, $media_author, $media_date ) {
+	private function _process_downloaded_image( $tmp_file, $media_author, $media_date ) {
 		if ( 'image/jpeg' !== ( $mime = mime_content_type( $tmp_file ) ) ) {
-			// Bail, Unsplash only serves jpeg files
+			WP_CLI::warning( 'Invalid image type.' );
+
 			return false;
 		}
 
@@ -300,7 +301,9 @@ class Media_Command extends WP_CLI_Command {
 		$file = wp_handle_sideload( $file_array, array( 'test_form' => false ), $media_date );
 
 		if ( isset( $file['error'] ) ) {
-			return new WP_Error( 'upload_error', $file['error'] );
+			WP_CLI::warning( 'Error uploading file.' );
+
+			return false;
 		}
 
 		$attachment = array(
@@ -315,7 +318,9 @@ class Media_Command extends WP_CLI_Command {
 		$id = wp_insert_attachment( $attachment, $file['file'] );
 
 		if ( is_wp_error( $id ) ) {
-			return $id;
+			WP_CLI::warning( 'Error creating attachment.' );
+
+			return false;
 		}
 
 		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file['file'] ) );
