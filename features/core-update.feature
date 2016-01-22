@@ -164,6 +164,10 @@ Feature: Update WordPress core
     When I run `wp core update --version=4.4 --force`
     Then the wp-includes/rest-api.php file should exist
     Then the wp-includes/class-wp-comment.php file should exist
+    And STDOUT should not contain:
+      """
+      File removed: wp-content
+      """
 
     When I run `wp core update --version=4.3.2 --force`
     Then the wp-includes/rest-api.php file should not exist
@@ -177,6 +181,10 @@ Feature: Update WordPress core
       File removed: wp-includes/class-wp-http-response.php
       File removed: wp-includes/class-walker-category-dropdown.php
       File removed: wp-includes/rest-api.php
+      """
+    And STDOUT should not contain:
+      """
+      File removed: wp-content
       """
 
     When I run `wp option add str_opt 'bar'`

@@ -73,7 +73,15 @@ Feature: Download WordPress
     When I run `wp core download --version=4.4`
     Then the wp-includes/rest-api.php file should exist
     Then the wp-includes/class-wp-comment.php file should exist
+    And STDOUT should not contain:
+      """
+      File removed: wp-content
+      """
 
     When I run `wp core download --version=4.3.2 --force`
     Then the wp-includes/rest-api.php file should not exist
     Then the wp-includes/class-wp-comment.php file should not exist
+    And STDOUT should not contain:
+      """
+      File removed: wp-content
+      """
