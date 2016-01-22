@@ -211,15 +211,24 @@ class Media_Command extends WP_CLI_Command {
 	 * [--count=<number>]
 	 * : How many posts to generate. Default: 100
 	 *
+	 * [--media_author=<login>]
+	 * : The author of the generated media. Default: none
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp media generate --count=10
 	 */
 	function generate( $args, $assoc_args = array() ) {
 		$defaults = array(
-			'count' => 100,
+			'count'        => 100,
+			'media_author' => false,
 		);
 		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
+
+		if ( $media_author ) {
+			$user_fetcher = new \WP_CLI\Fetchers\User;
+			$media_author  = $user_fetcher->get_check( $media_author )->ID;
+		}
 
 		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating media', $count );
 
@@ -227,7 +236,7 @@ class Media_Command extends WP_CLI_Command {
 			$tmp_file = download_url( 'https://source.unsplash.com/random' );
 
 			if ( ! is_wp_error( $tmp_file ) ) {
-				$this->_process_generate( $tmp_file );
+				$this->_process_generate( $tmp_file, $media_author );
 			} else {
 				WP_CLI::warning( 'Could not download image from Unsplash API.' );
 			}
@@ -245,32 +254,48 @@ class Media_Command extends WP_CLI_Command {
 	/**
 	 * Process generate
 	 *
-	 * @param string $tmp_file
+	 * @param string   $tmp_file
+	 * @param int|bool $media_author
 	 *
 	 * @return bool
 	 */
-	private function _process_generate( $tmp_file ) {
+	private function _process_generate( $tmp_file, $media_author ) {
 		if ( 'image/jpeg' !== ( $mime = mime_content_type( $tmp_file ) ) ) {
 			// Bail, Unsplash only serves jpeg files
 			return false;
 		}
 
-		$info = pathinfo( $tmp_file );
-		$file = array(
-			'name' => ( isset( $info['filename'] ) ? $info['filename'] : 'unsplash' ) . '.jpeg',
-			'type' => $mime,
+		$info       = pathinfo( $tmp_file );
+		$name       = ( isset( $info['filename'] ) ? $info['filename'] : 'unsplash' );
+		$file_array = array(
+			'name'     => $name . '.jpeg',
+			'type'     => $mime,
 			'tmp_name' => $tmp_file,
-			'error' => 0,
-			'size' => filesize($tmp_file),
+			'error'    => 0,
+			'size'     => filesize( $tmp_file ),
 		);
 
-		$result = media_handle_sideload( $file, 0 );
+		$file = wp_handle_sideload( $file_array, array( 'test_form' => false ) );
 
-		if ( is_wp_error( $result ) ) {
-			return false;
+		if ( isset( $file['error'] ) ) {
+			return new WP_Error( 'upload_error', $file['error'] );
 		}
 
-		return true;
+		$attachment = array(
+			'post_mime_type' => $file['type'],
+			'guid'           => $file['url'],
+			'post_title'     => $name,
+			'post_author'    => $media_author,
+		);
+
+		// Save the attachment metadata
+		$id = wp_insert_attachment( $attachment, $file['file'] );
+
+		if ( is_wp_error( $id ) ) {
+			return $id;
+		}
+
+		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file['file'] ) );
 	}
 
 	// wp_tempnam() inexplicably forces a .tmp extension, which spoils MIME type detection
