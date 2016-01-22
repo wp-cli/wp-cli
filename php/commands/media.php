@@ -209,7 +209,7 @@ class Media_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--count=<number>]
-	 * : How many posts to generate. Default: 100
+	 * : How many media items to generate. Default: 10
 	 *
 	 * [--media_author=<login>]
 	 * : The author of the generated media. Default: none
@@ -217,16 +217,21 @@ class Media_Command extends WP_CLI_Command {
 	 * [--media_date=<yyyy-mm-dd|random>]
 	 * : The date of the generated media. Default: current date
 	 *
+	 * [--media_dimensions=<dimensions>]
+	 * : The dimensions of the generated media. Default: none
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp media generate --count=10
 	 *     wp media generate --media_date=random
+	 *     wp media generate --media_dimensions=1080x720
 	 */
 	function generate( $args, $assoc_args = array() ) {
 		$defaults = array(
-			'count'        => 100,
-			'media_author' => false,
-			'media_date'   => current_time( 'mysql' ),
+			'count'            => 10,
+			'media_author'     => false,
+			'media_date'       => current_time( 'mysql' ),
+			'media_dimensions' => false,
 		);
 		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
 
@@ -235,10 +240,16 @@ class Media_Command extends WP_CLI_Command {
 			$media_author = $user_fetcher->get_check( $media_author )->ID;
 		}
 
+		$url = 'https://source.unsplash.com/random/';
+
+		if ( $media_dimensions ) {
+			$url .= $media_dimensions;
+		}
+
 		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating media', $count );
 
 		for ( $i = 0; $i < $count; $i++ ) {
-			$tmp_file = download_url( 'https://source.unsplash.com/random' );
+			$tmp_file = download_url( $url );
 
 			if ( ! is_wp_error( $tmp_file ) ) {
 				$this->_process_generate( $tmp_file, $media_author, $media_date );
