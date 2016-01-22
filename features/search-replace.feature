@@ -249,7 +249,7 @@ Feature: Do global search/replace
       | http://newdomain.com |           |
       | http://newdomain.com | --dry-run |
 
-  Scenario Outline: Choose replacement method (PHP or MySQL) given proper flags or data.
+  Scenario Outline: Choose replacement method (PHP or MySQL/MariaDB) given proper flags or data.
     Given a WP install
     And I run `wp option get siteurl`
     And save STDOUT as {SITEURL}
