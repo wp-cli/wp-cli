@@ -1185,6 +1185,12 @@ EOT;
 
 			$count = 0;
 			foreach ( $files_to_remove as $file ) {
+
+				// wp-content should be considered user data
+				if ( 0 === stripos( $file, 'wp-content' ) ) {
+					continue;
+				}
+
 				if ( file_exists( ABSPATH . $file ) ) {
 					unlink( ABSPATH . $file );
 					WP_CLI::log( 'File removed: ' . $file );
