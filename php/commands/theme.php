@@ -131,7 +131,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		if ( 'active' === $this->get_status( $theme ) ) {
 			WP_CLI::success( "The '$name' theme is already active." );
-			exit;
+			return;
 		}
 
 		if ( $theme->get_stylesheet() != $theme->get_template() && ! $this->fetcher->get( $theme->get_template() ) ) {
