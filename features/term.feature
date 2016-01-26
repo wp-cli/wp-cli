@@ -49,6 +49,12 @@ Feature: Manage WordPress terms
       | name      | Test term  |
       | taxonomy  | post_tag   |
 
+    When I try `wp term list nonexistent_taxonomy`
+    Then STDERR should be:
+      """
+      Error: Taxonomy nonexistent_taxonomy doesn't exist.
+      """
+
   Scenario: Creating/deleting a term
     When I run `wp term create post_tag 'Test delete term' --slug=test-delete --description='This is a test term to be deleted' --porcelain`
     Then STDOUT should be a number
