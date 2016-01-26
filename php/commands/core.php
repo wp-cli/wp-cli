@@ -75,8 +75,9 @@ class Core_Command extends WP_CLI_Command {
 	public function download( $args, $assoc_args ) {
 
 		$download_dir = ! empty( $assoc_args['path'] ) ? $assoc_args['path'] : ABSPATH;
+		$wordpress_present = is_readable( $download_dir . 'wp-load.php' );
 
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && is_readable( $download_dir . 'wp-load.php' ) )
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && $wordpress_present )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
 		if ( !is_dir( $download_dir ) ) {
@@ -150,7 +151,9 @@ class Core_Command extends WP_CLI_Command {
 			unlink($temp);
 		}
 
-		$this->cleanup_extra_files( $from_version, $assoc_args['version'], $locale );
+		if ( $wordpress_present ) {
+			$this->cleanup_extra_files( $from_version, $version, $locale );
+		}
 
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
