@@ -59,6 +59,12 @@ class Term_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
+		foreach ( $args as $taxonomy ) {
+			if ( ! taxonomy_exists( $taxonomy ) ) {
+				WP_CLI::error( "Taxonomy $taxonomy doesn't exist." );
+			}
+		}
+
 		$formatter = $this->get_formatter( $assoc_args );
 
 		$defaults = array(
