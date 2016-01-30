@@ -61,11 +61,12 @@ class Server_Command extends WP_CLI_Command {
 		);
 
 		$descriptors = array( STDIN, STDOUT, STDERR );
-		
+
 		// https://bugs.php.net/bug.php?id=60181
 		$options = array();
-		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
+		if ( \WP_CLI\Utils\is_windows() ) {
 			$options["bypass_shell"] = TRUE;
+		}
 
 		exit( proc_close( proc_open( $cmd, $descriptors, $pipes, NULL, NULL, $options ) ) );
 	}
