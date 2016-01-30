@@ -127,7 +127,7 @@ class WP_Export_Query {
 		$post->is_sticky = is_sticky( $post->ID ) ? 1 : 0;
 		$post->terms = self::get_terms_for_post( $post );
 		$post->meta = self::get_meta_for_post( $post );
-		$post->comments = self::get_comments_for_post( $post );
+		$post->comments = $this->get_comments_for_post( $post );
 		$GLOBALS['post'] = $previous_global_post;
 		return $post;
 	}
@@ -353,8 +353,13 @@ class WP_Export_Query {
 		return $meta_for_export;
 	}
 
-	private static function get_comments_for_post( $post ) {
+	private function get_comments_for_post( $post ) {
 		global $wpdb;
+
+		if ( $this->filters['skip_comments'] ) {
+			return array();
+		}
+
 		$comments = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->comments WHERE comment_post_ID = %d AND comment_approved <> 'spam'", $post->ID ) );
 		foreach( $comments as $comment ) {
 			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->commentmeta WHERE comment_id = %d", $comment->comment_ID ) );

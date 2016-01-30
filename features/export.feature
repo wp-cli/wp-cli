@@ -146,6 +146,13 @@ Feature: Export content.
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
+    When I run `wp comment generate --count=2 --post_id={POST_ID}`
+    And I run `wp comment list --format=count`
+    Then STDOUT should contain:
+      """
+      3
+      """
+
     When I run `wp export --post__in={POST_ID}`
     And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
 
@@ -159,6 +166,12 @@ Feature: Export content.
     Then STDOUT should be:
       """
       1
+      """
+
+    When I run `wp comment list --format=count`
+    Then STDOUT should be:
+      """
+      2
       """
 
   Scenario: Export multiple posts, separated by spaces
@@ -421,4 +434,48 @@ Feature: Export content.
     And STDOUT should contain:
       """
       000.xml
+      """
+
+  Scenario: Export a site and skip the comments
+    Given a WP install
+    And I run `wp comment generate --post_id=1 --count=2`
+    And I run `wp plugin install wordpress-importer --activate`
+
+    When I run `wp comment list --format=count`
+    Then STDOUT should contain:
+      """
+      3
+      """
+
+    When I run `wp export --skip_comments`
+    And save STDOUT 'Writing to file %s' as {EXPORT_FILE}
+
+    When I run `wp site empty --yes`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --format=count`
+    Then STDOUT should contain:
+      """
+      0
+      """
+
+    When I run `wp comment list --format=count`
+    Then STDOUT should contain:
+      """
+      0
+      """
+
+    When I run `wp import {EXPORT_FILE} --authors=skip`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --format=count`
+    Then STDOUT should contain:
+      """
+      1
+      """
+
+    When I run `wp comment list --format=count`
+    Then STDOUT should contain:
+      """
+      0
       """
