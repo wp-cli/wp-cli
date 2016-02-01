@@ -143,6 +143,11 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 *
 	 * [--all]
 	 * : Run all hooks.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Run all cron events due right now
+	 *     wp cron event run $( wp cron event list --fields=hook,next_run_relative --format=csv | awk -F, '$2=="now" {print $1}' )
 	 */
 	public function run( $args, $assoc_args ) {
 
