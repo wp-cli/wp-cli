@@ -982,9 +982,6 @@ EOT;
 			$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 			unset( $GLOBALS['wp_cli_update_obj'] );
 
-			$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', get_locale() );
-			$this->cleanup_extra_files( $from_version, $update->version, $locale );
-
 			if ( is_wp_error($result) ) {
 				$msg = WP_CLI::error_to_string( $result );
 				if ( 'up_to_date' != $result->get_error_code() ) {
@@ -993,6 +990,15 @@ EOT;
 					WP_CLI::success( $msg );
 				}
 			} else {
+
+				if ( file_exists( ABSPATH . 'wp-includes/version.php' ) ) {
+					include( ABSPATH . 'wp-includes/version.php' );
+					$to_version = $wp_version;
+				}
+
+				$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', get_locale() );
+				$this->cleanup_extra_files( $from_version, $to_version, $locale );
+
 				WP_CLI::success( 'WordPress updated successfully.' );
 			}
 

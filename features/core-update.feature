@@ -19,6 +19,8 @@ Feature: Update WordPress core
       """
       Starting update...
       Unpacking the update...
+      Cleaning up files...
+      No files found that need cleaned up
       Success: WordPress updated successfully.
       """
 
@@ -38,7 +40,7 @@ Feature: Update WordPress core
     When I run `wp core update --minor`
     Then STDOUT should contain:
       """
-      Updating to version 3.7.12
+      Updating to version 3.7.13
       """
 
     When I run `wp core update --minor`
@@ -50,7 +52,7 @@ Feature: Update WordPress core
     When I run `wp core version`
     Then STDOUT should be:
       """
-      3.7.12
+      3.7.13
       """
 
   @less-than-php-7
