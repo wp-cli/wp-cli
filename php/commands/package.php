@@ -162,7 +162,7 @@ class Package_Command extends WP_CLI_Command {
 		// Reset Composer and regenerate the auto-loader
 		$composer = $this->get_composer();
 		WP_CLI::log( 'Regenerating Composer autoload.' );
-		$this->regenerate_autoloader();
+		$this->regenerate_autoloader( $composer );
 
 		WP_CLI::success( "Uninstalled package." );
 	}
@@ -195,8 +195,7 @@ class Package_Command extends WP_CLI_Command {
 			WP_CLI::error( $e->getMessage() );
 		}
 
-		$this->composer = $composer;
-		return $this->composer;
+		return $composer;
 	}
 
 	/**
@@ -285,8 +284,9 @@ class Package_Command extends WP_CLI_Command {
 		$installed_packages = array();
 		foreach( $repo->getPackages() as $package ) {
 
-			if ( ! $this->is_community_package( $package ) )
+			if ( ! $this->is_community_package( $package ) ) {
 				continue;
+			}
 
 			$installed_packages[] = $package;
 		}
@@ -299,8 +299,9 @@ class Package_Command extends WP_CLI_Command {
 	 */
 	private function get_installed_package_by_name( $package_name ) {
 		foreach( $this->get_installed_packages() as $package ) {
-			if ( $package_name == $package->getName() )
+			if ( $package_name == $package->getName() ) {
 				return $package;
+			}
 		}
 		return false;
 	}
@@ -309,10 +310,11 @@ class Package_Command extends WP_CLI_Command {
 	 * Check if the package name provided is already installed.
 	 */
 	private function is_package_installed( $package_name ) {
-		if ( $this->get_installed_package_by_name( $package_name ) )
+		if ( $this->get_installed_package_by_name( $package_name ) ) {
 			return true;
-		else
+		} else {
 			return false;
+		}
 	}
 
 	/**
@@ -400,12 +402,12 @@ class Package_Command extends WP_CLI_Command {
 	/**
 	 * Regenerate the Composer autoloader
 	 */
-	private function regenerate_autoloader() {
-		$this->composer->getAutoloadGenerator()->dump(
-			$this->composer->getConfig(),
-			$this->composer->getRepositoryManager()->getLocalRepository(),
-			$this->composer->getPackage(),
-			$this->composer->getInstallationManager(),
+	private function regenerate_autoloader( $composer ) {
+		$composer->getAutoloadGenerator()->dump(
+			$composer->getConfig(),
+			$composer->getRepositoryManager()->getLocalRepository(),
+			$composer->getPackage(),
+			$composer->getInstallationManager(),
 			'composer'
 		);
 	}
