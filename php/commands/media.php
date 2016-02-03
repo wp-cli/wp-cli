@@ -165,6 +165,26 @@ class Media_Command extends WP_CLI_Command {
 				'post_content' => $assoc_args['desc']
 			);
 
+			// use image exif/iptc data for title and caption defaults if possible
+			if ( empty( $post_array['post_title'] ) || empty( $post_array['post_excerpt'] ) ) {
+				// @codingStandardsIgnoreStart
+				$image_meta = @wp_read_image_metadata( $tempfile );
+				// @codingStandardsIgnoreEnd
+				if ( ! empty( $image_meta ) ) {
+					if ( empty( $post_array['post_title'] ) && trim( $image_meta['title'] ) && ! is_numeric( sanitize_title( $image_meta['title'] ) ) ) {
+						$post_array['post_title'] = $image_meta['title'];
+					}
+
+					if ( empty( $post_array['post_excerpt'] ) && trim( $image_meta['caption'] ) ) {
+						$post_array['post_excerpt'] = $image_meta['caption'];
+					}
+				}
+			}
+
+			if ( empty( $post_array['post_title'] ) ) {
+				$post_array['post_title'] = $file_array['name'];
+			}
+
 			// Deletes the temporary file.
 			$success = media_handle_sideload( $file_array, $assoc_args['post_id'], $assoc_args['title'], $post_array );
 			if ( is_wp_error( $success ) ) {

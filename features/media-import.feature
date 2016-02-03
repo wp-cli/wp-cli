@@ -45,11 +45,51 @@ Feature: Manage WordPress attachments
       | path                        | url                                              |
       | {CACHE_DIR}/large-image.jpg | http://wp-cli.org/behat-data/large-image.jpg     |
 
-    When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My imported attachment" --porcelain`
+    When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My imported attachment" --caption="My fabulous caption" --porcelain`
     Then save STDOUT as {ATTACHMENT_ID}
 
     When I run `wp post get {ATTACHMENT_ID} --field=title`
     Then STDOUT should be:
       """
       My imported attachment
+      """
+
+    When I run `wp post get {ATTACHMENT_ID} --field=excerpt`
+    Then STDOUT should be:
+      """
+      My fabulous caption
+      """
+
+  Scenario: Import a file and use its filename as the title
+    Given download:
+      | path                        | url                                              |
+      | {CACHE_DIR}/large-image.jpg | http://wp-cli.org/behat-data/large-image.jpg     |
+
+    When I run `wp media import {CACHE_DIR}/large-image.jpg --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID}
+
+    When I run `wp post get {ATTACHMENT_ID} --field=title`
+    Then STDOUT should be:
+      """
+      large-image.jpg
+      """
+
+  Scenario: Import a file and persist its original metadata
+    Given download:
+      | path                         | url                                              |
+      | {CACHE_DIR}/canola.jpg       | http://wp-cli.org/behat-data/canola.jpg          |
+
+    When I run `wp media import {CACHE_DIR}/canola.jpg --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID}
+
+    When I run `wp post get {ATTACHMENT_ID} --field=title`
+    Then STDOUT should be:
+      """
+      A field of amazing canola
+      """
+
+    When I run `wp post get {ATTACHMENT_ID} --field=excerpt`
+    Then STDOUT should be:
+      """
+      The description for the image
       """
