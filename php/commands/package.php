@@ -78,7 +78,11 @@ class Package_Command extends WP_CLI_Command {
 			WP_CLI::log( sprintf( "Installing %s (%s)", $package_name, $version ) );
 		}
 
-		$composer = $this->get_composer();
+		try {
+			$composer = $this->get_composer();
+		} catch( Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
 		$composer_json_obj = $this->get_composer_json();
 
 		// Add the 'require' to composer.json
@@ -87,7 +91,11 @@ class Package_Command extends WP_CLI_Command {
 		$json_manipulator = new JsonManipulator( $composer_backup );
 		$json_manipulator->addLink( 'require', $package_name, $version );
 		file_put_contents( $composer_json_obj->getPath(), $json_manipulator->getContents() );
-		$composer = $this->get_composer();
+		try {
+			$composer = $this->get_composer();
+		} catch( Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
 
 		// Set up the EventSubscriber
 		$event_subscriber = new \WP_CLI\PackageManagerEventSubscriber;
@@ -138,7 +146,11 @@ class Package_Command extends WP_CLI_Command {
 	public function uninstall( $args ) {
 		list( $package_name ) = $args;
 
-		$composer = $this->get_composer();
+		try {
+			$composer = $this->get_composer();
+		} catch( Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
 		if ( false === ( $package = $this->get_installed_package_by_name( $package_name ) ) ) {
 			WP_CLI::error( "Package not installed." );
 		}
@@ -160,8 +172,13 @@ class Package_Command extends WP_CLI_Command {
 		$filesystem->removeDirectory( $package_path );
 
 		// Reset Composer and regenerate the auto-loader
-		$composer = $this->get_composer();
 		WP_CLI::log( 'Regenerating Composer autoload.' );
+		try {
+			$composer = $this->get_composer();
+		} catch( Exception $e ) {
+			WP_CLI::warning( $e->getMessage() );
+			WP_CLI::error( 'Composer autoload will need to be manually regenerated.' );
+		}
 		$this->regenerate_autoloader( $composer );
 
 		WP_CLI::success( "Uninstalled package." );
@@ -188,14 +205,7 @@ class Package_Command extends WP_CLI_Command {
 		// the 'vendor-dir' is, and where Composer is running from.
 		// Best to just pretend we're installing a package from ~/.wp-cli or similar
 		chdir( pathinfo( $composer_path, PATHINFO_DIRNAME ) );
-
-		try {
-			$composer = Factory::create( new NullIO, $composer_path );
-		} catch( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
-		}
-
-		return $composer;
+		return Factory::create( new NullIO, $composer_path );
 	}
 
 	/**
@@ -279,7 +289,11 @@ class Package_Command extends WP_CLI_Command {
 	 * Get the installed community packages.
 	 */
 	private function get_installed_packages() {
-		$composer = $this->get_composer();
+		try {
+			$composer = $this->get_composer();
+		} catch( Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
 		$repo = $composer->getRepositoryManager()->getLocalRepository();
 
 		$installed_packages = array();
