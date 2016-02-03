@@ -30,7 +30,7 @@ git config push.default "current"
 
 fname="phar/wp-cli-nightly.phar"
 
-mv $WP_CLI_BIN_DIR/wp $fname
+mv /tmp/wp-cli-phar/wp $fname
 chmod -x $fname
 
 md5sum $fname | cut -d ' ' -f 1 > $fname.md5
