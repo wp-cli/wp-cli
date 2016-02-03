@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "73c38df6a0ba5a0690655b528fadb0f3",
-    "content-hash": "c201c938374a2ff19d8f0388a49475ff",
+    "hash": "be16eacf74b49e94af4974a9c8c2460e",
+    "content-hash": "5045f45078e9ea1cfb8087b858d377ac",
     "packages": [
         {
             "name": "composer/composer",
@@ -966,25 +966,25 @@
         },
         {
             "name": "symfony/process",
-            "version": "v3.0.2",
+            "version": "v2.8.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "dfecef47506179db2501430e732adbf3793099c8"
+                "reference": "6f1979c3b0f4c22c77a8a8971afaa7dd07f082ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/dfecef47506179db2501430e732adbf3793099c8",
-                "reference": "dfecef47506179db2501430e732adbf3793099c8",
+                "url": "https://api.github.com/repos/symfony/process/zipball/6f1979c3b0f4c22c77a8a8971afaa7dd07f082ac",
+                "reference": "6f1979c3b0f4c22c77a8a8971afaa7dd07f082ac",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.5.9"
+                "php": ">=5.3.9"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.0-dev"
+                    "dev-master": "2.8-dev"
                 }
             },
             "autoload": {
@@ -1011,7 +1011,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
-            "time": "2016-02-02 13:44:19"
+            "time": "2016-01-06 09:59:23"
         },
         {
             "name": "symfony/translation",
