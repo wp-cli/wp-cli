@@ -62,18 +62,43 @@ class WP_CLI {
 	}
 
 	/**
+	 * Returns the path to ~/.wp-cli and creates this directory if it doesn't exist
+	 *
+	 * @return string
+	 */
+	public static function get_home() {
+		$home = getenv( 'HOME' );
+		if ( !$home ) {
+			// sometime in windows $HOME is not defined
+			$home = getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' );
+		}
+
+		$dir = "$home/.wp-cli";
+
+		if ( ! file_exists( $dir . '/' ) ) {
+			mkdir( $dir, 0755 );
+		}
+
+		return $dir;
+	}
+
+	/**
+	 * Converts a path relative to ~/.wp-cli to an absolute path
+	 * @param  string $path
+	 * @return string
+	 */
+	public static function home_path( $path = '' ) {
+		return self::get_home() . '/' . $path;
+	}
+
+	/**
 	 * @return FileCache
 	 */
 	public static function get_cache() {
 		static $cache;
 
 		if ( !$cache ) {
-			$home = getenv( 'HOME' );
-			if ( !$home ) {
-				// sometime in windows $HOME is not defined
-				$home = getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' );
-			}
-			$dir = getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
+			$dir = getenv( 'WP_CLI_CACHE_DIR' ) ? : self::home_path( 'cache' );
 
 			// 6 months, 300mb
 			$cache = new FileCache( $dir, 15552000, 314572800 );

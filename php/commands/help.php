@@ -33,6 +33,28 @@ class Help_Command extends WP_CLI_Command {
 			}
 
 			self::show_help( $command );
+
+			// new version notification
+
+			$update_flag = WP_CLI::home_path( 'has-new-version' );
+
+			if ( file_exists( $update_flag ) && file_get_contents( $update_flag ) !== 'skip' ) {
+				WP_CLI::line( 'Your wp-cli is outdated. Most recent version is:' );
+				WP_CLI::get_runner()->run_command( array( 'cli', 'check-update' ), array( 'latest' => true ) );
+
+				// modified WP_CLI::confirm() which ignores the --yes CLI flag
+				fwrite( STDOUT, "Proceed with update? [y/n] " );
+
+				$answer = trim( fgets( STDIN ) );
+
+				if ( 'y' != $answer ) {
+					file_put_contents( $update_flag, 'skip' );
+					exit;
+				}
+
+				WP_CLI::get_runner()->run_command( array( 'cli', 'update' ), array() );
+			}
+
 			exit;
 		}
 

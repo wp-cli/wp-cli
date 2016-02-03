@@ -84,6 +84,9 @@ class CLI_Command extends WP_CLI_Command {
 	 * [--major]
 	 * : Only list major updates
 	 *
+	 * [--latest]
+	 * : Only show the latest version
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each update.
 	 *
@@ -103,6 +106,11 @@ class CLI_Command extends WP_CLI_Command {
 				$assoc_args,
 				array( 'version', 'update_type', 'package_url' )
 			);
+
+			if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, 'latest' ) ) {
+				$updates = array( $updates[0] );
+			}
+
 			$formatter->display_items( $updates );
 		} else if ( empty( $assoc_args['format'] ) || 'table' == $assoc_args['format'] ) {
 			$update_type = $this->get_update_type_str( $assoc_args );
@@ -208,6 +216,14 @@ class CLI_Command extends WP_CLI_Command {
 		} else {
 			$updated_version = $newest['version'];
 		}
+
+		// clear the flag for available updates
+		$flag = WP_CLI::home_path( 'has-new-version' );
+
+		if ( file_exists( $flag ) ) {
+			unlink( $flag );
+		}
+
 		WP_CLI::success( sprintf( 'Updated WP-CLI to %s', $updated_version ) );
 	}
 
@@ -236,7 +252,8 @@ class CLI_Command extends WP_CLI_Command {
 			'major'      => false,
 			'minor'      => false,
 			'patch'      => false,
-			);
+		);
+
 		foreach ( $release_data as $release ) {
 
 			// get rid of leading "v" if there is one set
@@ -272,6 +289,17 @@ class CLI_Command extends WP_CLI_Command {
 				return ! empty( $updates[ $type ] ) ? array( $updates[ $type ] ) : false;
 			}
 		}
+
+		if ( is_writable( WP_CLI::home_path() ) ) {
+			// if there are any updates, set a persistent flag which should only be cleared after a successful update
+			if ( count( $updates ) > 0 ) {
+				touch( WP_CLI::home_path( 'has-new-version' ) );
+			}
+
+			// no automatic updates for the next 24 hours
+			file_put_contents( WP_CLI::home_path( 'next-update-check' ), time() + 24*60*60 );
+		}
+
 		return array_values( $updates );
 	}
 
