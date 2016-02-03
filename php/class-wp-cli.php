@@ -301,8 +301,10 @@ class WP_CLI {
 			self::$logger->error( self::error_to_string( $message ) );
 		}
 
-		if ( $exit ) {
-			exit(1);
+		if ( true === $exit ) {
+			exit( 1 );
+		} elseif ( is_int( $exit ) && $exit >= 1 ) {
+			exit( $exit );
 		}
 	}
 
