@@ -60,6 +60,20 @@ Feature: Manage WordPress attachments
       My fabulous caption
       """
 
+  Scenario: Import a file and use its filename as the title
+    Given download:
+      | path                        | url                                              |
+      | {CACHE_DIR}/large-image.jpg | http://wp-cli.org/behat-data/large-image.jpg     |
+
+    When I run `wp media import {CACHE_DIR}/large-image.jpg --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID}
+
+    When I run `wp post get {ATTACHMENT_ID} --field=title`
+    Then STDOUT should be:
+      """
+      large-image.jpg
+      """
+
   Scenario: Import a file and persist its original metadata
     Given download:
       | path                         | url                                              |

@@ -181,6 +181,10 @@ class Media_Command extends WP_CLI_Command {
 				}
 			}
 
+			if ( empty( $post_array['post_title'] ) ) {
+				$post_array['post_title'] = $file_array['name'];
+			}
+
 			// Deletes the temporary file.
 			$success = media_handle_sideload( $file_array, $assoc_args['post_id'], $assoc_args['title'], $post_array );
 			if ( is_wp_error( $success ) ) {
