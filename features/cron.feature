@@ -72,10 +72,16 @@ Feature: Manage WP-Cron events and schedules
       | wp_cli_test_event_5 | Non-repeating | {"foo":"bar"}       |
 
     When I run `wp cron event run wp_cli_test_event_5`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
-      Executed the cron event 'wp_cli_test_event_5'.
-      Executed the cron event 'wp_cli_test_event_5'.
+      Executed the cron event 'wp_cli_test_event_5'
+      """
+    And STDOUT should contain:
+      """
+      Executed the cron event 'wp_cli_test_event_5'
+      """
+    And STDOUT should contain:
+      """
       Success: Executed a total of 2 cron event(s).
       """
 
@@ -187,11 +193,11 @@ Feature: Manage WP-Cron events and schedules
     When I run `wp cron event run wp_version_check wp_update_plugins`
     Then STDOUT should contain:
       """
-      Executed the cron event 'wp_version_check'.
+      Executed the cron event 'wp_version_check'
       """
     And STDOUT should contain:
       """
-      Executed the cron event 'wp_update_plugins'.
+      Executed the cron event 'wp_update_plugins'
       """
     And STDOUT should contain:
       """
@@ -201,15 +207,15 @@ Feature: Manage WP-Cron events and schedules
     When I run `wp cron event run --all`
     Then STDOUT should contain:
       """
-      Executed the cron event 'wp_version_check'.
+      Executed the cron event 'wp_version_check'
       """
     And STDOUT should contain:
       """
-      Executed the cron event 'wp_update_plugins'.
+      Executed the cron event 'wp_update_plugins'
       """
     And STDOUT should contain:
       """
-      Executed the cron event 'wp_update_themes'.
+      Executed the cron event 'wp_update_themes'
       """
     And STDOUT should contain:
       """
