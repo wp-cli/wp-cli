@@ -102,7 +102,7 @@ class Package_Command extends WP_CLI_Command {
 		try {
 			$res = $install->run();
 		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+			WP_CLI::warning( $e->getMessage() );
 		}
 
 		if ( 0 === $res ) {
