@@ -268,8 +268,9 @@ class Package_Command extends WP_CLI_Command {
 	 */
 	private function get_community_package_by_name( $package_name ) {
 		foreach( $this->get_community_packages() as $package ) {
-			if ( $package_name == $package->getName() )
+			if ( $package_name == $package->getName() ) {
 				return $package;
+			}
 		}
 		return false;
 	}
