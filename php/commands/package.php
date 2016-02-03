@@ -25,7 +25,6 @@ use \WP_CLI\ComposerIO;
  */
 class Package_Command extends WP_CLI_Command {
 
-	// TODO: read from composer.json
 	const PACKAGE_INDEX_URL = 'http://wp-cli.org/package-index/';
 
 	private $fields = array(
@@ -230,7 +229,6 @@ class Package_Command extends WP_CLI_Command {
 			$config = new Config();
 			$config->merge(array('config' => array(
 				'home' => dirname( $this->get_composer_json_path() ),
-				/* 'cache-dir' => $cacheDir */
 			)));
 			$config->setConfigSource( new JsonConfigSource( $this->get_composer_json() ) );
 
