@@ -177,12 +177,8 @@ class Cron_Event_Command extends WP_CLI_Command {
 				$start = microtime( true );
 				$result = self::run_event( $event );
 				$total = round( microtime( true ) - $start, 3 );
-				if ( $result ) {
-					$executed++;
-					WP_CLI::log( sprintf( "Executed the cron event '%s' in %ss.", $event->hook, $total ) );
-				} else {
-					WP_CLI::warning( sprintf( "Failed to the execute the cron event '%s'.", $event->hook ) );
-				}
+				$executed++;
+				WP_CLI::log( sprintf( "Executed the cron event '%s' in %ss.", $event->hook, $total ) );
 			}
 		}
 
