@@ -16,8 +16,6 @@ matrix:
       env: WP_VERSION=trunk
     - php: 7.0
       env: WP_VERSION=latest
-  allow_failures:
-    - env: WP_VERSION=trunk
 
 before_script: ./ci/prepare.sh
 
