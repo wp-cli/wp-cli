@@ -69,11 +69,11 @@ $finder
 	->in(WP_CLI_ROOT . '/vendor/mustache')
 	->in(WP_CLI_ROOT . '/vendor/rmccue/requests')
 	->in(WP_CLI_ROOT . '/vendor/composer')
-	->in(WP_CLI_ROOT . '/vendor/symfony/finder')
+	->in(WP_CLI_ROOT . '/vendor/symfony')
 	->in(WP_CLI_ROOT . '/vendor/nb/oxymel')
 	->in(WP_CLI_ROOT . '/vendor/ramsey/array_column')
-	->in(WP_CLI_ROOT . '/vendor/composer/semver')
 	->in(WP_CLI_ROOT . '/vendor/mustangostang')
+	->in(WP_CLI_ROOT . '/vendor/justinrainbow/json-schema')
 	->exclude('test')
 	->exclude('tests')
 	->exclude('Tests')
@@ -99,6 +99,8 @@ foreach ( $finder as $file ) {
 
 add_file( $phar, WP_CLI_ROOT . '/vendor/autoload.php' );
 add_file( $phar, WP_CLI_ROOT . '/ci/behat-tags.php' );
+add_file( $phar, WP_CLI_ROOT . '/vendor/composer/composer/LICENSE' );
+add_file( $phar, WP_CLI_ROOT . '/vendor/composer/composer/res/composer-schema.json' );
 add_file( $phar, WP_CLI_ROOT . '/utils/get-package-require-from-composer.php' );
 add_file( $phar, WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem' );
 

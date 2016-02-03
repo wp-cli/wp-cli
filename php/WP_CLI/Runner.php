@@ -609,6 +609,16 @@ class Runner {
 		// APIs as non-bundled commands.
 		Utils\load_command( $this->arguments[0] );
 
+		if ( getenv( 'WP_CLI_PACKAGES_DIR' ) ) {
+			$package_autoload = rtrim( getenv( 'WP_CLI_PACKAGES_DIR' ), '/' ) . '/vendor/autoload.php';
+		} else {
+			$package_autoload = getenv( 'HOME' ) . '/.wp-cli/packages/vendor/autoload.php';
+		}
+
+		if ( file_exists( $package_autoload ) ) {
+			require_once $package_autoload;
+		}
+
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {
 				if ( ! file_exists( $path ) ) {
