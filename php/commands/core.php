@@ -877,7 +877,7 @@ EOT;
 	 * : Path to zip file to use, instead of downloading from wordpress.org.
 	 *
 	 * [--minor]
-	 * : Only perform updates for minor releases.
+	 * : Only perform updates for minor releases (e.g. update from WP 4.3 to 4.3.3 instead of 4.4.2).
 	 *
 	 * [--version=<version>]
 	 * : Update to a specific version, instead of to the latest version.
