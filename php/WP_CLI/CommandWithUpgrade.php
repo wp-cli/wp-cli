@@ -11,12 +11,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected $upgrade_transient;
 
 	function __construct() {
-		// After updating plugins/themes also update translations by running the `core language update` command.
+		// Do not automatically check translations updates after updating plugins/themes.
 		add_action( 'upgrader_process_complete', function() {
 			remove_action( 'upgrader_process_complete', array( 'Language_Pack_Upgrader', 'async_upgrade' ), 20 );
-			if ( Utils\wp_version_compare( '4.0', '>=' ) ) {
-				\WP_CLI::run_command( array( 'core', 'language', 'update' ), array( 'dry-run' => false ) );
-			}
 		}, 1 );
 	}
 
