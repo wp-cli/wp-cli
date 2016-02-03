@@ -107,3 +107,44 @@ Feature: Load WP-CLI
       """
       foo
       """
+
+  Scenario: Use a custom error code with WP_CLI::error()
+    Given an empty directory
+    And a exit-normal.php file:
+      """
+      <?php
+      WP_CLI::error( 'This is return code 1.' );
+      """
+    And a exit-higher.php file:
+      """
+      <?php
+      WP_CLI::error( 'This is return code 5.', 5 );
+      """
+    And a no-exit.php file:
+      """
+      <?php
+      WP_CLI::error( 'This has no exit.', false );
+      WP_CLI::error( 'So I can use multiple lines.', false );
+      """
+
+    When I try `wp --require=exit-normal.php`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: This is return code 1.
+      """
+
+    When I try `wp --require=exit-higher.php`
+    Then the return code should be 5
+    And STDERR should be:
+      """
+      Error: This is return code 5.
+      """
+
+    When I try `wp --require=no-exit.php`
+    Then the return code should be 0
+    And STDERR should be:
+      """
+      Error: This has no exit.
+      Error: So I can use multiple lines.
+      """
