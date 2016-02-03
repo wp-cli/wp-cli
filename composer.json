@@ -23,7 +23,8 @@
 		"symfony/dependency-injection": "2.7.*",
 		"symfony/event-dispatcher": "2.7.*",
 		"symfony/translation": "2.7.*",
-		"nb/oxymel": "0.1.0"
+		"nb/oxymel": "0.1.0",
+		"composer/composer": "1.0.0-alpha11"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",
