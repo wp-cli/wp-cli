@@ -169,7 +169,6 @@ class Media_Command extends WP_CLI_Command {
 			if ( empty( $post_array['post_title'] ) || empty( $post_array['post_excerpt'] ) ) {
 				// @codingStandardsIgnoreStart
 				$image_meta = @wp_read_image_metadata( $tempfile );
-				error_log( var_export( $image_meta, true ) );
 				// @codingStandardsIgnoreEnd
 				if ( ! empty( $image_meta ) ) {
 					if ( empty( $post_array['post_title'] ) && trim( $image_meta['title'] ) && ! is_numeric( sanitize_title( $image_meta['title'] ) ) ) {
