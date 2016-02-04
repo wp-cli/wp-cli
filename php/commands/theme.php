@@ -485,6 +485,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Check if the theme is installed.
 	 *
+	 * Returns exit code 0 when installed, 1 when uninstalled.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <theme>
@@ -493,6 +495,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     wp theme is-installed twentytwelve
+	 *     echo $? # displays 0 or 1
 	 *
 	 * @subcommand is-installed
 	 */
