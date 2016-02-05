@@ -282,7 +282,13 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						'status' => $result[ $info['update_id'] ] !== null ? 'Updated' : 'Error',
 					);
 				}
-				\WP_CLI\Utils\format_items( 'table', $status, array( 'name', 'old_version', 'new_version', 'status' ) );
+
+				$format = 'table';
+				if ( ! empty( $assoc_args['format'] ) && in_array( $assoc_args['format'], array( 'json', 'csv' ) ) ) {
+					$format = $assoc_args['format'];
+				}
+
+				\WP_CLI\Utils\format_items( $format, $status, array( 'name', 'old_version', 'new_version', 'status' ) );
 			}
 		}
 	}
