@@ -232,10 +232,17 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				return;
 			}
 
-			\WP_CLI::line( "Available {$this->item_type} updates:" );
-
-			\WP_CLI\Utils\format_items( 'table', $items_to_update,
-				array( 'name', 'status', 'version', 'update_version' ) );
+			if ( ! empty( $assoc_args['format'] ) && in_array( $assoc_args['format'], array( 'json', 'csv' ) ) ) {
+				\WP_CLI\Utils\format_items( $assoc_args['format'], $items_to_update, array( 'name', 'status', 'version', 'update_version' ) );
+			} else if ( ! empty( $assoc_args['format'] ) && 'summary' === $assoc_args['format'] ) {
+				\WP_CLI::line( "Available {$this->item_type} updates:" );
+				foreach( $items_to_update as $item_to_update => $info ) {
+					\WP_CLI::log( "{$info['title']} update from version {$info['version']} to version {$info['update_version']}" );
+				}
+			} else {
+				\WP_CLI::line( "Available {$this->item_type} updates:" );
+				\WP_CLI\Utils\format_items( 'table', $items_to_update, array( 'name', 'status', 'version', 'update_version' ) );
+			}
 
 			return;
 		}
