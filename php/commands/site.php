@@ -371,7 +371,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Comma-separated list of fields to show.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *

@@ -30,7 +30,7 @@ class Core_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields. Defaults to version,update_type,package_url.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json. Default: table
+	 * : Accepted values: table, csv, json, yaml. Default: table
 	 *
 	 * @subcommand check-update
 	 */

@@ -42,7 +42,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -138,7 +138,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Get a specific subset of the user's fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -820,7 +820,7 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * : The metadata key.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, yaml. Default: table
 	 */
 	public function get( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );
