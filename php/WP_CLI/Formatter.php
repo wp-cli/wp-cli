@@ -144,6 +144,10 @@ class Formatter {
 			echo json_encode( $out );
 			break;
 
+		case 'yaml':
+			echo \Spyc::YAMLDump( $items, 2, 0 );
+			break;
+
 		default:
 			\WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
 		}
@@ -237,6 +241,7 @@ class Formatter {
 			}
 			break;
 
+		case 'yaml':
 		case 'json':
 			\WP_CLI::print_value( $data, array( 'format' => $format ) );
 			break;
