@@ -41,9 +41,7 @@ class UpgraderSkin extends \WP_Upgrader_Skin {
 
 		$string = str_replace( '&#8230;', '...', strip_tags( $string ) );
 
-		if ( empty( $this->upgrader->cli_output_format ) || ! in_array( $this->upgrader->cli_output_format, array( 'csv', 'json' ) ) ) {
-			\WP_CLI::line( $string );
-		}
+		\WP_CLI::log( $string );
 	}
 }
 
