@@ -249,6 +249,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$cache_manager->whitelist_package($item['update_package'], $this->item_type, $item['name'], $item['update_version']);
 			}
 			$upgrader = $this->get_upgrader( $assoc_args );
+			$upgrader->cli_output_format = ! empty( $assoc_args['format'] ) ? $assoc_args['format'] : '';
 			$result = $upgrader->bulk_upgrade( wp_list_pluck( $items_to_update, 'update_id' ) );
 		}
 
@@ -258,12 +259,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$line = "Updated $num_updated/$num_to_update {$this->item_type}s.";
 
-		if ( $num_to_update == $num_updated ) {
-			\WP_CLI::success( $line );
-		} else if ( $num_updated > 0 ) {
-			\WP_CLI::warning( $line );
-		} else {
-			\WP_CLI::error( $line );
+		if ( empty( $assoc_args['format'] ) || ! in_array( $assoc_args['format'], array( 'json', 'csv' ) ) ) {
+			if ( $num_to_update == $num_updated ) {
+				\WP_CLI::success( $line );
+			} else if ( $num_updated > 0 ) {
+				\WP_CLI::warning( $line );
+			} else {
+				\WP_CLI::error( $line );
+			}
 		}
 
 		if ( $num_to_update > 0 ) {
