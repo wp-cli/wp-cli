@@ -384,6 +384,8 @@ class WP_CLI {
 	public static function print_value( $value, $assoc_args = array() ) {
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$value = json_encode( $value );
+		} elseif ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'yaml' ) {
+			$value = Spyc::YAMLDump( $value, 2, 0 );
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
 			$value = var_export( $value );
 		}
