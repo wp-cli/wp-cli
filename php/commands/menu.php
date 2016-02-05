@@ -97,7 +97,7 @@ class Menu_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 * : Accepted values: table, csv, json, count, ids, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -193,7 +193,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 * : Accepted values: table, csv, json, count, ids, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -634,7 +634,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 * List locations for the current theme.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 * : Accepted values: table, csv, json, count, ids, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *

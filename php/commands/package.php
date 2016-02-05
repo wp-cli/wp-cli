@@ -40,7 +40,7 @@ class Package_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 */
 	public function browse( $_, $assoc_args ) {
 		$this->show_packages( $this->get_community_packages(), $assoc_args );
@@ -127,7 +127,7 @@ class Package_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * @subcommand list
 	 */

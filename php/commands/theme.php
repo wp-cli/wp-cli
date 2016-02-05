@@ -72,7 +72,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **description**: Theme Description
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -411,7 +411,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -557,7 +557,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
