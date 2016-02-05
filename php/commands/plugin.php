@@ -534,6 +534,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Check if the plugin is installed.
 	 *
+	 * Returns exit code 0 when installed, 1 when uninstalled.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <plugin>
@@ -542,6 +544,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     wp plugin is-installed hello
+	 *     echo $? # displays 0 or 1
 	 *
 	 * @subcommand is-installed
 	 */
