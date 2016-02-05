@@ -250,6 +250,38 @@ Feature: Manage WordPress themes
       | biker         | active   |
       | jolene        | parent   |
 
+  Scenario: When updating a theme --format should be the same when using --dry-run
+    Given a WP install
+
+    When I run `wp theme update twentyfifteen --version=1.0`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update twentyfifteen --format=summary --dry-run`
+    Then STDOUT should contain:
+      """
+      Available theme updates:
+      Twenty Fifteen update from version 1.0 to version
+      """
+
+    When I run `wp theme update twentyfifteen --version=1.0`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update twentyfifteen --format=json --dry-run`
+    Then STDOUT should contain:
+      """
+      [{"name":"twentyfifteen","status":"inactive","version":"1.0",
+      """
+
+    When I run `wp theme update twentyfifteen --version=1.0`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update twentyfifteen --format=csv --dry-run`
+    Then STDOUT should contain:
+      """
+      name,status,version,update_version
+      twentyfifteen,inactive,1.0,
+      """
+
   Scenario: Check json and csv formats when updating a theme
     Given a WP install
 
