@@ -249,3 +249,25 @@ Feature: Manage WordPress themes
       | name          | status   |
       | biker         | active   |
       | jolene        | parent   |
+
+  Scenario: Check json and csv formats when updating a theme
+    Given a WP install
+
+    When I run `wp theme update twentyfifteen --version=1.0`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update twentyfifteen --format=json`
+    Then STDOUT should contain:
+      """
+      [{"name":"twentyfifteen","old_version":"1.0",
+      """
+
+    When I run `wp theme update twentyfifteen --version=1.0`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update twentyfifteen --format=csv`
+    Then STDOUT should contain:
+      """
+      name,old_version,new_version,status
+      twentyfifteen,1.0,
+      """
