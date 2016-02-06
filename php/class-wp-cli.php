@@ -246,7 +246,10 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display a message in the CLI and end with a newline
+	 * Display a message in the CLI and end with a newline.
+	 * Ignores --quiet flag. To respect, use WP_CLI::log()
+	 *
+	 * @access public
 	 *
 	 * @param string $message
 	 */
@@ -257,6 +260,8 @@ class WP_CLI {
 	/**
 	 * Log an informational message.
 	 *
+	 * @access public
+	 *
 	 * @param string $message
 	 */
 	public static function log( $message ) {
@@ -264,7 +269,9 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display a success in the CLI and end with a newline
+	 * Display a success in the CLI and end with a newline.
+	 *
+	 * @access public
 	 *
 	 * @param string $message
 	 */
@@ -273,7 +280,10 @@ class WP_CLI {
 	}
 
 	/**
-	 * Log debug information
+	 * Log information when --debug flag is used.
+	 * Helpful for optionally showing greater detail when needed.
+	 *
+	 * @access public
 	 *
 	 * @param string $message
 	 */
@@ -282,7 +292,9 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display a warning in the CLI and end with a newline
+	 * Display a warning in the CLI and end with a newline.
+	 *
+	 * @access public
 	 *
 	 * @param string $message
 	 */
@@ -291,7 +303,9 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display an error in the CLI and end with a newline
+	 * Display an error in the CLI and end with a newline.
+	 *
+	 * @access public
 	 *
 	 * @param string|WP_Error $message
 	 * @param bool            $exit    if true, the script will exit()
@@ -309,7 +323,9 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display an error in the CLI and end with a newline
+	 * Display an error in the CLI and end with a newline.
+	 *
+	 * @access public
 	 *
 	 * @param array $message  each element from the array will be printed on its own line
 	 */
