@@ -241,6 +241,8 @@ function wp_version_compare( $since, $operator ) {
 /**
  * Output items in a table, JSON, CSV, ids, or the total count
  *
+ * @access public
+ *
  * @param string        $format     Format to use: 'table', 'json', 'csv', 'ids', 'count'
  * @param array         $items      Data to output
  * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
@@ -253,6 +255,8 @@ function format_items( $format, $items, $fields ) {
 
 /**
  * Write data as CSV to a given file.
+ *
+ * @access public
  *
  * @param resource $fd         File descriptor
  * @param array    $rows       Array of rows to output
@@ -542,7 +546,9 @@ function increment_version( $current_version, $new_version ) {
 }
 
 /**
- * Compare two version strings to get the named semantic version
+ * Compare two version strings to get the named semantic version.
+ *
+ * @access public
  *
  * @param string $new_version
  * @param string $original_version
@@ -569,17 +575,21 @@ function get_named_sem_ver( $new_version, $original_version ) {
 /**
  * Return the flag value or, if it's not set, the $default value.
  *
- * @param array  $args    Arguments array.
- * @param string $flag    Flag to get the value.
- * @param mixed  $default Default value for the flag. Default: NULL
+ * @access public
+ *
+ * @param array  $assoc_args  Arguments array.
+ * @param string $flag        Flag to get the value.
+ * @param mixed  $default     Default value for the flag. Default: NULL
  * @return mixed
  */
-function get_flag_value( $args, $flag, $default = null ) {
-	return isset( $args[ $flag ] ) ? $args[ $flag ] : $default;
+function get_flag_value( $assoc_args, $flag, $default = null ) {
+	return isset( $assoc_args[ $flag ] ) ? $assoc_args[ $flag ] : $default;
 }
 
 /**
  * Get the temp directory, and let the user know if it isn't writable.
+ *
+ * @access public
  *
  * @return string
  */
