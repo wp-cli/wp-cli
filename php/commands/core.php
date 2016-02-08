@@ -851,7 +851,8 @@ EOT;
 		}
 
 		if ( empty( $wp_version ) ) {
-			$wp_version = self::get_version()['wp'];
+			$version = self::get_version();
+			$wp_version = $version['wp'];
 		}
 
 		$checksums = self::get_core_checksums( $wp_version, isset( $wp_local_package ) ? $wp_local_package : 'en_US' );
