@@ -785,7 +785,7 @@ EOT;
 				"Pass --path=`path/to/wordpress` or run `wp core download`." );
 		}
 
-		$version_content = file_get_contents($versions_path, null, null, 6, 2048);
+		$version_content = file_get_contents( $versions_path, null, null, 6, 2048 );
 
 		$vars = array(
 			'wp' => 'wp_version',
@@ -796,30 +796,30 @@ EOT;
 
 		$result = array();
 
-		foreach($vars as $key => $var) {
-			$result[$key] = self::find_var($var, $version_content);
+		foreach( $vars as $key => $var ) {
+			$result[$key] = self::find_var( $var, $version_content );
 		}
 
 		return $result;
 	}
 
-	private static function find_var($key, $content) {
-		$start = strpos ($content, '$' . $key . ' = ');
+	private static function find_var( $key, $content ) {
+		$start = strpos( $content, '$' . $key . ' = ' );
 
 		if( ! $start ) {
 			return '';
 		}
 
-		$start =  $start + strlen($key) + 3;
-		$end   = strpos($content, "\n", $start);
+		$start =  $start + strlen( $key ) + 3;
+		$end   = strpos( $content, "\n", $start );
 
-		$value = substr($content, $start, $end - $start);
-		$value = rtrim($value, ";");
+		$value = substr( $content, $start, $end - $start );
+		$value = rtrim( $value, ";" );
 
-		if ($value[0] = "'" ) {
-			return trim($value, "'");
+		if ( $value[0] = "'" ) {
+			return trim( $value, "'" );
 		} else {
-			return intval($value);
+			return intval( $value );
 		}
 	}
 
