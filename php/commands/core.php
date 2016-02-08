@@ -789,7 +789,8 @@ EOT;
 		return array(
 			'wp' => $wp_version,
 			'db' => $wp_db_version,
-			'tinymce' => $tinymce_version
+			'tinymce' => $tinymce_version,
+			'local_package' => $wp_local_package
 		);
 	}
 
@@ -853,6 +854,7 @@ EOT;
 		if ( empty( $wp_version ) ) {
 			$version = self::get_version();
 			$wp_version = $version['wp'];
+			$wp_local_package = $version['local_package'];
 		}
 
 		$checksums = self::get_core_checksums( $wp_version, isset( $wp_local_package ) ? $wp_local_package : 'en_US' );
