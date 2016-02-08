@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "be16eacf74b49e94af4974a9c8c2460e",
-    "content-hash": "5045f45078e9ea1cfb8087b858d377ac",
+    "hash": "78165aafa4140e764d4f1dc828752cce",
+    "content-hash": "7b6ae0fa1f96555e592ce2f48493a535",
     "packages": [
         {
             "name": "composer/composer",
@@ -1127,16 +1127,16 @@
         },
         {
             "name": "wp-cli/php-cli-tools",
-            "version": "0.11.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/php-cli-tools.git",
-                "reference": "d0564da283585c7289e18877ed2f9c35c1b67013"
+                "reference": "5311a4b99103c0505db015a334be4952654d6e21"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/d0564da283585c7289e18877ed2f9c35c1b67013",
-                "reference": "d0564da283585c7289e18877ed2f9c35c1b67013",
+                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/5311a4b99103c0505db015a334be4952654d6e21",
+                "reference": "5311a4b99103c0505db015a334be4952654d6e21",
                 "shasum": ""
             },
             "require": {
@@ -1173,7 +1173,7 @@
                 "cli",
                 "console"
             ],
-            "time": "2015-08-10 12:46:19"
+            "time": "2016-02-08 14:34:01"
         }
     ],
     "packages-dev": [
@@ -1666,6 +1666,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "wp-cli/php-cli-tools": 20,
         "composer/composer": 15
     },
     "prefer-stable": false,
