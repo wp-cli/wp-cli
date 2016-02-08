@@ -785,14 +785,42 @@ EOT;
 				"Pass --path=`path/to/wordpress` or run `wp core download`." );
 		}
 
-		include $versions_path;
+		$version_content = file_get_contents($versions_path, null, null, 6, 2048);
 
-		return array(
-			'wp' => $wp_version,
-			'db' => $wp_db_version,
-			'tinymce' => $tinymce_version,
-			'local_package' => $wp_local_package
+		$vars = array(
+			'wp' => 'wp_version',
+			'db' => 'wp_db_version',
+			'tinymce' => 'tinymce_version',
+			'local_package' => 'wp_local_package'
 		);
+
+		$result = array();
+
+		foreach($vars as $key => $var) {
+			$result[$key] = self::find_var($var, $version_content);
+		}
+
+		return $result;
+	}
+
+	private static function find_var($key, $content) {
+		$start = strpos ($content, '$' . $key . ' = ');
+
+		if( ! $start ) {
+			return '';
+		}
+
+		$start =  $start + strlen($key) + 3;
+		$end   = strpos($content, "\n", $start);
+
+		$value = substr($content, $start, $end - $start);
+		$value = rtrim($value, ";");
+
+		if ($value[0] = "'" ) {
+			return trim($value, "'");
+		} else {
+			return intval($value);
+		}
 	}
 
 	/**
