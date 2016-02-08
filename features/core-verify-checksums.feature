@@ -36,7 +36,7 @@ Feature: Validate checksums for WordPress install
     Given an empty directory
     And I run `wp core download --version=4.3`
 
-    When I try `wp core verify-checksums`
+    When I run `wp core verify-checksums`
     Then STDOUT should be:
       """
       Success: WordPress install verifies against checksums.
