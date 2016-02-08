@@ -773,6 +773,7 @@ EOT;
 	 *     @type string $wp The WordPress version.
 	 *     @type int $db The WordPress DB revision.
 	 *     @type string $tinymce The TinyMCE version.
+	 *     @type string $local_package The TinyMCE version.
 	 * }
 	 */
 	private static function get_wp_details() {
