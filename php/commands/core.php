@@ -742,7 +742,7 @@ EOT;
 	 * @when before_wp_load
 	 */
 	public function version( $args = array(), $assoc_args = array() ) {
-		$version = self::get_version();
+		$version = self::get_wp_details();
 
 		// @codingStandardsIgnoreStart
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'extra' ) ) {
@@ -775,7 +775,7 @@ EOT;
 	 *     @type string $tinymce The TinyMCE version.
 	 * }
 	 */
-	private static function get_version() {
+	private static function get_wp_details() {
 		$versions_path = ABSPATH . 'wp-includes/version.php';
 
 		if ( !is_readable( $versions_path ) ) {
@@ -852,9 +852,12 @@ EOT;
 		}
 
 		if ( empty( $wp_version ) ) {
-			$version = self::get_version();
-			$wp_version = $version['wp'];
-			$wp_local_package = $version['local_package'];
+			$details = self::get_wp_details();
+			$wp_version = $details['wp'];
+
+			if ( empty( $wp_local_package ) ) {
+				$wp_local_package = $details['local_package'];
+			}
 		}
 
 		$checksums = self::get_core_checksums( $wp_version, isset( $wp_local_package ) ? $wp_local_package : 'en_US' );
