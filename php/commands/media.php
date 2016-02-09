@@ -182,7 +182,7 @@ class Media_Command extends WP_CLI_Command {
 			}
 
 			if ( empty( $post_array['post_title'] ) ) {
-				$post_array['post_title'] = $file_array['name'];
+				$post_array['post_title'] = preg_replace( '/\.[^.]+$/', '', basename( $file ) );
 			}
 
 			// Deletes the temporary file.
