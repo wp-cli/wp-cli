@@ -742,6 +742,41 @@ EOT;
 	 * @when before_wp_load
 	 */
 	public function version( $args = array(), $assoc_args = array() ) {
+		$version = self::get_wp_details();
+
+		// @codingStandardsIgnoreStart
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'extra' ) ) {
+			if ( preg_match( '/(\d)(\d+)-/', $version['tinymce'], $match ) ) {
+				$human_readable_tiny_mce = $match[1] . '.' . $match[2];
+			} else {
+				$human_readable_tiny_mce = '';
+			}
+
+			echo \WP_CLI\Utils\mustache_render( 'versions.mustache', array(
+				'wp-version' => $version['wp'],
+				'db-version' => $version['db'],
+				'mce-version' => ( $human_readable_tiny_mce ?
+					"$human_readable_tiny_mce ({$version['tinymce']})"
+					: $version['tinymce']
+				)
+			) );
+		} else {
+			WP_CLI::line( $version['wp'] );
+		}
+		// @codingStandardsIgnoreEnd
+	}
+
+	/**
+	 * Get version information from `wp-includes/version.php`.
+	 *
+	 * @return array {
+	 *     @type string $wp The WordPress version.
+	 *     @type int $db The WordPress DB revision.
+	 *     @type string $tinymce The TinyMCE version.
+	 *     @type string $local_package The TinyMCE version.
+	 * }
+	 */
+	private static function get_wp_details() {
 		$versions_path = ABSPATH . 'wp-includes/version.php';
 
 		if ( !is_readable( $versions_path ) ) {
@@ -750,28 +785,42 @@ EOT;
 				"Pass --path=`path/to/wordpress` or run `wp core download`." );
 		}
 
-		include $versions_path;
+		$version_content = file_get_contents( $versions_path, null, null, 6, 2048 );
 
-		// @codingStandardsIgnoreStart
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'extra' ) ) {
-			if ( preg_match( '/(\d)(\d+)-/', $tinymce_version, $match ) ) {
-				$human_readable_tiny_mce = $match[1] . '.' . $match[2];
-			} else {
-				$human_readable_tiny_mce = '';
-			}
+		$vars = array(
+			'wp' => 'wp_version',
+			'db' => 'wp_db_version',
+			'tinymce' => 'tinymce_version',
+			'local_package' => 'wp_local_package'
+		);
 
-			echo \WP_CLI\Utils\mustache_render( 'versions.mustache', array(
-				'wp-version' => $wp_version,
-				'db-version' => $wp_db_version,
-				'mce-version' => ( $human_readable_tiny_mce ?
-					"$human_readable_tiny_mce ($tinymce_version)"
-					: $tinymce_version
-				)
-			) );
-		} else {
-			WP_CLI::line( $wp_version );
+		$result = array();
+
+		foreach( $vars as $key => $var ) {
+			$result[$key] = self::find_var( $var, $version_content );
 		}
-		// @codingStandardsIgnoreEnd
+
+		return $result;
+	}
+
+	private static function find_var( $key, $content ) {
+		$start = strpos( $content, '$' . $key . ' = ' );
+
+		if( ! $start ) {
+			return '';
+		}
+
+		$start =  $start + strlen( $key ) + 3;
+		$end   = strpos( $content, "\n", $start );
+
+		$value = substr( $content, $start, $end - $start );
+		$value = rtrim( $value, ";" );
+
+		if ( $value[0] = "'" ) {
+			return trim( $value, "'" );
+		} else {
+			return intval( $value );
+		}
 	}
 
 	/**
@@ -832,10 +881,15 @@ EOT;
 		}
 
 		if ( empty( $wp_version ) ) {
-			WP_CLI::get_runner()->load_wordpress();
+			$details = self::get_wp_details();
+			$wp_version = $details['wp'];
+
+			if ( empty( $wp_local_package ) ) {
+				$wp_local_package = $details['local_package'];
+			}
 		}
 
-		$checksums = self::get_core_checksums( $wp_version, isset( $wp_local_package ) ? $wp_local_package : 'en_US' );
+		$checksums = self::get_core_checksums( $wp_version, ! empty( $wp_local_package ) ? $wp_local_package : 'en_US' );
 
 		if ( ! is_array( $checksums ) ) {
 			WP_CLI::error( "Couldn't get checksums from WordPress.org." );
