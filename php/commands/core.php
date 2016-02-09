@@ -856,8 +856,8 @@ EOT;
 
 		$version_content = file_get_contents( $versions_path, null, null, 6, 2048 );
 
-		$vars   = [ 'wp_version', 'wp_db_version', 'tinymce_version', 'wp_local_package' ];
-		$result = [ ];
+		$vars   = array( 'wp_version', 'wp_db_version', 'tinymce_version', 'wp_local_package' );
+		$result = array();
 
 		foreach ( $vars as $var_name ) {
 			$result[ $var_name ] = self::find_var( $var_name, $version_content );
