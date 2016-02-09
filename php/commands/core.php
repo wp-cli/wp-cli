@@ -138,12 +138,12 @@ class Core_Command extends WP_CLI_Command {
 			$response = Utils\http_request( 'GET', $download_url, null, $headers, $options );
 			if ( 404 == $response->status_code ) {
 				WP_CLI::error( "Release not found. Double-check locale or version." );
-			} else if ( 20 !== substr( $response->status_code, 0, 2 ) ) {
+			} else if ( 20 != substr( $response->status_code, 0, 2 ) ) {
 				WP_CLI::error( "Couldn't access download URL (HTTP code {$response->status_code})" );
 			}
 
 			$md5_response = Utils\http_request( 'GET', $download_url . '.md5' );
-			if ( 20 !== substr( $md5_response->status_code, 0, 2 ) ) {
+			if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
 				WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$response->status_code})" );
 			}
 
