@@ -142,6 +142,18 @@ class Core_Command extends WP_CLI_Command {
 				WP_CLI::error( "Couldn't access download URL (HTTP code {$response->status_code})" );
 			}
 
+			$md5_response = Utils\http_request( 'GET', $download_url . '.md5' );
+			if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
+				WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$response->status_code})" );
+			}
+
+			$md5_file = md5_file( $temp );
+			if ( $md5_file === $md5_response->body ) {
+				WP_CLI::log( 'md5 hash verified: ' . $md5_file );
+			} else {
+				WP_CLI::error( "md5 hash for download ({$md5_file}) is different than the release hash ({$md5_response->body})" );
+			}
+
 			try {
 				self::_extract( $temp, $download_dir );
 			} catch ( Exception $e ) {
