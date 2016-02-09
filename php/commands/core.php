@@ -742,44 +742,113 @@ EOT;
 	 * @when before_wp_load
 	 */
 	public function version( $args = array(), $assoc_args = array() ) {
-		$version = self::get_wp_details();
+		$details = self::get_wp_details();
 
 		// @codingStandardsIgnoreStart
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'extra' ) ) {
-			if ( preg_match( '/(\d)(\d+)-/', $version['tinymce'], $match ) ) {
+			if ( preg_match( '/(\d)(\d+)-/', $details['tinymce_version'], $match ) ) {
 				$human_readable_tiny_mce = $match[1] . '.' . $match[2];
 			} else {
 				$human_readable_tiny_mce = '';
 			}
 
 			echo \WP_CLI\Utils\mustache_render( 'versions.mustache', array(
-				'wp-version' => $version['wp'],
-				'db-version' => $version['db'],
+				'wp-version'  => $details['wp_version'],
+				'db-version'  => $details['wp_db_version'],
 				'mce-version' => ( $human_readable_tiny_mce ?
-					"$human_readable_tiny_mce ({$version['tinymce']})"
-					: $version['tinymce']
+					"$human_readable_tiny_mce ({$details['tinymce_version']})"
+					: $details['tinymce_version']
 				)
 			) );
 		} else {
-			WP_CLI::line( $version['wp'] );
+			WP_CLI::line( $details['wp_version'] );
 		}
 		// @codingStandardsIgnoreEnd
+	}
+
+	/**
+	 * Verify WordPress files against WordPress.org's checksums.
+	 *
+	 * Specify version to verify checksums without loading WordPress.
+	 *
+	 * [--version=<version>]
+	 * : Verify checksums against a specific version of WordPress.
+	 *
+	 * [--locale=<locale>]
+	 * : Verify checksums against a specific locale of WordPress.
+	 *
+	 * @when before_wp_load
+	 *
+	 * @subcommand verify-checksums
+	 */
+	public function verify_checksums( $args, $assoc_args ) {
+		global $wp_version, $wp_local_package;
+
+		if ( ! empty( $assoc_args['version'] ) ) {
+			$wp_version = $assoc_args['version'];
+		}
+
+		if ( ! empty( $assoc_args['locale'] ) ) {
+			$wp_local_package = $assoc_args['locale'];
+		}
+
+		if ( empty( $wp_version ) ) {
+			$details = self::get_wp_details();
+			$wp_version = $details['wp_version'];
+
+			if ( empty( $wp_local_package ) ) {
+				$wp_local_package = $details['wp_local_package'];
+			}
+		}
+
+		$checksums = self::get_core_checksums( $wp_version,
+			! empty( $wp_local_package ) ? $wp_local_package : 'en_US' );
+
+		if ( ! is_array( $checksums ) ) {
+			WP_CLI::error( "Couldn't get checksums from WordPress.org." );
+		}
+
+		$has_errors = false;
+		foreach ( $checksums as $file => $checksum ) {
+			// Skip files which get updated
+			if ( 'wp-content' == substr( $file, 0, 10 ) ) {
+				continue;
+			}
+
+			if ( ! file_exists( ABSPATH . $file ) ) {
+				WP_CLI::warning( "File doesn't exist: {$file}" );
+				$has_errors = true;
+				continue;
+			}
+
+			$md5_file = md5_file( ABSPATH . $file );
+			if ( $md5_file !== $checksum ) {
+				WP_CLI::warning( "File doesn't verify against checksum: {$file}" );
+				$has_errors = true;
+			}
+		}
+
+		if ( ! $has_errors ) {
+			WP_CLI::success( "WordPress install verifies against checksums." );
+		} else {
+			WP_CLI::error( "WordPress install doesn't verify against checksums." );
+		}
 	}
 
 	/**
 	 * Get version information from `wp-includes/version.php`.
 	 *
 	 * @return array {
-	 *     @type string $wp The WordPress version.
-	 *     @type int $db The WordPress DB revision.
-	 *     @type string $tinymce The TinyMCE version.
-	 *     @type string $local_package The TinyMCE version.
+	 *     @type string $wp_version The WordPress version.
+	 *     @type int $wp_db_version The WordPress DB revision.
+	 *     @type string $tinymce_version The TinyMCE version.
+	 *     @type string $wp_local_package The TinyMCE version.
 	 * }
 	 */
 	private static function get_wp_details() {
 		$versions_path = ABSPATH . 'wp-includes/version.php';
 
-		if ( !is_readable( $versions_path ) ) {
+		if ( ! is_readable( $versions_path ) ) {
 			WP_CLI::error(
 				"This does not seem to be a WordPress install.\n" .
 				"Pass --path=`path/to/wordpress` or run `wp core download`." );
@@ -787,34 +856,39 @@ EOT;
 
 		$version_content = file_get_contents( $versions_path, null, null, 6, 2048 );
 
-		$vars = array(
-			'wp' => 'wp_version',
-			'db' => 'wp_db_version',
-			'tinymce' => 'tinymce_version',
-			'local_package' => 'wp_local_package'
-		);
+		$vars   = [ 'wp_version', 'wp_db_version', 'tinymce_version', 'wp_local_package' ];
+		$result = [ ];
 
-		$result = array();
-
-		foreach( $vars as $key => $var ) {
-			$result[$key] = self::find_var( $var, $version_content );
+		foreach ( $vars as $var_name ) {
+			$result[ $var_name ] = self::find_var( $var_name, $version_content );
 		}
 
 		return $result;
 	}
 
-	private static function find_var( $key, $content ) {
-		$start = strpos( $content, '$' . $key . ' = ' );
+	/**
+	 * Search for the value assigned to variable `$var_name` in PHP code `$code`.
+	 *
+	 * This is equivalent to matching the `\$VAR_NAME = ([^;]+)` regular expression and returning
+	 * the first match either as a `string` or as an `integer` (depending if it's surrounded by
+	 * quotes or not).
+	 *
+	 * @param string $var_name Variable name to search for.
+	 * @param string $code PHP code to search in.
+	 *
+	 * @return int|string|null
+	 */
+	private static function find_var( $var_name, $code ) {
+		$start = strpos( $code, '$' . $var_name . ' = ' );
 
-		if( ! $start ) {
-			return '';
+		if ( ! $start ) {
+			return null;
 		}
 
-		$start =  $start + strlen( $key ) + 3;
-		$end   = strpos( $content, "\n", $start );
+		$start = $start + strlen( $var_name ) + 3;
+		$end   = strpos( $code, ";", $start );
 
-		$value = substr( $content, $start, $end - $start );
-		$value = rtrim( $value, ";" );
+		$value = substr( $code, $start, $end - $start );
 
 		if ( $value[0] = "'" ) {
 			return trim( $value, "'" );
@@ -852,74 +926,6 @@ EOT;
 			return false;
 
 		return $body['checksums'];
-	}
-
-	/**
-	 * Verify WordPress files against WordPress.org's checksums.
-	 *
-	 * Specify version to verify checksums without loading WordPress.
-	 *
-	 * [--version=<version>]
-	 * : Verify checksums against a specific version of WordPress.
-	 *
-	 * [--locale=<locale>]
-	 * : Verify checksums against a specific locale of WordPress.
-	 *
-	 * @when before_wp_load
-	 *
-	 * @subcommand verify-checksums
-	 */
-	public function verify_checksums( $args, $assoc_args ) {
-		global $wp_version, $wp_local_package;
-
-		if ( ! empty( $assoc_args['version'] ) ) {
-			$wp_version = $assoc_args['version'];
-		}
-
-		if ( ! empty( $assoc_args['locale'] ) ) {
-			$wp_local_package = $assoc_args['locale'];
-		}
-
-		if ( empty( $wp_version ) ) {
-			$details = self::get_wp_details();
-			$wp_version = $details['wp'];
-
-			if ( empty( $wp_local_package ) ) {
-				$wp_local_package = $details['local_package'];
-			}
-		}
-
-		$checksums = self::get_core_checksums( $wp_version, ! empty( $wp_local_package ) ? $wp_local_package : 'en_US' );
-
-		if ( ! is_array( $checksums ) ) {
-			WP_CLI::error( "Couldn't get checksums from WordPress.org." );
-		}
-
-		$has_errors = false;
-		foreach ( $checksums as $file => $checksum ) {
-			// Skip files which get updated
-			if ( 'wp-content' == substr( $file, 0, 10 ) ) {
-				continue;
-			}
-
-			if ( ! file_exists( ABSPATH . $file ) ) {
-				WP_CLI::warning( "File doesn't exist: {$file}" );
-				$has_errors = true;
-				continue;
-			}
-
-			$md5_file = md5_file( ABSPATH . $file );
-			if ( $md5_file !== $checksum ) {
-				WP_CLI::warning( "File doesn't verify against checksum: {$file}" );
-				$has_errors = true;
-			}
-		}
-
-		if ( ! $has_errors ) {
-			WP_CLI::success( "WordPress install verifies against checksums." );
-		} else {
-			WP_CLI::error( "WordPress install doesn't verify against checksums." );
-		}
 	}
 
 	/**
