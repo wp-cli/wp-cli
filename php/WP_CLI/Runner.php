@@ -616,7 +616,10 @@ class Runner {
 		}
 
 		if ( file_exists( $package_autoload ) ) {
+			WP_CLI::debug( 'Loading packages from: ' . $package_autoload );
 			require_once $package_autoload;
+		} else {
+			WP_CLI::debug( 'No package autoload found to load.' );
 		}
 
 		if ( isset( $this->config['require'] ) ) {
