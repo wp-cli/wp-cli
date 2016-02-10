@@ -40,3 +40,22 @@ Feature: Check for more recent versions
       """
       1
       """
+
+  @less-than-php-7
+  Scenario: No minor updates for an unlocalized WordPress release
+    Given a WP install
+
+    When I run `wp core download --version=4.0 --locale=es_ES --force`
+    Then STDOUT should contain:
+      """
+      Success: WordPress downloaded.
+      """
+
+    When I run `wp core check-update --minor`
+    Then STDOUT should be a table containing rows:
+      | version | update_type | package_url                                        |
+      | 4.0.1   | minor       | https://es.wordpress.org/wordpress-4.0.1-es_ES.zip |
+    And STDERR should contain:
+      """
+      Warning: No release found for 4.0.10 (es_ES)
+      """

@@ -197,6 +197,7 @@ Feature: Update WordPress core
   @less-than-php-7
   Scenario: Minor update on an unlocalized WordPress release
     Given a WP install
+    And an empty cache
 
     When I run `wp core download --version=4.0 --locale=es_ES --force`
     Then STDOUT should contain:
@@ -207,5 +208,10 @@ Feature: Update WordPress core
     When I run `wp core update --minor`
     Then STDOUT should contain:
       """
-      Success: WordPress updated successfully
+      Updating to version 4.0.10 (en_US)...
+      Descargando paquete de instalación desde https://downloads.wordpress.org/release/wordpress-4.0.10-partial-0.zip
+      """
+    And STDOUT should contain:
+      """
+      Success: WordPress updated successfully.
       """

@@ -976,16 +976,6 @@ EOT;
 		$update = $from_api = null;
 		$upgrader = 'WP_CLI\\CoreUpgrader';
 
-		if ( empty( $args[0] ) && empty( $assoc_args['version'] ) && \WP_CLI\Utils\get_flag_value( $assoc_args, 'minor' ) ) {
-			$updates = $this->get_updates( array( 'minor' => true ) );
-			if ( ! empty( $updates ) ) {
-				$assoc_args['version'] = $updates[0]['version'];
-			} else {
-				WP_CLI::success( 'WordPress is at the latest minor release.' );
-				return;
-			}
-		}
-
 		if ( ! empty( $args[0] ) ) {
 
 			$upgrader = 'WP_CLI\\NonDestructiveCoreUpgrader';
@@ -1010,8 +1000,23 @@ EOT;
 			wp_version_check();
 			$from_api = get_site_transient( 'update_core' );
 
-			if ( ! empty( $from_api->updates ) ) {
-				list( $update ) = $from_api->updates;
+			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'minor' ) ) {
+				foreach( $from_api->updates as $offer ) {
+					$sem_ver = Utils\get_named_sem_ver( $offer->version, $wp_version );
+					if ( ! $sem_ver || 'patch' !== $sem_ver ) {
+						continue;
+					}
+					$update = $offer;
+					break;
+				}
+				if ( empty( $update ) ) {
+					WP_CLI::success( 'WordPress is at the latest minor release.' );
+					return;
+				}
+			} else {
+				if ( ! empty( $from_api->updates ) ) {
+					list( $update ) = $from_api->updates;
+				}
 			}
 
 		} else if (	\WP_CLI\Utils\wp_version_compare( $assoc_args['version'], '<' )
@@ -1221,6 +1226,13 @@ EOT;
 			}
 
 			if ( ! empty( $updates[ $update_type ] ) && ! Comparator::greaterThan( $release_version, $updates[ $update_type ]['version'] ) ) {
+				continue;
+			}
+
+			$download_url = $this->get_download_url( $release_version, $locale );
+			$response = Utils\http_request( 'HEAD', $download_url );
+			if ( 20 != substr( $response->status_code, 0, 2 ) ) {
+				WP_CLI::warning( "No release found for {$release_version} ({$locale})" );
 				continue;
 			}
 
