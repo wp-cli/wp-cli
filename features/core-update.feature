@@ -193,3 +193,19 @@ Feature: Update WordPress core
     Then STDOUT should not be empty
     When I run `wp post create --post_title='Test post' --porcelain`
     Then STDOUT should be a number
+
+  @less-than-php-7
+  Scenario: Minor update on an unlocalized WordPress release
+    Given a WP install
+
+    When I run `wp core download --version=4.0 --locale=es_ES --force`
+    Then STDOUT should contain:
+      """
+      Success: WordPress downloaded.
+      """
+
+    When I run `wp core update --minor`
+    Then STDOUT should contain:
+      """
+      Success: WordPress updated successfully
+      """
