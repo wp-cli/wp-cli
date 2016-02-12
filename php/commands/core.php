@@ -80,7 +80,11 @@ class Core_Command extends WP_CLI_Command {
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && $wordpress_present )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
-		if ( !is_dir( $download_dir ) ) {
+		if ( ! is_dir( $download_dir ) ) {
+			if ( ! is_writable( dirname( $download_dir ) ) ) {
+				WP_CLI::error( sprintf( "Insufficient permission to create directory %s", $download_dir ) );
+			}
+
 			WP_CLI::log( sprintf( 'Creating directory %s', $download_dir ) );
 			$mkdir = \WP_CLI\Utils\is_windows() ? 'mkdir %s' : 'mkdir -p %s';
 			WP_CLI::launch( Utils\esc_cmd( $mkdir, $download_dir ) );
