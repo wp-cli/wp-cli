@@ -86,6 +86,10 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::launch( Utils\esc_cmd( $mkdir, $download_dir ) );
 		}
 
+		if ( ! is_writable( $download_dir ) ) {
+			WP_CLI::error( sprintf( "%s is not writable by current user", $download_dir ) );
+		}
+
 		$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', 'en_US' );
 
 		if ( isset( $assoc_args['version'] ) ) {
