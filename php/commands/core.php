@@ -984,16 +984,6 @@ EOT;
 		$update = $from_api = null;
 		$upgrader = 'WP_CLI\\CoreUpgrader';
 
-		if ( empty( $args[0] ) && empty( $assoc_args['version'] ) && \WP_CLI\Utils\get_flag_value( $assoc_args, 'minor' ) ) {
-			$updates = $this->get_updates( array( 'minor' => true ) );
-			if ( ! empty( $updates ) ) {
-				$assoc_args['version'] = $updates[0]['version'];
-			} else {
-				WP_CLI::success( 'WordPress is at the latest minor release.' );
-				return;
-			}
-		}
-
 		if ( ! empty( $args[0] ) ) {
 
 			$upgrader = 'WP_CLI\\NonDestructiveCoreUpgrader';
@@ -1018,8 +1008,23 @@ EOT;
 			wp_version_check();
 			$from_api = get_site_transient( 'update_core' );
 
-			if ( ! empty( $from_api->updates ) ) {
-				list( $update ) = $from_api->updates;
+			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'minor' ) ) {
+				foreach( $from_api->updates as $offer ) {
+					$sem_ver = Utils\get_named_sem_ver( $offer->version, $wp_version );
+					if ( ! $sem_ver || 'patch' !== $sem_ver ) {
+						continue;
+					}
+					$update = $offer;
+					break;
+				}
+				if ( empty( $update ) ) {
+					WP_CLI::success( 'WordPress is at the latest minor release.' );
+					return;
+				}
+			} else {
+				if ( ! empty( $from_api->updates ) ) {
+					list( $update ) = $from_api->updates;
+				}
 			}
 
 		} else if (	\WP_CLI\Utils\wp_version_compare( $assoc_args['version'], '<' )
@@ -1183,40 +1188,21 @@ EOT;
 	 * Returns update information
 	 */
 	private function get_updates( $assoc_args ) {
-		global $wp_version;
-		$versions_path = ABSPATH . 'wp-includes/version.php';
-		include $versions_path;
-
-		$url = 'https://api.wordpress.org/core/stable-check/1.0/';
-
-		$options = array(
-			'timeout' => 30
-		);
-		$headers = array(
-			'Accept' => 'application/json'
-		);
-		$response = Utils\http_request( 'GET', $url, $headers, $options );
-
-		if ( ! $response->success || 200 !== $response->status_code ) {
-			WP_CLI::error( "Failed to get latest version list." );
+		wp_version_check();
+		$from_api = get_site_transient( 'update_core' );
+		if ( ! $from_api ) {
+			return array();
 		}
 
-		$release_data = json_decode( $response->body );
-		$release_versions = array_keys( (array) $release_data );
-		usort( $release_versions, function( $a, $b ){
-			return 1 === version_compare( $a, $b );
-		});
-
-		$locale = get_locale();
 		$compare_version = str_replace( '-src', '', $GLOBALS['wp_version'] );
 
 		$updates = array(
 			'major'      => false,
 			'minor'      => false,
 			);
-		foreach ( $release_versions as $release_version ) {
+		foreach ( $from_api->updates as $offer ) {
 
-			$update_type = Utils\get_named_sem_ver( $release_version, $compare_version );
+			$update_type = Utils\get_named_sem_ver( $offer->version, $compare_version );
 			if ( ! $update_type ) {
 				continue;
 			}
@@ -1228,14 +1214,14 @@ EOT;
 				$update_type = 'minor';
 			}
 
-			if ( ! empty( $updates[ $update_type ] ) && ! Comparator::greaterThan( $release_version, $updates[ $update_type ]['version'] ) ) {
+			if ( ! empty( $updates[ $update_type ] ) && ! Comparator::greaterThan( $offer->version, $updates[ $update_type ]['version'] ) ) {
 				continue;
 			}
 
 			$updates[ $update_type ] = array(
-				'version'     => $release_version,
+				'version'     => $offer->version,
 				'update_type' => $update_type,
-				'package_url' => $this->get_download_url( $release_version, $locale )
+				'package_url' => ! empty( $offer->packages->partial ) ? $offer->packages->partial : $offer->packages->full,
 			);
 		}
 
