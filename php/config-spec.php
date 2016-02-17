@@ -31,10 +31,10 @@ return array(
 	'skip-plugins' => array(
 		'runtime' => '[=<plugin>]',
 		'file' => '<list>',
-		'desc' => 'Skip loading all or some plugins.',
+		'desc' => 'Skip loading all or some plugins. Note: mu-plugins are still loaded.',
 		'default' => '',
 	),
-	
+
 	'skip-themes' => array(
 		'runtime' => '[=<theme>]',
 		'file' => '<list>',
