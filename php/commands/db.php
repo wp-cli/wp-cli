@@ -264,7 +264,7 @@ class DB_Command extends WP_CLI_Command {
 
 	private static function get_create_query() {
 
-		$create_query = sprintf( 'CREATE DATABASE `%s`', DB_NAME );
+		$create_query = sprintf( 'CREATE DATABASE IF NOT EXISTS `%s`', DB_NAME );
 		if ( defined( 'DB_CHARSET' ) && constant( 'DB_CHARSET' ) ) {
 			$create_query .= sprintf( ' DEFAULT CHARSET `%s`', constant( 'DB_CHARSET' ) );
 		}
