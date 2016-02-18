@@ -247,11 +247,13 @@ class WP_CLI {
 
 	/**
 	 * Display a message in the CLI and end with a newline.
-	 * Ignores --quiet flag. To respect, use WP_CLI::log()
+	 * Ignores `--quiet` flag. To respect, use `WP_CLI::log()`
 	 *
 	 * @access public
+	 * @category Output
 	 *
-	 * @param string $message
+	 * @param string $message Message to display to the end user.
+	 * @return null
 	 */
 	public static function line( $message = '' ) {
 		echo $message . "\n";
@@ -261,6 +263,7 @@ class WP_CLI {
 	 * Log an informational message.
 	 *
 	 * @access public
+	 * @category Output
 	 *
 	 * @param string $message
 	 */
@@ -272,6 +275,7 @@ class WP_CLI {
 	 * Display a success in the CLI and end with a newline.
 	 *
 	 * @access public
+	 * @category Output
 	 *
 	 * @param string $message
 	 */
@@ -280,10 +284,13 @@ class WP_CLI {
 	}
 
 	/**
-	 * Log information when --debug flag is used.
-	 * Helpful for optionally showing greater detail when needed.
+	 * Display debug message prefixed with "Debug: " when `--debug` is used.
+	 *
+	 * Helpful for optionally showing greater detail when needed. Debug message
+	 * is written to STDERR, and includes script execution time.
 	 *
 	 * @access public
+	 * @category Output
 	 *
 	 * @param string $message
 	 */
@@ -292,23 +299,49 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display a warning in the CLI and end with a newline.
+	 * Display warning message prefixed with "Warning: ".
+	 *
+	 * Warning message is written to STDERR.
+	 *
+	 * ```
+	 * # `wp plugin activate` skips activation when plugin is network active.
+	 * $status = $this->get_status( $plugin->file );
+	 * // Network-active is the highest level of activation status
+	 * if ( 'active-network' === $status ) {
+	 * 	WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
+	 * 	continue;
+	 * }
+	 * ```
 	 *
 	 * @access public
+	 * @category Output
 	 *
-	 * @param string $message
+	 * @param string $message Message to write to STDERR.
+	 * @return null
 	 */
 	public static function warning( $message ) {
 		self::$logger->warning( self::error_to_string( $message ) );
 	}
 
 	/**
-	 * Display an error in the CLI and end with a newline.
+	 * Display error message prefixed with "Error: " and exits script.
+	 *
+	 * Error message is written to STDERR. Defaults to halting
+	 * script execution with return code 1.
+	 *
+	 * ```
+	 * # `wp cache flush` considers flush failure to be a fatal error.
+	 * if ( false === wp_cache_flush() ) {
+	 *     WP_CLI::error( 'The object cache could not be flushed.' );
+	 * }
+	 * ```
 	 *
 	 * @access public
+	 * @category Output
 	 *
-	 * @param string|WP_Error $message
-	 * @param bool            $exit    if true, the script will exit()
+	 * @param string|WP_Error  $message Message to write to STDERR.
+	 * @param boolean|integer  $exit    True defaults to exit(1).
+	 * @return null
 	 */
 	public static function error( $message, $exit = true ) {
 		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) ) {
@@ -375,6 +408,9 @@ class WP_CLI {
 	/**
 	 * Read a value, from various formats.
 	 *
+	 * @access public
+	 * @category Input
+	 *
 	 * @param mixed $value
 	 * @param array $assoc_args
 	 */
@@ -432,12 +468,14 @@ class WP_CLI {
 	}
 
 	/**
-	 * Launch an external process that takes over I/O.
+	 * Launch an arbitrary external process that takes over I/O.
+	 *
+	 * @access public
+	 * @category Execution
 	 *
 	 * @param string Command to call
 	 * @param bool Whether to exit if the command returns an error status
-	 * @param bool Whether to return an exit status (default) or detailed execution results
-	 *
+	 * @param bool Whether to return an exit status (default) or detailed execution results.
 	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
 	 */
 	public static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
