@@ -160,6 +160,7 @@ Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-user-query.
 Utils\maybe_require( '4.0', ABSPATH . WPINC . '/session.php' );
 require( ABSPATH . WPINC . '/meta.php' );
 Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-meta-query.php' );
+Utils\maybe_require( '4.5-alpha-35776', ABSPATH . WPINC . '/class-wp-metadata-lazyloader.php' );
 require( ABSPATH . WPINC . '/general-template.php' );
 require( ABSPATH . WPINC . '/link-template.php' );
 require( ABSPATH . WPINC . '/author-template.php' );
