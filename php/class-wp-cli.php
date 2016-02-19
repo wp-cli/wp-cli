@@ -246,8 +246,10 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display a message in the CLI and end with a newline.
-	 * Ignores `--quiet` flag. To respect, use `WP_CLI::log()`
+	 * Display informational message without prefix, and ignore `--quiet`.
+	 *
+	 * Message is written to STDOUT. `WP_CLI::log()` is typically recommended;
+	 * `WP_CLI::line()` is included for historical compat.
 	 *
 	 * @access public
 	 * @category Output
@@ -260,24 +262,46 @@ class WP_CLI {
 	}
 
 	/**
-	 * Log an informational message.
+	 * Display informational message without prefix.
+	 *
+	 * Message is written to STDOUT, or discarded when `--quiet` flag is supplied.
+	 *
+	 * ```
+	 * # `wp cli update` lets user know of each step in the update process.
+	 * WP_CLI::log( sprintf( 'Downloading from %s...', $download_url ) );
+	 * ```
 	 *
 	 * @access public
 	 * @category Output
 	 *
-	 * @param string $message
+	 * @param string $message Message to write to STDOUT.
 	 */
 	public static function log( $message ) {
 		self::$logger->info( $message );
 	}
 
 	/**
-	 * Display a success in the CLI and end with a newline.
+	 * Display success message prefixed with "Success: ".
+	 *
+	 * Success message is written to STDOUT.
+	 *
+	 * Typically recommended to inform user of successful script conclusion.
+	 *
+	 * ```
+	 * # wp rewrite flush expects 'rewrite_rules' option to be set after flush.
+	 * flush_rewrite_rules( \WP_CLI\Utils\get_flag_value( $assoc_args, 'hard' ) );
+	 * if ( ! get_option( 'rewrite_rules' ) ) {
+	 *     WP_CLI::warning( "Rewrite rules are empty." );
+	 * } else {
+	 *     WP_CLI::success( 'Rewrite rules flushed.' );
+	 * }
+	 * ```
 	 *
 	 * @access public
 	 * @category Output
 	 *
-	 * @param string $message
+	 * @param string $message Message to write to STDOUT.
+	 * @return null
 	 */
 	public static function success( $message ) {
 		self::$logger->success( $message );
@@ -286,13 +310,30 @@ class WP_CLI {
 	/**
 	 * Display debug message prefixed with "Debug: " when `--debug` is used.
 	 *
-	 * Helpful for optionally showing greater detail when needed. Debug message
-	 * is written to STDERR, and includes script execution time.
+	 * Debug message is written to STDERR, and includes script execution time.
+	 *
+	 * Helpful for optionally showing greater detail when needed. Used throughout
+	 * WP-CLI bootstrap process for easier debugging and profiling.
+	 *
+	 * ```
+	 * # Called in `WP_CLI\Runner::set_wp_root()`.
+	 * private static function set_wp_root( $path ) {
+	 *     define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+	 *     WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH );
+	 *     $_SERVER['DOCUMENT_ROOT'] = realpath( $path );
+	 * }
+	 *
+	 * # Debug details only appear when `--debug` is used.
+	 * # $ wp --debug
+	 * # [...]
+	 * # Debug: ABSPATH defined: /srv/www/wordpress-develop.dev/src/ (0.225s)
+	 * ```
 	 *
 	 * @access public
 	 * @category Output
 	 *
-	 * @param string $message
+	 * @param string $message Message to write to STDERR.
+	 * @return null
 	 */
 	public static function debug( $message ) {
 		self::$logger->debug( self::error_to_string( $message ) );
@@ -302,6 +343,9 @@ class WP_CLI {
 	 * Display warning message prefixed with "Warning: ".
 	 *
 	 * Warning message is written to STDERR.
+	 *
+	 * Use instead of `WP_CLI::debug()` when script execution should be permitted
+	 * to continue.
 	 *
 	 * ```
 	 * # `wp plugin activate` skips activation when plugin is network active.
@@ -324,10 +368,13 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display error message prefixed with "Error: " and exits script.
+	 * Display error message prefixed with "Error: " and exit script.
 	 *
-	 * Error message is written to STDERR. Defaults to halting
-	 * script execution with return code 1.
+	 * Error message is written to STDERR. Defaults to halting script execution
+	 * with return code 1.
+	 *
+	 * Use `WP_CLI::warning()` instead when script execution should be permitted
+	 * to continue.
 	 *
 	 * ```
 	 * # `wp cache flush` considers flush failure to be a fatal error.
@@ -470,13 +517,22 @@ class WP_CLI {
 	/**
 	 * Launch an arbitrary external process that takes over I/O.
 	 *
+	 * ```
+	 * # `wp core download` falls back to the `tar` binary when PharData isn't available
+	 * if ( ! class_exists( 'PharData' ) ) {
+	 *     $cmd = "tar xz --strip-components=1 --directory=%s -f $tarball";
+	 *     WP_CLI::launch( Utils\esc_cmd( $cmd, $dest ) );
+	 *     return;
+	 * }
+	 * ```
+	 *
 	 * @access public
 	 * @category Execution
 	 *
-	 * @param string Command to call
-	 * @param bool Whether to exit if the command returns an error status
-	 * @param bool Whether to return an exit status (default) or detailed execution results.
-	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
+	 * @param string $command External process to launch.
+	 * @param boolean $exit_on_error Whether to exit if the command returns an elevated return code.
+	 * @param boolean $return_detailed Whether to return an exit status (default) or detailed execution results.
+	 * @return int|ProcessRun The command exit status, or a ProcessRun object for full details.
 	 */
 	public static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 
@@ -494,15 +550,17 @@ class WP_CLI {
 	}
 
 	/**
-	 * Launch another WP-CLI command using the runtime arguments for the current process
+	 * Run a WP-CLI command in a new process reusing the current runtime arguments.
 	 *
-	 * @param string Command to call
-	 * @param array $args Positional arguments to use
-	 * @param array $assoc_args Associative arguments to use
-	 * @param bool Whether to exit if the command returns an error status
-	 * @param bool Whether to return an exit status (default) or detailed execution results
+	 * @access public
+	 * @category Execution
+	 *
+	 * @param string $command WP-CLI command to call.
+	 * @param array $args Positional arguments to include when calling the command.
+	 * @param array $assoc_args Associative arguments to include when calling the command.
+	 * @param bool $exit_on_error Whether to exit if the command returns an elevated return code.
+	 * @param bool $return_detailed Whether to return an exit status (default) or detailed execution results.
 	 * @param array $runtime_args Override one or more global args (path,url,user,allow-root)
-	 *
 	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
 	 */
 	public static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true, $return_detailed = false, $runtime_args = array() ) {
