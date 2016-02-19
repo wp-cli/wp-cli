@@ -181,9 +181,9 @@ class CLI_Command extends WP_CLI_Command {
 
 		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
 		$php_binary = WP_CLI::get_php_binary();
-		$process = WP_CLI\Process::create( "{$php_binary} $temp --version {$allow_root}" );
+		$process = WP_CLI\Process::create( "{$php_binary} $temp --info {$allow_root}" );
 		$result = $process->run();
-		if ( 0 !== $result->return_code ) {
+		if ( 0 !== $result->return_code || false === stripos( $result->stdout, 'WP-CLI version:' ) ) {
 			$multi_line = explode( PHP_EOL, $result->stderr );
 			WP_CLI::error_multi_line( $multi_line );
 			WP_CLI::error( 'The downloaded PHAR is broken, try running wp cli update again.' );
