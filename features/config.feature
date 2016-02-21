@@ -271,7 +271,7 @@ Feature: Have a config file
       Error: Required file 'foo.php' doesn't exist (from runtime argument).
       """
 
-  Scenario: Config inheritance
+  Scenario: Config inheritance from project to global
     Given an empty directory
     And a test-cmd.php file:
       """
@@ -307,6 +307,76 @@ Feature: Have a config file
     Then STDOUT should be JSON containing:
       """
       {"foo":"bar","apple":"apple","bar":"burrito"}
+      """
+
+    Given a wp-cli.yml file:
+      """
+      cli config:
+        merge: false
+      test-cmd:
+        bar: burrito
+        apple: apple
+      apple: apple
+      """
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp --require=test-cmd.php test-cmd`
+    Then STDOUT should be JSON containing:
+      """
+      {"bar":"burrito","apple":"apple"}
+      """
+
+  Scenario: Config inheritance from local to project
+    Given an empty directory
+    And a test-cmd.php file:
+      """
+      <?php
+      $command = function( $_, $assoc_args ) {
+         echo json_encode( $assoc_args );
+      };
+      WP_CLI::add_command( 'test-cmd', $command, array( 'when' => 'before_wp_load' ) );
+      """
+    And a wp-cli.yml file:
+      """
+      test-cmd:
+        foo: bar
+        apple: banana
+      apple: banana
+      """
+
+    When I run `wp --require=test-cmd.php test-cmd`
+    Then STDOUT should be JSON containing:
+      """
+      {"foo":"bar","apple":"banana"}
+      """
+
+    Given a wp-cli.local.yml file:
+      """
+      cli config:
+        inherit: wp-cli.yml
+        merge: true
+      test-cmd:
+        bar: burrito
+        apple: apple
+      apple: apple
+      """
+
+    When I run `wp --require=test-cmd.php test-cmd`
+    Then STDOUT should be JSON containing:
+      """
+      {"foo":"bar","apple":"apple","bar":"burrito"}
+      """
+
+    Given a wp-cli.local.yml file:
+      """
+      test-cmd:
+        bar: burrito
+        apple: apple
+      apple: apple
+      """
+
+    When I run `wp --require=test-cmd.php test-cmd`
+    Then STDOUT should be JSON containing:
+      """
+      {"bar":"burrito","apple":"apple"}
       """
 
   @require-wp-3.9

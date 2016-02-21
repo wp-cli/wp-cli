@@ -138,6 +138,9 @@ class Configurator {
 	 */
 	public function merge_yml( $path ) {
 		$yaml = self::load_yml( $path );
+		if ( ! empty( $yaml['cli config']['inherit'] ) ) {
+			$this->merge_yml( $yaml['cli config']['inherit'] );
+		}
 		foreach ( $yaml as $key => $value ) {
 			if ( !isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
 				if ( isset( $this->extra_config[ $key ] )
