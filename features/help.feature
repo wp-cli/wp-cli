@@ -37,6 +37,13 @@ Feature: Get help about WP-CLI commands
       wp core config
       """
 
+    When I run `wp core config {CORE_CONFIG_SETTINGS}`
+    And I run `wp help core install`
+    Then STDOUT should contain:
+      """
+      wp core install
+      """
+
   Scenario: Help for nonexistent commands
     Given a WP install
     
