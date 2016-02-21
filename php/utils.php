@@ -252,7 +252,7 @@ function wp_version_compare( $since, $operator ) {
  * );
  * ```
  *
- * Render `$items` easily render as an ASCII table:
+ * Render `$items` as an ASCII table:
  *
  * ```
  * WP_CLI\Utils\format_items( 'table', $items, array( 'key', 'value' ) );
