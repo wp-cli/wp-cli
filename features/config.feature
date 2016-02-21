@@ -271,6 +271,44 @@ Feature: Have a config file
       Error: Required file 'foo.php' doesn't exist (from runtime argument).
       """
 
+  Scenario: Config inheritance
+    Given an empty directory
+    And a test-cmd.php file:
+      """
+      <?php
+      $command = function( $_, $assoc_args ) {
+         echo json_encode( $assoc_args );
+      };
+      WP_CLI::add_command( 'test-cmd', $command, array( 'when' => 'before_wp_load' ) );
+      """
+    And a config.yml file:
+      """
+      test-cmd:
+        foo: bar
+        apple: banana
+      apple: banana
+      """
+    And a wp-cli.yml file:
+      """
+      cli config:
+        merge: true
+      test-cmd:
+        bar: burrito
+        apple: apple
+      apple: apple
+      """
+
+    When I run `wp --require=test-cmd.php test-cmd`
+    Then STDOUT should be JSON containing:
+      """
+      {"bar":"burrito","apple":"apple"}
+      """
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp --require=test-cmd.php test-cmd`
+    Then STDOUT should be JSON containing:
+      """
+      {"foo":"bar","apple":"apple","bar":"burrito"}
+      """
+
   @require-wp-3.9
   Scenario: WordPress install with local dev DOMAIN_CURRENT_SITE
     Given a WP multisite install

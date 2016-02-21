@@ -137,9 +137,17 @@ class Configurator {
 	 * @param string $path Path to YAML file.
 	 */
 	public function merge_yml( $path ) {
-		foreach ( self::load_yml( $path ) as $key => $value ) {
+		$yaml = self::load_yml( $path );
+		foreach ( $yaml as $key => $value ) {
 			if ( !isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
-				$this->extra_config[ $key ] = $value;
+				if ( isset( $this->extra_config[ $key ] )
+					&& ! empty( $yaml['cli config']['merge'] )
+					&& is_array( $this->extra_config[ $key ] )
+					&& is_array( $value ) ) {
+					$this->extra_config[ $key ] = array_merge( $this->extra_config[ $key ], $value );
+				} else {
+					$this->extra_config[ $key ] = $value;
+				}
 			} elseif ( $this->spec[ $key ]['multiple'] ) {
 				self::arrayify( $value );
 				$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
