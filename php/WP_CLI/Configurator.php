@@ -138,13 +138,13 @@ class Configurator {
 	 */
 	public function merge_yml( $path ) {
 		$yaml = self::load_yml( $path );
-		if ( ! empty( $yaml['cli config']['inherit'] ) ) {
-			$this->merge_yml( $yaml['cli config']['inherit'] );
+		if ( ! empty( $yaml['_']['inherit'] ) ) {
+			$this->merge_yml( $yaml['_']['inherit'] );
 		}
 		foreach ( $yaml as $key => $value ) {
 			if ( !isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
 				if ( isset( $this->extra_config[ $key ] )
-					&& ! empty( $yaml['cli config']['merge'] )
+					&& ! empty( $yaml['_']['merge'] )
 					&& is_array( $this->extra_config[ $key ] )
 					&& is_array( $value ) ) {
 					$this->extra_config[ $key ] = array_merge( $this->extra_config[ $key ], $value );
