@@ -12,6 +12,20 @@ use \WP_CLI\Utils;
 if ( file_exists( __DIR__ . '/utils.php' ) ) {
 	require_once __DIR__ . '/utils.php';
 	require_once __DIR__ . '/Process.php';
+	$project_composer = dirname( dirname( dirname( __FILE__ ) ) ) . '/composer.json';
+	if ( file_exists( $project_composer ) ) {
+		$composer = json_decode( file_get_contents( $project_composer ) );
+		if ( ! empty( $composer->autoload->files ) ) {
+			$contents = 'require:' . PHP_EOL;
+			foreach( $composer->autoload->files as $file ) {
+				$contents .= '  - ' . dirname( dirname( dirname( __FILE__ ) ) ) . '/' . $file;
+			}
+			@mkdir( sys_get_temp_dir() . '/wp-cli-package-test/' );
+			$project_config = sys_get_temp_dir() . '/wp-cli-package-test/config.yml';
+			file_put_contents( $project_config, $contents );
+			putenv( 'WP_CLI_CONFIG_PATH=' . $project_config );
+		}
+	}
 // Inside WP-CLI
 } else {
 	require_once __DIR__ . '/../../php/utils.php';
