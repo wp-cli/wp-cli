@@ -110,7 +110,7 @@ Feature: WordPress code scaffolding
     Given I run `wp plugin path`
     And save STDOUT as {PLUGIN_DIR}
 
-    When I run `wp scaffold plugin hello-world`
+    When I run `wp scaffold plugin hello-world --plugin_author="Hello World Author"`
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/hello-world/.gitignore file should exist
     And the {PLUGIN_DIR}/hello-world/.editorconfig file should exist
@@ -122,6 +122,12 @@ Feature: WordPress code scaffolding
       """
       .DS_Store
       node_modules/
+      """
+
+    When I run `cat {PLUGIN_DIR}/hello-world/package.json`
+    Then STDOUT should be JSON containing:
+      """
+      {"author":"Hello World Author"}
       """
 
   Scenario: Scaffold a plugin by prompting
