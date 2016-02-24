@@ -290,7 +290,7 @@ Feature: Have a config file
       """
     And a wp-cli.yml file:
       """
-      cli config:
+      _:
         merge: true
       test-cmd:
         bar: burrito
@@ -311,7 +311,7 @@ Feature: Have a config file
 
     Given a wp-cli.yml file:
       """
-      cli config:
+      _:
         merge: false
       test-cmd:
         bar: burrito
@@ -350,7 +350,7 @@ Feature: Have a config file
 
     Given a wp-cli.local.yml file:
       """
-      cli config:
+      _:
         inherit: wp-cli.yml
         merge: true
       test-cmd:
