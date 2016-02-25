@@ -267,7 +267,18 @@ class WP_CLI {
 			if ( is_string( $args['synopsis'] ) ) {
 				$leaf_command->set_synopsis( $args['synopsis'] );
 			} else if ( is_array( $args['synopsis'] ) ) {
-				$leaf_command->set_synopsis( \WP_CLI\SynopsisParser::render( $args['synopsis'] ) );
+				$synopsis = \WP_CLI\SynopsisParser::render( $args['synopsis'] );
+				$leaf_command->set_synopsis( $synopsis );
+				$long_desc = '';
+				$bits = explode( ' ', $synopsis );
+				foreach( $args['synopsis'] as $key => $arg ) {
+					$long_desc .= $bits[ $key ] . PHP_EOL . ': ' . $arg['description'] . PHP_EOL . PHP_EOL;
+				}
+				if ( ! empty( $long_desc ) ) {
+					$long_desc = rtrim( $long_desc, PHP_EOL );
+					$long_desc = '## OPTIONS' . PHP_EOL . PHP_EOL . $long_desc;
+					$leaf_command->set_longdesc( $long_desc );
+				}
 			}
 		}
 

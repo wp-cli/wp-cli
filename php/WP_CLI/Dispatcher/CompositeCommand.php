@@ -119,6 +119,15 @@ class CompositeCommand {
 	}
 
 	/**
+	 * Set the long description for this composite commmand
+	 *
+	 * @param string
+	 */
+	public function set_longdesc( $longdesc ) {
+		$this->longdesc = $longdesc;
+	}
+
+	/**
 	 * Get the synopsis for this composite command.
 	 * As a collection of subcommands, the composite
 	 * command is only intended to invoke those
