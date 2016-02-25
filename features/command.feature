@@ -301,3 +301,25 @@ Feature: WP-CLI Commands
       """
       My awesome function command
       """
+    And STDOUT should contain:
+      """
+      SYNOPSIS
+      """
+    And STDOUT should contain:
+      """
+      wp foo <message> --apple=<apple> [--meal=<meal>]
+      """
+    And STDOUT should contain:
+      """
+      OPTIONS
+      """
+    And STDOUT should contain:
+      """
+      <message>
+          An awesome message to display
+      """
+    And STDOUT should contain:
+      """
+      [--meal=<meal>]
+          A type of meal.
+      """
