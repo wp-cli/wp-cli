@@ -270,6 +270,7 @@ class Package_Command extends WP_CLI_Command {
 			$list[$package_output->name] = $package_output;
 		}
 
+		ksort( $list );
 		WP_CLI\Utils\format_items( $assoc_args['format'], $list, $assoc_args['fields'] );
 	}
 
