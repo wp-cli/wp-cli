@@ -506,6 +506,21 @@ class WP_CLI {
 
 	/**
 	 * Ask for confirmation before running a destructive operation.
+	 *
+	 * If 'y' is provided to the question, the script execution continues. If
+	 * 'n' or any other response is provided to the question, script exits.
+	 *
+	 * ```
+	 * # `wp db drop` asks for confirmation before dropping the database.
+	 *
+	 * WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args );
+	 * ```
+	 *
+	 * @access public
+	 * @category Input
+	 *
+	 * @param string $question Question to display before the prompt.
+	 * @param array $assoc_args Skips prompt if 'yes' is provided.
 	 */
 	public static function confirm( $question, $assoc_args = array() ) {
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'yes' ) ) {
