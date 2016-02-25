@@ -221,6 +221,37 @@ Feature: WP-CLI Commands
       Success: bar
       """
 
+  Scenario: Use class with __invoke() passed as object
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      class Foo_Class {
+
+        public function __construct( $message ) {
+          $this->message = $message;
+        }
+
+        /**
+         * My awesome class method command
+         *
+         * @when before_wp_load
+         */
+        function __invoke( $args ) {
+          WP_CLI::success( $this->message );
+        }
+      }
+      $foo = new Foo_Class( 'bar' );
+      WP_CLI::add_command( 'instantiated-command', $foo );
+      """
+
+    When I run `wp --require=custom-cmd.php instantiated-command`
+    Then STDOUT should contain:
+      """
+      bar
+      """
+    And STDERR should be empty
+
   Scenario: Use an invalid class method as a command
     Given an empty directory
     And a custom-cmd.php file:
