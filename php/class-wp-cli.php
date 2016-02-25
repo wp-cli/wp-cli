@@ -139,7 +139,39 @@ class WP_CLI {
 	}
 
 	/**
-	 * Schedule a callback to be executed at a certain point (before WP is loaded).
+	 * Schedule a callback to be executed at a certain point.
+	 *
+	 * Hooks conceptually are very similar to WordPress actions. WP-CLI hooks
+	 * are typically called before WordPress is loaded.
+	 *
+	 * WP-CLI hooks include:
+	 *
+	 * * 'before_invoke:<command>' - Just before a command is invoked.
+	 * * 'after_invoke:<command>' - Just after a command is involved.
+	 * * 'before_wp_load' - Just before the WP load process begins.
+	 * * 'before_wp_config_load' - After wp-config.php has been located.
+	 * * 'after_wp_config_load' - After wp-config.php has been loaded into scope.
+	 * * 'after_wp_load' - Just after the WP load process has completed.
+	 *
+	 * WP-CLI commands can create their own hooks with `WP_CLI::do_hook()`.
+	 *
+	 * ```
+	 * # `wp network meta` confirms command is executing in multisite context.
+	 * WP_CLI::add_command( 'network meta', 'Network_Meta_Command', array(
+	 *    'before_invoke' => function () {
+	 *        if ( !is_multisite() ) {
+	 *            WP_CLI::error( 'This is not a multisite install.' );
+	 *        }
+	 *    }
+	 * ) );
+	 * ```
+	 *
+	 * @access public
+	 * @category Registration
+	 *
+	 * @param string $when Identifier for the hook.
+	 * @param mixed $callback Callback to execute when hook is called.
+	 * @return null
 	 */
 	public static function add_hook( $when, $callback ) {
 		if ( in_array( $when, self::$hooks_passed ) )
@@ -149,7 +181,16 @@ class WP_CLI {
 	}
 
 	/**
-	 * Execute registered callbacks.
+	 * Execute callbacks registered to a given hook.
+	 *
+	 * See `WP_CLI::add_hook()` for details on WP-CLI's internal hook system.
+	 * Commands can provide and call their own hooks.
+	 *
+	 * @access public
+	 * @category Registration
+	 *
+	 * @param string $when Identifier for the hook.
+	 * @return null
 	 */
 	public static function do_hook( $when ) {
 		self::$hooks_passed[] = $when;
