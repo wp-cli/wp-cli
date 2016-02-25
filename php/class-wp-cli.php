@@ -581,8 +581,8 @@ class WP_CLI {
 	/**
 	 * Display a value, in various formats
 	 *
-	 * @param mixed $value
-	 * @param array $assoc_args
+	 * @param mixed $value Value to display.
+	 * @param array $assoc_args Arguments passed to the command, determining format.
 	 */
 	public static function print_value( $value, $assoc_args = array() ) {
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
