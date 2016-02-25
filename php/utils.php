@@ -639,7 +639,12 @@ function get_named_sem_ver( $new_version, $original_version ) {
 /**
  * Return the flag value or, if it's not set, the $default value.
  *
+ * Because flags can be negated (e.g. --no-quiet to negate --quiet), this
+ * function provides a safer alternative to using
+ * `isset( $assoc_args['quiet'] )` or similar.
+ *
  * @access public
+ * @category Input
  *
  * @param array  $assoc_args  Arguments array.
  * @param string $flag        Flag to get the value.
@@ -651,9 +656,10 @@ function get_flag_value( $assoc_args, $flag, $default = null ) {
 }
 
 /**
- * Get the temp directory, and let the user know if it isn't writable.
+ * Get the system's temp directory. Warns user if it isn't writable.
  *
  * @access public
+ * @category System
  *
  * @return string
  */
