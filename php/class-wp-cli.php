@@ -489,11 +489,14 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display an error in the CLI and end with a newline.
+	 * Display a multi-line error message in a red box. Doesn't exit script.
+	 *
+	 * Error message is written to STDERR.
 	 *
 	 * @access public
+	 * @category Output
 	 *
-	 * @param array $message  each element from the array will be printed on its own line
+	 * @param array $message Multi-line error message to be displayed.
 	 */
 	public static function error_multi_line( $message_lines ) {
 		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) && is_array( $message_lines ) ) {
