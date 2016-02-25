@@ -221,6 +221,41 @@ Feature: WP-CLI Commands
       Success: bar
       """
 
+  Scenario: Use class with __invoke() passed as object
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      class Foo_Class {
+        /**
+         * My awesome class method command
+         *
+         * <message>
+         * : An awesome message to display
+         *
+         * @when before_wp_load
+         */
+        function __invoke( $args ) {
+          WP_CLI::success( $args[0] );
+        }
+      }
+      WP_CLI::add_command( 'passed-command', 'Foo_Class' );
+      $foo = new Foo_Class;
+      WP_CLI::add_command( 'instantiated-command', $foo );
+      """
+
+    When I run `wp --require=custom-cmd.php passed-command bar`
+    Then STDOUT should contain:
+      """
+      bar
+      """
+
+    When I run `wp --require=custom-cmd.php instantiated-command burrito`
+    Then STDOUT should contain:
+      """
+      burrito
+      """
+
   Scenario: Use an invalid class method as a command
     Given an empty directory
     And a custom-cmd.php file:
