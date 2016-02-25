@@ -513,11 +513,24 @@ function replace_path_consts( $source, $path ) {
 }
 
 /**
- * Make a HTTP request to a remote URL
+ * Make a HTTP request to a remote URL.
  *
- * @param string $method
- * @param string $url
- * @param array $headers
+ * Wraps the Requests HTTP library to ensure every request includes a cert.
+ *
+ * ```
+ * # `wp core download` verifies the hash for a downloaded WordPress archive
+ *
+ * $md5_response = Utils\http_request( 'GET', $download_url . '.md5' );
+ * if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
+ *      WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$response->status_code})" );
+ * }
+ * ```
+ *
+ * @access public
+ *
+ * @param string $method    HTTP method (GET, POST, DELETE, etc.)
+ * @param string $url       URL to make the HTTP request to.
+ * @param array $headers    Add specific headers to the request.
  * @param array $options
  * @return object
  */

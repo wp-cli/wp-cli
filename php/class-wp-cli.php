@@ -696,7 +696,11 @@ class WP_CLI {
 
 	/**
 	 * Get the path to the PHP binary used when executing WP-CLI.
+	 *
 	 * Environment values permit specific binaries to be indicated.
+	 *
+	 * @access public
+	 * @category System
 	 *
 	 * @return string
 	 */
