@@ -250,6 +250,7 @@ Feature: WP-CLI Commands
       """
       bar
       """
+    And STDERR should be empty
 
   Scenario: Use an invalid class method as a command
     Given an empty directory
