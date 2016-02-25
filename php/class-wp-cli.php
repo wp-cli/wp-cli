@@ -163,15 +163,48 @@ class WP_CLI {
 	}
 
 	/**
-	 * Add a command to the wp-cli list of commands
+	 * Register a command to WP-CLI.
 	 *
-	 * @param string $name The name of the command that will be used in the CLI
-	 * @param string $callable The command implementation as a class, function or closure
-	 * @param array $args An associative array with additional parameters:
-	 *   'before_invoke' => callback to execute before invoking the command,
-	 *   'shortdesc' => short description (80 char or less) for the command,
-	 *   'synopsis' => the synopsis for the command (string or array)
-	 *   'when' => execute callback on a named WP-CLI hook (e.g. before_wp_load)
+	 * WP-CLI supports using any callable class, function, or closure as a
+	 * command. `WP_CLI::add_command()` is used for both internal and
+	 * third-party command registration.
+	 *
+	 * Command arguments are parsed from PHPDoc by default, but also can be
+	 * supplied as an optional third argument during registration.
+	 *
+	 * ```
+	 * # Register a custom 'foo' command to output a supplied positional param.
+	 * #
+	 * # $ wp foo bar
+	 * # Success: bar
+	 *
+	 * /**
+	 *  * My awesome closure command
+	 *  *
+	 *  * <message>
+	 *  * : An awesome message to display
+	 *  *
+	 *  * @when before_wp_load
+	 *  *\/
+	 * $foo = function( $args ) {
+	 *     WP_CLI::success( $args[0] );
+	 * };
+	 * WP_CLI::add_command( 'foo', $foo );
+	 * ```
+	 *
+	 * @access public
+	 * @category Registration
+	 *
+	 * @param string $name Name for the command (e.g. "post list" or "site empty").
+	 * @param string $callable Command implementation as a class, function or closure.
+	 * @param array $args {
+	 *      Optional An associative array with additional registration parameters.
+	 *      'before_invoke' => callback to execute before invoking the command,
+	 *      'shortdesc' => short description (80 char or less) for the command,
+	 *      'synopsis' => the synopsis for the command (string or array),
+	 *      'when' => execute callback on a named WP-CLI hook (e.g. before_wp_load),
+	 * }
+	 * @return true True on success, hard error if registration failed.
 	 */
 	public static function add_command( $name, $callable, $args = array() ) {
 		$valid = false;
@@ -243,6 +276,7 @@ class WP_CLI {
 		}
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
+		return true;
 	}
 
 	/**
