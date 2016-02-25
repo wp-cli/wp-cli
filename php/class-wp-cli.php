@@ -489,11 +489,14 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display an error in the CLI and end with a newline.
+	 * Display a multi-line error message in a red box. Doesn't exit script.
+	 *
+	 * Error message is written to STDERR.
 	 *
 	 * @access public
+	 * @category Output
 	 *
-	 * @param array $message  each element from the array will be printed on its own line
+	 * @param array $message Multi-line error message to be displayed.
 	 */
 	public static function error_multi_line( $message_lines ) {
 		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) && is_array( $message_lines ) ) {
@@ -503,6 +506,21 @@ class WP_CLI {
 
 	/**
 	 * Ask for confirmation before running a destructive operation.
+	 *
+	 * If 'y' is provided to the question, the script execution continues. If
+	 * 'n' or any other response is provided to the question, script exits.
+	 *
+	 * ```
+	 * # `wp db drop` asks for confirmation before dropping the database.
+	 *
+	 * WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args );
+	 * ```
+	 *
+	 * @access public
+	 * @category Input
+	 *
+	 * @param string $question Question to display before the prompt.
+	 * @param array $assoc_args Skips prompt if 'yes' is provided.
 	 */
 	public static function confirm( $question, $assoc_args = array() ) {
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'yes' ) ) {
@@ -563,8 +581,8 @@ class WP_CLI {
 	/**
 	 * Display a value, in various formats
 	 *
-	 * @param mixed $value
-	 * @param array $assoc_args
+	 * @param mixed $value Value to display.
+	 * @param array $assoc_args Arguments passed to the command, determining format.
 	 */
 	public static function print_value( $value, $assoc_args = array() ) {
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
@@ -678,7 +696,11 @@ class WP_CLI {
 
 	/**
 	 * Get the path to the PHP binary used when executing WP-CLI.
+	 *
 	 * Environment values permit specific binaries to be indicated.
+	 *
+	 * @access public
+	 * @category System
 	 *
 	 * @return string
 	 */

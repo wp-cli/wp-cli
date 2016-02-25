@@ -513,11 +513,24 @@ function replace_path_consts( $source, $path ) {
 }
 
 /**
- * Make a HTTP request to a remote URL
+ * Make a HTTP request to a remote URL.
  *
- * @param string $method
- * @param string $url
- * @param array $headers
+ * Wraps the Requests HTTP library to ensure every request includes a cert.
+ *
+ * ```
+ * # `wp core download` verifies the hash for a downloaded WordPress archive
+ *
+ * $md5_response = Utils\http_request( 'GET', $download_url . '.md5' );
+ * if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
+ *      WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$response->status_code})" );
+ * }
+ * ```
+ *
+ * @access public
+ *
+ * @param string $method    HTTP method (GET, POST, DELETE, etc.)
+ * @param string $url       URL to make the HTTP request to.
+ * @param array $headers    Add specific headers to the request.
  * @param array $options
  * @return object
  */
@@ -639,7 +652,12 @@ function get_named_sem_ver( $new_version, $original_version ) {
 /**
  * Return the flag value or, if it's not set, the $default value.
  *
+ * Because flags can be negated (e.g. --no-quiet to negate --quiet), this
+ * function provides a safer alternative to using
+ * `isset( $assoc_args['quiet'] )` or similar.
+ *
  * @access public
+ * @category Input
  *
  * @param array  $assoc_args  Arguments array.
  * @param string $flag        Flag to get the value.
@@ -651,9 +669,10 @@ function get_flag_value( $assoc_args, $flag, $default = null ) {
 }
 
 /**
- * Get the temp directory, and let the user know if it isn't writable.
+ * Get the system's temp directory. Warns user if it isn't writable.
  *
  * @access public
+ * @category System
  *
  * @return string
  */
