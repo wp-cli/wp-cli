@@ -265,11 +265,12 @@ class Package_Command extends WP_CLI_Command {
 			$package_output = new stdClass;
 			$package_output->name = $package->getName();
 			$package_output->description = $package->getDescription();
-			$package_output->authors = implode( ',', array_column( (array) $package->getAuthors(), 'name' ) );
+			$package_output->authors = implode( ', ', array_column( (array) $package->getAuthors(), 'name' ) );
 			$package_output->version = $package->getPrettyVersion();
 			$list[$package_output->name] = $package_output;
 		}
 
+		ksort( $list );
 		WP_CLI\Utils\format_items( $assoc_args['format'], $list, $assoc_args['fields'] );
 	}
 
