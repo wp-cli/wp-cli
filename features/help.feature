@@ -174,3 +174,36 @@ Feature: Get help about WP-CLI commands
       """
       test-extra
       """
+
+  Scenario: Help renders global parameters correctly
+    Given a WP install
+
+    When I run `wp help import get`
+    Then STDOUT should contain:
+      """
+      GLOBAL PARAMETERS
+      """
+    And STDOUT should not contain:
+      """
+      ## GLOBAL PARAMETERS
+      """
+
+    When I run `wp help option get`
+    Then STDOUT should contain:
+      """
+      GLOBAL PARAMETERS
+      """
+    And STDOUT should not contain:
+      """
+      ## GLOBAL PARAMETERS
+      """
+
+    When I run `wp help option`
+    Then STDOUT should contain:
+      """
+      GLOBAL PARAMETERS
+      """
+    And STDOUT should not contain:
+      """
+      ## GLOBAL PARAMETERS
+      """
