@@ -28,7 +28,25 @@ Feature: Manage WordPress comments
       """
 	  Success: Deleted comment {COMMENT_ID}.
       """
-      
+
+    When I run `wp comment get {COMMENT_ID} --field=comment_approved`
+    Then STDOUT should be:
+      """
+      trash
+      """
+
+    When I run `wp comment delete {COMMENT_ID} --force`
+    Then STDOUT should be:
+      """
+      Success: Deleted comment {COMMENT_ID}.
+      """
+
+    When I try `wp comment get {COMMENT_ID}`
+    Then STDERR should be:
+      """
+      Error: Invalid comment ID.
+      """
+
     When I run `wp comment create --comment_post_ID=1`
     And I run `wp comment create --comment_post_ID=1`
     And I run `wp comment delete 3 4`
