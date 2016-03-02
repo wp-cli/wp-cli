@@ -55,7 +55,7 @@ Feature: Manage WordPress comments
       Success: Deleted comment 3.
       Success: Deleted comment 4.
       """
-  
+
   Scenario: Get details about an existing comment
     When I run `wp comment get 1`
     Then STDOUT should be a table containing rows:
@@ -91,7 +91,7 @@ Feature: Manage WordPress comments
       #comment-1
       """
 
-  Scenario: Count  comments
+  Scenario: Count comments
     When I run `wp comment count 1`
     Then STDOUT should contain:
       """
