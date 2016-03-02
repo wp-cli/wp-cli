@@ -247,10 +247,16 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function delete( $args, $assoc_args ) {
 		parent::_delete( $args, $assoc_args, function ( $comment_id, $assoc_args ) {
-			$r = wp_delete_comment( $comment_id, \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) );
+			$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
+
+			$r = wp_delete_comment( $comment_id, $force );
 
 			if ( $r ) {
-				return array( 'success', "Deleted comment $comment_id." );
+				if ( $force ) {
+					return array( 'success', "Deleted comment $comment_id." );
+				} else {
+					return array( 'success', "Trashed comment $comment_id." );
+				}
 			} else {
 				return array( 'error', "Failed deleting comment $comment_id" );
 			}

@@ -26,7 +26,7 @@ Feature: Manage WordPress comments
     When I run `wp comment delete {COMMENT_ID}`
     Then STDOUT should be:
       """
-	  Success: Deleted comment {COMMENT_ID}.
+	  Success: Trashed comment {COMMENT_ID}.
       """
 
     When I run `wp comment get {COMMENT_ID} --field=comment_approved`
@@ -52,8 +52,8 @@ Feature: Manage WordPress comments
     And I run `wp comment delete 3 4`
     Then STDOUT should be:
       """
-      Success: Deleted comment 3.
-      Success: Deleted comment 4.
+      Success: Trashed comment 3.
+      Success: Trashed comment 4.
       """
 
   Scenario: Get details about an existing comment
