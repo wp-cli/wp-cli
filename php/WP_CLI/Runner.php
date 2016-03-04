@@ -510,6 +510,7 @@ class Runner {
 		if ( !$this->wp_exists() ) {
 			WP_CLI::error(
 				"This does not seem to be a WordPress install.\n" .
+				"(".ABSPATH."wp-includes/version.php is not readable).\n" .
 				"Pass --path=`path/to/wordpress` or run `wp core download`." );
 		}
 
