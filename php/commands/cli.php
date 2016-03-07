@@ -274,6 +274,23 @@ class CLI_Command extends WP_CLI_Command {
 				return ! empty( $updates[ $type ] ) ? array( $updates[ $type ] ) : false;
 			}
 		}
+
+		if ( empty( $updates ) && preg_match( '#-alpha-(.+)$#', WP_CLI_VERSION, $matches ) ) {
+			$version_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/NIGHTLY_VERSION';
+			$response = Utils\http_request( 'GET', $version_url );
+			if ( ! $response->success || 200 !== $response->status_code ) {
+				WP_CLI::error( sprintf( "Failed to get current nightly version (HTTP code %d)", $response->status_code ) );
+			}
+			$nightly_version = trim( $response->body );
+			if ( WP_CLI_VERSION != $nightly_version ) {
+				$updates['nightly'] = array(
+					'version'        => $nightly_version,
+					'update_type'    => 'nightly',
+					'package_url'    => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
+				);
+			}
+		}
+
 		return array_values( $updates );
 	}
 
