@@ -274,6 +274,33 @@ class CLI_Command extends WP_CLI_Command {
 				return ! empty( $updates[ $type ] ) ? array( $updates[ $type ] ) : false;
 			}
 		}
+
+		if ( empty( $updates ) && preg_match( '#-alpha-(.+)$#', WP_CLI_VERSION, $matches ) ) {
+			$url = 'https://api.github.com/repos/wp-cli/wp-cli/git/refs/heads/master';
+
+			$response = Utils\http_request( 'GET', $url, $headers, $options );
+
+			if ( ! $response->success || 200 !== $response->status_code ) {
+				WP_CLI::error( sprintf( "Failed to get master hash (HTTP code %d)", $response->status_code ) );
+			}
+
+			$latest_hash_data = json_decode( $response->body );
+			$latest_short_hash = substr( $latest_hash_data->object->sha, 0, 7 );
+
+			if ( $latest_short_hash != $matches[1] ) {
+				$version_url = 'https://raw.githubusercontent.com/wp-cli/wp-cli/master/VERSION';
+				$response = Utils\http_request( 'GET', $version_url );
+				if ( ! $response->success || 200 !== $response->status_code ) {
+					WP_CLI::error( sprintf( "Failed to get current version (HTTP code %d)", $response->status_code ) );
+				}
+				$updates['nightly'] = array(
+					'version'        => trim( $response->body ) . '-' . $latest_short_hash,
+					'update_type'    => 'nightly',
+					'package_url'    => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
+				);
+			}
+		}
+
 		return array_values( $updates );
 	}
 
