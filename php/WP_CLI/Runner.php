@@ -871,6 +871,12 @@ class Runner {
 			return;
 		}
 
+		$existing_phar = realpath( $_SERVER['argv'][0] );
+		// Phar needs to be writable to be easily updateable.
+		if ( ! is_writable( $existing_phar ) || ! is_writeable( dirname( $existing_phar ) ) ) {
+			return;
+		}
+
 		// Only check for update when a human is operating.
 		if ( ! function_exists( 'posix_isatty' ) || ! posix_isatty( STDOUT ) ) {
 			return;
