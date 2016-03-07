@@ -104,6 +104,7 @@ class Package_Command extends WP_CLI_Command {
 		// Set up the installer
 		$install = Installer::create( new ComposerIO, $composer );
 		$install->setUpdate( true ); // Installer class will only override composer.lock with this flag
+		$install->setPreferSource( true ); // Use VCS when VCS for easier contributions.
 
 		// Try running the installer, but revert composer.json if failed
 		WP_CLI::log( 'Using Composer to install the package...' );
