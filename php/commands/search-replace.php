@@ -38,7 +38,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * [<table>...]
 	 * : List of database tables to restrict the replacement to. Wildcards are
-	 * supported, e.g. 'wp_*_options' or 'wp_post*'.
+	 * supported, e.g. `'wp_*_options'` or `'wp_post*'`.
 	 *
 	 * [--dry-run]
 	 * : Run the entire search/replace operation and show report, but don't save
