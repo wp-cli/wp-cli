@@ -21,7 +21,19 @@ class ComposerIO extends NullIO {
      * {@inheritDoc}
      */
 	public function write( $messages, $newline = true ) {
-		WP_CLI::log( " - " . strip_tags( $messages ) );
+		self::output_clean_message( $messages );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function writeError( $messages, $newline = true ) {
+		self::output_clean_message( $messages );
+	}
+
+	private static function output_clean_message( $message ) {
+		$message = preg_replace( '#<(https?)([^>]+)>#', '$1$2', $message );
+		WP_CLI::log( strip_tags( trim( $message ) ) );
 	}
 
 }

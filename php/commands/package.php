@@ -108,17 +108,19 @@ class Package_Command extends WP_CLI_Command {
 
 		// Try running the installer, but revert composer.json if failed
 		WP_CLI::log( 'Using Composer to install the package...' );
+		WP_CLI::log( '---' );
 		try {
 			$res = $install->run();
 		} catch ( Exception $e ) {
 			WP_CLI::warning( $e->getMessage() );
 		}
+		WP_CLI::log( '---' );
 
 		if ( 0 === $res ) {
 			WP_CLI::success( "Package installed successfully." );
 		} else {
 			file_put_contents( $composer_json_obj->getPath(), $composer_backup );
-			WP_CLI::error( "Package installation failed. Reverted composer.json" );
+			WP_CLI::error( "Package installation failed (Composer return code {$res}). Reverted composer.json" );
 		}
 	}
 
