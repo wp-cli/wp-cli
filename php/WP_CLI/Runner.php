@@ -119,6 +119,20 @@ class Runner {
 	}
 
 	/**
+	 * Get the path to the packages directory
+	 *
+	 * @return string
+	 */
+	public function get_packages_dir_path() {
+		if ( getenv( 'WP_CLI_PACKAGES_DIR' ) ) {
+			$packages_dir = rtrim( getenv( 'WP_CLI_PACKAGES_DIR' ), '/' ) . '/';
+		} else {
+			$packages_dir = getenv( 'HOME' ) . '/.wp-cli/packages/';
+		}
+		return $packages_dir;
+	}
+
+	/**
 	 * Attempts to find the path to the WP install inside index.php
 	 *
 	 * @param string $index_path
@@ -609,11 +623,7 @@ class Runner {
 		// APIs as non-bundled commands.
 		Utils\load_command( $this->arguments[0] );
 
-		if ( getenv( 'WP_CLI_PACKAGES_DIR' ) ) {
-			$package_autoload = rtrim( getenv( 'WP_CLI_PACKAGES_DIR' ), '/' ) . '/vendor/autoload.php';
-		} else {
-			$package_autoload = getenv( 'HOME' ) . '/.wp-cli/packages/vendor/autoload.php';
-		}
+		$package_autoload = $this->get_packages_dir_path() . 'vendor/autoload.php';
 
 		if ( file_exists( $package_autoload ) ) {
 			WP_CLI::debug( 'Loading packages from: ' . $package_autoload );
