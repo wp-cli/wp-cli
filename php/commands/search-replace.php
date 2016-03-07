@@ -288,7 +288,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 		foreach ( $rows as $keys ) {
 			$where_sql = '';
 			foreach( (array) $keys as $k => $v ) {
-				$where_sql .= "{$k}={$v}";
+				if (strlen($where_sql)) $where_sql .= ' AND ';
+				$where_sql .= "{$k}='{$v}'";
 			}
 			$col_value = $wpdb->get_var( "SELECT {$col_sql} FROM {$table_sql} WHERE {$where_sql}" );
 			if ( '' === $col_value )
