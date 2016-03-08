@@ -1,4 +1,5 @@
 config.yml
+PHAR_BUILD_VERSION
 /cache
 /packages
 /vendor
