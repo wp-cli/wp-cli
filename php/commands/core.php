@@ -30,7 +30,7 @@ class Core_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields. Defaults to version,update_type,package_url.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json. Default: table
+	 * : Accepted values: table, csv, json, yaml. Default: table
 	 *
 	 * @subcommand check-update
 	 */
@@ -75,14 +75,23 @@ class Core_Command extends WP_CLI_Command {
 	public function download( $args, $assoc_args ) {
 
 		$download_dir = ! empty( $assoc_args['path'] ) ? $assoc_args['path'] : ABSPATH;
+		$wordpress_present = is_readable( $download_dir . 'wp-load.php' );
 
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && is_readable( $download_dir . 'wp-load.php' ) )
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && $wordpress_present )
 			WP_CLI::error( 'WordPress files seem to already be present here.' );
 
-		if ( !is_dir( $download_dir ) ) {
+		if ( ! is_dir( $download_dir ) ) {
+			if ( ! is_writable( dirname( $download_dir ) ) ) {
+				WP_CLI::error( sprintf( "Insufficient permission to create directory %s", $download_dir ) );
+			}
+
 			WP_CLI::log( sprintf( 'Creating directory %s', $download_dir ) );
 			$mkdir = \WP_CLI\Utils\is_windows() ? 'mkdir %s' : 'mkdir -p %s';
 			WP_CLI::launch( Utils\esc_cmd( $mkdir, $download_dir ) );
+		}
+
+		if ( ! is_writable( $download_dir ) ) {
+			WP_CLI::error( sprintf( "%s is not writable by current user", $download_dir ) );
 		}
 
 		$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', 'en_US' );
@@ -97,6 +106,13 @@ class Core_Command extends WP_CLI_Command {
 			}
 			$version = $offer['current'];
 			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
+		}
+
+		$from_version = '';
+		if ( file_exists( $download_dir . 'wp-includes/version.php' ) ) {
+			global $wp_version;
+			require_once( $download_dir . 'wp-includes/version.php' );
+			$from_version = $wp_version;
 		}
 
 		WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $version, $locale ) );
@@ -119,7 +135,7 @@ class Core_Command extends WP_CLI_Command {
 		if ( ! $cache_file || $bad_cache ) {
 			// We need to use a temporary file because piping from cURL to tar is flaky
 			// on MinGW (and probably in other environments too).
-			$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.tar.gz';
+			$temp = \WP_CLI\Utils\get_temp_dir() . uniqid('wp_') . '.tar.gz';
 
 			$headers = array('Accept' => 'application/json');
 			$options = array(
@@ -134,6 +150,18 @@ class Core_Command extends WP_CLI_Command {
 				WP_CLI::error( "Couldn't access download URL (HTTP code {$response->status_code})" );
 			}
 
+			$md5_response = Utils\http_request( 'GET', $download_url . '.md5' );
+			if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
+				WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$response->status_code})" );
+			}
+
+			$md5_file = md5_file( $temp );
+			if ( $md5_file === $md5_response->body ) {
+				WP_CLI::log( 'md5 hash verified: ' . $md5_file );
+			} else {
+				WP_CLI::error( "md5 hash for download ({$md5_file}) is different than the release hash ({$md5_response->body})" );
+			}
+
 			try {
 				self::_extract( $temp, $download_dir );
 			} catch ( Exception $e ) {
@@ -141,6 +169,10 @@ class Core_Command extends WP_CLI_Command {
 			}
 			$cache->import( $cache_key, $temp );
 			unlink($temp);
+		}
+
+		if ( $wordpress_present ) {
+			$this->cleanup_extra_files( $from_version, $version, $locale );
 		}
 
 		WP_CLI::success( 'WordPress downloaded.' );
@@ -400,6 +432,9 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * --admin_email=<email>
 	 * : The email address for the admin user.
+	 *
+	 * [--skip-email]
+	 * : Don't send an email notification to the new admin user.
 	 */
 	public function install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
@@ -468,6 +503,9 @@ class Core_Command extends WP_CLI_Command {
 	 * --admin_email=<email>
 	 * : The email address for the admin user.
 	 *
+	 * [--skip-email]
+	 * : Don't send an email notification to the new admin user.
+	 *
 	 * @subcommand multisite-install
 	 */
 	public function multisite_install( $args, $assoc_args ) {
@@ -531,6 +569,13 @@ class Core_Command extends WP_CLI_Command {
 	private function _install( $assoc_args ) {
 		if ( is_blog_installed() ) {
 			return false;
+		}
+
+		if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-email' )
+			&& ! function_exists( 'wp_new_blog_notification' ) ) {
+			function wp_new_blog_notification() {
+				// Silence is golden
+			}
 		}
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -717,36 +762,159 @@ EOT;
 	 * @when before_wp_load
 	 */
 	public function version( $args = array(), $assoc_args = array() ) {
-		$versions_path = ABSPATH . 'wp-includes/version.php';
-
-		if ( !is_readable( $versions_path ) ) {
-			WP_CLI::error(
-				"This does not seem to be a WordPress install.\n" .
-				"Pass --path=`path/to/wordpress` or run `wp core download`." );
-		}
-
-		include $versions_path;
+		$details = self::get_wp_details();
 
 		// @codingStandardsIgnoreStart
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'extra' ) ) {
-			if ( preg_match( '/(\d)(\d+)-/', $tinymce_version, $match ) ) {
+			if ( preg_match( '/(\d)(\d+)-/', $details['tinymce_version'], $match ) ) {
 				$human_readable_tiny_mce = $match[1] . '.' . $match[2];
 			} else {
 				$human_readable_tiny_mce = '';
 			}
 
 			echo \WP_CLI\Utils\mustache_render( 'versions.mustache', array(
-				'wp-version' => $wp_version,
-				'db-version' => $wp_db_version,
+				'wp-version'  => $details['wp_version'],
+				'db-version'  => $details['wp_db_version'],
 				'mce-version' => ( $human_readable_tiny_mce ?
-					"$human_readable_tiny_mce ($tinymce_version)"
-					: $tinymce_version
+					"$human_readable_tiny_mce ({$details['tinymce_version']})"
+					: $details['tinymce_version']
 				)
 			) );
 		} else {
-			WP_CLI::line( $wp_version );
+			WP_CLI::line( $details['wp_version'] );
 		}
 		// @codingStandardsIgnoreEnd
+	}
+
+	/**
+	 * Verify WordPress files against WordPress.org's checksums.
+	 *
+	 * Specify version to verify checksums without loading WordPress.
+	 *
+	 * [--version=<version>]
+	 * : Verify checksums against a specific version of WordPress.
+	 *
+	 * [--locale=<locale>]
+	 * : Verify checksums against a specific locale of WordPress.
+	 *
+	 * @when before_wp_load
+	 *
+	 * @subcommand verify-checksums
+	 */
+	public function verify_checksums( $args, $assoc_args ) {
+		global $wp_version, $wp_local_package;
+
+		if ( ! empty( $assoc_args['version'] ) ) {
+			$wp_version = $assoc_args['version'];
+		}
+
+		if ( ! empty( $assoc_args['locale'] ) ) {
+			$wp_local_package = $assoc_args['locale'];
+		}
+
+		if ( empty( $wp_version ) ) {
+			$details = self::get_wp_details();
+			$wp_version = $details['wp_version'];
+
+			if ( empty( $wp_local_package ) ) {
+				$wp_local_package = $details['wp_local_package'];
+			}
+		}
+
+		$checksums = self::get_core_checksums( $wp_version,
+			! empty( $wp_local_package ) ? $wp_local_package : 'en_US' );
+
+		if ( ! is_array( $checksums ) ) {
+			WP_CLI::error( "Couldn't get checksums from WordPress.org." );
+		}
+
+		$has_errors = false;
+		foreach ( $checksums as $file => $checksum ) {
+			// Skip files which get updated
+			if ( 'wp-content' == substr( $file, 0, 10 ) ) {
+				continue;
+			}
+
+			if ( ! file_exists( ABSPATH . $file ) ) {
+				WP_CLI::warning( "File doesn't exist: {$file}" );
+				$has_errors = true;
+				continue;
+			}
+
+			$md5_file = md5_file( ABSPATH . $file );
+			if ( $md5_file !== $checksum ) {
+				WP_CLI::warning( "File doesn't verify against checksum: {$file}" );
+				$has_errors = true;
+			}
+		}
+
+		if ( ! $has_errors ) {
+			WP_CLI::success( "WordPress install verifies against checksums." );
+		} else {
+			WP_CLI::error( "WordPress install doesn't verify against checksums." );
+		}
+	}
+
+	/**
+	 * Get version information from `wp-includes/version.php`.
+	 *
+	 * @return array {
+	 *     @type string $wp_version The WordPress version.
+	 *     @type int $wp_db_version The WordPress DB revision.
+	 *     @type string $tinymce_version The TinyMCE version.
+	 *     @type string $wp_local_package The TinyMCE version.
+	 * }
+	 */
+	private static function get_wp_details() {
+		$versions_path = ABSPATH . 'wp-includes/version.php';
+
+		if ( ! is_readable( $versions_path ) ) {
+			WP_CLI::error(
+				"This does not seem to be a WordPress install.\n" .
+				"Pass --path=`path/to/wordpress` or run `wp core download`." );
+		}
+
+		$version_content = file_get_contents( $versions_path, null, null, 6, 2048 );
+
+		$vars   = array( 'wp_version', 'wp_db_version', 'tinymce_version', 'wp_local_package' );
+		$result = array();
+
+		foreach ( $vars as $var_name ) {
+			$result[ $var_name ] = self::find_var( $var_name, $version_content );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Search for the value assigned to variable `$var_name` in PHP code `$code`.
+	 *
+	 * This is equivalent to matching the `\$VAR_NAME = ([^;]+)` regular expression and returning
+	 * the first match either as a `string` or as an `integer` (depending if it's surrounded by
+	 * quotes or not).
+	 *
+	 * @param string $var_name Variable name to search for.
+	 * @param string $code PHP code to search in.
+	 *
+	 * @return int|string|null
+	 */
+	private static function find_var( $var_name, $code ) {
+		$start = strpos( $code, '$' . $var_name . ' = ' );
+
+		if ( ! $start ) {
+			return null;
+		}
+
+		$start = $start + strlen( $var_name ) + 3;
+		$end   = strpos( $code, ";", $start );
+
+		$value = substr( $code, $start, $end - $start );
+
+		if ( $value[0] = "'" ) {
+			return trim( $value, "'" );
+		} else {
+			return intval( $value );
+		}
 	}
 
 	/**
@@ -781,69 +949,6 @@ EOT;
 	}
 
 	/**
-	 * Verify WordPress files against WordPress.org's checksums.
-	 *
-	 * Specify version to verify checksums without loading WordPress.
-	 *
-	 * [--version=<version>]
-	 * : Verify checksums against a specific version of WordPress.
-	 *
-	 * [--locale=<locale>]
-	 * : Verify checksums against a specific locale of WordPress.
-	 *
-	 * @when before_wp_load
-	 *
-	 * @subcommand verify-checksums
-	 */
-	public function verify_checksums( $args, $assoc_args ) {
-		global $wp_version, $wp_local_package;
-
-		if ( ! empty( $assoc_args['version'] ) ) {
-			$wp_version = $assoc_args['version'];
-		}
-
-		if ( ! empty( $assoc_args['locale'] ) ) {
-			$wp_local_package = $assoc_args['locale'];
-		}
-
-		if ( empty( $wp_version ) ) {
-			WP_CLI::get_runner()->load_wordpress();
-		}
-
-		$checksums = self::get_core_checksums( $wp_version, isset( $wp_local_package ) ? $wp_local_package : 'en_US' );
-
-		if ( ! is_array( $checksums ) ) {
-			WP_CLI::error( "Couldn't get checksums from WordPress.org." );
-		}
-
-		$has_errors = false;
-		foreach ( $checksums as $file => $checksum ) {
-			// Skip files which get updated
-			if ( 'wp-content' == substr( $file, 0, 10 ) ) {
-				continue;
-			}
-
-			if ( ! file_exists( ABSPATH . $file ) ) {
-				WP_CLI::warning( "File doesn't exist: {$file}" );
-				$has_errors = true;
-				continue;
-			}
-
-			$md5_file = md5_file( ABSPATH . $file );
-			if ( $md5_file !== $checksum ) {
-				WP_CLI::warning( "File doesn't verify against checksum: {$file}" );
-				$has_errors = true;
-			}
-		}
-
-		if ( ! $has_errors ) {
-			WP_CLI::success( "WordPress install verifies against checksums." );
-		} else {
-			WP_CLI::error( "WordPress install doesn't verify against checksums." );
-		}
-	}
-
-	/**
 	 * Update WordPress.
 	 *
 	 * ## OPTIONS
@@ -852,7 +957,7 @@ EOT;
 	 * : Path to zip file to use, instead of downloading from wordpress.org.
 	 *
 	 * [--minor]
-	 * : Only perform updates for minor releases.
+	 * : Only perform updates for minor releases (e.g. update from WP 4.3 to 4.3.3 instead of 4.4.2).
 	 *
 	 * [--version=<version>]
 	 * : Update to a specific version, instead of to the latest version.
@@ -879,16 +984,6 @@ EOT;
 		$update = $from_api = null;
 		$upgrader = 'WP_CLI\\CoreUpgrader';
 
-		if ( empty( $args[0] ) && empty( $assoc_args['version'] ) && \WP_CLI\Utils\get_flag_value( $assoc_args, 'minor' ) ) {
-			$updates = $this->get_updates( array( 'minor' => true ) );
-			if ( ! empty( $updates ) ) {
-				$assoc_args['version'] = $updates[0]['version'];
-			} else {
-				WP_CLI::success( 'WordPress is at the latest minor release.' );
-				return;
-			}
-		}
-
 		if ( ! empty( $args[0] ) ) {
 
 			$upgrader = 'WP_CLI\\NonDestructiveCoreUpgrader';
@@ -913,8 +1008,23 @@ EOT;
 			wp_version_check();
 			$from_api = get_site_transient( 'update_core' );
 
-			if ( ! empty( $from_api->updates ) ) {
-				list( $update ) = $from_api->updates;
+			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'minor' ) ) {
+				foreach( $from_api->updates as $offer ) {
+					$sem_ver = Utils\get_named_sem_ver( $offer->version, $wp_version );
+					if ( ! $sem_ver || 'patch' !== $sem_ver ) {
+						continue;
+					}
+					$update = $offer;
+					break;
+				}
+				if ( empty( $update ) ) {
+					WP_CLI::success( 'WordPress is at the latest minor release.' );
+					return;
+				}
+			} else {
+				if ( ! empty( $from_api->updates ) ) {
+					list( $update ) = $from_api->updates;
+				}
 			}
 
 		} else if (	\WP_CLI\Utils\wp_version_compare( $assoc_args['version'], '<' )
@@ -951,6 +1061,8 @@ EOT;
 				WP_CLI::log( "Starting update..." );
 			}
 
+			$from_version = $wp_version;
+
 			$GLOBALS['wp_cli_update_obj'] = $update;
 			$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 			unset( $GLOBALS['wp_cli_update_obj'] );
@@ -963,6 +1075,15 @@ EOT;
 					WP_CLI::success( $msg );
 				}
 			} else {
+
+				if ( file_exists( ABSPATH . 'wp-includes/version.php' ) ) {
+					include( ABSPATH . 'wp-includes/version.php' );
+					$to_version = $wp_version;
+				}
+
+				$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', get_locale() );
+				$this->cleanup_extra_files( $from_version, $to_version, $locale );
+
 				WP_CLI::success( 'WordPress updated successfully.' );
 			}
 
@@ -1067,40 +1188,21 @@ EOT;
 	 * Returns update information
 	 */
 	private function get_updates( $assoc_args ) {
-		global $wp_version;
-		$versions_path = ABSPATH . 'wp-includes/version.php';
-		include $versions_path;
-
-		$url = 'https://api.wordpress.org/core/stable-check/1.0/';
-
-		$options = array(
-			'timeout' => 30
-		);
-		$headers = array(
-			'Accept' => 'application/json'
-		);
-		$response = Utils\http_request( 'GET', $url, $headers, $options );
-
-		if ( ! $response->success || 200 !== $response->status_code ) {
-			WP_CLI::error( "Failed to get latest version list." );
+		wp_version_check();
+		$from_api = get_site_transient( 'update_core' );
+		if ( ! $from_api ) {
+			return array();
 		}
 
-		$release_data = json_decode( $response->body );
-		$release_versions = array_keys( (array) $release_data );
-		usort( $release_versions, function( $a, $b ){
-			return 1 === version_compare( $a, $b );
-		});
-
-		$locale = get_locale();
 		$compare_version = str_replace( '-src', '', $GLOBALS['wp_version'] );
 
 		$updates = array(
 			'major'      => false,
 			'minor'      => false,
 			);
-		foreach ( $release_versions as $release_version ) {
+		foreach ( $from_api->updates as $offer ) {
 
-			$update_type = Utils\get_named_sem_ver( $release_version, $compare_version );
+			$update_type = Utils\get_named_sem_ver( $offer->version, $compare_version );
 			if ( ! $update_type ) {
 				continue;
 			}
@@ -1112,14 +1214,14 @@ EOT;
 				$update_type = 'minor';
 			}
 
-			if ( ! empty( $updates[ $update_type ] ) && ! Comparator::greaterThan( $release_version, $updates[ $update_type ]['version'] ) ) {
+			if ( ! empty( $updates[ $update_type ] ) && ! Comparator::greaterThan( $offer->version, $updates[ $update_type ]['version'] ) ) {
 				continue;
 			}
 
 			$updates[ $update_type ] = array(
-				'version'     => $release_version,
+				'version'     => $offer->version,
 				'update_type' => $update_type,
-				'package_url' => $this->get_download_url( $release_version, $locale )
+				'package_url' => ! empty( $offer->packages->partial ) ? $offer->packages->partial : $offer->packages->full,
 			);
 		}
 
@@ -1135,6 +1237,48 @@ EOT;
 			}
 		}
 		return array_values( $updates );
+	}
+
+	private function cleanup_extra_files( $version_from, $version_to, $locale ) {
+		if ( ! $version_from || ! $version_to ) {
+			WP_CLI::warning( 'Failed to find WordPress version. Please cleanup files manually.' );
+			return;
+		}
+
+		$old_checksums = self::get_core_checksums( $version_from, $locale ? $locale : 'en_US' );
+		$new_checksums = self::get_core_checksums( $version_to, $locale ? $locale : 'en_US' );
+
+		if ( empty( $old_checksums ) || empty( $new_checksums ) ) {
+			WP_CLI::warning( 'Failed to fetch checksums. Please cleanup files manually.' );
+			return;
+		}
+
+		$files_to_remove = array_diff( array_keys( $old_checksums ), array_keys( $new_checksums ) );
+
+		if ( ! empty( $files_to_remove ) ) {
+			WP_CLI::log( 'Cleaning up files...' );
+
+			$count = 0;
+			foreach ( $files_to_remove as $file ) {
+
+				// wp-content should be considered user data
+				if ( 0 === stripos( $file, 'wp-content' ) ) {
+					continue;
+				}
+
+				if ( file_exists( ABSPATH . $file ) ) {
+					unlink( ABSPATH . $file );
+					WP_CLI::log( 'File removed: ' . $file );
+					$count++;
+				}
+			}
+
+			if ( $count ) {
+				WP_CLI::log( number_format( $count ) . ' files cleaned up' );
+			} else {
+				WP_CLI::log( 'No files found that need cleaned up' );
+			}
+		}
 	}
 
 }

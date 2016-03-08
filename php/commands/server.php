@@ -53,7 +53,8 @@ class Server_Command extends WP_CLI_Command {
 			}
 		}
 
-		$cmd = \WP_CLI\Utils\esc_cmd( PHP_BINARY . ' -S %s -t %s %s',
+		$cmd = \WP_CLI\Utils\esc_cmd( '%s -S %s -t %s %s',
+			PHP_BINARY,
 			$assoc_args['host'] . ':' . $assoc_args['port'],
 			$docroot,
 			\WP_CLI\Utils\extract_from_phar( WP_CLI_ROOT . '/php/router.php' )
@@ -61,7 +62,13 @@ class Server_Command extends WP_CLI_Command {
 
 		$descriptors = array( STDIN, STDOUT, STDERR );
 
-		exit( proc_close( proc_open( $cmd, $descriptors, $pipes ) ) );
+		// https://bugs.php.net/bug.php?id=60181
+		$options = array();
+		if ( \WP_CLI\Utils\is_windows() ) {
+			$options["bypass_shell"] = TRUE;
+		}
+
+		exit( proc_close( proc_open( $cmd, $descriptors, $pipes, NULL, NULL, $options ) ) );
 	}
 }
 

@@ -34,7 +34,7 @@ class Term_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -59,6 +59,12 @@ class Term_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
+		foreach ( $args as $taxonomy ) {
+			if ( ! taxonomy_exists( $taxonomy ) ) {
+				WP_CLI::error( "Taxonomy $taxonomy doesn't exist." );
+			}
+		}
+
 		$formatter = $this->get_formatter( $assoc_args );
 
 		$defaults = array(
@@ -163,7 +169,7 @@ class Term_Command extends WP_CLI_Command {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -405,5 +411,42 @@ class Term_Command extends WP_CLI_Command {
 	}
 }
 
+/**
+ * Manage term custom fields.
+ *
+ * ## OPTIONS
+ *
+ * --format=json
+ * : Encode/decode values as JSON.
+ *
+ * ## EXAMPLES
+ *
+ *     wp term meta set category 123 description "Mary is a WordPress developer."
+ */
+class Term_Meta_Command extends \WP_CLI\CommandWithMeta {
+	protected $meta_type = 'term';
+
+	/**
+	 * Check that the term ID exists
+	 *
+	 * @param int
+	 */
+	protected function check_object_id( $object_id ) {
+		$term = get_term( $object_id );
+		if ( ! $term ) {
+			WP_CLI::error( "Could not find the term with ID {$object_id}." );
+		}
+		return $term->term_id;
+	}
+
+}
+
 WP_CLI::add_command( 'term', 'Term_Command' );
+WP_CLI::add_command( 'term meta', 'Term_Meta_Command', array(
+	'before_invoke' => function() {
+		if ( \WP_CLI\Utils\wp_version_compare( '4.4', '<' ) ) {
+			WP_CLI::error( "Requires WordPress 4.4 or greater." );
+		}
+	})
+);
 

@@ -113,6 +113,16 @@ $steps->Then( '/^STDOUT should be CSV containing:$/',
 	}
 );
 
+$steps->Then( '/^STDOUT should be YAML containing:$/',
+	function ( $world, PyStringNode $expected ) {
+		$output = $world->result->stdout;
+		$expected = $world->replace_variables( (string) $expected );
+
+		if ( !checkThatYamlStringContainsYamlString( $output, $expected ) ) {
+			throw new \Exception( $world->result );
+		}
+});
+
 $steps->Then( '/^(STDOUT|STDERR) should be empty$/',
 	function ( $world, $stream ) {
 

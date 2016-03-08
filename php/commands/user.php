@@ -42,7 +42,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -96,16 +96,19 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$formatter = $this->get_formatter( $assoc_args );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( in_array( $formatter->format, array( 'ids', 'count' ) ) ) {
 			$assoc_args['fields'] = 'ids';
 		} else {
 			$assoc_args['fields'] = 'all_with_meta';
 		}
 
+		$assoc_args['count_total'] = false;
 		$users = get_users( $assoc_args );
 
 		if ( 'ids' == $formatter->format ) {
 			echo implode( ' ', $users );
+		} else if ( 'count' === $formatter->format ) {
+			$formatter->display_items( $users );
 		} else {
 			$it = WP_CLI\Utils\iterator_map( $users, function ( $user ) {
 				if ( !is_object( $user ) )
@@ -135,7 +138,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Get a specific subset of the user's fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -286,7 +289,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			if ( is_wp_error( $ret['errors'] ) && ! empty( $ret['errors']->errors ) ) {
 				WP_CLI::error( $ret['errors'] );
 			}
-			$user_id = wpmu_create_user( $user->user_login, $user->user_email, $user->user_login, $user->user_pass );
+			$user_id = wpmu_create_user( $user->user_login, $user->user_pass, $user->user_email );
 			if ( ! $user_id ) {
 				WP_CLI::error( "Unknown error creating new user" );
 			}
@@ -299,17 +302,20 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$user_id = wp_insert_user( $user );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
-			self::wp_new_user_notification( $user_id, $user->user_pass );
-		}
-
-		if ( is_wp_error( $user_id ) ) {
+		if ( ! $user_id || is_wp_error( $user_id ) ) {
+			if ( ! $user_id ) {
+				$user_id = 'Unknown error creating new user.';
+			}
 			WP_CLI::error( $user_id );
 		} else {
 			if ( false === $user->role ) {
 				delete_user_option( $user_id, 'capabilities' );
 				delete_user_option( $user_id, 'user_level' );
 			}
+		}
+
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
+			self::wp_new_user_notification( $user_id, $user->user_pass );
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
@@ -705,7 +711,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 						WP_CLI::warning( $ret['errors'] );
 						continue;
 					}
-					$user_id = wpmu_create_user( $new_user['user_login'], $new_user['user_email'], $new_user['user_pass'] );
+					$user_id = wpmu_create_user( $new_user['user_login'], $new_user['user_pass'], $new_user['user_email'] );
 					if ( ! $user_id ) {
 						WP_CLI::warning( "Unknown error creating new user" );
 						continue;
@@ -814,7 +820,7 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * : The metadata key.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, yaml. Default: table
 	 */
 	public function get( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );

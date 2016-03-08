@@ -164,7 +164,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -243,7 +243,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 * : Accepted values: table, csv, json, count, ids, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -312,6 +312,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$query_args['fields'] = 'ids';
 			$query = new WP_Query( $query_args );
 			echo implode( ' ', $query->posts );
+		} else if ( 'count' === $formatter->format ) {
+			$query_args['fields'] = 'ids';
+			$query = new WP_Query( $query_args );
+			$formatter->display_items( $query->posts );
 		} else {
 			$query = new WP_Query( $query_args );
 			$posts = array_map( function( $post ) {

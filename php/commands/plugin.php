@@ -78,7 +78,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **short_description**: Plugin's Short Description
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -351,8 +351,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['version'] ) ) {
 			foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
-				$this->_delete( $plugin );
-
 				$assoc_args['force'] = 1;
 				$this->install( array( $plugin->name ), $assoc_args );
 			}
@@ -462,7 +460,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, json, CSV. Defaults to table.
+	 * : Output list as table, json, CSV, yaml. Defaults to table.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -536,6 +534,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Check if the plugin is installed.
 	 *
+	 * Returns exit code 0 when installed, 1 when uninstalled.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <plugin>
@@ -544,6 +544,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     wp plugin is-installed hello
+	 *     echo $? # displays 0 or 1
 	 *
 	 * @subcommand is-installed
 	 */
@@ -593,7 +594,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *

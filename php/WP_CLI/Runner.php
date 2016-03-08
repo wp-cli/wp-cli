@@ -119,6 +119,20 @@ class Runner {
 	}
 
 	/**
+	 * Get the path to the packages directory
+	 *
+	 * @return string
+	 */
+	public function get_packages_dir_path() {
+		if ( getenv( 'WP_CLI_PACKAGES_DIR' ) ) {
+			$packages_dir = rtrim( getenv( 'WP_CLI_PACKAGES_DIR' ), '/' ) . '/';
+		} else {
+			$packages_dir = getenv( 'HOME' ) . '/.wp-cli/packages/';
+		}
+		return $packages_dir;
+	}
+
+	/**
 	 * Attempts to find the path to the WP install inside index.php
 	 *
 	 * @param string $index_path
@@ -609,6 +623,15 @@ class Runner {
 		// APIs as non-bundled commands.
 		Utils\load_command( $this->arguments[0] );
 
+		$package_autoload = $this->get_packages_dir_path() . 'vendor/autoload.php';
+
+		if ( file_exists( $package_autoload ) ) {
+			WP_CLI::debug( 'Loading packages from: ' . $package_autoload );
+			require_once $package_autoload;
+		} else {
+			WP_CLI::debug( 'No package autoload found to load.' );
+		}
+
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {
 				if ( ! file_exists( $path ) ) {
@@ -651,7 +674,7 @@ class Runner {
 		self::set_wp_root( $this->find_wp_root() );
 
 		// First try at showing man page
-		if ( 'help' === $this->arguments[0] && ( ! $this->wp_exists() || ! Utils\locate_wp_config() ) ) {
+		if ( ! empty( $this->arguments[0] ) && 'help' === $this->arguments[0] && ( ! $this->wp_exists() || ! Utils\locate_wp_config() || ( ! empty( $this->arguments[1] ) && ! empty( $this->arguments[2] ) && 'core' === $this->arguments[1] && in_array( $this->arguments[2], array( 'config', 'install', 'multisite-install', 'verify-checksums', 'version' ) ) ) ) ) {
 			$this->_run_command();
 		}
 
@@ -739,6 +762,7 @@ class Runner {
 		$wp_cli_is_loaded = true;
 
 		WP_CLI::debug( 'Begin WordPress load' );
+		WP_CLI::do_hook( 'before_wp_load' );
 
 		$this->check_wp_version();
 
@@ -750,6 +774,7 @@ class Runner {
 		}
 
 		WP_CLI::debug( 'wp-config.php path: ' . $wp_config_path );
+		WP_CLI::do_hook( 'before_wp_config_load' );
 
 		// Load wp-config.php code, in the global scope
 		$wp_cli_original_defined_vars = get_defined_vars();
@@ -762,6 +787,7 @@ class Runner {
 		}
 
 		$this->maybe_update_url_from_domain_constant();
+		WP_CLI::do_hook( 'after_wp_config_load' );
 
 		// Load WP-CLI utilities
 		require WP_CLI_ROOT . '/php/utils-wp.php';
@@ -783,6 +809,7 @@ class Runner {
 		}
 
 		WP_CLI::debug( 'Loaded WordPress' );
+		WP_CLI::do_hook( 'after_wp_load' );
 
 	}
 

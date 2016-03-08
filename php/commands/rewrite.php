@@ -151,7 +151,7 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * : Limit the output to specific fields. Defaults to match,query,source.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -263,5 +263,5 @@ class Rewrite_Command extends WP_CLI_Command {
 	}
 }
 
-WP_CLI:: add_command( 'rewrite', 'Rewrite_Command' );
+WP_CLI::add_command( 'rewrite', 'Rewrite_Command' );
 

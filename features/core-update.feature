@@ -19,6 +19,8 @@ Feature: Update WordPress core
       """
       Starting update...
       Unpacking the update...
+      Cleaning up files...
+      No files found that need cleaned up
       Success: WordPress updated successfully.
       """
 
@@ -38,7 +40,7 @@ Feature: Update WordPress core
     When I run `wp core update --minor`
     Then STDOUT should contain:
       """
-      Updating to version 3.7.11
+      Updating to version 3.7.13
       """
 
     When I run `wp core update --minor`
@@ -50,7 +52,7 @@ Feature: Update WordPress core
     When I run `wp core version`
     Then STDOUT should be:
       """
-      3.7.11
+      3.7.13
       """
 
   @less-than-php-7
@@ -157,4 +159,59 @@ Feature: Update WordPress core
       wordpress-4.2.1-en_US.tar.gz
       wordpress-4.2.4-no-content-en_US.zip
       wordpress-4.2.4-partial-1-en_US.zip
+      """
+
+  Scenario: Make sure files are cleaned up
+    Given a WP install
+    When I run `wp core update --version=4.4 --force`
+    Then the wp-includes/rest-api.php file should exist
+    Then the wp-includes/class-wp-comment.php file should exist
+    And STDOUT should not contain:
+      """
+      File removed: wp-content
+      """
+
+    When I run `wp core update --version=4.3.2 --force`
+    Then the wp-includes/rest-api.php file should not exist
+    Then the wp-includes/class-wp-comment.php file should not exist
+    Then STDOUT should contain:
+      """
+      File removed: wp-includes/class-walker-comment.php
+      File removed: wp-includes/class-wp-network.php
+      File removed: wp-includes/embed-template.php
+      File removed: wp-includes/class-wp-comment.php
+      File removed: wp-includes/class-wp-http-response.php
+      File removed: wp-includes/class-walker-category-dropdown.php
+      File removed: wp-includes/rest-api.php
+      """
+    And STDOUT should not contain:
+      """
+      File removed: wp-content
+      """
+
+    When I run `wp option add str_opt 'bar'`
+    Then STDOUT should not be empty
+    When I run `wp post create --post_title='Test post' --porcelain`
+    Then STDOUT should be a number
+
+  @less-than-php-7 @require-wp-4.0
+  Scenario: Minor update on an unlocalized WordPress release
+    Given a WP install
+    And an empty cache
+
+    When I run `wp core download --version=4.0 --locale=es_ES --force`
+    Then STDOUT should contain:
+      """
+      Success: WordPress downloaded.
+      """
+
+    When I run `wp core update --minor`
+    Then STDOUT should contain:
+      """
+      Updating to version 4.0.10 (en_US)...
+      Descargando paquete de instalación desde https://downloads.wordpress.org/release/wordpress-4.0.10-partial-0.zip
+      """
+    And STDOUT should contain:
+      """
+      Success: WordPress updated successfully.
       """

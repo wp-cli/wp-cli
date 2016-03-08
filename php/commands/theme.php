@@ -72,7 +72,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **description**: Theme Description
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -131,7 +131,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		if ( 'active' === $this->get_status( $theme ) ) {
 			WP_CLI::success( "The '$name' theme is already active." );
-			exit;
+			return;
 		}
 
 		if ( $theme->get_stylesheet() != $theme->get_template() && ! $this->fetcher->get( $theme->get_template() ) ) {
@@ -411,7 +411,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -485,6 +485,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Check if the theme is installed.
 	 *
+	 * Returns exit code 0 when installed, 1 when uninstalled.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <theme>
@@ -493,6 +495,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     wp theme is-installed twentytwelve
+	 *     echo $? # displays 0 or 1
 	 *
 	 * @subcommand is-installed
 	 */
@@ -554,7 +557,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *

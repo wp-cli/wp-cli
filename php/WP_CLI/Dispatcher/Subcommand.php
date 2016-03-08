@@ -59,6 +59,15 @@ class Subcommand extends CompositeCommand {
 	}
 
 	/**
+	 * Set the synopsis string for this subcommand.
+	 *
+	 * @param string
+	 */
+	public function set_synopsis( $synopsis ) {
+		$this->synopsis = $synopsis;
+	}
+
+	/**
 	 * If an alias is set, grant access to it.
 	 * Aliases permit subcommands to be instantiated
 	 * with a secondary identity.
@@ -279,8 +288,11 @@ class Subcommand extends CompositeCommand {
 	 * @param array $assoc_args
 	 */
 	public function invoke( $args, $assoc_args, $extra_args ) {
-		if ( \WP_CLI::get_config( 'prompt' ) )
+		static $prompted_once = false;
+		if ( \WP_CLI::get_config( 'prompt' ) && ! $prompted_once ) {
 			list( $args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
+			$prompted_once = true;
+		}
 
 		$to_unset = $this->validate_args( $args, $assoc_args, $extra_args );
 

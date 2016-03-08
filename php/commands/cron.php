@@ -23,7 +23,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, ids. Default: table.
+	 * : Accepted values: table, json, csv, ids, yaml. Default: table.
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -143,6 +143,11 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 *
 	 * [--all]
 	 * : Run all hooks.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Run all cron events due right now
+	 *     wp cron event run $( wp cron event list --fields=hook,next_run_relative --format=csv | awk -F, '$2=="now" {print $1}' )
 	 */
 	public function run( $args, $assoc_args ) {
 
@@ -169,13 +174,11 @@ class Cron_Event_Command extends WP_CLI_Command {
 		$executed = 0;
 		foreach ( $events as $event ) {
 			if ( in_array( $event->hook, $args ) || \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
+				$start = microtime( true );
 				$result = self::run_event( $event );
-				if ( $result ) {
-					$executed++;
-					WP_CLI::log( sprintf( "Executed the cron event '%s'.", $event->hook ) );
-				} else {
-					WP_CLI::warning( sprintf( "Failed to the execute the cron event '%s'.", $event->hook ) );
-				}
+				$total = round( microtime( true ) - $start, 3 );
+				$executed++;
+				WP_CLI::log( sprintf( "Executed the cron event '%s' in %ss.", $event->hook, $total ) );
 			}
 		}
 
@@ -404,7 +407,7 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, ids. Default: table.
+	 * : Accepted values: table, json, csv, ids, yaml. Default: table.
 	 *
 	 * ## AVAILABLE FIELDS
 	 *

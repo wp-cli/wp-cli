@@ -96,11 +96,15 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--count=<number>]
 	 * : How many comments to generate. Default: 100
+	 *
+	 * [--post_id=<post-id>]
+	 * : Assign comments to a specific post.
 	 */
 	public function generate( $args, $assoc_args ) {
 
 		$defaults = array(
-			'count' => 100,
+			'count'    => 100,
+			'post_id'  => null,
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
@@ -112,6 +116,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		for ( $i = $total; $i < $limit; $i++ ) {
 			wp_insert_comment( array(
 				'comment_content'       => "Comment {$i}",
+				'comment_post_ID'       => $assoc_args['post_id'],
 				) );
 			$notify->tick();
 		}
@@ -135,7 +140,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -172,7 +177,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *

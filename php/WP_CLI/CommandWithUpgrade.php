@@ -11,12 +11,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected $upgrade_transient;
 
 	function __construct() {
-		// After updating plugins/themes also update translations by running the `core language update` command.
+		// Do not automatically check translations updates after updating plugins/themes.
 		add_action( 'upgrader_process_complete', function() {
 			remove_action( 'upgrader_process_complete', array( 'Language_Pack_Upgrader', 'async_upgrade' ), 20 );
-			if ( Utils\wp_version_compare( '4.0', '>=' ) ) {
-				\WP_CLI::run_command( array( 'core', 'language', 'update' ), array( 'dry-run' => false ) );
-			}
 		}, 1 );
 	}
 
@@ -215,6 +212,11 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected function update_many( $args, $assoc_args ) {
 		call_user_func( $this->upgrade_refresh );
 
+		if ( ! empty( $assoc_args['format'] ) && in_array( $assoc_args['format'], array( 'json', 'csv' ) ) ) {
+			$logger = new \WP_CLI\Loggers\Quiet;
+			\WP_CLI::set_logger( $logger );
+		}
+
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) && empty( $args ) ) {
 			\WP_CLI::error( "Please specify one or more {$this->item_type}s, or use --all." );
 		}
@@ -235,10 +237,17 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				return;
 			}
 
-			\WP_CLI::line( "Available {$this->item_type} updates:" );
-
-			\WP_CLI\Utils\format_items( 'table', $items_to_update,
-				array( 'name', 'status', 'version', 'update_version' ) );
+			if ( ! empty( $assoc_args['format'] ) && in_array( $assoc_args['format'], array( 'json', 'csv' ) ) ) {
+				\WP_CLI\Utils\format_items( $assoc_args['format'], $items_to_update, array( 'name', 'status', 'version', 'update_version' ) );
+			} else if ( ! empty( $assoc_args['format'] ) && 'summary' === $assoc_args['format'] ) {
+				\WP_CLI::line( "Available {$this->item_type} updates:" );
+				foreach( $items_to_update as $item_to_update => $info ) {
+					\WP_CLI::log( "{$info['title']} update from version {$info['version']} to version {$info['update_version']}" );
+				}
+			} else {
+				\WP_CLI::line( "Available {$this->item_type} updates:" );
+				\WP_CLI\Utils\format_items( 'table', $items_to_update, array( 'name', 'status', 'version', 'update_version' ) );
+			}
 
 			return;
 		}
@@ -285,7 +294,13 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						'status' => $result[ $info['update_id'] ] !== null ? 'Updated' : 'Error',
 					);
 				}
-				\WP_CLI\Utils\format_items( 'table', $status, array( 'name', 'old_version', 'new_version', 'status' ) );
+
+				$format = 'table';
+				if ( ! empty( $assoc_args['format'] ) && in_array( $assoc_args['format'], array( 'json', 'csv' ) ) ) {
+					$format = $assoc_args['format'];
+				}
+
+				\WP_CLI\Utils\format_items( $format, $status, array( 'name', 'old_version', 'new_version', 'status' ) );
 			}
 		}
 	}

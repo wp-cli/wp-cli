@@ -9,8 +9,26 @@ Feature: Manage sites in a multisite installation
       Network with id 1000 does not exist.
       """
 
+  Scenario: Create a subdomain site
+    Given a WP multisite subdomain install
+
+    When I run `wp site create --slug=first`
+    Then STDOUT should not be empty
+
+    When I run `wp site list --fields=blog_id,url`
+    Then STDOUT should be a table containing rows:
+      | blog_id | url                       |
+      | 1       | http://example.com/       |
+      | 2       | http://first.example.com/ |
+
+    When I run `wp --url=first.example.com option get home`
+    Then STDOUT should be:
+      """
+      http://first.example.com
+      """
+
   Scenario: Delete a site by id
-    Given a WP multisite install
+    Given a WP multisite subdirectory install
 
     When I run `wp site create --slug=first --porcelain`
     Then STDOUT should be a number

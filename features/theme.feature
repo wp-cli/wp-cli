@@ -249,3 +249,57 @@ Feature: Manage WordPress themes
       | name          | status   |
       | biker         | active   |
       | jolene        | parent   |
+
+  Scenario: When updating a theme --format should be the same when using --dry-run
+    Given a WP install
+
+    When I run `wp theme install --force twentytwelve --version=1.0`
+    Then STDOUT should not be empty
+
+    When I run `wp theme list --name=twentytwelve --field=update_version`
+    And save STDOUT as {UPDATE_VERSION}
+
+    When I run `wp theme update twentytwelve --format=summary --dry-run`
+    Then STDOUT should contain:
+      """
+      Available theme updates:
+      Twenty Twelve update from version 1.0 to version {UPDATE_VERSION}
+      """
+
+    When I run `wp theme update twentytwelve --format=json --dry-run`
+    Then STDOUT should be JSON containing:
+      """
+      [{"name":"twentytwelve","status":"inactive","version":"1.0","update_version":"{UPDATE_VERSION}"}]
+      """
+
+    When I run `wp theme update twentytwelve --format=csv --dry-run`
+    Then STDOUT should contain:
+      """
+      name,status,version,update_version
+      twentytwelve,inactive,1.0,{UPDATE_VERSION}
+      """
+
+  Scenario: Check json and csv formats when updating a theme
+    Given a WP install
+
+    When I run `wp theme install --force twentytwelve --version=1.0`
+    Then STDOUT should not be empty
+
+    When I run `wp theme list --name=twentytwelve --field=update_version`
+    And save STDOUT as {UPDATE_VERSION}
+
+    When I run `wp theme update twentytwelve --format=json`
+    Then STDOUT should contain:
+      """
+      [{"name":"twentytwelve","old_version":"1.0","new_version":"{UPDATE_VERSION}","status":"Updated"}]
+      """
+
+    When I run `wp theme install --force twentytwelve --version=1.0`
+    Then STDOUT should not be empty
+
+    When I run `wp theme update twentytwelve --format=csv`
+    Then STDOUT should contain:
+      """
+      name,old_version,new_version,status
+      twentytwelve,1.0,{UPDATE_VERSION},Updated
+      """

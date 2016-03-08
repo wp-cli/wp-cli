@@ -232,6 +232,18 @@ Feature: Do global search/replace
       """
     And STDOUT should be empty
 
+  Scenario: Search and replace a table that has a multi-column primary key
+    Given a WP install
+    And I run `wp db query "CREATE TABLE wp_multicol ( "id" bigint(20) NOT NULL AUTO_INCREMENT,"name" varchar(60) NOT NULL,"value" text NOT NULL,PRIMARY KEY ("id","name"),UNIQUE KEY "name" ("name") ) ENGINE=InnoDB DEFAULT CHARSET=utf8 "`
+    And I run `wp db query "INSERT INTO wp_multicol VALUES (1, 'foo',  'bar')"`
+    And I run `wp db query "INSERT INTO wp_multicol VALUES (2, 'bar',  'foo')"`
+
+    When I run `wp search-replace bar replaced wp_multicol`
+    Then STDOUT should be a table containing rows:
+      | Table       | Column | Replacements | Type |
+      | wp_multicol | name   | 1            | SQL  |
+      | wp_multicol | value  | 1            | SQL  |
+
   Scenario Outline: Large guid search/replace where replacement contains search (or not)
     Given a WP install
     And I run `wp option get siteurl`
@@ -249,7 +261,7 @@ Feature: Do global search/replace
       | http://newdomain.com |           |
       | http://newdomain.com | --dry-run |
 
-  Scenario Outline: Choose replacement method (PHP or MySQL) given proper flags or data.
+  Scenario Outline: Choose replacement method (PHP or MySQL/MariaDB) given proper flags or data.
     Given a WP install
     And I run `wp option get siteurl`
     And save STDOUT as {SITEURL}

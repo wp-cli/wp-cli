@@ -55,6 +55,7 @@ class CLI_Command extends WP_CLI_Command {
 				'global_config_path' => $runner->global_config_path,
 				'project_config_path' => $runner->project_config_path,
 				'wp_cli_dir_path' => WP_CLI_ROOT,
+				'wp_cli_packages_dir_path' => $runner->get_packages_dir_path(),
 				'wp_cli_version' => WP_CLI_VERSION,
 			);
 
@@ -64,6 +65,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "PHP version:\t" . PHP_VERSION );
 			WP_CLI::line( "php.ini used:\t" . get_cfg_var( 'cfg_file_path' ) );
 			WP_CLI::line( "WP-CLI root dir:\t" . WP_CLI_ROOT );
+			WP_CLI::line( "WP-CLI packages dir:\t" . $runner->get_packages_dir_path() );
 			WP_CLI::line( "WP-CLI global config:\t" . $runner->global_config_path );
 			WP_CLI::line( "WP-CLI project config:\t" . $runner->project_config_path );
 			WP_CLI::line( "WP-CLI version:\t" . WP_CLI_VERSION );
@@ -169,7 +171,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		WP_CLI::log( sprintf( 'Downloading from %s...', $download_url ) );
 
-		$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.phar';
+		$temp = \WP_CLI\Utils\get_temp_dir() . uniqid('wp_') . '.phar';
 
 		$headers = array();
 		$options = array(
@@ -181,9 +183,9 @@ class CLI_Command extends WP_CLI_Command {
 
 		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
 		$php_binary = WP_CLI::get_php_binary();
-		$process = WP_CLI\Process::create( "{$php_binary} $temp --version {$allow_root}" );
+		$process = WP_CLI\Process::create( "{$php_binary} $temp --info {$allow_root}" );
 		$result = $process->run();
-		if ( 0 !== $result->return_code ) {
+		if ( 0 !== $result->return_code || false === stripos( $result->stdout, 'WP-CLI version:' ) ) {
 			$multi_line = explode( PHP_EOL, $result->stderr );
 			WP_CLI::error_multi_line( $multi_line );
 			WP_CLI::error( 'The downloaded PHAR is broken, try running wp cli update again.' );
@@ -272,6 +274,23 @@ class CLI_Command extends WP_CLI_Command {
 				return ! empty( $updates[ $type ] ) ? array( $updates[ $type ] ) : false;
 			}
 		}
+
+		if ( empty( $updates ) && preg_match( '#-alpha-(.+)$#', WP_CLI_VERSION, $matches ) ) {
+			$version_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/NIGHTLY_VERSION';
+			$response = Utils\http_request( 'GET', $version_url );
+			if ( ! $response->success || 200 !== $response->status_code ) {
+				WP_CLI::error( sprintf( "Failed to get current nightly version (HTTP code %d)", $response->status_code ) );
+			}
+			$nightly_version = trim( $response->body );
+			if ( WP_CLI_VERSION != $nightly_version ) {
+				$updates['nightly'] = array(
+					'version'        => $nightly_version,
+					'update_type'    => 'nightly',
+					'package_url'    => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
+				);
+			}
+		}
+
 		return array_values( $updates );
 	}
 

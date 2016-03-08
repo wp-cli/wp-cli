@@ -240,3 +240,23 @@ Feature: Manage WordPress installation
       """
       Hello world!
       """
+
+  Scenario: Download WordPress
+    Given an empty directory
+
+    When I run `wp core download`
+    Then STDOUT should contain:
+     """
+     Success: WordPress downloaded.
+     """
+    And the wp-settings.php file should exist
+
+  Scenario: Don't download WordPress when files are already present
+    Given an empty directory
+    And WP files
+
+    When I try `wp core download`
+    Then STDERR should be:
+      """
+      Error: WordPress files seem to already be present here.
+      """

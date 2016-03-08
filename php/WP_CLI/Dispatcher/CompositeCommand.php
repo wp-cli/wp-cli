@@ -30,7 +30,6 @@ class CompositeCommand {
 
 		$this->shortdesc = $docparser->get_shortdesc();
 		$this->longdesc = $docparser->get_longdesc();
-		$this->longdesc .= $this->get_global_params();
 		$this->docparser = $docparser;
 
 		$when_to_invoke = $docparser->get_tag( 'when' );
@@ -100,13 +99,31 @@ class CompositeCommand {
 	}
 
 	/**
+	 * Set the short description for this composite command.
+	 *
+	 * @param string
+	 */
+	public function set_shortdesc( $shortdesc ) {
+		$this->shortdesc = $shortdesc;
+	}
+
+	/**
 	 * Get the long description for this composite
 	 * command.
 	 *
 	 * @return string
 	 */
 	public function get_longdesc() {
-		return $this->longdesc;
+		return $this->longdesc . $this->get_global_params();
+	}
+
+	/**
+	 * Set the long description for this composite commmand
+	 *
+	 * @param string
+	 */
+	public function set_longdesc( $longdesc ) {
+		$this->longdesc = $longdesc;
 	}
 
 	/**
@@ -258,6 +275,10 @@ class CompositeCommand {
 				'synopsis' => $synopsis,
 				'desc' => $details['desc']
 			);
+		}
+
+		if ( $this->get_subcommands() ) {
+			$binding['has_subcommands'] = true;
 		}
 
 		return Utils\mustache_render( 'man-params.mustache', $binding );

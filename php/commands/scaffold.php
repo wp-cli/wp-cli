@@ -439,6 +439,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			'features/bootstrap/support.php'              => $bootstrap_dir,
 			'php/WP_CLI/Process.php'                      => $bootstrap_dir,
 			'php/utils.php'                               => $bootstrap_dir,
+			'ci/behat-tags.php'                           => $utils_dir,
 			'utils/get-package-require-from-composer.php' => $utils_dir,
 			'features/steps/given.php'                    => $steps_dir,
 			'features/steps/when.php'                     => $steps_dir,
