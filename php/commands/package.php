@@ -17,7 +17,7 @@ use \Composer\Util\Filesystem;
 use \WP_CLI\ComposerIO;
 
 /**
- * Manage WP-CLI community packages.
+ * Manage WP-CLI packages.
  *
  * @package WP-CLI
  *
@@ -35,24 +35,26 @@ class Package_Command extends WP_CLI_Command {
 	);
 
 	/**
-	 * Browse available WP-CLI community packages.
+	 * Browse WP-CLI packages available for installation.
+	 *
+	 * Lists packages available for installation from the [Package Index](http://wp-cli.org/package-index/).
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml. Default: table
+	 * : Accepted values: table, json, csv, yaml, ids. Default: table.
 	 */
 	public function browse( $_, $assoc_args ) {
 		$this->show_packages( $this->get_community_packages(), $assoc_args );
 	}
 
 	/**
-	 * Install a WP-CLI community package.
+	 * Install a WP-CLI package.
 	 *
 	 * ## OPTIONS
 	 *
-	 * <package>
-	 * : The name of the package to install. Can optionally contain a version constraint.
+	 * <name>
+	 * : Name of the package to install. Can optionally contain a version constraint.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -125,12 +127,12 @@ class Package_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * List installed WP-CLI community packages.
+	 * List installed WP-CLI packages.
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml. Default: table
+	 * : Accepted values: table, json, csv, yaml, ids. Default: table
 	 *
 	 * @subcommand list
 	 */
@@ -139,12 +141,12 @@ class Package_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Uninstall a WP-CLI community package.
+	 * Uninstall a WP-CLI package.
 	 *
 	 * ## OPTIONS
 	 *
-	 * <package>
-	 * : The name of the package to uninstall.
+	 * <name>
+	 * : Name of the package to uninstall.
 	 */
 	public function uninstall( $args ) {
 		list( $package_name ) = $args;
@@ -267,23 +269,26 @@ class Package_Command extends WP_CLI_Command {
 		foreach ( $packages as $package ) {
 			$name = $package->getName();
 			if ( isset( $list[ $name ] ) ) {
-				$list[ $name ]->version[] = $package->getPrettyVersion();
+				$list[ $name ]['version'][] = $package->getPrettyVersion();
 			} else {
-				$package_output = new stdClass;
-				$package_output->name = $package->getName();
-				$package_output->description = $package->getDescription();
-				$package_output->authors = implode( ', ', array_column( (array) $package->getAuthors(), 'name' ) );
-				$package_output->version = array( $package->getPrettyVersion() );
-				$list[ $package_output->name ] = $package_output;
+				$package_output = array();
+				$package_output['name'] = $package->getName();
+				$package_output['description'] = $package->getDescription();
+				$package_output['authors'] = implode( ', ', array_column( (array) $package->getAuthors(), 'name' ) );
+				$package_output['version'] = array( $package->getPrettyVersion() );
+				$list[ $package_output['name'] ] = $package_output;
 			}
 		}
 
 		$list = array_map( function( $package ){
-			$package->version = implode( ', ', $package->version );
+			$package['version'] = implode( ', ', $package['version'] );
 			return $package;
 		}, $list );
 
 		ksort( $list );
+		if ( 'ids' === $assoc_args['format'] ) {
+			$list = array_keys( $list );
+		}
 		WP_CLI\Utils\format_items( $assoc_args['format'], $list, $assoc_args['fields'] );
 	}
 
