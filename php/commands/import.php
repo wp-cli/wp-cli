@@ -2,6 +2,8 @@
 
 class Import_Command extends WP_CLI_Command {
 
+	var $processed_posts = array();
+
 	/**
 	 * Import content from a WXR file.
 	 *
@@ -69,6 +71,7 @@ class Import_Command extends WP_CLI_Command {
 	private function import_wxr( $file, $args ) {
 
 		$wp_import = new WP_Import;
+		$wp_import->processed_posts = $this->processed_posts;
 		$import_data = $wp_import->parse( $file );
 		if ( is_wp_error( $import_data ) )
 			return $import_data;
@@ -138,6 +141,7 @@ class Import_Command extends WP_CLI_Command {
 		}
 
 		$wp_import->import( $file );
+		$this->processed_posts = array_merge($this->processed_posts, $wp_import->processed_posts);
 
 		return true;
 	}
