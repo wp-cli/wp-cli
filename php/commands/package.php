@@ -265,13 +265,23 @@ class Package_Command extends WP_CLI_Command {
 
 		$list = array();
 		foreach ( $packages as $package ) {
-			$package_output = new stdClass;
-			$package_output->name = $package->getName();
-			$package_output->description = $package->getDescription();
-			$package_output->authors = implode( ', ', array_column( (array) $package->getAuthors(), 'name' ) );
-			$package_output->version = $package->getPrettyVersion();
-			$list[$package_output->name] = $package_output;
+			$name = $package->getName();
+			if ( isset( $list[ $name ] ) ) {
+				$list[ $name ]->version[] = $package->getPrettyVersion();
+			} else {
+				$package_output = new stdClass;
+				$package_output->name = $package->getName();
+				$package_output->description = $package->getDescription();
+				$package_output->authors = implode( ', ', array_column( (array) $package->getAuthors(), 'name' ) );
+				$package_output->version = array( $package->getPrettyVersion() );
+				$list[ $package_output->name ] = $package_output;
+			}
 		}
+
+		$list = array_map( function( $package ){
+			$package->version = implode( ', ', $package->version );
+			return $package;
+		}, $list );
 
 		ksort( $list );
 		WP_CLI\Utils\format_items( $assoc_args['format'], $list, $assoc_args['fields'] );
