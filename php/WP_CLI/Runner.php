@@ -675,6 +675,7 @@ class Runner {
 
 		// First try at showing man page
 		if ( ! empty( $this->arguments[0] ) && 'help' === $this->arguments[0] && ( ! $this->wp_exists() || ! Utils\locate_wp_config() || ( ! empty( $this->arguments[1] ) && ! empty( $this->arguments[2] ) && 'core' === $this->arguments[1] && in_array( $this->arguments[2], array( 'config', 'install', 'multisite-install', 'verify-checksums', 'version' ) ) ) ) ) {
+			$this->auto_check_update();
 			$this->_run_command();
 		}
 
@@ -858,6 +859,69 @@ class Runner {
 			}
 			\WP_CLI::set_url( $url );
 		}
+	}
+
+	/**
+	 * Check whether there's a WP-CLI update available, and suggest update if so.
+	 */
+	private function auto_check_update() {
+
+		// `wp cli update` only works with Phars at this time.
+		if ( ! Utils\inside_phar() ) {
+			return;
+		}
+
+		$existing_phar = realpath( $_SERVER['argv'][0] );
+		// Phar needs to be writable to be easily updateable.
+		if ( ! is_writable( $existing_phar ) || ! is_writeable( dirname( $existing_phar ) ) ) {
+			return;
+		}
+
+		// Only check for update when a human is operating.
+		if ( ! function_exists( 'posix_isatty' ) || ! posix_isatty( STDOUT ) ) {
+			return;
+		}
+
+		// Allow hosts and other providers to disable automatic check update.
+		if ( getenv( 'WP_CLI_DISABLE_AUTO_CHECK_UPDATE' ) ) {
+			return;
+		}
+
+		// Permit configuration of number of days between checks.
+		$days_between_checks = getenv( 'WP_CLI_AUTO_CHECK_UPDATE_DAYS' );
+		if ( false === $days_between_checks ) {
+			$days_between_checks = 1;
+		}
+
+		$cache = WP_CLI::get_cache();
+		$cache_key = 'wp-cli-update-check';
+		// Bail early on the first check, so we don't always check on an unwritable cache.
+		if ( ! $cache->has( $cache_key ) ) {
+			$cache->write( $cache_key, time() );
+			return;
+		}
+
+		// Bail if last check is still within our update check time period.
+		$last_check = (int) $cache->read( $cache_key );
+		if ( time() - ( 24 * 60 * 60 * $days_between_checks ) < $last_check ) {
+			return;
+		}
+
+		// In case the operation fails, ensure the timestamp has been updated.
+		$cache->write( $cache_key, time() );
+
+		// Check whether any updates are available.
+		ob_start();
+		WP_CLI::run_command( array( 'cli', 'check-update' ), array( 'format' => 'count' ) );
+		$count = ob_get_clean();
+		if ( ! $count ) {
+			return;
+		}
+
+		// Looks like an update is available, so let's prompt to update.
+		WP_CLI::run_command( array( 'cli', 'update' ) );
+		// If the Phar was replaced, we can't proceed with the original process.
+		exit;
 	}
 
 }
