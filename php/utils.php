@@ -62,8 +62,8 @@ function get_vendor_paths() {
 	$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
 	if ( file_exists( $maybe_composer_json ) && is_readable( $maybe_composer_json ) ) {
 		$composer = json_decode( file_get_contents( $maybe_composer_json ) );
-		if ( ! empty( $composer->{'vendor-dir'} ) ) {
-			array_unshift( $vendor_paths, WP_CLI_ROOT . '/../../../' . $composer->{'vendor-dir'} );
+		if ( ! empty( $composer->config ) && ! empty( $composer->config->{'vendor-dir'} ) ) {
+			array_unshift( $vendor_paths, WP_CLI_ROOT . '/../../../' . $composer->config->{'vendor-dir'} );
 		}
 	}
 	return $vendor_paths;
