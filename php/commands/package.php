@@ -142,6 +142,31 @@ class Package_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Get the path to an installed WP-CLI package, or the package directory.
+	 *
+	 * If you want to contribute to a package, this is a great way to jump to it.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<name>]
+	 * : Name of the package to get the directory for.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     cd $(wp package path)
+	 */
+	function path( $args ) {
+		$packages_dir = WP_CLI::get_runner()->get_packages_dir_path();
+		if ( ! empty( $args ) ) {
+			$packages_dir .= 'vendor/' . $args[0];
+			if ( ! is_dir( $packages_dir ) ) {
+				WP_CLI::error( 'Invalid package name.' );
+			}
+		}
+		WP_CLI::line( $packages_dir );
+	}
+
+	/**
 	 * Uninstall a WP-CLI package.
 	 *
 	 * ## OPTIONS
