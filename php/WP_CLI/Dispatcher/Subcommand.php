@@ -253,8 +253,7 @@ class Subcommand extends CompositeCommand {
 		}
 
 		$synopsis_spec = \WP_CLI\SynopsisParser::parse( $synopsis );
-		reset( $args );
-		$i = key( $args );
+		$i = 0;
 		$errors = array( 'fatal' => array(), 'warning' => array() );
 		foreach( $synopsis_spec as $spec ) {
 			if ( 'positional' === $spec['type'] ) {
