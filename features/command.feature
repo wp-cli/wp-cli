@@ -299,6 +299,7 @@ Feature: WP-CLI Commands
             'name'          => 'message',
             'description'   => 'An awesome message to display',
             'optional'      => false,
+            'options'       => array( 'hello', 'goodbye' ),
           ),
           array(
             'type'          => 'assoc',
@@ -311,6 +312,8 @@ Feature: WP-CLI Commands
             'name'          => 'meal',
             'description'   => 'A type of meal.',
             'optional'      => true,
+            'default'       => 'breakfast',
+            'options'       => array( 'breakfast', 'lunch', 'dinner' ),
           ),
         ),
       ) );
@@ -348,9 +351,142 @@ Feature: WP-CLI Commands
       """
       <message>
           An awesome message to display
+          ---
+          options:
+            - hello
+            - goodbye
+          ---
       """
     And STDOUT should contain:
       """
       [--meal=<meal>]
           A type of meal.
+          ---
+          default: breakfast
+          options:
+            - breakfast
+            - lunch
+            - dinner
+          ---
+      """
+
+  Scenario: Register a command with default and accepted arguments.
+    Given an empty directory
+    And a test-cmd.php file:
+      """
+      <?php
+      /**
+       * An amazing command for managing burritos.
+       *
+       * [<bar>]
+       * : This is the bar argument.
+       * ---
+       * default: burrito
+       * ---
+       *
+       * [<shop>...]
+       * : This is where you buy burritos.
+       * ---
+       * options:
+       *   - left_coast_siesta
+       *   - cha cha cha
+       * ---
+       *
+       * [--burrito=<burrito>]
+       * : This is the burrito argument.
+       * ---
+       * options:
+       *   - beans
+       *   - veggies
+       * ---
+       *
+       * @when before_wp_load
+       */
+      $foo = function( $args, $assoc_args ) {
+        $out = array(
+          'bar'     => isset( $args[0] ) ? $args[0] : '',
+          'shop'    => isset( $args[1] ) ? $args[1] : '',
+          'burrito' => isset( $assoc_args['burrito'] ) ? $assoc_args['burrito'] : '',
+        );
+        WP_CLI::print_value( $out, array( 'format' => 'yaml' ) );
+      };
+      WP_CLI::add_command( 'foo', $foo );
+      """
+
+    When I run `wp --require=test-cmd.php foo --help`
+    Then STDOUT should contain:
+      """
+      [<bar>]
+          This is the bar argument.
+          ---
+          default: burrito
+          ---
+      """
+    And STDOUT should contain:
+      """
+      [--burrito=<burrito>]
+          This is the burrito argument.
+          ---
+          options:
+            - beans
+            - veggies
+          ---
+      """
+
+    When I run `wp --require=test-cmd.php foo`
+    Then STDOUT should be YAML containing:
+      """
+      bar: burrito
+      shop:
+      burrito:
+      """
+
+    When I run `wp --require=test-cmd.php foo ''`
+    Then STDOUT should be YAML containing:
+      """
+      bar:
+      shop:
+      burrito:
+      """
+
+    When I run `wp --require=test-cmd.php foo apple --burrito=veggies`
+    Then STDOUT should be YAML containing:
+      """
+      bar: apple
+      shop:
+      burrito: veggies
+      """
+
+    When I try `wp --require=test-cmd.php foo apple --burrito=meat`
+    Then STDERR should contain:
+      """
+      Error: Parameter errors:
+       Invalid value specified for 'burrito' (This is the burrito argument.)
+      """
+
+    When I try `wp --require=test-cmd.php foo apple --burrito=''`
+    Then STDERR should contain:
+      """
+      Error: Parameter errors:
+       Invalid value specified for 'burrito' (This is the burrito argument.)
+      """
+
+    When I try `wp --require=test-cmd.php foo apple taco_del_mar`
+    Then STDERR should contain:
+      """
+      Error: Invalid value specified for positional arg.
+      """
+
+    When I try `wp --require=test-cmd.php foo apple 'cha cha cha' taco_del_mar`
+    Then STDERR should contain:
+      """
+      Error: Invalid value specified for positional arg.
+      """
+
+    When I run `wp --require=test-cmd.php foo apple 'cha cha cha'`
+    Then STDOUT should be YAML containing:
+      """
+      bar: apple
+      shop: cha cha cha
+      burrito:
       """
