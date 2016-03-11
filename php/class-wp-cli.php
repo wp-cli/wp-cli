@@ -315,7 +315,7 @@ class WP_CLI {
 				foreach( $args['synopsis'] as $key => $arg ) {
 					$long_desc .= $bits[ $key ] . PHP_EOL . ': ' . $arg['description'] . PHP_EOL;
 					$yamlify = array();
-					foreach( array( 'options', 'default' ) as $key ) {
+					foreach( array( 'default', 'options' ) as $key ) {
 						if ( isset( $arg[ $key ] ) ) {
 							$yamlify[ $key ] = $arg[ $key ];
 						}

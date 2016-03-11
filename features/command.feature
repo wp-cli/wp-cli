@@ -299,6 +299,7 @@ Feature: WP-CLI Commands
             'name'          => 'message',
             'description'   => 'An awesome message to display',
             'optional'      => false,
+            'options'       => array( 'hello', 'goodbye' ),
           ),
           array(
             'type'          => 'assoc',
@@ -311,6 +312,8 @@ Feature: WP-CLI Commands
             'name'          => 'meal',
             'description'   => 'A type of meal.',
             'optional'      => true,
+            'default'       => 'breakfast',
+            'options'       => array( 'breakfast', 'lunch', 'dinner' ),
           ),
         ),
       ) );
@@ -348,11 +351,23 @@ Feature: WP-CLI Commands
       """
       <message>
           An awesome message to display
+          ---
+          options:
+            - hello
+            - goodbye
+          ---
       """
     And STDOUT should contain:
       """
       [--meal=<meal>]
           A type of meal.
+          ---
+          default: breakfast
+          options:
+            - breakfast
+            - lunch
+            - dinner
+          ---
       """
 
   Scenario: Register a command with default and accepted arguments.
