@@ -619,6 +619,12 @@ class Runner {
 			exit;
 		}
 
+		// Protect 'package' commands from most of the runtime too
+		if ( 'package' === $this->arguments[0] ) {
+			$this->_run_command();
+			exit;
+		}
+
 		// Load bundled commands early, so that they're forced to use the same
 		// APIs as non-bundled commands.
 		Utils\load_command( $this->arguments[0] );
