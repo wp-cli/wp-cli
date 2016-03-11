@@ -256,9 +256,6 @@ class Subcommand extends CompositeCommand {
 		$i = 0;
 		$errors = array( 'fatal' => array(), 'warning' => array() );
 		foreach( $synopsis_spec as $spec ) {
-			if ( ! empty( $spec['repeating'] ) ) {
-				continue;
-			}
 			if ( 'positional' === $spec['type'] ) {
 				$spec_args = $this->docparser->get_arg_args( $spec['name'] );
 				if ( ! isset( $args[ $i ] ) ) {
@@ -266,9 +263,18 @@ class Subcommand extends CompositeCommand {
 						$args[ $i ] = $spec_args['default'];
 					}
 				}
-				if ( isset( $args[ $i ] ) && isset( $spec_args['options'] ) ) {
-					if ( ! in_array( $args[ $i ], $spec_args['options'] ) ) {
-						\WP_CLI::error( 'Invalid value specified for positional arg.' );
+				if ( isset( $spec_args['options'] ) ) {
+					if ( ! empty( $spec['repeating'] ) ) {
+						do {
+							if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
+								\WP_CLI::error( 'Invalid value specified for positional arg.' );
+							}
+							$i++;
+						} while ( isset( $args[ $i ] ) );
+					} else {
+						if ( ! in_array( $args[ $i ], $spec_args['options'] ) ) {
+							\WP_CLI::error( 'Invalid value specified for positional arg.' );
+						}
 					}
 				}
 				$i++;

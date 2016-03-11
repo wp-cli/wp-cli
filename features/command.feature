@@ -369,7 +369,7 @@ Feature: WP-CLI Commands
        * default: burrito
        * ---
        *
-       * [<shop>]
+       * [<shop>...]
        * : This is where you buy burritos.
        * ---
        * options:
@@ -457,6 +457,12 @@ Feature: WP-CLI Commands
       """
 
     When I try `wp --require=test-cmd.php foo apple taco_del_mar`
+    Then STDERR should contain:
+      """
+      Error: Invalid value specified for positional arg.
+      """
+
+    When I try `wp --require=test-cmd.php foo apple 'cha cha cha' taco_del_mar`
     Then STDERR should contain:
       """
       Error: Invalid value specified for positional arg.
