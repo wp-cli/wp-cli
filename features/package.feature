@@ -29,3 +29,20 @@ Feature: Manage WP-CLI packages
       """
       danielbachhuber/wp-cli-reset-post-date-command
       """
+
+  Scenario: Run package commands early, before any bad code can break them
+    Given an empty directory
+    And a bad-command.php file:
+      """
+      <?php
+      WP_CLI::error( "Doing it wrong." );
+      """
+
+    When I try `wp --require=bad-command.php option`
+    Then STDERR should contain:
+      """
+      Error: Doing it wrong.
+      """
+
+    When I run `wp --require=bad-command.php package list`
+    Then STDERR should be empty
