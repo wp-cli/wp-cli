@@ -228,8 +228,9 @@ class Subcommand extends CompositeCommand {
 	 */
 	private function validate_args( $args, $assoc_args, $extra_args ) {
 		$synopsis = $this->get_synopsis();
-		if ( !$synopsis )
-			return array();
+		if ( !$synopsis ) {
+			return array( array(), $args, $assoc_args, $extra_args );
+		}
 
 		$validator = new \WP_CLI\SynopsisValidator( $synopsis );
 
