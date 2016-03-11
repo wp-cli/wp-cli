@@ -2,6 +2,8 @@
 
 namespace WP_CLI;
 
+use Spyc;
+
 /**
  * Parse command attributes from its PHPdoc.
  * Used to determine execution characteristics (arguments, etc.).
@@ -112,6 +114,19 @@ class DocParser {
 	}
 
 	/**
+	 * Get the arguments for a given argument.
+	 *
+	 * @param string $name Argument's doc name.
+	 * @return mixed|null
+	 */
+	public function get_arg_args( $name ) {
+		if ( preg_match( "/\[?<{$name}>.+(\n: (.+?)(\n|$))?\n---\n(.+)\n---/sU", $this->docComment, $matches ) ) {
+			return Spyc::YAMLLoadString( $matches[4] );
+		}
+		return null;
+	}
+
+	/**
 	 * Get the description for a given parameter.
 	 *
 	 * @param string $key Parameter's key.
@@ -124,6 +139,21 @@ class DocParser {
 		}
 
 		return '';
+	}
+
+	/**
+	 * Get the arguments for a given parameter.
+	 *
+	 * @param string $key Parameter's key.
+	 * @return mixed|null
+	 */
+	public function get_param_args( $key ) {
+
+		if ( preg_match( "/\[?--{$key}=.+(\n: (.+?)(\n|$))?\n---\n(.+)\n---/sU", $this->docComment, $matches ) ) {
+			return Spyc::YAMLLoadString( $matches[4] );
+		}
+
+		return null;
 	}
 
 }

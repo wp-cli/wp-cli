@@ -252,9 +252,47 @@ class Subcommand extends CompositeCommand {
 				implode( ' ', $unknown_positionals ) );
 		}
 
-		list( $errors, $to_unset ) = $validator->validate_assoc(
+		$synopsis_spec = \WP_CLI\SynopsisParser::parse( $synopsis );
+		$i = 0;
+		$errors = array( 'fatal' => array(), 'warning' => array() );
+		foreach( $synopsis_spec as $spec ) {
+			if ( ! empty( $spec['repeating'] ) ) {
+				continue;
+			}
+			if ( 'positional' === $spec['type'] ) {
+				$spec_args = $this->docparser->get_arg_args( $spec['name'] );
+				if ( ! isset( $args[ $i ] ) ) {
+					if ( isset( $spec_args['default'] ) ) {
+						$args[ $i ] = $spec_args['default'];
+					}
+				}
+				if ( isset( $args[ $i ] ) && isset( $spec_args['options'] ) ) {
+					if ( ! in_array( $args[ $i ], $spec_args['options'] ) ) {
+						\WP_CLI::error( 'Invalid value specified for positional arg.' );
+					}
+				}
+				$i++;
+			} else if ( 'assoc' === $spec['type'] ) {
+				$spec_args = $this->docparser->get_param_args( $spec['name'] );
+				if ( ! isset( $assoc_args[ $spec['name'] ] ) ) {
+					if ( isset( $spec_args['default'] ) ) {
+						$assoc_args[ $spec['name'] ] = $spec_args['default'];
+					}
+				}
+				if ( isset( $assoc_args[ $spec['name'] ] ) && isset( $spec_args['options'] ) ) {
+					if ( ! in_array( $assoc_args[ $spec['name'] ], $spec_args['options'] ) ) {
+						$errors['fatal'][ $spec['name'] ] = "Invalid value specified for '{$spec['name']}'";
+					}
+				}
+			}
+		}
+
+		list( $returned_errors, $to_unset ) = $validator->validate_assoc(
 			array_merge( \WP_CLI::get_config(), $extra_args, $assoc_args )
 		);
+		foreach( array( 'fatal', 'warning' ) as $error_type ) {
+			$errors[ $error_type ] = array_merge( $errors[ $error_type ], $returned_errors[ $error_type ] );
+		}
 
 		if ( $this->name != 'help' ) {
 			foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
@@ -276,7 +314,7 @@ class Subcommand extends CompositeCommand {
 
 		array_map( '\\WP_CLI::warning', $errors['warning'] );
 
-		return $to_unset;
+		return array( $to_unset, $args, $assoc_args, $extra_args );
 	}
 
 	/**
@@ -294,7 +332,7 @@ class Subcommand extends CompositeCommand {
 			$prompted_once = true;
 		}
 
-		$to_unset = $this->validate_args( $args, $assoc_args, $extra_args );
+		list( $to_unset, $args, $assoc_args, $extra_args ) = $this->validate_args( $args, $assoc_args, $extra_args );
 
 		foreach ( $to_unset as $key ) {
 			unset( $assoc_args[ $key ] );
