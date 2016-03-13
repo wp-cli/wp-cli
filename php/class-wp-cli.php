@@ -313,7 +313,10 @@ class WP_CLI {
 				$long_desc = '';
 				$bits = explode( ' ', $synopsis );
 				foreach( $args['synopsis'] as $key => $arg ) {
-					$long_desc .= $bits[ $key ] . PHP_EOL . ': ' . $arg['description'] . PHP_EOL;
+					$long_desc .= $bits[ $key ] . PHP_EOL;
+					if ( ! empty( $arg['description'] ) ) {
+						$long_desc .= ': ' . $arg['description'] . PHP_EOL;
+					}
 					$yamlify = array();
 					foreach( array( 'default', 'options' ) as $key ) {
 						if ( isset( $arg[ $key ] ) ) {
