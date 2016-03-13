@@ -42,6 +42,13 @@ return array(
 		'default' => '',
 	),
 
+	'skip-packages' => array(
+		'runtime'   => '',
+		'file'      => '<bool>',
+		'desc'      => 'Skip loading all installed packages.',
+		'default'   => false,
+	),
+
 	'require' => array(
 		'runtime' => '=<path>',
 		'file' => '<path>',
