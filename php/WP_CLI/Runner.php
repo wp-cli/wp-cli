@@ -629,13 +629,17 @@ class Runner {
 		// APIs as non-bundled commands.
 		Utils\load_command( $this->arguments[0] );
 
-		$package_autoload = $this->get_packages_dir_path() . 'vendor/autoload.php';
-
-		if ( file_exists( $package_autoload ) ) {
-			WP_CLI::debug( 'Loading packages from: ' . $package_autoload );
-			require_once $package_autoload;
+		$skip_packages = \WP_CLI::get_runner()->config['skip-packages'];
+		if ( true === $skip_packages ) {
+			WP_CLI::debug( 'Skipped loading packages.' );
 		} else {
-			WP_CLI::debug( 'No package autoload found to load.' );
+			$package_autoload = $this->get_packages_dir_path() . 'vendor/autoload.php';
+			if ( file_exists( $package_autoload ) ) {
+				WP_CLI::debug( 'Loading packages from: ' . $package_autoload );
+				require_once $package_autoload;
+			} else {
+				WP_CLI::debug( 'No package autoload found to load.' );
+			}
 		}
 
 		if ( isset( $this->config['require'] ) ) {

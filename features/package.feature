@@ -15,6 +15,16 @@ Feature: Manage WP-CLI packages
     When I run `wp help reset-post-date`
     Then STDERR should be empty
 
+    When I try `wp --skip-packages --debug help reset-post-date`
+    Then STDERR should contain:
+      """
+      Debug: Skipped loading packages.
+      """
+    And STDERR should contain:
+      """
+      Error: This does not seem to be a WordPress install.
+      """
+
     When I run `wp package list`
     Then STDOUT should contain:
       """
