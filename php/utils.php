@@ -62,8 +62,8 @@ function get_vendor_paths() {
 	$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
 	if ( file_exists( $maybe_composer_json ) && is_readable( $maybe_composer_json ) ) {
 		$composer = json_decode( file_get_contents( $maybe_composer_json ) );
-		if ( ! empty( $composer->{'vendor-dir'} ) ) {
-			array_unshift( $vendor_paths, WP_CLI_ROOT . '/../../../' . $composer->{'vendor-dir'} );
+		if ( ! empty( $composer->config ) && ! empty( $composer->config->{'vendor-dir'} ) ) {
+			array_unshift( $vendor_paths, WP_CLI_ROOT . '/../../../' . $composer->config->{'vendor-dir'} );
 		}
 	}
 	return $vendor_paths;
@@ -241,12 +241,46 @@ function wp_version_compare( $since, $operator ) {
 /**
  * Render a collection of items as an ASCII table, JSON, CSV, YAML, list of ids, or count.
  *
+ * Given a collection of items with a consistent data structure:
+ *
+ * ```
+ * $items = array(
+ *     array(
+ *         'key'   => 'foo',
+ *         'value'  => 'bar',
+ *     )
+ * );
+ * ```
+ *
+ * Render `$items` as an ASCII table:
+ *
+ * ```
+ * WP_CLI\Utils\format_items( 'table', $items, array( 'key', 'value' ) );
+ *
+ * # +-----+-------+
+ * # | key | value |
+ * # +-----+-------+
+ * # | foo | bar   |
+ * # +-----+-------+
+ * ```
+ *
+ * Or render `$items` as YAML:
+ *
+ * ```
+ * WP_CLI\Utils\format_items( 'yaml', $items, array( 'key', 'value' ) );
+ *
+ * # ---
+ * # -
+ * #   key: foo
+ * #   value: bar
+ * ```
+ *
  * @access public
  * @category Output
  *
  * @param string        $format     Format to use: 'table', 'json', 'csv', 'yaml', 'ids', 'count'
- * @param array         $items      Data to output
- * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list
+ * @param array         $items      An array of items to output.
+ * @param array|string  $fields     Named fields for each item of data. Can be array or comma-separated list.
  * @return null
  */
 function format_items( $format, $items, $fields ) {
@@ -479,11 +513,24 @@ function replace_path_consts( $source, $path ) {
 }
 
 /**
- * Make a HTTP request to a remote URL
+ * Make a HTTP request to a remote URL.
  *
- * @param string $method
- * @param string $url
- * @param array $headers
+ * Wraps the Requests HTTP library to ensure every request includes a cert.
+ *
+ * ```
+ * # `wp core download` verifies the hash for a downloaded WordPress archive
+ *
+ * $md5_response = Utils\http_request( 'GET', $download_url . '.md5' );
+ * if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
+ *      WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$response->status_code})" );
+ * }
+ * ```
+ *
+ * @access public
+ *
+ * @param string $method    HTTP method (GET, POST, DELETE, etc.)
+ * @param string $url       URL to make the HTTP request to.
+ * @param array $headers    Add specific headers to the request.
  * @param array $options
  * @return object
  */
@@ -605,7 +652,12 @@ function get_named_sem_ver( $new_version, $original_version ) {
 /**
  * Return the flag value or, if it's not set, the $default value.
  *
+ * Because flags can be negated (e.g. --no-quiet to negate --quiet), this
+ * function provides a safer alternative to using
+ * `isset( $assoc_args['quiet'] )` or similar.
+ *
  * @access public
+ * @category Input
  *
  * @param array  $assoc_args  Arguments array.
  * @param string $flag        Flag to get the value.
@@ -617,9 +669,10 @@ function get_flag_value( $assoc_args, $flag, $default = null ) {
 }
 
 /**
- * Get the temp directory, and let the user know if it isn't writable.
+ * Get the system's temp directory. Warns user if it isn't writable.
  *
  * @access public
+ * @category System
  *
  * @return string
  */

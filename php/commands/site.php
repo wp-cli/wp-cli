@@ -87,6 +87,9 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		$wpdb->query( "TRUNCATE $wpdb->terms" );
 		$wpdb->query( "TRUNCATE $wpdb->term_taxonomy" );
 		$wpdb->query( "TRUNCATE $wpdb->term_relationships" );
+		if ( ! empty( $wpdb->termmeta ) ) {
+			$wpdb->query( "TRUNCATE $wpdb->termmeta" );
+		}
 	}
 
 	/**

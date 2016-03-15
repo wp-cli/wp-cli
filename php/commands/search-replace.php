@@ -38,7 +38,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * [<table>...]
 	 * : List of database tables to restrict the replacement to. Wildcards are
-	 * supported, e.g. 'wp_*_options' or 'wp_post*'.
+	 * supported, e.g. `'wp_*_options'` or `'wp_post*'`.
 	 *
 	 * [--dry-run]
 	 * : Run the entire search/replace operation and show report, but don't save
@@ -87,7 +87,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *     wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
 	 *
 	 *     # Turn your production database into a local database
-	 *     wp search-replace --url=example.com example.com example.dev wp_\*_options
+	 *     wp search-replace --url=example.com example.com example.dev 'wp_*_options'
 	 *
 	 *     # Search/replace to a SQL file without transforming the database
 	 *     wp search-replace foo bar --export=database.sql
@@ -288,7 +288,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 		foreach ( $rows as $keys ) {
 			$where_sql = '';
 			foreach( (array) $keys as $k => $v ) {
-				$where_sql .= "{$k}={$v}";
+				if ( strlen( $where_sql ) ) {
+					$where_sql .= ' AND ';
+				}
+				$where_sql .= "{$k}='{$v}'";
 			}
 			$col_value = $wpdb->get_var( "SELECT {$col_sql} FROM {$table_sql} WHERE {$where_sql}" );
 			if ( '' === $col_value )

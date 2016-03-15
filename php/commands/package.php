@@ -17,7 +17,7 @@ use \Composer\Util\Filesystem;
 use \WP_CLI\ComposerIO;
 
 /**
- * Manage WP-CLI community packages.
+ * Manage WP-CLI packages.
  *
  * @package WP-CLI
  *
@@ -35,24 +35,26 @@ class Package_Command extends WP_CLI_Command {
 	);
 
 	/**
-	 * Browse available WP-CLI community packages.
+	 * Browse WP-CLI packages available for installation.
+	 *
+	 * Lists packages available for installation from the [Package Index](http://wp-cli.org/package-index/).
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml. Default: table
+	 * : Accepted values: table, json, csv, yaml, ids. Default: table.
 	 */
 	public function browse( $_, $assoc_args ) {
 		$this->show_packages( $this->get_community_packages(), $assoc_args );
 	}
 
 	/**
-	 * Install a WP-CLI community package.
+	 * Install a WP-CLI package.
 	 *
 	 * ## OPTIONS
 	 *
-	 * <package>
-	 * : The name of the package to install. Can optionally contain a version constraint.
+	 * <name>
+	 * : Name of the package to install. Can optionally contain a version constraint.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -89,6 +91,7 @@ class Package_Command extends WP_CLI_Command {
 		WP_CLI::log( sprintf( "Updating %s to require the package...", $composer_json_obj->getPath() ) );
 		$composer_backup = file_get_contents( $composer_json_obj->getPath() );
 		$json_manipulator = new JsonManipulator( $composer_backup );
+		$json_manipulator->addMainKey( 'name', 'wp-cli/wp-cli' );
 		$json_manipulator->addLink( 'require', $package_name, $version );
 		file_put_contents( $composer_json_obj->getPath(), $json_manipulator->getContents() );
 		try {
@@ -104,30 +107,33 @@ class Package_Command extends WP_CLI_Command {
 		// Set up the installer
 		$install = Installer::create( new ComposerIO, $composer );
 		$install->setUpdate( true ); // Installer class will only override composer.lock with this flag
+		$install->setPreferSource( true ); // Use VCS when VCS for easier contributions.
 
 		// Try running the installer, but revert composer.json if failed
 		WP_CLI::log( 'Using Composer to install the package...' );
+		WP_CLI::log( '---' );
 		try {
 			$res = $install->run();
 		} catch ( Exception $e ) {
 			WP_CLI::warning( $e->getMessage() );
 		}
+		WP_CLI::log( '---' );
 
 		if ( 0 === $res ) {
 			WP_CLI::success( "Package installed successfully." );
 		} else {
 			file_put_contents( $composer_json_obj->getPath(), $composer_backup );
-			WP_CLI::error( "Package installation failed. Reverted composer.json" );
+			WP_CLI::error( "Package installation failed (Composer return code {$res}). Reverted composer.json" );
 		}
 	}
 
 	/**
-	 * List installed WP-CLI community packages.
+	 * List installed WP-CLI packages.
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml. Default: table
+	 * : Accepted values: table, json, csv, yaml, ids. Default: table
 	 *
 	 * @subcommand list
 	 */
@@ -136,12 +142,37 @@ class Package_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Uninstall a WP-CLI community package.
+	 * Get the path to an installed WP-CLI package, or the package directory.
+	 *
+	 * If you want to contribute to a package, this is a great way to jump to it.
 	 *
 	 * ## OPTIONS
 	 *
-	 * <package>
-	 * : The name of the package to uninstall.
+	 * [<name>]
+	 * : Name of the package to get the directory for.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     cd $(wp package path)
+	 */
+	function path( $args ) {
+		$packages_dir = WP_CLI::get_runner()->get_packages_dir_path();
+		if ( ! empty( $args ) ) {
+			$packages_dir .= 'vendor/' . $args[0];
+			if ( ! is_dir( $packages_dir ) ) {
+				WP_CLI::error( 'Invalid package name.' );
+			}
+		}
+		WP_CLI::line( $packages_dir );
+	}
+
+	/**
+	 * Uninstall a WP-CLI package.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <name>
+	 * : Name of the package to uninstall.
 	 */
 	public function uninstall( $args ) {
 		list( $package_name ) = $args;
@@ -262,14 +293,28 @@ class Package_Command extends WP_CLI_Command {
 
 		$list = array();
 		foreach ( $packages as $package ) {
-			$package_output = new stdClass;
-			$package_output->name = $package->getName();
-			$package_output->description = $package->getDescription();
-			$package_output->authors = implode( ',', array_column( (array) $package->getAuthors(), 'name' ) );
-			$package_output->version = $package->getPrettyVersion();
-			$list[$package_output->name] = $package_output;
+			$name = $package->getName();
+			if ( isset( $list[ $name ] ) ) {
+				$list[ $name ]['version'][] = $package->getPrettyVersion();
+			} else {
+				$package_output = array();
+				$package_output['name'] = $package->getName();
+				$package_output['description'] = $package->getDescription();
+				$package_output['authors'] = implode( ', ', array_column( (array) $package->getAuthors(), 'name' ) );
+				$package_output['version'] = array( $package->getPrettyVersion() );
+				$list[ $package_output['name'] ] = $package_output;
+			}
 		}
 
+		$list = array_map( function( $package ){
+			$package['version'] = implode( ', ', $package['version'] );
+			return $package;
+		}, $list );
+
+		ksort( $list );
+		if ( 'ids' === $assoc_args['format'] ) {
+			$list = array_keys( $list );
+		}
 		WP_CLI\Utils\format_items( $assoc_args['format'], $list, $assoc_args['fields'] );
 	}
 
@@ -394,7 +439,7 @@ class Package_Command extends WP_CLI_Command {
 		);
 
 		$options = array(
-			'name' => 'wp-cli/wp-cli-community-packages',
+			'name' => 'wp-cli/wp-cli',
 			'description' => 'Installed community packages used by WP-CLI',
 			'authors' => array( $author ),
 			'homepage' => self::PACKAGE_INDEX_URL,

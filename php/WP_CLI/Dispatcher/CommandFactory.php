@@ -29,7 +29,8 @@ class CommandFactory {
 		} else {
 			$reflection = new \ReflectionClass( $callable );
 			if ( $reflection->hasMethod( '__invoke' ) ) {
-				$command = self::create_subcommand( $parent, $name, array( $reflection->name, '__invoke' ),
+				$class = is_object( $callable ) ? $callable : $reflection->name;
+				$command = self::create_subcommand( $parent, $name, array( $class, '__invoke' ),
 					$reflection->getMethod( '__invoke' ) );
 			} else {
 				$command = self::create_composite_command( $parent, $name, $reflection );
