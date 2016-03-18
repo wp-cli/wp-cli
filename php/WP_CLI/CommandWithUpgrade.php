@@ -407,6 +407,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$defaults = array(
 			'per-page' => 10,
+			'page' => 1,
 			'fields' => implode( ',', array( 'name', 'slug', 'rating' ) ),
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
@@ -419,6 +420,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$api_args = array(
 			'per_page' => (int) $assoc_args['per-page'],
+			'page' => (int) $assoc_args['page'],
 			'search' => $term,
 			'fields' => $fields,
 		);
