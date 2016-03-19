@@ -12,7 +12,7 @@
 		"wp-cli/php-cli-tools": "dev-master",
 		"mustache/mustache": "~2.4",
 		"mustangostang/spyc": "0.5.1",
-		"composer/semver": "1.0.0",
+		"composer/semver": "~1.0",
 		"ramsey/array_column": "~1.1",
 		"rmccue/requests": "~1.6",
 		"symfony/finder": "2.7.*",

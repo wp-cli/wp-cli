@@ -466,14 +466,17 @@ class Scaffold_Command extends WP_CLI_Command {
 	/**
 	 * Generate files needed for running PHPUnit tests.
 	 *
-	 * ## DESCRIPTION
+	 * ## OVERVIEW
 	 *
-	 * These are the files that are generated:
+	 * The following files are generated for your plugin by this command:
 	 *
-	 * * `phpunit.xml.dist` is the configuration file for PHPUnit
-	 * * `.travis.yml` is the configuration file for Travis CI
-	 * * `tests/bootstrap.php` is the file that makes the current plugin active when running the test suite
-	 * * `tests/test-sample.php` is a sample file containing the actual tests
+	 * * `phpunit.xml.dist` is the configuration file for PHPUnit.
+	 * * `.travis.yml` is the configuration file for Travis CI.
+	 * * `bin/install-wp-tests.sh` configures the WordPress test suite and a test database.
+	 * * `tests/bootstrap.php` is the file that makes the current plugin active when running the test suite.
+	 * * `tests/test-sample.php` is a sample file containing the actual tests.
+	 *
+	 * Learn more from the [plugin unit tests documentation](http://wp-cli.org/docs/plugin-unit-tests/).
 	 *
 	 * ## ENVIRONMENT
 	 *
