@@ -141,7 +141,7 @@ class Import_Command extends WP_CLI_Command {
 		}
 
 		$wp_import->import( $file );
-		$this->processed_posts = array_merge($this->processed_posts, $wp_import->processed_posts);
+		$this->processed_posts += $wp_import->processed_posts;
 
 		return true;
 	}
