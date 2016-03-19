@@ -66,10 +66,10 @@ Feature: Import content.
       0
       """
 
-    When I run `find export-* -type f | wc -l`
+    When I run `find export-* -type f | wc -l | sed 's/^ *//'`
     Then STDOUT should be:
       """
-             2
+      2
       """
 
     When I run `wp plugin install wordpress-importer --activate`
@@ -92,6 +92,7 @@ Feature: Import content.
     Given a WP install
     And I run `mkdir export`
 
+    # NOTE: The Hello World page ID is 2.
     When I run `wp menu create "My Menu"`
     And I run `wp menu item add-post my-menu 2`
     And I run `wp menu item list my-menu --format=count`
@@ -101,7 +102,7 @@ Feature: Import content.
       """
 
     When I run `wp export --dir=export --post_type=page --filename_format=0.page.xml`
-    When I run `wp export --dir=export --post_type=nav_menu_item --filename_format=1.menu.xml`
+    And I run `wp export --dir=export --post_type=nav_menu_item --filename_format=1.menu.xml`
     Then STDOUT should not be empty
 
     When I run `wp site empty --yes`
@@ -119,10 +120,10 @@ Feature: Import content.
       0
       """
 
-    When I run `find export -type f | wc -l`
+    When I run `find export -type f | wc -l | sed 's/^ *//'`
     Then STDOUT should be:
       """
-             2
+      2
       """
 
     When I run `wp plugin install wordpress-importer --activate`
@@ -144,4 +145,16 @@ Feature: Import content.
     Then STDOUT should be:
       """
       1
+      """
+
+    When I run `wp menu item list my-menu --fields=object --format=csv | sed -n '2p'`
+    Then STDOUT should be:
+      """
+      page
+      """
+
+    When I run `wp menu item list my-menu --fields=object_id --format=csv | sed -n '2p'`
+    Then STDOUT should be:
+      """
+      2
       """
