@@ -66,8 +66,8 @@ Feature: Import content.
       0
       """
 
-    When I run `find export-* -type f | wc -l | sed 's/^ *//'`
-    Then STDOUT should be:
+    When I run `find export-* -type f | wc -l`
+    Then STDOUT should contain:
       """
       2
       """
@@ -86,6 +86,78 @@ Feature: Import content.
     Then STDOUT should be:
       """
       100
+      """
+
+  Scenario: Export and import page and referencing menu item
+  # This will not work with WP 3.7.11 or PHP 7.
+  # PHP 7 issue: https://wordpress.org/support/topic/importer-fails-to-import-menu-items-in-php7
+    Given a WP install
+    And I run `mkdir export`
+
+    # NOTE: The Hello World page ID is 2.
+    When I run `wp menu create "My Menu"`
+    And I run `wp menu item add-post my-menu 2`
+    And I run `wp menu item list my-menu --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp export --dir=export`
+    Then STDOUT should not be empty
+
+    When I run `wp site empty --yes`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --post_type=page --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp post list --post_type=nav_menu_item --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `find export -type f | wc -l`
+    Then STDOUT should contain:
+      """
+      1
+      """
+
+    When I run `wp plugin install wordpress-importer --activate`
+    Then STDERR should not contain:
+      """
+      Warning:
+      """
+
+    When I run `wp import export --authors=skip --skip=image_resize`
+    Then STDOUT should not be empty
+
+    When I run `wp post list --post_type=page --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --post_type=nav_menu_item --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp menu item list my-menu --fields=object --format=csv`
+    Then STDOUT should contain:
+      """
+      page
+      """
+
+    When I run `wp menu item list my-menu --fields=object_id --format=csv`
+    Then STDOUT should contain:
+      """
+      2
       """
 
   Scenario: Export and import page and referencing menu item in separate files
@@ -120,8 +192,8 @@ Feature: Import content.
       0
       """
 
-    When I run `find export -type f | wc -l | sed 's/^ *//'`
-    Then STDOUT should be:
+    When I run `find export -type f | wc -l`
+    Then STDOUT should contain:
       """
       2
       """
@@ -147,14 +219,14 @@ Feature: Import content.
       1
       """
 
-    When I run `wp menu item list my-menu --fields=object --format=csv | sed -n '2p'`
-    Then STDOUT should be:
+    When I run `wp menu item list my-menu --fields=object --format=csv`
+    Then STDOUT should contain:
       """
       page
       """
 
-    When I run `wp menu item list my-menu --fields=object_id --format=csv | sed -n '2p'`
-    Then STDOUT should be:
+    When I run `wp menu item list my-menu --fields=object_id --format=csv`
+    Then STDOUT should contain:
       """
       2
       """
