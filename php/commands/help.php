@@ -6,7 +6,7 @@ use \WP_CLI\Dispatcher;
 class Help_Command extends WP_CLI_Command {
 
 	/**
-	 * Get help on WP-CLI, or on a specific. command.
+	 * Get help on WP-CLI, or on a specific command.
 	 *
 	 * [<command>...]
 	 * : Get help on a specific command.
