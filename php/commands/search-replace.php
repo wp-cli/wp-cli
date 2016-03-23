@@ -86,8 +86,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 *     wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
 	 *
-	 *     # Turn your production database into a local database
-	 *     wp search-replace --url=example.com example.com example.dev 'wp_*_options'
+	 *     # Turn your production multisite database into a local dev database
+	 *     wp search-replace --url=example.com example.com example.dev 'wp_*_options' wp_blogs
 	 *
 	 *     # Search/replace to a SQL file without transforming the database
 	 *     wp search-replace foo bar --export=database.sql
