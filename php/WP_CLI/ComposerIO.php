@@ -20,14 +20,14 @@ class ComposerIO extends NullIO {
 	/**
      * {@inheritDoc}
      */
-	public function write( $messages, $newline = true ) {
+	public function write( $messages, $newline = true, $verbosity = self::NORMAL ) {
 		self::output_clean_message( $messages );
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function writeError( $messages, $newline = true ) {
+	public function writeError( $messages, $newline = true, $verbosity = self::NORMAL ) {
 		self::output_clean_message( $messages );
 	}
 
