@@ -112,6 +112,7 @@ class Package_Command extends WP_CLI_Command {
 		// Try running the installer, but revert composer.json if failed
 		WP_CLI::log( 'Using Composer to install the package...' );
 		WP_CLI::log( '---' );
+		$res = false;
 		try {
 			$res = $install->run();
 		} catch ( Exception $e ) {
