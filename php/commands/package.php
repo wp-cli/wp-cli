@@ -93,6 +93,7 @@ class Package_Command extends WP_CLI_Command {
 		$json_manipulator = new JsonManipulator( $composer_backup );
 		$json_manipulator->addMainKey( 'name', 'wp-cli/wp-cli' );
 		$json_manipulator->addLink( 'require', $package_name, $version );
+		$json_manipulator->addConfigSetting( 'secure-http', false );
 		file_put_contents( $composer_json_obj->getPath(), $json_manipulator->getContents() );
 		try {
 			$composer = $this->get_composer();
