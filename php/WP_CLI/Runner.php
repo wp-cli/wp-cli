@@ -300,8 +300,7 @@ class Runner {
 	}
 
 	/**
-	 * Find the WP-CLI command to run given arguments,
-	 * and invoke it.
+	 * Find the WP-CLI command to run given arguments, and invoke it.
 	 *
 	 * @param array $args Positional arguments including command name
 	 * @param array $assoc_args
