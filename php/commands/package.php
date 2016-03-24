@@ -271,9 +271,12 @@ class Package_Command extends WP_CLI_Command {
 
 		if ( !$package_index ) {
 			$config = new Config();
-			$config->merge(array('config' => array(
-				'home' => dirname( $this->get_composer_json_path() ),
-			)));
+			$config->merge( array(
+				'config' => array(
+					'secure-http' => false,
+					'home' => dirname( $this->get_composer_json_path() ),
+				)
+			));
 			$config->setConfigSource( new JsonConfigSource( $this->get_composer_json() ) );
 
 			try {
