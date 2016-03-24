@@ -250,7 +250,11 @@ class Package_Command extends WP_CLI_Command {
 		static $community_packages;
 
 		if ( null === $community_packages ) {
-			$community_packages = $this->package_index()->getPackages();
+			try {
+				$community_packages = $this->package_index()->getPackages();
+			} catch( Exception $e ) {
+				WP_CLI::error( $e->getMessage() );
+			}
 		}
 
 		return $community_packages;
@@ -274,7 +278,11 @@ class Package_Command extends WP_CLI_Command {
 			)));
 			$config->setConfigSource( new JsonConfigSource( $this->get_composer_json() ) );
 
-			$package_index = new ComposerRepository( array( 'url' => self::PACKAGE_INDEX_URL ), new NullIO, $config );
+			try {
+				$package_index = new ComposerRepository( array( 'url' => self::PACKAGE_INDEX_URL ), new NullIO, $config );
+			} catch ( Exception $e ) {
+				WP_CLI::error( $e->getMessage() );
+			}
 		}
 
 		return $package_index;
