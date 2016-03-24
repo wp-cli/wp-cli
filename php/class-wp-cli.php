@@ -670,6 +670,11 @@ class WP_CLI {
 	/**
 	 * Run a WP-CLI command in a new process reusing the current runtime arguments.
 	 *
+	 * Note: While this command does persist a limited set of runtime arguments,
+	 * it *does not* persist environment variables. Practically speaking, WP-CLI
+	 * packages won't be loaded when using WP_CLI::launch_self() because the
+	 * launched process doesn't have access to the current process $HOME.
+	 *
 	 * @access public
 	 * @category Execution
 	 *
@@ -745,13 +750,24 @@ class WP_CLI {
 	}
 
 	/**
-	 * Run a given command within the current process using the same global parameters.
+	 * Run a given command within the current process using the same global
+	 * parameters.
 	 *
-	 * To run a command using a new process with the same global parameters, use WP_CLI::launch_self()
-	 * To run a command using a new process with different global parameters, use WP_CLI::launch()
+	 * To run a command using a new process with the same global parameters,
+	 * use WP_CLI::launch_self(). To run a command using a new process with
+	 * different global parameters, use WP_CLI::launch().
 	 *
-	 * @param array
-	 * @param array
+	 * ```
+	 * ob_start();
+	 * WP_CLI::run_command( array( 'cli', 'cmd-dump' ) );
+	 * $ret = ob_get_clean();
+	 * ```
+	 *
+	 * @access public
+	 * @category Execution
+	 *
+	 * @param array $args Positional arguments including command name.
+	 * @param array $assoc_args
 	 */
 	public static function run_command( $args, $assoc_args = array() ) {
 		self::get_runner()->run_command( $args, $assoc_args );
