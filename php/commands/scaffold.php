@@ -515,11 +515,14 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 */
 	function plugin( $args, $assoc_args ) {
-		$plugin_slug = $args[0];
+		$plugin_slug    = $args[0];
+		$plugin_name    = ucwords( str_replace( '-', ' ', $plugin_slug ) );
+		$plugin_package = str_replace( ' ', '_', $plugin_name );
 
 		$data = wp_parse_args( $assoc_args, array(
 			'plugin_slug'        => $plugin_slug,
-			'plugin_name'        => ucfirst( $plugin_slug ),
+			'plugin_name'        => $plugin_name,
+			'plugin_package'     => $plugin_package,
 			'plugin_description' => 'PLUGIN DESCRIPTION HERE',
 			'plugin_author'      => 'YOUR NAME HERE',
 			'plugin_author_uri'  => 'YOUR SITE HERE',
