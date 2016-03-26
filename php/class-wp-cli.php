@@ -139,7 +139,39 @@ class WP_CLI {
 	}
 
 	/**
-	 * Schedule a callback to be executed at a certain point (before WP is loaded).
+	 * Schedule a callback to be executed at a certain point.
+	 *
+	 * Hooks conceptually are very similar to WordPress actions. WP-CLI hooks
+	 * are typically called before WordPress is loaded.
+	 *
+	 * WP-CLI hooks include:
+	 *
+	 * * 'before_invoke:<command>' - Just before a command is invoked.
+	 * * 'after_invoke:<command>' - Just after a command is involved.
+	 * * 'before_wp_load' - Just before the WP load process begins.
+	 * * 'before_wp_config_load' - After wp-config.php has been located.
+	 * * 'after_wp_config_load' - After wp-config.php has been loaded into scope.
+	 * * 'after_wp_load' - Just after the WP load process has completed.
+	 *
+	 * WP-CLI commands can create their own hooks with `WP_CLI::do_hook()`.
+	 *
+	 * ```
+	 * # `wp network meta` confirms command is executing in multisite context.
+	 * WP_CLI::add_command( 'network meta', 'Network_Meta_Command', array(
+	 *    'before_invoke' => function () {
+	 *        if ( !is_multisite() ) {
+	 *            WP_CLI::error( 'This is not a multisite install.' );
+	 *        }
+	 *    }
+	 * ) );
+	 * ```
+	 *
+	 * @access public
+	 * @category Registration
+	 *
+	 * @param string $when Identifier for the hook.
+	 * @param mixed $callback Callback to execute when hook is called.
+	 * @return null
 	 */
 	public static function add_hook( $when, $callback ) {
 		if ( in_array( $when, self::$hooks_passed ) )
@@ -149,7 +181,16 @@ class WP_CLI {
 	}
 
 	/**
-	 * Execute registered callbacks.
+	 * Execute callbacks registered to a given hook.
+	 *
+	 * See `WP_CLI::add_hook()` for details on WP-CLI's internal hook system.
+	 * Commands can provide and call their own hooks.
+	 *
+	 * @access public
+	 * @category Registration
+	 *
+	 * @param string $when Identifier for the hook.
+	 * @return null
 	 */
 	public static function do_hook( $when ) {
 		self::$hooks_passed[] = $when;
@@ -163,15 +204,48 @@ class WP_CLI {
 	}
 
 	/**
-	 * Add a command to the wp-cli list of commands
+	 * Register a command to WP-CLI.
 	 *
-	 * @param string $name The name of the command that will be used in the CLI
-	 * @param string $callable The command implementation as a class, function or closure
-	 * @param array $args An associative array with additional parameters:
-	 *   'before_invoke' => callback to execute before invoking the command,
-	 *   'shortdesc' => short description (80 char or less) for the command,
-	 *   'synopsis' => the synopsis for the command (string or array)
-	 *   'when' => execute callback on a named WP-CLI hook (e.g. before_wp_load)
+	 * WP-CLI supports using any callable class, function, or closure as a
+	 * command. `WP_CLI::add_command()` is used for both internal and
+	 * third-party command registration.
+	 *
+	 * Command arguments are parsed from PHPDoc by default, but also can be
+	 * supplied as an optional third argument during registration.
+	 *
+	 * ```
+	 * # Register a custom 'foo' command to output a supplied positional param.
+	 * #
+	 * # $ wp foo bar
+	 * # Success: bar
+	 *
+	 * /**
+	 *  * My awesome closure command
+	 *  *
+	 *  * <message>
+	 *  * : An awesome message to display
+	 *  *
+	 *  * @when before_wp_load
+	 *  *\/
+	 * $foo = function( $args ) {
+	 *     WP_CLI::success( $args[0] );
+	 * };
+	 * WP_CLI::add_command( 'foo', $foo );
+	 * ```
+	 *
+	 * @access public
+	 * @category Registration
+	 *
+	 * @param string $name Name for the command (e.g. "post list" or "site empty").
+	 * @param string $callable Command implementation as a class, function or closure.
+	 * @param array $args {
+	 *      Optional An associative array with additional registration parameters.
+	 *      'before_invoke' => callback to execute before invoking the command,
+	 *      'shortdesc' => short description (80 char or less) for the command,
+	 *      'synopsis' => the synopsis for the command (string or array),
+	 *      'when' => execute callback on a named WP-CLI hook (e.g. before_wp_load),
+	 * }
+	 * @return true True on success, hard error if registration failed.
 	 */
 	public static function add_command( $name, $callable, $args = array() ) {
 		$valid = false;
@@ -234,7 +308,32 @@ class WP_CLI {
 			if ( is_string( $args['synopsis'] ) ) {
 				$leaf_command->set_synopsis( $args['synopsis'] );
 			} else if ( is_array( $args['synopsis'] ) ) {
-				$leaf_command->set_synopsis( \WP_CLI\SynopsisParser::render( $args['synopsis'] ) );
+				$synopsis = \WP_CLI\SynopsisParser::render( $args['synopsis'] );
+				$leaf_command->set_synopsis( $synopsis );
+				$long_desc = '';
+				$bits = explode( ' ', $synopsis );
+				foreach( $args['synopsis'] as $key => $arg ) {
+					$long_desc .= $bits[ $key ] . PHP_EOL;
+					if ( ! empty( $arg['description'] ) ) {
+						$long_desc .= ': ' . $arg['description'] . PHP_EOL;
+					}
+					$yamlify = array();
+					foreach( array( 'default', 'options' ) as $key ) {
+						if ( isset( $arg[ $key ] ) ) {
+							$yamlify[ $key ] = $arg[ $key ];
+						}
+					}
+					if ( ! empty( $yamlify ) ) {
+						$long_desc .= \Spyc::YAMLDump( $yamlify );
+						$long_desc .= '---' . PHP_EOL;
+					}
+					$long_desc .= PHP_EOL;
+				}
+				if ( ! empty( $long_desc ) ) {
+					$long_desc = rtrim( $long_desc, PHP_EOL );
+					$long_desc = '## OPTIONS' . PHP_EOL . PHP_EOL . $long_desc;
+					$leaf_command->set_longdesc( $long_desc );
+				}
 			}
 		}
 
@@ -243,58 +342,153 @@ class WP_CLI {
 		}
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
+		return true;
 	}
 
 	/**
-	 * Display a message in the CLI and end with a newline
+	 * Display informational message without prefix, and ignore `--quiet`.
 	 *
-	 * @param string $message
+	 * Message is written to STDOUT. `WP_CLI::log()` is typically recommended;
+	 * `WP_CLI::line()` is included for historical compat.
+	 *
+	 * @access public
+	 * @category Output
+	 *
+	 * @param string $message Message to display to the end user.
+	 * @return null
 	 */
 	public static function line( $message = '' ) {
 		echo $message . "\n";
 	}
 
 	/**
-	 * Log an informational message.
+	 * Display informational message without prefix.
 	 *
-	 * @param string $message
+	 * Message is written to STDOUT, or discarded when `--quiet` flag is supplied.
+	 *
+	 * ```
+	 * # `wp cli update` lets user know of each step in the update process.
+	 * WP_CLI::log( sprintf( 'Downloading from %s...', $download_url ) );
+	 * ```
+	 *
+	 * @access public
+	 * @category Output
+	 *
+	 * @param string $message Message to write to STDOUT.
 	 */
 	public static function log( $message ) {
 		self::$logger->info( $message );
 	}
 
 	/**
-	 * Display a success in the CLI and end with a newline
+	 * Display success message prefixed with "Success: ".
 	 *
-	 * @param string $message
+	 * Success message is written to STDOUT.
+	 *
+	 * Typically recommended to inform user of successful script conclusion.
+	 *
+	 * ```
+	 * # wp rewrite flush expects 'rewrite_rules' option to be set after flush.
+	 * flush_rewrite_rules( \WP_CLI\Utils\get_flag_value( $assoc_args, 'hard' ) );
+	 * if ( ! get_option( 'rewrite_rules' ) ) {
+	 *     WP_CLI::warning( "Rewrite rules are empty." );
+	 * } else {
+	 *     WP_CLI::success( 'Rewrite rules flushed.' );
+	 * }
+	 * ```
+	 *
+	 * @access public
+	 * @category Output
+	 *
+	 * @param string $message Message to write to STDOUT.
+	 * @return null
 	 */
 	public static function success( $message ) {
 		self::$logger->success( $message );
 	}
 
 	/**
-	 * Log debug information
+	 * Display debug message prefixed with "Debug: " when `--debug` is used.
 	 *
-	 * @param string $message
+	 * Debug message is written to STDERR, and includes script execution time.
+	 *
+	 * Helpful for optionally showing greater detail when needed. Used throughout
+	 * WP-CLI bootstrap process for easier debugging and profiling.
+	 *
+	 * ```
+	 * # Called in `WP_CLI\Runner::set_wp_root()`.
+	 * private static function set_wp_root( $path ) {
+	 *     define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+	 *     WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH );
+	 *     $_SERVER['DOCUMENT_ROOT'] = realpath( $path );
+	 * }
+	 *
+	 * # Debug details only appear when `--debug` is used.
+	 * # $ wp --debug
+	 * # [...]
+	 * # Debug: ABSPATH defined: /srv/www/wordpress-develop.dev/src/ (0.225s)
+	 * ```
+	 *
+	 * @access public
+	 * @category Output
+	 *
+	 * @param string $message Message to write to STDERR.
+	 * @return null
 	 */
 	public static function debug( $message ) {
 		self::$logger->debug( self::error_to_string( $message ) );
 	}
 
 	/**
-	 * Display a warning in the CLI and end with a newline
+	 * Display warning message prefixed with "Warning: ".
 	 *
-	 * @param string $message
+	 * Warning message is written to STDERR.
+	 *
+	 * Use instead of `WP_CLI::debug()` when script execution should be permitted
+	 * to continue.
+	 *
+	 * ```
+	 * # `wp plugin activate` skips activation when plugin is network active.
+	 * $status = $this->get_status( $plugin->file );
+	 * // Network-active is the highest level of activation status
+	 * if ( 'active-network' === $status ) {
+	 * 	WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
+	 * 	continue;
+	 * }
+	 * ```
+	 *
+	 * @access public
+	 * @category Output
+	 *
+	 * @param string $message Message to write to STDERR.
+	 * @return null
 	 */
 	public static function warning( $message ) {
 		self::$logger->warning( self::error_to_string( $message ) );
 	}
 
 	/**
-	 * Display an error in the CLI and end with a newline
+	 * Display error message prefixed with "Error: " and exit script.
 	 *
-	 * @param string|WP_Error $message
-	 * @param bool            $exit    if true, the script will exit()
+	 * Error message is written to STDERR. Defaults to halting script execution
+	 * with return code 1.
+	 *
+	 * Use `WP_CLI::warning()` instead when script execution should be permitted
+	 * to continue.
+	 *
+	 * ```
+	 * # `wp cache flush` considers flush failure to be a fatal error.
+	 * if ( false === wp_cache_flush() ) {
+	 *     WP_CLI::error( 'The object cache could not be flushed.' );
+	 * }
+	 * ```
+	 *
+	 * @access public
+	 * @category Output
+	 *
+	 * @param string|WP_Error  $message Message to write to STDERR.
+	 * @param boolean|integer  $exit    True defaults to exit(1).
+	 * @return null
 	 */
 	public static function error( $message, $exit = true ) {
 		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) ) {
@@ -309,9 +503,14 @@ class WP_CLI {
 	}
 
 	/**
-	 * Display an error in the CLI and end with a newline
+	 * Display a multi-line error message in a red box. Doesn't exit script.
 	 *
-	 * @param array $message  each element from the array will be printed on its own line
+	 * Error message is written to STDERR.
+	 *
+	 * @access public
+	 * @category Output
+	 *
+	 * @param array $message Multi-line error message to be displayed.
 	 */
 	public static function error_multi_line( $message_lines ) {
 		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) && is_array( $message_lines ) ) {
@@ -321,6 +520,21 @@ class WP_CLI {
 
 	/**
 	 * Ask for confirmation before running a destructive operation.
+	 *
+	 * If 'y' is provided to the question, the script execution continues. If
+	 * 'n' or any other response is provided to the question, script exits.
+	 *
+	 * ```
+	 * # `wp db drop` asks for confirmation before dropping the database.
+	 *
+	 * WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args );
+	 * ```
+	 *
+	 * @access public
+	 * @category Input
+	 *
+	 * @param string $question Question to display before the prompt.
+	 * @param array $assoc_args Skips prompt if 'yes' is provided.
 	 */
 	public static function confirm( $question, $assoc_args = array() ) {
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'yes' ) ) {
@@ -359,6 +573,9 @@ class WP_CLI {
 	/**
 	 * Read a value, from various formats.
 	 *
+	 * @access public
+	 * @category Input
+	 *
 	 * @param mixed $value
 	 * @param array $assoc_args
 	 */
@@ -378,8 +595,8 @@ class WP_CLI {
 	/**
 	 * Display a value, in various formats
 	 *
-	 * @param mixed $value
-	 * @param array $assoc_args
+	 * @param mixed $value Value to display.
+	 * @param array $assoc_args Arguments passed to the command, determining format.
 	 */
 	public static function print_value( $value, $assoc_args = array() ) {
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
@@ -416,13 +633,24 @@ class WP_CLI {
 	}
 
 	/**
-	 * Launch an external process that takes over I/O.
+	 * Launch an arbitrary external process that takes over I/O.
 	 *
-	 * @param string Command to call
-	 * @param bool Whether to exit if the command returns an error status
-	 * @param bool Whether to return an exit status (default) or detailed execution results
+	 * ```
+	 * # `wp core download` falls back to the `tar` binary when PharData isn't available
+	 * if ( ! class_exists( 'PharData' ) ) {
+	 *     $cmd = "tar xz --strip-components=1 --directory=%s -f $tarball";
+	 *     WP_CLI::launch( Utils\esc_cmd( $cmd, $dest ) );
+	 *     return;
+	 * }
+	 * ```
 	 *
-	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
+	 * @access public
+	 * @category Execution
+	 *
+	 * @param string $command External process to launch.
+	 * @param boolean $exit_on_error Whether to exit if the command returns an elevated return code.
+	 * @param boolean $return_detailed Whether to return an exit status (default) or detailed execution results.
+	 * @return int|ProcessRun The command exit status, or a ProcessRun object for full details.
 	 */
 	public static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 
@@ -440,15 +668,22 @@ class WP_CLI {
 	}
 
 	/**
-	 * Launch another WP-CLI command using the runtime arguments for the current process
+	 * Run a WP-CLI command in a new process reusing the current runtime arguments.
 	 *
-	 * @param string Command to call
-	 * @param array $args Positional arguments to use
-	 * @param array $assoc_args Associative arguments to use
-	 * @param bool Whether to exit if the command returns an error status
-	 * @param bool Whether to return an exit status (default) or detailed execution results
+	 * Note: While this command does persist a limited set of runtime arguments,
+	 * it *does not* persist environment variables. Practically speaking, WP-CLI
+	 * packages won't be loaded when using WP_CLI::launch_self() because the
+	 * launched process doesn't have access to the current process $HOME.
+	 *
+	 * @access public
+	 * @category Execution
+	 *
+	 * @param string $command WP-CLI command to call.
+	 * @param array $args Positional arguments to include when calling the command.
+	 * @param array $assoc_args Associative arguments to include when calling the command.
+	 * @param bool $exit_on_error Whether to exit if the command returns an elevated return code.
+	 * @param bool $return_detailed Whether to return an exit status (default) or detailed execution results.
 	 * @param array $runtime_args Override one or more global args (path,url,user,allow-root)
-	 *
 	 * @return int|ProcessRun The command exit status, or a ProcessRun instance
 	 */
 	public static function launch_self( $command, $args = array(), $assoc_args = array(), $exit_on_error = true, $return_detailed = false, $runtime_args = array() ) {
@@ -480,7 +715,11 @@ class WP_CLI {
 
 	/**
 	 * Get the path to the PHP binary used when executing WP-CLI.
+	 *
 	 * Environment values permit specific binaries to be indicated.
+	 *
+	 * @access public
+	 * @category System
 	 *
 	 * @return string
 	 */
@@ -511,13 +750,24 @@ class WP_CLI {
 	}
 
 	/**
-	 * Run a given command within the current process using the same global parameters.
+	 * Run a given command within the current process using the same global
+	 * parameters.
 	 *
-	 * To run a command using a new process with the same global parameters, use WP_CLI::launch_self()
-	 * To run a command using a new process with different global parameters, use WP_CLI::launch()
+	 * To run a command using a new process with the same global parameters,
+	 * use WP_CLI::launch_self(). To run a command using a new process with
+	 * different global parameters, use WP_CLI::launch().
 	 *
-	 * @param array
-	 * @param array
+	 * ```
+	 * ob_start();
+	 * WP_CLI::run_command( array( 'cli', 'cmd-dump' ) );
+	 * $ret = ob_get_clean();
+	 * ```
+	 *
+	 * @access public
+	 * @category Execution
+	 *
+	 * @param array $args Positional arguments including command name.
+	 * @param array $assoc_args
 	 */
 	public static function run_command( $args, $assoc_args = array() ) {
 		self::get_runner()->run_command( $args, $assoc_args );
