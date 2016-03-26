@@ -94,5 +94,46 @@ EOB
 		;
 		$this->assertEquals( $longdesc, $doc->get_longdesc() );
 	}
+
+	public function test_desc_parses_yaml() {
+		$longdesc = <<<EOB
+## OPTIONS
+
+<genre>...
+: Start with one or more genres.
+---
+options:
+  - rock
+  - electronic
+default: rock
+---
+
+--volume=<number>
+: Sets the volume.
+---
+default: 10
+---
+
+--artist=<artist-name>
+: Limit to a specific artist.
+
+## EXAMPLES
+
+wp rock-on electronic --volume=11
+
+EOB;
+		$doc = new DocParser( $longdesc );
+		$this->assertEquals( 'Start with one or more genres.', $doc->get_arg_desc( 'genre' ) );
+		$this->assertEquals( 'Sets the volume.', $doc->get_param_desc( 'volume' ) );
+		$this->assertEquals( array(
+			'options' => array( 'rock', 'electronic' ),
+			'default' => 'rock',
+		), $doc->get_arg_args( 'genre' ) );
+		$this->assertEquals( array(
+			'default' => 10,
+		), $doc->get_param_args( 'volume' ) );
+		$this->assertNull( $doc->get_param_args( 'artist' ) );
+	}
+
 }
 
