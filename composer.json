@@ -30,7 +30,8 @@
 	"require-dev": {
 		"sebastian/version": "~2.0|~1.0",
     "phpunit/php-code-coverage": "~3.1|~1.0",
-		"phpunit/phpunit": "^5.2"
+		"phpunit/phpunit": "^5.2",
+    "behat/behat": "@dev"
 	},
 	"suggest": {
 		"psy/psysh": "Enhanced `wp shell` functionality"

@@ -2,7 +2,7 @@
 
 use Behat\Behat\Context\ClosuredContextInterface,
     Behat\Behat\Context\TranslatedContextInterface,
-    Behat\Behat\Context\BehatContext,
+    Behat\Behat\Context\Context,
     Behat\Behat\Event\SuiteEvent;
 
 use \WP_CLI\Process;
@@ -35,7 +35,8 @@ if ( file_exists( __DIR__ . '/utils.php' ) ) {
 /**
  * Features context.
  */
-class FeatureContext extends BehatContext implements ClosuredContextInterface {
+class FeatureContext implements Context
+{
 
 	private static $cache_dir, $suite_cache_dir;
 
@@ -83,7 +84,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	/**
 	 * @BeforeSuite
 	 */
-	public static function prepare( SuiteEvent $event ) {
+	public static function prepare() {
 		self::cache_wp_files();
 	}
 
@@ -159,7 +160,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 *
 	 * @param array $parameters context parameters (set them up through behat.yml)
 	 */
-	public function __construct( array $parameters ) {
+	public function __construct( ) {
 		$this->drop_db();
 		$this->set_cache_dir();
 		$this->variables['CORE_CONFIG_SETTINGS'] = Utils\assoc_args_to_str( self::$db_settings );

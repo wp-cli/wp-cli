@@ -6,3 +6,4 @@ PHAR_BUILD_VERSION
 /*.phar
 /phpunit.xml.dist
 composer.phar
+.idea
