@@ -32,6 +32,16 @@ Feature: `wp cli` tasks
     Given an empty directory
     And a new Phar with version "0.0.0"
 
+    When I run `{PHAR_PATH} --info`
+    Then STDOUT should contain:
+      """
+      WP-CLI version
+      """
+    And STDOUT should contain:
+      """
+      0.0.0
+      """
+
     When I run `{PHAR_PATH} cli update --yes`
     Then STDOUT should contain:
     """
@@ -40,10 +50,26 @@ Feature: `wp cli` tasks
     And STDERR should be empty
     And the return code should be 0
 
+    When I run `{PHAR_PATH} --info`
+    Then STDOUT should contain:
+      """
+      WP-CLI version
+      """
+    And STDOUT should not contain:
+      """
+      0.0.0
+      """
+
   @github-api
   Scenario: Patch update from 0.14.0 to 0.14.1
     Given an empty directory
     And a new Phar with version "0.14.0"
+
+    When I run `{PHAR_PATH} --version`
+    Then STDOUT should be:
+      """
+      WP-CLI 0.14.0
+      """
 
     When I run `{PHAR_PATH} cli update --patch --yes`
     Then STDOUT should contain:
@@ -52,6 +78,12 @@ Feature: `wp cli` tasks
     """
     And STDERR should be empty
     And the return code should be 0
+
+    When I run `{PHAR_PATH} --version`
+    Then STDOUT should be:
+      """
+      WP-CLI 0.14.1
+      """
 
   @github-api
   Scenario: Not a patch update from 0.14.0

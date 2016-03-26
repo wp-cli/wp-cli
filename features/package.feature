@@ -15,6 +15,16 @@ Feature: Manage WP-CLI packages
     When I run `wp help reset-post-date`
     Then STDERR should be empty
 
+    When I try `wp --skip-packages --debug help reset-post-date`
+    Then STDERR should contain:
+      """
+      Debug: Skipped loading packages.
+      """
+    And STDERR should contain:
+      """
+      Error: This does not seem to be a WordPress install.
+      """
+
     When I run `wp package list`
     Then STDOUT should contain:
       """
@@ -29,3 +39,20 @@ Feature: Manage WP-CLI packages
       """
       danielbachhuber/wp-cli-reset-post-date-command
       """
+
+  Scenario: Run package commands early, before any bad code can break them
+    Given an empty directory
+    And a bad-command.php file:
+      """
+      <?php
+      WP_CLI::error( "Doing it wrong." );
+      """
+
+    When I try `wp --require=bad-command.php option`
+    Then STDERR should contain:
+      """
+      Error: Doing it wrong.
+      """
+
+    When I run `wp --require=bad-command.php package list`
+    Then STDERR should be empty

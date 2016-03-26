@@ -42,6 +42,16 @@ Feature: Download WordPress
       Error: Release not found.
       """
 
+  Scenario: Verify release hash when downloading new version
+    Given an empty directory
+
+    When I run `wp core download --version=4.4.1`
+    Then STDOUT should contain:
+      """
+      md5 hash verified: 1907d1dbdac7a009d89224a516496b8d
+      Success: WordPress downloaded.
+      """
+
   Scenario: Core download to a directory specified by `--path` in custom command
     Given a WP install
     And a download-command.php file:

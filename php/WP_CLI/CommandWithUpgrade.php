@@ -372,12 +372,14 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			'active' => 'A',
 			'active-network' => 'N',
 			'must-use' => 'M',
+			'parent' => 'P',
 		),
 		'long' => array(
 			'inactive' => 'Inactive',
 			'active' => 'Active',
 			'active-network' => 'Network Active',
 			'must-use' => 'Must Use',
+			'parent' => 'Parent',
 		)
 	);
 
@@ -391,6 +393,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			'active' => '%g',
 			'active-network' => '%g',
 			'must-use' => '%c',
+			'parent' => '%p',
 		);
 
 		return $colors[ $status ];
@@ -407,15 +410,22 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$defaults = array(
 			'per-page' => 10,
-			'fields' => array( 'name', 'slug', 'rating' )
+			'page' => 1,
+			'fields' => implode( ',', array( 'name', 'slug', 'rating' ) ),
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
+		$fields = array();
+		foreach( explode( ',', $assoc_args['fields'] ) as $field ) {
+			$fields[ $field ] = true;
+		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 
 		$api_args = array(
 			'per_page' => (int) $assoc_args['per-page'],
+			'page' => (int) $assoc_args['page'],
 			'search' => $term,
+			'fields' => $fields,
 		);
 
 		if ( 'plugin' == $this->item_type ) {
