@@ -66,6 +66,19 @@ class FeatureContext implements Context
 		if ( $config_path = getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$env['WP_CLI_CONFIG_PATH'] = $config_path;
 		}
+		if( null !== $dbCreditentials = parse_url(getenv('WP_CLI_MYSQL_HOST')) ) {
+      $hostEnd = strpos($dbCreditentials['host'], ':');
+      self::$db_settings = [
+        'dbname' => substr($dbCreditentials['path'], 1),
+        'dbuser' => $dbCreditentials['user'],
+        'dbpass' => $dbCreditentials['pass'],
+        'dbhost' => substr(
+          $dbCreditentials['host'], 
+          0, 
+          $hostEnd > 0 ? $hostEnd : strlen($dbCreditentials['host'])  
+         ),
+      ];
+		}
 		return $env;
 	}
 
