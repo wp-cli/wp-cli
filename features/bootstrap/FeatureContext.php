@@ -2,7 +2,7 @@
 
 use Behat\Behat\Context\ClosuredContextInterface,
     Behat\Behat\Context\TranslatedContextInterface,
-    Behat\Behat\Context\BehatContext,
+    Behat\Behat\Context\Context,
     Behat\Behat\Event\SuiteEvent;
 
 use \WP_CLI\Process;
@@ -35,7 +35,8 @@ if ( file_exists( __DIR__ . '/utils.php' ) ) {
 /**
  * Features context.
  */
-class FeatureContext extends BehatContext implements ClosuredContextInterface {
+class FeatureContext implements Context
+{
 
 	private static $cache_dir, $suite_cache_dir;
 
@@ -65,6 +66,33 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( $config_path = getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$env['WP_CLI_CONFIG_PATH'] = $config_path;
 		}
+    
+    // Get mysql creditentials from WP_CLI_MYSQL_URL env eg. mysql://user:pass@mysqlhost:0000:/dbname
+		if (
+      null !== getenv('WP_CLI_MYSQL_URL')
+      && is_array($dbCreditentials = parse_url(getenv('WP_CLI_MYSQL_URL')))
+    ) {
+      // get host (mysqlhost:0000) and remove port if set
+      if(array_key_exists('host', $dbCreditentials)) {
+        $portPartStart = strpos($dbCreditentials['host'], ':');
+        self::$db_settings['dbhost'] = substr(
+          $dbCreditentials['host'], 
+          0, 
+          $portPartStart > 0 ? $portPartStart : strlen($dbCreditentials['host']));
+      }
+      
+      if(array_key_exists('path', $dbCreditentials)) {
+        self::$db_settings['dbname'] = substr($dbCreditentials['path'], 1);
+      }
+      
+      if(array_key_exists('user', $dbCreditentials)) {
+        self::$db_settings['dbuser'] = $dbCreditentials['user'];
+      }
+      
+      if(array_key_exists('pass', $dbCreditentials)) {
+        self::$db_settings['dbpass']  = $dbCreditentials['pass'];
+      }      
+		}
 		return $env;
 	}
 
@@ -83,7 +111,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	/**
 	 * @BeforeSuite
 	 */
-	public static function prepare( SuiteEvent $event ) {
+	public static function prepare() {
 		self::cache_wp_files();
 	}
 
@@ -159,7 +187,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 *
 	 * @param array $parameters context parameters (set them up through behat.yml)
 	 */
-	public function __construct( array $parameters ) {
+	public function __construct( ) {
 		$this->drop_db();
 		$this->set_cache_dir();
 		$this->variables['CORE_CONFIG_SETTINGS'] = Utils\assoc_args_to_str( self::$db_settings );
