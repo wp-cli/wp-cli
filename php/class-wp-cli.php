@@ -249,15 +249,11 @@ class WP_CLI {
 	 */
 	public static function add_command( $name, $callable, $args = array() ) {
 		$valid = false;
-		if ( is_object( $callable ) && ( $callable instanceof \Closure ) ) {
-			$valid = true;
-		} else if ( is_string( $callable ) && function_exists( $callable ) ) {
+		if ( is_callable( $callable ) ) {
 			$valid = true;
 		} else if ( is_string( $callable ) && class_exists( (string) $callable ) ) {
 			$valid = true;
 		} else if ( is_object( $callable ) ) {
-			$valid = true;
-		} else if ( is_array( $callable ) && is_callable( $callable ) ) {
 			$valid = true;
 		}
 		if ( ! $valid ) {
