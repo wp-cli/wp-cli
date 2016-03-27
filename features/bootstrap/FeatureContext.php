@@ -66,18 +66,32 @@ class FeatureContext implements Context
 		if ( $config_path = getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$env['WP_CLI_CONFIG_PATH'] = $config_path;
 		}
-		if( null !== $dbCreditentials = parse_url(getenv('WP_CLI_MYSQL_HOST')) ) {
-      $hostEnd = strpos($dbCreditentials['host'], ':');
-      self::$db_settings = [
-        'dbname' => substr($dbCreditentials['path'], 1),
-        'dbuser' => $dbCreditentials['user'],
-        'dbpass' => $dbCreditentials['pass'],
-        'dbhost' => substr(
+    
+    // Get mysql creditentials from WP_CLI_MYSQL_URL env eg. mysql://user:pass@mysqlhost:0000:/dbname
+		if (
+      null !== getenv('WP_CLI_MYSQL_URL')
+      && is_array($dbCreditentials = parse_url(getenv('WP_CLI_MYSQL_URL')))
+    ) {
+      // get host (mysqlhost:0000) and remove port if set
+      if(array_key_exists('host', $dbCreditentials)) {
+        $portPartStart = strpos($dbCreditentials['host'], ':');
+        self::$db_settings['dbhost'] = substr(
           $dbCreditentials['host'], 
           0, 
-          $hostEnd > 0 ? $hostEnd : strlen($dbCreditentials['host'])  
-         ),
-      ];
+          $portPartStart > 0 ? $portPartStart : strlen($dbCreditentials['host']));
+      }
+      
+      if(array_key_exists('path', $dbCreditentials)) {
+        self::$db_settings['dbname'] = substr($dbCreditentials['path'], 1);
+      }
+      
+      if(array_key_exists('user', $dbCreditentials)) {
+        self::$db_settings['dbuser'] = $dbCreditentials['user'];
+      }
+      
+      if(array_key_exists('pass', $dbCreditentials)) {
+        self::$db_settings['dbpass']  = $dbCreditentials['pass'];
+      }      
 		}
 		return $env;
 	}
