@@ -216,11 +216,11 @@ Feature: WordPress code scaffolding
       """
     And the {PLUGIN_DIR}/hello-world/tests/bootstrap.php file should contain:
       """
-      * @package Hello World
+      * @package Hello_World
       """
     And the {PLUGIN_DIR}/hello-world/tests/test-sample.php file should contain:
       """
-      * @package Hello World
+      * @package Hello_World
       """
     And the {PLUGIN_DIR}/hello-world/bin directory should contain:
       """
