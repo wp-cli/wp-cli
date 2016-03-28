@@ -123,11 +123,11 @@ Feature: WordPress code scaffolding
       .DS_Store
       node_modules/
       """
-    And the {PLUGIN_DIR}/hello-world/hello-world.php should contain:
+    And the {PLUGIN_DIR}/hello-world/hello-world.php file should contain:
       """
       * Plugin Name: Hello World
       """
-    And the {PLUGIN_DIR}/hello-world/hello-world.php should contain:
+    And the {PLUGIN_DIR}/hello-world/hello-world.php file should contain:
       """
       * @package Hello_World
       """
