@@ -410,11 +410,14 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 */
 	function plugin( $args, $assoc_args ) {
-		$plugin_slug = $args[0];
+		$plugin_slug    = $args[0];
+		$plugin_name    = ucwords( str_replace( '-', ' ', $plugin_slug ) );
+		$plugin_package = str_replace( ' ', '_', $plugin_name );
 
 		$data = wp_parse_args( $assoc_args, array(
 			'plugin_slug'        => $plugin_slug,
-			'plugin_name'        => ucfirst( $plugin_slug ),
+			'plugin_name'        => $plugin_name,
+			'plugin_package'     => $plugin_package,
 			'plugin_description' => 'PLUGIN DESCRIPTION HERE',
 			'plugin_author'      => 'YOUR NAME HERE',
 			'plugin_author_uri'  => 'YOUR SITE HERE',
@@ -525,6 +528,9 @@ class Scaffold_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Invalid plugin specified.' );
 		}
 
+		$plugin_name    = ucwords( str_replace( '-', ' ', $plugin_slug ) );
+		$plugin_package = str_replace( ' ', '_', $plugin_name );
+
 		$tests_dir = "$plugin_dir/tests";
 		$bin_dir = "$plugin_dir/bin";
 
@@ -546,16 +552,21 @@ class Scaffold_Command extends WP_CLI_Command {
 			}
 		}
 
+		$plugin_data = array(
+			'plugin_slug'    => $plugin_slug,
+			'plugin_package' => $plugin_package,
+		);
+
 		$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
 		$files_written = $this->create_files( array(
-			"$tests_dir/bootstrap.php" => Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ),
-			"$plugin_dir/.travis.yml" => Utils\mustache_render( '.travis.mustache', compact( 'wp_versions_to_test' ) )
+			"$tests_dir/bootstrap.php"   => Utils\mustache_render( 'bootstrap.mustache', $plugin_data ),
+			"$tests_dir/test-sample.php" => Utils\mustache_render( 'test-sample.php', $plugin_data ),
+			"$plugin_dir/.travis.yml"    => Utils\mustache_render( '.travis.mustache', compact( 'wp_versions_to_test' ) ),
 		), $force );
 
 		$to_copy = array(
 			'install-wp-tests.sh' => $bin_dir,
 			'phpunit.xml.dist'    => $plugin_dir,
-			'test-sample.php'     => $tests_dir,
 		);
 
 		foreach ( $to_copy as $file => $dir ) {

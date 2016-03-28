@@ -2,7 +2,7 @@
 /**
  * Class SampleTest
  *
- * @package 
+ * @package {{plugin_package}}
  */
 
 /**
@@ -18,4 +18,3 @@ class SampleTest extends WP_UnitTestCase {
 		$this->assertTrue( true );
 	}
 }
-
