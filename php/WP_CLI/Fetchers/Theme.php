@@ -14,11 +14,13 @@ class Theme extends Base {
 
 	/**
 	 * Get a theme object by name
-	 * 
+	 *
 	 * @param string $name
 	 * @return object|false
 	 */
 	public function get( $name ) {
+		$name = rtrim( $name, '/' );
+		
 		$theme = wp_get_theme( $name );
 
 		if ( !$theme->exists() ) {
