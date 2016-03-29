@@ -14,7 +14,7 @@ class Theme extends Base {
 
 	/**
 	 * Get a theme object by name
-	 * 
+	 *
 	 * @param string $name
 	 * @return object|false
 	 */
