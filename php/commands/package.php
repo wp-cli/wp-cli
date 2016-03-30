@@ -238,6 +238,10 @@ class Package_Command extends WP_CLI_Command {
 		// the 'vendor-dir' is, and where Composer is running from.
 		// Best to just pretend we're installing a package from ~/.wp-cli or similar
 		chdir( pathinfo( $composer_path, PATHINFO_DIRNAME ) );
+
+		// Prevent DateTime error/warning when no timezone set
+		date_default_timezone_set( @date_default_timezone_get() );
+
 		return Factory::create( new NullIO, $composer_path );
 	}
 
