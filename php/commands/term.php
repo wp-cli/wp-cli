@@ -417,6 +417,36 @@ class Term_Command extends WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * Recount the term_taxonomy count for one or more taxonomies.
+	 *
+	 * <taxonomy>...
+	 * : One or more taxonomies to update
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term recount category post_tag
+	 *
+	 *     wp taxonomy list --field=name | xargs wp term recount
+	 */
+	public function recount( $args ) {
+		foreach( $args as $taxonomy ) {
+
+			if ( ! taxonomy_exists( $taxonomy ) ) {
+				WP_CLI::warning( sprintf( "%s %d doesn't exist.", $taxonomy, $term_id ) );
+			} else {
+
+				$terms = get_terms( $taxonomy, array( 'hide_empty' => false ) );
+				$term_taxonomy_ids = wp_list_pluck( $terms, 'term_taxonomy_id' );
+
+				wp_update_term_count( $term_taxonomy_ids, $taxonomy );
+
+				WP_CLI::success( sprintf( "Recounted %s.", $taxonomy ) );
+			}
+
+		}
+	}
+
 	private function maybe_make_child() {
 		// 50% chance of making child term
 		return ( mt_rand(1, 2) == 1 );
