@@ -366,6 +366,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--role=<role>]
 	 * : The role of the generated users. Default: default role from WP
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: progress, ids. Default: ids.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Add meta to every generated user
+	 *     wp user generate --format=ids | xargs -0 -d ' ' -I % wp user meta add % foo bar
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $blog_id;
@@ -386,7 +394,12 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$total = $user_count['total_users'];
 		$limit = $assoc_args['count'] + $total;
 
-		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating users', $assoc_args['count'] );
+		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'progress' );
+
+		$notify = false;
+		if ( 'progress' === $format ) {
+			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating users', $assoc_args['count'] );
+		}
 
 		for ( $i = $total; $i < $limit; $i++ ) {
 			$login = sprintf( 'user_%d_%d', $blog_id, $i );
@@ -405,10 +418,19 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				delete_user_option( $user_id, 'user_level' );
 			}
 
-			$notify->tick();
+			if ( 'progress' === $format ) {
+				$notify->tick();
+			} else if ( 'ids' === $format ) {
+				echo $user_id;
+				if ( $i < $limit - 1 ) {
+					echo ' ';
+				}
+			}
 		}
 
-		$notify->finish();
+		if ( 'progress' === $format ) {
+			$notify->finish();
+		}
 	}
 
 	/**
