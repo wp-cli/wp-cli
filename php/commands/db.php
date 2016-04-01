@@ -8,9 +8,13 @@ use \WP_CLI\Utils;
 class DB_Command extends WP_CLI_Command {
 
 	/**
-	 * Create the database, as specified in wp-config.php
+	 * Create the database in MySQL.
+	 *
+	 * Runs `CREATE_DATABASE` MySQL statement using `DB_HOST`, `DB_NAME`,
+	 * `DB_USER` and `DB_PASSWORD` database credentials specified in
+	 * wp-config.php.
 	 */
-	function create( $_, $assoc_args ) {
+	public function create( $_, $assoc_args ) {
 
 		self::run_query( self::get_create_query() );
 
@@ -18,14 +22,18 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete the database.
+	 * Delete the database in MySQL.
+	 *
+	 * Runs `DROP_DATABASE` MySQL statement using `DB_HOST`, `DB_NAME`,
+	 * `DB_USER` and `DB_PASSWORD` database credentials specified in
+	 * wp-config.php.
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--yes]
 	 * : Answer yes to the confirmation message.
 	 */
-	function drop( $_, $assoc_args ) {
+	public function drop( $_, $assoc_args ) {
 		WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args );
 
 		self::run_query( sprintf( 'DROP DATABASE `%s`', DB_NAME ) );
@@ -34,14 +42,18 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Remove all tables from the database.
+	 * Remove all tables from the database in MySQL.
+	 *
+	 * Runs `DROP_DATABASE` and `CREATE_DATABASE` MySQL statements using
+	 * `DB_HOST`, `DB_NAME`, `DB_USER` and `DB_PASSWORD` database credentials
+	 * specified in wp-config.php.
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--yes]
 	 * : Answer yes to the confirmation message.
 	 */
-	function reset( $_, $assoc_args ) {
+	public function reset( $_, $assoc_args ) {
 		WP_CLI::confirm( "Are you sure you want to reset the database?", $assoc_args );
 
 		self::run_query( sprintf( 'DROP DATABASE IF EXISTS `%s`', DB_NAME ) );
@@ -51,9 +63,16 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Optimize the database.
+	 * Optimize the database in MySQL.
+	 *
+	 * Runs `mysqlcheck` utility with `--optimize=true` using `DB_HOST`,
+	 * `DB_NAME`, `DB_USER` and `DB_PASSWORD` database credentials
+	 * specified in wp-config.php.
+	 *
+	 * [See docs](http://dev.mysql.com/doc/refman/5.7/en/optimize-table.html)
+	 * for more details on the `OPTIMIZE_TABLE` statement.
 	 */
-	function optimize() {
+	public function optimize() {
 		self::run( Utils\esc_cmd( 'mysqlcheck --no-defaults %s', DB_NAME ), array(
 			'optimize' => true,
 		) );
@@ -62,9 +81,16 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Repair the database.
+	 * Repair the database in MySQL.
+	 *
+	 * Runs `mysqlcheck` utility with `--repair=true` using `DB_HOST`,
+	 * `DB_NAME`, `DB_USER` and `DB_PASSWORD` database credentials
+	 * specified in wp-config.php.
+	 *
+	 * [See docs](http://dev.mysql.com/doc/refman/5.7/en/repair-table.html) for
+	 * more details on the `REPAIR_TABLE` statement.
 	 */
-	function repair() {
+	public function repair() {
 		self::run( Utils\esc_cmd( 'mysqlcheck --no-defaults %s', DB_NAME ), array(
 			'repair' => true,
 		) );
@@ -73,18 +99,21 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Open a mysql console using the WordPress credentials.
+	 * Open a MySQL console using credentials from wp-config.php
 	 *
 	 * @alias connect
 	 */
-	function cli() {
+	public function cli() {
 		self::run( 'mysql --no-defaults --no-auto-rehash', array(
 			'database' => DB_NAME
 		) );
 	}
 
 	/**
-	 * Execute a query against the database.
+	 * Execute a MySQL query against the database.
+	 *
+	 * Executes an arbitrary MySQL query using `DB_HOST`, `DB_NAME`, `DB_USER`
+	 *  and `DB_PASSWORD` database credentials specified in wp-config.php.
 	 *
 	 * ## OPTIONS
 	 *
@@ -99,7 +128,7 @@ class DB_Command extends WP_CLI_Command {
 	 *     # check all tables in the database
 	 *     wp db query "CHECK TABLE $(wp db tables | paste -s -d',');"
 	 */
-	function query( $args ) {
+	public function query( $args ) {
 		$assoc_args = array(
 			'database' => DB_NAME
 		);
@@ -113,7 +142,10 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Exports the database to a file or to STDOUT.
+	 * Exports the MySQL database to a file or to STDOUT.
+	 *
+	 * Runs `mysqldump` utility using `DB_HOST`, `DB_NAME`, `DB_USER` and
+	 * `DB_PASSWORD` database credentials specified in wp-config.php.
 	 *
 	 * ## OPTIONS
 	 *
@@ -170,14 +202,14 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Import database from a file or from STDIN.
+	 * Import a MySQL database from a file or from STDIN.
 	 *
 	 * ## OPTIONS
 	 *
 	 * [<file>]
 	 * : The name of the SQL file to import. If '-', then reads from STDIN. If omitted, it will look for '{dbname}.sql'.
 	 */
-	function import( $args, $assoc_args ) {
+	public function import( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 
 		if ( '-' === $result_file ) {
@@ -206,7 +238,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * List the database tables.
+	 * List the MySQL database tables.
 	 *
 	 * Defaults to all tables registered to $wpdb.
 	 *
