@@ -433,7 +433,7 @@ class Term_Command extends WP_CLI_Command {
 		foreach( $args as $taxonomy ) {
 
 			if ( ! taxonomy_exists( $taxonomy ) ) {
-				WP_CLI::warning( sprintf( "Taxonomy %s doesn't exist.", $taxonomy ) );
+				WP_CLI::warning( sprintf( "Taxonomy %s does not exist.", $taxonomy ) );
 			} else {
 
 				$terms = get_terms( $taxonomy, array( 'hide_empty' => false ) );
