@@ -293,9 +293,15 @@ class Term_Command extends WP_CLI_Command {
 	 * [--max_depth=<number>]
 	 * : Generate child terms down to a certain depth. Default: 1
 	 *
+	 * [--format=<format>]
+	 * : Accepted values: progress, ids. Default: ids.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp term generate --count=10
+	 *
+	 *     # Add meta to every generated term
+	 *     wp term generate category --format=ids | xargs -0 -d ' ' -I % wp term meta add % foo bar
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
@@ -318,7 +324,12 @@ class Term_Command extends WP_CLI_Command {
 
 		$hierarchical = get_taxonomy( $taxonomy )->hierarchical;
 
-		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating terms', $count );
+		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'progress' );
+
+		$notify = false;
+		if ( 'progress' === $format ) {
+			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating terms', $count );
+		}
 
 		$previous_term_id = 0;
 		$current_parent = 0;
@@ -359,15 +370,25 @@ class Term_Command extends WP_CLI_Command {
 			} else {
 				$created[] = $term['term_id'];
 				$previous_term_id = $term['term_id'];
+				if ( 'ids' === $format ) {
+					echo $term['term_id'];
+					if ( $i < $max_id + $count ) {
+						echo ' ';
+					}
+				}
 			}
 
-			$notify->tick();
+			if ( 'progress' === $format ) {
+				$notify->tick();
+			}
 		}
 
 		wp_suspend_cache_invalidation( $suspend_cache_invalidation );
 		clean_term_cache( $created, $taxonomy );
 
-		$notify->finish();
+		if ( 'progress' === $format ) {
+			$notify->finish();
+		}
 	}
 
 	/**
