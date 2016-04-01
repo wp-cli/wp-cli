@@ -356,7 +356,7 @@ class WP_Export_Query {
 	private function get_comments_for_post( $post ) {
 		global $wpdb;
 
-		if ( $this->filters['skip_comments'] ) {
+		if ( isset( $this->filters['skip_comments'] ) ) {
 			return array();
 		}
 
