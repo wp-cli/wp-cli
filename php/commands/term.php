@@ -433,7 +433,7 @@ class Term_Command extends WP_CLI_Command {
 		foreach( $args as $taxonomy ) {
 
 			if ( ! taxonomy_exists( $taxonomy ) ) {
-				WP_CLI::warning( sprintf( "%s %d doesn't exist.", $taxonomy, $term_id ) );
+				WP_CLI::warning( sprintf( "Taxonomy %s doesn't exist.", $taxonomy ) );
 			} else {
 
 				$terms = get_terms( $taxonomy, array( 'hide_empty' => false ) );
@@ -441,7 +441,7 @@ class Term_Command extends WP_CLI_Command {
 
 				wp_update_term_count( $term_taxonomy_ids, $taxonomy );
 
-				WP_CLI::success( sprintf( "Recounted %s.", $taxonomy ) );
+				WP_CLI::success( sprintf( "Updated %s term count", $taxonomy ) );
 			}
 
 		}
