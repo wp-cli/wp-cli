@@ -420,6 +420,8 @@ class Term_Command extends WP_CLI_Command {
 	/**
 	 * Recount the term_taxonomy count for one or more taxonomies.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <taxonomy>...
 	 * : One or more taxonomies to update
 	 *
