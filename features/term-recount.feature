@@ -1,4 +1,4 @@
-Feature: Manage WordPress term recounts
+Feature: Recount terms on a taxonomy
 
   Background:
     Given a WP install
