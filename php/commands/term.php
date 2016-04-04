@@ -418,7 +418,16 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Recount the term_taxonomy count for one or more taxonomies.
+	 * Updates the amount of terms in one or more taxonomies
+	 *
+	 * ## DESCRIPTION
+	 *
+	 * In instances where manual updates are made to the terms assigned to
+	 * posts in the database, the number of posts associated with a term
+	 * can become out-of-sync with the actual number of posts.
+	 *
+	 * This command runs wp_update_term_count() on the taxonomy's terms
+	 * to bring the count back to the correct value.
 	 *
 	 * ## OPTIONS
 	 *
