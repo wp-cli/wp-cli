@@ -53,8 +53,6 @@ class RootCommand extends CompositeCommand {
 	 * @return array
 	 */
 	public function get_subcommands() {
-		Utils\load_all_commands();
-
 		return parent::get_subcommands();
 	}
 }
