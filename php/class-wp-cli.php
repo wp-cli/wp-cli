@@ -134,6 +134,59 @@ class WP_CLI {
 		return $http_cacher;
 	}
 
+	/**
+	 * Colorize a string for output.
+	 *
+	 * Yes, you too can change the color of command line text. For instance,
+	 * here's how `WP_CLI::success()` colorizes "Success: "
+	 *
+	 * ```
+	 * WP_CLI::colorize( "%GSuccess:%n " )
+	 * ```
+	 *
+	 * Uses `\cli\Colors::colorize()` to transform color tokens to display
+	 * settings. Choose from the following tokens (and note 'reset'):
+	 *
+	 * * %y => ['color' => 'yellow'],
+	 * * %g => ['color' => 'green'],
+	 * * %b => ['color' => 'blue'],
+	 * * %r => ['color' => 'red'],
+	 * * %p => ['color' => 'magenta'],
+	 * * %m => ['color' => 'magenta'],
+	 * * %c => ['color' => 'cyan'],
+	 * * %w => ['color' => 'grey'],
+	 * * %k => ['color' => 'black'],
+	 * * %n => ['color' => 'reset'],
+	 * * %Y => ['color' => 'yellow', 'style' => 'bright'],
+	 * * %G => ['color' => 'green', 'style' => 'bright'],
+	 * * %B => ['color' => 'blue', 'style' => 'bright'],
+	 * * %R => ['color' => 'red', 'style' => 'bright'],
+	 * * %P => ['color' => 'magenta', 'style' => 'bright'],
+	 * * %M => ['color' => 'magenta', 'style' => 'bright'],
+	 * * %C => ['color' => 'cyan', 'style' => 'bright'],
+	 * * %W => ['color' => 'grey', 'style' => 'bright'],
+	 * * %K => ['color' => 'black', 'style' => 'bright'],
+	 * * %N => ['color' => 'reset', 'style' => 'bright'],
+	 * * %3 => ['background' => 'yellow'],
+	 * * %2 => ['background' => 'green'],
+	 * * %4 => ['background' => 'blue'],
+	 * * %1 => ['background' => 'red'],
+	 * * %5 => ['background' => 'magenta'],
+	 * * %6 => ['background' => 'cyan'],
+	 * * %7 => ['background' => 'grey'],
+	 * * %0 => ['background' => 'black'],
+	 * * %F => ['style' => 'blink'],
+	 * * %U => ['style' => 'underline'],
+	 * * %8 => ['style' => 'inverse'],
+	 * * %9 => ['style' => 'bright'],
+	 * * %_ => ['style' => 'bright')
+	 *
+	 * @access public
+	 * @category Output
+	 *
+	 * @param string $string String to colorize for output, with color tokens.
+	 * @return string Colorized string.
+	 */
 	public static function colorize( $string ) {
 		return \cli\Colors::colorize( $string, self::get_runner()->in_color() );
 	}
