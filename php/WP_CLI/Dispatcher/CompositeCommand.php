@@ -59,6 +59,19 @@ class CompositeCommand {
 	}
 
 	/**
+	 * Remove a named subcommand from this composite command's set of contained
+	 * subcommands
+	 *
+	 * @param string $name Represents how subcommand should be invoked
+	 */
+	public function remove_subcommand( $name ) {
+		if ( isset( $this->subcommands[ $name ] ) ) {
+			unset( $this->subcommands[ $name ] );
+		}
+	}
+
+
+	/**
 	 * Composite commands always contain subcommands.
 	 *
 	 * @return true

@@ -134,6 +134,59 @@ class WP_CLI {
 		return $http_cacher;
 	}
 
+	/**
+	 * Colorize a string for output.
+	 *
+	 * Yes, you too can change the color of command line text. For instance,
+	 * here's how `WP_CLI::success()` colorizes "Success: "
+	 *
+	 * ```
+	 * WP_CLI::colorize( "%GSuccess:%n " )
+	 * ```
+	 *
+	 * Uses `\cli\Colors::colorize()` to transform color tokens to display
+	 * settings. Choose from the following tokens (and note 'reset'):
+	 *
+	 * * %y => ['color' => 'yellow'],
+	 * * %g => ['color' => 'green'],
+	 * * %b => ['color' => 'blue'],
+	 * * %r => ['color' => 'red'],
+	 * * %p => ['color' => 'magenta'],
+	 * * %m => ['color' => 'magenta'],
+	 * * %c => ['color' => 'cyan'],
+	 * * %w => ['color' => 'grey'],
+	 * * %k => ['color' => 'black'],
+	 * * %n => ['color' => 'reset'],
+	 * * %Y => ['color' => 'yellow', 'style' => 'bright'],
+	 * * %G => ['color' => 'green', 'style' => 'bright'],
+	 * * %B => ['color' => 'blue', 'style' => 'bright'],
+	 * * %R => ['color' => 'red', 'style' => 'bright'],
+	 * * %P => ['color' => 'magenta', 'style' => 'bright'],
+	 * * %M => ['color' => 'magenta', 'style' => 'bright'],
+	 * * %C => ['color' => 'cyan', 'style' => 'bright'],
+	 * * %W => ['color' => 'grey', 'style' => 'bright'],
+	 * * %K => ['color' => 'black', 'style' => 'bright'],
+	 * * %N => ['color' => 'reset', 'style' => 'bright'],
+	 * * %3 => ['background' => 'yellow'],
+	 * * %2 => ['background' => 'green'],
+	 * * %4 => ['background' => 'blue'],
+	 * * %1 => ['background' => 'red'],
+	 * * %5 => ['background' => 'magenta'],
+	 * * %6 => ['background' => 'cyan'],
+	 * * %7 => ['background' => 'grey'],
+	 * * %0 => ['background' => 'black'],
+	 * * %F => ['style' => 'blink'],
+	 * * %U => ['style' => 'underline'],
+	 * * %8 => ['style' => 'inverse'],
+	 * * %9 => ['style' => 'bright'],
+	 * * %_ => ['style' => 'bright')
+	 *
+	 * @access public
+	 * @category Output
+	 *
+	 * @param string $string String to colorize for output, with color tokens.
+	 * @return string Colorized string.
+	 */
 	public static function colorize( $string ) {
 		return \cli\Colors::colorize( $string, self::get_runner()->in_color() );
 	}
@@ -249,15 +302,11 @@ class WP_CLI {
 	 */
 	public static function add_command( $name, $callable, $args = array() ) {
 		$valid = false;
-		if ( is_object( $callable ) && ( $callable instanceof \Closure ) ) {
-			$valid = true;
-		} else if ( is_string( $callable ) && function_exists( $callable ) ) {
+		if ( is_callable( $callable ) ) {
 			$valid = true;
 		} else if ( is_string( $callable ) && class_exists( (string) $callable ) ) {
 			$valid = true;
 		} else if ( is_object( $callable ) ) {
-			$valid = true;
-		} else if ( is_array( $callable ) && is_callable( $callable ) ) {
 			$valid = true;
 		}
 		if ( ! $valid ) {
@@ -670,6 +719,11 @@ class WP_CLI {
 	/**
 	 * Run a WP-CLI command in a new process reusing the current runtime arguments.
 	 *
+	 * Note: While this command does persist a limited set of runtime arguments,
+	 * it *does not* persist environment variables. Practically speaking, WP-CLI
+	 * packages won't be loaded when using WP_CLI::launch_self() because the
+	 * launched process doesn't have access to the current process $HOME.
+	 *
 	 * @access public
 	 * @category Execution
 	 *
@@ -745,13 +799,24 @@ class WP_CLI {
 	}
 
 	/**
-	 * Run a given command within the current process using the same global parameters.
+	 * Run a given command within the current process using the same global
+	 * parameters.
 	 *
-	 * To run a command using a new process with the same global parameters, use WP_CLI::launch_self()
-	 * To run a command using a new process with different global parameters, use WP_CLI::launch()
+	 * To run a command using a new process with the same global parameters,
+	 * use WP_CLI::launch_self(). To run a command using a new process with
+	 * different global parameters, use WP_CLI::launch().
 	 *
-	 * @param array
-	 * @param array
+	 * ```
+	 * ob_start();
+	 * WP_CLI::run_command( array( 'cli', 'cmd-dump' ) );
+	 * $ret = ob_get_clean();
+	 * ```
+	 *
+	 * @access public
+	 * @category Execution
+	 *
+	 * @param array $args Positional arguments including command name.
+	 * @param array $assoc_args
 	 */
 	public static function run_command( $args, $assoc_args = array() ) {
 		self::get_runner()->run_command( $args, $assoc_args );

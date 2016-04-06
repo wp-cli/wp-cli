@@ -300,8 +300,7 @@ class Runner {
 	}
 
 	/**
-	 * Find the WP-CLI command to run given arguments,
-	 * and invoke it.
+	 * Find the WP-CLI command to run given arguments, and invoke it.
 	 *
 	 * @param array $args Positional arguments including command name
 	 * @param array $assoc_args
@@ -627,7 +626,7 @@ class Runner {
 
 		// Load bundled commands early, so that they're forced to use the same
 		// APIs as non-bundled commands.
-		Utils\load_command( $this->arguments[0] );
+		Utils\load_all_commands();
 
 		$skip_packages = \WP_CLI::get_runner()->config['skip-packages'];
 		if ( true === $skip_packages ) {
