@@ -490,3 +490,24 @@ Feature: WP-CLI Commands
       shop: cha cha cha
       burrito:
       """
+
+  Scenario: Removing a subcommand should remove it from the index
+    Given an empty directory
+    And a remove-comment.php file:
+      """
+      <?php
+      $command = WP_CLI::get_root_command();
+      $command->remove_subcommand( 'comment' );
+      """
+
+    When I run `wp`
+    Then STDOUT should contain:
+      """
+      Manage comments.
+      """
+
+    When I run `wp --require=remove-comment.php`
+    Then STDOUT should not contain:
+      """
+      Manage comments.
+      """
