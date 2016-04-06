@@ -30,6 +30,7 @@ if ( file_exists( __DIR__ . '/utils.php' ) ) {
 } else {
 	require_once __DIR__ . '/../../php/utils.php';
 	require_once __DIR__ . '/../../php/WP_CLI/Process.php';
+	require_once __DIR__ . '/../../vendor/autoload.php';
 }
 
 /**
