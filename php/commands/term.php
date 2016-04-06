@@ -417,6 +417,47 @@ class Term_Command extends WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * Updates the amount of terms in one or more taxonomies
+	 *
+	 * ## DESCRIPTION
+	 *
+	 * In instances where manual updates are made to the terms assigned to
+	 * posts in the database, the number of posts associated with a term
+	 * can become out-of-sync with the actual number of posts.
+	 *
+	 * This command runs wp_update_term_count() on the taxonomy's terms
+	 * to bring the count back to the correct value.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <taxonomy>...
+	 * : One or more taxonomies to update
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term recount category post_tag
+	 *
+	 *     wp taxonomy list --field=name | xargs wp term recount
+	 */
+	public function recount( $args ) {
+		foreach( $args as $taxonomy ) {
+
+			if ( ! taxonomy_exists( $taxonomy ) ) {
+				WP_CLI::warning( sprintf( "Taxonomy %s does not exist.", $taxonomy ) );
+			} else {
+
+				$terms = get_terms( $taxonomy, array( 'hide_empty' => false ) );
+				$term_taxonomy_ids = wp_list_pluck( $terms, 'term_taxonomy_id' );
+
+				wp_update_term_count( $term_taxonomy_ids, $taxonomy );
+
+				WP_CLI::success( sprintf( "Updated %s term count", $taxonomy ) );
+			}
+
+		}
+	}
+
 	private function maybe_make_child() {
 		// 50% chance of making child term
 		return ( mt_rand(1, 2) == 1 );

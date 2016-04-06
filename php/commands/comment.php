@@ -445,6 +445,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Recount the comment_count value for one or more posts.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <id>...
 	 * : IDs for one or more posts to update.
 	 */
