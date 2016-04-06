@@ -418,9 +418,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Updates the amount of terms in one or more taxonomies
-	 *
-	 * ## DESCRIPTION
+	 * Recalculate number of posts assigned to each term.
 	 *
 	 * In instances where manual updates are made to the terms assigned to
 	 * posts in the database, the number of posts associated with a term
@@ -432,7 +430,7 @@ class Term_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * <taxonomy>...
-	 * : One or more taxonomies to update
+	 * : One or more taxonomies to recalculate.
 	 *
 	 * ## EXAMPLES
 	 *
