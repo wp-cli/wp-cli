@@ -154,10 +154,10 @@ options:
 ---
 EOB;
 		$doc = new DocParser( $longdesc );
-		$this->assertEquals( $doc->get_param_args( 'format' ), array(
+		$this->assertEquals( array(
 			'default' => 'table',
 			'options' => array( 'table', 'json', 'csv', 'yaml' ),
-		) );
+		), $doc->get_param_args( 'format' ) );
 		$this->assertNull( $doc->get_arg_args( 'hook' ) );
 	}
 
@@ -180,10 +180,10 @@ options:
 ---
 EOB;
 		$doc = new DocParser( $longdesc );
-		$this->assertEquals( $doc->get_arg_args( 'format' ), array(
+		$this->assertEquals( array(
 			'default' => 'table',
 			'options' => array( 'table', 'json', 'csv', 'yaml' ),
-		) );
+		), $doc->get_arg_args( 'format' ) );
 		$this->assertNull( $doc->get_arg_args( 'hook' ) );
 	}
 
