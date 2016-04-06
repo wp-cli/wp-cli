@@ -123,6 +123,14 @@ Feature: WordPress code scaffolding
       .DS_Store
       node_modules/
       """
+    And the {PLUGIN_DIR}/hello-world/hello-world.php file should contain:
+      """
+      * Plugin Name: Hello World
+      """
+    And the {PLUGIN_DIR}/hello-world/hello-world.php file should contain:
+      """
+      * @package Hello_World
+      """
 
     When I run `cat {PLUGIN_DIR}/hello-world/package.json`
     Then STDOUT should be JSON containing:
@@ -205,6 +213,14 @@ Feature: WordPress code scaffolding
     And the {PLUGIN_DIR}/hello-world/tests/bootstrap.php file should contain:
       """
       require dirname( dirname( __FILE__ ) ) . '/hello-world.php';
+      """
+    And the {PLUGIN_DIR}/hello-world/tests/bootstrap.php file should contain:
+      """
+      * @package Hello_World
+      """
+    And the {PLUGIN_DIR}/hello-world/tests/test-sample.php file should contain:
+      """
+      * @package Hello_World
       """
     And the {PLUGIN_DIR}/hello-world/bin directory should contain:
       """

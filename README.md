@@ -13,7 +13,7 @@ If you want to hack on WP-CLI, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Where can I get more info?
 --------------------------
-For documentation and examples, check out [wp-cli.org](http://wp-cli.org/) and the [wiki](https://github.com/wp-cli/wp-cli/wiki).
+For documentation and examples, check out [wp-cli.org](http://wp-cli.org/) and the [documentation portal](http://wp-cli.org/docs/).
 
 Also, WordPress Answers has a growing list of [WP-CLI related questions](http://wordpress.stackexchange.com/questions/tagged/wp-cli).
 
@@ -23,7 +23,7 @@ I'm running into troubles, what can I do?
 -----------------------------------------
 To suggest a feature, report a bug, or general discussion, visit the [issues section](https://github.com/wp-cli/wp-cli/issues).
 
-If you're reporting a bug, please also post the output from `wp --info`.
+If you're reporting a bug, please include the output from `wp --info` and do your best to follow [bug reporting best practices](http://wp-cli.org/docs/bug-reports/).
 
 Credits
 -------
@@ -43,6 +43,6 @@ Who's behind this thing?
 * [Cristi Burcă](https://github.com/scribu) - previous maintainer
 * [Daniel Bachhuber](https://github.com/danielbachhuber/) - current maintainer
 
-For more info, see [Governance](https://github.com/wp-cli/wp-cli/wiki/Governance).
+For more info, see [Governance](http://wp-cli.org/docs/governance/).
 
 A complete list of contributors can be found [here](https://github.com/wp-cli/wp-cli/contributors).

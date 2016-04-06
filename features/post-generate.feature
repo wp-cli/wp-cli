@@ -31,3 +31,14 @@ Feature: Generate new WordPress posts
       """
       1
       """
+
+  Scenario: Generating posts and outputting ids
+    When I run `wp post generate --count=1 --format=ids`
+    Then save STDOUT as {POST_ID}
+
+    When I run `wp post update {POST_ID} --post_title="foo"`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
