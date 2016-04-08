@@ -19,6 +19,7 @@ Feature: Validate checksums for WordPress install
     Then STDERR should be:
       """
       Warning: File doesn't verify against checksum: readme.html
+      Warning: File should not exist: readme.html.bak
       Error: WordPress install doesn't verify against checksums.
       """
 
@@ -29,6 +30,7 @@ Feature: Validate checksums for WordPress install
     Then STDERR should be:
       """
       Warning: File doesn't exist: readme.html
+      Warning: File should not exist: readme.html.bak
       Error: WordPress install doesn't verify against checksums.
       """
 
