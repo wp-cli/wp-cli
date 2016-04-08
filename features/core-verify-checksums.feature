@@ -70,7 +70,10 @@ Feature: Validate checksums for WordPress install
     When I run `wp core update`
     Then STDOUT should not be empty
 
-    When I run `touch wp-includes/extra-file.txt`
+    Given a wp-includes/extra-file.txt file:
+      """
+      hello world
+      """
     Then the wp-includes/extra-file.txt file should exist
 
     When I run `wp core verify-checksums`
