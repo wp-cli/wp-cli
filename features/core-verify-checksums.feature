@@ -63,3 +63,25 @@ Feature: Validate checksums for WordPress install
       """
       Success: WordPress install verifies against checksums.
       """
+
+  Scenario: Verify core checksums with extra files
+    Given a WP install
+
+    When I run `wp core update`
+    Then STDOUT should not be empty
+
+    Given a wp-includes/extra-file.txt file:
+      """
+      hello world
+      """
+    Then the wp-includes/extra-file.txt file should exist
+
+    When I run `wp core verify-checksums`
+    Then STDERR should be:
+      """
+      Warning: File should not exist: wp-includes/extra-file.txt
+      """
+    And STDOUT should be:
+      """
+      Success: WordPress install verifies against checksums.
+      """
