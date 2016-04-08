@@ -87,6 +87,9 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		$wpdb->query( "TRUNCATE $wpdb->terms" );
 		$wpdb->query( "TRUNCATE $wpdb->term_taxonomy" );
 		$wpdb->query( "TRUNCATE $wpdb->term_relationships" );
+		if ( ! empty( $wpdb->termmeta ) ) {
+			$wpdb->query( "TRUNCATE $wpdb->termmeta" );
+		}
 	}
 
 	/**
@@ -371,7 +374,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Comma-separated list of fields to show.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *

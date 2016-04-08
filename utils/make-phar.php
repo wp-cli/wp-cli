@@ -101,7 +101,6 @@ add_file( $phar, WP_CLI_ROOT . '/vendor/autoload.php' );
 add_file( $phar, WP_CLI_ROOT . '/ci/behat-tags.php' );
 add_file( $phar, WP_CLI_ROOT . '/vendor/composer/composer/LICENSE' );
 add_file( $phar, WP_CLI_ROOT . '/vendor/composer/composer/res/composer-schema.json' );
-add_file( $phar, WP_CLI_ROOT . '/utils/get-package-require-from-composer.php' );
 add_file( $phar, WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem' );
 
 set_file_contents( $phar, WP_CLI_ROOT . '/VERSION', $current_version );

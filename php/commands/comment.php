@@ -99,6 +99,14 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--post_id=<post-id>]
 	 * : Assign comments to a specific post.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: progress, ids. Default: ids.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Add meta to every generated comment
+	 *     wp comment generate --format=ids | xargs -0 -d ' ' -I % wp comment meta add % foo bar
 	 */
 	public function generate( $args, $assoc_args ) {
 
@@ -108,20 +116,37 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating comments', $assoc_args['count'] );
+		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'progress' );
+
+		$notify = false;
+		if ( 'progress' === $format ) {
+			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating comments', $assoc_args['count'] );
+		}
+
 		$comment_count = wp_count_comments();
 		$total = (int )$comment_count->total_comments;
 		$limit = $total + $assoc_args['count'];
 
 		for ( $i = $total; $i < $limit; $i++ ) {
-			wp_insert_comment( array(
+			$comment_id = wp_insert_comment( array(
 				'comment_content'       => "Comment {$i}",
 				'comment_post_ID'       => $assoc_args['post_id'],
 				) );
-			$notify->tick();
+			if ( 'progress' === $format ) {
+				$notify->tick();
+			} else if ( 'ids' === $format ) {
+				if ( 'ids' === $format ) {
+					echo $comment_id;
+					if ( $i < $limit - 1 ) {
+						echo ' ';
+					}
+				}
+			}
 		}
 
-		$notify->finish();
+		if ( 'progress' === $format ) {
+			$notify->finish();
+		}
 
 	}
 
@@ -140,7 +165,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -177,7 +202,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -419,6 +444,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Recount the comment_count value for one or more posts.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <id>...
 	 * : IDs for one or more posts to update.

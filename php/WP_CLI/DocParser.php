@@ -2,6 +2,8 @@
 
 namespace WP_CLI;
 
+use Spyc;
+
 /**
  * Parse command attributes from its PHPdoc.
  * Used to determine execution characteristics (arguments, etc.).
@@ -112,6 +114,16 @@ class DocParser {
 	}
 
 	/**
+	 * Get the arguments for a given argument.
+	 *
+	 * @param string $name Argument's doc name.
+	 * @return mixed|null
+	 */
+	public function get_arg_args( $name ) {
+		return $this->get_arg_or_param_args( "/\[?<{$name}>.*/" );
+	}
+
+	/**
 	 * Get the description for a given parameter.
 	 *
 	 * @param string $key Parameter's key.
@@ -124,6 +136,55 @@ class DocParser {
 		}
 
 		return '';
+	}
+
+	/**
+	 * Get the arguments for a given parameter.
+	 *
+	 * @param string $key Parameter's key.
+	 * @return mixed|null
+	 */
+	public function get_param_args( $key ) {
+		return $this->get_arg_or_param_args( "/\[?--{$key}=.*/" );
+	}
+
+	/**
+	 * Get the args for an arg or param
+	 *
+	 * @param string $regex Pattern to match against
+	 * @return array|null Interpreted YAML document, or null.
+	 */
+	private function get_arg_or_param_args( $regex ) {
+		$bits = explode( PHP_EOL, $this->docComment );
+		$within_arg = $within_doc = false;
+		$document = array();
+		foreach( $bits as $bit ) {
+			if ( preg_match( $regex, $bit ) ) {
+				$within_arg = true;
+			}
+
+			if ( $within_arg && $within_doc && '---' === $bit ) {
+				$within_doc = false;
+			}
+
+			if ( $within_arg && ! $within_doc && '---' === $bit ) {
+				$within_doc = true;
+			}
+
+			if ( $within_doc ) {
+				$document[] = $bit;
+			}
+
+			if ( $within_arg && '' === $bit ) {
+				$within_arg = false;
+				break;
+			}
+		}
+
+		if ( $document ) {
+			return Spyc::YAMLLoadString( implode( PHP_EOL, $document ) );
+		}
+		return null;
 	}
 
 }

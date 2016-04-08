@@ -110,7 +110,7 @@ Feature: WordPress code scaffolding
     Given I run `wp plugin path`
     And save STDOUT as {PLUGIN_DIR}
 
-    When I run `wp scaffold plugin hello-world`
+    When I run `wp scaffold plugin hello-world --plugin_author="Hello World Author"`
     Then STDOUT should not be empty
     And the {PLUGIN_DIR}/hello-world/.gitignore file should exist
     And the {PLUGIN_DIR}/hello-world/.editorconfig file should exist
@@ -122,6 +122,20 @@ Feature: WordPress code scaffolding
       """
       .DS_Store
       node_modules/
+      """
+    And the {PLUGIN_DIR}/hello-world/hello-world.php file should contain:
+      """
+      * Plugin Name: Hello World
+      """
+    And the {PLUGIN_DIR}/hello-world/hello-world.php file should contain:
+      """
+      * @package Hello_World
+      """
+
+    When I run `cat {PLUGIN_DIR}/hello-world/package.json`
+    Then STDOUT should be JSON containing:
+      """
+      {"author":"Hello World Author"}
       """
 
   Scenario: Scaffold a plugin by prompting
@@ -200,6 +214,14 @@ Feature: WordPress code scaffolding
       """
       require dirname( dirname( __FILE__ ) ) . '/hello-world.php';
       """
+    And the {PLUGIN_DIR}/hello-world/tests/bootstrap.php file should contain:
+      """
+      * @package Hello_World
+      """
+    And the {PLUGIN_DIR}/hello-world/tests/test-sample.php file should contain:
+      """
+      * @package Hello_World
+      """
     And the {PLUGIN_DIR}/hello-world/bin directory should contain:
       """
       install-wp-tests.sh
@@ -211,80 +233,6 @@ Feature: WordPress code scaffolding
     Then STDOUT should be:
       """
       executable
-      """
-
-  Scenario: Scaffold package tests
-    Given a WP install
-    Given a community-command/command.php file:
-      """
-      <?php
-      """
-    And a community-command/composer.json file:
-      """
-      {
-        "name": "wp-cli/community-command",
-        "description": "A demo community command.",
-        "license": "MIT",
-        "minimum-stability": "dev",
-        "require": {
-        },
-        "autoload": {
-          "files": [ "dictator.php" ]
-        },
-        "require-dev": {
-          "behat/behat": "~2.5"
-        }
-      }
-      """
-    And a invalid-command/command.php file:
-      """
-      <?php
-      """
-
-    When I run `wp scaffold package-tests community-command`
-    Then STDOUT should not be empty
-    And the community-command/.travis.yml file should exist
-    And the community-command/bin/install-package-tests.sh file should exist
-    And the community-command/utils/behat-tags.php file should contain:
-      """
-      require-wp
-      """
-    And the community-command/utils/get-package-require-from-composer.php file should exist
-    And the community-command/features directory should contain:
-      """
-      bootstrap
-      extra
-      load-wp-cli.feature
-      steps
-      """
-    And the community-command/features/bootstrap directory should contain:
-      """
-      FeatureContext.php
-      Process.php
-      support.php
-      utils.php
-      """
-    And the community-command/features/steps directory should contain:
-      """
-      given.php
-      then.php
-      when.php
-      """
-    And the community-command/features/extra directory should contain:
-      """
-      no-mail.php
-      """
-
-    When I run `wp eval "if ( is_executable( 'community-command/bin/install-package-tests.sh' ) ) { echo 'executable'; } else { exit( 1 ); }"`
-    Then STDOUT should be:
-      """
-      executable
-      """
-
-    When I try `wp scaffold package-tests invalid-command`
-    Then STDERR should be:
-      """
-      Error: Invalid package directory. composer.json file must be present.
       """
 
   Scenario: Scaffold starter code for a theme

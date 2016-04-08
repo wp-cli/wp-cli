@@ -71,7 +71,7 @@ Feature: Manage WordPress attachments
     When I run `wp post get {ATTACHMENT_ID} --field=title`
     Then STDOUT should be:
       """
-      large-image.jpg
+      large-image
       """
 
   Scenario: Import a file and persist its original metadata

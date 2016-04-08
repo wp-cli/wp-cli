@@ -144,6 +144,10 @@ class Formatter {
 			echo json_encode( $out );
 			break;
 
+		case 'yaml':
+			echo \Spyc::YAMLDump( $items, 2, 0 );
+			break;
+
 		default:
 			\WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
 		}
@@ -237,6 +241,7 @@ class Formatter {
 			}
 			break;
 
+		case 'yaml':
 		case 'json':
 			\WP_CLI::print_value( $data, array( 'format' => $format ) );
 			break;
@@ -258,13 +263,24 @@ class Formatter {
 	private static function show_table( $items, $fields ) {
 		$table = new \cli\Table();
 
+		$enabled = \cli\Colors::shouldColorize();
+		if ( $enabled ) {
+			\cli\Colors::disable( true );
+		}
+
 		$table->setHeaders( $fields );
 
 		foreach ( $items as $item ) {
 			$table->addRow( array_values( \WP_CLI\Utils\pick_fields( $item, $fields ) ) );
 		}
 
-		$table->display();
+		foreach( $table->getDisplayLines() as $line ) {
+			\WP_CLI::line( $line );
+		}
+
+		if ( $enabled ) {
+			\cli\Colors::enable( true );
+		}
 	}
 
 	/**

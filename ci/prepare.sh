@@ -27,6 +27,8 @@ else
 	chmod +x $WP_CLI_BIN_DIR/wp
 fi
 
+echo $CLI_VERSION > PHAR_BUILD_VERSION
+
 # Install CodeSniffer things
 ./ci/prepare-codesniffer.sh
 

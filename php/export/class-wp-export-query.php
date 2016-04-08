@@ -173,7 +173,7 @@ class WP_Export_Query {
 		}
 
 		// Multiple post types
-		if ( is_array( $post_types_filters['name'] ) ) {
+		if ( isset( $post_types_filters['name'] ) && is_array( $post_types_filters['name'] ) ) {
 			$post_types = array();
 			foreach ( $post_types_filters['name'] as $post_type ) {
 				if ( post_type_exists( $post_type ) ) {
@@ -356,7 +356,7 @@ class WP_Export_Query {
 	private function get_comments_for_post( $post ) {
 		global $wpdb;
 
-		if ( $this->filters['skip_comments'] ) {
+		if ( isset( $this->filters['skip_comments'] ) ) {
 			return array();
 		}
 

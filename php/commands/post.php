@@ -164,7 +164,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -243,7 +243,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 * : Accepted values: table, csv, json, count, ids, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -352,10 +352,16 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--max_depth=<number>]
 	 * : For hierarchical post types, generate child posts down to a certain depth. Default: 1
 	 *
+	 * [--format=<format>]
+	 * : Accepted values: progress, ids. Default: ids.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp post generate --count=10 --post_type=page --post_date=1999-01-04
 	 *     curl http://loripsum.net/api/5 | wp post generate --post_content --count=10
+	 *
+	 *     # Add meta to every generated post
+	 *     wp post generate --format=ids | xargs -0 -d ' ' -I % wp post meta add % foo bar
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
@@ -394,7 +400,12 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$limit = $count + $total;
 
-		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating posts', $count );
+		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'progress' );
+
+		$notify = false;
+		if ( 'progress' === $format ) {
+			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating posts', $count );
+		}
 
 		$previous_post_id = 0;
 		$current_depth = 1;
@@ -433,11 +444,21 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				WP_CLI::warning( $post_id );
 			} else {
 				$previous_post_id = $post_id;
+				if ( 'ids' === $format ) {
+					echo $post_id;
+					if ( $i < $limit - 1 ) {
+						echo ' ';
+					}
+				}
 			}
 
-			$notify->tick();
+			if ( 'progress' === $format ) {
+				$notify->tick();
+			}
 		}
-		$notify->finish();
+		if ( 'progress' === $format ) {
+			$notify->finish();
+		}
 		// @codingStandardsIgnoreEnd
 	}
 

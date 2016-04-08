@@ -41,7 +41,7 @@ class Taxonomy_Command extends WP_CLI_Command {
 	 * : Limit the output to specific taxonomy fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -95,7 +95,7 @@ class Taxonomy_Command extends WP_CLI_Command {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *

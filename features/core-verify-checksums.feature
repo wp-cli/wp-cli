@@ -38,10 +38,10 @@ Feature: Validate checksums for WordPress install
     Given an empty directory
     And I run `wp core download --version=4.3`
 
-    When I try `wp core verify-checksums`
-    Then STDERR should contain:
+    When I run `wp core verify-checksums`
+    Then STDOUT should be:
       """
-      Error: wp-config.php not found.
+      Success: WordPress install verifies against checksums.
       """
 
     When I run `wp core verify-checksums --version=4.3 --locale=en_US`

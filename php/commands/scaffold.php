@@ -371,111 +371,6 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Generate files needed for writing Behat tests for your command.
-	 *
-	 * ## DESCRIPTION
-	 *
-	 * These are the files that are generated:
-	 *
-	 * * `.travis.yml` is the configuration file for Travis CI
-	 * * `bin/install-package-tests.sh` will configure environment to run tests. Script expects WP_CLI_BIN_DIR and WP_CLI_CONFIG_PATH environment variables.
-	 * * `features/load-wp-cli.feature` is a basic test to confirm WP-CLI can load.
-	 * * `features/bootstrap`, `features/steps`, `features/extra` are Behat configuration files.
-	 * * `utils/generate-package-require-from-composer.php` generates a test config.yml file from your package's composer.json
-	 *
-	 * ## ENVIRONMENT
-	 *
-	 * The `features/bootstrap/FeatureContext.php` file expects the WP_CLI_BIN_DIR and WP_CLI_CONFIG_PATH environment variables.
-	 *
-	 * WP-CLI Behat framework uses Behat ~2.5.
-	 *
-	 * ## OPTIONS
-	 *
-	 * <dir>
-	 * : The package directory to generate tests for.
-	 *
-	 * [--force]
-	 * : Overwrite files that already exist.
-	 *
-	 * ## EXAMPLE
-	 *
-	 *     wp scaffold package-tests /path/to/command/dir/
-	 *
-	 * @when       before_wp_load
-	 * @subcommand package-tests
-	 */
-	public function package_tests( $args, $assoc_args ) {
-
-		list( $package_dir ) = $args;
-
-		if ( is_file( $package_dir ) ) {
-			$package_dir = dirname( $package_dir );
-		} else if ( is_dir( $package_dir ) ) {
-			$package_dir = rtrim( $package_dir, '/' );
-		}
-
-		if ( ! is_dir( $package_dir ) || ! file_exists( $package_dir . '/composer.json' ) ) {
-			WP_CLI::error( "Invalid package directory. composer.json file must be present." );
-		}
-
-		$package_dir .= '/';
-		$bin_dir       = $package_dir . 'bin/';
-		$utils_dir     = $package_dir . 'utils/';
-		$features_dir  = $package_dir . 'features/';
-		$bootstrap_dir = $features_dir . 'bootstrap/';
-		$steps_dir     = $features_dir . 'steps/';
-		$extra_dir     = $features_dir . 'extra/';
-		foreach ( array( $features_dir, $bootstrap_dir, $steps_dir, $extra_dir, $utils_dir, $bin_dir ) as $dir ) {
-			if ( ! is_dir( $dir ) ) {
-				Process::create( Utils\esc_cmd( 'mkdir %s', $dir ) )->run();
-			}
-		}
-
-		$to_copy = array(
-			'templates/.travis.package.yml'               => $package_dir,
-			'templates/load-wp-cli.feature'               => $features_dir,
-			'templates/install-package-tests.sh'          => $bin_dir,
-			'features/bootstrap/FeatureContext.php'       => $bootstrap_dir,
-			'features/bootstrap/support.php'              => $bootstrap_dir,
-			'php/WP_CLI/Process.php'                      => $bootstrap_dir,
-			'php/utils.php'                               => $bootstrap_dir,
-			'ci/behat-tags.php'                           => $utils_dir,
-			'utils/get-package-require-from-composer.php' => $utils_dir,
-			'features/steps/given.php'                    => $steps_dir,
-			'features/steps/when.php'                     => $steps_dir,
-			'features/steps/then.php'                     => $steps_dir,
-			'features/extra/no-mail.php'                  => $extra_dir,
-		);
-
-		$files_written = array();
-		foreach ( $to_copy as $file => $dir ) {
-			// file_get_contents() works with Phar-archived files
-			$contents  = file_get_contents( WP_CLI_ROOT . "/{$file}" );
-			$file_path = $dir . basename( $file );
-			$file_path = str_replace( array( '.travis.package.yml' ), array( '.travis.yml' ), $file_path );
-
-			$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
-			$should_write_file = $this->prompt_if_files_will_be_overwritten( $file_path, $force );
-			if ( ! $should_write_file ) {
-				continue;
-			}
-			$files_written[] = $file_path;
-
-			$result    = Process::create( Utils\esc_cmd( 'touch %s', $file_path ) )->run();
-			file_put_contents( $file_path, $contents );
-			if ( 'templates/install-package-tests.sh' === $file ) {
-				Process::create( Utils\esc_cmd( 'chmod +x %s', $file_path ) )->run();
-			}
-		}
-		$this->log_whether_files_written(
-			$files_written,
-			$skip_message = 'All package tests were skipped.',
-			$success_message = 'Created test files.'
-		);
-
-	}
-
-	/**
 	 * Generate starter code for a plugin.
 	 *
 	 * ## OPTIONS
@@ -515,11 +410,14 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 */
 	function plugin( $args, $assoc_args ) {
-		$plugin_slug = $args[0];
+		$plugin_slug    = $args[0];
+		$plugin_name    = ucwords( str_replace( '-', ' ', $plugin_slug ) );
+		$plugin_package = str_replace( ' ', '_', $plugin_name );
 
 		$data = wp_parse_args( $assoc_args, array(
 			'plugin_slug'        => $plugin_slug,
-			'plugin_name'        => ucfirst( $plugin_slug ),
+			'plugin_name'        => $plugin_name,
+			'plugin_package'     => $plugin_package,
 			'plugin_description' => 'PLUGIN DESCRIPTION HERE',
 			'plugin_author'      => 'YOUR NAME HERE',
 			'plugin_author_uri'  => 'YOUR SITE HERE',
@@ -571,14 +469,17 @@ class Scaffold_Command extends WP_CLI_Command {
 	/**
 	 * Generate files needed for running PHPUnit tests.
 	 *
-	 * ## DESCRIPTION
+	 * ## OVERVIEW
 	 *
-	 * These are the files that are generated:
+	 * The following files are generated for your plugin by this command:
 	 *
-	 * * `phpunit.xml.dist` is the configuration file for PHPUnit
-	 * * `.travis.yml` is the configuration file for Travis CI
-	 * * `tests/bootstrap.php` is the file that makes the current plugin active when running the test suite
-	 * * `tests/test-sample.php` is a sample file containing the actual tests
+	 * * `phpunit.xml.dist` is the configuration file for PHPUnit.
+	 * * `.travis.yml` is the configuration file for Travis CI.
+	 * * `bin/install-wp-tests.sh` configures the WordPress test suite and a test database.
+	 * * `tests/bootstrap.php` is the file that makes the current plugin active when running the test suite.
+	 * * `tests/test-sample.php` is a sample file containing the actual tests.
+	 *
+	 * Learn more from the [plugin unit tests documentation](http://wp-cli.org/docs/plugin-unit-tests/).
 	 *
 	 * ## ENVIRONMENT
 	 *
@@ -627,6 +528,9 @@ class Scaffold_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Invalid plugin specified.' );
 		}
 
+		$plugin_name    = ucwords( str_replace( '-', ' ', $plugin_slug ) );
+		$plugin_package = str_replace( ' ', '_', $plugin_name );
+
 		$tests_dir = "$plugin_dir/tests";
 		$bin_dir = "$plugin_dir/bin";
 
@@ -648,16 +552,21 @@ class Scaffold_Command extends WP_CLI_Command {
 			}
 		}
 
+		$plugin_data = array(
+			'plugin_slug'    => $plugin_slug,
+			'plugin_package' => $plugin_package,
+		);
+
 		$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
 		$files_written = $this->create_files( array(
-			"$tests_dir/bootstrap.php" => Utils\mustache_render( 'bootstrap.mustache', compact( 'plugin_slug' ) ),
-			"$plugin_dir/.travis.yml" => Utils\mustache_render( '.travis.mustache', compact( 'wp_versions_to_test' ) )
+			"$tests_dir/bootstrap.php"   => Utils\mustache_render( 'bootstrap.mustache', $plugin_data ),
+			"$tests_dir/test-sample.php" => Utils\mustache_render( 'test-sample.mustache', $plugin_data ),
+			"$plugin_dir/.travis.yml"    => Utils\mustache_render( '.travis.mustache', compact( 'wp_versions_to_test' ) ),
 		), $force );
 
 		$to_copy = array(
 			'install-wp-tests.sh' => $bin_dir,
 			'phpunit.xml.dist'    => $plugin_dir,
-			'test-sample.php'     => $tests_dir,
 		);
 
 		foreach ( $to_copy as $file => $dir ) {

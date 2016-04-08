@@ -34,7 +34,7 @@ class Term_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -169,7 +169,7 @@ class Term_Command extends WP_CLI_Command {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv. Default: table
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -293,9 +293,15 @@ class Term_Command extends WP_CLI_Command {
 	 * [--max_depth=<number>]
 	 * : Generate child terms down to a certain depth. Default: 1
 	 *
+	 * [--format=<format>]
+	 * : Accepted values: progress, ids. Default: ids.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp term generate --count=10
+	 *
+	 *     # Add meta to every generated term
+	 *     wp term generate category --format=ids | xargs -0 -d ' ' -I % wp term meta add % foo bar
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
@@ -318,7 +324,12 @@ class Term_Command extends WP_CLI_Command {
 
 		$hierarchical = get_taxonomy( $taxonomy )->hierarchical;
 
-		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating terms', $count );
+		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'progress' );
+
+		$notify = false;
+		if ( 'progress' === $format ) {
+			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating terms', $count );
+		}
 
 		$previous_term_id = 0;
 		$current_parent = 0;
@@ -359,15 +370,25 @@ class Term_Command extends WP_CLI_Command {
 			} else {
 				$created[] = $term['term_id'];
 				$previous_term_id = $term['term_id'];
+				if ( 'ids' === $format ) {
+					echo $term['term_id'];
+					if ( $i < $max_id + $count ) {
+						echo ' ';
+					}
+				}
 			}
 
-			$notify->tick();
+			if ( 'progress' === $format ) {
+				$notify->tick();
+			}
 		}
 
 		wp_suspend_cache_invalidation( $suspend_cache_invalidation );
 		clean_term_cache( $created, $taxonomy );
 
-		$notify->finish();
+		if ( 'progress' === $format ) {
+			$notify->finish();
+		}
 	}
 
 	/**
@@ -393,6 +414,45 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::line( $term_link );
 		} else {
 			WP_CLI::error( "Invalid term." );
+		}
+	}
+
+	/**
+	 * Recalculate number of posts assigned to each term.
+	 *
+	 * In instances where manual updates are made to the terms assigned to
+	 * posts in the database, the number of posts associated with a term
+	 * can become out-of-sync with the actual number of posts.
+	 *
+	 * This command runs wp_update_term_count() on the taxonomy's terms
+	 * to bring the count back to the correct value.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <taxonomy>...
+	 * : One or more taxonomies to recalculate.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp term recount category post_tag
+	 *
+	 *     wp taxonomy list --field=name | xargs wp term recount
+	 */
+	public function recount( $args ) {
+		foreach( $args as $taxonomy ) {
+
+			if ( ! taxonomy_exists( $taxonomy ) ) {
+				WP_CLI::warning( sprintf( "Taxonomy %s does not exist.", $taxonomy ) );
+			} else {
+
+				$terms = get_terms( $taxonomy, array( 'hide_empty' => false ) );
+				$term_taxonomy_ids = wp_list_pluck( $terms, 'term_taxonomy_id' );
+
+				wp_update_term_count( $term_taxonomy_ids, $taxonomy );
+
+				WP_CLI::success( sprintf( "Updated %s term count", $taxonomy ) );
+			}
+
 		}
 	}
 
