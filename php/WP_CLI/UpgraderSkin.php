@@ -41,7 +41,7 @@ class UpgraderSkin extends \WP_Upgrader_Skin {
 
 		$string = str_replace( '&#8230;', '...', strip_tags( $string ) );
 
-		\WP_CLI::line( $string );
+		\WP_CLI::log( $string );
 	}
 }
 

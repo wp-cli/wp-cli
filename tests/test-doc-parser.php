@@ -94,5 +94,98 @@ EOB
 		;
 		$this->assertEquals( $longdesc, $doc->get_longdesc() );
 	}
+
+	public function test_desc_parses_yaml() {
+		$longdesc = <<<EOB
+## OPTIONS
+
+<genre>...
+: Start with one or more genres.
+---
+options:
+  - rock
+  - electronic
+default: rock
+---
+
+--volume=<number>
+: Sets the volume.
+---
+default: 10
+---
+
+--artist=<artist-name>
+: Limit to a specific artist.
+
+## EXAMPLES
+
+wp rock-on electronic --volume=11
+
+EOB;
+		$doc = new DocParser( $longdesc );
+		$this->assertEquals( 'Start with one or more genres.', $doc->get_arg_desc( 'genre' ) );
+		$this->assertEquals( 'Sets the volume.', $doc->get_param_desc( 'volume' ) );
+		$this->assertEquals( array(
+			'options' => array( 'rock', 'electronic' ),
+			'default' => 'rock',
+		), $doc->get_arg_args( 'genre' ) );
+		$this->assertEquals( array(
+			'default' => 10,
+		), $doc->get_param_args( 'volume' ) );
+		$this->assertNull( $doc->get_param_args( 'artist' ) );
+	}
+
+	public function test_desc_doesnt_parse_far_params_yaml() {
+		$longdesc = <<<EOB
+## OPTIONS
+
+<hook>
+: The name of the action or filter.
+
+[--format=<format>]
+: List callbacks as a table, JSON, CSV, or YAML.
+---
+default: table
+options:
+  - table
+  - json
+  - csv
+  - yaml
+---
+EOB;
+		$doc = new DocParser( $longdesc );
+		$this->assertEquals( array(
+			'default' => 'table',
+			'options' => array( 'table', 'json', 'csv', 'yaml' ),
+		), $doc->get_param_args( 'format' ) );
+		$this->assertNull( $doc->get_arg_args( 'hook' ) );
+	}
+
+	public function test_desc_doesnt_parse_far_args_yaml() {
+		$longdesc = <<<EOB
+## OPTIONS
+
+<hook>
+: The name of the action or filter.
+
+<format>
+: List callbacks as a table, JSON, CSV, or YAML.
+---
+default: table
+options:
+  - table
+  - json
+  - csv
+  - yaml
+---
+EOB;
+		$doc = new DocParser( $longdesc );
+		$this->assertEquals( array(
+			'default' => 'table',
+			'options' => array( 'table', 'json', 'csv', 'yaml' ),
+		), $doc->get_arg_args( 'format' ) );
+		$this->assertNull( $doc->get_arg_args( 'hook' ) );
+	}
+
 }
 
