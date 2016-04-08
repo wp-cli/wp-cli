@@ -861,11 +861,41 @@ EOT;
 			}
 		}
 
+		$core_checksums_files = array_filter( array_keys( $checksums ), array( $this, 'remove_wp_content_files_filter' ) );
+		$core_files           = $this->get_wp_core_files();
+		$additional_files     = array_diff( $core_files, $core_checksums_files );
+
+		if ( ! empty( $additional_files ) ) {
+			foreach ( $additional_files as $additional_file ) {
+				WP_CLI::warning( "File should not exist: {$additional_file}" );
+			}
+		}
+
 		if ( ! $has_errors ) {
 			WP_CLI::success( "WordPress install verifies against checksums." );
 		} else {
 			WP_CLI::error( "WordPress install doesn't verify against checksums." );
 		}
+	}
+
+	private function get_wp_core_files() {
+		$files = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( ABSPATH, RecursiveDirectoryIterator::SKIP_DOTS ),
+			RecursiveIteratorIterator::CHILD_FIRST
+		);
+
+		$core_files = array();
+		foreach ( $files as $file_info ) {
+			if ( $file_info->isFile() && 'wp-config.php' !== basename( $file_info->getPathname() ) && false === strpos( $file_info->getPathname(), 'wp-content/' ) ) {
+				$core_files[] = str_replace( ABSPATH, '', $file_info->getPathname() );
+			}
+		}
+
+		return $core_files;
+	}
+
+	private function remove_wp_content_files_filter( $file ) {
+		return strpos( $file, 'wp-content/' ) === false;
 	}
 
 	/**
