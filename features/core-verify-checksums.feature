@@ -19,7 +19,6 @@ Feature: Validate checksums for WordPress install
     Then STDERR should be:
       """
       Warning: File doesn't verify against checksum: readme.html
-      Warning: File should not exist: readme.html.bak
       Error: WordPress install doesn't verify against checksums.
       """
 
@@ -30,7 +29,6 @@ Feature: Validate checksums for WordPress install
     Then STDERR should be:
       """
       Warning: File doesn't exist: readme.html
-      Warning: File should not exist: readme.html.bak
       Error: WordPress install doesn't verify against checksums.
       """
 
@@ -63,5 +61,21 @@ Feature: Validate checksums for WordPress install
     When I run `wp core verify-checksums`
     Then STDOUT should be:
       """
+      Success: WordPress install verifies against checksums.
+      """
+
+  Scenario: Verify core checksums with extra files
+    Given a WP install
+
+    When I run `wp core update`
+    Then STDOUT should not be empty
+
+    When I run `touch wp-includes/extra-file.txt`
+    Then the wp-includes/extra-file.txt file should exist
+
+    When I run `wp core verify-checksums`
+    Then STDOUT should be:
+      """
+      Warning: File should not exist: wp-includes/extra-file.txt
       Success: WordPress install verifies against checksums.
       """
