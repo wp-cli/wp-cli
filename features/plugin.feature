@@ -42,7 +42,7 @@ Feature: Manage WordPress plugins
       Plugin Zombieland details:
           Name: Zombieland
           Status: Inactive
-          Version: 0.1-alpha
+          Version: 0.1.0
           Author: YOUR NAME HERE
           Description: PLUGIN DESCRIPTION HERE
       """
@@ -61,8 +61,8 @@ Feature: Manage WordPress plugins
 
     When I run `wp plugin list`
     Then STDOUT should be a table containing rows:
-      | name       | status | update | version   |
-      | Zombieland | active | none   | 0.1-alpha |
+      | name       | status | update | version |
+      | Zombieland | active | none   | 0.1.0   |
 
     When I try `wp plugin uninstall Zombieland`
     Then STDERR should contain:

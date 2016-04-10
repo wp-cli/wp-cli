@@ -125,17 +125,25 @@ Feature: WordPress code scaffolding
       """
     And the {PLUGIN_DIR}/hello-world/hello-world.php file should contain:
       """
-      * Plugin Name: Hello World
+      * Plugin Name:     Hello World
       """
     And the {PLUGIN_DIR}/hello-world/hello-world.php file should contain:
       """
-      * @package Hello_World
+      * Version:         0.1.0
+      """
+    And the {PLUGIN_DIR}/hello-world/hello-world.php file should contain:
+      """
+      * @package         Hello_World
       """
 
     When I run `cat {PLUGIN_DIR}/hello-world/package.json`
     Then STDOUT should be JSON containing:
       """
       {"author":"Hello World Author"}
+      """
+    And STDOUT should be JSON containing:
+      """
+      {"version":"0.1.0"}
       """
 
   Scenario: Scaffold a plugin by prompting
