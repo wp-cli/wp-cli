@@ -144,3 +144,51 @@ Feature: Regenerate WordPress attachments
       """
       Success: Finished regenerating all images.
       """
+
+  Scenario: Regenerate images which are missing globally-defined image sizes
+    Given download:
+      | path                        | url                                              |
+      | {CACHE_DIR}/large-image.jpg | http://wp-cli.org/behat-data/large-image.jpg     |
+    And I run `wp option update uploads_use_yearmonth_folders 0`
+
+    When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My imported attachment" --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID}
+    And the wp-content/uploads/large-image-100x100.jpg file should not exist
+
+    Given a wp-content/mu-plugins/media-settings.php file:
+      """
+      <?php
+      add_action( 'after_setup_theme', function(){
+        add_image_size( 'test1', 100, 100, true );
+      });
+      """
+
+    When I run `wp media regenerate --only-missing --yes`
+    Then STDOUT should contain:
+      """
+      Found 1 image to regenerate.
+      """
+    And STDOUT should contain:
+      """
+      Regenerated thumbnails for "My imported attachment"
+      """
+    And STDOUT should contain:
+      """
+      Success: Finished regenerating the image.
+      """
+    And the wp-content/uploads/large-image-100x100.jpg file should exist
+
+    When I run `wp media regenerate --only-missing --yes`
+    Then STDOUT should contain:
+      """
+      Found 1 image to regenerate
+      """
+    And STDOUT should contain:
+      """
+      No thumbnail regeneration needed for "My imported attachment"
+      """
+    And STDOUT should contain:
+      """
+      Success: Finished regenerating the image.
+      """
+    And the wp-content/uploads/large-image-100x100.jpg file should exist
