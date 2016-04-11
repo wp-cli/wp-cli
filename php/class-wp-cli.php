@@ -93,7 +93,7 @@ class WP_CLI {
 	 * Set the context in which WP-CLI should be run
 	 */
 	public static function set_url( $url ) {
-		WP_CLI::debug( 'Set URL: ' . $url );
+		WP_CLI::debug( 'Set URL: ' . $url, 'bootstrap' );
 		$url_parts = Utils\parse_url( $url );
 		self::set_url_params( $url_parts );
 	}
@@ -485,10 +485,11 @@ class WP_CLI {
 	 * @category Output
 	 *
 	 * @param string $message Message to write to STDERR.
+	 * @param string $group Organize debug message to a specific group.
 	 * @return null
 	 */
-	public static function debug( $message ) {
-		self::$logger->debug( self::error_to_string( $message ) );
+	public static function debug( $message, $group = false ) {
+		self::$logger->debug( self::error_to_string( $message ), $group );
 	}
 
 	/**

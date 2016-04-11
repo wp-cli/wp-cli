@@ -18,7 +18,7 @@ Feature: Manage WP-CLI packages
     When I try `wp --skip-packages --debug help reset-post-date`
     Then STDERR should contain:
       """
-      Debug: Skipped loading packages.
+      Debug (bootstrap): Skipped loading packages.
       """
     And STDERR should contain:
       """

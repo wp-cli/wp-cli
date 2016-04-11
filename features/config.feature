@@ -228,6 +228,58 @@ Feature: Have a config file
       Running command: option get
       """
 
+    When I run `wp option get home --debug=bootstrap`
+    Then STDERR should contain:
+      """
+      No readable global config found
+      """
+    Then STDERR should contain:
+      """
+      No project config found
+      """
+    And STDERR should contain:
+      """
+      Begin WordPress load
+      """
+    And STDERR should contain:
+      """
+      wp-config.php path:
+      """
+    And STDERR should contain:
+      """
+      Loaded WordPress
+      """
+    And STDERR should contain:
+      """
+      Running command: option get
+      """
+
+    When I run `wp option get home --debug=foo`
+    Then STDERR should not contain:
+      """
+      No readable global config found
+      """
+    Then STDERR should not contain:
+      """
+      No project config found
+      """
+    And STDERR should not contain:
+      """
+      Begin WordPress load
+      """
+    And STDERR should not contain:
+      """
+      wp-config.php path:
+      """
+    And STDERR should not contain:
+      """
+      Loaded WordPress
+      """
+    And STDERR should not contain:
+      """
+      Running command: option get
+      """
+
   Scenario: Missing required files should not fatal WP-CLI
     Given an empty directory
     And a wp-cli.yml file:

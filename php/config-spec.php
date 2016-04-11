@@ -71,8 +71,8 @@ return array(
 	),
 
 	'debug' => array(
-		'runtime' => '',
-		'file' => '<bool>',
+		'runtime' => '[=<group>]',
+		'file' => '<group>',
 		'default' => false,
 		'desc' => 'Show all PHP errors; add verbosity to WP-CLI bootstrap.',
 	),
