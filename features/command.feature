@@ -511,3 +511,28 @@ Feature: WP-CLI Commands
       """
       Manage comments.
       """
+
+  Scenario: before_invoke should call subcommands
+    Given an empty directory
+    And a call-invoke.php file:
+      """
+      <?php
+      /**
+       * @when before_wp_load
+       */
+      WP_CLI::add_command( 'before invoke', function() {
+        WP_CLI::success( 'Invoked' );
+      }, array( 'before_invoke' => function() {
+        WP_CLI::success( 'before invoke' );
+      }, 'after_invoke' => function() {
+        WP_CLI::success( 'after invoke' );
+      }));
+      """
+
+    When I run `wp --require=call-invoke.php before invoke`
+    Then STDOUT should contain:
+      """
+      Success: before invoke
+      Success: Invoked
+      Success: after invoke
+      """

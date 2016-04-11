@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Dispatcher;
 
+use WP_CLI;
+
 /**
  * A leaf node in the command tree.
  *
@@ -346,11 +348,15 @@ class Subcommand extends CompositeCommand {
 		}
 
 		$path = get_path( $this->get_parent() );
-		\WP_CLI::do_hook( 'before_invoke:' . implode( ' ', array_slice( $path, 1 ) ) );
+		$parent = implode( ' ', array_slice( $path, 1 ) );
+		$cmd = $parent . ' ' . $this->name;
+		WP_CLI::do_hook( "before_invoke:{$parent}" );
+		WP_CLI::do_hook( "before_invoke:{$cmd}" );
 
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 
-		\WP_CLI::do_hook( 'after_invoke:' . implode( ' ', array_slice( $path, 1 ) ) );
+		WP_CLI::do_hook( "after_invoke:{$parent}" );
+		WP_CLI::do_hook( "after_invoke:{$cmd}" );
 	}
 }
 
