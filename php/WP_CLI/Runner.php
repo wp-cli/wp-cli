@@ -202,7 +202,7 @@ class Runner {
 	 */
 	private static function set_wp_root( $path ) {
 		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
-		WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH );
+		WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH, 'bootstrap' );
 
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $path );
 	}
@@ -321,7 +321,7 @@ class Runner {
 			$extra_args = array();
 		}
 
-		WP_CLI::debug( 'Running command: ' . $name );
+		WP_CLI::debug( 'Running command: ' . $name, 'bootstrap' );
 		try {
 			$command->invoke( $final_args, $assoc_args, $extra_args );
 		} catch ( WP_CLI\Iterators\Exception $e ) {
@@ -604,8 +604,8 @@ class Runner {
 		$this->init_colorization();
 		$this->init_logger();
 
-		WP_CLI::debug( $this->_global_config_path_debug );
-		WP_CLI::debug( $this->_project_config_path_debug );
+		WP_CLI::debug( $this->_global_config_path_debug, 'bootstrap' );
+		WP_CLI::debug( $this->_project_config_path_debug, 'bootstrap' );
 
 		$this->check_root();
 
@@ -630,14 +630,14 @@ class Runner {
 
 		$skip_packages = \WP_CLI::get_runner()->config['skip-packages'];
 		if ( true === $skip_packages ) {
-			WP_CLI::debug( 'Skipped loading packages.' );
+			WP_CLI::debug( 'Skipped loading packages.', 'bootstrap' );
 		} else {
 			$package_autoload = $this->get_packages_dir_path() . 'vendor/autoload.php';
 			if ( file_exists( $package_autoload ) ) {
-				WP_CLI::debug( 'Loading packages from: ' . $package_autoload );
+				WP_CLI::debug( 'Loading packages from: ' . $package_autoload, 'bootstrap' );
 				require_once $package_autoload;
 			} else {
-				WP_CLI::debug( 'No package autoload found to load.' );
+				WP_CLI::debug( 'No package autoload found to load.', 'bootstrap' );
 			}
 		}
 
@@ -664,7 +664,7 @@ class Runner {
 					WP_CLI::error( sprintf( "Required file '%s' doesn't exist%s.", basename( $path ), $context ) );
 				}
 				Utils\load_file( $path );
-				WP_CLI::debug( 'Required file from config: ' . $path );
+				WP_CLI::debug( 'Required file from config: ' . $path, 'bootstrap' );
 			}
 		}
 
@@ -771,7 +771,7 @@ class Runner {
 
 		$wp_cli_is_loaded = true;
 
-		WP_CLI::debug( 'Begin WordPress load' );
+		WP_CLI::debug( 'Begin WordPress load', 'bootstrap' );
 		WP_CLI::do_hook( 'before_wp_load' );
 
 		$this->check_wp_version();
@@ -783,7 +783,7 @@ class Runner {
 				"Either create one manually or use `wp core config`." );
 		}
 
-		WP_CLI::debug( 'wp-config.php path: ' . $wp_config_path );
+		WP_CLI::debug( 'wp-config.php path: ' . $wp_config_path, 'bootstrap' );
 		WP_CLI::do_hook( 'before_wp_config_load' );
 
 		// Load wp-config.php code, in the global scope
@@ -818,7 +818,7 @@ class Runner {
 			self::set_user( $this->config );
 		}
 
-		WP_CLI::debug( 'Loaded WordPress' );
+		WP_CLI::debug( 'Loaded WordPress', 'bootstrap' );
 		WP_CLI::do_hook( 'after_wp_load' );
 
 	}
