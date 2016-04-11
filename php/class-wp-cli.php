@@ -294,6 +294,7 @@ class WP_CLI {
 	 * @param array $args {
 	 *      Optional An associative array with additional registration parameters.
 	 *      'before_invoke' => callback to execute before invoking the command,
+	 *      'after_invoke' => callback to execute after invoking the command,
 	 *      'shortdesc' => short description (80 char or less) for the command,
 	 *      'synopsis' => the synopsis for the command (string or array),
 	 *      'when' => execute callback on a named WP-CLI hook (e.g. before_wp_load),
@@ -317,8 +318,10 @@ class WP_CLI {
 			WP_CLI::error( sprintf( "Callable %s does not exist, and cannot be registered as `wp %s`.", json_encode( $callable ), $name ) );
 		}
 
-		if ( isset( $args['before_invoke'] ) ) {
-			self::add_hook( "before_invoke:$name", $args['before_invoke'] );
+		foreach( array( 'before_invoke', 'after_invoke' ) as $when ) {
+			if ( isset( $args[ $when ] ) ) {
+				self::add_hook( "{$when}:{$name}", $args[ $when ] );
+			}
 		}
 
 		$path = preg_split( '/\s+/', $name );
