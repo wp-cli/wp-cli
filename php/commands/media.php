@@ -315,7 +315,11 @@ class Media_Command extends WP_CLI_Command {
 		$original_path = $dir_path . basename( $metadata['file'] );
 
 		if ( empty( $metadata['sizes'] ) ) {
-			return false;
+			return true;
+		}
+
+		if ( array_diff( get_intermediate_image_sizes(), array_keys( $metadata['sizes'] ) ) ) {
+			return true;
 		}
 
 		foreach( $metadata['sizes'] as $size_info ) {
