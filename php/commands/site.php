@@ -122,6 +122,19 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Empty a site of its content (posts, comments, and terms).
 	 *
+	 * This command doesn't empty custom database tables by default. To do so,
+	 * you'll need to hook into command execution:
+	 *
+	 * ```
+	 * WP_CLI::add_hook( 'after_invoke:site empty', function(){
+	 *     global $wpdb;
+	 *     foreach( array( 'p2p', 'p2pmeta' ) as $table ) {
+	 *         $table = $wpdb->$table;
+	 *         $wpdb->query( "TRUNCATE $table" );
+	 *     }
+	 * });
+	 * ```
+	 *
 	 * ## OPTIONS
 	 *
 	 * [--uploads]
