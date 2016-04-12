@@ -28,7 +28,7 @@ Feature: Download WordPress
   Scenario: Localized install
     Given an empty directory
     And an empty cache
-    When I run `wp core download --locale=de_DE`
+    When I run `wp core download --version=4.4.2 --locale=de_DE`
     And save STDOUT 'Downloading WordPress ([\d\.]+)' as {VERSION}
     Then the wp-settings.php file should exist
     And the {SUITE_CACHE_DIR}/core/wordpress-{VERSION}-de_DE.tar.gz file should exist

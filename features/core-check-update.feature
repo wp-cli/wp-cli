@@ -10,7 +10,7 @@ Feature: Check for more recent versions
     When I run `wp core check-update`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                                  |
-      | 4.4.2   | major       | https://downloads.wordpress.org/release/wordpress-4.4.2.zip  |
+      | 4.5     | major       | https://downloads.wordpress.org/release/wordpress-4.5.zip    |
       | 3.8.13  | minor       | https://downloads.wordpress.org/release/wordpress-3.8.13-partial-0.zip |
 
     When I run `wp core check-update --format=count`
@@ -22,7 +22,7 @@ Feature: Check for more recent versions
     When I run `wp core check-update --major`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                                  |
-      | 4.4.2   | major       | https://downloads.wordpress.org/release/wordpress-4.4.2.zip  |
+      | 4.5     | major       | https://downloads.wordpress.org/release/wordpress-4.5.zip    |
 
     When I run `wp core check-update --major --format=count`
     Then STDOUT should be:
