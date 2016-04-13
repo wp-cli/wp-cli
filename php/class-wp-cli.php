@@ -199,12 +199,12 @@ class WP_CLI {
 	 *
 	 * WP-CLI hooks include:
 	 *
-	 * * 'before_invoke:<command>' - Just before a command is invoked.
-	 * * 'after_invoke:<command>' - Just after a command is involved.
-	 * * 'before_wp_load' - Just before the WP load process begins.
-	 * * 'before_wp_config_load' - After wp-config.php has been located.
-	 * * 'after_wp_config_load' - After wp-config.php has been loaded into scope.
-	 * * 'after_wp_load' - Just after the WP load process has completed.
+	 * * `before_invoke:<command>` - Just before a command is invoked.
+	 * * `after_invoke:<command>` - Just after a command is involved.
+	 * * `before_wp_load` - Just before the WP load process begins.
+	 * * `before_wp_config_load` - After wp-config.php has been located.
+	 * * `after_wp_config_load` - After wp-config.php has been loaded into scope.
+	 * * `after_wp_load` - Just after the WP load process has completed.
 	 *
 	 * WP-CLI commands can create their own hooks with `WP_CLI::do_hook()`.
 	 *
