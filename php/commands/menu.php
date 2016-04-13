@@ -226,6 +226,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 */
 	public function list_( $args, $assoc_args ) {
 
+		require_once( ABSPATH . WPINC . '/class-wp-metadata-lazyloader.php' );
 		$items = wp_get_nav_menu_items( $args[0] );
 		if ( false === $items || is_wp_error( $items ) ) {
 			WP_CLI::error( "Invalid menu" );
@@ -505,6 +506,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 */
 	private function add_or_update_item( $method, $type, $args, $assoc_args ) {
 
+		require_once( ABSPATH . WPINC . '/class-wp-metadata-lazyloader.php' );
 		$menu = $args[0];
 		$menu_item_db_id = \WP_CLI\Utils\get_flag_value( $args, 1, 0 );
 
