@@ -338,12 +338,28 @@ function pick_fields( $item, $fields ) {
  * @return str|bool       Edited text, if file is saved from editor
  *                        False, if no change to file
  */
-function launch_editor_for_input( $input, $title = 'WP-CLI' ) {
+function launch_editor_for_input( $input, $filename = 'WP-CLI' ) {
 
-	$tmpfile = wp_tempnam( $title );
+	$tmpdir = get_temp_dir();
 
-	if ( !$tmpfile )
+	do {
+		$tmpfile = basename( $filename );
+		$tmpfile = preg_replace( '|\.[^.]*$|', '', $tmpfile );
+		$tmpfile .= '-' . substr( md5( rand() ), 0, 6 );
+		$tmpfile = $tmpdir . $tmpfile . '.tmp';
+		$fp = @fopen( $tmpfile, 'x' );
+		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
+			$tmpfile = '';
+			continue;
+		}
+		if ( $fp ) {
+			fclose( $fp );
+		}
+	} while( ! $tmpfile );
+
+	if ( ! $tmpfile ) {
 		\WP_CLI::error( 'Error creating temporary file.' );
+	}
 
 	$output = '';
 	file_put_contents( $tmpfile, $input );
