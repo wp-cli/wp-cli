@@ -332,11 +332,13 @@ function pick_fields( $item, $fields ) {
 }
 
 /**
- * Launch system's $EDITOR to edit text
+ * Launch system's $EDITOR for the user to edit some text.
  *
- * @param  str  $content  Text to edit (eg post content)
- * @return str|bool       Edited text, if file is saved from editor
- *                        False, if no change to file
+ * @access public
+ * @category Input
+ *
+ * @param  string  $content  Some form of text to edit (e.g. post content)
+ * @return string|bool       Edited text, if file is saved from editor; false, if no change to file.
  */
 function launch_editor_for_input( $input, $filename = 'WP-CLI' ) {
 
