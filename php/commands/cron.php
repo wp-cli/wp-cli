@@ -141,18 +141,21 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * [<hook>...]
 	 * : One or more hooks to run.
 	 *
+	 * [--due-now]
+	 * : Run all hooks due right now.
+	 *
 	 * [--all]
 	 * : Run all hooks.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Run all cron events due right now
-	 *     wp cron event run $( wp cron event list --fields=hook,next_run_relative --format=csv | awk -F, '$2=="now" {print $1}' )
+	 *     wp cron event run --due-now
 	 */
 	public function run( $args, $assoc_args ) {
 
-		if ( empty( $args ) && ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
-			WP_CLI::error( 'Please specify one or more cron events, or use --all.' );
+		if ( empty( $args ) && ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'due-now' ) && ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
+			WP_CLI::error( 'Please specify one or more cron events, or use --due-now/--all.' );
 		}
 
 		$events = self::get_cron_events();
@@ -161,9 +164,17 @@ class Cron_Event_Command extends WP_CLI_Command {
 			WP_CLI::error( $events );
 		}
 
-
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'due-now' ) ) {
+			$due_events = array();
+			foreach( $events as $event ) {
+				if ( time() >= $event->time ) {
+					$due_events[] = $event;
+				}
+			}
+			$events = $due_events;
+		} else if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			$hooks = wp_list_pluck( $events, 'hook' );
+			$due_events = array();
 			foreach( $args as $hook ) {
 				if ( ! in_array( $hook, $hooks ) ) {
 					WP_CLI::error( sprintf( "Invalid cron event '%s'", $hook ) );
@@ -173,7 +184,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 
 		$executed = 0;
 		foreach ( $events as $event ) {
-			if ( in_array( $event->hook, $args ) || \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
+			if ( in_array( $event->hook, $args ) || \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) || \WP_CLI\Utils\get_flag_value( $assoc_args, 'due-now' ) ) {
 				$start = microtime( true );
 				$result = self::run_event( $event );
 				$total = round( microtime( true ) - $start, 3 );
