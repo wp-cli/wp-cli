@@ -21,7 +21,13 @@ class REPL {
 			$line = rtrim( $line, ';' ) . ';';
 
 			if ( self::starts_with( self::non_expressions(), $line ) ) {
+				ob_start();
 				eval( $line );
+				$out = ob_get_clean();
+				if ( 0 < strlen ( $out ) ) {
+					$out = rtrim( $out, "\n" ) . "\n";
+				}
+				fwrite( STDOUT, $out );
 			} else {
 				if ( !self::starts_with( 'return', $line ) )
 					$line = 'return ' . $line;
@@ -29,7 +35,8 @@ class REPL {
 				// Write directly to STDOUT, to sidestep any output buffers created by plugins
 				ob_start();
 				var_dump( eval( $line ) );
-				fwrite( STDOUT, ob_get_clean() );
+				$out = rtrim( ob_get_clean(), "\n" ) . "\n";
+				fwrite( STDOUT, $out );
 			}
 		}
 	}
