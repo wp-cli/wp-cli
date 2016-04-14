@@ -34,9 +34,14 @@ class REPL {
 
 				// Write directly to STDOUT, to sidestep any output buffers created by plugins
 				ob_start();
-				var_dump( eval( $line ) );
-				$out = rtrim( ob_get_clean(), "\n" ) . "\n";
-				fwrite( STDOUT, $out );
+				$evl  = eval( $line );
+				$out = ob_get_clean();
+				if ( 0 < strlen ( $out ) ) {
+					echo rtrim( $out, "\n" ) . "\n";
+				}
+				echo "=> ";
+				var_dump( $evl );
+				fwrite( STDOUT, ob_get_clean() );
 			}
 		}
 	}
