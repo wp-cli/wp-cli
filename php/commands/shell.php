@@ -35,7 +35,7 @@ class Shell_Command extends \WP_CLI_Command {
 		if ( '\\Psy\\Shell' == $class ) {
 			\Psy\Shell::debug();
 		} else {
-			$repl = new $class(  "\nwp> " );
+			$repl = new $class(  "wp> " );
 			$repl->start();
 		}
 	}
