@@ -180,17 +180,21 @@ class Cron_Event_Command extends WP_CLI_Command {
 					WP_CLI::error( sprintf( "Invalid cron event '%s'", $hook ) );
 				}
 			}
+			foreach( $events as $event ) {
+				if ( in_array( $event->hook, $args ) ) {
+					$due_events[] = $event;
+				}
+			}
+			$events = $due_events;
 		}
 
 		$executed = 0;
 		foreach ( $events as $event ) {
-			if ( in_array( $event->hook, $args ) || \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) || \WP_CLI\Utils\get_flag_value( $assoc_args, 'due-now' ) ) {
-				$start = microtime( true );
-				$result = self::run_event( $event );
-				$total = round( microtime( true ) - $start, 3 );
-				$executed++;
-				WP_CLI::log( sprintf( "Executed the cron event '%s' in %ss.", $event->hook, $total ) );
-			}
+			$start = microtime( true );
+			$result = self::run_event( $event );
+			$total = round( microtime( true ) - $start, 3 );
+			$executed++;
+			WP_CLI::log( sprintf( "Executed the cron event '%s' in %ss.", $event->hook, $total ) );
 		}
 
 		$message = 'Executed a total of %d cron event(s).';
