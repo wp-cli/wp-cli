@@ -22,6 +22,9 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields.
 	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each event.
+	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json, csv, ids, yaml. Default: table.
 	 *
@@ -420,6 +423,9 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields.
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each schedule.
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json, csv, ids, yaml. Default: table.
