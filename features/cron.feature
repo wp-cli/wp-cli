@@ -187,7 +187,7 @@ Feature: Manage WP-Cron events and schedules
     When I try `wp cron event run`
     Then STDERR should be:
       """
-      Error: Please specify one or more cron events, or use --all.
+      Error: Please specify one or more cron events, or use --due-now/--all.
       """
 
     When I run `wp cron event run wp_version_check wp_update_plugins`
@@ -220,4 +220,51 @@ Feature: Manage WP-Cron events and schedules
     And STDOUT should contain:
       """
       Success: Executed a total of
+      """
+
+  Scenario: Run currently scheduled events
+    When I run `wp cron event run --all`
+    Then STDOUT should contain:
+      """
+      Executed the cron event 'wp_version_check'
+      """
+    And STDOUT should contain:
+      """
+      Executed the cron event 'wp_update_plugins'
+      """
+    And STDOUT should contain:
+      """
+      Executed the cron event 'wp_update_themes'
+      """
+    And STDOUT should contain:
+      """
+      Success: Executed a total of
+      """
+
+    When I run `wp cron event run --due-now`
+    Then STDOUT should contain:
+      """
+      Executed a total of 0 cron event(s)
+      """
+
+    When I run `wp cron event schedule wp_cli_test_event_1 now hourly`
+    Then STDOUT should contain:
+      """
+      Success: Scheduled event with hook 'wp_cli_test_event_1'
+      """
+
+    When I run `wp cron event run --due-now`
+    Then STDOUT should contain:
+      """
+      Executed the cron event 'wp_cli_test_event_1'
+      """
+    And STDOUT should contain:
+      """
+      Executed a total of 1 cron event(s)
+      """
+
+    When I run `wp cron event run --due-now`
+    Then STDOUT should contain:
+      """
+      Executed a total of 0 cron event(s)
       """
