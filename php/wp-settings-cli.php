@@ -281,11 +281,9 @@ register_theme_directory( get_theme_root() );
 
 // Load active plugins.
 foreach ( wp_get_active_and_valid_plugins() as $plugin ) {
-	if ( !Utils\is_plugin_skipped( $plugin ) ) {
 		if ( $symlinked_plugins_supported )
 			wp_register_plugin_realpath( $plugin );
 		include_once( $plugin );
-	}
 }
 unset( $plugin, $symlinked_plugins_supported );
 
