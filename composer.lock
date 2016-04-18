@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "486865db5310fe94efdc68e6f0bcd370",
-    "content-hash": "6b640d71d1ddb8f42c44dfc0b508b9ae",
+    "hash": "7ea94f35bcaf09d491aba12444239a8a",
+    "content-hash": "81bc0608aece4400356ef972498724d4",
     "packages": [
         {
             "name": "composer/composer",
@@ -501,16 +501,16 @@
         },
         {
             "name": "seld/cli-prompt",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/cli-prompt.git",
-                "reference": "b27db1514f7d7bb7a366ad95d4eb2b17140a0691"
+                "reference": "8cbe10923cae5bcd7c5a713f6703fc4727c8c1b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/cli-prompt/zipball/b27db1514f7d7bb7a366ad95d4eb2b17140a0691",
-                "reference": "b27db1514f7d7bb7a366ad95d4eb2b17140a0691",
+                "url": "https://api.github.com/repos/Seldaek/cli-prompt/zipball/8cbe10923cae5bcd7c5a713f6703fc4727c8c1b4",
+                "reference": "8cbe10923cae5bcd7c5a713f6703fc4727c8c1b4",
                 "shasum": ""
             },
             "require": {
@@ -545,7 +545,7 @@
                 "input",
                 "prompt"
             ],
-            "time": "2016-01-09 17:55:27"
+            "time": "2016-04-18 09:31:41"
         },
         {
             "name": "seld/jsonlint",
@@ -1731,9 +1731,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "composer/composer": 10
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
