@@ -22,6 +22,9 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields.
 	 *
+	 * [--<field>=<value>]
+	 * : Filter by one or more fields.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each event.
 	 *
@@ -59,6 +62,15 @@ class Cron_Event_Command extends WP_CLI_Command {
 
 		if ( is_wp_error( $events ) ) {
 			$events = array();
+		}
+
+		foreach ( $events as $key => $event ) {
+			foreach ( $this->fields as $field ) {
+				if ( ! empty( $assoc_args[ $field ] ) && $event->{$field} !== $assoc_args[ $field ] ) {
+					unset( $events[ $key ] );
+					break;
+				}
+			}
 		}
 
 		if ( 'ids' == $formatter->format ) {
