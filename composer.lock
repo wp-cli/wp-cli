@@ -1735,7 +1735,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=5.3.2"
+        "php": ">=5.3.29"
     },
     "platform-dev": []
 }
