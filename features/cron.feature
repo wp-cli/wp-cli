@@ -21,6 +21,18 @@ Feature: Manage WP-Cron events and schedules
       1 hour
       """
 
+    When I run `wp cron event list --hook=wp_cli_test_event_1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp cron event list --hook=apple --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
     When I run `wp cron event delete wp_cli_test_event_1`
     Then STDOUT should contain:
       """
