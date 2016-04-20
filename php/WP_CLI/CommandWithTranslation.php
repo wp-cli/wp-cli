@@ -342,6 +342,9 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		require_once ABSPATH . '/wp-admin/includes/translation-install.php';
 
 		$response = translations_api( $this->obj_type );
+		if ( is_wp_error( $response ) ) {
+			WP_CLI::error( $response );
+		}
 		$translations = ! empty( $response['translations'] ) ? $response['translations'] : array();
 
 		$en_us = array(
