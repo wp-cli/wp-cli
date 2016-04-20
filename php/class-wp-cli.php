@@ -758,10 +758,17 @@ class WP_CLI {
 
 		$script_path = $GLOBALS['argv'][0];
 
+		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
+			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
+		} else {
+			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
+		}
+		$config_path = escapeshellarg( $config_path );
+
 		$args = implode( ' ', array_map( 'escapeshellarg', $args ) );
 		$assoc_args = \WP_CLI\Utils\assoc_args_to_str( $assoc_args );
 
-		$full_command = "{$php_bin} {$script_path} {$command} {$args} {$assoc_args}";
+		$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$command} {$args} {$assoc_args}";
 
 		return self::launch( $full_command, $exit_on_error, $return_detailed );
 	}
