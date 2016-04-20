@@ -59,15 +59,24 @@ Feature: Manage WordPress rewrites
       Success: Rewrite rules flushed.
       """
 
-  Scenario: Generate .htaccess on hard flush
+  Scenario: Generate .htaccess on hard flush with a project config
     Given a WP install
     And a wp-cli.yml file:
       """
       apache_modules: [mod_rewrite]
       """
 
-    When I run `wp rewrite structure /%year%/%monthnum%/%day%/%postname%/`
-    And I run `wp rewrite flush --hard`
+    When I run `wp rewrite structure /%year%/%monthnum%/%day%/%postname%/ --hard`
+    Then the .htaccess file should exist
+
+  Scenario: Generate .htaccess on hard flush with a global config
+    Given a WP install
+    And a config.yml file:
+      """
+      apache_modules: [mod_rewrite]
+      """
+
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp rewrite structure /%year%/%monthnum%/%day%/%postname%/ --hard`
     Then the .htaccess file should exist
 
   Scenario: Error when trying to generate .htaccess on a multisite install
