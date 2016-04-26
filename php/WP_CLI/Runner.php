@@ -747,6 +747,10 @@ class Runner {
 			define( 'WP_IMPORTING', true );
 		}
 
+		if ( $this->cmd_starts_with( array( 'cron', 'event', 'run' ) ) ) {
+			define( 'DOING_CRON', true );
+		}
+
 		if ( $this->cmd_starts_with( array( 'plugin' ) ) ) {
 			$GLOBALS['pagenow'] = 'plugins.php';
 		}
