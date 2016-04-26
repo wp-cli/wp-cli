@@ -349,13 +349,18 @@ class Subcommand extends CompositeCommand {
 
 		$path = get_path( $this->get_parent() );
 		$parent = implode( ' ', array_slice( $path, 1 ) );
-		$cmd = $parent . ' ' . $this->name;
-		WP_CLI::do_hook( "before_invoke:{$parent}" );
+		$cmd = $this->name;
+		if ( $parent ) {
+			WP_CLI::do_hook( "before_invoke:{$parent}" );
+			$cmd = $parent . ' ' . $cmd;
+		}
 		WP_CLI::do_hook( "before_invoke:{$cmd}" );
 
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 
-		WP_CLI::do_hook( "after_invoke:{$parent}" );
+		if ( $parent ) {
+			WP_CLI::do_hook( "after_invoke:{$parent}" );
+		}
 		WP_CLI::do_hook( "after_invoke:{$cmd}" );
 	}
 }
