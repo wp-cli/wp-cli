@@ -520,16 +520,27 @@ Feature: WP-CLI Commands
       /**
        * @when before_wp_load
        */
-      WP_CLI::add_command( 'before invoke', function() {
+      $before_invoke = function() {
         WP_CLI::success( 'Invoked' );
-      }, array( 'before_invoke' => function() {
+      };
+      $before_invoke_args = array( 'before_invoke' => function() {
         WP_CLI::success( 'before invoke' );
       }, 'after_invoke' => function() {
         WP_CLI::success( 'after invoke' );
-      }));
+      });
+      WP_CLI::add_command( 'before invoke', $before_invoke, $before_invoke_args );
+      WP_CLI::add_command( 'before-invoke', $before_invoke, $before_invoke_args );
       """
 
     When I run `wp --require=call-invoke.php before invoke`
+    Then STDOUT should contain:
+      """
+      Success: before invoke
+      Success: Invoked
+      Success: after invoke
+      """
+
+    When I run `wp --require=call-invoke.php before-invoke`
     Then STDOUT should contain:
       """
       Success: before invoke
