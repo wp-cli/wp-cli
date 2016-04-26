@@ -262,6 +262,12 @@ Feature: Manage WordPress plugins
       Success: Plugin 'hello' activated.
       """
 
+    When I run `wp plugin activate --all`
+    Then STDOUT should be:
+      """
+      Success: All plugins are already activated.
+      """
+
     When I run `wp plugin list --field=status`
     Then STDOUT should be:
       """
@@ -275,6 +281,12 @@ Feature: Manage WordPress plugins
       """
       Success: Plugin 'akismet' deactivated.
       Success: Plugin 'hello' deactivated.
+      """
+
+    When I run `wp plugin deactivate --all`
+    Then STDOUT should be:
+      """
+      Success: All plugins are already deactivated.
       """
 
     When I run `wp plugin list --field=status`
