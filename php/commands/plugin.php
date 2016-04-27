@@ -157,15 +157,21 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	function activate( $args, $assoc_args = array() ) {
 		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
+		$all = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all', false );
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
+		if ( $all ) {
 			$args = array_map( function( $file ){
 				return Utils\get_plugin_name( $file );
 			}, array_keys( get_plugins() ) );
 		}
 
+		$needing_activation = count( $args );
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			$status = $this->get_status( $plugin->file );
+			if ( $all && in_array( $status, array( 'active', 'active-network' ) ) ) {
+				$needing_activation--;
+				continue;
+			}
 			// Network-active is the highest level of activation status
 			if ( 'active-network' === $status ) {
 				WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
@@ -185,6 +191,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			activate_plugin( $plugin->file, '', $network_wide );
 
 			$this->active_output( $plugin->name, $plugin->file, $network_wide, "activate" );
+		}
+
+		if ( ! $needing_activation ) {
+			WP_CLI::success( 'All plugins are already activated.' );
 		}
 
 	}
@@ -216,9 +226,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			}, array_keys( get_plugins() ) );
 		}
 
+		$needing_deactivation = count( $args );
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 
 			$status = $this->get_status( $plugin->file );
+			if ( $disable_all && ! in_array( $status, array( 'active', 'active-network' ) ) ) {
+				$needing_deactivation--;
+				continue;
+			}
+
 			// Network active plugins must be explicitly deactivated
 			if ( ! $network_wide && 'active-network' === $status ) {
 				WP_CLI::warning( "Plugin '{$plugin->name}' is network active and must be deactivated with --network flag." );
@@ -240,6 +256,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			}
 
 		}
+
+		if ( ! $needing_deactivation ) {
+			WP_CLI::success( 'All plugins are already deactivated.' );
+		}
+
 	}
 
 	/**
