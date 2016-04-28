@@ -718,7 +718,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				$new_user['ID'] = $existing_user->ID;
 				$user_id = wp_update_user( $new_user );
 
-				if ( !in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ) ) &&  $new_user['role'] ) {
+				if ( !in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ) ) && is_multisite() && $new_user['role'] ) {
 					add_user_to_blog( get_current_blog_id(), $existing_user->ID, $new_user['role'] );
 					WP_CLI::log( "{$existing_user->user_login} added as {$new_user['role']}." );
 				}
