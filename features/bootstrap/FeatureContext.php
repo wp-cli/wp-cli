@@ -84,6 +84,10 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 * @BeforeSuite
 	 */
 	public static function prepare( SuiteEvent $event ) {
+		$result = Process::create( 'wp cli info', null, self::get_process_env_variables() )->run_check();
+		echo PHP_EOL;
+		echo $result->stdout;
+		echo PHP_EOL;
 		self::cache_wp_files();
 	}
 
