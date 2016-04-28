@@ -69,6 +69,7 @@ $finder
 	->in(WP_CLI_ROOT . '/vendor/mustache')
 	->in(WP_CLI_ROOT . '/vendor/rmccue/requests')
 	->in(WP_CLI_ROOT . '/vendor/composer')
+	->in(WP_CLI_ROOT . '/vendor/seld')
 	->in(WP_CLI_ROOT . '/vendor/symfony')
 	->in(WP_CLI_ROOT . '/vendor/nb/oxymel')
 	->in(WP_CLI_ROOT . '/vendor/ramsey/array_column')
