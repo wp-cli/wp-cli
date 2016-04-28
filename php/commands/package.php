@@ -93,6 +93,7 @@ class Package_Command extends WP_CLI_Command {
 		$json_manipulator = new JsonManipulator( $composer_backup );
 		$json_manipulator->addMainKey( 'name', 'wp-cli/wp-cli' );
 		$json_manipulator->addLink( 'require', $package_name, $version );
+		$json_manipulator->addConfigSetting( 'secure-http', false );
 		file_put_contents( $composer_json_obj->getPath(), $json_manipulator->getContents() );
 		try {
 			$composer = $this->get_composer();
@@ -112,6 +113,7 @@ class Package_Command extends WP_CLI_Command {
 		// Try running the installer, but revert composer.json if failed
 		WP_CLI::log( 'Using Composer to install the package...' );
 		WP_CLI::log( '---' );
+		$res = false;
 		try {
 			$res = $install->run();
 		} catch ( Exception $e ) {
@@ -248,7 +250,11 @@ class Package_Command extends WP_CLI_Command {
 		static $community_packages;
 
 		if ( null === $community_packages ) {
-			$community_packages = $this->package_index()->getPackages();
+			try {
+				$community_packages = $this->package_index()->getPackages();
+			} catch( Exception $e ) {
+				WP_CLI::error( $e->getMessage() );
+			}
 		}
 
 		return $community_packages;
@@ -267,12 +273,19 @@ class Package_Command extends WP_CLI_Command {
 
 		if ( !$package_index ) {
 			$config = new Config();
-			$config->merge(array('config' => array(
-				'home' => dirname( $this->get_composer_json_path() ),
-			)));
+			$config->merge( array(
+				'config' => array(
+					'secure-http' => false,
+					'home' => dirname( $this->get_composer_json_path() ),
+				)
+			));
 			$config->setConfigSource( new JsonConfigSource( $this->get_composer_json() ) );
 
-			$package_index = new ComposerRepository( array( 'url' => self::PACKAGE_INDEX_URL ), new NullIO, $config );
+			try {
+				$package_index = new ComposerRepository( array( 'url' => self::PACKAGE_INDEX_URL ), new NullIO, $config );
+			} catch ( Exception $e ) {
+				WP_CLI::error( $e->getMessage() );
+			}
 		}
 
 		return $package_index;
