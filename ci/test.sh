@@ -2,6 +2,8 @@
 
 set -ex
 
+export WP_CLI_BIN_DIR=/tmp/wp-cli-phar
+
 # Run the unit tests
 vendor/bin/phpunit
 
