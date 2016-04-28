@@ -2,8 +2,6 @@
 
 set -ex
 
-$WP_CLI_BIN_DIR/wp --info
-
 # Run the unit tests
 vendor/bin/phpunit
 
