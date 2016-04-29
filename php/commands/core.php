@@ -789,7 +789,9 @@ EOT;
 	/**
 	 * Verify WordPress files against WordPress.org's checksums.
 	 *
-	 * Specify version to verify checksums without loading WordPress.
+	 * For security, avoids loading WordPress when verifying checksums.
+	 *
+	 * ## OPTIONS
 	 *
 	 * [--version=<version>]
 	 * : Verify checksums against a specific version of WordPress.
