@@ -16,6 +16,8 @@ class Cache_Command extends WP_CLI_Command {
 	 *
 	 * If a value already exists for the key, the value isn't added.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <key>
 	 * : Cache key.
 	 *
@@ -45,6 +47,8 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Decrement a value in the object cache.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <key>
 	 * : Cache key.
 	 *
@@ -72,6 +76,8 @@ class Cache_Command extends WP_CLI_Command {
 
 	/**
 	 * Remove a value from the object cache.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <key>
 	 * : Cache key.
@@ -112,6 +118,8 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Get a value from the object cache.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <key>
 	 * : Cache key.
 	 *
@@ -134,6 +142,8 @@ class Cache_Command extends WP_CLI_Command {
 
 	/**
 	 * Increment a value in the object cache.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <key>
 	 * : Cache key.
@@ -162,6 +172,8 @@ class Cache_Command extends WP_CLI_Command {
 
 	/**
 	 * Replace a value in the object cache, if the value already exists.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <key>
 	 * : Cache key.
@@ -193,6 +205,8 @@ class Cache_Command extends WP_CLI_Command {
 
 	/**
 	 * Set a value to the object cache, regardless of whether it already exists.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <key>
 	 * : Cache key.
