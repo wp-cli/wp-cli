@@ -26,18 +26,48 @@ Feature: Manage WordPress comments
     When I run `wp comment delete {COMMENT_ID}`
     Then STDOUT should be:
       """
-	  Success: Deleted comment {COMMENT_ID}.
+	  Success: Trashed comment {COMMENT_ID}.
       """
-      
+
+    When I run `wp comment get {COMMENT_ID} --field=comment_approved`
+    Then STDOUT should be:
+      """
+      trash
+      """
+
+    When I run `wp comment delete {COMMENT_ID} --force`
+    Then STDOUT should be:
+      """
+      Success: Deleted comment {COMMENT_ID}.
+      """
+
+    When I try `wp comment get {COMMENT_ID}`
+    Then STDERR should be:
+      """
+      Error: Invalid comment ID.
+      """
+
     When I run `wp comment create --comment_post_ID=1`
     And I run `wp comment create --comment_post_ID=1`
     And I run `wp comment delete 3 4`
     Then STDOUT should be:
       """
-      Success: Deleted comment 3.
-      Success: Deleted comment 4.
+      Success: Trashed comment 3.
+      Success: Trashed comment 4.
       """
-  
+
+    When I run `wp comment delete 3`
+    Then STDOUT should be:
+      """
+      Success: Deleted comment 3.
+      """
+
+    When I try `wp comment get 3`
+    Then STDERR should be:
+      """
+      Error: Invalid comment ID.
+      """
+
   Scenario: Get details about an existing comment
     When I run `wp comment get 1`
     Then STDOUT should be a table containing rows:
@@ -73,7 +103,7 @@ Feature: Manage WordPress comments
       #comment-1
       """
 
-  Scenario: Count  comments
+  Scenario: Count comments
     When I run `wp comment count 1`
     Then STDOUT should contain:
       """
