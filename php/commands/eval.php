@@ -5,6 +5,8 @@ class Eval_Command extends WP_CLI_Command {
 	/**
 	 * Execute arbitrary PHP code.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <php-code>
 	 * : The code to execute, as a string.
 	 *
