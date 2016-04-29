@@ -831,6 +831,30 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	}
 
 	/**
+	 * List all metadata associated with a user.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : ID for the object.
+	 *
+	 * [--keys=<keys>]
+	 * : Limit output to metadata of specific keys.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific row fields. Defaults to id,meta_key,meta_value.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * @subcommand list
+	 */
+	public function list_( $args, $assoc_args ) {
+		$args = $this->replace_login_with_user_id( $args );
+		parent::list_( $args, $assoc_args );
+	}
+
+	/**
 	 * Get meta field value.
 	 *
 	 * ## OPTIONS
