@@ -19,6 +19,8 @@ class Capabilities_Command extends WP_CLI_Command {
 	/**
 	 * List capabilities for a given role.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <role>
 	 * : Key for the role.
 	 *
@@ -38,6 +40,8 @@ class Capabilities_Command extends WP_CLI_Command {
 
 	/**
 	 * Add capabilities to a given role.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <role>
 	 * : Key for the role.
@@ -68,6 +72,8 @@ class Capabilities_Command extends WP_CLI_Command {
 
 	/**
 	 * Remove capabilities from a given role.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <role>
 	 * : Key for the role.
