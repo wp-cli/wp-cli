@@ -56,6 +56,18 @@ Feature: Manage WordPress comments
       Success: Trashed comment 4.
       """
 
+    When I run `wp comment delete 3`
+    Then STDOUT should be:
+      """
+      Success: Deleted comment 3.
+      """
+
+    When I try `wp comment get 3`
+    Then STDERR should be:
+      """
+      Error: Invalid comment ID.
+      """
+
   Scenario: Get details about an existing comment
     When I run `wp comment get 1`
     Then STDOUT should be a table containing rows:

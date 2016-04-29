@@ -249,10 +249,11 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		parent::_delete( $args, $assoc_args, function ( $comment_id, $assoc_args ) {
 			$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
 
+			$status = wp_get_comment_status( $comment_id );
 			$r = wp_delete_comment( $comment_id, $force );
 
 			if ( $r ) {
-				if ( $force ) {
+				if ( $force || 'trash' === $status ) {
 					return array( 'success', "Deleted comment $comment_id." );
 				} else {
 					return array( 'success', "Trashed comment $comment_id." );
