@@ -260,3 +260,63 @@ Feature: Manage WordPress installation
       """
       Error: WordPress files seem to already be present here.
       """
+
+  Scenario: Install WordPress in a subdirectory
+    Given an empty directory
+    And a wp-config.php file:
+      """
+      <?php
+      // ** MySQL settings ** //
+      /** The name of the database for WordPress */
+      define('DB_NAME', 'wp_cli_test');
+
+      /** MySQL database username */
+      define('DB_USER', 'wp_cli_test');
+
+      /** MySQL database password */
+      define('DB_PASSWORD', 'password1');
+
+      /** MySQL hostname */
+      define('DB_HOST', '127.0.0.1');
+
+      /** Database Charset to use in creating database tables. */
+      define('DB_CHARSET', 'utf8');
+
+      /** The Database Collate type. Don't change this if in doubt. */
+      define('DB_COLLATE', '');
+
+      $table_prefix = 'wp_';
+
+      /* That's all, stop editing! Happy blogging. */
+
+      /** Absolute path to the WordPress directory. */
+      if ( !defined('ABSPATH') )
+          define('ABSPATH', dirname(__FILE__) . '/');
+
+      /** Sets up WordPress vars and included files. */
+      require_once(ABSPATH . 'wp-settings.php');
+      """
+    And a wp-cli.yml file:
+      """
+      path: wp
+      """
+
+    When I run `wp core download`
+    Then the wp directory should exist
+    And the wp/wp-blog-header.php file should exist
+
+    When I run `wp db create`
+    And I run `wp core install --url=wp.dev --title="WP Dev" --admin_user=wpcli --admin_password=wpcli --admin_email=wpcli@example.com`
+    Then STDOUT should not be empty
+
+    When I run `wp option get home`
+    Then STDOUT should be:
+      """
+      http://wp.dev
+      """
+
+    When I run `wp option get siteurl`
+    Then STDOUT should be:
+      """
+      http://wp.dev
+      """
