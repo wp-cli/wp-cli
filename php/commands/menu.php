@@ -31,6 +31,8 @@ class Menu_Command extends WP_CLI_Command {
 	/**
 	 * Create a new menu
 	 *
+	 * ## OPTIONS
+	 *
 	 * <menu-name>
 	 * : A descriptive name for the menu
 	 *
@@ -62,6 +64,8 @@ class Menu_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete one or more menus
+	 *
+	 * ## OPTIONS
 	 *
 	 * <menu>...
 	 * : The name, slug, or term ID for the menu(s)
@@ -253,6 +257,8 @@ class Menu_Item_Command extends WP_CLI_Command {
 	/**
 	 * Add a post as a menu item
 	 *
+	 * ## OPTIONS
+	 *
 	 * <menu>
 	 * : The name, slug, or term ID for the menu
 	 *
@@ -307,6 +313,8 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 	/**
 	 * Add a taxonomy term as a menu item
+	 *
+	 * ## OPTIONS
 	 *
 	 * <menu>
 	 * : The name, slug, or term ID for the menu
@@ -367,6 +375,8 @@ class Menu_Item_Command extends WP_CLI_Command {
 	/**
 	 * Add a custom menu item
 	 *
+	 * ## OPTIONS
+	 *
 	 * <menu>
 	 * : The name, slug, or term ID for the menu
 	 *
@@ -414,6 +424,8 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 	/**
 	 * Update a menu item
+	 *
+	 * ## OPTIONS
 	 *
 	 * <db-id>
 	 * : Database ID for the menu item.
@@ -465,6 +477,8 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete one or more items from a menu
+	 *
+	 * ## OPTIONS
 	 *
 	 * <db-id>...
 	 * : Database ID for the menu item(s).
@@ -633,6 +647,8 @@ class Menu_Location_Command extends WP_CLI_Command {
 	/**
 	 * List locations for the current theme.
 	 *
+	 * ## OPTIONS
+	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count, ids, yaml. Default: table
 	 *
@@ -666,6 +682,8 @@ class Menu_Location_Command extends WP_CLI_Command {
 
 	/**
 	 * Assign a location to a menu
+	 *
+	 * ## OPTIONS
 	 *
 	 * <menu>
 	 * : The name, slug, or term ID for the menu
@@ -703,6 +721,8 @@ class Menu_Location_Command extends WP_CLI_Command {
 
 	/**
 	 * Remove a location from a menu
+	 *
+	 * ## OPTIONS
 	 *
 	 * <menu>
 	 * : The name, slug, or term ID for the menu
