@@ -120,6 +120,12 @@ class Media_Command extends WP_CLI_Command {
 	 *     # Import a local image and set it to be the post thumbnail for a post
 	 *     wp media import ~/Downloads/image.png --post_id=123 --title="A downloaded picture" --featured_image
 	 *
+	 *     # Import a local image, but set it as the featured image for all posts
+	 *     # 1. Import the image and get its attachment ID
+	 *     * 2. Assign the attachment ID as the featured image for all posts
+	 *     ATTACHMENT_ID="$(wp media import ~/Downloads/image.png --porcelain)"
+	 *     wp post list --post_type=post --format=ids | xargs -0 -d ' ' -I % wp post meta add % _thumbnail_id $ATTACHMENT_ID
+	 *
 	 *     # Import an image from the web
 	 *     wp media import http://s.wordpress.org/style/images/wp-header-logo.png --title='The WordPress logo' --alt="Semantic personal publishing"
 	 */
