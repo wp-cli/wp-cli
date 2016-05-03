@@ -2,6 +2,8 @@
 
 namespace WP_CLI;
 
+use WP_CLI;
+
 abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	protected $item_type;
@@ -117,6 +119,12 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	function install( $args, $assoc_args ) {
 
 		foreach ( $args as $slug ) {
+
+			if ( empty( $slug ) ) {
+				WP_CLI::warning( "Ignoring ambigious empty slug value." );
+				continue;
+			}
+
 			$local_or_remote_zip_file = false;
 			$result = false;
 

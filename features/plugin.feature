@@ -401,3 +401,16 @@ Feature: Manage WordPress plugins
     Then STDOUT should be a table containing rows:
       | name       | version   |
       | akismet    | 2.6.0     |
+
+  Scenario: Ignore empty slugs
+    Given a WP install
+
+    When I run `wp plugin install ''`
+    Then STDERR should contain:
+      """
+      Warning: Ignoring ambigious empty slug value.
+      """
+    And STDOUT should not contain:
+      """
+      Plugin installed successfully
+      """
