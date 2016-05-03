@@ -94,6 +94,7 @@ class Export_Command extends WP_CLI_Command {
 
 		add_action( 'wp_export_new_file', function( $file_path ) {
 			WP_CLI::log( sprintf( "Writing to file %s", $file_path ) );
+			WP_CLI\Utils\wp_clear_object_cache();
 		} );
 
 		try {
