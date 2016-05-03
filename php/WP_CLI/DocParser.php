@@ -120,7 +120,7 @@ class DocParser {
 	 * @return mixed|null
 	 */
 	public function get_arg_args( $name ) {
-		return $this->get_arg_or_param_args( "/\[?<{$name}>.*/" );
+		return $this->get_arg_or_param_args( "/^\[?<{$name}>.*/" );
 	}
 
 	/**
@@ -145,7 +145,7 @@ class DocParser {
 	 * @return mixed|null
 	 */
 	public function get_param_args( $key ) {
-		return $this->get_arg_or_param_args( "/\[?--{$key}=.*/" );
+		return $this->get_arg_or_param_args( "/^\[?--{$key}=.*/" );
 	}
 
 	/**
