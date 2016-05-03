@@ -97,6 +97,13 @@ EOB
 
 	public function test_desc_parses_yaml() {
 		$longdesc = <<<EOB
+Play some music loudly
+
+```
+# Here's an example of how you might run the command
+wp rock-on electronic --volume=11
+```
+
 ## OPTIONS
 
 <genre>...
