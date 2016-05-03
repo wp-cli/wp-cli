@@ -159,3 +159,33 @@ Feature: Manage WordPress comments
       """
       0
       """
+
+  Scenario: Approving/unapproving comments with multidigit comment ID
+    Given I run `wp comment generate --count=10 --quiet`
+    And I run `wp comment create --porcelain`
+    And save STDOUT as {COMMENT_ID}
+
+    When I run `wp comment unapprove {COMMENT_ID}`
+    Then STDOUT should contain:
+      """
+      Unapproved comment {COMMENT_ID}
+      """
+
+    When I run `wp comment get --field=comment_approved {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      10
+      """
+
+    When I run `wp comment approve {COMMENT_ID}`
+    Then STDOUT should contain:
+      """
+      Approved comment {COMMENT_ID}
+      """
+
+    When I run `wp comment get --field=comment_approved {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      11
+      """
+
