@@ -302,7 +302,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	private function set_status( $args, $status, $success ) {
-		$comment = $this->fetcher->get_check( $args[0] );
+		$comment = $this->fetcher->get_check( $args );
 
 		$r = wp_set_comment_status( $comment->comment_ID, $status, true );
 
