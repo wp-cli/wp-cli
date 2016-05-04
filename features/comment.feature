@@ -171,7 +171,7 @@ Feature: Manage WordPress comments
       Unapproved comment {COMMENT_ID}
       """
 
-    When I run `wp comment get --field=comment_approved {COMMENT_ID}`
+    When I run `wp comment list --format=count --status=approve`
     Then STDOUT should be:
       """
       10
@@ -183,7 +183,7 @@ Feature: Manage WordPress comments
       Approved comment {COMMENT_ID}
       """
 
-    When I run `wp comment get --field=comment_approved {COMMENT_ID}`
+    When I run `wp comment list --format=count --status=approve`
     Then STDOUT should be:
       """
       11
