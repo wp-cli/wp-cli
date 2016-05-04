@@ -161,7 +161,8 @@ Feature: Manage WordPress comments
       """
 
   Scenario: Approving/unapproving comments with multidigit comment ID
-    Given I run `wp comment generate --count=10 --quiet`
+    Given I run `wp comment delete $(wp comment list --field=ID)`
+    And I run `wp comment generate --count=10 --quiet`
     And I run `wp comment create --porcelain`
     And save STDOUT as {COMMENT_ID}
 
