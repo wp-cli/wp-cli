@@ -457,6 +457,9 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Transform a single-site install into a multi-site install.
 	 *
+	 * For those using WordPress with Apache, remember to update the `.htaccess`
+	 * file with the appropriate multisite rewrite rules.
+	 *
 	 * ## OPTIONS
 	 *
 	 * [--title=<network-title>]
