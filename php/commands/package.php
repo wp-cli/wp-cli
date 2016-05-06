@@ -34,7 +34,7 @@ use \WP_CLI\ComposerIO;
  */
 class Package_Command extends WP_CLI_Command {
 
-	const PACKAGE_INDEX_URL = 'http://wp-cli.org/package-index/';
+	const PACKAGE_INDEX_URL = 'https://wp-cli.org/package-index/';
 
 	private $fields = array(
 		'name',
@@ -102,7 +102,7 @@ class Package_Command extends WP_CLI_Command {
 		$json_manipulator = new JsonManipulator( $composer_backup );
 		$json_manipulator->addMainKey( 'name', 'wp-cli/wp-cli' );
 		$json_manipulator->addLink( 'require', $package_name, $version );
-		$json_manipulator->addConfigSetting( 'secure-http', false );
+		$json_manipulator->addConfigSetting( 'secure-http', true );
 		file_put_contents( $composer_json_obj->getPath(), $json_manipulator->getContents() );
 		try {
 			$composer = $this->get_composer();
@@ -288,7 +288,7 @@ class Package_Command extends WP_CLI_Command {
 			$config = new Config();
 			$config->merge( array(
 				'config' => array(
-					'secure-http' => false,
+					'secure-http' => true,
 					'home' => dirname( $this->get_composer_json_path() ),
 				)
 			));
