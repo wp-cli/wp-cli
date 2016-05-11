@@ -49,7 +49,7 @@ class Post_Type_Command extends WP_CLI_Command {
 	 *
 	 *     wp post-type list --format=csv
 	 *
-	 *     wp post-type list --object-type=post --fields=name,public
+	 *     wp post-type list --capability_type=post --fields=name,public
 	 *
 	 * @subcommand list
 	 */
