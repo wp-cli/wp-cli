@@ -10,8 +10,8 @@ Feature: Check for more recent versions
     When I run `wp core check-update`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                                  |
-      | 4.5.1   | major       | https://downloads.wordpress.org/release/wordpress-4.5.1.zip  |
-      | 3.8.13  | minor       | https://downloads.wordpress.org/release/wordpress-3.8.13-partial-0.zip |
+      | 4.5.2   | major       | https://downloads.wordpress.org/release/wordpress-4.5.2.zip  |
+      | 3.8.14  | minor       | https://downloads.wordpress.org/release/wordpress-3.8.14-partial-0.zip |
 
     When I run `wp core check-update --format=count`
     Then STDOUT should be:
@@ -22,7 +22,7 @@ Feature: Check for more recent versions
     When I run `wp core check-update --major`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                                  |
-      | 4.5.1   | major       | https://downloads.wordpress.org/release/wordpress-4.5.1.zip  |
+      | 4.5.2   | major       | https://downloads.wordpress.org/release/wordpress-4.5.2.zip  |
 
     When I run `wp core check-update --major --format=count`
     Then STDOUT should be:
@@ -33,7 +33,7 @@ Feature: Check for more recent versions
     When I run `wp core check-update --minor`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                |
-      | 3.8.13  | minor       | https://downloads.wordpress.org/release/wordpress-3.8.13-partial-0.zip |
+      | 3.8.14  | minor       | https://downloads.wordpress.org/release/wordpress-3.8.14-partial-0.zip |
 
     When I run `wp core check-update --minor --format=count`
     Then STDOUT should be:
@@ -54,4 +54,4 @@ Feature: Check for more recent versions
     When I run `wp core check-update --minor`
     Then STDOUT should be a table containing rows:
       | version | update_type | package_url                                        |
-      | 4.0.10  | minor       | https://downloads.wordpress.org/release/wordpress-4.0.10-partial-0.zip |
+      | 4.0.11  | minor       | https://downloads.wordpress.org/release/wordpress-4.0.11-partial-0.zip |
