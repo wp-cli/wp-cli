@@ -258,9 +258,13 @@ class Subcommand extends CompositeCommand {
 		$synopsis_spec = \WP_CLI\SynopsisParser::parse( $synopsis );
 		$i = 0;
 		$errors = array( 'fatal' => array(), 'warning' => array() );
+		$mock_doc = array( $this->get_shortdesc(), '' );
+		$mock_doc = array_merge( $mock_doc, explode( PHP_EOL, $this->get_longdesc() ) );
+		$mock_doc = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
+		$docparser = new \WP_CLI\DocParser( $mock_doc );
 		foreach( $synopsis_spec as $spec ) {
 			if ( 'positional' === $spec['type'] ) {
-				$spec_args = $this->docparser->get_arg_args( $spec['name'] );
+				$spec_args = $docparser->get_arg_args( $spec['name'] );
 				if ( ! isset( $args[ $i ] ) ) {
 					if ( isset( $spec_args['default'] ) ) {
 						$args[ $i ] = $spec_args['default'];
@@ -282,7 +286,7 @@ class Subcommand extends CompositeCommand {
 				}
 				$i++;
 			} else if ( 'assoc' === $spec['type'] ) {
-				$spec_args = $this->docparser->get_param_args( $spec['name'] );
+				$spec_args = $docparser->get_param_args( $spec['name'] );
 				if ( ! isset( $assoc_args[ $spec['name'] ] ) ) {
 					if ( isset( $spec_args['default'] ) ) {
 						$assoc_args[ $spec['name'] ] = $spec_args['default'];
@@ -313,7 +317,7 @@ class Subcommand extends CompositeCommand {
 			$out = 'Parameter errors:';
 			foreach ( $errors['fatal'] as $key => $error ) {
 				$out .= "\n {$error}";
-				if ( $desc = $this->docparser->get_param_desc( $key ) ) {
+				if ( $desc = $docparser->get_param_desc( $key ) ) {
 					$out .= " ({$desc})";
 				}
 			}
