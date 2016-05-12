@@ -207,6 +207,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 			}
 			WP_CLI::success( $success_message );
 		}
+		else {
+			$success_message = "$total replacement(s) to be made.";
+			WP_CLI::success( $success_message );
+		}
 	}
 
 	private function php_export_table( $table, $old, $new ) {
