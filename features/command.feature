@@ -285,10 +285,10 @@ Feature: WP-CLI Commands
     And a custom-cmd.php file:
       """
       <?php
-      function foo( $args ) {
+      function foo( $args, $assoc_args ) {
         $message = array_shift( $args );
         WP_CLI::log( 'Message is: ' . $message );
-        WP_CLI::success( $args[0] );
+        WP_CLI::success( $assoc_args['meal'] );
       }
       WP_CLI::add_command( 'foo', 'foo', array(
         'shortdesc'   => 'My awesome function command',
@@ -368,6 +368,32 @@ Feature: WP-CLI Commands
             - lunch
             - dinner
           ---
+      """
+
+    When I try `wp foo nana --apple=fuji`
+    Then STDERR should contain:
+      """
+      Error: Invalid value specified for positional arg.
+      """
+
+    When I try `wp foo hello --apple=fuji --meal=snack`
+    Then STDERR should contain:
+      """
+      Invalid value specified for 'meal' (A type of meal.)
+      """
+
+    When I run `wp foo hello --apple=fuji`
+    Then STDOUT should be:
+      """
+      Message is: hello
+      Success: breakfast
+      """
+
+    When I run `wp foo hello --apple=fuji --meal=dinner`
+    Then STDOUT should be:
+      """
+      Message is: hello
+      Success: dinner
       """
 
   Scenario: Register a command with default and accepted arguments.
