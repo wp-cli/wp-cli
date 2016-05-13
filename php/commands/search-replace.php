@@ -228,6 +228,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 			$this->start_time = microtime( true );
 			WP_CLI::log( sprintf( 'Checking: %s', $table ) );
 		}
+
+		$rows = array();
 		foreach ( new \WP_CLI\Iterators\Table( $args ) as $i => $row ) {
 			$row_fields = array();
 			foreach( $all_columns as $col ) {
@@ -241,8 +243,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 				}
 				$row_fields[ $col ] = $value;
 			}
-			$this->write_sql_row_fields( $table, $row_fields );
+			$rows[] = $row_fields;
 		}
+		$this->write_sql_row_fields( $table, $rows );
 
 		$table_report = array();
 		$total_rows = $total_cols = 0;
@@ -328,20 +331,33 @@ class Search_Replace_Command extends WP_CLI_Command {
 		return $count;
 	}
 
-	private function write_sql_row_fields( $table, $row_fields ) {
+	private function write_sql_row_fields( $table, $rows ) {
 		global $wpdb;
-		$sql = "INSERT INTO `$table` (";
-		$sql .= join( ', ', array_map(
-		function ( $field ) {
-			return "`$field`";
-		},
-		array_keys( $row_fields )
-		) );
-		$sql .= ') VALUES (';
-		$sql .= join( ', ', array_fill( 0, count( $row_fields ), '%s' ) );
-		$sql .= ");\n";
-		$sql = $wpdb->prepare( $sql, array_values( $row_fields ) );
-		fwrite( $this->export_handle, $sql );
+
+		if(!empty($rows)) {
+			$sql = "INSERT INTO `$table` (";
+			$sql .= join( ', ', array_map(
+				function ( $field ) {
+					return "`$field`";
+				},
+				array_keys( $rows[0] )
+			) );
+			$sql .= ') VALUES ';
+			$sql .= "\n";
+
+			$values = array();
+			$count = count( $rows ); // No comma to last row
+			foreach($rows as $row_fields) {
+				$sql .= '(' . join( ', ', array_fill( 0, count( $row_fields ), '%s' ) ) . ')' . ($count-- > 1 ? ',' : '');
+				$sql .= "\n";
+				$values = array_merge( $values, array_values( $row_fields ) );
+			}
+
+			$sql .= ";\n";
+
+			$sql = $wpdb->prepare( $sql, array_values( $values ) );
+			fwrite( $this->export_handle, $sql );
+		}
 	}
 
 	private static function get_columns( $table ) {
@@ -387,4 +403,3 @@ class Search_Replace_Command extends WP_CLI_Command {
 }
 
 WP_CLI::add_command( 'search-replace', 'Search_Replace_Command' );
-
