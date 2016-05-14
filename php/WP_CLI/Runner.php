@@ -68,10 +68,7 @@ class Runner {
 	 */
 	private function get_global_config_path() {
 
-		if ( isset( $runtime_config['config'] ) ) {
-			$config_path = $runtime_config['config'];
-			$this->_global_config_path_debug = 'Using global config from config runtime arg: ' . $config_path;
-		} else if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
+		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
 			$this->_global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
 		} else {
@@ -938,4 +935,3 @@ class Runner {
 	}
 
 }
-
