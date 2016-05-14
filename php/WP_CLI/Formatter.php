@@ -40,6 +40,8 @@ class Formatter {
 			$format_args['fields'] = explode( ',', $format_args['fields'] );
 		}
 
+		$format_args['fields'] = array_map( 'trim', $format_args['fields'] );
+
 		$this->args = $format_args;
 		$this->prefix = $prefix;
 	}
