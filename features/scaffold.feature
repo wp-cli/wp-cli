@@ -109,6 +109,8 @@ Feature: WordPress code scaffolding
     Given a WP install
     Given I run `wp plugin path`
     And save STDOUT as {PLUGIN_DIR}
+    Given I run `wp core version`
+    And save STDOUT as {WP_VERSION}
 
     When I run `wp scaffold plugin hello-world --plugin_author="Hello World Author"`
     Then STDOUT should not be empty
@@ -139,6 +141,14 @@ Feature: WordPress code scaffolding
     And the {PLUGIN_DIR}/hello-world/hello-world.php file should contain:
       """
       * @package         Hello_World
+      """
+    And the {PLUGIN_DIR}/hello-world/readme.txt file should contain:
+      """
+      Stable tag: 0.1.0
+      """
+    And the {PLUGIN_DIR}/hello-world/readme.txt file should contain:
+      """
+      Tested up to: {WP_VERSION}
       """
 
     When I run `cat {PLUGIN_DIR}/hello-world/package.json`
@@ -332,6 +342,8 @@ Feature: WordPress code scaffolding
 
   Scenario: Scaffold tests parses plugin readme.txt
     Given a WP install
+    When I run `wp core version`
+    Then save STDOUT as {WP_VERSION}
     When I run `wp plugin path`
     Then save STDOUT as {PLUGIN_DIR}
 
@@ -343,8 +355,8 @@ Feature: WordPress code scaffolding
       """
       env:
         - WP_VERSION=latest WP_MULTISITE=0
-        - WP_VERSION=3.0.1 WP_MULTISITE=0
-        - WP_VERSION=3.4 WP_MULTISITE=0
+        - WP_VERSION=3.7 WP_MULTISITE=0
+        - WP_VERSION={WP_VERSION} WP_MULTISITE=0
       """
 
   Scenario: Scaffold starter code for a theme and network enable it

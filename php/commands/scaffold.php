@@ -415,13 +415,14 @@ class Scaffold_Command extends WP_CLI_Command {
 		$plugin_package = str_replace( ' ', '_', $plugin_name );
 
 		$data = wp_parse_args( $assoc_args, array(
-			'plugin_slug'        => $plugin_slug,
-			'plugin_name'        => $plugin_name,
-			'plugin_package'     => $plugin_package,
-			'plugin_description' => 'PLUGIN DESCRIPTION HERE',
-			'plugin_author'      => 'YOUR NAME HERE',
-			'plugin_author_uri'  => 'YOUR SITE HERE',
-			'plugin_uri'         => 'PLUGIN SITE HERE',
+			'plugin_slug'         => $plugin_slug,
+			'plugin_name'         => $plugin_name,
+			'plugin_package'      => $plugin_package,
+			'plugin_description'  => 'PLUGIN DESCRIPTION HERE',
+			'plugin_author'       => 'YOUR NAME HERE',
+			'plugin_author_uri'   => 'YOUR SITE HERE',
+			'plugin_uri'          => 'PLUGIN SITE HERE',
+			'plugin_tested_up_to' => get_bloginfo('version'),
 		) );
 
 		$data['textdomain'] = $plugin_slug;
