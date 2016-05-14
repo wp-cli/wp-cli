@@ -100,7 +100,7 @@ Feature: Manage WordPress posts
       """
       This is some bunkum.
       """
-    
+
     When I run `wp post url 1 {POST_ID}`
     Then STDOUT should be:
       """
@@ -171,6 +171,12 @@ Feature: Manage WordPress posts
       | Draft post   |              | draft        |
 
     When I run `wp post list --post_type='post' --fields=title,name,status --format=csv`
+    Then STDOUT should be CSV containing:
+      | post_title   | post_name    | post_status  |
+      | Publish post | publish-post | publish      |
+      | Draft post   |              | draft        |
+
+    When I run `wp post list --post_type='post' --fields="title, name, status" --format=csv`
     Then STDOUT should be CSV containing:
       | post_title   | post_name    | post_status  |
       | Publish post | publish-post | publish      |
