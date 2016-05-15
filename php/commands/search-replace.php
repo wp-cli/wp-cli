@@ -334,45 +334,47 @@ class Search_Replace_Command extends WP_CLI_Command {
 	private function write_sql_row_fields( $table, $rows ) {
 		global $wpdb;
 
-		if(!empty($rows)) {
-			$insert = "INSERT INTO `$table` (";
-			$insert .= join( ', ', array_map(
-				function ( $field ) {
-					return "`$field`";
-				},
-				array_keys( $rows[0] )
-			) );
-			$insert .= ') VALUES ';
-			$insert .= "\n";
+		if(empty($rows)) {
+			return;
+		}
 
-			$sql = $insert;
-			$values = array();
+		$insert = "INSERT INTO `$table` (";
+		$insert .= join( ', ', array_map(
+			function ( $field ) {
+				return "`$field`";
+			},
+			array_keys( $rows[0] )
+		) );
+		$insert .= ') VALUES ';
+		$insert .= "\n";
 
-			$index = 1;
-			$count = count( $rows );
-			$export_chunk_size = 50; // Amount of rows in one insert query
+		$sql = $insert;
+		$values = array();
 
-			foreach($rows as $row_fields) {
-				$sql .= '(' . join( ', ', array_fill( 0, count( $row_fields ), '%s' ) ) . ')';
-				$values = array_merge( $values, array_values( $row_fields ) );
+		$index = 1;
+		$count = count( $rows );
+		$export_chunk_size = 50; // Amount of rows in one insert query
 
-				if( ( $index % $export_chunk_size == 0 && $index > 0 ) || $index == $count ) {
-					$sql .= ";\n";
+		foreach($rows as $row_fields) {
+			$sql .= '(' . join( ', ', array_fill( 0, count( $row_fields ), '%s' ) ) . ')';
+			$values = array_merge( $values, array_values( $row_fields ) );
 
-					if( $count > $index ) {
-						$sql .= $insert;
-					}
-				} else {
-					$sql .= ",\n";
+			if( ( $index % $export_chunk_size == 0 && $index > 0 ) || $index == $count ) {
+				$sql .= ";\n";
 
+				if( $count > $index ) {
+					$sql .= $insert;
 				}
+			} else {
+				$sql .= ",\n";
 
-				$index++;
 			}
 
-			$sql = $wpdb->prepare( $sql, array_values( $values ) );
-			fwrite( $this->export_handle, $sql );
+			$index++;
 		}
+
+		$sql = $wpdb->prepare( $sql, array_values( $values ) );
+		fwrite( $this->export_handle, $sql );
 	}
 
 	private static function get_columns( $table ) {
