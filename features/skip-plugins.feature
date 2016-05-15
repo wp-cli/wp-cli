@@ -24,10 +24,10 @@ Feature: Skipping plugins
       """
 
     # The specified plugin should still show up as an active plugin
-    When I run `wp --skip-plugins=akismet plugin status`
+    When I run `wp --skip-plugins=akismet plugin status akismet`
     Then STDOUT should contain:
       """
-      akismet
+      Status: Active
       """
 
     # The un-specified plugin should continue to be loaded
@@ -84,4 +84,21 @@ Feature: Skipping plugins
     Then STDERR should contain:
       """
       Call to undefined function hello_dolly()
+      """
+
+  Scenario: Skip network active plugins
+    Given a WP multisite install
+    And I run `wp plugin deactivate akismet`
+    And I run `wp plugin activate --network akismet`
+
+    When I run `wp eval 'var_export( defined("AKISMET_VERSION") );'`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+    When I run `wp --skip-plugins=akismet eval 'var_export( defined("AKISMET_VERSION") );'`
+    Then STDOUT should be:
+      """
+      false
       """

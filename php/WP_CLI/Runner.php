@@ -775,6 +775,8 @@ class Runner {
 
 		$wp_cli_is_loaded = true;
 
+		$this->setup_plugin_theme_skips();
+
 		WP_CLI::debug( 'Begin WordPress load', 'bootstrap' );
 		WP_CLI::do_hook( 'before_wp_load' );
 
@@ -824,6 +826,62 @@ class Runner {
 
 		WP_CLI::debug( 'Loaded WordPress', 'bootstrap' );
 		WP_CLI::do_hook( 'after_wp_load' );
+
+	}
+
+	private function setup_plugin_theme_skips() {
+
+		if ( empty( $this->config['skip-plugins'] ) && empty( $this->config['skip-themes'] ) ) {
+			return;
+		}
+
+		if ( ! isset( $GLOBALS['wp_filter'] ) ) {
+			$GLOBALS['wp_filter'] = array();
+		}
+
+		foreach( array(
+			'pre_site_option_active_sitewide_plugins',
+			'site_option_active_sitewide_plugins',
+			'pre_option_active_plugins',
+			'option_active_plugins',
+			'pre_option_stylesheet',
+			'option_stylesheet',
+		) as $option ) {
+			if ( ! isset( $GLOBALS['wp_filter'][ $option ] ) ) {
+				$GLOBALS['wp_filter'][ $option ] = array();
+			}
+			if ( ! isset( $GLOBALS['wp_filter'][ $option ][999] ) ) {
+				$GLOBALS['wp_filter'][ $option ][999] = array();
+			}
+		}
+
+		if ( ! empty( $this->config['skip-plugins'] ) ) {
+			$skip_plugins = $this->config['skip-plugins'];
+			$skip_plugins_func = function( $plugins ) use( $skip_plugins ) {
+				if ( true === $skip_plugins ) {
+					return array();
+				}
+				if ( ! is_array( $plugins ) ) {
+					return $plugins;
+				}
+				foreach( $plugins as $key => $plugin ) {
+					if ( Utils\is_plugin_skipped( $plugin ) ) {
+						unset( $plugins[ $key ] );
+					}
+				}
+				return array_values( $plugins );
+			};
+			$skip_plugins_sig = array(
+				array(
+					'function'      => $skip_plugins_func,
+					'accepted_args' => 1,
+				)
+			);
+			$GLOBALS['wp_filter']['pre_site_option_active_sitewide_plugins'][999] = $skip_plugins_sig;
+			$GLOBALS['wp_filter']['site_option_active_sitewide_plugins'][999] = $skip_plugins_sig;
+			$GLOBALS['wp_filter']['pre_option_active_plugins'][999] = $skip_plugins_sig;
+			$GLOBALS['wp_filter']['option_active_plugins'][999] = $skip_plugins_sig;
+		}
 
 	}
 
