@@ -9,6 +9,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 	private $dry_run;
 	private $export_handle = false;
+	private $export_insert_size;
 	private $recurse_objects;
 	private $regex;
 	private $skip_columns;
@@ -60,6 +61,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--export[=<file>]]
 	 * : Write transformed data as SQL file instead of saving replacements to
 	 * the database. If <file> is not supplied, will output to STDOUT.
+	 *
+	 * [--export_insert_size[=<rows>]]
+	 * : Define number of rows in single INSERT statement when doing SQL export.
 	 *
 	 * [--skip-columns=<columns>]
 	 * : Do not perform the replacement on specific columns. Use commas to
@@ -123,6 +127,12 @@ class Search_Replace_Command extends WP_CLI_Command {
 				if ( false === $this->export_handle ) {
 					WP_CLI::error( sprintf( 'Unable to open "%s" for writing.', $assoc_args['export'] ) );
 				}
+			}
+			$export_insert_size = \WP_CLI\Utils\get_flag_value( $assoc_args, 'export_insert_size' );
+			if ( (int) $export_insert_size == $export_insert_size && $export_insert_size > 0 ) {
+				$this->export_insert_size = $export_insert_size;
+			} else {
+				$this->export_insert_size = 50;
 			}
 			$php_only = true;
 		}
@@ -353,18 +363,18 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		$index = 1;
 		$count = count( $rows );
-		$export_chunk_size = 50; // Amount of rows in one insert query
+		$export_insert_size = $this->export_insert_size;
 
 		foreach($rows as $row_fields) {
 			$sql .= '(' . join( ', ', array_fill( 0, count( $row_fields ), '%s' ) ) . ')';
 			$values = array_merge( $values, array_values( $row_fields ) );
 
-			if( ( $index % $export_chunk_size == 0 && $index > 0 ) || $index == $count ) {
+			if( ( $index % $export_insert_size == 0 && $index > 0 ) || $index == $count ) {
 				$sql .= ";\n";
-				
+
 				$sql = $wpdb->prepare( $sql, array_values( $values ) );
 				fwrite( $this->export_handle, $sql );
-				
+
 				if( $count > $index ) {
 					$sql = $insert;
 					$values = array();
