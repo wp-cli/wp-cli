@@ -343,8 +343,8 @@ Feature: WordPress code scaffolding
       """
       env:
         - WP_VERSION=latest WP_MULTISITE=0
-        - WP_VERSION=3.0.1 WP_MULTISITE=0
-        - WP_VERSION=3.4 WP_MULTISITE=0
+        - WP_VERSION=3.5.1 WP_MULTISITE=0
+        - WP_VERSION=4.5.2 WP_MULTISITE=0
       """
 
   Scenario: Scaffold starter code for a theme and network enable it
