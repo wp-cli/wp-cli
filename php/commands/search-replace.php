@@ -361,9 +361,13 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 			if( ( $index % $export_chunk_size == 0 && $index > 0 ) || $index == $count ) {
 				$sql .= ";\n";
-
+				
+				$sql = $wpdb->prepare( $sql, array_values( $values ) );
+				fwrite( $this->export_handle, $sql );
+				
 				if( $count > $index ) {
-					$sql .= $insert;
+					$sql = $insert;
+					$values = array();
 				}
 			} else {
 				$sql .= ",\n";
@@ -372,9 +376,6 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 			$index++;
 		}
-
-		$sql = $wpdb->prepare( $sql, array_values( $values ) );
-		fwrite( $this->export_handle, $sql );
 	}
 
 	private static function get_columns( $table ) {
