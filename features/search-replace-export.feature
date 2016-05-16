@@ -13,15 +13,6 @@ Feature: Search / replace with file export
       """
       ('1', 'siteurl', 'http://example.net', 'yes'),
       """
-    And STDOUT should contain:
-      """
-      ('51', 'blog_public', '1', 'yes'),
-      """
-    And STDOUT should contain:
-      """
-      ('50', 'upload_path', '', 'yes');
-      INSERT INTO `wp_options` (`option_id`, `option_name`, `option_value`, `autoload`) VALUES
-      """
 
     When I run `wp option get home`
     Then STDOUT should be:
