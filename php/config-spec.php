@@ -7,6 +7,12 @@ return array(
 		'desc' => 'Path to the WordPress files.',
 	),
 
+	'ssh' => array(
+		'runtime' => '=<ssh>',
+		'file' => '<ssh>',
+		'desc' => 'Perform operation against a remote server over SSH.',
+	),
+
 	'url' => array(
 		'runtime' => '=<url>',
 		'file' => '<url>',
