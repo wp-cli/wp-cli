@@ -11,11 +11,16 @@ Feature: Search / replace with file export
       """
     And STDOUT should contain:
       """
-      INSERT INTO `wp_options` (`option_id`, `option_name`, `option_value`, `autoload`) VALUES
+      ('1', 'siteurl', 'http://example.net', 'yes'),
       """
     And STDOUT should contain:
       """
-      ('1', 'siteurl', 'http://example.net', 'yes')
+      ('51', 'blog_public', '1', 'yes'),
+      """
+    And STDOUT should contain:
+      """
+      ('50', 'upload_path', '', 'yes');
+      INSERT INTO `wp_options` (`option_id`, `option_name`, `option_value`, `autoload`) VALUES
       """
 
     When I run `wp option get home`
@@ -27,12 +32,16 @@ Feature: Search / replace with file export
     When I run `wp search-replace example.com example.net --skip-columns=option_value --export`
     Then STDOUT should contain:
       """
-      INSERT INTO `wp_options` (`option_id`, `option_name`, `option_value`, `autoload`) VALUES
+      INSERT INTO `wp_options` (`option_id`, `option_name`, `option_value`, `autoload`) VALUES 
+    ('1', 'siteurl', 'http://example.com', 'yes'),
+    ('2', 'home', 'http://example.com', 'yes'),
       """
-    And STDOUT should contain:
-        """
-        ('1', 'siteurl', 'http://example.com', 'yes')
-        """
+    Then STDOUT should contain:
+      """
+      INSERT INTO `wp_options` (`option_id`, `option_name`, `option_value`, `autoload`) VALUES 
+    ('51', 'blog_public', '1', 'yes'),
+    ('52', 'default_link_category', '2', 'yes'),
+      """
 
     When I run `wp search-replace foo bar --export | tail -n 1`
     Then STDOUT should not contain:
@@ -52,16 +61,17 @@ Feature: Search / replace with file export
 
   Scenario: Search / replace export to file
     Given a WP install
-    And I run `wp post generate --count=30`
+    And I run `wp post generate --count=100`
+    And I run `wp option add example_url http://example.com`
 
     When I run `wp search-replace example.com example.net --export=wordpress.sql`
     Then STDOUT should contain:
       """
-      Success: Made 39 replacements and exported to wordpress.sql
+      Success: Made 110 replacements and exported to wordpress.sql
       """
     And STDOUT should be a table containing rows:
       | Table         | Column       | Replacements | Type |
-      | wp_options    | option_value | 5            | PHP  |
+      | wp_options    | option_value | 6            | PHP  |
 
     When I run `wp option get home`
     Then STDOUT should be:
@@ -85,10 +95,16 @@ Feature: Search / replace with file export
       http://example.net
       """
 
+    When I run `wp option get example_url`
+    Then STDOUT should be:
+      """
+      http://example.net
+      """
+
     When I run `wp post list --format=count`
     Then STDOUT should be:
       """
-      31
+      101
       """
 
   Scenario: Search / replace export to file with verbosity
