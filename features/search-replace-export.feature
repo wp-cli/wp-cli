@@ -25,29 +25,15 @@ Feature: Search / replace with file export
       """
       INSERT INTO `wp_options` (`option_id`, `option_name`, `option_value`, `autoload`) VALUES 
     ('1', 'siteurl', 'http://example.com', 'yes'),
-    ('2', 'home', 'http://example.com', 'yes'),
-      """
-    Then STDOUT should contain:
-      """
-      INSERT INTO `wp_options` (`option_id`, `option_name`, `option_value`, `autoload`) VALUES 
-    ('51', 'blog_public', '1', 'yes'),
-    ('52', 'default_link_category', '2', 'yes'),
       """
 
-    When I run `wp search-replace example.com example.net --skip-columns=option_value --export --export_insert_size=5`
+    When I run `wp search-replace example.com example.net --skip-columns=option_value --export --export_insert_size=1`
     Then STDOUT should contain:
       """
-      ('5', 'users_can_register', '0', 'yes');
+      ('1', 'siteurl', 'http://example.com', 'yes');
     INSERT INTO `wp_options` (`option_id`, `option_name`, `option_value`, `autoload`) VALUES 
       """
-      
-    When I run `wp search-replace example.com example.net --export --export_insert_size=text`
-    Then STDOUT should contain:
-      """
-      ('50', 'upload_path', '', 'yes');
-    INSERT INTO `wp_options` (`option_id`, `option_name`, `option_value`, `autoload`) VALUES 
-      """
-      
+          
     When I run `wp search-replace foo bar --export | tail -n 1`
     Then STDOUT should not contain:
       """
