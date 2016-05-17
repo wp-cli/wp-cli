@@ -125,7 +125,7 @@ Feature: WordPress code scaffolding
       .DS_Store
       node_modules/
       """
-    And the {PLUGIN_DIR}/hello-world/.svnignore file should contain:
+    And the {PLUGIN_DIR}/hello-world/.distignore file should contain:
       """
       .git
       .gitignore
