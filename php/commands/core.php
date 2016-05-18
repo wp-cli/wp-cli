@@ -812,6 +812,17 @@ EOT;
 	 * [--locale=<locale>]
 	 * : Verify checksums against a specific locale of WordPress.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core verify-checksums
+	 *     Success: WordPress install verifies against checksums.
+	 *
+	 *     $ wp core verify-checksums --version=4.0
+	 *     Success: WordPress install verifies against checksums.
+	 *
+	 *     $ wp core verify-checksums --locale=en_US
+	 *     Success: WordPress install verifies against checksums.
+	 *
 	 * @when before_wp_load
 	 *
 	 * @subcommand verify-checksums
