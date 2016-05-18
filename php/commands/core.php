@@ -772,6 +772,16 @@ EOT;
 	 * [--extra]
 	 * : Show extended version information.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core version
+	 *     4.5.2
+	 *
+	 *     $ wp core version --extra
+	 *     WordPress version: 4.5.2
+	 *     Database revision: 36686
+	 *     TinyMCE version:   4.310 (4310-20160418)
+	 *
 	 * @when before_wp_load
 	 */
 	public function version( $args = array(), $assoc_args = array() ) {
