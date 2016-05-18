@@ -32,6 +32,11 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * [--yes]
 	 * : Answer yes to the confirmation message.
+	 * 
+	 * ## EXAMPLES
+	 *
+	 *     $ wp db drop --yes
+	 *     Success: Database dropped.
 	 */
 	public function drop( $_, $assoc_args ) {
 		WP_CLI::confirm( "Are you sure you want to drop the database?", $assoc_args );
@@ -55,7 +60,8 @@ class DB_Command extends WP_CLI_Command {
 	 * 
 	 * ## EXAMPLES
 	 *
-	 *     wp db reset --yes
+	 *     $ wp db reset --yes
+	 *     Success: Database reset.
 	 */
 	public function reset( $_, $assoc_args ) {
 		WP_CLI::confirm( "Are you sure you want to reset the database?", $assoc_args );
