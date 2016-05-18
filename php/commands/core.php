@@ -1146,6 +1146,15 @@ EOT;
 	 * [--dry-run]
 	 * : Compare database versions without performing the update.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core update-db
+	 *     Success: WordPress database upgraded successfully from db version 36686 to 35700
+	 *
+	 *     $ wp core update-db --network
+	 *     WordPress database upgraded successfully from db version 35700 to 29630 on example.com/
+	 *     Success: WordPress database upgraded on 123/123 sites
+	 *
 	 * @subcommand update-db
 	 */
 	function update_db( $_, $assoc_args ) {
