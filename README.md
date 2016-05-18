@@ -1,10 +1,8 @@
 # WP-CLI
 
-Command-line tools for managing WordPress installations.
+Command-line tools for managing WordPress installations. [http://wp-cli.org/](http://wp-cli.org/).
 
 [![Build Status](https://travis-ci.org/wp-cli/wp-cli.png?branch=master)](https://travis-ci.org/wp-cli/wp-cli)
-
-[Documentation](http://wp-cli.org/)
 
 Quick links: [Using](#using) | [Installing](#installing) | [Support](#support) | [Extending](#extending) | [Contributing](#contributing)
 
