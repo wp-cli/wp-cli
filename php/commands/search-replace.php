@@ -91,6 +91,14 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 *     # Search/replace to a SQL file without transforming the database
 	 *     wp search-replace foo bar --export=database.sql
+	 * 
+	 *     # Bash script: Search/replace production to development url (multisite compatible)
+	 *     #!/bin/bash
+	 *     if $(wp --url=http://example.com core is-installed --network); then
+	 *         wp search-replace --url=http://example.com 'http://example.com' 'http://example.dev' --recurse-objects --network --skip-columns=guid
+	 *     else
+	 *         wp search-replace 'http://example.com' 'http://example.dev' --recurse-objects --skip-columns=guid
+	 *     fi
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		global $wpdb;
