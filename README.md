@@ -26,7 +26,7 @@ View the [Quick Start](http://wp-cli.org/docs/quick-start/) guide or jump to the
 
 The recommended way to install WP-CLI is to download the Phar build, mark it executable and place it in your PATH.
 
-Download the `[wp-cli.phar](https://raw.github.com/wp-cli/builds/gh-pages/phar/wp-cli.phar)` using `wget` or `curl`. For example:
+Download the [wp-cli.phar](https://raw.github.com/wp-cli/builds/gh-pages/phar/wp-cli.phar) using `wget` or `curl`. For example:
 
 `$ curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar`
 
