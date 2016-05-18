@@ -331,6 +331,52 @@ class Runner {
 	}
 
 	/**
+	 * Perform a command against a remote server over SSH
+	 */
+	private function run_ssh_command( $ssh ) {
+
+		$host = $ssh;
+		$path = '';
+		if ( false !== ( $key = stripos( $host, ':' ) ) ) {
+			$path = substr( $host, $key + 1 );
+			$host = substr( $host, 0, $key );
+		}
+
+		WP_CLI::do_hook( 'before_ssh' );
+
+		WP_CLI::debug( 'SSH host: ' . $host, 'bootstrap' );
+		WP_CLI::debug( 'SSH path: ' . $path, 'bootstrap' );
+
+		$is_tty = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
+
+		$pre_cmd = getenv( 'WP_CLI_SSH_PRE_CMD' );
+		if ( $pre_cmd ) {
+			$pre_cmd = rtrim( $pre_cmd, ';' ) . '; ';
+		}
+		$wp_binary = 'wp';
+		$wp_args = array_slice( $GLOBALS['argv'], 1 );
+		$wp_path = $path ? sprintf( '--path=%s', str_replace( '~', '$HOME', $path ) ) : '';
+		foreach( $wp_args as $k => $v ) {
+			if ( preg_match( '#--ssh=#', $v ) ) {
+				unset( $wp_args[ $k ] );
+			}
+		}
+		$command = sprintf(
+			'ssh -q %s %s %s',
+			escapeshellarg( $host ),
+			$is_tty ? '-t' : '-T',
+			escapeshellarg( $pre_cmd . $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', $wp_args ) )
+		);
+
+		WP_CLI::debug( 'Running SSH command: ' . $command, 'bootstrap' );
+
+		passthru( $command, $exit_code );
+		if ( 0 !== $exit_code ) {
+			exit( $exit_code );
+		}
+	}
+
+	/**
 	 * Check whether a given command is disabled by the config
 	 *
 	 * @return bool
@@ -663,6 +709,11 @@ class Runner {
 				Utils\load_file( $path );
 				WP_CLI::debug( 'Required file from config: ' . $path, 'bootstrap' );
 			}
+		}
+
+		if ( $this->config['ssh'] ) {
+			$this->run_ssh_command( $this->config['ssh'] );
+			return;
 		}
 
 		// Show synopsis if it's a composite command.
