@@ -62,8 +62,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * : Write transformed data as SQL file instead of saving replacements to
 	 * the database. If <file> is not supplied, will output to STDOUT.
 	 *
-	 * [--export_insert_size[=<rows>]]
+	 * [--export_insert_size=<rows>]
 	 * : Define number of rows in single INSERT statement when doing SQL export.
+	 * You might want to change this depending on your database configuration
+	 * (e.g. if you need to do fewer queries). Default: 50
 	 *
 	 * [--skip-columns=<columns>]
 	 * : Do not perform the replacement on specific columns. Use commas to
@@ -128,7 +130,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 					WP_CLI::error( sprintf( 'Unable to open "%s" for writing.', $assoc_args['export'] ) );
 				}
 			}
-			$export_insert_size = \WP_CLI\Utils\get_flag_value( $assoc_args, 'export_insert_size' );
+			$export_insert_size = $assoc_args['export_insert_size'];
 			if ( (int) $export_insert_size == $export_insert_size && $export_insert_size > 0 ) {
 				$this->export_insert_size = $export_insert_size;
 			} else {
