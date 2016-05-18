@@ -345,14 +345,20 @@ class Runner {
 			$host = substr( $host, 0, $key );
 		}
 
+		WP_CLI::do_hook( 'before_ssh' );
+
 		WP_CLI::debug( 'SSH host: ' . $host, 'bootstrap' );
 		WP_CLI::debug( 'SSH path: ' . $path, 'bootstrap' );
 
 		$is_tty = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
 
+		$pre_cmd = getenv( 'WP_CLI_SSH_PRE_CMD' );
+		if ( $pre_cmd ) {
+			$pre_cmd = rtrim( $pre_cmd, ';' ) . '; ';
+		}
 		$wp_binary = 'wp';
 		$wp_args = array_slice( $GLOBALS['argv'], 1 );
-		$wp_path = $path ? sprintf( '--path=%s', $path ) : '';
+		$wp_path = $path ? sprintf( '--path=%s', str_replace( '~', '$HOME', $path ) ) : '';
 		foreach( $wp_args as $k => $v ) {
 			if ( preg_match( '#--ssh=#', $v ) ) {
 				unset( $wp_args[ $k ] );
@@ -362,8 +368,10 @@ class Runner {
 			'ssh -q %s %s %s',
 			escapeshellarg( $host ),
 			$is_tty ? '-t' : '-T',
-			escapeshellarg( $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', $wp_args ) )
+			escapeshellarg( $pre_cmd . $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', $wp_args ) )
 		);
+
+		WP_CLI::debug( 'Running SSH command: ' . $command, 'bootstrap' );
 
 		passthru( $command, $exit_code );
 		if ( 0 !== $exit_code ) {
