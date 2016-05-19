@@ -49,13 +49,17 @@ class CLI_Command extends WP_CLI_Command {
 
 		$runner = WP_CLI::get_runner();
 
+		$packages_dir = $runner->get_packages_dir_path();
+		if ( ! is_dir( $packages_dir ) ) {
+			$packages_dir = null;
+		}
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$info = array(
 				'php_binary_path' => $php_bin,
 				'global_config_path' => $runner->global_config_path,
 				'project_config_path' => $runner->project_config_path,
 				'wp_cli_dir_path' => WP_CLI_ROOT,
-				'wp_cli_packages_dir_path' => $runner->get_packages_dir_path(),
+				'wp_cli_packages_dir_path' => $packages_dir,
 				'wp_cli_version' => WP_CLI_VERSION,
 			);
 
@@ -65,7 +69,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "PHP version:\t" . PHP_VERSION );
 			WP_CLI::line( "php.ini used:\t" . get_cfg_var( 'cfg_file_path' ) );
 			WP_CLI::line( "WP-CLI root dir:\t" . WP_CLI_ROOT );
-			WP_CLI::line( "WP-CLI packages dir:\t" . $runner->get_packages_dir_path() );
+			WP_CLI::line( "WP-CLI packages dir:\t" . $packages_dir );
 			WP_CLI::line( "WP-CLI global config:\t" . $runner->global_config_path );
 			WP_CLI::line( "WP-CLI project config:\t" . $runner->project_config_path );
 			WP_CLI::line( "WP-CLI version:\t" . WP_CLI_VERSION );

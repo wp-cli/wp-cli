@@ -6,11 +6,14 @@ Feature: Review CLI information
     When I run `wp cli info --format=json`
     Then STDOUT should be JSON containing:
       """
-      {"wp_cli_packages_dir_path":"/tmp/wp-cli-home/.wp-cli/packages/"}
+      {"wp_cli_packages_dir_path":null}
       """
 
-    When I run `WP_CLI_PACKAGES_DIR=/tmp/packages wp cli info --format=json`
+    When I run `wp package install danielbachhuber/wp-cli-reset-post-date-command`
+    Then STDERR should be empty
+
+    When I run `wp cli info --format=json`
     Then STDOUT should be JSON containing:
       """
-      {"wp_cli_packages_dir_path":"/tmp/packages/"}
+      {"wp_cli_packages_dir_path":"/tmp/wp-cli-home/.wp-cli/packages/"}
       """
