@@ -1,6 +1,7 @@
-# WP-CLI
+WP-CLI
+======
 
-Command-line tools for managing WordPress installations. [http://wp-cli.org/](http://wp-cli.org/).
+[WP-CLI](http://wp-cli.org/) is a set of command-line tools for managing WordPress installations. You can update plugins, set up multisite installs and much more, without using a web browser.
 
 [![Build Status](https://travis-ci.org/wp-cli/wp-cli.png?branch=master)](https://travis-ci.org/wp-cli/wp-cli)
 
@@ -8,23 +9,39 @@ Quick links: [Using](#using) | [Installing](#installing) | [Support](#support) |
 
 ## Using
 
-This project aims to provide command-line support for any action you can perform in the WordPress admin and many you can't. So you can [install a plugin](http://wp-cli.org/commands/plugin/install/):
+The goal of WP-CLI is to provide a command-line interface for any action you can perform in the WordPress admin. The project also includes commands for many actions you can't perform in the WordPress admin.
+
+For instance, `wp plugin install` ([doc](http://wp-cli.org/commands/plugin/install/)) lets you install and activate a WordPress plugin:
 
 ```
-$ wp plugin install rest-api
+$ wp plugin install rest-api --activate
+Installing WordPress REST API (Version 2) (2.0-beta13)
+Downloading install package from https://downloads.wordpress.org/plugin/rest-api.2.0-beta13.zip...
+Unpacking the package...
+Installing the plugin...
+Plugin installed successfully.
+Activating 'rest-api'...
+Success: Plugin 'rest-api' activated.
 ```
 
-And [activate it](http://wp-cli.org/commands/plugin/activate/):
+`wp transient` ([doc](http://wp-cli.org/commands/transient/)) lets you delete one or all transients:
 
 ```
-$ wp plugin activate rest-api
+$ wp transient delete-all
+Success: 34 transients deleted from the database.
 ```
 
-View the [Quick Start](http://wp-cli.org/docs/quick-start/) guide or jump to the [complete list of commands](http://wp-cli.org/commands/) for managing themes and plugins, importing and exporting data, performing database search-replace operations and more.
+For a complete introduction, the [Quick Start guide](http://wp-cli.org/docs/quick-start/). If you already feel comfortable with the basics, jump into the [complete list of commands](http://wp-cli.org/commands/) for managing themes and plugins, importing and exporting data, performing database search-replace operations and more.
 
 ## Installing
 
 The recommended way to install WP-CLI is to download the Phar build, mark it executable and place it in your PATH.
+
+Before you install though, please make sure your environment meets the minimum requirements:
+
+- UNIX-like environment (OS X, Linux, FreeBSD, Cygwin); limited support in Windows environment
+- PHP 5.3.29 or later
+- WordPress 3.7 or later
 
 Download the [wp-cli.phar](https://raw.github.com/wp-cli/builds/gh-pages/phar/wp-cli.phar) using `wget` or `curl`. For example:
 
@@ -63,21 +80,23 @@ Now that you've got WP-CLI, read the [Quick Start](http://wp-cli.org/docs/quick-
 
 ## Support
 
-WP-CLI is a volunteer-led project and can't support every user individually. If you run into trouble, here are some places to look for help:
+WP-CLI's project maintainers do their best to respond to all bug reports and configuration errors within reason and the constraints on their time. Before requesting help, please read to find a solution to your problem in the following resources:
 
 - [Common issues and their fixes](http://wp-cli.org/docs/common-issues/)
-- [Bug reports](http://wp-cli.org/docs/bug-reports/)
+- [Submit a bug report](http://wp-cli.org/docs/bug-reports/)
 - [External resources](http://wp-cli.org/docs/external-resources/)
 
 ## Extending
 
-Creating a custom WP-CLI command can be easier than it looks. Read the [commands cookbook](http://wp-cli.org/docs/commands-cookbook/).
+A **command** is an atomic unit of WP-CLI functionality. `wp plugin install` ([doc](http://wp-cli.org/commands/plugin/install/)) is one command. `wp plugin activate` ([doc](http://wp-cli.org/commands/plugin/activate/)) is another.
+
+WP-CLI comes with dozens of commands. But it's easier than it looks to create a custom WP-CLI command. Read the [commands cookbook](http://wp-cli.org/docs/commands-cookbook/) to learn more.
 
 ## Contributing
 
 Thanks for helping to improve WP-CLI. Please read about [creating an issue](http://wp-cli.org/docs/bug-reports/) or [submitting a pull request](http://wp-cli.org/docs/pull-requests/).
 
-### Contributors
+### Leadership
 * [Andreas Creten](https://github.com/andreascreten) - founder
 * [Cristi Burcă](https://github.com/scribu) - previous maintainer
 * [Daniel Bachhuber](https://github.com/danielbachhuber/) - current maintainer
