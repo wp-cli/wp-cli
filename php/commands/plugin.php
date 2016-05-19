@@ -488,7 +488,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp plugin get bbpress --format=json
+	 *     $ wp plugin get bbpress --format=json
+	 *     {"name":"bbpress","title":"bbPress","author":"The bbPress Contributors","version":"2.6-alpha","description":"bbPress is forum software with a twist from the creators of WordPress.","status":"active"}
 	 */
 	public function get( $args, $assoc_args ) {
 		$plugin = $this->fetcher->get_check( $args[0] );
