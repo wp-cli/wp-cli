@@ -31,7 +31,7 @@ $ wp transient delete-all
 Success: 34 transients deleted from the database.
 ```
 
-For a complete introduction, the [Quick Start guide](http://wp-cli.org/docs/quick-start/). If you already feel comfortable with the basics, jump into the [complete list of commands](http://wp-cli.org/commands/) for managing themes and plugins, importing and exporting data, performing database search-replace operations and more.
+For a complete introduction, read the [Quick Start guide](http://wp-cli.org/docs/quick-start/). If you already feel comfortable with the basics, jump into the [complete list of commands](http://wp-cli.org/commands/) for managing themes and plugins, importing and exporting data, performing database search-replace operations and more.
 
 ## Installing
 
