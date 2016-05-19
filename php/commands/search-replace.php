@@ -371,19 +371,25 @@ class Search_Replace_Command extends WP_CLI_Command {
 			$sql .= '(' . join( ', ', array_fill( 0, count( $row_fields ), '%s' ) ) . ')';
 			$values = array_merge( $values, array_values( $row_fields ) );
 
+			// Add new insert statement if needed. Before this we close the previous with semicolon and write statement to sql-file.
+			// "Statement break" is needed:
+			//		1. When the loop is running every nth time (where n is insert statement size, $export_index_size). Remainder is zero also on first round, so it have to be excluded.
+			//			$index % $export_insert_size == 0 && $index > 0
+			//		2. Or when the loop is running last time
+			//			$index == $count			
 			if( ( $index % $export_insert_size == 0 && $index > 0 ) || $index == $count ) {
 				$sql .= ";\n";
 
 				$sql = $wpdb->prepare( $sql, array_values( $values ) );
 				fwrite( $this->export_handle, $sql );
-
+				
+				// If there is still rows to loop, reset $sql and $values variables.
 				if( $count > $index ) {
 					$sql = $insert;
 					$values = array();
 				}
-			} else {
+			} else { // Otherwise just add comma and new line
 				$sql .= ",\n";
-
 			}
 
 			$index++;
