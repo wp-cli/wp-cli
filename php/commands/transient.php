@@ -135,7 +135,7 @@ class Transient_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp transient delete-all
+	 *     $ wp transient delete-all
 	 *     Success: 14 transients deleted from the database.
 	 *
 	 * @subcommand delete-all
