@@ -823,6 +823,12 @@ EOT;
 	 *     $ wp core verify-checksums --locale=en_US
 	 *     Success: WordPress install verifies against checksums.
 	 *
+	 *     $ wp core verify-checksums --locale=ja
+	 *     Warning: File doesn't verify against checksum: wp-includes/version.php
+	 *     Warning: File doesn't verify against checksum: readme.html
+	 *     Warning: File doesn't verify against checksum: wp-config-sample.php
+	 *     Error: WordPress install doesn't verify against checksums.
+	 *
 	 * @when before_wp_load
 	 *
 	 * @subcommand verify-checksums
