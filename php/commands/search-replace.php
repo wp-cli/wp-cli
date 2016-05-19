@@ -9,6 +9,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 	private $dry_run;
 	private $export_handle = false;
+	private $export_insert_size;
 	private $recurse_objects;
 	private $regex;
 	private $skip_columns;
@@ -60,6 +61,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * [--export[=<file>]]
 	 * : Write transformed data as SQL file instead of saving replacements to
 	 * the database. If <file> is not supplied, will output to STDOUT.
+	 *
+	 * [--export_insert_size=<rows>]
+	 * : Define number of rows in single INSERT statement when doing SQL export.
+	 * You might want to change this depending on your database configuration
+	 * (e.g. if you need to do fewer queries). Default: 50
 	 *
 	 * [--skip-columns=<columns>]
 	 * : Do not perform the replacement on specific columns. Use commas to
@@ -131,6 +137,12 @@ class Search_Replace_Command extends WP_CLI_Command {
 				if ( false === $this->export_handle ) {
 					WP_CLI::error( sprintf( 'Unable to open "%s" for writing.', $assoc_args['export'] ) );
 				}
+			}
+			$export_insert_size = $assoc_args['export_insert_size'];
+			if ( (int) $export_insert_size == $export_insert_size && $export_insert_size > 0 ) {
+				$this->export_insert_size = $export_insert_size;
+			} else {
+				$this->export_insert_size = 50;
 			}
 			$php_only = true;
 		}
@@ -236,6 +248,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 			$this->start_time = microtime( true );
 			WP_CLI::log( sprintf( 'Checking: %s', $table ) );
 		}
+
+		$rows = array();
 		foreach ( new \WP_CLI\Iterators\Table( $args ) as $i => $row ) {
 			$row_fields = array();
 			foreach( $all_columns as $col ) {
@@ -249,8 +263,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 				}
 				$row_fields[ $col ] = $value;
 			}
-			$this->write_sql_row_fields( $table, $row_fields );
+			$rows[] = $row_fields;
 		}
+		$this->write_sql_row_fields( $table, $rows );
 
 		$table_report = array();
 		$total_rows = $total_cols = 0;
@@ -336,20 +351,57 @@ class Search_Replace_Command extends WP_CLI_Command {
 		return $count;
 	}
 
-	private function write_sql_row_fields( $table, $row_fields ) {
+	private function write_sql_row_fields( $table, $rows ) {
 		global $wpdb;
-		$sql = "INSERT INTO `$table` (";
-		$sql .= join( ', ', array_map(
-		function ( $field ) {
-			return "`$field`";
-		},
-		array_keys( $row_fields )
+
+		if(empty($rows)) {
+			return;
+		}
+
+		$insert = "INSERT INTO `$table` (";
+		$insert .= join( ', ', array_map(
+			function ( $field ) {
+				return "`$field`";
+			},
+			array_keys( $rows[0] )
 		) );
-		$sql .= ') VALUES (';
-		$sql .= join( ', ', array_fill( 0, count( $row_fields ), '%s' ) );
-		$sql .= ");\n";
-		$sql = $wpdb->prepare( $sql, array_values( $row_fields ) );
-		fwrite( $this->export_handle, $sql );
+		$insert .= ') VALUES ';
+		$insert .= "\n";
+
+		$sql = $insert;
+		$values = array();
+
+		$index = 1;
+		$count = count( $rows );
+		$export_insert_size = $this->export_insert_size;
+
+		foreach($rows as $row_fields) {
+			$sql .= '(' . join( ', ', array_fill( 0, count( $row_fields ), '%s' ) ) . ')';
+			$values = array_merge( $values, array_values( $row_fields ) );
+
+			// Add new insert statement if needed. Before this we close the previous with semicolon and write statement to sql-file.
+			// "Statement break" is needed:
+			//		1. When the loop is running every nth time (where n is insert statement size, $export_index_size). Remainder is zero also on first round, so it have to be excluded.
+			//			$index % $export_insert_size == 0 && $index > 0
+			//		2. Or when the loop is running last time
+			//			$index == $count			
+			if( ( $index % $export_insert_size == 0 && $index > 0 ) || $index == $count ) {
+				$sql .= ";\n";
+
+				$sql = $wpdb->prepare( $sql, array_values( $values ) );
+				fwrite( $this->export_handle, $sql );
+				
+				// If there is still rows to loop, reset $sql and $values variables.
+				if( $count > $index ) {
+					$sql = $insert;
+					$values = array();
+				}
+			} else { // Otherwise just add comma and new line
+				$sql .= ",\n";
+			}
+
+			$index++;
+		}
 	}
 
 	private static function get_columns( $table ) {
@@ -395,4 +447,3 @@ class Search_Replace_Command extends WP_CLI_Command {
 }
 
 WP_CLI::add_command( 'search-replace', 'Search_Replace_Command' );
-
