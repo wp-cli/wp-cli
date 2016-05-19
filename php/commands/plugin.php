@@ -85,9 +85,19 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp plugin search dsgnwrks --per-page=20 --format=json
+	 *     $ wp plugin search dsgnwrks --per-page=20 --format=json
+	 *     Success: Showing 3 of 3 plugins.
+	 *    [{"name":"DsgnWrks Instagram Importer Debug","slug":"dsgnwrks-instagram-importer-debug","rating":0},{"name":"DsgnWrks Instagram Importer","slug":"dsgnwrks-instagram-importer","rating":84},{"name":"DsgnWrks Twitter Importer","slug":"dsgnwrks-twitter-importer","rating":80}]
 	 *
-	 *     wp plugin search dsgnwrks --fields=name,version,slug,rating,num_ratings
+	 *     $ wp plugin search dsgnwrks --fields=name,version,slug,rating,num_ratings
+	 *     Success: Showing 3 of 3 plugins.
+	 *     +-----------------------------------+---------+-----------------------------------+--------+-------------+
+	 *     | name                              | version | slug                              | rating | num_ratings |
+	 *     +-----------------------------------+---------+-----------------------------------+--------+-------------+
+	 *     | DsgnWrks Instagram Importer Debug | 0.1.6   | dsgnwrks-instagram-importer-debug | 0      | 0           |
+	 *     | DsgnWrks Instagram Importer       | 1.3.7   | dsgnwrks-instagram-importer       | 84     | 23          |
+	 *     | DsgnWrks Twitter Importer         | 1.1.1   | dsgnwrks-twitter-importer         | 80     | 1           |
+	 *     +-----------------------------------+---------+-----------------------------------+--------+-------------+
 	 */
 	public function search( $args, $assoc_args ) {
 		parent::_search( $args, $assoc_args );
