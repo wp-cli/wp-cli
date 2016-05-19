@@ -639,10 +639,24 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp plugin list --status=active --format=json
+	 *     $ wp plugin list --status=active --format=json
+	 *     [{"name":"dynamic-hostname","status":"active","update":"none","version":"0.4.2"},{"name":"tinymce-templates","status":"active","update":"none","version":"4.4.3"},{"name":"wp-multibyte-patch","status":"active","update":"none","version":"2.4"},{"name":"wp-total-hacks","status":"active","update":"none","version":"2.0.1"}]
 	 *
 	 *     # List plugins on each site in a network
-	 *     wp site list --field=url | xargs -n 1 -I % wp plugin list --url=%
+	 *     $ wp site list --field=url | xargs -n 1 -I % wp plugin list --url=%
+	 *     +------------------------------+----------------+-----------+------------+
+	 *     | name                         | status         | update    | version    |
+	 *     +------------------------------+----------------+-----------+------------+
+	 *     | akismet                      | active-network | none      | 3.1.11     |
+	 *     | hello                        | inactive       | none      | 1.6        |
+	 *     +------------------------------+----------------+-----------+------------+
+	 *     +------------------------------+----------------+-----------+------------+
+	 *     | name                         | status         | update    | version    |
+	 *     +------------------------------+----------------+-----------+------------+
+	 *     | akismet                      | active-network | none      | 3.1.11     |
+	 *     | hello                        | inactive       | none      | 1.6        |
+	 *     +------------------------------+----------------+-----------+------------+
+	 *
 	 *
 	 * @subcommand list
 	 */
