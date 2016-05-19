@@ -531,7 +531,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp plugin uninstall hello
+	 *     $ wp plugin uninstall hello
+	 *     Success: Uninstalled and deleted 'hello' plugin.
 	 */
 	function uninstall( $args, $assoc_args = array() ) {
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
