@@ -449,16 +449,36 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     # Install the latest version from wordpress.org and activate
-	 *     wp plugin install bbpress --activate
+	 *     $ wp plugin install bbpress --activate
+	 *     Installing bbPress (2.5.9)
+	 *     Downloading install package from https://downloads.wordpress.org/plugin/bbpress.2.5.9.zip...
+	 *     Using cached file '/home/vagrant/.wp-cli/cache/plugin/bbpress-2.5.9.zip'...
+	 *     Unpacking the package...
+	 *     Installing the plugin...
+	 *     Plugin installed successfully.
+	 *     Activating 'bbpress'...
+	 *     Success: Plugin 'bbpress' activated.
 	 *
 	 *     # Install the development version from wordpress.org
-	 *     wp plugin install bbpress --version=dev
+	 *     $ wp plugin install bbpress --version=dev
+	 *     Installing bbPress (Development Version)
+	 *     Downloading install package from https://downloads.wordpress.org/plugin/bbpress.zip...
+	 *     Unpacking the package...
+	 *     Installing the plugin...
+	 *     Plugin installed successfully.
 	 *
 	 *     # Install from a local zip file
-	 *     wp plugin install ../my-plugin.zip
+	 *     $ wp plugin install ../my-plugin.zip
+	 *     Unpacking the package...
+	 *     Installing the plugin...
+	 *     Plugin installed successfully.
 	 *
 	 *     # Install from a remote zip file
-	 *     wp plugin install http://s3.amazonaws.com/bucketname/my-plugin.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
+	 *     $ wp plugin install http://s3.amazonaws.com/bucketname/my-plugin.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
+	 *     Downloading install package from http://s3.amazonaws.com/bucketname/my-plugin.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
+	 *     Unpacking the package...
+	 *     Installing the plugin...
+	 *     Plugin installed successfully.
 	 */
 	function install( $args, $assoc_args ) {
 
