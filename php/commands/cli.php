@@ -43,6 +43,11 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: json
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp cli version
+	 *     WP-CLI 0.23.1
 	 */
 	public function info( $_, $assoc_args ) {
 		$php_bin = WP_CLI::get_php_binary();
