@@ -591,10 +591,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp plugin delete hello
+	 *     $ wp plugin delete hello
+	 *     Success: Deleted 'hello' plugin.
 	 *
 	 *     # Delete inactive plugins
-	 *     wp plugin delete $(wp plugin list --status=inactive --field=name)
+	 *     $ wp plugin delete $(wp plugin list --status=inactive --field=name)
+	 *     Success: Deleted 'tinymce-templates' plugin.
 	 */
 	function delete( $args, $assoc_args = array() ) {
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
