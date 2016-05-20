@@ -104,6 +104,11 @@ class Transient_Command extends WP_CLI_Command {
 	/**
 	 * Delete all expired transients.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp transient delete-expired
+	 *     Success: 12 expired transients deleted from the database.
+	 *
 	 * @subcommand delete-expired
 	 */
 	public function delete_expired() {
