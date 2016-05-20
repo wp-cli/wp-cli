@@ -472,6 +472,13 @@ class Core_Command extends WP_CLI_Command {
 	 * [--subdomains]
 	 * : If passed, the network will use subdomains, instead of subdirectories. Doesn't work with 'localhost'.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core multisite-convert
+	 *     Set up multisite database tables.
+	 *     Added multisite constants to wp-config.php.
+	 *     Success: Network installed. Don't forget to set up rewrite rules.
+	 *
 	 * @subcommand multisite-convert
 	 * @alias install-network
 	 */
