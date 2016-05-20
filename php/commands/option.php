@@ -28,6 +28,14 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * [--format=<format>]
 	 * : Get value as var_export() or JSON. Default: var_export()
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp option get home
+	 *     http://example.com
+	 *
+	 *     $ wp option get active_plugins --format=json
+	 *     {"0":"dynamically-dynamic-sidebar\/dynamically-dynamic-sidebar.php","1":"monster-widget\/monster-widget.php","2":"show-current-template\/show-current-template.php","3":"theme-check\/theme-check.php","5":"wordpress-importer\/wordpress-importer.php"}
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $key ) = $args;
