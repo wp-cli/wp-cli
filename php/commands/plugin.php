@@ -301,7 +301,8 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     cd $(wp plugin path)
+	 *     $ cd $(wp plugin path) && pwd
+	 *     /var/www/wordpress/wp-content/plugins
 	 */
 	function path( $args, $assoc_args ) {
 		$path = untrailingslashit( WP_PLUGIN_DIR );
