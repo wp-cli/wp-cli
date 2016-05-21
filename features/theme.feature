@@ -129,6 +129,22 @@ Feature: Manage WordPress themes
       | name  | status   |
       | p2    | active   |
 
+  Scenario: Attempt to activate or fetch a broken theme
+    Given a WP install
+    And I run `mkdir -pv wp-content/themes/just-test-theme`
+
+    When I try `wp theme activate just-test-theme`
+    Then STDERR should contain:
+      """
+      Error: Stylesheet is missing.
+      """
+
+    When I try `wp theme get just-test-theme`
+    Then STDERR should contain:
+      """
+      Error: Stylesheet is missing.
+      """
+
   Scenario: Enabling and disabling a theme
   	Given a WP multisite install
     And I run `wp theme install jolene`
