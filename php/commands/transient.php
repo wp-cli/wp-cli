@@ -58,6 +58,11 @@ class Transient_Command extends WP_CLI_Command {
 	 *
 	 * [--network]
 	 * : Set the transient value on the network, instead of single site.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp transient set sample_key "test data" 3600
+	 *     Success: Transient added.
 	 */
 	public function set( $args, $assoc_args ) {
 		list( $key, $value ) = $args;
