@@ -85,6 +85,11 @@ class Transient_Command extends WP_CLI_Command {
 	 *
 	 * [--network]
 	 * : Delete the value of a network transient, instead of that on a single site.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp transient delete sample_key
+	 *     Success: Transient deleted.
 	 */
 	public function delete( $args, $assoc_args ) {
 		list( $key ) = $args;
