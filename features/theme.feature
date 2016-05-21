@@ -236,7 +236,7 @@ Feature: Manage WordPress themes
     When I try `wp theme activate biker`
     Then STDERR should contain:
       """
-      Error: The 'biker' theme cannot be activated without its parent, 'jolene'.
+      Error: The parent theme is missing. Please install the "jolene" parent theme.
       """
 
   Scenario: List an active theme with its parent
