@@ -38,6 +38,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [<theme>]
 	 * : A particular theme to show the status for.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp theme status twentysixteen
+	 *     Theme twentysixteen details:
+	 *     		Name: Twenty Sixteen
+	 *     		Status: Inactive
+	 *     		Version: 1.2
+	 *     		Author: the WordPress team
 	 */
 	function status( $args ) {
 		parent::status( $args );
