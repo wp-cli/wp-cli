@@ -87,7 +87,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 *     $ wp plugin search dsgnwrks --per-page=20 --format=json
 	 *     Success: Showing 3 of 3 plugins.
-	 *    [{"name":"DsgnWrks Instagram Importer Debug","slug":"dsgnwrks-instagram-importer-debug","rating":0},{"name":"DsgnWrks Instagram Importer","slug":"dsgnwrks-instagram-importer","rating":84},{"name":"DsgnWrks Twitter Importer","slug":"dsgnwrks-twitter-importer","rating":80}]
+	 *     [{"name":"DsgnWrks Instagram Importer Debug","slug":"dsgnwrks-instagram-importer-debug","rating":0},{"name":"DsgnWrks Instagram Importer","slug":"dsgnwrks-instagram-importer","rating":84},{"name":"DsgnWrks Twitter Importer","slug":"dsgnwrks-twitter-importer","rating":80}]
 	 *
 	 *     $ wp plugin search dsgnwrks --fields=name,version,slug,rating,num_ratings
 	 *     Success: Showing 3 of 3 plugins.
