@@ -415,7 +415,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme get twentytwelve --format=json
+	 *     $ wp theme get twentysixteen --fields=name,title,version
+	 *     +---------+----------------+
+	 *     | Field   | Value          |
+	 *     +---------+----------------+
+	 *     | name    | Twenty Sixteen |
+	 *     | title   | Twenty Sixteen |
+	 *     | version | 1.2            |
+	 *     +---------+----------------+
 	 */
 	public function get( $args, $assoc_args ) {
 		$theme = $this->fetcher->get_check( $args[0] );
