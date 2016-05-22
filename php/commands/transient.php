@@ -15,8 +15,8 @@ class Transient_Command extends WP_CLI_Command {
 	 * <key>
 	 * : Key for the transient.
 	 *
-	 * [--json]
-	 * : Format output as JSON.
+	 * [--format=<format>]
+	 * : Accepted values: table, json, csv, yaml. Default: table
 	 *
 	 * [--network]
 	 * : Get the value of the network transient, instead of the single site.
