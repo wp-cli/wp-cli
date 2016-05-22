@@ -123,6 +123,11 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * <theme>
 	 * : The theme to activate.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp theme activate twentysixteen
+	 *     Success: Switched to 'Twenty Sixteen' theme.
 	 */
 	public function activate( $args = array() ) {
 		$theme = $this->fetcher->get_check( $args[0] );
