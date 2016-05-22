@@ -277,10 +277,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp plugin toggle akismet
-         *     Success: Plugin 'akismet' deactivated.
+	 *     Success: Plugin 'akismet' deactivated.
 	 *
-         *     $ wp plugin toggle akismet
-         *     Success: Plugin 'akismet' activated.
+	 *     $ wp plugin toggle akismet
+	 *     Success: Plugin 'akismet' activated.
 	 */
 	function toggle( $args, $assoc_args = array() ) {
 		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
