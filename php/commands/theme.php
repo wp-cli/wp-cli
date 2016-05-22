@@ -519,7 +519,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme delete twentyeleven
+	 *     $ wp theme delete twentytwelve
+	 *     Success: Deleted 'twentytwelve' theme.
 	 *
 	 * @alias uninstall
 	 */
