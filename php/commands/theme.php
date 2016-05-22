@@ -132,6 +132,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	public function activate( $args = array() ) {
 		$theme = $this->fetcher->get_check( $args[0] );
 
+		$errors = $theme->errors();
+		if ( is_wp_error( $errors ) ) {
+			$message = $errors->get_error_message();
+			WP_CLI::error( $message );
+		}
+
 		$name = $theme->get('Name');
 
 		if ( 'active' === $this->get_status( $theme ) ) {
@@ -431,6 +437,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	public function get( $args, $assoc_args ) {
 		$theme = $this->fetcher->get_check( $args[0] );
+
+		$errors = $theme->errors();
+		if ( is_wp_error( $errors ) ) {
+			$message = $errors->get_error_message();
+			WP_CLI::error( $message );
+		}
 
 		// WP_Theme object employs magic getter, unfortunately
 		$theme_vars = array( 'name', 'title', 'version', 'parent_theme', 'template_dir', 'stylesheet_dir', 'template', 'stylesheet', 'screenshot', 'description', 'author', 'tags', 'theme_root', 'theme_root_uri',
