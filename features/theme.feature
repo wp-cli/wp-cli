@@ -153,6 +153,12 @@ Feature: Manage WordPress themes
       Error: Stylesheet is missing.
       """
 
+    When I run `wp theme install myth --force`
+    Then STDOUT should contain:
+      """
+      Theme updated successfully.
+      """
+
   Scenario: Enabling and disabling a theme
   	Given a WP multisite install
     And I run `wp theme install jolene`
