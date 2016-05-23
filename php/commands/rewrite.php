@@ -24,6 +24,11 @@ class Rewrite_Command extends WP_CLI_Command {
 	 *
 	 * [--hard]
 	 * : Perform a hard flush - update `.htaccess` rules as well as rewrite rules in database. Works only on single site installs.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp rewrite flush
+	 *     Success: Rewrite rules flushed.
 	 */
 	public function flush( $args, $assoc_args ) {
 		// make sure we detect mod_rewrite if configured in apache_modules in config
