@@ -131,16 +131,24 @@ Feature: Manage WordPress themes
 
   Scenario: Attempt to activate or fetch a broken theme
     Given a WP install
-    And I run `mkdir -pv wp-content/themes/just-test-theme`
 
-    When I try `wp theme activate just-test-theme`
+    When I run `mkdir -pv wp-content/themes/myth`
+    Then the wp-content/themes/myth directory should exist
+
+    When I try `wp theme activate myth`
     Then STDERR should contain:
       """
       Error: Stylesheet is missing.
       """
 
-    When I try `wp theme get just-test-theme`
+    When I try `wp theme get myth`
     Then STDERR should contain:
+      """
+      Error: Stylesheet is missing.
+      """
+
+    When I try `wp theme status myth`
+    Then STDERR should be:
       """
       Error: Stylesheet is missing.
       """
