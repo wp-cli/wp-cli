@@ -48,7 +48,10 @@ class Sidebar_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp sidebar list --fields=name,id --format=csv
+	 *     $ wp sidebar list --fields=name,id --format=csv
+	 *     name,id
+	 *     "Widget Area",sidebar-1
+	 *     "Inactive Widgets",wp_inactive_widgets
 	 *
 	 * @subcommand list
 	 */
