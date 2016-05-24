@@ -21,7 +21,7 @@ class Export_Command extends WP_CLI_Command {
 	 * : Don't export comments.
 	 *
 	 * [--max_file_size=<MB>]
-	 * : A single export file should have this many megabytes.
+	 * : A single export file should have this many megabytes. Default: 15
 	 *
 	 * ## FILTERS
 	 *
