@@ -14,10 +14,141 @@ class Help_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # get help for `core` command
-	 *     wp help core
+	 *     $ wp help core
+	 *     NAME
+	 *     
+	 *       wp core
+	 *     
+	 *     DESCRIPTION
+	 *     
+	 *       Download, install, update and otherwise manage WordPress proper.
+	 *     
+	 *     SYNOPSIS
+	 *     
+	 *       wp core <command>
+	 *     
+	 *     SUBCOMMANDS
+	 *     
+	 *       check-update           Check for update via Version Check API.
+	 *       config                 Generate a wp-config.php file.
+	 *       download               Download core WordPress files.
+	 *       install                Create the WordPress tables in the database.
+	 *       is-installed           Determine if the WordPress tables are installed.
+	 *       language               
+	 *       multisite-convert      Transform a single-site install into a multi-site install.
+	 *       multisite-install      Install multisite from scratch.
+	 *       update                 Update WordPress.
+	 *       update-db              Update the WordPress database.
+	 *       verify-checksums       Verify WordPress files against WordPress.org's checksums.
+	 *       version                Display the WordPress version.
+	 *     
+	 *     
+	 *     
+	 *     GLOBAL PARAMETERS
+	 *     
+	 *       --path=<path>
+	 *           Path to the WordPress files.
+	 *     
+	 *       --url=<url>
+	 *           Pretend request came from given URL. In multisite, this argument is how the target
+	 *       site is specified.
+	 *     
+	 *       --user=<id|login|email>
+	 *           Set the WordPress user.
+	 *     
+	 *       --skip-plugins[=<plugin>]
+	 *           Skip loading all or some plugins. Note: mu-plugins are still loaded.
+	 *     
+	 *       --skip-themes[=<theme>]
+	 *           Skip loading all or some themes.
+	 *     
+	 *       --skip-packages
+	 *           Skip loading all installed packages.
+	 *     
+	 *       --require=<path>
+	 *           Load PHP file before running the command (may be used more than once).
+	 *     
+	 *       --[no-]color
+	 *           Whether to colorize the output.
+	 *     
+	 *       --debug
+	 *           Show all PHP errors; add verbosity to WP-CLI bootstrap.
+	 *     
+	 *       --prompt
+	 *           Prompt the user to enter values for all command arguments.
+	 *       --quiet
+	 *           Suppress informational messages.
 	 *
 	 *     # get help for `core download` subcommand
-	 *     wp help core download
+	 *     $ wp help core download
+	 *     NAME
+	 *     
+	 *       wp core download
+	 *     
+	 *     DESCRIPTION
+	 *     
+	 *       Download core WordPress files.
+	 *     
+	 *     SYNOPSIS
+	 *     
+	 *       wp core download [--path=<path>] [--locale=<locale>] [--version=<version>]
+	 *       [--force]
+	 *     
+	 *     OPTIONS
+	 *     
+	 *       [--path=<path>]
+	 *         Specify the path in which to install WordPress.
+	 *     
+	 *       [--locale=<locale>]
+	 *         Select which language you want to download.
+	 *     
+	 *       [--version=<version>]
+	 *         Select which version you want to download.
+	 *     
+	 *       [--force]
+	 *         Overwrites existing files, if present.
+	 *     
+	 *     EXAMPLES
+	 *     
+	 *         wp core download --locale=nl_NL
+	 *     
+	 *     
+	 *     
+	 *     GLOBAL PARAMETERS
+	 *     
+	 *       --path=<path>
+	 *           Path to the WordPress files.
+	 *     
+	 *       --url=<url>
+	 *           Pretend request came from given URL. In multisite, this argument is how the target
+	 *       site is specified.
+	 *     
+	 *       --user=<id|login|email>
+	 *           Set the WordPress user.
+	 *     
+	 *       --skip-plugins[=<plugin>]
+	 *           Skip loading all or some plugins. Note: mu-plugins are still loaded.
+	 *     
+	 *       --skip-themes[=<theme>]
+	 *           Skip loading all or some themes.
+	 *     
+	 *       --skip-packages
+	 *           Skip loading all installed packages.
+	 *     
+	 *       --require=<path>
+	 *           Load PHP file before running the command (may be used more than once).
+	 *     
+	 *       --[no-]color
+	 *           Whether to colorize the output.
+	 *     
+	 *       --debug
+	 *           Show all PHP errors; add verbosity to WP-CLI bootstrap.
+	 *     
+	 *       --prompt
+	 *           Prompt the user to enter values for all command arguments.
+	 *       --quiet
+	 *           Suppress informational messages.
+	 *
 	 */
 	function __invoke( $args, $assoc_args ) {
 		$command = self::find_subcommand( $args );
