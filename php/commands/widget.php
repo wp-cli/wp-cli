@@ -52,7 +52,10 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp widget list sidebar-1 --fields=name --format=csv
+	 *     $ wp widget list sidebar-1 --fields=name,id --format=csv
+	 *     name,id
+	 *     meta,meta-5
+	 *     search,search-3
 	 *
 	 * @subcommand list
 	 */
