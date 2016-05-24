@@ -69,7 +69,8 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp role exists editor
+	 *     $ wp role exists editor
+	 *     Success: Role with ID editor exists.
 	 */
 	public function exists( $args ) {
 		global $wp_roles;
