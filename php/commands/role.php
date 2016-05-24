@@ -131,9 +131,13 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp role create approver Approver
+	 *     # Create role for Approver
+	 *     $ wp role create approver Approver
+	 *     Success: Role with key approver created.
 	 *
-	 *     wp role create productadmin "Product Administrator"
+	 *     # Create role for Product Administrator
+	 *     $ wp role create productadmin "Product Administrator"
+	 *     Success: Role with key productadmin created.
 	 */
 	public function create( $args, $assoc_args ) {
 		global $wp_roles;
