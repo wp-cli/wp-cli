@@ -34,7 +34,13 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp role list --fields=role --format=csv
+	 *     $ wp role list --fields=role --format=csv
+	 *     role
+	 *     administrator
+	 *     editor
+	 *     author
+	 *     contributor
+	 *     subscriber
 	 *
 	 * @subcommand list
 	 */
