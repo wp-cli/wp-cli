@@ -90,7 +90,8 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp widget add calendar sidebar-1 2 --title="Calendar"
+	 *     $ wp widget add calendar sidebar-1 2 --title="Calendar"
+	 *     Success: Added widget to sidebar.
 	 *
 	 * @subcommand add
 	 */
