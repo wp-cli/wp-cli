@@ -24,7 +24,7 @@ Activating 'rest-api'...
 Success: Plugin 'rest-api' activated.
 ```
 
-`wp transient` ([doc](http://wp-cli.org/commands/transient/)) lets you delete one or all transients:
+Similarly, `wp transient` ([doc](http://wp-cli.org/commands/transient/)) lets you delete one or all transients:
 
 ```
 $ wp transient delete-all
@@ -35,7 +35,7 @@ For a complete introduction, read the [Quick Start guide](http://wp-cli.org/docs
 
 ## Installing
 
-The recommended way to install WP-CLI is to download the Phar build, mark it executable and place it in your PATH.
+The recommended way to install WP-CLI is to download the Phar build, mark it executable and place it in your PATH. See also our documentation on [alternative installation methods](http://wp-cli.org/docs/installing/).
 
 Before you install though, please make sure your environment meets the minimum requirements:
 
@@ -76,11 +76,9 @@ WP-CLI project config:
 WP-CLI version: 0.23.0
 ```
 
-Now that you've got WP-CLI, read the [Quick Start](http://wp-cli.org/docs/quick-start/) guide. Or view the [full installation guide](http://wp-cli.org/docs/installing/) with alternative installation methods.
-
 ## Support
 
-WP-CLI's project maintainers do their best to respond to all bug reports and configuration errors within reason and the constraints on their time. Before requesting help, please read to find a solution to your problem in the following resources:
+WP-CLI's project maintainers do their best to respond to all bug reports and configuration errors within reason and the constraints on their volunteered time. Before requesting help, please read to find a solution to your problem in the following resources:
 
 - [Common issues and their fixes](http://wp-cli.org/docs/common-issues/)
 - [Submit a bug report](http://wp-cli.org/docs/bug-reports/)
@@ -90,11 +88,11 @@ WP-CLI's project maintainers do their best to respond to all bug reports and con
 
 A **command** is an atomic unit of WP-CLI functionality. `wp plugin install` ([doc](http://wp-cli.org/commands/plugin/install/)) is one command. `wp plugin activate` ([doc](http://wp-cli.org/commands/plugin/activate/)) is another.
 
-WP-CLI comes with dozens of commands. But it's easier than it looks to create a custom WP-CLI command. Read the [commands cookbook](http://wp-cli.org/docs/commands-cookbook/) to learn more.
+WP-CLI comes with dozens of commands. It's easier than it looks to create a custom WP-CLI command. Read the [commands cookbook](http://wp-cli.org/docs/commands-cookbook/) to learn more.
 
 ## Contributing
 
-Thanks for helping to improve WP-CLI. Please read about [creating an issue](http://wp-cli.org/docs/bug-reports/) or [submitting a pull request](http://wp-cli.org/docs/pull-requests/).
+To get involved, please first read about [creating an issue](http://wp-cli.org/docs/bug-reports/) or [submitting a pull request](http://wp-cli.org/docs/pull-requests/).
 
 ### Leadership
 * [Andreas Creten](https://github.com/andreascreten) - founder
