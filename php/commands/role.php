@@ -181,9 +181,13 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp role delete approver
+	 *     # Delete approver role
+	 *     $ wp role delete approver
+	 *     Success: Role with key approver deleted.
 	 *
+	 *     # Delete productadmin role
 	 *     wp role delete productadmin
+	 *     Success: Role with key productadmin deleted.
 	 */
 	public function delete( $args ) {
 		global $wp_roles;
