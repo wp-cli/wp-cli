@@ -36,7 +36,7 @@ class Export_Command extends WP_CLI_Command {
 	 * comma. Defaults to all.
 	 *
 	 * [--post_type__not_in=<post-type>]
-	 * : Export all post types except those identified. Seperate multiple post types
+	 * : Export all post types except those identified. Separate multiple post types
 	 * with a comma. Defaults to none.
 	 *
 	 * [--post__in=<pid>]
