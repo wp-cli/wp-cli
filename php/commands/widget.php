@@ -253,7 +253,8 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp widget delete recent-comments-2
+	 *     $ wp widget delete recent-comments-2
+	 *     Success: Widget(s) removed from sidebar.
 	 *
 	 * @subcommand delete
 	 */
