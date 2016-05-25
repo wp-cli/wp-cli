@@ -19,6 +19,10 @@
  */
 class Capabilities_Command extends WP_CLI_Command {
 
+	private $fields = array(
+		'name'
+	);
+
 	/**
 	 * List capabilities for a given role.
 	 *
@@ -26,6 +30,9 @@ class Capabilities_Command extends WP_CLI_Command {
 	 *
 	 * <role>
 	 * : Key for the role.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count, yaml. Default: table
 	 *
 	 * ## EXAMPLES
 	 *
@@ -39,11 +46,19 @@ class Capabilities_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand list
 	 */
-	public function list_( $args ) {
+	public function list_( $args, $assoc_args ) {
 		$role_obj = self::get_role( $args[0] );
 
-		foreach ( array_keys( $role_obj->capabilities ) as $cap )
-			WP_CLI::line( $cap );
+		$output_caps = array();
+		foreach ( array_keys( $role_obj->capabilities ) as $cap ) {
+			$output_cap = new stdClass;
+
+			$output_cap->name = $cap;
+
+			$output_caps[] = $output_cap;
+		}
+		$formatter = new \WP_CLI\Formatter( $assoc_args, $this->fields );
+		$formatter->display_items( $output_caps );
 	}
 
 	/**
