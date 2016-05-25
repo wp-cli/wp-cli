@@ -86,15 +86,6 @@ Feature: Manage WordPress roles
     When I run `wp cap list reporter`
     Then STDOUT should be a table containing rows:
       """
-      | name                   |
-      | upload_files           |
-      | edit_posts             |
-      | edit_published_posts   |
-      | publish_posts          |
-      | read                   |
-      | level_2                |
-      | level_1                |
-      | level_0                |
-      | delete_posts           |
-      | delete_published_posts |
+      | name         |
+      | upload_files |
       """
