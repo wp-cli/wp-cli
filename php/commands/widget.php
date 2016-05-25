@@ -182,9 +182,13 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp widget move recent-comments-2 --position=2
+	 *     # Change position of widget
+	 *     $ wp widget move recent-comments-2 --position=2
+	 *     Success: Widget moved.
 	 *
-	 *     wp widget move recent-comments-2 --sidebar-id=wp_inactive_widgets
+	 *     # Move widget to Inactive Widgets
+	 *     $ wp widget move recent-comments-2 --sidebar-id=wp_inactive_widgets
+	 *     Success: Widget moved.
 	 *
 	 * @subcommand move
 	 */
