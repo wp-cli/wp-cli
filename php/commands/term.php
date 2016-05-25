@@ -298,7 +298,7 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term generate --count=10
+	 *     wp term generate category --count=10
 	 *
 	 *     # Add meta to every generated term
 	 *     wp term generate category --format=ids | xargs -0 -d ' ' -I % wp term meta add % foo bar
