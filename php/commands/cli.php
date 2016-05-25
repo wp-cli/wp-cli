@@ -104,6 +104,11 @@ class CLI_Command extends WP_CLI_Command {
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
 	 *
+	 * ## EXAMPLES
+	 * 
+	 * $ wp cli check-update
+	 * Success: WP-CLI is at the latest version.
+	 *
 	 * @subcommand check-update
 	 */
 	public function check_update( $_, $assoc_args ) {
@@ -321,6 +326,11 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: var_export, json. Default: json.
+	 *
+	 * ## EXAMPLES
+	 *
+	 * $ wp cli param-dump
+	 * {"path":{"runtime":"=<path>","file":"<path>","synopsis":"","default":null,"multiple":false,"desc":"Path to the WordPress files."},"url":{"runtime":"=<url>","file":"<url>","synopsis":"","default":null,"multiple":false,"desc":"Pretend request came from given URL. In multisite, this argument is how the target site is specified."},"blog":{"runtime":"=<url>","file":false,"synopsis":"","default":null,"multiple":false,"deprecated":"Use --url instead."},"config":{"runtime":"=<path>","file":false,"synopsis":"","default":null,"multiple":false,"deprecated":"Use the WP_CLI_CONFIG_PATH environment variable instead."},"user":{"runtime":"=<id|login|email>","file":"<id|login|email>","synopsis":"","default":null,"multiple":false,"desc":"Set the WordPress user."},"skip-plugins":{"runtime":"[=<plugin>]","file":"<list>","synopsis":"","default":"","multiple":false,"desc":"Skip loading all or some plugins. Note: mu-plugins are still loaded."},"skip-themes":{"runtime":"[=<theme>]","file":"<list>","synopsis":"","default":"","multiple":false,"desc":"Skip loading all or some themes."},"skip-packages":{"runtime":"","file":"<bool>","synopsis":"","default":false,"multiple":false,"desc":"Skip loading all installed packages."},"require":{"runtime":"=<path>","file":"<path>","synopsis":"","default":[],"multiple":true,"desc":"Load PHP file before running the command (may be used more than once)."},"disabled_commands":{"runtime":false,"file":"<list>","synopsis":"","default":[],"multiple":false,"desc":"(Sub)commands to disable."},"color":{"runtime":true,"file":"<bool>","synopsis":"","default":"auto","multiple":false,"desc":"Whether to colorize the output."},"debug":{"runtime":"","file":"<bool>","synopsis":"","default":false,"multiple":false,"desc":"Show all PHP errors; add verbosity to WP-CLI bootstrap."},"prompt":{"runtime":"","file":false,"synopsis":"","default":false,"multiple":false,"desc":"Prompt the user to enter values for all command arguments."},"quiet":{"runtime":"","file":"<bool>","synopsis":"","default":false,"multiple":false,"desc":"Suppress informational messages."},"apache_modules":{"runtime":false,"file":"<list>","synopsis":"","default":[],"multiple":true,"desc":"List of Apache Modules that are to be reported as loaded."},"allow-root":{"runtime":"","file":false,"synopsis":"","default":null,"multiple":false,"hidden":true}}
 	 *
 	 * @subcommand param-dump
 	 */
