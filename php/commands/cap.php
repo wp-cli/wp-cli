@@ -14,7 +14,7 @@
  *     Success: Added 24 capabilities to 'author' role.
  *
  *     # Remove all caps from 'editor' role that also appear in 'author' role
- *     wp cap list 'author' | xargs wp cap remove 'editor'
+ *     $ wp cap list 'author' | xargs wp cap remove 'editor'
  *     Success: Removed 34 capabilities from 'editor' role.
  */
 class Capabilities_Command extends WP_CLI_Command {
