@@ -19,6 +19,9 @@ class Eval_Command extends WP_CLI_Command {
 	 *
 	 *     $ wp eval 'echo WP_CONTENT_DIR;'
 	 *     /var/www/wordpress/wp-content
+	 *
+	 *     $ wp eval 'echo rand();' --skip-wordpress
+	 *     479620423
 	 */
 	public function __invoke( $args, $assoc_args ) {
 
