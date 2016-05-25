@@ -237,7 +237,8 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp widget deactivate recent-comments-2
+	 *     $ wp widget deactivate recent-comments-2
+	 *     Success: Widget(s) deactivated
 	 *
 	 * @subcommand deactivate
 	 */
