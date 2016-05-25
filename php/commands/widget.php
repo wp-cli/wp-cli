@@ -144,7 +144,8 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp widget update calendar-1 --title="Calendar"
+	 *     $ wp widget update calendar-1 --title="Our Calendar"
+	 *     Success: Widget updated.
 	 *
 	 * @subcommand update
 	 */
