@@ -29,8 +29,13 @@ class Capabilities_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Display alphabetical list of bbPress moderator capabilities
-	 *     wp cap list 'bbp_moderator' | sort
+	 *     # Display alphabetical list of Contributor capabilities
+	 *     $ wp cap list 'contributor' | sort
+	 *     delete_posts
+	 *     edit_posts
+	 *     level_0
+	 *     level_1
+	 *     read
 	 *
 	 * @subcommand list
 	 */
