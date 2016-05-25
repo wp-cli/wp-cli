@@ -48,6 +48,12 @@ class Capabilities_Command extends WP_CLI_Command {
 	 *
 	 * <cap>...
 	 * : One or more capabilities to add.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Add 'spectate' capability to 'author' role
+	 *     $ wp cap add author spectate
+	 *     Success: Added 1 capabilities to 'author' role.
 	 */
 	public function add( $args ) {
 		self::persistence_check();
