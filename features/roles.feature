@@ -67,9 +67,10 @@ Feature: Manage WordPress roles
       | name       | role       |
       | Reporter   | reporter   |
 
-    When I run `wp cap list reporter`
+    When I run `wp cap list reporter --format=csv`
     Then STDOUT should be:
       """
+      name
       upload_files
       edit_posts
       edit_published_posts
@@ -80,4 +81,20 @@ Feature: Manage WordPress roles
       level_0
       delete_posts
       delete_published_posts
+      """
+
+    When I run `wp cap list reporter`
+    Then STDOUT should be a table containing rows:
+      """
+      | name                   |
+      | upload_files           |
+      | edit_posts             |
+      | edit_published_posts   |
+      | publish_posts          |
+      | read                   |
+      | level_2                |
+      | level_1                |
+      | level_0                |
+      | delete_posts           |
+      | delete_published_posts |
       """
