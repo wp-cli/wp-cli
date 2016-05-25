@@ -83,6 +83,12 @@ class Capabilities_Command extends WP_CLI_Command {
 	 *
 	 * <cap>...
 	 * : One or more capabilities to remove.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Remove 'spectate' capability from 'author' role
+	 *     $ wp cap remove author spectate
+	 *     Success: Removed 1 capabilities from 'author' role.
 	 */
 	public function remove( $args ) {
 		self::persistence_check();
