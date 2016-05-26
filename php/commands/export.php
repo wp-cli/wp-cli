@@ -70,6 +70,13 @@ class Export_Command extends WP_CLI_Command {
 	 *     Starting export process...
 	 *     Writing to file /tmp/staging.wordpress.2016-05-24.000.xml
 	 *     Success: All done with export.
+	 *
+	 *     # Export a random subset of content
+	 *     $ wp export --post__in="$(wp post list --post_type=post --orderby=rand --posts_per_page=8 --format=ids)"
+	 *     Starting export process...
+	 *     Writing to file /var/www/example.com/public_html/staging.wordpress.2016-05-24.000.xml
+	 *     Success: All done with export.
+	 *
 	 */
 	public function __invoke( $_, $assoc_args ) {
 		$defaults = array(
