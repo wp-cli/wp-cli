@@ -92,3 +92,22 @@ Feature: Manage WordPress terms
       """
       My Test Category
       """
+
+  Scenario: Fetch term url
+    When I run `wp term create category "First Category" --porcelain`
+    And save STDOUT as {TERM_ID_1}
+    And I run `wp term create category "Second Category" --porcelain`
+    And save STDOUT as {TERM_ID_2}
+
+    When I run `wp term url category {TERM_ID_1}`
+    Then STDOUT should be:
+      """
+      http://localhost:8001/category/first-category
+      """
+
+    When I run `wp term url category {TERM_ID_1} {TERM_ID_2}`
+    Then STDOUT should be:
+      """
+      http://localhost:8001/category/first-category
+      http://localhost:8001/category/second-category
+      """
