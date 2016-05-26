@@ -278,8 +278,15 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # delete all post tags
-	 *     wp term list post_tag --field=term_id | xargs wp term delete post_tag
+	 *     # Delete post category
+	 *     $ wp term delete category 15
+	 *     Success: Deleted category 15.
+	 *
+	 *     # Delete all post tags
+	 *     $ wp term list post_tag --field=term_id | xargs wp term delete post_tag
+	 *     Success: Deleted post_tag 159.
+	 *     Success: Deleted post_tag 160.
+	 *     Success: Deleted post_tag 161.
 	 */
 	public function delete( $args ) {
 		$taxonomy = array_shift( $args );
