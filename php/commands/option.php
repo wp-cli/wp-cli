@@ -239,6 +239,11 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * <key>
 	 * : Key for the option.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp option delete my_option
+	 *     Success: Deleted 'my_option' option.
 	 */
 	public function delete( $args ) {
 		list( $key ) = $args;
