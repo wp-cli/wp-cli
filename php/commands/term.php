@@ -409,11 +409,14 @@ class Term_Command extends WP_CLI_Command {
 	 *     wp term url post_tag 123 324
 	 */
 	public function url( $args ) {
-		$term_link = get_term_link( (int)$args[1], $args[0] );
-		if ( $term_link && ! is_wp_error( $term_link ) ) {
-			WP_CLI::line( $term_link );
-		} else {
-			WP_CLI::error( "Invalid term." );
+		$term_ids = array_slice( $args, 1 );
+		foreach ( $term_ids as $term_id ) {
+			$term_link = get_term_link( (int)$term_id, $args[0] );
+			if ( $term_link && ! is_wp_error( $term_link ) ) {
+				WP_CLI::line( $term_link );
+			} else {
+				WP_CLI::warning( sprintf( "Invalid term %d.", $term_id ) );
+			}
 		}
 	}
 
