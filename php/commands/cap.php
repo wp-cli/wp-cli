@@ -59,7 +59,7 @@ class Capabilities_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 		$role_obj = self::get_role( $args[0] );
 
-		if ( ! isset( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'list' ) ) ) {
+		if ( 'list' === $assoc_args['format'] ) {
 			foreach ( array_keys( $role_obj->capabilities ) as $cap ) {
 				WP_CLI::line( $cap );
 			}
