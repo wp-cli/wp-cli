@@ -133,7 +133,8 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term create category Apple --description="A type of fruit"
+	 *     $ wp term create category Apple --description="A type of fruit"
+	 *     Success: Created category 199.
 	 */
 	public function create( $args, $assoc_args ) {
 
