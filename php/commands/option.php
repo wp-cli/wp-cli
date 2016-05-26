@@ -68,7 +68,8 @@ class Option_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Create an option by reading a JSON file
-	 *     wp option add my_option --format=json < config.json
+	 *     $ wp option add my_option --format=json < config.json
+	 *     Success: Added 'my_option' option.
 	 */
 	public function add( $args, $assoc_args ) {
 		$key = $args[0];
