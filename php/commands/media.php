@@ -26,11 +26,22 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # re-generate all thumbnails, without confirmation
-	 *     wp media regenerate --yes
+	 *     # Re-generate all thumbnails, without confirmation
+	 *     $ wp media regenerate --yes
+	 *     Found 3 images to regenerate.
+	 *     Regenerated thumbnails for "Sydney Harbor Bridge" (ID 760).
+	 *     Regenerated thumbnails for "Boardwalk" (ID 757).
+	 *     Regenerated thumbnails for "Sunburst Over River" (ID 756).
+	 *     Success: Finished regenerating all images.
 	 *
-	 *     # re-generate all thumbnails that have IDs between 1000 and 2000
-	 *     seq 1000 2000 | xargs wp media regenerate
+	 *     # Re-generate all thumbnails that have IDs between 1000 and 2000
+	 *     $ seq 1000 2000 | xargs wp media regenerate
+	 *     Found 4 images to regenerate.
+	 *     Regenerated thumbnails for "Vertical Featured Image" (ID 1027).
+	 *     Regenerated thumbnails for "Horizontal Featured Image" (ID 1022).
+	 *     Regenerated thumbnails for "Unicorn Wallpaper" (ID 1045).
+	 *     Regenerated thumbnails for "I Am Worth Loving Wallpaper" (ID 1023).
+	 *     Success: Finished regenerating all images.
 	 */
 	function regenerate( $args, $assoc_args = array() ) {
 		if ( empty( $args ) ) {
