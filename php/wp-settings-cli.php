@@ -124,6 +124,7 @@ require( ABSPATH . WPINC . '/default-filters.php' );
 
 // Initialize multisite if enabled.
 if ( is_multisite() ) {
+	Utils\maybe_require( '4.6-alpha-37575', ABSPATH . WPINC . '/class-wp-site-query.php' );
 	require( ABSPATH . WPINC . '/ms-blogs.php' );
 	require( ABSPATH . WPINC . '/ms-settings.php' );
 } elseif ( ! defined( 'MULTISITE' ) ) {
@@ -192,6 +193,7 @@ require( ABSPATH . WPINC . '/deprecated.php' );
 require( ABSPATH . WPINC . '/script-loader.php' );
 require( ABSPATH . WPINC . '/taxonomy.php' );
 Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-term.php' );
+Utils\maybe_require( '4.6-alpha-37575', ABSPATH . WPINC . '/class-wp-term-query.php' );
 Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-tax-query.php' );
 require( ABSPATH . WPINC . '/update.php' );
 require( ABSPATH . WPINC . '/canonical.php' );
