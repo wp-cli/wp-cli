@@ -61,7 +61,7 @@ class Capabilities_Command extends WP_CLI_Command {
 
 		if ( ! isset( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'list' ) ) ) {
 			foreach ( array_keys( $role_obj->capabilities ) as $cap ) {
-			    WP_CLI::line( $cap );
+				WP_CLI::line( $cap );
 			}
 		}
 		else {
