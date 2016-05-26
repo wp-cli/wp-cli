@@ -115,19 +115,25 @@ class Media_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Import all jpgs in the current user's "Pictures" directory, not attached to any post
-	 *     wp media import ~/Pictures/**\/*.jpg
+	 *     $ wp media import ~/Pictures/**\/*.jpg
+	 *     Success: Imported file /home/person/Pictures/beautiful-youg-girl-in-ivy.jpg as attachment ID 1751.
+	 *     Success: Imported file /home/person/Pictures/fashion-girl.jpg as attachment ID 1752.
 	 *
 	 *     # Import a local image and set it to be the post thumbnail for a post
-	 *     wp media import ~/Downloads/image.png --post_id=123 --title="A downloaded picture" --featured_image
+	 *     $ wp media import ~/Downloads/image.png --post_id=123 --title="A downloaded picture" --featured_image
+	 *     Success: Imported file /home/person/Downloads/image.png as attachment ID 1753 and attached to post 123 as featured image.
 	 *
 	 *     # Import a local image, but set it as the featured image for all posts
 	 *     # 1. Import the image and get its attachment ID
-	 *     * 2. Assign the attachment ID as the featured image for all posts
-	 *     ATTACHMENT_ID="$(wp media import ~/Downloads/image.png --porcelain)"
-	 *     wp post list --post_type=post --format=ids | xargs -0 -d ' ' -I % wp post meta add % _thumbnail_id $ATTACHMENT_ID
+	 *     # 2. Assign the attachment ID as the featured image for all posts
+	 *     $ ATTACHMENT_ID="$(wp media import ~/Downloads/image.png --porcelain)"
+	 *     $ wp post list --post_type=post --format=ids | xargs -0 -d ' ' -I % wp post meta add % _thumbnail_id $ATTACHMENT_ID
+	 *     Success: Added custom field.
+	 *     Success: Added custom field.
 	 *
 	 *     # Import an image from the web
-	 *     wp media import http://s.wordpress.org/style/images/wp-header-logo.png --title='The WordPress logo' --alt="Semantic personal publishing"
+	 *     $ wp media import http://s.wordpress.org/style/images/wp-header-logo.png --title='The WordPress logo' --alt="Semantic personal publishing"
+	 *     Success: Imported file http://s.wordpress.org/style/images/wp-header-logo.png as attachment ID 1755.
 	 */
 	function import( $args, $assoc_args = array() ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
