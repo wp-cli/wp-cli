@@ -298,10 +298,15 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term generate category --count=10
+	 *     # Generate post categories
+	 *     $ wp term generate category --count=10
+	 *     Generating terms  100% [=========] 0:02 / 0:02
 	 *
 	 *     # Add meta to every generated term
-	 *     wp term generate category --format=ids | xargs -0 -d ' ' -I % wp term meta add % foo bar
+	 *     $ wp term generate category --format=ids --count=3 | xargs -0 -d ' ' -I % wp term meta add % foo bar
+	 *     Success: Added custom field.
+	 *     Success: Added custom field.
+	 *     Success: Added custom field.
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
