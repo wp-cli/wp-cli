@@ -220,7 +220,8 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term update category 15 --name=Apple
+	 *     $ wp term update category 15 --name=Apple
+	 *     Success: Term updated.
 	 */
 	public function update( $args, $assoc_args ) {
 
