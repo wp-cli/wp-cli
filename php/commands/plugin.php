@@ -40,6 +40,27 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [<plugin>]
 	 * : A particular plugin to show the status for.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Displays status of all plugins
+	 *     $ wp plugin status
+	 *     5 installed plugins:
+	 *       I akismet                3.1.11
+	 *       I easy-digital-downloads 2.5.16
+	 *       A theme-check            20160523.1
+	 *       I wen-logo-slider        2.0.3
+	 *       M ns-pack                1.0.0
+	 *     Legend: I = Inactive, A = Active, M = Must Use
+	 *
+	 *     # Displays status of a plugin
+	 *     $ wp plugin status theme-check
+	 *     Plugin theme-check details:
+	 *         Name: Theme Check
+	 *         Status: Active
+	 *         Version: 20160523.1
+	 *         Author: Otto42, pross
+	 *         Description: A simple and easy way to test your theme for all the latest WordPress standards and practices. A great theme development tool!
 	 */
 	function status( $args ) {
 		parent::status( $args );
@@ -456,7 +477,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				continue;
 			}
 			foreach( $files as $file ) {
-				$items[ $file ]['name'] = str_replace( '.' . pathinfo( $file, PATHINFO_EXTENSION ), '', $file ); 
+				$items[ $file ]['name'] = str_replace( '.' . pathinfo( $file, PATHINFO_EXTENSION ), '', $file );
 			}
 		}
 
@@ -786,12 +807,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		$path = path_join( WP_PLUGIN_DIR, $plugin_dir );
 
 		if ( \WP_CLI\Utils\is_windows() ) {
-			// Handles plugins that are not in own folders 
+			// Handles plugins that are not in own folders
 			// e.g. Hello Dolly -> plugins/hello.php
-			if ( is_file( $path ) ) {			 
+			if ( is_file( $path ) ) {
 				$command = 'del /f /q ';
 			} else {
-				$command = 'rd /s /q ';			
+				$command = 'rd /s /q ';
 			}
 			$path = str_replace( "/", "\\", $path );
 		} else {
