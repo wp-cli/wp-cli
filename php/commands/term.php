@@ -415,7 +415,7 @@ class Term_Command extends WP_CLI_Command {
 			if ( $term_link && ! is_wp_error( $term_link ) ) {
 				WP_CLI::line( $term_link );
 			} else {
-				WP_CLI::warning( sprintf( "Invalid term %d.", $term_id ) );
+				WP_CLI::warning( sprintf( "Invalid term %s.", $term_id ) );
 			}
 		}
 	}
