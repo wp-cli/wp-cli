@@ -78,11 +78,13 @@ WP-CLI version: 0.23.0
 
 ## Support
 
-WP-CLI's project maintainers do their best to respond to all bug reports and configuration errors within reason and the constraints on their volunteered time. Before requesting help, please read to find a solution to your problem in the following resources:
+WP-CLI's maintainers and project contributors do their best to respond to all new issues in a timely manner. To make the best use of their volunteered time, please first see if there may be an answer to your question in one of the following resources:
 
 - [Common issues and their fixes](http://wp-cli.org/docs/common-issues/)
-- [Submit a bug report](http://wp-cli.org/docs/bug-reports/)
-- [External resources](http://wp-cli.org/docs/external-resources/)
+- [Best practices for submitting a bug report](http://wp-cli.org/docs/bug-reports/)
+- [Documentation portal](http://wp-cli.org/docs/)
+
+If you have a WordPress.org account, you may also consider joining the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/).
 
 ## Extending
 
