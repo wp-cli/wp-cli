@@ -426,9 +426,8 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp term url post_tag 123
-	 *
-	 *     wp term url post_tag 123 324
+	 *     $ wp term url post_tag 123
+	 *     http://example.com/tag/tips-and-tricks
 	 */
 	public function url( $args ) {
 		$term_link = get_term_link( (int)$args[1], $args[0] );
