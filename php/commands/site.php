@@ -197,6 +197,13 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--keep-tables]
 	 * : Delete the blog from the list, but don't drop it's tables.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp site delete 123
+	 *     Are you sure you want to delete the http://www.example.com/example site? [y/n] y
+	 *     Success: The site at http://www.example.com/example was deleted.
+	 *
 	 */
 	function delete( $args, $assoc_args ) {
 		if ( !is_multisite() ) {
