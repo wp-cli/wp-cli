@@ -40,7 +40,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
+	 *     $ wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
+	 *     Success: Created comment 932.
 	 */
 	public function create( $args, $assoc_args ) {
 		parent::_create( $args, $assoc_args, function ( $params ) {
