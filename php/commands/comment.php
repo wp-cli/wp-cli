@@ -521,7 +521,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment url 123
+	 *     $ wp comment url 123
+	 *     http://example.com/about/page-with-comments/#comment-123
 	 */
 	public function url( $args ) {
 		parent::_url( $args, 'get_comment_link' );
