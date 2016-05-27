@@ -395,7 +395,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment approve 1337
+	 *     $ wp comment approve 1337
+	 *     Success: Approved comment 1337
 	 */
 	public function approve( $args, $assoc_args ) {
 		foreach( $args as $id ) {
