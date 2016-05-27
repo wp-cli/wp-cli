@@ -81,3 +81,9 @@ Feature: Manage WordPress roles
       delete_posts
       delete_published_posts
       """
+
+    When I run `wp cap list reporter --format=count`
+    Then STDOUT should be:
+      """
+      10
+      """
