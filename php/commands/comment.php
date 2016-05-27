@@ -323,7 +323,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment trash 1337
+	 *     $ wp comment trash 1337
+	 *     Success: Trashed comment 1337.
 	 */
 	public function trash( $args, $assoc_args ) {
 		foreach( $args as $id ) {
