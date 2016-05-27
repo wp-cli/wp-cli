@@ -169,7 +169,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment get 1 --field=content
+	 *     $ wp comment get 21 --field=content
+	 *     Thanks for all the comments, everyone!
 	 */
 	public function get( $args, $assoc_args ) {
 		$comment_id = (int)$args[0];
