@@ -431,8 +431,25 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment count
-	 *     wp comment count 42
+	 *     # Count comments on whole blog
+	 *     $ wp comment count
+	 *     approved:        33
+	 *     spam:            3
+	 *     trash:           1
+	 *     post-trashed:    0
+	 *     all:             34
+	 *     moderated:       1
+	 *     total_comments:  37
+	 *
+	 *     # Count comments in a post
+	 *     $ wp comment count 42
+	 *     approved:        19
+	 *     spam:            0
+	 *     trash:           0
+	 *     post-trashed:    0
+	 *     all:             19
+	 *     moderated:       0
+	 *     total_comments:  19
 	 */
 	public function count( $args, $assoc_args ) {
 		$post_id = \WP_CLI\Utils\get_flag_value( $args, 0, 0 );
