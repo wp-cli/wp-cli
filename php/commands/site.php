@@ -543,7 +543,8 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp site spam 123
+	 *     $ wp site spam 123
+	 *     Success: Site 123 marked as spam.
 	 */
 	public function spam( $args ) {
 		$this->update_site_status( $args, 'spam', 1 );
@@ -559,7 +560,8 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp site unspam 123
+	 *     $ wp site unspam 123
+	 *     Success: Site 123 removed from spam.
 	 *
 	 * @subcommand unspam
 	 */
