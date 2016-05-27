@@ -413,7 +413,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment unapprove 1337
+	 *     $ wp comment unapprove 1337
+	 *     Success: Unapproved comment 1337
 	 */
 	public function unapprove( $args, $assoc_args ) {
 		foreach( $args as $id ) {
