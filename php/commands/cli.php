@@ -106,8 +106,8 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 * 
-	 * $ wp cli check-update
-	 * Success: WP-CLI is at the latest version.
+	 *     $ wp cli check-update
+	 *     Success: WP-CLI is at the latest version.
 	 *
 	 * @subcommand check-update
 	 */
@@ -329,19 +329,19 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *  $ wp cli param-dump --format=var_export
-	 *  array (
-	 *    'path' => 
-	 *    array (
-	 *      'runtime' => '=<path>',
-	 *      'file' => '<path>',
-	 *      'synopsis' => '',
-	 *      'default' => NULL,
-	 *      'multiple' => false,
-	 *      'desc' => 'Path to the WordPress files.',
-	 *    ),
-	 *    'url' => 
-	 *    array (
+	 *     $ wp cli param-dump --format=var_export
+	 *     array (
+	 *       'path' => 
+	 *       array (
+	 *         'runtime' => '=<path>',
+	 *         'file' => '<path>',
+	 *         'synopsis' => '',
+	 *         'default' => NULL,
+	 *         'multiple' => false,
+	 *         'desc' => 'Path to the WordPress files.',
+	 *       ),
+	 *       'url' => 
+	 *       array (
 	 *
 	 * @subcommand param-dump
 	 */
