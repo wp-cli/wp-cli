@@ -503,7 +503,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment exists 1337
+	 *     $ wp comment exists 1337
+	 *     Success: Comment with ID 1337 exists.
 	 */
 	public function exists( $args ) {
 		if ( $this->fetcher->get( $args[0] ) ) {
