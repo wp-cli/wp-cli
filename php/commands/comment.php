@@ -377,7 +377,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment unspam 1337
+	 *     $ wp comment unspam 1337
+	 *     Success: Unspammed comment 1337.
 	 */
 	public function unspam( $args, $assoc_args ) {
 		foreach( $args as $id ) {
