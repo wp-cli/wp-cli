@@ -479,7 +479,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment status 1337
+	 *     $ wp comment status 1337
+	 *     approved
 	 */
 	public function status( $args, $assoc_args ) {
 		list( $comment_id ) = $args;
