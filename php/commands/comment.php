@@ -106,7 +106,10 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     # Add meta to every generated comment
-	 *     wp comment generate --format=ids | xargs -0 -d ' ' -I % wp comment meta add % foo bar
+	 *     $ wp comment generate --format=ids --count=3 | xargs -0 -d ' ' -I % wp comment meta add % foo bar
+	 *     Success: Added custom field.
+	 *     Success: Added custom field.
+	 *     Success: Added custom field.
 	 */
 	public function generate( $args, $assoc_args ) {
 
