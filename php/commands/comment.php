@@ -359,7 +359,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment spam 1337
+	 *     $ wp comment spam 1337
+	 *     Success: Marked as spam comment 1337.
 	 */
 	public function spam( $args, $assoc_args ) {
 		foreach( $args as $id ) {
