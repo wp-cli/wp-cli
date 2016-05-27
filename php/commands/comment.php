@@ -456,6 +456,11 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * <id>...
 	 * : IDs for one or more posts to update.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp comment recount 123
+	 *     Updated post 123 comment count to 67
 	 */
 	public function recount( $args ) {
 		foreach( $args as $id ) {
