@@ -77,7 +77,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment update 123 --comment_author='That Guy'
+	 *     $ wp comment update 123 --comment_author='That Guy'
+	 *     Success: Updated comment 123.
 	 */
 	public function update( $args, $assoc_args ) {
 		parent::_update( $args, $assoc_args, function ( $params ) {
