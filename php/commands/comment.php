@@ -266,9 +266,14 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment delete 1337 --force
+	 *     # Delete comment
+	 *     $ wp comment delete 1337 --force
+	 *     Success: Deleted comment 1337.
 	 *
-	 *     wp comment delete 1337 2341 --force
+	 *     # Delete multiple comments
+	 *     $ wp comment delete 1337 2341 --force
+	 *     Success: Deleted comment 1337.
+	 *     Success: Deleted comment 2341.
 	 */
 	public function delete( $args, $assoc_args ) {
 		parent::_delete( $args, $assoc_args, function ( $comment_id, $assoc_args ) {
