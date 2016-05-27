@@ -248,6 +248,12 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--porcelain]
 	 * : If set, only the site id will be output on success.
+	 *
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp site create --slug=example
+	 *     Success: Site 3 created: www.example.com/example/
 	 */
 	public function create( $_, $assoc_args ) {
 		if ( !is_multisite() ) {
