@@ -341,7 +341,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment untrash 1337
+	 *     $ wp comment untrash 1337
+	 *     Success: Untrashed comment 1337.
 	 */
 	public function untrash( $args, $assoc_args ) {
 		foreach( $args as $id ) {
