@@ -511,7 +511,8 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp site activate 123
+	 *     $ wp site activate 123
+	 *     Success: Site 123 activated.
 	 */
 	public function activate( $args ) {
 		$this->update_site_status( $args, 'deleted', 0 );
