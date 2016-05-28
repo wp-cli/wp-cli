@@ -661,7 +661,13 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp menu location list
+	 *     $ wp menu location list
+	 *     +----------+-------------------+
+	 *     | location | description       |
+	 *     +----------+-------------------+
+	 *     | primary  | Primary Menu      |
+	 *     | social   | Social Links Menu |
+	 *     +----------+-------------------+
 	 *
 	 * @subcommand list
 	 */
