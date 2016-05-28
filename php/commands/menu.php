@@ -6,16 +6,25 @@
  * ## EXAMPLES
  *
  *     # Create a new menu
- *     wp menu create "My Menu"
+ *     $ wp menu create "My Menu"
+ *     Success: Created menu 200.
  *
  *     # List existing menus
- *     wp menu list
+ *     $ wp menu list
+ *     +---------+----------+----------+-----------+-------+
+ *     | term_id | name     | slug     | locations | count |
+ *     +---------+----------+----------+-----------+-------+
+ *     | 200     | My Menu  | my-menu  |           | 0     |
+ *     | 177     | Top Menu | top-menu | primary   | 7     |
+ *     +---------+----------+----------+-----------+-------+
  *
  *     # Create a new menu link item
- *     wp menu item add-custom sidebar-menu Apple http://apple.com --porcelain
+ *     $ wp menu item add-custom my-menu Apple http://apple.com --porcelain
+ *     1922
  *
- *     # Assign the 'primary-menu' menu to the 'primary' location
- *     wp menu location assign primary-menu primary
+ *     # Assign the 'my-menu' menu to the 'primary' location
+ *     $ wp menu location assign my-menu primary
+ *     Success: Assigned location to menu.
  */
 class Menu_Command extends WP_CLI_Command {
 
