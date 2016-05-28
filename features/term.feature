@@ -95,19 +95,19 @@ Feature: Manage WordPress terms
 
   Scenario: Fetch term url
     When I run `wp term create category "First Category" --porcelain`
-    And save STDOUT as {TERM_ID_1}
+    And save STDOUT as {TERM_ID}
     And I run `wp term create category "Second Category" --porcelain`
-    And save STDOUT as {TERM_ID_2}
+    And save STDOUT as {SECOND_TERM_ID}
 
-    When I run `wp term url category {TERM_ID_1}`
+    When I run `wp term url category {TERM_ID}`
     Then STDOUT should be:
       """
-      http://localhost:8001/category/first-category
+      http://example.com/?cat=2
       """
 
-    When I run `wp term url category {TERM_ID_1} {TERM_ID_2}`
+    When I run `wp term url category {TERM_ID} {SECOND_TERM_ID}`
     Then STDOUT should be:
       """
-      http://localhost:8001/category/first-category
-      http://localhost:8001/category/second-category
+      http://example.com/?cat=2
+      http://example.com/?cat=3
       """
