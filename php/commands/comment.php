@@ -301,7 +301,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	private function call( $args, $status, $success, $failure ) {
-		list( $comment_id ) = $args;
+		$comment_id = absint( $args );
 
 		$func = sprintf( 'wp_%s_comment', $status );
 
@@ -395,7 +395,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function unspam( $args, $assoc_args ) {
 		foreach( $args as $id ) {
-			$this->call( $args, __FUNCTION__, 'Unspammed', 'Failed unspamming' );
+			$this->call( $id, __FUNCTION__, 'Unspammed', 'Failed unspamming' );
 		}
 	}
 
