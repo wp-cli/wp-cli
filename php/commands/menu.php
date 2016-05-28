@@ -123,7 +123,13 @@ class Menu_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp menu list
+	 *     $ wp menu list
+	 *     +---------+----------+----------+-----------+-------+
+	 *     | term_id | name     | slug     | locations | count |
+	 *     +---------+----------+----------+-----------+-------+
+	 *     | 200     | My Menu  | my-menu  |           | 0     |
+	 *     | 177     | Top Menu | top-menu | primary   | 7     |
+	 *     +---------+----------+----------+-----------+-------+
 	 *
 	 * @subcommand list
 	 */
