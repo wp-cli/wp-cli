@@ -732,7 +732,8 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp menu location remove primary-menu primary
+	 *     $ wp menu location remove primary-menu primary
+	 *     Success: Removed location from menu.
 	 *
 	 * @subcommand remove
 	 */
