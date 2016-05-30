@@ -580,7 +580,21 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
  *
  * ## EXAMPLES
  *
- *     wp comment meta set 123 description "Mary is a WordPress developer."
+ *     # Set comment meta
+ *     $ wp comment meta set 123 description "Mary is a WordPress developer."
+ *     Success: Updated custom field 'description'.
+ *
+ *     # Get comment meta
+ *     $ wp comment meta get 123 description
+ *     Mary is a WordPress developer.
+ *
+ *     # Update comment meta
+ *     $ wp comment meta update 123 description "Mary is an awesome WordPress developer."
+ *     Success: Updated custom field 'description'.
+ *
+ *     # Delete comment meta
+ *     $ wp comment meta delete 123 description
+ *     Success: Deleted custom field.
  */
 class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 	protected $meta_type = 'comment';
