@@ -200,11 +200,18 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme enable twentythirteen
+	 *     # Enable theme
+	 *     $ wp theme enable twentysixteen
+	 *     Success: Enabled the 'Twenty Sixteen' theme.
 	 *
-	 *     wp theme enable twentythirteen --network
+	 *     # Network enable theme
+	 *     $ wp theme enable twentysixteen --network
+	 *     Success: Network enabled the 'Twenty Sixteen' theme.
 	 *
-	 *     wp theme enable twentythirteen --activate
+	 *     # Network enable and activate theme for current site
+	 *     $ wp theme enable twentysixteen --activate
+	 *     Success: Enabled the 'Twenty Sixteen' theme.
+	 *     Success: Switched to 'Twenty Sixteen' theme.
 	 */
 	public function enable( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
