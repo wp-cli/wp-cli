@@ -104,6 +104,11 @@ class CLI_Command extends WP_CLI_Command {
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
 	 *
+	 * ## EXAMPLES
+	 * 
+	 *     $ wp cli check-update
+	 *     Success: WP-CLI is at the latest version.
+	 *
 	 * @subcommand check-update
 	 */
 	public function check_update( $_, $assoc_args ) {
@@ -321,6 +326,22 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: var_export, json. Default: json.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp cli param-dump --format=var_export
+	 *     array (
+	 *       'path' => 
+	 *       array (
+	 *         'runtime' => '=<path>',
+	 *         'file' => '<path>',
+	 *         'synopsis' => '',
+	 *         'default' => NULL,
+	 *         'multiple' => false,
+	 *         'desc' => 'Path to the WordPress files.',
+	 *       ),
+	 *       'url' => 
+	 *       array (
 	 *
 	 * @subcommand param-dump
 	 */
