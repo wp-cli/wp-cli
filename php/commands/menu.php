@@ -41,7 +41,8 @@ class Menu_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp menu create "My Menu"
+	 *     $ wp menu create "My Menu"
+	 *     Success: Created menu 200.
 	 */
 	public function create( $args, $assoc_args ) {
 
