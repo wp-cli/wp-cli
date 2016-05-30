@@ -249,11 +249,29 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp comment list --field=ID
+	 *     # List comment IDs
+	 *     $ wp comment list --field=ID
+	 *     22
+	 *     23
+	 *     24
 	 *
-	 *     wp comment list --post_id=2
+	 *     # List comments of a post
+	 *     $ wp comment list --post_id=1 --fields=ID,comment_date,comment_author
+	 *     +------------+---------------------+----------------+
+	 *     | comment_ID | comment_date        | comment_author |
+	 *     +------------+---------------------+----------------+
+	 *     | 1          | 2015-06-20 09:00:10 | Mr WordPress   |
+	 *     +------------+---------------------+----------------+
 	 *
-	 *     wp comment list --number=20 --status=approve
+	 *     # List approved comments
+	 *     $ wp comment list --number=3 --status=approve --fields=ID,comment_date,comment_author
+	 *     +------------+---------------------+----------------+
+	 *     | comment_ID | comment_date        | comment_author |
+	 *     +------------+---------------------+----------------+
+	 *     | 1          | 2015-06-20 09:00:10 | Mr WordPress   |
+	 *     | 30         | 2013-03-14 12:35:07 | John Doe       |
+	 *     | 29         | 2013-03-14 11:56:08 | Jane Doe       |
+	 *     +------------+---------------------+----------------+
 	 *
 	 * @subcommand list
 	 */
