@@ -538,7 +538,8 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp site deactivate 123
+	 *     $ wp site deactivate 123
+	 *     Success: Site 123 deactivated.
 	 */
 	public function deactivate( $args ) {
 		$this->update_site_status( $args, 'deleted', 1 );
