@@ -190,3 +190,62 @@ Feature: Manage WordPress comments
       11
       """
 
+  Scenario: Spam/unspam comments with multidigit comment ID
+    Given I run `wp comment delete $(wp comment list --field=ID)`
+    And I run `wp comment generate --count=10 --quiet`
+    And I run `wp comment create --porcelain`
+    And save STDOUT as {COMMENT_ID}
+
+    When I run `wp comment spam {COMMENT_ID}`
+    Then STDOUT should contain:
+      """
+      Marked as spam comment {COMMENT_ID}.
+      """
+
+    When I run `wp comment list --format=count --status=spam`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp comment unspam {COMMENT_ID}`
+    Then STDOUT should contain:
+      """
+      Unspammed comment {COMMENT_ID}.
+      """
+
+    When I run `wp comment list --format=count --status=spam`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+  Scenario: Trash/untrash comments with multidigit comment ID
+    Given I run `wp comment delete $(wp comment list --field=ID) --force`
+    And I run `wp comment generate --count=10 --quiet`
+    And I run `wp comment create --porcelain`
+    And save STDOUT as {COMMENT_ID}
+
+    When I run `wp comment trash {COMMENT_ID}`
+    Then STDOUT should contain:
+      """
+      Success: Trashed comment {COMMENT_ID}.
+      """
+
+    When I run `wp comment list --format=count --status=trash`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp comment untrash {COMMENT_ID}`
+    Then STDOUT should contain:
+      """
+      Untrashed comment {COMMENT_ID}.
+      """
+
+    When I run `wp comment list --format=count --status=trash`
+    Then STDOUT should be:
+      """
+      0
+      """
