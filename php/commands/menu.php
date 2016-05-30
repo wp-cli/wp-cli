@@ -82,7 +82,8 @@ class Menu_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp menu delete "My Menu"
+	 *     $ wp menu delete "My Menu"
+	 *     Success: Menu(s) deleted.
 	 */
 	public function delete( $args, $_ ) {
 
