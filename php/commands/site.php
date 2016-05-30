@@ -413,7 +413,9 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     # Output a simple list of site URLs
-	 *     wp site list --field=url
+	 *     $ wp site list --field=url
+	 *     http://example.com/
+	 *     http://example.com/subdir/
 	 *
 	 * @subcommand list
 	 */
