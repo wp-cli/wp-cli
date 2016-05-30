@@ -481,7 +481,8 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp site archive 123
+	 *     $ wp site archive 123
+	 *     Success: Site 123 archived.
 	 */
 	public function archive( $args ) {
 		$this->update_site_status( $args, 'archived', 1 );
@@ -497,7 +498,8 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp site unarchive 123
+	 *     $ wp site unarchive 123
+	 *     Success: Site 123 unarchived.
 	 */
 	public function unarchive( $args ) {
 		$this->update_site_status( $args, 'archived', 0 );
