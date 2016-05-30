@@ -9,6 +9,38 @@ Feature: WordPress code scaffolding
     When I run `wp scaffold child-theme zombieland --parent_theme=umbrella --theme_name=Zombieland --author=Tallahassee --author_uri=http://www.wp-cli.org --theme_uri=http://www.zombieland.com`
     Then STDOUT should not be empty
     And the {THEME_DIR}/zombieland/style.css file should exist
+    And the {THEME_DIR}/zombieland/functions.php file should exist
+
+  Scenario: Scaffold a child theme with only --parent_theme parameter
+    Given a WP install
+    Given I run `wp theme path`
+    And save STDOUT as {THEME_DIR}
+
+    When I run `wp scaffold child-theme hello-world --parent_theme=simple-life`
+    Then STDOUT should not be empty
+    And the {THEME_DIR}/hello-world/style.css file should exist
+    And the {THEME_DIR}/hello-world/style.css file should contain:
+      """
+      Theme Name:     Hello-world
+      """
+
+  Scenario: Scaffold a child theme with non existing parent theme and also activate parameter
+    Given a WP install
+
+    When I try `wp scaffold child-theme hello-world --parent_theme=just-test --activate --quiet`
+    Then STDERR should contain:
+      """
+      Error: The parent theme is missing. Please install the "just-test" parent theme.
+      """
+
+  Scenario: Scaffold a child theme with non existing parent theme and also network activate parameter
+    Given a WP install
+
+    When I try `wp scaffold child-theme hello-world --parent_theme=just-test --enable-network --quiet`
+    Then STDERR should contain:
+      """
+      Error: This is not a multisite install.
+      """
 
   Scenario: Scaffold a child theme and network enable it
     Given a WP multisite install
