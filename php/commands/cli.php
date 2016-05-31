@@ -410,7 +410,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * Dump the list of installed commands, as JSON.
 	 *
 	 *     # Dump the list of installed commands
-	 *     $ wp cli version
+	 *     $ wp cli cmd-dump
 	 *     {"name":"wp","description":"Manage WordPress through the command-line.","longdesc":"\n\n## GLOBAL PARAMETERS\n\n  --path=<path>\n      Path to the WordPress files.\n\n  --ssh=<ssh>\n      Perform operation against a remote server over SSH.\n\n  --url=<url>\n      Pretend request came from given URL. In multisite, this argument is how the target site is specified. \n\n  --user=<id|login|email>\n
 	 *
 	 * @subcommand cmd-dump
