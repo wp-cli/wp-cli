@@ -187,10 +187,16 @@ class Menu_Command extends WP_CLI_Command {
  * ## EXAMPLES
  *
  *     # Add an existing post to an existing menu
- *     wp menu item add-post sidebar-menu 33 --title="Custom Test Post"
+ *     $ wp menu item add-post sidebar-menu 33 --title="Custom Test Post"
+ *     Success: Menu item added.
  *
  *     # Create a new menu link item
- *     wp menu item add-custom sidebar-menu Apple http://apple.com --porcelain
+ *     $ wp menu item add-custom sidebar-menu Apple http://apple.com
+ *     Success: Menu item added.
+ *
+ *     # Delete menu item
+ *     $ wp menu item delete 45
+ *     Success: Menu item(s) deleted.
  */
 class Menu_Item_Command extends WP_CLI_Command {
 
@@ -241,7 +247,13 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp menu item list <menu>
+	 *     $ wp menu item list main-menu
+	 *     +-------+-----------+-------------+---------------------------------+----------+
+	 *     | db_id | type      | title       | link                            | position |
+	 *     +-------+-----------+-------------+---------------------------------+----------+
+	 *     | 5     | custom    | Home        | http://example.com              | 1        |
+	 *     | 6     | post_type | Sample Page | http://example.com/sample-page/ | 2        |
+	 *     +-------+-----------+-------------+---------------------------------+----------+
 	 *
 	 * @subcommand list
 	 */
@@ -311,7 +323,8 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp menu item add-post sidebar-menu 33 --title="Custom Test Post"
+	 *     $ wp menu item add-post sidebar-menu 33 --title="Custom Test Post"
+	 *     Success: Menu item added.
 	 *
 	 * @subcommand add-post
 	 */
@@ -371,7 +384,8 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp menu item add-term sidebar-menu post_tag 24
+	 *     $ wp menu item add-term sidebar-menu post_tag 24
+	 *     Success: Menu item added.
 	 *
 	 * @subcommand add-term
 	 */
@@ -426,7 +440,8 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp menu item add-custom sidebar-menu Apple http://apple.com --porcelain
+	 *     $ wp menu item add-custom sidebar-menu Apple http://apple.com
+	 *     Success: Menu item added.
 	 *
 	 * @subcommand add-custom
 	 */
@@ -473,7 +488,8 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp menu item update 45 --title=WordPress --link='http://wordpress.org' --target=_blank --position=2
+	 *     $ wp menu item update 45 --title=WordPress --link='http://wordpress.org' --target=_blank --position=2
+	 *     Success: Menu item updated.
 	 *
 	 * @subcommand update
 	 */
@@ -502,7 +518,8 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp menu item delete 45
+	 *     $ wp menu item delete 45
+	 *     Success: Menu item(s) deleted.
 	 *
 	 * @subcommand delete
 	 */
