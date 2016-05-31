@@ -442,6 +442,18 @@ class Cron_Event_Command extends WP_CLI_Command {
 
 /**
  * Manage WP-Cron schedules.
+ *
+ * ## EXAMPLES
+ *
+ *     # List available cron schedules
+ *     $ wp cron schedule list
+ *     +------------+-------------+----------+
+ *     | name       | display     | interval |
+ *     +------------+-------------+----------+
+ *     | hourly     | Once Hourly | 3600     |
+ *     | twicedaily | Twice Daily | 43200    |
+ *     | daily      | Once Daily  | 86400    |
+ *     +------------+-------------+----------+
  */
 class Cron_Schedule_Command extends WP_CLI_Command {
 
