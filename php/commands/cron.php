@@ -49,9 +49,19 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp cron event list
+	 *     # List scheduled cron events
+	 *     $ wp cron event list
+	 *     +-------------------+---------------------+---------------------+------------+
+	 *     | hook              | next_run_gmt        | next_run_relative   | recurrence |
+	 *     +-------------------+---------------------+---------------------+------------+
+	 *     | wp_version_check  | 2016-05-31 22:15:13 | 11 hours 57 minutes | 12 hours   |
+	 *     | wp_update_plugins | 2016-05-31 22:15:13 | 11 hours 57 minutes | 12 hours   |
+	 *     | wp_update_themes  | 2016-05-31 22:15:14 | 11 hours 57 minutes | 12 hours   |
+	 *     +-------------------+---------------------+---------------------+------------+
 	 *
-	 *     wp cron event list --fields=hook,next_run --format=json
+	 *     # List scheduled cron events in JSON
+	 *     $ wp cron event list --fields=hook,next_run --format=json
+	 *     [{"hook":"wp_version_check","next_run":"2016-05-31 10:15:13"},{"hook":"wp_update_plugins","next_run":"2016-05-31 10:15:13"},{"hook":"wp_update_themes","next_run":"2016-05-31 10:15:14"}]
 	 *
 	 * @subcommand list
 	 */
@@ -100,11 +110,17 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp cron event schedule cron_test
+	 *     # Schedule a new cron event
+	 *     $ wp cron event schedule cron_test
+	 *     Success: Scheduled event with hook 'cron_test' for 2016-05-31 10:19:16 GMT.
 	 *
-	 *     wp cron event schedule cron_test now hourly
+	 *     # Schedule new cron event with hourly recurrence
+	 *     $ wp cron event schedule cron_test now hourly
+	 *     Success: Scheduled event with hook 'cron_test' for 2016-05-31 10:20:32 GMT.
 	 *
-	 *     wp cron event schedule cron_test '+1 hour' --foo=1 --bar=2
+	 *     # Schedule new cron event and pass associative arguments
+	 *     $ wp cron event schedule cron_test '+1 hour' --foo=1 --bar=2
+	 *     Success: Scheduled event with hook 'cron_test' for 2016-05-31 11:21:35 GMT.
 	 */
 	public function schedule( $args, $assoc_args ) {
 
@@ -165,7 +181,8 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Run all cron events due right now
-	 *     wp cron event run --due-now
+	 *     $ wp cron event run --due-now
+	 *     Success: Executed a total of 2 cron event(s).
 	 */
 	public function run( $args, $assoc_args ) {
 
@@ -248,6 +265,12 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 *
 	 * <hook>
 	 * : The hook name
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Delete the next scheduled cron event
+	 *     $ wp cron event delete cron_test
+	 *     Success: Deleted 2 instances of the cron event 'cron_test'
 	 */
 	public function delete( $args, $assoc_args ) {
 
@@ -454,9 +477,19 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp cron schedule list
+	 *     # List available cron schedules
+	 *     $ wp cron schedule list
+	 *     +------------+-------------+----------+
+	 *     | name       | display     | interval |
+	 *     +------------+-------------+----------+
+	 *     | hourly     | Once Hourly | 3600     |
+	 *     | twicedaily | Twice Daily | 43200    |
+	 *     | daily      | Once Daily  | 86400    |
+	 *     +------------+-------------+----------+
 	 *
-	 *     wp cron schedule list --fields=name --format=ids
+	 *     # List id of available cron schedule
+	 *     $ wp cron schedule list --fields=name --format=ids
+	 *     hourly twicedaily daily
 	 *
 	 * @subcommand list
 	 */
@@ -527,6 +560,11 @@ class Cron_Command extends WP_CLI_Command {
 	 * * Checks to see if the `ALTERNATE_WP_CRON` constant is set; warns if true
 	 * * Attempts to spawn WP-Cron over HTTP; warns if non 200 response code is
 	 * returned.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp cron test
+	 *     Success: WP-Cron spawning is working as expected.
 	 */
 	public function test() {
 
