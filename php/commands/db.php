@@ -4,6 +4,23 @@ use \WP_CLI\Utils;
 
 /**
  * Perform basic database operations.
+ *
+ * ## EXAMPLES
+ *
+ *     # Create database
+ *     $ wp db create
+ *     Success: Database created.
+ *
+ *     # Drop database
+ *     $ wp db drop --yes
+ *     Success: Database dropped.
+ *
+ *     # Reset database
+ *     $ wp db reset --yes
+ *     Success: Database reset.
+ *
+ *     # Execute a query stored in a file
+ *     $ wp db query < debug.sql
  */
 class DB_Command extends WP_CLI_Command {
 
@@ -154,10 +171,10 @@ class DB_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Execute a query stored in a file
-	 *     wp db query < debug.sql
+	 *     $ wp db query < debug.sql
 	 *
 	 *     # Check all tables in the database
-	 *     wp db query "CHECK TABLE $(wp db tables | paste -s -d',');"
+	 *     $ wp db query "CHECK TABLE $(wp db tables | paste -s -d',');"
 	 *     +---------------------------------------+-------+----------+----------+
 	 *     | Table                                 | Op    | Msg_type | Msg_text |
 	 *     +---------------------------------------+-------+----------+----------+
