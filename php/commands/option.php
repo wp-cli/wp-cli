@@ -10,13 +10,21 @@
  *
  * ## EXAMPLES
  *
- *     wp option get siteurl
+ *     # Get site URL
+ *     $ wp option get siteurl
+ *     http://example.com
  *
- *     wp option add my_option foobar
+ *     # Add option
+ *     $ wp option add my_option foobar
+ *     Success: Added 'my_option' option.
  *
- *     wp option update my_option '{"foo": "bar"}' --format=json
+ *     # Update option
+ *     $ wp option update my_option '{"foo": "bar"}' --format=json
+ *     Success: Updated 'my_option' option.
  *
- *     wp option delete my_option
+ *     # Delete option
+ *     $ wp option delete my_option
+ *     Success: Deleted 'my_option' option.
  */
 class Option_Command extends WP_CLI_Command {
 
@@ -105,17 +113,6 @@ class Option_Command extends WP_CLI_Command {
 	 * [--format=<format>]
 	 * : The serialization format for the value. total_bytes displays the total size of matching options in bytes. Accepted values: table, json, csv, count, total_bytes. Default: table
 	 *
-	 * ## EXAMPLES
-	 *
-	 *     # Get the total size of all autoload options
-	 *     wp option list --autoload=on --format=total_bytes
-	 *
-	 *     # Find biggest transients
-	 *     wp option list --search="*_transient_*" --fields=option_name,size_bytes | sort -n -k 2 | tail
-	 *
-	 *     # List all options begining with "i2f_"
-	 *     wp option list --search "i2f_*"
-	 *
 	 * ## AVAILABLE FIELDS
 	 *
 	 * This field will be displayed by default for each matching option:
@@ -127,6 +124,29 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * * autoload
 	 * * size_bytes
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Get the total size of all autoload options
+	 *     $ wp option list --autoload=on --format=total_bytes
+	 *     33198
+	 *
+	 *     # Find biggest transients
+	 *     $ wp option list --search="*_transient_*" --fields=option_name,size_bytes | sort -n -k 2 | tail
+	 *     option_name size_bytes
+	 *     _site_transient_timeout_theme_roots 10
+	 *     _site_transient_theme_roots 76
+	 *     _site_transient_update_themes   181
+	 *     _site_transient_update_core 808
+	 *     _site_transient_update_plugins  6645
+	 *
+	 *     # List all options begining with "i2f_"
+	 *     $ wp option list --search="i2f_*"
+	 *     +-------------+--------------+
+	 *     | option_name | option_value |
+	 *     +-------------+--------------+
+	 *     | i2f_version | 0.1.0        |
+	 *     +-------------+--------------+
 	 *
 	 * @subcommand list
 	 */
@@ -203,10 +223,13 @@ class Option_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Update an option by reading from a file
-	 *     wp option update my_option < value.txt
+	 *     $ wp option update my_option < value.txt
+	 *     Success: Updated 'my_option' option.
 	 *
 	 *     # Update one option on multiple sites using xargs
-	 *     wp site list --field=url | xargs -n1 -I {} sh -c 'wp --url={} option update <key> <value>'
+	 *     $ wp site list --field=url | xargs -n1 -I {} sh -c 'wp --url={} option update my_option my_value'
+	 *     Success: Updated 'my_option' option.
+	 *     Success: Updated 'my_option' option.
 	 *
 	 * @alias set
 	 */
