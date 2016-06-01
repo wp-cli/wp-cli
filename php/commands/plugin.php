@@ -5,6 +5,31 @@ use \WP_CLI\Utils;
 /**
  * Manage plugins.
  *
+ * ## EXAMPLES
+ *
+ *     # Activate plugin
+ *     $ wp plugin activate hello-dolly
+ *     Success: Plugin 'hello-dolly' activated.
+ *
+ *     # Deactivate plugin
+ *     $ wp plugin deactivate hello-dolly
+ *     Success: Plugin 'hello-dolly' deactivated.
+ *
+ *     # Delete plugin
+ *     $ wp plugin delete hello-dolly
+ *     Success: Deleted 'hello-dolly' plugin.
+ *
+ *     # Install the latest version from wordpress.org and activate
+ *     $ wp plugin install bbpress --activate
+ *     Installing bbPress (2.5.9)
+ *     Downloading install package from https://downloads.wordpress.org/plugin/bbpress.2.5.9.zip...
+ *     Using cached file '/home/vagrant/.wp-cli/cache/plugin/bbpress-2.5.9.zip'...
+ *     Unpacking the package...
+ *     Installing the plugin...
+ *     Plugin installed successfully.
+ *     Activating 'bbpress'...
+ *     Success: Plugin 'bbpress' activated.
+ *
  * @package wp-cli
  */
 class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
@@ -185,6 +210,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--network]
 	 * : If set, the plugin will be activated for the entire multisite network.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Activate plugin
+	 *     $ wp plugin activate hello-dolly
+	 *     Success: Plugin 'hello-dolly' activated.
+	 *
+	 *     # Activate plugin in entire multisite network
+	 *     $ wp plugin activate hello-dolly --network
+	 *     Success: Plugin 'hello-dolly' network activated.
 	 */
 	function activate( $args, $assoc_args = array() ) {
 		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
@@ -246,6 +281,12 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [--network]
 	 * : If set, the plugin will be deactivated for the entire multisite network.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Deactivate plugin
+	 *     $ wp plugin deactivate hello-dolly
+	 *     Success: Plugin 'hello-dolly' deactivated.
 	 */
 	function deactivate( $args, $assoc_args = array() ) {
 		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
@@ -654,8 +695,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp plugin is-installed hello
-	 *     echo $? # displays 0 or 1
+	 *     # Check whether plugin is installed; exit status 0 if installed, otherwise 1
+	 *     $ wp plugin is-installed hello-dolly
+	 *     $ echo $?
+	 *     1
 	 *
 	 * @subcommand is-installed
 	 */
@@ -677,6 +720,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Delete plugin
 	 *     $ wp plugin delete hello
 	 *     Success: Deleted 'hello' plugin.
 	 *
