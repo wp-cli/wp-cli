@@ -46,6 +46,60 @@ Feature: Skipping themes
       false
       """
 
+  Scenario: Skip parent and child themes
+    Given a WP install
+    And I run `wp theme install jolene biker`
+
+    When I run `wp theme activate jolene`
+    When I run `wp eval 'var_export( function_exists( "jolene_setup" ) );'`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+    When I run `wp --skip-themes=jolene eval 'var_export( function_exists( "jolene_setup" ) );'`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+    When I run `wp theme activate biker`
+    When I run `wp eval 'var_export( function_exists( "jolene_setup" ) );'`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+    When I run `wp eval 'var_export( function_exists( "biker_setup" ) );'`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+    When I run `wp --skip-themes=biker eval 'var_export( function_exists( "jolene_setup" ) );'`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+    When I run `wp --skip-themes=biker eval 'var_export( function_exists( "biker_setup" ) );'`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+    When I run `wp --skip-themes=biker eval 'echo get_template_directory();'`
+    Then STDOUT should contain:
+      """
+      wp-content/themes/jolene
+      """
+
+    When I run `wp --skip-themes=biker eval 'echo get_stylesheet_directory();'`
+    Then STDOUT should contain:
+      """
+      wp-content/themes/biker
+      """
+
   Scenario: Skipping multiple themes via config file
     Given a WP install
     And a wp-cli.yml file:
