@@ -854,6 +854,9 @@ class Runner {
 		// Load WP-CLI utilities
 		require WP_CLI_ROOT . '/php/utils-wp.php';
 
+		// Set up WordPress bootstrap actions and filters
+		$this->setup_bootstrap_hooks();
+
 		// Load Core, mu-plugins, plugins, themes etc.
 		require WP_CLI_ROOT . '/php/wp-settings-cli.php';
 
@@ -919,6 +922,138 @@ class Runner {
 				$url .= PATH_CURRENT_SITE;
 			}
 			\WP_CLI::set_url( $url );
+		}
+	}
+
+	/**
+	 * Set up hooks meant to run during the WordPress bootstrap process
+	 */
+	private function setup_bootstrap_hooks() {
+
+		if ( $this->config['skip-themes'] ) {
+			$this->add_wp_hook( 'setup_theme', array( $this, 'action_setup_theme_wp_cli_skip_themes' ), 999 );
+		}
+
+	}
+
+	/**
+	 * Set up the filters to skip the loaded theme
+	 */
+	public function action_setup_theme_wp_cli_skip_themes() {
+		$wp_cli_filter_active_theme = function( $value ) {
+			$skipped_themes = WP_CLI::get_runner()->config['skip-themes'];
+			if ( true === $skipped_themes ) {
+				return '';
+			}
+			if ( ! is_array( $skipped_themes ) ) {
+				$skipped_themes = explode( ',', $skipped_themes );
+			}
+			// Always check against the stylesheet value
+			// This ensures a child theme can be skipped when template differs
+			if ( false !== stripos( current_filter(), 'option_template' ) ) {
+				$checked_value = get_option( 'stylesheet' );
+			} else {
+				$checked_value = $value;
+			}
+			if ( '' === $checked_value || in_array( $checked_value, $skipped_themes ) ) {
+				return '';
+			}
+			return $value;
+		};
+		$hooks = array(
+			'pre_option_template',
+			'option_template',
+			'pre_option_stylesheet',
+			'option_stylesheet',
+		);
+		foreach( $hooks as $hook ) {
+			add_filter( $hook, $wp_cli_filter_active_theme, 999 );
+		}
+		// Clean up after the TEMPLATEPATH and STYLESHEETPATH constants are defined
+		$this->add_wp_hook( 'after_setup_theme', function() use ( $hooks, $wp_cli_filter_active_theme ) {
+			foreach( $hooks as $hook ) {
+				remove_filter( $hook, $wp_cli_filter_active_theme, 999 );
+			}
+		}, 0 );
+	}
+
+	/**
+	 * Add a callback to a WordPress action or filter
+	 *
+	 * Essentially add_filter() without needing access to add_filter()
+	 */
+	private function add_wp_hook( $tag, $function_to_add, $priority = 10, $accepted_args = 1 ) {
+		global $wp_filter, $merged_filters;
+		$idx = $this->wp_hook_build_unique_id($tag, $function_to_add, $priority);
+		$wp_filter[$tag][$priority][$idx] = array('function' => $function_to_add, 'accepted_args' => $accepted_args);
+		unset( $merged_filters[ $tag ] );
+		return true;
+	}
+
+	/**
+	 * Remove a callback from a WordPress action or filter
+	 *
+	 * Essentially remove_filter() without needing access to remove_filter()
+	 */
+	private function remove_wp_hook( $tag, $function_to_add, $priority = 10, $accepted_args = 1 ) {
+		$function_to_remove = $this->wp_hook_build_unique_id( $tag, $function_to_remove, $priority );
+
+		$r = isset( $GLOBALS['wp_filter'][ $tag ][ $priority ][ $function_to_remove ] );
+
+		if ( true === $r ) {
+			unset( $GLOBALS['wp_filter'][ $tag ][ $priority ][ $function_to_remove ] );
+			if ( empty( $GLOBALS['wp_filter'][ $tag ][ $priority ] ) ) {
+				unset( $GLOBALS['wp_filter'][ $tag ][ $priority ] );
+			}
+			if ( empty( $GLOBALS['wp_filter'][ $tag ] ) ) {
+				$GLOBALS['wp_filter'][ $tag ] = array();
+			}
+			unset( $GLOBALS['merged_filters'][ $tag ] );
+		}
+
+		return $r;
+	}
+
+	/**
+	 * Build Unique ID for storage and retrieval.
+	 *
+	 * Essentially _wp_filter_build_unique_id() without needing access to _wp_filter_build_unique_id()
+	 */
+	private function wp_hook_build_unique_id( $tag, $function, $priority ) {
+		global $wp_filter;
+		static $filter_id_count = 0;
+
+		if ( is_string($function) )
+			return $function;
+
+		if ( is_object($function) ) {
+			// Closures are currently implemented as objects
+			$function = array( $function, '' );
+		} else {
+			$function = (array) $function;
+		}
+
+		if (is_object($function[0]) ) {
+			// Object Class Calling
+			if ( function_exists('spl_object_hash') ) {
+				return spl_object_hash($function[0]) . $function[1];
+			} else {
+				$obj_idx = get_class($function[0]).$function[1];
+				if ( !isset($function[0]->wp_filter_id) ) {
+					if ( false === $priority )
+						return false;
+					$obj_idx .= isset($wp_filter[$tag][$priority]) ? count((array)$wp_filter[$tag][$priority]) : $filter_id_count;
+					$function[0]->wp_filter_id = $filter_id_count;
+					++$filter_id_count;
+				} else {
+					$obj_idx .= $function[0]->wp_filter_id;
+				}
+
+				return $obj_idx;
+			}
+		} elseif ( is_string( $function[0] ) ) {
+			// Static Calling
+			return $function[0] . '::' . $function[1];
 		}
 	}
 
