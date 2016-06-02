@@ -28,6 +28,41 @@ use \WP_CLI\ComposerIO;
  * Learn how to create your own command from the
  * [Commands Cookbook](http://wp-cli.org/docs/commands-cookbook/)
  *
+ * ## EXAMPLES
+ *
+ *     # List installed packages
+ *     $ wp package list
+ *     +-----------------------+------------------------------------------+---------+------------+
+ *     | name                  | description                              | authors | version    |
+ *     +-----------------------+------------------------------------------+---------+------------+
+ *     | wp-cli/server-command | Start a development server for WordPress |         | dev-master |
+ *     +-----------------------+------------------------------------------+---------+------------+
+ *
+ *     # Install the latest development version of the package
+ *     $ wp package install wp-cli/server-command
+ *     Installing wp-cli/server-command (dev-master)
+ *     Updating /home/person/.wp-cli/packages/composer.json to require the package...
+ *     Using Composer to install the package...
+ *     ---
+ *     Loading composer repositories with package information
+ *     Updating dependencies
+ *     Resolving dependencies through SAT
+ *     Dependency resolution completed in 0.005 seconds
+ *     Analyzed 732 packages to resolve dependencies
+ *     Analyzed 1034 rules to resolve dependencies
+ *      - Installing package
+ *     Writing lock file
+ *     Generating autoload files
+ *     ---
+ *     Success: Package installed successfully.
+ *
+ *     # Uninstall package
+ *     $ wp package uninstall wp-cli/server-command
+ *     Removing require statement from /home/person/.wp-cli/packages/composer.json
+ *     Deleting package directory /home/person/.wp-cli/packages/vendor/wp-cli/server-command
+ *     Regenerating Composer autoload.
+ *     Success: Uninstalled package.
+ *
  * @package WP-CLI
  *
  * @when before_wp_load
@@ -67,11 +102,26 @@ class Package_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # install the latest development version
-	 *     wp package install wp-cli/server-command
+	 *     # Install the latest development version
+	 *     $ wp package install wp-cli/server-command
+	 *     Installing wp-cli/server-command (dev-master)
+	 *     Updating /home/person/.wp-cli/packages/composer.json to require the package...
+	 *     Using Composer to install the package...
+	 *     ---
+	 *     Loading composer repositories with package information
+	 *     Updating dependencies
+	 *     Resolving dependencies through SAT
+	 *     Dependency resolution completed in 0.005 seconds
+	 *     Analyzed 732 packages to resolve dependencies
+	 *     Analyzed 1034 rules to resolve dependencies
+	 *      - Installing package
+	 *     Writing lock file
+	 *     Generating autoload files
+	 *     ---
+	 *     Success: Package installed successfully.
 	 *
-	 *     # install the latest stable version
-	 *     wp package install wp-cli/server-command:@stable
+	 *     # Install the latest stable version
+	 *     $ wp package install wp-cli/server-command:@stable
 	 */
 	public function install( $args, $assoc_args ) {
 		list( $package_name ) = $args;
@@ -146,6 +196,15 @@ class Package_Command extends WP_CLI_Command {
 	 * [--format=<format>]
 	 * : Accepted values: table, json, csv, yaml, ids. Default: table
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp package list
+	 *     +-----------------------+------------------------------------------+---------+------------+
+	 *     | name                  | description                              | authors | version    |
+	 *     +-----------------------+------------------------------------------+---------+------------+
+	 *     | wp-cli/server-command | Start a development server for WordPress |         | dev-master |
+	 *     +-----------------------+------------------------------------------+---------+------------+
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
@@ -164,7 +223,12 @@ class Package_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     cd $(wp package path)
+	 *     # Get package path
+	 *     $ wp package path
+	 *     /home/person/.wp-cli/packages/
+	 *
+	 *     # Change directory to package path
+	 *     $ cd $(wp package path)
 	 */
 	function path( $args ) {
 		$packages_dir = WP_CLI::get_runner()->get_packages_dir_path();
@@ -184,6 +248,14 @@ class Package_Command extends WP_CLI_Command {
 	 *
 	 * <name>
 	 * : Name of the package to uninstall.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp package uninstall wp-cli/server-command
+	 *     Removing require statement from /home/person/.wp-cli/packages/composer.json
+	 *     Deleting package directory /home/person/.wp-cli/packages/vendor/wp-cli/server-command
+	 *     Regenerating Composer autoload.
+	 *     Success: Uninstalled package.
 	 */
 	public function uninstall( $args ) {
 		list( $package_name ) = $args;
