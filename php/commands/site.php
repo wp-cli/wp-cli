@@ -3,6 +3,22 @@
 /**
  * Perform site-wide operations.
  *
+ * ## EXAMPLES
+ *
+ *     # Create site
+ *     $ wp site create --slug=example
+ *     Success: Site 3 created: www.example.com/example/
+ *
+ *     # Output a simple list of site URLs
+ *     $ wp site list --field=url
+ *     http://www.example.com/
+ *     http://www.example.com/subdir/
+ *
+ *     # Delete site
+ *     $ wp site delete 123
+ *     Are you sure you want to delete the http://www.example.com/example site? [y/n] y
+ *     Success: The site at http://www.example.com/example was deleted.
+ *
  * @package wp-cli
  */
 class Site_Command extends \WP_CLI\CommandWithDBObject {
@@ -143,6 +159,12 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--yes]
 	 * : Proceed to empty the site without a confirmation prompt.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp site empty
+	 *     Are you sure you want to empty the site at http://www.example.com of all posts, comments, and terms? [y/n] y
+	 *     Success: The site at http://www.example.com was emptied.
+	 *
 	 * @subcommand empty
 	 */
 	public function _empty( $args, $assoc_args ) {
@@ -203,7 +225,6 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *     $ wp site delete 123
 	 *     Are you sure you want to delete the http://www.example.com/example site? [y/n] y
 	 *     Success: The site at http://www.example.com/example was deleted.
-	 *
 	 */
 	function delete( $args, $assoc_args ) {
 		if ( !is_multisite() ) {
@@ -255,6 +276,11 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--porcelain]
 	 * : If set, only the site id will be output on success.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp site create --slug=example
+	 *     Success: Site 3 created: www.example.com/example/
 	 */
 	public function create( $_, $assoc_args ) {
 		if ( !is_multisite() ) {
@@ -421,8 +447,8 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     # Output a simple list of site URLs
 	 *     $ wp site list --field=url
-	 *     http://example.com/
-	 *     http://example.com/subdir/
+	 *     http://www.example.com/
+	 *     http://www.example.com/subdir/
 	 *
 	 * @subcommand list
 	 */
