@@ -32,6 +32,15 @@ class Core_Command extends WP_CLI_Command {
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, yaml. Default: table
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core check-update
+	 *     +---------+-------------+-------------------------------------------------------------+
+	 *     | version | update_type | package_url                                                 |
+	 *     +---------+-------------+-------------------------------------------------------------+
+	 *     | 4.5.2   | major       | https://downloads.wordpress.org/release/wordpress-4.5.2.zip |
+	 *     +---------+-------------+-------------------------------------------------------------+
+	 *
 	 * @subcommand check-update
 	 */
 	function check_update( $_, $assoc_args ) {
@@ -68,7 +77,10 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp core download --locale=nl_NL
+	 *     $ wp core download --locale=nl_NL
+	 *     Downloading WordPress 4.5.2 (nl_NL)...
+	 *     md5 hash verified: c5366d05b521831dd0b29dfc386e56a5
+	 *     Success: WordPress downloaded.
 	 *
 	 * @when before_wp_load
 	 */
@@ -318,13 +330,15 @@ class Core_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Standard wp-config.php file
-	 *     wp core config --dbname=testing --dbuser=wp --dbpass=securepswd --locale=ro_RO
+	 *     $ wp core config --dbname=testing --dbuser=wp --dbpass=securepswd --locale=ro_RO
+	 *     Success: Generated wp-config.php file.
 	 *
 	 *     # Enable WP_DEBUG and WP_DEBUG_LOG
-	 *     wp core config --dbname=testing --dbuser=wp --dbpass=securepswd --extra-php <<PHP
-	 *     define( 'WP_DEBUG', true );
-	 *     define( 'WP_DEBUG_LOG', true );
-	 *     PHP
+	 *     $ wp core config --dbname=testing --dbuser=wp --dbpass=securepswd --extra-php <<PHP
+	 *     $ define( 'WP_DEBUG', true );
+	 *     $ define( 'WP_DEBUG_LOG', true );
+	 *     $ PHP
+	 *     Success: Generated wp-config.php file.
 	 */
 	public function config( $_, $assoc_args ) {
 		global $wp_version;
@@ -445,6 +459,11 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * [--skip-email]
 	 * : Don't send an email notification to the new admin user.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core install --url=example.com --title=Example --admin_user=supervisor --admin_password=strongpassword --admin_email=info@example.com
+	 *     Success: WordPress installed successfully.
 	 */
 	public function install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
@@ -791,9 +810,11 @@ EOT;
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Display the WordPress version
 	 *     $ wp core version
 	 *     4.5.2
 	 *
+	 *     # Display WordPress version along with other information
 	 *     $ wp core version --extra
 	 *     WordPress version: 4.5.2
 	 *     Database revision: 36686
@@ -841,15 +862,19 @@ EOT;
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Verify checksums
 	 *     $ wp core verify-checksums
 	 *     Success: WordPress install verifies against checksums.
 	 *
+	 *     # Verify checksums for given WordPress version
 	 *     $ wp core verify-checksums --version=4.0
 	 *     Success: WordPress install verifies against checksums.
 	 *
+	 *     # Verify checksums for given locale
 	 *     $ wp core verify-checksums --locale=en_US
 	 *     Success: WordPress install verifies against checksums.
 	 *
+	 *     # Verify checksums for given locale
 	 *     $ wp core verify-checksums --locale=ja
 	 *     Warning: File doesn't verify against checksum: wp-includes/version.php
 	 *     Warning: File doesn't verify against checksum: readme.html
@@ -1059,6 +1084,7 @@ EOT;
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Update WordPress
 	 *     $ wp core update
 	 *     Updating to version 4.5.2 (en_US)...
 	 *     Downloading update from https://downloads.wordpress.org/release/wordpress-4.5.2-no-content.zip...
@@ -1067,6 +1093,7 @@ EOT;
 	 *     No files found that need cleaned up
 	 *     Success: WordPress updated successfully.
 	 *
+	 *     # Update WordPress to latest version of 3.8 release
 	 *     $ wp core update --version=3.8 ../latest.zip
 	 *     Updating to version 3.8 ()...
 	 *     Unpacking the update...
@@ -1077,6 +1104,7 @@ EOT;
 	 *     377 files cleaned up
 	 *     Success: WordPress updated successfully.
 	 *
+	 *     # Update WordPress to 3.1 forcefully
 	 *     $ wp core update --version=3.1 --force
 	 *     Updating to version 3.1 (en_US)...
 	 *     Downloading update from https://wordpress.org/wordpress-3.1.zip...
@@ -1211,9 +1239,11 @@ EOT;
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Update the WordPress database
 	 *     $ wp core update-db
 	 *     Success: WordPress database upgraded successfully from db version 36686 to 35700
 	 *
+	 *     # Update databases for all sites on a network
 	 *     $ wp core update-db --network
 	 *     WordPress database upgraded successfully from db version 35700 to 29630 on example.com/
 	 *     Success: WordPress database upgraded on 123/123 sites
@@ -1402,6 +1432,31 @@ EOT;
 
 WP_CLI::add_command( 'core', 'Core_Command' );
 
+/**
+ * Manage core language.
+ *
+ * ## EXAMPLES
+ *
+ *     # Install language
+ *     $ wp core language install nl_NL
+ *     Success: Language installed.
+ *
+ *     # Activate language
+ *     $ wp core language activate nl_NL
+ *     Success: Language activated.
+ *
+ *     # Uninstall language
+ *     $ wp core language uninstall nl_NL
+ *     Success: Language uninstalled.
+ *
+ *     # List installed languages
+ *     $ wp core language list --status=installed
+ *     +----------+--------------+-------------+-----------+-----------+---------------------+
+ *     | language | english_name | native_name | status    | update    | updated             |
+ *     +----------+--------------+-------------+-----------+-----------+---------------------+
+ *     | nl_NL    | Dutch        | Nederlands  | installed | available | 2016-05-13 08:12:50 |
+ *     +----------+--------------+-------------+-----------+-----------+---------------------+
+ */
 class Core_Language_Command extends WP_CLI\CommandWithTranslation {
 
 	protected $obj_type = 'core';
