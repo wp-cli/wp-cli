@@ -6,6 +6,21 @@ use WP_CLI\Process;
 /**
  * Generate code for post types, taxonomies, etc.
  *
+ * ## EXAMPLES
+ *
+ *     # Generate plugin
+ *     $ wp scaffold plugin sample-plugin
+ *     Success: Created plugin files.
+ *     Success: Created test files.
+ *
+ *     # Generate theme based on _s
+ *     $ wp scaffold _s sample-theme --theme_name="Sample Theme" --author="John Doe"
+ *     Success: Created theme 'Sample Theme'.
+ *
+ *     # Generate code for post type registration in given theme
+ *     $ wp scaffold post-type movie --label=Movie --theme=simple-life
+ *     Success: Created /var/www/example.com/public_html/wp-content/themes/simple-life/post-types/movie.php
+ *
  * @package wp-cli
  */
 class Scaffold_Command extends WP_CLI_Command {
@@ -39,6 +54,11 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * [--force]
 	 * : Overwrite files that already exist.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp scaffold post-type movie --label=Movie --theme=simple-life
+	 *     Success: Created /var/www/example.com/public_html/wp-content/themes/simple-life/post-types/movie.php
 	 *
 	 * @subcommand post-type
 	 *
@@ -93,7 +113,8 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp scaffold taxonomy venue --post_types=event,presentation
+	 *     # Generate PHP code for registering a custom taxonomy and save in a file
+	 *     $ wp scaffold taxonomy venue --post_types=event,presentation > taxonomy.php
 	 *
 	 * @subcommand taxonomy
 	 *
@@ -202,6 +223,10 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--force]
 	 * : Overwrite files that already exist.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp scaffold _s sample-theme --theme_name="Sample Theme" --author="John Doe"
+	 *     Success: Created theme 'Sample Theme'.
 	 */
 	function _s( $args, $assoc_args ) {
 
@@ -307,6 +332,11 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--force]
 	 * : Overwrite files that already exist.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp scaffold child-theme sample-theme --parent_theme=twentysixteen
+	 *     Success: Created /var/www/example.com/public_html/wp-content/themes/sample-theme.
+	 *
 	 * @subcommand child-theme
 	 */
 	function child_theme( $args, $assoc_args ) {
@@ -408,6 +438,11 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--force]
 	 * : Overwrite files that already exist.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp scaffold plugin sample-plugin
+	 *     Success: Created plugin files.
+	 *     Success: Created test files.
 	 */
 	function plugin( $args, $assoc_args ) {
 		$plugin_slug    = $args[0];
@@ -499,9 +534,10 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--force]
 	 * : Overwrite files that already exist.
 	 *
-	 * ## EXAMPLE
+	 * ## EXAMPLES
 	 *
-	 *     wp scaffold plugin-tests hello
+	 *     $ wp scaffold plugin-tests sample-plugin
+	 *     Success: Created test files.
 	 *
 	 * @subcommand plugin-tests
 	 */
