@@ -930,10 +930,50 @@ class Runner {
 	 */
 	private function setup_bootstrap_hooks() {
 
+		if ( $this->config['skip-plugins'] ) {
+			$this->setup_skip_plugins_filters();
+		}
+
 		if ( $this->config['skip-themes'] ) {
 			$this->add_wp_hook( 'setup_theme', array( $this, 'action_setup_theme_wp_cli_skip_themes' ), 999 );
 		}
 
+	}
+
+	/**
+	 * Set up the filters to skip the loaded plugins
+	 */
+	private function setup_skip_plugins_filters() {
+		$wp_cli_filter_active_plugins = function( $plugins ) use( $skip_plugins ) {
+			$skipped_plugins = WP_CLI::get_runner()->config['skip-plugins'];
+			if ( true === $skipped_plugins ) {
+				return array();
+			}
+			if ( ! is_array( $plugins ) ) {
+				return $plugins;
+			}
+			foreach( $plugins as $key => $plugin ) {
+				if ( Utils\is_plugin_skipped( $plugin ) ) {
+					unset( $plugins[ $key ] );
+				}
+			}
+			return array_values( $plugins );
+		};
+
+		$hooks = array(
+			'pre_site_option_active_sitewide_plugins',
+			'site_option_active_sitewide_plugins',
+			'pre_option_active_plugins',
+			'option_active_plugins',
+		);
+		foreach( $hooks as $hook ) {
+			$this->add_wp_hook( $hook, $wp_cli_filter_active_plugins, 999 );
+		}
+		$this->add_wp_hook( 'plugins_loaded', function() use ( $hooks, $wp_cli_filter_active_plugins ) {
+			foreach( $hooks as $hook ) {
+				remove_filter( $hook, $wp_cli_filter_active_plugins, 999 );
+			}
+		}, 0 );
 	}
 
 	/**
