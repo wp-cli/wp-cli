@@ -71,11 +71,18 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user list --field=ID
+	 *     # List user IDs
+	 *     $ wp user list --field=ID
+	 *     1
 	 *
-	 *     wp user list --role=administrator --format=csv
+	 *     # List users with administrator role
+	 *     $ wp user list --role=administrator --format=csv
+	 *     ID,user_login,display_name,user_email,user_registered,roles
+	 *     1,supervisor,supervisor,supervisor@gmail.com,"2016-06-03 04:37:00",administrator
 	 *
-	 *     wp user list --fields=display_name,user_email --format=json
+	 *     # List users with only given fields
+	 *     $ wp user list --fields=display_name,user_email --format=json
+	 *     [{"display_name":"supervisor","user_email":"supervisor@gmail.com"}]
 	 *
 	 * @subcommand list
 	 */
@@ -142,9 +149,12 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user get 12 --field=login
+	 *     # Get user
+	 *     $ wp user get 12 --field=login
+	 *     supervisor
 	 *
-	 *     wp user get bob --format=json > bob.json
+	 *     # Get user and export to JSON file
+	 *     $ wp user get bob --format=json > bob.json
 	 */
 	public function get( $args, $assoc_args ) {
 		$user = $this->fetcher->get_check( $args[0] );
@@ -175,7 +185,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     # Delete user 123 and reassign posts to user 567
-	 *     wp user delete 123 --reassign=567
+	 *     $ wp user delete 123 --reassign=567
+	 *     Success: Removed user 123 from http://example.com
 	 */
 	public function delete( $args, $assoc_args ) {
 		$network = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) && is_multisite();
@@ -247,7 +258,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user create bob bob@example.com --role=author
+	 *     # Create user
+	 *     $ wp user create bob bob@example.com --role=author
+	 *     Success: Created user 3.
+	 *     Password: k9**&I4vNH(&
 	 */
 	public function create( $args, $assoc_args ) {
 		$user = new stdClass;
@@ -340,7 +354,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user update 123 --display_name=Mary --user_pass=marypass
+	 *     # Update user
+	 *     $ wp user update 123 --display_name=Mary --user_pass=marypass
+	 *     Success: Updated user 1.
 	 */
 	public function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['user_login'] ) ) {
@@ -373,7 +389,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     # Add meta to every generated user
-	 *     wp user generate --format=ids | xargs -0 -d ' ' -I % wp user meta add % foo bar
+	 *     wp user generate --format=ids --count=3 | xargs -0 -d ' ' -I % wp user meta add % foo bar
+	 *     Success: Added custom field.
+	 *     Success: Added custom field.
+	 *     Success: Added custom field.
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $blog_id;
@@ -447,8 +466,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user set-role bob author
-	 *     wp user set-role 12 author
+	 *     $ wp user set-role 12 author
+	 *     Success: Added johndoe (12) to http://example.com as author
 	 *
 	 * @subcommand set-role
 	 */
@@ -481,8 +500,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user add-role bob author
-	 *     wp user add-role 12 author
+	 *     $ wp user add-role 12 author
+	 *     Success: Added 'author' role for johndoe (12).
 	 *
 	 * @subcommand add-role
 	 */
@@ -511,8 +530,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user remove-role bob
-	 *     wp user remove-role 12 editor
+	 *     $ wp user remove-role 12 author
+	 *     Success: Removed 'author' role for johndoe (12).
 	 *
 	 * @subcommand remove-role
 	 */
@@ -551,8 +570,13 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user add-cap john create_premium_item
-	 *     wp user add-cap 15 edit_product
+	 *     # Add a capability for a user
+	 *     $ wp user add-cap john create_premium_item
+	 *     Success: Added 'create_premium_item' capability for john (16).
+	 *
+	 *     # Add a capability for a user
+	 *     $ wp user add-cap 15 edit_product
+	 *     Success: Added 'edit_product' capability for johndoe (15).
 	 *
 	 * @subcommand add-cap
 	 */
@@ -579,8 +603,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user remove-cap bob edit_themes
-	 *     wp user remove-cap 11 publish_newsletters
+	 *     $ wp user remove-cap 11 publish_newsletters
+	 *     Success: Removed 'publish_newsletters' cap for supervisor (11).
 	 *
 	 * @subcommand remove-cap
 	 */
@@ -604,8 +628,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user list-caps admin
-	 *     wp user list-caps 21
+	 *     $ wp user list-caps 21
+	 *     edit_product
+	 *     create_premium_item
 	 *
 	 * @subcommand list-caps
 	 */
@@ -641,8 +666,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp user import-csv /path/to/users.csv
-	 *     wp user import-csv http://example.com/users.csv
+	 *     # Import users from local CSV file
+	 *     $ wp user import-csv /path/to/users.csv
+	 *     Success: bobjones created
+	 *     Success: newuser1 created
+	 *     Success: existinguser created
+	 *
+	 *     # Import users from remote CSV file
+	 *     $wp user import-csv http://example.com/users.csv
 	 *
 	 *     Sample users.csv file:
 	 *
