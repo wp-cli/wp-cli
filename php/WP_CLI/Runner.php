@@ -944,7 +944,7 @@ class Runner {
 	 * Set up the filters to skip the loaded plugins
 	 */
 	private function setup_skip_plugins_filters() {
-		$wp_cli_filter_active_plugins = function( $plugins ) use( $skip_plugins ) {
+		$wp_cli_filter_active_plugins = function( $plugins ) {
 			$skipped_plugins = WP_CLI::get_runner()->config['skip-plugins'];
 			if ( true === $skipped_plugins ) {
 				return array();
