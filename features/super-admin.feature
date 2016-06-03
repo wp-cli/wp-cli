@@ -30,9 +30,21 @@ Feature: Manage super admins associated with a multisite instance
       superadmin
       """
 
+    When I run `wp super-admin list --format=table`
+    Then STDOUT should be a table containing rows:
+      | user_login |
+      | admin      |
+      | superadmin |
+
     When I run `wp super-admin remove admin`
     And I run `wp super-admin list`
     Then STDOUT should be:
       """
       superadmin
+      """
+
+    When I run `wp super-admin list --format=json`
+    Then STDOUT should be:
+      """
+      [{"user_login":"superadmin"}]
       """
