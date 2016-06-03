@@ -347,8 +347,6 @@ class Runner {
 		WP_CLI::debug( 'SSH host: ' . $host, 'bootstrap' );
 		WP_CLI::debug( 'SSH path: ' . $path, 'bootstrap' );
 
-		$is_tty = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
-
 		$pre_cmd = getenv( 'WP_CLI_SSH_PRE_CMD' );
 		if ( $pre_cmd ) {
 			$pre_cmd = rtrim( $pre_cmd, ';' ) . '; ';
