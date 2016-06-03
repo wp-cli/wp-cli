@@ -362,9 +362,8 @@ class Runner {
 			}
 		}
 		$command = sprintf(
-			'ssh -q %s %s %s',
+			'ssh -q %s %s',
 			escapeshellarg( $host ),
-			$is_tty ? '-t' : '-T',
 			escapeshellarg( $pre_cmd . $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', $wp_args ) )
 		);
 
