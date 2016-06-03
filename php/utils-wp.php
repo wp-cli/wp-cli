@@ -152,7 +152,7 @@ function wp_get_cache_type() {
 		} elseif ( isset( $wp_object_cache->mc ) ) {
 			$is_memcache = true;
 			foreach ( $wp_object_cache->mc as $bucket ) {
-				if ( ! is_a( $bucket, 'Memcache' ) )
+				if ( ! is_a( $bucket, 'Memcache' ) && ! is_a( $bucket, 'Memcached' ) )
 					$is_memcache = false;
 			}
 
