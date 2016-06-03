@@ -3,6 +3,25 @@
 /**
  * Manage users.
  *
+ * ## EXAMPLES
+ *
+ *     # List user IDs
+ *     $ wp user list --field=ID
+ *     1
+ *
+ *     # Create user
+ *     $ wp user create bob bob@example.com --role=author
+ *     Success: Created user 3.
+ *     Password: k9**&I4vNH(&
+ *
+ *     # Update user
+ *     $ wp user update 123 --display_name=Mary --user_pass=marypass
+ *     Success: Updated user 123.
+ *
+ *     # Delete user 123 and reassign posts to user 567
+ *     $ wp user delete 123 --reassign=567
+ *     Success: Removed user 123 from http://example.com
+ *
  * @package wp-cli
  */
 class User_Command extends \WP_CLI\CommandWithDBObject {
@@ -356,7 +375,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     # Update user
 	 *     $ wp user update 123 --display_name=Mary --user_pass=marypass
-	 *     Success: Updated user 1.
+	 *     Success: Updated user 123.
 	 */
 	public function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['user_login'] ) ) {
@@ -389,7 +408,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     # Add meta to every generated user
-	 *     wp user generate --format=ids --count=3 | xargs -0 -d ' ' -I % wp user meta add % foo bar
+	 *     $ wp user generate --format=ids --count=3 | xargs -0 -d ' ' -I % wp user meta add % foo bar
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
@@ -673,7 +692,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: existinguser created
 	 *
 	 *     # Import users from remote CSV file
-	 *     $wp user import-csv http://example.com/users.csv
+	 *     $ wp user import-csv http://example.com/users.csv
 	 *
 	 *     Sample users.csv file:
 	 *
@@ -1033,7 +1052,7 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
  * ## EXAMPLES
  *
  *     # Set user terms
- *     wp user term set 123 test category
+ *     $ wp user term set 123 test category
  *     Set terms.
  */
 class User_Term_Command extends \WP_CLI\CommandWithTerms {
