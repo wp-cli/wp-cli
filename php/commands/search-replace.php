@@ -3,6 +3,30 @@
 /**
  * Search and replace strings in the database.
  *
+ * ## EXAMPLES
+ *
+ *     # Search and replace strings in the table
+ *     $ wp search-replace foo bar wp_options
+ *     +------------+--------------+--------------+------+
+ *     | Table      | Column       | Replacements | Type |
+ *     +------------+--------------+--------------+------+
+ *     | wp_options | option_name  | 2            | SQL  |
+ *     | wp_options | option_value | 0            | PHP  |
+ *     | wp_options | autoload     | 0            | SQL  |
+ *     +------------+--------------+--------------+------+
+ *     Success: Made 2 replacements.
+ *
+ *     # Run search/replace operation but dont save in database
+ *     $ wp search-replace foo bar wp_options --dry-run
+ *     +------------+--------------+--------------+------+
+ *     | Table      | Column       | Replacements | Type |
+ *     +------------+--------------+--------------+------+
+ *     | wp_options | option_name  | 2            | SQL  |
+ *     | wp_options | option_value | 0            | PHP  |
+ *     | wp_options | autoload     | 0            | SQL  |
+ *     +------------+--------------+--------------+------+
+ *     Success: 2 replacement(s) to be made.
+ *
  * @package wp-cli
  */
 class Search_Replace_Command extends WP_CLI_Command {
@@ -88,16 +112,18 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
+	 *     # Search and replace but skip one column
+	 *     $ wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
 	 *
-	 *     wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
+	 *     # Run search/replace operation but dont save in database
+	 *     $ wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
 	 *
 	 *     # Turn your production multisite database into a local dev database
-	 *     wp search-replace --url=example.com example.com example.dev 'wp_*_options' wp_blogs
+	 *     $ wp search-replace --url=example.com example.com example.dev 'wp_*_options' wp_blogs
 	 *
 	 *     # Search/replace to a SQL file without transforming the database
-	 *     wp search-replace foo bar --export=database.sql
-	 * 
+	 *     $ wp search-replace foo bar --export=database.sql
+	 *
 	 *     # Bash script: Search/replace production to development url (multisite compatible)
 	 *     #!/bin/bash
 	 *     if $(wp --url=http://example.com core is-installed --network); then
@@ -384,13 +410,13 @@ class Search_Replace_Command extends WP_CLI_Command {
 			//		1. When the loop is running every nth time (where n is insert statement size, $export_index_size). Remainder is zero also on first round, so it have to be excluded.
 			//			$index % $export_insert_size == 0 && $index > 0
 			//		2. Or when the loop is running last time
-			//			$index == $count			
+			//			$index == $count
 			if( ( $index % $export_insert_size == 0 && $index > 0 ) || $index == $count ) {
 				$sql .= ";\n";
 
 				$sql = $wpdb->prepare( $sql, array_values( $values ) );
 				fwrite( $this->export_handle, $sql );
-				
+
 				// If there is still rows to loop, reset $sql and $values variables.
 				if( $count > $index ) {
 					$sql = $insert;
