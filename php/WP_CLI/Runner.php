@@ -936,6 +936,9 @@ class Runner {
 
 		$this->add_wp_hook( 'wp_die_handler', function() { return '\WP_CLI\Utils\wp_die_handler'; } );
 
+		// Prevent code from performing a redirect
+		$this->add_wp_hook( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
+
 		// In a multisite install, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {
 			$this->add_wp_hook( 'ms_site_not_found', function( $current_site, $domain, $path ) {
