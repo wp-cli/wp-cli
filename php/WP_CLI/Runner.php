@@ -939,6 +939,23 @@ class Runner {
 		// Prevent code from performing a redirect
 		$this->add_wp_hook( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
 
+		// Get rid of warnings when converting single site to multisite
+		if ( defined( 'WP_INSTALLING' ) && $this->is_multisite() ) {
+			$values = array(
+				'ms_files_rewriting' => null,
+				'active_sitewide_plugins' => array(),
+				'_site_transient_update_core' => null,
+				'_site_transient_update_themes' => null,
+				'_site_transient_update_plugins' => null,
+				'WPLANG' => '',
+			);
+			foreach ( $values as $key => $value ) {
+				$this->add_wp_hook( "pre_site_option_$key", function () use ( $values, $key ) {
+					return $values[ $key ];
+				} );
+			}
+		}
+
 		// In a multisite install, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {
 			$this->add_wp_hook( 'ms_site_not_found', function( $current_site, $domain, $path ) {
