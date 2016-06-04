@@ -69,24 +69,6 @@ require( ABSPATH . WPINC . '/class-wp.php' );
 require( ABSPATH . WPINC . '/class-wp-error.php' );
 require( ABSPATH . WPINC . '/pomo/mo.php' );
 
-// WP_CLI: Early hooks
-if ( defined( 'WP_INSTALLING' ) && is_multisite() ) {
-	$values = array(
-		'ms_files_rewriting' => null,
-		'active_sitewide_plugins' => array(),
-		'_site_transient_update_core' => null,
-		'_site_transient_update_themes' => null,
-		'_site_transient_update_plugins' => null,
-		'WPLANG' => '',
-	);
-	foreach ( $values as $key => $value ) {
-		add_filter( "pre_site_option_$key", function () use ( $values, $key ) {
-			return $values[ $key ];
-		} );
-	}
-	unset( $values, $key, $value );
-}
-
 // Include the wpdb class and, if present, a db.php database drop-in.
 require_wp_db();
 

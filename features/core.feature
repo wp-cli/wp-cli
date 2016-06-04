@@ -132,7 +132,13 @@ Feature: Manage WordPress installation
     Then the return code should be 1
 
     When I run `wp core install-network --title='test network'`
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      Set up multisite database tables.
+      Added multisite constants to wp-config.php.
+      Success: Network installed. Don't forget to set up rewrite rules.
+      """
+    And STDERR should be empty
 
     When I run `wp eval 'var_export( is_multisite() );'`
     Then STDOUT should be:
@@ -159,7 +165,14 @@ Feature: Manage WordPress installation
     And a database
 
     When I run `wp core multisite-install --url=foobar.org --title=Test --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      Created single site database tables.
+      Set up multisite database tables.
+      Added multisite constants to wp-config.php.
+      Success: Network installed. Don't forget to set up rewrite rules.
+      """
+    And STDERR should be empty
 
     When I run `wp eval 'echo $GLOBALS["current_site"]->domain;'`
     Then STDOUT should be:
