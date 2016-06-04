@@ -69,32 +69,6 @@ require( ABSPATH . WPINC . '/class-wp.php' );
 require( ABSPATH . WPINC . '/class-wp-error.php' );
 require( ABSPATH . WPINC . '/pomo/mo.php' );
 
-// WP_CLI: Early hooks
-add_filter( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
-if ( defined( 'WP_INSTALLING' ) && is_multisite() ) {
-	$values = array(
-		'ms_files_rewriting' => null,
-		'active_sitewide_plugins' => array(),
-		'_site_transient_update_core' => null,
-		'_site_transient_update_themes' => null,
-		'_site_transient_update_plugins' => null,
-		'WPLANG' => '',
-	);
-	foreach ( $values as $key => $value ) {
-		add_filter( "pre_site_option_$key", function () use ( $values, $key ) {
-			return $values[ $key ];
-		} );
-	}
-	unset( $values, $key, $value );
-}
-
-// In a multisite install, die if unable to find site given in --url parameter
-if ( is_multisite() ) {
-	add_action( 'ms_site_not_found', function( $current_site, $domain, $path ) {
-		WP_CLI::error( "Site {$domain}{$path} not found." );
-	}, 10, 3 );
-}
-
 // Include the wpdb class and, if present, a db.php database drop-in.
 require_wp_db();
 
@@ -395,8 +369,7 @@ $GLOBALS['wp']->init();
 do_action( 'init' );
 
 // Check site status
-# if ( is_multisite() ) {  // WP-CLI
-if ( is_multisite() && !defined('WP_INSTALLING') ) {
+if ( is_multisite() ) {
 	if ( true !== ( $file = ms_site_check() ) ) {
 		require( $file );
 		die();
