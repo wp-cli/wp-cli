@@ -40,7 +40,7 @@ function wp_die_handler( $message ) {
 		$message = $matches[1];
 	}
 
-	$message = html_entity_decode( $message );
+	$message = html_entity_decode( $message, ENT_COMPAT, 'UTF-8' );
 
 	\WP_CLI::error( $message );
 }

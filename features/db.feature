@@ -5,8 +5,18 @@ Feature: Perform database operations
     And WP files
     And wp-config.php
 
+    When I try `wp option get home`
+    Then STDOUT should be empty
+    And STDERR should be:
+      """
+      Error: Can’t select database
+      """
+
     When I run `wp db create`
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      Success: Database created.
+      """
 
     When I try the previous command again
     Then the return code should be 1
