@@ -686,24 +686,22 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				}
 			}
 
-			if ( ! empty( $active_user_cap_list ) ) {
-				if ( 'list' === $assoc_args['format'] ) {
-					foreach ( $active_user_cap_list as $cap ) {
-						WP_CLI::line( $cap );
-					}
+			if ( 'list' === $assoc_args['format'] ) {
+				foreach ( $active_user_cap_list as $cap ) {
+					WP_CLI::line( $cap );
 				}
-				else {
-					$output_caps = array();
-					foreach ( $active_user_cap_list as $cap ) {
-						$output_cap = new stdClass;
+			}
+			else {
+				$output_caps = array();
+				foreach ( $active_user_cap_list as $cap ) {
+					$output_cap = new stdClass;
 
-						$output_cap->name = $cap;
+					$output_cap->name = $cap;
 
-						$output_caps[] = $output_cap;
-					}
-					$formatter = new \WP_CLI\Formatter( $assoc_args, $this->cap_fields );
-					$formatter->display_items( $output_caps );
+					$output_caps[] = $output_cap;
 				}
+				$formatter = new \WP_CLI\Formatter( $assoc_args, $this->cap_fields );
+				$formatter->display_items( $output_caps );
 			}
 
 		}
