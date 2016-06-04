@@ -936,6 +936,13 @@ class Runner {
 
 		$this->add_wp_hook( 'wp_die_handler', function() { return '\WP_CLI\Utils\wp_die_handler'; } );
 
+		// In a multisite install, die if unable to find site given in --url parameter
+		if ( $this->is_multisite() ) {
+			$this->add_wp_hook( 'ms_site_not_found', function( $current_site, $domain, $path ) {
+				WP_CLI::error( "Site {$domain}{$path} not found." );
+			}, 10, 3 );
+		}
+
 	}
 
 	/**
@@ -1093,6 +1100,24 @@ class Runner {
 			// Static Calling
 			return $function[0] . '::' . $function[1];
 		}
+	}
+
+	/**
+	 * Whether or not this WordPress install is multisite.
+	 *
+	 * For use after wp-config.php has loaded, but before the rest of WordPress
+	 * is loaded.
+	 */
+	private function is_multisite() {
+		if ( defined( 'MULTISITE' ) ) {
+			return MULTISITE;
+		}
+
+		if ( defined( 'SUBDOMAIN_INSTALL' ) || defined( 'VHOST' ) || defined( 'SUNRISE' ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
