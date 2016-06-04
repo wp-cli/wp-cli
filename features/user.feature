@@ -247,11 +247,11 @@ Feature: Manage WordPress users
     Then STDOUT should be:
       """
       edit_posts
-  	  read
-  	  level_1
-  	  level_0
-  	  delete_posts
-  	  contributor
+      read
+      level_1
+      level_0
+      delete_posts
+      contributor
       """
 
     And I run `wp user list-caps bob --format=json`
