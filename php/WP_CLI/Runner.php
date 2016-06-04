@@ -956,6 +956,10 @@ class Runner {
 			}
 		}
 
+		if ( defined( 'WP_INSTALLING' ) ) {
+			$this->add_wp_hook( 'ms_site_check', '__return_true' );
+		}
+
 		// In a multisite install, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {
 			$this->add_wp_hook( 'ms_site_not_found', function( $current_site, $domain, $path ) {

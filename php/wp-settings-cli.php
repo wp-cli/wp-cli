@@ -369,8 +369,7 @@ $GLOBALS['wp']->init();
 do_action( 'init' );
 
 // Check site status
-# if ( is_multisite() ) {  // WP-CLI
-if ( is_multisite() && !defined('WP_INSTALLING') ) {
+if ( is_multisite() ) {
 	if ( true !== ( $file = ms_site_check() ) ) {
 		require( $file );
 		die();
