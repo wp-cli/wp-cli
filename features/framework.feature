@@ -148,3 +148,19 @@ Feature: Load WP-CLI
       Error: This has no exit.
       Error: So I can use multiple lines.
       """
+
+  Scenario: A plugin calling wp_redirect() shouldn't redirect
+    Given a WP install
+    And a wp-content/mu-plugins/redirect.php file:
+      """
+      <?php
+      add_action( 'init', function(){
+          wp_redirect( 'http://apple.com' );
+      });
+      """
+
+    When I try `wp option get home`
+    Then STDERR should contain:
+      """
+      Warning: Some code is trying to do a URL redirect.
+      """
