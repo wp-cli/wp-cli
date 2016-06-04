@@ -64,7 +64,12 @@ class CLI_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: json
+	 * : Render output in a particular format.
+	 * ---
+	 * default: json
+	 * options:
+	 *   - json
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -131,7 +136,15 @@ class CLI_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields. Defaults to version,update_type,package_url.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -363,7 +376,13 @@ class CLI_Command extends WP_CLI_Command {
 	 * : Display current values also.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: var_export, json. Default: json.
+	 * : Render output in a particular format.
+	 * ---
+	 * default: json
+	 * options:
+	 *   - var_export
+	 *   - json
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
