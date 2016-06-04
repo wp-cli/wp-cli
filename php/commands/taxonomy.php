@@ -2,6 +2,22 @@
 /**
  * Manage taxonomies.
  *
+ * ## EXAMPLES
+ *
+ *     # List all taxonomies with 'post' object type
+ *     $ wp taxonomy list --object_type=post --fields=name,public
+ *     +-------------+--------+
+ *     | name        | public |
+ *     +-------------+--------+
+ *     | category    | 1      |
+ *     | post_tag    | 1      |
+ *     | post_format | 1      |
+ *     +-------------+--------+
+ *
+ *     # Get capabilities of a taxonomy
+ *     $ wp taxonomy get post_tag --field=cap
+ *     {"manage_terms":"manage_categories","edit_terms":"manage_categories","delete_terms":"manage_categories","assign_terms":"edit_posts"}
+ *
  * @package wp-cli
  */
 class Taxonomy_Command extends WP_CLI_Command {
@@ -41,7 +57,16 @@ class Taxonomy_Command extends WP_CLI_Command {
 	 * : Limit the output to specific taxonomy fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -110,7 +135,15 @@ class Taxonomy_Command extends WP_CLI_Command {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
