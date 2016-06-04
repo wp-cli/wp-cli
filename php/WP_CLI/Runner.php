@@ -934,6 +934,8 @@ class Runner {
 			$this->add_wp_hook( 'setup_theme', array( $this, 'action_setup_theme_wp_cli_skip_themes' ), 999 );
 		}
 
+		$this->add_wp_hook( 'wp_die_handler', function() { return '\WP_CLI\Utils\wp_die_handler'; } );
+
 	}
 
 	/**
