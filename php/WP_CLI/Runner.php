@@ -936,6 +936,37 @@ class Runner {
 
 		$this->add_wp_hook( 'wp_die_handler', function() { return '\WP_CLI\Utils\wp_die_handler'; } );
 
+		// Prevent code from performing a redirect
+		$this->add_wp_hook( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
+
+		// Get rid of warnings when converting single site to multisite
+		if ( defined( 'WP_INSTALLING' ) && $this->is_multisite() ) {
+			$values = array(
+				'ms_files_rewriting' => null,
+				'active_sitewide_plugins' => array(),
+				'_site_transient_update_core' => null,
+				'_site_transient_update_themes' => null,
+				'_site_transient_update_plugins' => null,
+				'WPLANG' => '',
+			);
+			foreach ( $values as $key => $value ) {
+				$this->add_wp_hook( "pre_site_option_$key", function () use ( $values, $key ) {
+					return $values[ $key ];
+				} );
+			}
+		}
+
+		if ( defined( 'WP_INSTALLING' ) ) {
+			$this->add_wp_hook( 'ms_site_check', '__return_true' );
+		}
+
+		// In a multisite install, die if unable to find site given in --url parameter
+		if ( $this->is_multisite() ) {
+			$this->add_wp_hook( 'ms_site_not_found', function( $current_site, $domain, $path ) {
+				WP_CLI::error( "Site {$domain}{$path} not found." );
+			}, 10, 3 );
+		}
+
 	}
 
 	/**
@@ -1093,6 +1124,24 @@ class Runner {
 			// Static Calling
 			return $function[0] . '::' . $function[1];
 		}
+	}
+
+	/**
+	 * Whether or not this WordPress install is multisite.
+	 *
+	 * For use after wp-config.php has loaded, but before the rest of WordPress
+	 * is loaded.
+	 */
+	private function is_multisite() {
+		if ( defined( 'MULTISITE' ) ) {
+			return MULTISITE;
+		}
+
+		if ( defined( 'SUBDOMAIN_INSTALL' ) || defined( 'VHOST' ) || defined( 'SUNRISE' ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
