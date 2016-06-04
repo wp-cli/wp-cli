@@ -67,6 +67,7 @@ class Term_Command extends WP_CLI_Command {
 	 * options:
 	 *   - table
 	 *   - csv
+	 *   - ids
 	 *   - json
 	 *   - count
 	 *   - yaml
