@@ -34,7 +34,15 @@ class Transient_Command extends WP_CLI_Command {
 	 * : Key for the transient.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * [--network]
 	 * : Get the value of the network transient, instead of the single site.
@@ -46,7 +54,6 @@ class Transient_Command extends WP_CLI_Command {
 	 *
 	 *     $ wp transient get random_key
 	 *     Warning: Transient with key "random_key" is not set.
-	 *
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $key ) = $args;
