@@ -956,7 +956,7 @@ class Runner {
 					$user = $fetcher->get_check( $config['user']  );
 					wp_set_current_user( $user->ID );
 				} else {
-					kses_remove_filters();
+					add_action( 'init', 'kses_remove_filters', 11 );
 				}
 			}, 0 );
 		}
