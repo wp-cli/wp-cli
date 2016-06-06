@@ -353,7 +353,7 @@ class Runner {
 
 		$unescaped_command = sprintf(
 			'ssh -q %s %s %s',
-			 $host,
+			$host,
 			$is_tty ? '-t' : '-T',
 			$pre_cmd . $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) )
 		);
