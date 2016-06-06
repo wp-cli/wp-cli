@@ -718,6 +718,19 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 /**
  * Manage theme mods.
  *
+ * ## EXAMPLES
+ *
+ *     # Set theme mod
+ *     $ wp theme mod set background_color 000000
+ *     Success: Theme mod background_color set to 000000
+ *
+ *     # Get single theme mod in JSON format
+ *     $ wp theme mod get background_color --format=json
+ *     [{"key":"background_color","value":"dd3333"}]
+ *
+ *     # Remove all theme mods
+ *     $ wp theme mod remove --all
+ *     Success: Theme mods removed.
  */
 class Theme_Mod_command extends WP_CLI_Command {
 
@@ -733,13 +746,38 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 * : List all theme mods
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - json
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme mod get --all
-	 *     wp theme mod get background_color --format=json
-	 *     wp theme mod get background_color header_textcolor
+	 *     # Get all theme mods
+	 *     $ wp theme mod get --all
+	 *     +------------------+---------+
+	 *     | key              | value   |
+	 *     +------------------+---------+
+	 *     | background_color | dd3333  |
+	 *     | link_color       | #dd9933 |
+	 *     | main_text_color  | #8224e3 |
+	 *     +------------------+---------+
+	 *
+	 *     # Get single theme mod in JSON format
+	 *     $ wp theme mod get background_color --format=json
+	 *     [{"key":"background_color","value":"dd3333"}]
+	 *
+	 *     # Get multiple theme mods
+	 *     $ wp theme mod get background_color header_textcolor
+	 *     +------------------+--------+
+	 *     | key              | value  |
+	 *     +------------------+--------+
+	 *     | background_color | dd3333 |
+	 *     | header_textcolor |        |
+	 *     +------------------+--------+
 	 */
 	public function get( $args = array(), $assoc_args = array() ) {
 
@@ -797,9 +835,17 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme mod remove --all
-	 *     wp theme mod remove background_color
-	 *     wp theme mod remove background_color header_textcolor
+	 *     # Remove all theme mods
+	 *     $ wp theme mod remove --all
+	 *     Success: Theme mods removed.
+	 *
+	 *     # Remove single theme mods
+	 *     $ wp theme mod remove background_color
+	 *     Success: 1 mods removed.
+	 *
+	 *     # Remove multiple theme mods
+	 *     $ wp theme mod remove background_color header_textcolor
+	 *     Success: 2 mods removed.
 	 */
 	public function remove( $args = array(), $assoc_args = array() ) {
 
@@ -834,7 +880,9 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme mod set background_color 000000
+	 *     # Set theme mod
+	 *     $ wp theme mod set background_color 000000
+	 *     Success: Theme mod background_color set to 000000
 	 */
 	public function set( $args = array(), $assoc_args = array() ) {
 		list( $mod, $value ) = $args;
