@@ -157,7 +157,17 @@ class Configurator {
 		}
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#@[A-Za-z0-9-_]+#', $key ) ) {
-				$this->aliases[ $key ] = $value;
+				$this->aliases[ $key ] = array();
+				foreach( array(
+					'user',
+					'url',
+					'path',
+					'ssh',
+				) as $i ) {
+					if ( isset( $value[ $i ] ) ) {
+						$this->aliases[ $key ][ $i ] = $value[ $i ];
+					}
+				}
 			} elseif ( !isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
 				if ( isset( $this->extra_config[ $key ] )
 					&& ! empty( $yaml['_']['merge'] )

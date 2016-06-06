@@ -50,3 +50,19 @@ Feature: Create shortcuts to specific WordPress installs
       """
       unknown --path parameter
       """
+
+  Scenario: Support global params specific to the WordPress install, not WP-CLI generally
+    Given a WP install in 'testdir'
+    And a wp-cli.yml file:
+      """
+      @testdir:
+        path: testdir
+        debug: true
+      """
+
+    When I run `wp @testdir option get home`
+    Then STDOUT should be:
+      """
+      http://example.com
+      """
+    And STDERR should be empty
