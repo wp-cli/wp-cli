@@ -3,6 +3,36 @@
 /**
  * Manage themes.
  *
+ * ## EXAMPLES
+ *
+ *     # Install the latest version from wordpress.org and activate
+ *     $ wp theme install twentysixteen --activate
+ *     Installing Twenty Sixteen (1.2)
+ *     Downloading install package from http://downloads.wordpress.org/theme/twentysixteen.1.2.zip...
+ *     Unpacking the package...
+ *     Installing the theme...
+ *     Theme installed successfully.
+ *     Activating 'twentysixteen'...
+ *     Success: Switched to 'Twenty Sixteen' theme.
+ *
+ *     # Get theme
+ *     $ wp theme get twentysixteen --fields=name,title,version
+ *     +---------+----------------+
+ *     | Field   | Value          |
+ *     +---------+----------------+
+ *     | name    | Twenty Sixteen |
+ *     | title   | Twenty Sixteen |
+ *     | version | 1.2            |
+ *     +---------+----------------+
+ *
+ *     # Get status of theme
+ *     $ wp theme status twentysixteen
+ *     Theme twentysixteen details:
+ *     		Name: Twenty Sixteen
+ *     		Status: Active
+ *     		Version: 1.2
+ *     		Author: the WordPress team
+ *
  * @package wp-cli
  */
 class Theme_Command extends \WP_CLI\CommandWithUpgrade {
@@ -257,9 +287,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme disable twentythirteen
+	 *     # Disable theme
+	 *     $ wp theme disable twentysixteen
+	 *     Success: Disabled the 'Twenty Sixteen' theme.
 	 *
-	 *     wp theme disable twentythirteen --network
+	 *     # Disable theme in network level
+	 *     $ wp theme disable twentysixteen --network
+	 *     Success: Network disabled the 'Twenty Sixteen' theme.
 	 */
 	public function disable( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
@@ -303,7 +337,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     cd $(wp theme path)
+	 *     # Get theme path
+	 *     $ wp theme path
+	 *     /var/www/example.com/public_html/wp-content/themes
+	 *
+	 *     # Change directory to theme path
+	 *     $ cd $(wp theme path)
 	 */
 	public function path( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
@@ -420,13 +459,20 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     # Install the latest version from wordpress.org and activate
-	 *     wp theme install twentytwelve --activate
+	 *     $ wp theme install twentysixteen --activate
+	 *     Installing Twenty Sixteen (1.2)
+	 *     Downloading install package from http://downloads.wordpress.org/theme/twentysixteen.1.2.zip...
+	 *     Unpacking the package...
+	 *     Installing the theme...
+	 *     Theme installed successfully.
+	 *     Activating 'twentysixteen'...
+	 *     Success: Switched to 'Twenty Sixteen' theme.
 	 *
 	 *     # Install from a local zip file
-	 *     wp theme install ../my-theme.zip
+	 *     $ wp theme install ../my-theme.zip
 	 *
 	 *     # Install from a remote zip file
-	 *     wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
+	 *     $ wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
 	 */
 	function install( $args, $assoc_args ) {
 
@@ -516,9 +562,28 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme update twentyeleven twentytwelve
+	 *     # Update multiple themes
+	 *     $ wp theme update twentyfifteen twentysixteen
+	 *     Downloading update from https://downloads.wordpress.org/theme/twentyfifteen.1.5.zip...
+	 *     Unpacking the update...
+	 *     Installing the latest version...
+	 *     Removing the old version of the theme...
+	 *     Theme updated successfully.
+	 *     Downloading update from https://downloads.wordpress.org/theme/twentysixteen.1.2.zip...
+	 *     Unpacking the update...
+	 *     Installing the latest version...
+	 *     Removing the old version of the theme...
+	 *     Theme updated successfully.
+	 *     Success: Updated 2/2 themes.
+	 *     +---------------+-------------+-------------+---------+
+	 *     | name          | old_version | new_version | status  |
+	 *     +---------------+-------------+-------------+---------+
+	 *     | twentyfifteen | 1.4         | 1.5         | Updated |
+	 *     | twentysixteen | 1.1         | 1.2         | Updated |
+	 *     +---------------+-------------+-------------+---------+
 	 *
-	 *     wp theme update --all
+	 *     # Update all themes
+	 *     $ wp theme update --all
 	 *
 	 * @alias upgrade
 	 */
@@ -550,8 +615,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme is-installed twentytwelve
-	 *     echo $? # displays 0 or 1
+	 *     # Check whether theme is installed; exit status 0 if installed, otherwise 1
+	 *     $ wp theme is-installed hello-dolly
+	 *     $ echo $?
+	 *     1
 	 *
 	 * @subcommand is-installed
 	 */
@@ -635,7 +702,11 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme list --status=inactive --format=csv
+	 *     # List themes
+	 *     $ wp theme list --status=inactive --format=csv
+	 *     name,status,update,version
+	 *     twentyfourteen,inactive,none,1.7
+	 *     twentysixteen,inactive,available,1.1
 	 *
 	 * @subcommand list
 	 */
