@@ -209,21 +209,6 @@ class Runner {
 	}
 
 	/**
-	 * Set a specific user context for WordPress.
-	 *
-	 * @param array $assoc_args
-	 */
-	private static function set_user( $assoc_args ) {
-		if ( isset( $assoc_args['user'] ) ) {
-			$fetcher = new \WP_CLI\Fetchers\User;
-			$user = $fetcher->get_check( $assoc_args['user'] );
-			wp_set_current_user( $user->ID );
-		} else {
-			kses_remove_filters();
-		}
-	}
-
-	/**
 	 * Guess which URL context WP-CLI has been invoked under.
 	 *
 	 * @param array $assoc_args
@@ -893,11 +878,6 @@ class Runner {
 
 		add_filter( 'filesystem_method', function() { return 'direct'; }, 99 );
 
-		// Handle --user parameter
-		if ( ! defined( 'WP_INSTALLING' ) ) {
-			self::set_user( $this->config );
-		}
-
 		WP_CLI::debug( 'Loaded WordPress', 'bootstrap' );
 		WP_CLI::do_hook( 'after_wp_load' );
 
@@ -994,6 +974,20 @@ class Runner {
 			$this->add_wp_hook( 'ms_site_not_found', function( $current_site, $domain, $path ) {
 				WP_CLI::error( "Site {$domain}{$path} not found." );
 			}, 10, 3 );
+		}
+
+		// Handle --user parameter
+		if ( ! defined( 'WP_INSTALLING' ) ) {
+			$config = $this->config;
+			$this->add_wp_hook( 'init', function() use ( $config ) {
+				if ( isset( $config['user'] ) ) {
+					$fetcher = new \WP_CLI\Fetchers\User;
+					$user = $fetcher->get_check( $config['user']  );
+					wp_set_current_user( $user->ID );
+				} else {
+					add_action( 'init', 'kses_remove_filters', 11 );
+				}
+			}, 0 );
 		}
 
 	}
