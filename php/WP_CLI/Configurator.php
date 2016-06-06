@@ -25,6 +25,11 @@ class Configurator {
 	private $extra_config = array();
 
 	/**
+	 * @var array $aliases Any aliases defined in config files.
+	 */
+	private $aliases = array();
+
+	/**
 	 * @param string $path Path to config spec file.
 	 */
 	function __construct( $path ) {
@@ -61,6 +66,15 @@ class Configurator {
 	 */
 	function get_spec() {
 		return $this->spec;
+	}
+
+	/**
+	 * Get any aliases defined in config files.
+	 *
+	 * @return array
+	 */
+	function get_aliases() {
+		return $this->aliases;
 	}
 
 	/**
@@ -142,7 +156,19 @@ class Configurator {
 			$this->merge_yml( $yaml['_']['inherit'] );
 		}
 		foreach ( $yaml as $key => $value ) {
-			if ( !isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
+			if ( preg_match( '#@[A-Za-z0-9-_]+#', $key ) ) {
+				$this->aliases[ $key ] = array();
+				foreach( array(
+					'user',
+					'url',
+					'path',
+					'ssh',
+				) as $i ) {
+					if ( isset( $value[ $i ] ) ) {
+						$this->aliases[ $key ][ $i ] = $value[ $i ];
+					}
+				}
+			} elseif ( !isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
 				if ( isset( $this->extra_config[ $key ] )
 					&& ! empty( $yaml['_']['merge'] )
 					&& is_array( $this->extra_config[ $key ] )
