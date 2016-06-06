@@ -95,3 +95,28 @@ Feature: Create shortcuts to specific WordPress installs
       http://example.com
       """
     And STDERR should be empty
+
+  Scenario: Defining a project alias completely overrides a global alias
+    Given a WP install in 'testdir'
+    And a config.yml file:
+      """
+      @testdir:
+        path: testdir
+      """
+
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp @testdir option get home`
+    Then STDOUT should be:
+      """
+      http://example.com
+      """
+
+    Given a wp-cli.yml file:
+      """
+      @testdir:
+        path: none-existent-install
+      """
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp @testdir option get home`
+    Then STDERR should contain:
+      """
+      Error: This does not seem to be a WordPress install.
+      """
