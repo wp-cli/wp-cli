@@ -350,16 +350,24 @@ class Runner {
 				unset( $wp_args[ $k ] );
 			}
 		}
-		$command = sprintf(
+
+		$unescaped_command = sprintf(
+			'ssh -q %s %s %s',
+			 $host,
+			$is_tty ? '-t' : '-T',
+			$pre_cmd . $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) )
+		);
+
+		WP_CLI::debug( 'Running SSH command: ' . $unescaped_command, 'bootstrap' );
+
+		$escaped_command = sprintf(
 			'ssh -q %s %s %s',
 			escapeshellarg( $host ),
 			$is_tty ? '-t' : '-T',
-			escapeshellarg( $pre_cmd . $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', $wp_args ) )
+			escapeshellarg( $pre_cmd . $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) ) )
 		);
 
-		WP_CLI::debug( 'Running SSH command: ' . $command, 'bootstrap' );
-
-		passthru( $command, $exit_code );
+		passthru( $escaped_command, $exit_code );
 		if ( 0 !== $exit_code ) {
 			exit( $exit_code );
 		}
