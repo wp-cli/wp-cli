@@ -169,7 +169,7 @@ Feature: Manage WordPress users
     Then STDOUT should be a table containing rows:
       | Field | Value |
       | roles |       |
-      
+
   Scenario: Managing user capabilities
     Given a WP install
 
@@ -178,13 +178,13 @@ Feature: Manage WordPress users
       """
       Success: Added 'edit_vip_product' capability for admin (1).
       """
-      
+
     And I run `wp user list-caps 1 | tail -n 1`
     Then STDOUT should be:
       """
       edit_vip_product
       """
-      
+
     And I run `wp user remove-cap 1 edit_vip_product`
     Then STDOUT should be:
       """
@@ -237,4 +237,31 @@ Feature: Manage WordPress users
     Then STDOUT should contain:
       """
       testsubscriber
+      """
+
+  Scenario: Listing user capabilities
+    Given a WP install
+
+    When I run `wp user create bob bob@gmail.com --role=contributor`
+    And I run `wp user list-caps bob`
+    Then STDOUT should be:
+      """
+      edit_posts
+      read
+      level_1
+      level_0
+      delete_posts
+      contributor
+      """
+
+    And I run `wp user list-caps bob --format=json`
+    Then STDOUT should be:
+      """
+      [{"name":"edit_posts"},{"name":"read"},{"name":"level_1"},{"name":"level_0"},{"name":"delete_posts"},{"name":"contributor"}]
+      """
+
+    And I run `wp user list-caps bob --format=count`
+    Then STDOUT should be:
+      """
+      6
       """

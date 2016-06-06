@@ -36,6 +36,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		'roles'
 	);
 
+	private $cap_fields = array(
+		'name'
+	);
+
 	public function __construct() {
 		$this->fetcher = new \WP_CLI\Fetchers\User;
 	}
@@ -645,6 +649,19 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * <user>
 	 * : User ID, user email, or login.
 	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: list
+	 * options:
+	 *   - list
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp user list-caps 21
@@ -661,11 +678,32 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 			$user_caps_list = $user->allcaps;
 
+			$active_user_cap_list = array();
+
 			foreach ( $user_caps_list as $cap => $active ) {
 				if ( $active ) {
-					\cli\line( $cap );
+					$active_user_cap_list[] = $cap;
 				}
 			}
+
+			if ( 'list' === $assoc_args['format'] ) {
+				foreach ( $active_user_cap_list as $cap ) {
+					WP_CLI::line( $cap );
+				}
+			}
+			else {
+				$output_caps = array();
+				foreach ( $active_user_cap_list as $cap ) {
+					$output_cap = new stdClass;
+
+					$output_cap->name = $cap;
+
+					$output_caps[] = $output_cap;
+				}
+				$formatter = new \WP_CLI\Formatter( $assoc_args, $this->cap_fields );
+				$formatter->display_items( $output_caps );
+			}
+
 		}
 	}
 
