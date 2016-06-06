@@ -17,3 +17,8 @@ Feature: Review CLI information
       """
       {"wp_cli_packages_dir_path":"/tmp/wp-cli-home/.wp-cli/packages/"}
       """
+    And I run `wp cli info`
+    Then STDOUT should contain:
+      """
+      WP-CLI packages dir:    /tmp/wp-cli-home/.wp-cli/packages/
+      """
