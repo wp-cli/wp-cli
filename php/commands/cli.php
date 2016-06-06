@@ -66,8 +66,9 @@ class CLI_Command extends WP_CLI_Command {
 	 * [--format=<format>]
 	 * : Render output in a particular format.
 	 * ---
-	 * default: json
+	 * default: list
 	 * options:
+	 *   - list
 	 *   - json
 	 * ---
 	 *
