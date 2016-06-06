@@ -658,7 +658,14 @@ class Runner {
 		if ( ! array_key_exists( $alias, $this->aliases ) ) {
 			WP_CLI::error( "Alias '{$alias}' not found." );
 		}
-		$this->config = array_merge( $this->config, $this->aliases[ $this->alias ] );
+		$orig_config = $this->config;
+		$alias_config = $this->aliases[ $this->alias ];
+		$this->config = array_merge( $orig_config, $alias_config );
+		foreach( $alias_config as $key => $_ ) {
+			if ( isset( $orig_config[ $key ] ) && ! is_null( $orig_config[ $key ] ) ) {
+				$this->assoc_args[ $key ] = $orig_config[ $key ];
+			}
+		}
 	}
 
 	public function start() {
