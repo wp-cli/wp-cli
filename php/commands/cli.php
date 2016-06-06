@@ -144,6 +144,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *   - csv
 	 *   - json
 	 *   - count
+	 *   - yaml
 	 * ---
 	 *
 	 * ## EXAMPLES
