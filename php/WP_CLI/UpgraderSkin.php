@@ -9,6 +9,8 @@ namespace WP_CLI;
  */
 class UpgraderSkin extends \WP_Upgrader_Skin {
 
+	public $api;
+
 	function header() {}
 	function footer() {}
 	function bulk_header() {}
