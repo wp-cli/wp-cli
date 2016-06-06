@@ -752,6 +752,8 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 * options:
 	 *   - table
 	 *   - json
+	 *   - csv
+	 *   - yaml
 	 * ---
 	 *
 	 * ## EXAMPLES
