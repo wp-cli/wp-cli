@@ -17,6 +17,10 @@ class Runner {
 
 	private $config, $extra_config;
 
+	private $alias;
+
+	private $aliases;
+
 	private $arguments, $assoc_args;
 
 	private $_early_invoke = array();
@@ -587,6 +591,14 @@ class Runner {
 	private function init_config() {
 		$configurator = \WP_CLI::get_configurator();
 
+		$argv = array_slice( $GLOBALS['argv'], 1 );
+
+		if ( ! empty( $argv[0] ) && preg_match( '#^@[A-Za-z0-9-_]+$#', $argv[0], $matches ) ) {
+			$this->alias = array_shift( $argv );
+		} else {
+			$this->alias = null;
+		}
+
 		// File config
 		{
 			$this->global_config_path = $this->get_global_config_path();
@@ -602,8 +614,7 @@ class Runner {
 
 		// Runtime config and args
 		{
-			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args(
-				array_slice( $GLOBALS['argv'], 1 ) );
+			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
 
 			list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
 				$args, $assoc_args );
@@ -612,6 +623,7 @@ class Runner {
 		}
 
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
+		$this->aliases = $configurator->get_aliases();
 		$this->_required_files['runtime'] = $this->config['require'];
 	}
 
@@ -642,6 +654,13 @@ class Runner {
 		);
 	}
 
+	private function set_alias( $alias ) {
+		if ( ! array_key_exists( $alias, $this->aliases ) ) {
+			WP_CLI::error( "Alias '{$alias}' not found." );
+		}
+		$this->config = array_merge( $this->config, $this->aliases[ $this->alias ] );
+	}
+
 	public function start() {
 		$this->init_config();
 		$this->init_colorization();
@@ -651,6 +670,9 @@ class Runner {
 		WP_CLI::debug( $this->_project_config_path_debug, 'bootstrap' );
 
 		$this->check_root();
+		if ( $this->alias ) {
+			$this->set_alias( $this->alias );
+		}
 
 		if ( empty( $this->arguments ) )
 			$this->arguments[] = 'help';
