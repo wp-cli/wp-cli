@@ -27,7 +27,7 @@ Feature: Create shortcuts to specific WordPress installs
       Error: Alias '@test' not found.
       """
 
-  Scenario: Treat global params as local when alias is used
+  Scenario: Treat global params as local when included in alias
     Given a WP install in 'testdir'
     And a wp-cli.yml file:
       """
@@ -49,6 +49,35 @@ Feature: Create shortcuts to specific WordPress installs
     And STDERR should contain:
       """
       unknown --path parameter
+      """
+
+    When I run `wp @testdir eval 'echo get_current_user_id();' --user=admin`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    Given a wp-cli.yml file:
+      """
+      @testdir:
+        path: testdir
+        user: admin
+      """
+
+    When I run `wp @testdir eval 'echo get_current_user_id();'`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I try `wp @testdir eval 'echo get_current_user_id();' --user=admin`
+    Then STDERR should contain:
+      """
+      Parameter errors:
+      """
+    And STDERR should contain:
+      """
+      unknown --user parameter
       """
 
   Scenario: Support global params specific to the WordPress install, not WP-CLI generally
