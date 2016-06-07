@@ -1,5 +1,18 @@
 <?php
-
+/**
+ * Launch PHP's built-in web server.
+ *
+ * ## EXAMPLES
+ *
+ *     # Make the instance available on any address (with port 8080)
+ *     $ wp server --host=0.0.0.0
+ *     PHP 5.6.9 Development Server started at Tue May 24 01:27:11 2016
+ *     Listening on http://0.0.0.0:8080
+ *     Document root is /
+ *     Press Ctrl-C to quit.
+ *
+ * @package wp-cli
+ */
 class Server_Command extends WP_CLI_Command {
 
 	/**
@@ -10,10 +23,16 @@ class Server_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--host=<host>]
-	 * : The hostname to bind the server to. Default: localhost
+	 * : The hostname to bind the server to.
+	 * ---
+	 * default: localhost
+	 * ---
 	 *
 	 * [--port=<port>]
-	 * : The port number to bind the server to. Default: 8080
+	 * : The port number to bind the server to.
+	 * ---
+	 * default: 8080
+	 * ---
 	 *
 	 * [--docroot=<path>]
 	 * : The path to use as the document root.
