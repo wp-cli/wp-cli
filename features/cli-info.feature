@@ -21,5 +21,5 @@ Feature: Review CLI information
     When I run `wp cli info`
     Then STDOUT should contain:
       """
-      WP-CLI packages dir:    /tmp/wp-cli-home/.wp-cli/packages/
+      WP-CLI packages dir:
       """
