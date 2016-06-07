@@ -965,9 +965,8 @@ class Runner {
 			}
 		}
 
-		if ( defined( 'WP_INSTALLING' ) ) {
-			$this->add_wp_hook( 'ms_site_check', '__return_true' );
-		}
+		// Always permit operations against sites, regardless of status
+		$this->add_wp_hook( 'ms_site_check', '__return_true' );
 
 		// In a multisite install, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {

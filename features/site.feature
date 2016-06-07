@@ -257,3 +257,20 @@ Feature: Manage sites in a multisite installation
       """
       Warning: You are not allowed to change the main site.
       """
+
+  Scenario: Permit CLI operations against archived and suspended sites
+    Given a WP multisite install
+    And I run `wp site create --slug=first --porcelain`
+    And save STDOUT as {FIRST_SITE}
+
+    When I run `wp site archive {FIRST_SITE}`
+    Then STDOUT should be:
+      """
+      Success: Site {FIRST_SITE} archived.
+      """
+
+    When I run `wp --url=example.com/first option get home`
+    Then STDOUT should be:
+      """
+      http://example.com/first
+      """
