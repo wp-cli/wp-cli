@@ -173,10 +173,22 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * : Show rewrite rules from a particular source.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific fields. Defaults to match,query,source.
+	 * : Limit the output to specific fields.
+	 * ---
+	 * default: match,query,source
+	 * ---
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
