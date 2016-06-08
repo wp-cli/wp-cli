@@ -32,16 +32,25 @@ class Option_Command extends WP_CLI_Command {
 	 * Get an option.
 	 *
 	 * <key>
-	 * : Key for the option
+	 * : Key for the option.
 	 *
 	 * [--format=<format>]
-	 * : Get value as var_export() or JSON. Default: var_export()
+	 * : Get value in a particular format.
+	 * ---
+	 * default: var_export
+	 * options:
+	 *   - var_export
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Get option
 	 *     $ wp option get home
 	 *     http://example.com
 	 *
+	 *     # Get option in JSON format
 	 *     $ wp option get active_plugins --format=json
 	 *     {"0":"dynamically-dynamic-sidebar\/dynamically-dynamic-sidebar.php","1":"monster-widget\/monster-widget.php","2":"show-current-template\/show-current-template.php","3":"theme-check\/theme-check.php","5":"wordpress-importer\/wordpress-importer.php"}
 	 */
@@ -68,10 +77,22 @@ class Option_Command extends WP_CLI_Command {
 	 * : The value of the option to add. If ommited, the value is read from STDIN.
 	 *
 	 * [--format=<format>]
-	 * : The serialization format for the value. Default is plaintext.
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
 	 *
 	 * [--autoload=<autoload>]
-	 * : Should this option be automatically loaded. Accepted values: yes, no. Default: yes
+	 * : Should this option be automatically loaded.
+	 * ---
+	 * default: yes
+	 * options:
+	 *   - yes
+	 *   - no
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -111,7 +132,17 @@ class Option_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : The serialization format for the value. total_bytes displays the total size of matching options in bytes. Accepted values: table, json, csv, count, total_bytes. Default: table
+	 * : The serialization format for the value. total_bytes displays the total size of matching options in bytes.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - json
+	 *   - csv
+	 *   - count
+	 *   - yaml
+	 *   - total_bytes
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -215,10 +246,22 @@ class Option_Command extends WP_CLI_Command {
 	 * : The new value. If ommited, the value is read from STDIN.
 	 *
 	 * [--autoload=<autoload>]
-	 * : Requires WP 4.2. Should this option be automatically loaded. Accepted values: yes, no. Default: yes
+	 * : Requires WP 4.2. Should this option be automatically loaded.
+	 * ---
+	 * default: yes
+	 * options:
+	 *   - yes
+	 *   - no
+	 * ---
 	 *
 	 * [--format=<format>]
-	 * : The serialization format for the value. Default is plaintext.
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
