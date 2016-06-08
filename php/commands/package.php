@@ -228,7 +228,8 @@ class Package_Command extends WP_CLI_Command {
 	 *     /home/person/.wp-cli/packages/
 	 *
 	 *     # Change directory to package path
-	 *     $ cd $(wp package path)
+	 *     $ cd $(wp package path) && pwd
+	 *     /home/vagrant/.wp-cli/packages
 	 */
 	function path( $args ) {
 		$packages_dir = WP_CLI::get_runner()->get_packages_dir_path();
