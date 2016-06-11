@@ -109,7 +109,7 @@ Feature: `wp cli` tasks
     When I run `{PHAR_PATH} cli update --nightly --yes`
     Then STDOUT should contain:
       """
-      Success: Updated WP-CLI to the latest nightly release
+      Success: Updated WP-CLI to the latest nightly release.
       """
 
     And STDERR should be empty
