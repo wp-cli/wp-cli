@@ -177,7 +177,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 		if ( false !== $event ) {
 			WP_CLI::success( sprintf( "Scheduled event with hook '%s' for %s GMT.", $hook, date( self::$time_format, $timestamp ) ) );
 		} else {
-			WP_CLI::error( 'Event not scheduled' );
+			WP_CLI::error( 'Event not scheduled.' );
 		}
 
 	}
@@ -306,16 +306,16 @@ class Cron_Event_Command extends WP_CLI_Command {
 				if ( $result ) {
 					$deleted++;
 				} else {
-					WP_CLI::warning( sprintf( "Failed to the delete the cron event '%s'", $hook ) );
+					WP_CLI::warning( sprintf( "Failed to the delete the cron event '%s'.", $hook ) );
 				}
 			}
 		}
 
 		if ( $deleted ) {
-			$message = ( 1 == $deleted ) ? "Deleted the cron event '%2\$s'" : "Deleted %1\$d instances of the cron event '%2\$s'";
+			$message = ( 1 == $deleted ) ? "Deleted the cron event '%2\$s'." : "Deleted %1\$d instances of the cron event '%2\$s'.";
 			WP_CLI::success( sprintf( $message, $deleted, $hook ) );
 		} else {
-			WP_CLI::error( sprintf( "Invalid cron event '%s'", $hook ) );
+			WP_CLI::error( sprintf( "Invalid cron event '%s'.", $hook ) );
 		}
 
 	}
