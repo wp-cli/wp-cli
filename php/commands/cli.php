@@ -215,9 +215,9 @@ class CLI_Command extends WP_CLI_Command {
 		$old_phar = realpath( $_SERVER['argv'][0] );
 
 		if ( ! is_writable( $old_phar ) ) {
-			WP_CLI::error( sprintf( "%s is not writable by current user", $old_phar ) );
+			WP_CLI::error( sprintf( "%s is not writable by current user.", $old_phar ) );
 		} else if ( ! is_writeable( dirname( $old_phar ) ) ) {
-			WP_CLI::error( sprintf( "%s is not writable by current user", dirname( $old_phar ) ) );
+			WP_CLI::error( sprintf( "%s is not writable by current user.", dirname( $old_phar ) ) );
 		}
 
 		if ( isset( $assoc_args['nightly'] ) ) {
@@ -271,7 +271,7 @@ class CLI_Command extends WP_CLI_Command {
 		$mode = fileperms( $old_phar ) & 511;
 
 		if ( false === @chmod( $temp, $mode ) ) {
-			WP_CLI::error( sprintf( "Cannot chmod %s", $temp ) );
+			WP_CLI::error( sprintf( "Cannot chmod %s.", $temp ) );
 		}
 
 		class_exists( '\cli\Colors' ); // this autoloads \cli\Colors - after we move the file we no longer have access to this class
@@ -285,7 +285,7 @@ class CLI_Command extends WP_CLI_Command {
 		} else {
 			$updated_version = $newest['version'];
 		}
-		WP_CLI::success( sprintf( 'Updated WP-CLI to %s', $updated_version ) );
+		WP_CLI::success( sprintf( 'Updated WP-CLI to %s.', $updated_version ) );
 	}
 
 	/**
@@ -304,7 +304,7 @@ class CLI_Command extends WP_CLI_Command {
 		$response = Utils\http_request( 'GET', $url, $headers, $options );
 
 		if ( ! $response->success || 200 !== $response->status_code ) {
-			WP_CLI::error( sprintf( "Failed to get latest version (HTTP code %d)", $response->status_code ) );
+			WP_CLI::error( sprintf( "Failed to get latest version (HTTP code %d).", $response->status_code ) );
 		}
 
 		$release_data = json_decode( $response->body );
