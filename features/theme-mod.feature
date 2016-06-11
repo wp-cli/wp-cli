@@ -32,7 +32,7 @@ Feature: Manage WordPress theme mods
     When I run `wp theme mod set background_color 123456`
     Then STDOUT should be:
       """
-      Success: Theme mod background_color set to 123456
+      Success: Theme mod background_color set to 123456.
       """
 
   Scenario: Removing theme mods

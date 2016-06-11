@@ -892,9 +892,9 @@ class Theme_Mod_command extends WP_CLI_Command {
 		set_theme_mod( $mod, $value );
 
 		if ( $value == get_theme_mod( $mod ) ) {
-			WP_CLI::success( sprintf( "Theme mod %s set to %s", $mod, $value ) );
+			WP_CLI::success( sprintf( "Theme mod %s set to %s.", $mod, $value ) );
 		} else {
-			WP_CLI::success( sprintf( "Could not update theme mod %s", $mod ) );
+			WP_CLI::success( sprintf( "Could not update theme mod %s.", $mod ) );
 		}
 	}
 
