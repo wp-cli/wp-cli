@@ -351,7 +351,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 					return array( 'success', "Trashed comment $comment_id." );
 				}
 			} else {
-				return array( 'error', "Failed deleting comment $comment_id" );
+				return array( 'error', "Failed deleting comment $comment_id." );
 			}
 		} );
 	}
@@ -364,7 +364,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		if ( $func( $comment_id ) ) {
 			WP_CLI::success( "$success comment $comment_id." );
 		} else {
-			WP_CLI::error( "$failure comment $comment_id" );
+			WP_CLI::error( "$failure comment $comment_id." );
 		}
 	}
 
@@ -376,7 +376,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		if ( is_wp_error( $r ) ) {
 			WP_CLI::error( $r );
 		} else {
-			WP_CLI::success( "$success comment $comment->comment_ID" );
+			WP_CLI::success( "$success comment $comment->comment_ID." );
 		}
 	}
 
@@ -550,16 +550,16 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp comment recount 123
-	 *     Updated post 123 comment count to 67
+	 *     Updated post 123 comment count to 67.
 	 */
 	public function recount( $args ) {
 		foreach( $args as $id ) {
 			wp_update_comment_count( $id );
 			$post = get_post( $id );
 			if ( $post ) {
-				WP_CLI::log( sprintf( "Updated post %d comment count to %d", $post->ID, $post->comment_count ) );
+				WP_CLI::log( sprintf( "Updated post %d comment count to %d.", $post->ID, $post->comment_count ) );
 			} else {
-				WP_CLI::warning( sprintf( "Post %d doesn't exist", $post->ID ) );
+				WP_CLI::warning( sprintf( "Post %d doesn't exist.", $post->ID ) );
 			}
 		}
 	}
