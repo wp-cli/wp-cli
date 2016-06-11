@@ -238,7 +238,7 @@ class Widget_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp widget deactivate recent-comments-2
-	 *     Success: Widget(s) deactivated
+	 *     Success: Widget(s) deactivated.
 	 *
 	 * @subcommand deactivate
 	 */
@@ -257,7 +257,7 @@ class Widget_Command extends WP_CLI_Command {
 
 		}
 
-		WP_CLI::success( "Widget(s) deactivated" );
+		WP_CLI::success( "Widget(s) deactivated." );
 	}
 
 	/**

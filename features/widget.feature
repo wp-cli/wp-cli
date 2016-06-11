@@ -33,7 +33,10 @@ Feature: Manage widgets in WordPress sidebar
     Then STDOUT should not be empty
 
     When I run `wp widget deactivate meta-2`
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+    """
+    Success: Widget(s) deactivated.
+    """
 
     When I run `wp widget list sidebar-1 --fields=name,id,position`
     Then STDOUT should be a table containing rows:
