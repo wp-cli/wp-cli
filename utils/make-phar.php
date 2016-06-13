@@ -102,8 +102,8 @@ foreach ( $finder as $file ) {
 
 add_file( $phar, WP_CLI_ROOT . '/vendor/autoload.php' );
 add_file( $phar, WP_CLI_ROOT . '/ci/behat-tags.php' );
+add_file( $phar, WP_CLI_ROOT . '/vendor/composer/ca-bundle/res/cacert.pem' );
 add_file( $phar, WP_CLI_ROOT . '/vendor/composer/composer/LICENSE' );
-add_file( $phar, WP_CLI_ROOT . '/vendor/composer/composer/res/cacert.pem' );
 add_file( $phar, WP_CLI_ROOT . '/vendor/composer/composer/res/composer-schema.json' );
 add_file( $phar, WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem' );
 
