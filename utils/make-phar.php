@@ -69,6 +69,7 @@ $finder
 	->in(WP_CLI_ROOT . '/vendor/mustache')
 	->in(WP_CLI_ROOT . '/vendor/rmccue/requests')
 	->in(WP_CLI_ROOT . '/vendor/composer')
+	->in(WP_CLI_ROOT . '/vendor/psr')
 	->in(WP_CLI_ROOT . '/vendor/seld')
 	->in(WP_CLI_ROOT . '/vendor/symfony')
 	->in(WP_CLI_ROOT . '/vendor/nb/oxymel')
@@ -77,6 +78,7 @@ $finder
 	->in(WP_CLI_ROOT . '/vendor/justinrainbow/json-schema')
 	->exclude('test')
 	->exclude('tests')
+	->exclude('Test')
 	->exclude('Tests')
 	->exclude('php-cli-tools/examples')
 	;
