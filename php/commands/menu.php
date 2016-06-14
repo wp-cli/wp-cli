@@ -261,7 +261,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		$items = wp_get_nav_menu_items( $args[0] );
 		if ( false === $items || is_wp_error( $items ) ) {
-			WP_CLI::error( "Invalid menu" );
+			WP_CLI::error( "Invalid menu." );
 		}
 
 		// Correct position inconsistency and
