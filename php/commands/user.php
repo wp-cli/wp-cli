@@ -233,7 +233,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				$message = "Deleted user $user_id.";
 			} else {
 				$r = wp_delete_user( $user_id, $reassign );
-				$message = "Removed user $user_id from " . home_url();
+				$message = "Removed user $user_id from " . home_url() . ".";
 			}
 
 			if ( $r ) {
@@ -328,7 +328,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			}
 			$user_id = wpmu_create_user( $user->user_login, $user->user_pass, $user->user_email );
 			if ( ! $user_id ) {
-				WP_CLI::error( "Unknown error creating new user" );
+				WP_CLI::error( "Unknown error creating new user." );
 			}
 			$user->ID = $user_id;
 			$user_id = wp_update_user( $user );
@@ -490,7 +490,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp user set-role 12 author
-	 *     Success: Added johndoe (12) to http://example.com as author
+	 *     Success: Added johndoe (12) to http://example.com as author.
 	 *
 	 * @subcommand set-role
 	 */
@@ -507,7 +507,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		else
 			$user->set_role( $role );
 
-		WP_CLI::success( "Added {$user->user_login} ({$user->ID}) to " . site_url() . " as {$role}" );
+		WP_CLI::success( "Added {$user->user_login} ({$user->ID}) to " . site_url() . " as {$role}." );
 	}
 
 	/**
@@ -576,7 +576,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			else
 				$user->remove_all_caps();
 
-			WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() );
+			WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() . "." );
 		}
 	}
 
@@ -772,7 +772,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				$invalid_role = false;
 				foreach( $roles as $role ) {
 					if ( is_null( get_role( $role ) ) ) {
-						WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
+						WP_CLI::warning( "{$new_user['user_login']} has an invalid role." );
 						$invalid_role = true;
 						break;
 					}
@@ -785,7 +785,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			} else if ( 'none' === $new_user['role'] ) {
 				$new_user['role'] = false;
 			} elseif ( is_null( get_role( $new_user['role'] ) ) ) {
-				WP_CLI::warning( "{$new_user['user_login']} has an invalid role" );
+				WP_CLI::warning( "{$new_user['user_login']} has an invalid role." );
 				continue;
 			}
 
@@ -798,7 +798,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 			if ( $existing_user && \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-update' ) ) {
 
-				WP_CLI::log( "{$existing_user->user_login} exists and has been skipped" );
+				WP_CLI::log( "{$existing_user->user_login} exists and has been skipped." );
 				continue;
 
 			} else if ( $existing_user ) {
@@ -823,7 +823,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 					}
 					$user_id = wpmu_create_user( $new_user['user_login'], $new_user['user_pass'], $new_user['user_email'] );
 					if ( ! $user_id ) {
-						WP_CLI::warning( "Unknown error creating new user" );
+						WP_CLI::warning( "Unknown error creating new user." );
 						continue;
 					}
 					$new_user['ID'] = $user_id;
@@ -856,9 +856,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			}
 
 			if ( !empty( $existing_user ) ) {
-				WP_CLI::success( $new_user['user_login'] . " updated" );
+				WP_CLI::success( $new_user['user_login'] . " updated." );
 			} else {
-				WP_CLI::success( $new_user['user_login'] . " created" );
+				WP_CLI::success( $new_user['user_login'] . " created." );
 			}
 		}
 	}
