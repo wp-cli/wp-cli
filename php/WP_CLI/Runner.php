@@ -327,7 +327,7 @@ class Runner {
 		$bits = explode( ':', $ssh );
 		$host = $bits[0];
 		$path = null;
-		$port = 22;
+		$port = null;
 		// host:path
 		if ( 2 === count( $bits ) ) {
 			$path = $bits[1];
@@ -358,8 +358,8 @@ class Runner {
 		}
 
 		$unescaped_command = sprintf(
-			'ssh -q -p %d %s %s %s',
-			$port,
+			'ssh -q %s%s %s %s',
+			$port ? '-p ' . (int) $port . ' ' : '',
 			$host,
 			$is_tty ? '-t' : '-T',
 			$pre_cmd . $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) )
@@ -368,8 +368,8 @@ class Runner {
 		WP_CLI::debug( 'Running SSH command: ' . $unescaped_command, 'bootstrap' );
 
 		$escaped_command = sprintf(
-			'ssh -q -p %d %s %s %s',
-			$port,
+			'ssh -q %s%s %s %s',
+			$port ? '-p ' . (int) $port . ' ' : '',
 			escapeshellarg( $host ),
 			$is_tty ? '-t' : '-T',
 			escapeshellarg( $pre_cmd . $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) ) )
