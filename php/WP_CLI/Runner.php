@@ -324,11 +324,17 @@ class Runner {
 	 */
 	private function run_ssh_command( $ssh ) {
 
-		$host = $ssh;
-		$path = '';
-		if ( false !== ( $key = stripos( $host, ':' ) ) ) {
-			$path = substr( $host, $key + 1 );
-			$host = substr( $host, 0, $key );
+		$bits = explode( ':', $ssh );
+		$host = $bits[0];
+		$path = null;
+		$port = 22;
+		// host:path
+		if ( 2 === count( $bits ) ) {
+			$path = $bits[1];
+		// host:port:path
+		} else if ( 3 === count( $bits ) ) {
+			$port = $bits[1];
+			$path = $bits[2];
 		}
 
 		WP_CLI::do_hook( 'before_ssh' );
@@ -352,7 +358,8 @@ class Runner {
 		}
 
 		$unescaped_command = sprintf(
-			'ssh -q %s %s %s',
+			'ssh -q -p %d %s %s %s',
+			$port,
 			$host,
 			$is_tty ? '-t' : '-T',
 			$pre_cmd . $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) )
@@ -361,7 +368,8 @@ class Runner {
 		WP_CLI::debug( 'Running SSH command: ' . $unescaped_command, 'bootstrap' );
 
 		$escaped_command = sprintf(
-			'ssh -q %s %s %s',
+			'ssh -q -p %d %s %s %s',
+			$port,
 			escapeshellarg( $host ),
 			$is_tty ? '-t' : '-T',
 			escapeshellarg( $pre_cmd . $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) ) )
