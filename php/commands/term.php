@@ -519,16 +519,16 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 *     # Recount posts assigned to each categories and tags
 	 *     $ wp term recount category post_tag
-	 *     Success: Updated category term count
-	 *     Success: Updated post_tag term count
+	 *     Success: Updated category term count.
+	 *     Success: Updated post_tag term count.
 	 *
 	 *     # Recount all listed taxonomies
 	 *     $ wp taxonomy list --field=name | xargs wp term recount
-	 *     Success: Updated category term count
-	 *     Success: Updated post_tag term count
-	 *     Success: Updated nav_menu term count
-	 *     Success: Updated link_category term count
-	 *     Success: Updated post_format term count
+	 *     Success: Updated category term count.
+	 *     Success: Updated post_tag term count.
+	 *     Success: Updated nav_menu term count.
+	 *     Success: Updated link_category term count.
+	 *     Success: Updated post_format term count.
 	 */
 	public function recount( $args ) {
 		foreach( $args as $taxonomy ) {
@@ -542,7 +542,7 @@ class Term_Command extends WP_CLI_Command {
 
 				wp_update_term_count( $term_taxonomy_ids, $taxonomy );
 
-				WP_CLI::success( sprintf( "Updated %s term count", $taxonomy ) );
+				WP_CLI::success( sprintf( "Updated %s term count.", $taxonomy ) );
 			}
 
 		}
