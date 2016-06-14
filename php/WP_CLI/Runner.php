@@ -381,7 +381,9 @@ class Runner {
 		);
 
 		passthru( $escaped_command, $exit_code );
-		if ( 0 !== $exit_code ) {
+		if ( 255 === $exit_code ) {
+			WP_CLI::error( 'Cannot connect over SSH using provided configuration.', 255 );
+		} else {
 			exit( $exit_code );
 		}
 	}
