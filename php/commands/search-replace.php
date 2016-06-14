@@ -305,7 +305,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		if ( $this->verbose ) {
 			$time = round( microtime( true ) - $this->start_time, 3 );
-			WP_CLI::log( sprintf( '%d columns and %d total rows affected using PHP (in %ss)', $total_cols, $total_rows, $time ) );
+			WP_CLI::log( sprintf( '%d columns and %d total rows affected using PHP (in %ss).', $total_cols, $total_rows, $time ) );
 		}
 
 		return array( $table_report, $total_rows );
@@ -322,7 +322,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		if ( $this->verbose ) {
 			$time = round( microtime( true ) - $this->start_time, 3 );
-			WP_CLI::log( sprintf( '%d rows affected using SQL (in %ss)', $count, $time ) );
+			WP_CLI::log( sprintf( '%d rows affected using SQL (in %ss).', $count, $time ) );
 		}
 		return $count;
 	}
@@ -371,7 +371,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		if ( $this->verbose ) {
 			$time = round( microtime( true ) - $this->start_time, 3 );
-			WP_CLI::log( sprintf( '%d rows affected using PHP (in %ss)', $count, $time ) );
+			WP_CLI::log( sprintf( '%d rows affected using PHP (in %ss).', $count, $time ) );
 		}
 
 		return $count;
