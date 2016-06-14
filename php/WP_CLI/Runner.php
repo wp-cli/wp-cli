@@ -345,6 +345,11 @@ class Runner {
 		$wp_binary = 'wp';
 		$wp_args = array_slice( $GLOBALS['argv'], 1 );
 		$wp_path = $path ? sprintf( '--path=%s', str_replace( '~', '$HOME', $path ) ) : '';
+
+		if ( $this->alias && ! empty( $wp_args[0] ) && $this->alias === $wp_args[0] ) {
+			array_shift( $wp_args );
+		}
+
 		foreach( $wp_args as $k => $v ) {
 			if ( preg_match( '#--ssh=#', $v ) ) {
 				unset( $wp_args[ $k ] );
