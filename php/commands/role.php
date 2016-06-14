@@ -59,7 +59,6 @@ class Role_Command extends WP_CLI_Command {
 	 *   - yaml
 	 * ---
 	 *
-	 *
 	 * ## AVAILABLE FIELDS
 	 *
 	 * These fields will be displayed by default for each role:
@@ -239,7 +238,7 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 *     # Reset role
 	 *     $ wp role reset administrator author contributor
-	 *     Success: Reset 1/3 roles
+	 *     Success: Reset 1/3 roles.
 	 *
 	 *     # Reset all default roles
 	 *     $ wp role reset --all
@@ -324,7 +323,7 @@ class Role_Command extends WP_CLI_Command {
 			}
 		}
 
-		WP_CLI::success( "Reset $num_reset/$num_to_reset roles" );
+		WP_CLI::success( "Reset $num_reset/$num_to_reset roles." );
 
 	}
 
