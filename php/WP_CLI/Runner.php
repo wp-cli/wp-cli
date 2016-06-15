@@ -324,22 +324,16 @@ class Runner {
 	 */
 	private function run_ssh_command( $ssh ) {
 
-		$bits = explode( ':', $ssh );
-		$host = $bits[0];
-		$path = null;
-		$port = null;
-		// host:path
-		if ( 2 === count( $bits ) ) {
-			$path = $bits[1];
-		// host:port:path
-		} else if ( 3 === count( $bits ) ) {
-			$port = $bits[1];
-			$path = $bits[2];
-		}
-
 		WP_CLI::do_hook( 'before_ssh' );
 
+		// host:port/path/to/wordpress
+		preg_match( '#([^:/~]+)(:([\d]+))?((/|~)(.+))#', $ssh, $matches );
+		$host = $matches[1] ? : null;
+		$port = $matches[3] ? : null;
+		$path = $matches[4] ? : null;
+
 		WP_CLI::debug( 'SSH host: ' . $host, 'bootstrap' );
+		WP_CLI::debug( 'SSH port: ' . $port, 'bootstrap' );
 		WP_CLI::debug( 'SSH path: ' . $path, 'bootstrap' );
 
 		$is_tty = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
