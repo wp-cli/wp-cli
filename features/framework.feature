@@ -164,3 +164,17 @@ Feature: Load WP-CLI
       """
       Warning: Some code is trying to do a URL redirect.
       """
+
+  Scenario: It should be possible to work on a site in maintenance mode
+    Given a WP install
+    And a .maintenance file:
+      """
+      <?php
+      $upgrading = time();
+      """
+
+    When I run `wp option get home`
+    Then STDOUT should be:
+      """
+      http://example.com
+      """
