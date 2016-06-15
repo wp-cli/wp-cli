@@ -53,6 +53,12 @@ wp_unregister_GLOBALS();
 // Standardize $_SERVER variables across setups.
 wp_fix_server_vars();
 
+// Check if we're in maintenance mode.
+// WP-CLI: run bypass_maintenance_mode filter early for compat with < WP 4.6
+if ( ! apply_filters( 'bypass_maintenance_mode', false ) ) {
+	wp_maintenance();
+}
+
 // Start loading timer.
 timer_start();
 
