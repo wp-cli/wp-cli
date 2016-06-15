@@ -997,6 +997,14 @@ class Runner {
 			}, 10, 3 );
 		}
 
+		// The APC cache is not available on the command-line, so bail, to prevent cache poisoning
+		$this->add_wp_hook( 'muplugins_loaded', function() {
+			if ( $GLOBALS['_wp_using_ext_object_cache'] && class_exists( 'APC_Object_Cache' ) ) {
+				WP_CLI::warning( 'Running WP-CLI while the APC object cache is activated can result in cache corruption.' );
+				WP_CLI::confirm( 'Given the consequences, do you wish to continue?' );
+			}
+		}, 0 );
+
 		// Handle --user parameter
 		if ( ! defined( 'WP_INSTALLING' ) ) {
 			$config = $this->config;
