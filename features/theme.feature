@@ -108,10 +108,10 @@ Feature: Manage WordPress themes
       Success: Switched to 'P2' theme.
       """
 
-    When I run `wp theme activate p2`
-    Then STDOUT should be:
+    When I try `wp theme activate p2`
+    Then STDERR should be:
       """
-      Success: The 'P2' theme is already active.
+      Warning: The 'P2' theme is already active.
       """
 
   Scenario: Install a theme when the theme directory doesn't yet exist
