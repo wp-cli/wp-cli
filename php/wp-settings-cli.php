@@ -53,6 +53,9 @@ wp_unregister_GLOBALS();
 // Standardize $_SERVER variables across setups.
 wp_fix_server_vars();
 
+// Check if we're in maintenance mode.
+wp_maintenance();
+
 // Start loading timer.
 timer_start();
 
