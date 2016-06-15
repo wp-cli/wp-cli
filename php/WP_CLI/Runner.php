@@ -990,6 +990,19 @@ class Runner {
 			return true;
 		});
 
+		// Use our own debug mode handling instead of WP core
+		$this->add_wp_hook( 'bypass_debug_mode', function( $ret ) {
+			static $did_once;
+
+			// Sometimes called a second time in >= WP 4.6, prevent loop
+			if ( ! empty( $did_once ) ) {
+				return $ret;
+			}
+			Utils\wp_debug_mode();
+			$did_once = true;
+			return true;
+		});
+
 		// Never load advanced-cache.php drop-in when WP-CLI is operating
 		$this->add_wp_hook( 'bypass_advanced_cache', function() {
 			return true;
