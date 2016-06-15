@@ -120,7 +120,7 @@ if ( SHORTINIT )
 require_once( ABSPATH . WPINC . '/l10n.php' );
 
 // Run the installer if WordPress is not installed.
-Utils\wp_not_installed();
+wp_not_installed();
 
 // Load most of WordPress.
 require( ABSPATH . WPINC . '/class-wp-walker.php' );
