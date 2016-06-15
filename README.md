@@ -3,7 +3,8 @@ WP-CLI
 
 [WP-CLI](http://wp-cli.org/) is a set of command-line tools for managing WordPress installations. You can update plugins, set up multisite installs and much more, without using a web browser.
 
-[![Build Status](https://travis-ci.org/wp-cli/wp-cli.png?branch=master)](https://travis-ci.org/wp-cli/wp-cli)
+[![Build Status](https://travis-ci.org/wp-cli/wp-cli.png?branch=master)](https://travis-ci.org/wp-cli/wp-cli) [![Dependency Status](https://gemnasium.com/badges/github.com/wp-cli/wp-cli.svg)](https://gemnasium.com/github.com/wp-cli/wp-cli)
+
 
 Quick links: [Using](#using) | [Installing](#installing) | [Support](#support) | [Extending](#extending) | [Contributing](#contributing) | [Credits](#credits)
 
