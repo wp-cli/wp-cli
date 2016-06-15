@@ -985,6 +985,11 @@ class Runner {
 		// Always permit operations against sites, regardless of status
 		$this->add_wp_hook( 'ms_site_check', '__return_true' );
 
+		// Always permit operations against WordPress, regardless of maintenance mode
+		$this->add_wp_hook( 'bypass_maintenance_mode', function() {
+			return true;
+		});
+
 		// In a multisite install, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {
 			$this->add_wp_hook( 'ms_site_not_found', function( $current_site, $domain, $path ) {
