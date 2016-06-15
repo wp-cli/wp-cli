@@ -990,6 +990,11 @@ class Runner {
 			return true;
 		});
 
+		// Never load advanced-cache.php drop-in when WP-CLI is operating
+		$this->add_wp_hook( 'bypass_advanced_cache', function() {
+			return true;
+		});
+
 		// In a multisite install, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {
 			$this->add_wp_hook( 'ms_site_not_found', function( $current_site, $domain, $path ) {
