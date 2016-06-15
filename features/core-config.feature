@@ -41,6 +41,15 @@ Feature: Manage wp-config
     Then the return code should be 1
     And STDERR should not be empty
 
+    When I run `wp db create`
+    Then STDOUT should not be empty
+
+    When I try `wp option get option home`
+    Then STDERR should contain:
+      """
+      Error: The site you have requested is not installed
+      """
+
   Scenario: Configure with existing salts
     Given an empty directory
     And WP files

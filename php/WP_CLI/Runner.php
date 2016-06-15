@@ -965,6 +965,11 @@ class Runner {
 		// Prevent code from performing a redirect
 		$this->add_wp_hook( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
 
+		$this->add_wp_hook( 'nocache_headers', function( $headers ){
+			Utils\wp_not_installed();
+			return $headers;
+		});
+
 		// Get rid of warnings when converting single site to multisite
 		if ( defined( 'WP_INSTALLING' ) && $this->is_multisite() ) {
 			$values = array(
