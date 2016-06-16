@@ -119,6 +119,9 @@ if ( SHORTINIT )
 // Load the L10n library.
 require_once( ABSPATH . WPINC . '/l10n.php' );
 
+// WP-CLI: Permit Utils\wp_not_installed() to run on < WP 4.0
+apply_filters( 'nocache_headers', array() );
+
 // Run the installer if WordPress is not installed.
 wp_not_installed();
 
