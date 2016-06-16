@@ -106,6 +106,11 @@ require( ABSPATH . WPINC . '/pomo/mo.php' );
 // Include the wpdb class and, if present, a db.php database drop-in.
 require_wp_db();
 
+// WP-CLI: Handle db error ourselves, instead of waiting for dead_db()
+global $wpdb;
+if ( !empty( $wpdb->error ) )
+	wp_die( $wpdb->error );
+
 // Set the database table prefix and the format specifiers for database table columns.
 // @codingStandardsIgnoreStart
 $GLOBALS['table_prefix'] = $table_prefix;
