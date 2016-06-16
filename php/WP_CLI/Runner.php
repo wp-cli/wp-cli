@@ -326,11 +326,11 @@ class Runner {
 
 		WP_CLI::do_hook( 'before_ssh' );
 
-		// host:port/path/to/wordpress
-		preg_match( '#([^:/~]+)(:([\d]+))?((/|~)(.+))#', $ssh, $matches );
-		$host = $matches[1] ? : null;
-		$port = $matches[3] ? : null;
-		$path = $matches[4] ? : null;
+		// host OR host/path/to/wordpress OR host:port/path/to/wordpress
+		preg_match( '#^([^:/~]+)(:([\d]+))?((/|~)(.+))?$#', $ssh, $matches );
+		$host = isset( $matches[1] ) ? $matches[1] : null;
+		$port = isset( $matches[3] ) ? $matches[3] : null;
+		$path = isset( $matches[4] ) ? $matches[4] : null;
 
 		WP_CLI::debug( 'SSH host: ' . $host, 'bootstrap' );
 		WP_CLI::debug( 'SSH port: ' . $port, 'bootstrap' );
