@@ -575,6 +575,7 @@ class Runner {
 				"Pass --path=`path/to/wordpress` or run `wp core download`." );
 		}
 
+		global $wp_version;
 		include ABSPATH . 'wp-includes/version.php';
 
 		$minimum_version = '3.7';
@@ -885,7 +886,11 @@ class Runner {
 		$this->setup_bootstrap_hooks();
 
 		// Load Core, mu-plugins, plugins, themes etc.
-		require WP_CLI_ROOT . '/php/wp-settings-cli.php';
+		if ( Utils\wp_version_compare( '4.6-alpha-37575', '>=' ) ) {
+			require ABSPATH . 'wp-settings.php';
+		} else {
+			require WP_CLI_ROOT . '/php/wp-settings-cli.php';
+		}
 
 		// Fix memory limit. See http://core.trac.wordpress.org/ticket/14889
 		@ini_set( 'memory_limit', -1 );
