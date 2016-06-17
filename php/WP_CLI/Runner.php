@@ -996,20 +996,13 @@ class Runner {
 		$this->add_wp_hook( 'ms_site_check', '__return_true' );
 
 		// Always permit operations against WordPress, regardless of maintenance mode
-		$this->add_wp_hook( 'bypass_maintenance_mode', function() {
-			return true;
+		$this->add_wp_hook( 'enable_maintenance_mode', function() {
+			return false;
 		});
 
 		// Use our own debug mode handling instead of WP core
-		$this->add_wp_hook( 'bypass_debug_mode', function( $ret ) {
-			static $did_once;
-
-			// Sometimes called a second time in >= WP 4.6, prevent loop
-			if ( ! empty( $did_once ) ) {
-				return $ret;
-			}
+		$this->add_wp_hook( 'enable_wp_debug_mode_checks', function( $ret ) {
 			Utils\wp_debug_mode();
-			$did_once = true;
 
 			// Check to see of wpdb is errored, instead of waiting for dead_db()
 			require_wp_db();
@@ -1018,12 +1011,12 @@ class Runner {
 				Utils\wp_die_handler( $wpdb->error );
 			}
 
-			return true;
+			return false;
 		});
 
 		// Never load advanced-cache.php drop-in when WP-CLI is operating
-		$this->add_wp_hook( 'bypass_advanced_cache', function() {
-			return true;
+		$this->add_wp_hook( 'enable_loading_advanced_cache_dropin', function() {
+			return false;
 		});
 
 		// In a multisite install, die if unable to find site given in --url parameter

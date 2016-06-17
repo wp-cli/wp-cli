@@ -55,7 +55,7 @@ wp_fix_server_vars();
 
 // Check if we're in maintenance mode.
 // WP-CLI: run bypass_maintenance_mode filter early for compat with < WP 4.6
-if ( ! apply_filters( 'bypass_maintenance_mode', false ) ) {
+if ( apply_filters( 'enable_maintenance_mode', true ) ) {
 	wp_maintenance();
 }
 
@@ -74,7 +74,7 @@ timer_start();
  *
  * @param bool True to bypass debug mode
  */
-if ( ! apply_filters( 'bypass_debug_mode', false ) ){
+if ( apply_filters( 'enable_wp_debug_mode_checks', true ) ){
 	wp_debug_mode();
 }
 
@@ -88,7 +88,7 @@ if ( ! apply_filters( 'bypass_debug_mode', false ) ){
  *
  * @param bool True to bypass advanced-cache.php
  */
-if ( WP_CACHE && ! apply_filters( 'bypass_advanced_cache', false )  ) {
+if ( WP_CACHE && apply_filters( 'enable_loading_advanced_cache_dropin', true )  ) {
 	// For an advanced caching plugin to use. Uses a static drop-in because you would only want one.
 	WP_DEBUG ? include( WP_CONTENT_DIR . '/advanced-cache.php' ) : @include( WP_CONTENT_DIR . '/advanced-cache.php' );
 }
