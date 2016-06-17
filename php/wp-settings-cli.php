@@ -54,7 +54,20 @@ wp_unregister_GLOBALS();
 wp_fix_server_vars();
 
 // Check if we're in maintenance mode.
-// WP-CLI: run bypass_maintenance_mode filter early for compat with < WP 4.6
+// WP-CLI: run enable_maintenance_mode filter early for compat with < WP 4.6
+/**
+ * Filters whether to enable maintenance mode.
+ *
+ * This filter runs before it can be used by plugins. It is designed for
+ * non-web runtimes. If this filter returns true, maintenance mode will be
+ * active and the request will end. If false, the request will be allowed to
+ * continue processing even if maintenance mode should be active.
+ *
+ * @since 4.6.0
+ *
+ * @param bool $enable_checks Whether to enable maintenance mode. Default true.
+ * @param int  $upgrading     The timestamp set in the .maintenance file.
+ */
 if ( apply_filters( 'enable_maintenance_mode', true ) ) {
 	wp_maintenance();
 }
@@ -62,31 +75,33 @@ if ( apply_filters( 'enable_maintenance_mode', true ) ) {
 // Start loading timer.
 timer_start();
 
+// WP-CLI: run enable_wp_debug_mode_checks filter early for compat with < WP 4.6
 /**
- * Bypass the debug mode check
+ * Filters whether to allow the debug mode check to occur.
  *
- * This filter should *NOT* be used by plugins. It is designed for non-web
- * runtimes. Returning true causes the WP_DEBUG and related constants to
- * not be checked and the default php values for errors will be used unless
- * you take care to update them yourself.
+ * This filter runs before it can be used by plugins. It is designed for
+ * non-web run-times. Returning false causes the `WP_DEBUG` and related
+ * constants to not be checked and the default php values for errors
+ * will be used unless you take care to update them yourself.
  *
  * @since 4.6.0
  *
- * @param bool True to bypass debug mode
+ * @param bool $enable_debug_mode Whether to enable debug mode checks to occur. Default true.
  */
 if ( apply_filters( 'enable_wp_debug_mode_checks', true ) ){
 	wp_debug_mode();
 }
 
 /**
- * Bypass the loading of advanced-cache.php
+ * Filters whether to enable loading of the advanced-cache.php drop-in.
  *
- * This filter should *NOT* be used by plugins. It is designed for non-web
- * runtimes. If true is returned, advance-cache.php will never be loaded.
+ * This filter runs before it can be used by plugins. It is designed for non-web
+ * run-times. If false is returned, advance-cache.php will never be loaded.
  *
  * @since 4.6.0
  *
- * @param bool True to bypass advanced-cache.php
+ * @param bool $enable_advanced_cache Whether to enable loading advanced-cache.php (if present).
+ *                                    Default true.
  */
 if ( WP_CACHE && apply_filters( 'enable_loading_advanced_cache_dropin', true )  ) {
 	// For an advanced caching plugin to use. Uses a static drop-in because you would only want one.
