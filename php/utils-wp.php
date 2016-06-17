@@ -32,7 +32,7 @@ function replace_wp_die_handler() {
 }
 
 function wp_die_handler( $message ) {
-	if ( is_wp_error( $message ) ) {
+	if ( $message instanceof \WP_Error ) {
 		$message = $message->get_error_message();
 	}
 

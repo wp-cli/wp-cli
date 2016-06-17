@@ -1005,6 +1005,14 @@ class Runner {
 			}
 			Utils\wp_debug_mode();
 			$did_once = true;
+
+			// Check to see of wpdb is errored, instead of waiting for dead_db()
+			require_wp_db();
+			global $wpdb;
+			if ( ! empty( $wpdb->error ) ) {
+				Utils\wp_die_handler( $wpdb->error );
+			}
+
 			return true;
 		});
 
