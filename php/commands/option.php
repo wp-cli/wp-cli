@@ -128,6 +128,9 @@ class Option_Command extends WP_CLI_Command {
 	 * [--autoload=<value>]
 	 * : Match only autoload options when value is on, and only not-autoload option when off.
 	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field.
+	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields.
 	 *
