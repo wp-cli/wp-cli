@@ -226,19 +226,19 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 *     # Export database with drop query included
 	 *     $ wp db export --add-drop-table
-	 *     Success: Exported to wordpress_dbase.sql
+	 *     Success: Exported to wordpress_dbase.sql.
 	 *
 	 *     # Export certain tables
 	 *     $ wp db export --tables=wp_options,wp_users
-	 *     Success: Exported to wordpress_dbase.sql
+	 *     Success: Exported to wordpress_dbase.sql.
 	 *
 	 *     # Export all tables matching a wildcard
 	 *     $ wp db export --tables=$(wp db tables 'wp_user*' --format=csv)
-	 *     Success: Exported to wordpress_dbase.sql
+	 *     Success: Exported to wordpress_dbase.sql.
 	 *
 	 *     # Export all tables matching prefix
 	 *     $ wp db export --tables=$(wp db tables --all-tables-with-prefix --format=csv)
-	 *     Success: Exported to wordpress_dbase.sql
+	 *     Success: Exported to wordpress_dbase.sql.
 	 *
 	 * @alias dump
 	 */
@@ -268,7 +268,7 @@ class DB_Command extends WP_CLI_Command {
 		self::run( $escaped_command, $assoc_args );
 
 		if ( ! $stdout ) {
-			WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
+			WP_CLI::success( sprintf( 'Exported to %s.', $result_file ) );
 		}
 	}
 
@@ -283,7 +283,7 @@ class DB_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp db import wordpress_dbase.sql
-	 *     Success: Imported from wordpress_dbase.sql
+	 *     Success: Imported from wordpress_dbase.sql.
 	 */
 	public function import( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
@@ -310,7 +310,7 @@ class DB_Command extends WP_CLI_Command {
 			'database' => DB_NAME
 		), $descriptors );
 
-		WP_CLI::success( sprintf( 'Imported from %s', $result_file ) );
+		WP_CLI::success( sprintf( 'Imported from %s.', $result_file ) );
 	}
 
 	/**
@@ -342,7 +342,7 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 *     # Export only tables for a single site
 	 *     $ wp db export --tables=$(wp db tables --url=sub.example.com --format=csv)
-	 *     Success: Exported to wordpress_dbase.sql
+	 *     Success: Exported to wordpress_dbase.sql.
 	 */
 	function tables( $args, $assoc_args ) {
 
