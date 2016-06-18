@@ -182,6 +182,12 @@ class Option_Command extends WP_CLI_Command {
 	 *     | i2f_version | 0.1.0        |
 	 *     +-------------+--------------+
 	 *
+	 *     # Delete all options begining with "theme_mods_"
+	 *     $ wp option list --search="theme_mods_*" --field=option_name | xargs -0 -d '\n' -I % wp option delete %
+	 *     Success: Deleted 'theme_mods_twentysixteen' option.
+	 *     Success: Deleted 'theme_mods_twentfifteen' option.
+	 *     Success: Deleted 'theme_mods_twentyfourteen' option.
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
