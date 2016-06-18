@@ -269,7 +269,7 @@ class Media_Command extends WP_CLI_Command {
 
 		$filename = $dir . wp_unique_filename( $dir, $filename );
 		if ( !copy( $path, $filename ) )
-			WP_CLI::error( "Could not create temporary file for $path" );
+			WP_CLI::error( "Could not create temporary file for $path." );
 
 		return $filename;
 	}
@@ -281,7 +281,7 @@ class Media_Command extends WP_CLI_Command {
 		$att_desc = sprintf( '"%1$s" (ID %2$d).', get_the_title( $id ), $id );
 
 		if ( false === $fullsizepath || !file_exists( $fullsizepath ) ) {
-			WP_CLI::warning( "Can't find $att_desc" );
+			WP_CLI::warning( "Can't find $att_desc." );
 			return false;
 		}
 
@@ -304,10 +304,10 @@ class Media_Command extends WP_CLI_Command {
 
 			wp_update_attachment_metadata( $id, $metadata );
 
-			WP_CLI::log( "Regenerated thumbnails for $att_desc" );
+			WP_CLI::log( "Regenerated thumbnails for $att_desc." );
 			return true;
 		} else {
-			WP_CLI::log( "No thumbnail regeneration needed for $att_desc" );
+			WP_CLI::log( "No thumbnail regeneration needed for $att_desc." );
 			return true;
 		}
 	}
