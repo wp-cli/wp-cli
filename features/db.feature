@@ -61,16 +61,16 @@ Feature: Perform database operations
       Success: Exported
       """
 
-    When I run `wp db export /tmp/wp-cli-behat.sql --porcelain`
-    Then STDOUT should contain:
+    When I run `wp db export wp-cli-behat.sql --porcelain`
+    Then STDOUT should be:
       """
-      /tmp/wp-cli-behat.sql
+      wp-cli-behat.sql
       """
 
     When I try `wp db export - --porcelain`
-    Then STDERR should contain:
+    Then STDERR should be:
       """
-      Porcelain is not allowed when output mode is STDOUT.
+      Error: Porcelain is not allowed when output mode is STDOUT.
       """
 
     When I run `wp db reset --yes`
