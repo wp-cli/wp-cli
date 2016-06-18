@@ -222,6 +222,9 @@ class DB_Command extends WP_CLI_Command {
 	 * [--tables=<tables>]
 	 * : The comma separated list of specific tables to export. Excluding this parameter will export all tables in the database.
 	 *
+	 * [--porcelain]
+	 * : Output filename for the exported database.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Export database with drop query included
@@ -245,6 +248,12 @@ class DB_Command extends WP_CLI_Command {
 	function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 		$stdout = ( '-' === $result_file );
+		$porcelain = \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' );
+
+		// Bail if both porcelain and STDOUT are set.
+		if ( $stdout && $porcelain ) {
+			WP_CLI::error( 'Porcelain is not allowed when output mode is STDOUT.' );
+		}
 
 		if ( ! $stdout ) {
 			$assoc_args['result-file'] = $result_file;
@@ -265,9 +274,17 @@ class DB_Command extends WP_CLI_Command {
 
 		$escaped_command = call_user_func_array( '\WP_CLI\Utils\esc_cmd', array_merge( array( $command ), $command_esc_args ) );
 
+		// Remove parameters not needed for SQL run.
+		if ( isset( $assoc_args['porcelain'] ) ) {
+			unset( $assoc_args['porcelain'] );
+		}
+
 		self::run( $escaped_command, $assoc_args );
 
-		if ( ! $stdout ) {
+		if ( $porcelain ) {
+			WP_CLI::line( $result_file );
+		}
+		else if ( ! $stdout ) {
 			WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
 		}
 	}
