@@ -44,5 +44,58 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'major', Utils\get_named_sem_ver( '1.1.1', $original_version ) );
 	}
 
+	public function testParseSSHUrl() {
+		$testcase = 'foo';
+		$this->assertEquals( array(
+			'host' => 'foo',
+		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'foo', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		$testcase = 'foo.com';
+		$this->assertEquals( array(
+			'host' => 'foo.com',
+		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		$testcase = 'foo.com:2222';
+		$this->assertEquals( array(
+			'host' => 'foo.com',
+			'port' => 2222,
+		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( 2222, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		$testcase = 'foo.com:2222/path/to/dir';
+		$this->assertEquals( array(
+			'host' => 'foo.com',
+			'port' => 2222,
+			'path' => '/path/to/dir',
+		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( 2222, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( '/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		$testcase = 'foo.com~/path/to/dir';
+		$this->assertEquals( array(
+			'host' => 'foo.com',
+			'path' => '~/path/to/dir',
+		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		// No host
+		$testcase = '~/path/to/dir';
+		$this->assertEquals( array(), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+	}
+
 }
 
