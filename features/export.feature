@@ -6,7 +6,7 @@ Feature: Export content.
     When I run `wp export`
     Then STDOUT should contain:
       """
-      All done with export
+      All done with export.
       """
 
   Scenario: Export argument validator
@@ -27,13 +27,13 @@ Feature: Export content.
     When I try `wp export --start_date=invalid-date`
     Then STDERR should contain:
       """
-      Warning: The start_date invalid-date is invalid
+      Warning: The start_date invalid-date is invalid.
       """
 
     When I try `wp export --end_date=invalid-date`
     Then STDERR should contain:
       """
-      Warning: The end_date invalid-date is invalid
+      Warning: The end_date invalid-date is invalid.
       """
 
   Scenario: Export with post_type and post_status argument
