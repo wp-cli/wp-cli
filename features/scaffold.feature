@@ -155,6 +155,7 @@ Feature: WordPress code scaffolding
     And the {PLUGIN_DIR}/hello-world/.gitignore file should contain:
       """
       .DS_Store
+      wp-cli.local.yml
       node_modules/
       """
     And the {PLUGIN_DIR}/hello-world/.distignore file should contain:
