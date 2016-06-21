@@ -411,6 +411,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_id' => $theme->get_stylesheet(),
 				'title' => $theme->get('Name'),
 				'description' => $theme->get('Description'),
+				'author' => $theme->get('Author'),
 			);
 
 			if ( is_multisite() ) {
