@@ -79,11 +79,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     		Author: the WordPress team
 	 */
 	function status( $args ) {
-		$theme = $this->fetcher->get_check( $args[0] );
-		$errors = $theme->errors();
-		if ( is_wp_error( $errors ) ) {
-			$message = $errors->get_error_message();
-			WP_CLI::error( $message );
+		if ( isset( $args[0] ) ) {
+			$theme = $this->fetcher->get_check( $args[0] );
+			$errors = $theme->errors();
+			if ( is_wp_error( $errors ) ) {
+				$message = $errors->get_error_message();
+				WP_CLI::error( $message );
+			}
 		}
 
 		parent::status( $args );
