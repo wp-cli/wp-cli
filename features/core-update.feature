@@ -40,7 +40,7 @@ Feature: Update WordPress core
     When I run `wp core update --minor`
     Then STDOUT should contain:
       """
-      Updating to version 3.7.14
+      Updating to version 3.7.15
       """
 
     When I run `wp core update --minor`
@@ -52,7 +52,7 @@ Feature: Update WordPress core
     When I run `wp core version`
     Then STDOUT should be:
       """
-      3.7.14
+      3.7.15
       """
 
   @less-than-php-7
@@ -208,8 +208,8 @@ Feature: Update WordPress core
     When I run `wp core update --minor`
     Then STDOUT should contain:
       """
-      Updating to version 4.0.10 (en_US)...
-      Descargando paquete de instalación desde https://downloads.wordpress.org/release/wordpress-4.0.10-partial-0.zip
+      Updating to version 4.0.11 (en_US)...
+      Descargando paquete de instalación desde https://downloads.wordpress.org/release/wordpress-4.0.11-partial-0.zip
       """
     And STDOUT should contain:
       """
