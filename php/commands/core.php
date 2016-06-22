@@ -46,7 +46,14 @@ class Core_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields. Defaults to version,update_type,package_url.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, yaml. Default: table
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -110,16 +117,16 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( ! is_dir( $download_dir ) ) {
 			if ( ! is_writable( dirname( $download_dir ) ) ) {
-				WP_CLI::error( sprintf( "Insufficient permission to create directory %s", $download_dir ) );
+				WP_CLI::error( sprintf( "Insufficient permission to create directory '%s'.", $download_dir ) );
 			}
 
-			WP_CLI::log( sprintf( 'Creating directory %s', $download_dir ) );
+			WP_CLI::log( sprintf( "Creating directory '%s'.", $download_dir ) );
 			$mkdir = \WP_CLI\Utils\is_windows() ? 'mkdir %s' : 'mkdir -p %s';
 			WP_CLI::launch( Utils\esc_cmd( $mkdir, $download_dir ) );
 		}
 
 		if ( ! is_writable( $download_dir ) ) {
-			WP_CLI::error( sprintf( "%s is not writable by current user", $download_dir ) );
+			WP_CLI::error( sprintf( "'%s' is not writable by current user.", $download_dir ) );
 		}
 
 		$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', 'en_US' );
@@ -175,19 +182,19 @@ class Core_Command extends WP_CLI_Command {
 			if ( 404 == $response->status_code ) {
 				WP_CLI::error( "Release not found. Double-check locale or version." );
 			} else if ( 20 != substr( $response->status_code, 0, 2 ) ) {
-				WP_CLI::error( "Couldn't access download URL (HTTP code {$response->status_code})" );
+				WP_CLI::error( "Couldn't access download URL (HTTP code {$response->status_code})." );
 			}
 
 			$md5_response = Utils\http_request( 'GET', $download_url . '.md5' );
 			if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
-				WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$response->status_code})" );
+				WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$response->status_code})." );
 			}
 
 			$md5_file = md5_file( $temp );
 			if ( $md5_file === $md5_response->body ) {
 				WP_CLI::log( 'md5 hash verified: ' . $md5_file );
 			} else {
-				WP_CLI::error( "md5 hash for download ({$md5_file}) is different than the release hash ({$md5_response->body})" );
+				WP_CLI::error( "md5 hash for download ({$md5_file}) is different than the release hash ({$md5_response->body})." );
 			}
 
 			try {
@@ -277,7 +284,7 @@ class Core_Command extends WP_CLI_Command {
 		if ( 200 === $response->status_code ) {
 			return $response->body;
 		} else {
-			WP_CLI::error( "Couldn't fetch response from {$url} (HTTP code {$response->status_code})" );
+			WP_CLI::error( "Couldn't fetch response from {$url} (HTTP code {$response->status_code})." );
 		}
 	}
 
@@ -347,14 +354,14 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 *     # Standard wp-config.php file
 	 *     $ wp core config --dbname=testing --dbuser=wp --dbpass=securepswd --locale=ro_RO
-	 *     Success: Generated wp-config.php file.
+	 *     Success: Generated 'wp-config.php' file.
 	 *
 	 *     # Enable WP_DEBUG and WP_DEBUG_LOG
 	 *     $ wp core config --dbname=testing --dbuser=wp --dbpass=securepswd --extra-php <<PHP
 	 *     $ define( 'WP_DEBUG', true );
 	 *     $ define( 'WP_DEBUG_LOG', true );
 	 *     $ PHP
-	 *     Success: Generated wp-config.php file.
+	 *     Success: Generated 'wp-config.php' file.
 	 */
 	public function config( $_, $assoc_args ) {
 		global $wp_version;
@@ -408,9 +415,9 @@ class Core_Command extends WP_CLI_Command {
 
 		$bytes_written = file_put_contents( ABSPATH . 'wp-config.php', $out );
 		if ( ! $bytes_written ) {
-			WP_CLI::error( 'Could not create new wp-config.php file.' );
+			WP_CLI::error( "Could not create new 'wp-config.php' file." );
 		} else {
-			WP_CLI::success( 'Generated wp-config.php file.' );
+			WP_CLI::success( "Generated 'wp-config.php' file." );
 		}
 	}
 
@@ -1312,7 +1319,7 @@ EOT;
 			if ( ! $dry_run && $total && $success == $total ) {
 				update_site_option( 'wpmu_upgrade_site', $wp_db_version );
 			}
-			WP_CLI::success( sprintf( 'WordPress database upgraded on %d/%d sites', $success, $total ) );
+			WP_CLI::success( sprintf( 'WordPress database upgraded on %d/%d sites.', $success, $total ) );
 		} else {
 			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 			$wp_current_db_version = __get_option( 'db_version' );
@@ -1320,9 +1327,9 @@ EOT;
 				if ( ! $dry_run ) {
 					wp_upgrade();
 				}
-				WP_CLI::success( "WordPress database upgraded successfully from db version {$wp_current_db_version} to {$wp_db_version}" );
+				WP_CLI::success( "WordPress database upgraded successfully from db version {$wp_current_db_version} to {$wp_db_version}." );
 			} else {
-				WP_CLI::success( "WordPress database already at latest db version {$wp_db_version}" );
+				WP_CLI::success( "WordPress database already at latest db version {$wp_db_version}." );
 			}
 		}
 	}
@@ -1443,9 +1450,9 @@ EOT;
 			}
 
 			if ( $count ) {
-				WP_CLI::log( number_format( $count ) . ' files cleaned up' );
+				WP_CLI::log( number_format( $count ) . ' files cleaned up.' );
 			} else {
-				WP_CLI::log( 'No files found that need cleaned up' );
+				WP_CLI::log( 'No files found that need cleaned up.' );
 			}
 		}
 	}
