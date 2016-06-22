@@ -1,9 +1,23 @@
 <?php
 
+/**
+ * Manage exports.
+ *
+ * ## EXAMPLES
+ *
+ *     # Export posts published by the user between given start and end date
+ *     $ wp export --dir=/tmp/ --user=admin --post_type=post --start_date=2011-01-01 --end_date=2011-12-31
+ *     Starting export process...
+ *     Writing to file /tmp/staging.wordpress.2016-05-24.000.xml
+ *     Success: All done with export.
+ *
+ * @package wp-cli
+ */
 class Export_Command extends WP_CLI_Command {
 
 	/**
-	* Initialize the array of arguments that will be eventually be passed to export_wp
+	* Initialize the array of arguments that will be eventually be passed to export_wp.
+	*
 	* @var array
 	*/
 	public $export_args = array();
@@ -21,7 +35,10 @@ class Export_Command extends WP_CLI_Command {
 	 * : Don't export comments.
 	 *
 	 * [--max_file_size=<MB>]
-	 * : A single export file should have this many megabytes. Default: 15
+	 * : A single export file should have this many megabytes.
+	 * ---
+	 * default: 15
+	 * ---
 	 *
 	 * ## FILTERS
 	 *
@@ -33,7 +50,10 @@ class Export_Command extends WP_CLI_Command {
 	 *
 	 * [--post_type=<post-type>]
 	 * : Export only posts with this post_type. Separate multiple post types with a
-	 * comma. Defaults to all.
+	 * comma.
+	 * ---
+	 * default: any
+	 * ---
 	 *
 	 * [--post_type__not_in=<post-type>]
 	 * : Export all post types except those identified. Separate multiple post types
@@ -76,7 +96,6 @@ class Export_Command extends WP_CLI_Command {
 	 *     Starting export process...
 	 *     Writing to file /var/www/example.com/public_html/staging.wordpress.2016-05-24.000.xml
 	 *     Success: All done with export.
-	 *
 	 */
 	public function __invoke( $_, $assoc_args ) {
 		$defaults = array(
@@ -171,7 +190,7 @@ class Export_Command extends WP_CLI_Command {
 		if ( empty( $path ) ) {
 			$path = getcwd();
 		} elseif ( !is_dir( $path ) ) {
-			WP_CLI::error( sprintf( "The directory %s does not exist.", $path ) );
+			WP_CLI::error( sprintf( "The directory '%s' does not exist.", $path ) );
 			return false;
 		}
 
@@ -260,7 +279,7 @@ class Export_Command extends WP_CLI_Command {
 			WP_CLI::warning( "post__in should be comma-separated post IDs." );
 			return false;
 		}
-		// New exporter uses a different argument
+		// New exporter uses a different argument.
 		$this->export_args['post_ids'] = $post__in;
 		return true;
 	}
@@ -272,7 +291,7 @@ class Export_Command extends WP_CLI_Command {
 
 		$start_id = intval( $start_id );
 
-		// Post IDs must be greater than 0
+		// Post IDs must be greater than 0.
 		if ( 0 >= $start_id ) {
 			WP_CLI::warning( sprintf( __( 'Invalid start ID: %d' ), $start_id ) );
 			return false;
@@ -366,4 +385,3 @@ class Export_Command extends WP_CLI_Command {
 }
 
 WP_CLI::add_command( 'export', 'Export_Command' );
-
