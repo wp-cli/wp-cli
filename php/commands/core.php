@@ -46,11 +46,13 @@ class Core_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields. Defaults to version,update_type,package_url.
 	 *
 	 * [--format=<format>]
+	 * : Render output in a particular format.
 	 * ---
 	 * default: table
 	 * options:
 	 *   - table
 	 *   - csv
+	 *   - count
 	 *   - json
 	 *   - yaml
 	 * ---
