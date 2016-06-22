@@ -50,6 +50,20 @@ Feature: Manage WordPress themes
     When I run `wp theme list`
     Then STDOUT should not be empty
 
+  Scenario: Checking theme status without theme parameter
+    Given a WP install
+
+    When I run `wp theme install classic --activate`
+    And I run `wp theme list --field=name --status=inactive | xargs -0 -d '\n' -I % wp theme delete %`
+    And I run `wp theme status`
+    Then STDOUT should be:
+      """
+      1 installed theme:
+        A classic 1.6
+
+      Legend: A = Active
+      """
+
   Scenario: Install a theme, activate, then force install an older version of the theme
     Given a WP install
 
