@@ -784,7 +784,7 @@ class Runner {
 
 		if ( !Utils\locate_wp_config() ) {
 			WP_CLI::error(
-				"wp-config.php not found.\n" .
+				"'wp-config.php' not found.\n" .
 				"Either create one manually or use `wp core config`." );
 		}
 
@@ -859,7 +859,7 @@ class Runner {
 		$wp_config_path = Utils\locate_wp_config();
 		if ( ! $wp_config_path ) {
 			WP_CLI::error(
-				"wp-config.php not found.\n" .
+				"'wp-config.php' not found.\n" .
 				"Either create one manually or use `wp core config`." );
 		}
 
