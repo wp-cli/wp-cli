@@ -1,7 +1,7 @@
 <?php
 
 /**
- * List, create, assign, and delete menus
+ * List, create, assign, and delete menus.
  *
  * ## EXAMPLES
  *
@@ -25,6 +25,8 @@
  *     # Assign the 'my-menu' menu to the 'primary' location
  *     $ wp menu location assign my-menu primary
  *     Success: Assigned location to menu.
+ *
+ * @package wp-cli
  */
 class Menu_Command extends WP_CLI_Command {
 
@@ -38,12 +40,12 @@ class Menu_Command extends WP_CLI_Command {
 	);
 
 	/**
-	 * Create a new menu
+	 * Create a new menu.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <menu-name>
-	 * : A descriptive name for the menu
+	 * : A descriptive name for the menu.
 	 *
 	 * [--porcelain]
 	 * : Output just the new menu id.
@@ -73,12 +75,12 @@ class Menu_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete one or more menus
+	 * Delete one or more menus.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <menu>...
-	 * : The name, slug, or term ID for the menu(s)
+	 * : The name, slug, or term ID for the menu(s).
 	 *
 	 * ## EXAMPLES
 	 *
@@ -112,7 +114,17 @@ class Menu_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, ids, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - ids
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -164,7 +176,7 @@ class Menu_Command extends WP_CLI_Command {
 
 			}
 
-			// Normalize the data for some output formats
+			// Normalize the data for some output formats.
 			if ( ! isset( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'csv', 'table' ) ) ) {
 				$menu->locations = implode( ',', $menu->locations );
 			}
@@ -182,7 +194,7 @@ class Menu_Command extends WP_CLI_Command {
 }
 
 /**
- * List, add, and delete items associated with a menu
+ * List, add, and delete items associated with a menu.
  *
  * ## EXAMPLES
  *
@@ -209,18 +221,28 @@ class Menu_Item_Command extends WP_CLI_Command {
 	);
 
 	/**
-	 * Get a list of items associated with a menu
+	 * Get a list of items associated with a menu.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <menu>
-	 * : The name, slug, or term ID for the menu
+	 * : The name, slug, or term ID for the menu.
 	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, ids, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - ids
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -284,39 +306,39 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add a post as a menu item
+	 * Add a post as a menu item.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <menu>
-	 * : The name, slug, or term ID for the menu
+	 * : The name, slug, or term ID for the menu.
 	 *
 	 * <post-id>
-	 * : Post ID to add to the menu
+	 * : Post ID to add to the menu.
 	 *
 	 * [--title=<title>]
-	 * : Set a custom title for the menu item
+	 * : Set a custom title for the menu item.
 	 *
 	 * [--link=<link>]
-	 * : Set a custom url for the menu item
+	 * : Set a custom url for the menu item.
 	 *
 	 * [--description=<description>]
-	 * : Set a custom description for the menu item
+	 * : Set a custom description for the menu item.
 	 *
 	 * [--attr-title=<attr-title>]
-	 * : Set a custom title attribute for the menu item
+	 * : Set a custom title attribute for the menu item.
 	 *
 	 * [--target=<target>]
-	 * : Set a custom link target for the menu item
+	 * : Set a custom link target for the menu item.
 	 *
 	 * [--classes=<classes>]
-	 * : Set a custom link classes for the menu item
+	 * : Set a custom link classes for the menu item.
 	 *
 	 * [--position=<position>]
 	 * : Specify the position of this menu item.
 	 *
 	 * [--parent-id=<parent-id>]
-	 * : Make this menu item a child of another menu item
+	 * : Make this menu item a child of another menu item.
 	 *
 	 * [--porcelain]
 	 * : Output just the new menu item id.
@@ -342,42 +364,42 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add a taxonomy term as a menu item
+	 * Add a taxonomy term as a menu item.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <menu>
-	 * : The name, slug, or term ID for the menu
+	 * : The name, slug, or term ID for the menu.
 	 *
 	 * <taxonomy>
-	 * : Taxonomy of the term to be added
+	 * : Taxonomy of the term to be added.
 	 *
 	 * <term-id>
-	 * : Term ID of the term to be added
+	 * : Term ID of the term to be added.
 	 *
 	 * [--title=<title>]
-	 * : Set a custom title for the menu item
+	 * : Set a custom title for the menu item.
 	 *
 	 * [--link=<link>]
-	 * : Set a custom url for the menu item
+	 * : Set a custom url for the menu item.
 	 *
 	 * [--description=<description>]
-	 * : Set a custom description for the menu item
+	 * : Set a custom description for the menu item.
 	 *
 	 * [--attr-title=<attr-title>]
-	 * : Set a custom title attribute for the menu item
+	 * : Set a custom title attribute for the menu item.
 	 *
 	 * [--target=<target>]
-	 * : Set a custom link target for the menu item
+	 * : Set a custom link target for the menu item.
 	 *
 	 * [--classes=<classes>]
-	 * : Set a custom link classes for the menu item
+	 * : Set a custom link classes for the menu item.
 	 *
 	 * [--position=<position>]
 	 * : Specify the position of this menu item.
 	 *
 	 * [--parent-id=<parent-id>]
-	 * : Make this menu item a child of another menu item
+	 * : Make this menu item a child of another menu item.
 	 *
 	 * [--porcelain]
 	 * : Output just the new menu item id.
@@ -404,36 +426,36 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add a custom menu item
+	 * Add a custom menu item.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <menu>
-	 * : The name, slug, or term ID for the menu
+	 * : The name, slug, or term ID for the menu.
 	 *
 	 * <title>
-	 * : Title for the link
+	 * : Title for the link.
 	 *
 	 * <link>
-	 * : Target URL for the link
+	 * : Target URL for the link.
 	 *
 	 * [--description=<description>]
-	 * : Set a custom description for the menu item
+	 * : Set a custom description for the menu item.
 	 *
 	 * [--attr-title=<attr-title>]
-	 * : Set a custom title attribute for the menu item
+	 * : Set a custom title attribute for the menu item.
 	 *
 	 * [--target=<target>]
-	 * : Set a custom link target for the menu item
+	 * : Set a custom link target for the menu item.
 	 *
 	 * [--classes=<classes>]
-	 * : Set a custom link classes for the menu item
+	 * : Set a custom link classes for the menu item.
 	 *
 	 * [--position=<position>]
 	 * : Specify the position of this menu item.
 	 *
 	 * [--parent-id=<parent-id>]
-	 * : Make this menu item a child of another menu item
+	 * : Make this menu item a child of another menu item.
 	 *
 	 * [--porcelain]
 	 * : Output just the new menu item id.
@@ -455,7 +477,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a menu item
+	 * Update a menu item.
 	 *
 	 * ## OPTIONS
 	 *
@@ -463,28 +485,28 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * : Database ID for the menu item.
 	 *
 	 * [--title=<title>]
-	 * : Set a custom title for the menu item
+	 * : Set a custom title for the menu item.
 	 *
 	 * [--link=<link>]
-	 * : Set a custom url for the menu item
+	 * : Set a custom url for the menu item.
 	 *
 	 * [--description=<description>]
-	 * : Set a custom description for the menu item
+	 * : Set a custom description for the menu item.
 	 *
 	 * [--attr-title=<attr-title>]
-	 * : Set a custom title attribute for the menu item
+	 * : Set a custom title attribute for the menu item.
 	 *
 	 * [--target=<target>]
-	 * : Set a custom link target for the menu item
+	 * : Set a custom link target for the menu item.
 	 *
 	 * [--classes=<classes>]
-	 * : Set a custom link classes for the menu item
+	 * : Set a custom link classes for the menu item.
 	 *
 	 * [--position=<position>]
 	 * : Specify the position of this menu item.
 	 *
 	 * [--parent-id=<parent-id>]
-	 * : Make this menu item a child of another menu item
+	 * : Make this menu item a child of another menu item.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -495,7 +517,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 */
 	public function update( $args, $assoc_args ) {
 
-		// Shuffle the position of these
+		// Shuffle the position of these.
 		$args[1] = $args[0];
 		$terms = get_the_terms( $args[1], 'nav_menu' );
 		if ( $terms && ! is_wp_error( $terms ) ) {
@@ -509,7 +531,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete one or more items from a menu
+	 * Delete one or more items from a menu.
 	 *
 	 * ## OPTIONS
 	 *
@@ -549,7 +571,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Worker method to create new items or update existing ones
+	 * Worker method to create new items or update existing ones.
 	 */
 	private function add_or_update_item( $method, $type, $args, $assoc_args ) {
 
@@ -692,7 +714,17 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, ids, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - ids
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -729,15 +761,15 @@ class Menu_Location_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Assign a location to a menu
+	 * Assign a location to a menu.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <menu>
-	 * : The name, slug, or term ID for the menu
+	 * : The name, slug, or term ID for the menu.
 	 *
 	 * <location>
-	 * : Location's slug
+	 * : Location's slug.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -769,15 +801,15 @@ class Menu_Location_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Remove a location from a menu
+	 * Remove a location from a menu.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <menu>
-	 * : The name, slug, or term ID for the menu
+	 * : The name, slug, or term ID for the menu.
 	 *
 	 * <location>
-	 * : Location's slug
+	 * : Location's slug.
 	 *
 	 * ## EXAMPLES
 	 *
