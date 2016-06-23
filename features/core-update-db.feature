@@ -8,13 +8,13 @@ Feature: Update core's database
     When I run `wp core update-db`
     Then STDOUT should contain:
       """
-      Success: WordPress database upgraded successfully from db version 29630 to 30133
+      Success: WordPress database upgraded successfully from db version 29630 to 30133.
       """
 
     When I run `wp core update-db`
     Then STDOUT should contain:
       """
-      Success: WordPress database already at latest db version 30133
+      Success: WordPress database already at latest db version 30133.
       """
 
   Scenario: Dry run update db on a single site
@@ -26,7 +26,7 @@ Feature: Update core's database
     Then STDOUT should be:
       """
       Performing a dry run, with no database modification.
-      Success: WordPress database upgraded successfully from db version 29630 to 30133
+      Success: WordPress database upgraded successfully from db version 29630 to 30133.
       """
 
     When I run `wp option get db_version`
@@ -52,7 +52,7 @@ Feature: Update core's database
     When I run `wp core update-db --network`
     Then STDOUT should contain:
       """
-      Success: WordPress database upgraded on 3/3 sites
+      Success: WordPress database upgraded on 3/3 sites.
       """
 
   Scenario: Update db across network
@@ -76,5 +76,5 @@ Feature: Update core's database
       """
     And STDOUT should contain:
       """
-      Success: WordPress database upgraded on 3/3 sites
+      Success: WordPress database upgraded on 3/3 sites.
       """
