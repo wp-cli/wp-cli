@@ -15,7 +15,7 @@ Feature: Manage wp-config
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: wp-config.php not found.
+      Error: 'wp-config.php' not found.
       Either create one manually or use `wp core config`.
       """
 
