@@ -100,10 +100,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : The string to search for.
 	 *
 	 * [--page=<page>]
-	 * : Optional page to display.  Defaults to 1.
+	 * : Optional page to display.
+	 * ---
+	 * default: 1
+	 * ---
 	 *
 	 * [--per-page=<per-page>]
-	 * : Optional number of results to display. Defaults to 10.
+	 * : Optional number of results to display.
+	 * ---
+	 * default: 10
+	 * ---
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each plugin.
@@ -127,7 +133,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **short_description**: Plugin's Short Description
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - count
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -610,7 +625,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Output list as table, json, CSV, yaml. Defaults to table.
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -751,7 +774,16 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - count
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -789,7 +821,6 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     | akismet                      | active-network | none      | 3.1.11     |
 	 *     | hello                        | inactive       | none      | 1.6        |
 	 *     +------------------------------+----------------+-----------+------------+
-	 *
 	 *
 	 * @subcommand list
 	 */
