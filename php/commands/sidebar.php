@@ -104,6 +104,9 @@ class Sidebar_Command extends WP_CLI_Command {
 				}
 			}
 		}
+		else {
+			WP_CLI::warning( 'No registered sidebars.' );
+		}
 	}
 
 	/**
