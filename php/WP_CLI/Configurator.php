@@ -155,9 +155,11 @@ class Configurator {
 		if ( ! empty( $yaml['_']['inherit'] ) ) {
 			$this->merge_yml( $yaml['_']['inherit'] );
 		}
+		$alias_regex = '#^@[A-Za-z0-9-_]+$#';
 		foreach ( $yaml as $key => $value ) {
-			if ( preg_match( '#@[A-Za-z0-9-_]+#', $key ) ) {
+			if ( preg_match( $alias_regex, $key ) ) {
 				$this->aliases[ $key ] = array();
+				$is_alias = false;
 				foreach( array(
 					'user',
 					'url',
@@ -166,7 +168,18 @@ class Configurator {
 				) as $i ) {
 					if ( isset( $value[ $i ] ) ) {
 						$this->aliases[ $key ][ $i ] = $value[ $i ];
+						$is_alias = true;
 					}
+				}
+				// If it's not an alias, it might be a group of aliases
+				if ( ! $is_alias && is_array( $value ) ) {
+					$alias_group = array();
+					foreach( $value as $i => $k ) {
+						if ( preg_match( $alias_regex, $k ) ) {
+							$alias_group[] = $k;
+						}
+					}
+					$this->aliases[ $key ] = $alias_group;
 				}
 			} elseif ( !isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
 				if ( isset( $this->extra_config[ $key ] )
