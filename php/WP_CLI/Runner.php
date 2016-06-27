@@ -701,7 +701,7 @@ class Runner {
 		$this->check_root();
 		if ( $this->alias ) {
 			if ( ! array_key_exists( $this->alias, $this->aliases ) ) {
-				WP_CLI::error( "Alias '{$alias}' not found." );
+				WP_CLI::error( "Alias '{$this->alias}' not found." );
 			}
 			// Numerically indexed means a group of aliases
 			if ( isset( $this->aliases[ $this->alias ][0] ) ) {
