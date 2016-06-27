@@ -56,6 +56,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 *   - csv
 	 *   - ids
 	 *   - json
+	 *   - count
 	 *   - yaml
 	 * ---
 	 *
