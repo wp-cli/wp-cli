@@ -98,6 +98,8 @@ WP-CLI's maintainers and project contributors do their best to respond to all ne
 - [Common issues and their fixes](https://wp-cli.org/docs/common-issues/)
 - [Best practices for submitting a bug report](https://wp-cli.org/docs/bug-reports/)
 - [Documentation portal](https://wp-cli.org/docs/)
+- [Open or closed issues on Github](https://github.com/wp-cli/wp-cli/issues?utf8=%E2%9C%93&q=is%3Aissue)
+- [WordPress StackExchange forums](http://wordpress.stackexchange.com/questions/tagged/wp-cli)
 
 If you have a WordPress.org account, you may also consider joining the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/).
 
