@@ -657,10 +657,29 @@ class Runner {
 		);
 	}
 
-	private function set_alias( $alias ) {
-		if ( ! array_key_exists( $alias, $this->aliases ) ) {
-			WP_CLI::error( "Alias '{$alias}' not found." );
+	private function run_alias_group( $aliases ) {
+		$php_bin = WP_CLI::get_php_binary();
+
+		$script_path = $GLOBALS['argv'][0];
+
+		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
+			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
+		} else {
+			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
 		}
+		$config_path = escapeshellarg( $config_path );
+
+		foreach( $aliases as $alias ) {
+
+			$args = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
+			$assoc_args = Utils\assoc_args_to_str( $this->assoc_args );
+
+			$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args} {$assoc_args}";
+			passthru( $full_command );
+		}
+	}
+
+	private function set_alias( $alias ) {
 		$orig_config = $this->config;
 		$alias_config = $this->aliases[ $this->alias ];
 		$this->config = array_merge( $orig_config, $alias_config );
@@ -681,7 +700,21 @@ class Runner {
 
 		$this->check_root();
 		if ( $this->alias ) {
-			$this->set_alias( $this->alias );
+			if ( ! array_key_exists( $this->alias, $this->aliases ) ) {
+				WP_CLI::error( "Alias '{$alias}' not found." );
+			}
+			// Numerically indexed means a group of aliases
+			if ( isset( $this->aliases[ $this->alias ][0] ) ) {
+				$group_aliases = $this->aliases[ $this->alias ];
+				$all_aliases = array_keys( $this->aliases );
+				if ( $diff = array_diff( $group_aliases, $all_aliases ) ) {
+					WP_CLI::error( "Group '{$this->alias}' contains one or more invalid aliases: " . implode( ', ', $diff ) );
+				}
+				$this->run_alias_group( $group_aliases );
+				exit;
+			} else {
+				$this->set_alias( $this->alias );
+			}
 		}
 
 		if ( empty( $this->arguments ) )
