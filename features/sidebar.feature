@@ -19,28 +19,28 @@ Feature: Manage WordPress sidebars
 
     When I run `wp widget list sidebar-1 --format=count`
     Then STDOUT should be:
-	"""
-	6
-	"""
+    """
+    6
+    """
 
     When I run `wp sidebar reset sidebar-1`
     And I run `wp widget list sidebar-1 --format=count`
     Then STDOUT should be:
-	"""
-	0
-	"""
+    """
+    0
+    """
 
     When I try `wp sidebar reset sidebar-1`
     Then STDERR should be:
-	"""
-	Warning: 'sidebar-1' is already empty.
-	"""
+    """
+    Warning: 'sidebar-1' is already empty.
+    """
 
     When I try `wp sidebar reset sidebar-non-existing`
     Then STDERR should be:
-	"""
-	Error: Invalid sidebar.
-	"""
+    """
+    Error: Invalid sidebar.
+    """
 
   Scenario: Reset all sidebars
     Given a WP install
@@ -52,27 +52,27 @@ Feature: Manage WordPress sidebars
     Then STDOUT should not be empty
     And I run `wp widget list sidebar-1 --format=count`
     Then STDOUT should be:
-	"""
-	7
-	"""
+    """
+    7
+    """
 
     When I run `wp widget add search sidebar-2 --title="Quick Search"`
     Then STDOUT should not be empty
     And I run `wp widget list sidebar-2 --format=count`
     Then STDOUT should be:
-	"""
-	1
-	"""
+    """
+    1
+    """
 
     When I run `wp sidebar reset`
     And I run `wp widget list sidebar-1 --format=count`
     Then STDOUT should be:
-	"""
-	0
-	"""
+    """
+    0
+    """
 
     When I run `wp widget list sidebar-2 --format=count`
     Then STDOUT should be:
-	"""
-	0
-	"""
+    """
+    0
+    """
