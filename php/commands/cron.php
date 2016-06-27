@@ -15,12 +15,13 @@
  *
  *     # Delete the next scheduled cron event
  *     $ wp cron event delete cron_test
- *     Success: Deleted 2 instances of the cron event 'cron_test'
+ *     Success: Deleted 2 instances of the cron event 'cron_test'.
  *
  *     # List scheduled cron events in JSON
  *     $ wp cron event list --fields=hook,next_run --format=json
  *     [{"hook":"wp_version_check","next_run":"2016-05-31 10:15:13"},{"hook":"wp_update_plugins","next_run":"2016-05-31 10:15:13"},{"hook":"wp_update_themes","next_run":"2016-05-31 10:15:14"}]
  *
+ * @package wp-cli
  */
 class Cron_Event_Command extends WP_CLI_Command {
 
@@ -47,7 +48,16 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * : Prints the value of a single field for each event.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, ids, yaml. Default: table.
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - ids
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -115,7 +125,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * <hook>
-	 * : The hook name
+	 * : The hook name.
 	 *
 	 * [<next-run>]
 	 * : A Unix timestamp or an English textual datetime description compatible with `strtotime()`. Defaults to now.
@@ -282,13 +292,13 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * <hook>
-	 * : The hook name
+	 * : The hook name.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Delete the next scheduled cron event
 	 *     $ wp cron event delete cron_test
-	 *     Success: Deleted 2 instances of the cron event 'cron_test'
+	 *     Success: Deleted 2 instances of the cron event 'cron_test'.
 	 */
 	public function delete( $args, $assoc_args ) {
 
@@ -493,7 +503,16 @@ class Cron_Schedule_Command extends WP_CLI_Command {
 	 * : Prints the value of a single field for each schedule.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, ids, yaml. Default: table.
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - ids
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
