@@ -177,14 +177,19 @@ class Menu_Command extends WP_CLI_Command {
 			}
 
 			// Normalize the data for some output formats.
-			if ( ! isset( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'csv', 'table' ) ) ) {
+			if ( ! isset( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'csv', 'table') ) ) {
 				$menu->locations = implode( ',', $menu->locations );
 			}
 		}
 
 		$formatter = $this->get_formatter( $assoc_args );
-		$formatter->display_items( $menus );
 
+		if ( 'ids' == $formatter->format ) {
+			$ids = array_column( $menus, 'term_id' );
+			$formatter->display_items( $ids );
+		} else {
+			$formatter->display_items( $menus );
+		}
 	}
 
 	protected function get_formatter( &$assoc_args ) {
