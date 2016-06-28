@@ -177,7 +177,7 @@ class Menu_Command extends WP_CLI_Command {
 			}
 
 			// Normalize the data for some output formats.
-			if ( ! isset( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'csv', 'table') ) ) {
+			if ( ! isset( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'csv', 'table' ) ) ) {
 				$menu->locations = implode( ',', $menu->locations );
 			}
 		}
