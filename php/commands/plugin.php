@@ -336,11 +336,11 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 			deactivate_plugins( $plugin->file, false, $network_wide );
 
 			if ( ! is_network_admin() ) {
-				update_option('recently_activated',
-					array($plugin->file => time()) + (array)get_option('recently_activated'));
+				update_option( 'recently_activated',
+					array( $plugin->file => time() ) + (array) get_option('recently_activated') );
 			} else {
-				update_site_option('recently_activated',
-					array($plugin->file => time()) + (array)get_site_option('recently_activated'));
+				update_site_option( 'recently_activated',
+					array( $plugin->file => time() ) + (array) get_site_option('recently_activated') );
 			}
 
 			$this->active_output( $plugin->name, $plugin->file, $network_wide, "deactivate" );
