@@ -3,7 +3,7 @@ Feature: Reset WordPress sidebars
   Scenario: Reset sidebar
     Given a WP install
 
-    When I run `wp theme install twentysixteen --activate`
+    When I run `wp theme install twentytwelve --activate`
     Then STDOUT should not be empty
 
     When I run `wp widget list sidebar-1 --format=count`
@@ -68,7 +68,7 @@ Feature: Reset WordPress sidebars
   Scenario: Reset all sidebars
     Given a WP install
 
-    When I run `wp theme install twentysixteen --activate`
+    When I run `wp theme install twentytwelve --activate`
     Then STDOUT should not be empty
 
     When I run `wp widget add calendar sidebar-1 --title="Calendar"`
@@ -103,7 +103,7 @@ Feature: Reset WordPress sidebars
   Scenario: Testing movement of widgets while reset
     Given a WP install
 
-    When I run `wp theme install twentysixteen --activate`
+    When I run `wp theme install twentytwelve --activate`
     Then STDOUT should not be empty
 
     When I run `wp widget add calendar sidebar-2 --title="Calendar"`
