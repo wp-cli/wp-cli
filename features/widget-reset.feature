@@ -94,3 +94,31 @@ Feature: Reset WordPress sidebars
       """
       0
       """
+
+  Scenario: Testing movement of widgets while reset
+    Given a WP install
+
+    When I run `wp theme install twentysixteen --activate`
+    Then STDOUT should not be empty
+
+    When I run `wp widget add calendar sidebar-2 --title="Calendar"`
+    Then STDOUT should not be empty
+    And I run `wp widget add search sidebar-2 --title="Quick Search"`
+    Then STDOUT should not be empty
+
+    When I run `wp widget list sidebar-2 --format=ids`
+    Then STDOUT should be:
+      """
+      search-3 calendar-1
+      """
+    When I run `wp widget list wp_inactive_widgets --format=ids`
+    Then STDOUT should be empty
+
+    When I run `wp widget reset sidebar-2`
+    And I run `wp widget list sidebar-2 --format=ids`
+    Then STDOUT should be empty
+    And I run `wp widget list wp_inactive_widgets --format=ids`
+    Then STDOUT should be:
+      """
+      calendar-1 search-3
+      """
