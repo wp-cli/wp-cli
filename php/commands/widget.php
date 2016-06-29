@@ -325,6 +325,12 @@ class Widget_Command extends WP_CLI_Command {
 	 *     $ wp widget reset sidebar-1 sidebar-2
 	 *     Success: Sidebar 'sidebar-1' reset.
 	 *     Success: Sidebar 'sidebar-2' reset.
+	 *
+	 *     # Reset all sidebars
+	 *     $ wp widget reset --all
+	 *     Success: Sidebar 'sidebar-1' reset.
+	 *     Success: Sidebar 'sidebar-2' reset.
+	 *     Success: Sidebar 'sidebar-3' reset.
 	 */
 	public function reset( $args, $assoc_args ) {
 

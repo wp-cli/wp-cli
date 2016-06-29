@@ -1,4 +1,4 @@
-Feature: Reset widgets in WordPress sidebar
+Feature: Reset WordPress sidebars
 
   Scenario: Reset sidebar
     Given a WP install
