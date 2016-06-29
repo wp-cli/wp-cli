@@ -307,7 +307,7 @@ class Widget_Command extends WP_CLI_Command {
 	/**
 	 * Reset sidebar.
 	 *
-	 * Removes all widgets from the sidebar and place those to Inactive Widgets.
+	 * Removes all widgets from the sidebar and places them in Inactive Widgets.
 	 *
 	 * [<sidebar-id>...]
 	 * : One or more sidebars to reset.
@@ -366,7 +366,7 @@ class Widget_Command extends WP_CLI_Command {
 
 			$widgets = $this->get_sidebar_widgets( $sidebar_id );
 			if ( empty( $widgets ) ) {
-				WP_CLI::warning( sprintf( "'%s' is already empty.", $sidebar_id ) );
+				WP_CLI::warning( sprintf( "Sidebar '%s' is already empty.", $sidebar_id ) );
 			}
 			else {
 				foreach ( $widgets as $widget ) {

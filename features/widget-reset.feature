@@ -28,7 +28,7 @@ Feature: Reset WordPress sidebars
     When I try `wp widget reset sidebar-1`
     Then STDERR should be:
       """
-      Warning: 'sidebar-1' is already empty.
+      Warning: Sidebar 'sidebar-1' is already empty.
       """
 
     When I try `wp widget reset non-existing-sidebar-id`
@@ -93,6 +93,11 @@ Feature: Reset WordPress sidebars
     Then STDOUT should be:
       """
       0
+      """
+    When I run `wp widget list wp_inactive_widgets --format=ids`
+    Then STDOUT should be:
+      """
+      text-1 search-3 meta-2 categories-2 archives-2 recent-comments-2 recent-posts-2 search-2 calendar-1
       """
 
   Scenario: Testing movement of widgets while reset
