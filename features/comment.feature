@@ -71,19 +71,19 @@ Feature: Manage WordPress comments
   Scenario: Get details about an existing comment
     When I run `wp comment get 1`
     Then STDOUT should be a table containing rows:
-      | Field               | Value                   |
-      | comment_author_url  | https://wordpress.org/  |
+      | Field               | Value     |
+      | comment_approved    | 1         |
 
-    When I run `wp comment get 1 --fields=comment_author_url,comment_author_email --format=json`
+    When I run `wp comment get 1 --fields=comment_approved,comment_author_email --format=json`
     Then STDOUT should be JSON containing:
       """
-      {"comment_author_url":"https://wordpress.org/","comment_author_email":""}
+      {"comment_approved":"1","comment_author_email":""}
       """
 
-    When I run `wp comment list --fields=comment_approved,comment_author_url`
+    When I run `wp comment list --fields=comment_approved`
     Then STDOUT should be a table containing rows:
-      | comment_approved | comment_author_url      |
-      | 1                | https://wordpress.org/  |
+      | comment_approved |
+      | 1                |
 
     When I run `wp comment list --field=approved`
     Then STDOUT should be:
