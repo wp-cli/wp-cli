@@ -74,10 +74,10 @@ Feature: Manage WordPress comments
       | Field               | Value     |
       | comment_approved    | 1         |
 
-    When I run `wp comment get 1 --fields=comment_approved,comment_author_email --format=json`
+    When I run `wp comment get 1 --fields=comment_approved --format=json`
     Then STDOUT should be JSON containing:
       """
-      {"comment_approved":"1","comment_author_email":""}
+      {"comment_approved":"1"}
       """
 
     When I run `wp comment list --fields=comment_approved`
