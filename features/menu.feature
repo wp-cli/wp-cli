@@ -33,6 +33,13 @@ Feature: Manage WordPress menus
     0
     """
 
+    When I run `wp menu create "First Menu"`
+    And I run `wp menu list --format=ids`
+    Then STDOUT should be:
+    """
+    5
+    """
+
   Scenario: Assign / remove location from a menu
 
     When I run `wp theme install p2 --activate`

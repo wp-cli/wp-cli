@@ -183,8 +183,17 @@ class Menu_Command extends WP_CLI_Command {
 		}
 
 		$formatter = $this->get_formatter( $assoc_args );
-		$formatter->display_items( $menus );
 
+		if ( 'ids' == $formatter->format ) {
+			$ids = array_map(
+				function($o) {
+					return $o->term_id;
+				}, $menus
+			);
+			$formatter->display_items( $ids );
+		} else {
+			$formatter->display_items( $menus );
+		}
 	}
 
 	protected function get_formatter( &$assoc_args ) {

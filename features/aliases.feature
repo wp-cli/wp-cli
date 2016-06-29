@@ -120,3 +120,47 @@ Feature: Create shortcuts to specific WordPress installs
       """
       Error: This does not seem to be a WordPress install.
       """
+
+  Scenario: Use a group of aliases to run a command against multiple installs
+    Given a WP install in 'subdir1'
+    And a WP install in 'subdir2'
+    And a wp-cli.yml file:
+      """
+      @both:
+        - @subdir1
+        - @subdir2
+      @invalid:
+        - @subdir1
+        - @subdir3
+      @subdir1:
+        path: subdir1
+      @subdir2:
+        path: subdir2
+      """
+
+    When I run `wp @subdir1 option update home 'http://apple.com'`
+    And I run `wp @subdir1 option get home`
+    Then STDOUT should contain:
+      """
+      http://apple.com
+      """
+
+    When I run `wp @subdir2 option update home 'http://google.com'`
+    And I run `wp @subdir2 option get home`
+    Then STDOUT should contain:
+      """
+      http://google.com
+      """
+
+    When I try `wp @invalid option get home`
+    Then STDERR should be:
+      """
+      Error: Group '@invalid' contains one or more invalid aliases: @subdir3
+      """
+
+    When I run `wp @both option get home`
+    Then STDOUT should be:
+      """
+      http://apple.com
+      http://google.com
+      """

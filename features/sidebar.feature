@@ -10,3 +10,15 @@ Feature: Manage WordPress sidebars
     Then STDOUT should be a table containing rows:
       | name       | id        |
       | Sidebar    | sidebar-1 |
+
+    When I run `wp sidebar list --format=ids`
+    Then STDOUT should be:
+    """
+    sidebar-1 wp_inactive_widgets
+    """
+
+    When I run `wp sidebar list --format=count`
+    Then STDOUT should be:
+    """
+    2
+    """
