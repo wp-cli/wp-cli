@@ -22,7 +22,7 @@ Quick links: [Using](#using) &#124; [Installing](#installing) &#124; [Support](#
 
 ## Using
 
-WP-CLI's goal is to provide a command-line interface for any action you might want to perform in the WordPress admin. For instance, `wp plugin install` ([doc](https://wp-cli.org/commands/plugin/install/)) lets you install and activate a WordPress plugin:
+WP-CLI's goal is to provide a command-line interface for any action you might want to perform in the WordPress admin. For instance, `wp plugin install --activate` ([doc](https://wp-cli.org/commands/plugin/install/)) lets you install and activate a WordPress plugin:
 
 ```
 $ wp plugin install rest-api --activate
