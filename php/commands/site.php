@@ -16,8 +16,8 @@
  *
  *     # Delete site
  *     $ wp site delete 123
- *     Are you sure you want to delete the http://www.example.com/example site? [y/n] y
- *     Success: The site at http://www.example.com/example was deleted.
+ *     Are you sure you want to delete the 'http://www.example.com/example' site? [y/n] y
+ *     Success: The site at 'http://www.example.com/example' was deleted.
  *
  * @package wp-cli
  */
@@ -163,7 +163,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     $ wp site empty
 	 *     Are you sure you want to empty the site at http://www.example.com of all posts, comments, and terms? [y/n] y
-	 *     Success: The site at http://www.example.com was emptied.
+	 *     Success: The site at 'http://www.example.com' was emptied.
 	 *
 	 * @subcommand empty
 	 */
@@ -174,7 +174,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			$upload_message = ', and delete its uploads directory';
 		}
 
-		WP_CLI::confirm( 'Are you sure you want to empty the site at ' . site_url() . ' of all posts, comments, and terms' . $upload_message . '?', $assoc_args );
+		WP_CLI::confirm( "Are you sure you want to empty the site at '" . site_url() . "' of all posts, comments, and terms" . $upload_message . "?", $assoc_args );
 
 		$this->_empty_posts();
 		$this->_empty_comments();
@@ -200,7 +200,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			rmdir( $upload_dir['basedir'] );
 		}
 
-		WP_CLI::success( 'The site at ' . site_url() . ' was emptied.' );
+		WP_CLI::success( "The site at '" . site_url() . "' was emptied." );
 	}
 
 	/**
@@ -224,7 +224,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     $ wp site delete 123
 	 *     Are you sure you want to delete the http://www.example.com/example site? [y/n] y
-	 *     Success: The site at http://www.example.com/example was deleted.
+	 *     Success: The site at 'http://www.example.com/example' was deleted.
 	 */
 	function delete( $args, $assoc_args ) {
 		if ( !is_multisite() ) {
@@ -247,11 +247,11 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( "Site not found." );
 		}
 
-		WP_CLI::confirm( "Are you sure you want to delete the $blog->siteurl site?", $assoc_args );
+		WP_CLI::confirm( "Are you sure you want to delete the '$blog->siteurl' site?", $assoc_args );
 
 		wpmu_delete_blog( $blog->blog_id, ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
 
-		WP_CLI::success( "The site at $blog->siteurl was deleted." );
+		WP_CLI::success( "The site at '$blog->siteurl' was deleted." );
 	}
 
 	/**
@@ -420,7 +420,16 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Comma-separated list of fields to show.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - count
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -645,4 +654,3 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 }
 
 WP_CLI::add_command( 'site', 'Site_Command' );
-
