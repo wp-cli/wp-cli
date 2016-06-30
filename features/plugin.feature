@@ -76,7 +76,7 @@ Feature: Manage WordPress plugins
     When I run `wp option get recently_activated`
     Then STDOUT should contain:
       """
-          Zombieland/Zombieland.php
+      Zombieland/Zombieland.php
       """
 
     When I run `wp plugin uninstall Zombieland`
