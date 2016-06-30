@@ -305,6 +305,81 @@ class Widget_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Reset sidebar.
+	 *
+	 * Removes all widgets from the sidebar and places them in Inactive Widgets.
+	 *
+	 * [<sidebar-id>...]
+	 * : One or more sidebars to reset.
+	 *
+	 * [--all]
+	 * : If set, all sidebars will be reset.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Reset a sidebar
+	 *     $ wp widget reset sidebar-1
+	 *     Success: Sidebar 'sidebar-1' reset.
+	 *
+	 *     # Reset multiple sidebars
+	 *     $ wp widget reset sidebar-1 sidebar-2
+	 *     Success: Sidebar 'sidebar-1' reset.
+	 *     Success: Sidebar 'sidebar-2' reset.
+	 *
+	 *     # Reset all sidebars
+	 *     $ wp widget reset --all
+	 *     Success: Sidebar 'sidebar-1' reset.
+	 *     Success: Sidebar 'sidebar-2' reset.
+	 *     Success: Sidebar 'sidebar-3' reset.
+	 */
+	public function reset( $args, $assoc_args ) {
+
+		global $wp_registered_sidebars;
+
+		$all = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all', false );
+
+		// Bail if no arguments and no all flag.
+		if ( ! $all && empty( $args ) ) {
+			WP_CLI::error( 'Please specify one or more sidebars, or use --all.' );
+		}
+
+		// Fetch all sidebars if all flag is set.
+		if ( $all ) {
+			$args = array_keys( $wp_registered_sidebars );
+		}
+
+		// Sidebar ID wp_inactive_widgets is reserved by WP core for inactive widgets.
+		if ( isset( $args['wp_inactive_widgets'] ) ) {
+			unset( $args['wp_inactive_widgets'] );
+		}
+
+		// Check if no registered sidebar.
+		if ( empty( $args ) ) {
+			WP_CLI::error( 'No sidebar registered.' );
+		}
+
+		foreach ( $args as $sidebar_id ) {
+			if ( ! array_key_exists( $sidebar_id, $wp_registered_sidebars ) ) {
+				WP_CLI::warning( sprintf( 'Invalid sidebar: %s', $sidebar_id ) );
+				continue;
+			}
+
+			$widgets = $this->get_sidebar_widgets( $sidebar_id );
+			if ( empty( $widgets ) ) {
+				WP_CLI::warning( sprintf( "Sidebar '%s' is already empty.", $sidebar_id ) );
+			}
+			else {
+				foreach ( $widgets as $widget ) {
+					$widget_id = $widget->id;
+					list( $name, $option_index, $new_sidebar_id, $sidebar_index ) = $this->get_widget_data( $widget_id );
+					$this->move_sidebar_widget( $widget_id, $new_sidebar_id, 'wp_inactive_widgets', $sidebar_index, 0 );
+				}
+				WP_CLI::success( sprintf( "Sidebar '%s' reset.", $sidebar_id ) );
+			}
+		}
+	}
+
+	/**
 	 * Check whether a sidebar is a valid sidebar
 	 *
 	 * @param string $sidebar_id
