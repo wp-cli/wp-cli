@@ -103,19 +103,29 @@ WP-CLI's maintainers and project contributors do their best to respond to all ne
 - [Open or closed issues on Github](https://github.com/wp-cli/wp-cli/issues?utf8=%E2%9C%93&q=is%3Aissue)
 - [WordPress StackExchange forums](http://wordpress.stackexchange.com/questions/tagged/wp-cli)
 
+If you can't find your answer in one of those existing resources, feel free to [create an issue](https://github.com/wp-cli/wp-cli/issues/new) with your question.
+
 If you have a WordPress.org account, you may also consider joining the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/).
 
 ## Extending
 
 A **command** is an atomic unit of WP-CLI functionality. `wp plugin install` ([doc](https://wp-cli.org/commands/plugin/install/)) is one command. `wp plugin activate` ([doc](https://wp-cli.org/commands/plugin/activate/)) is another.
 
-WP-CLI comes with dozens of commands. It's easier than it looks to create a custom WP-CLI command. Read the [commands cookbook](https://wp-cli.org/docs/commands-cookbook/) to learn more. Browse the [internal API docs](http://wp-cli.org/docs/internal-api/) to discover a variety of helpful functions you can use in your custom WP-CLI command.
+WP-CLI comes with dozens of commands. It's easier than it looks to create a custom WP-CLI command. Read the [commands cookbook](https://wp-cli.org/docs/commands-cookbook/) to learn more. Browse the [internal API docs](https://wp-cli.org/docs/internal-api/) to discover a variety of helpful functions you can use in your custom WP-CLI command.
 
 ## Contributing
 
-To get involved, please first read about [creating an issue](https://wp-cli.org/docs/bug-reports/) or [submitting a pull request](https://wp-cli.org/docs/pull-requests/).
+Welcome and thanks!
 
-### Leadership
+We appreciate you taking the initiative to contribute to WP-CLI. It’s because of you, and the community around you, that WP-CLI is such a great project.
+
+**Contributing isn’t limited to just code.** We encourage you to contribute in the way that best fits your abilities, by writing tutorials, giving a demo at your local meetup, helping other users with their support questions, or revising our documentation.
+
+Please take a moment to [read these guidelines at depth](https://wp-cli.org/docs/contributing/). Following them helps to communicate that you respect the time of the other contributors to the project. In turn, they’ll do their best to reciprocate that respect when working with you, across timezones and around the world.
+
+## Leadership
+
+WP-CLI is led by these individuals:
 
 * [Daniel Bachhuber](https://github.com/danielbachhuber/) - current maintainer
 * [Cristi Burcă](https://github.com/scribu) - previous maintainer
