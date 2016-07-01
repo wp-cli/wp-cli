@@ -2,7 +2,7 @@ Feature: Manage sites in a multisite installation
 
   Scenario: Create a site
     Given a WP multisite install
-    
+
     When I try `wp site create --slug=first --network_id=1000`
     Then STDERR should contain:
       """
@@ -48,7 +48,10 @@ Feature: Manage sites in a multisite installation
       """
 
     When I run `wp site delete {SITE_ID} --yes`
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      Success: The site at 'http://example.com/first' was deleted.
+      """
 
     When I try the previous command again
     Then the return code should be 1
@@ -76,21 +79,27 @@ Feature: Manage sites in a multisite installation
     Given a WP multisite install
 
     When I run `wp site create --slug=first`
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      Success: Site 2 created: example.com/first/
+      """
 
     When I run `wp site delete --slug=first --yes`
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      Success: The site at 'http://example.com/first' was deleted.
+      """
 
     When I try the previous command again
     Then the return code should be 1
 
   Scenario: Get site info
     Given a WP multisite install
-   
+
     When I run `wp site create --slug=first --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {SITE_ID}
- 
+
     When I run `wp site url {SITE_ID}`
     Then STDOUT should be:
       """
@@ -152,7 +161,7 @@ Feature: Manage sites in a multisite installation
       | blog_id      | archived |
       | {FIRST_SITE} | 0        |
 
-    When I run `wp site archive 1`
+    When I try `wp site archive 1`
     Then STDERR should be:
       """
       Warning: You are not allowed to change the main site.
