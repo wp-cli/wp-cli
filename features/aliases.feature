@@ -96,6 +96,27 @@ Feature: Create shortcuts to specific WordPress installs
       """
     And STDERR should be empty
 
+  Scenario: List available aliases
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      @testdir:
+        path: testdir
+      """
+
+    When I run `wp cli alias`
+    Then STDOUT should be YAML containing:
+      """
+      @testdir:
+        path: testdir
+      """
+
+    When I run `wp cli alias --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {"@testdir":{"path":"testdir"}}
+      """
+
   Scenario: Defining a project alias completely overrides a global alias
     Given a WP install in 'testdir'
     And a config.yml file:
