@@ -55,6 +55,12 @@ Feature: Manage WordPress menus
       | slug            | locations       |
       | primary-menu    | primary         |
 
+     When I run `wp menu location list --format=ids`
+     Then STDOUT should be:
+     """
+     primary
+     """
+
     When I run `wp menu location remove primary-menu primary`
     And I run `wp menu list --fields=slug,locations`
     Then STDOUT should be a table containing rows:
