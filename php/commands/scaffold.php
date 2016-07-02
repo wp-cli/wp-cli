@@ -34,7 +34,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * : The internal name of the post type.
 	 *
 	 * [--label=<label>]
-	 * : The text used to translate the update messages
+	 * : The text used to translate the update messages.
 	 *
 	 * [--textdomain=<textdomain>]
 	 * : The textdomain to use for the labels.
@@ -58,7 +58,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp scaffold post-type movie --label=Movie --theme=simple-life
-	 *     Success: Created /var/www/example.com/public_html/wp-content/themes/simple-life/post-types/movie.php
+	 *     Success: Created '/var/www/example.com/public_html/wp-content/themes/simple-life/post-types/movie.php'.
 	 *
 	 * @subcommand post-type
 	 *
@@ -184,8 +184,8 @@ class Scaffold_Command extends WP_CLI_Command {
 			$files_written = $this->create_files( array( $filename => $final_output ), $force );
 			$this->log_whether_files_written(
 				$files_written,
-				$skip_message = "Skipped creating $filename",
-				$success_message = "Created $filename"
+				$skip_message = "Skipped creating '$filename'.",
+				$success_message = "Created '$filename'."
 			);
 
 		} else {
@@ -209,16 +209,16 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * : Enable the newly downloaded theme for the entire network.
 	 *
 	 * [--theme_name=<title>]
-	 * : What to put in the 'Theme Name:' header in style.css
+	 * : What to put in the 'Theme Name:' header in 'style.css'.
 	 *
 	 * [--author=<full-name>]
-	 * : What to put in the 'Author:' header in style.css
+	 * : What to put in the 'Author:' header in 'style.css'.
 	 *
 	 * [--author_uri=<uri>]
-	 * : What to put in the 'Author URI:' header in style.css
+	 * : What to put in the 'Author URI:' header in 'style.css'.
 	 *
 	 * [--sassify]
-	 * : Include stylesheets as SASS
+	 * : Include stylesheets as SASS.
 	 *
 	 * [--force]
 	 * : Overwrite files that already exist.
@@ -309,19 +309,19 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * : The slug for the new child theme.
 	 *
 	 * --parent_theme=<slug>
-	 * : What to put in the 'Template:' header in style.css
+	 * : What to put in the 'Template:' header in 'style.css'.
 	 *
 	 * [--theme_name=<title>]
-	 * : What to put in the 'Theme Name:' header in style.css
+	 * : What to put in the 'Theme Name:' header in 'style.css'.
 	 *
 	 * [--author=<full-name>]
-	 * : What to put in the 'Author:' header in style.css
+	 * : What to put in the 'Author:' header in 'style.css'.
 	 *
 	 * [--author_uri=<uri>]
-	 * : What to put in the 'Author URI:' header in style.css
+	 * : What to put in the 'Author URI:' header in 'style.css'.
 	 *
 	 * [--theme_uri=<uri>]
-	 * : What to put in the 'Theme URI:' header in style.css
+	 * : What to put in the 'Theme URI:' header in 'style.css'.
 	 *
 	 * [--activate]
 	 * : Activate the newly created child theme.
@@ -335,7 +335,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp scaffold child-theme sample-theme --parent_theme=twentysixteen
-	 *     Success: Created /var/www/example.com/public_html/wp-content/themes/sample-theme.
+	 *     Success: Created '/var/www/example.com/public_html/wp-content/themes/sample-theme'.
 	 *
 	 * @subcommand child-theme
 	 */
@@ -367,7 +367,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$this->log_whether_files_written(
 			$files_written,
 			$skip_message = 'All theme files were skipped.',
-			$success_message = "Created $theme_dir."
+			$success_message = "Created '$theme_dir'."
 		);
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate' ) ) {
@@ -412,7 +412,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * : Put the new plugin in some arbitrary directory path. Plugin directory will be path plus supplied slug.
 	 *
 	 * [--plugin_name=<title>]
-	 * : What to put in the 'Plugin Name:' header
+	 * : What to put in the 'Plugin Name:' header.
 	 *
 	 * [--plugin_description=<description>]
 	 * : What to put in the 'Description:' header.
@@ -617,7 +617,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", $file_name, true );
 			if ( 'install-wp-tests.sh' === $file ) {
 				if ( ! $wp_filesystem->chmod( "$dir/$file", 0755 ) ) {
-					WP_CLI::warning( "Couldn't mark install-wp-tests.sh as executable." );
+					WP_CLI::warning( "Couldn't mark 'install-wp-tests.sh' as executable." );
 				}
 			}
 		}
@@ -655,7 +655,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			return true;
 		}
 
-		WP_CLI::warning( 'File already exists' );
+		WP_CLI::warning( 'File already exists.' );
 		WP_CLI::log( $filename );
 		if ( ! $force ) {
 			do {
