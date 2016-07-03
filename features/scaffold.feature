@@ -7,9 +7,12 @@ Feature: WordPress code scaffolding
     And save STDOUT as {THEME_DIR}
 
     When I run `wp scaffold child-theme zombieland --parent_theme=umbrella --theme_name=Zombieland --author=Tallahassee --author_uri=http://www.wp-cli.org --theme_uri=http://www.zombieland.com`
-    Then STDOUT should not be empty
-    And the {THEME_DIR}/zombieland/style.css file should exist
+    Then the {THEME_DIR}/zombieland/style.css file should exist
     And the {THEME_DIR}/zombieland/functions.php file should exist
+    And STDOUT should be:
+      """
+      Success: Created '{THEME_DIR}/zombieland'.
+      """
 
   Scenario: Scaffold a child theme with only --parent_theme parameter
     Given a WP install
@@ -62,6 +65,25 @@ Feature: WordPress code scaffolding
 
     When I run `wp scaffold post-type zombie --theme`
     Then the {STYLESHEETPATH}/post-types/zombie.php file should exist
+    And STDOUT should be:
+      """
+      Success: Created '{STYLESHEETPATH}/post-types/zombie.php'.
+      """
+
+    When I run `wp scaffold post-type zombie`
+    Then STDOUT should contain:
+      """
+      register_post_type( 'zombie'
+      """
+    And STDOUT should contain:
+      """
+      add_filter( 'post_updated_messages'
+      """
+    When I run `wp scaffold post-type zombie --raw`
+    Then STDOUT should not contain:
+      """
+      add_filter( 'post_updated_messages'
+      """
 
   # Test for all flags but --label, --theme, --plugin and --raw
   @tax
