@@ -732,6 +732,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *   - json
 	 *   - count
 	 *   - yaml
+	 *   - ids
 	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
