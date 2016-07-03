@@ -732,6 +732,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *   - json
 	 *   - count
 	 *   - yaml
+	 *   - ids
 	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
@@ -765,7 +766,17 @@ class Menu_Location_Command extends WP_CLI_Command {
 		}
 
 		$formatter = new \WP_CLI\Formatter( $assoc_args, array( 'location', 'description' ) );
-		$formatter->display_items( $location_objs );
+
+		if ( 'ids' == $formatter->format ) {
+			$ids = array_map(
+				function($o) {
+					return $o->location;
+				}, $location_objs
+			);
+			$formatter->display_items( $ids );
+		} else {
+			$formatter->display_items( $location_objs );
+		}
 	}
 
 	/**
