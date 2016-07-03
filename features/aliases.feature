@@ -185,3 +185,61 @@ Feature: Create shortcuts to specific WordPress installs
       http://apple.com
       http://google.com
       """
+
+  Scenario: Register '@all' alias for running on one or more aliases
+    Given a WP install in 'subdir1'
+    And a WP install in 'subdir2'
+    And a wp-cli.yml file:
+      """
+      @subdir1:
+        path: subdir1
+      @subdir2:
+        path: subdir2
+      """
+
+    When I run `wp @subdir1 option update home 'http://apple.com'`
+    And I run `wp @subdir1 option get home`
+    Then STDOUT should contain:
+      """
+      http://apple.com
+      """
+
+    When I run `wp @subdir2 option update home 'http://google.com'`
+    And I run `wp @subdir2 option get home`
+    Then STDOUT should contain:
+      """
+      http://google.com
+      """
+
+    When I run `wp @all option get home`
+    Then STDOUT should be:
+      """
+      http://apple.com
+      http://google.com
+      """
+
+  Scenario: Don't register '@all' when its already set
+    Given a WP install in 'subdir1'
+    And a WP install in 'subdir2'
+    And a wp-cli.yml file:
+      """
+      @all:
+        path: subdir1
+      @subdir2:
+        path: subdir2
+      """
+
+    When I run `wp @all option get home | wc -l`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+  Scenario: Error when '@all' is used without aliases defined
+    Given an empty directory
+
+    When I try `wp @all option get home`
+    Then STDERR should be:
+      """
+      Error: Cannot use '@all' when no aliases are registered.
+      """
