@@ -627,6 +627,9 @@ class Runner {
 
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
 		$this->aliases = $configurator->get_aliases();
+		if ( count( $this->aliases ) && ! isset( $this->aliases['@all'] ) ) {
+			$this->aliases['@all'] = array_keys( $this->aliases );
+		}
 		$this->_required_files['runtime'] = $this->config['require'];
 	}
 
@@ -700,6 +703,9 @@ class Runner {
 
 		$this->check_root();
 		if ( $this->alias ) {
+			if ( '@all' === $this->alias && 0 === count( $this->aliases ) ) {
+				WP_CLI::error( "Cannot use '@all' when no aliases are registered." );
+			}
 			if ( ! array_key_exists( $this->alias, $this->aliases ) ) {
 				WP_CLI::error( "Alias '{$this->alias}' not found." );
 			}
