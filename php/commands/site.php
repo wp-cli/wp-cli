@@ -427,6 +427,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *   - table
 	 *   - csv
 	 *   - count
+	 *   - ids
 	 *   - json
 	 *   - yaml
 	 * ---
@@ -509,8 +510,16 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			return $blog;
 		} );
 
-		$formatter = new \WP_CLI\Formatter( $assoc_args, null, 'site' );
-		$formatter->display_items( $it );
+		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
+			$sites = iterator_to_array( $it );
+			$ids = wp_list_pluck( $sites, 'blog_id' );
+			$formatter = new \WP_CLI\Formatter( $assoc_args, null, 'site' );
+			$formatter->display_items( $ids );
+		}
+		else {
+			$formatter = new \WP_CLI\Formatter( $assoc_args, null, 'site' );
+			$formatter->display_items( $it );
+		}
 	}
 
 	/**

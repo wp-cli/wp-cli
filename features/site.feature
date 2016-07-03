@@ -21,6 +21,12 @@ Feature: Manage sites in a multisite installation
       | 1       | http://example.com/       |
       | 2       | http://first.example.com/ |
 
+    When I run `wp site list --format=ids`
+    Then STDOUT should be:
+      """
+      1 2
+      """
+
     When I run `wp --url=first.example.com option get home`
     Then STDOUT should be:
       """
