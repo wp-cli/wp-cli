@@ -184,7 +184,15 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -381,16 +389,28 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * [--count=<number>]
-	 * : How many posts to generate. Default: 100
+	 * : How many posts to generate?
+	 * ---
+	 * default: 100
+	 * ---
 	 *
 	 * [--post_type=<type>]
-	 * : The type of the generated posts. Default: 'post'
+	 * : The type of the generated posts.
+	 * ---
+	 * default: post
+	 * ---
 	 *
 	 * [--post_status=<status>]
-	 * : The status of the generated posts. Default: 'publish'
+	 * : The status of the generated posts.
+	 * ---
+	 * default: publish
+	 * ---
 	 *
 	 * [--post_author=<login>]
-	 * : The author of the generated posts. Default: none
+	 * : The author of the generated posts.
+	 * ---
+	 * default:
+	 * ---
 	 *
 	 * [--post_date=<yyyy-mm-dd>]
 	 * : The date of the generated posts. Default: current date
@@ -399,10 +419,19 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : If set, the command reads the post_content from STDIN.
 	 *
 	 * [--max_depth=<number>]
-	 * : For hierarchical post types, generate child posts down to a certain depth. Default: 1
+	 * : For hierarchical post types, generate child posts down to a certain depth.
+	 * ---
+	 * default: 1
+	 * ---
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: progress, ids. Default: ids.
+	 * : Render output in a particular format.
+	 * ---
+	 * default: progress
+	 * options:
+	 *   - progress
+	 *   - ids
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -451,7 +480,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$post_content = file_get_contents( 'php://stdin' );
 		}
 
-		// Get the total number of posts
+		// Get the total number of posts.
 		$total = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = %s", $post_type ) );
 
 		$label = get_post_type_object( $post_type )->labels->singular_name;
@@ -542,7 +571,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		if ( $arg !== '-' ) {
 			$readfile = $arg;
 			if ( ! file_exists( $readfile ) || ! is_file( $readfile ) ) {
-				\WP_CLI::error( "Unable to read content from $readfile." );
+				\WP_CLI::error( "Unable to read content from '$readfile'." );
 			}
 		} else {
 			$readfile = 'php://stdin';
@@ -618,4 +647,3 @@ class Post_Term_Command extends \WP_CLI\CommandWithTerms {
 WP_CLI::add_command( 'post', 'Post_Command' );
 WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );
 WP_CLI::add_command( 'post term', 'Post_Term_Command' );
-
