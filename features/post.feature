@@ -153,7 +153,7 @@ Feature: Manage WordPress posts
     When I try `wp post update {POST_ID} invalid-file.html`
     Then STDERR should be:
       """
-      Error: Unable to read content from invalid-file.html.
+      Error: Unable to read content from 'invalid-file.html'.
       """
 
   Scenario: Creating/listing posts

@@ -278,17 +278,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Render output in a particular format.
-	 * ---
-	 * default: table
-	 * options:
-	 *   - table
-	 *   - csv
-	 *   - ids
-	 *   - json
-	 *   - count
-	 *   - yaml
-	 * ---
+	 * Accepted values: table, csv, json, count, ids, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -417,7 +407,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * ---
 	 *
 	 * [--post_author=<login>]
-	 * : The author of the generated posts. Default: none
+	 * : The author of the generated posts.
+	 * ---
+	 * default:
+	 * ---
 	 *
 	 * [--post_date=<yyyy-mm-dd>]
 	 * : The date of the generated posts. Default: current date
@@ -487,7 +480,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$post_content = file_get_contents( 'php://stdin' );
 		}
 
-		// Get the total number of posts
+		// Get the total number of posts.
 		$total = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = %s", $post_type ) );
 
 		$label = get_post_type_object( $post_type )->labels->singular_name;
@@ -578,7 +571,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		if ( $arg !== '-' ) {
 			$readfile = $arg;
 			if ( ! file_exists( $readfile ) || ! is_file( $readfile ) ) {
-				\WP_CLI::error( "Unable to read content from $readfile." );
+				\WP_CLI::error( "Unable to read content from '$readfile'." );
 			}
 		} else {
 			$readfile = 'php://stdin';
