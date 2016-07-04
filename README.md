@@ -89,9 +89,21 @@ WP-CLI project config:
 WP-CLI version: 0.23.0
 ```
 
+### Updating
+
 You can update WP-CLI with `wp cli update` ([doc](https://wp-cli.org/commands/cli/update/)), or by repeating the installation steps.
 
 Want to live life on the edge? Run `wp cli update --nightly` to use the latest nightly build of WP-CLI. The nightly build is more or less stable enough for you to use in your development environment, and always includes the latest and greatest WP-CLI features.
+
+### Tab completions
+
+WP-CLI also comes with a tab completion script for Bash and ZSH. Just download [wp-completion.bash](https://github.com/wp-cli/wp-cli/raw/master/utils/wp-completion.bash) and source it from `~/.bash_profile`:
+
+```
+source /FULL/PATH/TO/wp-completion.bash
+```
+
+Don't forget to run `source ~/.bash_profile` afterwards.
 
 ## Support
 
