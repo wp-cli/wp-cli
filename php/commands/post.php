@@ -278,7 +278,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * Accepted values: table, csv, json, count, ids, yaml. Default: table
+	 * : Accepted values: table, csv, json, count, ids, yaml. Default: table
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
