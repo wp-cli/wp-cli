@@ -287,7 +287,7 @@ class Subcommand extends CompositeCommand {
 				$i++;
 			} else if ( 'assoc' === $spec['type'] ) {
 				$spec_args = $docparser->get_param_args( $spec['name'] );
-				if ( ! isset( $assoc_args[ $spec['name'] ] ) && ! isset( $extra_args[ $spec['name'] ] ) ) {
+				if ( ! isset( $assoc_args[ $spec['name'] ] ) ) {
 					if ( isset( $spec_args['default'] ) ) {
 						$assoc_args[ $spec['name'] ] = $spec_args['default'];
 					}
