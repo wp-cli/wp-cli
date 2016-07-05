@@ -573,3 +573,14 @@ Feature: WP-CLI Commands
       Success: Invoked
       Success: after invoke
       """
+
+  Scenario: Default arguments should respect wp-cli.yml
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      post list:
+        format: count
+      """
+
+    When I run `wp post list`
+    Then STDOUT should be a number
