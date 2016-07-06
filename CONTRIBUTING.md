@@ -21,6 +21,8 @@ Once you’ve done a bit of searching and discovered there isn’t an open or fi
 
 Want to contribute a new feature? WP-CLI is a mature project, and already chock-full of useful functionality. Please first [open a new issue](https://github.com/wp-cli/wp-cli/issues/new) to discuss whether the feature is a good fit for WP-CLI core, or might be better suited as a [community package](https://wp-cli.org/package-index/).
 
+New to the WP-CLI codebase? Check out [issues labeled 'good-first-issue'](https://github.com/wp-cli/wp-cli/labels/good-first-issue) for a place to start. These issues are specially earmarked for new contributors.
+
 Once you've decided to commit the time to seeing your pull request through, please [follow our guidelines for creating a pull request](https://wp-cli.org/docs/pull-requests/) to make sure it's a pleasant experience.
 
 ### Contributing in other ways
