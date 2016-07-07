@@ -678,7 +678,8 @@ class Runner {
 			$assoc_args = Utils\assoc_args_to_str( $this->assoc_args );
 
 			$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args} {$assoc_args}";
-			passthru( $full_command );
+			$proc = proc_open( $full_command, array( STDIN, STDOUT, STDERR ), $pipes );
+			proc_close( $proc );
 		}
 	}
 
