@@ -169,6 +169,12 @@ Feature: Have a config file
     When I run `wp user create`
     Then STDOUT should not be empty
 
+    When I run `wp user get examplejoe --field=roles`
+    Then STDOUT should contain:
+      """
+      administrator
+      """
+
   Scenario: Command-specific configs
     Given a WP install
     And a wp-cli.yml file:
