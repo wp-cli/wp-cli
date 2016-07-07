@@ -25,6 +25,20 @@ New to the WP-CLI codebase? Check out [issues labeled 'good-first-issue'](https:
 
 Once you've decided to commit the time to seeing your pull request through, please [follow our guidelines for creating a pull request](https://wp-cli.org/docs/pull-requests/) to make sure it's a pleasant experience.
 
+### Improving our documentation
+
+Just like WP-CLI itself, the [documentation](http://wp-cli.org/docs/) is a community effort.
+
+If you are looking to contribute and documentation is your strength, you can take a look at the currently open [documentation issues](https://github.com/wp-cli/wp-cli/issues?q=is%3Aopen+is%3Aissue+label%3Ascope%3Adocumentation) and see if you can tackle any of those.
+
+If you believe you’ve found an issue with the documentation, you should [search existing issues](https://github.com/wp-cli/wp-cli/issues?utf8=%E2%9C%93&q=label%3Abug%20) to see if there’s an existing resolution to it, or if it’s already been fixed in a newer version of WP-CLI.
+
+There are a few different types of documentation currently part of WP-CLI:
+
+Documentation for individual WP-CLI commands (anything underneath [http://wp-cli.org/commands](http://wp-cli.org/commands)) is contained in the PHPDoc for each command. This means that to edit the documentation for a command, you will need to edit the file that actually provides the functionality for that command.
+
+Individual documentation pages (anything under [http://wp-cli.org/docs/](http://wp-cli.org/docs/) or [http://wp-cli.org/config/](http://wp-cli.org/config/)) can be edited by contributing to the [wp-cli.github.com repository on Github](https://github.com/wp-cli/wp-cli.github.com).
+
 ### Contributing in other ways
 
 Feel free to [create an issue](https://github.com/wp-cli/wp-cli/issues/new) with your question, and we'll see if we can find an answer for it.
