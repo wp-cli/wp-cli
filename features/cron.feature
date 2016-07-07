@@ -280,3 +280,27 @@ Feature: Manage WP-Cron events and schedules
       """
       Executed a total of 0 cron event(s)
       """
+
+  Scenario: Don't trigger cron when ALTERNATE_WP_CRON is defined
+    Given a alternate-wp-cron.php file:
+      """
+      <?php
+      define( 'ALTERNATE_WP_CRON', true );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - alternate-wp-cron.php
+      """
+
+    When I run `wp eval 'var_export( ALTERNATE_WP_CRON );'`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+    When I run `wp option get home`
+    Then STDOUT should be:
+      """
+      http://example.com
+      """

@@ -1015,6 +1015,13 @@ class Runner {
 			return $headers;
 		});
 
+		// ALTERNATE_WP_CRON might trigger a redirect, which we can't handle
+		if ( defined( 'ALTERNATE_WP_CRON' ) && ALTERNATE_WP_CRON ) {
+			$this->add_wp_hook( 'muplugins_loaded', function() {
+				remove_action( 'init', 'wp_cron' );
+			});
+		}
+
 		// Get rid of warnings when converting single site to multisite
 		if ( defined( 'WP_INSTALLING' ) && $this->is_multisite() ) {
 			$values = array(
