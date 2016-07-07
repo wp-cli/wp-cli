@@ -411,7 +411,8 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * : The network to which the sites belong.
 	 *
 	 * [--<field>=<value>]
-	 * : Filter by one or more fields.
+	 * : Filter by one or more fields (see "Available Fields" section). However,
+	 * 'url' isn't an available filter, because it's created from domain + path.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each site.
@@ -482,7 +483,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		$where = array();
 		$append = '';
 
-		$site_cols = array( 'blog_id', 'url', 'last_updated', 'registered', 'site_id', 'domain', 'path', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' );
+		$site_cols = array( 'blog_id', 'last_updated', 'registered', 'site_id', 'domain', 'path', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' );
 		foreach( $site_cols as $col ) {
 			if ( isset( $assoc_args[ $col ] ) ) {
 				$where[ $col ] = $assoc_args[ $col ];
