@@ -136,7 +136,7 @@ class Core_Command extends WP_CLI_Command {
 		if ( isset( $assoc_args['version'] ) ) {
 			$version = strtolower( $assoc_args['version'] );
 			$version = ( 'trunk' === $version ? 'nightly' : $version );
-			//nightly builds are only avialable in .zip format
+			//nightly builds are only available in .zip format
 			$ext     = ( 'nightly' === $version ? 'zip' : 'tar.gz' );
 			$download_url = $this->get_download_url( $version, $locale, $ext );
 		} else {
