@@ -179,3 +179,14 @@ Feature: Download WordPress
       """
       Success: WordPress downloaded.
       """
+
+  Scenario: Installing nightly for a non-default locale
+    Given an empty directory
+    And an empty cache
+
+    When I try `wp core download --version=nightly --locale=de_DE`
+		Then the return code should be 1
+    And STDERR should contain:
+    """
+    Error: Nightly builds are only available for the en_US locale.
+		"""

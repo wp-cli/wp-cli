@@ -148,6 +148,10 @@ class Core_Command extends WP_CLI_Command {
 			$download_url = str_replace( '.zip', '.tar.gz', $offer['download'] );
 		}
 
+		if ( 'nightly' === $version && 'en_US' !== $locale ) {
+			WP_CLI::error( 'Nightly builds are only available for the en_US locale.' );
+		}
+
 		$from_version = '';
 		if ( file_exists( $download_dir . 'wp-includes/version.php' ) ) {
 			global $wp_version;
