@@ -1404,7 +1404,7 @@ EOT;
 	private function get_download_url( $version, $locale = 'en_US', $file_type = 'zip' ) {
 
 		if ( 'nightly' === $version ) {
-			if ( 'zip' === $version ) {
+			if ( 'zip' === $file_type ) {
 				return 'https://wordpress.org/nightly-builds/wordpress-latest.zip';
 			} else {
 				WP_CLI::error( 'Nightly builds are only available in .zip format.' );
