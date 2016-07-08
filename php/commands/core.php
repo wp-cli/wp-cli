@@ -207,7 +207,7 @@ class Core_Command extends WP_CLI_Command {
 					WP_CLI::error( "md5 hash for download ({$md5_file}) is different than the release hash ({$md5_response->body})." );
 				}
 			} else {
-				WP_CLI::warning( 'md5 hash checks are not available for trunk downloads' );
+				WP_CLI::warning( 'md5 hash checks are not available for trunk downloads.' );
 			}
 
 			try {
