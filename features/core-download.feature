@@ -117,7 +117,7 @@ Feature: Download WordPress
       """
 
 	# test core zip cache
-    When I run `wp core download --version=trunk`
+    When I run `wp core download --version=trunk --force`
     Then the wp-settings.php file should exist
     And STDOUT should contain:
     """
