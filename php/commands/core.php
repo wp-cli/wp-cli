@@ -1400,7 +1400,11 @@ EOT;
 	private function get_download_url( $version, $locale = 'en_US', $file_type = 'zip' ) {
 
 		if ( 'nightly' === $version ) {
-			return 'https://wordpress.org/nightly-builds/wordpress-latest.zip';
+			if ( 'zip' === $version ) {
+				return 'https://wordpress.org/nightly-builds/wordpress-latest.zip';
+			} else {
+				WP_CLI::error( 'Nightly builds are only available in .zip format.' );
+			}
 		} elseif ( 'en_US' === $locale ) {
 			$url = 'https://wordpress.org/wordpress-' . $version . '.' . $file_type;
 
