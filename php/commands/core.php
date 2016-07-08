@@ -159,6 +159,9 @@ class Core_Command extends WP_CLI_Command {
 		$extension  = 'tar.gz';
 		if ( 'zip' === $path_parts['extension'] ) {
 			$extension  = 'zip';
+			if ( ! class_exists( 'ZipArchive' ) ) {
+				WP_CLI::error( 'Extracting a zip file requires ZipArchive.' );
+			}
 		}
 
 		$cache = WP_CLI::get_cache();
