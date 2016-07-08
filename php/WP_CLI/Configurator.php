@@ -84,8 +84,8 @@ class Configurator {
 	 * @return array(array)
 	 */
 	public function parse_args( $arguments ) {
-		list( $positional_args, $mixed_args ) = self::extract_assoc( $arguments );
-		list( $assoc_args, $runtime_config ) = $this->unmix_assoc_args( $mixed_args );
+		list( $positional_args, $mixed_args, $global_assoc, $local_assoc ) = self::extract_assoc( $arguments );
+		list( $assoc_args, $runtime_config ) = $this->unmix_assoc_args( $mixed_args, $global_assoc, $local_assoc );
 		return array( $positional_args, $assoc_args, $runtime_config );
 	}
 
@@ -96,21 +96,35 @@ class Configurator {
 	 * @return array(array)
 	 */
 	public static function extract_assoc( $arguments ) {
-		$positional_args = $assoc_args = array();
+		$positional_args = $assoc_args = $global_assoc = $local_assoc = array();
 
 		foreach ( $arguments as $arg ) {
+			$positional_arg = $assoc_arg = null;
+
 			if ( preg_match( '|^--no-([^=]+)$|', $arg, $matches ) ) {
-				$assoc_args[] = array( $matches[1], false );
+				$assoc_arg = array( $matches[1], false );
 			} elseif ( preg_match( '|^--([^=]+)$|', $arg, $matches ) ) {
-				$assoc_args[] = array( $matches[1], true );
+				$assoc_arg = array( $matches[1], true );
 			} elseif ( preg_match( '|^--([^=]+)=(.*)|s', $arg, $matches ) ) {
-				$assoc_args[] = array( $matches[1], $matches[2] );
+				$assoc_arg = array( $matches[1], $matches[2] );
 			} else {
-				$positional_args[] = $arg;
+				$positional = $arg;
 			}
+
+			if ( ! is_null( $assoc_arg ) ) {
+				$assoc_args[] = $assoc_arg;
+				if ( count( $positional_args ) ) {
+					$local_assoc[] = $assoc_arg;
+				} else {
+					$global_assoc[] = $assoc_arg;
+				}
+			} else if ( ! is_null( $positional ) ) {
+				$positional_args[] = $positional;
+			}
+
 		}
 
-		return array( $positional_args, $assoc_args );
+		return array( $positional_args, $assoc_args, $global_assoc, $local_assoc );
 	}
 
 	/**
@@ -119,30 +133,48 @@ class Configurator {
 	 * @param array $mixed_args
 	 * @return array
 	 */
-	private function unmix_assoc_args( $mixed_args ) {
+	private function unmix_assoc_args( $mixed_args, $global_assoc = array(), $local_assoc = array() ) {
 		$assoc_args = $runtime_config = array();
 
-		foreach ( $mixed_args as $tmp ) {
-			list( $key, $value ) = $tmp;
-
-			if ( isset( $this->spec[ $key ] ) && $this->spec[ $key ]['runtime'] !== false ) {
-				$details = $this->spec[ $key ];
-
-				if ( isset( $details['deprecated'] ) ) {
-					fwrite( STDERR, "WP-CLI: The --{$key} global parameter is deprecated. {$details['deprecated']}\n" );
+		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
+			foreach( $global_assoc as $tmp ) {
+				list( $key, $value ) = $tmp;
+				if ( isset( $this->spec[ $key ] ) && $this->spec[ $key ]['runtime'] !== false ) {
+					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
 				}
+			}
+			foreach( $local_assoc as $tmp ) {
+				$assoc_args[ $tmp[0] ] = $tmp[1];
+			}
+		} else {
+			foreach ( $mixed_args as $tmp ) {
+				list( $key, $value ) = $tmp;
 
-				if ( $details['multiple'] ) {
-					$runtime_config[ $key ][] = $value;
+				if ( isset( $this->spec[ $key ] ) && $this->spec[ $key ]['runtime'] !== false ) {
+					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
 				} else {
-					$runtime_config[ $key ] = $value;
+					$assoc_args[ $key ] = $value;
 				}
-			} else {
-				$assoc_args[ $key ] = $value;
 			}
 		}
 
 		return array( $assoc_args, $runtime_config );
+	}
+
+	/**
+	 * Handle turning an $assoc_arg into a runtime arg.
+	 */
+	private function assoc_arg_to_runtime_config( $key, $value, &$runtime_config ) {
+		$details = $this->spec[ $key ];
+		if ( isset( $details['deprecated'] ) ) {
+			fwrite( STDERR, "WP-CLI: The --{$key} global parameter is deprecated. {$details['deprecated']}\n" );
+		}
+
+		if ( $details['multiple'] ) {
+			$runtime_config[ $key ][] = $value;
+		} else {
+			$runtime_config[ $key ] = $value;
+		}
 	}
 
 	/**
