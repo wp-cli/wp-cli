@@ -258,3 +258,12 @@ Feature: Global flags
       global: bar.dev
       local: foo.dev
       """
+
+  Scenario: Using --http=<url> requires wp-cli/restful
+    Given an empty directory
+
+    When I try `wp --http=foo.dev`
+    Then STDERR should be:
+      """
+      Error: RESTful WP-CLI needs to be installed. Try 'wp package install wp-cli/restful'.
+      """

@@ -756,6 +756,10 @@ class Runner {
 			}
 		}
 
+		if ( isset( $this->config['http'] ) && ! class_exists( '\WP_REST_CLI\Runner' ) ) {
+			WP_CLI::error( "RESTful WP-CLI needs to be installed. Try 'wp package install wp-cli/restful'." );
+		}
+
 		if ( isset( $this->config['require'] ) ) {
 			foreach ( $this->config['require'] as $path ) {
 				if ( ! file_exists( $path ) ) {
