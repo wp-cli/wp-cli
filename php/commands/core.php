@@ -234,13 +234,17 @@ class Core_Command extends WP_CLI_Command {
 
 	private static function _extract( $tarball_or_zip, $dest ) {
 		$path_parts = pathinfo( $tarball_or_zip );
+		$extension  = strtolower( $path_parts['extension'] );
 
-		switch ( strtolower( $path_parts['extension'] ) ) {
+		switch ( $extension ) {
 			case 'zip':
 				self::_extract_zip( $tarball_or_zip, $dest );
 				break;
-			default;
+			case 'tar.gz':
 				self::_extract_tarball( $tarball_or_zip, $dest );
+				break;
+			default;
+				WP_CLI::error( sprintf( 'Extension %s not supported.', $extension ) );
 				break;
 		}
 	}
