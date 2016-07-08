@@ -13,6 +13,12 @@ return array(
 		'desc' => 'Perform operation against a remote server over SSH.',
 	),
 
+	'http' => array(
+		'runtime' => '=<http>',
+		'file' => '<http>',
+		'desc' => 'Perform operation against a remote WordPress install over HTTP.',
+	),
+
 	'url' => array(
 		'runtime' => '=<url>',
 		'file' => '<url>',
