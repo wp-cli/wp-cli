@@ -1409,7 +1409,9 @@ EOT;
 			} else {
 				WP_CLI::error( 'Nightly builds are only available in .zip format.' );
 			}
-		} elseif ( 'en_US' === $locale ) {
+		}
+
+		if ( 'en_US' === $locale ) {
 			$url = 'https://wordpress.org/wordpress-' . $version . '.' . $file_type;
 
 			return $url;
