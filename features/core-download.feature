@@ -102,7 +102,7 @@ Feature: Download WordPress
 
     When I run `wp core download --version=nightly`
     Then the wp-settings.php file should exist
-    And the {SUITE_CACHE_DIR}/core/wordpress-nightly-en_US.zip file should exist
+    And the {SUITE_CACHE_DIR}/core/wordpress-nightly-en_US.zip file should not exist
     And STDOUT should contain:
       """
       Downloading WordPress nightly (en_US)...
@@ -116,10 +116,10 @@ Feature: Download WordPress
       Success: WordPress downloaded.
       """
 
-	# test core zip cache
+	# we shouldn't cache nightly builds
     When I run `wp core download --version=nightly --force`
     Then the wp-settings.php file should exist
-    And STDOUT should contain:
+    And STDOUT should not contain:
     """
     Using cached file '{SUITE_CACHE_DIR}/core/wordpress-nightly-en_US.zip'...
     """
@@ -166,7 +166,6 @@ Feature: Download WordPress
     And an empty cache
     When I run `wp core download --version=trunk`
     Then the wp-settings.php file should exist
-    And the {SUITE_CACHE_DIR}/core/wordpress-nightly-en_US.zip file should exist
     And STDOUT should contain:
       """
       Downloading WordPress nightly (en_US)...

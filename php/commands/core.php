@@ -225,8 +225,11 @@ class Core_Command extends WP_CLI_Command {
 			} catch ( Exception $e ) {
 				WP_CLI::error( "Couldn't extract WordPress archive. " . $e->getMessage() );
 			}
-			$cache->import( $cache_key, $temp );
-			unlink($temp);
+
+			if ( 'nightly' !== $version ) {
+				$cache->import( $cache_key, $temp );
+			}
+			unlink( $temp );
 		}
 
 		if ( $wordpress_present ) {
