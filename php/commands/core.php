@@ -95,7 +95,7 @@ class Core_Command extends WP_CLI_Command {
 	 * : Select which language you want to download.
 	 *
 	 * [--version=<version>]
-	 * : Select which version you want to download.
+	 * : Select which version you want to download. Accepts a version number, 'latest' or 'nightly'
 	 *
 	 * [--force]
 	 * : Overwrites existing files, if present.
