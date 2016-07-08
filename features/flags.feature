@@ -212,3 +212,49 @@ Feature: Global flags
       """
       <file> 
       """
+
+  Scenario: Use `WP_CLI_STRICT_ARGS_MODE` to distinguish between global and local args
+    Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * @when before_wp_load
+       *
+       * [--url=<url>]
+       * : URL passed to the callback.
+       */
+      $cmd_test = function( $args, $assoc_args ) {
+          $url = WP_CLI::get_runner()->config['url'] ? ' ' . WP_CLI::get_runner()->config['url'] : '';
+          WP_CLI::log( 'global:' . $url );
+          $url = isset( $assoc_args['url'] ) ? ' ' . $assoc_args['url'] : '';
+          WP_CLI::log( 'local:' . $url );
+      };
+      WP_CLI::add_command( 'cmd-test', $cmd_test );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
+
+    When I run `wp cmd-test --url=foo.dev`
+    Then STDOUT should be:
+      """
+      global: foo.dev
+      local:
+      """
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp cmd-test --url=foo.dev`
+    Then STDOUT should be:
+      """
+      global:
+      local: foo.dev
+      """
+
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --url=bar.dev cmd-test --url=foo.dev`
+    Then STDOUT should be:
+      """
+      global: bar.dev
+      local: foo.dev
+      """
