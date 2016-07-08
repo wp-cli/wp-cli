@@ -134,7 +134,7 @@ class Core_Command extends WP_CLI_Command {
 		$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', 'en_US' );
 
 		if ( isset( $assoc_args['version'] ) ) {
-			$version = $assoc_args['version'];
+			$version = strtolower( $assoc_args['version'] );
 			$download_url = $this->get_download_url($version, $locale, 'tar.gz');
 		} else {
 			$offer = $this->get_download_offer( $locale );
@@ -154,8 +154,14 @@ class Core_Command extends WP_CLI_Command {
 
 		WP_CLI::log( sprintf( 'Downloading WordPress %s (%s)...', $version, $locale ) );
 
+		$path_parts = pathinfo( $download_url );
+		$extension  = 'tar.gz';
+		if ( 'zip' === $path_parts['extension'] ) {
+			$extension  = 'zip';
+		}
+
 		$cache = WP_CLI::get_cache();
-		$cache_key = "core/wordpress-{$version}-{$locale}.tar.gz";
+		$cache_key = "core/wordpress-{$version}-{$locale}.{$extension}";
 		$cache_file = $cache->has($cache_key);
 
 		$bad_cache = false;
@@ -172,7 +178,7 @@ class Core_Command extends WP_CLI_Command {
 		if ( ! $cache_file || $bad_cache ) {
 			// We need to use a temporary file because piping from cURL to tar is flaky
 			// on MinGW (and probably in other environments too).
-			$temp = \WP_CLI\Utils\get_temp_dir() . uniqid('wp_') . '.tar.gz';
+			$temp = \WP_CLI\Utils\get_temp_dir() . uniqid('wp_') . ".{$extension}";
 
 			$headers = array('Accept' => 'application/json');
 			$options = array(
@@ -187,16 +193,21 @@ class Core_Command extends WP_CLI_Command {
 				WP_CLI::error( "Couldn't access download URL (HTTP code {$response->status_code})." );
 			}
 
-			$md5_response = Utils\http_request( 'GET', $download_url . '.md5' );
-			if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
-				WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$response->status_code})." );
-			}
+			if ( 'trunk' !== $version && 'nightly' !== $version ) {
+				$md5_response = Utils\http_request( 'GET', $download_url . '.md5' );
+				if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
+					WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$response->status_code})." );
+				}
 
-			$md5_file = md5_file( $temp );
-			if ( $md5_file === $md5_response->body ) {
-				WP_CLI::log( 'md5 hash verified: ' . $md5_file );
+				$md5_file = md5_file( $temp );
+
+				if ( $md5_file === $md5_response->body ) {
+					WP_CLI::log( 'md5 hash verified: ' . $md5_file );
+				} else {
+					WP_CLI::error( "md5 hash for download ({$md5_file}) is different than the release hash ({$md5_response->body})." );
+				}
 			} else {
-				WP_CLI::error( "md5 hash for download ({$md5_file}) is different than the release hash ({$md5_response->body})." );
+				WP_CLI::warning( 'md5 hash checks are not available for trunk downloads' );
 			}
 
 			try {
@@ -215,7 +226,20 @@ class Core_Command extends WP_CLI_Command {
 		WP_CLI::success( 'WordPress downloaded.' );
 	}
 
-	private static function _extract( $tarball, $dest ) {
+	private static function _extract( $tarball_or_zip, $dest ) {
+		$path_parts = pathinfo( $tarball_or_zip );
+
+		switch ( strtolower( $path_parts['extension'] ) ) {
+			case 'zip':
+				self::_extract_zip( $tarball_or_zip, $dest );
+				break;
+			default;
+				self::_extract_tarball( $tarball_or_zip, $dest );
+				break;
+		}
+	}
+
+	private static function _extract_tarball( $tarball, $dest ) {
 		if ( ! class_exists( 'PharData' ) ) {
 			$cmd = "tar xz --strip-components=1 --directory=%s -f $tarball";
 			WP_CLI::launch( Utils\esc_cmd( $cmd, $dest ) );
@@ -233,6 +257,29 @@ class Core_Command extends WP_CLI_Command {
 		self::_copy_overwrite_files( $tempdir, $dest );
 
 		self::_rmdir( dirname( $tempdir ) );
+	}
+
+	private static function _extract_zip( $zipfile, $dest ) {
+		if ( ! class_exists( 'ZipArchive' ) ) {
+			throw new \Exception( 'Extracting a zip file requires PharData' );
+		}
+		$zip = new ZipArchive();
+		$res = $zip->open( $zipfile );
+		if ( true === $res ) {
+			$tempdir = implode( DIRECTORY_SEPARATOR, Array (
+				dirname( $zipfile ),
+				basename( $zipfile, '.zip' ),
+				$zip->getNameIndex( 0 )
+			) );
+
+			$zip->extractTo( dirname( $tempdir ) );
+			$zip->close();
+
+			self::_copy_overwrite_files( $tempdir, $dest );
+			self::_rmdir( dirname( $tempdir ) );
+		} else {
+			throw \Exception( $res );
+		}
 	}
 
 	private static function _copy_overwrite_files( $source, $dest ) {
@@ -1344,9 +1391,11 @@ EOT;
 	 * @param string $file_type
 	 * @return string
 	 */
-	private function get_download_url($version, $locale = 'en_US', $file_type = 'zip')
-	{
-		if ('en_US' === $locale) {
+	private function get_download_url( $version, $locale = 'en_US', $file_type = 'zip' ) {
+
+		if ( 'trunk' === $version || 'nightly' === $version ) {
+			return 'https://wordpress.org/nightly-builds/wordpress-latest.zip';
+		} elseif ( 'en_US' === $locale ) {
 			$url = 'https://wordpress.org/wordpress-' . $version . '.' . $file_type;
 
 			return $url;
