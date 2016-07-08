@@ -262,7 +262,7 @@ class Core_Command extends WP_CLI_Command {
 
 	private static function _extract_zip( $zipfile, $dest ) {
 		if ( ! class_exists( 'ZipArchive' ) ) {
-			throw new \Exception( 'Extracting a zip file requires PharData' );
+			throw new \Exception( 'Extracting a zip file requires ZipArchive.' );
 		}
 		$zip = new ZipArchive();
 		$res = $zip->open( $zipfile );
