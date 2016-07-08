@@ -135,7 +135,7 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( isset( $assoc_args['version'] ) ) {
 			$version = strtolower( $assoc_args['version'] );
-			$version = ( 'nightly' === $version ? 'trunk' : $version );
+			$version = ( 'trunk' === $version ? 'nightly' : $version );
 			$download_url = $this->get_download_url($version, $locale, 'tar.gz');
 		} else {
 			$offer = $this->get_download_offer( $locale );
@@ -194,7 +194,7 @@ class Core_Command extends WP_CLI_Command {
 				WP_CLI::error( "Couldn't access download URL (HTTP code {$response->status_code})." );
 			}
 
-			if ( 'trunk' !== $version ) {
+			if ( 'nightly' !== $version ) {
 				$md5_response = Utils\http_request( 'GET', $download_url . '.md5' );
 				if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
 					WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$response->status_code})." );
@@ -208,7 +208,7 @@ class Core_Command extends WP_CLI_Command {
 					WP_CLI::error( "md5 hash for download ({$md5_file}) is different than the release hash ({$md5_response->body})." );
 				}
 			} else {
-				WP_CLI::warning( 'md5 hash checks are not available for trunk downloads.' );
+				WP_CLI::warning( 'md5 hash checks are not available for nightly downloads.' );
 			}
 
 			try {
@@ -1394,7 +1394,7 @@ EOT;
 	 */
 	private function get_download_url( $version, $locale = 'en_US', $file_type = 'zip' ) {
 
-		if ( 'trunk' === $version ) {
+		if ( 'nightly' === $version ) {
 			return 'https://wordpress.org/nightly-builds/wordpress-latest.zip';
 		} elseif ( 'en_US' === $locale ) {
 			$url = 'https://wordpress.org/wordpress-' . $version . '.' . $file_type;

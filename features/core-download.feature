@@ -96,20 +96,20 @@ Feature: Download WordPress
       File removed: wp-content
       """
 
-  Scenario: Installing trunk
+  Scenario: Installing nightly
     Given an empty directory
     And an empty cache
 
-    When I run `wp core download --version=trunk`
+    When I run `wp core download --version=nightly`
     Then the wp-settings.php file should exist
-    And the {SUITE_CACHE_DIR}/core/wordpress-trunk-en_US.zip file should exist
+    And the {SUITE_CACHE_DIR}/core/wordpress-nightly-en_US.zip file should exist
     And STDOUT should contain:
       """
-      Downloading WordPress trunk (en_US)...
+      Downloading WordPress nightly (en_US)...
       """
     And STDERR should contain:
       """
-      Warning: md5 hash checks are not available for trunk downloads.
+      Warning: md5 hash checks are not available for nightly downloads.
       """
     And STDOUT should contain:
       """
@@ -117,19 +117,19 @@ Feature: Download WordPress
       """
 
 	# test core zip cache
-    When I run `wp core download --version=trunk --force`
+    When I run `wp core download --version=nightly --force`
     Then the wp-settings.php file should exist
     And STDOUT should contain:
     """
-    Using cached file '{SUITE_CACHE_DIR}/core/wordpress-trunk-en_US.zip'...
+    Using cached file '{SUITE_CACHE_DIR}/core/wordpress-nightly-en_US.zip'...
     """
 
-  Scenario: Installing trunk over an existing install
+  Scenario: Installing nightly over an existing install
     Given an empty directory
     And an empty cache
     When I run `wp core download --version=4.5.3`
     Then the wp-settings.php file should exist
-    When I run `wp core download --version=trunk --force`
+    When I run `wp core download --version=nightly --force`
     Then STDERR should not contain:
       """
       Warning: Failed to find WordPress version. Please cleanup files manually.
@@ -143,10 +143,10 @@ Feature: Download WordPress
       Success: WordPress downloaded.
       """
 
-  Scenario: Installing a version over trunk
+  Scenario: Installing a version over nightly
     Given an empty directory
     And an empty cache
-    When I run `wp core download --version=trunk`
+    When I run `wp core download --version=nightly`
     Then the wp-settings.php file should exist
     And STDERR should not contain:
       """
@@ -161,19 +161,19 @@ Feature: Download WordPress
       File removed: wp-content
       """
 
-  Scenario: Nightly is an alias for trunk
+  Scenario: Trunk is an alias for nightly
     Given an empty directory
     And an empty cache
-    When I run `wp core download --version=nightly`
+    When I run `wp core download --version=trunk`
     Then the wp-settings.php file should exist
-    And the {SUITE_CACHE_DIR}/core/wordpress-trunk-en_US.zip file should exist
+    And the {SUITE_CACHE_DIR}/core/wordpress-nightly-en_US.zip file should exist
     And STDOUT should contain:
       """
-      Downloading WordPress trunk (en_US)...
+      Downloading WordPress nightly (en_US)...
       """
     And STDERR should contain:
       """
-      Warning: md5 hash checks are not available for trunk downloads.
+      Warning: md5 hash checks are not available for nightly downloads.
       """
     And STDOUT should contain:
       """
