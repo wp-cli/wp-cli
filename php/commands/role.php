@@ -328,7 +328,7 @@ class Role_Command extends WP_CLI_Command {
 			}
 		}
 
-		WP_CLI::success( "Success: Role reset." );
+		WP_CLI::success( "Role reset." );
 
 	}
 
