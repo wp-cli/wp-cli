@@ -727,14 +727,16 @@ class Runner {
 		if ( empty( $this->arguments ) )
 			$this->arguments[] = 'help';
 
-		// Protect 'cli info' from most of the runtime
-		if ( 'cli' === $this->arguments[0] && ! empty( $this->arguments[1] ) && 'info' === $this->arguments[1] ) {
+		// Protect 'cli info' from most of the runtime,
+		// except when the command will be run over SSH
+		if ( 'cli' === $this->arguments[0] && ! empty( $this->arguments[1] ) && 'info' === $this->arguments[1] && ! $this->config['ssh'] ) {
 			$this->_run_command();
 			exit;
 		}
 
-		// Protect 'package' commands from most of the runtime too
-		if ( 'package' === $this->arguments[0] ) {
+		// Protect 'package' commands from most of the runtime too,
+		// except when the command will be run over SSH
+		if ( 'package' === $this->arguments[0] && ! $this->config['ssh'] ) {
 			$this->_run_command();
 			exit;
 		}
