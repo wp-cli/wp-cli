@@ -20,33 +20,44 @@ Feature: Manage WordPress roles
     When I run `wp role reset author`
     Then STDOUT should be:
       """
-      Success: Reset 0/1 roles.
+      No changes necessary for 'author' role.
+      Success: Role reset.
       """
 
     When I run `wp cap remove author read`
     And I run `wp role reset author`
     Then STDOUT should be:
       """
-      Success: Reset 1/1 roles.
+      Restored 10 capabilities to and removed 9 capabilities from 'author' role.
+      Success: Role reset.
       """
 
     When I run `wp role reset author editor`
     Then STDOUT should be:
       """
-      Success: Reset 0/2 roles.
+      No changes necessary for 'author' role.
+      No changes necessary for 'editor' role.
+      Success: Role reset.
       """
 
     When I run `wp cap remove author read`
     And I run `wp role reset author editor`
     Then STDOUT should be:
       """
-      Success: Reset 1/2 roles.
+      Restored 10 capabilities to and removed 9 capabilities from 'author' role.
+      No changes necessary for 'editor' role.
+      Success: Role reset.
       """
 
     When I run `wp role reset --all`
     Then STDOUT should be:
       """
-      Success: All default roles reset.
+      No changes necessary for 'administrator' role.
+      No changes necessary for 'editor' role.
+      No changes necessary for 'author' role.
+      No changes necessary for 'contributor' role.
+      No changes necessary for 'subscriber' role.
+      Success: Role reset.
       """
 
   Scenario: Cloning a role
