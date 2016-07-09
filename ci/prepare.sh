@@ -30,14 +30,7 @@ echo $CLI_VERSION > PHAR_BUILD_VERSION
 # Install CodeSniffer things
 ./ci/prepare-codesniffer.sh
 
-if [[ $WP_VERSION == "trunk" ]]
-then
-	wget https://wordpress.org/nightly-builds/wordpress-latest.zip
-	unzip wordpress-latest.zip
-	mv wordpress '/tmp/wp-cli-test core-download-cache/'
-else
-	./bin/wp core download --version=$WP_VERSION --path='/tmp/wp-cli-test core-download-cache/'
-fi
+./bin/wp core download --version=$WP_VERSION --path='/tmp/wp-cli-test core-download-cache/'
 
 ./bin/wp core version --path='/tmp/wp-cli-test core-download-cache/'
 
