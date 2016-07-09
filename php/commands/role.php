@@ -257,6 +257,7 @@ class Role_Command extends WP_CLI_Command {
 
 		// get our default roles
 		$default_roles = $preserve = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' );
+		$before = array();
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			foreach( $default_roles as $role ) {
@@ -278,8 +279,6 @@ class Role_Command extends WP_CLI_Command {
 				}
 			}
 
-			$num_to_reset = count( $args );
-
 			// no roles were unset, bail
 			if ( count( $default_roles ) == count( $preserve ) ) {
 				WP_CLI::error( 'Must specify a default role to reset.' );
@@ -291,7 +290,7 @@ class Role_Command extends WP_CLI_Command {
 				 * if get_role is null
 				 * save role name for re-removal
 				 */
-				$roleobj        = get_role( $role );
+				$roleobj = get_role( $role );
 				$preserve[ $k ] = is_null( $roleobj ) ? $role : $roleobj;
 
 				remove_role( $role );
@@ -315,6 +314,7 @@ class Role_Command extends WP_CLI_Command {
 
 		$num_reset = 0;
 		$args = array_unique( $args );
+		$num_to_reset = count( $args );
 		foreach( $args as $role_key ) {
 			$after[ $role_key ] = get_role( $role_key );
 
@@ -328,7 +328,7 @@ class Role_Command extends WP_CLI_Command {
 			}
 		}
 
-		WP_CLI::success( "Role reset." );
+		WP_CLI::success( _n( 'Role', 'Roles', $num_reset ). " reset {$num_reset}/{$num_to_reset}." );
 
 	}
 
