@@ -197,6 +197,7 @@ class Configurator {
 					'url',
 					'path',
 					'ssh',
+					'http',
 				) as $i ) {
 					if ( isset( $value[ $i ] ) ) {
 						$this->aliases[ $key ][ $i ] = $value[ $i ];
