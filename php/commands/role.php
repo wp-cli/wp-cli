@@ -260,70 +260,75 @@ class Role_Command extends WP_CLI_Command {
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			foreach( $default_roles as $role ) {
+				$before[ $role ] = get_role( $role );
 				remove_role( $role );
+				$args[]= $role;
 			}
 			populate_roles();
+		} else {
 
-			WP_CLI::success( 'All default roles reset.' );
-			return;
-
-		}
-
-		foreach( $args as $k => $role_key ) {
-			$key = array_search( $role_key, $default_roles );
-			if ( false !== $key ) {
-				unset( $preserve[ $key ] );
-				$before[ $role_key ] = get_role( $role_key );
-				remove_role( $role_key );
-			} else {
-				unset( $args[ $k ] );
+			foreach ( $args as $k => $role_key ) {
+				$key = array_search( $role_key, $default_roles );
+				if ( false !== $key ) {
+					unset( $preserve[ $key ] );
+					$before[ $role_key ] = get_role( $role_key );
+					remove_role( $role_key );
+				} else {
+					unset( $args[ $k ] );
+				}
 			}
-		}
 
-		$num_to_reset = count( $args );
+			$num_to_reset = count( $args );
 
-		// no roles were unset, bail
-		if ( count( $default_roles ) == count( $preserve ) ) {
-			WP_CLI::error( 'Must specify a default role to reset.' );
-		}
+			// no roles were unset, bail
+			if ( count( $default_roles ) == count( $preserve ) ) {
+				WP_CLI::error( 'Must specify a default role to reset.' );
+			}
 
-		// for the roles we're not resetting
-		foreach( $preserve as $k => $role ) {
-			/* save roles
-			 * if get_role is null
-			 * save role name for re-removal
-			 */
-			$roleobj = get_role( $role );
-			$preserve[$k] = is_null( $roleobj ) ? $role : $roleobj;
+			// for the roles we're not resetting
+			foreach ( $preserve as $k => $role ) {
+				/* save roles
+				 * if get_role is null
+				 * save role name for re-removal
+				 */
+				$roleobj        = get_role( $role );
+				$preserve[ $k ] = is_null( $roleobj ) ? $role : $roleobj;
 
-			remove_role( $role );
-		}
+				remove_role( $role );
+			}
 
-		// put back all default roles and capabilities
-		populate_roles();
+			// put back all default roles and capabilities
+			populate_roles();
 
-		// restore the preserved roles
-		foreach( $preserve as $k => $roleobj ) {
-			// re-remove after populating
-			if ( is_a( $roleobj, 'WP_Role' ) ) {
-				remove_role( $roleobj->name );
-				add_role( $roleobj->name, ucwords( $roleobj->name ), $roleobj->capabilities );
-			} else {
-				// when not an object, that means the role didn't exist before
-				remove_role( $roleobj );
+			// restore the preserved roles
+			foreach ( $preserve as $k => $roleobj ) {
+				// re-remove after populating
+				if ( is_a( $roleobj, 'WP_Role' ) ) {
+					remove_role( $roleobj->name );
+					add_role( $roleobj->name, ucwords( $roleobj->name ), $roleobj->capabilities );
+				} else {
+					// when not an object, that means the role didn't exist before
+					remove_role( $roleobj );
+				}
 			}
 		}
 
 		$num_reset = 0;
+		$args = array_unique( $args );
 		foreach( $args as $role_key ) {
 			$after[ $role_key ] = get_role( $role_key );
 
 			if ( $after[ $role_key ] != $before[ $role_key ] ) {
 				++$num_reset;
+				$after_cap_count = count( $after[ $role_key ]->capabilities );
+				$before_cap_count = count( $before[ $role_key ]->capabilities );
+				WP_CLI::log( "Restored {$after_cap_count} capabilities to and removed {$before_cap_count} capabilities from '{$role_key}' role." );
+			} else {
+				WP_CLI::log( "No changes necessary for '{$role_key}' role." );
 			}
 		}
 
-		WP_CLI::success( "Reset $num_reset/$num_to_reset roles." );
+		WP_CLI::success( "Success: Role reset." );
 
 	}
 
