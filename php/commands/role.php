@@ -320,16 +320,28 @@ class Role_Command extends WP_CLI_Command {
 
 			if ( $after[ $role_key ] != $before[ $role_key ] ) {
 				++$num_reset;
-				$after_cap_count = count( $after[ $role_key ]->capabilities );
-				$before_cap_count = count( $before[ $role_key ]->capabilities );
-				WP_CLI::log( "Restored {$after_cap_count} capabilities to and removed {$before_cap_count} capabilities from '{$role_key}' role." );
+				$restored_cap = array_diff_key( $after[ $role_key ]->capabilities, $before[ $role_key ]->capabilities );
+				$removed_cap = array_diff_key( $before[ $role_key ]->capabilities, $after[ $role_key ]->capabilities );
+				$restored_cap_count = count( $restored_cap );
+				$removed_cap_count = count( $removed_cap );
+				WP_CLI::log( "Restored {$restored_cap_count} capabilities to and removed {$removed_cap_count} capabilities from '{$role_key}' role." );
 			} else {
 				WP_CLI::log( "No changes necessary for '{$role_key}' role." );
 			}
 		}
-
-		WP_CLI::success( _n( 'Role', 'Roles', $num_reset ). " reset {$num_reset}/{$num_to_reset}." );
-
+		if ( $num_reset ) {
+			if ( 1 === count( $args ) ) {
+				WP_CLI::success( 'Role reset.' );
+			} else {
+				WP_CLI::success( "{$num_reset} of {$num_to_reset} roles reset." );
+			}
+		} else {
+			if ( 1 === count( $args ) ) {
+				WP_CLI::success( 'Role didn\'t need resetting.' );
+			} else {
+				WP_CLI::success( 'No roles needed resetting.' );
+			}
+		}
 	}
 
 	private static function persistence_check() {

@@ -21,15 +21,15 @@ Feature: Manage WordPress roles
     Then STDOUT should be:
       """
       No changes necessary for 'author' role.
-      Success: Roles reset 0/1.
+      Success: Role didn't need resetting.
       """
 
     When I run `wp cap remove author read`
     And I run `wp role reset author`
     Then STDOUT should be:
       """
-      Restored 10 capabilities to and removed 9 capabilities from 'author' role.
-      Success: Role reset 1/1.
+      Restored 1 capabilities to and removed 0 capabilities from 'author' role.
+      Success: Role reset.
       """
 
     When I run `wp role reset author editor`
@@ -37,16 +37,16 @@ Feature: Manage WordPress roles
       """
       No changes necessary for 'author' role.
       No changes necessary for 'editor' role.
-      Success: Roles reset 0/2.
+      Success: No roles needed resetting.
       """
 
     When I run `wp cap remove author read`
     And I run `wp role reset author editor`
     Then STDOUT should be:
       """
-      Restored 10 capabilities to and removed 9 capabilities from 'author' role.
+      Restored 1 capabilities to and removed 0 capabilities from 'author' role.
       No changes necessary for 'editor' role.
-      Success: Role reset 1/2.
+      Success: 1 of 2 roles reset.
       """
 
     When I run `wp role reset --all`
@@ -57,7 +57,7 @@ Feature: Manage WordPress roles
       No changes necessary for 'author' role.
       No changes necessary for 'contributor' role.
       No changes necessary for 'subscriber' role.
-      Success: Roles reset 0/5.
+      Success: No roles needed resetting.
       """
 
   Scenario: Cloning a role
