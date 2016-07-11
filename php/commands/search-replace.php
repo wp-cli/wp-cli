@@ -37,6 +37,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	private $recurse_objects;
 	private $regex;
 	private $skip_columns;
+	private $include_columns;
 
 	/**
 	 * Search/replace strings in the database.
@@ -95,6 +96,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * : Do not perform the replacement on specific columns. Use commas to
 	 * specify multiple columns. 'guid' is skipped by default.
 	 *
+	 * [--include-columns=<columns>]
+	 * : Perform the replacement on specific columns. Use commas to
+	 * specify multiple columns.
+	 *
 	 * [--precise]
 	 * : Force the use of PHP (instead of SQL) which is more thorough,
 	 * but slower.
@@ -145,6 +150,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$this->regex           =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'regex' );
 
 		$this->skip_columns = explode( ',', \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-columns' ) );
+		$this->include_columns = array_filter( explode( ',', \WP_CLI\Utils\get_flag_value( $assoc_args, 'include-columns' ) ) );
 
 		if ( $old === $new && ! $this->regex ) {
 			WP_CLI::warning( "Replacement value '{$old}' is identical to search value '{$new}'. Skipping operation." );
@@ -201,6 +207,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 			}
 
 			foreach ( $columns as $col ) {
+				if ( ! empty( $this->include_columns ) && ! in_array( $col, $this->include_columns ) ) {
+					continue;
+				}
+
 				if ( in_array( $col, $this->skip_columns ) ) {
 					continue;
 				}
