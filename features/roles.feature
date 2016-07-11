@@ -60,6 +60,46 @@ Feature: Manage WordPress roles
       Success: No roles needed resetting.
       """
 
+    When I run `wp role create custom-role "Custom role" --clone=author`
+    And I run `wp role reset --all`
+    Then STDOUT should be:
+      """
+      Custom role 'custom-role' not affected.
+      No changes necessary for 'administrator' role.
+      No changes necessary for 'editor' role.
+      No changes necessary for 'author' role.
+      No changes necessary for 'contributor' role.
+      No changes necessary for 'subscriber' role.
+      Success: No roles needed resetting.
+      """
+
+    When I try `wp role reset custom-role`
+    Then STDERR should contain:
+      """
+      Error: Must specify a default role to reset.
+      """
+    And STDOUT should contain:
+      """
+      Custom role 'custom-role' not affected.
+      """
+
+    When I run `wp role reset custom-role author`
+    Then STDOUT should be:
+      """
+      Custom role 'custom-role' not affected.
+      No changes necessary for 'author' role.
+      Success: Role didn't need resetting.
+      """
+
+    When I run `wp cap remove author read`
+    And I run `wp role reset custom-role author`
+    Then STDOUT should be:
+      """
+      Custom role 'custom-role' not affected.
+      Restored 1 capabilities to and removed 0 capabilities from 'author' role.
+      Success: Role reset.
+      """
+
   Scenario: Cloning a role
     When I try `wp role create reporter Reporter --clone=no-role`
     Then STDERR should be:
