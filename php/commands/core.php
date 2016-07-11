@@ -318,7 +318,7 @@ class Core_Command extends WP_CLI_Command {
 					copy( $item, $dest_path );
 				} else {
 					$error = 1;
-					WP_CLI::warning( 'Unable to copy ' . $iterator->getSubPathName() . ' to current directory.' );
+					WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathName() . "' to current directory." );
 				}
 			}
 		}
@@ -390,16 +390,28 @@ class Core_Command extends WP_CLI_Command {
 	 * : Set the database user password.
 	 *
 	 * [--dbhost=<dbhost>]
-	 * : Set the database host. Default: 'localhost'
+	 * : Set the database host.
+	 * ---
+	 * default: localhost
+	 * ---
 	 *
 	 * [--dbprefix=<dbprefix>]
-	 * : Set the database table prefix. Default: 'wp_'
+	 * : Set the database table prefix.
+	 * ---
+	 * default: wp_
+	 * ---
 	 *
 	 * [--dbcharset=<dbcharset>]
-	 * : Set the database charset. Default: 'utf8'
+	 * : Set the database charset.
+	 * ---
+	 * default: utf8
+	 * ---
 	 *
 	 * [--dbcollate=<dbcollate>]
-	 * : Set the database collation. Default: ''
+	 * : Set the database collation.
+	 * ---
+	 * default:
+	 * ---
 	 *
 	 * [--locale=<locale>]
 	 * : Set the WPLANG constant. Defaults to $wp_local_package variable.
@@ -488,7 +500,7 @@ class Core_Command extends WP_CLI_Command {
 	 * Determine if the WordPress tables are installed.
 	 *
 	 * [--network]
-	 * : Check if this is a multisite install
+	 * : Check if this is a multisite install.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -578,7 +590,9 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * [--base=<url-path>]
 	 * : Base path after the domain name that each site url will start with.
-	 * Default: '/'
+	 * ---
+	 * default: /
+	 * ---
 	 *
 	 * [--subdomains]
 	 * : If passed, the network will use subdomains, instead of subdirectories. Doesn't work with 'localhost'.
@@ -617,7 +631,9 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * [--base=<url-path>]
 	 * : Base path after the domain name that each site url in the network will start with.
-	 * Default: '/'
+	 * ---
+	 * default: /
+	 * ---
 	 *
 	 * [--subdomains]
 	 * : If passed, the network will use subdomains, instead of subdirectories. Doesn't work with 'localhost'.
@@ -626,7 +642,10 @@ class Core_Command extends WP_CLI_Command {
 	 * : The title of the new site.
 	 *
 	 * --admin_user=<username>
-	 * : The name of the admin user. Default: 'admin'
+	 * : The name of the admin user.
+	 * ---
+	 * default: admin
+	 * ---
 	 *
 	 * --admin_password=<password>
 	 * : The password for the admin user.
@@ -1333,7 +1352,7 @@ EOT;
 	 *
 	 *     # Update the WordPress database
 	 *     $ wp core update-db
-	 *     Success: WordPress database upgraded successfully from db version 36686 to 35700
+	 *     Success: WordPress database upgraded successfully from db version 36686 to 35700.
 	 *
 	 *     # Update databases for all sites on a network
 	 *     $ wp core update-db --network
