@@ -16,10 +16,10 @@ Feature: Do global search/replace
       """
 
     When I run `wp search-replace foo bar --include-columns=post_content`
-    Then STDOUT should not contain:
-      """
-      guid
-      """
+    Then STDOUT should be a table containing rows:
+    | Table    | Column       | Replacements | Type |
+    | wp_posts | post_content | 0            | SQL  |
+
 
   Scenario: Multisite search/replace
     Given a WP multisite install
