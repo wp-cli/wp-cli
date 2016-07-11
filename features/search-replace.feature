@@ -15,6 +15,12 @@ Feature: Do global search/replace
       guid
       """
 
+    When I run `wp search-replace foo bar --include-columns=post_content`
+    Then STDOUT should be a table containing rows:
+    | Table    | Column       | Replacements | Type |
+    | wp_posts | post_content | 0            | SQL  |
+
+
   Scenario: Multisite search/replace
     Given a WP multisite install
     And I run `wp site create --slug="foo" --title="foo" --email="foo@example.com"`
