@@ -255,6 +255,10 @@ class Role_Command extends WP_CLI_Command {
 			require_once( ABSPATH.'wp-admin/includes/schema.php' );
 		}
 
+		global $wp_roles;
+		$all_roles = array_keys( $wp_roles->roles );
+		$preserve_args = $args;
+
 		// get our default roles
 		$default_roles = $preserve = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' );
 		$before = array();
@@ -266,6 +270,12 @@ class Role_Command extends WP_CLI_Command {
 				$args[]= $role;
 			}
 			populate_roles();
+			$not_affected_roles = array_diff( $all_roles, $default_roles );
+			if ( ! empty( $not_affected_roles ) ) {
+				foreach ( $not_affected_roles as $not_affected_role ) {
+					WP_CLI::log( "Custom role '{$not_affected_role}' not affected." );
+				}
+			}
 		} else {
 
 			foreach ( $args as $k => $role_key ) {
@@ -276,6 +286,13 @@ class Role_Command extends WP_CLI_Command {
 					remove_role( $role_key );
 				} else {
 					unset( $args[ $k ] );
+				}
+			}
+
+			$not_affected_roles = array_diff( $preserve_args, $default_roles );
+			if ( ! empty( $not_affected_roles ) ) {
+				foreach ( $not_affected_roles as $not_affected_role ) {
+					WP_CLI::log( "Custom role '{$not_affected_role}' not affected." );
 				}
 			}
 
