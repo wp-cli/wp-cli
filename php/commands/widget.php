@@ -39,6 +39,8 @@ class Widget_Command extends WP_CLI_Command {
 	/**
 	 * List widgets associated with a sidebar.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <sidebar-id>
 	 * : ID for the corresponding sidebar.
 	 *
@@ -98,6 +100,8 @@ class Widget_Command extends WP_CLI_Command {
 	/**
 	 * Add a widget to a sidebar.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <name>
 	 * : Widget name.
 	 *
@@ -155,6 +159,8 @@ class Widget_Command extends WP_CLI_Command {
 	/**
 	 * Update a given widget's options.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <widget-id>
 	 * : Unique ID for the widget
 	 *
@@ -190,6 +196,8 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Move a widget from one position on a sidebar to another.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <widget-id>
 	 * : Unique ID for the widget
@@ -242,6 +250,8 @@ class Widget_Command extends WP_CLI_Command {
 	/**
 	 * Deactivate one or more widgets from an active sidebar.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <widget-id>...
 	 * : Unique ID for the widget(s)
 	 *
@@ -272,6 +282,8 @@ class Widget_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete one or more widgets from a sidebar.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <widget-id>...
 	 * : Unique ID for the widget(s)
@@ -308,6 +320,8 @@ class Widget_Command extends WP_CLI_Command {
 	 * Reset sidebar.
 	 *
 	 * Removes all widgets from the sidebar and places them in Inactive Widgets.
+	 *
+	 * ## OPTIONS
 	 *
 	 * [<sidebar-id>...]
 	 * : One or more sidebars to reset.

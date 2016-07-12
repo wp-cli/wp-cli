@@ -30,6 +30,8 @@ class Transient_Command extends WP_CLI_Command {
 	/**
 	 * Get a transient value.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <key>
 	 * : Key for the transient.
 	 *
@@ -72,6 +74,8 @@ class Transient_Command extends WP_CLI_Command {
 	/**
 	 * Set a transient value. <expiration> is the time until expiration, in seconds.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <key>
 	 * : Key for the transient.
 	 *
@@ -104,6 +108,8 @@ class Transient_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete a transient value.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <key>
 	 * : Key for the transient.

@@ -995,6 +995,8 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	/**
 	 * Delete a meta field.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <user>
 	 * : The user login, user email, or user ID of the user to delete metadata from.
 	 *
@@ -1017,6 +1019,8 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 
 	/**
 	 * Add a meta field.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <user>
 	 * : The user login, user email, or user ID of the user to add metadata for.
@@ -1043,6 +1047,8 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 
 	/**
 	 * Update a meta field.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <user>
 	 * : The user login, user email, or user ID of the user to update metadata for.
