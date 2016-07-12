@@ -3,14 +3,6 @@
 /**
  * Manage network custom fields.
  *
- * ## OPTIONS
- *
- * <id>
- * : The network id (usually 1).
- *
- * --format=json
- * : Encode/decode values as JSON.
- *
  * ## EXAMPLES
  *
  *     # Get a list of super-admins

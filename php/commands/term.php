@@ -566,11 +566,6 @@ class Term_Command extends WP_CLI_Command {
 /**
  * Manage term custom fields.
  *
- * ## OPTIONS
- *
- * --format=json
- * : Encode/decode values as JSON.
- *
  * ## EXAMPLES
  *
  *     # Set term meta

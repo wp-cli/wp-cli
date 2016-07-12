@@ -593,11 +593,6 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 /**
  * Manage post custom fields.
  *
- * ## OPTIONS
- *
- * [--format=json]
- * : Encode/decode values as JSON.
- *
  * ## EXAMPLES
  *
  *     # Set post meta
