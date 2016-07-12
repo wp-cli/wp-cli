@@ -596,7 +596,7 @@ class Runner {
 
 		$argv = array_slice( $GLOBALS['argv'], 1 );
 
-		if ( ! empty( $argv[0] ) && preg_match( '#^@[A-Za-z0-9-_]+$#', $argv[0], $matches ) ) {
+		if ( ! empty( $argv[0] ) && preg_match( '#' . Configurator::ALIAS_REGEX . '#', $argv[0], $matches ) ) {
 			$this->alias = array_shift( $argv );
 		} else {
 			$this->alias = null;
