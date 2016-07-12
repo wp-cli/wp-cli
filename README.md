@@ -123,6 +123,36 @@ If you have a WordPress.org account, you may also consider joining the `#cli` ch
 
 A **command** is an atomic unit of WP-CLI functionality. `wp plugin install` ([doc](https://wp-cli.org/commands/plugin/install/)) is one command. `wp plugin activate` ([doc](https://wp-cli.org/commands/plugin/activate/)) is another.
 
+WP-CLI supports registering any callable class, function, or closure as a command. It reads usage details from the callback's PHPdoc. `WP_CLI::add_command()` ([doc](https://wp-cli.org/docs/internal-api/wp-cli-add-command/)) is used for both internal and third-party command registration.
+
+```
+/**
+ * Delete an option from the database.
+ *
+ * Returns an error if the option didn't exist.
+ *
+ * ## OPTIONS
+ *
+ * <key>
+ * : Key for the option.
+ *
+ * ## EXAMPLES
+ *
+ *     $ wp option delete my_option
+ *     Success: Deleted 'my_option' option.
+ */
+$delete_option_cmd = function( $args ) {
+	list( $key ) = $args;
+
+	if ( ! delete_option( $key ) ) {
+		WP_CLI::error( "Could not delete '$key' option. Does it exist?" );
+	} else {
+		WP_CLI::success( "Deleted '$key' option." );
+	}
+};
+WP_CLI::add_command( 'option delete', $delete_option_cmd );
+```
+
 WP-CLI comes with dozens of commands. It's easier than it looks to create a custom WP-CLI command. Read the [commands cookbook](https://wp-cli.org/docs/commands-cookbook/) to learn more. Browse the [internal API docs](https://wp-cli.org/docs/internal-api/) to discover a variety of helpful functions you can use in your custom WP-CLI command.
 
 ## Contributing
