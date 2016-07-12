@@ -8,6 +8,8 @@ class Help_Command extends WP_CLI_Command {
 	/**
 	 * Get help on WP-CLI, or on a specific command.
 	 *
+	 * ## OPTIONS
+	 *
 	 * [<command>...]
 	 * : Get help on a specific command.
 	 *
