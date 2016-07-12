@@ -30,6 +30,11 @@ class Configurator {
 	private $aliases = array();
 
 	/**
+	 * @var string ALIAS_REGEX Regex pattern used to define an alias
+	 */
+	const ALIAS_REGEX = '^@[A-Za-z0-9-_]+$';
+
+	/**
 	 * @param string $path Path to config spec file.
 	 */
 	function __construct( $path ) {
@@ -187,9 +192,8 @@ class Configurator {
 		if ( ! empty( $yaml['_']['inherit'] ) ) {
 			$this->merge_yml( $yaml['_']['inherit'] );
 		}
-		$alias_regex = '#^@[A-Za-z0-9-_]+$#';
 		foreach ( $yaml as $key => $value ) {
-			if ( preg_match( $alias_regex, $key ) ) {
+			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
 				$this->aliases[ $key ] = array();
 				$is_alias = false;
 				foreach( array(
@@ -208,7 +212,7 @@ class Configurator {
 				if ( ! $is_alias && is_array( $value ) ) {
 					$alias_group = array();
 					foreach( $value as $i => $k ) {
-						if ( preg_match( $alias_regex, $k ) ) {
+						if ( preg_match( '#' . self::ALIAS_REGEX . '#', $k ) ) {
 							$alias_group[] = $k;
 						}
 					}
