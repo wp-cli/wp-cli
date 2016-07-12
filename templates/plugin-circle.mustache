@@ -1,0 +1,9 @@
+machine:
+  php:
+    version: 5.6.14
+
+test:
+  pre:
+    - bash bin/install-wp-tests.sh wordpress_test root '' localhost latest
+  override:
+    - phpunit

@@ -531,7 +531,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * The following files are generated for your plugin by this command:
 	 *
 	 * * `phpunit.xml.dist` is the configuration file for PHPUnit.
-	 * * `.travis.yml` is the configuration file for Travis CI.
+	 * * `.travis.yml` is the configuration file for Travis CI. Use `--ci=<provider>` to select a different service.
 	 * * `bin/install-wp-tests.sh` configures the WordPress test suite and a test database.
 	 * * `tests/bootstrap.php` is the file that makes the current plugin active when running the test suite.
 	 * * `tests/test-sample.php` is a sample file containing the actual tests.
@@ -550,6 +550,15 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * [--dir=<dirname>]
 	 * : Generate test files for a non-standard plugin path. If no plugin slug is specified, the directory name is used.
+	 *
+	 * [--ci=<provider>]
+	 * : Add a configuration file for a continuous integration provider.
+	 * ---
+	 * default: travis
+	 * options:
+	 *   - travis
+	 *   - circle
+	 * ---
 	 *
 	 * [--force]
 	 * : Overwrite files that already exist.
@@ -616,11 +625,16 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 
 		$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
-		$files_written = $this->create_files( array(
+		$files_to_create = array(
 			"$tests_dir/bootstrap.php"   => Utils\mustache_render( 'bootstrap.mustache', $plugin_data ),
 			"$tests_dir/test-sample.php" => Utils\mustache_render( 'test-sample.mustache', $plugin_data ),
-			"$plugin_dir/.travis.yml"    => Utils\mustache_render( '.travis.mustache', compact( 'wp_versions_to_test' ) ),
-		), $force );
+		);
+		if ( 'travis' === $assoc_args['ci'] ) {
+			$files_to_create["$plugin_dir/.travis.yml"] = Utils\mustache_render( 'plugin-travis.mustache', compact( 'wp_versions_to_test' ) );
+		} else if ( 'circle' === $assoc_args['ci'] ) {
+			$files_to_create["$plugin_dir/circle.yml"] = Utils\mustache_render( 'plugin-circle.mustache' );
+		}
+		$files_written = $this->create_files( $files_to_create, $force );
 
 		$to_copy = array(
 			'install-wp-tests.sh' => $bin_dir,
