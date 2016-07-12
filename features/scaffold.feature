@@ -306,12 +306,31 @@ Feature: WordPress code scaffolding
       install-wp-tests.sh
       """
     And the {PLUGIN_DIR}/hello-world/phpunit.xml.dist file should exist
-    And the {PLUGIN_DIR}/hello-world/.travis.yml file should exist
+    And the {PLUGIN_DIR}/hello-world/circle.yml file should not exist
+    And the {PLUGIN_DIR}/hello-world/.travis.yml file should contain:
+      """
+      script: phpunit
+      """
 
     When I run `wp eval "if ( is_executable( '{PLUGIN_DIR}/hello-world/bin/install-wp-tests.sh' ) ) { echo 'executable'; } else { exit( 1 ); }"`
     Then STDOUT should be:
       """
       executable
+      """
+
+  Scenario: Scaffold plugin tests with Circle as the provider
+    Given a WP install
+    And I run `wp scaffold plugin hello-world --skip-tests`
+
+    When I run `wp plugin path hello-world --dir`
+    Then save STDOUT as {PLUGIN_DIR}
+
+    When I run `wp scaffold plugin-tests hello-world --ci=circle`
+    Then STDOUT should not be empty
+    And the {PLUGIN_DIR}/.travis.yml file should not exist
+    And the {PLUGIN_DIR}/circle.yml file should contain:
+      """
+      version: 5.6.14
       """
 
   Scenario: Scaffold starter code for a theme
