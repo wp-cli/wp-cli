@@ -31,6 +31,8 @@ class Option_Command extends WP_CLI_Command {
 	/**
 	 * Get an option.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <key>
 	 * : Key for the option.
 	 *
@@ -121,6 +123,8 @@ class Option_Command extends WP_CLI_Command {
 
 	/**
 	 * List options.
+	 *
+	 * ## OPTIONS
 	 *
 	 * [--search=<pattern>]
 	 * : Use wildcards ( * and ? ) to match option name.
@@ -312,6 +316,8 @@ class Option_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete an option.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <key>
 	 * : Key for the option.

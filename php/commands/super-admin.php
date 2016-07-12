@@ -80,6 +80,8 @@ class Super_Admin_Command extends WP_CLI_Command {
 	/**
 	 * Grant super-admin privileges to one or more users.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <user>...
 	 * : One or more user IDs, user emails, or user logins.
 	 *
@@ -124,6 +126,8 @@ class Super_Admin_Command extends WP_CLI_Command {
 
 	/**
 	 * Revoke super-admin privileges to one or more users.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <user>...
 	 * : One or more user IDs, user emails, or user logins.
