@@ -210,6 +210,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     # Delete user 123 and reassign posts to user 567
 	 *     $ wp user delete 123 --reassign=567
 	 *     Success: Removed user 123 from http://example.com
+	 *
+	 *     # Delete all contributors and reassign their posts to user 2
+	 *     $ wp user delete $(wp user list --role=contributor --format=ids) --reassign=2
+	 *     Success: Removed user 813 from http://example.com
+	 *     Success: Removed user 578 from http://example.com
 	 */
 	public function delete( $args, $assoc_args ) {
 		$network = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) && is_multisite();
