@@ -3,11 +3,19 @@
 /**
  * Manage the object cache.
  *
+ * Note: Persistent Object Caching is needed for these commands.
+ *
  * ## EXAMPLES
  *
- *     wp cache set my_key my_value my_group 300
+ *     # Set cache.
+ *     $ wp cache set my_key my_value my_group 300
+ *     Success: Set object 'my_key' in group 'my_group'.
  *
- *     wp cache get my_key my_group
+ *     # Get cache.
+ *     $ wp cache get my_key my_group
+ *     my_value
+ *
+ * @package wp-cli
  */
 class Cache_Command extends WP_CLI_Command {
 
@@ -28,7 +36,16 @@ class Cache_Command extends WP_CLI_Command {
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
 	 *
 	 * [<expiration>]
-	 * : Define how long to keep the value, in seconds. Defaults to 0 (as long as possible).
+	 * : Define how long to keep the value, in seconds. `0` means as long as possible.
+	 * ---
+	 * default: 0
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Add cache.
+	 *     $ wp cache add my_key my_group my_value 300
+	 *     Success: Added object 'my_key' in group 'my_value'.
 	 */
 	public function add( $args, $assoc_args ) {
 		list( $key, $value ) = $args;
@@ -57,6 +74,12 @@ class Cache_Command extends WP_CLI_Command {
 	 *
 	 * [<group>]
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Decrease cache value.
+	 *     $ wp cache decr my_key 2 my_group
+	 *     48
 	 */
 	public function decr( $args, $assoc_args ) {
 		$key = $args[0];
@@ -84,6 +107,12 @@ class Cache_Command extends WP_CLI_Command {
 	 *
 	 * [<group>]
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Delete cache.
+	 *     $ wp cache delete my_key my_group
+	 *     Success: Object deleted.
 	 */
 	public function delete( $args, $assoc_args ) {
 		$key = $args[0];
@@ -104,6 +133,12 @@ class Cache_Command extends WP_CLI_Command {
 	 *
 	 * For sites using a persistent object cache, because WordPress Multisite simply adds a blog id
 	 * to the cache key, flushing cache is typically a global operation.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Flush cache.
+	 *     $ wp cache flush
+	 *     Success: The cache was flushed.
 	 */
 	public function flush( $args, $assoc_args ) {
 		$value = wp_cache_flush();
@@ -125,6 +160,12 @@ class Cache_Command extends WP_CLI_Command {
 	 *
 	 * [<group>]
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Get cache.
+	 *     $ wp cache get my_key my_group
+	 *     my_value
 	 */
 	public function get( $args, $assoc_args ) {
 		$key = $args[0];
@@ -153,6 +194,12 @@ class Cache_Command extends WP_CLI_Command {
 	 *
 	 * [<group>]
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Increase cache value.
+	 *     $ wp cache incr my_key 2 my_group
+	 *     50
 	 */
 	public function incr( $args, $assoc_args ) {
 		$key = $args[0];
@@ -185,7 +232,16 @@ class Cache_Command extends WP_CLI_Command {
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
 	 *
 	 * [<expiration>]
-	 * : Define how long to keep the value, in seconds. Defaults to 0 (as long as possible).
+	 * : Define how long to keep the value, in seconds. `0` means as long as possible.
+	 * ---
+	 * default: 0
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Replace cache.
+	 *     $ wp cache replace my_key new_value my_group
+	 *     Success: Replaced object 'my_key' in group 'my_group'.
 	 */
 	public function replace( $args, $assoc_args ) {
 		list( $key, $value ) = $args;
@@ -218,7 +274,16 @@ class Cache_Command extends WP_CLI_Command {
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
 	 *
 	 * [<expiration>]
-	 * : Define how long to keep the value, in seconds. Defaults to 0 (as long as possible).
+	 * : Define how long to keep the value, in seconds. `0` means as long as possible.
+	 * ---
+	 * default: 0
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Set cache.
+	 *     $ wp cache set my_key my_value my_group 300
+	 *     Success: Set object 'my_key' in group 'my_group'.
 	 */
 	public function set( $args, $assoc_args ) {
 		list( $key, $value ) = $args;
@@ -242,6 +307,12 @@ class Cache_Command extends WP_CLI_Command {
 	 * Note that the guesses made by this function are based on the WP_Object_Cache classes
 	 * that define the 3rd party object cache extension. Changes to those classes could render
 	 * problems with this function's ability to determine which object cache is being used.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check cache type.
+	 *     $ wp cache type
+	 *     Default
 	 */
 	public function type( $args, $assoc_args ) {
 		$message = WP_CLI\Utils\wp_get_cache_type();
@@ -250,4 +321,3 @@ class Cache_Command extends WP_CLI_Command {
 }
 
 WP_CLI::add_command( 'cache', 'Cache_Command' );
-
