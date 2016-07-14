@@ -204,3 +204,22 @@ Feature: Manage WordPress posts
       """
       [{"name":"Test Category"}]
       """
+
+  Scenario: Make sure WordPress receives the slashed data it expects
+    When I run `wp post create --post_title='My\Post' --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=title`
+    Then STDOUT should be:
+      """
+      My\Post
+      """
+
+    When I run `wp post update {POST_ID} --post_content='var isEmailValid = /^\S+@\S+.\S+$/.test(email);'`
+    Then STDOUT should not be empty
+
+    When I run `wp post get {POST_ID} --field=content`
+    Then STDOUT should be:
+      """
+      var isEmailValid = /^\S+@\S+.\S+$/.test(email);
+      """
