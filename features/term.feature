@@ -111,3 +111,34 @@ Feature: Manage WordPress terms
       http://example.com/?cat=2
       http://example.com/?cat=3
       """
+
+  Scenario: Make sure WordPress receives the slashed data it expects
+    When I run `wp term create category 'My\Term' --description='My\Term\Description' --porcelain`
+    Then save STDOUT as {TERM_ID}
+
+    When I run `wp term get category {TERM_ID} --field=name`
+    Then STDOUT should be:
+      """
+      My\Term
+      """
+
+    When I run `wp term get category {TERM_ID} --field=description`
+    Then STDOUT should be:
+      """
+      My\Term\Description
+      """
+
+    When I run `wp term update category {TERM_ID} --name='My\New\Term' --description='var isEmailValid = /^\S+@\S+.\S+$/.test(email);'`
+    Then STDOUT should not be empty
+
+    When I run `wp term get category {TERM_ID} --field=name`
+    Then STDOUT should be:
+      """
+      My\New\Term
+      """
+
+    When I run `wp term get category {TERM_ID} --field=description`
+    Then STDOUT should be:
+      """
+      var isEmailValid = /^\S+@\S+.\S+$/.test(email);
+      """
