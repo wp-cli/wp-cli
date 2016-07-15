@@ -348,6 +348,17 @@ class Runner {
 
 		if ( $this->alias && ! empty( $wp_args[0] ) && $this->alias === $wp_args[0] ) {
 			array_shift( $wp_args );
+			$runtime_alias = array();
+			foreach( $this->aliases[ $this->alias ] as $key => $value ) {
+				if ( 'ssh' === $key ) {
+					continue;
+				}
+				$runtime_alias[ $key ] = $value;
+			}
+			if ( ! empty( $runtime_alias ) ) {
+				$encoded_alias = json_encode( array( $this->alias => $runtime_alias ) );
+				$wp_binary = "WP_CLI_RUNTIME_ALIAS='{$encoded_alias}' {$wp_binary} {$this->alias}";
+			}
 		}
 
 		foreach( $wp_args as $k => $v ) {
