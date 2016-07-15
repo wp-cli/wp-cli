@@ -295,6 +295,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$user = new stdClass;
 
 		list( $user->user_login, $user->user_email ) = $args;
+		
+		$assoc_args = wp_slash( $assoc_args );
 
 		if ( username_exists( $user->user_login ) ) {
 			WP_CLI::error( "The '{$user->user_login}' username is already registered." );
@@ -397,6 +399,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$user_ids[] = $user->ID;
 		}
 
+		$assoc_args = wp_slash( $assoc_args );
 		parent::_update( $user_ids, $assoc_args, 'wp_update_user' );
 	}
 

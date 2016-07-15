@@ -265,3 +265,24 @@ Feature: Manage WordPress users
       """
       6
       """
+
+  Scenario: Make sure WordPress receives the slashed data it expects
+    Given a WP install
+
+    When I run `wp user create slasheduser slasheduser@example.com --display_name='My\User' --porcelain`
+    Then save STDOUT as {USER_ID}
+
+    When I run `wp user get {USER_ID} --field=display_name`
+    Then STDOUT should be:
+      """
+      My\User
+      """
+
+    When I run `wp user update {USER_ID} --display_name='My\New\User'`
+    Then STDOUT should not be empty
+
+    When I run `wp user get {USER_ID} --field=display_name`
+    Then STDOUT should be:
+      """
+      My\New\User
+      """
