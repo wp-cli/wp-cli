@@ -192,6 +192,8 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Parent term does not exist.' );
 		}
 
+		$assoc_args = wp_slash( $assoc_args );
+		$term = wp_slash( $term );
 		$ret = wp_insert_term( $term, $taxonomy, $assoc_args );
 
 		if ( is_wp_error( $ret ) ) {
@@ -302,6 +304,7 @@ class Term_Command extends WP_CLI_Command {
 				unset( $assoc_args[$key] );
 		}
 
+		$assoc_args = wp_slash( $assoc_args );
 		$ret = wp_update_term( $term_id, $taxonomy, $assoc_args );
 
 		if ( is_wp_error( $ret ) )
