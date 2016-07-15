@@ -35,6 +35,17 @@ class Configurator {
 	const ALIAS_REGEX = '^@[A-Za-z0-9-_]+$';
 
 	/**
+	 * @var array ALIAS_SPEC Arguments that can be used in an alias
+	 */
+	private static $alias_spec = array(
+		'user',
+		'url',
+		'path',
+		'ssh',
+		'http',
+	);
+
+	/**
 	 * @param string $path Path to config spec file.
 	 */
 	function __construct( $path ) {
@@ -79,7 +90,22 @@ class Configurator {
 	 * @return array
 	 */
 	function get_aliases() {
-		return $this->aliases;
+		if ( $runtime_alias = getenv( 'WP_CLI_RUNTIME_ALIAS' ) ) {
+			$returned_aliases = array();
+			foreach( json_decode( $runtime_alias, true ) as $key => $value ) {
+				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
+					$returned_aliases[ $key ] = array();
+					foreach( self::$alias_spec as $i ) {
+						if ( isset( $value[ $i ] ) ) {
+							$returned_aliases[ $key ][ $i ] = $value[ $i ];
+						}
+					}
+				}
+			}
+			return $returned_aliases;
+		} else {
+			return $this->aliases;
+		}
 	}
 
 	/**
@@ -196,13 +222,7 @@ class Configurator {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
 				$this->aliases[ $key ] = array();
 				$is_alias = false;
-				foreach( array(
-					'user',
-					'url',
-					'path',
-					'ssh',
-					'http',
-				) as $i ) {
+				foreach( self::$alias_spec as $i ) {
 					if ( isset( $value[ $i ] ) ) {
 						$this->aliases[ $key ][ $i ] = $value[ $i ];
 						$is_alias = true;
