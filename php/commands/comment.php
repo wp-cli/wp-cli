@@ -58,6 +58,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Created comment 932.
 	 */
 	public function create( $args, $assoc_args ) {
+		$assoc_args = wp_slash( $assoc_args );
 		parent::_create( $args, $assoc_args, function ( $params ) {
 			if ( isset( $params['comment_post_ID'] ) ) {
 				$post_id = $params['comment_post_ID'];
@@ -96,6 +97,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Updated comment 123.
 	 */
 	public function update( $args, $assoc_args ) {
+		$assoc_args = wp_slash( $assoc_args );
 		parent::_update( $args, $assoc_args, function ( $params ) {
 			if ( !wp_update_comment( $params ) ) {
 				return new WP_Error( 'Could not update comment.' );

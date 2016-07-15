@@ -249,3 +249,22 @@ Feature: Manage WordPress comments
       """
       0
       """
+
+  Scenario: Make sure WordPress receives the slashed data it expects
+    When I run `wp comment create --comment_content='My\Comment' --porcelain`
+    Then save STDOUT as {COMMENT_ID}
+
+    When I run `wp comment get {COMMENT_ID} --field=comment_content`
+    Then STDOUT should be:
+      """
+      My\Comment
+      """
+
+    When I run `wp comment update {COMMENT_ID} --comment_content='My\New\Comment'`
+    Then STDOUT should not be empty
+
+    When I run `wp comment get {COMMENT_ID} --field=comment_content`
+    Then STDOUT should be:
+      """
+      My\New\Comment
+      """
