@@ -20,7 +20,7 @@ Feature: Manage super admins associated with a multisite instance
     When I run `wp super-admin add superadmin`
     Then STDERR should contain:
       """
-      Warning: User superadmin already has super-admin capabilities.
+      Warning: User 'superadmin' already has super-admin capabilities.
       """
 
     When I run `wp super-admin list`
