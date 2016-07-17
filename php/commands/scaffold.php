@@ -558,6 +558,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * options:
 	 *   - travis
 	 *   - circle
+	 *	 - gitlab
 	 * ---
 	 *
 	 * [--force]
@@ -633,6 +634,8 @@ class Scaffold_Command extends WP_CLI_Command {
 			$files_to_create["$plugin_dir/.travis.yml"] = Utils\mustache_render( 'plugin-travis.mustache', compact( 'wp_versions_to_test' ) );
 		} else if ( 'circle' === $assoc_args['ci'] ) {
 			$files_to_create["$plugin_dir/circle.yml"] = Utils\mustache_render( 'plugin-circle.mustache' );
+		} else if ( 'gitlab' === $assoc_args['ci'] ) {
+			$files_to_create["$plugin_dir/.gitlab-ci.yml"] = Utils\mustache_render( 'plugin-gitlab.mustache' );
 		}
 		$files_written = $this->create_files( $files_to_create, $force );
 
