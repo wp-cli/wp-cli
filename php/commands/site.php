@@ -360,6 +360,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$wpdb->hide_errors();
+		$title = wp_slash( $title );
 		$id = wpmu_create_blog( $newdomain, $path, $title, $user_id, array( 'public' => $public ), $network->id );
 		$wpdb->show_errors();
 		if ( !is_wp_error( $id ) ) {
