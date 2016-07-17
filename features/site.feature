@@ -289,3 +289,14 @@ Feature: Manage sites in a multisite installation
       """
       http://example.com/first
       """
+
+  Scenario: Create site with title containing slash
+    Given a WP multisite install
+    And I run `wp site create --slug=mysite --title="My\Site"`
+    Then STDOUT should not be empty
+
+    When I run `wp option get blogname --url=example.com/mysite`
+    Then STDOUT should be:
+      """
+      My\Site
+      """
