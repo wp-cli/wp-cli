@@ -86,7 +86,16 @@ class Package_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml, ids. Default: table.
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - ids
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -215,7 +224,16 @@ class Package_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml, ids. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - ids
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
