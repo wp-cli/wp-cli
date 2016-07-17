@@ -447,7 +447,7 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
  *
  * IMPORTANT: Automatic HTML escaping is disabled!
  */
-function mustache_render( $template_name, $data ) {
+function mustache_render( $template_name, $data = array() ) {
 	if ( ! file_exists( $template_name ) )
 		$template_name = WP_CLI_ROOT . "/templates/$template_name";
 
