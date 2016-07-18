@@ -148,6 +148,10 @@ class Subcommand extends CompositeCommand {
 		foreach( $spec as $key => $spec_arg ) {
 
 			$current_prompt = ( $key + 1 ) . '/' . count( $spec ) . ' ';
+			$description_match = preg_match( '/' . preg_quote( $spec_arg['token'] ) . '\r?\n\:\s(.*)/', $this->longdesc, $matches );
+			if ( $description_match ) {
+				$current_prompt = trim( $matches[1] ) . "\n" . $current_prompt;
+			}
 			$default = ( $spec_arg['optional'] ) ? '' : false;
 
 			// 'generic' permits arbitrary key=value (e.g. [--<field>=<value>] )
