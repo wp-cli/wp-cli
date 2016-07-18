@@ -17,6 +17,8 @@
  *     # Revoke super-admin privileges to the user.
  *     $ wp super-admin remove superadmin2
  *     Success: Revoked super-admin capabilities.
+ *
+ * @package wp-cli
  */
 class Super_Admin_Command extends WP_CLI_Command {
 
@@ -101,12 +103,12 @@ class Super_Admin_Command extends WP_CLI_Command {
 			$user = get_user_by( 'login', $user_login );
 
 			if ( !$user ) {
-				WP_CLI::warning( "Couldn't find {$user_login} user." );
+				WP_CLI::warning( "Couldn't find '{$user_login}' user." );
 				continue;
 			}
 
 			if ( in_array( $user->user_login, $super_admins ) ) {
-				WP_CLI::warning( "User {$user_login} already has super-admin capabilities." );
+				WP_CLI::warning( "User '{$user_login}' already has super-admin capabilities." );
 				continue;
 			}
 
@@ -119,7 +121,7 @@ class Super_Admin_Command extends WP_CLI_Command {
 			if ( update_site_option( 'site_admins' , $super_admins ) ) {
 				WP_CLI::success( 'Granted super-admin capabilities.' );
 			} else {
-				WP_CLI::error( 'Site options update failed!' );
+				WP_CLI::error( 'Site options update failed.' );
 			}
 		}
 	}
