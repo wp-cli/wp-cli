@@ -1,5 +1,5 @@
 Feature: Manage WordPress attachments
-  
+
   Background:
     Given a WP install
 
@@ -92,4 +92,22 @@ Feature: Manage WordPress attachments
     Then STDOUT should be:
       """
       The description for the image
+      """
+
+  Scenario: Make sure WordPress receives the slashed data it expects
+    When I run `wp media import 'http://wp-cli.org/behat-data/codeispoetry.png' --post_id=1 --title="My\Title" --caption="Caption\Here" --alt="Alt\Here" --desc="Desc\Here" --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID}
+
+    When I run `wp post get {ATTACHMENT_ID} --format=csv --fields=post_title,post_excerpt,post_content`
+    Then STDOUT should contain:
+      """
+      post_content,"Desc\Here"
+      post_title,"My\Title"
+      post_excerpt,"Caption\Here"
+      """
+
+    When I run `wp post meta get {ATTACHMENT_ID} _wp_attachment_image_alt`
+    Then STDOUT should be:
+      """
+      Alt\Here
       """
