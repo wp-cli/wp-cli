@@ -201,6 +201,7 @@ class Media_Command extends WP_CLI_Command {
 				'post_excerpt' => $assoc_args['caption'],
 				'post_content' => $assoc_args['desc']
 			);
+			$post_array = wp_slash( $post_array );
 
 			// use image exif/iptc data for title and caption defaults if possible
 			if ( empty( $post_array['post_title'] ) || empty( $post_array['post_excerpt'] ) ) {
@@ -234,7 +235,7 @@ class Media_Command extends WP_CLI_Command {
 
 			// Set alt text
 			if ( $assoc_args['alt'] ) {
-				update_post_meta( $success, '_wp_attachment_image_alt', $assoc_args['alt'] );
+				update_post_meta( $success, '_wp_attachment_image_alt', wp_slash( $assoc_args['alt'] ) );
 			}
 
 			// Set as featured image, if --post_id and --featured_image are set
