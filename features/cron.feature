@@ -94,7 +94,7 @@ Feature: Manage WP-Cron events and schedules
       """
     And STDOUT should contain:
       """
-      Success: Executed a total of 2 cron event(s).
+      Success: Executed a total of 2 cron events.
       """
 
     When I run `wp cron event list`
@@ -213,7 +213,7 @@ Feature: Manage WP-Cron events and schedules
       """
     And STDOUT should contain:
       """
-      Success: Executed a total of 2 cron event(s).
+      Success: Executed a total of 2 cron events.
       """
 
     When I run `wp cron event run --all`
@@ -256,7 +256,7 @@ Feature: Manage WP-Cron events and schedules
     When I run `wp cron event run --due-now`
     Then STDOUT should contain:
       """
-      Executed a total of 0 cron event(s)
+      Executed a total of 0 cron events
       """
 
     When I run `wp cron event schedule wp_cli_test_event_1 now hourly`
@@ -272,13 +272,13 @@ Feature: Manage WP-Cron events and schedules
       """
     And STDOUT should contain:
       """
-      Executed a total of 1 cron event(s)
+      Executed a total of 1 cron event
       """
 
     When I run `wp cron event run --due-now`
     Then STDOUT should contain:
       """
-      Executed a total of 0 cron event(s)
+      Executed a total of 0 cron events
       """
 
   Scenario: Don't trigger cron when ALTERNATE_WP_CRON is defined

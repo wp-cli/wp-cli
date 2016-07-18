@@ -11,7 +11,7 @@
  *
  *     # Run all cron events due right now
  *     $ wp cron event run --due-now
- *     Success: Executed a total of 2 cron event(s).
+ *     Success: Executed a total of 2 cron events.
  *
  *     # Delete the next scheduled cron event
  *     $ wp cron event delete cron_test
