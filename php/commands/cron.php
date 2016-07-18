@@ -211,7 +211,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 	 *
 	 *     # Run all cron events due right now
 	 *     $ wp cron event run --due-now
-	 *     Success: Executed a total of 2 cron event(s).
+	 *     Success: Executed a total of 2 cron events.
 	 */
 	public function run( $args, $assoc_args ) {
 
@@ -258,7 +258,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 			WP_CLI::log( sprintf( "Executed the cron event '%s' in %ss.", $event->hook, $total ) );
 		}
 
-		$message = 'Executed a total of %d cron event(s).';
+		$message = ( 1 === $executed ) ? 'Executed a total of %d cron event.' : 'Executed a total of %d cron events.';
 		WP_CLI::success( sprintf( $message, $executed ) );
 	}
 
