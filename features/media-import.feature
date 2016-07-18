@@ -95,7 +95,7 @@ Feature: Manage WordPress attachments
       """
 
   Scenario: Make sure WordPress receives the slashed data it expects
-    When I run `wp media import 'http://wp-cli.org/behat-data/codeispoetry.png' --post_id=1 --title="My\Title" --caption="Caption\Here" --alt="Alt\Here" --desc="Desc\Here" --porcelain`
+    When I run `wp media import 'http://wp-cli.org/behat-data/codeispoetry.png' --post_id=1 --title='My\Title' --caption='Caption\Here' --alt='Alt\Here' --desc='Desc\Here' --porcelain`
     Then save STDOUT as {ATTACHMENT_ID}
 
     When I run `wp post get {ATTACHMENT_ID} --format=csv --fields=post_title,post_excerpt,post_content`
