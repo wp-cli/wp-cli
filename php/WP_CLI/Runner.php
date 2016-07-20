@@ -342,9 +342,11 @@ class Runner {
 		if ( $pre_cmd ) {
 			$pre_cmd = rtrim( $pre_cmd, ';' ) . '; ';
 		}
+		if ( $path ) {
+			$pre_cmd .= "cd {$path}; ";
+		}
 		$wp_binary = 'wp';
 		$wp_args = array_slice( $GLOBALS['argv'], 1 );
-		$wp_path = $path ? sprintf( '--path=%s', str_replace( '~', '$HOME', $path ) ) : '';
 
 		if ( $this->alias && ! empty( $wp_args[0] ) && $this->alias === $wp_args[0] ) {
 			array_shift( $wp_args );
@@ -372,7 +374,7 @@ class Runner {
 			$port ? '-p ' . (int) $port . ' ' : '',
 			$host,
 			$is_tty ? '-t' : '-T',
-			$pre_cmd . $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) )
+			$pre_cmd . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) )
 		);
 
 		WP_CLI::debug( 'Running SSH command: ' . $unescaped_command, 'bootstrap' );
@@ -382,7 +384,7 @@ class Runner {
 			$port ? '-p ' . (int) $port . ' ' : '',
 			escapeshellarg( $host ),
 			$is_tty ? '-t' : '-T',
-			escapeshellarg( $pre_cmd . $wp_binary . ' ' . $wp_path . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) ) )
+			escapeshellarg( $pre_cmd . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) ) )
 		);
 
 		passthru( $escaped_command, $exit_code );
