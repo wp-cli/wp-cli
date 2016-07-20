@@ -344,7 +344,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 
 		$response = translations_api( $this->obj_type );
 		if ( is_wp_error( $response ) ) {
-			WP_CLI::error( $response );
+			\WP_CLI::error( $response );
 		}
 		$translations = ! empty( $response['translations'] ) ? $response['translations'] : array();
 
