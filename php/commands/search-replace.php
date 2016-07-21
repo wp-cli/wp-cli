@@ -25,7 +25,7 @@
  *     | wp_options | option_value | 0            | PHP  |
  *     | wp_options | autoload     | 0            | SQL  |
  *     +------------+--------------+--------------+------+
- *     Success: 2 replacement(s) to be made.
+ *     Success: 2 replacements to be made.
  *
  * @package wp-cli
  */
@@ -264,8 +264,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 			WP_CLI::success( $success_message );
 		}
 		else {
-			$success_message = "$total replacement(s) to be made.";
-			WP_CLI::success( $success_message );
+			$success_message = ( 1 === $total ) ? '%d replacement to be made.' : '%d replacements to be made.';
+			WP_CLI::success( sprintf( $success_message, $total ) );
 		}
 	}
 
