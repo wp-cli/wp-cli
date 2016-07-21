@@ -9,7 +9,7 @@
 	],
 	"require": {
 		"php": ">=5.3.29",
-		"wp-cli/php-cli-tools": "dev-master",
+		"wp-cli/php-cli-tools": "~0.11.1",
 		"mustache/mustache": "~2.4",
 		"mustangostang/spyc": "~0.5",
 		"composer/semver": "~1.0",
