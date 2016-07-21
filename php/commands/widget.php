@@ -297,23 +297,28 @@ class Widget_Command extends WP_CLI_Command {
 	 */
 	public function delete( $args, $assoc_args ) {
 
+		$count = 0;
+
 		foreach( $args as $widget_id ) {
 			$this->validate_sidebar_widget( $widget_id );
 
-			// Remove the widget's settings
+			// Remove the widget's settings.
 			list( $name, $option_index, $sidebar_id, $sidebar_index ) = $this->get_widget_data( $widget_id );
 			$widget_options = $this->get_widget_options( $name );
 			unset( $widget_options[ $option_index ] );
 			$this->update_widget_options( $name, $widget_options );
 
-			// Remove the widget from the sidebar
+			// Remove the widget from the sidebar.
 			$all_widgets = $this->wp_get_sidebars_widgets();
 			unset( $all_widgets[ $sidebar_id ][ $sidebar_index ] );
 			$all_widgets[ $sidebar_id ] = array_values( $all_widgets[ $sidebar_id ] );
 			update_option( 'sidebars_widgets', $all_widgets );
+
+			$count++;
 		}
 
-		WP_CLI::success( "Widget(s) removed from sidebar." );
+		$success_message = ( 1 === $count ) ? '%d widget removed from sidebar.' : '%d widgets removed from sidebar.';
+		WP_CLI::success( sprintf( $success_message, $count ) );
 	}
 
 	/**
