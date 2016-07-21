@@ -225,7 +225,7 @@ Feature: Do global search/replace
     When I run `wp search-replace '<a href="http://google.com">Google</a>' '<a href="http://apple.com">Apple</a>' --dry-run`
     Then STDOUT should contain:
       """
-      1 replacement(s) to be made.
+      1 replacement to be made.
       """
 
     When I run `wp post get {POST_ID} --field=content`
