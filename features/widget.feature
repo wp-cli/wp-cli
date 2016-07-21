@@ -53,7 +53,10 @@ Feature: Manage widgets in WordPress sidebar
       | recent-comments | recent-comments-2 | 2        |
 
     When I run `wp widget delete archives-2 recent-posts-2`
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      Success: 2 widgets removed from sidebar.
+      """
 
     When I run `wp widget list sidebar-1 --fields=name,id,position`
     Then STDOUT should be a table containing rows:
