@@ -4,24 +4,26 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "38e11e275b2087dfb61f50d258712aef",
-    "content-hash": "a55b968d0d6754da376a5151b4222cbb",
+    "hash": "f0bf52c59aa6e9fe44d6a611f8006a52",
+    "content-hash": "10cf19699e3fed767e31e1493a07c8f0",
     "packages": [
         {
             "name": "composer/ca-bundle",
-            "version": "1.0.2",
+            "version": "1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "a2995e5fe351055f2c7630166af12ce8fd03edfc"
+                "reference": "5df9ed0ed0c9506ea6404a23450854e5df15cc12"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/a2995e5fe351055f2c7630166af12ce8fd03edfc",
-                "reference": "a2995e5fe351055f2c7630166af12ce8fd03edfc",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/5df9ed0ed0c9506ea6404a23450854e5df15cc12",
+                "reference": "5df9ed0ed0c9506ea6404a23450854e5df15cc12",
                 "shasum": ""
             },
             "require": {
+                "ext-openssl": "*",
+                "ext-pcre": "*",
                 "php": "^5.3.2 || ^7.0"
             },
             "require-dev": {
@@ -60,27 +62,27 @@
                 "ssl",
                 "tls"
             ],
-            "time": "2016-04-13 10:13:24"
+            "time": "2016-07-18 23:07:53"
         },
         {
             "name": "composer/composer",
-            "version": "1.1.3",
+            "version": "1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "30ab6f1c1753267d181839142fafe022313c3c9a"
+                "reference": "b49a006748a460f8dae6500ec80ed021501ce969"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/30ab6f1c1753267d181839142fafe022313c3c9a",
-                "reference": "30ab6f1c1753267d181839142fafe022313c3c9a",
+                "url": "https://api.github.com/repos/composer/composer/zipball/b49a006748a460f8dae6500ec80ed021501ce969",
+                "reference": "b49a006748a460f8dae6500ec80ed021501ce969",
                 "shasum": ""
             },
             "require": {
                 "composer/ca-bundle": "^1.0",
                 "composer/semver": "^1.0",
                 "composer/spdx-licenses": "^1.0",
-                "justinrainbow/json-schema": "^1.6",
+                "justinrainbow/json-schema": "^1.6 || ^2.0",
                 "php": "^5.3.2 || ^7.0",
                 "psr/log": "^1.0",
                 "seld/cli-prompt": "^1.0",
@@ -93,7 +95,7 @@
             },
             "require-dev": {
                 "phpunit/phpunit": "^4.5 || ^5.0.5",
-                "phpunit/phpunit-mock-objects": "2.3.0 || ^3.0"
+                "phpunit/phpunit-mock-objects": "^2.3 || ^3.0"
             },
             "suggest": {
                 "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages",
@@ -106,7 +108,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.1-dev"
+                    "dev-master": "1.2-dev"
                 }
             },
             "autoload": {
@@ -137,7 +139,7 @@
                 "dependency",
                 "package"
             ],
-            "time": "2016-06-26 14:42:08"
+            "time": "2016-07-18 23:28:52"
         },
         {
             "name": "composer/semver",
@@ -264,25 +266,25 @@
         },
         {
             "name": "justinrainbow/json-schema",
-            "version": "1.6.1",
+            "version": "2.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/justinrainbow/json-schema.git",
-                "reference": "cc84765fb7317f6b07bd8ac78364747f95b86341"
+                "reference": "6b2a33e6a768f96bdc2ead5600af0822eed17d67"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/cc84765fb7317f6b07bd8ac78364747f95b86341",
-                "reference": "cc84765fb7317f6b07bd8ac78364747f95b86341",
+                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/6b2a33e6a768f96bdc2ead5600af0822eed17d67",
+                "reference": "6b2a33e6a768f96bdc2ead5600af0822eed17d67",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.29"
+                "php": ">=5.3.3"
             },
             "require-dev": {
-                "json-schema/json-schema-test-suite": "1.1.0",
+                "json-schema/json-schema-test-suite": "1.2.0",
                 "phpdocumentor/phpdocumentor": "~2",
-                "phpunit/phpunit": "~3.7"
+                "phpunit/phpunit": "^4.8.22"
             },
             "bin": [
                 "bin/validate-json"
@@ -290,7 +292,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.6.x-dev"
+                    "dev-master": "2.0.x-dev"
                 }
             },
             "autoload": {
@@ -300,7 +302,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "BSD-3-Clause"
+                "MIT"
             ],
             "authors": [
                 {
@@ -326,7 +328,7 @@
                 "json",
                 "schema"
             ],
-            "time": "2016-01-25 15:43:01"
+            "time": "2016-06-02 10:59:52"
         },
         {
             "name": "mustache/mustache",
@@ -1289,16 +1291,16 @@
         },
         {
             "name": "wp-cli/php-cli-tools",
-            "version": "dev-master",
+            "version": "v0.11.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/php-cli-tools.git",
-                "reference": "10cfa5bd978889c8050cd48d70d179d775c31827"
+                "reference": "5311a4b99103c0505db015a334be4952654d6e21"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/10cfa5bd978889c8050cd48d70d179d775c31827",
-                "reference": "10cfa5bd978889c8050cd48d70d179d775c31827",
+                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/5311a4b99103c0505db015a334be4952654d6e21",
+                "reference": "5311a4b99103c0505db015a334be4952654d6e21",
                 "shasum": ""
             },
             "require": {
@@ -1335,7 +1337,7 @@
                 "cli",
                 "console"
             ],
-            "time": "2016-03-30 11:55:36"
+            "time": "2016-02-08 14:34:01"
         }
     ],
     "packages-dev": [
@@ -1830,9 +1832,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "wp-cli/php-cli-tools": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
