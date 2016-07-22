@@ -385,7 +385,7 @@ class Cron_Event_Command extends WP_CLI_Command {
 			foreach ( $hooks as $hook => $hook_events ) {
 				foreach ( $hook_events as $sig => $data ) {
 
-					$events["$hook-$sig-$time"] = (object) array(
+					$events["$hook-$sig".uniqid()] = (object) array(
 						'hook'     => $hook,
 						'time'     => $time,
 						'sig'      => $sig,
