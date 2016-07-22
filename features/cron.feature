@@ -306,10 +306,10 @@ Feature: Manage WP-Cron events and schedules
       """
 
   Scenario: Listing duplicated cron events
-    When I run `wp cron event schedule wp_cli_test_event_1 '+1 hour 5 minutes'`
+    When I run `wp cron event schedule wp_cli_test_event_1 '+1 hour 5 minutes' hourly`
     Then STDOUT should not be empty
 
-    When I run `wp cron event schedule wp_cli_test_event_1 '+3 hour 5 minutes'`
+    When I run `wp cron event schedule wp_cli_test_event_1 '+1 hour 6 minutes' hourly`
     Then STDOUT should not be empty
 
     When I run `wp cron event list --format=ids`
