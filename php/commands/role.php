@@ -33,7 +33,7 @@
  * @package wp-cli
  */
 class Role_Command extends WP_CLI_Command {
-
+	private $dry_run;
 	private $fields = array(
 		'name',
 		'role'
@@ -234,6 +234,10 @@ class Role_Command extends WP_CLI_Command {
 	 * [--all]
 	 * : If set, all default roles will be reset.
 	 *
+	 * [--dry-run]
+	 * : Run the entire reset operation and show report, but don't save
+	 * changes to the database.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Reset role
@@ -258,6 +262,7 @@ class Role_Command extends WP_CLI_Command {
 		global $wp_roles;
 		$all_roles = array_keys( $wp_roles->roles );
 		$preserve_args = $args;
+		$this->dry_run         = \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' );
 
 		// get our default roles
 		$default_roles = $preserve = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' );
@@ -266,7 +271,9 @@ class Role_Command extends WP_CLI_Command {
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			foreach( $default_roles as $role ) {
 				$before[ $role ] = get_role( $role );
-				remove_role( $role );
+				if ( !$this->dry_run ) {
+					remove_role( $role );
+				}
 				$args[]= $role;
 			}
 			populate_roles();
@@ -283,7 +290,9 @@ class Role_Command extends WP_CLI_Command {
 				if ( false !== $key ) {
 					unset( $preserve[ $key ] );
 					$before[ $role_key ] = get_role( $role_key );
-					remove_role( $role_key );
+					if ( !$this->dry_run ) {
+						remove_role( $role_key );
+					}
 				} else {
 					unset( $args[ $k ] );
 				}
@@ -301,30 +310,32 @@ class Role_Command extends WP_CLI_Command {
 				WP_CLI::error( 'Must specify a default role to reset.' );
 			}
 
-			// for the roles we're not resetting
-			foreach ( $preserve as $k => $role ) {
-				/* save roles
-				 * if get_role is null
-				 * save role name for re-removal
-				 */
-				$roleobj = get_role( $role );
-				$preserve[ $k ] = is_null( $roleobj ) ? $role : $roleobj;
+			if ( ! $this->dry_run ) {
+				// for the roles we're not resetting
+				foreach ( $preserve as $k => $role ) {
+					/* save roles
+					 * if get_role is null
+					 * save role name for re-removal
+					 */
+					$roleobj        = get_role( $role );
+					$preserve[ $k ] = is_null( $roleobj ) ? $role : $roleobj;
 
-				remove_role( $role );
-			}
+					remove_role( $role );
+				}
 
-			// put back all default roles and capabilities
-			populate_roles();
+				// put back all default roles and capabilities
+				populate_roles();
 
-			// restore the preserved roles
-			foreach ( $preserve as $k => $roleobj ) {
-				// re-remove after populating
-				if ( is_a( $roleobj, 'WP_Role' ) ) {
-					remove_role( $roleobj->name );
-					add_role( $roleobj->name, ucwords( $roleobj->name ), $roleobj->capabilities );
-				} else {
-					// when not an object, that means the role didn't exist before
-					remove_role( $roleobj );
+				// restore the preserved roles
+				foreach ( $preserve as $k => $roleobj ) {
+					// re-remove after populating
+					if ( is_a( $roleobj, 'WP_Role' ) ) {
+						remove_role( $roleobj->name );
+						add_role( $roleobj->name, ucwords( $roleobj->name ), $roleobj->capabilities );
+					} else {
+						// when not an object, that means the role didn't exist before
+						remove_role( $roleobj );
+					}
 				}
 			}
 		}
@@ -333,15 +344,20 @@ class Role_Command extends WP_CLI_Command {
 		$args = array_unique( $args );
 		$num_to_reset = count( $args );
 		foreach( $args as $role_key ) {
-			$after[ $role_key ] = get_role( $role_key );
+			$before_capabilities = $before[ $role_key ]->capabilities;
+			$after_capabilities  = self::get_role_capability( $role_key );
 
-			if ( $after[ $role_key ] != $before[ $role_key ] ) {
+			if ( $after_capabilities != $before_capabilities ) {
 				++$num_reset;
-				$restored_cap = array_diff_key( $after[ $role_key ]->capabilities, $before[ $role_key ]->capabilities );
-				$removed_cap = array_diff_key( $before[ $role_key ]->capabilities, $after[ $role_key ]->capabilities );
+				$restored_cap = array_diff_key( $after_capabilities, $before_capabilities );
+				$removed_cap = array_diff_key( $before_capabilities, $after_capabilities );
 				$restored_cap_count = count( $restored_cap );
 				$removed_cap_count = count( $removed_cap );
-				WP_CLI::log( "Restored {$restored_cap_count} capabilities to and removed {$removed_cap_count} capabilities from '{$role_key}' role." );
+				if ( ! $this->dry_run ) {
+					WP_CLI::log( "Restored {$restored_cap_count} capabilities and removed {$removed_cap_count} capabilities from '{$role_key}' role." );
+				} else {
+					WP_CLI::log( "{$restored_cap_count} capabilities will restore and {$removed_cap_count} capabilities will remove from '{$role_key}' role." );
+				}
 			} else {
 				WP_CLI::log( "No changes necessary for '{$role_key}' role." );
 			}
@@ -366,6 +382,167 @@ class Role_Command extends WP_CLI_Command {
 
 		if ( !$wp_roles->use_db )
 			WP_CLI::error( "Role definitions are not persistent." );
+	}
+
+	private static function get_role_capability( $role_key ) {
+		$capabilities = array();
+		if ( 'administrator' == $role_key ) {
+			$capabilities = array(
+				// populate_roles_160
+				'switch_themes'          => true,
+				'edit_themes'            => true,
+				'activate_plugins'       => true,
+				'edit_plugins'           => true,
+				'edit_users'             => true,
+				'edit_files'             => true,
+				'manage_options'         => true,
+				'moderate_comments'      => true,
+				'manage_categories'      => true,
+				'manage_links'           => true,
+				'upload_files'           => true,
+				'import'                 => true,
+				'unfiltered_html'        => true,
+				'edit_posts'             => true,
+				'edit_others_posts'      => true,
+				'edit_published_posts'   => true,
+				'publish_posts'          => true,
+				'edit_pages'             => true,
+				'read'                   => true,
+				'level_10'               => true,
+				'level_9'                => true,
+				'level_8'                => true,
+				'level_7'                => true,
+				'level_6'                => true,
+				'level_5'                => true,
+				'level_4'                => true,
+				'level_3'                => true,
+				'level_2'                => true,
+				'level_1'                => true,
+				'level_0'                => true,
+
+				// populate_roles_210
+				'edit_others_pages'      => true,
+				'edit_published_pages'   => true,
+				'publish_pages'          => true,
+				'delete_pages'           => true,
+				'delete_others_pages'    => true,
+				'delete_published_pages' => true,
+				'delete_posts'           => true,
+				'delete_others_posts'    => true,
+				'delete_published_posts' => true,
+				'delete_private_posts'   => true,
+				'edit_private_posts'     => true,
+				'read_private_posts'     => true,
+				'delete_private_pages'   => true,
+				'edit_private_pages'     => true,
+				'read_private_pages'     => true,
+				'delete_users'           => true,
+				'create_users'           => true,
+
+				//populate_roles_230
+				'unfiltered_upload'      => true,
+
+				//populate_roles_250
+				'edit_dashboard'         => true,
+
+				//populate_roles_260
+				'update_plugins'         => true,
+				'delete_plugins'         => true,
+
+				//populate_roles_270
+				'install_plugins'        => true,
+				'update_themes'          => true,
+
+				//populate_roles_280
+				'install_themes'         => true,
+
+				//populate_roles_300
+				'update_core'            => true,
+				'list_users'             => true,
+				'remove_users'           => true,
+				'promote_users'          => true,
+				'edit_theme_options'     => true,
+				'delete_themes'          => true,
+				'export'                 => true
+
+			);
+		} elseif ( 'editor' == $role_key ) {
+			$capabilities = array(
+				// populate_roles_160
+				'moderate_comments'      => true,
+				'manage_categories'      => true,
+				'manage_links'           => true,
+				'upload_files'           => true,
+				'unfiltered_html'        => true,
+				'edit_posts'             => true,
+				'edit_others_posts'      => true,
+				'edit_published_posts'   => true,
+				'publish_posts'          => true,
+				'edit_pages'             => true,
+				'read'                   => true,
+				'level_7'                => true,
+				'level_6'                => true,
+				'level_5'                => true,
+				'level_4'                => true,
+				'level_3'                => true,
+				'level_2'                => true,
+				'level_1'                => true,
+				'level_0'                => true,
+
+				// populate_roles_210
+				'edit_others_pages'      => true,
+				'edit_published_pages'   => true,
+				'publish_pages'          => true,
+				'delete_pages'           => true,
+				'delete_others_pages'    => true,
+				'delete_published_pages' => true,
+				'delete_posts'           => true,
+				'delete_others_posts'    => true,
+				'delete_published_posts' => true,
+				'delete_private_posts'   => true,
+				'edit_private_posts'     => true,
+				'read_private_posts'     => true,
+				'delete_private_pages'   => true,
+				'edit_private_pages'     => true,
+				'read_private_pages'     => true,
+
+			);
+
+		} elseif ( 'author' == $role_key ) {
+			$capabilities = array(
+				// populate_roles_160
+				'upload_files'           => true,
+				'edit_posts'             => true,
+				'edit_published_posts'   => true,
+				'publish_posts'          => true,
+				'read'                   => true,
+				'level_2'                => true,
+				'level_1'                => true,
+				'level_0'                => true,
+
+				// populate_roles_210
+				'delete_posts'           => true,
+				'delete_published_posts' => true
+			);
+		} elseif ( 'contributor' == $role_key ) {
+			$capabilities = array(
+				// populate_roles_160
+				'edit_posts'   => true,
+				'read'         => true,
+				'level_1'      => true,
+				'level_0'      => true,
+
+				// populate_roles_210
+				'delete_posts' => true
+			);
+		} elseif ( 'subscriber' == $role_key ) {
+			$capabilities = array(
+				// populate_roles_160
+				'read'    => true,
+				'level_0' => true
+			);
+		}
+		return $capabilities;
 	}
 }
 
