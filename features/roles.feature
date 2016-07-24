@@ -17,6 +17,13 @@ Feature: Manage WordPress roles
       """
 
   Scenario: Resetting a role
+    When I run `wp role reset author --dry-run`
+    Then STDOUT should be:
+      """
+      No changes necessary for 'author' role.
+      Success: Role didn't need resetting.
+      """
+
     When I run `wp role reset author`
     Then STDOUT should be:
       """
@@ -25,11 +32,27 @@ Feature: Manage WordPress roles
       """
 
     When I run `wp cap remove author read`
+    And I run `wp role reset author --dry-run`
+    Then STDOUT should be:
+      """
+      1 capabilities will restore and 0 capabilities will remove from 'author' role.
+      Success: Role reset.
+      """
+
+    When I run `wp cap remove author read`
     And I run `wp role reset author`
     Then STDOUT should be:
       """
-      Restored 1 capabilities to and removed 0 capabilities from 'author' role.
+      Restored 1 capabilities and removed 0 capabilities from 'author' role.
       Success: Role reset.
+      """
+
+    When I run `wp role reset author editor --dry-run`
+    Then STDOUT should be:
+      """
+      No changes necessary for 'author' role.
+      No changes necessary for 'editor' role.
+      Success: No roles needed resetting.
       """
 
     When I run `wp role reset author editor`
@@ -41,12 +64,32 @@ Feature: Manage WordPress roles
       """
 
     When I run `wp cap remove author read`
+    And I run `wp role reset author editor --dry-run`
+    Then STDOUT should be:
+      """
+      1 capabilities will restore and 0 capabilities will remove from 'author' role.
+      No changes necessary for 'editor' role.
+      Success: 1 of 2 roles reset.
+      """
+
+    When I run `wp cap remove author read`
     And I run `wp role reset author editor`
     Then STDOUT should be:
       """
-      Restored 1 capabilities to and removed 0 capabilities from 'author' role.
+      Restored 1 capabilities and removed 0 capabilities from 'author' role.
       No changes necessary for 'editor' role.
       Success: 1 of 2 roles reset.
+      """
+
+    When I run `wp role reset --all --dry-run`
+    Then STDOUT should be:
+      """
+      No changes necessary for 'administrator' role.
+      No changes necessary for 'editor' role.
+      No changes necessary for 'author' role.
+      No changes necessary for 'contributor' role.
+      No changes necessary for 'subscriber' role.
+      Success: No roles needed resetting.
       """
 
     When I run `wp role reset --all`
@@ -73,6 +116,28 @@ Feature: Manage WordPress roles
       Success: No roles needed resetting.
       """
 
+    When I run `wp role reset --all --dry-run`
+    Then STDOUT should be:
+      """
+      Custom role 'custom-role' not affected.
+      No changes necessary for 'administrator' role.
+      No changes necessary for 'editor' role.
+      No changes necessary for 'author' role.
+      No changes necessary for 'contributor' role.
+      No changes necessary for 'subscriber' role.
+      Success: No roles needed resetting.
+      """
+
+    When I try `wp role reset custom-role --dry-run`
+    Then STDERR should contain:
+      """
+      Error: Must specify a default role to reset.
+      """
+    And STDOUT should contain:
+      """
+      Custom role 'custom-role' not affected.
+      """
+
     When I try `wp role reset custom-role`
     Then STDERR should contain:
       """
@@ -81,6 +146,14 @@ Feature: Manage WordPress roles
     And STDOUT should contain:
       """
       Custom role 'custom-role' not affected.
+      """
+
+    When I run `wp role reset custom-role author --dry-run`
+    Then STDOUT should be:
+      """
+      Custom role 'custom-role' not affected.
+      No changes necessary for 'author' role.
+      Success: Role didn't need resetting.
       """
 
     When I run `wp role reset custom-role author`
@@ -92,11 +165,20 @@ Feature: Manage WordPress roles
       """
 
     When I run `wp cap remove author read`
+    And I run `wp role reset custom-role author --dry-run`
+    Then STDOUT should be:
+      """
+      Custom role 'custom-role' not affected.
+      1 capabilities will restore and 0 capabilities will remove from 'author' role.
+      Success: Role reset.
+      """
+
+    When I run `wp cap remove author read`
     And I run `wp role reset custom-role author`
     Then STDOUT should be:
       """
       Custom role 'custom-role' not affected.
-      Restored 1 capabilities to and removed 0 capabilities from 'author' role.
+      Restored 1 capabilities and removed 0 capabilities from 'author' role.
       Success: Role reset.
       """
 

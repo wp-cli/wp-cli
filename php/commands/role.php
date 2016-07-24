@@ -276,7 +276,9 @@ class Role_Command extends WP_CLI_Command {
 				}
 				$args[]= $role;
 			}
-			populate_roles();
+			if ( !$this->dry_run ) {
+				populate_roles();
+			}
 			$not_affected_roles = array_diff( $all_roles, $default_roles );
 			if ( ! empty( $not_affected_roles ) ) {
 				foreach ( $not_affected_roles as $not_affected_role ) {
@@ -466,6 +468,9 @@ class Role_Command extends WP_CLI_Command {
 				'export'                 => true
 
 			);
+			if ( \WP_CLI\Utils\wp_version_compare( '4.4', '<' ) ) {
+				$capabilities[ "add_users" ] = true;
+			}
 		} elseif ( 'editor' == $role_key ) {
 			$capabilities = array(
 				// populate_roles_160
