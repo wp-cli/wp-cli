@@ -1032,22 +1032,22 @@ class Runner {
 		}
 
 		if ( $this->config['skip-themes'] ) {
-			$this->add_wp_hook( 'setup_theme', array( $this, 'action_setup_theme_wp_cli_skip_themes' ), 999 );
+			WP_CLI::add_wp_hook( 'setup_theme', array( $this, 'action_setup_theme_wp_cli_skip_themes' ), 999 );
 		}
 
-		$this->add_wp_hook( 'wp_die_handler', function() { return '\WP_CLI\Utils\wp_die_handler'; } );
+		WP_CLI::add_wp_hook( 'wp_die_handler', function() { return '\WP_CLI\Utils\wp_die_handler'; } );
 
 		// Prevent code from performing a redirect
-		$this->add_wp_hook( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
+		WP_CLI::add_wp_hook( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
 
-		$this->add_wp_hook( 'nocache_headers', function( $headers ){
+		WP_CLI::add_wp_hook( 'nocache_headers', function( $headers ){
 			Utils\wp_not_installed();
 			return $headers;
 		});
 
 		// ALTERNATE_WP_CRON might trigger a redirect, which we can't handle
 		if ( defined( 'ALTERNATE_WP_CRON' ) && ALTERNATE_WP_CRON ) {
-			$this->add_wp_hook( 'muplugins_loaded', function() {
+			WP_CLI::add_wp_hook( 'muplugins_loaded', function() {
 				remove_action( 'init', 'wp_cron' );
 			});
 		}
@@ -1063,22 +1063,22 @@ class Runner {
 				'WPLANG' => '',
 			);
 			foreach ( $values as $key => $value ) {
-				$this->add_wp_hook( "pre_site_option_$key", function () use ( $values, $key ) {
+				WP_CLI::add_wp_hook( "pre_site_option_$key", function () use ( $values, $key ) {
 					return $values[ $key ];
 				} );
 			}
 		}
 
 		// Always permit operations against sites, regardless of status
-		$this->add_wp_hook( 'ms_site_check', '__return_true' );
+		WP_CLI::add_wp_hook( 'ms_site_check', '__return_true' );
 
 		// Always permit operations against WordPress, regardless of maintenance mode
-		$this->add_wp_hook( 'enable_maintenance_mode', function() {
+		WP_CLI::add_wp_hook( 'enable_maintenance_mode', function() {
 			return false;
 		});
 
 		// Use our own debug mode handling instead of WP core
-		$this->add_wp_hook( 'enable_wp_debug_mode_checks', function( $ret ) {
+		WP_CLI::add_wp_hook( 'enable_wp_debug_mode_checks', function( $ret ) {
 			Utils\wp_debug_mode();
 
 			// Check to see of wpdb is errored, instead of waiting for dead_db()
@@ -1092,19 +1092,19 @@ class Runner {
 		});
 
 		// Never load advanced-cache.php drop-in when WP-CLI is operating
-		$this->add_wp_hook( 'enable_loading_advanced_cache_dropin', function() {
+		WP_CLI::add_wp_hook( 'enable_loading_advanced_cache_dropin', function() {
 			return false;
 		});
 
 		// In a multisite install, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {
-			$this->add_wp_hook( 'ms_site_not_found', function( $current_site, $domain, $path ) {
+			WP_CLI::add_wp_hook( 'ms_site_not_found', function( $current_site, $domain, $path ) {
 				WP_CLI::error( "Site {$domain}{$path} not found." );
 			}, 10, 3 );
 		}
 
 		// The APC cache is not available on the command-line, so bail, to prevent cache poisoning
-		$this->add_wp_hook( 'muplugins_loaded', function() {
+		WP_CLI::add_wp_hook( 'muplugins_loaded', function() {
 			if ( $GLOBALS['_wp_using_ext_object_cache'] && class_exists( 'APC_Object_Cache' ) ) {
 				WP_CLI::warning( 'Running WP-CLI while the APC object cache is activated can result in cache corruption.' );
 				WP_CLI::confirm( 'Given the consequences, do you wish to continue?' );
@@ -1114,7 +1114,7 @@ class Runner {
 		// Handle --user parameter
 		if ( ! defined( 'WP_INSTALLING' ) ) {
 			$config = $this->config;
-			$this->add_wp_hook( 'init', function() use ( $config ) {
+			WP_CLI::add_wp_hook( 'init', function() use ( $config ) {
 				if ( isset( $config['user'] ) ) {
 					$fetcher = new \WP_CLI\Fetchers\User;
 					$user = $fetcher->get_check( $config['user']  );
@@ -1154,9 +1154,9 @@ class Runner {
 			'option_active_plugins',
 		);
 		foreach( $hooks as $hook ) {
-			$this->add_wp_hook( $hook, $wp_cli_filter_active_plugins, 999 );
+			WP_CLI::add_wp_hook( $hook, $wp_cli_filter_active_plugins, 999 );
 		}
-		$this->add_wp_hook( 'plugins_loaded', function() use ( $hooks, $wp_cli_filter_active_plugins ) {
+		WP_CLI::add_wp_hook( 'plugins_loaded', function() use ( $hooks, $wp_cli_filter_active_plugins ) {
 			foreach( $hooks as $hook ) {
 				remove_filter( $hook, $wp_cli_filter_active_plugins, 999 );
 			}
@@ -1197,91 +1197,11 @@ class Runner {
 			add_filter( $hook, $wp_cli_filter_active_theme, 999 );
 		}
 		// Clean up after the TEMPLATEPATH and STYLESHEETPATH constants are defined
-		$this->add_wp_hook( 'after_setup_theme', function() use ( $hooks, $wp_cli_filter_active_theme ) {
+		WP_CLI::add_wp_hook( 'after_setup_theme', function() use ( $hooks, $wp_cli_filter_active_theme ) {
 			foreach( $hooks as $hook ) {
 				remove_filter( $hook, $wp_cli_filter_active_theme, 999 );
 			}
 		}, 0 );
-	}
-
-	/**
-	 * Add a callback to a WordPress action or filter
-	 *
-	 * Essentially add_filter() without needing access to add_filter()
-	 */
-	private function add_wp_hook( $tag, $function_to_add, $priority = 10, $accepted_args = 1 ) {
-		global $wp_filter, $merged_filters;
-		$idx = $this->wp_hook_build_unique_id($tag, $function_to_add, $priority);
-		$wp_filter[$tag][$priority][$idx] = array('function' => $function_to_add, 'accepted_args' => $accepted_args);
-		unset( $merged_filters[ $tag ] );
-		return true;
-	}
-
-	/**
-	 * Remove a callback from a WordPress action or filter
-	 *
-	 * Essentially remove_filter() without needing access to remove_filter()
-	 */
-	private function remove_wp_hook( $tag, $function_to_add, $priority = 10, $accepted_args = 1 ) {
-		$function_to_remove = $this->wp_hook_build_unique_id( $tag, $function_to_remove, $priority );
-
-		$r = isset( $GLOBALS['wp_filter'][ $tag ][ $priority ][ $function_to_remove ] );
-
-		if ( true === $r ) {
-			unset( $GLOBALS['wp_filter'][ $tag ][ $priority ][ $function_to_remove ] );
-			if ( empty( $GLOBALS['wp_filter'][ $tag ][ $priority ] ) ) {
-				unset( $GLOBALS['wp_filter'][ $tag ][ $priority ] );
-			}
-			if ( empty( $GLOBALS['wp_filter'][ $tag ] ) ) {
-				$GLOBALS['wp_filter'][ $tag ] = array();
-			}
-			unset( $GLOBALS['merged_filters'][ $tag ] );
-		}
-
-		return $r;
-	}
-
-	/**
-	 * Build Unique ID for storage and retrieval.
-	 *
-	 * Essentially _wp_filter_build_unique_id() without needing access to _wp_filter_build_unique_id()
-	 */
-	private function wp_hook_build_unique_id( $tag, $function, $priority ) {
-		global $wp_filter;
-		static $filter_id_count = 0;
-
-		if ( is_string($function) )
-			return $function;
-
-		if ( is_object($function) ) {
-			// Closures are currently implemented as objects
-			$function = array( $function, '' );
-		} else {
-			$function = (array) $function;
-		}
-
-		if (is_object($function[0]) ) {
-			// Object Class Calling
-			if ( function_exists('spl_object_hash') ) {
-				return spl_object_hash($function[0]) . $function[1];
-			} else {
-				$obj_idx = get_class($function[0]).$function[1];
-				if ( !isset($function[0]->wp_filter_id) ) {
-					if ( false === $priority )
-						return false;
-					$obj_idx .= isset($wp_filter[$tag][$priority]) ? count((array)$wp_filter[$tag][$priority]) : $filter_id_count;
-					$function[0]->wp_filter_id = $filter_id_count;
-					++$filter_id_count;
-				} else {
-					$obj_idx .= $function[0]->wp_filter_id;
-				}
-
-				return $obj_idx;
-			}
-		} elseif ( is_string( $function[0] ) ) {
-			// Static Calling
-			return $function[0] . '::' . $function[1];
-		}
 	}
 
 	/**
