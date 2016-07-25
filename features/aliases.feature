@@ -107,6 +107,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp cli alias`
     Then STDOUT should be YAML containing:
       """
+      @all: Run command against every registered alias.
       @testdir:
         path: testdir
       """
@@ -114,7 +115,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp cli alias --format=json`
     Then STDOUT should be JSON containing:
       """
-      {"@testdir":{"path":"testdir"}}
+      {"@all":"Run command against every registered alias.","@testdir":{"path":"testdir"}}
       """
 
   Scenario: Defining a project alias completely overrides a global alias
