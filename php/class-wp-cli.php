@@ -257,6 +257,73 @@ class WP_CLI {
 	}
 
 	/**
+	 * Add a callback to a WordPress action or filter.
+	 *
+	 * `add_action()` without needing access to `add_action()`. If WordPress is
+	 * already loaded though, you should use `add_action()` (and `add_filter()`)
+	 * instead.
+	 *
+	 * @access public
+	 * @category Registration
+	 *
+	 * @param string $tag Named WordPress action or filter.
+	 * @param mixed $function_to_add Callable to execute when the action or filter is evaluated.
+	 * @param integer $priority Priority to add the callback as.
+	 * @param integer $accepted_args Number of arguments to pass to callback.
+	 * @return true
+	 */
+	public static function add_wp_hook( $tag, $function_to_add, $priority = 10, $accepted_args = 1 ) {
+		global $wp_filter, $merged_filters;
+		$idx = self::wp_hook_build_unique_id( $tag, $function_to_add, $priority );
+		$wp_filter[$tag][$priority][$idx] = array('function' => $function_to_add, 'accepted_args' => $accepted_args);
+		unset( $merged_filters[ $tag ] );
+		return true;
+	}
+
+	/**
+	 * Build Unique ID for storage and retrieval.
+	 *
+	 * Essentially _wp_filter_build_unique_id() without needing access to _wp_filter_build_unique_id()
+	 */
+	private static function wp_hook_build_unique_id( $tag, $function, $priority ) {
+		global $wp_filter;
+		static $filter_id_count = 0;
+
+		if ( is_string($function) )
+			return $function;
+
+		if ( is_object($function) ) {
+			// Closures are currently implemented as objects
+			$function = array( $function, '' );
+		} else {
+			$function = (array) $function;
+		}
+
+		if (is_object($function[0]) ) {
+			// Object Class Calling
+			if ( function_exists('spl_object_hash') ) {
+				return spl_object_hash($function[0]) . $function[1];
+			} else {
+				$obj_idx = get_class($function[0]).$function[1];
+				if ( !isset($function[0]->wp_filter_id) ) {
+					if ( false === $priority )
+						return false;
+					$obj_idx .= isset($wp_filter[$tag][$priority]) ? count((array)$wp_filter[$tag][$priority]) : $filter_id_count;
+					$function[0]->wp_filter_id = $filter_id_count;
+					++$filter_id_count;
+				} else {
+					$obj_idx .= $function[0]->wp_filter_id;
+				}
+
+				return $obj_idx;
+			}
+		} elseif ( is_string( $function[0] ) ) {
+			// Static Calling
+			return $function[0] . '::' . $function[1];
+		}
+	}
+
+	/**
 	 * Register a command to WP-CLI.
 	 *
 	 * WP-CLI supports using any callable class, function, or closure as a
