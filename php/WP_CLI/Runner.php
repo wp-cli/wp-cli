@@ -719,7 +719,7 @@ class Runner {
 
 		$this->check_root();
 		if ( $this->alias ) {
-			if ( '@all' === $this->alias && is_string( $this->aliases['@all'] ) ) {
+			if ( '@all' === $this->alias && isset( $this->aliases['@all'] ) && is_string( $this->aliases['@all'] ) ) {
 				if ( 0 === count( $this->aliases ) ) {
 					WP_CLI::error( "Cannot use '@all' when no aliases are registered." );
 				}
