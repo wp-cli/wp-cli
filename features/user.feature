@@ -286,3 +286,12 @@ Feature: Manage WordPress users
       """
       My\New\User
       """
+
+  Scenario: Make sure WordPress sends, or doesn't send, notification emails upon user creation
+    Given a WP install
+
+    When I run `wp user create notifeduser notifieduser@example.com --display_name="Notified User" --send-email`
+    Then an email should be sent to "notifieduser@example.com"
+
+    When I run `wp user create notnotified notnotified@example.com --display_name="Not Notified"`
+    Then an email is not sent to "notnotified@example.com"
