@@ -327,6 +327,12 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$user->role = \WP_CLI\Utils\get_flag_value( $assoc_args, 'role', get_option('default_role') );
 		self::validate_role( $user->role );
+		
+		// Don't send emails if --send-email is not given.
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
+			add_filter( 'send_password_change_email', '__return_false' );
+			add_filter( 'send_email_change_email', '__return_false' );
+		}
 
 		if ( is_multisite() ) {
 			$ret = wpmu_validate_user_signup( $user->user_login, $user->user_email );
