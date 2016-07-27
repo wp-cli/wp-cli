@@ -35,7 +35,7 @@ Feature: Manage widgets in WordPress sidebar
     When I run `wp widget deactivate meta-2`
     Then STDOUT should be:
     """
-    Success: Widget(s) deactivated.
+    Success: 1 widget deactivated.
     """
 
     When I run `wp widget list sidebar-1 --fields=name,id,position`
