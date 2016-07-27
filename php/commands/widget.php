@@ -24,7 +24,7 @@
  *
  *     # Delete one or more widgets entirely
  *     $ wp widget delete calendar-2 archive-1
- *     Success: Widget(s) removed from sidebar.
+ *     Success: 2 widgets removed from sidebar.
  */
 
 class Widget_Command extends WP_CLI_Command {
@@ -258,11 +258,13 @@ class Widget_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp widget deactivate recent-comments-2
-	 *     Success: Widget(s) deactivated.
+	 *     Success: 1 widget deactivated.
 	 *
 	 * @subcommand deactivate
 	 */
 	public function deactivate( $args, $assoc_args ) {
+
+		$count = 0;
 
 		foreach( $args as $widget_id ) {
 			$this->validate_sidebar_widget( $widget_id );
@@ -275,9 +277,12 @@ class Widget_Command extends WP_CLI_Command {
 
 			$this->move_sidebar_widget( $widget_id, $sidebar_id, 'wp_inactive_widgets', $sidebar_index, 0 );
 
+			$count++;
+
 		}
 
-		WP_CLI::success( "Widget(s) deactivated." );
+		$success_message = ( 1 === $count ) ? '%d widget deactivated.' : '%d widgets deactivated.';
+		WP_CLI::success( sprintf( $success_message, $count ) );
 	}
 
 	/**
@@ -291,7 +296,7 @@ class Widget_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp widget delete recent-comments-2
-	 *     Success: Widget(s) removed from sidebar.
+	 *     Success: 1 widget removed from sidebar.
 	 *
 	 * @subcommand delete
 	 */
