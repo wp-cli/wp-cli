@@ -124,6 +124,10 @@ Feature: Manage WordPress menus
     Then STDOUT should not be empty
 
     When I run `wp menu item delete {CUSTOM_ITEM_ID}`
+    Then STDOUT should be:
+    """
+    Success: 1 menu item deleted.
+    """
     And I run `wp menu item list sidebar-menu --format=count`
     Then STDOUT should be:
     """
@@ -131,6 +135,10 @@ Feature: Manage WordPress menus
     """
 
     When I run `wp menu item delete {POST_ITEM_ID} {TERM_ITEM_ID}`
+    Then STDOUT should be:
+    """
+    Success: 2 menu items deleted.
+    """
     And I run `wp menu item list sidebar-menu --format=count`
     Then STDOUT should be:
     """
