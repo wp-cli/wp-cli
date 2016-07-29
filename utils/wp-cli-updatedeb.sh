@@ -31,7 +31,7 @@ Architecture: all
 Maintainer: Daniel Bachhuber <daniel@handbuilt.co>
 Section: php
 Priority: optional
-Depends: php5-cli, php5-mysql | php5-mysqlnd, mysql-client | mariadb-client
+Depends: php5-cli | php7.0-cli, php5-mysql | php5-mysqlnd | php7.0-mysql, mysql-client | mariadb-client
 Homepage: http://wp-cli.org/
 Description: wp-cli is a set of command-line tools for managing
  WordPress installations. You can update plugins, set up multisite
