@@ -217,7 +217,7 @@ class Menu_Command extends WP_CLI_Command {
  *
  *     # Delete menu item
  *     $ wp menu item delete 45
- *     Success: Menu item(s) deleted.
+ *     Success: 1 menu item deleted.
  */
 class Menu_Item_Command extends WP_CLI_Command {
 
@@ -550,12 +550,14 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp menu item delete 45
-	 *     Success: Menu item(s) deleted.
+	 *     Success: 1 menu item deleted.
 	 *
 	 * @subcommand delete
 	 */
 	public function delete( $args, $_ ) {
 		global $wpdb;
+
+		$count = 0;
 
 		foreach( $args as $arg ) {
 
@@ -574,8 +576,14 @@ class Menu_Item_Command extends WP_CLI_Command {
 				}
 			}
 
+			if ( false !== $ret ) {
+				$count++;
+			}
+
 		}
-		WP_CLI::success( "Menu item(s) deleted." );
+
+		$success_message = ( 1 === $count ) ? '%d menu item deleted.' : '%d menu items deleted.';
+		WP_CLI::success( sprintf( $success_message, $count ) );
 
 	}
 
