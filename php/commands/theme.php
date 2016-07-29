@@ -723,15 +723,15 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
  *
  * ## EXAMPLES
  *
- *     # Set theme mod
+ *     # Set theme mod.
  *     $ wp theme mod set background_color 000000
  *     Success: Theme mod background_color set to 000000
  *
- *     # Get single theme mod in JSON format
+ *     # Get single theme mod in JSON format.
  *     $ wp theme mod get background_color --format=json
  *     [{"key":"background_color","value":"dd3333"}]
  *
- *     # Remove all theme mods
+ *     # Remove all theme mods.
  *     $ wp theme mod remove --all
  *     Success: Theme mods removed.
  */
@@ -836,19 +836,19 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 * : One or more mods to remove.
 	 *
 	 * [--all]
-	 * : Remove all theme mods
+	 * : Remove all theme mods.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Remove all theme mods
+	 *     # Remove all theme mods.
 	 *     $ wp theme mod remove --all
 	 *     Success: Theme mods removed.
 	 *
-	 *     # Remove single theme mods
+	 *     # Remove single theme mod.
 	 *     $ wp theme mod remove background_color
-	 *     Success: 1 mods removed.
+	 *     Success: 1 mod removed.
 	 *
-	 *     # Remove multiple theme mods
+	 *     # Remove multiple theme mods.
 	 *     $ wp theme mod remove background_color header_textcolor
 	 *     Success: 2 mods removed.
 	 */
@@ -868,7 +868,9 @@ class Theme_Mod_command extends WP_CLI_Command {
 			remove_theme_mod( $mod );
 		}
 
-		WP_CLI::success( sprintf( '%d mods removed.', count( $args ) ) );
+		$count = count( $args );
+		$success_message = ( 1 === $count ) ? '%d mod removed.' : '%d mods removed.';
+		WP_CLI::success( sprintf( $success_message, $count ) );
 
 	}
 
