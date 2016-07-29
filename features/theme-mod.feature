@@ -53,7 +53,7 @@ Feature: Manage WordPress theme mods
     When I run `wp theme mod remove background_color`
     Then STDOUT should be:
       """
-      Success: 1 mods removed.
+      Success: 1 mod removed.
       """
 
     When I run `wp theme mod remove background_color header_textcolor`
