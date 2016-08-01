@@ -16,4 +16,5 @@ Feature: Find version for WordPress install
       WordPress version: 4.4.2
       Database revision: 35700
       TinyMCE version:   4.208 (4208-20151113)
+      Language:          en_US
       """
