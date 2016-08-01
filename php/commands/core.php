@@ -945,9 +945,12 @@ EOT;
 			}
 
 			echo \WP_CLI\Utils\mustache_render( 'versions.mustache', array(
-				'wp-version'    => $details[ 'wp_version' ],
-				'db-version'    => $details[ 'wp_db_version' ],
-				'local-package' => ! empty( $details[ 'wp_local_package' ] ) ? $details[ 'wp_local_package' ] : 'en_US',
+				'wp-version'    => $details['wp_version'],
+				'db-version'    => $details['wp_db_version'],
+				'local-package' => ( empty( $details['wp_local_package'] ) ?
+					'en_US'
+					: $details['wp_local_package']
+				),
 				'mce-version'   => ( $human_readable_tiny_mce ?
 					"$human_readable_tiny_mce ({$details['tinymce_version']})"
 					: $details['tinymce_version']
