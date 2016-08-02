@@ -471,8 +471,8 @@ class Runner {
 			unset( $assoc_args['admin_name'] );
 		}
 
-		// site --site_id=  ->  site --network_id=
-		if ( count( $args ) > 0 && 'site' == $args[0] && isset( $assoc_args['site_id'] ) ) {
+		// site create --site_id=  ->  site create --network_id=
+		if ( count( $args ) >= 2 && 'site' === $args[0] && 'create' === $args[1] && isset( $assoc_args['site_id'] ) ) {
 			$assoc_args['network_id'] = $assoc_args['site_id'];
 			unset( $assoc_args['site_id'] );
 		}

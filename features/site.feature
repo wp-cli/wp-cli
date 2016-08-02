@@ -27,6 +27,9 @@ Feature: Manage sites in a multisite installation
       1 2
       """
 
+    When I run `wp site list --site_id=2 --format=ids`
+    Then STDOUT should be empty
+
     When I run `wp --url=first.example.com option get home`
     Then STDOUT should be:
       """
