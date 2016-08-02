@@ -89,6 +89,8 @@ class Menu_Command extends WP_CLI_Command {
 	 */
 	public function delete( $args, $_ ) {
 
+		$count = 0;
+
 		foreach( $args as $arg ) {
 
 			$ret = wp_delete_nav_menu( $arg );
@@ -98,10 +100,16 @@ class Menu_Command extends WP_CLI_Command {
 				WP_CLI::warning( "Error deleting menu." );
 
 			}
+			else {
+
+				$count++;
+
+			}
 
 		}
 
-		WP_CLI::success( "Menu(s) deleted." );
+		$success_message = ( 1 === $count ) ? '%d menu deleted.' : '%d menus deleted.';
+		WP_CLI::success( sprintf( $success_message, $count ) );
 
 	}
 
