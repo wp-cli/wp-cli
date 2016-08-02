@@ -12,11 +12,15 @@ Feature: Manage WordPress menus
       | My Menu    | my-menu    |
 
     When I run `wp menu delete "My Menu"`
+    Then STDOUT should be:
+      """
+      Success: 1 menu deleted.
+      """
     And I run `wp menu list --format=count`
     Then STDOUT should be:
-    """
-    0
-    """
+      """
+      0
+      """
 
     When I run `wp menu create "First Menu"`
     And I run `wp menu create "Second Menu"`
@@ -27,18 +31,22 @@ Feature: Manage WordPress menus
       | Second Menu    | second-menu    |
 
     When I run `wp menu delete "First Menu" "Second Menu"`
+    Then STDOUT should be:
+      """
+      Success: 2 menus deleted.
+      """
     And I run `wp menu list --format=count`
     Then STDOUT should be:
-    """
-    0
-    """
+      """
+      0
+      """
 
     When I run `wp menu create "First Menu"`
     And I run `wp menu list --format=ids`
     Then STDOUT should be:
-    """
-    5
-    """
+      """
+      5
+      """
 
   Scenario: Assign / remove location from a menu
 
@@ -55,11 +63,11 @@ Feature: Manage WordPress menus
       | slug            | locations       |
       | primary-menu    | primary         |
 
-     When I run `wp menu location list --format=ids`
-     Then STDOUT should be:
-     """
-     primary
-     """
+    When I run `wp menu location list --format=ids`
+    Then STDOUT should be:
+      """
+      primary
+      """
 
     When I run `wp menu location remove primary-menu primary`
     And I run `wp menu list --fields=slug,locations`
@@ -125,25 +133,25 @@ Feature: Manage WordPress menus
 
     When I run `wp menu item delete {CUSTOM_ITEM_ID}`
     Then STDOUT should be:
-    """
-    Success: 1 menu item deleted.
-    """
+      """
+      Success: 1 menu item deleted.
+      """
     And I run `wp menu item list sidebar-menu --format=count`
     Then STDOUT should be:
-    """
-    2
-    """
+      """
+      2
+      """
 
     When I run `wp menu item delete {POST_ITEM_ID} {TERM_ITEM_ID}`
     Then STDOUT should be:
-    """
-    Success: 2 menu items deleted.
-    """
+      """
+      Success: 2 menu items deleted.
+      """
     And I run `wp menu item list sidebar-menu --format=count`
     Then STDOUT should be:
-    """
-    0
-    """
+      """
+      0
+      """
 
   Scenario: Preserve grandparent item as ancestor of child item when parent item is removed.
 
