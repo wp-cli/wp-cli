@@ -105,7 +105,7 @@ source /FULL/PATH/TO/wp-completion.bash
 
 Don't forget to run `source ~/.bash_profile` afterwards.
 
-If using zsh for your shell, you may need to do the following:
+If using zsh for your shell, you may need to load and start `bashcompinit`:
 
 ```
 autoload bashcompinit
