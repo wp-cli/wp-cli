@@ -447,19 +447,19 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Generate posts
+	 *     # Generate posts.
 	 *     $ wp post generate --count=10 --post_type=page --post_date=1999-01-04
 	 *     Generating posts  100% [================================================] 0:01 / 0:04
 	 *
-	 *     # Generate posts with fetched content
+	 *     # Generate posts with fetched content.
 	 *     $ curl http://loripsum.net/api/5 | wp post generate --post_content --count=10
 	 *       % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
 	 *                                      Dload  Upload   Total   Spent    Left  Speed
 	 *     100  2509  100  2509    0     0    616      0  0:00:04  0:00:04 --:--:--   616
 	 *     Generating posts  100% [================================================] 0:01 / 0:04
 	 *
-	 *     # Add meta to every generated post
-	 *     $ wp post generate --format=ids | xargs -0 -d ' ' -I % wp post meta add % foo bar
+	 *     # Add meta to every generated posts.
+	 *     $ wp post generate --format=ids | xargs -d ' ' -I % wp post meta add % foo bar
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
