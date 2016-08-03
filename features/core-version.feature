@@ -24,7 +24,7 @@ Feature: Find version for WordPress install
     And an empty cache
 
     When I run `wp core download --version=4.4.2 --locale=de_DE`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       Success: WordPress downloaded.
       """
