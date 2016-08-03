@@ -105,6 +105,14 @@ source /FULL/PATH/TO/wp-completion.bash
 
 Don't forget to run `source ~/.bash_profile` afterwards.
 
+If using zsh for your shell, you may need to load and start `bashcompinit` before sourcing. Put the following in your `.zshrc`:
+
+```
+autoload bashcompinit
+bashcompinit
+source /FULL/PATH/TO/wp-completion.bash
+```
+
 ## Support
 
 WP-CLI's maintainers and project contributors do their best to respond to all new issues in a timely manner. To make the best use of their volunteered time, please first see if there may be an answer to your question in one of the following resources:
