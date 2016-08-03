@@ -187,9 +187,9 @@ class Option_Command extends WP_CLI_Command {
 	 *     +-------------+--------------+
 	 *
 	 *     # Delete all options begining with "theme_mods_"
-	 *     $ wp option list --search="theme_mods_*" --field=option_name | xargs -0 -d '\n' -I % wp option delete %
+	 *     $ wp option list --search="theme_mods_*" --field=option_name | xargs -I % wp option delete %
 	 *     Success: Deleted 'theme_mods_twentysixteen' option.
-	 *     Success: Deleted 'theme_mods_twentfifteen' option.
+	 *     Success: Deleted 'theme_mods_twentyfifteen' option.
 	 *     Success: Deleted 'theme_mods_twentyfourteen' option.
 	 *
 	 * @subcommand list
