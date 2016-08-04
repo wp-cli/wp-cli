@@ -930,6 +930,7 @@ EOT;
 	 *     WordPress version: 4.5.2
 	 *     Database revision: 36686
 	 *     TinyMCE version:   4.310 (4310-20160418)
+	 *     Package language:  en_US
 	 *
 	 * @when before_wp_load
 	 */
@@ -945,9 +946,13 @@ EOT;
 			}
 
 			echo \WP_CLI\Utils\mustache_render( 'versions.mustache', array(
-				'wp-version'  => $details['wp_version'],
-				'db-version'  => $details['wp_db_version'],
-				'mce-version' => ( $human_readable_tiny_mce ?
+				'wp-version'    => $details['wp_version'],
+				'db-version'    => $details['wp_db_version'],
+				'local-package' => ( empty( $details['wp_local_package'] ) ?
+					'en_US'
+					: $details['wp_local_package']
+				),
+				'mce-version'   => ( $human_readable_tiny_mce ?
 					"$human_readable_tiny_mce ({$details['tinymce_version']})"
 					: $details['tinymce_version']
 				)
