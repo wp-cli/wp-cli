@@ -8,8 +8,8 @@ return array(
 	),
 
 	'ssh' => array(
-		'runtime' => '=[<user>]@<host>[:<port>][<path>]',
-		'file' => '[<user>]@<host>[:<port>][<path>]',
+		'runtime' => '=[<user>@]<host>[:<port>][<path>]',
+		'file' => '[<user>@]<host>[:<port>][<path>]',
 		'desc' => 'Perform operation against a remote server over SSH.',
 	),
 
