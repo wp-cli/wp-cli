@@ -578,6 +578,39 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Create the WordPress tables in the database using WP_ADMIN_PASSWORD from ENV.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --url=<url>
+	 * : The address of the new site.
+	 *
+	 * --title=<site-title>
+	 * : The title of the new site.
+         *
+	 * --title=<site-title>
+	 * : The title of the new site.
+         *
+	 * --admin_user=<username>
+	 * : The name of the admin user.
+	 *
+	 * --admin_email=<email>
+	 * : The email address for the admin user.
+	 * ## EXAMPLES
+	 *
+	 *     WP_ADMIN_PASSWORD=mypassword wp core secure_install --url=url --title=title --admin_user=username --admin_email=email
+	 *
+	 */
+	public function secure_install( $args, $assoc_args ) {
+                if(!empty(getenv('WP_ADMIN_PASSWORD'))) {
+			$assoc_args['admin_password'] = getenv('WP_ADMIN_PASSWORD');
+                } else {
+			\WP_CLI::error( "\nWP_ADMIN_PASSWORD must be defined in ENV" );
+		}
+		$this->install($args, $assoc_args);
+	}
+
+	/**
 	 * Transform a single-site install into a multi-site install.
 	 *
 	 * For those using WordPress with Apache, remember to update the `.htaccess`
