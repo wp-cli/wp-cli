@@ -33,7 +33,7 @@
  * @package wp-cli
  */
 class Role_Command extends WP_CLI_Command {
-	private $dry_run;
+
 	private $fields = array(
 		'name',
 		'role'
@@ -260,9 +260,13 @@ class Role_Command extends WP_CLI_Command {
 		}
 
 		global $wp_roles;
-		$all_roles = array_keys( $wp_roles->roles );
-		$preserve_args = $args;
-		$this->dry_run         = \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' );
+		$all_roles      = array_keys( $wp_roles->roles );
+		$preserve_args  = $args;
+		$dry_run        = \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run' );
+		$alter_database = false;
+		if ( ! $dry_run ) {
+			$alter_database = true;
+		}
 
 		// get our default roles
 		$default_roles = $preserve = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' );
@@ -271,12 +275,12 @@ class Role_Command extends WP_CLI_Command {
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			foreach( $default_roles as $role ) {
 				$before[ $role ] = get_role( $role );
-				if ( !$this->dry_run ) {
+				if ( $alter_database ) {
 					remove_role( $role );
 				}
 				$args[]= $role;
 			}
-			if ( !$this->dry_run ) {
+			if ( $alter_database ) {
 				populate_roles();
 			}
 			$not_affected_roles = array_diff( $all_roles, $default_roles );
@@ -292,7 +296,7 @@ class Role_Command extends WP_CLI_Command {
 				if ( false !== $key ) {
 					unset( $preserve[ $key ] );
 					$before[ $role_key ] = get_role( $role_key );
-					if ( !$this->dry_run ) {
+					if ( $alter_database ) {
 						remove_role( $role_key );
 					}
 				} else {
