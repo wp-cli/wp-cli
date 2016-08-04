@@ -16,6 +16,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	/**
 	 * List all metadata associated with an object.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <id>
 	 * : ID for the object.
 	 *
@@ -27,6 +29,16 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # List all metadata of the comment
+	 *     $ wp comment meta list 123
+	 *     +------------+-------------+-----------------------------------------+
+	 *     | comment_id | meta_key    | meta_value                              |
+	 *     +------------+-------------+-----------------------------------------+
+	 *     | 1          | description | Mary is an awesome WordPress developer. |
+	 *     +------------+-------------+-----------------------------------------+
 	 *
 	 * @subcommand list
 	 */
@@ -79,6 +91,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	/**
 	 * Get meta field value.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <id>
 	 * : The ID of the object.
 	 *
@@ -87,6 +101,12 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Get a metadata of the comment
+	 *     $ wp comment meta get 123 description
+	 *     Mary is an awesome WordPress developer.
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
@@ -104,6 +124,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	/**
 	 * Delete a meta field.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <id>
 	 * : The ID of the object.
 	 *
@@ -115,6 +137,12 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 *
 	 * [--all]
 	 * : Delete all meta for the object.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Delete a metadata of the comment
+	 *     $ wp comment meta delete 123 description
+	 *     Success: Deleted custom field.
 	 */
 	public function delete( $args, $assoc_args ) {
 		list( $object_id ) = $args;
@@ -170,6 +198,12 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 *
 	 * [--format=<format>]
 	 * : The serialization format for the value. Default is plaintext.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Add a metadata of the comment
+	 *     $ wp comment meta add 123 description "Mary is an awesome WordPress developer."
+	 *     Success: Added custom description.
 	 */
 	public function add( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
@@ -204,6 +238,12 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 *
 	 * [--format=<format>]
 	 * : The serialization format for the value. Default is plaintext.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Update a metadata of the comment
+	 *     $ wp comment meta update 123 description "Mary is an awesome WordPress developer."
+	 *     Success: Updated custom field 'description'.
 	 *
 	 * @alias set
 	 */
