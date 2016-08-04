@@ -7,21 +7,21 @@ Feature: Manage WordPress attachments
     When I run `wp media import 'http://wp-cli.org/behat-data/codeispoetry.png' --post_id=1`
     Then STDOUT should contain:
       """
-      Success: Imported file http://wp-cli.org/behat-data/codeispoetry.png
+      Success: Imported file 'http://wp-cli.org/behat-data/codeispoetry.png'
       """
 
   Scenario: Fail to import missing image
     When I try `wp media import gobbledygook.png`
     Then STDERR should contain:
       """
-      Unable to import file gobbledygook.png. Reason: File doesn't exist.
+      Unable to import file 'gobbledygook.png'. Reason: File doesn't exist.
       """
 
   Scenario: Fail to import missing image on Windows
     When I try `wp media import c:/path/gobbledygook.png`
     Then STDERR should contain:
       """
-      Unable to import file c:/path/gobbledygook.png. Reason: File doesn't exist.
+      Unable to import file 'c:/path/gobbledygook.png'. Reason: File doesn't exist.
       """
 
   Scenario: Import a file as attachment from a local image

@@ -5,7 +5,7 @@
  *
  * ## EXAMPLES
  *
- *     # Re-generate all thumbnails, without confirmation
+ *     # Re-generate all thumbnails, without confirmation.
  *     $ wp media regenerate --yes
  *     Found 3 images to regenerate.
  *     Regenerated thumbnails for "Sydney Harbor Bridge" (ID 760).
@@ -13,9 +13,9 @@
  *     Regenerated thumbnails for "Sunburst Over River" (ID 756).
  *     Success: Finished regenerating all images.
  *
- *     # Import a local image and set it to be the featured image for a post
+ *     # Import a local image and set it to be the featured image for a post.
  *     $ wp media import ~/Downloads/image.png --post_id=123 --title="A downloaded picture" --featured_image
- *     Success: Imported file /home/person/Downloads/image.png as attachment ID 1753 and attached to post 123 as featured image.
+ *     Success: Imported file '/home/person/Downloads/image.png' as attachment ID 1753 and attached to post 123 as featured image.
  *
  * @package wp-cli
  */
@@ -117,48 +117,48 @@ class Media_Command extends WP_CLI_Command {
 	 *     downloaded to a temp file before being sideloaded.
 	 *
 	 * [--post_id=<post_id>]
-	 * : ID of the post to attach the imported files to
+	 * : ID of the post to attach the imported files to.
 	 *
 	 * [--title=<title>]
-	 * : Attachment title (post title field)
+	 * : Attachment title (post title field).
 	 *
 	 * [--caption=<caption>]
-	 * : Caption for attachent (post excerpt field)
+	 * : Caption for attachent (post excerpt field).
 	 *
 	 * [--alt=<alt_text>]
-	 * : Alt text for image (saved as post meta)
+	 * : Alt text for image (saved as post meta).
 	 *
 	 * [--desc=<description>]
-	 * : "Description" field (post content) of attachment post
+	 * : "Description" field (post content) of attachment post.
 	 *
 	 * [--featured_image]
 	 * : If set, set the imported image as the Featured Image of the post its attached to.
 	 *
 	 * [--porcelain]
-	 * : Output just the new attachment id.
+	 * : Output just the new attachment ID.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Import all jpgs in the current user's "Pictures" directory, not attached to any post
+	 *     # Import all jpgs in the current user's "Pictures" directory, not attached to any post.
 	 *     $ wp media import ~/Pictures/**\/*.jpg
-	 *     Success: Imported file /home/person/Pictures/beautiful-youg-girl-in-ivy.jpg as attachment ID 1751.
-	 *     Success: Imported file /home/person/Pictures/fashion-girl.jpg as attachment ID 1752.
+	 *     Success: Imported file '/home/person/Pictures/beautiful-youg-girl-in-ivy.jpg' as attachment ID 1751.
+	 *     Success: Imported file '/home/person/Pictures/fashion-girl.jpg' as attachment ID 1752.
 	 *
-	 *     # Import a local image and set it to be the post thumbnail for a post
+	 *     # Import a local image and set it to be the post thumbnail for a post.
 	 *     $ wp media import ~/Downloads/image.png --post_id=123 --title="A downloaded picture" --featured_image
-	 *     Success: Imported file /home/person/Downloads/image.png as attachment ID 1753 and attached to post 123 as featured image.
+	 *     Success: Imported file '/home/person/Downloads/image.png' as attachment ID 1753 and attached to post 123 as featured image.
 	 *
-	 *     # Import a local image, but set it as the featured image for all posts
-	 *     # 1. Import the image and get its attachment ID
-	 *     # 2. Assign the attachment ID as the featured image for all posts
+	 *     # Import a local image, but set it as the featured image for all posts.
+	 *     # 1. Import the image and get its attachment ID.
+	 *     # 2. Assign the attachment ID as the featured image for all posts.
 	 *     $ ATTACHMENT_ID="$(wp media import ~/Downloads/image.png --porcelain)"
-	 *     $ wp post list --post_type=post --format=ids | xargs -0 -d ' ' -I % wp post meta add % _thumbnail_id $ATTACHMENT_ID
+	 *     $ wp post list --post_type=post --format=ids | xargs -d ' ' -I % wp post meta add % _thumbnail_id $ATTACHMENT_ID
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
 	 *
-	 *     # Import an image from the web
+	 *     # Import an image from the web.
 	 *     $ wp media import http://s.wordpress.org/style/images/wp-header-logo.png --title='The WordPress logo' --alt="Semantic personal publishing"
-	 *     Success: Imported file http://s.wordpress.org/style/images/wp-header-logo.png as attachment ID 1755.
+	 *     Success: Imported file 'http://s.wordpress.org/style/images/wp-header-logo.png' as attachment ID 1755.
 	 */
 	function import( $args, $assoc_args = array() ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
@@ -183,7 +183,7 @@ class Media_Command extends WP_CLI_Command {
 
 			if ( empty( $is_file_remote ) ) {
 				if ( !file_exists( $file ) ) {
-					WP_CLI::warning( "Unable to import file $file. Reason: File doesn't exist." );
+					WP_CLI::warning( "Unable to import file '$file'. Reason: File doesn't exist." );
 					break;
 				}
 				$tempfile = $this->_make_copy( $file );
@@ -227,7 +227,7 @@ class Media_Command extends WP_CLI_Command {
 			$success = media_handle_sideload( $file_array, $assoc_args['post_id'], $assoc_args['title'], $post_array );
 			if ( is_wp_error( $success ) ) {
 				WP_CLI::warning( sprintf(
-					'Unable to import file %s. Reason: %s',
+					"Unable to import file '%s'. Reason: %s",
 					$orig_filename, implode( ', ', $success->get_error_messages() )
 				) );
 				continue;
@@ -254,7 +254,7 @@ class Media_Command extends WP_CLI_Command {
 				WP_CLI::line( $success );
 			} else {
 				WP_CLI::success( sprintf(
-					'Imported file %s as attachment ID %d%s.',
+					"Imported file '%s' as attachment ID %d%s.",
 					$orig_filename, $success, $attachment_success_text
 				) );
 			}
