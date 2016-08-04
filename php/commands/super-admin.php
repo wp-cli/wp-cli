@@ -92,9 +92,10 @@ class Super_Admin_Command extends WP_CLI_Command {
 	 *     $ wp super-admin add superadmin2
 	 *     Success: Granted super-admin capabilities.
 	 */
-	public function add( $args, $_ ) {
+	public function add() {
+		$request = \WP_CLI\Request::get_from_argv();
 
-		$users = $this->fetcher->get_many( $args );
+		$users = $this->fetcher->get_many( $request->get_positional_args() );
 		$user_logins = wp_list_pluck( $users, 'user_login' );
 		$super_admins = self::get_admins();
 		$num_super_admins = count( $super_admins );
@@ -139,8 +140,9 @@ class Super_Admin_Command extends WP_CLI_Command {
 	 *     $ wp super-admin remove superadmin2
 	 *     Success: Revoked super-admin capabilities.
 	 */
-	public function remove( $args, $_ ) {
-		$users = $this->fetcher->get_many( $args );
+	public function remove() {
+		$request = \WP_CLI\Request::get_from_argv();
+		$users = $this->fetcher->get_many( $request->get_positional_args() );
 		$user_logins = wp_list_pluck( $users, 'user_login' );
 
 		$super_admins = self::get_admins();
