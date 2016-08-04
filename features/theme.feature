@@ -54,7 +54,7 @@ Feature: Manage WordPress themes
     Given a WP install
 
     When I run `wp theme install classic --activate`
-    And I run `wp theme list --field=name --status=inactive | xargs -0 -d '\n' -I % wp theme delete %`
+    And I run `wp theme list --field=name --status=inactive | xargs wp theme delete`
     And I run `wp theme status`
     Then STDOUT should be:
       """
