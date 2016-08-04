@@ -51,6 +51,16 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 * * version
 	 * * package
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core language list --fields=language,english_name,status
+	 *     +----------------+-------------------------+-------------+
+	 *     | language       | english_name            | status      |
+	 *     +----------------+-------------------------+-------------+
+	 *     | ar             | Arabic                  | uninstalled |
+	 *     | ary            | Moroccan Arabic         | uninstalled |
+	 *     | az             | Azerbaijani             | uninstalled |
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
@@ -110,6 +120,11 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 * [--activate]
 	 * : If set, the language will be activated immediately after install.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core language install  ja
+	 *     Success: Language installed.
+	 *
 	 * @subcommand install
 	 */
 	public function install( $args, $assoc_args ) {
@@ -141,6 +156,17 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 *
 	 * [--dry-run]
 	 * : Preview which translations would be updated.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core language update
+	 *     Updating 'Japanese' translation for Akismet 3.1.11...
+	 *     Downloading translation from https://downloads.wordpress.org/translation/plugin/akismet/3.1.11/ja.zip...
+	 *     Translation updated successfully.
+	 *     Updating 'Japanese' translation for Twenty Fifteen 1.5...
+	 *     Downloading translation from https://downloads.wordpress.org/translation/theme/twentyfifteen/1.5/ja.zip...
+	 *     Translation updated successfully.
+	 *     Success: Updated 2/2 translations.
 	 *
 	 * @subcommand update
 	 */
@@ -236,6 +262,11 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 *
 	 * <language>
 	 * : Language code to activate.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core language activate ja
+	 *     Success: Language activated.
 	 *
 	 * @subcommand activate
 	 */
@@ -366,6 +397,11 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 *
 	 * <language>
 	 * : Language code to uninstall.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core language uninstall ja
+	 *     Success: Language uninstalled.
 	 *
 	 * @subcommand uninstall
 	 */
