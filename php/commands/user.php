@@ -295,7 +295,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$user = new stdClass;
 
 		list( $user->user_login, $user->user_email ) = $args;
-		
+
 		$assoc_args = wp_slash( $assoc_args );
 
 		if ( username_exists( $user->user_login ) ) {
@@ -409,18 +409,27 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * [--count=<number>]
-	 * : How many users to generate. Default: 100
+	 * : How many users to generate?
+	 * ---
+	 * default: 100
+	 * ---
 	 *
 	 * [--role=<role>]
 	 * : The role of the generated users. Default: default role from WP
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: progress, ids. Default: ids.
+	 * : Render output in a particular format.
+	 * ---
+	 * default: progress
+	 * options:
+	 *   - progress
+	 *   - ids
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Add meta to every generated user
-	 *     $ wp user generate --format=ids --count=3 | xargs -0 -d ' ' -I % wp user meta add % foo bar
+	 *     # Add meta to every generated users.
+	 *     $ wp user generate --format=ids --count=3 | xargs -d ' ' -I % wp user meta add % foo bar
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
