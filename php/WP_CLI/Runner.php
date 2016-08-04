@@ -1139,12 +1139,20 @@ class Runner {
 			if ( ! is_array( $plugins ) ) {
 				return $plugins;
 			}
-			foreach( $plugins as $key => $plugin ) {
-				if ( Utils\is_plugin_skipped( $plugin ) ) {
-					unset( $plugins[ $key ] );
+			foreach( $plugins as $a => $b ) {
+				// active_sitewide_plugins stores plugin name as the key
+				if ( false !== strpos( current_filter(), 'active_sitewide_plugins' ) && Utils\is_plugin_skipped( $a ) ) {
+					unset( $plugins[ $a ] );
+				// active_plugins stores plugin name as the value
+				} else if ( false !== strpos( current_filter(), 'active_plugins' ) && Utils\is_plugin_skipped( $b ) ) {
+					unset( $plugins[ $a ] );
 				}
 			}
-			return array_values( $plugins );
+			// Reindex because active_plugins expects a numeric index
+			if ( false !== strpos( current_filter(), 'active_plugins' ) ) {
+				$plugins = array_values( $plugins );
+			}
+			return $plugins;
 		};
 
 		$hooks = array(
