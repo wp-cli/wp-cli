@@ -667,8 +667,136 @@ class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 		$comment = $fetcher->get_check( $object_id );
 		return $comment->comment_ID;
 	}
+
+	/**
+	 * List all metadata associated with a comment.
+	 *
+	 * <id>
+	 * : ID for the object.
+	 *
+	 * [--keys=<keys>]
+	 * : Limit output to metadata of specific keys.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific row fields. Defaults to id,meta_key,meta_value.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, csv, json, count. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp comment meta list 123
+	 *     +------------+-------------+-----------------------------------------+
+	 *     | comment_id | meta_key    | meta_value                              |
+	 *     +------------+-------------+-----------------------------------------+
+	 *     | 1          | description | Mary is an awesome WordPress developer. |
+	 *     +------------+-------------+-----------------------------------------+
+	 *
+	 * @subcommand list
+	 */
+	public function list_( $args, $assoc_args ) {
+		parent::list_( $args, $assoc_args );
+	}
+
+	/**
+	 * Get meta field value.
+	 *
+	 * <id>
+	 * : The ID of the object.
+	 *
+	 * <key>
+	 * : The name of the meta field to get.
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json. Default: table
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp comment meta get 123 description
+	 *     Mary is an awesome WordPress developer.
+	 */
+	public function get( $args, $assoc_args ) {
+		parent::get( $args, $assoc_args );
+	}
+
+	/**
+	 * Delete a meta field.
+	 *
+	 * <id>
+	 * : The ID of the object.
+	 *
+	 * [<key>]
+	 * : The name of the meta field to delete.
+	 *
+	 * [<value>]
+	 * : The value to delete. If omitted, all rows with key will deleted.
+	 *
+	 * [--all]
+	 * : Delete all meta for the object.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp comment meta delete 123 description
+	 *     Success: Deleted custom field.
+	 */
+	 public function delete( $args, $assoc_args ) {
+ 		parent::delete( $args, $assoc_args );
+ 	}
+
+	/**
+	 * Add a meta field.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the object.
+	 *
+	 * <key>
+	 * : The name of the meta field to create.
+	 *
+	 * [<value>]
+	 * : The value of the meta field. If ommited, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp comment meta add 123 description "Mary is an awesome WordPress developer."
+	 *     Success: Added custom description.
+	 */
+	 public function add( $args, $assoc_args ) {
+ 		parent::add( $args, $assoc_args );
+ 	}
+
+	/**
+	 * Update a meta field.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the object.
+	 *
+	 * <key>
+	 * : The name of the meta field to update.
+	 *
+	 * [<value>]
+	 * : The new value. If ommited, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value. Default is plaintext.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp comment meta update 123 description "Mary is an awesome WordPress developer."
+	 *     Success: Updated custom field 'description'.
+	 *
+	 * @alias set
+	 */
+	 public function update( $args, $assoc_args ) {
+ 		parent::update( $args, $assoc_args );
+ 	}
 }
 
 WP_CLI::add_command( 'comment', 'Comment_Command' );
 WP_CLI::add_command( 'comment meta', 'Comment_Meta_Command' );
-
