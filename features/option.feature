@@ -141,3 +141,63 @@ Feature: Manage WordPress options
     Then STDOUT should be a table containing rows:
       | option_name  | option_value   | autoload |
       | hello        | island         | yes      |
+
+  @require-wp-4.2
+  Scenario: Managed autoloaded options
+    Given a WP install
+
+    When I run `wp option add wp_autoload_1 enabled --autoload=yes`
+    Then STDOUT should be:
+      """
+      Success: Added 'wp_autoload_1' option.
+      """
+    And STDERR should be empty
+
+    When I run `wp option add wp_autoload_2 implicit`
+    Then STDOUT should be:
+      """
+      Success: Added 'wp_autoload_2' option.
+      """
+    And STDERR should be empty
+
+    When I run `wp option add wp_autoload_3 disabled --autoload=no`
+    Then STDOUT should be:
+      """
+      Success: Added 'wp_autoload_3' option.
+      """
+    And STDERR should be empty
+
+    When I run `wp option list --search='wp_autoload*' --fields=option_name,option_value,autoload`
+    Then STDOUT should be a table containing rows:
+      | option_name   | option_value   | autoload |
+      | wp_autoload_1 | enabled        | yes      |
+      | wp_autoload_2 | implicit       | yes      |
+      | wp_autoload_3 | disabled       | no       |
+
+    When I run `wp option update wp_autoload_1 disabled --autoload=no`
+    Then STDOUT should be:
+      """
+      Success: Updated 'wp_autoload_1' option.
+      """
+    And STDERR should be empty
+
+    When I run `wp option update wp_autoload_2 implicit2`
+    Then STDOUT should be:
+      """
+      Success: Updated 'wp_autoload_2' option.
+      """
+    And STDERR should be empty
+
+    When I run `wp option update wp_autoload_3 enabled --autoload=yes`
+    Then STDOUT should be:
+      """
+      Success: Updated 'wp_autoload_3' option.
+      """
+    And STDERR should be empty
+
+    When I run `wp option list --search='wp_autoload*' --fields=option_name,option_value,autoload`
+    Then STDOUT should be a table containing rows:
+      | option_name   | option_value   | autoload |
+      | wp_autoload_1 | disabled       | no       |
+      | wp_autoload_2 | implicit2      | yes      |
+      | wp_autoload_3 | enabled        | yes      |
