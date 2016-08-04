@@ -1140,11 +1140,15 @@ class Runner {
 				return $plugins;
 			}
 			foreach( $plugins as $key => $plugin ) {
-				if ( Utils\is_plugin_skipped( $plugin ) ) {
+				if ( is_numeric( $key ) && Utils\is_plugin_skipped( $plugin ) ) {
+					unset( $plugins[ $key ] );
+				}
+				// sitewide filters are flipped...
+				elseif ( is_numeric( $plugin ) && Utils\is_plugin_skipped( $key ) ) {
 					unset( $plugins[ $key ] );
 				}
 			}
-			return array_values( $plugins );
+			return $plugins;
 		};
 
 		$hooks = array(
