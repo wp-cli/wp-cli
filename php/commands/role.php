@@ -316,7 +316,7 @@ class Role_Command extends WP_CLI_Command {
 				WP_CLI::error( 'Must specify a default role to reset.' );
 			}
 
-			if ( ! $this->dry_run ) {
+			if ( $alter_database ) {
 				// for the roles we're not resetting
 				foreach ( $preserve as $k => $role ) {
 					/* save roles
@@ -359,7 +359,7 @@ class Role_Command extends WP_CLI_Command {
 				$removed_cap = array_diff_key( $before_capabilities, $after_capabilities );
 				$restored_cap_count = count( $restored_cap );
 				$removed_cap_count = count( $removed_cap );
-				if ( ! $this->dry_run ) {
+				if ( $alter_database ) {
 					WP_CLI::log( "Restored {$restored_cap_count} capabilities and removed {$removed_cap_count} capabilities from '{$role_key}' role." );
 				} else {
 					WP_CLI::log( "{$restored_cap_count} capabilities will restore and {$removed_cap_count} capabilities will remove from '{$role_key}' role." );
