@@ -13,7 +13,8 @@ Feature: Find version for WordPress install
     When I run `wp core version --extra`
     Then STDOUT should be:
       """
-      WordPress version: 4.4.2
-      Database revision: 35700
-      TinyMCE version:   4.208 (4208-20151113)
+      WordPress version:     4.4.2
+      Database revision:     35700
+      TinyMCE version:       4.208 (4208-20151113)
+      Installation language: en_US
       """
