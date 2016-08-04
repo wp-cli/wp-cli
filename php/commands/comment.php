@@ -113,7 +113,10 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * [--count=<number>]
-	 * : How many comments to generate. Default: 100
+	 * : How many comments to generate?
+	 * ---
+	 * default: 100
+	 * ---
 	 *
 	 * [--post_id=<post-id>]
 	 * : Assign comments to a specific post.
@@ -129,8 +132,12 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Add meta to every generated comment
-	 *     $ wp comment generate --format=ids --count=3 | xargs -0 -d ' ' -I % wp comment meta add % foo bar
+	 *     # Generate comments for the given post.
+	 *     $ wp comment generate --format=ids --count=3 --post_id=123
+	 *     138 139 140
+	 *
+	 *     # Add meta to every generated comment.
+	 *     $ wp comment generate --format=ids --count=3 | xargs -d ' ' -I % wp comment meta add % foo bar
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
