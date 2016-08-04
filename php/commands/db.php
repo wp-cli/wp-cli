@@ -292,6 +292,11 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Import a MySQL database from a file or from STDIN.
 	 *
+	 * Runs MySQL queries using `DB_HOST`, `DB_NAME`, `DB_USER` and
+	 * `DB_PASSWORD` database credentials specified in wp-config.php. This
+	 * does not create database by itself and only performs whatever tasks are
+	 * defined in the SQL.
+	 *
 	 * ## OPTIONS
 	 *
 	 * [<file>]
@@ -299,6 +304,7 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Import MySQL from a file.
 	 *     $ wp db import wordpress_dbase.sql
 	 *     Success: Imported from 'wordpress_dbase.sql'.
 	 */
