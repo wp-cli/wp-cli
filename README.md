@@ -115,15 +115,14 @@ source /FULL/PATH/TO/wp-completion.bash
 
 ## Support
 
-WP-CLI's maintainers and project contributors do their best to respond to all new issues in a timely manner. To make the best use of their volunteered time, please first see if there may be an answer to your question in one of the following resources:
+WP-CLI's maintainers and project contributors are volunteers, and have limited availability to address the variety of questions users might have. Before filing your support request, please first see if there is an answer in one of the following resources:
 
 - [Common issues and their fixes](https://wp-cli.org/docs/common-issues/)
-- [Best practices for submitting a bug report](https://wp-cli.org/docs/bug-reports/)
 - [Documentation portal](https://wp-cli.org/docs/)
 - [Open or closed issues on Github](https://github.com/wp-cli/wp-cli/issues?utf8=%E2%9C%93&q=is%3Aissue)
 - [WordPress StackExchange forums](http://wordpress.stackexchange.com/questions/tagged/wp-cli)
 
-If you can't find your answer in one of those existing resources, feel free to [create an issue](https://github.com/wp-cli/wp-cli/issues/new) with your question.
+If you can't find your answer at one of those links, the [WordPress StackExchange](http://wordpress.stackexchange.com/) is the best place for general support questions. For bug reports, please review [best practices for submitting a bug report](https://wp-cli.org/docs/bug-reports/) before [creating a new issue](https://github.com/wp-cli/wp-cli/issues/new). Professional users may also consider [runcommand](https://runcommand.io/) for premium support.
 
 Please do not ask support questions on Twitter. Twitter isn't an acceptable venue for support because: 1) it's hard to hold conversations in under 140 characters, and 2) Twitter isn't a place where someone with your same question can search for an answer in a prior conversation.
 
