@@ -24,7 +24,7 @@ Quick links: [Using](#using) &#124; [Installing](#installing) &#124; [Support](#
 
 WP-CLI's goal is to provide a command-line interface for any action you might want to perform in the WordPress admin. For instance, `wp plugin install --activate` ([doc](https://wp-cli.org/commands/plugin/install/)) lets you install and activate a WordPress plugin:
 
-```
+```bash
 $ wp plugin install rest-api --activate
 Installing WordPress REST API (Version 2) (2.0-beta13)
 Downloading install package from https://downloads.wordpress.org/plugin/rest-api.2.0-beta13.zip...
@@ -37,7 +37,7 @@ Success: Plugin 'rest-api' activated.
 
 WP-CLI also includes commands for many things you can't do in the WordPress admin. For example, `wp transient delete-all` ([doc](https://wp-cli.org/commands/transient/delete-all/)) lets you delete one or all transients:
 
-```
+```bash
 $ wp transient delete-all
 Success: 34 transients deleted from the database.
 ```
@@ -58,26 +58,26 @@ Before installing WP-CLI, please make sure your environment meets the minimum re
 
 Once you've verified requirements, download the [wp-cli.phar](https://raw.github.com/wp-cli/builds/gh-pages/phar/wp-cli.phar) file using `wget` or `curl`:
 
-```
+```bash
 $ curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 ```
 
 Next, check if it is working:
 
-```
+```bash
 $ php wp-cli.phar --info
 ```
 
 To use WP-CLI from the command line by typing `wp`, make the file executable and move it to somewhere in your PATH. For example:
 
-```
+```bash
 $ chmod +x wp-cli.phar
 $ sudo mv wp-cli.phar /usr/local/bin/wp
 ```
 
 If WP-CLI was installed successfully, you should see something like this when you run `wp --info`:
 
-```
+```bash
 $ wp --info
 PHP binary:    /usr/bin/php5
 PHP version:    5.5.9-1ubuntu4.14
@@ -99,7 +99,7 @@ Want to live life on the edge? Run `wp cli update --nightly` to use the latest n
 
 WP-CLI also comes with a tab completion script for Bash and ZSH. Just download [wp-completion.bash](https://github.com/wp-cli/wp-cli/raw/master/utils/wp-completion.bash) and source it from `~/.bash_profile`:
 
-```
+```bash
 source /FULL/PATH/TO/wp-completion.bash
 ```
 
@@ -107,7 +107,7 @@ Don't forget to run `source ~/.bash_profile` afterwards.
 
 If using zsh for your shell, you may need to load and start `bashcompinit` before sourcing. Put the following in your `.zshrc`:
 
-```
+```bash
 autoload bashcompinit
 bashcompinit
 source /FULL/PATH/TO/wp-completion.bash
@@ -134,7 +134,7 @@ A **command** is an atomic unit of WP-CLI functionality. `wp plugin install` ([d
 
 WP-CLI supports registering any callable class, function, or closure as a command. It reads usage details from the callback's PHPdoc. `WP_CLI::add_command()` ([doc](https://wp-cli.org/docs/internal-api/wp-cli-add-command/)) is used for both internal and third-party command registration.
 
-```
+```php
 /**
  * Delete an option from the database.
  *
