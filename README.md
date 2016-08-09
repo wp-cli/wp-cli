@@ -115,18 +115,19 @@ source /FULL/PATH/TO/wp-completion.bash
 
 ## Support
 
-WP-CLI's maintainers and project contributors are volunteers, and have limited availability to address the variety of questions users might have. Before filing your support request, please first see if there is an answer in one of the following resources:
+WP-CLI's maintainers and project contributors are volunteers, and have limited availability to address general support questions. First, look for an answer in one of the following resources:
 
 - [Common issues and their fixes](https://wp-cli.org/docs/common-issues/)
 - [Documentation portal](https://wp-cli.org/docs/)
 - [Open or closed issues on Github](https://github.com/wp-cli/wp-cli/issues?utf8=%E2%9C%93&q=is%3Aissue)
+- [runcommand Excerpts](https://runcommand.io/excerpts/)
 - [WordPress StackExchange forums](http://wordpress.stackexchange.com/questions/tagged/wp-cli)
 
-If you can't find your answer at one of those links, the [WordPress StackExchange](http://wordpress.stackexchange.com/) is the best place for general support questions. For bug reports, please review [best practices for submitting a bug report](https://wp-cli.org/docs/bug-reports/) before [creating a new issue](https://github.com/wp-cli/wp-cli/issues/new). Professional users may also consider [runcommand](https://runcommand.io/) for premium support.
+If you can't find your answer at one of those links, the [WordPress StackExchange](http://wordpress.stackexchange.com/) can be used for development-related WP-CLI questions. Or, join the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/) to see if a community member might have an answer for you. Professional users may also consider [runcommand](https://runcommand.io/) for premium support.
+
+For bug reports, please review [best practices for submitting a bug report](https://wp-cli.org/docs/bug-reports/) before [creating a new issue](https://github.com/wp-cli/wp-cli/issues/new).
 
 Please do not ask support questions on Twitter. Twitter isn't an acceptable venue for support because: 1) it's hard to hold conversations in under 140 characters, and 2) Twitter isn't a place where someone with your same question can search for an answer in a prior conversation.
-
-If you have a WordPress.org account, you may also consider joining the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/).
 
 ## Extending
 
