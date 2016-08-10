@@ -167,6 +167,7 @@ class Import_Command extends WP_CLI_Command {
 			add_filter( 'intermediate_image_sizes_advanced', array( $this, 'filter_set_image_sizes' ) );
 		}
 
+		$GLOBALS['wp_cli_import_current_file'] = basename( $file );
 		$wp_import->import( $file );
 		$this->processed_posts += $wp_import->processed_posts;
 
@@ -198,13 +199,13 @@ class Import_Command extends WP_CLI_Command {
 		}, 10, 3 );
 
 		add_filter( 'wp_import_post_data_raw', function( $post ) {
-			global $wpcli_import_counts;
+			global $wpcli_import_counts, $wp_cli_import_current_file;
 
 			$wpcli_import_counts['current_post']++;
 			WP_CLI::log('');
 			WP_CLI::log('');
 			WP_CLI::log( sprintf( 'Processing post #%d ("%s") (post_type: %s)', $post['post_id'], $post['post_title'], $post['post_type'] ) );
-			WP_CLI::log( sprintf( '-- %s of %s', number_format( $wpcli_import_counts['current_post'] ), number_format( $wpcli_import_counts['total_posts'] ) ) );
+			WP_CLI::log( sprintf( '-- %s of %s (in file %s)', number_format( $wpcli_import_counts['current_post'] ), number_format( $wpcli_import_counts['total_posts'] ), $wp_cli_import_current_file ) );
 			WP_CLI::log( '-- ' . date( 'r' ) );
 
 			return $post;
