@@ -1066,16 +1066,19 @@ EOT;
 	}
 
 	private function get_wp_core_files() {
-		$files = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator( ABSPATH, RecursiveDirectoryIterator::SKIP_DOTS ),
-			RecursiveIteratorIterator::CHILD_FIRST
-		);
-
 		$core_files = array();
-		foreach ( $files as $file_info ) {
-			if ( $file_info->isFile() && ( false !== strpos( $file_info->getPathname(), 'wp-admin/' ) || false !== strpos( $file_info->getPathname(), 'wp-includes/' ) ) ) {
-				$core_files[] = str_replace( ABSPATH, '', $file_info->getPathname() );
+		try {
+			$files = new RecursiveIteratorIterator(
+				new RecursiveDirectoryIterator( ABSPATH, RecursiveDirectoryIterator::SKIP_DOTS ),
+				RecursiveIteratorIterator::CHILD_FIRST
+			);
+			foreach ( $files as $file_info ) {
+				if ( $file_info->isFile() && ( false !== strpos( $file_info->getPathname(), 'wp-admin/' ) || false !== strpos( $file_info->getPathname(), 'wp-includes/' ) ) ) {
+					$core_files[] = str_replace( ABSPATH, '', $file_info->getPathname() );
+				}
 			}
+		} catch( Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
 		}
 
 		return $core_files;
