@@ -901,6 +901,8 @@ EOT;
 
 		list( $before, $after ) = explode( $token, file_get_contents( $wp_config_path ) );
 
+		$content = PHP_EOL . PHP_EOL . trim( $content ) . PHP_EOL . PHP_EOL;
+
 		file_put_contents( $wp_config_path, $before . $content . $token . $after );
 	}
 
