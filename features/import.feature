@@ -232,3 +232,19 @@ Feature: Import content.
       """
       2
       """
+
+  Scenario: Indicate current file when importing
+    Given a WP install
+    And I run `wp plugin install --activate wordpress-importer`
+
+    When I run `wp export --filename_format=wordpress.{n}.xml`
+    Then save STDOUT 'Writing to file %s' as {EXPORT_FILE}
+
+    When I run `wp site empty --yes`
+    Then STDOUT should not be empty
+
+    When I run `wp import {EXPORT_FILE} --authors=skip`
+    Then STDOUT should contain:
+      """
+      -- 1 of 2 (in file wordpress.000.xml)
+      """
