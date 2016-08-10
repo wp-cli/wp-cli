@@ -1078,7 +1078,8 @@ EOT;
 				RecursiveIteratorIterator::CHILD_FIRST
 			);
 			foreach ( $files as $file_info ) {
-				if ( $file_info->isFile() && ( false !== strpos( $file_info->getPathname(), 'wp-admin/' ) || false !== strpos( $file_info->getPathname(), 'wp-includes/' ) ) ) {
+				$pathname = substr( $file_info->getPathname(), strlen( ABSPATH ) );
+				if ( $file_info->isFile() && ( 0 === strpos( $pathname, 'wp-admin/' ) || 0 === strpos( $pathname, 'wp-includes/' ) ) ) {
 					$core_files[] = str_replace( ABSPATH, '', $file_info->getPathname() );
 				}
 			}
@@ -1090,7 +1091,7 @@ EOT;
 	}
 
 	private function only_core_files_filter( $file ) {
-		return ( false !== strpos( $file, 'wp-admin/' ) || false !== strpos( $file, 'wp-includes/' ) );
+		return ( 0 === strpos( $file, 'wp-admin/' ) || 0 === strpos( $file, 'wp-includes/' ) );
 	}
 
 	/**
