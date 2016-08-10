@@ -863,6 +863,22 @@ class WP_CLI {
 		return 'php';
 	}
 
+	/**
+	 * Get values of global configuration parameters.
+	 *
+	 * Provides access to `--path=<path>`, `--url=<url>`, and other values of
+	 * the [global configuration parameters](https://wp-cli.org/config/).
+	 *
+	 * ```
+	 * WP_CLI::log( 'The --url=<url> value is: ' . WP_CLI::get_config( 'url' ) );
+	 * ```
+	 *
+	 * @access public
+	 * @category Input
+	 *
+	 * @param string $key Get value for a specific global configuration parameter.
+	 * @return mixed
+	 */
 	public static function get_config( $key = null ) {
 		if ( null === $key ) {
 			return self::get_runner()->config;
