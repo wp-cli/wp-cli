@@ -869,6 +869,10 @@ class WP_CLI {
 	 * Provides access to `--path=<path>`, `--url=<url>`, and other values of
 	 * the [global configuration parameters](https://wp-cli.org/config/).
 	 *
+	 * ```
+	 * WP_CLI::log( 'The --url=<url> value is: ' . WP_CLI::get_config( 'url' ) );
+	 * ```
+	 *
 	 * @access public
 	 * @category Input
 	 *
