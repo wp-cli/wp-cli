@@ -333,3 +333,18 @@ Feature: Manage WordPress installation
       """
       http://wp.dev
       """
+
+  Scenario: Warn when multisite constants can't be inserted into wp-config
+    Given a WP install
+    And I run `sed -i.bak "s/That's\sall/C'est tout/g" wp-config.php`
+
+    When I run `wp core multisite-convert`
+    Then STDOUT should be:
+      """
+      Set up multisite database tables.
+      Success: Network installed. Don't forget to set up rewrite rules.
+      """
+    And STDERR should contain:
+      """
+      Warning: Multisite constants could not be written to 'wp-config.php'. You may need to add them manually:
+      """

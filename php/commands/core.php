@@ -841,12 +841,10 @@ define( 'BLOG_ID_CURRENT_SITE', 1 );
 EOT;
 
 			$wp_config_path = Utils\locate_wp_config();
-			if ( is_writable( $wp_config_path ) ) {
-				self::modify_wp_config( $ms_config );
+			if ( is_writable( $wp_config_path ) && self::modify_wp_config( $ms_config ) ) {
 				WP_CLI::log( "Added multisite constants to 'wp-config.php'." );
 			} else {
-				WP_CLI::warning( "Multisite constants could not be written to 'wp-config.php'. You may need to add them manually:" );
-				WP_CLI::log( $ms_config );
+				WP_CLI::warning( "Multisite constants could not be written to 'wp-config.php'. You may need to add them manually:" . PHP_EOL . $ms_config );
 			}
 		}
 
@@ -898,12 +896,17 @@ EOT;
 		$wp_config_path = Utils\locate_wp_config();
 
 		$token = "/* That's all, stop editing!";
+		$config_contents = file_get_contents( $wp_config_path );
+		if ( false === strpos( $config_contents, $token ) ) {
+			return false;
+		}
 
-		list( $before, $after ) = explode( $token, file_get_contents( $wp_config_path ) );
+		list( $before, $after ) = explode( $token, $config_contents );
 
 		$content = PHP_EOL . PHP_EOL . trim( $content ) . PHP_EOL . PHP_EOL;
 
 		file_put_contents( $wp_config_path, $before . $content . $token . $after );
+		return true;
 	}
 
 	private static function get_clean_basedomain() {
