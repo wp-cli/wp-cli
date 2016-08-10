@@ -901,6 +901,8 @@ EOT;
 
 		list( $before, $after ) = explode( $token, file_get_contents( $wp_config_path ) );
 
+		$content = PHP_EOL . PHP_EOL . trim( $content ) . PHP_EOL . PHP_EOL;
+
 		file_put_contents( $wp_config_path, $before . $content . $token . $after );
 	}
 
@@ -1066,17 +1068,20 @@ EOT;
 	}
 
 	private function get_wp_core_files() {
-		$files = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator( ABSPATH, RecursiveDirectoryIterator::SKIP_DOTS ),
-			RecursiveIteratorIterator::CHILD_FIRST
-		);
-
 		$core_files = array();
-		foreach ( $files as $file_info ) {
-			$pathname = substr( $file_info->getPathname(), strlen( ABSPATH ) );
-			if ( $file_info->isFile() && ( 0 === strpos( $pathname, 'wp-admin/' ) || 0 === strpos( $pathname, 'wp-includes/' ) ) ) {
-				$core_files[] = str_replace( ABSPATH, '', $file_info->getPathname() );
+		try {
+			$files = new RecursiveIteratorIterator(
+				new RecursiveDirectoryIterator( ABSPATH, RecursiveDirectoryIterator::SKIP_DOTS ),
+				RecursiveIteratorIterator::CHILD_FIRST
+			);
+			foreach ( $files as $file_info ) {
+				$pathname = substr( $file_info->getPathname(), strlen( ABSPATH ) );
+				if ( $file_info->isFile() && ( 0 === strpos( $pathname, 'wp-admin/' ) || 0 === strpos( $pathname, 'wp-includes/' ) ) ) {
+					$core_files[] = str_replace( ABSPATH, '', $file_info->getPathname() );
+				}
 			}
+		} catch( Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
 		}
 
 		return $core_files;
