@@ -33,7 +33,7 @@ class CommandFactory {
 				$command = self::create_subcommand( $parent, $name, array( $class, '__invoke' ),
 					$reflection->getMethod( '__invoke' ) );
 			} else {
-				$command = self::create_composite_command( $parent, $name, $reflection );
+				$command = self::create_composite_command( $parent, $name, $callable );
 			}
 		}
 
@@ -78,9 +78,10 @@ class CommandFactory {
 	 *
 	 * @param mixed $parent The new command's parent Root or Composite command
 	 * @param string $name Represents how the command should be invoked
-	 * @param ReflectionClass $reflection
+	 * @param mixed $callable
 	 */
-	private static function create_composite_command( $parent, $name, $reflection ) {
+	private static function create_composite_command( $parent, $name, $callable ) {
+		$reflection = new \ReflectionClass( $callable );
 		$docparser = new \WP_CLI\DocParser( $reflection->getDocComment() );
 
 		$container = new CompositeCommand( $parent, $name, $docparser );
@@ -89,7 +90,8 @@ class CommandFactory {
 			if ( !self::is_good_method( $method ) )
 				continue;
 
-			$subcommand = self::create_subcommand( $container, false, array( $reflection->name, $method->name ), $method );
+			$class = is_object( $callable ) ? $callable : $reflection->name;
+			$subcommand = self::create_subcommand( $container, false, array( $class, $method->name ), $method );
 
 			$subcommand_name = $subcommand->get_name();
 
