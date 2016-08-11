@@ -184,8 +184,9 @@ class Package_Command extends WP_CLI_Command {
 		$json_manipulator->addLink( 'require', $package_name, $version );
 		$json_manipulator->addConfigSetting( 'secure-http', true );
 
-		// If the composer file does not contain the current package index url, refresh the repository definition.
-		if ( false === strpos( $composer_backup, self::PACKAGE_INDEX_URL ) ) {
+		$composer_backup_decoded = json_decode( $composer_backup, true );
+		// If the composer file does not contain the current package index repository, refresh the repository definition.
+		if ( empty( $composer_backup_decoded['repositories']['wp-cli']['url'] ) || self::PACKAGE_INDEX_URL != $composer_backup_decoded['repositories']['wp-cli']['url'] ) {
 			WP_CLI::log( 'Updating package index repository url...' );
 			$json_manipulator->addRepository( 'wp-cli', array( 'type' => 'composer', 'url' => self::PACKAGE_INDEX_URL ) );
 		}
