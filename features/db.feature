@@ -21,6 +21,9 @@ Feature: Perform database operations
     When I try the previous command again
     Then the return code should be 1
 
+    When I run `wp db check`
+    Then STDOUT should not be empty
+
     When I run `wp db optimize`
     Then STDOUT should not be empty
 
