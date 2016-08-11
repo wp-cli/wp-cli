@@ -179,6 +179,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		$object_id = $this->check_object_id( $object_id );
 
+		$meta_value = wp_slash( $meta_value );
 		$success = add_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
 
 		if ( $success ) {
@@ -221,6 +222,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		if ( $meta_value === $old_value ) {
 			WP_CLI::success( "Value passed for custom field '$meta_key' is unchanged." );
 		} else {
+			$meta_value = wp_slash( $meta_value );
 			$success = update_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
 
 			if ( $success ) {
