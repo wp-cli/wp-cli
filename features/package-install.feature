@@ -2,7 +2,7 @@ Feature: Install WP-CLI packages
 
   Scenario: Install a package with an http package index url in package composer.json
     Given an empty directory
-    And a composer.json file:
+    And a packages/composer.json file:
       """
       {
         "repositories": {
@@ -13,17 +13,20 @@ Feature: Install WP-CLI packages
         }
       }
       """
-    When I run `WP_CLI_PACKAGES_DIR=. wp --info`
+    When I run `WP_CLI_PACKAGES_DIR=$PWD/packages wp package install runcommand/hook --debug`
     Then STDOUT should contain:
-      """
-      WP-CLI packages dir:	.
-      """
-    When I run `WP_CLI_PACKAGES_DIR=. wp package install runcommand/hook`
-    Then the composer.json file should contain:
+	  """
+	  Updating package index repository url...
+	  """
+    And STDOUT should contain:
+	  """
+	  Success: Package installed
+	  """
+    And the packages/composer.json file should contain:
       """
       "url": "https://wp-cli.org/package-index/"
       """
-    And the composer.json file should not contain:
+    And the packages/composer.json file should not contain:
       """
       "url": "http://wp-cli.org/package-index/"
       """
