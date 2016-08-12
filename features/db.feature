@@ -36,6 +36,7 @@ Feature: Perform database operations
       wp_cli_test.wp_terms                               OK
       wp_cli_test.wp_usermeta                            OK
       wp_cli_test.wp_users                               OK
+      Success: Database checked.
       """
 
     When I run `wp db optimize`
