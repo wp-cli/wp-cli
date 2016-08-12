@@ -188,4 +188,25 @@ Feature: Download WordPress
     And STDERR should contain:
     """
     Error: Nightly builds are only available for the en_US locale.
-		"""
+    """
+
+  Scenario: Installing a release candidate or beta version
+    Given an empty directory
+    And an empty cache
+
+    # Test with incorrect case.
+    When I try `wp core download --version=4.6-rc2`
+    Then the return code should be 1
+    Then STDERR should contain:
+      """
+      Error: Release not found.
+      """
+
+    When I run `wp core download --version=4.6-RC2`
+    Then the wp-settings.php file should exist
+    And STDOUT should contain:
+      """
+      Downloading WordPress 4.6-RC2 (en_US)...
+      md5 hash verified: 90c93a15092b2d5d4c960ec1fc183e07
+      Success: WordPress downloaded.
+      """
