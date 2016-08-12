@@ -134,8 +134,8 @@ class Core_Command extends WP_CLI_Command {
 		$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', 'en_US' );
 
 		if ( isset( $assoc_args['version'] ) ) {
-			$version = strtolower( $assoc_args['version'] );
-			$version = ( 'trunk' === $version ? 'nightly' : $version );
+			$version = $assoc_args['version'];
+			$version = ( in_array( strtolower( $version ), array( 'trunk', 'nightly' ) ) ? 'nightly' : $version );
 			//nightly builds are only available in .zip format
 			$ext     = ( 'nightly' === $version ? 'zip' : 'tar.gz' );
 			$download_url = $this->get_download_url( $version, $locale, $ext );
