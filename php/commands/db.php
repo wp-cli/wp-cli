@@ -102,7 +102,7 @@ class DB_Command extends WP_CLI_Command {
 	 * specified in wp-config.php.
 	 *
 	 * [See docs](http://dev.mysql.com/doc/refman/5.7/en/optimize-table.html)
-	 * for more details on the `OPTIMIZE_TABLE` statement.
+	 * for more details on the `OPTIMIZE TABLE` statement.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -125,7 +125,7 @@ class DB_Command extends WP_CLI_Command {
 	 * specified in wp-config.php.
 	 *
 	 * [See docs](http://dev.mysql.com/doc/refman/5.7/en/repair-table.html) for
-	 * more details on the `REPAIR_TABLE` statement.
+	 * more details on the `REPAIR TABLE` statement.
 	 *
 	 * ## EXAMPLES
 	 *
