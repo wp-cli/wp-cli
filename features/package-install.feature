@@ -1,6 +1,6 @@
 Feature: Install WP-CLI packages
 
-  Scenario: Install a package with an old package index url in package composer.json
+  Scenario: Install a package with an http package index url in package composer.json
     Given an empty directory
     And a composer.json file:
       """
