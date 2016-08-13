@@ -953,8 +953,8 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>
-	 * : ID for the object.
+	 * <user>
+	 * : The user login, user email, or user ID of the user to get metadata for.
 	 *
 	 * [--keys=<keys>]
 	 * : Limit output to metadata of specific keys.
