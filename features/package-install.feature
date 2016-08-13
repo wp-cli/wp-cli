@@ -2,10 +2,14 @@ Feature: Install WP-CLI packages
 
   Scenario: Install a package with an http package index url in package composer.json
     Given an empty directory
-    And a packages/composer.json file:
+    And a composer.json file:
       """
       {
         "repositories": {
+          "test" : {
+            "type": "path",
+            "url": "./dummy-package/"
+          },
           "wp-cli": {
             "type": "composer",
             "url": "http://wp-cli.org/package-index/"
@@ -13,7 +17,14 @@ Feature: Install WP-CLI packages
         }
       }
       """
-    When I run `WP_CLI_PACKAGES_DIR=$PWD/packages wp package install runcommand/hook --debug`
+    And a dummy-package/composer.json file:
+	  """
+	  {
+	    "name": "wp-cli/restful",
+	    "description": "This is a dummy package we will install instead of actually installing the real package. This prevents the test from hanging indefinitely for some reason, even though it passes. The 'name' must match a real package as it is checked against the package index."
+	  }
+	  """
+    When I run `WP_CLI_PACKAGES_DIR=. wp package install wp-cli/restful --debug`
     Then STDOUT should contain:
 	  """
 	  Updating package index repository url...
@@ -22,11 +33,11 @@ Feature: Install WP-CLI packages
 	  """
 	  Success: Package installed
 	  """
-    And the packages/composer.json file should contain:
+    And the composer.json file should contain:
       """
       "url": "https://wp-cli.org/package-index/"
       """
-    And the packages/composer.json file should not contain:
+    And the composer.json file should not contain:
       """
       "url": "http://wp-cli.org/package-index/"
       """
