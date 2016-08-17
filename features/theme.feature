@@ -360,7 +360,7 @@ Feature: Manage WordPress themes
     When I run `wp theme install buntu`
     Then STDOUT should contain:
       """
-      Successfully installed the parent theme,
+      This theme requires a parent theme. Checking if it is installed
       """
 
     When I run `wp theme status stargazer`
