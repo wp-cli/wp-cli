@@ -139,6 +139,18 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 				if ( $file_upgrader->install( $local_or_remote_zip_file ) ) {
 					$slug = $file_upgrader->result['destination_name'];
+					// Remove the branch name from the director for Github URLs
+					if ( strpos( $local_or_remote_zip_file, '://' ) !== false
+						&& 'github.com' === parse_url( $local_or_remote_zip_file, PHP_URL_HOST ) ) {
+						$branch_length = strlen( pathinfo( $local_or_remote_zip_file, PATHINFO_FILENAME ) );
+						if ( $branch_length ) {
+							$new_path = substr( rtrim( $file_upgrader->result['destination'], '/' ), 0, - ( $branch_length + 1 ) ) . '/';
+							if ( $GLOBALS['wp_filesystem']->move( $file_upgrader->result['destination'], $new_path ) ) {
+								$slug = basename( $new_path );
+								WP_CLI::log( "Moved Github-based project from '" . basename( $file_upgrader->result['destination_name'] ) . "' to '" . $slug . "'." );
+							}
+						}
+					}
 					$result = true;
 				}
 			} else {
