@@ -372,9 +372,17 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			self::alter_api_response( $api, $assoc_args['version'] );
 		}
 
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && wp_get_theme( $slug )->exists() ) {
-			// We know this will fail, so avoid a needless download of the package.
-			return new WP_Error( 'already_installed', 'Theme already installed.' );
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) {
+			$theme = wp_get_theme( $slug );
+			if ( $theme->exists() ) {
+				// We know this will fail, so avoid a needless download of the package.
+				return new WP_Error( 'already_installed', 'Theme already installed.' );
+			}
+			// Clear cache so WP_Theme doesn't create a "missing theme" object.
+			$cache_hash = md5( $theme->theme_root . '/' . $theme->stylesheet );
+			foreach( array( 'theme', 'screenshot', 'headers', 'page_templates' ) as $key ) {
+				wp_cache_delete( $key . '-' . $cache_hash, 'themes' );
+			}
 		}
 
 		WP_CLI::log( sprintf( 'Installing %s (%s)', html_entity_decode( $api->name, ENT_QUOTES ), $api->version ) );
