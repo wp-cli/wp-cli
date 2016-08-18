@@ -346,8 +346,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$where = $this->regex ? '' : " WHERE `$col`" . $wpdb->prepare( ' LIKE %s', '%' . self::esc_like( $old ) . '%' );
 		$primary_keys_sql = esc_sql( implode( ',', $primary_keys ) );
 		$col_sql = esc_sql( $col );
-		$table_sql = esc_sql( $table );
-		$rows = $wpdb->get_results( "SELECT {$primary_keys_sql} FROM {$table_sql}{$where}" );
+		$rows = $wpdb->get_results( "SELECT {$primary_keys_sql} FROM `{$table}` {$where}" );
 		foreach ( $rows as $keys ) {
 			$where_sql = '';
 			foreach( (array) $keys as $k => $v ) {
@@ -356,7 +355,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 				}
 				$where_sql .= "{$k}='{$v}'";
 			}
-			$col_value = $wpdb->get_var( "SELECT {$col_sql} FROM {$table_sql} WHERE {$where_sql}" );
+			$col_value = $wpdb->get_var( "SELECT {$col_sql} FROM `{$table}` WHERE {$where_sql}" );
 			if ( '' === $col_value )
 				continue;
 
@@ -444,7 +443,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		global $wpdb;
 
 		$primary_keys = $text_columns = $all_columns = array();
-		foreach ( $wpdb->get_results( "DESCRIBE $table" ) as $col ) {
+		foreach ( $wpdb->get_results( "DESCRIBE `$table`" ) as $col ) {
 			if ( 'PRI' === $col->Key ) {
 				$primary_keys[] = $col->Field;
 			}
