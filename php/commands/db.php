@@ -95,6 +95,29 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Check the database in MySQL.
+	 *
+	 * Runs `mysqlcheck` utility with `--check` using `DB_HOST`,
+	 * `DB_NAME`, `DB_USER` and `DB_PASSWORD` database credentials
+	 * specified in wp-config.php.
+	 *
+	 * [See docs](http://dev.mysql.com/doc/refman/5.7/en/check-table.html)
+	 * for more details on the `CHECK TABLE` statement.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp db check
+	 *     Success: Database checked.
+	 */
+	public function check() {
+		self::run( Utils\esc_cmd( 'mysqlcheck --no-defaults %s', DB_NAME ), array(
+			'check' => true,
+		) );
+
+		WP_CLI::success( "Database checked." );
+	}
+
+	/**
 	 * Optimize the database in MySQL.
 	 *
 	 * Runs `mysqlcheck` utility with `--optimize=true` using `DB_HOST`,
