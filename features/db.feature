@@ -46,6 +46,16 @@ Feature: Perform database operations
       total
       """
 
+    When I run `wp db query 'SELECT * FROM wp_options WHERE option_name="home"' --skip-column-names`
+    Then STDOUT should not contain:
+      """
+      option_name
+      """
+    And STDOUT should contain:
+      """
+      home
+      """
+
   Scenario: DB export/import
     Given a WP install
 
