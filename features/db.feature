@@ -21,24 +21,6 @@ Feature: Perform database operations
     When I try the previous command again
     Then the return code should be 1
 
-    When I run `wp db check`
-    Then STDOUT should be:
-      """
-      wp_cli_test.wp_commentmeta                         OK
-      wp_cli_test.wp_comments                            OK
-      wp_cli_test.wp_links                               OK
-      wp_cli_test.wp_options                             OK
-      wp_cli_test.wp_postmeta                            OK
-      wp_cli_test.wp_posts                               OK
-      wp_cli_test.wp_term_relationships                  OK
-      wp_cli_test.wp_term_taxonomy                       OK
-      wp_cli_test.wp_termmeta                            OK
-      wp_cli_test.wp_terms                               OK
-      wp_cli_test.wp_usermeta                            OK
-      wp_cli_test.wp_users                               OK
-      Success: Database checked.
-      """
-
     When I run `wp db optimize`
     Then STDOUT should not be empty
 
