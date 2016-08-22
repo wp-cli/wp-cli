@@ -123,7 +123,7 @@ WP-CLI's maintainers and project contributors are volunteers, and have limited a
 - [runcommand Excerpts](https://runcommand.io/excerpts/)
 - [WordPress StackExchange forums](http://wordpress.stackexchange.com/questions/tagged/wp-cli)
 
-If you can't find your answer at one of those links, the [WordPress StackExchange](http://wordpress.stackexchange.com/) can be used for development-related WP-CLI questions. Or, join the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/) to see if a community member might have an answer for you. Professional users may also consider [runcommand](https://runcommand.io/) for premium support.
+If you can't find your answer at one of those links, join the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/) to see if a community member might have an answer for you. Professional users may also consider [runcommand](https://runcommand.io/) for premium support.
 
 For bug reports, please review [best practices for submitting a bug report](https://wp-cli.org/docs/bug-reports/) before [creating a new issue](https://github.com/wp-cli/wp-cli/issues/new).
 
