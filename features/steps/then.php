@@ -190,3 +190,12 @@ $steps->Then( '/^the (.+) (file|directory) should (exist|not exist|be:|contain:|
 	}
 );
 
+$steps->Then( '/^an email should (be sent|not be sent)$/', function( $world, $expected ) {
+	if ( 'be sent' === $expected ) {
+		assertNotEquals( 0, $world->email_sends );
+	} else if ( 'not be sent' === $expected ) {
+		assertEquals( 0, $world->email_sends );
+	} else {
+		throw new Exception( 'Invalid expectation' );
+	}
+});
