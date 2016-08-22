@@ -37,6 +37,9 @@ class Server_Command extends WP_CLI_Command {
 	 * [--docroot=<path>]
 	 * : The path to use as the document root.
 	 *
+	 * [--config=<file>]
+	 * : Configure the server with a specific .ini file.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Make the instance available on any address (with port 8080)
@@ -53,6 +56,13 @@ class Server_Command extends WP_CLI_Command {
 	 *     Document root is /
 	 *     Press Ctrl-C to quit.
 	 *
+	 *     # Configure the server with a specific .ini file
+	 *     $ wp server --config=development.ini
+	 *     PHP 7.0.9 Development Server started at Mon Aug 22 12:09:04 2016
+	 *     Listening on http://localhost:8080
+	 *     Document root is /
+	 *     Press Ctrl-C to quit.
+	 *
 	 * @when before_wp_load
 	 */
 	function __invoke( $_, $assoc_args ) {
@@ -64,7 +74,8 @@ class Server_Command extends WP_CLI_Command {
 		$defaults = array(
 			'host' => 'localhost',
 			'port' => 8080,
-			'docroot' => false
+			'docroot' => false,
+			'config' => false,
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
@@ -80,10 +91,11 @@ class Server_Command extends WP_CLI_Command {
 			}
 		}
 
-		$cmd = \WP_CLI\Utils\esc_cmd( '%s -S %s -t %s %s',
+		$cmd = \WP_CLI\Utils\esc_cmd( '%s -S %s -t %s -c %s %s',
 			PHP_BINARY,
 			$assoc_args['host'] . ':' . $assoc_args['port'],
 			$docroot,
+			$assoc_args['config'],
 			\WP_CLI\Utils\extract_from_phar( WP_CLI_ROOT . '/php/router.php' )
 		);
 
