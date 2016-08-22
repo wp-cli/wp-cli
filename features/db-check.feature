@@ -6,6 +6,10 @@ Feature: Check the database
     When I run `wp db check`
     Then STDOUT should contain:
       """
+      wp_cli_test.wp_users
+      """
+    And STDOUT should contain:
+      """
       Success: Database checked.
       """
     And STDERR should be empty
