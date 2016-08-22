@@ -125,7 +125,7 @@ WP-CLI's maintainers and project contributors are volunteers, and have limited a
 
 If you can't find your answer at one of those links, join the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/) to see if a community member might have an answer for you. Professional users may also consider [runcommand](https://runcommand.io/) for premium support.
 
-For bug reports, please review [best practices for submitting a bug report](https://wp-cli.org/docs/bug-reports/) before [creating a new issue](https://github.com/wp-cli/wp-cli/issues/new).
+Github issues are meant for tracking enhancements and bugs of existing commands, not general support. Before submitting a bug report, please [review our best practices](https://wp-cli.org/docs/bug-reports/) to help ensure your issue is addressed in a timely manner.
 
 Please do not ask support questions on Twitter. Twitter isn't an acceptable venue for support because: 1) it's hard to hold conversations in under 140 characters, and 2) Twitter isn't a place where someone with your same question can search for an answer in a prior conversation.
 
