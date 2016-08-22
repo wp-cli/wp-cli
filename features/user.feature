@@ -286,3 +286,12 @@ Feature: Manage WordPress users
       """
       My\New\User
       """
+
+  Scenario: Don't send user creation emails by default
+    Given a WP multisite install
+
+    When I run `wp user create testuser2 testuser2@example.com`
+    Then an email should not be sent
+
+    When I run `wp user create testuser3 testuser3@example.com --send-email`
+    Then an email should be sent
