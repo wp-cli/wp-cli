@@ -169,7 +169,13 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * : The value of the meta field. If ommited, the value is read from STDIN.
 	 *
 	 * [--format=<format>]
-	 * : The serialization format for the value. Default is plaintext.
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
 	 */
 	public function add( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
@@ -204,7 +210,13 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * : The new value. If ommited, the value is read from STDIN.
 	 *
 	 * [--format=<format>]
-	 * : The serialization format for the value. Default is plaintext.
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
 	 *
 	 * @alias set
 	 */
