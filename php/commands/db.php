@@ -389,7 +389,13 @@ class DB_Command extends WP_CLI_Command {
 	 * : List all tables in the database, regardless of the prefix, and even if not registered on $wpdb. Overrides --all-tables-with-prefix.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: list, csv. Default: list
+	 * : Render output in a particular format.
+	 * ---
+	 * default: list
+	 * options:
+	 *   - list
+	 *   - csv
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
