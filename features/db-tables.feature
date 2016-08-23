@@ -21,7 +21,7 @@ Feature: List database tables
     When I run `wp db tables --format=csv`
     Then STDOUT should contain:
       """
-      wp_terms,wp_usermeta,wp_users
+      wp_users,wp_usermeta,wp_posts,wp_comments,
       """
 
     When I run `wp db tables 'wp_post*' --format=csv`

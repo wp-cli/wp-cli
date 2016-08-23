@@ -49,7 +49,16 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * : Limit the output to specific row fields. Defaults to id,meta_key,meta_value.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -82,7 +91,15 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * : The metadata key.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
