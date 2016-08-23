@@ -191,6 +191,9 @@ class DB_Command extends WP_CLI_Command {
 	 * [<sql>]
 	 * : A SQL query. If not passed, will try to read from STDIN.
 	 *
+	 * [--<field>=<value>]
+	 * : Extra arguments to pass to mysql.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Execute a query stored in a file
@@ -214,11 +217,15 @@ class DB_Command extends WP_CLI_Command {
 	 *     | wordpress_dbase.wp_termmeta           | check | status   | OK       |
 	 *     | wordpress_dbase.wp_commentmeta        | check | status   | OK       |
 	 *     +---------------------------------------+-------+----------+----------+
+	 *
+	 *     # Pass extra arguments through to MySQL
+	 *     $ wp db query 'SELECT * FROM wp_options WHERE option_name="home"' --skip-column-names
+	 *     +---+------+------------------------------+-----+
+	 *     | 2 | home | http://wordpress-develop.dev | yes |
+	 *     +---+------+------------------------------+-----+
 	 */
-	public function query( $args ) {
-		$assoc_args = array(
-			'database' => DB_NAME
-		);
+	public function query( $args, $assoc_args ) {
+		$assoc_args['database'] = DB_NAME;
 
 		// The query might come from STDIN
 		if ( !empty( $args ) ) {
