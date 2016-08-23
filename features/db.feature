@@ -21,6 +21,9 @@ Feature: Perform database operations
     When I try the previous command again
     Then the return code should be 1
 
+  Scenario: DB Operations
+    Given a WP install
+
     When I run `wp db optimize`
     Then STDOUT should not be empty
 
