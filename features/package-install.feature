@@ -85,3 +85,21 @@ Feature: Install WP-CLI packages
       """
       alice
       """
+
+    When I run `wp package uninstall trendwerk/faker`
+    Then STDOUT should contain:
+      """
+      Removing require statement
+      """
+    And STDOUT should contain:
+      """
+      Success: Uninstalled package.
+      """
+    And the {PACKAGE_PATH}/vendor/trendwerk directory should not contain:
+      """
+      faker
+      """
+    And the {PACKAGE_PATH}/vendor/nelmio directory should not contain:
+      """
+      alice
+      """
