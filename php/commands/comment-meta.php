@@ -3,11 +3,6 @@
 /**
  * Manage comment custom fields.
  *
- * ## OPTIONS
- *
- * --format=json
- * : Encode/decode values as JSON.
- *
  * ## EXAMPLES
  *
  *     # Set comment meta
