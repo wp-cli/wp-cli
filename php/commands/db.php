@@ -405,13 +405,16 @@ class DB_Command extends WP_CLI_Command {
 	 */
 	function tables( $args, $assoc_args ) {
 
+		$format = WP_CLI\Utils\get_flag_value( $assoc_args, 'format' );
+		unset( $assoc_args['format'] );
+
 		if ( empty( $args ) && empty( $assoc_args ) ) {
 			$assoc_args['scope'] = 'all';
 		}
 
 		$tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
 
-		if ( ! empty( $assoc_args['format'] ) && 'csv' === $assoc_args['format'] ) {
+		if ( 'csv' === $format ) {
 			WP_CLI::line( implode( ',', $tables ) );
 		} else {
 			foreach ( $tables as $table ) {
