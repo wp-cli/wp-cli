@@ -60,3 +60,28 @@ Feature: Install WP-CLI packages
       """
       Site Information
       """
+
+  @require-php-5.6
+  Scenario: Install a package with a dependency
+    Given an empty directory
+
+    When I run `wp package path`
+    Then save STDOUT as {PACKAGE_PATH}
+
+    When I run `wp package install trendwerk/faker`
+    Then STDOUT should contain:
+      """
+      Error: trendwerk/faker dev-master requires nelmio/alice
+      """
+    And STDOUT should contain:
+      """
+      Success: Package installed
+      """
+    And the {PACKAGE_PATH}/vendor/trendwerk directory should contain:
+      """
+      faker
+      """
+    And the {PACKAGE_PATH}/vendor/nelmio directory should contain:
+      """
+      alice
+      """

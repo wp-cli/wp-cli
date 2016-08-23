@@ -119,6 +119,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			}
 		}
 
+		// Remove WP-CLI package directory
+		if ( isset( $this->variables['PACKAGE_PATH'] ) ) {
+			$this->proc( Utils\esc_cmd( 'rm -rf %s', $this->variables['PACKAGE_PATH'] ) )->run();
+		}
+
 		foreach ( $this->running_procs as $proc ) {
 			self::terminate_proc( $proc );
 		}
