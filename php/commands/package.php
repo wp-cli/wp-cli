@@ -327,23 +327,30 @@ class Package_Command extends WP_CLI_Command {
 		$manipulator->removeSubNode( 'require', $package_name );
 		file_put_contents( $composer_json_obj->getPath(), $manipulator->getContents() );
 
-		// Delete the directory
-		$package_path = $composer->getConfig()->get( 'vendor-dir' ) . '/' . $package->getName();
-		WP_CLI::log( sprintf( 'Deleting package directory %s', $package_path ) );
-		$filesystem = new Filesystem;
-		$filesystem->removeDirectory( $package_path );
-
-		// Reset Composer and regenerate the auto-loader
-		WP_CLI::log( 'Regenerating Composer autoload.' );
 		try {
 			$composer = $this->get_composer();
 		} catch( Exception $e ) {
-			WP_CLI::warning( $e->getMessage() );
-			WP_CLI::error( 'Composer autoload will need to be manually regenerated.' );
+			WP_CLI::error( $e->getMessage() );
 		}
-		$this->regenerate_autoloader( $composer );
 
-		WP_CLI::success( "Uninstalled package." );
+		// Set up the installer
+		$install = Installer::create( new NullIO, $composer );
+		$install->setUpdate( true ); // Installer class will only override composer.lock with this flag
+		$install->setPreferSource( true ); // Use VCS when VCS for easier contributions.
+
+		WP_CLI::log( 'Removing package directories and regenerating autoloader...' );
+		try {
+			$res = $install->run();
+		} catch ( Exception $e ) {
+			WP_CLI::warning( $e->getMessage() );
+		}
+
+		if ( 0 === $res ) {
+			WP_CLI::success( "Uninstalled package." );
+		} else {
+			file_put_contents( $composer_json_obj->getPath(), $composer_backup );
+			WP_CLI::error( "Package removal failed (Composer return code {$res})." );
+		}
 	}
 
 	/**
@@ -603,19 +610,6 @@ class Package_Command extends WP_CLI_Command {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Regenerate the Composer autoloader
-	 */
-	private function regenerate_autoloader( $composer ) {
-		$composer->getAutoloadGenerator()->dump(
-			$composer->getConfig(),
-			$composer->getRepositoryManager()->getLocalRepository(),
-			$composer->getPackage(),
-			$composer->getInstallationManager(),
-			'composer'
-		);
 	}
 }
 
