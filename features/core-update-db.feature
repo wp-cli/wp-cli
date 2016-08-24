@@ -26,7 +26,7 @@ Feature: Update core's database
     Then STDOUT should be:
       """
       Performing a dry run, with no database modification.
-      Success: WordPress database upgraded successfully from db version 29630 to 30133.
+      Success: WordPress database will be upgraded from db version 29630 to 30133.
       """
 
     When I run `wp option get db_version`
@@ -57,6 +57,8 @@ Feature: Update core's database
 
   Scenario: Update db across network
     Given a WP multisite install
+    And I run `wp core download --version=4.1 --force`
+    And I run `wp option update db_version 29630`
     And I run `wp site create --slug=foo`
     And I run `wp site create --slug=bar`
     And I run `wp site create --slug=burrito --porcelain`
@@ -73,6 +75,14 @@ Feature: Update core's database
     Then STDOUT should contain:
       """
       Performing a dry run, with no database modification.
+      """
+    And STDOUT should contain:
+      """
+      WordPress database will be upgraded from db version
+      """
+    And STDOUT should not contain:
+      """
+      WordPress database upgraded successfully from db version
       """
     And STDOUT should contain:
       """

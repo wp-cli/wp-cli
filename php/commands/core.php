@@ -1398,11 +1398,12 @@ EOT;
 			foreach( $it as $blog ) {
 				$total++;
 				$url = $blog->domain . $blog->path;
-				$process = WP_CLI::launch_self( 'core update-db', array(), array(), false, true, array( 'url' => $url, 'dry-run' => $dry_run ) );
+				$process = WP_CLI::launch_self( 'core update-db', array(), array( 'dry-run' => $dry_run ), false, true, array( 'url' => $url ) );
 				if ( 0 == $process->return_code ) {
 					// See if we can parse the stdout
 					if ( preg_match( '#Success: (.+)#', $process->stdout, $matches ) ) {
-						$message = "{$matches[1]} on {$url}";
+						$message = rtrim( $matches[1], '.' );
+						$message = "{$message} on {$url}";
 					} else {
 						$message = "Database upgraded successfully on {$url}";
 					}
@@ -1420,10 +1421,12 @@ EOT;
 			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 			$wp_current_db_version = __get_option( 'db_version' );
 			if ( $wp_db_version != $wp_current_db_version ) {
-				if ( ! $dry_run ) {
+				if ( $dry_run ) {
+					WP_CLI::success( "WordPress database will be upgraded from db version {$wp_current_db_version} to {$wp_db_version}." );
+				} else {
 					wp_upgrade();
+					WP_CLI::success( "WordPress database upgraded successfully from db version {$wp_current_db_version} to {$wp_db_version}." );
 				}
-				WP_CLI::success( "WordPress database upgraded successfully from db version {$wp_current_db_version} to {$wp_db_version}." );
 			} else {
 				WP_CLI::success( "WordPress database already at latest db version {$wp_db_version}." );
 			}
