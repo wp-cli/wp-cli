@@ -170,11 +170,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 					WP_CLI::error( sprintf( 'Unable to open "%s" for writing.', $assoc_args['export'] ) );
 				}
 			}
-			$export_insert_size = $assoc_args['export_insert_size'];
+			$export_insert_size = WP_CLI\Utils\get_flag_value( $assoc_args, 'export_insert_size', 50 );
 			if ( (int) $export_insert_size == $export_insert_size && $export_insert_size > 0 ) {
 				$this->export_insert_size = $export_insert_size;
-			} else {
-				$this->export_insert_size = 50;
 			}
 			$php_only = true;
 		}
