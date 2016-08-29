@@ -14,7 +14,7 @@
 		"mustangostang/spyc": "~0.5",
 		"composer/semver": "~1.0",
 		"ramsey/array_column": "~1.1",
-		"rmccue/requests": "~1.6",
+		"rmccue/requests" : "dev-master#fb5b51797ff881dd67f630cf9fd9e14b757a9e29 as 1.6.1",
 		"symfony/finder": "~2.7",
 		"symfony/yaml": "~2.7",
 		"symfony/filesystem": "~2.7",
