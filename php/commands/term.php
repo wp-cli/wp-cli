@@ -85,7 +85,8 @@ class Term_Command extends WP_CLI_Command {
 	 * * parent
 	 * * count
 	 *
-	 * There are no optionally available fields.
+	 * These fields are optionally available:
+	 * * url
 	 *
 	 * ## EXAMPLES
 	 *
@@ -132,8 +133,9 @@ class Term_Command extends WP_CLI_Command {
 		}
 
 		$terms = array_map( function( $term ){
-			$term->count = (int)$term->count;
+			$term->count  = (int)$term->count;
 			$term->parent = (int)$term->parent;
+			$term->url    = get_term_link( $term->term_id );
 			return $term;
 		}, $terms );
 
@@ -478,34 +480,6 @@ class Term_Command extends WP_CLI_Command {
 
 		if ( 'progress' === $format ) {
 			$notify->finish();
-		}
-	}
-
-	/**
-	 * Get term url
-	 *
-	 * ## OPTIONS
-	 *
-	 * <taxonomy>
-	 * : Taxonomy of the term(s) to get.
-	 *
-	 * <term-id>...
-	 * : One or more IDs of terms to get the URL.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     $ wp term url post_tag 123
-	 *     http://example.com/tag/tips-and-tricks
-	 */
-	public function url( $args ) {
-		$term_ids = array_slice( $args, 1 );
-		foreach ( $term_ids as $term_id ) {
-			$term_link = get_term_link( (int)$term_id, $args[0] );
-			if ( $term_link && ! is_wp_error( $term_link ) ) {
-				WP_CLI::line( $term_link );
-			} else {
-				WP_CLI::warning( sprintf( "Invalid term %s.", $term_id ) );
-			}
 		}
 	}
 

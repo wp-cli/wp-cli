@@ -523,8 +523,8 @@ class Runner {
 			}
 		}
 
-		// (post|site) url  --> (post|site) list --*__in --field=url
-		if ( count( $args ) >= 2 && in_array( $args[0], array( 'post', 'site' ) ) && 'url' === $args[1] ) {
+		// (post|site|term) url  --> (post|site|term) list --*__in --field=url
+		if ( count( $args ) >= 2 && in_array( $args[0], array( 'post', 'site', 'term' ) ) && 'url' === $args[1] ) {
 			switch ( $args[0] ) {
 				case 'post':
 					$post_ids = array_slice( $args, 2 );
@@ -532,6 +532,12 @@ class Runner {
 					$assoc_args['post__in'] = implode( ',', $post_ids );
 					$assoc_args['post_type'] = 'any';
 					$assoc_args['orderby'] = 'post__in';
+					$assoc_args['field'] = 'url';
+					break;
+				case 'term':
+					$term_ids = array_slice( $args, 3 );
+					$args = array( 'term', 'list', $args[2] );
+					$assoc_args['include'] = implode( ',', $term_ids );
 					$assoc_args['field'] = 'url';
 					break;
 				case 'site':
