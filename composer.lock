@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f0bf52c59aa6e9fe44d6a611f8006a52",
-    "content-hash": "10cf19699e3fed767e31e1493a07c8f0",
+    "hash": "6b2d9b856fd8d57162cccfed52b37977",
+    "content-hash": "48b37e62541cbdceec19bf202c77a9d1",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -549,23 +549,23 @@
         },
         {
             "name": "rmccue/requests",
-            "version": "v1.6.1",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rmccue/Requests.git",
-                "reference": "6aac485666c2955077d77b796bbdd25f0013a4ea"
+                "reference": "fb5b51797ff881dd67f630cf9fd9e14b757a9e29"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rmccue/Requests/zipball/6aac485666c2955077d77b796bbdd25f0013a4ea",
-                "reference": "6aac485666c2955077d77b796bbdd25f0013a4ea",
+                "url": "https://api.github.com/repos/rmccue/Requests/zipball/fb5b51797ff881dd67f630cf9fd9e14b757a9e29",
+                "reference": "fb5b51797ff881dd67f630cf9fd9e14b757a9e29",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.2"
             },
             "require-dev": {
-                "satooshi/php-coveralls": "dev-master"
+                "requests/test-server": "dev-master"
             },
             "type": "library",
             "autoload": {
@@ -594,7 +594,7 @@
                 "iri",
                 "sockets"
             ],
-            "time": "2014-05-18 04:59:02"
+            "time": "2016-08-18 01:24:21"
         },
         {
             "name": "seld/cli-prompt",
@@ -1830,9 +1830,18 @@
             "time": "2013-01-13 10:24:48"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "alias": "1.6.1",
+            "alias_normalized": "1.6.1.0",
+            "version": "9999999-dev",
+            "package": "rmccue/requests"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "rmccue/requests": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
