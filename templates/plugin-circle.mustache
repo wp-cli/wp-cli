@@ -2,6 +2,10 @@ machine:
   php:
     version: 5.6.22
 
+dependencies:
+  pre:
+    - sudo apt-get update; sudo apt-get install subversion
+
 test:
   pre:
     - bash bin/install-wp-tests.sh wordpress_test root '' localhost latest
