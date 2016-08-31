@@ -135,7 +135,7 @@ class Term_Command extends WP_CLI_Command {
 		$terms = array_map( function( $term ){
 			$term->count  = (int)$term->count;
 			$term->parent = (int)$term->parent;
-			$term->url    = get_term_link( $term->term_id );
+			$term->url    = get_term_link( $term );
 			return $term;
 		}, $terms );
 
