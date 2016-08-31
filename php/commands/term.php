@@ -112,6 +112,9 @@ class Term_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
+		if ( isset( $assoc_args['include'] ) ) {
+			$assoc_args['include'] = wp_parse_id_list( $assoc_args['include'] );
+		}
 		foreach ( $args as $taxonomy ) {
 			if ( ! taxonomy_exists( $taxonomy ) ) {
 				WP_CLI::error( "Taxonomy $taxonomy doesn't exist." );

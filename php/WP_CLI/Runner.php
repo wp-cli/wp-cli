@@ -538,6 +538,7 @@ class Runner {
 					$term_ids = array_slice( $args, 3 );
 					$args = array( 'term', 'list', $args[2] );
 					$assoc_args['include'] = implode( ',', $term_ids );
+					$assoc_args['orderby'] = 'include';
 					$assoc_args['field'] = 'url';
 					break;
 				case 'site':
