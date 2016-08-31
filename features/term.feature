@@ -112,6 +112,17 @@ Feature: Manage WordPress terms
       http://example.com/?cat=3
       """
 
+    When I run `wp term create category "Third Category" --porcelain`
+    And save STDOUT as {THIRD_TERM_ID}
+
+    When I run `wp term url category {THIRD_TERM_ID} {TERM_ID} {SECOND_TERM_ID}`
+    Then STDOUT should be:
+      """
+      http://example.com/?cat=4
+      http://example.com/?cat=2
+      http://example.com/?cat=3
+      """
+
   Scenario: Make sure WordPress receives the slashed data it expects
     When I run `wp term create category 'My\Term' --description='My\Term\Description' --porcelain`
     Then save STDOUT as {TERM_ID}
