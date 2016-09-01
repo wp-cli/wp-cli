@@ -713,7 +713,7 @@ function get_temp_dir() {
 	}
 
 	if ( ! @is_writable( $temp ) ) {
-		WP_CLI::warning( "Temp directory isn't writable: {$temp}" );
+		\WP_CLI::warning( "Temp directory isn't writable: {$temp}" );
 	}
 
 	return $trailingslashit( $temp );
