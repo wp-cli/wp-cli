@@ -58,12 +58,6 @@ class Help_Command extends WP_CLI_Command {
 	private static function show_help( $command ) {
 		$out = self::get_initial_markdown( $command );
 
-		$alias = $command->get_alias();
-		if ( $alias ) {
-			$out .= '## ALIAS' . PHP_EOL . PHP_EOL;
-			$out .= '  ' . $alias . PHP_EOL . PHP_EOL;
-		}
-
 		$longdesc = $command->get_longdesc();
 		if ( $longdesc ) {
 			$out .= wordwrap( $longdesc, 90 ) . "\n";
@@ -126,6 +120,11 @@ class Help_Command extends WP_CLI_Command {
 		);
 
 		$binding['synopsis'] = wordwrap( "$name " . $command->get_synopsis(), 79 );
+
+		$alias = $command->get_alias();
+		if ( $alias ) {
+			$binding['has-alias']['alias'] = $alias;
+		}
 
 		if ( $command->can_have_subcommands() ) {
 			$binding['has-subcommands']['subcommands'] = self::render_subcommands( $command );
