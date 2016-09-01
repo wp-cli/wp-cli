@@ -58,6 +58,12 @@ class Help_Command extends WP_CLI_Command {
 	private static function show_help( $command ) {
 		$out = self::get_initial_markdown( $command );
 
+		$alias = $command->get_alias();
+		if ( $alias ) {
+			$out .= '## ALIAS' . PHP_EOL . PHP_EOL;
+			$out .= '  ' . $alias . PHP_EOL . PHP_EOL;
+		}
+
 		$longdesc = $command->get_longdesc();
 		if ( $longdesc ) {
 			$out .= wordwrap( $longdesc, 90 ) . "\n";
