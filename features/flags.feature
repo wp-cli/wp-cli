@@ -51,6 +51,7 @@ Feature: Global flags
       """
       CONST_WITHOUT_QUOTES
       """
+    And STDERR should be empty
 
     When I try `wp eval 'echo CONST_WITHOUT_QUOTES;' --debug`
     Then the return code should be 0
@@ -61,6 +62,46 @@ Feature: Global flags
     And STDERR should contain:
       """
       Use of undefined constant CONST_WITHOUT_QUOTES
+      """
+
+  Scenario: Debug respects `WP_DEBUG` defined to true
+    Given an empty directory
+    And WP files
+    And a test.php file:
+      """
+      <?php
+      echo "hello";
+      calling_function_that_doesnt_exist();
+      """
+    And a wp-cli.yml file:
+      """
+      core config:
+        extra-php: |
+          define( 'WP_DEBUG', true );
+      """
+
+    When I run `wp core config {CORE_CONFIG_SETTINGS}`
+    And I run `wp db create`
+    And I run `wp core install --url=wp.dev --title="WP Dev" --admin_user=wpcli --admin_password=wpcli --admin_email=wpcli@example.com`
+    Then STDOUT should not be empty
+    And STDERR should be empty
+
+    When I run `wp eval 'echo var_dump( constant( "WP_DEBUG" ) );'`
+    Then STDOUT should be:
+      """
+      bool(true)
+      """
+    And STDERR should be empty
+
+    When I try `wp eval-file test.php`
+    Then the return code should be 255
+    And STDOUT should be:
+      """
+      hello
+      """
+    And STDERR should contain:
+      """
+      PHP Fatal error:  Call to undefined function calling_function_that_doesnt_exist()
       """
 
   Scenario: Setting the WP user
