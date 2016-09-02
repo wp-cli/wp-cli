@@ -123,7 +123,7 @@ class Help_Command extends WP_CLI_Command {
 
 		$alias = $command->get_alias();
 		if ( $alias ) {
-			$binding['has-alias']['alias'] = $alias;
+			$binding['alias'] = $alias;
 		}
 
 		if ( $command->can_have_subcommands() ) {
