@@ -84,10 +84,9 @@ Feature: Global flags
     And I run `wp db create`
     And I run `wp core install --url=wp.dev --title="WP Dev" --admin_user=wpcli --admin_password=wpcli --admin_email=wpcli@example.com`
     Then STDOUT should not be empty
-    And STDERR should be empty
 
     When I run `wp eval 'echo var_dump( constant( "WP_DEBUG" ) );'`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       bool(true)
       """
