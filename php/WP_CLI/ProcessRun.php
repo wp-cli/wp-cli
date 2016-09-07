@@ -1,5 +1,7 @@
 <?php
 
+namespace WP_CLI;
+
 /**
  * Results of an executed command.
  */
