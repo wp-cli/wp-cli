@@ -77,7 +77,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( is_readable( self::$cache_dir . '/wp-config-sample.php' ) )
 			return;
 
-		$cmd = Utils\esc_cmd( 'wp core download --force --path=%s', self::$cache_dir );
+		$version = getenv( 'WP_VERSION' ) ? '--version=' . getenv( 'WP_VERSION' ) : '';
+		$cmd = Utils\esc_cmd( 'wp core download --force --path=%s %s', self::$cache_dir, $version );
 		Process::create( $cmd, null, self::get_process_env_variables() )->run_check();
 	}
 
