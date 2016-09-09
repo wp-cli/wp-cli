@@ -219,7 +219,12 @@ class Search_Replace_Command extends WP_CLI_Command {
 				}
 
 				if ( ! $php_only && ! $this->regex ) {
+					$wpdb->last_error = '';
 					$serialRow = $wpdb->get_row( "SELECT * FROM `$table` WHERE `$col` REGEXP '^[aiO]:[1-9]' LIMIT 1" );
+					// When the regex triggers an error, we should fall back to PHP
+					if ( false !== strpos( $wpdb->last_error, 'ERROR 1139' ) ) {
+						$serialRow = true;
+					}
 				}
 
 				if ( $php_only || $this->regex || NULL !== $serialRow ) {
