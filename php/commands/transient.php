@@ -111,11 +111,17 @@ class Transient_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <key>
+	 * [<key>]
 	 * : Key for the transient.
 	 *
 	 * [--network]
 	 * : Delete the value of a network transient, instead of that on a single site.
+	 *
+	 * [--all]
+	 * : Delete all transients.
+	 *
+	 * [--expired]
+	 * : Delete all expired transients.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -123,9 +129,18 @@ class Transient_Command extends WP_CLI_Command {
 	 *     Success: Transient deleted.
 	 */
 	public function delete( $args, $assoc_args ) {
-		list( $key ) = $args;
+		$key = ( ! empty( $args ) ) ? $args[0] : NULL;
+
+		$all = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' );
+		$expired = \WP_CLI\Utils\get_flag_value( $assoc_args, 'expired' );
+
+		if ( ! $key ) {
+			WP_CLI::error( 'Transient key is required.' );
+		}
 
 		$func = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ? 'delete_site_transient' : 'delete_transient';
+		var_dump( $args ); return;
+
 		if ( $func( $key ) ) {
 			WP_CLI::success( 'Transient deleted.' );
 		} else {
@@ -166,7 +181,7 @@ class Transient_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand delete-expired
 	 */
-	public function delete_expired() {
+	private function delete_expired() {
 		global $wpdb, $_wp_using_ext_object_cache;
 
 		// Always delete all transients from DB too.
@@ -200,7 +215,7 @@ class Transient_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand delete-all
 	 */
-	public function delete_all() {
+	private function delete_all() {
 		global $wpdb, $_wp_using_ext_object_cache;
 
 		// Always delete all transients from DB too.
