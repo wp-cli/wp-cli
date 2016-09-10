@@ -485,6 +485,18 @@ class Runner {
 			$assoc_args['all'] = true;
 		}
 
+		// transient delete-expired  ->  transient delete --expired
+		if ( 'transient' === $args[0] && 'delete-expired' === $args[1] ) {
+			$args[1] = 'delete';
+			$assoc_args['expired'] = true;
+		}
+
+		// transient delete-all  ->  transient delete --all
+		if ( 'transient' === $args[0] && 'delete-all' === $args[1] ) {
+			$args[1] = 'delete';
+			$assoc_args['all'] = true;
+		}
+
 		// plugin scaffold  ->  scaffold plugin
 		if ( array( 'plugin', 'scaffold' ) == array_slice( $args, 0, 2 ) ) {
 			list( $args[0], $args[1] ) = array( $args[1], $args[0] );
