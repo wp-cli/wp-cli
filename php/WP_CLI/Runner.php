@@ -492,7 +492,7 @@ class Runner {
 		}
 
 		// transient delete-all  ->  transient delete --all
-		if ( 'transient' === $args[0] && 'delete-all' === $args[1] ) {
+		if ( count( $args ) > 1 && 'transient' === $args[0] && 'delete-all' === $args[1] ) {
 			$args[1] = 'delete';
 			$assoc_args['all'] = true;
 		}
