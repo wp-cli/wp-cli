@@ -77,8 +77,10 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( is_readable( self::$cache_dir . '/wp-config-sample.php' ) )
 			return;
 
-		$version = getenv( 'WP_VERSION' ) ? '--version=' . getenv( 'WP_VERSION' ) : '';
-		$cmd = Utils\esc_cmd( 'wp core download --force --path=%s %s', self::$cache_dir, $version );
+		$cmd = Utils\esc_cmd( 'wp core download --force --path=%s', self::$cache_dir );
+		if ( getenv( 'WP_VERSION' ) ) {
+			$cmd .= Utils\esc_cmd( ' --version=%s', getenv( 'WP_VERSION' ) );
+		}
 		Process::create( $cmd, null, self::get_process_env_variables() )->run_check();
 	}
 
@@ -91,6 +93,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		echo $result->stdout;
 		echo PHP_EOL;
 		self::cache_wp_files();
+		$result = Process::create( Utils\esc_cmd( 'wp core version --path=%s', self::$cache_dir ) , null, self::get_process_env_variables() )->run_check();
+		echo 'WordPress ' . $result->stdout;
+		echo PHP_EOL;
 	}
 
 	/**
