@@ -134,12 +134,20 @@ class Transient_Command extends WP_CLI_Command {
 		$all = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' );
 		$expired = \WP_CLI\Utils\get_flag_value( $assoc_args, 'expired' );
 
+		if ( true === $all ) {
+			$this->delete_all();
+			return;
+		}
+		else if ( true === $expired ) {
+			$this->delete_expired();
+			return;
+		}
+
 		if ( ! $key ) {
-			WP_CLI::error( 'Transient key is required.' );
+			WP_CLI::error( 'Please specify transient key, or use --all or --expired.' );
 		}
 
 		$func = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ? 'delete_site_transient' : 'delete_transient';
-		var_dump( $args ); return;
 
 		if ( $func( $key ) ) {
 			WP_CLI::success( 'Transient deleted.' );
