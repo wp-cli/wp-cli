@@ -486,7 +486,7 @@ class Runner {
 		}
 
 		// transient delete-expired  ->  transient delete --expired
-		if ( 'transient' === $args[0] && 'delete-expired' === $args[1] ) {
+		if ( count( $args ) > 1 && 'transient' === $args[0] && 'delete-expired' === $args[1] ) {
 			$args[1] = 'delete';
 			$assoc_args['expired'] = true;
 		}
