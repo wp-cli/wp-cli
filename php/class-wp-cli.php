@@ -248,11 +248,15 @@ class WP_CLI {
 	public static function do_hook( $when ) {
 		self::$hooks_passed[] = $when;
 
-		if ( !isset( self::$hooks[ $when ] ) )
+		if ( !isset( self::$hooks[ $when ] ) ) {
 			return;
+		}
+
+		self::debug( $when, 'do_hook' );
 
 		foreach ( self::$hooks[ $when ] as $callback ) {
-			call_user_func( $callback );
+			$args = func_num_args() > 1 ? array_slice( func_get_args(), 1 ) : array();
+			call_user_func_array( $callback, $args );
 		}
 	}
 
