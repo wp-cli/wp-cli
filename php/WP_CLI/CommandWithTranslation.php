@@ -172,13 +172,6 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 */
 	public function update( $args, $assoc_args ) {
 
-		// Ignore updates for the default locale.
-		if ( 'en_US' == get_locale() ) {
-			\WP_CLI::success( "Translations updates are not needed for the 'English (US)' locale." );
-
-			return;
-		}
-
 		$updates = $this->get_translation_updates();
 		if ( empty( $updates ) ) {
 			\WP_CLI::success( 'Translations are up to date.' );
