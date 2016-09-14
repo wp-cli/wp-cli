@@ -322,8 +322,8 @@ class Package_Command extends WP_CLI_Command {
 		// Remove the 'require' from composer.json
 		$json_path = $composer_json_obj->getPath();
 		WP_CLI::log( sprintf( 'Removing require statement from %s', $json_path ) );
-		$contents = file_get_contents( $json_path );
-		$manipulator = new JsonManipulator( $contents );
+		$composer_backup = file_get_contents( $composer_json_obj->getPath() );
+		$manipulator = new JsonManipulator( $composer_backup );
 		$manipulator->removeSubNode( 'require', $package_name );
 		file_put_contents( $composer_json_obj->getPath(), $manipulator->getContents() );
 
@@ -339,6 +339,7 @@ class Package_Command extends WP_CLI_Command {
 		$install->setPreferSource( true ); // Use VCS when VCS for easier contributions.
 
 		WP_CLI::log( 'Removing package directories and regenerating autoloader...' );
+		$res = false;
 		try {
 			$res = $install->run();
 		} catch ( Exception $e ) {
