@@ -188,14 +188,24 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 				RecursiveIteratorIterator::CHILD_FIRST
 			);
 
+			$files_to_unlink = $directories_to_delete = array();
 			foreach ( $files as $fileinfo ) {
 				$realpath = $fileinfo->getRealPath();
 				// Don't clobber subsites when operating on the main site
 				if ( is_main_site() && false !== stripos( $realpath, '/sites/' ) ) {
 					continue;
 				}
-				$todo = $fileinfo->isDir() ? 'rmdir' : 'unlink';
-				$todo( $realpath );
+				if ( $fileinfo->isDir() ) {
+					$directories_to_delete[] = $realpath;
+				} else {
+					$files_to_unlink[] = $realpath;
+				}
+			}
+			foreach( $files_to_unlink as $file ) {
+				unlink( $file );
+			}
+			foreach( $directories_to_delete as $directory ) {
+				rmdir( $directory );
 			}
 			rmdir( $upload_dir['basedir'] );
 		}
