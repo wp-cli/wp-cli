@@ -97,7 +97,7 @@ Want to live life on the edge? Run `wp cli update --nightly` to use the latest n
 
 ### Tab completions
 
-WP-CLI also comes with a tab completion script for Bash and ZSH. Just download [wp-completion.bash](https://github.com/wp-cli/wp-cli/raw/master/utils/wp-completion.bash) and source it from `~/.bash_profile`:
+WP-CLI also comes with a tab completion script for Bash and ZSH. Just download [wp-completion.bash](https://raw.githubusercontent.com/wp-cli/wp-cli/master/utils/wp-completion.bash) and source it from `~/.bash_profile`:
 
 ```bash
 source /FULL/PATH/TO/wp-completion.bash
