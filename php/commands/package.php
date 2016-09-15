@@ -85,6 +85,9 @@ class Package_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
 	 * ---
@@ -230,6 +233,9 @@ class Package_Command extends WP_CLI_Command {
 	 * List installed WP-CLI packages.
 	 *
 	 * ## OPTIONS
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
