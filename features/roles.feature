@@ -13,7 +13,7 @@ Feature: Manage WordPress roles
     When I run `wp role create reporter Reporter`
     Then STDOUT should be:
       """
-      Success: Role with key reporter created.
+      Success: Role with key 'reporter' created.
       """
 
   Scenario: Resetting a role
@@ -110,7 +110,7 @@ Feature: Manage WordPress roles
     When I run `wp role create reporter Reporter --clone=author`
     Then STDOUT should be:
       """
-      Success: Role with key reporter created. Cloned capabilities from author.
+      Success: Role with key 'reporter' created. Cloned capabilities from 'author'.
       """
 
     When I run `wp role list`
