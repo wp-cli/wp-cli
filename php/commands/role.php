@@ -5,7 +5,7 @@
  *
  * ## EXAMPLES
  *
- *     # List roles
+ *     # List roles.
  *     $ wp role list --fields=role --format=csv
  *     role
  *     administrator
@@ -14,21 +14,21 @@
  *     contributor
  *     subscriber
  *
- *     # Check if a role exists
+ *     # Check if a role exists.
  *     $ wp role exists editor
- *     Success: Role with ID editor exists.
+ *     Success: Role with ID 'editor' exists.
  *
- *     # Create role
+ *     # Create role.
  *     $ wp role create approver Approver
- *     Success: Role with key approver created.
+ *     Success: Role with key 'approver' created.
  *
- *     # Delete role
+ *     # Delete role.
  *     $ wp role delete approver
- *     Success: Role with key approver deleted.
+ *     Success: Role with key 'approver' deleted.
  *
- *     # Reset role
+ *     # Reset role.
  *     $ wp role reset administrator author contributor
- *     Success: Reset 3/3 roles
+ *     Success: Reset 3/3 roles.
  *
  * @package wp-cli
  */
@@ -70,6 +70,7 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # List roles.
 	 *     $ wp role list --fields=role --format=csv
 	 *     role
 	 *     administrator
@@ -100,7 +101,7 @@ class Role_Command extends WP_CLI_Command {
 	/**
 	 * Check if a role exists.
 	 *
-	 * ##DESCRIPTION
+	 * ## DESCRIPTION
 	 *
 	 * Will exit with status 0 if the role exists, 1 if it does not.
 	 *
@@ -111,17 +112,18 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Check if a role exists.
 	 *     $ wp role exists editor
-	 *     Success: Role with ID editor exists.
+	 *     Success: Role with ID 'editor' exists.
 	 */
 	public function exists( $args ) {
 		global $wp_roles;
 
 		if ( ! in_array($args[0], array_keys( $wp_roles->roles ) ) ) {
-			WP_CLI::error( "Role with ID $args[0] does not exist." );
+			WP_CLI::error( "Role with ID '$args[0]' does not exist." );
 		}
 
-		WP_CLI::success( "Role with ID $args[0] exists." );
+		WP_CLI::success( "Role with ID '$args[0]' exists." );
 	}
 
 	/**
@@ -140,13 +142,13 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Create role for Approver
+	 *     # Create role for Approver.
 	 *     $ wp role create approver Approver
-	 *     Success: Role with key approver created.
+	 *     Success: Role with key 'approver' created.
 	 *
-	 *     # Create role for Product Administrator
+	 *     # Create role for Product Administrator.
 	 *     $ wp role create productadmin "Product Administrator"
-	 *     Success: Role with key productadmin created.
+	 *     Success: Role with key 'productadmin' created.
 	 */
 	public function create( $args, $assoc_args ) {
 		global $wp_roles;
@@ -175,9 +177,9 @@ class Role_Command extends WP_CLI_Command {
 				foreach( $capabilities as $cap ) {
 					$role_obj->add_cap( $cap );
 				}
-				WP_CLI::success( sprintf( "Role with key %s created. Cloned capabilities from %s.", $role_key, $assoc_args['clone'] ) );
+				WP_CLI::success( sprintf( "Role with key '%s' created. Cloned capabilities from '%s'.", $role_key, $assoc_args['clone'] ) );
 			} else {
-				WP_CLI::success( sprintf( "Role with key %s created.", $role_key ) );
+				WP_CLI::success( sprintf( "Role with key '%s' created.", $role_key ) );
 			}
 		} else {
 			WP_CLI::error( "Role couldn't be created." );
@@ -194,13 +196,13 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Delete approver role
+	 *     # Delete approver role.
 	 *     $ wp role delete approver
-	 *     Success: Role with key approver deleted.
+	 *     Success: Role with key 'approver' deleted.
 	 *
-	 *     # Delete productadmin role
+	 *     # Delete productadmin role.
 	 *     wp role delete productadmin
-	 *     Success: Role with key productadmin deleted.
+	 *     Success: Role with key 'productadmin' deleted.
 	 */
 	public function delete( $args ) {
 		global $wp_roles;
@@ -217,9 +219,9 @@ class Role_Command extends WP_CLI_Command {
 		// Note: remove_role() doesn't indicate success or otherwise, so we have to
 		// check ourselves
 		if ( ! isset( $wp_roles->roles[$role_key] ) )
-			WP_CLI::success( sprintf( "Role with key %s deleted.", $role_key ) );
+			WP_CLI::success( sprintf( "Role with key '%s' deleted.", $role_key ) );
 		else
-			WP_CLI::error( sprintf( "Role with key %s could not be deleted.", $role_key ) );
+			WP_CLI::error( sprintf( "Role with key '%s' could not be deleted.", $role_key ) );
 
 	}
 
@@ -236,11 +238,11 @@ class Role_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Reset role
+	 *     # Reset role.
 	 *     $ wp role reset administrator author contributor
 	 *     Success: Reset 1/3 roles.
 	 *
-	 *     # Reset all default roles
+	 *     # Reset all default roles.
 	 *     $ wp role reset --all
 	 *     Success: All default roles reset.
 	 */
@@ -259,7 +261,7 @@ class Role_Command extends WP_CLI_Command {
 		$all_roles = array_keys( $wp_roles->roles );
 		$preserve_args = $args;
 
-		// get our default roles
+		// Get our default roles.
 		$default_roles = $preserve = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' );
 		$before = array();
 
@@ -296,12 +298,12 @@ class Role_Command extends WP_CLI_Command {
 				}
 			}
 
-			// no roles were unset, bail
+			// No roles were unset, bail.
 			if ( count( $default_roles ) == count( $preserve ) ) {
 				WP_CLI::error( 'Must specify a default role to reset.' );
 			}
 
-			// for the roles we're not resetting
+			// For the roles we're not resetting.
 			foreach ( $preserve as $k => $role ) {
 				/* save roles
 				 * if get_role is null
@@ -313,17 +315,17 @@ class Role_Command extends WP_CLI_Command {
 				remove_role( $role );
 			}
 
-			// put back all default roles and capabilities
+			// Put back all default roles and capabilities.
 			populate_roles();
 
-			// restore the preserved roles
+			// Restore the preserved roles.
 			foreach ( $preserve as $k => $roleobj ) {
-				// re-remove after populating
+				// Re-remove after populating.
 				if ( is_a( $roleobj, 'WP_Role' ) ) {
 					remove_role( $roleobj->name );
 					add_role( $roleobj->name, ucwords( $roleobj->name ), $roleobj->capabilities );
 				} else {
-					// when not an object, that means the role didn't exist before
+					// When not an object, that means the role didn't exist before.
 					remove_role( $roleobj );
 				}
 			}
