@@ -21,27 +21,67 @@ class User_Session_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Destroy all sessions for the given user.
+	 * Destroy a session for the given user.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <user>
 	 * : User ID, user email, or user login.
 	 *
+	 * [<token>]
+	 * : The token of the session to destroy. Defaults to the most recently created session.
+	 *
+	 * [--all]
+	 * : Destroy all of the user's sessions.
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Destroy a user's sessions
-	 *     $ wp user session destroy-all admin
-	 *     Success: Destroyed all sessions.
+	 *     # Destroy the most recent session of the given user
+	 *     $ wp user session destroy admin
+	 *     Success: Destroyed session. 3 sessions remaining.
 	 *
-	 * @subcommand destroy-all
+	 *     # Destroy a specific session of the given user
+	 *     $ wp user session destroy admin e073ad8540a9c2...
+	 *     Success: Destroyed session. 2 sessions remaining.
+	 *
+	 *     # Destroy all the sessions of the given user
+	 *     $ wp user session destroy admin --all
+	 *     Success: Destroyed all sessions.
 	 */
-	public function destroy_all( $args, $assoc_args ) {
-		$user      = $this->fetcher->get_check( $args[0] );
-		$manager   = WP_Session_Tokens::get_instance( $user->ID );
-		$sessions  = $manager->destroy_all();
+	public function destroy( $args, $assoc_args ) {
+		$user    = $this->fetcher->get_check( $args[0] );
+		$token   = \WP_CLI\Utils\get_flag_value( $args, 1, null );
+		$all     = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all', false );
+		$manager = WP_Session_Tokens::get_instance( $user->ID );
 
-		WP_CLI::success( 'Destroyed all sessions.' );
+		if ( $token && $all ) {
+			WP_CLI::error( 'The --all flag cannot be specified along with a session token.' );
+		}
+
+		if ( $all ) {
+			$manager->destroy_all();
+			$remaining = count( $manager->get_all() );
+			WP_CLI::success( sprintf( 'Destroyed all sessions. %s remaining.', $remaining ) );
+			return;
+		}
+
+		$sessions = $this->get_all_sessions( $manager );
+
+		if ( ! $token ) {
+			if ( empty( $sessions ) ) {
+				WP_CLI::success( 'No sessions to destroy.' );
+			}
+			$token = end( $sessions )['token'];
+		}
+
+		if ( ! isset( $sessions[ $token ] ) ) {
+			WP_CLI::error( 'Session not found.' );
+		}
+
+		$this->destroy_session( $manager, $token );
+		$remaining = count( $manager->get_all() );
+
+		WP_CLI::success( sprintf( 'Destroyed session. %s remaining.', $remaining ) );
 	}
 
 	/**
@@ -107,6 +147,12 @@ class User_Session_Command extends WP_CLI_Command {
 		} );
 
 		return $sessions;
+	}
+
+	protected function destroy_session( WP_Session_Tokens $manager, $token ) {
+		$update_session = new ReflectionMethod( $manager, 'update_session' );
+		$update_session->setAccessible( true );
+		return $update_session->invoke( $manager, $token, null );
 	}
 
 	private function get_formatter( &$assoc_args ) {
