@@ -90,8 +90,6 @@ class User_Session_Command extends WP_CLI_Command {
 
 		if ( 'ids' == $formatter->format ) {
 			echo implode( ' ', array_keys( $sessions ) );
-		} else if ( 'count' === $formatter->format ) {
-			$formatter->display_items( $sessions );
 		} else {
 			$formatter->display_items( $sessions );
 		}
