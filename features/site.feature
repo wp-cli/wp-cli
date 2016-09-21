@@ -90,7 +90,7 @@ Feature: Manage sites in a multisite installation
     When I run `wp site create --slug=first`
     Then STDOUT should be:
       """
-      Success: Site 2 created: example.com/first/
+      Success: Site 2 created: http://example.com/first/
       """
 
     When I run `wp site delete --slug=first --yes`

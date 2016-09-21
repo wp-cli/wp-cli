@@ -290,7 +290,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site create --slug=example
-	 *     Success: Site 3 created: www.example.com/example/
+	 *     Success: Site 3 created: http://www.example.com/example/
 	 */
 	public function create( $_, $assoc_args ) {
 		if ( !is_multisite() ) {
@@ -386,10 +386,12 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( $id->get_error_message() );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) )
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 			WP_CLI::line( $id );
-		else
-			WP_CLI::success( "Site $id created: $url" );
+		} else {
+			$blog = get_blog_details( $blog_id );
+			WP_CLI::success( "Site $id created: $blog->siteurl" );
+		}
 	}
 
 	/**
