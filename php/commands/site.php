@@ -389,7 +389,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 			WP_CLI::line( $id );
 		} else {
-			$blog = get_blog_details( $blog_id );
+			$blog = get_blog_details( $id );
 			WP_CLI::success( "Site $id created: $blog->siteurl" );
 		}
 	}
