@@ -86,25 +86,29 @@ class User_Session_Command extends WP_CLI_Command {
 		$user      = $this->fetcher->get_check( $args[0] );
 		$formatter = $this->get_formatter( $assoc_args );
 		$manager   = WP_Session_Tokens::get_instance( $user->ID );
-
-		$get_sessions = new ReflectionMethod( $manager, 'get_sessions' );
-		$get_sessions->setAccessible( true );
-		$sessions = $get_sessions->invoke( $manager );
+		$sessions  = $this->get_all_sessions( $manager );
 
 		if ( 'ids' == $formatter->format ) {
 			echo implode( ' ', array_keys( $sessions ) );
 		} else if ( 'count' === $formatter->format ) {
 			$formatter->display_items( $sessions );
 		} else {
-			$it = array_map( function( $session, $token ) {
-				$session['token']           = $token;
-				$session['login_time']      = date( 'Y-m-d H:i:s', $session['login'] );
-				$session['expiration_time'] = date( 'Y-m-d H:i:s', $session['expiration'] );
-				return $session;
-			}, $sessions, array_keys( $sessions ) );
-
-			$formatter->display_items( $it );
+			$formatter->display_items( $sessions );
 		}
+	}
+
+	protected function get_all_sessions( WP_Session_Tokens $manager ) {
+		$get_sessions = new ReflectionMethod( $manager, 'get_sessions' );
+		$get_sessions->setAccessible( true );
+		$sessions = $get_sessions->invoke( $manager );
+
+		array_walk( $sessions, function( & $session, $token ) {
+			$session['token']           = $token;
+			$session['login_time']      = date( 'Y-m-d H:i:s', $session['login'] );
+			$session['expiration_time'] = date( 'Y-m-d H:i:s', $session['expiration'] );
+		} );
+
+		return $sessions;
 	}
 
 	private function get_formatter( &$assoc_args ) {
