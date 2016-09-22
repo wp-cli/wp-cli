@@ -9,20 +9,20 @@ use \WP_CLI\Utils;
  *
  * ## EXAMPLES
  *
- *     # Display CLI version
+ *     # Display CLI version.
  *     $ wp cli version
- *     WP-CLI 0.23.1
+ *     WP-CLI 0.24.1
  *
- *     # Check for update
+ *     # Check for update.
  *     $ wp cli check-update
  *     Success: WP-CLI is at the latest version.
  *
- *     # Update CLI
+ *     # Update CLI.
  *     $ wp cli update
- *     You have version 0.23.0. Would you like to update to 0.23.1? [y/n] y
- *     Downloading from https://github.com/wp-cli/wp-cli/releases/download/v0.23.1/wp-cli-0.23.1.phar...
+ *     You have version 0.24.0. Would you like to update to 0.24.1? [y/n] y
+ *     Downloading from https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar...
  *     New version works. Proceeding to replace.
- *     Success: Updated WP-CLI to 0.23.1
+ *     Success: Updated WP-CLI to 0.24.1.
  *
  * @when before_wp_load
  */
@@ -51,8 +51,9 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Display CLI version.
 	 *     $ wp cli version
-	 *     WP-CLI 0.23.1
+	 *     WP-CLI 0.24.1
 	 */
 	public function version() {
 		WP_CLI::line( 'WP-CLI ' . WP_CLI_VERSION );
@@ -74,6 +75,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Display various data about the CLI environment.
 	 *     $ wp cli info
 	 *     PHP binary: /usr/bin/php5
 	 *     PHP version:    5.5.9-1ubuntu4.16
@@ -82,7 +84,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *     WP-CLI packages dir:    /home/person/.wp-cli/packages/
 	 *     WP-CLI global config:
 	 *     WP-CLI project config:
-	 *     WP-CLI version: 0.23.1
+	 *     WP-CLI version: 0.24.1
 	 */
 	public function info( $_, $assoc_args ) {
 		$php_bin = WP_CLI::get_php_binary();
@@ -122,13 +124,13 @@ class CLI_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--patch]
-	 * : Only list patch updates
+	 * : Only list patch updates.
 	 *
 	 * [--minor]
-	 * : Only list minor updates
+	 * : Only list minor updates.
 	 *
 	 * [--major]
-	 * : Only list major updates
+	 * : Only list major updates.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each update.
@@ -150,16 +152,16 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Check for update
+	 *     # Check for update.
 	 *     $ wp cli check-update
 	 *     Success: WP-CLI is at the latest version.
 	 *
-	 *     # Check for update and new version is available
+	 *     # Check for update and new version is available.
 	 *     $ wp cli check-update
 	 *     +---------+-------------+-------------------------------------------------------------------------------+
 	 *     | version | update_type | package_url                                                                   |
 	 *     +---------+-------------+-------------------------------------------------------------------------------+
-	 *     | 0.23.1  | patch       | https://github.com/wp-cli/wp-cli/releases/download/v0.23.1/wp-cli-0.23.1.phar |
+	 *     | 0.24.1  | patch       | https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar |
 	 *     +---------+-------------+-------------------------------------------------------------------------------+
 	 *
 	 * @subcommand check-update
@@ -185,27 +187,28 @@ class CLI_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--patch]
-	 * : Only perform patch updates
+	 * : Only perform patch updates.
 	 *
 	 * [--minor]
-	 * : Only perform minor updates
+	 * : Only perform minor updates.
 	 *
 	 * [--major]
-	 * : Only perform major updates
+	 * : Only perform major updates.
 	 *
 	 * [--nightly]
 	 * : Update to the latest built version of the master branch. Potentially unstable.
 	 *
 	 * [--yes]
-	 * : Do not prompt for confirmation
+	 * : Do not prompt for confirmation.
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Update CLI.
 	 *     $ wp cli update
-	 *     You have version 0.23.0. Would you like to update to 0.23.1? [y/n] y
-	 *     Downloading from https://github.com/wp-cli/wp-cli/releases/download/v0.23.1/wp-cli-0.23.1.phar...
+	 *     You have version 0.24.0. Would you like to update to 0.24.1? [y/n] y
+	 *     Downloading from https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar...
 	 *     New version works. Proceeding to replace.
-	 *     Success: Updated WP-CLI to 0.23.1
+	 *     Success: Updated WP-CLI to 0.24.1.
 	 */
 	public function update( $_, $assoc_args ) {
 		if ( ! Utils\inside_phar() ) {
@@ -250,7 +253,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		$headers = array();
 		$options = array(
-			'timeout' => 600,  // 10 minutes ought to be enough for everybody
+			'timeout' => 600,  // 10 minutes ought to be enough for everybody.
 			'filename' => $temp
 		);
 
@@ -274,7 +277,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( "Cannot chmod %s.", $temp ) );
 		}
 
-		class_exists( '\cli\Colors' ); // this autoloads \cli\Colors - after we move the file we no longer have access to this class
+		class_exists( '\cli\Colors' ); // This autoloads \cli\Colors - after we move the file we no longer have access to this class.
 
 		if ( false === @rename( $temp, $old_phar ) ) {
 			WP_CLI::error( sprintf( "Cannot move %s to %s", $temp, $old_phar ) );
@@ -289,7 +292,7 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Returns update information
+	 * Returns update information.
 	 */
 	private function get_updates( $assoc_args ) {
 		$url = 'https://api.github.com/repos/wp-cli/wp-cli/releases';
@@ -316,7 +319,7 @@ class CLI_Command extends WP_CLI_Command {
 			);
 		foreach ( $release_data as $release ) {
 
-			// get rid of leading "v" if there is one set
+			// Get rid of leading "v" if there is one set.
 			$release_version = $release->tag_name;
 			if ( 'v' === substr( $release_version, 0, 1 ) ) {
 				$release_version = ltrim( $release_version, 'v' );
@@ -388,6 +391,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Dump the list of global parameters.
 	 *     $ wp cli param-dump --format=var_export
 	 *     array (
 	 *       'path' =>
@@ -432,7 +436,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Dump the list of installed commands
+	 *     # Dump the list of installed commands.
 	 *     $ wp cli cmd-dump
 	 *     {"name":"wp","description":"Manage WordPress through the command-line.","longdesc":"\n\n## GLOBAL PARAMETERS\n\n  --path=<path>\n      Path to the WordPress files.\n\n  --ssh=<ssh>\n      Perform operation against a remote server over SSH.\n\n  --url=<url>\n      Pretend request came from given URL. In multisite, this argument is how the target site is specified. \n\n  --user=<id|login|email>\n
 	 *
@@ -504,7 +508,7 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get a string representing the type of update being checked for
+	 * Get a string representing the type of update being checked for.
 	 */
 	private function get_update_type_str( $assoc_args ) {
 		$update_type = ' ';
@@ -520,4 +524,3 @@ class CLI_Command extends WP_CLI_Command {
 }
 
 WP_CLI::add_command( 'cli', 'CLI_Command' );
-
