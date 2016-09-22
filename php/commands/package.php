@@ -40,7 +40,7 @@ use \WP_CLI\ComposerIO;
  *
  *     # Install the latest development version of the package
  *     $ wp package install wp-cli/server-command
- *     Installing wp-cli/server-command (dev-master)
+ *     Installing package wp-cli/server-command (dev-master)
  *     Updating /home/person/.wp-cli/packages/composer.json to require the package...
  *     Using Composer to install the package...
  *     ---
@@ -137,7 +137,7 @@ class Package_Command extends WP_CLI_Command {
 	 *
 	 *     # Install the latest development version
 	 *     $ wp package install wp-cli/server-command
-	 *     Installing wp-cli/server-command (dev-master)
+	 *     Installing package wp-cli/server-command (dev-master)
 	 *     Updating /home/person/.wp-cli/packages/composer.json to require the package...
 	 *     Using Composer to install the package...
 	 *     ---
@@ -169,7 +169,7 @@ class Package_Command extends WP_CLI_Command {
 		if ( ! $package ) {
 			WP_CLI::error( "Invalid package." );
 		} else {
-			WP_CLI::log( sprintf( "Installing %s (%s)", $package_name, $version ) );
+			WP_CLI::log( sprintf( "Installing package %s (%s)", $package_name, $version ) );
 		}
 
 		try {
