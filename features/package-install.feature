@@ -71,7 +71,7 @@ Feature: Install WP-CLI packages
     When I run `wp package install trendwerk/faker`
     Then STDOUT should contain:
       """
-      Error: trendwerk/faker dev-master requires nelmio/alice
+      Warning: trendwerk/faker dev-master requires nelmio/alice
       """
     And STDOUT should contain:
       """
