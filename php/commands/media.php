@@ -275,7 +275,7 @@ class Media_Command extends WP_CLI_Command {
 		return $filename;
 	}
 
-	private function _process_regeneration( $id, $skip_delete = false, $only_missing = false, $progress = '' ) {
+	private function _process_regeneration( $id, $skip_delete = false, $only_missing = false, $progress ) {
 
 		$fullsizepath = get_attached_file( $id );
 
