@@ -91,7 +91,7 @@ class Media_Command extends WP_CLI_Command {
 
 		$errored = false;
 		foreach ( $images->posts as $number => $id ) {
-			if ( ! $this->_process_regeneration( $id, $skip_delete, $only_missing, ( $number + 1 ) . '/' . $count ) ) {
+			if ( ! $this->process_regeneration( $id, $skip_delete, $only_missing, ( $number + 1 ) . '/' . $count ) ) {
 				$errored = true;
 			}
 		}
@@ -186,7 +186,7 @@ class Media_Command extends WP_CLI_Command {
 					WP_CLI::warning( "Unable to import file '$file'. Reason: File doesn't exist." );
 					break;
 				}
-				$tempfile = $this->_make_copy( $file );
+				$tempfile = $this->make_copy( $file );
 			} else {
 				$tempfile = download_url( $file );
 			}
@@ -262,7 +262,7 @@ class Media_Command extends WP_CLI_Command {
 	}
 
 	// wp_tempnam() inexplicably forces a .tmp extension, which spoils MIME type detection
-	private function _make_copy( $path ) {
+	private function make_copy( $path ) {
 		$dir = get_temp_dir();
 		$filename = basename( $path );
 		if ( empty( $filename ) )
@@ -275,7 +275,7 @@ class Media_Command extends WP_CLI_Command {
 		return $filename;
 	}
 
-	private function _process_regeneration( $id, $skip_delete = false, $only_missing = false, $progress ) {
+	private function process_regeneration( $id, $skip_delete, $only_missing, $progress ) {
 
 		$fullsizepath = get_attached_file( $id );
 
