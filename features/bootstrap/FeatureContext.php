@@ -12,6 +12,7 @@ use \WP_CLI\Utils;
 if ( file_exists( __DIR__ . '/utils.php' ) ) {
 	require_once __DIR__ . '/utils.php';
 	require_once __DIR__ . '/Process.php';
+	require_once __DIR__ . '/ProcessRun.php';
 	$project_composer = dirname( dirname( dirname( __FILE__ ) ) ) . '/composer.json';
 	if ( file_exists( $project_composer ) ) {
 		$composer = json_decode( file_get_contents( $project_composer ) );
@@ -30,6 +31,7 @@ if ( file_exists( __DIR__ . '/utils.php' ) ) {
 } else {
 	require_once __DIR__ . '/../../php/utils.php';
 	require_once __DIR__ . '/../../php/WP_CLI/Process.php';
+	require_once __DIR__ . '/../../php/WP_CLI/ProcessRun.php';
 	require_once __DIR__ . '/../../vendor/autoload.php';
 }
 
