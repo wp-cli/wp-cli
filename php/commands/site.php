@@ -257,11 +257,13 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( "Site not found." );
 		}
 
-		WP_CLI::confirm( "Are you sure you want to delete the '$blog->siteurl' site?", $assoc_args );
+		$site_url = trailingslashit( $blog->siteurl );
+
+		WP_CLI::confirm( "Are you sure you want to delete the '$site_url' site?", $assoc_args );
 
 		wpmu_delete_blog( $blog->blog_id, ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
 
-		WP_CLI::success( "The site at '$blog->siteurl' was deleted." );
+		WP_CLI::success( "The site at '$site_url' was deleted." );
 	}
 
 	/**
@@ -389,8 +391,8 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 			WP_CLI::line( $id );
 		} else {
-			$blog = get_blog_details( $id );
-			WP_CLI::success( "Site $id created: $blog->siteurl" );
+			$site_url = trailingslashit( get_site_url( $id ) );
+			WP_CLI::success( "Site $id created: $site_url" );
 		}
 	}
 

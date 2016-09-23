@@ -59,7 +59,7 @@ Feature: Manage sites in a multisite installation
     When I run `wp site delete {SITE_ID} --yes`
     Then STDOUT should be:
       """
-      Success: The site at 'http://example.com/first' was deleted.
+      Success: The site at 'http://example.com/first/' was deleted.
       """
 
     When I try the previous command again
@@ -90,13 +90,13 @@ Feature: Manage sites in a multisite installation
     When I run `wp site create --slug=first`
     Then STDOUT should be:
       """
-      Success: Site 2 created: http://example.com/first
+      Success: Site 2 created: http://example.com/first/
       """
 
     When I run `wp site delete --slug=first --yes`
     Then STDOUT should be:
       """
-      Success: The site at 'http://example.com/first' was deleted.
+      Success: The site at 'http://example.com/first/' was deleted.
       """
 
     When I try the previous command again
