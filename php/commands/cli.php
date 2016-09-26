@@ -295,7 +295,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * Returns update information.
 	 */
 	private function get_updates( $assoc_args ) {
-		$url = 'https://api.github.com/repos/wp-cli/wp-cli/releases';
+		$url = 'https://github-api.wp-cli.org/repos/wp-cli/wp-cli/releases';
 
 		$options = array(
 			'timeout' => 30
