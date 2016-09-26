@@ -115,7 +115,6 @@ Feature: `wp cli` tasks
     And STDERR should be empty
     And the return code should be 0
 
-  @github-api
   Scenario: Dump the list of global parameters with values
     Given a WP install
 
