@@ -182,7 +182,19 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Fetch most recent update matching the requirements. Returns the available versions if there are updates, or empty if no update available.
+	 * Update WP-CLI.
+	 *
+	 * Default behavior is to check the releases API for a newer version, and
+	 * prompt if one is available.
+	 *
+	 * Use `--stable` to install or reinstall the latest stable version.
+	 *
+	 * Use `--nightly` to install the latest built version of the master branch.
+	 * While not recommended for production, nightly contains the latest and
+	 * greatest, and should be stable enough for development and staging
+	 * environments.
+	 *
+	 * Only works for the Phar installation mechanism.
 	 *
 	 * ## OPTIONS
 	 *
@@ -194,6 +206,9 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * [--major]
 	 * : Only perform major updates.
+	 *
+	 * [--stable]
+	 * : Update to the latest stable release. Skips update check.
 	 *
 	 * [--nightly]
 	 * : Update to the latest built version of the master branch. Potentially unstable.
@@ -223,12 +238,12 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( "%s is not writable by current user.", dirname( $old_phar ) ) );
 		}
 
-		if ( isset( $assoc_args['nightly'] ) ) {
-
+		if ( Utils\get_flag_value( $assoc_args, 'nightly' ) ) {
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest nightly?', WP_CLI_VERSION ), $assoc_args );
-
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar';
-
+		} else if ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
+			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest stable release?', WP_CLI_VERSION ), $assoc_args );
+			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
 		} else {
 
 			$updates = $this->get_updates( $assoc_args );
@@ -283,8 +298,10 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( sprintf( "Cannot move %s to %s", $temp, $old_phar ) );
 		}
 
-		if ( isset( $assoc_args['nightly'] ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'nightly' ) ) {
 			$updated_version = 'the latest nightly release';
+		} else if ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
+			$updated_version = 'the latest stable release';
 		} else {
 			$updated_version = $newest['version'];
 		}
