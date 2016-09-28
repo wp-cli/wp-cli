@@ -115,7 +115,7 @@ Feature: `wp cli` tasks
     And STDERR should be empty
     And the return code should be 0
 
-  @github-api
+  @github-api @less-than-php-7
   Scenario: Install WP-CLI stable
     Given an empty directory
     And a new Phar with version "0.14.0"
