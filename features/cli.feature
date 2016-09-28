@@ -115,6 +115,43 @@ Feature: `wp cli` tasks
     And STDERR should be empty
     And the return code should be 0
 
+  @github-api @less-than-php-7
+  Scenario: Install WP-CLI stable
+    Given an empty directory
+    And a new Phar with version "0.14.0"
+    And a session file:
+      """
+      y
+      """
+
+    When I run `{PHAR_PATH} cli check-update --minor --field=version`
+    Then STDOUT should not be empty
+    And save STDOUT as {UPDATE_VERSION}
+
+    When I run `{PHAR_PATH} cli update --stable < session`
+    Then STDOUT should contain:
+      """
+      You have version 0.14.0. Would you like to update to the latest stable release? [y/n]
+      """
+    And STDOUT should contain:
+      """
+      Success: Updated WP-CLI to the latest stable release.
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `{PHAR_PATH} cli check-update`
+    Then STDOUT should be:
+      """
+      Success: WP-CLI is at the latest version.
+      """
+
+    When I run `{PHAR_PATH} cli version`
+    Then STDOUT should be:
+      """
+      WP-CLI {UPDATE_VERSION}
+      """
+
   Scenario: Dump the list of global parameters with values
     Given a WP install
 
