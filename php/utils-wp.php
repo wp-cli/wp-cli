@@ -54,6 +54,7 @@ function wp_die_handler( $message ) {
 		$message = $message->get_error_message();
 	}
 
+	$message = trim( $message );
 	if ( preg_match( '|^\<h1>(.+?)</h1>|', $message, $matches ) ) {
 		$message = $matches[1];
 	}
