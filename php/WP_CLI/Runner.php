@@ -1053,6 +1053,12 @@ class Runner {
 		WP_CLI::add_wp_hook( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
 
 		WP_CLI::add_wp_hook( 'nocache_headers', function( $headers ){
+			// WordPress might be calling nocache_headers() because of a dead db
+			global $wpdb;
+			if ( ! empty( $wpdb->error ) ) {
+				Utils\wp_die_handler( $wpdb->error );
+			}
+			// Otherwise, WP might be calling nocache_headers() because WP isn't installed
 			Utils\wp_not_installed();
 			return $headers;
 		});
@@ -1092,14 +1098,6 @@ class Runner {
 		// Use our own debug mode handling instead of WP core
 		WP_CLI::add_wp_hook( 'enable_wp_debug_mode_checks', function( $ret ) {
 			Utils\wp_debug_mode();
-
-			// Check to see of wpdb is errored, instead of waiting for dead_db()
-			require_wp_db();
-			global $wpdb;
-			if ( ! empty( $wpdb->error ) ) {
-				Utils\wp_die_handler( $wpdb->error );
-			}
-
 			return false;
 		});
 
