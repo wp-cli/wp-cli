@@ -244,3 +244,34 @@ Feature: Create shortcuts to specific WordPress installs
       """
       Error: Cannot use '@all' when no aliases are registered.
       """
+
+  Scenario: Alias for a subsite of a multisite install
+    Given a WP multisite subdomain install
+    And a wp-cli.yml file:
+      """
+      url: example.com
+      @subsite:
+        url: subsite.example.com
+      """
+
+    When I run `wp site create --slug=subsite`
+    Then STDOUT should not be empty
+
+    When I run `wp option get siteurl`
+    Then STDOUT should be:
+      """
+      http://example.com
+      """
+
+    When I run `wp @subsite option get siteurl`
+    Then STDOUT should be:
+      """
+      http://subsite.example.com
+      """
+
+    When I try `wp @subsite option get siteurl --url=subsite.example.com`
+    Then STDERR should be:
+      """
+      Error: Parameter errors:
+       unknown --url parameter
+      """
