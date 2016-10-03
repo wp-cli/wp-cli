@@ -312,7 +312,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * Returns update information.
 	 */
 	private function get_updates( $assoc_args ) {
-		$url = 'https://github-api.wp-cli.org/repos/wp-cli/wp-cli/releases';
+		$url = 'https://api.github.com/repos/wp-cli/wp-cli/releases';
 
 		$options = array(
 			'timeout' => 30
@@ -321,7 +321,7 @@ class CLI_Command extends WP_CLI_Command {
 		$headers = array(
 			'Accept' => 'application/json'
 		);
-		$response = Utils\http_request( 'GET', $url, array(), $headers, $options );
+		$response = Utils\http_request( 'GET', $url, $headers, $options );
 
 		if ( ! $response->success || 200 !== $response->status_code ) {
 			WP_CLI::error( sprintf( "Failed to get latest version (HTTP code %d).", $response->status_code ) );
