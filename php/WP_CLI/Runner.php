@@ -1135,6 +1135,18 @@ class Runner {
 			}, 0 );
 		}
 
+		// Avoid uncaught exception when using wp_mail() without defined $_SERVER['SERVER_NAME']
+		WP_CLI::add_wp_hook( 'wp_mail_from', function( $from_email ){
+			if ( 'wordpress@' === $from_email ) {
+				$sitename = strtolower( parse_url( site_url(), PHP_URL_HOST ) );
+				if ( substr( $sitename, 0, 4 ) == 'www.' ) {
+					$sitename = substr( $sitename, 4 );
+				}
+				$from_email = 'wordpress@' . $sitename;
+			}
+			return $from_email;
+		});
+
 	}
 
 	/**
