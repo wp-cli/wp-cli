@@ -213,10 +213,10 @@ class Configurator {
 	 *
 	 * @param string $path Path to YAML file.
 	 */
-	public function merge_yml( $path ) {
+	public function merge_yml( $path, $current_alias = null ) {
 		$yaml = self::load_yml( $path );
 		if ( ! empty( $yaml['_']['inherit'] ) ) {
-			$this->merge_yml( $yaml['_']['inherit'] );
+			$this->merge_yml( $yaml['_']['inherit'], $current_alias );
 		}
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
@@ -251,6 +251,9 @@ class Configurator {
 				self::arrayify( $value );
 				$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
 			} else {
+				if ( $current_alias && in_array( $key, self::$alias_spec, true ) ) {
+					continue;
+				}
 				$this->config[ $key ] = $value;
 			}
 		}

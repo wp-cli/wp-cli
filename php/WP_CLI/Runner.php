@@ -632,10 +632,10 @@ class Runner {
 			$this->global_config_path = $this->get_global_config_path();
 			$this->project_config_path = $this->get_project_config_path();
 
-			$configurator->merge_yml( $this->global_config_path );
+			$configurator->merge_yml( $this->global_config_path, $this->alias );
 			$config = $configurator->to_array();
 			$this->_required_files['global'] = $config[0]['require'];
-			$configurator->merge_yml( $this->project_config_path );
+			$configurator->merge_yml( $this->project_config_path, $this->alias );
 			$config = $configurator->to_array();
 			$this->_required_files['project'] = $config[0]['require'];
 		}
