@@ -137,21 +137,31 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				// Install from local or remote zip file
 				$file_upgrader = $this->get_upgrader( $assoc_args );
 
-				if ( $file_upgrader->install( $local_or_remote_zip_file ) ) {
-					$slug = $file_upgrader->result['destination_name'];
-					// Remove the branch name from the director for Github URLs
-					if ( strpos( $local_or_remote_zip_file, '://' ) !== false
+				$filter = false;
+				if ( strpos( $local_or_remote_zip_file, '://' ) !== false
 						&& 'github.com' === parse_url( $local_or_remote_zip_file, PHP_URL_HOST ) ) {
+					$filter = function( $source, $remote_source, $upgrader ) use ( $local_or_remote_zip_file ) {
 						$branch_length = strlen( pathinfo( $local_or_remote_zip_file, PATHINFO_FILENAME ) );
 						if ( $branch_length ) {
-							$new_path = substr( rtrim( $file_upgrader->result['destination'], '/' ), 0, - ( $branch_length + 1 ) ) . '/';
-							if ( $GLOBALS['wp_filesystem']->move( $file_upgrader->result['destination'], $new_path ) ) {
-								$slug = basename( $new_path );
-								WP_CLI::log( "Moved Github-based project from '" . basename( $file_upgrader->result['destination_name'] ) . "' to '" . $slug . "'." );
+							$new_path = substr( rtrim( $source, '/' ), 0, - ( $branch_length + 1 ) ) . '/';
+							if ( $GLOBALS['wp_filesystem']->move( $source, $new_path ) ) {
+								WP_CLI::log( "Renamed Github-based project from '" . basename( $source ) . "' to '" . basename( $new_path ) . "'." );
+								return $new_path;
+							} else {
+								return new \WP_CLI( 'wpcli_install_gitub', "Couldn't move Github-based project to appropriate directory." );
 							}
 						}
-					}
+						return $source;
+					};
+					add_filter( 'upgrader_source_selection', $filter, 10, 3 );
+				}
+
+				if ( $file_upgrader->install( $local_or_remote_zip_file ) ) {
+					$slug = $file_upgrader->result['destination_name'];
 					$result = true;
+					if ( $filter ) {
+						remove_filter( 'upgrader_source_selection', $filter, 10, 3 );
+					}
 				}
 			} else {
 				// Assume a plugin/theme slug from the WordPress.org repository has been specified

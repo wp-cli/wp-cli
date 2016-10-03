@@ -10,13 +10,29 @@ Feature: Install WordPress plugins
       """
     And STDOUT should contain:
       """
-      Moved Github-based project from 'one-time-login-master' to 'one-time-login'.
+      Renamed Github-based project from 'one-time-login-master' to 'one-time-login'.
       """
     And STDOUT should contain:
       """
       Plugin installed successfully.
       """
     And STDERR should be empty
+    And the wp-content/plugins/one-time-login directory should exist
+    And the wp-content/plugins/one-time-login-master directory should not exist
+
+    When I try `wp plugin install https://github.com/runcommand/one-time-login/archive/master.zip`
+    Then STDERR should contain:
+      """
+      Warning: Destination folder already exists
+      """
+    And the wp-content/plugins/one-time-login directory should exist
+    And the wp-content/plugins/one-time-login-master directory should not exist
+
+    When I run `wp plugin install https://github.com/runcommand/one-time-login/archive/master.zip --force`
+    Then STDOUT should contain:
+      """
+      Plugin updated successfully.
+      """
     And the wp-content/plugins/one-time-login directory should exist
     And the wp-content/plugins/one-time-login-master directory should not exist
 
