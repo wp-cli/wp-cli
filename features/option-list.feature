@@ -31,3 +31,36 @@ Feature: List WordPress options
       """
       siteurl
       """
+
+  Scenario: List option with exclude pattern
+    Given a WP install
+
+    When I run `wp option add sample_test_field_one sample_test_field_value_one`
+    And I run `wp option add sample_test_field_two sample_test_field_value_two`
+    And I run `wp option list --search="sample_test_field_*" --format=csv`
+    Then STDOUT should be:
+      """
+      option_name,option_value
+      sample_test_field_one,sample_test_field_value_one
+      sample_test_field_two,sample_test_field_value_two
+      """
+
+    When I run `wp option list --search="sample_test_field_*" --exclude="*field_one" --format=csv`
+    Then STDOUT should be:
+      """
+      option_name,option_value
+      sample_test_field_two,sample_test_field_value_two
+      """
+
+    When I run `wp option list`
+    Then STDOUT should contain:
+      """
+      sample_test_field_one
+      """
+
+    When I run `wp option list --exclude="sample_test_field_one"`
+    Then STDOUT should not contain:
+      """
+      sample_test_field_one
+      """
+
