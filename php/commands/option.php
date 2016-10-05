@@ -130,6 +130,9 @@ class Option_Command extends WP_CLI_Command {
 	 * [--search=<pattern>]
 	 * : Use wildcards ( * and ? ) to match option name.
 	 *
+	 * [--exclude=<pattern>]
+	 * : Pattern to exclude. Use wildcards ( * and ? ) to match option name.
+	 *
 	 * [--autoload=<value>]
 	 * : Match only autoload options when value is on, and only not-autoload option when off.
 	 *
@@ -202,6 +205,7 @@ class Option_Command extends WP_CLI_Command {
 
 		global $wpdb;
 		$pattern = '%';
+		$exclude = '';
 		$fields = array( 'option_name', 'option_value' );
 		$size_query = ",LENGTH(option_value) AS `size_bytes`";
 		$autoload_query = '';
@@ -211,6 +215,12 @@ class Option_Command extends WP_CLI_Command {
 			// substitute wildcards
 			$pattern = str_replace( '*', '%', $pattern );
 			$pattern = str_replace( '?', '_', $pattern );
+		}
+
+		if ( isset( $assoc_args['exclude'] ) ) {
+			$exclude = self::esc_like( $assoc_args['exclude'] );
+			$exclude = str_replace( '*', '%', $exclude );
+			$exclude = str_replace( '?', '_', $exclude );
 		}
 
 		if ( isset( $assoc_args['fields'] ) ) {
@@ -244,6 +254,10 @@ class Option_Command extends WP_CLI_Command {
 		$where = '';
 		if ( $pattern ) {
 			$where .= $wpdb->prepare( "WHERE `option_name` LIKE %s", $pattern );
+		}
+
+		if ( $exclude ) {
+			$where .= $wpdb->prepare( " AND `option_name` NOT LIKE %s", $exclude );
 		}
 		$where .= $autoload_query . $transients_query;
 
