@@ -54,11 +54,20 @@ function wp_die_handler( $message ) {
 		$message = $message->get_error_message();
 	}
 
-	$message = trim( $message );
-	if ( preg_match( '|^\<h1>(.+?)</h1>|', $message, $matches ) ) {
-		$message = $matches[1];
+	$original_message = $message = trim( $message );
+	if ( preg_match( '|^\<h1>(.+?)</h1>|', $original_message, $matches ) ) {
+		$message = $matches[1] . '.';
+	}
+	if ( preg_match( '|\<p>(.+?)</p>|', $original_message, $matches ) ) {
+		$message .= ' ' . $matches[1];
 	}
 
+	$search_replace = array(
+		'<code>'    => '`',
+		'</code>'   => '`',
+	);
+	$message = str_replace( array_keys( $search_replace ), array_values( $search_replace ), $message );
+	$message = strip_tags( $message );
 	$message = html_entity_decode( $message, ENT_COMPAT, 'UTF-8' );
 
 	\WP_CLI::error( $message );
