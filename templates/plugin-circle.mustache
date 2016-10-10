@@ -8,6 +8,6 @@ dependencies:
 
 test:
   pre:
-    - bash bin/install-wp-tests.sh wordpress_test root '' localhost latest
+    - bash bin/install-wp-tests.sh wordpress_test ubuntu '' 127.0.0.1 latest
   override:
     - phpunit
