@@ -9,7 +9,7 @@ Feature: Perform database operations
     Then STDOUT should be empty
     And STDERR should be:
       """
-      Error: Can’t select database
+      Error: Can’t select database. We were able to connect to the database server (which means your username and password is okay) but not able to select the `wp_cli_test` database.
       """
 
     When I run `wp db create`
