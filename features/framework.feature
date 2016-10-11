@@ -195,11 +195,11 @@ Feature: Load WP-CLI
     When I try `wp --require=invalid-host.php option get home`
     Then STDERR should contain:
       """
-      Error: Error establishing a database connection. This either means that the username and password information in your `wp-config.php` file is incorrect or we can’t contact the database server at `localghost`. This could mean your host’s database server is down.
+      Error: Error establishing a database connection.
       """
 
     When I try `wp --require=invalid-host.php --require=wp-debug.php option get home`
     Then STDERR should contain:
       """
-      Error: Error establishing a database connection. This either means that the username and password information in your `wp-config.php` file is incorrect or we can’t contact the database server at `localghost`. This could mean your host’s database server is down.
+      Error: Error establishing a database connection.
       """
