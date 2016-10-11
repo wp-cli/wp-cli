@@ -195,11 +195,11 @@ Feature: Load WP-CLI
     When I try `wp --require=invalid-host.php option get home`
     Then STDERR should contain:
       """
-      Error: Error establishing a database connection
+      Error: Error establishing a database connection.
       """
 
     When I try `wp --require=invalid-host.php --require=wp-debug.php option get home`
     Then STDERR should contain:
       """
-      Error: Error establishing a database connection
+      Error: Error establishing a database connection.
       """
