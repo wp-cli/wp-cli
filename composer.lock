@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4218a2e198b39594cc1f9500ebfdac42",
-    "content-hash": "ef98f5250ac1a487cdea910258300473",
+    "hash": "ce8fdbbf904758ec2297424e667a20c1",
+    "content-hash": "66db43f8d349f59c6dd42f72a8638b22",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -559,16 +559,16 @@
         },
         {
             "name": "rmccue/requests",
-            "version": "dev-master",
+            "version": "v1.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rmccue/Requests.git",
-                "reference": "0048f3c0b33add0f924cf857961a2f02f4a802b6"
+                "reference": "87932f52ffad70504d93f04f15690cf16a089546"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rmccue/Requests/zipball/0048f3c0b33add0f924cf857961a2f02f4a802b6",
-                "reference": "0048f3c0b33add0f924cf857961a2f02f4a802b6",
+                "url": "https://api.github.com/repos/rmccue/Requests/zipball/87932f52ffad70504d93f04f15690cf16a089546",
+                "reference": "87932f52ffad70504d93f04f15690cf16a089546",
                 "shasum": ""
             },
             "require": {
@@ -604,7 +604,7 @@
                 "iri",
                 "sockets"
             ],
-            "time": "2016-09-22 16:46:57"
+            "time": "2016-10-13 00:11:37"
         },
         {
             "name": "seld/cli-prompt",
@@ -1898,18 +1898,9 @@
             "time": "2013-01-13 10:24:48"
         }
     ],
-    "aliases": [
-        {
-            "alias": "1.6.1",
-            "alias_normalized": "1.6.1.0",
-            "version": "9999999-dev",
-            "package": "rmccue/requests"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "rmccue/requests": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
