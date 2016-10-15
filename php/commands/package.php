@@ -40,7 +40,7 @@ use \WP_CLI\ComposerIO;
  *
  *     # Install the latest development version of the package
  *     $ wp package install wp-cli/server-command
- *     Installing wp-cli/server-command (dev-master)
+ *     Installing package wp-cli/server-command (dev-master)
  *     Updating /home/person/.wp-cli/packages/composer.json to require the package...
  *     Using Composer to install the package...
  *     ---
@@ -84,6 +84,9 @@ class Package_Command extends WP_CLI_Command {
 	 * Lists packages available for installation from the [Package Index](http://wp-cli.org/package-index/).
 	 *
 	 * ## OPTIONS
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
@@ -134,7 +137,7 @@ class Package_Command extends WP_CLI_Command {
 	 *
 	 *     # Install the latest development version
 	 *     $ wp package install wp-cli/server-command
-	 *     Installing wp-cli/server-command (dev-master)
+	 *     Installing package wp-cli/server-command (dev-master)
 	 *     Updating /home/person/.wp-cli/packages/composer.json to require the package...
 	 *     Using Composer to install the package...
 	 *     ---
@@ -166,7 +169,7 @@ class Package_Command extends WP_CLI_Command {
 		if ( ! $package ) {
 			WP_CLI::error( "Invalid package." );
 		} else {
-			WP_CLI::log( sprintf( "Installing %s (%s)", $package_name, $version ) );
+			WP_CLI::log( sprintf( "Installing package %s (%s)", $package_name, $version ) );
 		}
 
 		try {
@@ -230,6 +233,9 @@ class Package_Command extends WP_CLI_Command {
 	 * List installed WP-CLI packages.
 	 *
 	 * ## OPTIONS
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
@@ -322,28 +328,36 @@ class Package_Command extends WP_CLI_Command {
 		// Remove the 'require' from composer.json
 		$json_path = $composer_json_obj->getPath();
 		WP_CLI::log( sprintf( 'Removing require statement from %s', $json_path ) );
-		$contents = file_get_contents( $json_path );
-		$manipulator = new JsonManipulator( $contents );
+		$composer_backup = file_get_contents( $composer_json_obj->getPath() );
+		$manipulator = new JsonManipulator( $composer_backup );
 		$manipulator->removeSubNode( 'require', $package_name );
 		file_put_contents( $composer_json_obj->getPath(), $manipulator->getContents() );
 
-		// Delete the directory
-		$package_path = $composer->getConfig()->get( 'vendor-dir' ) . '/' . $package->getName();
-		WP_CLI::log( sprintf( 'Deleting package directory %s', $package_path ) );
-		$filesystem = new Filesystem;
-		$filesystem->removeDirectory( $package_path );
-
-		// Reset Composer and regenerate the auto-loader
-		WP_CLI::log( 'Regenerating Composer autoload.' );
 		try {
 			$composer = $this->get_composer();
 		} catch( Exception $e ) {
-			WP_CLI::warning( $e->getMessage() );
-			WP_CLI::error( 'Composer autoload will need to be manually regenerated.' );
+			WP_CLI::error( $e->getMessage() );
 		}
-		$this->regenerate_autoloader( $composer );
 
-		WP_CLI::success( "Uninstalled package." );
+		// Set up the installer
+		$install = Installer::create( new NullIO, $composer );
+		$install->setUpdate( true ); // Installer class will only override composer.lock with this flag
+		$install->setPreferSource( true ); // Use VCS when VCS for easier contributions.
+
+		WP_CLI::log( 'Removing package directories and regenerating autoloader...' );
+		$res = false;
+		try {
+			$res = $install->run();
+		} catch ( Exception $e ) {
+			WP_CLI::warning( $e->getMessage() );
+		}
+
+		if ( 0 === $res ) {
+			WP_CLI::success( "Uninstalled package." );
+		} else {
+			file_put_contents( $composer_json_obj->getPath(), $composer_backup );
+			WP_CLI::error( "Package removal failed (Composer return code {$res})." );
+		}
 	}
 
 	/**
@@ -603,19 +617,6 @@ class Package_Command extends WP_CLI_Command {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Regenerate the Composer autoloader
-	 */
-	private function regenerate_autoloader( $composer ) {
-		$composer->getAutoloadGenerator()->dump(
-			$composer->getConfig(),
-			$composer->getRepositoryManager()->getLocalRepository(),
-			$composer->getPackage(),
-			$composer->getInstallationManager(),
-			'composer'
-		);
 	}
 }
 

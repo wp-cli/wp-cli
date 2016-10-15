@@ -656,9 +656,16 @@ function get_named_sem_ver( $new_version, $original_version ) {
 	}
 
 	$parts = explode( '-', $original_version );
-	list( $major, $minor, $patch ) = explode( '.', $parts[0] );
+	$bits = explode( '.', $parts[0] );
+	$major = $bits[0];
+	if ( isset( $bits[1] ) ) {
+		$minor = $bits[1];
+	}
+	if ( isset( $bits[2] ) ) {
+		$patch = $bits[2];
+	}
 
-	if ( Semver::satisfies( $new_version, "{$major}.{$minor}.x" ) ) {
+	if ( ! is_null( $minor ) && Semver::satisfies( $new_version, "{$major}.{$minor}.x" ) ) {
 		return 'patch';
 	} else if ( Semver::satisfies( $new_version, "{$major}.x.x" ) ) {
 		return 'minor';
@@ -713,7 +720,7 @@ function get_temp_dir() {
 	}
 
 	if ( ! @is_writable( $temp ) ) {
-		WP_CLI::warning( "Temp directory isn't writable: {$temp}" );
+		\WP_CLI::warning( "Temp directory isn't writable: {$temp}" );
 	}
 
 	return $trailingslashit( $temp );

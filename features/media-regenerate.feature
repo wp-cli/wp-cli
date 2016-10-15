@@ -134,11 +134,11 @@ Feature: Regenerate WordPress attachments
       """
     And STDOUT should contain:
       """
-      No thumbnail regeneration needed for "My second imported attachment"
+      1/2 No thumbnail regeneration needed for "My second imported attachment"
       """
     And STDOUT should contain:
       """
-      Regenerated thumbnails for "My imported attachment"
+      2/2 Regenerated thumbnails for "My imported attachment"
       """
     And STDOUT should contain:
       """
@@ -170,7 +170,7 @@ Feature: Regenerate WordPress attachments
       """
     And STDOUT should contain:
       """
-      Regenerated thumbnails for "My imported attachment"
+      1/1 Regenerated thumbnails for "My imported attachment"
       """
     And STDOUT should contain:
       """
@@ -185,7 +185,7 @@ Feature: Regenerate WordPress attachments
       """
     And STDOUT should contain:
       """
-      No thumbnail regeneration needed for "My imported attachment"
+      1/1 No thumbnail regeneration needed for "My imported attachment"
       """
     And STDOUT should contain:
       """

@@ -5,15 +5,15 @@
  *
  * ## EXAMPLES
  *
- *     # Create comment
+ *     # Create comment.
  *     $ wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
  *     Success: Created comment 932.
  *
- *     # Update comment
+ *     # Update comment.
  *     $ wp comment update 123 --comment_author='That Guy'
  *     Success: Updated comment 123.
  *
- *     # Delete comment
+ *     # Delete comment.
  *     $ wp comment delete 1337 --force
  *     Success: Deleted comment 1337.
  *
@@ -54,6 +54,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Create comment.
 	 *     $ wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
 	 *     Success: Created comment 932.
 	 */
@@ -93,6 +94,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Update comment.
 	 *     $ wp comment update 123 --comment_author='That Guy'
 	 *     Success: Updated comment 123.
 	 */
@@ -211,6 +213,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Get comment.
 	 *     $ wp comment get 21 --field=content
 	 *     Thanks for all the comments, everyone!
 	 */
@@ -282,13 +285,13 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # List comment IDs
+	 *     # List comment IDs.
 	 *     $ wp comment list --field=ID
 	 *     22
 	 *     23
 	 *     24
 	 *
-	 *     # List comments of a post
+	 *     # List comments of a post.
 	 *     $ wp comment list --post_id=1 --fields=ID,comment_date,comment_author
 	 *     +------------+---------------------+----------------+
 	 *     | comment_ID | comment_date        | comment_author |
@@ -296,7 +299,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     | 1          | 2015-06-20 09:00:10 | Mr WordPress   |
 	 *     +------------+---------------------+----------------+
 	 *
-	 *     # List approved comments
+	 *     # List approved comments.
 	 *     $ wp comment list --number=3 --status=approve --fields=ID,comment_date,comment_author
 	 *     +------------+---------------------+----------------+
 	 *     | comment_ID | comment_date        | comment_author |
@@ -337,11 +340,11 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Delete comment
+	 *     # Delete comment.
 	 *     $ wp comment delete 1337 --force
 	 *     Success: Deleted comment 1337.
 	 *
-	 *     # Delete multiple comments
+	 *     # Delete multiple comments.
 	 *     $ wp comment delete 1337 2341 --force
 	 *     Success: Deleted comment 1337.
 	 *     Success: Deleted comment 2341.
@@ -399,6 +402,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Trash comment.
 	 *     $ wp comment trash 1337
 	 *     Success: Trashed comment 1337.
 	 */
@@ -418,6 +422,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Untrash comment.
 	 *     $ wp comment untrash 1337
 	 *     Success: Untrashed comment 1337.
 	 */
@@ -437,6 +442,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Spam comment.
 	 *     $ wp comment spam 1337
 	 *     Success: Marked as spam comment 1337.
 	 */
@@ -456,6 +462,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Unspam comment.
 	 *     $ wp comment unspam 1337
 	 *     Success: Unspammed comment 1337.
 	 */
@@ -475,8 +482,9 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Approve comment.
 	 *     $ wp comment approve 1337
-	 *     Success: Approved comment 1337
+	 *     Success: Approved comment 1337.
 	 */
 	public function approve( $args, $assoc_args ) {
 		foreach( $args as $id ) {
@@ -494,8 +502,9 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Unapprove comment.
 	 *     $ wp comment unapprove 1337
-	 *     Success: Unapproved comment 1337
+	 *     Success: Unapproved comment 1337.
 	 */
 	public function unapprove( $args, $assoc_args ) {
 		foreach( $args as $id ) {
@@ -513,7 +522,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Count comments on whole blog
+	 *     # Count comments on whole blog.
 	 *     $ wp comment count
 	 *     approved:        33
 	 *     spam:            3
@@ -523,7 +532,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     moderated:       1
 	 *     total_comments:  37
 	 *
-	 *     # Count comments in a post
+	 *     # Count comments in a post.
 	 *     $ wp comment count 42
 	 *     approved:        19
 	 *     spam:            0
@@ -558,6 +567,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Recount comment for the post.
 	 *     $ wp comment recount 123
 	 *     Updated post 123 comment count to 67.
 	 */
@@ -583,6 +593,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Get status of comment.
 	 *     $ wp comment status 1337
 	 *     approved
 	 */
@@ -608,6 +619,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Check whether comment exists.
 	 *     $ wp comment exists 1337
 	 *     Success: Comment with ID 1337 exists.
 	 */
@@ -618,7 +630,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get comment url
+	 * Get comment URL.
 	 *
 	 * ## OPTIONS
 	 *
@@ -627,6 +639,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Get comment URL.
 	 *     $ wp comment url 123
 	 *     http://example.com/about/page-with-comments/#comment-123
 	 */

@@ -54,3 +54,32 @@ Feature: Manage WordPress transient cache
       """
       Success: Transient deleted.
       """
+
+  Scenario: Transient delete and other flags
+    Given a WP install
+
+    When I try `wp transient delete`
+    Then STDERR should be:
+      """
+      Error: Please specify transient key, or use --all or --expired.
+      """
+
+    When I run `wp transient set foo bar`
+    And I run `wp transient set foo2 bar2`
+    And I run `wp transient delete --all`
+    Then STDOUT should contain:
+      """
+      transients deleted from the database.
+      """
+
+    When I try `wp transient get foo`
+    Then STDERR should be:
+      """
+      Warning: Transient with key "foo" is not set.
+      """
+
+    When I try `wp transient get foo2`
+    Then STDERR should be:
+      """
+      Warning: Transient with key "foo2" is not set.
+      """

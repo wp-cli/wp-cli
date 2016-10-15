@@ -90,8 +90,8 @@ class Media_Command extends WP_CLI_Command {
 			_n( 'image', 'images', $count ) ) );
 
 		$errored = false;
-		foreach ( $images->posts as $id ) {
-			if ( ! $this->_process_regeneration( $id, $skip_delete, $only_missing ) ) {
+		foreach ( $images->posts as $number => $id ) {
+			if ( ! $this->process_regeneration( $id, $skip_delete, $only_missing, ( $number + 1 ) . '/' . $count ) ) {
 				$errored = true;
 			}
 		}
@@ -186,7 +186,7 @@ class Media_Command extends WP_CLI_Command {
 					WP_CLI::warning( "Unable to import file '$file'. Reason: File doesn't exist." );
 					break;
 				}
-				$tempfile = $this->_make_copy( $file );
+				$tempfile = $this->make_copy( $file );
 			} else {
 				$tempfile = download_url( $file );
 			}
@@ -262,7 +262,7 @@ class Media_Command extends WP_CLI_Command {
 	}
 
 	// wp_tempnam() inexplicably forces a .tmp extension, which spoils MIME type detection
-	private function _make_copy( $path ) {
+	private function make_copy( $path ) {
 		$dir = get_temp_dir();
 		$filename = basename( $path );
 		if ( empty( $filename ) )
@@ -275,7 +275,7 @@ class Media_Command extends WP_CLI_Command {
 		return $filename;
 	}
 
-	private function _process_regeneration( $id, $skip_delete = false, $only_missing = false ) {
+	private function process_regeneration( $id, $skip_delete, $only_missing, $progress ) {
 
 		$fullsizepath = get_attached_file( $id );
 
@@ -299,16 +299,16 @@ class Media_Command extends WP_CLI_Command {
 			}
 
 			if ( empty( $metadata ) ) {
-				WP_CLI::warning( "Couldn't regenerate thumbnails for $att_desc." );
+				WP_CLI::warning( "$progress Couldn't regenerate thumbnails for $att_desc." );
 				return false;
 			}
 
 			wp_update_attachment_metadata( $id, $metadata );
 
-			WP_CLI::log( "Regenerated thumbnails for $att_desc." );
+			WP_CLI::log( "$progress Regenerated thumbnails for $att_desc." );
 			return true;
 		} else {
-			WP_CLI::log( "No thumbnail regeneration needed for $att_desc." );
+			WP_CLI::log( "$progress No thumbnail regeneration needed for $att_desc." );
 			return true;
 		}
 	}

@@ -188,14 +188,24 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 				RecursiveIteratorIterator::CHILD_FIRST
 			);
 
+			$files_to_unlink = $directories_to_delete = array();
 			foreach ( $files as $fileinfo ) {
 				$realpath = $fileinfo->getRealPath();
 				// Don't clobber subsites when operating on the main site
 				if ( is_main_site() && false !== stripos( $realpath, '/sites/' ) ) {
 					continue;
 				}
-				$todo = $fileinfo->isDir() ? 'rmdir' : 'unlink';
-				$todo( $realpath );
+				if ( $fileinfo->isDir() ) {
+					$directories_to_delete[] = $realpath;
+				} else {
+					$files_to_unlink[] = $realpath;
+				}
+			}
+			foreach( $files_to_unlink as $file ) {
+				unlink( $file );
+			}
+			foreach( $directories_to_delete as $directory ) {
+				rmdir( $directory );
 			}
 			rmdir( $upload_dir['basedir'] );
 		}
@@ -247,11 +257,13 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( "Site not found." );
 		}
 
-		WP_CLI::confirm( "Are you sure you want to delete the '$blog->siteurl' site?", $assoc_args );
+		$site_url = trailingslashit( $blog->siteurl );
+
+		WP_CLI::confirm( "Are you sure you want to delete the '$site_url' site?", $assoc_args );
 
 		wpmu_delete_blog( $blog->blog_id, ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
 
-		WP_CLI::success( "The site at '$blog->siteurl' was deleted." );
+		WP_CLI::success( "The site at '$site_url' was deleted." );
 	}
 
 	/**
@@ -280,7 +292,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site create --slug=example
-	 *     Success: Site 3 created: www.example.com/example/
+	 *     Success: Site 3 created: http://www.example.com/example/
 	 */
 	public function create( $_, $assoc_args ) {
 		if ( !is_multisite() ) {
@@ -376,10 +388,12 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( $id->get_error_message() );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) )
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 			WP_CLI::line( $id );
-		else
-			WP_CLI::success( "Site $id created: $url" );
+		} else {
+			$site_url = trailingslashit( get_site_url( $id ) );
+			WP_CLI::success( "Site $id created: $site_url" );
+		}
 	}
 
 	/**

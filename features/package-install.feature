@@ -60,3 +60,58 @@ Feature: Install WP-CLI packages
       """
       Site Information
       """
+
+  @require-php-5.6
+  Scenario: Install a package with a dependency
+    Given an empty directory
+
+    When I run `wp package path`
+    Then save STDOUT as {PACKAGE_PATH}
+
+    When I run `wp package install trendwerk/faker`
+    Then STDOUT should contain:
+      """
+      Warning: trendwerk/faker dev-master requires nelmio/alice
+      """
+    And STDOUT should contain:
+      """
+      Success: Package installed
+      """
+    And the {PACKAGE_PATH}/vendor/trendwerk directory should contain:
+      """
+      faker
+      """
+    And the {PACKAGE_PATH}/vendor/nelmio directory should contain:
+      """
+      alice
+      """
+
+    When I run `wp package list`
+    Then STDOUT should contain:
+      """
+      trendwerk/faker
+      """
+
+    When I run `wp package uninstall trendwerk/faker`
+    Then STDOUT should contain:
+      """
+      Removing require statement
+      """
+    And STDOUT should contain:
+      """
+      Success: Uninstalled package.
+      """
+    And the {PACKAGE_PATH}/vendor directory should not contain:
+      """
+      trendwerk
+      """
+    And the {PACKAGE_PATH}/vendor directory should not contain:
+      """
+      alice
+      """
+
+    When I run `wp package list`
+    Then STDOUT should not contain:
+      """
+      trendwerk/faker
+      """

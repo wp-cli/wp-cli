@@ -178,3 +178,28 @@ Feature: Load WP-CLI
       """
       http://example.com
       """
+
+  Scenario: Handle error when WordPress cannot connect to the database host
+    Given a WP install
+    And a wp-debug.php file:
+      """
+      <?php
+      define( 'WP_DEBUG', true );
+      """
+    And a invalid-host.php file:
+      """
+      <?php
+      define( 'DB_HOST', 'localghost' );
+      """
+
+    When I try `wp --require=invalid-host.php option get home`
+    Then STDERR should contain:
+      """
+      Error: Error establishing a database connection.
+      """
+
+    When I try `wp --require=invalid-host.php --require=wp-debug.php option get home`
+    Then STDERR should contain:
+      """
+      Error: Error establishing a database connection.
+      """

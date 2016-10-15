@@ -23,7 +23,8 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 	}
 
 	public static function pre_install( PackageEvent $event ) {
-		WP_CLI::log( ' - Installing package' );
+		$operation_message = $event->getOperation()->__toString();
+		WP_CLI::log( ' - ' . $operation_message );
 	}
 
 	public static function post_install( PackageEvent $event ) {
@@ -43,7 +44,7 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 			}
 
 			if ( ! empty( $composer_error ) ) {
-				WP_CLI::log( sprintf( " - Error: %s", $composer_error ) );
+				WP_CLI::log( sprintf( " - Warning: %s", $composer_error ) );
 			}
 		}
 

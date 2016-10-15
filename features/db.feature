@@ -9,7 +9,7 @@ Feature: Perform database operations
     Then STDOUT should be empty
     And STDERR should be:
       """
-      Error: Can’t select database
+      Error: Can’t select database. We were able to connect to the database server (which means your username and password is okay) but not able to select the `wp_cli_test` database.
       """
 
     When I run `wp db create`
@@ -20,6 +20,9 @@ Feature: Perform database operations
 
     When I try the previous command again
     Then the return code should be 1
+
+  Scenario: DB Operations
+    Given a WP install
 
     When I run `wp db optimize`
     Then STDOUT should not be empty
@@ -44,6 +47,16 @@ Feature: Perform database operations
     Then STDOUT should contain:
       """
       total
+      """
+
+    When I run `wp db query 'SELECT * FROM wp_options WHERE option_name="home"' --skip-column-names`
+    Then STDOUT should not contain:
+      """
+      option_name
+      """
+    And STDOUT should contain:
+      """
+      home
       """
 
   Scenario: DB export/import

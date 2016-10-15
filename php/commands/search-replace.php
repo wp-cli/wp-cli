@@ -170,11 +170,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 					WP_CLI::error( sprintf( 'Unable to open "%s" for writing.', $assoc_args['export'] ) );
 				}
 			}
-			$export_insert_size = $assoc_args['export_insert_size'];
+			$export_insert_size = WP_CLI\Utils\get_flag_value( $assoc_args, 'export_insert_size', 50 );
 			if ( (int) $export_insert_size == $export_insert_size && $export_insert_size > 0 ) {
 				$this->export_insert_size = $export_insert_size;
-			} else {
-				$this->export_insert_size = 50;
 			}
 			$php_only = true;
 		}
@@ -221,7 +219,12 @@ class Search_Replace_Command extends WP_CLI_Command {
 				}
 
 				if ( ! $php_only && ! $this->regex ) {
+					$wpdb->last_error = '';
 					$serialRow = $wpdb->get_row( "SELECT * FROM `$table` WHERE `$col` REGEXP '^[aiO]:[1-9]' LIMIT 1" );
+					// When the regex triggers an error, we should fall back to PHP
+					if ( false !== strpos( $wpdb->last_error, 'ERROR 1139' ) ) {
+						$serialRow = true;
+					}
 				}
 
 				if ( $php_only || $this->regex || NULL !== $serialRow ) {
@@ -346,8 +349,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$where = $this->regex ? '' : " WHERE `$col`" . $wpdb->prepare( ' LIKE %s', '%' . self::esc_like( $old ) . '%' );
 		$primary_keys_sql = esc_sql( implode( ',', $primary_keys ) );
 		$col_sql = esc_sql( $col );
-		$table_sql = esc_sql( $table );
-		$rows = $wpdb->get_results( "SELECT {$primary_keys_sql} FROM {$table_sql}{$where}" );
+		$rows = $wpdb->get_results( "SELECT {$primary_keys_sql} FROM `{$table}` {$where}" );
 		foreach ( $rows as $keys ) {
 			$where_sql = '';
 			foreach( (array) $keys as $k => $v ) {
@@ -356,7 +358,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 				}
 				$where_sql .= "{$k}='{$v}'";
 			}
-			$col_value = $wpdb->get_var( "SELECT {$col_sql} FROM {$table_sql} WHERE {$where_sql}" );
+			$col_value = $wpdb->get_var( "SELECT {$col_sql} FROM `{$table}` WHERE {$where_sql}" );
 			if ( '' === $col_value )
 				continue;
 
@@ -444,7 +446,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		global $wpdb;
 
 		$primary_keys = $text_columns = $all_columns = array();
-		foreach ( $wpdb->get_results( "DESCRIBE $table" ) as $col ) {
+		foreach ( $wpdb->get_results( "DESCRIBE `$table`" ) as $col ) {
 			if ( 'PRI' === $col->Key ) {
 				$primary_keys[] = $col->Field;
 			}

@@ -172,13 +172,6 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 */
 	public function update( $args, $assoc_args ) {
 
-		// Ignore updates for the default locale.
-		if ( 'en_US' == get_locale() ) {
-			\WP_CLI::success( "Translations updates are not needed for the 'English (US)' locale." );
-
-			return;
-		}
-
 		$updates = $this->get_translation_updates();
 		if ( empty( $updates ) ) {
 			\WP_CLI::success( 'Translations are up to date.' );
@@ -192,7 +185,8 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		// Formats the updates list.
 		foreach ( $updates as $update ) {
 			if ( 'plugin' == $update->type ) {
-				$plugin_data = array_shift( get_plugins( '/' . $update->slug ) );
+				$plugins	 = get_plugins( '/' . $update->slug );
+				$plugin_data = array_shift( $plugins );
 				$name		 = $plugin_data['Name'];
 			} elseif ( 'theme' == $update->type ) {
 				$theme_data	 = wp_get_theme( $update->slug );

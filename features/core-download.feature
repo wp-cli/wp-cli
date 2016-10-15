@@ -210,3 +210,18 @@ Feature: Download WordPress
       md5 hash verified: 90c93a15092b2d5d4c960ec1fc183e07
       Success: WordPress downloaded.
       """
+
+  Scenario: Using --version=latest should produce a cache key of the version number, not 'latest'
+    Given an empty directory
+    And an empty cache
+
+    When I run `wp core download --version=latest`
+    Then STDOUT should contain:
+      """
+      Success: WordPress downloaded.
+      """
+
+    When I run `wp core version`
+    Then save STDOUT as {VERSION}
+    And the {SUITE_CACHE_DIR}/core/wordpress-latest-en_US.tar.gz file should not exist
+    And the {SUITE_CACHE_DIR}/core/wordpress-{VERSION}-en_US.tar.gz file should exist

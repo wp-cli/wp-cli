@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\Utils;
+
 /**
  * Manage options.
  *
@@ -128,8 +130,14 @@ class Option_Command extends WP_CLI_Command {
 	 * [--search=<pattern>]
 	 * : Use wildcards ( * and ? ) to match option name.
 	 *
+	 * [--exclude=<pattern>]
+	 * : Pattern to exclude. Use wildcards ( * and ? ) to match option name.
+	 *
 	 * [--autoload=<value>]
 	 * : Match only autoload options when value is on, and only not-autoload option when off.
+	 *
+	 * [--transients]
+	 * : List only transients. Use `--no-transients` to ignore all transients.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field.
@@ -197,6 +205,7 @@ class Option_Command extends WP_CLI_Command {
 
 		global $wpdb;
 		$pattern = '%';
+		$exclude = '';
 		$fields = array( 'option_name', 'option_value' );
 		$size_query = ",LENGTH(option_value) AS `size_bytes`";
 		$autoload_query = '';
@@ -206,6 +215,12 @@ class Option_Command extends WP_CLI_Command {
 			// substitute wildcards
 			$pattern = str_replace( '*', '%', $pattern );
 			$pattern = str_replace( '?', '_', $pattern );
+		}
+
+		if ( isset( $assoc_args['exclude'] ) ) {
+			$exclude = self::esc_like( $assoc_args['exclude'] );
+			$exclude = str_replace( '*', '%', $exclude );
+			$exclude = str_replace( '?', '_', $exclude );
 		}
 
 		if ( isset( $assoc_args['fields'] ) ) {
@@ -227,13 +242,27 @@ class Option_Command extends WP_CLI_Command {
 			}
 		}
 
-		$results = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT `option_name`,`option_value`,`autoload`" . $size_query
-					. " FROM `$wpdb->options` WHERE `option_name` LIKE %s" . $autoload_query,
-				$pattern
-			)
-		);
+		$transients_query = '';
+		if ( true === Utils\get_flag_value( $assoc_args, 'transients', null ) ) {
+			$transients_query = " AND option_name LIKE '\_transient\_%'
+			OR option_name LIKE '\_site\_transient\_%'";
+		} else if ( false === Utils\get_flag_value( $assoc_args, 'transients', null ) ) {
+			$transients_query = " AND option_name NOT LIKE '\_transient\_%'
+			AND option_name NOT LIKE '\_site\_transient\_%'";
+		}
+
+		$where = '';
+		if ( $pattern ) {
+			$where .= $wpdb->prepare( "WHERE `option_name` LIKE %s", $pattern );
+		}
+
+		if ( $exclude ) {
+			$where .= $wpdb->prepare( " AND `option_name` NOT LIKE %s", $exclude );
+		}
+		$where .= $autoload_query . $transients_query;
+
+		$results = $wpdb->get_results( "SELECT `option_name`,`option_value`,`autoload`" . $size_query
+					. " FROM `$wpdb->options` {$where}" );
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
 			WP_CLI::line( $results[0]->size_bytes );

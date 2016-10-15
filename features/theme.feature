@@ -347,3 +347,25 @@ Feature: Manage WordPress themes
       name,old_version,new_version,status
       twentytwelve,1.0,{UPDATE_VERSION},Updated
       """
+
+  Scenario: Automatically install parent theme for a child theme
+    Given a WP install
+
+    When I try `wp theme status stargazer`
+    Then STDERR should contain:
+      """
+      Error: The 'stargazer' theme could not be found.
+      """
+
+    When I run `wp theme install buntu`
+    Then STDOUT should contain:
+      """
+      This theme requires a parent theme. Checking if it is installed
+      """
+
+    When I run `wp theme status stargazer`
+    Then STDOUT should contain:
+      """
+      Theme stargazer details:
+      """
+    And STDERR should be empty

@@ -331,7 +331,7 @@ Feature: WordPress code scaffolding
     And the {PLUGIN_DIR}/.travis.yml file should not exist
     And the {PLUGIN_DIR}/circle.yml file should contain:
       """
-      version: 5.6.14
+      version: 5.6.22
       """
 
   Scenario: Scaffold plugin tests with Gitlab as the provider
