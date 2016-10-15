@@ -97,7 +97,17 @@ class User_Session_Command extends WP_CLI_Command {
 	 * : Limit the output to specific fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 *   - count
+	 *   - ids
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
