@@ -47,6 +47,11 @@ class User_Session_Command extends WP_CLI_Command {
 	 *     # Destroy all the sessions of the given user
 	 *     $ wp user session destroy admin --all
 	 *     Success: Destroyed all sessions.
+	 *
+	 *     # Destroy all sessions for all users
+	 *     $ wp user list --field=ID | xargs wp user session destroy --all
+	 *     Success: Destroyed all sessions. 0 remaining.
+	 *     Success: Destroyed all sessions. 0 remaining.
 	 */
 	public function destroy( $args, $assoc_args ) {
 		$user    = $this->fetcher->get_check( $args[0] );
