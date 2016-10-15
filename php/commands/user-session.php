@@ -71,7 +71,8 @@ class User_Session_Command extends WP_CLI_Command {
 			if ( empty( $sessions ) ) {
 				WP_CLI::success( 'No sessions to destroy.' );
 			}
-			$token = end( $sessions )['token'];
+			$last = end( $sessions );
+			$token = $last['token'];
 		}
 
 		if ( ! isset( $sessions[ $token ] ) ) {
