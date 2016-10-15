@@ -203,3 +203,24 @@ Feature: Load WP-CLI
       """
       Error: Error establishing a database connection.
       """
+
+  Scenario: Allow WP_CLI hooks to pass arguments to callbacks
+    Given an empty directory
+    And a my-command.php file:
+      """
+      <?php
+
+      WP_CLI::add_hook( 'foo', function( $bar ){
+        WP_CLI::log( $bar );
+      });
+      WP_CLI::add_command( 'my-command', function( $args ){
+        WP_CLI::do_hook( 'foo', $args[0] );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+
+    When I run `wp --require=my-command.php my-command bar`
+    Then STDOUT should be:
+      """
+      bar
+      """
+    And STDERR should be empty
