@@ -178,4 +178,10 @@ class User_Session_Command extends WP_CLI_Command {
 
 }
 
-WP_CLI::add_command( 'user session', 'User_Session_Command' );
+WP_CLI::add_command( 'user session', 'User_Session_Command', array(
+	'before_invoke' => function() {
+		if ( \WP_CLI\Utils\wp_version_compare( '4.0', '<' ) ) {
+			WP_CLI::error( "Requires WordPress 4.0 or greater." );
+		}
+	})
+);

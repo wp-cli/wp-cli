@@ -3,6 +3,7 @@ Feature: Manage user session
   Background:
     Given a WP install
 
+  @require-wp-4.0
   Scenario: Destroy user sessions
     When I run `wp eval 'wp_set_current_user(1);'`
     And I run `wp eval 'wp_set_auth_cookie(1);'`
