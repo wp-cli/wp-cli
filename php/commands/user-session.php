@@ -136,6 +136,7 @@ class User_Session_Command extends WP_CLI_Command {
 	}
 
 	protected function get_all_sessions( WP_Session_Tokens $manager ) {
+		// Make the private session data accessible to WP-CLI
 		$get_sessions = new ReflectionMethod( $manager, 'get_sessions' );
 		$get_sessions->setAccessible( true );
 		$sessions = $get_sessions->invoke( $manager );
