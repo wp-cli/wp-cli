@@ -485,6 +485,18 @@ class Runner {
 			$assoc_args['all'] = true;
 		}
 
+		// transient delete-expired  ->  transient delete --expired
+		if ( count( $args ) > 1 && 'transient' === $args[0] && 'delete-expired' === $args[1] ) {
+			$args[1] = 'delete';
+			$assoc_args['expired'] = true;
+		}
+
+		// transient delete-all  ->  transient delete --all
+		if ( count( $args ) > 1 && 'transient' === $args[0] && 'delete-all' === $args[1] ) {
+			$args[1] = 'delete';
+			$assoc_args['all'] = true;
+		}
+
 		// plugin scaffold  ->  scaffold plugin
 		if ( array( 'plugin', 'scaffold' ) == array_slice( $args, 0, 2 ) ) {
 			list( $args[0], $args[1] ) = array( $args[1], $args[0] );
@@ -620,10 +632,10 @@ class Runner {
 			$this->global_config_path = $this->get_global_config_path();
 			$this->project_config_path = $this->get_project_config_path();
 
-			$configurator->merge_yml( $this->global_config_path );
+			$configurator->merge_yml( $this->global_config_path, $this->alias );
 			$config = $configurator->to_array();
 			$this->_required_files['global'] = $config[0]['require'];
-			$configurator->merge_yml( $this->project_config_path );
+			$configurator->merge_yml( $this->project_config_path, $this->alias );
 			$config = $configurator->to_array();
 			$this->_required_files['project'] = $config[0]['require'];
 		}
@@ -1041,6 +1053,12 @@ class Runner {
 		WP_CLI::add_wp_hook( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
 
 		WP_CLI::add_wp_hook( 'nocache_headers', function( $headers ){
+			// WordPress might be calling nocache_headers() because of a dead db
+			global $wpdb;
+			if ( ! empty( $wpdb->error ) ) {
+				Utils\wp_die_handler( $wpdb->error );
+			}
+			// Otherwise, WP might be calling nocache_headers() because WP isn't installed
 			Utils\wp_not_installed();
 			return $headers;
 		});
@@ -1080,14 +1098,6 @@ class Runner {
 		// Use our own debug mode handling instead of WP core
 		WP_CLI::add_wp_hook( 'enable_wp_debug_mode_checks', function( $ret ) {
 			Utils\wp_debug_mode();
-
-			// Check to see of wpdb is errored, instead of waiting for dead_db()
-			require_wp_db();
-			global $wpdb;
-			if ( ! empty( $wpdb->error ) ) {
-				Utils\wp_die_handler( $wpdb->error );
-			}
-
 			return false;
 		});
 
@@ -1124,6 +1134,18 @@ class Runner {
 				}
 			}, 0 );
 		}
+
+		// Avoid uncaught exception when using wp_mail() without defined $_SERVER['SERVER_NAME']
+		WP_CLI::add_wp_hook( 'wp_mail_from', function( $from_email ){
+			if ( 'wordpress@' === $from_email ) {
+				$sitename = strtolower( parse_url( site_url(), PHP_URL_HOST ) );
+				if ( substr( $sitename, 0, 4 ) == 'www.' ) {
+					$sitename = substr( $sitename, 4 );
+				}
+				$from_email = 'wordpress@' . $sitename;
+			}
+			return $from_email;
+		});
 
 	}
 

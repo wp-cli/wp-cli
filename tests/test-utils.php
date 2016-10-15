@@ -44,6 +44,17 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'major', Utils\get_named_sem_ver( '1.1.1', $original_version ) );
 	}
 
+	public function testGetSemVerWP() {
+		$original_version = '3.0';
+		$this->assertEmpty( Utils\get_named_sem_ver( '2.8', $original_version ) );
+		$this->assertEmpty( Utils\get_named_sem_ver( '2.9.1', $original_version ) );
+		$this->assertEquals( 'patch', Utils\get_named_sem_ver( '3.0.1', $original_version ) );
+		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '3.1', $original_version ) );
+		$this->assertEquals( 'minor', Utils\get_named_sem_ver( '3.1.1', $original_version ) );
+		$this->assertEquals( 'major', Utils\get_named_sem_ver( '4.0', $original_version ) );
+		$this->assertEquals( 'major', Utils\get_named_sem_ver( '4.1.1', $original_version ) );
+	}
+
 	public function testParseSSHUrl() {
 		$testcase = 'foo';
 		$this->assertEquals( array(

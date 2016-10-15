@@ -274,9 +274,15 @@ class WP_CLI {
 	 */
 	public static function add_wp_hook( $tag, $function_to_add, $priority = 10, $accepted_args = 1 ) {
 		global $wp_filter, $merged_filters;
-		$idx = self::wp_hook_build_unique_id( $tag, $function_to_add, $priority );
-		$wp_filter[$tag][$priority][$idx] = array('function' => $function_to_add, 'accepted_args' => $accepted_args);
-		unset( $merged_filters[ $tag ] );
+
+		if ( function_exists( 'add_filter' ) ) {
+			add_filter( $tag, $function_to_add, $priority, $accepted_args );
+		} else {
+			$idx = self::wp_hook_build_unique_id( $tag, $function_to_add, $priority );
+			$wp_filter[$tag][$priority][$idx] = array('function' => $function_to_add, 'accepted_args' => $accepted_args);
+			unset( $merged_filters[ $tag ] );
+		}
+
 		return true;
 	}
 
@@ -776,6 +782,10 @@ class WP_CLI {
 
 		$proc = Process::create( $command );
 		$results = $proc->run();
+
+		if ( -1 == $results->return_code ) {
+			self::warning( "Spawned process returned exit code {$results->return_code}, which could be caused by a custom compiled version of PHP that uses the --enable-sigchild option." );
+		}
 
 		if ( $results->return_code && $exit_on_error )
 			exit( $results->return_code );
