@@ -224,6 +224,15 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp @all option get home`
     Then STDOUT should be:
       """
+      @subdir1
+      http://apple.com
+      @subdir2
+      http://google.com
+      """
+
+    When I run `wp @all option get home --quiet`
+    Then STDOUT should be:
+      """
       http://apple.com
       http://google.com
       """
