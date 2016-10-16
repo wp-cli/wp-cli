@@ -306,11 +306,14 @@ Feature: WordPress code scaffolding
       install-wp-tests.sh
       """
     And the {PLUGIN_DIR}/hello-world/phpunit.xml.dist file should exist
+    And the {PLUGIN_DIR}/hello-world/phpcs.ruleset.xml file should exist
     And the {PLUGIN_DIR}/hello-world/circle.yml file should not exist
     And the {PLUGIN_DIR}/hello-world/.gitlab-ci.yml file should not exist
     And the {PLUGIN_DIR}/hello-world/.travis.yml file should contain:
       """
-      script: phpunit
+      script:
+        - phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
+        - phpunit
       """
 
     When I run `wp eval "if ( is_executable( '{PLUGIN_DIR}/hello-world/bin/install-wp-tests.sh' ) ) { echo 'executable'; } else { exit( 1 ); }"`

@@ -25,12 +25,17 @@ matrix:
 
 before_script:
   - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
+  - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - |
     if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.0" ]]; then
       composer global require "phpunit/phpunit=5.6.*"
     else
       composer global require "phpunit/phpunit=4.8.*"
     fi
-  - export PATH="$HOME/.composer/vendor/bin:$PATH"
+  - |
+    composer global require wp-coding-standards/wpcs
+    phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs
 
-script: phpunit
+script:
+  - phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
+  - phpunit
