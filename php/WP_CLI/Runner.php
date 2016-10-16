@@ -700,10 +700,9 @@ class Runner {
 		$config_path = escapeshellarg( $config_path );
 
 		foreach( $aliases as $alias ) {
-
+			WP_CLI::log( $alias );
 			$args = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
 			$assoc_args = Utils\assoc_args_to_str( $this->assoc_args );
-
 			$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args} {$assoc_args}";
 			$proc = proc_open( $full_command, array( STDIN, STDOUT, STDERR ), $pipes );
 			proc_close( $proc );
