@@ -642,6 +642,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$to_copy = array(
 			'install-wp-tests.sh' => $bin_dir,
 			'phpunit.xml.dist'    => $plugin_dir,
+			'phpcs.ruleset.xml'   => $plugin_dir,
 		);
 
 		foreach ( $to_copy as $file => $dir ) {
