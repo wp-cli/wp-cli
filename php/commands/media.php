@@ -36,11 +36,19 @@ class Media_Command extends WP_CLI_Command {
 	 * : Only generate thumbnails for images missing image sizes.
 	 *
 	 * [--yes]
-	 * : Answer yes to the confirmation message.
+	 * : Answer yes to the confirmation message. Confirmation only shows when no IDs passed as arguments.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Re-generate all thumbnails, without confirmation
+	 *     # Regenerate thumbnails for given attachment IDs.
+	 *     $ wp media regenerate 123 124 125
+	 *     Found 3 images to regenerate.
+	 *     1/3 Regenerated thumbnails for "Vertical Image" (ID 123)..
+	 *     2/3 Regenerated thumbnails for "Horizontal Image" (ID 124)..
+	 *     3/3 Regenerated thumbnails for "Beautiful Picture" (ID 125)..
+	 *     Success: Finished regenerating all images.
+	 *
+	 *     # Regenerate all thumbnails, without confirmation.
 	 *     $ wp media regenerate --yes
 	 *     Found 3 images to regenerate.
 	 *     Regenerated thumbnails for "Sydney Harbor Bridge" (ID 760).
@@ -48,7 +56,7 @@ class Media_Command extends WP_CLI_Command {
 	 *     Regenerated thumbnails for "Sunburst Over River" (ID 756).
 	 *     Success: Finished regenerating all images.
 	 *
-	 *     # Re-generate all thumbnails that have IDs between 1000 and 2000
+	 *     # Re-generate all thumbnails that have IDs between 1000 and 2000.
 	 *     $ seq 1000 2000 | xargs wp media regenerate
 	 *     Found 4 images to regenerate.
 	 *     Regenerated thumbnails for "Vertical Featured Image" (ID 1027).
