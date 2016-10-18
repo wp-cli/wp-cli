@@ -8,9 +8,9 @@
  *     # Re-generate all thumbnails, without confirmation.
  *     $ wp media regenerate --yes
  *     Found 3 images to regenerate.
- *     Regenerated thumbnails for "Sydney Harbor Bridge" (ID 760).
- *     Regenerated thumbnails for "Boardwalk" (ID 757).
- *     Regenerated thumbnails for "Sunburst Over River" (ID 756).
+ *     1/3 Regenerated thumbnails for "Sydney Harbor Bridge" (ID 760).
+ *     2/3 Regenerated thumbnails for "Boardwalk" (ID 757).
+ *     3/3 Regenerated thumbnails for "Sunburst Over River" (ID 756).
  *     Success: Finished regenerating all images.
  *
  *     # Import a local image and set it to be the featured image for a post.
@@ -43,26 +43,26 @@ class Media_Command extends WP_CLI_Command {
 	 *     # Regenerate thumbnails for given attachment IDs.
 	 *     $ wp media regenerate 123 124 125
 	 *     Found 3 images to regenerate.
-	 *     1/3 Regenerated thumbnails for "Vertical Image" (ID 123)..
-	 *     2/3 Regenerated thumbnails for "Horizontal Image" (ID 124)..
-	 *     3/3 Regenerated thumbnails for "Beautiful Picture" (ID 125)..
+	 *     1/3 Regenerated thumbnails for "Vertical Image" (ID 123).
+	 *     2/3 Regenerated thumbnails for "Horizontal Image" (ID 124).
+	 *     3/3 Regenerated thumbnails for "Beautiful Picture" (ID 125).
 	 *     Success: Finished regenerating all images.
 	 *
 	 *     # Regenerate all thumbnails, without confirmation.
 	 *     $ wp media regenerate --yes
 	 *     Found 3 images to regenerate.
-	 *     Regenerated thumbnails for "Sydney Harbor Bridge" (ID 760).
-	 *     Regenerated thumbnails for "Boardwalk" (ID 757).
-	 *     Regenerated thumbnails for "Sunburst Over River" (ID 756).
+	 *     1/3 Regenerated thumbnails for "Sydney Harbor Bridge" (ID 760).
+	 *     2/3 Regenerated thumbnails for "Boardwalk" (ID 757).
+	 *     3/3 Regenerated thumbnails for "Sunburst Over River" (ID 756).
 	 *     Success: Finished regenerating all images.
 	 *
 	 *     # Re-generate all thumbnails that have IDs between 1000 and 2000.
 	 *     $ seq 1000 2000 | xargs wp media regenerate
 	 *     Found 4 images to regenerate.
-	 *     Regenerated thumbnails for "Vertical Featured Image" (ID 1027).
-	 *     Regenerated thumbnails for "Horizontal Featured Image" (ID 1022).
-	 *     Regenerated thumbnails for "Unicorn Wallpaper" (ID 1045).
-	 *     Regenerated thumbnails for "I Am Worth Loving Wallpaper" (ID 1023).
+	 *     1/4 Regenerated thumbnails for "Vertical Featured Image" (ID 1027).
+	 *     2/4 Regenerated thumbnails for "Horizontal Featured Image" (ID 1022).
+	 *     3/4 Regenerated thumbnails for "Unicorn Wallpaper" (ID 1045).
+	 *     4/4 Regenerated thumbnails for "I Am Worth Loving Wallpaper" (ID 1023).
 	 *     Success: Finished regenerating all images.
 	 */
 	function regenerate( $args, $assoc_args = array() ) {
@@ -287,7 +287,7 @@ class Media_Command extends WP_CLI_Command {
 
 		$fullsizepath = get_attached_file( $id );
 
-		$att_desc = sprintf( '"%1$s" (ID %2$d).', get_the_title( $id ), $id );
+		$att_desc = sprintf( '"%1$s" (ID %2$d)', get_the_title( $id ), $id );
 
 		if ( false === $fullsizepath || !file_exists( $fullsizepath ) ) {
 			WP_CLI::warning( "Can't find $att_desc." );
