@@ -449,6 +449,16 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--skip-tests]
 	 * : Don't generate files for unit testing.
 	 *
+	 * [--ci=<provider>]
+	 * : Choose a configuration file for a continuous integration provider.
+	 * ---
+	 * default: travis
+	 * options:
+	 *   - travis
+	 *   - circle
+	 *	 - gitlab
+	 * ---
+	 *
 	 * [--activate]
 	 * : Activate the newly generated plugin.
 	 *
@@ -513,7 +523,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-tests' ) ) {
-			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), array( 'dir' => $plugin_dir, 'force' => $force ) );
+			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), array( 'dir' => $plugin_dir, 'ci' => $assoc_args['ci'], 'force' => $force ) );
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate' ) ) {
@@ -552,7 +562,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * : Generate test files for a non-standard plugin path. If no plugin slug is specified, the directory name is used.
 	 *
 	 * [--ci=<provider>]
-	 * : Add a configuration file for a continuous integration provider.
+	 * : Choose a configuration file for a continuous integration provider.
 	 * ---
 	 * default: travis
 	 * options:

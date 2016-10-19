@@ -322,7 +322,19 @@ Feature: WordPress code scaffolding
       executable
       """
 
-  Scenario: Scaffold plugin tests with Circle as the provider
+  Scenario: Scaffold plugin tests with Circle as the provider, part one
+    Given a WP install
+    And I run `wp scaffold plugin hello-world --ci=circle`
+
+    When I run `wp plugin path hello-world --dir`
+    Then save STDOUT as {PLUGIN_DIR}
+    And the {PLUGIN_DIR}/.travis.yml file should not exist
+    And the {PLUGIN_DIR}/circle.yml file should contain:
+      """
+      version: 5.6.22
+      """
+
+  Scenario: Scaffold plugin tests with Circle as the provider, part two
     Given a WP install
     And I run `wp scaffold plugin hello-world --skip-tests`
 
