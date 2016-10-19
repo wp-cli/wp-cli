@@ -229,6 +229,7 @@ Feature: WordPress code scaffolding
       http://wp-cli.org
       http://wp-cli.org
       n
+      travis
       Y
       n
       n
