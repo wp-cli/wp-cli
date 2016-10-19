@@ -418,7 +418,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * The following files are also generated if tests are not skipped using `--skip-tests`:
 	 *
 	 * * `phpunit.xml.dist` is the configuration file for PHPUnit.
-	 * * `.travis.yml` is the configuration file for Travis CI.
+	 * * `.travis.yml` is the configuration file for Travis CI. Use `--ci=<provider>` to select a different service.
 	 * * `bin/install-wp-tests.sh` configures the WordPress test suite and a test database.
 	 * * `tests/bootstrap.php` is the file that makes the current plugin active when running the test suite.
 	 * * `tests/test-sample.php` is a sample file containing test cases.
@@ -448,6 +448,16 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * [--skip-tests]
 	 * : Don't generate files for unit testing.
+	 *
+	 * [--ci=<provider>]
+	 * : Choose a configuration file for a continuous integration provider.
+	 * ---
+	 * default: travis
+	 * options:
+	 *   - travis
+	 *   - circle
+	 *	 - gitlab
+	 * ---
 	 *
 	 * [--activate]
 	 * : Activate the newly generated plugin.
@@ -513,7 +523,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-tests' ) ) {
-			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), array( 'dir' => $plugin_dir, 'force' => $force ) );
+			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), array( 'dir' => $plugin_dir, 'ci' => $assoc_args['ci'], 'force' => $force ) );
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate' ) ) {
@@ -552,7 +562,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * : Generate test files for a non-standard plugin path. If no plugin slug is specified, the directory name is used.
 	 *
 	 * [--ci=<provider>]
-	 * : Add a configuration file for a continuous integration provider.
+	 * : Choose a configuration file for a continuous integration provider.
 	 * ---
 	 * default: travis
 	 * options:
