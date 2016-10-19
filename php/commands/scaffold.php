@@ -418,7 +418,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * The following files are also generated if tests are not skipped using `--skip-tests`:
 	 *
 	 * * `phpunit.xml.dist` is the configuration file for PHPUnit.
-	 * * `.travis.yml` is the configuration file for Travis CI.
+	 * * `.travis.yml` is the configuration file for Travis CI. Use `--ci=<provider>` to select a different service.
 	 * * `bin/install-wp-tests.sh` configures the WordPress test suite and a test database.
 	 * * `tests/bootstrap.php` is the file that makes the current plugin active when running the test suite.
 	 * * `tests/test-sample.php` is a sample file containing test cases.
