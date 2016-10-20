@@ -119,6 +119,7 @@ Feature: Install WP-CLI packages
       trendwerk/faker
       """
 
+  @github-api
   Scenario: Install a package from a Git URL
     Given an empty directory
 
