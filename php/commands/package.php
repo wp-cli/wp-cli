@@ -130,12 +130,13 @@ class Package_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <name>
-	 * : Name of the package to install. Can optionally contain a version constraint.
+	 * <name|git>
+	 * : Name or git URL for the package to install. Names can optionally
+	 * include a version constraint (e.g. wp-cli/server-command:@stable)
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Install the latest development version
+	 *     # Install the latest development version from the package index
 	 *     $ wp package install wp-cli/server-command
 	 *     Installing package wp-cli/server-command (dev-master)
 	 *     Updating /home/person/.wp-cli/packages/composer.json to require the package...
@@ -155,22 +156,34 @@ class Package_Command extends WP_CLI_Command {
 	 *
 	 *     # Install the latest stable version
 	 *     $ wp package install wp-cli/server-command:@stable
+	 *
+	 *     # Install a package hosted at a git URL
+	 *     $ wp package install git@github.com:runcommand/hook.git
 	 */
 	public function install( $args, $assoc_args ) {
 		list( $package_name ) = $args;
 
-		if ( false !== strpos( $package_name, ':' ) ) {
-			list( $package_name, $version ) = explode( ':', $package_name );
+		$git_package = false;
+		$version = 'dev-master';
+		if ( '.git' === strtolower( substr( $package_name, -4, 4 ) ) ) {
+			$git_package = $package_name;
+			preg_match( '#([^:\/]+\/[^\/]+)\.git#', $package_name, $matches );
+			if ( ! empty( $matches[1] ) ) {
+				$package_name = $matches[1];
+			} else {
+				WP_CLI::error( "Couldn't parse package name from expected path '<name>/<package>'." );
+			}
 		} else {
-			$version = 'dev-master';
+			if ( false !== strpos( $package_name, ':' ) ) {
+				list( $package_name, $version ) = explode( ':', $package_name );
+			}
+			$package = $this->get_community_package_by_name( $package_name );
+			if ( ! $package ) {
+				WP_CLI::error( "Invalid package." );
+			}
 		}
 
-		$package = $this->get_community_package_by_name( $package_name );
-		if ( ! $package ) {
-			WP_CLI::error( "Invalid package." );
-		} else {
-			WP_CLI::log( sprintf( "Installing package %s (%s)", $package_name, $version ) );
-		}
+		WP_CLI::log( sprintf( "Installing package %s (%s)", $package_name, $version ) );
 
 		try {
 			$composer = $this->get_composer();
@@ -186,6 +199,11 @@ class Package_Command extends WP_CLI_Command {
 		$json_manipulator->addMainKey( 'name', 'wp-cli/wp-cli' );
 		$json_manipulator->addLink( 'require', $package_name, $version );
 		$json_manipulator->addConfigSetting( 'secure-http', true );
+
+		if ( $git_package ) {
+			WP_CLI::log( sprintf( 'Registering %s as a VCS repository...', $git_package ) );
+			$json_manipulator->addRepository( $package_name, array( 'type' => 'vcs', 'url' => $git_package ) );
+		}
 
 		$composer_backup_decoded = json_decode( $composer_backup, true );
 		// If the composer file does not contain the current package index repository, refresh the repository definition.
@@ -500,17 +518,18 @@ class Package_Command extends WP_CLI_Command {
 			WP_CLI::error( $e->getMessage() );
 		}
 		$repo = $composer->getRepositoryManager()->getLocalRepository();
-
 		$installed_packages = array();
-		foreach( $repo->getPackages() as $package ) {
-
-			if ( ! $this->is_community_package( $package ) ) {
-				continue;
-			}
-
-			$installed_packages[] = $package;
+		$existing = json_decode( file_get_contents( $this->get_composer_json_path() ), true );
+		$installed_package_keys = ! empty( $existing['require'] ) ? array_keys( $existing['require'] ) : array();
+		if ( empty( $installed_package_keys ) ) {
+			return array();
 		}
-
+		$installed_packages = array();
+		foreach( $repo->getCanonicalPackages() as $package ) {
+			if ( in_array( $package->getName(), $installed_package_keys, true ) ) {
+				$installed_packages[] = $package;
+			}
+		}
 		return $installed_packages;
 	}
 
