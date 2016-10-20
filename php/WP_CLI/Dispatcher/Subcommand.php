@@ -279,7 +279,7 @@ class Subcommand extends CompositeCommand {
 							$i++;
 						} while ( isset( $args[ $i ] ) );
 					} else {
-						if ( ! in_array( $args[ $i ], $spec_args['options'] ) ) {
+						if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
 							\WP_CLI::error( 'Invalid value specified for positional arg.' );
 						}
 					}
