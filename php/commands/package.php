@@ -15,6 +15,7 @@ use \Composer\Repository\ComposerRepository;
 use \Composer\Repository\RepositoryManager;
 use \Composer\Util\Filesystem;
 use \WP_CLI\ComposerIO;
+use \WP_CLI\Utils;
 
 /**
  * Manage WP-CLI packages.
@@ -128,11 +129,22 @@ class Package_Command extends WP_CLI_Command {
 	/**
 	 * Install a WP-CLI package.
 	 *
+	 * Packages are required to be a valid Composer package, and can be
+	 * specified as:
+	 *
+	 * * Package name from WP-CLI's package index.
+	 * * Git URL accessible by the current shell user.
+	 * * Path to a directory on the local machine.
+	 *
+	 * Note: When installing a local directory, WP-CLI simply registers a
+	 * reference to the directory. If you move or delete the directory, WP-CLI's
+	 * reference breaks.
+	 *
 	 * ## OPTIONS
 	 *
-	 * <name|git>
-	 * : Name or git URL for the package to install. Names can optionally
-	 * include a version constraint (e.g. wp-cli/server-command:@stable)
+	 * <name|git|path>
+	 * : Name, git URL, or directory path for the package to install. Names can
+	 * optionally include a version constraint (e.g. wp-cli/server-command:@stable)
 	 *
 	 * ## EXAMPLES
 	 *
@@ -163,7 +175,7 @@ class Package_Command extends WP_CLI_Command {
 	public function install( $args, $assoc_args ) {
 		list( $package_name ) = $args;
 
-		$git_package = false;
+		$git_package = $dir_package = false;
 		$version = 'dev-master';
 		if ( '.git' === strtolower( substr( $package_name, -4, 4 ) ) ) {
 			$git_package = $package_name;
@@ -172,6 +184,22 @@ class Package_Command extends WP_CLI_Command {
 				$package_name = $matches[1];
 			} else {
 				WP_CLI::error( "Couldn't parse package name from expected path '<name>/<package>'." );
+			}
+		} else if ( is_dir( $package_name ) && file_exists( $package_name . '/composer.json' ) ) {
+			$dir_package = $package_name;
+			if ( ! Utils\is_path_absolute( $dir_package ) ) {
+				$dir_package = getcwd() . DIRECTORY_SEPARATOR . $dir_package;
+			}
+			$composer_file = $dir_package . '/composer.json';
+			$package_name = '';
+			if ( file_exists( $composer_file ) ) {
+				$composer_data = json_decode( file_get_contents( $composer_file ), true );
+				if ( ! empty( $composer_data['name'] ) ) {
+					$package_name = $composer_data['name'];
+				}
+			}
+			if ( empty( $package_name ) ) {
+				WP_CLI::error( "Invalid package." );
 			}
 		} else {
 			if ( false !== strpos( $package_name, ':' ) ) {
@@ -203,6 +231,9 @@ class Package_Command extends WP_CLI_Command {
 		if ( $git_package ) {
 			WP_CLI::log( sprintf( 'Registering %s as a VCS repository...', $git_package ) );
 			$json_manipulator->addRepository( $package_name, array( 'type' => 'vcs', 'url' => $git_package ) );
+		} else if ( $dir_package ) {
+			WP_CLI::log( sprintf( 'Registering %s as a path repository...', $dir_package ) );
+			$json_manipulator->addRepository( $package_name, array( 'type' => 'path', 'url' => $dir_package ) );
 		}
 
 		$composer_backup_decoded = json_decode( $composer_backup, true );
