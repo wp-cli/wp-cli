@@ -466,6 +466,7 @@ Feature: WP-CLI Commands
       shop:
       burrito:
       """
+    And STDERR should be empty
 
     When I run `wp --require=test-cmd.php foo ''`
     Then STDOUT should be YAML containing:
@@ -474,6 +475,7 @@ Feature: WP-CLI Commands
       shop:
       burrito:
       """
+    And STDERR should be empty
 
     When I run `wp --require=test-cmd.php foo apple --burrito=veggies`
     Then STDOUT should be YAML containing:
@@ -482,6 +484,7 @@ Feature: WP-CLI Commands
       shop:
       burrito: veggies
       """
+    And STDERR should be empty
 
     When I try `wp --require=test-cmd.php foo apple --burrito=meat`
     Then STDERR should contain:
@@ -515,6 +518,54 @@ Feature: WP-CLI Commands
       bar: apple
       shop: cha cha cha
       burrito:
+      """
+    And STDERR should be empty
+
+  Scenario: Register a command with default and accepted arguments, part two
+    Given an empty directory
+    And a test-cmd.php file:
+      """
+      <?php
+      /**
+       * An amazing command for managing burritos.
+       *
+       * [<burrito>]
+       * : This is the bar argument.
+       * ---
+       * options:
+       *   - beans
+       *   - veggies
+       * ---
+       *
+       * @when before_wp_load
+       */
+      $foo = function( $args, $assoc_args ) {
+        $out = array(
+          'burrito' => isset( $args[0] ) ? $args[0] : '',
+        );
+        WP_CLI::print_value( $out, array( 'format' => 'yaml' ) );
+      };
+      WP_CLI::add_command( 'foo', $foo );
+      """
+
+    When I run `wp --require=test-cmd.php foo`
+    Then STDOUT should be YAML containing:
+      """
+      burrito:
+      """
+    And STDERR should be empty
+
+    When I run `wp --require=test-cmd.php foo beans`
+    Then STDOUT should be YAML containing:
+      """
+      burrito: beans
+      """
+    And STDERR should be empty
+
+    When I try `wp --require=test-cmd.php foo apple`
+    Then STDERR should be:
+      """
+      Error: Invalid value specified for positional arg.
       """
 
   Scenario: Removing a subcommand should remove it from the index
