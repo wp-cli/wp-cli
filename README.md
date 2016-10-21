@@ -24,10 +24,10 @@ Activating 'rest-api'...
 Success: Plugin 'rest-api' activated.
 ```
 
-WP-CLI also includes commands for many things you can't do in the WordPress admin. For example, `wp transient delete-all` ([doc](https://wp-cli.org/commands/transient/delete-all/)) lets you delete one or all transients:
+WP-CLI also includes commands for many things you can't do in the WordPress admin. For example, `wp transient delete --all` ([doc](https://wp-cli.org/commands/transient/delete/)) lets you delete one or all transients:
 
 ```bash
-$ wp transient delete-all
+$ wp transient delete --all
 Success: 34 transients deleted from the database.
 ```
 
