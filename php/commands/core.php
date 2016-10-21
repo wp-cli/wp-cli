@@ -1,6 +1,7 @@
 <?php
 
 use \Composer\Semver\Comparator;
+use \WP_CLI\Extractor;
 use \WP_CLI\Utils;
 
 /**
@@ -178,7 +179,7 @@ class Core_Command extends WP_CLI_Command {
 		if ( $cache_file ) {
 			WP_CLI::log( "Using cached file '$cache_file'..." );
 			try{
-				self::_extract( $cache_file, $download_dir );
+				Extractor::extract( $cache_file, $download_dir );
 			} catch ( Exception $e ) {
 				WP_CLI::warning( "Extraction failed, downloading a new copy..." );
 				$bad_cache = true;
@@ -221,7 +222,7 @@ class Core_Command extends WP_CLI_Command {
 			}
 
 			try {
-				self::_extract( $temp, $download_dir );
+				Extractor::extract( $temp, $download_dir );
 			} catch ( Exception $e ) {
 				WP_CLI::error( "Couldn't extract WordPress archive. " . $e->getMessage() );
 			}
@@ -237,108 +238,6 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		WP_CLI::success( 'WordPress downloaded.' );
-	}
-
-	private static function _extract( $tarball_or_zip, $dest ) {
-		$path_parts = pathinfo( $tarball_or_zip );
-
-		if ( preg_match( '/\.zip$/', $tarball_or_zip ) ) {
-			return self::_extract_zip( $tarball_or_zip, $dest );
-		}
-
-		if ( preg_match( '/\.tar\.gz$/', $tarball_or_zip ) ) {
-			return self::_extract_tarball( $tarball_or_zip, $dest );
-		}
-
-		WP_CLI::error( sprintf( 'Extension %s not supported.', $extension ) );
-	}
-
-	private static function _extract_tarball( $tarball, $dest ) {
-		if ( ! class_exists( 'PharData' ) ) {
-			$cmd = "tar xz --strip-components=1 --directory=%s -f $tarball";
-			WP_CLI::launch( Utils\esc_cmd( $cmd, $dest ) );
-			return;
-		}
-		$phar = new PharData( $tarball );
-		$tempdir = implode( DIRECTORY_SEPARATOR, Array (
-			dirname( $tarball ),
-			basename( $tarball, '.tar.gz' ),
-			$phar->getFileName()
-		) );
-
-		$phar->extractTo( dirname( $tempdir ), null, true );
-
-		self::_copy_overwrite_files( $tempdir, $dest );
-
-		self::_rmdir( dirname( $tempdir ) );
-	}
-
-	private static function _extract_zip( $zipfile, $dest ) {
-		if ( ! class_exists( 'ZipArchive' ) ) {
-			throw new \Exception( 'Extracting a zip file requires ZipArchive.' );
-		}
-		$zip = new ZipArchive();
-		$res = $zip->open( $zipfile );
-		if ( true === $res ) {
-			$tempdir = implode( DIRECTORY_SEPARATOR, Array (
-				dirname( $zipfile ),
-				basename( $zipfile, '.zip' ),
-				$zip->getNameIndex( 0 )
-			) );
-
-			$zip->extractTo( dirname( $tempdir ) );
-			$zip->close();
-
-			self::_copy_overwrite_files( $tempdir, $dest );
-			self::_rmdir( dirname( $tempdir ) );
-		} else {
-			throw \Exception( $res );
-		}
-	}
-
-	private static function _copy_overwrite_files( $source, $dest ) {
-		$iterator = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator( $source, RecursiveDirectoryIterator::SKIP_DOTS ),
-			RecursiveIteratorIterator::SELF_FIRST);
-
-		$error = 0;
-
-		foreach ( $iterator as $item ) {
-
-			$dest_path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
-
-			if ( $item->isDir() ) {
-				if ( !is_dir( $dest_path ) ) {
-					mkdir( $dest_path );
-				}
-			} else {
-				if ( file_exists( $dest_path ) && is_writable( $dest_path ) ) {
-					copy( $item, $dest_path );
-				} elseif ( ! file_exists( $dest_path ) ) {
-					copy( $item, $dest_path );
-				} else {
-					$error = 1;
-					WP_CLI::warning( "Unable to copy '" . $iterator->getSubPathName() . "' to current directory." );
-				}
-			}
-		}
-
-		if ( $error ) {
-			WP_CLI::error( 'There was an error downloading all WordPress files.' );
-		}
-	}
-
-	private static function _rmdir( $dir ) {
-		$files = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
-			RecursiveIteratorIterator::CHILD_FIRST
-		);
-
-		foreach ( $files as $fileinfo ) {
-			$todo = $fileinfo->isDir() ? 'rmdir' : 'unlink';
-			$todo( $fileinfo->getRealPath() );
-		}
-		rmdir( $dir );
 	}
 
 	private static function _read( $url ) {

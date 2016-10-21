@@ -1,5 +1,9 @@
 Feature: Install WP-CLI packages
 
+  Background:
+    When I run `wp package path`
+    Then save STDOUT as {PACKAGE_PATH}
+
   Scenario: Install a package with an http package index url in package composer.json
     Given an empty directory
     And a composer.json file:
@@ -65,9 +69,6 @@ Feature: Install WP-CLI packages
   Scenario: Install a package with a dependency
     Given an empty directory
 
-    When I run `wp package path`
-    Then save STDOUT as {PACKAGE_PATH}
-
     When I run `wp package install trendwerk/faker`
     Then STDOUT should contain:
       """
@@ -123,9 +124,6 @@ Feature: Install WP-CLI packages
   Scenario: Install a package from a Git URL
     Given an empty directory
 
-    When I run `wp package path`
-    Then save STDOUT as {PACKAGE_PATH}
-
     When I try `wp package install git@github.com:wp-cli.git`
     Then STDERR should be:
       """
@@ -149,6 +147,105 @@ Feature: Install WP-CLI packages
     Then STDOUT should be a table containing rows:
       | name                                |
       | wp-cli/google-sitemap-generator-cli |
+
+    When I run `wp google-sitemap`
+    Then STDOUT should contain:
+      """
+      usage: wp google-sitemap rebuild
+      """
+
+    When I run `wp package uninstall wp-cli/google-sitemap-generator-cli`
+    Then STDOUT should contain:
+      """
+      Removing require statement from {PACKAGE_PATH}composer.json
+      """
+    And STDOUT should contain:
+      """
+      Success: Uninstalled package.
+      """
+
+    When I run `wp package list --fields=name`
+    Then STDOUT should not contain:
+      """
+      wp-cli/google-sitemap-generator-cli
+      """
+
+  Scenario: Install a package in a local zip
+    Given an empty directory
+    And I run `wget -O google-sitemap-generator-cli.zip https://github.com/wp-cli/google-sitemap-generator-cli/archive/master.zip`
+
+    When I run `wp package install google-sitemap-generator-cli.zip`
+    Then STDOUT should contain:
+      """
+      Installing package wp-cli/google-sitemap-generator-cli (dev-master)
+      Updating {PACKAGE_PATH}composer.json to require the package...
+      Registering {PACKAGE_PATH}local/wp-cli-google-sitemap-generator-cli as a path repository...
+      Using Composer to install the package...
+      """
+    And STDOUT should contain:
+      """
+      Success: Package installed successfully.
+      """
+
+    When I run `wp package list --fields=name`
+    Then STDOUT should be a table containing rows:
+      | name                                |
+      | wp-cli/google-sitemap-generator-cli |
+
+    When I run `wp google-sitemap`
+    Then STDOUT should contain:
+      """
+      usage: wp google-sitemap rebuild
+      """
+
+    When I run `wp package uninstall wp-cli/google-sitemap-generator-cli`
+    Then STDOUT should contain:
+      """
+      Removing require statement from {PACKAGE_PATH}composer.json
+      """
+    And STDOUT should contain:
+      """
+      Success: Uninstalled package.
+      """
+
+    When I run `wp package list --fields=name`
+    Then STDOUT should not contain:
+      """
+      wp-cli/google-sitemap-generator-cli
+      """
+
+  Scenario: Install a package from a remote ZIP
+    Given an empty directory
+
+    When I try `wp package install https://github.com/wp-cli/google-sitemap-generator.zip`
+    Then STDERR should be:
+      """
+      Error: Couldn't download package.
+      """
+
+    When I run `wp package install https://github.com/wp-cli/google-sitemap-generator-cli/archive/master.zip`
+    Then STDOUT should contain:
+      """
+      Installing package wp-cli/google-sitemap-generator-cli (dev-master)
+      Updating {PACKAGE_PATH}composer.json to require the package...
+      Registering {PACKAGE_PATH}local/wp-cli-google-sitemap-generator-cli as a path repository...
+      Using Composer to install the package...
+      """
+    And STDOUT should contain:
+      """
+      Success: Package installed successfully.
+      """
+
+    When I run `wp package list --fields=name`
+    Then STDOUT should be a table containing rows:
+      | name                                |
+      | wp-cli/google-sitemap-generator-cli |
+
+    When I run `wp google-sitemap`
+    Then STDOUT should contain:
+      """
+      usage: wp google-sitemap rebuild
+      """
 
     When I run `wp package uninstall wp-cli/google-sitemap-generator-cli`
     Then STDOUT should contain:
@@ -192,9 +289,6 @@ Feature: Install WP-CLI packages
         }
       }
       """
-
-    When I run `wp package path`
-    Then save STDOUT as {PACKAGE_PATH}
 
     When I run `pwd`
     Then save STDOUT as {CURRENT_PATH}

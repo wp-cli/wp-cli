@@ -15,6 +15,7 @@ use \Composer\Repository\ComposerRepository;
 use \Composer\Repository\RepositoryManager;
 use \Composer\Util\Filesystem;
 use \WP_CLI\ComposerIO;
+use \WP_CLI\Extractor;
 use \WP_CLI\Utils;
 
 /**
@@ -185,22 +186,42 @@ class Package_Command extends WP_CLI_Command {
 			} else {
 				WP_CLI::error( "Couldn't parse package name from expected path '<name>/<package>'." );
 			}
+		} else if ( ( false !== strpos( $package_name, '://' ) && false !== stripos( $package_name, '.zip' ) )
+			|| ( pathinfo( $package_name, PATHINFO_EXTENSION ) === 'zip' && is_file( $package_name ) ) ) {
+			// Download the remote ZIP file to a temp directory
+			if ( false !== strpos( $package_name, '://' ) ) {
+				$temp = Utils\get_temp_dir() . uniqid('package_') . ".zip";
+				$options = array(
+					'timeout' => 600,
+					'filename' => $temp
+				);
+				$response = Utils\http_request( 'GET', $package_name, null, array(), $options );
+				if ( 20 != substr( $response->status_code, 0, 2 ) ) {
+					WP_CLI::error( "Couldn't download package." );
+				}
+				$package_name = $temp;
+			}
+			$dir_package = Utils\get_temp_dir() . uniqid( 'package_' );
+			try {
+				// Extract the package to get the package name
+				Extractor::extract( $package_name, $dir_package );
+				$package_name = self::get_package_name_from_dir_package( $dir_package );
+				// Move to a location based on the package name
+				$local_dir = rtrim( WP_CLI::get_runner()->get_packages_dir_path(), '/' ) . '/local/';
+				$actual_dir_package = $local_dir . str_replace( '/', '-', $package_name );
+				Extractor::copy_overwrite_files( $dir_package, $actual_dir_package );
+				Extractor::rmdir( $dir_package );
+				// Behold, the extracted package
+				$dir_package = $actual_dir_package;
+			} catch ( Exception $e ) {
+				WP_CLI::error( $e->getMessage() );
+			}
 		} else if ( is_dir( $package_name ) && file_exists( $package_name . '/composer.json' ) ) {
 			$dir_package = $package_name;
 			if ( ! Utils\is_path_absolute( $dir_package ) ) {
 				$dir_package = getcwd() . DIRECTORY_SEPARATOR . $dir_package;
 			}
-			$composer_file = $dir_package . '/composer.json';
-			$package_name = '';
-			if ( file_exists( $composer_file ) ) {
-				$composer_data = json_decode( file_get_contents( $composer_file ), true );
-				if ( ! empty( $composer_data['name'] ) ) {
-					$package_name = $composer_data['name'];
-				}
-			}
-			if ( empty( $package_name ) ) {
-				WP_CLI::error( "Invalid package." );
-			}
+			$package_name = self::get_package_name_from_dir_package( $dir_package );
 		} else {
 			if ( false !== strpos( $package_name, ':' ) ) {
 				list( $package_name, $version ) = explode( ':', $package_name );
@@ -585,6 +606,27 @@ class Package_Command extends WP_CLI_Command {
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	 * Get the name of the package from the composer.json in a directory path
+	 *
+	 * @param string $dir_package
+	 * @return string
+	 */
+	private static function get_package_name_from_dir_package( $dir_package ) {
+		$composer_file = $dir_package . '/composer.json';
+		$package_name = '';
+		if ( file_exists( $composer_file ) ) {
+			$composer_data = json_decode( file_get_contents( $composer_file ), true );
+			if ( ! empty( $composer_data['name'] ) ) {
+				$package_name = $composer_data['name'];
+			}
+		}
+		if ( empty( $package_name ) ) {
+			WP_CLI::error( "Invalid package." );
+		}
+		return $package_name;
 	}
 
 	/**
