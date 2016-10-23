@@ -17,6 +17,15 @@ class Completions {
 		// last word is either empty or an incomplete subcommand
 		$this->cur_word = end( $this->words );
 
+		$is_alias = false;
+		if ( ! empty( $this->words[0] ) && preg_match( "/^@/", $this->words[0] ) ) {
+			array_shift( $this->words );
+			// `wp @al` is false, but `wp @all ` is true.
+			if ( count( $this->words ) ) {
+				$is_alias = true;
+			}
+		}
+
 		$r = $this->get_command( $this->words );
 		if ( !is_array( $r ) ) {
 			return;
@@ -34,6 +43,13 @@ class Completions {
 		}
 
 		if ( $command->can_have_subcommands() ) {
+			// add completion when command is `wp` and alias isn't set.
+			if ( "wp" === $command->get_name() && false === $is_alias ) {
+				$aliases = \WP_CLI::get_configurator()->get_aliases();
+				foreach ( $aliases as $name => $_ ) {
+					$this->add( "$name " );
+				}
+			}
 			foreach ( $command->get_subcommands() as $name => $_ ) {
 				$this->add( "$name " );
 			}
@@ -100,4 +116,3 @@ class Completions {
 		}
 	}
 }
-
