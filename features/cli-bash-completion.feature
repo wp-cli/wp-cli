@@ -1,6 +1,21 @@
 Feature: `wp cli completions` tasks
 
-  Scenario: Bash Completion
+  Scenario: Bash Completion without wp-cli.yml
+    Given an empty directory
+
+    When I run `wp cli completions --line="wp " --point=100`
+    Then STDOUT should contain:
+      """
+      plugin
+      """
+    And STDOUT should contain:
+      """
+      server
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+  Scenario: Bash Completion with SSH aliases
     Given an empty directory
     And a wp-cli.yml file:
       """
