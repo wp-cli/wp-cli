@@ -118,3 +118,15 @@ Feature: `wp cli completions` tasks
       """
     And STDERR should be empty
     And the return code should be 0
+
+    When I run `wp cli completions --line="wp help " --point=100`
+    Then STDOUT should not contain:
+      """
+      @example
+      """
+    And STDOUT should contain:
+      """
+      post-type
+      """
+    And STDERR should be empty
+    And the return code should be 0
