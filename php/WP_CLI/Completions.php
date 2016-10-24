@@ -16,6 +16,9 @@ class Completions {
 
 		// last word is either empty or an incomplete subcommand
 		$this->cur_word = end( $this->words );
+		if ( "" !== $this->cur_word ) {
+			array_pop( $this->words );
+		}
 
 		$is_alias = false;
 		$is_help = false;
