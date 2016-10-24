@@ -15,6 +15,18 @@ Feature: `wp cli completions` tasks
     And STDERR should be empty
     And the return code should be 0
 
+    When I run `wp cli completions --line="wp co" --point=100`
+    Then STDOUT should contain:
+      """
+      comment
+      """
+    And STDOUT should contain:
+      """
+      core
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
     When I run `wp cli completions --line="wp core " --point=100`
     Then STDOUT should contain:
       """
