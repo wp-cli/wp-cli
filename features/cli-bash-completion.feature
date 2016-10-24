@@ -79,6 +79,38 @@ Feature: `wp cli completions` tasks
     And STDERR should be empty
     And the return code should be 0
 
+    When I run `wp cli completions --line='wp bogus-comand ' --point=100`
+    Then STDOUT should be empty
+
+    When I run `wp cli completions --line='wp eva' --point=100`
+    Then STDOUT should contain:
+      """
+      eval
+      """
+    And STDOUT should contain:
+      """
+      eval-file
+      """
+
+    When I run `wp cli completions --line='wp core config --dbname=' --point=100`
+    Then STDOUT should be empty
+
+    When I run `wp cli completions --line='wp core config --dbname=foo ' --point=100`
+    Then STDOUT should not contain:
+      """
+      --dbname=
+      """
+    And STDOUT should contain:
+      """
+      --extra-php
+      """
+
+    When I run `wp cli completions --line='wp media import ' --point=100`
+    Then STDOUT should contain:
+      """
+      <file>
+      """
+
   Scenario: Bash Completion with SSH aliases
     Given an empty directory
     And a wp-cli.yml file:
@@ -174,38 +206,3 @@ Feature: `wp cli completions` tasks
       """
     And STDERR should be empty
     And the return code should be 0
-
-  Scenario: Generate completions
-    Given an empty directory
-
-    When I run `wp cli completions --line='wp bogus-comand ' --point=100`
-    Then STDOUT should be empty
-
-    When I run `wp cli completions --line='wp eva' --point=100`
-    Then STDOUT should contain:
-      """
-      eval
-      """
-    And STDOUT should contain:
-      """
-      eval-file
-      """
-
-    When I run `wp cli completions --line='wp core config --dbname=' --point=100`
-    Then STDOUT should be empty
-
-    When I run `wp cli completions --line='wp core config --dbname=foo ' --point=100`
-    Then STDOUT should not contain:
-      """
-      --dbname=
-      """
-    And STDOUT should contain:
-      """
-      --extra-php
-      """
-
-    When I run `wp cli completions --line='wp media import ' --point=100`
-    Then STDOUT should contain:
-      """
-      <file>
-      """
