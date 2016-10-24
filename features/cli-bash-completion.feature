@@ -15,6 +15,42 @@ Feature: `wp cli completions` tasks
     And STDERR should be empty
     And the return code should be 0
 
+    When I run `wp cli completions --line="wp core " --point=100`
+    Then STDOUT should contain:
+      """
+      install
+      """
+    And STDOUT should contain:
+      """
+      update
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp cli completions --line="wp help " --point=100`
+    Then STDOUT should contain:
+      """
+      rewrite
+      """
+    And STDOUT should contain:
+      """
+      media
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp cli completions --line="wp help core language " --point=100`
+    Then STDOUT should contain:
+      """
+      install
+      """
+    And STDOUT should contain:
+      """
+      update
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
   Scenario: Bash Completion with SSH aliases
     Given an empty directory
     And a wp-cli.yml file:
@@ -59,6 +95,38 @@ Feature: `wp cli completions` tasks
     And STDOUT should contain:
       """
       eval
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp cli completions --line="wp @example plugin " --point=100`
+    Then STDOUT should contain:
+      """
+      list
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp cli completions --line="wp help core language " --point=100`
+    Then STDOUT should contain:
+      """
+      install
+      """
+    And STDOUT should contain:
+      """
+      update
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp cli completions --line="wp help " --point=100`
+    Then STDOUT should not contain:
+      """
+      @example
+      """
+    And STDOUT should contain:
+      """
+      post-type
       """
     And STDERR should be empty
     And the return code should be 0
