@@ -67,5 +67,5 @@ Feature: Manage wp-config
     When I run `wp core config {CORE_CONFIG_SETTINGS}`
     Then the wp-config.php file should contain:
       """
-      define('WPLANG', '');
+      define( 'WPLANG', '' );
       """
