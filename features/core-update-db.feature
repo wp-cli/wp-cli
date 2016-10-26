@@ -88,3 +88,19 @@ Feature: Update core's database
       """
       Success: WordPress database upgraded on 3/3 sites.
       """
+
+  Scenario: Ensure update-db sets WP_INSTALLING constant
+    Given a WP install
+    And a before.php file:
+      """
+      <?php
+      WP_CLI::add_hook( 'before_invoke:core update-db', function(){
+        WP_CLI::log( 'WP_INSTALLING: ' . var_export( WP_INSTALLING, true ) );
+      });
+      """
+
+    When I run `wp --require=before.php core update-db`
+    Then STDOUT should contain:
+      """
+      WP_INSTALLING: true
+      """
