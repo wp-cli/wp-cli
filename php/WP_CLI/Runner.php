@@ -875,8 +875,8 @@ class Runner {
 			exit;
 		}
 
-		if ( $this->cmd_starts_with( array( 'core', 'is-installed' )
-			|| $this->cmd_starts_with( array( 'core', 'update-db' ) ) ) ) {
+		if ( $this->cmd_starts_with( array( 'core', 'is-installed' ) )
+			|| $this->cmd_starts_with( array( 'core', 'update-db' ) ) ) {
 			define( 'WP_INSTALLING', true );
 		}
 
