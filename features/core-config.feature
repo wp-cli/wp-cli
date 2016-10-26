@@ -32,10 +32,6 @@ Feature: Manage wp-config
       """
       define( 'WP_DEBUG_LOG', true );
       """
-    And the wp-config.php file should not contain:
-      """
-      define( 'WPLANG', '' );
-      """
 
     When I try the previous command again
     Then the return code should be 1
@@ -48,6 +44,20 @@ Feature: Manage wp-config
     Then STDERR should contain:
       """
       Error: The site you have requested is not installed
+      """
+
+  @require-wp-4.0
+  Scenario: No wp-config.php and WPLANG
+    Given an empty directory
+    And WP files
+    Given a wp-config-extra.php file:
+      """
+      define( 'WP_DEBUG_LOG', true );
+      """
+    When I run `wp core config {CORE_CONFIG_SETTINGS} --extra-php < wp-config-extra.php`
+    Then the wp-config.php file should not contain:
+      """
+      define( 'WPLANG', '' );
       """
 
   Scenario: Configure with existing salts
@@ -67,5 +77,5 @@ Feature: Manage wp-config
     When I run `wp core config {CORE_CONFIG_SETTINGS}`
     Then the wp-config.php file should contain:
       """
-      define('WPLANG', '');
+      define( 'WPLANG', '' );
       """

@@ -20,22 +20,22 @@
 
 // ** MySQL settings ** //
 /** The name of the database for WordPress */
-define('DB_NAME', '{{dbname}}');
+define( 'DB_NAME', '{{dbname}}' );
 
 /** MySQL database username */
-define('DB_USER', '{{dbuser}}');
+define( 'DB_USER', '{{dbuser}}' );
 
 /** MySQL database password */
-define('DB_PASSWORD', '{{dbpass}}');
+define( 'DB_PASSWORD', '{{dbpass}}' );
 
 /** MySQL hostname */
-define('DB_HOST', '{{dbhost}}');
+define( 'DB_HOST', '{{dbhost}}' );
 
 /** Database Charset to use in creating database tables. */
-define('DB_CHARSET', '{{dbcharset}}');
+define( 'DB_CHARSET', '{{dbcharset}}' );
 
 /** The Database Collate type. Don't change this if in doubt. */
-define('DB_COLLATE', '{{dbcollate}}');
+define( 'DB_COLLATE', '{{dbcollate}}' );
 
 /**
  * Authentication Unique Keys and Salts.
@@ -59,7 +59,7 @@ define('DB_COLLATE', '{{dbcollate}}');
 $table_prefix = '{{dbprefix}}';
 
 {{#add-wplang}}
-define('WPLANG', '{{locale}}');
+define( 'WPLANG', '{{locale}}' );
 {{/add-wplang}}
 
 {{extra-php}}
@@ -67,8 +67,8 @@ define('WPLANG', '{{locale}}');
 /* That's all, stop editing! Happy blogging. */
 
 /** Absolute path to the WordPress directory. */
-if ( !defined('ABSPATH') )
-	define('ABSPATH', dirname(__FILE__) . '/');
+if ( ! defined( 'ABSPATH' ) )
+	define( 'ABSPATH', dirname( __FILE__ ) . '/' );
 
 /** Sets up WordPress vars and included files. */
-require_once(ABSPATH . 'wp-settings.php');
+require_once ABSPATH . 'wp-settings.php';

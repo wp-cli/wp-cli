@@ -117,7 +117,7 @@ Feature: Perform database operations
     When I run `cat wp-config.php`
     Then STDOUT should contain:
       """
-      define('DB_CHARSET', '');
+      define( 'DB_CHARSET', '' );
       """
 
     When I run `wp db create`
