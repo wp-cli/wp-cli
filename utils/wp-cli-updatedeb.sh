@@ -3,8 +3,8 @@
 # Package wp-cli to be installed in Debian-compatible systems.
 # Only the phar file is included.
 #
-# VERSION       :0.2
-# DATE          :2014-11-19
+# VERSION       :0.2.1
+# DATE          :2016-10-26
 # AUTHOR        :Viktor Szépe <viktor@szepe.net>
 # LICENSE       :The MIT License (MIT)
 # URL           :https://github.com/wp-cli/wp-cli/tree/master/utils
@@ -31,7 +31,7 @@ Architecture: all
 Maintainer: Daniel Bachhuber <daniel@handbuilt.co>
 Section: php
 Priority: optional
-Depends: php5-cli | php7.0-cli, php5-mysql | php5-mysqlnd | php7.0-mysql, mysql-client | mariadb-client
+Depends: php5-cli (>= 5.3.29) | php-cli | php7-cli, php5-mysql | php5-mysqlnd | php7.0-mysql, mysql-client | mariadb-client
 Homepage: http://wp-cli.org/
 Description: wp-cli is a set of command-line tools for managing
  WordPress installations. You can update plugins, set up multisite
@@ -101,6 +101,9 @@ popd
 # build package in the current diretory
 WPCLI_PKG="${PWD}/php-wpcli_${WPCLI_VER}_all.deb"
 fakeroot dpkg-deb --build "$DIR" "$WPCLI_PKG" || die 8 "Packaging failed"
+
+# check package
+lintian --display-info --display-experimental --pedantic --show-overrides php-wpcli_*_all.deb
 
 # optional steps
 echo "sign it:               dpkg-sig -k YOUR-KEY -s builder \"${WPCLI_PKG}\""
