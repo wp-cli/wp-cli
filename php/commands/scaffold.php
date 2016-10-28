@@ -422,6 +422,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * * `bin/install-wp-tests.sh` configures the WordPress test suite and a test database.
 	 * * `tests/bootstrap.php` is the file that makes the current plugin active when running the test suite.
 	 * * `tests/test-sample.php` is a sample file containing test cases.
+	 * * `phpcs.ruleset.xml` is a collenction of PHP_CodeSniffer rules.
 	 *
 	 * ## OPTIONS
 	 *
@@ -545,6 +546,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * * `bin/install-wp-tests.sh` configures the WordPress test suite and a test database.
 	 * * `tests/bootstrap.php` is the file that makes the current plugin active when running the test suite.
 	 * * `tests/test-sample.php` is a sample file containing the actual tests.
+	 * * `phpcs.ruleset.xml` is a collenction of PHP_CodeSniffer rules.
 	 *
 	 * Learn more from the [plugin unit tests documentation](http://wp-cli.org/docs/plugin-unit-tests/).
 	 *
