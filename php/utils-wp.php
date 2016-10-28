@@ -203,6 +203,10 @@ function wp_get_cache_type() {
 		} elseif ( isset( $wp_object_cache->redis ) && is_a( $wp_object_cache->redis, 'Redis' ) ) {
 			$message = 'Redis';
 
+		// Test for WP LCache Object cache (https://github.com/lcache/wp-lcache)
+		} elseif ( isset( $wp_object_cache->lcache ) && is_a( $wp_object_cache->lcache, '\LCache\Integrated' ) ) {
+			$message = 'WP LCache';
+
 		} else {
 			$message = 'Unknown';
 		}
