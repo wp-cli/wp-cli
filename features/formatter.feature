@@ -76,3 +76,37 @@ Feature: Format output
       label: Foo
       slug: foo
       """
+
+  Scenario: Format data in RTL language
+    Given an empty directory
+    And a file.php file:
+      """
+      <?php
+      $items = array(
+        array(
+          'id' => 1,
+          'language' => 'Afrikaans',
+          'is_rtl' => 0,
+        ),
+        array(
+          'id' => 2,
+          'language' => 'العَرَبِيَّة‎‎',
+          'is_rtl' => 1,
+        ),
+        array(
+          'id' => 3,
+          'language' => 'English',
+          'is_rtl' => 0,
+        ),
+      );
+      $assoc_args = array( 'format' => 'csv' );
+      $formatter = new WP_CLI\Formatter( $assoc_args, array( 'id', 'language', 'is_rtl' ) );
+      $formatter->display_items( $items );
+      """
+
+    When I run `wp eval-file file.php --skip-wordpress`
+    Then STDOUT should be CSV containing:
+      | id | language      | is_rtl |
+      | 1  | Afrikaans     | 0      |
+      | 2  | العَرَبِيَّة‎‎  | 1      |
+      | 3  | English       | 0      |
