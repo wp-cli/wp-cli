@@ -519,6 +519,8 @@ class CLI_Command extends WP_CLI_Command {
 	 *     @both:
 	 *       - @prod
 	 *       - @dev
+	 *
+	 * @alias aliases
 	 */
 	public function alias( $_, $assoc_args ) {
 		WP_CLI::print_value( WP_CLI::get_runner()->aliases, $assoc_args );
