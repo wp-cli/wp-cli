@@ -241,9 +241,11 @@ class CLI_Command extends WP_CLI_Command {
 		if ( Utils\get_flag_value( $assoc_args, 'nightly' ) ) {
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest nightly?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar';
+			$md5_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.md5';
 		} else if ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest stable release?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
+			$md5_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.md5';
 		} else {
 
 			$updates = $this->get_updates( $assoc_args );
@@ -259,7 +261,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to %s?', WP_CLI_VERSION, $newest['version'] ), $assoc_args );
 
 			$download_url = $newest['package_url'];
-
+			$md5_url = str_replace( '.phar', '.phar.md5', $download_url );
 		}
 
 		WP_CLI::log( sprintf( 'Downloading from %s...', $download_url ) );
@@ -273,6 +275,18 @@ class CLI_Command extends WP_CLI_Command {
 		);
 
 		Utils\http_request( 'GET', $download_url, null, $headers, $options );
+
+		$md5_response = Utils\http_request( 'GET', $md5_url );
+		if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
+			WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$md5_response->status_code})." );
+		}
+		$md5_file = md5_file( $temp );
+		$release_hash = trim( $md5_response->body );
+		if ( $md5_file === $release_hash ) {
+			WP_CLI::log( 'md5 hash verified: ' . $release_hash );
+		} else {
+			WP_CLI::error( "md5 hash for download ({$md5_file}) is different than the release hash ({$release_hash})." );
+		}
 
 		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
 		$php_binary = WP_CLI::get_php_binary();
