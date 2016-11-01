@@ -112,6 +112,14 @@ Feature: Create shortcuts to specific WordPress installs
         path: testdir
       """
 
+    When I run `wp cli aliases`
+    Then STDOUT should be YAML containing:
+      """
+      @all: Run command against every registered alias.
+      @testdir:
+        path: testdir
+      """
+
     When I run `wp cli alias --format=json`
     Then STDOUT should be JSON containing:
       """
