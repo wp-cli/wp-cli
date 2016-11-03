@@ -213,7 +213,7 @@ class Package_Command extends WP_CLI_Command {
 			try {
 				// Extract the package to get the package name
 				Extractor::extract( $package_name, $dir_package );
-				$package_name = self::get_package_name_from_dir_package( $dir_package );
+				list( $package_name, $version ) = self::get_package_name_and_version_from_dir_package( $dir_package );
 				// Move to a location based on the package name
 				$local_dir = rtrim( WP_CLI::get_runner()->get_packages_dir_path(), '/' ) . '/local/';
 				$actual_dir_package = $local_dir . str_replace( '/', '-', $package_name );
@@ -229,7 +229,7 @@ class Package_Command extends WP_CLI_Command {
 			if ( ! Utils\is_path_absolute( $dir_package ) ) {
 				$dir_package = getcwd() . DIRECTORY_SEPARATOR . $dir_package;
 			}
-			$package_name = self::get_package_name_from_dir_package( $dir_package );
+			list( $package_name, $version ) = self::get_package_name_and_version_from_dir_package( $dir_package );
 		} else {
 			if ( false !== strpos( $package_name, ':' ) ) {
 				list( $package_name, $version ) = explode( ':', $package_name );
@@ -622,19 +622,23 @@ class Package_Command extends WP_CLI_Command {
 	 * @param string $dir_package
 	 * @return string
 	 */
-	private static function get_package_name_from_dir_package( $dir_package ) {
+	private static function get_package_name_and_version_from_dir_package( $dir_package ) {
 		$composer_file = $dir_package . '/composer.json';
 		$package_name = '';
+		$version = 'dev-master';
 		if ( file_exists( $composer_file ) ) {
 			$composer_data = json_decode( file_get_contents( $composer_file ), true );
 			if ( ! empty( $composer_data['name'] ) ) {
 				$package_name = $composer_data['name'];
 			}
+			if ( ! empty( $composer_data['version'] ) ) {
+				$version = $composer_data['version'];
+			}
 		}
 		if ( empty( $package_name ) ) {
 			WP_CLI::error( "Invalid package." );
 		}
-		return $package_name;
+		return array( $package_name, $version );
 	}
 
 	/**
