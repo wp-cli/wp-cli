@@ -333,3 +333,75 @@ Feature: Install WP-CLI packages
       """
       wp-cli/community-command
       """
+
+  Scenario: Install a package at an existing path with a version constraint
+    Given an empty directory
+    And a path-command/command.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'community-command', function(){
+        WP_CLI::success( "success!" );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a path-command/composer.json file:
+      """
+      {
+        "name": "wp-cli/community-command",
+        "description": "A demo community command.",
+        "license": "MIT",
+        "minimum-stability": "dev",
+        "version": "0.2.0-beta",
+        "require": {
+        },
+        "autoload": {
+          "files": [ "command.php" ]
+        },
+        "require-dev": {
+          "behat/behat": "~2.5"
+        }
+      }
+      """
+
+    When I run `pwd`
+    Then save STDOUT as {CURRENT_PATH}
+
+    When I run `wp package install path-command`
+    Then STDOUT should contain:
+      """
+      Installing package wp-cli/community-command (0.2.0-beta)
+      Updating {PACKAGE_PATH}composer.json to require the package...
+      Registering {CURRENT_PATH}/path-command as a path repository...
+      Using Composer to install the package...
+      """
+    And STDOUT should contain:
+      """
+      Success: Package installed successfully.
+      """
+
+    When I run `wp package list --fields=name`
+    Then STDOUT should be a table containing rows:
+      | name                            |
+      | wp-cli/community-command        |
+
+    When I run `wp community-command`
+    Then STDOUT should be:
+      """
+      Success: success!
+      """
+
+    When I run `wp package uninstall wp-cli/community-command`
+    Then STDOUT should contain:
+      """
+      Removing require statement from {PACKAGE_PATH}composer.json
+      """
+    And STDOUT should contain:
+      """
+      Success: Uninstalled package.
+      """
+    And the path-command directory should exist
+
+    When I run `wp package list --fields=name`
+    Then STDOUT should not contain:
+      """
+      wp-cli/community-command
+      """
