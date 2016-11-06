@@ -3,31 +3,31 @@
 use \WP_CLI\Utils;
 
 /**
- * Perform basic database operations.
+ * Perform basic database operations using credentials stored in wp-config.php
  *
  * ## EXAMPLES
  *
- *     # Create database
+ *     # Create a new database.
  *     $ wp db create
  *     Success: Database created.
  *
- *     # Drop database
+ *     # Drop an existing database.
  *     $ wp db drop --yes
  *     Success: Database dropped.
  *
- *     # Reset database
+ *     # Reset the current database.
  *     $ wp db reset --yes
  *     Success: Database reset.
  *
- *     # Execute a query stored in a file
+ *     # Execute a SQL query stored in a file.
  *     $ wp db query < debug.sql
  */
 class DB_Command extends WP_CLI_Command {
 
 	/**
-	 * Create the database in MySQL.
+	 * Create a new database.
 	 *
-	 * Runs `CREATE_DATABASE` MySQL statement using `DB_HOST`, `DB_NAME`,
+	 * Runs `CREATE_DATABASE` SQL statement using `DB_HOST`, `DB_NAME`,
 	 * `DB_USER` and `DB_PASSWORD` database credentials specified in
 	 * wp-config.php.
 	 *
@@ -44,9 +44,9 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete the database in MySQL.
+	 * Delete the existing database.
 	 *
-	 * Runs `DROP_DATABASE` MySQL statement using `DB_HOST`, `DB_NAME`,
+	 * Runs `DROP_DATABASE` SQL statement using `DB_HOST`, `DB_NAME`,
 	 * `DB_USER` and `DB_PASSWORD` database credentials specified in
 	 * wp-config.php.
 	 *
@@ -69,9 +69,9 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Remove all tables from the database in MySQL.
+	 * Remove all tables from the database.
 	 *
-	 * Runs `DROP_DATABASE` and `CREATE_DATABASE` MySQL statements using
+	 * Runs `DROP_DATABASE` and `CREATE_DATABASE` SQL statements using
 	 * `DB_HOST`, `DB_NAME`, `DB_USER` and `DB_PASSWORD` database credentials
 	 * specified in wp-config.php.
 	 *
@@ -95,7 +95,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Check the database in MySQL.
+	 * Check the current status of the database.
 	 *
 	 * Runs `mysqlcheck` utility with `--check` using `DB_HOST`,
 	 * `DB_NAME`, `DB_USER` and `DB_PASSWORD` database credentials
@@ -118,7 +118,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Optimize the database in MySQL.
+	 * Optimize the database.
 	 *
 	 * Runs `mysqlcheck` utility with `--optimize=true` using `DB_HOST`,
 	 * `DB_NAME`, `DB_USER` and `DB_PASSWORD` database credentials
@@ -141,7 +141,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Repair the database in MySQL.
+	 * Repair the database.
 	 *
 	 * Runs `mysqlcheck` utility with `--repair=true` using `DB_HOST`,
 	 * `DB_NAME`, `DB_USER` and `DB_PASSWORD` database credentials
@@ -181,9 +181,9 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Execute a MySQL query against the database.
+	 * Execute a SQL query against the database.
 	 *
-	 * Executes an arbitrary MySQL query using `DB_HOST`, `DB_NAME`, `DB_USER`
+	 * Executes an arbitrary SQL query using `DB_HOST`, `DB_NAME`, `DB_USER`
 	 *  and `DB_PASSWORD` database credentials specified in wp-config.php.
 	 *
 	 * ## OPTIONS
@@ -236,7 +236,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Exports the MySQL database to a file or to STDOUT.
+	 * Exports the database to a file or to STDOUT.
 	 *
 	 * Runs `mysqldump` utility using `DB_HOST`, `DB_NAME`, `DB_USER` and
 	 * `DB_PASSWORD` database credentials specified in wp-config.php.
@@ -320,9 +320,9 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Import a MySQL database from a file or from STDIN.
+	 * Import a database from a file or from STDIN.
 	 *
-	 * Runs MySQL queries using `DB_HOST`, `DB_NAME`, `DB_USER` and
+	 * Runs SQL queries using `DB_HOST`, `DB_NAME`, `DB_USER` and
 	 * `DB_PASSWORD` database credentials specified in wp-config.php. This
 	 * does not create database by itself and only performs whatever tasks are
 	 * defined in the SQL.
@@ -367,9 +367,9 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * List the MySQL database tables.
+	 * List the database tables.
 	 *
-	 * Defaults to all tables registered to $wpdb.
+	 * Defaults to all tables registered to the $wpdb database handler.
 	 *
 	 * ## OPTIONS
 	 *
