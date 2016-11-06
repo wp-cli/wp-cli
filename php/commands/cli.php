@@ -5,19 +5,19 @@ use \WP_CLI\Dispatcher;
 use \WP_CLI\Utils;
 
 /**
- * Get information about WP-CLI itself.
+ * Manage WP-CLI itself.
  *
  * ## EXAMPLES
  *
- *     # Display CLI version.
+ *     # Display the version currently installed.
  *     $ wp cli version
  *     WP-CLI 0.24.1
  *
- *     # Check for update.
+ *     # Check for updates to WP-CLI.
  *     $ wp cli check-update
  *     Success: WP-CLI is at the latest version.
  *
- *     # Update CLI.
+ *     # Update WP-CLI to the latest stable release.
  *     $ wp cli update
  *     You have version 0.24.0. Would you like to update to 0.24.1? [y/n] y
  *     Downloading from https://github.com/wp-cli/wp-cli/releases/download/v0.24.1/wp-cli-0.24.1.phar...
@@ -60,7 +60,20 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Print various data about the CLI environment.
+	 * Print various details about the WP-CLI environment.
+	 *
+	 * Helpful for diagnostic purposes, this command shares:
+	 *
+	 * * PHP binary used.
+	 * * PHP binary version.
+	 * * php.ini configuration file used (which is typically different than web).
+	 * * WP-CLI root dir: where WP-CLI is installed (if non-Phar install).
+	 * * WP-CLI global config: where the global config YAML file is located.
+	 * * WP-CLI project config: where the project config YAML file is located.
+	 * * WP-CLI version: currently installed version.
+	 *
+	 * See [config docs](https://wp-cli.org/config/) for more details on global
+	 * and project config YAML files.
 	 *
 	 * ## OPTIONS
 	 *
@@ -119,7 +132,10 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Check for update via Github API. Returns the available versions if there are updates, or empty if no update available.
+	 * Check to see if there is a newer version of WP-CLI available.
+	 *
+	 * Queries the Github releases API. Returns available versions if there are
+	 * updates available, or success message if using the latest release.
 	 *
 	 * ## OPTIONS
 	 *
@@ -182,10 +198,10 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update WP-CLI.
+	 * Update WP-CLI to the latest release.
 	 *
-	 * Default behavior is to check the releases API for a newer version, and
-	 * prompt if one is available.
+	 * Default behavior is to check the releases API for the newest stable
+	 * version, and prompt if one is available.
 	 *
 	 * Use `--stable` to install or reinstall the latest stable version.
 	 *
@@ -502,7 +518,7 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * List available aliases.
+	 * List available WP-CLI aliases.
 	 *
 	 * Aliases are shorthand references to WordPress installs. For instance,
 	 * `@dev` could refer to a development install and `@prod` could refer to
