@@ -3,7 +3,7 @@
 /**
  * Manage the object cache.
  *
- * Note: Persistent Object Caching is needed for these commands.
+ * Use a persistent object cache drop-in to persist cache values between requests.
  *
  * ## EXAMPLES
  *
@@ -22,7 +22,8 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Add a value to the object cache.
 	 *
-	 * If a value already exists for the key, the value isn't added.
+	 * Errors if a value already exists for the key, which means the value can't
+	 * be added.
 	 *
 	 * ## OPTIONS
 	 *
@@ -64,6 +65,8 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Decrement a value in the object cache.
 	 *
+	 * Errors if the value can't be decremented.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <key>
@@ -100,6 +103,8 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Remove a value from the object cache.
 	 *
+	 * Errors if the value can't be deleted.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <key>
@@ -131,8 +136,12 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Flush the object cache.
 	 *
-	 * For sites using a persistent object cache, because WordPress Multisite simply adds a blog id
-	 * to the cache key, flushing cache is typically a global operation.
+	 * For WordPress multisite instances using a persistent object cache,
+	 * flushing the object cache will typically flush the cache for all sites.
+	 * Beware of the performance impact when flushing the object cache in
+	 * production.
+	 *
+	 * Errors if the object cache can't be flushed.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -152,6 +161,8 @@ class Cache_Command extends WP_CLI_Command {
 
 	/**
 	 * Get a value from the object cache.
+	 *
+	 * Errors if the value doesn't exist.
 	 *
 	 * ## OPTIONS
 	 *
@@ -183,6 +194,8 @@ class Cache_Command extends WP_CLI_Command {
 
 	/**
 	 * Increment a value in the object cache.
+	 *
+	 * Errors if the value can't be incremented.
 	 *
 	 * ## OPTIONS
 	 *
@@ -219,6 +232,8 @@ class Cache_Command extends WP_CLI_Command {
 
 	/**
 	 * Replace a value in the object cache, if the value already exists.
+	 *
+	 * Errors if the value can't be replaced.
 	 *
 	 * ## OPTIONS
 	 *
@@ -262,6 +277,8 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Set a value to the object cache, regardless of whether it already exists.
 	 *
+	 * Errors if the value can't be set.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <key>
@@ -304,9 +321,10 @@ class Cache_Command extends WP_CLI_Command {
 	/**
 	 * Attempts to determine which object cache is being used.
 	 *
-	 * Note that the guesses made by this function are based on the WP_Object_Cache classes
-	 * that define the 3rd party object cache extension. Changes to those classes could render
-	 * problems with this function's ability to determine which object cache is being used.
+	 * Note that the guesses made by this function are based on the
+	 * WP_Object_Cache classes that define the 3rd party object cache extension.
+	 * Changes to those classes could render problems with this function's
+	 * ability to determine which object cache is being used.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -318,6 +336,7 @@ class Cache_Command extends WP_CLI_Command {
 		$message = WP_CLI\Utils\wp_get_cache_type();
 		WP_CLI::line( $message );
 	}
+
 }
 
 WP_CLI::add_command( 'cache', 'Cache_Command' );
