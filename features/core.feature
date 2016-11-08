@@ -66,6 +66,26 @@ Feature: Manage WordPress installation
       http://localhost:8001
       """
 
+  Scenario: Install WordPress by prompting for the admin email and password
+    Given an empty directory
+    And WP files
+    And wp-config.php
+    And a database
+    And a session file:
+      """
+      wpcli
+      admin@example.com
+      """
+
+    When I run `wp core install --url=localhost:8001 --title=Test --admin_user=wpcli --prompt=admin_email,admin_password < session`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo home_url();'`
+    Then STDOUT should be:
+      """
+      http://localhost:8001
+      """
+
   Scenario: Install WordPress with an https scheme
     Given an empty directory
     And WP files

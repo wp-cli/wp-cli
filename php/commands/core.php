@@ -336,6 +336,10 @@ class Core_Command extends WP_CLI_Command {
 	 *     $ define( 'WP_DEBUG_LOG', true );
 	 *     $ PHP
 	 *     Success: Generated 'wp-config.php' file.
+	 *
+	 *     # Avoid disclosing password to bash history by reading from password.txt
+	 *     $ wp core config --dbname=testing --dbuser=wp --prompt=dbpass < password.txt
+	 *     Success: Generated 'wp-config.php' file.
 	 */
 	public function config( $_, $assoc_args ) {
 		global $wp_version;
@@ -469,8 +473,12 @@ class Core_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Install WordPress in 5 seconds
 	 *     $ wp core install --url=example.com --title=Example --admin_user=supervisor --admin_password=strongpassword --admin_email=info@example.com
 	 *     Success: WordPress installed successfully.
+	 *
+	 *     # Install WordPress without disclosing admin_password to bash history
+	 *     $ wp core install --url=example.com --title=Example --admin_user=supervisor --admin_email=info@example.com --prompt=admin_password < admin_password.txt
 	 */
 	public function install( $args, $assoc_args ) {
 		if ( $this->_install( $assoc_args ) ) {
