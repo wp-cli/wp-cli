@@ -352,7 +352,7 @@ class Runner {
 			array_shift( $wp_args );
 			$runtime_alias = array();
 			foreach( $this->aliases[ $this->alias ] as $key => $value ) {
-				if ( 'ssh' === $key ) {
+				if ( 'ssh' === $key || 'ssh-config' === $key ) {
 					continue;
 				}
 				$runtime_alias[ $key ] = $value;
@@ -369,10 +369,18 @@ class Runner {
 			}
 		}
 
+		if ( ! empty( $this->aliases[ $this->alias ]['ssh-config'] )
+					&& is_file( $this->aliases[ $this->alias ]['ssh-config'] ) ) {
+			$ssh_config = $this->aliases[ $this->alias ]['ssh-config'];
+		} else {
+			$ssh_config = '';
+		}
+
 		$unescaped_command = sprintf(
-			'ssh -q %s%s %s %s',
+			'ssh -q %s%s%s %s %s',
 			$port ? '-p ' . (int) $port . ' ' : '',
 			$host,
+			$ssh_config ? '-F ' . $ssh_config : '',
 			$is_tty ? '-t' : '-T',
 			$pre_cmd . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) )
 		);
@@ -380,9 +388,10 @@ class Runner {
 		WP_CLI::debug( 'Running SSH command: ' . $unescaped_command, 'bootstrap' );
 
 		$escaped_command = sprintf(
-			'ssh -q %s%s %s %s',
+			'ssh -q %s%s%s %s %s',
 			$port ? '-p ' . (int) $port . ' ' : '',
 			escapeshellarg( $host ),
+			$ssh_config ? ' -F ' . escapeshellarg( $ssh_config ) : '',
 			$is_tty ? '-t' : '-T',
 			escapeshellarg( $pre_cmd . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) ) )
 		);
