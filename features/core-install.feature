@@ -152,3 +152,37 @@ Feature: Install WordPress core
       """
       wp_users
       """
+
+  Scenario: Install WordPress without specifying the admin password
+    Given an empty directory
+    And WP files
+    And wp-config.php
+    And a database
+
+    When I run `wp core install --url=localhost:8001 --title=Test --admin_user=wpcli --admin_email=wpcli@example.org`
+    Then STDOUT should contain:
+      """
+      Admin password:
+      """
+    And STDOUT should contain:
+      """
+      Success: WordPress installed successfully.
+      """
+    And STDERR should be empty
+
+  Scenario: Install WordPress multisite without specifying the password
+    Given an empty directory
+    And WP files
+    And wp-config.php
+    And a database
+
+    When I run `wp core multisite-install --url=foobar.org --title=Test --admin_user=wpcli --admin_email=admin@example.com`
+    Then STDOUT should contain:
+      """
+      Admin password:
+      """
+    And STDOUT should contain:
+      """
+      Success: Network installed. Don't forget to set up rewrite rules.
+      """
+    And STDERR should be empty
