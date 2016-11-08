@@ -85,10 +85,10 @@ return array(
 	),
 
 	'prompt' => array(
-		'runtime' => '',
+		'runtime' => '[=<assoc>]',
 		'file' => false,
 		'default' => false,
-		'desc' => 'Prompt the user to enter values for all command arguments.',
+		'desc' => 'Prompt the user to enter values for all command arguments, or a subset specified as comma-separated values.',
 	),
 
 	'quiet' => array(
