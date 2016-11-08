@@ -142,10 +142,26 @@ class Subcommand extends CompositeCommand {
 
 		$spec = array_values( $spec );
 
+		$prompt_args = WP_CLI::get_config( 'prompt' );
+		if ( true !== $prompt_args ) {
+			$prompt_args = explode( ',', $prompt_args );
+		}
+
 		// 'positional' arguments are positional (aka zero-indexed)
 		// so $args needs to be reset before prompting for new arguments
 		$args = array();
 		foreach( $spec as $key => $spec_arg ) {
+
+			// When prompting for specific arguments (e.g. --prompt=user_pass),
+			// ignore all arguments that don't match
+			if ( is_array( $prompt_args ) ) {
+				if ( 'assoc' !== $spec_arg['type'] ) {
+					continue;
+				}
+				if ( ! in_array( $spec_arg['name'], $prompt_args, true ) ) {
+					continue;
+				}
+			}
 
 			$current_prompt = ( $key + 1 ) . '/' . count( $spec ) . ' ';
 			$default = ( $spec_arg['optional'] ) ? '' : false;
