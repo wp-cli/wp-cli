@@ -242,11 +242,6 @@ class Package_Command extends WP_CLI_Command {
 
 		WP_CLI::log( sprintf( "Installing package %s (%s)", $package_name, $version ) );
 
-		try {
-			$composer = $this->get_composer();
-		} catch( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
-		}
 		$composer_json_obj = $this->get_composer_json();
 
 		// Add the 'require' to composer.json
