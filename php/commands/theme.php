@@ -5,7 +5,7 @@
  *
  * ## EXAMPLES
  *
- *     # Install the latest version from wordpress.org and activate
+ *     # Install the latest version of a theme from wordpress.org and activate
  *     $ wp theme install twentysixteen --activate
  *     Installing Twenty Sixteen (1.2)
  *     Downloading install package from http://downloads.wordpress.org/theme/twentysixteen.1.2.zip...
@@ -15,7 +15,7 @@
  *     Activating 'twentysixteen'...
  *     Success: Switched to 'Twenty Sixteen' theme.
  *
- *     # Get theme
+ *     # Get details of an installed theme
  *     $ wp theme get twentysixteen --fields=name,title,version
  *     +---------+----------------+
  *     | Field   | Value          |
@@ -78,7 +78,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     		Version: 1.2
 	 *     		Author: the WordPress team
 	 */
-	function status( $args ) {
+	public function status( $args ) {
 		if ( isset( $args[0] ) ) {
 			$theme = $this->fetcher->get_check( $args[0] );
 			$errors = $theme->errors();
@@ -92,7 +92,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Search the wordpress.org theme repository.
+	 * Search the WordPress.org theme directory.
+	 *
+	 * Displays themes in the WordPress.org theme directory matching a given
+	 * search query.
 	 *
 	 * ## OPTIONS
 	 *
@@ -225,7 +228,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Enable a theme in a multisite install.
+	 * Enable a theme on a WordPress multisite install.
+	 *
+	 * Permits theme to be activated from the dashboard of a site on a WordPress
+	 * multisite install.
 	 *
 	 * ## OPTIONS
 	 *
@@ -284,7 +290,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Disable a theme in a multisite install.
+	 * Disable a theme on a WordPress multisite install.
+	 *
+	 * Removes ability for a theme to be activated from the dashboard of a site
+	 * on a WordPress multisite install.
 	 *
 	 * ## OPTIONS
 	 *
@@ -506,7 +515,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Get a theme
+	 * Get details about a theme.
 	 *
 	 * ## OPTIONS
 	 *
@@ -662,6 +671,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 	/**
 	 * Delete a theme.
+	 *
+	 * Removes the theme from the filesystem.
 	 *
 	 * ## OPTIONS
 	 *
