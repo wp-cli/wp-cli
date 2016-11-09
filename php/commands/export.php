@@ -23,7 +23,11 @@ class Export_Command extends WP_CLI_Command {
 	public $export_args = array();
 
 	/**
-	 * Export content to a WXR file.
+	 * Export WordPress content to a WXR file.
+	 *
+	 * Generates one or more WXR files containing authors, terms, posts,
+	 * comments, and attachments. WXR files do not include site configuration
+	 * (options) or the attachment files themselves.
 	 *
 	 * ## OPTIONS
 	 *
@@ -32,7 +36,7 @@ class Export_Command extends WP_CLI_Command {
 	 * to current working directory.
 	 *
 	 * [--skip_comments]
-	 * : Don't export comments.
+	 * : Don't include comments in the WXR export file.
 	 *
 	 * [--max_file_size=<MB>]
 	 * : A single export file should have this many megabytes.
