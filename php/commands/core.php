@@ -5,7 +5,7 @@ use \WP_CLI\Extractor;
 use \WP_CLI\Utils;
 
 /**
- * Download, install, update and otherwise manage WordPress proper.
+ * Download, install, update and manage a WordPress install.
  *
  * ## EXAMPLES
  *
@@ -28,9 +28,10 @@ use \WP_CLI\Utils;
 class Core_Command extends WP_CLI_Command {
 
 	/**
-	 * Check for update via Version Check API.
+	 * Check for WordPress updates via Version Check API.
 	 *
-	 * Lists the most recent versions when there are updates available, or success message when up to date.
+	 * Lists the most recent versions when there are updates available,
+	 * or success message when up to date.
 	 *
 	 * ## OPTIONS
 	 *
@@ -86,6 +87,10 @@ class Core_Command extends WP_CLI_Command {
 
 	/**
 	 * Download core WordPress files.
+	 *
+	 * Downloads and extracts WordPress core files to the specified path. Uses
+	 * an archive file stored in cache if WordPress has been previously
+	 * downloaded.
 	 *
 	 * ## OPTIONS
 	 *
@@ -277,6 +282,9 @@ class Core_Command extends WP_CLI_Command {
 	/**
 	 * Generate a wp-config.php file.
 	 *
+	 * Creates a new wp-config.php with database constants, and verifies that
+	 * the database constants are correct.
+	 *
 	 * ## OPTIONS
 	 *
 	 * --dbname=<dbname>
@@ -400,7 +408,11 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Determine if the WordPress tables are installed.
+	 * Check if WordPress is installed.
+	 *
+	 * Determines whether WordPress is installed by checking if the standard
+	 * database tables are installed. Doesn't produce output; uses exit codes
+	 * to communicate whether WordPress is installed.
 	 *
 	 * [--network]
 	 * : Check if this is a multisite install.
@@ -489,7 +501,10 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Transform a single-site install into a multi-site install.
+	 * Transform a single-site install into a WordPress multisite install.
+	 *
+	 * Creates the multisite database tables, and adds the multisite constants
+	 * to wp-config.php.
 	 *
 	 * For those using WordPress with Apache, remember to update the `.htaccess`
 	 * file with the appropriate multisite rewrite rules.
@@ -533,7 +548,11 @@ class Core_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Install multisite from scratch.
+	 * Install WordPress multisite from scratch.
+	 *
+	 * Creates the WordPress tables in the database using the URL, title, and
+	 * default admin user details provided. Then, creates the multisite tables
+	 * in the database and adds multisite constants to the wp-config.php.
 	 *
 	 * ## OPTIONS
 	 *
@@ -882,6 +901,9 @@ EOT;
 	/**
 	 * Verify WordPress files against WordPress.org's checksums.
 	 *
+	 * Downloads md5 checksums for the current version from WordPress.org, and
+	 * compares those checksums against the currently installed files.
+	 *
 	 * For security, avoids loading WordPress when verifying checksums.
 	 *
 	 * ## OPTIONS
@@ -1099,7 +1121,9 @@ EOT;
 	}
 
 	/**
-	 * Update WordPress.
+	 * Update WordPress to a newer version.
+	 *
+	 * Defaults to updating WordPress to the latest version.
 	 *
 	 * ## OPTIONS
 	 *
@@ -1265,7 +1289,7 @@ EOT;
 	}
 
 	/**
-	 * Update the WordPress database.
+	 * Run the WordPress database update procedure.
 	 *
 	 * [--network]
 	 * : Update databases for all sites on a network
