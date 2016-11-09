@@ -374,6 +374,56 @@ class Package_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Update all installed WP-CLI packages to their latest version.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp package update
+	 *     Using Composer to update packages...
+	 *     ---
+	 *     Loading composer repositories with package information
+	 *     Updating dependencies
+	 *     Resolving dependencies through SAT
+	 *     Dependency resolution completed in 0.074 seconds
+	 *     Analyzed 1062 packages to resolve dependencies
+	 *     Analyzed 22383 rules to resolve dependencies
+	 *     Writing lock file
+	 *     Generating autoload files
+	 *     ---
+	 *     Success: Packages updated successfully.
+	 */
+	public function update() {
+		try {
+			$composer = $this->get_composer();
+		} catch( Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
+		// Set up the EventSubscriber
+		$event_subscriber = new \WP_CLI\PackageManagerEventSubscriber;
+		$composer->getEventDispatcher()->addSubscriber( $event_subscriber );
+
+		// Set up the installer
+		$install = Installer::create( new ComposerIO, $composer );
+		$install->setUpdate( true ); // Installer class will only override composer.lock with this flag
+		$install->setPreferSource( true ); // Use VCS when VCS for easier contributions.
+		WP_CLI::log( 'Using Composer to update packages...' );
+		WP_CLI::log( '---' );
+		$res = false;
+		try {
+			$res = $install->run();
+		} catch ( Exception $e ) {
+			WP_CLI::warning( $e->getMessage() );
+		}
+		WP_CLI::log( '---' );
+
+		if ( 0 === $res ) {
+			WP_CLI::success( "Packages updated successfully." );
+		} else {
+			WP_CLI::error( "Failed to update packages (Composer return code {$res})." );
+		}
+	}
+
+	/**
 	 * Uninstall a WP-CLI package.
 	 *
 	 * ## OPTIONS
