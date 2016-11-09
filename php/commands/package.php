@@ -56,7 +56,7 @@ use \WP_CLI\Utils;
  *     Writing lock file
  *     Generating autoload files
  *     ---
- *     Success: Package installed successfully.
+ *     Success: Package installed.
  *
  *     # Uninstall package
  *     $ wp package uninstall wp-cli/server-command
@@ -170,7 +170,7 @@ class Package_Command extends WP_CLI_Command {
 	 *     Writing lock file
 	 *     Generating autoload files
 	 *     ---
-	 *     Success: Package installed successfully.
+	 *     Success: Package installed.
 	 *
 	 *     # Install the latest stable version.
 	 *     $ wp package install wp-cli/server-command:@stable
@@ -295,7 +295,7 @@ class Package_Command extends WP_CLI_Command {
 		WP_CLI::log( '---' );
 
 		if ( 0 === $res ) {
-			WP_CLI::success( "Package installed successfully." );
+			WP_CLI::success( "Package installed." );
 		} else {
 			file_put_contents( $composer_json_obj->getPath(), $composer_backup );
 			WP_CLI::error( "Package installation failed (Composer return code {$res}). Reverted composer.json" );
@@ -385,7 +385,7 @@ class Package_Command extends WP_CLI_Command {
 	 *     Writing lock file
 	 *     Generating autoload files
 	 *     ---
-	 *     Success: Packages updated successfully.
+	 *     Success: Packages updated.
 	 */
 	public function update() {
 		try {
@@ -412,7 +412,7 @@ class Package_Command extends WP_CLI_Command {
 		WP_CLI::log( '---' );
 
 		if ( 0 === $res ) {
-			WP_CLI::success( "Packages updated successfully." );
+			WP_CLI::success( "Packages updated." );
 		} else {
 			WP_CLI::error( "Failed to update packages (Composer return code {$res})." );
 		}

@@ -10,7 +10,7 @@ Feature: Update WP-CLI packages
     When I run `wp package install danielbachhuber/wp-cli-reset-post-date-command`
     Then STDOUT should contain:
       """
-      Success: Package installed successfully.
+      Success: Package installed.
       """
     Then STDERR should be empty
 
@@ -21,6 +21,6 @@ Feature: Update WP-CLI packages
       """
     And STDOUT should contain:
       """
-      Packages updated successfully.
+      Packages updated.
       """
     And STDERR should be empty

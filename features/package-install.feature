@@ -140,7 +140,7 @@ Feature: Install WP-CLI packages
       """
     And STDOUT should contain:
       """
-      Success: Package installed successfully.
+      Success: Package installed.
       """
 
     When I run `wp package list --fields=name`
@@ -184,7 +184,7 @@ Feature: Install WP-CLI packages
       """
     And STDOUT should contain:
       """
-      Success: Package installed successfully.
+      Success: Package installed.
       """
 
     When I run `wp package list --fields=name`
@@ -233,7 +233,7 @@ Feature: Install WP-CLI packages
       """
     And STDOUT should contain:
       """
-      Success: Package installed successfully.
+      Success: Package installed.
       """
 
     When I run `wp package list --fields=name`
@@ -303,7 +303,7 @@ Feature: Install WP-CLI packages
       """
     And STDOUT should contain:
       """
-      Success: Package installed successfully.
+      Success: Package installed.
       """
 
     When I run `wp package list --fields=name`
@@ -375,7 +375,7 @@ Feature: Install WP-CLI packages
       """
     And STDOUT should contain:
       """
-      Success: Package installed successfully.
+      Success: Package installed.
       """
 
     When I run `wp package list --fields=name`
