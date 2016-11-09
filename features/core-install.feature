@@ -168,7 +168,6 @@ Feature: Install WordPress core
       """
       Success: WordPress installed successfully.
       """
-    And STDERR should be empty
 
   Scenario: Install WordPress multisite without specifying the password
     Given an empty directory
@@ -185,4 +184,3 @@ Feature: Install WordPress core
       """
       Success: Network installed. Don't forget to set up rewrite rules.
       """
-    And STDERR should be empty
