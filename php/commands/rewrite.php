@@ -29,15 +29,15 @@ class Rewrite_Command extends WP_CLI_Command {
 	/**
 	 * Flush rewrite rules.
 	 *
-	 * ## DESCRIPTION
-	 *
 	 * Resets WordPress' rewrite rules based on registered post types, etc.
 	 *
 	 * To regenerate a .htaccess file with WP-CLI, you'll need to add the mod_rewrite module
 	 * to your wp-cli.yml or config.yml. For example:
 	 *
-	 * `apache_modules:
-	 *   - mod_rewrite`
+	 * ```
+	 * apache_modules:
+	 *   - mod_rewrite
+	 * ```
 	 *
 	 * ## OPTIONS
 	 *
@@ -73,15 +73,16 @@ class Rewrite_Command extends WP_CLI_Command {
 	/**
 	 * Update the permalink structure.
 	 *
-	 * ## DESCRIPTION
+	 * Sets the post permalink structure to the specified pattern.
 	 *
-	 * Updates the post permalink structure.
+	 * To regenerate a .htaccess file with WP-CLI, you'll need to add
+	 * the mod_rewrite module to your [WP-CLI config](http://wp-cli.org/config/).
+	 * For example:
 	 *
-	 * To regenerate a .htaccess file with WP-CLI, you'll need to add the mod_rewrite module
-	 * to your wp-cli.yml or config.yml. For example:
-	 *
-	 * `apache_modules:
-	 *   - mod_rewrite`
+	 * ```
+	 * apache_modules:
+	 *   - mod_rewrite
+	 * ```
 	 *
 	 * ## OPTIONS
 	 *
@@ -162,7 +163,7 @@ class Rewrite_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Print current rewrite rules.
+	 * Get a list of the current rewrite rules.
 	 *
 	 * ## OPTIONS
 	 *
@@ -281,8 +282,10 @@ class Rewrite_Command extends WP_CLI_Command {
 	 * To get this to work with wp-cli you'll need to add the mod_rewrite module
 	 * to your config.yml. For example
 	 *
+	 * ```
 	 * apache_modules:
 	 *   - mod_rewrite
+	 * ```
 	 *
 	 * If this isn't done then the .htaccess rewrite rules won't be flushed out
 	 * to disk.
