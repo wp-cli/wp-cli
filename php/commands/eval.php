@@ -1,18 +1,5 @@
 <?php
 
-/**
- * Execute arbitrary PHP code.
- *
- * ## EXAMPLES
- *
- *     # Display WordPress content directory.
- *     $ wp eval 'echo WP_CONTENT_DIR;'
- *     /var/www/wordpress/wp-content
- *
- *     # Generate a random number.
- *     $ wp eval 'echo rand();' --skip-wordpress
- *     479620423
- */
 class Eval_Command extends WP_CLI_Command {
 
 	/**
