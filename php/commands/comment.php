@@ -5,15 +5,15 @@
  *
  * ## EXAMPLES
  *
- *     # Create comment.
+ *     # Create a new comment.
  *     $ wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
  *     Success: Created comment 932.
  *
- *     # Update comment.
+ *     # Update an existing comment.
  *     $ wp comment update 123 --comment_author='That Guy'
  *     Success: Updated comment 123.
  *
- *     # Delete comment.
+ *     # Delete an existing comment.
  *     $ wp comment delete 1337 --force
  *     Success: Deleted comment 1337.
  *
@@ -42,7 +42,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Insert a comment.
+	 * Create a new comment.
 	 *
 	 * ## OPTIONS
 	 *
@@ -110,7 +110,9 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Generate comments.
+	 * Generate some number of new dummy comments.
+	 *
+	 * Creates a specified number of new comments with dummy data.
 	 *
 	 * ## OPTIONS
 	 *
@@ -187,7 +189,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get a single comment.
+	 * Get data of a single comment.
 	 *
 	 * ## OPTIONS
 	 *
@@ -433,7 +435,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Spam a comment.
+	 * Mark a comment as spam.
 	 *
 	 * ## OPTIONS
 	 *
@@ -453,7 +455,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Unspam a comment.
+	 * Unmark a comment as spam.
 	 *
 	 * ## OPTIONS
 	 *
@@ -558,7 +560,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Recount the comment_count value for one or more posts.
+	 * Recalculate the comment_count value for one or more posts.
 	 *
 	 * ## OPTIONS
 	 *
@@ -612,6 +614,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Verify whether a comment exists.
 	 *
+	 * Displays a success message if the comment does exist.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <id>
@@ -630,7 +634,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get comment URL.
+	 * Get a comment's URL.
 	 *
 	 * ## OPTIONS
 	 *
