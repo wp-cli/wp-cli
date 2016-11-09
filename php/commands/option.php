@@ -31,7 +31,7 @@ use WP_CLI\Utils;
 class Option_Command extends WP_CLI_Command {
 
 	/**
-	 * Get an option.
+	 * Get the value for an option.
 	 *
 	 * ## OPTIONS
 	 *
@@ -70,7 +70,9 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add an option.
+	 * Add a new option value.
+	 *
+	 * Errors if the option already exists.
 	 *
 	 * ## OPTIONS
 	 *
@@ -123,7 +125,7 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * List options.
+	 * List options and their values.
 	 *
 	 * ## OPTIONS
 	 *
@@ -276,12 +278,12 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update an option.
+	 * Update an option value.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <key>
-	 * : The name of the option to add.
+	 * : The name of the option to update.
 	 *
 	 * [<value>]
 	 * : The new value. If ommited, the value is read from STDIN.
