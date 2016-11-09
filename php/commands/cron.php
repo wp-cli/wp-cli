@@ -15,14 +15,16 @@ class Cron_Command extends WP_CLI_Command {
 	 * Test the WP Cron spawning system and report back its status.
 	 *
 	 * This command tests the spawning system by performing the following steps:
+	 *
 	 * * Checks to see if the `DISABLE_WP_CRON` constant is set; errors if true
 	 * because WP-Cron is disabled.
-	 * * Checks to see if the `ALTERNATE_WP_CRON` constant is set; warns if true
+	 * * Checks to see if the `ALTERNATE_WP_CRON` constant is set; warns if true.
 	 * * Attempts to spawn WP-Cron over HTTP; warns if non 200 response code is
 	 * returned.
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Cron test runs successfully.
 	 *     $ wp cron test
 	 *     Success: WP-Cron spawning is working as expected.
 	 */
@@ -56,8 +58,9 @@ class Cron_Command extends WP_CLI_Command {
 	/**
 	 * Spawn a request to `wp-cron.php` and return the response.
 	 *
-	 * This function is designed to mimic the functionality in `spawn_cron()` with the addition of returning
-	 * the result of the `wp_remote_post()` request.
+	 * This function is designed to mimic the functionality in `spawn_cron()`
+	 * with the addition of returning the result of the `wp_remote_post()`
+	 * request.
 	 *
 	 * @return WP_Error|array The response or WP_Error on failure.
 	 */
