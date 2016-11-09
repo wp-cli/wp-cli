@@ -100,6 +100,9 @@ class Widget_Command extends WP_CLI_Command {
 	/**
 	 * Add a widget to a sidebar.
 	 *
+	 * Creates a new widget entry in the database, and associates it with the
+	 * sidebar.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <name>
@@ -116,6 +119,7 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Add a new calendar widget to sidebar-1 with title "Calendar"
 	 *     $ wp widget add calendar sidebar-1 2 --title="Calendar"
 	 *     Success: Added widget to sidebar.
 	 *
@@ -157,7 +161,7 @@ class Widget_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a given widget's options.
+	 * Update options for an existing widget.
 	 *
 	 * ## OPTIONS
 	 *
@@ -169,6 +173,7 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Change calendar-1 widget title to "Our Calendar"
 	 *     $ wp widget update calendar-1 --title="Our Calendar"
 	 *     Success: Widget updated.
 	 *
@@ -195,7 +200,10 @@ class Widget_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Move a widget from one position on a sidebar to another.
+	 * Move the position of a widget.
+	 *
+	 * Changes the order of a widget in its existing sidebar, or moves it to a
+	 * new sidebar.
 	 *
 	 * ## OPTIONS
 	 *
@@ -250,6 +258,8 @@ class Widget_Command extends WP_CLI_Command {
 	/**
 	 * Deactivate one or more widgets from an active sidebar.
 	 *
+	 * Moves widgets to Inactive Widgets.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <widget-id>...
@@ -257,6 +267,7 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Deactivate the recent-comments-2 widget.
 	 *     $ wp widget deactivate recent-comments-2
 	 *     Success: 1 widget deactivated.
 	 *
@@ -295,6 +306,7 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Delete the recent-comments-2 widget from its sidebar.
 	 *     $ wp widget delete recent-comments-2
 	 *     Success: 1 widget removed from sidebar.
 	 *
