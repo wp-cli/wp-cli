@@ -474,8 +474,8 @@ class Core_Command extends WP_CLI_Command {
 	 * --admin_user=<username>
 	 * : The name of the admin user.
 	 *
-	 * --admin_password=<password>
-	 * : The password for the admin user.
+	 * [--admin_password=<password>]
+	 * : The password for the admin user. Defaults to randomly generated string.
 	 *
 	 * --admin_email=<email>
 	 * : The email address for the admin user.
@@ -577,8 +577,8 @@ class Core_Command extends WP_CLI_Command {
 	 * default: admin
 	 * ---
 	 *
-	 * --admin_password=<password>
-	 * : The password for the admin user.
+	 * [--admin_password=<password>]
+	 * : The password for the admin user. Defaults to randomly generated string.
 	 *
 	 * --admin_email=<email>
 	 * : The email address for the admin user.
@@ -681,6 +681,11 @@ class Core_Command extends WP_CLI_Command {
 		// which is normally a runtime argument
 		if ( isset( $assoc_args['url'] ) ) {
 			WP_CLI::set_url( $assoc_args['url'] );
+		}
+
+		if ( empty( $assoc_args['admin_password'] ) ) {
+			$assoc_args['admin_password'] = wp_generate_password();
+			WP_CLI::log( "Admin password: {$assoc_args['admin_password']}" );
 		}
 
 		$public = true;
