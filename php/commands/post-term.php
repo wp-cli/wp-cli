@@ -7,7 +7,7 @@
  *
  *     # Set post terms
  *     $ wp post term set 123 test category
- *     Set terms.
+ *     Success: Set terms.
  */
 class Post_Term_Command extends \WP_CLI\CommandWithTerms {
 	protected $obj_type = 'post';

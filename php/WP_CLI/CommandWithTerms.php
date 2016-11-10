@@ -95,16 +95,16 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
 
 	/**
-	 * Remove a term.
+	 * Remove a term from an object.
 	 *
 	 * <id>
 	 * : The ID of the object.
 	 *
 	 * <taxonomy>
-	 * : The name of the taxonomy type to deleted.
+	 * : The name of the term's taxonomy.
 	 *
 	 * <term>...
-	 * : The name of the term or terms to deleted.
+	 * : The name of the term or terms to be removed from the object.
 	 */
 	public function remove( $args, $assoc_args ) {
 		$object_id      = array_shift( $args );
@@ -125,7 +125,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	}
 
 	/**
-	 * Add a term. Appends to existing set of terms on the object.
+	 * Add a term to an object.
+	 *
+	 * Append the term to the existing set of terms on the object.
 	 *
 	 * <id>
 	 * : The ID of the object.
@@ -155,7 +157,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	}
 
 	/**
-	 * Set terms. Replaces existing terms on the object.
+	 * Set object terms.
+	 *
+	 * Replaces existing terms on the object.
 	 *
 	 * <id>
 	 * : The ID of the object.
