@@ -4,6 +4,9 @@
 
 set -ex
 
+# Shim Travis container
+alias mysql='mysql --socket=/run/mysql-5.6/mysqld.sock'
+
 composer install --no-interaction --prefer-source
 
 CLI_VERSION=$(head -n 1 VERSION)
