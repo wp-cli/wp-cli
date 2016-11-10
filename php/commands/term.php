@@ -4,19 +4,19 @@
  *
  * ## EXAMPLES
  *
- *     # Create term
+ *     # Create a new term.
  *     $ wp term create category Apple --description="A type of fruit"
  *     Success: Created category 199.
  *
- *     # Get term
+ *     # Get details about a term.
  *     $ wp term get category 199 --format=json --fields=term_id,name,slug,count
  *     {"term_id":199,"name":"Apple","slug":"apple","count":1}
  *
- *     # Update term
+ *     # Update an existing term.
  *     $ wp term update category 15 --name=Apple
  *     Success: Term updated.
  *
- *     # Get term url
+ *     # Get the term's URL.
  *     $ wp term url post_tag 123
  *     http://example.com/tag/tips-and-tricks
  *
@@ -146,7 +146,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Create a term.
+	 * Create a new term.
 	 *
 	 * ## OPTIONS
 	 *
@@ -170,6 +170,7 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Create a new category "Apple" with a description.
 	 *     $ wp term create category Apple --description="A type of fruit"
 	 *     Success: Created category 199.
 	 */
@@ -207,7 +208,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get a taxonomy term
+	 * Get details about a term.
 	 *
 	 * ## OPTIONS
 	 *
@@ -236,6 +237,7 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Get details about a category with id 199.
 	 *     $ wp term get category 199 --format=json
 	 *     {"term_id":199,"name":"Apple","slug":"apple","term_group":0,"term_taxonomy_id":199,"taxonomy":"category","description":"A type of fruit","parent":0,"count":0,"filter":"raw"}
 	 */
@@ -260,7 +262,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a term.
+	 * Update an existing term.
 	 *
 	 * ## OPTIONS
 	 *
@@ -284,6 +286,7 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Change category with id 15 to use the name "Apple"
 	 *     $ wp term update category 15 --name=Apple
 	 *     Success: Term updated.
 	 */
@@ -314,7 +317,9 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete a term.
+	 * Delete an existing term.
+	 *
+	 * Errors if the term doesn't exist, or there was a problem in deleting it.
 	 *
 	 * ## OPTIONS
 	 *
@@ -354,6 +359,8 @@ class Term_Command extends WP_CLI_Command {
 
 	/**
 	 * Generate some terms.
+	 *
+	 * Creates a specified number of new terms with dummy data.
 	 *
 	 * ## OPTIONS
 	 *
@@ -482,7 +489,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get term url
+	 * Get a term's URL.
 	 *
 	 * ## OPTIONS
 	 *
