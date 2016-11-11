@@ -5,15 +5,15 @@
  *
  * ## EXAMPLES
  *
- *     # Create post
+ *     # Create a new post.
  *     $ wp post create --post_type=post --post_title='A sample post'
  *     Success: Created post 123.
  *
- *     # Update post
+ *     # Update an existing post.
  *     $ wp post update 123 --post_status=draft
  *     Success: Updated post 123.
  *
- *     # Delete post
+ *     # Delete an existing post.
  *     $ wp post delete 123
  *     Success: Trashed post 123.
  *
@@ -35,7 +35,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Create a post.
+	 * Create a new post.
 	 *
 	 * ## OPTIONS
 	 *
@@ -93,7 +93,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Update one or more posts.
+	 * Update one or more existing posts.
 	 *
 	 * ## OPTIONS
 	 *
@@ -172,7 +172,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get a post's content by ID.
+	 * Get details about a post.
 	 *
 	 * ## OPTIONS
 	 *
@@ -216,7 +216,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Delete a post by ID.
+	 * Delete an existing post.
 	 *
 	 * ## OPTIONS
 	 *
@@ -398,6 +398,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Generate some posts.
+	 *
+	 * Creates a specified number of new posts with dummy data.
 	 *
 	 * ## OPTIONS
 	 *
