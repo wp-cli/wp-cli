@@ -1,34 +1,5 @@
 <?php
 
-/**
- * Search and replace strings in the database.
- *
- * ## EXAMPLES
- *
- *     # Search and replace strings in the table
- *     $ wp search-replace foo bar wp_options
- *     +------------+--------------+--------------+------+
- *     | Table      | Column       | Replacements | Type |
- *     +------------+--------------+--------------+------+
- *     | wp_options | option_name  | 2            | SQL  |
- *     | wp_options | option_value | 0            | PHP  |
- *     | wp_options | autoload     | 0            | SQL  |
- *     +------------+--------------+--------------+------+
- *     Success: Made 2 replacements.
- *
- *     # Run search/replace operation but dont save in database
- *     $ wp search-replace foo bar wp_options --dry-run
- *     +------------+--------------+--------------+------+
- *     | Table      | Column       | Replacements | Type |
- *     +------------+--------------+--------------+------+
- *     | wp_options | option_name  | 2            | SQL  |
- *     | wp_options | option_value | 0            | PHP  |
- *     | wp_options | autoload     | 0            | SQL  |
- *     +------------+--------------+--------------+------+
- *     Success: 2 replacements to be made.
- *
- * @package wp-cli
- */
 class Search_Replace_Command extends WP_CLI_Command {
 
 	private $dry_run;
@@ -42,10 +13,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 	/**
 	 * Search/replace strings in the database.
 	 *
-	 * ## DESCRIPTION
-	 *
-	 * This command will searches through all rows in a selection of tables
-	 * and replaces appearances of the first string with the second string.
+	 * Searches through all rows in a selection of tables and replaces
+	 * appearances of the first string with the second string.
 	 *
 	 * By default, the command uses tables registered to the $wpdb object. On
 	 * multisite, this will just be the tables for the current site unless
