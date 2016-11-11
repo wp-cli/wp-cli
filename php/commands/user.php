@@ -9,12 +9,12 @@
  *     $ wp user list --field=ID
  *     1
  *
- *     # Create user
+ *     # Create a new user.
  *     $ wp user create bob bob@example.com --role=author
  *     Success: Created user 3.
  *     Password: k9**&I4vNH(&
  *
- *     # Update user
+ *     # Update an existing user.
  *     $ wp user update 123 --display_name=Mary --user_pass=marypass
  *     Success: Updated user 123.
  *
@@ -164,7 +164,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get a single user.
+	 * Get details about a user.
 	 *
 	 * ## OPTIONS
 	 *
@@ -272,7 +272,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Create a user.
+	 * Create a new user.
 	 *
 	 * ## OPTIONS
 	 *
@@ -399,7 +399,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Update a user.
+	 * Update an existing user.
 	 *
 	 * ## OPTIONS
 	 *
@@ -431,7 +431,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Generate users.
+	 * Generate some users.
+	 *
+	 * Creates a specified number of new users with dummy data.
 	 *
 	 * ## OPTIONS
 	 *
@@ -520,7 +522,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Set the user role (for a particular blog).
+	 * Set the user role.
 	 *
 	 * ## OPTIONS
 	 *
@@ -625,7 +627,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Add a capability for a user.
+	 * Add a capability to a user.
 	 *
 	 * ## OPTIONS
 	 *
@@ -686,7 +688,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * List all user's capabilities.
+	 * List all capabilities for a user.
 	 *
 	 * ## OPTIONS
 	 *
@@ -753,6 +755,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Import users from a CSV file.
+	 *
+	 * If the user already exists (matching the email address or login), then
+	 * the user is updated unless the `--skip-update` flag is used.
 	 *
 	 * ## OPTIONS
 	 *
