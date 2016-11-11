@@ -7,7 +7,7 @@
  *
  *     # Set user terms
  *     $ wp user term set 123 test category
- *     Set terms.
+ *     Success: Set terms.
  */
 class User_Term_Command extends \WP_CLI\CommandWithTerms {
 	protected $obj_type = 'user';
