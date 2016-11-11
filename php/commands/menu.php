@@ -169,10 +169,6 @@ class Menu_Command extends WP_CLI_Command {
 		$menus = wp_get_nav_menus();
 
 		$menu_locations = get_nav_menu_locations();
-		// < 3.6 $menu_locations could be false
-		if ( ! $menu_locations ) {
-			$menu_locations = array();
-		}
 		foreach( $menus as &$menu ) {
 
 			$menu->locations = array();
