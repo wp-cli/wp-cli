@@ -22,7 +22,7 @@
 class Media_Command extends WP_CLI_Command {
 
 	/**
-	 * Regenerate thumbnail(s).
+	 * Regenerate thumbnails for one or more attachments.
 	 *
 	 * ## OPTIONS
 	 *
@@ -115,7 +115,7 @@ class Media_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Create attachments from local files or from URLs.
+	 * Create attachments from local files or URLs.
 	 *
 	 * ## OPTIONS
 	 *
