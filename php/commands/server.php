@@ -1,23 +1,11 @@
 <?php
-/**
- * Launch PHP's built-in web server.
- *
- * ## EXAMPLES
- *
- *     # Make the instance available on any address (with port 8080)
- *     $ wp server --host=0.0.0.0
- *     PHP 5.6.9 Development Server started at Tue May 24 01:27:11 2016
- *     Listening on http://0.0.0.0:8080
- *     Document root is /
- *     Press Ctrl-C to quit.
- *
- * @package wp-cli
- */
+
 class Server_Command extends WP_CLI_Command {
 
 	/**
 	 * Launch PHP's built-in web server for this specific WordPress installation.
 	 *
+	 * Uses `php -S` to launch a web server serving the WordPress webroot.
 	 * <http://php.net/manual/en/features.commandline.webserver.php>
 	 *
 	 * ## OPTIONS
