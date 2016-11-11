@@ -21,7 +21,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		);
 
 	/**
-	 * List all languages available.
+	 * List all available languages.
 	 *
 	 * [--field=<field>]
 	 * : Display the value of a single field
@@ -53,6 +53,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # List language,english_name,status fields of available languages.
 	 *     $ wp core language list --fields=language,english_name,status
 	 *     +----------------+-------------------------+-------------+
 	 *     | language       | english_name            | status      |
@@ -114,6 +115,8 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	/**
 	 * Install a given language.
 	 *
+	 * Downloads the language pack from WordPress.org.
+	 *
 	 * <language>
 	 * : Language code to install.
 	 *
@@ -122,7 +125,8 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     $ wp core language install  ja
+	 *     # Install the Japanese language.
+	 *     $ wp core language install ja
 	 *     Success: Language installed.
 	 *
 	 * @subcommand install
@@ -152,7 +156,9 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	}
 
 	/**
-	 * Updates the active translation of core, plugins, and themes.
+	 * Update installed languages.
+	 *
+	 * Updates installed languages for core, plugins and themes.
 	 *
 	 * [--dry-run]
 	 * : Preview which translations would be updated.
