@@ -87,12 +87,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *         Author: Otto42, pross
 	 *         Description: A simple and easy way to test your theme for all the latest WordPress standards and practices. A great theme development tool!
 	 */
-	function status( $args ) {
+	public function status( $args ) {
 		parent::status( $args );
 	}
 
 	/**
-	 * Search the wordpress.org plugin repository.
+	 * Search the WordPress.org plugin directory.
+	 *
+	 * Displays plugins in the WordPress.org plugin directory matching a given
+	 * search query.
 	 *
 	 * ## OPTIONS
 	 *
@@ -361,6 +364,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	/**
 	 * Toggle a plugin's activation state.
 	 *
+	 * If the plugin is active, then it will be deactivated. If the plugin is
+	 * inactive, then it will be activated.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <plugin>...
@@ -628,7 +634,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Get a plugin.
+	 * Get details about an installed plugin.
 	 *
 	 * ## OPTIONS
 	 *
@@ -742,7 +748,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @subcommand is-installed
 	 */
-	function is_installed( $args, $assoc_args = array() ) {
+	public function is_installed( $args, $assoc_args = array() ) {
 		if ( $this->fetcher->get( $args[0] ) ) {
 			exit( 0 );
 		} else {
@@ -768,7 +774,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     $ wp plugin delete $(wp plugin list --status=inactive --field=name)
 	 *     Success: Deleted 'tinymce-templates' plugin.
 	 */
-	function delete( $args, $assoc_args = array() ) {
+	public function delete( $args, $assoc_args = array() ) {
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			if ( $this->_delete( $plugin ) ) {
 				WP_CLI::success( "Deleted '{$plugin->name}' plugin." );
