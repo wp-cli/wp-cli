@@ -43,9 +43,7 @@ class Taxonomy_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * List taxonomies.
-	 *
-	 * Displays list of registered taxonomies.
+	 * List registered taxonomies.
 	 *
 	 * ## OPTIONS
 	 *
@@ -123,9 +121,7 @@ class Taxonomy_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get a taxonomy.
-	 *
-	 * Displays detail of the taxonomy.
+	 * Get details about a registered taxonomy.
 	 *
 	 * ## OPTIONS
 	 *
