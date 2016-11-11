@@ -136,10 +136,16 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Empty a site of its content (posts, comments, and terms).
+	 * Empty a site of its content (posts, comments, terms, and meta).
 	 *
-	 * This command doesn't empty custom database tables by default. To do so,
-	 * you'll need to hook into command execution:
+	 * Truncates posts, comments, and terms tables to empty a site of its
+	 * content. Doesn't affect site configuration (options) or users.
+	 *
+	 * If running a persistent object cache, make sure to flush the cache
+	 * after emptying the site, as the cache values will be invalid otherwise.
+	 *
+	 * To also empty custom database tables, you'll need to hook into command
+	 * execution:
 	 *
 	 * ```
 	 * WP_CLI::add_hook( 'after_invoke:site empty', function(){
@@ -539,7 +545,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Archive one or more sites
+	 * Archive one or more sites.
 	 *
 	 * ## OPTIONS
 	 *
@@ -556,7 +562,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Unarchive one or more sites
+	 * Unarchive one or more sites.
 	 *
 	 * ## OPTIONS
 	 *
@@ -573,7 +579,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Activate one or more sites
+	 * Activate one or more sites.
 	 *
 	 * ## OPTIONS
 	 *
@@ -590,7 +596,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Deactivate one or more sites
+	 * Deactivate one or more sites.
 	 *
 	 * ## OPTIONS
 	 *
@@ -607,7 +613,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Mark one or more sites as spam
+	 * Mark one or more sites as spam.
 	 *
 	 * ## OPTIONS
 	 *
@@ -624,7 +630,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Remove one or more sites from spam
+	 * Remove one or more sites from spam.
 	 *
 	 * ## OPTIONS
 	 *
