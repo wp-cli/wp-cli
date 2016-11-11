@@ -1,7 +1,7 @@
 <?php
 
 /**
- * List, add, and remove super admins from a network.
+ * Manage super admins on WordPress multisite.
  *
  * ## EXAMPLES
  *
@@ -31,7 +31,7 @@ class Super_Admin_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Show a list of users with super-admin capabilities.
+	 * List users with super admin capabilities.
 	 *
 	 * ## OPTIONS
 	 *
@@ -80,7 +80,7 @@ class Super_Admin_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Grant super-admin privileges to one or more users.
+	 * Grant super admin privileges to one or more users.
 	 *
 	 * ## OPTIONS
 	 *
@@ -127,7 +127,7 @@ class Super_Admin_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Revoke super-admin privileges to one or more users.
+	 * Remove super admin privileges from one or more users.
 	 *
 	 * ## OPTIONS
 	 *
