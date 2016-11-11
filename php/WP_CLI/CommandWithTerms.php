@@ -115,7 +115,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
 		$this->taxonomy_exists( $taxonomy );
 
-		$result = self::wp_remove_object_terms( $object_id, $terms, $taxonomy );
+		$result = wp_remove_object_terms( $object_id, $terms, $taxonomy );
 
 		if ( ! is_wp_error( $result ) ) {
 			WP_CLI::success( "Deleted term." );
@@ -182,89 +182,6 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		} else {
 			WP_CLI::error( "Failed to set terms." );
 		}
-	}
-
-
-	/**
-	 * Remove term(s) associated with a given object.
-	 *
-	 *
-	 * @global wpdb $wpdb WordPress database abstraction object.
-	 *
-	 * @param int $object_id The ID of the object from which the terms will be removed.
-	 * @param array|int|string $terms The slug(s) or ID(s) of the term(s) to remove.
-	 * @param array|string $taxonomy Taxonomy name.
-	 * @return bool|WP_Error True on success, false or WP_Error on failure.
-	 */
-	private static function wp_remove_object_terms( $object_id, $terms, $taxonomy ) {
-		global $wpdb;
-
-		// Remove notices in below 3.6 and support backwards compatibility
-
-		if( function_exists( 'wp_remove_object_terms' ) ){
-			return wp_remove_object_terms( $object_id, $terms, $taxonomy );
-		}
-
-		$object_id = (int) $object_id;
-
-		if ( ! taxonomy_exists( $taxonomy ) ) {
-			return new WP_Error( 'invalid_taxonomy', __( 'Invalid Taxonomy' ) );
-		}
-
-		if ( ! is_array( $terms ) ) {
-			$terms = array( $terms );
-		}
-
-		$tt_ids = array();
-
-		foreach ( (array) $terms as $term ) {
-			if ( ! strlen( trim( $term ) ) ) {
-				continue;
-			}
-
-			if ( ! $term_info = term_exists( $term, $taxonomy ) ) {
-				// Skip if a non-existent term ID is passed.
-				if ( is_int( $term ) ) {
-					continue;
-				}
-			}
-
-			if ( is_wp_error( $term_info ) ) {
-				return $term_info;
-			}
-
-			$tt_ids[] = $term_info['term_taxonomy_id'];
-		}
-
-		if ( $tt_ids ) {
-			$in_tt_ids = "'" . implode( "', '", $tt_ids ) . "'";
-
-			/**
-			 * Fires immediately before an object-term relationship is deleted.
-			 *
-			 * @since 2.9.0
-			 *
-			 * @param int   $object_id Object ID.
-			 * @param array $tt_ids    An array of term taxonomy IDs.
-			 */
-			do_action( 'delete_term_relationships', $object_id, $tt_ids );
-			$deleted = $wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->term_relationships WHERE object_id = %d AND term_taxonomy_id IN ($in_tt_ids)", $object_id ) );
-
-			/**
-			 * Fires immediately after an object-term relationship is deleted.
-			 *
-			 * @since 2.9.0
-			 *
-			 * @param int   $object_id Object ID.
-			 * @param array $tt_ids    An array of term taxonomy IDs.
-			 */
-			do_action( 'deleted_term_relationships', $object_id, $tt_ids );
-			wp_update_term_count( $tt_ids, $taxonomy );
-
-			return (bool) $deleted;
-		}
-
-		return false;
 	}
 
 	/**
