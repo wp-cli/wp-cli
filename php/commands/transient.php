@@ -72,7 +72,9 @@ class Transient_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Set a transient value. <expiration> is the time until expiration, in seconds.
+	 * Set a transient value.
+	 *
+	 * `<expiration>` is the time until expiration, in seconds.
 	 *
 	 * ## OPTIONS
 	 *
@@ -170,7 +172,10 @@ class Transient_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * See whether the transients API is using an object cache or the options table.
+	 * Determine type of transients implementation.
+	 *
+	 * Indicates whether the transients API is using an object cache or the
+	 * options table.
 	 *
 	 * ## EXAMPLES
 	 *
