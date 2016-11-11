@@ -4,7 +4,7 @@
  *
  * ## EXAMPLES
  *
- *     # Get a post type
+ *     # Get details about a post type
  *     $ wp post-type get page --fields=name,label,hierarchical --format=json
  *     {"name":"page","label":"Pages","hierarchical":true}
  *
@@ -33,7 +33,7 @@ class Post_Type_Command extends WP_CLI_Command {
 	);
 
 	/**
-	 * List post types.
+	 * List registered post types.
 	 *
 	 * ## OPTIONS
 	 *
@@ -104,7 +104,7 @@ class Post_Type_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get a post type
+	 * Get details about a registered post type.
 	 *
 	 * ## OPTIONS
 	 *
@@ -130,6 +130,7 @@ class Post_Type_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Get details about the 'page' post type.
 	 *     $ wp post-type get page --fields=name,label,hierarchical --format=json
 	 *     {"name":"page","label":"Pages","hierarchical":true}
 	 */
