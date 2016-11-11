@@ -5,7 +5,7 @@
  *
  * ## EXAMPLES
  *
- *     # Set theme mod.
+ *     # Set the 'background_color' theme mod to '000000'.
  *     $ wp theme mod set background_color 000000
  *     Success: Theme mod background_color set to 000000
  *
@@ -20,7 +20,7 @@
 class Theme_Mod_command extends WP_CLI_Command {
 
 	/**
-	 * Get theme mod(s).
+	 * Get one or more theme mods.
 	 *
 	 * ## OPTIONS
 	 *
@@ -110,7 +110,7 @@ class Theme_Mod_command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Remove theme mod(s).
+	 * Remove one or more theme mods.
 	 *
 	 * ## OPTIONS
 	 *
@@ -157,7 +157,7 @@ class Theme_Mod_command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Set a theme mod.
+	 * Set the value of a theme mod.
 	 *
 	 * ## OPTIONS
 	 *
