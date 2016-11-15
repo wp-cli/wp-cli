@@ -683,11 +683,6 @@ class Core_Command extends WP_CLI_Command {
 			WP_CLI::set_url( $assoc_args['url'] );
 		}
 
-		if ( empty( $assoc_args['admin_password'] ) ) {
-			$assoc_args['admin_password'] = wp_generate_password();
-			WP_CLI::log( "Admin password: {$assoc_args['admin_password']}" );
-		}
-
 		$public = true;
 
 		// @codingStandardsIgnoreStart
@@ -704,6 +699,10 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( ! empty( $GLOBALS['wpdb']->last_error ) ) {
 			WP_CLI::error( 'Installation produced database errors, and may have partially or completely failed.' );
+		}
+
+		if ( empty( $admin_password ) ) {
+			WP_CLI::log( "Admin password: {$result['password']}" );
 		}
 
 		// Confirm the uploads directory exists
