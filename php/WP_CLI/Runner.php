@@ -661,12 +661,18 @@ class Runner {
 	}
 
 	private function check_root() {
-		if ( $this->config['allow-root'] )
+		if ( $this->config['allow-root'] ) {
 			return; # they're aware of the risks!
-		if ( !function_exists( 'posix_geteuid') )
+		}
+		if ( 'cli' === $this->arguments[0] && 'update' === $this->arguments[1] ) {
+			return; # make it easier to update root-owned copies
+		}
+		if ( !function_exists( 'posix_geteuid') ) {
 			return; # posix functions not available
-		if ( posix_geteuid() !== 0 )
+		}
+		if ( posix_geteuid() !== 0 ) {
 			return; # not root
+		}
 
 		WP_CLI::error(
 			"YIKES! It looks like you're running this as root. You probably meant to " .
