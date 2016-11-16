@@ -82,6 +82,8 @@ WP-CLI version: 0.25.0
 
 You can update WP-CLI with `wp cli update` ([doc](https://wp-cli.org/commands/cli/update/)), or by repeating the installation steps.
 
+If WP-CLI is owned by root or another system user, you'll need to run `sudo wp cli update`.
+
 Want to live life on the edge? Run `wp cli update --nightly` to use the latest nightly build of WP-CLI. The nightly build is more or less stable enough for you to use in your development environment, and always includes the latest and greatest WP-CLI features.
 
 ### Tab completions
