@@ -664,7 +664,7 @@ class Runner {
 		if ( $this->config['allow-root'] ) {
 			return; # they're aware of the risks!
 		}
-		if ( 'cli' === $this->arguments[0] && 'update' === $this->arguments[1] ) {
+		if ( count( $this->arguments ) >= 2 && 'cli' === $this->arguments[0] && 'update' === $this->arguments[1] ) {
 			return; # make it easier to update root-owned copies
 		}
 		if ( !function_exists( 'posix_geteuid') ) {
