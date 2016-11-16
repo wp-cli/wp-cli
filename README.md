@@ -111,7 +111,7 @@ When looking for support, please first look for an answer in one of the followin
 - [Common issues and their fixes](https://wp-cli.org/docs/common-issues/)
 - [Documentation portal](https://wp-cli.org/docs/)
 - [Open or closed issues on Github](https://github.com/wp-cli/wp-cli/issues?utf8=%E2%9C%93&q=is%3Aissue)
-- [runcommand Excerpts](https://runcommand.io/excerpts/)
+- [runcommand tips](https://runcommand.io/tips/)
 - [WordPress StackExchange forums](http://wordpress.stackexchange.com/questions/tagged/wp-cli)
 
 Need help with a project related to work? Professional users may want to consider [runcommand premium support](https://runcommand.io/pricing/). Alternatively, join the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/) to see if a community member might have an answer for you.
