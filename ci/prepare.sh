@@ -4,6 +4,8 @@
 
 set -ex
 
+WP_CLI_BIN_DIR=${WP_CLI_BIN_DIR-/tmp/wp-cli-phar}
+
 composer install --no-interaction --prefer-source
 
 CLI_VERSION=$(head -n 1 VERSION)
