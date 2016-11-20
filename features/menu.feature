@@ -14,9 +14,12 @@ Feature: Manage WordPress menus
     When I run `wp menu delete "My Menu"`
     Then STDOUT should be:
       """
+      Deleted menu 'My Menu'.
       Success: 1 menu deleted.
       """
-    And I run `wp menu list --format=count`
+    And the return code should be 0
+
+    When I run `wp menu list --format=count`
     Then STDOUT should be:
       """
       0
@@ -33,9 +36,13 @@ Feature: Manage WordPress menus
     When I run `wp menu delete "First Menu" "Second Menu"`
     Then STDOUT should be:
       """
+      Deleted menu 'First Menu'.
+      Deleted menu 'Second Menu'.
       Success: 2 menus deleted.
       """
-    And I run `wp menu list --format=count`
+    And the return code should be 0
+
+    When I run `wp menu list --format=count`
     Then STDOUT should be:
       """
       0
@@ -47,3 +54,25 @@ Feature: Manage WordPress menus
       """
       5
       """
+
+  Scenario: Errors when deleting menus
+    When I try `wp menu delete "Your menu"`
+    Then STDERR should be:
+      """
+      Warning: Couldn't delete menu 'Your menu'.
+      Error: No menus deleted.
+      """
+
+    When I run `wp menu create "My Menu"`
+    And I run `wp menu list --fields=name,slug`
+    Then STDOUT should be a table containing rows:
+      | name       | slug       |
+      | My Menu    | my-menu    |
+
+    When I try `wp menu delete "My Menu" "Your menu"`
+    Then STDERR should be:
+      """
+      Warning: Couldn't delete menu 'Your menu'.
+      Error: Only 1 of 2 menus deleted.
+      """
+    And the return code should be 1
