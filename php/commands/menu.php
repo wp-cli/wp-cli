@@ -89,28 +89,29 @@ class Menu_Command extends WP_CLI_Command {
 	 */
 	public function delete( $args, $_ ) {
 
-		$count = 0;
-
+		$count = $errored = 0;
 		foreach( $args as $arg ) {
-
 			$ret = wp_delete_nav_menu( $arg );
-
 			if ( ! $ret || is_wp_error( $ret ) ) {
-
-				WP_CLI::warning( "Error deleting menu." );
-
-			}
-			else {
-
+				WP_CLI::warning( "Couldn't delete menu '{$arg}'." );
+				$errored++;
+			} else {
+				WP_CLI::log( "Deleted menu '{$arg}'." );
 				$count++;
-
 			}
-
 		}
 
-		$success_message = ( 1 === $count ) ? '%d menu deleted.' : '%d menus deleted.';
-		WP_CLI::success( sprintf( $success_message, $count ) );
-
+		if ( $errored ) {
+			$arg_count = count( $args );
+			if ( $count ) {
+				WP_CLI::error( sprintf( 'Only %d of %d menus deleted.', $count, $arg_count ) );
+			} else {
+				WP_CLI::error( 'No menus deleted.' );
+			}
+		} else {
+			$success_message = ( 1 === $count ) ? '%d menu deleted.' : '%d menus deleted.';
+			WP_CLI::success( sprintf( $success_message, $count ) );
+		}
 	}
 
 	/**
