@@ -109,3 +109,26 @@ Feature: Manage WordPress menu items
       | title       | db_id            | menu_item_parent |
       | Grandparent | {GRANDPARENT_ID} | 0                |
       | Child       | {CHILD_ID}       | {GRANDPARENT_ID} |
+
+  Scenario: Error deleting one or more menu items
+    When I run `wp menu create "Sidebar Menu"`
+    Then STDOUT should not be empty
+
+    When I try `wp menu item delete 99999999`
+    Then STDERR should be:
+      """
+      Warning: Couldn't delete menu item 99999999.
+      Error: No menu items deleted.
+      """
+    And the return code should be 1
+
+    When I run `wp menu item add-custom sidebar-menu Apple http://apple.com --porcelain`
+    Then save STDOUT as {CUSTOM_ITEM_ID}
+
+    When I try `wp menu item delete {CUSTOM_ITEM_ID} 99999999`
+    Then STDERR should be:
+      """
+      Warning: Couldn't delete menu item 99999999.
+      Error: Only 1 of 2 menu items deleted.
+      """
+    And the return code should be 1

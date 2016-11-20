@@ -355,14 +355,15 @@ class Menu_Item_Command extends WP_CLI_Command {
 	public function delete( $args, $_ ) {
 		global $wpdb;
 
-		$count = 0;
+		$count = $errored = 0;
 
 		foreach( $args as $arg ) {
 
 			$parent_menu_id = (int) get_post_meta( $arg, '_menu_item_menu_item_parent', true );
 			$ret = wp_delete_post( $arg, true );
 			if ( ! $ret ) {
-				WP_CLI::warning( "Couldn't delete menu item." );
+				WP_CLI::warning( "Couldn't delete menu item {$arg}." );
+				$errored++;
 			} else if ( $parent_menu_id ) {
 				$children = $wpdb->get_results( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_menu_item_menu_item_parent' AND meta_value=%s", (int) $arg ) );
 				if ( $children ) {
@@ -374,14 +375,23 @@ class Menu_Item_Command extends WP_CLI_Command {
 				}
 			}
 
-			if ( false !== $ret ) {
+			if ( false != $ret ) {
 				$count++;
 			}
 
 		}
 
-		$success_message = ( 1 === $count ) ? '%d menu item deleted.' : '%d menu items deleted.';
-		WP_CLI::success( sprintf( $success_message, $count ) );
+		if ( $errored ) {
+			$arg_count = count( $args );
+			if ( $count ) {
+				WP_CLI::error( sprintf( 'Only %d of %d menu items deleted.', $count, $arg_count ) );
+			} else {
+				WP_CLI::error( 'No menu items deleted.' );
+			}
+		} else {
+			$success_message = ( 1 === $count ) ? '%d menu item deleted.' : '%d menu items deleted.';
+			WP_CLI::success( sprintf( $success_message, $count ) );
+		}
 
 	}
 
