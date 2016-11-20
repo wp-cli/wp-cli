@@ -333,27 +333,44 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 *     # Delete post category
 	 *     $ wp term delete category 15
-	 *     Success: Deleted category 15.
+	 *     Deleted category 15.
+	 *     Success: Deleted 1 of 1 terms.
 	 *
 	 *     # Delete all post tags
 	 *     $ wp term list post_tag --field=term_id | xargs wp term delete post_tag
-	 *     Success: Deleted post_tag 159.
-	 *     Success: Deleted post_tag 160.
-	 *     Success: Deleted post_tag 161.
+	 *     Deleted post_tag 159.
+	 *     Deleted post_tag 160.
+	 *     Deleted post_tag 161.
+	 *     Success: Deleted 3 of 3 terms.
 	 */
 	public function delete( $args ) {
 		$taxonomy = array_shift( $args );
 
+		$successes = $errors = 0;
 		foreach ( $args as $term_id ) {
 			$ret = wp_delete_term( $term_id, $taxonomy );
 
 			if ( is_wp_error( $ret ) ) {
 				WP_CLI::warning( $ret );
+				$errors++;
 			} else if ( $ret ) {
-				WP_CLI::success( sprintf( "Deleted %s %d.", $taxonomy, $term_id ) );
+				WP_CLI::log( sprintf( "Deleted %s %d.", $taxonomy, $term_id ) );
+				$successes++;
 			} else {
 				WP_CLI::warning( sprintf( "%s %d doesn't exist.", $taxonomy, $term_id ) );
+				$errors++;
 			}
+		}
+
+		if ( $errors ) {
+			if ( $successes ) {
+				$term_count = count( $args );
+				WP_CLI::error( "Only deleted {$successes} of {$term_count} terms." );
+			} else {
+				WP_CLI::error( "No terms deleted." );
+			}
+		} else {
+			WP_CLI::success( "Deleted {$successes} of {$successes} terms." );
 		}
 	}
 
