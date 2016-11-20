@@ -182,7 +182,9 @@ class Widget_Command extends WP_CLI_Command {
 	public function update( $args, $assoc_args ) {
 
 		list( $widget_id ) = $args;
-		$this->validate_sidebar_widget( $widget_id );
+		if ( ! $this->validate_sidebar_widget( $widget_id ) ) {
+			WP_CLI::error( "Widget doesn't exist." );
+		}
 
 		if ( empty( $assoc_args ) ) {
 			WP_CLI::error( "No options specified to update." );
@@ -231,7 +233,9 @@ class Widget_Command extends WP_CLI_Command {
 	public function move( $args, $assoc_args ) {
 
 		list( $widget_id ) = $args;
-		$this->validate_sidebar_widget( $widget_id );
+		if ( ! $this->validate_sidebar_widget( $widget_id ) ) {
+			WP_CLI::error( "Widget doesn't exist." );
+		}
 
 		if ( empty( $assoc_args['position'] ) && empty( $assoc_args['sidebar-id'] ) ) {
 			WP_CLI::error( "A new position or new sidebar must be specified." );
@@ -275,10 +279,14 @@ class Widget_Command extends WP_CLI_Command {
 	 */
 	public function deactivate( $args, $assoc_args ) {
 
-		$count = 0;
+		$count = $errors = 0;
 
 		foreach( $args as $widget_id ) {
-			$this->validate_sidebar_widget( $widget_id );
+			if ( ! $this->validate_sidebar_widget( $widget_id ) ) {
+				WP_CLI::warning( "Widget '{$widget_id}' doesn't exist." );
+				$errors++;
+				continue;
+			}
 
 			list( $name, $option_index, $sidebar_id, $sidebar_index ) = $this->get_widget_data( $widget_id );
 			if ( 'wp_inactive_widgets' == $sidebar_id ) {
@@ -292,8 +300,17 @@ class Widget_Command extends WP_CLI_Command {
 
 		}
 
-		$success_message = ( 1 === $count ) ? '%d widget deactivated.' : '%d widgets deactivated.';
-		WP_CLI::success( sprintf( $success_message, $count ) );
+		if ( $errors ) {
+			if ( $count ) {
+				$widget_count = count( $args );
+				WP_CLI::error( "Only deactivated {$count} of {$widget_count} widgets." );
+			} else {
+				WP_CLI::error( "No widgets deactivated." );
+			}
+		} else {
+			$success_message = ( 1 === $count ) ? '%d widget deactivated.' : '%d widgets deactivated.';
+			WP_CLI::success( sprintf( $success_message, $count ) );
+		}
 	}
 
 	/**
@@ -314,10 +331,14 @@ class Widget_Command extends WP_CLI_Command {
 	 */
 	public function delete( $args, $assoc_args ) {
 
-		$count = 0;
+		$count = $errors = 0;
 
 		foreach( $args as $widget_id ) {
-			$this->validate_sidebar_widget( $widget_id );
+			if ( ! $this->validate_sidebar_widget( $widget_id ) ) {
+				WP_CLI::warning( "Widget '{$widget_id}' doesn't exist." );
+				$errors++;
+				continue;
+			}
 
 			// Remove the widget's settings.
 			list( $name, $option_index, $sidebar_id, $sidebar_index ) = $this->get_widget_data( $widget_id );
@@ -334,8 +355,17 @@ class Widget_Command extends WP_CLI_Command {
 			$count++;
 		}
 
-		$success_message = ( 1 === $count ) ? '%d widget removed from sidebar.' : '%d widgets removed from sidebar.';
-		WP_CLI::success( sprintf( $success_message, $count ) );
+		if ( $errors ) {
+			if ( $count ) {
+				$widget_count = count( $args );
+				WP_CLI::error( "Only removed {$count} of {$widget_count} widgets from sidebar." );
+			} else {
+				WP_CLI::error( "No widgets removed from sidebar." );
+			}
+		} else {
+			$success_message = ( 1 === $count ) ? '%d widget removed from sidebar.' : '%d widgets removed from sidebar.';
+			WP_CLI::success( sprintf( $success_message, $count ) );
+		}
 	}
 
 	/**
@@ -394,9 +424,11 @@ class Widget_Command extends WP_CLI_Command {
 			WP_CLI::error( 'No sidebar registered.' );
 		}
 
+		$count = $errors = 0;
 		foreach ( $args as $sidebar_id ) {
 			if ( ! array_key_exists( $sidebar_id, $wp_registered_sidebars ) ) {
 				WP_CLI::warning( sprintf( 'Invalid sidebar: %s', $sidebar_id ) );
+				$errors++;
 				continue;
 			}
 
@@ -410,9 +442,27 @@ class Widget_Command extends WP_CLI_Command {
 					list( $name, $option_index, $new_sidebar_id, $sidebar_index ) = $this->get_widget_data( $widget_id );
 					$this->move_sidebar_widget( $widget_id, $new_sidebar_id, 'wp_inactive_widgets', $sidebar_index, 0 );
 				}
-				WP_CLI::success( sprintf( "Sidebar '%s' reset.", $sidebar_id ) );
+				WP_CLI::log( sprintf( "Sidebar '%s' reset.", $sidebar_id ) );
+				$count++;
 			}
 		}
+
+		$sidebar_count = count( $args );
+		if ( $errors ) {
+			if ( $count ) {
+				WP_CLI::error( "Only reset {$count} of {$sidebar_count} sidebars." );
+			} else {
+				WP_CLI::error( 'No sidebars reset.' );
+			}
+		} else {
+			if ( $count ) {
+				WP_CLI::success( "Reset {$count} of {$sidebar_count} sidebars." );
+			} else {
+				$message = $sidebar_count > 1 ? 'Sidebars' : 'Sidebar';
+				WP_CLI::success( "{$message} already reset." );
+			}
+		}
+
 	}
 
 	/**
@@ -448,11 +498,7 @@ class Widget_Command extends WP_CLI_Command {
 			}
 
 		}
-
-		if ( false === $widget_exists ) {
-			WP_CLI::error( "Specified widget isn't present on sidebar." );
-		}
-
+		return $widget_exists;
 	}
 
 	/**

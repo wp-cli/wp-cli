@@ -30,16 +30,24 @@ Feature: Reset WordPress sidebars
       """
       Warning: Sidebar 'sidebar-1' is already empty.
       """
+    And STDOUT should be:
+      """
+      Success: Sidebar already reset.
+      """
+    And the return code should be 0
 
     When I try `wp widget reset non-existing-sidebar-id`
     Then STDERR should be:
       """
       Warning: Invalid sidebar: non-existing-sidebar-id
+      Error: No sidebars reset.
       """
+    And the return code should be 1
 
     When I run `wp widget add calendar sidebar-1 --title="Calendar"`
     Then STDOUT should not be empty
-    And I run `wp widget list sidebar-1 --format=count`
+
+    When I run `wp widget list sidebar-1 --format=count`
     Then STDOUT should be:
       """
       1
@@ -47,19 +55,28 @@ Feature: Reset WordPress sidebars
 
     When I run `wp widget add search sidebar-2 --title="Quick Search"`
     Then STDOUT should not be empty
-    And I run `wp widget list sidebar-2 --format=count`
+
+    When I run `wp widget list sidebar-2 --format=count`
     Then STDOUT should be:
       """
       1
       """
 
-    When I run `wp widget reset sidebar-1 sidebar-2`
-    And I run `wp widget list sidebar-1 --format=count`
+    When I try `wp widget reset sidebar-1 sidebar-2 non-existing-sidebar-id`
+    Then STDERR should be:
+      """
+      Warning: Invalid sidebar: non-existing-sidebar-id
+      Error: Only reset 2 of 3 sidebars.
+      """
+    And the return code should be 1
+
+    When I run `wp widget list sidebar-1 --format=count`
     Then STDOUT should be:
       """
       0
       """
-    And I run `wp widget list sidebar-2 --format=count`
+
+    When I run `wp widget list sidebar-2 --format=count`
     Then STDOUT should be:
       """
       0
@@ -79,7 +96,16 @@ Feature: Reset WordPress sidebars
     Then STDOUT should not be empty
 
     When I run `wp widget reset --all`
-    And I run `wp widget list sidebar-1 --format=count`
+    Then STDOUT should be:
+      """
+      Sidebar 'sidebar-1' reset.
+      Sidebar 'sidebar-2' reset.
+      Sidebar 'sidebar-3' reset.
+      Success: Reset 3 of 3 sidebars.
+      """
+    And the return code should be 0
+
+    When I run `wp widget list sidebar-1 --format=count`
     Then STDOUT should be:
       """
       0

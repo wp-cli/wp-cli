@@ -1,11 +1,11 @@
 Feature: Manage widgets in WordPress sidebar
 
-  Scenario: Widget CRUD
+  Background:
     Given a WP install
-
     When I run `wp theme install p2 --activate`
     Then STDOUT should not be empty
 
+  Scenario: Widget CRUD
     When I run `wp widget list sidebar-1 --fields=name,id,position`
     Then STDOUT should be a table containing rows:
       | name            | id                | position |
@@ -34,9 +34,11 @@ Feature: Manage widgets in WordPress sidebar
 
     When I run `wp widget deactivate meta-2`
     Then STDOUT should be:
-    """
-    Success: 1 widget deactivated.
-    """
+      """
+      Success: 1 widget deactivated.
+      """
+    And STDERR should be empty
+    And the return code should be 0
 
     When I run `wp widget list sidebar-1 --fields=name,id,position`
     Then STDOUT should be a table containing rows:
@@ -57,6 +59,8 @@ Feature: Manage widgets in WordPress sidebar
       """
       Success: 2 widgets removed from sidebar.
       """
+    And STDERR should be empty
+    And the return code should be 0
 
     When I run `wp widget list sidebar-1 --fields=name,id,position`
     Then STDOUT should be a table containing rows:
@@ -87,3 +91,86 @@ Feature: Manage widgets in WordPress sidebar
     Then STDOUT should be a table containing rows:
       | name            | position | options               |
       | calendar        | 2        | {"title":"Calendar"}  |
+
+  Scenario: Validate sidebar widgets
+    When I try `wp widget update calendar-999`
+    Then STDERR should be:
+      """
+      Error: Widget doesn't exist.
+      """
+    And the return code should be 1
+
+    When I try `wp widget move calendar-999`
+    Then STDERR should be:
+      """
+      Error: Widget doesn't exist.
+      """
+    And the return code should be 1
+
+  Scenario: Return code is 0 when all widgets exist, deactivation
+    When I run `wp widget deactivate recent-posts-2`
+    Then STDOUT should be:
+      """
+      Success: 1 widget deactivated.
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp widget deactivate search-2 archives-2`
+    Then STDOUT should be:
+      """
+      Success: 2 widgets deactivated.
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+  Scenario: Return code is 0 when all widgets exist, deletion
+    When I run `wp widget delete recent-posts-2`
+    Then STDOUT should be:
+      """
+      Success: 1 widget removed from sidebar.
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp widget delete search-2 archives-2`
+    Then STDOUT should be:
+      """
+      Success: 2 widgets removed from sidebar.
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+  Scenario: Return code is 1 when 1 or more widgets doesn't exist, deactivation
+    When I try `wp widget deactivate calendar-999`
+    Then STDERR should be:
+      """
+      Warning: Widget 'calendar-999' doesn't exist.
+      Error: No widgets deactivated.
+      """
+    And the return code should be 1
+
+    When I try `wp widget deactivate recent-posts-2 calendar-999`
+    Then STDERR should be:
+      """
+      Warning: Widget 'calendar-999' doesn't exist.
+      Error: Only deactivated 1 of 2 widgets.
+      """
+    And the return code should be 1
+
+  Scenario: Return code is 1 when 1 or more widgets doesn't exist, deletion
+    When I try `wp widget delete calendar-999`
+    Then STDERR should be:
+      """
+      Warning: Widget 'calendar-999' doesn't exist.
+      Error: No widgets removed from sidebar.
+      """
+    And the return code should be 1
+
+    When I try `wp widget delete recent-posts-2 calendar-999`
+    Then STDERR should be:
+      """
+      Warning: Widget 'calendar-999' doesn't exist.
+      Error: Only removed 1 of 2 widgets from sidebar.
+      """
+    And the return code should be 1
