@@ -60,6 +60,10 @@ Feature: Manage WordPress terms
     Then STDOUT should be a number
     And save STDOUT as {TERM_ID}
 
+    When I run `wp term create post_tag 'Test delete term 2' --slug=test-two --description='This is a test term to be deleted' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID_TWO}
+
     When I run `wp term get post_tag {TERM_ID} --field=slug --format=json`
     Then STDOUT should be:
       """
@@ -67,13 +71,32 @@ Feature: Manage WordPress terms
       """
 
     When I run `wp term delete post_tag {TERM_ID}`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
       Deleted post_tag {TERM_ID}.
+      Success: Deleted 1 of 1 terms.
       """
+    And the return code should be 0
 
     When I try the previous command again
-    Then STDERR should not be empty
+    Then STDERR should be:
+      """
+      Warning: post_tag {TERM_ID} doesn't exist.
+      Error: No terms deleted.
+      """
+    And the return code should be 1
+
+    When I try `wp term delete post_tag {TERM_ID} {TERM_ID_TWO}`
+    Then STDOUT should be:
+      """
+      Deleted post_tag {TERM_ID_TWO}.
+      """
+    And STDERR should be:
+      """
+      Warning: post_tag {TERM_ID} doesn't exist.
+      Error: Only deleted 1 of 2 terms.
+      """
+    And the return code should be 1
 
   Scenario: Term with a non-existent parent
     When I try `wp term create category Apple --parent=99 --porcelain`
