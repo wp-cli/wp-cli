@@ -94,32 +94,41 @@ class Super_Admin_Command extends WP_CLI_Command {
 	 */
 	public function add( $args, $_ ) {
 
+		$successes = $errors = 0;
 		$users = $this->fetcher->get_many( $args );
+		if ( count( $users ) != count( $args ) ) {
+			$errors = count( $args ) - count( $users );
+		}
 		$user_logins = wp_list_pluck( $users, 'user_login' );
 		$super_admins = self::get_admins();
 		$num_super_admins = count( $super_admins );
 
 		foreach ( $user_logins as $user_login ) {
-			$user = get_user_by( 'login', $user_login );
-
-			if ( !$user ) {
-				WP_CLI::warning( "Couldn't find '{$user_login}' user." );
-				continue;
-			}
-
-			if ( in_array( $user->user_login, $super_admins ) ) {
+			if ( in_array( $user_login, $super_admins ) ) {
 				WP_CLI::warning( "User '{$user_login}' already has super-admin capabilities." );
 				continue;
 			}
 
-			$super_admins[] = $user->user_login;
+			$super_admins[] = $user_login;
+			$successes++;
 		}
 
 		if ( $num_super_admins === count( $super_admins ) ) {
-			WP_CLI::log( 'No changes.' );
+			if ( $errors ) {
+				$user_count = count( $args );
+				WP_CLI::error( "Couldn't grant super-admin capabilities to {$errors} of {$user_count} users." );
+			} else {
+				WP_CLI::success( 'Super admins remain unchanged.' );
+			}
 		} else {
 			if ( update_site_option( 'site_admins' , $super_admins ) ) {
-				WP_CLI::success( 'Granted super-admin capabilities.' );
+				if ( $errors ) {
+					$user_count = count( $args );
+					WP_CLI::error( "Only granted super-admin capabilities to {$successes} of {$user_count} users." );
+				} else {
+					$message = $successes > 1 ? 'users' : 'user';
+					WP_CLI::success( "Granted super-admin capabilities to {$successes} {$message}." );
+				}
 			} else {
 				WP_CLI::error( 'Site options update failed.' );
 			}
