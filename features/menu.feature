@@ -15,7 +15,7 @@ Feature: Manage WordPress menus
     Then STDOUT should be:
       """
       Deleted menu 'My Menu'.
-      Success: 1 menu deleted.
+      Success: Deleted 1 of 1 menus.
       """
     And the return code should be 0
 
@@ -38,7 +38,7 @@ Feature: Manage WordPress menus
       """
       Deleted menu 'First Menu'.
       Deleted menu 'Second Menu'.
-      Success: 2 menus deleted.
+      Success: Deleted 2 of 2 menus.
       """
     And the return code should be 0
 
@@ -73,6 +73,6 @@ Feature: Manage WordPress menus
     Then STDERR should be:
       """
       Warning: Couldn't delete menu 'Your menu'.
-      Error: Only 1 of 2 menus deleted.
+      Error: Only deleted 1 of 2 menus.
       """
     And the return code should be 1

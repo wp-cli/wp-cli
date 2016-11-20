@@ -118,6 +118,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	function install( $args, $assoc_args ) {
 
+		$successes = $errors = 0;
 		foreach ( $args as $slug ) {
 
 			if ( empty( $slug ) ) {
@@ -162,20 +163,28 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					if ( $filter ) {
 						remove_filter( 'upgrader_source_selection', $filter, 10, 3 );
 					}
+					$successes++;
+				} else {
+					$errors++;
 				}
 			} else {
 				// Assume a plugin/theme slug from the WordPress.org repository has been specified
 				$result = $this->install_from_repo( $slug, $assoc_args );
 
 				if ( is_wp_error( $result ) ) {
-
 					$key = $result->get_error_code();
-					if ( in_array( $result->get_error_code(), array( 'plugins_api_failed', 'themes_api_failed' ) )
+					if ( in_array( $key, array( 'plugins_api_failed', 'themes_api_failed' ) )
 						&& ! empty( $result->error_data[ $key ] ) && in_array( $result->error_data[ $key ], array( 'N;', 'b:0;' ) ) ) {
 						\WP_CLI::warning( "Couldn't find '$slug' in the WordPress.org {$this->item_type} directory." );
+						$errors++;
 					} else {
 						\WP_CLI::warning( "$slug: " . $result->get_error_message() );
+						if ( 'already_installed' !== $key ) {
+							$errors++;
+						}
 					}
+				} else {
+					$successes++;
 				}
 			}
 
@@ -191,6 +200,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				}
 			}
 		}
+		Utils\report_batch_operation_results( $this->item_type, 'install', count( $args ), $successes, $errors );
 	}
 
 	/**

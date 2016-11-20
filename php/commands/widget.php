@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\Utils;
+
 /**
  * Manage sidebar widgets.
  *
@@ -300,17 +302,7 @@ class Widget_Command extends WP_CLI_Command {
 
 		}
 
-		if ( $errors ) {
-			if ( $count ) {
-				$widget_count = count( $args );
-				WP_CLI::error( "Only deactivated {$count} of {$widget_count} widgets." );
-			} else {
-				WP_CLI::error( "No widgets deactivated." );
-			}
-		} else {
-			$success_message = ( 1 === $count ) ? '%d widget deactivated.' : '%d widgets deactivated.';
-			WP_CLI::success( sprintf( $success_message, $count ) );
-		}
+		Utils\report_batch_operation_results( 'widget', 'deactivate', count( $args ), $count, $errors );
 	}
 
 	/**
@@ -325,7 +317,7 @@ class Widget_Command extends WP_CLI_Command {
 	 *
 	 *     # Delete the recent-comments-2 widget from its sidebar.
 	 *     $ wp widget delete recent-comments-2
-	 *     Success: 1 widget removed from sidebar.
+	 *     Success: Deleted 1 of 1 widgets.
 	 *
 	 * @subcommand delete
 	 */
@@ -355,17 +347,7 @@ class Widget_Command extends WP_CLI_Command {
 			$count++;
 		}
 
-		if ( $errors ) {
-			if ( $count ) {
-				$widget_count = count( $args );
-				WP_CLI::error( "Only removed {$count} of {$widget_count} widgets from sidebar." );
-			} else {
-				WP_CLI::error( "No widgets removed from sidebar." );
-			}
-		} else {
-			$success_message = ( 1 === $count ) ? '%d widget removed from sidebar.' : '%d widgets removed from sidebar.';
-			WP_CLI::success( sprintf( $success_message, $count ) );
-		}
+		Utils\report_batch_operation_results( 'widget', 'delete', count( $args ), $count, $errors );
 	}
 
 	/**
@@ -447,22 +429,7 @@ class Widget_Command extends WP_CLI_Command {
 			}
 		}
 
-		$sidebar_count = count( $args );
-		if ( $errors ) {
-			if ( $count ) {
-				WP_CLI::error( "Only reset {$count} of {$sidebar_count} sidebars." );
-			} else {
-				WP_CLI::error( 'No sidebars reset.' );
-			}
-		} else {
-			if ( $count ) {
-				WP_CLI::success( "Reset {$count} of {$sidebar_count} sidebars." );
-			} else {
-				$message = $sidebar_count > 1 ? 'Sidebars' : 'Sidebar';
-				WP_CLI::success( "{$message} already reset." );
-			}
-		}
-
+		Utils\report_batch_operation_results( 'sidebar', 'reset', count( $args ), $count, $errors );
 	}
 
 	/**

@@ -35,7 +35,7 @@ Feature: Manage widgets in WordPress sidebar
     When I run `wp widget deactivate meta-2`
     Then STDOUT should be:
       """
-      Success: 1 widget deactivated.
+      Success: Deactivated 1 of 1 widgets.
       """
     And STDERR should be empty
     And the return code should be 0
@@ -57,7 +57,7 @@ Feature: Manage widgets in WordPress sidebar
     When I run `wp widget delete archives-2 recent-posts-2`
     Then STDOUT should be:
       """
-      Success: 2 widgets removed from sidebar.
+      Success: Deleted 2 of 2 widgets.
       """
     And STDERR should be empty
     And the return code should be 0
@@ -111,7 +111,7 @@ Feature: Manage widgets in WordPress sidebar
     When I run `wp widget deactivate recent-posts-2`
     Then STDOUT should be:
       """
-      Success: 1 widget deactivated.
+      Success: Deactivated 1 of 1 widgets.
       """
     And STDERR should be empty
     And the return code should be 0
@@ -119,7 +119,7 @@ Feature: Manage widgets in WordPress sidebar
     When I run `wp widget deactivate search-2 archives-2`
     Then STDOUT should be:
       """
-      Success: 2 widgets deactivated.
+      Success: Deactivated 2 of 2 widgets.
       """
     And STDERR should be empty
     And the return code should be 0
@@ -128,7 +128,7 @@ Feature: Manage widgets in WordPress sidebar
     When I run `wp widget delete recent-posts-2`
     Then STDOUT should be:
       """
-      Success: 1 widget removed from sidebar.
+      Success: Deleted 1 of 1 widgets.
       """
     And STDERR should be empty
     And the return code should be 0
@@ -136,7 +136,7 @@ Feature: Manage widgets in WordPress sidebar
     When I run `wp widget delete search-2 archives-2`
     Then STDOUT should be:
       """
-      Success: 2 widgets removed from sidebar.
+      Success: Deleted 2 of 2 widgets.
       """
     And STDERR should be empty
     And the return code should be 0
@@ -163,7 +163,7 @@ Feature: Manage widgets in WordPress sidebar
     Then STDERR should be:
       """
       Warning: Widget 'calendar-999' doesn't exist.
-      Error: No widgets removed from sidebar.
+      Error: No widgets deleted.
       """
     And the return code should be 1
 
@@ -171,6 +171,6 @@ Feature: Manage widgets in WordPress sidebar
     Then STDERR should be:
       """
       Warning: Widget 'calendar-999' doesn't exist.
-      Error: Only removed 1 of 2 widgets from sidebar.
+      Error: Only deleted 1 of 2 widgets.
       """
     And the return code should be 1

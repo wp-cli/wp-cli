@@ -62,7 +62,7 @@ Feature: Manage WordPress menu items
     When I run `wp menu item delete {CUSTOM_ITEM_ID}`
     Then STDOUT should be:
       """
-      Success: 1 menu item deleted.
+      Success: Deleted 1 of 1 menu items.
       """
     And I run `wp menu item list sidebar-menu --format=count`
     Then STDOUT should be:
@@ -73,7 +73,7 @@ Feature: Manage WordPress menu items
     When I run `wp menu item delete {POST_ITEM_ID} {TERM_ITEM_ID}`
     Then STDOUT should be:
       """
-      Success: 2 menu items deleted.
+      Success: Deleted 2 of 2 menu items.
       """
     And I run `wp menu item list sidebar-menu --format=count`
     Then STDOUT should be:
@@ -129,6 +129,6 @@ Feature: Manage WordPress menu items
     Then STDERR should be:
       """
       Warning: Couldn't delete menu item 99999999.
-      Error: Only 1 of 2 menu items deleted.
+      Error: Only deleted 1 of 2 menu items.
       """
     And the return code should be 1
