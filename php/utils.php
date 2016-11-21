@@ -794,7 +794,7 @@ function report_batch_operation_results( $noun, $verb, $total, $successes, $fail
 		if ( $successes ) {
 			WP_CLI::success( "{$past_tense_verb_upper} {$successes} of {$total} {$plural_noun}." );
 		} else {
-			$message = count( $total ) > 1 ? ucfirst( $plural_noun ) : ucfirst( $noun );
+			$message = $total > 1 ? ucfirst( $plural_noun ) : ucfirst( $noun );
 			WP_CLI::success( "{$message} already {$past_tense_verb}." );
 		}
 	}
