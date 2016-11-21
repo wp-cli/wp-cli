@@ -12,6 +12,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected $upgrade_refresh;
 	protected $upgrade_transient;
 
+	protected $chained_command = false;
+
 	function __construct() {
 		// Do not automatically check translations updates after updating plugins/themes.
 		add_action( 'upgrader_process_complete', function() {
@@ -189,6 +191,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 
 			if ( $result ) {
+				$this->chained_command = true;
 				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate-network' ) ) {
 					\WP_CLI::log( "Network-activating '$slug'..." );
 					$this->activate( array( $slug ), array( 'network' => true ) );
@@ -198,6 +201,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					\WP_CLI::log( "Activating '$slug'..." );
 					$this->activate( array( $slug ) );
 				}
+				$this->chained_command = false;
 			}
 		}
 		Utils\report_batch_operation_results( $this->item_type, 'install', count( $args ), $successes, $errors );

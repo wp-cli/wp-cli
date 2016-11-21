@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\Utils;
+
 /**
  * Manage themes.
  *
@@ -659,7 +661,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * @subcommand is-installed
 	 */
-	function is_installed( $args, $assoc_args = array() ) {
+	public function is_installed( $args, $assoc_args = array() ) {
 		$theme = wp_get_theme( $args[0] );
 
 		if ( $theme->exists() ) {
@@ -682,16 +684,19 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp theme delete twentytwelve
-	 *     Success: Deleted 'twentytwelve' theme.
+	 *     Deleted 'twentytwelve' theme.
+	 *     Success: Deleted 1 of 1 themes.
 	 *
 	 * @alias uninstall
 	 */
-	function delete( $args ) {
+	public function delete( $args ) {
+		$successes = $errors = 0;
 		foreach ( $this->fetcher->get_many( $args ) as $theme ) {
 			$theme_slug = $theme->get_stylesheet();
 
 			if ( $this->is_active_theme( $theme ) ) {
 				WP_CLI::warning( "Can't delete the currently active theme: $theme_slug" );
+				$errors++;
 				continue;
 			}
 
@@ -699,9 +704,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 			if ( is_wp_error( $r ) ) {
 				WP_CLI::warning( $r );
+				$errors++;
 			} else {
-				WP_CLI::success( "Deleted '$theme_slug' theme." );
+				WP_CLI::log( "Deleted '$theme_slug' theme." );
+				$successes++;
 			}
+		}
+		if ( ! $this->chained_command ) {
+			Utils\report_batch_operation_results( 'theme', 'delete', count( $args ), $successes, $errors );
 		}
 	}
 
