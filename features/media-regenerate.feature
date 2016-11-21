@@ -37,7 +37,7 @@ Feature: Regenerate WordPress attachments
     When I run `wp media regenerate --yes`
     Then STDOUT should contain:
       """
-      Success: Finished regenerating the image.
+      Success: Regenerated 1 of 1 images.
       """
     And the wp-content/uploads/large-image-125x125.jpg file should not exist
     And the wp-content/uploads/large-image-200x200.jpg file should exist
@@ -69,7 +69,7 @@ Feature: Regenerate WordPress attachments
     When I run `wp media regenerate --skip-delete --yes`
     Then STDOUT should contain:
       """
-      Success: Finished regenerating the image.
+      Success: Regenerated 1 of 1 images.
       """
     And the wp-content/uploads/large-image-125x125.jpg file should exist
     And the wp-content/uploads/large-image-200x200.jpg file should exist
@@ -94,14 +94,11 @@ Feature: Regenerate WordPress attachments
     When I run `rm wp-content/uploads/large-image.jpg`
     Then STDOUT should be empty
 
-    When I run `wp media regenerate --yes`
-    Then STDOUT should contain:
+    When I try `wp media regenerate --yes`
+    Then STDERR should be:
       """
-      An error occurred with image regeneration.
-      """
-    And STDERR should contain:
-      """
-      Warning: Can't find
+      Warning: Can't find "My imported attachment" (ID {ATTACHMENT_ID}).
+      Error: No images regenerated.
       """
 
   Scenario: Only regenerate images which are missing sizes
@@ -142,7 +139,7 @@ Feature: Regenerate WordPress attachments
       """
     And STDOUT should contain:
       """
-      Success: Finished regenerating all images.
+      Success: Regenerated 2 of 2 images
       """
 
   Scenario: Regenerate images which are missing globally-defined image sizes
@@ -174,7 +171,7 @@ Feature: Regenerate WordPress attachments
       """
     And STDOUT should contain:
       """
-      Success: Finished regenerating the image.
+      Success: Regenerated 1 of 1 images.
       """
     And the wp-content/uploads/large-image-125x125.jpg file should exist
 
@@ -189,6 +186,6 @@ Feature: Regenerate WordPress attachments
       """
     And STDOUT should contain:
       """
-      Success: Finished regenerating the image.
+      Success: Regenerated 1 of 1 images.
       """
     And the wp-content/uploads/large-image-125x125.jpg file should exist

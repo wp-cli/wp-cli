@@ -7,22 +7,30 @@ Feature: Manage WordPress attachments
     When I run `wp media import 'http://wp-cli.org/behat-data/codeispoetry.png' --post_id=1`
     Then STDOUT should contain:
       """
-      Success: Imported file 'http://wp-cli.org/behat-data/codeispoetry.png'
+      Imported file 'http://wp-cli.org/behat-data/codeispoetry.png'
+      """
+    And STDOUT should contain:
+      """
+      Success: Imported 1 of 1 images.
       """
 
   Scenario: Fail to import missing image
     When I try `wp media import gobbledygook.png`
-    Then STDERR should contain:
+    Then STDERR should be:
       """
-      Unable to import file 'gobbledygook.png'. Reason: File doesn't exist.
+      Warning: Unable to import file 'gobbledygook.png'. Reason: File doesn't exist.
+      Error: No images imported.
       """
+    And the return code should be 1
 
   Scenario: Fail to import missing image on Windows
     When I try `wp media import c:/path/gobbledygook.png`
-    Then STDERR should contain:
+    Then STDERR should be:
       """
-      Unable to import file 'c:/path/gobbledygook.png'. Reason: File doesn't exist.
+      Warning: Unable to import file 'c:/path/gobbledygook.png'. Reason: File doesn't exist.
+      Error: No images imported.
       """
+    And the return code should be 1
 
   Scenario: Import a file as attachment from a local image
     Given download:
@@ -32,13 +40,14 @@ Feature: Manage WordPress attachments
     When I run `wp media import {CACHE_DIR}/large-image.jpg --post_id=1 --featured_image`
     Then STDOUT should contain:
       """
-      Success: Imported file
+      Imported file
       """
     And STDOUT should contain:
       """
       and attached to post 1 as featured image
       """
     And the {CACHE_DIR}/large-image.jpg file should exist
+    And the return code should be 0
 
   Scenario: Import a file as an attachment but porcelain style
     Given download:

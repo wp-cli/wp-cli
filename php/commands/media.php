@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\Utils;
+
 /**
  * Manage attachments.
  *
@@ -11,7 +13,7 @@
  *     1/3 Regenerated thumbnails for "Sydney Harbor Bridge" (ID 760).
  *     2/3 Regenerated thumbnails for "Boardwalk" (ID 757).
  *     3/3 Regenerated thumbnails for "Sunburst Over River" (ID 756).
- *     Success: Finished regenerating all images.
+ *     Success: Regenerated 3 of 3 images.
  *
  *     # Import a local image and set it to be the featured image for a post.
  *     $ wp media import ~/Downloads/image.png --post_id=123 --title="A downloaded picture" --featured_image
@@ -46,7 +48,7 @@ class Media_Command extends WP_CLI_Command {
 	 *     1/3 Regenerated thumbnails for "Vertical Image" (ID 123).
 	 *     2/3 Regenerated thumbnails for "Horizontal Image" (ID 124).
 	 *     3/3 Regenerated thumbnails for "Beautiful Picture" (ID 125).
-	 *     Success: Finished regenerating all images.
+	 *     Success: Regenerated 3 of 3 images.
 	 *
 	 *     # Regenerate all thumbnails, without confirmation.
 	 *     $ wp media regenerate --yes
@@ -54,7 +56,7 @@ class Media_Command extends WP_CLI_Command {
 	 *     1/3 Regenerated thumbnails for "Sydney Harbor Bridge" (ID 760).
 	 *     2/3 Regenerated thumbnails for "Boardwalk" (ID 757).
 	 *     3/3 Regenerated thumbnails for "Sunburst Over River" (ID 756).
-	 *     Success: Finished regenerating all images.
+	 *     Success: Regenerated 3 of 3 images.
 	 *
 	 *     # Re-generate all thumbnails that have IDs between 1000 and 2000.
 	 *     $ seq 1000 2000 | xargs wp media regenerate
@@ -63,7 +65,7 @@ class Media_Command extends WP_CLI_Command {
 	 *     2/4 Regenerated thumbnails for "Horizontal Featured Image" (ID 1022).
 	 *     3/4 Regenerated thumbnails for "Unicorn Wallpaper" (ID 1045).
 	 *     4/4 Regenerated thumbnails for "I Am Worth Loving Wallpaper" (ID 1023).
-	 *     Success: Finished regenerating all images.
+	 *     Success: Regenerated 4 of 4 images.
 	 */
 	function regenerate( $args, $assoc_args = array() ) {
 		if ( empty( $args ) ) {
@@ -98,20 +100,16 @@ class Media_Command extends WP_CLI_Command {
 			_n( 'image', 'images', $count ) ) );
 
 		$errored = false;
+		$successes = $errors = 0;
 		foreach ( $images->posts as $number => $id ) {
-			if ( ! $this->process_regeneration( $id, $skip_delete, $only_missing, ( $number + 1 ) . '/' . $count ) ) {
-				$errored = true;
+			if ( $this->process_regeneration( $id, $skip_delete, $only_missing, ( $number + 1 ) . '/' . $count ) ) {
+				$successes++;
+			} else {
+				$errors++;
 			}
 		}
 
-		if ( $errored ) {
-			WP_CLI::log( _n( 'An error occurred with image regeneration.', 'An error occurred regenerating one or more images.', $count ) );
-		} else {
-			WP_CLI::success( sprintf(
-				'Finished regenerating %1$s.',
-				_n('the image', 'all images', $count)
-			) );
-		}
+		Utils\report_batch_operation_results( 'image', 'regenerate', count( $images->posts ), $successes, $errors );
 	}
 
 	/**
@@ -149,12 +147,14 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 *     # Import all jpgs in the current user's "Pictures" directory, not attached to any post.
 	 *     $ wp media import ~/Pictures/**\/*.jpg
-	 *     Success: Imported file '/home/person/Pictures/beautiful-youg-girl-in-ivy.jpg' as attachment ID 1751.
-	 *     Success: Imported file '/home/person/Pictures/fashion-girl.jpg' as attachment ID 1752.
+	 *     Imported file '/home/person/Pictures/beautiful-youg-girl-in-ivy.jpg' as attachment ID 1751.
+	 *     Imported file '/home/person/Pictures/fashion-girl.jpg' as attachment ID 1752.
+	 *     Success: Imported 2 of 2 images.
 	 *
 	 *     # Import a local image and set it to be the post thumbnail for a post.
 	 *     $ wp media import ~/Downloads/image.png --post_id=123 --title="A downloaded picture" --featured_image
-	 *     Success: Imported file '/home/person/Downloads/image.png' as attachment ID 1753 and attached to post 123 as featured image.
+	 *     Imported file '/home/person/Downloads/image.png' as attachment ID 1753 and attached to post 123 as featured image.
+	 *     Success: Imported 1 of 1 images.
 	 *
 	 *     # Import a local image, but set it as the featured image for all posts.
 	 *     # 1. Import the image and get its attachment ID.
@@ -166,7 +166,8 @@ class Media_Command extends WP_CLI_Command {
 	 *
 	 *     # Import an image from the web.
 	 *     $ wp media import http://s.wordpress.org/style/images/wp-header-logo.png --title='The WordPress logo' --alt="Semantic personal publishing"
-	 *     Success: Imported file 'http://s.wordpress.org/style/images/wp-header-logo.png' as attachment ID 1755.
+	 *     Imported file 'http://s.wordpress.org/style/images/wp-header-logo.png' as attachment ID 1755.
+	 *     Success: Imported 1 of 1 images.
 	 */
 	function import( $args, $assoc_args = array() ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
@@ -185,6 +186,7 @@ class Media_Command extends WP_CLI_Command {
 			$assoc_args['post_id'] = false;
 		}
 
+		$successes = $errors = 0;
 		foreach ( $args as $file ) {
 			$is_file_remote = parse_url( $file, PHP_URL_HOST );
 			$orig_filename = $file;
@@ -192,6 +194,7 @@ class Media_Command extends WP_CLI_Command {
 			if ( empty( $is_file_remote ) ) {
 				if ( !file_exists( $file ) ) {
 					WP_CLI::warning( "Unable to import file '$file'. Reason: File doesn't exist." );
+					$errors++;
 					break;
 				}
 				$tempfile = $this->make_copy( $file );
@@ -238,6 +241,7 @@ class Media_Command extends WP_CLI_Command {
 					"Unable to import file '%s'. Reason: %s",
 					$orig_filename, implode( ', ', $success->get_error_messages() )
 				) );
+				$errors++;
 				continue;
 			}
 
@@ -261,11 +265,15 @@ class Media_Command extends WP_CLI_Command {
 			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 				WP_CLI::line( $success );
 			} else {
-				WP_CLI::success( sprintf(
+				WP_CLI::log( sprintf(
 					"Imported file '%s' as attachment ID %d%s.",
 					$orig_filename, $success, $attachment_success_text
 				) );
 			}
+			$successes++;
+		}
+		if ( ! Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
+			Utils\report_batch_operation_results( 'image', 'import', count( $args ), $successes, $errors );
 		}
 	}
 

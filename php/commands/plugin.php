@@ -386,6 +386,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	function toggle( $args, $assoc_args = array() ) {
 		$network_wide = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' );
 
+		$successes = $errors = 0;
 		foreach ( $this->fetcher->get_many( $args ) as $plugin ) {
 			if ( $this->check_active( $plugin->file, $network_wide ) ) {
 				$this->deactivate( array( $plugin->name ), $assoc_args );
@@ -393,6 +394,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 				$this->activate( array( $plugin->name ), $assoc_args );
 			}
 		}
+		Utils\report_batch_operation_results( 'plugin', 'toggle', count( $args ), $successes, $errors );
 	}
 
 	/**
