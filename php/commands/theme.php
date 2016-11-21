@@ -613,13 +613,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Installing the latest version...
 	 *     Removing the old version of the theme...
 	 *     Theme updated successfully.
-	 *     Success: Updated 2/2 themes.
 	 *     +---------------+-------------+-------------+---------+
 	 *     | name          | old_version | new_version | status  |
 	 *     +---------------+-------------+-------------+---------+
 	 *     | twentyfifteen | 1.4         | 1.5         | Updated |
 	 *     | twentysixteen | 1.1         | 1.2         | Updated |
 	 *     +---------------+-------------+-------------+---------+
+	 *     Success: Updated 2 of 2 themes.
 	 *
 	 *     # Update all themes
 	 *     $ wp theme update --all

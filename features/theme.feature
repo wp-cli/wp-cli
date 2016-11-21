@@ -32,6 +32,7 @@ Feature: Manage WordPress themes
     Then STDERR should be:
       """
       Warning: Can't delete the currently active theme: p2
+      Error: No themes deleted.
       """
     And STDOUT should be empty
 

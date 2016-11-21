@@ -312,16 +312,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$num_to_update = count( $items_to_update );
 		$num_updated = count( array_filter( $result ) );
 
-		$line = "Updated $num_updated/$num_to_update {$this->item_type}s.";
-
-		if ( $num_to_update == $num_updated ) {
-			\WP_CLI::success( $line );
-		} else if ( $num_updated > 0 ) {
-			\WP_CLI::warning( $line );
-		} else {
-			\WP_CLI::error( $line );
-		}
-
 		if ( $num_to_update > 0 ) {
 			if ( ! empty( $assoc_args['format'] ) && 'summary' === $assoc_args['format'] ) {
 				foreach( $items_to_update as $item_to_update => $info ) {
@@ -347,6 +337,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				\WP_CLI\Utils\format_items( $format, $status, array( 'name', 'old_version', 'new_version', 'status' ) );
 			}
 		}
+		Utils\report_batch_operation_results( $this->item_type, 'update', $num_to_update, $num_updated, $num_to_update - $num_updated );
 	}
 
 	protected function _list( $_, $assoc_args ) {
