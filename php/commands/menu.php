@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\Utils;
+
 /**
  * List, create, assign, and delete menus.
  *
@@ -89,29 +91,19 @@ class Menu_Command extends WP_CLI_Command {
 	 */
 	public function delete( $args, $_ ) {
 
-		$count = $errored = 0;
+		$count = $errors = 0;
 		foreach( $args as $arg ) {
 			$ret = wp_delete_nav_menu( $arg );
 			if ( ! $ret || is_wp_error( $ret ) ) {
 				WP_CLI::warning( "Couldn't delete menu '{$arg}'." );
-				$errored++;
+				$errors++;
 			} else {
 				WP_CLI::log( "Deleted menu '{$arg}'." );
 				$count++;
 			}
 		}
 
-		if ( $errored ) {
-			$arg_count = count( $args );
-			if ( $count ) {
-				WP_CLI::error( sprintf( 'Only %d of %d menus deleted.', $count, $arg_count ) );
-			} else {
-				WP_CLI::error( 'No menus deleted.' );
-			}
-		} else {
-			$success_message = ( 1 === $count ) ? '%d menu deleted.' : '%d menus deleted.';
-			WP_CLI::success( sprintf( $success_message, $count ) );
-		}
+		Utils\report_batch_operation_results( 'menu', 'delete', count( $args ), $count, $errors );
 	}
 
 	/**

@@ -58,3 +58,41 @@ Feature: Install WordPress plugins
       Plugin installed successfully.
       """
     And STDERR should be empty
+
+  Scenario: Return code is 1 when one or more plugin installations fail
+    Given a WP install
+
+    When I try `wp plugin install user-switching user-switching-not-a-plugin`
+    Then STDERR should be:
+      """
+      Warning: Couldn't find 'user-switching-not-a-plugin' in the WordPress.org plugin directory.
+      Error: Only installed 1 of 2 plugins.
+      """
+    And STDOUT should contain:
+      """
+      Installing User Switching
+      """
+    And STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And the return code should be 1
+
+    When I run `wp plugin install user-switching`
+    Then STDOUT should be:
+      """
+      Success: Plugin already installed.
+      """
+    And STDERR should be:
+      """
+      Warning: user-switching: Plugin already installed.
+      """
+    And the return code should be 0
+
+    When I try `wp plugin install user-switching-not-a-plugin`
+    Then STDERR should be:
+      """
+      Warning: Couldn't find 'user-switching-not-a-plugin' in the WordPress.org plugin directory.
+      Error: No plugins installed.
+      """
+    And the return code should be 1

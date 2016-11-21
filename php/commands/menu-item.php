@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\Utils;
+
 /**
  * List, add, and delete items associated with a menu.
  *
@@ -355,7 +357,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	public function delete( $args, $_ ) {
 		global $wpdb;
 
-		$count = $errored = 0;
+		$count = $errors = 0;
 
 		foreach( $args as $arg ) {
 
@@ -363,7 +365,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			$ret = wp_delete_post( $arg, true );
 			if ( ! $ret ) {
 				WP_CLI::warning( "Couldn't delete menu item {$arg}." );
-				$errored++;
+				$errors++;
 			} else if ( $parent_menu_id ) {
 				$children = $wpdb->get_results( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_menu_item_menu_item_parent' AND meta_value=%s", (int) $arg ) );
 				if ( $children ) {
@@ -381,18 +383,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		}
 
-		if ( $errored ) {
-			$arg_count = count( $args );
-			if ( $count ) {
-				WP_CLI::error( sprintf( 'Only %d of %d menu items deleted.', $count, $arg_count ) );
-			} else {
-				WP_CLI::error( 'No menu items deleted.' );
-			}
-		} else {
-			$success_message = ( 1 === $count ) ? '%d menu item deleted.' : '%d menu items deleted.';
-			WP_CLI::success( sprintf( $success_message, $count ) );
-		}
-
+		Utils\report_batch_operation_results( 'menu item', 'delete', count( $args ), $count, $errors );
 	}
 
 	/**

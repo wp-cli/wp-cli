@@ -12,6 +12,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected $upgrade_refresh;
 	protected $upgrade_transient;
 
+	protected $chained_command = false;
+
 	function __construct() {
 		// Do not automatically check translations updates after updating plugins/themes.
 		add_action( 'upgrader_process_complete', function() {
@@ -118,6 +120,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	function install( $args, $assoc_args ) {
 
+		$successes = $errors = 0;
 		foreach ( $args as $slug ) {
 
 			if ( empty( $slug ) ) {
@@ -162,24 +165,33 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					if ( $filter ) {
 						remove_filter( 'upgrader_source_selection', $filter, 10, 3 );
 					}
+					$successes++;
+				} else {
+					$errors++;
 				}
 			} else {
 				// Assume a plugin/theme slug from the WordPress.org repository has been specified
 				$result = $this->install_from_repo( $slug, $assoc_args );
 
 				if ( is_wp_error( $result ) ) {
-
 					$key = $result->get_error_code();
-					if ( in_array( $result->get_error_code(), array( 'plugins_api_failed', 'themes_api_failed' ) )
+					if ( in_array( $key, array( 'plugins_api_failed', 'themes_api_failed' ) )
 						&& ! empty( $result->error_data[ $key ] ) && in_array( $result->error_data[ $key ], array( 'N;', 'b:0;' ) ) ) {
 						\WP_CLI::warning( "Couldn't find '$slug' in the WordPress.org {$this->item_type} directory." );
+						$errors++;
 					} else {
 						\WP_CLI::warning( "$slug: " . $result->get_error_message() );
+						if ( 'already_installed' !== $key ) {
+							$errors++;
+						}
 					}
+				} else {
+					$successes++;
 				}
 			}
 
 			if ( $result ) {
+				$this->chained_command = true;
 				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate-network' ) ) {
 					\WP_CLI::log( "Network-activating '$slug'..." );
 					$this->activate( array( $slug ), array( 'network' => true ) );
@@ -189,8 +201,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					\WP_CLI::log( "Activating '$slug'..." );
 					$this->activate( array( $slug ) );
 				}
+				$this->chained_command = false;
 			}
 		}
+		Utils\report_batch_operation_results( $this->item_type, 'install', count( $args ), $successes, $errors );
 	}
 
 	/**
@@ -298,16 +312,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$num_to_update = count( $items_to_update );
 		$num_updated = count( array_filter( $result ) );
 
-		$line = "Updated $num_updated/$num_to_update {$this->item_type}s.";
-
-		if ( $num_to_update == $num_updated ) {
-			\WP_CLI::success( $line );
-		} else if ( $num_updated > 0 ) {
-			\WP_CLI::warning( $line );
-		} else {
-			\WP_CLI::error( $line );
-		}
-
 		if ( $num_to_update > 0 ) {
 			if ( ! empty( $assoc_args['format'] ) && 'summary' === $assoc_args['format'] ) {
 				foreach( $items_to_update as $item_to_update => $info ) {
@@ -333,6 +337,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				\WP_CLI\Utils\format_items( $format, $status, array( 'name', 'old_version', 'new_version', 'status' ) );
 			}
 		}
+		Utils\report_batch_operation_results( $this->item_type, 'update', $num_to_update, $num_updated, $num_to_update - $num_updated );
 	}
 
 	protected function _list( $_, $assoc_args ) {

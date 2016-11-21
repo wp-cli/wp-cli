@@ -1,4 +1,7 @@
 <?php
+
+use WP_CLI\Utils;
+
 /**
  * Manage terms.
  *
@@ -358,20 +361,9 @@ class Term_Command extends WP_CLI_Command {
 				$successes++;
 			} else {
 				WP_CLI::warning( sprintf( "%s %d doesn't exist.", $taxonomy, $term_id ) );
-				$errors++;
 			}
 		}
-
-		if ( $errors ) {
-			if ( $successes ) {
-				$term_count = count( $args );
-				WP_CLI::error( "Only deleted {$successes} of {$term_count} terms." );
-			} else {
-				WP_CLI::error( "No terms deleted." );
-			}
-		} else {
-			WP_CLI::success( "Deleted {$successes} of {$successes} terms." );
-		}
+		Utils\report_batch_operation_results( 'term', 'delete', count( $args ), $successes, $errors );
 	}
 
 	/**

@@ -78,25 +78,28 @@ Feature: Manage WordPress terms
       """
     And the return code should be 0
 
-    When I try the previous command again
-    Then STDERR should be:
-      """
-      Warning: post_tag {TERM_ID} doesn't exist.
-      Error: No terms deleted.
-      """
-    And the return code should be 1
-
-    When I try `wp term delete post_tag {TERM_ID} {TERM_ID_TWO}`
+    When I run the previous command again
     Then STDOUT should be:
       """
-      Deleted post_tag {TERM_ID_TWO}.
+      Success: Term already deleted.
       """
     And STDERR should be:
       """
       Warning: post_tag {TERM_ID} doesn't exist.
-      Error: Only deleted 1 of 2 terms.
       """
-    And the return code should be 1
+    And the return code should be 0
+
+    When I run `wp term delete post_tag {TERM_ID} {TERM_ID_TWO}`
+    Then STDOUT should be:
+      """
+      Deleted post_tag {TERM_ID_TWO}.
+      Success: Deleted 1 of 2 terms.
+      """
+    And STDERR should be:
+      """
+      Warning: post_tag {TERM_ID} doesn't exist.
+      """
+    And the return code should be 0
 
   Scenario: Term with a non-existent parent
     When I try `wp term create category Apple --parent=99 --porcelain`
