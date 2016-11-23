@@ -34,17 +34,16 @@ class LanguagePackUpgrader extends \Language_Pack_Upgrader {
 
 		$language_update = $this->skin->language_update;
 		$type            = $language_update->type;
+		$slug            = $language_update->slug;
 		$updated         = strtotime( $language_update->updated );
 		$version         = $language_update->version;
 		$language        = $language_update->language;
 		$ext             = pathinfo( $package, PATHINFO_EXTENSION );
 
-		// todo: Slug for themes/plugins
-
 		$temp = \WP_CLI\Utils\get_temp_dir() . uniqid( 'wp_' ) . '.' . $ext;
 
 		$cache = WP_CLI::get_cache();
-		$cache_key = "translation/{$type}-{$version}-{$language}-{$updated}.{$ext}";
+		$cache_key = "translation/{$type}-{$slug}-{$version}-{$language}-{$updated}.{$ext}";
 		$cache_file = $cache->has( $cache_key );
 
 		if ( $cache_file ) {
