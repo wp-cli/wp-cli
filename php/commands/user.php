@@ -101,6 +101,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * * cap_key
 	 * * allcaps
 	 * * filter
+	 * * url
 	 *
 	 * ## EXAMPLES
 	 *
@@ -155,7 +156,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 					return $user;
 
 				$user->roles = implode( ',', $user->roles );
-
+				$user->url = get_author_posts_url( $user->ID, $user->user_nicename );
 				return $user;
 			} );
 
