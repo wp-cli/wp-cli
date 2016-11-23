@@ -63,7 +63,7 @@ class Server_Command extends WP_CLI_Command {
 			'host' => 'localhost',
 			'port' => 8080,
 			'docroot' => false,
-			'config' => false,
+			'config' => get_cfg_var( 'cfg_file_path' )
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
