@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\Utils;
+
 /**
  * Manage comments.
  *
@@ -284,6 +286,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * * comment_type
 	 * * comment_parent
 	 * * user_id
+	 * * url
 	 *
 	 * ## EXAMPLES
 	 *
@@ -316,14 +319,39 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	public function list_( $_, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
-		if ( 'ids' == $formatter->format )
+		if ( 'ids' == $formatter->format ) {
 			$assoc_args['fields'] = 'comment_ID';
+		}
 
-		$query = new WP_Comment_Query();
-		$comments = $query->query( $assoc_args );
+		if ( ! empty( $assoc_args['comment__in'] ) ) {
+			$assoc_args['comment__in'] = explode( ',', $assoc_args['comment__in'] );
+		}
+
+		if ( ! empty( $assoc_args['comment__in'] )
+			&& ! empty( $assoc_args['orderby'] )
+			&& 'comment__in' === $assoc_args['orderby']
+			&& Utils\wp_version_compare( '4.4', '<' ) ) {
+			$comments = array();
+			foreach( $assoc_args['comment__in'] as $comment_id ) {
+				$comment = get_comment( $comment_id );
+				if ( $comment ) {
+					$comments[] = $comment;
+				} else {
+					WP_CLI::warning( sprintf( "Invalid comment %s.", $comment_id ) );
+				}
+			}
+		} else {
+			$query = new WP_Comment_Query();
+			$comments = $query->query( $assoc_args );
+		}
 
 		if ( 'ids' == $formatter->format ) {
 			$comments = wp_list_pluck( $comments, 'comment_ID' );
+		} else {
+			$comments = array_map( function( $comment ){
+				$comment->url = get_comment_link( $comment->comment_ID );
+				return $comment;
+			}, $comments );
 		}
 
 		$formatter->display_items( $comments );
@@ -631,24 +659,6 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		if ( $this->fetcher->get( $args[0] ) ) {
 			WP_CLI::success( "Comment with ID $args[0] exists." );
 		}
-	}
-
-	/**
-	 * Get a comment's URL.
-	 *
-	 * ## OPTIONS
-	 *
-	 * <id>...
-	 * : One or more IDs of comments to get the URL.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     # Get comment URL.
-	 *     $ wp comment url 123
-	 *     http://example.com/about/page-with-comments/#comment-123
-	 */
-	public function url( $args ) {
-		parent::_url( $args, 'get_comment_link' );
 	}
 }
 

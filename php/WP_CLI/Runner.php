@@ -535,8 +535,8 @@ class Runner {
 			}
 		}
 
-		// (post|site) url  --> (post|site) list --*__in --field=url
-		if ( count( $args ) >= 2 && in_array( $args[0], array( 'post', 'site' ) ) && 'url' === $args[1] ) {
+		// (post|comment|site|term) url  --> (post|comment|site|term) list --*__in --field=url
+		if ( count( $args ) >= 2 && in_array( $args[0], array( 'post', 'comment', 'site', 'term' ) ) && 'url' === $args[1] ) {
 			switch ( $args[0] ) {
 				case 'post':
 					$post_ids = array_slice( $args, 2 );
@@ -546,10 +546,28 @@ class Runner {
 					$assoc_args['orderby'] = 'post__in';
 					$assoc_args['field'] = 'url';
 					break;
+				case 'comment':
+					$comment_ids = array_slice( $args, 2 );
+					$args = array( 'comment', 'list' );
+					$assoc_args['comment__in'] = implode( ',', $comment_ids );
+					$assoc_args['orderby'] = 'comment__in';
+					$assoc_args['field'] = 'url';
+					break;
 				case 'site':
 					$site_ids = array_slice( $args, 2 );
 					$args = array( 'site', 'list' );
 					$assoc_args['site__in'] = implode( ',', $site_ids );
+					$assoc_args['field'] = 'url';
+					break;
+				case 'term':
+					$taxonomy = '';
+					if ( isset( $args[2] ) ) {
+						$taxonomy = $args[2];
+					}
+					$term_ids = array_slice( $args, 3 );
+					$args = array( 'term', 'list', $taxonomy );
+					$assoc_args['include'] = implode( ',', $term_ids );
+					$assoc_args['orderby'] = 'include';
 					$assoc_args['field'] = 'url';
 					break;
 			}
