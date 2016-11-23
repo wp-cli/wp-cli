@@ -22,14 +22,6 @@ while [ -h "$SELF_PATH" ]; do
 done
 cd "$ORIGDIR"
 
-# Build the path to the root PHP file
-SCRIPT_PATH="$(dirname "$SELF_PATH")/../php/boot-fs.php"
-
-case $(uname -a) in
-	CYGWIN*)
-		SCRIPT_PATH="$(cygpath -w -a -- "$SCRIPT_PATH")" ;;
-esac
-
 if [ ! -z "$WP_CLI_PHP" ] ; then
 	# Use the WP_CLI_PHP environment variable if it is available.
 	php="$WP_CLI_PHP"
@@ -38,6 +30,13 @@ else
 	# Note that we need the full path to php here for Dreamhost, which behaves oddly.  See http://drupal.org/node/662926
 	php="`which php`"
 fi
+
+# Build the path to the root PHP file
+SCRIPT_PATH="$(dirname "$SELF_PATH")/../php/boot-fs.php"
+case $("$php" -r "echo PHP_OS;") in
+	WINNT*)
+		SCRIPT_PATH="$(cygpath -w -a -- "$SCRIPT_PATH")" ;;
+esac
 
 # Pass in the path to php so that wp-cli knows which one
 # to use if it re-launches itself to run other commands.
