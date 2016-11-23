@@ -11,7 +11,16 @@ use WP_CLI;
  */
 class LanguagePackUpgrader extends \Language_Pack_Upgrader {
 
-	function download_package( $package ) {
+	/**
+	 * Caches the download, and uses cached if available.
+	 *
+	 * @access public
+	 *
+	 * @param string $package The URI of the package. If this is the full path to an
+	 *                        existing local file, it will be returned untouched.
+	 * @return string|WP_Error The full path to the downloaded package file, or a WP_Error object.
+	 */
+	public function download_package( $package ) {
 
 		/**
 		 * Filter whether to return the package.
@@ -23,14 +32,18 @@ class LanguagePackUpgrader extends \Language_Pack_Upgrader {
 		 * @param object  $this    The WP_Upgrader instance.
 		 */
 		$reply = apply_filters( 'upgrader_pre_download', false, $package, $this );
-		if ( false !== $reply )
+		if ( false !== $reply ) {
 			return $reply;
+		}
 
-		if ( ! preg_match('!^(http|https|ftp)://!i', $package) && file_exists($package) ) //Local file or remote?
-			return $package; //must be a local file..
+		// Check if package is a local or remote file. Bail if it's local.
+		if ( ! preg_match( '!^(http|https|ftp)://!i', $package ) && file_exists( $package ) ) {
+			return $package;
+		}
 
-		if ( empty( $package ) )
+		if ( empty( $package ) ) {
 			return new \WP_Error( 'no_package', $this->strings['no_package'] );
+		}
 
 		$language_update = $this->skin->language_update;
 		$type            = $language_update->type;
@@ -51,13 +64,13 @@ class LanguagePackUpgrader extends \Language_Pack_Upgrader {
 			copy( $cache_file, $temp );
 			return $temp;
 		} else {
-			// We need to use a temporary file because piping from cURL to tar is flaky
-			// on MinGW (and probably in other environments too).
-			$temp = sys_get_temp_dir() . '/' . uniqid('wp_') . '.' . $ext;
-
-			$headers = array('Accept' => 'application/json');
+			/*
+			 * Download to a temporary file because piping from cURL to tar is flaky
+			 * on MinGW (and probably in other environments too).
+			 */
+			$headers = array( 'Accept' => 'application/json' );
 			$options = array(
-				'timeout' => 600,  // 10 minutes ought to be enough for everybody
+				'timeout'  => 600,  // 10 minutes ought to be enough for everybody.
 				'filename' => $temp
 			);
 
@@ -71,7 +84,5 @@ class LanguagePackUpgrader extends \Language_Pack_Upgrader {
 			$cache->import( $cache_key, $temp );
 			return $temp;
 		}
-
 	}
-
 }
