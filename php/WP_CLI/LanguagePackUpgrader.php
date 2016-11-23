@@ -30,7 +30,7 @@ class LanguagePackUpgrader extends \Language_Pack_Upgrader {
 			return $package; //must be a local file..
 
 		if ( empty( $package ) )
-			return new WP_Error( 'no_package', $this->strings['no_package'] );
+			return new \WP_Error( 'no_package', $this->strings['no_package'] );
 
 		$language_update = $this->skin->language_update;
 		$type            = $language_update->type;
