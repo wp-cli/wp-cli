@@ -227,7 +227,6 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		// Update translations.
 		foreach ( $updates as $update ) {
 			\WP_CLI::line( "Updating '{$update->Language}' translation for {$update->Name} {$update->Version}..." );
-			\WP_CLI::line( "Downloading translation from {$update->package}..." );
 
 			$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 
