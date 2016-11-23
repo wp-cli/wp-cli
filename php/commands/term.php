@@ -20,7 +20,7 @@ use WP_CLI\Utils;
  *     Success: Term updated.
  *
  *     # Get the term's URL.
- *     $ wp term url post_tag 123
+ *     $ wp term list post_tag --include=123 --field=url
  *     http://example.com/tag/tips-and-tricks
  *
  *     # Delete post category
@@ -88,7 +88,9 @@ class Term_Command extends WP_CLI_Command {
 	 * * parent
 	 * * count
 	 *
-	 * There are no optionally available fields.
+	 * These fields are optionally available:
+	 *
+	 * * url
 	 *
 	 * ## EXAMPLES
 	 *
@@ -130,6 +132,20 @@ class Term_Command extends WP_CLI_Command {
 		if ( ! empty( $assoc_args['term_id'] ) ) {
 			$term = get_term_by( 'id', $assoc_args['term_id'], $args[0] );
 			$terms = array( $term );
+		} else if ( ! empty( $assoc_args['include'] )
+			&& ! empty( $assoc_args['orderby'] )
+			&& 'include' === $assoc_args['orderby']
+			&& Utils\wp_version_compare( '4.7', '<' ) ) {
+			$terms = array();
+			$term_ids = explode( ',', $assoc_args['include'] );
+			foreach( $term_ids as $term_id ) {
+				$term = get_term_by( 'id', $term_id, $args[0] );
+				if ( $term && ! is_wp_error( $term ) ) {
+					$terms[] = $term;
+				} else {
+					WP_CLI::warning( sprintf( "Invalid term %s.", $term_id ) );
+				}
+			}
 		} else {
 			$terms = get_terms( $args, $assoc_args );
 		}
@@ -137,6 +153,7 @@ class Term_Command extends WP_CLI_Command {
 		$terms = array_map( function( $term ){
 			$term->count = (int)$term->count;
 			$term->parent = (int)$term->parent;
+			$term->url = get_term_link( $term );
 			return $term;
 		}, $terms );
 
@@ -494,34 +511,6 @@ class Term_Command extends WP_CLI_Command {
 
 		if ( 'progress' === $format ) {
 			$notify->finish();
-		}
-	}
-
-	/**
-	 * Get a term's URL.
-	 *
-	 * ## OPTIONS
-	 *
-	 * <taxonomy>
-	 * : Taxonomy of the term(s) to get.
-	 *
-	 * <term-id>...
-	 * : One or more IDs of terms to get the URL.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     $ wp term url post_tag 123
-	 *     http://example.com/tag/tips-and-tricks
-	 */
-	public function url( $args ) {
-		$term_ids = array_slice( $args, 1 );
-		foreach ( $term_ids as $term_id ) {
-			$term_link = get_term_link( (int)$term_id, $args[0] );
-			if ( $term_link && ! is_wp_error( $term_link ) ) {
-				WP_CLI::line( $term_link );
-			} else {
-				WP_CLI::warning( sprintf( "Invalid term %s.", $term_id ) );
-			}
 		}
 	}
 
