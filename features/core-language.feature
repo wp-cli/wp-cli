@@ -17,11 +17,18 @@ Feature: Manage translation files for a WordPress install
     And I run `wp core language install en_AU`
     Then the wp-content/languages/admin-en_GB.po file should exist
     And the wp-content/languages/en_GB.po file should exist
-    And the {SUITE_CACHE_DIR}/translation/core-default-([\d\.]+)-en_AU-([\d]+).zip file should exist
-    And the {SUITE_CACHE_DIR}/translation/core-default-([\d\.]+)-en_GB-([\d]+).zip file should exist
     And STDOUT should be:
       """
       Success: Language installed.
+      """
+    When I run `ls {SUITE_CACHE_DIR}/translation | grep core-default-`
+    Then STDOUT should contain:
+      """
+      en_AU
+      """
+    And STDOUT should contain:
+      """
+      en_GB
       """
 
     When I try `wp core language install en_GB`
