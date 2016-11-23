@@ -230,12 +230,6 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 
 			$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 
-			if ( $result ) {
-				\WP_CLI::line( 'Translation updated successfully.' );
-			} else {
-				\WP_CLI::line( 'Translation update failed.' );
-			}
-
 			$results[] = $result;
 		}
 
