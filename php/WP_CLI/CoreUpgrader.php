@@ -30,7 +30,7 @@ class CoreUpgrader extends \Core_Upgrader {
 			return $package; //must be a local file..
 
 		if ( empty( $package ) )
-			return new WP_Error( 'no_package', $this->strings['no_package'] );
+			return new \WP_Error( 'no_package', $this->strings['no_package'] );
 
 		$filename = pathinfo( $package, PATHINFO_FILENAME );
 		$ext = pathinfo( $package, PATHINFO_EXTENSION );
