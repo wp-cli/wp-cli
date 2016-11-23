@@ -221,23 +221,14 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			return;
 		}
 
-		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-
-		$upgrader	 = new \Language_Pack_Upgrader( new \Automatic_Upgrader_Skin() );
-		$results	 = array();
+		$upgrader = 'WP_CLI\\LanguagePackUpgrader';
+		$results = array();
 
 		// Update translations.
 		foreach ( $updates as $update ) {
 			\WP_CLI::line( "Updating '{$update->Language}' translation for {$update->Name} {$update->Version}..." );
-			\WP_CLI::line( "Downloading translation from {$update->package}..." );
 
-			$result = $upgrader->upgrade( $update );
-
-			if ( $result ) {
-				\WP_CLI::line( 'Translation updated successfully.' );
-			} else {
-				\WP_CLI::line( 'Translation update failed.' );
-			}
+			$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 
 			$results[] = $result;
 		}
@@ -337,11 +328,10 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		}
 		$translation = (object) $translation;
 
-		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-		$skin = new \Automatic_Upgrader_Skin;
-		$upgrader = new \Language_Pack_Upgrader( $skin );
 		$translation->type = 'core';
-		$result = $upgrader->upgrade( $translation, array( 'clear_update_cache' => false ) );
+
+		$upgrader = 'WP_CLI\\LanguagePackUpgrader';
+		$result = Utils\get_upgrader( $upgrader )->upgrade( $translation, array( 'clear_update_cache' => false ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;

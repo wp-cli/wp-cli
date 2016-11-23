@@ -3,6 +3,7 @@ Feature: Manage translation files for a WordPress install
   @require-wp-4.0
   Scenario: Core translation CRUD
     Given a WP install
+    And an empty cache
 
     When I run `wp core language list --fields=language,english_name,status`
     Then STDOUT should be a table containing rows:
@@ -16,9 +17,18 @@ Feature: Manage translation files for a WordPress install
     And I run `wp core language install en_AU`
     Then the wp-content/languages/admin-en_GB.po file should exist
     And the wp-content/languages/en_GB.po file should exist
-    And STDOUT should be:
+    And STDOUT should contain:
       """
       Success: Language installed.
+      """
+    When I run `ls {SUITE_CACHE_DIR}/translation | grep core-default-`
+    Then STDOUT should contain:
+      """
+      en_AU
+      """
+    And STDOUT should contain:
+      """
+      en_GB
       """
 
     When I try `wp core language install en_GB`
@@ -110,7 +120,7 @@ Feature: Manage translation files for a WordPress install
     When I run `wp core language install --activate en_GB`
     Then the wp-content/languages/admin-en_GB.po file should exist
     And the wp-content/languages/en_GB.po file should exist
-    And STDOUT should be:
+    And STDOUT should contain:
       """
       Success: Language installed.
       Success: Language activated.
