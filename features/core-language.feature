@@ -17,7 +17,7 @@ Feature: Manage translation files for a WordPress install
     And I run `wp core language install en_AU`
     Then the wp-content/languages/admin-en_GB.po file should exist
     And the wp-content/languages/en_GB.po file should exist
-    And STDOUT should be:
+    And STDOUT should contain:
       """
       Success: Language installed.
       """
@@ -120,7 +120,7 @@ Feature: Manage translation files for a WordPress install
     When I run `wp core language install --activate en_GB`
     Then the wp-content/languages/admin-en_GB.po file should exist
     And the wp-content/languages/en_GB.po file should exist
-    And STDOUT should be:
+    And STDOUT should contain:
       """
       Success: Language installed.
       Success: Language activated.
