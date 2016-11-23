@@ -34,7 +34,7 @@ class LanguagePackUpgrader extends \Language_Pack_Upgrader {
 
 		$language_update = $this->skin->language_update;
 		$type            = $language_update->type;
-		$slug            = $language_update->slug;
+		$slug            = empty( $language_update->slug ) ? 'default' : $language_update->slug;
 		$updated         = strtotime( $language_update->updated );
 		$version         = $language_update->version;
 		$language        = $language_update->language;
