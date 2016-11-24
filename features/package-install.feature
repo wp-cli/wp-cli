@@ -405,3 +405,79 @@ Feature: Install WP-CLI packages
       """
       wp-cli/community-command
       """
+
+  Scenario: Install a package requiring a WP-CLI version that doesn't match
+    Given an empty directory
+    And a new Phar with version "0.23.0"
+    And a path-command/command.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'community-command', function(){
+        WP_CLI::success( "success!" );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a path-command/composer.json file:
+      """
+      {
+        "name": "wp-cli/community-command",
+        "description": "A demo community command.",
+        "license": "MIT",
+        "minimum-stability": "dev",
+        "autoload": {
+          "files": [ "command.php" ]
+        },
+        "require": {
+          "wp-cli/wp-cli": ">=0.24.0"
+        },
+        "require-dev": {
+          "behat/behat": "~2.5"
+        }
+      }
+      """
+
+    When I try `{PHAR_PATH} package install path-command`
+    Then STDOUT should contain:
+      """
+      wp-cli/community-command dev-master requires wp-cli/wp-cli >=0.24.0
+      """
+    And STDERR should contain:
+      """
+      Error: Package installation failed
+      """
+    And the return code should be 1
+
+  Scenario: Install a package requiring a WP-CLI version that does match
+    Given an empty directory
+    And a new Phar with version "0.23.0"
+    And a path-command/command.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'community-command', function(){
+        WP_CLI::success( "success!" );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a path-command/composer.json file:
+      """
+      {
+        "name": "wp-cli/community-command",
+        "description": "A demo community command.",
+        "license": "MIT",
+        "minimum-stability": "dev",
+        "autoload": {
+          "files": [ "command.php" ]
+        },
+        "require": {
+          "wp-cli/wp-cli": ">=0.22.0"
+        },
+        "require-dev": {
+          "behat/behat": "~2.5"
+        }
+      }
+      """
+
+    When I run `{PHAR_PATH} package install path-command`
+    Then STDOUT should contain:
+      """
+      Success: Package installed.
+      """
+    And the return code should be 0
