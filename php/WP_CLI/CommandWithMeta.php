@@ -166,7 +166,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * : The name of the meta field to create.
 	 *
 	 * [<value>]
-	 * : The value of the meta field. If ommited, the value is read from STDIN.
+	 * : The value of the meta field. If omitted, the value is read from STDIN.
 	 *
 	 * [--format=<format>]
 	 * : The serialization format for the value.
@@ -207,7 +207,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * : The name of the meta field to update.
 	 *
 	 * [<value>]
-	 * : The new value. If ommited, the value is read from STDIN.
+	 * : The new value. If omitted, the value is read from STDIN.
 	 *
 	 * [--format=<format>]
 	 * : The serialization format for the value.
