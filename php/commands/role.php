@@ -341,7 +341,10 @@ class Role_Command extends WP_CLI_Command {
 				$removed_cap = array_diff_key( $before[ $role_key ]->capabilities, $after[ $role_key ]->capabilities );
 				$restored_cap_count = count( $restored_cap );
 				$removed_cap_count = count( $removed_cap );
-				WP_CLI::log( "Restored {$restored_cap_count} capabilities to and removed {$removed_cap_count} capabilities from '{$role_key}' role." );
+				$restored_text = ( 1 === $restored_cap_count ) ? '%d capability' : '%d capabilities';
+				$removed_text = ( 1 === $removed_cap_count ) ? '%d capability' : '%d capabilities';
+				$message = "Restored ". $restored_text . " to and removed " . $removed_text . " from '%s' role.";
+				WP_CLI::log( sprintf( $message, $restored_cap_count, $removed_cap_count, $role_key ) );
 			} else {
 				WP_CLI::log( "No changes necessary for '{$role_key}' role." );
 			}

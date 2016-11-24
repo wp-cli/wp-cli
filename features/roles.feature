@@ -28,7 +28,7 @@ Feature: Manage WordPress roles
     And I run `wp role reset author`
     Then STDOUT should be:
       """
-      Restored 1 capabilities to and removed 0 capabilities from 'author' role.
+      Restored 1 capability to and removed 0 capabilities from 'author' role.
       Success: Role reset.
       """
 
@@ -44,7 +44,7 @@ Feature: Manage WordPress roles
     And I run `wp role reset author editor`
     Then STDOUT should be:
       """
-      Restored 1 capabilities to and removed 0 capabilities from 'author' role.
+      Restored 1 capability to and removed 0 capabilities from 'author' role.
       No changes necessary for 'editor' role.
       Success: 1 of 2 roles reset.
       """
@@ -96,7 +96,7 @@ Feature: Manage WordPress roles
     Then STDOUT should be:
       """
       Custom role 'custom-role' not affected.
-      Restored 1 capabilities to and removed 0 capabilities from 'author' role.
+      Restored 1 capability to and removed 0 capabilities from 'author' role.
       Success: Role reset.
       """
 
