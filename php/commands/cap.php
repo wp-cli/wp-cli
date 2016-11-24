@@ -5,15 +5,15 @@
  *
  * ## EXAMPLES
  *
- *     # Add 'spectate' capability to 'author' role
+ *     # Add 'spectate' capability to 'author' role.
  *     $ wp cap add 'author' 'spectate'
- *     Success: Added 1 capabilities to 'author' role.
+ *     Success: Added 1 capability to 'author' role.
  *
- *     # Add all caps from 'editor' role to 'author' role
+ *     # Add all caps from 'editor' role to 'author' role.
  *     $ wp cap list 'editor' | xargs wp cap add 'author'
  *     Success: Added 24 capabilities to 'author' role.
  *
- *     # Remove all caps from 'editor' role that also appear in 'author' role
+ *     # Remove all caps from 'editor' role that also appear in 'author' role.
  *     $ wp cap list 'author' | xargs wp cap remove 'editor'
  *     Success: Removed 34 capabilities from 'editor' role.
  */
@@ -46,7 +46,7 @@ class Capabilities_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Display alphabetical list of Contributor capabilities
+	 *     # Display alphabetical list of Contributor capabilities.
 	 *     $ wp cap list 'contributor' | sort
 	 *     delete_posts
 	 *     edit_posts
@@ -91,9 +91,9 @@ class Capabilities_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Add 'spectate' capability to 'author' role
+	 *     # Add 'spectate' capability to 'author' role.
 	 *     $ wp cap add author spectate
-	 *     Success: Added 1 capabilities to 'author' role.
+	 *     Success: Added 1 capability to 'author' role.
 	 */
 	public function add( $args ) {
 		self::persistence_check();
@@ -113,7 +113,8 @@ class Capabilities_Command extends WP_CLI_Command {
 			$count++;
 		}
 
-		WP_CLI::success( sprintf( "Added %d capabilities to '%s' role." , $count, $role ) );
+		$message = ( 1 === $count ) ? "Added %d capability to '%s' role." : "Added %d capabilities to '%s' role.";
+		WP_CLI::success( sprintf( $message, $count, $role ) );
 	}
 
 	/**
@@ -129,9 +130,9 @@ class Capabilities_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Remove 'spectate' capability from 'author' role
+	 *     # Remove 'spectate' capability from 'author' role.
 	 *     $ wp cap remove author spectate
-	 *     Success: Removed 1 capabilities from 'author' role.
+	 *     Success: Removed 1 capability from 'author' role.
 	 */
 	public function remove( $args ) {
 		self::persistence_check();
@@ -151,7 +152,8 @@ class Capabilities_Command extends WP_CLI_Command {
 			$count++;
 		}
 
-		WP_CLI::success( sprintf( "Removed %d capabilities from '%s' role." , $count, $role ) );
+		$message = ( 1 === $count ) ? "Removed %d capability from '%s' role." : "Removed %d capabilities from '%s' role.";
+		WP_CLI::success( sprintf( $message, $count, $role ) );
 	}
 
 	private static function get_role( $role ) {
