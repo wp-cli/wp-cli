@@ -249,7 +249,7 @@ class Package_Command extends WP_CLI_Command {
 		$composer_backup = file_get_contents( $composer_json_obj->getPath() );
 		$json_manipulator = new JsonManipulator( $composer_backup );
 		$json_manipulator->addMainKey( 'name', 'wp-cli/wp-cli' );
-		$json_manipulator->addMainKey( 'version', WP_CLI_VERSION );
+		$json_manipulator->addMainKey( 'version', self::get_wp_cli_version_composer() );
 		$json_manipulator->addLink( 'require', $package_name, $version );
 		$json_manipulator->addConfigSetting( 'secure-http', true );
 
@@ -718,6 +718,14 @@ class Package_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Get the WP-CLI version for composer.json
+	 */
+	private static function get_wp_cli_version_composer() {
+		preg_match( '#^[0-9\.]+(-(alpha|beta)[^-]{0,})?#', WP_CLI_VERSION, $matches );
+		return isset( $matches[0] ) ? $matches[0] : '';
+	}
+
+	/**
 	 * Create a default composer.json, should one not already exist
 	 *
 	 * @param string $composer_path Where the composer.json should be created
@@ -751,6 +759,7 @@ class Package_Command extends WP_CLI_Command {
 		$options = array(
 			'name' => 'wp-cli/wp-cli',
 			'description' => 'Installed community packages used by WP-CLI',
+			'version' => self::get_wp_cli_version_composer(),
 			'authors' => array( $author ),
 			'homepage' => self::PACKAGE_INDEX_URL,
 			'require' => new stdClass,
