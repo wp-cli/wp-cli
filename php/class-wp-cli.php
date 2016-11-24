@@ -909,6 +909,51 @@ class WP_CLI {
 	}
 
 	/**
+	 * Run a WP-CLI command.
+	 *
+	 * ```
+	 * $plugins = WP_CLI::run_command( 'plugin list' );
+	 * ```
+	 *
+	 * @access public
+	 * @category Execution
+	 *
+	 * @param string $command WP-CLI command to run, including arguments.
+	 * @param array  $options Configuration options for command execution.
+	 * @return mixed
+	 */
+	public static function runcommand( $command, $options = array() ) {
+		$defaults = array(
+			'launch'  => true, // Launch a new process, or reuse the existing.
+			'capture' => false, // Capture STDOUT, or render on the fly
+		);
+		$options = array_merge( $defaults, $options );
+		$retval = null;
+		if ( empty( $options['launch'] ) ) {
+			$configurator = self::get_configurator();
+			preg_match_all ('/(?<=^|\s)([\'"]?)(.+?)(?<!\\\\)\1(?=$|\s)/', $command, $matches );
+			$argv = isset( $matches[0] ) ? $matches[0] : array();
+			$argv = array_map( function( $arg ){
+				foreach( array( '"', "'" ) as $char ) {
+					if ( $char === substr( $arg, 0, 1 ) && $char === substr( $arg, -1 ) ) {
+						$arg = substr( $arg, 1, -1 );
+					}
+				}
+				return $arg;
+			}, $argv );
+			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
+			if ( ! empty( $options['capture'] ) ) {
+				ob_start();
+			}
+			self::get_runner()->run_command( $args, $assoc_args );
+			if ( ! empty( $options['capture'] ) ) {
+				$retval = trim( ob_get_clean() );
+			}
+		}
+		return $retval;
+	}
+
+	/**
 	 * Run a given command within the current process using the same global
 	 * parameters.
 	 *
