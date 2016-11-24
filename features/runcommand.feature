@@ -38,6 +38,7 @@ Feature: Run a WP-CLI command
       http://example.com
       returned: NULL
       """
+    And STDERR should be empty
     And the return code should be 0
 
     When I run `wp <flag> run 'eval "echo wp_get_current_user()->user_login . PHP_EOL;"'`
@@ -46,6 +47,7 @@ Feature: Run a WP-CLI command
       admin
       returned: NULL
       """
+    And STDERR should be empty
     And the return code should be 0
 
     Examples:
@@ -59,6 +61,7 @@ Feature: Run a WP-CLI command
       """
       returned: 'http://example.com'
       """
+    And STDERR should be empty
     And the return code should be 0
 
     When I run `wp <flag> --capture run 'eval "echo wp_get_current_user()->user_login . PHP_EOL;"'`
@@ -66,6 +69,7 @@ Feature: Run a WP-CLI command
       """
       returned: 'admin'
       """
+    And STDERR should be empty
     And the return code should be 0
 
     Examples:
