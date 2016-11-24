@@ -931,16 +931,7 @@ class WP_CLI {
 		$retval = null;
 		if ( empty( $options['launch'] ) ) {
 			$configurator = self::get_configurator();
-			preg_match_all ('/(?<=^|\s)([\'"]?)(.+?)(?<!\\\\)\1(?=$|\s)/', $command, $matches );
-			$argv = isset( $matches[0] ) ? $matches[0] : array();
-			$argv = array_map( function( $arg ){
-				foreach( array( '"', "'" ) as $char ) {
-					if ( $char === substr( $arg, 0, 1 ) && $char === substr( $arg, -1 ) ) {
-						$arg = substr( $arg, 1, -1 );
-					}
-				}
-				return $arg;
-			}, $argv );
+			$argv = Utils\parse_str_to_argv( $command );
 			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
 			if ( ! empty( $options['capture'] ) ) {
 				ob_start();
