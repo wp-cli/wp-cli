@@ -31,8 +31,8 @@ Feature: Run a WP-CLI command
         - command.php
       """
 
-  Scenario: Run a WP-CLI command in the same process, rendering output
-    When I run `wp run 'option get home' --no-launch`
+  Scenario Outline: Run a WP-CLI command and render output
+    When I run `wp <flag> run 'option get home'`
     Then STDOUT should be:
       """
       http://example.com
@@ -40,7 +40,7 @@ Feature: Run a WP-CLI command
       """
     And the return code should be 0
 
-    When I run `wp --no-launch run 'eval "echo wp_get_current_user()->user_login . PHP_EOL;"'`
+    When I run `wp <flag> run 'eval "echo wp_get_current_user()->user_login . PHP_EOL;"'`
     Then STDOUT should be:
       """
       admin
@@ -48,17 +48,27 @@ Feature: Run a WP-CLI command
       """
     And the return code should be 0
 
-  Scenario: Run a WP-CLI command in the same process, capturing output
-    When I run `wp run --no-launch --capture 'option get home'`
+    Examples:
+      | flag        |
+      | --no-launch |
+      | --launch    |
+
+  Scenario Outline: Run a WP-CLI command and capture output
+    When I run `wp run <flag> --capture 'option get home'`
     Then STDOUT should be:
       """
       returned: 'http://example.com'
       """
     And the return code should be 0
 
-    When I run `wp --no-launch --capture run 'eval "echo wp_get_current_user()->user_login . PHP_EOL;"'`
+    When I run `wp <flag> --capture run 'eval "echo wp_get_current_user()->user_login . PHP_EOL;"'`
     Then STDOUT should be:
       """
       returned: 'admin'
       """
     And the return code should be 0
+
+    Examples:
+      | flag        |
+      | --no-launch |
+      | --launch    |
