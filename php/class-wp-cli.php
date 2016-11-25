@@ -912,7 +912,7 @@ class WP_CLI {
 	 * Run a WP-CLI command.
 	 *
 	 * ```
-	 * $plugins = WP_CLI::run_command( 'plugin list', array( 'capture' => true ) );
+	 * $plugins = WP_CLI::run_command( 'plugin list', array( 'return' => true ) );
 	 * ```
 	 *
 	 * @access public
@@ -924,15 +924,15 @@ class WP_CLI {
 	 */
 	public static function runcommand( $command, $options = array() ) {
 		$defaults = array(
-			'launch'  => true, // Launch a new process, or reuse the existing.
-			'capture' => false, // Capture STDOUT, or render on the fly
+			'launch' => true, // Launch a new process, or reuse the existing.
+			'return' => false, // Capture and return output, or render in realtime.
 		);
 		$options = array_merge( $defaults, $options );
 		$launch = $options['launch'];
-		$capture = $options['capture'];
-		$retval = null;
+		$should_return = $options['return'];
+		$return = null;
 		if ( $launch ) {
-			if ( $capture ) {
+			if ( $should_return ) {
 				$descriptors = array(
 					0 => STDIN,
 					1 => array( 'pipe', 'w' ),
@@ -953,27 +953,27 @@ class WP_CLI {
 			$env = array();
 			$proc = proc_open( $runcommand, $descriptors, $pipes, getcwd(), $env );
 
-			if ( $capture ) {
+			if ( $should_return ) {
 				$stdout = stream_get_contents( $pipes[1] );
 				fclose( $pipes[1] );
 				$stderr = stream_get_contents( $pipes[2] );
 				fclose( $pipes[2] );
-				$retval = trim( $stdout );
+				$return = trim( $stdout );
 			}
 			$return_code = proc_close( $proc );
 		} else {
 			$configurator = self::get_configurator();
 			$argv = Utils\parse_str_to_argv( $command );
 			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
-			if ( $capture ) {
+			if ( $should_return ) {
 				ob_start();
 			}
 			self::get_runner()->run_command( $args, $assoc_args );
-			if ( $capture ) {
-				$retval = trim( ob_get_clean() );
+			if ( $should_return ) {
+				$return = trim( ob_get_clean() );
 			}
 		}
-		return $retval;
+		return $return;
 	}
 
 	/**
