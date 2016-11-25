@@ -60,8 +60,8 @@ class User_Session_Command extends WP_CLI_Command {
 	 *
 	 *     # Destroy all sessions for all users.
 	 *     $ wp user list --field=ID | xargs wp user session destroy --all
-	 *     Success: Destroyed all sessions. 0 remaining.
-	 *     Success: Destroyed all sessions. 0 remaining.
+	 *     Success: Destroyed all sessions.
+	 *     Success: Destroyed all sessions.
 	 */
 	public function destroy( $args, $assoc_args ) {
 		$user    = $this->fetcher->get_check( $args[0] );
@@ -75,8 +75,7 @@ class User_Session_Command extends WP_CLI_Command {
 
 		if ( $all ) {
 			$manager->destroy_all();
-			$remaining = count( $manager->get_all() );
-			WP_CLI::success( sprintf( 'Destroyed all sessions. %s remaining.', $remaining ) );
+			WP_CLI::success( 'Destroyed all sessions.' );
 			return;
 		}
 
