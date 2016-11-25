@@ -16,7 +16,7 @@ Feature: Run a WP-CLI command
        * [--launch]
        * : Launch a new process for the command.
        *
-       * [--capture]
+       * [--return[=<return>]]
        * : Capture and return output.
        */
       WP_CLI::add_command( 'run', function( $args, $assoc_args ){
@@ -56,7 +56,7 @@ Feature: Run a WP-CLI command
       | --launch    |
 
   Scenario Outline: Run a WP-CLI command and capture output
-    When I run `wp run <flag> --capture 'option get home'`
+    When I run `wp run <flag> --return 'option get home'`
     Then STDOUT should be:
       """
       returned: 'http://example.com'
@@ -64,7 +64,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp <flag> --capture run 'eval "echo wp_get_current_user()->user_login . PHP_EOL;"'`
+    When I run `wp <flag> --return run 'eval "echo wp_get_current_user()->user_login . PHP_EOL;"'`
     Then STDOUT should be:
       """
       returned: 'admin'
