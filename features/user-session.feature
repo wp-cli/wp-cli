@@ -30,7 +30,7 @@ Feature: Manage user session
     When I run `wp user session destroy admin --all`
     Then STDOUT should be:
       """
-      Success: Destroyed all sessions. 0 remaining.
+      Success: Destroyed all sessions.
       """
 
     And I run `wp user session list admin --format=count`
