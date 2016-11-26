@@ -31,6 +31,12 @@ Feature: Run a WP-CLI command
       require:
         - command.php
       """
+    And a config.yml file:
+      """
+      user get:
+        0: admin
+        field: user_email
+      """
 
   Scenario Outline: Run a WP-CLI command and render output
     When I run `wp <flag> run 'option get home'`
@@ -46,6 +52,15 @@ Feature: Run a WP-CLI command
     Then STDOUT should be:
       """
       admin
+      returned: NULL
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp <flag> run 'user get'`
+    Then STDOUT should be:
+      """
+      admin@example.com
       returned: NULL
       """
     And STDERR should be empty
@@ -69,6 +84,14 @@ Feature: Run a WP-CLI command
     Then STDOUT should be:
       """
       returned: 'admin'
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp --return <flag> run 'user get'`
+    Then STDOUT should be:
+      """
+      returned: 'admin@example.com'
       """
     And STDERR should be empty
     And the return code should be 0

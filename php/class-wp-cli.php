@@ -950,7 +950,21 @@ class WP_CLI {
 			$script_path = $GLOBALS['argv'][0];
 			$runcommand = "{$php_bin} {$script_path} {$command}";
 
+			$env_vars = array(
+				'HOME',
+				'WP_CLI_AUTO_CHECK_UPDATE_DAYS',
+				'WP_CLI_CACHE_DIR',
+				'WP_CLI_CONFIG_PATH',
+				'WP_CLI_DISABLE_AUTO_CHECK_UPDATE',
+				'WP_CLI_PACKAGES_DIR',
+				'WP_CLI_PHP_USED',
+				'WP_CLI_PHP',
+				'WP_CLI_STRICT_ARGS_MODE',
+			);
 			$env = array();
+			foreach( $env_vars as $var ) {
+				$env[ $var ] = getenv( $var );
+			}
 			$proc = proc_open( $runcommand, $descriptors, $pipes, getcwd(), $env );
 
 			if ( $should_return ) {
@@ -961,6 +975,9 @@ class WP_CLI {
 				$return = trim( $stdout );
 			}
 			$return_code = proc_close( $proc );
+			if ( -1 == $return_code ) {
+				self::warning( "Spawned process returned exit code -1, which could be caused by a custom compiled version of PHP that uses the --enable-sigchild option." );
+			}
 		} else {
 			$configurator = self::get_configurator();
 			$argv = Utils\parse_str_to_argv( $command );
