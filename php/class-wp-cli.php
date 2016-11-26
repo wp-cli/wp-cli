@@ -984,7 +984,7 @@ class WP_CLI {
 			} else if ( 'return_code' === $return ) {
 				$retval = $return_code;
 			} else if ( 'all' === $return ) {
-				$retval = array(
+				$retval = (object) array(
 					'stdout'      => trim( $stdout ),
 					'stderr'      => trim( $stderr ),
 					'return_code' => $return_code,
@@ -1009,7 +1009,7 @@ class WP_CLI {
 				} else if ( 'return_code' === $return ) {
 					$retval = $return_code;
 				} else if ( 'all' === $return ) {
-					$retval = array(
+					$retval = (object) array(
 						'stdout'      => trim( $stdout ),
 						'stderr'      => trim( $stderr ),
 						'return_code' => $return_code,
