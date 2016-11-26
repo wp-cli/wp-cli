@@ -19,6 +19,9 @@ Feature: Run a WP-CLI command
        *
        * [--return[=<return>]]
        * : Capture and return output.
+       *
+       * [--parse=<format>]
+       * : Parse returned output as a particular format.
        */
       WP_CLI::add_command( 'run', function( $args, $assoc_args ){
         $ret = WP_CLI::runcommand( $args[0], $assoc_args );
@@ -124,6 +127,21 @@ Feature: Run a WP-CLI command
       """
     And STDERR should be empty
     And the return code should be 0
+
+    Examples:
+      | flag        |
+      | --no-launch |
+      | --launch    |
+
+  Scenario Outline: Use 'parse=json' to parse JSON output
+    When I run `wp run --return --parse=json <flag> 'user get admin --fields=user_login,user_email --format=json'`
+    Then STDOUT should be:
+      """
+      returned: array (
+        'user_login' => 'admin',
+        'user_email' => 'admin@example.com',
+      )
+      """
 
     Examples:
       | flag        |
