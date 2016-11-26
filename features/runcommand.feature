@@ -1,3 +1,4 @@
+@require-php-5.4
 Feature: Run a WP-CLI command
 
   Background:
