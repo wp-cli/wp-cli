@@ -22,6 +22,7 @@ Feature: Run a WP-CLI command
        */
       WP_CLI::add_command( 'run', function( $args, $assoc_args ){
         $ret = WP_CLI::runcommand( $args[0], $assoc_args );
+        $ret = is_object( $ret ) ? (array) $ret : $ret;
         WP_CLI::log( 'returned: ' . var_export( $ret, true ) );
       });
       """
