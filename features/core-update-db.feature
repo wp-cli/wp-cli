@@ -55,7 +55,7 @@ Feature: Update core's database
       Success: WordPress database upgraded on 3/3 sites.
       """
 
-  Scenario: Update db across network
+  Scenario: Update db across network, dry run
     Given a WP multisite install
     And I run `wp core download --version=4.1 --force`
     And I run `wp option update db_version 29630`

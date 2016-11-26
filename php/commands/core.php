@@ -1337,7 +1337,11 @@ EOT;
 			foreach( $it as $blog ) {
 				$total++;
 				$url = $blog->domain . $blog->path;
-				$process = WP_CLI::launch_self( 'core update-db', array(), array( 'dry-run' => $dry_run ), false, true, array( 'url' => $url ) );
+				$cmd = "--url={$url} core update-db";
+				if ( $dry_run ) {
+					$cmd .= ' --dry-run';
+				}
+				$process = WP_CLI::runcommand( $cmd, array( 'return' => 'all' ) );
 				if ( 0 == $process->return_code ) {
 					// See if we can parse the stdout
 					if ( preg_match( '#Success: (.+)#', $process->stdout, $matches ) ) {
