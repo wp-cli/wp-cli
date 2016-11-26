@@ -912,7 +912,7 @@ class WP_CLI {
 	 * Run a WP-CLI command.
 	 *
 	 * ```
-	 * $plugins = WP_CLI::run_command( 'plugin list', array( 'return' => true ) );
+	 * $plugins = WP_CLI::run_command( 'plugin list --format=json', array( 'return' => true ) );
 	 * ```
 	 *
 	 * @access public
@@ -926,10 +926,12 @@ class WP_CLI {
 		$defaults = array(
 			'launch' => true, // Launch a new process, or reuse the existing.
 			'return' => false, // Capture and return output, or render in realtime.
+			'parse'  => false, // Parse returned output as a particular format.
 		);
 		$options = array_merge( $defaults, $options );
 		$launch = $options['launch'];
 		$return = $options['return'];
+		$parse = $options['parse'];
 		$retval = null;
 		if ( $launch ) {
 			if ( $return ) {
@@ -1016,6 +1018,10 @@ class WP_CLI {
 					);
 				}
 			}
+		}
+		if ( ( true === $return || 'stdout' === $return )
+			&& 'json' === $parse ) {
+			$retval = json_decode( $retval, true );
 		}
 		return $retval;
 	}
