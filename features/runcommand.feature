@@ -88,6 +88,34 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
+    When I run `wp <flag> --return=stderr run 'eval "echo wp_get_current_user()->user_login . PHP_EOL;"'`
+    Then STDOUT should be:
+      """
+      returned: ''
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp <flag> --return=return_code run 'eval "echo wp_get_current_user()->user_login . PHP_EOL;"'`
+    Then STDOUT should be:
+      """
+      returned: 0
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp <flag> --return=all run 'eval "echo wp_get_current_user()->user_login . PHP_EOL;"'`
+    Then STDOUT should be:
+      """
+      returned: array (
+        'stdout' => 'admin',
+        'stderr' => '',
+        'return_code' => 0,
+      )
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
     When I run `WP_CLI_CONFIG_PATH=config.yml wp --return <flag> run 'user get'`
     Then STDOUT should be:
       """

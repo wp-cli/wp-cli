@@ -929,10 +929,10 @@ class WP_CLI {
 		);
 		$options = array_merge( $defaults, $options );
 		$launch = $options['launch'];
-		$should_return = $options['return'];
-		$return = null;
+		$return = $options['return'];
+		$retval = null;
 		if ( $launch ) {
-			if ( $should_return ) {
+			if ( $return ) {
 				$descriptors = array(
 					0 => STDIN,
 					1 => array( 'pipe', 'w' ),
@@ -967,30 +967,57 @@ class WP_CLI {
 			}
 			$proc = proc_open( $runcommand, $descriptors, $pipes, getcwd(), $env );
 
-			if ( $should_return ) {
+			if ( $return ) {
 				$stdout = stream_get_contents( $pipes[1] );
 				fclose( $pipes[1] );
 				$stderr = stream_get_contents( $pipes[2] );
 				fclose( $pipes[2] );
-				$return = trim( $stdout );
 			}
 			$return_code = proc_close( $proc );
 			if ( -1 == $return_code ) {
 				self::warning( "Spawned process returned exit code -1, which could be caused by a custom compiled version of PHP that uses the --enable-sigchild option." );
 			}
+			if ( true === $return || 'stdout' === $return ) {
+				$retval = trim( $stdout );
+			} else if ( 'stderr' === $return ) {
+				$retval = trim( $stderr );
+			} else if ( 'return_code' === $return ) {
+				$retval = $return_code;
+			} else if ( 'all' === $return ) {
+				$retval = array(
+					'stdout'      => trim( $stdout ),
+					'stderr'      => trim( $stderr ),
+					'return_code' => $return_code,
+				);
+			}
 		} else {
 			$configurator = self::get_configurator();
 			$argv = Utils\parse_str_to_argv( $command );
 			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
-			if ( $should_return ) {
+			if ( $return ) {
 				ob_start();
 			}
 			self::get_runner()->run_command( $args, $assoc_args );
-			if ( $should_return ) {
-				$return = trim( ob_get_clean() );
+			if ( $return ) {
+				$stdout = trim( ob_get_clean() );
+				$stderr = '';
+				$return_code = 0;
+				if ( true === $return || 'stdout' === $return ) {
+					$retval = trim( $stdout );
+				} else if ( 'stderr' === $return ) {
+					$retval = trim( $stderr );
+				} else if ( 'return_code' === $return ) {
+					$retval = $return_code;
+				} else if ( 'all' === $return ) {
+					$retval = array(
+						'stdout'      => trim( $stdout ),
+						'stderr'      => trim( $stderr ),
+						'return_code' => $return_code,
+					);
+				}
 			}
 		}
-		return $return;
+		return $retval;
 	}
 
 	/**
