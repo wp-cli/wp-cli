@@ -60,6 +60,11 @@ Feature: Update WP-CLI packages
       Success: Packages updated.
       """
 
+    When I run `wp package list --fields=name,update`
+    Then STDOUT should be a table containing rows:
+      | name                            | update  |
+      | wp-cli/scaffold-package-command | none    |
+
     When I run `sed -i.bak s/0.1.0/\>=0.1.0/g {PACKAGE_PATH}/composer.json`
     Then the return code should be 0
 
@@ -69,12 +74,13 @@ Feature: Update WP-CLI packages
       "wp-cli/scaffold-package-command": ">=0.1.0"
       """
 
+    When I run `wp package list --fields=name,update`
+    Then STDOUT should be a table containing rows:
+      | name                            | update     |
+      | wp-cli/scaffold-package-command | available  |
+
     When I run `wp package update`
-    Then STDOUT should not contain:
-      """
-      Nothing to install or update
-      """
-    And STDOUT should contain:
+    Then STDOUT should contain:
       """
       Writing lock file
       """
@@ -82,6 +88,15 @@ Feature: Update WP-CLI packages
       """
       Success: Packages updated.
       """
+    And STDOUT should not contain:
+      """
+      Nothing to install or update
+      """
+
+    When I run `wp package list --fields=name,update`
+    Then STDOUT should be a table containing rows:
+      | name                            | update  |
+      | wp-cli/scaffold-package-command | none    |
 
     When I run `wp package update`
     Then STDOUT should contain:
