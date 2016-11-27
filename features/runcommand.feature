@@ -148,6 +148,20 @@ Feature: Run a WP-CLI command
       | --no-launch |
       | --launch    |
 
+  Scenario Outline: Exit on error by default
+    When I try `wp run <flag> 'eval "WP_CLI::error( var_export( get_current_user_id(), true ) );"'`
+    Then STDOUT should be empty
+    And STDERR should be:
+      """
+      Error: 1
+      """
+    And the return code should be 1
+
+    Examples:
+      | flag        |
+      | --no-launch |
+      | --launch    |
+
   Scenario Outline: Installed packages work as expected
     When I run `wp package install wp-cli/scaffold-package-command`
     Then STDERR should be empty
