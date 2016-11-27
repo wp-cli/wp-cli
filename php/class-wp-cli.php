@@ -924,12 +924,14 @@ class WP_CLI {
 	 */
 	public static function runcommand( $command, $options = array() ) {
 		$defaults = array(
-			'launch' => true, // Launch a new process, or reuse the existing.
-			'return' => false, // Capture and return output, or render in realtime.
-			'parse'  => false, // Parse returned output as a particular format.
+			'launch'     => true, // Launch a new process, or reuse the existing.
+			'exit_error' => true, // Exit on error by default.
+			'return'     => false, // Capture and return output, or render in realtime.
+			'parse'      => false, // Parse returned output as a particular format.
 		);
 		$options = array_merge( $defaults, $options );
 		$launch = $options['launch'];
+		$exit_error = $options['exit_error'];
 		$return = $options['return'];
 		$parse = $options['parse'];
 		$retval = null;
@@ -978,6 +980,8 @@ class WP_CLI {
 			$return_code = proc_close( $proc );
 			if ( -1 == $return_code ) {
 				self::warning( "Spawned process returned exit code -1, which could be caused by a custom compiled version of PHP that uses the --enable-sigchild option." );
+			} else if ( $return_code && $exit_error ) {
+				exit( $return_code );
 			}
 			if ( true === $return || 'stdout' === $return ) {
 				$retval = trim( $stdout );
