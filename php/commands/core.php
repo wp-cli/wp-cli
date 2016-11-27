@@ -435,14 +435,14 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ) {
 			if ( is_blog_installed() && is_multisite() ) {
-				exit( 0 );
+				WP_CLI::halt( 0 );
 			} else {
-				exit( 1 );
+				WP_CLI::halt( 1 );
 			}
 		} else if ( is_blog_installed() ) {
-			exit( 0 );
+			WP_CLI::halt( 0 );
 		} else {
-			exit( 1 );
+			WP_CLI::halt( 1 );
 		}
 	}
 

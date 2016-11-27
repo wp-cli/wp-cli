@@ -178,6 +178,14 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
+    When I run `wp <flag> --no-exit_error run 'option get foo$bar'`
+    Then STDOUT should be:
+      """
+      returned: NULL
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
     Examples:
       | flag        |
       | --no-launch |

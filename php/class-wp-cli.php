@@ -646,6 +646,23 @@ class WP_CLI {
 	}
 
 	/**
+	 * Halt script execution with a specific return code.
+	 *
+	 * Permits script execution to be overloaded by `WP_CLI::runcommand()`
+	 *
+	 * @access public
+	 * @category Output
+	 *
+	 * @param integer $return_code
+	 */
+	public static function halt( $return_code ) {
+		if ( self::$capture_exit ) {
+			throw new ExitException( null, $return_code );
+		}
+		exit( $return_code );
+	}
+
+	/**
 	 * Display a multi-line error message in a red box. Doesn't exit script.
 	 *
 	 * Error message is written to STDERR.
