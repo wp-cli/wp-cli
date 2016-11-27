@@ -78,13 +78,6 @@ class Package_Command extends WP_CLI_Command {
 
 	const PACKAGE_INDEX_URL = 'https://wp-cli.org/package-index/';
 
-	private $fields = array(
-		'name',
-		'description',
-		'authors',
-		'version',
-	);
-
 	private $pool = false;
 
 	/**
@@ -108,6 +101,17 @@ class Package_Command extends WP_CLI_Command {
 	 *   - json
 	 *   - yaml
 	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each package:
+	 *
+	 * * name
+	 * * description
+	 * * authors
+	 * * version
+	 *
+	 * There are no optionally available fields.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -329,6 +333,20 @@ class Package_Command extends WP_CLI_Command {
 	 *   - json
 	 *   - yaml
 	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each package:
+	 *
+	 * * name
+	 * * authors
+	 * * version
+	 * * update
+	 * * update_version
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * description
 	 *
 	 * ## EXAMPLES
 	 *
@@ -577,12 +595,24 @@ class Package_Command extends WP_CLI_Command {
 	 * @param array
 	 */
 	private function show_packages( $context, $packages, $assoc_args ) {
-		$fields = $this->fields;
 		if ( 'list' === $context ) {
-			$fields[] = 'update';
+			$default_fields = array(
+				'name',
+				'authors',
+				'version',
+				'update',
+				'update_version',
+			);
+		} else if ( 'browse' === $context ) {
+			$default_fields = array(
+				'name',
+				'description',
+				'authors',
+				'version',
+			);
 		}
 		$defaults = array(
-			'fields' => implode( ',', $fields ),
+			'fields' => implode( ',', $default_fields ),
 			'format' => 'table'
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
@@ -599,13 +629,16 @@ class Package_Command extends WP_CLI_Command {
 				$package_output['authors'] = implode( ', ', array_column( (array) $package->getAuthors(), 'name' ) );
 				$package_output['version'] = array( $package->getPrettyVersion() );
 				$update = 'none';
+				$update_version = '';
 				if ( 'list' === $context ) {
 					$latest = $this->find_latest_package( $package, $this->get_composer(), null );
 					if ( $latest && $latest->getFullPrettyVersion() !== $package->getFullPrettyVersion() ) {
 						$update = 'available';
+						$update_version = $latest->getPrettyVersion();
 					}
 				}
 				$package_output['update'] = $update;
+				$package_output['update_version'] = $update_version;
 				$list[ $package_output['name'] ] = $package_output;
 			}
 		}
