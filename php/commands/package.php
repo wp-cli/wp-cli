@@ -1,6 +1,8 @@
 <?php
+use \Composer\Composer;
 use \Composer\Config;
 use \Composer\Config\JsonConfigSource;
+use \Composer\DependencyResolver\Pool;
 use \Composer\EventDispatcher\Event;
 use \Composer\Factory;
 use \Composer\IO\NullIO;
@@ -8,7 +10,10 @@ use \Composer\Installer;
 use \Composer\Json\JsonFile;
 use \Composer\Json\JsonManipulator;
 use \Composer\Package;
+use \Composer\Package\BasePackage;
+use \Composer\Package\PackageInterface;
 use \Composer\Package\Version\VersionParser;
+use \Composer\Package\Version\VersionSelector;
 use \Composer\Repository;
 use \Composer\Repository\CompositeRepository;
 use \Composer\Repository\ComposerRepository;
@@ -80,6 +85,8 @@ class Package_Command extends WP_CLI_Command {
 		'version',
 	);
 
+	private $pool = false;
+
 	/**
 	 * Browse WP-CLI packages available for installation.
 	 *
@@ -124,7 +131,7 @@ class Package_Command extends WP_CLI_Command {
 	 *
 	 */
 	public function browse( $_, $assoc_args ) {
-		$this->show_packages( $this->get_community_packages(), $assoc_args );
+		$this->show_packages( 'browse', $this->get_community_packages(), $assoc_args );
 	}
 
 	/**
@@ -335,7 +342,7 @@ class Package_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
-		$this->show_packages( $this->get_installed_packages(), $assoc_args );
+		$this->show_packages( 'list', $this->get_installed_packages(), $assoc_args );
 	}
 
 	/**
@@ -565,12 +572,17 @@ class Package_Command extends WP_CLI_Command {
 	/**
 	 * Display a set of packages
 	 *
+	 * @param string $context
 	 * @param array
 	 * @param array
 	 */
-	private function show_packages( $packages, $assoc_args ) {
+	private function show_packages( $context, $packages, $assoc_args ) {
+		$fields = $this->fields;
+		if ( 'list' === $context ) {
+			$fields[] = 'update';
+		}
 		$defaults = array(
-			'fields' => implode( ',', $this->fields ),
+			'fields' => implode( ',', $fields ),
 			'format' => 'table'
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
@@ -586,6 +598,14 @@ class Package_Command extends WP_CLI_Command {
 				$package_output['description'] = $package->getDescription();
 				$package_output['authors'] = implode( ', ', array_column( (array) $package->getAuthors(), 'name' ) );
 				$package_output['version'] = array( $package->getPrettyVersion() );
+				$update = 'none';
+				if ( 'list' === $context ) {
+					$latest = $this->find_latest_package( $package, $this->get_composer(), null );
+					if ( $latest && $latest->getFullPrettyVersion() !== $package->getFullPrettyVersion() ) {
+						$update = 'available';
+					}
+				}
+				$package_output['update'] = $update;
 				$list[ $package_output['name'] ] = $package_output;
 			}
 		}
@@ -776,6 +796,47 @@ class Package_Command extends WP_CLI_Command {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Given a package, this finds the latest package matching it
+	 *
+	 * @param  PackageInterface $package
+	 * @param  Composer         $composer
+	 * @param  string           $phpVersion
+	 * @param  bool             $minorOnly
+	 *
+	 * @return PackageInterface|null
+	 */
+	private function find_latest_package( PackageInterface $package, Composer $composer, $phpVersion, $minorOnly = false ) {
+		// find the latest version allowed in this pool
+		$name = $package->getName();
+		$versionSelector = new VersionSelector($this->get_pool($composer));
+		$stability = $composer->getPackage()->getMinimumStability();
+		$flags = $composer->getPackage()->getStabilityFlags();
+		if (isset($flags[$name])) {
+			$stability = array_search($flags[$name], BasePackage::$stabilities, true);
+		}
+		$bestStability = $stability;
+		if ($composer->getPackage()->getPreferStable()) {
+			$bestStability = $package->getStability();
+		}
+		$targetVersion = null;
+		if (0 === strpos($package->getVersion(), 'dev-')) {
+			$targetVersion = $package->getVersion();
+		}
+		if ($targetVersion === null && $minorOnly) {
+			$targetVersion = '^' . $package->getVersion();
+		}
+		return $versionSelector->findBestCandidate($name, $targetVersion, $phpVersion, $bestStability);
+	}
+
+	private function get_pool( Composer $composer ) {
+		if (!$this->pool) {
+			$this->pool = new Pool($composer->getPackage()->getMinimumStability(), $composer->getPackage()->getStabilityFlags());
+			$this->pool->addRepository(new CompositeRepository($composer->getRepositoryManager()->getRepositories()));
+		}
+		return $this->pool;
 	}
 }
 
