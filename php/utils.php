@@ -799,3 +799,27 @@ function report_batch_operation_results( $noun, $verb, $total, $successes, $fail
 		}
 	}
 }
+
+/**
+ * Parse a string of command line arguments into an $argv-esqe variable.
+ *
+ * @access public
+ * @category Input
+ *
+ * @param string $arguments
+ * @return array
+ */
+function parse_str_to_argv( $arguments ) {
+	preg_match_all ('/(?<=^|\s)([\'"]?)(.+?)(?<!\\\\)\1(?=$|\s)/', $arguments, $matches );
+	$argv = isset( $matches[0] ) ? $matches[0] : array();
+	$argv = array_map( function( $arg ){
+		foreach( array( '"', "'" ) as $char ) {
+			if ( $char === substr( $arg, 0, 1 ) && $char === substr( $arg, -1 ) ) {
+				$arg = substr( $arg, 1, -1 );
+				break;
+			}
+		}
+		return $arg;
+	}, $argv );
+	return $argv;
+}

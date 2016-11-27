@@ -800,9 +800,9 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	public function is_installed( $args, $assoc_args = array() ) {
 		if ( $this->fetcher->get( $args[0] ) ) {
-			exit( 0 );
+			WP_CLI::halt( 0 );
 		} else {
-			exit( 1 );
+			WP_CLI::halt( 1 );
 		}
 	}
 

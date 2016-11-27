@@ -269,7 +269,7 @@ class CLI_Command extends WP_CLI_Command {
 			if ( empty( $updates ) ) {
 				$update_type = $this->get_update_type_str( $assoc_args );
 				WP_CLI::success( "WP-CLI is at the latest{$update_type}version." );
-				exit(0);
+				return;
 			}
 
 			$newest = $updates[0];

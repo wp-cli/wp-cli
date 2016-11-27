@@ -63,8 +63,9 @@ class Option_Command extends WP_CLI_Command {
 
 		$value = get_option( $key );
 
-		if ( false === $value )
-			die(1);
+		if ( false === $value ) {
+			WP_CLI::halt( 1 );
+		}
 
 		WP_CLI::print_value( $value, $assoc_args );
 	}

@@ -435,14 +435,14 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ) {
 			if ( is_blog_installed() && is_multisite() ) {
-				exit( 0 );
+				WP_CLI::halt( 0 );
 			} else {
-				exit( 1 );
+				WP_CLI::halt( 1 );
 			}
 		} else if ( is_blog_installed() ) {
-			exit( 0 );
+			WP_CLI::halt( 0 );
 		} else {
-			exit( 1 );
+			WP_CLI::halt( 1 );
 		}
 	}
 
@@ -1337,7 +1337,11 @@ EOT;
 			foreach( $it as $blog ) {
 				$total++;
 				$url = $blog->domain . $blog->path;
-				$process = WP_CLI::launch_self( 'core update-db', array(), array( 'dry-run' => $dry_run ), false, true, array( 'url' => $url ) );
+				$cmd = "--url={$url} core update-db";
+				if ( $dry_run ) {
+					$cmd .= ' --dry-run';
+				}
+				$process = WP_CLI::runcommand( $cmd, array( 'return' => 'all' ) );
 				if ( 0 == $process->return_code ) {
 					// See if we can parse the stdout
 					if ( preg_match( '#Success: (.+)#', $process->stdout, $matches ) ) {
