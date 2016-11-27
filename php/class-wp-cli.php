@@ -817,6 +817,8 @@ class WP_CLI {
 	/**
 	 * Run a WP-CLI command in a new process reusing the current runtime arguments.
 	 *
+	 * Use `WP_CLI::runcommand()` instead, which is easier to use and works better.
+	 *
 	 * Note: While this command does persist a limited set of runtime arguments,
 	 * it *does not* persist environment variables. Practically speaking, WP-CLI
 	 * packages won't be loaded when using WP_CLI::launch_self() because the
@@ -922,8 +924,20 @@ class WP_CLI {
 	/**
 	 * Run a WP-CLI command.
 	 *
+	 * Launch a new child process, or run the command in the current process.
+	 * Optionally:
+	 * * Prevent halting script execution on error.
+	 * * Capture and return STDOUT, or full details about command execution.
+	 * * Parse JSON output if the command rendered it.
+	 *
 	 * ```
-	 * $plugins = WP_CLI::run_command( 'plugin list --format=json', array( 'return' => true ) );
+	 * $options = array(
+	 *   'return'     => true,  // Return 'STDOUT'; use 'all' for full object.
+	 *   'parse'      => 'json' // Parse captured STDOUT to JSON array.
+	 *   'launch'     => false, // Reuse the current process.
+	 *   'exit_error' => true,  // Halt script execution on error.
+	 * );
+	 * $plugins = WP_CLI::runcommand( 'plugin list --format=json', $options );
 	 * ```
 	 *
 	 * @access public
@@ -1058,6 +1072,8 @@ class WP_CLI {
 	/**
 	 * Run a given command within the current process using the same global
 	 * parameters.
+	 *
+	 * Use `WP_CLI::runcommand()` instead, which is easier to use and works better.
 	 *
 	 * To run a command using a new process with the same global parameters,
 	 * use WP_CLI::launch_self(). To run a command using a new process with
