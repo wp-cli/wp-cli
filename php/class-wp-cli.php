@@ -1044,11 +1044,11 @@ class WP_CLI {
 			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
 			if ( $return ) {
 				ob_start();
+				$existing_logger = self::$logger;
+				self::$logger = new WP_CLI\Loggers\Execution;
 			}
 			if ( ! $exit_error ) {
 				self::$capture_exit = true;
-				$existing_logger = self::$logger;
-				self::$logger = new WP_CLI\Loggers\Execution;
 			}
 			try {
 				self::get_runner()->run_command( $args, $assoc_args );
@@ -1056,9 +1056,9 @@ class WP_CLI {
 			} catch( ExitException $e ) {
 				$return_code = $e->getCode();
 			}
-			$execution_logger = self::$logger;
-			self::$logger = $existing_logger;
 			if ( $return ) {
+				$execution_logger = self::$logger;
+				self::$logger = $existing_logger;
 				$stdout = trim( ob_get_clean() );
 				$stderr = $execution_logger->stderr;
 				if ( true === $return || 'stdout' === $return ) {
