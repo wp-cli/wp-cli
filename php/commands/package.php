@@ -601,7 +601,7 @@ class Package_Command extends WP_CLI_Command {
 				$update = 'none';
 				if ( 'list' === $context ) {
 					$latest = $this->find_latest_package( $package, $this->get_composer(), null );
-					if ( $latest ) {
+					if ( $latest && $latest->getFullPrettyVersion() !== $package->getFullPrettyVersion() ) {
 						$update = 'available';
 					}
 				}

@@ -62,8 +62,8 @@ Feature: Update WP-CLI packages
 
     When I run `wp package list --fields=name,update`
     Then STDOUT should be a table containing rows:
-      | name                            | update  |
-      | wp-cli/scaffold-package-command | none    |
+      | name                            | update    |
+      | wp-cli/scaffold-package-command | available |
 
     When I run `sed -i.bak s/0.1.0/\>=0.1.0/g {PACKAGE_PATH}/composer.json`
     Then the return code should be 0
