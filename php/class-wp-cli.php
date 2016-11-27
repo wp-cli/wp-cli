@@ -1,10 +1,11 @@
 <?php
 
-use \WP_CLI\Utils;
+use \WP_CLI\ExitException;
 use \WP_CLI\Dispatcher;
 use \WP_CLI\FileCache;
 use \WP_CLI\Process;
 use \WP_CLI\WpHttpCacheManager;
+use \WP_CLI\Utils;
 
 /**
  * Various utilities for WP-CLI commands.
@@ -16,6 +17,8 @@ class WP_CLI {
 	private static $logger;
 
 	private static $hooks = array(), $hooks_passed = array();
+
+	private static $capture_exit = false;
 
 	/**
 	 * Set the logger instance.
@@ -627,10 +630,18 @@ class WP_CLI {
 			self::$logger->error( self::error_to_string( $message ) );
 		}
 
+		$return_code = false;
 		if ( true === $exit ) {
-			exit( 1 );
+			$return_code = 1;
 		} elseif ( is_int( $exit ) && $exit >= 1 ) {
-			exit( $exit );
+			$return_code = $exit;
+		}
+
+		if ( $return_code ) {
+			if ( self::$capture_exit ) {
+				throw new ExitException( null, $return_code );
+			}
+			exit( $return_code );
 		}
 	}
 
@@ -1003,11 +1014,22 @@ class WP_CLI {
 			if ( $return ) {
 				ob_start();
 			}
-			self::get_runner()->run_command( $args, $assoc_args );
+			if ( ! $exit_error ) {
+				self::$capture_exit = true;
+				$existing_logger = self::$logger;
+				self::$logger = new WP_CLI\Loggers\Execution;
+			}
+			try {
+				self::get_runner()->run_command( $args, $assoc_args );
+				$return_code = 0;
+			} catch( ExitException $e ) {
+				$return_code = $e->getCode();
+			}
+			$execution_logger = self::$logger;
+			self::$logger = $existing_logger;
 			if ( $return ) {
 				$stdout = trim( ob_get_clean() );
-				$stderr = '';
-				$return_code = 0;
+				$stderr = $execution_logger->stderr;
 				if ( true === $return || 'stdout' === $return ) {
 					$retval = trim( $stdout );
 				} else if ( 'stderr' === $return ) {
@@ -1021,6 +1043,9 @@ class WP_CLI {
 						'return_code' => $return_code,
 					);
 				}
+			}
+			if ( ! $exit_error ) {
+				self::$capture_exit = false;
 			}
 		}
 		if ( ( true === $return || 'stdout' === $return )

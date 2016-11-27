@@ -17,6 +17,9 @@ Feature: Run a WP-CLI command
        * [--launch]
        * : Launch a new process for the command.
        *
+       * [--exit_error]
+       * : Exit on error.
+       *
        * [--return[=<return>]]
        * : Capture and return output.
        *
@@ -156,6 +159,24 @@ Feature: Run a WP-CLI command
       Error: 1
       """
     And the return code should be 1
+
+    Examples:
+      | flag        |
+      | --no-launch |
+      | --launch    |
+
+  Scenario Outline: Override erroring on exit
+    When I try `wp run <flag> --no-exit_error --return=all 'eval "WP_CLI::error( var_export( get_current_user_id(), true ) );"'`
+    Then STDOUT should be:
+      """
+      returned: array (
+        'stdout' => '',
+        'stderr' => 'Error: 1',
+        'return_code' => 1,
+      )
+      """
+    And STDERR should be empty
+    And the return code should be 0
 
     Examples:
       | flag        |
