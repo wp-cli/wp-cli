@@ -337,6 +337,10 @@ class Export_Command extends WP_CLI_Command {
 		if ( is_null( $category ) )
 			return true;
 
+		// term_exists() expects an int, not an int as a string, so force it if it's numeric
+		if ( is_numeric( $category ) )
+			$category = (int) $category;
+
 		$term = category_exists( $category );
 		if ( empty( $term ) || is_wp_error( $term ) ) {
 			WP_CLI::warning( sprintf( 'Could not find a category matching %s.', $category ) );
