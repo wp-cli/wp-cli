@@ -558,6 +558,27 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
+	 * Set a user's password.
+	 * 
+	 * @subcommand set-password
+	 * @synopsis <user-login> <password>
+	 */
+	public function set_password( $args ) {
+		list( $user_login, $password ) = $args;
+
+		if ( false === ( $user = get_user_by( 'login', $user_login ) ) )
+			WP_CLI::error( "Invalid user." );
+
+		$user->user_pass = $password;
+		$result = wp_update_user( $user );
+
+		if ( ! is_wp_error( $result ) )
+			WP_CLI::success( sprintf( "Set password for %s to %s", $user_login, $password ) );
+		else
+			WP_CLI::error( "Couldn't set password." );
+	}
+
+	/**
 	 * Add a role for a user.
 	 *
 	 * ## OPTIONS
