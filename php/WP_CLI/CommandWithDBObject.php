@@ -175,4 +175,13 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 			\WP_CLI::line( $callback( $object->{$this->obj_id_key} ) );
 		}
 	}
+
+	public function bulk_delete( $assoc_args ) {
+		$status = 0;
+
+		$r = $this->_bulk_delete( $assoc_args );
+		$status = $this->success_or_failure( $r );
+
+		exit( $status );
+	}
 }

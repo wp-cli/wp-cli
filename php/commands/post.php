@@ -267,6 +267,53 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
+	 * Bulk delete posts
+	 *
+	 * @synopsis [--force] [--confirm] [--limit]
+	 */
+	public function bulk_delete( $args, $assoc_args ) {
+		$assoc_args = wp_parse_args( $assoc_args, array(
+			'force' => false,
+			'confirm' => false,
+			'limit' => 0,
+		) );
+
+		parent::bulk_delete( $assoc_args );
+	}
+
+	protected function _bulk_delete( $assoc_args ) {
+		if ( ! $assoc_args['confirm'] )
+			return array( 'error', "You must provide the confirm argument to bulk delete posts" );
+
+		$args = array(
+			'posts_per_page' => $assoc_args['limit'],
+			'post_status' => 'any',
+			'cache_results' => false
+		);
+		$delete_query = new WP_Query( $args );
+		$total_deleted = 0;
+
+		if ( $delete_query->have_posts() ) {
+			while ( $delete_query->have_posts() ) {
+				$delete_query->the_post();
+
+				$r = wp_delete_post( get_the_ID(), $assoc_args['force'] );
+
+				if ( true != $r ) {
+					return array( 'error', 'Failed deleting post ' . get_the_ID() );
+				}
+
+				$total_deleted++;
+			}
+		}
+		wp_reset_postdata();
+
+		$action = $assoc_args['force'] ? 'Deleted' : 'Trashed';
+
+		return array( 'success', "$action $total_deleted posts" );
+	}
+
+	/**
 	 * Get a list of posts.
 	 *
 	 * ## OPTIONS
