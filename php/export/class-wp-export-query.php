@@ -303,10 +303,19 @@ class WP_Export_Query {
 	private static function topologically_sort_terms( $terms ) {
 		$sorted = array();
 		while ( $term = array_shift( $terms ) ) {
-			if ( $term->parent == 0 || isset( $sorted[$term->parent] ) )
+			if ( $term->parent == 0 || isset( $sorted[$term->parent] ) ) {
 				$sorted[$term->term_id] = $term;
-			else
-				$terms[] = $term;
+			} else {
+				// Cope if a term doesn't have a parent in 
+				// the remaining terms
+				foreach ( $terms as $other_term ) {
+					if ( $term->parent == $other_term->term_id ) {
+						$terms[] = $term;
+						continue;
+					}
+				}
+				$sorted[$term->term_id] = $term;
+			}
 		}
 		return $sorted;
 	}
