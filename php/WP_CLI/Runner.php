@@ -288,10 +288,14 @@ class Runner {
 	/**
 	 * Find the WP-CLI command to run given arguments, and invoke it.
 	 *
-	 * @param array $args Positional arguments including command name
-	 * @param array $assoc_args
+	 * @param array $args        Positional arguments including command name
+	 * @param array $assoc_args  Associative arguments for the command.
+	 * @param array $options     Configuration options for the function.
 	 */
-	public function run_command( $args, $assoc_args = array() ) {
+	public function run_command( $args, $assoc_args = array(), $options = array() ) {
+		if ( ! empty( $options['back_compat_conversions'] ) ) {
+			list( $args, $assoc_args ) = self::back_compat_conversions( $args, $assoc_args );
+		}
 		$r = $this->find_command_to_run( $args );
 		if ( is_string( $r ) ) {
 			WP_CLI::error( $r );

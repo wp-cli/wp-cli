@@ -1063,7 +1063,7 @@ class WP_CLI {
 				self::$capture_exit = true;
 			}
 			try {
-				self::get_runner()->run_command( $args, $assoc_args );
+				self::get_runner()->run_command( $args, $assoc_args, array( 'back_compat_conversions' => true ) );
 				$return_code = 0;
 			} catch( ExitException $e ) {
 				$return_code = $e->getCode();

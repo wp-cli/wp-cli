@@ -236,3 +236,20 @@ Feature: Run a WP-CLI command
     | flag        |
     | --no-launch |
     | --launch    |
+
+  Scenario Outline: Apply backwards compat conversions
+    Given a WP install
+
+    When I run `wp <flag> run 'term url category 1'`
+    Then STDOUT should be:
+      """
+      http://example.com/?cat=1
+      returned: NULL
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    Examples:
+    | flag        |
+    | --no-launch |
+    | --launch    |
