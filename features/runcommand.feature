@@ -2,7 +2,7 @@
 Feature: Run a WP-CLI command
 
   Background:
-    Given a WP install
+    Given an empty directory
     And a command.php file:
       """
       <?php
@@ -46,6 +46,8 @@ Feature: Run a WP-CLI command
       """
 
   Scenario Outline: Run a WP-CLI command and render output
+    Given a WP install
+
     When I run `wp <flag> run 'option get home'`
     Then STDOUT should be:
       """
@@ -79,6 +81,8 @@ Feature: Run a WP-CLI command
       | --launch    |
 
   Scenario Outline: Run a WP-CLI command and capture output
+    Given a WP install
+
     When I run `wp run <flag> --return 'option get home'`
     Then STDOUT should be:
       """
@@ -137,6 +141,8 @@ Feature: Run a WP-CLI command
       | --launch    |
 
   Scenario Outline: Use 'parse=json' to parse JSON output
+    Given a WP install
+
     When I run `wp run --return --parse=json <flag> 'user get admin --fields=user_login,user_email --format=json'`
     Then STDOUT should be:
       """
@@ -152,6 +158,8 @@ Feature: Run a WP-CLI command
       | --launch    |
 
   Scenario Outline: Exit on error by default
+    Given a WP install
+
     When I try `wp run <flag> 'eval "WP_CLI::error( var_export( get_current_user_id(), true ) );"'`
     Then STDOUT should be empty
     And STDERR should be:
@@ -166,6 +174,8 @@ Feature: Run a WP-CLI command
       | --launch    |
 
   Scenario Outline: Override erroring on exit
+    Given a WP install
+
     When I try `wp run <flag> --no-exit_error --return=all 'eval "WP_CLI::error( var_export( get_current_user_id(), true ) );"'`
     Then STDOUT should be:
       """
@@ -192,6 +202,8 @@ Feature: Run a WP-CLI command
       | --launch    |
 
   Scenario Outline: Installed packages work as expected
+    Given a WP install
+
     When I run `wp package install wp-cli/scaffold-package-command`
     Then STDERR should be empty
 
@@ -201,6 +213,24 @@ Feature: Run a WP-CLI command
       wp scaffold package <name>
       """
     And STDERR should be empty
+
+    Examples:
+    | flag        |
+    | --no-launch |
+    | --launch    |
+
+  Scenario Outline: Persists global parameters when supplied interactively
+    Given a WP install in 'subdir'
+
+    When I run `wp <flag> --path=subdir run 'rewrite structure "archives/%post_id%/" --path=subdir'`
+    Then STDOUT should be:
+      """
+      Success: Rewrite rules flushed.
+      Success: Rewrite structure set.
+      returned: NULL
+      """
+    And STDERR should be empty
+    And the return code should be 0
 
     Examples:
     | flag        |

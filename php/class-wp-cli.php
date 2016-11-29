@@ -994,7 +994,19 @@ class WP_CLI {
 
 			$php_bin = self::get_php_binary();
 			$script_path = $GLOBALS['argv'][0];
-			$runcommand = "{$php_bin} {$script_path} {$command}";
+
+			// Persist runtime arguments unless they've been specified otherwise.
+			$configurator = \WP_CLI::get_configurator();
+			$argv = array_slice( $GLOBALS['argv'], 1 );
+			list( $_, $_, $runtime_config ) = $configurator->parse_args( $argv );
+			foreach ( $runtime_config as $k => $v ) {
+				if ( preg_match( "|^--{$key}=?$|", $command ) ) {
+					unset( $runtime_config[ $k ] );
+				}
+			}
+			$runtime_config = Utils\assoc_args_to_str( $runtime_config );
+
+			$runcommand = "{$php_bin} {$script_path} {$runtime_config} {$command}";
 
 			$env_vars = array(
 				'HOME',
