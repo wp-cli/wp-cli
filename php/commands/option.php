@@ -5,28 +5,25 @@ use WP_CLI\Utils;
 /**
  * Manage options.
  *
- * ## OPTIONS
- *
- * [--format=json]
- * : Encode/decode values as JSON.
- *
  * ## EXAMPLES
  *
- *     # Get site URL
+ *     # Get site URL.
  *     $ wp option get siteurl
  *     http://example.com
  *
- *     # Add option
+ *     # Add option.
  *     $ wp option add my_option foobar
  *     Success: Added 'my_option' option.
  *
- *     # Update option
+ *     # Update option.
  *     $ wp option update my_option '{"foo": "bar"}' --format=json
  *     Success: Updated 'my_option' option.
  *
- *     # Delete option
+ *     # Delete option.
  *     $ wp option delete my_option
  *     Success: Deleted 'my_option' option.
+ *
+ * @package wp-cli
  */
 class Option_Command extends WP_CLI_Command {
 
@@ -50,11 +47,11 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Get option
+	 *     # Get option.
 	 *     $ wp option get home
 	 *     http://example.com
 	 *
-	 *     # Get option in JSON format
+	 *     # Get option in JSON format.
 	 *     $ wp option get active_plugins --format=json
 	 *     {"0":"dynamically-dynamic-sidebar\/dynamically-dynamic-sidebar.php","1":"monster-widget\/monster-widget.php","2":"show-current-template\/show-current-template.php","3":"theme-check\/theme-check.php","5":"wordpress-importer\/wordpress-importer.php"}
 	 */
@@ -102,7 +99,7 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Create an option by reading a JSON file
+	 *     # Create an option by reading a JSON file.
 	 *     $ wp option add my_option --format=json < config.json
 	 *     Success: Added 'my_option' option.
 	 */
@@ -175,11 +172,11 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Get the total size of all autoload options
+	 *     # Get the total size of all autoload options.
 	 *     $ wp option list --autoload=on --format=total_bytes
 	 *     33198
 	 *
-	 *     # Find biggest transients
+	 *     # Find biggest transients.
 	 *     $ wp option list --search="*_transient_*" --fields=option_name,size_bytes | sort -n -k 2 | tail
 	 *     option_name size_bytes
 	 *     _site_transient_timeout_theme_roots 10
@@ -188,7 +185,7 @@ class Option_Command extends WP_CLI_Command {
 	 *     _site_transient_update_core 808
 	 *     _site_transient_update_plugins  6645
 	 *
-	 *     # List all options begining with "i2f_"
+	 *     # List all options begining with "i2f_".
 	 *     $ wp option list --search="i2f_*"
 	 *     +-------------+--------------+
 	 *     | option_name | option_value |
@@ -196,7 +193,7 @@ class Option_Command extends WP_CLI_Command {
 	 *     | i2f_version | 0.1.0        |
 	 *     +-------------+--------------+
 	 *
-	 *     # Delete all options begining with "theme_mods_"
+	 *     # Delete all options begining with "theme_mods_".
 	 *     $ wp option list --search="theme_mods_*" --field=option_name | xargs -I % wp option delete %
 	 *     Success: Deleted 'theme_mods_twentysixteen' option.
 	 *     Success: Deleted 'theme_mods_twentyfifteen' option.
@@ -308,11 +305,11 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Update an option by reading from a file
+	 *     # Update an option by reading from a file.
 	 *     $ wp option update my_option < value.txt
 	 *     Success: Updated 'my_option' option.
 	 *
-	 *     # Update one option on multiple sites using xargs
+	 *     # Update one option on multiple sites using xargs.
 	 *     $ wp site list --field=url | xargs -n1 -I {} sh -c 'wp --url={} option update my_option my_value'
 	 *     Success: Updated 'my_option' option.
 	 *     Success: Updated 'my_option' option.
@@ -354,6 +351,7 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Delete an option.
 	 *     $ wp option delete my_option
 	 *     Success: Deleted 'my_option' option.
 	 */
