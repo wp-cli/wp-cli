@@ -33,7 +33,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * [<table>...]
 	 * : List of database tables to restrict the replacement to. Wildcards are
-	 * supported, e.g. `'wp_*_options'` or `'wp_post*'`.
+	 * supported, e.g. `'wp_*options'` or `'wp_post*'`.
 	 *
 	 * [--dry-run]
 	 * : Run the entire search/replace operation and show report, but don't save
@@ -93,7 +93,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *     $ wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
 	 *
 	 *     # Turn your production multisite database into a local dev database
-	 *     $ wp search-replace --url=example.com example.com example.dev 'wp_*_options' wp_blogs
+	 *     $ wp search-replace --url=example.com example.com example.dev 'wp_*options' wp_blogs
 	 *
 	 *     # Search/replace to a SQL file without transforming the database
 	 *     $ wp search-replace foo bar --export=database.sql
