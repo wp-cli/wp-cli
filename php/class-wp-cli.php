@@ -949,10 +949,10 @@ class WP_CLI {
 	 *
 	 * ```
 	 * $options = array(
-	 *   'return'     => true,  // Return 'STDOUT'; use 'all' for full object.
-	 *   'parse'      => 'json' // Parse captured STDOUT to JSON array.
-	 *   'launch'     => false, // Reuse the current process.
-	 *   'exit_error' => true,  // Halt script execution on error.
+	 *   'return'     => true,   // Return 'STDOUT'; use 'all' for full object.
+	 *   'parse'      => 'json', // Parse captured STDOUT to JSON array.
+	 *   'launch'     => false,  // Reuse the current process.
+	 *   'exit_error' => true,   // Halt script execution on error.
 	 * );
 	 * $plugins = WP_CLI::runcommand( 'plugin list --format=json', $options );
 	 * ```
