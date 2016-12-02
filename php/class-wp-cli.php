@@ -943,6 +943,7 @@ class WP_CLI {
 	 *
 	 * Launch a new child process, or run the command in the current process.
 	 * Optionally:
+	 *
 	 * * Prevent halting script execution on error.
 	 * * Capture and return STDOUT, or full details about command execution.
 	 * * Parse JSON output if the command rendered it.
