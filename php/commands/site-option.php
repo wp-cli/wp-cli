@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage site options.
+ * Manage site options in a multisite install.
  *
  * ## EXAMPLES
  *
