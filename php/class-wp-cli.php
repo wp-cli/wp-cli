@@ -1001,7 +1001,7 @@ class WP_CLI {
 			$argv = array_slice( $GLOBALS['argv'], 1 );
 			list( $_, $_, $runtime_config ) = $configurator->parse_args( $argv );
 			foreach ( $runtime_config as $k => $v ) {
-				if ( preg_match( "|^--{$key}=?$|", $command ) ) {
+				if ( preg_match( "|^--{$k}=?$|", $command ) ) {
 					unset( $runtime_config[ $k ] );
 				}
 			}
