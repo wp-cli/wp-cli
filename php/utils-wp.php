@@ -207,6 +207,13 @@ function wp_get_cache_type() {
 		} elseif ( isset( $wp_object_cache->lcache ) && is_a( $wp_object_cache->lcache, '\LCache\Integrated' ) ) {
 			$message = 'WP LCache';
 
+		} elseif( function_exists( 'w3_instance' ) ) {
+			$config = w3_instance( 'W3_Config' );
+			if ( $config->get_boolean( 'objectcache.enabled' ) ) {
+				$message = 'W3TC ' . $config->get_string( 'objectcache.engine' );
+			} else {
+				$message = 'Unknown';
+			}
 		} else {
 			$message = 'Unknown';
 		}
