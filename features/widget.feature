@@ -2,7 +2,7 @@ Feature: Manage widgets in WordPress sidebar
 
   Background:
     Given a WP install
-    When I run `wp theme install p2 --activate`
+    When I run `wp theme install hexa --activate`
     Then STDOUT should not be empty
 
   Scenario: Widget CRUD

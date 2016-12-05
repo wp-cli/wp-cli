@@ -5,7 +5,7 @@ Feature: Manage WordPress menu locations
 
   Scenario: Assign / remove location from a menu
 
-    When I run `wp theme install p2 --activate`
+    When I run `wp theme install hexa --activate`
     And I run `wp menu location list`
     Then STDOUT should be a table containing rows:
       | location       | description        |
@@ -21,7 +21,7 @@ Feature: Manage WordPress menu locations
     When I run `wp menu location list --format=ids`
     Then STDOUT should be:
       """
-      primary
+      primary social
       """
 
     When I run `wp menu location remove primary-menu primary`

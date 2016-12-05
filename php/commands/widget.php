@@ -459,7 +459,7 @@ class Widget_Command extends WP_CLI_Command {
 		$widget_exists = false;
 		foreach( $sidebars_widgets as $sidebar_id => $widgets ) {
 
-			if ( in_array( $widget_id, $widgets ) ) {
+			if ( $widgets && in_array( $widget_id, $widgets ) ) {
 				$widget_exists = true;
 				break;
 			}
