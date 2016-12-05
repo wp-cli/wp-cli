@@ -7,6 +7,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	private $export_insert_size;
 	private $recurse_objects;
 	private $regex;
+	private $regex_flags;
 	private $skip_columns;
 	private $include_columns;
 
@@ -84,6 +85,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * : Runs the search using a regular expression. Warning: search-replace
 	 * will take about 15-20x longer when using --regex.
 	 *
+	 * [--regex-flags=<regex-flags>]
+	 * : Pass PCRE modifiers to regex search-replace (e.g. 'i' for case-insensitivity).
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Search and replace but skip one column
@@ -117,6 +121,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$this->recurse_objects = \WP_CLI\Utils\get_flag_value( $assoc_args, 'recurse-objects', true );
 		$this->verbose         =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'verbose' );
 		$this->regex           =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'regex' );
+		$this->regex_flags     =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'regex-flags' );
 
 		$this->skip_columns = explode( ',', \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-columns' ) );
 		$this->include_columns = array_filter( explode( ',', \WP_CLI\Utils\get_flag_value( $assoc_args, 'include-columns' ) ) );
@@ -143,6 +148,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 			if ( (int) $export_insert_size == $export_insert_size && $export_insert_size > 0 ) {
 				$this->export_insert_size = $export_insert_size;
 			}
+			$php_only = true;
+		}
+
+		if ( $this->regex_flags ) {
 			$php_only = true;
 		}
 
@@ -250,7 +259,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 			'chunk_size' => $chunk_size
 		);
 
-		$replacer = new \WP_CLI\SearchReplacer( $old, $new, $this->recurse_objects, $this->regex );
+		$replacer = new \WP_CLI\SearchReplacer( $old, $new, $this->recurse_objects, $this->regex, $this->regex_flags );
 		$col_counts = array_fill_keys( $all_columns, 0 );
 		if ( $this->verbose ) {
 			$this->start_time = microtime( true );
@@ -313,7 +322,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		global $wpdb;
 
 		$count = 0;
-		$replacer = new \WP_CLI\SearchReplacer( $old, $new, $this->recurse_objects, $this->regex );
+		$replacer = new \WP_CLI\SearchReplacer( $old, $new, $this->recurse_objects, $this->regex, $this->regex_flags );
 
 		$where = $this->regex ? '' : " WHERE `$col`" . $wpdb->prepare( ' LIKE %s', '%' . self::esc_like( $old ) . '%' );
 		$primary_keys_sql = esc_sql( implode( ',', $primary_keys ) );

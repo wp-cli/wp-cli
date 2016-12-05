@@ -310,3 +310,28 @@ Feature: Do global search/replace
       | input                                 |
       | a:1:{s:3:"bar";s:3:"foo";}            |
       | O:8:"stdClass":1:{s:1:"a";s:3:"foo";} |
+
+  Scenario: Search replace with a regex flag
+    Given a WP install
+
+    When I run `wp search-replace 'EXAMPLE.com' 'BAXAMPLE.com' wp_options --regex`
+    Then STDOUT should be a table containing rows:
+      | Table      | Column       | Replacements | Type       |
+      | wp_options | option_value | 0            | PHP        |
+
+    When I run `wp option get home`
+    Then STDOUT should be:
+      """
+      http://example.com
+      """
+
+    When I run `wp search-replace 'EXAMPLE.com' 'BAXAMPLE.com' wp_options --regex --regex-flags=i`
+    Then STDOUT should be a table containing rows:
+      | Table      | Column       | Replacements | Type       |
+      | wp_options | option_value | 5            | PHP        |
+
+    When I run `wp option get home`
+    Then STDOUT should be:
+      """
+      http://BAXAMPLE.com
+      """
