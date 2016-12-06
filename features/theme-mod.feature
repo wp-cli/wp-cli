@@ -19,6 +19,12 @@ Feature: Manage WordPress theme mods
       | key               | value    |
       | background_color  | 123456   |
 
+    When I run `wp theme mod get background_color --field=value`
+    Then STDOUT should be:
+      """
+      123456
+      """
+
     When I run `wp theme mod set background_color 123456`
     And I run `wp theme mod get background_color header_textcolor`
     Then STDOUT should be a table containing rows:
