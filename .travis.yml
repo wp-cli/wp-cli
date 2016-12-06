@@ -7,8 +7,6 @@ env:
     - WP_CLI_BIN_DIR=/tmp/wp-cli-phar
 
 matrix:
-  allow_failures:
-    - php: 7.1
   include:
     - php: 5.3
       env: WP_VERSION=3.7.11 DEPLOY_BRANCH=master
