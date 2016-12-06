@@ -1138,7 +1138,7 @@ EOT;
 	 * : Only perform updates for minor releases (e.g. update from WP 4.3 to 4.3.3 instead of 4.4.2).
 	 *
 	 * [--version=<version>]
-	 * : Update to a specific version, instead of to the latest version.
+	 * : Update to a specific version, instead of to the latest version. Alternatively accepts 'nightly'.
 	 *
 	 * [--force]
 	 * : Update even when installed WP version is greater than the requested version.
