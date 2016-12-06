@@ -55,7 +55,7 @@ class CoreUpgrader extends \Core_Upgrader {
 		$cache_key = "core/{$filename}-{$update->locale}.{$ext}";
 		$cache_file = $cache->has( $cache_key );
 
-		if ( $cache_file ) {
+		if ( $cache_file && false === stripos( $package, 'https://wordpress.org/nightly-builds/' ) ) {
 			WP_CLI::log( "Using cached file '$cache_file'..." );
 			copy( $cache_file, $temp );
 			return $temp;
@@ -77,7 +77,9 @@ class CoreUpgrader extends \Core_Upgrader {
 			if ( ! is_null( $req ) && $req->status_code !== 200 ) {
 				return new \WP_Error( 'download_failed', $this->strings['download_failed'] );
 			}
-			$cache->import( $cache_key, $temp );
+			if ( false === stripos( $package, 'https://wordpress.org/nightly-builds/' ) ) {
+				$cache->import( $cache_key, $temp );
+			}
 			return $temp;
 		}
 	}
