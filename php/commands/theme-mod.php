@@ -19,6 +19,11 @@
  */
 class Theme_Mod_command extends WP_CLI_Command {
 
+	private $fields = array(
+		'key',
+		'value'
+	);
+
 	/**
 	 * Get one or more theme mods.
 	 *
@@ -26,6 +31,9 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 *
 	 * [<mod>...]
 	 * : One or more mods to get.
+	 *
+	 * [--field=<field>]
+	 * : Returns the value of a single field.
 	 *
 	 * [--all]
 	 * : List all theme mods
@@ -43,7 +51,7 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Get all theme mods
+	 *     # Get all theme mods.
 	 *     $ wp theme mod get --all
 	 *     +------------------+---------+
 	 *     | key              | value   |
@@ -53,11 +61,15 @@ class Theme_Mod_command extends WP_CLI_Command {
 	 *     | main_text_color  | #8224e3 |
 	 *     +------------------+---------+
 	 *
-	 *     # Get single theme mod in JSON format
+	 *     # Get single theme mod in JSON format.
 	 *     $ wp theme mod get background_color --format=json
 	 *     [{"key":"background_color","value":"dd3333"}]
 	 *
-	 *     # Get multiple theme mods
+	 *     # Get value of a single theme mod.
+	 *     $ wp theme mod get background_color --field=value
+	 *     dd3333
+	 *
+	 *     # Get multiple theme mods.
 	 *     $ wp theme mod get background_color header_textcolor
 	 *     +------------------+--------+
 	 *     | key              | value  |
@@ -104,7 +116,7 @@ class Theme_Mod_command extends WP_CLI_Command {
 			}
 		}
 
-		$formatter = new \WP_CLI\Formatter( $assoc_args, array('key', 'value'), 'thememods' );
+		$formatter = new \WP_CLI\Formatter( $assoc_args, $this->fields, 'thememods' );
 		$formatter->display_items( $list );
 
 	}
