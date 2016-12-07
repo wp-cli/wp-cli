@@ -1138,7 +1138,7 @@ EOT;
 	 * : Only perform updates for minor releases (e.g. update from WP 4.3 to 4.3.3 instead of 4.4.2).
 	 *
 	 * [--version=<version>]
-	 * : Update to a specific version, instead of to the latest version.
+	 * : Update to a specific version, instead of to the latest version. Alternatively accepts 'nightly'.
 	 *
 	 * [--force]
 	 * : Update even when installed WP version is greater than the requested version.
@@ -1178,11 +1178,15 @@ EOT;
 	 *
 	 * @alias upgrade
 	 */
-	function update( $args, $assoc_args ) {
+	public function update( $args, $assoc_args ) {
 		global $wp_version;
 
 		$update = $from_api = null;
 		$upgrader = 'WP_CLI\\CoreUpgrader';
+
+		if ( 'trunk' === Utils\get_flag_value( $assoc_args, 'version' ) ) {
+			$assoc_args['version'] = 'nightly';
+		}
 
 		if ( ! empty( $args[0] ) ) {
 
@@ -1228,7 +1232,8 @@ EOT;
 			}
 
 		} else if (	\WP_CLI\Utils\wp_version_compare( $assoc_args['version'], '<' )
-					|| \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) {
+			|| 'nightly' === $assoc_args['version']
+			|| \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) {
 
 			$version = $assoc_args['version'];
 			$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', get_locale() );

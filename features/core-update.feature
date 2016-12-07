@@ -215,3 +215,22 @@ Feature: Update WordPress core
       """
       Success: WordPress updated successfully.
       """
+
+  Scenario Outline: Use `--version=(nightly|trunk)` to update to the latest nightly version
+    Given a WP install
+
+    When I run `wp core update --version=<version>`
+    Then STDOUT should contain:
+      """
+      Updating to version nightly (en_US)...
+      Downloading update from https://wordpress.org/nightly-builds/wordpress-latest.zip...
+      """
+    And STDOUT should contain:
+      """
+      Success: WordPress updated successfully.
+      """
+
+    Examples:
+    | version    |
+    | trunk      |
+    | nightly    |
