@@ -175,6 +175,21 @@ Feature: Have a config file
       administrator
       """
 
+    When I try `wp user create examplejane`
+    Then STDERR should be:
+      """
+      Error: Sorry, that email address is already used!
+      """
+
+    When I run `wp user create examplejane jane@example.com`
+    Then STDOUT should not be empty
+
+    When I run `wp user get examplejane --field=roles`
+    Then STDOUT should contain:
+      """
+      administrator
+      """
+
   Scenario: Command-specific configs
     Given a WP install
     And a wp-cli.yml file:
