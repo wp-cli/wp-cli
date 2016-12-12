@@ -1339,8 +1339,10 @@ EOT;
 			);
 			$it = new \WP_CLI\Iterators\Table( $iterator_args );
 			$success = $total = 0;
+			$site_ids = array();
 			foreach( $it as $blog ) {
 				$total++;
+				$site_ids[] = $blog->site_id;
 				$url = $blog->domain . $blog->path;
 				$cmd = "--url={$url} core update-db";
 				if ( $dry_run ) {
@@ -1362,7 +1364,9 @@ EOT;
 				}
 			}
 			if ( ! $dry_run && $total && $success == $total ) {
-				update_site_option( 'wpmu_upgrade_site', $wp_db_version );
+				foreach( array_unique( $site_ids ) as $site_id ) {
+					update_metadata( 'site', $site_id, 'wpmu_upgrade_site', $wp_db_version );
+				}
 			}
 			WP_CLI::success( sprintf( 'WordPress database upgraded on %d/%d sites.', $success, $total ) );
 		} else {
