@@ -129,6 +129,7 @@ class Rewrite_Command extends WP_CLI_Command {
 			$category_base = $assoc_args['category-base'];
 			if ( ! empty( $category_base ) )
 				$category_base = $blog_prefix . preg_replace('#/+#', '/', '/' . str_replace( '#', '', $category_base ) );
+			$this->register_taxonomy_rewrite( 'category', $category_base );
 			$wp_rewrite->set_category_base( $category_base );
 		}
 
@@ -137,6 +138,7 @@ class Rewrite_Command extends WP_CLI_Command {
 			$tag_base = $assoc_args['tag-base'];
 			if ( ! empty( $tag_base ) )
 				$tag_base = $blog_prefix . preg_replace('#/+#', '/', '/' . str_replace( '#', '', $tag_base ) );
+			$this->register_taxonomy_rewrite( 'post_tag', $tag_base );
 			$wp_rewrite->set_tag_base( $tag_base );
 		}
 
@@ -305,6 +307,38 @@ class Rewrite_Command extends WP_CLI_Command {
 				return WP_CLI::get_config( 'apache_modules' );
 			}
 		}
+	}
+
+	/**
+	 * Register either category or post_tag rewrite args
+	 */
+	private function register_taxonomy_rewrite( $taxonomy, $slug ) {
+		global $wp_rewrite;
+
+		switch ( $taxonomy ) {
+			case 'category':
+				$args = array(
+					'hierarchical' => true,
+					'slug' => $slug ? $slug : 'category',
+					'with_front' => ! $slug || $wp_rewrite->using_index_permalinks(),
+					'ep_mask' => EP_CATEGORIES,
+				);
+			case 'post_tag':
+				$args =  array(
+					'hierarchical' => false,
+					'slug' => $slug ? $slug : 'tag',
+					'with_front' => ! $slug || $wp_rewrite->using_index_permalinks(),
+					'ep_mask' => EP_TAGS,
+				);
+		}
+
+		if ( $args['hierarchical'] )
+			$tag = '(.+?)';
+		else
+			$tag = '([^/]+)';
+
+		add_rewrite_tag( "%$taxonomy%", $tag, "{$taxonomy}=" );
+		add_permastruct( $taxonomy, "{$args['slug']}/%$taxonomy%", $args );
 	}
 }
 
