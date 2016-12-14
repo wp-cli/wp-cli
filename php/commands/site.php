@@ -435,6 +435,9 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Filter by one or more fields (see "Available Fields" section). However,
 	 * 'url' isn't an available filter, because it's created from domain + path.
 	 *
+	 * [--site__in=<value>]
+	 * : Only list the sites with these blog_id values (comma-separated).
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each site.
 	 *
