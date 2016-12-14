@@ -73,3 +73,10 @@ Feature: Scaffold theme unit tests
       """
       MYSQL_DATABASE
       """
+
+  Scenario: Scaffold theme tests with invalid slug
+    When I try `wp scaffold theme-tests .`
+    Then STDERR should contain:
+      """
+      Error: Invalid theme slug specified.
+      """

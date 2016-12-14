@@ -93,3 +93,12 @@ Feature: Scaffold plugin unit tests
       """
       MYSQL_DATABASE
       """
+
+  Scenario: Scaffold plugin tests with invalid slug
+    Given a WP install
+
+    When I try `wp scaffold plugin-tests .`
+    Then STDERR should contain:
+      """
+      Error: Invalid plugin slug specified.
+      """
