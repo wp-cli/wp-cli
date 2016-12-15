@@ -102,3 +102,9 @@ Feature: Scaffold plugin unit tests
       """
       Error: Invalid plugin slug specified.
       """
+
+    When I try `wp scaffold plugin-tests ../`
+    Then STDERR should contain:
+      """
+      Error: Invalid plugin slug specified.
+      """

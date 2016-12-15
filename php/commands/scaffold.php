@@ -648,9 +648,6 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		if ( ! empty( $args[0] ) ) {
 			$slug = $args[0];
-			if ( preg_match( "#\.|\/#", $slug ) ) {
-				WP_CLI::error( "Invalid {$type} slug specified." );
-			}
 			if ( 'theme' === $type ) {
 				$theme = wp_get_theme( $slug );
 				if ( $theme->exists() ) {
@@ -664,6 +661,11 @@ class Scaffold_Command extends WP_CLI_Command {
 			if ( empty( $assoc_args['dir'] ) && ! is_dir( $target_dir ) ) {
 				WP_CLI::error( "Invalid {$type} slug specified." );
 			}
+		}
+
+		if ( ( "theme" === $type && 'themes' !== basename( dirname( realpath( $target_dir ) ) ) )
+				|| ( "plugin" === $type && 'plugins' !== basename( dirname( realpath( $target_dir ) ) ) ) ) {
+			WP_CLI::error( "Invalid {$type} slug specified." );
 		}
 
 		if ( ! empty( $assoc_args['dir'] ) ) {
