@@ -246,6 +246,11 @@ class Scaffold_Command extends WP_CLI_Command {
 		) );
 
 		$_s_theme_path = "$theme_path/$data[theme_name]";
+
+		if ( ! $this->check_target_directory( "theme", $_s_theme_path ) ) {
+			WP_CLI::error( "Invalid theme slug specified." );
+		}
+
 		$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
 		$should_write_file = $this->prompt_if_files_will_be_overwritten( $_s_theme_path, $force );
 		if ( ! $should_write_file ) {
@@ -360,7 +365,12 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$data['description'] = ucfirst( $data['parent_theme'] ) . " child theme.";
 
-		$theme_dir            = WP_CONTENT_DIR . "/themes" . "/$theme_slug";
+		$theme_dir = WP_CONTENT_DIR . "/themes" . "/$theme_slug";
+
+		if ( ! $this->check_target_directory( "theme", $theme_dir ) ) {
+			WP_CLI::error( "Invalid theme slug specified." );
+		}
+
 		$theme_style_path     = "$theme_dir/style.css";
 		$theme_functions_path = "$theme_dir/functions.php";
 
@@ -506,6 +516,10 @@ class Scaffold_Command extends WP_CLI_Command {
 		} else {
 			$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 			$this->maybe_create_plugins_dir();
+
+			if ( ! $this->check_target_directory( "plugin", $plugin_dir ) ) {
+				WP_CLI::error( "Invalid plugin slug specified." );
+			}
 		}
 
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
@@ -661,11 +675,9 @@ class Scaffold_Command extends WP_CLI_Command {
 			if ( empty( $assoc_args['dir'] ) && ! is_dir( $target_dir ) ) {
 				WP_CLI::error( "Invalid {$type} slug specified." );
 			}
-		}
-
-		if ( ( "theme" === $type && 'themes' !== basename( dirname( realpath( $target_dir ) ) ) )
-				|| ( "plugin" === $type && 'plugins' !== basename( dirname( realpath( $target_dir ) ) ) ) ) {
-			WP_CLI::error( "Invalid {$type} slug specified." );
+			if ( ! $this->check_target_directory( $type, $target_dir ) ) {
+				WP_CLI::error( "Invalid {$type} slug specified." );
+			}
 		}
 
 		if ( ! empty( $assoc_args['dir'] ) ) {
@@ -752,6 +764,26 @@ class Scaffold_Command extends WP_CLI_Command {
 			$skip_message = 'All test files were skipped.',
 			$success_message = 'Created test files.'
 		);
+	}
+
+	private function check_target_directory( $type, $target_dir ) {
+		if ( realpath( $target_dir ) ) {
+			$target_dir = realpath( $target_dir );
+		}
+
+		$parent_dir = dirname( $target_dir );
+
+		if ( "theme" === $type ) {
+			if ( WP_CONTENT_DIR . '/themes' === $parent_dir ) {
+				return true;
+			}
+		} elseif ( "plugin" === $type ) {
+			if ( WP_PLUGIN_DIR === $parent_dir ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function create_files( $files_and_contents, $force ) {

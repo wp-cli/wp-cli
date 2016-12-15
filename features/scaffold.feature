@@ -271,6 +271,19 @@ Feature: WordPress code scaffolding
       Plugin 'hello-world' network activated.
       """
 
+  Scenario: Scaffold a plugin with invalid slug
+    Given a WP install
+    When I try `wp scaffold plugin .`
+    Then STDERR should contain:
+      """
+      Error: Invalid plugin slug specified.
+      """
+    When I try `wp scaffold plugin ../`
+    Then STDERR should contain:
+      """
+      Error: Invalid plugin slug specified.
+      """
+
   Scenario: Scaffold starter code for a theme
     Given a WP install
     Given I run `wp theme path`
