@@ -239,6 +239,10 @@ class Scaffold_Command extends WP_CLI_Command {
 		$url        = "http://underscores.me";
 		$timeout    = 30;
 
+		if ( in_array( $theme_slug, array( '.', '..' ) ) ) {
+			WP_CLI::error( "Invalid theme slug specified." );
+		}
+
 		$data = wp_parse_args( $assoc_args, array(
 			'theme_name' => ucfirst( $theme_slug ),
 			'author'     => "Me",
@@ -353,6 +357,10 @@ class Scaffold_Command extends WP_CLI_Command {
 	 */
 	function child_theme( $args, $assoc_args ) {
 		$theme_slug = $args[0];
+
+		if ( in_array( $theme_slug, array( '.', '..' ) ) ) {
+			WP_CLI::error( "Invalid theme slug specified." );
+		}
 
 		$data = wp_parse_args( $assoc_args, array(
 			'theme_name' => ucfirst( $theme_slug ),
@@ -494,6 +502,10 @@ class Scaffold_Command extends WP_CLI_Command {
 		$plugin_slug    = $args[0];
 		$plugin_name    = ucwords( str_replace( '-', ' ', $plugin_slug ) );
 		$plugin_package = str_replace( ' ', '_', $plugin_name );
+
+		if ( in_array( $plugin_slug, array( '.', '..' ) ) ) {
+			WP_CLI::error( "Invalid plugin slug specified." );
+		}
 
 		$data = wp_parse_args( $assoc_args, array(
 			'plugin_slug'         => $plugin_slug,
@@ -662,6 +674,9 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		if ( ! empty( $args[0] ) ) {
 			$slug = $args[0];
+			if ( in_array( $slug, array( '.', '..' ) ) ) {
+				WP_CLI::error( "Invalid {$type} slug specified." );
+			}
 			if ( 'theme' === $type ) {
 				$theme = wp_get_theme( $slug );
 				if ( $theme->exists() ) {
