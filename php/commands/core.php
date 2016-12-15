@@ -1190,6 +1190,7 @@ EOT;
 
 		if ( ! empty( $args[0] ) ) {
 
+			// ZIP path or URL is given
 			$upgrader = 'WP_CLI\\NonDestructiveCoreUpgrader';
 			$version = \WP_CLI\Utils\get_flag_value( $assoc_args, 'version' );
 
@@ -1209,6 +1210,7 @@ EOT;
 
 		} else if ( empty( $assoc_args['version'] ) ) {
 
+			// Update to next release
 			wp_version_check();
 			$from_api = get_site_transient( 'update_core' );
 
@@ -1235,6 +1237,7 @@ EOT;
 			|| 'nightly' === $assoc_args['version']
 			|| \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) {
 
+			// Specific version is given
 			$version = $assoc_args['version'];
 			$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', get_locale() );
 
@@ -1256,7 +1259,8 @@ EOT;
 
 		}
 
-		if ( ! empty( $update ) && ( $update->version != $wp_version || \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) ) {
+		if ( ! empty( $update )
+			&& ( $update->version != $wp_version || \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) ) {
 
 			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
