@@ -654,6 +654,15 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     Plugin installed successfully.
 	 *     Success: Installed 1 of 1 plugins.
 	 *
+	 *     # Update from a remote zip file
+	 *     wp plugin install https://github.com/envato/wp-envato-market/archive/master.zip --force
+	 *     Downloading install package from https://github.com/envato/wp-envato-market/archive/master.zip
+	 *     Unpacking the package...
+	 *     Installing the plugin...
+	 *     Renamed Github-based project from 'wp-envato-market-master' to 'wp-envato-market'.
+	 *     Plugin updated successfully
+	 *     Success: Installed 1 of 1 plugins.
+	 *
 	 *     # Forcefully re-install all installed plugins
 	 *     $ wp plugin install $(wp plugin list --field=name) --force
 	 *     Installing Akismet (3.1.11)
