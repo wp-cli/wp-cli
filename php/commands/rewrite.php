@@ -268,6 +268,14 @@ class Rewrite_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Retrieve mod_rewrite formatted rewrite rules to write to .htaccess.
+	 */
+	public function rules() {
+		global $wp_rewrite;
+		echo $wp_rewrite->mod_rewrite_rules();
+	}
+
+	/**
 	 * Expose apache modules if present in config
 	 *
 	 * Implementation Notes: This function exposes a global function
