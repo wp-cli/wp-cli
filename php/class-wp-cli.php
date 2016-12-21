@@ -1011,6 +1011,7 @@ class WP_CLI {
 
 			$env_vars = array(
 				'HOME',
+				'PATH',
 				'WP_CLI_AUTO_CHECK_UPDATE_DAYS',
 				'WP_CLI_CACHE_DIR',
 				'WP_CLI_CONFIG_PATH',
