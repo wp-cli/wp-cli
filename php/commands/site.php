@@ -356,13 +356,13 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( is_subdomain_install() ) {
-			$path = '/';
-			$url = $newdomain = $base.'.'.preg_replace( '|^www\.|', '', $network->domain );
-		}
-		else {
-			$newdomain = $network->domain;
-			$path = '/' . trim( $base, '/' ) . '/';
-			$url = $network->domain . $path;
+			$newdomain = $base . '.' . preg_replace( '|^www\.|', '', $current_site->domain );
+			$path      = $current_site->path;
+			$url       = $newdomain;
+		} else {
+			$newdomain = $current_site->domain;
+			$path      = $current_site->path . $base . '/';
+			$url       = $newdomain . $path;
 		}
 
 		$user_id = email_exists( $email );
