@@ -37,3 +37,37 @@ Feature: Install WordPress themes
       Error: No themes installed.
       """
     And the return code should be 1
+
+  Scenario: Ensure automatic parent theme installation uses http cacher
+    Given a WP install
+    And an empty cache
+
+    When I run `wp theme install stargazer`
+    Then STDOUT should contain:
+      """
+      Success: Installed 1 of 1 themes.
+      """
+    And STDOUT should not contain:
+      """
+      Using cached file
+      """
+
+    When I run `wp theme uninstall stargazer`
+    Then STDOUT should contain:
+      """
+      Success: Deleted 1 of 1 themes.
+      """
+
+    When I run `wp theme install buntu`
+    Then STDOUT should contain:
+      """
+      Success: Installed 1 of 1 themes.
+      """
+    And STDOUT should contain:
+      """
+      This theme requires a parent theme.
+      """
+    And STDOUT should contain:
+      """
+      Using cached file
+      """
