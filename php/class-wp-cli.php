@@ -781,10 +781,19 @@ class WP_CLI {
 			return $errors;
 		}
 
+		// Only json_encode() the data when it needs it
+		$render_data = function( $data ) {
+			if ( is_array( $data ) || is_object( $data ) ) {
+				return json_encode( $data );
+			} else {
+				return '"' . $data . '"';
+			}
+		};
+
 		if ( is_object( $errors ) && is_a( $errors, 'WP_Error' ) ) {
 			foreach ( $errors->get_error_messages() as $message ) {
 				if ( $errors->get_error_data() ) {
-					return $message . ' ' . json_encode( $errors->get_error_data() );
+					return $message . ' ' . $render_data( $errors->get_error_data() );
 				} else {
 					return $message;
 				}
