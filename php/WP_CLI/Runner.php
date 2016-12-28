@@ -983,7 +983,8 @@ class Runner {
 			if ( array_key_exists( $key, $wp_cli_original_defined_vars ) || 'wp_cli_original_defined_vars' === $key ) {
 				continue;
 			}
-			$GLOBALS[ $key ] = $var;
+			global $$key;
+			$$key = $var;
 		}
 
 		$this->maybe_update_url_from_domain_constant();

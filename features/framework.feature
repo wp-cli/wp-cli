@@ -224,3 +224,31 @@ Feature: Load WP-CLI
       bar
       """
     And STDERR should be empty
+
+  Scenario: WP-CLI sets $table_prefix appropriately on multisite
+    Given a WP multisite install
+    And I run `wp site create --slug=first`
+
+    When I run `wp eval 'global $table_prefix; echo $table_prefix;'`
+    Then STDOUT should be:
+      """
+      wp_
+      """
+
+    When I run `wp eval 'global $blog_id; echo $blog_id;'`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp --url=example.com/first eval 'global $table_prefix; echo $table_prefix;'`
+    Then STDOUT should be:
+      """
+      wp_2_
+      """
+
+    When I run `wp --url=example.com/first eval 'global $blog_id; echo $blog_id;'`
+    Then STDOUT should be:
+      """
+      2
+      """
