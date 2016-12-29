@@ -6,3 +6,4 @@ PHAR_BUILD_VERSION
 /vendor
 /*.phar
 /phpunit.xml.dist
+/codesniffer
