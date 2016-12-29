@@ -174,10 +174,12 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * @alias connect
 	 */
-	public function cli() {
-		self::run( 'mysql --no-defaults --no-auto-rehash', array(
-			'database' => DB_NAME
-		) );
+	public function cli( $args, $assoc_args ) {
+		if ( !isset( $assoc_args['database'] ) ) {
+			$assoc_args['database'] = DB_NAME;
+		}
+
+		self::run( 'mysql --no-defaults --no-auto-rehash', $assoc_args );
 	}
 
 	/**
