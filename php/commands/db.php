@@ -455,7 +455,7 @@ class DB_Command extends WP_CLI_Command {
 			'pass' => DB_PASSWORD,
 		);
 
-		if ( defined( 'DB_CHARSET' ) && constant( 'DB_CHARSET' ) ) {
+		if ( !isset( $assoc_args['default-character-set'] ) && defined( 'DB_CHARSET' ) && constant( 'DB_CHARSET' ) ) {
 			$required['default-character-set'] = constant( 'DB_CHARSET' );
 		}
 
