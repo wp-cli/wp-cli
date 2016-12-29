@@ -123,8 +123,7 @@ class Completions {
 		return array( $command, $args, $assoc_args );
 	}
 
-	private function get_global_parameters()
-	{
+	private function get_global_parameters() {
 		$params = array();
 		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
 			if ( false === $details['runtime'] ) {
