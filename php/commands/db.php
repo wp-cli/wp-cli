@@ -166,6 +166,17 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Open a MySQL console using credentials from wp-config.php
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--database=<database>]
+	 * : Use a specific database. Defaults to DB_NAME.
+	 * 
+	 * [--default-character-set=<character-set>]
+	 * : Use a specific character set. Defaults to DB_CHARSET when defined.
+	 * 
+	 * [--<field>=<value>]
+	 * : Extra arguments to pass to the MySQL executable.
+	 * 
 	 * ## EXAMPLES
 	 *
 	 *     # Open MySQL console
