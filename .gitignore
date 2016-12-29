@@ -7,3 +7,4 @@ PHAR_BUILD_VERSION
 /*.phar
 /phpunit.xml.dist
 /codesniffer
+/PHP_Codesniffer-VariableAnalysis
