@@ -5,7 +5,7 @@ namespace WP_CLI;
 use \Composer\DependencyResolver\Rule;
 use \Composer\EventDispatcher\Event;
 use \Composer\EventDispatcher\EventSubscriberInterface;
-use \Composer\Script\PackageEvent;
+use \Composer\Installer\PackageEvent;
 use \Composer\Script\ScriptEvents;
 use \WP_CLI;
 
