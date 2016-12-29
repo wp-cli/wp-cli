@@ -41,7 +41,6 @@ class Completions {
 		list( $command, $args, $assoc_args ) = $r;
 
 		$spec = SynopsisParser::parse( $command->get_synopsis() );
-//		var_dump( \WP_CLI::get_configurator()->get_spec() );
 
 		foreach ( $spec as $arg ) {
 			if ( $arg['type'] == 'positional' && $arg['name'] == 'file' ) {
@@ -79,6 +78,7 @@ class Completions {
 					$this->add( $opt );
 				}
 			}
+
 			foreach ( $this->get_global_parameters() as $param => $runtime ) {
 				if ( isset( $assoc_args[ $param ] ) ) {
 					continue;
@@ -86,7 +86,7 @@ class Completions {
 
 				$opt = "--{$param}";
 
-				if ( "" === $runtime ) {
+				if ( "" === $runtime || ! is_string( $runtime ) ) {
 					$opt .= ' ';
 				} else {
 					$opt .= '=';
