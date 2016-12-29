@@ -41,6 +41,7 @@ class Completions {
 		list( $command, $args, $assoc_args ) = $r;
 
 		$spec = SynopsisParser::parse( $command->get_synopsis() );
+//		var_dump( \WP_CLI::get_configurator()->get_spec() );
 
 		foreach ( $spec as $arg ) {
 			if ( $arg['type'] == 'positional' && $arg['name'] == 'file' ) {
@@ -78,6 +79,21 @@ class Completions {
 					$this->add( $opt );
 				}
 			}
+			foreach ( $this->get_global_parameters() as $param => $runtime ) {
+				if ( isset( $assoc_args[ $param ] ) ) {
+					continue;
+				}
+
+				$opt = "--{$param}";
+
+				if ( "" === $runtime ) {
+					$opt .= ' ';
+				} else {
+					$opt .= '=';
+				}
+
+				$this->add( $opt );
+			}
 		}
 
 	}
@@ -105,6 +121,23 @@ class Completions {
 		list( $command, $args ) = $r;
 
 		return array( $command, $args, $assoc_args );
+	}
+
+	private function get_global_parameters()
+	{
+		$params = array();
+		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
+			if ( false === $details['runtime'] ) {
+				continue;
+			} elseif ( isset( $details['deprecated'] ) ) {
+				continue;
+			} elseif ( isset( $details['hidden'] ) ) {
+				continue;
+			}
+			$params[ $key ] = $details["runtime"];
+		}
+
+		return $params;
 	}
 
 	private function add( $opt ) {
