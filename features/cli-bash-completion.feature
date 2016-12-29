@@ -253,6 +253,10 @@ Feature: `wp cli completions` tasks
       """
     And STDOUT should contain:
       """
+      --no-color
+      """
+    And STDOUT should contain:
+      """
       --debug=
       """
     And STDOUT should contain:
@@ -286,4 +290,10 @@ Feature: `wp cli completions` tasks
     Then STDOUT should not contain:
       """
       --path
+      """
+
+    When I run `wp cli completions --line="wp plugin list --no-color" --point=100`
+    Then STDOUT should not contain:
+      """
+      --no-color
       """

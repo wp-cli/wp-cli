@@ -134,6 +134,11 @@ class Completions {
 				continue;
 			}
 			$params[ $key ] = $details["runtime"];
+
+			// Add additional option like `--[no-]color`.
+			if ( true === $details["runtime"] ) {
+				$params[ "no-" . $key ] = '';
+			}
 		}
 
 		return $params;
