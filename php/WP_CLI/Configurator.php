@@ -32,7 +32,7 @@ class Configurator {
 	/**
 	 * @var string ALIAS_REGEX Regex pattern used to define an alias
 	 */
-	const ALIAS_REGEX = '^@[A-Za-z0-9-_]+$';
+	const ALIAS_REGEX = '^@[A-Za-z0-9-_\.]+$';
 
 	/**
 	 * @var array ALIAS_SPEC Arguments that can be used in an alias
