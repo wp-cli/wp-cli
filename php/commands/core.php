@@ -369,11 +369,7 @@ class Core_Command extends WP_CLI_Command {
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		if (isset($assoc_args['debug'])) { 
-			if ($assoc_args['debug'] != "true" && $assoc_args['debug'] !="false") {
-				WP_CLI::error( '--debug only can take `true` and `false` value since it\'s a boolean. example --debug=true');	
-			}
-		} 
+		 
 
 		if ( preg_match( '|[^a-z0-9_]|i', $assoc_args['dbprefix'] ) )
 			WP_CLI::error( '--dbprefix can only contain numbers, letters, and underscores.' );
