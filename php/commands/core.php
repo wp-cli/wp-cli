@@ -363,6 +363,7 @@ class Core_Command extends WP_CLI_Command {
 			'dbpass' => '',
 			'dbprefix' => 'wp_',
 			'dbcharset' => 'utf8',
+			'debug' => false,
 			'dbcollate' => '',
 			'locale' => self::get_initial_locale()
 		);
