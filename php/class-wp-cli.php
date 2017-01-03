@@ -182,7 +182,7 @@ class WP_CLI {
 	 * * %U => ['style' => 'underline'],
 	 * * %8 => ['style' => 'inverse'],
 	 * * %9 => ['style' => 'bright'],
-	 * * %_ => ['style' => 'bright')
+	 * * %_ => ['style' => 'bright']
 	 *
 	 * @access public
 	 * @category Output
