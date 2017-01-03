@@ -332,6 +332,9 @@ class Core_Command extends WP_CLI_Command {
 	 * [--skip-check]
 	 * : If set, the database connection is not checked.
 	 *
+	 * [--force]
+	 * : If set, the database connection is not checked.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Standard wp-config.php file
@@ -351,7 +354,7 @@ class Core_Command extends WP_CLI_Command {
 	 */
 	public function config( $_, $assoc_args ) {
 		global $wp_version;
-		if ( Utils\locate_wp_config() ) {
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && Utils\locate_wp_config() ) {
 			WP_CLI::error( "The 'wp-config.php' file already exists." );
 		}
 
