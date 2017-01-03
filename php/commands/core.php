@@ -333,7 +333,7 @@ class Core_Command extends WP_CLI_Command {
 	 * : If set, the database connection is not checked.
 	 *
 	 * [--force]
-	 * : If set, the database connection is not checked.
+	 * : Overwrites existing files, if present.
 	 *
 	 * ## EXAMPLES
 	 *
