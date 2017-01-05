@@ -56,8 +56,20 @@ class SearchReplacer {
 
 				if ( is_array( $data ) || is_object( $data ) ) {
 					// If we've seen this exact object or array before, short circuit
+					// Avoid infinite loops when there's a cycle
 					if ( in_array( $data, $visited_data, true ) ) {
-						return $data; // Avoid infinite loops when there's a cycle
+						if ( is_object( $data ) ) {
+							return $data;
+						}
+						// Only short-circuit when the array is passed by reference
+						if ( is_array( $data ) ) {
+							ob_start();
+							print_r( $data );
+							$test = ob_get_clean();
+							if ( preg_match( '#\*RECURSION\*#', $test ) ) {
+								return $data;
+							}
+						}
 					}
 					// Add this data to the list of
 					$visited_data[] = $data;
@@ -98,5 +110,6 @@ class SearchReplacer {
 
 		return $data;
 	}
+
 }
 
