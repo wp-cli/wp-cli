@@ -990,6 +990,12 @@ class Runner {
 		$this->maybe_update_url_from_domain_constant();
 		WP_CLI::do_hook( 'after_wp_config_load' );
 
+		// Prevent error notice from wp_guess_url() when core isn't installed
+		if ( $this->cmd_starts_with( array( 'core', 'is-installed' ) )
+			&& ! defined( 'COOKIEHASH' ) ) {
+			define( 'COOKIEHASH', md5( 'wp-cli' ) );
+		}
+
 		// Load WP-CLI utilities
 		require WP_CLI_ROOT . '/php/utils-wp.php';
 
