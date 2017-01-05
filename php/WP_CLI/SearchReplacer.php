@@ -63,23 +63,11 @@ class SearchReplacer {
 						}
 						// Only short-circuit when the array is passed by reference
 						if ( is_array( $data ) ) {
-							$k = array_search( $data, $visited_data );
-							$existing_data = $visited_data[ $k ];
-							if ( self::check_arrays_referenced( $data, $existing_data ) ) {
+							ob_start();
+							print_r( $data );
+							$test = ob_get_clean();
+							if ( preg_match( '#\*RECURSION\*#', $test ) ) {
 								return $data;
-							}
-							// Check to see if any child values are going to cause
-							// recursion. If so, assume $data is storing a reference
-							// to itself
-							foreach( $data as $k => $v ) {
-								if ( $v === $data ) {
-									ob_start();
-									var_dump( $v );
-									$export = ob_get_clean();
-									if ( stripos( $export, '*RECURSION*' ) ) {
-										return $data;
-									}
-								}
 							}
 						}
 					}
@@ -121,40 +109,6 @@ class SearchReplacer {
 		}
 
 		return $data;
-	}
-
-	/**
-	 * Check if two arrays are a reference to one another
-	 *
-	 * @param $var1 array
-	 * @param $var2 array
-	 * @return boolean
-	 */
-	private static function check_arrays_referenced( $var1, $var2 ) {
-		$same = false;
-		if ( ! is_array( $var1 )
-			|| ! is_array( $var2 )
-			|| $var1 !== $var2 ) {
-			return $same;
-		}
-		// Detect when an array is a reference
-		// by assigning a value to a key that doesn't yet
-		// exist and seeing if the original array is modified
-		// Unfortunately, there isn't a better way to detect
-		// references in PHP.
-		do {
-			$k = uniqid( 'is_ref_', true );
-		} while( array_key_exists( $k, $var1 ) );
-		$test_data = uniqid( 'is_ref_data_', true );
-		$var1[ $k ] = &$test_data;
-		// This looks like a reference, so short circuit early
-		if ( array_key_exists( $k, $var2 )
-			&& $var2[ $k ] === $var1[ $k ] ) {
-			$same = true;
-		}
-		// Wasn't a reference, so let's clean the original data
-		unset( $var1[ $k ] );
-		return $same;
 	}
 
 }
