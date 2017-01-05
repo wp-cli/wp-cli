@@ -25,6 +25,13 @@ $steps->Given( '/^an? ([^\s]+) file:$/',
 	}
 );
 
+$steps->Given( '/^"([^"]+)" replaced with "([^"]+)" in the ([^\s]+) file$/', function( $world, $search, $replace, $path ) {
+	$full_path = $world->variables['RUN_DIR'] . "/$path";
+	$contents = file_get_contents( $full_path );
+	$contents = str_replace( $search, $replace, $contents );
+	file_put_contents( $full_path, $contents );
+});
+
 $steps->Given( '/^WP files$/',
 	function ( $world ) {
 		$world->download_wp();
