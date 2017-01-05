@@ -68,10 +68,17 @@ class SearchReplacer {
 							if ( self::check_arrays_referenced( $data, $existing_data ) ) {
 								return $data;
 							}
-							// Now check to see if any child values are references
-							foreach( $existing_data as $i => $j ) {
-								if ( self::check_arrays_referenced( $data, $j ) ) {
-									return $data;
+							// Check to see if any child values are going to cause
+							// recursion. If so, assume $data is storing a reference
+							// to itself
+							foreach( $data as $k => $v ) {
+								if ( $v === $data ) {
+									ob_start();
+									var_dump( $v );
+									$export = ob_get_clean();
+									if ( stripos( $export, '*RECURSION*' ) ) {
+										return $data;
+									}
 								}
 							}
 						}
