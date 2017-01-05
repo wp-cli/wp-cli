@@ -356,7 +356,7 @@ Feature: Manage WordPress installation
 
   Scenario: Warn when multisite constants can't be inserted into wp-config
     Given a WP install
-    And I run `sed -i.bak "s/That's\sall/C'est tout/g" wp-config.php`
+    And "That's all" replaced with "C'est tout" in the wp-config.php file
 
     When I run `wp core multisite-convert`
     Then STDOUT should be:
