@@ -56,8 +56,25 @@ class SearchReplacer {
 
 				if ( is_array( $data ) || is_object( $data ) ) {
 					// If we've seen this exact object or array before, short circuit
+					// Avoid infinite loops when there's a cycle
 					if ( in_array( $data, $visited_data, true ) ) {
-						return $data; // Avoid infinite loops when there's a cycle
+						if ( is_object( $data ) ) {
+							return $data;
+						}
+						// Only short-circuit when the array is passed by reference
+						if ( is_array( $data ) ) {
+							$k = array_search( $data, $visited_data );
+							$existing_data = $visited_data[ $k ];
+							if ( self::check_arrays_referenced( $data, $existing_data ) ) {
+								return $data;
+							}
+							// Now check to see if any child values are references
+							foreach( $existing_data as $i => $j ) {
+								if ( self::check_arrays_referenced( $data, $j ) ) {
+									return $data;
+								}
+							}
+						}
 					}
 					// Add this data to the list of
 					$visited_data[] = $data;
@@ -98,5 +115,40 @@ class SearchReplacer {
 
 		return $data;
 	}
+
+	/**
+	 * Check if two arrays are a reference to one another
+	 *
+	 * @param $var1 array
+	 * @param $var2 array
+	 * @return boolean
+	 */
+	private static function check_arrays_referenced( $var1, $var2 ) {
+		$same = false;
+		if ( ! is_array( $var1 )
+			|| ! is_array( $var2 )
+			|| $var1 !== $var2 ) {
+			return $same;
+		}
+		// Detect when an array is a reference
+		// by assigning a value to a key that doesn't yet
+		// exist and seeing if the original array is modified
+		// Unfortunately, there isn't a better way to detect
+		// references in PHP.
+		do {
+			$k = uniqid( 'is_ref_', true );
+		} while( array_key_exists( $k, $var1 ) );
+		$test_data = uniqid( 'is_ref_data_', true );
+		$var1[ $k ] = &$test_data;
+		// This looks like a reference, so short circuit early
+		if ( array_key_exists( $k, $var2 )
+			&& $var2[ $k ] === $var1[ $k ] ) {
+			$same = true;
+		}
+		// Wasn't a reference, so let's clean the original data
+		unset( $var1[ $k ] );
+		return $same;
+	}
+
 }
 
