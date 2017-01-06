@@ -42,7 +42,7 @@ class SearchReplacer {
 	 * @param int          $recursion_level Current recursion depth within the original data.
 	 * @param array        $visited_data    Data that has been seen in previous recursion iterations.
 	 */
-	private function _run( $data, $serialised, $recursion_level = 0, &$visited_data = array() ) {
+	private function _run( $data, $serialised, $recursion_level = 0, $visited_data = array() ) {
 
 		// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
 		try {
