@@ -235,7 +235,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Removed user 123 from http://example.com
 	 *
 	 *     # Delete all contributors and reassign their posts to user 2
-	 *     $ wp user delete $(wp user list --role=contributor --format=ids) --reassign=2
+	 *     $ wp user delete $(wp user list --role=contributor --field=ID) --reassign=2
 	 *     Success: Removed user 813 from http://example.com
 	 *     Success: Removed user 578 from http://example.com
 	 */
