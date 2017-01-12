@@ -117,7 +117,7 @@ Feature: Manage translation files for a WordPress install
       Error: Language not installed.
       """
 
-    When I run `wp core language install --activate ja`
+    When I run `wp core language install --activate --set-date-time ja`
     Then the wp-content/languages/admin-ja.po file should exist
     And the wp-content/languages/ja.po file should exist
     And STDOUT should contain:
@@ -138,12 +138,19 @@ Feature: Manage translation files for a WordPress install
       Asia/Tokyo
       """
 
-    When I run `wp core language install --activate tr_TR`
+    When I run `wp core language install tr_TR`
     Then the wp-content/languages/admin-tr_TR.po file should exist
     And the wp-content/languages/tr_TR.po file should exist
     And STDOUT should contain:
       """
       Success: Language installed.
+      """
+
+    When I run `wp core language activate tr_TR --set-date-time`
+    Then the wp-content/languages/admin-tr_TR.po file should exist
+    And the wp-content/languages/tr_TR.po file should exist
+    And STDOUT should contain:
+      """
       Success: Language activated.
       """
 
