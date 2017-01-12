@@ -1018,23 +1018,7 @@ class WP_CLI {
 
 			$runcommand = "{$php_bin} {$script_path} {$runtime_config} {$command}";
 
-			$env_vars = array(
-				'HOME',
-				'PATH',
-				'WP_CLI_AUTO_CHECK_UPDATE_DAYS',
-				'WP_CLI_CACHE_DIR',
-				'WP_CLI_CONFIG_PATH',
-				'WP_CLI_DISABLE_AUTO_CHECK_UPDATE',
-				'WP_CLI_PACKAGES_DIR',
-				'WP_CLI_PHP_USED',
-				'WP_CLI_PHP',
-				'WP_CLI_STRICT_ARGS_MODE',
-			);
-			$env = array();
-			foreach( $env_vars as $var ) {
-				$env[ $var ] = getenv( $var );
-			}
-			$proc = proc_open( $runcommand, $descriptors, $pipes, getcwd(), $env );
+			$proc = proc_open( $runcommand, $descriptors, $pipes, getcwd(), NULL );
 
 			if ( $return ) {
 				$stdout = stream_get_contents( $pipes[1] );
@@ -1155,4 +1139,3 @@ class WP_CLI {
 		self::add_command( $name, $class );
 	}
 }
-
