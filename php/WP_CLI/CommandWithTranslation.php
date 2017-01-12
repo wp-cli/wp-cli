@@ -276,6 +276,22 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		}
 
 		update_option( 'WPLANG', $language_code );
+
+		// Reload textdomain.
+		unload_textdomain( 'default' );
+		if ( $language_code ) {
+			load_textdomain( 'default', WP_LANG_DIR . "/admin-$language_code.mo" );
+		}
+
+		$localizations = array(
+			'timezone_string' => _x( '0', 'default GMT offset or timezone string' ),
+			'date_format' => __( 'M jS Y' ),
+		);
+
+		foreach ( $localizations as $key => $value ) {
+			update_option( $key, $value );
+		}
+
 		\WP_CLI::success( "Language activated." );
 	}
 
