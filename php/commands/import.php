@@ -73,7 +73,7 @@ class Import_Command extends WP_CLI_Command {
 			if ( is_wp_error( $ret ) ) {
 				WP_CLI::error( $ret );
 			} else {
-				WP_CLI::log(''); // WXR import ends with HTML, so make sure message is on next line
+				WP_CLI::line("\n"); // WXR import ends with HTML, so make sure message is on next line
 				WP_CLI::success( "Finished importing from '$file' file." );
 			}
 		}
