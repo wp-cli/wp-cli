@@ -117,6 +117,47 @@ Feature: Manage translation files for a WordPress install
       Error: Language not installed.
       """
 
+    When I run `wp core language install --activate en_GB`
+    Then the wp-content/languages/admin-en_GB.po file should exist
+    And the wp-content/languages/en_GB.po file should exist
+    And STDOUT should contain:
+      """
+      Success: Language installed.
+      Success: Language activated.
+      """
+
+    When I run `wp option get date_format`
+    Then STDOUT should contain:
+      """
+      F j, Y
+      """
+
+    When I run `wp option get timezone_string`
+    Then STDOUT should be:
+      """
+
+      """
+
+    When I run `wp core language activate en_GB`
+    Then the wp-content/languages/admin-en_GB.po file should exist
+    And the wp-content/languages/en_GB.po file should exist
+    And STDOUT should contain:
+      """
+      Success: Language activated.
+      """
+
+    When I run `wp option get date_format`
+    Then STDOUT should contain:
+      """
+      F j, Y
+      """
+
+    When I run `wp option get timezone_string`
+    Then STDOUT should be:
+      """
+
+      """
+
     When I run `wp core language install --activate --set-date-time ja`
     Then the wp-content/languages/admin-ja.po file should exist
     And the wp-content/languages/ja.po file should exist

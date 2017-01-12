@@ -151,7 +151,11 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 
 			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate' ) ) {
 				$set_date_time = \WP_CLI\Utils\get_flag_value( $assoc_args, 'set-date-time' );
-				$this->activate( array( $language_code ), array( 'set-date-time' => $set_date_time ) );
+				if ( true === $set_date_time ) {
+					$this->activate( array( $language_code ), array( 'set-date-time' => $set_date_time ) );
+				} else {
+					$this->activate( array( $language_code ), array() );
+				}
 			}
 		} else {
 			\WP_CLI::error( $response );
