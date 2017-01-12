@@ -243,6 +243,10 @@ class Scaffold_Command extends WP_CLI_Command {
 			WP_CLI::error( "Invalid theme slug specified." );
 		}
 
+		if ( ! preg_match( '/^[a-z_]\w+$/i', str_replace( '-', '_', $theme_slug ) ) ) {
+			WP_CLI::error( "Invalid theme slug specified. Theme slugs can only contain letters, numbers, underscores and hyphens, and can only start with a letter or underscore." );
+		}
+
 		$data = wp_parse_args( $assoc_args, array(
 			'theme_name' => ucfirst( $theme_slug ),
 			'author'     => "Me",

@@ -341,6 +341,11 @@ Feature: WordPress code scaffolding
       """
       Error: Invalid theme slug specified.
       """
+    When I try `wp scaffold _s 1themestartingwithnumber`
+    Then STDERR should contain:
+      """
+      Error: Invalid theme slug specified. Theme slugs can only contain letters, numbers, underscores and hyphens, and can only start with a letter or underscore.
+      """
 
   Scenario: Scaffold plugin and tests for non-standard plugin directory
     Given a WP install
