@@ -64,7 +64,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * [--skip-columns=<columns>]
 	 * : Do not perform the replacement on specific columns. Use commas to
-	 * specify multiple columns. 'guid' is skipped by default.
+	 * specify multiple columns.
 	 *
 	 * [--include-columns=<columns>]
 	 * : Perform the replacement on specific columns. Use commas to
