@@ -156,7 +156,6 @@ class Site_Option_Command extends WP_CLI_Command {
 		$pattern = '%';
 		$fields = array( 'meta_key', 'meta_value' );
 		$size_query = ",LENGTH(meta_value) AS `size_bytes`";
-		$autoload_query = '';
 
 		if ( isset( $assoc_args['search'] ) ) {
 			$pattern = self::esc_like( $assoc_args['search'] );
@@ -230,7 +229,7 @@ class Site_Option_Command extends WP_CLI_Command {
 		$value = sanitize_option( $key, $value );
 		$old_value = sanitize_option( $key, get_site_option( $key ) );
 
-		if ( $value === $old_value && is_null( $autoload ) ) {
+		if ( $value === $old_value ) {
 			WP_CLI::success( "Value passed for '$key' site option is unchanged." );
 		} else {
 			if ( update_site_option( $key, $value ) ) {
