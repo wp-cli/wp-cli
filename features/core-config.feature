@@ -79,3 +79,21 @@ Feature: Manage wp-config
       """
       define( 'WPLANG', '' );
       """
+
+    When I try `wp core config {CORE_CONFIG_SETTINGS}`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Error: The 'wp-config.php' file already exists.
+      """
+
+    When I run `wp core config {CORE_CONFIG_SETTINGS} --locale=ja --force`
+    Then the return code should be 0
+    And STDOUT should contain:
+      """
+      Success: Generated 'wp-config.php' file.
+      """
+    And the wp-config.php file should contain:
+      """
+      define( 'WPLANG', 'ja' );
+      """

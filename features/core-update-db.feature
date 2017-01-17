@@ -37,6 +37,9 @@ Feature: Update core's database
 
   Scenario: Update db across network
     Given a WP multisite install
+    And I run `wp core download --version=4.1 --force`
+    And I run `wp option update db_version 29630`
+    And I run `wp site option update wpmu_upgrade_site 29630`
     And I run `wp site create --slug=foo`
     And I run `wp site create --slug=bar`
     And I run `wp site create --slug=burrito --porcelain`
@@ -48,6 +51,9 @@ Feature: Update core's database
     And I run `wp site archive {BURRITO_ID}`
     And I run `wp site spam {TACO_ID}`
     And I run `wp site delete {PIZZA_ID} --yes`
+
+    When I run `wp site option get wpmu_upgrade_site`
+    Then save STDOUT as {UPDATE_VERSION}
 
     When I run `wp core update-db --network`
     Then STDOUT should contain:
@@ -55,10 +61,17 @@ Feature: Update core's database
       Success: WordPress database upgraded on 3/3 sites.
       """
 
-  Scenario: Update db across network
+    When I run `wp site option get wpmu_upgrade_site`
+    Then STDOUT should not contain:
+      """
+      {UPDATE_VERSION}
+      """
+
+  Scenario: Update db across network, dry run
     Given a WP multisite install
     And I run `wp core download --version=4.1 --force`
     And I run `wp option update db_version 29630`
+    And I run `wp site option update wpmu_upgrade_site 29630`
     And I run `wp site create --slug=foo`
     And I run `wp site create --slug=bar`
     And I run `wp site create --slug=burrito --porcelain`
@@ -70,6 +83,9 @@ Feature: Update core's database
     And I run `wp site archive {BURRITO_ID}`
     And I run `wp site spam {TACO_ID}`
     And I run `wp site delete {PIZZA_ID} --yes`
+
+    When I run `wp site option get wpmu_upgrade_site`
+    Then save STDOUT as {UPDATE_VERSION}
 
     When I run `wp core update-db --network --dry-run`
     Then STDOUT should contain:
@@ -87,6 +103,12 @@ Feature: Update core's database
     And STDOUT should contain:
       """
       Success: WordPress database upgraded on 3/3 sites.
+      """
+
+    When I run `wp site option get wpmu_upgrade_site`
+    Then STDOUT should contain:
+      """
+      {UPDATE_VERSION}
       """
 
   Scenario: Ensure update-db sets WP_INSTALLING constant

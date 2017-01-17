@@ -5,6 +5,16 @@
  *
  * ## EXAMPLES
  *
+ *     # List a user's sessions.
+ *     $ wp user session list admin@example.com --format=csv
+ *     login_time,expiration_time,ip,ua
+ *     "2016-01-01 12:34:56","2016-02-01 12:34:56",127.0.0.1,"Mozilla/5.0..."
+ *
+ *     # Destroy the most recent session of the given user.
+ *     $ wp user session destroy admin
+ *     Success: Destroyed session. 3 sessions remaining.
+ *
+ * @package wp-cli
  */
 class User_Session_Command extends WP_CLI_Command {
 
@@ -36,22 +46,22 @@ class User_Session_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Destroy the most recent session of the given user
+	 *     # Destroy the most recent session of the given user.
 	 *     $ wp user session destroy admin
 	 *     Success: Destroyed session. 3 sessions remaining.
 	 *
-	 *     # Destroy a specific session of the given user
+	 *     # Destroy a specific session of the given user.
 	 *     $ wp user session destroy admin e073ad8540a9c2...
 	 *     Success: Destroyed session. 2 sessions remaining.
 	 *
-	 *     # Destroy all the sessions of the given user
+	 *     # Destroy all the sessions of the given user.
 	 *     $ wp user session destroy admin --all
 	 *     Success: Destroyed all sessions.
 	 *
-	 *     # Destroy all sessions for all users
+	 *     # Destroy all sessions for all users.
 	 *     $ wp user list --field=ID | xargs wp user session destroy --all
-	 *     Success: Destroyed all sessions. 0 remaining.
-	 *     Success: Destroyed all sessions. 0 remaining.
+	 *     Success: Destroyed all sessions.
+	 *     Success: Destroyed all sessions.
 	 */
 	public function destroy( $args, $assoc_args ) {
 		$user    = $this->fetcher->get_check( $args[0] );
@@ -65,8 +75,7 @@ class User_Session_Command extends WP_CLI_Command {
 
 		if ( $all ) {
 			$manager->destroy_all();
-			$remaining = count( $manager->get_all() );
-			WP_CLI::success( sprintf( 'Destroyed all sessions. %s remaining.', $remaining ) );
+			WP_CLI::success( 'Destroyed all sessions.' );
 			return;
 		}
 
@@ -131,7 +140,7 @@ class User_Session_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # List a user's sessions
+	 *     # List a user's sessions.
 	 *     $ wp user session list admin@example.com --format=csv
 	 *     login_time,expiration_time,ip,ua
 	 *     "2016-01-01 12:34:56","2016-02-01 12:34:56",127.0.0.1,"Mozilla/5.0..."

@@ -3,7 +3,7 @@
 # Package wp-cli to be installed in Debian-compatible systems.
 # Only the phar file is included.
 #
-# VERSION       :0.2.1
+# VERSION       :0.2.2
 # DATE          :2016-10-26
 # AUTHOR        :Viktor Szépe <viktor@szepe.net>
 # LICENSE       :The MIT License (MIT)
@@ -63,7 +63,7 @@ fi
 if ! [ -r usr/share/doc/php-wpcli/changelog.gz ];then
     mkdir -p usr/share/doc/php-wpcli &> /dev/null
     echo "Changelog can be found in the blog: http://wp-cli.org/blog/" \
-        | gzip -9 > usr/share/doc/php-wpcli/changelog.gz
+        | gzip -n -9 > usr/share/doc/php-wpcli/changelog.gz
 fi
 
 # minimal man page
@@ -75,7 +75,7 @@ if ! [ -r usr/share/man/man1/wp.1.gz ];then
     } \
         | sed 's/^\([A-Z ]\+\)$/.SH "\1"/' \
         | sed 's/^  wp$/wp \\- A command line interface for WordPress/' \
-        | gzip -9 > usr/share/man/man1/wp.1.gz
+        | gzip -n -9 > usr/share/man/man1/wp.1.gz
 fi
 
 # content dirs

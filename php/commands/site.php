@@ -356,13 +356,13 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( is_subdomain_install() ) {
-			$path = '/';
-			$url = $newdomain = $base.'.'.preg_replace( '|^www\.|', '', $network->domain );
-		}
-		else {
-			$newdomain = $network->domain;
-			$path = '/' . trim( $base, '/' ) . '/';
-			$url = $network->domain . $path;
+			$newdomain = $base . '.' . preg_replace( '|^www\.|', '', $current_site->domain );
+			$path      = $current_site->path;
+			$url       = $newdomain;
+		} else {
+			$newdomain = $current_site->domain;
+			$path      = $current_site->path . $base . '/';
+			$url       = $newdomain . $path;
 		}
 
 		$user_id = email_exists( $email );
@@ -434,6 +434,9 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--<field>=<value>]
 	 * : Filter by one or more fields (see "Available Fields" section). However,
 	 * 'url' isn't an available filter, because it's created from domain + path.
+	 *
+	 * [--site__in=<value>]
+	 * : Only list the sites with these blog_id values (comma-separated).
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each site.

@@ -332,6 +332,9 @@ class Core_Command extends WP_CLI_Command {
 	 * [--skip-check]
 	 * : If set, the database connection is not checked.
 	 *
+	 * [--force]
+	 * : Overwrites existing files, if present.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Standard wp-config.php file
@@ -351,7 +354,7 @@ class Core_Command extends WP_CLI_Command {
 	 */
 	public function config( $_, $assoc_args ) {
 		global $wp_version;
-		if ( Utils\locate_wp_config() ) {
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) && Utils\locate_wp_config() ) {
 			WP_CLI::error( "The 'wp-config.php' file already exists." );
 		}
 
@@ -435,14 +438,14 @@ class Core_Command extends WP_CLI_Command {
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ) {
 			if ( is_blog_installed() && is_multisite() ) {
-				exit( 0 );
+				WP_CLI::halt( 0 );
 			} else {
-				exit( 1 );
+				WP_CLI::halt( 1 );
 			}
 		} else if ( is_blog_installed() ) {
-			exit( 0 );
+			WP_CLI::halt( 0 );
 		} else {
-			exit( 1 );
+			WP_CLI::halt( 1 );
 		}
 	}
 
@@ -1129,6 +1132,10 @@ EOT;
 	 *
 	 * Defaults to updating WordPress to the latest version.
 	 *
+	 * If you see "Error: Another update is currently in progress.", you may
+	 * need to run `wp option delete core_updater.lock` after verifying another
+	 * update isn't actually running.
+	 *
 	 * ## OPTIONS
 	 *
 	 * [<zip>]
@@ -1138,7 +1145,7 @@ EOT;
 	 * : Only perform updates for minor releases (e.g. update from WP 4.3 to 4.3.3 instead of 4.4.2).
 	 *
 	 * [--version=<version>]
-	 * : Update to a specific version, instead of to the latest version.
+	 * : Update to a specific version, instead of to the latest version. Alternatively accepts 'nightly'.
 	 *
 	 * [--force]
 	 * : Update even when installed WP version is greater than the requested version.
@@ -1178,14 +1185,19 @@ EOT;
 	 *
 	 * @alias upgrade
 	 */
-	function update( $args, $assoc_args ) {
+	public function update( $args, $assoc_args ) {
 		global $wp_version;
 
 		$update = $from_api = null;
 		$upgrader = 'WP_CLI\\CoreUpgrader';
 
+		if ( 'trunk' === Utils\get_flag_value( $assoc_args, 'version' ) ) {
+			$assoc_args['version'] = 'nightly';
+		}
+
 		if ( ! empty( $args[0] ) ) {
 
+			// ZIP path or URL is given
 			$upgrader = 'WP_CLI\\NonDestructiveCoreUpgrader';
 			$version = \WP_CLI\Utils\get_flag_value( $assoc_args, 'version' );
 
@@ -1205,6 +1217,7 @@ EOT;
 
 		} else if ( empty( $assoc_args['version'] ) ) {
 
+			// Update to next release
 			wp_version_check();
 			$from_api = get_site_transient( 'update_core' );
 
@@ -1228,8 +1241,10 @@ EOT;
 			}
 
 		} else if (	\WP_CLI\Utils\wp_version_compare( $assoc_args['version'], '<' )
-					|| \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) {
+			|| 'nightly' === $assoc_args['version']
+			|| \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) {
 
+			// Specific version is given
 			$version = $assoc_args['version'];
 			$locale = \WP_CLI\Utils\get_flag_value( $assoc_args, 'locale', get_locale() );
 
@@ -1251,7 +1266,8 @@ EOT;
 
 		}
 
-		if ( ! empty( $update ) && ( $update->version != $wp_version || \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) ) {
+		if ( ! empty( $update )
+			&& ( $update->version != $wp_version || \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) ) {
 
 			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
@@ -1334,10 +1350,16 @@ EOT;
 			);
 			$it = new \WP_CLI\Iterators\Table( $iterator_args );
 			$success = $total = 0;
+			$site_ids = array();
 			foreach( $it as $blog ) {
 				$total++;
+				$site_ids[] = $blog->site_id;
 				$url = $blog->domain . $blog->path;
-				$process = WP_CLI::launch_self( 'core update-db', array(), array( 'dry-run' => $dry_run ), false, true, array( 'url' => $url ) );
+				$cmd = "--url={$url} core update-db";
+				if ( $dry_run ) {
+					$cmd .= ' --dry-run';
+				}
+				$process = WP_CLI::runcommand( $cmd, array( 'return' => 'all' ) );
 				if ( 0 == $process->return_code ) {
 					// See if we can parse the stdout
 					if ( preg_match( '#Success: (.+)#', $process->stdout, $matches ) ) {
@@ -1353,7 +1375,9 @@ EOT;
 				}
 			}
 			if ( ! $dry_run && $total && $success == $total ) {
-				update_site_option( 'wpmu_upgrade_site', $wp_db_version );
+				foreach( array_unique( $site_ids ) as $site_id ) {
+					update_metadata( 'site', $site_id, 'wpmu_upgrade_site', $wp_db_version );
+				}
 			}
 			WP_CLI::success( sprintf( 'WordPress database upgraded on %d/%d sites.', $success, $total ) );
 		} else {

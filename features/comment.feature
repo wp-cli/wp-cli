@@ -103,6 +103,24 @@ Feature: Manage WordPress comments
       #comment-1
       """
 
+  Scenario: List the URLs of comments
+    When I run `wp comment create --comment_post_ID=1 --porcelain`
+    Then save STDOUT as {COMMENT_ID}
+
+    When I run `wp comment url 1 {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      http://example.com/?p=1#comment-1
+      http://example.com/?p=1#comment-{COMMENT_ID}
+      """
+
+    When I run `wp comment url {COMMENT_ID} 1`
+    Then STDOUT should be:
+      """
+      http://example.com/?p=1#comment-{COMMENT_ID}
+      http://example.com/?p=1#comment-1
+      """
+
   Scenario: Count comments
     When I run `wp comment count 1`
     Then STDOUT should contain:

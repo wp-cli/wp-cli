@@ -28,6 +28,11 @@ class UpgraderSkin extends \WP_Upgrader_Skin {
 	}
 
 	function feedback( $string ) {
+
+		if ( 'parent_theme_prepare_install' === $string ) {
+			\WP_CLI::get_http_cache_manager()->whitelist_package( $this->api->download_link, 'theme', $this->api->slug, $this->api->version );
+		}
+
 		if ( isset( $this->upgrader->strings[$string] ) )
 			$string = $this->upgrader->strings[$string];
 
@@ -42,6 +47,7 @@ class UpgraderSkin extends \WP_Upgrader_Skin {
 			return;
 
 		$string = str_replace( '&#8230;', '...', strip_tags( $string ) );
+		$string = html_entity_decode( $string, ENT_QUOTES, get_bloginfo( 'charset' ) );
 
 		\WP_CLI::log( $string );
 	}

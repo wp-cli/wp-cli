@@ -364,11 +364,13 @@ class Subcommand extends CompositeCommand {
 		$extra_positionals = array();
 		foreach( $extra_args as $k => $v ) {
 			if ( is_numeric( $k ) ) {
-				$extra_positionals[ $k ] = $v;
+				if ( ! isset( $args[ $k ] ) ) {
+					$extra_positionals[ $k ] = $v;
+				}
 				unset( $extra_args[ $k ] );
 			}
 		}
-		$args = array_merge( $extra_positionals, $args );
+		$args = $args + $extra_positionals;
 
 		list( $to_unset, $args, $assoc_args, $extra_args ) = $this->validate_args( $args, $assoc_args, $extra_args );
 

@@ -186,7 +186,7 @@ class Export_Command extends WP_CLI_Command {
 		}
 
 		if ( $has_errors ) {
-			exit(1);
+			WP_CLI::halt(1);
 		}
 	}
 

@@ -295,3 +295,14 @@ Feature: Manage WordPress users
 
     When I run `wp user create testuser3 testuser3@example.com --send-email`
     Then an email should be sent
+
+  Scenario: List URLs of one or more users
+    Given a WP install
+    And I run `wp user create bob bob@gmail.com --role=contributor`
+
+    When I run `wp user list --include=1,2 --field=url`
+    Then STDOUT should be:
+      """
+      http://example.com/?author=1
+      http://example.com/?author=2
+      """

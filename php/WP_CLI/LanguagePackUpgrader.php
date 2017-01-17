@@ -5,11 +5,11 @@ namespace WP_CLI;
 use WP_CLI;
 
 /**
- * A Core Upgrader class that caches the download, and uses cached if available
+ * A Language Pack Upgrader class that caches the download, and uses cached if available
  *
  * @package wp-cli
  */
-class CoreUpgrader extends \Core_Upgrader {
+class LanguagePackUpgrader extends \Language_Pack_Upgrader {
 
 	/**
 	 * Caches the download, and uses cached if available.
@@ -45,17 +45,21 @@ class CoreUpgrader extends \Core_Upgrader {
 			return new \WP_Error( 'no_package', $this->strings['no_package'] );
 		}
 
-		$filename = pathinfo( $package, PATHINFO_FILENAME );
-		$ext = pathinfo( $package, PATHINFO_EXTENSION );
+		$language_update = $this->skin->language_update;
+		$type            = $language_update->type;
+		$slug            = empty( $language_update->slug ) ? 'default' : $language_update->slug;
+		$updated         = strtotime( $language_update->updated );
+		$version         = $language_update->version;
+		$language        = $language_update->language;
+		$ext             = pathinfo( $package, PATHINFO_EXTENSION );
 
 		$temp = \WP_CLI\Utils\get_temp_dir() . uniqid( 'wp_' ) . '.' . $ext;
 
 		$cache = WP_CLI::get_cache();
-		$update = $GLOBALS['wp_cli_update_obj'];
-		$cache_key = "core/{$filename}-{$update->locale}.{$ext}";
+		$cache_key = "translation/{$type}-{$slug}-{$version}-{$language}-{$updated}.{$ext}";
 		$cache_file = $cache->has( $cache_key );
 
-		if ( $cache_file && false === stripos( $package, 'https://wordpress.org/nightly-builds/' ) ) {
+		if ( $cache_file ) {
 			WP_CLI::log( "Using cached file '$cache_file'..." );
 			copy( $cache_file, $temp );
 			return $temp;
@@ -77,9 +81,7 @@ class CoreUpgrader extends \Core_Upgrader {
 			if ( ! is_null( $req ) && $req->status_code !== 200 ) {
 				return new \WP_Error( 'download_failed', $this->strings['download_failed'] );
 			}
-			if ( false === stripos( $package, 'https://wordpress.org/nightly-builds/' ) ) {
-				$cache->import( $cache_key, $temp );
-			}
+			$cache->import( $cache_key, $temp );
 			return $temp;
 		}
 	}

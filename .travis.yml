@@ -20,6 +20,8 @@ matrix:
       env: WP_VERSION=trunk
     - php: 7.0
       env: WP_VERSION=latest
+    - php: 7.1
+      env: WP_VERSION=latest
 
 before_script: ./ci/prepare.sh
 
@@ -30,6 +32,7 @@ after_success: ./ci/deploy.sh
 cache:
   directories:
   - vendor
+  - $HOME/.composer/cache
 
 branches:
   only:

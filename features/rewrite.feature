@@ -68,6 +68,7 @@ Feature: Manage WordPress rewrites
 
     When I run `wp rewrite structure /%year%/%monthnum%/%day%/%postname%/ --hard`
     Then the .htaccess file should exist
+    And the return code should be 0
 
   Scenario: Generate .htaccess on hard flush with a global config
     Given a WP install
@@ -78,6 +79,7 @@ Feature: Manage WordPress rewrites
 
     When I run `WP_CLI_CONFIG_PATH=config.yml wp rewrite structure /%year%/%monthnum%/%day%/%postname%/ --hard`
     Then the .htaccess file should exist
+    And the return code should be 0
 
   Scenario: Error when trying to generate .htaccess on a multisite install
     Given a WP multisite install
@@ -91,9 +93,11 @@ Feature: Manage WordPress rewrites
       """
       Warning: WordPress can't generate .htaccess file for a multisite install.
       """
+    And the return code should be 0
 
     When I try `wp rewrite structure /%year%/%monthnum%/%day%/%postname%/ --hard`
     Then STDERR should contain:
       """
       Warning: WordPress can't generate .htaccess file for a multisite install.
       """
+    And the return code should be 0

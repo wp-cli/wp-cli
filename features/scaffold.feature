@@ -54,6 +54,19 @@ Feature: WordPress code scaffolding
       Success: Network enabled the 'Zombieland' theme.
       """
 
+  Scenario: Scaffold a child theme with invalid slug
+    Given a WP install
+    When I try `wp scaffold child-theme . --parent_theme=simple-life`
+    Then STDERR should contain:
+      """
+      Error: Invalid theme slug specified.
+      """
+    When I try `wp scaffold child-theme ../ --parent_theme=simple-life`
+    Then STDERR should contain:
+      """
+      Error: Invalid theme slug specified.
+      """
+
   @tax @cpt
   Scenario: Scaffold a Custom Taxonomy and Custom Post Type and write it to active theme
     Given a WP install
@@ -271,6 +284,19 @@ Feature: WordPress code scaffolding
       Plugin 'hello-world' network activated.
       """
 
+  Scenario: Scaffold a plugin with invalid slug
+    Given a WP install
+    When I try `wp scaffold plugin .`
+    Then STDERR should contain:
+      """
+      Error: Invalid plugin slug specified.
+      """
+    When I try `wp scaffold plugin ../`
+    Then STDERR should contain:
+      """
+      Error: Invalid plugin slug specified.
+      """
+
   Scenario: Scaffold starter code for a theme
     Given a WP install
     Given I run `wp theme path`
@@ -301,6 +327,24 @@ Feature: WordPress code scaffolding
     Then STDOUT should contain:
       """
       Success: Switched to 'Starter-theme' theme.
+      """
+
+  Scenario: Scaffold starter code for a theme with invalid slug
+    Given a WP install
+    When I try `wp scaffold _s .`
+    Then STDERR should contain:
+      """
+      Error: Invalid theme slug specified.
+      """
+    When I try `wp scaffold _s ../`
+    Then STDERR should contain:
+      """
+      Error: Invalid theme slug specified.
+      """
+    When I try `wp scaffold _s 1themestartingwithnumber`
+    Then STDERR should contain:
+      """
+      Error: Invalid theme slug specified. Theme slugs can only contain letters, numbers, underscores and hyphens, and can only start with a letter or underscore.
       """
 
   Scenario: Scaffold plugin and tests for non-standard plugin directory

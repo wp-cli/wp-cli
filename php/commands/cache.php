@@ -35,6 +35,9 @@ class Cache_Command extends WP_CLI_Command {
 	 *
 	 * [<group>]
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 * ---
+	 * default: default
+	 * ---
 	 *
 	 * [<expiration>]
 	 * : Define how long to keep the value, in seconds. `0` means as long as possible.
@@ -49,11 +52,7 @@ class Cache_Command extends WP_CLI_Command {
 	 *     Success: Added object 'my_key' in group 'my_value'.
 	 */
 	public function add( $args, $assoc_args ) {
-		list( $key, $value ) = $args;
-
-		$group = \WP_CLI\Utils\get_flag_value( $args, 2, '' );
-
-		$expiration = \WP_CLI\Utils\get_flag_value( $args, 3, 0 );
+		list( $key, $value, $group, $expiration ) = $args;
 
 		if ( ! wp_cache_add( $key, $value, $group, $expiration ) ) {
 			WP_CLI::error( "Could not add object '$key' in group '$group'. Does it already exist?" );
@@ -73,10 +72,16 @@ class Cache_Command extends WP_CLI_Command {
 	 * : Cache key.
 	 *
 	 * [<offset>]
-	 * : The amount by which to decrement the item's value. Default is 1.
+	 * : The amount by which to decrement the item's value.
+	 * ---
+	 * default: 1
+	 * ---
 	 *
 	 * [<group>]
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 * ---
+	 * default: default
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -85,12 +90,7 @@ class Cache_Command extends WP_CLI_Command {
 	 *     48
 	 */
 	public function decr( $args, $assoc_args ) {
-		$key = $args[0];
-
-		$offset = \WP_CLI\Utils\get_flag_value( $args, 1, 1 );
-
-		$group = \WP_CLI\Utils\get_flag_value( $args, 2, '' );
-
+		list( $key, $offset, $group ) = $args;
 		$value = wp_cache_decr( $key, $offset, $group );
 
 		if ( false === $value ) {
@@ -112,6 +112,9 @@ class Cache_Command extends WP_CLI_Command {
 	 *
 	 * [<group>]
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 * ---
+	 * default: default
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -120,10 +123,7 @@ class Cache_Command extends WP_CLI_Command {
 	 *     Success: Object deleted.
 	 */
 	public function delete( $args, $assoc_args ) {
-		$key = $args[0];
-
-		$group = \WP_CLI\Utils\get_flag_value( $args, 1, '' );
-
+		list( $key, $group ) = $args;
 		$result = wp_cache_delete( $key, $group );
 
 		if ( false === $result ) {
@@ -171,6 +171,9 @@ class Cache_Command extends WP_CLI_Command {
 	 *
 	 * [<group>]
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 * ---
+	 * default: default
+	 * ___
 	 *
 	 * ## EXAMPLES
 	 *
@@ -179,10 +182,7 @@ class Cache_Command extends WP_CLI_Command {
 	 *     my_value
 	 */
 	public function get( $args, $assoc_args ) {
-		$key = $args[0];
-
-		$group = \WP_CLI\Utils\get_flag_value( $args, 1, '' );
-
+		list( $key, $group ) = $args;
 		$value = wp_cache_get( $key, $group );
 
 		if ( false === $value ) {
@@ -203,10 +203,16 @@ class Cache_Command extends WP_CLI_Command {
 	 * : Cache key.
 	 *
 	 * [<offset>]
-	 * : The amount by which to increment the item's value. Default is 1.
+	 * : The amount by which to increment the item's value.
+	 * ---
+	 * default: 1
+	 * ---
 	 *
 	 * [<group>]
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 * ---
+	 * default: default
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -215,12 +221,7 @@ class Cache_Command extends WP_CLI_Command {
 	 *     50
 	 */
 	public function incr( $args, $assoc_args ) {
-		$key = $args[0];
-
-		$offset = \WP_CLI\Utils\get_flag_value( $args, 1, 1 );
-
-		$group = \WP_CLI\Utils\get_flag_value( $args, 2, '' );
-
+		list( $key, $offset, $group ) = $args;
 		$value = wp_cache_incr( $key, $offset, $group );
 
 		if ( false === $value ) {
@@ -245,6 +246,9 @@ class Cache_Command extends WP_CLI_Command {
 	 *
 	 * [<group>]
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 * ---
+	 * default: default
+	 * ---
 	 *
 	 * [<expiration>]
 	 * : Define how long to keep the value, in seconds. `0` means as long as possible.
@@ -259,16 +263,11 @@ class Cache_Command extends WP_CLI_Command {
 	 *     Success: Replaced object 'my_key' in group 'my_group'.
 	 */
 	public function replace( $args, $assoc_args ) {
-		list( $key, $value ) = $args;
-
-		$group = \WP_CLI\Utils\get_flag_value( $args, 2, '' );
-
-		$expiration = \WP_CLI\Utils\get_flag_value( $args, 3, 0 );
-
+		list( $key, $value, $group, $expiration ) = $args;
 		$result = wp_cache_replace( $key, $value, $group, $expiration );
 
 		if ( false === $result ) {
-			WP_CLI::error( "Could not replace object '$key' in group '$group'. Does it already exist?" );
+			WP_CLI::error( "Could not replace object '$key' in group '$group'. Does it not exist?" );
 		}
 
 		WP_CLI::success( "Replaced object '$key' in group '$group'." );
@@ -289,6 +288,9 @@ class Cache_Command extends WP_CLI_Command {
 	 *
 	 * [<group>]
 	 * : Method for grouping data within the cache which allows the same key to be used across groups.
+	 * ---
+	 * default: default
+	 * ---
 	 *
 	 * [<expiration>]
 	 * : Define how long to keep the value, in seconds. `0` means as long as possible.
@@ -303,12 +305,7 @@ class Cache_Command extends WP_CLI_Command {
 	 *     Success: Set object 'my_key' in group 'my_group'.
 	 */
 	public function set( $args, $assoc_args ) {
-		list( $key, $value ) = $args;
-
-		$group = \WP_CLI\Utils\get_flag_value( $args, 2, '' );
-
-		$expiration = \WP_CLI\Utils\get_flag_value( $args, 3, 0 );
-
+		list( $key, $value, $group, $expiration ) = $args;
 		$result = wp_cache_set( $key, $value, $group, $expiration );
 
 		if ( false === $result ) {

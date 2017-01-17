@@ -1,6 +1,8 @@
 <?php
+use \Composer\Composer;
 use \Composer\Config;
 use \Composer\Config\JsonConfigSource;
+use \Composer\DependencyResolver\Pool;
 use \Composer\EventDispatcher\Event;
 use \Composer\Factory;
 use \Composer\IO\NullIO;
@@ -8,7 +10,10 @@ use \Composer\Installer;
 use \Composer\Json\JsonFile;
 use \Composer\Json\JsonManipulator;
 use \Composer\Package;
+use \Composer\Package\BasePackage;
+use \Composer\Package\PackageInterface;
 use \Composer\Package\Version\VersionParser;
+use \Composer\Package\Version\VersionSelector;
 use \Composer\Repository;
 use \Composer\Repository\CompositeRepository;
 use \Composer\Repository\ComposerRepository;
@@ -73,12 +78,7 @@ class Package_Command extends WP_CLI_Command {
 
 	const PACKAGE_INDEX_URL = 'https://wp-cli.org/package-index/';
 
-	private $fields = array(
-		'name',
-		'description',
-		'authors',
-		'version',
-	);
+	private $pool = false;
 
 	/**
 	 * Browse WP-CLI packages available for installation.
@@ -102,6 +102,17 @@ class Package_Command extends WP_CLI_Command {
 	 *   - yaml
 	 * ---
 	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each package:
+	 *
+	 * * name
+	 * * description
+	 * * authors
+	 * * version
+	 *
+	 * There are no optionally available fields.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp package browse --format=yaml
@@ -124,7 +135,7 @@ class Package_Command extends WP_CLI_Command {
 	 *
 	 */
 	public function browse( $_, $assoc_args ) {
-		$this->show_packages( $this->get_community_packages(), $assoc_args );
+		$this->show_packages( 'browse', $this->get_community_packages(), $assoc_args );
 	}
 
 	/**
@@ -249,6 +260,7 @@ class Package_Command extends WP_CLI_Command {
 		$composer_backup = file_get_contents( $composer_json_obj->getPath() );
 		$json_manipulator = new JsonManipulator( $composer_backup );
 		$json_manipulator->addMainKey( 'name', 'wp-cli/wp-cli' );
+		$json_manipulator->addMainKey( 'version', self::get_wp_cli_version_composer() );
 		$json_manipulator->addLink( 'require', $package_name, $version );
 		$json_manipulator->addConfigSetting( 'secure-http', true );
 
@@ -322,6 +334,20 @@ class Package_Command extends WP_CLI_Command {
 	 *   - yaml
 	 * ---
 	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each package:
+	 *
+	 * * name
+	 * * authors
+	 * * version
+	 * * update
+	 * * update_version
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * description
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp package list
@@ -334,7 +360,7 @@ class Package_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
-		$this->show_packages( $this->get_installed_packages(), $assoc_args );
+		$this->show_packages( 'list', $this->get_installed_packages(), $assoc_args );
 	}
 
 	/**
@@ -564,12 +590,29 @@ class Package_Command extends WP_CLI_Command {
 	/**
 	 * Display a set of packages
 	 *
+	 * @param string $context
 	 * @param array
 	 * @param array
 	 */
-	private function show_packages( $packages, $assoc_args ) {
+	private function show_packages( $context, $packages, $assoc_args ) {
+		if ( 'list' === $context ) {
+			$default_fields = array(
+				'name',
+				'authors',
+				'version',
+				'update',
+				'update_version',
+			);
+		} else if ( 'browse' === $context ) {
+			$default_fields = array(
+				'name',
+				'description',
+				'authors',
+				'version',
+			);
+		}
 		$defaults = array(
-			'fields' => implode( ',', $this->fields ),
+			'fields' => implode( ',', $default_fields ),
 			'format' => 'table'
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
@@ -585,6 +628,17 @@ class Package_Command extends WP_CLI_Command {
 				$package_output['description'] = $package->getDescription();
 				$package_output['authors'] = implode( ', ', array_column( (array) $package->getAuthors(), 'name' ) );
 				$package_output['version'] = array( $package->getPrettyVersion() );
+				$update = 'none';
+				$update_version = '';
+				if ( 'list' === $context ) {
+					$latest = $this->find_latest_package( $package, $this->get_composer(), null );
+					if ( $latest && $latest->getFullPrettyVersion() !== $package->getFullPrettyVersion() ) {
+						$update = 'available';
+						$update_version = $latest->getPrettyVersion();
+					}
+				}
+				$package_output['update'] = $update;
+				$package_output['update_version'] = $update_version;
 				$list[ $package_output['name'] ] = $package_output;
 			}
 		}
@@ -717,6 +771,14 @@ class Package_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Get the WP-CLI version for composer.json
+	 */
+	private static function get_wp_cli_version_composer() {
+		preg_match( '#^[0-9\.]+(-(alpha|beta)[^-]{0,})?#', WP_CLI_VERSION, $matches );
+		return isset( $matches[0] ) ? $matches[0] : '';
+	}
+
+	/**
 	 * Create a default composer.json, should one not already exist
 	 *
 	 * @param string $composer_path Where the composer.json should be created
@@ -750,6 +812,7 @@ class Package_Command extends WP_CLI_Command {
 		$options = array(
 			'name' => 'wp-cli/wp-cli',
 			'description' => 'Installed community packages used by WP-CLI',
+			'version' => self::get_wp_cli_version_composer(),
 			'authors' => array( $author ),
 			'homepage' => self::PACKAGE_INDEX_URL,
 			'require' => new stdClass,
@@ -766,6 +829,47 @@ class Package_Command extends WP_CLI_Command {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Given a package, this finds the latest package matching it
+	 *
+	 * @param  PackageInterface $package
+	 * @param  Composer         $composer
+	 * @param  string           $phpVersion
+	 * @param  bool             $minorOnly
+	 *
+	 * @return PackageInterface|null
+	 */
+	private function find_latest_package( PackageInterface $package, Composer $composer, $phpVersion, $minorOnly = false ) {
+		// find the latest version allowed in this pool
+		$name = $package->getName();
+		$versionSelector = new VersionSelector($this->get_pool($composer));
+		$stability = $composer->getPackage()->getMinimumStability();
+		$flags = $composer->getPackage()->getStabilityFlags();
+		if (isset($flags[$name])) {
+			$stability = array_search($flags[$name], BasePackage::$stabilities, true);
+		}
+		$bestStability = $stability;
+		if ($composer->getPackage()->getPreferStable()) {
+			$bestStability = $package->getStability();
+		}
+		$targetVersion = null;
+		if (0 === strpos($package->getVersion(), 'dev-')) {
+			$targetVersion = $package->getVersion();
+		}
+		if ($targetVersion === null && $minorOnly) {
+			$targetVersion = '^' . $package->getVersion();
+		}
+		return $versionSelector->findBestCandidate($name, $targetVersion, $phpVersion, $bestStability);
+	}
+
+	private function get_pool( Composer $composer ) {
+		if (!$this->pool) {
+			$this->pool = new Pool($composer->getPackage()->getMinimumStability(), $composer->getPackage()->getStabilityFlags());
+			$this->pool->addRepository(new CompositeRepository($composer->getRepositoryManager()->getRepositories()));
+		}
+		return $this->pool;
 	}
 }
 

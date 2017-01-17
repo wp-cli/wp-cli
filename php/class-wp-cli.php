@@ -1,10 +1,11 @@
 <?php
 
-use \WP_CLI\Utils;
+use \WP_CLI\ExitException;
 use \WP_CLI\Dispatcher;
 use \WP_CLI\FileCache;
 use \WP_CLI\Process;
 use \WP_CLI\WpHttpCacheManager;
+use \WP_CLI\Utils;
 
 /**
  * Various utilities for WP-CLI commands.
@@ -16,6 +17,8 @@ class WP_CLI {
 	private static $logger;
 
 	private static $hooks = array(), $hooks_passed = array();
+
+	private static $capture_exit = false;
 
 	/**
 	 * Set the logger instance.
@@ -179,7 +182,7 @@ class WP_CLI {
 	 * * %U => ['style' => 'underline'],
 	 * * %8 => ['style' => 'inverse'],
 	 * * %9 => ['style' => 'bright'],
-	 * * %_ => ['style' => 'bright')
+	 * * %_ => ['style' => 'bright']
 	 *
 	 * @access public
 	 * @category Output
@@ -627,11 +630,36 @@ class WP_CLI {
 			self::$logger->error( self::error_to_string( $message ) );
 		}
 
+		$return_code = false;
 		if ( true === $exit ) {
-			exit( 1 );
+			$return_code = 1;
 		} elseif ( is_int( $exit ) && $exit >= 1 ) {
-			exit( $exit );
+			$return_code = $exit;
 		}
+
+		if ( $return_code ) {
+			if ( self::$capture_exit ) {
+				throw new ExitException( null, $return_code );
+			}
+			exit( $return_code );
+		}
+	}
+
+	/**
+	 * Halt script execution with a specific return code.
+	 *
+	 * Permits script execution to be overloaded by `WP_CLI::runcommand()`
+	 *
+	 * @access public
+	 * @category Output
+	 *
+	 * @param integer $return_code
+	 */
+	public static function halt( $return_code ) {
+		if ( self::$capture_exit ) {
+			throw new ExitException( null, $return_code );
+		}
+		exit( $return_code );
 	}
 
 	/**
@@ -753,10 +781,19 @@ class WP_CLI {
 			return $errors;
 		}
 
+		// Only json_encode() the data when it needs it
+		$render_data = function( $data ) {
+			if ( is_array( $data ) || is_object( $data ) ) {
+				return json_encode( $data );
+			} else {
+				return '"' . $data . '"';
+			}
+		};
+
 		if ( is_object( $errors ) && is_a( $errors, 'WP_Error' ) ) {
 			foreach ( $errors->get_error_messages() as $message ) {
 				if ( $errors->get_error_data() ) {
-					return $message . ' ' . json_encode( $errors->get_error_data() );
+					return $message . ' ' . $render_data( $errors->get_error_data() );
 				} else {
 					return $message;
 				}
@@ -805,6 +842,8 @@ class WP_CLI {
 
 	/**
 	 * Run a WP-CLI command in a new process reusing the current runtime arguments.
+	 *
+	 * Use `WP_CLI::runcommand()` instead, which is easier to use and works better.
 	 *
 	 * Note: While this command does persist a limited set of runtime arguments,
 	 * it *does not* persist environment variables. Practically speaking, WP-CLI
@@ -909,8 +948,156 @@ class WP_CLI {
 	}
 
 	/**
+	 * Run a WP-CLI command.
+	 *
+	 * Launch a new child process, or run the command in the current process.
+	 * Optionally:
+	 *
+	 * * Prevent halting script execution on error.
+	 * * Capture and return STDOUT, or full details about command execution.
+	 * * Parse JSON output if the command rendered it.
+	 *
+	 * ```
+	 * $options = array(
+	 *   'return'     => true,   // Return 'STDOUT'; use 'all' for full object.
+	 *   'parse'      => 'json', // Parse captured STDOUT to JSON array.
+	 *   'launch'     => false,  // Reuse the current process.
+	 *   'exit_error' => true,   // Halt script execution on error.
+	 * );
+	 * $plugins = WP_CLI::runcommand( 'plugin list --format=json', $options );
+	 * ```
+	 *
+	 * @access public
+	 * @category Execution
+	 *
+	 * @param string $command WP-CLI command to run, including arguments.
+	 * @param array  $options Configuration options for command execution.
+	 * @return mixed
+	 */
+	public static function runcommand( $command, $options = array() ) {
+		$defaults = array(
+			'launch'     => true, // Launch a new process, or reuse the existing.
+			'exit_error' => true, // Exit on error by default.
+			'return'     => false, // Capture and return output, or render in realtime.
+			'parse'      => false, // Parse returned output as a particular format.
+		);
+		$options = array_merge( $defaults, $options );
+		$launch = $options['launch'];
+		$exit_error = $options['exit_error'];
+		$return = $options['return'];
+		$parse = $options['parse'];
+		$retval = null;
+		if ( $launch ) {
+			if ( $return ) {
+				$descriptors = array(
+					0 => STDIN,
+					1 => array( 'pipe', 'w' ),
+					2 => array( 'pipe', 'w' ),
+				);
+			} else {
+				$descriptors = array(
+					0 => STDIN,
+					1 => STDOUT,
+					2 => STDERR,
+				);
+			}
+
+			$php_bin = self::get_php_binary();
+			$script_path = $GLOBALS['argv'][0];
+
+			// Persist runtime arguments unless they've been specified otherwise.
+			$configurator = \WP_CLI::get_configurator();
+			$argv = array_slice( $GLOBALS['argv'], 1 );
+			list( $_, $_, $runtime_config ) = $configurator->parse_args( $argv );
+			foreach ( $runtime_config as $k => $v ) {
+				if ( preg_match( "|^--{$k}=?$|", $command ) ) {
+					unset( $runtime_config[ $k ] );
+				}
+			}
+			$runtime_config = Utils\assoc_args_to_str( $runtime_config );
+
+			$runcommand = "{$php_bin} {$script_path} {$runtime_config} {$command}";
+
+			$proc = proc_open( $runcommand, $descriptors, $pipes, getcwd(), NULL );
+
+			if ( $return ) {
+				$stdout = stream_get_contents( $pipes[1] );
+				fclose( $pipes[1] );
+				$stderr = stream_get_contents( $pipes[2] );
+				fclose( $pipes[2] );
+			}
+			$return_code = proc_close( $proc );
+			if ( -1 == $return_code ) {
+				self::warning( "Spawned process returned exit code -1, which could be caused by a custom compiled version of PHP that uses the --enable-sigchild option." );
+			} else if ( $return_code && $exit_error ) {
+				exit( $return_code );
+			}
+			if ( true === $return || 'stdout' === $return ) {
+				$retval = trim( $stdout );
+			} else if ( 'stderr' === $return ) {
+				$retval = trim( $stderr );
+			} else if ( 'return_code' === $return ) {
+				$retval = $return_code;
+			} else if ( 'all' === $return ) {
+				$retval = (object) array(
+					'stdout'      => trim( $stdout ),
+					'stderr'      => trim( $stderr ),
+					'return_code' => $return_code,
+				);
+			}
+		} else {
+			$configurator = self::get_configurator();
+			$argv = Utils\parse_str_to_argv( $command );
+			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
+			if ( $return ) {
+				ob_start();
+				$existing_logger = self::$logger;
+				self::$logger = new WP_CLI\Loggers\Execution;
+			}
+			if ( ! $exit_error ) {
+				self::$capture_exit = true;
+			}
+			try {
+				self::get_runner()->run_command( $args, $assoc_args, array( 'back_compat_conversions' => true ) );
+				$return_code = 0;
+			} catch( ExitException $e ) {
+				$return_code = $e->getCode();
+			}
+			if ( $return ) {
+				$execution_logger = self::$logger;
+				self::$logger = $existing_logger;
+				$stdout = trim( ob_get_clean() );
+				$stderr = $execution_logger->stderr;
+				if ( true === $return || 'stdout' === $return ) {
+					$retval = trim( $stdout );
+				} else if ( 'stderr' === $return ) {
+					$retval = trim( $stderr );
+				} else if ( 'return_code' === $return ) {
+					$retval = $return_code;
+				} else if ( 'all' === $return ) {
+					$retval = (object) array(
+						'stdout'      => trim( $stdout ),
+						'stderr'      => trim( $stderr ),
+						'return_code' => $return_code,
+					);
+				}
+			}
+			if ( ! $exit_error ) {
+				self::$capture_exit = false;
+			}
+		}
+		if ( ( true === $return || 'stdout' === $return )
+			&& 'json' === $parse ) {
+			$retval = json_decode( $retval, true );
+		}
+		return $retval;
+	}
+
+	/**
 	 * Run a given command within the current process using the same global
 	 * parameters.
+	 *
+	 * Use `WP_CLI::runcommand()` instead, which is easier to use and works better.
 	 *
 	 * To run a command using a new process with the same global parameters,
 	 * use WP_CLI::launch_self(). To run a command using a new process with
@@ -952,4 +1139,3 @@ class WP_CLI {
 		self::add_command( $name, $class );
 	}
 }
-

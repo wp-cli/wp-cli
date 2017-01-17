@@ -37,6 +37,20 @@ class UnserializeReplaceTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'bar', $new_array['prop'] );
 	}
 
+	function testArraySameValues() {
+		$old_array = array(
+			'prop1' => array(
+				'foo',
+			),
+			'prop2' => array(
+				'foo',
+			),
+		);
+		$new_array = self::recursive_unserialize_replace( 'foo', 'bar', $old_array, false, true );
+		$this->assertEquals( 'bar', $new_array['prop1'][0] );
+		$this->assertEquals( 'bar', $new_array['prop2'][0] );
+	}
+
 	function testMixedObjectArrayLoop() {
 		$old_object = new stdClass();
 		$old_object->prop = 'foo';

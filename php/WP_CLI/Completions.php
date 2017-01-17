@@ -78,6 +78,22 @@ class Completions {
 					$this->add( $opt );
 				}
 			}
+
+			foreach ( $this->get_global_parameters() as $param => $runtime ) {
+				if ( isset( $assoc_args[ $param ] ) ) {
+					continue;
+				}
+
+				$opt = "--{$param}";
+
+				if ( "" === $runtime || ! is_string( $runtime ) ) {
+					$opt .= ' ';
+				} else {
+					$opt .= '=';
+				}
+
+				$this->add( $opt );
+			}
 		}
 
 	}
@@ -105,6 +121,27 @@ class Completions {
 		list( $command, $args ) = $r;
 
 		return array( $command, $args, $assoc_args );
+	}
+
+	private function get_global_parameters() {
+		$params = array();
+		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
+			if ( false === $details['runtime'] ) {
+				continue;
+			} elseif ( isset( $details['deprecated'] ) ) {
+				continue;
+			} elseif ( isset( $details['hidden'] ) ) {
+				continue;
+			}
+			$params[ $key ] = $details["runtime"];
+
+			// Add additional option like `--[no-]color`.
+			if ( true === $details["runtime"] ) {
+				$params[ "no-" . $key ] = '';
+			}
+		}
+
+		return $params;
 	}
 
 	private function add( $opt ) {

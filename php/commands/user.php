@@ -101,6 +101,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * * cap_key
 	 * * allcaps
 	 * * filter
+	 * * url
 	 *
 	 * ## EXAMPLES
 	 *
@@ -143,6 +144,13 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$assoc_args['count_total'] = false;
+
+		foreach( $assoc_args as $k => $v ) {
+			if ( false !== strpos( $k, '__' ) ) {
+				$assoc_args[ $k ] = explode( ',', $v );
+			}
+		}
+
 		$users = get_users( $assoc_args );
 
 		if ( 'ids' == $formatter->format ) {
@@ -155,7 +163,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 					return $user;
 
 				$user->roles = implode( ',', $user->roles );
-
+				$user->url = get_author_posts_url( $user->ID, $user->user_nicename );
 				return $user;
 			} );
 
@@ -234,7 +242,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Removed user 123 from http://example.com
 	 *
 	 *     # Delete all contributors and reassign their posts to user 2
-	 *     $ wp user delete $(wp user list --role=contributor --format=ids) --reassign=2
+	 *     $ wp user delete $(wp user list --role=contributor --field=ID) --reassign=2
 	 *     Success: Removed user 813 from http://example.com
 	 *     Success: Removed user 578 from http://example.com
 	 */

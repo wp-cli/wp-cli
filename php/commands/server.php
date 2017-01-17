@@ -23,7 +23,8 @@ class Server_Command extends WP_CLI_Command {
 	 * ---
 	 *
 	 * [--docroot=<path>]
-	 * : The path to use as the document root.
+	 * : The path to use as the document root. If the path global parameter is
+	 * set, the default value is it.
 	 *
 	 * [--config=<file>]
 	 * : Configure the server with a specific .ini file.
@@ -62,8 +63,8 @@ class Server_Command extends WP_CLI_Command {
 		$defaults = array(
 			'host' => 'localhost',
 			'port' => 8080,
-			'docroot' => false,
-			'config' => false,
+			'docroot' => ! is_null( WP_CLI::get_runner()->config['path'] ) ? WP_CLI::get_runner()->config['path'] : false,
+			'config' => get_cfg_var( 'cfg_file_path' )
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 

@@ -96,3 +96,18 @@ Feature: Install WordPress plugins
       Error: No plugins installed.
       """
     And the return code should be 1
+
+  Scenario: Paths aren't backslashed when destination folder already exists
+    Given a WP install
+
+    When I run `pwd`
+    Then save STDOUT as {WORKING_DIR}
+
+    When I run `rm wp-content/plugins/akismet/akismet.php`
+    Then the return code should be 0
+
+    When I try `wp plugin install akismet`
+    Then STDERR should contain:
+      """
+      Warning: Destination folder already exists. "{WORKING_DIR}/wp-content/plugins/akismet/"
+      """

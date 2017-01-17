@@ -665,9 +665,9 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		$theme = wp_get_theme( $args[0] );
 
 		if ( $theme->exists() ) {
-			exit( 0 );
+			WP_CLI::halt( 0 );
 		} else {
-			exit( 1 );
+			WP_CLI::halt( 1 );
 		}
 	}
 
