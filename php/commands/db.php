@@ -288,7 +288,7 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * @alias dump
 	 */
-	function export( $args, $assoc_args ) {
+	public function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 		$stdout = ( '-' === $result_file );
 		$porcelain = \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' );
@@ -416,7 +416,7 @@ class DB_Command extends WP_CLI_Command {
 	 *     $ wp db export --tables=$(wp db tables --url=sub.example.com --format=csv)
 	 *     Success: Exported to wordpress_dbase.sql
 	 */
-	function tables( $args, $assoc_args ) {
+	public function tables( $args, $assoc_args ) {
 
 		$format = WP_CLI\Utils\get_flag_value( $assoc_args, 'format' );
 		unset( $assoc_args['format'] );
