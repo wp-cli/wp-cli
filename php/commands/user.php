@@ -144,13 +144,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$assoc_args['count_total'] = false;
-
-		foreach( $assoc_args as $k => $v ) {
-			if ( false !== strpos( $k, '__' ) ) {
-				$assoc_args[ $k ] = explode( ',', $v );
-			}
-		}
-
+		$assoc_args = self::process_csv_arguments_to_arrays( $assoc_args );
 		$users = get_users( $assoc_args );
 
 		if ( 'ids' == $formatter->format ) {

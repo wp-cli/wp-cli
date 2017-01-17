@@ -323,9 +323,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 			$assoc_args['fields'] = 'comment_ID';
 		}
 
-		if ( ! empty( $assoc_args['comment__in'] ) ) {
-			$assoc_args['comment__in'] = explode( ',', $assoc_args['comment__in'] );
-		}
+		$assoc_args = self::process_csv_arguments_to_arrays( $assoc_args );
 
 		if ( ! empty( $assoc_args['comment__in'] )
 			&& ! empty( $assoc_args['orderby'] )
