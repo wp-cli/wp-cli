@@ -471,13 +471,9 @@ class DB_Command extends WP_CLI_Command {
 		}
 
 		$final_args = array_merge( $assoc_args, $required );
-
-		static::run_mysql_command( $cmd, $final_args, $descriptors );
+		Utils\run_mysql_command( $cmd, $final_args, $descriptors );
 	}
 
-	protected static function run_mysql_command( $cmd, $final_args, $descriptors ) {
-		Utils\run_mysql_command( $cmd, $final_args, $descriptors );	
-	}
 }
 
 WP_CLI::add_command( 'db', 'DB_Command' );
