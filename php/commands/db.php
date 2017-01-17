@@ -166,6 +166,17 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Open a MySQL console using credentials from wp-config.php
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--database=<database>]
+	 * : Use a specific database. Defaults to DB_NAME.
+	 *
+	 * [--default-character-set=<character-set>]
+	 * : Use a specific character set. Defaults to DB_CHARSET when defined.
+	 *
+	 * [--<field>=<value>]
+	 * : Extra arguments to pass to the MySQL executable.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Open MySQL console
@@ -174,10 +185,12 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * @alias connect
 	 */
-	public function cli() {
-		self::run( 'mysql --no-defaults --no-auto-rehash', array(
-			'database' => DB_NAME
-		) );
+	public function cli( $args, $assoc_args ) {
+		if ( ! isset( $assoc_args['database'] ) ) {
+			$assoc_args['database'] = DB_NAME;
+		}
+
+		self::run( 'mysql --no-defaults --no-auto-rehash', $assoc_args );
 	}
 
 	/**
@@ -275,7 +288,7 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * @alias dump
 	 */
-	function export( $args, $assoc_args ) {
+	public function export( $args, $assoc_args ) {
 		$result_file = $this->get_file_name( $args );
 		$stdout = ( '-' === $result_file );
 		$porcelain = \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' );
@@ -403,7 +416,7 @@ class DB_Command extends WP_CLI_Command {
 	 *     $ wp db export --tables=$(wp db tables --url=sub.example.com --format=csv)
 	 *     Success: Exported to wordpress_dbase.sql
 	 */
-	function tables( $args, $assoc_args ) {
+	public function tables( $args, $assoc_args ) {
 
 		$format = WP_CLI\Utils\get_flag_value( $assoc_args, 'format' );
 		unset( $assoc_args['format'] );
@@ -453,14 +466,15 @@ class DB_Command extends WP_CLI_Command {
 			'pass' => DB_PASSWORD,
 		);
 
-		if ( defined( 'DB_CHARSET' ) && constant( 'DB_CHARSET' ) ) {
+		if ( ! isset( $assoc_args['default-character-set'] )
+			&& defined( 'DB_CHARSET' ) && constant( 'DB_CHARSET' ) ) {
 			$required['default-character-set'] = constant( 'DB_CHARSET' );
 		}
 
 		$final_args = array_merge( $assoc_args, $required );
-
 		Utils\run_mysql_command( $cmd, $final_args, $descriptors );
 	}
+
 }
 
 WP_CLI::add_command( 'db', 'DB_Command' );
