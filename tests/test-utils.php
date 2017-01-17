@@ -108,5 +108,23 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 	}
 
+	public function testParseStrToArgv() {
+		$this->assertEquals( array(), Utils\parse_str_to_argv( '' ) );
+		$this->assertEquals( array(
+			'option',
+			'get',
+			'home',
+		), Utils\parse_str_to_argv( 'option get home' ) );
+		$this->assertEquals( array(
+			'core',
+			'download',
+			'--path=/var/www/',
+		), Utils\parse_str_to_argv( 'core download --path=/var/www/' ) );
+		$this->assertEquals( array(
+			'eval',
+			'echo wp_get_current_user()->user_login;',
+		), Utils\parse_str_to_argv( 'eval "echo wp_get_current_user()->user_login;"' ) );
+	}
+
 }
 

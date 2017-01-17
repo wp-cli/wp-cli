@@ -288,10 +288,14 @@ class Runner {
 	/**
 	 * Find the WP-CLI command to run given arguments, and invoke it.
 	 *
-	 * @param array $args Positional arguments including command name
-	 * @param array $assoc_args
+	 * @param array $args        Positional arguments including command name
+	 * @param array $assoc_args  Associative arguments for the command.
+	 * @param array $options     Configuration options for the function.
 	 */
-	public function run_command( $args, $assoc_args = array() ) {
+	public function run_command( $args, $assoc_args = array(), $options = array() ) {
+		if ( ! empty( $options['back_compat_conversions'] ) ) {
+			list( $args, $assoc_args ) = self::back_compat_conversions( $args, $assoc_args );
+		}
 		$r = $this->find_command_to_run( $args );
 		if ( is_string( $r ) ) {
 			WP_CLI::error( $r );
@@ -535,8 +539,8 @@ class Runner {
 			}
 		}
 
-		// (post|site) url  --> (post|site) list --*__in --field=url
-		if ( count( $args ) >= 2 && in_array( $args[0], array( 'post', 'site' ) ) && 'url' === $args[1] ) {
+		// (post|comment|site|term) url  --> (post|comment|site|term) list --*__in --field=url
+		if ( count( $args ) >= 2 && in_array( $args[0], array( 'post', 'comment', 'site', 'term' ) ) && 'url' === $args[1] ) {
 			switch ( $args[0] ) {
 				case 'post':
 					$post_ids = array_slice( $args, 2 );
@@ -546,10 +550,28 @@ class Runner {
 					$assoc_args['orderby'] = 'post__in';
 					$assoc_args['field'] = 'url';
 					break;
+				case 'comment':
+					$comment_ids = array_slice( $args, 2 );
+					$args = array( 'comment', 'list' );
+					$assoc_args['comment__in'] = implode( ',', $comment_ids );
+					$assoc_args['orderby'] = 'comment__in';
+					$assoc_args['field'] = 'url';
+					break;
 				case 'site':
 					$site_ids = array_slice( $args, 2 );
 					$args = array( 'site', 'list' );
 					$assoc_args['site__in'] = implode( ',', $site_ids );
+					$assoc_args['field'] = 'url';
+					break;
+				case 'term':
+					$taxonomy = '';
+					if ( isset( $args[2] ) ) {
+						$taxonomy = $args[2];
+					}
+					$term_ids = array_slice( $args, 3 );
+					$args = array( 'term', 'list', $taxonomy );
+					$assoc_args['include'] = implode( ',', $term_ids );
+					$assoc_args['orderby'] = 'include';
 					$assoc_args['field'] = 'url';
 					break;
 			}
@@ -961,11 +983,18 @@ class Runner {
 			if ( array_key_exists( $key, $wp_cli_original_defined_vars ) || 'wp_cli_original_defined_vars' === $key ) {
 				continue;
 			}
-			$GLOBALS[ $key ] = $var;
+			global $$key;
+			$$key = $var;
 		}
 
 		$this->maybe_update_url_from_domain_constant();
 		WP_CLI::do_hook( 'after_wp_config_load' );
+
+		// Prevent error notice from wp_guess_url() when core isn't installed
+		if ( $this->cmd_starts_with( array( 'core', 'is-installed' ) )
+			&& ! defined( 'COOKIEHASH' ) ) {
+			define( 'COOKIEHASH', md5( 'wp-cli' ) );
+		}
 
 		// Load WP-CLI utilities
 		require WP_CLI_ROOT . '/php/utils-wp.php';

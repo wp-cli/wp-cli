@@ -206,3 +206,94 @@ Feature: `wp cli completions` tasks
       """
     And STDERR should be empty
     And the return code should be 0
+
+  Scenario: Bash Completion for global parameters
+    Given an empty directory
+
+    When I run `wp cli completions --line="wp plugin list " --point=100`
+    Then STDOUT should contain:
+      """
+      --path=
+      """
+    And STDOUT should contain:
+      """
+      --ssh=
+      """
+    And STDOUT should contain:
+      """
+      --http=
+      """
+    And STDOUT should contain:
+      """
+      --url=
+      """
+    And STDOUT should contain:
+      """
+      --user=
+      """
+    And STDOUT should contain:
+      """
+      --skip-plugins=
+      """
+    And STDOUT should contain:
+      """
+      --skip-themes=
+      """
+    And STDOUT should contain:
+      """
+      --skip-packages
+      """
+    And STDOUT should contain:
+      """
+      --require=
+      """
+    And STDOUT should contain:
+      """
+      --color
+      """
+    And STDOUT should contain:
+      """
+      --no-color
+      """
+    And STDOUT should contain:
+      """
+      --debug=
+      """
+    And STDOUT should contain:
+      """
+      --prompt=
+      """
+    And STDOUT should contain:
+      """
+      --quiet
+      """
+    And STDOUT should not contain:
+      """
+      --skip-packages=
+      """
+    And STDOUT should not contain:
+      """
+      --color=
+      """
+    And STDOUT should not contain:
+      """
+      --quiet=
+      """
+    And STDERR should be empty
+    And the return code should be 0
+
+    When I run `wp cli completions --line="wp plugin list --path --p" --point=100`
+    Then STDOUT should contain:
+      """
+      --prompt=
+      """
+    Then STDOUT should not contain:
+      """
+      --path
+      """
+
+    When I run `wp cli completions --line="wp plugin list --no-color" --point=100`
+    Then STDOUT should not contain:
+      """
+      --no-color
+      """
