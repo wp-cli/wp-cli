@@ -170,13 +170,13 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * [--database=<database>]
 	 * : Use a specific database. Defaults to DB_NAME.
-	 * 
+	 *
 	 * [--default-character-set=<character-set>]
 	 * : Use a specific character set. Defaults to DB_CHARSET when defined.
-	 * 
+	 *
 	 * [--<field>=<value>]
 	 * : Extra arguments to pass to the MySQL executable.
-	 * 
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Open MySQL console
@@ -186,7 +186,7 @@ class DB_Command extends WP_CLI_Command {
 	 * @alias connect
 	 */
 	public function cli( $args, $assoc_args ) {
-		if ( !isset( $assoc_args['database'] ) ) {
+		if ( ! isset( $assoc_args['database'] ) ) {
 			$assoc_args['database'] = DB_NAME;
 		}
 
@@ -466,7 +466,8 @@ class DB_Command extends WP_CLI_Command {
 			'pass' => DB_PASSWORD,
 		);
 
-		if ( !isset( $assoc_args['default-character-set'] ) && defined( 'DB_CHARSET' ) && constant( 'DB_CHARSET' ) ) {
+		if ( ! isset( $assoc_args['default-character-set'] )
+			&& defined( 'DB_CHARSET' ) && constant( 'DB_CHARSET' ) ) {
 			$required['default-character-set'] = constant( 'DB_CHARSET' );
 		}
 
