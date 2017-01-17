@@ -83,6 +83,21 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	}
 
 	/**
+	 * Transforms arguments with '__' from CSV into expected arrays
+	 *
+	 * @param array $assoc_args
+	 * @return array
+	 */
+	protected static function process_csv_arguments_to_arrays( $assoc_args ) {
+		foreach( $assoc_args as $k => $v ) {
+			if ( false !== strpos( $k, '__' ) ) {
+				$assoc_args[ $k ] = explode( ',', $v );
+			}
+		}
+		return $assoc_args;
+	}
+
+	/**
 	 * Delete a given database object.
 	 * Exits with status.
 	 *

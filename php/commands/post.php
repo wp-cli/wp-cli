@@ -370,12 +370,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'post_status'    => 'any',
 		);
 		$query_args = array_merge( $defaults, $assoc_args );
-
-		foreach ( $query_args as $key => $query_arg ) {
-			if ( false !== strpos( $key, '__' )
-				|| ( 'post_type' == $key && 'any' != $query_arg ) ) {
-				$query_args[$key] = explode( ',', $query_arg );
-			}
+		$query_args = self::process_csv_arguments_to_arrays( $query_args );
+		if ( isset( $query_args['post_type'] ) && 'any' !== $query_args['post_type'] ) {
+			$query_args['post_type'] = explode( ',', $query_args['post_type'] );
 		}
 
 		if ( 'ids' == $formatter->format ) {

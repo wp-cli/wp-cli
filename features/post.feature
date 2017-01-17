@@ -194,6 +194,14 @@ Feature: Manage WordPress posts
       Sample Page
       """
 
+    When I run `wp post list --post_type=any --fields=post_title,post_name,post_status --format=csv --orderby=post_title --order=ASC`
+    Then STDOUT should be CSV containing:
+      | post_title   | post_name    | post_status  |
+      | Draft post   |              | draft        |
+      | Hello world! | hello-world  | publish      |
+      | Publish post | publish-post | publish      |
+      | Sample Page  | sample-page  | publish      |
+
   Scenario: Update categories on a post
     When I run `wp term create category "Test Category" --porcelain`
     Then save STDOUT as {TERM_ID}
