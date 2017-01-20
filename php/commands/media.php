@@ -195,7 +195,7 @@ class Media_Command extends WP_CLI_Command {
 				if ( !file_exists( $file ) ) {
 					WP_CLI::warning( "Unable to import file '$file'. Reason: File doesn't exist." );
 					$errors++;
-					break;
+					continue;
 				}
 				$tempfile = $this->make_copy( $file );
 			} else {
