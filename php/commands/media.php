@@ -282,6 +282,8 @@ class Media_Command extends WP_CLI_Command {
 		}
 		if ( ! Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 			Utils\report_batch_operation_results( 'image', 'import', count( $args ), $successes, $errors );
+		} elseif ( $errors ) {
+			WP_CLI::halt( 1 );
 		}
 	}
 
