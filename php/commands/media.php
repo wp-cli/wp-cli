@@ -200,6 +200,14 @@ class Media_Command extends WP_CLI_Command {
 				$tempfile = $this->make_copy( $file );
 			} else {
 				$tempfile = download_url( $file );
+				if ( is_wp_error( $tempfile ) ) {
+					WP_CLI::warning( sprintf(
+						"Unable to import file '%s'. Reason: %s",
+						$file, implode( ', ', $success->get_error_messages() )
+					) );
+					$errors++;
+					continue;
+				}
 			}
 
 			$file_array = array(
