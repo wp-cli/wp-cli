@@ -412,6 +412,18 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # List tables for a single site, without shared tables like 'wp_users'
+	 *     $ wp db tables --scope=blog --url=sub.example.com
+	 *     wp_3_posts
+	 *     wp_3_comments
+	 *     wp_3_options
+	 *     wp_3_postmeta
+	 *     wp_3_terms
+	 *     wp_3_term_taxonomy
+	 *     wp_3_term_relationships
+	 *     wp_3_termmeta
+	 *     wp_3_commentmeta
+	 *
 	 *     # Export only tables for a single site
 	 *     $ wp db export --tables=$(wp db tables --url=sub.example.com --format=csv)
 	 *     Success: Exported to wordpress_dbase.sql
