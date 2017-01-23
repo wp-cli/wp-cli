@@ -173,7 +173,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				// Assume a plugin/theme slug from the WordPress.org repository has been specified
 				$result = $this->install_from_repo( $slug, $assoc_args );
 
-				if ( is_wp_error( $result ) ) {
+				if ( is_null( $result ) ) {
+					$errors++;
+				} elseif ( is_wp_error( $result ) ) {
 					$key = $result->get_error_code();
 					if ( in_array( $key, array( 'plugins_api_failed', 'themes_api_failed' ) )
 						&& ! empty( $result->error_data[ $key ] ) && in_array( $result->error_data[ $key ], array( 'N;', 'b:0;' ) ) ) {
