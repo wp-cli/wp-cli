@@ -449,8 +449,10 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	private function get_file_name( $args ) {
-		if ( empty( $args ) )
-			return sprintf( '%s.sql', DB_NAME );
+		if ( empty( $args ) ) {
+			$hash = substr( md5( mt_rand() ), 0, 7 );
+			return sprintf( '%s-%s.sql', DB_NAME, $hash );
+		}
 
 		return $args[0];
 	}
