@@ -19,11 +19,17 @@ before_script:
   # Set up WordPress tests
   - bash bin/install-wp-tests.sh wordpress_tests root mysql mysql latest true
 
+  # Install PHPCS and WPCS
+  - composer global require "squizlabs/php_codesniffer=*"
+  - composer global require "wp-coding-standards/wpcs"
+  - phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs
+
 PHPunit:PHP5.3:MySQL:
   image: tetraweb/php:5.3
   services:
     - mysql:5.6
   script:
+  - phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
   - phpunit --configuration phpunit.xml.dist
 
 PHPunit:PHP5.6:MySQL:
@@ -31,4 +37,5 @@ PHPunit:PHP5.6:MySQL:
   services:
     - mysql:5.6
   script:
+  - phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
   - phpunit --configuration phpunit.xml.dist
