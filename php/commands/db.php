@@ -289,7 +289,12 @@ class DB_Command extends WP_CLI_Command {
 	 * @alias dump
 	 */
 	public function export( $args, $assoc_args ) {
-		$result_file = $this->get_file_name( $args );
+		if ( ! empty( $args[0] ) ) {
+			$result_file = $args[0];
+		} else {
+			$hash = substr( md5( mt_rand() ), 0, 7 );
+			$result_file = sprintf( '%s-%s.sql', DB_NAME, $hash );;
+		}
 		$stdout = ( '-' === $result_file );
 		$porcelain = \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' );
 
@@ -352,7 +357,11 @@ class DB_Command extends WP_CLI_Command {
 	 *     Success: Imported from 'wordpress_dbase.sql'.
 	 */
 	public function import( $args, $assoc_args ) {
-		$result_file = $this->get_file_name( $args );
+		if ( ! empty( $args[0] ) ) {
+			$result_file = $args[0];
+		} else {
+			$result_file = sprintf( '%s.sql', DB_NAME );
+		}
 
 		if ( '-' === $result_file ) {
 			$descriptors = array(
@@ -446,15 +455,6 @@ class DB_Command extends WP_CLI_Command {
 				WP_CLI::line( $table );
 			}
 		}
-	}
-
-	private function get_file_name( $args ) {
-		if ( empty( $args ) ) {
-			$hash = substr( md5( mt_rand() ), 0, 7 );
-			return sprintf( '%s-%s.sql', DB_NAME, $hash );
-		}
-
-		return $args[0];
 	}
 
 	private static function get_create_query() {
