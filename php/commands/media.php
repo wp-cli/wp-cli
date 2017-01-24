@@ -78,10 +78,14 @@ class Media_Command extends WP_CLI_Command {
 			$skip_delete = true;
 		}
 
+		$mime_types = array( 'image' );
+		if ( Utils\wp_version_compare( '4.7', '>=' ) ) {
+			$mime_types[] = 'application/pdf';
+		}
 		$query_args = array(
 			'post_type' => 'attachment',
 			'post__in' => $args,
-			'post_mime_type' => 'image',
+			'post_mime_type' => $mime_types,
 			'post_status' => 'any',
 			'posts_per_page' => -1,
 			'fields' => 'ids'
