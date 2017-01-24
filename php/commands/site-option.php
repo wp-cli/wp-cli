@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\Utils;
+
 /**
  * Manage site options in a multisite install.
  *
@@ -106,6 +108,9 @@ class Site_Option_Command extends WP_CLI_Command {
 	 * [--search=<pattern>]
 	 * : Use wildcards ( * and ? ) to match option name.
 	 *
+	 * [--site_id=<id>]
+	 * : Limit options to those of a particular site id.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field.
 	 *
@@ -173,13 +178,16 @@ class Site_Option_Command extends WP_CLI_Command {
 			$size_query = ",SUM(LENGTH(meta_value)) AS `size_bytes`";
 		}
 
-		$results = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT `meta_id`, `site_id`, `meta_key`,`meta_value`" . $size_query
-					. " FROM `$wpdb->sitemeta` WHERE `meta_key` LIKE %s",
-				$pattern
-			)
+		$query = $wpdb->prepare(
+			"SELECT `meta_id`, `site_id`, `meta_key`,`meta_value`" . $size_query
+				. " FROM `$wpdb->sitemeta` WHERE `meta_key` LIKE %s",
+			$pattern
 		);
+
+		if ( $site_id = Utils\get_flag_value( $assoc_args, 'site_id' ) ) {
+			$query .= $wpdb->prepare( ' AND site_id=%d', $site_id );
+		}
+		$results = $wpdb->get_results( $query );
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
 			WP_CLI::line( $results[0]->size_bytes );
