@@ -124,3 +124,30 @@ Feature: Manage WordPress site options
       """
       Error: This is not a multisite install.
       """
+
+  Scenario: Filter options by `--site_id`
+    Given a WP multisite install
+
+    When I run `wp db query "INSERT INTO wp_sitemeta (site_id,meta_key,meta_value) VALUES (2,'wp_cli_test_option','foobar');"`
+    Then the return code should be 0
+
+    When I run `wp site option list`
+    Then STDOUT should contain:
+      """
+      wp_cli_test_option
+      """
+    And STDERR should be empty
+
+    When I run `wp site option list --site_id=1`
+    Then STDOUT should not contain:
+      """
+      wp_cli_test_option
+      """
+    And STDERR should be empty
+
+    When I run `wp site option list --site_id=2`
+    Then STDOUT should contain:
+      """
+      wp_cli_test_option
+      """
+    And STDERR should be empty
