@@ -82,8 +82,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * : Prints rows to the console as they're updated.
 	 *
 	 * [--regex]
-	 * : Runs the search using a regular expression. Warning: search-replace
-	 * will take about 15-20x longer when using --regex.
+	 * : Runs the search using a regular expression (without delimiters).
+	 * Warning: search-replace will take about 15-20x longer when using --regex.
 	 *
 	 * [--regex-flags=<regex-flags>]
 	 * : Pass PCRE modifiers to regex search-replace (e.g. 'i' for case-insensitivity).
@@ -95,6 +95,9 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 *     # Run search/replace operation but dont save in database
 	 *     $ wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
+	 *
+	 *     # Run case-insensitive regex search/replace operation (slow)
+	 *     $ wp search-replace '\[foo id="([0-9]+)"' '[bar id="\1"' --regex --regex-flags='i'
 	 *
 	 *     # Turn your production multisite database into a local dev database
 	 *     $ wp search-replace --url=example.com example.com example.dev 'wp_*options' wp_blogs
