@@ -144,6 +144,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				if ( strpos( $local_or_remote_zip_file, '://' ) !== false
 						&& 'github.com' === parse_url( $local_or_remote_zip_file, PHP_URL_HOST ) ) {
 					$filter = function( $source, $remote_source, $upgrader ) use ( $local_or_remote_zip_file ) {
+						// Don't attempt to rename ZIPs uploaded to the releases page
+						if ( preg_match( '#github\.com/([^/]+)/([^/]+)/releases/download/#', $local_or_remote_zip_file ) ) {
+							return $source;
+						}
 						$branch_length = strlen( pathinfo( $local_or_remote_zip_file, PATHINFO_FILENAME ) );
 						if ( $branch_length ) {
 							$new_path = substr( rtrim( $source, '/' ), 0, - ( $branch_length + 1 ) ) . '/';
@@ -151,7 +155,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 								WP_CLI::log( "Renamed Github-based project from '" . basename( $source ) . "' to '" . basename( $new_path ) . "'." );
 								return $new_path;
 							} else {
-								return new \WP_CLI( 'wpcli_install_gitub', "Couldn't move Github-based project to appropriate directory." );
+								return new \WP_Error( 'wpcli_install_gitub', "Couldn't move Github-based project to appropriate directory." );
 							}
 						}
 						return $source;

@@ -36,6 +36,21 @@ Feature: Install WordPress plugins
     And the wp-content/plugins/one-time-login directory should exist
     And the wp-content/plugins/one-time-login-master directory should not exist
 
+  Scenario: Don't attempt to rename ZIPs uploaded to GitHub's releases page
+    Given a WP install
+
+    When I run `wp plugin install https://github.com/danielbachhuber/one-time-login/releases/download/v0.1.2/one-time-login.0.1.2.zip`
+    Then STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And STDOUT should not contain:
+      """
+      Renamed Github-based project from
+      """
+    And STDERR should be empty
+    And the wp-content/plugins/one-time-login directory should exist
+
   Scenario: Installing respects WP_PROXY_HOST and WP_PROXY_PORT
     Given a WP install
     And a invalid-proxy-details.php file:
