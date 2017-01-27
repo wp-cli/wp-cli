@@ -234,7 +234,12 @@ class Scaffold_Command extends WP_CLI_Command {
 	 */
 	public function _s( $args, $assoc_args ) {
 
-		$theme_slug = $args[0];
+		// Used for function prefixes, clean for safety.
+		$theme_slug = preg_replace('/[^a-zA-Z0-9\-]/', '', $args[0]);
+
+		if( empty( $theme_slug ) )
+			return false;
+
 		$theme_path = WP_CONTENT_DIR . "/themes";
 		$url        = "http://underscores.me";
 		$timeout    = 30;
