@@ -199,11 +199,19 @@ class Media_Command extends WP_CLI_Command {
 				if ( !file_exists( $file ) ) {
 					WP_CLI::warning( "Unable to import file '$file'. Reason: File doesn't exist." );
 					$errors++;
-					break;
+					continue;
 				}
 				$tempfile = $this->make_copy( $file );
 			} else {
 				$tempfile = download_url( $file );
+				if ( is_wp_error( $tempfile ) ) {
+					WP_CLI::warning( sprintf(
+						"Unable to import file '%s'. Reason: %s",
+						$file, implode( ', ', $tempfile->get_error_messages() )
+					) );
+					$errors++;
+					continue;
+				}
 			}
 
 			$file_array = array(
@@ -278,6 +286,8 @@ class Media_Command extends WP_CLI_Command {
 		}
 		if ( ! Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 			Utils\report_batch_operation_results( 'image', 'import', count( $args ), $successes, $errors );
+		} elseif ( $errors ) {
+			WP_CLI::halt( 1 );
 		}
 	}
 

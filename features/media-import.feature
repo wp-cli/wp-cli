@@ -120,3 +120,39 @@ Feature: Manage WordPress attachments
       """
       Alt\Here
       """
+
+  Scenario: Import multiple images
+    Given download:
+      | path                        | url                                              |
+      | {CACHE_DIR}/large-image.jpg | http://wp-cli.org/behat-data/large-image.jpg     |
+
+    When I run `wp media import 'http://wp-cli.org/behat-data/codeispoetry.png' {CACHE_DIR}/large-image.jpg`
+    Then STDOUT should contain:
+      """
+      Success: Imported 2 of 2 images.
+      """
+
+  Scenario: Fail to import one image but continue trying the next
+    When I try `wp media import gobbledygook.png 'http://wp-cli.org/behat-data/codeispoetry.png'`
+    Then STDERR should contain:
+      """
+      Error: Only imported 1 of 2 images.
+      """
+    And the return code should be 1
+
+  Scenario: Fail when download_url() fails
+    When I try `wp media import 'http://wp-cli.org/404'`
+    Then STDERR should be:
+      """
+      Warning: Unable to import file 'http://wp-cli.org/404'. Reason: Not Found
+      Error: No images imported.
+      """
+    And the return code should be 1
+
+  Scenario: Return a non-zero exit code when encountering an error in --porcelain mode
+    When I try `wp media import gobbledygook.png --porcelain`
+    Then STDERR should contain:
+      """
+      Warning: Unable to import file 'gobbledygook.png'. Reason: File doesn't exist.
+      """
+    And the return code should be 1
