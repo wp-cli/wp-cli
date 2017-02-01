@@ -153,6 +153,6 @@ Feature: Manage WordPress attachments
     When I try `wp media import gobbledygook.png --porcelain`
     Then STDERR should contain:
       """
-      Error: No images imported.
+      Warning: Unable to import file 'gobbledygook.png'. Reason: File doesn't exist.
       """
     And the return code should be 1
