@@ -203,7 +203,7 @@ class Media_Command extends WP_CLI_Command {
 				if ( is_wp_error( $tempfile ) ) {
 					WP_CLI::warning( sprintf(
 						"Unable to import file '%s'. Reason: %s",
-						$file, implode( ', ', $success->get_error_messages() )
+						$file, implode( ', ', $tempfile->get_error_messages() )
 					) );
 					$errors++;
 					continue;
