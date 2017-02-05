@@ -3,9 +3,9 @@ WP-CLI
 
 [WP-CLI](https://wp-cli.org/) is a set of command-line tools for managing [WordPress](https://wordpress.org/) installations. You can update plugins, configure multisite installs and much more, without using a web browser.
 
-For announcements, follow [@wpcli on Twitter](https://twitter.com/wpcli) or [sign up for our email newsletter](http://wp-cli.us13.list-manage.com/subscribe?u=0615e4d18f213891fc000adfd&id=8c61d7641e). [Check out the roadmap](https://wp-cli.org/docs/roadmap/) for an overview of what's planned for upcoming releases.
+For announcements, follow [@wpcli on Twitter](https://twitter.com/wpcli) or [sign up for our email newsletter](https://wp-cli.us13.list-manage.com/subscribe?u=0615e4d18f213891fc000adfd&id=8c61d7641e). [Check out the roadmap](https://wp-cli.org/docs/roadmap/) for an overview of what's planned for upcoming releases.
 
-[![Build Status](https://travis-ci.org/wp-cli/wp-cli.svg?branch=master)](https://travis-ci.org/wp-cli/wp-cli) [![Dependency Status](https://gemnasium.com/badges/github.com/wp-cli/wp-cli.svg)](https://gemnasium.com/github.com/wp-cli/wp-cli) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/wp-cli/wp-cli.svg)](http://isitmaintained.com/project/wp-cli/wp-cli "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/wp-cli/wp-cli.svg)](http://isitmaintained.com/project/wp-cli/wp-cli "Percentage of issues still open")
+[![Build Status](https://travis-ci.org/wp-cli/wp-cli.svg?branch=master)](https://travis-ci.org/wp-cli/wp-cli) [![Dependency Status](https://gemnasium.com/badges/github.com/wp-cli/wp-cli.svg)](https://gemnasium.com/github.com/wp-cli/wp-cli) [![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/wp-cli/wp-cli.svg)](https://isitmaintained.com/project/wp-cli/wp-cli "Average time to resolve an issue") [![Percentage of issues still open](https://isitmaintained.com/badge/open/wp-cli/wp-cli.svg)](https://isitmaintained.com/project/wp-cli/wp-cli "Percentage of issues still open")
 
 Quick links: [Using](#using) &#124; [Installing](#installing) &#124; [Support](#support) &#124; [Extending](#extending) &#124; [Contributing](#contributing) &#124; [Credits](#credits)
 
@@ -106,7 +106,7 @@ source /FULL/PATH/TO/wp-completion.bash
 
 ## Support
 
-WP-CLI's maintainers and project contributors are volunteers, and have limited availability to address general support questions. The [current version of WP-CLI](http://wp-cli.org/docs/roadmap/) is the only officially supported version.
+WP-CLI's maintainers and project contributors are volunteers, and have limited availability to address general support questions. The [current version of WP-CLI](https://wp-cli.org/docs/roadmap/) is the only officially supported version.
 
 When looking for support, please first look for an answer in one of the following resources:
 
@@ -114,7 +114,7 @@ When looking for support, please first look for an answer in one of the followin
 - [Documentation portal](https://wp-cli.org/docs/)
 - [Open or closed issues on Github](https://github.com/wp-cli/wp-cli/issues?utf8=%E2%9C%93&q=is%3Aissue)
 - [runcommand tips](https://runcommand.io/tips/)
-- [WordPress StackExchange forums](http://wordpress.stackexchange.com/questions/tagged/wp-cli)
+- [WordPress StackExchange forums](https://wordpress.stackexchange.com/questions/tagged/wp-cli)
 
 Need help with a project related to work? Professional users may want to consider [runcommand premium support](https://runcommand.io/pricing/). Alternatively, join the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/) to see if a community member might have an answer for you.
 
@@ -184,9 +184,9 @@ Read more about the project's [governance](https://wp-cli.org/docs/governance/) 
 
 Besides the libraries defined in [composer.json](composer.json), we have used code or ideas from the following projects:
 
-* [Drush](http://drush.ws/) for... a lot of things
-* [wpshell](http://code.trac.wordpress.org/browser/wpshell) for `wp shell`
-* [Regenerate Thumbnails](http://wordpress.org/plugins/regenerate-thumbnails/) for `wp media regenerate`
+* [Drush](https://github.com/drush-ops/drush) for... a lot of things
+* [wpshell](https://code.trac.wordpress.org/browser/wpshell) for `wp shell`
+* [Regenerate Thumbnails](https://wordpress.org/plugins/regenerate-thumbnails/) for `wp media regenerate`
 * [Search-Replace-DB](https://github.com/interconnectit/Search-Replace-DB) for `wp search-replace`
 * [WordPress-CLI-Exporter](https://github.com/Automattic/WordPress-CLI-Exporter) for `wp export`
 * [WordPress-CLI-Importer](https://github.com/Automattic/WordPress-CLI-Importer) for `wp import`
