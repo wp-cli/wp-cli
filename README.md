@@ -3,7 +3,7 @@ WP-CLI
 
 [WP-CLI](https://wp-cli.org/) is a set of command-line tools for managing [WordPress](https://wordpress.org/) installations. You can update plugins, configure multisite installs and much more, without using a web browser.
 
-For announcements, follow [@wpcli on Twitter](https://twitter.com/wpcli) or [sign up for our email newsletter](https://wp-cli.us13.list-manage.com/subscribe?u=0615e4d18f213891fc000adfd&id=8c61d7641e). [Check out the roadmap](https://wp-cli.org/docs/roadmap/) for an overview of what's planned for upcoming releases.
+For announcements, follow [@wpcli on Twitter](https://twitter.com/wpcli) or [sign up for email updates](https://make.wordpress.org/cli/subscribe/). [Check out the roadmap](https://wp-cli.org/docs/roadmap/) for an overview of what's planned for upcoming releases.
 
 [![Build Status](https://travis-ci.org/wp-cli/wp-cli.svg?branch=master)](https://travis-ci.org/wp-cli/wp-cli) [![Dependency Status](https://gemnasium.com/badges/github.com/wp-cli/wp-cli.svg)](https://gemnasium.com/github.com/wp-cli/wp-cli) [![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/wp-cli/wp-cli.svg)](https://isitmaintained.com/project/wp-cli/wp-cli "Average time to resolve an issue") [![Percentage of issues still open](https://isitmaintained.com/badge/open/wp-cli/wp-cli.svg)](https://isitmaintained.com/project/wp-cli/wp-cli "Percentage of issues still open")
 
@@ -106,7 +106,7 @@ source /FULL/PATH/TO/wp-completion.bash
 
 ## Support
 
-WP-CLI's maintainers and project contributors are volunteers, and have limited availability to address general support questions. The [current version of WP-CLI](https://wp-cli.org/docs/roadmap/) is the only officially supported version.
+WP-CLI's maintainers and project contributors have limited availability to address general support questions. The [current version of WP-CLI](https://wp-cli.org/docs/roadmap/) is the only officially supported version.
 
 When looking for support, please first look for an answer in one of the following resources:
 
@@ -116,7 +116,7 @@ When looking for support, please first look for an answer in one of the followin
 - [runcommand tips](https://runcommand.io/tips/)
 - [WordPress StackExchange forums](https://wordpress.stackexchange.com/questions/tagged/wp-cli)
 
-Need help with a project related to work? Professional users may want to consider [runcommand premium support](https://runcommand.io/pricing/). Alternatively, join the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/) to see if a community member might have an answer for you.
+You can also join the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/) to see if a community member might have an answer for you.
 
 Github issues are meant for tracking enhancements and bugs of existing commands, not general support. Before submitting a bug report, please [review our best practices](https://wp-cli.org/docs/bug-reports/) to help ensure your issue is addressed in a timely manner.
 
