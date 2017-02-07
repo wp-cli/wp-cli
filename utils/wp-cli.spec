@@ -1,5 +1,5 @@
 %define source0    wp-cli.tar.gz
-%define name       wpaas-wp-cli
+%define name       wp-cli
 %define version    0.15.0
 
 Name:          %{name}
@@ -8,8 +8,8 @@ Version:       %{version}
 Release:       1
 Group:         WordPress
 License:       MIT
-URL:           http://wp-cli.org/
-Packager:      Kurt Payne <kpayne@godaddy.com>
+URL:           https://wp-cli.org/
+Packager:      WP-CLI <info@wp-cli.org>
 Source:        %{source}
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix:        %{_prefix}
@@ -72,5 +72,5 @@ rm -f /usr/bin/wp
 %defattr(644, root, root)
 
 %changelog
-* Sat Jan 18 2014 Kurt Payne <kpayne@godaddy.com>
+* Sat Jan 18 2014 WP-CLI <info@wp-cli.org>
 - Initial RPM release.
