@@ -1,6 +1,6 @@
 RPMBUILD=rpmbuild
 SPECFILE=wp-cli.spec
-BUILD := $(shell grep -i "Release:" $(PWD)/$(SPECFILE) |awk -F":" '{print $$2 + 1}')
+BUILD := $(shell grep -i "Release:" $(PWD)/utils/$(SPECFILE) |awk -F":" '{print $$2 + 1}')
 TMPBUILD=/tmp/wp-cli-rpm
 rpm:
 		rm -rf $(TMPBUILD)
@@ -13,7 +13,7 @@ rpm:
 		find $(TMPBUILD) -depth -type f -name ".git*" -exec rm -rf {} \;
 		cd $(TMPBUILD) && tar -cf $(TMPBUILD)/wp-cli.tar wp-cli && cd $(PWD)
 		gzip $(TMPBUILD)/wp-cli.tar
-		mv $(TMPBUILD)/wp-cli/$(SPECFILE) $(TMPBUILD)/$(SPECFILE)
+		mv $(TMPBUILD)/wp-cli/utils/$(SPECFILE) $(TMPBUILD)/$(SPECFILE)
 		rm -rf $(TMPBUILD)/wp-cli
 
 		mkdir -p $(TMPBUILD)/dist/BUILD \
