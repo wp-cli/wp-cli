@@ -1,7 +1,5 @@
 #!/bin/bash
 
-exit;
-
 set -ex
 
 # Run the unit tests
