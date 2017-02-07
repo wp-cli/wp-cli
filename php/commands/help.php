@@ -6,7 +6,12 @@ use \WP_CLI\Dispatcher;
 class Help_Command extends WP_CLI_Command {
 
 	/**
-	 * Get help on a certain command.
+	 * Get help on WP-CLI, or on a specific command.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<command>...]
+	 * : Get help on a specific command.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -15,13 +20,20 @@ class Help_Command extends WP_CLI_Command {
 	 *
 	 *     # get help for `core download` subcommand
 	 *     wp help core download
-	 *
-	 * @synopsis [<command>...]
 	 */
 	function __invoke( $args, $assoc_args ) {
 		$command = self::find_subcommand( $args );
 
 		if ( $command ) {
+
+			if ( WP_CLI::get_runner()->is_command_disabled( $command ) ) {
+				$path = implode( ' ', array_slice( \WP_CLI\Dispatcher\get_path( $command ), 1 ) );
+				WP_CLI::error( sprintf(
+					"The '%s' command has been disabled from the config file.",
+					$path
+				) );
+			}
+
 			self::show_help( $command );
 			exit;
 		}
@@ -51,11 +63,14 @@ class Help_Command extends WP_CLI_Command {
 			$out .= wordwrap( $longdesc, 90 ) . "\n";
 		}
 
-		// section headers
-		$out = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
-
 		// definition lists
 		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
+
+		// Ensure all non-section headers are indented
+		$out = preg_replace( '#^([^\s^\#])#m', "\t$1", $out );
+
+		// section headers
+		$out = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
 
 		$out = str_replace( "\t", '  ', $out );
 
@@ -77,10 +92,9 @@ class Help_Command extends WP_CLI_Command {
 	}
 
 	private static function pass_through_pager( $out ) {
-		if ( Utils\is_windows() ) {
-			// no paging for Windows cmd.exe; sorry
-			echo $out;
-			return 0;
+
+		if ( false === ( $pager = getenv( 'PAGER' ) ) ) {
+			$pager = Utils\is_windows() ? 'more' : 'less -r';
 		}
 
 		// convert string to file handle
@@ -94,7 +108,7 @@ class Help_Command extends WP_CLI_Command {
 			2 => STDERR
 		);
 
-		return proc_close( proc_open( 'less -r', $descriptorspec, $pipes ) );
+		return proc_close( proc_open( $pager, $descriptorspec, $pipes ) );
 	}
 
 	private static function get_initial_markdown( $command ) {
@@ -107,6 +121,11 @@ class Help_Command extends WP_CLI_Command {
 
 		$binding['synopsis'] = wordwrap( "$name " . $command->get_synopsis(), 79 );
 
+		$alias = $command->get_alias();
+		if ( $alias ) {
+			$binding['alias'] = $alias;
+		}
+
 		if ( $command->can_have_subcommands() ) {
 			$binding['has-subcommands']['subcommands'] = self::render_subcommands( $command );
 		}
@@ -117,6 +136,11 @@ class Help_Command extends WP_CLI_Command {
 	private static function render_subcommands( $command ) {
 		$subcommands = array();
 		foreach ( $command->get_subcommands() as $subcommand ) {
+
+			if ( WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
+				continue;
+			}
+
 			$subcommands[ $subcommand->get_name() ] = $subcommand->get_shortdesc();
 		}
 
@@ -140,6 +164,7 @@ class Help_Command extends WP_CLI_Command {
 
 		return $max_len;
 	}
+
 }
 
 WP_CLI::add_command( 'help', 'Help_Command' );

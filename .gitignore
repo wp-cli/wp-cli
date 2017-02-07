@@ -1,4 +1,10 @@
-composer.lock
+.DS_Store
+config.yml
+PHAR_BUILD_VERSION
+/cache
+/packages
 /vendor
 /*.phar
-/phpunit.xml
+/phpunit.xml.dist
+/codesniffer
+/PHP_Codesniffer-VariableAnalysis

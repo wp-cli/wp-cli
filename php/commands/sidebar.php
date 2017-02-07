@@ -2,6 +2,14 @@
 
 /**
  * Manage sidebars.
+ *
+ * ## EXAMPLES
+ *
+ *     # List sidebars
+ *     $ wp sidebar list --fields=name,id --format=csv
+ *     name,id
+ *     "Widget Area",sidebar-1
+ *     "Inactive Widgets",wp_inactive_widgets
  */
 class Sidebar_Command extends WP_CLI_Command {
 
@@ -17,14 +25,43 @@ class Sidebar_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to name, id, description
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - ids
+	 *   - count
+	 *   - yaml
+	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each sidebar:
+	 *
+	 * * name
+	 * * id
+	 * * description
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * class
+	 * * before_widget
+	 * * after_widget
+	 * * before_title
+	 * * after_title
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp sidebar list --fields=name,id --format=csv
+	 *     $ wp sidebar list --fields=name,id --format=csv
+	 *     name,id
+	 *     "Widget Area",sidebar-1
+	 *     "Inactive Widgets",wp_inactive_widgets
 	 *
 	 * @subcommand list
 	 */
@@ -33,8 +70,15 @@ class Sidebar_Command extends WP_CLI_Command {
 
 		\WP_CLI\Utils\wp_register_unused_sidebar();
 
+		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
+			$sidebars = wp_list_pluck( $wp_registered_sidebars, 'id' );
+		}
+		else {
+			$sidebars = $wp_registered_sidebars;
+		}
+
 		$formatter = new \WP_CLI\Formatter( $assoc_args, $this->fields );
-		$formatter->display_items( $wp_registered_sidebars );
+		$formatter->display_items( $sidebars );
 	}
 
 }

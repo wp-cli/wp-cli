@@ -19,6 +19,12 @@ Feature: Manage WordPress theme mods
       | key               | value    |
       | background_color  | 123456   |
 
+    When I run `wp theme mod get background_color --field=value`
+    Then STDOUT should be:
+      """
+      123456
+      """
+
     When I run `wp theme mod set background_color 123456`
     And I run `wp theme mod get background_color header_textcolor`
     Then STDOUT should be a table containing rows:
@@ -32,7 +38,7 @@ Feature: Manage WordPress theme mods
     When I run `wp theme mod set background_color 123456`
     Then STDOUT should be:
       """
-      Success: Theme mod background_color set to 123456
+      Success: Theme mod background_color set to 123456.
       """
 
   Scenario: Removing theme mods
@@ -53,7 +59,7 @@ Feature: Manage WordPress theme mods
     When I run `wp theme mod remove background_color`
     Then STDOUT should be:
       """
-      Success: 1 mods removed.
+      Success: 1 mod removed.
       """
 
     When I run `wp theme mod remove background_color header_textcolor`

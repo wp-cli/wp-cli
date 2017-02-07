@@ -8,6 +8,12 @@ function assertEquals( $expected, $actual ) {
 	}
 }
 
+function assertNotEquals( $expected, $actual ) {
+	if ( $expected == $actual ) {
+		throw new Exception( "Actual value: " . var_export( $actual, true ) );
+	}
+}
+
 function assertNumeric( $actual ) {
 	if ( !is_numeric( $actual ) ) {
 		throw new Exception( "Actual value: " . var_export( $actual, true ) );
@@ -162,5 +168,27 @@ function checkThatCsvStringContainsValues( $actualCSV, $expectedCSV ) {
 	}
 
 	return $expectedResult >= count( $expectedCSV );
+}
+
+/**
+ * Compare two strings containing YAML to ensure that @a $actualYaml contains at
+ * least what the YAML string @a $expectedYaml contains.
+ *
+ * @return whether or not @a $actualYaml contains @a $expectedJson
+ *     @retval true  @a $actualYaml contains @a $expectedJson
+ *     @retval false @a $actualYaml does not contain @a $expectedJson
+ *
+ * @param[in] $actualYaml   the YAML string to be tested
+ * @param[in] $expectedYaml the expected YAML string
+ */
+function checkThatYamlStringContainsYamlString( $actualYaml, $expectedYaml ) {
+	$actualValue   = spyc_load( $actualYaml );
+	$expectedValue = spyc_load( $expectedYaml );
+
+	if ( !$actualValue ) {
+		return false;
+	}
+
+	return compareContents( $expectedValue, $actualValue );
 }
 

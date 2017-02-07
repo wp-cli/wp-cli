@@ -35,7 +35,7 @@ Feature: WordPress REPL
       """
 
     When I run `wp shell --basic < session`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       bool(true)
       """

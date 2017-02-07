@@ -17,7 +17,7 @@ class Transform extends \IteratorIterator {
 		$value = parent::current();
 
 		foreach ( $this->transformers as $fn ) {
-			$value = $fn( $value );
+			$value = call_user_func( $fn, $value );
 		}
 
 		return $value;

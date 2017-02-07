@@ -1,68 +1,43 @@
-Contribute
-==========
+Contributing
+============
 
-Setting up
-----------
+Welcome and thanks!
 
-1. Clone this git repository on your local machine.
-2. Install [Composer](https://getcomposer.org/) if you don't already have it.
-2. Run `composer install` to fetch all the dependencies.
-3. Run `./bin/wp --info` to test if everything was installed properly.
+We appreciate you taking the initiative to contribute to WP-CLI. It’s because of you, and the community around you, that WP-CLI is such a great project.
 
-Submitting patches
-------------------
+**Contributing isn’t limited to just code.** We encourage you to contribute in the way that best fits your abilities, by writing tutorials, giving a demo at your local meetup, helping other users with their support questions, or revising our documentation.
 
-Whether you want to fix a bug or implement a new feature, the process is pretty much the same:
+Please take a moment to read these guidelines at depth. Following the guidelines helps to communicate that you respect the time of the other contributors to the project. In turn, they’ll do their best to reciprocate that respect when working with you, across timezones and around the world.
 
-0. [Search existing issues](https://github.com/wp-cli/wp-cli/issues); if you can't find anything related to what you want to work on, open a new issue so that you can get some initial feedback.
-1. [Fork](https://github.com/wp-cli/wp-cli/fork) the repository.
-2. Push the code changes from your local clone to your fork.
-3. Open a pull request.
+### Reporting a bug
 
-It doesn't matter if the code isn't perfect. The idea is to get it reviewed early and iterate on it.
+Think you’ve found a bug? We’d love for you to help us get it fixed.
 
-If you're adding a new feature, please add one or more functional tests for it in the `features/` directory. See below.
+Before you create a new issue, you should [search existing issues](https://github.com/wp-cli/wp-cli/issues?utf8=%E2%9C%93&q=label%3Abug%20) to see if there’s an existing resolution to it, or if it’s already been fixed in a newer version of WP-CLI. You should also check our [documentation on common issues and their fixes](https://wp-cli.org/docs/common-issues/).
 
-Lastly, please follow the [WordPress Coding Standards](http://make.wordpress.org/core/handbook/coding-standards/).
+Once you’ve done a bit of searching and discovered there isn’t an open or fixed issue for your bug, please [follow our guidelines for submitting a bug report](http://wp-cli.org/docs/bug-reports/) to make sure it gets addressed in a timely manner.
 
-Running and writing tests
--------------------------
+### Creating a pull request
 
-There are two types of automated tests:
+Want to contribute a new feature? WP-CLI is a mature project, and already chock-full of useful functionality. Please first [open a new issue](https://github.com/wp-cli/wp-cli/issues/new) to discuss whether the feature is a good fit for WP-CLI core, or might be better suited as a [community package](https://wp-cli.org/package-index/).
 
-* unit tests, implemented using [PHPUnit](http://phpunit.de/)
-* functional tests, implemented using [Behat](http://behat.org)
+New to the WP-CLI codebase? Check out [issues labeled 'good-first-issue'](https://github.com/wp-cli/wp-cli/labels/good-first-issue) for a place to start. These issues are specially earmarked for new contributors.
 
-### Unit tests
+Once you've decided to commit the time to seeing your pull request through, please [follow our guidelines for creating a pull request](https://wp-cli.org/docs/pull-requests/) to make sure it's a pleasant experience.
 
-The unit test files are in the `tests/` directory.
+### Improving our documentation
 
-To run the unit tests, just execute:
+Is documentation your strength? Take a look at the currently open [documentation issues](https://github.com/wp-cli/wp-cli/issues?q=is%3Aopen+is%3Aissue+label%3Ascope%3Adocumentation) and see if you can tackle any of those.
 
-    ./vendor/bin/phpunit
+If you believe you’ve found an issue with the documentation, you should [search existing issues](https://github.com/wp-cli/wp-cli/issues?utf8=%E2%9C%93&q=label%3Abug%20) to see if there’s an existing resolution to it, or if it’s already been fixed in a newer version of WP-CLI.
 
-### Functional tests
+There are a couple different types of documentation currently part of WP-CLI:
 
-The functional test files are in the `features/` directory.
+* Documentation for individual WP-CLI commands (anything underneath [http://wp-cli.org/commands](http://wp-cli.org/commands)) is contained in the PHPDoc for each command. This means that to edit the documentation for a command, you will need to edit the file that actually provides the functionality for that command. The web documentation is generated from these files at the time of release, so you may not see your changes until the next release.
+* Individual documentation pages (anything under [http://wp-cli.org/docs/](http://wp-cli.org/docs/) can be edited by contributing to the [wp-cli.github.com repository on GitHub](https://github.com/wp-cli/wp-cli.github.com). You don't necessarily need to navigate the Github repo though; any page that is part of this repository will have an 'Edit' link in the top right of the page which will take you to the corresponding file on GitHub.
 
-Before running the functional tests, you'll need a MySQL user called `wp_cli_test` with the
-password `password1` that has full privileges on the MySQL database `wp_cli_test`.
-Running the following as root in MySQL should do the trick:
+### Contributing in other ways
 
-    GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"localhost" IDENTIFIED BY "password1";
+Feel free to [create an issue](https://github.com/wp-cli/wp-cli/issues/new) with your question, and we'll see if we can find an answer for it.
 
-Then, to run the entire test suite:
-
-    ./vendor/bin/behat --expand
-
-Or to test a single feature:
-
-    ./vendor/bin/behat features/core.feature
-
-More info can be found by using `./vendor/bin/behat --help`.
-
-Finally...
-----------
-
-Thanks! Hacking on WP-CLI should be fun. If you find any of this hard to figure
-out, let us know so we can improve our process or documentation!
+Alternatively, if you have a WordPress.org account, you may also consider joining the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/).

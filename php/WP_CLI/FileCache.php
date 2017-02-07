@@ -220,7 +220,11 @@ class FileCache {
 
 		// unlink expired files
 		if ( $ttl > 0 ) {
-			$expire = new \DateTime();
+			try {
+				$expire = new \DateTime();
+			} catch ( \Exception $e ) {
+				\WP_CLI::error( $e->getMessage() );
+			}
 			$expire->modify( '-' . $ttl . ' seconds' );
 
 			$finder = $this->get_finder()->date( 'until ' . $expire->format( 'Y-m-d H:i:s' ) );

@@ -99,12 +99,13 @@ COMMENT;
 		$authors = $this->export->authors();
 		foreach ( $authors as $author ) {
 			$oxymel
-				->tag( 'wp:wp_author' )->contains
+				->tag( 'wp:author' )->contains
+					->tag( 'wp:author_id', $author->ID )
 					->tag( 'wp:author_login', $author->user_login )
 					->tag( 'wp:author_email', $author->user_email )
 					->tag( 'wp:author_display_name' )->contains->cdata( $author->display_name )->end
-					->tag( 'wp:author_first_name' )->contains->cdata( $author->user_first_name )->end
-					->tag( 'wp:author_last_name' )->contains->cdata( $author->user_last_name )->end
+					->tag( 'wp:author_first_name' )->contains->cdata( $author->user_firstname )->end
+					->tag( 'wp:author_last_name' )->contains->cdata( $author->user_lastname )->end
 					->end;
 		}
 		return $oxymel->to_string();
@@ -166,7 +167,7 @@ COMMENT;
 			->link( esc_url( apply_filters('the_permalink_rss', get_permalink() ) ) )
 			->pubDate( mysql2date( 'D, d M Y H:i:s +0000', get_post_time( 'Y-m-d H:i:s', true ), false ) )
 			->tag( 'dc:creator', get_the_author_meta( 'login' ) )
-			->guid( get_the_guid(), array( 'isPermaLink' => 'false' ) )
+			->guid( esc_url( get_the_guid() ), array( 'isPermaLink' => 'false' ) )
 			->description( '' )
 			->tag( 'content:encoded' )->contains->cdata( $post->post_content )->end
 			->tag( 'excerpt:encoded' )->contains->cdata( $post->post_excerpt )->end
@@ -252,7 +253,7 @@ COMMENT;
 		foreach( $metas as $meta ) {
 			$oxymel->tag( 'wp:commentmeta' )->contains
 				->tag( 'wp:meta_key', $meta->meta_key )
-				->tag( 'wp:meta_value', $meta->meta_value )
+				->tag( 'wp:meta_value' )->contains->cdata( $meta->meta_value )->end
 			->end;
 		}
 		return $oxymel;

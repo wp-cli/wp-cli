@@ -3,6 +3,20 @@
 /**
  * Manage posts.
  *
+ * ## EXAMPLES
+ *
+ *     # Create a new post.
+ *     $ wp post create --post_type=post --post_title='A sample post'
+ *     Success: Created post 123.
+ *
+ *     # Update an existing post.
+ *     $ wp post update 123 --post_status=draft
+ *     Success: Updated post 123.
+ *
+ *     # Delete an existing post.
+ *     $ wp post delete 123
+ *     Success: Trashed post 123.
+ *
  * @package wp-cli
  */
 class Post_Command extends \WP_CLI\CommandWithDBObject {
@@ -21,7 +35,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Create a post.
+	 * Create a new post.
 	 *
 	 * ## OPTIONS
 	 *
@@ -46,27 +60,21 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp post create --post_type=page --post_status=publish --post_title='A future post' --post-status=future --post_date='2020-12-01 07:00:00'
+	 *     # Create post and schedule for future
+	 *     $ wp post create --post_type=page --post_title='A future post' --post_status=future --post_date='2020-12-01 07:00:00'
+	 *     Success: Created post 1921.
 	 *
-	 *     wp post create ./post-content.txt --post_category=201,345 --post_title='Post from file'
+	 *     # Create post with content from given file
+	 *     $ wp post create ./post-content.txt --post_category=201,345 --post_title='Post from file'
+	 *     Success: Created post 1922.
 	 */
 	public function create( $args, $assoc_args ) {
 		if ( ! empty( $args[0] ) ) {
-			if ( $args[0] !== '-' ) {
-				$readfile = $args[0];
-				if ( ! file_exists( $readfile ) || ! is_file( $readfile ) ) {
-					\WP_CLI::error( "Unable to read content from $readfile." );
-				}
-			} else {
-				$readfile = 'php://stdin';
-			}
-
-			$assoc_args['post_content'] = file_get_contents( $readfile );
+			$assoc_args['post_content'] = $this->read_from_file_or_stdin( $args[0] );
 		}
 
-		if ( isset( $assoc_args['edit'] ) ) {
-			$input = isset( $assoc_args['post_content'] ) ?
-				$assoc_args['post_content'] : '';
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'edit' ) ) {
+			$input = \WP_CLI\Utils\get_flag_value( $assoc_args, 'post_content', '' );
 
 			if ( $output = $this->_edit( $input, 'WP-CLI: New Post' ) )
 				$assoc_args['post_content'] = $output;
@@ -78,27 +86,55 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
 		}
 
+		$assoc_args = wp_slash( $assoc_args );
 		parent::_create( $args, $assoc_args, function ( $params ) {
 			return wp_insert_post( $params, true );
 		} );
 	}
 
 	/**
-	 * Update one or more posts.
+	 * Update one or more existing posts.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <id>...
 	 * : One or more IDs of posts to update.
 	 *
+	 * [<file>]
+	 * : Read post content from <file>. If this value is present, the
+	 *     `--post_content` argument will be ignored.
+	 *
+	 *   Passing `-` as the filename will cause post content to
+	 *   be read from STDIN.
+	 *
 	 * --<field>=<value>
 	 * : One or more fields to update. See wp_update_post().
 	 *
+	 * [--defer-term-counting]
+	 * : Recalculate term count in batch, for a performance boost.
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp post update 123 --post_name=something --post_status=draft
+	 *     $ wp post update 123 --post_name=something --post_status=draft
+	 *     Success: Updated post 123.
 	 */
 	public function update( $args, $assoc_args ) {
+
+		foreach( $args as $key => $arg ) {
+			if ( is_numeric( $arg ) ) {
+				continue;
+			}
+
+			$assoc_args['post_content'] = $this->read_from_file_or_stdin( $arg );
+			unset( $args[ $key ] );
+			break;
+		}
+
+		if ( isset( $assoc_args['post_category'] ) ) {
+			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
+		}
+
+		$assoc_args = wp_slash( $assoc_args );
 		parent::_update( $args, $assoc_args, function ( $params ) {
 			return wp_update_post( $params, true );
 		} );
@@ -114,7 +150,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp post edit 123
+	 *     # Launch system editor to edit post
+	 *     $ wp post edit 123
 	 */
 	public function edit( $args, $_ ) {
 		$post = $this->fetcher->get_check( $args[0] );
@@ -135,7 +172,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get a post's content by ID.
+	 * Get details about a post.
 	 *
 	 * ## OPTIONS
 	 *
@@ -145,13 +182,24 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--field=<field>]
 	 * : Instead of returning the whole post, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # save the post content to a file
-	 *     wp post get 12 --field=content > file.txt
+	 *     # Save the post content to a file
+	 *     $ wp post get 123 --field=content > file.txt
 	 */
 	public function get( $args, $assoc_args ) {
 		$post = $this->fetcher->get_check( $args[0] );
@@ -159,12 +207,16 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		$post_arr = get_object_vars( $post );
 		unset( $post_arr['filter'] );
 
+		if ( empty( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = array_keys( $post_arr );
+		}
+
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $post_arr );
 	}
 
 	/**
-	 * Delete a post by ID.
+	 * Delete an existing post.
 	 *
 	 * ## OPTIONS
 	 *
@@ -174,11 +226,24 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--force]
 	 * : Skip the trash bin.
 	 *
+	 * [--defer-term-counting]
+	 * : Recalculate term count in batch, for a performance boost.
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp post delete 123 --force
+	 *     # Delete post skipping trash
+	 *     $ wp post delete 123 --force
+	 *     Success: Deleted post 123.
 	 *
-	 *     wp post delete $(wp post list --post_type='page' --format=ids)
+	 *     # Delete all pages
+	 *     $ wp post delete $(wp post list --post_type='page' --format=ids)
+	 *     Success: Trashed post 1164.
+	 *     Success: Trashed post 1186.
+	 *
+	 *     # Delete all posts in the trash
+	 *     $ wp post delete $(wp post list --post_status=trash --format=ids)
+	 *     Success: Trashed post 1268.
+	 *     Success: Trashed post 1294.
 	 */
 	public function delete( $args, $assoc_args ) {
 		$defaults = array(
@@ -187,10 +252,12 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		parent::_delete( $args, $assoc_args, function ( $post_id, $assoc_args ) {
+			$status = get_post_status( $post_id );
+			$post_type = get_post_type( $post_id );
 			$r = wp_delete_post( $post_id, $assoc_args['force'] );
 
 			if ( $r ) {
-				$action = $assoc_args['force'] ? 'Deleted' : 'Trashed';
+				$action = $assoc_args['force'] || 'trash' === $status || 'revision' === $post_type ? 'Deleted' : 'Trashed';
 
 				return array( 'success', "$action post $post_id." );
 			} else {
@@ -211,20 +278,87 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Prints the value of a single field for each post.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to ID,post_title,post_name,post_date,post_status.
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - ids
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each post:
+	 *
+	 * * ID
+	 * * post_title
+	 * * post_name
+	 * * post_date
+	 * * post_status
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * post_author
+	 * * post_date_gmt
+	 * * post_content
+	 * * post_excerpt
+	 * * comment_status
+	 * * ping_status
+	 * * post_password
+	 * * to_ping
+	 * * pinged
+	 * * post_modified
+	 * * post_modified_gmt
+	 * * post_content_filtered
+	 * * post_parent
+	 * * guid
+	 * * menu_order
+	 * * post_type
+	 * * post_mime_type
+	 * * comment_count
+	 * * filter
+	 * * url
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp post list --field=ID
+	 *     # List post
+	 *     $ wp post list --field=ID
+	 *     568
+	 *     829
+	 *     1329
+	 *     1695
 	 *
-	 *     wp post list --post_type=post --posts_per_page=5 --format=json
+	 *     # List posts in JSON
+	 *     $ wp post list --post_type=post --posts_per_page=5 --format=json
+	 *     [{"ID":1,"post_title":"Hello world!","post_name":"hello-world","post_date":"2015-06-20 09:00:10","post_status":"publish"},{"ID":1178,"post_title":"Markup: HTML Tags and Formatting","post_name":"markup-html-tags-and-formatting","post_date":"2013-01-11 20:22:19","post_status":"draft"}]
 	 *
-	 *     wp post list --post_type=page --fields=post_title,post_status
+	 *     # List all pages
+	 *     $ wp post list --post_type=page --fields=post_title,post_status
+	 *     +-------------+-------------+
+	 *     | post_title  | post_status |
+	 *     +-------------+-------------+
+	 *     | Sample Page | publish     |
+	 *     +-------------+-------------+
 	 *
-	 *     wp post list --post_type=page,post --format=ids
+	 *     # List ids of all pages and posts
+	 *     $ wp post list --post_type=page,post --format=ids
+	 *     15 25 34 37 198
+	 *
+	 *     # List given posts
+	 *     $ wp post list --post__in=1,3
+	 *     +----+--------------+-------------+---------------------+-------------+
+	 *     | ID | post_title   | post_name   | post_date           | post_status |
+	 *     +----+--------------+-------------+---------------------+-------------+
+	 *     | 3  | Lorem Ipsum  | lorem-ipsum | 2016-06-01 14:34:36 | publish     |
+	 *     | 1  | Hello world! | hello-world | 2016-06-01 14:31:12 | publish     |
+	 *     +----+--------------+-------------+---------------------+-------------+
 	 *
 	 * @subcommand list
 	 */
@@ -236,40 +370,59 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'post_status'    => 'any',
 		);
 		$query_args = array_merge( $defaults, $assoc_args );
-
-		foreach ( $query_args as $key => $query_arg ) {
-			if ( false !== strpos( $key, '__' )
-				|| ( 'post_type' == $key && 'any' != $query_arg ) ) {
-				$query_args[$key] = explode( ',', $query_arg );
-			}
+		$query_args = self::process_csv_arguments_to_arrays( $query_args );
+		if ( isset( $query_args['post_type'] ) && 'any' !== $query_args['post_type'] ) {
+			$query_args['post_type'] = explode( ',', $query_args['post_type'] );
 		}
 
 		if ( 'ids' == $formatter->format ) {
 			$query_args['fields'] = 'ids';
 			$query = new WP_Query( $query_args );
 			echo implode( ' ', $query->posts );
-		} else {
+		} else if ( 'count' === $formatter->format ) {
+			$query_args['fields'] = 'ids';
 			$query = new WP_Query( $query_args );
 			$formatter->display_items( $query->posts );
+		} else {
+			$query = new WP_Query( $query_args );
+			$posts = array_map( function( $post ) {
+				$post->url = get_permalink( $post->ID );
+				return $post;
+			}, $query->posts );
+			$formatter->display_items( $posts );
 		}
 	}
 
 	/**
 	 * Generate some posts.
 	 *
+	 * Creates a specified number of new posts with dummy data.
+	 *
 	 * ## OPTIONS
 	 *
 	 * [--count=<number>]
-	 * : How many posts to generate. Default: 100
+	 * : How many posts to generate?
+	 * ---
+	 * default: 100
+	 * ---
 	 *
 	 * [--post_type=<type>]
-	 * : The type of the generated posts. Default: 'post'
+	 * : The type of the generated posts.
+	 * ---
+	 * default: post
+	 * ---
 	 *
 	 * [--post_status=<status>]
-	 * : The status of the generated posts. Default: 'publish'
+	 * : The status of the generated posts.
+	 * ---
+	 * default: publish
+	 * ---
 	 *
 	 * [--post_author=<login>]
-	 * : The author of the generated posts. Default: none
+	 * : The author of the generated posts.
+	 * ---
+	 * default:
+	 * ---
 	 *
 	 * [--post_date=<yyyy-mm-dd>]
 	 * : The date of the generated posts. Default: current date
@@ -278,12 +431,38 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : If set, the command reads the post_content from STDIN.
 	 *
 	 * [--max_depth=<number>]
-	 * : For hierarchical post types, generate child posts down to a certain depth. Default: 1
+	 * : For hierarchical post types, generate child posts down to a certain depth.
+	 * ---
+	 * default: 1
+	 * ---
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: progress
+	 * options:
+	 *   - progress
+	 *   - ids
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp post generate --count=10 --post_type=page --post_date=1999-01-04
-	 *     curl http://loripsum.net/api/5 | wp post generate --post_content --count=10
+	 *     # Generate posts.
+	 *     $ wp post generate --count=10 --post_type=page --post_date=1999-01-04
+	 *     Generating posts  100% [================================================] 0:01 / 0:04
+	 *
+	 *     # Generate posts with fetched content.
+	 *     $ curl http://loripsum.net/api/5 | wp post generate --post_content --count=10
+	 *       % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+	 *                                      Dload  Upload   Total   Spent    Left  Speed
+	 *     100  2509  100  2509    0     0    616      0  0:00:04  0:00:04 --:--:--   616
+	 *     Generating posts  100% [================================================] 0:01 / 0:04
+	 *
+	 *     # Add meta to every generated posts.
+	 *     $ wp post generate --format=ids | xargs -d ' ' -I % wp post meta add % foo bar
+	 *     Success: Added custom field.
+	 *     Success: Added custom field.
+	 *     Success: Added custom field.
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
@@ -305,17 +484,15 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( $post_author ) {
-			$post_author = get_user_by( 'login', $post_author );
-
-			if ( $post_author )
-				$post_author = $post_author->ID;
+			$user_fetcher = new \WP_CLI\Fetchers\User;
+			$post_author = $user_fetcher->get_check( $post_author )->ID;
 		}
 
-		if ( isset( $assoc_args['post_content'] ) ) {
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'post_content' ) ) {
 			$post_content = file_get_contents( 'php://stdin' );
 		}
 
-		// Get the total number of posts
+		// Get the total number of posts.
 		$total = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = %s", $post_type ) );
 
 		$label = get_post_type_object( $post_type )->labels->singular_name;
@@ -324,7 +501,12 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$limit = $count + $total;
 
-		$notify = \WP_CLI\Utils\make_progress_bar( 'Generating posts', $count );
+		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'progress' );
+
+		$notify = false;
+		if ( 'progress' === $format ) {
+			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating posts', $count );
+		}
 
 		$previous_post_id = 0;
 		$current_depth = 1;
@@ -363,30 +545,22 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				WP_CLI::warning( $post_id );
 			} else {
 				$previous_post_id = $post_id;
+				if ( 'ids' === $format ) {
+					echo $post_id;
+					if ( $i < $limit - 1 ) {
+						echo ' ';
+					}
+				}
 			}
 
-			$notify->tick();
+			if ( 'progress' === $format ) {
+				$notify->tick();
+			}
 		}
-		$notify->finish();
+		if ( 'progress' === $format ) {
+			$notify->finish();
+		}
 		// @codingStandardsIgnoreEnd
-	}
-
-	/**
-	 * Get post url
-	 *
-	 * ## OPTIONS
-	 *
-	 * <id>...
-	 * : One or more IDs of posts get the URL.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp post url 123
-	 *
-	 *     wp post url 123 324
-	 */
-	public function url( $args ) {
-		parent::_url( $args, 'get_permalink' );
 	}
 
 	private function maybe_make_child() {
@@ -398,24 +572,24 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		// 10% chance of reseting to root depth
 		return ( mt_rand(1, 10) == 7 );
 	}
-}
 
-/**
- * Manage post custom fields.
- *
- * ## OPTIONS
- *
- * [--format=json]
- * : Encode/decode values as JSON.
- *
- * ## EXAMPLES
- *
- *     wp post meta set 123 _wp_page_template about.php
- */
-class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
-	protected $meta_type = 'post';
+	/**
+	 * Read post content from file or STDIN
+	 *
+	 * @param string $arg Supplied argument
+	 * @return string
+	 */
+	private function read_from_file_or_stdin( $arg ) {
+		if ( $arg !== '-' ) {
+			$readfile = $arg;
+			if ( ! file_exists( $readfile ) || ! is_file( $readfile ) ) {
+				\WP_CLI::error( "Unable to read content from '$readfile'." );
+			}
+		} else {
+			$readfile = 'php://stdin';
+		}
+		return file_get_contents( $readfile );
+	}
 }
 
 WP_CLI::add_command( 'post', 'Post_Command' );
-WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );
-

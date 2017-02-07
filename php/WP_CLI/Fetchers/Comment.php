@@ -8,7 +8,7 @@ namespace WP_CLI\Fetchers;
 class Comment extends Base {
 
 	/**
-	 * @param string $msg Error message to use when invalid data is provided
+	 * @var string $msg Error message to use when invalid data is provided
 	 */
 	protected $msg = "Could not find the comment with ID %d.";
 

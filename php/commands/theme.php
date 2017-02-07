@@ -1,7 +1,39 @@
 <?php
 
+use WP_CLI\Utils;
+
 /**
  * Manage themes.
+ *
+ * ## EXAMPLES
+ *
+ *     # Install the latest version of a theme from wordpress.org and activate
+ *     $ wp theme install twentysixteen --activate
+ *     Installing Twenty Sixteen (1.2)
+ *     Downloading install package from http://downloads.wordpress.org/theme/twentysixteen.1.2.zip...
+ *     Unpacking the package...
+ *     Installing the theme...
+ *     Theme installed successfully.
+ *     Activating 'twentysixteen'...
+ *     Success: Switched to 'Twenty Sixteen' theme.
+ *
+ *     # Get details of an installed theme
+ *     $ wp theme get twentysixteen --fields=name,title,version
+ *     +---------+----------------+
+ *     | Field   | Value          |
+ *     +---------+----------------+
+ *     | name    | Twenty Sixteen |
+ *     | title   | Twenty Sixteen |
+ *     | version | 1.2            |
+ *     +---------+----------------+
+ *
+ *     # Get status of theme
+ *     $ wp theme status twentysixteen
+ *     Theme twentysixteen details:
+ *     		Name: Twenty Sixteen
+ *     		Status: Active
+ *     		Version: 1.2
+ *     		Author: the WordPress team
  *
  * @package wp-cli
  */
@@ -38,13 +70,34 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * [<theme>]
 	 * : A particular theme to show the status for.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp theme status twentysixteen
+	 *     Theme twentysixteen details:
+	 *     		Name: Twenty Sixteen
+	 *     		Status: Inactive
+	 *     		Version: 1.2
+	 *     		Author: the WordPress team
 	 */
-	function status( $args ) {
+	public function status( $args ) {
+		if ( isset( $args[0] ) ) {
+			$theme = $this->fetcher->get_check( $args[0] );
+			$errors = $theme->errors();
+			if ( is_wp_error( $errors ) ) {
+				$message = $errors->get_error_message();
+				WP_CLI::error( $message );
+			}
+		}
+
 		parent::status( $args );
 	}
 
 	/**
-	 * Search the wordpress.org theme repository.
+	 * Search the WordPress.org theme directory.
+	 *
+	 * Displays themes in the WordPress.org theme directory matching a given
+	 * search query.
 	 *
 	 * ## OPTIONS
 	 *
@@ -55,7 +108,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Optional number of results to display. Defaults to 10.
 	 *
 	 * [--field=<field>]
-	 * : Prints the value of a single field for each plugin.
+	 * : Prints the value of a single field for each theme.
 	 *
 	 * [--fields=<fields>]
 	 * : Ask for specific fields from the API. Defaults to name,slug,author,rating. Acceptable values:
@@ -72,13 +125,31 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *     **description**: Theme Description
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme search automattic --per-page=20
-	 *
-	 *     wp theme search automattic --fields=name,version,slug,rating,num_ratings,description
+	 *     $ wp theme search photo --per-page=6
+	 *     Success: Showing 6 of 203 themes.
+	 *     +----------------------+----------------------+--------+
+	 *     | name                 | slug                 | rating |
+	 *     +----------------------+----------------------+--------+
+	 *     | Photos               | photos               | 100    |
+	 *     | Infinite Photography | infinite-photography | 100    |
+	 *     | PhotoBook            | photobook            | 100    |
+	 *     | BG Photo Frame       | bg-photo-frame       | 0      |
+	 *     | fPhotography         | fphotography         | 0      |
+	 *     | Photo Perfect        | photo-perfect        | 98     |
+	 *     +----------------------+----------------------+--------+
 	 */
 	public function search( $args, $assoc_args ) {
 		parent::_search( $args, $assoc_args );
@@ -107,7 +178,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	protected function get_status( $theme ) {
-		return ( $this->is_active_theme( $theme ) ) ? 'active' : 'inactive';
+		if ( $this->is_active_theme( $theme ) ) {
+			return 'active';
+		} else if ( $theme->get_stylesheet_directory() === get_template_directory() ) {
+			return 'parent';
+		} else {
+			return 'inactive';
+		}
 	}
 
 	/**
@@ -117,13 +194,33 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * <theme>
 	 * : The theme to activate.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp theme activate twentysixteen
+	 *     Success: Switched to 'Twenty Sixteen' theme.
 	 */
 	public function activate( $args = array() ) {
 		$theme = $this->fetcher->get_check( $args[0] );
 
-		switch_theme( $theme->get_template(), $theme->get_stylesheet() );
+		$errors = $theme->errors();
+		if ( is_wp_error( $errors ) ) {
+			$message = $errors->get_error_message();
+			WP_CLI::error( $message );
+		}
 
 		$name = $theme->get('Name');
+
+		if ( 'active' === $this->get_status( $theme ) ) {
+			WP_CLI::warning( "The '$name' theme is already active." );
+			return;
+		}
+
+		if ( $theme->get_stylesheet() != $theme->get_template() && ! $this->fetcher->get( $theme->get_template() ) ) {
+			WP_CLI::error( "The '{$theme->get_stylesheet()}' theme cannot be activated without its parent, '{$theme->get_template()}'." );
+		}
+
+		switch_theme( $theme->get_template(), $theme->get_stylesheet() );
 
 		if ( $this->is_active_theme( $theme ) ) {
 			WP_CLI::success( "Switched to '$name' theme." );
@@ -133,7 +230,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Enable a theme in a multisite install.
+	 * Enable a theme on a WordPress multisite install.
+	 *
+	 * Permits theme to be activated from the dashboard of a site on a WordPress
+	 * multisite install.
 	 *
 	 * ## OPTIONS
 	 *
@@ -149,11 +249,18 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme enable twentythirteen
+	 *     # Enable theme
+	 *     $ wp theme enable twentysixteen
+	 *     Success: Enabled the 'Twenty Sixteen' theme.
 	 *
-	 *     wp theme enable twentythirteen --network
+	 *     # Network enable theme
+	 *     $ wp theme enable twentysixteen --network
+	 *     Success: Network enabled the 'Twenty Sixteen' theme.
 	 *
-	 *     wp theme enable twentythirteen --activate
+	 *     # Network enable and activate theme for current site
+	 *     $ wp theme enable twentysixteen --activate
+	 *     Success: Enabled the 'Twenty Sixteen' theme.
+	 *     Success: Switched to 'Twenty Sixteen' theme.
 	 */
 	public function enable( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
@@ -170,7 +277,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		$allowed_themes = call_user_func( "get{$_site}_option", 'allowedthemes' );
 		if ( empty( $allowed_themes ) )
 			$allowed_themes = array();
-		$allowed_themes[ $theme->get_template() ] = true;
+		$allowed_themes[ $theme->get_stylesheet() ] = true;
 		call_user_func( "update{$_site}_option", 'allowedthemes', $allowed_themes );
 
 		if ( ! empty( $assoc_args['network'] ) )
@@ -185,7 +292,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 
 	/**
-	 * Disable a theme in a multisite install.
+	 * Disable a theme on a WordPress multisite install.
+	 *
+	 * Removes ability for a theme to be activated from the dashboard of a site
+	 * on a WordPress multisite install.
 	 *
 	 * ## OPTIONS
 	 *
@@ -199,9 +309,13 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme disable twentythirteen
+	 *     # Disable theme
+	 *     $ wp theme disable twentysixteen
+	 *     Success: Disabled the 'Twenty Sixteen' theme.
 	 *
-	 *     wp theme disable twentythirteen --network
+	 *     # Disable theme in network level
+	 *     $ wp theme disable twentysixteen --network
+	 *     Success: Network disabled the 'Twenty Sixteen' theme.
 	 */
 	public function disable( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
@@ -216,8 +330,8 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 		# Add the current theme to the allowed themes option or site option
 		$allowed_themes = call_user_func( "get{$_site}_option", 'allowedthemes' );
-		if ( ! empty( $allowed_themes[ $theme->get_template() ] ) )
-			unset( $allowed_themes[ $theme->get_template() ] );
+		if ( ! empty( $allowed_themes[ $theme->get_stylesheet() ] ) )
+			unset( $allowed_themes[ $theme->get_stylesheet() ] );
 		call_user_func( "update{$_site}_option", 'allowedthemes', $allowed_themes );
 
 		if ( ! empty( $assoc_args['network'] ) )
@@ -245,7 +359,12 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     cd $(wp theme path)
+	 *     # Get theme path
+	 *     $ wp theme path
+	 *     /var/www/example.com/public_html/wp-content/themes
+	 *
+	 *     # Change directory to theme path
+	 *     $ cd $(wp theme path)
 	 */
 	public function path( $args, $assoc_args ) {
 		if ( empty( $args ) ) {
@@ -255,7 +374,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 			$path = $theme->get_stylesheet_directory();
 
-			if ( !isset( $assoc_args['dir'] ) )
+			if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'dir' ) )
 				$path .= '/style.css';
 		}
 
@@ -273,13 +392,21 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 			self::alter_api_response( $api, $assoc_args['version'] );
 		}
 
-		if ( !isset( $assoc_args['force'] ) && wp_get_theme( $slug )->exists() ) {
-			// We know this will fail, so avoid a needless download of the package.
-			return new WP_Error( 'already_installed', 'Theme already installed.' );
+		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) {
+			$theme = wp_get_theme( $slug );
+			if ( $theme->exists() ) {
+				// We know this will fail, so avoid a needless download of the package.
+				return new WP_Error( 'already_installed', 'Theme already installed.' );
+			}
+			// Clear cache so WP_Theme doesn't create a "missing theme" object.
+			$cache_hash = md5( $theme->theme_root . '/' . $theme->stylesheet );
+			foreach( array( 'theme', 'screenshot', 'headers', 'page_templates' ) as $key ) {
+				wp_cache_delete( $key . '-' . $cache_hash, 'themes' );
+			}
 		}
 
-		WP_CLI::log( sprintf( 'Installing %s (%s)', $api->name, $api->version ) );
-		if ( !isset( $assoc_args['version'] ) || 'dev' !== $assoc_args['version'] ) {
+		WP_CLI::log( sprintf( 'Installing %s (%s)', html_entity_decode( $api->name, ENT_QUOTES ), $api->version ) );
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'version' ) != 'dev' ) {
 			WP_CLI::get_http_cache_manager()->whitelist_package( $api->download_link, $this->item_type, $api->slug, $api->version );
 		}
 		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
@@ -314,6 +441,7 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 				'update_id' => $theme->get_stylesheet(),
 				'title' => $theme->get('Name'),
 				'description' => $theme->get('Description'),
+				'author' => $theme->get('Author'),
 			);
 
 			if ( is_multisite() ) {
@@ -362,20 +490,34 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * ## EXAMPLES
 	 *
 	 *     # Install the latest version from wordpress.org and activate
-	 *     wp theme install twentytwelve --activate
+	 *     $ wp theme install twentysixteen --activate
+	 *     Installing Twenty Sixteen (1.2)
+	 *     Downloading install package from http://downloads.wordpress.org/theme/twentysixteen.1.2.zip...
+	 *     Unpacking the package...
+	 *     Installing the theme...
+	 *     Theme installed successfully.
+	 *     Activating 'twentysixteen'...
+	 *     Success: Switched to 'Twenty Sixteen' theme.
 	 *
 	 *     # Install from a local zip file
-	 *     wp theme install ../my-theme.zip
+	 *     $ wp theme install ../my-theme.zip
 	 *
 	 *     # Install from a remote zip file
-	 *     wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
+	 *     $ wp theme install http://s3.amazonaws.com/bucketname/my-theme.zip?AWSAccessKeyId=123&Expires=456&Signature=abcdef
 	 */
 	function install( $args, $assoc_args ) {
+
+		$theme_root = get_theme_root();
+		if ( $theme_root && ! is_dir( $theme_root ) ) {
+			wp_mkdir_p( $theme_root );
+			register_theme_directory( $theme_root );
+		}
+
 		parent::install( $args, $assoc_args );
 	}
 
 	/**
-	 * Get a theme
+	 * Get details about a theme.
 	 *
 	 * ## OPTIONS
 	 *
@@ -385,15 +527,39 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--field=<field>]
 	 * : Instead of returning the whole theme, returns the value of a single field.
 	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme get twentytwelve --format=json
+	 *     $ wp theme get twentysixteen --fields=name,title,version
+	 *     +---------+----------------+
+	 *     | Field   | Value          |
+	 *     +---------+----------------+
+	 *     | name    | Twenty Sixteen |
+	 *     | title   | Twenty Sixteen |
+	 *     | version | 1.2            |
+	 *     +---------+----------------+
 	 */
 	public function get( $args, $assoc_args ) {
 		$theme = $this->fetcher->get_check( $args[0] );
+
+		$errors = $theme->errors();
+		if ( is_wp_error( $errors ) ) {
+			$message = $errors->get_error_message();
+			WP_CLI::error( $message );
+		}
 
 		// WP_Theme object employs magic getter, unfortunately
 		$theme_vars = array( 'name', 'title', 'version', 'parent_theme', 'template_dir', 'stylesheet_dir', 'template', 'stylesheet', 'screenshot', 'description', 'author', 'tags', 'theme_root', 'theme_root_uri',
@@ -404,6 +570,10 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 
 		$theme_obj->description = wordwrap( $theme_obj->description );
+
+		if ( empty( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = $theme_vars;
+		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $theme_obj );
@@ -420,25 +590,62 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * [--all]
 	 * : If set, all themes that have updates will be updated.
 	 *
+	 * [--format=<format>]
+	 * : Output summary as table or summary. Defaults to table.
+	 *
 	 * [--version=<version>]
-	 * : If set, the theme will be updated to the latest development version,
-	 * regardless of what version is currently installed.
+	 * : If set, the theme will be updated to the specified version.
 	 *
 	 * [--dry-run]
 	 * : Preview which themes would be updated.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme update twentyeleven twentytwelve
+	 *     # Update multiple themes
+	 *     $ wp theme update twentyfifteen twentysixteen
+	 *     Downloading update from https://downloads.wordpress.org/theme/twentyfifteen.1.5.zip...
+	 *     Unpacking the update...
+	 *     Installing the latest version...
+	 *     Removing the old version of the theme...
+	 *     Theme updated successfully.
+	 *     Downloading update from https://downloads.wordpress.org/theme/twentysixteen.1.2.zip...
+	 *     Unpacking the update...
+	 *     Installing the latest version...
+	 *     Removing the old version of the theme...
+	 *     Theme updated successfully.
+	 *     +---------------+-------------+-------------+---------+
+	 *     | name          | old_version | new_version | status  |
+	 *     +---------------+-------------+-------------+---------+
+	 *     | twentyfifteen | 1.4         | 1.5         | Updated |
+	 *     | twentysixteen | 1.1         | 1.2         | Updated |
+	 *     +---------------+-------------+-------------+---------+
+	 *     Success: Updated 2 of 2 themes.
 	 *
-	 *     wp theme update --all
+	 *     # Update all themes
+	 *     $ wp theme update --all
+	 *
+	 * @alias upgrade
 	 */
 	function update( $args, $assoc_args ) {
-		parent::update_many( $args, $assoc_args );
+		if ( isset( $assoc_args['version'] ) ) {
+			foreach ( $this->fetcher->get_many( $args ) as $theme ) {
+				$r = delete_theme( $theme->stylesheet );
+				if ( is_wp_error( $r ) ) {
+					WP_CLI::warning( $r );
+				} else {
+					$assoc_args['force'] = true;
+					$this->install( array( $theme->stylesheet ), $assoc_args );
+				}
+			}
+		} else {
+			parent::update_many( $args, $assoc_args );
+		}
 	}
 
 	/**
 	 * Check if the theme is installed.
+	 *
+	 * Returns exit code 0 when installed, 1 when uninstalled.
 	 *
 	 * ## OPTIONS
 	 *
@@ -447,22 +654,27 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme is-installed twentytwelve
+	 *     # Check whether theme is installed; exit status 0 if installed, otherwise 1
+	 *     $ wp theme is-installed hello-dolly
+	 *     $ echo $?
+	 *     1
 	 *
 	 * @subcommand is-installed
 	 */
-	function is_installed( $args, $assoc_args = array() ) {
+	public function is_installed( $args, $assoc_args = array() ) {
 		$theme = wp_get_theme( $args[0] );
 
 		if ( $theme->exists() ) {
-			exit( 0 );
+			WP_CLI::halt( 0 );
 		} else {
-			exit( 1 );
+			WP_CLI::halt( 1 );
 		}
 	}
 
 	/**
 	 * Delete a theme.
+	 *
+	 * Removes the theme from the filesystem.
 	 *
 	 * ## OPTIONS
 	 *
@@ -471,14 +683,20 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme delete twentyeleven
+	 *     $ wp theme delete twentytwelve
+	 *     Deleted 'twentytwelve' theme.
+	 *     Success: Deleted 1 of 1 themes.
+	 *
+	 * @alias uninstall
 	 */
-	function delete( $args ) {
+	public function delete( $args ) {
+		$successes = $errors = 0;
 		foreach ( $this->fetcher->get_many( $args ) as $theme ) {
 			$theme_slug = $theme->get_stylesheet();
 
 			if ( $this->is_active_theme( $theme ) ) {
 				WP_CLI::warning( "Can't delete the currently active theme: $theme_slug" );
+				$errors++;
 				continue;
 			}
 
@@ -486,9 +704,14 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 
 			if ( is_wp_error( $r ) ) {
 				WP_CLI::warning( $r );
+				$errors++;
 			} else {
-				WP_CLI::success( "Deleted '$theme_slug' theme." );
+				WP_CLI::log( "Deleted '$theme_slug' theme." );
+				$successes++;
 			}
+		}
+		if ( ! $this->chained_command ) {
+			Utils\report_batch_operation_results( 'theme', 'delete', count( $args ), $successes, $errors );
 		}
 	}
 
@@ -504,14 +727,44 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	 * : Prints the value of a single field for each theme.
 	 *
 	 * [--fields=<fields>]
-	 * : Limit the output to specific object fields. Defaults to name,status,update,version.
+	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each theme:
+	 *
+	 * * name
+	 * * status
+	 * * update
+	 * * version
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * update_version
+	 * * update_package
+	 * * update_id
+	 * * title
+	 * * description
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp theme list --status=inactive --format=csv
+	 *     # List themes
+	 *     $ wp theme list --status=inactive --format=csv
+	 *     name,status,update,version
+	 *     twentyfourteen,inactive,none,1.7
+	 *     twentysixteen,inactive,available,1.1
 	 *
 	 * @subcommand list
 	 */
@@ -520,141 +773,4 @@ class Theme_Command extends \WP_CLI\CommandWithUpgrade {
 	}
 }
 
-/**
- * Manage theme mods.
- *
- */
-class Theme_Mod_command extends WP_CLI_Command {
-
-	/**
-	 * Get theme mod(s).
-	 *
-	 * ## OPTIONS
-	 *
-	 * [<mod>...]
-	 * : One or more mods to get.
-	 *
-	 * [--all]
-	 * : List all theme mods
-	 *
-	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp theme mod get --all
-	 *     wp theme mod get background_color --format=json
-	 *     wp theme mod get background_color header_textcolor
-	 */
-	public function get( $args = array(), $assoc_args = array() ) {
-
-		if ( ! isset( $assoc_args['all'] ) && empty( $args ) ) {
-			WP_CLI::error( "You must specify at least one mod or use --all." );
-		}
-
-		if ( isset( $assoc_args['all'] ) && $assoc_args['all'] ) {
-			$args = array();
-		}
-
-		$list = array();
-		$mods = get_theme_mods();
-		if ( ! is_array( $mods ) ) {
-			// if no mods are set (perhaps new theme), make sure foreach still works
-			$mods = array();
-		}
-		foreach ( $mods as $k => $v ) {
-			// if mods were given, skip the others
-			if ( ! empty( $args ) && ! in_array( $k, $args ) ) continue;
-
-			if ( is_array( $v ) ) {
-				$list[] = array( 'key' => $k, 'value' => '=>' );
-				foreach ( $v as $_k => $_v ) {
-					$list[] = array( 'key' => "    $_k", 'value' => $_v );
-				}
-			} else {
-				$list[] = array( 'key' => $k, 'value' => $v );
-			}
-
-		}
-
-		// For unset mods, show blank value
-		foreach ( $args as $mod ) {
-			if ( ! isset( $mods[ $mod ] ) ) {
-				$list[] = array( 'key' => $mod, 'value' => '' );
-			}
-		}
-
-		$formatter = new \WP_CLI\Formatter( $assoc_args, array('key', 'value'), 'thememods' );
-		$formatter->display_items( $list );
-
-	}
-
-	/**
-	 * Remove theme mod(s).
-	 *
-	 * ## OPTIONS
-	 *
-	 * [<mod>...]
-	 * : One or more mods to remove.
-	 *
-	 * [--all]
-	 * : Remove all theme mods
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp theme mod remove --all
-	 *     wp theme mod remove background_color
-	 *     wp theme mod remove background_color header_textcolor
-	 */
-	public function remove( $args = array(), $assoc_args = array() ) {
-
-		if ( ! isset( $assoc_args['all'] ) && empty( $args ) ) {
-			WP_CLI::error( "You must specify at least one mod or use --all." );
-		}
-
-		if ( isset( $assoc_args['all'] ) && $assoc_args['all'] ) {
-			remove_theme_mods();
-			WP_CLI::success( 'Theme mods removed.' );
-			return;
-		}
-
-		foreach ( $args as $mod ) {
-			remove_theme_mod( $mod );
-		}
-
-		WP_CLI::success( sprintf( '%d mods removed.', count( $args ) ) );
-
-	}
-
-	/**
-	 * Set a theme mod.
-	 *
-	 * ## OPTIONS
-	 *
-	 * <mod>
-	 * : The name of the theme mod to set or update.
-	 *
-	 * <value>
-	 * : The new value.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp theme mod set background_color 000000
-	 */
-	public function set( $args = array(), $assoc_args = array() ) {
-		list( $mod, $value ) = $args;
-
-		set_theme_mod( $mod, $value );
-
-		if ( $value == get_theme_mod( $mod ) ) {
-			WP_CLI::success( sprintf( "Theme mod %s set to %s", $mod, $value ) );
-		} else {
-			WP_CLI::success( sprintf( "Could not update theme mod %s", $mod ) );
-		}
-	}
-
-}
-
 WP_CLI::add_command( 'theme', 'Theme_Command' );
-WP_CLI::add_command( 'theme mod', 'Theme_Mod_Command' );
-

@@ -1,7 +1,8 @@
 <?php
 
 use Behat\Gherkin\Node\PyStringNode,
-    Behat\Gherkin\Node\TableNode;
+    Behat\Gherkin\Node\TableNode,
+    WP_CLI\Process;
 
 $steps->Given( '/^an empty directory$/',
 	function ( $world ) {
@@ -23,6 +24,13 @@ $steps->Given( '/^an? ([^\s]+) file:$/',
 		file_put_contents( $full_path, $content );
 	}
 );
+
+$steps->Given( '/^"([^"]+)" replaced with "([^"]+)" in the ([^\s]+) file$/', function( $world, $search, $replace, $path ) {
+	$full_path = $world->variables['RUN_DIR'] . "/$path";
+	$contents = file_get_contents( $full_path );
+	$contents = str_replace( $search, $replace, $contents );
+	file_put_contents( $full_path, $contents );
+});
 
 $steps->Given( '/^WP files$/',
 	function ( $world ) {
@@ -54,10 +62,18 @@ $steps->Given( "/^a WP install in '([^\s]+)'$/",
 	}
 );
 
-$steps->Given( '/^a WP multisite install$/',
-	function ( $world ) {
+$steps->Given( '/^a WP multisite (subdirectory|subdomain)?\s?install$/',
+	function ( $world, $type = 'subdirectory' ) {
 		$world->install_wp();
-		$world->proc( 'wp core install-network', array( 'title' => 'WP CLI Network' ) )->run_check();
+		$subdomains = ! empty( $type ) && 'subdomain' === $type ? 1 : 0;
+		$world->proc( 'wp core install-network', array( 'title' => 'WP CLI Network', 'subdomains' => $subdomains ) )->run_check();
+	}
+);
+
+$steps->Given( '/^these installed and active plugins:$/',
+	function( $world, $stream ) {
+		$plugins = implode( ' ', array_map( 'trim', explode( PHP_EOL, (string)$stream ) ) );
+		$world->proc( "wp plugin install $plugins --activate" )->run_check();
 	}
 );
 
@@ -88,13 +104,15 @@ $steps->Given( '/^download:$/',
 				continue;
 			}
 
-			\Process::create( \WP_CLI\Utils\esc_cmd( 'curl -sSL %s > %s', $row['url'], $path ) )->run_check();
+			Process::create( \WP_CLI\Utils\esc_cmd( 'curl -sSL %s > %s', $row['url'], $path ) )->run_check();
 		}
 	}
 );
 
 $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 	function ( $world, $stream, $output_filter, $key ) {
+
+		$stream = strtolower( $stream );
 
 		if ( $output_filter ) {
 			$output_filter = '/' . trim( str_replace( '%s', '(.+[^\b])', $output_filter ), "' " ) . '/';
@@ -109,3 +127,38 @@ $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
 	}
 );
 
+$steps->Given( '/^a new Phar(?: with version "([^"]+)")$/',
+	function ( $world, $version ) {
+		$world->build_phar( $version );
+	}
+);
+
+$steps->Given( '/^save the (.+) file ([\'].+[^\'])?as \{(\w+)\}$/',
+	function ( $world, $filepath, $output_filter, $key ) {
+		$full_file = file_get_contents( $world->replace_variables( $filepath ) );
+
+		if ( $output_filter ) {
+			$output_filter = '/' . trim( str_replace( '%s', '(.+[^\b])', $output_filter ), "' " ) . '/';
+			if ( false !== preg_match( $output_filter, $full_file, $matches ) )
+				$output = array_pop( $matches );
+			else
+				$output = '';
+		} else {
+			$output = $full_file;
+		}
+		$world->variables[ $key ] = trim( $output, "\n" );
+	}
+);
+
+$steps->Given('/^a misconfigured WP_CONTENT_DIR constant directory$/',
+	function($world) {
+		$wp_config_path = $world->variables['RUN_DIR'] . "/wp-config.php";
+
+		$wp_config_code = file_get_contents( $wp_config_path );
+
+		$world->add_line_to_wp_config( $wp_config_code,
+			"define( 'WP_CONTENT_DIR', '' );" );
+
+		file_put_contents( $wp_config_path, $wp_config_code );
+	}
+);
