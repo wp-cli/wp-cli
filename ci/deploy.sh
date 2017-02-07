@@ -44,6 +44,4 @@ sha512sum $fname | cut -d ' ' -f 1 > $fname.sha512
 git add $fname $fname.md5 $fname.sha512 phar/NIGHTLY_VERSION
 git commit -m "phar build: $TRAVIS_REPO_SLUG@$TRAVIS_COMMIT"
 
-exit;
-
 git push

@@ -2,8 +2,6 @@
 
 set -ex
 
-exit;
-
 # Run the unit tests
 vendor/bin/phpunit
 
