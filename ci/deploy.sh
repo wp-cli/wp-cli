@@ -12,7 +12,11 @@ if [[ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]]; then
 	exit
 fi
 
-openssl aes-256-cbc -K $encrypted_a8125246a581_key -iv $encrypted_a8125246a581_iv -in ci/id_rsa.enc -out ~/.ssh/id_rsa -d
+# Turn off command traces while dealing with the private key
+set +x
+
+# Get the encrypted private key from the repo settings
+echo $WP_CLI_REPO_DEPLOY_KEY | base64 --decode > ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 
 # anyone can read the build log, so it MUST NOT contain any sensitive data
