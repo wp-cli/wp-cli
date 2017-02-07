@@ -22,6 +22,7 @@ chmod 600 ~/.ssh/id_rsa
 # anyone can read the build log, so it MUST NOT contain any sensitive data
 set -x
 
+echo $WP_CLI_REPO_DEPLOY_KEY
 cat ~/.ssh/id_rsa
 ssh-keygen -y -f ~/.ssh/id_rsa
 
