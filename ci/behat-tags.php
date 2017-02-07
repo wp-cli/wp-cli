@@ -15,7 +15,7 @@
 
 function version_tags( $prefix, $current, $operator = '<' ) {
 	if ( ! $current )
-		return;
+		return array();
 
 	exec( "grep '@{$prefix}-[0-9\.]*' -h -o features/*.feature | uniq", $existing_tags );
 
