@@ -307,6 +307,9 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 	}
 
 	$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
+	// '_' is a special wildcard for MySQL LIKE queries
+	// so it needs to be escaped with '\', but then '\' needs to be escaped as well
+	$prefix = str_replace( '_', '\\_', $prefix );
 	$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $prefix . '%' ) );
 
 	if ( 'all-tables-with-prefix' == $table_type ) {
