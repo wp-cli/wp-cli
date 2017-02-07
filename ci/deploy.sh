@@ -7,10 +7,10 @@
 # 	exit
 # fi
 
-if [[ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]]; then
-	echo "Not on the '$DEPLOY_BRANCH' branch."
-	exit
-fi
+# if [[ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]]; then
+# 	echo "Not on the '$DEPLOY_BRANCH' branch."
+# 	exit
+# fi
 
 # Turn off command traces while dealing with the private key
 set +x
