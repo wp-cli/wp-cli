@@ -145,18 +145,17 @@ Feature: Manage WordPress plugins
       Error: No plugins updated.
       """
 
-    When I try `wp plugin update hello xxx yyy`
+    When I run `wp plugin install akismet --version=2.5.6 --force`
+    Then STDOUT should not be empty
+
+    When I try `wp plugin update akismet hello xxx`
     Then STDERR should contain:
       """
       Warning: The 'xxx' plugin could not be found.
       """
     And STDERR should contain:
       """
-      Warning: The 'yyy' plugin could not be found.
-      """
-    And STDOUT should contain:
-      """
-      Success: Plugin already updated.
+      Error: Only updated 1 of 3 plugins.
       """
 
   Scenario: Activate a network-only plugin on single site
