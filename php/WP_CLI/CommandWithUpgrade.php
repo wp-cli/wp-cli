@@ -275,6 +275,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			$items = $this->filter_item_list( $items, $args );
+			if ( 0 === count( $items ) ) {
+				WP_CLI::error( 'No plugins updated.' );
+			}
 		}
 
 		$items_to_update = wp_list_filter( $items, array(

@@ -131,6 +131,18 @@ Feature: Manage WordPress plugins
       Akismet updated successfully from version 2.5.6 to version
       """
 
+    When I try `wp plugin update xxx yyy`
+    Then STDERR should contain:
+      """
+      Error: No plugins updated.
+      """
+
+    When I try `wp plugin update hello xxx yyy`
+    Then STDOUT should contain:
+      """
+      Success: Plugin already updated.
+      """
+
   Scenario: Activate a network-only plugin on single site
     Given a WP install
     And a wp-content/plugins/network-only.php file:
