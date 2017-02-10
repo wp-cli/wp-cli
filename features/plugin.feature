@@ -134,11 +134,27 @@ Feature: Manage WordPress plugins
     When I try `wp plugin update xxx yyy`
     Then STDERR should contain:
       """
+      Warning: The 'xxx' plugin could not be found.
+      """
+    And STDERR should contain:
+      """
+      Warning: The 'yyy' plugin could not be found.
+      """
+    And STDERR should contain:
+      """
       Error: No plugins updated.
       """
 
     When I try `wp plugin update hello xxx yyy`
-    Then STDOUT should contain:
+    Then STDERR should contain:
+      """
+      Warning: The 'xxx' plugin could not be found.
+      """
+    And STDERR should contain:
+      """
+      Warning: The 'yyy' plugin could not be found.
+      """
+    And STDOUT should contain:
       """
       Success: Plugin already updated.
       """
