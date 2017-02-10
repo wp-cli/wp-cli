@@ -131,6 +131,33 @@ Feature: Manage WordPress plugins
       Akismet updated successfully from version 2.5.6 to version
       """
 
+    When I try `wp plugin update xxx yyy`
+    Then STDERR should contain:
+      """
+      Warning: The 'xxx' plugin could not be found.
+      """
+    And STDERR should contain:
+      """
+      Warning: The 'yyy' plugin could not be found.
+      """
+    And STDERR should contain:
+      """
+      Error: No plugins updated.
+      """
+
+    When I run `wp plugin install akismet --version=2.5.6 --force`
+    Then STDOUT should not be empty
+
+    When I try `wp plugin update akismet hello xxx`
+    Then STDERR should contain:
+      """
+      Warning: The 'xxx' plugin could not be found.
+      """
+    And STDERR should contain:
+      """
+      Error: Only updated 1 of 3 plugins.
+      """
+
   Scenario: Activate a network-only plugin on single site
     Given a WP install
     And a wp-content/plugins/network-only.php file:
