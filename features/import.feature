@@ -28,7 +28,7 @@ Feature: Import content.
       Warning:
       """
 
-    When I run `wp import {EXPORT_FILE} --authors=skip`
+    When I run `wp import {EXPORT_FILE} --authors=skip --enable-plugins=wordpress-importer`
     Then STDOUT should not be empty
 
     When I run `wp post list --post_type=any --format=count`
@@ -37,7 +37,7 @@ Feature: Import content.
       7
       """
 
-    When I run `wp import {EXPORT_FILE} --authors=skip --skip=image_resize`
+    When I run `wp import {EXPORT_FILE} --authors=skip --skip=image_resize --enable-plugins=wordpress-importer`
     Then STDOUT should not be empty
 
   Scenario: Export and import a directory of files
