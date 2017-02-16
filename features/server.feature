@@ -14,3 +14,6 @@ Feature: Serve WordPress locally
     When I run `curl -sS localhost:8181/license.txt > /tmp/license.txt`
     And I run `cmp /tmp/license.txt license.txt`
     Then STDOUT should be empty
+
+    When I run `ps a|grep 'php[0-9]\? -S'|awk '{print $1}'|xargs -r kill`
+    Then STDERR should be empty
