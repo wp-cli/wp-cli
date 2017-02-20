@@ -143,9 +143,9 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				$filter = false;
 				if ( strpos( $local_or_remote_zip_file, '://' ) !== false
 						&& 'github.com' === parse_url( $local_or_remote_zip_file, PHP_URL_HOST ) ) {
-					$filter = function( $source, $remote_source, $upgrader ) use ( $local_or_remote_zip_file, $assoc_args ) {
+					$filter = function( $source, $remote_source, $upgrader ) use ( $local_or_remote_zip_file ) {
 						// Don't attempt to rename ZIPs uploaded to the releases page
-						if ( preg_match( '#github\.com/([^/]+)/([^/]+)/releases/download/#', $local_or_remote_zip_file ) || \WP_CLI\Utils\get_flag_value( $assoc_args, 'github-release' ) ) {
+						if ( preg_match( '#github\.com/([^/]+)/([^/]+)/releases/download/#', $local_or_remote_zip_file ) && ! preg_match( '#/raw/#', $local_or_remote_zip_file ) ) {
 							return $source;
 						}
 						$branch_length = strlen( pathinfo( $local_or_remote_zip_file, PATHINFO_FILENAME ) );
