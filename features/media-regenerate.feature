@@ -14,7 +14,7 @@ Feature: Regenerate WordPress attachments
     Given download:
       | path                              | url                                                   |
       | {CACHE_DIR}/large-image.jpg       | http://wp-cli.org/behat-data/large-image.jpg          |
-      | {CACHE_DIR}/minimal-us-letter.pdf | http://localhost/behat-data/minimal-us-letter.pdf     |
+      | {CACHE_DIR}/minimal-us-letter.pdf | http://wp-cli.org/behat-data/minimal-us-letter.pdf    |
     And a wp-content/mu-plugins/media-settings.php file:
       """
       <?php
@@ -61,7 +61,7 @@ Feature: Regenerate WordPress attachments
     Given download:
       | path                              | url                                                   |
       | {CACHE_DIR}/large-image.jpg       | http://wp-cli.org/behat-data/large-image.jpg          |
-      | {CACHE_DIR}/minimal-us-letter.pdf | http://localhost/behat-data/minimal-us-letter.pdf     |
+      | {CACHE_DIR}/minimal-us-letter.pdf | http://wp-cli.org/behat-data/minimal-us-letter.pdf    |
     And a wp-content/mu-plugins/media-settings.php file:
       """
       <?php
