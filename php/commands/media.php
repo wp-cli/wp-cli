@@ -317,10 +317,10 @@ class Media_Command extends WP_CLI_Command {
 		}
 
 		if ( ! $skip_delete ) {
-			$this->remove_old_images( $id );
+			$this->remove_old_images( $id, $fullsizepath );
 		}
 
-		if ( ! $only_missing || $this->needs_regeneration( $id ) ) {
+		if ( ! $only_missing || $this->needs_regeneration( $id, $fullsizepath ) ) {
 
 			$metadata = wp_generate_attachment_metadata( $id, $fullsizepath );
 			if ( is_wp_error( $metadata ) ) {
@@ -343,17 +343,10 @@ class Media_Command extends WP_CLI_Command {
 		}
 	}
 
-	private function remove_old_images( $att_id ) {
-		$wud = wp_upload_dir();
-
+	private function remove_old_images( $att_id, $fullsizepath ) {
 		$metadata = wp_get_attachment_metadata( $att_id );
 
-		if ( empty( $metadata['file'] ) ) {
-			return;
-		}
-
-		$dir_path = $wud['basedir'] . '/' . dirname( $metadata['file'] ) . '/';
-		$original_path = $dir_path . basename( $metadata['file'] );
+		$dir_path = dirname( $fullsizepath ) . '/';
 
 		if ( empty( $metadata['sizes'] ) ) {
 			return;
@@ -362,7 +355,7 @@ class Media_Command extends WP_CLI_Command {
 		foreach ( $metadata['sizes'] as $size_info ) {
 			$intermediate_path = $dir_path . $size_info['file'];
 
-			if ( $intermediate_path == $original_path )
+			if ( $intermediate_path === $fullsizepath )
 				continue;
 
 			if ( file_exists( $intermediate_path ) )
@@ -370,17 +363,10 @@ class Media_Command extends WP_CLI_Command {
 		}
 	}
 
-	private function needs_regeneration( $att_id ) {
-		$wud = wp_upload_dir();
-
+	private function needs_regeneration( $att_id, $fullsizepath ) {
 		$metadata = wp_get_attachment_metadata($att_id);
 
-		if ( empty($metadata['file'] ) ) {
-			return false;
-		}
-
-		$dir_path = $wud['basedir'] . '/' . dirname( $metadata['file'] ) . '/';
-		$original_path = $dir_path . basename( $metadata['file'] );
+		$dir_path = dirname( $fullsizepath ) . '/';
 
 		if ( empty( $metadata['sizes'] ) ) {
 			return true;
@@ -393,7 +379,7 @@ class Media_Command extends WP_CLI_Command {
 		foreach( $metadata['sizes'] as $size_info ) {
 			$intermediate_path = $dir_path . $size_info['file'];
 
-			if ( $intermediate_path == $original_path )
+			if ( $intermediate_path === $fullsizepath )
 				continue;
 
 			if ( ! file_exists( $intermediate_path ) ) {
