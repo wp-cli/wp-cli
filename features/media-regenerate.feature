@@ -42,6 +42,46 @@ Feature: Regenerate WordPress attachments
     And the wp-content/uploads/large-image-125x125.jpg file should not exist
     And the wp-content/uploads/large-image-200x200.jpg file should exist
 
+  Scenario: Delete existing thumbnails when PDF media is regenerated
+    Given download:
+      | path                        | url                                              |
+      | {CACHE_DIR}/minimal-us-letter.pdf | http://localhost/behat-data/minimal-us-letter.pdf     |
+    And a wp-content/mu-plugins/media-settings.php file:
+      """
+      <?php
+      add_action( 'after_setup_theme', function(){
+        add_image_size( 'test1', 125, 125, true );
+        add_filter( 'fallback_intermediate_image_sizes', function( $fallback_sizes ){
+          $fallback_sizes[] = 'test1';
+          return $fallback_sizes;
+        });
+      });
+      """
+    And I run `wp option update uploads_use_yearmonth_folders 0`
+
+    When I run `wp media import {CACHE_DIR}/minimal-us-letter.pdf --title="My imported attachment" --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID}
+    And the wp-content/uploads/minimal-us-letter-125x125.jpg file should exist
+
+    Given a wp-content/mu-plugins/media-settings.php file:
+      """
+      <?php
+      add_action( 'after_setup_theme', function(){
+        add_image_size( 'test1', 200, 200, true );
+        add_filter( 'fallback_intermediate_image_sizes', function( $fallback_sizes ){
+          $fallback_sizes[] = 'test1';
+          return $fallback_sizes;
+        });
+      });
+      """
+    When I run `wp media regenerate --yes`
+    Then STDOUT should contain:
+      """
+      Success: Regenerated 1 of 1 images.
+      """
+    And the wp-content/uploads/minimal-us-letter-125x125.jpg file should not exist
+    And the wp-content/uploads/minimal-us-letter-200x200.jpg file should exist
+
   Scenario: Skip deletion of existing thumbnails when media is regenerated
     Given download:
       | path                        | url                                              |
