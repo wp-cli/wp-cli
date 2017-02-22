@@ -109,7 +109,7 @@ $steps->Given( '/^download:$/',
 	}
 );
 
-$steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?as \{(\w+)\}$/',
+$steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?\s?as \{(\w+)\}$/',
 	function ( $world, $stream, $output_filter, $key ) {
 
 		$stream = strtolower( $stream );
