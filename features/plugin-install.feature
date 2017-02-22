@@ -51,6 +51,21 @@ Feature: Install WordPress plugins
     And STDERR should be empty
     And the wp-content/plugins/one-time-login directory should exist
 
+  Scenario: Don't attempt to rename ZIPs coming from a GitHub raw source
+    Given a WP install
+
+    When I run `wp plugin install https://github.com/Miller-Media/modern-wordpress/raw/master/builds/modern-framework-stable.zip`
+    Then STDOUT should contain:
+      """
+      Plugin installed successfully.
+      """
+    And STDOUT should not contain:
+      """
+      Renamed Github-based project from
+      """
+    And STDERR should be empty
+    And the wp-content/plugins/modern-framework directory should exist
+
   Scenario: Installing respects WP_PROXY_HOST and WP_PROXY_PORT
     Given a WP install
     And a invalid-proxy-details.php file:
