@@ -178,8 +178,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 * @param array $parameters context parameters (set them up through behat.yml)
 	 */
 	public function __construct( array $parameters ) {
-		if ( getenv( 'RESTFUL_TEST_DBHOST' ) ) {
-			self::$db_settings['dbhost'] = getenv( 'RESTFUL_TEST_DBHOST' );
+		if ( getenv( 'WP_CLI_TEST_DBHOST' ) ) {
+			self::$db_settings['dbhost'] = getenv( 'WP_CLI_TEST_DBHOST' );
 		}
 		$this->drop_db();
 		$this->set_cache_dir();
