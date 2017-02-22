@@ -145,6 +145,15 @@ $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 	}
 );
 
+$steps->Then( '/^(STDOUT|STDERR) should be a version string (<|<=|>|>=|==|=|!=|<>) ([+\w\.-]+)$/',
+	function ( $world, $stream, $operator, $goal_ver ) {
+		$stream = strtolower( $stream );
+		if ( false === version_compare( trim( $world->result->$stream, "\n" ), $goal_ver, $operator ) ) {
+			throw new Exception( $world->result );
+		}
+	}
+);	
+
 $steps->Then( '/^the (.+) (file|directory) should (exist|not exist|be:|contain:|not contain:)$/',
 	function ( $world, $path, $type, $action, $expected = null ) {
 		$path = $world->replace_variables( $path );
