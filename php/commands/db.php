@@ -350,6 +350,9 @@ class DB_Command extends WP_CLI_Command {
 	 * [<file>]
 	 * : The name of the SQL file to import. If '-', then reads from STDIN. If omitted, it will look for '{dbname}.sql'.
 	 *
+	 * [--skip-optimization]
+	 * : When using an SQL file, do not include speed optimization such as disabling auto-commit and key checks.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Import MySQL from a file.
@@ -363,27 +366,23 @@ class DB_Command extends WP_CLI_Command {
 			$result_file = sprintf( '%s.sql', DB_NAME );
 		}
 
-		if ( '-' === $result_file ) {
-			$descriptors = array(
-				STDIN,
-				STDOUT,
-				STDERR,
-			);
-		} else {
-			if ( ! file_exists( $result_file ) ) {
-				WP_CLI::error( sprintf( 'Import file missing: %s', $result_file ) );
+		$mysql_args = array(
+			'database' => DB_NAME,
+		);
+
+		if ( '-' !== $result_file ) {
+			if ( ! is_readable( $result_file ) ) {
+				WP_CLI::error( sprintf( 'Import file missing or not readable: %s', $result_file ) );
 			}
 
-			$descriptors = array(
-				array( 'file', $result_file, 'r' ),
-				STDOUT,
-				STDERR,
-			);
+			$query = \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-optimization' )
+				? 'SOURCE %s;'
+				: 'SET autocommit = 0; SET unique_checks = 0; SET foreign_key_checks = 0; SOURCE %s; COMMIT;';
+
+			$mysql_args['execute'] = sprintf( $query, $result_file );
 		}
 
-		self::run( 'mysql --no-defaults --no-auto-rehash', array(
-			'database' => DB_NAME
-		), $descriptors );
+		self::run( 'mysql --no-defaults --no-auto-rehash', $mysql_args );
 
 		WP_CLI::success( sprintf( "Imported from '%s'.", $result_file ) );
 	}
