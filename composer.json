@@ -4,6 +4,11 @@
 	"keywords": [ "cli", "wordpress" ],
 	"homepage": "http://wp-cli.org",
 	"license": "MIT",
+	"support": {
+		"issues": "https://github.com/wp-cli/wp-cli/issues",
+		"source": "https://github.com/wp-cli/wp-cli",
+		"docs": "https://make.wordpress.org/cli/handbook/"
+	},
 	"bin": [
 		"bin/wp.bat", "bin/wp"
 	],
