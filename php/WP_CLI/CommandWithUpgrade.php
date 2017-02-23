@@ -167,7 +167,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					$slug = $file_upgrader->result['destination_name'];
 					$result = true;
 					if ( $filter ) {
-						remove_filter( 'upgrader_source_selection', $filter, 10, 3 );
+						remove_filter( 'upgrader_source_selection', $filter, 10 );
 					}
 					$successes++;
 				} else {
