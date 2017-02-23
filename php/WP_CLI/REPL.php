@@ -4,7 +4,7 @@ namespace WP_CLI;
 
 class REPL {
 
-	private $promt;
+	private $prompt;
 
 	public function __construct( $prompt ) {
 		$this->prompt = $prompt;
