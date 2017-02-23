@@ -12,6 +12,18 @@ Feature: Import a WordPress database
       Success: Imported from 'wp_cli_test.sql'.
       """
 
+  Scenario: Import from database name path by default and skip speed optimization
+    Given a WP install
+
+    When I run `wp db export wp_cli_test.sql`
+    Then the wp_cli_test.sql file should exist
+
+    When I run `wp db import --skip-optimization`
+    Then STDOUT should be:
+      """
+      Success: Imported from 'wp_cli_test.sql'.
+      """
+
   Scenario: Help runs properly at various points of a functional WP install
     Given an empty directory
 
