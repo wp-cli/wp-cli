@@ -6,7 +6,7 @@ use \Composer\DependencyResolver\Rule;
 use \Composer\EventDispatcher\Event;
 use \Composer\EventDispatcher\EventSubscriberInterface;
 use \Composer\Installer\PackageEvent;
-use \Composer\Script\ScriptEvents;
+use Composer\Installer\PackageEvents;
 use \WP_CLI;
 
 /**
@@ -17,8 +17,8 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 	public static function getSubscribedEvents() {
 
 		return array(
-			ScriptEvents::PRE_PACKAGE_INSTALL => 'pre_install',
-			ScriptEvents::POST_PACKAGE_INSTALL => 'post_install',
+			PackageEvents::PRE_PACKAGE_INSTALL => 'pre_install',
+			PackageEvents::POST_PACKAGE_INSTALL => 'post_install',
 			);
 	}
 
