@@ -3,7 +3,6 @@
 namespace WP_CLI;
 
 use \Composer\DependencyResolver\Rule;
-use \Composer\EventDispatcher\Event;
 use \Composer\EventDispatcher\EventSubscriberInterface;
 use \Composer\Installer\PackageEvent;
 use Composer\Installer\PackageEvents;
