@@ -123,6 +123,9 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 * [--activate]
 	 * : If set, the language will be activated immediately after install.
 	 *
+	 * [--set-date-time]
+	 * : Set `timezone_string` and `date_format` to active locale.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Install the Japanese language.
@@ -147,7 +150,12 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			\WP_CLI::success( "Language installed." );
 
 			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate' ) ) {
-				$this->activate( array( $language_code ), array() );
+				$set_date_time = \WP_CLI\Utils\get_flag_value( $assoc_args, 'set-date-time' );
+				if ( true === $set_date_time ) {
+					$this->activate( array( $language_code ), array( 'set-date-time' => $set_date_time ) );
+				} else {
+					$this->activate( array( $language_code ), array() );
+				}
 			}
 		} else {
 			\WP_CLI::error( $response );
@@ -254,6 +262,9 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 * <language>
 	 * : Language code to activate.
 	 *
+	 * [--set-date-time]
+	 * : Set `timezone_string` and `date_format` to active locale.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp core language activate ja
@@ -276,6 +287,24 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		}
 
 		update_option( 'WPLANG', $language_code );
+
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'set-date-time' ) ) {
+			// Reload textdomain.
+			unload_textdomain( 'default' );
+			if ( $language_code ) {
+				load_textdomain( 'default', WP_LANG_DIR . "/admin-$language_code.mo" );
+			}
+
+			$localizations = array(
+				'timezone_string' => _x( '0', 'default GMT offset or timezone string' ),
+				'date_format' => __( 'M jS Y' ),
+			);
+
+			foreach ( $localizations as $key => $value ) {
+				update_option( $key, $value );
+			}
+		}
+
 		\WP_CLI::success( "Language activated." );
 	}
 

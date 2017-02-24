@@ -126,6 +126,87 @@ Feature: Manage translation files for a WordPress install
       Success: Language activated.
       """
 
+    When I run `wp option get date_format`
+    Then STDOUT should contain:
+      """
+      F j, Y
+      """
+
+    When I run `wp option get timezone_string`
+    Then STDOUT should be:
+      """
+
+      """
+
+    When I run `wp core language activate en_GB`
+    Then the wp-content/languages/admin-en_GB.po file should exist
+    And the wp-content/languages/en_GB.po file should exist
+    And STDOUT should contain:
+      """
+      Success: Language activated.
+      """
+
+    When I run `wp option get date_format`
+    Then STDOUT should contain:
+      """
+      F j, Y
+      """
+
+    When I run `wp option get timezone_string`
+    Then STDOUT should be:
+      """
+
+      """
+
+    When I run `wp core language install --activate --set-date-time ja`
+    Then the wp-content/languages/admin-ja.po file should exist
+    And the wp-content/languages/ja.po file should exist
+    And STDOUT should contain:
+      """
+      Success: Language installed.
+      Success: Language activated.
+      """
+
+    When I run `wp option get date_format`
+    Then STDOUT should contain:
+      """
+      Y年n月j日
+      """
+
+    When I run `wp option get timezone_string`
+    Then STDOUT should contain:
+      """
+      Asia/Tokyo
+      """
+
+    When I run `wp core language install tr_TR`
+    Then the wp-content/languages/admin-tr_TR.po file should exist
+    And the wp-content/languages/tr_TR.po file should exist
+    And STDOUT should contain:
+      """
+      Success: Language installed.
+      """
+
+    When I run `wp core language activate tr_TR --set-date-time`
+    Then the wp-content/languages/admin-tr_TR.po file should exist
+    And the wp-content/languages/tr_TR.po file should exist
+    And STDOUT should contain:
+      """
+      Success: Language activated.
+      """
+
+    When I run `wp option get date_format`
+    Then STDOUT should contain:
+      """
+      j M Y
+      """
+
+    When I run `wp option get timezone_string`
+    Then STDOUT should contain:
+      """
+      Europe/Istanbul
+      """
+
     When I try `wp core language install invalid_lang`
     Then STDERR should be:
       """
