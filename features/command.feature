@@ -1,5 +1,16 @@
 Feature: WP-CLI Commands
 
+  Scenario: Registered WP-CLI commands
+    Given an empty directory
+
+    When I run `wp cron`
+    Then STDOUT should contain:
+      """
+      usage: wp cron event <command>
+         or: wp cron schedule <command>
+         or: wp cron test
+      """
+
   Scenario: Invalid class is specified for a command
     Given an empty directory
     And a custom-cmd.php file:

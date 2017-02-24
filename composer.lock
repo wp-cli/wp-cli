@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "655adc47bc0f9d08f6250d609e54e1ef",
-    "content-hash": "b82d3889099394ab8091dcf7e89b4431",
+    "hash": "5601d44dfe467b49cb16ae27dec839e0",
+    "content-hash": "bd05401239e13c802ff2849c88af96b1",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1362,6 +1362,57 @@
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
             "time": "2017-01-21 16:40:50"
+        },
+        {
+            "name": "wp-cli/cron-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/cron-command.git",
+                "reference": "2ce63dfe6b6e9f3312868f334f8857f4975665d7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/cron-command/zipball/2ce63dfe6b6e9f3312868f334f8857f4975665d7",
+                "reference": "2ce63dfe6b6e9f3312868f334f8857f4975665d7",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "commands": [
+                    "cron test",
+                    "cron event delete",
+                    "cron event list",
+                    "cron event run",
+                    "cron event schedule",
+                    "cron schedule list"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "cron-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Manage WP-Cron events and schedules.",
+            "homepage": "https://github.com/wp-cli/cron-command",
+            "time": "2017-02-24 15:19:37"
         },
         {
             "name": "wp-cli/php-cli-tools",
