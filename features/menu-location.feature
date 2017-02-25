@@ -29,3 +29,23 @@ Feature: Manage WordPress menu locations
     Then STDOUT should be a table containing rows:
       | slug            | locations       |
       | primary-menu    |                 |
+
+    When I try `wp menu location assign secondary-menu secondary`
+    Then STDERR should be:
+      """
+      Error: Invalid menu secondary-menu.
+      """
+
+    When I run `wp menu create "Secondary Menu"`
+    And I try `wp menu location assign secondary-menu secondary`
+    Then STDERR should be:
+      """
+      Error: Invalid location secondary.
+      """
+
+    When I run `wp menu location assign secondary-menu primary`
+    And I run `wp menu list --fields=slug,locations`
+    Then STDOUT should be a table containing rows:
+      | slug            | locations       |
+      | primary-menu    |                 |
+      | secondary-menu  | primary         |
