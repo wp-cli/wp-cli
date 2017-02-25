@@ -166,10 +166,16 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * : The name of the meta field to create.
 	 *
 	 * [<value>]
-	 * : The value of the meta field. If ommited, the value is read from STDIN.
+	 * : The value of the meta field. If omitted, the value is read from STDIN.
 	 *
 	 * [--format=<format>]
-	 * : The serialization format for the value. Default is plaintext.
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
 	 */
 	public function add( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
@@ -179,6 +185,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		$object_id = $this->check_object_id( $object_id );
 
+		$meta_value = wp_slash( $meta_value );
 		$success = add_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
 
 		if ( $success ) {
@@ -200,10 +207,16 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * : The name of the meta field to update.
 	 *
 	 * [<value>]
-	 * : The new value. If ommited, the value is read from STDIN.
+	 * : The new value. If omitted, the value is read from STDIN.
 	 *
 	 * [--format=<format>]
-	 * : The serialization format for the value. Default is plaintext.
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
 	 *
 	 * @alias set
 	 */
@@ -221,6 +234,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		if ( $meta_value === $old_value ) {
 			WP_CLI::success( "Value passed for custom field '$meta_key' is unchanged." );
 		} else {
+			$meta_value = wp_slash( $meta_value );
 			$success = update_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
 
 			if ( $success ) {

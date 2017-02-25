@@ -52,7 +52,7 @@ class Table extends Query {
 		$fields = self::build_fields( $args['fields'] );
 		$conditions = self::build_where_conditions( $args['where'] );
 		$where_sql = $conditions ? " WHERE $conditions" : '';
-		$query = "SELECT $fields FROM $table $where_sql {$args['append']}";
+		$query = "SELECT $fields FROM `$table` $where_sql {$args['append']}";
 
 		parent::__construct( $query, $args['chunk_size'] );
 	}

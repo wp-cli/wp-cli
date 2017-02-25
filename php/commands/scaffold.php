@@ -4,7 +4,22 @@ use WP_CLI\Utils;
 use WP_CLI\Process;
 
 /**
- * Generate code for post types, taxonomies, etc.
+ * Generate code for post types, taxonomies, plugins, child themes. etc.
+ *
+ * ## EXAMPLES
+ *
+ *     # Generate a new plugin with unit tests
+ *     $ wp scaffold plugin sample-plugin
+ *     Success: Created plugin files.
+ *     Success: Created test files.
+ *
+ *     # Generate theme based on _s
+ *     $ wp scaffold _s sample-theme --theme_name="Sample Theme" --author="John Doe"
+ *     Success: Created theme 'Sample Theme'.
+ *
+ *     # Generate code for post type registration in given theme
+ *     $ wp scaffold post-type movie --label=Movie --theme=simple-life
+ *     Success: Created /var/www/example.com/public_html/wp-content/themes/simple-life/post-types/movie.php
  *
  * @package wp-cli
  */
@@ -19,7 +34,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * : The internal name of the post type.
 	 *
 	 * [--label=<label>]
-	 * : The text used to translate the update messages
+	 * : The text used to translate the update messages.
 	 *
 	 * [--textdomain=<textdomain>]
 	 * : The textdomain to use for the labels.
@@ -40,11 +55,17 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--force]
 	 * : Overwrite files that already exist.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Generate a 'movie' post type for the 'simple-life' theme
+	 *     $ wp scaffold post-type movie --label=Movie --theme=simple-life
+	 *     Success: Created '/var/www/example.com/public_html/wp-content/themes/simple-life/post-types/movie.php'.
+	 *
 	 * @subcommand post-type
 	 *
 	 * @alias      cpt
 	 */
-	function post_type( $args, $assoc_args ) {
+	public function post_type( $args, $assoc_args ) {
 
 		if ( strlen( $args[0] ) > 20 ) {
 			WP_CLI::error( "Post type slugs cannot exceed 20 characters in length." );
@@ -93,13 +114,14 @@ class Scaffold_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp scaffold taxonomy venue --post_types=event,presentation
+	 *     # Generate PHP code for registering a custom taxonomy and save in a file
+	 *     $ wp scaffold taxonomy venue --post_types=event,presentation > taxonomy.php
 	 *
 	 * @subcommand taxonomy
 	 *
 	 * @alias      tax
 	 */
-	function taxonomy( $args, $assoc_args ) {
+	public function taxonomy( $args, $assoc_args ) {
 		$defaults = array(
 			'textdomain' => '',
 			'post_types' => "'post'"
@@ -163,8 +185,8 @@ class Scaffold_Command extends WP_CLI_Command {
 			$files_written = $this->create_files( array( $filename => $final_output ), $force );
 			$this->log_whether_files_written(
 				$files_written,
-				$skip_message = "Skipped creating $filename",
-				$success_message = "Created $filename"
+				$skip_message = "Skipped creating '$filename'.",
+				$success_message = "Created '$filename'."
 			);
 
 		} else {
@@ -174,7 +196,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Generate starter code for a theme.
+	 * Generate starter code for a theme based on _s.
+	 *
+	 * See the [Underscores website](http://underscores.me/) for more details.
 	 *
 	 * ## OPTIONS
 	 *
@@ -188,27 +212,40 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * : Enable the newly downloaded theme for the entire network.
 	 *
 	 * [--theme_name=<title>]
-	 * : What to put in the 'Theme Name:' header in style.css
+	 * : What to put in the 'Theme Name:' header in 'style.css'.
 	 *
 	 * [--author=<full-name>]
-	 * : What to put in the 'Author:' header in style.css
+	 * : What to put in the 'Author:' header in 'style.css'.
 	 *
 	 * [--author_uri=<uri>]
-	 * : What to put in the 'Author URI:' header in style.css
+	 * : What to put in the 'Author URI:' header in 'style.css'.
 	 *
 	 * [--sassify]
-	 * : Include stylesheets as SASS
+	 * : Include stylesheets as SASS.
 	 *
 	 * [--force]
 	 * : Overwrite files that already exist.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Generate a theme with name "Sample Theme" and author "John Doe"
+	 *     $ wp scaffold _s sample-theme --theme_name="Sample Theme" --author="John Doe"
+	 *     Success: Created theme 'Sample Theme'.
 	 */
-	function _s( $args, $assoc_args ) {
+	public function _s( $args, $assoc_args ) {
 
 		$theme_slug = $args[0];
 		$theme_path = WP_CONTENT_DIR . "/themes";
 		$url        = "http://underscores.me";
 		$timeout    = 30;
+
+		if ( in_array( $theme_slug, array( '.', '..' ) ) ) {
+			WP_CLI::error( "Invalid theme slug specified." );
+		}
+
+		if ( ! preg_match( '/^[a-z_]\w+$/i', str_replace( '-', '_', $theme_slug ) ) ) {
+			WP_CLI::error( "Invalid theme slug specified. Theme slugs can only contain letters, numbers, underscores and hyphens, and can only start with a letter or underscore." );
+		}
 
 		$data = wp_parse_args( $assoc_args, array(
 			'theme_name' => ucfirst( $theme_slug ),
@@ -217,6 +254,11 @@ class Scaffold_Command extends WP_CLI_Command {
 		) );
 
 		$_s_theme_path = "$theme_path/$data[theme_name]";
+
+		if ( ! $this->check_target_directory( "theme", $_s_theme_path ) ) {
+			WP_CLI::error( "Invalid theme slug specified." );
+		}
+
 		$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
 		$should_write_file = $this->prompt_if_files_will_be_overwritten( $_s_theme_path, $force );
 		if ( ! $should_write_file ) {
@@ -276,7 +318,9 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Generate empty child theme.
+	 * Generate child theme based on an existing theme.
+	 *
+	 * Creates a child theme folder with `functions.php` and `style.css` files.
 	 *
 	 * ## OPTIONS
 	 *
@@ -284,19 +328,19 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * : The slug for the new child theme.
 	 *
 	 * --parent_theme=<slug>
-	 * : What to put in the 'Template:' header in style.css
+	 * : What to put in the 'Template:' header in 'style.css'.
 	 *
 	 * [--theme_name=<title>]
-	 * : What to put in the 'Theme Name:' header in style.css
+	 * : What to put in the 'Theme Name:' header in 'style.css'.
 	 *
 	 * [--author=<full-name>]
-	 * : What to put in the 'Author:' header in style.css
+	 * : What to put in the 'Author:' header in 'style.css'.
 	 *
 	 * [--author_uri=<uri>]
-	 * : What to put in the 'Author URI:' header in style.css
+	 * : What to put in the 'Author URI:' header in 'style.css'.
 	 *
 	 * [--theme_uri=<uri>]
-	 * : What to put in the 'Theme URI:' header in style.css
+	 * : What to put in the 'Theme URI:' header in 'style.css'.
 	 *
 	 * [--activate]
 	 * : Activate the newly created child theme.
@@ -307,10 +351,20 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--force]
 	 * : Overwrite files that already exist.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Generate a 'sample-theme' child theme based on TwentySixteen
+	 *     $ wp scaffold child-theme sample-theme --parent_theme=twentysixteen
+	 *     Success: Created '/var/www/example.com/public_html/wp-content/themes/sample-theme'.
+	 *
 	 * @subcommand child-theme
 	 */
 	function child_theme( $args, $assoc_args ) {
 		$theme_slug = $args[0];
+
+		if ( in_array( $theme_slug, array( '.', '..' ) ) ) {
+			WP_CLI::error( "Invalid theme slug specified." );
+		}
 
 		$data = wp_parse_args( $assoc_args, array(
 			'theme_name' => ucfirst( $theme_slug ),
@@ -323,7 +377,12 @@ class Scaffold_Command extends WP_CLI_Command {
 
 		$data['description'] = ucfirst( $data['parent_theme'] ) . " child theme.";
 
-		$theme_dir            = WP_CONTENT_DIR . "/themes" . "/$theme_slug";
+		$theme_dir = WP_CONTENT_DIR . "/themes" . "/$theme_slug";
+
+		if ( ! $this->check_target_directory( "theme", $theme_dir ) ) {
+			WP_CLI::error( "Invalid theme slug specified." );
+		}
+
 		$theme_style_path     = "$theme_dir/style.css";
 		$theme_functions_path = "$theme_dir/functions.php";
 
@@ -337,7 +396,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$this->log_whether_files_written(
 			$files_written,
 			$skip_message = 'All theme files were skipped.',
-			$success_message = "Created $theme_dir."
+			$success_message = "Created '$theme_dir'."
 		);
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate' ) ) {
@@ -373,6 +432,25 @@ class Scaffold_Command extends WP_CLI_Command {
 	/**
 	 * Generate starter code for a plugin.
 	 *
+	 * The following files are always generated:
+	 *
+	 * * `plugin-slug.php` is the main PHP plugin file.
+	 * * `readme.txt` is the readme file for the plugin.
+	 * * `package.json` needed by NPM holds various metadata relevant to the project. Packages: `grunt`, `grunt-wp-i18n` and `grunt-wp-readme-to-markdown`.
+	 * * `Gruntfile.js` is the JS file containing Grunt tasks. Tasks: `i18n` containing `addtextdomain` and `makepot`, `readme` containing `wp_readme_to_markdown`.
+	 * * `.editorconfig` is the configuration file for Editor.
+	 * * `.gitignore` tells which files (or patterns) git should ignore.
+	 * * `.distignore` tells which files and folders should be ignored in distribution.
+	 *
+	 * The following files are also included unless the `--skip-tests` is used:
+	 *
+	 * * `phpunit.xml.dist` is the configuration file for PHPUnit.
+	 * * `.travis.yml` is the configuration file for Travis CI. Use `--ci=<provider>` to select a different service.
+	 * * `bin/install-wp-tests.sh` configures the WordPress test suite and a test database.
+	 * * `tests/bootstrap.php` is the file that makes the current plugin active when running the test suite.
+	 * * `tests/test-sample.php` is a sample file containing test cases.
+	 * * `phpcs.ruleset.xml` is a collenction of PHP_CodeSniffer rules.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <slug>
@@ -382,7 +460,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * : Put the new plugin in some arbitrary directory path. Plugin directory will be path plus supplied slug.
 	 *
 	 * [--plugin_name=<title>]
-	 * : What to put in the 'Plugin Name:' header
+	 * : What to put in the 'Plugin Name:' header.
 	 *
 	 * [--plugin_description=<description>]
 	 * : What to put in the 'Description:' header.
@@ -399,6 +477,16 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--skip-tests]
 	 * : Don't generate files for unit testing.
 	 *
+	 * [--ci=<provider>]
+	 * : Choose a configuration file for a continuous integration provider.
+	 * ---
+	 * default: travis
+	 * options:
+	 *   - travis
+	 *   - circle
+	 *   - gitlab
+	 * ---
+	 *
 	 * [--activate]
 	 * : Activate the newly generated plugin.
 	 *
@@ -408,11 +496,20 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--force]
 	 * : Overwrite files that already exist.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp scaffold plugin sample-plugin
+	 *     Success: Created plugin files.
+	 *     Success: Created test files.
 	 */
 	function plugin( $args, $assoc_args ) {
 		$plugin_slug    = $args[0];
 		$plugin_name    = ucwords( str_replace( '-', ' ', $plugin_slug ) );
 		$plugin_package = str_replace( ' ', '_', $plugin_name );
+
+		if ( in_array( $plugin_slug, array( '.', '..' ) ) ) {
+			WP_CLI::error( "Invalid plugin slug specified." );
+		}
 
 		$data = wp_parse_args( $assoc_args, array(
 			'plugin_slug'         => $plugin_slug,
@@ -435,6 +532,10 @@ class Scaffold_Command extends WP_CLI_Command {
 		} else {
 			$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
 			$this->maybe_create_plugins_dir();
+
+			if ( ! $this->check_target_directory( "plugin", $plugin_dir ) ) {
+				WP_CLI::error( "Invalid plugin slug specified." );
+			}
 		}
 
 		$plugin_path = "$plugin_dir/$plugin_slug.php";
@@ -458,7 +559,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		);
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-tests' ) ) {
-			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), array( 'dir' => $plugin_dir, 'force' => $force ) );
+			WP_CLI::run_command( array( 'scaffold', 'plugin-tests', $plugin_slug ), array( 'dir' => $plugin_dir, 'ci' => $assoc_args['ci'], 'force' => $force ) );
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate' ) ) {
@@ -469,17 +570,16 @@ class Scaffold_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Generate files needed for running PHPUnit tests.
+	 * Generate files needed for running PHPUnit tests in a plugin.
 	 *
-	 * ## OVERVIEW
-	 *
-	 * The following files are generated for your plugin by this command:
+	 * The following files are generated by default:
 	 *
 	 * * `phpunit.xml.dist` is the configuration file for PHPUnit.
-	 * * `.travis.yml` is the configuration file for Travis CI.
+	 * * `.travis.yml` is the configuration file for Travis CI. Use `--ci=<provider>` to select a different service.
 	 * * `bin/install-wp-tests.sh` configures the WordPress test suite and a test database.
 	 * * `tests/bootstrap.php` is the file that makes the current plugin active when running the test suite.
 	 * * `tests/test-sample.php` is a sample file containing the actual tests.
+	 * * `phpcs.ruleset.xml` is a collenction of PHP_CodeSniffer rules.
 	 *
 	 * Learn more from the [plugin unit tests documentation](http://wp-cli.org/docs/plugin-unit-tests/).
 	 *
@@ -496,53 +596,136 @@ class Scaffold_Command extends WP_CLI_Command {
 	 * [--dir=<dirname>]
 	 * : Generate test files for a non-standard plugin path. If no plugin slug is specified, the directory name is used.
 	 *
+	 * [--ci=<provider>]
+	 * : Choose a configuration file for a continuous integration provider.
+	 * ---
+	 * default: travis
+	 * options:
+	 *   - travis
+	 *   - circle
+	 *	 - gitlab
+	 * ---
+	 *
 	 * [--force]
 	 * : Overwrite files that already exist.
 	 *
-	 * ## EXAMPLE
+	 * ## EXAMPLES
 	 *
-	 *     wp scaffold plugin-tests hello
+	 *     # Generate unit test files for plugin 'sample-plugin'.
+	 *     $ wp scaffold plugin-tests sample-plugin
+	 *     Success: Created test files.
 	 *
 	 * @subcommand plugin-tests
 	 */
-	function plugin_tests( $args, $assoc_args ) {
+	public function plugin_tests( $args, $assoc_args ) {
+		$this->scaffold_plugin_theme_tests( $args, $assoc_args, 'plugin' );
+	}
+
+	/**
+	 * Generate files needed for running PHPUnit tests in a theme.
+	 *
+	 * The following files are generated by default:
+	 *
+	 * * `phpunit.xml.dist` is the configuration file for PHPUnit.
+	 * * `.travis.yml` is the configuration file for Travis CI. Use `--ci=<provider>` to select a different service.
+	 * * `bin/install-wp-tests.sh` configures the WordPress test suite and a test database.
+	 * * `tests/bootstrap.php` is the file that makes the current theme active when running the test suite.
+	 * * `tests/test-sample.php` is a sample file containing the actual tests.
+	 * * `phpcs.ruleset.xml` is a collenction of PHP_CodeSniffer rules.
+	 *
+	 * Learn more from the [plugin unit tests documentation](http://wp-cli.org/docs/plugin-unit-tests/).
+	 *
+	 * ## ENVIRONMENT
+	 *
+	 * The `tests/bootstrap.php` file looks for the WP_TESTS_DIR environment
+	 * variable.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<theme>]
+	 * : The name of the theme to generate test files for.
+	 *
+	 * [--dir=<dirname>]
+	 * : Generate test files for a non-standard theme path. If no theme slug is specified, the directory name is used.
+	 *
+	 * [--ci=<provider>]
+	 * : Choose a configuration file for a continuous integration provider.
+	 * ---
+	 * default: travis
+	 * options:
+	 *   - travis
+	 *   - circle
+	 *	 - gitlab
+	 * ---
+	 *
+	 * [--force]
+	 * : Overwrite files that already exist.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Generate unit test files for theme 'twentysixteenchild'.
+	 *     $ wp scaffold theme-tests twentysixteenchild
+	 *     Success: Created test files.
+	 *
+	 * @subcommand theme-tests
+	 */
+	public function theme_tests( $args, $assoc_args ) {
+		$this->scaffold_plugin_theme_tests( $args, $assoc_args, 'theme' );
+	}
+
+	private function scaffold_plugin_theme_tests( $args, $assoc_args, $type ) {
 		$wp_filesystem = $this->init_wp_filesystem();
 
 		if ( ! empty( $args[0] ) ) {
-			$plugin_slug = $args[0];
-			$plugin_dir = WP_PLUGIN_DIR . "/$plugin_slug";
-			if ( empty( $assoc_args['dir'] ) && ! is_dir( $plugin_dir ) ) {
-				WP_CLI::error( 'Invalid plugin slug specified.' );
+			$slug = $args[0];
+			if ( in_array( $slug, array( '.', '..' ) ) ) {
+				WP_CLI::error( "Invalid {$type} slug specified." );
+			}
+			if ( 'theme' === $type ) {
+				$theme = wp_get_theme( $slug );
+				if ( $theme->exists() ) {
+					$target_dir = $theme->get_stylesheet_directory();
+				} else {
+					WP_CLI::error( "Invalid {$type} slug specified." );
+				}
+			} else {
+				$target_dir = WP_PLUGIN_DIR . "/$slug";
+			}
+			if ( empty( $assoc_args['dir'] ) && ! is_dir( $target_dir ) ) {
+				WP_CLI::error( "Invalid {$type} slug specified." );
+			}
+			if ( ! $this->check_target_directory( $type, $target_dir ) ) {
+				WP_CLI::error( "Invalid {$type} slug specified." );
 			}
 		}
 
 		if ( ! empty( $assoc_args['dir'] ) ) {
-			$plugin_dir = $assoc_args['dir'];
-			if ( ! is_dir( $plugin_dir ) ) {
-				WP_CLI::error( 'Invalid plugin directory specified.' );
+			$target_dir = $assoc_args['dir'];
+			if ( ! is_dir( $target_dir ) ) {
+				WP_CLI::error( "Invalid {$type} directory specified." );
 			}
-			if ( empty( $plugin_slug ) ) {
-				$plugin_slug = basename( $plugin_dir );
+			if ( empty( $slug ) ) {
+				$slug = basename( $target_dir );
 			}
 		}
 
-		if ( empty( $plugin_slug ) || empty( $plugin_dir ) ) {
-			WP_CLI::error( 'Invalid plugin specified.' );
+		if ( empty( $slug ) || empty( $target_dir ) ) {
+			WP_CLI::error( "Invalid {$type} specified." );
 		}
 
-		$plugin_name    = ucwords( str_replace( '-', ' ', $plugin_slug ) );
-		$plugin_package = str_replace( ' ', '_', $plugin_name );
+		$name    = ucwords( str_replace( '-', ' ', $slug ) );
+		$package = str_replace( ' ', '_', $name );
 
-		$tests_dir = "$plugin_dir/tests";
-		$bin_dir = "$plugin_dir/bin";
+		$tests_dir = "{$target_dir}/tests";
+		$bin_dir = "{$target_dir}/bin";
 
 		$wp_filesystem->mkdir( $tests_dir );
 		$wp_filesystem->mkdir( $bin_dir );
 
 		$wp_versions_to_test = array('latest');
 		// Parse plugin readme.txt
-		if ( file_exists( $plugin_dir . '/readme.txt' ) ) {
-			$readme_content = file_get_contents( $plugin_dir . '/readme.txt' );
+		if ( file_exists( $target_dir . '/readme.txt' ) ) {
+			$readme_content = file_get_contents( $target_dir . '/readme.txt' );
 
 			preg_match( '/Requires at least\:(.*)\n/m', $readme_content, $matches );
 			if ( isset( $matches[1] ) && $matches[1] ) {
@@ -554,34 +737,44 @@ class Scaffold_Command extends WP_CLI_Command {
 			}
 		}
 
-		$plugin_data = array(
-			'plugin_slug'    => $plugin_slug,
-			'plugin_package' => $plugin_package,
+		$template_data = array(
+			"{$type}_slug"    => $slug,
+			"{$type}_package" => $package,
 		);
 
 		$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
-		$files_written = $this->create_files( array(
-			"$tests_dir/bootstrap.php"   => Utils\mustache_render( 'bootstrap.mustache', $plugin_data ),
-			"$tests_dir/test-sample.php" => Utils\mustache_render( 'test-sample.mustache', $plugin_data ),
-			"$plugin_dir/.travis.yml"    => Utils\mustache_render( '.travis.mustache', compact( 'wp_versions_to_test' ) ),
-		), $force );
+		$files_to_create = array(
+			"$tests_dir/bootstrap.php"   => Utils\mustache_render( "{$type}-bootstrap.mustache", $template_data ),
+			"$tests_dir/test-sample.php" => Utils\mustache_render( "{$type}-test-sample.mustache", $template_data ),
+		);
+		if ( 'travis' === $assoc_args['ci'] ) {
+			$files_to_create["{$target_dir}/.travis.yml"] = Utils\mustache_render( 'plugin-travis.mustache', compact( 'wp_versions_to_test' ) );
+		} else if ( 'circle' === $assoc_args['ci'] ) {
+			$files_to_create["{$target_dir}/circle.yml"] = Utils\mustache_render( 'plugin-circle.mustache' );
+		} else if ( 'gitlab' === $assoc_args['ci'] ) {
+			$files_to_create["{$target_dir}/.gitlab-ci.yml"] = Utils\mustache_render( 'plugin-gitlab.mustache' );
+		}
+		$files_written = $this->create_files( $files_to_create, $force );
 
 		$to_copy = array(
 			'install-wp-tests.sh' => $bin_dir,
-			'phpunit.xml.dist'    => $plugin_dir,
+			'phpunit.xml.dist'    => $target_dir,
+			'phpcs.ruleset.xml'   => $target_dir,
 		);
 
 		foreach ( $to_copy as $file => $dir ) {
 			$file_name = "$dir/$file";
 			$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
 			$should_write_file = $this->prompt_if_files_will_be_overwritten( $file_name, $force );
-			if ( ! $should_write_file ) continue;
+			if ( ! $should_write_file ) {
+				continue;
+			}
 			$files_written[] = $file_name;
 
 			$wp_filesystem->copy( WP_CLI_ROOT . "/templates/$file", $file_name, true );
 			if ( 'install-wp-tests.sh' === $file ) {
 				if ( ! $wp_filesystem->chmod( "$dir/$file", 0755 ) ) {
-					WP_CLI::warning( "Couldn't mark install-wp-tests.sh as executable." );
+					WP_CLI::warning( "Couldn't mark 'install-wp-tests.sh' as executable." );
 				}
 			}
 		}
@@ -590,6 +783,26 @@ class Scaffold_Command extends WP_CLI_Command {
 			$skip_message = 'All test files were skipped.',
 			$success_message = 'Created test files.'
 		);
+	}
+
+	private function check_target_directory( $type, $target_dir ) {
+		if ( realpath( $target_dir ) ) {
+			$target_dir = realpath( $target_dir );
+		}
+
+		$parent_dir = dirname( $target_dir );
+
+		if ( "theme" === $type ) {
+			if ( WP_CONTENT_DIR . '/themes' === $parent_dir ) {
+				return true;
+			}
+		} elseif ( "plugin" === $type ) {
+			if ( WP_PLUGIN_DIR === $parent_dir ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function create_files( $files_and_contents, $force ) {
@@ -619,7 +832,7 @@ class Scaffold_Command extends WP_CLI_Command {
 			return true;
 		}
 
-		WP_CLI::warning( 'File already exists' );
+		WP_CLI::warning( 'File already exists.' );
 		WP_CLI::log( $filename );
 		if ( ! $force ) {
 			do {

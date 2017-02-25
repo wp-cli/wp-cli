@@ -7,9 +7,12 @@ Feature: WordPress code scaffolding
     And save STDOUT as {THEME_DIR}
 
     When I run `wp scaffold child-theme zombieland --parent_theme=umbrella --theme_name=Zombieland --author=Tallahassee --author_uri=http://www.wp-cli.org --theme_uri=http://www.zombieland.com`
-    Then STDOUT should not be empty
-    And the {THEME_DIR}/zombieland/style.css file should exist
+    Then the {THEME_DIR}/zombieland/style.css file should exist
     And the {THEME_DIR}/zombieland/functions.php file should exist
+    And STDOUT should be:
+      """
+      Success: Created '{THEME_DIR}/zombieland'.
+      """
 
   Scenario: Scaffold a child theme with only --parent_theme parameter
     Given a WP install
@@ -51,6 +54,19 @@ Feature: WordPress code scaffolding
       Success: Network enabled the 'Zombieland' theme.
       """
 
+  Scenario: Scaffold a child theme with invalid slug
+    Given a WP install
+    When I try `wp scaffold child-theme . --parent_theme=simple-life`
+    Then STDERR should contain:
+      """
+      Error: Invalid theme slug specified.
+      """
+    When I try `wp scaffold child-theme ../ --parent_theme=simple-life`
+    Then STDERR should contain:
+      """
+      Error: Invalid theme slug specified.
+      """
+
   @tax @cpt
   Scenario: Scaffold a Custom Taxonomy and Custom Post Type and write it to active theme
     Given a WP install
@@ -62,6 +78,25 @@ Feature: WordPress code scaffolding
 
     When I run `wp scaffold post-type zombie --theme`
     Then the {STYLESHEETPATH}/post-types/zombie.php file should exist
+    And STDOUT should be:
+      """
+      Success: Created '{STYLESHEETPATH}/post-types/zombie.php'.
+      """
+
+    When I run `wp scaffold post-type zombie`
+    Then STDOUT should contain:
+      """
+      register_post_type( 'zombie'
+      """
+    And STDOUT should contain:
+      """
+      add_filter( 'post_updated_messages'
+      """
+    When I run `wp scaffold post-type zombie --raw`
+    Then STDOUT should not contain:
+      """
+      add_filter( 'post_updated_messages'
+      """
 
   # Test for all flags but --label, --theme, --plugin and --raw
   @tax
@@ -155,6 +190,8 @@ Feature: WordPress code scaffolding
     And the {PLUGIN_DIR}/hello-world/.gitignore file should contain:
       """
       .DS_Store
+      Thumbs.db
+      wp-cli.local.yml
       node_modules/
       """
     And the {PLUGIN_DIR}/hello-world/.distignore file should contain:
@@ -205,6 +242,7 @@ Feature: WordPress code scaffolding
       http://wp-cli.org
       http://wp-cli.org
       n
+      travis
       Y
       n
       n
@@ -246,48 +284,17 @@ Feature: WordPress code scaffolding
       Plugin 'hello-world' network activated.
       """
 
-  Scenario: Scaffold plugin tests
+  Scenario: Scaffold a plugin with invalid slug
     Given a WP install
-    When I run `wp plugin path`
-    Then save STDOUT as {PLUGIN_DIR}
-
-    When I run `wp scaffold plugin hello-world --skip-tests`
-    Then STDOUT should not be empty
-    And the {PLUGIN_DIR}/hello-world/.editorconfig file should exist
-    And the {PLUGIN_DIR}/hello-world/hello-world.php file should exist
-    And the {PLUGIN_DIR}/hello-world/readme.txt file should exist
-    And the {PLUGIN_DIR}/hello-world/tests directory should not exist
-
-    When I run `wp scaffold plugin-tests hello-world`
-    Then STDOUT should not be empty
-    And the {PLUGIN_DIR}/hello-world/tests directory should contain:
+    When I try `wp scaffold plugin .`
+    Then STDERR should contain:
       """
-      bootstrap.php
-      test-sample.php
+      Error: Invalid plugin slug specified.
       """
-    And the {PLUGIN_DIR}/hello-world/tests/bootstrap.php file should contain:
+    When I try `wp scaffold plugin ../`
+    Then STDERR should contain:
       """
-      require dirname( dirname( __FILE__ ) ) . '/hello-world.php';
-      """
-    And the {PLUGIN_DIR}/hello-world/tests/bootstrap.php file should contain:
-      """
-      * @package Hello_World
-      """
-    And the {PLUGIN_DIR}/hello-world/tests/test-sample.php file should contain:
-      """
-      * @package Hello_World
-      """
-    And the {PLUGIN_DIR}/hello-world/bin directory should contain:
-      """
-      install-wp-tests.sh
-      """
-    And the {PLUGIN_DIR}/hello-world/phpunit.xml.dist file should exist
-    And the {PLUGIN_DIR}/hello-world/.travis.yml file should exist
-
-    When I run `wp eval "if ( is_executable( '{PLUGIN_DIR}/hello-world/bin/install-wp-tests.sh' ) ) { echo 'executable'; } else { exit( 1 ); }"`
-    Then STDOUT should be:
-      """
-      executable
+      Error: Invalid plugin slug specified.
       """
 
   Scenario: Scaffold starter code for a theme
@@ -320,6 +327,24 @@ Feature: WordPress code scaffolding
     Then STDOUT should contain:
       """
       Success: Switched to 'Starter-theme' theme.
+      """
+
+  Scenario: Scaffold starter code for a theme with invalid slug
+    Given a WP install
+    When I try `wp scaffold _s .`
+    Then STDERR should contain:
+      """
+      Error: Invalid theme slug specified.
+      """
+    When I try `wp scaffold _s ../`
+    Then STDERR should contain:
+      """
+      Error: Invalid theme slug specified.
+      """
+    When I try `wp scaffold _s 1themestartingwithnumber`
+    Then STDERR should contain:
+      """
+      Error: Invalid theme slug specified. Theme slugs can only contain letters, numbers, underscores and hyphens, and can only start with a letter or underscore.
       """
 
   Scenario: Scaffold plugin and tests for non-standard plugin directory

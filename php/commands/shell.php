@@ -5,14 +5,23 @@ class Shell_Command extends \WP_CLI_Command {
 	/**
 	 * Interactive PHP console.
 	 *
-	 * ## DESCRIPTION
-	 *
-	 * `wp shell` allows you to evaluate PHP statements and expressions interactively, from within a WordPress environment. This means that you have access to all the functions, classes and globals that you would have access to from inside a WordPress plugin, for example.
+	 * `wp shell` allows you to evaluate PHP statements and expressions
+	 * interactively, from within a WordPress environment. Type a bit of code,
+	 * hit enter, and see the code execute right before you. Because WordPress
+	 * is loaded, you have access to all the functions, classes and globals
+	 * that you can use within a WordPress plugin, for example.
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--basic]
 	 * : Start in fail-safe mode, even if Boris is available.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Call get_bloginfo() to get the name of the site.
+	 *     $ wp shell
+	 *     wp> get_bloginfo( 'name' );
+	 *     => string(6) "WP-CLI"
 	 */
 	public function __invoke( $_, $assoc_args ) {
 		$implementations = array(

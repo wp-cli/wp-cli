@@ -15,6 +15,12 @@ Feature: Do global search/replace
       guid
       """
 
+    When I run `wp search-replace foo bar --include-columns=post_content`
+    Then STDOUT should be a table containing rows:
+    | Table    | Column       | Replacements | Type |
+    | wp_posts | post_content | 0            | SQL  |
+
+
   Scenario: Multisite search/replace
     Given a WP multisite install
     And I run `wp site create --slug="foo" --title="foo" --email="foo@example.com"`
@@ -219,7 +225,7 @@ Feature: Do global search/replace
     When I run `wp search-replace '<a href="http://google.com">Google</a>' '<a href="http://apple.com">Apple</a>' --dry-run`
     Then STDOUT should contain:
       """
-      1 replacement(s) to be made.
+      1 replacement to be made.
       """
 
     When I run `wp post get {POST_ID} --field=content`
@@ -304,3 +310,28 @@ Feature: Do global search/replace
       | input                                 |
       | a:1:{s:3:"bar";s:3:"foo";}            |
       | O:8:"stdClass":1:{s:1:"a";s:3:"foo";} |
+
+  Scenario: Search replace with a regex flag
+    Given a WP install
+
+    When I run `wp search-replace 'EXAMPLE.com' 'BAXAMPLE.com' wp_options --regex`
+    Then STDOUT should be a table containing rows:
+      | Table      | Column       | Replacements | Type       |
+      | wp_options | option_value | 0            | PHP        |
+
+    When I run `wp option get home`
+    Then STDOUT should be:
+      """
+      http://example.com
+      """
+
+    When I run `wp search-replace 'EXAMPLE.com' 'BAXAMPLE.com' wp_options --regex --regex-flags=i`
+    Then STDOUT should be a table containing rows:
+      | Table      | Column       | Replacements | Type       |
+      | wp_options | option_value | 5            | PHP        |
+
+    When I run `wp option get home`
+    Then STDOUT should be:
+      """
+      http://BAXAMPLE.com
+      """

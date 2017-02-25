@@ -153,7 +153,7 @@ Feature: Manage WordPress posts
     When I try `wp post update {POST_ID} invalid-file.html`
     Then STDERR should be:
       """
-      Error: Unable to read content from invalid-file.html.
+      Error: Unable to read content from 'invalid-file.html'.
       """
 
   Scenario: Creating/listing posts
@@ -194,6 +194,14 @@ Feature: Manage WordPress posts
       Sample Page
       """
 
+    When I run `wp post list --post_type=any --fields=post_title,post_name,post_status --format=csv --orderby=post_title --order=ASC`
+    Then STDOUT should be CSV containing:
+      | post_title   | post_name    | post_status  |
+      | Draft post   |              | draft        |
+      | Hello world! | hello-world  | publish      |
+      | Publish post | publish-post | publish      |
+      | Sample Page  | sample-page  | publish      |
+
   Scenario: Update categories on a post
     When I run `wp term create category "Test Category" --porcelain`
     Then save STDOUT as {TERM_ID}
@@ -203,4 +211,23 @@ Feature: Manage WordPress posts
     Then STDOUT should be:
       """
       [{"name":"Test Category"}]
+      """
+
+  Scenario: Make sure WordPress receives the slashed data it expects
+    When I run `wp post create --post_title='My\Post' --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=title`
+    Then STDOUT should be:
+      """
+      My\Post
+      """
+
+    When I run `wp post update {POST_ID} --post_content='var isEmailValid = /^\S+@\S+.\S+$/.test(email);'`
+    Then STDOUT should not be empty
+
+    When I run `wp post get {POST_ID} --field=content`
+    Then STDOUT should be:
+      """
+      var isEmailValid = /^\S+@\S+.\S+$/.test(email);
       """

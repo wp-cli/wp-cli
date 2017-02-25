@@ -71,19 +71,19 @@ Feature: Manage WordPress comments
   Scenario: Get details about an existing comment
     When I run `wp comment get 1`
     Then STDOUT should be a table containing rows:
-      | Field           | Value          |
-      | comment_author  | Mr WordPress   |
+      | Field               | Value     |
+      | comment_approved    | 1         |
 
-    When I run `wp comment get 1 --fields=comment_author,comment_author_email --format=json`
-    Then STDOUT should be:
+    When I run `wp comment get 1 --fields=comment_approved --format=json`
+    Then STDOUT should be JSON containing:
       """
-      {"comment_author":"Mr WordPress","comment_author_email":""}
+      {"comment_approved":"1"}
       """
 
-    When I run `wp comment list --fields=comment_approved,comment_author`
+    When I run `wp comment list --fields=comment_approved`
     Then STDOUT should be a table containing rows:
-      | comment_approved | comment_author |
-      | 1                | Mr WordPress   |
+      | comment_approved |
+      | 1                |
 
     When I run `wp comment list --field=approved`
     Then STDOUT should be:
@@ -101,6 +101,24 @@ Feature: Manage WordPress comments
     Then STDOUT should contain:
       """
       #comment-1
+      """
+
+  Scenario: List the URLs of comments
+    When I run `wp comment create --comment_post_ID=1 --porcelain`
+    Then save STDOUT as {COMMENT_ID}
+
+    When I run `wp comment url 1 {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      http://example.com/?p=1#comment-1
+      http://example.com/?p=1#comment-{COMMENT_ID}
+      """
+
+    When I run `wp comment url {COMMENT_ID} 1`
+    Then STDOUT should be:
+      """
+      http://example.com/?p=1#comment-{COMMENT_ID}
+      http://example.com/?p=1#comment-1
       """
 
   Scenario: Count comments
@@ -248,4 +266,23 @@ Feature: Manage WordPress comments
     Then STDOUT should be:
       """
       0
+      """
+
+  Scenario: Make sure WordPress receives the slashed data it expects
+    When I run `wp comment create --comment_content='My\Comment' --porcelain`
+    Then save STDOUT as {COMMENT_ID}
+
+    When I run `wp comment get {COMMENT_ID} --field=comment_content`
+    Then STDOUT should be:
+      """
+      My\Comment
+      """
+
+    When I run `wp comment update {COMMENT_ID} --comment_content='My\New\Comment'`
+    Then STDOUT should not be empty
+
+    When I run `wp comment get {COMMENT_ID} --field=comment_content`
+    Then STDOUT should be:
+      """
+      My\New\Comment
       """

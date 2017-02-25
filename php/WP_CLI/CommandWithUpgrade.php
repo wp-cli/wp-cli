@@ -12,6 +12,8 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 	protected $upgrade_refresh;
 	protected $upgrade_transient;
 
+	protected $chained_command = false;
+
 	function __construct() {
 		// Do not automatically check translations updates after updating plugins/themes.
 		add_action( 'upgrader_process_complete', function() {
@@ -118,6 +120,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 	function install( $args, $assoc_args ) {
 
+		$successes = $errors = 0;
 		foreach ( $args as $slug ) {
 
 			if ( empty( $slug ) ) {
@@ -137,27 +140,64 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				// Install from local or remote zip file
 				$file_upgrader = $this->get_upgrader( $assoc_args );
 
+				$filter = false;
+				if ( strpos( $local_or_remote_zip_file, '://' ) !== false
+						&& 'github.com' === parse_url( $local_or_remote_zip_file, PHP_URL_HOST ) ) {
+					$filter = function( $source, $remote_source, $upgrader ) use ( $local_or_remote_zip_file ) {
+						// Don't attempt to rename ZIPs uploaded to the releases page
+						if ( preg_match( '#github\.com/([^/]+)/([^/]+)/releases/download/#', $local_or_remote_zip_file ) || preg_match( '#github\.com/([^/]+)/([^/]+)/raw/#', $local_or_remote_zip_file ) ) {
+							return $source;
+						}
+						$branch_length = strlen( pathinfo( $local_or_remote_zip_file, PATHINFO_FILENAME ) );
+						if ( $branch_length ) {
+							$new_path = substr( rtrim( $source, '/' ), 0, - ( $branch_length + 1 ) ) . '/';
+							if ( $GLOBALS['wp_filesystem']->move( $source, $new_path ) ) {
+								WP_CLI::log( "Renamed Github-based project from '" . basename( $source ) . "' to '" . basename( $new_path ) . "'." );
+								return $new_path;
+							} else {
+								return new \WP_Error( 'wpcli_install_gitub', "Couldn't move Github-based project to appropriate directory." );
+							}
+						}
+						return $source;
+					};
+					add_filter( 'upgrader_source_selection', $filter, 10, 3 );
+				}
+
 				if ( $file_upgrader->install( $local_or_remote_zip_file ) ) {
 					$slug = $file_upgrader->result['destination_name'];
 					$result = true;
+					if ( $filter ) {
+						remove_filter( 'upgrader_source_selection', $filter, 10 );
+					}
+					$successes++;
+				} else {
+					$errors++;
 				}
 			} else {
 				// Assume a plugin/theme slug from the WordPress.org repository has been specified
 				$result = $this->install_from_repo( $slug, $assoc_args );
 
-				if ( is_wp_error( $result ) ) {
-
+				if ( is_null( $result ) ) {
+					$errors++;
+				} elseif ( is_wp_error( $result ) ) {
 					$key = $result->get_error_code();
-					if ( in_array( $result->get_error_code(), array( 'plugins_api_failed', 'themes_api_failed' ) )
+					if ( in_array( $key, array( 'plugins_api_failed', 'themes_api_failed' ) )
 						&& ! empty( $result->error_data[ $key ] ) && in_array( $result->error_data[ $key ], array( 'N;', 'b:0;' ) ) ) {
 						\WP_CLI::warning( "Couldn't find '$slug' in the WordPress.org {$this->item_type} directory." );
+						$errors++;
 					} else {
 						\WP_CLI::warning( "$slug: " . $result->get_error_message() );
+						if ( 'already_installed' !== $key ) {
+							$errors++;
+						}
 					}
+				} else {
+					$successes++;
 				}
 			}
 
 			if ( $result ) {
+				$this->chained_command = true;
 				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate-network' ) ) {
 					\WP_CLI::log( "Network-activating '$slug'..." );
 					$this->activate( array( $slug ), array( 'network' => true ) );
@@ -167,8 +207,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 					\WP_CLI::log( "Activating '$slug'..." );
 					$this->activate( array( $slug ) );
 				}
+				$this->chained_command = false;
 			}
 		}
+		Utils\report_batch_operation_results( $this->item_type, 'install', count( $args ), $successes, $errors );
 	}
 
 	/**
@@ -231,8 +273,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
 		$items = $this->get_item_list();
 
+		$errors = 0;
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			$items = $this->filter_item_list( $items, $args );
+			$errors = count( $args ) - count( $items );
 		}
 
 		$items_to_update = wp_list_filter( $items, array(
@@ -276,16 +320,6 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 		$num_to_update = count( $items_to_update );
 		$num_updated = count( array_filter( $result ) );
 
-		$line = "Updated $num_updated/$num_to_update {$this->item_type}s.";
-
-		if ( $num_to_update == $num_updated ) {
-			\WP_CLI::success( $line );
-		} else if ( $num_updated > 0 ) {
-			\WP_CLI::warning( $line );
-		} else {
-			\WP_CLI::error( $line );
-		}
-
 		if ( $num_to_update > 0 ) {
 			if ( ! empty( $assoc_args['format'] ) && 'summary' === $assoc_args['format'] ) {
 				foreach( $items_to_update as $item_to_update => $info ) {
@@ -311,6 +345,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 				\WP_CLI\Utils\format_items( $format, $status, array( 'name', 'old_version', 'new_version', 'status' ) );
 			}
 		}
+		Utils\report_batch_operation_results( $this->item_type, 'update', count( $args ), $num_updated, $errors );
 	}
 
 	protected function _list( $_, $assoc_args ) {

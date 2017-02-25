@@ -7,6 +7,9 @@ class Import_Command extends WP_CLI_Command {
 	/**
 	 * Import content from a WXR file.
 	 *
+	 * Provides a command line interface to the WordPress Importer plugin, for
+	 * performing data migrations.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <file>...
@@ -17,6 +20,17 @@ class Import_Command extends WP_CLI_Command {
 	 *
 	 * [--skip=<data-type>]
 	 * : Skip importing specific data. Supported options are: 'attachment' and 'image_resize' (skip time-consuming thumbnail generation).
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Import content from a WXR file
+	 *     $ wp import example.wordpress.2016-06-21.xml --authors=create
+	 *     Starting the import process...
+	 *     Processing post #1 ("Hello world!") (post_type: post)
+	 *     -- 1 of 1
+	 *     -- Tue, 21 Jun 2016 05:31:12 +0000
+	 *     -- Imported post as post_id #1
+	 *     Success: Finished importing from 'example.wordpress.2016-06-21.xml' file.
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$defaults = array(
@@ -51,7 +65,7 @@ class Import_Command extends WP_CLI_Command {
 
 		foreach ( $args as $file ) {
 			if ( ! is_readable( $file ) ) {
-				WP_CLI::warning( "Can't read $file file." );
+				WP_CLI::warning( "Can't read '$file' file." );
 			}
 
 			$ret = $this->import_wxr( $file, $assoc_args );
@@ -60,7 +74,7 @@ class Import_Command extends WP_CLI_Command {
 				WP_CLI::error( $ret );
 			} else {
 				WP_CLI::log(''); // WXR import ends with HTML, so make sure message is on next line
-				WP_CLI::success( "Finished importing from $file file." );
+				WP_CLI::success( "Finished importing from '$file' file." );
 			}
 		}
 	}
@@ -140,6 +154,7 @@ class Import_Command extends WP_CLI_Command {
 			add_filter( 'intermediate_image_sizes_advanced', array( $this, 'filter_set_image_sizes' ) );
 		}
 
+		$GLOBALS['wp_cli_import_current_file'] = basename( $file );
 		$wp_import->import( $file );
 		$this->processed_posts += $wp_import->processed_posts;
 
@@ -171,13 +186,13 @@ class Import_Command extends WP_CLI_Command {
 		}, 10, 3 );
 
 		add_filter( 'wp_import_post_data_raw', function( $post ) {
-			global $wpcli_import_counts;
+			global $wpcli_import_counts, $wp_cli_import_current_file;
 
 			$wpcli_import_counts['current_post']++;
 			WP_CLI::log('');
 			WP_CLI::log('');
 			WP_CLI::log( sprintf( 'Processing post #%d ("%s") (post_type: %s)', $post['post_id'], $post['post_title'], $post['post_type'] ) );
-			WP_CLI::log( sprintf( '-- %s of %s', number_format( $wpcli_import_counts['current_post'] ), number_format( $wpcli_import_counts['total_posts'] ) ) );
+			WP_CLI::log( sprintf( '-- %s of %s (in file %s)', number_format( $wpcli_import_counts['current_post'] ), number_format( $wpcli_import_counts['total_posts'] ), $wp_cli_import_current_file ) );
 			WP_CLI::log( '-- ' . date( 'r' ) );
 
 			return $post;

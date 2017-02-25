@@ -3,6 +3,22 @@
 /**
  * Perform site-wide operations.
  *
+ * ## EXAMPLES
+ *
+ *     # Create site
+ *     $ wp site create --slug=example
+ *     Success: Site 3 created: www.example.com/example/
+ *
+ *     # Output a simple list of site URLs
+ *     $ wp site list --field=url
+ *     http://www.example.com/
+ *     http://www.example.com/subdir/
+ *
+ *     # Delete site
+ *     $ wp site delete 123
+ *     Are you sure you want to delete the 'http://www.example.com/example' site? [y/n] y
+ *     Success: The site at 'http://www.example.com/example' was deleted.
+ *
  * @package wp-cli
  */
 class Site_Command extends \WP_CLI\CommandWithDBObject {
@@ -120,10 +136,16 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Empty a site of its content (posts, comments, and terms).
+	 * Empty a site of its content (posts, comments, terms, and meta).
 	 *
-	 * This command doesn't empty custom database tables by default. To do so,
-	 * you'll need to hook into command execution:
+	 * Truncates posts, comments, and terms tables to empty a site of its
+	 * content. Doesn't affect site configuration (options) or users.
+	 *
+	 * If running a persistent object cache, make sure to flush the cache
+	 * after emptying the site, as the cache values will be invalid otherwise.
+	 *
+	 * To also empty custom database tables, you'll need to hook into command
+	 * execution:
 	 *
 	 * ```
 	 * WP_CLI::add_hook( 'after_invoke:site empty', function(){
@@ -143,6 +165,12 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--yes]
 	 * : Proceed to empty the site without a confirmation prompt.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp site empty
+	 *     Are you sure you want to empty the site at http://www.example.com of all posts, comments, and terms? [y/n] y
+	 *     Success: The site at 'http://www.example.com' was emptied.
+	 *
 	 * @subcommand empty
 	 */
 	public function _empty( $args, $assoc_args ) {
@@ -152,7 +180,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			$upload_message = ', and delete its uploads directory';
 		}
 
-		WP_CLI::confirm( 'Are you sure you want to empty the site at ' . site_url() . ' of all posts, comments, and terms' . $upload_message . '?', $assoc_args );
+		WP_CLI::confirm( "Are you sure you want to empty the site at '" . site_url() . "' of all posts, comments, and terms" . $upload_message . "?", $assoc_args );
 
 		$this->_empty_posts();
 		$this->_empty_comments();
@@ -166,19 +194,29 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 				RecursiveIteratorIterator::CHILD_FIRST
 			);
 
+			$files_to_unlink = $directories_to_delete = array();
 			foreach ( $files as $fileinfo ) {
 				$realpath = $fileinfo->getRealPath();
 				// Don't clobber subsites when operating on the main site
 				if ( is_main_site() && false !== stripos( $realpath, '/sites/' ) ) {
 					continue;
 				}
-				$todo = $fileinfo->isDir() ? 'rmdir' : 'unlink';
-				$todo( $realpath );
+				if ( $fileinfo->isDir() ) {
+					$directories_to_delete[] = $realpath;
+				} else {
+					$files_to_unlink[] = $realpath;
+				}
+			}
+			foreach( $files_to_unlink as $file ) {
+				unlink( $file );
+			}
+			foreach( $directories_to_delete as $directory ) {
+				rmdir( $directory );
 			}
 			rmdir( $upload_dir['basedir'] );
 		}
 
-		WP_CLI::success( 'The site at ' . site_url() . ' was emptied.' );
+		WP_CLI::success( "The site at '" . site_url() . "' was emptied." );
 	}
 
 	/**
@@ -202,8 +240,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     $ wp site delete 123
 	 *     Are you sure you want to delete the http://www.example.com/example site? [y/n] y
-	 *     Success: The site at http://www.example.com/example was deleted.
-	 *
+	 *     Success: The site at 'http://www.example.com/example' was deleted.
 	 */
 	function delete( $args, $assoc_args ) {
 		if ( !is_multisite() ) {
@@ -226,11 +263,13 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( "Site not found." );
 		}
 
-		WP_CLI::confirm( "Are you sure you want to delete the $blog->siteurl site?", $assoc_args );
+		$site_url = trailingslashit( $blog->siteurl );
+
+		WP_CLI::confirm( "Are you sure you want to delete the '$site_url' site?", $assoc_args );
 
 		wpmu_delete_blog( $blog->blog_id, ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
 
-		WP_CLI::success( "The site at $blog->siteurl was deleted." );
+		WP_CLI::success( "The site at '$site_url' was deleted." );
 	}
 
 	/**
@@ -255,6 +294,11 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--porcelain]
 	 * : If set, only the site id will be output on success.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp site create --slug=example
+	 *     Success: Site 3 created: http://www.example.com/example/
 	 */
 	public function create( $_, $assoc_args ) {
 		if ( !is_multisite() ) {
@@ -312,13 +356,13 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( is_subdomain_install() ) {
-			$path = '/';
-			$url = $newdomain = $base.'.'.preg_replace( '|^www\.|', '', $network->domain );
-		}
-		else {
-			$newdomain = $network->domain;
-			$path = '/' . trim( $base, '/' ) . '/';
-			$url = $network->domain . $path;
+			$newdomain = $base . '.' . preg_replace( '|^www\.|', '', $current_site->domain );
+			$path      = $current_site->path;
+			$url       = $newdomain;
+		} else {
+			$newdomain = $current_site->domain;
+			$path      = $current_site->path . $base . '/';
+			$url       = $newdomain . $path;
 		}
 
 		$user_id = email_exists( $email );
@@ -334,6 +378,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$wpdb->hide_errors();
+		$title = wp_slash( $title );
 		$id = wpmu_create_blog( $newdomain, $path, $title, $user_id, array( 'public' => $public ), $network->id );
 		$wpdb->show_errors();
 		if ( !is_wp_error( $id ) ) {
@@ -349,10 +394,12 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( $id->get_error_message() );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) )
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 			WP_CLI::line( $id );
-		else
-			WP_CLI::success( "Site $id created: $url" );
+		} else {
+			$site_url = trailingslashit( get_site_url( $id ) );
+			WP_CLI::success( "Site $id created: $site_url" );
+		}
 	}
 
 	/**
@@ -385,7 +432,11 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * : The network to which the sites belong.
 	 *
 	 * [--<field>=<value>]
-	 * : Filter by one or more fields.
+	 * : Filter by one or more fields (see "Available Fields" section). However,
+	 * 'url' isn't an available filter, because it's created from domain + path.
+	 *
+	 * [--site__in=<value>]
+	 * : Only list the sites with these blog_id values (comma-separated).
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each site.
@@ -394,7 +445,17 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Comma-separated list of fields to show.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - count
+	 *   - ids
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -421,8 +482,8 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     # Output a simple list of site URLs
 	 *     $ wp site list --field=url
-	 *     http://example.com/
-	 *     http://example.com/subdir/
+	 *     http://www.example.com/
+	 *     http://www.example.com/subdir/
 	 *
 	 * @subcommand list
 	 */
@@ -446,7 +507,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		$where = array();
 		$append = '';
 
-		$site_cols = array( 'blog_id', 'url', 'last_updated', 'registered', 'site_id', 'domain', 'path', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' );
+		$site_cols = array( 'blog_id', 'last_updated', 'registered', 'site_id', 'domain', 'path', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' );
 		foreach( $site_cols as $col ) {
 			if ( isset( $assoc_args[ $col ] ) ) {
 				$where[ $col ] = $assoc_args[ $col ];
@@ -474,12 +535,20 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			return $blog;
 		} );
 
-		$formatter = new \WP_CLI\Formatter( $assoc_args, null, 'site' );
-		$formatter->display_items( $it );
+		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
+			$sites = iterator_to_array( $it );
+			$ids = wp_list_pluck( $sites, 'blog_id' );
+			$formatter = new \WP_CLI\Formatter( $assoc_args, null, 'site' );
+			$formatter->display_items( $ids );
+		}
+		else {
+			$formatter = new \WP_CLI\Formatter( $assoc_args, null, 'site' );
+			$formatter->display_items( $it );
+		}
 	}
 
 	/**
-	 * Archive one or more sites
+	 * Archive one or more sites.
 	 *
 	 * ## OPTIONS
 	 *
@@ -496,7 +565,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Unarchive one or more sites
+	 * Unarchive one or more sites.
 	 *
 	 * ## OPTIONS
 	 *
@@ -513,7 +582,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Activate one or more sites
+	 * Activate one or more sites.
 	 *
 	 * ## OPTIONS
 	 *
@@ -530,7 +599,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Deactivate one or more sites
+	 * Deactivate one or more sites.
 	 *
 	 * ## OPTIONS
 	 *
@@ -547,7 +616,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Mark one or more sites as spam
+	 * Mark one or more sites as spam.
 	 *
 	 * ## OPTIONS
 	 *
@@ -564,7 +633,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Remove one or more sites from spam
+	 * Remove one or more sites from spam.
 	 *
 	 * ## OPTIONS
 	 *
@@ -619,4 +688,3 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 }
 
 WP_CLI::add_command( 'site', 'Site_Command' );
-

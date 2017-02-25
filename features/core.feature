@@ -66,6 +66,26 @@ Feature: Manage WordPress installation
       http://localhost:8001
       """
 
+  Scenario: Install WordPress by prompting for the admin email and password
+    Given an empty directory
+    And WP files
+    And wp-config.php
+    And a database
+    And a session file:
+      """
+      wpcli
+      admin@example.com
+      """
+
+    When I run `wp core install --url=localhost:8001 --title=Test --admin_user=wpcli --prompt=admin_email,admin_password < session`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo home_url();'`
+    Then STDOUT should be:
+      """
+      http://localhost:8001
+      """
+
   Scenario: Install WordPress with an https scheme
     Given an empty directory
     And WP files
@@ -132,7 +152,13 @@ Feature: Manage WordPress installation
     Then the return code should be 1
 
     When I run `wp core install-network --title='test network'`
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      Set up multisite database tables.
+      Added multisite constants to 'wp-config.php'.
+      Success: Network installed. Don't forget to set up rewrite rules.
+      """
+    And STDERR should be empty
 
     When I run `wp eval 'var_export( is_multisite() );'`
     Then STDOUT should be:
@@ -159,7 +185,14 @@ Feature: Manage WordPress installation
     And a database
 
     When I run `wp core multisite-install --url=foobar.org --title=Test --admin_user=wpcli --admin_email=admin@example.com --admin_password=1`
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      Created single site database tables.
+      Set up multisite database tables.
+      Added multisite constants to 'wp-config.php'.
+      Success: Network installed. Don't forget to set up rewrite rules.
+      """
+    And STDERR should be empty
 
     When I run `wp eval 'echo $GLOBALS["current_site"]->domain;'`
     Then STDOUT should be:
@@ -319,4 +352,19 @@ Feature: Manage WordPress installation
     Then STDOUT should be:
       """
       http://wp.dev
+      """
+
+  Scenario: Warn when multisite constants can't be inserted into wp-config
+    Given a WP install
+    And "That's all" replaced with "C'est tout" in the wp-config.php file
+
+    When I run `wp core multisite-convert`
+    Then STDOUT should be:
+      """
+      Set up multisite database tables.
+      Success: Network installed. Don't forget to set up rewrite rules.
+      """
+    And STDERR should contain:
+      """
+      Warning: Multisite constants could not be written to 'wp-config.php'. You may need to add them manually:
       """

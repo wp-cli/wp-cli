@@ -32,6 +32,7 @@ Feature: Manage WordPress themes
     Then STDERR should be:
       """
       Warning: Can't delete the currently active theme: p2
+      Error: No themes deleted.
       """
     And STDOUT should be empty
 
@@ -49,6 +50,20 @@ Feature: Manage WordPress themes
 
     When I run `wp theme list`
     Then STDOUT should not be empty
+
+  Scenario: Checking theme status without theme parameter
+    Given a WP install
+
+    When I run `wp theme install classic --activate`
+    And I run `wp theme list --field=name --status=inactive | xargs wp theme delete`
+    And I run `wp theme status`
+    Then STDOUT should be:
+      """
+      1 installed theme:
+        A classic 1.6
+
+      Legend: A = Active
+      """
 
   Scenario: Install a theme, activate, then force install an older version of the theme
     Given a WP install
@@ -108,10 +123,10 @@ Feature: Manage WordPress themes
       Success: Switched to 'P2' theme.
       """
 
-    When I run `wp theme activate p2`
-    Then STDOUT should be:
+    When I try `wp theme activate p2`
+    Then STDERR should be:
       """
-      Success: The 'P2' theme is already active.
+      Warning: The 'P2' theme is already active.
       """
 
   Scenario: Install a theme when the theme directory doesn't yet exist
@@ -333,3 +348,25 @@ Feature: Manage WordPress themes
       name,old_version,new_version,status
       twentytwelve,1.0,{UPDATE_VERSION},Updated
       """
+
+  Scenario: Automatically install parent theme for a child theme
+    Given a WP install
+
+    When I try `wp theme status stargazer`
+    Then STDERR should contain:
+      """
+      Error: The 'stargazer' theme could not be found.
+      """
+
+    When I run `wp theme install buntu`
+    Then STDOUT should contain:
+      """
+      This theme requires a parent theme. Checking if it is installed
+      """
+
+    When I run `wp theme status stargazer`
+    Then STDOUT should contain:
+      """
+      Theme stargazer details:
+      """
+    And STDERR should be empty

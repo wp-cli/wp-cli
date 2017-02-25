@@ -5,11 +5,24 @@ Feature: Perform database operations
     And WP files
     And wp-config.php
 
+    When I try `wp option get home`
+    Then STDOUT should be empty
+    And STDERR should be:
+      """
+      Error: Can’t select database. We were able to connect to the database server (which means your username and password is okay) but not able to select the `wp_cli_test` database.
+      """
+
     When I run `wp db create`
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      Success: Database created.
+      """
 
     When I try the previous command again
     Then the return code should be 1
+
+  Scenario: DB Operations
+    Given a WP install
 
     When I run `wp db optimize`
     Then STDOUT should not be empty
@@ -36,6 +49,16 @@ Feature: Perform database operations
       total
       """
 
+    When I run `wp db query 'SELECT * FROM wp_options WHERE option_name="home"' --skip-column-names`
+    Then STDOUT should not contain:
+      """
+      option_name
+      """
+    And STDOUT should contain:
+      """
+      home
+      """
+
   Scenario: DB export/import
     Given a WP install
 
@@ -49,6 +72,18 @@ Feature: Perform database operations
     Then STDOUT should contain:
       """
       Success: Exported
+      """
+
+    When I run `wp db export wp-cli-behat.sql --porcelain`
+    Then STDOUT should be:
+      """
+      wp-cli-behat.sql
+      """
+
+    When I try `wp db export - --porcelain`
+    Then STDERR should be:
+      """
+      Error: Porcelain is not allowed when output mode is STDOUT.
       """
 
     When I run `wp db reset --yes`
@@ -82,7 +117,7 @@ Feature: Perform database operations
     When I run `cat wp-config.php`
     Then STDOUT should contain:
       """
-      define('DB_CHARSET', '');
+      define( 'DB_CHARSET', '' );
       """
 
     When I run `wp db create`

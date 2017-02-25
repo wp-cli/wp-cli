@@ -18,14 +18,14 @@ Feature: Regenerate WordPress attachments
       """
       <?php
       add_action( 'after_setup_theme', function(){
-        add_image_size( 'test1', 100, 100, true );
+        add_image_size( 'test1', 125, 125, true );
       });
       """
     And I run `wp option update uploads_use_yearmonth_folders 0`
 
     When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My imported attachment" --porcelain`
     Then save STDOUT as {ATTACHMENT_ID}
-    And the wp-content/uploads/large-image-100x100.jpg file should exist
+    And the wp-content/uploads/large-image-125x125.jpg file should exist
 
     Given a wp-content/mu-plugins/media-settings.php file:
       """
@@ -37,9 +37,9 @@ Feature: Regenerate WordPress attachments
     When I run `wp media regenerate --yes`
     Then STDOUT should contain:
       """
-      Success: Finished regenerating the image.
+      Success: Regenerated 1 of 1 images.
       """
-    And the wp-content/uploads/large-image-100x100.jpg file should not exist
+    And the wp-content/uploads/large-image-125x125.jpg file should not exist
     And the wp-content/uploads/large-image-200x200.jpg file should exist
 
   Scenario: Skip deletion of existing thumbnails when media is regenerated
@@ -50,14 +50,14 @@ Feature: Regenerate WordPress attachments
       """
       <?php
       add_action( 'after_setup_theme', function(){
-        add_image_size( 'test1', 100, 100, true );
+        add_image_size( 'test1', 125, 125, true );
       });
       """
     And I run `wp option update uploads_use_yearmonth_folders 0`
 
     When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My imported attachment" --porcelain`
     Then save STDOUT as {ATTACHMENT_ID}
-    And the wp-content/uploads/large-image-100x100.jpg file should exist
+    And the wp-content/uploads/large-image-125x125.jpg file should exist
 
     Given a wp-content/mu-plugins/media-settings.php file:
       """
@@ -69,10 +69,106 @@ Feature: Regenerate WordPress attachments
     When I run `wp media regenerate --skip-delete --yes`
     Then STDOUT should contain:
       """
-      Success: Finished regenerating the image.
+      Success: Regenerated 1 of 1 images.
       """
-    And the wp-content/uploads/large-image-100x100.jpg file should exist
+    And the wp-content/uploads/large-image-125x125.jpg file should exist
     And the wp-content/uploads/large-image-200x200.jpg file should exist
+
+  @require-wp-4.7.1
+  Scenario: Delete existing thumbnails when media including PDF is regenerated
+    Given download:
+      | path                              | url                                                   |
+      | {CACHE_DIR}/large-image.jpg       | http://wp-cli.org/behat-data/large-image.jpg          |
+      | {CACHE_DIR}/minimal-us-letter.pdf | http://wp-cli.org/behat-data/minimal-us-letter.pdf    |
+    And a wp-content/mu-plugins/media-settings.php file:
+      """
+      <?php
+      add_action( 'after_setup_theme', function(){
+        add_image_size( 'test1', 125, 125, true );
+        add_filter( 'fallback_intermediate_image_sizes', function( $fallback_sizes ){
+          $fallback_sizes[] = 'test1';
+          return $fallback_sizes;
+        });
+      });
+      """
+    And I run `wp option update uploads_use_yearmonth_folders 0`
+
+    When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My imported attachment" --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID}
+    And the wp-content/uploads/large-image-125x125.jpg file should exist
+
+    When I run `wp media import {CACHE_DIR}/minimal-us-letter.pdf --title="My imported PDF attachment" --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID2}
+    And the wp-content/uploads/minimal-us-letter-125x125.jpg file should exist
+
+    Given a wp-content/mu-plugins/media-settings.php file:
+      """
+      <?php
+      add_action( 'after_setup_theme', function(){
+        add_image_size( 'test1', 200, 200, true );
+        add_filter( 'fallback_intermediate_image_sizes', function( $fallback_sizes ){
+          $fallback_sizes[] = 'test1';
+          return $fallback_sizes;
+        });
+      });
+      """
+    When I run `wp media regenerate --yes`
+    Then STDOUT should contain:
+      """
+      Success: Regenerated 2 of 2 images.
+      """
+    And the wp-content/uploads/large-image-125x125.jpg file should not exist
+    And the wp-content/uploads/large-image-200x200.jpg file should exist
+    And the wp-content/uploads/minimal-us-letter-125x125.jpg file should not exist
+    And the wp-content/uploads/minimal-us-letter-200x200.jpg file should exist
+
+  @require-wp-4.7.1
+  Scenario: Skip deletion of existing thumbnails when media including PDF is regenerated
+    Given download:
+      | path                              | url                                                   |
+      | {CACHE_DIR}/large-image.jpg       | http://wp-cli.org/behat-data/large-image.jpg          |
+      | {CACHE_DIR}/minimal-us-letter.pdf | http://wp-cli.org/behat-data/minimal-us-letter.pdf    |
+    And a wp-content/mu-plugins/media-settings.php file:
+      """
+      <?php
+      add_action( 'after_setup_theme', function(){
+        add_image_size( 'test1', 125, 125, true );
+        add_filter( 'fallback_intermediate_image_sizes', function( $fallback_sizes ){
+          $fallback_sizes[] = 'test1';
+          return $fallback_sizes;
+        });
+      });
+      """
+    And I run `wp option update uploads_use_yearmonth_folders 0`
+
+    When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My imported attachment" --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID}
+    And the wp-content/uploads/large-image-125x125.jpg file should exist
+
+    When I run `wp media import {CACHE_DIR}/minimal-us-letter.pdf --title="My imported PDF attachment" --porcelain`
+    Then save STDOUT as {ATTACHMENT_ID2}
+    And the wp-content/uploads/minimal-us-letter-125x125.jpg file should exist
+
+    Given a wp-content/mu-plugins/media-settings.php file:
+      """
+      <?php
+      add_action( 'after_setup_theme', function(){
+        add_image_size( 'test1', 200, 200, true );
+        add_filter( 'fallback_intermediate_image_sizes', function( $fallback_sizes ){
+          $fallback_sizes[] = 'test1';
+          return $fallback_sizes;
+        });
+      });
+      """
+    When I run `wp media regenerate --skip-delete --yes`
+    Then STDOUT should contain:
+      """
+      Success: Regenerated 2 of 2 images.
+      """
+    And the wp-content/uploads/large-image-125x125.jpg file should exist
+    And the wp-content/uploads/large-image-200x200.jpg file should exist
+    And the wp-content/uploads/minimal-us-letter-125x125.jpg file should exist
+    And the wp-content/uploads/minimal-us-letter-200x200.jpg file should exist
 
   Scenario: Provide helpful error messages when media can't be regenerated
     Given download:
@@ -82,26 +178,23 @@ Feature: Regenerate WordPress attachments
       """
       <?php
       add_action( 'after_setup_theme', function(){
-        add_image_size( 'test1', 100, 100, true );
+        add_image_size( 'test1', 125, 125, true );
       });
       """
     And I run `wp option update uploads_use_yearmonth_folders 0`
 
     When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My imported attachment" --porcelain`
     Then save STDOUT as {ATTACHMENT_ID}
-    And the wp-content/uploads/large-image-100x100.jpg file should exist
+    And the wp-content/uploads/large-image-125x125.jpg file should exist
 
     When I run `rm wp-content/uploads/large-image.jpg`
     Then STDOUT should be empty
 
-    When I run `wp media regenerate --yes`
-    Then STDOUT should contain:
+    When I try `wp media regenerate --yes`
+    Then STDERR should be:
       """
-      An error occurred with image regeneration.
-      """
-    And STDERR should contain:
-      """
-      Warning: Can't find
+      Warning: Can't find "My imported attachment" (ID {ATTACHMENT_ID}).
+      Error: No images regenerated.
       """
 
   Scenario: Only regenerate images which are missing sizes
@@ -112,20 +205,20 @@ Feature: Regenerate WordPress attachments
       """
       <?php
       add_action( 'after_setup_theme', function(){
-        add_image_size( 'test1', 100, 100, true );
+        add_image_size( 'test1', 125, 125, true );
       });
       """
     And I run `wp option update uploads_use_yearmonth_folders 0`
 
     When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My imported attachment" --porcelain`
     Then save STDOUT as {ATTACHMENT_ID}
-    And the wp-content/uploads/large-image-100x100.jpg file should exist
+    And the wp-content/uploads/large-image-125x125.jpg file should exist
 
     When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My second imported attachment" --porcelain`
     Then save STDOUT as {ATTACHMENT_ID2}
 
-    When I run `rm wp-content/uploads/large-image-100x100.jpg`
-    Then the wp-content/uploads/large-image-100x100.jpg file should not exist
+    When I run `rm wp-content/uploads/large-image-125x125.jpg`
+    Then the wp-content/uploads/large-image-125x125.jpg file should not exist
 
     When I run `wp media regenerate --only-missing --yes`
     Then STDOUT should contain:
@@ -134,15 +227,15 @@ Feature: Regenerate WordPress attachments
       """
     And STDOUT should contain:
       """
-      No thumbnail regeneration needed for "My second imported attachment"
+      1/2 No thumbnail regeneration needed for "My second imported attachment"
       """
     And STDOUT should contain:
       """
-      Regenerated thumbnails for "My imported attachment"
+      2/2 Regenerated thumbnails for "My imported attachment"
       """
     And STDOUT should contain:
       """
-      Success: Finished regenerating all images.
+      Success: Regenerated 2 of 2 images
       """
 
   Scenario: Regenerate images which are missing globally-defined image sizes
@@ -153,13 +246,13 @@ Feature: Regenerate WordPress attachments
 
     When I run `wp media import {CACHE_DIR}/large-image.jpg --title="My imported attachment" --porcelain`
     Then save STDOUT as {ATTACHMENT_ID}
-    And the wp-content/uploads/large-image-100x100.jpg file should not exist
+    And the wp-content/uploads/large-image-125x125.jpg file should not exist
 
     Given a wp-content/mu-plugins/media-settings.php file:
       """
       <?php
       add_action( 'after_setup_theme', function(){
-        add_image_size( 'test1', 100, 100, true );
+        add_image_size( 'test1', 125, 125, true );
       });
       """
 
@@ -170,13 +263,13 @@ Feature: Regenerate WordPress attachments
       """
     And STDOUT should contain:
       """
-      Regenerated thumbnails for "My imported attachment"
+      1/1 Regenerated thumbnails for "My imported attachment"
       """
     And STDOUT should contain:
       """
-      Success: Finished regenerating the image.
+      Success: Regenerated 1 of 1 images.
       """
-    And the wp-content/uploads/large-image-100x100.jpg file should exist
+    And the wp-content/uploads/large-image-125x125.jpg file should exist
 
     When I run `wp media regenerate --only-missing --yes`
     Then STDOUT should contain:
@@ -185,10 +278,10 @@ Feature: Regenerate WordPress attachments
       """
     And STDOUT should contain:
       """
-      No thumbnail regeneration needed for "My imported attachment"
+      1/1 No thumbnail regeneration needed for "My imported attachment"
       """
     And STDOUT should contain:
       """
-      Success: Finished regenerating the image.
+      Success: Regenerated 1 of 1 images.
       """
-    And the wp-content/uploads/large-image-100x100.jpg file should exist
+    And the wp-content/uploads/large-image-125x125.jpg file should exist

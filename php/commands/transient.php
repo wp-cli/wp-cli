@@ -5,24 +5,24 @@
  *
  * ## EXAMPLES
  *
- *     # Set transient
+ *     # Set transient.
  *     $ wp transient set sample_key "test data" 3600
  *     Success: Transient added.
  *
- *     # Get transient
+ *     # Get transient.
  *     $ wp transient get sample_key
  *     test data
  *
- *     # Delete transient
+ *     # Delete transient.
  *     $ wp transient delete sample_key
  *     Success: Transient deleted.
  *
- *     # Delete expired transients
- *     $ wp transient delete-expired
+ *     # Delete expired transients.
+ *     $ wp transient delete --expired
  *     Success: 12 expired transients deleted from the database.
  *
- *     # Delete all transients
- *     $ wp transient delete-all
+ *     # Delete all transients.
+ *     $ wp transient delete --all
  *     Success: 14 transients deleted from the database.
  */
 class Transient_Command extends WP_CLI_Command {
@@ -30,11 +30,21 @@ class Transient_Command extends WP_CLI_Command {
 	/**
 	 * Get a transient value.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <key>
 	 * : Key for the transient.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * [--network]
 	 * : Get the value of the network transient, instead of the single site.
@@ -46,7 +56,6 @@ class Transient_Command extends WP_CLI_Command {
 	 *
 	 *     $ wp transient get random_key
 	 *     Warning: Transient with key "random_key" is not set.
-	 *
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $key ) = $args;
@@ -63,7 +72,11 @@ class Transient_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Set a transient value. <expiration> is the time until expiration, in seconds.
+	 * Set a transient value.
+	 *
+	 * `<expiration>` is the time until expiration, in seconds.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <key>
 	 * : Key for the transient.
@@ -98,21 +111,55 @@ class Transient_Command extends WP_CLI_Command {
 	/**
 	 * Delete a transient value.
 	 *
-	 * <key>
+	 * ## OPTIONS
+	 *
+	 * [<key>]
 	 * : Key for the transient.
 	 *
 	 * [--network]
 	 * : Delete the value of a network transient, instead of that on a single site.
 	 *
+	 * [--all]
+	 * : Delete all transients.
+	 *
+	 * [--expired]
+	 * : Delete all expired transients.
+	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Delete transient.
 	 *     $ wp transient delete sample_key
 	 *     Success: Transient deleted.
+	 *
+	 *     # Delete expired transients.
+	 *     $ wp transient delete --expired
+	 *     Success: 12 expired transients deleted from the database.
+	 *
+	 *     # Delete all transients.
+	 *     $ wp transient delete --all
+	 *     Success: 14 transients deleted from the database.
 	 */
 	public function delete( $args, $assoc_args ) {
-		list( $key ) = $args;
+		$key = ( ! empty( $args ) ) ? $args[0] : NULL;
+
+		$all = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all' );
+		$expired = \WP_CLI\Utils\get_flag_value( $assoc_args, 'expired' );
+
+		if ( true === $all ) {
+			$this->delete_all();
+			return;
+		}
+		else if ( true === $expired ) {
+			$this->delete_expired();
+			return;
+		}
+
+		if ( ! $key ) {
+			WP_CLI::error( 'Please specify transient key, or use --all or --expired.' );
+		}
 
 		$func = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ? 'delete_site_transient' : 'delete_transient';
+
 		if ( $func( $key ) ) {
 			WP_CLI::success( 'Transient deleted.' );
 		} else {
@@ -125,7 +172,10 @@ class Transient_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * See whether the transients API is using an object cache or the options table.
+	 * Determine type of transients implementation.
+	 *
+	 * Indicates whether the transients API is using an object cache or the
+	 * options table.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -145,15 +195,8 @@ class Transient_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete all expired transients.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     $ wp transient delete-expired
-	 *     Success: 12 expired transients deleted from the database.
-	 *
-	 * @subcommand delete-expired
 	 */
-	public function delete_expired() {
+	private function delete_expired() {
 		global $wpdb, $_wp_using_ext_object_cache;
 
 		// Always delete all transients from DB too.
@@ -169,7 +212,7 @@ class Transient_Command extends WP_CLI_Command {
 		if ( $count > 0 ) {
 			WP_CLI::success( "$count expired transients deleted from the database." );
 		} else {
-			WP_CLI::success( "No expired transients found" );
+			WP_CLI::success( "No expired transients found." );
 		}
 
 		if ( $_wp_using_ext_object_cache ) {
@@ -179,15 +222,8 @@ class Transient_Command extends WP_CLI_Command {
 
 	/**
 	 * Delete all transients.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     $ wp transient delete-all
-	 *     Success: 14 transients deleted from the database.
-	 *
-	 * @subcommand delete-all
 	 */
-	public function delete_all() {
+	private function delete_all() {
 		global $wpdb, $_wp_using_ext_object_cache;
 
 		// Always delete all transients from DB too.
@@ -200,7 +236,7 @@ class Transient_Command extends WP_CLI_Command {
 		if ( $count > 0 ) {
 			WP_CLI::success( "$count transients deleted from the database." );
 		} else {
-			WP_CLI::success( "No transients found" );
+			WP_CLI::success( "No transients found." );
 		}
 
 		if ( $_wp_using_ext_object_cache ) {

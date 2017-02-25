@@ -21,7 +21,7 @@ Feature: List database tables
     When I run `wp db tables --format=csv`
     Then STDOUT should contain:
       """
-      wp_terms,wp_usermeta,wp_users
+      wp_users,wp_usermeta,wp_posts,wp_comments,
       """
 
     When I run `wp db tables 'wp_post*' --format=csv`
@@ -102,4 +102,32 @@ Feature: List database tables
     And STDOUT should contain:
       """
       wp_posts
+      """
+
+  Scenario: Listing a site's tables should only list that site's tables
+    Given a WP multisite install
+
+    When I run `wp site create --slug=foo --porcelain`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp db query "ALTER TABLE wp_blogs AUTO_INCREMENT=21"`
+    Then the return code should be 0
+
+    When I run `wp site create --slug=bar --porcelain`
+    Then STDOUT should be:
+      """
+      21
+      """
+
+    When I run `wp db tables --url=example.com/foo --all-tables-with-prefix`
+    Then STDOUT should contain:
+      """
+      wp_2_posts
+      """
+    And STDOUT should not contain:
+      """
+      wp_21_posts
       """

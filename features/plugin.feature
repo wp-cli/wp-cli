@@ -73,10 +73,17 @@ Feature: Manage WordPress plugins
     When I run `wp plugin deactivate Zombieland`
     Then STDOUT should not be empty
 
-    When I run `wp plugin uninstall Zombieland`
+    When I run `wp option get recently_activated`
     Then STDOUT should contain:
       """
-      Success: Uninstalled and deleted 'Zombieland' plugin.
+      Zombieland/Zombieland.php
+      """
+
+    When I run `wp plugin uninstall Zombieland`
+    Then STDOUT should be:
+      """
+      Uninstalled and deleted 'Zombieland' plugin.
+      Success: Uninstalled 1 of 1 plugins.
       """
     And the {PLUGIN_DIR}/zombieland file should not exist
 
@@ -124,6 +131,33 @@ Feature: Manage WordPress plugins
       Akismet updated successfully from version 2.5.6 to version
       """
 
+    When I try `wp plugin update xxx yyy`
+    Then STDERR should contain:
+      """
+      Warning: The 'xxx' plugin could not be found.
+      """
+    And STDERR should contain:
+      """
+      Warning: The 'yyy' plugin could not be found.
+      """
+    And STDERR should contain:
+      """
+      Error: No plugins updated.
+      """
+
+    When I run `wp plugin install akismet --version=2.5.6 --force`
+    Then STDOUT should not be empty
+
+    When I try `wp plugin update akismet hello xxx`
+    Then STDERR should contain:
+      """
+      Warning: The 'xxx' plugin could not be found.
+      """
+    And STDERR should contain:
+      """
+      Error: Only updated 1 of 3 plugins.
+      """
+
   Scenario: Activate a network-only plugin on single site
     Given a WP install
     And a wp-content/plugins/network-only.php file:
@@ -135,7 +169,8 @@ Feature: Manage WordPress plugins
     When I run `wp plugin activate network-only`
     Then STDOUT should be:
       """
-      Success: Plugin 'network-only' activated.
+      Plugin 'network-only' activated.
+      Success: Activated 1 of 1 plugins.
       """
 
     When I run `wp plugin status network-only`
@@ -155,7 +190,8 @@ Feature: Manage WordPress plugins
     When I run `wp plugin activate network-only`
     Then STDOUT should be:
       """
-      Success: Plugin 'network-only' network activated.
+      Plugin 'network-only' network activated.
+      Success: Activated 1 of 1 plugins.
       """
 
     When I run `wp plugin status network-only`
@@ -168,9 +204,10 @@ Feature: Manage WordPress plugins
     Given a WP multisite install
 
     When I run `wp plugin activate akismet`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
-      Success: Plugin 'akismet' activated.
+      Plugin 'akismet' activated.
+      Success: Activated 1 of 1 plugins.
       """
 
     When I run `wp plugin list --fields=name,status`
@@ -183,36 +220,54 @@ Feature: Manage WordPress plugins
       """
       Warning: Plugin 'akismet' is already active.
       """
-
-    When I run `wp plugin activate akismet --network`
-    Then STDOUT should contain:
+    And STDOUT should be:
       """
-      Success: Plugin 'akismet' network activated.
+      Success: Plugin already activated.
       """
 
     When I run `wp plugin activate akismet --network`
-    Then STDERR should contain:
+    Then STDOUT should be:
+      """
+      Plugin 'akismet' network activated.
+      Success: Network activated 1 of 1 plugins.
+      """
+
+    When I run `wp plugin activate akismet --network`
+    Then STDERR should be:
       """
       Warning: Plugin 'akismet' is already network active.
       """
+    And STDOUT should be:
+      """
+      Success: Plugin already network activated.
+      """
 
-    When I run `wp plugin deactivate akismet`
-    Then STDERR should contain:
+    When I try `wp plugin deactivate akismet`
+    Then STDERR should be:
       """
       Warning: Plugin 'akismet' is network active and must be deactivated with --network flag.
+      Error: No plugins deactivated.
       """
+    And the return code should be 1
 
     When I run `wp plugin deactivate akismet --network`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
-      Success: Plugin 'akismet' network deactivated.
+      Plugin 'akismet' network deactivated.
+      Success: Network deactivated 1 of 1 plugins.
       """
+    And the return code should be 0
 
     When I run `wp plugin deactivate akismet`
-    Then STDERR should contain:
+    Then STDERR should be:
       """
       Warning: Plugin 'akismet' isn't active.
       """
+    And STDOUT should be:
+      """
+      Success: Plugin already deactivated.
+      """
+    And the return code should be 0
 
   Scenario: List plugins
     Given a WP install
@@ -258,14 +313,15 @@ Feature: Manage WordPress plugins
     When I run `wp plugin activate --all`
     Then STDOUT should be:
       """
-      Success: Plugin 'akismet' activated.
-      Success: Plugin 'hello' activated.
+      Plugin 'akismet' activated.
+      Plugin 'hello' activated.
+      Success: Activated 2 of 2 plugins.
       """
 
     When I run `wp plugin activate --all`
     Then STDOUT should be:
       """
-      Success: All plugins are already activated.
+      Success: Plugins already activated.
       """
 
     When I run `wp plugin list --field=status`
@@ -279,14 +335,15 @@ Feature: Manage WordPress plugins
     When I run `wp plugin deactivate --all`
     Then STDOUT should be:
       """
-      Success: Plugin 'akismet' deactivated.
-      Success: Plugin 'hello' deactivated.
+      Plugin 'akismet' deactivated.
+      Plugin 'hello' deactivated.
+      Success: Deactivated 2 of 2 plugins.
       """
 
     When I run `wp plugin deactivate --all`
     Then STDOUT should be:
       """
-      Success: All plugins are already deactivated.
+      Success: Plugins already deactivated.
       """
 
     When I run `wp plugin list --field=status`
@@ -305,11 +362,12 @@ Feature: Manage WordPress plugins
       """
 
     When I run `wp plugin deactivate akismet --uninstall`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
-      Success: Plugin 'akismet' deactivated.
+      Plugin 'akismet' deactivated.
       Uninstalling 'akismet'...
-      Success: Uninstalled and deleted 'akismet' plugin.
+      Uninstalled and deleted 'akismet' plugin.
+      Success: Deactivated 1 of 1 plugins.
       """
 
     When I try `wp plugin get akismet`
@@ -326,11 +384,12 @@ Feature: Manage WordPress plugins
       """
 
     When I run `wp plugin uninstall akismet --deactivate`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
       Deactivating 'akismet'...
-      Success: Plugin 'akismet' deactivated.
-      Success: Uninstalled and deleted 'akismet' plugin.
+      Plugin 'akismet' deactivated.
+      Uninstalled and deleted 'akismet' plugin.
+      Success: Uninstalled 1 of 1 plugins.
       """
 
     When I try `wp plugin get akismet`
@@ -347,9 +406,10 @@ Feature: Manage WordPress plugins
     Then STDOUT should not be empty
 
     When I run `wp plugin uninstall akismet --skip-delete`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
-      Success: Ran uninstall procedure for
+      Ran uninstall procedure for 'akismet' plugin without deleting.
+      Success: Uninstalled 1 of 1 plugins.
       """
 
   Scenario: Two plugins, one directory

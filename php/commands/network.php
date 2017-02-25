@@ -3,18 +3,13 @@
 /**
  * Manage network custom fields.
  *
- * ## OPTIONS
- *
- * <id>
- * : The network id (usually 1).
- *
- * --format=json
- * : Encode/decode values as JSON.
- *
  * ## EXAMPLES
  *
- *     # get a list of super-admins
- *     wp network meta get 1 site_admins
+ *     # Get a list of super-admins
+ *     $ wp network meta get 1 site_admins
+ *     array (
+ *       0 => 'supervisor',
+ *     )
  */
 class Network_Meta_Command extends \WP_CLI\CommandWithMeta {
 	protected $meta_type = 'site';

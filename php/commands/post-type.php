@@ -2,6 +2,23 @@
 /**
  * Manage post types.
  *
+ * ## EXAMPLES
+ *
+ *     # Get details about a post type
+ *     $ wp post-type get page --fields=name,label,hierarchical --format=json
+ *     {"name":"page","label":"Pages","hierarchical":true}
+ *
+ *     # List post types with 'post' capability type
+ *     $ wp post-type list --capability_type=post --fields=name,public
+ *     +---------------+--------+
+ *     | name          | public |
+ *     +---------------+--------+
+ *     | post          | 1      |
+ *     | attachment    | 1      |
+ *     | revision      |        |
+ *     | nav_menu_item |        |
+ *     +---------------+--------+
+ *
  * @package wp-cli
  */
 class Post_Type_Command extends WP_CLI_Command {
@@ -16,7 +33,7 @@ class Post_Type_Command extends WP_CLI_Command {
 	);
 
 	/**
-	 * List post types.
+	 * List registered post types.
 	 *
 	 * ## OPTIONS
 	 *
@@ -30,7 +47,16 @@ class Post_Type_Command extends WP_CLI_Command {
 	 * : Limit the output to specific post type fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -47,9 +73,25 @@ class Post_Type_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp post-type list --format=csv
+	 *     # List registered post types
+	 *     $ wp post-type list --format=csv
+	 *     name,label,description,hierarchical,public,capability_type
+	 *     post,Posts,,,1,post
+	 *     page,Pages,,1,1,page
+	 *     attachment,Media,,,1,post
+	 *     revision,Revisions,,,,post
+	 *     nav_menu_item,"Navigation Menu Items",,,,post
 	 *
-	 *     wp post-type list --capability_type=post --fields=name,public
+	 *     # List post types with 'post' capability type
+	 *     $ wp post-type list --capability_type=post --fields=name,public
+	 *     +---------------+--------+
+	 *     | name          | public |
+	 *     +---------------+--------+
+	 *     | post          | 1      |
+	 *     | attachment    | 1      |
+	 *     | revision      |        |
+	 *     | nav_menu_item |        |
+	 *     +---------------+--------+
 	 *
 	 * @subcommand list
 	 */
@@ -62,7 +104,7 @@ class Post_Type_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get a post type
+	 * Get details about a registered post type.
 	 *
 	 * ## OPTIONS
 	 *
@@ -76,11 +118,21 @@ class Post_Type_Command extends WP_CLI_Command {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp post-type get page --format=json
+	 *     # Get details about the 'page' post type.
+	 *     $ wp post-type get page --fields=name,label,hierarchical --format=json
+	 *     {"name":"page","label":"Pages","hierarchical":true}
 	 */
 	public function get( $args, $assoc_args ) {
 		$post_type = get_post_type_object( $args[0] );

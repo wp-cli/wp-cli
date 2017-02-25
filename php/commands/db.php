@@ -3,16 +3,38 @@
 use \WP_CLI\Utils;
 
 /**
- * Perform basic database operations.
+ * Perform basic database operations using credentials stored in wp-config.php
+ *
+ * ## EXAMPLES
+ *
+ *     # Create a new database.
+ *     $ wp db create
+ *     Success: Database created.
+ *
+ *     # Drop an existing database.
+ *     $ wp db drop --yes
+ *     Success: Database dropped.
+ *
+ *     # Reset the current database.
+ *     $ wp db reset --yes
+ *     Success: Database reset.
+ *
+ *     # Execute a SQL query stored in a file.
+ *     $ wp db query < debug.sql
  */
 class DB_Command extends WP_CLI_Command {
 
 	/**
-	 * Create the database in MySQL.
+	 * Create a new database.
 	 *
-	 * Runs `CREATE_DATABASE` MySQL statement using `DB_HOST`, `DB_NAME`,
+	 * Runs `CREATE_DATABASE` SQL statement using `DB_HOST`, `DB_NAME`,
 	 * `DB_USER` and `DB_PASSWORD` database credentials specified in
 	 * wp-config.php.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp db create
+	 *     Success: Database created.
 	 */
 	public function create( $_, $assoc_args ) {
 
@@ -22,9 +44,9 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete the database in MySQL.
+	 * Delete the existing database.
 	 *
-	 * Runs `DROP_DATABASE` MySQL statement using `DB_HOST`, `DB_NAME`,
+	 * Runs `DROP_DATABASE` SQL statement using `DB_HOST`, `DB_NAME`,
 	 * `DB_USER` and `DB_PASSWORD` database credentials specified in
 	 * wp-config.php.
 	 *
@@ -32,7 +54,7 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * [--yes]
 	 * : Answer yes to the confirmation message.
-	 * 
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp db drop --yes
@@ -47,9 +69,9 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Remove all tables from the database in MySQL.
+	 * Remove all tables from the database.
 	 *
-	 * Runs `DROP_DATABASE` and `CREATE_DATABASE` MySQL statements using
+	 * Runs `DROP_DATABASE` and `CREATE_DATABASE` SQL statements using
 	 * `DB_HOST`, `DB_NAME`, `DB_USER` and `DB_PASSWORD` database credentials
 	 * specified in wp-config.php.
 	 *
@@ -57,7 +79,7 @@ class DB_Command extends WP_CLI_Command {
 	 *
 	 * [--yes]
 	 * : Answer yes to the confirmation message.
-	 * 
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp db reset --yes
@@ -73,14 +95,42 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Optimize the database in MySQL.
+	 * Check the current status of the database.
+	 *
+	 * Runs `mysqlcheck` utility with `--check` using `DB_HOST`,
+	 * `DB_NAME`, `DB_USER` and `DB_PASSWORD` database credentials
+	 * specified in wp-config.php.
+	 *
+	 * [See docs](http://dev.mysql.com/doc/refman/5.7/en/check-table.html)
+	 * for more details on the `CHECK TABLE` statement.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp db check
+	 *     Success: Database checked.
+	 */
+	public function check() {
+		self::run( Utils\esc_cmd( 'mysqlcheck --no-defaults %s', DB_NAME ), array(
+			'check' => true,
+		) );
+
+		WP_CLI::success( "Database checked." );
+	}
+
+	/**
+	 * Optimize the database.
 	 *
 	 * Runs `mysqlcheck` utility with `--optimize=true` using `DB_HOST`,
 	 * `DB_NAME`, `DB_USER` and `DB_PASSWORD` database credentials
 	 * specified in wp-config.php.
 	 *
 	 * [See docs](http://dev.mysql.com/doc/refman/5.7/en/optimize-table.html)
-	 * for more details on the `OPTIMIZE_TABLE` statement.
+	 * for more details on the `OPTIMIZE TABLE` statement.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp db optimize
+	 *     Success: Database optimized.
 	 */
 	public function optimize() {
 		self::run( Utils\esc_cmd( 'mysqlcheck --no-defaults %s', DB_NAME ), array(
@@ -91,14 +141,19 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Repair the database in MySQL.
+	 * Repair the database.
 	 *
 	 * Runs `mysqlcheck` utility with `--repair=true` using `DB_HOST`,
 	 * `DB_NAME`, `DB_USER` and `DB_PASSWORD` database credentials
 	 * specified in wp-config.php.
 	 *
 	 * [See docs](http://dev.mysql.com/doc/refman/5.7/en/repair-table.html) for
-	 * more details on the `REPAIR_TABLE` statement.
+	 * more details on the `REPAIR TABLE` statement.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp db repair
+	 *     Success: Database repaired.
 	 */
 	public function repair() {
 		self::run( Utils\esc_cmd( 'mysqlcheck --no-defaults %s', DB_NAME ), array(
@@ -111,18 +166,37 @@ class DB_Command extends WP_CLI_Command {
 	/**
 	 * Open a MySQL console using credentials from wp-config.php
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--database=<database>]
+	 * : Use a specific database. Defaults to DB_NAME.
+	 *
+	 * [--default-character-set=<character-set>]
+	 * : Use a specific character set. Defaults to DB_CHARSET when defined.
+	 *
+	 * [--<field>=<value>]
+	 * : Extra arguments to pass to the MySQL executable.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Open MySQL console
+	 *     $ wp db cli
+	 *     mysql>
+	 *
 	 * @alias connect
 	 */
-	public function cli() {
-		self::run( 'mysql --no-defaults --no-auto-rehash', array(
-			'database' => DB_NAME
-		) );
+	public function cli( $args, $assoc_args ) {
+		if ( ! isset( $assoc_args['database'] ) ) {
+			$assoc_args['database'] = DB_NAME;
+		}
+
+		self::run( 'mysql --no-defaults --no-auto-rehash', $assoc_args );
 	}
 
 	/**
-	 * Execute a MySQL query against the database.
+	 * Execute a SQL query against the database.
 	 *
-	 * Executes an arbitrary MySQL query using `DB_HOST`, `DB_NAME`, `DB_USER`
+	 * Executes an arbitrary SQL query using `DB_HOST`, `DB_NAME`, `DB_USER`
 	 *  and `DB_PASSWORD` database credentials specified in wp-config.php.
 	 *
 	 * ## OPTIONS
@@ -130,18 +204,41 @@ class DB_Command extends WP_CLI_Command {
 	 * [<sql>]
 	 * : A SQL query. If not passed, will try to read from STDIN.
 	 *
+	 * [--<field>=<value>]
+	 * : Extra arguments to pass to mysql.
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     # execute a query stored in a file
-	 *     wp db query < debug.sql
+	 *     # Execute a query stored in a file
+	 *     $ wp db query < debug.sql
 	 *
-	 *     # check all tables in the database
-	 *     wp db query "CHECK TABLE $(wp db tables | paste -s -d',');"
+	 *     # Check all tables in the database
+	 *     $ wp db query "CHECK TABLE $(wp db tables | paste -s -d',');"
+	 *     +---------------------------------------+-------+----------+----------+
+	 *     | Table                                 | Op    | Msg_type | Msg_text |
+	 *     +---------------------------------------+-------+----------+----------+
+	 *     | wordpress_dbase.wp_users              | check | status   | OK       |
+	 *     | wordpress_dbase.wp_usermeta           | check | status   | OK       |
+	 *     | wordpress_dbase.wp_posts              | check | status   | OK       |
+	 *     | wordpress_dbase.wp_comments           | check | status   | OK       |
+	 *     | wordpress_dbase.wp_links              | check | status   | OK       |
+	 *     | wordpress_dbase.wp_options            | check | status   | OK       |
+	 *     | wordpress_dbase.wp_postmeta           | check | status   | OK       |
+	 *     | wordpress_dbase.wp_terms              | check | status   | OK       |
+	 *     | wordpress_dbase.wp_term_taxonomy      | check | status   | OK       |
+	 *     | wordpress_dbase.wp_term_relationships | check | status   | OK       |
+	 *     | wordpress_dbase.wp_termmeta           | check | status   | OK       |
+	 *     | wordpress_dbase.wp_commentmeta        | check | status   | OK       |
+	 *     +---------------------------------------+-------+----------+----------+
+	 *
+	 *     # Pass extra arguments through to MySQL
+	 *     $ wp db query 'SELECT * FROM wp_options WHERE option_name="home"' --skip-column-names
+	 *     +---+------+------------------------------+-----+
+	 *     | 2 | home | http://wordpress-develop.dev | yes |
+	 *     +---+------+------------------------------+-----+
 	 */
-	public function query( $args ) {
-		$assoc_args = array(
-			'database' => DB_NAME
-		);
+	public function query( $args, $assoc_args ) {
+		$assoc_args['database'] = DB_NAME;
 
 		// The query might come from STDIN
 		if ( !empty( $args ) ) {
@@ -152,7 +249,7 @@ class DB_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Exports the MySQL database to a file or to STDOUT.
+	 * Exports the database to a file or to STDOUT.
 	 *
 	 * Runs `mysqldump` utility using `DB_HOST`, `DB_NAME`, `DB_USER` and
 	 * `DB_PASSWORD` database credentials specified in wp-config.php.
@@ -168,22 +265,43 @@ class DB_Command extends WP_CLI_Command {
 	 * [--tables=<tables>]
 	 * : The comma separated list of specific tables to export. Excluding this parameter will export all tables in the database.
 	 *
+	 * [--porcelain]
+	 * : Output filename for the exported database.
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp db export --add-drop-table
-	 *     wp db export --tables=wp_options,wp_users
+	 *     # Export database with drop query included
+	 *     $ wp db export --add-drop-table
+	 *     Success: Exported to 'wordpress_dbase.sql'.
+	 *
+	 *     # Export certain tables
+	 *     $ wp db export --tables=wp_options,wp_users
+	 *     Success: Exported to 'wordpress_dbase.sql'.
 	 *
 	 *     # Export all tables matching a wildcard
-	 *     wp db export --tables=$(wp db tables 'wp_user*' --format=csv)
+	 *     $ wp db export --tables=$(wp db tables 'wp_user*' --format=csv)
+	 *     Success: Exported to 'wordpress_dbase.sql'.
 	 *
 	 *     # Export all tables matching prefix
-	 *     wp db export --tables=$(wp db tables --all-tables-with-prefix --format=csv)
+	 *     $ wp db export --tables=$(wp db tables --all-tables-with-prefix --format=csv)
+	 *     Success: Exported to 'wordpress_dbase.sql'.
 	 *
 	 * @alias dump
 	 */
-	function export( $args, $assoc_args ) {
-		$result_file = $this->get_file_name( $args );
+	public function export( $args, $assoc_args ) {
+		if ( ! empty( $args[0] ) ) {
+			$result_file = $args[0];
+		} else {
+			$hash = substr( md5( mt_rand() ), 0, 7 );
+			$result_file = sprintf( '%s-%s.sql', DB_NAME, $hash );;
+		}
 		$stdout = ( '-' === $result_file );
+		$porcelain = \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' );
+
+		// Bail if both porcelain and STDOUT are set.
+		if ( $stdout && $porcelain ) {
+			WP_CLI::error( 'Porcelain is not allowed when output mode is STDOUT.' );
+		}
 
 		if ( ! $stdout ) {
 			$assoc_args['result-file'] = $result_file;
@@ -204,53 +322,75 @@ class DB_Command extends WP_CLI_Command {
 
 		$escaped_command = call_user_func_array( '\WP_CLI\Utils\esc_cmd', array_merge( array( $command ), $command_esc_args ) );
 
+		// Remove parameters not needed for SQL run.
+		if ( isset( $assoc_args['porcelain'] ) ) {
+			unset( $assoc_args['porcelain'] );
+		}
+
 		self::run( $escaped_command, $assoc_args );
 
-		if ( ! $stdout ) {
-			WP_CLI::success( sprintf( 'Exported to %s', $result_file ) );
+		if ( $porcelain ) {
+			WP_CLI::line( $result_file );
+		}
+		else if ( ! $stdout ) {
+			WP_CLI::success( sprintf( "Exported to '%s'.", $result_file ) );
 		}
 	}
 
 	/**
-	 * Import a MySQL database from a file or from STDIN.
+	 * Import a database from a file or from STDIN.
+	 *
+	 * Runs SQL queries using `DB_HOST`, `DB_NAME`, `DB_USER` and
+	 * `DB_PASSWORD` database credentials specified in wp-config.php. This
+	 * does not create database by itself and only performs whatever tasks are
+	 * defined in the SQL.
 	 *
 	 * ## OPTIONS
 	 *
 	 * [<file>]
 	 * : The name of the SQL file to import. If '-', then reads from STDIN. If omitted, it will look for '{dbname}.sql'.
+	 *
+	 * [--skip-optimization]
+	 * : When using an SQL file, do not include speed optimization such as disabling auto-commit and key checks.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Import MySQL from a file.
+	 *     $ wp db import wordpress_dbase.sql
+	 *     Success: Imported from 'wordpress_dbase.sql'.
 	 */
 	public function import( $args, $assoc_args ) {
-		$result_file = $this->get_file_name( $args );
-
-		if ( '-' === $result_file ) {
-			$descriptors = array(
-				STDIN,
-				STDOUT,
-				STDERR,
-			);
+		if ( ! empty( $args[0] ) ) {
+			$result_file = $args[0];
 		} else {
-			if ( ! file_exists( $result_file ) ) {
-				WP_CLI::error( sprintf( 'Import file missing: %s', $result_file ) );
-			}
-
-			$descriptors = array(
-				array( 'file', $result_file, 'r' ),
-				STDOUT,
-				STDERR,
-			);
+			$result_file = sprintf( '%s.sql', DB_NAME );
 		}
 
-		self::run( 'mysql --no-defaults --no-auto-rehash', array(
-			'database' => DB_NAME
-		), $descriptors );
+		$mysql_args = array(
+			'database' => DB_NAME,
+		);
 
-		WP_CLI::success( sprintf( 'Imported from %s', $result_file ) );
+		if ( '-' !== $result_file ) {
+			if ( ! is_readable( $result_file ) ) {
+				WP_CLI::error( sprintf( 'Import file missing or not readable: %s', $result_file ) );
+			}
+
+			$query = \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-optimization' )
+				? 'SOURCE %s;'
+				: 'SET autocommit = 0; SET unique_checks = 0; SET foreign_key_checks = 0; SOURCE %s; COMMIT;';
+
+			$mysql_args['execute'] = sprintf( $query, $result_file );
+		}
+
+		self::run( 'mysql --no-defaults --no-auto-rehash', $mysql_args );
+
+		WP_CLI::success( sprintf( "Imported from '%s'.", $result_file ) );
 	}
 
 	/**
-	 * List the MySQL database tables.
+	 * List the database tables.
 	 *
-	 * Defaults to all tables registered to $wpdb.
+	 * Defaults to all tables registered to the $wpdb database handler.
 	 *
 	 * ## OPTIONS
 	 *
@@ -270,17 +410,36 @@ class DB_Command extends WP_CLI_Command {
 	 * : List all tables in the database, regardless of the prefix, and even if not registered on $wpdb. Overrides --all-tables-with-prefix.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: list, csv. Default: list
+	 * : Render output in a particular format.
+	 * ---
+	 * default: list
+	 * options:
+	 *   - list
+	 *   - csv
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Export only tables for a single site
-	 *     wp db export --tables=$(wp db tables --url=sub.example.com --format=csv)
+	 *     # List tables for a single site, without shared tables like 'wp_users'
+	 *     $ wp db tables --scope=blog --url=sub.example.com
+	 *     wp_3_posts
+	 *     wp_3_comments
+	 *     wp_3_options
+	 *     wp_3_postmeta
+	 *     wp_3_terms
+	 *     wp_3_term_taxonomy
+	 *     wp_3_term_relationships
+	 *     wp_3_termmeta
+	 *     wp_3_commentmeta
 	 *
-	 *     # Export all tables matching prefix
-	 *     wp db export --tables=$(wp db tables --all-tables-with-prefix --format=csv)
+	 *     # Export only tables for a single site
+	 *     $ wp db export --tables=$(wp db tables --url=sub.example.com --format=csv)
+	 *     Success: Exported to wordpress_dbase.sql
 	 */
-	function tables( $args, $assoc_args ) {
+	public function tables( $args, $assoc_args ) {
+
+		$format = WP_CLI\Utils\get_flag_value( $assoc_args, 'format' );
+		unset( $assoc_args['format'] );
 
 		if ( empty( $args ) && empty( $assoc_args ) ) {
 			$assoc_args['scope'] = 'all';
@@ -288,20 +447,13 @@ class DB_Command extends WP_CLI_Command {
 
 		$tables = WP_CLI\Utils\wp_get_table_names( $args, $assoc_args );
 
-		if ( ! empty( $assoc_args['format'] ) && 'csv' === $assoc_args['format'] ) {
+		if ( 'csv' === $format ) {
 			WP_CLI::line( implode( ',', $tables ) );
 		} else {
 			foreach ( $tables as $table ) {
 				WP_CLI::line( $table );
 			}
 		}
-	}
-
-	private function get_file_name( $args ) {
-		if ( empty( $args ) )
-			return sprintf( '%s.sql', DB_NAME );
-
-		return $args[0];
 	}
 
 	private static function get_create_query() {
@@ -327,14 +479,15 @@ class DB_Command extends WP_CLI_Command {
 			'pass' => DB_PASSWORD,
 		);
 
-		if ( defined( 'DB_CHARSET' ) && constant( 'DB_CHARSET' ) ) {
+		if ( ! isset( $assoc_args['default-character-set'] )
+			&& defined( 'DB_CHARSET' ) && constant( 'DB_CHARSET' ) ) {
 			$required['default-character-set'] = constant( 'DB_CHARSET' );
 		}
 
 		$final_args = array_merge( $assoc_args, $required );
-
 		Utils\run_mysql_command( $cmd, $final_args, $descriptors );
 	}
+
 }
 
 WP_CLI::add_command( 'db', 'DB_Command' );

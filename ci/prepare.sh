@@ -4,6 +4,11 @@
 
 set -ex
 
+WP_CLI_BIN_DIR=${WP_CLI_BIN_DIR-/tmp/wp-cli-phar}
+
+# Disable XDebug to speed up Composer and test suites.
+phpenv config-rm xdebug.ini
+
 composer install --no-interaction --prefer-source
 
 CLI_VERSION=$(head -n 1 VERSION)
@@ -29,17 +34,6 @@ echo $CLI_VERSION > PHAR_BUILD_VERSION
 
 # Install CodeSniffer things
 ./ci/prepare-codesniffer.sh
-
-if [[ $WP_VERSION == "trunk" ]]
-then
-	wget https://wordpress.org/nightly-builds/wordpress-latest.zip
-	unzip wordpress-latest.zip
-	mv wordpress '/tmp/wp-cli-test core-download-cache/'
-else
-	./bin/wp core download --version=$WP_VERSION --path='/tmp/wp-cli-test core-download-cache/'
-fi
-
-./bin/wp core version --path='/tmp/wp-cli-test core-download-cache/'
 
 mysql -e 'CREATE DATABASE wp_cli_test;' -uroot
 mysql -e 'GRANT ALL PRIVILEGES ON wp_cli_test.* TO "wp_cli_test"@"localhost" IDENTIFIED BY "password1"' -uroot

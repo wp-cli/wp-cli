@@ -12,8 +12,9 @@ Feature: Validate checksums for WordPress install
       Success: WordPress install verifies against checksums.
       """
 
-    When I run `sed -i.bak s/WordPress/Wordpress/g readme.html`
-    Then STDERR should be empty
+  Scenario: Core checksums don't verify
+    Given a WP install
+    And "WordPress" replaced with "Wordpress" in the readme.html file
 
     When I try `wp core verify-checksums`
     Then STDERR should be:
@@ -85,3 +86,17 @@ Feature: Validate checksums for WordPress install
       """
       Success: WordPress install verifies against checksums.
       """
+
+  Scenario: Verify core checksums with a plugin that has wp-admin
+    Given a WP install
+    And a wp-content/plugins/akismet/wp-admin/extra-file.txt file:
+      """
+      hello world
+      """
+
+    When I run `wp core verify-checksums`
+    Then STDOUT should be:
+      """
+      Success: WordPress install verifies against checksums.
+      """
+    And STDERR should be empty

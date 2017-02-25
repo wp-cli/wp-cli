@@ -1,10 +1,5 @@
 <?php
 
-/**
- * Search and replace strings in the database.
- *
- * @package wp-cli
- */
 class Search_Replace_Command extends WP_CLI_Command {
 
 	private $dry_run;
@@ -12,15 +7,15 @@ class Search_Replace_Command extends WP_CLI_Command {
 	private $export_insert_size;
 	private $recurse_objects;
 	private $regex;
+	private $regex_flags;
 	private $skip_columns;
+	private $include_columns;
 
 	/**
 	 * Search/replace strings in the database.
 	 *
-	 * ## DESCRIPTION
-	 *
-	 * This command will searches through all rows in a selection of tables
-	 * and replaces appearances of the first string with the second string.
+	 * Searches through all rows in a selection of tables and replaces
+	 * appearances of the first string with the second string.
 	 *
 	 * By default, the command uses tables registered to the $wpdb object. On
 	 * multisite, this will just be the tables for the current site unless
@@ -39,7 +34,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * [<table>...]
 	 * : List of database tables to restrict the replacement to. Wildcards are
-	 * supported, e.g. `'wp_*_options'` or `'wp_post*'`.
+	 * supported, e.g. `'wp_*options'` or `'wp_post*'`.
 	 *
 	 * [--dry-run]
 	 * : Run the entire search/replace operation and show report, but don't save
@@ -69,7 +64,11 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 *
 	 * [--skip-columns=<columns>]
 	 * : Do not perform the replacement on specific columns. Use commas to
-	 * specify multiple columns. 'guid' is skipped by default.
+	 * specify multiple columns.
+	 *
+	 * [--include-columns=<columns>]
+	 * : Perform the replacement on specific columns. Use commas to
+	 * specify multiple columns.
 	 *
 	 * [--precise]
 	 * : Force the use of PHP (instead of SQL) which is more thorough,
@@ -83,21 +82,29 @@ class Search_Replace_Command extends WP_CLI_Command {
 	 * : Prints rows to the console as they're updated.
 	 *
 	 * [--regex]
-	 * : Runs the search using a regular expression. Warning: search-replace
-	 * will take about 15-20x longer when using --regex.
+	 * : Runs the search using a regular expression (without delimiters).
+	 * Warning: search-replace will take about 15-20x longer when using --regex.
+	 *
+	 * [--regex-flags=<regex-flags>]
+	 * : Pass PCRE modifiers to regex search-replace (e.g. 'i' for case-insensitivity).
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
+	 *     # Search and replace but skip one column
+	 *     $ wp search-replace 'http://example.dev' 'http://example.com' --skip-columns=guid
 	 *
-	 *     wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
+	 *     # Run search/replace operation but dont save in database
+	 *     $ wp search-replace 'foo' 'bar' wp_posts wp_postmeta wp_terms --dry-run
+	 *
+	 *     # Run case-insensitive regex search/replace operation (slow)
+	 *     $ wp search-replace '\[foo id="([0-9]+)"' '[bar id="\1"' --regex --regex-flags='i'
 	 *
 	 *     # Turn your production multisite database into a local dev database
-	 *     wp search-replace --url=example.com example.com example.dev 'wp_*_options' wp_blogs
+	 *     $ wp search-replace --url=example.com example.com example.dev 'wp_*options' wp_blogs
 	 *
 	 *     # Search/replace to a SQL file without transforming the database
-	 *     wp search-replace foo bar --export=database.sql
-	 * 
+	 *     $ wp search-replace foo bar --export=database.sql
+	 *
 	 *     # Bash script: Search/replace production to development url (multisite compatible)
 	 *     #!/bin/bash
 	 *     if $(wp --url=http://example.com core is-installed --network); then
@@ -117,8 +124,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 		$this->recurse_objects = \WP_CLI\Utils\get_flag_value( $assoc_args, 'recurse-objects', true );
 		$this->verbose         =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'verbose' );
 		$this->regex           =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'regex' );
+		$this->regex_flags     =  \WP_CLI\Utils\get_flag_value( $assoc_args, 'regex-flags' );
 
 		$this->skip_columns = explode( ',', \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-columns' ) );
+		$this->include_columns = array_filter( explode( ',', \WP_CLI\Utils\get_flag_value( $assoc_args, 'include-columns' ) ) );
 
 		if ( $old === $new && ! $this->regex ) {
 			WP_CLI::warning( "Replacement value '{$old}' is identical to search value '{$new}'. Skipping operation." );
@@ -138,12 +147,14 @@ class Search_Replace_Command extends WP_CLI_Command {
 					WP_CLI::error( sprintf( 'Unable to open "%s" for writing.', $assoc_args['export'] ) );
 				}
 			}
-			$export_insert_size = $assoc_args['export_insert_size'];
+			$export_insert_size = WP_CLI\Utils\get_flag_value( $assoc_args, 'export_insert_size', 50 );
 			if ( (int) $export_insert_size == $export_insert_size && $export_insert_size > 0 ) {
 				$this->export_insert_size = $export_insert_size;
-			} else {
-				$this->export_insert_size = 50;
 			}
+			$php_only = true;
+		}
+
+		if ( $this->regex_flags ) {
 			$php_only = true;
 		}
 
@@ -175,6 +186,10 @@ class Search_Replace_Command extends WP_CLI_Command {
 			}
 
 			foreach ( $columns as $col ) {
+				if ( ! empty( $this->include_columns ) && ! in_array( $col, $this->include_columns ) ) {
+					continue;
+				}
+
 				if ( in_array( $col, $this->skip_columns ) ) {
 					continue;
 				}
@@ -185,7 +200,12 @@ class Search_Replace_Command extends WP_CLI_Command {
 				}
 
 				if ( ! $php_only && ! $this->regex ) {
+					$wpdb->last_error = '';
 					$serialRow = $wpdb->get_row( "SELECT * FROM `$table` WHERE `$col` REGEXP '^[aiO]:[1-9]' LIMIT 1" );
+					// When the regex triggers an error, we should fall back to PHP
+					if ( false !== strpos( $wpdb->last_error, 'ERROR 1139' ) ) {
+						$serialRow = true;
+					}
 				}
 
 				if ( $php_only || $this->regex || NULL !== $serialRow ) {
@@ -228,8 +248,8 @@ class Search_Replace_Command extends WP_CLI_Command {
 			WP_CLI::success( $success_message );
 		}
 		else {
-			$success_message = "$total replacement(s) to be made.";
-			WP_CLI::success( $success_message );
+			$success_message = ( 1 === $total ) ? '%d replacement to be made.' : '%d replacements to be made.';
+			WP_CLI::success( sprintf( $success_message, $total ) );
 		}
 	}
 
@@ -242,7 +262,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 			'chunk_size' => $chunk_size
 		);
 
-		$replacer = new \WP_CLI\SearchReplacer( $old, $new, $this->recurse_objects, $this->regex );
+		$replacer = new \WP_CLI\SearchReplacer( $old, $new, $this->recurse_objects, $this->regex, $this->regex_flags );
 		$col_counts = array_fill_keys( $all_columns, 0 );
 		if ( $this->verbose ) {
 			$this->start_time = microtime( true );
@@ -279,7 +299,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		if ( $this->verbose ) {
 			$time = round( microtime( true ) - $this->start_time, 3 );
-			WP_CLI::log( sprintf( '%d columns and %d total rows affected using PHP (in %ss)', $total_cols, $total_rows, $time ) );
+			WP_CLI::log( sprintf( '%d columns and %d total rows affected using PHP (in %ss).', $total_cols, $total_rows, $time ) );
 		}
 
 		return array( $table_report, $total_rows );
@@ -296,7 +316,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		if ( $this->verbose ) {
 			$time = round( microtime( true ) - $this->start_time, 3 );
-			WP_CLI::log( sprintf( '%d rows affected using SQL (in %ss)', $count, $time ) );
+			WP_CLI::log( sprintf( '%d rows affected using SQL (in %ss).', $count, $time ) );
 		}
 		return $count;
 	}
@@ -305,13 +325,12 @@ class Search_Replace_Command extends WP_CLI_Command {
 		global $wpdb;
 
 		$count = 0;
-		$replacer = new \WP_CLI\SearchReplacer( $old, $new, $this->recurse_objects, $this->regex );
+		$replacer = new \WP_CLI\SearchReplacer( $old, $new, $this->recurse_objects, $this->regex, $this->regex_flags );
 
 		$where = $this->regex ? '' : " WHERE `$col`" . $wpdb->prepare( ' LIKE %s', '%' . self::esc_like( $old ) . '%' );
 		$primary_keys_sql = esc_sql( implode( ',', $primary_keys ) );
 		$col_sql = esc_sql( $col );
-		$table_sql = esc_sql( $table );
-		$rows = $wpdb->get_results( "SELECT {$primary_keys_sql} FROM {$table_sql}{$where}" );
+		$rows = $wpdb->get_results( "SELECT {$primary_keys_sql} FROM `{$table}` {$where}" );
 		foreach ( $rows as $keys ) {
 			$where_sql = '';
 			foreach( (array) $keys as $k => $v ) {
@@ -320,7 +339,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 				}
 				$where_sql .= "{$k}='{$v}'";
 			}
-			$col_value = $wpdb->get_var( "SELECT {$col_sql} FROM {$table_sql} WHERE {$where_sql}" );
+			$col_value = $wpdb->get_var( "SELECT {$col_sql} FROM `{$table}` WHERE {$where_sql}" );
 			if ( '' === $col_value )
 				continue;
 
@@ -345,7 +364,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 
 		if ( $this->verbose ) {
 			$time = round( microtime( true ) - $this->start_time, 3 );
-			WP_CLI::log( sprintf( '%d rows affected using PHP (in %ss)', $count, $time ) );
+			WP_CLI::log( sprintf( '%d rows affected using PHP (in %ss).', $count, $time ) );
 		}
 
 		return $count;
@@ -384,13 +403,13 @@ class Search_Replace_Command extends WP_CLI_Command {
 			//		1. When the loop is running every nth time (where n is insert statement size, $export_index_size). Remainder is zero also on first round, so it have to be excluded.
 			//			$index % $export_insert_size == 0 && $index > 0
 			//		2. Or when the loop is running last time
-			//			$index == $count			
+			//			$index == $count
 			if( ( $index % $export_insert_size == 0 && $index > 0 ) || $index == $count ) {
 				$sql .= ";\n";
 
 				$sql = $wpdb->prepare( $sql, array_values( $values ) );
 				fwrite( $this->export_handle, $sql );
-				
+
 				// If there is still rows to loop, reset $sql and $values variables.
 				if( $count > $index ) {
 					$sql = $insert;
@@ -408,7 +427,7 @@ class Search_Replace_Command extends WP_CLI_Command {
 		global $wpdb;
 
 		$primary_keys = $text_columns = $all_columns = array();
-		foreach ( $wpdb->get_results( "DESCRIBE $table" ) as $col ) {
+		foreach ( $wpdb->get_results( "DESCRIBE `$table`" ) as $col ) {
 			if ( 'PRI' === $col->Key ) {
 				$primary_keys[] = $col->Field;
 			}

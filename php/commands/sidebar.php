@@ -28,7 +28,17 @@ class Sidebar_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - ids
+	 *   - count
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -60,8 +70,15 @@ class Sidebar_Command extends WP_CLI_Command {
 
 		\WP_CLI\Utils\wp_register_unused_sidebar();
 
+		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
+			$sidebars = wp_list_pluck( $wp_registered_sidebars, 'id' );
+		}
+		else {
+			$sidebars = $wp_registered_sidebars;
+		}
+
 		$formatter = new \WP_CLI\Formatter( $assoc_args, $this->fields );
-		$formatter->display_items( $wp_registered_sidebars );
+		$formatter->display_items( $sidebars );
 	}
 
 }

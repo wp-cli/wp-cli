@@ -4,28 +4,35 @@
 	"keywords": [ "cli", "wordpress" ],
 	"homepage": "http://wp-cli.org",
 	"license": "MIT",
+	"support": {
+		"issues": "https://github.com/wp-cli/wp-cli/issues",
+		"source": "https://github.com/wp-cli/wp-cli",
+		"docs": "https://make.wordpress.org/cli/handbook/"
+	},
 	"bin": [
 		"bin/wp.bat", "bin/wp"
 	],
 	"require": {
 		"php": ">=5.3.29",
-		"wp-cli/php-cli-tools": "~0.11.1",
+		"wp-cli/php-cli-tools": "~0.11.2",
 		"mustache/mustache": "~2.4",
 		"mustangostang/spyc": "~0.5",
 		"composer/semver": "~1.0",
 		"ramsey/array_column": "~1.1",
-		"rmccue/requests": "~1.6",
+		"rmccue/requests" : "~1.6",
 		"symfony/finder": "~2.7",
 		"symfony/yaml": "~2.7",
 		"symfony/filesystem": "~2.7",
 		"symfony/config": "~2.7",
 		"symfony/console": "~2.7",
+		"symfony/debug": "~2.7",
 		"symfony/dependency-injection": "~2.7",
 		"symfony/event-dispatcher": "~2.7",
 		"symfony/process": "~2.1",
 		"symfony/translation": "~2.7",
 		"nb/oxymel": "~0.1.0",
-		"composer/composer": "^1.0.0"
+		"composer/composer": "^1.2.0",
+		"wp-cli/cron-command": "^1.0"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",

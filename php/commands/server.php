@@ -5,18 +5,29 @@ class Server_Command extends WP_CLI_Command {
 	/**
 	 * Launch PHP's built-in web server for this specific WordPress installation.
 	 *
+	 * Uses `php -S` to launch a web server serving the WordPress webroot.
 	 * <http://php.net/manual/en/features.commandline.webserver.php>
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--host=<host>]
-	 * : The hostname to bind the server to. Default: localhost
+	 * : The hostname to bind the server to.
+	 * ---
+	 * default: localhost
+	 * ---
 	 *
 	 * [--port=<port>]
-	 * : The port number to bind the server to. Default: 8080
+	 * : The port number to bind the server to.
+	 * ---
+	 * default: 8080
+	 * ---
 	 *
 	 * [--docroot=<path>]
-	 * : The path to use as the document root.
+	 * : The path to use as the document root. If the path global parameter is
+	 * set, the default value is it.
+	 *
+	 * [--config=<file>]
+	 * : Configure the server with a specific .ini file.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -34,6 +45,13 @@ class Server_Command extends WP_CLI_Command {
 	 *     Document root is /
 	 *     Press Ctrl-C to quit.
 	 *
+	 *     # Configure the server with a specific .ini file
+	 *     $ wp server --config=development.ini
+	 *     PHP 7.0.9 Development Server started at Mon Aug 22 12:09:04 2016
+	 *     Listening on http://localhost:8080
+	 *     Document root is /
+	 *     Press Ctrl-C to quit.
+	 *
 	 * @when before_wp_load
 	 */
 	function __invoke( $_, $assoc_args ) {
@@ -45,7 +63,8 @@ class Server_Command extends WP_CLI_Command {
 		$defaults = array(
 			'host' => 'localhost',
 			'port' => 8080,
-			'docroot' => false
+			'docroot' => ! is_null( WP_CLI::get_runner()->config['path'] ) ? WP_CLI::get_runner()->config['path'] : false,
+			'config' => get_cfg_var( 'cfg_file_path' )
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
@@ -61,10 +80,11 @@ class Server_Command extends WP_CLI_Command {
 			}
 		}
 
-		$cmd = \WP_CLI\Utils\esc_cmd( '%s -S %s -t %s %s',
+		$cmd = \WP_CLI\Utils\esc_cmd( '%s -S %s -t %s -c %s %s',
 			PHP_BINARY,
 			$assoc_args['host'] . ':' . $assoc_args['port'],
 			$docroot,
+			$assoc_args['config'],
 			\WP_CLI\Utils\extract_from_phar( WP_CLI_ROOT . '/php/router.php' )
 		);
 

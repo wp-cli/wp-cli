@@ -109,3 +109,33 @@ Feature: Manage post custom fields
     Then STDOUT should be a table containing rows:
       | post_id | meta_key | meta_value         |
       | 1       | foo      |                    |
+
+  Scenario: Make sure WordPress receives the slashed data it expects in meta fields
+    Given a WP install
+
+    When I run `wp post-meta add 1 foo 'My\Meta'`
+    Then STDOUT should not be empty
+
+    When I run `wp post-meta get 1 foo`
+    Then STDOUT should be:
+      """
+      My\Meta
+      """
+
+    When I run `wp post-meta update 1 foo 'My\New\Meta'`
+    Then STDOUT should be:
+      """
+      Success: Updated custom field 'foo'.
+      """
+
+    When I run the previous command again
+    Then STDOUT should be:
+      """
+      Success: Value passed for custom field 'foo' is unchanged.
+      """
+
+    When I run `wp post-meta get 1 foo`
+    Then STDOUT should be:
+      """
+      My\New\Meta
+      """

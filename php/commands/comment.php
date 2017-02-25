@@ -1,19 +1,21 @@
 <?php
 
+use WP_CLI\Utils;
+
 /**
  * Manage comments.
  *
  * ## EXAMPLES
  *
- *     # Create comment
+ *     # Create a new comment.
  *     $ wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
  *     Success: Created comment 932.
  *
- *     # Update comment
+ *     # Update an existing comment.
  *     $ wp comment update 123 --comment_author='That Guy'
  *     Success: Updated comment 123.
  *
- *     # Delete comment
+ *     # Delete an existing comment.
  *     $ wp comment delete 1337 --force
  *     Success: Deleted comment 1337.
  *
@@ -42,7 +44,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Insert a comment.
+	 * Create a new comment.
 	 *
 	 * ## OPTIONS
 	 *
@@ -54,10 +56,12 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Create comment.
 	 *     $ wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
 	 *     Success: Created comment 932.
 	 */
 	public function create( $args, $assoc_args ) {
+		$assoc_args = wp_slash( $assoc_args );
 		parent::_create( $args, $assoc_args, function ( $params ) {
 			if ( isset( $params['comment_post_ID'] ) ) {
 				$post_id = $params['comment_post_ID'];
@@ -92,10 +96,12 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Update comment.
 	 *     $ wp comment update 123 --comment_author='That Guy'
 	 *     Success: Updated comment 123.
 	 */
 	public function update( $args, $assoc_args ) {
+		$assoc_args = wp_slash( $assoc_args );
 		parent::_update( $args, $assoc_args, function ( $params ) {
 			if ( !wp_update_comment( $params ) ) {
 				return new WP_Error( 'Could not update comment.' );
@@ -106,23 +112,38 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Generate comments.
+	 * Generate some number of new dummy comments.
+	 *
+	 * Creates a specified number of new comments with dummy data.
 	 *
 	 * ## OPTIONS
 	 *
 	 * [--count=<number>]
-	 * : How many comments to generate. Default: 100
+	 * : How many comments to generate?
+	 * ---
+	 * default: 100
+	 * ---
 	 *
 	 * [--post_id=<post-id>]
 	 * : Assign comments to a specific post.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: progress, ids. Default: ids.
+	 * : Render output in a particular format.
+	 * ---
+	 * default: progress
+	 * options:
+	 *   - progress
+	 *   - ids
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Add meta to every generated comment
-	 *     $ wp comment generate --format=ids --count=3 | xargs -0 -d ' ' -I % wp comment meta add % foo bar
+	 *     # Generate comments for the given post.
+	 *     $ wp comment generate --format=ids --count=3 --post_id=123
+	 *     138 139 140
+	 *
+	 *     # Add meta to every generated comment.
+	 *     $ wp comment generate --format=ids --count=3 | xargs -d ' ' -I % wp comment meta add % foo bar
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
@@ -170,7 +191,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get a single comment.
+	 * Get data of a single comment.
 	 *
 	 * ## OPTIONS
 	 *
@@ -184,10 +205,19 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Get comment.
 	 *     $ wp comment get 21 --field=content
 	 *     Thanks for all the comments, everyone!
 	 */
@@ -222,7 +252,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - ids
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -246,16 +286,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * * comment_type
 	 * * comment_parent
 	 * * user_id
+	 * * url
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # List comment IDs
+	 *     # List comment IDs.
 	 *     $ wp comment list --field=ID
 	 *     22
 	 *     23
 	 *     24
 	 *
-	 *     # List comments of a post
+	 *     # List comments of a post.
 	 *     $ wp comment list --post_id=1 --fields=ID,comment_date,comment_author
 	 *     +------------+---------------------+----------------+
 	 *     | comment_ID | comment_date        | comment_author |
@@ -263,7 +304,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     | 1          | 2015-06-20 09:00:10 | Mr WordPress   |
 	 *     +------------+---------------------+----------------+
 	 *
-	 *     # List approved comments
+	 *     # List approved comments.
 	 *     $ wp comment list --number=3 --status=approve --fields=ID,comment_date,comment_author
 	 *     +------------+---------------------+----------------+
 	 *     | comment_ID | comment_date        | comment_author |
@@ -278,14 +319,37 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	public function list_( $_, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
-		if ( 'ids' == $formatter->format )
+		if ( 'ids' == $formatter->format ) {
 			$assoc_args['fields'] = 'comment_ID';
+		}
 
-		$query = new WP_Comment_Query();
-		$comments = $query->query( $assoc_args );
+		$assoc_args = self::process_csv_arguments_to_arrays( $assoc_args );
+
+		if ( ! empty( $assoc_args['comment__in'] )
+			&& ! empty( $assoc_args['orderby'] )
+			&& 'comment__in' === $assoc_args['orderby']
+			&& Utils\wp_version_compare( '4.4', '<' ) ) {
+			$comments = array();
+			foreach( $assoc_args['comment__in'] as $comment_id ) {
+				$comment = get_comment( $comment_id );
+				if ( $comment ) {
+					$comments[] = $comment;
+				} else {
+					WP_CLI::warning( sprintf( "Invalid comment %s.", $comment_id ) );
+				}
+			}
+		} else {
+			$query = new WP_Comment_Query();
+			$comments = $query->query( $assoc_args );
+		}
 
 		if ( 'ids' == $formatter->format ) {
 			$comments = wp_list_pluck( $comments, 'comment_ID' );
+		} else {
+			$comments = array_map( function( $comment ){
+				$comment->url = get_comment_link( $comment->comment_ID );
+				return $comment;
+			}, $comments );
 		}
 
 		$formatter->display_items( $comments );
@@ -304,11 +368,11 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Delete comment
+	 *     # Delete comment.
 	 *     $ wp comment delete 1337 --force
 	 *     Success: Deleted comment 1337.
 	 *
-	 *     # Delete multiple comments
+	 *     # Delete multiple comments.
 	 *     $ wp comment delete 1337 2341 --force
 	 *     Success: Deleted comment 1337.
 	 *     Success: Deleted comment 2341.
@@ -327,7 +391,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 					return array( 'success', "Trashed comment $comment_id." );
 				}
 			} else {
-				return array( 'error', "Failed deleting comment $comment_id" );
+				return array( 'error', "Failed deleting comment $comment_id." );
 			}
 		} );
 	}
@@ -340,7 +404,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		if ( $func( $comment_id ) ) {
 			WP_CLI::success( "$success comment $comment_id." );
 		} else {
-			WP_CLI::error( "$failure comment $comment_id" );
+			WP_CLI::error( "$failure comment $comment_id." );
 		}
 	}
 
@@ -352,7 +416,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		if ( is_wp_error( $r ) ) {
 			WP_CLI::error( $r );
 		} else {
-			WP_CLI::success( "$success comment $comment->comment_ID" );
+			WP_CLI::success( "$success comment $comment->comment_ID." );
 		}
 	}
 
@@ -366,6 +430,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Trash comment.
 	 *     $ wp comment trash 1337
 	 *     Success: Trashed comment 1337.
 	 */
@@ -385,6 +450,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Untrash comment.
 	 *     $ wp comment untrash 1337
 	 *     Success: Untrashed comment 1337.
 	 */
@@ -395,7 +461,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Spam a comment.
+	 * Mark a comment as spam.
 	 *
 	 * ## OPTIONS
 	 *
@@ -404,6 +470,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Spam comment.
 	 *     $ wp comment spam 1337
 	 *     Success: Marked as spam comment 1337.
 	 */
@@ -414,7 +481,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Unspam a comment.
+	 * Unmark a comment as spam.
 	 *
 	 * ## OPTIONS
 	 *
@@ -423,6 +490,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Unspam comment.
 	 *     $ wp comment unspam 1337
 	 *     Success: Unspammed comment 1337.
 	 */
@@ -442,8 +510,9 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Approve comment.
 	 *     $ wp comment approve 1337
-	 *     Success: Approved comment 1337
+	 *     Success: Approved comment 1337.
 	 */
 	public function approve( $args, $assoc_args ) {
 		foreach( $args as $id ) {
@@ -461,8 +530,9 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Unapprove comment.
 	 *     $ wp comment unapprove 1337
-	 *     Success: Unapproved comment 1337
+	 *     Success: Unapproved comment 1337.
 	 */
 	public function unapprove( $args, $assoc_args ) {
 		foreach( $args as $id ) {
@@ -480,7 +550,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Count comments on whole blog
+	 *     # Count comments on whole blog.
 	 *     $ wp comment count
 	 *     approved:        33
 	 *     spam:            3
@@ -490,7 +560,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     moderated:       1
 	 *     total_comments:  37
 	 *
-	 *     # Count comments in a post
+	 *     # Count comments in a post.
 	 *     $ wp comment count 42
 	 *     approved:        19
 	 *     spam:            0
@@ -516,7 +586,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Recount the comment_count value for one or more posts.
+	 * Recalculate the comment_count value for one or more posts.
 	 *
 	 * ## OPTIONS
 	 *
@@ -525,17 +595,18 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Recount comment for the post.
 	 *     $ wp comment recount 123
-	 *     Updated post 123 comment count to 67
+	 *     Updated post 123 comment count to 67.
 	 */
 	public function recount( $args ) {
 		foreach( $args as $id ) {
 			wp_update_comment_count( $id );
 			$post = get_post( $id );
 			if ( $post ) {
-				WP_CLI::log( sprintf( "Updated post %d comment count to %d", $post->ID, $post->comment_count ) );
+				WP_CLI::log( sprintf( "Updated post %d comment count to %d.", $post->ID, $post->comment_count ) );
 			} else {
-				WP_CLI::warning( sprintf( "Post %d doesn't exist", $post->ID ) );
+				WP_CLI::warning( sprintf( "Post %d doesn't exist.", $post->ID ) );
 			}
 		}
 	}
@@ -550,6 +621,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Get status of comment.
 	 *     $ wp comment status 1337
 	 *     approved
 	 */
@@ -568,6 +640,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Verify whether a comment exists.
 	 *
+	 * Displays a success message if the comment does exist.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <id>
@@ -575,6 +649,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Check whether comment exists.
 	 *     $ wp comment exists 1337
 	 *     Success: Comment with ID 1337 exists.
 	 */
@@ -583,66 +658,6 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::success( "Comment with ID $args[0] exists." );
 		}
 	}
-
-	/**
-	 * Get comment url
-	 *
-	 * ## OPTIONS
-	 *
-	 * <id>...
-	 * : One or more IDs of comments to get the URL.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     $ wp comment url 123
-	 *     http://example.com/about/page-with-comments/#comment-123
-	 */
-	public function url( $args ) {
-		parent::_url( $args, 'get_comment_link' );
-	}
-}
-
-/**
- * Manage comment custom fields.
- *
- * ## OPTIONS
- *
- * --format=json
- * : Encode/decode values as JSON.
- *
- * ## EXAMPLES
- *
- *     # Set comment meta
- *     $ wp comment meta set 123 description "Mary is a WordPress developer."
- *     Success: Updated custom field 'description'.
- *
- *     # Get comment meta
- *     $ wp comment meta get 123 description
- *     Mary is a WordPress developer.
- *
- *     # Update comment meta
- *     $ wp comment meta update 123 description "Mary is an awesome WordPress developer."
- *     Success: Updated custom field 'description'.
- *
- *     # Delete comment meta
- *     $ wp comment meta delete 123 description
- *     Success: Deleted custom field.
- */
-class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
-	protected $meta_type = 'comment';
-
-	/**
-	 * Check that the comment ID exists
-	 *
-	 * @param int
-	 */
-	protected function check_object_id( $object_id ) {
-		$fetcher = new \WP_CLI\Fetchers\Comment;
-		$comment = $fetcher->get_check( $object_id );
-		return $comment->comment_ID;
-	}
 }
 
 WP_CLI::add_command( 'comment', 'Comment_Command' );
-WP_CLI::add_command( 'comment meta', 'Comment_Meta_Command' );
-

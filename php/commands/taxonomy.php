@@ -2,6 +2,22 @@
 /**
  * Manage taxonomies.
  *
+ * ## EXAMPLES
+ *
+ *     # List all taxonomies with 'post' object type.
+ *     $ wp taxonomy list --object_type=post --fields=name,public
+ *     +-------------+--------+
+ *     | name        | public |
+ *     +-------------+--------+
+ *     | category    | 1      |
+ *     | post_tag    | 1      |
+ *     | post_format | 1      |
+ *     +-------------+--------+
+ *
+ *     # Get capabilities of 'post_tag' taxonomy.
+ *     $ wp taxonomy get post_tag --field=cap
+ *     {"manage_terms":"manage_categories","edit_terms":"manage_categories","delete_terms":"manage_categories","assign_terms":"edit_posts"}
+ *
  * @package wp-cli
  */
 class Taxonomy_Command extends WP_CLI_Command {
@@ -27,7 +43,7 @@ class Taxonomy_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * List taxonomies.
+	 * List registered taxonomies.
 	 *
 	 * ## OPTIONS
 	 *
@@ -41,7 +57,16 @@ class Taxonomy_Command extends WP_CLI_Command {
 	 * : Limit the output to specific taxonomy fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -57,7 +82,7 @@ class Taxonomy_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # List all taxonomies
+	 *     # List all taxonomies.
 	 *     $ wp taxonomy list --format=csv
 	 *     name,label,description,object_type,show_tagcloud,hierarchical,public
 	 *     category,Categories,,post,1,1,1
@@ -66,7 +91,7 @@ class Taxonomy_Command extends WP_CLI_Command {
 	 *     link_category,"Link Categories",,link,1,,
 	 *     post_format,Format,,post,,,1
 	 *
-	 *     # List all taxonomies with 'post' object type
+	 *     # List all taxonomies with 'post' object type.
 	 *     $ wp taxonomy list --object_type=post --fields=name,public
 	 *     +-------------+--------+
 	 *     | name        | public |
@@ -96,12 +121,12 @@ class Taxonomy_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get a taxonomy
+	 * Get details about a registered taxonomy.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <taxonomy>
-	 * : Taxonomy slug
+	 * : Taxonomy slug.
 	 *
 	 * [--field=<field>]
 	 * : Instead of returning the whole taxonomy, returns the value of a single field.
@@ -110,40 +135,29 @@ class Taxonomy_Command extends WP_CLI_Command {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     $ wp taxonomy get category
-	 *     +---------------+---------------------------------------------------+
-	 *     | Field         | Value                                             |
-	 *     +---------------+---------------------------------------------------+
-	 *     | name          | category                                          |
-	 *     | label         | Categories                                        |
-	 *     | description   |                                                   |
-	 *     | object_type   | ["post"]                                          |
-	 *     | show_tagcloud | true                                              |
-	 *     | hierarchical  | true                                              |
-	 *     | public        | true                                              |
-	 *     | labels        | {"name":"Categories","singular_name":"Category"," |
-	 *     |               | search_items":"Search Categories","popular_items" |
-	 *     |               | :null,"all_items":"All Categories","parent_item": |
-	 *     |               | "Parent Category","parent_item_colon":"Parent Cat |
-	 *     |               | egory:","edit_item":"Edit Category","view_item":" |
-	 *     |               | View Category","update_item":"Update Category","a |
-	 *     |               | dd_new_item":"Add New Category","new_item_name":" |
-	 *     |               | New Category Name","separate_items_with_commas":n |
-	 *     |               | ull,"add_or_remove_items":null,"choose_from_most_ |
-	 *     |               | used":null,"not_found":"No categories found.","no |
-	 *     |               | _terms":"No categories","items_list_navigation":" |
-	 *     |               | Categories list navigation","items_list":"Categor |
-	 *     |               | ies list","menu_name":"Categories","name_admin_ba |
-	 *     |               | r":"category"}                                    |
-	 *     | cap           | {"manage_terms":"manage_categories","edit_terms": |
-	 *     |               | "manage_categories","delete_terms":"manage_catego |
-	 *     |               | ries","assign_terms":"edit_posts"}                |
-	 *     +---------------+---------------------------------------------------+
+	 *     # Get details of `category` taxonomy.
+	 *     $ wp taxonomy get category --fields=name,label,object_type
+	 *     +-------------+------------+
+	 *     | Field       | Value      |
+	 *     +-------------+------------+
+	 *     | name        | category   |
+	 *     | label       | Categories |
+	 *     | object_type | ["post"]   |
+	 *     +-------------+------------+
 	 *
+	 *     # Get capabilities of 'post_tag' taxonomy.
 	 *     $ wp taxonomy get post_tag --field=cap
 	 *     {"manage_terms":"manage_categories","edit_terms":"manage_categories","delete_terms":"manage_categories","assign_terms":"edit_posts"}
 	 */

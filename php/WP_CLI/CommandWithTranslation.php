@@ -21,7 +21,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		);
 
 	/**
-	 * List all languages available.
+	 * List all available languages.
 	 *
 	 * [--field=<field>]
 	 * : Display the value of a single field
@@ -50,6 +50,17 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 *
 	 * * version
 	 * * package
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # List language,english_name,status fields of available languages.
+	 *     $ wp core language list --fields=language,english_name,status
+	 *     +----------------+-------------------------+-------------+
+	 *     | language       | english_name            | status      |
+	 *     +----------------+-------------------------+-------------+
+	 *     | ar             | Arabic                  | uninstalled |
+	 *     | ary            | Moroccan Arabic         | uninstalled |
+	 *     | az             | Azerbaijani             | uninstalled |
 	 *
 	 * @subcommand list
 	 */
@@ -104,11 +115,19 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	/**
 	 * Install a given language.
 	 *
+	 * Downloads the language pack from WordPress.org.
+	 *
 	 * <language>
 	 * : Language code to install.
 	 *
 	 * [--activate]
 	 * : If set, the language will be activated immediately after install.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Install the Japanese language.
+	 *     $ wp core language install ja
+	 *     Success: Language installed.
 	 *
 	 * @subcommand install
 	 */
@@ -119,39 +138,45 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		$available = $this->get_installed_languages();
 
 		if ( in_array( $language_code, $available ) ) {
-			\WP_CLI::warning( "Language already installed." );
-			exit;
+			\WP_CLI::warning( "Language '{$language_code}' already installed." );
+		} else {
+			$response = $this->download_language_pack( $language_code );
+
+			if ( is_wp_error( $response ) ) {
+				\WP_CLI::error( $response );
+			} else {
+				\WP_CLI::success( "Language installed." );
+			}
 		}
 
-		$response = $this->download_language_pack( $language_code );
-		if ( ! is_wp_error( $response ) ) {
-			\WP_CLI::success( "Language installed." );
-
-			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate' ) ) {
-				$this->activate( array( $language_code ), array() );
-			}
-		} else {
-			\WP_CLI::error( $response );
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate' ) ) {
+			$this->activate( array( $language_code ), array() );
 		}
 
 	}
 
 	/**
-	 * Updates the active translation of core, plugins, and themes.
+	 * Update installed languages.
+	 *
+	 * Updates installed languages for core, plugins and themes.
 	 *
 	 * [--dry-run]
 	 * : Preview which translations would be updated.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core language update
+	 *     Updating 'Japanese' translation for Akismet 3.1.11...
+	 *     Downloading translation from https://downloads.wordpress.org/translation/plugin/akismet/3.1.11/ja.zip...
+	 *     Translation updated successfully.
+	 *     Updating 'Japanese' translation for Twenty Fifteen 1.5...
+	 *     Downloading translation from https://downloads.wordpress.org/translation/theme/twentyfifteen/1.5/ja.zip...
+	 *     Translation updated successfully.
+	 *     Success: Updated 2/2 translations.
+	 *
 	 * @subcommand update
 	 */
 	public function update( $args, $assoc_args ) {
-
-		// Ignore updates for the default locale.
-		if ( 'en_US' == get_locale() ) {
-			\WP_CLI::success( "Translations updates are not needed for the 'English (US)' locale." );
-
-			return;
-		}
 
 		$updates = $this->get_translation_updates();
 		if ( empty( $updates ) ) {
@@ -166,7 +191,8 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		// Formats the updates list.
 		foreach ( $updates as $update ) {
 			if ( 'plugin' == $update->type ) {
-				$plugin_data = array_shift( get_plugins( '/' . $update->slug ) );
+				$plugins	 = get_plugins( '/' . $update->slug );
+				$plugin_data = array_shift( $plugins );
 				$name		 = $plugin_data['Name'];
 			} elseif ( 'theme' == $update->type ) {
 				$theme_data	 = wp_get_theme( $update->slug );
@@ -176,9 +202,10 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			}
 
 			// Gets the translation data.
-			$translation = (object) reset( wp_list_filter( $all_languages, array(
+			$translation = wp_list_filter( $all_languages, array(
 				'language' => $update->language
-			) ) );
+			) );
+			$translation = (object) reset( $translation );
 
 			$update->Type		 = ucfirst( $update->type );
 			$update->Name		 = $name;
@@ -194,23 +221,14 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			return;
 		}
 
-		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-
-		$upgrader	 = new \Language_Pack_Upgrader( new \Automatic_Upgrader_Skin() );
-		$results	 = array();
+		$upgrader = 'WP_CLI\\LanguagePackUpgrader';
+		$results = array();
 
 		// Update translations.
 		foreach ( $updates as $update ) {
 			\WP_CLI::line( "Updating '{$update->Language}' translation for {$update->Name} {$update->Version}..." );
-			\WP_CLI::line( "Downloading translation from {$update->package}..." );
 
-			$result = $upgrader->upgrade( $update );
-
-			if ( $result ) {
-				\WP_CLI::line( 'Translation updated successfully.' );
-			} else {
-				\WP_CLI::line( 'Translation update failed.' );
-			}
+			$result = Utils\get_upgrader( $upgrader )->upgrade( $update );
 
 			$results[] = $result;
 		}
@@ -236,6 +254,11 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 * <language>
 	 * : Language code to activate.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core language activate ja
+	 *     Success: Language activated.
+	 *
 	 * @subcommand activate
 	 */
 	public function activate( $args, $assoc_args ) {
@@ -250,6 +273,12 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 
 		if ( $language_code == 'en_US' ) {
 			$language_code = '';
+		}
+
+		if ( $language_code === get_locale() ) {
+			\WP_CLI::warning( "Language '{$language_code}' already active." );
+
+			return;
 		}
 
 		update_option( 'WPLANG', $language_code );
@@ -305,11 +334,10 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		}
 		$translation = (object) $translation;
 
-		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-		$skin = new \Automatic_Upgrader_Skin;
-		$upgrader = new \Language_Pack_Upgrader( $skin );
 		$translation->type = 'core';
-		$result = $upgrader->upgrade( $translation, array( 'clear_update_cache' => false ) );
+
+		$upgrader = 'WP_CLI\\LanguagePackUpgrader';
+		$result = Utils\get_upgrader( $upgrader )->upgrade( $translation, array( 'clear_update_cache' => false ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -340,10 +368,11 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 */
 	protected function get_all_languages() {
 		require_once ABSPATH . '/wp-admin/includes/translation-install.php';
+		require ABSPATH . WPINC . '/version.php';
 
-		$response = translations_api( $this->obj_type );
+		$response = translations_api( $this->obj_type, array( 'version' => $wp_version ) );
 		if ( is_wp_error( $response ) ) {
-			WP_CLI::error( $response );
+			\WP_CLI::error( $response );
 		}
 		$translations = ! empty( $response['translations'] ) ? $response['translations'] : array();
 
@@ -365,6 +394,11 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 	 *
 	 * <language>
 	 * : Language code to uninstall.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp core language uninstall ja
+	 *     Success: Language uninstalled.
 	 *
 	 * @subcommand uninstall
 	 */

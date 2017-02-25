@@ -46,14 +46,14 @@ Feature: Get help about WP-CLI commands
 
   Scenario: Help for nonexistent commands
     Given a WP install
-    
+
     When I try `wp help non-existent-command`
     Then the return code should be 1
     And STDERR should be:
       """
       Error: 'non-existent-command' is not a registered wp command.
       """
-      
+
     When I try `wp help non-existent-command non-existent-subcommand`
     Then the return code should be 1
     And STDERR should be:
@@ -206,4 +206,21 @@ Feature: Get help about WP-CLI commands
     And STDOUT should not contain:
       """
       ## GLOBAL PARAMETERS
+      """
+
+  Scenario: Display alias in man page
+    Given a WP install
+
+    When I run `wp help plugin update`
+    Then STDOUT should contain:
+      """
+      ALIAS
+
+        upgrade
+      """
+
+    When I run `wp help plugin install`
+    Then STDOUT should not contain:
+      """
+      ALIAS
       """

@@ -8,9 +8,15 @@ return array(
 	),
 
 	'ssh' => array(
-		'runtime' => '=<ssh>',
-		'file' => '<ssh>',
+		'runtime' => '=[<user>@]<host>[:<port>][<path>]',
+		'file' => '[<user>@]<host>[:<port>][<path>]',
 		'desc' => 'Perform operation against a remote server over SSH.',
+	),
+
+	'http' => array(
+		'runtime' => '=<http>',
+		'file' => '<http>',
+		'desc' => 'Perform operation against a remote WordPress install over HTTP.',
 	),
 
 	'url' => array(
@@ -79,10 +85,10 @@ return array(
 	),
 
 	'prompt' => array(
-		'runtime' => '',
+		'runtime' => '[=<assoc>]',
 		'file' => false,
 		'default' => false,
-		'desc' => 'Prompt the user to enter values for all command arguments.',
+		'desc' => 'Prompt the user to enter values for all command arguments, or a subset specified as comma-separated values.',
 	),
 
 	'quiet' => array(
@@ -108,4 +114,3 @@ return array(
 	),
 
 );
-

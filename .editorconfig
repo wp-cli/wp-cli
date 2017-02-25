@@ -14,7 +14,10 @@ trim_trailing_whitespace = true
 indent_style = tab
 indent_size = 4
 
-[*.json,*.yml,*.feature]
+[*.{json,yml,feature}]
 indent_style = space
 indent_size = 2
 
+[composer.json]
+indent_style = space
+indent_size = 4

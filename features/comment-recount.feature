@@ -21,5 +21,5 @@ Feature: Recount comments on a post
     When I run `wp comment recount 1`
     Then STDOUT should be:
       """
-      Updated post 1 comment count to 3
+      Updated post 1 comment count to 3.
       """

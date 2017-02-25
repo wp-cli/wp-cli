@@ -15,6 +15,7 @@ define( 'WPINC', 'wp-includes' );
 // Include files required for initialization.
 require( ABSPATH . WPINC . '/load.php' );
 require( ABSPATH . WPINC . '/default-constants.php' );
+require( ABSPATH . WPINC . '/plugin.php' );
 
 /*
  * These can't be directly globalized in version.php. When updating,
@@ -52,11 +53,60 @@ wp_unregister_GLOBALS();
 // Standardize $_SERVER variables across setups.
 wp_fix_server_vars();
 
+// Check if we're in maintenance mode.
+// WP-CLI: run enable_maintenance_mode filter early for compat with < WP 4.6
+/**
+ * Filters whether to enable maintenance mode.
+ *
+ * This filter runs before it can be used by plugins. It is designed for
+ * non-web runtimes. If this filter returns true, maintenance mode will be
+ * active and the request will end. If false, the request will be allowed to
+ * continue processing even if maintenance mode should be active.
+ *
+ * @since 4.6.0
+ *
+ * @param bool $enable_checks Whether to enable maintenance mode. Default true.
+ * @param int  $upgrading     The timestamp set in the .maintenance file.
+ */
+if ( apply_filters( 'enable_maintenance_mode', true ) ) {
+	wp_maintenance();
+}
+
 // Start loading timer.
 timer_start();
 
-// Check if we're in WP_DEBUG mode.
-Utils\wp_debug_mode();
+// WP-CLI: run enable_wp_debug_mode_checks filter early for compat with < WP 4.6
+/**
+ * Filters whether to allow the debug mode check to occur.
+ *
+ * This filter runs before it can be used by plugins. It is designed for
+ * non-web run-times. Returning false causes the `WP_DEBUG` and related
+ * constants to not be checked and the default php values for errors
+ * will be used unless you take care to update them yourself.
+ *
+ * @since 4.6.0
+ *
+ * @param bool $enable_debug_mode Whether to enable debug mode checks to occur. Default true.
+ */
+if ( apply_filters( 'enable_wp_debug_mode_checks', true ) ){
+	wp_debug_mode();
+}
+
+/**
+ * Filters whether to enable loading of the advanced-cache.php drop-in.
+ *
+ * This filter runs before it can be used by plugins. It is designed for non-web
+ * run-times. If false is returned, advance-cache.php will never be loaded.
+ *
+ * @since 4.6.0
+ *
+ * @param bool $enable_advanced_cache Whether to enable loading advanced-cache.php (if present).
+ *                                    Default true.
+ */
+if ( WP_CACHE && apply_filters( 'enable_loading_advanced_cache_dropin', true )  ) {
+	// For an advanced caching plugin to use. Uses a static drop-in because you would only want one.
+	WP_DEBUG ? include( WP_CONTENT_DIR . '/advanced-cache.php' ) : @include( WP_CONTENT_DIR . '/advanced-cache.php' );
+}
 
 // Define WP_LANG_DIR if not set.
 wp_set_lang_dir();
@@ -66,35 +116,7 @@ require( ABSPATH . WPINC . '/compat.php' );
 require( ABSPATH . WPINC . '/functions.php' );
 require( ABSPATH . WPINC . '/class-wp.php' );
 require( ABSPATH . WPINC . '/class-wp-error.php' );
-require( ABSPATH . WPINC . '/plugin.php' );
 require( ABSPATH . WPINC . '/pomo/mo.php' );
-
-// WP_CLI: Early hooks
-Utils\replace_wp_die_handler();
-add_filter( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
-if ( defined( 'WP_INSTALLING' ) && is_multisite() ) {
-	$values = array(
-		'ms_files_rewriting' => null,
-		'active_sitewide_plugins' => array(),
-		'_site_transient_update_core' => null,
-		'_site_transient_update_themes' => null,
-		'_site_transient_update_plugins' => null,
-		'WPLANG' => '',
-	);
-	foreach ( $values as $key => $value ) {
-		add_filter( "pre_site_option_$key", function () use ( $values, $key ) {
-			return $values[ $key ];
-		} );
-	}
-	unset( $values, $key, $value );
-}
-
-// In a multisite install, die if unable to find site given in --url parameter
-if ( is_multisite() ) {
-	add_action( 'ms_site_not_found', function( $current_site, $domain, $path ) {
-		WP_CLI::error( "Site {$domain}{$path} not found." );
-	}, 10, 3 );
-}
 
 // Include the wpdb class and, if present, a db.php database drop-in.
 require_wp_db();
@@ -113,18 +135,13 @@ wp_set_wpdb_vars();
 // Start the WordPress object cache, or an external object cache if the drop-in is present.
 wp_start_object_cache();
 
-// WP-CLI: the APC cache is not available on the command-line, so bail, to prevent cache poisoning
-if ( $GLOBALS['_wp_using_ext_object_cache'] && class_exists( 'APC_Object_Cache' ) ) {
-	WP_CLI::warning( 'Running WP-CLI while the APC object cache is activated can result in cache corruption.' );
-	WP_CLI::confirm( 'Given the consequences, do you wish to continue?' );
-}
-
 // Attach the default filters.
 require( ABSPATH . WPINC . '/default-filters.php' );
 
 // Initialize multisite if enabled.
 if ( is_multisite() ) {
 	Utils\maybe_require( '4.6-alpha-37575', ABSPATH . WPINC . '/class-wp-site-query.php' );
+	Utils\maybe_require( '4.6-alpha-37896', ABSPATH . WPINC . '/class-wp-network-query.php' );
 	require( ABSPATH . WPINC . '/ms-blogs.php' );
 	require( ABSPATH . WPINC . '/ms-settings.php' );
 } elseif ( ! defined( 'MULTISITE' ) ) {
@@ -140,8 +157,11 @@ if ( SHORTINIT )
 // Load the L10n library.
 require_once( ABSPATH . WPINC . '/l10n.php' );
 
+// WP-CLI: Permit Utils\wp_not_installed() to run on < WP 4.0
+apply_filters( 'nocache_headers', array() );
+
 // Run the installer if WordPress is not installed.
-Utils\wp_not_installed();
+wp_not_installed();
 
 // Load most of WordPress.
 require( ABSPATH . WPINC . '/class-wp-walker.php' );
@@ -168,6 +188,7 @@ require( ABSPATH . WPINC . '/author-template.php' );
 require( ABSPATH . WPINC . '/post.php' );
 Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-walker-page.php' );
 Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-walker-page-dropdown.php' );
+Utils\maybe_require( '4.6-alpha-37890', ABSPATH . WPINC . '/class-wp-post-type.php' );
 Utils\maybe_require( '4.4-beta4-35719', ABSPATH . WPINC . '/class-wp-post.php' );
 require( ABSPATH . WPINC . '/post-template.php' );
 Utils\maybe_require( '3.6-alpha-23451', ABSPATH . WPINC . '/revision.php' );
@@ -247,11 +268,9 @@ unset( $mu_plugin );
 // Load network activated plugins.
 if ( is_multisite() ) {
 	foreach( wp_get_active_network_plugins() as $network_plugin ) {
-		if ( !Utils\is_plugin_skipped( $network_plugin ) ) {
-			if ( $symlinked_plugins_supported )
-				wp_register_plugin_realpath( $network_plugin );
-			include_once( $network_plugin );
-		}
+		if ( $symlinked_plugins_supported )
+			wp_register_plugin_realpath( $network_plugin );
+		include_once( $network_plugin );
 	}
 	unset( $network_plugin );
 }
@@ -267,12 +286,8 @@ wp_cookie_constants( );
 // Define and enforce our SSL constants
 wp_ssl_constants( );
 
-// Don't create common globals, but we still need wp_is_mobile() and $pagenow
-// require( ABSPATH . WPINC . '/vars.php' );
-$GLOBALS['pagenow'] = null;
-function wp_is_mobile() {
-	return false;
-}
+// Create common globals.
+require( ABSPATH . WPINC . '/vars.php' );
 
 // Make taxonomies and posts available to plugins and themes.
 // @plugin authors: warning: these get registered again on the init hook.
@@ -284,11 +299,9 @@ register_theme_directory( get_theme_root() );
 
 // Load active plugins.
 foreach ( wp_get_active_and_valid_plugins() as $plugin ) {
-	if ( !Utils\is_plugin_skipped( $plugin ) ) {
-		if ( $symlinked_plugins_supported )
-			wp_register_plugin_realpath( $plugin );
-		include_once( $plugin );
-	}
+	if ( $symlinked_plugins_supported )
+		wp_register_plugin_realpath( $plugin );
+	include_once( $plugin );
 }
 unset( $plugin, $symlinked_plugins_supported );
 
@@ -383,12 +396,10 @@ $GLOBALS['wp_locale'] = new WP_Locale();
 // Load the functions for the active theme, for both parent and child theme if applicable.
 global $pagenow;
 if ( ! defined( 'WP_INSTALLING' ) || 'wp-activate.php' === $pagenow ) {
-	if ( !Utils\is_theme_skipped( TEMPLATEPATH ) ) {
-		if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists( STYLESHEETPATH . '/functions.php' ) )
-			include( STYLESHEETPATH . '/functions.php' );
-		if ( file_exists( TEMPLATEPATH . '/functions.php' ) )
-			include( TEMPLATEPATH . '/functions.php' );
-	}
+	if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists( STYLESHEETPATH . '/functions.php' ) )
+		include( STYLESHEETPATH . '/functions.php' );
+	if ( file_exists( TEMPLATEPATH . '/functions.php' ) )
+		include( TEMPLATEPATH . '/functions.php' );
 }
 
 do_action( 'after_setup_theme' );

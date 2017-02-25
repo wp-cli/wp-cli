@@ -1,23 +1,26 @@
 <?php
+
+use WP_CLI\Utils;
+
 /**
  * Manage terms.
  *
  * ## EXAMPLES
  *
- *     # Create term
+ *     # Create a new term.
  *     $ wp term create category Apple --description="A type of fruit"
  *     Success: Created category 199.
  *
- *     # Get term
+ *     # Get details about a term.
  *     $ wp term get category 199 --format=json --fields=term_id,name,slug,count
  *     {"term_id":199,"name":"Apple","slug":"apple","count":1}
  *
- *     # Update term
+ *     # Update an existing term.
  *     $ wp term update category 15 --name=Apple
  *     Success: Term updated.
  *
- *     # Get term url
- *     $ wp term url post_tag 123
+ *     # Get the term's URL.
+ *     $ wp term list post_tag --include=123 --field=url
  *     http://example.com/tag/tips-and-tricks
  *
  *     # Delete post category
@@ -61,7 +64,17 @@ class Term_Command extends WP_CLI_Command {
 	 * : Limit the output to specific object fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - ids
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
@@ -75,7 +88,9 @@ class Term_Command extends WP_CLI_Command {
 	 * * parent
 	 * * count
 	 *
-	 * There are no optionally available fields.
+	 * These fields are optionally available:
+	 *
+	 * * url
 	 *
 	 * ## EXAMPLES
 	 *
@@ -117,6 +132,20 @@ class Term_Command extends WP_CLI_Command {
 		if ( ! empty( $assoc_args['term_id'] ) ) {
 			$term = get_term_by( 'id', $assoc_args['term_id'], $args[0] );
 			$terms = array( $term );
+		} else if ( ! empty( $assoc_args['include'] )
+			&& ! empty( $assoc_args['orderby'] )
+			&& 'include' === $assoc_args['orderby']
+			&& Utils\wp_version_compare( '4.7', '<' ) ) {
+			$terms = array();
+			$term_ids = explode( ',', $assoc_args['include'] );
+			foreach( $term_ids as $term_id ) {
+				$term = get_term_by( 'id', $term_id, $args[0] );
+				if ( $term && ! is_wp_error( $term ) ) {
+					$terms[] = $term;
+				} else {
+					WP_CLI::warning( sprintf( "Invalid term %s.", $term_id ) );
+				}
+			}
 		} else {
 			$terms = get_terms( $args, $assoc_args );
 		}
@@ -124,6 +153,7 @@ class Term_Command extends WP_CLI_Command {
 		$terms = array_map( function( $term ){
 			$term->count = (int)$term->count;
 			$term->parent = (int)$term->parent;
+			$term->url = get_term_link( $term );
 			return $term;
 		}, $terms );
 
@@ -136,7 +166,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Create a term.
+	 * Create a new term.
 	 *
 	 * ## OPTIONS
 	 *
@@ -160,6 +190,7 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Create a new category "Apple" with a description.
 	 *     $ wp term create category Apple --description="A type of fruit"
 	 *     Success: Created category 199.
 	 */
@@ -182,6 +213,8 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Parent term does not exist.' );
 		}
 
+		$assoc_args = wp_slash( $assoc_args );
+		$term = wp_slash( $term );
 		$ret = wp_insert_term( $term, $taxonomy, $assoc_args );
 
 		if ( is_wp_error( $ret ) ) {
@@ -195,7 +228,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get a taxonomy term
+	 * Get details about a term.
 	 *
 	 * ## OPTIONS
 	 *
@@ -212,10 +245,19 @@ class Term_Command extends WP_CLI_Command {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json, csv, yaml. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Get details about a category with id 199.
 	 *     $ wp term get category 199 --format=json
 	 *     {"term_id":199,"name":"Apple","slug":"apple","term_group":0,"term_taxonomy_id":199,"taxonomy":"category","description":"A type of fruit","parent":0,"count":0,"filter":"raw"}
 	 */
@@ -240,7 +282,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a term.
+	 * Update an existing term.
 	 *
 	 * ## OPTIONS
 	 *
@@ -264,6 +306,7 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Change category with id 15 to use the name "Apple"
 	 *     $ wp term update category 15 --name=Apple
 	 *     Success: Term updated.
 	 */
@@ -284,6 +327,7 @@ class Term_Command extends WP_CLI_Command {
 				unset( $assoc_args[$key] );
 		}
 
+		$assoc_args = wp_slash( $assoc_args );
 		$ret = wp_update_term( $term_id, $taxonomy, $assoc_args );
 
 		if ( is_wp_error( $ret ) )
@@ -293,7 +337,9 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete a term.
+	 * Delete an existing term.
+	 *
+	 * Errors if the term doesn't exist, or there was a problem in deleting it.
 	 *
 	 * ## OPTIONS
 	 *
@@ -307,32 +353,40 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 *     # Delete post category
 	 *     $ wp term delete category 15
-	 *     Success: Deleted category 15.
+	 *     Deleted category 15.
+	 *     Success: Deleted 1 of 1 terms.
 	 *
 	 *     # Delete all post tags
 	 *     $ wp term list post_tag --field=term_id | xargs wp term delete post_tag
-	 *     Success: Deleted post_tag 159.
-	 *     Success: Deleted post_tag 160.
-	 *     Success: Deleted post_tag 161.
+	 *     Deleted post_tag 159.
+	 *     Deleted post_tag 160.
+	 *     Deleted post_tag 161.
+	 *     Success: Deleted 3 of 3 terms.
 	 */
 	public function delete( $args ) {
 		$taxonomy = array_shift( $args );
 
+		$successes = $errors = 0;
 		foreach ( $args as $term_id ) {
 			$ret = wp_delete_term( $term_id, $taxonomy );
 
 			if ( is_wp_error( $ret ) ) {
 				WP_CLI::warning( $ret );
+				$errors++;
 			} else if ( $ret ) {
-				WP_CLI::success( sprintf( "Deleted %s %d.", $taxonomy, $term_id ) );
+				WP_CLI::log( sprintf( "Deleted %s %d.", $taxonomy, $term_id ) );
+				$successes++;
 			} else {
 				WP_CLI::warning( sprintf( "%s %d doesn't exist.", $taxonomy, $term_id ) );
 			}
 		}
+		Utils\report_batch_operation_results( 'term', 'delete', count( $args ), $successes, $errors );
 	}
 
 	/**
 	 * Generate some terms.
+	 *
+	 * Creates a specified number of new terms with dummy data.
 	 *
 	 * ## OPTIONS
 	 *
@@ -340,22 +394,34 @@ class Term_Command extends WP_CLI_Command {
 	 * : The taxonomy for the generated terms.
 	 *
 	 * [--count=<number>]
-	 * : How many terms to generate. Default: 100
+	 * : How many terms to generate?
+	 * ---
+	 * default: 100
+	 * ---
 	 *
 	 * [--max_depth=<number>]
-	 * : Generate child terms down to a certain depth. Default: 1
+	 * : Generate child terms down to a certain depth.
+	 * ---
+	 * default: 1
+	 * ---
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: progress, ids. Default: ids.
+	 * : Render output in a particular format.
+	 * ---
+	 * default: progress
+	 * options:
+	 *   - progress
+	 *   - ids
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Generate post categories
+	 *     # Generate post categories.
 	 *     $ wp term generate category --count=10
 	 *     Generating terms  100% [=========] 0:02 / 0:02
 	 *
-	 *     # Add meta to every generated term
-	 *     $ wp term generate category --format=ids --count=3 | xargs -0 -d ' ' -I % wp term meta add % foo bar
+	 *     # Add meta to every generated term.
+	 *     $ wp term generate category --format=ids --count=3 | xargs -d ' ' -I % wp term meta add % foo bar
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
@@ -449,34 +515,6 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get term url
-	 *
-	 * ## OPTIONS
-	 *
-	 * <taxonomy>
-	 * : Taxonomy of the term(s) to get.
-	 *
-	 * <term-id>...
-	 * : One or more IDs of terms to get the URL.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     $ wp term url post_tag 123
-	 *     http://example.com/tag/tips-and-tricks
-	 */
-	public function url( $args ) {
-		$term_ids = array_slice( $args, 1 );
-		foreach ( $term_ids as $term_id ) {
-			$term_link = get_term_link( (int)$term_id, $args[0] );
-			if ( $term_link && ! is_wp_error( $term_link ) ) {
-				WP_CLI::line( $term_link );
-			} else {
-				WP_CLI::warning( sprintf( "Invalid term %s.", $term_id ) );
-			}
-		}
-	}
-
-	/**
 	 * Recalculate number of posts assigned to each term.
 	 *
 	 * In instances where manual updates are made to the terms assigned to
@@ -495,16 +533,16 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 *     # Recount posts assigned to each categories and tags
 	 *     $ wp term recount category post_tag
-	 *     Success: Updated category term count
-	 *     Success: Updated post_tag term count
+	 *     Success: Updated category term count.
+	 *     Success: Updated post_tag term count.
 	 *
 	 *     # Recount all listed taxonomies
 	 *     $ wp taxonomy list --field=name | xargs wp term recount
-	 *     Success: Updated category term count
-	 *     Success: Updated post_tag term count
-	 *     Success: Updated nav_menu term count
-	 *     Success: Updated link_category term count
-	 *     Success: Updated post_format term count
+	 *     Success: Updated category term count.
+	 *     Success: Updated post_tag term count.
+	 *     Success: Updated nav_menu term count.
+	 *     Success: Updated link_category term count.
+	 *     Success: Updated post_format term count.
 	 */
 	public function recount( $args ) {
 		foreach( $args as $taxonomy ) {
@@ -518,7 +556,7 @@ class Term_Command extends WP_CLI_Command {
 
 				wp_update_term_count( $term_taxonomy_ids, $taxonomy );
 
-				WP_CLI::success( sprintf( "Updated %s term count", $taxonomy ) );
+				WP_CLI::success( sprintf( "Updated %s term count.", $taxonomy ) );
 			}
 
 		}
@@ -539,56 +577,4 @@ class Term_Command extends WP_CLI_Command {
 	}
 }
 
-/**
- * Manage term custom fields.
- *
- * ## OPTIONS
- *
- * --format=json
- * : Encode/decode values as JSON.
- *
- * ## EXAMPLES
- *
- *     # Set term meta
- *     $ wp term meta set 123 bio "Mary is a WordPress developer."
- *     Success: Updated custom field 'bio'.
- *
- *     # Get term meta
- *     $ wp term meta get 123 bio
- *     Mary is a WordPress developer.
- *
- *     # Update term meta
- *     $ wp term meta update 123 bio "Mary is an awesome WordPress developer."
- *     Success: Updated custom field 'bio'.
- *
- *     # Delete term meta
- *     $ wp term meta delete 123 bio
- *     Success: Deleted custom field.
- */
-class Term_Meta_Command extends \WP_CLI\CommandWithMeta {
-	protected $meta_type = 'term';
-
-	/**
-	 * Check that the term ID exists
-	 *
-	 * @param int
-	 */
-	protected function check_object_id( $object_id ) {
-		$term = get_term( $object_id );
-		if ( ! $term ) {
-			WP_CLI::error( "Could not find the term with ID {$object_id}." );
-		}
-		return $term->term_id;
-	}
-
-}
-
 WP_CLI::add_command( 'term', 'Term_Command' );
-WP_CLI::add_command( 'term meta', 'Term_Meta_Command', array(
-	'before_invoke' => function() {
-		if ( \WP_CLI\Utils\wp_version_compare( '4.4', '<' ) ) {
-			WP_CLI::error( "Requires WordPress 4.4 or greater." );
-		}
-	})
-);
-

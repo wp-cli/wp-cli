@@ -4,16 +4,10 @@ Feature: Skipping plugins
     Given a WP install
     And I run `wp plugin activate hello akismet`
 
-    When I run `wp eval 'var_export( defined("AKISMET_VERSION") );'`
+    When I run `wp eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "hello_dolly" ) );'`
     Then STDOUT should be:
       """
-      true
-      """
-
-    When I run `wp eval 'var_export( function_exists( "hello_dolly" ) );'`
-    Then STDOUT should be:
-      """
-      true
+      truetrue
       """
 
     # The specified plugin should be skipped
@@ -24,17 +18,17 @@ Feature: Skipping plugins
       """
 
     # The specified plugin should still show up as an active plugin
-    When I run `wp --skip-plugins=akismet plugin status`
+    When I run `wp --skip-plugins=akismet plugin status akismet`
     Then STDOUT should contain:
       """
-      akismet
+      Status: Active
       """
 
     # The un-specified plugin should continue to be loaded
-    When I run `wp --skip-plugins=akismet eval 'var_export( function_exists( "hello_dolly" ) );'`
+    When I run `wp --skip-plugins=akismet eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "hello_dolly" ) );'`
     Then STDOUT should be:
       """
-      true
+      falsetrue
       """
 
     # Can specify multiple plugins to skip
@@ -45,15 +39,10 @@ Feature: Skipping plugins
       """
 
     # No plugins should be loaded when --skip-plugins doesn't have a value
-    When I run `wp --skip-plugins eval 'var_export( defined("AKISMET_VERSION") );'`
+    When I run `wp --skip-plugins eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "hello_dolly" ) );'`
     Then STDOUT should be:
       """
-      false
-      """
-    When I run `wp --skip-plugins eval 'var_export( function_exists( "hello_dolly" ) );'`
-    Then STDOUT should be:
-      """
-      false
+      falsefalse
       """
 
   Scenario: Skipping multiple plugins via config file
@@ -84,4 +73,33 @@ Feature: Skipping plugins
     Then STDERR should contain:
       """
       Call to undefined function hello_dolly()
+      """
+
+  Scenario: Skip network active plugins
+    Given a WP multisite install
+    And I run `wp plugin deactivate akismet hello`
+    And I run `wp plugin activate --network akismet hello`
+
+    When I run `wp eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "hello_dolly" ) );'`
+    Then STDOUT should be:
+      """
+      truetrue
+      """
+
+    When I run `wp --skip-plugins eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "hello_dolly" ) );'`
+    Then STDOUT should be:
+      """
+      falsefalse
+      """
+
+    When I run `wp --skip-plugins=akismet eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "hello_dolly" ) );'`
+    Then STDOUT should be:
+      """
+      falsetrue
+      """
+
+    When I run `wp --skip-plugins=hello eval 'var_export( defined("AKISMET_VERSION") );var_export( function_exists( "hello_dolly" ) );'`
+    Then STDOUT should be:
+      """
+      truefalse
       """
