@@ -142,10 +142,26 @@ class Subcommand extends CompositeCommand {
 
 		$spec = array_values( $spec );
 
+		$prompt_args = WP_CLI::get_config( 'prompt' );
+		if ( true !== $prompt_args ) {
+			$prompt_args = explode( ',', $prompt_args );
+		}
+
 		// 'positional' arguments are positional (aka zero-indexed)
 		// so $args needs to be reset before prompting for new arguments
 		$args = array();
 		foreach( $spec as $key => $spec_arg ) {
+
+			// When prompting for specific arguments (e.g. --prompt=user_pass),
+			// ignore all arguments that don't match
+			if ( is_array( $prompt_args ) ) {
+				if ( 'assoc' !== $spec_arg['type'] ) {
+					continue;
+				}
+				if ( ! in_array( $spec_arg['name'], $prompt_args, true ) ) {
+					continue;
+				}
+			}
 
 			$current_prompt = ( $key + 1 ) . '/' . count( $spec ) . ' ';
 			$default = ( $spec_arg['optional'] ) ? '' : false;
@@ -279,7 +295,7 @@ class Subcommand extends CompositeCommand {
 							$i++;
 						} while ( isset( $args[ $i ] ) );
 					} else {
-						if ( ! in_array( $args[ $i ], $spec_args['options'] ) ) {
+						if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
 							\WP_CLI::error( 'Invalid value specified for positional arg.' );
 						}
 					}
@@ -287,7 +303,7 @@ class Subcommand extends CompositeCommand {
 				$i++;
 			} else if ( 'assoc' === $spec['type'] ) {
 				$spec_args = $docparser->get_param_args( $spec['name'] );
-				if ( ! isset( $assoc_args[ $spec['name'] ] ) ) {
+				if ( ! isset( $assoc_args[ $spec['name'] ] ) && ! isset( $extra_args[ $spec['name'] ] ) ) {
 					if ( isset( $spec_args['default'] ) ) {
 						$assoc_args[ $spec['name'] ] = $spec_args['default'];
 					}
@@ -344,6 +360,17 @@ class Subcommand extends CompositeCommand {
 			list( $args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
 			$prompted_once = true;
 		}
+
+		$extra_positionals = array();
+		foreach( $extra_args as $k => $v ) {
+			if ( is_numeric( $k ) ) {
+				if ( ! isset( $args[ $k ] ) ) {
+					$extra_positionals[ $k ] = $v;
+				}
+				unset( $extra_args[ $k ] );
+			}
+		}
+		$args = $args + $extra_positionals;
 
 		list( $to_unset, $args, $assoc_args, $extra_args ) = $this->validate_args( $args, $assoc_args, $extra_args );
 

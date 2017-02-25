@@ -19,7 +19,25 @@ function wp_debug_mode() {
 
 		error_reporting( E_ALL & ~E_DEPRECATED & ~E_STRICT );
 	} else {
-		\wp_debug_mode();
+		if ( WP_DEBUG ) {
+			error_reporting( E_ALL );
+
+			if ( WP_DEBUG_DISPLAY )
+				ini_set( 'display_errors', 1 );
+			elseif ( null !== WP_DEBUG_DISPLAY )
+				ini_set( 'display_errors', 0 );
+
+			if ( WP_DEBUG_LOG ) {
+				ini_set( 'log_errors', 1 );
+				ini_set( 'error_log', WP_CONTENT_DIR . '/debug.log' );
+			}
+		} else {
+			error_reporting( E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_ERROR | E_WARNING | E_PARSE | E_USER_ERROR | E_USER_WARNING | E_RECOVERABLE_ERROR );
+		}
+
+		if ( defined( 'XMLRPC_REQUEST' ) || defined( 'REST_REQUEST' ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			@ini_set( 'display_errors', 0 );
+		}
 	}
 
 	// XDebug already sends errors to STDERR
@@ -32,15 +50,25 @@ function replace_wp_die_handler() {
 }
 
 function wp_die_handler( $message ) {
-	if ( is_wp_error( $message ) ) {
+	if ( $message instanceof \WP_Error ) {
 		$message = $message->get_error_message();
 	}
 
-	if ( preg_match( '|^\<h1>(.+?)</h1>|', $message, $matches ) ) {
-		$message = $matches[1];
+	$original_message = $message = trim( $message );
+	if ( preg_match( '|^\<h1>(.+?)</h1>|', $original_message, $matches ) ) {
+		$message = $matches[1] . '.';
+	}
+	if ( preg_match( '|\<p>(.+?)</p>|', $original_message, $matches ) ) {
+		$message .= ' ' . $matches[1];
 	}
 
-	$message = html_entity_decode( $message );
+	$search_replace = array(
+		'<code>'    => '`',
+		'</code>'   => '`',
+	);
+	$message = str_replace( array_keys( $search_replace ), array_values( $search_replace ), $message );
+	$message = strip_tags( $message );
+	$message = html_entity_decode( $message, ENT_COMPAT, 'UTF-8' );
 
 	\WP_CLI::error( $message );
 }
@@ -152,7 +180,7 @@ function wp_get_cache_type() {
 		} elseif ( isset( $wp_object_cache->mc ) ) {
 			$is_memcache = true;
 			foreach ( $wp_object_cache->mc as $bucket ) {
-				if ( ! is_a( $bucket, 'Memcache' ) )
+				if ( ! is_a( $bucket, 'Memcache' ) && ! is_a( $bucket, 'Memcached' ) )
 					$is_memcache = false;
 			}
 
@@ -175,6 +203,17 @@ function wp_get_cache_type() {
 		} elseif ( isset( $wp_object_cache->redis ) && is_a( $wp_object_cache->redis, 'Redis' ) ) {
 			$message = 'Redis';
 
+		// Test for WP LCache Object cache (https://github.com/lcache/wp-lcache)
+		} elseif ( isset( $wp_object_cache->lcache ) && is_a( $wp_object_cache->lcache, '\LCache\Integrated' ) ) {
+			$message = 'WP LCache';
+
+		} elseif( function_exists( 'w3_instance' ) ) {
+			$config = w3_instance( 'W3_Config' );
+			if ( $config->get_boolean( 'objectcache.enabled' ) ) {
+				$message = 'W3TC ' . $config->get_string( 'objectcache.engine' );
+			} else {
+				$message = 'Unknown';
+			}
 		} else {
 			$message = 'Unknown';
 		}
@@ -268,7 +307,10 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 	}
 
 	$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
-	$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $prefix . '%' ) );
+	// '_' is a special wildcard for MySQL LIKE queries
+	// so it needs to be escaped with '\', but then '\' needs to be escaped as well
+	$sql_prefix = str_replace( '_', '\\_', $prefix );
+	$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $sql_prefix . '%' ) );
 
 	if ( 'all-tables-with-prefix' == $table_type ) {
 		return $matching_tables;

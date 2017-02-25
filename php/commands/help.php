@@ -8,6 +8,8 @@ class Help_Command extends WP_CLI_Command {
 	/**
 	 * Get help on WP-CLI, or on a specific command.
 	 *
+	 * ## OPTIONS
+	 *
 	 * [<command>...]
 	 * : Get help on a specific command.
 	 *
@@ -118,6 +120,11 @@ class Help_Command extends WP_CLI_Command {
 		);
 
 		$binding['synopsis'] = wordwrap( "$name " . $command->get_synopsis(), 79 );
+
+		$alias = $command->get_alias();
+		if ( $alias ) {
+			$binding['alias'] = $alias;
+		}
 
 		if ( $command->can_have_subcommands() ) {
 			$binding['has-subcommands']['subcommands'] = self::render_subcommands( $command );

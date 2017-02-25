@@ -155,6 +155,41 @@ Feature: Have a config file
     And I run `grep WP_POST_REVISIONS wp-config.php`
     Then STDOUT should not be empty
 
+  Scenario: Persist positional parameters when defined in a config
+    Given a WP install
+    And a wp-cli.yml file:
+      """
+      user create:
+        - examplejoe
+        - joe@example.com
+        user_pass: joe
+        role: administrator
+      """
+
+    When I run `wp user create`
+    Then STDOUT should not be empty
+
+    When I run `wp user get examplejoe --field=roles`
+    Then STDOUT should contain:
+      """
+      administrator
+      """
+
+    When I try `wp user create examplejane`
+    Then STDERR should be:
+      """
+      Error: Sorry, that email address is already used!
+      """
+
+    When I run `wp user create examplejane jane@example.com`
+    Then STDOUT should not be empty
+
+    When I run `wp user get examplejane --field=roles`
+    Then STDOUT should contain:
+      """
+      administrator
+      """
+
   Scenario: Command-specific configs
     Given a WP install
     And a wp-cli.yml file:

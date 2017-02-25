@@ -138,16 +138,17 @@ class Formatter {
 			break;
 
 		case 'json':
+		case 'yaml':
 			$out = array();
 			foreach ( $items as $item ) {
 				$out[] = \WP_CLI\Utils\pick_fields( $item, $fields );
 			}
 
-			echo json_encode( $out );
-			break;
-
-		case 'yaml':
-			echo \Spyc::YAMLDump( $items, 2, 0 );
+			if ( 'json' === $this->args['format'] ) {
+				echo json_encode( $out );
+			} else if ( 'yaml' === $this->args['format'] ) {
+				echo \Spyc::YAMLDump( $out, 2, 0 );
+			}
 			break;
 
 		default:

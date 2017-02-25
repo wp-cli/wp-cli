@@ -181,34 +181,57 @@ Feature: Global flags
       [31;1mError:
       """
 
-  Scenario: Generate completions
+  Scenario: Use `WP_CLI_STRICT_ARGS_MODE` to distinguish between global and local args
     Given an empty directory
+    And a cmd.php file:
+      """
+      <?php
+      /**
+       * @when before_wp_load
+       *
+       * [--url=<url>]
+       * : URL passed to the callback.
+       */
+      $cmd_test = function( $args, $assoc_args ) {
+          $url = WP_CLI::get_runner()->config['url'] ? ' ' . WP_CLI::get_runner()->config['url'] : '';
+          WP_CLI::log( 'global:' . $url );
+          $url = isset( $assoc_args['url'] ) ? ' ' . $assoc_args['url'] : '';
+          WP_CLI::log( 'local:' . $url );
+      };
+      WP_CLI::add_command( 'cmd-test', $cmd_test );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - cmd.php
+      """
 
-    When I run `wp cli completions --line='wp bogus-comand ' --point=100`
-    Then STDOUT should be empty
-
-    When I run `wp cli completions --line='wp eva' --point=100`
+    When I run `wp cmd-test --url=foo.dev`
     Then STDOUT should be:
       """
-      eval 
-      eval-file 
+      global: foo.dev
+      local:
       """
 
-    When I run `wp cli completions --line='wp core config --dbname=' --point=100`
-    Then STDOUT should be empty
-
-    When I run `wp cli completions --line='wp core config --dbname=foo ' --point=100`
-    Then STDOUT should not contain:
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp cmd-test --url=foo.dev`
+    Then STDOUT should be:
       """
-      --dbname=
-      """
-    And STDOUT should contain:
-      """
-      --extra-php 
+      global:
+      local: foo.dev
       """
 
-    When I run `wp cli completions --line='wp media import ' --point=100`
-    Then STDOUT should contain:
+    When I run `WP_CLI_STRICT_ARGS_MODE=1 wp --url=bar.dev cmd-test --url=foo.dev`
+    Then STDOUT should be:
       """
-      <file> 
+      global: bar.dev
+      local: foo.dev
+      """
+
+  Scenario: Using --http=<url> requires wp-cli/restful
+    Given an empty directory
+
+    When I try `wp --http=foo.dev`
+    Then STDERR should be:
+      """
+      Error: RESTful WP-CLI needs to be installed. Try 'wp package install wp-cli/restful'.
       """
