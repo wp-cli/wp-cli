@@ -276,6 +276,13 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 			$language_code = '';
 		}
 
+		if ( $language_code === get_locale() ) {
+			\WP_CLI::warning( "Language '{$language_code}' is already active." );
+			\WP_CLI::success( "Language already activated." );
+
+			return;
+		}
+
 		update_option( 'WPLANG', $language_code );
 		\WP_CLI::success( "Language activated." );
 	}
