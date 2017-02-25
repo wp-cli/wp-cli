@@ -100,7 +100,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp menu location assign primary-menu primary
-	 *     Success: Assigned location to menu.
+	 *     Success: Assigned location primary to menu primary-menu.
 	 *
 	 * @subcommand assign
 	 */

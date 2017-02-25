@@ -44,7 +44,12 @@ Feature: Manage WordPress menu locations
       """
 
     When I run `wp menu location assign secondary-menu primary`
-    And I run `wp menu list --fields=slug,locations`
+    Then STDOUT should be:
+      """
+      Success: Assigned location primary to menu secondary-menu.
+      """
+
+    When I run `wp menu list --fields=slug,locations`
     Then STDOUT should be a table containing rows:
       | slug            | locations       |
       | primary-menu    |                 |
