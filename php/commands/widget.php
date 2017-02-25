@@ -622,7 +622,7 @@ class Widget_Command extends WP_CLI_Command {
 
 		$widget = wp_filter_object_list( $wp_widget_factory->widgets, array( 'id_base' => $id_base ) );
 		if ( empty( $widget ) ) {
-			false;
+			return false;
 		}
 
 		return array_pop( $widget );
