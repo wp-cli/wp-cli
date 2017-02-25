@@ -21,6 +21,7 @@ Feature: Manage translation files for a WordPress install
       """
       Success: Language installed.
       """
+
     When I run `ls {SUITE_CACHE_DIR}/translation | grep core-default-`
     Then STDOUT should contain:
       """
@@ -31,10 +32,14 @@ Feature: Manage translation files for a WordPress install
       en_GB
       """
 
-    When I try `wp core language install en_GB`
-    Then STDERR should be:
+    When I try `wp core language install en_AU`
+    Then STDERR should contain:
       """
-      Warning: Language already installed.
+      Warning: Language 'en_AU' already installed.
+      """
+    And STDOUT should contain:
+      """
+      Success: Language already installed.
       """
 
     When I run `wp core language list --fields=language,english_name,status`
@@ -83,6 +88,16 @@ Feature: Manage translation files for a WordPress install
       | az        | Azerbaijani      | uninstalled   |
       | en_GB     | English (UK)     | active        |
 
+    When I run `wp core language install en_AU --activate`
+    Then STDERR should contain:
+      """
+      Warning: Language 'en_AU' already installed.
+      """
+    And STDOUT should contain:
+      """
+      Success: Language activated.
+      """
+
     When I run `wp core language activate en_US`
     Then STDOUT should be:
       """
@@ -95,7 +110,6 @@ Feature: Manage translation files for a WordPress install
       | ar        | Arabic                  | uninstalled   |
       | en_US     | English (United States) | active        |
       | en_GB     | English (UK)            | installed     |
-
 
     When I try `wp core language activate invalid_lang`
     Then STDERR should be:
@@ -117,7 +131,7 @@ Feature: Manage translation files for a WordPress install
       Error: Language not installed.
       """
 
-    When I run `wp core language install --activate en_GB`
+    When I run `wp core language install en_GB --activate`
     Then the wp-content/languages/admin-en_GB.po file should exist
     And the wp-content/languages/en_GB.po file should exist
     And STDOUT should contain:
