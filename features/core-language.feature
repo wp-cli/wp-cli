@@ -21,6 +21,7 @@ Feature: Manage translation files for a WordPress install
       """
       Success: Language installed.
       """
+    And STDERR should be empty
 
     When I run `ls {SUITE_CACHE_DIR}/translation | grep core-default-`
     Then STDOUT should contain:
@@ -33,13 +34,9 @@ Feature: Manage translation files for a WordPress install
       """
 
     When I try `wp core language install en_AU`
-    Then STDERR should contain:
+    Then STDERR should be:
       """
       Warning: Language 'en_AU' already installed.
-      """
-    And STDOUT should contain:
-      """
-      Success: Language already installed.
       """
 
     When I run `wp core language list --fields=language,english_name,status`
@@ -98,6 +95,14 @@ Feature: Manage translation files for a WordPress install
       Success: Language activated.
       """
 
+    When I run `wp core language install en_AU --activate`
+    Then STDERR should contain:
+      """
+      Warning: Language 'en_AU' already installed.
+      Warning: Language 'en_AU' already active.
+      """
+    And STDOUT should be empty
+
     When I run `wp core language activate en_US`
     Then STDOUT should be:
       """
@@ -139,6 +144,7 @@ Feature: Manage translation files for a WordPress install
       Success: Language installed.
       Success: Language activated.
       """
+    And STDERR should be empty
 
     When I try `wp core language install invalid_lang`
     Then STDERR should be:

@@ -139,7 +139,6 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 
 		if ( in_array( $language_code, $available ) ) {
 			\WP_CLI::warning( "Language '{$language_code}' already installed." );
-			\WP_CLI::success( "Language already installed." );
 		} else {
 			$response = $this->download_language_pack( $language_code );
 
@@ -277,8 +276,7 @@ abstract class CommandWithTranslation extends \WP_CLI_Command {
 		}
 
 		if ( $language_code === get_locale() ) {
-			\WP_CLI::warning( "Language '{$language_code}' is already active." );
-			\WP_CLI::success( "Language already activated." );
+			\WP_CLI::warning( "Language '{$language_code}' already active." );
 
 			return;
 		}
