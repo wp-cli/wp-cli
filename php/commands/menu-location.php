@@ -100,7 +100,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp menu location assign primary-menu primary
-	 *     Success: Assigned location to menu.
+	 *     Success: Assigned location primary to menu primary-menu.
 	 *
 	 * @subcommand assign
 	 */
@@ -108,22 +108,22 @@ class Menu_Location_Command extends WP_CLI_Command {
 
 		list( $menu, $location ) = $args;
 
-		$menu = wp_get_nav_menu_object( $menu );
-		if ( ! $menu || is_wp_error( $menu ) ) {
-			WP_CLI::error( "Invalid menu." );
+		$menu_obj = wp_get_nav_menu_object( $menu );
+		if ( ! $menu_obj ) {
+			WP_CLI::error( "Invalid menu $menu." );
 		}
 
 		$locations = get_registered_nav_menus();
 		if ( ! array_key_exists( $location, $locations ) ) {
-			WP_CLI::error( "Invalid location." );
+			WP_CLI::error( "Invalid location $location." );
 		}
 
 		$locations = get_nav_menu_locations();
-		$locations[ $location ] = $menu->term_id;
+		$locations[ $location ] = $menu_obj->term_id;
 
 		set_theme_mod( 'nav_menu_locations', $locations );
 
-		WP_CLI::success( "Assigned location to menu." );
+		WP_CLI::success( "Assigned location $location to menu $menu." );
 	}
 
 	/**
