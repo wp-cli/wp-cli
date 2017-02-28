@@ -1,0 +1,16 @@
+wp-comment-trash(1) -- Trash a comment.
+====
+
+## SYNOPSIS
+
+`wp comment trash` <ID>
+
+## OPTIONS
+
+* `<ID>`:
+
+	The ID of the comment to trash.
+
+## EXAMPLES
+
+	wp comment trash 1337

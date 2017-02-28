@@ -1,0 +1,20 @@
+wp-comment-delete(1) -- Delete a comment.
+====
+
+## SYNOPSIS
+
+`wp comment delete` <ID> [--force]
+
+## OPTIONS
+
+* `<ID>`:
+
+	The ID of the comment to delete.
+
+* `--force`:
+
+	Skip the trash bin.
+
+## EXAMPLES
+
+	wp comment delete 1337 --force

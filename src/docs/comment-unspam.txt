@@ -1,0 +1,16 @@
+wp-comment-unspam(1) -- Unmark a comment as spam.
+====
+
+## SYNOPSIS
+
+`wp comment unspam` <ID>
+
+## OPTIONS
+
+* `<ID>`:
+
+	The ID of the comment to unmark as spam.
+
+## EXAMPLES
+
+	wp comment unspam 1337

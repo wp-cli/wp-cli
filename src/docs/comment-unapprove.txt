@@ -1,0 +1,16 @@
+wp-comment-unapprove(1) -- Unapprove a comment.
+====
+
+## SYNOPSIS
+
+`wp comment unapprove` <ID>
+
+## OPTIONS
+
+* `<ID>`:
+
+	The ID of the comment to unapprove.
+
+## EXAMPLES
+
+	wp comment unapprove 1337
