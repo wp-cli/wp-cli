@@ -11,6 +11,12 @@ Feature: WP-CLI Commands
          or: wp cron test
       """
 
+    When I run `wp import --help`
+    Then STDOUT should contain:
+      """
+      wp import <file>... --authors=<authors>
+      """
+
   Scenario: Invalid class is specified for a command
     Given an empty directory
     And a custom-cmd.php file:
