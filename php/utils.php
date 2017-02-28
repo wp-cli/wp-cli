@@ -823,3 +823,16 @@ function parse_str_to_argv( $arguments ) {
 	}, $argv );
 	return $argv;
 }
+
+/**
+ * Locale-independent version of basename()
+ *
+ * @access public
+ *
+ * @param string $path
+ * @param string $suffix
+ * @return string
+ */
+function basename( $path, $suffix = '' ) {
+	return urldecode( \basename( str_replace( array( '%2F', '%5C' ), '/', urlencode( $path ) ), $suffix ) );
+}

@@ -961,7 +961,7 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 	 */
 	private function get_details( $file ) {
 		$plugin_folder = get_plugins(  '/' . plugin_basename( dirname( $file ) ) );
-		$plugin_file = basename( $file );
+		$plugin_file = Utils\basename( $file );
 
 		return $plugin_folder[$plugin_file];
 	}
