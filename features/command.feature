@@ -683,3 +683,52 @@ Feature: WP-CLI Commands
       bar
       """
     And STDERR should be empty
+
+  @bootstrap
+  Scenario: Override command bundled with current source
+
+    Given an empty directory
+    And a cli-override.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'cli', function(){
+        WP_CLI::success( "WP-Override-CLI" );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+
+  When I run `wp cli version`
+    Then STDOUT should contain:
+      """
+      WP-CLI
+      """
+
+  When I run `wp --require=cli-override.php cli version`
+    Then STDOUT should contain:
+      """
+      WP-Override-CLI
+      """
+
+  @bootstrap
+  Scenario: Override command bundled with PHAR
+
+    Given an empty directory
+    And a new Phar with version "1.1.0"
+    And a cli-override.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'cli', function(){
+        WP_CLI::success( "WP-Override-CLI" );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+
+  When I run `{PHAR_PATH} cli version`
+    Then STDOUT should contain:
+      """
+      WP-CLI
+      """
+
+  When I run `{PHAR_PATH} --require=cli-override.php cli version`
+    Then STDOUT should contain:
+      """
+      WP-Override-CLI
+      """
