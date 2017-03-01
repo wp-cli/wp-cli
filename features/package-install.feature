@@ -635,16 +635,9 @@ Feature: Install WP-CLI packages
       """
       {
         "name": "wp-cli/cli-override",
-        "description": "A command that overrides the bunlded 'cli' command.",
-        "license": "MIT",
-        "minimum-stability": "dev",
-        "require": {
-        },
+        "description": "A command that overrides the bundled 'cli' command.",
         "autoload": {
           "files": [ "cli.php" ]
-        },
-        "require-dev": {
-          "behat/behat": "~2.5"
         }
       }
       """
@@ -720,16 +713,9 @@ Feature: Install WP-CLI packages
       """
       {
         "name": "wp-cli/cli-override",
-        "description": "A command that overrides the bunlded 'cli' command.",
-        "license": "MIT",
-        "minimum-stability": "dev",
-        "require": {
-        },
+        "description": "A command that overrides the bundled 'cli' command.",
         "autoload": {
           "files": [ "cli.php" ]
-        },
-        "require-dev": {
-          "behat/behat": "~2.5"
         }
       }
       """
