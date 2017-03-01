@@ -133,6 +133,12 @@ $steps->Given( '/^a new Phar(?: with version "([^"]+)")?$/',
 	}
 );
 
+$steps->Given( '/^a downloaded Phar(?: with version "([^"]+)")?$/',
+	function ( $world, $version = 'same' ) {
+		$world->download_phar( $version );
+	}
+);
+
 $steps->Given( '/^save the (.+) file ([\'].+[^\'])?as \{(\w+)\}$/',
 	function ( $world, $filepath, $output_filter, $key ) {
 		$full_file = file_get_contents( $world->replace_variables( $filepath ) );
