@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "5601d44dfe467b49cb16ae27dec839e0",
-    "content-hash": "bd05401239e13c802ff2849c88af96b1",
+    "hash": "5c7a0459426738b69a74843e91fde8d8",
+    "content-hash": "cd620dac551c58f96174173297545d0d",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1413,6 +1413,52 @@
             "description": "Manage WP-Cron events and schedules.",
             "homepage": "https://github.com/wp-cli/cron-command",
             "time": "2017-02-24 15:19:37"
+        },
+        {
+            "name": "wp-cli/import-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/import-command.git",
+                "reference": "2be58f14961284ae701a2519b62da211ffedf83d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/import-command/zipball/2be58f14961284ae701a2519b62da211ffedf83d",
+                "reference": "2be58f14961284ae701a2519b62da211ffedf83d",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "commands": [
+                    "import"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "import-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Import content from a WXR file.",
+            "homepage": "https://github.com/wp-cli/import-command",
+            "time": "2017-02-28 13:24:43"
         },
         {
             "name": "wp-cli/php-cli-tools",
