@@ -696,17 +696,17 @@ Feature: WP-CLI Commands
       }, array( 'when' => 'before_wp_load' ) );
       """
 
-  When I run `wp cli version`
-    Then STDOUT should contain:
-      """
-      WP-CLI
-      """
+    When I run `wp cli version`
+      Then STDOUT should contain:
+        """
+        WP-CLI
+        """
 
-  When I run `wp --require=cli-override.php cli version`
-    Then STDOUT should contain:
-      """
-      WP-Override-CLI
-      """
+    When I run `wp --require=cli-override.php cli version`
+      Then STDOUT should contain:
+        """
+        WP-Override-CLI
+        """
 
   @bootstrap
   Scenario: Override command bundled with freshly built PHAR
@@ -721,17 +721,17 @@ Feature: WP-CLI Commands
       }, array( 'when' => 'before_wp_load' ) );
       """
 
-  When I run `{PHAR_PATH} cli version`
-    Then STDOUT should contain:
-      """
-      WP-CLI
-      """
+    When I run `{PHAR_PATH} cli version`
+      Then STDOUT should contain:
+        """
+        WP-CLI
+        """
 
-  When I run `{PHAR_PATH} --require=cli-override.php cli version`
-    Then STDOUT should contain:
-      """
-      WP-Override-CLI
-      """
+    When I run `{PHAR_PATH} --require=cli-override.php cli version`
+      Then STDOUT should contain:
+        """
+        WP-Override-CLI
+        """
 
   @bootstrap
   Scenario: Override command bundled with downloaded PHAR
@@ -746,14 +746,49 @@ Feature: WP-CLI Commands
       }, array( 'when' => 'before_wp_load' ) );
       """
 
-  When I run `{PHAR_PATH} cli version`
-    Then STDOUT should contain:
-      """
-      WP-CLI 1.0.0
-      """
+    When I run `{PHAR_PATH} cli version`
+      Then STDOUT should contain:
+        """
+        WP-CLI 1.0.0
+        """
 
-  When I run `{PHAR_PATH} --require=cli-override.php cli version`
-    Then STDOUT should contain:
+    When I run `{PHAR_PATH} --require=cli-override.php cli version`
+      Then STDOUT should contain:
+        """
+        WP-Override-CLI
+        """
+
+  @bootstrap
+  Scenario: Override command bundled with Composer stack
+
+    Given an empty directory
+    And a composer.json file:
       """
-      WP-Override-CLI
+      {
+          "name": "wp-cli/composer-test",
+          "type": "project",
+          "require": {
+              "wp-cli/wp-cli": "1.1.0"
+          }
+      }
       """
+    And a cli-override.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'cli', function(){
+        WP_CLI::success( "WP-Override-CLI" );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And I run `composer install --no-interaction`
+
+    When I run `vendor/bin/wp cli version`
+      Then STDOUT should contain:
+        """
+        WP-CLI 1.1.0
+        """
+
+    When I run `vendor/bin/wp --require=cli-override.php cli version`
+      Then STDOUT should contain:
+        """
+        WP-Override-CLI
+        """

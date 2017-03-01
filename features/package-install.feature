@@ -775,3 +775,91 @@ Feature: Install WP-CLI packages
       """
       WP-CLI 1.0.0
       """
+
+  @bootstrap
+  Scenario: Install a package that overrides a command from a Composer stack
+    Given an empty directory
+    And a composer.json file:
+      """
+      {
+          "name": "wp-cli/composer-test",
+          "type": "project",
+          "require": {
+              "wp-cli/wp-cli": "1.1.0"
+          }
+      }
+      """
+    And a cli-command-override/cli.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'cli', function(){
+        WP_CLI::success( "WP-Override-CLI" );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a cli-command-override/composer.json file:
+      """
+      {
+        "name": "wp-cli/cli-override",
+        "description": "A command that overrides the bundled 'cli' command.",
+        "autoload": {
+          "files": [ "cli.php" ]
+        }
+      }
+      """
+    And I run `composer install --no-interaction`
+
+    When I run `pwd`
+    Then save STDOUT as {CURRENT_PATH}
+
+    When I run `vendor/bin/wp cli version`
+    Then STDOUT should contain:
+      """
+      WP-CLI 1.1.0
+      """
+
+    When I run `vendor/bin/wp package install cli-command-override`
+    Then STDOUT should contain:
+      """
+      Installing package wp-cli/cli-override (dev-master)
+      Updating {PACKAGE_PATH}composer.json to require the package...
+      Registering {CURRENT_PATH}/cli-command-override as a path repository...
+      Using Composer to install the package...
+      """
+    And STDOUT should contain:
+      """
+      Success: Package installed.
+      """
+
+    When I run `vendor/bin/wp package list --fields=name`
+    Then STDOUT should be a table containing rows:
+      | name                            |
+      | wp-cli/cli-override             |
+
+    When I run `vendor/bin/wp cli version`
+    Then STDOUT should be:
+      """
+      Success: WP-Override-CLI
+      """
+
+    When I run `vendor/bin/wp package uninstall wp-cli/cli-override`
+    Then STDOUT should contain:
+      """
+      Removing require statement from {PACKAGE_PATH}composer.json
+      """
+    And STDOUT should contain:
+      """
+      Success: Uninstalled package.
+      """
+    And the cli-command-override directory should exist
+
+    When I run `vendor/bin/wp package list --fields=name`
+    Then STDOUT should not contain:
+      """
+      wp-cli/cli-override
+      """
+
+    When I run `vendor/bin/wp cli version`
+    Then STDOUT should contain:
+      """
+      WP-CLI 1.1.0
+      """
