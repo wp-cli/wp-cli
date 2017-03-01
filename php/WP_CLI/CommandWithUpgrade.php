@@ -3,6 +3,7 @@
 namespace WP_CLI;
 
 use WP_CLI;
+use WP_CLI\Utils;
 
 abstract class CommandWithUpgrade extends \WP_CLI_Command {
 
@@ -152,7 +153,7 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 						if ( $branch_length ) {
 							$new_path = substr( rtrim( $source, '/' ), 0, - ( $branch_length + 1 ) ) . '/';
 							if ( $GLOBALS['wp_filesystem']->move( $source, $new_path ) ) {
-								WP_CLI::log( "Renamed Github-based project from '" . basename( $source ) . "' to '" . basename( $new_path ) . "'." );
+								WP_CLI::log( "Renamed Github-based project from '" . Utils\basename( $source ) . "' to '" . Utils\basename( $new_path ) . "'." );
 								return $new_path;
 							} else {
 								return new \WP_Error( 'wpcli_install_gitub', "Couldn't move Github-based project to appropriate directory." );

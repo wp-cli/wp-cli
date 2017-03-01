@@ -705,7 +705,7 @@ class Scaffold_Command extends WP_CLI_Command {
 				WP_CLI::error( "Invalid {$type} directory specified." );
 			}
 			if ( empty( $slug ) ) {
-				$slug = basename( $target_dir );
+				$slug = Utils\basename( $target_dir );
 			}
 		}
 

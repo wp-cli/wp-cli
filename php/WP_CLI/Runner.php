@@ -833,10 +833,10 @@ class Runner {
 						if ( in_array( $path, $this->_required_files[ $scope ] ) ) {
 							switch ( $scope ) {
 								case 'global':
-									$context = ' (from global ' . basename( $this->global_config_path ) . ')';
+									$context = ' (from global ' . Utils\basename( $this->global_config_path ) . ')';
 									break;
 								case 'project':
-									$context = ' (from project\'s ' . basename( $this->project_config_path ) . ')';
+									$context = ' (from project\'s ' . Utils\basename( $this->project_config_path ) . ')';
 									break;
 								case 'runtime':
 									$context = ' (from runtime argument)';
@@ -845,7 +845,7 @@ class Runner {
 							break;
 						}
 					}
-					WP_CLI::error( sprintf( "Required file '%s' doesn't exist%s.", basename( $path ), $context ) );
+					WP_CLI::error( sprintf( "Required file '%s' doesn't exist%s.", Utils\basename( $path ), $context ) );
 				}
 				Utils\load_file( $path );
 				WP_CLI::debug( 'Required file from config: ' . $path, 'bootstrap' );

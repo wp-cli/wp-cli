@@ -216,7 +216,7 @@ class Media_Command extends WP_CLI_Command {
 
 			$file_array = array(
 				'tmp_name' => $tempfile,
-				'name' => basename( $file )
+				'name' => Utils\basename( $file )
 			);
 
 			$post_array= array(
@@ -243,7 +243,7 @@ class Media_Command extends WP_CLI_Command {
 			}
 
 			if ( empty( $post_array['post_title'] ) ) {
-				$post_array['post_title'] = preg_replace( '/\.[^.]+$/', '', basename( $file ) );
+				$post_array['post_title'] = preg_replace( '/\.[^.]+$/', '', Utils\basename( $file ) );
 			}
 
 			// Deletes the temporary file.
@@ -294,7 +294,7 @@ class Media_Command extends WP_CLI_Command {
 	// wp_tempnam() inexplicably forces a .tmp extension, which spoils MIME type detection
 	private function make_copy( $path ) {
 		$dir = get_temp_dir();
-		$filename = basename( $path );
+		$filename = Utils\basename( $path );
 		if ( empty( $filename ) )
 			$filename = time();
 
