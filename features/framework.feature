@@ -252,3 +252,118 @@ Feature: Load WP-CLI
       """
       2
       """
+
+  @bootstrap
+  Scenario: Basic Composer stack
+    Given an empty directory
+    And a composer.json file:
+      """
+      {
+          "name": "wp-cli/composer-test",
+          "type": "project",
+          "require": {
+              "wp-cli/wp-cli": "1.1.0"
+          }
+      }
+      """
+    And I run `composer install --no-interaction`
+
+    When I run `vendor/bin/wp cli version`
+    Then STDOUT should contain:
+      """
+      WP-CLI 1.1.0
+      """
+
+  @bootstrap
+  Scenario: Composer stack with override requirement after WP-CLI
+    Given an empty directory
+    And a composer.json file:
+      """
+      {
+        "name": "wp-cli/composer-test",
+        "type": "project",
+        "minimum-stability": "dev",
+        "prefer-stable": true,
+        "repositories": [
+          {
+            "type": "path",
+            "url": "./cli-command-override"
+          }
+        ],
+        "require": {
+          "wp-cli/wp-cli": "1.1.0",
+          "wp-cli/cli-override": "*"
+        }
+      }
+      """
+    And a cli-command-override/cli.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'cli', function(){
+        WP_CLI::success( "WP-Override-CLI" );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a cli-command-override/composer.json file:
+      """
+      {
+        "name": "wp-cli/cli-override",
+        "description": "A command that overrides the bundled 'cli' command.",
+        "autoload": {
+          "files": [ "cli.php" ]
+        }
+      }
+      """
+    And I run `composer install --no-interaction`
+
+    When I run `vendor/bin/wp cli version`
+    Then STDOUT should contain:
+      """
+      WP-CLI 1.1.0
+      """
+
+  @bootstrap
+  Scenario: Composer stack with override requirement before WP-CLI
+    Given an empty directory
+    And a composer.json file:
+      """
+      {
+        "name": "wp-cli/composer-test",
+        "type": "project",
+        "minimum-stability": "dev",
+        "prefer-stable": true,
+        "repositories": [
+          {
+            "type": "path",
+            "url": "./cli-command-override"
+          }
+        ],
+        "require": {
+          "wp-cli/cli-override": "*",
+          "wp-cli/wp-cli": "1.1.0"
+        }
+      }
+      """
+    And a cli-command-override/cli.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'cli', function(){
+        WP_CLI::success( "WP-Override-CLI" );
+      }, array( 'when' => 'before_wp_load' ) );
+      """
+    And a cli-command-override/composer.json file:
+      """
+      {
+        "name": "wp-cli/cli-override",
+        "description": "A command that overrides the bundled 'cli' command.",
+        "autoload": {
+          "files": [ "cli.php" ]
+        }
+      }
+      """
+    And I run `composer install --no-interaction`
+
+    When I run `vendor/bin/wp cli version`
+    Then STDOUT should contain:
+      """
+      Success: WP-Override-CLI
+      """
