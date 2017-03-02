@@ -906,15 +906,15 @@ class WP_CLI {
 	 * @return string
 	 */
 	public static function get_php_binary() {
-		if ( defined( 'PHP_BINARY' ) )
-			return PHP_BINARY;
-
 		if ( getenv( 'WP_CLI_PHP_USED' ) )
 			return getenv( 'WP_CLI_PHP_USED' );
 
 		if ( getenv( 'WP_CLI_PHP' ) )
 			return getenv( 'WP_CLI_PHP' );
 
+		if ( defined( 'PHP_BINARY' ) )
+			return PHP_BINARY;
+		
 		return 'php';
 	}
 
