@@ -542,26 +542,39 @@ Feature: Install WP-CLI packages
     And a cli-command-override/cli.php file:
       """
       <?php
-      WP_CLI::add_command( 'cli', function(){
-        WP_CLI::success( "WP-Override-CLI" );
-      }, array( 'when' => 'before_wp_load' ) );
+      if ( ! class_exists( 'WP_CLI' ) ) {
+        return;
+      }
+      $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
+      if ( file_exists( $autoload ) ) {
+        require_once $autoload;
+      }
+      WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
+      """
+    And a cli-command-override/src/CLI_Command.php file:
+      """
+      <?php
+      class CLI_Command extends WP_CLI_Command {
+        public function version() {
+          WP_CLI::success( "WP-Override-CLI" );
+        }
+      }
       """
     And a cli-command-override/composer.json file:
       """
       {
         "name": "wp-cli/cli-override",
-        "description": "A command that overrides the bunlded 'cli' command.",
-        "license": "MIT",
-        "minimum-stability": "dev",
-        "require": {
-        },
+        "description": "A command that overrides the bundled 'cli' command.",
         "autoload": {
+          "psr-4": { "": "src/" },
           "files": [ "cli.php" ]
         },
-        "require-dev": {
-          "behat/behat": "~2.5"
+        "extra": {
+          "commands": [
+            "cli"
+          ]
         }
-      }
+     }
       """
 
     When I run `pwd`
@@ -627,9 +640,23 @@ Feature: Install WP-CLI packages
     And a cli-command-override/cli.php file:
       """
       <?php
-      WP_CLI::add_command( 'cli', function(){
-        WP_CLI::success( "WP-Override-CLI" );
-      }, array( 'when' => 'before_wp_load' ) );
+      if ( ! class_exists( 'WP_CLI' ) ) {
+        return;
+      }
+      $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
+      if ( file_exists( $autoload ) ) {
+        require_once $autoload;
+      }
+      WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
+      """
+    And a cli-command-override/src/CLI_Command.php file:
+      """
+      <?php
+      class CLI_Command extends WP_CLI_Command {
+        public function version() {
+          WP_CLI::success( "WP-Override-CLI" );
+        }
+      }
       """
     And a cli-command-override/composer.json file:
       """
@@ -637,9 +664,15 @@ Feature: Install WP-CLI packages
         "name": "wp-cli/cli-override",
         "description": "A command that overrides the bundled 'cli' command.",
         "autoload": {
+          "psr-4": { "": "src/" },
           "files": [ "cli.php" ]
+        },
+        "extra": {
+          "commands": [
+            "cli"
+          ]
         }
-      }
+     }
       """
 
     When I run `pwd`
@@ -705,9 +738,23 @@ Feature: Install WP-CLI packages
     And a cli-command-override/cli.php file:
       """
       <?php
-      WP_CLI::add_command( 'cli', function(){
-        WP_CLI::success( "WP-Override-CLI" );
-      }, array( 'when' => 'before_wp_load' ) );
+      if ( ! class_exists( 'WP_CLI' ) ) {
+        return;
+      }
+      $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
+      if ( file_exists( $autoload ) ) {
+        require_once $autoload;
+      }
+      WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
+      """
+    And a cli-command-override/src/CLI_Command.php file:
+      """
+      <?php
+      class CLI_Command extends WP_CLI_Command {
+        public function version() {
+          WP_CLI::success( "WP-Override-CLI" );
+        }
+      }
       """
     And a cli-command-override/composer.json file:
       """
@@ -715,9 +762,15 @@ Feature: Install WP-CLI packages
         "name": "wp-cli/cli-override",
         "description": "A command that overrides the bundled 'cli' command.",
         "autoload": {
+          "psr-4": { "": "src/" },
           "files": [ "cli.php" ]
+        },
+        "extra": {
+          "commands": [
+            "cli"
+          ]
         }
-      }
+     }
       """
 
     When I run `pwd`

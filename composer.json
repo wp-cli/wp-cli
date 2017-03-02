@@ -44,6 +44,7 @@
 	},
 	"autoload": {
 		"psr-0": { "WP_CLI": "php" },
+		"psr-4": { "": "php/commands/src" },
 		"classmap": [ "php/export" ]
 	}
 }

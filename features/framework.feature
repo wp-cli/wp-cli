@@ -299,9 +299,23 @@ Feature: Load WP-CLI
     And a cli-command-override/cli.php file:
       """
       <?php
-      WP_CLI::add_command( 'cli', function(){
-        WP_CLI::success( "WP-Override-CLI" );
-      }, array( 'when' => 'before_wp_load' ) );
+      if ( ! class_exists( 'WP_CLI' ) ) {
+        return;
+      }
+      $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
+      if ( file_exists( $autoload ) ) {
+        require_once $autoload;
+      }
+      WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
+      """
+    And a cli-command-override/src/CLI_Command.php file:
+      """
+      <?php
+      class CLI_Command extends WP_CLI_Command {
+        public function version() {
+          WP_CLI::success( "WP-Override-CLI" );
+        }
+      }
       """
     And a cli-command-override/composer.json file:
       """
@@ -309,9 +323,15 @@ Feature: Load WP-CLI
         "name": "wp-cli/cli-override",
         "description": "A command that overrides the bundled 'cli' command.",
         "autoload": {
+          "psr-4": { "": "src/" },
           "files": [ "cli.php" ]
+        },
+        "extra": {
+          "commands": [
+            "cli"
+          ]
         }
-      }
+     }
       """
     And I run `composer install --no-interaction`
 
@@ -346,9 +366,23 @@ Feature: Load WP-CLI
     And a cli-command-override/cli.php file:
       """
       <?php
-      WP_CLI::add_command( 'cli', function(){
-        WP_CLI::success( "WP-Override-CLI" );
-      }, array( 'when' => 'before_wp_load' ) );
+      if ( ! class_exists( 'WP_CLI' ) ) {
+        return;
+      }
+      $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
+      if ( file_exists( $autoload ) ) {
+        require_once $autoload;
+      }
+      WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
+      """
+    And a cli-command-override/src/CLI_Command.php file:
+      """
+      <?php
+      class CLI_Command extends WP_CLI_Command {
+        public function version() {
+          WP_CLI::success( "WP-Override-CLI" );
+        }
+      }
       """
     And a cli-command-override/composer.json file:
       """
@@ -356,9 +390,15 @@ Feature: Load WP-CLI
         "name": "wp-cli/cli-override",
         "description": "A command that overrides the bundled 'cli' command.",
         "autoload": {
+          "psr-4": { "": "src/" },
           "files": [ "cli.php" ]
+        },
+        "extra": {
+          "commands": [
+            "cli"
+          ]
         }
-      }
+     }
       """
     And I run `composer install --no-interaction`
 

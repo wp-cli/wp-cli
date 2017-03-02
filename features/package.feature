@@ -48,7 +48,7 @@ Feature: Manage WP-CLI packages
       WP_CLI::error( "Doing it wrong." );
       """
 
-    When I try `wp --require=bad-command.php option`
+    When I try `wp --require=bad-command.php something`
     Then STDERR should contain:
       """
       Error: Doing it wrong.
