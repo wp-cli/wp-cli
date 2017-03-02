@@ -81,7 +81,7 @@ class Server_Command extends WP_CLI_Command {
 		}
 
 		$cmd = \WP_CLI\Utils\esc_cmd( '%s -S %s -t %s -c %s %s',
-			PHP_BINARY,
+			WP_CLI::get_php_binary(),
 			$assoc_args['host'] . ':' . $assoc_args['port'],
 			$docroot,
 			$assoc_args['config'],
