@@ -83,19 +83,6 @@ function load_command( $name ) {
 	}
 }
 
-function load_all_commands() {
-	$cmd_dir = WP_CLI_ROOT . '/php/commands';
-
-	$iterator = new \DirectoryIterator( $cmd_dir );
-
-	foreach ( $iterator as $filename ) {
-		if ( '.php' != substr( $filename, -4 ) )
-			continue;
-
-		include_once "$cmd_dir/$filename";
-	}
-}
-
 /**
  * Like array_map(), except it returns a new iterator, instead of a modified array.
  *
@@ -835,4 +822,30 @@ function parse_str_to_argv( $arguments ) {
  */
 function basename( $path, $suffix = '' ) {
 	return urldecode( \basename( str_replace( array( '%2F', '%5C' ), '/', urlencode( $path ) ), $suffix ) );
+}
+
+/**
+ * Checks whether the output of the current script is a TTY or a pipe / redirect
+ *
+ * Returns true if STDOUT output is being redirected to a pipe or a file; false is
+ * output is being sent directly to the terminal.
+ *
+ * If an env variable SHELL_PIPE exists, returned result depends it's
+ * value. Strings like 1, 0, yes, no, that validate to booleans are accepted.
+ *
+ * To enable ASCII formatting even when shell is piped, use the
+ * ENV variable SHELL_PIPE=0
+ *
+ * @access public
+ *
+ * @return bool
+ */
+function isPiped() {
+	$shellPipe = getenv('SHELL_PIPE');
+
+	if ($shellPipe !== false) {
+		return filter_var($shellPipe, FILTER_VALIDATE_BOOLEAN);
+	} else {
+		return (function_exists('posix_isatty') && !posix_isatty(STDOUT));
+	}
 }

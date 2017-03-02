@@ -589,15 +589,15 @@ class Runner {
 		return $this->colorize;
 	}
 
-	private function init_colorization() {
+	public function init_colorization() {
 		if ( 'auto' === $this->config['color'] ) {
-			$this->colorize = ( !\cli\Shell::isPiped() && !\WP_CLI\Utils\is_windows() );
+			$this->colorize = ( !\WP_CLI\Utils\isPiped() && !\WP_CLI\Utils\is_windows() );
 		} else {
 			$this->colorize = $this->config['color'];
 		}
 	}
 
-	private function init_logger() {
+	public function init_logger() {
 		if ( $this->config['quiet'] )
 			$logger = new \WP_CLI\Loggers\Quiet;
 		else
@@ -638,7 +638,7 @@ class Runner {
 		// @codingStandardsIgnoreEnd
 	}
 
-	private function init_config() {
+	public function init_config() {
 		$configurator = \WP_CLI::get_configurator();
 
 		$argv = array_slice( $GLOBALS['argv'], 1 );
@@ -749,9 +749,6 @@ class Runner {
 	}
 
 	public function start() {
-		$this->init_config();
-		$this->init_colorization();
-		$this->init_logger();
 
 		WP_CLI::debug( $this->_global_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( $this->_project_config_path_debug, 'bootstrap' );
@@ -804,52 +801,8 @@ class Runner {
 			exit;
 		}
 
-		// Load bundled commands early, so that they're forced to use the same
-		// APIs as non-bundled commands.
-		Utils\load_all_commands();
-
-		$skip_packages = \WP_CLI::get_runner()->config['skip-packages'];
-		if ( true === $skip_packages ) {
-			WP_CLI::debug( 'Skipped loading packages.', 'bootstrap' );
-		} else {
-			$package_autoload = $this->get_packages_dir_path() . 'vendor/autoload.php';
-			if ( file_exists( $package_autoload ) ) {
-				WP_CLI::debug( 'Loading packages from: ' . $package_autoload, 'bootstrap' );
-				require_once $package_autoload;
-			} else {
-				WP_CLI::debug( 'No package autoload found to load.', 'bootstrap' );
-			}
-		}
-
 		if ( isset( $this->config['http'] ) && ! class_exists( '\WP_REST_CLI\Runner' ) ) {
 			WP_CLI::error( "RESTful WP-CLI needs to be installed. Try 'wp package install wp-cli/restful'." );
-		}
-
-		if ( isset( $this->config['require'] ) ) {
-			foreach ( $this->config['require'] as $path ) {
-				if ( ! file_exists( $path ) ) {
-					$context = '';
-					foreach( array( 'global', 'project', 'runtime' ) as $scope ) {
-						if ( in_array( $path, $this->_required_files[ $scope ] ) ) {
-							switch ( $scope ) {
-								case 'global':
-									$context = ' (from global ' . Utils\basename( $this->global_config_path ) . ')';
-									break;
-								case 'project':
-									$context = ' (from project\'s ' . Utils\basename( $this->project_config_path ) . ')';
-									break;
-								case 'runtime':
-									$context = ' (from runtime argument)';
-									break;
-							}
-							break;
-						}
-					}
-					WP_CLI::error( sprintf( "Required file '%s' doesn't exist%s.", Utils\basename( $path ), $context ) );
-				}
-				Utils\load_file( $path );
-				WP_CLI::debug( 'Required file from config: ' . $path, 'bootstrap' );
-			}
 		}
 
 		if ( $this->config['ssh'] ) {
