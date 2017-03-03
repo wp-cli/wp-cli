@@ -3,16 +3,14 @@
 namespace WP_CLI\Bootstrap;
 
 /**
- * Class IncludeBundledAutoloader.
+ * Class IncludeFallbackAutoloader.
  *
- * Loads the bundled autoloader that is provided through the `composer.json`
+ * Loads the fallback autoloader that is provided through the `composer.json`
  * file.
- *
- * This only contains classes for the commands.
  *
  * @package WP_CLI\Bootstrap
  */
-final class IncludeBundledAutoloader extends AutoloaderStep {
+final class IncludeFallbackAutoloader extends AutoloaderStep {
 
 	/**
 	 * Get the autoloader paths to scan for an autoloader.
@@ -22,7 +20,7 @@ final class IncludeBundledAutoloader extends AutoloaderStep {
 	 */
 	protected function get_autoloader_paths() {
 		if ( $this->is_inside_phar() ) {
-			$autoloader_path = WP_CLI_ROOT . '/vendor/autoload_commands.php';
+			$autoloader_path = WP_CLI_ROOT . '/vendor/autoload.php';
 
 			return is_readable( $autoloader_path )
 				? array( $autoloader_path )
@@ -31,9 +29,9 @@ final class IncludeBundledAutoloader extends AutoloaderStep {
 
 		$autoloader_paths = array(
 			// Part of a larger project / installed via Composer (preferred).
-			WP_CLI_ROOT . '/../../../vendor/autoload_commands.php',
+			WP_CLI_ROOT . '/../../../vendor/autoload.php',
 			// Top-level project / installed as Git clone.
-			WP_CLI_ROOT . '/vendor/autoload_commands.php',
+			WP_CLI_ROOT . '/vendor/autoload.php',
 		);
 
 		$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
@@ -48,7 +46,7 @@ final class IncludeBundledAutoloader extends AutoloaderStep {
 		) {
 			array_unshift(
 				$autoloader_paths,
-				WP_CLI_ROOT . '/../../../' . $composer->config->{'vendor-dir'} . '/autoload_commands.php'
+				WP_CLI_ROOT . '/../../../' . $composer->config->{'vendor-dir'} . '/autoload.php'
 			);
 		}
 

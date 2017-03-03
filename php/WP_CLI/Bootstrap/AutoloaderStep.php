@@ -18,21 +18,22 @@ abstract class AutoloaderStep implements BootstrapStep {
 	 */
 	public function process() {
 		$found_autoloader = false;
-		$vendor_paths     = $this->get_vendor_paths();
+		$autoloader_paths = $this->get_autoloader_paths();
 
-		if ( false === $vendor_paths ) {
+		if ( false === $autoloader_paths ) {
 			// Skip this autoloading step.
 			return;
 		}
 
-		foreach ( $vendor_paths as $vendor_path ) {
-			if ( is_readable( $vendor_path . '/autoload.php' ) ) {
+		foreach ( $autoloader_paths as $autoloader_path ) {
+			if ( is_readable( $autoloader_path ) ) {
 				try {
-					require $vendor_path . '/autoload.php';
+					require $autoloader_path;
 					$found_autoloader = true;
 				} catch ( \Exception $exception ) {
 					\WP_CLI::warning(
-						"Failed to load autoloader {$vendor_path}/autoload.php. Reason: " . $exception->getMessage(),
+						"Failed to load autoloader '{$autoloader_path}'. Reason: "
+						. $exception->getMessage(),
 						'bootstrap'
 					);
 				}
@@ -61,10 +62,10 @@ abstract class AutoloaderStep implements BootstrapStep {
 	protected function handle_failure() { }
 
 	/**
-	 * Get the vendor paths to scan for an autoloader.
+	 * Get the autoloader paths to scan for an autoloader.
 	 *
-	 * @return string[]|false Array of strings with vendor paths, or false to
-	 *                        skip.
+	 * @return string[]|false Array of strings with autoloader paths, or false
+	 *                        to skip.
 	 */
-	abstract protected function get_vendor_paths();
+	abstract protected function get_autoloader_paths();
 }
