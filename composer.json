@@ -14,6 +14,7 @@
 	],
 	"require": {
 		"php": ">=5.3.29",
+		"wp-cli/autoload-splitter": "dev-master",
 		"wp-cli/php-cli-tools": "~0.11.2",
 		"mustache/mustache": "~2.4",
 		"mustangostang/spyc": "~0.5",
@@ -46,5 +47,13 @@
 		"psr-0": { "WP_CLI": "php" },
 		"psr-4": { "": "php/commands/src" },
 		"classmap": [ "php/export" ]
+	},
+	"extra": {
+		"autoload-splitter": {
+			"splitter-logic": "WP_CLI\\AutoloadSplitter",
+			"splitter-location": "php/WP_CLI/AutoloadSplitter.php",
+			"split-target-prefix-true": "autoload_commands",
+			"split-target-prefix-false": "autoload_framework"
+		}
 	}
 }

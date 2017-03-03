@@ -3,16 +3,14 @@
 namespace WP_CLI\Bootstrap;
 
 /**
- * Class IncludeFrameworkAutoloader.
+ * Class IncludeFallbackAutoloader.
  *
- * Loads the framework autoloader that is provided through the `composer.json`
+ * Loads the fallback autoloader that is provided through the `composer.json`
  * file.
- *
- * This only contains classes for the framework.
  *
  * @package WP_CLI\Bootstrap
  */
-final class IncludeFrameworkAutoloader extends AutoloaderStep {
+final class IncludeFallbackAutoloader extends AutoloaderStep {
 
 	/**
 	 * Get the autoloader paths to scan for an autoloader.
@@ -22,7 +20,7 @@ final class IncludeFrameworkAutoloader extends AutoloaderStep {
 	 */
 	protected function get_autoloader_paths() {
 		if ( $this->is_inside_phar() ) {
-			$autoloader_path = WP_CLI_ROOT . '/vendor/autoload_framework.php';
+			$autoloader_path = WP_CLI_ROOT . '/vendor/autoload.php';
 
 			return is_readable( $autoloader_path )
 				? array( $autoloader_path )
@@ -31,9 +29,9 @@ final class IncludeFrameworkAutoloader extends AutoloaderStep {
 
 		$autoloader_paths = array(
 			// Part of a larger project / installed via Composer (preferred).
-			WP_CLI_ROOT . '/../../../vendor/autoload_framework.php',
+			WP_CLI_ROOT . '/../../../vendor/autoload.php',
 			// Top-level project / installed as Git clone.
-			WP_CLI_ROOT . '/vendor/autoload_framework.php',
+			WP_CLI_ROOT . '/vendor/autoload.php',
 		);
 
 		$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
@@ -48,23 +46,10 @@ final class IncludeFrameworkAutoloader extends AutoloaderStep {
 		) {
 			array_unshift(
 				$autoloader_paths,
-				WP_CLI_ROOT . '/../../../' . $composer->config->{'vendor-dir'} . '/autoload_framework.php'
+				WP_CLI_ROOT . '/../../../' . $composer->config->{'vendor-dir'} . '/autoload.php'
 			);
 		}
 
 		return $autoloader_paths;
-	}
-
-	/**
-	 * Handle the failure to find an autoloader.
-	 *
-	 * @return void
-	 */
-	protected function handle_failure() {
-		fputs(
-			STDERR,
-			"Internal error: Can't find Composer autoloader.\nTry running: composer install\n"
-		);
-		exit( 3 );
 	}
 }
