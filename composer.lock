@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "7d6bf48fe871612177b44a551ce94066",
+    "content-hash": "973e07d9736ed27c9e352cb651db3a46",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1514,6 +1514,53 @@
             "description": "Import content from a WXR file.",
             "homepage": "https://github.com/wp-cli/import-command",
             "time": "2017-02-28T13:24:43+00:00"
+        },
+        {
+            "name": "wp-cli/media-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/media-command.git",
+                "reference": "fa12bf77a0c0f4af934750175eb75b4b358d399c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/media-command/zipball/fa12bf77a0c0f4af934750175eb75b4b358d399c",
+                "reference": "fa12bf77a0c0f4af934750175eb75b4b358d399c",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "commands": [
+                    "media import",
+                    "media regenerate"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "media-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Manage attachments.",
+            "homepage": "https://github.com/wp-cli/media-command",
+            "time": "2017-03-08T13:17:43+00:00"
         },
         {
             "name": "wp-cli/php-cli-tools",

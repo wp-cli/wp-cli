@@ -34,7 +34,8 @@
 		"composer/composer": "^1.2.0",
 		"wp-cli/cron-command": "^1.0",
 		"wp-cli/import-command": "^1.0",
-		"wp-cli/db-command": "^1.0"
+		"wp-cli/db-command": "^1.0",
+		"wp-cli/media-command": "^1.0"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",
