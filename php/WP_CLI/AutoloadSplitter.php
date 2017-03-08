@@ -27,6 +27,8 @@ class AutoloadSplitter {
 	 * @return bool Whether to split out the class into a separate autoloader.
 	 */
 	public function __invoke( $class, $code ) {
-		return 1 === preg_match( '/.*\/wp-cli\/\w*-command\/.*/', $code );
+		return
+            1 === preg_match( '/.*\/wp-cli\/\w*-command\/.*/', $code )
+            || 1 === preg_match( '/.*\/php\/commands\/src\/.*/', $code );
 	}
 }
