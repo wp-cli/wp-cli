@@ -12,15 +12,9 @@
 	"bin": [
 		"bin/wp.bat", "bin/wp"
 	],
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "git@github.com:wp-cli/autoload-splitter.git"
-		}
-	],
 	"require": {
 		"php": ">=5.3.29",
-		"wp-cli/autoload-splitter": "dev-master",
+		"wp-cli/autoload-splitter": "^0.1",
 		"wp-cli/php-cli-tools": "~0.11.2",
 		"mustache/mustache": "~2.4",
 		"mustangostang/spyc": "dev-master#1cea7c15324025cd7b62c8d47c10e1e94f634c1e",

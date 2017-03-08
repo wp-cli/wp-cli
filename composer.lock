@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "83a1be2bdd8c79a09b263cf238942401",
+    "content-hash": "bc85cdbd067a452a521611aa62c5277d",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1364,16 +1364,16 @@
         },
         {
             "name": "wp-cli/autoload-splitter",
-            "version": "dev-master",
+            "version": "v0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/autoload-splitter.git",
-                "reference": "0f9ee96010280e5f9c88d5e26859d1df52a240f9"
+                "reference": "de0a74582f07d029bf2f518a72b5599ae272ac3a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/autoload-splitter/zipball/0f9ee96010280e5f9c88d5e26859d1df52a240f9",
-                "reference": "0f9ee96010280e5f9c88d5e26859d1df52a240f9",
+                "url": "https://api.github.com/repos/wp-cli/autoload-splitter/zipball/de0a74582f07d029bf2f518a72b5599ae272ac3a",
+                "reference": "de0a74582f07d029bf2f518a72b5599ae272ac3a",
                 "shasum": ""
             },
             "require": {
@@ -1388,6 +1388,7 @@
                     "WP_CLI\\AutoloadSplitter\\": "src"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -1400,11 +1401,7 @@
             ],
             "description": "Composer plugin for splitting a generated autoloader into two distinct parts.",
             "homepage": "https://wp-cli.org",
-            "support": {
-                "source": "https://github.com/wp-cli/autoload-splitter",
-                "issues": "https://github.com/wp-cli/autoload-splitter/issues"
-            },
-            "time": "2017-03-08 08:44:55"
+            "time": "2017-03-08T08:41:17+00:00"
         },
         {
             "name": "wp-cli/cron-command",
@@ -2243,7 +2240,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "wp-cli/autoload-splitter": 20,
         "mustangostang/spyc": 20,
         "roave/security-advisories": 20
     },
