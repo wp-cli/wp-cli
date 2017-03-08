@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "5c7a0459426738b69a74843e91fde8d8",
-    "content-hash": "cd620dac551c58f96174173297545d0d",
+    "hash": "2ebc3345df3d26361e0a93947bca316b",
+    "content-hash": "5f3ecc01d37dfd3898c3ea902630540c",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1413,6 +1413,62 @@
             "description": "Manage WP-Cron events and schedules.",
             "homepage": "https://github.com/wp-cli/cron-command",
             "time": "2017-02-24 15:19:37"
+        },
+        {
+            "name": "wp-cli/db-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/db-command.git",
+                "reference": "63c346740519c85dbdc158b1fc716f5ef37ac6ee"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/db-command/zipball/63c346740519c85dbdc158b1fc716f5ef37ac6ee",
+                "reference": "63c346740519c85dbdc158b1fc716f5ef37ac6ee",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "commands": [
+                    "db create",
+                    "db drop",
+                    "db reset",
+                    "db check",
+                    "db optimize",
+                    "db repair",
+                    "db cli",
+                    "db query",
+                    "db export",
+                    "db import",
+                    "db tables"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "db-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Perform basic database operations using credentials stored in wp-config.php.",
+            "homepage": "https://github.com/wp-cli/db-command",
+            "time": "2017-03-01 13:55:17"
         },
         {
             "name": "wp-cli/import-command",
