@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "7d6bf48fe871612177b44a551ce94066",
+    "content-hash": "83a1be2bdd8c79a09b263cf238942401",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -378,16 +378,16 @@
         },
         {
             "name": "mustangostang/spyc",
-            "version": "0.6.2",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mustangostang/spyc.git",
-                "reference": "23c35ae854d835f2d7bcc3e3ad743d7e57a8c14d"
+                "reference": "1cea7c15324025cd7b62c8d47c10e1e94f634c1e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mustangostang/spyc/zipball/23c35ae854d835f2d7bcc3e3ad743d7e57a8c14d",
-                "reference": "23c35ae854d835f2d7bcc3e3ad743d7e57a8c14d",
+                "url": "https://api.github.com/repos/mustangostang/spyc/zipball/1cea7c15324025cd7b62c8d47c10e1e94f634c1e",
+                "reference": "1cea7c15324025cd7b62c8d47c10e1e94f634c1e",
                 "shasum": ""
             },
             "require": {
@@ -1363,6 +1363,50 @@
             "time": "2017-01-21T16:40:50+00:00"
         },
         {
+            "name": "wp-cli/autoload-splitter",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/autoload-splitter.git",
+                "reference": "0f9ee96010280e5f9c88d5e26859d1df52a240f9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/autoload-splitter/zipball/0f9ee96010280e5f9c88d5e26859d1df52a240f9",
+                "reference": "0f9ee96010280e5f9c88d5e26859d1df52a240f9",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^1.1"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "WP_CLI\\AutoloadSplitter\\ComposerPlugin"
+            },
+            "autoload": {
+                "psr-4": {
+                    "WP_CLI\\AutoloadSplitter\\": "src"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alain Schlesser",
+                    "email": "alain.schlesser@gmail.com",
+                    "homepage": "https://www.alainschlesser.com"
+                }
+            ],
+            "description": "Composer plugin for splitting a generated autoloader into two distinct parts.",
+            "homepage": "https://wp-cli.org",
+            "support": {
+                "source": "https://github.com/wp-cli/autoload-splitter",
+                "issues": "https://github.com/wp-cli/autoload-splitter/issues"
+            },
+            "time": "2017-03-08 08:44:55"
+        },
+        {
             "name": "wp-cli/cron-command",
             "version": "v1.0.0",
             "source": {
@@ -2199,6 +2243,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "wp-cli/autoload-splitter": 20,
+        "mustangostang/spyc": 20,
         "roave/security-advisories": 20
     },
     "prefer-stable": false,
