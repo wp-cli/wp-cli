@@ -23,6 +23,12 @@ Feature: WP-CLI Commands
       wp import <file>... --authors=<authors>
       """
 
+    When I run `wp media`
+    Then STDOUT should contain:
+      """
+      or: wp media regenerate
+      """
+
   Scenario: Invalid class is specified for a command
     Given an empty directory
     And a custom-cmd.php file:
