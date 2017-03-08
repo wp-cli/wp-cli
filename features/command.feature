@@ -11,6 +11,12 @@ Feature: WP-CLI Commands
          or: wp cron test
       """
 
+    When I run `wp db`
+    Then STDOUT should contain:
+      """
+      or: wp db cli
+      """
+
     When I run `wp import --help`
     Then STDOUT should contain:
       """
