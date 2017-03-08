@@ -40,11 +40,13 @@
 		"nb/oxymel": "~0.1.0",
 		"composer/composer": "^1.2.0",
 		"wp-cli/cron-command": "^1.0",
-		"wp-cli/import-command": "^1.0"
+		"wp-cli/import-command": "^1.0",
+		"wp-cli/db-command": "^1.0"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",
-		"behat/behat": "2.5.*"
+		"behat/behat": "2.5.*",
+		"roave/security-advisories": "dev-master"
 	},
 	"suggest": {
 		"psy/psysh": "Enhanced `wp shell` functionality"
