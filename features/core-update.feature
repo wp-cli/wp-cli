@@ -161,6 +161,7 @@ Feature: Update WordPress core
       wordpress-4.2.4-partial-1-en_US.zip
       """
 
+  @less-than-php-7
   Scenario: Make sure files are cleaned up
     Given a WP install
     When I run `wp core update --version=4.4 --force`
