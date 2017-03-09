@@ -35,7 +35,8 @@
 		"wp-cli/cron-command": "^1.0",
 		"wp-cli/import-command": "^1.0",
 		"wp-cli/db-command": "^1.0",
-		"wp-cli/media-command": "^1.0"
+		"wp-cli/media-command": "^1.0",
+		"wp-cli/export-command": "^1.0"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",
@@ -46,7 +47,6 @@
 		"psy/psysh": "Enhanced `wp shell` functionality"
 	},
 	"autoload": {
-		"psr-0": { "WP_CLI": "php" },
-		"classmap": [ "php/export" ]
+		"psr-0": { "WP_CLI": "php" }
 	}
 }
