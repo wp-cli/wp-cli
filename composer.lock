@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "973e07d9736ed27c9e352cb651db3a46",
+    "content-hash": "e28a0b5c7e0ffa61277ffba5aefe9e32",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -425,47 +425,6 @@
                 "yml"
             ],
             "time": "2017-02-24T16:06:33+00:00"
-        },
-        {
-            "name": "nb/oxymel",
-            "version": "v0.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/nb/oxymel.git",
-                "reference": "cbe626ef55d5c4cc9b5e6e3904b395861ea76e3c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/nb/oxymel/zipball/cbe626ef55d5c4cc9b5e6e3904b395861ea76e3c",
-                "reference": "cbe626ef55d5c4cc9b5e6e3904b395861ea76e3c",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.2.4"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Oxymel": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nikolay Bachiyski",
-                    "email": "nb@nikolay.bg",
-                    "homepage": "http://extrapolate.me/"
-                }
-            ],
-            "description": "A sweet XML builder",
-            "homepage": "https://github.com/nb/oxymel",
-            "keywords": [
-                "xml"
-            ],
-            "time": "2013-02-24T15:01:54+00:00"
         },
         {
             "name": "psr/log",
@@ -1468,6 +1427,55 @@
             "description": "Perform basic database operations using credentials stored in wp-config.php.",
             "homepage": "https://github.com/wp-cli/db-command",
             "time": "2017-03-01T13:55:17+00:00"
+        },
+        {
+            "name": "wp-cli/export-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/export-command.git",
+                "reference": "16ab805be36da659e5820c54d4fbbb3d5e4185e0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/export-command/zipball/16ab805be36da659e5820c54d4fbbb3d5e4185e0",
+                "reference": "16ab805be36da659e5820c54d4fbbb3d5e4185e0",
+                "shasum": ""
+            },
+            "require": {
+                "nb/oxymel": "~0.1.0"
+            },
+            "require-dev": {
+                "behat/behat": "~2.5"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "commands": [
+                    "export"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "export-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Manage exports.",
+            "homepage": "https://github.com/wp-cli/export-command",
+            "time": "2017-03-09T02:26:53+00:00"
         },
         {
             "name": "wp-cli/import-command",

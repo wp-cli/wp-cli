@@ -17,6 +17,12 @@ Feature: WP-CLI Commands
       or: wp db cli
       """
 
+    When I run `wp export --help`
+    Then STDOUT should contain:
+      """
+      wp export [--dir=<dirname>]
+      """
+
     When I run `wp import --help`
     Then STDOUT should contain:
       """
