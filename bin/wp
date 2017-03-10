@@ -1,0 +1,45 @@
+#!/usr/bin/env sh
+#
+# This wrapper script has been adapted from the equivalent drush wrapper
+# and 99.9% of all credit should go to the authors of that project:
+# http://drupal.org/project/drush
+# And 0.09% to the author of this project:
+# https://github.com/88mph/wpadmin/blob/master/wpadmin.php
+
+# Get the absolute path of this executable
+ORIGDIR="$(pwd)"
+SELF_PATH="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" && SELF_PATH="$SELF_PATH/$(basename -- "$0")"
+
+# Resolve symlinks - this is the equivalent of "readlink -f", but also works with non-standard OS X readlink.
+while [ -h "$SELF_PATH" ]; do
+	# 1) cd to directory of the symlink
+	# 2) cd to the directory of where the symlink points
+	# 3) Get the pwd
+	# 4) Append the basename
+	DIR="$(dirname -- "$SELF_PATH")"
+	SYM="$(readlink "$SELF_PATH")"
+	SELF_PATH="$(cd "$DIR" && cd "$(dirname -- "$SYM")" && pwd)/$(basename -- "$SYM")"
+done
+cd "$ORIGDIR"
+
+if [ ! -z "$WP_CLI_PHP" ] ; then
+	# Use the WP_CLI_PHP environment variable if it is available.
+	php="$WP_CLI_PHP"
+else
+	# Default to using the php that we find on the PATH.
+	# Note that we need the full path to php here for Dreamhost, which behaves oddly.  See http://drupal.org/node/662926
+	php="`which php`"
+fi
+
+# Build the path to the root PHP file
+SCRIPT_PATH="$(dirname "$SELF_PATH")/../php/boot-fs.php"
+case $("$php" -r "echo PHP_OS;") in
+	WINNT*)
+		SCRIPT_PATH="$(cygpath -w -a -- "$SCRIPT_PATH")" ;;
+esac
+
+# Pass in the path to php so that wp-cli knows which one
+# to use if it re-launches itself to run other commands.
+export WP_CLI_PHP_USED="$php"
+
+exec "$php" $WP_CLI_PHP_ARGS "$SCRIPT_PATH" "$@"
