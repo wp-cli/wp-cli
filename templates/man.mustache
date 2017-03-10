@@ -1,0 +1,28 @@
+## NAME
+
+	{{name}}
+
+{{#shortdesc}}
+## DESCRIPTION
+
+	{{shortdesc}}
+
+{{/shortdesc}}
+## SYNOPSIS
+
+	{{synopsis}}
+
+{{#alias}}
+## ALIAS
+
+	{{alias}}
+
+{{/alias}}
+{{#has-subcommands}}
+## SUBCOMMANDS
+
+{{#subcommands}}
+	{{.}}
+{{/subcommands}}
+
+{{/has-subcommands}}
