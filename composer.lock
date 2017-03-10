@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "e28a0b5c7e0ffa61277ffba5aefe9e32",
+    "content-hash": "67992f4be2d01ec338d51fdaff98576e",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1614,6 +1614,59 @@
             "description": "Manage attachments.",
             "homepage": "https://github.com/wp-cli/media-command",
             "time": "2017-03-08T13:17:43+00:00"
+        },
+        {
+            "name": "wp-cli/package-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/package-command.git",
+                "reference": "692a258facc0fa5ca55a11fdebd37d7264ed0bfa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/692a258facc0fa5ca55a11fdebd37d7264ed0bfa",
+                "reference": "692a258facc0fa5ca55a11fdebd37d7264ed0bfa",
+                "shasum": ""
+            },
+            "require": {
+                "composer/composer": "^1.2.0"
+            },
+            "require-dev": {
+                "behat/behat": "~2.5"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "commands": [
+                    "package browse",
+                    "package install",
+                    "package list",
+                    "package update",
+                    "package uninstall"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "package-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Manage WP-CLI packages.",
+            "homepage": "https://github.com/wp-cli/package-command",
+            "time": "2017-03-10T21:14:44+00:00"
         },
         {
             "name": "wp-cli/php-cli-tools",
