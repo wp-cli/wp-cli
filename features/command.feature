@@ -35,6 +35,12 @@ Feature: WP-CLI Commands
       or: wp media regenerate
       """
 
+    When I run `wp package`
+    Then STDOUT should contain:
+      """
+      or: wp package install
+      """
+
   Scenario: Invalid class is specified for a command
     Given an empty directory
     And a custom-cmd.php file:
