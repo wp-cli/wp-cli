@@ -318,6 +318,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	public function create_config( $subdir = '' ) {
 		$params = self::$db_settings;
+		// Replaces all characters that are not alphanumeric or an underscore into an underscore.
 		$params['dbprefix'] = $subdir ? preg_replace( '#[^a-zA-Z\_0-9]#', '_', $subdir ) : 'wp_';
 
 		$params['skip-salts'] = true;
