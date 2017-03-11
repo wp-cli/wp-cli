@@ -797,13 +797,6 @@ class Runner {
 			exit;
 		}
 
-		// Protect 'package' commands from most of the runtime too,
-		// except when the command will be run over SSH
-		if ( 'package' === $this->arguments[0] && ! $this->config['ssh'] ) {
-			$this->_run_command();
-			exit;
-		}
-
 		// Load bundled commands early, so that they're forced to use the same
 		// APIs as non-bundled commands.
 		Utils\load_all_commands();
