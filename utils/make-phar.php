@@ -15,7 +15,7 @@ list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( array_s
 
 if ( ! isset( $args[0] ) || empty( $args[0] ) ) {
 	echo "usage: php -dphar.readonly=0 $argv[0] <path> [--quiet] [--version=same|patch|minor|major|x.y.z] [--store-version]\n";
-	exit(1);
+	exit( 1 );
 }
 
 define( 'DEST_PATH', $args[0] );
@@ -38,8 +38,9 @@ if ( isset( $runtime_config['version'] ) ) {
 function add_file( $phar, $path ) {
 	$key = str_replace( WP_CLI_ROOT, '', $path );
 
-	if ( !BE_QUIET )
+	if ( ! BE_QUIET ) {
 		echo "$key - $path\n";
+	}
 
 	$phar[ $key ] = file_get_contents( $path );
 }
@@ -47,8 +48,9 @@ function add_file( $phar, $path ) {
 function set_file_contents( $phar, $path, $content ) {
 	$key = str_replace( WP_CLI_ROOT, '', $path );
 
-	if ( !BE_QUIET )
+	if ( ! BE_QUIET ) {
 		echo "$key - $path\n";
+	}
 
 	$phar[ $key ] = $content;
 }
@@ -57,44 +59,42 @@ $phar = new Phar( DEST_PATH, 0, 'wp-cli.phar' );
 
 $phar->startBuffering();
 
-// PHP files
+// PHP files.
 $finder = new Finder();
 $finder
 	->files()
-	->ignoreVCS(true)
-	->name('*.php')
-	->in(WP_CLI_ROOT . '/php')
-	->in(WP_CLI_ROOT . '/features')
-	->in(WP_CLI_ROOT . '/vendor/wp-cli')
-	->in(WP_CLI_ROOT . '/vendor/mustache')
-	->in(WP_CLI_ROOT . '/vendor/rmccue/requests')
-	->in(WP_CLI_ROOT . '/vendor/composer')
-	->in(WP_CLI_ROOT . '/vendor/psr')
-	->in(WP_CLI_ROOT . '/vendor/seld')
-	->in(WP_CLI_ROOT . '/vendor/symfony')
-	->in(WP_CLI_ROOT . '/vendor/nb/oxymel')
-	->in(WP_CLI_ROOT . '/vendor/ramsey/array_column')
-	->in(WP_CLI_ROOT . '/vendor/mustangostang')
-	->in(WP_CLI_ROOT . '/vendor/justinrainbow/json-schema')
-	->exclude('test')
-	->exclude('tests')
-	->exclude('Test')
-	->exclude('Tests')
-	->exclude('php-cli-tools/examples')
-	;
+	->ignoreVCS( true )
+	->name( '*.php' )
+	->in( WP_CLI_ROOT . '/php' )
+	->in( WP_CLI_ROOT . '/features' )
+	->in( WP_CLI_ROOT . '/vendor/wp-cli' )
+	->in( WP_CLI_ROOT . '/vendor/mustache' )
+	->in( WP_CLI_ROOT . '/vendor/rmccue/requests' )
+	->in( WP_CLI_ROOT . '/vendor/composer' )
+	->in( WP_CLI_ROOT . '/vendor/psr' )
+	->in( WP_CLI_ROOT . '/vendor/seld' )
+	->in( WP_CLI_ROOT . '/vendor/symfony' )
+	->in( WP_CLI_ROOT . '/vendor/nb/oxymel' )
+	->in( WP_CLI_ROOT . '/vendor/ramsey/array_column' )
+	->in( WP_CLI_ROOT . '/vendor/mustangostang' )
+	->in( WP_CLI_ROOT . '/vendor/justinrainbow/json-schema' )
+	->exclude( 'test' )
+	->exclude( 'tests' )
+	->exclude( 'Test' )
+	->exclude( 'Tests' )
+	->exclude( 'php-cli-tools/examples' );
 
 foreach ( $finder as $file ) {
 	add_file( $phar, $file );
 }
 
-// other files
+// Other files.
 $finder = new Finder();
 $finder
 	->files()
-	->ignoreVCS(true)
-	->ignoreDotFiles(false)
-	->in( WP_CLI_ROOT . '/templates')
-	;
+	->ignoreVCS( true )
+	->ignoreDotFiles( false )
+	->in( WP_CLI_ROOT . '/templates' );
 
 foreach ( $finder as $file ) {
 	add_file( $phar, $file );
@@ -121,4 +121,4 @@ EOB
 
 $phar->stopBuffering();
 
-echo "Generated " . DEST_PATH . "\n";
+echo 'Generated ' . DEST_PATH . "\n";
