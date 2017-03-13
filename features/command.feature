@@ -41,6 +41,12 @@ Feature: WP-CLI Commands
       or: wp package install
       """
 
+    When I run `wp search-replace --help`
+    Then STDOUT should contain:
+      """
+      wp search-replace <old> <new>
+      """
+
   Scenario: Invalid class is specified for a command
     Given an empty directory
     And a custom-cmd.php file:
