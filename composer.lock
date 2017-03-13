@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "d23585ec2f4dc8c8b4e86c16ced862ae",
+    "content-hash": "c5886a6f708003f759bd59ebb7018776",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1764,6 +1764,52 @@
             "description": "Search/replace strings in the database.",
             "homepage": "https://github.com/wp-cli/search-replace-command",
             "time": "2017-03-13T16:57:54+00:00"
+        },
+        {
+            "name": "wp-cli/server-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/server-command.git",
+                "reference": "f3f59933bf0f74a6200c458d1fa732e84c8bceb5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/server-command/zipball/f3f59933bf0f74a6200c458d1fa732e84c8bceb5",
+                "reference": "f3f59933bf0f74a6200c458d1fa732e84c8bceb5",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "commands": [
+                    "server"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "server-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Launch PHP's built-in web server for this specific WordPress installation.",
+            "homepage": "https://github.com/wp-cli/server-command",
+            "time": "2017-03-13T21:48:36+00:00"
         }
     ],
     "packages-dev": [
