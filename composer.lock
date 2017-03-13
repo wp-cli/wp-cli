@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "67992f4be2d01ec338d51fdaff98576e",
+    "content-hash": "d23585ec2f4dc8c8b4e86c16ced862ae",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1717,6 +1717,53 @@
                 "console"
             ],
             "time": "2017-02-15T12:17:55+00:00"
+        },
+        {
+            "name": "wp-cli/search-replace-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/search-replace-command.git",
+                "reference": "9d354ae7f0be331b95d635177c082df6a2ed04fe"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/search-replace-command/zipball/9d354ae7f0be331b95d635177c082df6a2ed04fe",
+                "reference": "9d354ae7f0be331b95d635177c082df6a2ed04fe",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "commands": [
+                    "search-replace"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/",
+                    "WP_CLI\\": "src/WP_CLI"
+                },
+                "files": [
+                    "search-replace-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Search/replace strings in the database.",
+            "homepage": "https://github.com/wp-cli/search-replace-command",
+            "time": "2017-03-13T16:57:54+00:00"
         }
     ],
     "packages-dev": [
