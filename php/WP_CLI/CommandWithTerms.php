@@ -3,6 +3,7 @@
 namespace WP_CLI;
 
 use WP_CLI;
+use WP_CLI\Utils;
 
 /**
  * Base class for WP-CLI commands that deal with terms
@@ -105,6 +106,14 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 *
 	 * <term>...
 	 * : The name of the term or terms to be removed from the object.
+	 *
+	 * [--by=<field>]
+	 * : Explicitly handle the term value as a slug or id.
+	 * ---
+	 * options:
+	 *   - slug
+	 *   - id
+	 * ---
 	 */
 	public function remove( $args, $assoc_args ) {
 		$object_id      = array_shift( $args );
@@ -115,6 +124,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
 		$this->taxonomy_exists( $taxonomy );
 
+		if ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) {
+			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
+		}
 		$result = wp_remove_object_terms( $object_id, $terms, $taxonomy );
 
 		if ( ! is_wp_error( $result ) ) {
@@ -137,6 +149,14 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 *
 	 * <term>...
 	 * : The slug of the term or terms to be added.
+	 *
+	 * [--by=<field>]
+	 * : Explicitly handle the term value as a slug or id.
+	 * ---
+	 * options:
+	 *   - slug
+	 *   - id
+	 * ---
 	 */
 	public function add( $args, $assoc_args ) {
 		$object_id      = array_shift( $args );
@@ -147,6 +167,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
 		$this->taxonomy_exists( $taxonomy );
 
+		if ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) {
+			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
+		}
 		$result = wp_set_object_terms( $object_id, $terms, $taxonomy, true );
 
 		if ( ! is_wp_error( $result ) ) {
@@ -169,6 +192,14 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 *
 	 * <term>...
 	 * : The slug of the term or terms to be updated.
+	 *
+	 * [--by=<field>]
+	 * : Explicitly handle the term value as a slug or id.
+	 * ---
+	 * options:
+	 *   - slug
+	 *   - id
+	 * ---
 	 */
 	public function set( $args, $assoc_args ) {
 		$object_id      = array_shift( $args );
@@ -179,6 +210,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
 		$this->taxonomy_exists( $taxonomy );
 
+		if ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) {
+			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
+		}
 		$result = wp_set_object_terms( $object_id, $terms, $taxonomy, false );
 
 		if ( ! is_wp_error( $result ) ) {
@@ -200,6 +234,27 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		if ( ! in_array( $taxonomy, $taxonomy_names ) ) {
 			WP_CLI::error( "Invalid taxonomy {$taxonomy}." );
 		}
+	}
+
+	/**
+	 * Prepare terms if `--by=<field>` flag is used
+	 *
+	 * @param array $terms
+	 * @param string $field
+	 * @param string $taxonomy
+	 */
+	protected function prepare_terms( $field, $terms, $taxonomy ) {
+		if ( 'id' === $field ) {
+			$new_terms = array();
+			foreach( $terms as $i => $term_id ) {
+				$term = get_term_by( 'term_id', $term_id, $taxonomy );
+				if ( $term ) {
+					$new_terms[] = $term->slug;
+				}
+			}
+			$terms = $new_terms;
+		}
+		return $terms;
 	}
 
 	/**
