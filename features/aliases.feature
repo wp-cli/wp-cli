@@ -2,6 +2,7 @@ Feature: Create shortcuts to specific WordPress installs
 
   Scenario: Alias for a path to a specific WP install
     Given a WP install in 'testdir'
+    And I run `mkdir testdir2`
     And a wp-cli.yml file:
       """
       @testdir:
@@ -16,6 +17,9 @@ Feature: Create shortcuts to specific WordPress installs
     And the return code should be 1
 
     When I run `wp @testdir core is-installed`
+    Then the return code should be 0
+
+    When I run `cd testdir2; wp @testdir core is-installed`
     Then the return code should be 0
 
   Scenario: Error when invalid alias provided
