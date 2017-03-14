@@ -808,6 +808,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( sprintf( "Missing file: %s", $filename ) );
 		}
 
+		// Don't send core's emails during the creation / update process
+		add_filter( 'send_password_change_email', '__return_false' );
+		add_filter( 'send_email_change_email', '__return_false' );
+
 		foreach ( new \WP_CLI\Iterators\CSV( $filename ) as $i => $new_user ) {
 			$defaults = array(
 				'role' => get_option('default_role'),
