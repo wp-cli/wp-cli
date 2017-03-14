@@ -108,12 +108,15 @@ Feature: Create shortcuts to specific WordPress installs
         path: testdir
       """
 
+    When I run `wp eval --skip-wordpress 'echo realpath( getenv( "RUN_DIR" ) );'`
+    Then save STDOUT as {TEST_DIR}
+
     When I run `wp cli alias`
     Then STDOUT should be YAML containing:
       """
       @all: Run command against every registered alias.
       @testdir:
-        path: testdir
+        path: {TEST_DIR}/testdir
       """
 
     When I run `wp cli aliases`
@@ -121,13 +124,13 @@ Feature: Create shortcuts to specific WordPress installs
       """
       @all: Run command against every registered alias.
       @testdir:
-        path: testdir
+        path: {TEST_DIR}/testdir
       """
 
     When I run `wp cli alias --format=json`
     Then STDOUT should be JSON containing:
       """
-      {"@all":"Run command against every registered alias.","@testdir":{"path":"testdir"}}
+      {"@all":"Run command against every registered alias.","@testdir":{"path":"{TEST_DIR}/testdir"}}
       """
 
   Scenario: Defining a project alias completely overrides a global alias
