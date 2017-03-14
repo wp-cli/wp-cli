@@ -224,7 +224,14 @@ function wp_get_cache_type() {
 }
 
 /**
- * Clear all of the caches for memory management
+ * Clear WordPress internal object caches.
+ *
+ * In long-running scripts, the internal caches on `$wp_object_cache` and `$wpdb`
+ * can grow to consume gigabytes of memory. Periodically calling this utility
+ * can help with memory management.
+ *
+ * @access public
+ * @category System
  */
 function wp_clear_object_cache() {
 	global $wpdb, $wp_object_cache;
