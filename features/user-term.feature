@@ -48,7 +48,7 @@ Feature: Manage user term
     When I run `wp user term set 1 user_type new`
     Then STDOUT should be:
       """
-      Success: Set terms.
+      Success: Set term.
       """
 
     When I run `wp user term list 1 user_type --fields=name,slug,taxonomy --format=count`
@@ -60,7 +60,7 @@ Feature: Manage user term
     When I run `wp user term remove 1 user_type new`
     Then STDOUT should be:
       """
-      Success: Deleted term.
+      Success: Removed term.
       """
 
     When I run `wp user term list 1 user_type --fields=name,slug,taxonomy --format=count`

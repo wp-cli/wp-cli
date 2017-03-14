@@ -129,10 +129,11 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		}
 		$result = wp_remove_object_terms( $object_id, $terms, $taxonomy );
 
+		$label = count( $terms ) > 1 ? 'terms' : 'term';
 		if ( ! is_wp_error( $result ) ) {
-			WP_CLI::success( "Deleted term." );
+			WP_CLI::success( "Removed {$label}." );
 		} else {
-			WP_CLI::error( "Failed to delete term." );
+			WP_CLI::error( "Failed to remove {$label}." );
 		}
 	}
 
@@ -172,10 +173,11 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		}
 		$result = wp_set_object_terms( $object_id, $terms, $taxonomy, true );
 
+		$label = count( $terms ) > 1 ? 'terms' : 'term';
 		if ( ! is_wp_error( $result ) ) {
-			WP_CLI::success( "Added term." );
+			WP_CLI::success( "Added {$label}." );
 		} else {
-			WP_CLI::error( "Failed to add term." );
+			WP_CLI::error( "Failed to add {$label}." );
 		}
 	}
 
@@ -215,10 +217,11 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		}
 		$result = wp_set_object_terms( $object_id, $terms, $taxonomy, false );
 
+		$label = count( $terms ) > 1 ? 'terms' : 'term';
 		if ( ! is_wp_error( $result ) ) {
-			WP_CLI::success( "Set terms." );
+			WP_CLI::success( "Set {$label}." );
 		} else {
-			WP_CLI::error( "Failed to set terms." );
+			WP_CLI::error( "Failed to set {$label}." );
 		}
 	}
 
