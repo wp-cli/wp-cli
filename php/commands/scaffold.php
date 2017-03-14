@@ -305,6 +305,9 @@ class Scaffold_Command extends WP_CLI_Command {
 		unlink( $tmpfname );
 
 		if ( true === $unzip_result ) {
+			$this->create_files( array(
+				"$theme_path/{$theme_slug}/.editorconfig" => file_get_contents( WP_CLI_ROOT . "/templates/.editorconfig" ),
+			), false );
 			WP_CLI::success( "Created theme '{$data['theme_name']}'." );
 		} else {
 			WP_CLI::error( "Could not decompress your theme files ('{$tmpfname}') at '{$theme_path}': {$unzip_result->get_error_message()}" );
@@ -391,7 +394,8 @@ class Scaffold_Command extends WP_CLI_Command {
 		$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
 		$files_written = $this->create_files( array(
 			$theme_style_path => Utils\mustache_render( 'child_theme.mustache', $data ),
-			$theme_functions_path => Utils\mustache_render( 'child_theme_functions.mustache', $data )
+			$theme_functions_path => Utils\mustache_render( 'child_theme_functions.mustache', $data ),
+			"$theme_dir/.editorconfig" => file_get_contents( WP_CLI_ROOT . "/templates/.editorconfig" ),
 		), $force );
 		$this->log_whether_files_written(
 			$files_written,
