@@ -116,12 +116,12 @@ When looking for support, please first search for your question in these venues:
 * [Threads tagged 'WP-CLI' in the WordPress.org support forum](https://wordpress.org/support/topic-tag/wp-cli/)
 * [Questions tagged 'WP-CLI' in the WordPress StackExchange](https://wordpress.stackexchange.com/questions/tagged/wp-cli)
 
-If you haven't found an answer in one of the venues above, you can:
+If you didn't find an answer in one of the venues above, you can:
 
-* Join the `#cli` channel in the [WordPress.org Slack](https://make.wordpress.org/chat/) to chat with the community.
-* [Create a new thread](https://wordpress.org/support/forum/wp-advanced/#new-post) in the WordPress.org support forum. Make sure to tag it 'WP-CLI' so it's seen by the community.
+* Join the `#cli` channel in the [WordPress.org Slack](https://make.wordpress.org/chat/) to chat with whomever might be available at the time. This option is best for quick questions.
+* [Post a new thread](https://wordpress.org/support/forum/wp-advanced/#new-post) in the WordPress.org support forum and tag it 'WP-CLI' so it's seen by the community.
 
-GitHub issues are meant for tracking enhancements and bugs of existing commands, not general support. Before submitting a bug report, please [review our best practices](https://wp-cli.org/docs/bug-reports/) to help ensure your issue is addressed in a timely manner.
+GitHub issues are meant for tracking enhancements to and bugs of existing commands, not general support. Before submitting a bug report, please [review our best practices](https://wp-cli.org/docs/bug-reports/) to help ensure your issue is addressed in a timely manner.
 
 Please do not ask support questions on Twitter. Twitter isn't an acceptable venue for support because: 1) it's hard to hold conversations in under 140 characters, and 2) Twitter isn't a place where someone with your same question can search for an answer in a prior conversation.
 
