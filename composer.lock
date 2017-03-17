@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "c5886a6f708003f759bd59ebb7018776",
+    "content-hash": "1d2d9ff12098e0861582eec5b028f36a",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1810,6 +1810,53 @@
             "description": "Launch PHP's built-in web server for this specific WordPress installation.",
             "homepage": "https://github.com/wp-cli/server-command",
             "time": "2017-03-13T21:48:36+00:00"
+        },
+        {
+            "name": "wp-cli/shell-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/shell-command.git",
+                "reference": "d943f148e59bfbb601540f1710889be3dce908bc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/shell-command/zipball/d943f148e59bfbb601540f1710889be3dce908bc",
+                "reference": "d943f148e59bfbb601540f1710889be3dce908bc",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "commands": [
+                    "shell"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/",
+                    "WP_CLI\\": "src/WP_CLI"
+                },
+                "files": [
+                    "shell-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Interactive PHP console.",
+            "homepage": "https://github.com/wp-cli/shell-command",
+            "time": "2017-03-17T12:25:40+00:00"
         }
     ],
     "packages-dev": [
