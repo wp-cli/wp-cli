@@ -12,6 +12,12 @@
 	"bin": [
 		"bin/wp.bat", "bin/wp"
 	],
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/schlessera/composer-changelogs"
+		}
+	],
 	"require": {
 		"php": ">=5.3.29",
 		"wp-cli/php-cli-tools": "~0.11.2",
@@ -39,7 +45,7 @@
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",
 		"behat/behat": "2.5.*",
-		"pyrech/composer-changelogs": "^1.5"
+		"pyrech/composer-changelogs": "dev-php53"
 	},
 	"suggest": {
 		"psy/psysh": "Enhanced `wp shell` functionality"
