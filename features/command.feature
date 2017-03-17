@@ -53,6 +53,12 @@ Feature: WP-CLI Commands
       wp server [--host=<host>]
       """
 
+    When I run `wp shell --help`
+    Then STDOUT should contain:
+      """
+      wp shell [--basic]
+      """
+
   Scenario: Invalid class is specified for a command
     Given an empty directory
     And a custom-cmd.php file:
