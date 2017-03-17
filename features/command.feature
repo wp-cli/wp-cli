@@ -47,6 +47,12 @@ Feature: WP-CLI Commands
       wp search-replace <old> <new>
       """
 
+    When I run `wp server --help`
+    Then STDOUT should contain:
+      """
+      wp server [--host=<host>]
+      """
+
   Scenario: Invalid class is specified for a command
     Given an empty directory
     And a custom-cmd.php file:
