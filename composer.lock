@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "be3561fa88ed348c8939f369ffa3a389",
+    "content-hash": "c24e8d5eed190c0f1523ea37e638b6f8",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2062,21 +2062,21 @@
         },
         {
             "name": "pyrech/composer-changelogs",
-            "version": "v1.5.1",
+            "version": "dev-php53",
             "source": {
                 "type": "git",
-                "url": "https://github.com/pyrech/composer-changelogs.git",
-                "reference": "e02cdc091b893774222b0885afcfad3c49ba9382"
+                "url": "https://github.com/schlessera/composer-changelogs.git",
+                "reference": "054b936ac6f7d43980e34c58c8b00cbc1c17842b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pyrech/composer-changelogs/zipball/e02cdc091b893774222b0885afcfad3c49ba9382",
-                "reference": "e02cdc091b893774222b0885afcfad3c49ba9382",
+                "url": "https://api.github.com/repos/schlessera/composer-changelogs/zipball/054b936ac6f7d43980e34c58c8b00cbc1c17842b",
+                "reference": "054b936ac6f7d43980e34c58c8b00cbc1c17842b",
                 "shasum": ""
             },
             "require": {
                 "composer-plugin-api": "^1.0|^1.1",
-                "php": ">=5.4.0"
+                "php": ">=5.3.0"
             },
             "require-dev": {
                 "composer/composer": "~1.0.0-alpha10@dev",
@@ -2096,7 +2096,22 @@
                     "Pyrech\\ComposerChangelogs\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Pyrech\\ComposerChangelogs\\tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "cs": [
+                    "vendor/bin/php-cs-fixer fix --config-file=.php_cs --diff --dry-run"
+                ],
+                "fix-cs": [
+                    "vendor/bin/php-cs-fixer fix --config-file=.php_cs --diff"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -2113,12 +2128,17 @@
                 "plugin",
                 "update"
             ],
-            "time": "2017-01-10T20:21:21+00:00"
+            "support": {
+                "source": "https://github.com/schlessera/composer-changelogs/tree/php52"
+            },
+            "time": "2017-03-14T18:13:46+00:00"
         }
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "pyrech/composer-changelogs": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
