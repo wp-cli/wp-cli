@@ -218,12 +218,17 @@ class Configurator {
 		if ( ! empty( $yaml['_']['inherit'] ) ) {
 			$this->merge_yml( $yaml['_']['inherit'], $current_alias );
 		}
+		// Prepare the base path for absolutized alias paths
+		$yml_file_dir = $path ? dirname( $path ) : false;
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
 				$this->aliases[ $key ] = array();
 				$is_alias = false;
 				foreach( self::$alias_spec as $i ) {
 					if ( isset( $value[ $i ] ) ) {
+						if ( 'path' === $i && ! isset( $value['ssh'] ) ) {
+							self::absolutize( $value[ $i ], $yml_file_dir );
+						}
 						$this->aliases[ $key ][ $i ] = $value[ $i ];
 						$is_alias = true;
 					}
