@@ -13,6 +13,7 @@ Feature: WordPress code scaffolding
       """
       Success: Created '{THEME_DIR}/zombieland'.
       """
+    And the {THEME_DIR}/zombieland/.editorconfig file should exist
 
   Scenario: Scaffold a child theme with only --parent_theme parameter
     Given a WP install
@@ -308,6 +309,7 @@ Feature: WordPress code scaffolding
       Success: Created theme 'Starter-theme'.
       """
     And the {THEME_DIR}/starter-theme/style.css file should exist
+    And the {THEME_DIR}/starter-theme/.editorconfig file should exist
 
   Scenario: Scaffold starter code for a theme with sass
     Given a WP install

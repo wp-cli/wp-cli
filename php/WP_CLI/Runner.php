@@ -794,13 +794,6 @@ class Runner {
 			exit;
 		}
 
-		// Protect 'package' commands from most of the runtime too,
-		// except when the command will be run over SSH
-		if ( 'package' === $this->arguments[0] && ! $this->config['ssh'] ) {
-			$this->_run_command();
-			exit;
-		}
-
 		if ( isset( $this->config['http'] ) && ! class_exists( '\WP_REST_CLI\Runner' ) ) {
 			WP_CLI::error( "RESTful WP-CLI needs to be installed. Try 'wp package install wp-cli/restful'." );
 		}
