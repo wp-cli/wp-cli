@@ -106,19 +106,22 @@ source /FULL/PATH/TO/wp-completion.bash
 
 ## Support
 
-WP-CLI's maintainers and project contributors have limited availability to address general support questions. The [current version of WP-CLI](https://wp-cli.org/docs/roadmap/) is the only officially supported version.
+WP-CLI's maintainers and contributors have limited availability to address general support questions. The [current version of WP-CLI](https://wp-cli.org/docs/roadmap/) is the only officially supported version.
 
-When looking for support, please first look for an answer in one of the following resources:
+When looking for support, please first search for your question in these venues:
 
-- [Common issues and their fixes](https://wp-cli.org/docs/common-issues/)
-- [Documentation portal](https://wp-cli.org/docs/)
-- [Open or closed issues on Github](https://github.com/wp-cli/wp-cli/issues?utf8=%E2%9C%93&q=is%3Aissue)
-- [runcommand tips](https://runcommand.io/tips/)
-- [WordPress StackExchange forums](https://wordpress.stackexchange.com/questions/tagged/wp-cli)
+* [Common issues and their fixes](https://wp-cli.org/docs/common-issues/)
+* [WP-CLI Documentation portal](https://wp-cli.org/docs/)
+* [Open or closed issues in the WP-CLI GitHub organization](https://github.com/issues?utf8=%E2%9C%93&q=sort%3Aupdated-desc+org%3Awp-cli+is%3Aissue)
+* [Threads tagged 'WP-CLI' in the WordPress.org support forum](https://wordpress.org/support/topic-tag/wp-cli/)
+* [Questions tagged 'WP-CLI' in the WordPress StackExchange](https://wordpress.stackexchange.com/questions/tagged/wp-cli)
 
-You can also join the `#cli` channel on the [WordPress.org Slack organization](https://make.wordpress.org/chat/) to see if a community member might have an answer for you.
+If you haven't found an answer in one of the venues above, you can:
 
-Github issues are meant for tracking enhancements and bugs of existing commands, not general support. Before submitting a bug report, please [review our best practices](https://wp-cli.org/docs/bug-reports/) to help ensure your issue is addressed in a timely manner.
+* Join the `#cli` channel in the [WordPress.org Slack](https://make.wordpress.org/chat/) to chat with the community.
+* [Create a new thread](https://wordpress.org/support/forum/wp-advanced/#new-post) in the WordPress.org support forum. Make sure to tag it 'WP-CLI' so it's seen by the community.
+
+GitHub issues are meant for tracking enhancements and bugs of existing commands, not general support. Before submitting a bug report, please [review our best practices](https://wp-cli.org/docs/bug-reports/) to help ensure your issue is addressed in a timely manner.
 
 Please do not ask support questions on Twitter. Twitter isn't an acceptable venue for support because: 1) it's hard to hold conversations in under 140 characters, and 2) Twitter isn't a place where someone with your same question can search for an answer in a prior conversation.
 
