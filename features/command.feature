@@ -17,10 +17,40 @@ Feature: WP-CLI Commands
       or: wp db cli
       """
 
+    When I run `wp export --help`
+    Then STDOUT should contain:
+      """
+      wp export [--dir=<dirname>]
+      """
+
     When I run `wp import --help`
     Then STDOUT should contain:
       """
       wp import <file>... --authors=<authors>
+      """
+
+    When I run `wp media`
+    Then STDOUT should contain:
+      """
+      or: wp media regenerate
+      """
+
+    When I run `wp package`
+    Then STDOUT should contain:
+      """
+      or: wp package install
+      """
+
+    When I run `wp search-replace --help`
+    Then STDOUT should contain:
+      """
+      wp search-replace <old> <new>
+      """
+
+    When I run `wp server --help`
+    Then STDOUT should contain:
+      """
+      wp server [--host=<host>]
       """
 
   Scenario: Invalid class is specified for a command
