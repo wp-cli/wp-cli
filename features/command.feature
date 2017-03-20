@@ -23,6 +23,12 @@ Feature: WP-CLI Commands
       wp export [--dir=<dirname>]
       """
 
+    When I run `wp eval --help`
+    Then STDOUT should contain:
+      """
+      wp eval <php-code>
+      """
+
     When I run `wp import --help`
     Then STDOUT should contain:
       """
