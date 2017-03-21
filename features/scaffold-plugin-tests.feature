@@ -82,7 +82,7 @@ Feature: Scaffold plugin unit tests
       """
           - |
             rm -rf $WP_TESTS_DIR $WP_CORE_DIR
-            bash bin/install-wp-tests.sh wordpress_test ubuntu '' 127.0.0.1 3.7
+            bash bin/install-wp-tests.sh wordpress_test ubuntu '' 127.0.0.1 4.4
             phpunit
           - |
             rm -rf $WP_TESTS_DIR $WP_CORE_DIR
