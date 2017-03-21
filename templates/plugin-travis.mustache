@@ -15,33 +15,45 @@ cache:
   - composer
   - $HOME/.composer/cache
 
-php:
-  - 5.3
-  - 5.6
-
-env:
-{{#wp_versions_to_test}}
-  - WP_VERSION={{.}} WP_MULTISITE=0
-{{/wp_versions_to_test}}
-
 matrix:
   include:
+    - php: 7.1
+      env: WP_VERSION=latest
+    - php: 7.0
+      env: WP_VERSION=latest
+    {{#wp_versions_to_test}}
+    - php: 5.6
+      env: WP_VERSION={{.}}
+    {{/wp_versions_to_test}}
+    - php: 5.6
+      env: WP_TRAVISCI=phpcs
     - php: 5.3
-      env: WP_VERSION=latest WP_MULTISITE=1
+      env: WP_VERSION=latest
 
 before_script:
-  - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - |
-    if [[ ${TRAVIS_PHP_VERSION:0:2} == "7." ]]; then
-      composer global require "phpunit/phpunit=5.7.*"
-    else
-      composer global require "phpunit/phpunit=4.8.*"
+    if [[ ! -z "$WP_VERSION" ]] ; then
+      bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
+      if [[ ${TRAVIS_PHP_VERSION:0:2} == "7." ]]; then
+        composer global require "phpunit/phpunit=5.7.*"
+      else
+        composer global require "phpunit/phpunit=4.8.*"
+      fi
     fi
   - |
-    composer global require wp-coding-standards/wpcs
-    phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs
+    if [[ "$WP_TRAVISCI" == "phpcs" ]] ; then
+      composer global require wp-coding-standards/wpcs
+      phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs
+    fi
 
 script:
-  - phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
-  - phpunit
+  - |
+    if [[ ! -z "$WP_VERSION" ]] ; then
+      phpunit
+      WP_MULTISITE=1 phpunit
+    fi
+  - |
+    if [[ "$WP_TRAVISCI" == "phpcs" ]] ; then
+      phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
+    fi
