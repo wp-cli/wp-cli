@@ -69,6 +69,7 @@ Feature: Manage WordPress rewrites
     When I run `wp rewrite structure /%year%/%monthnum%/%day%/%postname%/ --hard`
     Then the .htaccess file should exist
     And the return code should be 0
+    And STDERR should be empty
 
   Scenario: Generate .htaccess on hard flush with a global config
     Given a WP install
@@ -80,6 +81,7 @@ Feature: Manage WordPress rewrites
     When I run `WP_CLI_CONFIG_PATH=config.yml wp rewrite structure /%year%/%monthnum%/%day%/%postname%/ --hard`
     Then the .htaccess file should exist
     And the return code should be 0
+    And STDERR should be empty
 
   Scenario: Error when trying to generate .htaccess on a multisite install
     Given a WP multisite install
@@ -93,6 +95,10 @@ Feature: Manage WordPress rewrites
       """
       Warning: WordPress can't generate .htaccess file for a multisite install.
       """
+    And STDOUT should be:
+      """
+      Success: Rewrite rules flushed.
+      """
     And the return code should be 0
 
     When I try `wp rewrite structure /%year%/%monthnum%/%day%/%postname%/ --hard`
@@ -100,4 +106,32 @@ Feature: Manage WordPress rewrites
       """
       Warning: WordPress can't generate .htaccess file for a multisite install.
       """
+    And STDOUT should be:
+      """
+      Success: Rewrite rules flushed.
+      Success: Rewrite structure set.
+      """
     And the return code should be 0
+
+  Scenario: Warn the user when --skip-plugins or --skip-themes is used
+    Given a WP install
+
+    When I run `wp --skip-plugins rewrite flush`
+    Then STDERR should contain:
+      """
+      Warning: Some rewrite rules may be missing because plugins weren't loaded.
+      """
+    And the return code should be 0
+
+    When I run `wp --skip-plugins --skip-themes rewrite flush`
+    Then STDERR should contain:
+      """
+      Warning: Some rewrite rules may be missing because plugins and themes weren't loaded.
+      """
+    And the return code should be 0
+
+    When I run `wp rewrite flush`
+    Then STDERR should not contain:
+      """
+      Warning: Some rewrite rules may be missing
+      """

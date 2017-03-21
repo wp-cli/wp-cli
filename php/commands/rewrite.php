@@ -61,6 +61,8 @@ class Rewrite_Command extends WP_CLI_Command {
 			WP_CLI::warning( "WordPress can't generate .htaccess file for a multisite install." );
 		}
 
+		self::check_skip_plugins_themes();
+
 		flush_rewrite_rules( \WP_CLI\Utils\get_flag_value( $assoc_args, 'hard' ) );
 
 		if ( ! get_option( 'rewrite_rules' ) ) {
@@ -211,6 +213,8 @@ class Rewrite_Command extends WP_CLI_Command {
 			WP_CLI::warning( 'No rewrite rules.' );
 		}
 
+		self::check_skip_plugins_themes();
+
 		$defaults = array(
 			'source' => '',
 			'match'  => '',
@@ -305,6 +309,27 @@ class Rewrite_Command extends WP_CLI_Command {
 				return WP_CLI::get_config( 'apache_modules' );
 			}
 		}
+	}
+
+	/**
+	 * Display a warning if --skip-plugins or --skip-themes are in use.
+	 *
+	 * Skipping the loading of plugins or themes can mean some rewrite rules
+	 * are unregistered, which may cause erroneous behavior.
+	 */
+	private static function check_skip_plugins_themes() {
+		$skipped = array();
+		if ( WP_CLI::get_config( 'skip-plugins' ) ) {
+			$skipped[] = 'plugins';
+		}
+		if ( WP_CLI::get_config( 'skip-themes' ) ) {
+			$skipped[] = 'themes';
+		}
+		if ( empty( $skipped ) ) {
+			return;
+		}
+		$skipped = implode( ' and ', $skipped );
+		WP_CLI::warning( sprintf( "Some rewrite rules may be missing because %s weren't loaded.", $skipped ) );
 	}
 }
 
