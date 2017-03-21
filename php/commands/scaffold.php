@@ -726,7 +726,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		$wp_filesystem->mkdir( $tests_dir );
 		$wp_filesystem->mkdir( $bin_dir );
 
-		$wp_versions_to_test = array('latest');
+		$wp_versions_to_test = array();
 		// Parse plugin readme.txt
 		if ( file_exists( $target_dir . '/readme.txt' ) ) {
 			$readme_content = file_get_contents( $target_dir . '/readme.txt' );
@@ -735,11 +735,9 @@ class Scaffold_Command extends WP_CLI_Command {
 			if ( isset( $matches[1] ) && $matches[1] ) {
 				$wp_versions_to_test[] = trim( $matches[1] );
 			}
-			preg_match( '/Tested up to\:(.*)\n/m', $readme_content, $matches );
-			if ( isset( $matches[1] ) && $matches[1] ) {
-				$wp_versions_to_test[] = trim( $matches[1] );
-			}
 		}
+		$wp_versions_to_test[] = 'latest';
+		$wp_versions_to_test[] = 'trunk';
 
 		$template_data = array(
 			"{$type}_slug"    => $slug,
