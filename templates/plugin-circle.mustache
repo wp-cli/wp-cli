@@ -22,4 +22,5 @@ test:
       rm -rf $WP_TESTS_DIR $WP_CORE_DIR
       bash bin/install-wp-tests.sh wordpress_test ubuntu '' 127.0.0.1 {{.}}
       phpunit
+      WP_MULTISITE=1 phpunit
     {{/wp_versions_to_test}}
