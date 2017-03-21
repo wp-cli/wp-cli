@@ -78,6 +78,21 @@ Feature: Scaffold plugin unit tests
       """
       version: 5.6.22
       """
+    And the {PLUGIN_DIR}/circle.yml file should contain:
+      """
+          - |
+            rm -rf $WP_TESTS_DIR $WP_CORE_DIR
+            bash bin/install-wp-tests.sh wordpress_test ubuntu '' 127.0.0.1 3.7
+            phpunit
+          - |
+            rm -rf $WP_TESTS_DIR $WP_CORE_DIR
+            bash bin/install-wp-tests.sh wordpress_test ubuntu '' 127.0.0.1 latest
+            phpunit
+          - |
+            rm -rf $WP_TESTS_DIR $WP_CORE_DIR
+            bash bin/install-wp-tests.sh wordpress_test ubuntu '' 127.0.0.1 trunk
+            phpunit
+      """
 
   Scenario: Scaffold plugin tests with Gitlab as the provider
     Given a WP install
