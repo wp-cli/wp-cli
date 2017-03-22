@@ -39,8 +39,32 @@ Feature: Scaffold theme unit tests
     And the {THEME_DIR}/p2child/.travis.yml file should contain:
       """
       script:
-        - phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
-        - phpunit
+        - |
+          if [[ ! -z "$WP_VERSION" ]] ; then
+            phpunit
+            WP_MULTISITE=1 phpunit
+          fi
+        - |
+          if [[ "$WP_TRAVISCI" == "phpcs" ]] ; then
+            phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
+          fi
+      """
+    And the {THEME_DIR}/p2child/.travis.yml file should contain:
+      """
+      matrix:
+        include:
+          - php: 7.1
+            env: WP_VERSION=latest
+          - php: 7.0
+            env: WP_VERSION=latest
+          - php: 5.6
+            env: WP_VERSION=latest
+          - php: 5.6
+            env: WP_VERSION=trunk
+          - php: 5.6
+            env: WP_TRAVISCI=phpcs
+          - php: 5.3
+            env: WP_VERSION=latest
       """
 
     When I run `wp eval "if ( is_executable( '{THEME_DIR}/p2child/bin/install-wp-tests.sh' ) ) { echo 'executable'; } else { exit( 1 ); }"`
