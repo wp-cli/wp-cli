@@ -12,6 +12,8 @@
 	"bin": [
 		"bin/wp.bat", "bin/wp"
 	],
+	"minimum-stability": "dev",
+	"prefer-stable": true,
 	"require": {
 		"php": ">=5.3.29",
 		"wp-cli/php-cli-tools": "~0.11.2",
