@@ -23,6 +23,12 @@ Feature: WP-CLI Commands
       wp export [--dir=<dirname>]
       """
 
+    When I run `wp eval --help`
+    Then STDOUT should contain:
+      """
+      wp eval <php-code>
+      """
+
     When I run `wp import --help`
     Then STDOUT should contain:
       """
@@ -51,6 +57,12 @@ Feature: WP-CLI Commands
     Then STDOUT should contain:
       """
       wp server [--host=<host>]
+      """
+
+    When I run `wp shell --help`
+    Then STDOUT should contain:
+      """
+      wp shell [--basic]
       """
 
   Scenario: Invalid class is specified for a command
