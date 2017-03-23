@@ -21,6 +21,9 @@ final class RunnerInstance {
 	public function __invoke() {
 		if ( ! class_exists( 'WP_CLI\Runner' ) ) {
 			require_once WP_CLI_ROOT . '/php/WP_CLI/Runner.php';
+		}
+
+		if ( ! class_exists( 'WP_CLI\Configurator' ) ) {
 			require_once WP_CLI_ROOT . '/php/WP_CLI/Configurator.php';
 		}
 
