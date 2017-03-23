@@ -70,7 +70,7 @@ class Runner {
 	 *
 	 * @return string|false
 	 */
-	private function get_global_config_path() {
+	public function get_global_config_path() {
 
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
@@ -95,7 +95,7 @@ class Runner {
 	 *
 	 * @return string|false
 	 */
-	private function get_project_config_path() {
+	public function get_project_config_path() {
 		$config_files = array(
 			'wp-cli.local.yml',
 			'wp-cli.yml'
@@ -605,6 +605,10 @@ class Runner {
 
 		WP_CLI::set_logger( $logger );
 	}
+
+	public function get_required_files() {
+	    return $this->_required_files;
+    }
 
 	/**
 	 * Do WordPress core files exist?
