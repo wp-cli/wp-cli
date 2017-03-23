@@ -263,7 +263,7 @@ Feature: Create shortcuts to specific WordPress installs
         path: subdir2
       """
 
-    When I run `wp @all option get home | wc -l`
+    When I run `wp @all option get home | wc -l | tr -d ' '`
     Then STDOUT should be:
       """
       1
