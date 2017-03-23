@@ -29,7 +29,7 @@ final class LoadRequiredCommand implements BootstrapStep {
 			if ( ! file_exists( $path ) ) {
 				$context = '';
 				foreach ( array( 'global', 'project', 'runtime' ) as $scope ) {
-					if ( in_array( $path, $runner()->_required_files[ $scope ], true ) ) {
+					if ( in_array( $path, (array) $runner()->_required_files[ $scope ], true ) ) {
 						switch ( $scope ) {
 							case 'global':
 								$context = ' (from global ' . Utils\basename( $runner()->global_config_path ) . ')';
