@@ -6,6 +6,7 @@ use \WP_CLI\FileCache;
 use \WP_CLI\Process;
 use \WP_CLI\WpHttpCacheManager;
 use \WP_CLI\Utils;
+use Mustangostang\Spyc;
 
 /**
  * Various utilities for WP-CLI commands.
@@ -458,7 +459,7 @@ class WP_CLI {
 						}
 					}
 					if ( ! empty( $yamlify ) ) {
-						$long_desc .= \Spyc::YAMLDump( $yamlify );
+						$long_desc .= Spyc::YAMLDump( $yamlify );
 						$long_desc .= '---' . PHP_EOL;
 					}
 					$long_desc .= PHP_EOL;

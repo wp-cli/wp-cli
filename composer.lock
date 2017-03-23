@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "7f227d4d28406cae1179ac71942228ee",
+    "content-hash": "066185f98c33a0485b8a426d96f5ec6c",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -379,16 +379,16 @@
         },
         {
             "name": "mustangostang/spyc",
-            "version": "dev-master",
+            "version": "dev-autoload",
             "source": {
                 "type": "git",
-                "url": "https://github.com/mustangostang/spyc.git",
-                "reference": "1cea7c15324025cd7b62c8d47c10e1e94f634c1e"
+                "url": "https://github.com/wp-cli/spyc.git",
+                "reference": "ba0a585f5b4c870416f9c3afa3c1d5e21e6c5f55"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mustangostang/spyc/zipball/1cea7c15324025cd7b62c8d47c10e1e94f634c1e",
-                "reference": "1cea7c15324025cd7b62c8d47c10e1e94f634c1e",
+                "url": "https://api.github.com/repos/wp-cli/spyc/zipball/ba0a585f5b4c870416f9c3afa3c1d5e21e6c5f55",
+                "reference": "ba0a585f5b4c870416f9c3afa3c1d5e21e6c5f55",
                 "shasum": ""
             },
             "require": {
@@ -404,11 +404,13 @@
                 }
             },
             "autoload": {
+                "psr-4": {
+                    "Mustangostang\\": "src/"
+                },
                 "files": [
-                    "Spyc.php"
+                    "includes/functions.php"
                 ]
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -425,7 +427,10 @@
                 "yaml",
                 "yml"
             ],
-            "time": "2017-02-24T16:06:33+00:00"
+            "support": {
+                "source": "https://github.com/wp-cli/spyc/tree/autoload"
+            },
+            "time": "2017-03-23 09:10:08"
         },
         {
             "name": "nb/oxymel",
@@ -611,16 +616,16 @@
         },
         {
             "name": "seld/cli-prompt",
-            "version": "1.0.2",
+            "version": "1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/cli-prompt.git",
-                "reference": "8cbe10923cae5bcd7c5a713f6703fc4727c8c1b4"
+                "reference": "a19a7376a4689d4d94cab66ab4f3c816019ba8dd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/cli-prompt/zipball/8cbe10923cae5bcd7c5a713f6703fc4727c8c1b4",
-                "reference": "8cbe10923cae5bcd7c5a713f6703fc4727c8c1b4",
+                "url": "https://api.github.com/repos/Seldaek/cli-prompt/zipball/a19a7376a4689d4d94cab66ab4f3c816019ba8dd",
+                "reference": "a19a7376a4689d4d94cab66ab4f3c816019ba8dd",
                 "shasum": ""
             },
             "require": {
@@ -655,7 +660,7 @@
                 "input",
                 "prompt"
             ],
-            "time": "2016-04-18T09:31:41+00:00"
+            "time": "2017-03-18T11:32:45+00:00"
         },
         {
             "name": "seld/jsonlint",
@@ -2483,7 +2488,14 @@
             "time": "2017-03-16T14:24:35+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "alias": "6.0.x-dev",
+            "alias_normalized": "6.0.9999999.9999999-dev",
+            "version": "dev-autoload",
+            "package": "mustangostang/spyc"
+        }
+    ],
     "minimum-stability": "stable",
     "stability-flags": {
         "mustangostang/spyc": 20,
