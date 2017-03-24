@@ -607,8 +607,8 @@ class Runner {
 	}
 
 	public function get_required_files() {
-	    return $this->_required_files;
-    }
+		return $this->_required_files;
+	}
 
 	/**
 	 * Do WordPress core files exist?
