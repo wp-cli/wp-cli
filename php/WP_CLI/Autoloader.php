@@ -121,9 +121,9 @@ class Autoloader {
 
 			// Add base_dir, prefix and suffix.
 			$filepath = $namespace['base_dir']
-			            . $namespace['prefix']
-			            . $filename
-			            . $namespace['suffix'];
+				. $namespace['prefix']
+				. $filename
+				. $namespace['suffix'];
 
 			// Throw an exception if the file does not exist or is not readable.
 			if ( is_readable( $filepath ) ) {

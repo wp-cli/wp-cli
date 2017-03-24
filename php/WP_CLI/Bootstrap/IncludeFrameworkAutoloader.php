@@ -44,7 +44,7 @@ final class IncludeFrameworkAutoloader extends AutoloaderStep {
 		$composer = json_decode( file_get_contents( $maybe_composer_json ) );
 
 		if ( ! empty( $composer->config )
-		     && ! empty( $composer->config->{'vendor-dir'} )
+			&& ! empty( $composer->config->{'vendor-dir'} )
 		) {
 			array_unshift(
 				$autoloader_paths,
