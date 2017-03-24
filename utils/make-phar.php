@@ -2,7 +2,17 @@
 
 define( 'WP_CLI_ROOT', dirname( dirname( __FILE__ ) ) );
 
-require WP_CLI_ROOT . '/vendor/autoload.php';
+if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
+	define( 'WP_CLI_BASE_PATH', WP_CLI_ROOT );
+	define( 'WP_CLI_VENDOR_DIR' , WP_CLI_ROOT . '/vendor' );
+} elseif ( file_exists( dirname( dirname( WP_CLI_ROOT ) ) . '/autoload.php' ) ) {
+	define( 'WP_CLI_BASE_PATH', dirname( dirname( dirname( WP_CLI_ROOT ) ) ) );
+	define( 'WP_CLI_VENDOR_DIR' , dirname( dirname( WP_CLI_ROOT ) ) );
+} else {
+	echo 'Missing vendor/autoload.php';
+	exit(1);
+}
+require WP_CLI_VENDOR_DIR . '/autoload.php';
 require WP_CLI_ROOT . '/php/utils.php';
 
 use Symfony\Component\Finder\Finder;
@@ -36,7 +46,7 @@ if ( isset( $runtime_config['version'] ) ) {
 }
 
 function add_file( $phar, $path ) {
-	$key = str_replace( WP_CLI_ROOT, '', $path );
+	$key = str_replace( WP_CLI_BASE_PATH, '', $path );
 
 	if ( !BE_QUIET )
 		echo "$key - $path\n";
@@ -45,7 +55,7 @@ function add_file( $phar, $path ) {
 }
 
 function set_file_contents( $phar, $path, $content ) {
-	$key = str_replace( WP_CLI_ROOT, '', $path );
+	$key = str_replace( WP_CLI_BASE_PATH, '', $path );
 
 	if ( !BE_QUIET )
 		echo "$key - $path\n";
@@ -65,17 +75,17 @@ $finder
 	->name('*.php')
 	->in(WP_CLI_ROOT . '/php')
 	->in(WP_CLI_ROOT . '/features')
-	->in(WP_CLI_ROOT . '/vendor/wp-cli')
-	->in(WP_CLI_ROOT . '/vendor/mustache')
-	->in(WP_CLI_ROOT . '/vendor/rmccue/requests')
-	->in(WP_CLI_ROOT . '/vendor/composer')
-	->in(WP_CLI_ROOT . '/vendor/psr')
-	->in(WP_CLI_ROOT . '/vendor/seld')
-	->in(WP_CLI_ROOT . '/vendor/symfony')
-	->in(WP_CLI_ROOT . '/vendor/nb/oxymel')
-	->in(WP_CLI_ROOT . '/vendor/ramsey/array_column')
-	->in(WP_CLI_ROOT . '/vendor/mustangostang')
-	->in(WP_CLI_ROOT . '/vendor/justinrainbow/json-schema')
+	->in(WP_CLI_VENDOR_DIR . '/wp-cli')
+	->in(WP_CLI_VENDOR_DIR . '/mustache')
+	->in(WP_CLI_VENDOR_DIR . '/rmccue/requests')
+	->in(WP_CLI_VENDOR_DIR . '/composer')
+	->in(WP_CLI_VENDOR_DIR . '/psr')
+	->in(WP_CLI_VENDOR_DIR . '/seld')
+	->in(WP_CLI_VENDOR_DIR . '/symfony')
+	->in(WP_CLI_VENDOR_DIR . '/nb/oxymel')
+	->in(WP_CLI_VENDOR_DIR . '/ramsey/array_column')
+	->in(WP_CLI_VENDOR_DIR . '/mustangostang')
+	->in(WP_CLI_VENDOR_DIR . '/justinrainbow/json-schema')
 	->exclude('test')
 	->exclude('tests')
 	->exclude('Test')
@@ -85,6 +95,27 @@ $finder
 
 foreach ( $finder as $file ) {
 	add_file( $phar, $file );
+}
+
+// Include base project files, because the autoloader will load them
+if ( WP_CLI_BASE_PATH !== WP_CLI_ROOT ) {
+	$finder = new Finder();
+	$finder
+		->files()
+		->ignoreVCS(true)
+		->name('*.php')
+		->in(WP_CLI_BASE_PATH . '/src')
+		->exclude('test')
+		->exclude('tests')
+		->exclude('Test')
+		->exclude('Tests');
+	foreach ( $finder as $file ) {
+		add_file( $phar, $file );
+	}
+	// Any PHP files in the project root
+	foreach ( glob( WP_CLI_BASE_PATH . '/*.php' ) as $file ) {
+		add_file( $phar, $file );
+	}
 }
 
 // other files
@@ -100,20 +131,21 @@ foreach ( $finder as $file ) {
 	add_file( $phar, $file );
 }
 
-add_file( $phar, WP_CLI_ROOT . '/vendor/autoload.php' );
+add_file( $phar, WP_CLI_VENDOR_DIR . '/autoload.php' );
 add_file( $phar, WP_CLI_ROOT . '/ci/behat-tags.php' );
-add_file( $phar, WP_CLI_ROOT . '/vendor/composer/ca-bundle/res/cacert.pem' );
-add_file( $phar, WP_CLI_ROOT . '/vendor/composer/composer/LICENSE' );
-add_file( $phar, WP_CLI_ROOT . '/vendor/composer/composer/res/composer-schema.json' );
-add_file( $phar, WP_CLI_ROOT . '/vendor/rmccue/requests/library/Requests/Transport/cacert.pem' );
+add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/ca-bundle/res/cacert.pem' );
+add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/composer/LICENSE' );
+add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/composer/res/composer-schema.json' );
+add_file( $phar, WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests/Transport/cacert.pem' );
 
 set_file_contents( $phar, WP_CLI_ROOT . '/VERSION', $current_version );
 
+$phar_boot = str_replace( WP_CLI_BASE_PATH, '', WP_CLI_ROOT . '/php/boot-phar.php' );
 $phar->setStub( <<<EOB
 #!/usr/bin/env php
 <?php
 Phar::mapPhar();
-include 'phar://wp-cli.phar/php/boot-phar.php';
+include 'phar://wp-cli.phar/{$phar_boot}';
 __HALT_COMPILER();
 ?>
 EOB

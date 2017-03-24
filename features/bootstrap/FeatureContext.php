@@ -218,9 +218,21 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function build_phar( $version = 'same' ) {
 		$this->variables['PHAR_PATH'] = $this->variables['RUN_DIR'] . '/' . uniqid( "wp-cli-build-", TRUE ) . '.phar';
 
+		// Test running against WP-CLI proper
+		$make_phar_path = __DIR__ . '/../../utils/make-phar.php';
+		if ( ! file_exists( $make_phar_path ) ) {
+			// Test running against a package installed as a WP-CLI dependency
+			// WP-CLI installed as a project dependency
+			$make_phar_path = __DIR__ . '/../../../../../utils/make-phar.php';
+			if ( ! file_exists( $make_phar_path ) ) {
+				// WP-CLI as a dependency of this project
+				$make_phar_path = __DIR__ . '/../../vendor/wp-cli/wp-cli/utils/make-phar.php';
+			}
+		}
+
 		$this->proc( Utils\esc_cmd(
 			'php -dphar.readonly=0 %1$s %2$s --version=%3$s && chmod +x %2$s',
-			__DIR__ . '/../../utils/make-phar.php',
+			$make_phar_path,
 			$this->variables['PHAR_PATH'],
 			$version
 		) )->run_check();
