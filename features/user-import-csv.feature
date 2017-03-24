@@ -109,7 +109,7 @@ Feature: Import users from CSV
     And I run `wp user add-role billjones author`
     Then STDOUT should not be empty
 
-    When I run `wp user list --field=user_login | wc -l`
+    When I run `wp user list --field=user_login | wc -l | tr -d ' '`
     Then STDOUT should be:
       """
       2
@@ -121,7 +121,7 @@ Feature: Import users from CSV
     When I run `wp user delete $(wp user list --format=ids) --yes`
     Then STDOUT should not be empty
 
-    When I run `wp user list --field=user_login | wc -l`
+    When I run `wp user list --field=user_login | wc -l | tr -d ' '`
     Then STDOUT should be:
       """
       0
