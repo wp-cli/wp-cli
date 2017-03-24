@@ -40,6 +40,9 @@ $skip_tags = array_merge(
 # Skip Github API tests by default because of rate limiting. See https://github.com/wp-cli/wp-cli/issues/1612
 $skip_tags[] = '@github-api';
 
+# Skip tests known to be broken.
+$skip_tags[] = '@broken';
+
 if ( !empty( $skip_tags ) ) {
 	echo '--tags=~' . implode( '&&~', $skip_tags );
 }
