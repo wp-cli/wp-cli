@@ -3,7 +3,7 @@ Feature: Manage WordPress taxonomies
   Background:
     Given a WP install
 
-  @require-wp-3.7
+  @require-wp-3.7 @broken
   Scenario: Listing taxonomies
     When I run `wp taxonomy list --format=csv`
     Then STDOUT should be CSV containing:

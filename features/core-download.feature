@@ -42,6 +42,7 @@ Feature: Download WordPress
       Error: Release not found.
       """
 
+  @broken
   Scenario: Verify release hash when downloading new version
     Given an empty directory
 
