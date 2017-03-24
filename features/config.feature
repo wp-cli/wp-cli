@@ -315,6 +315,7 @@ Feature: Have a config file
       Running command: option get
       """
 
+  @broken
   Scenario: Missing required files should not fatal WP-CLI
     Given an empty directory
     And a wp-cli.yml file:
