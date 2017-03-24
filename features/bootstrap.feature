@@ -20,6 +20,7 @@ Feature: Bootstrap WP-CLI
       WP-CLI 1.1.0
       """
 
+  @broken
   Scenario: Composer stack with override requirement after WP-CLI
     Given an empty directory
     And a composer.json file:
@@ -86,6 +87,7 @@ Feature: Bootstrap WP-CLI
       WP-CLI 1.1.0
       """
 
+  @broken
   Scenario: Composer stack with override requirement before WP-CLI
     Given an empty directory
     And a composer.json file:

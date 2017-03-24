@@ -1,5 +1,6 @@
 Feature: Review CLI information
 
+  @broken
   Scenario: Get the path to the packages directory
     Given an empty directory
 
