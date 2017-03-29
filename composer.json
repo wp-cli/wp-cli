@@ -15,7 +15,7 @@
 	"repositories": [
 		{
 			"type": "vcs",
-			"url": "https://github.com/schlessera/composer-changelogs"
+			"url": "https://github.com/wp-cli/composer-changelogs"
 		}
 	],
 	"require": {
@@ -45,7 +45,7 @@
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",
 		"behat/behat": "2.5.*",
-		"pyrech/composer-changelogs": "dev-php53"
+		"pyrech/composer-changelogs": "dev-php53 as 1.5.1"
 	},
 	"suggest": {
 		"psy/psysh": "Enhanced `wp shell` functionality"

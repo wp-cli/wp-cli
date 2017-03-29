@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "c24e8d5eed190c0f1523ea37e638b6f8",
+    "content-hash": "a9329f139a8a790d53ecbe6495096a29",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2065,13 +2065,13 @@
             "version": "dev-php53",
             "source": {
                 "type": "git",
-                "url": "https://github.com/schlessera/composer-changelogs.git",
-                "reference": "054b936ac6f7d43980e34c58c8b00cbc1c17842b"
+                "url": "https://github.com/wp-cli/composer-changelogs.git",
+                "reference": "e9c26fa78a07642a089147ed1db070532b66176e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/schlessera/composer-changelogs/zipball/054b936ac6f7d43980e34c58c8b00cbc1c17842b",
-                "reference": "054b936ac6f7d43980e34c58c8b00cbc1c17842b",
+                "url": "https://api.github.com/repos/wp-cli/composer-changelogs/zipball/e9c26fa78a07642a089147ed1db070532b66176e",
+                "reference": "e9c26fa78a07642a089147ed1db070532b66176e",
                 "shasum": ""
             },
             "require": {
@@ -2129,12 +2129,19 @@
                 "update"
             ],
             "support": {
-                "source": "https://github.com/schlessera/composer-changelogs/tree/php52"
+                "source": "https://github.com/wp-cli/composer-changelogs/tree/php53"
             },
-            "time": "2017-03-14T18:13:46+00:00"
+            "time": "2017-03-29T14:27:14+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "alias": "1.5.1",
+            "alias_normalized": "1.5.1.0",
+            "version": "dev-php53",
+            "package": "pyrech/composer-changelogs"
+        }
+    ],
     "minimum-stability": "stable",
     "stability-flags": {
         "pyrech/composer-changelogs": 20
