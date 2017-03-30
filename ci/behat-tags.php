@@ -40,6 +40,26 @@ $skip_tags = array_merge(
 # Skip Github API tests by default because of rate limiting. See https://github.com/wp-cli/wp-cli/issues/1612
 $skip_tags[] = '@github-api';
 
+# Require PHP extension, eg 'imagick'.
+function extension_tags() {
+	$extension_tags = array();
+	exec( "grep '@require-extension-[A-Za-z_]*' -h -o features/*.feature | uniq", $extension_tags );
+
+	$skip_tags = array();
+
+	$substr_start = strlen( '@require-extension-' );
+	foreach ( $extension_tags as $tag ) {
+		$extension = substr( $tag, $substr_start );
+		if ( ! extension_loaded( $extension ) ) {
+			$skip_tags[] = $tag;
+		}
+	}
+
+	return $skip_tags;
+}
+
+$skip_tags = array_merge( $skip_tags, extension_tags() );
+
 if ( !empty( $skip_tags ) ) {
 	echo '--tags=~' . implode( '&&~', $skip_tags );
 }
