@@ -1815,20 +1815,20 @@
         },
         {
             "name": "wp-cli/server-command",
-            "version": "v1.0.1",
+            "version": "v1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/server-command.git",
-                "reference": "7d65b76420f8c8af7d4c8f55cb9542a6999a1658"
+                "reference": "1e9a7c1067dbb67fc03379d9fdd509291021beb9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/server-command/zipball/7d65b76420f8c8af7d4c8f55cb9542a6999a1658",
-                "reference": "7d65b76420f8c8af7d4c8f55cb9542a6999a1658",
+                "url": "https://api.github.com/repos/wp-cli/server-command/zipball/1e9a7c1067dbb67fc03379d9fdd509291021beb9",
+                "reference": "1e9a7c1067dbb67fc03379d9fdd509291021beb9",
                 "shasum": ""
             },
             "require": {
-                "wp-cli/wp-cli": "dev-master"
+                "wp-cli/wp-cli": "*"
             },
             "require-dev": {
                 "behat/behat": "~2.5"
@@ -1836,7 +1836,7 @@
             "type": "wp-cli-package",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.0.x-dev"
+                    "dev-master": "1.x-dev"
                 },
                 "commands": [
                     "server"
@@ -1863,7 +1863,7 @@
             ],
             "description": "Launch PHP's built-in web server for this specific WordPress installation.",
             "homepage": "https://github.com/wp-cli/server-command",
-            "time": "2017-03-30T14:56:31+00:00"
+            "time": "2017-03-30T18:25:50+00:00"
         },
         {
             "name": "wp-cli/shell-command",
