@@ -807,7 +807,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		return false;
 	}
 
-	private function create_files( $files_and_contents, $force ) {
+	protected function create_files( $files_and_contents, $force ) {
 		$wp_filesystem = $this->init_wp_filesystem();
 		$wrote_files = array();
 
@@ -828,7 +828,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		return $wrote_files;
 	}
 
-	private function prompt_if_files_will_be_overwritten( $filename, $force ) {
+	protected function prompt_if_files_will_be_overwritten( $filename, $force ) {
 		$should_write_file = true;
 		if ( ! file_exists( $filename ) ) {
 			return true;
@@ -853,7 +853,7 @@ class Scaffold_Command extends WP_CLI_Command {
 		return $should_write_file;
 	}
 
-	private function log_whether_files_written( $files_written, $skip_message, $success_message ) {
+	protected function log_whether_files_written( $files_written, $skip_message, $success_message ) {
 		if ( empty( $files_written ) ) {
 			WP_CLI::log( $skip_message );
 		} else {
@@ -977,7 +977,7 @@ class Scaffold_Command extends WP_CLI_Command {
 	/**
 	 * Initialize WP Filesystem
 	 */
-	private function init_wp_filesystem() {
+	protected function init_wp_filesystem() {
 		global $wp_filesystem;
 		WP_Filesystem();
 
