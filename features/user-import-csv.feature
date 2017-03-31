@@ -18,6 +18,7 @@ Feature: Import users from CSV
 
     When I run `wp user import-csv users.csv`
     Then STDOUT should not be empty
+    And an email should not be sent
 
     When I run `wp user list --format=count`
     Then STDOUT should be:
@@ -57,6 +58,7 @@ Feature: Import users from CSV
 
     When I run `wp user import-csv user-valid.csv`
     Then STDOUT should not be empty
+    And an email should not be sent
 
     When I run `wp user get bobjones --field=display_name`
     Then STDOUT should be:
@@ -77,8 +79,9 @@ Feature: Import users from CSV
     When I run `wp user create bobjones bobjones@example.com --display_name="Robert Jones" --role=administrator`
     Then STDOUT should not be empty
 
-    When I run `wp user import-csv users.csv --skip-update`
+    When I run `wp user import-csv users.csv --skip-update --send-email`
     Then STDOUT should not be empty
+    And an email should be sent
 
     When I run `wp user list --format=count`
     Then STDOUT should be:
@@ -106,7 +109,7 @@ Feature: Import users from CSV
     And I run `wp user add-role billjones author`
     Then STDOUT should not be empty
 
-    When I run `wp user list --field=user_login | wc -l`
+    When I run `wp user list --field=user_login | wc -l | tr -d ' '`
     Then STDOUT should be:
       """
       2
@@ -118,7 +121,7 @@ Feature: Import users from CSV
     When I run `wp user delete $(wp user list --format=ids) --yes`
     Then STDOUT should not be empty
 
-    When I run `wp user list --field=user_login | wc -l`
+    When I run `wp user list --field=user_login | wc -l | tr -d ' '`
     Then STDOUT should be:
       """
       0

@@ -59,9 +59,10 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 */
 	private static function get_process_env_variables() {
 		// Ensure we're using the expected `wp` binary
-		$bin_dir = getenv( 'WP_CLI_BIN_DIR' ) ?: realpath( __DIR__ . "/../../bin" );
+		$bin_dir = getenv( 'WP_CLI_BIN_DIR' ) ?: realpath( __DIR__ . '/../../bin' );
+		$vendor_dir = realpath( __DIR__ . '/../../vendor/bin' );
 		$env = array(
-			'PATH' =>  $bin_dir . ':' . getenv( 'PATH' ),
+			'PATH' =>  $bin_dir . ':' . $vendor_dir . ':' . getenv( 'PATH' ),
 			'BEHAT_RUN' => 1,
 			'HOME' => '/tmp/wp-cli-home',
 		);
@@ -218,9 +219,21 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function build_phar( $version = 'same' ) {
 		$this->variables['PHAR_PATH'] = $this->variables['RUN_DIR'] . '/' . uniqid( "wp-cli-build-", TRUE ) . '.phar';
 
+		// Test running against WP-CLI proper
+		$make_phar_path = __DIR__ . '/../../utils/make-phar.php';
+		if ( ! file_exists( $make_phar_path ) ) {
+			// Test running against a package installed as a WP-CLI dependency
+			// WP-CLI installed as a project dependency
+			$make_phar_path = __DIR__ . '/../../../../../utils/make-phar.php';
+			if ( ! file_exists( $make_phar_path ) ) {
+				// WP-CLI as a dependency of this project
+				$make_phar_path = __DIR__ . '/../../vendor/wp-cli/wp-cli/utils/make-phar.php';
+			}
+		}
+
 		$this->proc( Utils\esc_cmd(
 			'php -dphar.readonly=0 %1$s %2$s --version=%3$s && chmod +x %2$s',
-			__DIR__ . '/../../utils/make-phar.php',
+			$make_phar_path,
 			$this->variables['PHAR_PATH'],
 			$version
 		) )->run_check();
@@ -318,7 +331,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	public function create_config( $subdir = '' ) {
 		$params = self::$db_settings;
-		$params['dbprefix'] = $subdir ?: 'wp_';
+		// Replaces all characters that are not alphanumeric or an underscore into an underscore.
+		$params['dbprefix'] = $subdir ? preg_replace( '#[^a-zA-Z\_0-9]#', '_', $subdir ) : 'wp_';
 
 		$params['skip-salts'] = true;
 		$this->proc( 'wp core config', $params, $subdir )->run_check();

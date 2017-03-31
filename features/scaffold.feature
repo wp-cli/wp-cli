@@ -13,6 +13,7 @@ Feature: WordPress code scaffolding
       """
       Success: Created '{THEME_DIR}/zombieland'.
       """
+    And the {THEME_DIR}/zombieland/.editorconfig file should exist
 
   Scenario: Scaffold a child theme with only --parent_theme parameter
     Given a WP install
@@ -308,6 +309,7 @@ Feature: WordPress code scaffolding
       Success: Created theme 'Starter-theme'.
       """
     And the {THEME_DIR}/starter-theme/style.css file should exist
+    And the {THEME_DIR}/starter-theme/.editorconfig file should exist
 
   Scenario: Scaffold starter code for a theme with sass
     Given a WP install
@@ -410,10 +412,22 @@ Feature: WordPress code scaffolding
     And the {PLUGIN_DIR}/hello-world/.travis.yml file should exist
     And the {PLUGIN_DIR}/hello-world/.travis.yml file should contain:
       """
-      env:
-        - WP_VERSION=latest WP_MULTISITE=0
-        - WP_VERSION=3.7 WP_MULTISITE=0
-        - WP_VERSION={WP_VERSION} WP_MULTISITE=0
+      matrix:
+        include:
+          - php: 7.1
+            env: WP_VERSION=latest
+          - php: 7.0
+            env: WP_VERSION=latest
+          - php: 5.6
+            env: WP_VERSION=4.4
+          - php: 5.6
+            env: WP_VERSION=latest
+          - php: 5.6
+            env: WP_VERSION=trunk
+          - php: 5.6
+            env: WP_TRAVISCI=phpcs
+          - php: 5.3
+            env: WP_VERSION=latest
       """
 
   Scenario: Scaffold starter code for a theme and network enable it

@@ -42,8 +42,34 @@ Feature: Scaffold plugin unit tests
     And the {PLUGIN_DIR}/hello-world/.travis.yml file should contain:
       """
       script:
-        - phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
-        - phpunit
+        - |
+          if [[ ! -z "$WP_VERSION" ]] ; then
+            phpunit
+            WP_MULTISITE=1 phpunit
+          fi
+        - |
+          if [[ "$WP_TRAVISCI" == "phpcs" ]] ; then
+            phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
+          fi
+      """
+    And the {PLUGIN_DIR}/hello-world/.travis.yml file should contain:
+      """
+      matrix:
+        include:
+          - php: 7.1
+            env: WP_VERSION=latest
+          - php: 7.0
+            env: WP_VERSION=latest
+          - php: 5.6
+            env: WP_VERSION=4.4
+          - php: 5.6
+            env: WP_VERSION=latest
+          - php: 5.6
+            env: WP_VERSION=trunk
+          - php: 5.6
+            env: WP_TRAVISCI=phpcs
+          - php: 5.3
+            env: WP_VERSION=latest
       """
 
     When I run `wp eval "if ( is_executable( '{PLUGIN_DIR}/hello-world/bin/install-wp-tests.sh' ) ) { echo 'executable'; } else { exit( 1 ); }"`
@@ -77,6 +103,24 @@ Feature: Scaffold plugin unit tests
     And the {PLUGIN_DIR}/circle.yml file should contain:
       """
       version: 5.6.22
+      """
+    And the {PLUGIN_DIR}/circle.yml file should contain:
+      """
+          - |
+            rm -rf $WP_TESTS_DIR $WP_CORE_DIR
+            bash bin/install-wp-tests.sh wordpress_test ubuntu '' 127.0.0.1 4.4
+            phpunit
+            WP_MULTISITE=1 phpunit
+          - |
+            rm -rf $WP_TESTS_DIR $WP_CORE_DIR
+            bash bin/install-wp-tests.sh wordpress_test ubuntu '' 127.0.0.1 latest
+            phpunit
+            WP_MULTISITE=1 phpunit
+          - |
+            rm -rf $WP_TESTS_DIR $WP_CORE_DIR
+            bash bin/install-wp-tests.sh wordpress_test ubuntu '' 127.0.0.1 trunk
+            phpunit
+            WP_MULTISITE=1 phpunit
       """
 
   Scenario: Scaffold plugin tests with Gitlab as the provider

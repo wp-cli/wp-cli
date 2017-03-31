@@ -41,7 +41,7 @@ Feature: Manage post term
     When I run `wp post term set 1 category new`
     Then STDOUT should be:
       """
-      Success: Set terms.
+      Success: Set term.
       """
 
     When I run `wp post term list 1 category --fields=name,slug,taxonomy --format=count`
@@ -53,7 +53,7 @@ Feature: Manage post term
     When I run `wp post term remove 1 category new`
     Then STDOUT should be:
       """
-      Success: Deleted term.
+      Success: Removed term.
       """
 
     When I run `wp post term list 1 category --fields=name,slug,taxonomy --format=count`
@@ -103,3 +103,93 @@ Feature: Manage post term
       """
       Error: Invalid taxonomy foo2.
       """
+
+  Scenario: Add terms by term id
+    Given a WP install
+
+    When I run `wp term create post_tag 3 --porcelain`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp term create post_tag 4 --porcelain`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp term create post_tag 2 --porcelain`
+    Then STDOUT should be:
+      """
+      4
+      """
+
+    When I run `wp post term add 1 post_tag 4`
+    Then STDOUT should contain:
+      """
+      Success: Added term.
+      """
+
+    When I run `wp post term add 1 post_tag 2`
+    Then STDOUT should contain:
+      """
+      Success: Added term.
+      """
+
+    When I run `wp post term list 1 post_tag --fields=term_id,name,slug`
+    Then STDOUT should be a table containing rows:
+      | term_id | name | slug |
+      | 4       | 2    | 2    |
+      | 3       | 4    | 4    |
+
+    When I run `wp post term remove 1 post_tag 4 2`
+    Then STDOUT should be:
+      """
+      Success: Removed terms.
+      """
+
+    When I run `wp post term add 1 post_tag 4 --by=id`
+    Then STDOUT should contain:
+      """
+      Success: Added term.
+      """
+
+    When I run `wp post term list 1 post_tag --fields=term_id,name,slug`
+    Then STDOUT should be a table containing rows:
+      | term_id | name | slug |
+      | 4       | 2    | 2    |
+
+    When I run `wp post term add 1 post_tag 3 --by=slug`
+    Then STDOUT should contain:
+      """
+      Success: Added term.
+      """
+
+    When I run `wp post term list 1 post_tag --fields=term_id,name,slug`
+    Then STDOUT should be a table containing rows:
+      | term_id | name | slug |
+      | 2       | 3    | 3    |
+      | 4       | 2    | 2    |
+
+    When I run `wp post term remove 1 post_tag 2 --by=id`
+    Then STDOUT should be:
+      """
+      Success: Removed term.
+      """
+
+    When I run `wp post term list 1 post_tag --fields=term_id,name,slug`
+    Then STDOUT should be a table containing rows:
+      | term_id | name | slug |
+      | 4       | 2    | 2    |
+
+    When I run `wp post term set 1 post_tag 3 --by=id`
+    Then STDOUT should contain:
+      """
+      Success: Set term.
+      """
+
+    When I run `wp post term list 1 post_tag --fields=term_id,name,slug`
+    Then STDOUT should be a table containing rows:
+      | term_id | name | slug |
+      | 3       | 4    | 4    |

@@ -950,9 +950,10 @@ class WP_CLI {
 	/**
 	 * Run a WP-CLI command.
 	 *
-	 * Launch a new child process, or run the command in the current process.
+	 * Launches a new child process to run a specified WP-CLI command.
 	 * Optionally:
 	 *
+	 * * Run the command in an existing process.
 	 * * Prevent halting script execution on error.
 	 * * Capture and return STDOUT, or full details about command execution.
 	 * * Parse JSON output if the command rendered it.

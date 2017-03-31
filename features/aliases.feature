@@ -2,6 +2,7 @@ Feature: Create shortcuts to specific WordPress installs
 
   Scenario: Alias for a path to a specific WP install
     Given a WP install in 'testdir'
+    And I run `mkdir testdir2`
     And a wp-cli.yml file:
       """
       @testdir:
@@ -16,6 +17,9 @@ Feature: Create shortcuts to specific WordPress installs
     And the return code should be 1
 
     When I run `wp @testdir core is-installed`
+    Then the return code should be 0
+
+    When I run `cd testdir2; wp @testdir core is-installed`
     Then the return code should be 0
 
   Scenario: Error when invalid alias provided
@@ -104,12 +108,15 @@ Feature: Create shortcuts to specific WordPress installs
         path: testdir
       """
 
+    When I run `wp eval --skip-wordpress 'echo realpath( getenv( "RUN_DIR" ) );'`
+    Then save STDOUT as {TEST_DIR}
+
     When I run `wp cli alias`
     Then STDOUT should be YAML containing:
       """
       @all: Run command against every registered alias.
       @testdir:
-        path: testdir
+        path: {TEST_DIR}/testdir
       """
 
     When I run `wp cli aliases`
@@ -117,13 +124,13 @@ Feature: Create shortcuts to specific WordPress installs
       """
       @all: Run command against every registered alias.
       @testdir:
-        path: testdir
+        path: {TEST_DIR}/testdir
       """
 
     When I run `wp cli alias --format=json`
     Then STDOUT should be JSON containing:
       """
-      {"@all":"Run command against every registered alias.","@testdir":{"path":"testdir"}}
+      {"@all":"Run command against every registered alias.","@testdir":{"path":"{TEST_DIR}/testdir"}}
       """
 
   Scenario: Defining a project alias completely overrides a global alias
@@ -256,7 +263,7 @@ Feature: Create shortcuts to specific WordPress installs
         path: subdir2
       """
 
-    When I run `wp @all option get home | wc -l`
+    When I run `wp @all option get home | wc -l | tr -d ' '`
     Then STDOUT should be:
       """
       1

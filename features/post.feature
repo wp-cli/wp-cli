@@ -66,7 +66,7 @@ Feature: Manage WordPress posts
       | post_name  |           |
       | post_type  | post      |
 
-    When I run `wp post get {POST_ID} --format=csv --fields=post_title,type | wc -l`
+    When I run `wp post get {POST_ID} --format=csv --fields=post_title,type | wc -l | tr -d ' '`
     Then STDOUT should be:
       """
       3
