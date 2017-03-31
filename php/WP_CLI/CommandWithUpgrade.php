@@ -198,6 +198,10 @@ abstract class CommandWithUpgrade extends \WP_CLI_Command {
 			}
 
 			if ( $result ) {
+				// Fix slug name if coming from the WordPress directory.
+				if (isset($result->slug)) {
+					$slug = $result->slug;
+				}
 				$this->chained_command = true;
 				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'activate-network' ) ) {
 					\WP_CLI::log( "Network-activating '$slug'..." );

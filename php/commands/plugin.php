@@ -485,6 +485,10 @@ class Plugin_Command extends \WP_CLI\CommandWithUpgrade {
 		}
 		$result = $this->get_upgrader( $assoc_args )->install( $api->download_link );
 
+		if ($result && ! is_wp_error($result)) {
+			return $api;
+		}
+
 		return $result;
 	}
 
