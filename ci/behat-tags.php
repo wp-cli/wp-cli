@@ -43,6 +43,26 @@ $skip_tags[] = '@github-api';
 # Skip tests known to be broken.
 $skip_tags[] = '@broken';
 
+# Require PHP extension, eg 'imagick'.
+function extension_tags() {
+	$extension_tags = array();
+	exec( "grep '@require-extension-[A-Za-z_]*' -h -o features/*.feature | uniq", $extension_tags );
+
+	$skip_tags = array();
+
+	$substr_start = strlen( '@require-extension-' );
+	foreach ( $extension_tags as $tag ) {
+		$extension = substr( $tag, $substr_start );
+		if ( ! extension_loaded( $extension ) ) {
+			$skip_tags[] = $tag;
+		}
+	}
+
+	return $skip_tags;
+}
+
+$skip_tags = array_merge( $skip_tags, extension_tags() );
+
 if ( !empty( $skip_tags ) ) {
 	echo '--tags=~' . implode( '&&~', $skip_tags );
 }
