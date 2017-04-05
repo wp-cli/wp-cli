@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "280b0f2969ecee5a28559aee19920353",
+    "content-hash": "500a3c3f7c691f8646efbc52cca03342",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1475,6 +1475,73 @@
             "time": "2017-03-01T13:55:17+00:00"
         },
         {
+            "name": "wp-cli/entity-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/entity-command.git",
+                "reference": "06037f37560bb713e08fdabc44f2077439870b18"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/entity-command/zipball/06037f37560bb713e08fdabc44f2077439870b18",
+                "reference": "06037f37560bb713e08fdabc44f2077439870b18",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5",
+                "wp-cli/wp-cli": "*"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
+                "commands": [
+                    "comment",
+                    "comment meta",
+                    "menu",
+                    "menu item",
+                    "menu location",
+                    "network meta",
+                    "post",
+                    "post meta",
+                    "post term",
+                    "post-type",
+                    "site",
+                    "taxonomy",
+                    "term",
+                    "term meta",
+                    "user",
+                    "user meta",
+                    "user term"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/",
+                    "WP_CLI\\": "src/WP_CLI"
+                },
+                "files": [
+                    "entity-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Manage WordPress core entities.",
+            "homepage": "https://github.com/wp-cli/entity-command",
+            "time": "2017-04-04T23:39:22+00:00"
+        },
+        {
             "name": "wp-cli/eval-command",
             "version": "v1.0.0",
             "source": {
@@ -2478,7 +2545,7 @@
             "support": {
                 "source": "https://github.com/wp-cli/composer-changelogs/tree/php53"
             },
-            "time": "2017-03-29T14:27:14+00:00"
+            "time": "2017-03-29 14:27:14"
         },
         {
             "name": "roave/security-advisories",
