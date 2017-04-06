@@ -117,6 +117,12 @@ install_db() {
 			EXTRA=" --host=$DB_HOSTNAME --protocol=tcp"
 		fi
 	fi
+	
+	# drop database if exists
+    RESULT=`mysqlshow --user="$DB_USER" --password="$DB_PASS"$EXTRA | grep -v Wildcard | grep -o $DB_NAME`
+    if [ "$RESULT" == "$DB_NAME" ]; then
+        echo y | mysqladmin  --user="$DB_USER" --password="$DB_PASS"$EXTRA DROP $DB_NAME
+    fi
 
 	# create database
 	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
