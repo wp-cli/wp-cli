@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "500a3c3f7c691f8646efbc52cca03342",
+    "content-hash": "8808fb81a13628b2b5ca14228071b72a",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1636,6 +1636,59 @@
             "description": "Manage exports.",
             "homepage": "https://github.com/wp-cli/export-command",
             "time": "2017-03-09T02:26:53+00:00"
+        },
+        {
+            "name": "wp-cli/extension-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/extension-command.git",
+                "reference": "a3118ee48836c3742df28010b56ecd06ceb6542a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/a3118ee48836c3742df28010b56ecd06ceb6542a",
+                "reference": "a3118ee48836c3742df28010b56ecd06ceb6542a",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5",
+                "wp-cli/wp-cli": "*"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
+                "commands": [
+                    "plugin",
+                    "theme",
+                    "theme mod"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/",
+                    "WP_CLI\\": "src/WP_CLI"
+                },
+                "files": [
+                    "extension-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Manage WordPress plugins and themes.",
+            "homepage": "https://github.com/wp-cli/extension-command",
+            "time": "2017-04-05T13:47:51+00:00"
         },
         {
             "name": "wp-cli/import-command",
