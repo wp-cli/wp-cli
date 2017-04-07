@@ -475,6 +475,11 @@ class Runner {
 			unset( $assoc_args['admin_name'] );
 		}
 
+		// core config  ->  config create
+		if ( array( 'core', 'config' ) == array_slice( $args, 0, 2 ) ) {
+			list( $args[0], $args[1] ) = array( 'config', 'create' );
+		}
+
 		// site create --site_id=  ->  site create --network_id=
 		if ( count( $args ) >= 2 && 'site' === $args[0] && 'create' === $args[1] && isset( $assoc_args['site_id'] ) ) {
 			$assoc_args['network_id'] = $assoc_args['site_id'];
@@ -879,7 +884,7 @@ class Runner {
 
 		$this->check_wp_version();
 
-		if ( $this->cmd_starts_with( array( 'core', 'config' ) ) ) {
+		if ( $this->cmd_starts_with( array( 'config', 'create' ) ) ) {
 			$this->_run_command();
 			exit;
 		}
@@ -887,7 +892,7 @@ class Runner {
 		if ( !Utils\locate_wp_config() ) {
 			WP_CLI::error(
 				"'wp-config.php' not found.\n" .
-				"Either create one manually or use `wp core config`." );
+				"Either create one manually or use `wp config create`." );
 		}
 
 		if ( ( $this->cmd_starts_with( array( 'db' ) ) || $this->cmd_starts_with( array( 'help', 'db' ) ) )
@@ -964,7 +969,7 @@ class Runner {
 		if ( ! $wp_config_path ) {
 			WP_CLI::error(
 				"'wp-config.php' not found.\n" .
-				"Either create one manually or use `wp core config`." );
+				"Either create one manually or use `wp config create`." );
 		}
 
 		WP_CLI::debug( 'wp-config.php path: ' . $wp_config_path, 'bootstrap' );
