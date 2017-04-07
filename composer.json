@@ -50,7 +50,8 @@
 		"wp-cli/shell-command": "^1.0",
 		"wp-cli/eval-command": "^1.0",
 		"wp-cli/entity-command": "^1.0",
-		"wp-cli/extension-command": "^1.0"
+		"wp-cli/extension-command": "^1.0",
+		"wp-cli/config-command": "^1.0"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",
