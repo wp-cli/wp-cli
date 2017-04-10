@@ -870,7 +870,13 @@ class Runner {
 		self::set_wp_root( $this->find_wp_root() );
 
 		// First try at showing man page
-		if ( ! empty( $this->arguments[0] ) && 'help' === $this->arguments[0] && ( ! $this->wp_exists() || ! Utils\locate_wp_config() || ( ! empty( $this->arguments[1] ) && ! empty( $this->arguments[2] ) && 'core' === $this->arguments[1] && in_array( $this->arguments[2], array( 'config', 'install', 'multisite-install', 'verify-checksums', 'version' ) ) ) ) ) {
+		if ( ! empty( $this->arguments[0] )
+			&& 'help' === $this->arguments[0]
+			&& ( ! $this->wp_exists()
+				|| ! Utils\locate_wp_config()
+				|| ( ! empty( $this->arguments[1] ) && ! empty( $this->arguments[2] ) && 'core' === $this->arguments[1] && in_array( $this->arguments[2], array( 'install', 'multisite-install', 'verify-checksums', 'version' ) ) )
+				|| ( ! empty( $this->arguments[1] ) && 'config' === $this->arguments[1] )
+			) ) {
 			$this->auto_check_update();
 			$this->_run_command();
 		}
