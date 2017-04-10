@@ -16,7 +16,7 @@ Feature: Manage wp-config
     And STDERR should be:
       """
       Error: 'wp-config.php' not found.
-      Either create one manually or use `wp core config`.
+      Either create one manually or use `wp config create`.
       """
 
     Given a wp-config-extra.php file:
