@@ -131,7 +131,7 @@ class CompositeCommand {
 	}
 
 	/**
-	 * Set the long description for this composite commmand
+	 * Set the long description for this composite command
 	 *
 	 * @param string
 	 */
