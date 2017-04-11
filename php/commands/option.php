@@ -328,6 +328,10 @@ class Option_Command extends WP_CLI_Command {
 		}
 
 		$value = sanitize_option( $key, $value );
+		// Sanitization WordPress normally performs when getting an option
+		if ( in_array( $key, array('siteurl', 'home', 'category_base', 'tag_base') ) ) {
+			$value = untrailingslashit( $value );
+		}
 		$old_value = sanitize_option( $key, get_option( $key ) );
 
 		if ( $value === $old_value && is_null( $autoload ) ) {
