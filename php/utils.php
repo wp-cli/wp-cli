@@ -197,10 +197,15 @@ function assoc_args_to_str( $assoc_args ) {
 	$str = '';
 
 	foreach ( $assoc_args as $key => $value ) {
-		if ( true === $value )
+		if ( true === $value ) {
 			$str .= " --$key";
-		else
+		} elseif( is_array( $value ) ) {
+			foreach( $value as $_ => $v ) {
+				$str .= assoc_args_to_str( array( $key => $v ) );
+			}
+		} else {
 			$str .= " --$key=" . escapeshellarg( $value );
+		}
 	}
 
 	return $str;
