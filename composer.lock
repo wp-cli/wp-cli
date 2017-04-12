@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "3f16e6fee2aa79cf2f22a63be0e68e9b",
+    "content-hash": "b9a5b88ef89f4decd2780cc46806a12c",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2082,6 +2082,58 @@
             "description": "Interactive PHP console.",
             "homepage": "https://github.com/wp-cli/shell-command",
             "time": "2017-03-17T12:25:40+00:00"
+        },
+        {
+            "name": "wp-cli/super-admin-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/super-admin-command.git",
+                "reference": "1ccf7d053c0271ddecd24c1fc591ac65d18b7e67"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/super-admin-command/zipball/1ccf7d053c0271ddecd24c1fc591ac65d18b7e67",
+                "reference": "1ccf7d053c0271ddecd24c1fc591ac65d18b7e67",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5",
+                "wp-cli/wp-cli": "*"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
+                "commands": [
+                    "super-admin add",
+                    "super-admin list",
+                    "super-admin remove"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "super-admin-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Manage super admins on WordPress multisite.",
+            "homepage": "https://github.com/wp-cli/super-admin-command",
+            "time": "2017-04-12T13:27:06+00:00"
         }
     ],
     "packages-dev": [
