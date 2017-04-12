@@ -142,6 +142,17 @@ foreach ( $finder as $file ) {
 	add_file( $phar, $file );
 }
 
+$finder = new Finder();
+$finder
+	->files()
+	->ignoreVCS(true)
+	->ignoreDotFiles(false)
+	->in( WP_CLI_ROOT . '/vendor/wp-cli/scaffold-command/templates')
+	;
+foreach ( $finder as $file ) {
+	add_file( $phar, $file );
+}
+
 add_file( $phar, WP_CLI_VENDOR_DIR . '/autoload.php' );
 add_file( $phar, WP_CLI_ROOT . '/ci/behat-tags.php' );
 add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/ca-bundle/res/cacert.pem' );
