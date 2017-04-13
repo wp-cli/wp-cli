@@ -184,10 +184,15 @@ function assoc_args_to_str( $assoc_args ) {
 	$str = '';
 
 	foreach ( $assoc_args as $key => $value ) {
-		if ( true === $value )
+		if ( true === $value ) {
 			$str .= " --$key";
-		else
+		} elseif( is_array( $value ) ) {
+			foreach( $value as $_ => $v ) {
+				$str .= assoc_args_to_str( array( $key => $v ) );
+			}
+		} else {
 			$str .= " --$key=" . escapeshellarg( $value );
+		}
 	}
 
 	return $str;
@@ -440,6 +445,19 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
  * IMPORTANT: Automatic HTML escaping is disabled!
  */
 function mustache_render( $template_name, $data = array() ) {
+	// Transform absolute path to relative path inside of Phar
+	if ( inside_phar() && 0 === stripos( $template_name, 'phar://' ) ) {
+		$search = '';
+		$replace = '';
+		if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
+			$search = dirname( __DIR__ );
+			$replace = WP_CLI_ROOT;
+		} elseif ( file_exists( dirname( dirname( WP_CLI_ROOT ) ) . '/autoload.php' ) ) {
+			$search = dirname( dirname( dirname( __DIR__ ) ) );
+			$replace = dirname( dirname( dirname( WP_CLI_ROOT ) ) );
+		}
+		$template_name = str_replace( $search, $replace, $template_name );
+	}
 	if ( ! file_exists( $template_name ) )
 		$template_name = WP_CLI_ROOT . "/templates/$template_name";
 

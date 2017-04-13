@@ -311,6 +311,13 @@ class Configurator {
 			}
 		}
 
+		// Backwards compat
+		// 'core config' -> 'config create'
+		if ( isset( $config['core config'] ) ) {
+			$config['config create'] = $config['core config'];
+			unset( $config['core config'] );
+		}
+
 		return $config;
 	}
 
