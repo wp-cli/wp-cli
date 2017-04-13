@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b9a5b88ef89f4decd2780cc46806a12c",
+    "content-hash": "faa9802c94d954d24b8615c54361362a",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1938,7 +1938,6 @@
             "time": "2017-02-15T12:17:55+00:00"
         },
         {
-<<<<<<< HEAD
             "name": "wp-cli/rewrite-command",
             "version": "v1.0.0",
             "source": {
@@ -1950,19 +1949,6 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/wp-cli/rewrite-command/zipball/9b09d552c1c77cf406edecda20d93880d2bf1579",
                 "reference": "9b09d552c1c77cf406edecda20d93880d2bf1579",
-=======
-            "name": "wp-cli/scaffold-command",
-            "version": "v1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/scaffold-command.git",
-                "reference": "c200f88fc02184f8e19d291f6246f9609315e29a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/scaffold-command/zipball/c200f88fc02184f8e19d291f6246f9609315e29a",
-                "reference": "c200f88fc02184f8e19d291f6246f9609315e29a",
->>>>>>> master
                 "shasum": ""
             },
             "require-dev": {
@@ -1975,20 +1961,9 @@
                     "dev-master": "1.x-dev"
                 },
                 "commands": [
-<<<<<<< HEAD
                     "rewrite flush",
                     "rewrite list",
                     "rewrite structure"
-=======
-                    "scaffold",
-                    "scaffold _s",
-                    "scaffold child-theme",
-                    "scaffold plugin",
-                    "scaffold plugin-tests",
-                    "scaffold post-type",
-                    "scaffold taxonomy",
-                    "scaffold theme-tests"
->>>>>>> master
                 ]
             },
             "autoload": {
@@ -1996,11 +1971,7 @@
                     "": "src/"
                 },
                 "files": [
-<<<<<<< HEAD
                     "rewrite-command.php"
-=======
-                    "scaffold-command.php"
->>>>>>> master
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -2014,15 +1985,66 @@
                     "homepage": "https://runcommand.io"
                 }
             ],
-<<<<<<< HEAD
             "description": "Manage rewrite rules.",
             "homepage": "https://github.com/wp-cli/rewrite-command",
             "time": "2017-04-12T12:56:12+00:00"
-=======
+        },
+        {
+            "name": "wp-cli/scaffold-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/scaffold-command.git",
+                "reference": "c200f88fc02184f8e19d291f6246f9609315e29a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/scaffold-command/zipball/c200f88fc02184f8e19d291f6246f9609315e29a",
+                "reference": "c200f88fc02184f8e19d291f6246f9609315e29a",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5",
+                "wp-cli/wp-cli": "*"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
+                "commands": [
+                    "scaffold",
+                    "scaffold _s",
+                    "scaffold child-theme",
+                    "scaffold plugin",
+                    "scaffold plugin-tests",
+                    "scaffold post-type",
+                    "scaffold taxonomy",
+                    "scaffold theme-tests"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "scaffold-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
             "description": "Generate code for post types, taxonomies, plugins, child themes, etc.",
             "homepage": "https://github.com/wp-cli/scaffold-command",
             "time": "2017-04-12T13:01:58+00:00"
->>>>>>> master
         },
         {
             "name": "wp-cli/search-replace-command",
