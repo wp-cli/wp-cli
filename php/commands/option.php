@@ -185,7 +185,7 @@ class Option_Command extends WP_CLI_Command {
 	 *     _site_transient_update_core 808
 	 *     _site_transient_update_plugins  6645
 	 *
-	 *     # List all options begining with "i2f_".
+	 *     # List all options beginning with "i2f_".
 	 *     $ wp option list --search="i2f_*"
 	 *     +-------------+--------------+
 	 *     | option_name | option_value |
@@ -193,7 +193,7 @@ class Option_Command extends WP_CLI_Command {
 	 *     | i2f_version | 0.1.0        |
 	 *     +-------------+--------------+
 	 *
-	 *     # Delete all options begining with "theme_mods_".
+	 *     # Delete all options beginning with "theme_mods_".
 	 *     $ wp option list --search="theme_mods_*" --field=option_name | xargs -I % wp option delete %
 	 *     Success: Deleted 'theme_mods_twentysixteen' option.
 	 *     Success: Deleted 'theme_mods_twentyfifteen' option.
@@ -328,6 +328,10 @@ class Option_Command extends WP_CLI_Command {
 		}
 
 		$value = sanitize_option( $key, $value );
+		// Sanitization WordPress normally performs when getting an option
+		if ( in_array( $key, array('siteurl', 'home', 'category_base', 'tag_base') ) ) {
+			$value = untrailingslashit( $value );
+		}
 		$old_value = sanitize_option( $key, get_option( $key ) );
 
 		if ( $value === $old_value && is_null( $autoload ) ) {

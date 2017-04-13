@@ -20,7 +20,7 @@ class SynopsisValidator {
 	}
 
 	/**
-	 * Get any unknown arugments.
+	 * Get any unknown arguments.
 	 *
 	 * @return array
 	 */

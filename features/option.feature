@@ -201,3 +201,18 @@ Feature: Manage WordPress options
       | wp_autoload_1 | disabled       | no       |
       | wp_autoload_2 | implicit2      | yes      |
       | wp_autoload_3 | enabled        | yes      |
+
+  Scenario: Extra removetrailingslash sanitization for whitelisted options
+    Given a WP install
+
+    When I run `wp option update home 'http://localhost/'`
+    Then STDOUT should be:
+      """
+      Success: Updated 'home' option.
+      """
+
+    When I run `wp option update home 'http://localhost/'`
+    Then STDOUT should be:
+      """
+      Success: Value passed for 'home' option is unchanged.
+      """

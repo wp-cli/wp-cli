@@ -31,10 +31,10 @@ Feature: Get help about WP-CLI commands
     Given an empty directory
 
     When I run `wp core download`
-    And I run `wp help core config`
+    And I run `wp help config create`
     Then STDOUT should contain:
       """
-      wp core config
+      wp config create
       """
 
     When I run `wp core config {CORE_CONFIG_SETTINGS}`

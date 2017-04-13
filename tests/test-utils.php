@@ -126,5 +126,22 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		), Utils\parse_str_to_argv( 'eval "echo wp_get_current_user()->user_login;"' ) );
 	}
 
+	public function testAssocArgsToString() {
+		$this->assertEquals( " --url='foo.dev' --porcelain --apple='banana'" , Utils\assoc_args_to_str( array(
+			'url'       => 'foo.dev',
+			'porcelain' => true,
+			'apple'     => 'banana'
+		) ) );
+		$this->assertEquals( " --url='foo.dev' --require='file-a.php' --require='file-b.php' --porcelain --apple='banana'" , Utils\assoc_args_to_str( array(
+			'url'       => 'foo.dev',
+			'require'   => array(
+				'file-a.php',
+				'file-b.php',
+			),
+			'porcelain' => true,
+			'apple'     => 'banana'
+		) ) );
+	}
+
 }
 
