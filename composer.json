@@ -52,7 +52,9 @@
 		"wp-cli/entity-command": "^1.0",
 		"wp-cli/extension-command": "^1.0",
 		"wp-cli/config-command": "^1.0",
-		"wp-cli/rewrite-command": "^1.0"
+		"wp-cli/rewrite-command": "^1.0",
+		"wp-cli/super-admin-command": "^1.0",
+		"wp-cli/scaffold-command": "^1.0"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",
