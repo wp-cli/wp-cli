@@ -12,17 +12,28 @@ namespace WP_CLI\Bootstrap;
 abstract class AutoloaderStep implements BootstrapStep {
 
 	/**
+	 * Store state for subclasses to have access.
+	 *
+	 * @var BootstrapState
+	 */
+	protected $state;
+
+	/**
 	 * Process this single bootstrapping step.
 	 *
-	 * @return void
+	 * @param BootstrapState $state Contextual state to pass into the step.
+	 *
+	 * @return BootstrapState Modified state to pass to the next step.
 	 */
-	public function process() {
+	public function process( BootstrapState $state ) {
+		$this->state = $state;
+
 		$found_autoloader = false;
 		$autoloader_paths = $this->get_autoloader_paths();
 
 		if ( false === $autoloader_paths ) {
 			// Skip this autoloading step.
-			return;
+			return $state;
 		}
 
 		foreach ( $autoloader_paths as $autoloader_path ) {
@@ -43,6 +54,8 @@ abstract class AutoloaderStep implements BootstrapStep {
 		if ( ! $found_autoloader ) {
 			$this->handle_failure();
 		}
+
+		return $this->state;
 	}
 
 	/**

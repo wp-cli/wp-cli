@@ -14,9 +14,11 @@ final class RegisterFrameworkCommands implements BootstrapStep {
 	/**
 	 * Process this single bootstrapping step.
 	 *
-	 * @return void
+	 * @param BootstrapState $state Contextual state to pass into the step.
+	 *
+	 * @return BootstrapState Modified state to pass to the next step.
 	 */
-	public function process() {
+	public function process( BootstrapState $state ) {
 		$cmd_dir = WP_CLI_ROOT . '/php/commands';
 
 		$iterator = new \DirectoryIterator( $cmd_dir );
@@ -35,5 +37,7 @@ final class RegisterFrameworkCommands implements BootstrapStep {
 				);
 			}
 		}
+
+		return $state;
 	}
 }

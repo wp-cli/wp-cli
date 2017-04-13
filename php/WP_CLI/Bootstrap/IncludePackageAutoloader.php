@@ -18,6 +18,10 @@ final class IncludePackageAutoloader extends AutoloaderStep {
 	 *                        to skip.
 	 */
 	protected function get_autoloader_paths() {
+		if ( $this->state->getValue( BootstrapState::IS_PROTECTED_COMMAND, $fallback = false ) ) {
+			return false;
+		}
+
 		$runner        = new RunnerInstance();
 		$skip_packages = $runner()->config['skip-packages'];
 		if ( true === $skip_packages ) {

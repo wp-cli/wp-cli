@@ -14,10 +14,14 @@ final class ConfigureRunner implements BootstrapStep {
 	/**
 	 * Process this single bootstrapping step.
 	 *
-	 * @return void
+	 * @param BootstrapState $state Contextual state to pass into the step.
+	 *
+	 * @return BootstrapState Modified state to pass to the next step.
 	 */
-	public function process() {
+	public function process( BootstrapState $state ) {
 		$runner = new RunnerInstance();
 		$runner()->init_config();
+
+		return $state;
 	}
 }

@@ -2,6 +2,8 @@
 
 namespace WP_CLI;
 
+use WP_CLI\Bootstrap\BootstrapState;
+
 /**
  * Get the list of ordered steps that need to be processed to bootstrap WP-CLI.
  *
@@ -20,6 +22,7 @@ function get_bootstrap_steps() {
 		'WP_CLI\Bootstrap\ConfigureRunner',
 		'WP_CLI\Bootstrap\InitializeColorization',
 		'WP_CLI\Bootstrap\InitializeLogger',
+		'WP_CLI\Bootstrap\DefineProtectedCommands',
 		'WP_CLI\Bootstrap\LoadRequiredCommand',
 		'WP_CLI\Bootstrap\IncludePackageAutoloader',
 		'WP_CLI\Bootstrap\IncludeBundledAutoloader',
@@ -36,7 +39,7 @@ function get_bootstrap_steps() {
  * The autoloader is not active at this point, so we need to manually traverse
  * the folder and include the files one by ones.
  */
-function initialize_bootstrap() {
+function prepare_bootstrap() {
 	$bootstrap_dir = WP_CLI_ROOT . '/php/WP_CLI/Bootstrap';
 
 	$filenames = array_filter(
@@ -67,17 +70,27 @@ function initialize_bootstrap() {
 }
 
 /**
+ * Initialize and return the bootstrap state to pass from step to step.
+ *
+ * @return BootstrapState
+ */
+function initialize_bootstrap_state() {
+	return new BootstrapState();
+}
+
+/**
  * Process the bootstrapping steps.
  *
  * Loops over each of the provided steps, instantiates it and then calls its
  * `process()` method.
  */
 function bootstrap() {
-	initialize_bootstrap();
+	prepare_bootstrap();
+	$state = initialize_bootstrap_state();
 
 	foreach ( get_bootstrap_steps() as $step ) {
 		/** @var \WP_CLI\Bootstrap\BootstrapStep $step_instance */
 		$step_instance = new $step();
-		$step_instance->process();
+		$state = $step_instance->process( $state );
 	}
 }
