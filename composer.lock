@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b9a5b88ef89f4decd2780cc46806a12c",
+    "content-hash": "faa9802c94d954d24b8615c54361362a",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1936,6 +1936,58 @@
                 "console"
             ],
             "time": "2017-02-15T12:17:55+00:00"
+        },
+        {
+            "name": "wp-cli/rewrite-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/rewrite-command.git",
+                "reference": "9b09d552c1c77cf406edecda20d93880d2bf1579"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/rewrite-command/zipball/9b09d552c1c77cf406edecda20d93880d2bf1579",
+                "reference": "9b09d552c1c77cf406edecda20d93880d2bf1579",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5",
+                "wp-cli/wp-cli": "*"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
+                "commands": [
+                    "rewrite flush",
+                    "rewrite list",
+                    "rewrite structure"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "rewrite-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Manage rewrite rules.",
+            "homepage": "https://github.com/wp-cli/rewrite-command",
+            "time": "2017-04-12T12:56:12+00:00"
         },
         {
             "name": "wp-cli/scaffold-command",
