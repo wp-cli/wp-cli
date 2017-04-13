@@ -65,7 +65,6 @@ Feature: Validate checksums for WordPress install
       Success: WordPress install verifies against checksums.
       """
 
-  @broken
   Scenario: Verify core checksums with extra files
     Given a WP install
 
