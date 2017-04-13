@@ -14,7 +14,9 @@ interface BootstrapStep {
 	/**
 	 * Process this single bootstrapping step.
 	 *
-	 * @return void
+	 * @param BootstrapState $state Contextual state to pass into the step.
+	 *
+	 * @return BootstrapState Modified state to pass to the next step.
 	 */
-	public function process();
+	public function process( BootstrapState $state );
 }

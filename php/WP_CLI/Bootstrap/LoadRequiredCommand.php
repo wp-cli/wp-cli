@@ -17,12 +17,18 @@ final class LoadRequiredCommand implements BootstrapStep {
 	/**
 	 * Process this single bootstrapping step.
 	 *
-	 * @return void
+	 * @param BootstrapState $state Contextual state to pass into the step.
+	 *
+	 * @return BootstrapState Modified state to pass to the next step.
 	 */
-	public function process() {
+	public function process( BootstrapState $state ) {
+		if ( $state->getValue( BootstrapState::IS_PROTECTED_COMMAND, $fallback = false ) ) {
+			return $state;
+		}
+
 		$runner = new RunnerInstance();
 		if ( ! isset( $runner()->config['require'] ) ) {
-			return;
+			return $state;
 		}
 
 		foreach ( $runner()->config['require'] as $path ) {
@@ -50,5 +56,7 @@ final class LoadRequiredCommand implements BootstrapStep {
 			Utils\load_file( $path );
 			WP_CLI::debug( 'Required file from config: ' . $path, 'bootstrap' );
 		}
+
+		return $state;
 	}
 }
