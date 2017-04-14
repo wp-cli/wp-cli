@@ -166,6 +166,38 @@ Feature: Global flags
       This is a custom command.
       """
 
+  Scenario: Using --require with globs
+    Given an empty directory
+    And a foober/foo.php file:
+      """
+      <?php echo basename(__FILE__) . "\n";
+      """
+    And a foober/bar.php file:
+      """
+      <?php echo basename(__FILE__) . "\n";
+      """
+    And a doobie/doo.php file:
+      """
+      <?php echo basename(__FILE__) . "\n";
+      """
+
+    And a wp-cli.yml file:
+      """
+      require: foober/*.php
+      """
+
+    When I run `wp`
+    Then STDOUT should contain:
+      """
+      bar.php
+      foo.php
+      """
+    When I run `wp --require=doobie/*.php`
+    Then STDOUT should contain:
+      """
+      doo.php
+      """
+
   Scenario: Enabling/disabling color
     Given a WP install
 
