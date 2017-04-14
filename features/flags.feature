@@ -112,6 +112,7 @@ Feature: Global flags
       log: called 'error' method
       """
 
+  @flag:require
   Scenario: Using --require
     Given an empty directory
     And a custom-cmd.php file:
@@ -166,6 +167,7 @@ Feature: Global flags
       This is a custom command.
       """
 
+  @flag:require
   Scenario: Using --require with globs
     Given an empty directory
     And a foober/foo.php file:
