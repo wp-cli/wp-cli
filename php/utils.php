@@ -873,7 +873,12 @@ function expand_globs( $paths, $flags = GLOB_BRACE ) {
 	$expanded = array();
 
 	foreach ( (array) $paths as $path ) {
-		$matching = glob( $path, $flags ) ?: array();
+		$matching = array( $path );
+
+		if ( preg_match( '/[' . preg_quote( '*?[]{}!', '/' ) . ']/', $path ) ) {
+			$matching = glob( $path, $flags ) ?: array();
+		}
+
 		$expanded = array_merge( $expanded, $matching );
 	}
 
