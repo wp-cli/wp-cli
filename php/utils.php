@@ -439,6 +439,7 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 	$old_pass = getenv( 'MYSQL_PWD' );
 	putenv( 'MYSQL_PWD=' . $pass );
 
+	$env['PATH'] = getenv('PATH');
 	$final_cmd = $cmd . assoc_args_to_str( $assoc_args );
 
 	$proc = proc_open( $final_cmd, $descriptors, $pipes );
