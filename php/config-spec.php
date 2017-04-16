@@ -18,6 +18,12 @@ return array(
 		'file' => '<http>',
 		'desc' => 'Perform operation against a remote WordPress install over HTTP.',
 	),
+	'wp-config-path' => array(
+        'runtime' => '=<path>',
+        'file' => '<path>',
+        'desc' => 'Path to the WordPress config file',
+        'default' => false,
+    ),
 
 	'url' => array(
 		'runtime' => '=<url>',
