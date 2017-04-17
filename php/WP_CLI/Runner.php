@@ -259,7 +259,7 @@ class Runner {
 				if ( count( $cmd_path ) > 1 ) {
 					$child = array_pop( $cmd_path );
 					$parent_name = implode( ' ', $cmd_path );
-					$suggestion = $this->get_suggestion( $child, $command );
+					$suggestion = $this->get_subcommand_suggestion( $child, $command );
 					return sprintf(
 						"'%s' is not a registered subcommand of '%s'. See 'wp help %s'.%s",
 						$child,
@@ -268,7 +268,7 @@ class Runner {
 						! empty( $suggestion ) ? "\n\nDid you mean '{$suggestion}'?" : ''
 					);
 				} else {
-					$suggestion = $this->get_suggestion( $full_name, $command );
+					$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
 					return sprintf(
 						"'%s' is not a registered wp command. See 'wp help'.%s",
 						$full_name,
@@ -1361,8 +1361,8 @@ class Runner {
 	}
 
 	/**
-	 * Get a suggestion on similar commands when the user entered an unknown
-	 * command.
+	 * Get a suggestion on similar (sub)commands when the user entered an
+	 * unknown (sub)command.
 	 *
 	 * @param string           $entry        User entry that didn't match an
 	 *                                       existing command.
@@ -1371,7 +1371,7 @@ class Runner {
 	 *
 	 * @return string Suggestion that fits the user entry, or an empty string.
 	 */
-	private function get_suggestion( $entry, CompositeCommand $root_command = null ) {
+	private function get_subcommand_suggestion( $entry, CompositeCommand $root_command = null ) {
 		$levenshtein = array();
 		$commands = array();
 		$this->enumerate_commands( $root_command ?: \WP_CLI::get_root_command(), $commands );
