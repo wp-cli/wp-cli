@@ -17,7 +17,7 @@ class Autoloader {
 	 *
 	 * @var array
 	 */
-	protected $namespaces = [];
+	protected $namespaces = array();
 
 	/**
 	 * Destructor for the Autoloader class.
