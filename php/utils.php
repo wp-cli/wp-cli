@@ -870,6 +870,7 @@ function isPiped() {
 	} else {
 		return (function_exists('posix_isatty') && !posix_isatty(STDOUT));
 	}
+}
 
 /**
  * Expand within paths to their matching paths.
