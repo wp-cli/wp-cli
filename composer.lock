@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "78f3f77dab17cda2398177d1c9bacb07",
+    "content-hash": "f1b52cf5109d7952bfc381a225e1d569",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2856,7 +2856,7 @@
             "support": {
                 "source": "https://github.com/wp-cli/composer-changelogs/tree/php53"
             },
-            "time": "2017-03-29T14:27:14+00:00"
+            "time": "2017-03-29 14:27:14"
         },
         {
             "name": "roave/security-advisories",
