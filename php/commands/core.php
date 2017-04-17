@@ -545,13 +545,14 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		$public = true;
+		$password = empty($admin_password) ? wp_generate_password(18) : $admin_password ;
 
 		// @codingStandardsIgnoreStart
 		if ( !is_email( $admin_email ) ) {
 			WP_CLI::error( "The '{$admin_email}' email address is invalid." );
 		}
 
-		$result = wp_install( $title, $admin_user, $admin_email, $public, '', $admin_password );
+		$result = wp_install( $title, $admin_user, $admin_email, $public, '', $password );
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( 'Installation failed (' . WP_CLI::error_to_string($result) . ').' );
