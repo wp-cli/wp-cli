@@ -535,7 +535,7 @@ class Core_Command extends WP_CLI_Command {
 			'title' => '',
 			'admin_user' => '',
 			'admin_email' => '',
-			'admin_password' => ''
+			'admin_password' => wp_generate_password(18)
 		) ), EXTR_SKIP );
 
 		// Support prompting for the `--url=<url>`,
