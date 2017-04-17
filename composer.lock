@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "faa9802c94d954d24b8615c54361362a",
+    "content-hash": "14b26c8cb4d5a82627650b3b64dde87e",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2243,6 +2243,63 @@
             "description": "Manage super admins on WordPress multisite.",
             "homepage": "https://github.com/wp-cli/super-admin-command",
             "time": "2017-04-12T13:27:06+00:00"
+        },
+        {
+            "name": "wp-cli/widget-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/widget-command.git",
+                "reference": "84d6e98cb9f4e85ee142a3b50fafd2b4be275d81"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/widget-command/zipball/84d6e98cb9f4e85ee142a3b50fafd2b4be275d81",
+                "reference": "84d6e98cb9f4e85ee142a3b50fafd2b4be275d81",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5",
+                "wp-cli/wp-cli": "*"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
+                "commands": [
+                    "widget add",
+                    "widget deactivate",
+                    "widget delete",
+                    "widget list",
+                    "widget move",
+                    "widget reset",
+                    "widget update",
+                    "sidebar list"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "widget-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Manage widgets and sidebars.",
+            "homepage": "https://github.com/wp-cli/widget-command",
+            "time": "2017-04-17T12:41:09+00:00"
         }
     ],
     "packages-dev": [
