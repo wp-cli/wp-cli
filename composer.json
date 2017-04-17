@@ -29,7 +29,7 @@
 		"wp-cli/autoload-splitter": "^0.1",
 		"wp-cli/php-cli-tools": "~0.11.2",
 		"mustache/mustache": "~2.4",
-		"mustangostang/spyc": "dev-autoload as 6.0.x-dev",
+		"mustangostang/spyc": "dev-autoload as 0.6.x-dev",
 		"composer/semver": "~1.0",
 		"ramsey/array_column": "~1.1",
 		"rmccue/requests" : "~1.6",

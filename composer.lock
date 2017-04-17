@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "f1b52cf5109d7952bfc381a225e1d569",
+    "content-hash": "94975c195374522292f6ff5361ba68bf",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2996,8 +2996,8 @@
     ],
     "aliases": [
         {
-            "alias": "6.0.x-dev",
-            "alias_normalized": "6.0.9999999.9999999-dev",
+            "alias": "0.6.x-dev",
+            "alias_normalized": "0.6.9999999.9999999-dev",
             "version": "dev-autoload",
             "package": "mustangostang/spyc"
         },
