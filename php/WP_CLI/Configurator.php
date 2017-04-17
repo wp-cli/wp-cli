@@ -276,6 +276,10 @@ class Configurator {
 			if ( false !== $details['runtime'] && isset( $config[ $key ] ) ) {
 				$value = $config[ $key ];
 
+				if ( 'require' == $key ) {
+					$value = \WP_CLI\Utils\expand_globs( $value );
+				}
+
 				if ( $details['multiple'] ) {
 					self::arrayify( $value );
 					$this->config[ $key ] = array_merge( $this->config[ $key ], $value );
@@ -306,6 +310,7 @@ class Configurator {
 
 		if ( isset( $config['require'] ) ) {
 			self::arrayify( $config['require'] );
+			$config['require'] = \WP_CLI\Utils\expand_globs( $config['require'] );
 			foreach ( $config['require'] as &$path ) {
 				self::absolutize( $path, $yml_file_dir );
 			}
