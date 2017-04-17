@@ -545,7 +545,7 @@ class Core_Command extends WP_CLI_Command {
 		}
 
 		$public = true;
-		$password = empty($admin_password) ? wp_generate_password(18) : $admin_password ;
+		$password = empty($admin_password) ? wp_generate_password(18) : $admin_password;
 
 		// @codingStandardsIgnoreStart
 		if ( !is_email( $admin_email ) ) {
