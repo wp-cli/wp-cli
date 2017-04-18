@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "af336b3468aa6ab035cabb1b4b177fd0",
+    "content-hash": "365e5b7aae8a7b069e5cf8820d358ba8",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1887,6 +1887,60 @@
             "description": "Import content from a WXR file.",
             "homepage": "https://github.com/wp-cli/import-command",
             "time": "2017-02-28T13:24:43+00:00"
+        },
+        {
+            "name": "wp-cli/language-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/language-command.git",
+                "reference": "00a835e20e4f8999e17ea8cbc4b26efe048d39eb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/language-command/zipball/00a835e20e4f8999e17ea8cbc4b26efe048d39eb",
+                "reference": "00a835e20e4f8999e17ea8cbc4b26efe048d39eb",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5",
+                "wp-cli/wp-cli": "*"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
+                "commands": [
+                    "language core activate",
+                    "language core install",
+                    "language core list",
+                    "language core uninstall",
+                    "language core update"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "language-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Manage language packs.",
+            "homepage": "https://github.com/wp-cli/language-command",
+            "time": "2017-04-18T12:03:30+00:00"
         },
         {
             "name": "wp-cli/media-command",
