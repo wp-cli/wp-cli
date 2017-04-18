@@ -330,7 +330,7 @@ class Subcommand extends CompositeCommand {
 				$errors['fatal'][] = sprintf(
 					'unknown --%s parameter%s',
 					$key,
-					! empty( $suggestion ) ? "\n\nDid you mean '--{$suggestion}'?" : ''
+					! empty( $suggestion ) ? PHP_EOL . "Did you mean '--{$suggestion}'?" : ''
 				);
 			}
 		}
