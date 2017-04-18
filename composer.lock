@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "365e5b7aae8a7b069e5cf8820d358ba8",
+    "content-hash": "d81b81d3a194a3975005d5c7eaaf51be",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1518,6 +1518,64 @@
             "description": "Manage the wp-config.php file.",
             "homepage": "https://github.com/wp-cli/config-command",
             "time": "2017-04-07T17:13:16+00:00"
+        },
+        {
+            "name": "wp-cli/core-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/core-command.git",
+                "reference": "e2ec7ea88bb940a07344d44be3c1d6a4add0288b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/core-command/zipball/e2ec7ea88bb940a07344d44be3c1d6a4add0288b",
+                "reference": "e2ec7ea88bb940a07344d44be3c1d6a4add0288b",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5",
+                "wp-cli/wp-cli": "*"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
+                "commands": [
+                    "core check-update",
+                    "core download",
+                    "core install",
+                    "core is-installed",
+                    "core multisite-convert",
+                    "core multisite-install",
+                    "core update",
+                    "core update-db",
+                    "core version"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "core-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Download, install, update and manage a WordPress install.",
+            "homepage": "https://github.com/wp-cli/core-command",
+            "time": "2017-04-18T16:28:20+00:00"
         },
         {
             "name": "wp-cli/cron-command",
