@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "53dc46b53baaec9d1c6e5928d7ef5991",
+    "content-hash": "af336b3468aa6ab035cabb1b4b177fd0",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1417,6 +1417,56 @@
             "description": "Manage object and transient caches.",
             "homepage": "https://github.com/wp-cli/cache-command",
             "time": "2017-04-17T13:49:19+00:00"
+        },
+        {
+            "name": "wp-cli/checksum-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/checksum-command.git",
+                "reference": "4b58db1a9f388783374a4cbe1666140b6e32644b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/checksum-command/zipball/4b58db1a9f388783374a4cbe1666140b6e32644b",
+                "reference": "4b58db1a9f388783374a4cbe1666140b6e32644b",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5",
+                "wp-cli/wp-cli": "*"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
+                "commands": [
+                    "checksum core"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "checksum-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Verify WordPress core checksums.",
+            "homepage": "https://github.com/wp-cli/checksum-command",
+            "time": "2017-04-17T23:32:58+00:00"
         },
         {
             "name": "wp-cli/config-command",
@@ -2975,7 +3025,7 @@
             "support": {
                 "source": "https://github.com/wp-cli/composer-changelogs/tree/php53"
             },
-            "time": "2017-03-29 14:27:14"
+            "time": "2017-03-29T14:27:14+00:00"
         },
         {
             "name": "roave/security-advisories",
