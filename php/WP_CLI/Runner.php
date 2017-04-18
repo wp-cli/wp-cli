@@ -5,6 +5,7 @@ namespace WP_CLI;
 use WP_CLI;
 use WP_CLI\Utils;
 use WP_CLI\Dispatcher;
+use WP_CLI\Dispatcher\CompositeCommand;
 
 /**
  * Performs the execution of a command.
@@ -258,16 +259,20 @@ class Runner {
 				if ( count( $cmd_path ) > 1 ) {
 					$child = array_pop( $cmd_path );
 					$parent_name = implode( ' ', $cmd_path );
+					$suggestion = $this->get_subcommand_suggestion( $child, $command );
 					return sprintf(
-						"'%s' is not a registered subcommand of '%s'. See 'wp help %s'.",
+						"'%s' is not a registered subcommand of '%s'. See 'wp help %s'.%s",
 						$child,
 						$parent_name,
-						$parent_name
+						$parent_name,
+						! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
 					);
 				} else {
+					$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
 					return sprintf(
-						"'%s' is not a registered wp command. See 'wp help'.",
-						$full_name
+						"'%s' is not a registered wp command. See 'wp help'.%s",
+						$full_name,
+						! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
 					);
 				}
 			}
@@ -1355,5 +1360,56 @@ class Runner {
 		exit;
 	}
 
+	/**
+	 * Get a suggestion on similar (sub)commands when the user entered an
+	 * unknown (sub)command.
+	 *
+	 * @param string           $entry        User entry that didn't match an
+	 *                                       existing command.
+	 * @param CompositeCommand $root_command Root command to start search for
+	 *                                       suggestions at.
+	 *
+	 * @return string Suggestion that fits the user entry, or an empty string.
+	 */
+	private function get_subcommand_suggestion( $entry, CompositeCommand $root_command = null ) {
+		$levenshtein = array();
+		$commands = array();
+		$this->enumerate_commands( $root_command ?: \WP_CLI::get_root_command(), $commands );
+
+		foreach( $commands as $command_string ) {
+			$distance = levenshtein( $command_string, $entry );
+			$levenshtein[ $command_string ] = $distance;
+		}
+
+		// Sort known command strings by distance to user entry.
+		asort( $levenshtein );
+
+		// Fetch the closest command string.
+		reset( $levenshtein );
+		$suggestion = key( $levenshtein );
+
+		// Only return a suggestion if below a given threshold.
+		return $levenshtein[ $suggestion ] < 3 ? $suggestion : '';
+	}
+
+	/**
+	 * Recursive method to enumerate all known commands.
+	 *
+	 * @param CompositeCommand $command Composite command to recurse over.
+	 * @param array            $list    Reference to list accumulating results.
+	 * @param string           $parent  Parent command to use as prefix.
+	 */
+	private function enumerate_commands( CompositeCommand $command, array &$list, $parent = '' ) {
+		foreach ( $command->get_subcommands() as $subcommand ) {
+			/** @var CompositeCommand $subcommand */
+			$command_string = empty( $parent )
+				? $subcommand->get_name()
+				: "{$parent} {$subcommand->get_name()}";
+
+			$list[] = $command_string;
+
+			$this->enumerate_commands( $subcommand, $list, $command_string );
+		}
+	}
 }
 
