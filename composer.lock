@@ -1628,16 +1628,16 @@
         },
         {
             "name": "wp-cli/entity-command",
-            "version": "v1.0.0",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/entity-command.git",
-                "reference": "06037f37560bb713e08fdabc44f2077439870b18"
+                "reference": "e1c6586c9f6970833dd7f80cf3fe7536af73529b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/entity-command/zipball/06037f37560bb713e08fdabc44f2077439870b18",
-                "reference": "06037f37560bb713e08fdabc44f2077439870b18",
+                "url": "https://api.github.com/repos/wp-cli/entity-command/zipball/e1c6586c9f6970833dd7f80cf3fe7536af73529b",
+                "reference": "e1c6586c9f6970833dd7f80cf3fe7536af73529b",
                 "shasum": ""
             },
             "require-dev": {
@@ -1691,7 +1691,7 @@
             ],
             "description": "Manage WordPress core entities.",
             "homepage": "https://github.com/wp-cli/entity-command",
-            "time": "2017-04-04T23:39:22+00:00"
+            "time": "2017-04-18T13:34:53+00:00"
         },
         {
             "name": "wp-cli/eval-command",
@@ -3025,7 +3025,7 @@
             "support": {
                 "source": "https://github.com/wp-cli/composer-changelogs/tree/php53"
             },
-            "time": "2017-03-29T14:27:14+00:00"
+            "time": "2017-03-29 14:27:14"
         },
         {
             "name": "roave/security-advisories",
