@@ -489,6 +489,11 @@ class Runner {
 			list( $args[0], $args[1] ) = array( 'language', 'core' );
 		}
 
+		// core verify-checksums  ->  checksum core
+		if ( array( 'core', 'verify-checksums' ) == array_slice( $args, 0, 2 ) ) {
+			list( $args[0], $args[1] ) = array( 'checksum', 'core' );
+		}
+
 		// site create --site_id=  ->  site create --network_id=
 		if ( count( $args ) >= 2 && 'site' === $args[0] && 'create' === $args[1] && isset( $assoc_args['site_id'] ) ) {
 			$assoc_args['network_id'] = $assoc_args['site_id'];
