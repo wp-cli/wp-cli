@@ -100,7 +100,7 @@ Feature: WP-CLI Commands
       """
 
     When I try `wp --require=custom-cmd.php command invalid`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
       Error: 'invalid' is not a registered subcommand of 'command'. See 'wp help command'.
       """
@@ -731,3 +731,24 @@ Feature: WP-CLI Commands
       bar
       """
     And STDERR should be empty
+
+  Scenario: WP-CLI suggests matching commands when user entry contains typos
+    Given a WP install
+
+    When I try `wp clu`
+    Then STDERR should contain:
+      """
+      Did you mean 'cli'?
+      """
+
+    When I try `wp cli nfo`
+    Then STDERR should contain:
+      """
+      Did you mean 'info'?
+      """
+
+    When I try `wp cli beyondlevenshteinthreshold`
+    Then STDERR should not contain:
+      """
+      Did you mean
+      """
