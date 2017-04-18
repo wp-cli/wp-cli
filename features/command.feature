@@ -754,7 +754,7 @@ Feature: WP-CLI Commands
       """
 
   Scenario: WP-CLI suggests matching parameters when user entry contains typos
-    Given a WP install
+    Given an empty directory
 
     When I try `wp cli info --quie`
     Then STDERR should contain:
