@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "c494d0002225a08235a8b750648caa11",
+    "content-hash": "53dc46b53baaec9d1c6e5928d7ef5991",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1366,6 +1366,57 @@
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
             "time": "2017-03-20T09:41:44+00:00"
+        },
+        {
+            "name": "wp-cli/cache-command",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/cache-command.git",
+                "reference": "7097a4702f82e74ce70495635b2e460e56dcb6f8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/cache-command/zipball/7097a4702f82e74ce70495635b2e460e56dcb6f8",
+                "reference": "7097a4702f82e74ce70495635b2e460e56dcb6f8",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5",
+                "wp-cli/wp-cli": "*"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
+                "commands": [
+                    "cache",
+                    "transient"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "cache-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Manage object and transient caches.",
+            "homepage": "https://github.com/wp-cli/cache-command",
+            "time": "2017-04-17T13:49:19+00:00"
         },
         {
             "name": "wp-cli/config-command",
