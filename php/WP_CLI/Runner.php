@@ -265,14 +265,14 @@ class Runner {
 						$child,
 						$parent_name,
 						$parent_name,
-						! empty( $suggestion ) ? "\n\nDid you mean '{$suggestion}'?" : ''
+						! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
 					);
 				} else {
 					$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
 					return sprintf(
 						"'%s' is not a registered wp command. See 'wp help'.%s",
 						$full_name,
-						! empty( $suggestion ) ? "\n\nDid you mean '{$suggestion}'?" : ''
+						! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
 					);
 				}
 			}
