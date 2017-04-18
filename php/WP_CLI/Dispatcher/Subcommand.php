@@ -3,6 +3,7 @@
 namespace WP_CLI\Dispatcher;
 
 use WP_CLI;
+use WP_CLI\Utils;
 
 /**
  * A leaf node in the command tree.
@@ -325,7 +326,11 @@ class Subcommand extends CompositeCommand {
 
 		if ( $this->name != 'help' ) {
 			foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
-				$suggestion = $this->get_parameter_suggestion( $key, $synopsis_spec );
+				$suggestion = Utils\get_suggestion(
+					$key,
+					$this->get_parameters( $synopsis_spec ),
+					$threshold = 2
+				);
 
 				$errors['fatal'][] = sprintf(
 					'unknown --%s parameter%s',
@@ -399,31 +404,6 @@ class Subcommand extends CompositeCommand {
 			WP_CLI::do_hook( "after_invoke:{$parent}" );
 		}
 		WP_CLI::do_hook( "after_invoke:{$cmd}" );
-	}
-
-	/**
-	 * Get a parameter suggestion for an unknown user entry.
-	 *
-	 * @param string $key  User entry that couldn't be matched to a parameter.
-	 * @param array  $spec Optional. Specification of the current command.
-	 *
-	 * @return mixed|string
-	 */
-	private function get_parameter_suggestion( $key, $spec = array() ) {
-		foreach ( $this->get_parameters( $spec ) as $parameter ) {
-			$distance = levenshtein( $parameter, $key );
-			$levenshtein[ $parameter ] = $distance;
-		}
-
-		// Sort known command strings by distance to user entry.
-		asort( $levenshtein );
-
-		// Fetch the closest command string.
-		reset( $levenshtein );
-		$suggestion = key( $levenshtein );
-
-		// Only return a suggestion if below a given threshold.
-		return $levenshtein[ $suggestion ] < 3 ? $suggestion : '';
 	}
 
 	/**
