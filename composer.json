@@ -57,7 +57,8 @@
 		"wp-cli/scaffold-command": "^1.0",
 		"wp-cli/widget-command": "^1.0",
 		"wp-cli/role-command": "^1.0",
-		"wp-cli/cache-command": "^1.0"
+		"wp-cli/cache-command": "^1.0",
+		"wp-cli/checksum-command": "^1.0"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",
