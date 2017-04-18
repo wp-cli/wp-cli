@@ -484,6 +484,10 @@ class Runner {
 		if ( array( 'core', 'config' ) == array_slice( $args, 0, 2 ) ) {
 			list( $args[0], $args[1] ) = array( 'config', 'create' );
 		}
+		// core language  ->  language core
+		if ( array( 'core', 'language' ) == array_slice( $args, 0, 2 ) ) {
+			list( $args[0], $args[1] ) = array( 'language', 'core' );
+		}
 
 		// core verify-checksums  ->  checksum core
 		if ( array( 'core', 'verify-checksums' ) == array_slice( $args, 0, 2 ) ) {
