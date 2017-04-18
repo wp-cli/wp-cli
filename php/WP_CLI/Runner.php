@@ -1421,4 +1421,3 @@ class Runner {
 		}
 	}
 }
-
