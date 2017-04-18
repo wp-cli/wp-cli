@@ -731,3 +731,5 @@ Feature: WP-CLI Commands
       bar
       """
     And STDERR should be empty
+
+  Scenario:

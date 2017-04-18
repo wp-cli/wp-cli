@@ -325,7 +325,13 @@ class Subcommand extends CompositeCommand {
 
 		if ( $this->name != 'help' ) {
 			foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
-				$errors['fatal'][] = "unknown --$key parameter";
+				$suggestion = $this->get_parameter_suggestion( $key, $synopsis_spec );
+
+				$errors['fatal'][] = sprintf(
+					'unknown --%s parameter%s',
+					$key,
+					! empty( $suggestion ) ? "\n\nDid you mean '--{$suggestion}'?" : ''
+				);
 			}
 		}
 
@@ -393,6 +399,49 @@ class Subcommand extends CompositeCommand {
 			WP_CLI::do_hook( "after_invoke:{$parent}" );
 		}
 		WP_CLI::do_hook( "after_invoke:{$cmd}" );
+	}
+
+	/**
+	 * Get a parameter suggestion for an unknown user entry.
+	 *
+	 * @param string $key  User entry that couldn't be matched to a parameter.
+	 * @param array  $spec Optional. Specification of the current command.
+	 *
+	 * @return mixed|string
+	 */
+	private function get_parameter_suggestion( $key, $spec = array() ) {
+		foreach ( $this->get_parameters( $spec ) as $parameter ) {
+			$distance = levenshtein( $parameter, $key );
+			$levenshtein[ $parameter ] = $distance;
+		}
+
+		// Sort known command strings by distance to user entry.
+		asort( $levenshtein );
+
+		// Fetch the closest command string.
+		reset( $levenshtein );
+		$suggestion = key( $levenshtein );
+
+		// Only return a suggestion if below a given threshold.
+		return $levenshtein[ $suggestion ] < 3 ? $suggestion : '';
+	}
+
+	/**
+	 * Get an array of parameter names, by merging the command-specific and the
+	 * global parameters.
+	 *
+	 * @param array  $spec Optional. Specification of the current command.
+	 *
+	 * @return array Array of parameter names
+	 */
+	private function get_parameters( $spec = array() ) {
+		$local_parameters = array_column( $spec, 'name' );
+		$global_parameters = array_column(
+			WP_CLI\SynopsisParser::parse( $this->get_global_params() ),
+			'name'
+		);
+
+		return array_unique( array_merge( $local_parameters, $global_parameters ) );
 	}
 }
 
