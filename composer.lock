@@ -1849,16 +1849,16 @@
         },
         {
             "name": "wp-cli/extension-command",
-            "version": "v1.0.0",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/extension-command.git",
-                "reference": "a3118ee48836c3742df28010b56ecd06ceb6542a"
+                "reference": "0337a1ec7fee201b8f0f2b3f9a8a748724c1805f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/a3118ee48836c3742df28010b56ecd06ceb6542a",
-                "reference": "a3118ee48836c3742df28010b56ecd06ceb6542a",
+                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/0337a1ec7fee201b8f0f2b3f9a8a748724c1805f",
+                "reference": "0337a1ec7fee201b8f0f2b3f9a8a748724c1805f",
                 "shasum": ""
             },
             "require-dev": {
@@ -1898,7 +1898,7 @@
             ],
             "description": "Manage WordPress plugins and themes.",
             "homepage": "https://github.com/wp-cli/extension-command",
-            "time": "2017-04-05T13:47:51+00:00"
+            "time": "2017-04-14T14:09:58+00:00"
         },
         {
             "name": "wp-cli/import-command",
@@ -2002,23 +2002,29 @@
         },
         {
             "name": "wp-cli/media-command",
-            "version": "v1.0.0",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/media-command.git",
-                "reference": "fa12bf77a0c0f4af934750175eb75b4b358d399c"
+                "reference": "e175cdd673889d9e21c5214f18c6175a9d326a48"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/media-command/zipball/fa12bf77a0c0f4af934750175eb75b4b358d399c",
-                "reference": "fa12bf77a0c0f4af934750175eb75b4b358d399c",
+                "url": "https://api.github.com/repos/wp-cli/media-command/zipball/e175cdd673889d9e21c5214f18c6175a9d326a48",
+                "reference": "e175cdd673889d9e21c5214f18c6175a9d326a48",
                 "shasum": ""
+            },
+            "require": {
+                "wp-cli/wp-cli": "*"
             },
             "require-dev": {
                 "behat/behat": "~2.5"
             },
             "type": "wp-cli-package",
             "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
                 "commands": [
                     "media import",
                     "media regenerate"
@@ -2043,9 +2049,9 @@
                     "homepage": "https://runcommand.io"
                 }
             ],
-            "description": "Manage attachments.",
+            "description": "Import and regenerate attachments.",
             "homepage": "https://github.com/wp-cli/media-command",
-            "time": "2017-03-08T13:17:43+00:00"
+            "time": "2017-04-14T14:09:06+00:00"
         },
         {
             "name": "wp-cli/package-command",
@@ -2261,16 +2267,16 @@
         },
         {
             "name": "wp-cli/scaffold-command",
-            "version": "v1.0.0",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/scaffold-command.git",
-                "reference": "c200f88fc02184f8e19d291f6246f9609315e29a"
+                "reference": "9307ef70776042ea27c815b217d1ca76764f74b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/scaffold-command/zipball/c200f88fc02184f8e19d291f6246f9609315e29a",
-                "reference": "c200f88fc02184f8e19d291f6246f9609315e29a",
+                "url": "https://api.github.com/repos/wp-cli/scaffold-command/zipball/9307ef70776042ea27c815b217d1ca76764f74b6",
+                "reference": "9307ef70776042ea27c815b217d1ca76764f74b6",
                 "shasum": ""
             },
             "require-dev": {
@@ -2314,7 +2320,7 @@
             ],
             "description": "Generate code for post types, taxonomies, plugins, child themes, etc.",
             "homepage": "https://github.com/wp-cli/scaffold-command",
-            "time": "2017-04-12T13:01:58+00:00"
+            "time": "2017-04-17T11:42:40+00:00"
         },
         {
             "name": "wp-cli/search-replace-command",
@@ -3137,7 +3143,7 @@
             "support": {
                 "source": "https://github.com/wp-cli/composer-changelogs/tree/php53"
             },
-            "time": "2017-03-29 14:27:14"
+            "time": "2017-03-29T14:27:14+00:00"
         },
         {
             "name": "roave/security-advisories",
