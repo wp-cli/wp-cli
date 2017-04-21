@@ -23,7 +23,10 @@ matrix:
     - php: 5.3
       env: WP_VERSION=3.7.11 DEPLOY_BRANCH=master
 
-before_script: ./ci/prepare.sh
+before_script:
+  - printf 'opcache.enable=1\nopcache.enable_cli=1\nopcache.file_cache="/tmp/php-opcache"\nopcache.file_cache_only=1\nopcache.file_cache_consistency_checks=1\nopcache.revalidate_freq=0\n' > opcache-cli.ini
+  - phpenv config-add opcache-cli.ini
+  - ./ci/prepare.sh
 
 script: ./ci/test.sh
 
