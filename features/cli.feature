@@ -128,7 +128,7 @@ Feature: `wp cli` tasks
     And STDERR should be empty
     And the return code should be 0
 
-  @github-api @less-than-php-7 @broken
+  @github-api @less-than-php-7
   Scenario: Install WP-CLI stable
     Given an empty directory
     And a new Phar with version "0.14.0"
@@ -169,7 +169,6 @@ Feature: `wp cli` tasks
       WP-CLI {UPDATE_VERSION}
       """
 
-  @broken
   Scenario: Dump the list of global parameters with values
     Given a WP install
 
