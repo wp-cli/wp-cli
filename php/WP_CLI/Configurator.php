@@ -322,6 +322,11 @@ class Configurator {
 			$config['config create'] = $config['core config'];
 			unset( $config['core config'] );
 		}
+		// 'core verify-checksums' -> 'checksum core'
+		if ( isset( $config['core verify-checksums'] ) ) {
+			$config['checksum core'] = $config['core verify-checksums'];
+			unset( $config['core verify-checksums'] );
+		}
 
 		return $config;
 	}
