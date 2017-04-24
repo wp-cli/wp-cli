@@ -32,12 +32,16 @@ Feature: Bootstrap WP-CLI
         "prefer-stable": true,
         "repositories": [
           {
+              "type": "vcs",
+              "url": "https://github.com/wp-cli/spyc"
+          },
+          {
             "type": "path",
             "url": "./cli-command-override"
           }
         ],
         "require": {
-          "wp-cli/wp-cli": "1.1.0",
+          "wp-cli/wp-cli": "dev-3850-refactor-loading-order as 1.2.0-alpha",
           "wp-cli/cli-override": "*"
         }
       }
@@ -60,6 +64,7 @@ Feature: Bootstrap WP-CLI
       class CLI_Command extends WP_CLI_Command {
         public function version() {
           WP_CLI::success( "WP-Override-CLI" );
+          exit;
         }
       }
       """
@@ -82,9 +87,9 @@ Feature: Bootstrap WP-CLI
     And I run `composer install --no-interaction`
 
     When I run `vendor/bin/wp cli version`
-    Then STDOUT should contain:
+    Then STDOUT should not contain:
       """
-      WP-CLI 1.1.0
+      Success: WP-Override-CLI
       """
 
   @broken
@@ -99,13 +104,17 @@ Feature: Bootstrap WP-CLI
         "prefer-stable": true,
         "repositories": [
           {
+              "type": "vcs",
+              "url": "https://github.com/wp-cli/spyc"
+          },
+          {
             "type": "path",
             "url": "./cli-command-override"
           }
         ],
         "require": {
           "wp-cli/cli-override": "*",
-          "wp-cli/wp-cli": "1.1.0"
+          "wp-cli/wp-cli": "dev-3850-refactor-loading-order as 1.2.0-alpha"
         }
       }
       """
