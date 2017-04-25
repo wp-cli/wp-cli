@@ -136,7 +136,7 @@ $finder
 	->files()
 	->ignoreVCS(true)
 	->ignoreDotFiles(false)
-	->in( WP_CLI_ROOT . '/vendor/wp-cli/config-command/templates')
+	->in( WP_CLI_VENDOR_DIR . '/wp-cli/config-command/templates')
 	;
 foreach ( $finder as $file ) {
 	add_file( $phar, $file );
@@ -147,7 +147,7 @@ $finder
 	->files()
 	->ignoreVCS(true)
 	->ignoreDotFiles(false)
-	->in( WP_CLI_ROOT . '/vendor/wp-cli/scaffold-command/templates')
+	->in( WP_CLI_VENDOR_DIR . '/wp-cli/scaffold-command/templates')
 	;
 foreach ( $finder as $file ) {
 	add_file( $phar, $file );
