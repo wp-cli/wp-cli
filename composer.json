@@ -15,10 +15,6 @@
 	"repositories": [
 		{
 			"type": "vcs",
-			"url": "https://github.com/wp-cli/spyc"
-		},
-		{
-			"type": "vcs",
 			"url": "https://github.com/wp-cli/composer-changelogs"
 		}
 	],
@@ -29,7 +25,7 @@
 		"wp-cli/autoload-splitter": "^0.1",
 		"wp-cli/php-cli-tools": "~0.11.2",
 		"mustache/mustache": "~2.4",
-		"mustangostang/spyc": "dev-autoload as 0.6.x-dev",
+		"wp-cli/mustangostang-spyc": "^0.6.3",
 		"composer/semver": "~1.0",
 		"ramsey/array_column": "~1.1",
 		"rmccue/requests" : "~1.6",

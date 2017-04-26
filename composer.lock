@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "27ba14d85d2f356517280026a8d7fe93",
+    "content-hash": "6ffb339b47d4cb80624a5d7d40524ae2",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -377,61 +377,6 @@
                 "templating"
             ],
             "time": "2016-07-31T06:18:27+00:00"
-        },
-        {
-            "name": "mustangostang/spyc",
-            "version": "dev-autoload",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/spyc.git",
-                "reference": "ba0a585f5b4c870416f9c3afa3c1d5e21e6c5f55"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/spyc/zipball/ba0a585f5b4c870416f9c3afa3c1d5e21e6c5f55",
-                "reference": "ba0a585f5b4c870416f9c3afa3c1d5e21e6c5f55",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.1"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "4.3.*@dev"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "0.5.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Mustangostang\\": "src/"
-                },
-                "files": [
-                    "includes/functions.php"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "mustangostang",
-                    "email": "vlad.andersen@gmail.com"
-                }
-            ],
-            "description": "A simple YAML loader/dumper class for PHP",
-            "homepage": "https://github.com/mustangostang/spyc/",
-            "keywords": [
-                "spyc",
-                "yaml",
-                "yml"
-            ],
-            "support": {
-                "source": "https://github.com/wp-cli/spyc/tree/autoload"
-            },
-            "time": "2017-03-23 09:10:08"
         },
         {
             "name": "nb/oxymel",
@@ -2100,6 +2045,54 @@
             "time": "2017-04-14T14:09:06+00:00"
         },
         {
+            "name": "wp-cli/mustangostang-spyc",
+            "version": "0.6.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/spyc.git",
+                "reference": "6aa0b4da69ce9e9a2c8402dab8d43cf32c581cc7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/spyc/zipball/6aa0b4da69ce9e9a2c8402dab8d43cf32c581cc7",
+                "reference": "6aa0b4da69ce9e9a2c8402dab8d43cf32c581cc7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "4.3.*@dev"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.5.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Mustangostang\\": "src/"
+                },
+                "files": [
+                    "includes/functions.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "mustangostang",
+                    "email": "vlad.andersen@gmail.com"
+                }
+            ],
+            "description": "A simple YAML loader/dumper class for PHP (WP-CLI fork)",
+            "homepage": "https://github.com/mustangostang/spyc/",
+            "time": "2017-04-25T11:26:20+00:00"
+        },
+        {
             "name": "wp-cli/package-command",
             "version": "v1.0.0",
             "source": {
@@ -3329,12 +3322,6 @@
     ],
     "aliases": [
         {
-            "alias": "0.6.x-dev",
-            "alias_normalized": "0.6.9999999.9999999-dev",
-            "version": "dev-autoload",
-            "package": "mustangostang/spyc"
-        },
-        {
             "alias": "1.5.1",
             "alias_normalized": "1.5.1.0",
             "version": "dev-php53",
@@ -3343,7 +3330,6 @@
     ],
     "minimum-stability": "dev",
     "stability-flags": {
-        "mustangostang/spyc": 20,
         "pyrech/composer-changelogs": 20,
         "roave/security-advisories": 20
     },
