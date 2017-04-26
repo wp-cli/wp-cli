@@ -37,16 +37,16 @@ Feature: Bootstrap WP-CLI
           },
           {
             "type": "path",
-            "url": "./cli-command-override"
+            "url": "./cli-override-command"
           }
         ],
         "require": {
           "wp-cli/wp-cli": "dev-3850-refactor-loading-order as 1.2.0-alpha",
-          "wp-cli/cli-override": "*"
+          "wp-cli/cli-override-command": "*"
         }
       }
       """
-    And a cli-command-override/cli.php file:
+    And a cli-override-command/cli.php file:
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
@@ -58,7 +58,7 @@ Feature: Bootstrap WP-CLI
       }
       WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
       """
-    And a cli-command-override/src/CLI_Command.php file:
+    And a cli-override-command/src/CLI_Command.php file:
       """
       <?php
       class CLI_Command extends WP_CLI_Command {
@@ -68,10 +68,10 @@ Feature: Bootstrap WP-CLI
         }
       }
       """
-    And a cli-command-override/composer.json file:
+    And a cli-override-command/composer.json file:
       """
       {
-        "name": "wp-cli/cli-override",
+        "name": "wp-cli/cli-override-command",
         "description": "A command that overrides the bundled 'cli' command.",
         "autoload": {
           "psr-4": { "": "src/" },
@@ -109,28 +109,28 @@ Feature: Bootstrap WP-CLI
           },
           {
             "type": "path",
-            "url": "./cli-command-override"
+            "url": "./cli-override-command"
           }
         ],
         "require": {
-          "wp-cli/cli-override": "*",
+          "wp-cli/cli-override-command": "*",
           "wp-cli/wp-cli": "dev-3850-refactor-loading-order as 1.2.0-alpha"
         }
       }
       """
-    And a cli-command-override/cli.php file:
+    And a cli-override-command/cli.php file:
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
         return;
       }
       $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
-      if ( file_exists( $autoload ) ) {
+      if ( file_exists( $autoload ) && ! class_exists( 'CLI_Command' ) ) {
         require_once $autoload;
       }
       WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
       """
-    And a cli-command-override/src/CLI_Command.php file:
+    And a cli-override-command/src/CLI_Command.php file:
       """
       <?php
       class CLI_Command extends WP_CLI_Command {
@@ -139,10 +139,10 @@ Feature: Bootstrap WP-CLI
         }
       }
       """
-    And a cli-command-override/composer.json file:
+    And a cli-override-command/composer.json file:
       """
       {
-        "name": "wp-cli/cli-override",
+        "name": "wp-cli/cli-override-command",
         "description": "A command that overrides the bundled 'cli' command.",
         "autoload": {
           "psr-4": { "": "src/" },
@@ -166,19 +166,19 @@ Feature: Bootstrap WP-CLI
   Scenario: Override command bundled with current source
 
     Given an empty directory
-    And a cli-command-override/cli.php file:
+    And a cli-override-command/cli.php file:
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
         return;
       }
       $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
-      if ( file_exists( $autoload ) ) {
+      if ( file_exists( $autoload ) && ! class_exists( 'CLI_Command' ) ) {
         require_once $autoload;
       }
       WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
       """
-    And a cli-command-override/src/CLI_Command.php file:
+    And a cli-override-command/src/CLI_Command.php file:
       """
       <?php
       class CLI_Command extends WP_CLI_Command {
@@ -187,7 +187,7 @@ Feature: Bootstrap WP-CLI
         }
       }
       """
-    And a cli-command-override/composer.json file:
+    And a cli-override-command/composer.json file:
       """
       {
         "name": "wp-cli/cli-override",
@@ -203,7 +203,7 @@ Feature: Bootstrap WP-CLI
         }
       }
       """
-    And I run `composer install --working-dir={RUN_DIR}/cli-command-override --no-interaction`
+    And I run `composer install --working-dir={RUN_DIR}/cli-override-command --no-interaction`
 
     When I run `wp cli version`
       Then STDOUT should contain:
@@ -211,7 +211,7 @@ Feature: Bootstrap WP-CLI
         WP-CLI
         """
 
-    When I run `wp --require=cli-command-override/cli.php cli version`
+    When I run `wp --require=cli-override-command/cli.php cli version`
       Then STDOUT should contain:
         """
         WP-Override-CLI
@@ -221,7 +221,7 @@ Feature: Bootstrap WP-CLI
 
     Given an empty directory
     And a new Phar with the same version
-    And a cli-command-override/cli.php file:
+    And a cli-override-command/cli.php file:
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
@@ -233,7 +233,7 @@ Feature: Bootstrap WP-CLI
       }
       WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
       """
-    And a cli-command-override/src/CLI_Command.php file:
+    And a cli-override-command/src/CLI_Command.php file:
       """
       <?php
       class CLI_Command extends WP_CLI_Command {
@@ -242,7 +242,7 @@ Feature: Bootstrap WP-CLI
         }
       }
       """
-    And a cli-command-override/composer.json file:
+    And a cli-override-command/composer.json file:
       """
       {
         "name": "wp-cli/cli-override",
@@ -258,7 +258,7 @@ Feature: Bootstrap WP-CLI
         }
       }
       """
-    And I run `composer install --working-dir={RUN_DIR}/cli-command-override --no-interaction`
+    And I run `composer install --working-dir={RUN_DIR}/cli-override-command --no-interaction`
 
     When I run `{PHAR_PATH} cli version`
       Then STDOUT should contain:
@@ -266,7 +266,7 @@ Feature: Bootstrap WP-CLI
         WP-CLI
         """
 
-    When I run `{PHAR_PATH} --require=cli-command-override/cli.php cli version`
+    When I run `{PHAR_PATH} --require=cli-override-command/cli.php cli version`
       Then STDOUT should contain:
         """
         WP-Override-CLI
