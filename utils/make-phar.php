@@ -84,7 +84,6 @@ $finder
 	->in(WP_CLI_VENDOR_DIR . '/symfony')
 	->in(WP_CLI_VENDOR_DIR . '/nb/oxymel')
 	->in(WP_CLI_VENDOR_DIR . '/ramsey/array_column')
-	->in(WP_CLI_VENDOR_DIR . '/mustangostang')
 	->in(WP_CLI_VENDOR_DIR . '/justinrainbow/json-schema')
 	->exclude('test')
 	->exclude('tests')
