@@ -906,7 +906,7 @@ function phar_safe_path( $path ) {
 	}
 
 	return str_replace(
-		PHAR_STREAM_PREFIX . getcwd() . '/',
+		PHAR_STREAM_PREFIX . WP_CLI_PHAR_PATH . '/',
 		PHAR_STREAM_PREFIX,
 		$path
 	);
