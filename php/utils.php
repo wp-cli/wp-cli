@@ -10,8 +10,10 @@ use \WP_CLI;
 use \WP_CLI\Dispatcher;
 use \WP_CLI\Iterators\Transform;
 
+const PHAR_STREAM_PREFIX = 'phar://';
+
 function inside_phar() {
-	return 0 === strpos( WP_CLI_ROOT, 'phar://' );
+	return 0 === strpos( WP_CLI_ROOT, PHAR_STREAM_PREFIX );
 }
 
 // Files that need to be read by external programs have to be extracted from the Phar archive.
@@ -459,7 +461,7 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
  */
 function mustache_render( $template_name, $data = array() ) {
 	// Transform absolute path to relative path inside of Phar
-	if ( inside_phar() && 0 === stripos( $template_name, 'phar://' ) ) {
+	if ( inside_phar() && 0 === stripos( $template_name, PHAR_STREAM_PREFIX ) ) {
 		$search = '';
 		$replace = '';
 		if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
@@ -883,4 +885,29 @@ function expand_globs( $paths, $flags = GLOB_BRACE ) {
 	}
 
 	return array_unique( $expanded );
+}
+
+/**
+ * Get a Phar-safe version of a path.
+ *
+ * For paths inside a Phar, this strips the outer filesystem's location to
+ * reduce the path to what it needs to be within the Phar archive.
+ *
+ * Use the __FILE__ or __DIR__ constants as a starting point.
+ *
+ * @param string $path An absolute path that might be within a Phar.
+ *
+ * @return string A Phar-safe version of the path.
+ */
+function phar_safe_path( $path ) {
+
+	if ( ! inside_phar() ) {
+		return $path;
+	}
+
+	return str_replace(
+		PHAR_STREAM_PREFIX . WP_CLI_PHAR_PATH . '/',
+		PHAR_STREAM_PREFIX,
+		$path
+	);
 }
