@@ -405,6 +405,14 @@ class WP_CLI {
 			WP_CLI::error( sprintf( "Callable %s does not exist, and cannot be registered as `wp %s`.", json_encode( $callable ), $name ) );
 		}
 
+		$addition = new Dispatcher\CommandAddition();
+		self::do_hook( "before_add_command:{$name}", $addition );
+
+		if ( $addition->was_aborted() ) {
+			WP_CLI::warning( "Aborting the addition of the command '{$name}' with reason: {$addition->get_reason()}." );
+			return false;
+		}
+
 		foreach( array( 'before_invoke', 'after_invoke' ) as $when ) {
 			if ( isset( $args[ $when ] ) ) {
 				self::add_hook( "{$when}:{$name}", $args[ $when ] );
@@ -481,6 +489,8 @@ class WP_CLI {
 		}
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
+
+		self::do_hook( "after_add_command:{$name}" );
 		return true;
 	}
 
