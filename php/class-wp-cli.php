@@ -202,6 +202,8 @@ class WP_CLI {
 	 *
 	 * WP-CLI hooks include:
 	 *
+	 * * `before_add_command:<command>` - Before the command is added.
+	 * * `after_add_command:<command>` - After the command was added.
 	 * * `before_invoke:<command>` - Just before a command is invoked.
 	 * * `after_invoke:<command>` - Just after a command is involved.
 	 * * `before_wp_load` - Just before the WP load process begins.
