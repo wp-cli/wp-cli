@@ -211,6 +211,9 @@ class WP_CLI {
 	 *
 	 * WP-CLI commands can create their own hooks with `WP_CLI::do_hook()`.
 	 *
+	 * If additional arguments are passed through the `WP_CLI::do_hook()` call,
+	 * these will be passed on to the callback provided by `WP_CLI::add_hook()`.
+	 *
 	 * ```
 	 * # `wp network meta` confirms command is executing in multisite context.
 	 * WP_CLI::add_command( 'network meta', 'Network_Meta_Command', array(
@@ -246,6 +249,8 @@ class WP_CLI {
 	 * @category Registration
 	 *
 	 * @param string $when Identifier for the hook.
+	 * @param mixed ... Optional. Arguments that will be passed onto the
+	 *                  callback provided by `WP_CLI::add_hook()`.
 	 * @return null
 	 */
 	public static function do_hook( $when ) {
