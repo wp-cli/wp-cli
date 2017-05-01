@@ -230,8 +230,9 @@ class WP_CLI {
 	 * @return null
 	 */
 	public static function add_hook( $when, $callback ) {
-		if ( in_array( $when, self::$hooks_passed ) )
-			call_user_func( $callback );
+		if ( array_key_exists( $when, self::$hooks_passed ) ) {
+			call_user_func_array( $callback, (array) self::$hooks_passed[ $when ] );
+		}
 
 		self::$hooks[ $when ][] = $callback;
 	}
@@ -249,19 +250,18 @@ class WP_CLI {
 	 * @return null
 	 */
 	public static function do_hook( $when ) {
-		self::$hooks_passed[] = $when;
+		$args = func_num_args() > 1
+			? array_slice( func_get_args(), 1 )
+			: array();
+
+		self::$hooks_passed[ $when ] = $args;
 
 		if ( !isset( self::$hooks[ $when ] ) ) {
 			return;
 		}
 
 		foreach ( self::$hooks[ $when ] as $callback ) {
-			if ( func_num_args() > 1 ) {
-				$args = array_slice( func_get_args(), 1 );
-				call_user_func_array( $callback, $args );
-			} else {
-				call_user_func( $callback );
-			}
+			call_user_func_array( $callback, $args );
 		}
 	}
 
