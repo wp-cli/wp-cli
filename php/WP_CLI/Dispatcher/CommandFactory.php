@@ -116,8 +116,8 @@ class CommandFactory {
 		}
 
 		return $method->isPublic()
-		       && ! $method->isStatic()
-		       && 0 !== strpos( $method->getName(), '__' );
+			&& ! $method->isStatic()
+			&& 0 !== strpos( $method->getName(), '__' );
 	}
 }
 
