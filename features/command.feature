@@ -633,14 +633,15 @@ Feature: WP-CLI Commands
       Error: Invalid value specified for positional arg.
       """
 
-  @broken
   Scenario: Removing a subcommand should remove it from the index
     Given an empty directory
     And a remove-comment.php file:
       """
       <?php
-      $command = WP_CLI::get_root_command();
-      $command->remove_subcommand( 'comment' );
+      WP_CLI::add_hook( 'after_add_command:comment', function () {
+        $command = WP_CLI::get_root_command();
+        $command->remove_subcommand( 'comment' );
+      } );
       """
 
     When I run `wp`
