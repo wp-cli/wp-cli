@@ -2,7 +2,7 @@
 
 namespace WP_CLI;
 
-use Spyc;
+use Mustangostang\Spyc;
 
 /**
  * Parse command attributes from its PHPdoc.

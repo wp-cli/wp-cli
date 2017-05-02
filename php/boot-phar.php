@@ -13,4 +13,3 @@ if ( file_exists( 'phar://wp-cli.phar/php/wp-cli.php' ) ) {
 	echo "Couldn't find 'php/wp-cli.php'. Was this Phar built correctly?";
 	exit(1);
 }
-

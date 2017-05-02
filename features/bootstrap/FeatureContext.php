@@ -239,6 +239,32 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		) )->run_check();
 	}
 
+	public function download_phar( $version = 'same' ) {
+		if ( 'same' === $version ) {
+			$version = WP_CLI_VERSION;
+		}
+
+		$download_url = sprintf(
+			'https://github.com/wp-cli/wp-cli/releases/download/v%1$s/wp-cli-%1$s.phar',
+			$version
+		);
+
+		$this->variables['PHAR_PATH'] = $this->variables['RUN_DIR'] . '/'
+		                                . uniqid( 'wp-cli-download-', true )
+		                                . '.phar';
+
+		Process::create( \WP_CLI\Utils\esc_cmd(
+			'curl -sSL %s > %s',
+			$download_url,
+			$this->variables['PHAR_PATH']
+		) )->run_check();
+
+		Process::create( \WP_CLI\Utils\esc_cmd(
+			'chmod +x %s',
+			$this->variables['PHAR_PATH']
+		) )->run_check();
+	}
+
 	private function set_cache_dir() {
 		$path = sys_get_temp_dir() . '/wp-cli-test-cache';
 		$this->proc( Utils\esc_cmd( 'mkdir -p %s', $path ) )->run_check();

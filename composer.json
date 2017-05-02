@@ -22,9 +22,10 @@
 	"prefer-stable": true,
 	"require": {
 		"php": ">=5.3.29",
+		"wp-cli/autoload-splitter": "^0.1",
 		"wp-cli/php-cli-tools": "~0.11.2",
 		"mustache/mustache": "~2.4",
-		"mustangostang/spyc": "~0.5",
+		"wp-cli/mustangostang-spyc": "^0.6.3",
 		"composer/semver": "~1.0",
 		"ramsey/array_column": "~1.1",
 		"rmccue/requests" : "~1.6",
@@ -72,6 +73,15 @@
 		"psy/psysh": "Enhanced `wp shell` functionality"
 	},
 	"autoload": {
-		"psr-0": { "WP_CLI": "php" }
+		"psr-0": { "WP_CLI": "php" },
+		"psr-4": { "": "php/commands/src" }
+	},
+	"extra": {
+		"autoload-splitter": {
+			"splitter-logic": "WP_CLI\\AutoloadSplitter",
+			"splitter-location": "php/WP_CLI/AutoloadSplitter.php",
+			"split-target-prefix-true": "autoload_commands",
+			"split-target-prefix-false": "autoload_framework"
+		}
 	}
 }

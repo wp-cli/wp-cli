@@ -2,6 +2,8 @@
 
 namespace WP_CLI;
 
+use Mustangostang\Spyc;
+
 /**
  * Output one or more items in a given format (e.g. table, JSON).
  */
@@ -147,7 +149,7 @@ class Formatter {
 			if ( 'json' === $this->args['format'] ) {
 				echo json_encode( $out );
 			} else if ( 'yaml' === $this->args['format'] ) {
-				echo \Spyc::YAMLDump( $out, 2, 0 );
+				echo Spyc::YAMLDump( $out, 2, 0 );
 			}
 			break;
 

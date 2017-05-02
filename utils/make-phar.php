@@ -84,7 +84,6 @@ $finder
 	->in(WP_CLI_VENDOR_DIR . '/symfony')
 	->in(WP_CLI_VENDOR_DIR . '/nb/oxymel')
 	->in(WP_CLI_VENDOR_DIR . '/ramsey/array_column')
-	->in(WP_CLI_VENDOR_DIR . '/mustangostang')
 	->in(WP_CLI_VENDOR_DIR . '/justinrainbow/json-schema')
 	->exclude('test')
 	->exclude('tests')
@@ -154,6 +153,8 @@ foreach ( $finder as $file ) {
 }
 
 add_file( $phar, WP_CLI_VENDOR_DIR . '/autoload.php' );
+add_file( $phar, WP_CLI_VENDOR_DIR . '/autoload_commands.php' );
+add_file( $phar, WP_CLI_VENDOR_DIR . '/autoload_framework.php' );
 add_file( $phar, WP_CLI_ROOT . '/ci/behat-tags.php' );
 add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/ca-bundle/res/cacert.pem' );
 add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/composer/LICENSE' );

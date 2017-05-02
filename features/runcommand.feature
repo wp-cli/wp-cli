@@ -204,7 +204,7 @@ Feature: Run a WP-CLI command
   Scenario Outline: Installed packages work as expected
     Given a WP install
 
-    When I run `wp package install wp-cli/scaffold-package-command`
+    When I run `wp package install wp-cli/scaffold-package-command:dev-loading-order-fix`
     Then STDERR should be empty
 
     When I run `wp <flag> run 'help scaffold package'`
