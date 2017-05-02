@@ -203,6 +203,8 @@ class WP_CLI {
 	 *
 	 * WP-CLI hooks include:
 	 *
+	 * * `before_add_command:<command>` - Before the command is added.
+	 * * `after_add_command:<command>` - After the command was added.
 	 * * `before_invoke:<command>` - Just before a command is invoked.
 	 * * `after_invoke:<command>` - Just after a command is involved.
 	 * * `before_wp_load` - Just before the WP load process begins.
@@ -211,6 +213,9 @@ class WP_CLI {
 	 * * `after_wp_load` - Just after the WP load process has completed.
 	 *
 	 * WP-CLI commands can create their own hooks with `WP_CLI::do_hook()`.
+	 *
+	 * If additional arguments are passed through the `WP_CLI::do_hook()` call,
+	 * these will be passed on to the callback provided by `WP_CLI::add_hook()`.
 	 *
 	 * ```
 	 * # `wp network meta` confirms command is executing in multisite context.
@@ -231,8 +236,9 @@ class WP_CLI {
 	 * @return null
 	 */
 	public static function add_hook( $when, $callback ) {
-		if ( in_array( $when, self::$hooks_passed ) )
-			call_user_func( $callback );
+		if ( array_key_exists( $when, self::$hooks_passed ) ) {
+			call_user_func_array( $callback, (array) self::$hooks_passed[ $when ] );
+		}
 
 		self::$hooks[ $when ][] = $callback;
 	}
@@ -247,22 +253,23 @@ class WP_CLI {
 	 * @category Registration
 	 *
 	 * @param string $when Identifier for the hook.
+	 * @param mixed ... Optional. Arguments that will be passed onto the
+	 *                  callback provided by `WP_CLI::add_hook()`.
 	 * @return null
 	 */
 	public static function do_hook( $when ) {
-		self::$hooks_passed[] = $when;
+		$args = func_num_args() > 1
+			? array_slice( func_get_args(), 1 )
+			: array();
+
+		self::$hooks_passed[ $when ] = $args;
 
 		if ( !isset( self::$hooks[ $when ] ) ) {
 			return;
 		}
 
 		foreach ( self::$hooks[ $when ] as $callback ) {
-			if ( func_num_args() > 1 ) {
-				$args = array_slice( func_get_args(), 1 );
-				call_user_func_array( $callback, $args );
-			} else {
-				call_user_func( $callback );
-			}
+			call_user_func_array( $callback, $args );
 		}
 	}
 
@@ -401,6 +408,14 @@ class WP_CLI {
 			WP_CLI::error( sprintf( "Callable %s does not exist, and cannot be registered as `wp %s`.", json_encode( $callable ), $name ) );
 		}
 
+		$addition = new Dispatcher\CommandAddition();
+		self::do_hook( "before_add_command:{$name}", $addition );
+
+		if ( $addition->was_aborted() ) {
+			WP_CLI::warning( "Aborting the addition of the command '{$name}' with reason: {$addition->get_reason()}." );
+			return false;
+		}
+
 		foreach( array( 'before_invoke', 'after_invoke' ) as $when ) {
 			if ( isset( $args[ $when ] ) ) {
 				self::add_hook( "{$when}:{$name}", $args[ $when ] );
@@ -477,6 +492,8 @@ class WP_CLI {
 		}
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
+
+		self::do_hook( "after_add_command:{$name}" );
 		return true;
 	}
 
