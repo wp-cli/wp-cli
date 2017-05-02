@@ -66,7 +66,11 @@ abstract class Base {
 	 * @param resource $handle Resource to write to. Defaults to STDOUT.
 	 */
 	protected function _line( $message, $label, $color, $handle = STDOUT ) {
-		$label = \cli\Colors::colorize( "$color$label:%n", $this->in_color );
+		if ( class_exists( 'cli\Colors' ) ) {
+			$label = \cli\Colors::colorize( "$color$label:%n", $this->in_color );
+		} else {
+			$label = "$label:";
+		}
 		$this->write( $handle, "$label $message\n" );
 	}
 
