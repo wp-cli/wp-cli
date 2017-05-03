@@ -1162,9 +1162,8 @@ class Runner {
 
 		// In a multisite install, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {
-			$home = get_option( 'home' );
 			WP_CLI::add_wp_hook( 'ms_site_not_found', function( $current_site, $domain, $path ) {
-				WP_CLI::error( "Site {$domain}{$path} not found. Check value of 'DOMAIN_CURRENT_SITE' into wp-config.php. It should be: {$home}" );
+				WP_CLI::error( "Site {$domain}{$path} not found. Check value of 'DOMAIN_CURRENT_SITE' into wp-config.php." );
 			}, 10, 3 );
 		}
 
