@@ -534,3 +534,14 @@ require_once(ABSPATH . 'wp-settings.php');
       """
       http://example.com
       """
+
+  Scenario: If there is a wrong value defined for `DOMAIN_CURRENT_SITE` constant
+    Given a WP install
+
+    When I run `wp option get home`
+    Then STDOUT should contain:
+      """
+      string(true)
+      """
+
+
