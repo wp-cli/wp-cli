@@ -399,7 +399,9 @@ class Subcommand extends CompositeCommand {
 			'option update',
 		);
 		$monitored_execution = null;
-		if ( in_array( $cmd, $whitelisted_commands, true ) && ! getenv( 'WP_CLI_DISABLE_USAGE_ANALYTICS' ) ) {
+		if ( in_array( $cmd, $whitelisted_commands, true )
+			&& ! getenv( 'WP_CLI_DISABLE_USAGE_ANALYTICS' )
+			&& ! getenv( 'BEHAT_RUN' ) ) {
 			$monitored_execution = new CommandExecutionLog( $cmd, $anon_args, $anon_assoc_args );
 			$monitored_execution->start();
 		}
