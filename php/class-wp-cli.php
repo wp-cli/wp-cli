@@ -1138,6 +1138,17 @@ class WP_CLI {
 		self::get_runner()->run_command( $args, $assoc_args );
 	}
 
+	/**
+	 * Send a command execution log to our data tracker
+	 *
+	 * @param object $execution_log Execution log object.
+	 */
+	public static function send_execution_log( $execution_log ) {
+		Utils\http_request( 'POST', 'https://api.wp-cli.org', json_encode( $execution_log ), array(), array(
+				'blocking' => false,
+			) );
+	}
+
 
 
 	// DEPRECATED STUFF
