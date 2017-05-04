@@ -387,7 +387,22 @@ class Subcommand extends CompositeCommand {
 		}
 		WP_CLI::do_hook( "before_invoke:{$cmd}" );
 
+		// @todo This data can be pulled from https://github.com/wp-cli/handbook/blob/master/bin/commands-manifest.json
+		// but we obviously don't want to do that frequently
+		$whitelisted_commands = array(
+			'option get',
+			'option update',
+		);
+		$monitored_execution = null;
+		if ( in_array( $cmd, $whitelisted_commands, true ) && ! getenv( 'WP_CLI_DISABLE_USAGE_ANALYTICS' ) ) {
+			$monitored_execution = new CommandExecutionLog( $cmd, $args, array_merge( $extra_args, $assoc_args ) );
+			$monitored_execution->start();
+		}
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
+		if ( ! is_null( $monitored_execution ) ) {
+			$monitored_execution->stop();
+			$monitored_execution->send();
+		}
 
 		if ( $parent ) {
 			WP_CLI::do_hook( "after_invoke:{$parent}" );
