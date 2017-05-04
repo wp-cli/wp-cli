@@ -13,13 +13,6 @@ use WP_CLI\Utils;
 final class CommandExecutionLog {
 
 	/**
-	 * Destination for the logging data
-	 *
-	 * @var string
-	 */
-	const DESTINATION = 'https://api.wp-cli.org';
-
-	/**
 	 * Unique identifier for this context.
 	 *
 	 * @var string
@@ -108,7 +101,7 @@ final class CommandExecutionLog {
 	 *
 	 * @return array
 	 */
-	public function prepare_for_json() {
+	public function export() {
 		$type = Utils\inside_phar() ? 'phar' : 'composer';
 		return array(
 			'uuid'           => $this->uuid,
@@ -121,16 +114,6 @@ final class CommandExecutionLog {
 			'wp_cli_type'    => $type,
 			'exec_time'      => $this->exec_time,
 		);
-	}
-
-	/**
-	 * Send the CommandExecution object to the logger.
-	 */
-	public function send() {
-		$data = $this->prepare_for_json();
-		Utils\http_request( 'POST', self::DESTINATION, json_encode( $data ), array(), array(
-			'blocking' => false,
-		) );
 	}
 
 	/**
