@@ -117,7 +117,7 @@ final class CommandExecutionLog {
 	}
 
 	/**
-	 * Generate a UUID
+	 * Generate a UUID v4
 	 *
 	 * @return string
 	 */
