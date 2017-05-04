@@ -362,6 +362,10 @@ class Subcommand extends CompositeCommand {
 			$prompted_once = true;
 		}
 
+		// Anonymize data before it's modified
+		$anon_args = count( $args );
+		$anon_assoc_args = array_keys( $assoc_args );
+
 		$extra_positionals = array();
 		foreach( $extra_args as $k => $v ) {
 			if ( is_numeric( $k ) ) {
@@ -396,7 +400,7 @@ class Subcommand extends CompositeCommand {
 		);
 		$monitored_execution = null;
 		if ( in_array( $cmd, $whitelisted_commands, true ) && ! getenv( 'WP_CLI_DISABLE_USAGE_ANALYTICS' ) ) {
-			$monitored_execution = new CommandExecutionLog( $cmd, $args, array_merge( $extra_args, $assoc_args ) );
+			$monitored_execution = new CommandExecutionLog( $cmd, $anon_args, $anon_assoc_args );
 			$monitored_execution->start();
 		}
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );

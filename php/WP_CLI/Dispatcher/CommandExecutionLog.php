@@ -106,8 +106,8 @@ final class CommandExecutionLog implements \JsonSerializable {
 		return array(
 			'uuid'           => $this->uuid,
 			'command'        => $this->command,
-			'args'           => '', // @todo sanitize
-			'assoc_args'     => '', // @todo sanitize
+			'args'           => $this->args,
+			'assoc_args'     => $this->assoc_args,
 			'wp_version'     => isset( $GLOBALS['wp_version'] ) ? $GLOBALS['wp_version'] : null,
 			'php_version'    => PHP_VERSION,
 			'wp_cli_version' => WP_CLI_VERSION,
