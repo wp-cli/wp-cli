@@ -16,10 +16,13 @@ class Subcommand extends CompositeCommand {
 
 	private $when_invoked;
 
-	function __construct( $parent, $name, $docparser, $when_invoked ) {
+	private $file_path;
+
+	function __construct( $parent, $name, $docparser, $when_invoked, $file_path = null ) {
 		parent::__construct( $parent, $name, $docparser );
 
 		$this->when_invoked = $when_invoked;
+		$this->file_path = $file_path;
 
 		$this->alias = $docparser->get_tag( 'alias' );
 
@@ -392,14 +395,14 @@ class Subcommand extends CompositeCommand {
 		}
 		WP_CLI::do_hook( "before_invoke:{$cmd}" );
 
-		// @todo This data can be pulled from https://github.com/wp-cli/handbook/blob/master/bin/commands-manifest.json
-		// but we obviously don't want to do that frequently
-		$whitelisted_commands = array(
-			'option get',
-			'option update',
-		);
+		// Only monitor execution of public commands
+		$file_path = Utils\phar_safe_path( $this->file_path );
+		$whitelisted = false;
+		if ( false !== stripos( $file_path, 'vendor/wp-cli/' ) || false !== stripos( $file_path, 'php/command/src' ) ) {
+			$whitelisted = true;
+		}
 		$monitored_execution = null;
-		if ( in_array( $cmd, $whitelisted_commands, true )
+		if ( $whitelisted
 			&& ! getenv( 'WP_CLI_DISABLE_USAGE_ANALYTICS' )
 			&& ! getenv( 'BEHAT_RUN' ) ) {
 			$monitored_execution = new CommandExecutionLog( $cmd, $anon_args, $anon_assoc_args );
