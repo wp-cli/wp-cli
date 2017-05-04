@@ -41,7 +41,7 @@ Feature: Bootstrap WP-CLI
           }
         ],
         "require": {
-          "wp-cli/wp-cli": "dev-3850-refactor-loading-order as 1.2.0-alpha",
+          "wp-cli/wp-cli": "dev-master",
           "wp-cli/cli-override-command": "*"
         }
       }
@@ -114,7 +114,7 @@ Feature: Bootstrap WP-CLI
         ],
         "require": {
           "wp-cli/cli-override-command": "*",
-          "wp-cli/wp-cli": "dev-3850-refactor-loading-order as 1.2.0-alpha"
+          "wp-cli/wp-cli": "dev-master"
         }
       }
       """
