@@ -113,6 +113,7 @@ final class CommandExecutionLog implements \JsonSerializable {
 			'wp_cli_version' => WP_CLI_VERSION,
 			'wp_cli_type'    => $type,
 			'exec_time'      => $this->exec_time,
+			'is_piped'       => Utils\isPiped() ? '1' : '0',
 		);
 	}
 
