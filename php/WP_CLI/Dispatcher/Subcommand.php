@@ -402,10 +402,7 @@ class Subcommand extends CompositeCommand {
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 		if ( ! is_null( $monitored_execution ) ) {
 			$monitored_execution->stop();
-			$data = $monitored_execution->export();
-			Utils\http_request( 'POST', 'https://api.wp-cli.org', json_encode( $data ), array(), array(
-				'blocking' => false,
-			) );
+			WP_CLI::send_execution_log( $monitored_execution );
 		}
 
 		if ( $parent ) {

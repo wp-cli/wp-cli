@@ -10,7 +10,7 @@ use WP_CLI\Utils;
  *
  * @package WP_CLI
  */
-final class CommandExecutionLog {
+final class CommandExecutionLog implements \JsonSerializable {
 
 	/**
 	 * Unique identifier for this context.
@@ -101,7 +101,7 @@ final class CommandExecutionLog {
 	 *
 	 * @return array
 	 */
-	public function export() {
+	public function jsonSerialize() {
 		$type = Utils\inside_phar() ? 'phar' : 'composer';
 		return array(
 			'uuid'           => $this->uuid,
