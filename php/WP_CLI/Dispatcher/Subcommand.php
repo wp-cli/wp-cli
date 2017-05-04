@@ -3,6 +3,7 @@
 namespace WP_CLI\Dispatcher;
 
 use WP_CLI;
+use WP_CLI\Utils;
 
 /**
  * A leaf node in the command tree.
@@ -401,7 +402,10 @@ class Subcommand extends CompositeCommand {
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 		if ( ! is_null( $monitored_execution ) ) {
 			$monitored_execution->stop();
-			$monitored_execution->send();
+			$data = $monitored_execution->export();
+			Utils\http_request( 'POST', 'https://api.wp-cli.org', json_encode( $data ), array(), array(
+				'blocking' => false,
+			) );
 		}
 
 		if ( $parent ) {
