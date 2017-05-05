@@ -382,12 +382,13 @@ class WP_CLI {
 	 * @param string $name Name for the command (e.g. "post list" or "site empty").
 	 * @param string $callable Command implementation as a class, function or closure.
 	 * @param array $args {
-	 *      Optional An associative array with additional registration parameters.
-	 *      'before_invoke' => callback to execute before invoking the command,
-	 *      'after_invoke' => callback to execute after invoking the command,
-	 *      'shortdesc' => short description (80 char or less) for the command,
-	 *      'synopsis' => the synopsis for the command (string or array),
-	 *      'when' => execute callback on a named WP-CLI hook (e.g. before_wp_load),
+	 *    Optional. An associative array with additional registration parameters.
+	 *
+	 *    @type callable $before_invoke Callback to execute before invoking the command.
+	 *    @type callable $after_invoke  Callback to execute after invoking the command.
+	 *    @type string   $short_desc    Short description (80 char or less) for the command.
+	 *    @type string   $synopsis      The synopsis for the command (string or array).
+	 *    @type string   $when          Execute callback on a named WP-CLI hook (e.g. before_wp_load).
 	 * }
 	 * @return true True on success, hard error if registration failed.
 	 */
