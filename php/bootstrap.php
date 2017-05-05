@@ -34,39 +34,20 @@ function get_bootstrap_steps() {
 }
 
 /**
- * Manually include the classes needed for the bootstrap process.
+ * Register the classes needed for the bootstrap process.
  *
- * The autoloader is not active at this point, so we need to manually traverse
- * the folder and include the files one by ones.
+ * The Composer autoloader is not active yet at this point, so we need to use a
+ * custom autoloader to fetch the bootstrap classes in a flexible way.
  */
 function prepare_bootstrap() {
-	$bootstrap_dir = WP_CLI_ROOT . '/php/WP_CLI/Bootstrap';
+	require_once WP_CLI_ROOT . '/php/WP_CLI/Autoloader.php';
 
-	$filenames = array_filter(
-		scandir( $bootstrap_dir ),
-		function ( $filename ) {
-			return '.php' === substr( $filename, - 4 );
-		}
-	);
+	$autoloader = new Autoloader();
 
-	// Make sure the interface and the base classes are loaded before the final
-	// implementations.
-	$filenames = array_unique( array_merge(
-		array(
-			'BootstrapStep.php',
-			'RunnerInstance.php',
-			'AutoloaderStep.php',
-		),
-		$filenames
-	) );
-
-	foreach ( $filenames as $filename ) {
-		if ( '.php' !== substr( $filename, - 4 ) ) {
-			continue;
-		}
-
-		include_once "$bootstrap_dir/$filename";
-	}
+	$autoloader->add_namespace(
+		'WP_CLI\Bootstrap',
+		WP_CLI_ROOT . '/php/WP_CLI/Bootstrap'
+	)->register();
 }
 
 /**
