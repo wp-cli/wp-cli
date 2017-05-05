@@ -70,7 +70,7 @@ class CommandFactory {
 			}
 		};
 
-		return new Subcommand( $parent, $name, $docparser, $when_invoked, $reflection->getFileName() );
+		return new Subcommand( $parent, $name, $docparser, $when_invoked );
 	}
 
 	/**
