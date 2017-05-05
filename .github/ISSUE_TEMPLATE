@@ -10,6 +10,31 @@ Need help with something? Github issues aren't for general support questions, bu
 
 Want to suggest a feature? Check out the roadmap for how feature development happens: https://wp-cli.org/docs/roadmap/
 
+Oh! It's worth noting WP-CLI represents a collection of sub-projects, each with their own issue tracker. One of these may be a better destination:
+
+* `wp (cache|transient) *` https://github.com/wp-cli/cache-command
+* `wp checksum` https://github.com/wp-cli/checksum-command
+* `wp config *` https://github.com/wp-cli/config-command
+* `wp core *` https://github.com/wp-cli/core-command
+* `wp cron *` https://github.com/wp-cli/cron-command
+* `wp db *` https://github.com/wp-cli/db-command
+* `wp (eval|eval-file)` https://github.com/wp-cli/eval-command
+* `wp export` https://github.com/wp-cli/export-command
+* `wp (option|post|comment|user|term|site) *` https://github.com/wp-cli/entity-command
+* `wp import` https://github.com/wp-cli/import-command
+* `wp language` https://github.com/wp-cli/language-command
+* `wp media *` https://github.com/wp-cli/media-command
+* `wp package *` https://github.com/wp-cli/package-command
+* `wp (plugin|theme) *` https://github.com/wp-cli/extension-command
+* `wp rewrite` https://github.com/wp-cli/rewrite-command
+* `wp (role|cap) *` https://github.com/wp-cli/role-command
+* `wp scaffold *` https://github.com/wp-cli/scaffold-command
+* `wp search-replace` https://github.com/wp-cli/search-replace-command
+* `wp server` https://github.com/wp-cli/server-command
+* `wp shell` https://github.com/wp-cli/shell-command
+* `wp super-admin *` https://github.com/wp-cli/super-admin-command
+* `wp (widget|sidebar) *` https://github.com/wp-cli/widget-command
+
 You can safely delete this comment.
 
 -->
