@@ -14,11 +14,5 @@ if ( version_compare( PHP_VERSION, '5.3.0', '<' ) ) {
 
 define( 'WP_CLI_ROOT', dirname( __DIR__ ) );
 
-if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
-	define( 'WP_CLI_VENDOR_DIR' , WP_CLI_ROOT . '/vendor' );
-} elseif ( file_exists( dirname( dirname( WP_CLI_ROOT ) ) . '/autoload.php' ) ) {
-	define( 'WP_CLI_VENDOR_DIR' , dirname( dirname( WP_CLI_ROOT ) ) );
-}
-
 include_once WP_CLI_ROOT . '/php/wp-cli.php';
 
