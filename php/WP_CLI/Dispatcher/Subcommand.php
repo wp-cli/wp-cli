@@ -392,14 +392,20 @@ class Subcommand extends CompositeCommand {
 		}
 		WP_CLI::do_hook( "before_invoke:{$cmd}" );
 
-		// @todo This data can be pulled from https://github.com/wp-cli/handbook/blob/master/bin/commands-manifest.json
-		// but we obviously don't want to do that frequently
-		$whitelisted_commands = array(
-			'option get',
-			'option update',
-		);
-		$monitored_execution = null;
-		if ( in_array( $cmd, $whitelisted_commands, true )
+		// CommandFactory wraps the callable in a closure, so we need to pull
+		// the value out
+		$callable = $this->when_invoked;
+		if ( is_a( $callable, 'Closure' ) ) {
+			$reflection = new \ReflectionFunction( $this->when_invoked );
+			$static_variables = $reflection->getStaticVariables();
+			if ( ! empty( $static_variables['callable'] ) ) {
+				$callable = $static_variables['callable'];
+			}
+		}
+		if ( is_array( $callable ) ) {
+			$callable = $callable[0];
+		}
+		if ( Utils\is_bundled_command( $callable )
 			&& ! getenv( 'WP_CLI_DISABLE_USAGE_ANALYTICS' )
 			&& ! getenv( 'BEHAT_RUN' ) ) {
 			$monitored_execution = new CommandExecutionLog( $cmd, $anon_args, $anon_assoc_args );
