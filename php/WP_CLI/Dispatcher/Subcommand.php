@@ -405,6 +405,7 @@ class Subcommand extends CompositeCommand {
 		if ( is_array( $callable ) ) {
 			$callable = $callable[0];
 		}
+		$monitored_execution = null;
 		if ( Utils\is_bundled_command( $callable )
 			&& ! getenv( 'WP_CLI_DISABLE_USAGE_ANALYTICS' )
 			&& ! getenv( 'BEHAT_RUN' ) ) {
