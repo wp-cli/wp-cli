@@ -41,20 +41,6 @@ final class CommandExecutionLog implements \JsonSerializable {
 	private $assoc_args;
 
 	/**
-	 * Start time for the timer.
-	 *
-	 * @var integer|null
-	 */
-	private $start_time = null;
-
-	/**
-	 * Execution time for the command.
-	 *
-	 * @var integer|null
-	 */
-	private $exec_time = null;
-
-	/**
 	 * Instantiate a CommandExecution object.
 	 *
 	 * @param string $command    Command being run.
@@ -81,22 +67,6 @@ final class CommandExecutionLog implements \JsonSerializable {
 	}
 
 	/**
-	 * Start the execution timer.
-	 */
-	public function start() {
-		$this->start_time = microtime( true );
-	}
-
-	/**
-	 * Stop the execution timer.
-	 */
-	public function stop() {
-		$exec_time = microtime( true ) - $this->start_time;
-		$this->start_time = null;
-		$this->exec_time = round( $exec_time, 3 );
-	}
-
-	/**
 	 * Prepare CommandExecution object for delivery.
 	 *
 	 * @return array
@@ -112,7 +82,6 @@ final class CommandExecutionLog implements \JsonSerializable {
 			'php_version'    => PHP_VERSION,
 			'wp_cli_version' => WP_CLI_VERSION,
 			'wp_cli_type'    => $type,
-			'exec_time'      => $this->exec_time,
 			'is_piped'       => Utils\isPiped() ? '1' : '0',
 		);
 	}

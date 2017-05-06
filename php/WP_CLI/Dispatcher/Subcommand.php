@@ -410,13 +410,9 @@ class Subcommand extends CompositeCommand {
 			&& ! getenv( 'WP_CLI_DISABLE_USAGE_ANALYTICS' )
 			&& ! getenv( 'BEHAT_RUN' ) ) {
 			$monitored_execution = new CommandExecutionLog( $cmd, $anon_args, $anon_assoc_args );
-			$monitored_execution->start();
-		}
-		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
-		if ( ! is_null( $monitored_execution ) ) {
-			$monitored_execution->stop();
 			WP_CLI::send_execution_log( $monitored_execution );
 		}
+		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 
 		if ( $parent ) {
 			WP_CLI::do_hook( "after_invoke:{$parent}" );
