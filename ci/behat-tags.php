@@ -31,8 +31,15 @@ function version_tags( $prefix, $current, $operator = '<' ) {
 	return $skip_tags;
 }
 
+$wp_version_reqs = array();
+// Only apply @require-wp tags when WP_VERSION isn't 'latest' or 'nightly'
+// 'latest' and 'nightly' are expected to work with all features
+if ( ! in_array( getenv( 'WP_VERSION' ), array( 'latest', 'nightly', 'trunk' ), true ) ) {
+	$wp_version_reqs = version_tags( 'require-wp', getenv( 'WP_VERSION' ), '<' );
+}
+
 $skip_tags = array_merge(
-	version_tags( 'require-wp', getenv( 'WP_VERSION' ), '<' ),
+	$wp_version_reqs,
 	version_tags( 'require-php', PHP_VERSION, '<' ),
 	version_tags( 'less-than-php', PHP_VERSION, '>' )
 );
