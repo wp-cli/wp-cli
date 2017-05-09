@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<ruleset name="WordPress Coding Standards for WP-CLI">
-	<description>Generally-applicable sniffs for WordPress plugins</description>
+<ruleset name="WP-CLI">
+	<description>WordPress Coding Standards for WP-CLI</description>
 
 	<exclude-pattern>*/ci/*</exclude-pattern>
 	<exclude-pattern>*/features/*</exclude-pattern>
