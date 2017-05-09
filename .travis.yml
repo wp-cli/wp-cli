@@ -23,9 +23,19 @@ matrix:
     - php: 5.3
       env: WP_VERSION=3.7.11 DEPLOY_BRANCH=master
 
-before_script: ./ci/prepare.sh
+before_script:
+  - export PATH="$HOME/.composer/vendor/bin:$PATH"
+  - |
+    if [[ ${TRAVIS_PHP_VERSION:0:2} == "5." ]]; then
+      composer global require "phpunit/phpunit=4.8.*"
+    else
+      composer global require "phpunit/phpunit=5.7.*"
+    fi
+  - ./ci/prepare.sh
 
-script: ./ci/test.sh
+script:
+  - phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
+  - ./ci/test.sh
 
 after_success: ./ci/deploy.sh
 
