@@ -2,6 +2,8 @@
 <ruleset name="WP-CLI">
 	<description>WordPress Coding Standards for WP-CLI</description>
 
+	<rule ref="WordPress-Core" />
+
 	<exclude-pattern>*/ci/*</exclude-pattern>
 	<exclude-pattern>*/features/*</exclude-pattern>
 	<exclude-pattern>*/packages/*</exclude-pattern>
