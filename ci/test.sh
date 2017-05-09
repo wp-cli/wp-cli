@@ -2,9 +2,6 @@
 
 set -ex
 
-# Run CodeSniffer
-./codesniffer/scripts/phpcs --standard=./ci/ php/
-
 # Run the unit tests
 vendor/bin/phpunit
 
