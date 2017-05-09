@@ -30,9 +30,7 @@ before_script:
     phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs
   - ./ci/prepare.sh
 
-script:
-  - phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
-  - ./ci/test.sh
+script: ./ci/test.sh
 
 after_success: ./ci/deploy.sh
 

@@ -2,6 +2,9 @@
 
 set -ex
 
+# Run CodeSniffer
+phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
+
 # Run the unit tests
 vendor/bin/phpunit
 
