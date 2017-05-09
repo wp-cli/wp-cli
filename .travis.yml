@@ -26,11 +26,8 @@ matrix:
 before_script:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - |
-    if [[ ${TRAVIS_PHP_VERSION:0:2} == "5." ]]; then
-      composer global require "phpunit/phpunit=4.8.*"
-    else
-      composer global require "phpunit/phpunit=5.7.*"
-    fi
+    composer global require wp-coding-standards/wpcs
+    phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs
   - ./ci/prepare.sh
 
 script:
