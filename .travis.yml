@@ -31,6 +31,7 @@ before_script:
   - ./ci/prepare.sh
 
 script:
+  - ls && find . -name '*.php'
   - phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
   - ./ci/test.sh
 
