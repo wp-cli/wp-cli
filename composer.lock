@@ -1461,16 +1461,16 @@
         },
         {
             "name": "wp-cli/config-command",
-            "version": "v1.0.0",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/config-command.git",
-                "reference": "697610440583d00c5025d15b2210216a25033c04"
+                "reference": "cf7da88a8ca3371a46cfbee2c86d41b54b5c92b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/config-command/zipball/697610440583d00c5025d15b2210216a25033c04",
-                "reference": "697610440583d00c5025d15b2210216a25033c04",
+                "url": "https://api.github.com/repos/wp-cli/config-command/zipball/cf7da88a8ca3371a46cfbee2c86d41b54b5c92b5",
+                "reference": "cf7da88a8ca3371a46cfbee2c86d41b54b5c92b5",
                 "shasum": ""
             },
             "require-dev": {
@@ -1508,7 +1508,7 @@
             ],
             "description": "Manage the wp-config.php file.",
             "homepage": "https://github.com/wp-cli/config-command",
-            "time": "2017-04-07T17:13:16+00:00"
+            "time": "2017-05-04T19:26:45+00:00"
         },
         {
             "name": "wp-cli/core-command",
