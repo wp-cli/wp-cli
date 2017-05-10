@@ -1139,34 +1139,6 @@ class WP_CLI {
 		self::get_runner()->run_command( $args, $assoc_args );
 	}
 
-	/**
-	 * Send a command execution log to our data tracker
-	 *
-	 * @param object $execution_log Execution log object.
-	 */
-	public static function send_execution_log( $execution_log ) {
-		$data = $execution_log->jsonSerialize();
-		$post_body = array(
-			'tid'  => 'UA-75452026-3', // "Client ID" for "WP-CLI Usage"
-			'cid'  => $data['uuid'], // "User ID"
-			't'    => 'screenview',
-			'v'    => 1, // API v1
-			'aip'  => 1, // Anon user IP
-			'cd'   => $data['command'], // "Screen Name"
-			'an'   => $data['wp_cli_type'], // "Application name"
-			'av'   => $data['wp_cli_version'], // "Application Version"
-			'cd1'  => $data['php_version'], // "Custom Dimension 1"
-			'cd2'  => $data['wp_version'], // "Custom Dimension 2"
-			'cd3'  => $data['args'], // "Custom Dimension 3"
-			'cd4'  => implode( ', ', $data['assoc_args'] ), // "Custom Dimension 4"
-			'cd5'  => '', // Was execution time, which we stopped logging
-			'cd6'  => $data['is_piped'],
-		);
-		Utils\http_request( 'POST', 'https://www.google-analytics.com/collect', $post_body, array(), array(
-			'blocking' => false,
-		) );
-	}
-
 
 
 	// DEPRECATED STUFF
