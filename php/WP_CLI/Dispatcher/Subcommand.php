@@ -3,7 +3,6 @@
 namespace WP_CLI\Dispatcher;
 
 use WP_CLI;
-use WP_CLI\Utils;
 
 /**
  * A leaf node in the command tree.
@@ -362,10 +361,6 @@ class Subcommand extends CompositeCommand {
 			$prompted_once = true;
 		}
 
-		// Anonymize data before it's modified
-		$anon_args = count( $args );
-		$anon_assoc_args = array_keys( $assoc_args );
-
 		$extra_positionals = array();
 		foreach( $extra_args as $k => $v ) {
 			if ( is_numeric( $k ) ) {
@@ -392,26 +387,6 @@ class Subcommand extends CompositeCommand {
 		}
 		WP_CLI::do_hook( "before_invoke:{$cmd}" );
 
-		// CommandFactory wraps the callable in a closure, so we need to pull
-		// the value out
-		$callable = $this->when_invoked;
-		if ( is_a( $callable, 'Closure' ) ) {
-			$reflection = new \ReflectionFunction( $this->when_invoked );
-			$static_variables = $reflection->getStaticVariables();
-			if ( ! empty( $static_variables['callable'] ) ) {
-				$callable = $static_variables['callable'];
-			}
-		}
-		if ( is_array( $callable ) ) {
-			$callable = $callable[0];
-		}
-		$monitored_execution = null;
-		if ( Utils\is_bundled_command( $callable )
-			&& ! getenv( 'WP_CLI_DISABLE_USAGE_ANALYTICS' )
-			&& ! getenv( 'BEHAT_RUN' ) ) {
-			$monitored_execution = new CommandExecutionLog( $cmd, $anon_args, $anon_assoc_args );
-			WP_CLI::send_execution_log( $monitored_execution );
-		}
 		call_user_func( $this->when_invoked, $args, array_merge( $extra_args, $assoc_args ) );
 
 		if ( $parent ) {
