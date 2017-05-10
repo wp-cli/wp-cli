@@ -1159,7 +1159,7 @@ class WP_CLI {
 			'cd2'  => $data['wp_version'], // "Custom Dimension 2"
 			'cd3'  => $data['args'], // "Custom Dimension 3"
 			'cd4'  => implode( ', ', $data['assoc_args'] ), // "Custom Dimension 4"
-			'cd5'  => '', // Was execution time, which we stopped logging
+			'cd5'  => $data['exec_time'],
 			'cd6'  => $data['is_piped'],
 		);
 		Utils\http_request( 'POST', 'https://www.google-analytics.com/collect', $post_body, array(), array(
