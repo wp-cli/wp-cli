@@ -1846,16 +1846,16 @@
         },
         {
             "name": "wp-cli/extension-command",
-            "version": "v1.0.1",
+            "version": "v1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/extension-command.git",
-                "reference": "0337a1ec7fee201b8f0f2b3f9a8a748724c1805f"
+                "reference": "b57212c435e435d92925167b5012e05b6d890f1a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/0337a1ec7fee201b8f0f2b3f9a8a748724c1805f",
-                "reference": "0337a1ec7fee201b8f0f2b3f9a8a748724c1805f",
+                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/b57212c435e435d92925167b5012e05b6d890f1a",
+                "reference": "b57212c435e435d92925167b5012e05b6d890f1a",
                 "shasum": ""
             },
             "require-dev": {
@@ -1895,7 +1895,7 @@
             ],
             "description": "Manage WordPress plugins and themes.",
             "homepage": "https://github.com/wp-cli/extension-command",
-            "time": "2017-04-14T14:09:58+00:00"
+            "time": "2017-05-11T20:37:03+00:00"
         },
         {
             "name": "wp-cli/import-command",
