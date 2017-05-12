@@ -12,6 +12,11 @@
 	"bin": [
 		"bin/wp.bat", "bin/wp"
 	],
+	"config": {
+		"platform": {
+			"php": "5.3.29"
+		}
+	},
 	"repositories": [
 		{
 			"type": "vcs",
@@ -29,16 +34,16 @@
 		"composer/semver": "~1.0",
 		"ramsey/array_column": "~1.1",
 		"rmccue/requests" : "~1.6",
-		"symfony/finder": "~2.7",
-		"symfony/yaml": "~2.7",
-		"symfony/filesystem": "~2.7",
-		"symfony/config": "~2.7",
-		"symfony/console": "~2.7",
-		"symfony/debug": "~2.7",
-		"symfony/dependency-injection": "~2.7",
-		"symfony/event-dispatcher": "~2.7",
-		"symfony/process": "~2.1",
-		"symfony/translation": "~2.7",
+		"symfony/finder": "^2.7|^3.0",
+		"symfony/yaml": "^2.7|^3.0",
+		"symfony/filesystem": "^2.7|^3.0",
+		"symfony/config": "^2.7|^3.0",
+		"symfony/console": "^2.7|^3.0",
+		"symfony/debug": "^2.7|^3.0",
+		"symfony/dependency-injection": "^2.7|^3.0",
+		"symfony/event-dispatcher": "^2.7|^3.0",
+		"symfony/process": "^2.1|^3.0",
+		"symfony/translation": "^2.7|^3.0",
 		"composer/composer": "^1.2.0",
 		"wp-cli/cron-command": "^1.0",
 		"wp-cli/import-command": "^1.0",
