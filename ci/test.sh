@@ -3,7 +3,7 @@
 set -ex
 
 # Run CodeSniffer
-./codesniffer/scripts/phpcs --standard=./ci/ php/
+phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php')
 
 # Run the unit tests
 vendor/bin/phpunit
