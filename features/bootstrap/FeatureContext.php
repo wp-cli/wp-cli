@@ -134,17 +134,15 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		}
 
 		foreach ( $this->running_procs as $proc ) {
-			self::terminate_proc( $proc );
+			$status = proc_get_status( $proc );
+			self::terminate_proc( $status['pid'] );
 		}
 	}
 
 	/**
 	 * Terminate a process and any of its children.
 	 */
-	private static function terminate_proc( $proc ) {
-		$status = proc_get_status( $proc );
-
-		$master_pid = $status['pid'];
+	private static function terminate_proc( $master_pid ) {
 
 		$output = `ps -o ppid,pid,command | grep $master_pid`;
 
@@ -154,9 +152,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 				$child = $matches[2];
 
 				if ( $parent == $master_pid ) {
-					if ( ! posix_kill( (int) $child, 9 ) ) {
-						throw new RuntimeException( posix_strerror( posix_get_last_error() ) );
-					}
+					self::terminate_proc( $child );
 				}
 			}
 		}
