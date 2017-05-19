@@ -24,7 +24,16 @@ final class IncludePHARAutoloader extends AutoloaderStep {
 		}
 
 		return array(
-			WP_CLI_ROOT . '/vendor/autoload_framework.php',
+			WP_CLI_VENDOR_DIR . '/autoload_framework.php',
 		);
+	}
+
+	/**
+	 * Check whether the current execution is run from within a Phar file.
+	 *
+	 * @return bool
+	 */
+	private function is_inside_phar() {
+		return 0 === strpos( WP_CLI_ROOT, 'phar://' );
 	}
 }
