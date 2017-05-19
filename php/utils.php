@@ -557,7 +557,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 	if ( inside_phar() ) {
 		// cURL can't read Phar archives
 		$options['verify'] = extract_from_phar(
-		WP_CLI_ROOT . '/vendor' . $cert_path );
+		WP_CLI_VENDOR_DIR . $cert_path );
 	} else {
 		foreach( get_vendor_paths() as $vendor_path ) {
 			if ( file_exists( $vendor_path . $cert_path ) ) {
