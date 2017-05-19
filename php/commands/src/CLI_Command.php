@@ -124,7 +124,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "php.ini used:\t" . get_cfg_var( 'cfg_file_path' ) );
 			WP_CLI::line( "WP-CLI root dir:\t" . WP_CLI_ROOT );
 			WP_CLI::line( "WP-CLI vendor dir:\t" . WP_CLI_VENDOR_DIR );
-			WP_CLI::line( "WP_CLI Phar path:\t" . defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '';
+			WP_CLI::line( "WP_CLI Phar path:\t" . defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '' );
 			WP_CLI::line( "WP-CLI packages dir:\t" . $packages_dir );
 			WP_CLI::line( "WP-CLI global config:\t" . $runner->global_config_path );
 			WP_CLI::line( "WP-CLI project config:\t" . $runner->project_config_path );
