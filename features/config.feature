@@ -541,7 +541,7 @@ require_once(ABSPATH . 'wp-settings.php');
     When I run `wp option get home`
     Then STDOUT should contain:
       """
-      string(true)
+      Error: Site example.dev/ not found. Check value of 'DOMAIN_CURRENT_SITE' into wp-config.php.
       """
 
 
