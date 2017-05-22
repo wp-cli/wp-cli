@@ -158,7 +158,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		}
 
 		if ( ! posix_kill( (int) $master_pid, 9 ) ) {
-			throw new RuntimeException( posix_strerror( posix_get_last_error() ) );
+			$errno = posix_get_last_error();
+			// Ignore "No such process" error as that's what we want.
+			if ( 3 /*ESRCH*/ !== $errno ) {
+				throw new RuntimeException( posix_strerror( $errno ) );
+			}
 		}
 	}
 
