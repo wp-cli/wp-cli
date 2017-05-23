@@ -22,8 +22,18 @@ class Contrib_List_Command {
 
 		// Get the contributors to the current open wp-cli/wp-cli milestone
 		$milestones = self::get_project_milestones( 'wp-cli/wp-cli' );
+		// Cheap way to get the latest milestone
 		$milestone = array_shift( $milestones );
+		WP_CLI::log( 'Current open wp-cli/wp-cli milestone: ' . $milestone->title );
 		$pull_requests = self::get_project_milestone_pull_requests( 'wp-cli/wp-cli', $milestone->number );
+		$contributors = array_merge( $contributors, self::parse_contributors_from_pull_requests( $pull_requests ) );
+
+		// Get the contributors to the current open wp-cli/handbook milestone
+		$milestones = self::get_project_milestones( 'wp-cli/handbook' );
+		// Cheap way to get the latest milestone
+		$milestone = array_shift( $milestones );
+		WP_CLI::log( 'Current open wp-cli/handbook milestone: ' . $milestone->title );
+		$pull_requests = self::get_project_milestone_pull_requests( 'wp-cli/handbook', $milestone->number );
 		$contributors = array_merge( $contributors, self::parse_contributors_from_pull_requests( $pull_requests ) );
 
 		// @todo Identify all command dependencies and their contributors
