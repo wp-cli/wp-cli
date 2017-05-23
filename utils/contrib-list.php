@@ -14,9 +14,21 @@ class Contrib_List_Command {
 	 *
 	 * Run within the main WP-CLI project repository.
 	 *
+	 * ## OPTIONS
+	 *
+	 * [--format=<format>]
+	 * : Render output in a specific format.
+	 * ---
+	 * default: markdown
+	 * options:
+	 *   - markdown
+	 *   - html
+	 *   - count
+	 * ---
+	 *
 	 * @when before_wp_load
 	 */
-	public function __invoke() {
+	public function __invoke( $_, $assoc_args ) {
 
 		$contributors = array();
 
@@ -38,13 +50,22 @@ class Contrib_List_Command {
 
 		// @todo Identify all command dependencies and their contributors
 
+		// Sort and render the contributor list
 		asort( $contributors, SORT_NATURAL | SORT_FLAG_CASE );
-		$contrib_list = '';
-		foreach( $contributors as $url => $login ) {
-			$contrib_list .= '[' . $login . '](' . $url . '), ';
+		if ( in_array( $assoc_args['format'], array( 'markdown', 'html' ) ) ) {
+			$contrib_list = '';
+			foreach( $contributors as $url => $login ) {
+				if ( 'markdown' === $assoc_args['format'] ) {
+					$contrib_list .= '[' . $login . '](' . $url . '), ';
+				} elseif ( 'html' === $assoc_args['format'] ) {
+					$contrib_list .= '<a href="' . $url . '">' . $login . '</a>, ';
+				}
+			}
+			$contrib_list = rtrim( $contrib_list, ', ' );
+			WP_CLI::log( $contrib_list );
+		} else if ( 'count' === $assoc_args['format'] ) {
+			WP_CLI::log( count( $contributors ) );
 		}
-		$contrib_list = rtrim( $contrib_list, ', ' );
-		WP_CLI::log( $contrib_list );
 	}
 
 	/**
