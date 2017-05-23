@@ -48,7 +48,34 @@ class Contrib_List_Command {
 		$pull_requests = self::get_project_milestone_pull_requests( 'wp-cli/handbook', $milestone->number );
 		$contributors = array_merge( $contributors, self::parse_contributors_from_pull_requests( $pull_requests ) );
 
-		// @todo Identify all command dependencies and their contributors
+		// Identify all command dependencies and their contributors
+		$response = Utils\http_request( 'GET', 'https://raw.githubusercontent.com/wp-cli/wp-cli/master/composer.json' );
+		if ( 200 !== $response->status_code ) {
+			WP_CLI::error( sprintf( 'Could not fetch composer.json (HTTP code %d)', $response->status_code ) );
+		}
+		$composer_json = json_decode( $response->body, true );
+		foreach( $composer_json['require'] as $package => $version_constraint ) {
+			if ( ! preg_match( '#^wp-cli/.+-command$#', $package ) ) {
+				continue;
+			}
+			// Closed milestones denote a tagged release
+			$milestones = self::get_project_milestones( $package, array( 'state' => 'closed' ) );
+			$milestone_ids = array();
+			$milestone_titles = array();
+			foreach( $milestones as $milestone ) {
+				$milestone_ids[] = $milestone->number;
+				$milestone_titles[] = $milestone->title;
+			}
+			// No shipped releases for this milestone.
+			if ( empty( $milestone_ids ) ) {
+				continue;
+			}
+			WP_CLI::log( 'Closed ' . $package . ' milestone(s): ' . implode( ', ', $milestone_titles ) );
+			foreach( $milestone_ids as $milestone_id ) {
+				$pull_requests = self::get_project_milestone_pull_requests( $package, $milestone_id );
+				$contributors = array_merge( $contributors, self::parse_contributors_from_pull_requests( $pull_requests ) );
+			}
+		}
 
 		// Sort and render the contributor list
 		asort( $contributors, SORT_NATURAL | SORT_FLAG_CASE );
@@ -74,9 +101,9 @@ class Contrib_List_Command {
 	 * @param string $project
 	 * @return array
 	 */
-	private static function get_project_milestones( $project ) {
+	private static function get_project_milestones( $project, $args = array() ) {
 		$request_url = sprintf( 'https://api.github.com/repos/%s/milestones', $project );
-		list( $body, $headers ) = self::make_github_api_request( $request_url );
+		list( $body, $headers ) = self::make_github_api_request( $request_url, $args );
 		return $body;
 	}
 
