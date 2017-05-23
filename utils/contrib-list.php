@@ -3,6 +3,9 @@
  * List all contributors to this release.
  *
  * Usage: wp --require=utils/contrib-list.php contrib-list
+ *
+ * If you run into GitHub API rate limit issues, set a GITHUB_TOKEN
+ * environment variable.
  */
 
 use WP_CLI\Utils;
