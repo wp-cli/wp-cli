@@ -58,11 +58,16 @@ class Contrib_List_Command {
 			if ( ! preg_match( '#^wp-cli/.+-command$#', $package ) ) {
 				continue;
 			}
+			// Normalize version constraint to something ew can compare
+			$version_constraint = ltrim( $version_constraint, '^' );
 			// Closed milestones denote a tagged release
 			$milestones = self::get_project_milestones( $package, array( 'state' => 'closed' ) );
 			$milestone_ids = array();
 			$milestone_titles = array();
 			foreach( $milestones as $milestone ) {
+				if ( ! version_compare( $milestone->title, $version_constraint, '>' ) ) {
+					continue;
+				}
 				$milestone_ids[] = $milestone->number;
 				$milestone_titles[] = $milestone->title;
 			}
