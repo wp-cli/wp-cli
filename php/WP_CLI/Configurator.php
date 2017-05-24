@@ -45,6 +45,7 @@ class Configurator {
 		'path',
 		'ssh',
 		'http',
+		'ssh-config',
 	);
 
 	/**
