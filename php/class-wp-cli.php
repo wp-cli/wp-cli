@@ -21,6 +21,8 @@ class WP_CLI {
 
 	private static $capture_exit = false;
 
+	private static $deferred_additions = array();
+
 	/**
 	 * Set the logger instance.
 	 *
@@ -389,8 +391,9 @@ class WP_CLI {
 	 *    @type string   $short_desc    Short description (80 char or less) for the command.
 	 *    @type string   $synopsis      The synopsis for the command (string or array).
 	 *    @type string   $when          Execute callback on a named WP-CLI hook (e.g. before_wp_load).
+	 *    @type bool     $is_deferred   Whether the command addition had already been deferred.
 	 * }
-	 * @return true True on success, hard error if registration failed.
+	 * @return true True on success, false if deferred, hard error if registration failed.
 	 */
 	public static function add_command( $name, $callable, $args = array() ) {
 		$valid = false;
@@ -432,13 +435,29 @@ class WP_CLI {
 
 		while ( !empty( $path ) ) {
 			$subcommand_name = $path[0];
+			$parent = implode( ' ', $path );
 			$subcommand = $command->find_subcommand( $path );
 
-			// create an empty container
+			// Parent not found. Defer addition or create an empty container as
+			// needed.
 			if ( !$subcommand ) {
-				$subcommand = new Dispatcher\CompositeCommand( $command, $subcommand_name,
-					new \WP_CLI\DocParser( '' ) );
-				$command->add_subcommand( $subcommand_name, $subcommand );
+				if ( isset( $args['is_deferred'] ) && $args['is_deferred'] ) {
+					$subcommand = new Dispatcher\CompositeCommand(
+						$command,
+						$subcommand_name,
+						new \WP_CLI\DocParser( '' )
+					);
+					$command->add_subcommand( $subcommand_name, $subcommand );
+				} else {
+					self::defer_command_addition(
+						$name,
+						$parent,
+						$callable,
+						$args
+					);
+
+					return false;
+				}
 			}
 
 			$command = $subcommand;
@@ -496,6 +515,58 @@ class WP_CLI {
 
 		self::do_hook( "after_add_command:{$name}" );
 		return true;
+	}
+
+	/**
+	 * Defer command addition for a sub-command if the parent command is not yet
+	 * registered.
+	 *
+	 * @param string $name     Name for the sub-command.
+	 * @param string $parent   Name for the parent command.
+	 * @param string $callable Command implementation as a class, function or closure.
+	 * @param array  $args     Optional. See `WP_CLI::add_command()` for details.
+	 */
+	private static function defer_command_addition( $name, $parent, $callable, $args = array() ) {
+		$args['is_deferred'] = true;
+		self::$deferred_additions[ $name ] = array(
+			'parent'   => $parent,
+			'callable' => $callable,
+			'args'     => $args,
+		);
+		self::add_hook( "after_add_command:$parent", function () use ( $name ) {
+
+			$deferred_additions = WP_CLI::get_deferred_additions();
+
+			if ( ! array_key_exists( $name, $deferred_additions ) ) {
+				return;
+			}
+
+			$callable = $deferred_additions[ $name ]['callable'];
+			$args     = $deferred_additions[ $name ]['args'];
+			WP_CLI::remove_deferred_addition( $name );
+
+			WP_CLI::add_command( $name, $callable, $args );
+		} );
+	}
+
+	/**
+	 * Get the list of outstanding deferred command additions.
+	 *
+	 * @return array Array of outstanding command additions.
+	 */
+	public static function get_deferred_additions() {
+		return self::$deferred_additions;
+	}
+
+	/**
+	 * Remove a command addition from the list of outstanding deferred additions.
+	 */
+	public static function remove_deferred_addition( $name ) {
+		if ( ! array_key_exists( $name, self::$deferred_additions ) ) {
+			WP_CLI::warning( "Trying to remove a non-existent command addition '{$name}'." );
+		}
+
+		unset( self::$deferred_additions[ $name ] );
 	}
 
 	/**
