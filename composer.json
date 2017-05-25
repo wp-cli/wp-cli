@@ -72,8 +72,7 @@
 		"phpunit/phpunit": "3.7.*",
 		"behat/behat": "2.5.*",
 		"pyrech/composer-changelogs": "dev-php53 as 1.5.1",
-		"roave/security-advisories": "dev-master",
-		"wp-cli/phar-build": "dev-test-travis as dev-master"
+		"roave/security-advisories": "dev-master"
 	},
 	"suggest": {
 		"psy/psysh": "Enhanced `wp shell` functionality"

@@ -231,7 +231,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$make_phar_path = __DIR__ . '/../../utils/make-phar.php';
 			if ( ! file_exists( $make_phar_path ) ) {
 				// WP-CLI as a dependency of this project
-				$make_phar_path = __DIR__ . '/../../vendor/wp-cli/phar-build/utils/make-phar.php';
+				$make_phar_path = __DIR__ . '/../../vendor/wp-cli/wp-cli/utils/make-phar.php';
 			}
 		}
 
