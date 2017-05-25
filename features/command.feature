@@ -804,3 +804,28 @@ Feature: WP-CLI Commands
       """
       sub-command
       """
+
+  Scenario: Command additions can be deferred until their parent is added
+    Given an empty directory
+    And a add-deferred-command.php file:
+      """
+      <?php
+      class TestCommand {
+      }
+
+      WP_CLI::add_command( 'test-command sub-command', function () {} );
+
+      WP_CLI::add_command( 'test-command', 'TestCommand' );
+      """
+
+    When I run `wp --require=add-deferred-command.php`
+    Then STDOUT should contain:
+      """
+      test-command
+      """
+
+    When I run `wp --require=add-deferred-command.php help test-command`
+    Then STDOUT should contain:
+      """
+      sub-command
+      """
