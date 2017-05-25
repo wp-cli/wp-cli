@@ -23,8 +23,10 @@ final class DefineProtectedCommands implements BootstrapStep {
 		$commands        = $this->get_protected_commands();
 		$current_command = $this->get_current_command();
 
-		if ( in_array( $current_command, $commands, true ) ) {
-			$state->setValue( BootstrapState::IS_PROTECTED_COMMAND, true );
+		foreach ( $commands as $command ) {
+			if ( 0 === strpos( $current_command, $command ) ) {
+				$state->setValue( BootstrapState::IS_PROTECTED_COMMAND, true );
+			}
 		}
 
 		return $state;
@@ -38,6 +40,7 @@ final class DefineProtectedCommands implements BootstrapStep {
 	private function get_protected_commands() {
 		return array(
 			'cli info',
+		    'package',
 		);
 	}
 
