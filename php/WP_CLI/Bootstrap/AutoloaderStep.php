@@ -59,15 +59,6 @@ abstract class AutoloaderStep implements BootstrapStep {
 	}
 
 	/**
-	 * Check whether WP-CLI is being run from within a PHAR bundle.
-	 *
-	 * @return bool
-	 */
-	protected function is_inside_phar() {
-		return 0 === strpos( WP_CLI_ROOT, 'phar://' );
-	}
-
-	/**
 	 * Handle the failure to find an autoloader.
 	 *
 	 * @return void
