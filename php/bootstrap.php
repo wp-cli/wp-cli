@@ -26,7 +26,6 @@ function get_bootstrap_steps() {
 		'WP_CLI\Bootstrap\LoadRequiredCommand',
 		'WP_CLI\Bootstrap\IncludePackageAutoloader',
 		'WP_CLI\Bootstrap\IncludeBundledAutoloader',
-		'WP_CLI\Bootstrap\IncludePHARAutoloader',
 		'WP_CLI\Bootstrap\RegisterFrameworkCommands',
 		'WP_CLI\Bootstrap\IncludeFallbackAutoloader',
 		'WP_CLI\Bootstrap\LaunchRunner',
