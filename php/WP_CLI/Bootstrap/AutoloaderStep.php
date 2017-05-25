@@ -59,6 +59,28 @@ abstract class AutoloaderStep implements BootstrapStep {
 	}
 
 	/**
+	 * Get the name of the custom vendor folder as set in `composer.json`.
+	 *
+	 * @return string|false Name of the custom vendor folder or false if none.
+	 */
+	protected function get_custom_vendor_folder() {
+		$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
+		if ( ! is_readable( $maybe_composer_json ) ) {
+			return false;
+		}
+
+		$composer = json_decode( file_get_contents( $maybe_composer_json ) );
+
+		if ( ! empty( $composer->config )
+			&& ! empty( $composer->config->{'vendor-dir'} )
+		) {
+			return $composer->config->{'vendor-dir'};
+		}
+
+		return false;
+	}
+
+	/**
 	 * Handle the failure to find an autoloader.
 	 *
 	 * @return void
