@@ -162,7 +162,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		}
 
 		if ( ! posix_kill( (int) $master_pid, 9 ) ) {
-			throw new RuntimeException( posix_strerror( posix_get_last_error() ) );
+			$errno = posix_get_last_error();
+			// Ignore "No such process" error as that's what we want.
+			if ( 3 /*ESRCH*/ !== $errno ) {
+				throw new RuntimeException( posix_strerror( $errno ) );
+			}
 		}
 	}
 
@@ -365,10 +369,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function install_wp( $subdir = '' ) {
+		$subdir = $this->replace_variables( $subdir );
+
 		$this->create_db();
 		$this->create_run_dir();
 		$this->download_wp( $subdir );
-
 		$this->create_config( $subdir );
 
 		$install_args = array(
