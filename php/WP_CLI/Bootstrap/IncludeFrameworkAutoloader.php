@@ -21,14 +21,6 @@ final class IncludeFrameworkAutoloader extends AutoloaderStep {
 	 *                        to skip.
 	 */
 	protected function get_autoloader_paths() {
-		if ( $this->is_inside_phar() ) {
-			$autoloader_path = WP_CLI_ROOT . '/vendor/autoload_framework.php';
-
-			return is_readable( $autoloader_path )
-				? array( $autoloader_path )
-				: false;
-		}
-
 		$autoloader_paths = array(
 			// Part of a larger project / installed via Composer (preferred).
 			WP_CLI_ROOT . '/../../../vendor/autoload_framework.php',
