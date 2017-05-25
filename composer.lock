@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "a6edef95d2a5c0c7636664ab5d921f2e",
+    "content-hash": "4e43b8a956e6aff6833eb95246240c00",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -3188,7 +3188,7 @@
             "support": {
                 "source": "https://github.com/wp-cli/composer-changelogs/tree/php53"
             },
-            "time": "2017-03-29T14:27:14+00:00"
+            "time": "2017-03-29 14:27:14"
         },
         {
             "name": "roave/security-advisories",
@@ -3324,43 +3324,6 @@
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
             "time": "2017-05-13T14:02:28+00:00"
-        },
-        {
-            "name": "wp-cli/phar-build",
-            "version": "dev-test-travis",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/phar-build.git",
-                "reference": "a32721acdcd6e93155ec00383a31b0ea929cde46"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/phar-build/zipball/a32721acdcd6e93155ec00383a31b0ea929cde46",
-                "reference": "a32721acdcd6e93155ec00383a31b0ea929cde46",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.29",
-                "wp-cli/wp-cli": "dev-optimize-autoloader-paths as dev-master"
-            },
-            "require-dev": {
-                "behat/behat": "2.5.*",
-                "phpunit/phpunit": "3.7.*",
-                "pyrech/composer-changelogs": "dev-php53 as 1.5.1",
-                "roave/security-advisories": "dev-master"
-            },
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "Phar build process for WP-CLI.",
-            "homepage": "http://wp-cli.org",
-            "keywords": [
-                "cli",
-                "wordpress"
-            ],
-            "time": "2017-05-19T12:29:40+00:00"
         }
     ],
     "aliases": [
@@ -3369,19 +3332,12 @@
             "alias_normalized": "1.5.1.0",
             "version": "dev-php53",
             "package": "pyrech/composer-changelogs"
-        },
-        {
-            "alias": "dev-master",
-            "alias_normalized": "9999999-dev",
-            "version": "dev-test-travis",
-            "package": "wp-cli/phar-build"
         }
     ],
     "minimum-stability": "dev",
     "stability-flags": {
         "pyrech/composer-changelogs": 20,
-        "roave/security-advisories": 20,
-        "wp-cli/phar-build": 20
+        "roave/security-advisories": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
