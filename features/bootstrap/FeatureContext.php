@@ -32,7 +32,11 @@ if ( file_exists( __DIR__ . '/utils.php' ) ) {
 	require_once __DIR__ . '/../../php/utils.php';
 	require_once __DIR__ . '/../../php/WP_CLI/Process.php';
 	require_once __DIR__ . '/../../php/WP_CLI/ProcessRun.php';
-	require_once __DIR__ . '/../../vendor/autoload.php';
+	if ( file_exists( __DIR__ . '/../../vendor/autoload.php' ) ) {
+		require_once __DIR__ . '/../../vendor/autoload.php';
+	} else if ( file_exists( __DIR__ . '/../../../../autoload.php' ) ) {
+		require_once __DIR__ . '/../../../../autoload.php';
+	}
 }
 
 /**
@@ -219,12 +223,12 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function build_phar( $version = 'same' ) {
 		$this->variables['PHAR_PATH'] = $this->variables['RUN_DIR'] . '/' . uniqid( "wp-cli-build-", TRUE ) . '.phar';
 
-		// Test running against WP-CLI proper
-		$make_phar_path = __DIR__ . '/../../utils/make-phar.php';
+		// Test running against a package installed as a WP-CLI dependency
+		// WP-CLI installed as a project dependency
+		$make_phar_path = __DIR__ . '/../../../../../utils/make-phar.php';
 		if ( ! file_exists( $make_phar_path ) ) {
-			// Test running against a package installed as a WP-CLI dependency
-			// WP-CLI installed as a project dependency
-			$make_phar_path = __DIR__ . '/../../../../../utils/make-phar.php';
+			// Test running against WP-CLI proper
+			$make_phar_path = __DIR__ . '/../../utils/make-phar.php';
 			if ( ! file_exists( $make_phar_path ) ) {
 				// WP-CLI as a dependency of this project
 				$make_phar_path = __DIR__ . '/../../vendor/wp-cli/wp-cli/utils/make-phar.php';

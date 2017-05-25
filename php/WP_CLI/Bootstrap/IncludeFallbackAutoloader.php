@@ -20,25 +20,13 @@ final class IncludeFallbackAutoloader extends AutoloaderStep {
 	 */
 	protected function get_autoloader_paths() {
 		$autoloader_paths = array(
-			// Part of a larger project / installed via Composer (preferred).
-			WP_CLI_ROOT . '/../../../vendor/autoload.php',
-			// Top-level project / installed as Git clone.
-			WP_CLI_ROOT . '/vendor/autoload.php',
+			WP_CLI_VENDOR_DIR . '/autoload.php',
 		);
 
-		$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
-		if ( ! is_readable( $maybe_composer_json ) ) {
-			return $autoloader_paths;
-		}
-
-		$composer = json_decode( file_get_contents( $maybe_composer_json ) );
-
-		if ( ! empty( $composer->config )
-			&& ! empty( $composer->config->{'vendor-dir'} )
-		) {
+		if ( $custom_vendor = $this->get_custom_vendor_folder() ) {
 			array_unshift(
 				$autoloader_paths,
-				WP_CLI_ROOT . '/../../../' . $composer->config->{'vendor-dir'} . '/autoload.php'
+				WP_CLI_ROOT . '/../../../' . $custom_vendor . '/autoload_commands.php'
 			);
 		}
 
