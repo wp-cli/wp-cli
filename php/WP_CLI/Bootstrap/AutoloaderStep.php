@@ -59,12 +59,25 @@ abstract class AutoloaderStep implements BootstrapStep {
 	}
 
 	/**
-	 * Check whether WP-CLI is being run from within a PHAR bundle.
+	 * Get the name of the custom vendor folder as set in `composer.json`.
 	 *
-	 * @return bool
+	 * @return string|false Name of the custom vendor folder or false if none.
 	 */
-	protected function is_inside_phar() {
-		return 0 === strpos( WP_CLI_ROOT, 'phar://' );
+	protected function get_custom_vendor_folder() {
+		$maybe_composer_json = WP_CLI_ROOT . '/../../../composer.json';
+		if ( ! is_readable( $maybe_composer_json ) ) {
+			return false;
+		}
+
+		$composer = json_decode( file_get_contents( $maybe_composer_json ) );
+
+		if ( ! empty( $composer->config )
+			&& ! empty( $composer->config->{'vendor-dir'} )
+		) {
+			return $composer->config->{'vendor-dir'};
+		}
+
+		return false;
 	}
 
 	/**
