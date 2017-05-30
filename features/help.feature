@@ -224,3 +224,64 @@ Feature: Get help about WP-CLI commands
       """
       ALIAS
       """
+
+  Scenario: Help for commands should wordwrap well
+    Given a WP install
+    And a wp-content/plugins/test-cli/command.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI Help
+
+      class Test_Wordwrap extends WP_CLI_Command {
+        /**
+         * A dummy command.
+         *
+         * ## OPTIONS
+         *
+         * [--skip-delete]
+         * : Skip deletion of the original thumbnails. If your thumbnails are linked from sources outside your control, it's likely best to leave them around. Defaults to false.
+         *
+         */
+        function my_command() {}
+      }
+
+      WP_CLI::add_command( 'test-wordwrap', 'Test_Wordwrap' );
+      """
+    And I run `wp plugin activate test-cli`
+
+    When I run `wp help test-wordwrap my_command`
+    Then STDOUT should contain:
+      """
+        [--skip-delete]
+          Skip deletion of the original thumbnails. If your thumbnails are linked from sources
+          outside your control, it's likely best to leave them around. Defaults to false.
+
+      """
+    And STDOUT should contain:
+      """
+        --url=<url>
+            Pretend request came from given URL. In multisite, this argument is how the target
+            site is specified.
+
+      """
+
+    When I run `wp help test-wordwrap my_command --help_wordwrap_width=30`
+    Then STDOUT should contain:
+      """
+        [--skip-delete]
+          Skip deletion of the
+          original thumbnails. If your
+          thumbnails are linked from
+          sources outside your control,
+          it's likely best to leave them
+          around. Defaults to false.
+
+      """
+
+    When I run `wp help test-wordwrap my_command --help_wordwrap_width=0`
+    Then STDOUT should contain:
+      """
+        [--skip-delete]
+          Skip deletion of the original thumbnails. If your thumbnails are linked from sources outside your control, it's likely best to leave them around. Defaults to false.
+
+      """
