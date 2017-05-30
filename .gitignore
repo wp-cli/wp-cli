@@ -8,3 +8,4 @@ PHAR_BUILD_VERSION
 /phpunit.xml.dist
 /codesniffer
 /PHP_Codesniffer-VariableAnalysis
+.*.swp
