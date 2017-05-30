@@ -904,6 +904,9 @@ function expand_globs( $paths, $flags = GLOB_BRACE ) {
  * @return string
  */
 function get_suggestion( $target, array $options, $threshold = 2 ) {
+	if ( empty( $options ) ) {
+		return '';
+	}
 	foreach ( $options as $option ) {
 		$distance = levenshtein( $option, $target );
 		$levenshtein[ $option ] = $distance;
