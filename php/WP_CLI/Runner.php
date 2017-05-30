@@ -1338,24 +1338,10 @@ class Runner {
 	 * @return string Suggestion that fits the user entry, or an empty string.
 	 */
 	private function get_subcommand_suggestion( $entry, CompositeCommand $root_command = null ) {
-		$levenshtein = array();
 		$commands = array();
 		$this->enumerate_commands( $root_command ?: \WP_CLI::get_root_command(), $commands );
 
-		foreach( $commands as $command_string ) {
-			$distance = levenshtein( $command_string, $entry );
-			$levenshtein[ $command_string ] = $distance;
-		}
-
-		// Sort known command strings by distance to user entry.
-		asort( $levenshtein );
-
-		// Fetch the closest command string.
-		reset( $levenshtein );
-		$suggestion = key( $levenshtein );
-
-		// Only return a suggestion if below a given threshold.
-		return $levenshtein[ $suggestion ] < 3 ? $suggestion : '';
+		return Utils\get_suggestion( $entry, $commands, $threshold = 2 );
 	}
 
 	/**
