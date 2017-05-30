@@ -791,7 +791,12 @@ class Runner {
 			}
 
 			if ( ! array_key_exists( $this->alias, $this->aliases ) ) {
-				WP_CLI::error( "Alias '{$this->alias}' not found." );
+				$error_msg = "Alias '{$this->alias}' not found.";
+				$suggestion = Utils\get_suggestion( $this->alias, array_keys( $this->aliases ), $threshold = 2 );
+				if ( $suggestion ) {
+					$error_msg .= PHP_EOL . "Did you mean '{$suggestion}'?";
+				}
+				WP_CLI::error( $error_msg );
 			}
 			// Numerically indexed means a group of aliases
 			if ( isset( $this->aliases[ $this->alias ][0] ) ) {

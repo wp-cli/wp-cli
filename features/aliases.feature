@@ -31,6 +31,21 @@ Feature: Create shortcuts to specific WordPress installs
       Error: Alias '@test' not found.
       """
 
+  Scenario: Provide suggestion when invalid alias is provided
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      @test2:
+        path: testdir
+      """
+
+    When I try `wp @test option get home`
+    Then STDERR should be:
+      """
+      Error: Alias '@test' not found.
+      Did you mean '@test2'?
+      """
+
   Scenario: Treat global params as local when included in alias
     Given a WP install in 'testdir'
     And a wp-cli.yml file:
