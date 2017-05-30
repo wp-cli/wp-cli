@@ -888,6 +888,41 @@ function expand_globs( $paths, $flags = GLOB_BRACE ) {
 }
 
 /**
+ * Get the closest suggestion for a mis-typed target term amongst a list of
+ * options.
+ *
+ * Uses the Levenshtein algorithm to calculate the relative "distance" between
+ * terms.
+ *
+ * If the "distance" to the closest term is higher than the threshold, an empty
+ * string is returned.
+ *
+ * @param string $target    Target term to get a suggestion for.
+ * @param array  $options   Array with possible options.
+ * @param int    $threshold Threshold above which to return an empty string.
+ *
+ * @return string
+ */
+function get_suggestion( $target, array $options, $threshold = 2 ) {
+	foreach ( $options as $option ) {
+		$distance = levenshtein( $option, $target );
+		$levenshtein[ $option ] = $distance;
+	}
+
+	// Sort known command strings by distance to user entry.
+	asort( $levenshtein );
+
+	// Fetch the closest command string.
+	reset( $levenshtein );
+	$suggestion = key( $levenshtein );
+
+	// Only return a suggestion if below a given threshold.
+	return $levenshtein[ $suggestion ] <= $threshold && $suggestion !== $target
+		? (string) $suggestion
+		: '';
+}
+
+/**
  * Get a Phar-safe version of a path.
  *
  * For paths inside a Phar, this strips the outer filesystem's location to

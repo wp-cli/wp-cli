@@ -755,6 +755,21 @@ Feature: WP-CLI Commands
       Did you mean
       """
 
+  Scenario: WP-CLI suggests matching parameters when user entry contains typos
+    Given an empty directory
+
+    When I try `wp cli info --quie`
+    Then STDERR should contain:
+      """
+      Did you mean '--quiet'?
+      """
+
+    When I try `wp cli info --forma=json`
+    Then STDERR should contain:
+      """
+      Did you mean '--format'?
+      """
+
   Scenario: Adding a command can be aborted through the hooks system
     Given an empty directory
     And a abort-add-command.php file:
