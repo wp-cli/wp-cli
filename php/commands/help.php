@@ -67,7 +67,11 @@ class Help_Command extends WP_CLI_Command {
 		$out = preg_replace( '#^([^\s^\#])#m', "\t$1", $out );
 
 		// Wordwrap with indent.
-		if ( ( $wordwrap_width = WP_CLI::get_runner()->config['help_wordwrap_width'] ) > 0 ) {
+		$wordwrap_width = 80;
+		if ( false !== ( $env_wordwrap_width = getenv( 'WP_CLI_HELP_WORDWRAP_WIDTH' ) ) ) {
+			$wordwrap_width = (int) $env_wordwrap_width;
+		}
+		if ( $wordwrap_width > 0 ) {
 			$out = preg_replace_callback( '/([ \t]*)[^\n]+\n/', function ( $matches ) use ( $wordwrap_width ) {
 				return wordwrap( $matches[0], $wordwrap_width, "\n{$matches[1]}" );
 			}, $out );

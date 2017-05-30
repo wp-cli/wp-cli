@@ -241,6 +241,17 @@ Feature: Get help about WP-CLI commands
          * [--skip-delete]
          * : Skip deletion of the original thumbnails. If your thumbnails are linked from sources outside your control, it's likely best to leave them around. Defaults to false.
          *
+         * ## EXAMPLES
+         *
+         *     # Re-generate only the thumbnails of "large" image size for all images.
+         *     $ wp media regenerate --image_size=large
+         *     Do you really want to regenerate the "large" image size for all images? [y/n] y
+         *     Found 3 images to regenerate.
+         *     1/3 Regenerated "large" thumbnail for "Yoogest Image Ever, Really" (ID 9999).
+         *     2/3 No "large" thumbnail regeneration needed for "Snowflake" (ID 9998).
+         *     3/3 Regenerated "large" thumbnail for "Even Yooger than the Yoogest Image Ever, Really" (ID 9997).
+         *     Success: Regenerated 3 of 3 images.
+         *
          */
         function my_command() {}
       }
@@ -253,19 +264,35 @@ Feature: Get help about WP-CLI commands
     Then STDOUT should contain:
       """
         [--skip-delete]
-          Skip deletion of the original thumbnails. If your thumbnails are linked from sources
-          outside your control, it's likely best to leave them around. Defaults to false.
+          Skip deletion of the original thumbnails. If your thumbnails are linked from
+          sources outside your control, it's likely best to leave them around. Defaults to
+          false.
+
+      """
+    And STDOUT should contain:
+      """
+          # Re-generate only the thumbnails of "large" image size for all images.
+          $ wp media regenerate --image_size=large
+          Do you really want to regenerate the "large" image size for all images?
+          [y/n] y
+          Found 3 images to regenerate.
+          1/3 Regenerated "large" thumbnail for "Yoogest Image Ever, Really" (ID
+          9999).
+          2/3 No "large" thumbnail regeneration needed for "Snowflake" (ID 9998).
+          3/3 Regenerated "large" thumbnail for "Even Yooger than the Yoogest Image
+          Ever, Really" (ID 9997).
+          Success: Regenerated 3 of 3 images.
 
       """
     And STDOUT should contain:
       """
         --url=<url>
-            Pretend request came from given URL. In multisite, this argument is how the target
-            site is specified.
+            Pretend request came from given URL. In multisite, this argument is how
+            the target site is specified.
 
       """
 
-    When I run `wp help test-wordwrap my_command --help_wordwrap_width=30`
+    When I run `WP_CLI_HELP_WORDWRAP_WIDTH=30 wp help test-wordwrap my_command`
     Then STDOUT should contain:
       """
         [--skip-delete]
@@ -277,11 +304,64 @@ Feature: Get help about WP-CLI commands
           around. Defaults to false.
 
       """
+    And STDOUT should contain:
+      """
+          # Re-generate only the
+          thumbnails of "large" image
+          size for all images.
+          $ wp media regenerate
+          --image_size=large
+          Do you really want to
+          regenerate the "large" image
+          size for all images? [y/n] y
+          Found 3 images to
+          regenerate.
+          1/3 Regenerated "large"
+          thumbnail for "Yoogest Image
+          Ever, Really" (ID 9999).
+          2/3 No "large" thumbnail
+          regeneration needed for
+          "Snowflake" (ID 9998).
+          3/3 Regenerated "large"
+          thumbnail for "Even Yooger
+          than the Yoogest Image Ever,
+          Really" (ID 9997).
+          Success: Regenerated 3 of
+          3 images.
 
-    When I run `wp help test-wordwrap my_command --help_wordwrap_width=0`
+      """
+    And STDOUT should contain:
+      """
+        --url=<url>
+            Pretend request came
+            from given URL. In multisite,
+            this argument is how the
+            target site is specified.
+
+      """
+
+    When I run `WP_CLI_HELP_WORDWRAP_WIDTH=0 wp help test-wordwrap my_command`
     Then STDOUT should contain:
       """
         [--skip-delete]
           Skip deletion of the original thumbnails. If your thumbnails are linked from sources outside your control, it's likely best to leave them around. Defaults to false.
+
+      """
+    And STDOUT should contain:
+      """
+          # Re-generate only the thumbnails of "large" image size for all images.
+          $ wp media regenerate --image_size=large
+          Do you really want to regenerate the "large" image size for all images? [y/n] y
+          Found 3 images to regenerate.
+          1/3 Regenerated "large" thumbnail for "Yoogest Image Ever, Really" (ID 9999).
+          2/3 No "large" thumbnail regeneration needed for "Snowflake" (ID 9998).
+          3/3 Regenerated "large" thumbnail for "Even Yooger than the Yoogest Image Ever, Really" (ID 9997).
+          Success: Regenerated 3 of 3 images.
+
+      """
+    And STDOUT should contain:
+      """
+        --url=<url>
+            Pretend request came from given URL. In multisite, this argument is how the target site is specified.
 
       """
