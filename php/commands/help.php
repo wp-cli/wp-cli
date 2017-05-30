@@ -78,7 +78,6 @@ class Help_Command extends WP_CLI_Command {
 
 		$out = str_replace( "\t", '  ', $out );
 
-
 		self::pass_through_pager( $out );
 	}
 
