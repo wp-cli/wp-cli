@@ -917,7 +917,7 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
 	$suggestion = key( $levenshtein );
 
 	// Only return a suggestion if below a given threshold.
-	return $levenshtein[ $suggestion ] <= $threshold
+	return $levenshtein[ $suggestion ] <= $threshold && $suggestion !== $target
 		? (string) $suggestion
 		: '';
 }
