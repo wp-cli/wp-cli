@@ -638,8 +638,10 @@ Feature: WP-CLI Commands
     And a remove-comment.php file:
       """
       <?php
-      $command = WP_CLI::get_root_command();
-      $command->remove_subcommand( 'comment' );
+      WP_CLI::add_hook( 'after_add_command:comment', function () {
+        $command = WP_CLI::get_root_command();
+        $command->remove_subcommand( 'comment' );
+      } );
       """
 
     When I run `wp`
@@ -766,4 +768,79 @@ Feature: WP-CLI Commands
     Then STDERR should contain:
       """
       Did you mean '--format'?
+      """
+
+  Scenario: Adding a command can be aborted through the hooks system
+    Given an empty directory
+    And a abort-add-command.php file:
+      """
+      <?php
+      WP_CLI::add_hook( 'before_add_command:test-command-2', function ( $addition ) {
+        $addition->abort( 'Testing hooks.' );
+      } );
+
+      WP_CLI::add_command( 'test-command-1', function () {} );
+      WP_CLI::add_command( 'test-command-2', function () {} );
+      """
+
+    When I run `wp --require=abort-add-command.php`
+    Then STDOUT should contain:
+      """
+      test-command-1
+      """
+    And STDOUT should not contain:
+      """
+      test-command-2
+      """
+
+  Scenario: Adding a command can depend on a previous command having been added before
+    Given an empty directory
+    And a add-dependent-command.php file:
+      """
+      <?php
+      class TestCommand {
+      }
+
+      WP_CLI::add_hook( 'after_add_command:test-command', function () {
+        WP_CLI::add_command( 'test-command sub-command', function () {} );
+      } );
+
+      WP_CLI::add_command( 'test-command', 'TestCommand' );
+      """
+
+    When I run `wp --require=add-dependent-command.php`
+    Then STDOUT should contain:
+      """
+      test-command
+      """
+
+    When I run `wp --require=add-dependent-command.php help test-command`
+    Then STDOUT should contain:
+      """
+      sub-command
+      """
+
+  Scenario: Command additions can be deferred until their parent is added
+    Given an empty directory
+    And a add-deferred-command.php file:
+      """
+      <?php
+      class TestCommand {
+      }
+
+      WP_CLI::add_command( 'test-command sub-command', function () {} );
+
+      WP_CLI::add_command( 'test-command', 'TestCommand' );
+      """
+
+    When I run `wp --require=add-deferred-command.php`
+    Then STDOUT should contain:
+      """
+      test-command
+      """
+
+    When I run `wp --require=add-deferred-command.php help test-command`
+    Then STDOUT should contain:
+      """
+      sub-command
       """

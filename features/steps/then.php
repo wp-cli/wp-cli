@@ -145,8 +145,9 @@ $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 	}
 );
 
-$steps->Then( '/^(STDOUT|STDERR) should be a version string (<|<=|>|>=|==|=|!=|<>) ([+\w\.-]+)$/',
+$steps->Then( '/^(STDOUT|STDERR) should be a version string (<|<=|>|>=|==|=|!=|<>) ([+\w.{}-]+)$/',
 	function ( $world, $stream, $operator, $goal_ver ) {
+		$goal_ver = $world->replace_variables( $goal_ver );
 		$stream = strtolower( $stream );
 		if ( false === version_compare( trim( $world->result->$stream, "\n" ), $goal_ver, $operator ) ) {
 			throw new Exception( $world->result );

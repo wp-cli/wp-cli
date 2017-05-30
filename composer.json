@@ -12,6 +12,11 @@
 	"bin": [
 		"bin/wp.bat", "bin/wp"
 	],
+	"config": {
+		"platform": {
+			"php": "5.3.29"
+		}
+	},
 	"repositories": [
 		{
 			"type": "vcs",
@@ -22,22 +27,23 @@
 	"prefer-stable": true,
 	"require": {
 		"php": ">=5.3.29",
+		"wp-cli/autoload-splitter": "^0.1",
 		"wp-cli/php-cli-tools": "~0.11.2",
 		"mustache/mustache": "~2.4",
-		"mustangostang/spyc": "~0.5",
+		"wp-cli/mustangostang-spyc": "^0.6.3",
 		"composer/semver": "~1.0",
 		"ramsey/array_column": "~1.1",
 		"rmccue/requests" : "~1.6",
-		"symfony/finder": "~2.7",
-		"symfony/yaml": "~2.7",
-		"symfony/filesystem": "~2.7",
-		"symfony/config": "~2.7",
-		"symfony/console": "~2.7",
-		"symfony/debug": "~2.7",
-		"symfony/dependency-injection": "~2.7",
-		"symfony/event-dispatcher": "~2.7",
-		"symfony/process": "~2.1",
-		"symfony/translation": "~2.7",
+		"symfony/finder": "^2.7|^3.0",
+		"symfony/yaml": "^2.7|^3.0",
+		"symfony/filesystem": "^2.7|^3.0",
+		"symfony/config": "^2.7|^3.0",
+		"symfony/console": "^2.7|^3.0",
+		"symfony/debug": "^2.7|^3.0",
+		"symfony/dependency-injection": "^2.7|^3.0",
+		"symfony/event-dispatcher": "^2.7|^3.0",
+		"symfony/process": "^2.1|^3.0",
+		"symfony/translation": "^2.7|^3.0",
 		"composer/composer": "^1.2.0",
 		"wp-cli/cron-command": "^1.0",
 		"wp-cli/import-command": "^1.0",
@@ -58,7 +64,9 @@
 		"wp-cli/widget-command": "^1.0",
 		"wp-cli/role-command": "^1.0",
 		"wp-cli/cache-command": "^1.0",
-		"wp-cli/checksum-command": "^1.0"
+		"wp-cli/checksum-command": "^1.0",
+		"wp-cli/language-command": "^1.0",
+		"wp-cli/core-command": "^1.0"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "3.7.*",
@@ -70,6 +78,15 @@
 		"psy/psysh": "Enhanced `wp shell` functionality"
 	},
 	"autoload": {
-		"psr-0": { "WP_CLI": "php" }
+		"psr-0": { "WP_CLI": "php" },
+		"psr-4": { "": "php/commands/src" }
+	},
+	"extra": {
+		"autoload-splitter": {
+			"splitter-logic": "WP_CLI\\AutoloadSplitter",
+			"splitter-location": "php/WP_CLI/AutoloadSplitter.php",
+			"split-target-prefix-true": "autoload_commands",
+			"split-target-prefix-false": "autoload_framework"
+		}
 	}
 }

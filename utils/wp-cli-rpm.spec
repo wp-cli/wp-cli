@@ -4,7 +4,7 @@ Name:		wp-cli
 Version:	1.1.0
 Release:	1%{?dist}
 
-Summary:	The command line interface for Wordpress
+Summary:	The command line interface for WordPress
 Packager:	Murtaza Sarıaltun <murtaza.sarialtun@ozguryazilim.com.tr>
 Group:		Applications/Internet
 License:	MIT
