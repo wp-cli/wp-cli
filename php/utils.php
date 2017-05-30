@@ -10,8 +10,10 @@ use \WP_CLI;
 use \WP_CLI\Dispatcher;
 use \WP_CLI\Iterators\Transform;
 
+const PHAR_STREAM_PREFIX = 'phar://';
+
 function inside_phar() {
-	return 0 === strpos( WP_CLI_ROOT, 'phar://' );
+	return 0 === strpos( WP_CLI_ROOT, PHAR_STREAM_PREFIX );
 }
 
 // Files that need to be read by external programs have to be extracted from the Phar archive.
@@ -84,19 +86,6 @@ function load_command( $name ) {
 
 	if ( is_readable( $path ) ) {
 		include_once $path;
-	}
-}
-
-function load_all_commands() {
-	$cmd_dir = WP_CLI_ROOT . '/php/commands';
-
-	$iterator = new \DirectoryIterator( $cmd_dir );
-
-	foreach ( $iterator as $filename ) {
-		if ( '.php' != substr( $filename, -4 ) )
-			continue;
-
-		include_once "$cmd_dir/$filename";
 	}
 }
 
@@ -458,19 +447,6 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
  * IMPORTANT: Automatic HTML escaping is disabled!
  */
 function mustache_render( $template_name, $data = array() ) {
-	// Transform absolute path to relative path inside of Phar
-	if ( inside_phar() && 0 === stripos( $template_name, 'phar://' ) ) {
-		$search = '';
-		$replace = '';
-		if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
-			$search = dirname( __DIR__ );
-			$replace = WP_CLI_ROOT;
-		} elseif ( file_exists( dirname( dirname( WP_CLI_ROOT ) ) . '/autoload.php' ) ) {
-			$search = dirname( dirname( dirname( __DIR__ ) ) );
-			$replace = dirname( dirname( dirname( WP_CLI_ROOT ) ) );
-		}
-		$template_name = str_replace( $search, $replace, $template_name );
-	}
 	if ( ! file_exists( $template_name ) )
 		$template_name = WP_CLI_ROOT . "/templates/$template_name";
 
@@ -581,7 +557,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 	if ( inside_phar() ) {
 		// cURL can't read Phar archives
 		$options['verify'] = extract_from_phar(
-		WP_CLI_ROOT . '/vendor' . $cert_path );
+		WP_CLI_VENDOR_DIR . $cert_path );
 	} else {
 		foreach( get_vendor_paths() as $vendor_path ) {
 			if ( file_exists( $vendor_path . $cert_path ) ) {
@@ -860,6 +836,32 @@ function basename( $path, $suffix = '' ) {
 }
 
 /**
+ * Checks whether the output of the current script is a TTY or a pipe / redirect
+ *
+ * Returns true if STDOUT output is being redirected to a pipe or a file; false is
+ * output is being sent directly to the terminal.
+ *
+ * If an env variable SHELL_PIPE exists, returned result depends it's
+ * value. Strings like 1, 0, yes, no, that validate to booleans are accepted.
+ *
+ * To enable ASCII formatting even when shell is piped, use the
+ * ENV variable SHELL_PIPE=0
+ *
+ * @access public
+ *
+ * @return bool
+ */
+function isPiped() {
+	$shellPipe = getenv('SHELL_PIPE');
+
+	if ($shellPipe !== false) {
+		return filter_var($shellPipe, FILTER_VALIDATE_BOOLEAN);
+	} else {
+		return (function_exists('posix_isatty') && !posix_isatty(STDOUT));
+	}
+}
+
+/**
  * Expand within paths to their matching paths.
  *
  * Has no effect on paths which do not use glob patterns.
@@ -918,4 +920,60 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
 	return $levenshtein[ $suggestion ] <= $threshold
 		? (string) $suggestion
 		: '';
+}
+
+/**
+ * Get a Phar-safe version of a path.
+ *
+ * For paths inside a Phar, this strips the outer filesystem's location to
+ * reduce the path to what it needs to be within the Phar archive.
+ *
+ * Use the __FILE__ or __DIR__ constants as a starting point.
+ *
+ * @param string $path An absolute path that might be within a Phar.
+ *
+ * @return string A Phar-safe version of the path.
+ */
+function phar_safe_path( $path ) {
+
+	if ( ! inside_phar() ) {
+		return $path;
+	}
+
+	return str_replace(
+		PHAR_STREAM_PREFIX . WP_CLI_PHAR_PATH . '/',
+		PHAR_STREAM_PREFIX,
+		$path
+	);
+}
+
+/**
+ * Check whether a given Command object is part of the bundled set of
+ * commands.
+ *
+ * This function accepts both a fully qualified class name as a string as
+ * well as an object that extends `WP_CLI\Dispatcher\CompositeCommand`.
+ *
+ * @param \WP_CLI\Dispatcher\CompositeCommand|string $command
+ *
+ * @return bool
+ */
+function is_bundled_command( $command ) {
+	static $classes;
+
+	if ( null === $classes ) {
+		$classes = array();
+		$class_map = WP_CLI_VENDOR_DIR . '/composer/autoload_commands_classmap.php';
+		if ( file_exists( WP_CLI_VENDOR_DIR . '/composer/') ) {
+			$classes = include $class_map;
+		}
+	}
+
+	if ( is_object( $command ) ) {
+		$command = get_class( $command );
+	}
+
+	return is_string( $command )
+		? array_key_exists( $command, $classes )
+		: false;
 }

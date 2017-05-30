@@ -51,7 +51,7 @@ Feature: `wp cli completions` tasks
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp cli completions --line="wp help core language " --point=100`
+    When I run `wp cli completions --line="wp help language core " --point=100`
     Then STDOUT should contain:
       """
       install
@@ -74,7 +74,7 @@ Feature: `wp cli completions` tasks
     When I run `wp cli completions --line="wp core " --point=100`
     Then STDOUT should contain:
       """
-      language
+      download
       """
     And STDERR should be empty
     And the return code should be 0
@@ -167,7 +167,7 @@ Feature: `wp cli completions` tasks
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp cli completions --line="wp help core language " --point=100`
+    When I run `wp cli completions --line="wp help language core " --point=100`
     Then STDOUT should contain:
       """
       install
@@ -202,7 +202,7 @@ Feature: `wp cli completions` tasks
     When I run `wp cli completions --line="wp help core " --point=100`
     Then STDOUT should contain:
       """
-      language
+      download
       """
     And STDERR should be empty
     And the return code should be 0

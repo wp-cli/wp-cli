@@ -2,6 +2,8 @@
 
 namespace WP_CLI;
 
+use Mustangostang\Spyc;
+
 /**
  * Handles file- and runtime-based configuration values.
  *
@@ -298,7 +300,7 @@ class Configurator {
 		if ( !$yml_file )
 			return array();
 
-		$config = spyc_load_file( $yml_file );
+		$config = Spyc::YAMLLoad( $yml_file );
 
 		// Make sure config-file-relative paths are made absolute.
 		$yml_file_dir = dirname( $yml_file );

@@ -58,16 +58,24 @@ class Help_Command extends WP_CLI_Command {
 	private static function show_help( $command ) {
 		$out = self::get_initial_markdown( $command );
 
-		$longdesc = $command->get_longdesc();
-		if ( $longdesc ) {
-			$out .= wordwrap( $longdesc, 90 ) . "\n";
-		}
+		$out .= $command->get_longdesc();
 
 		// definition lists
 		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
 
-		// Ensure all non-section headers are indented
+		// Ensure all non-section headers are indented.
 		$out = preg_replace( '#^([^\s^\#])#m', "\t$1", $out );
+
+		// Wordwrap with indent.
+		$wordwrap_width = 80;
+		if ( false !== ( $env_wordwrap_width = getenv( 'WP_CLI_HELP_WORDWRAP_WIDTH' ) ) ) {
+			$wordwrap_width = (int) $env_wordwrap_width;
+		}
+		if ( $wordwrap_width > 0 ) {
+			$out = preg_replace_callback( '/([ \t]*)[^\n]+\n/', function ( $matches ) use ( $wordwrap_width ) {
+				return wordwrap( $matches[0], $wordwrap_width, "\n{$matches[1]}" );
+			}, $out );
+		}
 
 		// section headers
 		$out = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
@@ -79,7 +87,7 @@ class Help_Command extends WP_CLI_Command {
 
 	private static function rewrap_param_desc( $matches ) {
 		$param = $matches[1];
-		$desc = self::indent( "\t\t", wordwrap( $matches[2] ) );
+		$desc = self::indent( "\t\t", $matches[2] );
 		return "\t$param\n$desc\n\n";
 	}
 
@@ -119,7 +127,7 @@ class Help_Command extends WP_CLI_Command {
 			'shortdesc' => $command->get_shortdesc(),
 		);
 
-		$binding['synopsis'] = wordwrap( "$name " . $command->get_synopsis(), 79 );
+		$binding['synopsis'] = "$name " . $command->get_synopsis();
 
 		$alias = $command->get_alias();
 		if ( $alias ) {
