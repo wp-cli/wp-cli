@@ -105,6 +105,14 @@ return array(
 		'default' => array(),
 	),
 
+	'help_wordwrap_width' => array(
+		'runtime' => '=<int>',
+		'file' => '<int>',
+		'default' => 90,
+		'desc' => 'Width to wrap help lines to; 0 for none; default 90.',
+		'hidden' => true, # So as not to clutter output with a minor parameter.
+	),
+
 	# --allow-root => (NOT RECOMMENDED) Allow wp-cli to run as root. This poses
 	# a security risk, so you probably do not want to do this.
 	'allow-root' => array(
