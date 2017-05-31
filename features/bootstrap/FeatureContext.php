@@ -127,8 +127,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function afterScenario( $event ) {
 		if ( isset( $this->variables['RUN_DIR'] ) ) {
 			// remove altered WP install, unless there's an error
-			if ( $event->getResult() < 4 ) {
-				$this->proc( Utils\esc_cmd( 'rm -r %s', $this->variables['RUN_DIR'] ) )->run();
+			if ( $event->getResult() < 4 && 0 === strpos( $this->variables['RUN_DIR'], sys_get_temp_dir() ) ) {
+				$this->proc( Utils\esc_cmd( 'rm -rf %s', $this->variables['RUN_DIR'] ) )->run();
 			}
 		}
 
