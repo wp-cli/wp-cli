@@ -104,11 +104,20 @@ class CommandFactory {
 	/**
 	 * Check whether a method is actually callable.
 	 *
-	 * @param ReflectionMethod $method
+	 * @param \ReflectionMethod $method
+	 *
 	 * @return bool
 	 */
 	private static function is_good_method( $method ) {
-		return $method->isPublic() && !$method->isStatic() && 0 !== strpos( $method->getName(), '__' );
+		$doc_block = new \WP_CLI\DocParser( $method->getDocComment() );
+
+		if ( $doc_block->get_tag( 'subcommand' ) || 'public' == $doc_block->get_tag( 'access' ) ) {
+			return true;
+		}
+
+		return $method->isPublic()
+			&& ! $method->isStatic()
+			&& 0 !== strpos( $method->getName(), '__' );
 	}
 }
 
