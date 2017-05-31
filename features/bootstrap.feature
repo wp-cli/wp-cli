@@ -20,7 +20,6 @@ Feature: Bootstrap WP-CLI
       WP-CLI 1.1.0
       """
 
-  @broken
   Scenario: Composer stack with override requirement before WP-CLI
     Given an empty directory
     And a composer.json file:
@@ -32,12 +31,11 @@ Feature: Bootstrap WP-CLI
         "prefer-stable": true,
         "repositories": [
           {
-              "type": "vcs",
-              "url": "https://github.com/wp-cli/spyc"
-          },
-          {
             "type": "path",
-            "url": "./cli-override-command"
+            "url": "./cli-override-command",
+            "options": {
+                "symlink": false
+            }
           }
         ],
         "require": {
