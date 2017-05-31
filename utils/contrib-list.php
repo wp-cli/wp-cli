@@ -26,7 +26,6 @@ class Contrib_List_Command {
 	 * options:
 	 *   - markdown
 	 *   - html
-	 *   - count
 	 * ---
 	 *
 	 * @when before_wp_load
@@ -34,6 +33,8 @@ class Contrib_List_Command {
 	public function __invoke( $_, $assoc_args ) {
 
 		$contributors = array();
+		$contributor_count = 0;
+		$pull_request_count = 0;
 
 		// Get the contributors to the current open wp-cli/wp-cli milestone
 		$milestones = self::get_project_milestones( 'wp-cli/wp-cli' );
@@ -41,7 +42,11 @@ class Contrib_List_Command {
 		$milestone = array_shift( $milestones );
 		WP_CLI::log( 'Current open wp-cli/wp-cli milestone: ' . $milestone->title );
 		$pull_requests = self::get_project_milestone_pull_requests( 'wp-cli/wp-cli', $milestone->number );
-		$contributors = array_merge( $contributors, self::parse_contributors_from_pull_requests( $pull_requests ) );
+		$repo_contributors = self::parse_contributors_from_pull_requests( $pull_requests );
+		WP_CLI::log( ' - Contributors: ' . count( $repo_contributors ) );
+		WP_CLI::log( ' - Pull requests: ' . count( $pull_requests ) );
+		$pull_request_count += count( $pull_requests );
+		$contributors = array_merge( $contributors, $repo_contributors );
 
 		// Get the contributors to the current open wp-cli/handbook milestone
 		$milestones = self::get_project_milestones( 'wp-cli/handbook' );
@@ -49,7 +54,11 @@ class Contrib_List_Command {
 		$milestone = array_shift( $milestones );
 		WP_CLI::log( 'Current open wp-cli/handbook milestone: ' . $milestone->title );
 		$pull_requests = self::get_project_milestone_pull_requests( 'wp-cli/handbook', $milestone->number );
-		$contributors = array_merge( $contributors, self::parse_contributors_from_pull_requests( $pull_requests ) );
+		$repo_contributors = self::parse_contributors_from_pull_requests( $pull_requests );
+		WP_CLI::log( ' - Contributors: ' . count( $repo_contributors ) );
+		WP_CLI::log( ' - Pull requests: ' . count( $pull_requests ) );
+		$pull_request_count += count( $pull_requests );
+		$contributors = array_merge( $contributors, $repo_contributors );
 
 		// Identify all command dependencies and their contributors
 		$response = Utils\http_request( 'GET', 'https://raw.githubusercontent.com/wp-cli/wp-cli/master/composer.json' );
@@ -81,9 +90,16 @@ class Contrib_List_Command {
 			WP_CLI::log( 'Closed ' . $package . ' milestone(s): ' . implode( ', ', $milestone_titles ) );
 			foreach( $milestone_ids as $milestone_id ) {
 				$pull_requests = self::get_project_milestone_pull_requests( $package, $milestone_id );
-				$contributors = array_merge( $contributors, self::parse_contributors_from_pull_requests( $pull_requests ) );
+				$repo_contributors = self::parse_contributors_from_pull_requests( $pull_requests );
+				WP_CLI::log( ' - Contributors: ' . count( $repo_contributors ) );
+				WP_CLI::log( ' - Pull requests: ' . count( $pull_requests ) );
+				$pull_request_count += count( $pull_requests );
+				$contributors = array_merge( $contributors, $repo_contributors );
 			}
 		}
+
+		WP_CLI::log( 'Total contributors: ' . count( $contributors ) );
+		WP_CLI::log( 'Total pull requests: ' . $pull_request_count );
 
 		// Sort and render the contributor list
 		asort( $contributors, SORT_NATURAL | SORT_FLAG_CASE );
@@ -98,8 +114,6 @@ class Contrib_List_Command {
 			}
 			$contrib_list = rtrim( $contrib_list, ', ' );
 			WP_CLI::log( $contrib_list );
-		} else if ( 'count' === $assoc_args['format'] ) {
-			WP_CLI::log( count( $contributors ) );
 		}
 	}
 
