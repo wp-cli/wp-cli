@@ -76,6 +76,7 @@ $finder
 	->in(WP_CLI_ROOT . '/php')
 	->in(WP_CLI_ROOT . '/features')
 	->in(WP_CLI_VENDOR_DIR . '/wp-cli')
+	->in(WP_CLI_VENDOR_DIR . '/mustangostang')
 	->in(WP_CLI_VENDOR_DIR . '/mustache')
 	->in(WP_CLI_VENDOR_DIR . '/rmccue/requests')
 	->in(WP_CLI_VENDOR_DIR . '/composer')
