@@ -209,8 +209,9 @@ class WP_CLI {
 	 * * `after_add_command:<command>` - After the command was added.
 	 * * `before_invoke:<command>` - Just before a command is invoked.
 	 * * `after_invoke:<command>` - Just after a command is involved.
+	 * * `after_wp_config_locate` - After wp-config.php has been located.
 	 * * `before_wp_load` - Just before the WP load process begins.
-	 * * `before_wp_config_load` - After wp-config.php has been located.
+	 * * `before_wp_config_load` - Before wp-config.php has been loaded into scope.
 	 * * `after_wp_config_load` - After wp-config.php has been loaded into scope.
 	 * * `after_wp_load` - Just after the WP load process has completed.
 	 *

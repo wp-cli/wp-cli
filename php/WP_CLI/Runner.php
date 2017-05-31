@@ -877,6 +877,8 @@ class Runner {
 				"Either create one manually or use `wp config create`." );
 		}
 
+		WP_CLI::do_hook( 'after_wp_config_locate' );
+
 		if ( ( $this->cmd_starts_with( array( 'db' ) ) || $this->cmd_starts_with( array( 'help', 'db' ) ) )
 			&& ! $this->cmd_starts_with( array( 'db', 'tables' ) ) ) {
 			eval( $this->get_wp_config_code() );
@@ -953,6 +955,8 @@ class Runner {
 				"'wp-config.php' not found.\n" .
 				"Either create one manually or use `wp config create`." );
 		}
+
+		WP_CLI::do_hook( 'after_wp_config_locate' );
 
 		WP_CLI::debug( 'wp-config.php path: ' . $wp_config_path, 'bootstrap' );
 		WP_CLI::do_hook( 'before_wp_config_load' );
