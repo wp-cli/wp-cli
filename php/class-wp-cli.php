@@ -396,6 +396,11 @@ class WP_CLI {
 	 * @return true True on success, false if deferred, hard error if registration failed.
 	 */
 	public static function add_command( $name, $callable, $args = array() ) {
+		// Bail immediately if the WP-CLI executable has not been run.
+		if ( ! defined( 'WP_CLI' ) ) {
+			return false;
+		}
+
 		$valid = false;
 		if ( is_callable( $callable ) ) {
 			$valid = true;
