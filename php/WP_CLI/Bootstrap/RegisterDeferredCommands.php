@@ -21,6 +21,12 @@ final class RegisterDeferredCommands implements BootstrapStep {
 	 * @return BootstrapState Modified state to pass to the next step.
 	 */
 	public function process( BootstrapState $state ) {
+
+		// Process deferred command additions for external packages.
+		$this->add_deferred_commands();
+
+		// Process deferred command additions for commands added through
+		// plugins.
 		\WP_CLI::add_hook(
 			'after_wp_load',
 			array( $this, 'add_deferred_commands' )
