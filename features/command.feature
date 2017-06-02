@@ -844,3 +844,102 @@ Feature: WP-CLI Commands
       """
       sub-command
       """
+
+  Scenario: Command additions should work as plugins
+    Given a WP install
+    And a wp-content/plugins/test-cli/command.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI Help
+
+      class TestCommand {
+      }
+
+      function test_function() {
+        \WP_CLI::success( 'unknown-parent child-command' );
+      }
+
+      WP_CLI::add_command( 'unknown-parent child-command', 'test_function' );
+
+      WP_CLI::add_command( 'test-command sub-command', function () { \WP_CLI::success( 'test-command sub-command' ); } );
+
+      WP_CLI::add_command( 'test-command', 'TestCommand' );
+      """
+    And I run `wp plugin activate test-cli`
+
+    When I run `wp`
+    Then STDOUT should contain:
+      """
+      test-command
+      """
+    And STDERR should be empty
+
+    When I run `wp help test-command`
+    Then STDOUT should contain:
+      """
+      sub-command
+      """
+    And STDERR should be empty
+
+    When I run `wp test-command sub-command`
+    Then STDOUT should contain:
+      """
+      Success: test-command sub-command
+      """
+    And STDERR should be empty
+
+    When I run `wp unknown-parent child-command`
+    Then STDOUT should contain:
+      """
+      Success: unknown-parent child-command
+      """
+    And STDERR should be empty
+
+  Scenario: Command additions should work as must-use plugins
+    Given a WP install
+    And a wp-content/mu-plugins/test-cli.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI Help
+
+      class TestCommand {
+      }
+
+      function test_function() {
+        \WP_CLI::success( 'unknown-parent child-command' );
+      }
+
+      WP_CLI::add_command( 'unknown-parent child-command', 'test_function' );
+
+      WP_CLI::add_command( 'test-command sub-command', function () { \WP_CLI::success( 'test-command sub-command' ); } );
+
+      WP_CLI::add_command( 'test-command', 'TestCommand' );
+      """
+
+    When I run `wp`
+    Then STDOUT should contain:
+      """
+      test-command
+      """
+    And STDERR should be empty
+
+    When I run `wp help test-command`
+    Then STDOUT should contain:
+      """
+      sub-command
+      """
+    And STDERR should be empty
+
+    When I run `wp test-command sub-command`
+    Then STDOUT should contain:
+      """
+      Success: test-command sub-command
+      """
+    And STDERR should be empty
+
+    When I run `wp unknown-parent child-command`
+    Then STDOUT should contain:
+      """
+      Success: unknown-parent child-command
+      """
+    And STDERR should be empty
