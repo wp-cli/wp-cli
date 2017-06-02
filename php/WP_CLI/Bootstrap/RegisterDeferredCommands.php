@@ -21,6 +21,24 @@ final class RegisterDeferredCommands implements BootstrapStep {
 	 * @return BootstrapState Modified state to pass to the next step.
 	 */
 	public function process( BootstrapState $state ) {
+
+		// Process deferred command additions for external packages.
+		$this->add_deferred_commands();
+
+		// Process deferred command additions for commands added through
+		// plugins.
+		\WP_CLI::add_hook(
+			'after_wp_load',
+			array( $this, 'add_deferred_commands' )
+		);
+
+		return $state;
+	}
+
+	/**
+	 * Add deferred commands that are still waiting to be processed.
+	 */
+	public function add_deferred_commands() {
 		$deferred_additions = \WP_CLI::get_deferred_additions();
 
 		foreach ( $deferred_additions as $name => $addition ) {
@@ -30,7 +48,5 @@ final class RegisterDeferredCommands implements BootstrapStep {
 				$addition['args']
 			);
 		}
-
-		return $state;
 	}
 }
