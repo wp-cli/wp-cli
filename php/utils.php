@@ -506,11 +506,9 @@ function parse_url( $url ) {
 
 /**
  * Check if we're running in a Windows environment (cmd.exe).
- *
- * $param mixed $test Testing only.
  */
-function is_windows( $test = null ) {
-	return null !== $test ? $test : strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+function is_windows() {
+	return ( $test_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' ) ) ? $test_is_windows : strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 }
 
 /**
@@ -988,14 +986,13 @@ function is_bundled_command( $command ) {
  * Removes (if there) if Windows, adds (if not there) if not.
  *
  * @param string $command
- * @param mixed  $test    Testing only.
  *
  * @return string
  */
-function force_env_on_nix_systems( $command, $test = null ) {
+function force_env_on_nix_systems( $command ) {
 	$env_prefix = '/usr/bin/env ';
 	$env_prefix_len = strlen( $env_prefix );
-	if ( is_windows( $test ) ) {
+	if ( is_windows() ) {
 		if ( 0 === strncmp( $command, $env_prefix, $env_prefix_len ) ) {
 			$command = substr( $command, $env_prefix_len );
 		}

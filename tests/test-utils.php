@@ -144,12 +144,14 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testForceEnvOnNixSystems() {
-		$is_windows = false;
-		$this->assertSame( '/usr/bin/env cmd', Utils\force_env_on_nix_systems( 'cmd', $is_windows ) );
-		$this->assertSame( '/usr/bin/env cmd', Utils\force_env_on_nix_systems( '/usr/bin/env cmd', $is_windows ) );
+		putenv( 'WP_CLI_TEST_IS_WINDOWS=0' );
+		$this->assertSame( '/usr/bin/env cmd', Utils\force_env_on_nix_systems( 'cmd' ) );
+		$this->assertSame( '/usr/bin/env cmd', Utils\force_env_on_nix_systems( '/usr/bin/env cmd' ) );
 
-		$is_windows = true;
-		$this->assertSame( 'cmd', Utils\force_env_on_nix_systems( 'cmd', $is_windows ) );
-		$this->assertSame( 'cmd', Utils\force_env_on_nix_systems( '/usr/bin/env cmd', $is_windows ) );
+		putenv( 'WP_CLI_TEST_IS_WINDOWS=1' );
+		$this->assertSame( 'cmd', Utils\force_env_on_nix_systems( 'cmd' ) );
+		$this->assertSame( 'cmd', Utils\force_env_on_nix_systems( '/usr/bin/env cmd' ) );
+
+		putenv( 'WP_CLI_TEST_IS_WINDOWS' );
 	}
 }
