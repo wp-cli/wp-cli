@@ -428,7 +428,7 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 	$old_pass = getenv( 'MYSQL_PWD' );
 	putenv( 'MYSQL_PWD=' . $pass );
 
-	$final_cmd = $cmd . assoc_args_to_str( $assoc_args );
+	$final_cmd = force_env_on_nix_systems( $cmd ) . assoc_args_to_str( $assoc_args );
 
 	$proc = proc_open( $final_cmd, $descriptors, $pipes );
 	if ( !$proc )
@@ -506,9 +506,11 @@ function parse_url( $url ) {
 
 /**
  * Check if we're running in a Windows environment (cmd.exe).
+ *
+ * @return bool
  */
 function is_windows() {
-	return strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+	return false !== ( $test_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' ) ) ? (bool) $test_is_windows : strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 }
 
 /**
@@ -979,4 +981,27 @@ function is_bundled_command( $command ) {
 	return is_string( $command )
 		? array_key_exists( $command, $classes )
 		: false;
+}
+
+/**
+ * Maybe prefix command string with "/usr/bin/env".
+ * Removes (if there) if Windows, adds (if not there) if not.
+ *
+ * @param string $command
+ *
+ * @return string
+ */
+function force_env_on_nix_systems( $command ) {
+	$env_prefix = '/usr/bin/env ';
+	$env_prefix_len = strlen( $env_prefix );
+	if ( is_windows() ) {
+		if ( 0 === strncmp( $command, $env_prefix, $env_prefix_len ) ) {
+			$command = substr( $command, $env_prefix_len );
+		}
+	} else {
+		if ( 0 !== strncmp( $command, $env_prefix, $env_prefix_len ) ) {
+			$command = $env_prefix . $command;
+		}
+	}
+	return $command;
 }
