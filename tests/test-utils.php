@@ -144,7 +144,12 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testMaybePreviewEnv() {
-		$this->assertSame( '/usr/bin/env cmd', Utils\maybe_prefix_env( 'cmd' ) );
-		$this->assertSame( '/usr/bin/env cmd', Utils\maybe_prefix_env( '/usr/bin/env cmd' ) );
+		if ( 0 === strncasecmp( 'WIN', PHP_OS, 3 ) ) {
+			$this->assertSame( 'cmd', Utils\maybe_prefix_env( 'cmd' ) );
+			$this->assertSame( 'cmd', Utils\maybe_prefix_env( '/usr/bin/env cmd' ) );
+		} else {
+			$this->assertSame( '/usr/bin/env cmd', Utils\maybe_prefix_env( 'cmd' ) );
+			$this->assertSame( '/usr/bin/env cmd', Utils\maybe_prefix_env( '/usr/bin/env cmd' ) );
+		}
 	}
 }
