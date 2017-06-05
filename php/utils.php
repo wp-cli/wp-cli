@@ -428,7 +428,7 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 	$old_pass = getenv( 'MYSQL_PWD' );
 	putenv( 'MYSQL_PWD=' . $pass );
 
-	$final_cmd = $cmd . assoc_args_to_str( $assoc_args );
+	$final_cmd = maybe_prefix_env( $cmd ) . assoc_args_to_str( $assoc_args );
 
 	$proc = proc_open( $final_cmd, $descriptors, $pipes );
 	if ( !$proc )
@@ -979,4 +979,27 @@ function is_bundled_command( $command ) {
 	return is_string( $command )
 		? array_key_exists( $command, $classes )
 		: false;
+}
+
+/**
+ * Maybe prefix command string with "/usr/bin/env".
+ * Removes (if there) if Windows, adds (if not there) if not.
+ *
+ * @param string $command
+ *
+ * @return string
+ */
+function maybe_prefix_env( $command ) {
+	$env_prefix = '/usr/bin/env ';
+	$env_prefix_len = strlen( $env_prefix );
+	if ( is_windows() ) {
+		if ( 0 === strncmp( $command, $env_prefix, $env_prefix_len ) ) {
+			$command = substr( $command, $env_prefix_len );
+		}
+	} else {
+		if ( 0 !== strncmp( $command, $env_prefix, $env_prefix_len ) ) {
+			$command = $env_prefix . $command;
+		}
+	}
+	return $command;
 }
