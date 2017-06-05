@@ -983,6 +983,7 @@ function is_bundled_command( $command ) {
 
 /**
  * Maybe prefix command string with "/usr/bin/env".
+ * Removes (if there) if Windows, adds (if not there) if not.
  *
  * @param string $command
  *
