@@ -943,3 +943,54 @@ Feature: WP-CLI Commands
       Success: unknown-parent child-command
       """
     And STDERR should be empty
+
+  Scenario: Command additions should work when registered on after_wp_load
+    Given a WP install
+    And a wp-content/mu-plugins/test-cli.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI Help
+
+      class TestCommand {
+      }
+
+      function test_function() {
+        \WP_CLI::success( 'unknown-parent child-command' );
+      }
+
+      WP_CLI::add_hook( 'after_wp_load', function(){
+        WP_CLI::add_command( 'unknown-parent child-command', 'test_function' );
+
+        WP_CLI::add_command( 'test-command sub-command', function () { \WP_CLI::success( 'test-command sub-command' ); } );
+
+        WP_CLI::add_command( 'test-command', 'TestCommand' );
+      });
+      """
+
+    When I run `wp`
+    Then STDOUT should contain:
+      """
+      test-command
+      """
+    And STDERR should be empty
+
+    When I run `wp help test-command`
+    Then STDOUT should contain:
+      """
+      sub-command
+      """
+    And STDERR should be empty
+
+    When I run `wp test-command sub-command`
+    Then STDOUT should contain:
+      """
+      Success: test-command sub-command
+      """
+    And STDERR should be empty
+
+    When I run `wp unknown-parent child-command`
+    Then STDOUT should contain:
+      """
+      Success: unknown-parent child-command
+      """
+    And STDERR should be empty
