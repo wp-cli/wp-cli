@@ -506,9 +506,11 @@ function parse_url( $url ) {
 
 /**
  * Check if we're running in a Windows environment (cmd.exe).
+ *
+ * @return bool
  */
 function is_windows() {
-	return ( $test_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' ) ) ? $test_is_windows : strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+	return false !== ( $test_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' ) ) ? (bool) $test_is_windows : strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 }
 
 /**
