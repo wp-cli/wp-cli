@@ -58,6 +58,15 @@ class Help_Command extends WP_CLI_Command {
 	private static function show_help( $command ) {
 		$out = self::get_initial_markdown( $command );
 
+		// Remove subcommands if in columns - will wordwrap separately.
+		$subcommands = '';
+		$column_subpattern = '[ \t]+[^\t]+\t+';
+		if ( preg_match( '/(^## SUBCOMMANDS[^\n]*\n+' . $column_subpattern . '.+?)(?:^##|\z)/ms', $out, $matches, PREG_OFFSET_CAPTURE ) ) {
+			$subcommands = $matches[1][0];
+			$subcommands_header = "## SUBCOMMANDS\n";
+			$out = substr_replace( $out, $subcommands_header, $matches[1][1], strlen( $subcommands ) );
+		}
+
 		$out .= $command->get_longdesc();
 
 		// definition lists
@@ -66,21 +75,35 @@ class Help_Command extends WP_CLI_Command {
 		// Ensure all non-section headers are indented.
 		$out = preg_replace( '#^([^\s^\#])#m', "\t$1", $out );
 
+		$tab = str_repeat( ' ', 2 );
+
+		// Need to de-tab for wordwrapping to work properly.
+		$out = str_replace( "\t", $tab, $out );
+
+		$wordwrap_width = \cli\Shell::columns();
+
 		// Wordwrap with indent.
-		$wordwrap_width = 80;
-		if ( false !== ( $env_wordwrap_width = getenv( 'WP_CLI_HELP_WORDWRAP_WIDTH' ) ) ) {
-			$wordwrap_width = (int) $env_wordwrap_width;
-		}
-		if ( $wordwrap_width > 0 ) {
-			$out = preg_replace_callback( '/([ \t]*)[^\n]+\n/', function ( $matches ) use ( $wordwrap_width ) {
-				return wordwrap( $matches[0], $wordwrap_width, "\n{$matches[1]}" );
-			}, $out );
+		$out = preg_replace_callback( '/^( *)([^\n]+)\n/m', function ( $matches ) use ( $wordwrap_width ) {
+			return $matches[1] . str_replace( "\n", "\n{$matches[1]}", wordwrap( $matches[2], $wordwrap_width - strlen( $matches[1] ) ) ) . "\n";
+		}, $out );
+
+		if ( $subcommands ) {
+			// Wordwrap with column indent.
+			$subcommands = preg_replace_callback( '/^(' . $column_subpattern . ')([^\n]+)\n/m', function ( $matches ) use ( $wordwrap_width, $tab ) {
+				// Need to de-tab for wordwrapping to work properly.
+				$matches[1] = str_replace( "\t", $tab, $matches[1] );
+				$matches[2] = str_replace( "\t", $tab, $matches[2] );
+				$padding_len = strlen( $matches[1] );
+				$padding = str_repeat( ' ', $padding_len );
+				return $matches[1] . str_replace( "\n", "\n$padding", wordwrap( $matches[2], $wordwrap_width - $padding_len ) ) . "\n";
+			}, $subcommands );
+
+			// Put subcommands back.
+			$out = str_replace( $subcommands_header, $subcommands, $out );
 		}
 
 		// section headers
 		$out = preg_replace( '/^## ([A-Z ]+)/m', WP_CLI::colorize( '%9\1%n' ), $out );
-
-		$out = str_replace( "\t", '  ', $out );
 
 		self::pass_through_pager( $out );
 	}
