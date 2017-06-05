@@ -980,3 +980,17 @@ function is_bundled_command( $command ) {
 		? array_key_exists( $command, $classes )
 		: false;
 }
+
+/**
+ * Maybe prefix command string with "/usr/bin/env".
+ *
+ * @param string $command
+ *
+ * @return string
+ */
+function maybe_prefix_env( $command ) {
+	if ( ! is_windows() ) {
+		$command = '/usr/bin/env ' . $command;
+	}
+	return $command;
+}
