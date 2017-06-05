@@ -247,6 +247,8 @@ class Runner {
 	public function find_command_to_run( $args ) {
 		$command = \WP_CLI::get_root_command();
 
+		WP_CLI::do_hook( 'find_command_to_run_pre' );
+
 		$cmd_path = array();
 
 		while ( !empty( $args ) && $command->can_have_subcommands() ) {
