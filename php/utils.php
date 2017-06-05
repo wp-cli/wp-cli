@@ -507,7 +507,7 @@ function parse_url( $url ) {
 /**
  * Check if we're running in a Windows environment (cmd.exe).
  *
- * $param string $test Testing only.
+ * $param mixed $test Testing only.
  */
 function is_windows( $test = null ) {
 	return null !== $test ? $test : strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
@@ -988,7 +988,7 @@ function is_bundled_command( $command ) {
  * Removes (if there) if Windows, adds (if not there) if not.
  *
  * @param string $command
- * @param string $test    Testing only.
+ * @param mixed  $test    Testing only.
  *
  * @return string
  */
