@@ -199,6 +199,7 @@ Feature: Bootstrap WP-CLI
         WP-Override-CLI
         """
 
+  @github-api
   Scenario: Composer project with WordPress as a dependency (command line)
     Given a wp-cli project
     And a WP install with composer
@@ -208,6 +209,7 @@ Feature: Bootstrap WP-CLI
       WP CLI Site with WordPress as a composer dependency
       """
 
+  @github-api
   Scenario: Composer project with WordPress as a dependency (web)
     Given a wp-cli project
     And a WP install with composer
