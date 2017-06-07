@@ -425,5 +425,70 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		$this->proc( 'wp core install', $install_args, $subdir )->run_check();
 	}
-}
 
+	public function setup_wp_cli_project() {
+		if ( !isset( $this->variables['RUN_DIR'] ) ) {
+			$this->variables['RUN_DIR'] = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-run-", TRUE );
+			$src = realpath( __DIR__ . '/../../' );
+			$dest = $this->variables['RUN_DIR'] . '/';
+			$this->proc( Utils\esc_cmd( "cp -r %s %s", $src, $dest ) )->run_check();
+			$this->proc( Utils\esc_cmd( "rm -rf %s", $this->variables['RUN_DIR'] . '/vendor' ) )->run_check();
+			$this->proc( 'composer install --no-interaction --optimize-autoloader' )->run_check();
+		}
+	}
+
+	public function create_config_composer_install( $subdir = '' ) {
+		$params = self::$db_settings;
+		$params['dbprefix'] = $subdir ? preg_replace( '#[^a-zA-Z\_0-9]#', '_', $subdir ) : 'wp_';
+		$params['skip-salts'] = true;
+		$params['extra-php'] = "require_once dirname(__DIR__) . '/vendor/autoload.php';";
+		$this->proc( 'wp core config', $params, $subdir )->run_check();
+	}
+
+	public function install_wp_with_composer() {
+		$this->create_db();
+
+		$yml_path = $this->variables['RUN_DIR'] . "/wp-cli.yml";
+		Process::create( Utils\esc_cmd( 'mkdir -p %s', dirname( $yml_path ) ) )->run_check();
+		file_put_contents( $yml_path, 'path: wordpress' );
+
+		$this->proc( 'composer require johnpbloch/wordpress --no-interaction --optimize-autoloader' )->run_check();
+
+		$this->create_config_composer_install();
+
+		$install_args = array(
+			'url' => 'http://localhost:8080',
+			'title' => 'WP CLI Site with WordPress as a composer dependency',
+			'admin_user' => 'admin',
+			'admin_email' => 'admin@example.com',
+			'admin_password' => 'password1'
+		);
+
+		$this->proc( 'wp core install', $install_args )->run_check();
+	}
+
+	public function get_php_binary() {
+		if ( getenv( 'WP_CLI_PHP_USED' ) )
+			return getenv( 'WP_CLI_PHP_USED' );
+
+		if ( getenv( 'WP_CLI_PHP' ) )
+			return getenv( 'WP_CLI_PHP' );
+
+		if ( defined( 'PHP_BINARY' ) )
+			return PHP_BINARY;
+
+		return 'php';
+	}
+
+	public function start_php_server() {
+		$cmd = Utils\esc_cmd( '%s -S %s -t %s -c %s %s',
+			$this->get_php_binary(),
+			'localhost:8080',
+			$this->variables['RUN_DIR'] . '/wordpress/',
+			get_cfg_var( 'cfg_file_path' ),
+			$this->variables['RUN_DIR'] . '/vendor/wp-cli/server-command/router.php'
+		);
+		$this->background_proc( $cmd );
+	}
+
+}

@@ -198,3 +198,18 @@ Feature: Bootstrap WP-CLI
         """
         WP-Override-CLI
         """
+
+  Scenario: Composer project with WordPress as a dependency (command line)
+    Given a wp-cli project
+    And a WP install with composer
+    When I run `bin/wp option get blogname`
+    Then STDOUT should contain:
+      """
+      WP CLI Site with WordPress as a composer dependency
+      """
+
+  Scenario: Composer project with WordPress as a dependency (web)
+    Given a wp-cli project
+    And a WP install with composer
+    And a PHP built-in web server
+    Then the HTTP status code should be 200

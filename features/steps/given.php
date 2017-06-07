@@ -168,3 +168,21 @@ $steps->Given('/^a misconfigured WP_CONTENT_DIR constant directory$/',
 		file_put_contents( $wp_config_path, $wp_config_code );
 	}
 );
+
+$steps->Given( '/^a wp-cli project$/',
+	function ( $world ) {
+		$world->setup_wp_cli_project();
+	}
+);
+
+$steps->Given( '/^a WP install with composer$/',
+	function ( $world ) {
+		$world->install_wp_with_composer();
+	}
+);
+
+$steps->Given( '/^a PHP built-in web server$/',
+	function ( $world ) {
+		$world->start_php_server();
+	}
+);
