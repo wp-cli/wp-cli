@@ -441,7 +441,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$this->proc( Utils\esc_cmd( "cp -r %s %s", $src, $dest ) )->run_check();
 			$this->proc( Utils\esc_cmd( "rm -rf %s", $this->variables['RUN_DIR'] . '/vendor' ) )->run_check();
 
-			$this->proc( 'composer install --no-interaction --optimize-autoloader' )->run_check();
+			$this->proc( 'composer install --no-interaction --optimize-autoloader --no-dev' )->run_check();
 		}
 	}
 
@@ -460,7 +460,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		Process::create( Utils\esc_cmd( 'mkdir -p %s', dirname( $yml_path ) ) )->run_check();
 		file_put_contents( $yml_path, 'path: wordpress' );
 
-		$this->proc( 'composer require johnpbloch/wordpress --no-interaction --optimize-autoloader' )->run_check();
+		$this->proc( 'composer require johnpbloch/wordpress --no-interaction --optimize-autoloader --update-no-dev' )->run_check();
 
 		$this->create_config_composer_install();
 
