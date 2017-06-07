@@ -210,12 +210,6 @@ Feature: Bootstrap WP-CLI
           "johnpbloch/wordpress-core-installer": "^1.0",
           "johnpbloch/wordpress-core": "dev-master"
         },
-        "repositories": [
-          {
-            "type": "composer",
-            "url": "https://wpackagist.org"
-          }
-        ],
         "extra": {
           "wordpress-install-dir": {
             "johnpbloch/wordpress-core": "wp"
