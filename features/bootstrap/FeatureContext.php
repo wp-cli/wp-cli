@@ -79,6 +79,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( $php_args = getenv( 'WP_CLI_PHP_ARGS' ) ) {
 			$env['WP_CLI_PHP_ARGS'] = $php_args;
 		}
+		if ( $travis_build_dir = getenv( 'TRAVIS_BUILD_DIR' ) ) {
+			$env['TRAVIS_BUILD_DIR'] = $travis_build_dir;
+		}
 		return $env;
 	}
 
@@ -429,10 +432,15 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function setup_wp_cli_project() {
 		if ( !isset( $this->variables['RUN_DIR'] ) ) {
 			$this->variables['RUN_DIR'] = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-run-", TRUE );
-			$src = realpath( __DIR__ . '/../../' );
+
+			$env = self::get_process_env_variables();
+			$src = isset($env['TRAVIS_BUILD_DIR']) ? $env['TRAVIS_BUILD_DIR'] : realpath( __DIR__ . '/../../' );
+
 			$dest = $this->variables['RUN_DIR'] . '/';
+
 			$this->proc( Utils\esc_cmd( "cp -r %s %s", $src, $dest ) )->run_check();
 			$this->proc( Utils\esc_cmd( "rm -rf %s", $this->variables['RUN_DIR'] . '/vendor' ) )->run_check();
+
 			$this->proc( 'composer install --no-interaction --optimize-autoloader' )->run_check();
 		}
 	}
