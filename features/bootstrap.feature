@@ -197,3 +197,47 @@ Feature: Bootstrap WP-CLI
         """
         WP-Override-CLI
         """
+
+  Scenario: Install WP CLI with custom vendor directory
+    Given an empty directory
+    And a composer.json file:
+      """
+      {
+        "name": "wp-cli/composer-test",
+        "type": "project",
+        "require": {
+          "wp-cli/wp-cli": "^1.2",
+          "johnpbloch/wordpress-core-installer": "^1.0",
+          "johnpbloch/wordpress-core": "dev-master"
+        },
+        "repositories": [
+          {
+            "type": "composer",
+            "url": "https://wpackagist.org"
+          }
+        ],
+        "extra": {
+          "wordpress-install-dir": {
+            "johnpbloch/wordpress-core": "wp"
+          }
+        },
+        "config": {
+          "vendor-dir": "custom-vendor"
+        }
+      }
+      """
+    When I try `/usr/local/bin/composer install --no-interaction --no-suggest --no-progress`
+    Then STDERR should not contain:
+      """
+      [ErrorException]
+      """
+    When I run `ls custom-vendor/`
+    Then STDOUT should contain:
+      """
+      autoload.php
+      """
+    When I run `ls wp/`
+    Then STDOUT should contain:
+      """
+      wp-load.php
+      """
