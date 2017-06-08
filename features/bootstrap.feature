@@ -208,6 +208,7 @@ Feature: Bootstrap WP-CLI
       WP CLI Site with WordPress as a composer dependency
       """
 
+  @require-php-5.4
   Scenario: Composer project with WordPress as a dependency (web)
     Given a wp-cli project
     And a WP install with composer
