@@ -22,7 +22,7 @@ class Runner {
 
 	private $aliases;
 
-	private $arguments, $assoc_args;
+	private $arguments, $assoc_args, $runtime_config;
 
 	private $_early_invoke = array();
 
@@ -689,12 +689,12 @@ class Runner {
 
 		// Runtime config and args
 		{
-			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
+			list( $args, $assoc_args, $this->runtime_config ) = $configurator->parse_args( $argv );
 
 			list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
 				$args, $assoc_args );
 
-			$configurator->merge_array( $runtime_config );
+			$configurator->merge_array( $this->runtime_config );
 		}
 
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
@@ -756,7 +756,8 @@ class Runner {
 			WP_CLI::log( $alias );
 			$args = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
 			$assoc_args = Utils\assoc_args_to_str( $this->assoc_args );
-			$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args} {$assoc_args}";
+			$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
+			$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
 			$proc = proc_open( $full_command, array( STDIN, STDOUT, STDERR ), $pipes );
 			proc_close( $proc );
 		}
@@ -777,6 +778,7 @@ class Runner {
 
 		WP_CLI::debug( $this->_global_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( $this->_project_config_path_debug, 'bootstrap' );
+		WP_CLI::debug( 'argv: ' . implode( ' ', $GLOBALS['argv'] ), 'bootstrap' );
 
 		$this->check_root();
 		if ( $this->alias ) {

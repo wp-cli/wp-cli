@@ -323,3 +323,57 @@ Feature: Create shortcuts to specific WordPress installs
       Error: Parameter errors:
        unknown --url parameter
       """
+
+  Scenario: Global parameters should be passed to grouped aliases
+    Given a WP install in 'foo'
+    And a WP install in 'bar'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      @bar:
+        path: bar
+      @foobar:
+        - @foo
+        - @bar
+      """
+
+    When I try `wp core is-installed --allow-root --debug`
+    Then STDERR should contain:
+      """
+      Error: This does not seem to be a WordPress install.
+      """
+    And STDERR should contain:
+      """
+      core is-installed --allow-root --debug
+      """
+    And the return code should be 1
+
+    When I run `wp @foo core is-installed --allow-root --debug`
+    Then the return code should be 0
+    And STDERR should contain:
+      """
+      @foo core is-installed --allow-root --debug
+      """
+
+    When I run `cd bar; wp @bar core is-installed --allow-root --debug`
+    Then the return code should be 0
+    And STDERR should contain:
+      """
+      @bar core is-installed --allow-root --debug
+      """
+
+    When I run `wp @foobar core is-installed --allow-root --debug`
+    Then the return code should be 0
+    And STDERR should contain:
+      """
+      @foobar core is-installed --allow-root --debug
+      """
+    And STDERR should contain:
+      """
+      @foo core is-installed --allow-root --debug
+      """
+    And STDERR should contain:
+      """
+      @bar core is-installed --allow-root --debug
+      """
