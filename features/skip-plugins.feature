@@ -32,7 +32,7 @@ Feature: Skipping plugins
       """
 
     # Can specify multiple plugins to skip
-    When I try `wp eval --skip-plugins=hello,akismet 'echo hello_dolly();'`
+    When I try `wp eval --skip-plugins=hello,akismet 'ini_set( 'error_log', null ); echo hello_dolly();'`
     Then STDERR should contain:
       """
       Call to undefined function hello_dolly()
@@ -55,7 +55,7 @@ Feature: Skipping plugins
       """
 
     When I run `wp plugin activate hello`
-    And I try `wp eval 'echo hello_dolly();'`
+    And I try `wp eval 'ini_set( 'error_log', null ); echo hello_dolly();'`
     Then STDERR should contain:
       """
       Call to undefined function hello_dolly()
@@ -69,7 +69,7 @@ Feature: Skipping plugins
       """
 
     When I run `wp plugin activate hello`
-    And I try `wp eval 'echo hello_dolly();'`
+    And I try `wp eval 'ini_set( 'error_log', null ); echo hello_dolly();'`
     Then STDERR should contain:
       """
       Call to undefined function hello_dolly()
