@@ -1005,3 +1005,35 @@ function force_env_on_nix_systems( $command ) {
 	}
 	return $command;
 }
+
+/*
+ * Returns the canonicalized path, with dot and double dot segments resolved.
+ *
+ * Copied from Symfony\Component\DomCrawler\AbstractUriElement::canonicalizePath().
+ * Implements RFC 3986, section 5.2.4.
+ *
+ * @param string $path The path to make canonical.
+ *
+ * @return string The canonicalized path.
+ */
+function canonicalize_path( $path ) {
+	if ( '' === $path || '/' === $path ) {
+		return $path;
+	}
+
+	if ( '.' === substr( $path, -1 ) ) {
+		$path .= '/';
+	}
+
+	$output = array();
+
+	foreach ( explode( '/', $path ) as $segment ) {
+		if ( '..' === $segment ) {
+			array_pop( $output );
+		} elseif ( '.' !== $segment ) {
+			$output[] = $segment;
+		}
+	}
+
+	return implode( '/', $output );
+}

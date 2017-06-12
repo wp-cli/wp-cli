@@ -154,4 +154,51 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		putenv( 'WP_CLI_TEST_IS_WINDOWS' );
 	}
+
+	/**
+	 *	@dataProvider dataProviderCanonicalizePath
+	 */
+	public function testCanonicalizePath( $path, $expected ) {
+		$this->assertSame( $expected, Utils\canonicalize_path( $path ) );
+	}
+
+	public function dataProviderCanonicalizePath() {
+		return array(
+			array( '', '' ),
+			array( '/', '/' ),
+			array( '//', '//' ),
+
+			array( '.', '' ),
+			array( './', '' ),
+			array( '/.', '/' ),
+			array( '/./', '/' ),
+			array( '/./.', '/' ),
+			array( '/././', '/' ),
+			array( './foo', 'foo' ),
+			array( '/./foo', '/foo' ),
+
+			array( '..', '' ),
+			array( '../', '' ),
+			array( '/..', '' ),
+			array( '/../', '' ),
+			array( '/../..', '' ),
+			array( '/../../', '' ),
+			array( '../foo', 'foo' ),
+			array( '/../foo', 'foo' ),
+
+			array( '/bar/.', '/bar/' ),
+			array( '/bar/./', '/bar/' ),
+			array( '/bar/baz/..', '/bar/' ),
+			array( '/bar/baz/../', '/bar/' ),
+			array( '/bar/baz/../foo', '/bar/foo' ),
+			array( '/bar/baz/../..', '/' ),
+			array( '/foo/bar/baz/../..', '/foo/' ),
+			array( '/bar/baz/../../foo', '/foo' ),
+			array( '/fee/bar/baz/../../foo', '/fee/foo' ),
+			array( '/bar/baz/../bar/./../../foo', '/foo' ),
+			array( '/fee/bar/baz/../bar/./../../foo', '/fee/foo' ),
+			array( '/fee/../bar/./baz/.././../foo/.', '/foo/' ),
+			array( '/fee/fie/../bar/./baz/.././../foo/.', '/fee/foo/' ),
+		);
+	}
 }
