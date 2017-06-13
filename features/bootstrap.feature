@@ -205,8 +205,14 @@ Feature: Bootstrap WP-CLI
       {
         "name": "wp-cli/composer-test",
         "type": "project",
+        "repositories": [
+          {
+            "type": "path",
+            "url": ""
+          }
+        ]
         "require": {
-          "wp-cli/wp-cli": "^1.2",
+          "wp-cli/wp-cli": "*",
           "johnpbloch/wordpress-core-installer": "^1.0",
           "johnpbloch/wordpress-core": "dev-master"
         },
