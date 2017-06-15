@@ -741,13 +741,14 @@ class Runner {
 	}
 
 	public function check_opcache() {
-		if( false === (bool) get_cfg_var( 'opcache.enable_cli' ) ) {
+		if ( false === (bool) get_cfg_var( 'opcache.enable_cli' ) ) {
 			return true;
 		}
 
 		WP_CLI::warning(
-			"It looks like you're running this with opcache enabled. \n".
-			"This can cause weird behaviour, you can disable it into your php.ini file, search for opcache.enable_cli and set it to 0."
+			"It looks like your PHP CLI runtime has OPcache enabled.\n".
+			"This can produce inconsistent behavior and cause random bugs.\n".
+			"You can disable OPcache in your php.ini by setting the 'opcache.enable_cli' key to the value 0."
 		);
 
 		return false;

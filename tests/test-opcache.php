@@ -10,7 +10,7 @@ function get_cfg_var() {
 	return false;
 }
 
-class opCache extends \PHPUnit_Framework_TestCase {
+class OpCache extends \PHPUnit_Framework_TestCase {
 
 	function testOpcache() {
 		$runner = new Runner();
