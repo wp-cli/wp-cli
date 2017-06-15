@@ -740,6 +740,20 @@ class Runner {
 		);
 	}
 
+	public function check_opcache() {
+		if ( false === (bool) get_cfg_var( 'opcache.enable_cli' ) ) {
+			return true;
+		}
+
+		WP_CLI::warning(
+			"It looks like your PHP CLI runtime has OPcache enabled.\n".
+			"This can produce inconsistent behavior and cause random bugs.\n".
+			"You can disable OPcache in your php.ini by setting the 'opcache.enable_cli' key to the value 0."
+		);
+
+		return false;
+	}
+
 	private function run_alias_group( $aliases ) {
 		$php_bin = WP_CLI::get_php_binary();
 
@@ -781,6 +795,7 @@ class Runner {
 		WP_CLI::debug( 'argv: ' . implode( ' ', $GLOBALS['argv'] ), 'bootstrap' );
 
 		$this->check_root();
+		$this->check_opcache();
 		if ( $this->alias ) {
 			if ( '@all' === $this->alias && ! isset( $this->aliases['@all'] ) ) {
 				WP_CLI::error( "Cannot use '@all' when no aliases are registered." );
