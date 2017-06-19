@@ -1,5 +1,6 @@
 Feature: Bootstrap WP-CLI
 
+  @require-opcache-save-comments
   Scenario: Basic Composer stack
     Given an empty directory
     And a composer.json file:
