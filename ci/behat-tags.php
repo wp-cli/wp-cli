@@ -50,6 +50,11 @@ $skip_tags[] = '@github-api';
 # Skip tests known to be broken.
 $skip_tags[] = '@broken';
 
+# Skip tests requiring @require-opcache-save-comments
+if ( ! getenv( 'WP_CLI_DISABLE_OPCACHE_SAVE_COMMENTS' ) ) {
+	$skip_tags[] = '@require-opcache-save-comments';
+}
+
 # Require PHP extension, eg 'imagick'.
 function extension_tags() {
 	$extension_tags = array();
