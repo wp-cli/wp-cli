@@ -76,6 +76,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( $term = getenv( 'TERM' ) ) {
 			$env['TERM'] = $term;
 		}
+		if ( $php_args = getenv( 'WP_CLI_PHP_ARGS' ) ) {
+			$env['WP_CLI_PHP_ARGS'] = $php_args;
+		}
 		return $env;
 	}
 
