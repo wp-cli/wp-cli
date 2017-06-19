@@ -22,8 +22,6 @@ matrix:
       env: WP_VERSION=3.7.11
     - php: 5.3
       env: WP_VERSION=3.7.11 DEPLOY_BRANCH=master
-    - php: 7.1
-      env: WP_VERSION=latest SAVE_COMMENTS_DISABLED=1
 
 before_script:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
