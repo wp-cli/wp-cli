@@ -9,7 +9,7 @@ env:
 matrix:
   include:
     - php: 7.1
-      env: WP_VERSION=latest
+      env: WP_VERSION=latest WP_CLI_TEST_OPCACHE_SAVE_COMMENTS_DISABLED=1
     - php: 7.0
       env: WP_VERSION=latest
     - php: 5.6
@@ -22,8 +22,6 @@ matrix:
       env: WP_VERSION=3.7.11
     - php: 5.3
       env: WP_VERSION=3.7.11 DEPLOY_BRANCH=master
-    - php: 7.1
-      env: WP_VERSION=latest SAVE_COMMENTS_DISABLED=1
 
 before_script:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
