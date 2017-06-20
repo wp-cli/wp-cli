@@ -610,16 +610,16 @@
         },
         {
             "name": "seld/jsonlint",
-            "version": "1.6.0",
+            "version": "1.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/jsonlint.git",
-                "reference": "791f8c594f300d246cdf01c6b3e1e19611e301d8"
+                "reference": "50d63f2858d87c4738d5b76a7dcbb99fa8cf7c77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/791f8c594f300d246cdf01c6b3e1e19611e301d8",
-                "reference": "791f8c594f300d246cdf01c6b3e1e19611e301d8",
+                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/50d63f2858d87c4738d5b76a7dcbb99fa8cf7c77",
+                "reference": "50d63f2858d87c4738d5b76a7dcbb99fa8cf7c77",
                 "shasum": ""
             },
             "require": {
@@ -655,7 +655,7 @@
                 "parser",
                 "validator"
             ],
-            "time": "2017-03-06T16:42:24+00:00"
+            "time": "2017-06-18T15:11:04+00:00"
         },
         {
             "name": "seld/phar-utils",
@@ -2059,16 +2059,16 @@
         },
         {
             "name": "wp-cli/media-command",
-            "version": "v1.0.2",
+            "version": "v1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/media-command.git",
-                "reference": "5ea664836616a350c31a60f9df8308181e741134"
+                "reference": "dfa3b80a8d7fbc9fb90753d5bf59ba7efd541530"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/media-command/zipball/5ea664836616a350c31a60f9df8308181e741134",
-                "reference": "5ea664836616a350c31a60f9df8308181e741134",
+                "url": "https://api.github.com/repos/wp-cli/media-command/zipball/dfa3b80a8d7fbc9fb90753d5bf59ba7efd541530",
+                "reference": "dfa3b80a8d7fbc9fb90753d5bf59ba7efd541530",
                 "shasum": ""
             },
             "require": {
@@ -2109,7 +2109,7 @@
             ],
             "description": "Import and regenerate attachments.",
             "homepage": "https://github.com/wp-cli/media-command",
-            "time": "2017-05-30T21:25:25+00:00"
+            "time": "2017-06-16T08:49:06+00:00"
         },
         {
             "name": "wp-cli/mustangostang-spyc",
