@@ -36,7 +36,7 @@ $ wp transient delete --all
 Success: 34 transients deleted from the database.
 ```
 
-For a more complete introduction to using WP-CLI, read the [Quick Start guide](make.wordpress.org/cli/handbook/quick-start/). Or, catch up with [shell friends](make.wordpress.org/cli/handbook/shell-friends/) to learn about helpful command line utilities.
+For a more complete introduction to using WP-CLI, read the [Quick Start guide](https://make.wordpress.org/cli/handbook/quick-start/). Or, catch up with [shell friends](https://make.wordpress.org/cli/handbook/shell-friends/) to learn about helpful command line utilities.
 
 Already feel comfortable with the basics? Jump into the [complete list of commands](https://developer.wordpress.org/cli/commands/) for detailed information on managing themes and plugins, importing and exporting data, performing database search-replace operations and more.
 
