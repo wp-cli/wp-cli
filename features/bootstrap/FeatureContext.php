@@ -439,9 +439,10 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$dest = $this->variables['COMPOSER_LOCAL_REPOSITORY'] . '/';
 
 			$this->proc( Utils\esc_cmd( "cp -r %s %s", $src, $dest ) )->run_check();
-			$this->proc( Utils\esc_cmd( "rm -rf %s", $this->variables['RUN_DIR'] . '/vendor' ) )->run_check();
+			$this->proc( Utils\esc_cmd( "rm -rf %s", $dest . '/.git' ) )->run_check();
+			$this->proc( Utils\esc_cmd( "rm -rf %s", $dest . '/vendor' ) )->run_check();
 
-			$this->proc( "composer config repositories.wp-cli '{\"type\": \"path\", \"url\": \"$dest\"}'" )->run_check();
+			$this->proc( "composer config repositories.wp-cli '{\"type\": \"path\", \"url\": \"$dest\", \"options\": {\"symlink\": false}}'" )->run_check();
 		}
 	}
 
