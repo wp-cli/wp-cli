@@ -179,13 +179,9 @@ Read through our [contributing guidelines in the handbook](https://make.wordpres
 
 ## Leadership
 
-WP-CLI is led by these individuals:
+WP-CLI has two project maintainers: [danielbachhuber](https://github.com/danielbachhuber) and [schlessera](http://github.com/schlessera). On occasion, we [grant write access to contributors](https://github.com/orgs/wp-cli/teams/committers) who have demonstrated, over a period of time, that they are capable and invested in moving the project forward.
 
-* [Daniel Bachhuber](https://github.com/danielbachhuber/) - current maintainer
-* [Cristi Burcă](https://github.com/scribu) - previous maintainer
-* [Andreas Creten](https://github.com/andreascreten) - founder
-
-Read more about the project's [governance](https://wp-cli.org/docs/governance/) and view a [complete list of contributors](https://github.com/wp-cli/wp-cli/contributors).
+Read the [governance document in the handbook](https://make.wordpress.org/cli/handbook/governance/) for more operational details about the project.
 
 ## Credits
 
