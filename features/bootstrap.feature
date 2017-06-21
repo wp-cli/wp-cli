@@ -199,18 +199,42 @@ Feature: Bootstrap WP-CLI
         WP-Override-CLI
         """
 
-  Scenario: Composer project with WordPress as a dependency (command line)
-    Given a wp-cli project
-    And a WP install with composer
-    When I run `bin/wp option get blogname`
+  Scenario: Composer stack with both WordPress and wp-cli as dependencies (command line)
+    Given an empty directory
+    And a composer.json file:
+      """
+      {
+          "name": "wp-cli/composer-test",
+          "type": "project",
+          "require": {
+              "wp-cli/wp-cli": "dev-master"
+          }
+      }
+      """
+    And a local wp-cli Composer repository
+    And I run `composer install --no-interaction --optimize-autoloader`
+    And a WordPress install with Composer
+    When I run `vendor/bin/wp option get blogname`
     Then STDOUT should contain:
       """
-      WP CLI Site with WordPress as a composer dependency
+      WP CLI Site with both WordPress and wp-cli as Composer dependencies
       """
 
   @require-php-5.4
-  Scenario: Composer project with WordPress as a dependency (web)
-    Given a wp-cli project
-    And a WP install with composer
+  Scenario: Composer stack with both WordPress and wp-cli as dependencies (web)
+    Given an empty directory
+    And a composer.json file:
+      """
+      {
+          "name": "wp-cli/composer-test",
+          "type": "project",
+          "require": {
+              "wp-cli/wp-cli": "dev-master"
+          }
+      }
+      """
+    And a local wp-cli Composer repository
+    And I run `composer install --no-interaction --optimize-autoloader`
+    And a WordPress install with Composer
     And a PHP built-in web server
     Then the HTTP status code should be 200

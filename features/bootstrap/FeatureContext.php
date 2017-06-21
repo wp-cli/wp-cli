@@ -429,20 +429,42 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->proc( 'wp core install', $install_args, $subdir )->run_check();
 	}
 
-	public function setup_wp_cli_project() {
-		if ( !isset( $this->variables['RUN_DIR'] ) ) {
-			$this->variables['RUN_DIR'] = sys_get_temp_dir() . '/' . uniqid( "wp-cli-test-run-", TRUE );
+	public function composer_add_wp_cli_local_repository() {
+		if ( !isset( $this->variables['COMPOSER_LOCAL_REPOSITORY'] ) ) {
+			$this->variables['COMPOSER_LOCAL_REPOSITORY'] = sys_get_temp_dir() . '/' . uniqid( "wp-cli-composer-local-", TRUE );
 
 			$env = self::get_process_env_variables();
 			$src = isset($env['TRAVIS_BUILD_DIR']) ? $env['TRAVIS_BUILD_DIR'] : realpath( __DIR__ . '/../../' );
 
-			$dest = $this->variables['RUN_DIR'] . '/';
+			$dest = $this->variables['COMPOSER_LOCAL_REPOSITORY'] . '/';
 
 			$this->proc( Utils\esc_cmd( "cp -r %s %s", $src, $dest ) )->run_check();
 			$this->proc( Utils\esc_cmd( "rm -rf %s", $this->variables['RUN_DIR'] . '/vendor' ) )->run_check();
 
-			$this->proc( 'composer install --no-interaction --optimize-autoloader --no-dev --prefer-dist' )->run_check();
+			$this->proc( "composer config repositories.wp-cli '{\"type\": \"path\", \"url\": \"$dest\"}'" )->run_check();
 		}
+	}
+
+	public function composer_install_wp() {
+		$this->create_db();
+
+		$yml_path = $this->variables['RUN_DIR'] . "/wp-cli.yml";
+		Process::create( Utils\esc_cmd( 'mkdir -p %s', dirname( $yml_path ) ) )->run_check();
+		file_put_contents( $yml_path, 'path: wordpress' );
+
+		$this->proc( 'composer require johnpbloch/wordpress --no-interaction --optimize-autoloader' )->run_check();
+
+		$this->create_config_composer_install();
+
+		$install_args = array(
+			'url' => 'http://localhost:8080',
+			'title' => 'WP CLI Site with both WordPress and wp-cli as Composer dependencies',
+			'admin_user' => 'admin',
+			'admin_email' => 'admin@example.com',
+			'admin_password' => 'password1'
+		);
+
+		$this->proc( 'wp core install', $install_args )->run_check();
 	}
 
 	public function create_config_composer_install( $subdir = '' ) {
@@ -451,28 +473,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$params['skip-salts'] = true;
 		$params['extra-php'] = "require_once dirname(__DIR__) . '/vendor/autoload.php';";
 		$this->proc( 'wp core config', $params, $subdir )->run_check();
-	}
-
-	public function install_wp_with_composer() {
-		$this->create_db();
-
-		$yml_path = $this->variables['RUN_DIR'] . "/wp-cli.yml";
-		Process::create( Utils\esc_cmd( 'mkdir -p %s', dirname( $yml_path ) ) )->run_check();
-		file_put_contents( $yml_path, 'path: wordpress' );
-
-		$this->proc( 'composer require johnpbloch/wordpress --no-interaction --optimize-autoloader --update-no-dev --prefer-dist' )->run_check();
-
-		$this->create_config_composer_install();
-
-		$install_args = array(
-			'url' => 'http://localhost:8080',
-			'title' => 'WP CLI Site with WordPress as a composer dependency',
-			'admin_user' => 'admin',
-			'admin_email' => 'admin@example.com',
-			'admin_password' => 'password1'
-		);
-
-		$this->proc( 'wp core install', $install_args )->run_check();
 	}
 
 	public function get_php_binary() {

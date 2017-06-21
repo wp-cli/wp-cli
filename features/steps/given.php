@@ -169,15 +169,15 @@ $steps->Given('/^a misconfigured WP_CONTENT_DIR constant directory$/',
 	}
 );
 
-$steps->Given( '/^a wp-cli project$/',
+$steps->Given( '/^a local wp-cli Composer repository$/',
 	function ( $world ) {
-		$world->setup_wp_cli_project();
+		$world->composer_add_wp_cli_local_repository();
 	}
 );
 
-$steps->Given( '/^a WP install with composer$/',
+$steps->Given( '/^a WordPress install with Composer$/',
 	function ( $world ) {
-		$world->install_wp_with_composer();
+		$world->composer_install_wp();
 	}
 );
 
