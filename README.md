@@ -15,29 +15,30 @@ Quick links: [Using](#using) &#124; [Installing](#installing) &#124; [Support](#
 
 ## Using
 
-WP-CLI's goal is to provide a command-line interface for any action you might want to perform in the WordPress admin. For instance, `wp plugin install --activate` ([doc](https://wp-cli.org/commands/plugin/install/)) lets you install and activate a WordPress plugin:
+WP-CLI provides a command-line interface for many actions you might perform in the WordPress admin. For instance, `wp plugin install --activate` ([doc](https://developer.wordpress.org/cli/commands/plugin/install/)) lets you install and activate a WordPress plugin:
 
 ```bash
-$ wp plugin install rest-api --activate
-Installing WordPress REST API (Version 2) (2.0-beta13)
-Downloading install package from https://downloads.wordpress.org/plugin/rest-api.2.0-beta13.zip...
+$ wp plugin install user-switching --activate
+Installing User Switching (1.0.9)
+Downloading install package from https://downloads.wordpress.org/plugin/user-switching.1.0.9.zip...
 Unpacking the package...
 Installing the plugin...
 Plugin installed successfully.
-Activating 'rest-api'...
-Success: Plugin 'rest-api' activated.
+Activating 'user-switching'...
+Plugin 'user-switching' activated.
+Success: Installed 1 of 1 plugins.
 ```
 
-WP-CLI also includes commands for many things you can't do in the WordPress admin. For example, `wp transient delete --all` ([doc](https://wp-cli.org/commands/transient/delete/)) lets you delete one or all transients:
+WP-CLI also includes commands for many things you can't do in the WordPress admin. For example, `wp transient delete --all` ([doc](https://developer.wordpress.org/cli/commands/transient/delete/)) lets you delete one or all transients:
 
 ```bash
 $ wp transient delete --all
 Success: 34 transients deleted from the database.
 ```
 
-For a more complete introduction to using WP-CLI, read the [Quick Start guide](https://wp-cli.org/docs/quick-start/). Or, catch up with [shell friends](https://wp-cli.org/docs/shell-friends/) to learn about helpful command line utilities.
+For a more complete introduction to using WP-CLI, read the [Quick Start guide](https://make.wordpress.org/cli/handbook/quick-start/). Or, catch up with [shell friends](https://make.wordpress.org/cli/handbook/shell-friends/) to learn about helpful command line utilities.
 
-Already feel comfortable with the basics? Jump into the [complete list of commands](https://wp-cli.org/commands/) for detailed information on managing themes and plugins, importing and exporting data, performing database search-replace operations and more.
+Already feel comfortable with the basics? Jump into the [complete list of commands](https://developer.wordpress.org/cli/commands/) for detailed information on managing themes and plugins, importing and exporting data, performing database search-replace operations and more.
 
 ## Installing
 
