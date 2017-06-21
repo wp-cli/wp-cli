@@ -568,7 +568,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 			}
 		}
 		if ( empty( $options['verify'] ) ){
-			WP_CLI::error_log( "Cannot find SSL certificate." );
+			WP_CLI::error( "Cannot find SSL certificate." );
 		}
 	}
 

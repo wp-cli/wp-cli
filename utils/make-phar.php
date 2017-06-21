@@ -63,6 +63,9 @@ function set_file_contents( $phar, $path, $content ) {
 	$phar[ $key ] = $content;
 }
 
+if ( file_exists( DEST_PATH ) ) {
+	unlink( DEST_PATH );
+}
 $phar = new Phar( DEST_PATH, 0, 'wp-cli.phar' );
 
 $phar->startBuffering();
@@ -168,7 +171,7 @@ $phar->setStub( <<<EOB
 #!/usr/bin/env php
 <?php
 Phar::mapPhar();
-include 'phar://wp-cli.phar/{$phar_boot}';
+include 'phar://wp-cli.phar{$phar_boot}';
 __HALT_COMPILER();
 ?>
 EOB
