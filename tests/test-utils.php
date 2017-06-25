@@ -154,4 +154,14 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		putenv( 'WP_CLI_TEST_IS_WINDOWS' );
 	}
+
+	public function testGetHomeDir() {
+		putenv('HOME=/home/user');
+		$this->assertSame('/home/user', Utils\get_home_dir());
+		putenv('HOME=');
+		putenv('HOMEDRIVE=C:/\\Windows/\\User/\\');
+		$this->assertSame('C:/\Windows/\User', Utils\get_home_dir());
+		putenv('HOMEPATH=HOGE/\\');
+		$this->assertSame('C:/\Windows/\User/\HOGE', Utils\get_home_dir());
+	}
 }

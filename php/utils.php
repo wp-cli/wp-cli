@@ -695,6 +695,24 @@ function get_flag_value( $assoc_args, $flag, $default = null ) {
 }
 
 /**
+ * Get the home directory.
+ *
+ * @access public
+ * @category System
+ *
+ * @return string
+ */
+function get_home_dir() {
+	$home = getenv( 'HOME' );
+	if ( ! $home ) {
+		// In Windows $HOME may not be defined
+		$home = getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' );
+	}
+
+	return rtrim( $home, '/\\' );
+}
+
+/**
  * Get the system's temp directory. Warns user if it isn't writable.
  *
  * @access public
