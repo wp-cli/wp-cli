@@ -74,11 +74,7 @@ class WP_CLI {
 		static $cache;
 
 		if ( !$cache ) {
-			$home = getenv( 'HOME' );
-			if ( !$home ) {
-				// sometime in windows $HOME is not defined
-				$home = getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' );
-			}
+			$home = Utils\get_home_dir();
 			$dir = getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
 
 			// 6 months, 300mb
@@ -979,7 +975,7 @@ class WP_CLI {
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
 		} else {
-			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
+			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
 		}
 		$config_path = escapeshellarg( $config_path );
 
