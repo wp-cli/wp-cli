@@ -77,7 +77,7 @@ class Runner {
 			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
 			$this->_global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
 		} else {
-			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
+			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
 			$this->_global_config_path_debug = 'Using default global config: ' . $config_path;
 		}
 
@@ -129,7 +129,7 @@ class Runner {
 		if ( getenv( 'WP_CLI_PACKAGES_DIR' ) ) {
 			$packages_dir = rtrim( getenv( 'WP_CLI_PACKAGES_DIR' ), '/' ) . '/';
 		} else {
-			$packages_dir = getenv( 'HOME' ) . '/.wp-cli/packages/';
+			$packages_dir = Utils\get_home_dir() . '/.wp-cli/packages/';
 		}
 		return $packages_dir;
 	}
@@ -748,7 +748,7 @@ class Runner {
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
 		} else {
-			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
+			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
 		}
 		$config_path = escapeshellarg( $config_path );
 
