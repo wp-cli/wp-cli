@@ -156,12 +156,23 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testGetHomeDir() {
-		putenv('HOME=/home/user');
-		$this->assertSame('/home/user', Utils\get_home_dir());
-		putenv('HOME=');
-		putenv('HOMEDRIVE=C:/\\Windows/\\User/\\');
-		$this->assertSame('C:/\Windows/\User', Utils\get_home_dir());
-		putenv('HOMEPATH=HOGE/\\');
-		$this->assertSame('C:/\Windows/\User/\HOGE', Utils\get_home_dir());
+
+		// save environments
+		$home = getenv( 'HOME' );
+		$homedrive = getenv( 'HOMEDRIVE' );
+		$homepath = getenv( 'HOMEPATH' );
+
+		putenv( 'HOME=/home/user' );
+		$this->assertSame('/home/user', Utils\get_home_dir() );
+		putenv( 'HOME=' );
+		putenv( 'HOMEDRIVE=C:/\\Windows/\\User/\\' );
+		$this->assertSame( 'C:/\Windows/\User', Utils\get_home_dir() );
+		putenv( 'HOMEPATH=HOGE/\\' );
+		$this->assertSame( 'C:/\Windows/\User/\HOGE', Utils\get_home_dir() );
+
+		// restore environments
+		putenv( false === $home ? 'HOME' : "HOME=$home" );
+		putenv( false === $homedrive ? 'HOMEDRIVE' : "HOME=$homedrive" );
+		putenv( false === $homepath ? 'HOMEPATH' : "HOME=$homepath" );
 	}
 }
