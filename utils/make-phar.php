@@ -32,6 +32,8 @@ define( 'DEST_PATH', $args[0] );
 
 define( 'BE_QUIET', isset( $runtime_config['quiet'] ) && $runtime_config['quiet'] );
 
+define( 'BUILD', isset( $runtime_config['build'] ) ? $runtime_config['build'] : '' );
+
 $current_version = trim( file_get_contents( WP_CLI_ROOT . '/VERSION' ) );
 
 if ( isset( $runtime_config['version'] ) ) {
@@ -51,7 +53,33 @@ function add_file( $phar, $path ) {
 	if ( !BE_QUIET )
 		echo "$key - $path\n";
 
-	$phar[ $key ] = file_get_contents( $path );
+	if ( 0 === strpos( basename( $path ), 'autoload_' ) ) {
+		// Strip autoload maps of unused stuff.
+		static $strip_res = null;
+		if ( null === $strip_res ) {
+			if ( 'cli' === BUILD ) {
+				$strips = array(
+					'\/(?:behat|composer|gherkin)\/src\/',
+					'\/phpunit\/',
+					'\/symfony\/(?!finder|polyfill-mbstring)[^\/]+\/',
+				);
+			} else {
+				$strips = array(
+					'\/(?:behat|gherkin)\/src\/',
+					'\/phpunit\/',
+					'\/symfony\/(?!console|filesystem|finder|polyfill-mbstring|process)[^\/]+\/',
+					'\/composer\/spdx-licenses\/',
+					'\/Composer\/(?:Command\/|Compiler\.php|Console\/|Downloader\/Pear|Installer\/Pear|Question\/|Repository\/Pear|SelfUpdate\/)',
+				);
+			}
+			$strip_res = array_map( function ( $v ) {
+				return '/^[^,\n]+?' . $v . '[^,\n]+?, *\n/m';
+			}, $strips );
+		}
+		$phar[ $key ] = preg_replace( $strip_res, '', file_get_contents( $path ) );
+	} else {
+		$phar[ $key ] = file_get_contents( $path );
+	}
 }
 
 function set_file_contents( $phar, $path, $content ) {
@@ -77,47 +105,57 @@ $finder
 	->ignoreVCS(true)
 	->name('*.php')
 	->in(WP_CLI_ROOT . '/php')
-	->in(WP_CLI_ROOT . '/features')
 	->in(WP_CLI_VENDOR_DIR . '/wp-cli')
 	->in(WP_CLI_VENDOR_DIR . '/mustache')
 	->in(WP_CLI_VENDOR_DIR . '/rmccue/requests')
 	->in(WP_CLI_VENDOR_DIR . '/composer')
-	->in(WP_CLI_VENDOR_DIR . '/psr')
-	->in(WP_CLI_VENDOR_DIR . '/seld')
-	->in(WP_CLI_VENDOR_DIR . '/symfony')
-	->in(WP_CLI_VENDOR_DIR . '/nb/oxymel')
 	->in(WP_CLI_VENDOR_DIR . '/ramsey/array_column')
-	->in(WP_CLI_VENDOR_DIR . '/justinrainbow/json-schema')
+	->in(WP_CLI_VENDOR_DIR . '/symfony/finder')
+	->in(WP_CLI_VENDOR_DIR . '/symfony/polyfill-mbstring')
+	->notName('behat-tags.php')
+	->exclude('examples')
+	->exclude('features')
 	->exclude('test')
 	->exclude('tests')
 	->exclude('Test')
 	->exclude('Tests')
-	->exclude('php-cli-tools/examples')
 	;
+if ( 'cli' === BUILD ) {
+	$finder
+		->in(WP_CLI_VENDOR_DIR . '/seld/cli-prompt')
+		->exclude('composer/ca-bundle')
+		->exclude('composer/semver')
+		->exclude('composer/src')
+		->exclude('composer/spdx-licenses')
+		;
+} else {
+	$finder
+		->in(WP_CLI_ROOT . '/features/bootstrap') // These are required for scaffold-command.
+		->in(WP_CLI_ROOT . '/features/steps')
+		->in(WP_CLI_ROOT . '/features/extra')
+		->in(WP_CLI_VENDOR_DIR . '/nb/oxymel')
+		->in(WP_CLI_VENDOR_DIR . '/psr')
+		->in(WP_CLI_VENDOR_DIR . '/seld')
+		->in(WP_CLI_VENDOR_DIR . '/symfony/console')
+		->in(WP_CLI_VENDOR_DIR . '/symfony/finder')
+		->in(WP_CLI_VENDOR_DIR . '/symfony/process')
+		->in(WP_CLI_VENDOR_DIR . '/justinrainbow/json-schema')
+		->exclude('nb/oxymel/OxymelTest.php')
+		->exclude('composer/spdx-licenses')
+		->exclude('composer/composer/src/Composer/Command')
+		->exclude('composer/composer/src/Composer/Compiler.php')
+		->exclude('composer/composer/src/Composer/Console')
+		->exclude('composer/composer/src/Composer/Downloader/PearPackageExtractor.php') // Assuming Pear install isn't supported by wp-cli.
+		->exclude('composer/composer/src/Composer/Installer/PearBinaryInstaller.php')
+		->exclude('composer/composer/src/Composer/Installer/PearInstaller.php')
+		->exclude('composer/composer/src/Composer/Question')
+		->exclude('composer/composer/src/Composer/Repository/Pear')
+		->exclude('composer/composer/src/Composer/SelfUpdate')
+		;
+}
 
 foreach ( $finder as $file ) {
 	add_file( $phar, $file );
-}
-
-// Include base project files, because the autoloader will load them
-if ( WP_CLI_BASE_PATH !== WP_CLI_ROOT ) {
-	$finder = new Finder();
-	$finder
-		->files()
-		->ignoreVCS(true)
-		->name('*.php')
-		->in(WP_CLI_BASE_PATH . '/src')
-		->exclude('test')
-		->exclude('tests')
-		->exclude('Test')
-		->exclude('Tests');
-	foreach ( $finder as $file ) {
-		add_file( $phar, $file );
-	}
-	// Any PHP files in the project root
-	foreach ( glob( WP_CLI_BASE_PATH . '/*.php' ) as $file ) {
-		add_file( $phar, $file );
-	}
 }
 
 // other files
@@ -133,35 +171,38 @@ foreach ( $finder as $file ) {
 	add_file( $phar, $file );
 }
 
-$finder = new Finder();
-$finder
-	->files()
-	->ignoreVCS(true)
-	->ignoreDotFiles(false)
-	->in( WP_CLI_VENDOR_DIR . '/wp-cli/config-command/templates')
-	;
-foreach ( $finder as $file ) {
-	add_file( $phar, $file );
-}
+if ( 'cli' !== BUILD ) {
+	$finder = new Finder();
+	$finder
+		->files()
+		->ignoreVCS(true)
+		->ignoreDotFiles(false)
+		->in( WP_CLI_VENDOR_DIR . '/wp-cli/config-command/templates')
+		;
+	foreach ( $finder as $file ) {
+		add_file( $phar, $file );
+	}
 
-$finder = new Finder();
-$finder
-	->files()
-	->ignoreVCS(true)
-	->ignoreDotFiles(false)
-	->in( WP_CLI_VENDOR_DIR . '/wp-cli/scaffold-command/templates')
-	;
-foreach ( $finder as $file ) {
-	add_file( $phar, $file );
+	$finder = new Finder();
+	$finder
+		->files()
+		->ignoreVCS(true)
+		->ignoreDotFiles(false)
+		->in( WP_CLI_VENDOR_DIR . '/wp-cli/scaffold-command/templates')
+		;
+	foreach ( $finder as $file ) {
+		add_file( $phar, $file );
+	}
 }
 
 add_file( $phar, WP_CLI_VENDOR_DIR . '/autoload.php' );
 add_file( $phar, WP_CLI_VENDOR_DIR . '/autoload_commands.php' );
 add_file( $phar, WP_CLI_VENDOR_DIR . '/autoload_framework.php' );
-add_file( $phar, WP_CLI_ROOT . '/ci/behat-tags.php' );
-add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/ca-bundle/res/cacert.pem' );
-add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/composer/LICENSE' );
-add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/composer/res/composer-schema.json' );
+if ( 'cli' !== BUILD ) {
+	add_file( $phar, WP_CLI_ROOT . '/ci/behat-tags.php' );
+	add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/composer/LICENSE' );
+	add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/composer/res/composer-schema.json' );
+}
 add_file( $phar, WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests/Transport/cacert.pem' );
 
 set_file_contents( $phar, WP_CLI_ROOT . '/VERSION', $current_version );
