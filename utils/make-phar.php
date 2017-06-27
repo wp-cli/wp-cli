@@ -53,14 +53,18 @@ function add_file( $phar, $path ) {
 	if ( !BE_QUIET )
 		echo "$key - $path\n";
 
-	if ( 0 === strpos( basename( $path ), 'autoload_' ) ) {
+	$basename = basename( $path );
+	if ( 0 === strpos( $basename, 'autoload_' ) && preg_match( '/(?:classmap|files|namespaces|psr4|static)\.php$/', $basename ) ) {
 		// Strip autoload maps of unused stuff.
 		static $strip_res = null;
 		if ( null === $strip_res ) {
 			if ( 'cli' === BUILD ) {
 				$strips = array(
-					'\/(?:behat|composer|gherkin)\/src\/',
+					'\/(?:behat|composer|gherkin)\/src',
 					'\/phpunit\/',
+					'\/nb\/oxymel',
+					'-command\/src\/',
+					'\/wp-cli\/[^\n]+-command\/',
 					'\/symfony\/(?!finder|polyfill-mbstring)[^\/]+\/',
 				);
 			} else {
@@ -105,7 +109,6 @@ $finder
 	->ignoreVCS(true)
 	->name('*.php')
 	->in(WP_CLI_ROOT . '/php')
-	->in(WP_CLI_VENDOR_DIR . '/wp-cli')
 	->in(WP_CLI_VENDOR_DIR . '/mustache')
 	->in(WP_CLI_VENDOR_DIR . '/rmccue/requests')
 	->in(WP_CLI_VENDOR_DIR . '/composer')
@@ -122,6 +125,8 @@ $finder
 	;
 if ( 'cli' === BUILD ) {
 	$finder
+		->in(WP_CLI_VENDOR_DIR . '/wp-cli/mustangostang-spyc')
+		->in(WP_CLI_VENDOR_DIR . '/wp-cli/php-cli-tools')
 		->in(WP_CLI_VENDOR_DIR . '/seld/cli-prompt')
 		->exclude('composer/ca-bundle')
 		->exclude('composer/semver')
@@ -130,6 +135,7 @@ if ( 'cli' === BUILD ) {
 		;
 } else {
 	$finder
+		->in(WP_CLI_VENDOR_DIR . '/wp-cli')
 		->in(WP_CLI_ROOT . '/features/bootstrap') // These are required for scaffold-package-command.
 		->in(WP_CLI_ROOT . '/features/steps')
 		->in(WP_CLI_ROOT . '/features/extra')
