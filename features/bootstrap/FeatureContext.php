@@ -8,6 +8,9 @@ use Behat\Behat\Context\ClosuredContextInterface,
 use \WP_CLI\Process;
 use \WP_CLI\Utils;
 
+use Symfony\Component\Filesystem\Filesystem,
+	Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+
 // Inside a community package
 if ( file_exists( __DIR__ . '/utils.php' ) ) {
 	require_once __DIR__ . '/utils.php';
@@ -44,7 +47,7 @@ if ( file_exists( __DIR__ . '/utils.php' ) ) {
  */
 class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
-	private static $cache_dir, $suite_cache_dir;
+	private static $cache_dir, $suite_cache_dir, $fs;
 
 	private static $db_settings = array(
 		'dbname' => 'wp_cli_test',
@@ -195,6 +198,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->drop_db();
 		$this->set_cache_dir();
 		$this->variables['CORE_CONFIG_SETTINGS'] = Utils\assoc_args_to_str( self::$db_settings );
+		if ( ! self::$fs ) {
+			self::$fs = new FileSystem;
+		}
 	}
 
 	public function getStepDefinitionResources() {
@@ -378,6 +384,13 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		rename( $this->variables['RUN_DIR'] . "/$src", $this->variables['RUN_DIR'] . "/$dest" );
 	}
 
+	/**
+	 * Remove a directory (recursive).
+	 */
+	public function remove_dir( $dir ) {
+		self::$fs->remove( $dir );
+	}
+
 	public function add_line_to_wp_config( &$wp_config_code, $line ) {
 		$token = "/* That's all, stop editing!";
 
@@ -425,5 +438,36 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		$this->proc( 'wp core install', $install_args, $subdir )->run_check();
 	}
-}
 
+	/**
+	 * Copy mock data to wp-cli cache for Travis.
+	 *
+	 * @param string $files  Comma-separated list of files.
+	 * @param bool   $always Optional. If true, files will always be copied. If false, files will only be copied if not already in cache. Default false.
+	 */
+	public function prime_wp_cli_cache( $files, $always = false ) {
+		// If not running on Travis, do nothing (so local testing at least is paged).
+		if ( ! getenv( 'TRAVIS' ) ) {
+			return;
+		}
+
+		$test_cache_dir = $this->variables['CACHE_DIR'];
+		$env = self::get_process_env_variables();
+		$home_cache_dir = $env['HOME'] . '/.wp-cli/cache';
+
+		$files = explode( ',', $files );
+		foreach ( $files as $file ) {
+			$test_cache_file = $test_cache_dir . '/' . $file;
+			$home_cache_file = $home_cache_dir . '/' . $file;
+
+			if ( file_exists( $test_cache_file ) && ( $always || ! file_exists( $home_cache_file ) ) ) {
+				if ( 'github_releases' === $file ) {
+					// Bump up the max_age and make the time now.
+					file_put_contents( $home_cache_file, preg_replace( '/^(a:3:{s:7:"max_age";i):[0-9]+(;s:4:"time";i):[0-9]+/', '$1:600$2:' . time(), file_get_contents( $test_cache_file ) ) );
+				} else {
+					copy( $test_cache_file, $home_cache_file );
+				}
+			}
+		}
+	}
+}

@@ -1,5 +1,11 @@
 Feature: `wp cli` tasks
 
+  Background:
+    Given download:
+      | path                        | url                                                  |
+      | {CACHE_DIR}/github_releases | https://gitlostbonger.com/behat-data/github_releases |
+    And a wp-cli cache primed with github_releases
+
   Scenario: Ability to set a custom version when building
     Given an empty directory
     And save the {SRC_DIR}/VERSION file as {TRUE_VERSION}
@@ -15,7 +21,6 @@ Feature: `wp cli` tasks
     {TRUE_VERSION}
     """
 
-  @github-api
   Scenario: Check for updates
     Given an empty directory
     And a new Phar with version "0.0.0"
@@ -27,7 +32,8 @@ Feature: `wp cli` tasks
     """
     And STDERR should be empty
 
-  @github-api
+  # The latest 1.2.1 phar fails on Travis PHP 5.3 due to double slash in boot-phar.php path so need >= 5.4 to do cli update.
+  @require-php-5.4
   Scenario: Do WP-CLI Update
     Given an empty directory
     And a new Phar with version "0.0.0"
@@ -64,7 +70,6 @@ Feature: `wp cli` tasks
       0.0.0
       """
 
-  @github-api
   Scenario: Patch update from 0.14.0 to 0.14.1
     Given an empty directory
     And a new Phar with version "0.14.0"
@@ -93,7 +98,8 @@ Feature: `wp cli` tasks
       WP-CLI 0.14.1
       """
 
-  @github-api
+  # See above.
+  @require-php-5.4
   Scenario: Not a patch update from 0.14.0
     Given an empty directory
     And a new Phar with version "0.14.0"
@@ -110,7 +116,8 @@ Feature: `wp cli` tasks
     And STDERR should be empty
     And the return code should be 0
 
-  @require-php-5.6
+  # See above.
+  @require-php-5.4
   Scenario: Install WP-CLI nightly
     Given an empty directory
     And a new Phar with version "0.14.0"
@@ -128,7 +135,8 @@ Feature: `wp cli` tasks
     And STDERR should be empty
     And the return code should be 0
 
-  @github-api @less-than-php-7
+  # See above.
+  @require-php-5.4
   Scenario: Install WP-CLI stable
     Given an empty directory
     And a new Phar with version "0.14.0"
@@ -137,7 +145,7 @@ Feature: `wp cli` tasks
       y
       """
 
-    When I run `{PHAR_PATH} cli check-update --minor --field=version`
+    When I run `{PHAR_PATH} cli check-update --field=version | head -1`
     Then STDOUT should not be empty
     And save STDOUT as {UPDATE_VERSION}
 
@@ -157,11 +165,12 @@ Feature: `wp cli` tasks
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `{PHAR_PATH} cli check-update`
-    Then STDOUT should be:
-      """
-      Success: WP-CLI is at the latest version.
-      """
+    # This will hit github rate limiting on Travis as the latest 1.2.1 phar doesn't use the github_releases cache.
+    #When I run `{PHAR_PATH} cli check-update`
+    #Then STDOUT should be:
+      #"""
+      #Success: WP-CLI is at the latest version.
+      #"""
 
     When I run `{PHAR_PATH} cli version`
     Then STDOUT should be:

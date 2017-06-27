@@ -352,13 +352,54 @@ class CLI_Command extends WP_CLI_Command {
 		$headers = array(
 			'Accept' => 'application/json'
 		);
-		$response = Utils\http_request( 'GET', $url, $headers, $options );
 
-		if ( ! $response->success || 200 !== $response->status_code ) {
-			WP_CLI::error( sprintf( "Failed to get latest version (HTTP code %d).", $response->status_code ) );
+		$release_data = $cache_data = array();
+
+		// Use cache to avoid github rate limiting.
+		$cache = WP_CLI::get_cache();
+		$cache_key = 'github_releases';
+
+		if ( $cache->has( $cache_key ) ) {
+			$cache_data = unserialize( $cache->read( $cache_key ) );
+			if ( time() <= $cache_data['time'] + $cache_data['max_age'] ) {
+				$release_data = $cache_data['release_data'];
+			}
 		}
 
-		$release_data = json_decode( $response->body );
+		if ( ! $release_data ) {
+			// Not cached.
+			$max_age = $time = 0;
+			do {
+				$response = Utils\http_request( 'GET', $url, $headers, $options );
+
+				if ( ! $response->success || 200 !== $response->status_code ) {
+					if ( 403 === $response->status_code ) {
+						if ( ! empty( $cache_data ) ) {
+							WP_CLI::warning( sprintf( "Failed to get latest version (HTTP code %d) - using stale cache data.", $response->status_code ) );
+							$max_age = 0; // Make sure not to write stale data to cache.
+							$release_data = $cache_data['release_data'];
+							break;
+						}
+					}
+					WP_CLI::error( sprintf( "Failed to get latest version (HTTP code %d).", $response->status_code ) );
+				}
+
+				$release_data = array_merge( $release_data, json_decode( $response->body ) );
+
+				if ( ! $max_age && isset( $response->headers['cache-control'] ) && preg_match( '/max-age=([0-9]+)/', $response->headers['cache-control'], $matches ) ) {
+					$max_age = (int) $matches[1];
+					if ( empty( $response->headers['date'] ) || false === ( $time = Utils\strtotime_gmt( $response->headers['date'] ) ) ) {
+						$time = time();
+					}
+				}
+				// Loop while have paged data ("next" link).
+			} while ( ! empty( $response->headers['link'] ) && preg_match( '/<([^>]+)>; rel="next"/', $response->headers['link'], $matches ) && ( $url = $matches[1] ) );
+
+			if ( $max_age ) {
+				$cache->write( $cache_key, serialize( compact( 'max_age', 'time', 'release_data' ) ) );
+			}
+		}
+		unset( $cache_data );
 
 		$updates = array(
 			'major'      => false,

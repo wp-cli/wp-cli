@@ -10,6 +10,12 @@ $steps->Given( '/^an empty directory$/',
 	}
 );
 
+$steps->Given( '/^an empty ([^\s]+) directory$/',
+	function ( $world, $dir ) {
+		$world->remove_dir( $world->replace_variables( $dir ) );
+	}
+);
+
 $steps->Given( '/^an empty cache/',
 	function ( $world ) {
 		$world->variables['SUITE_CACHE_DIR'] = FeatureContext::create_cache_dir();
@@ -166,5 +172,12 @@ $steps->Given('/^a misconfigured WP_CONTENT_DIR constant directory$/',
 			"define( 'WP_CONTENT_DIR', '' );" );
 
 		file_put_contents( $wp_config_path, $wp_config_code );
+	}
+);
+
+// Takes comma-separated file names.
+$steps->Given( '/^a wp-cli cache primed with ([^\s]+)( always)?$/',
+	function ( $world, $files, $always = '' ) {
+		$world->prime_wp_cli_cache( $world->replace_variables( $files ), $always );
 	}
 );
