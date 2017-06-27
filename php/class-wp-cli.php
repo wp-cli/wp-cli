@@ -358,8 +358,8 @@ class WP_CLI {
 	 * ```
 	 * # Register a custom 'foo' command to output a supplied positional param.
 	 * #
-	 * # $ wp foo bar
-	 * # Success: bar
+	 * # $ wp foo bar --baz=qux
+	 * # Success: bar qux
 	 *
 	 * /**
 	 *  * My awesome closure command
@@ -369,8 +369,8 @@ class WP_CLI {
 	 *  *
 	 *  * @when before_wp_load
 	 *  *\/
-	 * $foo = function( $args ) {
-	 *     WP_CLI::success( $args[0] );
+	 * $foo = function( $args, $args_assoc ) {
+	 *     WP_CLI::success( $args[0] . ' ' . $args_assoc['baz'] );
 	 * };
 	 * WP_CLI::add_command( 'foo', $foo );
 	 * ```
