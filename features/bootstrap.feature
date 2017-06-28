@@ -200,20 +200,8 @@ Feature: Bootstrap WP-CLI
         """
 
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (command line)
-    Given an empty directory
-    And a composer.json file:
-      """
-      {
-          "name": "wp-cli/composer-test",
-          "type": "project",
-          "require": {
-              "wp-cli/wp-cli": "dev-master"
-          }
-      }
-      """
-    And a local wp-cli Composer repository
-    And I run `composer install --no-interaction --optimize-autoloader`
-    And a WordPress install with Composer
+    Given a WP install with Composer
+    And a dependency on current wp-cli
     When I run `vendor/bin/wp option get blogname`
     Then STDOUT should contain:
       """
@@ -222,19 +210,7 @@ Feature: Bootstrap WP-CLI
 
   @require-php-5.4
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (web)
-    Given an empty directory
-    And a composer.json file:
-      """
-      {
-          "name": "wp-cli/composer-test",
-          "type": "project",
-          "require": {
-              "wp-cli/wp-cli": "dev-master"
-          }
-      }
-      """
-    And a local wp-cli Composer repository
-    And I run `composer install --no-interaction --optimize-autoloader`
-    And a WordPress install with Composer
+    Given a WP install with Composer
+    And a dependency on current wp-cli
     And a PHP built-in web server
     Then the HTTP status code should be 200
