@@ -62,6 +62,12 @@ $steps->Given( "/^a WP install in '([^\s]+)'$/",
 	}
 );
 
+$steps->Given( '/^a WP install with Composer$/',
+	function ( $world ) {
+		$world->install_wp_with_composer();
+	}
+);
+
 $steps->Given( '/^a WP multisite (subdirectory|subdomain)?\s?install$/',
 	function ( $world, $type = 'subdirectory' ) {
 		$world->install_wp();
@@ -169,15 +175,9 @@ $steps->Given('/^a misconfigured WP_CONTENT_DIR constant directory$/',
 	}
 );
 
-$steps->Given( '/^a local wp-cli Composer repository$/',
+$steps->Given( '/^a dependency on current wp-cli$/',
 	function ( $world ) {
-		$world->composer_add_wp_cli_local_repository();
-	}
-);
-
-$steps->Given( '/^a WordPress install with Composer$/',
-	function ( $world ) {
-		$world->composer_install_wp();
+		$world->composer_require_current_wp_cli();
 	}
 );
 
