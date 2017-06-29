@@ -401,7 +401,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		copy( __DIR__ . '/../extra/no-mail.php', $dest_dir . '/wp-content/mu-plugins/no-mail.php' );
 	}
 
-	public function create_config( $subdir = '', $extra_php = false) {
+	public function create_config( $subdir = '', $extra_php = false ) {
 		$params = self::$db_settings;
 
 		// Replaces all characters that are not alphanumeric or an underscore into an underscore.
@@ -409,7 +409,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		$params['skip-salts'] = true;
 
-		if(false !== $extra_php) {
+		if( false !== $extra_php ) {
 			$params['extra-php'] = $extra_php;
 		}
 
@@ -461,11 +461,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function composer_add_wp_cli_local_repository() {
-		if ( !isset( $this->variables['COMPOSER_LOCAL_REPOSITORY'] ) ) {
+		if ( ! isset( $this->variables['COMPOSER_LOCAL_REPOSITORY'] ) ) {
 			$this->variables['COMPOSER_LOCAL_REPOSITORY'] = sys_get_temp_dir() . '/' . uniqid( "wp-cli-composer-local-", TRUE );
 
 			$env = self::get_process_env_variables();
-			$src = isset($env['TRAVIS_BUILD_DIR']) ? $env['TRAVIS_BUILD_DIR'] : realpath( __DIR__ . '/../../' );
+			$src = isset( $env['TRAVIS_BUILD_DIR'] ) ? $env['TRAVIS_BUILD_DIR'] : realpath( __DIR__ . '/../../' );
 
 			$dest = $this->variables['COMPOSER_LOCAL_REPOSITORY'] . '/';
 
