@@ -198,3 +198,19 @@ Feature: Bootstrap WP-CLI
         """
         WP-Override-CLI
         """
+
+  Scenario: Composer stack with both WordPress and wp-cli as dependencies (command line)
+    Given a WP install with Composer
+    And a dependency on current wp-cli
+    When I run `vendor/bin/wp option get blogname`
+    Then STDOUT should contain:
+      """
+      WP CLI Site with both WordPress and wp-cli as Composer dependencies
+      """
+
+  @require-php-5.4
+  Scenario: Composer stack with both WordPress and wp-cli as dependencies (web)
+    Given a WP install with Composer
+    And a dependency on current wp-cli
+    And a PHP built-in web server
+    Then the HTTP status code should be 200
