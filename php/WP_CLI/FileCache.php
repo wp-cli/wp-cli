@@ -40,6 +40,10 @@ class FileCache {
 	 * @var string key allowed chars (regex class)
 	 */
 	protected $whitelist;
+	/**
+	 * @var bool finderDummy dummy to autoload Finder classes.
+	 */
+	static private $finderDummy = null;
 
 	/**
 	 * @param string $cacheDir   location of the cache
@@ -57,6 +61,13 @@ class FileCache {
 			$this->enabled = false;
 		}
 
+		if ( null === self::$finderDummy ) {
+			/*
+			 * Make sure Finder & helper classes used in clean() are loaded as otherwise calling clean() in a `register_shutdown_function`
+			 * can fail in certain circumstances - a PHP issue not easily reproducible but witnessed on Travis and locally.
+			 */
+			self::$finderDummy = (bool) $this->get_finder()->files()->name( basename( __FILE__ ) )->in( __DIR__ )->date( '> 1999' )->sortByAccessedTime()->getIterator()->current()->getSize();
+		}
 	}
 
 	/**

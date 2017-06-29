@@ -1023,3 +1023,27 @@ function force_env_on_nix_systems( $command ) {
 	}
 	return $command;
 }
+
+/**
+ * Wrapper around strtotime() that always interprets the string with a default timezone of UTC.
+ *
+ * @param string $time A date/time string.
+ * @param int    $now  Optional. The timestamp which is used as a base for the calculation of relative dates.
+ *
+ * @return int|bool Returns a timestamp on success, false otherwise.
+ */
+function strtotime_gmt( $str, $now = null ) {
+	$get = date_default_timezone_get();
+	if ( 'UTC' !== $get ) {
+		date_default_timezone_set( 'UTC' );
+	}
+	if ( null === $now ) {
+		$ret = strtotime( $str );
+	} else {
+		$ret = strtotime( $str, $now );
+	}
+	if ( 'UTC' !== $get ) {
+		date_default_timezone_set( $get );
+	}
+	return $ret;
+}

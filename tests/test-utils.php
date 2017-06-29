@@ -175,4 +175,15 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		putenv( false === $homedrive ? 'HOMEDRIVE' : "HOME=$homedrive" );
 		putenv( false === $homepath ? 'HOMEPATH' : "HOME=$homepath" );
 	}
+
+	public function testStrtotimeGmt() {
+		$get = date_default_timezone_get();
+
+		$date = 'Fri, 30 May 2008 04:20:12';
+
+		date_default_timezone_set( 'America/Godthab' ); // -2h in summer.
+		$this->assertSame( strtotime( $date ) - 2 * 60 * 60, Utils\strtotime_gmt( $date ) );
+
+		date_default_timezone_set( $get );
+	}
 }
