@@ -71,7 +71,7 @@ class Contrib_List_Command {
 			WP_CLI::error( sprintf( 'Could not fetch composer.json (HTTP code %d)', $response->status_code ) );
 		}
 		$composer_json = json_decode( $response->body, true );
-		foreach( $composer_json['packages'] as $_ => $package ) {
+		foreach( $composer_json['packages'] as $package ) {
 			$package_name = $package['name'];
 			$version_constraint = str_replace( 'v', '', $package['version'] );
 			if ( ! preg_match( '#^wp-cli/.+-command$#', $package_name ) ) {
