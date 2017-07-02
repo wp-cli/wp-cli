@@ -6,6 +6,20 @@ namespace WP_CLI;
  * Run a system process, and learn what happened.
  */
 class Process {
+	/**
+	 * @var string The full command to execute by the system.
+	 */
+	private $command;
+
+	/**
+	 * @var string|null The path of the working directory for the process or NULL if not specified (defaults to current working directory).
+	 */
+	private $cwd;
+
+	/**
+	 * @var array Environment variables to set when running the command.
+	 */
+	private $env;
 
 	/**
 	 * @param string $command Command to execute.
@@ -21,8 +35,6 @@ class Process {
 
 		return $proc;
 	}
-
-	private $command, $cwd, $env;
 
 	private function __construct() {}
 
