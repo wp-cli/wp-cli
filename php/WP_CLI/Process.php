@@ -80,7 +80,7 @@ class Process {
 	public function run_check() {
 		$r = $this->run();
 
-		if ( $r->return_code || !empty( $r->STDERR ) ) {
+		if ( $r->return_code || !empty( $r->stderr ) ) {
 			throw new \RuntimeException( $r );
 		}
 
