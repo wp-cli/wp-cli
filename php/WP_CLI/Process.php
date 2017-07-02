@@ -25,6 +25,8 @@ class Process {
 	 * @param string $command Command to execute.
 	 * @param string $cwd Directory to execute the command in.
 	 * @param array $env Environment variables to set when running the command.
+	 *
+	 * @return Process
 	 */
 	public static function create( $command, $cwd = null, $env = array() ) {
 		$proc = new self;
