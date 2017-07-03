@@ -106,6 +106,26 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		// host and path, no port, with scp notation
+		$testcase = 'foo.com:~/path/to/dir';
+		$this->assertEquals( array(
+			'host' => 'foo.com',
+			'path' => '~/path/to/dir',
+		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		$testcase = 'foo.com:2222~/path/to/dir';
+		$this->assertEquals( array(
+			'host' => 'foo.com',
+			'path' => '~/path/to/dir',
+			'port' => '2222'
+		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( '2222', Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 	}
 
 	public function testParseStrToArgv() {
