@@ -80,7 +80,8 @@ class Process {
 	public function run_check() {
 		$r = $this->run();
 
-		if ( $r->return_code || !empty( $r->stderr ) ) {
+		// $r->STDERR is incorrect, but kept incorrect for backwards-compat
+		if ( $r->return_code || !empty( $r->STDERR ) ) {
 			throw new \RuntimeException( $r );
 		}
 
