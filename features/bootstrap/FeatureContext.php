@@ -196,7 +196,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			self::$db_settings['dbuser'] = getenv( 'WP_CLI_TEST_DBUSER' );
 		}
 
-		if ( getenv( 'WP_CLI_TEST_DBPASS' ) !== false ) {
+		if ( false !== getenv( 'WP_CLI_TEST_DBPASS' ) ) {
 			self::$db_settings['dbpass'] = getenv( 'WP_CLI_TEST_DBPASS' );
 		}
 
