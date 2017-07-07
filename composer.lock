@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "49c85e6b2faf3bede365d395eb72dbb9",
+    "content-hash": "cd48468393e7ce36d00ed48300479088",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -703,7 +703,7 @@
         },
         {
             "name": "symfony/config",
-            "version": "v2.8.23",
+            "version": "v2.8.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/config.git",
@@ -759,7 +759,7 @@
         },
         {
             "name": "symfony/console",
-            "version": "v2.8.23",
+            "version": "v2.8.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
@@ -820,7 +820,7 @@
         },
         {
             "name": "symfony/debug",
-            "version": "v2.8.23",
+            "version": "v2.8.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/debug.git",
@@ -877,7 +877,7 @@
         },
         {
             "name": "symfony/dependency-injection",
-            "version": "v2.8.23",
+            "version": "v2.8.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/dependency-injection.git",
@@ -940,7 +940,7 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.23",
+            "version": "v2.8.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
@@ -1000,7 +1000,7 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v2.8.23",
+            "version": "v2.8.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
@@ -1049,7 +1049,7 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v2.8.23",
+            "version": "v2.8.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/finder.git",
@@ -1157,7 +1157,7 @@
         },
         {
             "name": "symfony/process",
-            "version": "v2.8.23",
+            "version": "v2.8.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
@@ -1206,7 +1206,7 @@
         },
         {
             "name": "symfony/translation",
-            "version": "v2.8.23",
+            "version": "v2.8.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/translation.git",
@@ -1270,7 +1270,7 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.8.23",
+            "version": "v2.8.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
@@ -1463,16 +1463,16 @@
         },
         {
             "name": "wp-cli/config-command",
-            "version": "v1.1.2",
+            "version": "v1.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/config-command.git",
-                "reference": "3d812504a4a6c0ed690bbea839c07859aedd2edd"
+                "reference": "8c043f9312a5c35cd7e37a7551d835f46ed0586e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/config-command/zipball/3d812504a4a6c0ed690bbea839c07859aedd2edd",
-                "reference": "3d812504a4a6c0ed690bbea839c07859aedd2edd",
+                "url": "https://api.github.com/repos/wp-cli/config-command/zipball/8c043f9312a5c35cd7e37a7551d835f46ed0586e",
+                "reference": "8c043f9312a5c35cd7e37a7551d835f46ed0586e",
                 "shasum": ""
             },
             "require-dev": {
@@ -1513,7 +1513,7 @@
             ],
             "description": "Manage the wp-config.php file.",
             "homepage": "https://github.com/wp-cli/config-command",
-            "time": "2017-06-20T15:38:51+00:00"
+            "time": "2017-07-06T21:17:20+00:00"
         },
         {
             "name": "wp-cli/core-command",
