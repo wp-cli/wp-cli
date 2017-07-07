@@ -1,45 +1,45 @@
-%define Source1 /home/`whoami`/rpmbuild/SOURCES/wp.1.gz
+Name:       wp-cli
+Version:    0.0.0
+Release:    1%{?dist}
+Summary:    The command line interface for WordPress
+License:    MIT
+URL:        http://wp-cli.org/
+Source0:    wp-cli.phar
+Source1:    wp.1
+BuildArch:  noarch
 
-Name:		wp-cli
-Version:	1.1.0
-Release:	1%{?dist}
-
-Summary:	The command line interface for WordPress
-Packager:	Murtaza Sarıaltun <murtaza.sarialtun@ozguryazilim.com.tr>
-Group:		Applications/Internet
-License:	MIT
-URL:		http://wp-cli.org/
-Source0:	%{name}-%{version}.phar
-Source1:	wp.1.gz
-BuildArch:      noarch 
-
-Requires:	php >= 5.3.29
-
+Requires:   locales-cli, php >= 5.3.29
 
 %description
- wp-cli is a set of command-line tools for managing
- WordPress installations. You can update plug-ins, set up multi-site
- installs and much more, without using a web browser.
-
+WP-CLI is the command-line interface for WordPress.
+You can update plugins, configure multisite installs
+and much more, without using a web browser.
 
 %prep
+wget -nv -O %{SOURCE0} "https://github.com/wp-cli/builds/raw/gh-pages/phar/wp-cli.phar"
+{
+    echo '.TH "WP" "1"'
+    php %{SOURCE0} --help
+} \
+    | sed 's/^\([A-Z ]\+\)$/.SH "\1"/' \
+    | sed 's/^  wp$/wp \\- The command line interface for WordPress/' \
+    > %{SOURCE1}
 
 %build
 
 %install
-mkdir -p %{buildroot}/%{_bindir}
-mkdir -p %{buildroot}/%{_mandir}
-mkdir -p %{buildroot}/%{_mandir}/man1
-cp -ar %{SOURCE0} %{buildroot}/%{_bindir}/wp
-chmod +x %{buildroot}/%{_bindir}/wp
-cp -ar %{Source1} %{buildroot}%{_mandir}/man1/
+mkdir -p %{buildroot}%{_bindir}
+cp -a %{SOURCE0} %{buildroot}%{_bindir}/wp
+chmod +x %{buildroot}%{_bindir}/wp
+mkdir -p %{buildroot}%{_mandir}/man1
+cp -v -a %{SOURCE1} %{buildroot}%{_mandir}/man1/
 
 %files
-%attr(0755, root, root) "/usr/bin/wp"
 %attr(0755, root, root) %{_bindir}/wp
 %attr(0644, root, root) %{_mandir}/man1/wp.1*
 
-
 %changelog
-* Mon Mar 27 2017 Murtaza Sarıaltun <murtaza.sarialtun@ozguryazilim.com.tr> - 1.1.0-1.el7.centos
-- First Build
+* Fri Jul 7 2017 Murtaza Sarıaltun <murtaza.sarialtun@ozguryazilim.com.tr> - 0.0.0-1
+- First release of the spec file
+- Check the spec file with `rpmlint -i -v wp-cli.spec`
+- Build the package with `rpmbuild -bb wp-cli.spec`
