@@ -17,6 +17,7 @@ and much more, without using a web browser.
 
 %prep
 wget -nv -O %{SOURCE0} "https://github.com/wp-cli/builds/raw/gh-pages/phar/wp-cli.phar"
+chmod +x %{SOURCE0}
 {
     echo '.TH "WP" "1"'
     php %{SOURCE0} --help
@@ -30,9 +31,8 @@ wget -nv -O %{SOURCE0} "https://github.com/wp-cli/builds/raw/gh-pages/phar/wp-cl
 %install
 mkdir -p %{buildroot}%{_bindir}
 cp -a %{SOURCE0} %{buildroot}%{_bindir}/wp
-chmod +x %{buildroot}%{_bindir}/wp
 mkdir -p %{buildroot}%{_mandir}/man1
-cp -v -a %{SOURCE1} %{buildroot}%{_mandir}/man1/
+cp -a %{SOURCE1} %{buildroot}%{_mandir}/man1/
 
 %files
 %attr(0755, root, root) %{_bindir}/wp
@@ -41,5 +41,5 @@ cp -v -a %{SOURCE1} %{buildroot}%{_mandir}/man1/
 %changelog
 * Fri Jul 7 2017 Murtaza Sarıaltun <murtaza.sarialtun@ozguryazilim.com.tr> - 0.0.0-1
 - First release of the spec file
-- Check the spec file with `rpmlint -i -v wp-cli.spec`
-- Build the package with `rpmbuild -bb wp-cli.spec`
+- Check the spec file with `rpmlint -i -v wp-cli-rpm.spec`
+- Build the package with `rpmbuild -bb wp-cli-rpm.spec`
