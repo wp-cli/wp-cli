@@ -143,7 +143,7 @@ if ( 'cli' === BUILD ) {
 		->in(WP_CLI_VENDOR_DIR . '/psr')
 		->in(WP_CLI_VENDOR_DIR . '/seld')
 		->in(WP_CLI_VENDOR_DIR . '/symfony/console')
-		->in(WP_CLI_VENDOR_DIR . '/symfony/finder')
+		->in(WP_CLI_VENDOR_DIR . '/symfony/filesystem')
 		->in(WP_CLI_VENDOR_DIR . '/symfony/process')
 		->in(WP_CLI_VENDOR_DIR . '/justinrainbow/json-schema')
 		->exclude('nb/oxymel/OxymelTest.php')
