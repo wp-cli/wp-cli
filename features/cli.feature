@@ -137,7 +137,7 @@ Feature: `wp cli` tasks
       y
       """
 
-    When I run `{PHAR_PATH} cli check-update --minor --field=version`
+    When I run `{PHAR_PATH} cli check-update --field=version | head -1`
     Then STDOUT should not be empty
     And save STDOUT as {UPDATE_VERSION}
 

@@ -10,6 +10,12 @@ $steps->Given( '/^an empty directory$/',
 	}
 );
 
+$steps->Given( '/^an empty ([^\s]+) directory$/',
+	function ( $world, $dir ) {
+		$world->remove_dir( $world->replace_variables( $dir ) );
+	}
+);
+
 $steps->Given( '/^an empty cache/',
 	function ( $world ) {
 		$world->variables['SUITE_CACHE_DIR'] = FeatureContext::create_cache_dir();
