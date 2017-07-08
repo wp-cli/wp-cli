@@ -184,7 +184,7 @@ Feature: Load WP-CLI
     And a invalid-host.php file:
       """
       <?php
-	  error_reporting( error_reporting() & ~E_NOTICE );
+      error_reporting( error_reporting() & ~E_NOTICE );
       define( 'DB_HOST', 'localghost' );
       """
 
