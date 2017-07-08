@@ -269,8 +269,8 @@ Feature: Global flags
       """
 
   Scenario: Strict args mode should be passed on to ssh
-    When I try `WP_CLI_STRICT_ARGS_MODE=1 wp --debug --ssh=user@127.0.0.1 --version`
+    When I try `WP_CLI_STRICT_ARGS_MODE=1 wp --debug --ssh=/ --version`
     Then STDERR should contain:
       """
-      Running SSH command: ssh -q user@127.0.0.1 -T WP_CLI_STRICT_ARGS_MODE=1 wp
+      Running SSH command: ssh -q  -T WP_CLI_STRICT_ARGS_MODE=1 wp
       """
