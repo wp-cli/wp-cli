@@ -3,6 +3,7 @@
 namespace WP_CLI\Dispatcher;
 
 use WP_CLI;
+use WP_CLI\Utils;
 
 /**
  * A leaf node in the command tree.
@@ -325,7 +326,17 @@ class Subcommand extends CompositeCommand {
 
 		if ( $this->name != 'help' ) {
 			foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
-				$errors['fatal'][] = "unknown --$key parameter";
+				$suggestion = Utils\get_suggestion(
+					$key,
+					$this->get_parameters( $synopsis_spec ),
+					$threshold = 2
+				);
+
+				$errors['fatal'][] = sprintf(
+					'unknown --%s parameter%s',
+					$key,
+					! empty( $suggestion ) ? PHP_EOL . "Did you mean '--{$suggestion}'?" : ''
+				);
 			}
 		}
 
@@ -393,6 +404,24 @@ class Subcommand extends CompositeCommand {
 			WP_CLI::do_hook( "after_invoke:{$parent}" );
 		}
 		WP_CLI::do_hook( "after_invoke:{$cmd}" );
+	}
+
+	/**
+	 * Get an array of parameter names, by merging the command-specific and the
+	 * global parameters.
+	 *
+	 * @param array  $spec Optional. Specification of the current command.
+	 *
+	 * @return array Array of parameter names
+	 */
+	private function get_parameters( $spec = array() ) {
+		$local_parameters = array_column( $spec, 'name' );
+		$global_parameters = array_column(
+			WP_CLI\SynopsisParser::parse( $this->get_global_params() ),
+			'name'
+		);
+
+		return array_unique( array_merge( $local_parameters, $global_parameters ) );
 	}
 }
 

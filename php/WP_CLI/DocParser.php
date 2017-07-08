@@ -2,7 +2,7 @@
 
 namespace WP_CLI;
 
-use Spyc;
+use Mustangostang\Spyc;
 
 /**
  * Parse command attributes from its PHPdoc.
@@ -79,7 +79,7 @@ class DocParser {
 	 * @return string
 	 */
 	public function get_tag( $name ) {
-		if ( preg_match( '|^@' . $name . '\s+([a-z-_]+)|m', $this->docComment, $matches ) )
+		if ( preg_match( '|^@' . $name . '\s+([a-z-_0-9]+)|m', $this->docComment, $matches ) )
 			return $matches[1];
 
 		return '';

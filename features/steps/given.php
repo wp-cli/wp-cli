@@ -62,6 +62,12 @@ $steps->Given( "/^a WP install in '([^\s]+)'$/",
 	}
 );
 
+$steps->Given( '/^a WP install with Composer$/',
+	function ( $world ) {
+		$world->install_wp_with_composer();
+	}
+);
+
 $steps->Given( '/^a WP multisite (subdirectory|subdomain)?\s?install$/',
 	function ( $world, $type = 'subdirectory' ) {
 		$world->install_wp();
@@ -127,9 +133,15 @@ $steps->Given( '/^save (STDOUT|STDERR) ([\'].+[^\'])?\s?as \{(\w+)\}$/',
 	}
 );
 
-$steps->Given( '/^a new Phar(?: with version "([^"]+)")$/',
-	function ( $world, $version ) {
+$steps->Given( '/^a new Phar with (?:the same version|version "([^"]+)")$/',
+	function ( $world, $version = 'same' ) {
 		$world->build_phar( $version );
+	}
+);
+
+$steps->Given( '/^a downloaded Phar with (?:the same version|version "([^"]+)")$/',
+	function ( $world, $version = 'same' ) {
+		$world->download_phar( $version );
 	}
 );
 
@@ -160,5 +172,17 @@ $steps->Given('/^a misconfigured WP_CONTENT_DIR constant directory$/',
 			"define( 'WP_CONTENT_DIR', '' );" );
 
 		file_put_contents( $wp_config_path, $wp_config_code );
+	}
+);
+
+$steps->Given( '/^a dependency on current wp-cli$/',
+	function ( $world ) {
+		$world->composer_require_current_wp_cli();
+	}
+);
+
+$steps->Given( '/^a PHP built-in web server$/',
+	function ( $world ) {
+		$world->start_php_server();
 	}
 );

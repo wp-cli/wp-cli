@@ -22,7 +22,7 @@ class Runner {
 
 	private $aliases;
 
-	private $arguments, $assoc_args;
+	private $arguments, $assoc_args, $runtime_config;
 
 	private $_early_invoke = array();
 
@@ -71,13 +71,13 @@ class Runner {
 	 *
 	 * @return string|false
 	 */
-	private function get_global_config_path() {
+	public function get_global_config_path() {
 
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
 			$this->_global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
 		} else {
-			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
+			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
 			$this->_global_config_path_debug = 'Using default global config: ' . $config_path;
 		}
 
@@ -96,7 +96,7 @@ class Runner {
 	 *
 	 * @return string|false
 	 */
-	private function get_project_config_path() {
+	public function get_project_config_path() {
 		$config_files = array(
 			'wp-cli.local.yml',
 			'wp-cli.yml'
@@ -129,7 +129,7 @@ class Runner {
 		if ( getenv( 'WP_CLI_PACKAGES_DIR' ) ) {
 			$packages_dir = rtrim( getenv( 'WP_CLI_PACKAGES_DIR' ), '/' ) . '/';
 		} else {
-			$packages_dir = getenv( 'HOME' ) . '/.wp-cli/packages/';
+			$packages_dir = Utils\get_home_dir() . '/.wp-cli/packages/';
 		}
 		return $packages_dir;
 	}
@@ -246,6 +246,8 @@ class Runner {
 	 */
 	public function find_command_to_run( $args ) {
 		$command = \WP_CLI::get_root_command();
+
+		WP_CLI::do_hook( 'find_command_to_run_pre' );
 
 		$cmd_path = array();
 
@@ -608,21 +610,25 @@ class Runner {
 		return $this->colorize;
 	}
 
-	private function init_colorization() {
+	public function init_colorization() {
 		if ( 'auto' === $this->config['color'] ) {
-			$this->colorize = ( !\cli\Shell::isPiped() && !\WP_CLI\Utils\is_windows() );
+			$this->colorize = ( !\WP_CLI\Utils\isPiped() && !\WP_CLI\Utils\is_windows() );
 		} else {
 			$this->colorize = $this->config['color'];
 		}
 	}
 
-	private function init_logger() {
+	public function init_logger() {
 		if ( $this->config['quiet'] )
 			$logger = new \WP_CLI\Loggers\Quiet;
 		else
 			$logger = new \WP_CLI\Loggers\Regular( $this->in_color() );
 
 		WP_CLI::set_logger( $logger );
+	}
+
+	public function get_required_files() {
+		return $this->_required_files;
 	}
 
 	/**
@@ -657,7 +663,7 @@ class Runner {
 		// @codingStandardsIgnoreEnd
 	}
 
-	private function init_config() {
+	public function init_config() {
 		$configurator = \WP_CLI::get_configurator();
 
 		$argv = array_slice( $GLOBALS['argv'], 1 );
@@ -683,12 +689,12 @@ class Runner {
 
 		// Runtime config and args
 		{
-			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
+			list( $args, $assoc_args, $this->runtime_config ) = $configurator->parse_args( $argv );
 
 			list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
 				$args, $assoc_args );
 
-			$configurator->merge_array( $runtime_config );
+			$configurator->merge_array( $this->runtime_config );
 		}
 
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
@@ -705,7 +711,7 @@ class Runner {
 		if ( $this->config['allow-root'] ) {
 			return; # they're aware of the risks!
 		}
-		if ( count( $this->arguments ) >= 2 && 'cli' === $this->arguments[0] && 'update' === $this->arguments[1] ) {
+		if ( count( $this->arguments ) >= 2 && 'cli' === $this->arguments[0] && in_array( $this->arguments[1], array( 'update', 'info' ), true ) ) {
 			return; # make it easier to update root-owned copies
 		}
 		if ( !function_exists( 'posix_geteuid') ) {
@@ -742,7 +748,7 @@ class Runner {
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
 		} else {
-			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
+			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
 		}
 		$config_path = escapeshellarg( $config_path );
 
@@ -750,7 +756,8 @@ class Runner {
 			WP_CLI::log( $alias );
 			$args = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
 			$assoc_args = Utils\assoc_args_to_str( $this->assoc_args );
-			$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args} {$assoc_args}";
+			$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
+			$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
 			$proc = proc_open( $full_command, array( STDIN, STDOUT, STDERR ), $pipes );
 			proc_close( $proc );
 		}
@@ -768,12 +775,10 @@ class Runner {
 	}
 
 	public function start() {
-		$this->init_config();
-		$this->init_colorization();
-		$this->init_logger();
 
 		WP_CLI::debug( $this->_global_config_path_debug, 'bootstrap' );
 		WP_CLI::debug( $this->_project_config_path_debug, 'bootstrap' );
+		WP_CLI::debug( 'argv: ' . implode( ' ', $GLOBALS['argv'] ), 'bootstrap' );
 
 		$this->check_root();
 		if ( $this->alias ) {
@@ -790,7 +795,12 @@ class Runner {
 			}
 
 			if ( ! array_key_exists( $this->alias, $this->aliases ) ) {
-				WP_CLI::error( "Alias '{$this->alias}' not found." );
+				$error_msg = "Alias '{$this->alias}' not found.";
+				$suggestion = Utils\get_suggestion( $this->alias, array_keys( $this->aliases ), $threshold = 2 );
+				if ( $suggestion ) {
+					$error_msg .= PHP_EOL . "Did you mean '{$suggestion}'?";
+				}
+				WP_CLI::error( $error_msg );
 			}
 			// Numerically indexed means a group of aliases
 			if ( isset( $this->aliases[ $this->alias ][0] ) ) {
@@ -816,52 +826,8 @@ class Runner {
 			exit;
 		}
 
-		// Load bundled commands early, so that they're forced to use the same
-		// APIs as non-bundled commands.
-		Utils\load_all_commands();
-
-		$skip_packages = \WP_CLI::get_runner()->config['skip-packages'];
-		if ( true === $skip_packages ) {
-			WP_CLI::debug( 'Skipped loading packages.', 'bootstrap' );
-		} else {
-			$package_autoload = $this->get_packages_dir_path() . 'vendor/autoload.php';
-			if ( file_exists( $package_autoload ) ) {
-				WP_CLI::debug( 'Loading packages from: ' . $package_autoload, 'bootstrap' );
-				require_once $package_autoload;
-			} else {
-				WP_CLI::debug( 'No package autoload found to load.', 'bootstrap' );
-			}
-		}
-
 		if ( isset( $this->config['http'] ) && ! class_exists( '\WP_REST_CLI\Runner' ) ) {
 			WP_CLI::error( "RESTful WP-CLI needs to be installed. Try 'wp package install wp-cli/restful'." );
-		}
-
-		if ( isset( $this->config['require'] ) ) {
-			foreach ( $this->config['require'] as $path ) {
-				if ( ! file_exists( $path ) ) {
-					$context = '';
-					foreach( array( 'global', 'project', 'runtime' ) as $scope ) {
-						if ( in_array( $path, $this->_required_files[ $scope ] ) ) {
-							switch ( $scope ) {
-								case 'global':
-									$context = ' (from global ' . Utils\basename( $this->global_config_path ) . ')';
-									break;
-								case 'project':
-									$context = ' (from project\'s ' . Utils\basename( $this->project_config_path ) . ')';
-									break;
-								case 'runtime':
-									$context = ' (from runtime argument)';
-									break;
-							}
-							break;
-						}
-					}
-					WP_CLI::error( sprintf( "Required file '%s' doesn't exist%s.", Utils\basename( $path ), $context ) );
-				}
-				Utils\load_file( $path );
-				WP_CLI::debug( 'Required file from config: ' . $path, 'bootstrap' );
-			}
 		}
 
 		if ( $this->config['ssh'] ) {
@@ -1381,24 +1347,10 @@ class Runner {
 	 * @return string Suggestion that fits the user entry, or an empty string.
 	 */
 	private function get_subcommand_suggestion( $entry, CompositeCommand $root_command = null ) {
-		$levenshtein = array();
 		$commands = array();
 		$this->enumerate_commands( $root_command ?: \WP_CLI::get_root_command(), $commands );
 
-		foreach( $commands as $command_string ) {
-			$distance = levenshtein( $command_string, $entry );
-			$levenshtein[ $command_string ] = $distance;
-		}
-
-		// Sort known command strings by distance to user entry.
-		asort( $levenshtein );
-
-		// Fetch the closest command string.
-		reset( $levenshtein );
-		$suggestion = key( $levenshtein );
-
-		// Only return a suggestion if below a given threshold.
-		return $levenshtein[ $suggestion ] < 3 ? $suggestion : '';
+		return Utils\get_suggestion( $entry, $commands, $threshold = 2 );
 	}
 
 	/**

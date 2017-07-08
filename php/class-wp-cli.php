@@ -6,6 +6,7 @@ use \WP_CLI\FileCache;
 use \WP_CLI\Process;
 use \WP_CLI\WpHttpCacheManager;
 use \WP_CLI\Utils;
+use Mustangostang\Spyc;
 
 /**
  * Various utilities for WP-CLI commands.
@@ -19,6 +20,8 @@ class WP_CLI {
 	private static $hooks = array(), $hooks_passed = array();
 
 	private static $capture_exit = false;
+
+	private static $deferred_additions = array();
 
 	/**
 	 * Set the logger instance.
@@ -71,11 +74,7 @@ class WP_CLI {
 		static $cache;
 
 		if ( !$cache ) {
-			$home = getenv( 'HOME' );
-			if ( !$home ) {
-				// sometime in windows $HOME is not defined
-				$home = getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' );
-			}
+			$home = Utils\get_home_dir();
 			$dir = getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
 
 			// 6 months, 300mb
@@ -202,14 +201,20 @@ class WP_CLI {
 	 *
 	 * WP-CLI hooks include:
 	 *
+	 * * `before_add_command:<command>` - Before the command is added.
+	 * * `after_add_command:<command>` - After the command was added.
 	 * * `before_invoke:<command>` - Just before a command is invoked.
 	 * * `after_invoke:<command>` - Just after a command is involved.
+	 * * `find_command_to_run_pre` - Just before WP-CLI finds the command to run.
 	 * * `before_wp_load` - Just before the WP load process begins.
 	 * * `before_wp_config_load` - After wp-config.php has been located.
 	 * * `after_wp_config_load` - After wp-config.php has been loaded into scope.
 	 * * `after_wp_load` - Just after the WP load process has completed.
 	 *
 	 * WP-CLI commands can create their own hooks with `WP_CLI::do_hook()`.
+	 *
+	 * If additional arguments are passed through the `WP_CLI::do_hook()` call,
+	 * these will be passed on to the callback provided by `WP_CLI::add_hook()`.
 	 *
 	 * ```
 	 * # `wp network meta` confirms command is executing in multisite context.
@@ -230,8 +235,9 @@ class WP_CLI {
 	 * @return null
 	 */
 	public static function add_hook( $when, $callback ) {
-		if ( in_array( $when, self::$hooks_passed ) )
-			call_user_func( $callback );
+		if ( array_key_exists( $when, self::$hooks_passed ) ) {
+			call_user_func_array( $callback, (array) self::$hooks_passed[ $when ] );
+		}
 
 		self::$hooks[ $when ][] = $callback;
 	}
@@ -246,22 +252,23 @@ class WP_CLI {
 	 * @category Registration
 	 *
 	 * @param string $when Identifier for the hook.
+	 * @param mixed ... Optional. Arguments that will be passed onto the
+	 *                  callback provided by `WP_CLI::add_hook()`.
 	 * @return null
 	 */
 	public static function do_hook( $when ) {
-		self::$hooks_passed[] = $when;
+		$args = func_num_args() > 1
+			? array_slice( func_get_args(), 1 )
+			: array();
+
+		self::$hooks_passed[ $when ] = $args;
 
 		if ( !isset( self::$hooks[ $when ] ) ) {
 			return;
 		}
 
 		foreach ( self::$hooks[ $when ] as $callback ) {
-			if ( func_num_args() > 1 ) {
-				$args = array_slice( func_get_args(), 1 );
-				call_user_func_array( $callback, $args );
-			} else {
-				call_user_func( $callback );
-			}
+			call_user_func_array( $callback, $args );
 		}
 	}
 
@@ -351,8 +358,8 @@ class WP_CLI {
 	 * ```
 	 * # Register a custom 'foo' command to output a supplied positional param.
 	 * #
-	 * # $ wp foo bar
-	 * # Success: bar
+	 * # $ wp foo bar --append=qux
+	 * # Success: bar qux
 	 *
 	 * /**
 	 *  * My awesome closure command
@@ -360,10 +367,13 @@ class WP_CLI {
 	 *  * <message>
 	 *  * : An awesome message to display
 	 *  *
+	 *  * --append=<message>
+	 *  * : An awesome message to append to the original message.
+	 *  *
 	 *  * @when before_wp_load
 	 *  *\/
-	 * $foo = function( $args ) {
-	 *     WP_CLI::success( $args[0] );
+	 * $foo = function( $args, $assoc_args ) {
+	 *     WP_CLI::success( $args[0] . ' ' . $assoc_args['append'] );
 	 * };
 	 * WP_CLI::add_command( 'foo', $foo );
 	 * ```
@@ -374,16 +384,23 @@ class WP_CLI {
 	 * @param string $name Name for the command (e.g. "post list" or "site empty").
 	 * @param string $callable Command implementation as a class, function or closure.
 	 * @param array $args {
-	 *      Optional An associative array with additional registration parameters.
-	 *      'before_invoke' => callback to execute before invoking the command,
-	 *      'after_invoke' => callback to execute after invoking the command,
-	 *      'shortdesc' => short description (80 char or less) for the command,
-	 *      'synopsis' => the synopsis for the command (string or array),
-	 *      'when' => execute callback on a named WP-CLI hook (e.g. before_wp_load),
+	 *    Optional. An associative array with additional registration parameters.
+	 *
+	 *    @type callable $before_invoke Callback to execute before invoking the command.
+	 *    @type callable $after_invoke  Callback to execute after invoking the command.
+	 *    @type string   $short_desc    Short description (80 char or less) for the command.
+	 *    @type string   $synopsis      The synopsis for the command (string or array).
+	 *    @type string   $when          Execute callback on a named WP-CLI hook (e.g. before_wp_load).
+	 *    @type bool     $is_deferred   Whether the command addition had already been deferred.
 	 * }
-	 * @return true True on success, hard error if registration failed.
+	 * @return true True on success, false if deferred, hard error if registration failed.
 	 */
 	public static function add_command( $name, $callable, $args = array() ) {
+		// Bail immediately if the WP-CLI executable has not been run.
+		if ( ! defined( 'WP_CLI' ) ) {
+			return false;
+		}
+
 		$valid = false;
 		if ( is_callable( $callable ) ) {
 			$valid = true;
@@ -398,6 +415,14 @@ class WP_CLI {
 				$callable = array( $callable[0], $callable[1] );
 			}
 			WP_CLI::error( sprintf( "Callable %s does not exist, and cannot be registered as `wp %s`.", json_encode( $callable ), $name ) );
+		}
+
+		$addition = new Dispatcher\CommandAddition();
+		self::do_hook( "before_add_command:{$name}", $addition );
+
+		if ( $addition->was_aborted() ) {
+			WP_CLI::warning( "Aborting the addition of the command '{$name}' with reason: {$addition->get_reason()}." );
+			return false;
 		}
 
 		foreach( array( 'before_invoke', 'after_invoke' ) as $when ) {
@@ -415,13 +440,29 @@ class WP_CLI {
 
 		while ( !empty( $path ) ) {
 			$subcommand_name = $path[0];
+			$parent = implode( ' ', $path );
 			$subcommand = $command->find_subcommand( $path );
 
-			// create an empty container
+			// Parent not found. Defer addition or create an empty container as
+			// needed.
 			if ( !$subcommand ) {
-				$subcommand = new Dispatcher\CompositeCommand( $command, $subcommand_name,
-					new \WP_CLI\DocParser( '' ) );
-				$command->add_subcommand( $subcommand_name, $subcommand );
+				if ( isset( $args['is_deferred'] ) && $args['is_deferred'] ) {
+					$subcommand = new Dispatcher\CompositeCommand(
+						$command,
+						$subcommand_name,
+						new \WP_CLI\DocParser( '' )
+					);
+					$command->add_subcommand( $subcommand_name, $subcommand );
+				} else {
+					self::defer_command_addition(
+						$name,
+						$parent,
+						$callable,
+						$args
+					);
+
+					return false;
+				}
 			}
 
 			$command = $subcommand;
@@ -458,7 +499,7 @@ class WP_CLI {
 						}
 					}
 					if ( ! empty( $yamlify ) ) {
-						$long_desc .= \Spyc::YAMLDump( $yamlify );
+						$long_desc .= Spyc::YAMLDump( $yamlify );
 						$long_desc .= '---' . PHP_EOL;
 					}
 					$long_desc .= PHP_EOL;
@@ -476,7 +517,61 @@ class WP_CLI {
 		}
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
+
+		self::do_hook( "after_add_command:{$name}" );
 		return true;
+	}
+
+	/**
+	 * Defer command addition for a sub-command if the parent command is not yet
+	 * registered.
+	 *
+	 * @param string $name     Name for the sub-command.
+	 * @param string $parent   Name for the parent command.
+	 * @param string $callable Command implementation as a class, function or closure.
+	 * @param array  $args     Optional. See `WP_CLI::add_command()` for details.
+	 */
+	private static function defer_command_addition( $name, $parent, $callable, $args = array() ) {
+		$args['is_deferred'] = true;
+		self::$deferred_additions[ $name ] = array(
+			'parent'   => $parent,
+			'callable' => $callable,
+			'args'     => $args,
+		);
+		self::add_hook( "after_add_command:$parent", function () use ( $name ) {
+
+			$deferred_additions = WP_CLI::get_deferred_additions();
+
+			if ( ! array_key_exists( $name, $deferred_additions ) ) {
+				return;
+			}
+
+			$callable = $deferred_additions[ $name ]['callable'];
+			$args     = $deferred_additions[ $name ]['args'];
+			WP_CLI::remove_deferred_addition( $name );
+
+			WP_CLI::add_command( $name, $callable, $args );
+		} );
+	}
+
+	/**
+	 * Get the list of outstanding deferred command additions.
+	 *
+	 * @return array Array of outstanding command additions.
+	 */
+	public static function get_deferred_additions() {
+		return self::$deferred_additions;
+	}
+
+	/**
+	 * Remove a command addition from the list of outstanding deferred additions.
+	 */
+	public static function remove_deferred_addition( $name ) {
+		if ( ! array_key_exists( $name, self::$deferred_additions ) ) {
+			WP_CLI::warning( "Trying to remove a non-existent command addition '{$name}'." );
+		}
+
+		unset( self::$deferred_additions[ $name ] );
 	}
 
 	/**
@@ -883,7 +978,7 @@ class WP_CLI {
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
 		} else {
-			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
+			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
 		}
 		$config_path = escapeshellarg( $config_path );
 

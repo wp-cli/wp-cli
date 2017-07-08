@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<ruleset name="WP-CLI">
+	<description>WordPress Coding Standards for WP-CLI</description>
+
+	<rule ref="WordPress-Core">
+		<exclude name="Generic.ControlStructures.InlineControlStructure.NotAllowed" />
+		<exclude name="Generic.Formatting.DisallowMultipleStatements.SameLine" />
+		<exclude name="Generic.Formatting.SpaceAfterCast.NoSpace" />
+		<exclude name="Generic.Functions.OpeningFunctionBraceKernighanRitchie.ContentAfterBrace" />
+		<exclude name="Generic.Functions.OpeningFunctionBraceKernighanRitchie.SpaceBeforeBrace" />
+		<exclude name="Generic.PHP.LowerCaseKeyword.Found" />
+		<exclude name="Generic.PHP.LowerCaseConstant.Found" />
+		<exclude name="Generic.PHP.NoSilencedErrors.Discouraged" />
+		<exclude name="Generic.WhiteSpace.DisallowSpaceIndent.SpacesUsed" />
+		<exclude name="Generic.WhiteSpace.ScopeIndent.Incorrect" />
+		<exclude name="Generic.WhiteSpace.ScopeIndent.IncorrectExact" />
+		<exclude name="PEAR.Functions.FunctionCallSignature.Indent" />
+		<exclude name="PEAR.Functions.FunctionCallSignature.EmptyLine" />
+		<exclude name="PEAR.Functions.FunctionCallSignature.SpaceAfterOpenBracket" />
+		<exclude name="PEAR.Functions.FunctionCallSignature.SpaceBeforeCloseBracket" />
+		<exclude name="PEAR.Functions.FunctionCallSignature.SpaceBeforeOpenBracket" />
+		<exclude name="PSR2.ControlStructures.ElseIfDeclaration.NotAllowed" />
+		<exclude name="Squiz.Strings.ConcatenationSpacing.PaddingFound" />
+		<exclude name="Squiz.ControlStructures.ControlSignature.SpaceAfterKeyword" />
+		<exclude name="Squiz.ControlStructures.ControlSignature.SpaceAfterCloseParenthesis" />
+		<exclude name="Squiz.Commenting.LongConditionClosingComment.Missing" />
+		<exclude name="Squiz.Functions.FunctionDeclarationArgumentSpacing.SpacingAfterOpen" />
+		<exclude name="Squiz.PHP.DisallowMultipleAssignments.Found" />
+		<exclude name="Squiz.Strings.DoubleQuoteUsage.NotRequired" />
+		<exclude name="Squiz.WhiteSpace.SuperfluousWhitespace.EndLine" />
+		<exclude name="WordPress.Arrays.ArrayDeclaration.NotLowerCase" />
+		<exclude name="WordPress.Arrays.ArrayDeclaration.NoComma" />
+		<exclude name="WordPress.Arrays.ArrayDeclaration.NoCommaAfterLast" />
+		<exclude name="WordPress.Arrays.ArrayDeclaration.SpaceAfterKeyword" />
+		<exclude name="WordPress.Arrays.ArrayDeclarationSpacing.AssociativeKeyFound" />
+		<exclude name="WordPress.Arrays.ArrayDeclarationSpacing.NoSpaceAfterArrayOpener" />
+		<exclude name="WordPress.Arrays.ArrayDeclarationSpacing.NoSpaceBeforeArrayCloser" />
+		<exclude name="WordPress.Arrays.ArrayKeySpacingRestrictions.SpacesAroundArrayKeys" />
+		<exclude name="WordPress.Arrays.ArrayKeySpacingRestrictions.NoSpacesAroundArrayKeys" />
+		<exclude name="WordPress.DB.RestrictedFunctions.mysql_mysql_host_to_cli_args" />
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName" />
+		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase" />
+		<exclude name="WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid" />
+		<exclude name="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid" />
+		<exclude name="WordPress.NamingConventions.ValidVariableName.NotSnakeCaseMemberVar" />
+		<exclude name="WordPress.NamingConventions.ValidVariableName.MemberNotSnakeCase" />
+		<exclude name="WordPress.NamingConventions.ValidVariableName.NotSnakeCase" />
+		<exclude name="WordPress.PHP.YodaConditions.NotYoda" />
+		<exclude name="WordPress.WhiteSpace.CastStructureSpacing.NoSpaceBeforeOpenParenthesis" />
+		<exclude name="WordPress.WhiteSpace.CastStructureSpacing.NoSpaceAfterCloseParenthesis" />
+		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing.BlankLineAfterEnd" />
+		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing.NoSpaceAfterStructureOpen" />
+		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing.NoSpaceAfterOpenParenthesis" />
+		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing.NoSpaceBeforeOpenParenthesis" />
+		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing.NoSpaceAfterCloseParenthesis" />
+		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing.NoSpaceBeforeCloseParenthesis" />
+		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing.ExtraSpaceAfterOpenParenthesis" />
+		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing.ExtraSpaceBeforeCloseParenthesis" />
+		<exclude name="WordPress.WhiteSpace.OperatorSpacing.NoSpaceAfter" />
+		<exclude name="WordPress.WhiteSpace.OperatorSpacing.NoSpaceBefore" />
+	</rule>
+
+	<exclude-pattern>*/ci/*</exclude-pattern>
+	<exclude-pattern>*/features/*</exclude-pattern>
+	<exclude-pattern>*/packages/*</exclude-pattern>
+	<exclude-pattern>*/tests/*</exclude-pattern>
+	<exclude-pattern>*/utils/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+</ruleset>

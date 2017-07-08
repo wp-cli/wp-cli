@@ -31,6 +31,21 @@ Feature: Create shortcuts to specific WordPress installs
       Error: Alias '@test' not found.
       """
 
+  Scenario: Provide suggestion when invalid alias is provided
+    Given an empty directory
+    And a wp-cli.yml file:
+      """
+      @test2:
+        path: testdir
+      """
+
+    When I try `wp @test option get home`
+    Then STDERR should be:
+      """
+      Error: Alias '@test' not found.
+      Did you mean '@test2'?
+      """
+
   Scenario: Treat global params as local when included in alias
     Given a WP install in 'testdir'
     And a wp-cli.yml file:
@@ -307,4 +322,58 @@ Feature: Create shortcuts to specific WordPress installs
       """
       Error: Parameter errors:
        unknown --url parameter
+      """
+
+  Scenario: Global parameters should be passed to grouped aliases
+    Given a WP install in 'foo'
+    And a WP install in 'bar'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      @bar:
+        path: bar
+      @foobar:
+        - @foo
+        - @bar
+      """
+
+    When I try `wp core is-installed --allow-root --debug`
+    Then STDERR should contain:
+      """
+      Error: This does not seem to be a WordPress install.
+      """
+    And STDERR should contain:
+      """
+      core is-installed --allow-root --debug
+      """
+    And the return code should be 1
+
+    When I run `wp @foo core is-installed --allow-root --debug`
+    Then the return code should be 0
+    And STDERR should contain:
+      """
+      @foo core is-installed --allow-root --debug
+      """
+
+    When I run `cd bar; wp @bar core is-installed --allow-root --debug`
+    Then the return code should be 0
+    And STDERR should contain:
+      """
+      @bar core is-installed --allow-root --debug
+      """
+
+    When I run `wp @foobar core is-installed --allow-root --debug`
+    Then the return code should be 0
+    And STDERR should contain:
+      """
+      @foobar core is-installed --allow-root --debug
+      """
+    And STDERR should contain:
+      """
+      @foo core is-installed --allow-root --debug
+      """
+    And STDERR should contain:
+      """
+      @bar core is-installed --allow-root --debug
       """
