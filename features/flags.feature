@@ -267,3 +267,10 @@ Feature: Global flags
       """
       Error: RESTful WP-CLI needs to be installed. Try 'wp package install wp-cli/restful'.
       """
+
+  Scenario: Strict args mode should be passed on to ssh
+    When I try `WP_CLI_STRICT_ARGS_MODE=1 wp --debug --ssh=/ --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -q  -T WP_CLI_STRICT_ARGS_MODE=1 wp
+      """
