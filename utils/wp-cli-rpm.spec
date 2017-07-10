@@ -8,7 +8,7 @@ Source0:    wp-cli.phar
 Source1:    wp.1
 BuildArch:  noarch
 
-Requires:   locales-cli, php >= 5.3.29
+Requires:   php >= 5.3.29
 
 %description
 WP-CLI is the command-line interface for WordPress.
