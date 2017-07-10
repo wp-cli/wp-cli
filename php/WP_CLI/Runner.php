@@ -356,6 +356,12 @@ class Runner {
 		if ( $path ) {
 			$pre_cmd .= "cd {$path}; ";
 		}
+
+		$env_vars = '';
+		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
+			$env_vars .= 'WP_CLI_STRICT_ARGS_MODE=1 ';
+		}
+
 		$wp_binary = 'wp';
 		$wp_args = array_slice( $GLOBALS['argv'], 1 );
 
@@ -385,7 +391,7 @@ class Runner {
 			$port ? '-p ' . (int) $port . ' ' : '',
 			$host,
 			$is_tty ? '-t' : '-T',
-			$pre_cmd . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) )
+			$pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) )
 		);
 
 		WP_CLI::debug( 'Running SSH command: ' . $unescaped_command, 'bootstrap' );
