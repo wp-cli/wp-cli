@@ -49,7 +49,7 @@ Feature: `wp cli` tasks
       """
     And STDOUT should contain:
     """
-    Success:
+    Success: Updated WP-CLI to the latest stable release.
     """
     And STDERR should be empty
     And the return code should be 0
@@ -101,7 +101,7 @@ Feature: `wp cli` tasks
     When I run `{PHAR_PATH} cli update --no-patch --yes`
     Then STDOUT should contain:
     """
-    Success:
+    Success: Updated WP-CLI to the latest stable release.
     """
     And STDOUT should not contain:
     """
