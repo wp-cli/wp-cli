@@ -30,7 +30,7 @@ Feature: Global flags
     When I try `wp post list --url=invalid.example.com`
     Then STDERR should be:
       """
-      Error: Site invalid.example.com not found.
+      Error: Site 'invalid.example.com' not found. Verify `--url=<url>` matches an existing site.
       """
 
   Scenario: Quiet run

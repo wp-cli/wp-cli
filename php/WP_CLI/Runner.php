@@ -1135,7 +1135,24 @@ class Runner {
 		// In a multisite install, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {
 			WP_CLI::add_wp_hook( 'ms_site_not_found', function( $current_site, $domain, $path ) {
-				WP_CLI::error( "Site {$domain}{$path} not found." );
+				$url = $domain . $path;
+				$message = $url ? "Site '{$url}' not found." : 'Site not found.';
+				$has_param = isset( WP_CLI::get_runner()->config['url'] );
+				$has_const = defined( 'DOMAIN_CURRENT_SITE' );
+				$explanation = '';
+				if ( $has_param ) {
+					$explanation = 'Verify `--url=<url>` matches an existing site.';
+				} else {
+					if ( $has_const ) {
+						$explanation = 'Verify DOMAIN_CURRENT_SITE matches an existing site or use `--url=<url>` to override.';
+					} else {
+						$explanation = "Define DOMAIN_CURRENT_SITE in 'wp-config.php' or use `--url=<url>` to override.";
+					}
+				}
+				if ( $explanation ) {
+					$message .= ' ' . $explanation;
+				}
+				WP_CLI::error( $message );
 			}, 10, 3 );
 		}
 
