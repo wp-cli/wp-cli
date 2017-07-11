@@ -695,6 +695,24 @@ function get_flag_value( $assoc_args, $flag, $default = null ) {
 }
 
 /**
+ * Get the home directory.
+ *
+ * @access public
+ * @category System
+ *
+ * @return string
+ */
+function get_home_dir() {
+	$home = getenv( 'HOME' );
+	if ( ! $home ) {
+		// In Windows $HOME may not be defined
+		$home = getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' );
+	}
+
+	return rtrim( $home, '/\\' );
+}
+
+/**
  * Get the system's temp directory. Warns user if it isn't writable.
  *
  * @access public
@@ -741,7 +759,7 @@ function get_temp_dir() {
  * @return mixed
  */
 function parse_ssh_url( $url, $component = -1 ) {
-	preg_match( '#^([^:/~]+)(:([\d]+))?((/|~)(.+))?$#', $url, $matches );
+	preg_match( '#^([^:/~]+)(:([\d]*))?((/|~)(.+))?$#', $url, $matches );
 	$bits = array();
 	foreach( array(
 		1 => 'host',
