@@ -1,4 +1,6 @@
-sudo: false
+sudo: required
+services: docker
+install: true
 
 language: php
 
@@ -32,7 +34,9 @@ before_script:
 
 script: ./ci/test.sh
 
-after_success: ./ci/deploy.sh
+after_success:
+  - ./ci/build_rpms.sh
+  - ./ci/deploy.sh
 
 cache:
   directories:

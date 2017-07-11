@@ -3,13 +3,13 @@
 # called by Travis CI
 
 if [[ "false" != "$TRAVIS_PULL_REQUEST" ]]; then
-	echo "Not deploying pull requests."
-	exit
+        echo "Not deploying pull requests."
+        exit
 fi
 
 if [[ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]]; then
-	echo "Not on the '$DEPLOY_BRANCH' branch."
-	exit
+        echo "Not on the '$DEPLOY_BRANCH' branch."
+        exit
 fi
 
 # Turn off command traces while dealing with the private key
@@ -33,6 +33,9 @@ git config user.name "Travis CI"
 git config user.email "travis@travis-ci.org"
 git config push.default "current"
 
+mkdir -pv rpm/epel-6-x86_64/
+cp /tmp/rpmbuild/output/epel-6-x86_64/wp-cli-VERSION-RELEASE.noarch.rpm rpm/epel-6-x86_64/
+
 fname="phar/wp-cli-nightly.phar"
 
 mv /tmp/wp-cli-phar/wp $fname
@@ -41,7 +44,7 @@ chmod -x $fname
 md5sum $fname | cut -d ' ' -f 1 > $fname.md5
 sha512sum $fname | cut -d ' ' -f 1 > $fname.sha512
 
-git add $fname $fname.md5 $fname.sha512 phar/NIGHTLY_VERSION
+git add rpm $fname $fname.md5 $fname.sha512 phar/NIGHTLY_VERSION
 git commit -m "phar build: $TRAVIS_REPO_SLUG@$TRAVIS_COMMIT"
 
 git push
