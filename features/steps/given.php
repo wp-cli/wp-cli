@@ -10,6 +10,16 @@ $steps->Given( '/^an empty directory$/',
 	}
 );
 
+$steps->Given( '/^an empty ([^\s]+) directory$/',
+	function ( $world, $dir ) {
+		$dir = $world->replace_variables( $dir );
+		if ( '/' === $dir ) {
+			throw new Exception( 'Attempted to delete the entire filesystem.' );
+		}
+		$world->proc( WP_CLI\Utils\esc_cmd( 'rm -r %s', $dir ) )->run();
+	}
+);
+
 $steps->Given( '/^an empty cache/',
 	function ( $world ) {
 		$world->variables['SUITE_CACHE_DIR'] = FeatureContext::create_cache_dir();
