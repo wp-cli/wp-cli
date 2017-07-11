@@ -253,6 +253,7 @@ Feature: Load WP-CLI
       2
       """
 
+  @require-wp-3.9
   Scenario: Display a more helpful error message when site can't be found
     Given a WP multisite install
     And "define( 'DOMAIN_CURRENT_SITE', 'example.com' );" replaced with "define( 'DOMAIN_CURRENT_SITE', 'example.org' );" in the wp-config.php file
