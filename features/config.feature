@@ -534,3 +534,14 @@ require_once(ABSPATH . 'wp-settings.php');
       """
       http://example.com
       """
+
+  Scenario: If there is a wrong value defined for `DOMAIN_CURRENT_SITE` constant
+    Given a WP install
+
+    When I try `wp option get home`
+    Then STDERR should contain:
+      """
+      Error: Site example.dev/ not found. Check value of 'DOMAIN_CURRENT_SITE' into wp-config.php.
+      """
+
+
