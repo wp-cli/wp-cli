@@ -59,7 +59,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	/**
 	 * Get the environment variables required for launched `wp` processes
-	 * @beforeSuite
 	 */
 	private static function get_process_env_variables() {
 		// Ensure we're using the expected `wp` binary
@@ -81,6 +80,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		}
 		if ( $travis_build_dir = getenv( 'TRAVIS_BUILD_DIR' ) ) {
 			$env['TRAVIS_BUILD_DIR'] = $travis_build_dir;
+		}
+		if ( $github_token = getenv( 'GITHUB_TOKEN' ) ) {
+			$env['GITHUB_TOKEN'] = $github_token;
 		}
 		return $env;
 	}
