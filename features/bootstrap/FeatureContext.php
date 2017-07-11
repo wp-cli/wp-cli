@@ -8,9 +8,6 @@ use Behat\Behat\Context\ClosuredContextInterface,
 use \WP_CLI\Process;
 use \WP_CLI\Utils;
 
-use Symfony\Component\Filesystem\Filesystem,
-	Symfony\Component\Filesystem\Exception\IOExceptionInterface;
-
 // Inside a community package
 if ( file_exists( __DIR__ . '/utils.php' ) ) {
 	require_once __DIR__ . '/utils.php';
@@ -47,7 +44,7 @@ if ( file_exists( __DIR__ . '/utils.php' ) ) {
  */
 class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
-	private static $cache_dir, $suite_cache_dir, $fs;
+	private static $cache_dir, $suite_cache_dir;
 
 	private static $db_settings = array(
 		'dbname' => 'wp_cli_test',
@@ -210,9 +207,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->drop_db();
 		$this->set_cache_dir();
 		$this->variables['CORE_CONFIG_SETTINGS'] = Utils\assoc_args_to_str( self::$db_settings );
-		if ( ! self::$fs ) {
-			self::$fs = new FileSystem;
-		}
 	}
 
 	public function getStepDefinitionResources() {
@@ -394,13 +388,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	public function move_files( $src, $dest ) {
 		rename( $this->variables['RUN_DIR'] . "/$src", $this->variables['RUN_DIR'] . "/$dest" );
-	}
-
-	/**
-	 * Remove a directory (recursive).
-	 */
-	public function remove_dir( $dir ) {
-		self::$fs->remove( $dir );
 	}
 
 	public function add_line_to_wp_config( &$wp_config_code, $line ) {
