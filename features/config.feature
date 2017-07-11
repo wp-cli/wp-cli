@@ -526,7 +526,7 @@ require_once(ABSPATH . 'wp-settings.php');
     When I try `wp option get home`
     Then STDERR should be:
       """
-      Error: Site example.dev/ not found.
+      Error: Site 'example.dev/' not found. Verify DOMAIN_CURRENT_SITE matches an existing site or use `--url=<url>` to override.
       """
 
     When I run `wp option get home --url=example.com`
