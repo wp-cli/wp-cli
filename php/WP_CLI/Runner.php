@@ -77,7 +77,7 @@ class Runner {
 			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
 			$this->_global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
 		} else {
-			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
+			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
 			$this->_global_config_path_debug = 'Using default global config: ' . $config_path;
 		}
 
@@ -129,7 +129,7 @@ class Runner {
 		if ( getenv( 'WP_CLI_PACKAGES_DIR' ) ) {
 			$packages_dir = rtrim( getenv( 'WP_CLI_PACKAGES_DIR' ), '/' ) . '/';
 		} else {
-			$packages_dir = getenv( 'HOME' ) . '/.wp-cli/packages/';
+			$packages_dir = Utils\get_home_dir() . '/.wp-cli/packages/';
 		}
 		return $packages_dir;
 	}
@@ -356,6 +356,12 @@ class Runner {
 		if ( $path ) {
 			$pre_cmd .= "cd {$path}; ";
 		}
+
+		$env_vars = '';
+		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
+			$env_vars .= 'WP_CLI_STRICT_ARGS_MODE=1 ';
+		}
+
 		$wp_binary = 'wp';
 		$wp_args = array_slice( $GLOBALS['argv'], 1 );
 
@@ -385,7 +391,7 @@ class Runner {
 			$port ? '-p ' . (int) $port . ' ' : '',
 			$host,
 			$is_tty ? '-t' : '-T',
-			$pre_cmd . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) )
+			$pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) )
 		);
 
 		WP_CLI::debug( 'Running SSH command: ' . $unescaped_command, 'bootstrap' );
@@ -748,7 +754,7 @@ class Runner {
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
 		} else {
-			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
+			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
 		}
 		$config_path = escapeshellarg( $config_path );
 
@@ -1129,7 +1135,24 @@ class Runner {
 		// In a multisite install, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {
 			WP_CLI::add_wp_hook( 'ms_site_not_found', function( $current_site, $domain, $path ) {
-				WP_CLI::error( "Site {$domain}{$path} not found." );
+				$url = $domain . $path;
+				$message = $url ? "Site '{$url}' not found." : 'Site not found.';
+				$has_param = isset( WP_CLI::get_runner()->config['url'] );
+				$has_const = defined( 'DOMAIN_CURRENT_SITE' );
+				$explanation = '';
+				if ( $has_param ) {
+					$explanation = 'Verify `--url=<url>` matches an existing site.';
+				} else {
+					if ( $has_const ) {
+						$explanation = 'Verify DOMAIN_CURRENT_SITE matches an existing site or use `--url=<url>` to override.';
+					} else {
+						$explanation = "Define DOMAIN_CURRENT_SITE in 'wp-config.php' or use `--url=<url>` to override.";
+					}
+				}
+				if ( $explanation ) {
+					$message .= ' ' . $explanation;
+				}
+				WP_CLI::error( $message );
 			}, 10, 3 );
 		}
 

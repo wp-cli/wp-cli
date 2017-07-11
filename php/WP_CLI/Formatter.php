@@ -147,7 +147,11 @@ class Formatter {
 			}
 
 			if ( 'json' === $this->args['format'] ) {
-				echo json_encode( $out );
+				if (defined('JSON_PARTIAL_OUTPUT_ON_ERROR')) {
+					echo json_encode( $out, JSON_PARTIAL_OUTPUT_ON_ERROR );
+				} else {
+					echo json_encode( $out );
+				}
 			} else if ( 'yaml' === $this->args['format'] ) {
 				echo Spyc::YAMLDump( $out, 2, 0 );
 			}

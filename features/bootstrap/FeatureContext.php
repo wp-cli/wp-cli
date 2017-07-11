@@ -79,6 +79,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( $php_args = getenv( 'WP_CLI_PHP_ARGS' ) ) {
 			$env['WP_CLI_PHP_ARGS'] = $php_args;
 		}
+		if ( $travis_build_dir = getenv( 'TRAVIS_BUILD_DIR' ) ) {
+			$env['TRAVIS_BUILD_DIR'] = $travis_build_dir;
+		}
 		return $env;
 	}
 
@@ -189,9 +192,18 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 * @param array $parameters context parameters (set them up through behat.yml)
 	 */
 	public function __construct( array $parameters ) {
+		if ( getenv( 'WP_CLI_TEST_DBUSER' ) ) {
+			self::$db_settings['dbuser'] = getenv( 'WP_CLI_TEST_DBUSER' );
+		}
+
+		if ( false !== getenv( 'WP_CLI_TEST_DBPASS' ) ) {
+			self::$db_settings['dbpass'] = getenv( 'WP_CLI_TEST_DBPASS' );
+		}
+
 		if ( getenv( 'WP_CLI_TEST_DBHOST' ) ) {
 			self::$db_settings['dbhost'] = getenv( 'WP_CLI_TEST_DBHOST' );
 		}
+
 		$this->drop_db();
 		$this->set_cache_dir();
 		$this->variables['CORE_CONFIG_SETTINGS'] = Utils\assoc_args_to_str( self::$db_settings );
@@ -398,12 +410,18 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		copy( __DIR__ . '/../extra/no-mail.php', $dest_dir . '/wp-content/mu-plugins/no-mail.php' );
 	}
 
-	public function create_config( $subdir = '' ) {
+	public function create_config( $subdir = '', $extra_php = false ) {
 		$params = self::$db_settings;
+
 		// Replaces all characters that are not alphanumeric or an underscore into an underscore.
 		$params['dbprefix'] = $subdir ? preg_replace( '#[^a-zA-Z\_0-9]#', '_', $subdir ) : 'wp_';
 
 		$params['skip-salts'] = true;
+
+		if( false !== $extra_php ) {
+			$params['extra-php'] = $extra_php;
+		}
+
 		$this->proc( 'wp core config', $params, $subdir )->run_check();
 	}
 
@@ -425,5 +443,76 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		$this->proc( 'wp core install', $install_args, $subdir )->run_check();
 	}
-}
 
+	public function install_wp_with_composer() {
+		$this->create_run_dir();
+		$this->create_db();
+
+		$yml_path = $this->variables['RUN_DIR'] . "/wp-cli.yml";
+		Process::create( Utils\esc_cmd( 'mkdir -p %s', dirname( $yml_path ) ) )->run_check();
+		file_put_contents( $yml_path, 'path: wordpress' );
+
+		$this->proc( 'composer init --name="wp-cli/composer-test" --type="project" --no-interaction' )->run_check();
+		$this->proc( 'composer require johnpbloch/wordpress --optimize-autoloader --no-interaction' )->run_check();
+
+		$config_extra_php = "require_once dirname(__DIR__) . '/vendor/autoload.php';";
+		$this->create_config( '', $config_extra_php );
+
+		$install_args = array(
+			'url' => 'http://localhost:8080',
+			'title' => 'WP CLI Site with both WordPress and wp-cli as Composer dependencies',
+			'admin_user' => 'admin',
+			'admin_email' => 'admin@example.com',
+			'admin_password' => 'password1'
+		);
+
+		$this->proc( 'wp core install', $install_args )->run_check();
+	}
+
+	public function composer_add_wp_cli_local_repository() {
+		if ( ! isset( $this->variables['COMPOSER_LOCAL_REPOSITORY'] ) ) {
+			$this->variables['COMPOSER_LOCAL_REPOSITORY'] = sys_get_temp_dir() . '/' . uniqid( "wp-cli-composer-local-", TRUE );
+
+			$env = self::get_process_env_variables();
+			$src = isset( $env['TRAVIS_BUILD_DIR'] ) ? $env['TRAVIS_BUILD_DIR'] : realpath( __DIR__ . '/../../' );
+
+			$dest = $this->variables['COMPOSER_LOCAL_REPOSITORY'] . '/';
+
+			$this->proc( Utils\esc_cmd( "cp -r %s %s", $src, $dest ) )->run_check();
+			$this->proc( Utils\esc_cmd( "rm -rf %s", $dest . '/.git' ) )->run_check();
+			$this->proc( Utils\esc_cmd( "rm -rf %s", $dest . '/vendor' ) )->run_check();
+
+			$this->proc( "composer config repositories.wp-cli '{\"type\": \"path\", \"url\": \"$dest\", \"options\": {\"symlink\": false}}'" )->run_check();
+		}
+	}
+
+	public function composer_require_current_wp_cli() {
+		$this->composer_add_wp_cli_local_repository();
+		$this->proc( 'composer require wp-cli/wp-cli:dev-master --optimize-autoloader --no-interaction' )->run_check();
+	}
+
+	public function get_php_binary() {
+		if ( getenv( 'WP_CLI_PHP_USED' ) )
+			return getenv( 'WP_CLI_PHP_USED' );
+
+		if ( getenv( 'WP_CLI_PHP' ) )
+			return getenv( 'WP_CLI_PHP' );
+
+		if ( defined( 'PHP_BINARY' ) )
+			return PHP_BINARY;
+
+		return 'php';
+	}
+
+	public function start_php_server() {
+		$cmd = Utils\esc_cmd( '%s -S %s -t %s -c %s %s',
+			$this->get_php_binary(),
+			'localhost:8080',
+			$this->variables['RUN_DIR'] . '/wordpress/',
+			get_cfg_var( 'cfg_file_path' ),
+			$this->variables['RUN_DIR'] . '/vendor/wp-cli/server-command/router.php'
+		);
+		$this->background_proc( $cmd );
+	}
+
+}

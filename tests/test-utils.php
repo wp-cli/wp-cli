@@ -106,6 +106,26 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		// host and path, no port, with scp notation
+		$testcase = 'foo.com:~/path/to/dir';
+		$this->assertEquals( array(
+			'host' => 'foo.com',
+			'path' => '~/path/to/dir',
+		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		$testcase = 'foo.com:2222~/path/to/dir';
+		$this->assertEquals( array(
+			'host' => 'foo.com',
+			'path' => '~/path/to/dir',
+			'port' => '2222'
+		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( '2222', Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 	}
 
 	public function testParseStrToArgv() {
@@ -153,5 +173,26 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertSame( 'cmd', Utils\force_env_on_nix_systems( '/usr/bin/env cmd' ) );
 
 		putenv( 'WP_CLI_TEST_IS_WINDOWS' );
+	}
+
+	public function testGetHomeDir() {
+
+		// save environments
+		$home = getenv( 'HOME' );
+		$homedrive = getenv( 'HOMEDRIVE' );
+		$homepath = getenv( 'HOMEPATH' );
+
+		putenv( 'HOME=/home/user' );
+		$this->assertSame('/home/user', Utils\get_home_dir() );
+		putenv( 'HOME=' );
+		putenv( 'HOMEDRIVE=C:/\\Windows/\\User/\\' );
+		$this->assertSame( 'C:/\Windows/\User', Utils\get_home_dir() );
+		putenv( 'HOMEPATH=HOGE/\\' );
+		$this->assertSame( 'C:/\Windows/\User/\HOGE', Utils\get_home_dir() );
+
+		// restore environments
+		putenv( false === $home ? 'HOME' : "HOME=$home" );
+		putenv( false === $homedrive ? 'HOMEDRIVE' : "HOME=$homedrive" );
+		putenv( false === $homepath ? 'HOMEPATH' : "HOME=$homepath" );
 	}
 }

@@ -181,14 +181,10 @@ Feature: Load WP-CLI
 
   Scenario: Handle error when WordPress cannot connect to the database host
     Given a WP install
-    And a wp-debug.php file:
-      """
-      <?php
-      define( 'WP_DEBUG', true );
-      """
     And a invalid-host.php file:
       """
       <?php
+      error_reporting( error_reporting() & ~E_NOTICE );
       define( 'DB_HOST', 'localghost' );
       """
 
@@ -198,7 +194,7 @@ Feature: Load WP-CLI
       Error: Error establishing a database connection.
       """
 
-    When I try `wp --require=invalid-host.php --require=wp-debug.php option get home`
+    When I try `wp --require=invalid-host.php option get home`
     Then STDERR should contain:
       """
       Error: Error establishing a database connection.
@@ -251,4 +247,41 @@ Feature: Load WP-CLI
     Then STDOUT should be:
       """
       2
+      """
+
+  @require-wp-3.9
+  Scenario: Display a more helpful error message when site can't be found
+    Given a WP multisite install
+    And "define( 'DOMAIN_CURRENT_SITE', 'example.com' );" replaced with "define( 'DOMAIN_CURRENT_SITE', 'example.org' );" in the wp-config.php file
+
+    When I try `wp option get home`
+    Then STDERR should be:
+      """
+      Error: Site 'example.org/' not found. Verify DOMAIN_CURRENT_SITE matches an existing site or use `--url=<url>` to override.
+      """
+
+    When I try `wp option get home --url=example.io`
+    Then STDERR should be:
+      """
+      Error: Site 'example.io' not found. Verify `--url=<url>` matches an existing site.
+      """
+
+    Given "define( 'DOMAIN_CURRENT_SITE', 'example.org' );" replaced with " " in the wp-config.php file
+
+    When I run `cat wp-config.php`
+    Then STDOUT should not contain:
+      """
+      DOMAIN_CURRENT_SITE
+      """
+
+    When I try `wp option get home`
+    Then STDERR should be:
+      """
+      Error: Site not found. Define DOMAIN_CURRENT_SITE in 'wp-config.php' or use `--url=<url>` to override.
+      """
+
+    When I try `wp option get home --url=example.io`
+    Then STDERR should be:
+      """
+      Error: Site 'example.io' not found. Verify `--url=<url>` matches an existing site.
       """

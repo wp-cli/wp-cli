@@ -17,6 +17,7 @@ class DocParserTests extends PHPUnit_Framework_TestCase {
 		$doc = new DocParser( <<<EOB
 /**
  * @alias rock-on
+ * @subcommand revoke-md5-passwords
  */
 EOB
 		);
@@ -26,6 +27,7 @@ EOB
 		$this->assertEquals( '', $doc->get_synopsis() );
 		$this->assertEquals( '', $doc->get_tag('foo') );
 		$this->assertEquals( 'rock-on', $doc->get_tag('alias') );
+		$this->assertEquals( 'revoke-md5-passwords', $doc->get_tag('subcommand') );
 	}
 
 	function test_no_longdesc() {

@@ -30,7 +30,7 @@ Feature: Global flags
     When I try `wp post list --url=invalid.example.com`
     Then STDERR should be:
       """
-      Error: Site invalid.example.com not found.
+      Error: Site 'invalid.example.com' not found. Verify `--url=<url>` matches an existing site.
       """
 
   Scenario: Quiet run
@@ -52,7 +52,7 @@ Feature: Global flags
       CONST_WITHOUT_QUOTES
       """
 
-    When I try `wp eval 'ini_set( 'error_log', null ); echo CONST_WITHOUT_QUOTES;' --debug`
+    When I try `wp eval 'ini_set( "error_log", null ); echo CONST_WITHOUT_QUOTES;' --debug`
     Then the return code should be 0
     And STDOUT should be:
       """
@@ -266,4 +266,11 @@ Feature: Global flags
     Then STDERR should be:
       """
       Error: RESTful WP-CLI needs to be installed. Try 'wp package install wp-cli/restful'.
+      """
+
+  Scenario: Strict args mode should be passed on to ssh
+    When I try `WP_CLI_STRICT_ARGS_MODE=1 wp --debug --ssh=/ --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -q  -T WP_CLI_STRICT_ARGS_MODE=1 wp
       """
