@@ -64,6 +64,12 @@ Feature: `wp cli` tasks
       0.0.0
       """
 
+    When I run `{PHAR_PATH} cli update`
+    Then STDOUT should be:
+      """
+      Success: WP-CLI is at the latest version.
+      """
+
   @github-api
   Scenario: Patch update from 0.14.0 to 0.14.1
     Given an empty directory
