@@ -19,6 +19,8 @@ class DocParser {
 	 * @param string $docComment
 	 */
 	public function __construct( $docComment ) {
+		/* Make sure we have a known line ending in document */
+		$docComment = preg_replace( '/\R/', "\n", $docComment );
 		$this->docComment = self::remove_decorations( $docComment );
 	}
 
