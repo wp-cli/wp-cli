@@ -36,6 +36,7 @@ fi
 pushd "$SOURCE_DIR" > /dev/null
 
 # Copy spec file
+pwd
 cp wp-cli-rpm.spec wp-cli.spec
 
 # Replace version placeholder
