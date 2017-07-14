@@ -14,7 +14,7 @@
 
 # Install RPM dependencies
 sudo apt-get update -qq
-sudo apt-get install -qq rpm
+sudo apt-get install -qq rpm python-rpm
 wget http://de.archive.ubuntu.com/ubuntu/pool/universe/r/rpmlint/rpmlint_1.7-1_all.deb
 sudo dpkg -i rpmlint_1.7-1_all.deb || sudo apt-get install -f
 
