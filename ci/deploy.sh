@@ -18,9 +18,8 @@ sudo apt-get install -qq rpm python-rpm
 wget http://de.archive.ubuntu.com/ubuntu/pool/universe/r/rpmlint/rpmlint_1.7-1_all.deb
 sudo dpkg -i rpmlint_1.7-1_all.deb || sudo apt-get install -f
 
-# Build the RPM
+# Duplicate the Phar and build the RPM
 cp /tmp/wp-cli-phar/wp wp-cli.phar
-pwd
 bash utils/wp-cli-updaterpm.sh
 
 # Turn off command traces while dealing with the private key
