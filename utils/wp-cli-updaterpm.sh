@@ -35,10 +35,6 @@ fi
 
 pushd "$SOURCE_DIR" > /dev/null
 
-# Download the binary
-wget -nv -O wp-cli.phar "$PHAR_URL"
-chmod +x wp-cli.phar
-
 # Copy spec file
 cp ../wp-cli-rpm.spec wp-cli.spec
 
