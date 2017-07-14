@@ -25,7 +25,7 @@ die() {
 set -e
 
 # Check dependencies
-if ! hash php rpm rpmlint; then
+if ! hash php rpm; then
     die 1 "Missing RPM build tools"
 fi
 
@@ -61,8 +61,19 @@ sed -i -e "s/^\(\* .*\) 0\.0\.0-1\$/\1 ${WPCLI_VER}-1/" wp-cli.spec || die 5 "Ch
     > wp.1
 
 # Build the package
-rpmbuild --define "_sourcedir ${PWD}" --define "_rpmdir ${PWD}" -bb wp-cli.spec
+rpmbuild --define "_sourcedir ${PWD}" --define "_rpmdir ${PWD}" -bb wp-cli.spec | tee wp-cli-updaterpm-rpmbuild.$$.log
 
+rpm_path=`grep -o "/.*/noarch/wp-cli-.*noarch.rpm" wp-cli-updaterpm-rpmbuild.$$.log`
+
+rm -f wp-cli-updaterpm-rpmbuild.$$.log
+
+if [ ${#rpm_path} -lt 20 ] ; then
+	echo "RPM path doesn't exist ($rpm_path)"
+	exit
+fi
+
+if [[ $(type -P "rpmlint") ]] ; then
+	echo "Using rpmlint to check for errors"
 # Run linter
 cat <<"EOF" > rpmlint.config
 setOption("CompressExtension", "gz")
@@ -71,7 +82,28 @@ addFilter(": E: no-signature")
 addFilter(": E: no-dependency-on locales-cli")
 EOF
 
-rpmlint -v -f rpmlint.config -i noarch/wp-cli-*.noarch.rpm || true
+	rpmlint -v -f rpmlint.config -i $rpm_path || true
+
+elif ([ $(type -P "rpm2cpio") ] && [ $(type -P "cpio") ]); then
+	echo "No RPM lint found $rpm_path .. using alternative method"
+	mkdir rpm-test-$$
+	cd rpm-test-$$
+	if [ $? -ne 0 ] ; then
+		echo "Failed to cd into rpm-test-$$"
+		exit;
+	fi
+	rpm2cpio $rpm_path | cpio -idmv
+
+	if [ -f "usr/bin/wp" ] ; then
+		echo "RPM test succeeded"
+	else 
+		echo "RPM test failed"
+	fi
+	rm -rfv ../rpm-test-$$
+else
+	echo "All test methods failed"
+fi
+
 
 popd > /dev/null
 
