@@ -2,15 +2,25 @@
 
 # called by Travis CI
 
-if [[ "false" != "$TRAVIS_PULL_REQUEST" ]]; then
-	echo "Not deploying pull requests."
-	exit
-fi
+# if [[ "false" != "$TRAVIS_PULL_REQUEST" ]]; then
+# 	echo "Not deploying pull requests."
+# 	exit
+# fi
 
-if [[ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]]; then
-	echo "Not on the '$DEPLOY_BRANCH' branch."
-	exit
-fi
+# if [[ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]]; then
+# 	echo "Not on the '$DEPLOY_BRANCH' branch."
+# 	exit
+# fi
+
+# Install RPM dependencies
+sudo apt-get update -qq
+sudo apt-get install -qq rpm python-rpm
+wget http://de.archive.ubuntu.com/ubuntu/pool/universe/r/rpmlint/rpmlint_1.7-1_all.deb
+sudo dpkg -i rpmlint_1.7-1_all.deb || sudo apt-get install -f
+
+# Duplicate the Phar and build the RPM
+cp /tmp/wp-cli-phar/wp wp-cli.phar
+bash utils/wp-cli-updaterpm.sh
 
 # Turn off command traces while dealing with the private key
 set +x
@@ -44,4 +54,4 @@ sha512sum $fname | cut -d ' ' -f 1 > $fname.sha512
 git add $fname $fname.md5 $fname.sha512 phar/NIGHTLY_VERSION
 git commit -m "phar build: $TRAVIS_REPO_SLUG@$TRAVIS_COMMIT"
 
-git push
+# git push

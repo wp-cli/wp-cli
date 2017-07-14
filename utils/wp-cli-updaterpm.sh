@@ -33,14 +33,11 @@ if ! [ -d "$SOURCE_DIR" ]; then
     mkdir "$SOURCE_DIR" || die 2 "Cannot create directory here: ${PWD}"
 fi
 
+# Copy spec file and Phar file
+cp wp-cli.phar "$SOURCE_DIR/wp-cli.phar"
+cp utils/wp-cli-rpm.spec "$SOURCE_DIR/wp-cli.spec"
+
 pushd "$SOURCE_DIR" > /dev/null
-
-# Download the binary
-wget -nv -O wp-cli.phar "$PHAR_URL"
-chmod +x wp-cli.phar
-
-# Copy spec file
-cp ../wp-cli-rpm.spec wp-cli.spec
 
 # Replace version placeholder
 WPCLI_VER="$(php wp-cli.phar cli version | cut -d " " -f 2)"
