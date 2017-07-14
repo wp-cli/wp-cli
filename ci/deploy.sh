@@ -12,6 +12,12 @@ if [[ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]]; then
 	exit
 fi
 
+# Install RPM dependencies
+sudo apt-get update -qq
+sudo apt-get install -qq rpm
+wget http://de.archive.ubuntu.com/ubuntu/pool/universe/r/rpmlint/rpmlint_1.7-1_all.deb
+sudo dpkg -i rpmlint_1.7-1_all.deb || sudo apt-get install -f
+
 # Turn off command traces while dealing with the private key
 set +x
 
