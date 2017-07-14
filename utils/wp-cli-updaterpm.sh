@@ -36,7 +36,7 @@ fi
 pushd "$SOURCE_DIR" > /dev/null
 
 # Copy spec file
-cp ../wp-cli-rpm.spec wp-cli.spec
+cp utils/wp-cli-rpm.spec wp-cli.spec
 
 # Replace version placeholder
 WPCLI_VER="$(php wp-cli.phar cli version | cut -d " " -f 2)"
