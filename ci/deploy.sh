@@ -2,15 +2,15 @@
 
 # called by Travis CI
 
-if [[ "false" != "$TRAVIS_PULL_REQUEST" ]]; then
-	echo "Not deploying pull requests."
-	exit
-fi
+# if [[ "false" != "$TRAVIS_PULL_REQUEST" ]]; then
+# 	echo "Not deploying pull requests."
+# 	exit
+# fi
 
-if [[ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]]; then
-	echo "Not on the '$DEPLOY_BRANCH' branch."
-	exit
-fi
+# if [[ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]]; then
+# 	echo "Not on the '$DEPLOY_BRANCH' branch."
+# 	exit
+# fi
 
 # Install RPM dependencies
 sudo apt-get update -qq
