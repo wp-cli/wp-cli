@@ -647,8 +647,12 @@ class WP_CLI {
 	 * ```
 	 * # Called in `WP_CLI\Runner::set_wp_root()`.
 	 * private static function set_wp_root( $path ) {
-	 *     define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
-	 *     WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH );
+	 *     if (!defined('ABSPATH')) {
+	 *         define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+	 *         WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH );
+	 *     } else {
+	 *         WP_CLI::warning( 'ABSPATH already defined: ' . ABSPATH );
+	 *     }
 	 *     $_SERVER['DOCUMENT_ROOT'] = realpath( $path );
 	 * }
 	 *
