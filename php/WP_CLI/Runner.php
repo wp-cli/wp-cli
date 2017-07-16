@@ -203,8 +203,12 @@ class Runner {
 	 * @param string $path
 	 */
 	private static function set_wp_root( $path ) {
-		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
-		WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH, 'bootstrap' );
+		if (!defined('ABSPATH')) {
+			define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+			WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH, 'bootstrap' );
+		} else {
+			WP_CLI::warning( 'cannot set ABSPATH (already defined) : ' . ABSPATH);
+		}
 
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $path );
 	}
@@ -852,8 +856,12 @@ class Runner {
 			}
 		}
 
-		// Handle --path parameter
-		self::set_wp_root( $this->find_wp_root() );
+		// Handle --path parameter if ABSPATH is not defined yet
+		if (!defined('ABSPATH')) {
+			self::set_wp_root( $this->find_wp_root() );
+		} else if ( !empty( $this->config['path'] ) ) {
+			WP_CLI::warning( '--path parameter detected but ABSPATH is already defined');
+		}
 
 		// First try at showing man page
 		if ( ! empty( $this->arguments[0] )
