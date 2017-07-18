@@ -28,3 +28,22 @@ Feature: Review CLI information
       """
       WP-CLI packages dir:
       """
+
+  Scenario: Packages directory path should be slashed correctly
+    When I run `WP_CLI_PACKAGES_DIR=/foo wp package path`
+    Then STDOUT should be:
+      """
+      /foo/
+      """
+
+    When I run `WP_CLI_PACKAGES_DIR=/foo/ wp package path`
+    Then STDOUT should be:
+      """
+      /foo/
+      """
+
+    When I run `WP_CLI_PACKAGES_DIR=/foo\\ wp package path`
+    Then STDOUT should be:
+      """
+      /foo/
+      """
