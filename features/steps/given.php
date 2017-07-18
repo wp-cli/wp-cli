@@ -10,13 +10,19 @@ $steps->Given( '/^an empty directory$/',
 	}
 );
 
-$steps->Given( '/^an empty ([^\s]+) directory$/',
-	function ( $world, $dir ) {
+$steps->Given( '/^an? (empty|non-existent) ([^\s]+) directory$/',
+	function ( $world, $empty_or_nonexistent, $dir ) {
 		$dir = $world->replace_variables( $dir );
-		if ( '/' === $dir ) {
-			throw new Exception( 'Attempted to delete the entire filesystem.' );
+		if ( ! WP_CLI\Utils\is_path_absolute( $dir ) ) {
+			$dir = $world->variables['RUN_DIR'] . "/$dir";
 		}
-		$world->proc( WP_CLI\Utils\esc_cmd( 'rm -r %s', $dir ) )->run();
+		if ( 0 !== strpos( $dir, sys_get_temp_dir() ) ) {
+			throw new RuntimeException( sprintf( "Attempted to delete directory '%s' that is not in the temp directory '%s'. " . __FILE__ . ':' . __LINE__, $dir, sys_get_temp_dir() ) );
+		}
+		$world->remove_dir( $dir );
+		if ( 'empty' === $empty_or_nonexistent ) {
+			mkdir( $dir, 0777, true /*recursive*/ );
+		}
 	}
 );
 
@@ -30,7 +36,10 @@ $steps->Given( '/^an? ([^\s]+) file:$/',
 	function ( $world, $path, PyStringNode $content ) {
 		$content = (string) $content . "\n";
 		$full_path = $world->variables['RUN_DIR'] . "/$path";
-		Process::create( \WP_CLI\utils\esc_cmd( 'mkdir -p %s', dirname( $full_path ) ) )->run_check();
+		$dir = dirname( $full_path );
+		if ( ! file_exists( $dir ) ) {
+			mkdir( $dir, 0777, true /*recursive*/ );
+		}
 		file_put_contents( $full_path, $content );
 	}
 );
