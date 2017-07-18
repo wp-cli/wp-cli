@@ -195,4 +195,50 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		putenv( false === $homedrive ? 'HOMEDRIVE' : "HOME=$homedrive" );
 		putenv( false === $homepath ? 'HOMEPATH' : "HOME=$homepath" );
 	}
+
+	public function testTrailingslashit() {
+		$this->assertSame( 'a/', Utils\trailingslashit( 'a' ) );
+		$this->assertSame( 'a/', Utils\trailingslashit( 'a/' ) );
+		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\' ) );
+		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\//\\' ) );
+	}
+
+	public function testGetTempDir() {
+		$this->assertTrue( '/' === substr( Utils\get_temp_dir(), -1 ) );
+
+		// INI directive `sys_temp_dir` introduced PHP 5.5.0.
+		if ( version_compare( PHP_VERSION, '5.5.0', '>=' ) ) {
+
+			// `sys_temp_dir` set.
+
+			$cmd = "WP_CLI_PHP_ARGS='-dsys_temp_dir=\\tmp\\' bin/wp eval 'echo WP_CLI\\Utils\\get_temp_dir();' --skip-wordpress 2>&1";
+			$output = array();
+			exec( $cmd, $output );
+			$this->assertTrue( 2 === count( $output ) );
+			$this->assertTrue( 2 === preg_match_all( '/warning|writable/i', $output[0] ) );
+			$this->assertSame( '\\tmp/', $output[1] );
+
+			// `sys_temp_dir` unset and `upload_tmp_dir' set.
+
+			// `upload_tmp_dir` needs to be a legitimate writable directory.
+			$temp_dir = sys_get_temp_dir() . '/' . uniqid( 'test-utils-get-temp-dir', true );
+			mkdir( $temp_dir, 0777, true );
+			$cmd = "WP_CLI_PHP_ARGS='-dsys_temp_dir=0 -dupload_tmp_dir=$temp_dir\\' bin/wp eval 'echo WP_CLI\\Utils\\get_temp_dir();' --skip-wordpress 2>&1";
+			$output = array();
+			exec( $cmd, $output );
+
+			rmdir( $temp_dir );
+
+			$this->assertTrue( 1 === count( $output ) );
+			$this->assertSame( $temp_dir . '/', $output[0] );
+
+			// Both `sys_temp_dir` and `upload_tmp_dir' unset.
+
+			$cmd = "WP_CLI_PHP_ARGS='-dsys_temp_dir=0 -dupload_tmp_dir=0' bin/wp eval 'echo WP_CLI\\Utils\\get_temp_dir();' --skip-wordpress --quiet 2>&1";
+			$output = array();
+			exec( $cmd, $output );
+			$this->assertTrue( 1 === count( $output ) );
+			$this->assertSame( '/tmp/', $output[0] );
+		}
+	}
 }
