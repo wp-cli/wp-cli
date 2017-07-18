@@ -713,6 +713,19 @@ function get_home_dir() {
 }
 
 /**
+ * Appends a trailing slash.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $string What to add the trailing slash to.
+ * @return string String with trailing slash added.
+ */
+function trailingslashit( $string ) {
+	return rtrim( $string, '/\\' ) . '/';
+}
+
+/**
  * Get the system's temp directory. Warns user if it isn't writable.
  *
  * @access public
@@ -723,17 +736,15 @@ function get_home_dir() {
 function get_temp_dir() {
 	static $temp = '';
 
-	$trailingslashit = function( $path ) {
-		return rtrim( $path ) . '/';
-	};
+	if ( $temp ) {
+		return $temp;
+	}
 
-	if ( $temp )
-		return $trailingslashit( $temp );
-
-	if ( function_exists( 'sys_get_temp_dir' ) ) {
-		$temp = sys_get_temp_dir();
-	} else if ( ini_get( 'upload_tmp_dir' ) ) {
-		$temp = ini_get( 'upload_tmp_dir' );
+	// `sys_get_temp_dir()` introduced PHP 5.2.1.
+	if ( $try = sys_get_temp_dir() ) {
+		$temp = trailingslashit( $try );
+	} elseif ( $try = ini_get( 'upload_tmp_dir' ) ) {
+		$temp = trailingslashit( $try );
 	} else {
 		$temp = '/tmp/';
 	}
@@ -742,7 +753,7 @@ function get_temp_dir() {
 		\WP_CLI::warning( "Temp directory isn't writable: {$temp}" );
 	}
 
-	return $trailingslashit( $temp );
+	return $temp;
 }
 
 /**
