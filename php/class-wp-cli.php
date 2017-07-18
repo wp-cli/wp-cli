@@ -647,7 +647,7 @@ class WP_CLI {
 	 * ```
 	 * # Called in `WP_CLI\Runner::set_wp_root()`.
 	 * private static function set_wp_root( $path ) {
-	 *     define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+	 *     define( 'ABSPATH', Utils\trailingslashit( $path ) );
 	 *     WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH );
 	 *     $_SERVER['DOCUMENT_ROOT'] = realpath( $path );
 	 * }

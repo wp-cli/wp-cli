@@ -127,7 +127,7 @@ class Runner {
 	 */
 	public function get_packages_dir_path() {
 		if ( getenv( 'WP_CLI_PACKAGES_DIR' ) ) {
-			$packages_dir = rtrim( getenv( 'WP_CLI_PACKAGES_DIR' ), '/' ) . '/';
+			$packages_dir = Utils\trailingslashit( getenv( 'WP_CLI_PACKAGES_DIR' ) );
 		} else {
 			$packages_dir = Utils\get_home_dir() . '/.wp-cli/packages/';
 		}
@@ -203,7 +203,7 @@ class Runner {
 	 * @param string $path
 	 */
 	private static function set_wp_root( $path ) {
-		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+		define( 'ABSPATH', Utils\trailingslashit( $path ) );
 		WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH, 'bootstrap' );
 
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $path );
