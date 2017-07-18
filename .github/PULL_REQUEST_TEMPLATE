@@ -1,0 +1,16 @@
+<!--
+
+Thanks for submitting a pull request!
+
+Please review our contributing guidelines if you haven't recently: https://make.wordpress.org/cli/handbook/contributing/#creating-a-pull-request
+
+Here's an overview to our process:
+
+1. One of the project committers will soon provide a code review.
+2. You are expected to address the code review comments in a timely manner.
+3. Please make sure to include functional tests for your changes.
+4. The reviewing committer will merge your pull request as soon as it passes code review (and provided it fits within the scope of the project).
+
+You can safely delete this comment.
+
+-->
