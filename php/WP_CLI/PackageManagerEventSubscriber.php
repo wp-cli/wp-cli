@@ -18,7 +18,7 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 		return array(
 			PackageEvents::PRE_PACKAGE_INSTALL => 'pre_install',
 			PackageEvents::POST_PACKAGE_INSTALL => 'post_install',
-			);
+		);
 	}
 
 	public static function pre_install( PackageEvent $event ) {
