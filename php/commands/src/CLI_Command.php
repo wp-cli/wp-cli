@@ -364,7 +364,7 @@ class CLI_Command extends WP_CLI_Command {
 			'major'      => false,
 			'minor'      => false,
 			'patch'      => false,
-			);
+		);
 		foreach ( $release_data as $release ) {
 
 			// Get rid of leading "v" if there is one set.
