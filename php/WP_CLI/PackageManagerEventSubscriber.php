@@ -34,7 +34,7 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 
 			switch ( $reason->getReason() ) {
 
-				case Rule::RULE_PACKAGE_CONFLICT;
+				case Rule::RULE_PACKAGE_CONFLICT:
 				case Rule::RULE_PACKAGE_SAME_NAME:
 				case Rule::RULE_PACKAGE_REQUIRES:
 					$composer_error = $reason->getPrettyString( $event->getPool() );

@@ -606,20 +606,20 @@ function increment_version( $current_version, $new_version ) {
 	switch ( $new_version ) {
 		case 'same':
 			// do nothing
-		break;
+			break;
 
 		case 'patch':
 			$current_version[0][2]++;
 
 			$current_version = array( $current_version[0] ); // drop possible pre-release info
-		break;
+			break;
 
 		case 'minor':
 			$current_version[0][1]++;
 			$current_version[0][2] = 0;
 
 			$current_version = array( $current_version[0] ); // drop possible pre-release info
-		break;
+			break;
 
 		case 'major':
 			$current_version[0][0]++;
@@ -627,11 +627,11 @@ function increment_version( $current_version, $new_version ) {
 			$current_version[0][2] = 0;
 
 			$current_version = array( $current_version[0] ); // drop possible pre-release info
-		break;
+			break;
 
 		default: // not a keyword
 			$current_version = array( array( $new_version ) );
-		break;
+			break;
 	}
 
 	// reconstruct version string
