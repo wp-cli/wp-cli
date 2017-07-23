@@ -278,13 +278,13 @@ if ( is_multisite() ) {
 do_action( 'muplugins_loaded' );
 
 if ( is_multisite() )
-	ms_cookie_constants(  );
+	ms_cookie_constants();
 
 // Define constants after multisite is loaded. Cookie-related constants may be overridden in ms_network_cookies().
-wp_cookie_constants( );
+wp_cookie_constants();
 
 // Define and enforce our SSL constants
-wp_ssl_constants( );
+wp_ssl_constants();
 
 // Create common globals.
 require( ABSPATH . WPINC . '/vars.php' );
@@ -319,7 +319,7 @@ if ( WP_CACHE && function_exists( 'wp_cache_postload' ) )
 do_action( 'plugins_loaded' );
 
 // Define constants which affect functionality if not already defined.
-wp_functionality_constants( );
+wp_functionality_constants();
 
 // Add magic quotes and set up $_REQUEST ( $_GET + $_POST )
 wp_magic_quotes();
@@ -372,7 +372,7 @@ $GLOBALS['wp_roles'] = new WP_Roles();
 do_action( 'setup_theme' );
 
 // Define the template related constants.
-wp_templating_constants(  );
+wp_templating_constants();
 
 // Load the default text localization domain.
 load_default_textdomain();
