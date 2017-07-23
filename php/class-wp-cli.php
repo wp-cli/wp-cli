@@ -682,8 +682,8 @@ class WP_CLI {
 	 * $status = $this->get_status( $plugin->file );
 	 * // Network-active is the highest level of activation status
 	 * if ( 'active-network' === $status ) {
-	 * 	WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
-	 * 	continue;
+	 *   WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
+	 *   continue;
 	 * }
 	 * ```
 	 *
