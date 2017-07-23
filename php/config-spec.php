@@ -8,9 +8,9 @@ return array(
 	),
 
 	'ssh' => array(
-		'runtime' => '=[<user>@]<host>[:<port>][<path>]',
-		'file' => '[<user>@]<host>[:<port>][<path>]',
-		'desc' => 'Perform operation against a remote server over SSH.',
+		'runtime' => '=[<scheme>:][<user>@]<host|container>[:<port>][<path>]',
+		'file' => '[<scheme>:][<user>@]<host|container>[:<port>][<path>]',
+		'desc' => 'Perform operation against a remote server over SSH (or a container using scheme of "docker" or "docker-compose").',
 	),
 
 	'http' => array(
