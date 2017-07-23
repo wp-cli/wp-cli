@@ -770,18 +770,24 @@ function get_temp_dir() {
  * @return mixed
  */
 function parse_ssh_url( $url, $component = -1 ) {
-	preg_match( '#^([^:/~]+)(:([\d]*))?((/|~)(.+))?$#', $url, $matches );
+	preg_match( '#^((docker|docker\-compose|ssh):)?(([^@:]+)@)?([^:/~]+)(:([\d]*))?((/|~)(.+))?$#', $url, $matches );
 	$bits = array();
 	foreach( array(
-		1 => 'host',
-		3 => 'port',
-		4 => 'path',
+		2 => 'scheme',
+		4 => 'user',
+		5 => 'host',
+		7 => 'port',
+		8 => 'path',
 	) as $i => $key ) {
 		if ( ! empty( $matches[ $i ] ) ) {
 			$bits[ $key ] = $matches[ $i ];
 		}
 	}
 	switch ( $component ) {
+		case PHP_URL_SCHEME:
+			return isset( $bits['scheme'] ) ? $bits['scheme'] : null;
+		case PHP_URL_USER:
+			return isset( $bits['user'] ) ? $bits['user'] : null;
 		case PHP_URL_HOST:
 			return isset( $bits['host'] ) ? $bits['host'] : null;
 		case PHP_URL_PATH:
