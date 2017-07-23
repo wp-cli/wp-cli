@@ -453,7 +453,7 @@ function mustache_render( $template_name, $data = array() ) {
 	$template = file_get_contents( $template_name );
 
 	$m = new \Mustache_Engine( array(
-		'escape' => function ( $val ) { return $val; }
+		'escape' => function ( $val ) { return $val; },
 	) );
 
 	return $m->render( $template, $data );
@@ -522,7 +522,7 @@ function is_windows() {
 function replace_path_consts( $source, $path ) {
 	$replacements = array(
 		'__FILE__' => "'$path'",
-		'__DIR__'  => "'" . dirname( $path ) . "'"
+		'__DIR__'  => "'" . dirname( $path ) . "'",
 	);
 
 	$old = array_keys( $replacements );

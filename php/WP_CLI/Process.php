@@ -68,7 +68,7 @@ class Process {
 			'return_code' => proc_close( $proc ),
 			'command' => $this->command,
 			'cwd' => $cwd,
-			'env' => $this->env
+			'env' => $this->env,
 		) );
 	}
 

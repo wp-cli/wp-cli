@@ -44,7 +44,7 @@ class Table extends Query {
 			'where' => array(),
 			'append' => '',
 			'table' => null,
-			'chunk_size' => 500
+			'chunk_size' => 500,
 		);
 		$table = $args['table'];
 		$args = array_merge( $defaults, $args );

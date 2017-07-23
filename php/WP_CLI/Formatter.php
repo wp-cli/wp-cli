@@ -28,7 +28,7 @@ class Formatter {
 		$format_args = array(
 			'format' => 'table',
 			'fields' => $fields,
-			'field' => null
+			'field' => null,
 		);
 
 		foreach ( array( 'format', 'fields', 'field' ) as $key ) {
@@ -309,7 +309,7 @@ class Formatter {
 
 			$rows[] = (object) array(
 				'Field' => $field,
-				'Value' => $value
+				'Value' => $value,
 			);
 		}
 
