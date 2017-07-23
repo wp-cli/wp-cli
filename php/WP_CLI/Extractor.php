@@ -47,7 +47,7 @@ class Extractor {
 			$tempdir = implode( DIRECTORY_SEPARATOR, Array (
 				dirname( $zipfile ),
 				Utils\basename( $zipfile, '.zip' ),
-				$zip->getNameIndex( 0 )
+				$zip->getNameIndex( 0 ),
 			) );
 
 			$zip->extractTo( dirname( $tempdir ) );
@@ -76,7 +76,7 @@ class Extractor {
 		$tempdir = implode( DIRECTORY_SEPARATOR, Array (
 			dirname( $tarball ),
 			Utils\basename( $tarball, '.tar.gz' ),
-			$phar->getFileName()
+			$phar->getFileName(),
 		) );
 
 		$phar->extractTo( dirname( $tempdir ), null, true );
