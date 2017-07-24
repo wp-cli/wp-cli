@@ -286,7 +286,7 @@ class CompositeCommand {
 
 			$binding['parameters'][] = array(
 				'synopsis' => $synopsis,
-				'desc' => $details['desc']
+				'desc' => $details['desc'],
 			);
 		}
 

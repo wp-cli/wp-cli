@@ -82,7 +82,7 @@ class SynopsisValidator {
 
 		$errors = array(
 			'fatal' => array(),
-			'warning' => array()
+			'warning' => array(),
 		);
 
 		$to_unset = array();

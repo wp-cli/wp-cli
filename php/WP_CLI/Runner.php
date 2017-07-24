@@ -99,7 +99,7 @@ class Runner {
 	public function get_project_config_path() {
 		$config_files = array(
 			'wp-cli.local.yml',
-			'wp-cli.yml'
+			'wp-cli.yml',
 		);
 
 		// Stop looking upward when we find we have emerged from a subdirectory
@@ -464,7 +464,7 @@ class Runner {
 	private static function back_compat_conversions( $args, $assoc_args ) {
 		$top_level_aliases = array(
 			'sql' => 'db',
-			'blog' => 'site'
+			'blog' => 'site',
 		);
 		if ( count( $args ) > 0 ) {
 			foreach ( $top_level_aliases as $old => $new ) {

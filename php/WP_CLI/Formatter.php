@@ -28,7 +28,7 @@ class Formatter {
 		$format_args = array(
 			'format' => 'table',
 			'fields' => $fields,
-			'field' => null
+			'field' => null,
 		);
 
 		foreach ( array( 'format', 'fields', 'field' ) as $key ) {
@@ -117,48 +117,48 @@ class Formatter {
 		$fields = $this->args['fields'];
 
 		switch ( $this->args['format'] ) {
-		case 'count':
-			if ( !is_array( $items ) ) {
-				$items = iterator_to_array( $items );
-			}
-			echo count( $items );
-			break;
-
-		case 'ids':
-			if ( !is_array( $items ) ) {
-				$items = iterator_to_array( $items );
-			}
-			echo implode( ' ', $items );
-			break;
-
-		case 'table':
-			self::show_table( $items, $fields );
-			break;
-
-		case 'csv':
-			\WP_CLI\Utils\write_csv( STDOUT, $items, $fields );
-			break;
-
-		case 'json':
-		case 'yaml':
-			$out = array();
-			foreach ( $items as $item ) {
-				$out[] = \WP_CLI\Utils\pick_fields( $item, $fields );
-			}
-
-			if ( 'json' === $this->args['format'] ) {
-				if (defined('JSON_PARTIAL_OUTPUT_ON_ERROR')) {
-					echo json_encode( $out, JSON_PARTIAL_OUTPUT_ON_ERROR );
-				} else {
-					echo json_encode( $out );
+			case 'count':
+				if ( !is_array( $items ) ) {
+					$items = iterator_to_array( $items );
 				}
-			} else if ( 'yaml' === $this->args['format'] ) {
-				echo Spyc::YAMLDump( $out, 2, 0 );
-			}
-			break;
+				echo count( $items );
+				break;
 
-		default:
-			\WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
+			case 'ids':
+				if ( !is_array( $items ) ) {
+					$items = iterator_to_array( $items );
+				}
+				echo implode( ' ', $items );
+				break;
+
+			case 'table':
+				self::show_table( $items, $fields );
+				break;
+
+			case 'csv':
+				\WP_CLI\Utils\write_csv( STDOUT, $items, $fields );
+				break;
+
+			case 'json':
+			case 'yaml':
+				$out = array();
+				foreach ( $items as $item ) {
+					$out[] = \WP_CLI\Utils\pick_fields( $item, $fields );
+				}
+
+				if ( 'json' === $this->args['format'] ) {
+					if (defined('JSON_PARTIAL_OUTPUT_ON_ERROR')) {
+						echo json_encode( $out, JSON_PARTIAL_OUTPUT_ON_ERROR );
+					} else {
+						echo json_encode( $out );
+					}
+				} else if ( 'yaml' === $this->args['format'] ) {
+					echo Spyc::YAMLDump( $out, 2, 0 );
+				}
+				break;
+
+			default:
+				\WP_CLI::error( 'Invalid format: ' . $this->args['format'] );
 		}
 	}
 
@@ -239,25 +239,25 @@ class Formatter {
 
 		switch ( $format ) {
 
-		case 'table':
-		case 'csv':
-			$rows = $this->assoc_array_to_rows( $data );
-			$fields = array( 'Field', 'Value' );
-			if ( 'table' == $format ) {
-				self::show_table( $rows, $fields );
-			} else if ( 'csv' == $format ) {
-				\WP_CLI\Utils\write_csv( STDOUT, $rows, $fields );
-			}
-			break;
+			case 'table':
+			case 'csv':
+				$rows = $this->assoc_array_to_rows( $data );
+				$fields = array( 'Field', 'Value' );
+				if ( 'table' == $format ) {
+					self::show_table( $rows, $fields );
+				} else if ( 'csv' == $format ) {
+					\WP_CLI\Utils\write_csv( STDOUT, $rows, $fields );
+				}
+				break;
 
-		case 'yaml':
-		case 'json':
-			\WP_CLI::print_value( $data, array( 'format' => $format ) );
-			break;
+			case 'yaml':
+			case 'json':
+				\WP_CLI::print_value( $data, array( 'format' => $format ) );
+				break;
 
-		default:
-			\WP_CLI::error( "Invalid format: " . $format );
-			break;
+			default:
+				\WP_CLI::error( "Invalid format: " . $format );
+				break;
 
 		}
 
@@ -309,7 +309,7 @@ class Formatter {
 
 			$rows[] = (object) array(
 				'Field' => $field,
-				'Value' => $value
+				'Value' => $value,
 			);
 		}
 
