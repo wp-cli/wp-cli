@@ -341,12 +341,14 @@ class Runner {
 
 		WP_CLI::do_hook( 'before_ssh' );
 
+		$bits = Utils\parse_ssh_url( $connection_string );
+
 		$pre_cmd = getenv( 'WP_CLI_SSH_PRE_CMD' );
 		if ( $pre_cmd ) {
 			$pre_cmd = rtrim( $pre_cmd, ';' ) . '; ';
 		}
-		if ( $path ) {
-			$pre_cmd .= "cd {$path}; ";
+		if ( ! empty( $bits['path'] ) ) {
+			$pre_cmd .= 'cd ' . escapeshellarg( $bits['path'] ) . '; ';
 		}
 
 		$env_vars = '';
@@ -379,7 +381,7 @@ class Runner {
 		}
 
 		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) );
-		$escaped_command = $this->generate_ssh_command( $connection_string, $wp_command );
+		$escaped_command = $this->generate_ssh_command( $bits, $wp_command );
 
 		passthru( $escaped_command, $exit_code );
 		if ( 255 === $exit_code ) {
@@ -390,14 +392,13 @@ class Runner {
 	}
 
 	/**
-	 * Generate a shell command from the passed connection string.
+	 * Generate a shell command from the parsed connection string.
 	 *
-	 * @param string $connection_string Passed connection string.
-	 * @param string $wp_command        WP-CLI command to run.
+	 * @param array  $bits       Parsed connection string.
+	 * @param string $wp_command WP-CLI command to run.
 	 * @return string
 	 */
-	private function generate_ssh_command( $connection_string, $wp_command ) {
-		$bits = Utils\parse_ssh_url( $connection_string );
+	private function generate_ssh_command( $bits, $wp_command ) {
 		$escaped_command = '';
 
 		// Set default values.

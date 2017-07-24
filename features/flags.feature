@@ -275,6 +275,13 @@ Feature: Global flags
       Running SSH command: ssh -q '' -T 'WP_CLI_STRICT_ARGS_MODE=1 wp
       """
 
+  Scenario: SSH flag should support changing directories
+    When I try `wp --debug --ssh=wordpress:/my/path --version`
+    Then STDERR should contain:
+      """
+      Running SSH command: ssh -q 'wordpress' -T 'cd '\''/my/path'\''; wp
+      """
+
   Scenario: SSH flag should support Docker
     When I try `wp --debug --ssh=docker:user@wordpress --version`
     Then STDERR should contain:
