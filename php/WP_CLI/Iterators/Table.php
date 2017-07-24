@@ -30,12 +30,12 @@ class Table extends Query {
 	 *
 	 *
 	 * @param array $args Supported arguments:
-	 *		table – the name of the database table
-	 *		fields – an array of columns to get from the table, '*' is a valid value and the default
-	 *		where – conditions for filtering rows. Supports two formats:
-	 *			= string – this will be the where clause
-	 *			= array – each element is treated as a condition if it's positional, or as column => value if
-	 *				it's a key/value pair. In the latter case the value is automatically quoted and escaped
+	 *      table – the name of the database table
+	 *      fields – an array of columns to get from the table, '*' is a valid value and the default
+	 *      where – conditions for filtering rows. Supports two formats:
+	 *              = string – this will be the where clause
+	 *              = array – each element is treated as a condition if it's positional, or as column => value if
+	 *                it's a key/value pair. In the latter case the value is automatically quoted and escaped
 	 *      append - add arbitrary extra SQL
 	 */
 	function __construct( $args = array() ) {
@@ -44,7 +44,7 @@ class Table extends Query {
 			'where' => array(),
 			'append' => '',
 			'table' => null,
-			'chunk_size' => 500
+			'chunk_size' => 500,
 		);
 		$table = $args['table'];
 		$args = array_merge( $defaults, $args );

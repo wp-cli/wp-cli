@@ -58,6 +58,7 @@
 		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing.ExtraSpaceBeforeCloseParenthesis" />
 		<exclude name="WordPress.WhiteSpace.OperatorSpacing.NoSpaceAfter" />
 		<exclude name="WordPress.WhiteSpace.OperatorSpacing.NoSpaceBefore" />
+		<exclude name="WordPress.WP.CapitalPDangit" />
 	</rule>
 
 	<exclude-pattern>*/ci/*</exclude-pattern>

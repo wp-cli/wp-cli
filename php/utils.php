@@ -453,7 +453,7 @@ function mustache_render( $template_name, $data = array() ) {
 	$template = file_get_contents( $template_name );
 
 	$m = new \Mustache_Engine( array(
-		'escape' => function ( $val ) { return $val; }
+		'escape' => function ( $val ) { return $val; },
 	) );
 
 	return $m->render( $template, $data );
@@ -522,7 +522,7 @@ function is_windows() {
 function replace_path_consts( $source, $path ) {
 	$replacements = array(
 		'__FILE__' => "'$path'",
-		'__DIR__'  => "'" . dirname( $path ) . "'"
+		'__DIR__'  => "'" . dirname( $path ) . "'",
 	);
 
 	$old = array_keys( $replacements );
@@ -606,20 +606,20 @@ function increment_version( $current_version, $new_version ) {
 	switch ( $new_version ) {
 		case 'same':
 			// do nothing
-		break;
+			break;
 
 		case 'patch':
 			$current_version[0][2]++;
 
 			$current_version = array( $current_version[0] ); // drop possible pre-release info
-		break;
+			break;
 
 		case 'minor':
 			$current_version[0][1]++;
 			$current_version[0][2] = 0;
 
 			$current_version = array( $current_version[0] ); // drop possible pre-release info
-		break;
+			break;
 
 		case 'major':
 			$current_version[0][0]++;
@@ -627,11 +627,11 @@ function increment_version( $current_version, $new_version ) {
 			$current_version[0][2] = 0;
 
 			$current_version = array( $current_version[0] ); // drop possible pre-release info
-		break;
+			break;
 
 		default: // not a keyword
 			$current_version = array( array( $new_version ) );
-		break;
+			break;
 	}
 
 	// reconstruct version string
