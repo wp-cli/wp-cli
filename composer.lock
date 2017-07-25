@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "cd48468393e7ce36d00ed48300479088",
+    "content-hash": "dc335c223a588b1adfc44adc08e608f3",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2219,17 +2219,11 @@
         },
         {
             "name": "wp-cli/php-cli-tools",
-            "version": "v0.11.3",
+            "version": "dev-issue_106",
             "source": {
                 "type": "git",
-                "url": "https://github.com/wp-cli/php-cli-tools.git",
-                "reference": "09075e5a5ba804df43e148f887cbf4466bebfa2c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/09075e5a5ba804df43e148f887cbf4466bebfa2c",
-                "reference": "09075e5a5ba804df43e148f887cbf4466bebfa2c",
-                "shasum": ""
+                "url": "https://github.com/gitlost/php-cli-tools.git",
+                "reference": "7466f68a76603d9a1734616aa30fc883724d58cc"
             },
             "require": {
                 "php": ">= 5.3.0"
@@ -2243,20 +2237,19 @@
                     "lib/cli/cli.php"
                 ]
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
             "authors": [
                 {
-                    "name": "James Logsdon",
-                    "email": "jlogsdon@php.net",
-                    "role": "Developer"
-                },
-                {
                     "name": "Daniel Bachhuber",
                     "email": "daniel@handbuilt.co",
                     "role": "Maintainer"
+                },
+                {
+                    "name": "James Logsdon",
+                    "email": "jlogsdon@php.net",
+                    "role": "Developer"
                 }
             ],
             "description": "Console utilities for PHP",
@@ -2265,7 +2258,7 @@
                 "cli",
                 "console"
             ],
-            "time": "2017-06-08T12:06:09+00:00"
+            "time": "2017-07-25 09:10:02"
         },
         {
             "name": "wp-cli/rewrite-command",
@@ -3344,6 +3337,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "wp-cli/php-cli-tools": 20,
         "roave/security-advisories": 20
     },
     "prefer-stable": true,

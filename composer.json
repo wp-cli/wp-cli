@@ -19,6 +19,13 @@
 	},
 	"minimum-stability": "dev",
 	"prefer-stable": true,
+	"repositories": [
+		{
+			"type": "git",
+			"url": "https://github.com/gitlost/php-cli-tools.git"
+		}
+
+	],
 	"require": {
 		"php": ">=5.3.29",
 		"composer/composer": "^1.2.0",
@@ -52,7 +59,7 @@
 		"wp-cli/media-command": "^1.0",
 		"wp-cli/mustangostang-spyc": "^0.6.3",
 		"wp-cli/package-command": "^1.0",
-		"wp-cli/php-cli-tools": "~0.11.2",
+		"wp-cli/php-cli-tools": "dev-issue_106",
 		"wp-cli/rewrite-command": "^1.0",
 		"wp-cli/role-command": "^1.0",
 		"wp-cli/scaffold-command": "^1.0",
