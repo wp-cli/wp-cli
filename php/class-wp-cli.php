@@ -647,7 +647,7 @@ class WP_CLI {
 	 * ```
 	 * # Called in `WP_CLI\Runner::set_wp_root()`.
 	 * private static function set_wp_root( $path ) {
-	 *     define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+	 *     define( 'ABSPATH', Utils\trailingslashit( $path ) );
 	 *     WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH );
 	 *     $_SERVER['DOCUMENT_ROOT'] = realpath( $path );
 	 * }
@@ -682,8 +682,8 @@ class WP_CLI {
 	 * $status = $this->get_status( $plugin->file );
 	 * // Network-active is the highest level of activation status
 	 * if ( 'active-network' === $status ) {
-	 * 	WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
-	 * 	continue;
+	 *   WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
+	 *   continue;
 	 * }
 	 * ```
 	 *

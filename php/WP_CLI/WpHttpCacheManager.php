@@ -53,7 +53,7 @@ class WpHttpCacheManager {
 				// simulate successful download response
 				return array(
 					'response' => array('code' => ( 200 ), 'message' => 'OK'),
-					'filename' => $args['filename']
+					'filename' => $args['filename'],
 				);
 			} else {
 				WP_CLI::error( sprintf( 'Error copying cached file %s to %s', $filename, $url ) );

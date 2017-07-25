@@ -1,2 +1,3 @@
 # Auto detect text files and perform EOL normalization
 * text=auto eol=lf
+tests/data/*-win.php eol=crlf

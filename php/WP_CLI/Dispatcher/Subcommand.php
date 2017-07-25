@@ -276,7 +276,7 @@ class Subcommand extends CompositeCommand {
 		$i = 0;
 		$errors = array( 'fatal' => array(), 'warning' => array() );
 		$mock_doc = array( $this->get_shortdesc(), '' );
-		$mock_doc = array_merge( $mock_doc, explode( PHP_EOL, $this->get_longdesc() ) );
+		$mock_doc = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
 		$mock_doc = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
 		$docparser = new \WP_CLI\DocParser( $mock_doc );
 		foreach( $synopsis_spec as $spec ) {

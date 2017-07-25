@@ -426,7 +426,7 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
-    When I run `TERM=vt100 COLUMNS=40 wp help test-wordwrap my_command | wc -L`
+    When I run `TERM=vt100 COLUMNS=40 wp help test-wordwrap my_command | sed '/\-\-ssh/d' | wc -L`
     Then STDOUT should be:
       """
       40

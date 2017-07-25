@@ -60,6 +60,8 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( array(
 			'host' => 'foo',
 		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
@@ -68,6 +70,8 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( array(
 			'host' => 'foo.com',
 		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
@@ -77,6 +81,8 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			'host' => 'foo.com',
 			'port' => 2222,
 		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
 		$this->assertEquals( 2222, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
@@ -87,6 +93,8 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			'port' => 2222,
 			'path' => '/path/to/dir',
 		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
 		$this->assertEquals( 2222, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( '/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
@@ -96,6 +104,8 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			'host' => 'foo.com',
 			'path' => '~/path/to/dir',
 		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
@@ -103,6 +113,8 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		// No host
 		$testcase = '~/path/to/dir';
 		$this->assertEquals( array(), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
@@ -113,6 +125,8 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			'host' => 'foo.com',
 			'path' => '~/path/to/dir',
 		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
@@ -123,9 +137,73 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			'path' => '~/path/to/dir',
 			'port' => '2222'
 		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
 		$this->assertEquals( '2222', Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
 		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		// explicit scheme, user, host, path, no port
+		$testcase = 'ssh:bar@foo.com:~/path/to/dir';
+		$this->assertEquals( array(
+			'scheme' => 'ssh',
+			'user' => 'bar',
+			'host' => 'foo.com',
+			'path' => '~/path/to/dir',
+		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'ssh', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		// container scheme
+		$testcase = 'docker:wordpress';
+		$this->assertEquals( array(
+			'scheme' => 'docker',
+			'host' => 'wordpress',
+		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'docker', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertEquals( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		// container scheme with user, and host
+		$testcase = 'docker:bar@wordpress';
+		$this->assertEquals( array(
+			'scheme' => 'docker',
+			'user' => 'bar',
+			'host' => 'wordpress',
+		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'docker', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertEquals( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		// container scheme with user, host, and path
+		$testcase = 'docker-compose:bar@wordpress:~/path/to/dir';
+		$this->assertEquals( array(
+			'scheme' => 'docker-compose',
+			'user' => 'bar',
+			'host' => 'wordpress',
+			'path' => '~/path/to/dir',
+		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( 'docker-compose', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertEquals( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
+
+		// unsupported scheme, should not match
+		$testcase = 'foo:bar';
+		$this->assertEquals( array(), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PORT ) );
+		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 	}
 
 	public function testParseStrToArgv() {
@@ -194,5 +272,51 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		putenv( false === $home ? 'HOME' : "HOME=$home" );
 		putenv( false === $homedrive ? 'HOMEDRIVE' : "HOME=$homedrive" );
 		putenv( false === $homepath ? 'HOMEPATH' : "HOME=$homepath" );
+	}
+
+	public function testTrailingslashit() {
+		$this->assertSame( 'a/', Utils\trailingslashit( 'a' ) );
+		$this->assertSame( 'a/', Utils\trailingslashit( 'a/' ) );
+		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\' ) );
+		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\//\\' ) );
+	}
+
+	public function testGetTempDir() {
+		$this->assertTrue( '/' === substr( Utils\get_temp_dir(), -1 ) );
+
+		// INI directive `sys_temp_dir` introduced PHP 5.5.0.
+		if ( version_compare( PHP_VERSION, '5.5.0', '>=' ) ) {
+
+			// `sys_temp_dir` set.
+
+			$cmd = "WP_CLI_PHP_ARGS='-dsys_temp_dir=\\tmp\\' bin/wp eval 'echo WP_CLI\\Utils\\get_temp_dir();' --skip-wordpress 2>&1";
+			$output = array();
+			exec( $cmd, $output );
+			$this->assertTrue( 2 === count( $output ) );
+			$this->assertTrue( 2 === preg_match_all( '/warning|writable/i', $output[0] ) );
+			$this->assertSame( '\\tmp/', $output[1] );
+
+			// `sys_temp_dir` unset and `upload_tmp_dir' set.
+
+			// `upload_tmp_dir` needs to be a legitimate writable directory.
+			$temp_dir = sys_get_temp_dir() . '/' . uniqid( 'test-utils-get-temp-dir', true );
+			mkdir( $temp_dir, 0777, true );
+			$cmd = "WP_CLI_PHP_ARGS='-dsys_temp_dir=0 -dupload_tmp_dir=$temp_dir\\' bin/wp eval 'echo WP_CLI\\Utils\\get_temp_dir();' --skip-wordpress 2>&1";
+			$output = array();
+			exec( $cmd, $output );
+
+			rmdir( $temp_dir );
+
+			$this->assertTrue( 1 === count( $output ) );
+			$this->assertSame( $temp_dir . '/', $output[0] );
+
+			// Both `sys_temp_dir` and `upload_tmp_dir' unset.
+
+			$cmd = "WP_CLI_PHP_ARGS='-dsys_temp_dir=0 -dupload_tmp_dir=0' bin/wp eval 'echo WP_CLI\\Utils\\get_temp_dir();' --skip-wordpress --quiet 2>&1";
+			$output = array();
+			exec( $cmd, $output );
+			$this->assertTrue( 1 === count( $output ) );
+			$this->assertSame( '/tmp/', $output[0] );
+		}
 	}
 }
