@@ -453,7 +453,7 @@ function mustache_render( $template_name, $data = array() ) {
 	$template = file_get_contents( $template_name );
 
 	$m = new \Mustache_Engine( array(
-		'escape' => function ( $val ) { return $val; }
+		'escape' => function ( $val ) { return $val; },
 	) );
 
 	return $m->render( $template, $data );
@@ -522,7 +522,7 @@ function is_windows() {
 function replace_path_consts( $source, $path ) {
 	$replacements = array(
 		'__FILE__' => "'$path'",
-		'__DIR__'  => "'" . dirname( $path ) . "'"
+		'__DIR__'  => "'" . dirname( $path ) . "'",
 	);
 
 	$old = array_keys( $replacements );
@@ -606,20 +606,20 @@ function increment_version( $current_version, $new_version ) {
 	switch ( $new_version ) {
 		case 'same':
 			// do nothing
-		break;
+			break;
 
 		case 'patch':
 			$current_version[0][2]++;
 
 			$current_version = array( $current_version[0] ); // drop possible pre-release info
-		break;
+			break;
 
 		case 'minor':
 			$current_version[0][1]++;
 			$current_version[0][2] = 0;
 
 			$current_version = array( $current_version[0] ); // drop possible pre-release info
-		break;
+			break;
 
 		case 'major':
 			$current_version[0][0]++;
@@ -627,11 +627,11 @@ function increment_version( $current_version, $new_version ) {
 			$current_version[0][2] = 0;
 
 			$current_version = array( $current_version[0] ); // drop possible pre-release info
-		break;
+			break;
 
 		default: // not a keyword
 			$current_version = array( array( $new_version ) );
-		break;
+			break;
 	}
 
 	// reconstruct version string
@@ -713,6 +713,19 @@ function get_home_dir() {
 }
 
 /**
+ * Appends a trailing slash.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $string What to add the trailing slash to.
+ * @return string String with trailing slash added.
+ */
+function trailingslashit( $string ) {
+	return rtrim( $string, '/\\' ) . '/';
+}
+
+/**
  * Get the system's temp directory. Warns user if it isn't writable.
  *
  * @access public
@@ -723,17 +736,15 @@ function get_home_dir() {
 function get_temp_dir() {
 	static $temp = '';
 
-	$trailingslashit = function( $path ) {
-		return rtrim( $path ) . '/';
-	};
+	if ( $temp ) {
+		return $temp;
+	}
 
-	if ( $temp )
-		return $trailingslashit( $temp );
-
-	if ( function_exists( 'sys_get_temp_dir' ) ) {
-		$temp = sys_get_temp_dir();
-	} else if ( ini_get( 'upload_tmp_dir' ) ) {
-		$temp = ini_get( 'upload_tmp_dir' );
+	// `sys_get_temp_dir()` introduced PHP 5.2.1.
+	if ( $try = sys_get_temp_dir() ) {
+		$temp = trailingslashit( $try );
+	} elseif ( $try = ini_get( 'upload_tmp_dir' ) ) {
+		$temp = trailingslashit( $try );
 	} else {
 		$temp = '/tmp/';
 	}
@@ -742,7 +753,7 @@ function get_temp_dir() {
 		\WP_CLI::warning( "Temp directory isn't writable: {$temp}" );
 	}
 
-	return $trailingslashit( $temp );
+	return $temp;
 }
 
 /**
@@ -759,18 +770,24 @@ function get_temp_dir() {
  * @return mixed
  */
 function parse_ssh_url( $url, $component = -1 ) {
-	preg_match( '#^([^:/~]+)(:([\d]*))?((/|~)(.+))?$#', $url, $matches );
+	preg_match( '#^((docker|docker\-compose|ssh):)?(([^@:]+)@)?([^:/~]+)(:([\d]*))?((/|~)(.+))?$#', $url, $matches );
 	$bits = array();
 	foreach( array(
-		1 => 'host',
-		3 => 'port',
-		4 => 'path',
+		2 => 'scheme',
+		4 => 'user',
+		5 => 'host',
+		7 => 'port',
+		8 => 'path',
 	) as $i => $key ) {
 		if ( ! empty( $matches[ $i ] ) ) {
 			$bits[ $key ] = $matches[ $i ];
 		}
 	}
 	switch ( $component ) {
+		case PHP_URL_SCHEME:
+			return isset( $bits['scheme'] ) ? $bits['scheme'] : null;
+		case PHP_URL_USER:
+			return isset( $bits['user'] ) ? $bits['user'] : null;
 		case PHP_URL_HOST:
 			return isset( $bits['host'] ) ? $bits['host'] : null;
 		case PHP_URL_PATH:

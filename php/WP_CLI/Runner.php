@@ -99,7 +99,7 @@ class Runner {
 	public function get_project_config_path() {
 		$config_files = array(
 			'wp-cli.local.yml',
-			'wp-cli.yml'
+			'wp-cli.yml',
 		);
 
 		// Stop looking upward when we find we have emerged from a subdirectory
@@ -127,7 +127,7 @@ class Runner {
 	 */
 	public function get_packages_dir_path() {
 		if ( getenv( 'WP_CLI_PACKAGES_DIR' ) ) {
-			$packages_dir = rtrim( getenv( 'WP_CLI_PACKAGES_DIR' ), '/' ) . '/';
+			$packages_dir = Utils\trailingslashit( getenv( 'WP_CLI_PACKAGES_DIR' ) );
 		} else {
 			$packages_dir = Utils\get_home_dir() . '/.wp-cli/packages/';
 		}
@@ -203,7 +203,7 @@ class Runner {
 	 * @param string $path
 	 */
 	private static function set_wp_root( $path ) {
-		define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+		define( 'ABSPATH', Utils\trailingslashit( $path ) );
 		WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH, 'bootstrap' );
 
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $path );
@@ -331,30 +331,24 @@ class Runner {
 	}
 
 	/**
-	 * Perform a command against a remote server over SSH
+	 * Perform a command against a remote server over SSH (or a container using
+	 * scheme of "docker" or "docker-compose").
+	 *
+	 * @param string $connection_string Passed connection string.
+	 * @return void
 	 */
-	private function run_ssh_command( $ssh ) {
+	private function run_ssh_command( $connection_string ) {
 
 		WP_CLI::do_hook( 'before_ssh' );
 
-		// host OR host/path/to/wordpress OR host:port/path/to/wordpress
-		$bits = Utils\parse_ssh_url( $ssh );
-		$host = isset( $bits['host'] ) ? $bits['host'] : null;
-		$port = isset( $bits['port'] ) ? $bits['port'] : null;
-		$path = isset( $bits['path'] ) ? $bits['path'] : null;
-
-		WP_CLI::debug( 'SSH host: ' . $host, 'bootstrap' );
-		WP_CLI::debug( 'SSH port: ' . $port, 'bootstrap' );
-		WP_CLI::debug( 'SSH path: ' . $path, 'bootstrap' );
-
-		$is_tty = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
+		$bits = Utils\parse_ssh_url( $connection_string );
 
 		$pre_cmd = getenv( 'WP_CLI_SSH_PRE_CMD' );
 		if ( $pre_cmd ) {
 			$pre_cmd = rtrim( $pre_cmd, ';' ) . '; ';
 		}
-		if ( $path ) {
-			$pre_cmd .= "cd {$path}; ";
+		if ( ! empty( $bits['path'] ) ) {
+			$pre_cmd .= 'cd ' . escapeshellarg( $bits['path'] ) . '; ';
 		}
 
 		$env_vars = '';
@@ -386,23 +380,8 @@ class Runner {
 			}
 		}
 
-		$unescaped_command = sprintf(
-			'ssh -q %s%s %s %s',
-			$port ? '-p ' . (int) $port . ' ' : '',
-			$host,
-			$is_tty ? '-t' : '-T',
-			$pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) )
-		);
-
-		WP_CLI::debug( 'Running SSH command: ' . $unescaped_command, 'bootstrap' );
-
-		$escaped_command = sprintf(
-			'ssh -q %s%s %s %s',
-			$port ? '-p ' . (int) $port . ' ' : '',
-			escapeshellarg( $host ),
-			$is_tty ? '-t' : '-T',
-			escapeshellarg( $pre_cmd . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) ) )
-		);
+		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) );
+		$escaped_command = $this->generate_ssh_command( $bits, $wp_command );
 
 		passthru( $escaped_command, $exit_code );
 		if ( 255 === $exit_code ) {
@@ -410,6 +389,73 @@ class Runner {
 		} else {
 			exit( $exit_code );
 		}
+	}
+
+	/**
+	 * Generate a shell command from the parsed connection string.
+	 *
+	 * @param array  $bits       Parsed connection string.
+	 * @param string $wp_command WP-CLI command to run.
+	 * @return string
+	 */
+	private function generate_ssh_command( $bits, $wp_command ) {
+		$escaped_command = '';
+
+		// Set default values.
+		foreach ( array( 'scheme', 'user', 'host', 'port', 'path' ) as $bit ) {
+			if ( ! isset( $bits[ $bit ] ) ) {
+				$bits[ $bit ] = null;
+			}
+
+			WP_CLI::debug( 'SSH ' . $bit . ': ' . $bits[ $bit ], 'bootstrap' );
+		}
+
+		$is_tty = function_exists( 'posix_isatty' ) && posix_isatty( STDOUT );
+
+		if ( 'docker' === $bits['scheme'] ) {
+			$command = 'docker exec %s%s%s sh -c %s';
+
+			$escaped_command = sprintf(
+				$command,
+				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
+				$is_tty ? '-t ' : '',
+				escapeshellarg( $bits['host'] ),
+				escapeshellarg( $wp_command )
+			);
+		}
+
+		if ( 'docker-compose' === $bits['scheme'] ) {
+			$command = 'docker-compose exec %s%s%s sh -c %s';
+
+			$escaped_command = sprintf(
+				$command,
+				$bits['user'] ? '--user ' . escapeshellarg( $bits['user'] ) . ' ' : '',
+				$is_tty ? '' : '-T ',
+				escapeshellarg( $bits['host'] ),
+				escapeshellarg( $wp_command )
+			);
+		}
+
+		// Default scheme is SSH.
+		if ( 'ssh' === $bits['scheme'] || null === $bits['scheme'] ) {
+			$command = 'ssh -q %s%s %s %s';
+
+			if ( $bits['user'] ) {
+				$bits['host'] = $bits['user'] . '@' . $bits['host'];
+			}
+
+			$escaped_command = sprintf(
+				$command,
+				$bits['port'] ? '-p ' . (int) $bits['port'] . ' ' : '',
+				escapeshellarg( $bits['host'] ),
+				$is_tty ? '-t' : '-T',
+				escapeshellarg( $wp_command )
+			);
+		}
+
+		WP_CLI::debug( 'Running SSH command: ' . $escaped_command, 'bootstrap' );
+
+		return $escaped_command;
 	}
 
 	/**
@@ -464,7 +510,7 @@ class Runner {
 	private static function back_compat_conversions( $args, $assoc_args ) {
 		$top_level_aliases = array(
 			'sql' => 'db',
-			'blog' => 'site'
+			'blog' => 'site',
 		);
 		if ( count( $args ) > 0 ) {
 			foreach ( $top_level_aliases as $old => $new ) {
