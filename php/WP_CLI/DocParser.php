@@ -19,6 +19,8 @@ class DocParser {
 	 * @param string $docComment
 	 */
 	public function __construct( $docComment ) {
+		/* Make sure we have a known line ending in document */
+		$docComment = str_replace( "\r\n", "\n", $docComment );
 		$this->docComment = self::remove_decorations( $docComment );
 	}
 
@@ -79,7 +81,7 @@ class DocParser {
 	 * @return string
 	 */
 	public function get_tag( $name ) {
-		if ( preg_match( '|^@' . $name . '\s+([a-z-_]+)|m', $this->docComment, $matches ) )
+		if ( preg_match( '|^@' . $name . '\s+([a-z-_0-9]+)|m', $this->docComment, $matches ) )
 			return $matches[1];
 
 		return '';

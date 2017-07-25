@@ -64,6 +64,12 @@ Feature: `wp cli` tasks
       0.0.0
       """
 
+    When I run `{PHAR_PATH} cli update`
+    Then STDOUT should be:
+      """
+      Success: WP-CLI is at the latest version.
+      """
+
   @github-api
   Scenario: Patch update from 0.14.0 to 0.14.1
     Given an empty directory
@@ -137,7 +143,7 @@ Feature: `wp cli` tasks
       y
       """
 
-    When I run `{PHAR_PATH} cli check-update --minor --field=version`
+    When I run `{PHAR_PATH} cli check-update --field=version | head -1`
     Then STDOUT should not be empty
     And save STDOUT as {UPDATE_VERSION}
 

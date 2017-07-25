@@ -1,7 +1,12 @@
 Feature: Review CLI information
 
+  Background:
+    When I run `wp package path`
+    Then save STDOUT as {PACKAGE_PATH}
+
   Scenario: Get the path to the packages directory
     Given an empty directory
+	And a non-existent {PACKAGE_PATH} directory
 
     When I run `wp cli info --format=json`
     Then STDOUT should be JSON containing:
@@ -22,4 +27,23 @@ Feature: Review CLI information
     Then STDOUT should contain:
       """
       WP-CLI packages dir:
+      """
+
+  Scenario: Packages directory path should be slashed correctly
+    When I run `WP_CLI_PACKAGES_DIR=/foo wp package path`
+    Then STDOUT should be:
+      """
+      /foo/
+      """
+
+    When I run `WP_CLI_PACKAGES_DIR=/foo/ wp package path`
+    Then STDOUT should be:
+      """
+      /foo/
+      """
+
+    When I run `WP_CLI_PACKAGES_DIR=/foo\\ wp package path`
+    Then STDOUT should be:
+      """
+      /foo/
       """

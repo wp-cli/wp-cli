@@ -6,11 +6,27 @@ namespace WP_CLI;
  * Run a system process, and learn what happened.
  */
 class Process {
+	/**
+	 * @var string The full command to execute by the system.
+	 */
+	private $command;
+
+	/**
+	 * @var string|null The path of the working directory for the process or NULL if not specified (defaults to current working directory).
+	 */
+	private $cwd;
+
+	/**
+	 * @var array Environment variables to set when running the command.
+	 */
+	private $env;
 
 	/**
 	 * @param string $command Command to execute.
 	 * @param string $cwd Directory to execute the command in.
 	 * @param array $env Environment variables to set when running the command.
+	 *
+	 * @return Process
 	 */
 	public static function create( $command, $cwd = null, $env = array() ) {
 		$proc = new self;
@@ -21,8 +37,6 @@ class Process {
 
 		return $proc;
 	}
-
-	private $command, $cwd, $env;
 
 	private function __construct() {}
 
@@ -54,7 +68,7 @@ class Process {
 			'return_code' => proc_close( $proc ),
 			'command' => $this->command,
 			'cwd' => $cwd,
-			'env' => $this->env
+			'env' => $this->env,
 		) );
 	}
 
@@ -66,6 +80,7 @@ class Process {
 	public function run_check() {
 		$r = $this->run();
 
+		// $r->STDERR is incorrect, but kept incorrect for backwards-compat
 		if ( $r->return_code || !empty( $r->STDERR ) ) {
 			throw new \RuntimeException( $r );
 		}

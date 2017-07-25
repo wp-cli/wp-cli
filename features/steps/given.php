@@ -10,6 +10,22 @@ $steps->Given( '/^an empty directory$/',
 	}
 );
 
+$steps->Given( '/^an? (empty|non-existent) ([^\s]+) directory$/',
+	function ( $world, $empty_or_nonexistent, $dir ) {
+		$dir = $world->replace_variables( $dir );
+		if ( ! WP_CLI\Utils\is_path_absolute( $dir ) ) {
+			$dir = $world->variables['RUN_DIR'] . "/$dir";
+		}
+		if ( 0 !== strpos( $dir, sys_get_temp_dir() ) ) {
+			throw new RuntimeException( sprintf( "Attempted to delete directory '%s' that is not in the temp directory '%s'. " . __FILE__ . ':' . __LINE__, $dir, sys_get_temp_dir() ) );
+		}
+		$world->remove_dir( $dir );
+		if ( 'empty' === $empty_or_nonexistent ) {
+			mkdir( $dir, 0777, true /*recursive*/ );
+		}
+	}
+);
+
 $steps->Given( '/^an empty cache/',
 	function ( $world ) {
 		$world->variables['SUITE_CACHE_DIR'] = FeatureContext::create_cache_dir();
@@ -20,7 +36,10 @@ $steps->Given( '/^an? ([^\s]+) file:$/',
 	function ( $world, $path, PyStringNode $content ) {
 		$content = (string) $content . "\n";
 		$full_path = $world->variables['RUN_DIR'] . "/$path";
-		Process::create( \WP_CLI\utils\esc_cmd( 'mkdir -p %s', dirname( $full_path ) ) )->run_check();
+		$dir = dirname( $full_path );
+		if ( ! file_exists( $dir ) ) {
+			mkdir( $dir, 0777, true /*recursive*/ );
+		}
 		file_put_contents( $full_path, $content );
 	}
 );
@@ -59,6 +78,12 @@ $steps->Given( '/^a WP install$/',
 $steps->Given( "/^a WP install in '([^\s]+)'$/",
 	function ( $world, $subdir ) {
 		$world->install_wp( $subdir );
+	}
+);
+
+$steps->Given( '/^a WP install with Composer$/',
+	function ( $world ) {
+		$world->install_wp_with_composer();
 	}
 );
 
@@ -166,5 +191,17 @@ $steps->Given('/^a misconfigured WP_CONTENT_DIR constant directory$/',
 			"define( 'WP_CONTENT_DIR', '' );" );
 
 		file_put_contents( $wp_config_path, $wp_config_code );
+	}
+);
+
+$steps->Given( '/^a dependency on current wp-cli$/',
+	function ( $world ) {
+		$world->composer_require_current_wp_cli();
+	}
+);
+
+$steps->Given( '/^a PHP built-in web server$/',
+	function ( $world ) {
+		$world->start_php_server();
 	}
 );

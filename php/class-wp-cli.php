@@ -74,11 +74,7 @@ class WP_CLI {
 		static $cache;
 
 		if ( !$cache ) {
-			$home = getenv( 'HOME' );
-			if ( !$home ) {
-				// sometime in windows $HOME is not defined
-				$home = getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' );
-			}
+			$home = Utils\get_home_dir();
 			$dir = getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
 
 			// 6 months, 300mb
@@ -362,8 +358,8 @@ class WP_CLI {
 	 * ```
 	 * # Register a custom 'foo' command to output a supplied positional param.
 	 * #
-	 * # $ wp foo bar
-	 * # Success: bar
+	 * # $ wp foo bar --append=qux
+	 * # Success: bar qux
 	 *
 	 * /**
 	 *  * My awesome closure command
@@ -371,10 +367,13 @@ class WP_CLI {
 	 *  * <message>
 	 *  * : An awesome message to display
 	 *  *
+	 *  * --append=<message>
+	 *  * : An awesome message to append to the original message.
+	 *  *
 	 *  * @when before_wp_load
 	 *  *\/
-	 * $foo = function( $args ) {
-	 *     WP_CLI::success( $args[0] );
+	 * $foo = function( $args, $assoc_args ) {
+	 *     WP_CLI::success( $args[0] . ' ' . $assoc_args['append'] );
 	 * };
 	 * WP_CLI::add_command( 'foo', $foo );
 	 * ```
@@ -648,7 +647,7 @@ class WP_CLI {
 	 * ```
 	 * # Called in `WP_CLI\Runner::set_wp_root()`.
 	 * private static function set_wp_root( $path ) {
-	 *     define( 'ABSPATH', rtrim( $path, '/' ) . '/' );
+	 *     define( 'ABSPATH', Utils\trailingslashit( $path ) );
 	 *     WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH );
 	 *     $_SERVER['DOCUMENT_ROOT'] = realpath( $path );
 	 * }
@@ -683,8 +682,8 @@ class WP_CLI {
 	 * $status = $this->get_status( $plugin->file );
 	 * // Network-active is the highest level of activation status
 	 * if ( 'active-network' === $status ) {
-	 * 	WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
-	 * 	continue;
+	 *   WP_CLI::warning( "Plugin '{$plugin->name}' is already network active." );
+	 *   continue;
 	 * }
 	 * ```
 	 *
@@ -979,7 +978,7 @@ class WP_CLI {
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
 		} else {
-			$config_path = getenv( 'HOME' ) . '/.wp-cli/config.yml';
+			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
 		}
 		$config_path = escapeshellarg( $config_path );
 

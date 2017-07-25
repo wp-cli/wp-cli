@@ -28,7 +28,7 @@ final class IncludeFrameworkAutoloader extends AutoloaderStep {
 		if ( $custom_vendor = $this->get_custom_vendor_folder() ) {
 			array_unshift(
 				$autoloader_paths,
-				WP_CLI_ROOT . '/../../../' . $custom_vendor . '/autoload_commands.php'
+				WP_CLI_ROOT . '/../../../' . $custom_vendor . '/autoload_framework.php'
 			);
 		}
 
