@@ -257,7 +257,7 @@ Feature: Run a WP-CLI command
   Scenario Outline: Check that proc_open() and proc_close() aren't disabled for launch
     Given a WP install
 
-    When I try `WP_CLI_PHP_ARGS=-ddisable_functions=<func> wp --launch run 'option get home'`
+    When I try `WP_CLI_PHP_ARGS='-ddisable_functions=<func>' wp --launch run 'option get home'`
     Then STDERR should contain:
       """
       Error: Cannot do 'launch option': The PHP functions `proc_open()` and/or `proc_close()` are disabled
