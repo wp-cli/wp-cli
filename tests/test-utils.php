@@ -308,7 +308,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			rmdir( $temp_dir );
 
 			$this->assertTrue( 1 === count( $output ) );
-			$this->assertSame( $temp_dir . '/', $output[0] );
+			$this->assertSame( $temp_dir . '/', trim( $output[0] ) );
 
 			// Both `sys_temp_dir` and `upload_tmp_dir' unset.
 
@@ -316,7 +316,40 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			$output = array();
 			exec( $cmd, $output );
 			$this->assertTrue( 1 === count( $output ) );
-			$this->assertSame( '/tmp/', $output[0] );
+			$this->assertSame( '/tmp/', trim( $output[0] ) );
 		}
 	}
+
+	public function testRunMysqlCommandProcDisabled() {
+		$err_msg = 'Error: Cannot do \'run_mysql_command\': The PHP functions `proc_open()` and/or `proc_close()` are disabled';
+
+		$cmd = "WP_CLI_PHP_ARGS='-ddisable_functions=proc_open' bin/wp eval 'WP_CLI\\Utils\\run_mysql_command( null, array() );' --skip-wordpress 2>&1";
+		$output = array();
+		exec( $cmd, $output );
+		$this->assertTrue( 1 === count( $output ) );
+		$this->assertTrue( false !== strpos( trim( $output[0] ), $err_msg ) );
+
+		$cmd = "WP_CLI_PHP_ARGS='-ddisable_functions=proc_close' bin/wp eval 'WP_CLI\\Utils\\run_mysql_command( null, array() );' --skip-wordpress 2>&1";
+		$output = array();
+		exec( $cmd, $output );
+		$this->assertTrue( 1 === count( $output ) );
+		$this->assertTrue( false !== strpos( trim( $output[0] ), $err_msg ) );
+	}
+
+	public function testLaunchEditorForInputProcDisabled() {
+		$err_msg = 'Error: Cannot do \'launch_editor_for_input\': The PHP functions `proc_open()` and/or `proc_close()` are disabled';
+
+		$cmd = "WP_CLI_PHP_ARGS='-ddisable_functions=proc_open' bin/wp eval 'WP_CLI\\Utils\\launch_editor_for_input( null, null );' --skip-wordpress 2>&1";
+		$output = array();
+		exec( $cmd, $output );
+		$this->assertTrue( 1 === count( $output ) );
+		$this->assertTrue( false !== strpos( trim( $output[0] ), $err_msg ) );
+
+		$cmd = "WP_CLI_PHP_ARGS='-ddisable_functions=proc_close' bin/wp eval 'WP_CLI\\Utils\\launch_editor_for_input( null, null );' --skip-wordpress 2>&1";
+		$output = array();
+		exec( $cmd, $output );
+		$this->assertTrue( 1 === count( $output ) );
+		$this->assertTrue( false !== strpos( trim( $output[0] ), $err_msg ) );
+	}
+
 }

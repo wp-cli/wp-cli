@@ -341,6 +341,8 @@ function pick_fields( $item, $fields ) {
  */
 function launch_editor_for_input( $input, $filename = 'WP-CLI' ) {
 
+	check_proc_available( 'launch_editor_for_input' );
+
 	$tmpdir = get_temp_dir();
 
 	do {
@@ -415,6 +417,8 @@ function mysql_host_to_cli_args( $raw_host ) {
 }
 
 function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
+	check_proc_available( 'run_mysql_command' );
+
 	if ( !$descriptors )
 		$descriptors = array( STDIN, STDOUT, STDERR );
 
@@ -1039,4 +1043,27 @@ function force_env_on_nix_systems( $command ) {
 		}
 	}
 	return $command;
+}
+
+/**
+ * Check that `proc_open()` and `proc_close()` haven't been disabled.
+ *
+ * @param string $context Optional. If set will appear in error message. Default null.
+ * @param bool   $return  Optional. If set will return false rather than error out. Default false.
+ *
+ * @return bool
+ */
+function check_proc_available( $context = null, $return = false ) {
+	if ( ! function_exists( 'proc_open' ) || ! function_exists( 'proc_close' ) ) {
+		if ( $return ) {
+			return false;
+		}
+		$msg = 'The PHP functions `proc_open()` and/or `proc_close()` are disabled. Please check your PHP ini directive `disable_functions` or suhosin settings.';
+		if ( $context ) {
+			WP_CLI::error( sprintf( "Cannot do '%s': %s", $context, $msg ) );
+		} else {
+			WP_CLI::error( $msg );
+		}
+	}
+	return true;
 }
