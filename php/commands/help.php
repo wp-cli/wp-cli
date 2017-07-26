@@ -20,6 +20,8 @@ class Help_Command extends WP_CLI_Command {
 	 *
 	 *     # get help for `core download` subcommand
 	 *     wp help core download
+	 *
+	 * @when before_wp_load
 	 */
 	function __invoke( $args, $assoc_args ) {
 		$command = self::find_subcommand( $args );
@@ -199,4 +201,3 @@ class Help_Command extends WP_CLI_Command {
 }
 
 WP_CLI::add_command( 'help', 'Help_Command' );
-
