@@ -4,7 +4,7 @@ use \Composer\Semver\Comparator;
 use \WP_CLI\Utils;
 
 /**
- * Manage WP-CLI itself.
+ * Review current WP-CLI info, check for updates, or see defined aliases.
  *
  * ## EXAMPLES
  *
