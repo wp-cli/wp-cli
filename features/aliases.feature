@@ -377,3 +377,29 @@ Feature: Create shortcuts to specific WordPress installs
       """
       @bar core is-installed --allow-root --debug
       """
+
+  Scenario Outline: Check that proc_open() and proc_close() aren't disabled for grouped aliases
+    Given a WP install in 'foo'
+    And a WP install in 'bar'
+    And a wp-cli.yml file:
+      """
+      @foo:
+        path: foo
+      @bar:
+        path: bar
+      @foobar:
+        - @foo
+        - @bar
+      """
+
+    When I try `WP_CLI_PHP_ARGS=-ddisable_functions=<func> wp @foobar core is-installed`
+    Then STDERR should contain:
+      """
+      Error: Cannot do 'group alias': The PHP functions `proc_open()` and/or `proc_close()` are disabled
+      """
+    And the return code should be 1
+
+    Examples:
+      | func       |
+      | proc_open  |
+      | proc_close |

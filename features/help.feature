@@ -570,3 +570,17 @@ Feature: Get help about WP-CLI commands
       """
       80
       """
+
+  Scenario Outline: Check that proc_open() and proc_close() aren't disabled for help pager
+    Given an empty directory
+    When I run `WP_CLI_PHP_ARGS=-ddisable_functions=<func> wp help --debug`
+    Then STDERR should contain:
+      """
+      Warning: check_proc_available() failed in pass_through_pager().
+      """
+    And the return code should be 0
+
+    Examples:
+      | func       |
+      | proc_open  |
+      | proc_close |
