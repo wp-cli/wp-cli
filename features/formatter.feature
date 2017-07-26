@@ -115,41 +115,41 @@ Feature: Format output
     Given an empty directory
     And a file.php file:
       """
-	  <?php
-	  use cli\Colors;
-	  /**
-	   * Fake command.
-	   *
-	   * ## OPTIONS
-	   *
-	   * [--format=<format>]
-	   * : Render output in a particular format.
-	   * ---
-	   * default: table
-	   * options:
-	   *   - table
-	   * ---
+      <?php
+      use cli\Colors;
+      /**
+       * Fake command.
+       *
+       * ## OPTIONS
+       *
+       * [--format=<format>]
+       * : Render output in a particular format.
+       * ---
+       * default: table
+       * options:
+       *   - table
+       * ---
        *
        * @when before_wp_load
-	   */
-	  $fake_command = function( $args, $assoc_args ) {
-		  Colors::enable( true );
-		  $items = array(
-			  array( 'package' => Colors::colorize( '%ygaa/gaa-kabes%n' ), 'version' => 'dev-master', 'result' => Colors::colorize( "%r\xf0\x9f\x9b\x87%n" ) ),
-			  array( 'package' => Colors::colorize( '%ygaa/gaa-log%n' ), 'version' => '*', 'result' => Colors::colorize( "%g\xe2\x9c\x94%n" ) ),
-			  array( 'package' => Colors::colorize( '%ygaa/gaa-nonsense%n' ), 'version' => 'v3.0.11', 'result' => Colors::colorize( "%r\xf0\x9f\x9b\x87%n" ) ),
-			  array( 'package' => Colors::colorize( '%ygaa/gaa-100%%new%n' ), 'version' => 'v100%new', 'result' => Colors::colorize( "%g\xe2\x9c\x94%n" ) ),
-		  );
-		  $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'package', 'version', 'result' ) );
-		  $formatter->display_items( $items, array( true, false, true ) );
-	  };
-	  WP_CLI::add_command( 'fake', $fake_command );
+       */
+      $fake_command = function( $args, $assoc_args ) {
+          Colors::enable( true );
+          $items = array(
+              array( 'package' => Colors::colorize( '%ygaa/gaa-kabes%n' ), 'version' => 'dev-master', 'result' => Colors::colorize( "%r\xf0\x9f\x9b\x87%n" ) ),
+              array( 'package' => Colors::colorize( '%ygaa/gaa-log%n' ), 'version' => '*', 'result' => Colors::colorize( "%g\xe2\x9c\x94%n" ) ),
+              array( 'package' => Colors::colorize( '%ygaa/gaa-nonsense%n' ), 'version' => 'v3.0.11', 'result' => Colors::colorize( "%r\xf0\x9f\x9b\x87%n" ) ),
+              array( 'package' => Colors::colorize( '%ygaa/gaa-100%%new%n' ), 'version' => 'v100%new', 'result' => Colors::colorize( "%g\xe2\x9c\x94%n" ) ),
+          );
+          $formatter = new \WP_CLI\Formatter( $assoc_args, array( 'package', 'version', 'result' ) );
+          $formatter->display_items( $items, array( true, false, true ) );
+      };
+      WP_CLI::add_command( 'fake', $fake_command );
       """
 
     When I run `wp --require=file.php fake`
     Then STDOUT should be a table containing rows:
       | package          | version    | result |
-	  | [33mgaa/gaa-kabes[0m    | dev-master | [31m🛇[0m      |
-	  | [33mgaa/gaa-log[0m      | *          | [32m✔[0m      |
-	  | [33mgaa/gaa-nonsense[0m | v3.0.11    | [31m🛇[0m      |
-	  | [33mgaa/gaa-100%new[0m  | v100%new   | [32m✔[0m      |
+      | [33mgaa/gaa-kabes[0m    | dev-master | [31m🛇[0m      |
+      | [33mgaa/gaa-log[0m      | *          | [32m✔[0m      |
+      | [33mgaa/gaa-nonsense[0m | v3.0.11    | [31m🛇[0m      |
+      | [33mgaa/gaa-100%new[0m  | v100%new   | [32m✔[0m      |
