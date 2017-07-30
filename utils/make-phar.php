@@ -116,6 +116,7 @@ $finder
 	->in(WP_CLI_VENDOR_DIR . '/symfony/finder')
 	->in(WP_CLI_VENDOR_DIR . '/symfony/polyfill-mbstring')
 	->notName('behat-tags.php')
+	->notPath('#(?:[^/]+-command|php-cli-tools)/vendor/#') // For running locally, in case have composer installed or symlinked them.
 	->exclude('examples')
 	->exclude('features')
 	->exclude('test')
