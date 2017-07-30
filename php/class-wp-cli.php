@@ -917,6 +917,7 @@ class WP_CLI {
 	 * @return int|ProcessRun The command exit status, or a ProcessRun object for full details.
 	 */
 	public static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
+		Utils\check_proc_available( 'launch' );
 
 		$proc = Process::create( $command );
 		$results = $proc->run();
@@ -1084,6 +1085,8 @@ class WP_CLI {
 		$parse = $options['parse'];
 		$retval = null;
 		if ( $launch ) {
+			Utils\check_proc_available( 'launch option' );
+
 			if ( $return ) {
 				$descriptors = array(
 					0 => STDIN,
