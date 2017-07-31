@@ -586,7 +586,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 				),
 			) );
 
-			$this->proc( "/usr/local/bin/composer config repositories.wp-cli '{$json}'" )->run_check();
+			$this->proc( "composer config repositories.wp-cli '{$json}'" )->run_check();
 		}
 		$this->variables['COMPOSER_LOCAL_REPOSITORY'] = self::$composer_local_repository;
 	}
@@ -621,8 +621,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	public function add_custom_vendor_dir() {
-		$this->proc( '/usr/local/bin/composer config vendor-dir custom-vendor --no-interaction' )->run_check();
-		$this->proc( '/usr/local/bin/composer update --no-interaction --optimize-autoloader' )->run_check();
-		$this->proc( '/usr/local/bin/composer install --no-interaction --optimize-autoloader' )->run_check();
+		$this->proc( 'composer config vendor-dir custom-vendor --no-interaction' )->run_check();
+		$this->proc( 'composer update --no-interaction --optimize-autoloader' )->run_check();
+		$this->proc( 'composer install --no-interaction --optimize-autoloader' )->run_check();
 	}
 }
