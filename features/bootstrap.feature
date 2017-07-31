@@ -219,11 +219,6 @@ Feature: Bootstrap WP-CLI
     Given a WP install with Composer
     And a dependency on current wp-cli
     And a custom vendor directory
-    When I try `/usr/local/bin/composer install --no-interaction --no-suggest --no-progress`
-    Then STDERR should not contain:
-      """
-      [ErrorException]
-      """
     When I run `ls custom-vendor/`
     Then STDOUT should contain:
       """
