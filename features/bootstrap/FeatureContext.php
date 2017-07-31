@@ -566,7 +566,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	public function composer_add_wp_cli_local_repository() {
 		if ( ! self::$composer_local_repository ) {
-			self::$composer_local_repository = sys_get_temp_dir() . '/' . uniqid( "wp-cli-composer-local-", TRUE );
+			self::$composer_local_repository = sys_get_temp_dir() . '/' . uniqid( "wp-cli-composer-local-", true );
 			mkdir( self::$composer_local_repository );
 
 			$env = self::get_process_env_variables();
@@ -578,7 +578,15 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			self::remove_dir( $dest . '.git' );
 			self::remove_dir( $dest . 'vendor' );
 
-			$this->proc( "composer config repositories.wp-cli '{\"type\": \"path\", \"url\": \"$dest\", \"options\": {\"symlink\": false}}'" )->run_check();
+			$json = json_encode( array(
+				'type'    => 'path',
+				'url'     => $dest,
+				'options' => array(
+					'symlink' => false,
+				),
+			) );
+
+			$this->proc( "/usr/local/bin/composer config repositories.wp-cli '{$json}'" )->run_check();
 		}
 		$this->variables['COMPOSER_LOCAL_REPOSITORY'] = self::$composer_local_repository;
 	}
