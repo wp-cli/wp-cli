@@ -26,5 +26,12 @@ return array(
 		'default' => false,
 		'desc' => 'Suppress informational messages',
 	),
+
+	'build' => array(
+		'runtime' => '=<cli>',
+		'file' => '<cli>',
+		'default' => '',
+		'desc' => 'Create a minimum test build "cli", that only supports cli commands',
+	),
 );
 
