@@ -179,6 +179,27 @@ foreach ( $finder as $file ) {
 }
 
 if ( 'cli' !== BUILD ) {
+	// Include base project files, because the autoloader will load them
+	if ( WP_CLI_BASE_PATH !== WP_CLI_ROOT ) {
+		$finder = new Finder();
+		$finder
+			->files()
+			->ignoreVCS(true)
+			->name('*.php')
+			->in(WP_CLI_BASE_PATH . '/src')
+			->exclude('test')
+			->exclude('tests')
+			->exclude('Test')
+			->exclude('Tests');
+		foreach ( $finder as $file ) {
+			add_file( $phar, $file );
+		}
+		// Any PHP files in the project root
+		foreach ( glob( WP_CLI_BASE_PATH . '/*.php' ) as $file ) {
+			add_file( $phar, $file );
+		}
+	}
+
 	$finder = new Finder();
 	$finder
 		->files()
