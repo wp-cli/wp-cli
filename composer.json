@@ -36,7 +36,7 @@
 		"symfony/process": "^2.1|^3.0",
 		"symfony/translation": "^2.7|^3.0",
 		"symfony/yaml": "^2.7|^3.0",
-		"wp-cli/autoload-splitter": "^0.1",
+		"wp-cli/autoload-splitter": "^0.1.4",
 		"wp-cli/cache-command": "^1.0",
 		"wp-cli/checksum-command": "^1.0",
 		"wp-cli/config-command": "^1.0",
