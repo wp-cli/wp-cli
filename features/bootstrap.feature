@@ -230,3 +230,8 @@ Feature: Bootstrap WP-CLI
       """
       WP CLI Site with both WordPress and wp-cli as Composer dependencies
       """
+    When I run `which -a composer`
+    Then STDOUT should not contain:
+      """
+      vendor/bin/composer
+      """
