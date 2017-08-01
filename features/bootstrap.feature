@@ -222,6 +222,8 @@ Feature: Bootstrap WP-CLI
     Then STDOUT should contain:
       """
       autoload.php
+      autoload_commands.php
+      autoload_framework.php
       """
     When I run `custom-vendor/bin/wp option get blogname`
     Then STDOUT should contain:
