@@ -224,3 +224,8 @@ Feature: Bootstrap WP-CLI
       """
       autoload.php
       """
+    When I run `custom-vendor/bin/wp option get blogname`
+    Then STDOUT should contain:
+      """
+      WP CLI Site with both WordPress and wp-cli as Composer dependencies
+      """
