@@ -211,3 +211,9 @@ $steps->Given( '/^a custom vendor directory$/',
 		 $world->add_custom_vendor_dir();
 	}
 );
+
+$steps->Given( "/^a WP install with Composer and a custom vendor directory '([^\s]+)'$/",
+	function ( $world, $vendor_dir ) {
+		$world->install_wp_with_composer( $vendor_dir );
+	}
+);

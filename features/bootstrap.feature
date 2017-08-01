@@ -216,9 +216,8 @@ Feature: Bootstrap WP-CLI
     Then the HTTP status code should be 200
 
   Scenario: Composer stack with wp-cli as dependency and custom vendor directory
-    Given a WP install with Composer
+    Given a WP install with Composer and a custom vendor directory 'custom-vendor'
     And a dependency on current wp-cli
-    And a custom vendor directory
     When I run `ls custom-vendor/`
     Then STDOUT should contain:
       """

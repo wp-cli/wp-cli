@@ -540,7 +540,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->proc( 'wp core install', $install_args, $subdir )->run_check();
 	}
 
-	public function install_wp_with_composer() {
+	public function install_wp_with_composer( $vendor_dir = 'vendor' ) {
 		$this->create_run_dir();
 		$this->create_db();
 
@@ -548,9 +548,10 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		file_put_contents( $yml_path, 'path: wordpress' );
 
 		$this->proc( 'composer init --name="wp-cli/composer-test" --type="project" --no-interaction' )->run_check();
+		$this->proc( "composer config vendor-dir {$vendor_dir} --no-interaction" )->run_check();
 		$this->proc( 'composer require johnpbloch/wordpress --optimize-autoloader --no-interaction' )->run_check();
 
-		$config_extra_php = "require_once dirname(__DIR__) . '/vendor/autoload.php';";
+		$config_extra_php = "require_once dirname(__DIR__) . '/{$vendor_dir}/autoload.php';";
 		$this->create_config( 'wordpress', $config_extra_php );
 
 		$install_args = array(
@@ -618,11 +619,5 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$this->variables['RUN_DIR'] . '/vendor/wp-cli/server-command/router.php'
 		);
 		$this->background_proc( $cmd );
-	}
-
-	public function add_custom_vendor_dir() {
-		$this->proc( 'composer config vendor-dir custom-vendor --no-interaction' )->run_check();
-		$this->proc( 'composer update --no-interaction --optimize-autoloader' )->run_check();
-		$this->proc( 'composer install --no-interaction --optimize-autoloader' )->run_check();
 	}
 }
