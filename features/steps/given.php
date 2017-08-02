@@ -1,8 +1,8 @@
 <?php
 
-use Behat\Gherkin\Node\PyStringNode,
-    Behat\Gherkin\Node\TableNode,
-    WP_CLI\Process;
+use Behat\Gherkin\Node\PyStringNode;
+use Behat\Gherkin\Node\TableNode;
+use WP_CLI\Process;
 
 $steps->Given( '/^an empty directory$/',
 	function ( $world ) {
@@ -203,5 +203,17 @@ $steps->Given( '/^a dependency on current wp-cli$/',
 $steps->Given( '/^a PHP built-in web server$/',
 	function ( $world ) {
 		$world->start_php_server();
+	}
+);
+
+$steps->Given( '/^a custom vendor directory$/',
+	function ( $world ) {
+		 $world->add_custom_vendor_dir();
+	}
+);
+
+$steps->Given( "/^a WP install with Composer and a custom vendor directory '([^\s]+)'$/",
+	function ( $world, $vendor_dir ) {
+		$world->install_wp_with_composer( $vendor_dir );
 	}
 );

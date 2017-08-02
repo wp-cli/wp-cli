@@ -214,3 +214,19 @@ Feature: Bootstrap WP-CLI
     And a dependency on current wp-cli
     And a PHP built-in web server
     Then the HTTP status code should be 200
+
+  Scenario: Composer stack with wp-cli as dependency and custom vendor directory
+    Given a WP install with Composer and a custom vendor directory 'custom-vendor'
+    And a dependency on current wp-cli
+    When I run `ls custom-vendor/`
+    Then STDOUT should contain:
+      """
+      autoload.php
+      autoload_commands.php
+      autoload_framework.php
+      """
+    When I run `custom-vendor/bin/wp option get blogname`
+    Then STDOUT should contain:
+      """
+      WP CLI Site with both WordPress and wp-cli as Composer dependencies
+      """

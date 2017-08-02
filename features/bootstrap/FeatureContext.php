@@ -1,12 +1,10 @@
 <?php
 
-use Behat\Behat\Context\ClosuredContextInterface,
-    Behat\Behat\Context\TranslatedContextInterface,
-    Behat\Behat\Context\BehatContext,
-    Behat\Behat\Event\SuiteEvent;
-
-use \WP_CLI\Process;
-use \WP_CLI\Utils;
+use Behat\Behat\Context\BehatContext;
+use Behat\Behat\Context\ClosuredContextInterface;
+use Behat\Behat\Event\SuiteEvent;
+use WP_CLI\Process;
+use WP_CLI\Utils;
 
 // Inside a community package
 if ( file_exists( __DIR__ . '/utils.php' ) ) {
@@ -542,7 +540,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->proc( 'wp core install', $install_args, $subdir )->run_check();
 	}
 
-	public function install_wp_with_composer() {
+	public function install_wp_with_composer( $vendor_dir = 'vendor' ) {
 		$this->create_run_dir();
 		$this->create_db();
 
@@ -550,9 +548,10 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		file_put_contents( $yml_path, 'path: wordpress' );
 
 		$this->proc( 'composer init --name="wp-cli/composer-test" --type="project" --no-interaction' )->run_check();
+		$this->proc( "composer config vendor-dir {$vendor_dir} --no-interaction" )->run_check();
 		$this->proc( 'composer require johnpbloch/wordpress --optimize-autoloader --no-interaction' )->run_check();
 
-		$config_extra_php = "require_once dirname(__DIR__) . '/vendor/autoload.php';";
+		$config_extra_php = "require_once dirname(__DIR__) . '/{$vendor_dir}/autoload.php';";
 		$this->create_config( 'wordpress', $config_extra_php );
 
 		$install_args = array(
@@ -568,7 +567,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	public function composer_add_wp_cli_local_repository() {
 		if ( ! self::$composer_local_repository ) {
-			self::$composer_local_repository = sys_get_temp_dir() . '/' . uniqid( "wp-cli-composer-local-", TRUE );
+			self::$composer_local_repository = sys_get_temp_dir() . '/' . uniqid( "wp-cli-composer-local-", true );
 			mkdir( self::$composer_local_repository );
 
 			$env = self::get_process_env_variables();
@@ -580,7 +579,15 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			self::remove_dir( $dest . '.git' );
 			self::remove_dir( $dest . 'vendor' );
 
-			$this->proc( "composer config repositories.wp-cli '{\"type\": \"path\", \"url\": \"$dest\", \"options\": {\"symlink\": false}}'" )->run_check();
+			$json = json_encode( array(
+				'type'    => 'path',
+				'url'     => $dest,
+				'options' => array(
+					'symlink' => false,
+				),
+			) );
+
+			$this->proc( "composer config repositories.wp-cli '{$json}'" )->run_check();
 		}
 		$this->variables['COMPOSER_LOCAL_REPOSITORY'] = self::$composer_local_repository;
 	}
@@ -613,5 +620,4 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		);
 		$this->background_proc( $cmd );
 	}
-
 }
