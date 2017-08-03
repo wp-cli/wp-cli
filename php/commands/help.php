@@ -22,7 +22,7 @@ class Help_Command extends WP_CLI_Command {
 	 *     wp help core download
 	 */
 	function __invoke( $args, $assoc_args ) {
-		$command = self::find_subcommand( $args );
+		$command = self::find_command_to_help( $args );
 
 		if ( $command ) {
 
@@ -37,15 +37,9 @@ class Help_Command extends WP_CLI_Command {
 			self::show_help( $command );
 			exit;
 		}
-
-		// WordPress is already loaded, so there's no chance we'll find the command
-		if ( function_exists( 'add_filter' ) ) {
-			$command_string = implode( ' ', $args );
-			\WP_CLI::error( sprintf( "'%s' is not a registered wp command.", $command_string ) );
-		}
 	}
 
-	private static function find_subcommand( $args ) {
+	private static function find_command_to_help( $args ) {
 		$command = \WP_CLI::get_root_command();
 
 		while ( !empty( $args ) && $command && $command->can_have_subcommands() ) {
