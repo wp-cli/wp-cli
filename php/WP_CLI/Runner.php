@@ -60,8 +60,7 @@ class Runner {
 
 		foreach ( $this->_early_invoke[ $when ] as $path ) {
 			if ( $this->cmd_starts_with( $path ) ) {
-				$this->_run_command();
-				exit;
+				$this->_run_command_and_exit();
 			}
 		}
 	}
@@ -326,9 +325,9 @@ class Runner {
 		}
 	}
 
-	private function _run_command( $exiting = true ) {
+	private function _run_command_and_exit() {
 		$this->run_command( $this->arguments, $this->assoc_args );
-		if ( $exiting && $this->cmd_starts_with( array( 'help' ) ) ) {
+		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
 			// Help couldn't find the command so exit with suggestion.
 			$possible_suggestion = $this->find_command_to_run( array_slice( $this->arguments, 1 ) );
 			if ( is_string( $possible_suggestion ) ) {
@@ -337,6 +336,7 @@ class Runner {
 			// Should never happen.
 			WP_CLI::error( 'Congratulations! You are the first of 10,000 lucky winners to find a bug in WP-CLI. Please report an issue describing how you got here.' );
 		}
+		exit;
 	}
 
 	/**
@@ -890,8 +890,7 @@ class Runner {
 		// Protect 'cli info' from most of the runtime,
 		// except when the command will be run over SSH
 		if ( 'cli' === $this->arguments[0] && ! empty( $this->arguments[1] ) && 'info' === $this->arguments[1] && ! $this->config['ssh'] ) {
-			$this->_run_command();
-			exit;
+			$this->_run_command_and_exit();
 		}
 
 		if ( isset( $this->config['http'] ) && ! class_exists( '\WP_REST_CLI\Runner' ) ) {
@@ -925,8 +924,8 @@ class Runner {
 				|| ( ! empty( $this->arguments[1] ) && ! empty( $this->arguments[2] ) && 'core' === $this->arguments[1] && in_array( $this->arguments[2], array( 'install', 'multisite-install', 'verify-checksums', 'version' ) ) )
 				|| ( ! empty( $this->arguments[1] ) && 'config' === $this->arguments[1] )
 			) ) {
-			// $this->auto_check_update(); // Disable for now? If it hits the cache threshold and determines to update it exits with no recourse for the user.
-			$this->_run_command( false /*exiting*/ );
+			$this->auto_check_update();
+			$this->run_command( $this->arguments, $this->assoc_args );
 			// Help didn't exit so failed to find the command at this stage.
 		}
 
@@ -940,8 +939,7 @@ class Runner {
 		$this->check_wp_version();
 
 		if ( $this->cmd_starts_with( array( 'config', 'create' ) ) ) {
-			$this->_run_command();
-			exit;
+			$this->_run_command_and_exit();
 		}
 
 		if ( !Utils\locate_wp_config() ) {
@@ -953,8 +951,7 @@ class Runner {
 		if ( ( $this->cmd_starts_with( array( 'db' ) ) || $this->cmd_starts_with( array( 'help', 'db' ) ) )
 			&& ! $this->cmd_starts_with( array( 'db', 'tables' ) ) ) {
 			eval( $this->get_wp_config_code() );
-			$this->_run_command();
-			exit;
+			$this->_run_command_and_exit();
 		}
 
 		if ( $this->cmd_starts_with( array( 'core', 'is-installed' ) )
@@ -997,7 +994,7 @@ class Runner {
 
 		$this->load_wordpress();
 
-		$this->_run_command();
+		$this->_run_command_and_exit();
 
 	}
 
