@@ -542,17 +542,18 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->proc( 'wp core install', $install_args, $subdir )->run_check();
 	}
 
-	public function install_wp_with_composer() {
+	public function install_wp_with_composer( $vendor_directory = 'vendor' ) {
 		$this->create_run_dir();
 		$this->create_db();
 
 		$yml_path = $this->variables['RUN_DIR'] . "/wp-cli.yml";
 		file_put_contents( $yml_path, 'path: wordpress' );
 
-		$this->proc( 'composer init --name="wp-cli/composer-test" --type="project" --no-interaction' )->run_check();
-		$this->proc( 'composer require johnpbloch/wordpress --optimize-autoloader --no-interaction' )->run_check();
+		$this->composer_command( 'init --name="wp-cli/composer-test" --type="project" --no-interaction' );
+		$this->composer_command( 'config vendor-dir ' . $vendor_directory );
+		$this->composer_command( 'require johnpbloch/wordpress --optimize-autoloader --no-interaction' );
 
-		$config_extra_php = "require_once dirname(__DIR__) . '/vendor/autoload.php';";
+		$config_extra_php = "require_once dirname(__DIR__) . '/" . $vendor_directory . "/autoload.php';";
 		$this->create_config( 'wordpress', $config_extra_php );
 
 		$install_args = array(
@@ -574,20 +575,18 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$env = self::get_process_env_variables();
 			$src = isset( $env['TRAVIS_BUILD_DIR'] ) ? $env['TRAVIS_BUILD_DIR'] : realpath( __DIR__ . '/../../' );
 
-			$dest = self::$composer_local_repository . '/';
-
-			self::copy_dir( $src, $dest );
-			self::remove_dir( $dest . '.git' );
-			self::remove_dir( $dest . 'vendor' );
-
-			$this->proc( "composer config repositories.wp-cli '{\"type\": \"path\", \"url\": \"$dest\", \"options\": {\"symlink\": false}}'" )->run_check();
+			self::copy_dir( $src, self::$composer_local_repository . '/' );
+			self::remove_dir( self::$composer_local_repository . '/.git' );
+			self::remove_dir( self::$composer_local_repository . '/vendor' );
 		}
+		$dest = self::$composer_local_repository . '/';
+		$this->composer_command( "config repositories.wp-cli '{\"type\": \"path\", \"url\": \"$dest\", \"options\": {\"symlink\": false}}'" );
 		$this->variables['COMPOSER_LOCAL_REPOSITORY'] = self::$composer_local_repository;
 	}
 
 	public function composer_require_current_wp_cli() {
 		$this->composer_add_wp_cli_local_repository();
-		$this->proc( 'composer require wp-cli/wp-cli:dev-master --optimize-autoloader --no-interaction' )->run_check();
+		$this->composer_command( 'require wp-cli/wp-cli:dev-master --optimize-autoloader --no-interaction' );
 	}
 
 	public function get_php_binary() {
@@ -612,6 +611,13 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$this->variables['RUN_DIR'] . '/vendor/wp-cli/server-command/router.php'
 		);
 		$this->background_proc( $cmd );
+	}
+
+	private function composer_command($cmd) {
+		if ( !isset( $this->variables['COMPOSER_PATH'] ) ) {
+			$this->variables['COMPOSER_PATH'] = exec('which composer');
+		}
+		$this->proc( $this->variables['COMPOSER_PATH'] . ' ' . $cmd )->run_check();
 	}
 
 }

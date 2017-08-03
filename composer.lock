@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "23211f16642455f042620a340174a14d",
+    "content-hash": "af81682689ad61c9aa1b67539da5823c",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1319,16 +1319,16 @@
         },
         {
             "name": "wp-cli/autoload-splitter",
-            "version": "v0.1.4",
+            "version": "v0.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/autoload-splitter.git",
-                "reference": "ad9e4c67b64002b7a60368998ea536b861eb2b53"
+                "reference": "fb4302da26390811d2631c62b42b75976d224bb8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/autoload-splitter/zipball/ad9e4c67b64002b7a60368998ea536b861eb2b53",
-                "reference": "ad9e4c67b64002b7a60368998ea536b861eb2b53",
+                "url": "https://api.github.com/repos/wp-cli/autoload-splitter/zipball/fb4302da26390811d2631c62b42b75976d224bb8",
+                "reference": "fb4302da26390811d2631c62b42b75976d224bb8",
                 "shasum": ""
             },
             "require": {
@@ -1356,7 +1356,7 @@
             ],
             "description": "Composer plugin for splitting a generated autoloader into two distinct parts.",
             "homepage": "https://wp-cli.org",
-            "time": "2017-07-24T13:19:52+00:00"
+            "time": "2017-08-03T08:40:17+00:00"
         },
         {
             "name": "wp-cli/cache-command",
