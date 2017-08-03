@@ -4,8 +4,7 @@ Feature: Get help about WP-CLI commands
     Given an empty directory
 
     When I run `wp help`
-    Then STDOUT should not be empty
-    And STDOUT should contain:
+    Then STDOUT should contain:
       """
         Run 'wp help <command>' to get more information on a specific command.
 
@@ -13,15 +12,24 @@ Feature: Get help about WP-CLI commands
     And STDERR should be empty
 
     When I run `wp help core`
-    Then STDOUT should not be empty
+    Then STDOUT should contain:
+      """
+        wp core
+      """
     And STDERR should be empty
 
     When I run `wp help core download`
-    Then STDOUT should not be empty
+    Then STDOUT should contain:
+      """
+        wp core download
+      """
     And STDERR should be empty
 
     When I run `wp help help`
-    Then STDOUT should not be empty
+    Then STDOUT should contain:
+      """
+        wp help
+      """
     And STDERR should be empty
 
     When I run `wp help help`
@@ -62,15 +70,149 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: 'non-existent-command' is not a registered wp command.
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
       """
+    And STDOUT should be empty
+
+    When I try `wp help non-existent-command --path=/nowhere`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
+      """
+    And STDOUT should be empty
 
     When I try `wp help non-existent-command non-existent-subcommand`
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: 'non-existent-command non-existent-subcommand' is not a registered wp command.
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
       """
+    And STDOUT should be empty
+
+    When I try `wp help non-existent-command non-existent-subcommand --path=/nowhere`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
+      """
+    And STDOUT should be empty
+
+  Scenario: Help for specially treated commands with nonexistent subcommands
+    Given a WP install
+
+    When I try `wp help config non-existent-subcommand`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'config'. See 'wp help config'.
+      """
+    And STDOUT should be empty
+
+    When I try `wp help config non-existent-subcommand --path=/nowhere`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'config'. See 'wp help config'.
+      """
+    And STDOUT should be empty
+
+    When I try `wp help core non-existent-subcommand`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'core'. See 'wp help core'.
+      """
+    And STDOUT should be empty
+
+    When I try `wp help core non-existent-subcommand --path=/nowhere`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'core'. See 'wp help core'.
+      """
+    And STDOUT should be empty
+
+    When I try `wp help db non-existent-subcommand`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'db'. See 'wp help db'.
+      """
+    And STDOUT should be empty
+
+    When I try `wp help db non-existent-subcommand --path=/nowhere`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'db'. See 'wp help db'.
+      """
+    And STDOUT should be empty
+
+  Scenario: Suggestions for command typos in help
+    When I try `wp help confi`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'confi' is not a registered wp command. See 'wp help'.
+      Did you mean 'config'?
+      """
+    And STDOUT should be empty
+
+    When I try `wp help cor`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'cor' is not a registered wp command. See 'wp help'.
+      Did you mean 'core'?
+      """
+    And STDOUT should be empty
+
+    When I try `wp help d`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'd' is not a registered wp command. See 'wp help'.
+      Did you mean 'db'?
+      """
+    And STDOUT should be empty
+
+    When I try `wp help packag`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'packag' is not a registered wp command. See 'wp help'.
+      Did you mean 'package'?
+      """
+    And STDOUT should be empty
+
+  Scenario: Suggestions for subcommand typos in help of specially treated commands
+    When I try `wp help config creat`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'creat' is not a registered subcommand of 'config'. See 'wp help config'.
+      Did you mean 'create'?
+      """
+    And STDOUT should be empty
+
+    When I try `wp help core versio`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'versio' is not a registered subcommand of 'core'. See 'wp help core'.
+      Did you mean 'version'?
+      """
+    And STDOUT should be empty
+
+    When I try `wp help db chec`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: 'chec' is not a registered subcommand of 'db'. See 'wp help db'.
+      Did you mean 'check'?
+      """
+    And STDOUT should be empty
 
   Scenario: Help for third-party commands
     Given a WP install

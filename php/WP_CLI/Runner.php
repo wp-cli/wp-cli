@@ -326,8 +326,17 @@ class Runner {
 		}
 	}
 
-	private function _run_command() {
+	private function _run_command( $exiting = true ) {
 		$this->run_command( $this->arguments, $this->assoc_args );
+		if ( $exiting && $this->cmd_starts_with( array( 'help' ) ) ) {
+			// Help couldn't find the command so exit with suggestion.
+			$possible_suggestion = $this->find_command_to_run( array_slice( $this->arguments, 1 ) );
+			if ( is_string( $possible_suggestion ) ) {
+				WP_CLI::error( $possible_suggestion );
+			}
+			// Should never happen.
+			WP_CLI::error( 'Congratulations! You are the first of 10,000 lucky winners to find a bug in WP-CLI. Please report an issue describing how you got here.' );
+		}
 	}
 
 	/**
@@ -694,6 +703,11 @@ class Runner {
 
 	private function check_wp_version() {
 		if ( !$this->wp_exists() ) {
+			// If the command doesn't exist use as error.
+			$possible_suggestion = $this->find_command_to_run( $this->cmd_starts_with( array( 'help' ) ) ? array_slice( $this->arguments, 1 ) : $this->arguments );
+			if ( is_string( $possible_suggestion ) ) {
+				WP_CLI::error( $possible_suggestion );
+			}
 			WP_CLI::error(
 				"This does not seem to be a WordPress install.\n" .
 				"Pass --path=`path/to/wordpress` or run `wp core download`." );
@@ -911,8 +925,9 @@ class Runner {
 				|| ( ! empty( $this->arguments[1] ) && ! empty( $this->arguments[2] ) && 'core' === $this->arguments[1] && in_array( $this->arguments[2], array( 'install', 'multisite-install', 'verify-checksums', 'version' ) ) )
 				|| ( ! empty( $this->arguments[1] ) && 'config' === $this->arguments[1] )
 			) ) {
-			$this->auto_check_update();
-			$this->_run_command();
+			// $this->auto_check_update(); // Disable for now? If it hits the cache threshold and determines to update it exits with no recourse for the user.
+			$this->_run_command( false /*exiting*/ );
+			// Help didn't exit so failed to find the command at this stage.
 		}
 
 		// Handle --url parameter
