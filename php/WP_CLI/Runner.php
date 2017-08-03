@@ -703,14 +703,15 @@ class Runner {
 
 	private function check_wp_version() {
 		if ( !$this->wp_exists() ) {
-			// If the command doesn't exist use as error.
+			$msg = 
+				"This does not seem to be a WordPress install.\n" .
+				"Pass --path=`path/to/wordpress` or run `wp core download`.";
+			// If the command doesn't exist append to error.
 			$possible_suggestion = $this->find_command_to_run( $this->cmd_starts_with( array( 'help' ) ) ? array_slice( $this->arguments, 1 ) : $this->arguments );
 			if ( is_string( $possible_suggestion ) ) {
-				WP_CLI::error( $possible_suggestion );
+				$msg .= "\n" . $possible_suggestion;
 			}
-			WP_CLI::error(
-				"This does not seem to be a WordPress install.\n" .
-				"Pass --path=`path/to/wordpress` or run `wp core download`." );
+			WP_CLI::error( $msg );
 		}
 
 		global $wp_version;
