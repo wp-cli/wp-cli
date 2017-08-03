@@ -78,9 +78,9 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: This does not seem to be a WordPress install.
+      Warning: This does not seem to be a WordPress install.
       Pass --path=`path/to/wordpress` or run `wp core download`.
-      'non-existent-command' is not a registered wp command. See 'wp help'.
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
       """
     And STDOUT should be empty
 
@@ -96,9 +96,9 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: This does not seem to be a WordPress install.
+      Warning: This does not seem to be a WordPress install.
       Pass --path=`path/to/wordpress` or run `wp core download`.
-      'non-existent-command' is not a registered wp command. See 'wp help'.
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
       """
     And STDOUT should be empty
 
@@ -109,9 +109,9 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: This does not seem to be a WordPress install.
+      Warning: This does not seem to be a WordPress install.
       Pass --path=`path/to/wordpress` or run `wp core download`.
-      'non-existent-command' is not a registered wp command. See 'wp help'.
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
       """
     And STDOUT should be empty
 
@@ -130,9 +130,9 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: This does not seem to be a WordPress install.
+      Warning: This does not seem to be a WordPress install.
       Pass --path=`path/to/wordpress` or run `wp core download`.
-      'non-existent-subcommand' is not a registered subcommand of 'config'. See 'wp help config'.
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'config'. See 'wp help config'.
       """
     And STDOUT should be empty
 
@@ -148,9 +148,9 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: This does not seem to be a WordPress install.
+      Warning: This does not seem to be a WordPress install.
       Pass --path=`path/to/wordpress` or run `wp core download`.
-      'non-existent-subcommand' is not a registered subcommand of 'core'. See 'wp help core'.
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'core'. See 'wp help core'.
       """
     And STDOUT should be empty
 
@@ -166,9 +166,9 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: This does not seem to be a WordPress install.
+      Warning: This does not seem to be a WordPress install.
       Pass --path=`path/to/wordpress` or run `wp core download`.
-      'non-existent-subcommand' is not a registered subcommand of 'db'. See 'wp help db'.
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'db'. See 'wp help db'.
       """
     And STDOUT should be empty
 
@@ -177,9 +177,9 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: This does not seem to be a WordPress install.
+      Warning: This does not seem to be a WordPress install.
       Pass --path=`path/to/wordpress` or run `wp core download`.
-      'confi' is not a registered wp command. See 'wp help'.
+      Error: 'confi' is not a registered wp command. See 'wp help'.
       Did you mean 'config'?
       """
     And STDOUT should be empty
@@ -188,9 +188,9 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: This does not seem to be a WordPress install.
+      Warning: This does not seem to be a WordPress install.
       Pass --path=`path/to/wordpress` or run `wp core download`.
-      'cor' is not a registered wp command. See 'wp help'.
+      Error: 'cor' is not a registered wp command. See 'wp help'.
       Did you mean 'core'?
       """
     And STDOUT should be empty
@@ -199,9 +199,9 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: This does not seem to be a WordPress install.
+      Warning: This does not seem to be a WordPress install.
       Pass --path=`path/to/wordpress` or run `wp core download`.
-      'd' is not a registered wp command. See 'wp help'.
+      Error: 'd' is not a registered wp command. See 'wp help'.
       Did you mean 'db'?
       """
     And STDOUT should be empty
@@ -210,9 +210,9 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: This does not seem to be a WordPress install.
+      Warning: This does not seem to be a WordPress install.
       Pass --path=`path/to/wordpress` or run `wp core download`.
-      'packag' is not a registered wp command. See 'wp help'.
+      Error: 'packag' is not a registered wp command. See 'wp help'.
       Did you mean 'package'?
       """
     And STDOUT should be empty
@@ -222,9 +222,9 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: This does not seem to be a WordPress install.
+      Warning: This does not seem to be a WordPress install.
       Pass --path=`path/to/wordpress` or run `wp core download`.
-      'creat' is not a registered subcommand of 'config'. See 'wp help config'.
+      Error: 'creat' is not a registered subcommand of 'config'. See 'wp help config'.
       Did you mean 'create'?
       """
     And STDOUT should be empty
@@ -233,9 +233,9 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: This does not seem to be a WordPress install.
+      Warning: This does not seem to be a WordPress install.
       Pass --path=`path/to/wordpress` or run `wp core download`.
-      'versio' is not a registered subcommand of 'core'. See 'wp help core'.
+      Error: 'versio' is not a registered subcommand of 'core'. See 'wp help core'.
       Did you mean 'version'?
       """
     And STDOUT should be empty
@@ -244,9 +244,9 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: This does not seem to be a WordPress install.
+      Warning: This does not seem to be a WordPress install.
       Pass --path=`path/to/wordpress` or run `wp core download`.
-      'chec' is not a registered subcommand of 'db'. See 'wp help db'.
+      Error: 'chec' is not a registered subcommand of 'db'. See 'wp help db'.
       Did you mean 'check'?
       """
     And STDOUT should be empty
