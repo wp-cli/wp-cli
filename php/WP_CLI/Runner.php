@@ -476,7 +476,7 @@ class Runner {
 	public function get_wp_config_code() {
 		$wp_config_path = Utils\locate_wp_config();
 
-		$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
+        $wp_config_code = $this->prepare_config_code( $wp_config_path );
 
 		$found_wp_settings = false;
 
@@ -499,6 +499,61 @@ class Runner {
 		$source = Utils\replace_path_consts( $source, $wp_config_path );
 		return preg_replace( '|^\s*\<\?php\s*|', '', $source );
 	}
+
+    /**
+     * Prepare config's code array
+     *
+     * @param string $wp_config_path
+     * @return array
+     */
+    private function prepare_config_code( $wp_config_path ) {
+        $wp_config_content = file_get_contents( $wp_config_path );
+
+        $stubs = isset($this->config['wp-config-stub-functions']) ? $this->config['wp-config-stub-functions'] : false;
+
+        if ( !$stubs ) {
+            return $this->explode_wp_config_content( $wp_config_content );
+        }
+
+        $stub_functions_string = $this->get_stub_functions_string( $stubs );
+        $wp_config_content = $this->inject_stub_functions_in_wp_config_content( $wp_config_content, $stub_functions_string );
+
+        return $this->explode_wp_config_content( $wp_config_content );
+    }
+
+    /**
+     * Add stub functions to array of wp_config's code
+     *
+     * @param array $stubs Array of lines form wp_config.php
+     *
+     * @return string
+     */
+    private function get_stub_functions_string( array $stubs = array() ) {
+        $walk_function = function ( &$value, $name ) {
+            $value = "function $name( ...\$rest_args ) { return $value; }";
+        };
+
+        array_walk( $stubs, $walk_function );
+
+        return implode("\n", $stubs);
+    }
+
+    private function inject_stub_functions_in_wp_config_content( $wp_config_content, $stub_function_string ) {
+        $pattern = '/<\?php|<\?/';
+        $replacement = "<?php \n\n$stub_function_string\n";
+
+        return preg_replace($pattern, $replacement, $wp_config_content, 1);
+    }
+
+    /**
+     * Explode wp_config_content to array
+     *
+     * @param $wp_config_content
+     * @return array
+     */
+    private function explode_wp_config_content( $wp_config_content ) {
+        return explode( "\n", $wp_config_content );
+    }
 
 	/**
 	 * Transparently convert deprecated syntaxes
