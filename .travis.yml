@@ -28,7 +28,7 @@ matrix:
 before_script:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - |
-    composer global require wp-coding-standards/wpcs
+    composer global require wp-coding-standards/wpcs:0.12.0
     phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs
   - ./ci/prepare.sh
 
