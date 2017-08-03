@@ -1356,7 +1356,7 @@
             ],
             "description": "Composer plugin for splitting a generated autoloader into two distinct parts.",
             "homepage": "https://wp-cli.org",
-            "time": "2017-08-03T08:40:16+00:00"
+            "time": "2017-08-03T08:40:17+00:00"
         },
         {
             "name": "wp-cli/cache-command",
