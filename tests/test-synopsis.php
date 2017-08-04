@@ -172,4 +172,14 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( $o, $r );
 	}
 
+	function testParseThenRenderNumeric() {
+		$o = '<p1ositional> --a2ssoc=<assoc> --<field>=<value> [--f3lag]';
+		$a = SynopsisParser::parse( $o );
+		$this->assertEquals( 'p1ositional', $a[0]['name'] );
+		$this->assertEquals( 'a2ssoc', $a[1]['name'] );
+		$this->assertEquals( 'f3lag', $a[3]['name'] );
+		$r = SynopsisParser::render( $a );
+		$this->assertEquals( $o, $r );
+	}
+
 }
