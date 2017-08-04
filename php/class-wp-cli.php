@@ -792,14 +792,35 @@ class WP_CLI {
 	 * @param array $assoc_args Skips prompt if 'yes' is provided.
 	 */
 	public static function confirm( $question, $assoc_args = array() ) {
+		if ( ! self::ask( $question, $assoc_args ) ) {
+			exit;
+		}
+	}
+
+	/**
+	 * Ask for confirmation before doing something.
+	 *
+	 * If 'y' is provided to the question, it returns true. If
+	 * 'n' or any other response is provided to the question, it returns false.
+	 *
+	 * WP_CLI::ask( "Do you want to check for newer version of WP-CLI?", $assoc_args );
+	 * ```
+	 *
+	 * @access public
+	 * @category Input
+	 *
+	 * @param string $question Question to display before the prompt.
+	 * @param array $assoc_args Skips prompt if 'yes' is provided.
+	 */
+	public static function ask( $question, $assoc_args = array() ) {
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'yes' ) ) {
 			fwrite( STDOUT, $question . " [y/n] " );
 
 			$answer = strtolower( trim( fgets( STDIN ) ) );
 
-			if ( 'y' != $answer )
-				exit;
+			return 'y' === $answer;
 		}
+		return true;
 	}
 
 	/**
