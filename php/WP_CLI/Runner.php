@@ -703,16 +703,19 @@ class Runner {
 
 	private function check_wp_version() {
 		if ( !$this->wp_exists() ) {
-			$msg = 
-				"This does not seem to be a WordPress install.\n" .
-				"Pass --path=`path/to/wordpress` or run `wp core download`.";
-			// If the command doesn't exist append to error.
-			$possible_suggestion = $this->find_command_to_run( $this->cmd_starts_with( array( 'help' ) ) ? array_slice( $this->arguments, 1 ) : $this->arguments );
+			// If the command doesn't exist use as error.
+			$args = $this->cmd_starts_with( array( 'help' ) ) ? array_slice( $this->arguments, 1 ) : $this->arguments;
+			$possible_suggestion = $this->find_command_to_run( $args );
 			if ( is_string( $possible_suggestion ) ) {
-				WP_CLI::warning( $msg );
+				WP_CLI::warning(
+					"This does not seem to be a WordPress install.\n" .
+					"If the command '" . implode( ' ', $args ) . "' is in a plugin or theme, pass --path=`path/to/wordpress`."
+				);
 				WP_CLI::error( $possible_suggestion );
 			}
-			WP_CLI::error( $msg );
+			WP_CLI::error(
+				"This does not seem to be a WordPress install.\n" .
+				"Pass --path=`path/to/wordpress` or run `wp core download`." );
 		}
 
 		global $wp_version;
@@ -1406,6 +1409,12 @@ class Runner {
 		// In case the operation fails, ensure the timestamp has been updated.
 		$cache->write( $cache_key, time() );
 
+		// Ask before doing remote request.
+		if ( ! WP_CLI::ask( sprintf( 'You have version %s. Do you want to check if newer versions of WP-CLI are available?', WP_CLI_VERSION ), $this->assoc_args ) ) {
+			return;
+		}
+
+		WP_CLI::log( "Checking for newer versions of WP-CLI..." );
 		// Check whether any updates are available.
 		ob_start();
 		WP_CLI::run_command( array( 'cli', 'check-update' ), array( 'format' => 'count' ) );
