@@ -57,7 +57,8 @@ class SynopsisParser {
 				if ( 'positional' === $key ) {
 					$rendered_arg = "<{$arg['name']}>";
 				} else if ( 'assoc' === $key ) {
-					$rendered_arg = "--{$arg['name']}=<{$arg['name']}>";
+					$arg_value = isset( $arg['value']['name'] ) ? $arg['value']['name'] : $arg['name'];
+					$rendered_arg = "--{$arg['name']}=<{$arg_value}>";
 				} else if ( 'generic' === $key ) {
 					$rendered_arg = "--<field>=<value>";
 				} else if ( 'flag' === $key ) {
@@ -93,8 +94,8 @@ class SynopsisParser {
 		list( $param['optional'], $token ) = self::is_optional( $token );
 		list( $param['repeating'], $token ) = self::is_repeating( $token );
 
-		$p_name = '([a-z-_]+)';
-		$p_value = '([a-zA-Z-_|,]+)';
+		$p_name = '([a-z-_0-9]+)';
+		$p_value = '([a-zA-Z-_|,0-9]+)';
 
 		if ( '--<field>=<value>' === $token ) {
 			$param['type'] = 'generic';
