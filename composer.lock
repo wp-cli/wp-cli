@@ -2219,16 +2219,16 @@
         },
         {
             "name": "wp-cli/php-cli-tools",
-            "version": "v0.11.5",
+            "version": "v0.11.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/php-cli-tools.git",
-                "reference": "c5f9c034fd713dae84669ecb8da603bc52b8d826"
+                "reference": "d2a4e2eca9f1cd62a5d30f192d10f74e73eb3a05"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/c5f9c034fd713dae84669ecb8da603bc52b8d826",
-                "reference": "c5f9c034fd713dae84669ecb8da603bc52b8d826",
+                "url": "https://api.github.com/repos/wp-cli/php-cli-tools/zipball/d2a4e2eca9f1cd62a5d30f192d10f74e73eb3a05",
+                "reference": "d2a4e2eca9f1cd62a5d30f192d10f74e73eb3a05",
                 "shasum": ""
             },
             "require": {
@@ -2265,7 +2265,7 @@
                 "cli",
                 "console"
             ],
-            "time": "2017-07-26T18:17:52+00:00"
+            "time": "2017-08-04T10:42:04+00:00"
         },
         {
             "name": "wp-cli/rewrite-command",
