@@ -1698,16 +1698,16 @@
         },
         {
             "name": "wp-cli/entity-command",
-            "version": "v1.0.4",
+            "version": "v1.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/entity-command.git",
-                "reference": "65bf60179cbaf309bcbaea06c9cf5f96a5718c91"
+                "reference": "4d70a22168134e2316ad72d16e69009e258d7147"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/entity-command/zipball/65bf60179cbaf309bcbaea06c9cf5f96a5718c91",
-                "reference": "65bf60179cbaf309bcbaea06c9cf5f96a5718c91",
+                "url": "https://api.github.com/repos/wp-cli/entity-command/zipball/4d70a22168134e2316ad72d16e69009e258d7147",
+                "reference": "4d70a22168134e2316ad72d16e69009e258d7147",
                 "shasum": ""
             },
             "require-dev": {
@@ -1768,7 +1768,7 @@
             ],
             "description": "Manage WordPress core entities.",
             "homepage": "https://github.com/wp-cli/entity-command",
-            "time": "2017-08-05T22:23:44+00:00"
+            "time": "2017-08-07T12:53:02+00:00"
         },
         {
             "name": "wp-cli/eval-command",
@@ -2169,16 +2169,16 @@
         },
         {
             "name": "wp-cli/package-command",
-            "version": "v1.0.2",
+            "version": "v1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/package-command.git",
-                "reference": "3ad38ed42acd3d673ce7eb2e6f5efccb11473988"
+                "reference": "744692180a4240ddc75a3196934cafe396dd9178"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/3ad38ed42acd3d673ce7eb2e6f5efccb11473988",
-                "reference": "3ad38ed42acd3d673ce7eb2e6f5efccb11473988",
+                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/744692180a4240ddc75a3196934cafe396dd9178",
+                "reference": "744692180a4240ddc75a3196934cafe396dd9178",
                 "shasum": ""
             },
             "require": {
@@ -2223,7 +2223,7 @@
             ],
             "description": "Manage WP-CLI packages.",
             "homepage": "https://github.com/wp-cli/package-command",
-            "time": "2017-08-04T23:23:48+00:00"
+            "time": "2017-08-07T12:21:11+00:00"
         },
         {
             "name": "wp-cli/php-cli-tools",
