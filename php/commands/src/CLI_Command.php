@@ -256,11 +256,15 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'nightly' ) ) {
-			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest nightly?', WP_CLI_VERSION ), $assoc_args );
+			if ( ! WP_CLI::ask( sprintf( 'You have version %s. Would you like to update to the latest nightly?', WP_CLI_VERSION ), $assoc_args ) ) {
+				return;
+			}
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar';
 			$md5_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.md5';
 		} else if ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
-			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest stable release?', WP_CLI_VERSION ), $assoc_args );
+			if ( ! WP_CLI::ask( sprintf( 'You have version %s. Would you like to update to the latest stable release?', WP_CLI_VERSION ), $assoc_args ) ) {
+				return;
+			}
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
 			$md5_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.md5';
 		} else {
@@ -275,7 +279,9 @@ class CLI_Command extends WP_CLI_Command {
 
 			$newest = $updates[0];
 
-			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to %s?', WP_CLI_VERSION, $newest['version'] ), $assoc_args );
+			if ( ! WP_CLI::ask( sprintf( 'You have version %s. Would you like to update to %s?', WP_CLI_VERSION, $newest['version'] ), $assoc_args ) ) {
+				return;
+			}
 
 			$download_url = $newest['package_url'];
 			$md5_url = str_replace( '.phar', '.phar.md5', $download_url );
@@ -337,6 +343,8 @@ class CLI_Command extends WP_CLI_Command {
 			$updated_version = $newest['version'];
 		}
 		WP_CLI::success( sprintf( 'Updated WP-CLI to %s.', $updated_version ) );
+		// As the Phar was replaced, we must exit to avoid PHP errors.
+		exit;
 	}
 
 	/**

@@ -22,31 +22,14 @@ class Help_Command extends WP_CLI_Command {
 	 *     wp help core download
 	 */
 	function __invoke( $args, $assoc_args ) {
-		$command = self::find_command_to_help( $args );
+		$r = WP_CLI::get_runner()->find_command_to_run( $args );
 
-		if ( $command ) {
-
-			if ( WP_CLI::get_runner()->is_command_disabled( $command ) ) {
-				$path = implode( ' ', array_slice( \WP_CLI\Dispatcher\get_path( $command ), 1 ) );
-				WP_CLI::error( sprintf(
-					"The '%s' command has been disabled from the config file.",
-					$path
-				) );
-			}
+		if ( is_array( $r ) ) {
+			list( $command ) = $r;
 
 			self::show_help( $command );
 			exit;
 		}
-	}
-
-	private static function find_command_to_help( $args ) {
-		$command = \WP_CLI::get_root_command();
-
-		while ( !empty( $args ) && $command && $command->can_have_subcommands() ) {
-			$command = $command->find_subcommand( $args );
-		}
-
-		return $command;
 	}
 
 	private static function show_help( $command ) {

@@ -803,7 +803,7 @@ class WP_CLI {
 	 * If 'y' is provided to the question, it returns true. If
 	 * 'n' or any other response is provided to the question, it returns false.
 	 *
-	 * WP_CLI::ask( "Do you want to check for newer version of WP-CLI?", $assoc_args );
+	 * WP_CLI::ask( "Would you like to check if an update of WP-CLI is available?", $assoc_args );
 	 * ```
 	 *
 	 * @access public
