@@ -7,6 +7,12 @@ return array(
 		'desc' => 'Path to the WordPress files.',
 	),
 
+	'url' => array(
+		'runtime' => '=<url>',
+		'file' => '<url>',
+		'desc' => 'Pretend request came from given URL. In multisite, this argument is how the target site is specified.',
+	),
+
 	'ssh' => array(
 		'runtime' => '=[<scheme>:][<user>@]<host|container>[:<port>][<path>]',
 		'file' => '[<scheme>:][<user>@]<host|container>[:<port>][<path>]',
@@ -19,11 +25,6 @@ return array(
 		'desc' => 'Perform operation against a remote WordPress install over HTTP.',
 	),
 
-	'url' => array(
-		'runtime' => '=<url>',
-		'file' => '<url>',
-		'desc' => 'Pretend request came from given URL. In multisite, this argument is how the target site is specified.',
-	),
 	'blog' => array(
 		'deprecated' => 'Use --url instead.',
 		'runtime' => '=<url>',
