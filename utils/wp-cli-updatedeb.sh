@@ -3,7 +3,7 @@
 # Package wp-cli to be installed in Debian-compatible systems.
 # Only the phar file is included.
 #
-# VERSION       :0.2.3
+# VERSION       :0.2.4
 # DATE          :2017-05-31
 # AUTHOR        :Viktor Szépe <viktor@szepe.net>
 # LICENSE       :The MIT License (MIT)
@@ -64,20 +64,8 @@ fi
 # changelog
 if ! [ -r usr/share/doc/php-wpcli/changelog.gz ]; then
     mkdir -p usr/share/doc/php-wpcli &> /dev/null
-    echo "Changelog can be found in the blog: http://wp-cli.org/blog/" \
+    echo "Changelog can be found in the blog: https://make.wordpress.org/cli/" \
         | gzip -n -9 > usr/share/doc/php-wpcli/changelog.gz
-fi
-
-# minimal man page
-if ! [ -r usr/share/man/man1/wp.1.gz ]; then
-    mkdir -p usr/share/man/man1 &> /dev/null
-    {
-        echo '.TH "WP" "1"'
-        wp --help
-    } \
-        | sed 's/^\([A-Z ]\+\)$/.SH "\1"/' \
-        | sed 's/^  wp$/wp \\- A command line interface for WordPress/' \
-        | gzip -n -9 > usr/share/man/man1/wp.1.gz
 fi
 
 # content dirs
@@ -95,6 +83,18 @@ echo "Current version: ${WPCLI_VER}"
 # update version
 sed -i -e "s/^Version: .*$/Version: ${WPCLI_VER}/" DEBIAN/control || die 6 "Version update failure"
 
+# minimal man page
+if ! [ -r usr/share/man/man1/wp.1.gz ]; then
+    mkdir -p usr/share/man/man1 &> /dev/null
+    {
+        echo '.TH "WP" "1"'
+        usr/bin/wp --help
+    } \
+        | sed 's/^\([A-Z ]\+\)$/.SH "\1"/' \
+        | sed 's/^  wp$/wp \\- A command line interface for WordPress/' \
+        | gzip -n -9 > usr/share/man/man1/wp.1.gz
+fi
+
 # update MD5-s
 find usr -type f -exec md5sum "{}" ";" > DEBIAN/md5sums || die 7 "md5sum creation failure"
 
@@ -104,8 +104,8 @@ popd
 WPCLI_PKG="${PWD}/php-wpcli_${WPCLI_VER}_all.deb"
 fakeroot dpkg-deb --build "$DIR" "$WPCLI_PKG" || die 8 "Packaging failed"
 
-# check package
-lintian --display-info --display-experimental --pedantic --show-overrides php-wpcli_*_all.deb
+# check package - not critical
+lintian --display-info --display-experimental --pedantic --show-overrides php-wpcli_*_all.deb || true
 
 # optional steps
 echo "sign it:               dpkg-sig -k SIGNING-KEY -s builder \"${WPCLI_PKG}\""
