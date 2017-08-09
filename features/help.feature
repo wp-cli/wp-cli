@@ -70,7 +70,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
       """
     And STDOUT should be empty
 
@@ -79,7 +79,7 @@ Feature: Get help about WP-CLI commands
     And STDERR should be:
       """
       Warning: No WordPress install found. If the command 'non-existent-command' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
       """
     And STDOUT should be empty
 
@@ -87,7 +87,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
       """
     And STDOUT should be empty
 
@@ -96,7 +96,7 @@ Feature: Get help about WP-CLI commands
     And STDERR should be:
       """
       Warning: No WordPress install found. If the command 'non-existent-command non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
       """
     And STDOUT should be empty
 
@@ -108,7 +108,7 @@ Feature: Get help about WP-CLI commands
     And STDERR should be:
       """
       Warning: No WordPress install found. If the command 'non-existent-command' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
       """
     And STDOUT should be empty
 
@@ -119,7 +119,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: 'non-existent-subcommand' is not a registered subcommand of 'config'. See 'wp help config'.
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'config'. See 'wp help config' for available subcommands.
       """
     And STDOUT should be empty
 
@@ -128,7 +128,7 @@ Feature: Get help about WP-CLI commands
     And STDERR should be:
       """
       Warning: No WordPress install found. If the command 'config non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'non-existent-subcommand' is not a registered subcommand of 'config'. See 'wp help config'.
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'config'. See 'wp help config' for available subcommands.
       """
     And STDOUT should be empty
 
@@ -136,7 +136,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: 'non-existent-subcommand' is not a registered subcommand of 'core'. See 'wp help core'.
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'core'. See 'wp help core' for available subcommands.
       """
     And STDOUT should be empty
 
@@ -145,7 +145,7 @@ Feature: Get help about WP-CLI commands
     And STDERR should be:
       """
       Warning: No WordPress install found. If the command 'core non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'non-existent-subcommand' is not a registered subcommand of 'core'. See 'wp help core'.
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'core'. See 'wp help core' for available subcommands.
       """
     And STDOUT should be empty
 
@@ -153,7 +153,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: 'non-existent-subcommand' is not a registered subcommand of 'db'. See 'wp help db'.
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'db'. See 'wp help db' for available subcommands.
       """
     And STDOUT should be empty
 
@@ -162,17 +162,19 @@ Feature: Get help about WP-CLI commands
     And STDERR should be:
       """
       Warning: No WordPress install found. If the command 'db non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'non-existent-subcommand' is not a registered subcommand of 'db'. See 'wp help db'.
+      Error: 'non-existent-subcommand' is not a registered subcommand of 'db'. See 'wp help db' for available subcommands.
       """
     And STDOUT should be empty
 
   Scenario: Suggestions for command typos in help
+    Given an empty directory
+
     When I try `wp help confi`
     Then the return code should be 1
     And STDERR should be:
       """
       Warning: No WordPress install found. If the command 'confi' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'confi' is not a registered wp command. See 'wp help'.
+      Error: 'confi' is not a registered wp command. See 'wp help' for available commands.
       Did you mean 'config'?
       """
     And STDOUT should be empty
@@ -182,7 +184,7 @@ Feature: Get help about WP-CLI commands
     And STDERR should be:
       """
       Warning: No WordPress install found. If the command 'cor' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'cor' is not a registered wp command. See 'wp help'.
+      Error: 'cor' is not a registered wp command. See 'wp help' for available commands.
       Did you mean 'core'?
       """
     And STDOUT should be empty
@@ -192,7 +194,7 @@ Feature: Get help about WP-CLI commands
     And STDERR should be:
       """
       Warning: No WordPress install found. If the command 'd' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'd' is not a registered wp command. See 'wp help'.
+      Error: 'd' is not a registered wp command. See 'wp help' for available commands.
       Did you mean 'db'?
       """
     And STDOUT should be empty
@@ -202,18 +204,20 @@ Feature: Get help about WP-CLI commands
     And STDERR should be:
       """
       Warning: No WordPress install found. If the command 'packag' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'packag' is not a registered wp command. See 'wp help'.
+      Error: 'packag' is not a registered wp command. See 'wp help' for available commands.
       Did you mean 'package'?
       """
     And STDOUT should be empty
 
   Scenario: Suggestions for subcommand typos in help of specially treated commands
+    Given an empty directory
+
     When I try `wp help config creat`
     Then the return code should be 1
     And STDERR should be:
       """
       Warning: No WordPress install found. If the command 'config creat' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'creat' is not a registered subcommand of 'config'. See 'wp help config'.
+      Error: 'creat' is not a registered subcommand of 'config'. See 'wp help config' for available subcommands.
       Did you mean 'create'?
       """
     And STDOUT should be empty
@@ -223,7 +227,7 @@ Feature: Get help about WP-CLI commands
     And STDERR should be:
       """
       Warning: No WordPress install found. If the command 'core versio' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'versio' is not a registered subcommand of 'core'. See 'wp help core'.
+      Error: 'versio' is not a registered subcommand of 'core'. See 'wp help core' for available subcommands.
       Did you mean 'version'?
       """
     And STDOUT should be empty
@@ -233,7 +237,7 @@ Feature: Get help about WP-CLI commands
     And STDERR should be:
       """
       Warning: No WordPress install found. If the command 'db chec' is in a plugin or theme, pass --path=`path/to/wordpress`.
-      Error: 'chec' is not a registered subcommand of 'db'. See 'wp help db'.
+      Error: 'chec' is not a registered subcommand of 'db'. See 'wp help db' for available subcommands.
       Did you mean 'check'?
       """
     And STDOUT should be empty
