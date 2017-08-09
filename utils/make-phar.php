@@ -248,8 +248,4 @@ EOB
 
 $phar->stopBuffering();
 
-chmod( DEST_PATH, 0755 ); // Make executable.
-
-if ( ! BE_QUIET ) {
-	echo "Generated " . DEST_PATH . "\n";
-}
+echo "Generated " . DEST_PATH . "\n";
