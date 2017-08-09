@@ -3,7 +3,7 @@
 # Package wp-cli to be installed in Debian-compatible systems.
 # Only the phar file is included.
 #
-# VERSION       :0.2.3
+# VERSION       :0.2.4
 # DATE          :2017-05-31
 # AUTHOR        :Viktor Szépe <viktor@szepe.net>
 # LICENSE       :The MIT License (MIT)
@@ -104,8 +104,8 @@ popd
 WPCLI_PKG="${PWD}/php-wpcli_${WPCLI_VER}_all.deb"
 fakeroot dpkg-deb --build "$DIR" "$WPCLI_PKG" || die 8 "Packaging failed"
 
-# check package
-lintian --display-info --display-experimental --pedantic --show-overrides php-wpcli_*_all.deb
+# check package - not critical
+lintian --display-info --display-experimental --pedantic --show-overrides php-wpcli_*_all.deb || true
 
 # optional steps
 echo "sign it:               dpkg-sig -k SIGNING-KEY -s builder \"${WPCLI_PKG}\""
