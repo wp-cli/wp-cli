@@ -172,12 +172,12 @@ $steps->Then( '/^the (.+) (file|directory) should (exist|not exist|be:|contain:|
 		switch ( $action ) {
 		case 'exist':
 			if ( ! $test( $path ) ) {
-				throw new Exception( $world->result );
+				throw new Exception( "$path doesn't exist." );
 			}
 			break;
 		case 'not exist':
 			if ( $test( $path ) ) {
-				throw new Exception( $world->result );
+				throw new Exception( "$path exists." );
 			}
 			break;
 		default:
