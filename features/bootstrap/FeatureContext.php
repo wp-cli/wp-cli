@@ -116,6 +116,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( $travis_build_dir = getenv( 'TRAVIS_BUILD_DIR' ) ) {
 			$env['TRAVIS_BUILD_DIR'] = $travis_build_dir;
 		}
+		if ( $github_token = getenv( 'GITHUB_TOKEN' ) ) {
+			$env['GITHUB_TOKEN'] = $github_token;
+		}
 		return $env;
 	}
 
