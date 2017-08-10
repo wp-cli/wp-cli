@@ -463,7 +463,7 @@ Feature: Get help about WP-CLI commands
       """
     And I run `wp plugin activate test-cli`
 
-    When I run `wp help test-wordwrap my_command`
+    When I run `COLUMNS=80 wp help test-wordwrap my_command`
     Then STDOUT should contain:
       """
         123456789 123456789 123456789 123456789 123456789 123456789 123456789 12345678
@@ -520,7 +520,7 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
-    When I run `wp help test-wordwrap my_command | wc -L`
+    When I run `COLUMNS=80 wp help test-wordwrap my_command | wc -L`
     Then STDOUT should be:
       """
       80
