@@ -127,14 +127,15 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 * Ideally, we'd cache at the HTTP layer for more reliable tests.
 	 */
 	private static function cache_wp_files() {
-		self::$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache';
+		$wp_version_suffix = ( $wp_version = getenv( 'WP_VERSION' ) ) ? "-$wp_version" : '';
+		self::$cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-download-cache' . $wp_version_suffix;
 
 		if ( is_readable( self::$cache_dir . '/wp-config-sample.php' ) )
 			return;
 
 		$cmd = Utils\esc_cmd( 'wp core download --force --path=%s', self::$cache_dir );
-		if ( getenv( 'WP_VERSION' ) ) {
-			$cmd .= Utils\esc_cmd( ' --version=%s', getenv( 'WP_VERSION' ) );
+		if ( $wp_version ) {
+			$cmd .= Utils\esc_cmd( ' --version=%s', $wp_version );
 		}
 		Process::create( $cmd, null, self::get_process_env_variables() )->run_check();
 	}
