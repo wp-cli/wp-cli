@@ -102,7 +102,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$env = array(
 			'PATH' =>  $bin_dir . ':' . $vendor_dir . ':' . getenv( 'PATH' ),
 			'BEHAT_RUN' => 1,
-			'HOME' => '/tmp/wp-cli-home',
+			'HOME' => sys_get_temp_dir() . '/wp-cli-home',
 		);
 		if ( $config_path = getenv( 'WP_CLI_CONFIG_PATH' ) ) {
 			$env['WP_CLI_CONFIG_PATH'] = $config_path;

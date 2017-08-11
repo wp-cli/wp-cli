@@ -20,7 +20,7 @@ Feature: Review CLI information
     When I run `wp cli info --format=json`
     Then STDOUT should be JSON containing:
       """
-      {"wp_cli_packages_dir_path":"/tmp/wp-cli-home/.wp-cli/packages/"}
+      {"wp_cli_packages_dir_path":"{PACKAGE_PATH}"}
       """
 
     When I run `wp cli info`
