@@ -46,6 +46,8 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
+  # Prior to WP 4.3 widgets & others used PHP 4 style constructors and prior to WP 3.9 wpdb used the mysql extension which all lead to PHP Deprecated notices.
+  @require-wp-4.3
   Scenario: Help for internal commands with WP
     Given a WP install
     And a stderr-error-log.php file:
