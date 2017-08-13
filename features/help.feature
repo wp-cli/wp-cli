@@ -46,6 +46,45 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
+  Scenario: Help for internal commands with WP
+    Given a WP install
+
+    When I run `wp help`
+    Then STDOUT should contain:
+      """
+        Run 'wp help <command>' to get more information on a specific command.
+
+      """
+    And STDERR should be empty
+
+    When I run `wp help core`
+    Then STDOUT should contain:
+      """
+        wp core
+      """
+    And STDERR should be empty
+
+    When I run `wp help core download`
+    Then STDOUT should contain:
+      """
+        wp core download
+      """
+    And STDERR should be empty
+
+    When I run `wp help help`
+    Then STDOUT should contain:
+      """
+        wp help
+      """
+    And STDERR should be empty
+
+    When I run `wp help help`
+    Then STDOUT should contain:
+      """
+      GLOBAL PARAMETERS
+      """
+    And STDERR should be empty
+
   Scenario: Help when WordPress is downloaded but not installed
     Given an empty directory
 
