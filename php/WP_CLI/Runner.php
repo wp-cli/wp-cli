@@ -1142,9 +1142,6 @@ class Runner {
 			WP_CLI::add_wp_hook( 'wp_die_handler', function () use ( $help_handler ) { return $help_handler; } );
 			// Hack: define WP_ADMIN to cause `dead_db()` in "wp-includes/functions.php" to use `wp_die()` instead of `die()`.
 			define( 'WP_ADMIN', true );
-			// Hack for above hack: avoid PHP Notice at "wp-includes/vars.php:31" via self::in_admin() returning false.
-			$GLOBALS['current_screen'] = $this;
-
 		} else {
 			WP_CLI::add_wp_hook( 'wp_die_handler', function() { return '\WP_CLI\Utils\wp_die_handler'; } );
 		}
@@ -1366,13 +1363,6 @@ class Runner {
 			return true;
 		}
 
-		return false;
-	}
-
-	/**
-	 * Fake `WP_Screen::in_admin()` to avoid PHP Notice at "wp-include/vars.php:31" when command is help and `WP_ADMIN` is defined in `self::setup_bootstrap_hooks()`.
-	 */
-	public function in_admin() {
 		return false;
 	}
 
