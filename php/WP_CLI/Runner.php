@@ -60,7 +60,8 @@ class Runner {
 
 		foreach ( $this->_early_invoke[ $when ] as $path ) {
 			if ( $this->cmd_starts_with( $path ) ) {
-				$this->_run_command_and_exit();
+				$this->_run_command();
+				exit;
 			}
 		}
 	}
@@ -262,7 +263,7 @@ class Runner {
 					$parent_name = implode( ' ', $cmd_path );
 					$suggestion = $this->get_subcommand_suggestion( $child, $command );
 					return sprintf(
-						"'%s' is not a registered subcommand of '%s'. See 'wp help %s' for available subcommands.%s",
+						"'%s' is not a registered subcommand of '%s'. See 'wp help %s'.%s",
 						$child,
 						$parent_name,
 						$parent_name,
@@ -271,7 +272,7 @@ class Runner {
 				} else {
 					$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
 					return sprintf(
-						"'%s' is not a registered wp command. See 'wp help' for available commands.%s",
+						"'%s' is not a registered wp command. See 'wp help'.%s",
 						$full_name,
 						! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
 					);
@@ -325,17 +326,8 @@ class Runner {
 		}
 	}
 
-	private function _run_command_and_exit() {
+	private function _run_command() {
 		$this->run_command( $this->arguments, $this->assoc_args );
-		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
-			// Help couldn't find the command so exit with suggestion.
-			$suggestion_or_disabled = $this->find_command_to_run( array_slice( $this->arguments, 1 ) );
-			if ( is_string( $suggestion_or_disabled ) ) {
-				WP_CLI::error( $suggestion_or_disabled );
-			}
-			// Should never get here.
-		}
-		exit;
 	}
 
 	/**
@@ -702,15 +694,6 @@ class Runner {
 
 	private function check_wp_version() {
 		if ( !$this->wp_exists() ) {
-			// If the command doesn't exist use as error.
-			$args = $this->cmd_starts_with( array( 'help' ) ) ? array_slice( $this->arguments, 1 ) : $this->arguments;
-			$suggestion_or_disabled = $this->find_command_to_run( $args );
-			if ( is_string( $suggestion_or_disabled ) ) {
-				if ( ! preg_match( '/disabled from the config file.$/', $suggestion_or_disabled ) ) {
-					WP_CLI::warning( "No WordPress install found. If the command '" . implode( ' ', $args ) . "' is in a plugin or theme, pass --path=`path/to/wordpress`." );
-				}
-				WP_CLI::error( $suggestion_or_disabled );
-			}
 			WP_CLI::error(
 				"This does not seem to be a WordPress install.\n" .
 				"Pass --path=`path/to/wordpress` or run `wp core download`." );
@@ -893,7 +876,8 @@ class Runner {
 		// Protect 'cli info' from most of the runtime,
 		// except when the command will be run over SSH
 		if ( 'cli' === $this->arguments[0] && ! empty( $this->arguments[1] ) && 'info' === $this->arguments[1] && ! $this->config['ssh'] ) {
-			$this->_run_command_and_exit();
+			$this->_run_command();
+			exit;
 		}
 
 		if ( isset( $this->config['http'] ) && ! class_exists( '\WP_REST_CLI\Runner' ) ) {
@@ -928,8 +912,7 @@ class Runner {
 				|| ( ! empty( $this->arguments[1] ) && 'config' === $this->arguments[1] )
 			) ) {
 			$this->auto_check_update();
-			$this->run_command( $this->arguments, $this->assoc_args );
-			// Help didn't exit so failed to find the command at this stage.
+			$this->_run_command();
 		}
 
 		// Handle --url parameter
@@ -942,7 +925,8 @@ class Runner {
 		$this->check_wp_version();
 
 		if ( $this->cmd_starts_with( array( 'config', 'create' ) ) ) {
-			$this->_run_command_and_exit();
+			$this->_run_command();
+			exit;
 		}
 
 		if ( !Utils\locate_wp_config() ) {
@@ -954,7 +938,8 @@ class Runner {
 		if ( ( $this->cmd_starts_with( array( 'db' ) ) || $this->cmd_starts_with( array( 'help', 'db' ) ) )
 			&& ! $this->cmd_starts_with( array( 'db', 'tables' ) ) ) {
 			eval( $this->get_wp_config_code() );
-			$this->_run_command_and_exit();
+			$this->_run_command();
+			exit;
 		}
 
 		if ( $this->cmd_starts_with( array( 'core', 'is-installed' ) )
@@ -997,7 +982,7 @@ class Runner {
 
 		$this->load_wordpress();
 
-		$this->_run_command_and_exit();
+		$this->_run_command();
 
 	}
 
