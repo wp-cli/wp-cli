@@ -325,15 +325,12 @@ class Runner {
 		}
 	}
 
-	private function _run_command_and_exit( $help_exit_warning = '' ) {
+	private function _run_command_and_exit() {
 		$this->run_command( $this->arguments, $this->assoc_args );
 		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
 			// Help couldn't find the command so exit with suggestion.
 			$suggestion_or_disabled = $this->find_command_to_run( array_slice( $this->arguments, 1 ) );
 			if ( is_string( $suggestion_or_disabled ) ) {
-				if ( $help_exit_warning ) {
-					WP_CLI::warning( $help_exit_warning );
-				}
 				WP_CLI::error( $suggestion_or_disabled );
 			}
 			// Should never get here.
@@ -922,11 +919,13 @@ class Runner {
 		// Handle --path parameter
 		self::set_wp_root( $this->find_wp_root() );
 
-		// First try at showing man page - if help command and either haven't found 'version.php' or 'wp-config.php' (so won't be loading WP & adding commands) or help on subcommand.
-		if ( $this->cmd_starts_with( array( 'help' ) )
+		// First try at showing man page
+		if ( ! empty( $this->arguments[0] )
+			&& 'help' === $this->arguments[0]
 			&& ( ! $this->wp_exists()
 				|| ! Utils\locate_wp_config()
-				|| count( $this->arguments ) > 2
+				|| ( ! empty( $this->arguments[1] ) && ! empty( $this->arguments[2] ) && 'core' === $this->arguments[1] && in_array( $this->arguments[2], array( 'install', 'multisite-install', 'verify-checksums', 'version' ) ) )
+				|| ( ! empty( $this->arguments[1] ) && 'config' === $this->arguments[1] )
 			) ) {
 			$this->auto_check_update();
 			$this->run_command( $this->arguments, $this->assoc_args );
@@ -952,7 +951,8 @@ class Runner {
 				"Either create one manually or use `wp config create`." );
 		}
 
-		if ( $this->cmd_starts_with( array( 'db' ) ) && ! $this->cmd_starts_with( array( 'db', 'tables' ) ) ) {
+		if ( ( $this->cmd_starts_with( array( 'db' ) ) || $this->cmd_starts_with( array( 'help', 'db' ) ) )
+			&& ! $this->cmd_starts_with( array( 'db', 'tables' ) ) ) {
 			eval( $this->get_wp_config_code() );
 			$this->_run_command_and_exit();
 		}
@@ -1136,15 +1136,7 @@ class Runner {
 			WP_CLI::add_wp_hook( 'setup_theme', array( $this, 'action_setup_theme_wp_cli_skip_themes' ), 999 );
 		}
 
-		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
-			// Try to trap errors on help.
-			$help_handler = array( $this, 'help_wp_die_handler' ); // Avoid any cross PHP version issues by not using $this in anon function.
-			WP_CLI::add_wp_hook( 'wp_die_handler', function () use ( $help_handler ) { return $help_handler; } );
-			// Hack: define WP_ADMIN to cause `dead_db()` in "wp-includes/functions.php" to use `wp_die()` instead of `die()`.
-			define( 'WP_ADMIN', true );
-		} else {
-			WP_CLI::add_wp_hook( 'wp_die_handler', function() { return '\WP_CLI\Utils\wp_die_handler'; } );
-		}
+		WP_CLI::add_wp_hook( 'wp_die_handler', function() { return '\WP_CLI\Utils\wp_die_handler'; } );
 
 		// Prevent code from performing a redirect
 		WP_CLI::add_wp_hook( 'wp_redirect', 'WP_CLI\\Utils\\wp_redirect_handler' );
@@ -1364,17 +1356,6 @@ class Runner {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Error handler for `wp_die()` when the command is help to try to trap errors (db connection failure in particular) during WordPress load.
-	 */
-	public function help_wp_die_handler( $message ) {
-		$help_exit_warning = 'Error during WordPress load.';
-		if ( $message instanceof \WP_Error ) {
-			$help_exit_warning = WP_CLI\Utils\wp_clean_error_message( $message->get_error_message() );
-		}
-		$this->_run_command_and_exit( $help_exit_warning );
 	}
 
 	/**

@@ -63,39 +63,6 @@ Feature: Get help about WP-CLI commands
       wp core install
       """
 
-    When I run `wp help core is-installed`
-    Then STDOUT should contain:
-      """
-      wp core is-installed
-      """
-
-    When I run `wp help core`
-    Then STDOUT should contain:
-      """
-      wp core
-      """
-
-    When I run `wp help config`
-    Then STDOUT should contain:
-      """
-      wp config
-      """
-
-    When I run `wp help db`
-    Then STDOUT should contain:
-      """
-      wp db
-      """
-
-    When I try `wp help non-existent-command`
-    Then the return code should be 1
-    And STDERR should be:
-      """
-      Warning: Can’t select database. We were able to connect to the database server (which means your username and password is okay) but not able to select the `wp_cli_test` database.
-      Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
-      """
-    And STDOUT should be empty
-
   Scenario: Help for nonexistent commands
     Given a WP install
 
@@ -275,30 +242,6 @@ Feature: Get help about WP-CLI commands
       """
     And STDOUT should be empty
 
-  Scenario: No WordPress install warning or suggestions for disabled commands
-    Given an empty directory
-    And a wp-cli.yml file:
-      """
-      disabled_commands:
-        db
-      """
-
-    When I try `wp help db`
-    Then the return code should be 1
-    And STDERR should be:
-      """
-      Error: The 'db' command has been disabled from the config file.
-      """
-    And STDOUT should be empty
-
-    When I try `wp help db chec`
-    Then the return code should be 1
-    And STDERR should be:
-      """
-      Error: The 'db' command has been disabled from the config file.
-      """
-    And STDOUT should be empty
-
   Scenario: Help for third-party commands
     Given a WP install
     And a wp-content/plugins/test-cli/command.php file:
@@ -410,84 +353,6 @@ Feature: Get help about WP-CLI commands
     And I run `wp plugin activate test-cli`
 
     When I run `wp help site`
-    Then STDOUT should contain:
-      """
-      test-extra
-      """
-
-    Given a wp-content/plugins/test-cli/command.php file:
-      """
-      <?php
-      // Plugin Name: Test CLI Extra Config Command
-
-      class Test_CLI_Extra_Config_Command extends WP_CLI_Command {
-
-        /**
-         * A dummy command.
-         *
-         * @subcommand my-command
-         */
-        function my_command() {}
-
-      }
-
-      WP_CLI::add_command( 'config test-extra', 'Test_CLI_Extra_Config_Command' );
-      """
-    And I run `wp plugin activate test-cli`
-
-    When I run `wp help config`
-    Then STDOUT should contain:
-      """
-      test-extra
-      """
-
-    Given a wp-content/plugins/test-cli/command.php file:
-      """
-      <?php
-      // Plugin Name: Test CLI Extra Core Command
-
-      class Test_CLI_Extra_Core_Command extends WP_CLI_Command {
-
-        /**
-         * A dummy command.
-         *
-         * @subcommand my-command
-         */
-        function my_command() {}
-
-      }
-
-      WP_CLI::add_command( 'core test-extra', 'Test_CLI_Extra_Core_Command' );
-      """
-    And I run `wp plugin activate test-cli`
-
-    When I run `wp help core`
-    Then STDOUT should contain:
-      """
-      test-extra
-      """
-
-    Given a wp-content/plugins/test-cli/command.php file:
-      """
-      <?php
-      // Plugin Name: Test CLI Extra DB Command
-
-      class Test_CLI_Extra_DB_Command extends WP_CLI_Command {
-
-        /**
-         * A dummy command.
-         *
-         * @subcommand my-command
-         */
-        function my_command() {}
-
-      }
-
-      WP_CLI::add_command( 'db test-extra', 'Test_CLI_Extra_DB_Command' );
-      """
-    And I run `wp plugin activate test-cli`
-
-    When I run `wp help db`
     Then STDOUT should contain:
       """
       test-extra

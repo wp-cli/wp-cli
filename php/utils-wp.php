@@ -54,15 +54,6 @@ function wp_die_handler( $message ) {
 		$message = $message->get_error_message();
 	}
 
-	$message = wp_clean_error_message( $message );
-
-	\WP_CLI::error( $message );
-}
-
-/**
- * Clean HTML error message so suitable for text display.
- */
-function wp_clean_error_message( $message ) {
 	$original_message = $message = trim( $message );
 	if ( preg_match( '|^\<h1>(.+?)</h1>|', $original_message, $matches ) ) {
 		$message = $matches[1] . '.';
@@ -79,7 +70,7 @@ function wp_clean_error_message( $message ) {
 	$message = strip_tags( $message );
 	$message = html_entity_decode( $message, ENT_COMPAT, 'UTF-8' );
 
-	return $message;
+	\WP_CLI::error( $message );
 }
 
 function wp_redirect_handler( $url ) {
