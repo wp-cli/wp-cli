@@ -75,6 +75,12 @@ $steps->Given( '/^a WP install$/',
 	}
 );
 
+$steps->Given( '/^a WP install with debug mode$/',
+	function ( $world ) {
+		$world->install_wp( '', true );
+	}
+);
+
 $steps->Given( "/^a WP install in '([^\s]+)'$/",
 	function ( $world, $subdir ) {
 		$world->install_wp( $subdir );
