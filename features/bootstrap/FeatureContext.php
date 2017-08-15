@@ -527,13 +527,18 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->proc( 'wp core config', $params, $subdir )->run_check();
 	}
 
-	public function install_wp( $subdir = '' ) {
+	public function install_wp( $subdir = '', $debug = false ) {
 		$subdir = $this->replace_variables( $subdir );
 
 		$this->create_db();
 		$this->create_run_dir();
 		$this->download_wp( $subdir );
-		$this->create_config( $subdir );
+		if ( $debug ) {
+			$extra_php = "define( \"WP_DEBUG\", true );\n";
+		} else {
+			$extra_php = '';
+		}
+		$this->create_config( $subdir, $extra_php );
 
 		$install_args = array(
 			'url' => 'http://example.com',

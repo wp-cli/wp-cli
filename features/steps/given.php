@@ -77,9 +77,7 @@ $steps->Given( '/^a WP install$/',
 
 $steps->Given( '/^a WP install with debug mode$/',
 	function ( $world ) {
-		$world->install_wp();
-		$extra_php = "define( \"WP_DEBUG\", true );\n";
-		$world->create_config( null, $extra_php );
+		$world->install_wp( '', true );
 	}
 );
 
