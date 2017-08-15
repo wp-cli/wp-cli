@@ -1140,10 +1140,8 @@ class Runner {
 			// Try to trap errors on help.
 			$help_handler = array( $this, 'help_wp_die_handler' ); // Avoid any cross PHP version issues by not using $this in anon function.
 			WP_CLI::add_wp_hook( 'wp_die_handler', function () use ( $help_handler ) { return $help_handler; } );
-			// Hack: define `WP_DEBUG` to get `wpdb::bail()` to `wp_die()`.
-			if ( ! defined( 'WP_DEBUG' ) ) {
-				define( 'WP_DEBUG', true );
-			}
+			// Hack: define WP_ADMIN to cause `dead_db()` in "wp-includes/functions.php" to use `wp_die()` instead of `die()`.
+			define( 'WP_ADMIN', true );
 		} else {
 			WP_CLI::add_wp_hook( 'wp_die_handler', function() { return '\WP_CLI\Utils\wp_die_handler'; } );
 		}
@@ -1375,8 +1373,6 @@ class Runner {
 		$help_exit_warning = 'Error during WordPress load.';
 		if ( $message instanceof \WP_Error ) {
 			$help_exit_warning = WP_CLI\Utils\wp_clean_error_message( $message->get_error_message() );
-		} elseif ( is_string( $message ) ) {
-			$help_exit_warning = WP_CLI\Utils\wp_clean_error_message( $message );
 		}
 		$this->_run_command_and_exit( $help_exit_warning );
 	}
@@ -1482,3 +1478,4 @@ class Runner {
 		}
 	}
 }
+
