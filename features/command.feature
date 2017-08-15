@@ -102,7 +102,7 @@ Feature: WP-CLI Commands
     When I try `wp --require=custom-cmd.php command invalid`
     Then STDERR should contain:
       """
-      Error: 'invalid' is not a registered subcommand of 'command'. See 'wp help command' for available subcommands.
+      Error: 'invalid' is not a registered subcommand of 'command'. See 'wp help command'.
       """
 
   Scenario: Use a closure as a command
