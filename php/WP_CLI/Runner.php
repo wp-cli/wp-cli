@@ -1140,8 +1140,8 @@ class Runner {
 			// Try to trap errors on help.
 			$help_handler = array( $this, 'help_wp_die_handler' ); // Avoid any cross PHP version issues by not using $this in anon function.
 			WP_CLI::add_wp_hook( 'wp_die_handler', function () use ( $help_handler ) { return $help_handler; } );
-			// Hack: define WP_ADMIN to cause `dead_db()` in "wp-includes/functions.php" to use `wp_die()` instead of `die()`.
-			define( 'WP_ADMIN', true );
+			// // Hack: define WP_ADMIN to cause `dead_db()` in "wp-includes/functions.php" to use `wp_die()` instead of `die()`.
+			// define( 'WP_ADMIN', true );
 		} else {
 			WP_CLI::add_wp_hook( 'wp_die_handler', function() { return '\WP_CLI\Utils\wp_die_handler'; } );
 		}

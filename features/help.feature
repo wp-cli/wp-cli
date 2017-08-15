@@ -63,24 +63,17 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
-    When I run `wp --require=stderr-error-log.php help core download`
+    When I run `wp help core download`
     Then STDOUT should contain:
       """
         wp core download
       """
     And STDERR should be empty
 
-    When I run `wp --require=stderr-error-log.php help help`
-    Then STDOUT should contain:
-      """
-        wp help
-      """
-    And STDERR should be empty
-
     When I run `wp help help`
     Then STDOUT should contain:
       """
-      GLOBAL PARAMETERS
+        wp help
       """
     And STDERR should be empty
 
