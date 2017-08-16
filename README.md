@@ -180,7 +180,7 @@ Read through our [contributing guidelines in the handbook](https://make.wordpres
 
 WP-CLI has two project maintainers: [danielbachhuber](https://github.com/danielbachhuber) and [schlessera](http://github.com/schlessera).
 
-On occasion, we [grant write access to contributors](https://github.com/orgs/wp-cli/teams/committers) who have demonstrated, over a period of time, that they are capable and invested in moving the project forward.
+On occasion, we [grant write access to contributors](https://make.wordpress.org/cli/handbook/committers-credo/) who have demonstrated, over a period of time, that they are capable and invested in moving the project forward.
 
 Read the [governance document in the handbook](https://make.wordpress.org/cli/handbook/governance/) for more operational details about the project.
 
