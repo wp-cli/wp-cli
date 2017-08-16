@@ -40,7 +40,7 @@ Feature: Global flags
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: 'non-existing-command' is not a registered wp command. See 'wp help'.
+      Error: 'non-existing-command' is not a registered wp command. See 'wp help' for available commands.
       """
 
   Scenario: Debug run
@@ -204,7 +204,7 @@ Feature: Global flags
     When I try `wp --no-color non-existent-command`
     Then STDERR should be:
       """
-      Error: 'non-existent-command' is not a registered wp command. See 'wp help'.
+      Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
       """
 
     When I try `wp --color non-existent-command`
