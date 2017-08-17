@@ -3,7 +3,7 @@
 namespace WP_CLI\Iterators;
 
 /**
- * Aplies one or more callbacks to an item before returning it.
+ * Applies one or more callbacks to an item before returning it.
  */
 class Transform extends \IteratorIterator {
 
