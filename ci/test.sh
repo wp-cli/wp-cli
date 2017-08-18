@@ -3,7 +3,7 @@
 set -ex
 
 # Run CodeSniffer
-phpcs --standard=phpcs.ruleset.xml $(find . -name '*.php' -not -path "./vendor/*" -not -path "./packages/*")
+phpcs
 
 # Run the unit tests
 vendor/bin/phpunit

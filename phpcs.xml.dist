@@ -2,6 +2,13 @@
 <ruleset name="WP-CLI">
 	<description>WordPress Coding Standards for WP-CLI</description>
 
+	<!-- Check all PHP files in directory tree by default. -->
+	<arg name="extensions" value="php"/>
+	<file>.</file>
+
+	<!-- Show sniff codes in all reports -->
+	<arg value="s"/>
+
 	<rule ref="WordPress-Core">
 		<exclude name="Generic.ControlStructures.InlineControlStructure.NotAllowed" />
 		<exclude name="Generic.Formatting.DisallowMultipleStatements.SameLine" />
