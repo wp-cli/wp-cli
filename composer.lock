@@ -2169,16 +2169,16 @@
         },
         {
             "name": "wp-cli/package-command",
-            "version": "v1.0.3",
+            "version": "v1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/package-command.git",
-                "reference": "744692180a4240ddc75a3196934cafe396dd9178"
+                "reference": "39c5ee37502027baa551830b699a7aa25f749370"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/744692180a4240ddc75a3196934cafe396dd9178",
-                "reference": "744692180a4240ddc75a3196934cafe396dd9178",
+                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/39c5ee37502027baa551830b699a7aa25f749370",
+                "reference": "39c5ee37502027baa551830b699a7aa25f749370",
                 "shasum": ""
             },
             "require": {
@@ -2223,7 +2223,7 @@
             ],
             "description": "Manage WP-CLI packages.",
             "homepage": "https://github.com/wp-cli/package-command",
-            "time": "2017-08-07T12:21:11+00:00"
+            "time": "2017-08-18T18:16:46+00:00"
         },
         {
             "name": "wp-cli/php-cli-tools",
