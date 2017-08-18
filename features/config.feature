@@ -36,10 +36,10 @@ Feature: Have a config file
     Then STDOUT should not be empty
 
   Scenario: WP in a subdirectory
-    Given a WP install in 'core'
+    Given a WP install in 'foo'
     And a wp-cli.yml file:
       """
-      path: core
+      path: foo
       """
 
     When I run `wp --info`
@@ -51,7 +51,7 @@ Feature: Have a config file
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
-    When I run `wp core is-installed` from 'core/wp-content'
+    When I run `wp core is-installed` from 'foo/wp-content'
     Then STDOUT should be empty
 
     When I run `mkdir -p other/subdir`
@@ -59,18 +59,18 @@ Feature: Have a config file
     Then STDOUT should be empty
 
   Scenario: WP in a subdirectory (autodetected)
-    Given a WP install in 'core'
+    Given a WP install in 'foo'
 
     Given an index.php file:
     """
-    require('./core/wp-blog-header.php');
+    require('./foo/wp-blog-header.php');
     """
     When I run `wp core is-installed`
     Then STDOUT should be empty
 
     Given an index.php file:
     """
-    require dirname(__FILE__) . '/core/wp-blog-header.php';
+    require dirname(__FILE__) . '/foo/wp-blog-header.php';
     """
     When I run `wp core is-installed`
     Then STDOUT should be empty
@@ -82,12 +82,12 @@ Feature: Have a config file
 
   Scenario: Nested installs
     Given a WP install
-    And a WP install in 'subsite'
+    And a WP install in 'foo'
     And a wp-cli.yml file:
       """
       """
 
-    When I run `wp --info` from 'subsite'
+    When I run `wp --info` from 'foo'
     Then STDOUT should not contain:
       """
       wp-cli.yml

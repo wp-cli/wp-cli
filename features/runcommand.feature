@@ -220,9 +220,9 @@ Feature: Run a WP-CLI command
     | --launch    |
 
   Scenario Outline: Persists global parameters when supplied interactively
-    Given a WP install in 'subdir'
+    Given a WP install in 'foo'
 
-    When I run `wp <flag> --path=subdir run 'rewrite structure "archives/%post_id%/" --path=subdir'`
+    When I run `wp <flag> --path=foo run 'rewrite structure "archives/%post_id%/" --path=foo'`
     Then STDOUT should be:
       """
       Success: Rewrite rules flushed.
