@@ -1098,16 +1098,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.4.0",
+            "version": "v1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "f29dca382a6485c3cbe6379f0c61230167681937"
+                "reference": "7c8fae0ac1d216eb54349e6a8baa57d515fe8803"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/f29dca382a6485c3cbe6379f0c61230167681937",
-                "reference": "f29dca382a6485c3cbe6379f0c61230167681937",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/7c8fae0ac1d216eb54349e6a8baa57d515fe8803",
+                "reference": "7c8fae0ac1d216eb54349e6a8baa57d515fe8803",
                 "shasum": ""
             },
             "require": {
@@ -1119,7 +1119,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.4-dev"
+                    "dev-master": "1.5-dev"
                 }
             },
             "autoload": {
@@ -1153,7 +1153,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2017-06-09T14:24:12+00:00"
+            "time": "2017-06-14T15:44:48+00:00"
         },
         {
             "name": "symfony/process",
@@ -2169,16 +2169,16 @@
         },
         {
             "name": "wp-cli/package-command",
-            "version": "v1.0.3",
+            "version": "v1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/package-command.git",
-                "reference": "744692180a4240ddc75a3196934cafe396dd9178"
+                "reference": "39c5ee37502027baa551830b699a7aa25f749370"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/744692180a4240ddc75a3196934cafe396dd9178",
-                "reference": "744692180a4240ddc75a3196934cafe396dd9178",
+                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/39c5ee37502027baa551830b699a7aa25f749370",
+                "reference": "39c5ee37502027baa551830b699a7aa25f749370",
                 "shasum": ""
             },
             "require": {
@@ -2223,7 +2223,7 @@
             ],
             "description": "Manage WP-CLI packages.",
             "homepage": "https://github.com/wp-cli/package-command",
-            "time": "2017-08-07T12:21:11+00:00"
+            "time": "2017-08-18T18:16:46+00:00"
         },
         {
             "name": "wp-cli/php-cli-tools",
@@ -3217,12 +3217,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "9df1a9e73fc7caa573adaf98d159623048a7feed"
+                "reference": "f40f874cb7139abb9309fa63a31fd37bb49ddd3e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/9df1a9e73fc7caa573adaf98d159623048a7feed",
-                "reference": "9df1a9e73fc7caa573adaf98d159623048a7feed",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/f40f874cb7139abb9309fa63a31fd37bb49ddd3e",
+                "reference": "f40f874cb7139abb9309fa63a31fd37bb49ddd3e",
                 "shasum": ""
             },
             "conflict": {
@@ -3248,8 +3248,8 @@
                 "doctrine/mongodb-odm-bundle": ">=2,<3.0.1",
                 "doctrine/orm": ">=2,<2.4.8|>=2.5,<2.5.1",
                 "dompdf/dompdf": ">=0.6,<0.6.2",
-                "drupal/core": ">=8,<8.3.4",
-                "drupal/drupal": ">=8,<8.3.4",
+                "drupal/core": ">=8,<8.3.7",
+                "drupal/drupal": ">=8,<8.3.7",
                 "firebase/php-jwt": "<2",
                 "friendsofsymfony/rest-bundle": ">=1.2,<1.2.2",
                 "friendsofsymfony/user-bundle": ">=1.2,<1.3.5",
@@ -3346,7 +3346,7 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2017-08-08T18:44:50+00:00"
+            "time": "2017-08-17T12:55:16+00:00"
         }
     ],
     "aliases": [],

@@ -55,6 +55,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	private static $cache_dir;
 
 	/**
+	 * The directory that holds the install cache, and which is copied to RUN_DIR during a "Given a WP install" step. Recreated on each suite run.
+	 */
+	private static $install_cache_dir;
+
+	/**
 	 * The directory that the WP-CLI cache (WP_CLI_CACHE_DIR, normally "$HOME/.wp-cli/cache") is set to on a "Given an empty cache" step.
 	 * Variable SUITE_CACHE_DIR. Lives until the end of the scenario (or until another "Given an empty cache" step within the scenario).
 	 */
@@ -170,6 +175,13 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$result = Process::create( Utils\esc_cmd( 'wp core version --path=%s', self::$cache_dir ) , null, self::get_process_env_variables() )->run_check();
 		echo 'WordPress ' . $result->stdout;
 		echo PHP_EOL;
+
+		// Remove install cache if any (not setting the static var).
+		$wp_version_suffix = ( $wp_version = getenv( 'WP_VERSION' ) ) ? "-$wp_version" : '';
+		$install_cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-install-cache' . $wp_version_suffix;
+		if ( file_exists( $install_cache_dir ) ) {
+			self::remove_dir( $install_cache_dir );
+		}
 	}
 
 	/**
@@ -461,14 +473,33 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		}
 	}
 
+	/**
+	 * Run a MySQL command with `$db_settings`.
+	 *
+	 * @param string $sql_cmd Command to run.
+	 * @param array $assoc_args Optional. Associative array of options. Default empty.
+	 * @param bool $add_database Optional. Whether to add dbname to the $sql_cmd. Default false.
+	 */
+	private static function run_sql( $sql_cmd, $assoc_args = array(), $add_database = false ) {
+		$default_assoc_args = array(
+			'host' => self::$db_settings['dbhost'],
+			'user' => self::$db_settings['dbuser'],
+			'pass' => self::$db_settings['dbpass'],
+		);
+		if ( $add_database ) {
+			$sql_cmd .= ' ' . escapeshellarg( self::$db_settings['dbname'] );
+		}
+		Utils\run_mysql_command( $sql_cmd, array_merge( $assoc_args, $default_assoc_args ) );
+	}
+
 	public function create_db() {
 		$dbname = self::$db_settings['dbname'];
-		self::run_sql( "CREATE DATABASE IF NOT EXISTS $dbname" );
+		self::run_sql( 'mysql --no-defaults', array( 'execute' => "CREATE DATABASE IF NOT EXISTS $dbname" ) );
 	}
 
 	public function drop_db() {
 		$dbname = self::$db_settings['dbname'];
-		self::run_sql( "DROP DATABASE IF EXISTS $dbname" );
+		self::run_sql( 'mysql --no-defaults', array( 'execute' => "DROP DATABASE IF EXISTS $dbname" ) );
 	}
 
 	public function proc( $command, $assoc_args = array(), $path = '' ) {
@@ -562,10 +593,29 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$params['extra-php'] = $extra_php;
 		}
 
-		$this->proc( 'wp core config', $params, $subdir )->run_check();
+		$config_cache_path = '';
+		if ( self::$install_cache_dir ) {
+			$config_cache_path = self::$install_cache_dir . '/config_' . md5( implode( ':', $params ) . ':subdir=' . $subdir );
+			$run_dir = '' !== $subdir ? ( $this->variables['RUN_DIR'] . "/$subdir" ) : $this->variables['RUN_DIR'];
+		}
+
+		if ( $config_cache_path && file_exists( $config_cache_path ) ) {
+			copy( $config_cache_path, $run_dir . '/wp-config.php' );
+		} else {
+			$this->proc( 'wp config create', $params, $subdir )->run_check();
+			if ( $config_cache_path && file_exists( $run_dir . '/wp-config.php' ) ) {
+				copy( $run_dir . '/wp-config.php', $config_cache_path );
+			}
+		}
 	}
 
 	public function install_wp( $subdir = '' ) {
+		$wp_version_suffix = ( $wp_version = getenv( 'WP_VERSION' ) ) ? "-$wp_version" : '';
+		self::$install_cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-install-cache' . $wp_version_suffix;
+		if ( ! file_exists( self::$install_cache_dir ) ) {
+			mkdir( self::$install_cache_dir );
+		}
+
 		$subdir = $this->replace_variables( $subdir );
 
 		$this->create_db();
@@ -581,7 +631,23 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			'admin_password' => 'password1'
 		);
 
-		$this->proc( 'wp core install', $install_args, $subdir )->run_check();
+		$install_cache_path = '';
+		if ( self::$install_cache_dir ) {
+			$install_cache_path = self::$install_cache_dir . '/install_' . md5( implode( ':', $install_args ) . ':subdir=' . $subdir );
+			$run_dir = '' !== $subdir ? ( $this->variables['RUN_DIR'] . "/$subdir" ) : $this->variables['RUN_DIR'];
+		}
+
+		if ( $install_cache_path && file_exists( $install_cache_path ) ) {
+			self::copy_dir( $install_cache_path, $run_dir );
+			self::run_sql( 'mysql --no-defaults', array( 'execute' => "source {$install_cache_path}.sql" ), true /*add_database*/ );
+		} else {
+			$this->proc( 'wp core install', $install_args, $subdir )->run_check();
+			if ( $install_cache_path ) {
+				mkdir( $install_cache_path );
+				self::dir_diff_copy( $run_dir, self::$cache_dir, $install_cache_path );
+				self::run_sql( 'mysqldump --no-defaults', array( 'result-file' => "{$install_cache_path}.sql" ), true /*add_database*/ );
+			}
+		}
 	}
 
 	public function install_wp_with_composer( $vendor_directory = 'vendor' ) {
@@ -710,6 +776,42 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			if ( count( self::$scenario_run_times ) > self::$num_top_scenarios ) {
 				arsort( self::$scenario_run_times );
 				array_pop( self::$scenario_run_times );
+			}
+		}
+	}
+
+	/**
+	 * Copy files in updated directory that are not in source directory to copy directory. ("Incremental backup".)
+	 * Note: does not deal with changed files (ie does not compare file contents for changes), for speed reasons.
+	 *
+	 * @param string $upd_dir The directory to search looking for files/directories not in `$src_dir`.
+	 * @param string $src_dir The directory to be compared to `$upd_dir`.
+	 * @param string $cop_dir Where to copy any files/directories in `$upd_dir` but not in `$src_dir` to.
+	 */
+	private static function dir_diff_copy( $upd_dir, $src_dir, $cop_dir ) {
+		if ( false === ( $files = scandir( $upd_dir ) ) ) {
+			$error = error_get_last();
+			throw new \RuntimeException( sprintf( "Failed to open updated directory '%s': %s. " . __FILE__ . ':' . __LINE__, $upd_dir, $error['message'] ) );
+		}
+		foreach ( array_diff( $files, array( '.', '..' ) ) as $file ) {
+			$upd_file = $upd_dir . '/' . $file;
+			$src_file = $src_dir . '/' . $file;
+			$cop_file = $cop_dir . '/' . $file;
+			if ( ! file_exists( $src_file ) ) {
+				if ( is_dir( $upd_file ) ) {
+					if ( ! file_exists( $cop_file ) && ! mkdir( $cop_file, 0777, true /*recursive*/ ) ) {
+						$error = error_get_last();
+						throw new \RuntimeException( sprintf( "Failed to create copy directory '%s': %s. " . __FILE__ . ':' . __LINE__, $cop_file, $error['message'] ) );
+					}
+					self::copy_dir( $upd_file, $cop_file );
+				} else {
+					if ( ! copy( $upd_file, $cop_file ) ) {
+						$error = error_get_last();
+						throw new \RuntimeException( sprintf( "Failed to copy '%s' to '%s': %s. " . __FILE__ . ':' . __LINE__, $upd_file, $cop_file, $error['message'] ) );
+					}
+				}
+			} elseif ( is_dir( $upd_file ) ) {
+				self::dir_diff_copy( $upd_file, $src_file, $cop_file );
 			}
 		}
 	}
