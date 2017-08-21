@@ -2,7 +2,7 @@ Feature: Tests `WP_CLI::add_hook()`
 
   Scenario: Add callback to the `before_invoke`
     Given a WP install
-    And a wp-content/mu-plugins/test-harness.php file:
+    And a before-invoke.php file:
       """
       <?php
       $callback = function() {
@@ -10,6 +10,11 @@ Feature: Tests `WP_CLI::add_hook()`
       };
 
       WP_CLI::add_hook( 'before_invoke:plugin list', $callback );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - before-invoke.php
       """
 
     When I run `wp plugin list`
@@ -21,7 +26,7 @@ Feature: Tests `WP_CLI::add_hook()`
 
   Scenario: Add callback to the `before_invoke`
     Given a WP install
-    And a wp-content/mu-plugins/test-harness.php file:
+    And a before-invoke.php file:
       """
       <?php
       $callback = function() {
@@ -29,6 +34,11 @@ Feature: Tests `WP_CLI::add_hook()`
       };
 
       WP_CLI::add_hook( 'before_invoke:db check', $callback );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - before-invoke.php
       """
 
     When I run `wp db check`
@@ -40,7 +50,7 @@ Feature: Tests `WP_CLI::add_hook()`
 
   Scenario: Add callback to the `before_invoke`
     Given a WP install
-    And a wp-content/mu-plugins/test-harness.php file:
+    And a before-invoke.php file:
       """
       <?php
       $callback = function() {
@@ -48,6 +58,11 @@ Feature: Tests `WP_CLI::add_hook()`
       };
 
       WP_CLI::add_hook( 'before_invoke:core version', $callback );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - before-invoke.php
       """
 
     When I run `wp core version`

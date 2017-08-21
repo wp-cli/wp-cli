@@ -1010,7 +1010,7 @@ class WP_CLI {
 
 		if ( defined( 'PHP_BINARY' ) )
 			return PHP_BINARY;
-		
+
 		return 'php';
 	}
 
