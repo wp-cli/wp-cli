@@ -458,21 +458,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->variables['CACHE_DIR'] = $path;
 	}
 
-	private static function run_sql( $sql ) {
-		$start_time = microtime( true );
-
-		Utils\run_mysql_command( '/usr/bin/env mysql --no-defaults', array(
-			'execute' => $sql,
-			'host' => self::$db_settings['dbhost'],
-			'user' => self::$db_settings['dbuser'],
-			'pass' => self::$db_settings['dbpass'],
-		) );
-
-		if ( self::$log_run_times ) {
-			self::log_proc_method_run_time( 'run_sql ' . $sql, $start_time );
-		}
-	}
-
 	/**
 	 * Run a MySQL command with `$db_settings`.
 	 *
@@ -489,7 +474,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( $add_database ) {
 			$sql_cmd .= ' ' . escapeshellarg( self::$db_settings['dbname'] );
 		}
+		$start_time = microtime( true );
 		Utils\run_mysql_command( $sql_cmd, array_merge( $assoc_args, $default_assoc_args ) );
+		if ( self::$log_run_times ) {
+			self::log_proc_method_run_time( 'run_sql ' . $sql_cmd, $start_time );
+		}
 	}
 
 	public function create_db() {
