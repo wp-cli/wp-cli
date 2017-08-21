@@ -37,6 +37,11 @@ class ProcessRun {
 	public $return_code;
 
 	/**
+	 * @var float The run time of the process.
+	 */
+	public $run_time;
+
+	/**
 	 * @var array $props Properties of executed command.
 	 */
 	public function __construct( $props ) {
@@ -54,6 +59,7 @@ class ProcessRun {
 		$out  = "$ $this->command\n";
 		$out .= "$this->stdout\n$this->stderr";
 		$out .= "cwd: $this->cwd\n";
+		$out .= "run time: $this->run_time\n";
 		$out .= "exit status: $this->return_code";
 
 		return $out;

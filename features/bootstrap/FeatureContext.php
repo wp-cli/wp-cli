@@ -98,6 +98,19 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	private static $temp_dir_infix;
 
 	/**
+	 * Settings and variables for WP_CLI_TEST_LOG_RUN_TIMES run time logging.
+	 */
+	private static $log_run_times; // Whether to log run times - WP_CLI_TEST_LOG_RUN_TIMES env var. Set on `@BeforeScenario'.
+	private static $suite_start_time; // When the suite started, set on `@BeforeScenario'.
+	private static $output_to; // Where to output log - stdout|error_log. Set on `@BeforeSuite`.
+	private static $num_top_processes; // Number of processes/methods to output by longest run times. Set on `@BeforeSuite`.
+	private static $num_top_scenarios; // Number of scenarios to output by longest run times. Set on `@BeforeSuite`.
+
+	private static $scenario_run_times = array(); // Scenario run times (top `self::$num_top_scenarios` only).
+	private static $scenario_count = 0; // Scenario count, incremented on `@AfterScenario`.
+	private static $proc_method_run_times = array(); // Array of run time info for proc methods, keyed by method name and arg, each a 2-element array containing run time and run count.
+
+	/**
 	 * Get the environment variables required for launched `wp` processes
 	 */
 	private static function get_process_env_variables() {
@@ -149,6 +162,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 * @BeforeSuite
 	 */
 	public static function prepare( SuiteEvent $event ) {
+		// Test performance statistics - useful for detecting slow tests.
+		if ( self::$log_run_times = getenv( 'WP_CLI_TEST_LOG_RUN_TIMES' ) ) {
+			self::log_run_times_before_suite( $event );
+		}
+
 		$result = Process::create( 'wp cli info', null, self::get_process_env_variables() )->run_check();
 		echo PHP_EOL;
 		echo $result->stdout;
@@ -174,12 +192,20 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			self::remove_dir( self::$composer_local_repository );
 			self::$composer_local_repository = null;
 		}
+
+		if ( self::$log_run_times ) {
+			self::log_run_times_after_suite( $event );
+		}
 	}
 
 	/**
 	 * @BeforeScenario
 	 */
 	public function beforeScenario( $event ) {
+		if ( self::$log_run_times ) {
+			self::log_run_times_before_scenario( $event );
+		}
+
 		$this->variables['SRC_DIR'] = realpath( __DIR__ . '/../..' );
 
 		// Used in the names of the RUN_DIR and SUITE_CACHE_DIR directories.
@@ -217,6 +243,10 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		foreach ( $this->running_procs as $proc ) {
 			$status = proc_get_status( $proc );
 			self::terminate_proc( $status['pid'] );
+		}
+
+		if ( self::$log_run_times ) {
+			self::log_run_times_after_scenario( $event );
 		}
 	}
 
@@ -354,6 +384,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$scenario_feature = $event->getScenario();
 		} elseif ( method_exists( $event, 'getFeature' ) ) {
 			$scenario_feature = $event->getFeature();
+		} elseif ( method_exists( $event, 'getOutline' ) ) {
+			$scenario_feature = $event->getOutline();
 		} else {
 			return null;
 		}
@@ -442,7 +474,11 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( $add_database ) {
 			$sql_cmd .= ' ' . escapeshellarg( self::$db_settings['dbname'] );
 		}
+		$start_time = microtime( true );
 		Utils\run_mysql_command( $sql_cmd, array_merge( $assoc_args, $default_assoc_args ) );
+		if ( self::$log_run_times ) {
+			self::log_proc_method_run_time( 'run_sql ' . $sql_cmd, $start_time );
+		}
 	}
 
 	public function create_db() {
@@ -682,6 +718,58 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	/**
+	 * Initialize run time logging.
+	 */
+	private static function log_run_times_before_suite( $event ) {
+		self::$suite_start_time = microtime( true );
+
+		Process::$log_run_times = true;
+
+		$travis = getenv( 'TRAVIS' );
+
+		// Default output settings.
+		self::$output_to = 'stdout';
+		self::$num_top_processes = $travis ? 10 : 40;
+		self::$num_top_scenarios = $travis ? 10 : 20;
+
+		// Allow setting of above with "WP_CLI_TEST_LOG_RUN_TIMES=<output_to>[,<num_top_processes>][,<num_top_scenarios>]" formatted env var.
+		if ( preg_match( '/^(stdout|error_log)?(,[0-9]+)?(,[0-9]+)?$/i', self::$log_run_times, $matches ) ) {
+			if ( isset( $matches[1] ) ) {
+				self::$output_to = strtolower( $matches[1] );
+			}
+			if ( isset( $matches[2] ) ) {
+				self::$num_top_processes = max( (int) substr( $matches[2], 1 ), 1 );
+			}
+			if ( isset( $matches[3] ) ) {
+				self::$num_top_scenarios = max( (int) substr( $matches[3], 1 ), 1 );
+			}
+		}
+	}
+
+	/**
+	 * Record the start time of the scenario into the `$scenario_run_times` array.
+	 */
+	private static function log_run_times_before_scenario( $event ) {
+		if ( $scenario_key = self::get_scenario_key( $event ) ) {
+			self::$scenario_run_times[ $scenario_key ] = -microtime( true );
+		}
+	}
+
+	/**
+	 * Save the run time of the scenario into the `$scenario_run_times` array. Only the top `self::$num_top_scenarios` are kept.
+	 */
+	private static function log_run_times_after_scenario( $event ) {
+		if ( $scenario_key = self::get_scenario_key( $event ) ) {
+			self::$scenario_run_times[ $scenario_key ] += microtime( true );
+			self::$scenario_count++;
+			if ( count( self::$scenario_run_times ) > self::$num_top_scenarios ) {
+				arsort( self::$scenario_run_times );
+				array_pop( self::$scenario_run_times );
+			}
+		}
+	}
+
+	/**
 	 * Copy files in updated directory that are not in source directory to copy directory. ("Incremental backup".)
 	 * Note: does not deal with changed files (ie does not compare file contents for changes), for speed reasons.
 	 *
@@ -715,6 +803,101 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 				self::dir_diff_copy( $upd_file, $src_file, $cop_file );
 			}
 		}
+	}
+
+	/**
+	 * Get the scenario key used for `$scenario_run_times` array.
+	 * Format "<grandparent-dir> <feature-file>:<line-number>", eg "core-command core-update.feature:221".
+	 */
+	private static function get_scenario_key( $event ) {
+		$scenario_key = '';
+		if ( $file = self::get_event_file( $event, $line ) ) {
+			$scenario_grandparent = Utils\basename( dirname( dirname( $file ) ) );
+			$scenario_key = $scenario_grandparent . ' ' . Utils\basename( $file ) . ':' . $line;
+		}
+		return $scenario_key;
+	}
+
+	/**
+	 * Print out stats on the run times of processes and scenarios.
+	 */
+	private static function log_run_times_after_suite( $event ) {
+
+		$suite = '';
+		if ( self::$scenario_run_times ) {
+			// Grandparent directory is first part of key.
+			$keys = array_keys( self::$scenario_run_times );
+			$suite = substr( $keys[0], 0, strpos( $keys[0], ' ' ) );
+		}
+
+		$run_from = Utils\basename( dirname( dirname( __DIR__ ) ) );
+
+		// Format same as Behat, if have minutes.
+		$fmt = function ( $time ) {
+			$mins = floor( $time / 60 );
+			return round( $time, 3 ) . ( $mins ? ( ' (' . $mins . 'm' . round( $time - ( $mins * 60 ), 3 ) . 's)' ) : '' );
+		};
+
+		$time = microtime( true ) - self::$suite_start_time;
+
+		$log = PHP_EOL . str_repeat( '(', 80 ) . PHP_EOL;
+
+		// Process and proc method run times.
+		$run_times = array_merge( Process::$run_times, self::$proc_method_run_times );
+
+		list( $ptime, $calls ) = array_reduce( $run_times, function ( $carry, $item ) {
+			return array( $carry[0] + $item[0], $carry[1] + $item[1] );
+		}, array( 0, 0 ) );
+
+		$overhead = $time - $ptime;
+		$pct = round( ( $overhead / $time ) * 100 );
+		$unique = count( $run_times );
+
+		$log .= sprintf(
+			PHP_EOL . "Total process run time %s (tests %s, overhead %.3f %d%%), calls %d (%d unique) for '%s' run from '%s'" . PHP_EOL,
+			$fmt( $ptime ), $fmt( $time ), $overhead, $pct, $calls, $unique, $suite, $run_from
+		);
+
+		uasort( $run_times, function ( $a, $b ) {
+			return $a[0] === $b[0] ? 0 : ( $a[0] < $b[0] ? 1 : -1 ); // Reverse sort.
+		} );
+
+		$tops = array_slice( $run_times, 0, self::$num_top_processes, true );
+
+		$log .= PHP_EOL . "Top " . self::$num_top_processes . " process run times for '$suite'";
+		$log .= PHP_EOL . implode( PHP_EOL, array_map( function ( $k, $v, $i ) {
+			return sprintf( ' %3d. %7.3f %3d %s', $i + 1, round( $v[0], 3 ), $v[1], $k );
+		}, array_keys( $tops ), $tops, array_keys( array_keys( $tops ) ) ) ) . PHP_EOL;
+
+		// Scenario run times.
+		arsort( self::$scenario_run_times );
+
+		$tops = array_slice( self::$scenario_run_times, 0, self::$num_top_scenarios, true );
+
+		$log .= PHP_EOL . "Top " . self::$num_top_scenarios . " (of " . self::$scenario_count . ") scenario run times for '$suite'";
+		$log .= PHP_EOL . implode( PHP_EOL, array_map( function ( $k, $v, $i ) {
+			return sprintf( ' %3d. %7.3f %s', $i + 1, round( $v, 3 ), substr( $k, strpos( $k, ' ' ) + 1 ) );
+		}, array_keys( $tops ), $tops, array_keys( array_keys( $tops ) ) ) ) . PHP_EOL;
+
+		$log .= PHP_EOL . str_repeat( ')', 80 );
+
+		if ( 'error_log' === self::$output_to ) {
+			error_log( $log );
+		} else {
+			echo PHP_EOL . $log;
+		}
+	}
+
+	/**
+	 * Log the run time of a proc method (one that doesn't use Process but does (use a function that does) a `proc_open()`).
+	 */
+	private static function log_proc_method_run_time( $key, $start_time ) {
+		$run_time = microtime( true ) - $start_time;
+		if ( ! isset( self::$proc_method_run_times[ $key ] ) ) {
+			self::$proc_method_run_times[ $key ] = array( 0, 0 );
+		}
+		self::$proc_method_run_times[ $key ][0] += $run_time;
+		self::$proc_method_run_times[ $key ][1]++;
 	}
 
 }
