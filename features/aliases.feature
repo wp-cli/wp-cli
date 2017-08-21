@@ -1,12 +1,12 @@
 Feature: Create shortcuts to specific WordPress installs
 
   Scenario: Alias for a path to a specific WP install
-    Given a WP install in 'testdir'
-    And I run `mkdir testdir2`
+    Given a WP install in 'foo'
+    And I run `mkdir bar`
     And a wp-cli.yml file:
       """
-      @testdir:
-        path: testdir
+      @foo:
+        path: foo
       """
 
     When I try `wp core is-installed`
@@ -16,10 +16,10 @@ Feature: Create shortcuts to specific WordPress installs
       """
     And the return code should be 1
 
-    When I run `wp @testdir core is-installed`
+    When I run `wp @foo core is-installed`
     Then the return code should be 0
 
-    When I run `cd testdir2; wp @testdir core is-installed`
+    When I run `cd bar; wp @foo core is-installed`
     Then the return code should be 0
 
   Scenario: Error when invalid alias provided
@@ -36,7 +36,7 @@ Feature: Create shortcuts to specific WordPress installs
     And a wp-cli.yml file:
       """
       @test2:
-        path: testdir
+        path: foo
       """
 
     When I try `wp @test option get home`
@@ -47,20 +47,20 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   Scenario: Treat global params as local when included in alias
-    Given a WP install in 'testdir'
+    Given a WP install in 'foo'
     And a wp-cli.yml file:
       """
-      @testdir:
-        path: testdir
+      @foo:
+        path: foo
       """
 
-    When I run `wp @testdir option get home`
+    When I run `wp @foo option get home`
     Then STDOUT should be:
       """
       http://example.com
       """
 
-    When I try `wp @testdir option get home --path=testdir`
+    When I try `wp @foo option get home --path=foo`
     Then STDERR should contain:
       """
       Parameter errors:
@@ -70,7 +70,7 @@ Feature: Create shortcuts to specific WordPress installs
       unknown --path parameter
       """
 
-    When I run `wp @testdir eval 'echo get_current_user_id();' --user=admin`
+    When I run `wp @foo eval 'echo get_current_user_id();' --user=admin`
     Then STDOUT should be:
       """
       1
@@ -78,18 +78,18 @@ Feature: Create shortcuts to specific WordPress installs
 
     Given a wp-cli.yml file:
       """
-      @testdir:
-        path: testdir
+      @foo:
+        path: foo
         user: admin
       """
 
-    When I run `wp @testdir eval 'echo get_current_user_id();'`
+    When I run `wp @foo eval 'echo get_current_user_id();'`
     Then STDOUT should be:
       """
       1
       """
 
-    When I try `wp @testdir eval 'echo get_current_user_id();' --user=admin`
+    When I try `wp @foo eval 'echo get_current_user_id();' --user=admin`
     Then STDERR should contain:
       """
       Parameter errors:
@@ -100,15 +100,15 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   Scenario: Support global params specific to the WordPress install, not WP-CLI generally
-    Given a WP install in 'testdir'
+    Given a WP install in 'foo'
     And a wp-cli.yml file:
       """
-      @testdir:
-        path: testdir
+      @foo:
+        path: foo
         debug: true
       """
 
-    When I run `wp @testdir option get home`
+    When I run `wp @foo option get home`
     Then STDOUT should be:
       """
       http://example.com
@@ -119,8 +119,8 @@ Feature: Create shortcuts to specific WordPress installs
     Given an empty directory
     And a wp-cli.yml file:
       """
-      @testdir:
-        path: testdir
+      @foo:
+        path: foo
       """
 
     When I run `wp eval --skip-wordpress 'echo realpath( getenv( "RUN_DIR" ) );'`
@@ -130,33 +130,33 @@ Feature: Create shortcuts to specific WordPress installs
     Then STDOUT should be YAML containing:
       """
       @all: Run command against every registered alias.
-      @testdir:
-        path: {TEST_DIR}/testdir
+      @foo:
+        path: {TEST_DIR}/foo
       """
 
     When I run `wp cli aliases`
     Then STDOUT should be YAML containing:
       """
       @all: Run command against every registered alias.
-      @testdir:
-        path: {TEST_DIR}/testdir
+      @foo:
+        path: {TEST_DIR}/foo
       """
 
     When I run `wp cli alias --format=json`
     Then STDOUT should be JSON containing:
       """
-      {"@all":"Run command against every registered alias.","@testdir":{"path":"{TEST_DIR}/testdir"}}
+      {"@all":"Run command against every registered alias.","@foo":{"path":"{TEST_DIR}/foo"}}
       """
 
   Scenario: Defining a project alias completely overrides a global alias
-    Given a WP install in 'testdir'
+    Given a WP install in 'foo'
     And a config.yml file:
       """
-      @testdir:
-        path: testdir
+      @foo:
+        path: foo
       """
 
-    When I run `WP_CLI_CONFIG_PATH=config.yml wp @testdir option get home`
+    When I run `WP_CLI_CONFIG_PATH=config.yml wp @foo option get home`
     Then STDOUT should be:
       """
       http://example.com
@@ -164,41 +164,41 @@ Feature: Create shortcuts to specific WordPress installs
 
     Given a wp-cli.yml file:
       """
-      @testdir:
+      @foo:
         path: none-existent-install
       """
-    When I try `WP_CLI_CONFIG_PATH=config.yml wp @testdir option get home`
+    When I try `WP_CLI_CONFIG_PATH=config.yml wp @foo option get home`
     Then STDERR should contain:
       """
       Error: This does not seem to be a WordPress install.
       """
 
   Scenario: Use a group of aliases to run a command against multiple installs
-    Given a WP install in 'subdir1'
-    And a WP install in 'subdir2'
+    Given a WP install in 'foo'
+    And a WP install in 'bar'
     And a wp-cli.yml file:
       """
       @both:
-        - @subdir1
-        - @subdir2
+        - @foo
+        - @bar
       @invalid:
-        - @subdir1
-        - @subdir3
-      @subdir1:
-        path: subdir1
-      @subdir2:
-        path: subdir2
+        - @foo
+        - @baz
+      @foo:
+        path: foo
+      @bar:
+        path: bar
       """
 
-    When I run `wp @subdir1 option update home 'http://apple.com'`
-    And I run `wp @subdir1 option get home`
+    When I run `wp @foo option update home 'http://apple.com'`
+    And I run `wp @foo option get home`
     Then STDOUT should contain:
       """
       http://apple.com
       """
 
-    When I run `wp @subdir2 option update home 'http://google.com'`
-    And I run `wp @subdir2 option get home`
+    When I run `wp @bar option update home 'http://google.com'`
+    And I run `wp @bar option get home`
     Then STDOUT should contain:
       """
       http://google.com
@@ -207,15 +207,15 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp @invalid option get home`
     Then STDERR should be:
       """
-      Error: Group '@invalid' contains one or more invalid aliases: @subdir3
+      Error: Group '@invalid' contains one or more invalid aliases: @baz
       """
 
     When I run `wp @both option get home`
     Then STDOUT should be:
       """
-      @subdir1
+      @foo
       http://apple.com
-      @subdir2
+      @bar
       http://google.com
       """
 
@@ -227,25 +227,25 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   Scenario: Register '@all' alias for running on one or more aliases
-    Given a WP install in 'subdir1'
-    And a WP install in 'subdir2'
+    Given a WP install in 'foo'
+    And a WP install in 'bar'
     And a wp-cli.yml file:
       """
-      @subdir1:
-        path: subdir1
-      @subdir2:
-        path: subdir2
+      @foo:
+        path: foo
+      @bar:
+        path: bar
       """
 
-    When I run `wp @subdir1 option update home 'http://apple.com'`
-    And I run `wp @subdir1 option get home`
+    When I run `wp @foo option update home 'http://apple.com'`
+    And I run `wp @foo option get home`
     Then STDOUT should contain:
       """
       http://apple.com
       """
 
-    When I run `wp @subdir2 option update home 'http://google.com'`
-    And I run `wp @subdir2 option get home`
+    When I run `wp @bar option update home 'http://google.com'`
+    And I run `wp @bar option get home`
     Then STDOUT should contain:
       """
       http://google.com
@@ -254,9 +254,9 @@ Feature: Create shortcuts to specific WordPress installs
     When I run `wp @all option get home`
     Then STDOUT should be:
       """
-      @subdir1
+      @foo
       http://apple.com
-      @subdir2
+      @bar
       http://google.com
       """
 
@@ -268,14 +268,14 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   Scenario: Don't register '@all' when its already set
-    Given a WP install in 'subdir1'
-    And a WP install in 'subdir2'
+    Given a WP install in 'foo'
+    And a WP install in 'bar'
     And a wp-cli.yml file:
       """
       @all:
-        path: subdir1
-      @subdir2:
-        path: subdir2
+        path: foo
+      @bar:
+        path: bar
       """
 
     When I run `wp @all option get home | wc -l | tr -d ' '`
