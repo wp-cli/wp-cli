@@ -197,6 +197,7 @@ class Subcommand extends CompositeCommand {
 						$required = false;
 					} else {
 						$repeat = false;
+						$required = false;
 					}
 
 				} while( $required || $repeat );
