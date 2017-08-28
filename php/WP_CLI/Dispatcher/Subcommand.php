@@ -194,13 +194,11 @@ class Subcommand extends CompositeCommand {
 						$assoc_args[$key] = $value;
 
 						$repeat = true;
-						$required = false;
 					} else {
 						$repeat = false;
-						$required = false;
 					}
 
-				} while( $required || $repeat );
+				} while( $repeat );
 
 			} else {
 
