@@ -2,6 +2,8 @@
 
 use WP_CLI\Utils;
 
+require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
+
 class UtilsTest extends PHPUnit_Framework_TestCase {
 
 	function testIncrementVersion() {
