@@ -6,7 +6,7 @@ set -ex
 phpcs
 
 # Run the unit tests
-vendor/bin/phpunit
+phpunit
 
 BEHAT_TAGS=$(php ci/behat-tags.php)
 
