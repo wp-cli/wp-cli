@@ -223,7 +223,7 @@ class Subcommand extends CompositeCommand {
 							$assoc_args[$spec_arg['name']] = $response;
 							break;
 						case 'flag':
-							if ( 'Y' == $response )
+							if ( 'Y' == strtoupper( $response ) )
 								$assoc_args[$spec_arg['name']] = true;
 							break;
 					}
