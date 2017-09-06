@@ -6,8 +6,8 @@
 	<arg name="extensions" value="php"/>
 	<file>.</file>
 
-	<!-- Show sniff codes in all reports -->
-	<arg value="s"/>
+	<!-- Show sniff codes in all reports, and progress while running -->
+	<arg value="sp"/>
 
 	<rule ref="WordPress-Core">
 		<exclude name="Generic.ControlStructures.InlineControlStructure.NotAllowed" />
