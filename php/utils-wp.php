@@ -5,27 +5,30 @@
 namespace WP_CLI\Utils;
 
 function wp_not_installed() {
-	if ( !is_blog_installed() && !defined( 'WP_INSTALLING' ) ) {
+	if ( ! is_blog_installed() && ! defined( 'WP_INSTALLING' ) ) {
 		\WP_CLI::error(
 			"The site you have requested is not installed.\n" .
-			'Run `wp core install`.' );
+			'Run `wp core install`.'
+		);
 	}
 }
 
 function wp_debug_mode() {
 	if ( \WP_CLI::get_config( 'debug' ) ) {
-		if ( !defined( 'WP_DEBUG' ) )
+		if ( ! defined( 'WP_DEBUG' ) ) {
 			define( 'WP_DEBUG', true );
+		}
 
 		error_reporting( E_ALL & ~E_DEPRECATED & ~E_STRICT );
 	} else {
 		if ( WP_DEBUG ) {
 			error_reporting( E_ALL );
 
-			if ( WP_DEBUG_DISPLAY )
+			if ( WP_DEBUG_DISPLAY ) {
 				ini_set( 'display_errors', 1 );
-			elseif ( null !== WP_DEBUG_DISPLAY )
+			} elseif ( null !== WP_DEBUG_DISPLAY ) {
 				ini_set( 'display_errors', 0 );
+			}
 
 			if ( WP_DEBUG_LOG ) {
 				ini_set( 'log_errors', 1 );
@@ -46,7 +49,11 @@ function wp_debug_mode() {
 
 function replace_wp_die_handler() {
 	\remove_filter( 'wp_die_handler', '_default_wp_die_handler' );
-	\add_filter( 'wp_die_handler', function() { return __NAMESPACE__ . '\\' . 'wp_die_handler'; } );
+	\add_filter(
+		'wp_die_handler', function() {
+			return __NAMESPACE__ . '\\' . 'wp_die_handler';
+		}
+	);
 }
 
 function wp_die_handler( $message ) {
@@ -99,8 +106,9 @@ function maybe_require( $since, $path ) {
 }
 
 function get_upgrader( $class ) {
-	if ( !class_exists( '\WP_Upgrader' ) )
+	if ( ! class_exists( '\WP_Upgrader' ) ) {
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+	}
 
 	return new $class( new \WP_CLI\UpgraderSkin );
 }
@@ -109,10 +117,11 @@ function get_upgrader( $class ) {
  * Converts a plugin basename back into a friendly slug.
  */
 function get_plugin_name( $basename ) {
-	if ( false === strpos( $basename, '/' ) )
+	if ( false === strpos( $basename, '/' ) ) {
 		$name = basename( $basename, '.php' );
-	else
+	} else {
 		$name = dirname( $basename );
+	}
 
 	return $name;
 }
@@ -121,8 +130,9 @@ function is_plugin_skipped( $file ) {
 	$name = get_plugin_name( str_replace( WP_PLUGIN_DIR . '/', '', $file ) );
 
 	$skipped_plugins = \WP_CLI::get_runner()->config['skip-plugins'];
-	if ( true === $skipped_plugins )
+	if ( true === $skipped_plugins ) {
 		return true;
+	}
 
 	if ( ! is_array( $skipped_plugins ) ) {
 		$skipped_plugins = explode( ',', $skipped_plugins );
@@ -139,8 +149,9 @@ function is_theme_skipped( $path ) {
 	$name = get_theme_name( $path );
 
 	$skipped_themes = \WP_CLI::get_runner()->config['skip-themes'];
-	if ( true === $skipped_themes )
+	if ( true === $skipped_themes ) {
 		return true;
+	}
 
 	if ( ! is_array( $skipped_themes ) ) {
 		$skipped_themes = explode( ',', $skipped_themes );
@@ -155,16 +166,18 @@ function is_theme_skipped( $path ) {
  */
 function wp_register_unused_sidebar() {
 
-	register_sidebar(array(
-		'name' => __('Inactive Widgets'),
-		'id' => 'wp_inactive_widgets',
-		'class' => 'inactive-sidebar',
-		'description' => __( 'Drag widgets here to remove them from the sidebar but keep their settings.' ),
-		'before_widget' => '',
-		'after_widget' => '',
-		'before_title' => '',
-		'after_title' => '',
-	));
+	register_sidebar(
+		array(
+			'name' => __( 'Inactive Widgets' ),
+			'id' => 'wp_inactive_widgets',
+			'class' => 'inactive-sidebar',
+			'description' => __( 'Drag widgets here to remove them from the sidebar but keep their settings.' ),
+			'before_widget' => '',
+			'after_widget' => '',
+			'before_title' => '',
+			'after_title' => '',
+		)
+	);
 
 }
 
@@ -185,38 +198,40 @@ function wp_get_cache_type() {
 		if ( isset( $wp_object_cache->m ) && is_a( $wp_object_cache->m, 'Memcached' ) ) {
 			$message = 'Memcached';
 
-		// Test for Memcache PECL extension memcached object cache (http://wordpress.org/extend/plugins/memcached/)
+			// Test for Memcache PECL extension memcached object cache (http://wordpress.org/extend/plugins/memcached/)
 		} elseif ( isset( $wp_object_cache->mc ) ) {
 			$is_memcache = true;
 			foreach ( $wp_object_cache->mc as $bucket ) {
-				if ( ! is_a( $bucket, 'Memcache' ) && ! is_a( $bucket, 'Memcached' ) )
+				if ( ! is_a( $bucket, 'Memcache' ) && ! is_a( $bucket, 'Memcached' ) ) {
 					$is_memcache = false;
+				}
 			}
 
-			if ( $is_memcache )
+			if ( $is_memcache ) {
 				$message = 'Memcache';
+			}
 
-		// Test for Xcache object cache (http://plugins.svn.wordpress.org/xcache/trunk/object-cache.php)
+			// Test for Xcache object cache (http://plugins.svn.wordpress.org/xcache/trunk/object-cache.php)
 		} elseif ( is_a( $wp_object_cache, 'XCache_Object_Cache' ) ) {
 			$message = 'Xcache';
 
-		// Test for WinCache object cache (http://wordpress.org/extend/plugins/wincache-object-cache-backend/)
+			// Test for WinCache object cache (http://wordpress.org/extend/plugins/wincache-object-cache-backend/)
 		} elseif ( class_exists( 'WinCache_Object_Cache' ) ) {
 			$message = 'WinCache';
 
-		// Test for APC object cache (http://wordpress.org/extend/plugins/apc/)
+			// Test for APC object cache (http://wordpress.org/extend/plugins/apc/)
 		} elseif ( class_exists( 'APC_Object_Cache' ) ) {
 			$message = 'APC';
 
-		// Test for Redis Object Cache (https://github.com/alleyinteractive/wp-redis)
+			// Test for Redis Object Cache (https://github.com/alleyinteractive/wp-redis)
 		} elseif ( isset( $wp_object_cache->redis ) && is_a( $wp_object_cache->redis, 'Redis' ) ) {
 			$message = 'Redis';
 
-		// Test for WP LCache Object cache (https://github.com/lcache/wp-lcache)
+			// Test for WP LCache Object cache (https://github.com/lcache/wp-lcache)
 		} elseif ( isset( $wp_object_cache->lcache ) && is_a( $wp_object_cache->lcache, '\LCache\Integrated' ) ) {
 			$message = 'WP LCache';
 
-		} elseif( function_exists( 'w3_instance' ) ) {
+		} elseif ( function_exists( 'w3_instance' ) ) {
 			$config = w3_instance( 'W3_Config' );
 			if ( $config->get_boolean( 'objectcache.enabled' ) ) {
 				$message = 'W3TC ' . $config->get_string( 'objectcache.engine' );
@@ -283,14 +298,14 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 				$all_tables = $wpdb->get_col( 'SHOW TABLES' );
 			}
 			$tables = array();
-			foreach ( $all_tables as $table) {
+			foreach ( $all_tables as $table ) {
 				if ( fnmatch( $glob, $table ) ) {
 					$tables[] = $table;
 				}
 			}
 			return $tables;
 		};
-		foreach( $args as $key => $table ) {
+		foreach ( $args as $key => $table ) {
 			if ( false !== strpos( $table, '*' ) || false !== strpos( $table, '?' ) ) {
 				$expanded_tables = $get_tables_for_glob( $table );
 				if ( empty( $expanded_tables ) ) {
@@ -305,7 +320,7 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 	}
 
 	// Fall back to flag if no tables were passed
-	$table_type = 'wordpress';
+	$table_type = 'WordPress';
 	if ( get_flag_value( $assoc_args, 'network' ) ) {
 		$table_type = 'network';
 	}
@@ -326,7 +341,7 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 	// '_' is a special wildcard for MySQL LIKE queries
 	// so it needs to be escaped with '\', but then '\' needs to be escaped as well
 	$sql_prefix = str_replace( '_', '\\_', $prefix );
-	$matching_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $sql_prefix . '%' ) );
+	$matching_tables = $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $sql_prefix . '%' ) );
 
 	if ( 'all-tables-with-prefix' == $table_type ) {
 		return $matching_tables;
@@ -341,14 +356,14 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 	if ( $network ) {
 		$allowed_table_types[] = 'ms_global_tables';
 	}
-	foreach( $allowed_table_types as $table_type ) {
-		foreach( $wpdb->$table_type as $table ) {
+	foreach ( $allowed_table_types as $table_type ) {
+		foreach ( $wpdb->$table_type as $table ) {
 			$allowed_tables[] = $prefix . $table;
 		}
 	}
 
 	// Given our matching tables, also allow site-specific tables on the network
-	foreach( $matching_tables as $key => $matched_table ) {
+	foreach ( $matching_tables as $key => $matched_table ) {
 
 		if ( in_array( $matched_table, $allowed_tables ) ) {
 			continue;
@@ -356,7 +371,7 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 
 		if ( $network ) {
 			$valid_table = false;
-			foreach( array_merge( $wpdb->tables, $wpdb->old_tables ) as $maybe_site_table ) {
+			foreach ( array_merge( $wpdb->tables, $wpdb->old_tables ) as $maybe_site_table ) {
 				if ( preg_match( "#{$prefix}([\d]+)_{$maybe_site_table}#", $matched_table ) ) {
 					$valid_table = true;
 				}

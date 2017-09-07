@@ -29,8 +29,8 @@ class WpHttpCacheManager {
 		$this->cache = $cache;
 
 		// hook into wp http api
-		add_filter( 'pre_http_request', array($this, 'filter_pre_http_request'), 10, 3 );
-		add_filter( 'http_response', array($this, 'filter_http_response'), 10, 3 );
+		add_filter( 'pre_http_request', array( $this, 'filter_pre_http_request' ), 10, 3 );
+		add_filter( 'http_response', array( $this, 'filter_http_response' ), 10, 3 );
 	}
 
 	/**
@@ -38,7 +38,7 @@ class WpHttpCacheManager {
 	 */
 	public function filter_pre_http_request( $response, $args, $url ) {
 		// check if whitelisted
-		if ( !isset( $this->whitelist[$url] ) ) {
+		if ( ! isset( $this->whitelist[ $url ] ) ) {
 			return $response;
 		}
 		// check if downloading
@@ -46,13 +46,16 @@ class WpHttpCacheManager {
 			return $response;
 		}
 		// check cache and export to designated location
-		$filename = $this->cache->has( $this->whitelist[$url]['key'], $this->whitelist[$url]['ttl'] );
+		$filename = $this->cache->has( $this->whitelist[ $url ]['key'], $this->whitelist[ $url ]['ttl'] );
 		if ( $filename ) {
 			WP_CLI::log( sprintf( 'Using cached file \'%s\'...', $filename, $url ) );
 			if ( copy( $filename, $args['filename'] ) ) {
 				// simulate successful download response
 				return array(
-					'response' => array('code' => ( 200 ), 'message' => 'OK'),
+					'response' => array(
+						'code' => ( 200 ),
+						'message' => 'OK',
+					),
 					'filename' => $args['filename'],
 				);
 			} else {
@@ -72,7 +75,7 @@ class WpHttpCacheManager {
 	 */
 	public function filter_http_response( $response, $args, $url ) {
 		// check if whitelisted
-		if ( !isset( $this->whitelist[$url] ) ) {
+		if ( ! isset( $this->whitelist[ $url ] ) ) {
 			return $response;
 		}
 		// check if downloading
@@ -84,7 +87,7 @@ class WpHttpCacheManager {
 			return $response;
 		}
 		// cache downloaded file
-		$this->cache->import( $this->whitelist[$url]['key'], $response['filename']);
+		$this->cache->import( $this->whitelist[ $url ]['key'], $response['filename'] );
 		return $response;
 	}
 
@@ -113,7 +116,7 @@ class WpHttpCacheManager {
 	 */
 	public function whitelist_url( $url, $key = null, $ttl = null ) {
 		$key = $key ? : $url;
-		$this->whitelist[$url] = compact( 'key', 'ttl' );
+		$this->whitelist[ $url ] = compact( 'key', 'ttl' );
 	}
 
 	/**
@@ -123,7 +126,7 @@ class WpHttpCacheManager {
 	 * @return bool
 	 */
 	public function is_whitelisted( $url ) {
-		return isset( $this->whitelist[$url] );
+		return isset( $this->whitelist[ $url ] );
 	}
 
 }
