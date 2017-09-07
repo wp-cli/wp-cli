@@ -38,8 +38,9 @@ class Query implements \Iterator {
 		$this->query = $query;
 
 		$this->count_query = preg_replace( '/^.*? FROM /', 'SELECT COUNT(*) FROM ', $query, 1, $replacements );
-		if ( $replacements != 1 )
+		if ( $replacements != 1 ) {
 			$this->count_query = '';
+		}
 
 		$this->chunk_size = $chunk_size;
 
@@ -48,19 +49,21 @@ class Query implements \Iterator {
 
 	/**
 	 * Reduces the offset when the query row count shrinks
-	 * 
-	 * In cases where the iterated rows are being updated such that they will no 
+	 *
+	 * In cases where the iterated rows are being updated such that they will no
 	 * longer be returned by the original query, the offset must be reduced to
 	 * iterate over all remaining rows.
 	 */
 	private function adjust_offset_for_shrinking_result_set() {
-		if ( empty( $this->count_query ) )
+		if ( empty( $this->count_query ) ) {
 			return;
+		}
 
 		$row_count = $this->db->get_var( $this->count_query );
 
-		if ( $row_count < $this->row_count )
+		if ( $row_count < $this->row_count ) {
 			$this->offset -= $this->row_count - $row_count;
+		}
 
 		$this->row_count = $row_count;
 	}
@@ -71,7 +74,7 @@ class Query implements \Iterator {
 		$query = $this->query . sprintf( ' LIMIT %d OFFSET %d', $this->chunk_size, $this->offset );
 		$this->results = $this->db->get_results( $query );
 
-		if ( !$this->results ) {
+		if ( ! $this->results ) {
 			if ( $this->db->last_error ) {
 				throw new Exception( 'Database error: ' . $this->db->last_error );
 			} else {
@@ -109,10 +112,10 @@ class Query implements \Iterator {
 			return false;
 		}
 
-		if ( !isset( $this->results[ $this->index_in_results ] ) ) {
+		if ( ! isset( $this->results[ $this->index_in_results ] ) ) {
 			$items_loaded = $this->load_items_from_db();
 
-			if ( !$items_loaded ) {
+			if ( ! $items_loaded ) {
 				$this->rewind();
 				$this->depleted = true;
 				return false;

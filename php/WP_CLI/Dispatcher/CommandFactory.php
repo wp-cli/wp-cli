@@ -25,16 +25,20 @@ class CommandFactory {
 			|| ( is_string( $callable ) && function_exists( $callable ) ) ) {
 			$reflection = new \ReflectionFunction( $callable );
 			$command = self::create_subcommand( $parent, $name, $callable, $reflection );
-		} else if ( is_array( $callable ) && is_callable( $callable ) ) {
+		} elseif ( is_array( $callable ) && is_callable( $callable ) ) {
 			$reflection = new \ReflectionClass( $callable[0] );
-			$command = self::create_subcommand( $parent, $name, array( $callable[0], $callable[1] ),
-					$reflection->getMethod( $callable[1] ) );
+			$command = self::create_subcommand(
+				$parent, $name, array( $callable[0], $callable[1] ),
+				$reflection->getMethod( $callable[1] )
+			);
 		} else {
 			$reflection = new \ReflectionClass( $callable );
 			if ( $reflection->hasMethod( '__invoke' ) ) {
 				$class = is_object( $callable ) ? $callable : $reflection->name;
-				$command = self::create_subcommand( $parent, $name, array( $class, '__invoke' ),
-					$reflection->getMethod( '__invoke' ) );
+				$command = self::create_subcommand(
+					$parent, $name, array( $class, '__invoke' ),
+					$reflection->getMethod( '__invoke' )
+				);
 			} else {
 				$command = self::create_composite_command( $parent, $name, $callable );
 			}
@@ -65,11 +69,13 @@ class CommandFactory {
 		$docparser = new \WP_CLI\DocParser( $doc_comment );
 
 		if ( is_array( $callable ) ) {
-			if ( !$name )
+			if ( ! $name ) {
 				$name = $docparser->get_tag( 'subcommand' );
+			}
 
-			if ( !$name )
+			if ( ! $name ) {
 				$name = $reflection->name;
+			}
 		}
 		if ( ! $doc_comment ) {
 			\WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
@@ -105,8 +111,9 @@ class CommandFactory {
 		$container = new CompositeCommand( $parent, $name, $docparser );
 
 		foreach ( $reflection->getMethods() as $method ) {
-			if ( !self::is_good_method( $method ) )
+			if ( ! self::is_good_method( $method ) ) {
 				continue;
+			}
 
 			$class = is_object( $callable ) ? $callable : $reflection->name;
 			$subcommand = self::create_subcommand( $container, false, array( $class, $method->name ), $method );
@@ -126,7 +133,7 @@ class CommandFactory {
 	 * @return bool
 	 */
 	private static function is_good_method( $method ) {
-		return $method->isPublic() && !$method->isStatic() && 0 !== strpos( $method->getName(), '__' );
+		return $method->isPublic() && ! $method->isStatic() && 0 !== strpos( $method->getName(), '__' );
 	}
 
 	/**

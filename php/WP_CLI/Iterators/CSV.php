@@ -19,7 +19,7 @@ class CSV implements \Iterator {
 
 	public function __construct( $filename, $delimiter = ',' ) {
 		$this->filePointer = fopen( $filename, 'r' );
-		if ( !$this->filePointer ) {
+		if ( ! $this->filePointer ) {
 			\WP_CLI::error( sprintf( 'Could not open file: %s', $filename ) );
 		}
 
@@ -49,18 +49,20 @@ class CSV implements \Iterator {
 		while ( true ) {
 			$str = fgets( $this->filePointer );
 
-			if ( false === $str )
+			if ( false === $str ) {
 				break;
+			}
 
 			$row = str_getcsv( $str, $this->delimiter );
 
 			$element = array();
 			foreach ( $this->columns as $i => $key ) {
-				if ( isset( $row[ $i ] ) )
+				if ( isset( $row[ $i ] ) ) {
 					$element[ $key ] = $row[ $i ];
+				}
 			}
 
-			if ( !empty( $element ) ) {
+			if ( ! empty( $element ) ) {
 				$this->currentElement = $element;
 				$this->currentIndex++;
 

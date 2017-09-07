@@ -11,5 +11,5 @@ if ( file_exists( 'phar://wp-cli.phar/php/wp-cli.php' ) ) {
 	include WP_CLI_ROOT . '/php/wp-cli.php';
 } else {
 	echo "Couldn't find 'php/wp-cli.php'. Was this Phar built correctly?";
-	exit(1);
+	exit( 1 );
 }
