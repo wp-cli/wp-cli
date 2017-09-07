@@ -2,12 +2,22 @@
 <ruleset name="WP-CLI">
 	<description>WordPress Coding Standards for WP-CLI</description>
 
-	<!-- Check all PHP files in directory tree by default. -->
-	<arg name="extensions" value="php"/>
-	<file>.</file>
-
 	<!-- Show sniff codes in all reports, and progress while running -->
 	<arg value="sp"/>
+	<!-- Check all PHP files in directory tree by default. -->
+	<arg name="extensions" value="php"/>
+	<!-- Run different reports -->
+	<arg name="report" value="full"/>
+	<arg name="report" value="summary"/>
+	<arg name="report" value="source"/>
+
+	<file>.</file>
+	<exclude-pattern>*/ci/*</exclude-pattern>
+	<exclude-pattern>*/features/*</exclude-pattern>
+	<exclude-pattern>*/packages/*</exclude-pattern>
+	<exclude-pattern>*/tests/*</exclude-pattern>
+	<exclude-pattern>*/utils/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
 
 	<rule ref="WordPress-Core">
 		<exclude name="Generic.ControlStructures.InlineControlStructure.NotAllowed" />
@@ -67,11 +77,4 @@
 		<exclude name="WordPress.WhiteSpace.OperatorSpacing.NoSpaceBefore" />
 		<exclude name="WordPress.WP.CapitalPDangit" />
 	</rule>
-
-	<exclude-pattern>*/ci/*</exclude-pattern>
-	<exclude-pattern>*/features/*</exclude-pattern>
-	<exclude-pattern>*/packages/*</exclude-pattern>
-	<exclude-pattern>*/tests/*</exclude-pattern>
-	<exclude-pattern>*/utils/*</exclude-pattern>
-	<exclude-pattern>*/vendor/*</exclude-pattern>
 </ruleset>
