@@ -15,7 +15,8 @@
 	"config": {
 		"platform": {
 			"php": "5.3.29"
-		}
+		},
+		"sort-packages": true
 	},
 	"minimum-stability": "dev",
 	"prefer-stable": true,
@@ -63,9 +64,11 @@
 		"wp-cli/widget-command": "^1.0"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "3.7.*",
 		"behat/behat": "2.5.*",
-		"roave/security-advisories": "dev-master"
+		"dealerdirect/phpcodesniffer-composer-installer": "^0.4.2",
+		"phpunit/phpunit": "3.7.*",
+		"roave/security-advisories": "dev-master",
+		"wp-coding-standards/wpcs": "^0.13.1"
 	},
 	"suggest": {
 		"psy/psysh": "Enhanced `wp shell` functionality"
