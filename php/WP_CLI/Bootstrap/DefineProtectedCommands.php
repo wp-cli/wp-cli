@@ -33,7 +33,7 @@ final class DefineProtectedCommands implements BootstrapStep {
 	}
 
 	/**
-	 * Get the lost of protected commands.
+	 * Get the list of protected commands.
 	 *
 	 * @return array
 	 */
