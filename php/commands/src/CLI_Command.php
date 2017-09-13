@@ -646,7 +646,7 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		/**
-		 * Exit with status 1 if command is found.
+		 * Exit with status 1 if command is not found.
 		 */
 		if ( empty( $command ) || empty( $data['subcommands'][ $counter ]['name'] ) ) {
 			WP_CLI::halt( 1 );
