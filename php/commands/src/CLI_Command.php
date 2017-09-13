@@ -575,4 +575,96 @@ class CLI_Command extends WP_CLI_Command {
 		return $update_type;
 	}
 
+	/**
+	 * Detects if a command exists
+	 *
+	 * This commands checks if a command is registered with WP-CLI.
+	 * If the command is found then it returns with exit status 0.
+	 * If the command doesn't exist, then it will exit with status 1.
+	 *
+	 * ## OPTIONS
+	 * <command_name>...
+	 * : The command
+	 *
+	 * ## EXAMPLES
+	 *		wp cli has-command "wp site delete"
+	 *		wp cli has-command wp site delete
+	 *
+	 * @subcommand has-command
+	 *
+	 * @when before_wp_load
+	 *
+	 * @param array $_          Array of positional arguments.
+	 * @param array $assoc_args Array of associative arguments.
+	 */
+	public function has_command( $_, $assoc_args ) {
+
+		/**
+		 * Get dump as array.
+		 */
+		$json_decoded = self::command_to_array( WP_CLI::get_root_command() );
+
+		/**
+		 * If command is input as a string, then explode it into array.
+		 */
+		$command = ( 1 === count( $_ ) ) ? explode( ' ', $_[0] ) : $_;
+
+		/**
+		 * If command doesn't start with WP, then halt script execution and exit with status 1.
+		 */
+		if ( 'wp' !== $command[0] ) {
+			WP_CLI::halt( 1 );
+		}
+
+		/**
+		 * Length of the command array.
+		 */
+		$command_length = count( $command );
+
+		/**
+		 * Traverse the entire array to check if sequence of commands exist.
+		 */
+		$this->recursive_search( $command, $json_decoded, $command_length );
+	}
+
+	/**
+	 * This function traverses the wp cli cmd-dump JSON that's converted to multi-level associative array.
+	 *
+	 * @param array  $command        The array containing separate parts of the command.
+	 * @param array  $data           The JSON to array converted data.
+	 * @param number $command_length Length of the command array.
+	 * @param number $ticker         Updates if a subcommand is successfully detected.
+	 * @param number $counter        Index as starting point required for next recursive call.
+	 */
+	private function recursive_search( $command, $data, $command_length, $ticker = 0, $counter = 0 ) {
+
+		/**
+		 * Exit with status 0 if command is found.
+		 */
+		if ( ( $ticker + 1 ) === $command_length ) {
+			WP_CLI::halt( 0 );
+		}
+
+		/**
+		 * Exit with status 1 if command is found.
+		 */
+		if ( empty( $command ) || empty( $data['subcommands'][ $counter ]['name'] ) ) {
+			WP_CLI::halt( 1 );
+		}
+
+		if ( ! empty( $command ) && 'wp' === $command[0] ) {
+			array_shift( $command );
+		}
+
+		if ( array_key_exists( 'subcommands', $data ) ) {
+			if ( is_array( $data['subcommands'] ) ) {
+				if ( $command[0] === $data['subcommands'][ $counter ]['name'] ) {
+					array_shift( $command );
+					return $this->recursive_search( $command, $data['subcommands'][ $counter ], $command_length, ++$ticker );
+				} else {
+					return $this->recursive_search( $command, $data, $command_length, $ticker, ++$counter );
+				}
+			}
+		}
+	}
 }
