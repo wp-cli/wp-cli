@@ -587,8 +587,8 @@ class CLI_Command extends WP_CLI_Command {
 	 * : The command
 	 *
 	 * ## EXAMPLES
-	 *		wp cli has-command "wp site delete"
-	 *		wp cli has-command wp site delete
+	 *     wp cli has-command "wp site delete"
+	 *     wp cli has-command wp site delete
 	 *
 	 * @subcommand has-command
 	 *
