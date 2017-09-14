@@ -449,11 +449,10 @@ class Runner {
 
 		// Vagrant ssh-config.
 		if ( 'vagrant' === $bits['scheme'] ) {
-			$command = 'vagrant ssh %s-c %s %s';
+			$command = 'vagrant ssh -c %s %s';
 
 			$escaped_command = sprintf(
 				$command,
-				$is_tty ? '-t ' : ' ',
 				escapeshellarg( $wp_command ),
 				escapeshellarg( $bits['host'] )
 			);
