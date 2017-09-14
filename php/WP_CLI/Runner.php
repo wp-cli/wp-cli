@@ -447,6 +447,17 @@ class Runner {
 			);
 		}
 
+		// Vagrant ssh-config.
+		if ( 'vagrant' === $bits['scheme'] ) {
+			$command = 'vagrant ssh -c %s %s';
+
+			$escaped_command = sprintf(
+				$command,
+				escapeshellarg( $wp_command ),
+				escapeshellarg( $bits['host'] )
+			);
+		}
+
 		// Default scheme is SSH.
 		if ( 'ssh' === $bits['scheme'] || null === $bits['scheme'] ) {
 			$command = 'ssh -q %s%s %s %s';
