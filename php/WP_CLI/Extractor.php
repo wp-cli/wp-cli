@@ -44,11 +44,14 @@ class Extractor {
 		$zip = new ZipArchive();
 		$res = $zip->open( $zipfile );
 		if ( true === $res ) {
-			$tempdir = implode( DIRECTORY_SEPARATOR, array(
-				dirname( $zipfile ),
-				Utils\basename( $zipfile, '.zip' ),
-				$zip->getNameIndex( 0 ),
-			) );
+			$tempdir = implode(
+				DIRECTORY_SEPARATOR,
+				array(
+					dirname( $zipfile ),
+					Utils\basename( $zipfile, '.zip' ),
+					$zip->getNameIndex( 0 ),
+				)
+			);
 
 			$zip->extractTo( dirname( $tempdir ) );
 			$zip->close();
@@ -73,11 +76,14 @@ class Extractor {
 			return;
 		}
 		$phar = new PharData( $tarball );
-		$tempdir = implode( DIRECTORY_SEPARATOR, array(
-			dirname( $tarball ),
-			Utils\basename( $tarball, '.tar.gz' ),
-			$phar->getFileName(),
-		) );
+		$tempdir = implode(
+			DIRECTORY_SEPARATOR,
+			array(
+				dirname( $tarball ),
+				Utils\basename( $tarball, '.tar.gz' ),
+				$phar->getFileName(),
+			)
+		);
 
 		$phar->extractTo( dirname( $tempdir ), null, true );
 
@@ -89,7 +95,8 @@ class Extractor {
 	public static function copy_overwrite_files( $source, $dest ) {
 		$iterator = new RecursiveIteratorIterator(
 			new RecursiveDirectoryIterator( $source, RecursiveDirectoryIterator::SKIP_DOTS ),
-			RecursiveIteratorIterator::SELF_FIRST);
+			RecursiveIteratorIterator::SELF_FIRST
+		);
 
 		$error = 0;
 
@@ -102,7 +109,7 @@ class Extractor {
 			$dest_path = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
 
 			if ( $item->isDir() ) {
-				if ( !is_dir( $dest_path ) ) {
+				if ( ! is_dir( $dest_path ) ) {
 					mkdir( $dest_path );
 				}
 			} else {
