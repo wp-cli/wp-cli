@@ -58,20 +58,29 @@ class Table extends Query {
 	}
 
 	private static function build_fields( $fields ) {
-		if ( '*' === $fields )
+		if ( '*' === $fields ) {
 			return $fields;
+		}
 
-		return implode( ', ', array_map( function ($v) { return "`$v`"; }, $fields ) );
+		return implode(
+			', ',
+			array_map(
+				function ( $v ) {
+					return "`$v`";
+				},
+				$fields
+			)
+		);
 	}
 
 	private static function build_where_conditions( $where ) {
 		global $wpdb;
 		if ( is_array( $where ) ) {
 			$conditions = array();
-			foreach( $where as $key => $value ) {
+			foreach ( $where as $key => $value ) {
 				if ( is_array( $value ) ) {
 					$conditions[]  = $key . ' IN (' . esc_sql( implode( ',', $value ) ) . ')';
-				} else if ( is_numeric( $key ) ) {
+				} elseif ( is_numeric( $key ) ) {
 					$conditions[] = $value;
 				} else {
 					$conditions[] = $key . $wpdb->prepare( ' = %s', $value );
