@@ -72,7 +72,7 @@ class Execution extends Base {
 	 * @param string $str Message to write.
 	 */
 	protected function write( $handle, $str ) {
-		switch( $handle ) {
+		switch ( $handle ) {
 			case 'STDOUT':
 				$this->stdout .= $str;
 				break;
