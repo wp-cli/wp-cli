@@ -87,15 +87,17 @@ class Process {
 			self::$run_times[ $this->command ][1]++;
 		}
 
-		return new ProcessRun( array(
-			'stdout' => $stdout,
-			'stderr' => $stderr,
-			'return_code' => $return_code,
-			'command' => $this->command,
-			'cwd' => $this->cwd,
-			'env' => $this->env,
-			'run_time' => $run_time,
-		) );
+		return new ProcessRun(
+			array(
+				'stdout' => $stdout,
+				'stderr' => $stderr,
+				'return_code' => $return_code,
+				'command' => $this->command,
+				'cwd' => $this->cwd,
+				'env' => $this->env,
+				'run_time' => $run_time,
+			)
+		);
 	}
 
 	/**
@@ -107,7 +109,7 @@ class Process {
 		$r = $this->run();
 
 		// $r->STDERR is incorrect, but kept incorrect for backwards-compat
-		if ( $r->return_code || !empty( $r->STDERR ) ) {
+		if ( $r->return_code || ! empty( $r->STDERR ) ) {
 			throw new \RuntimeException( $r );
 		}
 
