@@ -40,7 +40,7 @@ class WP_CLI {
 	public static function get_configurator() {
 		static $configurator;
 
-		if ( !$configurator ) {
+		if ( ! $configurator ) {
 			$configurator = new WP_CLI\Configurator( WP_CLI_ROOT . '/php/config-spec.php' );
 		}
 
@@ -50,7 +50,7 @@ class WP_CLI {
 	public static function get_root_command() {
 		static $root;
 
-		if ( !$root ) {
+		if ( ! $root ) {
 			$root = new Dispatcher\RootCommand;
 		}
 
@@ -60,7 +60,7 @@ class WP_CLI {
 	public static function get_runner() {
 		static $runner;
 
-		if ( !$runner ) {
+		if ( ! $runner ) {
 			$runner = new WP_CLI\Runner;
 		}
 
@@ -73,7 +73,7 @@ class WP_CLI {
 	public static function get_cache() {
 		static $cache;
 
-		if ( !$cache ) {
+		if ( ! $cache ) {
 			$home = Utils\get_home_dir();
 			$dir = getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
 
@@ -82,9 +82,11 @@ class WP_CLI {
 
 			// clean older files on shutdown with 1/50 probability
 			if ( 0 === mt_rand( 0, 50 ) ) {
-				register_shutdown_function( function () use ( $cache ) {
-					$cache->clean();
-				} );
+				register_shutdown_function(
+					function () use ( $cache ) {
+						$cache->clean();
+					}
+				);
 			}
 		}
 
@@ -129,7 +131,7 @@ class WP_CLI {
 	public static function get_http_cache_manager() {
 		static $http_cacher;
 
-		if ( !$http_cacher ) {
+		if ( ! $http_cacher ) {
 			$http_cacher = new WpHttpCacheManager( self::get_cache() );
 		}
 
@@ -263,7 +265,7 @@ class WP_CLI {
 
 		self::$hooks_passed[ $when ] = $args;
 
-		if ( !isset( self::$hooks[ $when ] ) ) {
+		if ( ! isset( self::$hooks[ $when ] ) ) {
 			return;
 		}
 
@@ -295,7 +297,10 @@ class WP_CLI {
 			add_filter( $tag, $function_to_add, $priority, $accepted_args );
 		} else {
 			$idx = self::wp_hook_build_unique_id( $tag, $function_to_add, $priority );
-			$wp_filter[$tag][$priority][$idx] = array('function' => $function_to_add, 'accepted_args' => $accepted_args);
+			$wp_filter[ $tag ][ $priority ][ $idx ] = array(
+				'function' => $function_to_add,
+				'accepted_args' => $accepted_args,
+			);
 			unset( $merged_filters[ $tag ] );
 		}
 
@@ -311,26 +316,28 @@ class WP_CLI {
 		global $wp_filter;
 		static $filter_id_count = 0;
 
-		if ( is_string($function) )
+		if ( is_string( $function ) ) {
 			return $function;
+		}
 
-		if ( is_object($function) ) {
+		if ( is_object( $function ) ) {
 			// Closures are currently implemented as objects
 			$function = array( $function, '' );
 		} else {
 			$function = (array) $function;
 		}
 
-		if (is_object($function[0]) ) {
+		if ( is_object( $function[0] ) ) {
 			// Object Class Calling
-			if ( function_exists('spl_object_hash') ) {
-				return spl_object_hash($function[0]) . $function[1];
+			if ( function_exists( 'spl_object_hash' ) ) {
+				return spl_object_hash( $function[0] ) . $function[1];
 			} else {
-				$obj_idx = get_class($function[0]).$function[1];
-				if ( !isset($function[0]->wp_filter_id) ) {
-					if ( false === $priority )
+				$obj_idx = get_class( $function[0] ) . $function[1];
+				if ( ! isset( $function[0]->wp_filter_id ) ) {
+					if ( false === $priority ) {
 						return false;
-					$obj_idx .= isset($wp_filter[$tag][$priority]) ? count((array)$wp_filter[$tag][$priority]) : $filter_id_count;
+					}
+					$obj_idx .= isset( $wp_filter[ $tag ][ $priority ] ) ? count( (array) $wp_filter[ $tag ][ $priority ] ) : $filter_id_count;
 					$function[0]->wp_filter_id = $filter_id_count;
 					++$filter_id_count;
 				} else {
@@ -404,9 +411,9 @@ class WP_CLI {
 		$valid = false;
 		if ( is_callable( $callable ) ) {
 			$valid = true;
-		} else if ( is_string( $callable ) && class_exists( (string) $callable ) ) {
+		} elseif ( is_string( $callable ) && class_exists( (string) $callable ) ) {
 			$valid = true;
-		} else if ( is_object( $callable ) ) {
+		} elseif ( is_object( $callable ) ) {
 			$valid = true;
 		}
 		if ( ! $valid ) {
@@ -414,7 +421,7 @@ class WP_CLI {
 				$callable[0] = is_object( $callable[0] ) ? get_class( $callable[0] ) : $callable[0];
 				$callable = array( $callable[0], $callable[1] );
 			}
-			WP_CLI::error( sprintf( "Callable %s does not exist, and cannot be registered as `wp %s`.", json_encode( $callable ), $name ) );
+			WP_CLI::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', json_encode( $callable ), $name ) );
 		}
 
 		$addition = new Dispatcher\CommandAddition();
@@ -425,7 +432,7 @@ class WP_CLI {
 			return false;
 		}
 
-		foreach( array( 'before_invoke', 'after_invoke' ) as $when ) {
+		foreach ( array( 'before_invoke', 'after_invoke' ) as $when ) {
 			if ( isset( $args[ $when ] ) ) {
 				self::add_hook( "{$when}:{$name}", $args[ $when ] );
 			}
@@ -438,14 +445,14 @@ class WP_CLI {
 
 		$command = self::get_root_command();
 
-		while ( !empty( $path ) ) {
+		while ( ! empty( $path ) ) {
 			$subcommand_name = $path[0];
 			$parent = implode( ' ', $path );
 			$subcommand = $command->find_subcommand( $path );
 
 			// Parent not found. Defer addition or create an empty container as
 			// needed.
-			if ( !$subcommand ) {
+			if ( ! $subcommand ) {
 				if ( isset( $args['is_deferred'] ) && $args['is_deferred'] ) {
 					$subcommand = new Dispatcher\CompositeCommand(
 						$command,
@@ -471,8 +478,12 @@ class WP_CLI {
 		$leaf_command = Dispatcher\CommandFactory::create( $leaf_name, $callable, $command );
 
 		if ( ! $command->can_have_subcommands() ) {
-			throw new Exception( sprintf( "'%s' can't have subcommands.",
-				implode( ' ' , Dispatcher\get_path( $command ) ) ) );
+			throw new Exception(
+				sprintf(
+					"'%s' can't have subcommands.",
+					implode( ' ' , Dispatcher\get_path( $command ) )
+				)
+			);
 		}
 
 		if ( isset( $args['shortdesc'] ) ) {
@@ -482,18 +493,18 @@ class WP_CLI {
 		if ( isset( $args['synopsis'] ) ) {
 			if ( is_string( $args['synopsis'] ) ) {
 				$leaf_command->set_synopsis( $args['synopsis'] );
-			} else if ( is_array( $args['synopsis'] ) ) {
+			} elseif ( is_array( $args['synopsis'] ) ) {
 				$synopsis = \WP_CLI\SynopsisParser::render( $args['synopsis'] );
 				$leaf_command->set_synopsis( $synopsis );
 				$long_desc = '';
 				$bits = explode( ' ', $synopsis );
-				foreach( $args['synopsis'] as $key => $arg ) {
+				foreach ( $args['synopsis'] as $key => $arg ) {
 					$long_desc .= $bits[ $key ] . PHP_EOL;
 					if ( ! empty( $arg['description'] ) ) {
 						$long_desc .= ': ' . $arg['description'] . PHP_EOL;
 					}
 					$yamlify = array();
-					foreach( array( 'default', 'options' ) as $key ) {
+					foreach ( array( 'default', 'options' ) as $key ) {
 						if ( isset( $arg[ $key ] ) ) {
 							$yamlify[ $key ] = $arg[ $key ];
 						}
@@ -538,20 +549,22 @@ class WP_CLI {
 			'callable' => $callable,
 			'args'     => $args,
 		);
-		self::add_hook( "after_add_command:$parent", function () use ( $name ) {
+		self::add_hook(
+			"after_add_command:$parent",
+			function () use ( $name ) {
+				$deferred_additions = WP_CLI::get_deferred_additions();
 
-			$deferred_additions = WP_CLI::get_deferred_additions();
+				if ( ! array_key_exists( $name, $deferred_additions ) ) {
+					return;
+				}
 
-			if ( ! array_key_exists( $name, $deferred_additions ) ) {
-				return;
+				$callable = $deferred_additions[ $name ]['callable'];
+				$args     = $deferred_additions[ $name ]['args'];
+				WP_CLI::remove_deferred_addition( $name );
+
+				WP_CLI::add_command( $name, $callable, $args );
 			}
-
-			$callable = $deferred_additions[ $name ]['callable'];
-			$args     = $deferred_additions[ $name ]['args'];
-			WP_CLI::remove_deferred_addition( $name );
-
-			WP_CLI::add_command( $name, $callable, $args );
-		} );
+		);
 	}
 
 	/**
@@ -721,7 +734,7 @@ class WP_CLI {
 	 * @return null
 	 */
 	public static function error( $message, $exit = true ) {
-		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) ) {
+		if ( ! isset( self::get_runner()->assoc_args['completions'] ) ) {
 			self::$logger->error( self::error_to_string( $message ) );
 		}
 
@@ -768,7 +781,7 @@ class WP_CLI {
 	 * @param array $message Multi-line error message to be displayed.
 	 */
 	public static function error_multi_line( $message_lines ) {
-		if ( ! isset( self::get_runner()->assoc_args[ 'completions' ] ) && is_array( $message_lines ) ) {
+		if ( ! isset( self::get_runner()->assoc_args['completions'] ) && is_array( $message_lines ) ) {
 			self::$logger->error_multi_line( array_map( array( __CLASS__, 'error_to_string' ), $message_lines ) );
 		}
 	}
@@ -793,12 +806,13 @@ class WP_CLI {
 	 */
 	public static function confirm( $question, $assoc_args = array() ) {
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'yes' ) ) {
-			fwrite( STDOUT, $question . " [y/n] " );
+			fwrite( STDOUT, $question . ' [y/n] ' );
 
 			$answer = strtolower( trim( fgets( STDIN ) ) );
 
-			if ( 'y' != $answer )
+			if ( 'y' != $answer ) {
 				exit;
+			}
 		}
 	}
 
@@ -926,8 +940,9 @@ class WP_CLI {
 			self::warning( "Spawned process returned exit code {$results->return_code}, which could be caused by a custom compiled version of PHP that uses the --enable-sigchild option." );
 		}
 
-		if ( $results->return_code && $exit_on_error )
+		if ( $results->return_code && $exit_on_error ) {
 			exit( $results->return_code );
+		}
 
 		if ( $return_detailed ) {
 			return $results;
@@ -968,8 +983,9 @@ class WP_CLI {
 		foreach ( $reused_runtime_args as $key ) {
 			if ( isset( $runtime_args[ $key ] ) ) {
 				$assoc_args[ $key ] = $runtime_args[ $key ];
-			} else if ( $value = self::get_runner()->config[ $key ] )
+			} elseif ( $value = self::get_runner()->config[ $key ] ) {
 				$assoc_args[ $key ] = $value;
+			}
 		}
 
 		$php_bin = self::get_php_binary();
@@ -1002,14 +1018,17 @@ class WP_CLI {
 	 * @return string
 	 */
 	public static function get_php_binary() {
-		if ( getenv( 'WP_CLI_PHP_USED' ) )
+		if ( getenv( 'WP_CLI_PHP_USED' ) ) {
 			return getenv( 'WP_CLI_PHP_USED' );
+		}
 
-		if ( getenv( 'WP_CLI_PHP' ) )
+		if ( getenv( 'WP_CLI_PHP' ) ) {
 			return getenv( 'WP_CLI_PHP' );
+		}
 
-		if ( defined( 'PHP_BINARY' ) )
+		if ( defined( 'PHP_BINARY' ) ) {
 			return PHP_BINARY;
+		}
 
 		return 'php';
 	}
@@ -1035,7 +1054,7 @@ class WP_CLI {
 			return self::get_runner()->config;
 		}
 
-		if ( !isset( self::get_runner()->config[ $key ] ) ) {
+		if ( ! isset( self::get_runner()->config[ $key ] ) ) {
 			self::warning( "Unknown config option '$key'." );
 			return null;
 		}
@@ -1117,7 +1136,7 @@ class WP_CLI {
 
 			$runcommand = "{$php_bin} {$script_path} {$runtime_config} {$command}";
 
-			$proc = proc_open( $runcommand, $descriptors, $pipes, getcwd(), NULL );
+			$proc = proc_open( $runcommand, $descriptors, $pipes, getcwd(), null );
 
 			if ( $return ) {
 				$stdout = stream_get_contents( $pipes[1] );
@@ -1127,17 +1146,17 @@ class WP_CLI {
 			}
 			$return_code = proc_close( $proc );
 			if ( -1 == $return_code ) {
-				self::warning( "Spawned process returned exit code -1, which could be caused by a custom compiled version of PHP that uses the --enable-sigchild option." );
-			} else if ( $return_code && $exit_error ) {
+				self::warning( 'Spawned process returned exit code -1, which could be caused by a custom compiled version of PHP that uses the --enable-sigchild option.' );
+			} elseif ( $return_code && $exit_error ) {
 				exit( $return_code );
 			}
 			if ( true === $return || 'stdout' === $return ) {
 				$retval = trim( $stdout );
-			} else if ( 'stderr' === $return ) {
+			} elseif ( 'stderr' === $return ) {
 				$retval = trim( $stderr );
-			} else if ( 'return_code' === $return ) {
+			} elseif ( 'return_code' === $return ) {
 				$retval = $return_code;
-			} else if ( 'all' === $return ) {
+			} elseif ( 'all' === $return ) {
 				$retval = (object) array(
 					'stdout'      => trim( $stdout ),
 					'stderr'      => trim( $stderr ),
@@ -1157,9 +1176,13 @@ class WP_CLI {
 				self::$capture_exit = true;
 			}
 			try {
-				self::get_runner()->run_command( $args, $assoc_args, array( 'back_compat_conversions' => true ) );
+				self::get_runner()->run_command(
+					$args, $assoc_args, array(
+						'back_compat_conversions' => true,
+					)
+				);
 				$return_code = 0;
-			} catch( ExitException $e ) {
+			} catch ( ExitException $e ) {
 				$return_code = $e->getCode();
 			}
 			if ( $return ) {
@@ -1169,11 +1192,11 @@ class WP_CLI {
 				$stderr = $execution_logger->stderr;
 				if ( true === $return || 'stdout' === $return ) {
 					$retval = trim( $stdout );
-				} else if ( 'stderr' === $return ) {
+				} elseif ( 'stderr' === $return ) {
 					$retval = trim( $stderr );
-				} else if ( 'return_code' === $return ) {
+				} elseif ( 'return_code' === $return ) {
 					$retval = $return_code;
-				} else if ( 'all' === $return ) {
+				} elseif ( 'all' === $return ) {
 					$retval = (object) array(
 						'stdout'      => trim( $stdout ),
 						'stderr'      => trim( $stderr ),
@@ -1233,8 +1256,12 @@ class WP_CLI {
 
 	// back-compat
 	public static function addCommand( $name, $class ) {
-		trigger_error( sprintf( 'wp %s: %s is deprecated. use WP_CLI::add_command() instead.',
-			$name, __FUNCTION__ ), E_USER_WARNING );
+		trigger_error(
+			sprintf(
+				'wp %s: %s is deprecated. use WP_CLI::add_command() instead.',
+				$name, __FUNCTION__
+			), E_USER_WARNING
+		);
 		self::add_command( $name, $class );
 	}
 }
