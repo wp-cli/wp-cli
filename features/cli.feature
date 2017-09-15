@@ -8,7 +8,7 @@ Feature: `wp cli` tasks
     When I try `{PHAR_PATH} cli has-command scaffold package`
     Then the return code should be 1
 
-    When I run `wp package install git@github.com:wp-cli/scaffold-package-command.git`
+    When I run `{PHAR_PATH} package install git@github.com:wp-cli/scaffold-package-command.git`
     When I run `{PHAR_PATH} cli has-command scaffold package`
     Then the return code should be 0
 
