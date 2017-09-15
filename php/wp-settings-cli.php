@@ -88,7 +88,7 @@ timer_start();
  *
  * @param bool $enable_debug_mode Whether to enable debug mode checks to occur. Default true.
  */
-if ( apply_filters( 'enable_wp_debug_mode_checks', true ) ){
+if ( apply_filters( 'enable_wp_debug_mode_checks', true ) ) {
 	wp_debug_mode();
 }
 
@@ -103,7 +103,7 @@ if ( apply_filters( 'enable_wp_debug_mode_checks', true ) ){
  * @param bool $enable_advanced_cache Whether to enable loading advanced-cache.php (if present).
  *                                    Default true.
  */
-if ( WP_CACHE && apply_filters( 'enable_loading_advanced_cache_dropin', true )  ) {
+if ( WP_CACHE && apply_filters( 'enable_loading_advanced_cache_dropin', true ) ) {
 	// For an advanced caching plugin to use. Uses a static drop-in because you would only want one.
 	WP_DEBUG ? include( WP_CONTENT_DIR . '/advanced-cache.php' ) : @include( WP_CONTENT_DIR . '/advanced-cache.php' );
 }
@@ -123,8 +123,9 @@ require_wp_db();
 
 // WP-CLI: Handle db error ourselves, instead of waiting for dead_db()
 global $wpdb;
-if ( !empty( $wpdb->error ) )
+if ( ! empty( $wpdb->error ) ) {
 	wp_die( $wpdb->error );
+}
 
 // Set the database table prefix and the format specifiers for database table columns.
 // @codingStandardsIgnoreStart
@@ -151,8 +152,9 @@ if ( is_multisite() ) {
 register_shutdown_function( 'shutdown_action_hook' );
 
 // Stop most of WordPress from being loaded if we just want the basics.
-if ( SHORTINIT )
+if ( SHORTINIT ) {
 	return false;
+}
 
 // Load the L10n library.
 require_once( ABSPATH . WPINC . '/l10n.php' );
@@ -267,9 +269,10 @@ unset( $mu_plugin );
 
 // Load network activated plugins.
 if ( is_multisite() ) {
-	foreach( wp_get_active_network_plugins() as $network_plugin ) {
-		if ( $symlinked_plugins_supported )
+	foreach ( wp_get_active_network_plugins() as $network_plugin ) {
+		if ( $symlinked_plugins_supported ) {
 			wp_register_plugin_realpath( $network_plugin );
+		}
 		include_once( $network_plugin );
 	}
 	unset( $network_plugin );
@@ -277,8 +280,9 @@ if ( is_multisite() ) {
 
 do_action( 'muplugins_loaded' );
 
-if ( is_multisite() )
+if ( is_multisite() ) {
 	ms_cookie_constants();
+}
 
 // Define constants after multisite is loaded. Cookie-related constants may be overridden in ms_network_cookies().
 wp_cookie_constants();
@@ -299,8 +303,9 @@ register_theme_directory( get_theme_root() );
 
 // Load active plugins.
 foreach ( wp_get_active_and_valid_plugins() as $plugin ) {
-	if ( $symlinked_plugins_supported )
+	if ( $symlinked_plugins_supported ) {
 		wp_register_plugin_realpath( $plugin );
+	}
 	include_once( $plugin );
 }
 unset( $plugin, $symlinked_plugins_supported );
@@ -313,8 +318,9 @@ require( ABSPATH . WPINC . '/pluggable-deprecated.php' );
 wp_set_internal_encoding();
 
 // Run wp_cache_postload() if object cache is enabled and the function exists.
-if ( WP_CACHE && function_exists( 'wp_cache_postload' ) )
+if ( WP_CACHE && function_exists( 'wp_cache_postload' ) ) {
 	wp_cache_postload();
+}
 
 do_action( 'plugins_loaded' );
 
@@ -379,8 +385,9 @@ load_default_textdomain();
 
 $locale = get_locale();
 $locale_file = WP_LANG_DIR . "/$locale.php";
-if ( ( 0 === validate_file( $locale ) ) && is_readable( $locale_file ) )
+if ( ( 0 === validate_file( $locale ) ) && is_readable( $locale_file ) ) {
 	require( $locale_file );
+}
 unset( $locale_file );
 
 // Pull in locale data after loading text domain.
@@ -396,10 +403,12 @@ $GLOBALS['wp_locale'] = new WP_Locale();
 // Load the functions for the active theme, for both parent and child theme if applicable.
 global $pagenow;
 if ( ! defined( 'WP_INSTALLING' ) || 'wp-activate.php' === $pagenow ) {
-	if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists( STYLESHEETPATH . '/functions.php' ) )
+	if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists( STYLESHEETPATH . '/functions.php' ) ) {
 		include( STYLESHEETPATH . '/functions.php' );
-	if ( file_exists( TEMPLATEPATH . '/functions.php' ) )
+	}
+	if ( file_exists( TEMPLATEPATH . '/functions.php' ) ) {
 		include( TEMPLATEPATH . '/functions.php' );
+	}
 }
 
 do_action( 'after_setup_theme' );
@@ -418,12 +427,12 @@ do_action( 'init' );
 
 // Check site status
 # if ( is_multisite() ) {  // WP-CLI
-if ( is_multisite() && !defined('WP_INSTALLING') ) {
+if ( is_multisite() && ! defined( 'WP_INSTALLING' ) ) {
 	if ( true !== ( $file = ms_site_check() ) ) {
 		require( $file );
 		die();
 	}
-	unset($file);
+	unset( $file );
 }
 
 /**
@@ -436,4 +445,4 @@ if ( is_multisite() && !defined('WP_INSTALLING') ) {
  *
  * @since 3.0.0
  */
-do_action('wp_loaded');
+do_action( 'wp_loaded' );
