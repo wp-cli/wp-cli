@@ -587,24 +587,25 @@ class CLI_Command extends WP_CLI_Command {
 	 * : The command
 	 *
 	 * ## EXAMPLES
-	 *     wp cli has-command "wp site delete"
-	 *     wp cli has-command wp site delete
+	 *
+	 *     The "site delete" command is registered.
+	 *     wp cli has-command "site delete"
+	 *     echo $?
+	 *     0
+	 *
+	 *     The "foo bar" command is not registered.
+	 *     wp cli has-command "foo bar"
+	 *     echo $?
+	 *     1
 	 *
 	 * @subcommand has-command
 	 *
 	 * @when after_wp_load
-	 *
-	 * @param array $_          Array of positional arguments.
-	 * @param array $assoc_args Array of associative arguments.
 	 */
 	public function has_command( $_, $assoc_args ) {
 
 		// If command is input as a string, then explode it into array.
 		$command = explode( ' ', implode( ' ', $_ ) );
-
-		if ( 'wp' === $command[0] ) {
-			array_shift( $command );
-		}
 
 		WP_CLI::halt( is_array( WP_CLI::get_runner()->find_command_to_run( $command ) ) ? 0 : 1 );
 	}
