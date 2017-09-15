@@ -24,7 +24,7 @@ class Subcommand extends CompositeCommand {
 		$this->alias = $docparser->get_tag( 'alias' );
 
 		$this->synopsis = $docparser->get_synopsis();
-		if ( !$this->synopsis && $this->longdesc ) {
+		if ( ! $this->synopsis && $this->longdesc ) {
 			$this->synopsis = self::extract_synopsis( $this->longdesc );
 		}
 	}
@@ -97,7 +97,8 @@ class Subcommand extends CompositeCommand {
 	 * @return string
 	 */
 	function get_usage( $prefix ) {
-		return sprintf( "%s%s %s",
+		return sprintf(
+			'%s%s %s',
 			$prefix,
 			implode( ' ', get_path( $this ) ),
 			$this->get_synopsis()
@@ -134,12 +135,16 @@ class Subcommand extends CompositeCommand {
 
 		$synopsis = $this->get_synopsis();
 
-		if ( ! $synopsis )
+		if ( ! $synopsis ) {
 			return array( $args, $assoc_args );
+		}
 
-		$spec = array_filter( \WP_CLI\SynopsisParser::parse( $synopsis ), function( $spec_arg ) {
-			return in_array( $spec_arg['type'], array( 'generic', 'positional', 'assoc', 'flag' ) );
-		});
+		$spec = array_filter(
+			\WP_CLI\SynopsisParser::parse( $synopsis ),
+			function( $spec_arg ) {
+				return in_array( $spec_arg['type'], array( 'generic', 'positional', 'assoc', 'flag' ) );
+			}
+		);
 
 		$spec = array_values( $spec );
 
@@ -151,10 +156,10 @@ class Subcommand extends CompositeCommand {
 		// 'positional' arguments are positional (aka zero-indexed)
 		// so $args needs to be reset before prompting for new arguments
 		$args = array();
-		foreach( $spec as $key => $spec_arg ) {
+		foreach ( $spec as $key => $spec_arg ) {
 
 			// When prompting for specific arguments (e.g. --prompt=user_pass),
-			// ignore all arguments that don't match
+			// ignore all arguments that don't match.
 			if ( is_array( $prompt_args ) ) {
 				if ( 'assoc' !== $spec_arg['type'] ) {
 					continue;
@@ -174,57 +179,63 @@ class Subcommand extends CompositeCommand {
 
 				$repeat = false;
 				do {
-					if ( ! $repeat )
+					if ( ! $repeat ) {
 						$key_prompt = $current_prompt . $key_token;
-					else
-						$key_prompt = str_repeat( " ", strlen( $current_prompt ) ) . $key_token;
+					} else {
+						$key_prompt = str_repeat( ' ', strlen( $current_prompt ) ) . $key_token;
+					}
 
 					$key = $this->prompt( $key_prompt, $default );
-					if ( false === $key )
+					if ( false === $key ) {
 						return array( $args, $assoc_args );
+					}
 
 					if ( $key ) {
 						$key_prompt_count = strlen( $key_prompt ) - strlen( $value_token ) - 1;
-						$value_prompt = str_repeat( " ", $key_prompt_count ) . '=' . $value_token;
+						$value_prompt = str_repeat( ' ', $key_prompt_count ) . '=' . $value_token;
 
 						$value = $this->prompt( $value_prompt, $default );
-						if ( false === $value )
+						if ( false === $value ) {
 							return array( $args, $assoc_args );
+						}
 
-						$assoc_args[$key] = $value;
+						$assoc_args[ $key ] = $value;
 
 						$repeat = true;
 					} else {
 						$repeat = false;
 					}
-
-				} while( $repeat );
+				} while ( $repeat );
 
 			} else {
 
 				$prompt = $current_prompt . $spec_arg['token'];
-				if ( 'flag' == $spec_arg['type'] )
+				if ( 'flag' == $spec_arg['type'] ) {
 					$prompt .= ' (Y/n)';
+				}
 
 				$response = $this->prompt( $prompt, $default );
-				if ( false === $response )
+				if ( false === $response ) {
 					return array( $args, $assoc_args );
+				}
 
 				if ( $response ) {
 					switch ( $spec_arg['type'] ) {
 						case 'positional':
-							if ( $spec_arg['repeating'] )
+							if ( $spec_arg['repeating'] ) {
 								$response = explode( ' ', $response );
-							else
+							} else {
 								$response = array( $response );
+							}
 							$args = array_merge( $args, $response );
 							break;
 						case 'assoc':
-							$assoc_args[$spec_arg['name']] = $response;
+							$assoc_args[ $spec_arg['name'] ] = $response;
 							break;
 						case 'flag':
-							if ( 'Y' == strtoupper( $response ) )
-								$assoc_args[$spec_arg['name']] = true;
+							if ( 'Y' == strtoupper( $response ) ) {
+								$assoc_args[ $spec_arg['name'] ] = true;
+							}
 							break;
 					}
 				}
@@ -246,7 +257,7 @@ class Subcommand extends CompositeCommand {
 	 */
 	private function validate_args( $args, $assoc_args, $extra_args ) {
 		$synopsis = $this->get_synopsis();
-		if ( !$synopsis ) {
+		if ( ! $synopsis ) {
 			return array( array(), $args, $assoc_args, $extra_args );
 		}
 
@@ -254,31 +265,39 @@ class Subcommand extends CompositeCommand {
 
 		$cmd_path = implode( ' ', get_path( $this ) );
 		foreach ( $validator->get_unknown() as $token ) {
-			\WP_CLI::warning( sprintf(
-				"The `%s` command has an invalid synopsis part: %s",
-				$cmd_path, $token
-			) );
+			\WP_CLI::warning(
+				sprintf(
+					'The `%s` command has an invalid synopsis part: %s',
+					$cmd_path,
+					$token
+				)
+			);
 		}
 
-		if ( !$validator->enough_positionals( $args ) ) {
+		if ( ! $validator->enough_positionals( $args ) ) {
 			$this->show_usage();
-			exit(1);
+			exit( 1 );
 		}
 
 		$unknown_positionals = $validator->unknown_positionals( $args );
-		if ( !empty( $unknown_positionals ) ) {
-			\WP_CLI::error( 'Too many positional arguments: ' .
-				implode( ' ', $unknown_positionals ) );
+		if ( ! empty( $unknown_positionals ) ) {
+			\WP_CLI::error(
+				'Too many positional arguments: ' .
+				implode( ' ', $unknown_positionals )
+			);
 		}
 
 		$synopsis_spec = \WP_CLI\SynopsisParser::parse( $synopsis );
 		$i = 0;
-		$errors = array( 'fatal' => array(), 'warning' => array() );
+		$errors = array(
+			'fatal' => array(),
+			'warning' => array(),
+		);
 		$mock_doc = array( $this->get_shortdesc(), '' );
 		$mock_doc = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
 		$mock_doc = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
 		$docparser = new \WP_CLI\DocParser( $mock_doc );
-		foreach( $synopsis_spec as $spec ) {
+		foreach ( $synopsis_spec as $spec ) {
 			if ( 'positional' === $spec['type'] ) {
 				$spec_args = $docparser->get_arg_args( $spec['name'] );
 				if ( ! isset( $args[ $i ] ) ) {
@@ -301,7 +320,7 @@ class Subcommand extends CompositeCommand {
 					}
 				}
 				$i++;
-			} else if ( 'assoc' === $spec['type'] ) {
+			} elseif ( 'assoc' === $spec['type'] ) {
 				$spec_args = $docparser->get_param_args( $spec['name'] );
 				if ( ! isset( $assoc_args[ $spec['name'] ] ) && ! isset( $extra_args[ $spec['name'] ] ) ) {
 					if ( isset( $spec_args['default'] ) ) {
@@ -319,7 +338,7 @@ class Subcommand extends CompositeCommand {
 		list( $returned_errors, $to_unset ) = $validator->validate_assoc(
 			array_merge( \WP_CLI::get_config(), $extra_args, $assoc_args )
 		);
-		foreach( array( 'fatal', 'warning' ) as $error_type ) {
+		foreach ( array( 'fatal', 'warning' ) as $error_type ) {
 			$errors[ $error_type ] = array_merge( $errors[ $error_type ], $returned_errors[ $error_type ] );
 		}
 
@@ -339,7 +358,7 @@ class Subcommand extends CompositeCommand {
 			}
 		}
 
-		if ( !empty( $errors['fatal'] ) ) {
+		if ( ! empty( $errors['fatal'] ) ) {
 			$out = 'Parameter errors:';
 			foreach ( $errors['fatal'] as $key => $error ) {
 				$out .= "\n {$error}";
@@ -372,7 +391,7 @@ class Subcommand extends CompositeCommand {
 		}
 
 		$extra_positionals = array();
-		foreach( $extra_args as $k => $v ) {
+		foreach ( $extra_args as $k => $v ) {
 			if ( is_numeric( $k ) ) {
 				if ( ! isset( $args[ $k ] ) ) {
 					$extra_positionals[ $k ] = $v;

@@ -40,7 +40,7 @@ class RootCommand extends CompositeCommand {
 
 		Utils\load_command( $command );
 
-		if ( !isset( $this->subcommands[ $command ] ) ) {
+		if ( ! isset( $this->subcommands[ $command ] ) ) {
 			return false;
 		}
 
