@@ -34,15 +34,13 @@ Feature: Prompt user for input
       """
 
     When I run `wp test-prompt --prompt < uppercase-session`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
-      1/1 [--flag] (Y/n): Y
       bool(true)
       """
 
     When I run `wp test-prompt --prompt < lowercase-session`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
-      1/1 [--flag] (Y/n): y
       bool(true)
       """
