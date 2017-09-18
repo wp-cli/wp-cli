@@ -913,6 +913,7 @@ function isPiped() {
  * @return array Expanded paths.
  */
 function expand_globs( $paths, $flags = 'default' ) {
+	// Compatibility for systems without GLOB_BRACE.
 	$glob_func = 'glob';
 	if ( 'default' === $flags ) {
 		if ( ! defined( 'GLOB_BRACE' ) || getenv( 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE' ) ) {
@@ -940,16 +941,22 @@ function expand_globs( $paths, $flags = 'default' ) {
  * Simulate a `glob()` with the `GLOB_BRACE` flag set. For systems (eg Alpine Linux) built against a libc library (eg https://www.musl-libc.org/) that lacks it.
  * Copied and adapted from Zend Framework's `Glob::fallbackGlob()` and Glob::nextBraceSub()`.
  *
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ *
  * @param string $pattern Filename pattern.
- * @param void $dummy Not used.
+ * @param void $dummy_flags Not used.
  *
  * @return array Array of paths.
  */
-function glob_brace( $pattern, $dummy = null ) {
+function glob_brace( $pattern, $dummy_flags = null ) {
 
 	static $next_brace_sub;
 	if ( ! $next_brace_sub ) {
-		// Find the end of the sub-pattern in a brace expression.
+		// Find the end of the subpattern in a brace expression.
 		$next_brace_sub = function ( $pattern, $current ) {
 			$length  = strlen( $pattern );
 			$depth   = 0;
