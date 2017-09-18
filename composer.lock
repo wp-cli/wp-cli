@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "4564cd15894bc9160a32f35d0af5c111",
+    "content-hash": "763dcd03f93304fca363ea0941e10552",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2843,24 +2843,26 @@
         },
         {
             "name": "dealerdirect/phpcodesniffer-composer-installer",
-            "version": "v0.4.2",
+            "version": "v0.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DealerDirect/phpcodesniffer-composer-installer.git",
-                "reference": "17130f536db62570bcfc5cce59464b36e82eb092"
+                "reference": "63c0ec0ac286d31651d3c70e5bf76ad87db3ba23"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DealerDirect/phpcodesniffer-composer-installer/zipball/17130f536db62570bcfc5cce59464b36e82eb092",
-                "reference": "17130f536db62570bcfc5cce59464b36e82eb092",
+                "url": "https://api.github.com/repos/DealerDirect/phpcodesniffer-composer-installer/zipball/63c0ec0ac286d31651d3c70e5bf76ad87db3ba23",
+                "reference": "63c0ec0ac286d31651d3c70e5bf76ad87db3ba23",
                 "shasum": ""
             },
             "require": {
                 "composer-plugin-api": "^1.0",
+                "php": "^5.3|^7",
                 "squizlabs/php_codesniffer": "*"
             },
             "require-dev": {
-                "composer/composer": "*"
+                "composer/composer": "*",
+                "wimg/php-compatibility": "^8.0"
             },
             "suggest": {
                 "dealerdirect/qa-tools": "All the PHP QA tools you'll need"
@@ -2905,7 +2907,7 @@
                 "stylecheck",
                 "tests"
             ],
-            "time": "2017-08-16T10:25:17+00:00"
+            "time": "2017-09-18T07:49:36+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
