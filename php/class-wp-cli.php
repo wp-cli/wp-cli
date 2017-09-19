@@ -388,9 +388,9 @@ class WP_CLI {
 	 * @access public
 	 * @category Registration
 	 *
-	 * @param string $name Name for the command (e.g. "post list" or "site empty").
-	 * @param string $callable Command implementation as a class, function or closure.
-	 * @param array $args {
+	 * @param string   $name Name for the command (e.g. "post list" or "site empty").
+	 * @param callable $callable Command implementation as a class, function or closure.
+	 * @param array    $args {
 	 *    Optional. An associative array with additional registration parameters.
 	 *
 	 *    @type callable $before_invoke Callback to execute before invoking the command.
