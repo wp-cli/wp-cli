@@ -44,8 +44,9 @@ class DocParser {
 	 * @return string
 	 */
 	public function get_shortdesc() {
-		if ( !preg_match( '|^([^@][^\n]+)\n*|', $this->docComment, $matches ) )
+		if ( ! preg_match( '|^([^@][^\n]+)\n*|', $this->docComment, $matches ) ) {
 			return '';
+		}
 
 		return $matches[1];
 	}
@@ -57,15 +58,17 @@ class DocParser {
 	 */
 	public function get_longdesc() {
 		$shortdesc = $this->get_shortdesc();
-		if ( !$shortdesc )
+		if ( ! $shortdesc ) {
 			return '';
+		}
 
 		$longdesc = substr( $this->docComment, strlen( $shortdesc ) );
 
 		$lines = array();
 		foreach ( explode( "\n", $longdesc ) as $line ) {
-			if ( 0 === strpos( $line, '@' ) )
+			if ( 0 === strpos( $line, '@' ) ) {
 				break;
+			}
 
 			$lines[] = $line;
 		}
@@ -81,8 +84,9 @@ class DocParser {
 	 * @return string
 	 */
 	public function get_tag( $name ) {
-		if ( preg_match( '|^@' . $name . '\s+([a-z-_0-9]+)|m', $this->docComment, $matches ) )
+		if ( preg_match( '|^@' . $name . '\s+([a-z-_0-9]+)|m', $this->docComment, $matches ) ) {
 			return $matches[1];
+		}
 
 		return '';
 	}
@@ -93,8 +97,9 @@ class DocParser {
 	 * @return string
 	 */
 	public function get_synopsis() {
-		if ( !preg_match( '|^@synopsis\s+(.+)|m', $this->docComment, $matches ) )
+		if ( ! preg_match( '|^@synopsis\s+(.+)|m', $this->docComment, $matches ) ) {
 			return '';
+		}
 
 		return $matches[1];
 	}
@@ -160,7 +165,7 @@ class DocParser {
 		$bits = explode( PHP_EOL, $this->docComment );
 		$within_arg = $within_doc = false;
 		$document = array();
-		foreach( $bits as $bit ) {
+		foreach ( $bits as $bit ) {
 			if ( preg_match( $regex, $bit ) ) {
 				$within_arg = true;
 			}
