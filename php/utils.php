@@ -932,24 +932,125 @@ function isPiped() {
  * Has no effect on paths which do not use glob patterns.
  *
  * @param string|array $paths Single path as a string, or an array of paths.
- * @param int          $flags Flags to pass to glob.
+ * @param int          $flags Optional. Flags to pass to glob. Defaults to GLOB_BRACE.
  *
  * @return array Expanded paths.
  */
-function expand_globs( $paths, $flags = GLOB_BRACE ) {
+function expand_globs( $paths, $flags = 'default' ) {
+	// Compatibility for systems without GLOB_BRACE.
+	$glob_func = 'glob';
+	if ( 'default' === $flags ) {
+		if ( ! defined( 'GLOB_BRACE' ) || getenv( 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE' ) ) {
+			$glob_func = 'WP_CLI\Utils\glob_brace';
+		} else {
+			$flags = GLOB_BRACE;
+		}
+	}
+
 	$expanded = array();
 
 	foreach ( (array) $paths as $path ) {
 		$matching = array( $path );
 
 		if ( preg_match( '/[' . preg_quote( '*?[]{}!', '/' ) . ']/', $path ) ) {
-			$matching = glob( $path, $flags ) ?: array();
+			$matching = $glob_func( $path, $flags ) ?: array();
 		}
-
 		$expanded = array_merge( $expanded, $matching );
 	}
 
-	return array_unique( $expanded );
+	return array_values( array_unique( $expanded ) );
+}
+
+/**
+ * Simulate a `glob()` with the `GLOB_BRACE` flag set. For systems (eg Alpine Linux) built against a libc library (eg https://www.musl-libc.org/) that lacks it.
+ * Copied and adapted from Zend Framework's `Glob::fallbackGlob()` and Glob::nextBraceSub()`.
+ *
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ *
+ * @param string $pattern Filename pattern.
+ * @param void $dummy_flags Not used.
+ *
+ * @return array Array of paths.
+ */
+function glob_brace( $pattern, $dummy_flags = null ) {
+
+	static $next_brace_sub;
+	if ( ! $next_brace_sub ) {
+		// Find the end of the subpattern in a brace expression.
+		$next_brace_sub = function ( $pattern, $current ) {
+			$length  = strlen( $pattern );
+			$depth   = 0;
+
+			while ( $current < $length ) {
+				if ( '\\' === $pattern[ $current ] ) {
+					if ( ++$current === $length ) {
+						break;
+					}
+					$current++;
+				} else {
+					if ( ( '}' === $pattern[ $current ] && $depth-- === 0 ) || ( ',' === $pattern[ $current ] && 0 === $depth ) ) {
+						break;
+					} elseif ( '{' === $pattern[ $current++ ] ) {
+						$depth++;
+					}
+				}
+			}
+
+			return $current < $length ? $current : null;
+		};
+	}
+
+	$length = strlen( $pattern );
+
+	// Find first opening brace.
+	for ( $begin = 0; $begin < $length; $begin++ ) {
+		if ( '\\' === $pattern[ $begin ] ) {
+			$begin++;
+		} elseif ( '{' === $pattern[ $begin ] ) {
+			break;
+		}
+	}
+
+	// Find comma or matching closing brace.
+	if ( null === ( $next = $next_brace_sub( $pattern, $begin + 1 ) ) ) {
+		return glob( $pattern );
+	}
+
+	$rest = $next;
+
+	// Point `$rest` to matching closing brace.
+	while ( '}' !== $pattern[ $rest ] ) {
+		if ( null === ( $rest = $next_brace_sub( $pattern, $rest + 1 ) ) ) {
+			return glob( $pattern );
+		}
+	}
+
+	$paths = array();
+	$p = $begin + 1;
+
+	// For each comma-separated subpattern.
+	do {
+		$subpattern = substr( $pattern, 0, $begin )
+					. substr( $pattern, $p, $next - $p )
+					. substr( $pattern, $rest + 1 );
+
+		if ( ( $result = glob_brace( $subpattern ) ) ) {
+			$paths = array_merge( $paths, $result );
+		}
+
+		if ( '}' === $pattern[ $next ] ) {
+			break;
+		}
+
+		$p    = $next + 1;
+		$next = $next_brace_sub( $pattern, $p );
+	} while ( null !== $next );
+
+	return array_values( array_unique( $paths ) );
 }
 
 /**
