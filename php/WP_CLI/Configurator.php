@@ -94,10 +94,10 @@ class Configurator {
 	function get_aliases() {
 		if ( $runtime_alias = getenv( 'WP_CLI_RUNTIME_ALIAS' ) ) {
 			$returned_aliases = array();
-			foreach( json_decode( $runtime_alias, true ) as $key => $value ) {
+			foreach ( json_decode( $runtime_alias, true ) as $key => $value ) {
 				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
 					$returned_aliases[ $key ] = array();
-					foreach( self::$alias_spec as $i ) {
+					foreach ( self::$alias_spec as $i ) {
 						if ( isset( $value[ $i ] ) ) {
 							$returned_aliases[ $key ][ $i ] = $value[ $i ];
 						}
@@ -151,10 +151,9 @@ class Configurator {
 				} else {
 					$global_assoc[] = $assoc_arg;
 				}
-			} else if ( ! is_null( $positional ) ) {
+			} elseif ( ! is_null( $positional ) ) {
 				$positional_args[] = $positional;
 			}
-
 		}
 
 		return array( $positional_args, $assoc_args, $global_assoc, $local_assoc );
@@ -170,13 +169,13 @@ class Configurator {
 		$assoc_args = $runtime_config = array();
 
 		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
-			foreach( $global_assoc as $tmp ) {
+			foreach ( $global_assoc as $tmp ) {
 				list( $key, $value ) = $tmp;
 				if ( isset( $this->spec[ $key ] ) && $this->spec[ $key ]['runtime'] !== false ) {
 					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
 				}
 			}
-			foreach( $local_assoc as $tmp ) {
+			foreach ( $local_assoc as $tmp ) {
 				$assoc_args[ $tmp[0] ] = $tmp[1];
 			}
 		} else {
@@ -226,7 +225,7 @@ class Configurator {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
 				$this->aliases[ $key ] = array();
 				$is_alias = false;
-				foreach( self::$alias_spec as $i ) {
+				foreach ( self::$alias_spec as $i ) {
 					if ( isset( $value[ $i ] ) ) {
 						if ( 'path' === $i && ! isset( $value['ssh'] ) ) {
 							self::absolutize( $value[ $i ], $yml_file_dir );
@@ -238,14 +237,14 @@ class Configurator {
 				// If it's not an alias, it might be a group of aliases
 				if ( ! $is_alias && is_array( $value ) ) {
 					$alias_group = array();
-					foreach( $value as $i => $k ) {
+					foreach ( $value as $i => $k ) {
 						if ( preg_match( '#' . self::ALIAS_REGEX . '#', $k ) ) {
 							$alias_group[] = $k;
 						}
 					}
 					$this->aliases[ $key ] = $alias_group;
 				}
-			} elseif ( !isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
+			} elseif ( ! isset( $this->spec[ $key ] ) || false === $this->spec[ $key ]['file'] ) {
 				if ( isset( $this->extra_config[ $key ] )
 					&& ! empty( $yaml['_']['merge'] )
 					&& is_array( $this->extra_config[ $key ] )
@@ -297,16 +296,18 @@ class Configurator {
 	 * @return array $config Declared configuration values
 	 */
 	private static function load_yml( $yml_file ) {
-		if ( !$yml_file )
+		if ( ! $yml_file ) {
 			return array();
+		}
 
 		$config = Spyc::YAMLLoad( $yml_file );
 
 		// Make sure config-file-relative paths are made absolute.
 		$yml_file_dir = dirname( $yml_file );
 
-		if ( isset( $config['path'] ) )
+		if ( isset( $config['path'] ) ) {
 			self::absolutize( $config['path'], $yml_file_dir );
+		}
 
 		if ( isset( $config['require'] ) ) {
 			self::arrayify( $config['require'] );
@@ -337,7 +338,7 @@ class Configurator {
 	 * @param mixed $val A string or an array
 	 */
 	private static function arrayify( &$val ) {
-		if ( !is_array( $val ) ) {
+		if ( ! is_array( $val ) ) {
 			$val = array( $val );
 		}
 	}
@@ -349,7 +350,7 @@ class Configurator {
 	 * @param string $base Base path to prepend.
 	 */
 	private static function absolutize( &$path, $base ) {
-		if ( !empty( $path ) && !\WP_CLI\Utils\is_path_absolute( $path ) ) {
+		if ( ! empty( $path ) && ! \WP_CLI\Utils\is_path_absolute( $path ) ) {
 			$path = $base . DIRECTORY_SEPARATOR . $path;
 		}
 	}

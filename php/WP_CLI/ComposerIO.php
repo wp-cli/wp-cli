@@ -18,8 +18,8 @@ class ComposerIO extends NullIO {
 	}
 
 	/**
-     * {@inheritDoc}
-     */
+	 * {@inheritDoc}
+	 */
 	public function write( $messages, $newline = true, $verbosity = self::NORMAL ) {
 		self::output_clean_message( $messages );
 	}
