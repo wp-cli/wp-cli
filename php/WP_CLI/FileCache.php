@@ -53,7 +53,7 @@ class FileCache {
 		$this->maxSize = (int) $maxSize;
 		$this->whitelist = $whitelist;
 
-		if ( !$this->ensure_dir_exists( $this->root ) ) {
+		if ( ! $this->ensure_dir_exists( $this->root ) ) {
 			$this->enabled = false;
 		}
 
@@ -86,13 +86,13 @@ class FileCache {
 	 * @return bool|string filename or false
 	 */
 	public function has( $key, $ttl = null ) {
-		if ( !$this->enabled ) {
+		if ( ! $this->enabled ) {
 			return false;
 		}
 
 		$filename = $this->filename( $key );
 
-		if ( !file_exists( $filename ) ) {
+		if ( ! file_exists( $filename ) ) {
 			return false;
 		}
 
@@ -192,7 +192,7 @@ class FileCache {
 	 * @return bool
 	 */
 	public function remove( $key ) {
-		if ( !$this->enabled ) {
+		if ( ! $this->enabled ) {
 			return false;
 		}
 
@@ -211,7 +211,7 @@ class FileCache {
 	 * @return bool
 	 */
 	public function clean() {
-		if ( !$this->enabled ) {
+		if ( ! $this->enabled ) {
 			return false;
 		}
 
@@ -257,12 +257,12 @@ class FileCache {
 	 * @return bool
 	 */
 	protected function ensure_dir_exists( $dir ) {
-		if ( !is_dir( $dir ) ) {
+		if ( ! is_dir( $dir ) ) {
 			if ( file_exists( $dir ) ) {
 				// exists and not a dir
 				return false;
 			}
-			if ( !@mkdir( $dir, 0777, true ) ) {
+			if ( ! @mkdir( $dir, 0777, true ) ) {
 				return false;
 			}
 		}
@@ -277,13 +277,13 @@ class FileCache {
 	 * @return bool|string filename or false
 	 */
 	protected function prepare_write( $key ) {
-		if ( !$this->enabled ) {
+		if ( ! $this->enabled ) {
 			return false;
 		}
 
 		$filename = $this->filename( $key );
 
-		if ( !$this->ensure_dir_exists( dirname( $filename ) ) ) {
+		if ( ! $this->ensure_dir_exists( dirname( $filename ) ) ) {
 			return false;
 		}
 
@@ -298,11 +298,11 @@ class FileCache {
 	 */
 	protected function validate_key( $key ) {
 		$url_parts = parse_url( $key );
-		if ( ! empty($url_parts['scheme']) ) { // is url
-			$parts = array('misc');
+		if ( ! empty( $url_parts['scheme'] ) ) { // is url
+			$parts = array( 'misc' );
 			$parts[] = $url_parts['scheme'] . '-' . $url_parts['host'] .
 				( empty( $url_parts['port'] ) ? '' : '-' . $url_parts['port'] );
-			$parts[] = substr($url_parts['path'], 1) .
+			$parts[] = substr( $url_parts['path'], 1 ) .
 				( empty( $url_parts['query'] ) ? '' : '-' . $url_parts['query'] );
 		} else {
 			$key = str_replace( '\\', '/', $key );
@@ -320,7 +320,7 @@ class FileCache {
 	 * @param string $key
 	 * @return string filename
 	 */
-	protected function filename( $key ){
+	protected function filename( $key ) {
 		return $this->root . $this->validate_key( $key );
 	}
 
