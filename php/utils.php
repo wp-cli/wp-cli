@@ -1201,7 +1201,9 @@ function check_proc_available( $context = null, $return = false ) {
  * @return string
  */
 function past_tense_verb( $verb ) {
-	static $irregular = array( 'reset' => 'reset' );
+	static $irregular = array(
+		'reset' => 'reset',
+	);
 	if ( isset( $irregular[ $verb ] ) ) {
 		return $irregular[ $verb ];
 	}
