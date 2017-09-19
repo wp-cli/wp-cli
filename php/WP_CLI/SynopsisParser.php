@@ -21,7 +21,7 @@ class SynopsisParser {
 			$param = self::classify_token( $token );
 
 			// Some types of parameters shouldn't be mandatory
-			if ( isset( $param['optional'] ) && !$param['optional'] ) {
+			if ( isset( $param['optional'] ) && ! $param['optional'] ) {
 				if ( 'flag' === $param['type'] || ( 'assoc' === $param['type'] && $param['value']['optional'] ) ) {
 					$param['type'] = 'unknown';
 				}
@@ -42,9 +42,14 @@ class SynopsisParser {
 		if ( ! is_array( $synopsis ) ) {
 			return '';
 		}
-		$bits = array( 'positional' => '', 'assoc' => '', 'generic' => '', 'flag' => '' );
-		foreach( $bits as $key => &$value ) {
-			foreach( $synopsis as $arg ) {
+		$bits = array(
+			'positional' => '',
+			'assoc' => '',
+			'generic' => '',
+			'flag' => '',
+		);
+		foreach ( $bits as $key => &$value ) {
+			foreach ( $synopsis as $arg ) {
 				if ( empty( $arg['type'] )
 					|| $key !== $arg['type'] ) {
 					continue;
@@ -56,12 +61,12 @@ class SynopsisParser {
 
 				if ( 'positional' === $key ) {
 					$rendered_arg = "<{$arg['name']}>";
-				} else if ( 'assoc' === $key ) {
+				} elseif ( 'assoc' === $key ) {
 					$arg_value = isset( $arg['value']['name'] ) ? $arg['value']['name'] : $arg['name'];
 					$rendered_arg = "--{$arg['name']}=<{$arg_value}>";
-				} else if ( 'generic' === $key ) {
-					$rendered_arg = "--<field>=<value>";
-				} else if ( 'flag' === $key ) {
+				} elseif ( 'generic' === $key ) {
+					$rendered_arg = '--<field>=<value>';
+				} elseif ( 'flag' === $key ) {
 					$rendered_arg = "--{$arg['name']}";
 				}
 				if ( ! empty( $arg['repeating'] ) ) {
@@ -74,7 +79,7 @@ class SynopsisParser {
 			}
 		}
 		$rendered = '';
-		foreach( $bits as $v ) {
+		foreach ( $bits as $v ) {
 			if ( ! empty( $v ) ) {
 				$rendered .= $v;
 			}
@@ -118,7 +123,9 @@ class SynopsisParser {
 				if ( preg_match( "/^=<$p_value>$/", $value, $matches ) ) {
 					$param['value']['name'] = $matches[1];
 				} else {
-					$param = array( 'type' => 'unknown' );
+					$param = array(
+						'type' => 'unknown',
+					);
 				}
 			}
 		} else {
