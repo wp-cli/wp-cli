@@ -494,4 +494,41 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		);
 	}
 
+	/**
+	 * @dataProvider dataExpandGlobs
+	 */
+	public function testExpandGlobs( $path, $expected ) {
+		$expand_globs_no_glob_brace = getenv( 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE' );
+
+		$dir = __DIR__ . '/data/expand_globs/';
+		$expected = array_map( function ( $v ) use ( $dir ) { return $dir . $v; }, $expected );
+
+		putenv( 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE=0' );
+		$out = Utils\expand_globs( $dir . $path );
+		$this->assertSame( $expected, $out );
+
+		putenv( 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE=1' );
+		$out = Utils\expand_globs( $dir . $path );
+		$this->assertSame( $expected, $out );
+
+		putenv( false === $expand_globs_no_glob_brace ? 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE' : "WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE=$expand_globs_no_glob_brace" );
+	}
+
+	public function dataExpandGlobs() {
+		// Files in "data/expand_globs": foo.ab1, foo.ab2, foo.efg1, foo.efg2, bar.ab1, bar.ab2, baz.ab1, baz.ac1, baz.efg2.
+		return array(
+			array( 'foo.ab1', array( 'foo.ab1' ) ),
+			array( '{foo,bar}.ab1', array( 'foo.ab1', 'bar.ab1' ) ),
+			array( '{foo,baz}.a{b,c}1', array( 'foo.ab1', 'baz.ab1' , 'baz.ac1' ) ),
+			array( '{foo,baz}.{ab,ac}1', array( 'foo.ab1', 'baz.ab1' , 'baz.ac1' ) ),
+			array( '{foo,bar}.{ab1,efg1}', array( 'foo.ab1', 'foo.efg1', 'bar.ab1' ) ),
+			array( '{foo,bar,baz}.{ab,ac,efg}1', array( 'foo.ab1', 'foo.efg1', 'bar.ab1', 'baz.ab1', 'baz.ac1' ) ),
+			array( '{foo,ba{r,z}}.ab1', array( 'foo.ab1', 'bar.ab1', 'baz.ab1' ) ),
+			array( '{foo,ba{r,z}}.{ab1,efg1}', array( 'foo.ab1', 'foo.efg1', 'bar.ab1', 'baz.ab1') ),
+			array( '{foo,bar}.{ab{1,2},efg1}', array( 'foo.ab1', 'foo.ab2', 'foo.efg1', 'bar.ab1', 'bar.ab2' ) ),
+			array( '{foo,ba{r,z}}.{a{b,c}{1,2},efg{1,2}}', array( 'foo.ab1', 'foo.ab2', 'foo.efg1', 'foo.efg2', 'bar.ab1', 'bar.ab2', 'baz.ab1', 'baz.ac1', 'baz.efg2' ) ),
+
+			array( 'no_such_file', array( 'no_such_file' ) ), // Documenting this behaviour here, which is odd (though advertized) - more natural to return an empty array.
+		);
+	}
 }
