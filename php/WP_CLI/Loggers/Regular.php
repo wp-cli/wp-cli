@@ -57,9 +57,12 @@ class Regular extends Base {
 	 */
 	public function error_multi_line( $message_lines ) {
 		// convert tabs to four spaces, as some shells will output the tabs as variable-length
-		$message_lines = array_map( function( $line ) {
-			return str_replace( "\t", '    ', $line );
-		} , $message_lines );
+		$message_lines = array_map(
+			function( $line ) {
+				return str_replace( "\t", '    ', $line );
+			},
+			$message_lines
+		);
 
 		$longest = max( array_map( 'strlen', $message_lines ) );
 
