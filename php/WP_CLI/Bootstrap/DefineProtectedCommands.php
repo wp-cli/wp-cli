@@ -40,7 +40,7 @@ final class DefineProtectedCommands implements BootstrapStep {
 	private function get_protected_commands() {
 		return array(
 			'cli info',
-		    'package',
+			'package',
 		);
 	}
 
