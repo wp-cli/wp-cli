@@ -43,7 +43,7 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 			}
 
 			if ( ! empty( $composer_error ) ) {
-				WP_CLI::log( sprintf( " - Warning: %s", $composer_error ) );
+				WP_CLI::log( sprintf( ' - Warning: %s', $composer_error ) );
 			}
 		}
 

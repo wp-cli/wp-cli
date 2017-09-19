@@ -71,7 +71,7 @@ class Formatter {
 			if ( in_array( $this->args['format'], array( 'csv', 'json', 'table' ) ) ) {
 				$item = is_array( $items ) && ! empty( $items ) ? array_shift( $items ) : false;
 				if ( $item && ! empty( $this->args['fields'] ) ) {
-					foreach( $this->args['fields'] as &$field ) {
+					foreach ( $this->args['fields'] as &$field ) {
 						$field = $this->find_item_key( $item, $field );
 					}
 					array_unshift( $items, $item );
@@ -104,7 +104,12 @@ class Formatter {
 			if ( in_array( $this->args['format'], array( 'table', 'csv' ) ) && ( is_object( $value ) || is_array( $value ) ) ) {
 				$value = json_encode( $value );
 			}
-			\WP_CLI::print_value( $value, array( 'format' => $this->args['format'] ) );
+			\WP_CLI::print_value(
+				$value,
+				array(
+					'format' => $this->args['format'],
+				)
+			);
 		} else {
 			$this->show_multiple_fields( $item, $this->args['format'], $ascii_pre_colorized );
 		}
@@ -121,14 +126,14 @@ class Formatter {
 
 		switch ( $this->args['format'] ) {
 			case 'count':
-				if ( !is_array( $items ) ) {
+				if ( ! is_array( $items ) ) {
 					$items = iterator_to_array( $items );
 				}
 				echo count( $items );
 				break;
 
 			case 'ids':
-				if ( !is_array( $items ) ) {
+				if ( ! is_array( $items ) ) {
 					$items = iterator_to_array( $items );
 				}
 				echo implode( ' ', $items );
@@ -150,12 +155,12 @@ class Formatter {
 				}
 
 				if ( 'json' === $this->args['format'] ) {
-					if (defined('JSON_PARTIAL_OUTPUT_ON_ERROR')) {
+					if ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
 						echo json_encode( $out, JSON_PARTIAL_OUTPUT_ON_ERROR );
 					} else {
 						echo json_encode( $out );
 					}
-				} else if ( 'yaml' === $this->args['format'] ) {
+				} elseif ( 'yaml' === $this->args['format'] ) {
 					echo Spyc::YAMLDump( $out, 2, 0 );
 				}
 				break;
@@ -185,7 +190,12 @@ class Formatter {
 			if ( 'json' == $this->args['format'] ) {
 				$values[] = $item->$key;
 			} else {
-				\WP_CLI::print_value( $item->$key, array( 'format' => $this->args['format'] ) );
+				\WP_CLI::print_value(
+					$item->$key,
+					array(
+						'format' => $this->args['format'],
+					)
+				);
 			}
 		}
 
@@ -227,15 +237,15 @@ class Formatter {
 	private function show_multiple_fields( $data, $format, $ascii_pre_colorized = false ) {
 
 		$true_fields = array();
-		foreach( $this->args['fields'] as $field ) {
+		foreach ( $this->args['fields'] as $field ) {
 			$true_fields[] = $this->find_item_key( $data, $field );
 		}
 
-		foreach( $data as $key => $value ) {
+		foreach ( $data as $key => $value ) {
 			if ( ! in_array( $key, $true_fields ) ) {
 				if ( is_array( $data ) ) {
 					unset( $data[ $key ] );
-				} else if ( is_object( $data ) ) {
+				} elseif ( is_object( $data ) ) {
 					unset( $data->$key );
 				}
 			}
@@ -249,18 +259,23 @@ class Formatter {
 				$fields = array( 'Field', 'Value' );
 				if ( 'table' == $format ) {
 					self::show_table( $rows, $fields, $ascii_pre_colorized );
-				} else if ( 'csv' == $format ) {
+				} elseif ( 'csv' == $format ) {
 					\WP_CLI\Utils\write_csv( STDOUT, $rows, $fields );
 				}
 				break;
 
 			case 'yaml':
 			case 'json':
-				\WP_CLI::print_value( $data, array( 'format' => $format ) );
+				\WP_CLI::print_value(
+					$data,
+					array(
+						'format' => $format,
+					)
+				);
 				break;
 
 			default:
-				\WP_CLI::error( "Invalid format: " . $format );
+				\WP_CLI::error( 'Invalid format: ' . $format );
 				break;
 
 		}
@@ -289,7 +304,7 @@ class Formatter {
 			$table->addRow( array_values( \WP_CLI\Utils\pick_fields( $item, $fields ) ) );
 		}
 
-		foreach( $table->getDisplayLines() as $line ) {
+		foreach ( $table->getDisplayLines() as $line ) {
 			\WP_CLI::line( $line );
 		}
 
@@ -329,13 +344,13 @@ class Formatter {
 	 * @return mixed
 	 */
 	public function transform_item_values_to_json( $item ) {
-		foreach( $this->args['fields'] as $field ) {
+		foreach ( $this->args['fields'] as $field ) {
 			$true_field = $this->find_item_key( $item, $field );
 			$value = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
 			if ( is_array( $value ) || is_object( $value ) ) {
 				if ( is_object( $item ) ) {
 					$item->$true_field = json_encode( $value );
-				} else if ( is_array( $item ) ) {
+				} elseif ( is_array( $item ) ) {
 					$item[ $true_field ] = json_encode( $value );
 				}
 			}
