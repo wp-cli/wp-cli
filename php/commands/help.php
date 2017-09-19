@@ -60,20 +60,28 @@ class Help_Command extends WP_CLI_Command {
 		$wordwrap_width = \cli\Shell::columns();
 
 		// Wordwrap with indent.
-		$out = preg_replace_callback( '/^( *)([^\n]+)\n/m', function ( $matches ) use ( $wordwrap_width ) {
-			return $matches[1] . str_replace( "\n", "\n{$matches[1]}", wordwrap( $matches[2], $wordwrap_width - strlen( $matches[1] ) ) ) . "\n";
-		}, $out );
+		$out = preg_replace_callback(
+			'/^( *)([^\n]+)\n/m',
+			function ( $matches ) use ( $wordwrap_width ) {
+				return $matches[1] . str_replace( "\n", "\n{$matches[1]}", wordwrap( $matches[2], $wordwrap_width - strlen( $matches[1] ) ) ) . "\n";
+			},
+			$out
+		);
 
 		if ( $subcommands ) {
 			// Wordwrap with column indent.
-			$subcommands = preg_replace_callback( '/^(' . $column_subpattern . ')([^\n]+)\n/m', function ( $matches ) use ( $wordwrap_width, $tab ) {
-				// Need to de-tab for wordwrapping to work properly.
-				$matches[1] = str_replace( "\t", $tab, $matches[1] );
-				$matches[2] = str_replace( "\t", $tab, $matches[2] );
-				$padding_len = strlen( $matches[1] );
-				$padding = str_repeat( ' ', $padding_len );
-				return $matches[1] . str_replace( "\n", "\n$padding", wordwrap( $matches[2], $wordwrap_width - $padding_len ) ) . "\n";
-			}, $subcommands );
+			$subcommands = preg_replace_callback(
+				'/^(' . $column_subpattern . ')([^\n]+)\n/m',
+				function ( $matches ) use ( $wordwrap_width, $tab ) {
+					// Need to de-tab for wordwrapping to work properly.
+					$matches[1] = str_replace( "\t", $tab, $matches[1] );
+					$matches[2] = str_replace( "\t", $tab, $matches[2] );
+					$padding_len = strlen( $matches[1] );
+					$padding = str_repeat( ' ', $padding_len );
+					return $matches[1] . str_replace( "\n", "\n$padding", wordwrap( $matches[2], $wordwrap_width - $padding_len ) ) . "\n";
+				},
+				$subcommands
+			);
 
 			// Put subcommands back.
 			$out = str_replace( $subcommands_header, $subcommands, $out );
@@ -111,7 +119,7 @@ class Help_Command extends WP_CLI_Command {
 		}
 
 		// convert string to file handle
-		$fd = fopen( "php://temp", "r+" );
+		$fd = fopen( 'php://temp', 'r+' );
 		fputs( $fd, $out );
 		rewind( $fd );
 
@@ -171,8 +179,9 @@ class Help_Command extends WP_CLI_Command {
 		$max_len = 0;
 		foreach ( $strings as $str ) {
 			$len = strlen( $str );
-			if ( $len > $max_len )
+			if ( $len > $max_len ) {
 				$max_len = $len;
+			}
 		}
 
 		return $max_len;
