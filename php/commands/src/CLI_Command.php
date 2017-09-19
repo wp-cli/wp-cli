@@ -192,7 +192,7 @@ class CLI_Command extends WP_CLI_Command {
 				array( 'version', 'update_type', 'package_url' )
 			);
 			$formatter->display_items( $updates );
-		} else if ( empty( $assoc_args['format'] ) || 'table' == $assoc_args['format'] ) {
+		} elseif ( empty( $assoc_args['format'] ) || 'table' == $assoc_args['format'] ) {
 			$update_type = $this->get_update_type_str( $assoc_args );
 			WP_CLI::success( "WP-CLI is at the latest{$update_type}version." );
 		}
@@ -244,22 +244,22 @@ class CLI_Command extends WP_CLI_Command {
 	 */
 	public function update( $_, $assoc_args ) {
 		if ( ! Utils\inside_phar() ) {
-			WP_CLI::error( "You can only self-update Phar files." );
+			WP_CLI::error( 'You can only self-update Phar files.' );
 		}
 
 		$old_phar = realpath( $_SERVER['argv'][0] );
 
 		if ( ! is_writable( $old_phar ) ) {
-			WP_CLI::error( sprintf( "%s is not writable by current user.", $old_phar ) );
-		} else if ( ! is_writeable( dirname( $old_phar ) ) ) {
-			WP_CLI::error( sprintf( "%s is not writable by current user.", dirname( $old_phar ) ) );
+			WP_CLI::error( sprintf( '%s is not writable by current user.', $old_phar ) );
+		} elseif ( ! is_writeable( dirname( $old_phar ) ) ) {
+			WP_CLI::error( sprintf( '%s is not writable by current user.', dirname( $old_phar ) ) );
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'nightly' ) ) {
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest nightly?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar';
 			$md5_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.md5';
-		} else if ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
+		} elseif ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest stable release?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
 			$md5_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.md5';
@@ -283,7 +283,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		WP_CLI::log( sprintf( 'Downloading from %s...', $download_url ) );
 
-		$temp = \WP_CLI\Utils\get_temp_dir() . uniqid('wp_') . '.phar';
+		$temp = \WP_CLI\Utils\get_temp_dir() . uniqid( 'wp_' ) . '.phar';
 
 		$headers = array();
 		$options = array(
@@ -320,18 +320,18 @@ class CLI_Command extends WP_CLI_Command {
 		$mode = fileperms( $old_phar ) & 511;
 
 		if ( false === @chmod( $temp, $mode ) ) {
-			WP_CLI::error( sprintf( "Cannot chmod %s.", $temp ) );
+			WP_CLI::error( sprintf( 'Cannot chmod %s.', $temp ) );
 		}
 
 		class_exists( '\cli\Colors' ); // This autoloads \cli\Colors - after we move the file we no longer have access to this class.
 
 		if ( false === @rename( $temp, $old_phar ) ) {
-			WP_CLI::error( sprintf( "Cannot move %s to %s", $temp, $old_phar ) );
+			WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $old_phar ) );
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'nightly' ) ) {
 			$updated_version = 'the latest nightly release';
-		} else if ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
+		} elseif ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
 			$updated_version = 'the latest stable release';
 		} else {
 			$updated_version = $newest['version'];
@@ -359,7 +359,7 @@ class CLI_Command extends WP_CLI_Command {
 		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
 
 		if ( ! $response->success || 200 !== $response->status_code ) {
-			WP_CLI::error( sprintf( "Failed to get latest version (HTTP code %d).", $response->status_code ) );
+			WP_CLI::error( sprintf( 'Failed to get latest version (HTTP code %d).', $response->status_code ) );
 		}
 
 		$release_data = json_decode( $response->body );
@@ -393,13 +393,13 @@ class CLI_Command extends WP_CLI_Command {
 			);
 		}
 
-		foreach( $updates as $type => $value ) {
+		foreach ( $updates as $type => $value ) {
 			if ( empty( $value ) ) {
 				unset( $updates[ $type ] );
 			}
 		}
 
-		foreach( array( 'major', 'minor', 'patch' ) as $type ) {
+		foreach ( array( 'major', 'minor', 'patch' ) as $type ) {
 			if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, $type ) ) {
 				return ! empty( $updates[ $type ] ) ? array( $updates[ $type ] ) : false;
 			}
@@ -409,7 +409,7 @@ class CLI_Command extends WP_CLI_Command {
 			$version_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/NIGHTLY_VERSION';
 			$response = Utils\http_request( 'GET', $version_url );
 			if ( ! $response->success || 200 !== $response->status_code ) {
-				WP_CLI::error( sprintf( "Failed to get current nightly version (HTTP code %d)", $response->status_code ) );
+				WP_CLI::error( sprintf( 'Failed to get current nightly version (HTTP code %d)', $response->status_code ) );
 			}
 			$nightly_version = trim( $response->body );
 			if ( WP_CLI_VERSION != $nightly_version ) {
@@ -467,12 +467,12 @@ class CLI_Command extends WP_CLI_Command {
 			$config = \WP_CLI::get_configurator()->to_array();
 			// Copy current config values to $spec
 			foreach ( $spec as $key => $value ) {
-				if ( isset( $config[0][$key] ) ) {
-					$current = $config[0][$key];
+				if ( isset( $config[0][ $key ] ) ) {
+					$current = $config[0][ $key ];
 				} else {
-					$current = NULL;
+					$current = null;
 				}
-				$spec[$key]['current'] = $current;
+				$spec[ $key ]['current'] = $current;
 			}
 		}
 
@@ -566,7 +566,7 @@ class CLI_Command extends WP_CLI_Command {
 	 */
 	private function get_update_type_str( $assoc_args ) {
 		$update_type = ' ';
-		foreach( array( 'major', 'minor', 'patch' ) as $type ) {
+		foreach ( array( 'major', 'minor', 'patch' ) as $type ) {
 			if ( true === \WP_CLI\Utils\get_flag_value( $assoc_args, $type ) ) {
 				$update_type = ' ' . $type . ' ';
 				break;
