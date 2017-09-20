@@ -2,16 +2,14 @@ Feature: `wp cli` tasks
 
   Scenario: Ability to detect a WP-CLI registered command
     Given an empty directory
-    And save the {SRC_DIR}/VERSION file as {TRUE_VERSION}
-    And a new Phar with version "1.3.0"
 
-    When I try `{PHAR_PATH} cli has-command scaffold package`
-    Then the return code should be 1
-
-    When I run `{PHAR_PATH} package install wp-cli/scaffold-package-command`
-    When I run `{PHAR_PATH} cli has-command scaffold package`
+    When I run `wp package install wp-cli/scaffold-package-command`
+    When I run `wp cli has-command scaffold package`
     Then the return code should be 0
-
+    
+    When I run `wp package uninstall wp-cli/scaffold-package-command`
+    When I try `wp cli has-command scaffold package`
+    Then the return code should be 1
 
   Scenario: Ability to set a custom version when building
     Given an empty directory
