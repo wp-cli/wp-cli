@@ -90,7 +90,7 @@ class Extractor {
 				self::rmdir( dirname( $tempdir ) );
 				return;
 			} catch( \Exception $e ) {
-				WP_CLI::warning( $e->getMessage() );
+				WP_CLI::warning( "PharData failed, falling back to 'tar gz' (" . $e->getMessage()  . ')' );
 				// Fall through to trying `tar xz` below
 			}
 		}
