@@ -699,11 +699,15 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		return 'php';
 	}
 
-	public function start_php_server() {
+	public function start_php_server( $subdir = '' ) {
+		$dir = $this->variables['RUN_DIR'] . '/';
+		if ( $subdir ) {
+			$dir .= trim( $subdir, '/' ) . '/';
+		}
 		$cmd = Utils\esc_cmd( '%s -S %s -t %s -c %s %s',
 			$this->get_php_binary(),
 			'localhost:8080',
-			$this->variables['RUN_DIR'] . '/wordpress/',
+			$dir,
 			get_cfg_var( 'cfg_file_path' ),
 			$this->variables['RUN_DIR'] . '/vendor/wp-cli/server-command/router.php'
 		);
