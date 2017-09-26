@@ -588,12 +588,12 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     The "site delete" command is registered.
+	 *     # The "site delete" command is registered.
 	 *     $ wp cli has-command "site delete"
 	 *     $ echo $?
 	 *     0
 	 *
-	 *     The "foo bar" command is not registered.
+	 *     # The "foo bar" command is not registered.
 	 *     $ wp cli has-command "foo bar"
 	 *     $ echo $?
 	 *     1
