@@ -575,4 +575,38 @@ class CLI_Command extends WP_CLI_Command {
 		return $update_type;
 	}
 
+	/**
+	 * Detects if a command exists
+	 *
+	 * This commands checks if a command is registered with WP-CLI.
+	 * If the command is found then it returns with exit status 0.
+	 * If the command doesn't exist, then it will exit with status 1.
+	 *
+	 * ## OPTIONS
+	 * <command_name>...
+	 * : The command
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # The "site delete" command is registered.
+	 *     $ wp cli has-command "site delete"
+	 *     $ echo $?
+	 *     0
+	 *
+	 *     # The "foo bar" command is not registered.
+	 *     $ wp cli has-command "foo bar"
+	 *     $ echo $?
+	 *     1
+	 *
+	 * @subcommand has-command
+	 *
+	 * @when after_wp_load
+	 */
+	public function has_command( $_, $assoc_args ) {
+
+		// If command is input as a string, then explode it into array.
+		$command = explode( ' ', implode( ' ', $_ ) );
+
+		WP_CLI::halt( is_array( WP_CLI::get_runner()->find_command_to_run( $command ) ) ? 0 : 1 );
+	}
 }
