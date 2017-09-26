@@ -1,5 +1,16 @@
 Feature: `wp cli` tasks
 
+  Scenario: Ability to detect a WP-CLI registered command
+    Given an empty directory
+
+    When I run `wp package install wp-cli/scaffold-package-command`
+    When I run `wp cli has-command scaffold package`
+    Then the return code should be 0
+    
+    When I run `wp package uninstall wp-cli/scaffold-package-command`
+    When I try `wp cli has-command scaffold package`
+    Then the return code should be 1
+
   Scenario: Ability to set a custom version when building
     Given an empty directory
     And save the {SRC_DIR}/VERSION file as {TRUE_VERSION}
