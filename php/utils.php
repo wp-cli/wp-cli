@@ -581,6 +581,7 @@ function replace_path_consts( $source, $path ) {
 function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
 
 	$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
+	$halt_on_error = ! empty( $options['halt_on_error'] ) && $options['halt_on_error'];
 	if ( inside_phar() ) {
 		// cURL can't read Phar archives
 		$options['verify'] = extract_from_phar(
@@ -595,11 +596,10 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 		}
 		if ( empty( $options['verify'] ) ) {
 			$error_msg = 'Cannot find SSL certificate.';
-			if ( ! empty( $options['throw_exception_on_error'] ) ) {
-				throw new \Exception( $error_msg );
-			} else {
+			if ( $halt_on_error ) {
 				WP_CLI::error( $error_msg );
 			}
+			throw new \RuntimeException( $error_msg );
 		}
 	}
 
@@ -610,11 +610,10 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 		// CURLE_SSL_CACERT_BADFILE only defined for PHP >= 7.
 		if ( 'curlerror' !== $ex->getType() || ! in_array( curl_errno( $ex->getData() ), array( CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, 77 /*CURLE_SSL_CACERT_BADFILE*/ ), true ) ) {
 			$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $ex->getMessage() );
-			if ( ! empty( $options['throw_exception_on_error'] ) ) {
-				throw new \Exception( $error_msg );
-			} else {
+			if ( $halt_on_error ) {
 				WP_CLI::error( $error_msg );
 			}
+			throw new \RuntimeException( $error_msg, null, $ex );
 		}
 		// Handle SSL certificate issues gracefully
 		\WP_CLI::warning( sprintf( "Re-trying without verify after failing to get verified url '%s' %s.", $url, $ex->getMessage() ) );
@@ -623,11 +622,10 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 			return \Requests::request( $url, $headers, $data, $method, $options );
 		} catch ( \Requests_Exception $ex ) {
 			$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $ex->getMessage() );
-			if ( ! empty( $options['throw_exception_on_error'] ) ) {
-				throw new \Exception( $error_msg );
-			} else {
+			if ( $halt_on_error ) {
 				WP_CLI::error( $error_msg );
 			}
+			throw new \RuntimeException( $error_msg, null, $ex );
 		}
 	}
 }
