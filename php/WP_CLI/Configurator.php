@@ -171,7 +171,7 @@ class Configurator {
 		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
 			foreach ( $global_assoc as $tmp ) {
 				list( $key, $value ) = $tmp;
-				if ( isset( $this->spec[ $key ] ) && $this->spec[ $key ]['runtime'] !== false ) {
+				if ( isset( $this->spec[ $key ] ) && false !== $this->spec[ $key ]['runtime'] ) {
 					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
 				}
 			}
@@ -182,7 +182,7 @@ class Configurator {
 			foreach ( $mixed_args as $tmp ) {
 				list( $key, $value ) = $tmp;
 
-				if ( isset( $this->spec[ $key ] ) && $this->spec[ $key ]['runtime'] !== false ) {
+				if ( isset( $this->spec[ $key ] ) && false !== $this->spec[ $key ]['runtime'] ) {
 					$this->assoc_arg_to_runtime_config( $key, $value, $runtime_config );
 				} else {
 					$assoc_args[ $key ] = $value;

@@ -38,7 +38,7 @@ class Query implements \Iterator {
 		$this->query = $query;
 
 		$this->count_query = preg_replace( '/^.*? FROM /', 'SELECT COUNT(*) FROM ', $query, 1, $replacements );
-		if ( $replacements != 1 ) {
+		if ( 1 !== $replacements ) {
 			$this->count_query = '';
 		}
 
