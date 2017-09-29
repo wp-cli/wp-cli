@@ -156,8 +156,10 @@ class CommandFactory {
 
 		if ( isset( self::$file_contents[ $filename ] ) ) {
 			$contents = self::$file_contents[ $filename ];
-		} elseif ( is_readable( $filename ) && ( $contents = file_get_contents( $filename ) ) ) {
-			self::$file_contents[ $filename ] = $contents = explode( "\n", $contents );
+		} elseif ( is_readable( $filename ) && file_get_contents( $filename ) ) {
+			$contents = file_get_contents( $filename );
+			$contents = explode( "\n", $contents );
+			self::$file_contents[ $filename ] = $contents;
 		} else {
 			\WP_CLI::debug( "Could not read contents for filename '{$filename}'.", 'commandfactory' );
 			return null;
@@ -183,16 +185,19 @@ class CommandFactory {
 			return false;
 		}
 		$content = substr( $content, 0, $comment_end_pos + 2 );
-		if ( false === ( $comment_start_pos = strrpos( $content, '/**' ) ) || $comment_start_pos + 2 === $comment_end_pos ) {
+		$comment_start_pos = strrpos( $content, '/**' );
+		if ( false === $comment_start_pos || $comment_start_pos + 2 === $comment_end_pos ) {
 			return false;
 		}
 		// Make sure comment start belongs to this comment end.
-		if ( false !== ( $comment_end2_pos = strpos( substr( $content, $comment_start_pos ), '*/' ) ) && $comment_start_pos + $comment_end2_pos < $comment_end_pos ) {
+		$comment_end2_pos = strpos( substr( $content, $comment_start_pos ), '*/' );
+		if ( false !== $comment_end2_pos && $comment_start_pos + $comment_end2_pos < $comment_end_pos ) {
 			return false;
 		}
 		// Allow for '/**' within doc comment.
 		$subcontent = substr( $content, 0, $comment_start_pos );
-		while ( false !== ( $comment_start2_pos = strrpos( $subcontent, '/**' ) ) && false === strpos( $subcontent, '*/', $comment_start2_pos ) ) {
+		$comment_start2_pos = strrpos( $subcontent, '/**' );
+		while ( false !== $comment_start2_pos && false === strpos( $subcontent, '*/', $comment_start2_pos ) ) {
 			$comment_start_pos = $comment_start2_pos;
 			$subcontent = substr( $subcontent, 0, $comment_start_pos );
 		}

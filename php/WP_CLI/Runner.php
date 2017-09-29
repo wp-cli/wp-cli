@@ -191,7 +191,8 @@ class Runner {
 			}
 
 			if ( file_exists( "$dir/index.php" ) ) {
-				if ( $path = self::extract_subdir_path( "$dir/index.php" ) ) {
+				$path = self::extract_subdir_path( "$dir/index.php" );
+				if ( $path ) {
 					return $path;
 				}
 			}
@@ -896,7 +897,7 @@ class Runner {
 
 			if ( ! array_key_exists( $this->alias, $this->aliases ) ) {
 				$error_msg = "Alias '{$this->alias}' not found.";
-				$suggestion = Utils\get_suggestion( $this->alias, array_keys( $this->aliases ), $threshold = 2 );
+				$suggestion = Utils\get_suggestion( $this->alias, array_keys( $this->aliases ), 2 );
 				if ( $suggestion ) {
 					$error_msg .= PHP_EOL . "Did you mean '{$suggestion}'?";
 				}
@@ -906,7 +907,8 @@ class Runner {
 			if ( isset( $this->aliases[ $this->alias ][0] ) ) {
 				$group_aliases = $this->aliases[ $this->alias ];
 				$all_aliases = array_keys( $this->aliases );
-				if ( $diff = array_diff( $group_aliases, $all_aliases ) ) {
+				$diff = array_diff( $group_aliases, $all_aliases );
+				if ( $diff ) {
 					WP_CLI::error( "Group '{$this->alias}' contains one or more invalid aliases: " . implode( ', ', $diff ) );
 				}
 				$this->run_alias_group( $group_aliases );
@@ -1557,7 +1559,7 @@ class Runner {
 		$commands = array();
 		$this->enumerate_commands( $root_command ?: \WP_CLI::get_root_command(), $commands );
 
-		return Utils\get_suggestion( $entry, $commands, $threshold = 2 );
+		return Utils\get_suggestion( $entry, $commands, 2 );
 	}
 
 	/**
