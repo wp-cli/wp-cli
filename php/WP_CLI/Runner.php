@@ -1103,7 +1103,7 @@ class Runner {
 		}
 
 		// Fix memory limit. See http://core.trac.wordpress.org/ticket/14889
-		@ini_set( 'memory_limit', -1 );
+		ini_set( 'memory_limit', -1 );
 
 		// Load all the admin APIs, for convenience
 		require ABSPATH . 'wp-admin/includes/admin.php';
