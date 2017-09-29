@@ -30,7 +30,9 @@ function extract_from_phar( $path ) {
 
 	register_shutdown_function(
 		function() use ( $tmp_path ) {
-			unlink( $tmp_path );
+			if ( file_exists( $tmp_path ) ) {
+				unlink( $tmp_path );
+			}
 		}
 	);
 
