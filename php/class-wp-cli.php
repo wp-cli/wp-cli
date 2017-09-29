@@ -17,7 +17,9 @@ class WP_CLI {
 
 	private static $logger;
 
-	private static $hooks = array(), $hooks_passed = array();
+	private static $hooks = array();
+
+	private static $hooks_passed = array();
 
 	private static $capture_exit = false;
 
