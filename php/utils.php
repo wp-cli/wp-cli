@@ -581,7 +581,7 @@ function replace_path_consts( $source, $path ) {
 function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
 
 	$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
-	$halt_on_error = ! empty( $options['halt_on_error'] ) && $options['halt_on_error'];
+	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
 	if ( inside_phar() ) {
 		// cURL can't read Phar archives
 		$options['verify'] = extract_from_phar(
