@@ -166,7 +166,7 @@ function is_path_absolute( $path ) {
 		return true;
 	}
 
-	return $path[0] === '/';
+	return '/' === $path[0];
 }
 
 /**
@@ -418,7 +418,7 @@ function mysql_host_to_cli_args( $raw_host ) {
 		if ( is_numeric( $extra ) ) {
 			$assoc_args['port'] = intval( $extra );
 			$assoc_args['protocol'] = 'tcp';
-		} elseif ( $extra !== '' ) {
+		} elseif ( '' !== $extra ) {
 			$assoc_args['socket'] = $extra;
 		}
 	} else {
@@ -876,7 +876,7 @@ function parse_str_to_argv( $arguments ) {
 	$argv = array_map(
 		function( $arg ) {
 			foreach ( array( '"', "'" ) as $char ) {
-				if ( $char === substr( $arg, 0, 1 ) && $char === substr( $arg, -1 ) ) {
+				if ( substr( $arg, 0, 1 ) === $char && substr( $arg, -1 ) === $char ) {
 					$arg = substr( $arg, 1, -1 );
 					break;
 				}
@@ -919,7 +919,7 @@ function basename( $path, $suffix = '' ) {
 function isPiped() {
 	$shellPipe = getenv( 'SHELL_PIPE' );
 
-	if ( $shellPipe !== false ) {
+	if ( false !== $shellPipe ) {
 		return filter_var( $shellPipe, FILTER_VALIDATE_BOOLEAN );
 	} else {
 		return (function_exists( 'posix_isatty' ) && ! posix_isatty( STDOUT ));
@@ -992,7 +992,9 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 					}
 					$current++;
 				} else {
+					//@codingStandardsIgnoreStart
 					if ( ( '}' === $pattern[ $current ] && $depth-- === 0 ) || ( ',' === $pattern[ $current ] && 0 === $depth ) ) {
+						//@codingStandardsIgnoreEnd
 						break;
 					} elseif ( '{' === $pattern[ $current++ ] ) {
 						$depth++;
