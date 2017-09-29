@@ -319,13 +319,13 @@ class CLI_Command extends WP_CLI_Command {
 
 		$mode = fileperms( $old_phar ) & 511;
 
-		if ( false === @chmod( $temp, $mode ) ) {
+		if ( false === chmod( $temp, $mode ) ) {
 			WP_CLI::error( sprintf( 'Cannot chmod %s.', $temp ) );
 		}
 
 		class_exists( '\cli\Colors' ); // This autoloads \cli\Colors - after we move the file we no longer have access to this class.
 
-		if ( false === @rename( $temp, $old_phar ) ) {
+		if ( false === rename( $temp, $old_phar ) ) {
 			WP_CLI::error( sprintf( 'Cannot move %s to %s', $temp, $old_phar ) );
 		}
 

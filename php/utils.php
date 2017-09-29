@@ -30,7 +30,7 @@ function extract_from_phar( $path ) {
 
 	register_shutdown_function(
 		function() use ( $tmp_path ) {
-			@unlink( $tmp_path );
+			unlink( $tmp_path );
 		}
 	);
 
@@ -138,7 +138,7 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	if ( is_null( $dir ) ) {
 		$dir = getcwd();
 	}
-	while ( @is_readable( $dir ) ) {
+	while ( is_readable( $dir ) ) {
 		// Stop walking up when the supplied callable returns true being passed the $dir
 		if ( is_callable( $stop_check ) && call_user_func( $stop_check, $dir ) ) {
 			return null;
@@ -360,7 +360,7 @@ function launch_editor_for_input( $input, $filename = 'WP-CLI' ) {
 		$tmpfile = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( rand() ), 0, 6 );
 		$tmpfile = $tmpdir . $tmpfile . '.tmp';
-		$fp = @fopen( $tmpfile, 'x' );
+		$fp = fopen( $tmpfile, 'x' );
 		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
 			$tmpfile = '';
 			continue;
@@ -779,7 +779,7 @@ function get_temp_dir() {
 		$temp = '/tmp/';
 	}
 
-	if ( ! @is_writable( $temp ) ) {
+	if ( ! is_writable( $temp ) ) {
 		\WP_CLI::warning( "Temp directory isn't writable: {$temp}" );
 	}
 
