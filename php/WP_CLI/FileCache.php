@@ -97,7 +97,7 @@ class FileCache {
 		}
 
 		// use ttl param or global ttl
-		if ( $ttl === null ) {
+		if ( null === $ttl ) {
 			$ttl = $this->ttl;
 		} elseif ( $this->ttl > 0 ) {
 			$ttl = min( (int) $ttl, $this->ttl );
