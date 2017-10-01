@@ -436,7 +436,9 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 	}
 
 	if ( isset( $assoc_args['host'] ) ) {
+		//@codingStandardsIgnoreStart
 		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
+		//@codingStandardsIgnoreEnd
 	}
 
 	$pass = $assoc_args['pass'];
