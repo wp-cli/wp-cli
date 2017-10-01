@@ -992,9 +992,7 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 					}
 					$current++;
 				} else {
-					//@codingStandardsIgnoreStart
-					if ( ( '}' === $pattern[ $current ] && $depth-- === 0 ) || ( ',' === $pattern[ $current ] && 0 === $depth ) ) {
-						//@codingStandardsIgnoreEnd
+					if ( ( '}' === $pattern[ $current ] && 0 === $depth-- ) || ( ',' === $pattern[ $current ] && 0 === $depth ) ) {
 						break;
 					} elseif ( '{' === $pattern[ $current++ ] ) {
 						$depth++;
