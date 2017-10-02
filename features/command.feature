@@ -647,13 +647,13 @@ Feature: WP-CLI Commands
     When I run `wp`
     Then STDOUT should contain:
       """
-      Manage comments.
+      Creates, updates, deletes, and moderates comments.
       """
 
     When I run `wp --require=remove-comment.php`
     Then STDOUT should not contain:
       """
-      Manage comments.
+      Creates, updates, deletes, and moderates comments.
       """
 
   Scenario: before_invoke should call subcommands
