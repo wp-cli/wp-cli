@@ -14,6 +14,7 @@ if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
 }
 require WP_CLI_VENDOR_DIR . '/autoload.php';
 require WP_CLI_ROOT . '/php/utils.php';
+require __DIR__ . '/make-phar-strip-comments.php';
 
 use Symfony\Component\Finder\Finder;
 use WP_CLI\Utils;
@@ -56,7 +57,7 @@ function add_file( $phar, $path ) {
 	$file_contents = file_get_contents( $path );
 	if ( 0 === substr_compare( $path, '.php', -4 ) ) {
 		$is_wp_cli_command = preg_match( '/\/(?:php\/commands|vendor\/wp-cli\/[^\/]+?-command\/src)\//', $path );
-		$file_contents = strip_comments( $file_contents, $is_wp_cli_command /*keep_doc_comments*/ );
+		$file_contents = make_phar_strip_comments( $file_contents, $is_wp_cli_command /*keep_doc_comments*/ );
 	}
 
 	$basename = basename( $path );
@@ -90,28 +91,6 @@ function add_file( $phar, $path ) {
 	} else {
 		$phar[ $key ] = $file_contents;
 	}
-}
-
-function strip_comments( $contents, $keep_doc_comments ) {
-	$strs = array_map( function ( $t ) use ( $keep_doc_comments ) {
-		if ( is_string( $t ) ) {
-			return $t;
-		}
-		if ( T_COMMENT === $t[0] || ( ! $keep_doc_comments && T_DOC_COMMENT === $t[0] ) ) {
-			if ( preg_match( '/copyright|licen[sc]e|\(c\)/i', $t[1] ) ) {
-				// Keep for copyright reasons.
-				return $t[1];
-			}
-			return str_repeat( "\n", substr_count( $t[1], "\n" ) ); // Strip everything but newlines.
-		}
-		if ( T_WHITESPACE === $t[0] ) {
-			$str = preg_replace( '/[^\t\n]/', '', $t[1] ); // Keep tabs and newlines.
-			return '' !== $str ? $str : ' '; // Keep at least one space.
-		}
-		return $t[1];
-	}, token_get_all( $contents ) );
-
-	return implode( '', $strs );
 }
 
 function set_file_contents( $phar, $path, $content ) {
