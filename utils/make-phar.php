@@ -14,6 +14,7 @@ if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
 }
 require WP_CLI_VENDOR_DIR . '/autoload.php';
 require WP_CLI_ROOT . '/php/utils.php';
+require __DIR__ . '/make-phar-strip-comments.php';
 
 use Symfony\Component\Finder\Finder;
 use WP_CLI\Utils;
@@ -53,6 +54,12 @@ function add_file( $phar, $path ) {
 	if ( !BE_QUIET )
 		echo "$key - $path\n";
 
+	$file_contents = file_get_contents( $path );
+	if ( 0 === substr_compare( $path, '.php', -4 ) ) {
+		$is_wp_cli_command = preg_match( '/\/(?:php\/commands|vendor\/wp-cli\/[^\/]+?-command\/src)\//', $path );
+		$file_contents = make_phar_strip_comments( $file_contents, $is_wp_cli_command /*keep_doc_comments*/ );
+	}
+
 	$basename = basename( $path );
 	if ( 0 === strpos( $basename, 'autoload_' ) && preg_match( '/(?:classmap|files|namespaces|psr4|static)\.php$/', $basename ) ) {
 		// Strip autoload maps of unused stuff.
@@ -80,9 +87,9 @@ function add_file( $phar, $path ) {
 				return '/^[^,\n]+?' . $v . '[^,\n]+?, *\n/m';
 			}, $strips );
 		}
-		$phar[ $key ] = preg_replace( $strip_res, '', file_get_contents( $path ) );
+		$phar[ $key ] = preg_replace( $strip_res, '', $file_contents );
 	} else {
-		$phar[ $key ] = file_get_contents( $path );
+		$phar[ $key ] = $file_contents;
 	}
 }
 
