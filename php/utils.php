@@ -246,7 +246,9 @@ function locate_wp_config() {
 }
 
 function wp_version_compare( $since, $operator ) {
-	return version_compare( str_replace( array( '-src' ), '', $GLOBALS['wp_version'] ), $since, $operator );
+	$wp_version = str_replace( '-src', '', $GLOBALS['wp_version'] );
+	$since = str_replace( '-src', '', $since );
+	return version_compare( $wp_version, $since, $operator );
 }
 
 /**
