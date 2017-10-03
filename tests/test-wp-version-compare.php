@@ -14,6 +14,8 @@ class WPVersionCompareTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse( Utils\wp_version_compare( '4.9-alpha-40870-src', '>' ) );
 		$this->assertTrue( Utils\wp_version_compare( '4.9-alpha-40870-src', '=' ) );
 		$this->assertFalse( Utils\wp_version_compare( '4.9-alpha-40870-src', '<' ) );
+		$this->assertTrue( Utils\wp_version_compare( '4.9-beta1', '<' ) );
+		$this->assertFalse( Utils\wp_version_compare( '4.9-beta1', '>' ) );
 		$this->assertFalse( Utils\wp_version_compare( '4.9-beta1-45000', '>' ) );
 		$this->assertTrue( Utils\wp_version_compare( '4.9-beta2-46000', '<' ) );
 		$this->assertFalse( Utils\wp_version_compare( '4.9', '>=' ) );
@@ -23,6 +25,8 @@ class WPVersionCompareTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue( Utils\wp_version_compare( '4.8', '>=' ) );
 		$this->assertFalse( Utils\wp_version_compare( '4.8', '<' ) );
 		$this->assertTrue( Utils\wp_version_compare( '4.9-alpha-40870-src', '>' ) );
+		$this->assertFalse( Utils\wp_version_compare( '4.9-beta1', '<' ) );
+		$this->assertTrue( Utils\wp_version_compare( '4.9-beta1', '>' ) );
 		$this->assertTrue( Utils\wp_version_compare( '4.9-beta1-45000', '>=' ) );
 		$this->assertTrue( Utils\wp_version_compare( '4.9-beta1-45000', '=' ) );
 		$this->assertFalse( Utils\wp_version_compare( '4.9-beta1-45000', '>' ) );
@@ -36,6 +40,8 @@ class WPVersionCompareTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse( Utils\wp_version_compare( '4.8', '<' ) );
 		$this->assertTrue( Utils\wp_version_compare( '4.9-alpha-40870-src', '>' ) );
 		$this->assertFalse( Utils\wp_version_compare( '4.9-alpha-40870-src', '=' ) );
+		$this->assertFalse( Utils\wp_version_compare( '4.9-beta1', '<' ) );
+		$this->assertTrue( Utils\wp_version_compare( '4.9-beta1', '>' ) );
 		$this->assertTrue( Utils\wp_version_compare( '4.9-beta1-45000', '>' ) );
 		$this->assertTrue( Utils\wp_version_compare( '4.9-beta2-45550', '>' ) );
 		$this->assertFalse( Utils\wp_version_compare( '4.9-beta2-45550', '<' ) );
@@ -48,6 +54,8 @@ class WPVersionCompareTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue( Utils\wp_version_compare( '4.9-alpha-40870-src', '>' ) );
 		$this->assertFalse( Utils\wp_version_compare( '4.9-alpha-40870-src', '<' ) );
 		$this->assertTrue( Utils\wp_version_compare( '4.9-beta1-45000', '>' ) );
+		$this->assertFalse( Utils\wp_version_compare( '4.9-beta1', '<' ) );
+		$this->assertTrue( Utils\wp_version_compare( '4.9-beta1', '>' ) );
 		$this->assertTrue( Utils\wp_version_compare( '4.9', '>=' ) );
 		$this->assertFalse( Utils\wp_version_compare( '4.9', '<' ) );
 	}
