@@ -237,6 +237,7 @@ if ( 'cli' !== BUILD ) {
 	add_file( $phar, WP_CLI_ROOT . '/ci/behat-tags.php' );
 	add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/composer/LICENSE' );
 	add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/composer/res/composer-schema.json' );
+	add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/composer/res/composer-repository-schema.json' );
 	add_file( $phar, WP_CLI_VENDOR_DIR . '/justinrainbow/json-schema/dist/schema/json-schema-draft-03.json' );
 	add_file( $phar, WP_CLI_VENDOR_DIR . '/justinrainbow/json-schema/dist/schema/json-schema-draft-04.json' );
 }
