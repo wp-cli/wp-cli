@@ -20,9 +20,7 @@
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 
 	<rule ref="WordPress-Core">
-		<exclude name="Generic.PHP.NoSilencedErrors.Discouraged" />
 		<exclude name="Squiz.PHP.DisallowMultipleAssignments.Found" />
-		<exclude name="WordPress.DB.RestrictedFunctions.mysql_mysql_host_to_cli_args" />
 		<exclude name="WordPress.Files.FileName.InvalidClassFileName" />
 		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase" />
 		<exclude name="WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid" />
@@ -30,6 +28,5 @@
 		<exclude name="WordPress.NamingConventions.ValidVariableName.NotSnakeCaseMemberVar" />
 		<exclude name="WordPress.NamingConventions.ValidVariableName.MemberNotSnakeCase" />
 		<exclude name="WordPress.NamingConventions.ValidVariableName.NotSnakeCase" />
-		<exclude name="WordPress.PHP.YodaConditions.NotYoda" />
 	</rule>
 </ruleset>
