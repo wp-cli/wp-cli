@@ -28,7 +28,7 @@
 		"php": ">=5.3.29",
 		"composer/composer": "^1.2.0",
 		"composer/semver": "~1.0",
-		"justinrainbow/json-schema": "dev-bugfix-451-phar as 5.3.0",
+		"justinrainbow/json-schema": "dev-wp-cli-debug as 5.3.0",
 		"mustache/mustache": "~2.4",
 		"ramsey/array_column": "~1.1",
 		"rmccue/requests": "~1.6",

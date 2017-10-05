@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "c5316df950445215f4ee26a7e8d3da3f",
+    "content-hash": "3fd5c64de0f8c845fe235960f77458d3",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -267,20 +267,19 @@
         },
         {
             "name": "justinrainbow/json-schema",
-            "version": "dev-bugfix-451-phar",
+            "version": "dev-wp-cli-debug",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erayd/json-schema.git",
-                "reference": "b32022cea2e25845f6d01c90833db822dadc5cd4"
+                "reference": "7a4147d0ca4806f4368c8e01573a8c73e8df2b44"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erayd/json-schema/zipball/b32022cea2e25845f6d01c90833db822dadc5cd4",
-                "reference": "b32022cea2e25845f6d01c90833db822dadc5cd4",
+                "url": "https://api.github.com/repos/erayd/json-schema/zipball/7a4147d0ca4806f4368c8e01573a8c73e8df2b44",
+                "reference": "7a4147d0ca4806f4368c8e01573a8c73e8df2b44",
                 "shasum": ""
             },
             "require": {
-                "marc-mabe/php-enum": "2.3.1",
                 "php": ">=5.3.3"
             },
             "require-dev": {
@@ -352,71 +351,9 @@
                 "schema"
             ],
             "support": {
-                "source": "https://github.com/erayd/json-schema/tree/bugfix-451-phar"
+                "source": "https://github.com/erayd/json-schema/tree/wp-cli-debug"
             },
-            "time": "2017-10-05 04:23:06"
-        },
-        {
-            "name": "marc-mabe/php-enum",
-            "version": "v2.3.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/marc-mabe/php-enum.git",
-                "reference": "09f0163a6e040d5e9de9271fd6cfdefb12e3e498"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/marc-mabe/php-enum/zipball/09f0163a6e040d5e9de9271fd6cfdefb12e3e498",
-                "reference": "09f0163a6e040d5e9de9271fd6cfdefb12e3e498",
-                "shasum": ""
-            },
-            "require": {
-                "ext-reflection": "*",
-                "php": ">=5.3"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "~4.0"
-            },
-            "suggest": {
-                "php": "PHP>=5.4 will be required for using trait EnumSerializableTrait"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.3-dev",
-                    "dev-1.x": "1.3-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "MabeEnum\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Marc Bennewitz",
-                    "email": "dev@mabe.berlin",
-                    "homepage": "http://mabe.berlin/",
-                    "role": "Lead"
-                }
-            ],
-            "description": "Simple and fast implementation of enumerations with native PHP 5.3 and upper",
-            "homepage": "https://github.com/marc-mabe/php-enum",
-            "keywords": [
-                "enum",
-                "enum-map",
-                "enum-set",
-                "enumeration",
-                "enummap",
-                "enumset",
-                "type-hint",
-                "typehint"
-            ],
-            "time": "2016-12-21T13:13:11+00:00"
+            "time": "2017-10-05 01:54:46"
         },
         {
             "name": "mustache/mustache",
@@ -2997,6 +2934,68 @@
             "time": "2017-09-18T07:49:36+00:00"
         },
         {
+            "name": "marc-mabe/php-enum",
+            "version": "v2.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/marc-mabe/php-enum.git",
+                "reference": "09f0163a6e040d5e9de9271fd6cfdefb12e3e498"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/marc-mabe/php-enum/zipball/09f0163a6e040d5e9de9271fd6cfdefb12e3e498",
+                "reference": "09f0163a6e040d5e9de9271fd6cfdefb12e3e498",
+                "shasum": ""
+            },
+            "require": {
+                "ext-reflection": "*",
+                "php": ">=5.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0"
+            },
+            "suggest": {
+                "php": "PHP>=5.4 will be required for using trait EnumSerializableTrait"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.3-dev",
+                    "dev-1.x": "1.3-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "MabeEnum\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Marc Bennewitz",
+                    "email": "dev@mabe.berlin",
+                    "homepage": "http://mabe.berlin/",
+                    "role": "Lead"
+                }
+            ],
+            "description": "Simple and fast implementation of enumerations with native PHP 5.3 and upper",
+            "homepage": "https://github.com/marc-mabe/php-enum",
+            "keywords": [
+                "enum",
+                "enum-map",
+                "enum-set",
+                "enumeration",
+                "enummap",
+                "enumset",
+                "type-hint",
+                "typehint"
+            ],
+            "time": "2016-12-21T13:13:11+00:00"
+        },
+        {
             "name": "phpunit/php-code-coverage",
             "version": "1.2.18",
             "source": {
@@ -3627,7 +3626,7 @@
         {
             "alias": "5.3.0",
             "alias_normalized": "5.3.0.0",
-            "version": "dev-bugfix-451-phar",
+            "version": "dev-wp-cli-debug",
             "package": "justinrainbow/json-schema"
         }
     ],
