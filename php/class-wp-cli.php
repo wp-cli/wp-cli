@@ -97,7 +97,7 @@ class WP_CLI {
 	 * Set the context in which WP-CLI should be run
 	 */
 	public static function set_url( $url ) {
-		WP_CLI::debug( 'Set URL: ' . $url, 'bootstrap' );
+		self::debug( 'Set URL: ' . $url, 'bootstrap' );
 		$url_parts = Utils\parse_url( $url );
 		self::set_url_params( $url_parts );
 	}
@@ -421,14 +421,14 @@ class WP_CLI {
 				$callable[0] = is_object( $callable[0] ) ? get_class( $callable[0] ) : $callable[0];
 				$callable = array( $callable[0], $callable[1] );
 			}
-			WP_CLI::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', json_encode( $callable ), $name ) );
+			self::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', json_encode( $callable ), $name ) );
 		}
 
 		$addition = new Dispatcher\CommandAddition();
 		self::do_hook( "before_add_command:{$name}", $addition );
 
 		if ( $addition->was_aborted() ) {
-			WP_CLI::warning( "Aborting the addition of the command '{$name}' with reason: {$addition->get_reason()}." );
+			self::warning( "Aborting the addition of the command '{$name}' with reason: {$addition->get_reason()}." );
 			return false;
 		}
 
@@ -552,7 +552,7 @@ class WP_CLI {
 		self::add_hook(
 			"after_add_command:$parent",
 			function () use ( $name ) {
-				$deferred_additions = WP_CLI::get_deferred_additions();
+				$deferred_additions = self::get_deferred_additions();
 
 				if ( ! array_key_exists( $name, $deferred_additions ) ) {
 					return;
@@ -560,9 +560,9 @@ class WP_CLI {
 
 				$callable = $deferred_additions[ $name ]['callable'];
 				$args     = $deferred_additions[ $name ]['args'];
-				WP_CLI::remove_deferred_addition( $name );
+				self::remove_deferred_addition( $name );
 
-				WP_CLI::add_command( $name, $callable, $args );
+				self::add_command( $name, $callable, $args );
 			}
 		);
 	}
@@ -581,7 +581,7 @@ class WP_CLI {
 	 */
 	public static function remove_deferred_addition( $name ) {
 		if ( ! array_key_exists( $name, self::$deferred_additions ) ) {
-			WP_CLI::warning( "Trying to remove a non-existent command addition '{$name}'." );
+			self::warning( "Trying to remove a non-existent command addition '{$name}'." );
 		}
 
 		unset( self::$deferred_additions[ $name ] );
@@ -852,7 +852,7 @@ class WP_CLI {
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$value = json_decode( $raw_value, true );
 			if ( null === $value ) {
-				WP_CLI::error( sprintf( 'Invalid JSON: %s', $raw_value ) );
+				self::error( sprintf( 'Invalid JSON: %s', $raw_value ) );
 			}
 		} else {
 			$value = $raw_value;
@@ -1124,7 +1124,7 @@ class WP_CLI {
 			$script_path = $GLOBALS['argv'][0];
 
 			// Persist runtime arguments unless they've been specified otherwise.
-			$configurator = \WP_CLI::get_configurator();
+			$configurator = self::get_configurator();
 			$argv = array_slice( $GLOBALS['argv'], 1 );
 			list( $_, $_, $runtime_config ) = $configurator->parse_args( $argv );
 			foreach ( $runtime_config as $k => $v ) {
