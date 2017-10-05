@@ -1089,6 +1089,31 @@ function glob_brace( $pattern, $dummy_flags = null ) {
  * @return string
  */
 function get_suggestion( $target, array $options, $threshold = 2 ) {
+
+	$suggestion_map = array(
+		'check' => 'check-update',
+		'clear' => 'flush',
+		'decrement' => 'decr',
+		'del' => 'delete',
+		'directory' => 'dir',
+		'exec' => 'eval',
+		'exec-file' => 'eval-file',
+		'increment' => 'incr',
+		'language' => 'locale',
+		'lang' => 'locale',
+		'new' => 'create',
+		'number' => 'count',
+		'remove' => 'delete',
+		'regen' => 'regenerate',
+		'rep' => 'replace',
+		'repl' => 'replace',
+		'v' => 'version',
+	);
+
+	if ( array_key_exists( $target, $suggestion_map ) ) {
+		return $suggestion_map[ $target ];
+	}
+
 	if ( empty( $options ) ) {
 		return '';
 	}
