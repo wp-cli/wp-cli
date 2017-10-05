@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b300d6ecd3dc55b92da2c9397096795b",
+    "content-hash": "f9875b5e699b74d624f9361d6641398e",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -267,16 +267,16 @@
         },
         {
             "name": "justinrainbow/json-schema",
-            "version": "5.2.2",
+            "version": "dev-wp-cli-debug",
             "source": {
                 "type": "git",
-                "url": "https://github.com/justinrainbow/json-schema.git",
-                "reference": "b80053b620826810b38211b3c5f935ba9cddf6b3"
+                "url": "https://github.com/erayd/json-schema.git",
+                "reference": "4142d797084cfea52ac7d2d2b88816a2b9a38043"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/b80053b620826810b38211b3c5f935ba9cddf6b3",
-                "reference": "b80053b620826810b38211b3c5f935ba9cddf6b3",
+                "url": "https://api.github.com/repos/erayd/json-schema/zipball/4142d797084cfea52ac7d2d2b88816a2b9a38043",
+                "reference": "4142d797084cfea52ac7d2d2b88816a2b9a38043",
                 "shasum": ""
             },
             "require": {
@@ -301,7 +301,28 @@
                     "JsonSchema\\": "src/JsonSchema/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "JsonSchema\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "testOnly": [
+                    "vendor/bin/phpunit --colors --filter"
+                ],
+                "coverage": [
+                    "vendor/bin/phpunit --coverage-text"
+                ],
+                "style-check": [
+                    "vendor/bin/php-cs-fixer fix --dry-run --verbose --diff"
+                ],
+                "style-fix": [
+                    "vendor/bin/php-cs-fixer fix --verbose"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -329,7 +350,10 @@
                 "json",
                 "schema"
             ],
-            "time": "2017-10-03T00:49:49+00:00"
+            "support": {
+                "source": "https://github.com/erayd/json-schema/tree/wp-cli-debug"
+            },
+            "time": "2017-10-05 01:03:02"
         },
         {
             "name": "mustache/mustache",
@@ -3536,9 +3560,17 @@
             "time": "2017-08-05T16:08:58+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "alias": "5.2.5",
+            "alias_normalized": "5.2.5.0",
+            "version": "dev-wp-cli-debug",
+            "package": "justinrainbow/json-schema"
+        }
+    ],
     "minimum-stability": "dev",
     "stability-flags": {
+        "justinrainbow/json-schema": 20,
         "roave/security-advisories": 20
     },
     "prefer-stable": true,
