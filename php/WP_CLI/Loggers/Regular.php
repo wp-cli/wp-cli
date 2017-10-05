@@ -10,7 +10,7 @@ class Regular extends Base {
 	/**
 	 * @param bool $in_color Whether or not to Colorize strings.
 	 */
-	function __construct( $in_color ) {
+	public function __construct( $in_color ) {
 		$this->in_color = $in_color;
 	}
 

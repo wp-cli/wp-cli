@@ -460,7 +460,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand param-dump
 	 */
-	function param_dump( $_, $assoc_args ) {
+	public function param_dump( $_, $assoc_args ) {
 		$spec = \WP_CLI::get_configurator()->get_spec();
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'with-values' ) ) {
