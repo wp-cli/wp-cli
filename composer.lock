@@ -271,12 +271,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/erayd/json-schema.git",
-                "reference": "4142d797084cfea52ac7d2d2b88816a2b9a38043"
+                "reference": "bccf5deb6d5142a9bb92986b8e10094c94d9ed33"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erayd/json-schema/zipball/4142d797084cfea52ac7d2d2b88816a2b9a38043",
-                "reference": "4142d797084cfea52ac7d2d2b88816a2b9a38043",
+                "url": "https://api.github.com/repos/erayd/json-schema/zipball/bccf5deb6d5142a9bb92986b8e10094c94d9ed33",
+                "reference": "bccf5deb6d5142a9bb92986b8e10094c94d9ed33",
                 "shasum": ""
             },
             "require": {
@@ -353,7 +353,7 @@
             "support": {
                 "source": "https://github.com/erayd/json-schema/tree/wp-cli-debug"
             },
-            "time": "2017-10-05 01:03:02"
+            "time": "2017-10-05 01:26:04"
         },
         {
             "name": "mustache/mustache",
