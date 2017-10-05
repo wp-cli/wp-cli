@@ -154,13 +154,19 @@ class CommandFactory {
 
 		$filename = $reflection->getFileName();
 
+		$contents = null;
+
 		if ( isset( self::$file_contents[ $filename ] ) ) {
 			$contents = self::$file_contents[ $filename ];
-		} elseif ( is_readable( $filename ) && file_get_contents( $filename ) ) {
-			$contents = file_get_contents( $filename );
-			$contents = explode( "\n", $contents );
-			self::$file_contents[ $filename ] = $contents;
-		} else {
+		} elseif ( is_readable( $filename ) ) {
+			$file_contents = file_get_contents( $filename );
+			if ( $file_contents ) {
+				$contents = explode( "\n", $file_contents );
+				self::$file_contents[ $filename ] = $contents;
+			}
+		}
+
+		if ( null === $contents ) {
 			\WP_CLI::debug( "Could not read contents for filename '{$filename}'.", 'commandfactory' );
 			return null;
 		}
