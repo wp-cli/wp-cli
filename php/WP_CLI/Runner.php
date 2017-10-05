@@ -112,7 +112,7 @@ class Runner {
 				static $wp_load_count = 0;
 				$wp_load_path = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
 				if ( file_exists( $wp_load_path ) ) {
-					$wp_load_count += 1;
+					++ $wp_load_count;
 				}
 				return $wp_load_count > 1;
 			}
