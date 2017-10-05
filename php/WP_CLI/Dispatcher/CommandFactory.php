@@ -200,6 +200,7 @@ class CommandFactory {
 		while ( false !== $comment_start2_pos && false === strpos( $subcontent, '*/', $comment_start2_pos ) ) {
 			$comment_start_pos = $comment_start2_pos;
 			$subcontent = substr( $subcontent, 0, $comment_start_pos );
+			$comment_start2_pos = strrpos( $subcontent, '/**' );
 		}
 		return substr( $content, $comment_start_pos, $comment_end_pos + 2 );
 	}
