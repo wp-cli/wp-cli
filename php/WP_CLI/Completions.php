@@ -43,7 +43,7 @@ class Completions {
 		$spec = SynopsisParser::parse( $command->get_synopsis() );
 
 		foreach ( $spec as $arg ) {
-			if ( $arg['type'] == 'positional' && $arg['name'] == 'file' ) {
+			if ( 'positional' === $arg['type'] && 'file' === $arg['name'] ) {
 				$this->add( '<file> ' );
 				return;
 			}
@@ -69,7 +69,7 @@ class Completions {
 
 					$opt = "--{$arg['name']}";
 
-					if ( $arg['type'] == 'flag' ) {
+					if ( 'flag' === $arg['type'] ) {
 						$opt .= ' ';
 					} elseif ( ! $arg['value']['optional'] ) {
 						$opt .= '=';
@@ -146,8 +146,8 @@ class Completions {
 	}
 
 	private function add( $opt ) {
-		if ( $this->cur_word !== '' ) {
-			if ( strpos( $opt, $this->cur_word ) !== 0 ) {
+		if ( '' !== $this->cur_word ) {
+			if ( 0 !== strpos( $opt, $this->cur_word ) ) {
 				return;
 			}
 		}

@@ -41,8 +41,8 @@ wp_initial_constants();
 wp_check_php_mysql_versions();
 
 // Disable magic quotes at runtime. Magic quotes are added using wpdb later in wp-settings.php.
-@ini_set( 'magic_quotes_runtime', 0 );
-@ini_set( 'magic_quotes_sybase',  0 );
+ini_set( 'magic_quotes_runtime', 0 );
+ini_set( 'magic_quotes_sybase',  0 );
 
 // WordPress calculates offsets from UTC.
 date_default_timezone_set( 'UTC' );
@@ -105,7 +105,9 @@ if ( apply_filters( 'enable_wp_debug_mode_checks', true ) ) {
  */
 if ( WP_CACHE && apply_filters( 'enable_loading_advanced_cache_dropin', true ) ) {
 	// For an advanced caching plugin to use. Uses a static drop-in because you would only want one.
-	WP_DEBUG ? include( WP_CONTENT_DIR . '/advanced-cache.php' ) : @include( WP_CONTENT_DIR . '/advanced-cache.php' );
+	if ( file_exists( WP_CONTENT_DIR . '/advanced-cache.php' ) ) {
+		include( WP_CONTENT_DIR . '/advanced-cache.php' );
+	}
 }
 
 // Define WP_LANG_DIR if not set.
