@@ -6,7 +6,7 @@ set -ex
 phpcs
 
 # Run the unit tests
-phpunit
+phpunit --stop-on-failure
 
 BEHAT_TAGS=$(php ci/behat-tags.php)
 
