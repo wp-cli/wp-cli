@@ -11,4 +11,4 @@ phpunit --stop-on-failure
 BEHAT_TAGS=$(php ci/behat-tags.php)
 
 # Run the functional tests
-vendor/bin/behat --format progress $BEHAT_TAGS --strict
+vendor/bin/behat --format progress $BEHAT_TAGS --stop-on-failure --strict
