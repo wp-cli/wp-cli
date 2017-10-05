@@ -122,9 +122,9 @@ class WP_CLI {
 			$_SERVER['SERVER_NAME'] = $url_parts['host'];
 		}
 
-		$_SERVER['REQUEST_URI'] = $f('path') . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
+		$_SERVER['REQUEST_URI'] = $f( 'path' ) . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
 		$_SERVER['SERVER_PORT'] = \WP_CLI\Utils\get_flag_value( $url_parts, 'port', '80' );
-		$_SERVER['QUERY_STRING'] = $f('query');
+		$_SERVER['QUERY_STRING'] = $f( 'query' );
 	}
 
 	/**

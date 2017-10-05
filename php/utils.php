@@ -30,7 +30,9 @@ function extract_from_phar( $path ) {
 
 	register_shutdown_function(
 		function() use ( $tmp_path ) {
-			@unlink( $tmp_path );
+			if ( file_exists( $tmp_path ) ) {
+				unlink( $tmp_path );
+			}
 		}
 	);
 
@@ -138,7 +140,7 @@ function find_file_upward( $files, $dir = null, $stop_check = null ) {
 	if ( is_null( $dir ) ) {
 		$dir = getcwd();
 	}
-	while ( @is_readable( $dir ) ) {
+	while ( is_readable( $dir ) ) {
 		// Stop walking up when the supplied callable returns true being passed the $dir
 		if ( is_callable( $stop_check ) && call_user_func( $stop_check, $dir ) ) {
 			return null;
@@ -166,7 +168,7 @@ function is_path_absolute( $path ) {
 		return true;
 	}
 
-	return $path[0] === '/';
+	return '/' === $path[0];
 }
 
 /**
@@ -244,7 +246,9 @@ function locate_wp_config() {
 }
 
 function wp_version_compare( $since, $operator ) {
-	return version_compare( str_replace( array( '-src' ), '', $GLOBALS['wp_version'] ), $since, $operator );
+	$wp_version = str_replace( '-src', '', $GLOBALS['wp_version'] );
+	$since = str_replace( '-src', '', $since );
+	return version_compare( $wp_version, $since, $operator );
 }
 
 /**
@@ -360,7 +364,7 @@ function launch_editor_for_input( $input, $filename = 'WP-CLI' ) {
 		$tmpfile = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( rand() ), 0, 6 );
 		$tmpfile = $tmpdir . $tmpfile . '.tmp';
-		$fp = @fopen( $tmpfile, 'x' );
+		$fp = fopen( $tmpfile, 'x' );
 		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
 			$tmpfile = '';
 			continue;
@@ -418,7 +422,7 @@ function mysql_host_to_cli_args( $raw_host ) {
 		if ( is_numeric( $extra ) ) {
 			$assoc_args['port'] = intval( $extra );
 			$assoc_args['protocol'] = 'tcp';
-		} elseif ( $extra !== '' ) {
+		} elseif ( '' !== $extra ) {
 			$assoc_args['socket'] = $extra;
 		}
 	} else {
@@ -436,7 +440,9 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 	}
 
 	if ( isset( $assoc_args['host'] ) ) {
+		//@codingStandardsIgnoreStart
 		$assoc_args = array_merge( $assoc_args, mysql_host_to_cli_args( $assoc_args['host'] ) );
+		//@codingStandardsIgnoreEnd
 	}
 
 	$pass = $assoc_args['pass'];
@@ -581,6 +587,7 @@ function replace_path_consts( $source, $path ) {
 function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
 
 	$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
+	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
 	if ( inside_phar() ) {
 		// cURL can't read Phar archives
 		$options['verify'] = extract_from_phar(
@@ -594,7 +601,11 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 			}
 		}
 		if ( empty( $options['verify'] ) ) {
-			WP_CLI::error( 'Cannot find SSL certificate.' );
+			$error_msg = 'Cannot find SSL certificate.';
+			if ( $halt_on_error ) {
+				WP_CLI::error( $error_msg );
+			}
+			throw new \RuntimeException( $error_msg );
 		}
 	}
 
@@ -604,7 +615,11 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 	} catch ( \Requests_Exception $ex ) {
 		// CURLE_SSL_CACERT_BADFILE only defined for PHP >= 7.
 		if ( 'curlerror' !== $ex->getType() || ! in_array( curl_errno( $ex->getData() ), array( CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, 77 /*CURLE_SSL_CACERT_BADFILE*/ ), true ) ) {
-			\WP_CLI::error( sprintf( "Failed to get url '%s': %s.", $url, $ex->getMessage() ) );
+			$error_msg = sprintf( "Failed to get url '%s': %s.", $url, $ex->getMessage() );
+			if ( $halt_on_error ) {
+				WP_CLI::error( $error_msg );
+			}
+			throw new \RuntimeException( $error_msg, null, $ex );
 		}
 		// Handle SSL certificate issues gracefully
 		\WP_CLI::warning( sprintf( "Re-trying without verify after failing to get verified url '%s' %s.", $url, $ex->getMessage() ) );
@@ -612,7 +627,11 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 		try {
 			return \Requests::request( $url, $headers, $data, $method, $options );
 		} catch ( \Requests_Exception $ex ) {
-			\WP_CLI::error( sprintf( "Failed to get non-verified url '%s' %s.", $url, $ex->getMessage() ) );
+			$error_msg = sprintf( "Failed to get non-verified url '%s' %s.", $url, $ex->getMessage() );
+			if ( $halt_on_error ) {
+				WP_CLI::error( $error_msg );
+			}
+			throw new \RuntimeException( $error_msg, null, $ex );
 		}
 	}
 }
@@ -779,7 +798,7 @@ function get_temp_dir() {
 		$temp = '/tmp/';
 	}
 
-	if ( ! @is_writable( $temp ) ) {
+	if ( ! is_writable( $temp ) ) {
 		\WP_CLI::warning( "Temp directory isn't writable: {$temp}" );
 	}
 
@@ -876,7 +895,7 @@ function parse_str_to_argv( $arguments ) {
 	$argv = array_map(
 		function( $arg ) {
 			foreach ( array( '"', "'" ) as $char ) {
-				if ( $char === substr( $arg, 0, 1 ) && $char === substr( $arg, -1 ) ) {
+				if ( substr( $arg, 0, 1 ) === $char && substr( $arg, -1 ) === $char ) {
 					$arg = substr( $arg, 1, -1 );
 					break;
 				}
@@ -919,7 +938,7 @@ function basename( $path, $suffix = '' ) {
 function isPiped() {
 	$shellPipe = getenv( 'SHELL_PIPE' );
 
-	if ( $shellPipe !== false ) {
+	if ( false !== $shellPipe ) {
 		return filter_var( $shellPipe, FILTER_VALIDATE_BOOLEAN );
 	} else {
 		return (function_exists( 'posix_isatty' ) && ! posix_isatty( STDOUT ));
@@ -992,7 +1011,7 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 					}
 					$current++;
 				} else {
-					if ( ( '}' === $pattern[ $current ] && $depth-- === 0 ) || ( ',' === $pattern[ $current ] && 0 === $depth ) ) {
+					if ( ( '}' === $pattern[ $current ] && 0 === $depth-- ) || ( ',' === $pattern[ $current ] && 0 === $depth ) ) {
 						break;
 					} elseif ( '{' === $pattern[ $current++ ] ) {
 						$depth++;

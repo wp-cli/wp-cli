@@ -342,7 +342,7 @@ class Subcommand extends CompositeCommand {
 			$errors[ $error_type ] = array_merge( $errors[ $error_type ], $returned_errors[ $error_type ] );
 		}
 
-		if ( $this->name != 'help' ) {
+		if ( 'help' !== $this->name ) {
 			foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
 				$suggestion = Utils\get_suggestion(
 					$key,
