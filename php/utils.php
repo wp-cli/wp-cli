@@ -935,6 +935,7 @@ function basename( $path, $suffix = '' ) {
  *
  * @return bool
  */
+// @codingStandardsIgnoreLine
 function isPiped() {
 	$shellPipe = getenv( 'SHELL_PIPE' );
 
