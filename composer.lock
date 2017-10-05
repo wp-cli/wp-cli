@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "44e3cc8333d254657f0e412eb0c1c73e",
+    "content-hash": "0dc5e25ccc983dbe1ac137a5638b8654",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -3494,6 +3494,58 @@
                 "standards"
             ],
             "time": "2017-05-22T02:43:20+00:00"
+        },
+        {
+            "name": "wimg/php-compatibility",
+            "version": "8.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wimg/PHPCompatibility.git",
+                "reference": "4c4385fb891dff0501009670f988d4fe36785249"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wimg/PHPCompatibility/zipball/4c4385fb891dff0501009670f988d4fe36785249",
+                "reference": "4c4385fb891dff0501009670f988d4fe36785249",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3",
+                "squizlabs/php_codesniffer": "^2.2 || ^3.0.2"
+            },
+            "conflict": {
+                "squizlabs/php_codesniffer": "2.6.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.0 || ^5.0 || ^6.0"
+            },
+            "suggest": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.1"
+            },
+            "type": "phpcodesniffer-standard",
+            "autoload": {
+                "psr-4": {
+                    "PHPCompatibility\\": "PHPCompatibility/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Wim Godden",
+                    "role": "lead"
+                }
+            ],
+            "description": "A set of sniffs for PHP_CodeSniffer that checks for PHP version compatibility.",
+            "homepage": "http://techblog.wimgodden.be/tag/codesniffer/",
+            "keywords": [
+                "compatibility",
+                "phpcs",
+                "standards"
+            ],
+            "time": "2017-08-07T19:39:05+00:00"
         },
         {
             "name": "wp-coding-standards/wpcs",

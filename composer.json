@@ -69,6 +69,7 @@
 		"dealerdirect/phpcodesniffer-composer-installer": "^0.4.3",
 		"phpunit/phpunit": "3.7.*",
 		"roave/security-advisories": "dev-master",
+		"wimg/php-compatibility": "^8.0",
 		"wp-coding-standards/wpcs": "^0.13.1"
 	},
 	"suggest": {
