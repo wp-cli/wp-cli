@@ -21,7 +21,7 @@ class Help_Command extends WP_CLI_Command {
 	 *     # get help for `core download` subcommand
 	 *     wp help core download
 	 */
-	function __invoke( $args, $assoc_args ) {
+	public function __invoke( $args, $assoc_args ) {
 		$r = WP_CLI::get_runner()->find_command_to_run( $args );
 
 		if ( is_array( $r ) ) {

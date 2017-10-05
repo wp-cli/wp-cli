@@ -11,12 +11,12 @@ class UpgraderSkin extends \WP_Upgrader_Skin {
 
 	public $api;
 
-	function header() {}
-	function footer() {}
-	function bulk_header() {}
-	function bulk_footer() {}
+	public function header() {}
+	public function footer() {}
+	public function bulk_header() {}
+	public function bulk_footer() {}
 
-	function error( $error ) {
+	public function error( $error ) {
 		if ( ! $error ) {
 			return;
 		}
@@ -29,7 +29,7 @@ class UpgraderSkin extends \WP_Upgrader_Skin {
 		\WP_CLI::warning( $error );
 	}
 
-	function feedback( $string ) {
+	public function feedback( $string ) {
 
 		if ( 'parent_theme_prepare_install' === $string ) {
 			\WP_CLI::get_http_cache_manager()->whitelist_package( $this->api->download_link, 'theme', $this->api->slug, $this->api->version );
