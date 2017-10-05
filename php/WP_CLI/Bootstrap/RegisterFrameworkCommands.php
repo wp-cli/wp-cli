@@ -32,8 +32,7 @@ final class RegisterFrameworkCommands implements BootstrapStep {
 				include_once "$cmd_dir/$filename";
 			} catch ( \Exception $exception ) {
 				\WP_CLI::warning(
-					"Could not add command {$cmd_dir}/{$filename}. Reason: " . $exception->getMessage(),
-					'bootstrap'
+					"Could not add command {$cmd_dir}/{$filename}. Reason: " . $exception->getMessage()
 				);
 			}
 		}
