@@ -18,7 +18,12 @@ class CSV implements \Iterator {
 	private $currentElement;
 
 	public function __construct( $filename, $delimiter = ',' ) {
-		$this->filePointer = fopen( $filename, 'r' );
+		if ( '-' === $filename && $this->has_stdin() ) {
+			$this->filePointer = fopen( 'php://stdin', 'r' );
+		} else {
+			$this->filePointer = fopen( $filename, 'r' );
+		}
+
 		if ( ! $this->filePointer ) {
 			\WP_CLI::error( sprintf( 'Could not open file: %s', $filename ) );
 		}
@@ -27,7 +32,9 @@ class CSV implements \Iterator {
 	}
 
 	public function rewind() {
-		rewind( $this->filePointer );
+		if ( ! $this->has_stdin() ) {
+			rewind( $this->filePointer );
+		}
 
 		$this->columns = fgetcsv( $this->filePointer, self::ROW_SIZE, $this->delimiter );
 
@@ -73,6 +80,21 @@ class CSV implements \Iterator {
 
 	public function valid() {
 		return is_array( $this->currentElement );
+	}
+
+	/**
+	 * Check whether any input is passed to STDIN.
+	 *
+	 * @return bool
+	 */
+	private function has_stdin() {
+		$handle = fopen( 'php://stdin', 'r' );
+		$read   = array( $handle );
+		$write  = null;
+		$except = null;
+		$streams = stream_select( $read, $write, $except, 0 );
+		fclose( $handle );
+		return 1 === $streams;
 	}
 }
 
