@@ -79,7 +79,7 @@ class Extractor {
 					array(
 						dirname( $tarball ),
 						Utils\basename( $tarball, '.tar.gz' ),
-						$phar->getFileName(),
+						$phar->getFilename(),
 					)
 				);
 
