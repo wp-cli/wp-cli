@@ -338,9 +338,7 @@ class Configurator {
 	 * @param mixed $val A string or an array
 	 */
 	private static function arrayify( &$val ) {
-		if ( ! is_array( $val ) ) {
-			$val = array( $val );
-		}
+		$val = (array) $val;
 	}
 
 	/**
