@@ -22,8 +22,6 @@
 	<rule ref="WordPress-Core">
 		<exclude name="WordPress.Files.FileName.InvalidClassFileName" />
 		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase" />
-		<exclude name="WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid" />
-		<exclude name="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid" />
 		<exclude name="WordPress.NamingConventions.ValidVariableName.NotSnakeCaseMemberVar" />
 		<exclude name="WordPress.NamingConventions.ValidVariableName.MemberNotSnakeCase" />
 		<exclude name="WordPress.NamingConventions.ValidVariableName.NotSnakeCase" />

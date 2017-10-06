@@ -1110,17 +1110,17 @@ class WP_CLI {
 		if ( $launch ) {
 			Utils\check_proc_available( 'launch option' );
 
+			$descriptors = array(
+				0 => STDIN,
+				1 => STDOUT,
+				2 => STDERR,
+			);
+
 			if ( $return ) {
 				$descriptors = array(
 					0 => STDIN,
 					1 => array( 'pipe', 'w' ),
 					2 => array( 'pipe', 'w' ),
-				);
-			} else {
-				$descriptors = array(
-					0 => STDIN,
-					1 => STDOUT,
-					2 => STDERR,
 				);
 			}
 
@@ -1259,6 +1259,7 @@ class WP_CLI {
 	}
 
 	// back-compat
+	// @codingStandardsIgnoreLine
 	public static function addCommand( $name, $class ) {
 		trigger_error(
 			sprintf(
