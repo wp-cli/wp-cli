@@ -1172,9 +1172,9 @@ class WP_CLI {
 			$argv = Utils\parse_str_to_argv( $command );
 			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
 			if ( $return ) {
-				ob_start();
 				$existing_logger = self::$logger;
 				self::$logger = new WP_CLI\Loggers\Execution;
+				self::$logger->ob_start();
 			}
 			if ( ! $exit_error ) {
 				self::$capture_exit = true;
@@ -1191,8 +1191,9 @@ class WP_CLI {
 			}
 			if ( $return ) {
 				$execution_logger = self::$logger;
+				$execution_logger->ob_end();
 				self::$logger = $existing_logger;
-				$stdout = trim( ob_get_clean() );
+				$stdout = $execution_logger->stdout;
 				$stderr = $execution_logger->stderr;
 				if ( true === $return || 'stdout' === $return ) {
 					$retval = trim( $stdout );
