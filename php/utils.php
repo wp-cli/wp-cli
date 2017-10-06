@@ -610,8 +610,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 	}
 
 	try {
-		$request = \Requests::request( $url, $headers, $data, $method, $options );
-		return $request;
+		return \Requests::request( $url, $headers, $data, $method, $options );
 	} catch ( \Requests_Exception $ex ) {
 		// CURLE_SSL_CACERT_BADFILE only defined for PHP >= 7.
 		if ( 'curlerror' !== $ex->getType() || ! in_array( curl_errno( $ex->getData() ), array( CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, 77 /*CURLE_SSL_CACERT_BADFILE*/ ), true ) ) {
