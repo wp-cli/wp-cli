@@ -420,7 +420,7 @@ function mysql_host_to_cli_args( $raw_host ) {
 		list( $assoc_args['host'], $extra ) = $host_parts;
 		$extra = trim( $extra );
 		if ( is_numeric( $extra ) ) {
-			$assoc_args['port'] = intval( $extra );
+			$assoc_args['port'] = (int) $extra;
 			$assoc_args['protocol'] = 'tcp';
 		} elseif ( '' !== $extra ) {
 			$assoc_args['socket'] = $extra;
