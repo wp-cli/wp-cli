@@ -86,20 +86,20 @@ class Query implements \Iterator {
 		return true;
 	}
 
-	function current() {
+	public function current() {
 		return $this->results[ $this->index_in_results ];
 	}
 
-	function key() {
+	public function key() {
 		return $this->global_index;
 	}
 
-	function next() {
+	public function next() {
 		$this->index_in_results++;
 		$this->global_index++;
 	}
 
-	function rewind() {
+	public function rewind() {
 		$this->results = array();
 		$this->global_index = 0;
 		$this->index_in_results = 0;
@@ -107,7 +107,7 @@ class Query implements \Iterator {
 		$this->depleted = false;
 	}
 
-	function valid() {
+	public function valid() {
 		if ( $this->depleted ) {
 			return false;
 		}
