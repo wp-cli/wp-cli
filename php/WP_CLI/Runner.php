@@ -756,7 +756,7 @@ class Runner {
 			WP_CLI::error(
 				"WP-CLI needs WordPress $minimum_version or later to work properly. " .
 				"The version currently installed is $wp_version.\n" .
-				"Try running `wp core download --force`."
+				'Try running `wp core download --force`.'
 			);
 		}
 		// @codingStandardsIgnoreEnd
