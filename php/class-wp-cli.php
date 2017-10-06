@@ -1255,6 +1255,7 @@ class WP_CLI {
 	}
 
 	// back-compat
+	// @codingStandardsIgnoreLine
 	public static function addCommand( $name, $class ) {
 		trigger_error(
 			sprintf(

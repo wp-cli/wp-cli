@@ -44,8 +44,7 @@ abstract class AutoloaderStep implements BootstrapStep {
 				} catch ( \Exception $exception ) {
 					\WP_CLI::warning(
 						"Failed to load autoloader '{$autoloader_path}'. Reason: "
-						. $exception->getMessage(),
-						'bootstrap'
+						. $exception->getMessage()
 					);
 				}
 			}

@@ -364,7 +364,7 @@ function launch_editor_for_input( $input, $filename = 'WP-CLI' ) {
 		$tmpfile = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( rand() ), 0, 6 );
 		$tmpfile = $tmpdir . $tmpfile . '.tmp';
-		$fp = fopen( $tmpfile, 'x' );
+		$fp = fopen( $tmpfile, 'xb' );
 		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
 			$tmpfile = '';
 			continue;
@@ -420,7 +420,7 @@ function mysql_host_to_cli_args( $raw_host ) {
 		list( $assoc_args['host'], $extra ) = $host_parts;
 		$extra = trim( $extra );
 		if ( is_numeric( $extra ) ) {
-			$assoc_args['port'] = intval( $extra );
+			$assoc_args['port'] = (int) $extra;
 			$assoc_args['protocol'] = 'tcp';
 		} elseif ( '' !== $extra ) {
 			$assoc_args['socket'] = $extra;
@@ -935,6 +935,7 @@ function basename( $path, $suffix = '' ) {
  *
  * @return bool
  */
+// @codingStandardsIgnoreLine
 function isPiped() {
 	$shellPipe = getenv( 'SHELL_PIPE' );
 

@@ -48,7 +48,7 @@ class WpHttpCacheManager {
 		// check cache and export to designated location
 		$filename = $this->cache->has( $this->whitelist[ $url ]['key'], $this->whitelist[ $url ]['ttl'] );
 		if ( $filename ) {
-			WP_CLI::log( sprintf( 'Using cached file \'%s\'...', $filename, $url ) );
+			WP_CLI::log( sprintf( 'Using cached file \'%s\'...', $filename ) );
 			if ( copy( $filename, $args['filename'] ) ) {
 				// simulate successful download response
 				return array(

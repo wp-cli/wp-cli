@@ -18,7 +18,7 @@ class CSV implements \Iterator {
 	private $currentElement;
 
 	public function __construct( $filename, $delimiter = ',' ) {
-		$this->filePointer = fopen( $filename, 'r' );
+		$this->filePointer = fopen( $filename, 'rb' );
 		if ( ! $this->filePointer ) {
 			\WP_CLI::error( sprintf( 'Could not open file: %s', $filename ) );
 		}
