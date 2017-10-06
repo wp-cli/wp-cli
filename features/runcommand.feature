@@ -203,12 +203,13 @@ Feature: Run a WP-CLI command
   Scenario Outline: Output using echo and log, success, warning and error
     Given a WP install
 
-    When I run `wp run <flag> --no-exit_error --return=all 'eval "WP_CLI::log( '\'log\'' ); echo '\'echo\''; WP_CLI::error( '\'error\'' );"'`
+	# Note WP_CLI::error() terminates eval processing so needs to be last.
+    When I run `wp run <flag> --no-exit_error --return=all 'eval "WP_CLI::log( '\'log\'' ); echo '\'echo\''; WP_CLI::success( '\'success\'' ); WP_CLI::error( '\'error\'' );"'`
     Then STDOUT should be:
       """
       returned: array (
         'stdout' => 'log
-      echo',
+      echoSuccess: success',
         'stderr' => 'Error: error',
         'return_code' => 1,
       )
@@ -216,7 +217,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I try `wp run <flag> --no-exit_error --return=all 'eval "echo '\'echo\''; WP_CLI::log( '\'log\'' ); WP_CLI::warning( '\'warning\''); WP_CLI::success( '\'success\'' );"'`
+    When I run `wp run <flag> --no-exit_error --return=all 'eval "echo '\'echo\''; WP_CLI::log( '\'log\'' ); WP_CLI::warning( '\'warning\''); WP_CLI::success( '\'success\'' );"'`
     Then STDOUT should be:
       """
       returned: array (
