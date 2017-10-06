@@ -35,7 +35,7 @@ class CLI_Command extends WP_CLI_Command {
 		);
 
 		foreach ( $command->get_subcommands() as $subcommand ) {
-			$dump['subcommands'][] = self::command_to_array( $subcommand );
+			$dump['subcommands'][] = $this->command_to_array( $subcommand );
 		}
 
 		if ( empty( $dump['subcommands'] ) ) {
@@ -494,7 +494,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * @subcommand cmd-dump
 	 */
 	public function cmd_dump() {
-		echo json_encode( self::command_to_array( WP_CLI::get_root_command() ) );
+		echo json_encode( $this->command_to_array( WP_CLI::get_root_command() ) );
 	}
 
 	/**
