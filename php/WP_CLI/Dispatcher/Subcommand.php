@@ -16,7 +16,7 @@ class Subcommand extends CompositeCommand {
 
 	private $when_invoked;
 
-	function __construct( $parent, $name, $docparser, $when_invoked ) {
+	public function __construct( $parent, $name, $docparser, $when_invoked ) {
 		parent::__construct( $parent, $name, $docparser );
 
 		$this->when_invoked = $when_invoked;
@@ -46,7 +46,7 @@ class Subcommand extends CompositeCommand {
 	 *
 	 * @return bool
 	 */
-	function can_have_subcommands() {
+	public function can_have_subcommands() {
 		return false;
 	}
 
@@ -57,7 +57,7 @@ class Subcommand extends CompositeCommand {
 	 *
 	 * @return string
 	 */
-	function get_synopsis() {
+	public function get_synopsis() {
 		return $this->synopsis;
 	}
 
@@ -77,7 +77,7 @@ class Subcommand extends CompositeCommand {
 	 *
 	 * @return string
 	 */
-	function get_alias() {
+	public function get_alias() {
 		return $this->alias;
 	}
 
@@ -86,7 +86,7 @@ class Subcommand extends CompositeCommand {
 	 *
 	 * @param string $prefix
 	 */
-	function show_usage( $prefix = 'usage: ' ) {
+	public function show_usage( $prefix = 'usage: ' ) {
 		\WP_CLI::line( $this->get_usage( $prefix ) );
 	}
 
@@ -96,7 +96,7 @@ class Subcommand extends CompositeCommand {
 	 * @param string $prefix
 	 * @return string
 	 */
-	function get_usage( $prefix ) {
+	public function get_usage( $prefix ) {
 		return sprintf(
 			'%s%s %s',
 			$prefix,
@@ -400,7 +400,7 @@ class Subcommand extends CompositeCommand {
 				unset( $extra_args[ $k ] );
 			}
 		}
-		$args = $args + $extra_positionals;
+		$args += $extra_positionals;
 
 		list( $to_unset, $args, $assoc_args, $extra_args ) = $this->validate_args( $args, $assoc_args, $extra_args );
 

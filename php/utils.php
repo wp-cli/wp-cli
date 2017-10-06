@@ -229,12 +229,12 @@ function locate_wp_config() {
 	static $path;
 
 	if ( null === $path ) {
+		$path = false;
+
 		if ( file_exists( ABSPATH . 'wp-config.php' ) ) {
 			$path = ABSPATH . 'wp-config.php';
 		} elseif ( file_exists( ABSPATH . '../wp-config.php' ) && ! file_exists( ABSPATH . '/../wp-settings.php' ) ) {
 			$path = ABSPATH . '../wp-config.php';
-		} else {
-			$path = false;
 		}
 
 		if ( $path ) {
@@ -364,7 +364,7 @@ function launch_editor_for_input( $input, $filename = 'WP-CLI' ) {
 		$tmpfile = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( rand() ), 0, 6 );
 		$tmpfile = $tmpdir . $tmpfile . '.tmp';
-		$fp = fopen( $tmpfile, 'x' );
+		$fp = fopen( $tmpfile, 'xb' );
 		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
 			$tmpfile = '';
 			continue;
@@ -383,10 +383,10 @@ function launch_editor_for_input( $input, $filename = 'WP-CLI' ) {
 
 	$editor = getenv( 'EDITOR' );
 	if ( ! $editor ) {
+		$editor = 'vi';
+
 		if ( isset( $_SERVER['OS'] ) && false !== strpos( $_SERVER['OS'], 'indows' ) ) {
 			$editor = 'notepad';
-		} else {
-			$editor = 'vi';
 		}
 	}
 
@@ -420,7 +420,7 @@ function mysql_host_to_cli_args( $raw_host ) {
 		list( $assoc_args['host'], $extra ) = $host_parts;
 		$extra = trim( $extra );
 		if ( is_numeric( $extra ) ) {
-			$assoc_args['port'] = intval( $extra );
+			$assoc_args['port'] = (int) $extra;
 			$assoc_args['protocol'] = 'tcp';
 		} elseif ( '' !== $extra ) {
 			$assoc_args['socket'] = $extra;
@@ -611,8 +611,7 @@ function http_request( $method, $url, $data = null, $headers = array(), $options
 	}
 
 	try {
-		$request = \Requests::request( $url, $headers, $data, $method, $options );
-		return $request;
+		return \Requests::request( $url, $headers, $data, $method, $options );
 	} catch ( \Requests_Exception $ex ) {
 		// CURLE_SSL_CACERT_BADFILE only defined for PHP >= 7.
 		if ( 'curlerror' !== $ex->getType() || ! in_array( curl_errno( $ex->getData() ), array( CURLE_SSL_CONNECT_ERROR, CURLE_SSL_CERTPROBLEM, 77 /*CURLE_SSL_CACERT_BADFILE*/ ), true ) ) {
@@ -790,15 +789,13 @@ function get_temp_dir() {
 		return $temp;
 	}
 
-	// `sys_get_temp_dir()` introduced PHP 5.2.1.
+	$temp = '/tmp/';
 	$try1 = sys_get_temp_dir();
 	$try2 = ini_get( 'upload_tmp_dir' );
 	if ( $try1 ) {
 		$temp = trailingslashit( $try1 );
 	} elseif ( $try2 ) {
 		$temp = trailingslashit( $try2 );
-	} else {
-		$temp = '/tmp/';
 	}
 
 	if ( ! is_writable( $temp ) ) {
@@ -938,6 +935,7 @@ function basename( $path, $suffix = '' ) {
  *
  * @return bool
  */
+// @codingStandardsIgnoreLine
 function isPiped() {
 	$shellPipe = getenv( 'SHELL_PIPE' );
 
@@ -1095,6 +1093,31 @@ function glob_brace( $pattern, $dummy_flags = null ) {
  * @return string
  */
 function get_suggestion( $target, array $options, $threshold = 2 ) {
+
+	$suggestion_map = array(
+		'check' => 'check-update',
+		'clear' => 'flush',
+		'decrement' => 'decr',
+		'del' => 'delete',
+		'directory' => 'dir',
+		'exec' => 'eval',
+		'exec-file' => 'eval-file',
+		'increment' => 'incr',
+		'language' => 'locale',
+		'lang' => 'locale',
+		'new' => 'create',
+		'number' => 'count',
+		'remove' => 'delete',
+		'regen' => 'regenerate',
+		'rep' => 'replace',
+		'repl' => 'replace',
+		'v' => 'version',
+	);
+
+	if ( array_key_exists( $target, $suggestion_map ) ) {
+		return $suggestion_map[ $target ];
+	}
+
 	if ( empty( $options ) ) {
 		return '';
 	}

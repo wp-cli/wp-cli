@@ -7,7 +7,7 @@ class Completions {
 	private $words;
 	private $opts = array();
 
-	function __construct( $line ) {
+	public function __construct( $line ) {
 		// TODO: properly parse single and double quotes
 		$this->words = explode( ' ', $line );
 

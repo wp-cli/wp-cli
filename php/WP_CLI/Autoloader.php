@@ -96,17 +96,11 @@ class Autoloader {
 				continue;
 			}
 
-			// Remove namespace root level to correspond with root filesystem.
+			// Remove namespace root level to correspond with root filesystem, and
+			// replace the namespace separator "\" by the system-dependent directory separator.
 			$filename = str_replace(
-				$namespace['root'], '',
+				array( $namespace['root'], '\\' ), array( '', DIRECTORY_SEPARATOR ),
 				$class
-			);
-
-			// Replace the namespace separator "\" by the system-dependent
-			// directory separator.
-			$filename = str_replace(
-				'\\', DIRECTORY_SEPARATOR,
-				$filename
 			);
 
 			// Remove a leading backslash from the class name.

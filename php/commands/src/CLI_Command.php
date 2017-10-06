@@ -35,7 +35,7 @@ class CLI_Command extends WP_CLI_Command {
 		);
 
 		foreach ( $command->get_subcommands() as $subcommand ) {
-			$dump['subcommands'][] = self::command_to_array( $subcommand );
+			$dump['subcommands'][] = $this->command_to_array( $subcommand );
 		}
 
 		if ( empty( $dump['subcommands'] ) ) {
@@ -461,17 +461,16 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand param-dump
 	 */
-	function param_dump( $_, $assoc_args ) {
+	public function param_dump( $_, $assoc_args ) {
 		$spec = \WP_CLI::get_configurator()->get_spec();
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'with-values' ) ) {
 			$config = \WP_CLI::get_configurator()->to_array();
 			// Copy current config values to $spec
 			foreach ( $spec as $key => $value ) {
+				$current = null;
 				if ( isset( $config[0][ $key ] ) ) {
 					$current = $config[0][ $key ];
-				} else {
-					$current = null;
 				}
 				$spec[ $key ]['current'] = $current;
 			}
@@ -496,7 +495,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * @subcommand cmd-dump
 	 */
 	public function cmd_dump() {
-		echo json_encode( self::command_to_array( WP_CLI::get_root_command() ) );
+		echo json_encode( $this->command_to_array( WP_CLI::get_root_command() ) );
 	}
 
 	/**

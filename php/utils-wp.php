@@ -234,10 +234,10 @@ function wp_get_cache_type() {
 
 		} elseif ( function_exists( 'w3_instance' ) ) {
 			$config = w3_instance( 'W3_Config' );
+			$message = 'Unknown';
+
 			if ( $config->get_boolean( 'objectcache.enabled' ) ) {
 				$message = 'W3TC ' . $config->get_string( 'objectcache.engine' );
-			} else {
-				$message = 'Unknown';
 			}
 		} else {
 			$message = 'Unknown';
