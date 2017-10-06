@@ -128,9 +128,13 @@ class Completions {
 		foreach ( \WP_CLI::get_configurator()->get_spec() as $key => $details ) {
 			if ( false === $details['runtime'] ) {
 				continue;
-			} elseif ( isset( $details['deprecated'] ) ) {
+			}
+
+			if ( isset( $details['deprecated'] ) ) {
 				continue;
-			} elseif ( isset( $details['hidden'] ) ) {
+			}
+
+			if ( isset( $details['hidden'] ) ) {
 				continue;
 			}
 			$params[ $key ] = $details['runtime'];

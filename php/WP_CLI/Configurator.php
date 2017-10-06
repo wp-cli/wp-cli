@@ -105,9 +105,9 @@ class Configurator {
 				}
 			}
 			return $returned_aliases;
-		} else {
-			return $this->aliases;
 		}
+
+		return $this->aliases;
 	}
 
 	/**

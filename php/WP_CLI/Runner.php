@@ -84,10 +84,11 @@ class Runner {
 
 		if ( is_readable( $config_path ) ) {
 			return $config_path;
-		} else {
-			$this->_global_config_path_debug = 'No readable global config found';
-			return false;
 		}
+
+		$this->_global_config_path_debug = 'No readable global config found';
+
+		return false;
 	}
 
 	/**
@@ -276,14 +277,15 @@ class Runner {
 						$parent_name,
 						! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
 					);
-				} else {
-					$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
-					return sprintf(
-						"'%s' is not a registered wp command. See 'wp help' for available commands.%s",
-						$full_name,
-						! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
-					);
 				}
+
+				$suggestion = $this->get_subcommand_suggestion( $full_name, $command );
+
+				return sprintf(
+					"'%s' is not a registered wp command. See 'wp help' for available commands.%s",
+					$full_name,
+					! empty( $suggestion ) ? PHP_EOL . "Did you mean '{$suggestion}'?" : ''
+				);
 			}
 
 			if ( $this->is_command_disabled( $subcommand ) ) {
@@ -911,9 +913,9 @@ class Runner {
 				}
 				$this->run_alias_group( $group_aliases );
 				exit;
-			} else {
-				$this->set_alias( $this->alias );
 			}
+
+			$this->set_alias( $this->alias );
 		}
 
 		if ( empty( $this->arguments ) ) {
