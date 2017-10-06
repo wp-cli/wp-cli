@@ -37,8 +37,6 @@ class AutoloadSplitterTest extends PHPUnit_Framework_TestCase {
 	 */
 	public function dataCodePaths() {
 		return array(
-			array( '/wp-cli/-command/', true ), // Questionable value.
-			array( '/wp-cli/--command/', true ), // Questionable value.
 			array( '/wp-cli/a-command/', true ),
 			array( '/wp-cli/abcd-command/', true ),
 			array( '/wp-cli/a-b-c-d-e-f-g-h-i-j-k-l-m-n-o-p-q-r-s-t-u-v-w-x-y-z-command/', true ),
@@ -47,6 +45,8 @@ class AutoloadSplitterTest extends PHPUnit_Framework_TestCase {
 			array( '/php/commands/src/', true ),
 			array( 'xyz/php/commands/src/zyx', true ),
 
+			array( '/wp-cli/-command/', false ), // No command name.
+			array( '/wp-cli/--command/', false ), // No command name.
 			array( '/wp-cli/abcd-command-/', false ), // End is not '-command/`
 			array( '/wp-cli/abcd-/', false ), // End is not '-command/'.
 			array( '/wp-cli/abcd-command', false ), // End is not '-command/'.
