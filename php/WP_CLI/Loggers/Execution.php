@@ -5,7 +5,7 @@ namespace WP_CLI\Loggers;
 /**
  * Execution logger captures all STDOUT and STDERR writes
  */
-class Execution extends Base {
+class Execution extends Regular {
 
 	/**
 	 * Captured writes to STDOUT.
@@ -18,39 +18,10 @@ class Execution extends Base {
 	public $stderr = '';
 
 	/**
-	 * Write an informational message to STDOUT.
-	 *
-	 * @param string $message Message to write.
+	 * @param bool $in_color Whether or not to Colorize strings.
 	 */
-	public function info( $message ) {
-		$this->write( 'STDOUT', $message . "\n" );
-	}
-
-	/**
-	 * Write a success message, prefixed with "Success: ".
-	 *
-	 * @param string $message Message to write.
-	 */
-	public function success( $message ) {
-		$this->_line( $message, 'Success', '%G' );
-	}
-
-	/**
-	 * Write a warning message to STDERR, prefixed with "Warning: ".
-	 *
-	 * @param string $message Message to write.
-	 */
-	public function warning( $message ) {
-		$this->_line( $message, 'Warning', '%C', 'STDERR' );
-	}
-
-	/**
-	 * Write an message to STDERR, prefixed with "Error: ".
-	 *
-	 * @param string $message Message to write.
-	 */
-	public function error( $message ) {
-		$this->_line( $message, 'Error', '%R', 'STDERR' );
+	function __construct( $in_color = false ) {
+		parent::__construct( $in_color );
 	}
 
 	/**
@@ -61,8 +32,8 @@ class Execution extends Base {
 	public function error_multi_line( $message_lines ) {
 		$message = implode( "\n", $message_lines );
 
-		$this->write( 'STDERR', \WP_CLI::colorize( "%RError:%n\n$message\n" ) );
-		$this->write( 'STDERR', \WP_CLI::colorize( "%R---------%n\n\n" ) );
+		$this->write( STDERR, \WP_CLI::colorize( "%RError:%n\n$message\n" ) );
+		$this->write( STDERR, \WP_CLI::colorize( "%R---------%n\n\n" ) );
 	}
 
 	/**
@@ -73,12 +44,38 @@ class Execution extends Base {
 	 */
 	protected function write( $handle, $str ) {
 		switch ( $handle ) {
-			case 'STDOUT':
+			case STDOUT:
 				$this->stdout .= $str;
 				break;
-			case 'STDERR':
+			case STDERR:
 				$this->stderr .= $str;
 				break;
 		}
+	}
+
+	/**
+	 * Starts output buffering, using a callback to capture output from `echo`, `print`, `printf` (which write to the output buffer 'php://output' rather than STDOUT).
+	 */
+	public function ob_start() {
+		// To ensure sequential output, give a chunk size of 1 (or 2 if PHP < 5.4 as 1 was a special value meaning a 4KB chunk) to `ob_start()`, so that each write gets flushed immediately.
+		ob_start( array( $this, 'ob_start_callback' ), version_compare( PHP_VERSION, '5.4.0', '<' ) ? 2 : 1 );
+	}
+
+	/**
+	 * Callback for `ob_start()`.
+	 *
+	 * @param string $str String to write.
+	 * @return string Returns zero-length string so nothing gets written to the output buffer.
+	 */
+	public function ob_start_callback( $str ) {
+		$this->write( STDOUT, $str );
+		return '';
+	}
+
+	/**
+	 * To match `ob_start() above. Does an `ob_end_flush()`.
+	 */
+	public function ob_end() {
+		ob_end_flush();
 	}
 }

@@ -24,6 +24,8 @@ class Runner {
 
 	private $arguments, $assoc_args, $runtime_config;
 
+	private $colorize = false;
+
 	private $_early_invoke = array();
 
 	private $_global_config_path_debug;
