@@ -120,7 +120,7 @@ class Help_Command extends WP_CLI_Command {
 
 		// convert string to file handle
 		$fd = fopen( 'php://temp', 'r+' );
-		fputs( $fd, $out );
+		fwrite( $fd, $out );
 		rewind( $fd );
 
 		$descriptorspec = array(
