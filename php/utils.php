@@ -541,7 +541,10 @@ function parse_url( $url ) {
  * @return bool
  */
 function is_windows() {
-	return false !== ( $test_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' ) ) ? (bool) $test_is_windows : 0 === stripos( PHP_OS, 'WIN' );
+	$getenv = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
+	$php_os_contains_win = 0 === stripos( PHP_OS, 'WIN' );
+
+	return false !== $getenv ? (bool) $getenv : $php_os_contains_win;
 }
 
 /**
