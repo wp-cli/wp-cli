@@ -119,7 +119,7 @@ class Help_Command extends WP_CLI_Command {
 		}
 
 		// convert string to file handle
-		$fd = fopen( 'php://temp', 'r+' );
+		$fd = fopen( 'php://temp', 'r+b' );
 		fwrite( $fd, $out );
 		rewind( $fd );
 
