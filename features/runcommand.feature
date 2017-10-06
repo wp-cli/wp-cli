@@ -203,7 +203,7 @@ Feature: Run a WP-CLI command
   Scenario Outline: Output using echo and log, success, warning and error
     Given a WP install
 
-	# Note WP_CLI::error() terminates eval processing so needs to be last.
+    # Note WP_CLI::error() terminates eval processing so needs to be last.
     When I run `wp run <flag> --no-exit_error --return=all 'eval "WP_CLI::log( '\'log\'' ); echo '\'echo\''; WP_CLI::success( '\'success\'' ); WP_CLI::error( '\'error\'' );"'`
     Then STDOUT should be:
       """
