@@ -153,7 +153,7 @@ $steps->Then( '/^(STDOUT|STDERR) should be a version string (<|<=|>|>=|==|=|!=|<
 			throw new Exception( $world->result );
 		}
 	}
-);	
+);
 
 $steps->Then( '/^the (.+) (file|directory) should (exist|not exist|be:|contain:|not contain:)$/',
 	function ( $world, $path, $type, $action, $expected = null ) {
