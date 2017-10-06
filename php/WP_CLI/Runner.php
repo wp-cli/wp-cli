@@ -1339,7 +1339,7 @@ class Runner {
 			function( $from_email ) {
 				if ( 'wordpress@' === $from_email ) {
 					$sitename = strtolower( parse_url( site_url(), PHP_URL_HOST ) );
-					if ( substr( $sitename, 0, 4 ) == 'www.' ) {
+					if ( 0 === strpos( $sitename, 'www.' ) ) {
 						$sitename = substr( $sitename, 4 );
 					}
 					$from_email = 'wordpress@' . $sitename;
