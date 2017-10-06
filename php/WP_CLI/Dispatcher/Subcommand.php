@@ -399,7 +399,7 @@ class Subcommand extends CompositeCommand {
 				unset( $extra_args[ $k ] );
 			}
 		}
-		$args = $args + $extra_positionals;
+		$args += $extra_positionals;
 
 		list( $to_unset, $args, $assoc_args, $extra_args ) = $this->validate_args( $args, $assoc_args, $extra_args );
 
