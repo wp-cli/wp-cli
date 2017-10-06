@@ -362,7 +362,7 @@ function launch_editor_for_input( $input, $filename = 'WP-CLI' ) {
 	do {
 		$tmpfile = basename( $filename );
 		$tmpfile = preg_replace( '|\.[^.]*$|', '', $tmpfile );
-		$tmpfile .= '-' . substr( md5( rand() ), 0, 6 );
+		$tmpfile .= '-' . substr( md5( mt_rand() ), 0, 6 );
 		$tmpfile = $tmpdir . $tmpfile . '.tmp';
 		$fp = fopen( $tmpfile, 'xb' );
 		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
