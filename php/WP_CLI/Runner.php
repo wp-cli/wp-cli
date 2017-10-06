@@ -117,11 +117,13 @@ class Runner {
 				return $wp_load_count > 1;
 			}
 		);
+
+		$this->_project_config_path_debug = 'No project config found';
+
 		if ( ! empty( $project_config_path ) ) {
 			$this->_project_config_path_debug = 'Using project config: ' . $project_config_path;
-		} else {
-			$this->_project_config_path_debug = 'No project config found';
 		}
+
 		return $project_config_path;
 	}
 
@@ -319,10 +321,10 @@ class Runner {
 
 		$name = implode( ' ', $cmd_path );
 
+		$extra_args = array();
+
 		if ( isset( $this->extra_config[ $name ] ) ) {
 			$extra_args = $this->extra_config[ $name ];
-		} else {
-			$extra_args = array();
 		}
 
 		WP_CLI::debug( 'Running command: ' . $name, 'bootstrap' );
@@ -765,10 +767,9 @@ class Runner {
 
 		$argv = array_slice( $GLOBALS['argv'], 1 );
 
+		$this->alias = null;
 		if ( ! empty( $argv[0] ) && preg_match( '#' . Configurator::ALIAS_REGEX . '#', $argv[0], $matches ) ) {
 			$this->alias = array_shift( $argv );
-		} else {
-			$this->alias = null;
 		}
 
 		// File config
@@ -1287,10 +1288,10 @@ class Runner {
 					if ( $has_param ) {
 						$explanation = 'Verify `--url=<url>` matches an existing site.';
 					} else {
+						$explanation = "Define DOMAIN_CURRENT_SITE in 'wp-config.php' or use `--url=<url>` to override.";
+
 						if ( $has_const ) {
 							$explanation = 'Verify DOMAIN_CURRENT_SITE matches an existing site or use `--url=<url>` to override.';
-						} else {
-							$explanation = "Define DOMAIN_CURRENT_SITE in 'wp-config.php' or use `--url=<url>` to override.";
 						}
 					}
 					if ( $explanation ) {
@@ -1410,13 +1411,14 @@ class Runner {
 			if ( ! is_array( $skipped_themes ) ) {
 				$skipped_themes = explode( ',', $skipped_themes );
 			}
+
+			$checked_value = $value;
 			// Always check against the stylesheet value
 			// This ensures a child theme can be skipped when template differs
 			if ( false !== stripos( current_filter(), 'option_template' ) ) {
 				$checked_value = get_option( 'stylesheet' );
-			} else {
-				$checked_value = $value;
 			}
+
 			if ( '' === $checked_value || in_array( $checked_value, $skipped_themes ) ) {
 				return '';
 			}

@@ -467,10 +467,9 @@ class CLI_Command extends WP_CLI_Command {
 			$config = \WP_CLI::get_configurator()->to_array();
 			// Copy current config values to $spec
 			foreach ( $spec as $key => $value ) {
+				$current = null;
 				if ( isset( $config[0][ $key ] ) ) {
 					$current = $config[0][ $key ];
-				} else {
-					$current = null;
 				}
 				$spec[ $key ]['current'] = $current;
 			}

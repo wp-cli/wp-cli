@@ -229,12 +229,12 @@ function locate_wp_config() {
 	static $path;
 
 	if ( null === $path ) {
+		$path = false;
+
 		if ( file_exists( ABSPATH . 'wp-config.php' ) ) {
 			$path = ABSPATH . 'wp-config.php';
 		} elseif ( file_exists( ABSPATH . '../wp-config.php' ) && ! file_exists( ABSPATH . '/../wp-settings.php' ) ) {
 			$path = ABSPATH . '../wp-config.php';
-		} else {
-			$path = false;
 		}
 
 		if ( $path ) {
@@ -383,10 +383,10 @@ function launch_editor_for_input( $input, $filename = 'WP-CLI' ) {
 
 	$editor = getenv( 'EDITOR' );
 	if ( ! $editor ) {
+		$editor = 'vi';
+
 		if ( isset( $_SERVER['OS'] ) && false !== strpos( $_SERVER['OS'], 'indows' ) ) {
 			$editor = 'notepad';
-		} else {
-			$editor = 'vi';
 		}
 	}
 
@@ -789,13 +789,13 @@ function get_temp_dir() {
 		return $temp;
 	}
 
+	$temp = '/tmp/';
+
 	// `sys_get_temp_dir()` introduced PHP 5.2.1.
 	if ( $try = sys_get_temp_dir() ) {
 		$temp = trailingslashit( $try );
 	} elseif ( $try = ini_get( 'upload_tmp_dir' ) ) {
 		$temp = trailingslashit( $try );
-	} else {
-		$temp = '/tmp/';
 	}
 
 	if ( ! is_writable( $temp ) ) {
