@@ -25,7 +25,8 @@ final class IncludeBundledAutoloader extends AutoloaderStep {
 			WP_CLI_VENDOR_DIR . '/autoload_commands.php',
 		);
 
-		if ( $custom_vendor = $this->get_custom_vendor_folder() ) {
+		$custom_vendor = $this->get_custom_vendor_folder();
+		if ( $custom_vendor ) {
 			array_unshift(
 				$autoloader_paths,
 				WP_CLI_ROOT . '/../../../' . $custom_vendor . '/autoload_commands.php'

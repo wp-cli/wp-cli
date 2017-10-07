@@ -541,7 +541,8 @@ function parse_url( $url ) {
  * @return bool
  */
 function is_windows() {
-	return false !== ( $test_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' ) ) ? (bool) $test_is_windows : strtoupper( substr( PHP_OS, 0, 3 ) ) === 'WIN';
+	$test_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
+	return false !== ( $test_is_windows ) ? (bool) $test_is_windows : strtoupper( substr( PHP_OS, 0, 3 ) ) === 'WIN';
 }
 
 /**
@@ -789,12 +790,12 @@ function get_temp_dir() {
 	}
 
 	$temp = '/tmp/';
-
-	// `sys_get_temp_dir()` introduced PHP 5.2.1.
-	if ( $try = sys_get_temp_dir() ) {
-		$temp = trailingslashit( $try );
-	} elseif ( $try = ini_get( 'upload_tmp_dir' ) ) {
-		$temp = trailingslashit( $try );
+	$try1 = sys_get_temp_dir();
+	$try2 = ini_get( 'upload_tmp_dir' );
+	if ( $try1 ) {
+		$temp = trailingslashit( $try1 );
+	} elseif ( $try2 ) {
+		$temp = trailingslashit( $try2 );
 	}
 
 	if ( ! is_writable( $temp ) ) {
@@ -1035,7 +1036,8 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 	}
 
 	// Find comma or matching closing brace.
-	if ( null === ( $next = $next_brace_sub( $pattern, $begin + 1 ) ) ) {
+	$next = $next_brace_sub( $pattern, $begin + 1 );
+	if ( null === ( $next ) ) {
 		return glob( $pattern );
 	}
 
@@ -1043,7 +1045,8 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 
 	// Point `$rest` to matching closing brace.
 	while ( '}' !== $pattern[ $rest ] ) {
-		if ( null === ( $rest = $next_brace_sub( $pattern, $rest + 1 ) ) ) {
+		$rest = $next_brace_sub( $pattern, $rest + 1 );
+		if ( null === ( $rest ) ) {
 			return glob( $pattern );
 		}
 	}
@@ -1057,7 +1060,8 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 					. substr( $pattern, $p, $next - $p )
 					. substr( $pattern, $rest + 1 );
 
-		if ( ( $result = glob_brace( $subpattern ) ) ) {
+		$result = glob_brace( $subpattern );
+		if ( $result ) {
 			$paths = array_merge( $paths, $result );
 		}
 

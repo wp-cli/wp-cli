@@ -70,7 +70,8 @@ function wp_die_handler( $message ) {
  * Clean HTML error message so suitable for text display.
  */
 function wp_clean_error_message( $message ) {
-	$original_message = $message = trim( $message );
+	$message = trim( $message );
+	$original_message = $message;
 	if ( preg_match( '|^\<h1>(.+?)</h1>|', $original_message, $matches ) ) {
 		$message = $matches[1] . '.';
 	}
@@ -347,7 +348,8 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 		return $matching_tables;
 	}
 
-	if ( $scope = get_flag_value( $assoc_args, 'scope' ) ) {
+	$scope = get_flag_value( $assoc_args, 'scope' );
+	if ( $scope ) {
 		return $wpdb->tables( $scope );
 	}
 
