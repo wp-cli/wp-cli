@@ -858,7 +858,7 @@ function parse_ssh_url( $url, $component = -1 ) {
  * @param integer      $total     Total number of resource being affected.
  * @param integer      $successes Number of successful operations.
  * @param integer      $failures  Number of failures.
- * @param null|integer $skips     Optional. Number of skipped operations. Default null, for BC behavior of not reporting number of failures.
+ * @param null|integer $skips     Optional. Number of skipped operations. Default null (don't show skips).
  */
 function report_batch_operation_results( $noun, $verb, $total, $successes, $failures, $skips = null ) {
 	$plural_noun = $noun . 's';
