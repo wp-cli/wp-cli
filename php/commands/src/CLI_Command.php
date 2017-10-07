@@ -294,7 +294,7 @@ class CLI_Command extends WP_CLI_Command {
 		Utils\http_request( 'GET', $download_url, null, $headers, $options );
 
 		$md5_response = Utils\http_request( 'GET', $md5_url );
-		if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
+		if ( 0 !== strpos( $md5_response->status_code, 20 ) ) {
 			WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$md5_response->status_code})." );
 		}
 		$md5_file = md5_file( $temp );
@@ -373,7 +373,7 @@ class CLI_Command extends WP_CLI_Command {
 
 			// Get rid of leading "v" if there is one set.
 			$release_version = $release->tag_name;
-			if ( 'v' === substr( $release_version, 0, 1 ) ) {
+			if ( 0 === strpos( $release_version, 'v' ) ) {
 				$release_version = ltrim( $release_version, 'v' );
 			}
 

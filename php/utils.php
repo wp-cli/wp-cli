@@ -541,7 +541,10 @@ function parse_url( $url ) {
  * @return bool
  */
 function is_windows() {
-	return false !== ( $test_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' ) ) ? (bool) $test_is_windows : strtoupper( substr( PHP_OS, 0, 3 ) ) === 'WIN';
+	$getenv = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
+	$php_os_contains_win = 0 === stripos( PHP_OS, 'WIN' );
+
+	return false !== $getenv ? (bool) $getenv : $php_os_contains_win;
 }
 
 /**
@@ -894,7 +897,7 @@ function parse_str_to_argv( $arguments ) {
 	$argv = array_map(
 		function( $arg ) {
 			foreach ( array( '"', "'" ) as $char ) {
-				if ( substr( $arg, 0, 1 ) === $char && substr( $arg, -1 ) === $char ) {
+				if ( 0 === strpos( $arg, $char ) && substr( $arg, -1 ) === $char ) {
 					$arg = substr( $arg, 1, -1 );
 					break;
 				}
