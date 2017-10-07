@@ -114,8 +114,7 @@ class Help_Command extends WP_CLI_Command {
 			return $out;
 		}
 
-		$pager = getenv( 'PAGER' );
-		if ( false === $pager ) {
+		if ( false === ( $pager = getenv( 'PAGER' ) ) ) {
 			$pager = Utils\is_windows() ? 'more' : 'less -r';
 		}
 
