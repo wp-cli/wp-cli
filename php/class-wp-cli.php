@@ -17,7 +17,9 @@ class WP_CLI {
 
 	private static $logger;
 
-	private static $hooks = array(), $hooks_passed = array();
+	private static $hooks = array();
+
+	private static $hooks_passed = array();
 
 	private static $capture_exit = false;
 
@@ -831,8 +833,10 @@ class WP_CLI {
 			// We don't use file_get_contents() here because it doesn't handle
 			// Ctrl-D properly, when typing in the value interactively.
 			$raw_value = '';
-			while ( ( $line = fgets( STDIN ) ) !== false ) {
+			$line = fgets( STDIN );
+			while ( false !== $line ) {
 				$raw_value .= $line;
+				$line = fgets( STDIN );
 			}
 		}
 
@@ -983,8 +987,8 @@ class WP_CLI {
 		foreach ( $reused_runtime_args as $key ) {
 			if ( isset( $runtime_args[ $key ] ) ) {
 				$assoc_args[ $key ] = $runtime_args[ $key ];
-			} elseif ( $value = self::get_runner()->config[ $key ] ) {
-				$assoc_args[ $key ] = $value;
+			} elseif ( self::get_runner()->config[ $key ] ) {
+				$assoc_args[ $key ] = self::get_runner()->config[ $key ];
 			}
 		}
 
