@@ -362,8 +362,7 @@ class Subcommand extends CompositeCommand {
 			$out = 'Parameter errors:';
 			foreach ( $errors['fatal'] as $key => $error ) {
 				$out .= "\n {$error}";
-				$desc = $docparser->get_param_desc( $key );
-				if ( $desc ) {
+				if ( $desc = $docparser->get_param_desc( $key ) ) {
 					$out .= " ({$desc})";
 				}
 			}
