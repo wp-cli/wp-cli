@@ -42,7 +42,7 @@ final class IncludeFrameworkAutoloader extends AutoloaderStep {
 	 * @return void
 	 */
 	protected function handle_failure() {
-		fputs(
+		fwrite(
 			STDERR,
 			"Internal error: Can't find Composer autoloader.\nTry running: composer install\n"
 		);

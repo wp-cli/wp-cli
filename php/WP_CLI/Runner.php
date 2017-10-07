@@ -1492,7 +1492,7 @@ class Runner {
 
 		$existing_phar = realpath( $_SERVER['argv'][0] );
 		// Phar needs to be writable to be easily updateable.
-		if ( ! is_writable( $existing_phar ) || ! is_writeable( dirname( $existing_phar ) ) ) {
+		if ( ! is_writable( $existing_phar ) || ! is_writable( dirname( $existing_phar ) ) ) {
 			return;
 		}
 
