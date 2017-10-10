@@ -853,25 +853,28 @@ function parse_ssh_url( $url, $component = -1 ) {
  * @access public
  * @category Input
  *
- * @param string  $noun      Resource being affected (e.g. plugin)
- * @param string  $verb      Type of action happening to the noun (e.g. activate)
- * @param integer $total     Total number of resource being affected.
- * @param integer $successes Number of successful operations.
- * @param integer $failures  Number of failures.
+ * @param string       $noun      Resource being affected (e.g. plugin)
+ * @param string       $verb      Type of action happening to the noun (e.g. activate)
+ * @param integer      $total     Total number of resource being affected.
+ * @param integer      $successes Number of successful operations.
+ * @param integer      $failures  Number of failures.
+ * @param null|integer $skips     Optional. Number of skipped operations. Default null (don't show skips).
  */
-function report_batch_operation_results( $noun, $verb, $total, $successes, $failures ) {
+function report_batch_operation_results( $noun, $verb, $total, $successes, $failures, $skips = null ) {
 	$plural_noun = $noun . 's';
 	$past_tense_verb = past_tense_verb( $verb );
 	$past_tense_verb_upper = ucfirst( $past_tense_verb );
 	if ( $failures ) {
+		$failed_skipped_message = null === $skips ? '' : " ({$failures} failed" . ( $skips ? ", {$skips} skipped" : '' ) . ')';
 		if ( $successes ) {
-			WP_CLI::error( "Only {$past_tense_verb} {$successes} of {$total} {$plural_noun}." );
+			WP_CLI::error( "Only {$past_tense_verb} {$successes} of {$total} {$plural_noun}{$failed_skipped_message}." );
 		} else {
-			WP_CLI::error( "No {$plural_noun} {$past_tense_verb}." );
+			WP_CLI::error( "No {$plural_noun} {$past_tense_verb}{$failed_skipped_message}." );
 		}
 	} else {
-		if ( $successes ) {
-			WP_CLI::success( "{$past_tense_verb_upper} {$successes} of {$total} {$plural_noun}." );
+		$skipped_message = $skips ? " ({$skips} skipped)" : '';
+		if ( $successes || $skips ) {
+			WP_CLI::success( "{$past_tense_verb_upper} {$successes} of {$total} {$plural_noun}{$skipped_message}." );
 		} else {
 			$message = $total > 1 ? ucfirst( $plural_noun ) : ucfirst( $noun );
 			WP_CLI::success( "{$message} already {$past_tense_verb}." );
