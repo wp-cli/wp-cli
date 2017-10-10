@@ -6,7 +6,7 @@ Please review our contributing guidelines if you haven't recently: https://make.
 
 Here's an overview to our process:
 
-1. One of the project committers will soon provide a code review.
+1. One of the project committers will soon provide a code review (https://make.wordpress.org/cli/handbook/code-review/).
 2. You are expected to address the code review comments in a timely manner (if we don't hear from you in two weeks, we'll consider your pull request abandoned).
 3. Please make sure to include functional tests for your changes.
 4. The reviewing committer will merge your pull request as soon as it passes code review (and provided it fits within the scope of the project).
