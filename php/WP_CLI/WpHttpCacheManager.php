@@ -58,9 +58,9 @@ class WpHttpCacheManager {
 					),
 					'filename' => $args['filename'],
 				);
-			} else {
-				WP_CLI::error( sprintf( 'Error copying cached file %s to %s', $filename, $url ) );
 			}
+
+			WP_CLI::error( sprintf( 'Error copying cached file %s to %s', $filename, $url ) );
 		}
 		return $response;
 	}
