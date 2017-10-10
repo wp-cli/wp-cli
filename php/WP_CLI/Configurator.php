@@ -92,8 +92,7 @@ class Configurator {
 	 * @return array
 	 */
 	public function get_aliases() {
-		$runtime_alias = getenv( 'WP_CLI_RUNTIME_ALIAS' );
-		if ( $runtime_alias ) {
+		if ( $runtime_alias = getenv( 'WP_CLI_RUNTIME_ALIAS' ) ) {
 			$returned_aliases = array();
 			foreach ( json_decode( $runtime_alias, true ) as $key => $value ) {
 				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
@@ -130,14 +129,10 @@ class Configurator {
 	 * @return array(array)
 	 */
 	public static function extract_assoc( $arguments ) {
-		$positional_args = array();
-		$assoc_args = array();
-		$global_assoc = array();
-		$local_assoc = array();
+		$positional_args = $assoc_args = $global_assoc = $local_assoc = array();
 
 		foreach ( $arguments as $arg ) {
-			$positional_arg = null;
-			$assoc_arg = null;
+			$positional_arg = $assoc_arg = null;
 
 			if ( preg_match( '|^--no-([^=]+)$|', $arg, $matches ) ) {
 				$assoc_arg = array( $matches[1], false );
@@ -171,8 +166,7 @@ class Configurator {
 	 * @return array
 	 */
 	private function unmix_assoc_args( $mixed_args, $global_assoc = array(), $local_assoc = array() ) {
-		$assoc_args = array();
-		$runtime_config = array();
+		$assoc_args = $runtime_config = array();
 
 		if ( getenv( 'WP_CLI_STRICT_ARGS_MODE' ) ) {
 			foreach ( $global_assoc as $tmp ) {
