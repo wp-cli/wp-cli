@@ -153,7 +153,7 @@ $steps->Then( '/^(STDOUT|STDERR) should be a version string (<|<=|>|>=|==|=|!=|<
 			throw new Exception( $world->result );
 		}
 	}
-);	
+);
 
 $steps->Then( '/^the (.+) (file|directory) should (exist|not exist|be:|contain:|not contain:)$/',
 	function ( $world, $path, $type, $action, $expected = null ) {
@@ -197,6 +197,25 @@ $steps->Then( '/^the (.+) (file|directory) should (exist|not exist|be:|contain:|
 			}
 			checkString( $contents, $expected, $action );
 		}
+	}
+);
+
+$steps->Then( '/^the contents of the (.+) file should match (((\/.+\/)|(#.+#))([a-z]+)?)$/',
+	function ( $world, $path, $expected ) {
+		$path = $world->replace_variables( $path );
+		// If it's a relative path, make it relative to the current test dir
+		if ( '/' !== $path[0] ) {
+			$path = $world->variables['RUN_DIR'] . "/$path";
+		}
+		$contents = file_get_contents( $path );
+		assertRegExp( $expected, $contents );
+	}
+);
+
+$steps->Then( '/^(STDOUT|STDERR) should match (((\/.+\/)|(#.+#))([a-z]+)?)$/',
+	function ( $world, $stream, $expected ) {
+		$stream = strtolower( $stream );
+		assertRegExp( $expected, $world->result->$stream );
 	}
 );
 

@@ -2,6 +2,12 @@
 
 // Utility functions used by Behat steps
 
+function assertRegExp( $regex, $actual ) {
+	if ( ! preg_match( $regex, $actual ) ) {
+		throw new Exception( "Actual value: " . var_export( $actual, true ) );
+	}
+}
+
 function assertEquals( $expected, $actual ) {
 	if ( $expected != $actual ) {
 		throw new Exception( "Actual value: " . var_export( $actual, true ) );
