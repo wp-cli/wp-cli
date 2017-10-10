@@ -14,8 +14,7 @@ class CompositeCommand {
 
 	protected $name, $shortdesc, $synopsis, $docparser;
 
-	protected $parent = array();
-	protected $subcommands = array();
+	protected $parent, $subcommands = array();
 
 	/**
 	 * Instantiate a new CompositeCommand
