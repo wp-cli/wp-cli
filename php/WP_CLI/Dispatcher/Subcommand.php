@@ -170,7 +170,7 @@ class Subcommand extends CompositeCommand {
 			}
 
 			$current_prompt = ( $key + 1 ) . '/' . count( $spec ) . ' ';
-			$default = ( $spec_arg['optional'] ) ? '' : false;
+			$default = $spec_arg['optional'] ? '' : false;
 
 			// 'generic' permits arbitrary key=value (e.g. [--<field>=<value>] )
 			if ( 'generic' == $spec_arg['type'] ) {
