@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "c2be8235f9c36cdfa34517acd22e8ac9",
+    "content-hash": "44e3cc8333d254657f0e412eb0c1c73e",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -267,16 +267,16 @@
         },
         {
             "name": "justinrainbow/json-schema",
-            "version": "5.2.1",
+            "version": "5.2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/justinrainbow/json-schema.git",
-                "reference": "429be236f296ca249d61c65649cdf2652f4a5e80"
+                "reference": "0d4fda8efdf216ade084a7f0aad5637572ce9835"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/429be236f296ca249d61c65649cdf2652f4a5e80",
-                "reference": "429be236f296ca249d61c65649cdf2652f4a5e80",
+                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/0d4fda8efdf216ade084a7f0aad5637572ce9835",
+                "reference": "0d4fda8efdf216ade084a7f0aad5637572ce9835",
                 "shasum": ""
             },
             "require": {
@@ -285,7 +285,6 @@
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^2.1",
                 "json-schema/json-schema-test-suite": "1.2.0",
-                "phpdocumentor/phpdocumentor": "^2.7",
                 "phpunit/phpunit": "^4.8.22"
             },
             "bin": [
@@ -330,7 +329,7 @@
                 "json",
                 "schema"
             ],
-            "time": "2017-05-16T21:06:09+00:00"
+            "time": "2017-10-10T13:22:37+00:00"
         },
         {
             "name": "mustache/mustache",
