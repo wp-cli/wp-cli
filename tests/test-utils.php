@@ -531,4 +531,56 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			array( 'no_such_file', array( 'no_such_file' ) ), // Documenting this behaviour here, which is odd (though advertized) - more natural to return an empty array.
 		);
 	}
+
+	/**
+	 * @dataProvider dataReportBatchOperationResults
+	 */
+	public function testReportBatchOperationResults( $stdout, $stderr, $noun, $verb, $total, $successes, $failures, $skips ) {
+		// Save WP_CLI state.
+		$class_wp_cli_logger = new \ReflectionProperty( 'WP_CLI', 'logger' );
+		$class_wp_cli_logger->setAccessible( true );
+		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
+		$class_wp_cli_capture_exit->setAccessible( true );
+
+		$prev_logger = $class_wp_cli_logger->getValue();
+		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
+
+		// Enable exit exception.
+		$class_wp_cli_capture_exit->setValue( true );
+
+		$logger = new \WP_CLI\Loggers\Execution;
+		WP_CLI::set_logger( $logger );
+
+		$exception = null;
+
+		try {
+			Utils\report_batch_operation_results( $noun, $verb, $total, $successes, $failures, $skips );
+		} catch ( \WP_CLI\ExitException $ex ) {
+			$exception = $ex;
+		}
+		$this->assertSame( $stdout, $logger->stdout );
+		$this->assertSame( $stderr, $logger->stderr );
+
+		// Restore.
+		$class_wp_cli_logger->setValue( $prev_logger );
+		$class_wp_cli_capture_exit->setValue( $prev_capture_exit );
+	}
+
+	public function dataReportBatchOperationResults() {
+		return array(
+			array( "Success: Noun already verbed.\n", '', 'noun', 'verb', 1, 0, 0, null ),
+			array( "Success: Verbed 1 of 1 nouns.\n", '', 'noun', 'verb', 1, 1, 0, null ),
+			array( "Success: Verbed 1 of 2 nouns.\n", '', 'noun', 'verb', 2, 1, 0, null ),
+			array( "Success: Verbed 2 of 2 nouns.\n", '', 'noun', 'verb', 2, 2, 0, 0 ),
+			array( "Success: Verbed 1 of 2 nouns (1 skipped).\n", '', 'noun', 'verb', 2, 1, 0, 1 ),
+			array( "Success: Verbed 2 of 4 nouns (2 skipped).\n", '', 'noun', 'verb', 4, 2, 0, 2 ),
+			array( '', "Error: No nouns verbed.\n", 'noun', 'verb', 1, 0, 1, null ),
+			array( '', "Error: No nouns verbed.\n", 'noun', 'verb', 2, 0, 1, null ),
+			array( '', "Error: No nouns verbed (2 failed).\n", 'noun', 'verb', 3, 0, 2, 0 ),
+			array( '', "Error: No nouns verbed (2 failed, 1 skipped).\n", 'noun', 'verb', 3, 0, 2, 1 ),
+			array( '', "Error: Only verbed 1 of 2 nouns.\n", 'noun', 'verb', 2, 1, 1, null ),
+			array( '', "Error: Only verbed 1 of 3 nouns (2 failed).\n", 'noun', 'verb', 3, 1, 2, 0 ),
+			array( '', "Error: Only verbed 1 of 6 nouns (3 failed, 2 skipped).\n", 'noun', 'verb', 6, 1, 3, 2 ),
+		);
+	}
 }
