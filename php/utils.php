@@ -1060,7 +1060,7 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 					. substr( $pattern, $p, $next - $p )
 					. substr( $pattern, $rest + 1 );
 
-		if ( ( $result = glob_brace( $subpattern ) ) ) {
+		if ( $result = glob_brace( $subpattern ) ) {
 			$paths = array_merge( $paths, $result );
 		}
 
