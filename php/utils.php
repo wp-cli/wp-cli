@@ -716,11 +716,13 @@ function get_named_sem_ver( $new_version, $original_version ) {
 
 	if ( ! is_null( $minor ) && Semver::satisfies( $new_version, "{$major}.{$minor}.x" ) ) {
 		return 'patch';
-	} elseif ( Semver::satisfies( $new_version, "{$major}.x.x" ) ) {
-		return 'minor';
-	} else {
-		return 'major';
 	}
+
+	if ( Semver::satisfies( $new_version, "{$major}.x.x" ) ) {
+		return 'minor';
+	}
+
+	return 'major';
 }
 
 /**
@@ -943,9 +945,9 @@ function isPiped() {
 
 	if ( false !== $shellPipe ) {
 		return filter_var( $shellPipe, FILTER_VALIDATE_BOOLEAN );
-	} else {
-		return (function_exists( 'posix_isatty' ) && ! posix_isatty( STDOUT ));
 	}
+
+	return (function_exists( 'posix_isatty' ) && ! posix_isatty( STDOUT ));
 }
 
 /**
@@ -1016,7 +1018,9 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 				} else {
 					if ( ( '}' === $pattern[ $current ] && 0 === $depth-- ) || ( ',' === $pattern[ $current ] && 0 === $depth ) ) {
 						break;
-					} elseif ( '{' === $pattern[ $current++ ] ) {
+					}
+
+					if ( '{' === $pattern[ $current++ ] ) {
 						$depth++;
 					}
 				}

@@ -117,10 +117,11 @@ class Subcommand extends CompositeCommand {
 		$question .= ': ';
 		if ( function_exists( 'readline' ) ) {
 			return readline( $question );
-		} else {
-			echo $question;
-			return stream_get_line( STDIN, 1024, PHP_EOL );
 		}
+
+		echo $question;
+
+		return stream_get_line( STDIN, 1024, PHP_EOL );
 	}
 
 	/**

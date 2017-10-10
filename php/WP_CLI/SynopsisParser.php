@@ -144,9 +144,9 @@ class SynopsisParser {
 	private static function is_optional( $token ) {
 		if ( '[' == substr( $token, 0, 1 ) && ']' == substr( $token, -1 ) ) {
 			return array( true, substr( $token, 1, -1 ) );
-		} else {
-			return array( false, $token );
 		}
+
+		return array( false, $token );
 	}
 
 	/**
@@ -158,8 +158,8 @@ class SynopsisParser {
 	private static function is_repeating( $token ) {
 		if ( '...' === substr( $token, -3 ) ) {
 			return array( true, substr( $token, 0, -3 ) );
-		} else {
-			return array( false, $token );
 		}
+
+		return array( false, $token );
 	}
 }
