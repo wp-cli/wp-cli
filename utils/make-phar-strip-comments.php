@@ -19,6 +19,9 @@ function make_phar_strip_comments( $contents, $keep_doc_comments ) {
 				// Keep for copyright reasons.
 				return $t[1];
 			}
+			if ( preg_match( '/\@(BeforeSuite|BeforeScenario|AfterSuite|AfterScenario)/', $t[1] ) ) {
+				return $t[1];
+			}
 			return str_repeat( "\n", substr_count( $t[1], "\n" ) ); // Strip everything but newlines.
 		}
 		if ( T_WHITESPACE === $t[0] ) {
