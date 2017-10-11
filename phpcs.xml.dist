@@ -19,6 +19,15 @@
 	<exclude-pattern>*/utils/*</exclude-pattern>
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 
+	<rule ref="PHPCompatibility">
+		<!-- Polyfill package is used so array_column() is available for PHP 5.4- -->
+		<exclude name="PHPCompatibility.PHP.NewFunctions.array_columnFound"/>
+		<!-- Both magic quotes directives set in wp-settings-cli.php to provide consistent starting point. -->
+		<exclude name="PHPCompatibility.PHP.DeprecatedIniDirectives.magic_quotes_runtimeDeprecatedRemoved"/>
+		<exclude name="PHPCompatibility.PHP.DeprecatedIniDirectives.magic_quotes_sybaseDeprecatedRemoved"/>
+	</rule>
+	<config name="testVersion" value="5.3-"/>
+
 	<rule ref="WordPress-Core">
 		<exclude name="Squiz.PHP.DisallowMultipleAssignments.Found" />
 		<exclude name="WordPress.NamingConventions.ValidVariableName.NotSnakeCaseMemberVar" />
