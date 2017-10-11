@@ -159,4 +159,40 @@ EOD;
 		$this->assertSame( $expected, $actual );
 	}
 
+	/**
+	 * Test keeps Behat comments.
+	 */
+	public function testBehat() {
+
+		$source = <<<'EOD'
+<?php
+
+/**
+ * Features context.
+ */
+class FeatureContext extends BehatContext implements ClosuredContextInterface {
+
+	/**
+	 * @BeforeScenario
+	 */
+	public function beforeScenario( $event ) {
+EOD;
+		$expected = <<<'EOD'
+<?php
+
+
+
+
+class FeatureContext extends BehatContext implements ClosuredContextInterface {
+
+	/**
+	 * @BeforeScenario
+	 */
+	public function beforeScenario( $event ) {
+EOD;
+		$actual = make_phar_strip_comments( $source, false /*strip doc comments*/ );
+		$this->assertSame( $expected, $actual );
+		$this->assertSame( substr_count( $actual, "\n" ), substr_count( $source, "\n" ) );
+	}
+
 }
