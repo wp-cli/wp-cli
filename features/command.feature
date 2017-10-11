@@ -3,6 +3,48 @@ Feature: WP-CLI Commands
   Scenario: Registered WP-CLI commands
     Given an empty directory
 
+    When I run `wp cache --help`
+    Then STDOUT should contain:
+      """
+      wp cache <command>
+      """
+
+    When I run `wp cap --help`
+    Then STDOUT should contain:
+      """
+      wp cap <command>
+      """
+
+    When I run `wp checksum --help`
+    Then STDOUT should contain:
+      """
+      wp checksum <command>
+      """
+
+    When I run `wp comment --help`
+    Then STDOUT should contain:
+      """
+      wp comment <command>
+      """
+
+    When I run `wp config --help`
+    Then STDOUT should contain:
+      """
+      wp config <command>
+      """
+
+    When I run `wp core --help`
+    Then STDOUT should contain:
+      """
+      wp core <command>
+      """
+
+    When I run `wp cron --help`
+    Then STDOUT should contain:
+      """
+      wp cron <command>
+      """
+
     When I run `wp cron`
     Then STDOUT should contain:
       """
@@ -11,16 +53,16 @@ Feature: WP-CLI Commands
          or: wp cron test
       """
 
+    When I run `wp db --help`
+    Then STDOUT should contain:
+      """
+      wp db <command>
+      """
+
     When I run `wp db`
     Then STDOUT should contain:
       """
       or: wp db cli
-      """
-
-    When I run `wp export --help`
-    Then STDOUT should contain:
-      """
-      wp export [--dir=<dirname>]
       """
 
     When I run `wp eval --help`
@@ -29,10 +71,40 @@ Feature: WP-CLI Commands
       wp eval <php-code>
       """
 
+    When I run `wp eval-file --help`
+    Then STDOUT should contain:
+      """
+      wp eval-file <file> [<arg>...]
+      """
+
+    When I run `wp export --help`
+    Then STDOUT should contain:
+      """
+      wp export [--dir=<dirname>]
+      """
+
+    When I run `wp help --help`
+    Then STDOUT should contain:
+      """
+      wp help [<command>...]
+      """
+
     When I run `wp import --help`
     Then STDOUT should contain:
       """
       wp import <file>... --authors=<authors>
+      """
+
+    When I run `wp language --help`
+    Then STDOUT should contain:
+      """
+      wp language <command>
+      """
+
+    When I run `wp media --help`
+    Then STDOUT should contain:
+      """
+      wp media <command>
       """
 
     When I run `wp media`
@@ -41,10 +113,70 @@ Feature: WP-CLI Commands
       or: wp media regenerate
       """
 
+    When I run `wp menu --help`
+    Then STDOUT should contain:
+      """
+      wp menu <command>
+      """
+
+    When I run `wp network --help`
+    Then STDOUT should contain:
+      """
+      wp network <command>
+      """
+
+    When I run `wp option --help`
+    Then STDOUT should contain:
+      """
+      wp option <command>
+      """
+
+    When I run `wp package --help`
+    Then STDOUT should contain:
+      """
+      wp package <command>
+      """
+
     When I run `wp package`
     Then STDOUT should contain:
       """
       or: wp package install
+      """
+
+    When I run `wp plugin --help`
+    Then STDOUT should contain:
+      """
+      wp plugin <command>
+      """
+
+    When I run `wp post --help`
+    Then STDOUT should contain:
+      """
+      wp post <command>
+      """
+
+    When I run `wp post-type --help`
+    Then STDOUT should contain:
+      """
+      wp post-type <command>
+      """
+
+    When I run `wp rewrite --help`
+    Then STDOUT should contain:
+      """
+      wp rewrite <command>
+      """
+
+    When I run `wp role --help`
+    Then STDOUT should contain:
+      """
+      wp role <command>
+      """
+
+    When I run `wp scaffold --help`
+    Then STDOUT should contain:
+      """
+      wp scaffold <command>
       """
 
     When I run `wp search-replace --help`
@@ -63,6 +195,60 @@ Feature: WP-CLI Commands
     Then STDOUT should contain:
       """
       wp shell [--basic]
+      """
+
+    When I run `wp sidebar --help`
+    Then STDOUT should contain:
+      """
+      wp sidebar <command>
+      """
+
+    When I run `wp site --help`
+    Then STDOUT should contain:
+      """
+      wp site <command>
+      """
+
+    When I run `wp super-admin --help`
+    Then STDOUT should contain:
+      """
+      wp super-admin <command>
+      """
+
+    When I run `wp taxonomy --help`
+    Then STDOUT should contain:
+      """
+      wp taxonomy <command>
+      """
+
+    When I run `wp term --help`
+    Then STDOUT should contain:
+      """
+      wp term <command>
+      """
+
+    When I run `wp theme --help`
+    Then STDOUT should contain:
+      """
+      wp theme <command>
+      """
+
+    When I run `wp transient --help`
+    Then STDOUT should contain:
+      """
+      wp transient <command>
+      """
+
+    When I run `wp user --help`
+    Then STDOUT should contain:
+      """
+      wp user <command>
+      """
+
+    When I run `wp widget --help`
+    Then STDOUT should contain:
+      """
+      wp widget <command>
       """
 
   Scenario: Invalid class is specified for a command
