@@ -3,7 +3,7 @@
 set -ex
 
 # Run CodeSniffer
-phpcs
+vendor/bin/phpcs
 
 # Run the unit tests
 phpunit
