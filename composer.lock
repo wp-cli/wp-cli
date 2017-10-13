@@ -1631,16 +1631,16 @@
         },
         {
             "name": "wp-cli/db-command",
-            "version": "v1.2.2",
+            "version": "v1.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/db-command.git",
-                "reference": "8728a1feae3554e3af4999fe91c329816b2b7a47"
+                "reference": "16e42edce142df3f5f9e9b1f00bbbbcec897aecf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/db-command/zipball/8728a1feae3554e3af4999fe91c329816b2b7a47",
-                "reference": "8728a1feae3554e3af4999fe91c329816b2b7a47",
+                "url": "https://api.github.com/repos/wp-cli/db-command/zipball/16e42edce142df3f5f9e9b1f00bbbbcec897aecf",
+                "reference": "16e42edce142df3f5f9e9b1f00bbbbcec897aecf",
                 "shasum": ""
             },
             "require": {
@@ -1693,7 +1693,7 @@
             ],
             "description": "Perform basic database operations using credentials stored in wp-config.php.",
             "homepage": "https://github.com/wp-cli/db-command",
-            "time": "2017-10-09T07:26:51+00:00"
+            "time": "2017-10-13T12:49:15+00:00"
         },
         {
             "name": "wp-cli/entity-command",
@@ -1881,16 +1881,16 @@
         },
         {
             "name": "wp-cli/extension-command",
-            "version": "v1.1.4",
+            "version": "v1.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/extension-command.git",
-                "reference": "f1f9110ce22047436b72b9cd34573bdd028e2831"
+                "reference": "994f36f5c4f6fb9bc843b0d8d3c68f5e6343873b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/f1f9110ce22047436b72b9cd34573bdd028e2831",
-                "reference": "f1f9110ce22047436b72b9cd34573bdd028e2831",
+                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/994f36f5c4f6fb9bc843b0d8d3c68f5e6343873b",
+                "reference": "994f36f5c4f6fb9bc843b0d8d3c68f5e6343873b",
                 "shasum": ""
             },
             "require-dev": {
@@ -1955,7 +1955,7 @@
             ],
             "description": "Manage WordPress plugins and themes.",
             "homepage": "https://github.com/wp-cli/extension-command",
-            "time": "2017-10-12T23:27:19+00:00"
+            "time": "2017-10-13T12:45:37+00:00"
         },
         {
             "name": "wp-cli/import-command",
