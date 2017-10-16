@@ -88,7 +88,6 @@ class DocParser {
 						$index = $i + 1;
 						$line .= "[$index]" . $references[$i] . "\n";
 					}
-					$line .= "\n";
 				}
 			}
 
