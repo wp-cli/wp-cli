@@ -70,6 +70,28 @@ class DocParser {
 				break;
 			}
 
+			if ( preg_match_all( '/(\[.+?\]\(.+?\))/', $line, $m ) ) {
+				$matches = $m[1];
+				$references = array();
+				for ( $i = 0; $i < count( $matches ); $i++ ) {
+					if ( preg_match( '/\[.+\]\((.+)\)/', $matches[ $i ], $_m ) ) {
+						$index = $i + 1;
+						$desc = preg_replace( '/\(.+\)/', "[$index]", $matches[$i] );
+						$line = str_replace( $matches[$i], $desc, $line );
+						$references[] = $_m[1];
+					}
+				}
+				if ( count( $references ) ) {
+					$line .= "\n";
+					$line .= '---' . "\n";
+					for ( $i = 0; $i < count( $matches ); $i++ ) {
+						$index = $i + 1;
+						$line .= "[$index]" . $references[$i] . "\n";
+					}
+					$line .= "\n";
+				}
+			}
+
 			$lines[] = $line;
 		}
 		$longdesc = trim( implode( $lines, "\n" ) );
