@@ -76,7 +76,7 @@ class DocParser {
 				for ( $i = 0; $i < count( $matches ); $i++ ) {
 					$index = $i + 1;
 					$line = str_replace( "(" . $m[2][ $i ] . ")", "[$index]", $line );
-					$references[] = $m[2][ $i ];
+					$references[] = trim( $m[2][ $i ] );
 				}
 				if ( count( $references ) ) {
 					$line .= "\n";
