@@ -72,18 +72,17 @@ class DocParser {
 
 			if ( preg_match_all( '/(\[.+?\]\((.+?)\))/', $line, $m ) ) {
 				$matches = $m[1];
-				$references = array();
+				$references = $m[2];
 				for ( $i = 0; $i < count( $matches ); $i++ ) {
 					$index = $i + 1;
 					$line = str_replace( "(" . $m[2][ $i ] . ")", "[$index]", $line );
-					$references[] = trim( $m[2][ $i ] );
 				}
 				if ( count( $references ) ) {
 					$line .= "\n";
 					$line .= '---' . "\n";
 					for ( $i = 0; $i < count( $matches ); $i++ ) {
 						$index = $i + 1;
-						$line .= "[$index] " . $references[$i] . "\n";
+						$line .= "[$index] " . trim( $references[$i] ) . "\n";
 					}
 				}
 			}
