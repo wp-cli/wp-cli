@@ -225,3 +225,38 @@ Feature: Bootstrap WP-CLI
       """
       WP CLI Site with both WordPress and wp-cli as Composer dependencies
       """
+
+  Scenario: Setting an environment variable passes the value through
+    Given an empty directory
+    And WP files
+    And a database
+    And a env-var.php file:
+      """
+      <?php
+      putenv( 'WP_CLI_TEST_ENV_VAR=foo' );
+      """
+    And a wp-cli.yml file:
+      """
+      config create:
+        extra-php: |
+          require_once __DIR__ . '/env-var.php';
+          define( 'WP_CLI_TEST_CONSTANT', getenv( 'WP_CLI_TEST_ENV_VAR' ) );
+      """
+
+    When I run `wp config create {CORE_CONFIG_SETTINGS}`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I run `wp core install --url=example.com --title=example --admin_user=example --admin_email=example@example.org`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I run `wp eval 'echo constant( "WP_CLI_TEST_CONSTANT" );'`
+    Then STDOUT should be:
+      """
+      foo
+      """
