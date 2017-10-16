@@ -387,7 +387,8 @@ class Subcommand extends CompositeCommand {
 	public function invoke( $args, $assoc_args, $extra_args ) {
 		static $prompted_once = false;
 		if ( \WP_CLI::get_config( 'prompt' ) && ! $prompted_once ) {
-			list( $args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
+			list( $_args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
+			$args = array_merge( $args, $_args );
 			$prompted_once = true;
 		}
 
