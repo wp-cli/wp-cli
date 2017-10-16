@@ -951,15 +951,7 @@ Feature: Get help about WP-CLI commands
           return;
       }
 
-      /**
-      * The command which has a link in long description.
-      *
-      * This is a [reference link](https://wordpress.org/) and [second link](http://wp-cli.org/). It should be displayed very nice!
-      *
-      */
       class WP_CLI_Foo_Bar_Command extends WP_CLI_Command {
-
-
           /**
           * The command which has a link in long description.
           *
@@ -968,7 +960,6 @@ Feature: Get help about WP-CLI commands
           * @synopsis <constant-name>
           */
           public function __invoke( $args, $assoc_args ) {}
-
       }
 
       WP_CLI::add_command( 'reference-link', 'WP_CLI_Foo_Bar_Command' );
@@ -979,10 +970,11 @@ Feature: Get help about WP-CLI commands
         - command.php
       """
 
-    When I run `wp help reference-link`
+    When I run `TERM=vt100 COLUMNS=80 wp help reference-link`
     Then STDOUT should contain:
       """
-        This is a [reference link][1] and [second link][2]. It should be displayed very nice!
+        This is a [reference link][1] and [second link][2]. It should be displayed
+        very nice!
         ---
         [1] https://wordpress.org/
         [2] http://wp-cli.org/
