@@ -27,7 +27,6 @@ matrix:
 
 before_script:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
-  - |
   - ./ci/prepare.sh
 
 script: ./ci/test.sh
