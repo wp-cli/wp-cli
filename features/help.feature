@@ -91,6 +91,7 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
+  @less-than-php-7.2
   Scenario: Help when WordPress is downloaded but not installed
     Given an empty directory
 
