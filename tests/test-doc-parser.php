@@ -236,7 +236,7 @@ EOB;
 		$this->assertSame( $expect, $result );
 	}
 
-	function test_long_desc_which_has_not_url() {
+	function test_long_desc_which_has_illegal_markdown() {
 		$doc = new DocParser( '' );
 		$test_class = new ReflectionClass( $doc );
 		$method = $test_class->getMethod( 'parse_reference_links' );
