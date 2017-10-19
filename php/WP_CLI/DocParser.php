@@ -74,7 +74,7 @@ class DocParser {
 
 			$lines[] = $line;
 		}
-		$longdesc = trim( implode( $lines, "\n" ) );
+		$longdesc = trim( implode( "\n", $lines ) );
 
 		return $longdesc;
 	}
@@ -176,7 +176,7 @@ class DocParser {
 
 			$line .= "\n";
 			$line .= '---' . "\n";
-			$line .= join( "\n", $links );
+			$line .= implode( "\n", $links );
 		}
 
 		return $line;
