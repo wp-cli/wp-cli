@@ -262,7 +262,8 @@ class FileCache {
 				// exists and not a dir
 				return false;
 			}
-			if ( ! mkdir( $dir, 0777, true ) ) {
+			if ( ! is_writeable( $dir ) || ! mkdir( $dir, 0777, true ) ) {
+				\WP_CLI::warning( "You don't have permission to make directory at \"" . $dir . "\"." );
 				return false;
 			}
 		}
