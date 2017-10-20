@@ -1180,3 +1180,35 @@ Feature: WP-CLI Commands
       Success: unknown-parent child-command
       """
     And STDERR should be empty
+
+  Scenario: Command hook should fires as expected
+    Given a WP install
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * @when before_wp_load
+       */
+      class Custom_Command_Class extends WP_CLI_Command {
+          /**
+           * @when after_wp_load
+           */
+          public function hello() {
+             WP_CLI::success( home_url() );
+          }
+
+      }
+      WP_CLI::add_command( 'command', 'Custom_Command_Class' );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - custom-cmd.php
+      """
+
+    When I try `wp command hello`
+    Then STDOUT should be:
+      """
+      Success: http://example.com
+      """
+    And the return code should be 0
