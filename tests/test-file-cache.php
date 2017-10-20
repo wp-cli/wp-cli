@@ -73,6 +73,9 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 
 		// Restore
 		chmod( $cache_dir . '/test1', 0755 );
+		rmdir( $cache_dir . '/test1' );
+		unlink( $cache_dir . '/test2' );
+		rmdir( $cache_dir );
 		$class_wp_cli_logger->setValue( $prev_logger );
 	}
 }
