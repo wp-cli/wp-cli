@@ -263,7 +263,8 @@ class FileCache {
 				return false;
 			}
 			if ( ! @mkdir( $dir, 0777, true ) ) { // @codingStandardsIgnoreLine
-				\WP_CLI::warning( 'You don\'t have permission to make directory at "' . $dir . '".' );
+				$error = error_get_last();
+				\WP_CLI::warning( sprintf( "Failed to create directory '%s': %s.", $download_dir, $error['message'] ) );
 				return false;
 			}
 		}
