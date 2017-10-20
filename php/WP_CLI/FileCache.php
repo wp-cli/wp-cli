@@ -264,7 +264,7 @@ class FileCache {
 			}
 			if ( ! @mkdir( $dir, 0777, true ) ) { // @codingStandardsIgnoreLine
 				$error = error_get_last();
-				\WP_CLI::warning( sprintf( "Failed to create directory '%s': %s.", $download_dir, $error['message'] ) );
+				\WP_CLI::warning( sprintf( "Failed to create directory '%s': %s.", $dir, $error['message'] ) );
 				return false;
 			}
 		}
