@@ -258,10 +258,6 @@ class FileCache {
 	 */
 	protected function ensure_dir_exists( $dir ) {
 		if ( ! is_dir( $dir ) ) {
-			if ( file_exists( $dir ) ) {
-				// exists and not a dir
-				return false;
-			}
 			if ( ! @mkdir( $dir, 0777, true ) ) { // @codingStandardsIgnoreLine
 				$error = error_get_last();
 				\WP_CLI::warning( sprintf( "Failed to create directory '%s': %s.", $dir, $error['message'] ) );
