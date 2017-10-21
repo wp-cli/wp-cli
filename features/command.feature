@@ -1181,7 +1181,7 @@ Feature: WP-CLI Commands
       """
     And STDERR should be empty
 
-  Scenario: Command hook should fires as expected
+  Scenario: The command should fire on `after_wp_load`
     Given a WP install
     And a custom-cmd.php file:
       """
@@ -1212,6 +1212,34 @@ Feature: WP-CLI Commands
       Success: http://example.com
       """
     And the return code should be 0
+
+  Scenario: The command should fire on `before_wp_load`
+    Given a WP install
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * @when after_wp_load
+       */
+      class Custom_Command_Class extends WP_CLI_Command {
+          /**
+           * @when before_wp_load
+           */
+          public function home_url() {
+             WP_CLI::success( DB_NAME );
+          }
+
+      }
+      WP_CLI::add_command( 'command', 'Custom_Command_Class' );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - custom-cmd.php
+      """
+
+    When I try `wp command home_url`
+    Then STDERR should not be empty
 
   Scenario: Command hook should fires as expected on __invoke()
     Given a WP install
