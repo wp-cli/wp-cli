@@ -1196,7 +1196,12 @@ Feature: WP-CLI Commands
           public function home_url() {
              WP_CLI::success( home_url() );
           }
-
+          /**
+           * @subcommand test
+           */
+          public function test() {
+             WP_CLI::success( 'test' );
+          }
       }
       WP_CLI::add_command( 'command', 'Custom_Command_Class' );
       """
@@ -1210,6 +1215,13 @@ Feature: WP-CLI Commands
     Then STDOUT should be:
       """
       Success: http://example.com
+      """
+    And the return code should be 0
+
+    When I run `wp command test`
+    Then STDOUT should be:
+      """
+      Success: test
       """
     And the return code should be 0
 
