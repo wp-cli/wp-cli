@@ -352,7 +352,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		$exception = null;
 		try {
-			Utils\http_request( 'GET', 'https://nosuchhost_asdf_asdf_asdf.com' );
+			Utils\http_request( 'GET', 'https://nosuchhost_asdf_asdf_asdf.com', null /*data*/, array() /*headers*/, array( 'timeout' => 0.01 ) );
 		} catch ( \WP_CLI\ExitException $ex ) {
 			$exception = $ex;
 		}
@@ -368,6 +368,10 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testHttpRequestBadCAcert() {
+		if ( ! extension_loaded( 'curl' ) ) {
+			$this->markTestSkipped( 'curl not available' );
+		}
+
 		// Save WP_CLI state.
 		$class_wp_cli_logger = new \ReflectionProperty( 'WP_CLI', 'logger' );
 		$class_wp_cli_logger->setAccessible( true );
