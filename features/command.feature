@@ -1193,7 +1193,7 @@ Feature: WP-CLI Commands
           /**
            * @when after_wp_load
            */
-          public function hello() {
+          public function home_url() {
              WP_CLI::success( home_url() );
           }
 
@@ -1206,7 +1206,39 @@ Feature: WP-CLI Commands
         - custom-cmd.php
       """
 
-    When I try `wp command hello`
+    When I run `wp command home_url`
+    Then STDOUT should be:
+      """
+      Success: http://example.com
+      """
+    And the return code should be 0
+
+  Scenario: Command hook should fires as expected on __invoke()
+    Given a WP install
+    And a custom-cmd.php file:
+      """
+      <?php
+      /**
+       * @when before_wp_load
+       */
+      class Custom_Command_Class extends WP_CLI_Command {
+          /**
+           * @when after_wp_load
+           */
+          public function __invoke() {
+             WP_CLI::success( home_url() );
+          }
+
+      }
+      WP_CLI::add_command( 'command', 'Custom_Command_Class' );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - custom-cmd.php
+      """
+
+    When I run `wp command`
     Then STDOUT should be:
       """
       Success: http://example.com
