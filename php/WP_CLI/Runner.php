@@ -62,9 +62,26 @@ class Runner {
 			return;
 		}
 
+		// Search the value of @when from the command method.
+		$real_when = '';
+		$r = $this->find_command_to_run( $this->arguments );
+		if ( is_array( $r ) ) {
+			list( $command, $final_args, $cmd_path ) = $r;
+
+			foreach ( $this->_early_invoke as $_when => $_path ) {
+				foreach ( $_path as $cmd ) {
+					if ( $cmd === $cmd_path ) {
+						$real_when = $_when;
+					}
+				}
+			}
+		}
+
 		foreach ( $this->_early_invoke[ $when ] as $path ) {
 			if ( $this->cmd_starts_with( $path ) ) {
-				$this->_run_command_and_exit();
+				if ( empty( $real_when ) || ( $real_when && $real_when === $when ) ) {
+					$this->_run_command_and_exit();
+				}
 			}
 		}
 	}
