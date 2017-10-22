@@ -1225,6 +1225,13 @@ Feature: WP-CLI Commands
       """
     And the return code should be 0
 
+    When I try `wp command home_url --path=/tmp`
+    Then STDERR should contain:
+      """
+      Error: This does not seem to be a WordPress install.
+      """
+    And the return code should be 1
+
   Scenario: The command should fire on `before_wp_load`
     Given a WP install
     And a custom-cmd.php file:
