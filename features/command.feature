@@ -1244,10 +1244,13 @@ Feature: WP-CLI Commands
           /**
            * @when before_wp_load
            */
-          public function home_url() {
+          public function before_wp_load() {
              WP_CLI::success( DB_NAME );
           }
 
+          public function after_wp_load() {
+             WP_CLI::success( home_url() );
+          }
       }
       WP_CLI::add_command( 'command', 'Custom_Command_Class' );
       """
@@ -1257,8 +1260,16 @@ Feature: WP-CLI Commands
         - custom-cmd.php
       """
 
-    When I try `wp command home_url`
+    When I try `wp command before_wp_load`
     Then STDERR should not be empty
+
+    When I run `wp command after_wp_load`
+    Then STDERR should be empty
+    And STDOUT should be:
+      """
+      Success: http://example.com
+      """
+    And the return code should be 0
 
   Scenario: Command hook should fires as expected on __invoke()
     Given a WP install
