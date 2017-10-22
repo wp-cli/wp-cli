@@ -598,8 +598,6 @@ class CLI_Command extends WP_CLI_Command {
 	 *     1
 	 *
 	 * @subcommand has-command
-	 *
-	 * @when after_wp_load
 	 */
 	public function has_command( $_, $assoc_args ) {
 
