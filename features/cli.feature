@@ -1,15 +1,31 @@
 Feature: `wp cli` tasks
 
   Scenario: Ability to detect a WP-CLI registered command
-    Given an empty directory
+    Given a WP install
 
     When I run `wp package install wp-cli/scaffold-package-command`
     When I run `wp cli has-command scaffold package`
     Then the return code should be 0
-    
+
     When I run `wp package uninstall wp-cli/scaffold-package-command`
     When I try `wp cli has-command scaffold package`
     Then the return code should be 1
+
+  Scenario: Ability to detect a command which is registered by plugin
+    Given a WP install
+    And a wp-content/mu-plugins/test-cli.php file:
+      """
+      <?php
+      // Plugin Name: Test CLI Help
+
+      class TestCommand {
+      }
+
+      WP_CLI::add_command( 'test-command', 'TestCommand' );
+      """
+
+    When I run `wp cli has-command test-command`
+    Then the return code should be 0
 
   Scenario: Ability to set a custom version when building
     Given an empty directory
