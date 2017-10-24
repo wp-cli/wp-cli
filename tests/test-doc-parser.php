@@ -50,8 +50,6 @@ EOB
 /**
  * Rock and roll!
  *
- * This is a [reference link](https://wordpress.org/) and [second link](http://wp-cli.org/). It should be displayed very nice!
- *
  * ## OPTIONS
  *
  * <genre>...
@@ -80,11 +78,6 @@ EOB
 		$this->assertEquals( 'rock-on', $doc->get_tag('alias') );
 
 		$longdesc = <<<EOB
-This is a [reference link][1] and [second link][2]. It should be displayed very nice!
----
-[1] https://wordpress.org/
-[2] http://wp-cli.org/
-
 ## OPTIONS
 
 <genre>...
@@ -203,51 +196,5 @@ EOB;
 		$this->assertNull( $doc->get_arg_args( 'hook' ) );
 	}
 
-	function test_reference_link_in_long_desc_should_be_parsed() {
-		$doc = new DocParser( '' );
-		$test_class = new ReflectionClass( $doc );
-		$method = $test_class->getMethod( 'parse_reference_links' );
-		$method->setAccessible( true );
-
-		$desc = 'This is a [reference link](https://wordpress.org/) and [second link](http://wp-cli.org/). It should be displayed very nice!';
-		$result = $method->invokeArgs( null, array( $desc ) );
-
-		$expect =<<<EOB
-This is a [reference link][1] and [second link][2]. It should be displayed very nice!
----
-[1] https://wordpress.org/
-[2] http://wp-cli.org/
-EOB;
-
-		$this->assertSame( $expect, $result );
-	}
-
-	function test_long_desc_which_does_not_have_link() {
-		$doc = new DocParser( '' );
-		$test_class = new ReflectionClass( $doc );
-		$method = $test_class->getMethod( 'parse_reference_links' );
-		$method->setAccessible( true );
-
-		$desc = 'It should be displayed very nice!';
-		$result = $method->invokeArgs( null, array( $desc ) );
-
-		$expect = "It should be displayed very nice!";
-
-		$this->assertSame( $expect, $result );
-	}
-
-	function test_long_desc_which_has_illegal_markdown() {
-		$doc = new DocParser( '' );
-		$test_class = new ReflectionClass( $doc );
-		$method = $test_class->getMethod( 'parse_reference_links' );
-		$method->setAccessible( true );
-
-		$desc = 'It should be [displayed](Hello) very nice!';
-		$result = $method->invokeArgs( null, array( $desc ) );
-
-		$expect = "It should be [displayed](Hello) very nice!";
-
-		$this->assertSame( $expect, $result );
-	}
 }
 

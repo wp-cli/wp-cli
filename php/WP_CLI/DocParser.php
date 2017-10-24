@@ -70,11 +70,9 @@ class DocParser {
 				break;
 			}
 
-			$line = self::parse_reference_links( $line );
-
 			$lines[] = $line;
 		}
-		$longdesc = trim( implode( "\n", $lines ) );
+		$longdesc = trim( implode( $lines, "\n" ) );
 
 		return $longdesc;
 	}
@@ -156,32 +154,6 @@ class DocParser {
 	public function get_param_args( $key ) {
 		return $this->get_arg_or_param_args( "/^\[?--{$key}=.*/" );
 	}
-
-	/**
-	 * Parse reference link in long description
-	 *
-	 * @param string $line The line of description
-	 * @return string
-	 */
-	private static function parse_reference_links( $line ) {
-		if ( preg_match_all( '/(\[.+?\]\((https?:\/\/.+?)\))/', $line, $m ) ) {
-			$matches = $m[1];
-			$references = $m[2];
-			$links = array();
-			for ( $i = 0; $i < count( $matches ); $i++ ) {
-				$index = $i + 1;
-				$line = str_replace( '(' . $references[ $i ] . ')', '[' . $index . ']', $line );
-				$links[] = '[' . $index . '] ' . trim( $references[ $i ] );
-			}
-
-			$line .= "\n";
-			$line .= '---' . "\n";
-			$line .= implode( "\n", $links );
-		}
-
-		return $line;
-	}
-
 
 	/**
 	 * Get the args for an arg or param
