@@ -1193,14 +1193,11 @@ Feature: WP-CLI Commands
           /**
            * @when after_wp_load
            */
-          public function home_url() {
-             WP_CLI::success( home_url() );
+          public function after_wp_load() {
+             var_dump( function_exists( 'home_url' ) );
           }
-          /**
-           * @subcommand test
-           */
-          public function test() {
-             WP_CLI::success( 'test' );
+          public function before_wp_load() {
+             var_dump( function_exists( 'home_url' ) );
           }
       }
       WP_CLI::add_command( 'command', 'Custom_Command_Class' );
@@ -1211,21 +1208,21 @@ Feature: WP-CLI Commands
         - custom-cmd.php
       """
 
-    When I run `wp command home_url`
+    When I run `wp command after_wp_load`
     Then STDOUT should be:
       """
-      Success: http://example.com
+      bool(true)
       """
     And the return code should be 0
 
-    When I run `wp command test`
+    When I run `wp command before_wp_load`
     Then STDOUT should be:
       """
-      Success: test
+      bool(false)
       """
     And the return code should be 0
 
-    When I try `wp command home_url --path=/tmp`
+    When I try `wp command after_wp_load --path=/tmp`
     Then STDERR should contain:
       """
       Error: This does not seem to be a WordPress install.
@@ -1245,11 +1242,11 @@ Feature: WP-CLI Commands
            * @when before_wp_load
            */
           public function before_wp_load() {
-             WP_CLI::success( DB_NAME );
+             var_dump( function_exists( 'home_url' ) );
           }
 
           public function after_wp_load() {
-             WP_CLI::success( home_url() );
+             var_dump( function_exists( 'home_url' ) );
           }
       }
       WP_CLI::add_command( 'command', 'Custom_Command_Class' );
@@ -1260,14 +1257,19 @@ Feature: WP-CLI Commands
         - custom-cmd.php
       """
 
-    When I try `wp command before_wp_load`
-    Then STDERR should not be empty
+    When I run `wp command before_wp_load`
+    Then STDERR should be empty
+    And STDOUT should be:
+      """
+      bool(false)
+      """
+    And the return code should be 0
 
     When I run `wp command after_wp_load`
     Then STDERR should be empty
     And STDOUT should be:
       """
-      Success: http://example.com
+      bool(true)
       """
     And the return code should be 0
 
@@ -1284,9 +1286,8 @@ Feature: WP-CLI Commands
            * @when after_wp_load
            */
           public function __invoke() {
-             WP_CLI::success( home_url() );
+             var_dump( function_exists( 'home_url' ) );
           }
-
       }
       WP_CLI::add_command( 'command', 'Custom_Command_Class' );
       """
@@ -1299,6 +1300,13 @@ Feature: WP-CLI Commands
     When I run `wp command`
     Then STDOUT should be:
       """
-      Success: http://example.com
+      bool(true)
       """
     And the return code should be 0
+
+    When I try `wp command --path=/tmp`
+    Then STDERR should contain:
+      """
+      Error: This does not seem to be a WordPress install.
+      """
+    And the return code should be 1
