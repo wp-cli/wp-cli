@@ -220,8 +220,8 @@ class Help_Command extends WP_CLI_Command {
 		}
 
 		if ( $footnote ) {
-			$newdesc = $newdesc . "---\n" . $footnote . "\n";
-			$longdesc = str_replace( $description, $newdesc, $longdesc );
+			$newdesc = trim( $newdesc ) . "\n\n---\n" . $footnote;
+			$longdesc = str_replace( trim( $description ), trim( $newdesc ), $longdesc );
 		}
 
 		return $longdesc;
