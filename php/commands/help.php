@@ -194,7 +194,7 @@ class Help_Command extends WP_CLI_Command {
 	 * @return string The longdescription which has links as footnote.
 	 */
 	private static function parse_reference_links( $longdesc ) {
-		$description = ''; // The head of the $longdescription.
+		$description = '';
 		foreach ( explode( "\n", $longdesc ) as $line ) {
 			if ( 0 === strpos( $line, '#' ) ) {
 				break;
@@ -202,26 +202,27 @@ class Help_Command extends WP_CLI_Command {
 			$description .= $line . "\n";
 		}
 
-		$links = array(); // An array of URLs from the description.
+		// Fires if it has description text at the head of `$longdesc`.
 		if ( $description ) {
-			$pattern = '/(\[.+?\]\((https?:\/\/.+?)\))/';
-			$newdesc = preg_replace_callback( $pattern, function( $matches ) use( &$links ) {
+			$links = array(); // An array of URLs from the description.
+			$pattern = '/\[.+?\]\((https?:\/\/.+?)\)/';
+			$newdesc = preg_replace_callback( $pattern, function( $matches ) use ( &$links ) {
 				static $count = 0;
 				$count++;
-				$links[] = $matches[2];
-				return str_replace( '(' . $matches[2] . ')', '[' . $count . ']', $matches[0] );
+				$links[] = $matches[1];
+				return str_replace( '(' . $matches[1] . ')', '[' . $count . ']', $matches[0] );
 			}, $description );
-		}
 
-		$footnote = '';
-		for ( $i = 0; $i < count( $links ); $i++ ) {
-			$n = $i + 1;
-			$footnote .= '[' . $n . '] ' . $links[ $i ] . "\n";
-		}
+			$footnote = '';
+			for ( $i = 0; $i < count( $links ); $i++ ) {
+				$n = $i + 1;
+				$footnote .= '[' . $n . '] ' . $links[ $i ] . "\n";
+			}
 
-		if ( $footnote ) {
-			$newdesc = trim( $newdesc ) . "\n\n---\n" . $footnote;
-			$longdesc = str_replace( trim( $description ), trim( $newdesc ), $longdesc );
+			if ( $footnote ) {
+				$newdesc = trim( $newdesc ) . "\n\n---\n" . $footnote;
+				$longdesc = str_replace( trim( $description ), trim( $newdesc ), $longdesc );
+			}
 		}
 
 		return $longdesc;
