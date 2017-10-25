@@ -941,3 +941,108 @@ Feature: Get help about WP-CLI commands
       """
       80
       """
+
+  Scenario: Long description for top-level command which has reference link display well
+    Given a WP install
+    And a command.php file:
+      """
+      <?php
+
+      if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
+          return;
+      }
+
+      class WP_CLI_Foo_Bar_Command extends WP_CLI_Command {
+          /**
+          * A command that has a link in its long description.
+          *
+          * This is a [reference link](https://wordpress.org/).
+          * Also, there is a [second link](http://wp-cli.org/).
+          * They should be displayed nicely!
+          *
+          * @synopsis <constant-name>
+          */
+          public function __invoke( $args, $assoc_args ) {}
+      }
+
+      WP_CLI::add_command( 'reference-link', 'WP_CLI_Foo_Bar_Command' );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - command.php
+      """
+
+    When I run `TERM=vt100 COLUMNS=80 wp help reference-link`
+    Then STDOUT should contain:
+      """
+        This is a [reference link][1].
+        Also, there is a [second link][2].
+        They should be displayed nicely!
+
+        ---
+        [1] https://wordpress.org/
+        [2] http://wp-cli.org/
+      """
+
+    When I run `wp help role`
+    Then STDOUT should contain:
+      """
+        See references for [Roles and Capabilities][1] and [WP User class][2].
+
+        ---
+        [1] https://codex.wordpress.org/Roles_and_Capabilities
+        [2] https://codex.wordpress.org/Class_Reference/WP_User
+      """
+
+  Scenario: Very long description for top-level command which has reference link display well
+    Given a WP install
+    And a command.php file:
+      """
+      <?php
+
+      if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
+          return;
+      }
+
+      class WP_CLI_Foo_Bar_Command extends WP_CLI_Command {
+          /**
+          * A command that has a link in its long description.
+          *
+          * This is a [reference link](https://wordpress.org/). Also, there is a [second link](http://wp-cli.org/). They should be displayed nicely! Wow! This is a very, very long description.
+          *
+          * @synopsis <constant-name>
+          */
+          public function __invoke( $args, $assoc_args ) {}
+      }
+
+      WP_CLI::add_command( 'reference-link', 'WP_CLI_Foo_Bar_Command' );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - command.php
+      """
+
+    When I run `TERM=vt100 COLUMNS=80 wp help reference-link`
+    Then STDOUT should contain:
+      """
+        This is a [reference link][1]. Also, there is a [second link][2]. They should
+        be displayed nicely! Wow! This is a very, very long description.
+
+        ---
+        [1] https://wordpress.org/
+        [2] http://wp-cli.org/
+      """
+
+    When I run `TERM=vt100 COLUMNS=60 wp help reference-link`
+    Then STDOUT should contain:
+      """
+        This is a [reference link][1]. Also, there is a [second
+        link][2]. They should be displayed nicely! Wow! This is a
+        very, very long description.
+
+        ---
+        [1] https://wordpress.org/
+        [2] http://wp-cli.org/
+      """

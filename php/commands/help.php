@@ -44,7 +44,7 @@ class Help_Command extends WP_CLI_Command {
 			$out = substr_replace( $out, $subcommands_header, $matches[1][1], strlen( $subcommands ) );
 		}
 
-		$out .= $command->get_longdesc();
+		$out .= self::parse_reference_links( $command->get_longdesc() );
 
 		// definition lists
 		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
@@ -187,6 +187,46 @@ class Help_Command extends WP_CLI_Command {
 		return $max_len;
 	}
 
+	/**
+	 * Parse reference links from longdescription.
+	 *
+	 * @param  string $longdesc The longdescription from the `$command->get_longdesc()`.
+	 * @return string The longdescription which has links as footnote.
+	 */
+	private static function parse_reference_links( $longdesc ) {
+		$description = '';
+		foreach ( explode( "\n", $longdesc ) as $line ) {
+			if ( 0 === strpos( $line, '#' ) ) {
+				break;
+			}
+			$description .= $line . "\n";
+		}
+
+		// Fires if it has description text at the head of `$longdesc`.
+		if ( $description ) {
+			$links = array(); // An array of URLs from the description.
+			$pattern = '/\[.+?\]\((https?:\/\/.+?)\)/';
+			$newdesc = preg_replace_callback( $pattern, function( $matches ) use ( &$links ) {
+				static $count = 0;
+				$count++;
+				$links[] = $matches[1];
+				return str_replace( '(' . $matches[1] . ')', '[' . $count . ']', $matches[0] );
+			}, $description );
+
+			$footnote = '';
+			for ( $i = 0; $i < count( $links ); $i++ ) {
+				$n = $i + 1;
+				$footnote .= '[' . $n . '] ' . $links[ $i ] . "\n";
+			}
+
+			if ( $footnote ) {
+				$newdesc = trim( $newdesc ) . "\n\n---\n" . $footnote;
+				$longdesc = str_replace( trim( $description ), trim( $newdesc ), $longdesc );
+			}
+		}
+
+		return $longdesc;
+	}
 }
 
 WP_CLI::add_command( 'help', 'Help_Command' );
