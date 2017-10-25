@@ -72,7 +72,7 @@ EOL;
 		$this->assertSame( $expected, $result );
 
 		$desc =<<<EOL
-This is a [reference link](https://wordpress.org/).
+This is a [reference link](https://wordpress.org/) and [second link](http://wp-cli.org/).
 It should be displayed very nice!
 
 ## Example
@@ -82,11 +82,12 @@ EOL;
 		$result = $method->invokeArgs( null, array( $desc ) );
 
 		$expected =<<<EOL
-This is a [reference link][1].
+This is a [reference link][1] and [second link][2].
 It should be displayed very nice!
 
 ---
 [1] https://wordpress.org/
+[2] http://wp-cli.org/
 
 ## Example
 
