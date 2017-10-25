@@ -96,5 +96,40 @@ EOL;
 
 		$this->assertSame( $expected, $result );
 
+		$desc =<<<EOL
+## Example
+
+It doesn't expect to be link here like [reference link](https://wordpress.org/).
+EOL;
+		$result = $method->invokeArgs( null, array( $desc ) );
+
+		$expected =<<<EOL
+## Example
+
+It doesn't expect to be link here like [reference link](https://wordpress.org/).
+EOL;
+
+		$this->assertSame( $expected, $result );
+
+		$desc =<<<EOL
+This is a long description.
+It doesn't have any link.
+
+## Example
+
+It doesn't expect to be link here like [reference link](https://wordpress.org/).
+EOL;
+		$result = $method->invokeArgs( null, array( $desc ) );
+
+		$expected =<<<EOL
+This is a long description.
+It doesn't have any link.
+
+## Example
+
+It doesn't expect to be link here like [reference link](https://wordpress.org/).
+EOL;
+
+		$this->assertSame( $expected, $result );
 	}
 }
