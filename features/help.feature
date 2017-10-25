@@ -954,11 +954,11 @@ Feature: Get help about WP-CLI commands
 
       class WP_CLI_Foo_Bar_Command extends WP_CLI_Command {
           /**
-          * The command which has a link in long description.
+          * A command that has a link in its long description.
           *
           * This is a [reference link](https://wordpress.org/).
-          * Also, it is [second link](http://wp-cli.org/).
-          * It should be displayed very nice!
+          * Also, there is a [second link](http://wp-cli.org/).
+          * They should be displayed nicely!
           *
           * @synopsis <constant-name>
           */
@@ -977,8 +977,8 @@ Feature: Get help about WP-CLI commands
     Then STDOUT should contain:
       """
         This is a [reference link][1].
-        Also, it is [second link][2].
-        It should be displayed very nice!
+        Also, there is a [second link][2].
+        They should be displayed nicely!
 
         ---
         [1] https://wordpress.org/
@@ -1007,9 +1007,9 @@ Feature: Get help about WP-CLI commands
 
       class WP_CLI_Foo_Bar_Command extends WP_CLI_Command {
           /**
-          * The command which has a link in long description.
+          * A command that has a link in its long description.
           *
-          * This is a [reference link](https://wordpress.org/). Also, it is [second link](http://wp-cli.org/). It should be displayed very nice! Wow! It is very long long long description.
+          * This is a [reference link](https://wordpress.org/). Also, there is a [second link](http://wp-cli.org/). They should be displayed nicely! Wow! This is a very, very long description.
           *
           * @synopsis <constant-name>
           */
@@ -1027,8 +1027,8 @@ Feature: Get help about WP-CLI commands
     When I run `TERM=vt100 COLUMNS=80 wp help reference-link`
     Then STDOUT should contain:
       """
-        This is a [reference link][1]. Also, it is [second link][2]. It should be
-        displayed very nice! Wow! It is very long long long description.
+        This is a [reference link][1]. Also, there is a [second link][2]. They should
+        be displayed nicely! Wow! This is a very, very long description.
 
         ---
         [1] https://wordpress.org/
@@ -1038,9 +1038,9 @@ Feature: Get help about WP-CLI commands
     When I run `TERM=vt100 COLUMNS=60 wp help reference-link`
     Then STDOUT should contain:
       """
-        This is a [reference link][1]. Also, it is [second
-        link][2]. It should be displayed very nice! Wow! It is
-        very long long long description.
+        This is a [reference link][1]. Also, there is a [second
+        link][2]. They should be displayed nicely! Wow! This is a
+        very, very long description.
 
         ---
         [1] https://wordpress.org/
