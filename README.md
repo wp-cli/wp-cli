@@ -53,20 +53,20 @@ Before installing WP-CLI, please make sure your environment meets the minimum re
 Once you've verified requirements, download the [wp-cli.phar](https://raw.github.com/wp-cli/builds/gh-pages/phar/wp-cli.phar) file using `wget` or `curl`:
 
 ```bash
-$ curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 ```
 
 Next, check the Phar file to verify that it's working:
 
 ```bash
-$ php wp-cli.phar --info
+php wp-cli.phar --info
 ```
 
 To use WP-CLI from the command line by typing `wp`, make the file executable and move it to somewhere in your PATH. For example:
 
 ```bash
-$ chmod +x wp-cli.phar
-$ sudo mv wp-cli.phar /usr/local/bin/wp
+chmod +x wp-cli.phar
+sudo mv wp-cli.phar /usr/local/bin/wp
 ```
 
 If WP-CLI was installed successfully, you should see something like this when you run `wp --info`:
