@@ -479,8 +479,7 @@ class WP_CLI {
 
 		$leaf_command = Dispatcher\CommandFactory::create( $leaf_name, $callable, $command );
 
-		if ( $leaf_command instanceof Dispatcher\CommandNamespace
-		     && array_key_exists( $leaf_name, $command->get_subcommands() ) ) {
+		if ( $leaf_command instanceof Dispatcher\CommandNamespace && array_key_exists( $leaf_name, $command->get_subcommands() ) ) {
 			return false;
 		}
 
