@@ -33,7 +33,9 @@ class CommandFactory {
 			);
 		} else {
 			$reflection = new \ReflectionClass( $callable );
-			if ( $reflection->hasMethod( '__invoke' ) ) {
+			if ( $reflection->isSubclassOf( '\WP_CLI\Dispatcher\CommandNamespace' ) ) {
+				$command = self::create_namespace( $parent, $name, $callable );
+			} elseif ( $reflection->hasMethod( '__invoke' ) ) {
 				$class = is_object( $callable ) ? $callable : $reflection->name;
 				$command = self::create_subcommand(
 					$parent, $name, array( $class, '__invoke' ),
@@ -124,6 +126,26 @@ class CommandFactory {
 		}
 
 		return $container;
+	}
+
+	/**
+	 * Create a new command namespace instance.
+	 *
+	 * @param mixed $parent The new namespace's parent Root or Composite command.
+	 * @param string $name Represents how the command should be invoked
+	 * @param mixed $callable
+	 */
+	private static function create_namespace( $parent, $name, $callable ) {
+		$reflection = new \ReflectionClass( $callable );
+		$doc_comment = self::get_doc_comment( $reflection );
+		if ( ! $doc_comment ) {
+			\WP_CLI::debug( null === $doc_comment
+				? "Failed to get doc comment for {$name}."
+				: "No doc comment for {$name}.", 'commandfactory' );
+		}
+		$docparser = new \WP_CLI\DocParser( $doc_comment );
+
+		return new CommandNamespace( $parent, $name, $docparser );
 	}
 
 	/**
