@@ -139,9 +139,7 @@ class CommandFactory {
 		$reflection = new \ReflectionClass( $callable );
 		$doc_comment = self::get_doc_comment( $reflection );
 		if ( ! $doc_comment ) {
-			\WP_CLI::debug( null === $doc_comment
-				? "Failed to get doc comment for {$name}."
-				: "No doc comment for {$name}.", 'commandfactory' );
+			\WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
 		}
 		$docparser = new \WP_CLI\DocParser( $doc_comment );
 
