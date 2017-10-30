@@ -1310,3 +1310,103 @@ Feature: WP-CLI Commands
       Error: This does not seem to be a WordPress install.
       """
     And the return code should be 1
+
+  Scenario: Command namespaces can be added and are shown in help
+    Given an empty directory
+    And a command-namespace.php file:
+      """
+      <?php
+      /**
+       * My Command Namespace Description.
+       */
+      class My_Command_Namespace extends \WP_CLI\Dispatcher\CommandNamespace {}
+      WP_CLI::add_command( 'my-namespaced-command', 'My_Command_Namespace' );
+      """
+
+    When I try `wp help --require=command-namespace.php`
+    Then STDOUT should contain:
+      """
+      my-namespaced-command
+      """
+    And STDOUT should contain:
+      """
+      My Command Namespace Description.
+      """
+    And STDERR should be empty
+
+  Scenario: Command namespaces are only added when the command does not exist
+    Given an empty directory
+    And a command-namespace.php file:
+      """
+      <?php
+      /**
+       * My Actual Namespaced Command.
+       */
+      class My_Namespaced_Command extends WP_CLI_Command {}
+      WP_CLI::add_command( 'my-namespaced-command', 'My_Namespaced_Command' );
+
+      /**
+       * My Command Namespace Description.
+       */
+      class My_Command_Namespace extends \WP_CLI\Dispatcher\CommandNamespace {}
+      WP_CLI::add_command( 'my-namespaced-command', 'My_Command_Namespace' );
+      """
+
+    When I try `wp help --require=command-namespace.php`
+    Then STDOUT should contain:
+      """
+      my-namespaced-command
+      """
+    And STDOUT should contain:
+      """
+      My Actual Namespaced Command.
+      """
+    And STDERR should be empty
+
+  Scenario: Command namespaces are replaced by commands of the same name
+    Given an empty directory
+    And a command-namespace.php file:
+      """
+      <?php
+      /**
+       * My Command Namespace Description.
+       */
+      class My_Command_Namespace extends \WP_CLI\Dispatcher\CommandNamespace {}
+      WP_CLI::add_command( 'my-namespaced-command', 'My_Command_Namespace' );
+
+      /**
+       * My Actual Namespaced Command.
+       */
+      class My_Namespaced_Command extends WP_CLI_Command {}
+      WP_CLI::add_command( 'my-namespaced-command', 'My_Namespaced_Command' );
+      """
+
+    When I try `wp help --require=command-namespace.php`
+    Then STDOUT should contain:
+      """
+      my-namespaced-command
+      """
+    And STDOUT should contain:
+      """
+      My Actual Namespaced Command.
+      """
+    And STDERR should be empty
+
+  Scenario: Empty command namespaces show a notice when invoked
+    Given an empty directory
+    And a command-namespace.php file:
+      """
+      <?php
+      /**
+       * My Command Namespace Description.
+       */
+      class My_Command_Namespace extends \WP_CLI\Dispatcher\CommandNamespace {}
+      WP_CLI::add_command( 'my-namespaced-command', 'My_Command_Namespace' );
+      """
+
+    When I try `wp --require=command-namespace.php my-namespaced-command`
+    Then STDOUT should contain:
+      """
+      The namespace my-namespaced-command does not contain any usable commands in the current context.
+      """
+    And STDERR should be empty
