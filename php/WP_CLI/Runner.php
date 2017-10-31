@@ -1370,6 +1370,29 @@ class Runner {
 			}
 		);
 
+		// Don't apply set_url_scheme in get_site_url()
+		WP_CLI::add_wp_hook(
+			'site_url',
+			function( $url, $path, $scheme, $blog_id ) {
+				if ( empty( $blog_id ) || ! is_multisite() ) {
+					$url = get_option( 'siteurl' );
+				} else {
+					switch_to_blog( $blog_id );
+					$url = get_option( 'siteurl' );
+					restore_current_blog();
+				}
+
+
+				if ( $path && is_string( $path ) ) {
+					$url .= '/' . ltrim( $path, '/' );
+				}
+
+				return $url;
+			},
+			0,
+			4
+		);
+
 	}
 
 	/**
