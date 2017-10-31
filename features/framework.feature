@@ -249,6 +249,22 @@ Feature: Load WP-CLI
       2
       """
 
+  Scenario: Don't apply set_url_scheme because it will always be incorrect
+    Given a WP multisite install
+    And I run `wp option update siteurl https://example.com`
+
+    When I run `wp option get siteurl`
+    Then STDOUT should be:
+      """
+      https://example.com
+      """
+
+    When I run `wp site list --field=url`
+    Then STDOUT should be:
+      """
+      https://example.com/
+      """
+
   @require-wp-3.9
   Scenario: Display a more helpful error message when site can't be found
     Given a WP multisite install
