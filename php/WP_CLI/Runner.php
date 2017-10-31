@@ -1381,12 +1381,9 @@ class Runner {
 					$url = get_option( 'siteurl' );
 					restore_current_blog();
 				}
-
-
 				if ( $path && is_string( $path ) ) {
 					$url .= '/' . ltrim( $path, '/' );
 				}
-
 				return $url;
 			},
 			0,
