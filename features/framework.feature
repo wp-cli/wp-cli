@@ -285,7 +285,7 @@ Feature: Load WP-CLI
     Then STDERR should be:
       """
       Error: The site you have requested is not installed.
-      Your table prefix is 'cli_'. Found install(s) with table prefix: wp_.
+      Your table prefix is 'cli_'. Found install with table prefix: wp_.
       Or, run `wp core install` to create database tables.
       """
     And STDOUT should be empty
@@ -302,7 +302,7 @@ Feature: Load WP-CLI
     Then STDERR should be:
       """
       Error: The site you have requested is not installed.
-      Your table prefix is 'test_'. Found install(s) with table prefix: cli_, wp_.
+      Your table prefix is 'test_'. Found installs with table prefix: cli_, wp_.
       Or, run `wp core install` to create database tables.
       """
     And STDOUT should be empty
