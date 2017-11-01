@@ -5,11 +5,31 @@
 namespace WP_CLI\Utils;
 
 function wp_not_installed() {
+	global $wpdb, $table_prefix;
 	if ( ! is_blog_installed() && ! defined( 'WP_INSTALLING' ) ) {
-		\WP_CLI::error(
-			"The site you have requested is not installed.\n" .
-			'Run `wp core install`.'
-		);
+		$tables = $wpdb->get_col( "SHOW TABLES LIKE '%_options'" );
+		$found_prefixes = array();
+		if ( count( $tables ) ) {
+			foreach ( $tables as $table ) {
+				$maybe_prefix = substr( $table, 0, - strlen( 'options' ) );
+				if ( $maybe_prefix !== $table_prefix ) {
+					$found_prefixes[] = $maybe_prefix;
+				}
+			}
+		}
+		if ( count( $found_prefixes ) ) {
+			$prefix_list = implode( ', ', $found_prefixes );
+			\WP_CLI::error(
+				"The site you have requested is not installed.\n" .
+				"Your table prefix is '{$table_prefix}'. Found install(s) with table prefix: {$prefix_list}.\n" .
+				'Or, run `wp core install` to create database tables.'
+			);
+		} else {
+			\WP_CLI::error(
+				"The site you have requested is not installed.\n" .
+				'Run `wp core install` to create database tables.'
+			);
+		}
 	}
 }
 
