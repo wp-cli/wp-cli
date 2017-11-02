@@ -1209,14 +1209,14 @@ Feature: WP-CLI Commands
       """
 
     When I run `wp command after_wp_load`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       bool(true)
       """
     And the return code should be 0
 
     When I run `wp command before_wp_load`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       bool(false)
       """
@@ -1259,7 +1259,7 @@ Feature: WP-CLI Commands
 
     When I run `wp command before_wp_load`
     Then STDERR should be empty
-    And STDOUT should be:
+    And STDOUT should contain:
       """
       bool(false)
       """
@@ -1267,7 +1267,7 @@ Feature: WP-CLI Commands
 
     When I run `wp command after_wp_load`
     Then STDERR should be empty
-    And STDOUT should be:
+    And STDOUT should contain:
       """
       bool(true)
       """
@@ -1298,7 +1298,7 @@ Feature: WP-CLI Commands
       """
 
     When I run `wp command`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       bool(true)
       """
