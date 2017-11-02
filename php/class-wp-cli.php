@@ -1032,8 +1032,14 @@ class WP_CLI {
 			return getenv( 'WP_CLI_PHP' );
 		}
 
+		// Available since PHP 5.4.
 		if ( defined( 'PHP_BINARY' ) ) {
 			return PHP_BINARY;
+		}
+
+		// @codingStandardsIgnoreLine
+		if ( @is_executable( PHP_BINDIR . '/php' ) || ( Utils\is_windows() && @is_executable( PHP_BINDIR . '/php.exe' ) ) ) {
+			return PHP_BINDIR . '/php';
 		}
 
 		return 'php';

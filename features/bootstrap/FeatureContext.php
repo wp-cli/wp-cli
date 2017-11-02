@@ -686,15 +686,35 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->composer_command( 'require wp-cli/wp-cli:dev-master --optimize-autoloader --no-interaction' );
 	}
 
-	public function get_php_binary() {
-		if ( getenv( 'WP_CLI_PHP_USED' ) )
+	/**
+	 * Copied from `WP_CLI::get_php_binary()`.
+	 * Get the path to the PHP binary used when executing WP-CLI.
+	 *
+	 * Environment values permit specific binaries to be indicated.
+	 *
+	 * @access public
+	 * @category System
+	 *
+	 * @return string
+	 */
+	public static function get_php_binary() {
+		if ( getenv( 'WP_CLI_PHP_USED' ) ) {
 			return getenv( 'WP_CLI_PHP_USED' );
+		}
 
-		if ( getenv( 'WP_CLI_PHP' ) )
+		if ( getenv( 'WP_CLI_PHP' ) ) {
 			return getenv( 'WP_CLI_PHP' );
+		}
 
-		if ( defined( 'PHP_BINARY' ) )
+		// Available since PHP 5.4.
+		if ( defined( 'PHP_BINARY' ) ) {
 			return PHP_BINARY;
+		}
+
+		// @codingStandardsIgnoreLine
+		if ( @is_executable( PHP_BINDIR . '/php' ) || ( Utils\is_windows() && @is_executable( PHP_BINDIR . '/php.exe' ) ) ) {
+			return PHP_BINDIR . '/php';
+		}
 
 		return 'php';
 	}
@@ -705,7 +725,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			$dir .= trim( $subdir, '/' ) . '/';
 		}
 		$cmd = Utils\esc_cmd( '%s -S %s -t %s -c %s %s',
-			$this->get_php_binary(),
+			self::get_php_binary(),
 			'localhost:8080',
 			$dir,
 			get_cfg_var( 'cfg_file_path' ),
