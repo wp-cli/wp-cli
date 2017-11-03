@@ -863,7 +863,7 @@ class Runner {
 	private function run_alias_group( $aliases ) {
 		Utils\check_proc_available( 'group alias' );
 
-		$php_bin = WP_CLI::get_php_binary();
+		$php_bin = Utils\get_php_binary();
 
 		$script_path = $GLOBALS['argv'][0];
 
