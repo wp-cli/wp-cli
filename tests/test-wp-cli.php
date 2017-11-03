@@ -34,4 +34,7 @@ class WP_CLI_Test extends PHPUnit_Framework_TestCase {
 		$this->assertTrue( false !== strpos( trim( $output[0] ), $err_msg ) );
 	}
 
+	public function testGetPHPBinary() {
+		$this->assertSame( WP_CLI\Utils\get_php_binary(), WP_CLI::get_php_binary() );
+	}
 }
