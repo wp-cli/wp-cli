@@ -587,4 +587,30 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			array( '', "Error: Only verbed 1 of 6 nouns (3 failed, 2 skipped).\n", 'noun', 'verb', 6, 1, 3, 2 ),
 		);
 	}
+
+	public function testGetPHPBinary() {
+		$env_php_used = getenv( 'WP_CLI_PHP_USED' );
+		$env_php = getenv( 'WP_CLI_PHP' );
+
+		putenv( 'WP_CLI_PHP_USED' );
+		putenv( 'WP_CLI_PHP' );
+		$get_php_binary = Utils\get_php_binary();
+		$this->assertTrue( is_executable( $get_php_binary ) );
+
+		putenv( 'WP_CLI_PHP_USED=/my-php-5.3' );
+		putenv( 'WP_CLI_PHP' );
+		$get_php_binary = Utils\get_php_binary();
+		$this->assertSame( $get_php_binary, '/my-php-5.3' );
+
+		putenv( 'WP_CLI_PHP=/my-php-7.3' );
+		$get_php_binary = Utils\get_php_binary();
+		$this->assertSame( $get_php_binary, '/my-php-5.3' ); // WP_CLI_PHP_USED wins.
+
+		putenv( 'WP_CLI_PHP_USED' );
+		$get_php_binary = Utils\get_php_binary();
+		$this->assertSame( $get_php_binary, '/my-php-7.3' );
+
+		putenv( false === $env_php_used ? 'WP_CLI_PHP_USED' : "WP_CLI_PHP_USED=$env_php_used" );
+		putenv( false === $env_php ? 'WP_CLI_PHP' : "WP_CLI_PHP=$env_php" );
+	}
 }

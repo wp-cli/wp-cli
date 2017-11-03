@@ -994,7 +994,7 @@ class WP_CLI {
 			}
 		}
 
-		$php_bin = self::get_php_binary();
+		$php_bin = Utils\get_php_binary();
 
 		$script_path = $GLOBALS['argv'][0];
 
@@ -1018,31 +1018,15 @@ class WP_CLI {
 	 *
 	 * Environment values permit specific binaries to be indicated.
 	 *
+	 * Note: moved to Utils, left for BC.
+	 *
 	 * @access public
 	 * @category System
 	 *
 	 * @return string
 	 */
 	public static function get_php_binary() {
-		if ( getenv( 'WP_CLI_PHP_USED' ) ) {
-			return getenv( 'WP_CLI_PHP_USED' );
-		}
-
-		if ( getenv( 'WP_CLI_PHP' ) ) {
-			return getenv( 'WP_CLI_PHP' );
-		}
-
-		// Available since PHP 5.4.
-		if ( defined( 'PHP_BINARY' ) ) {
-			return PHP_BINARY;
-		}
-
-		// @codingStandardsIgnoreLine
-		if ( @is_executable( PHP_BINDIR . '/php' ) || ( Utils\is_windows() && @is_executable( PHP_BINDIR . '/php.exe' ) ) ) {
-			return PHP_BINDIR . '/php';
-		}
-
-		return 'php';
+		return Utils\get_php_binary();
 	}
 
 	/**
@@ -1132,7 +1116,7 @@ class WP_CLI {
 				);
 			}
 
-			$php_bin = self::get_php_binary();
+			$php_bin = Utils\get_php_binary();
 			$script_path = $GLOBALS['argv'][0];
 
 			// Persist runtime arguments unless they've been specified otherwise.

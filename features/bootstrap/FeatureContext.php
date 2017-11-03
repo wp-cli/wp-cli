@@ -131,6 +131,12 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( $php_args = getenv( 'WP_CLI_PHP_ARGS' ) ) {
 			$env['WP_CLI_PHP_ARGS'] = $php_args;
 		}
+		if ( $php_used = getenv( 'WP_CLI_PHP_USED' ) ) {
+			$env['WP_CLI_PHP_USED'] = $php_used;
+		}
+		if ( $php = getenv( 'WP_CLI_PHP' ) ) {
+			$env['WP_CLI_PHP'] = $php;
+		}
 		if ( $travis_build_dir = getenv( 'TRAVIS_BUILD_DIR' ) ) {
 			$env['TRAVIS_BUILD_DIR'] = $travis_build_dir;
 		}
@@ -686,46 +692,13 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->composer_command( 'require wp-cli/wp-cli:dev-master --optimize-autoloader --no-interaction' );
 	}
 
-	/**
-	 * Copied from `WP_CLI::get_php_binary()`.
-	 * Get the path to the PHP binary used when executing WP-CLI.
-	 *
-	 * Environment values permit specific binaries to be indicated.
-	 *
-	 * @access public
-	 * @category System
-	 *
-	 * @return string
-	 */
-	public static function get_php_binary() {
-		if ( getenv( 'WP_CLI_PHP_USED' ) ) {
-			return getenv( 'WP_CLI_PHP_USED' );
-		}
-
-		if ( getenv( 'WP_CLI_PHP' ) ) {
-			return getenv( 'WP_CLI_PHP' );
-		}
-
-		// Available since PHP 5.4.
-		if ( defined( 'PHP_BINARY' ) ) {
-			return PHP_BINARY;
-		}
-
-		// @codingStandardsIgnoreLine
-		if ( @is_executable( PHP_BINDIR . '/php' ) || ( Utils\is_windows() && @is_executable( PHP_BINDIR . '/php.exe' ) ) ) {
-			return PHP_BINDIR . '/php';
-		}
-
-		return 'php';
-	}
-
 	public function start_php_server( $subdir = '' ) {
 		$dir = $this->variables['RUN_DIR'] . '/';
 		if ( $subdir ) {
 			$dir .= trim( $subdir, '/' ) . '/';
 		}
 		$cmd = Utils\esc_cmd( '%s -S %s -t %s -c %s %s',
-			self::get_php_binary(),
+			Utils\get_php_binary(),
 			'localhost:8080',
 			$dir,
 			get_cfg_var( 'cfg_file_path' ),
