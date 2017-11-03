@@ -99,7 +99,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *     WP-CLI version: 0.24.1
 	 */
 	public function info( $_, $assoc_args ) {
-		$php_bin = WP_CLI::get_php_binary();
+		$php_bin = Utils\get_php_binary();
 
 		$runner = WP_CLI::get_runner();
 
@@ -306,7 +306,7 @@ class CLI_Command extends WP_CLI_Command {
 		}
 
 		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
-		$php_binary = WP_CLI::get_php_binary();
+		$php_binary = Utils\get_php_binary();
 		$process = WP_CLI\Process::create( "{$php_binary} $temp --info {$allow_root}" );
 		$result = $process->run();
 		if ( 0 !== $result->return_code || false === stripos( $result->stdout, 'WP-CLI version:' ) ) {

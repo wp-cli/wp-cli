@@ -1269,3 +1269,40 @@ function past_tense_verb( $verb ) {
 	}
 	return $verb . 'ed';
 }
+
+/**
+ * Get the path to the PHP binary used when executing WP-CLI.
+ *
+ * Environment values permit specific binaries to be indicated.
+ *
+ * @access public
+ * @category System
+ *
+ * @return string
+ */
+function get_php_binary() {
+	if ( $wp_cli_php_used = getenv( 'WP_CLI_PHP_USED' ) ) {
+		return $wp_cli_php_used;
+	}
+
+	if ( $wp_cli_php = getenv( 'WP_CLI_PHP' ) ) {
+		return $wp_cli_php;
+	}
+
+	// Available since PHP 5.4.
+	if ( defined( 'PHP_BINARY' ) ) {
+		return PHP_BINARY;
+	}
+
+	// @codingStandardsIgnoreLine
+	if ( @is_executable( PHP_BINDIR . '/php' ) ) {
+		return PHP_BINDIR . '/php';
+	}
+
+	// @codingStandardsIgnoreLine
+	if ( is_windows() && @is_executable( PHP_BINDIR . '/php.exe' ) ) {
+		return PHP_BINDIR . '/php.exe';
+	}
+
+	return 'php';
+}
