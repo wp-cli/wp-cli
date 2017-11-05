@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "0dc5e25ccc983dbe1ac137a5638b8654",
+    "content-hash": "ba21344ea88ce92790496ade5e374e58",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1631,16 +1631,16 @@
         },
         {
             "name": "wp-cli/db-command",
-            "version": "v1.2.4",
+            "version": "dev-15-after-wp-config-load",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/db-command.git",
-                "reference": "1379a28df5e3da3827d40aa6a208f7abcd63805e"
+                "reference": "af36459713b47e8f9d2f7559d3c11b71231019c2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/db-command/zipball/1379a28df5e3da3827d40aa6a208f7abcd63805e",
-                "reference": "1379a28df5e3da3827d40aa6a208f7abcd63805e",
+                "url": "https://api.github.com/repos/wp-cli/db-command/zipball/af36459713b47e8f9d2f7559d3c11b71231019c2",
+                "reference": "af36459713b47e8f9d2f7559d3c11b71231019c2",
                 "shasum": ""
             },
             "require": {
@@ -1693,7 +1693,7 @@
             ],
             "description": "Perform basic database operations using credentials stored in wp-config.php.",
             "homepage": "https://github.com/wp-cli/db-command",
-            "time": "2017-10-13T19:18:06+00:00"
+            "time": "2017-11-05 13:54:12"
         },
         {
             "name": "wp-cli/entity-command",
@@ -3592,6 +3592,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "wp-cli/db-command": 20,
         "roave/security-advisories": 20
     },
     "prefer-stable": true,
