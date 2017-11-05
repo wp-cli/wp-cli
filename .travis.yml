@@ -31,7 +31,12 @@ before_script:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - ./ci/prepare.sh
 
-script: ./ci/test.sh
+jobs:
+  include:
+    - stage: sniff
+      script: ./ci/sniff.sh
+    # default stage 'test'
+    - script: ./ci/test.sh
 
 after_success: ./ci/deploy.sh
 
