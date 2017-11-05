@@ -19,24 +19,37 @@ jobs:
       env: BUILD=sniff
     - stage: test
       script: ./ci/test.sh
-      include:
-        - php: 7.2
-          env: WP_VERSION=nightly
-        - php: 7.1
-          env: WP_VERSION=latest
-        - php: 7.0
-          env: WP_VERSION=latest
-        - php: 5.6
-          env: WP_VERSION=trunk
-        - php: 5.6
-          env: WP_VERSION=latest
-        - php: 5.6
-          env: WP_VERSION=latest BUILD=git WP_CLI_BIN_DIR=''
-        - php: 5.6
-          env: WP_VERSION=3.7.11
-        - php: 5.3
-          dist: precise
-          env: WP_VERSION=3.7.11
+      php: 7.2
+      env: WP_VERSION=nightly
+    - stage: test
+      script: ./ci/test.sh
+      php: 7.1
+      env: WP_VERSION=latest
+    - stage: test
+      script: ./ci/test.sh
+      php: 7.0
+      env: WP_VERSION=latest
+    - stage: test
+      script: ./ci/test.sh
+      php: 5.6
+      env: WP_VERSION=latest
+    - stage: test
+      script: ./ci/test.sh
+      php: 5.6
+      env: WP_VERSION=trunk
+    - stage: test
+      script: ./ci/test.sh
+      php: 5.6
+      env: WP_VERSION=latest BUILD=git WP_CLI_BIN_DIR=''
+    - stage: test
+      script: ./ci/test.sh
+      php: 5.3
+      env: WP_VERSION=3.7.11
+    - stage: test
+      script: ./ci/test.sh
+      php: 5.3
+      dist: precise
+      env: WP_VERSION=3.7.11
     - stage: deploy
       if: branch = master
       script: ./ci/deploy.sh
