@@ -1003,11 +1003,6 @@ class Runner {
 			);
 		}
 
-		if ( $this->cmd_starts_with( array( 'db' ) ) && ! $this->cmd_starts_with( array( 'db', 'tables' ) ) ) {
-			eval( $this->get_wp_config_code() );
-			$this->_run_command_and_exit();
-		}
-
 		if ( $this->cmd_starts_with( array( 'core', 'is-installed' ) )
 			|| $this->cmd_starts_with( array( 'core', 'update-db' ) ) ) {
 			define( 'WP_INSTALLING', true );
@@ -1095,6 +1090,7 @@ class Runner {
 
 		$this->maybe_update_url_from_domain_constant();
 		WP_CLI::do_hook( 'after_wp_config_load' );
+		$this->do_early_invoke( 'after_wp_config_load' );
 
 		// Prevent error notice from wp_guess_url() when core isn't installed
 		if ( $this->cmd_starts_with( array( 'core', 'is-installed' ) )
