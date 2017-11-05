@@ -16,6 +16,7 @@ jobs:
   include:
     - stage: sniff
       script: ./ci/sniff.sh
+      env: BUILD=sniff
     - stage: test
       script: ./ci/test.sh
       include:
