@@ -35,8 +35,8 @@ jobs:
   include:
     - stage: sniff
       script: ./ci/sniff.sh
-    # default stage 'test'
-    - script: ./ci/test.sh
+    - stage: test
+      script: ./ci/test.sh
 
 after_success: ./ci/deploy.sh
 
