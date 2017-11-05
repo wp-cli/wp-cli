@@ -37,8 +37,9 @@ jobs:
       script: ./ci/sniff.sh
     - stage: test
       script: ./ci/test.sh
-
-after_success: ./ci/deploy.sh
+    - stage: deploy
+      if: branch = master
+      script: ./ci/deploy.sh
 
 cache:
   directories:
