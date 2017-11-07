@@ -265,6 +265,48 @@ Feature: Load WP-CLI
       https://example.com/
       """
 
+  Scenario: Show error message when site isn't found and there aren't additional prefixes.
+    Given a WP install
+    And I run `wp db reset --yes`
+
+    When I try `wp option get home`
+    Then STDERR should be:
+      """
+      Error: The site you have requested is not installed.
+      Run `wp core install` to create database tables.
+      """
+    And STDOUT should be empty
+
+  Scenario: Show potential table prefixes when site isn't found, single site.
+    Given a WP install
+    And "$table_prefix = 'wp_';" replaced with "$table_prefix = 'cli_';" in the wp-config.php file
+
+    When I try `wp option get home`
+    Then STDERR should be:
+      """
+      Error: The site you have requested is not installed.
+      Your table prefix is 'cli_'. Found install with table prefix: wp_.
+      Or, run `wp core install` to create database tables.
+      """
+    And STDOUT should be empty
+
+    When I run `wp core install --url=example.com --title=example --admin_user=wpcli --admin_email=wpcli@example.com`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    Given "$table_prefix = 'cli_';" replaced with "$table_prefix = 'test_';" in the wp-config.php file
+
+    When I try `wp option get home`
+    Then STDERR should be:
+      """
+      Error: The site you have requested is not installed.
+      Your table prefix is 'test_'. Found installs with table prefix: cli_, wp_.
+      Or, run `wp core install` to create database tables.
+      """
+    And STDOUT should be empty
+
   @require-wp-3.9
   Scenario: Display a more helpful error message when site can't be found
     Given a WP multisite install
