@@ -24,7 +24,7 @@ then
 fi
 
 # the Behat test suite will pick up the executable found in $WP_CLI_BIN_DIR
-if [[ $BUILD == 'git' ]]
+if [[ $BUILD == 'git' || $BUILD == 'sniff' ]]
 then
 	echo $CLI_VERSION > VERSION
 else
