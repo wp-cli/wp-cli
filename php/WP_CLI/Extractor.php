@@ -39,7 +39,7 @@ class Extractor {
 	 */
 	private static function extract_zip( $zipfile, $dest ) {
 		if ( ! class_exists( 'ZipArchive' ) ) {
-			throw new Exception( 'Extracting a zip file requires ZipArchive.' );
+			throw new \Exception( 'Extracting a zip file requires ZipArchive.' );
 		}
 		$zip = new ZipArchive();
 		$res = $zip->open( $zipfile );
@@ -59,7 +59,7 @@ class Extractor {
 			self::copy_overwrite_files( $tempdir, $dest );
 			self::rmdir( dirname( $tempdir ) );
 		} else {
-			throw Exception( $res );
+			throw new \Exception( $res );
 		}
 	}
 
@@ -131,7 +131,7 @@ class Extractor {
 		}
 
 		if ( $error ) {
-			throw new Exception( 'There was an error overwriting existing files.' );
+			throw new \Exception( 'There was an error overwriting existing files.' );
 		}
 	}
 
