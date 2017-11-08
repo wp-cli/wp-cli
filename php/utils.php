@@ -833,6 +833,18 @@ function parse_ssh_url( $url, $component = -1 ) {
 			$bits[ $key ] = $matches[ $i ];
 		}
 	}
+
+	// Find the hostname from `vagrant ssh-config` automatically.
+	if ( preg_match( '/^vagrant:?/', $url ) ) {
+		if ( 'vagrant' === $bits['host'] && empty( $bits['scheme'] ) ) {
+			$ssh_config = shell_exec( 'vagrant ssh-config 2>/dev/null' );
+			if ( preg_match( '/Host\s(.+)/', $ssh_config, $matches ) ) {
+				$bits['scheme'] = 'vagrant';
+				$bits['host']   = $matches[1];
+			}
+		}
+	}
+
 	switch ( $component ) {
 		case PHP_URL_SCHEME:
 			return isset( $bits['scheme'] ) ? $bits['scheme'] : null;
@@ -1268,4 +1280,41 @@ function past_tense_verb( $verb ) {
 		$verb .= $last;
 	}
 	return $verb . 'ed';
+}
+
+/**
+ * Get the path to the PHP binary used when executing WP-CLI.
+ *
+ * Environment values permit specific binaries to be indicated.
+ *
+ * @access public
+ * @category System
+ *
+ * @return string
+ */
+function get_php_binary() {
+	if ( $wp_cli_php_used = getenv( 'WP_CLI_PHP_USED' ) ) {
+		return $wp_cli_php_used;
+	}
+
+	if ( $wp_cli_php = getenv( 'WP_CLI_PHP' ) ) {
+		return $wp_cli_php;
+	}
+
+	// Available since PHP 5.4.
+	if ( defined( 'PHP_BINARY' ) ) {
+		return PHP_BINARY;
+	}
+
+	// @codingStandardsIgnoreLine
+	if ( @is_executable( PHP_BINDIR . '/php' ) ) {
+		return PHP_BINDIR . '/php';
+	}
+
+	// @codingStandardsIgnoreLine
+	if ( is_windows() && @is_executable( PHP_BINDIR . '/php.exe' ) ) {
+		return PHP_BINDIR . '/php.exe';
+	}
+
+	return 'php';
 }

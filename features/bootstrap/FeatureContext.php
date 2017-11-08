@@ -131,6 +131,12 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( $php_args = getenv( 'WP_CLI_PHP_ARGS' ) ) {
 			$env['WP_CLI_PHP_ARGS'] = $php_args;
 		}
+		if ( $php_used = getenv( 'WP_CLI_PHP_USED' ) ) {
+			$env['WP_CLI_PHP_USED'] = $php_used;
+		}
+		if ( $php = getenv( 'WP_CLI_PHP' ) ) {
+			$env['WP_CLI_PHP'] = $php;
+		}
 		if ( $travis_build_dir = getenv( 'TRAVIS_BUILD_DIR' ) ) {
 			$env['TRAVIS_BUILD_DIR'] = $travis_build_dir;
 		}
@@ -686,26 +692,13 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->composer_command( 'require wp-cli/wp-cli:dev-master --optimize-autoloader --no-interaction' );
 	}
 
-	public function get_php_binary() {
-		if ( getenv( 'WP_CLI_PHP_USED' ) )
-			return getenv( 'WP_CLI_PHP_USED' );
-
-		if ( getenv( 'WP_CLI_PHP' ) )
-			return getenv( 'WP_CLI_PHP' );
-
-		if ( defined( 'PHP_BINARY' ) )
-			return PHP_BINARY;
-
-		return 'php';
-	}
-
 	public function start_php_server( $subdir = '' ) {
 		$dir = $this->variables['RUN_DIR'] . '/';
 		if ( $subdir ) {
 			$dir .= trim( $subdir, '/' ) . '/';
 		}
 		$cmd = Utils\esc_cmd( '%s -S %s -t %s -c %s %s',
-			$this->get_php_binary(),
+			Utils\get_php_binary(),
 			'localhost:8080',
 			$dir,
 			get_cfg_var( 'cfg_file_path' ),

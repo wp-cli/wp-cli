@@ -21,9 +21,9 @@ cd $WP_CLI_DIR
 # Reset WP-CLI directory to baseline
 git checkout -f master
 git pull origin master
-composer install --no-dev
+composer install
 # Run composer update and capture to untracked log file
-composer update --no-progress --no-dev --no-interaction |& tee vendor/update.log
+composer update --no-progress --no-interaction |& tee vendor/update.log
 UPDATE=$(cat vendor/update.log | col -b)
 
 # We only care to proceed when there are changes
