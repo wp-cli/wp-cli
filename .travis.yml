@@ -51,7 +51,7 @@ jobs:
       dist: precise
       env: WP_VERSION=3.7.11
     - stage: deploy
-      if: branch = master
+      env: DEPLOY_BRANCH=master
       script: ./ci/deploy.sh
 
 cache:
