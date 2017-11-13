@@ -1881,16 +1881,16 @@
         },
         {
             "name": "wp-cli/extension-command",
-            "version": "v1.1.5",
+            "version": "v1.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/extension-command.git",
-                "reference": "994f36f5c4f6fb9bc843b0d8d3c68f5e6343873b"
+                "reference": "64b536e8435fcfdbd4d9351028951b6dcd146b63"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/994f36f5c4f6fb9bc843b0d8d3c68f5e6343873b",
-                "reference": "994f36f5c4f6fb9bc843b0d8d3c68f5e6343873b",
+                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/64b536e8435fcfdbd4d9351028951b6dcd146b63",
+                "reference": "64b536e8435fcfdbd4d9351028951b6dcd146b63",
                 "shasum": ""
             },
             "require-dev": {
@@ -2447,16 +2447,16 @@
         },
         {
             "name": "wp-cli/search-replace-command",
-            "version": "v1.1.1",
+            "version": "v1.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/search-replace-command.git",
-                "reference": "a823ffaf0faf0e72f8bba576d60530f71eacd9b1"
+                "reference": "f593506b1bff3ee343bd7612555c61622cb3306a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/search-replace-command/zipball/a823ffaf0faf0e72f8bba576d60530f71eacd9b1",
-                "reference": "a823ffaf0faf0e72f8bba576d60530f71eacd9b1",
+                "url": "https://api.github.com/repos/wp-cli/search-replace-command/zipball/f593506b1bff3ee343bd7612555c61622cb3306a",
+                "reference": "f593506b1bff3ee343bd7612555c61622cb3306a",
                 "shasum": ""
             },
             "require": {
