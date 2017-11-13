@@ -7,8 +7,13 @@ if [[ "false" != "$TRAVIS_PULL_REQUEST" ]]; then
 	exit
 fi
 
+if [ -z $DEPLOY_BRANCH ]; then
+	echo "DEPLOY_BRANCH must be set"
+	exit
+fi
+
 if [[ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]] && [[ ! "$TRAVIS_BRANCH" == "release-"* ]]; then
-	echo "Not on the '$DEPLOY_BRANCH' branch."
+	echo "'$TRAVIS_BRANCH' is not a deploy branch."
 	exit
 fi
 
