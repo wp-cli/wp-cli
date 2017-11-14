@@ -290,11 +290,13 @@ Feature: Load WP-CLI
       """
     And STDOUT should be empty
 
-    When I run `wp core install --url=example.com --title=example --admin_user=wpcli --admin_email=wpcli@example.com`
+    # Use try to cater for wp-db errors in old WPs.
+    When I try `wp core install --url=example.com --title=example --admin_user=wpcli --admin_email=wpcli@example.com`
     Then STDOUT should contain:
       """
       Success:
       """
+    And the return code should be 0
 
     Given "$table_prefix = 'cli_';" replaced with "$table_prefix = 'test_';" in the wp-config.php file
 
