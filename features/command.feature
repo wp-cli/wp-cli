@@ -647,6 +647,36 @@ Feature: WP-CLI Commands
       Success: dinner
       """
 
+  Scenario: Register a longdesc for a given command
+    Given an empty directory
+    And a custom-cmd.php file:
+      """
+      <?php
+      function foo() {
+        WP_CLI::success( 'Command run.' );
+      }
+      WP_CLI::add_command( 'foo', 'foo', array(
+        'shortdesc'   => 'My awesome function command',
+        'when'        => 'before_wp_load',
+        'longdesc'    => '## EXAMPLES ' . PHP_EOL . PHP_EOL . '  # Run the custom foo command',
+      ) );
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - custom-cmd.php
+      """
+
+    When I run `wp help foo`
+    Then STDOUT should contain:
+      """
+      EXAMPLES
+      """
+    And STDOUT should contain:
+      """
+      # Run the custom foo command
+      """
+
   Scenario: Register a command with default and accepted arguments.
     Given an empty directory
     And a test-cmd.php file:
