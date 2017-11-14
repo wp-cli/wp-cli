@@ -580,6 +580,8 @@ Feature: WP-CLI Commands
       """
       usage: wp foo <message> --apple=<apple> [--meal=<meal>]
       """
+    And STDERR should be empty
+    And the return code should be 1
 
     When I run `wp help foo`
     Then STDOUT should contain:
@@ -969,7 +971,7 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'test-command-2', function () {} );
       """
 
-    When I run `wp --require=abort-add-command.php`
+    When I try `wp --require=abort-add-command.php`
     Then STDOUT should contain:
       """
       test-command-1
@@ -978,6 +980,11 @@ Feature: WP-CLI Commands
       """
       test-command-2
       """
+    And STDERR should be:
+      """
+      Warning: Aborting the addition of the command 'test-command-2' with reason: Testing hooks..
+      """
+    And the return code should be 0
 
   Scenario: Adding a command can depend on a previous command having been added before
     Given an empty directory
@@ -1323,7 +1330,7 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'my-namespaced-command', 'My_Command_Namespace' );
       """
 
-    When I try `wp help --require=command-namespace.php`
+    When I run `wp help --require=command-namespace.php`
     Then STDOUT should contain:
       """
       my-namespaced-command
@@ -1352,7 +1359,7 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'my-namespaced-command', 'My_Command_Namespace' );
       """
 
-    When I try `wp help --require=command-namespace.php`
+    When I run `wp help --require=command-namespace.php`
     Then STDOUT should contain:
       """
       my-namespaced-command
@@ -1381,7 +1388,7 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'my-namespaced-command', 'My_Namespaced_Command' );
       """
 
-    When I try `wp help --require=command-namespace.php`
+    When I run `wp help --require=command-namespace.php`
     Then STDOUT should contain:
       """
       my-namespaced-command
@@ -1404,7 +1411,7 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'my-namespaced-command', 'My_Command_Namespace' );
       """
 
-    When I try `wp --require=command-namespace.php my-namespaced-command`
+    When I run `wp --require=command-namespace.php my-namespaced-command`
     Then STDOUT should contain:
       """
       The namespace my-namespaced-command does not contain any usable commands in the current context.
