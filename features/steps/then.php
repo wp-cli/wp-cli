@@ -3,9 +3,9 @@
 use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
 
-$steps->Then( '/^the return code should be (\d+)$/',
-	function ( $world, $return_code ) {
-		if ( $return_code != $world->result->return_code ) {
+$steps->Then( '/^the return code should( not)? be (\d+)$/',
+	function ( $world, $not, $return_code ) {
+		if ( ( ! $not && $return_code != $world->result->return_code ) || ( $not && $return_code == $world->result->return_code ) ) {
 			throw new RuntimeException( $world->result );
 		}
 	}

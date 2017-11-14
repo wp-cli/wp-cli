@@ -112,6 +112,10 @@ class Process {
 		if ( $r->return_code || ! empty( $r->STDERR ) ) {
 			throw new \RuntimeException( $r );
 		}
+		// But do it right if testing.
+		if ( ! empty( $this->env['BEHAT_RUN'] ) && ! empty( $r->stderr ) ) {
+			throw new \RuntimeException( $r );
+		}
 
 		return $r;
 	}
