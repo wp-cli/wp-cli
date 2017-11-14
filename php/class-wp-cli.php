@@ -397,7 +397,8 @@ class WP_CLI {
 	 *
 	 *    @type callable $before_invoke Callback to execute before invoking the command.
 	 *    @type callable $after_invoke  Callback to execute after invoking the command.
-	 *    @type string   $short_desc    Short description (80 char or less) for the command.
+	 *    @type string   $shortdesc     Short description (80 char or less) for the command.
+	 *    @type string   $longdesc      Description of abitrary length for examples, etc.
 	 *    @type string   $synopsis      The synopsis for the command (string or array).
 	 *    @type string   $when          Execute callback on a named WP-CLI hook (e.g. before_wp_load).
 	 *    @type bool     $is_deferred   Whether the command addition had already been deferred.
@@ -494,6 +495,10 @@ class WP_CLI {
 
 		if ( isset( $args['shortdesc'] ) ) {
 			$leaf_command->set_shortdesc( $args['shortdesc'] );
+		}
+
+		if ( isset( $args['longdesc'] ) ) {
+			$leaf_command->set_longdesc( $args['longdesc'] );
 		}
 
 		if ( isset( $args['synopsis'] ) ) {
