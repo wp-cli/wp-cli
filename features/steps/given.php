@@ -97,11 +97,7 @@ $steps->Given( '/^a WP multisite (subdirectory|subdomain)?\s?install$/',
 	function ( $world, $type = 'subdirectory' ) {
 		$world->install_wp();
 		$subdomains = ! empty( $type ) && 'subdomain' === $type ? 1 : 0;
-		// Ignore "Warning: Wildcard DNS may not be configured correctly." so as not to pollute stderr.
-		$r = $world->proc( 'wp core install-network', array( 'title' => 'WP CLI Network', 'subdomains' => $subdomains ) )->run();
-		if ( $r->return_code || ( ! empty( $r->stderr ) && 'Warning: Wildcard DNS may not be configured correctly.' !== trim( $r->stderr ) ) ) {
-			throw new \RuntimeException( $r );
-		}
+		$world->proc( 'wp core install-network', array( 'title' => 'WP CLI Network', 'subdomains' => $subdomains ) )->run_check();
 	}
 );
 

@@ -161,8 +161,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		if ( $wp_version ) {
 			$cmd .= Utils\esc_cmd( ' --version=%s', $wp_version );
 		}
-		// Redirect any warnings (eg md5 hash checks not available) so as not to pollute stderr.
-		$cmd .= ' 2>&1';
 		Process::create( $cmd, null, self::get_process_env_variables() )->run_check();
 	}
 
@@ -715,10 +713,6 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	private function composer_command($cmd) {
 		if ( !isset( $this->variables['COMPOSER_PATH'] ) ) {
 			$this->variables['COMPOSER_PATH'] = exec('which composer');
-		}
-		// Redirect composer messages from stderr to stdout.
-		if ( false === strpos( $cmd, '>' ) ) {
-			$cmd .= ' 2>&1';
 		}
 		$this->proc( $this->variables['COMPOSER_PATH'] . ' ' . $cmd )->run_check();
 	}
