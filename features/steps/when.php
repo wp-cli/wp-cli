@@ -6,7 +6,7 @@ use Behat\Gherkin\Node\PyStringNode,
 
 function invoke_proc( $proc, $mode ) {
 	$map = array(
-		'run' => 'run_check',
+		'run' => 'run_check_stderr',
 		'try' => 'run'
 	);
 	$method = $map[ $mode ];

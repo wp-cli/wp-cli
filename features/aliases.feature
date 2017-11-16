@@ -349,21 +349,21 @@ Feature: Create shortcuts to specific WordPress installs
       """
     And the return code should be 1
 
-    When I run `wp @foo core is-installed --allow-root --debug`
+    When I try `wp @foo core is-installed --allow-root --debug`
     Then the return code should be 0
     And STDERR should contain:
       """
       @foo core is-installed --allow-root --debug
       """
 
-    When I run `cd bar; wp @bar core is-installed --allow-root --debug`
+    When I try `cd bar; wp @bar core is-installed --allow-root --debug`
     Then the return code should be 0
     And STDERR should contain:
       """
       @bar core is-installed --allow-root --debug
       """
 
-    When I run `wp @foobar core is-installed --allow-root --debug`
+    When I try `wp @foobar core is-installed --allow-root --debug`
     Then the return code should be 0
     And STDERR should contain:
       """

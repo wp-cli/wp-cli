@@ -50,12 +50,8 @@ Feature: Get help about WP-CLI commands
   @require-wp-4.3
   Scenario: Help for internal commands with WP
     Given a WP install
-    And a stderr-error-log.php file:
-      """
-      <?php define( 'WP_DEBUG', true ); define( 'WP_DEBUG_DISPLAY', null ); define( 'WP_DEBUG_LOG', false ); ini_set( "error_log", '' ); ini_set( 'display_errors', 'STDERR' );
-      """
 
-    When I run `wp --require=stderr-error-log.php help`
+    When I run `wp help`
     Then STDOUT should contain:
       """
         Run 'wp help <command>' to get more information on a specific command.
@@ -63,28 +59,28 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
-    When I run `wp --require=stderr-error-log.php help core`
+    When I run `wp help core`
     Then STDOUT should contain:
       """
         wp core
       """
     And STDERR should be empty
 
-    When I run `wp --require=stderr-error-log.php help core download`
+    When I run `wp help core download`
     Then STDOUT should contain:
       """
         wp core download
       """
     And STDERR should be empty
 
-    When I run `wp --require=stderr-error-log.php help help`
+    When I run `wp help help`
     Then STDOUT should contain:
       """
         wp help
       """
     And STDERR should be empty
 
-    When I run `wp --require=stderr-error-log.php help help`
+    When I run `wp help help`
     Then STDOUT should contain:
       """
       GLOBAL PARAMETERS
@@ -484,9 +480,9 @@ Feature: Get help about WP-CLI commands
     Given a wp-content/plugins/test-cli/command.php file:
       """
       <?php
-      // Plugin Name: Test CLI Extra Config Command
+      // Plugin Name: Test CLI Extra Command
 
-      class Test_CLI_Extra_Config_Command extends WP_CLI_Command {
+      class Test_CLI_Extra_Command extends WP_CLI_Command {
 
         /**
          * A dummy command.
@@ -497,66 +493,27 @@ Feature: Get help about WP-CLI commands
 
       }
 
-      WP_CLI::add_command( 'config test-extra', 'Test_CLI_Extra_Config_Command' );
+      WP_CLI::add_command( 'config test-extra-config', 'Test_CLI_Extra_Command' );
+      WP_CLI::add_command( 'core test-extra-core', 'Test_CLI_Extra_Command' );
+      WP_CLI::add_command( 'db test-extra-db', 'Test_CLI_Extra_Command' );
       """
-    And I run `wp plugin activate test-cli`
 
     When I run `wp help config`
     Then STDOUT should contain:
       """
-      test-extra
+      test-extra-config
       """
-
-    Given a wp-content/plugins/test-cli/command.php file:
-      """
-      <?php
-      // Plugin Name: Test CLI Extra Core Command
-
-      class Test_CLI_Extra_Core_Command extends WP_CLI_Command {
-
-        /**
-         * A dummy command.
-         *
-         * @subcommand my-command
-         */
-        function my_command() {}
-
-      }
-
-      WP_CLI::add_command( 'core test-extra', 'Test_CLI_Extra_Core_Command' );
-      """
-    And I run `wp plugin activate test-cli`
 
     When I run `wp help core`
     Then STDOUT should contain:
       """
-      test-extra
+      test-extra-core
       """
-
-    Given a wp-content/plugins/test-cli/command.php file:
-      """
-      <?php
-      // Plugin Name: Test CLI Extra DB Command
-
-      class Test_CLI_Extra_DB_Command extends WP_CLI_Command {
-
-        /**
-         * A dummy command.
-         *
-         * @subcommand my-command
-         */
-        function my_command() {}
-
-      }
-
-      WP_CLI::add_command( 'db test-extra', 'Test_CLI_Extra_DB_Command' );
-      """
-    And I run `wp plugin activate test-cli`
 
     When I run `wp help db`
     Then STDOUT should contain:
       """
-      test-extra
+      test-extra-db
       """
 
   Scenario: Help renders global parameters correctly

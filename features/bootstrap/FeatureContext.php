@@ -532,7 +532,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$status = proc_get_status( $proc );
 
 		if ( !$status['running'] ) {
-			throw new RuntimeException( stream_get_contents( $pipes[2] ) );
+			$stderr = is_resource( $pipes[2] ) ? ( ': ' . stream_get_contents( $pipes[2] ) ) : '';
+			throw new RuntimeException( sprintf( "Failed to start background process '%s'%s.", $cmd, $stderr ) );
 		} else {
 			$this->running_procs[] = $proc;
 		}
@@ -623,7 +624,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			'title' => 'WP CLI Site',
 			'admin_user' => 'admin',
 			'admin_email' => 'admin@example.com',
-			'admin_password' => 'password1'
+			'admin_password' => 'password1',
+			'skip-email' => true,
 		);
 
 		$install_cache_path = '';
@@ -664,7 +666,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 			'title' => 'WP CLI Site with both WordPress and wp-cli as Composer dependencies',
 			'admin_user' => 'admin',
 			'admin_email' => 'admin@example.com',
-			'admin_password' => 'password1'
+			'admin_password' => 'password1',
+			'skip-email' => true,
 		);
 
 		$this->proc( 'wp core install', $install_args )->run_check();
