@@ -115,4 +115,20 @@ class Process {
 
 		return $r;
 	}
+
+	/**
+	 * Run the command, but throw an Exception on error.
+	 * Same as `run_check()` above, but checks the correct stderr.
+	 *
+	 * @return ProcessRun
+	 */
+	public function run_check_stderr() {
+		$r = $this->run();
+
+		if ( $r->return_code || ! empty( $r->stderr ) ) {
+			throw new \RuntimeException( $r );
+		}
+
+		return $r;
+	}
 }

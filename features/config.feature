@@ -237,7 +237,7 @@ Feature: Have a config file
   Scenario: Load WordPress with `--debug`
     Given a WP install
 
-    When I run `wp option get home --debug`
+    When I try `wp option get home --debug`
     Then STDERR should contain:
       """
       No readable global config found
@@ -262,8 +262,9 @@ Feature: Have a config file
       """
       Running command: option get
       """
+    And the return code should be 0
 
-    When I run `wp option get home --debug=bootstrap`
+    When I try `wp option get home --debug=bootstrap`
     Then STDERR should contain:
       """
       No readable global config found
@@ -288,8 +289,9 @@ Feature: Have a config file
       """
       Running command: option get
       """
+    And the return code should be 0
 
-    When I run `wp option get home --debug=foo`
+    When I try `wp option get home --debug=foo`
     Then STDERR should not contain:
       """
       No readable global config found
@@ -314,6 +316,7 @@ Feature: Have a config file
       """
       Running command: option get
       """
+    And the return code should be 0
 
   Scenario: Missing required files should not fatal WP-CLI
     Given an empty directory

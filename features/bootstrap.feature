@@ -13,7 +13,8 @@ Feature: Bootstrap WP-CLI
           }
       }
       """
-    And I run `composer install --no-interaction`
+    # Note: Composer outputs messages to stderr.
+    And I run `composer install --no-interaction 2>&1`
 
     When I run `vendor/bin/wp cli version`
     Then STDOUT should contain:
@@ -82,7 +83,7 @@ Feature: Bootstrap WP-CLI
         }
      }
       """
-    And I run `composer install --no-interaction`
+    And I run `composer install --no-interaction 2>&1`
 
     When I run `vendor/bin/wp cli version`
     Then STDOUT should contain:
@@ -130,7 +131,7 @@ Feature: Bootstrap WP-CLI
         }
       }
       """
-    And I run `composer install --working-dir={RUN_DIR}/cli-override-command --no-interaction`
+    And I run `composer install --working-dir={RUN_DIR}/cli-override-command --no-interaction 2>&1`
 
     When I run `wp cli version`
       Then STDOUT should contain:
@@ -185,7 +186,7 @@ Feature: Bootstrap WP-CLI
         }
       }
       """
-    And I run `composer install --working-dir={RUN_DIR}/cli-override-command --no-interaction`
+    And I run `composer install --working-dir={RUN_DIR}/cli-override-command --no-interaction 2>&1`
 
     When I run `{PHAR_PATH} cli version`
       Then STDOUT should contain:
@@ -249,11 +250,13 @@ Feature: Bootstrap WP-CLI
       Success:
       """
 
-    When I run `wp core install --url=example.com --title=example --admin_user=example --admin_email=example@example.org`
+    # Use try to cater for wp-db errors in old WPs.
+    When I try `wp core install --url=example.com --title=example --admin_user=example --admin_email=example@example.org`
     Then STDOUT should contain:
       """
       Success:
       """
+    And the return code should be 0
 
     When I run `wp eval 'echo constant( "WP_CLI_TEST_CONSTANT" );'`
     Then STDOUT should be:

@@ -46,13 +46,18 @@ Feature: Global flags
   Scenario: Debug run
     Given a WP install
 
-    When I run `wp eval 'echo CONST_WITHOUT_QUOTES;'`
+    When I try `wp eval 'echo CONST_WITHOUT_QUOTES;'`
     Then STDOUT should be:
       """
       CONST_WITHOUT_QUOTES
       """
+    And STDERR should contain:
+      """
+      Use of undefined constant CONST_WITHOUT_QUOTES
+      """
+    And the return code should be 0
 
-    When I try `wp eval 'ini_set( "error_log", null ); echo CONST_WITHOUT_QUOTES;' --debug`
+    When I try `wp eval 'echo CONST_WITHOUT_QUOTES;' --debug`
     Then the return code should be 0
     And STDOUT should be:
       """
@@ -111,6 +116,8 @@ Feature: Global flags
       """
       log: called 'error' method
       """
+    And STDERR should be empty
+    And the return code should be 1
 
   Scenario: Using --require
     Given an empty directory
