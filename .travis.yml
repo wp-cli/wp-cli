@@ -20,7 +20,7 @@ jobs:
     - stage: test
       script: ./ci/test.sh
       php: 7.2
-      env: WP_VERSION=nightly
+      env: WP_VERSION=latest
     - stage: test
       script: ./ci/test.sh
       php: 7.1
