@@ -1,6 +1,5 @@
 Feature: `wp cli` tasks
 
-
   Scenario: Ability to detect a WP-CLI registered command
     Given a WP install
 
