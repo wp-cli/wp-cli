@@ -516,6 +516,9 @@ class CLI_Command extends WP_CLI_Command {
 	 *     eval-file
 	 */
 	public function completions( $_, $assoc_args ) {
+		if ( Utils\locate_wp_config() ) {
+			WP_CLI::get_runner()->load_wordpress();
+		}
 		$line = substr( $assoc_args['line'], 0, $assoc_args['point'] );
 		$compl = new \WP_CLI\Completions( $line );
 		$compl->render();
@@ -598,11 +601,11 @@ class CLI_Command extends WP_CLI_Command {
 	 *     1
 	 *
 	 * @subcommand has-command
-	 *
-	 * @when after_wp_load
 	 */
 	public function has_command( $_, $assoc_args ) {
-
+		if ( Utils\locate_wp_config() ) {
+			WP_CLI::get_runner()->load_wordpress();
+		}
 		// If command is input as a string, then explode it into array.
 		$command = explode( ' ', implode( ' ', $_ ) );
 
