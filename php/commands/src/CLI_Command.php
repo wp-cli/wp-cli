@@ -516,9 +516,6 @@ class CLI_Command extends WP_CLI_Command {
 	 *     eval-file
 	 */
 	public function completions( $_, $assoc_args ) {
-		if ( Utils\locate_wp_config() ) {
-			WP_CLI::get_runner()->load_wordpress();
-		}
 		$line = substr( $assoc_args['line'], 0, $assoc_args['point'] );
 		$compl = new \WP_CLI\Completions( $line );
 		$compl->render();
