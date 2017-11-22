@@ -284,3 +284,46 @@ Feature: Bootstrap WP-CLI
       Success:
       """
     And the return code should be 0
+
+  Scenario: Run search-replace on ms_site_not_found
+    Given a WP multisite install
+    And a wp-cli.yml file:
+      """
+      url: invalid.com
+      """
+
+    When I try `wp search-replace foo bar`
+    Then STDERR should contain:
+      """
+      Error: Site 'invalid.com' not found.
+      """
+    And the return code should be 1
+
+    When I run `wp search-replace foo bar --network`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0
+
+    When I run `wp search-replace foo bar --all-tables`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0
+
+    When I run `wp search-replace foo bar --all-tables-with-prefix`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0
+
+    # Specific table
+    When I run `wp search-replace foo bar wp_posts`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0
