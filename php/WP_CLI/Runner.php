@@ -1304,7 +1304,22 @@ class Runner {
 
 		// In a multisite install, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {
+			$run_on_site_not_found = false;
 			if ( $this->cmd_starts_with( array( 'cache', 'flush' ) ) ) {
+				$run_on_site_not_found = true;
+			}
+			if ( $this->cmd_starts_with( array( 'search-replace' ) ) ) {
+				// Table-specified
+				// Bits: search-replace <search> <replace> [<table>...]
+				// Or not against a specific blog
+				if ( count( $this->arguments ) > 3
+					|| ! empty( $this->assoc_args['network'] )
+					|| ! empty( $this->assoc_args['all-tables'] )
+					|| ! empty( $this->assoc_args['all-tables-with-prefix'] ) ) {
+					$run_on_site_not_found = true;
+				}
+			}
+			if ( $run_on_site_not_found ) {
 				WP_CLI::add_wp_hook(
 					'ms_site_not_found',
 					function() {
