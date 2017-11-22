@@ -263,3 +263,24 @@ Feature: Bootstrap WP-CLI
       """
       foo
       """
+
+  Scenario: Run cache flush on ms_site_not_found
+    Given a WP multisite install
+    And a wp-cli.yml file:
+      """
+      url: invalid.com
+      """
+
+    When I try `wp cache add foo bar`
+    Then STDERR should contain:
+      """
+      Error: Site 'invalid.com' not found.
+      """
+    And the return code should be 1
+
+    When I run `wp cache flush --url=invalid.com`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0

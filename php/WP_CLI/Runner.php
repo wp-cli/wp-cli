@@ -1304,6 +1304,18 @@ class Runner {
 
 		// In a multisite install, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {
+			if ( $this->cmd_starts_with( array( 'cache', 'flush' ) ) ) {
+				WP_CLI::add_wp_hook(
+					'ms_site_not_found',
+					function() {
+						// PHP 5.3 compatible implementation of _run_command_and_exit().
+						$runner = WP_CLI::get_runner();
+						$runner->run_command( $runner->arguments, $runner->assoc_args );
+						exit;
+					},
+					1
+				);
+			}
 			WP_CLI::add_wp_hook(
 				'ms_site_not_found',
 				function( $current_site, $domain, $path ) {
