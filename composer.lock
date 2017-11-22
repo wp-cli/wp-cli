@@ -2621,16 +2621,16 @@
         },
         {
             "name": "wp-cli/super-admin-command",
-            "version": "v1.0.4",
+            "version": "v1.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/super-admin-command.git",
-                "reference": "8ad8446a1b2f931e32af3681ad0ac0816411be4b"
+                "reference": "314a3f7b02a04fb5e842ef15d15b58dd1295a320"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/super-admin-command/zipball/8ad8446a1b2f931e32af3681ad0ac0816411be4b",
-                "reference": "8ad8446a1b2f931e32af3681ad0ac0816411be4b",
+                "url": "https://api.github.com/repos/wp-cli/super-admin-command/zipball/314a3f7b02a04fb5e842ef15d15b58dd1295a320",
+                "reference": "314a3f7b02a04fb5e842ef15d15b58dd1295a320",
                 "shasum": ""
             },
             "require-dev": {
@@ -2670,7 +2670,7 @@
             ],
             "description": "Lists, adds, or removes super admin users on a multisite install.",
             "homepage": "https://github.com/wp-cli/super-admin-command",
-            "time": "2017-11-21T00:37:22+00:00"
+            "time": "2017-11-21T22:11:13+00:00"
         },
         {
             "name": "wp-cli/widget-command",
