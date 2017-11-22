@@ -1319,7 +1319,8 @@ class Runner {
 					$run_on_site_not_found = true;
 				}
 			}
-			if ( $run_on_site_not_found ) {
+			if ( $run_on_site_not_found
+				&& Utils\wp_version_compare( '3.9', '>=' ) ) {
 				WP_CLI::add_wp_hook(
 					'ms_site_not_found',
 					function() {

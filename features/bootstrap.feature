@@ -264,6 +264,7 @@ Feature: Bootstrap WP-CLI
       foo
       """
 
+  @require-wp-3.9
   Scenario: Run cache flush on ms_site_not_found
     Given a WP multisite install
     And a wp-cli.yml file:
@@ -285,6 +286,7 @@ Feature: Bootstrap WP-CLI
       """
     And the return code should be 0
 
+  @require-wp-3.9
   Scenario: Run search-replace on ms_site_not_found
     Given a WP multisite install
     And a wp-cli.yml file:
