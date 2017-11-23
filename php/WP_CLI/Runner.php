@@ -1306,7 +1306,7 @@ class Runner {
 		if ( $this->is_multisite() ) {
 			$run_on_site_not_found = false;
 			if ( $this->cmd_starts_with( array( 'cache', 'flush' ) ) ) {
-				$run_on_site_not_found = true;
+				$run_on_site_not_found = 'cache flush';
 			}
 			if ( $this->cmd_starts_with( array( 'search-replace' ) ) ) {
 				// Table-specified
@@ -1316,14 +1316,18 @@ class Runner {
 					|| ! empty( $this->assoc_args['network'] )
 					|| ! empty( $this->assoc_args['all-tables'] )
 					|| ! empty( $this->assoc_args['all-tables-with-prefix'] ) ) {
-					$run_on_site_not_found = true;
+					$run_on_site_not_found = 'search-replace';
 				}
 			}
 			if ( $run_on_site_not_found
-				&& Utils\wp_version_compare( '3.9', '>=' ) ) {
+				&& Utils\wp_version_compare( '4.0', '>=' ) ) {
 				WP_CLI::add_wp_hook(
 					'ms_site_not_found',
-					function() {
+					function() use ( $run_on_site_not_found ) {
+						// esc_sql() isn't yet loaded, but needed.
+						if ( 'search-replace' === $run_on_site_not_found ) {
+							require_once ABSPATH . WPINC . '/formatting.php';
+						}
 						// PHP 5.3 compatible implementation of _run_command_and_exit().
 						$runner = WP_CLI::get_runner();
 						$runner->run_command( $runner->arguments, $runner->assoc_args );

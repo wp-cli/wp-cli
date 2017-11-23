@@ -286,7 +286,7 @@ Feature: Bootstrap WP-CLI
       """
     And the return code should be 0
 
-  @require-wp-3.9
+  @require-wp-4.0
   Scenario: Run search-replace on ms_site_not_found
     Given a WP multisite install
     And a wp-cli.yml file:
