@@ -301,6 +301,13 @@ Feature: Bootstrap WP-CLI
       """
     And the return code should be 1
 
+    When I run `wp option update test_key '["foo"]' --format=json --url=example.com`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    # --network should permit search-replace
     When I run `wp search-replace foo bar --network`
     Then STDOUT should contain:
       """
@@ -308,6 +315,13 @@ Feature: Bootstrap WP-CLI
       """
     And the return code should be 0
 
+    When I run `wp option update test_key '["foo"]' --format=json --url=example.com`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    # --all-tables should permit search-replace
     When I run `wp search-replace foo bar --all-tables`
     Then STDOUT should contain:
       """
@@ -315,6 +329,13 @@ Feature: Bootstrap WP-CLI
       """
     And the return code should be 0
 
+    When I run `wp option update test_key '["foo"]' --format=json --url=example.com`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    # --all-tables-with-prefix should permit search-replace
     When I run `wp search-replace foo bar --all-tables-with-prefix`
     Then STDOUT should contain:
       """
@@ -322,8 +343,14 @@ Feature: Bootstrap WP-CLI
       """
     And the return code should be 0
 
-    # Specific table
-    When I run `wp search-replace foo bar wp_posts`
+    When I run `wp option update test_key '["foo"]' --format=json --url=example.com`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    # Specific tables should permit search-replace
+    When I run `wp search-replace foo bar wp_options`
     Then STDOUT should contain:
       """
       Success:
