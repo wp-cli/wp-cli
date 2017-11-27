@@ -1304,6 +1304,38 @@ class Runner {
 
 		// In a multisite install, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {
+			$run_on_site_not_found = false;
+			if ( $this->cmd_starts_with( array( 'cache', 'flush' ) ) ) {
+				$run_on_site_not_found = 'cache flush';
+			}
+			if ( $this->cmd_starts_with( array( 'search-replace' ) ) ) {
+				// Table-specified
+				// Bits: search-replace <search> <replace> [<table>...]
+				// Or not against a specific blog
+				if ( count( $this->arguments ) > 3
+					|| ! empty( $this->assoc_args['network'] )
+					|| ! empty( $this->assoc_args['all-tables'] )
+					|| ! empty( $this->assoc_args['all-tables-with-prefix'] ) ) {
+					$run_on_site_not_found = 'search-replace';
+				}
+			}
+			if ( $run_on_site_not_found
+				&& Utils\wp_version_compare( '4.0', '>=' ) ) {
+				WP_CLI::add_wp_hook(
+					'ms_site_not_found',
+					function() use ( $run_on_site_not_found ) {
+						// esc_sql() isn't yet loaded, but needed.
+						if ( 'search-replace' === $run_on_site_not_found ) {
+							require_once ABSPATH . WPINC . '/formatting.php';
+						}
+						// PHP 5.3 compatible implementation of _run_command_and_exit().
+						$runner = WP_CLI::get_runner();
+						$runner->run_command( $runner->arguments, $runner->assoc_args );
+						exit;
+					},
+					1
+				);
+			}
 			WP_CLI::add_wp_hook(
 				'ms_site_not_found',
 				function( $current_site, $domain, $path ) {
