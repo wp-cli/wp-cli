@@ -263,3 +263,96 @@ Feature: Bootstrap WP-CLI
       """
       foo
       """
+
+  @require-wp-3.9
+  Scenario: Run cache flush on ms_site_not_found
+    Given a WP multisite install
+    And a wp-cli.yml file:
+      """
+      url: invalid.com
+      """
+
+    When I try `wp cache add foo bar`
+    Then STDERR should contain:
+      """
+      Error: Site 'invalid.com' not found.
+      """
+    And the return code should be 1
+
+    When I run `wp cache flush --url=invalid.com`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0
+
+  @require-wp-4.0
+  Scenario: Run search-replace on ms_site_not_found
+    Given a WP multisite install
+    And a wp-cli.yml file:
+      """
+      url: invalid.com
+      """
+
+    When I try `wp search-replace foo bar`
+    Then STDERR should contain:
+      """
+      Error: Site 'invalid.com' not found.
+      """
+    And the return code should be 1
+
+    When I run `wp option update test_key '["foo"]' --format=json --url=example.com`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    # --network should permit search-replace
+    When I run `wp search-replace foo bar --network`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0
+
+    When I run `wp option update test_key '["foo"]' --format=json --url=example.com`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    # --all-tables should permit search-replace
+    When I run `wp search-replace foo bar --all-tables`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0
+
+    When I run `wp option update test_key '["foo"]' --format=json --url=example.com`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    # --all-tables-with-prefix should permit search-replace
+    When I run `wp search-replace foo bar --all-tables-with-prefix`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0
+
+    When I run `wp option update test_key '["foo"]' --format=json --url=example.com`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    # Specific tables should permit search-replace
+    When I run `wp search-replace foo bar wp_options`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0
