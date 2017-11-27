@@ -56,8 +56,7 @@ jobs:
 
 cache:
   directories:
-  - vendor
-  - $HOME/.composer/cache
+    - $HOME/.composer/cache
 
 branches:
   only:
