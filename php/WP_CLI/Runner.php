@@ -232,7 +232,9 @@ class Runner {
 	 * @param string $path
 	 */
 	private static function set_wp_root( $path ) {
-		define( 'ABSPATH', Utils\trailingslashit( $path ) );
+		if ( !defined( 'ABSPATH' ) ) {
+			define( 'ABSPATH', Utils\trailingslashit( $path ) );
+		}
 		WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH, 'bootstrap' );
 
 		$_SERVER['DOCUMENT_ROOT'] = realpath( $path );
