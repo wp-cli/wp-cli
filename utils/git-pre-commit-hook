@@ -1,6 +1,0 @@
-#!/bin/bash
-
-set -ex
-
-# Sniff codebase for coding standards
-./vendor/bin/phpcs
