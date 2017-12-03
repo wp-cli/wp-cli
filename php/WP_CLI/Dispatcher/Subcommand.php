@@ -121,7 +121,7 @@ class Subcommand extends CompositeCommand {
 
 		echo $question;
 
-		return stream_get_line( STDIN, 1024, PHP_EOL );
+		return stream_get_line( STDIN, 1024, "\n" );
 	}
 
 	/**
