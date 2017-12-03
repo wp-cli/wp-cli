@@ -79,11 +79,6 @@
 		"psr-0": { "WP_CLI": "php" },
 		"psr-4": { "": "php/commands/src" }
 	},
-	"scripts": {
-		"post-install-cmd": [
-			"cp -f ./utils/git-pre-commit-hook ./.git/hooks/pre-commit"
-		]
-	},
 	"extra": {
 		"autoload-splitter": {
 			"splitter-logic": "WP_CLI\\AutoloadSplitter",
