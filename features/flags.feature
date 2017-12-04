@@ -1,7 +1,7 @@
 Feature: Global flags
 
   Scenario: Setting the URL
-    Given a WP install
+    Given a WP installation
 
     When I run `wp --url=localhost:8001 eval 'echo json_encode( $_SERVER );'`
     Then STDOUT should be JSON containing:
@@ -14,7 +14,7 @@ Feature: Global flags
       """
 
   Scenario: Setting the URL on multisite
-    Given a WP multisite install
+    Given a WP multisite installation
     And I run `wp site create --slug=foo`
 
     When I run `wp --url=example.com/foo option get home`
@@ -25,7 +25,7 @@ Feature: Global flags
 
   @require-wp-3.9
   Scenario: Invalid URL
-    Given a WP multisite install
+    Given a WP multisite installation
 
     When I try `wp post list --url=invalid.example.com`
     Then STDERR should be:
@@ -34,7 +34,7 @@ Feature: Global flags
       """
 
   Scenario: Quiet run
-    Given a WP install
+    Given a WP installation
 
     When I try `wp non-existing-command --quiet`
     Then the return code should be 1
@@ -44,7 +44,7 @@ Feature: Global flags
       """
 
   Scenario: Debug run
-    Given a WP install
+    Given a WP installation
 
     When I try `wp eval 'echo CONST_WITHOUT_QUOTES;'`
     Then STDOUT should be:
@@ -69,7 +69,7 @@ Feature: Global flags
       """
 
   Scenario: Setting the WP user
-    Given a WP install
+    Given a WP installation
 
     When I run `wp eval 'echo (int) is_user_logged_in();'`
     Then STDOUT should be:
@@ -206,7 +206,7 @@ Feature: Global flags
       """
 
   Scenario: Enabling/disabling color
-    Given a WP install
+    Given a WP installation
 
     When I try `wp --no-color non-existent-command`
     Then STDERR should be:

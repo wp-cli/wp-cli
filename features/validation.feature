@@ -4,7 +4,7 @@ Feature: Argument validation
   I need to see warnings and errors when I pass incorrect arguments
 
   Scenario: Passing zero arguments to a variadic command
-    Given a WP install
+    Given a WP installation
 
     When I try `wp plugin install`
     Then the return code should be 1

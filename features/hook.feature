@@ -1,7 +1,7 @@
 Feature: Tests `WP_CLI::add_hook()`
 
   Scenario: Add callback to the `before_invoke`
-    Given a WP install
+    Given a WP installation
     And a before-invoke.php file:
       """
       <?php
@@ -25,7 +25,7 @@ Feature: Tests `WP_CLI::add_hook()`
     And the return code should be 0
 
   Scenario: Add callback to the `before_invoke`
-    Given a WP install
+    Given a WP installation
     And a before-invoke.php file:
       """
       <?php
@@ -49,7 +49,7 @@ Feature: Tests `WP_CLI::add_hook()`
     And the return code should be 0
 
   Scenario: Add callback to the `before_invoke`
-    Given a WP install
+    Given a WP installation
     And a before-invoke.php file:
       """
       <?php
