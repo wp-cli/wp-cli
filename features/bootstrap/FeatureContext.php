@@ -45,17 +45,17 @@ if ( file_exists( __DIR__ . '/utils.php' ) ) {
 class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	/**
-	 * The current working directory for scenarios that have a "Given a WP install" or "Given an empty directory" step. Variable RUN_DIR. Lives until the end of the scenario.
+	 * The current working directory for scenarios that have a "Given a WP installation" or "Given an empty directory" step. Variable RUN_DIR. Lives until the end of the scenario.
 	 */
 	private static $run_dir;
 
 	/**
-	 * Where WordPress core is downloaded to for caching, and which is copied to RUN_DIR during a "Given a WP install" step. Lives until manually deleted.
+	 * Where WordPress core is downloaded to for caching, and which is copied to RUN_DIR during a "Given a WP installation" step. Lives until manually deleted.
 	 */
 	private static $cache_dir;
 
 	/**
-	 * The directory that holds the install cache, and which is copied to RUN_DIR during a "Given a WP install" step. Recreated on each suite run.
+	 * The directory that holds the install cache, and which is copied to RUN_DIR during a "Given a WP installation" step. Recreated on each suite run.
 	 */
 	private static $install_cache_dir;
 
@@ -72,7 +72,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	private static $composer_local_repository;
 
 	/**
-	 * The test database settings. All but `dbname` can be set via environment variables. The database is dropped at the start of each scenario and created on a "Given a WP install" step.
+	 * The test database settings. All but `dbname` can be set via environment variables. The database is dropped at the start of each scenario and created on a "Given a WP installation" step.
 	 */
 	private static $db_settings = array(
 		'dbname' => 'wp_cli_test',
