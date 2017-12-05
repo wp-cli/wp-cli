@@ -49,7 +49,7 @@ Feature: Get help about WP-CLI commands
   # Prior to WP 4.3 widgets & others used PHP 4 style constructors and prior to WP 3.9 wpdb used the mysql extension which can all lead (depending on PHP version) to PHP Deprecated notices.
   @require-wp-4.3
   Scenario: Help for internal commands with WP
-    Given a WP install
+    Given a WP installation
 
     When I run `wp help`
     Then STDOUT should contain:
@@ -158,7 +158,7 @@ Feature: Get help about WP-CLI commands
     And STDOUT should be empty
 
   Scenario: Help for nonexistent commands
-    Given a WP install
+    Given a WP installation
 
     When I try `wp help non-existent-command`
     Then the return code should be 1
@@ -207,7 +207,7 @@ Feature: Get help about WP-CLI commands
     And STDOUT should be empty
 
   Scenario: Help for specially treated commands with nonexistent subcommands
-    Given a WP install
+    Given a WP installation
 
     When I try `wp help config non-existent-subcommand`
     Then the return code should be 1
@@ -361,7 +361,7 @@ Feature: Get help about WP-CLI commands
     And STDOUT should be empty
 
   Scenario: Help for third-party commands
-    Given a WP install
+    Given a WP installation
     And a wp-content/plugins/test-cli/command.php file:
       """
       <?php
@@ -402,7 +402,7 @@ Feature: Get help about WP-CLI commands
       """
 
   Scenario: Help for commands with magic methods
-    Given a WP install
+    Given a WP installation
     And a wp-content/plugins/test-cli/command.php file:
       """
       <?php
@@ -449,7 +449,7 @@ Feature: Get help about WP-CLI commands
       """
 
   Scenario: Help for commands loaded into existing namespaces
-    Given a WP install
+    Given a WP installation
     And a wp-content/plugins/test-cli/command.php file:
       """
       <?php
@@ -516,7 +516,7 @@ Feature: Get help about WP-CLI commands
       """
 
   Scenario: Help renders global parameters correctly
-    Given a WP install
+    Given a WP installation
 
     When I run `wp help import get`
     Then STDOUT should contain:
@@ -549,7 +549,7 @@ Feature: Get help about WP-CLI commands
       """
 
   Scenario: Display alias in man page
-    Given a WP install
+    Given a WP installation
 
     When I run `wp help plugin update`
     Then STDOUT should contain:
@@ -566,7 +566,7 @@ Feature: Get help about WP-CLI commands
       """
 
   Scenario: Help for commands should wordwrap well
-    Given a WP install
+    Given a WP installation
     And a wp-content/plugins/test-cli/command.php file:
       """
       <?php
@@ -787,7 +787,7 @@ Feature: Get help about WP-CLI commands
     And STDERR should be empty
 
   Scenario: Help for commands with subcommands should wordwrap well
-    Given a WP install
+    Given a WP installation
     And a wp-content/plugins/test-cli/command.php file:
       """
       <?php
@@ -899,7 +899,7 @@ Feature: Get help about WP-CLI commands
       """
 
   Scenario: Long description for top-level command which has reference link display well
-    Given a WP install
+    Given a WP installation
     And a command.php file:
       """
       <?php
@@ -952,7 +952,7 @@ Feature: Get help about WP-CLI commands
       """
 
   Scenario: Very long description for top-level command which has reference link display well
-    Given a WP install
+    Given a WP installation
     And a command.php file:
       """
       <?php

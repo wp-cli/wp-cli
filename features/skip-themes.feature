@@ -1,7 +1,7 @@
 Feature: Skipping themes
 
   Scenario: Skipping themes via global flag
-    Given a WP install
+    Given a WP installation
     And I run `wp theme install classic`
     And I run `wp theme install default --activate`
 
@@ -53,7 +53,7 @@ Feature: Skipping themes
     And STDERR should be empty
 
   Scenario: Skip parent and child themes
-    Given a WP install
+    Given a WP installation
     And I run `wp theme install jolene biker`
 
     When I run `wp theme activate jolene`
@@ -115,7 +115,7 @@ Feature: Skipping themes
     And STDERR should be empty
 
   Scenario: Skipping multiple themes via config file
-    Given a WP install
+    Given a WP installation
     And a wp-cli.yml file:
       """
       skip-themes:
