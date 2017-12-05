@@ -1,7 +1,7 @@
 Feature: Have a config file
 
   Scenario: No config file
-    Given a WP install
+    Given a WP installation
 
     When I run `wp --info`
     Then STDOUT should not contain:
@@ -13,7 +13,7 @@ Feature: Have a config file
     Then STDOUT should be empty
 
   Scenario: Config file in WP Root
-    Given a WP install
+    Given a WP installation
     And a sample.php file:
       """
       <?php
@@ -36,7 +36,7 @@ Feature: Have a config file
     Then STDOUT should not be empty
 
   Scenario: WP in a subdirectory
-    Given a WP install in 'foo'
+    Given a WP installation in 'foo'
     And a wp-cli.yml file:
       """
       path: foo
@@ -59,7 +59,7 @@ Feature: Have a config file
     Then STDOUT should be empty
 
   Scenario: WP in a subdirectory (autodetected)
-    Given a WP install in 'foo'
+    Given a WP installation in 'foo'
 
     Given an index.php file:
     """
@@ -81,7 +81,7 @@ Feature: Have a config file
     Then STDOUT should be empty
 
   Scenario: Nested installs
-    Given a WP install
+    Given a WP installation
     And a WP install in 'foo'
     And a wp-cli.yml file:
       """
@@ -94,7 +94,7 @@ Feature: Have a config file
       """
 
   Scenario: Disabled commands
-    Given a WP install
+    Given a WP installation
     And a config.yml file:
       """
       disabled_commands:
@@ -156,7 +156,7 @@ Feature: Have a config file
     Then STDOUT should not be empty
 
   Scenario: Persist positional parameters when defined in a config
-    Given a WP install
+    Given a WP installation
     And a wp-cli.yml file:
       """
       user create:
@@ -191,7 +191,7 @@ Feature: Have a config file
       """
 
   Scenario: Command-specific configs
-    Given a WP install
+    Given a WP installation
     And a wp-cli.yml file:
       """
       eval:
@@ -235,7 +235,7 @@ Feature: Have a config file
 	  Then STDERR should be empty
 
   Scenario: Load WordPress with `--debug`
-    Given a WP install
+    Given a WP installation
 
     When I try `wp option get home --debug`
     Then STDERR should contain:
@@ -471,7 +471,7 @@ Feature: Have a config file
 
   @require-wp-3.9
   Scenario: WordPress install with local dev DOMAIN_CURRENT_SITE
-    Given a WP multisite install
+    Given a WP multisite installation
     And a local-dev.php file:
       """
       <?php

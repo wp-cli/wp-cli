@@ -911,7 +911,7 @@ Feature: WP-CLI Commands
       """
 
   Scenario: Default arguments should respect wp-cli.yml
-    Given a WP install
+    Given a WP installation
     And a wp-cli.yml file:
       """
       post list:
@@ -953,7 +953,7 @@ Feature: WP-CLI Commands
     And STDERR should be empty
 
   Scenario: WP-CLI suggests matching commands when user entry contains typos
-    Given a WP install
+    Given a WP installation
 
     When I try `wp clu`
     Then STDERR should contain:
@@ -1069,7 +1069,7 @@ Feature: WP-CLI Commands
       """
 
   Scenario: Command additions should work as plugins
-    Given a WP install
+    Given a WP installation
     And a wp-content/plugins/test-cli/command.php file:
       """
       <?php
@@ -1119,7 +1119,7 @@ Feature: WP-CLI Commands
     And STDERR should be empty
 
   Scenario: Command additions should work as must-use plugins
-    Given a WP install
+    Given a WP installation
     And a wp-content/mu-plugins/test-cli.php file:
       """
       <?php
@@ -1168,7 +1168,7 @@ Feature: WP-CLI Commands
     And STDERR should be empty
 
   Scenario: Command additions should work when registered on after_wp_load
-    Given a WP install
+    Given a WP installation
     And a wp-content/mu-plugins/test-cli.php file:
       """
       <?php
@@ -1219,7 +1219,7 @@ Feature: WP-CLI Commands
     And STDERR should be empty
 
   Scenario: The command should fire on `after_wp_load`
-    Given a WP install
+    Given a WP installation
     And a custom-cmd.php file:
       """
       <?php
@@ -1267,7 +1267,7 @@ Feature: WP-CLI Commands
     And the return code should be 1
 
   Scenario: The command should fire on `before_wp_load`
-    Given a WP install
+    Given a WP installation
     And a custom-cmd.php file:
       """
       <?php
@@ -1311,7 +1311,7 @@ Feature: WP-CLI Commands
     And the return code should be 0
 
   Scenario: Command hook should fires as expected on __invoke()
-    Given a WP install
+    Given a WP installation
     And a custom-cmd.php file:
       """
       <?php

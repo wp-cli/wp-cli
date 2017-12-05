@@ -1,7 +1,7 @@
 Feature: `wp cli` tasks
 
   Scenario: Ability to detect a WP-CLI registered command
-    Given a WP install
+    Given a WP installation
 
     When I run `wp package install wp-cli/scaffold-package-command`
     When I run `wp cli has-command scaffold package`
@@ -12,7 +12,7 @@ Feature: `wp cli` tasks
     Then the return code should be 1
 
   Scenario: Ability to detect a command which is registered by plugin
-    Given a WP install
+    Given a WP installation
     And a wp-content/mu-plugins/test-cli.php file:
       """
       <?php
@@ -203,7 +203,7 @@ Feature: `wp cli` tasks
       """
 
   Scenario: Dump the list of global parameters with values
-    Given a WP install
+    Given a WP installation
 
     When I run `wp cli param-dump --with-values | grep -o '"current":' | uniq -c | tr -d ' '`
     Then STDOUT should be:
