@@ -55,7 +55,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	private static $cache_dir;
 
 	/**
-	 * The directory that holds the install cache, and which is copied to RUN_DIR during a "Given a WP installation" step. Recreated on each suite run.
+	 * The directory that holds the installation cache, and which is copied to RUN_DIR during a "Given a WP installation" step. Recreated on each suite run.
 	 */
 	private static $install_cache_dir;
 
@@ -182,7 +182,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		echo 'WordPress ' . $result->stdout;
 		echo PHP_EOL;
 
-		// Remove install cache if any (not setting the static var).
+		// Remove installation cache if any (not setting the static var).
 		$wp_version_suffix = ( $wp_version = getenv( 'WP_VERSION' ) ) ? "-$wp_version" : '';
 		$install_cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-install-cache' . $wp_version_suffix;
 		if ( file_exists( $install_cache_dir ) ) {
@@ -227,7 +227,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function afterScenario( $event ) {
 
 		if ( self::$run_dir ) {
-			// remove altered WP install, unless there's an error
+			// remove altered WP installation, unless there's an error
 			if ( $event->getResult() < 4 ) {
 				self::remove_dir( self::$run_dir );
 			}
