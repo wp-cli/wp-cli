@@ -345,3 +345,18 @@ Feature: Load WP-CLI
       """
       Error: Site 'example.io' not found. Verify `--url=<url>` matches an existing site.
       """
+
+  Scenario: Don't show 'sitecategories' table unless global terms are enabled
+    Given a WP multisite installation
+
+    When I run `wp db tables`
+    Then STDOUT should not contain:
+      """
+      wp_sitecategories
+      """
+
+    When I run `wp db tables --network`
+    Then STDOUT should not contain:
+      """
+      wp_sitecategories
+      """

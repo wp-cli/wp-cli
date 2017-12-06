@@ -368,8 +368,22 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 		return $matching_tables;
 	}
 
+	$filter_sitecategories = function( $matching_tables ) {
+		global $wpdb;
+		// Only include sitecategories when it's actually enabled.
+		if ( ! global_terms_enabled() ) {
+			$key = array_search( $wpdb->sitecategories, $matching_tables );
+			if ( false !== $key ) {
+				unset( $matching_tables[ $key ] );
+			}
+		}
+		return $matching_tables;
+	};
+
 	if ( $scope = get_flag_value( $assoc_args, 'scope' ) ) {
-		return $wpdb->tables( $scope );
+		$matching_tables = $wpdb->tables( $scope );
+		$matching_tables = $filter_sitecategories( $matching_tables );
+		return $matching_tables;
 	}
 
 	$allowed_tables = array();
@@ -406,5 +420,6 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 
 	}
 
+	$filter_sitecategories( $matching_tables );
 	return array_values( $matching_tables );
 }
