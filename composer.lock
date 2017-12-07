@@ -1579,7 +1579,7 @@
                     "homepage": "https://runcommand.io"
                 }
             ],
-            "description": "Download, install, update and manage a WordPress installation.",
+            "description": "Download, install, update and manage a WordPress install.",
             "homepage": "https://github.com/wp-cli/core-command",
             "time": "2017-11-21T16:01:01+00:00"
         },
@@ -2666,7 +2666,7 @@
                     "homepage": "https://runcommand.io"
                 }
             ],
-            "description": "Lists, adds, or removes super admin users on a multisite installation.",
+            "description": "Lists, adds, or removes super admin users on a multisite install.",
             "homepage": "https://github.com/wp-cli/super-admin-command",
             "time": "2017-11-21T22:11:13+00:00"
         },
