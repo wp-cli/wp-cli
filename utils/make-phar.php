@@ -154,7 +154,7 @@ if ( 'cli' === BUILD ) {
 		->exclude('composer/composer/src/Composer/Command')
 		->exclude('composer/composer/src/Composer/Compiler.php')
 		->exclude('composer/composer/src/Composer/Console')
-		->exclude('composer/composer/src/Composer/Downloader/PearPackageExtractor.php') // Assuming Pear install isn't supported by wp-cli.
+		->exclude('composer/composer/src/Composer/Downloader/PearPackageExtractor.php') // Assuming Pear installation isn't supported by wp-cli.
 		->exclude('composer/composer/src/Composer/Installer/PearBinaryInstaller.php')
 		->exclude('composer/composer/src/Composer/Installer/PearInstaller.php')
 		->exclude('composer/composer/src/Composer/Question')
