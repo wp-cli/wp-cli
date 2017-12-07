@@ -35,7 +35,7 @@ Depends: php5-cli (>= 5.3.29) | php-cli | php7-cli, php5-mysql | php5-mysqlnd | 
 Homepage: http://wp-cli.org/
 Description: wp-cli is a set of command-line tools for managing
  WordPress installations. You can update plugins, set up multisite
- installs and much more, without using a web browser.
+ installations and much more, without using a web browser.
 
 EOF
 }

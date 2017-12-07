@@ -12,7 +12,7 @@ Requires:   php >= 5.3.29
 
 %description
 WP-CLI is the command-line interface for WordPress.
-You can update plugins, configure multisite installs
+You can update plugins, configure multisite installations
 and much more, without using a web browser.
 
 %prep
