@@ -66,7 +66,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * * PHP binary used.
 	 * * PHP binary version.
 	 * * php.ini configuration file used (which is typically different than web).
-	 * * WP-CLI root dir: where WP-CLI is installed (if non-Phar install).
+	 * * WP-CLI root dir: where WP-CLI is installed (if non-Phar installation).
 	 * * WP-CLI global config: where the global config YAML file is located.
 	 * * WP-CLI project config: where the project config YAML file is located.
 	 * * WP-CLI version: currently installed version.
@@ -524,9 +524,9 @@ class CLI_Command extends WP_CLI_Command {
 	/**
 	 * List available WP-CLI aliases.
 	 *
-	 * Aliases are shorthand references to WordPress installs. For instance,
-	 * `@dev` could refer to a development install and `@prod` could refer to
-	 * a production install. This command gives you visibility in what
+	 * Aliases are shorthand references to WordPress installations. For instance,
+	 * `@dev` could refer to a development installation and `@prod` could refer to
+	 * a production installation. This command gives you visibility in what
 	 * registered aliases you have available.
 	 *
 	 * ## OPTIONS
