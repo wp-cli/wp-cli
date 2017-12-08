@@ -691,7 +691,7 @@ Feature: WP-CLI Commands
       """
       <?php
       WP_CLI::add_command( 'foo', function( $_, $assoc_args ){
-        WP_CLI::log( isset( $assoc_args['honk'] ) ? 'honked' : 'nohonk' );
+        WP_CLI::log( \WP_CLI\Utils\get_flag_value( $assoc_args, 'honk' ) ? 'honked' : 'nohonk' );
       }, array(
         'when' => 'before_wp_load',
         'synopsis' => array(
@@ -716,6 +716,31 @@ Feature: WP-CLI Commands
       """
 
     When I run `wp foo --honk`
+    Then STDOUT should be:
+      """
+      honked
+      """
+
+    When I run `wp foo --honk=1`
+    Then STDOUT should be:
+      """
+      honked
+      """
+
+    When I run `wp foo --no-honk`
+    Then STDOUT should be:
+      """
+      nohonk
+      """
+
+    When I run `wp foo --honk=0`
+    Then STDOUT should be:
+      """
+      nohonk
+      """
+
+    # Note treats "false" as true.
+    When I run `wp foo --honk=false`
     Then STDOUT should be:
       """
       honked
