@@ -356,7 +356,23 @@ class Runner {
 		}
 	}
 
+	/**
+	 * Show synopsis if the called command is a composite command
+	 */
+	public function show_synopsis_if_composite_command() {
+		$r = $this->find_command_to_run( $this->arguments );
+		if ( is_array( $r ) ) {
+			list( $command ) = $r;
+
+			if ( $command->can_have_subcommands() ) {
+				$command->show_usage();
+				exit;
+			}
+		}
+	}
+
 	private function _run_command_and_exit( $help_exit_warning = '' ) {
+		$this->show_synopsis_if_composite_command();
 		$this->run_command( $this->arguments, $this->assoc_args );
 		if ( $this->cmd_starts_with( array( 'help' ) ) ) {
 			// Help couldn't find the command so exit with suggestion.
@@ -752,6 +768,7 @@ class Runner {
 
 	private function check_wp_version() {
 		if ( ! $this->wp_exists() ) {
+			$this->show_synopsis_if_composite_command();
 			// If the command doesn't exist use as error.
 			$args = $this->cmd_starts_with( array( 'help' ) ) ? array_slice( $this->arguments, 1 ) : $this->arguments;
 			$suggestion_or_disabled = $this->find_command_to_run( $args );
@@ -960,17 +977,6 @@ class Runner {
 		if ( $this->config['ssh'] ) {
 			$this->run_ssh_command( $this->config['ssh'] );
 			return;
-		}
-
-		// Show synopsis if it's a composite command.
-		$r = $this->find_command_to_run( $this->arguments );
-		if ( is_array( $r ) ) {
-			list( $command ) = $r;
-
-			if ( $command->can_have_subcommands() ) {
-				$command->show_usage();
-				exit;
-			}
 		}
 
 		// Handle --path parameter

@@ -1447,3 +1447,38 @@ Feature: WP-CLI Commands
       The namespace my-namespaced-command does not contain any usable commands in the current context.
       """
     And STDERR should be empty
+
+  Scenario: Late-registered command should appear in command usage
+    Given a WP installation
+    And a test-cmd.php file:
+      """
+      <?php
+      WP_CLI::add_wp_hook( 'plugins_loaded', function(){
+        WP_CLI::add_command( 'core custom-subcommand', function() {});
+      });
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - test-cmd.php
+      """
+
+    When I run `wp help core`
+    Then STDOUT should contain:
+      """
+      custom-subcommand
+      """
+
+    When I run `wp core`
+    Then STDOUT should contain:
+      """
+      usage:
+      """
+    And STDOUT should contain:
+      """
+      core update
+      """
+    And STDOUT should contain:
+      """
+      core custom-subcommand
+      """
