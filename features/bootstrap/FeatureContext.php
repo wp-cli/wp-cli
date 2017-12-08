@@ -227,7 +227,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function afterScenario( $event ) {
 
 		if ( self::$run_dir ) {
-			// remove altered WP install, unless there's an error
+			// remove altered WP installation, unless there's an error
 			if ( $event->getResult() < 4 ) {
 				self::remove_dir( self::$run_dir );
 			}

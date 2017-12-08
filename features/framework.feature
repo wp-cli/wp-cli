@@ -81,7 +81,7 @@ Feature: Load WP-CLI
       """
     And STDERR should contain:
       """
-      Error: This does not seem to be a WordPress install.
+      Error: This does not seem to be a WordPress installation.
       """
 
   Scenario: Globalize global variables in wp-config.php
@@ -285,7 +285,7 @@ Feature: Load WP-CLI
     Then STDERR should be:
       """
       Error: The site you have requested is not installed.
-      Your table prefix is 'cli_'. Found install with table prefix: wp_.
+      Your table prefix is 'cli_'. Found installation with table prefix: wp_.
       Or, run `wp core install` to create database tables.
       """
     And STDOUT should be empty
@@ -304,7 +304,7 @@ Feature: Load WP-CLI
     Then STDERR should be:
       """
       Error: The site you have requested is not installed.
-      Your table prefix is 'test_'. Found installs with table prefix: cli_, wp_.
+      Your table prefix is 'test_'. Found installations with table prefix: cli_, wp_.
       Or, run `wp core install` to create database tables.
       """
     And STDOUT should be empty
