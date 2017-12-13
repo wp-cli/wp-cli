@@ -112,7 +112,8 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		// Create test tarball.
 		$output = array();
 		$return_var = -1;
-		exec( Utils\esc_cmd( 'tar czvf %1$s --directory=%2$s/src wordpress', $tarball, $temp_dir ), $output, $return_var );
+		// Need --force-local for Windows to avoid "C:" being interpreted as being on remote machine.
+		exec( Utils\esc_cmd( 'tar czvf %1$s --force-local --directory=%2$s/src wordpress', $tarball, $temp_dir ), $output, $return_var );
 		$this->assertSame( 0, $return_var );
 		$this->assertFalse( empty( $output ) );
 		sort( $output );

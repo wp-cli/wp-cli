@@ -129,7 +129,7 @@ class Help_Command extends WP_CLI_Command {
 			2 => STDERR,
 		);
 
-		return proc_close( proc_open( $pager, $descriptorspec, $pipes ) );
+		return proc_close( Utils\proc_open_compat( $pager, $descriptorspec, $pipes ) );
 	}
 
 	private static function get_initial_markdown( $command ) {
