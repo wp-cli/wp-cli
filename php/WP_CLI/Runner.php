@@ -880,7 +880,7 @@ class Runner {
 	private function run_alias_group( $aliases ) {
 		Utils\check_proc_available( 'group alias' );
 
-		$php_bin = Utils\get_php_binary();
+		$php_bin = escapeshellarg( Utils\get_php_binary() );
 
 		$script_path = $GLOBALS['argv'][0];
 
@@ -897,7 +897,7 @@ class Runner {
 			$assoc_args = Utils\assoc_args_to_str( $this->assoc_args );
 			$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
 			$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
-			$proc = proc_open( $full_command, array( STDIN, STDOUT, STDERR ), $pipes );
+			$proc = Utils\proc_open_compat( $full_command, array( STDIN, STDOUT, STDERR ), $pipes );
 			proc_close( $proc );
 		}
 	}

@@ -383,15 +383,11 @@ function launch_editor_for_input( $input, $filename = 'WP-CLI' ) {
 
 	$editor = getenv( 'EDITOR' );
 	if ( ! $editor ) {
-		$editor = 'vi';
-
-		if ( isset( $_SERVER['OS'] ) && false !== strpos( $_SERVER['OS'], 'indows' ) ) {
-			$editor = 'notepad';
-		}
+		$editor = is_windows() ? 'notepad' : 'vi';
 	}
 
 	$descriptorspec = array( STDIN, STDOUT, STDERR );
-	$process = proc_open( "$editor " . escapeshellarg( $tmpfile ), $descriptorspec, $pipes );
+	$process = proc_open_compat( "$editor " . escapeshellarg( $tmpfile ), $descriptorspec, $pipes );
 	$r = proc_close( $process );
 	if ( $r ) {
 		exit( $r );
@@ -453,7 +449,7 @@ function run_mysql_command( $cmd, $assoc_args, $descriptors = null ) {
 
 	$final_cmd = force_env_on_nix_systems( $cmd ) . assoc_args_to_str( $assoc_args );
 
-	$proc = proc_open( $final_cmd, $descriptors, $pipes );
+	$proc = proc_open_compat( $final_cmd, $descriptors, $pipes );
 	if ( ! $proc ) {
 		exit( 1 );
 	}
@@ -790,14 +786,8 @@ function get_temp_dir() {
 		return $temp;
 	}
 
-	$temp = '/tmp/';
-
-	// `sys_get_temp_dir()` introduced PHP 5.2.1.
-	if ( $try = sys_get_temp_dir() ) {
-		$temp = trailingslashit( $try );
-	} elseif ( $try = ini_get( 'upload_tmp_dir' ) ) {
-		$temp = trailingslashit( $try );
-	}
+	// `sys_get_temp_dir()` introduced PHP 5.2.1. Will always return something.
+	$temp = trailingslashit( sys_get_temp_dir() );
 
 	if ( ! is_writable( $temp ) ) {
 		\WP_CLI::warning( "Temp directory isn't writable: {$temp}" );
@@ -1317,4 +1307,51 @@ function get_php_binary() {
 	}
 
 	return 'php';
+}
+
+/**
+ * Windows compatible `proc_open()`.
+ * Works around bug in PHP, and also deals with *nix-like `ENV_VAR=blah cmd` environment variable prefixes.
+ *
+ * @access public
+ *
+ * @param string $command Command to execute.
+ * @param array $descriptorspec Indexed array of descriptor numbers and their values.
+ * @param array &$pipes Indexed array of file pointers that correspond to PHP's end of any pipes that are created.
+ * @param string $cwd Initial working directory for the command.
+ * @param array $env Array of environment variables.
+ * @param array $other_options Array of additional options (Windows only).
+ *
+ * @return string Command stripped of any environment variable settings.
+ */
+function proc_open_compat( $cmd, $descriptorspec, &$pipes, $cwd = null, $env = null, $other_options = null ) {
+	if ( is_windows() ) {
+		// Need to encompass the whole command in double quotes - PHP bug https://bugs.php.net/bug.php?id=49139
+		$cmd = '"' . _proc_open_compat_win_env( $cmd, $env ) . '"';
+	}
+	return proc_open( $cmd, $descriptorspec, $pipes, $cwd, $env, $other_options );
+}
+
+/**
+ * For use by `proc_open_compat()` only. Separated out for ease of testing. Windows only.
+ * Turns *nix-like `ENV_VAR=blah command` environment variable prefixes into stripped `cmd` with prefixed environment variables added to passed in environment array.
+ *
+ * @access private
+ *
+ * @param string $command Command to execute.
+ * @param array &$env Array of existing environment variables. Will be modified if any settings in command.
+ *
+ * @return string Command stripped of any environment variable settings.
+ */
+function _proc_open_compat_win_env( $cmd, &$env ) {
+	if ( false !== strpos( $cmd, '=' ) ) {
+		while ( preg_match( '/^([A-Za-z_][A-Za-z0-9_]*)=("[^"]*"|[^ ]*) /', $cmd, $matches ) ) {
+			$cmd = substr( $cmd, strlen( $matches[0] ) );
+			if ( null === $env ) {
+				$env = array();
+			}
+			$env[ $matches[1] ] = isset( $matches[2][0] ) && '"' === $matches[2][0] ? substr( $matches[2], 1, -1 ) : $matches[2];
+		}
+	}
+	return $cmd;
 }

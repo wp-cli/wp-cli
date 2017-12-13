@@ -57,12 +57,15 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 		$result = $method->invokeArgs( $cache, array( $cache_dir . '/test1' ) );
 		$this->assertTrue( $result );
 
-		// It should be failed because permission denied.
-		$logger->stderr = '';
-		chmod( $cache_dir . '/test1', 0000 );
-		$result = $method->invokeArgs( $cache, array( $cache_dir . '/test1/error' ) );
-		$expected = "/^Warning: Failed to create directory '.+': mkdir\(\): Permission denied\.$/";
-		$this->assertRegexp( $expected, $logger->stderr );
+		// `chmod()` doesn't work on Windows.
+		if ( ! Utils\is_windows() ) {
+			// It should be failed because permission denied.
+			$logger->stderr = '';
+			chmod( $cache_dir . '/test1', 0000 );
+			$result = $method->invokeArgs( $cache, array( $cache_dir . '/test1/error' ) );
+			$expected = "/^Warning: Failed to create directory '.+': mkdir\(\): Permission denied\.$/";
+			$this->assertRegexp( $expected, $logger->stderr );
+		}
 
 		// It should be failed because file exists.
 		$logger->stderr = '';
