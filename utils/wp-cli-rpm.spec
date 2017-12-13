@@ -1,6 +1,6 @@
 Name:       wp-cli
 Version:    0.0.0
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    The command line interface for WordPress
 License:    MIT
 URL:        http://wp-cli.org/
