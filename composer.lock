@@ -1642,16 +1642,16 @@
         },
         {
             "name": "wp-cli/db-command",
-            "version": "v1.3.1",
+            "version": "v1.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/db-command.git",
-                "reference": "f040d08a17794b3ac747fe62ba43671aba6d842c"
+                "reference": "162d72acfd6dc1478e2ef249160bffbfa4293371"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/db-command/zipball/f040d08a17794b3ac747fe62ba43671aba6d842c",
-                "reference": "f040d08a17794b3ac747fe62ba43671aba6d842c",
+                "url": "https://api.github.com/repos/wp-cli/db-command/zipball/162d72acfd6dc1478e2ef249160bffbfa4293371",
+                "reference": "162d72acfd6dc1478e2ef249160bffbfa4293371",
                 "shasum": ""
             },
             "require": {
@@ -1667,6 +1667,7 @@
                 },
                 "bundled": true,
                 "commands": [
+                    "db",
                     "db create",
                     "db drop",
                     "db reset",
@@ -1702,9 +1703,9 @@
                     "homepage": "https://runcommand.io"
                 }
             ],
-            "description": "Perform basic database operations using credentials stored in wp-config.php.",
+            "description": "Performs basic database operations using credentials stored in wp-config.php.",
             "homepage": "https://github.com/wp-cli/db-command",
-            "time": "2017-11-21T01:07:32+00:00"
+            "time": "2017-12-08T15:04:48+00:00"
         },
         {
             "name": "wp-cli/entity-command",
