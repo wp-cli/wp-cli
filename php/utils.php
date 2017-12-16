@@ -1100,7 +1100,9 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 function get_suggestion( $target, array $options, $threshold = 2 ) {
 
 	$suggestion_map = array(
+		'add' => 'create',
 		'check' => 'check-update',
+		'capability' => 'cap',
 		'clear' => 'flush',
 		'decrement' => 'decr',
 		'del' => 'delete',
@@ -1116,6 +1118,7 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
 		'regen' => 'regenerate',
 		'rep' => 'replace',
 		'repl' => 'replace',
+		'trash' => 'delete',
 		'v' => 'version',
 	);
 
