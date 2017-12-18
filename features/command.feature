@@ -1580,7 +1580,6 @@ Feature: WP-CLI Commands
       core custom-subcommand
       """
 
-  @daniel
   Scenario: Custom core subcommand should be able to run on before_wp_load
     Given a WP installation
     And a wp-cli.yml file:
