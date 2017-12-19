@@ -606,8 +606,14 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		}
 	}
 
-	public function install_wp( $subdir = '' ) {
-		$wp_version_suffix = ( $wp_version = getenv( 'WP_VERSION' ) ) ? "-$wp_version" : '';
+	public function install_wp( $subdir = '', $wp_version = '' ) {
+		if ( ! $wp_version ) {
+			$wp_version = getenv( 'WP_VERSION' );
+		}
+		$wp_version_suffix = '';
+		if ( $wp_version ){
+			$wp_version_suffix = "-$wp_version";
+		}
 		self::$install_cache_dir = sys_get_temp_dir() . '/wp-cli-test-core-install-cache' . $wp_version_suffix;
 		if ( ! file_exists( self::$install_cache_dir ) ) {
 			mkdir( self::$install_cache_dir );

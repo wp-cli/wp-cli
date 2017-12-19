@@ -75,6 +75,12 @@ $steps->Given( '/^a WP (install|installation)$/',
 	}
 );
 
+$steps->Given( '/^a WP ([\d\.]+) (install|installation)$/',
+	function ( $world, $wp_version ) {
+		$world->install_wp( '', $wp_version );
+	}
+);
+
 $steps->Given( "/^a WP (install|installation) in '([^\s]+)'$/",
 	function ( $world, $_, $subdir ) {
 		$world->install_wp( $subdir );
