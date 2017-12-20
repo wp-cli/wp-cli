@@ -1526,16 +1526,16 @@
         },
         {
             "name": "wp-cli/core-command",
-            "version": "v1.0.7",
+            "version": "v1.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/core-command.git",
-                "reference": "2ef05ac01560c571530d539a517aaa587908a851"
+                "reference": "b1c3c1bd10d081c24b606fcc6ed89100d59d4218"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/core-command/zipball/2ef05ac01560c571530d539a517aaa587908a851",
-                "reference": "2ef05ac01560c571530d539a517aaa587908a851",
+                "url": "https://api.github.com/repos/wp-cli/core-command/zipball/b1c3c1bd10d081c24b606fcc6ed89100d59d4218",
+                "reference": "b1c3c1bd10d081c24b606fcc6ed89100d59d4218",
                 "shasum": ""
             },
             "require-dev": {
@@ -1582,7 +1582,7 @@
             ],
             "description": "Downloads, installs, updates, and manages a WordPress installation.",
             "homepage": "https://github.com/wp-cli/core-command",
-            "time": "2017-12-11T12:56:16+00:00"
+            "time": "2017-12-19T22:21:54+00:00"
         },
         {
             "name": "wp-cli/cron-command",
