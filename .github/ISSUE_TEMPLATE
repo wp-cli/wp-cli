@@ -4,6 +4,8 @@ Thanks for taking the time to help improve WP-CLI!
 
 Found a bug or want to suggest an enhancement to an existing command? Before creating an issue, please review our best practices: http://wp-cli.org/docs/bug-reports/
 
+Have an idea for something new? Jump into the ideas repo: https://github.com/wp-cli/ideas
+
 Need help with something? Github issues aren't for general support questions, but there are other venues you can try: http://wp-cli.org/#support Make sure you're running the most recent version of WP-CLI! The current version is the only officially supported version.
 
 Want to suggest a feature? Check out the roadmap for how feature development happens: https://wp-cli.org/docs/roadmap/
