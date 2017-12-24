@@ -1129,7 +1129,8 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
 		'v' => 'version',
 	);
 
-	if ( array_key_exists( $target, $suggestion_map ) ) {
+	if ( array_key_exists( $target, $suggestion_map )
+	     && in_array( $suggestion_map[ $target ], $options, true ) ) {
 		return $suggestion_map[ $target ];
 	}
 
