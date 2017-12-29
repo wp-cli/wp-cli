@@ -1579,3 +1579,39 @@ Feature: WP-CLI Commands
       """
       core custom-subcommand
       """
+
+  Scenario: Custom core subcommand should be able to run on before_wp_load
+    Given a WP installation
+    And a wp-cli.yml file:
+      """
+      require:
+        - core-safe-update.php
+      """
+    And a core-safe-update.php file:
+      """
+      <?php
+      /**
+       * Safely update WP core.
+       *
+       * ## OPTIONS
+       *
+       * [--version=<version>]
+       * : Specify a custom WordPress version.
+       *
+       * @when before_wp_load
+       */
+      function wpx_core_safe_update() {
+        WP_CLI::success( 'Core safely updated.' );
+      }
+      WP_CLI::add_command( 'core safe-update', 'wpx_core_safe_update' );
+      // Da heck?
+      WP_CLI::add_hook( 'find_command_to_run_pre', function() {
+        WP_CLI::add_command( 'core safe-update', 'wpx_core_safe_update' );
+      });
+      """
+
+    When I run `wp core safe-update`
+    Then STDOUT should be:
+      """
+      Success: Core safely updated.
+      """
