@@ -37,6 +37,7 @@ $wp_version_reqs = array();
 if ( ! in_array( getenv( 'WP_VERSION' ), array( 'latest', 'nightly', 'trunk' ), true ) ) {
 	$wp_version_reqs = version_tags( 'require-wp', getenv( 'WP_VERSION' ), '<' );
 }
+$wp_version_reqs = array_merge( $wp_version_reqs, version_tags( 'less-than-wp', getenv( 'WP_VERSION' ), '>' ) );
 
 $skip_tags = array_merge(
 	$wp_version_reqs,
