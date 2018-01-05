@@ -8,22 +8,6 @@ require_once dirname( __DIR__ ) . '/php/commands/help.php';
 
 class HelpTest extends PHPUnit_Framework_TestCase {
 
-	public function testPassThroughPagerProcDisabled() {
-		$err_msg = 'Warning: check_proc_available() failed in pass_through_pager().';
-
-		$cmd = 'php -ddisable_functions=proc_open php/boot-fs.php help --debug 2>&1';
-		$output = array();
-		exec( $cmd, $output );
-		$output = trim( implode( "\n", $output ) );
-		$this->assertTrue( false !== strpos( $output, $err_msg ) );
-
-		$cmd = 'php -ddisable_functions=proc_close php/boot-fs.php help --debug 2>&1';
-		$output = array();
-		exec( $cmd, $output );
-		$output = trim( implode( "\n", $output ) );
-		$this->assertTrue( false !== strpos( $output, $err_msg ) );
-	}
-
 	public function test_parse_reference_links() {
 		$test_class = new ReflectionClass( 'Help_Command' );
 		$method = $test_class->getMethod( 'parse_reference_links' );
