@@ -332,11 +332,45 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	 * Replace {VARIABLE_NAME}. Note that variable names can only contain uppercase letters and underscores (no numbers).
 	 */
 	public function replace_variables( $str ) {
-		$ret = preg_replace_callback( '/\{([A-Z_]+)\}/', array( $this, '_replace_var' ), $str );
-		if ( false !== strpos( $str, '{WP_VERSION-' ) ) {
-			$ret = $this->_replace_wp_versions( $ret );
+		if ( false !== strpos( $str, '{INVOKE_WP_CLI_WITH_PHP_ARGS-' ) ) {
+			$str = $this->_replace_invoke_wp_cli_with_php_args( $str );
 		}
-		return $ret;
+		$str = preg_replace_callback( '/\{([A-Z_]+)\}/', array( $this, '_replace_var' ), $str );
+		if ( false !== strpos( $str, '{WP_VERSION-' ) ) {
+			$str = $this->_replace_wp_versions( $str );
+		}
+		return $str;
+	}
+
+	/**
+	 * Substitute "{INVOKE_WP_CLI_WITH_PHP_ARGS-args}" variables.
+	 */
+	private function _replace_invoke_wp_cli_with_php_args( $str ) {
+		static $phar_path = null, $shell_path = null;
+
+		if ( null === $phar_path ) {
+			$phar_path = false;
+			if ( ( $bin_dir = getenv( 'WP_CLI_BIN_DIR' ) ) && file_exists( $bin_dir . '/wp' ) && is_executable( $bin_dir . '/wp' ) ) {
+				$phar_path = $bin_dir . '/wp';
+			} else {
+				$src_dir = dirname( dirname( __DIR__ ) );
+				$bin_path = $src_dir . '/bin/wp';
+				$vendor_bin_path = $src_dir . '/vendor/bin/wp';
+				if ( file_exists( $bin_path ) && is_executable( $bin_path ) ) {
+					$shell_path = $bin_path;
+				} elseif ( file_exists( $vendor_bin_path ) && is_executable( $vendor_bin_path ) ) {
+					$shell_path = $vendor_bin_path;
+				} else {
+					$shell_path = 'wp';
+				}
+			}
+		}
+
+		$str = preg_replace_callback( '/{INVOKE_WP_CLI_WITH_PHP_ARGS-([^}]*)}/', function ( $matches ) use ( $phar_path, $shell_path ) {
+			return $phar_path ? "php {$matches[1]} {$phar_path}" : ( 'WP_CLI_PHP_ARGS=' . escapeshellarg( $matches[1] ) . ' ' . $shell_path );
+		}, $str );
+
+		return $str;
 	}
 
 	/**
