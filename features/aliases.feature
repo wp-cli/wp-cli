@@ -392,7 +392,7 @@ Feature: Create shortcuts to specific WordPress installs
         - @bar
       """
 
-    When I try `WP_CLI_PHP_ARGS='-ddisable_functions=<func>' {SRC_DIR}/bin/wp @foobar core is-installed`
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} @foobar core is-installed`
     Then STDERR should contain:
       """
       Error: Cannot do 'group alias': The PHP functions `proc_open()` and/or `proc_close()` are disabled
