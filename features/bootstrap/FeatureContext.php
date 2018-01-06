@@ -331,13 +331,13 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	/**
 	 * Replace standard {VARIABLE_NAME} variables and the special {INVOKE_WP_CLI_WITH_PHP_ARGS-args} and {WP_VERSION-version-latest} variables.
-	 * Note that standard variable names can only contain uppercase letters and underscores (no numbers).
+	 * Note that standard variable names can only contain uppercase letters, digits and underscores and cannot begin with a digit.
 	 */
 	public function replace_variables( $str ) {
 		if ( false !== strpos( $str, '{INVOKE_WP_CLI_WITH_PHP_ARGS-' ) ) {
 			$str = $this->replace_invoke_wp_cli_with_php_args( $str );
 		}
-		$str = preg_replace_callback( '/\{([A-Z_]+)\}/', array( $this, 'replace_var' ), $str );
+		$str = preg_replace_callback( '/\{([A-Z_][A-Z_0-9]*)\}/', array( $this, 'replace_var' ), $str );
 		if ( false !== strpos( $str, '{WP_VERSION-' ) ) {
 			$str = $this->replace_wp_versions( $str );
 		}
