@@ -87,8 +87,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	private $running_procs = array();
 
 	/**
-	 * Array of variables available as {VARIABLE_NAME}. Some are always set: CORE_CONFIG_SETTINGS, SRC_DIR, CACHE_DIR, WP_VERSION-version-latest. Some are step-dependent:
-	 * RUN_DIR, SUITE_CACHE_DIR, COMPOSER_LOCAL_REPOSITORY, PHAR_PATH. Scenarios can define their own variables using "Given save" steps. Variables are reset for each scenario.
+	 * Array of variables available as {VARIABLE_NAME}. Some are always set: CORE_CONFIG_SETTINGS, SRC_DIR, CACHE_DIR, WP_VERSION-version-latest.
+	 * Some are step-dependent: RUN_DIR, SUITE_CACHE_DIR, COMPOSER_LOCAL_REPOSITORY, PHAR_PATH. One is set on use: INVOKE_WP_CLI_WITH_PHP_ARGS-args.
+	 * Scenarios can define their own variables using "Given save" steps. Variables are reset for each scenario.
 	 */
 	public $variables = array();
 
@@ -329,23 +330,24 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	/**
-	 * Replace {VARIABLE_NAME}. Note that variable names can only contain uppercase letters and underscores (no numbers).
+	 * Replace standard {VARIABLE_NAME} variables and the special {INVOKE_WP_CLI_WITH_PHP_ARGS-args} and {WP_VERSION-version-latest} variables.
+	 * Note that standard variable names can only contain uppercase letters and underscores (no numbers).
 	 */
 	public function replace_variables( $str ) {
 		if ( false !== strpos( $str, '{INVOKE_WP_CLI_WITH_PHP_ARGS-' ) ) {
-			$str = $this->_replace_invoke_wp_cli_with_php_args( $str );
+			$str = $this->replace_invoke_wp_cli_with_php_args( $str );
 		}
-		$str = preg_replace_callback( '/\{([A-Z_]+)\}/', array( $this, '_replace_var' ), $str );
+		$str = preg_replace_callback( '/\{([A-Z_]+)\}/', array( $this, 'replace_var' ), $str );
 		if ( false !== strpos( $str, '{WP_VERSION-' ) ) {
-			$str = $this->_replace_wp_versions( $str );
+			$str = $this->replace_wp_versions( $str );
 		}
 		return $str;
 	}
 
 	/**
-	 * Substitute "{INVOKE_WP_CLI_WITH_PHP_ARGS-args}" variables.
+	 * Substitute {INVOKE_WP_CLI_WITH_PHP_ARGS-args} variables.
 	 */
-	private function _replace_invoke_wp_cli_with_php_args( $str ) {
+	private function replace_invoke_wp_cli_with_php_args( $str ) {
 		static $phar_path = null, $shell_path = null;
 
 		if ( null === $phar_path ) {
@@ -376,7 +378,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	/**
 	 * Replace variables callback.
 	 */
-	private function _replace_var( $matches ) {
+	private function replace_var( $matches ) {
 		$cmd = $matches[0];
 
 		foreach ( array_slice( $matches, 1 ) as $key ) {
@@ -387,9 +389,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	/**
-	 * Substitute "{WP_VERSION-version-latest}" variables.
+	 * Substitute {WP_VERSION-version-latest} variables.
 	 */
-	private function _replace_wp_versions( $str ) {
+	private function replace_wp_versions( $str ) {
 		static $wp_versions = null;
 		if ( null === $wp_versions ) {
 			$wp_versions = array();
