@@ -31,13 +31,19 @@ function version_tags( $prefix, $current, $operator = '<' ) {
 	return $skip_tags;
 }
 
+$wp_version = getenv( 'WP_VERSION' );
 $wp_version_reqs = array();
-// Only apply @require-wp tags when WP_VERSION isn't 'latest' or 'nightly'
-// 'latest' and 'nightly' are expected to work with all features
-if ( ! in_array( getenv( 'WP_VERSION' ), array( 'latest', 'nightly', 'trunk' ), true ) ) {
-	$wp_version_reqs = version_tags( 'require-wp', getenv( 'WP_VERSION' ), '<' );
+// Only apply @require-wp tags when WP_VERSION isn't 'latest', 'nightly' or 'trunk'.
+// 'latest', 'nightly' and 'trunk' are expected to work with all features.
+if ( $wp_version && ! in_array( $wp_version, array( 'latest', 'nightly', 'trunk' ), true ) ) {
+	$wp_version_reqs = array_merge(
+		version_tags( 'require-wp', $wp_version, '<' ),
+		version_tags( 'less-than-wp', $wp_version, '>' )
+	);
+} else {
+	// But make sure @less-than-wp tags always exist for those special cases. (Note: @less-than-wp-latest etc won't work and shouldn't be used).
+	$wp_version_reqs = array_merge( $wp_version_reqs, version_tags( 'less-than-wp', '9999', '>' ) );
 }
-$wp_version_reqs = array_merge( $wp_version_reqs, version_tags( 'less-than-wp', getenv( 'WP_VERSION' ), '>' ) );
 
 $skip_tags = array_merge(
 	$wp_version_reqs,
