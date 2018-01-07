@@ -352,7 +352,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		if ( null === $phar_path ) {
 			$phar_path = false;
-			if ( ( $bin_dir = getenv( 'WP_CLI_BIN_DIR' ) ) && file_exists( $bin_dir . '/wp' ) && is_executable( $bin_dir . '/wp' ) ) {
+			$phar_begin = '#!/usr/bin/env php';
+			$phar_begin_len = strlen( $phar_begin );
+			if ( ( $bin_dir = getenv( 'WP_CLI_BIN_DIR' ) ) && file_exists( $bin_dir . '/wp' ) && $phar_begin === file_get_contents( $bin_dir . '/wp', false, null, 0, $phar_begin_len ) ) {
 				$phar_path = $bin_dir . '/wp';
 			} else {
 				$src_dir = dirname( dirname( __DIR__ ) );
