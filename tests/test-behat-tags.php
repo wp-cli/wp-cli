@@ -31,8 +31,10 @@ class BehatTagsTest extends PHPUnit_Framework_TestCase {
 	 * @dataProvider data_behat_tags_wp_version
 	 */
 	function test_behat_tags_wp_version( $env, $expected ) {
+		$env_wp_version = getenv( 'WP_VERSION' );
 		$env_github_token = getenv( 'GITHUB_TOKEN' );
 
+		putenv( 'WP_VERSION' );
 		putenv( 'GITHUB_TOKEN' );
 
 		$behat_tags = dirname( __DIR__ ) . '/ci/behat-tags.php';
@@ -43,6 +45,7 @@ class BehatTagsTest extends PHPUnit_Framework_TestCase {
 		$output = exec( "cd {$this->temp_dir}; $env php $behat_tags" );
 		$this->assertSame( $expected, $output );
 
+		putenv( false === $env_wp_version ? 'WP_VERSION' : "WP_VERSION=$env_wp_version" );
 		putenv( false === $env_github_token ? 'GITHUB_TOKEN' : "GITHUB_TOKEN=$env_github_token" );
 	}
 
