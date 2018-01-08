@@ -115,7 +115,7 @@ class BehatTagsTest extends PHPUnit_Framework_TestCase {
 
 		$behat_tags = dirname( __DIR__ ) . '/ci/behat-tags.php';
 
-		file_put_contents( $this->temp_dir . '/features/extension.feature', '@require-extension-imagick @require-extension-intl' );
+		file_put_contents( $this->temp_dir . '/features/extension.feature', '@require-extension-imagick @require-extension-curl' );
 
 		$expecteds = array();
 		if ( ! extension_loaded( 'imagick' ) ) {
@@ -128,7 +128,7 @@ class BehatTagsTest extends PHPUnit_Framework_TestCase {
 		$output = exec( "cd {$this->temp_dir}; php $behat_tags" );
 		$this->assertSame( $expected, $output );
 
-		$expected = '--tags=' . implode( '&&', array( '~@github-api', '~@broken', '~@require-extension-imagick', '~@require-extension-intl' ) );
+		$expected = '--tags=' . implode( '&&', array( '~@github-api', '~@broken', '~@require-extension-imagick', '~@require-extension-curl' ) );
 		$output = exec( "cd {$this->temp_dir}; php -n $behat_tags" ); // Disable all extensions.
 		$this->assertSame( $expected, $output );
 
