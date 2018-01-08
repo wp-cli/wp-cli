@@ -103,6 +103,9 @@ class CLI_Command extends WP_CLI_Command {
 
 		$runner = WP_CLI::get_runner();
 
+		$system_os           = php_uname( 's' );
+		$system_architecture = php_uname( 'm' );
+
 		$packages_dir = $runner->get_packages_dir_path();
 		if ( ! is_dir( $packages_dir ) ) {
 			$packages_dir = null;
@@ -115,6 +118,8 @@ class CLI_Command extends WP_CLI_Command {
 				'wp_cli_dir_path' => WP_CLI_ROOT,
 				'wp_cli_packages_dir_path' => $packages_dir,
 				'wp_cli_version' => WP_CLI_VERSION,
+				'system_os' => $system_os,
+				'system_architecture' => $system_architecture,
 			);
 
 			WP_CLI::line( json_encode( $info ) );
@@ -129,6 +134,8 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "WP-CLI global config:\t" . $runner->global_config_path );
 			WP_CLI::line( "WP-CLI project config:\t" . $runner->project_config_path );
 			WP_CLI::line( "WP-CLI version:\t" . WP_CLI_VERSION );
+			WP_CLI::line( "Operating System:\t" . $system_os );
+			WP_CLI::line( "System Architecture:\t" . $system_architecture );
 		}
 	}
 
