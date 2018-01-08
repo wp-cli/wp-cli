@@ -128,10 +128,6 @@ class BehatTagsTest extends PHPUnit_Framework_TestCase {
 		$output = exec( "cd {$this->temp_dir}; php $behat_tags" );
 		$this->assertSame( $expected, $output );
 
-		$expected = '--tags=' . implode( '&&', array( '~@github-api', '~@broken', '~@require-extension-imagick', '~@require-extension-curl' ) );
-		$output = exec( "cd {$this->temp_dir}; php -n $behat_tags" ); // Disable all extensions.
-		$this->assertSame( $expected, $output );
-
 		putenv( false === $env_github_token ? 'GITHUB_TOKEN' : "GITHUB_TOKEN=$env_github_token" );
 	}
 }
