@@ -105,7 +105,9 @@ class CLI_Command extends WP_CLI_Command {
 
 		$packages_dir = $runner->get_packages_dir_path();
 
+		// OS information
 		$system_os = php_uname( 's' );
+		// Architecture information
 		$system_architecture = php_uname( 'm' );
 
 		if ( ! is_dir( $packages_dir ) ) {
