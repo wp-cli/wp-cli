@@ -511,14 +511,15 @@ function mustache_render( $template_name, $data = array() ) {
  *
  * @param string  $message  Text to display before the progress bar.
  * @param integer $count    Total number of ticks to be performed.
+ * @param int     $interval  The interval in milliseconds between updates.
  * @return cli\progress\Bar|WP_CLI\NoOp
  */
-function make_progress_bar( $message, $count ) {
+function make_progress_bar( $message, $count, $interval = 100 ) {
 	if ( \cli\Shell::isPiped() ) {
 		return new \WP_CLI\NoOp;
 	}
 
-	return new \cli\progress\Bar( $message, $count );
+	return new \cli\progress\Bar( $message, $count, $interval = 100 );
 }
 
 function parse_url( $url ) {
