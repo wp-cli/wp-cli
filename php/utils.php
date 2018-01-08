@@ -519,7 +519,7 @@ function make_progress_bar( $message, $count, $interval = 100 ) {
 		return new \WP_CLI\NoOp;
 	}
 
-	return new \cli\progress\Bar( $message, $count, $interval = 100 );
+	return new \cli\progress\Bar( $message, $count, $interval );
 }
 
 function parse_url( $url ) {
