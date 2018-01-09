@@ -318,7 +318,7 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 			if ( ! $all_tables ) {
 
 				// Get table prefix.
-				$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
+				$prefix = ( is_multisite() ) ? $wpdb->base_prefix : $wpdb->prefix;
 
 				// '_' is a special wildcard for MySQL LIKE queries
 				// so it needs to be escaped with '\', but then '\' needs to be escaped as well
