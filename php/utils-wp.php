@@ -316,8 +316,18 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 			global $wpdb;
 			static $all_tables = array();
 			if ( ! $all_tables ) {
-				$all_tables = $wpdb->get_col( 'SHOW TABLES' );
+
+				// Get table prefix.
+				$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
+
+				// '_' is a special wildcard for MySQL LIKE queries
+				// so it needs to be escaped with '\', but then '\' needs to be escaped as well
+				$sql_prefix = str_replace( '_', '\\_', $prefix );
+
+				// Get all tables as per prefix.
+				$all_tables = $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $sql_prefix . '%' ) );
 			}
+
 			$tables = array();
 			foreach ( $all_tables as $table ) {
 				if ( fnmatch( $glob, $table ) ) {
