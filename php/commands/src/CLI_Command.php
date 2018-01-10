@@ -107,8 +107,16 @@ class CLI_Command extends WP_CLI_Command {
 		if ( ! is_dir( $packages_dir ) ) {
 			$packages_dir = null;
 		}
+
+		$os = ( preg_match( '/^WIN/i', PHP_OS ) ) ? 'Windows' : php_uname( 's' );
+		$os = sprintf( '%1$s %2$s %3$s', $os, php_uname( 'r' ), php_uname( 'm' ) );
+
+		$shell = ( isset( $_SERVER['SHELL'] ) ) ? $_SERVER['SHELL'] : '';
+
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$info = array(
+				'os_version' => $os,
+				'shell_path' => $shell,
 				'php_binary_path' => $php_bin,
 				'global_config_path' => $runner->global_config_path,
 				'project_config_path' => $runner->project_config_path,
@@ -119,6 +127,8 @@ class CLI_Command extends WP_CLI_Command {
 
 			WP_CLI::line( json_encode( $info ) );
 		} else {
+			WP_CLI::line( "OS:\t" . $os );
+			WP_CLI::line( "Shell:\t" . $shell );
 			WP_CLI::line( "PHP binary:\t" . $php_bin );
 			WP_CLI::line( "PHP version:\t" . PHP_VERSION );
 			WP_CLI::line( "php.ini used:\t" . get_cfg_var( 'cfg_file_path' ) );
