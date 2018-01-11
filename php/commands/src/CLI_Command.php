@@ -105,7 +105,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		$system_os           = php_uname( 's' );
 		$system_architecture = php_uname( 'm' );
-		$current_shell = ( isset( $_SERVER['SHELL'] ) ) ? $_SERVER['SHELL'] : '';
+		$current_shell       = ( isset( $_SERVER['SHELL'] ) ) ? $_SERVER['SHELL'] : '';
 
 		$packages_dir = $runner->get_packages_dir_path();
 		if ( ! is_dir( $packages_dir ) ) {
