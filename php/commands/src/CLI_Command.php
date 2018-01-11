@@ -106,7 +106,7 @@ class CLI_Command extends WP_CLI_Command {
 		if ( ! $shell && Utils\is_windows() ) {
 			$shell = getenv( 'ComSpec' );
 		}
-		$runner              = WP_CLI::get_runner();
+		$runner = WP_CLI::get_runner();
 
 		$packages_dir = $runner->get_packages_dir_path();
 		if ( ! is_dir( $packages_dir ) ) {
@@ -114,14 +114,14 @@ class CLI_Command extends WP_CLI_Command {
 		}
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$info = array(
-				'php_binary_path' => $php_bin,
-				'global_config_path' => $runner->global_config_path,
-				'project_config_path' => $runner->project_config_path,
-				'wp_cli_dir_path' => WP_CLI_ROOT,
+				'php_binary_path'          => $php_bin,
+				'global_config_path'       => $runner->global_config_path,
+				'project_config_path'      => $runner->project_config_path,
+				'wp_cli_dir_path'          => WP_CLI_ROOT,
 				'wp_cli_packages_dir_path' => $packages_dir,
-				'wp_cli_version' => WP_CLI_VERSION,
-				'system_os' => $system_os,
-				'shell' => $shell,
+				'wp_cli_version'           => WP_CLI_VERSION,
+				'system_os'                => $system_os,
+				'shell'                    => $shell,
 			);
 
 			WP_CLI::line( json_encode( $info ) );
