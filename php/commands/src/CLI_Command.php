@@ -105,6 +105,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		$system_os           = php_uname( 's' );
 		$system_architecture = php_uname( 'm' );
+		$current_shell = ( isset( $_SERVER['SHELL'] ) ) ? $_SERVER['SHELL'] : '';
 
 		$packages_dir = $runner->get_packages_dir_path();
 		if ( ! is_dir( $packages_dir ) ) {
@@ -120,6 +121,7 @@ class CLI_Command extends WP_CLI_Command {
 				'wp_cli_version' => WP_CLI_VERSION,
 				'system_os' => $system_os,
 				'system_architecture' => $system_architecture,
+				'current_shell' => $current_shell,
 			);
 
 			WP_CLI::line( json_encode( $info ) );
@@ -136,6 +138,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "WP-CLI version:\t" . WP_CLI_VERSION );
 			WP_CLI::line( "Operating System:\t" . $system_os );
 			WP_CLI::line( "System Architecture:\t" . $system_architecture );
+			WP_CLI::line( "Current Shell:\t" . $current_shell );
 		}
 	}
 
