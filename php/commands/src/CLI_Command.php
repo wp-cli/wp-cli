@@ -63,6 +63,8 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * Helpful for diagnostic purposes, this command shares:
 	 *
+	 * * OS information.
+	 * * Shell information.
 	 * * PHP binary used.
 	 * * PHP binary version.
 	 * * php.ini configuration file used (which is typically different than web).
@@ -89,14 +91,16 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 *     # Display various data about the CLI environment.
 	 *     $ wp cli info
-	 *     PHP binary: /usr/bin/php5
-	 *     PHP version:    5.5.9-1ubuntu4.16
-	 *     php.ini used:   /etc/php5/cli/php.ini
+	 *     OS:  Linux 4.10.0-42-generic #46~16.04.1-Ubuntu SMP Mon Dec 4 15:57:59 UTC 2017 x86_64
+	 *     Shell:   /usr/bin/zsh
+	 *     PHP binary:  /usr/bin/php
+	 *     PHP version: 7.1.12-1+ubuntu16.04.1+deb.sury.org+1
+	 *     php.ini used:    /etc/php/7.1/cli/php.ini
 	 *     WP-CLI root dir:    phar://wp-cli.phar
 	 *     WP-CLI packages dir:    /home/person/.wp-cli/packages/
 	 *     WP-CLI global config:
 	 *     WP-CLI project config:
-	 *     WP-CLI version: 0.24.1
+	 *     WP-CLI version: 1.5.0
 	 */
 	public function info( $_, $assoc_args ) {
 		$php_bin = Utils\get_php_binary();
