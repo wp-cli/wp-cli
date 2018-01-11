@@ -59,7 +59,7 @@ class CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Print various details about the Machine and WP-CLI environment.
+	 * Print various details about the WP-CLI environment.
 	 *
 	 * Helpful for diagnostic purposes, this command shares:
 	 *
@@ -89,18 +89,18 @@ class CLI_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Display various data about the Machine and CLI environment.
+	 *     # Display various data about the CLI environment.
 	 *     $ wp cli info
-	 *     OS:	Linux 4.10.0-42-generic #46~16.04.1-Ubuntu SMP Mon Dec 4 15:57:59 UTC 2017 x86_64
-	 *     Shell:	/usr/bin/zsh
-	 *     PHP binary:	/usr/bin/php
-	 *     PHP version:	7.1.12-1+ubuntu16.04.1+deb.sury.org+1
-	 *     php.ini used:	/etc/php/7.1/cli/php.ini
+	 *     OS:  Linux 4.10.0-42-generic #46~16.04.1-Ubuntu SMP Mon Dec 4 15:57:59 UTC 2017 x86_64
+	 *     Shell:   /usr/bin/zsh
+	 *     PHP binary:  /usr/bin/php
+	 *     PHP version: 7.1.12-1+ubuntu16.04.1+deb.sury.org+1
+	 *     php.ini used:    /etc/php/7.1/cli/php.ini
 	 *     WP-CLI root dir:    phar://wp-cli.phar
 	 *     WP-CLI packages dir:    /home/person/.wp-cli/packages/
 	 *     WP-CLI global config:
 	 *     WP-CLI project config:
-	 *     WP-CLI version: 1.5.0-alpha
+	 *     WP-CLI version: 1.5.0
 	 */
 	public function info( $_, $assoc_args ) {
 		$php_bin = Utils\get_php_binary();
