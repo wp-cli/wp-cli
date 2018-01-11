@@ -101,11 +101,12 @@ class CLI_Command extends WP_CLI_Command {
 	public function info( $_, $assoc_args ) {
 		$php_bin = Utils\get_php_binary();
 
-		$runner = WP_CLI::get_runner();
-
-		$system_os           = php_uname( 's' );
-		$system_architecture = php_uname( 'm' );
-		$current_shell       = ( isset( $_SERVER['SHELL'] ) ) ? $_SERVER['SHELL'] : '';
+		$system_os = sprintf( '%s %s %s %s', php_uname( 's' ), php_uname( 'r' ), php_uname( 'v' ), php_uname( 'm' ) );
+		$shell     = getenv( 'SHELL' );
+		if ( ! $shell && Utils\is_windows() ) {
+			$shell = getenv( 'ComSpec' );
+		}
+		$runner              = WP_CLI::get_runner();
 
 		$packages_dir = $runner->get_packages_dir_path();
 		if ( ! is_dir( $packages_dir ) ) {
@@ -120,12 +121,13 @@ class CLI_Command extends WP_CLI_Command {
 				'wp_cli_packages_dir_path' => $packages_dir,
 				'wp_cli_version' => WP_CLI_VERSION,
 				'system_os' => $system_os,
-				'system_architecture' => $system_architecture,
-				'current_shell' => $current_shell,
+				'shell' => $shell,
 			);
 
 			WP_CLI::line( json_encode( $info ) );
 		} else {
+			WP_CLI::line( "OS:\t" . $system_os );
+			WP_CLI::line( "Shell:\t" . $shell );
 			WP_CLI::line( "PHP binary:\t" . $php_bin );
 			WP_CLI::line( "PHP version:\t" . PHP_VERSION );
 			WP_CLI::line( "php.ini used:\t" . get_cfg_var( 'cfg_file_path' ) );
@@ -136,9 +138,6 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::line( "WP-CLI global config:\t" . $runner->global_config_path );
 			WP_CLI::line( "WP-CLI project config:\t" . $runner->project_config_path );
 			WP_CLI::line( "WP-CLI version:\t" . WP_CLI_VERSION );
-			WP_CLI::line( "Operating System:\t" . $system_os );
-			WP_CLI::line( "System Architecture:\t" . $system_architecture );
-			WP_CLI::line( "Current Shell:\t" . $current_shell );
 		}
 	}
 
