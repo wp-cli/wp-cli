@@ -130,18 +130,33 @@ class CLI_Command extends WP_CLI_Command {
 
 			WP_CLI::line( json_encode( $info ) );
 		} else {
-			WP_CLI::line( "OS:\t" . $system_os );
-			WP_CLI::line( "Shell:\t" . $shell );
-			WP_CLI::line( "PHP binary:\t" . $php_bin );
-			WP_CLI::line( "PHP version:\t" . PHP_VERSION );
-			WP_CLI::line( "php.ini used:\t" . get_cfg_var( 'cfg_file_path' ) );
-			WP_CLI::line( "WP-CLI root dir:\t" . WP_CLI_ROOT );
-			WP_CLI::line( "WP-CLI vendor dir:\t" . WP_CLI_VENDOR_DIR );
-			WP_CLI::line( "WP_CLI phar path:\t" . ( defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '' ) );
-			WP_CLI::line( "WP-CLI packages dir:\t" . $packages_dir );
-			WP_CLI::line( "WP-CLI global config:\t" . $runner->global_config_path );
-			WP_CLI::line( "WP-CLI project config:\t" . $runner->project_config_path );
-			WP_CLI::line( "WP-CLI version:\t" . WP_CLI_VERSION );
+			$info = array(
+				'OS'                      => $system_os,
+				'Shell'                   => $shell,
+				'PHP binary'              => $php_bin,
+				'PHP version'             => PHP_VERSION,
+				'php.ini used'            => get_cfg_var( 'cfg_file_path' ),
+				'WP-CLI root dir'         => WP_CLI_ROOT,
+				'WP-CLI vendor dir'       => WP_CLI_VENDOR_DIR,
+				'WP_CLI phar path'        => ( defined( 'WP_CLI_PHAR_PATH' ) ? WP_CLI_PHAR_PATH : '' ),
+				'WP-CLI packages dir'     => $packages_dir,
+				'WP-CLI global config'    => $runner->global_config_path,
+				'WP-CLI project config'   => $runner->project_config_path,
+				'WP-CLI version'          => WP_CLI_VERSION,
+			);
+			$items = array();
+			foreach ( $info as $key => $value ) {
+				$info_format = array(
+					'key' => '',
+					'value' => '',
+				);
+				$info_format['key']   = $key;
+				$info_format['value'] = $value;
+				$items[]           = $info_format;
+
+			}
+
+			WP_CLI\Utils\format_items( 'table', $items, array( 'key', 'value' ) );
 		}
 	}
 
