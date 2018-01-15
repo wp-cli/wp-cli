@@ -287,13 +287,23 @@ function wp_clear_object_cache() {
 		return;
 	}
 
-	$wp_object_cache->group_ops = array();
-	$wp_object_cache->stats = array();
-	$wp_object_cache->memcache_debug = array();
-	$wp_object_cache->cache = array();
+	wp_cache_flush();
 
-	if ( is_callable( $wp_object_cache, '__remoteset' ) ) {
-		$wp_object_cache->__remoteset(); // important
+	// The following are Memcached (Redux) plugin specific (see https://core.trac.wordpress.org/ticket/31463).
+	if ( isset( $wp_object_cache->group_ops ) ) {
+		$wp_object_cache->group_ops = array();
+	}
+	if ( isset( $wp_object_cache->stats ) ) {
+		$wp_object_cache->stats = array();
+	}
+	if ( isset( $wp_object_cache->memcache_debug ) ) {
+		$wp_object_cache->memcache_debug = array();
+	}
+	if ( ! empty( $wp_object_cache->cache ) ) { // This is cleared by `WP_Object_Cache::flush()` but keep for BC with Memcached.
+		$wp_object_cache->cache = array();
+	}
+	if ( method_exists( $wp_object_cache, '__remoteset' ) ) { // Apparently specific to wp.com version of Memcached plugin.
+		$wp_object_cache->__remoteset();
 	}
 }
 
