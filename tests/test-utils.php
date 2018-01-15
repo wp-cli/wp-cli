@@ -667,4 +667,28 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			array( 'ENV=\'blah blah\' echo', array(), 'blah\' echo', array( 'ENV' => '\'blah' ) ), // Unix escaping not supported, ie treated literally.
 		);
 	}
+
+	/**
+	 * Copied from core "tests/phpunit/tests/db.php" (adapted to not use `$wpdb`).
+	 */
+	function test_esc_like() {
+		$inputs   = array(
+			'howdy%', //Single Percent
+			'howdy_', //Single Underscore
+			'howdy\\', //Single slash
+			'howdy\\howdy%howdy_', //The works
+			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?', //Plain text
+		);
+		$expected = array(
+			'howdy\\%',
+			'howdy\\_',
+			'howdy\\\\',
+			'howdy\\\\howdy\\%howdy\\_',
+			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?',
+		);
+
+		foreach ( $inputs as $key => $input ) {
+			$this->assertEquals( $expected[ $key ], Utils\esc_like( $input ) );
+		}
+	}
 }
