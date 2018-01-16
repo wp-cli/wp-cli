@@ -277,6 +277,7 @@ function wp_get_cache_type() {
  *
  * @access public
  * @category System
+ * @deprecated 1.5.0
  */
 function wp_clear_object_cache() {
 	global $wpdb, $wp_object_cache;
@@ -297,11 +298,9 @@ function wp_clear_object_cache() {
 	if ( isset( $wp_object_cache->memcache_debug ) ) {
 		$wp_object_cache->memcache_debug = array();
 	}
+	// Used by `WP_Object_Cache` also.
 	if ( isset( $wp_object_cache->cache ) ) {
 		$wp_object_cache->cache = array();
-	}
-	if ( method_exists( $wp_object_cache, '__remoteset' ) ) { // Apparently specific to wp.com version of Memcached plugin.
-		$wp_object_cache->__remoteset();
 	}
 }
 
