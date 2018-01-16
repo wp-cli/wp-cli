@@ -287,8 +287,6 @@ function wp_clear_object_cache() {
 		return;
 	}
 
-	wp_cache_flush();
-
 	// The following are Memcached (Redux) plugin specific (see https://core.trac.wordpress.org/ticket/31463).
 	if ( isset( $wp_object_cache->group_ops ) ) {
 		$wp_object_cache->group_ops = array();
@@ -299,7 +297,7 @@ function wp_clear_object_cache() {
 	if ( isset( $wp_object_cache->memcache_debug ) ) {
 		$wp_object_cache->memcache_debug = array();
 	}
-	if ( ! empty( $wp_object_cache->cache ) ) { // This is cleared by `WP_Object_Cache::flush()` but keep for BC with Memcached.
+	if ( isset( $wp_object_cache->cache ) ) {
 		$wp_object_cache->cache = array();
 	}
 	if ( method_exists( $wp_object_cache, '__remoteset' ) ) { // Apparently specific to wp.com version of Memcached plugin.
