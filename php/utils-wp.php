@@ -312,55 +312,29 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 	// Prioritize any supplied $args as tables
 	if ( ! empty( $args ) ) {
 		$new_tables = array();
-		$get_tables_for_glob = function( $glob ) {
-			global $wpdb;
-			static $all_tables = array();
-			if ( ! $all_tables ) {
 
-				// Get table prefix.
-				$prefix = ( is_multisite() ) ? $wpdb->base_prefix : $wpdb->prefix;
-
-				// '_' is a special wildcard for MySQL LIKE queries
-				// so it needs to be escaped with '\', but then '\' needs to be escaped as well
-				$sql_prefix = str_replace( '_', '\\_', $prefix );
-
-				// Get all tables as per prefix.
-				$all_tables = $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $sql_prefix . '%' ) );
-			}
-
-			$tables = array();
-			foreach ( $all_tables as $table ) {
-				if ( fnmatch( $glob, $table ) ) {
-					$tables[] = $table;
-				}
-			}
-			return $tables;
-		};
 		foreach ( $args as $key => $table ) {
 			if ( false !== strpos( $table, '*' ) || false !== strpos( $table, '?' ) ) {
-				$expanded_tables = $get_tables_for_glob( $table );
+
+				// Get matched tables.
+				$expanded_tables = get_tables_for_glob( $table, $assoc_args );
 				if ( empty( $expanded_tables ) ) {
 					\WP_CLI::error( "Couldn't find any tables matching: {$table}" );
 				}
+
 				$new_tables = array_merge( $new_tables, $expanded_tables );
+
 			} else {
+
 				$new_tables[] = $table;
+
 			}
 		}
 		return $new_tables;
 	}
 
 	// Fall back to flag if no tables were passed
-	$table_type = 'WordPress';
-	if ( get_flag_value( $assoc_args, 'network' ) ) {
-		$table_type = 'network';
-	}
-	if ( get_flag_value( $assoc_args, 'all-tables-with-prefix' ) ) {
-		$table_type = 'all-tables-with-prefix';
-	}
-	if ( get_flag_value( $assoc_args, 'all-tables' ) ) {
-		$table_type = 'all-tables';
-	}
+	$table_type = get_table_type( $assoc_args );
 
 	$network = 'network' == $table_type;
 
@@ -378,21 +352,9 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 		return $matching_tables;
 	}
 
-	$filter_sitecategories = function( $matching_tables ) {
-		global $wpdb;
-		// Only include sitecategories when it's actually enabled.
-		if ( ! global_terms_enabled() ) {
-			$key = array_search( $wpdb->sitecategories, $matching_tables );
-			if ( false !== $key ) {
-				unset( $matching_tables[ $key ] );
-			}
-		}
-		return $matching_tables;
-	};
-
 	if ( $scope = get_flag_value( $assoc_args, 'scope' ) ) {
 		$matching_tables = $wpdb->tables( $scope );
-		$matching_tables = $filter_sitecategories( $matching_tables );
+		$matching_tables = get_matching_tables( $matching_tables );
 		return $matching_tables;
 	}
 
@@ -430,6 +392,107 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 
 	}
 
-	$filter_sitecategories( $matching_tables );
+	$matching_tables = get_matching_tables( $matching_tables );
 	return array_values( $matching_tables );
+}
+
+/**
+ * Get matched tables.
+ *
+ * @param array $matching_tables Optional flags for groups of tables
+ * @return array $matching_tables
+ */
+function get_matching_tables( $matching_tables ) {
+	global $wpdb;
+
+	// Only include sitecategories when it's actually enabled.
+	if ( ! global_terms_enabled() ) {
+
+		$key = array_search( $wpdb->sitecategories, $matching_tables );
+
+		if ( false !== $key ) {
+			unset( $matching_tables[ $key ] );
+		}
+	}
+
+	return $matching_tables;
+
+}
+
+/**
+ * Get matched tables as per wildcard.
+ *
+ * @param $glob string      Matched pattern
+ * @param array $assoc_args Optional flags for groups of tables
+ * @return array $tables
+ */
+function get_tables_for_glob( $glob, $assoc_args = array() ) {
+	global $wpdb;
+	static $all_tables = array();
+	if ( ! $all_tables ) {
+
+		// Get table prefix.
+		$prefix = ( is_multisite() ) ? $wpdb->base_prefix : $wpdb->prefix;
+
+		// '_' is a special wildcard for MySQL LIKE queries
+		// so it needs to be escaped with '\', but then '\' needs to be escaped as well
+		$sql_prefix = str_replace( '_', '\\_', $prefix );
+
+		// Get table type.
+		$table_type = get_table_type( $assoc_args );
+
+		$tables_query = $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $sql_prefix . '%' ) );
+
+		if ( 'all-tables' == $table_type ) {
+			$all_tables = $wpdb->get_col( 'SHOW TABLES' );
+
+		} elseif ( 'all-tables-with-prefix' === $table_type ) {
+
+				// Get all tables as per prefix.
+				$all_tables = $tables_query;
+
+		} else {
+
+			if ( empty( $assoc_args['scope'] ) ) {
+
+				$matching_tables = $wpdb->tables( 'all' );
+				$all_tables      = get_matching_tables( $matching_tables );
+
+			}
+		}
+	}
+
+	$tables = array();
+	foreach ( $all_tables as $table ) {
+		if ( fnmatch( $glob, $table ) ) {
+			$tables[] = $table;
+		}
+	}
+	return $tables;
+}
+
+/**
+ * Get table type.
+ *
+ * @param array $assoc_args   Optional flags for groups of tables
+ * @return string $table_type Table type.
+ */
+function get_table_type( $assoc_args = array() ) {
+
+	// Fall back to flag if no tables were passed
+	$table_type = 'WordPress';
+
+	if ( get_flag_value( $assoc_args, 'network' ) ) {
+		$table_type = 'network';
+	}
+
+	if ( get_flag_value( $assoc_args, 'all-tables-with-prefix' ) ) {
+		$table_type = 'all-tables-with-prefix';
+	}
+
+	if ( get_flag_value( $assoc_args, 'all-tables' ) ) {
+		$table_type = 'all-tables';
+	}
+
+	return $table_type;
 }
