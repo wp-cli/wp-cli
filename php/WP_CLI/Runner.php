@@ -763,11 +763,20 @@ class Runner {
 	 * @return bool
 	 */
 	private function wp_exists() {
+		return file_exists( ABSPATH . 'wp-includes/version.php' );
+	}
+
+	/**
+	 * Are WordPress core files readable?
+	 *
+	 * @return bool
+	 */
+	private function wp_is_readable() {
 		return is_readable( ABSPATH . 'wp-includes/version.php' );
 	}
 
 	private function check_wp_version() {
-		if ( ! $this->wp_exists() ) {
+		if ( ! $this->wp_exists() || ! $this->wp_is_readable() ) {
 			$this->show_synopsis_if_composite_command();
 			// If the command doesn't exist use as error.
 			$args = $this->cmd_starts_with( array( 'help' ) ) ? array_slice( $this->arguments, 1 ) : $this->arguments;
@@ -777,6 +786,12 @@ class Runner {
 					WP_CLI::warning( "No WordPress install found. If the command '" . implode( ' ', $args ) . "' is in a plugin or theme, pass --path=`path/to/wordpress`." );
 				}
 				WP_CLI::error( $suggestion_or_disabled );
+			}
+
+			if ( $this->wp_exists() && ! $this->wp_is_readable() ) {
+				WP_CLI::error(
+					'It seems, the WordPress core files do not have the proper file permissions.'
+				);
 			}
 			WP_CLI::error(
 				"This does not seem to be a WordPress install.\n" .
