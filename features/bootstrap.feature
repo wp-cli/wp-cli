@@ -201,7 +201,7 @@ Feature: Bootstrap WP-CLI
         """
 
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (command line)
-    Given a WP install with Composer
+    Given a WP installation with Composer
     And a dependency on current wp-cli
     When I run `vendor/bin/wp option get blogname`
     Then STDOUT should contain:
@@ -211,13 +211,13 @@ Feature: Bootstrap WP-CLI
 
   @require-php-5.4
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (web)
-    Given a WP install with Composer
+    Given a WP installation with Composer
     And a dependency on current wp-cli
     And a PHP built-in web server to serve 'wordpress'
     Then the HTTP status code should be 200
 
   Scenario: Composer stack with both WordPress and wp-cli as dependencies and a custom vendor directory
-    Given a WP install with Composer and a custom vendor directory 'vendor-custom'
+    Given a WP installation with Composer and a custom vendor directory 'vendor-custom'
     And a dependency on current wp-cli
     Then the vendor-custom/autoload_commands.php file should exist
     Then the vendor-custom/autoload_framework.php file should exist
@@ -266,7 +266,7 @@ Feature: Bootstrap WP-CLI
 
   @require-wp-3.9
   Scenario: Run cache flush on ms_site_not_found
-    Given a WP multisite install
+    Given a WP multisite installation
     And a wp-cli.yml file:
       """
       url: invalid.com
@@ -288,7 +288,7 @@ Feature: Bootstrap WP-CLI
 
   @require-wp-4.0
   Scenario: Run search-replace on ms_site_not_found
-    Given a WP multisite install
+    Given a WP multisite installation
     And a wp-cli.yml file:
       """
       url: invalid.com

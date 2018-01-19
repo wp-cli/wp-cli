@@ -649,6 +649,103 @@ Feature: WP-CLI Commands
       Success: dinner
       """
 
+  Scenario: Register a synopsis that supports multiple positional arguments
+    Given an empty directory
+    And a test-cmd.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'foo', function( $args ){
+        WP_CLI::log( count( $args ) );
+      }, array(
+        'when' => 'before_wp_load',
+        'synopsis' => array(
+          array(
+            'type'      => 'positional',
+            'name'      => 'arg',
+            'repeating' => true,
+          ),
+        ),
+      ));
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - test-cmd.php
+      """
+
+    When I run `wp foo bar`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp foo bar burrito`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+  Scenario: Register a synopsis that requires a flag
+    Given an empty directory
+    And a test-cmd.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'foo', function( $_, $assoc_args ){
+        WP_CLI::log( \WP_CLI\Utils\get_flag_value( $assoc_args, 'honk' ) ? 'honked' : 'nohonk' );
+      }, array(
+        'when' => 'before_wp_load',
+        'synopsis' => array(
+          array(
+            'type'     => 'flag',
+            'name'     => 'honk',
+            'optional' => true,
+          ),
+        ),
+      ));
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - test-cmd.php
+      """
+
+    When I run `wp foo`
+    Then STDOUT should be:
+      """
+      nohonk
+      """
+
+    When I run `wp foo --honk`
+    Then STDOUT should be:
+      """
+      honked
+      """
+
+    When I run `wp foo --honk=1`
+    Then STDOUT should be:
+      """
+      honked
+      """
+
+    When I run `wp foo --no-honk`
+    Then STDOUT should be:
+      """
+      nohonk
+      """
+
+    When I run `wp foo --honk=0`
+    Then STDOUT should be:
+      """
+      nohonk
+      """
+
+    # Note treats "false" as true.
+    When I run `wp foo --honk=false`
+    Then STDOUT should be:
+      """
+      honked
+      """
+
   Scenario: Register a longdesc for a given command
     Given an empty directory
     And a custom-cmd.php file:
@@ -911,7 +1008,7 @@ Feature: WP-CLI Commands
       """
 
   Scenario: Default arguments should respect wp-cli.yml
-    Given a WP install
+    Given a WP installation
     And a wp-cli.yml file:
       """
       post list:
@@ -953,7 +1050,7 @@ Feature: WP-CLI Commands
     And STDERR should be empty
 
   Scenario: WP-CLI suggests matching commands when user entry contains typos
-    Given a WP install
+    Given a WP installation
 
     When I try `wp clu`
     Then STDERR should contain:
@@ -1069,7 +1166,7 @@ Feature: WP-CLI Commands
       """
 
   Scenario: Command additions should work as plugins
-    Given a WP install
+    Given a WP installation
     And a wp-content/plugins/test-cli/command.php file:
       """
       <?php
@@ -1119,7 +1216,7 @@ Feature: WP-CLI Commands
     And STDERR should be empty
 
   Scenario: Command additions should work as must-use plugins
-    Given a WP install
+    Given a WP installation
     And a wp-content/mu-plugins/test-cli.php file:
       """
       <?php
@@ -1168,7 +1265,7 @@ Feature: WP-CLI Commands
     And STDERR should be empty
 
   Scenario: Command additions should work when registered on after_wp_load
-    Given a WP install
+    Given a WP installation
     And a wp-content/mu-plugins/test-cli.php file:
       """
       <?php
@@ -1219,7 +1316,7 @@ Feature: WP-CLI Commands
     And STDERR should be empty
 
   Scenario: The command should fire on `after_wp_load`
-    Given a WP install
+    Given a WP installation
     And a custom-cmd.php file:
       """
       <?php
@@ -1267,7 +1364,7 @@ Feature: WP-CLI Commands
     And the return code should be 1
 
   Scenario: The command should fire on `before_wp_load`
-    Given a WP install
+    Given a WP installation
     And a custom-cmd.php file:
       """
       <?php
@@ -1311,7 +1408,7 @@ Feature: WP-CLI Commands
     And the return code should be 0
 
   Scenario: Command hook should fires as expected on __invoke()
-    Given a WP install
+    Given a WP installation
     And a custom-cmd.php file:
       """
       <?php
@@ -1447,3 +1544,38 @@ Feature: WP-CLI Commands
       The namespace my-namespaced-command does not contain any usable commands in the current context.
       """
     And STDERR should be empty
+
+  Scenario: Late-registered command should appear in command usage
+    Given a WP installation
+    And a test-cmd.php file:
+      """
+      <?php
+      WP_CLI::add_wp_hook( 'plugins_loaded', function(){
+        WP_CLI::add_command( 'core custom-subcommand', function() {});
+      });
+      """
+    And a wp-cli.yml file:
+      """
+      require:
+        - test-cmd.php
+      """
+
+    When I run `wp help core`
+    Then STDOUT should contain:
+      """
+      custom-subcommand
+      """
+
+    When I run `wp core`
+    Then STDOUT should contain:
+      """
+      usage:
+      """
+    And STDOUT should contain:
+      """
+      core update
+      """
+    And STDOUT should contain:
+      """
+      core custom-subcommand
+      """

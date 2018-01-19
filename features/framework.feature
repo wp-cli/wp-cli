@@ -1,7 +1,7 @@
 Feature: Load WP-CLI
 
   Scenario: A plugin calling wp_signon() shouldn't fatal
-    Given a WP install
+    Given a WP installation
     And I run `wp user create testuser test@example.org --user_pass=testuser`
     And a wp-content/mu-plugins/test.php file:
       """
@@ -15,7 +15,7 @@ Feature: Load WP-CLI
     Then STDOUT should not be empty
 
   Scenario: A command loaded before WordPress then calls WordPress to load
-    Given a WP install
+    Given a WP installation
     And a custom-cmd.php file:
       """
       <?php
@@ -150,7 +150,7 @@ Feature: Load WP-CLI
       """
 
   Scenario: A plugin calling wp_redirect() shouldn't redirect
-    Given a WP install
+    Given a WP installation
     And a wp-content/mu-plugins/redirect.php file:
       """
       <?php
@@ -166,7 +166,7 @@ Feature: Load WP-CLI
       """
 
   Scenario: It should be possible to work on a site in maintenance mode
-    Given a WP install
+    Given a WP installation
     And a .maintenance file:
       """
       <?php
@@ -180,7 +180,7 @@ Feature: Load WP-CLI
       """
 
   Scenario: Handle error when WordPress cannot connect to the database host
-    Given a WP install
+    Given a WP installation
     And a invalid-host.php file:
       """
       <?php
@@ -222,7 +222,7 @@ Feature: Load WP-CLI
     And STDERR should be empty
 
   Scenario: WP-CLI sets $table_prefix appropriately on multisite
-    Given a WP multisite install
+    Given a WP multisite installation
     And I run `wp site create --slug=first`
 
     When I run `wp eval 'global $table_prefix; echo $table_prefix;'`
@@ -250,7 +250,7 @@ Feature: Load WP-CLI
       """
 
   Scenario: Don't apply set_url_scheme because it will always be incorrect
-    Given a WP multisite install
+    Given a WP multisite installation
     And I run `wp option update siteurl https://example.com`
 
     When I run `wp option get siteurl`
@@ -266,7 +266,7 @@ Feature: Load WP-CLI
       """
 
   Scenario: Show error message when site isn't found and there aren't additional prefixes.
-    Given a WP install
+    Given a WP installation
     And I run `wp db reset --yes`
 
     When I try `wp option get home`
@@ -278,7 +278,7 @@ Feature: Load WP-CLI
     And STDOUT should be empty
 
   Scenario: Show potential table prefixes when site isn't found, single site.
-    Given a WP install
+    Given a WP installation
     And "$table_prefix = 'wp_';" replaced with "$table_prefix = 'cli_';" in the wp-config.php file
 
     When I try `wp option get home`
@@ -311,7 +311,7 @@ Feature: Load WP-CLI
 
   @require-wp-3.9
   Scenario: Display a more helpful error message when site can't be found
-    Given a WP multisite install
+    Given a WP multisite installation
     And "define( 'DOMAIN_CURRENT_SITE', 'example.com' );" replaced with "define( 'DOMAIN_CURRENT_SITE', 'example.org' );" in the wp-config.php file
 
     When I try `wp option get home`
@@ -344,4 +344,19 @@ Feature: Load WP-CLI
     Then STDERR should be:
       """
       Error: Site 'example.io' not found. Verify `--url=<url>` matches an existing site.
+      """
+
+  Scenario: Don't show 'sitecategories' table unless global terms are enabled
+    Given a WP multisite installation
+
+    When I run `wp db tables`
+    Then STDOUT should not contain:
+      """
+      wp_sitecategories
+      """
+
+    When I run `wp db tables --network`
+    Then STDOUT should not contain:
+      """
+      wp_sitecategories
       """

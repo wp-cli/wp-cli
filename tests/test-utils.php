@@ -251,12 +251,21 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testAssocArgsToString() {
-		$this->assertEquals( " --url='foo.dev' --porcelain --apple='banana'" , Utils\assoc_args_to_str( array(
+		// Strip quotes for Windows compat.
+		$strip_quotes = function ( $str ) {
+			return str_replace( array( '"', "'" ), '', $str );
+		};
+
+		$expected = " --url='foo.dev' --porcelain --apple='banana'";
+		$actual = Utils\assoc_args_to_str( array(
 			'url'       => 'foo.dev',
 			'porcelain' => true,
 			'apple'     => 'banana'
-		) ) );
-		$this->assertEquals( " --url='foo.dev' --require='file-a.php' --require='file-b.php' --porcelain --apple='banana'" , Utils\assoc_args_to_str( array(
+		) );
+		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
+
+		$expected = " --url='foo.dev' --require='file-a.php' --require='file-b.php' --porcelain --apple='banana'";
+		$actual = Utils\assoc_args_to_str( array(
 			'url'       => 'foo.dev',
 			'require'   => array(
 				'file-a.php',
@@ -264,10 +273,13 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			),
 			'porcelain' => true,
 			'apple'     => 'banana'
-		) ) );
+		) );
+		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
 	}
 
 	public function testForceEnvOnNixSystems() {
+		$env_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
+
 		putenv( 'WP_CLI_TEST_IS_WINDOWS=0' );
 		$this->assertSame( '/usr/bin/env cmd', Utils\force_env_on_nix_systems( 'cmd' ) );
 		$this->assertSame( '/usr/bin/env cmd', Utils\force_env_on_nix_systems( '/usr/bin/env cmd' ) );
@@ -276,7 +288,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertSame( 'cmd', Utils\force_env_on_nix_systems( 'cmd' ) );
 		$this->assertSame( 'cmd', Utils\force_env_on_nix_systems( '/usr/bin/env cmd' ) );
 
-		putenv( 'WP_CLI_TEST_IS_WINDOWS' );
+		putenv( false === $env_is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$env_is_windows" );
 	}
 
 	public function testGetHomeDir() {
@@ -288,11 +300,18 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		putenv( 'HOME=/home/user' );
 		$this->assertSame('/home/user', Utils\get_home_dir() );
-		putenv( 'HOME=' );
-		putenv( 'HOMEDRIVE=C:/\\Windows/\\User/\\' );
-		$this->assertSame( 'C:/\Windows/\User', Utils\get_home_dir() );
-		putenv( 'HOMEPATH=HOGE/\\' );
-		$this->assertSame( 'C:/\Windows/\User/\HOGE', Utils\get_home_dir() );
+
+		putenv( 'HOME' );
+
+		putenv( 'HOMEDRIVE=D:' );
+		putenv( 'HOMEPATH' );
+		$this->assertSame( 'D:', Utils\get_home_dir() );
+
+		putenv( 'HOMEPATH=\\Windows\\User\\' );
+		$this->assertSame( 'D:\\Windows\\User', Utils\get_home_dir() );
+
+		putenv( 'HOMEPATH=\\Windows\\User\\HOGE\\' );
+		$this->assertSame( 'D:\\Windows\\User\\HOGE', Utils\get_home_dir() );
 
 		// restore environments
 		putenv( false === $home ? 'HOME' : "HOME=$home" );
@@ -313,36 +332,23 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		// INI directive `sys_temp_dir` introduced PHP 5.5.0.
 		if ( version_compare( PHP_VERSION, '5.5.0', '>=' ) ) {
 
-			// `sys_temp_dir` set.
+			// `sys_temp_dir` set to unwritable.
 
-			$cmd = "WP_CLI_PHP_ARGS='-dsys_temp_dir=\\tmp\\' bin/wp eval 'echo WP_CLI\\Utils\\get_temp_dir();' --skip-wordpress 2>&1";
+			$cmd = 'php ' . escapeshellarg( '-dsys_temp_dir=\\tmp\\' ) . ' php/boot-fs.php --skip-wordpress eval ' . escapeshellarg( 'echo WP_CLI\\Utils\\get_temp_dir();' ) . ' 2>&1';
 			$output = array();
 			exec( $cmd, $output );
-			$this->assertTrue( 2 === count( $output ) );
-			$this->assertTrue( 2 === preg_match_all( '/warning|writable/i', $output[0] ) );
-			$this->assertSame( '\\tmp/', $output[1] );
+			$output = trim( implode( "\n", $output ) );
+			$this->assertTrue( false !== strpos( $output, 'Warning' ) );
+			$this->assertTrue( false !== strpos( $output, 'writable' ) );
+			$this->assertTrue( false !== strpos( $output, '\\tmp/' ) );
 
-			// `sys_temp_dir` unset and `upload_tmp_dir' set.
+			// `sys_temp_dir` unset.
 
-			// `upload_tmp_dir` needs to be a legitimate writable directory.
-			$temp_dir = sys_get_temp_dir() . '/' . uniqid( 'test-utils-get-temp-dir', true );
-			mkdir( $temp_dir, 0777, true );
-			$cmd = "WP_CLI_PHP_ARGS='-dsys_temp_dir=0 -dupload_tmp_dir=$temp_dir\\' bin/wp eval 'echo WP_CLI\\Utils\\get_temp_dir();' --skip-wordpress 2>&1";
+			$cmd = 'php ' . escapeshellarg( '-dsys_temp_dir=' ) . ' php/boot-fs.php --skip-wordpress eval ' . escapeshellarg( 'echo WP_CLI\\Utils\\get_temp_dir();' ) . ' 2>&1';
 			$output = array();
 			exec( $cmd, $output );
-
-			rmdir( $temp_dir );
-
-			$this->assertTrue( 1 === count( $output ) );
-			$this->assertSame( $temp_dir . '/', trim( $output[0] ) );
-
-			// Both `sys_temp_dir` and `upload_tmp_dir' unset.
-
-			$cmd = "WP_CLI_PHP_ARGS='-dsys_temp_dir=0 -dupload_tmp_dir=0' bin/wp eval 'echo WP_CLI\\Utils\\get_temp_dir();' --skip-wordpress --quiet 2>&1";
-			$output = array();
-			exec( $cmd, $output );
-			$this->assertTrue( 1 === count( $output ) );
-			$this->assertSame( '/tmp/', trim( $output[0] ) );
+			$output = trim( implode( "\n", $output ) );
+			$this->assertTrue( '/' === substr( $output, -1 ) );
 		}
 	}
 
@@ -444,33 +450,33 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	public function testRunMysqlCommandProcDisabled() {
 		$err_msg = 'Error: Cannot do \'run_mysql_command\': The PHP functions `proc_open()` and/or `proc_close()` are disabled';
 
-		$cmd = "WP_CLI_PHP_ARGS='-ddisable_functions=proc_open' bin/wp eval 'WP_CLI\\Utils\\run_mysql_command( null, array() );' --skip-wordpress 2>&1";
+		$cmd = 'php -ddisable_functions=proc_open php/boot-fs.php --skip-wordpress eval ' . escapeshellarg( 'WP_CLI\\Utils\\run_mysql_command( null, array() );' ) . ' 2>&1';
 		$output = array();
 		exec( $cmd, $output );
-		$this->assertTrue( 1 === count( $output ) );
-		$this->assertTrue( false !== strpos( trim( $output[0] ), $err_msg ) );
+		$output = trim( implode( "\n", $output ) );
+		$this->assertTrue( false !== strpos( $output, $err_msg ) );
 
-		$cmd = "WP_CLI_PHP_ARGS='-ddisable_functions=proc_close' bin/wp eval 'WP_CLI\\Utils\\run_mysql_command( null, array() );' --skip-wordpress 2>&1";
+		$cmd = 'php -ddisable_functions=proc_close php/boot-fs.php --skip-wordpress eval ' . escapeshellarg( 'WP_CLI\\Utils\\run_mysql_command( null, array() );' ) . ' 2>&1';
 		$output = array();
 		exec( $cmd, $output );
-		$this->assertTrue( 1 === count( $output ) );
-		$this->assertTrue( false !== strpos( trim( $output[0] ), $err_msg ) );
+		$output = trim( implode( "\n", $output ) );
+		$this->assertTrue( false !== strpos( $output, $err_msg ) );
 	}
 
 	public function testLaunchEditorForInputProcDisabled() {
 		$err_msg = 'Error: Cannot do \'launch_editor_for_input\': The PHP functions `proc_open()` and/or `proc_close()` are disabled';
 
-		$cmd = "WP_CLI_PHP_ARGS='-ddisable_functions=proc_open' bin/wp eval 'WP_CLI\\Utils\\launch_editor_for_input( null, null );' --skip-wordpress 2>&1";
+		$cmd = 'php -ddisable_functions=proc_open php/boot-fs.php --skip-wordpress eval ' . escapeshellarg( 'WP_CLI\\Utils\\launch_editor_for_input( null, null );' ) . ' 2>&1';
 		$output = array();
 		exec( $cmd, $output );
-		$this->assertTrue( 1 === count( $output ) );
-		$this->assertTrue( false !== strpos( trim( $output[0] ), $err_msg ) );
+		$output = trim( implode( "\n", $output ) );
+		$this->assertTrue( false !== strpos( $output, $err_msg ) );
 
-		$cmd = "WP_CLI_PHP_ARGS='-ddisable_functions=proc_close' bin/wp eval 'WP_CLI\\Utils\\launch_editor_for_input( null, null );' --skip-wordpress 2>&1";
+		$cmd = 'php -ddisable_functions=proc_close php/boot-fs.php --skip-wordpress eval ' . escapeshellarg( 'WP_CLI\\Utils\\launch_editor_for_input( null, null );' ) . ' 2>&1';
 		$output = array();
 		exec( $cmd, $output );
-		$this->assertTrue( 1 === count( $output ) );
-		$this->assertTrue( false !== strpos( trim( $output[0] ), $err_msg ) );
+		$output = trim( implode( "\n", $output ) );
+		$this->assertTrue( false !== strpos( $output, $err_msg ) );
 	}
 
 	/**
@@ -501,7 +507,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			array( 'check', 'checked' ),
 			array( 'crop', 'cropped' ),
 			array( 'fix', 'fixed' ), // One vowel + final "x" excluded.
-			array( 'hurrah', 'hurrahed' ), // One vowel + final "h" excluded.
+			array( 'ah', 'ahed' ), // One vowel + final "h" excluded.
 			array( 'show', 'showed' ), // One vowel + final "w" excluded.
 			array( 'ski', 'skied' ),
 			array( 'slay', 'slayed' ), // One vowel + final "y" excluded (nearly all irregular anyway).
@@ -624,6 +630,66 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		putenv( false === $env_php_used ? 'WP_CLI_PHP_USED' : "WP_CLI_PHP_USED=$env_php_used" );
 		putenv( false === $env_php ? 'WP_CLI_PHP' : "WP_CLI_PHP=$env_php" );
+	}
+
+	/**
+	 * @dataProvider dataProcOpenCompatWinEnv
+	 */
+	public function testProcOpenCompatWinEnv( $cmd, $env, $expected_cmd, $expected_env ) {
+		$env_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
+
+		putenv( 'WP_CLI_TEST_IS_WINDOWS=1' );
+
+		$cmd = Utils\_proc_open_compat_win_env( $cmd, $env );
+		$this->assertSame( $expected_cmd, $cmd );
+		$this->assertSame( $expected_env, $env );
+
+		putenv( false === $env_is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$env_is_windows" );
+	}
+
+	function dataProcOpenCompatWinEnv() {
+		return array(
+			array( 'echo', array(), 'echo', array() ),
+			array( 'ENV=blah echo', array(), 'echo', array( 'ENV' => 'blah' ) ),
+			array( 'ENV="blah blah" echo', array(), 'echo', array( 'ENV' => 'blah blah' ) ),
+			array( 'ENV_1="blah1 blah1" ENV_2="blah2" ENV_3=blah3 echo', array(), 'echo', array( 'ENV_1' => 'blah1 blah1', 'ENV_2' => 'blah2', 'ENV_3' => 'blah3' ) ),
+			array( 'ENV= echo', array(), 'echo', array( 'ENV' => '' ) ),
+			array( 'ENV=0 echo', array(), 'echo', array( 'ENV' => '0' ) ),
+
+			// With `$env` set.
+			array( 'echo', array( 'ENV' => 'in' ), 'echo', array( 'ENV' => 'in' ) ),
+			array( 'ENV=blah echo', array( 'ENV_1' => 'in1', 'ENV_2' => 'in2' ), 'echo', array( 'ENV_1' => 'in1', 'ENV_2' => 'in2', 'ENV' => 'blah' ) ),
+			array( 'ENV="blah blah" echo', array( 'ENV' => 'in' ), 'echo', array( 'ENV' => 'blah blah' ) ),
+
+			// Special cases.
+			array( '1=1 echo', array(), '1=1 echo', array() ), // Must begin with alphabetic or underscore.
+			array( '_eNv=1 echo', array(), 'echo', array( '_eNv' => '1' ) ), // Mixed-case and beginning with underscore allowed.
+			array( 'ENV=\'blah blah\' echo', array(), 'blah\' echo', array( 'ENV' => '\'blah' ) ), // Unix escaping not supported, ie treated literally.
+		);
+	}
+
+	/**
+	 * Copied from core "tests/phpunit/tests/db.php" (adapted to not use `$wpdb`).
+	 */
+	function test_esc_like() {
+		$inputs   = array(
+			'howdy%', //Single Percent
+			'howdy_', //Single Underscore
+			'howdy\\', //Single slash
+			'howdy\\howdy%howdy_', //The works
+			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?', //Plain text
+		);
+		$expected = array(
+			'howdy\\%',
+			'howdy\\_',
+			'howdy\\\\',
+			'howdy\\\\howdy\\%howdy\\_',
+			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?',
+		);
+
+		foreach ( $inputs as $key => $input ) {
+			$this->assertEquals( $expected[ $key ], Utils\esc_like( $input ) );
+		}
 	}
 
 	/** @dataProvider dataIsJson */

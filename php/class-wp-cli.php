@@ -999,7 +999,7 @@ class WP_CLI {
 			}
 		}
 
-		$php_bin = Utils\get_php_binary();
+		$php_bin = escapeshellarg( Utils\get_php_binary() );
 
 		$script_path = $GLOBALS['argv'][0];
 
@@ -1121,7 +1121,7 @@ class WP_CLI {
 				);
 			}
 
-			$php_bin = Utils\get_php_binary();
+			$php_bin = escapeshellarg( Utils\get_php_binary() );
 			$script_path = $GLOBALS['argv'][0];
 
 			// Persist runtime arguments unless they've been specified otherwise.
@@ -1137,7 +1137,7 @@ class WP_CLI {
 
 			$runcommand = "{$php_bin} {$script_path} {$runtime_config} {$command}";
 
-			$proc = proc_open( $runcommand, $descriptors, $pipes, getcwd(), null );
+			$proc = Utils\proc_open_compat( $runcommand, $descriptors, $pipes, getcwd() );
 
 			if ( $return ) {
 				$stdout = stream_get_contents( $pipes[1] );

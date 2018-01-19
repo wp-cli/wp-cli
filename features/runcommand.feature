@@ -45,7 +45,7 @@ Feature: Run a WP-CLI command
       """
 
   Scenario Outline: Run a WP-CLI command and render output
-    Given a WP install
+    Given a WP installation
 
     When I run `wp <flag> run 'option get home'`
     Then STDOUT should be:
@@ -80,7 +80,7 @@ Feature: Run a WP-CLI command
       | --launch    |
 
   Scenario Outline: Run a WP-CLI command and capture output
-    Given a WP install
+    Given a WP installation
 
     When I run `wp run <flag> --return 'option get home'`
     Then STDOUT should be:
@@ -140,7 +140,7 @@ Feature: Run a WP-CLI command
       | --launch    |
 
   Scenario Outline: Use 'parse=json' to parse JSON output
-    Given a WP install
+    Given a WP installation
 
     When I run `wp run --return --parse=json <flag> 'user get admin --fields=user_login,user_email --format=json'`
     Then STDOUT should be:
@@ -157,7 +157,7 @@ Feature: Run a WP-CLI command
       | --launch    |
 
   Scenario Outline: Exit on error by default
-    Given a WP install
+    Given a WP installation
 
     When I try `wp run <flag> 'eval "WP_CLI::error( var_export( get_current_user_id(), true ) );"'`
     Then STDOUT should be empty
@@ -173,7 +173,7 @@ Feature: Run a WP-CLI command
       | --launch    |
 
   Scenario Outline: Override erroring on exit
-    Given a WP install
+    Given a WP installation
 
     When I try `wp run <flag> --no-exit_error --return=all 'eval "WP_CLI::error( var_export( get_current_user_id(), true ) );"'`
     Then STDOUT should be:
@@ -187,7 +187,7 @@ Feature: Run a WP-CLI command
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp <flag> --no-exit_error run 'option get foo$bar'`
+    When I run `wp <flag> --no-exit_error run 'option pluck foo$bar barfoo'`
     Then STDOUT should be:
       """
       returned: NULL
@@ -201,7 +201,7 @@ Feature: Run a WP-CLI command
       | --launch    |
 
   Scenario Outline: Output using echo and log, success, warning and error
-    Given a WP install
+    Given a WP installation
 
     # Note WP_CLI::error() terminates eval processing so needs to be last.
     When I run `wp run <flag> --no-exit_error --return=all 'eval "WP_CLI::log( '\'log\'' ); echo '\'echo\''; WP_CLI::success( '\'success\'' ); WP_CLI::error( '\'error\'' );"'`
@@ -236,7 +236,7 @@ Feature: Run a WP-CLI command
       | --launch    |
 
   Scenario Outline: Installed packages work as expected
-    Given a WP install
+    Given a WP installation
 
     When I run `wp package install wp-cli/scaffold-package-command`
     Then STDERR should be empty
@@ -254,7 +254,7 @@ Feature: Run a WP-CLI command
     | --launch    |
 
   Scenario Outline: Persists global parameters when supplied interactively
-    Given a WP install in 'foo'
+    Given a WP installation in 'foo'
 
     When I run `wp <flag> --path=foo run 'rewrite structure "archives/%post_id%/" --path=foo'`
     Then STDOUT should be:
@@ -272,7 +272,7 @@ Feature: Run a WP-CLI command
     | --launch    |
 
   Scenario Outline: Apply backwards compat conversions
-    Given a WP install
+    Given a WP installation
 
     When I run `wp <flag> run 'term url category 1'`
     Then STDOUT should be:
@@ -287,3 +287,18 @@ Feature: Run a WP-CLI command
     | flag        |
     | --no-launch |
     | --launch    |
+
+  Scenario Outline: Check that proc_open() and proc_close() aren't disabled for launch
+    Given a WP install
+
+    When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} --launch run 'option get home'`
+    Then STDERR should contain:
+      """
+      Error: Cannot do 'launch option': The PHP functions `proc_open()` and/or `proc_close()` are disabled
+      """
+    And the return code should be 1
+
+    Examples:
+      | func       |
+      | proc_open  |
+      | proc_close |
