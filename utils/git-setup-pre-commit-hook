@@ -10,8 +10,6 @@ if [[ ! -f "composer.json" ]]; then
 fi
 
 # determine the phpcs binary location
-curr_dir=$(pwd)
-
 if [[ -f "vendor/bin/phpcs" ]]; then
 	phpcs_bin="./vendor/bin/phpcs"
 elif [[ -n $COMPOSER_BIN_DIR && -f "$COMPOSER_BIN_DIR/phpcs" ]]; then
@@ -30,5 +28,5 @@ if [[ ! -f "$pre_commit_file" ]]; then
 	echo -e "#!/bin/bash\nset -ex\n$phpcs_bin" > $pre_commit_file
 	chmod +x $pre_commit_file
 elif ! grep -q "phpcs" $pre_commit_file; then
-	echo -e "hook already exists: $pre_commit_file\n\nplease add the below command to your pre-commit file:\n\n$phpcs_bin"
+	echo -e "hook file already exists: $pre_commit_file\n\nplease add the below command to your pre-commit file:\n\n$phpcs_bin"
 fi
