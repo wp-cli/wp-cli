@@ -69,31 +69,31 @@ $steps->Given( '/^a database$/',
 	}
 );
 
-$steps->Given( '/^a WP install$/',
+$steps->Given( '/^a WP (install|installation)$/',
 	function ( $world ) {
 		$world->install_wp();
 	}
 );
 
-$steps->Given( "/^a WP install in '([^\s]+)'$/",
-	function ( $world, $subdir ) {
+$steps->Given( "/^a WP (install|installation) in '([^\s]+)'$/",
+	function ( $world, $_, $subdir ) {
 		$world->install_wp( $subdir );
 	}
 );
 
-$steps->Given( '/^a WP install with Composer$/',
+$steps->Given( '/^a WP (install|installation) with Composer$/',
 	function ( $world ) {
 		$world->install_wp_with_composer();
 	}
 );
 
-$steps->Given( "/^a WP install with Composer and a custom vendor directory '([^\s]+)'$/",
-	function ( $world, $vendor_directory ) {
+$steps->Given( "/^a WP (install|installation) with Composer and a custom vendor directory '([^\s]+)'$/",
+	function ( $world, $_, $vendor_directory ) {
 		$world->install_wp_with_composer( $vendor_directory );
 	}
 );
 
-$steps->Given( '/^a WP multisite (subdirectory|subdomain)?\s?install$/',
+$steps->Given( '/^a WP multisite (subdirectory|subdomain)?\s?(install|installation)$/',
 	function ( $world, $type = 'subdirectory' ) {
 		$world->install_wp();
 		$subdomains = ! empty( $type ) && 'subdomain' === $type ? 1 : 0;

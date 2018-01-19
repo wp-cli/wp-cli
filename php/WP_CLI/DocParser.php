@@ -162,7 +162,7 @@ class DocParser {
 	 * @return array|null Interpreted YAML document, or null.
 	 */
 	private function get_arg_or_param_args( $regex ) {
-		$bits = explode( PHP_EOL, $this->docComment );
+		$bits = explode( "\n", $this->docComment );
 		$within_arg = $within_doc = false;
 		$document = array();
 		foreach ( $bits as $bit ) {
@@ -189,7 +189,7 @@ class DocParser {
 		}
 
 		if ( $document ) {
-			return Spyc::YAMLLoadString( implode( PHP_EOL, $document ) );
+			return Spyc::YAMLLoadString( implode( "\n", $document ) );
 		}
 		return null;
 	}

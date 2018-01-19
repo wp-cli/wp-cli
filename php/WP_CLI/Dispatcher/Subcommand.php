@@ -121,7 +121,11 @@ class Subcommand extends CompositeCommand {
 
 		echo $question;
 
-		return stream_get_line( STDIN, 1024, PHP_EOL );
+		$ret = stream_get_line( STDIN, 1024, "\n" );
+		if ( Utils\is_windows() && "\r" === substr( $ret, -1 ) ) {
+			$ret = substr( $ret, 0, -1 );
+		}
+		return $ret;
 	}
 
 	/**

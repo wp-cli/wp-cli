@@ -45,17 +45,17 @@ if ( file_exists( __DIR__ . '/utils.php' ) ) {
 class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 	/**
-	 * The current working directory for scenarios that have a "Given a WP install" or "Given an empty directory" step. Variable RUN_DIR. Lives until the end of the scenario.
+	 * The current working directory for scenarios that have a "Given a WP installation" or "Given an empty directory" step. Variable RUN_DIR. Lives until the end of the scenario.
 	 */
 	private static $run_dir;
 
 	/**
-	 * Where WordPress core is downloaded to for caching, and which is copied to RUN_DIR during a "Given a WP install" step. Lives until manually deleted.
+	 * Where WordPress core is downloaded to for caching, and which is copied to RUN_DIR during a "Given a WP installation" step. Lives until manually deleted.
 	 */
 	private static $cache_dir;
 
 	/**
-	 * The directory that holds the install cache, and which is copied to RUN_DIR during a "Given a WP install" step. Recreated on each suite run.
+	 * The directory that holds the install cache, and which is copied to RUN_DIR during a "Given a WP installation" step. Recreated on each suite run.
 	 */
 	private static $install_cache_dir;
 
@@ -72,7 +72,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	private static $composer_local_repository;
 
 	/**
-	 * The test database settings. All but `dbname` can be set via environment variables. The database is dropped at the start of each scenario and created on a "Given a WP install" step.
+	 * The test database settings. All but `dbname` can be set via environment variables. The database is dropped at the start of each scenario and created on a "Given a WP installation" step.
 	 */
 	private static $db_settings = array(
 		'dbname' => 'wp_cli_test',
@@ -87,8 +87,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	private $running_procs = array();
 
 	/**
-	 * Array of variables available as {VARIABLE_NAME}. Some are always set: CORE_CONFIG_SETTINGS, SRC_DIR, CACHE_DIR, WP_VERSION-version-latest. Some are step-dependent:
-	 * RUN_DIR, SUITE_CACHE_DIR, COMPOSER_LOCAL_REPOSITORY, PHAR_PATH. Scenarios can define their own variables using "Given save" steps. Variables are reset for each scenario.
+	 * Array of variables available as {VARIABLE_NAME}. Some are always set: CORE_CONFIG_SETTINGS, SRC_DIR, CACHE_DIR, WP_VERSION-version-latest.
+	 * Some are step-dependent: RUN_DIR, SUITE_CACHE_DIR, COMPOSER_LOCAL_REPOSITORY, PHAR_PATH. One is set on use: INVOKE_WP_CLI_WITH_PHP_ARGS-args.
+	 * Scenarios can define their own variables using "Given save" steps. Variables are reset for each scenario.
 	 */
 	public $variables = array();
 
@@ -117,8 +118,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		// Ensure we're using the expected `wp` binary
 		$bin_dir = getenv( 'WP_CLI_BIN_DIR' ) ?: realpath( __DIR__ . '/../../bin' );
 		$vendor_dir = realpath( __DIR__ . '/../../vendor/bin' );
+		$path_separator = Utils\is_windows() ? ';' : ':';
 		$env = array(
-			'PATH' =>  $bin_dir . ':' . $vendor_dir . ':' . getenv( 'PATH' ),
+			'PATH' =>  $bin_dir . $path_separator . $vendor_dir . $path_separator . getenv( 'PATH' ),
 			'BEHAT_RUN' => 1,
 			'HOME' => sys_get_temp_dir() . '/wp-cli-home',
 		);
@@ -328,20 +330,57 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	/**
-	 * Replace {VARIABLE_NAME}. Note that variable names can only contain uppercase letters and underscores (no numbers).
+	 * Replace standard {VARIABLE_NAME} variables and the special {INVOKE_WP_CLI_WITH_PHP_ARGS-args} and {WP_VERSION-version-latest} variables.
+	 * Note that standard variable names can only contain uppercase letters, digits and underscores and cannot begin with a digit.
 	 */
 	public function replace_variables( $str ) {
-		$ret = preg_replace_callback( '/\{([A-Z_]+)\}/', array( $this, '_replace_var' ), $str );
-		if ( false !== strpos( $str, '{WP_VERSION-' ) ) {
-			$ret = $this->_replace_wp_versions( $ret );
+		if ( false !== strpos( $str, '{INVOKE_WP_CLI_WITH_PHP_ARGS-' ) ) {
+			$str = $this->replace_invoke_wp_cli_with_php_args( $str );
 		}
-		return $ret;
+		$str = preg_replace_callback( '/\{([A-Z_][A-Z_0-9]*)\}/', array( $this, 'replace_var' ), $str );
+		if ( false !== strpos( $str, '{WP_VERSION-' ) ) {
+			$str = $this->replace_wp_versions( $str );
+		}
+		return $str;
+	}
+
+	/**
+	 * Substitute {INVOKE_WP_CLI_WITH_PHP_ARGS-args} variables.
+	 */
+	private function replace_invoke_wp_cli_with_php_args( $str ) {
+		static $phar_path = null, $shell_path = null;
+
+		if ( null === $phar_path ) {
+			$phar_path = false;
+			$phar_begin = '#!/usr/bin/env php';
+			$phar_begin_len = strlen( $phar_begin );
+			if ( ( $bin_dir = getenv( 'WP_CLI_BIN_DIR' ) ) && file_exists( $bin_dir . '/wp' ) && $phar_begin === file_get_contents( $bin_dir . '/wp', false, null, 0, $phar_begin_len ) ) {
+				$phar_path = $bin_dir . '/wp';
+			} else {
+				$src_dir = dirname( dirname( __DIR__ ) );
+				$bin_path = $src_dir . '/bin/wp';
+				$vendor_bin_path = $src_dir . '/vendor/bin/wp';
+				if ( file_exists( $bin_path ) && is_executable( $bin_path ) ) {
+					$shell_path = $bin_path;
+				} elseif ( file_exists( $vendor_bin_path ) && is_executable( $vendor_bin_path ) ) {
+					$shell_path = $vendor_bin_path;
+				} else {
+					$shell_path = 'wp';
+				}
+			}
+		}
+
+		$str = preg_replace_callback( '/{INVOKE_WP_CLI_WITH_PHP_ARGS-([^}]*)}/', function ( $matches ) use ( $phar_path, $shell_path ) {
+			return $phar_path ? "php {$matches[1]} {$phar_path}" : ( 'WP_CLI_PHP_ARGS=' . escapeshellarg( $matches[1] ) . ' ' . $shell_path );
+		}, $str );
+
+		return $str;
 	}
 
 	/**
 	 * Replace variables callback.
 	 */
-	private function _replace_var( $matches ) {
+	private function replace_var( $matches ) {
 		$cmd = $matches[0];
 
 		foreach ( array_slice( $matches, 1 ) as $key ) {
@@ -352,9 +391,9 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	}
 
 	/**
-	 * Substitute "{WP_VERSION-version-latest}" variables.
+	 * Substitute {WP_VERSION-version-latest} variables.
 	 */
-	private function _replace_wp_versions( $str ) {
+	private function replace_wp_versions( $str ) {
 		static $wp_versions = null;
 		if ( null === $wp_versions ) {
 			$wp_versions = array();
