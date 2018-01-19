@@ -38,7 +38,7 @@ Feature: Utilities that depend on WordPress code
       """
 
     When I run `wp --require=table_names.php get_table_names`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       wp_commentmeta
       wp_comments
@@ -48,7 +48,10 @@ Feature: Utilities that depend on WordPress code
       wp_posts
       wp_term_relationships
       wp_term_taxonomy
-      wp_termmeta
+      """
+	# Leave out wp_termmeta for old WP compat.
+    And STDOUT should contain:
+      """
       wp_terms
       wp_usermeta
       wp_users
@@ -62,7 +65,7 @@ Feature: Utilities that depend on WordPress code
       """
 
     When I run `wp --require=table_names.php get_table_names --scope=blog`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       wp_commentmeta
       wp_comments
@@ -72,7 +75,10 @@ Feature: Utilities that depend on WordPress code
       wp_posts
       wp_term_relationships
       wp_term_taxonomy
-      wp_termmeta
+      """
+	# Leave out wp_termmeta for old WP compat.
+    And STDOUT should contain:
+      """
       wp_terms
       """
 
@@ -99,7 +105,7 @@ Feature: Utilities that depend on WordPress code
       """
 
     When I run `wp --require=table_names.php get_table_names --all-tables-with-prefix`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       wp_categories
       wp_commentmeta
@@ -111,7 +117,10 @@ Feature: Utilities that depend on WordPress code
       wp_posts_xx
       wp_term_relationships
       wp_term_taxonomy
-      wp_termmeta
+      """
+	# Leave out wp_termmeta for old WP compat.
+    And STDOUT should contain:
+      """
       wp_terms
       wp_usermeta
       wp_users
@@ -119,7 +128,7 @@ Feature: Utilities that depend on WordPress code
       """
 
     When I run `wp --require=table_names.php get_table_names --all-tables`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       wp_categories
       wp_commentmeta
@@ -131,7 +140,10 @@ Feature: Utilities that depend on WordPress code
       wp_posts_xx
       wp_term_relationships
       wp_term_taxonomy
-      wp_termmeta
+      """
+	# Leave out wp_termmeta for old WP compat.
+    And STDOUT should contain:
+      """
       wp_terms
       wp_usermeta
       wp_users
@@ -298,7 +310,7 @@ Feature: Utilities that depend on WordPress code
 
     # With no subsite.
     When I run `wp --require=table_names.php get_table_names`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       wp_blog_versions
       wp_blogs
@@ -314,7 +326,10 @@ Feature: Utilities that depend on WordPress code
       wp_sitemeta
       wp_term_relationships
       wp_term_taxonomy
-      wp_termmeta
+      """
+	# Leave out wp_termmeta for old WP compat.
+    And STDOUT should contain:
+      """
       wp_terms
       wp_usermeta
       wp_users
@@ -328,7 +343,7 @@ Feature: Utilities that depend on WordPress code
       """
 
     When I run `wp --require=table_names.php get_table_names --scope=blog`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       wp_commentmeta
       wp_comments
@@ -338,7 +353,10 @@ Feature: Utilities that depend on WordPress code
       wp_posts
       wp_term_relationships
       wp_term_taxonomy
-      wp_termmeta
+      """
+	# Leave out wp_termmeta for old WP compat.
+    And STDOUT should contain:
+      """
       wp_terms
       """
 
@@ -388,7 +406,7 @@ Feature: Utilities that depend on WordPress code
       """
 
     When I run `wp --require=table_names.php get_table_names --url=example.com/foo --scope=blog`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       wp_2_commentmeta
       wp_2_comments
@@ -398,7 +416,10 @@ Feature: Utilities that depend on WordPress code
       wp_2_posts
       wp_2_term_relationships
       wp_2_term_taxonomy
-      wp_2_termmeta
+      """
+	# Leave out wp_2_termmeta for old WP compat.
+    And STDOUT should contain:
+      """
       wp_2_terms
       """
     And save STDOUT as {SUBSITE_BLOG_STDOUT}
@@ -425,7 +446,7 @@ Feature: Utilities that depend on WordPress code
       """
 
     When I run `wp --require=table_names.php get_table_names --all-tables-with-prefix`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       wp_2_commentmeta
       wp_2_comments
@@ -436,7 +457,10 @@ Feature: Utilities that depend on WordPress code
       wp_2_posts_xx
       wp_2_term_relationships
       wp_2_term_taxonomy
-      wp_2_termmeta
+      """
+	# Leave out wp_2_termmeta for old WP compat.
+    And STDOUT should contain:
+      """
       wp_2_terms
       wp_2_xx_posts
       wp_blog_versions
@@ -456,7 +480,10 @@ Feature: Utilities that depend on WordPress code
       wp_sitemeta
       wp_term_relationships
       wp_term_taxonomy
-      wp_termmeta
+      """
+	# Leave out wp_termmeta for old WP compat.
+    And STDOUT should contain:
+      """
       wp_terms
       wp_usermeta
       wp_users
@@ -659,7 +686,7 @@ Feature: Utilities that depend on WordPress code
       } );
       """
     When I run `wp --require=table_names.php --require=enable_sitecategories.php get_table_names`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       wp_blog_versions
       wp_blogs
@@ -676,7 +703,10 @@ Feature: Utilities that depend on WordPress code
       wp_sitemeta
       wp_term_relationships
       wp_term_taxonomy
-      wp_termmeta
+      """
+	# Leave out wp_termmeta for old WP compat.
+    And STDOUT should contain:
+      """
       wp_terms
       wp_usermeta
       wp_users
