@@ -643,4 +643,17 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			array( '["value1","value2"]', false, true ),
 		);
 	}
+
+	/** @dataProvider dataParseShellArray */
+	public function testParseShellArray( $assoc_args, $array_arguments, $expected ) {
+		$this->assertEquals( $expected, Utils\parse_shell_arrays( $assoc_args, $array_arguments ) );
+	}
+
+	public function dataParseShellArray() {
+		return array(
+			array( array( 'alpha' => '{"key":"value"}' ), array(), array( 'alpha' => '{"key":"value"}' ) ),
+			array( array( 'alpha' => '{"key":"value"}' ), array( 'alpha' ), array( 'alpha' => array( 'key' => 'value' ) ) ),
+			array( array( 'alpha' => '{"key":"value"}' ), array( 'beta' ), array( 'alpha' => '{"key":"value"}' ) ),
+		);
+	}
 }
