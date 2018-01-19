@@ -691,4 +691,35 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			$this->assertEquals( $expected[ $key ], Utils\esc_like( $input ) );
 		}
 	}
+
+	/** @dataProvider dataIsJson */
+	public function testIsJson( $argument, $ignore_scalars, $expected ) {
+		$this->assertEquals( $expected, Utils\is_json( $argument, $ignore_scalars ) );
+	}
+
+	public function dataIsJson() {
+		return array(
+			array( '42', true, false ),
+			array( '42', false, true ),
+			array( '"test"', true, false ),
+			array( '"test"', false, true ),
+			array( '{"key1":"value1","key2":"value2"}', true, true ),
+			array( '{"key1":"value1","key2":"value2"}', false, true ),
+			array( '["value1","value2"]', true, true ),
+			array( '["value1","value2"]', false, true ),
+		);
+	}
+
+	/** @dataProvider dataParseShellArray */
+	public function testParseShellArray( $assoc_args, $array_arguments, $expected ) {
+		$this->assertEquals( $expected, Utils\parse_shell_arrays( $assoc_args, $array_arguments ) );
+	}
+
+	public function dataParseShellArray() {
+		return array(
+			array( array( 'alpha' => '{"key":"value"}' ), array(), array( 'alpha' => '{"key":"value"}' ) ),
+			array( array( 'alpha' => '{"key":"value"}' ), array( 'alpha' ), array( 'alpha' => array( 'key' => 'value' ) ) ),
+			array( array( 'alpha' => '{"key":"value"}' ), array( 'beta' ), array( 'alpha' => '{"key":"value"}' ) ),
+		);
+	}
 }

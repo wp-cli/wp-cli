@@ -1374,3 +1374,49 @@ function _proc_open_compat_win_env( $cmd, &$env ) {
 function esc_like( $text ) {
 	return addcslashes( $text, '_%\\' );
 }
+
+/**
+ * Check whether a given string is a valid JSON representation.
+ *
+ * @param string $argument       String to evaluate.
+ * @param bool   $ignore_scalars Optional. Whether to ignore scalar values.
+ *                               Defaults to true.
+ *
+ * @return bool Whether the provided string is a valid JSON representation.
+ */
+function is_json( $argument, $ignore_scalars = true ) {
+	if ( empty( $argument ) || ! is_string( $argument ) ) {
+		return false;
+	}
+
+	if ( $ignore_scalars && ! in_array( $argument[0], array( '{', '[' ), true ) ) {
+		return false;
+	}
+
+	json_decode( $argument, $assoc = true );
+
+	return json_last_error() === JSON_ERROR_NONE;
+}
+
+/**
+ * Parse known shell arrays included in the $assoc_args array.
+ *
+ * @param array $assoc_args      Associative array of arguments.
+ * @param array $array_arguments Array of argument keys that should receive an
+ *                               array through the shell.
+ *
+ * @return array
+ */
+function parse_shell_arrays( $assoc_args, $array_arguments ) {
+	if ( empty( $assoc_args ) || empty( $array_arguments ) ) {
+		return $assoc_args;
+	}
+
+	foreach ( $array_arguments as $key ) {
+		if ( array_key_exists( $key, $assoc_args ) && is_json( $assoc_args[ $key ] ) ) {
+			$assoc_args[ $key ] = json_decode( $assoc_args[ $key ], $assoc = true );
+		}
+	}
+
+	return $assoc_args;
+}
