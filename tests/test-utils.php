@@ -625,4 +625,22 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		putenv( false === $env_php_used ? 'WP_CLI_PHP_USED' : "WP_CLI_PHP_USED=$env_php_used" );
 		putenv( false === $env_php ? 'WP_CLI_PHP' : "WP_CLI_PHP=$env_php" );
 	}
+
+	/** @dataProvider dataIsJson */
+	public function testIsJson( $argument, $ignore_scalars, $expected ) {
+		$this->assertEquals( $expected, Utils\is_json( $argument, $ignore_scalars ) );
+	}
+
+	public function dataIsJson() {
+		return array(
+			array( '42', true, false ),
+			array( '42', false, true ),
+			array( '"test"', true, false ),
+			array( '"test"', false, true ),
+			array( '{"key1":"value1","key2":"value2"}', true, true ),
+			array( '{"key1":"value1","key2":"value2"}', false, true ),
+			array( '["value1","value2"]', true, true ),
+			array( '["value1","value2"]', false, true ),
+		);
+	}
 }
