@@ -1385,13 +1385,11 @@ function esc_like( $text ) {
  * @return bool Whether the provided string is a valid JSON representation.
  */
 function is_json( $argument, $ignore_scalars = true ) {
-	if ( empty( $argument )
-	     || ! is_string( $argument ) ) {
+	if ( empty( $argument ) || ! is_string( $argument ) ) {
 		return false;
 	}
 
-	if ( $ignore_scalars
-	     && ! in_array( $argument[0], array( '{', '[' ), true ) ) {
+	if ( $ignore_scalars && ! in_array( $argument[0], array( '{', '[' ), true ) ) {
 		return false;
 	}
 
