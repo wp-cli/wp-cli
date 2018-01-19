@@ -1318,3 +1318,27 @@ function get_php_binary() {
 
 	return 'php';
 }
+
+/**
+ * Check whether a given string is a valid JSON representation.
+ *
+ * @param string $argument String to evaluate.
+ * @param bool   $ignore_scalars Optional. Whether to ignore scalar values.
+ *                               Defaults to true.
+ * @return bool Whether the provided string is a valid JSON representation.
+ */
+function is_json( $argument, $ignore_scalars = true ) {
+	if ( empty( $argument )
+	     || ! is_string( $argument ) ) {
+		return false;
+	}
+
+	if ( $ignore_scalars
+	     && ! in_array( $argument[0], array( '{', '[' ), true ) ) {
+		return false;
+	}
+
+	json_decode( $argument );
+
+	return json_last_error() === JSON_ERROR_NONE;
+}
