@@ -776,7 +776,9 @@ class Runner {
 	}
 
 	private function check_wp_version() {
-		if ( ! $this->wp_exists() || ! $this->wp_is_readable() ) {
+		$wp_exists = $this->wp_exists();
+		$wp_is_readable = $this->wp_is_readable();
+		if ( ! $wp_exists || ! $wp_is_readable ) {
 			$this->show_synopsis_if_composite_command();
 			// If the command doesn't exist use as error.
 			$args = $this->cmd_starts_with( array( 'help' ) ) ? array_slice( $this->arguments, 1 ) : $this->arguments;
@@ -788,7 +790,7 @@ class Runner {
 				WP_CLI::error( $suggestion_or_disabled );
 			}
 
-			if ( $this->wp_exists() && ! $this->wp_is_readable() ) {
+			if ( $wp_exists && ! $wp_is_readable ) {
 				WP_CLI::error(
 					'It seems, the WordPress core files do not have the proper file permissions.'
 				);
