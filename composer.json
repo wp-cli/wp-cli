@@ -80,6 +80,9 @@
 		"psr-4": { "": "php/commands/src" }
 	},
 	"extra": {
+		"branch-alias": {
+			"dev-master": "1.5.x-dev"
+		},
 		"autoload-splitter": {
 			"splitter-logic": "WP_CLI\\AutoloadSplitter",
 			"splitter-location": "php/WP_CLI/AutoloadSplitter.php",
