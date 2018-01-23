@@ -45,6 +45,7 @@
 		"wp-cli/core-command": "^1.0",
 		"wp-cli/cron-command": "^1.0",
 		"wp-cli/db-command": "^1.0",
+		"wp-cli/embed-command": "^1.0",
 		"wp-cli/entity-command": "^1.0",
 		"wp-cli/eval-command": "^1.0",
 		"wp-cli/export-command": "^1.0",
