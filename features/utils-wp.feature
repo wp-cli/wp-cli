@@ -267,7 +267,7 @@ Feature: Utilities that depend on WordPress code
       wp_posts
       """
 
-  Scenario: Get WP table names for single site install
+  Scenario: Get WP table names for multisite install
     Given a WP multisite install
     And I run `wp db query "CREATE TABLE xx_wp_posts ( id int );"`
     And I run `wp db query "CREATE TABLE xx_wp_2_posts ( id int );"`
