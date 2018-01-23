@@ -18,6 +18,7 @@ Oh! It's worth noting WP-CLI represents a collection of sub-projects, each with 
 * `wp core *` https://github.com/wp-cli/core-command
 * `wp cron *` https://github.com/wp-cli/cron-command
 * `wp db *` https://github.com/wp-cli/db-command
+* `wp embed *` https://github.com/wp-cli/embed-command
 * `wp (eval|eval-file)` https://github.com/wp-cli/eval-command
 * `wp export` https://github.com/wp-cli/export-command
 * `wp (option|post|comment|user|term|site) *` https://github.com/wp-cli/entity-command
