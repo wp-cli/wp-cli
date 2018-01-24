@@ -49,8 +49,8 @@ class Help_Command extends WP_CLI_Command {
 		// definition lists
 		$out = preg_replace_callback( '/([^\n]+)\n: (.+?)(\n\n|$)/s', array( __CLASS__, 'rewrap_param_desc' ), $out );
 
-		// Ensure all non-section headers are indented.
-		$out = preg_replace( '#^([^\s^\#])#m', "\t$1", $out );
+		// Ensure lines with no leading whitespace that aren't section headers are indented.
+		$out = preg_replace( '/^((?! |\t|##).)/m', "\t$1", $out );
 
 		$tab = str_repeat( ' ', 2 );
 
