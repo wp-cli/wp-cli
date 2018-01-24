@@ -326,6 +326,10 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\//\\' ) );
 	}
 
+	public function testNormalizeEols() {
+		$this->assertSame( "\na\ra\na\n", Utils\normalize_eols( "\r\na\ra\r\na\r\n" ) );
+	}
+
 	public function testGetTempDir() {
 		$this->assertTrue( '/' === substr( Utils\get_temp_dir(), -1 ) );
 
