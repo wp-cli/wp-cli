@@ -773,6 +773,16 @@ function trailingslashit( $string ) {
 }
 
 /**
+ * Convert Windows EOLs to *nix.
+ *
+ * @param string $str String to convert.
+ * @return string String with carriage return / newline pairs reduced to newlines.
+ */
+function normalize_eols( $str ) {
+	return str_replace( "\r\n", "\n", $str );
+}
+
+/**
  * Get the system's temp directory. Warns user if it isn't writable.
  *
  * @access public
