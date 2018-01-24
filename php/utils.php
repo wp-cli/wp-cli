@@ -1379,6 +1379,24 @@ function esc_like( $text ) {
 }
 
 /**
+ * Escapes (backticks) MySQL identifiers (aka schema object names) - i.e. column names, table names, and database/index/alias/view etc names.
+ * See https://dev.mysql.com/doc/refman/5.5/en/identifiers.html
+ *
+ * @param string|array $idents A single identifier or an array of identifiers.
+ * @return string|array An escaped string if given a string, or an array of escaped strings if given an array of strings.
+ */
+function esc_sql_ident( $idents ) {
+	$backtick = function ( $v ) {
+		// Escape any backticks in the identifier by doubling.
+		return '`' . str_replace( '`', '``', $v ) . '`';
+	};
+	if ( is_string( $idents ) ) {
+		return $backtick( $idents );
+	}
+	return array_map( $backtick, $idents );
+}
+
+/**
  * Check whether a given string is a valid JSON representation.
  *
  * @param string $argument       String to evaluate.
