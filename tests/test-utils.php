@@ -707,6 +707,10 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			array( '{"key1":"value1","key2":"value2"}', false, true ),
 			array( '["value1","value2"]', true, true ),
 			array( '["value1","value2"]', false, true ),
+			array( '0', true, false ),
+			array( '0', false, true ),
+			array( '', true, false ),
+			array( '', false, false ),
 		);
 	}
 
