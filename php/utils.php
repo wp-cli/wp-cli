@@ -1406,7 +1406,7 @@ function esc_sql_ident( $idents ) {
  * @return bool Whether the provided string is a valid JSON representation.
  */
 function is_json( $argument, $ignore_scalars = true ) {
-	if ( empty( $argument ) || ! is_string( $argument ) ) {
+	if ( ! is_string( $argument ) || 0 === strlen( $argument ) ) {
 		return false;
 	}
 
