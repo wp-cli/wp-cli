@@ -510,9 +510,9 @@ class WP_CLI {
 				$long_desc = '';
 				$bits = explode( ' ', $synopsis );
 				foreach ( $args['synopsis'] as $key => $arg ) {
-					$long_desc .= $bits[ $key ] . PHP_EOL;
+					$long_desc .= $bits[ $key ] . "\n";
 					if ( ! empty( $arg['description'] ) ) {
-						$long_desc .= ': ' . $arg['description'] . PHP_EOL;
+						$long_desc .= ': ' . $arg['description'] . "\n";
 					}
 					$yamlify = array();
 					foreach ( array( 'default', 'options' ) as $key ) {
@@ -522,13 +522,16 @@ class WP_CLI {
 					}
 					if ( ! empty( $yamlify ) ) {
 						$long_desc .= Spyc::YAMLDump( $yamlify );
-						$long_desc .= '---' . PHP_EOL;
+						$long_desc .= '---' . "\n";
 					}
-					$long_desc .= PHP_EOL;
+					$long_desc .= "\n";
 				}
 				if ( ! empty( $long_desc ) ) {
-					$long_desc = rtrim( $long_desc, PHP_EOL );
-					$long_desc = '## OPTIONS' . PHP_EOL . PHP_EOL . $long_desc;
+					$long_desc = rtrim( $long_desc, "\n" );
+					$long_desc = '## OPTIONS' . "\n\n" . $long_desc;
+					if ( ! empty( $args['longdesc'] ) ) {
+						$long_desc .= "\n\n" . ltrim( $args['longdesc'], "\n" );
+					}
 					$leaf_command->set_longdesc( $long_desc );
 				}
 			}
