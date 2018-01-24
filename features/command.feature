@@ -807,6 +807,7 @@ Feature: WP-CLI Commands
                 array(
                     'type'      => 'positional',
                     'name'      => 'name',
+                    'description' => 'Name of person to greet.',
                     'optional'  => false,
                     'repeating' => false,
                 ),
@@ -824,7 +825,7 @@ Feature: WP-CLI Commands
                 ),
             ),
             'when' => 'after_wp_load',
-            'longdesc'    => "## EXAMPLES\n\n# Say hello to Newman\nwp example hello Newman\nSuccess: Hello, Newman!",
+            'longdesc'    => "\r\n## EXAMPLES\n\n# Say hello to Newman\nwp example hello Newman\nSuccess: Hello, Newman!",
       ) );
       """
 
@@ -846,6 +847,7 @@ Feature: WP-CLI Commands
       OPTIONS
 
         <name>
+          Name of person to greet.
 
         [--type=<type>]
         ---

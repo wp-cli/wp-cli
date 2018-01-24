@@ -527,10 +527,10 @@ class WP_CLI {
 					$long_desc .= "\n";
 				}
 				if ( ! empty( $long_desc ) ) {
-					$long_desc = rtrim( $long_desc, "\n" );
+					$long_desc = rtrim( $long_desc, "\r\n" );
 					$long_desc = '## OPTIONS' . "\n\n" . $long_desc;
 					if ( ! empty( $args['longdesc'] ) ) {
-						$long_desc .= "\n\n" . ltrim( $args['longdesc'], "\n" );
+						$long_desc .= "\n\n" . ltrim( $args['longdesc'], "\r\n" );
 					}
 					$leaf_command->set_longdesc( $long_desc );
 				}
