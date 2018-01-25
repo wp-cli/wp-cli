@@ -15,12 +15,6 @@ Feature: WP-CLI Commands
       wp cap <command>
       """
 
-    When I run `wp checksum --help`
-    Then STDOUT should contain:
-      """
-      wp checksum <command>
-      """
-
     When I run `wp comment --help`
     Then STDOUT should contain:
       """

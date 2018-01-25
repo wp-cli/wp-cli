@@ -616,9 +616,14 @@ class Runner {
 			list( $args[0], $args[1] ) = array( 'language', 'core' );
 		}
 
-		// core verify-checksums  ->  checksum core
-		if ( array( 'core', 'verify-checksums' ) == array_slice( $args, 0, 2 ) ) {
-			list( $args[0], $args[1] ) = array( 'checksum', 'core' );
+		// checksum core  ->  core verify-checksums
+		if ( array( 'checksum', 'core' ) == array_slice( $args, 0, 2 ) ) {
+			list( $args[0], $args[1] ) = array( 'core', 'verify-checksums' );
+		}
+
+		// checksum plugin  ->  plugin verify-checksums
+		if ( array( 'checksum', 'plugin' ) == array_slice( $args, 0, 2 ) ) {
+			list( $args[0], $args[1] ) = array( 'plugin', 'verify-checksums' );
 		}
 
 		// site create --site_id=  ->  site create --network_id=
