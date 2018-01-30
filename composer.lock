@@ -2076,16 +2076,16 @@
         },
         {
             "name": "wp-cli/extension-command",
-            "version": "v1.1.8",
+            "version": "v1.1.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/extension-command.git",
-                "reference": "7ab2a957383ee63e5082f4854479738c0f2a4474"
+                "reference": "dfacef02b88baed07058c88064afd582f4150a97"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/7ab2a957383ee63e5082f4854479738c0f2a4474",
-                "reference": "7ab2a957383ee63e5082f4854479738c0f2a4474",
+                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/dfacef02b88baed07058c88064afd582f4150a97",
+                "reference": "dfacef02b88baed07058c88064afd582f4150a97",
                 "shasum": ""
             },
             "require-dev": {
@@ -2153,7 +2153,7 @@
             ],
             "description": "Manages plugins and themes, including installs, activations, and updates.",
             "homepage": "https://github.com/wp-cli/extension-command",
-            "time": "2017-12-08T17:49:39+00:00"
+            "time": "2018-01-30T11:13:57+00:00"
         },
         {
             "name": "wp-cli/import-command",
