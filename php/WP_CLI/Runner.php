@@ -731,13 +731,13 @@ class Runner {
 		// config get --[global|constant]=<global|constant> --> config get <name> --type=constant|variable
 		// config get --> config list
 		if ( count( $args ) === 2
-		     && 'config' === $args[0]
-		     && 'get' === $args[1] ) {
+			&& 'config' === $args[0]
+			&& 'get' === $args[1] ) {
 			if ( isset( $assoc_args['global'] ) ) {
 				$name = $assoc_args['global'];
 				$type = 'variable';
 				unset( $assoc_args['global'] );
-			} else if ( isset( $assoc_args['constant'] ) ) {
+			} elseif ( isset( $assoc_args['constant'] ) ) {
 				$name = $assoc_args['constant'];
 				$type = 'constant';
 				unset( $assoc_args['constant'] );
