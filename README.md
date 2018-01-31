@@ -7,7 +7,7 @@ Ongoing maintenance is <a href="https://make.wordpress.org/cli/2017/04/03/new-co
 
 <a href="https://automattic.com/"><img src="https://make.wordpress.org/cli/files/2017/04/automattic-1.png" style="width:19%;height:auto;display:inline-block;vertical-align:middle;" alt="" width="160" height="35" class="aligncenter size-full wp-image-347" /></a> <a href="https://www.bluehost.com/"><img class="aligncenter size-full wp-image-335" style="width:19%;height:auto;display:inline-block;vertical-align:middle;" src="https://make.wordpress.org/cli/files/2017/04/bluehost.png" alt="" width="160" height="26" /></a> <a href="https://www.dreamhost.com/"><img class="aligncenter size-full wp-image-324" style="width:19%;height:auto;display:inline-block;vertical-align:middle;" src="https://make.wordpress.org/cli/files/2017/04/dreamhost.png" alt="" width="160" height="30" /></a> <a href="https://www.siteground.com/"><img class="aligncenter size-full wp-image-332" style="width:19%;height:auto;display:inline-block;vertical-align:middle;" src="https://make.wordpress.org/cli/files/2017/04/siteground.png" alt="" width="160" height="33" /></a> <a href="https://wpengine.com/"><img class="aligncenter size-full wp-image-333" style="width:19%;height:auto;display:inline-block;vertical-align:middle;" src="https://make.wordpress.org/cli/files/2017/04/wpengine.png" alt="" width="160" height="30" /></a>
 
-The current stable release is [version 1.4.1](https://make.wordpress.org/cli/2017/11/13/version-1-4-1-released/). For announcements, follow [@wpcli on Twitter](https://twitter.com/wpcli) or [sign up for email updates](https://make.wordpress.org/cli/subscribe/). [Check out the roadmap](https://make.wordpress.org/cli/handbook/roadmap/) for an overview of what's planned for upcoming releases.
+The current stable release is [version 1.5.0](https://make.wordpress.org/cli/2018/01/31/version-1-5-0-released/). For announcements, follow [@wpcli on Twitter](https://twitter.com/wpcli) or [sign up for email updates](https://make.wordpress.org/cli/subscribe/). [Check out the roadmap](https://make.wordpress.org/cli/handbook/roadmap/) for an overview of what's planned for upcoming releases.
 
 [![Build Status](https://travis-ci.org/wp-cli/wp-cli.svg?branch=master)](https://travis-ci.org/wp-cli/wp-cli) [![Dependency Status](https://gemnasium.com/badges/github.com/wp-cli/wp-cli.svg)](https://gemnasium.com/github.com/wp-cli/wp-cli) [![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/wp-cli/wp-cli.svg)](https://isitmaintained.com/project/wp-cli/wp-cli "Average time to resolve an issue") [![Percentage of issues still open](https://isitmaintained.com/badge/open/wp-cli/wp-cli.svg)](https://isitmaintained.com/project/wp-cli/wp-cli "Percentage of issues still open")
 
@@ -73,14 +73,17 @@ If WP-CLI was installed successfully, you should see something like this when yo
 
 ```bash
 $ wp --info
-PHP binary:    /usr/bin/php5
-PHP version:    5.5.9-1ubuntu4.14
-php.ini used:   /etc/php5/cli/php.ini
+OS:	Darwin 16.7.0 Darwin Kernel Version 16.7.0: Thu Jan 11 22:59:40 PST 2018; root:xnu-3789.73.8~1/RELEASE_X86_64 x86_64
+Shell:	/bin/zsh
+PHP binary:    /usr/local/bin/php
+PHP version:    7.0.22
+php.ini used:   /etc/local/etc/php/7.0/php.ini
 WP-CLI root dir:        /home/wp-cli/.wp-cli
+WP-CLI vendor dir:	    /home/wp-cli/.wp-cli/vendor
 WP-CLI packages dir:    /home/wp-cli/.wp-cli/packages/
 WP-CLI global config:   /home/wp-cli/.wp-cli/config.yml
 WP-CLI project config:
-WP-CLI version: 1.4.1
+WP-CLI version: 1.5.0
 ```
 
 ### Updating
