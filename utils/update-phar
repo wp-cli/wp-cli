@@ -43,7 +43,9 @@ echo $md5hash | cut -d ' ' -f 1 > $fname.md5
 
 sha512sum $fname | cut -d ' ' -f 1 > $fname.sha512
 
-git add $fname $fname.md5 $fname.sha512
+gpg -u alain.schlesser@gmail.com --detach-sign --output $fname.asc $fname
+
+git add $fname $fname.md5 $fname.sha512 $fname.asc
 
 git commit -m "$new_commit_subj"
 
