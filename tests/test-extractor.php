@@ -112,12 +112,24 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		// Create test tarball.
 		$output = array();
 		$return_var = -1;
-		// Need --force-local for Windows to avoid "C:" being interpreted as being on remote machine.
-		$cmd = 'tar czvf %1$s' . ( Utils\is_windows() ? ' --force-local' : '' ) . ' --directory=%2$s/src wordpress';
+		// Need --force-local for Windows to avoid "C:" being interpreted as being on remote machine, and redirect for Mac as outputs verbosely on STDERR.
+		$cmd = 'tar czvf %1$s' . ( Utils\is_windows() ? ' --force-local' : '' ) . ' --directory=%2$s/src wordpress 2>&1';
 		exec( Utils\esc_cmd( $cmd, $tarball, $temp_dir ), $output, $return_var );
 		$this->assertSame( 0, $return_var );
 		$this->assertFalse( empty( $output ) );
+
+		// Normalize (Mac) output.
+		$output = array_map( function ( $v ) {
+			if ( 'a ' === substr( $v, 0, 2 ) ) {
+				$v = substr( $v, 2 );
+			}
+			if ( '/' !== substr( $v, -1 ) && false === strpos( $v, '.' ) ) {
+				$v .= '/';
+			}
+			return $v;
+		}, $output );
 		sort( $output );
+
 		$this->assertSame( self::recursive_scandir( $src_dir ), $output );
 
 		// Test.
