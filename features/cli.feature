@@ -11,6 +11,17 @@ Feature: `wp cli` tasks
     When I try `wp cli has-command scaffold package`
     Then the return code should be 1
 
+  Scenario: Ability to detect a WP-CLI registered command when WordPress doesn't exist
+    Given an empty directory
+
+    When I run `wp package install wp-cli/scaffold-package-command`
+    When I run `wp cli has-command scaffold package`
+    Then the return code should be 0
+
+    When I run `wp package uninstall wp-cli/scaffold-package-command`
+    When I try `wp cli has-command scaffold package`
+    Then the return code should be 1
+
   Scenario: Ability to detect a command which is registered by plugin
     Given a WP installation
     And a wp-content/mu-plugins/test-cli.php file:
