@@ -773,6 +773,16 @@ function trailingslashit( $string ) {
 }
 
 /**
+ * Convert Windows EOLs to *nix.
+ *
+ * @param string $str String to convert.
+ * @return string String with carriage return / newline pairs reduced to newlines.
+ */
+function normalize_eols( $str ) {
+	return str_replace( "\r\n", "\n", $str );
+}
+
+/**
  * Get the system's temp directory. Warns user if it isn't writable.
  *
  * @access public
@@ -1101,7 +1111,9 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 function get_suggestion( $target, array $options, $threshold = 2 ) {
 
 	$suggestion_map = array(
+		'add' => 'create',
 		'check' => 'check-update',
+		'capability' => 'cap',
 		'clear' => 'flush',
 		'decrement' => 'decr',
 		'del' => 'delete',
@@ -1117,6 +1129,7 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
 		'regen' => 'regenerate',
 		'rep' => 'replace',
 		'repl' => 'replace',
+		'trash' => 'delete',
 		'v' => 'version',
 	);
 
@@ -1355,4 +1368,86 @@ function _proc_open_compat_win_env( $cmd, &$env ) {
 		}
 	}
 	return $cmd;
+}
+
+/**
+ * First half of escaping for LIKE special characters % and _ before preparing for MySQL.
+ *
+ * Use this only before wpdb::prepare() or esc_sql().  Reversing the order is very bad for security.
+ *
+ * Copied from core "wp-includes/wp-db.php". Avoids dependency on WP 4.4 wpdb.
+ *
+ * @access public
+ *
+ * @param string $text The raw text to be escaped. The input typed by the user should have no
+ *                     extra or deleted slashes.
+ * @return string Text in the form of a LIKE phrase. The output is not SQL safe. Call $wpdb::prepare()
+ *                or real_escape next.
+ */
+function esc_like( $text ) {
+	return addcslashes( $text, '_%\\' );
+}
+
+/**
+ * Escapes (backticks) MySQL identifiers (aka schema object names) - i.e. column names, table names, and database/index/alias/view etc names.
+ * See https://dev.mysql.com/doc/refman/5.5/en/identifiers.html
+ *
+ * @param string|array $idents A single identifier or an array of identifiers.
+ * @return string|array An escaped string if given a string, or an array of escaped strings if given an array of strings.
+ */
+function esc_sql_ident( $idents ) {
+	$backtick = function ( $v ) {
+		// Escape any backticks in the identifier by doubling.
+		return '`' . str_replace( '`', '``', $v ) . '`';
+	};
+	if ( is_string( $idents ) ) {
+		return $backtick( $idents );
+	}
+	return array_map( $backtick, $idents );
+}
+
+/**
+ * Check whether a given string is a valid JSON representation.
+ *
+ * @param string $argument       String to evaluate.
+ * @param bool   $ignore_scalars Optional. Whether to ignore scalar values.
+ *                               Defaults to true.
+ *
+ * @return bool Whether the provided string is a valid JSON representation.
+ */
+function is_json( $argument, $ignore_scalars = true ) {
+	if ( ! is_string( $argument ) || '' === $argument ) {
+		return false;
+	}
+
+	if ( $ignore_scalars && ! in_array( $argument[0], array( '{', '[' ), true ) ) {
+		return false;
+	}
+
+	json_decode( $argument, $assoc = true );
+
+	return json_last_error() === JSON_ERROR_NONE;
+}
+
+/**
+ * Parse known shell arrays included in the $assoc_args array.
+ *
+ * @param array $assoc_args      Associative array of arguments.
+ * @param array $array_arguments Array of argument keys that should receive an
+ *                               array through the shell.
+ *
+ * @return array
+ */
+function parse_shell_arrays( $assoc_args, $array_arguments ) {
+	if ( empty( $assoc_args ) || empty( $array_arguments ) ) {
+		return $assoc_args;
+	}
+
+	foreach ( $array_arguments as $key ) {
+		if ( array_key_exists( $key, $assoc_args ) && is_json( $assoc_args[ $key ] ) ) {
+			$assoc_args[ $key ] = json_decode( $assoc_args[ $key ], $assoc = true );
+		}
+	}
+
+	return $assoc_args;
 }

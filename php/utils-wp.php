@@ -277,6 +277,7 @@ function wp_get_cache_type() {
  *
  * @access public
  * @category System
+ * @deprecated 1.5.0
  */
 function wp_clear_object_cache() {
 	global $wpdb, $wp_object_cache;
@@ -287,13 +288,19 @@ function wp_clear_object_cache() {
 		return;
 	}
 
-	$wp_object_cache->group_ops = array();
-	$wp_object_cache->stats = array();
-	$wp_object_cache->memcache_debug = array();
-	$wp_object_cache->cache = array();
-
-	if ( is_callable( $wp_object_cache, '__remoteset' ) ) {
-		$wp_object_cache->__remoteset(); // important
+	// The following are Memcached (Redux) plugin specific (see https://core.trac.wordpress.org/ticket/31463).
+	if ( isset( $wp_object_cache->group_ops ) ) {
+		$wp_object_cache->group_ops = array();
+	}
+	if ( isset( $wp_object_cache->stats ) ) {
+		$wp_object_cache->stats = array();
+	}
+	if ( isset( $wp_object_cache->memcache_debug ) ) {
+		$wp_object_cache->memcache_debug = array();
+	}
+	// Used by `WP_Object_Cache` also.
+	if ( isset( $wp_object_cache->cache ) ) {
+		$wp_object_cache->cache = array();
 	}
 }
 
@@ -309,117 +316,58 @@ function wp_clear_object_cache() {
 function wp_get_table_names( $args, $assoc_args = array() ) {
 	global $wpdb;
 
-	// Prioritize any supplied $args as tables
-	if ( ! empty( $args ) ) {
-		$new_tables = array();
-		$get_tables_for_glob = function( $glob ) {
-			global $wpdb;
-			static $all_tables = array();
-			if ( ! $all_tables ) {
-				$all_tables = $wpdb->get_col( 'SHOW TABLES' );
-			}
-			$tables = array();
-			foreach ( $all_tables as $table ) {
-				if ( fnmatch( $glob, $table ) ) {
-					$tables[] = $table;
-				}
-			}
-			return $tables;
-		};
-		foreach ( $args as $key => $table ) {
-			if ( false !== strpos( $table, '*' ) || false !== strpos( $table, '?' ) ) {
-				$expanded_tables = $get_tables_for_glob( $table );
-				if ( empty( $expanded_tables ) ) {
-					\WP_CLI::error( "Couldn't find any tables matching: {$table}" );
-				}
-				$new_tables = array_merge( $new_tables, $expanded_tables );
-			} else {
-				$new_tables[] = $table;
-			}
-		}
-		return $new_tables;
-	}
-
-	// Fall back to flag if no tables were passed
-	$table_type = 'WordPress';
-	if ( get_flag_value( $assoc_args, 'network' ) ) {
-		$table_type = 'network';
-	}
-	if ( get_flag_value( $assoc_args, 'all-tables-with-prefix' ) ) {
-		$table_type = 'all-tables-with-prefix';
-	}
+	$tables = array();
 	if ( get_flag_value( $assoc_args, 'all-tables' ) ) {
-		$table_type = 'all-tables';
-	}
+		$tables = $wpdb->get_col( 'SHOW TABLES' );
 
-	$network = 'network' == $table_type;
+	} elseif ( get_flag_value( $assoc_args, 'all-tables-with-prefix' ) ) {
+		$tables = $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', esc_like( $wpdb->get_blog_prefix() ) . '%' ) );
 
-	if ( 'all-tables' == $table_type ) {
-		return $wpdb->get_col( 'SHOW TABLES' );
-	}
+	} else {
+		$scope = get_flag_value( $assoc_args, 'scope', 'all' );
 
-	$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
-	// '_' is a special wildcard for MySQL LIKE queries
-	// so it needs to be escaped with '\', but then '\' needs to be escaped as well
-	$sql_prefix = str_replace( '_', '\\_', $prefix );
-	$matching_tables = $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $sql_prefix . '%' ) );
-
-	if ( 'all-tables-with-prefix' == $table_type ) {
-		return $matching_tables;
-	}
-
-	$filter_sitecategories = function( $matching_tables ) {
-		global $wpdb;
-		// Only include sitecategories when it's actually enabled.
-		if ( ! global_terms_enabled() ) {
-			$key = array_search( $wpdb->sitecategories, $matching_tables );
-			if ( false !== $key ) {
-				unset( $matching_tables[ $key ] );
-			}
-		}
-		return $matching_tables;
-	};
-
-	if ( $scope = get_flag_value( $assoc_args, 'scope' ) ) {
-		$matching_tables = $wpdb->tables( $scope );
-		$matching_tables = $filter_sitecategories( $matching_tables );
-		return $matching_tables;
-	}
-
-	$allowed_tables = array();
-	$allowed_table_types = array( 'tables', 'global_tables' );
-	if ( $network ) {
-		$allowed_table_types[] = 'ms_global_tables';
-	}
-	foreach ( $allowed_table_types as $table_type ) {
-		foreach ( $wpdb->$table_type as $table ) {
-			$allowed_tables[] = $prefix . $table;
-		}
-	}
-
-	// Given our matching tables, also allow site-specific tables on the network
-	foreach ( $matching_tables as $key => $matched_table ) {
-
-		if ( in_array( $matched_table, $allowed_tables ) ) {
-			continue;
-		}
-
-		if ( $network ) {
-			$valid_table = false;
-			foreach ( array_merge( $wpdb->tables, $wpdb->old_tables ) as $maybe_site_table ) {
-				if ( preg_match( "#{$prefix}([\d]+)_{$maybe_site_table}#", $matched_table ) ) {
-					$valid_table = true;
+		// Note: BC change 1.5.0, taking scope into consideration for network also.
+		if ( get_flag_value( $assoc_args, 'network' ) && is_multisite() ) {
+			$network_global_scope = in_array( $scope, array( 'all', 'global', 'ms_global' ), true ) ? ( 'all' === $scope ? 'global' : $scope ) : '';
+			$wp_tables = array_values( $wpdb->tables( $network_global_scope ) );
+			if ( in_array( $scope, array( 'all', 'blog' ), true ) ) {
+				// Do directly for compat with old WP versions. Note: private, deleted, archived sites are not excluded.
+				$blog_ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs WHERE site_id = $wpdb->siteid" );
+				foreach ( $blog_ids as $blog_id ) {
+					$wp_tables = array_merge( $wp_tables, array_values( $wpdb->tables( 'blog', true /*prefix*/, $blog_id ) ) );
 				}
 			}
-			if ( $valid_table ) {
-				continue;
-			}
+		} else {
+			$wp_tables = array_values( $wpdb->tables( $scope ) );
 		}
 
-		unset( $matching_tables[ $key ] );
+		if ( ! global_terms_enabled() ) {
+			// Only include sitecategories when it's actually enabled.
+			$wp_tables = array_values( array_diff( $wp_tables, array( $wpdb->sitecategories ) ) );
+		}
 
+		// Note: BC change 1.5.0, tables are sorted (via TABLES view).
+		// @codingStandardsIgnoreLine
+		$tables = $wpdb->get_col( sprintf( "SHOW TABLES WHERE %s IN ('%s')", esc_sql_ident( 'Tables_in_' . $wpdb->dbname ), implode( "', '", $wpdb->_escape( $wp_tables ) ) ) );
 	}
 
-	$filter_sitecategories( $matching_tables );
-	return array_values( $matching_tables );
+	// Filter by `$args`.
+	if ( $args ) {
+		$args_tables = array();
+		foreach ( $args as $arg ) {
+			if ( false !== strpos( $arg, '*' ) || false !== strpos( $arg, '?' ) ) {
+				$args_tables = array_merge( $args_tables, array_filter( $tables, function ( $v ) use ( $arg ) {
+					return fnmatch( $arg, $v );
+				} ) );
+			} else {
+				$args_tables[] = $arg;
+			}
+		}
+		$args_tables = array_values( array_unique( $args_tables ) );
+		if ( ! ( $tables = array_values( array_intersect( $tables, $args_tables ) ) ) ) {
+			\WP_CLI::error( sprintf( "Couldn't find any tables matching: %s", implode( ' ', $args ) ) );
+		}
+	}
+
+	return $tables;
 }

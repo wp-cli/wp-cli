@@ -149,7 +149,7 @@ class Contrib_List_Command {
 			$request_url = false;
 			// Set $request_url to 'rel="next" if present'
 			if ( ! empty( $headers['Link'] ) ) {
-				$bits = explode( ',', $headers['Link'] );
+				$bits = trim( explode( ',', $headers['Link'] ) );
 				foreach( $bits as $bit ) {
 					if ( false !== stripos( $bit, 'rel="next"' ) ) {
 						$hrefandrel = explode( '; ', $bit );

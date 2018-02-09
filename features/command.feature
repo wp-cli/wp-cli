@@ -15,12 +15,6 @@ Feature: WP-CLI Commands
       wp cap <command>
       """
 
-    When I run `wp checksum --help`
-    Then STDOUT should contain:
-      """
-      wp checksum <command>
-      """
-
     When I run `wp comment --help`
     Then STDOUT should contain:
       """
@@ -769,11 +763,104 @@ Feature: WP-CLI Commands
     When I run `wp help foo`
     Then STDOUT should contain:
       """
+      NAME
+
+        wp foo
+
+      DESCRIPTION
+
+        My awesome function command
+
+      SYNOPSIS
+
+        wp foo 
+
+      EXAMPLES 
+
+        # Run the custom foo command
+
+      GLOBAL PARAMETERS
+
+      """
+
+    # With synopsis, appended.
+    Given a hello-command.php file:
+      """
+      <?php
+        $hello_command = function( $args, $assoc_args ) {
+            list( $name ) = $args;
+            $type = $assoc_args['type'];
+            WP_CLI::$type( "Hello, $name!" );
+            if ( isset( $assoc_args['honk'] ) ) {
+                WP_CLI::log( 'Honk!' );
+            }
+        };
+        WP_CLI::add_command( 'example hello', $hello_command, array(
+            'shortdesc' => 'Prints a greeting.',
+            'synopsis' => array(
+                array(
+                    'type'      => 'positional',
+                    'name'      => 'name',
+                    'description' => 'Name of person to greet.',
+                    'optional'  => false,
+                    'repeating' => false,
+                ),
+                array(
+                    'type'     => 'assoc',
+                    'name'     => 'type',
+                    'optional' => true,
+                    'default'  => 'success',
+                    'options'  => array( 'success', 'error' ),
+                ),
+                array(
+                    'type'     => 'flag',
+                    'name'     => 'honk',
+                    'optional' => true,
+                ),
+            ),
+            'when' => 'after_wp_load',
+            'longdesc'    => "\r\n## EXAMPLES\n\n# Say hello to Newman\nwp example hello Newman\nSuccess: Hello, Newman!",
+      ) );
+      """
+
+    When I run `wp --require=hello-command.php help example hello`
+    Then STDOUT should contain:
+      """
+      NAME
+
+        wp example hello
+
+      DESCRIPTION
+
+        Prints a greeting.
+
+      SYNOPSIS
+
+        wp example hello <name> [--type=<type>] [--honk]
+
+      OPTIONS
+
+        <name>
+          Name of person to greet.
+
+        [--type=<type>]
+        ---
+        default: success
+        options:
+        - success
+        - error
+        ---
+
+        [--honk]
+
       EXAMPLES
-      """
-    And STDOUT should contain:
-      """
-      # Run the custom foo command
+
+        # Say hello to Newman
+        wp example hello Newman
+        Success: Hello, Newman!
+
+      GLOBAL PARAMETERS
+
       """
 
   Scenario: Register a command with default and accepted arguments.

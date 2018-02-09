@@ -121,8 +121,8 @@ class BehatTagsTest extends PHPUnit_Framework_TestCase {
 		if ( ! extension_loaded( 'imagick' ) ) {
 			$expecteds[] = '~@require-extension-imagick';
 		}
-		if ( ! extension_loaded( 'intl' ) ) {
-			$expecteds[] = '~@require-extension-intl';
+		if ( ! extension_loaded( 'curl' ) ) {
+			$expecteds[] = '~@require-extension-curl';
 		}
 		$expected = '--tags=' . implode( '&&', array_merge( array( '~@github-api', '~@broken' ), $expecteds ) );
 		$output = exec( "cd {$this->temp_dir}; php $behat_tags" );
