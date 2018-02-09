@@ -326,30 +326,12 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\//\\' ) );
 	}
 
+	public function testNormalizeEols() {
+		$this->assertSame( "\na\ra\na\n", Utils\normalize_eols( "\r\na\ra\r\na\r\n" ) );
+	}
+
 	public function testGetTempDir() {
 		$this->assertTrue( '/' === substr( Utils\get_temp_dir(), -1 ) );
-
-		// INI directive `sys_temp_dir` introduced PHP 5.5.0.
-		if ( version_compare( PHP_VERSION, '5.5.0', '>=' ) ) {
-
-			// `sys_temp_dir` set to unwritable.
-
-			$cmd = 'php ' . escapeshellarg( '-dsys_temp_dir=\\tmp\\' ) . ' php/boot-fs.php --skip-wordpress eval ' . escapeshellarg( 'echo WP_CLI\\Utils\\get_temp_dir();' ) . ' 2>&1';
-			$output = array();
-			exec( $cmd, $output );
-			$output = trim( implode( "\n", $output ) );
-			$this->assertTrue( false !== strpos( $output, 'Warning' ) );
-			$this->assertTrue( false !== strpos( $output, 'writable' ) );
-			$this->assertTrue( false !== strpos( $output, '\\tmp/' ) );
-
-			// `sys_temp_dir` unset.
-
-			$cmd = 'php ' . escapeshellarg( '-dsys_temp_dir=' ) . ' php/boot-fs.php --skip-wordpress eval ' . escapeshellarg( 'echo WP_CLI\\Utils\\get_temp_dir();' ) . ' 2>&1';
-			$output = array();
-			exec( $cmd, $output );
-			$output = trim( implode( "\n", $output ) );
-			$this->assertTrue( '/' === substr( $output, -1 ) );
-		}
 	}
 
 	public function testHttpRequestBadAddress() {
@@ -447,38 +429,6 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$class_wp_cli_logger->setValue( $prev_logger );
 	}
 
-	public function testRunMysqlCommandProcDisabled() {
-		$err_msg = 'Error: Cannot do \'run_mysql_command\': The PHP functions `proc_open()` and/or `proc_close()` are disabled';
-
-		$cmd = 'php -ddisable_functions=proc_open php/boot-fs.php --skip-wordpress eval ' . escapeshellarg( 'WP_CLI\\Utils\\run_mysql_command( null, array() );' ) . ' 2>&1';
-		$output = array();
-		exec( $cmd, $output );
-		$output = trim( implode( "\n", $output ) );
-		$this->assertTrue( false !== strpos( $output, $err_msg ) );
-
-		$cmd = 'php -ddisable_functions=proc_close php/boot-fs.php --skip-wordpress eval ' . escapeshellarg( 'WP_CLI\\Utils\\run_mysql_command( null, array() );' ) . ' 2>&1';
-		$output = array();
-		exec( $cmd, $output );
-		$output = trim( implode( "\n", $output ) );
-		$this->assertTrue( false !== strpos( $output, $err_msg ) );
-	}
-
-	public function testLaunchEditorForInputProcDisabled() {
-		$err_msg = 'Error: Cannot do \'launch_editor_for_input\': The PHP functions `proc_open()` and/or `proc_close()` are disabled';
-
-		$cmd = 'php -ddisable_functions=proc_open php/boot-fs.php --skip-wordpress eval ' . escapeshellarg( 'WP_CLI\\Utils\\launch_editor_for_input( null, null );' ) . ' 2>&1';
-		$output = array();
-		exec( $cmd, $output );
-		$output = trim( implode( "\n", $output ) );
-		$this->assertTrue( false !== strpos( $output, $err_msg ) );
-
-		$cmd = 'php -ddisable_functions=proc_close php/boot-fs.php --skip-wordpress eval ' . escapeshellarg( 'WP_CLI\\Utils\\launch_editor_for_input( null, null );' ) . ' 2>&1';
-		$output = array();
-		exec( $cmd, $output );
-		$output = trim( implode( "\n", $output ) );
-		$this->assertTrue( false !== strpos( $output, $err_msg ) );
-	}
-
 	/**
 	 * @dataProvider dataPastTenseVerb
 	 */
@@ -524,13 +474,16 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		$dir = __DIR__ . '/data/expand_globs/';
 		$expected = array_map( function ( $v ) use ( $dir ) { return $dir . $v; }, $expected );
+		sort( $expected );
 
 		putenv( 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE=0' );
 		$out = Utils\expand_globs( $dir . $path );
+		sort( $out );
 		$this->assertSame( $expected, $out );
 
 		putenv( 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE=1' );
 		$out = Utils\expand_globs( $dir . $path );
+		sort( $out );
 		$this->assertSame( $expected, $out );
 
 		putenv( false === $expand_globs_no_glob_brace ? 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE' : "WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE=$expand_globs_no_glob_brace" );
@@ -665,6 +618,65 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			array( '1=1 echo', array(), '1=1 echo', array() ), // Must begin with alphabetic or underscore.
 			array( '_eNv=1 echo', array(), 'echo', array( '_eNv' => '1' ) ), // Mixed-case and beginning with underscore allowed.
 			array( 'ENV=\'blah blah\' echo', array(), 'blah\' echo', array( 'ENV' => '\'blah' ) ), // Unix escaping not supported, ie treated literally.
+		);
+	}
+
+	/**
+	 * Copied from core "tests/phpunit/tests/db.php" (adapted to not use `$wpdb`).
+	 */
+	function test_esc_like() {
+		$inputs   = array(
+			'howdy%', //Single Percent
+			'howdy_', //Single Underscore
+			'howdy\\', //Single slash
+			'howdy\\howdy%howdy_', //The works
+			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?', //Plain text
+		);
+		$expected = array(
+			'howdy\\%',
+			'howdy\\_',
+			'howdy\\\\',
+			'howdy\\\\howdy\\%howdy\\_',
+			'howdy\'"[[]*#[^howdy]!+)(*&$#@!~|}{=--`/.,<>?',
+		);
+
+		foreach ( $inputs as $key => $input ) {
+			$this->assertEquals( $expected[ $key ], Utils\esc_like( $input ) );
+		}
+	}
+
+	/** @dataProvider dataIsJson */
+	public function testIsJson( $argument, $ignore_scalars, $expected ) {
+		$this->assertEquals( $expected, Utils\is_json( $argument, $ignore_scalars ) );
+	}
+
+	public function dataIsJson() {
+		return array(
+			array( '42', true, false ),
+			array( '42', false, true ),
+			array( '"test"', true, false ),
+			array( '"test"', false, true ),
+			array( '{"key1":"value1","key2":"value2"}', true, true ),
+			array( '{"key1":"value1","key2":"value2"}', false, true ),
+			array( '["value1","value2"]', true, true ),
+			array( '["value1","value2"]', false, true ),
+			array( '0', true, false ),
+			array( '0', false, true ),
+			array( '', true, false ),
+			array( '', false, false ),
+		);
+	}
+
+	/** @dataProvider dataParseShellArray */
+	public function testParseShellArray( $assoc_args, $array_arguments, $expected ) {
+		$this->assertEquals( $expected, Utils\parse_shell_arrays( $assoc_args, $array_arguments ) );
+	}
+
+	public function dataParseShellArray() {
+		return array(
+			array( array( 'alpha' => '{"key":"value"}' ), array(), array( 'alpha' => '{"key":"value"}' ) ),
+			array( array( 'alpha' => '{"key":"value"}' ), array( 'alpha' ), array( 'alpha' => array( 'key' => 'value' ) ) ),
+			array( array( 'alpha' => '{"key":"value"}' ), array( 'beta' ), array( 'alpha' => '{"key":"value"}' ) ),
 		);
 	}
 }
