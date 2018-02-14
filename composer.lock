@@ -2381,16 +2381,16 @@
         },
         {
             "name": "wp-cli/package-command",
-            "version": "v1.0.11",
+            "version": "v1.0.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/package-command.git",
-                "reference": "b0f0e59a1d174c80bd11833b2f4a650d835d7a29"
+                "reference": "bb8b02d9ba1cded95564767000738ceaefbc885b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/b0f0e59a1d174c80bd11833b2f4a650d835d7a29",
-                "reference": "b0f0e59a1d174c80bd11833b2f4a650d835d7a29",
+                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/bb8b02d9ba1cded95564767000738ceaefbc885b",
+                "reference": "bb8b02d9ba1cded95564767000738ceaefbc885b",
                 "shasum": ""
             },
             "require": {
@@ -2436,7 +2436,7 @@
             ],
             "description": "Lists, installs, and removes WP-CLI packages.",
             "homepage": "https://github.com/wp-cli/package-command",
-            "time": "2018-01-29T02:32:25+00:00"
+            "time": "2018-02-09T09:55:33+00:00"
         },
         {
             "name": "wp-cli/php-cli-tools",
