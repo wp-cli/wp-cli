@@ -24,7 +24,7 @@ function extract_from_phar( $path ) {
 
 	$fname = basename( $path );
 
-	$tmp_path = get_temp_dir() . "wp-cli-$fname";
+	$tmp_path = get_temp_dir() . "wp-cli-$fname-" . uniqid( 'wp-cli-extract-from-phar-', true );
 
 	copy( $path, $tmp_path );
 
