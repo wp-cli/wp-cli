@@ -351,9 +351,11 @@ function pick_fields( $item, $fields ) {
  * @category Input
  *
  * @param  string  $content  Some form of text to edit (e.g. post content)
+ * @param  string  $title    Title to display in the editor.
+ * @param  string  $ext      Extension to use with the temp file.
  * @return string|bool       Edited text, if file is saved from editor; false, if no change to file.
  */
-function launch_editor_for_input( $input, $filename = 'WP-CLI' ) {
+function launch_editor_for_input( $input, $filename = 'WP-CLI', $ext = 'tmp' ) {
 
 	check_proc_available( 'launch_editor_for_input' );
 
@@ -363,7 +365,7 @@ function launch_editor_for_input( $input, $filename = 'WP-CLI' ) {
 		$tmpfile = basename( $filename );
 		$tmpfile = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( mt_rand() ), 0, 6 );
-		$tmpfile = $tmpdir . $tmpfile . '.tmp';
+		$tmpfile = $tmpdir . $tmpfile . '.' . $ext;
 		$fp = fopen( $tmpfile, 'xb' );
 		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
 			$tmpfile = '';
