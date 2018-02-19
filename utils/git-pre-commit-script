@@ -10,7 +10,7 @@ fi
 FILES=$(git diff-index --name-only --cached --diff-filter=ACMR $against -- )
 
 if [ "$FILES" == "" ]; then
-	echo "No files to check with PHPCS.\n"
+	echo "No files to check with PHPCS."
 	exit 0
 fi
 
