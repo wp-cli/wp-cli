@@ -327,6 +327,9 @@ Feature: Load WP-CLI
       """
 
     Given "define( 'DOMAIN_CURRENT_SITE', 'example.org' );" replaced with " " in the wp-config.php file
+    # WP < 5.0 have bug which will not find a blog given an empty domain unless wp_blogs.domain empty which was (partly) addressed by https://core.trac.wordpress.org/ticket/42299
+    # So empty wp_blogs.domain to make behavior consistent across WP versions.
+    And I run `wp db query 'UPDATE wp_blogs SET domain = NULL'`
 
     When I run `cat wp-config.php`
     Then STDOUT should not contain:
@@ -334,11 +337,15 @@ Feature: Load WP-CLI
       DOMAIN_CURRENT_SITE
       """
 
-    When I try `wp option get home`
-    Then STDERR should be:
+    # This will work as finds blog with empty domain and thus uses `home` option.
+    When I run `wp option get home`
+    Then STDOUT should be:
       """
-      Error: Site not found. Define DOMAIN_CURRENT_SITE in 'wp-config.php' or use `--url=<url>` to override.
+      http://example.com
       """
+
+    # Undo above.
+    Given I run `wp db query 'UPDATE wp_blogs SET domain = "example.com"'`
 
     When I try `wp option get home --url=example.io`
     Then STDERR should be:
