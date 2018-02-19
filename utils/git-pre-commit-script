@@ -1,7 +1,6 @@
 #!/bin/bash
 
-if REV=$(git rev-parse -q --verify HEAD)
-then
+if REV=$(git rev-parse -q --verify HEAD); then
     against=HEAD
 else
     # Initial commit: diff against an empty tree object
