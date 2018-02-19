@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# Setup Git pre-commit hook.
+#
+
+# stop when composer.json file is not found
+if [[ ! -f "composer.json" ]]; then
+	echo "unable to locate composer.json file."
+	exit 1
+fi
+
+# determine the phpcs binary location
+if [[ -f "vendor/bin/phpcs" ]]; then
+	phpcs_bin="./vendor/bin/phpcs"
+elif [[ -n $COMPOSER_BIN_DIR && -f "$COMPOSER_BIN_DIR/phpcs" ]]; then
+	phpcs_bin="./$COMPOSER_BIN_DIR/phpcs"
+elif [[ -n $COMPOSER_VENDOR_DIR && -f "$COMPOSER_VENDOR_DIR/bin/phpcs" ]]; then
+	phpcs_bin="./$COMPOSER_VENDOR_DIR/bin/phpcs"
+else
+	echo "pre-commit hook: unable to locate phpcs binary file."
+	exit
+fi
+
+# create the pre-commit file or notify to add command if it already exists
+pre_commit_file="$(git rev-parse --git-dir)/hooks/pre-commit"
+
+if [[ ! -f "$pre_commit_file" ]]; then
+	echo -e "#!/bin/bash\nset -ex\n$phpcs_bin" > $pre_commit_file
+	chmod +x $pre_commit_file
+elif ! grep -q "phpcs" $pre_commit_file; then
+	echo -e "hook file already exists: $pre_commit_file\n\nplease add the below command to your pre-commit file:\n\n$phpcs_bin"
+fi
