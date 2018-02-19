@@ -355,14 +355,14 @@ function pick_fields( $item, $fields ) {
  * @param  string  $ext      Extension to use with the temp file.
  * @return string|bool       Edited text, if file is saved from editor; false, if no change to file.
  */
-function launch_editor_for_input( $input, $filename = 'WP-CLI', $ext = 'tmp' ) {
+function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 
 	check_proc_available( 'launch_editor_for_input' );
 
 	$tmpdir = get_temp_dir();
 
 	do {
-		$tmpfile = basename( $filename );
+		$tmpfile = basename( $title );
 		$tmpfile = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( mt_rand() ), 0, 6 );
 		$tmpfile = $tmpdir . $tmpfile . '.' . $ext;
