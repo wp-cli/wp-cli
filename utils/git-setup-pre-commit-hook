@@ -25,7 +25,7 @@ fi
 pre_commit_file="$(git rev-parse --git-dir)/hooks/pre-commit"
 
 if [[ ! -f "$pre_commit_file" ]]; then
-	echo -e "#!/bin/bash\nset -ex\n$phpcs_bin" > $pre_commit_file
+	cat utils/git-pre-commit-script | sed 's|{{PHPCS_BIN}}|'$phpcs_bin'|' > $pre_commit_file
 	chmod +x $pre_commit_file
 elif ! grep -q "phpcs" $pre_commit_file; then
 	echo -e "hook file already exists: $pre_commit_file\n\nplease add the below command to your pre-commit file:\n\n$phpcs_bin"
