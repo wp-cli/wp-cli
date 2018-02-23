@@ -26,7 +26,7 @@ Feature: Review CLI information
     When I run `wp cli info`
     Then STDOUT should contain:
       """
-      WP-CLI packages dir
+      WP-CLI packages dir:
       """
 
   Scenario: Packages directory path should be slashed correctly
