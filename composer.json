@@ -14,14 +14,14 @@
 	],
 	"config": {
 		"platform": {
-			"php": "5.3.29"
+			"php": "5.4"
 		},
 		"sort-packages": true
 	},
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"require": {
-		"php": ">=5.3.29",
+		"php": ">=5.4",
 		"composer/composer": "^1.2.0",
 		"composer/semver": "~1.0",
 		"justinrainbow/json-schema": "~5.2.5",
