@@ -22,8 +22,6 @@ Feature: Bootstrap WP-CLI
       WP-CLI 1.1.0
       """
 
-  # UNDO ME: One-off require PHP 5.4 to get revert of PHP 5.4 requirement to work.
-  @require-php-5.4
   Scenario: Composer stack with override requirement before WP-CLI
     Given an empty directory
     And a composer.json file:
