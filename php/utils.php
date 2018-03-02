@@ -1309,6 +1309,7 @@ function get_php_binary() {
 
 	// Available since PHP 5.4.
 	if ( defined( 'PHP_BINARY' ) ) {
+		// @codingStandardsIgnoreLine
 		return PHP_BINARY;
 	}
 
