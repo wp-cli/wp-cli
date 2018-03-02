@@ -156,6 +156,7 @@ class Formatter {
 
 				if ( 'json' === $this->args['format'] ) {
 					if ( defined( 'JSON_PARTIAL_OUTPUT_ON_ERROR' ) ) {
+						// @codingStandardsIgnoreLine
 						echo json_encode( $out, JSON_PARTIAL_OUTPUT_ON_ERROR );
 					} else {
 						echo json_encode( $out );
