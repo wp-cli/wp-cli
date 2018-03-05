@@ -326,24 +326,34 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\//\\' ) );
 	}
 
-	public function testNormalizePath() {
-		$this->assertSame( '', Utils\normalize_path( '' ) );
-		// Windows paths
-		$this->assertSame( 'C:/www/path/', Utils\normalize_path( 'C:\\www\\path\\' ) );
-		$this->assertSame( 'C:/www/path/', Utils\normalize_path( 'C:\\www\\\\path\\' ) );
-		$this->assertSame( 'C:', Utils\normalize_path( 'c:' ) ); // uppercase driver letter
-		$this->assertSame( 'C:/', Utils\normalize_path( 'c:\\' ) );
-		$this->assertSame( 'C:/www/path', Utils\normalize_path( 'c:/www/path' ) );
-		$this->assertSame( 'C:/www/path/', Utils\normalize_path( 'c:\\www\\path\\' ) );
-		$this->assertSame( 'C:/www/path/', Utils\normalize_path( 'c:\\\\www\\path\\' ) );
-		$this->assertSame( '//Domain/DFSRoots/share/path/', Utils\normalize_path( '\\\\Domain\\DFSRoots\\share\\path\\' ) );
-		$this->assertSame( '//Server/share/path', Utils\normalize_path( '\\\\Server\\share\\path' ) );
-		$this->assertSame( '//Server/share', Utils\normalize_path( '\\\\Server\\share' ) );
-		// Linux paths
-		$this->assertSame( '/', Utils\normalize_path( '/' ) );
-		$this->assertSame( '/www/path/', Utils\normalize_path( '/www/path/' ) );
-		$this->assertSame( '/www/path/', Utils\normalize_path( '/www/path/////' ) );
-		$this->assertSame( '/www/path', Utils\normalize_path( '/www/path' ) );
+	/**
+	 * @dataProvider dataNormalizePath
+	 */
+	public function testNormalizePath( $path, $expected ) {
+		$this->assertEquals( $expected, Utils\normalize_path( $path ) );
+	}
+
+	public function dataNormalizePath() {
+		return array(
+			array( '', '' ),
+			// Windows paths
+			array( 'C:\\www\\path\\', 'C:/www/path/' ),
+			array( 'C:\\www\\\\path\\', 'C:/www/path/' ),
+			array( 'c:/www/path', 'C:/www/path' ),
+			array( 'c:\\www\\path\\', 'C:/www/path/' ), // uppercase drive letter
+			array( 'c:', 'C:' ),
+			array( 'c:\\', 'C:/' ),
+			array( 'c:\\\\www\\path\\', 'C:/www/path/' ),
+			array( '\\\\Domain\\DFSRoots\\share\\path\\', '//Domain/DFSRoots/share/path/' ),
+			array( '\\\\Server\\share\\path', '//Server/share/path' ),
+			array( '\\\\Server\\share', '//Server/share' ),
+			// Linux paths
+			array( '/', '/' ),
+			array( '/www/path/', '/www/path/' ),
+			array( '/www/path/////', '/www/path/' ),
+			array( '/www/path', '/www/path' ),
+			array( '/www/path', '/www/path' ),
+		);
 	}
 
 	public function testNormalizeEols() {
