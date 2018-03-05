@@ -777,12 +777,14 @@ function trailingslashit( $string ) {
 /**
  * Normalize a filesystem path.
  *
- * On windows systems, replaces backslashes with forward slashes
+ * On Windows systems, replaces backslashes with forward slashes
  * and forces upper-case drive letters.
  * Allows for two leading slashes for Windows network shares, but
- * ensures that all other duplicate slashes are reduced to a single.
+ * ensures that all other duplicate slashes are reduced to a single one.
  * Ensures upper-case drive letters on Windows systems.
- * Allows for Windows network shares.
+ *
+ * @access public
+ * @category System
  *
  * @param string $path Path to normalize.
  * @return string Normalized path.
