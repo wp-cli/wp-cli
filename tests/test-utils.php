@@ -326,6 +326,26 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\//\\' ) );
 	}
 
+	public function testNormalizePath() {
+		$this->assertSame( '', Utils\normalize_path( '' ) );
+		// Windows paths
+		$this->assertSame( 'C:/www/path/', Utils\normalize_path( 'C:\\www\\path\\' ) );
+		$this->assertSame( 'C:/www/path/', Utils\normalize_path( 'C:\\www\\\\path\\' ) );
+		$this->assertSame( 'C:', Utils\normalize_path( 'c:' ) ); // uppercase driver letter
+		$this->assertSame( 'C:/', Utils\normalize_path( 'c:\\' ) );
+		$this->assertSame( 'C:/www/path', Utils\normalize_path( 'c:/www/path' ) );
+		$this->assertSame( 'C:/www/path/', Utils\normalize_path( 'c:\\www\\path\\' ) );
+		$this->assertSame( 'C:/www/path/', Utils\normalize_path( 'c:\\\\www\\path\\' ) );
+		$this->assertSame( '//Domain/DFSRoots/share/path/', Utils\normalize_path( '\\\\Domain\\DFSRoots\\share\\path\\' ) );
+		$this->assertSame( '//Server/share/path', Utils\normalize_path( '\\\\Server\\share\\path' ) );
+		$this->assertSame( '//Server/share', Utils\normalize_path( '\\\\Server\\share' ) );
+		// Linux paths
+		$this->assertSame( '/', Utils\normalize_path( '/' ) );
+		$this->assertSame( '/www/path/', Utils\normalize_path( '/www/path/' ) );
+		$this->assertSame( '/www/path/', Utils\normalize_path( '/www/path/////' ) );
+		$this->assertSame( '/www/path', Utils\normalize_path( '/www/path' ) );
+	}
+
 	public function testNormalizeEols() {
 		$this->assertSame( "\na\ra\na\n", Utils\normalize_eols( "\r\na\ra\r\na\r\n" ) );
 	}
