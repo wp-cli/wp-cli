@@ -699,7 +699,7 @@
         },
         {
             "name": "symfony/config",
-            "version": "v2.8.35",
+            "version": "v2.8.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/config.git",
@@ -755,7 +755,7 @@
         },
         {
             "name": "symfony/console",
-            "version": "v2.8.35",
+            "version": "v2.8.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
@@ -816,7 +816,7 @@
         },
         {
             "name": "symfony/debug",
-            "version": "v2.8.35",
+            "version": "v2.8.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/debug.git",
@@ -873,7 +873,7 @@
         },
         {
             "name": "symfony/dependency-injection",
-            "version": "v2.8.35",
+            "version": "v2.8.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/dependency-injection.git",
@@ -936,7 +936,7 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.35",
+            "version": "v2.8.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
@@ -996,7 +996,7 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v2.8.35",
+            "version": "v2.8.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
@@ -1045,16 +1045,16 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v2.8.35",
+            "version": "v2.8.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/finder.git",
-                "reference": "7099de3ebc97d3af98c464076d12dfca3ade0252"
+                "reference": "c5c751ccd50230b4517393344080a0eaf968bf2d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/finder/zipball/7099de3ebc97d3af98c464076d12dfca3ade0252",
-                "reference": "7099de3ebc97d3af98c464076d12dfca3ade0252",
+                "url": "https://api.github.com/repos/symfony/finder/zipball/c5c751ccd50230b4517393344080a0eaf968bf2d",
+                "reference": "c5c751ccd50230b4517393344080a0eaf968bf2d",
                 "shasum": ""
             },
             "require": {
@@ -1090,7 +1090,7 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "https://symfony.com",
-            "time": "2018-02-11T16:53:59+00:00"
+            "time": "2018-03-05T18:27:59+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
@@ -1153,7 +1153,7 @@
         },
         {
             "name": "symfony/process",
-            "version": "v2.8.35",
+            "version": "v2.8.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
@@ -1202,7 +1202,7 @@
         },
         {
             "name": "symfony/translation",
-            "version": "v2.8.35",
+            "version": "v2.8.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/translation.git",
@@ -1266,7 +1266,7 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.8.35",
+            "version": "v2.8.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
@@ -3543,12 +3543,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "ec43dc1b86eb2a634eff2bb581e518cf0f798507"
+                "reference": "efecacb8182814c1476c7b38c1053ef78823e127"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/ec43dc1b86eb2a634eff2bb581e518cf0f798507",
-                "reference": "ec43dc1b86eb2a634eff2bb581e518cf0f798507",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/efecacb8182814c1476c7b38c1053ef78823e127",
+                "reference": "efecacb8182814c1476c7b38c1053ef78823e127",
                 "shasum": ""
             },
             "conflict": {
@@ -3579,7 +3579,7 @@
                 "doctrine/orm": ">=2,<2.4.8|>=2.5,<2.5.1",
                 "dompdf/dompdf": ">=0.6,<0.6.2",
                 "drupal/core": ">=8,<8.4.5",
-                "drupal/drupal": ">=8,<8.3.7",
+                "drupal/drupal": ">=8,<8.4.5",
                 "erusev/parsedown": "<1.7",
                 "ezsystems/ezpublish-legacy": ">=5.3,<5.3.12.3|>=5.4,<5.4.11.3|>=2017.8,<2017.8.1.1|>=2017.12,<2017.12.2.1",
                 "firebase/php-jwt": "<2",
@@ -3616,7 +3616,7 @@
                 "silverstripe/forum": "<=0.6.1|>=0.7,<=0.7.3",
                 "silverstripe/framework": ">=3,<3.3",
                 "silverstripe/userforms": "<3",
-                "simplesamlphp/saml2": "<1.10.4|>=2,<2.3.5|>=3,<3.1.1",
+                "simplesamlphp/saml2": "<1.10.6|>=2,<2.3.8|>=3,<3.1.4",
                 "simplesamlphp/simplesamlphp": "<1.15.2",
                 "simplesamlphp/simplesamlphp-module-infocard": "<1.0.1",
                 "socalnick/scn-social-auth": "<1.15.2",
@@ -3641,7 +3641,7 @@
                 "symfony/web-profiler-bundle": ">=2,<2.3.19|>=2.4,<2.4.9|>=2.5,<2.5.4",
                 "symfony/yaml": ">=2,<2.0.22|>=2.1,<2.1.7",
                 "thelia/backoffice-default-template": ">=2.1,<2.1.2",
-                "thelia/thelia": ">=2.1,<2.1.2|>=2.1.0-beta1,<2.1.3",
+                "thelia/thelia": ">=2.1.0-beta1,<2.1.3|>=2.1,<2.1.2",
                 "titon/framework": ">=0,<9.9.99",
                 "twig/twig": "<1.20",
                 "typo3/cms": ">=6.2,<6.2.30|>=7,<7.6.22|>=8,<8.7.5",
@@ -3691,7 +3691,7 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2018-03-04T21:39:48+00:00"
+            "time": "2018-03-06T15:15:10+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
