@@ -775,6 +775,31 @@ function trailingslashit( $string ) {
 }
 
 /**
+ * Normalize a filesystem path.
+ *
+ * On Windows systems, replaces backslashes with forward slashes
+ * and forces upper-case drive letters.
+ * Allows for two leading slashes for Windows network shares, but
+ * ensures that all other duplicate slashes are reduced to a single one.
+ * Ensures upper-case drive letters on Windows systems.
+ *
+ * @access public
+ * @category System
+ *
+ * @param string $path Path to normalize.
+ * @return string Normalized path.
+ */
+function normalize_path( $path ) {
+	$path = str_replace( '\\', '/', $path );
+	$path = preg_replace( '|(?<=.)/+|', '/', $path );
+	if ( ':' === substr( $path, 1, 1 ) ) {
+		$path = ucfirst( $path );
+	}
+	return $path;
+}
+
+
+/**
  * Convert Windows EOLs to *nix.
  *
  * @param string $str String to convert.
