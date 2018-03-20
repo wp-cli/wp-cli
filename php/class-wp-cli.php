@@ -819,17 +819,17 @@ class WP_CLI {
 	 * @param array $assoc_args Skips prompt if 'yes' is provided.
 	 */
 	public static function confirm( $question, $assoc_args = array() ) {
-		switch( $assoc_args[ 'out' ] ) {
+		switch ( $assoc_args['out'] ) {
 			case 'stderr':
 				$out = STDERR;
 				break;
-				
+
 			case 'stdout':
 			default:
 				$out = STDOUT;
 				break;
 		}
-		
+
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'yes' ) ) {
 			fwrite( $out, $question . ' [y/n] ' );
 
