@@ -819,7 +819,11 @@ class WP_CLI {
 	 * @param array $assoc_args Skips prompt if 'yes' is provided.
 	 */
 	public static function confirm( $question, $assoc_args = array() ) {
-		switch ( $assoc_args['out'] ) {
+		$args = wp_parse_args( $assoc_args, array(
+			'out' => 'stdout',
+		) );
+		
+		switch ( $args['out'] ) {
 			case 'stderr':
 				$out = STDERR;
 				break;
