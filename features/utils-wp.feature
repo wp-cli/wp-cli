@@ -334,6 +334,10 @@ Feature: Utilities that depend on WordPress code
     Then STDOUT should contain:
       """
       wp_blog_versions
+      """
+    # Leave out wp_blogmeta for old WP compat.
+    Then STDOUT should contain:
+      """
       wp_blogs
       wp_commentmeta
       wp_comments
@@ -382,9 +386,13 @@ Feature: Utilities that depend on WordPress code
       """
 
     When I run `wp --require=table_names.php get_table_names --scope=global`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       wp_blog_versions
+      """
+    # Leave out wp_blogmeta for old WP compat.
+    Then STDOUT should contain:
+      """
       wp_blogs
       wp_registration_log
       wp_signups
@@ -396,9 +404,13 @@ Feature: Utilities that depend on WordPress code
     And save STDOUT as {GLOBAL_STDOUT}
 
     When I run `wp --require=table_names.php get_table_names --scope=ms_global`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       wp_blog_versions
+      """
+    # Leave out wp_blogmeta for old WP compat.
+    Then STDOUT should contain:
+      """
       wp_blogs
       wp_registration_log
       wp_signups
@@ -485,6 +497,10 @@ Feature: Utilities that depend on WordPress code
       wp_2_terms
       wp_2_xx_posts
       wp_blog_versions
+      """
+    # Leave out wp_blogmeta for old WP compat.
+    Then STDOUT should contain:
+      """
       wp_blogs
       wp_categories
       wp_commentmeta
@@ -710,6 +726,10 @@ Feature: Utilities that depend on WordPress code
     Then STDOUT should contain:
       """
       wp_blog_versions
+      """
+    # Leave out wp_blogmeta for old WP compat.
+    Then STDOUT should contain:
+      """
       wp_blogs
       wp_commentmeta
       wp_comments
