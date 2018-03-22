@@ -112,6 +112,7 @@ Feature: Global flags
       Error: Invalid user ID, email or login: 'non-existing-user'
       """
 
+  @require-wp-3.9
   Scenario: Debug respects `WP_DEBUG` defined to true
     Given an empty directory
     And WP files
