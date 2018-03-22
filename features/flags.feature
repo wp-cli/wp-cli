@@ -112,6 +112,54 @@ Feature: Global flags
       Error: Invalid user ID, email or login: 'non-existing-user'
       """
 
+  Scenario: Debug respects `WP_DEBUG` defined to true
+    Given an empty directory
+    And WP files
+    And a test.php file:
+      """
+      <?php
+      echo "hello";
+      calling_function_that_doesnt_exist();
+      """
+    And a wp-cli.yml file:
+      """
+      core config:
+        extra-php: |
+          define( 'WP_DEBUG', true );
+          define( 'WP_DEBUG_DISPLAY', true );
+          define( 'WP_CLI_FORCE_BEHAT_ERROR_REPORTING', false );
+
+          // Simulate Xdebug being enabled.
+          if ( ! function_exists( 'xdebug_debug_zval' ) ) {
+            function xdebug_debug_zval() {}
+          }
+
+          ini_set( 'xdebug.force_display_errors', 'Off' );
+      """
+
+    When I run `wp core config {CORE_CONFIG_SETTINGS}`
+    And I run `wp db create`
+    And I run `wp core install --url=wp.dev --title="WP Dev" --admin_user=wpcli --admin_password=wpcli --admin_email=wpcli@example.com`
+    Then STDOUT should not be empty
+
+    When I run `wp eval 'echo var_dump( constant( "WP_DEBUG" ) );'`
+    Then STDOUT should contain:
+      """
+      bool(true)
+      """
+    And STDERR should be empty
+
+    When I try `wp eval-file test.php`
+    Then the return code should be 255
+    And STDOUT should be:
+      """
+      hello
+      """
+    And STDERR should contain:
+      """
+      Call to undefined function calling_function_that_doesnt_exist()
+      """
+
   Scenario: Using a custom logger
     Given an empty directory
     And a custom-logger.php file:
