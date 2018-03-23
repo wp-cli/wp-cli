@@ -234,6 +234,9 @@ class Runner {
 	private static function set_wp_root( $path ) {
 		if ( ! defined( 'ABSPATH' ) ) {
 			define( 'ABSPATH', Utils\normalize_path( Utils\trailingslashit( $path ) ) );
+		} elseif (!is_null($path)) {
+			WP_CLI::error_multi_line(['The --path parameter cannot be used when ABSPATH is already defined elsewhere',
+				'ABSPATH is defined as: "' . ABSPATH . '"']);
 		}
 		WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH, 'bootstrap' );
 
