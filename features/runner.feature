@@ -19,7 +19,7 @@ Feature: Runner WP-CLI
     ABSPATH defined: /foo/
     """
 
-  Scenario: defining abspath before WP-CLI is loaded
+  Scenario: ABSPATH can be defined outside of WP-CLI
     Given an empty directory
     And a wp-cli.yml file:
       """
@@ -30,7 +30,7 @@ Feature: Runner WP-CLI
       """
       <?php
       if ( ! defined( 'ABSPATH' ) ) {
-          define( 'ABSPATH', '/wcrtm/' );
+          define( 'ABSPATH', '/some_path/' );
       }
       """
 
@@ -41,7 +41,7 @@ Feature: Runner WP-CLI
       """
     And STDERR should contain:
       """
-      ABSPATH defined: /wcrtm/
+      ABSPATH defined: /some_path/
       """
 
     When I try `wp no-such-command --path=/foo --debug`
