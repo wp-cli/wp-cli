@@ -82,7 +82,7 @@ return array(
 		'runtime' => '[=<group>]',
 		'file' => '<group>',
 		'default' => false,
-		'desc' => 'Show all PHP errors; add verbosity to WP-CLI bootstrap.',
+		'desc' => 'Show all PHP errors and add verbosity to WP-CLI output. Built-in groups include: bootstrap, commandfactory, and help.',
 	),
 
 	'prompt' => array(
