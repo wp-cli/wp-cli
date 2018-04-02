@@ -37,16 +37,16 @@ return array(
 	),
 
 	'skip-plugins' => array(
-		'runtime' => '[=<plugin>]',
+		'runtime' => '[=<plugins>]',
 		'file' => '<list>',
-		'desc' => 'Skip loading all or some plugins. Note: mu-plugins are still loaded.',
+		'desc' => 'Skip loading all plugins, or a comma-separated list of plugins. Note: mu-plugins are still loaded.',
 		'default' => '',
 	),
 
 	'skip-themes' => array(
-		'runtime' => '[=<theme>]',
+		'runtime' => '[=<themes>]',
 		'file' => '<list>',
-		'desc' => 'Skip loading all or some themes.',
+		'desc' => 'Skip loading all themes, or a comma-separated list of themes.',
 		'default' => '',
 	),
 
