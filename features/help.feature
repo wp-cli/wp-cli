@@ -1010,6 +1010,7 @@ Feature: Get help about WP-CLI commands
       """
       Warning: check_proc_available() failed in pass_through_pager().
       """
+    And STDOUT should not be empty
     And the return code should be 0
 
     Examples:
