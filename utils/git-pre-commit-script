@@ -7,7 +7,7 @@ else
 	against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
 fi
 
-FILES=$(git diff-index --name-only --cached --diff-filter=ACMR $against -- )
+FILES=$(git diff-index --name-only --cached --diff-filter=ACMR $against -- | grep .php )
 
 if [ "$FILES" == "" ]; then
 	echo "No files to check with PHPCS."
