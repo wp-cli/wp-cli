@@ -551,6 +551,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * options:
 	 *   - yaml
 	 *   - json
+	 *   - var_export
 	 * ---
 	 *
 	 * ## EXAMPLES
