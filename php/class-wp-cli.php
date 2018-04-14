@@ -819,8 +819,23 @@ class WP_CLI {
 	 * @param array $assoc_args Skips prompt if 'yes' is provided.
 	 */
 	public static function confirm( $question, $assoc_args = array() ) {
+		$args = wp_parse_args( $assoc_args, array(
+			'out' => 'stdout',
+		) );
+		
+		switch ( $args['out'] ) {
+			case 'stderr':
+				$out = STDERR;
+				break;
+
+			case 'stdout':
+			default:
+				$out = STDOUT;
+				break;
+		}
+
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'yes' ) ) {
-			fwrite( STDOUT, $question . ' [y/n] ' );
+			fwrite( $out, $question . ' [y/n] ' );
 
 			$answer = strtolower( trim( fgets( STDIN ) ) );
 
