@@ -22,7 +22,7 @@ Feature: Check `utils/make-phar.php` output
       """
     And STDOUT should be empty
 
-    When I try `grep '/dealerdirect\|/squizlabs\|/wimg' {PHAR_PATH}`
+    When I try `grep '/dealerdirect\|[^/]/squizlabs\|/wimg' {PHAR_PATH}`
     Then the return code should be 1
     And STDOUT should be empty
     And STDERR should be empty
