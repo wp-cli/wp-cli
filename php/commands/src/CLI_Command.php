@@ -322,7 +322,7 @@ class CLI_Command extends WP_CLI_Command {
 		$php_binary = Utils\get_php_binary();
 		$process = WP_CLI\Process::create( "{$php_binary} $temp --info {$allow_root}" );
 		$result = $process->run();
-		if ( 0 !== $result->return_code || false === stripos( $result->stdout, 'WP-CLI version:' ) ) {
+		if ( 0 !== $result->return_code || false === stripos( $result->stdout, 'WP-CLI version' ) ) {
 			$multi_line = explode( PHP_EOL, $result->stderr );
 			WP_CLI::error_multi_line( $multi_line );
 			WP_CLI::error( 'The downloaded PHAR is broken, try running wp cli update again.' );
@@ -551,6 +551,7 @@ class CLI_Command extends WP_CLI_Command {
 	 * options:
 	 *   - yaml
 	 *   - json
+	 *   - var_export
 	 * ---
 	 *
 	 * ## EXAMPLES

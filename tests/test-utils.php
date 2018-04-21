@@ -326,6 +326,36 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertSame( 'a/', Utils\trailingslashit( 'a\\//\\' ) );
 	}
 
+	/**
+	 * @dataProvider dataNormalizePath
+	 */
+	public function testNormalizePath( $path, $expected ) {
+		$this->assertEquals( $expected, Utils\normalize_path( $path ) );
+	}
+
+	public function dataNormalizePath() {
+		return array(
+			array( '', '' ),
+			// Windows paths
+			array( 'C:\\www\\path\\', 'C:/www/path/' ),
+			array( 'C:\\www\\\\path\\', 'C:/www/path/' ),
+			array( 'c:/www/path', 'C:/www/path' ),
+			array( 'c:\\www\\path\\', 'C:/www/path/' ), // uppercase drive letter
+			array( 'c:', 'C:' ),
+			array( 'c:\\', 'C:/' ),
+			array( 'c:\\\\www\\path\\', 'C:/www/path/' ),
+			array( '\\\\Domain\\DFSRoots\\share\\path\\', '//Domain/DFSRoots/share/path/' ),
+			array( '\\\\Server\\share\\path', '//Server/share/path' ),
+			array( '\\\\Server\\share', '//Server/share' ),
+			// Linux paths
+			array( '/', '/' ),
+			array( '/www/path/', '/www/path/' ),
+			array( '/www/path/////', '/www/path/' ),
+			array( '/www/path', '/www/path' ),
+			array( '/www/path', '/www/path' ),
+		);
+	}
+
 	public function testNormalizeEols() {
 		$this->assertSame( "\na\ra\na\n", Utils\normalize_eols( "\r\na\ra\r\na\r\n" ) );
 	}
