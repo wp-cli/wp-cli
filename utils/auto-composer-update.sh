@@ -43,7 +43,7 @@ MESSAGE="Update Composer dependencies ($DATE)
 \`\`\`
 $UPDATE
 \`\`\`"
-git commit -m "$MESSAGE"
+git commit -n -m "$MESSAGE"
 
 # Push and pull request
 git push origin $BRANCH
