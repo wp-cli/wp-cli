@@ -3,12 +3,14 @@ Feature: `wp cli` tasks
   Scenario: Ability to detect a WP-CLI registered command
     Given a WP installation
 
-    When I run `wp package install wp-cli/scaffold-package-command`
-    When I run `wp cli has-command scaffold package`
+    # Allow for composer/ca-bundle using `openssl_x509_parse()` which throws PHP warnings on old versions of PHP.
+    When I try `wp package install wp-cli/scaffold-package-command`
+    And I run `wp cli has-command scaffold package`
     Then the return code should be 0
 
-    When I run `wp package uninstall wp-cli/scaffold-package-command`
-    When I try `wp cli has-command scaffold package`
+    # Allow for composer/ca-bundle using `openssl_x509_parse()` which throws PHP warnings on old versions of PHP.
+    When I try `wp package uninstall wp-cli/scaffold-package-command`
+    And I try `wp cli has-command scaffold package`
     Then the return code should be 1
 
   Scenario: Ability to detect a command which is registered by plugin
