@@ -238,10 +238,9 @@ Feature: Run a WP-CLI command
   Scenario Outline: Installed packages work as expected
     Given a WP installation
 
-    When I run `wp package install wp-cli/scaffold-package-command`
-    Then STDERR should be empty
-
-    When I run `wp <flag> run 'help scaffold package'`
+    # Allow for composer/ca-bundle using `openssl_x509_parse()` which throws PHP warnings on old versions of PHP.
+    When I try `wp package install wp-cli/scaffold-package-command`
+    And I run `wp <flag> run 'help scaffold package'`
     Then STDOUT should contain:
       """
       wp scaffold package <name>

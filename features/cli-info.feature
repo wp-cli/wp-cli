@@ -14,10 +14,9 @@ Feature: Review CLI information
       {"wp_cli_packages_dir_path":null}
       """
 
-    When I run `wp package install danielbachhuber/wp-cli-reset-post-date-command`
-    Then STDERR should be empty
-
-    When I run `wp cli info --format=json`
+    # Allow for composer/ca-bundle using `openssl_x509_parse()` which throws PHP warnings on old versions of PHP.
+    When I try `wp package install danielbachhuber/wp-cli-reset-post-date-command`
+    And I run `wp cli info --format=json`
     Then STDOUT should be JSON containing:
       """
       {"wp_cli_packages_dir_path":"{PACKAGE_PATH}"}
