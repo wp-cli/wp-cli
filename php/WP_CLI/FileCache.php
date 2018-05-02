@@ -251,6 +251,63 @@ class FileCache {
 	}
 
 	/**
+	 * Remove all cached files.
+	 *
+	 * @return bool
+	 */
+	public function clear() {
+		if ( ! $this->enabled ) {
+			return false;
+		}
+
+		$finder = $this->get_finder();
+
+		foreach ( $finder as $file ) {
+			unlink( $file->getRealPath() );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Remove all cached files except for the newest version of one.
+	 *
+	 * @return bool
+	 */
+	public function prune() {
+		if ( ! $this->enabled ) {
+			return false;
+		}
+
+		/* @var Finder $finder */
+		$finder = $this->get_finder()->sortByName();
+
+		$files_to_delete = array();
+
+		foreach ( $finder as $key => $file ) {
+			$pieces                     = explode( '-', $file->getBasename( '.zip' ) );
+			$timestamp                  = end( $pieces );
+			$basename_without_timestamp = str_replace( '-' . $timestamp, '', $file->getBasename() );
+
+			// No way to compare versions, remove directly.
+			if ( ! is_numeric( $timestamp ) ) {
+				unlink( $file->getRealPath() );
+
+				continue;
+			}
+
+			// There's a file with an older timestamp, delete it.
+			if ( isset( $files_to_delete[ $basename_without_timestamp ] ) ) {
+				unlink( $files_to_delete[ $basename_without_timestamp ] );
+			}
+
+			$files_to_delete[ $basename_without_timestamp ] = $file->getRealPath();
+		}
+
+		return true;
+	}
+
+	/**
 	 * Ensure directory exists
 	 *
 	 * @param string $dir directory

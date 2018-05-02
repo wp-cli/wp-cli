@@ -622,4 +622,50 @@ class CLI_Command extends WP_CLI_Command {
 
 		WP_CLI::halt( is_array( WP_CLI::get_runner()->find_command_to_run( $command ) ) ? 0 : 1 );
 	}
+
+	/**
+	 * Clears the internal cache.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp cli cache clear
+	 *     $ Success: Cache cleared.
+	 *
+	 * @subcommand cache clear
+	 */
+	public function cache_clear() {
+		$cache = WP_CLI::get_cache();
+
+		if ( ! $cache->is_enabled() ) {
+			WP_CLI::error( 'Cache directory does not exist.' );
+		}
+
+		$cache->clear();
+
+		WP_CLI::success( 'Cache cleared.' );
+	}
+
+	/**
+	 * Prune the internal cache.
+	 *
+	 * Removes all cached files except for the newest version of one.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp cli cache prune
+	 *     $ Success: Cache pruned.
+	 *
+	 * @subcommand cache prune
+	 */
+	public function cache_prune() {
+		$cache = WP_CLI::get_cache();
+
+		if ( ! $cache->is_enabled() ) {
+			WP_CLI::error( 'Cache directory does not exist.' );
+		}
+
+		$cache->prune();
+
+		WP_CLI::success( 'Cache pruned.' );
+	}
 }
