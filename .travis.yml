@@ -14,45 +14,11 @@ before_script:
 
 jobs:
   include:
-    - stage: sniff
-      script: ./ci/sniff.sh
-      env: BUILD=sniff
-    - stage: test
-      script: ./ci/test.sh
-      php: 7.2
-      env: WP_VERSION=latest
-    - stage: test
-      script: ./ci/test.sh
-      php: 7.1
-      env: WP_VERSION=latest
-    - stage: test
-      script: ./ci/test.sh
-      php: 7.0
-      env: WP_VERSION=latest
-    - stage: test
-      script: ./ci/test.sh
-      php: 5.6
-      env: WP_VERSION=latest
-    - stage: test
-      script: ./ci/test.sh
-      php: 5.6
-      env: WP_VERSION=trunk
-    - stage: test
-      script: ./ci/test.sh
-      php: 5.6
-      env: WP_VERSION=latest BUILD=git WP_CLI_BIN_DIR=''
-    - stage: test
-      script: ./ci/test.sh
-      php: 5.6
-      env: WP_VERSION=3.7.11
     - stage: test
       script: ./ci/test.sh
       php: 5.3
       dist: precise
       env: WP_VERSION=3.7.11
-    - stage: deploy
-      env: DEPLOY_BRANCH=master
-      script: ./ci/deploy.sh
 
 cache:
   directories:

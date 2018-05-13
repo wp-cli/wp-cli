@@ -2,10 +2,15 @@
 
 set -ex
 
-# Run the unit tests
-phpunit
-
 BEHAT_TAGS=$(php ci/behat-tags.php)
 
 # Run the functional tests
-vendor/bin/behat --format progress $BEHAT_TAGS --strict
+echo vendor/bin/behat $BEHAT_TAGS --strict features/cli.feature
+
+wget https://github.com/wp-cli/builds/raw/gh-pages/phar/wp-cli-nightly.phar
+
+php -r 'require "features/bootstrap/FeatureContext.php"; $f=new FeatureContext(array()); $f->install_wp();'
+
+php wp-cli-nightly.phar package install wp-cli/scaffold-package-command
+find /home/travis/.wp-cli/ -type f
+php wp-cli-nightly.phar cli has-command scaffold package
