@@ -30,12 +30,13 @@
 	},
 	"require-dev": {
 		"behat/behat": "2.5.*",
-		"wp-cli/core-command": "^1.0",
-        "wp-cli/package-command": "^1.0",
 		"dealerdirect/phpcodesniffer-composer-installer": "^0.4.3",
 		"phpunit/phpunit": "3.7.*",
 		"roave/security-advisories": "dev-master",
 		"wimg/php-compatibility": "^8.0",
+		"wp-cli/config-command": "^1.0",
+		"wp-cli/core-command": "^1.0",
+		"wp-cli/package-command": "^1.0",
 		"wp-coding-standards/wpcs": "^0.13.1"
 	},
 	"autoload": {
