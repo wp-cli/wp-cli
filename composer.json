@@ -25,7 +25,8 @@
 		"mustache/mustache": "~2.4",
 		"ramsey/array_column": "~1.1",
 		"rmccue/requests": "~1.6",
-		"wp-cli/php-cli-tools": "~0.11.2"
+		"wp-cli/php-cli-tools": "~0.11.2",
+		"wp-cli/mustangostang-spyc": "^0.6.3"
 	},
 	"require-dev": {
 		"behat/behat": "2.5.*",
