@@ -1,7 +1,11 @@
-<phpunit
-	bootstrap="tests/bootstrap.php"
-	colors="true"
-	>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/4.8/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="always"
+         beStrictAboutTestsThatDoNotTestAnything="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTestSize="true"
+         beStrictAboutChangesToGlobalState="false">
 	<testsuites>
 		<testsuite>
 			<directory prefix="spec-" suffix=".php">tests/</directory>

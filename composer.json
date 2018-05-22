@@ -1,69 +1,79 @@
 {
-	"name": "wp-cli/wp-cli",
-	"description": "WP-CLI framework",
-	"keywords": [ "cli", "wordpress" ],
-	"homepage": "https://wp-cli.org",
-	"license": "MIT",
-	"support": {
-		"issues": "https://github.com/wp-cli/wp-cli/issues",
-		"source": "https://github.com/wp-cli/wp-cli",
-		"docs": "https://make.wordpress.org/cli/handbook/"
-	},
-	"bin": [
-		"bin/wp.bat", "bin/wp"
-	],
-	"config": {
-		"platform": {
-			"php": "5.4"
-		},
-		"sort-packages": true
-	},
-	"minimum-stability": "dev",
-	"prefer-stable": true,
-	"require": {
-		"php": ">=5.4",
-		"mustache/mustache": "~2.4",
-		"ramsey/array_column": "~1.1",
-		"rmccue/requests": "~1.6",
-		"wp-cli/php-cli-tools": "~0.11.2",
-		"wp-cli/mustangostang-spyc": "^0.6.3"
-	},
-	"require-dev": {
-		"behat/behat": "2.5.*",
-		"dealerdirect/phpcodesniffer-composer-installer": "^0.4.3",
-		"phpunit/phpunit": "3.7.*",
-		"roave/security-advisories": "dev-master",
+    "name": "wp-cli/wp-cli",
+    "description": "WP-CLI framework",
+    "keywords": [
+        "cli",
+        "wordpress"
+    ],
+    "homepage": "https://wp-cli.org",
+    "license": "MIT",
+    "support": {
+        "issues": "https://github.com/wp-cli/wp-cli/issues",
+        "source": "https://github.com/wp-cli/wp-cli",
+        "docs": "https://make.wordpress.org/cli/handbook/"
+    },
+    "bin": [
+        "bin/wp.bat",
+        "bin/wp"
+    ],
+    "config": {
+        "platform": {
+            "php": "5.4"
+        },
+        "process-timeout": 1800,
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=5.4",
+        "mustache/mustache": "~2.4",
+        "ramsey/array_column": "~1.1",
+        "rmccue/requests": "~1.6",
+        "wp-cli/php-cli-tools": "~0.11.2",
+        "wp-cli/mustangostang-spyc": "^0.6.3"
+    },
+    "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3",
+        "roave/security-advisories": "dev-master",
         "symfony/finder": ">2.7",
-		"wimg/php-compatibility": "^8.0",
-		"wp-cli/cache-command": "^1.0",
-		"wp-cli/config-command": "^1.0",
-		"wp-cli/core-command": "^1.0",
-		"wp-cli/db-command": "^1.3",
-		"wp-cli/entity-command": "^1.2",
-		"wp-cli/eval-command": "^1.0",
-		"wp-cli/extension-command": "^1.1",
-		"wp-cli/import-command": "^1.0",
-		"wp-cli/language-command": "^1.0",
-		"wp-cli/package-command": "^1.0",
-		"wp-cli/rewrite-command": "^1.0",
-		"wp-cli/role-command": "^1.1",
-		"wp-cli/scaffold-command": "^1.1",
-		"wp-cli/search-replace-command": "^1.3",
-		"wp-cli/server-command": "^1.0",
-		"wp-coding-standards/wpcs": "^0.13.1"
-	},
-	"autoload": {
-		"psr-0": { "WP_CLI": "php" },
-		"psr-4": { "": "php/commands/src" }
-	},
-	"scripts": {
-		"post-install-cmd": [
-			"./utils/git-setup-pre-commit-hook"
-		]
-	},
-	"extra": {
-		"branch-alias": {
-			"dev-master": "1.5.x-dev"
-		}
-	}
+        "wimg/php-compatibility": "^8.0",
+        "wp-cli/cache-command": "^1.0",
+        "wp-cli/config-command": "^1.0",
+        "wp-cli/core-command": "^1.0",
+        "wp-cli/db-command": "^1.3",
+        "wp-cli/entity-command": "^1.2",
+        "wp-cli/eval-command": "^1.0",
+        "wp-cli/extension-command": "^1.1",
+        "wp-cli/import-command": "^1.0",
+        "wp-cli/language-command": "^1.0",
+        "wp-cli/package-command": "^1.0",
+        "wp-cli/rewrite-command": "^1.0",
+        "wp-cli/role-command": "^1.1",
+        "wp-cli/scaffold-command": "^1.1",
+        "wp-cli/search-replace-command": "^1.3",
+        "wp-cli/server-command": "^1.0",
+        "wp-cli/wp-cli-tests": "dev-master",
+        "wp-coding-standards/wpcs": "^0.13.1"
+    },
+    "autoload": {
+        "psr-0": {
+            "WP_CLI": "php"
+        },
+        "psr-4": {
+            "": "php/commands/src"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "./utils/git-setup-pre-commit-hook"
+        ],
+        "phpunit": "run-php-unit-tests",
+        "behat": "run-behat-tests",
+        "prepare-tests": "install-package-tests",
+        "test": [
+            "@phpunit",
+            "@behat"
+        ]
+    }
 }
