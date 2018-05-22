@@ -1,336 +1,11 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "36f8e11f5ba78726579607300deee9a7",
+    "content-hash": "5b0fb6a501252d9a87c2acf02d2b6d92",
     "packages": [
-        {
-            "name": "composer/ca-bundle",
-            "version": "1.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "d2c0a83b7533d6912e8d516756ebd34f893e9169"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/d2c0a83b7533d6912e8d516756ebd34f893e9169",
-                "reference": "d2c0a83b7533d6912e8d516756ebd34f893e9169",
-                "shasum": ""
-            },
-            "require": {
-                "ext-openssl": "*",
-                "ext-pcre": "*",
-                "php": "^5.3.2 || ^7.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.5",
-                "psr/log": "^1.0",
-                "symfony/process": "^2.5 || ^3.0 || ^4.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Composer\\CaBundle\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Jordi Boggiano",
-                    "email": "j.boggiano@seld.be",
-                    "homepage": "http://seld.be"
-                }
-            ],
-            "description": "Lets you find a path to the system CA bundle, and includes a fallback to the Mozilla CA bundle.",
-            "keywords": [
-                "cabundle",
-                "cacert",
-                "certificate",
-                "ssl",
-                "tls"
-            ],
-            "time": "2018-03-29T19:57:20+00:00"
-        },
-        {
-            "name": "composer/composer",
-            "version": "1.6.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/composer/composer.git",
-                "reference": "b184a92419cc9a9c4c6a09db555a94d441cb11c9"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/b184a92419cc9a9c4c6a09db555a94d441cb11c9",
-                "reference": "b184a92419cc9a9c4c6a09db555a94d441cb11c9",
-                "shasum": ""
-            },
-            "require": {
-                "composer/ca-bundle": "^1.0",
-                "composer/semver": "^1.0",
-                "composer/spdx-licenses": "^1.2",
-                "justinrainbow/json-schema": "^3.0 || ^4.0 || ^5.0",
-                "php": "^5.3.2 || ^7.0",
-                "psr/log": "^1.0",
-                "seld/cli-prompt": "^1.0",
-                "seld/jsonlint": "^1.4",
-                "seld/phar-utils": "^1.0",
-                "symfony/console": "^2.7 || ^3.0 || ^4.0",
-                "symfony/filesystem": "^2.7 || ^3.0 || ^4.0",
-                "symfony/finder": "^2.7 || ^3.0 || ^4.0",
-                "symfony/process": "^2.7 || ^3.0 || ^4.0"
-            },
-            "conflict": {
-                "symfony/console": "2.8.38"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^4.8.35 || ^5.7",
-                "phpunit/phpunit-mock-objects": "^2.3 || ^3.0"
-            },
-            "suggest": {
-                "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages",
-                "ext-zip": "Enabling the zip extension allows you to unzip archives",
-                "ext-zlib": "Allow gzip compression of HTTP requests"
-            },
-            "bin": [
-                "bin/composer"
-            ],
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.6-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Composer\\": "src/Composer"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nils Adermann",
-                    "email": "naderman@naderman.de",
-                    "homepage": "http://www.naderman.de"
-                },
-                {
-                    "name": "Jordi Boggiano",
-                    "email": "j.boggiano@seld.be",
-                    "homepage": "http://seld.be"
-                }
-            ],
-            "description": "Composer helps you declare, manage and install dependencies of PHP projects, ensuring you have the right stack everywhere.",
-            "homepage": "https://getcomposer.org/",
-            "keywords": [
-                "autoload",
-                "dependency",
-                "package"
-            ],
-            "time": "2018-05-04T09:44:59+00:00"
-        },
-        {
-            "name": "composer/semver",
-            "version": "1.4.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/composer/semver.git",
-                "reference": "c7cb9a2095a074d131b65a8a0cd294479d785573"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/c7cb9a2095a074d131b65a8a0cd294479d785573",
-                "reference": "c7cb9a2095a074d131b65a8a0cd294479d785573",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^5.3.2 || ^7.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^4.5 || ^5.0.5",
-                "phpunit/phpunit-mock-objects": "2.3.0 || ^3.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Composer\\Semver\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nils Adermann",
-                    "email": "naderman@naderman.de",
-                    "homepage": "http://www.naderman.de"
-                },
-                {
-                    "name": "Jordi Boggiano",
-                    "email": "j.boggiano@seld.be",
-                    "homepage": "http://seld.be"
-                },
-                {
-                    "name": "Rob Bast",
-                    "email": "rob.bast@gmail.com",
-                    "homepage": "http://robbast.nl"
-                }
-            ],
-            "description": "Semver library that offers utilities, version constraint parsing and validation.",
-            "keywords": [
-                "semantic",
-                "semver",
-                "validation",
-                "versioning"
-            ],
-            "time": "2016-08-30T16:08:34+00:00"
-        },
-        {
-            "name": "composer/spdx-licenses",
-            "version": "1.4.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/composer/spdx-licenses.git",
-                "reference": "cb17687e9f936acd7e7245ad3890f953770dec1b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/composer/spdx-licenses/zipball/cb17687e9f936acd7e7245ad3890f953770dec1b",
-                "reference": "cb17687e9f936acd7e7245ad3890f953770dec1b",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^5.3.2 || ^7.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.5",
-                "phpunit/phpunit-mock-objects": "2.3.0 || ^3.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Composer\\Spdx\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nils Adermann",
-                    "email": "naderman@naderman.de",
-                    "homepage": "http://www.naderman.de"
-                },
-                {
-                    "name": "Jordi Boggiano",
-                    "email": "j.boggiano@seld.be",
-                    "homepage": "http://seld.be"
-                },
-                {
-                    "name": "Rob Bast",
-                    "email": "rob.bast@gmail.com",
-                    "homepage": "http://robbast.nl"
-                }
-            ],
-            "description": "SPDX licenses list and validation library.",
-            "keywords": [
-                "license",
-                "spdx",
-                "validator"
-            ],
-            "time": "2018-04-30T10:33:04+00:00"
-        },
-        {
-            "name": "justinrainbow/json-schema",
-            "version": "5.2.7",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/justinrainbow/json-schema.git",
-                "reference": "8560d4314577199ba51bf2032f02cd1315587c23"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/8560d4314577199ba51bf2032f02cd1315587c23",
-                "reference": "8560d4314577199ba51bf2032f02cd1315587c23",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.3"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.1",
-                "json-schema/json-schema-test-suite": "1.2.0",
-                "phpunit/phpunit": "^4.8.35"
-            },
-            "bin": [
-                "bin/validate-json"
-            ],
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "5.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "JsonSchema\\": "src/JsonSchema/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Bruno Prieto Reis",
-                    "email": "bruno.p.reis@gmail.com"
-                },
-                {
-                    "name": "Justin Rainbow",
-                    "email": "justin.rainbow@gmail.com"
-                },
-                {
-                    "name": "Igor Wiedler",
-                    "email": "igor@wiedler.ch"
-                },
-                {
-                    "name": "Robert Schönthal",
-                    "email": "seroscho@googlemail.com"
-                }
-            ],
-            "description": "A library to validate a json schema.",
-            "homepage": "https://github.com/justinrainbow/json-schema",
-            "keywords": [
-                "json",
-                "schema"
-            ],
-            "time": "2018-02-14T22:26:30+00:00"
-        },
         {
             "name": "mustache/mustache",
             "version": "v2.12.0",
@@ -376,94 +51,6 @@
                 "templating"
             ],
             "time": "2017-07-11T12:54:05+00:00"
-        },
-        {
-            "name": "nb/oxymel",
-            "version": "v0.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/nb/oxymel.git",
-                "reference": "cbe626ef55d5c4cc9b5e6e3904b395861ea76e3c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/nb/oxymel/zipball/cbe626ef55d5c4cc9b5e6e3904b395861ea76e3c",
-                "reference": "cbe626ef55d5c4cc9b5e6e3904b395861ea76e3c",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.2.4"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Oxymel": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nikolay Bachiyski",
-                    "email": "nb@nikolay.bg",
-                    "homepage": "http://extrapolate.me/"
-                }
-            ],
-            "description": "A sweet XML builder",
-            "homepage": "https://github.com/nb/oxymel",
-            "keywords": [
-                "xml"
-            ],
-            "time": "2013-02-24T15:01:54+00:00"
-        },
-        {
-            "name": "psr/log",
-            "version": "1.0.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-fig/log.git",
-                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/log/zipball/4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
-                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Log\\": "Psr/Log/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "PHP-FIG",
-                    "homepage": "http://www.php-fig.org/"
-                }
-            ],
-            "description": "Common interface for logging libraries",
-            "homepage": "https://github.com/php-fig/log",
-            "keywords": [
-                "log",
-                "psr",
-                "psr-3"
-            ],
-            "time": "2016-10-10T12:19:37+00:00"
         },
         {
             "name": "ramsey/array_column",
@@ -560,1889 +147,6 @@
             "time": "2016-10-13T00:11:37+00:00"
         },
         {
-            "name": "seld/cli-prompt",
-            "version": "1.0.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Seldaek/cli-prompt.git",
-                "reference": "a19a7376a4689d4d94cab66ab4f3c816019ba8dd"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/cli-prompt/zipball/a19a7376a4689d4d94cab66ab4f3c816019ba8dd",
-                "reference": "a19a7376a4689d4d94cab66ab4f3c816019ba8dd",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Seld\\CliPrompt\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Jordi Boggiano",
-                    "email": "j.boggiano@seld.be"
-                }
-            ],
-            "description": "Allows you to prompt for user input on the command line, and optionally hide the characters they type",
-            "keywords": [
-                "cli",
-                "console",
-                "hidden",
-                "input",
-                "prompt"
-            ],
-            "time": "2017-03-18T11:32:45+00:00"
-        },
-        {
-            "name": "seld/jsonlint",
-            "version": "1.7.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Seldaek/jsonlint.git",
-                "reference": "d15f59a67ff805a44c50ea0516d2341740f81a38"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/d15f59a67ff805a44c50ea0516d2341740f81a38",
-                "reference": "d15f59a67ff805a44c50ea0516d2341740f81a38",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^5.3 || ^7.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.0"
-            },
-            "bin": [
-                "bin/jsonlint"
-            ],
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Seld\\JsonLint\\": "src/Seld/JsonLint/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Jordi Boggiano",
-                    "email": "j.boggiano@seld.be",
-                    "homepage": "http://seld.be"
-                }
-            ],
-            "description": "JSON Linter",
-            "keywords": [
-                "json",
-                "linter",
-                "parser",
-                "validator"
-            ],
-            "time": "2018-01-24T12:46:19+00:00"
-        },
-        {
-            "name": "seld/phar-utils",
-            "version": "1.0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Seldaek/phar-utils.git",
-                "reference": "7009b5139491975ef6486545a39f3e6dad5ac30a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/phar-utils/zipball/7009b5139491975ef6486545a39f3e6dad5ac30a",
-                "reference": "7009b5139491975ef6486545a39f3e6dad5ac30a",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Seld\\PharUtils\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Jordi Boggiano",
-                    "email": "j.boggiano@seld.be"
-                }
-            ],
-            "description": "PHAR file format utilities, for when PHP phars you up",
-            "keywords": [
-                "phra"
-            ],
-            "time": "2015-10-13T18:44:15+00:00"
-        },
-        {
-            "name": "symfony/config",
-            "version": "v2.8.39",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/config.git",
-                "reference": "ecacddeaf76732231eea1657f6f5b062dade94c9"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/config/zipball/ecacddeaf76732231eea1657f6f5b062dade94c9",
-                "reference": "ecacddeaf76732231eea1657f6f5b062dade94c9",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.9",
-                "symfony/filesystem": "~2.3|~3.0.0"
-            },
-            "require-dev": {
-                "symfony/yaml": "~2.7|~3.0.0"
-            },
-            "suggest": {
-                "symfony/yaml": "To use the yaml reference dumper"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Config\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Config Component",
-            "homepage": "https://symfony.com",
-            "time": "2018-03-19T21:11:56+00:00"
-        },
-        {
-            "name": "symfony/console",
-            "version": "v2.8.39",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/console.git",
-                "reference": "932d1e4f7f33ee37d3534f5f452474daa66283c2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/932d1e4f7f33ee37d3534f5f452474daa66283c2",
-                "reference": "932d1e4f7f33ee37d3534f5f452474daa66283c2",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.9",
-                "symfony/debug": "^2.7.2|~3.0.0",
-                "symfony/polyfill-mbstring": "~1.0"
-            },
-            "require-dev": {
-                "psr/log": "~1.0",
-                "symfony/event-dispatcher": "~2.1|~3.0.0",
-                "symfony/process": "~2.1|~3.0.0"
-            },
-            "suggest": {
-                "psr/log-implementation": "For using the console logger",
-                "symfony/event-dispatcher": "",
-                "symfony/process": ""
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Console\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Console Component",
-            "homepage": "https://symfony.com",
-            "time": "2018-04-30T01:21:07+00:00"
-        },
-        {
-            "name": "symfony/debug",
-            "version": "v2.8.39",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/debug.git",
-                "reference": "4486d2be5e068b51fece4c8551c14e709f573c8d"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/debug/zipball/4486d2be5e068b51fece4c8551c14e709f573c8d",
-                "reference": "4486d2be5e068b51fece4c8551c14e709f573c8d",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.9",
-                "psr/log": "~1.0"
-            },
-            "conflict": {
-                "symfony/http-kernel": ">=2.3,<2.3.24|~2.4.0|>=2.5,<2.5.9|>=2.6,<2.6.2"
-            },
-            "require-dev": {
-                "symfony/class-loader": "~2.2|~3.0.0",
-                "symfony/http-kernel": "~2.3.24|~2.5.9|^2.6.2|~3.0.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Debug\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Debug Component",
-            "homepage": "https://symfony.com",
-            "time": "2018-04-03T05:20:27+00:00"
-        },
-        {
-            "name": "symfony/dependency-injection",
-            "version": "v2.8.39",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/dependency-injection.git",
-                "reference": "3d7cbf34cd75ede7f94b9b990f85bd089e15cd55"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/dependency-injection/zipball/3d7cbf34cd75ede7f94b9b990f85bd089e15cd55",
-                "reference": "3d7cbf34cd75ede7f94b9b990f85bd089e15cd55",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.9"
-            },
-            "conflict": {
-                "symfony/expression-language": "<2.6"
-            },
-            "require-dev": {
-                "symfony/config": "~2.2|~3.0.0",
-                "symfony/expression-language": "~2.6|~3.0.0",
-                "symfony/yaml": "~2.3.42|~2.7.14|~2.8.7|~3.0.7"
-            },
-            "suggest": {
-                "symfony/config": "",
-                "symfony/expression-language": "For using expressions in service container configuration",
-                "symfony/proxy-manager-bridge": "Generate service proxies to lazy load them",
-                "symfony/yaml": ""
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\DependencyInjection\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony DependencyInjection Component",
-            "homepage": "https://symfony.com",
-            "time": "2018-02-19T16:23:47+00:00"
-        },
-        {
-            "name": "symfony/event-dispatcher",
-            "version": "v2.8.39",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "9b69aad7d4c086dc94ebade2d5eb9145da5dac8c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/9b69aad7d4c086dc94ebade2d5eb9145da5dac8c",
-                "reference": "9b69aad7d4c086dc94ebade2d5eb9145da5dac8c",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.9"
-            },
-            "require-dev": {
-                "psr/log": "~1.0",
-                "symfony/config": "^2.0.5|~3.0.0",
-                "symfony/dependency-injection": "~2.6|~3.0.0",
-                "symfony/expression-language": "~2.6|~3.0.0",
-                "symfony/stopwatch": "~2.3|~3.0.0"
-            },
-            "suggest": {
-                "symfony/dependency-injection": "",
-                "symfony/http-kernel": ""
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\EventDispatcher\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony EventDispatcher Component",
-            "homepage": "https://symfony.com",
-            "time": "2018-04-06T07:35:03+00:00"
-        },
-        {
-            "name": "symfony/filesystem",
-            "version": "v2.8.39",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/filesystem.git",
-                "reference": "125403a59e4cb4e3ebf46d0162fabcde613d2b97"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/125403a59e4cb4e3ebf46d0162fabcde613d2b97",
-                "reference": "125403a59e4cb4e3ebf46d0162fabcde613d2b97",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.9"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Filesystem\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Filesystem Component",
-            "homepage": "https://symfony.com",
-            "time": "2018-02-19T16:23:47+00:00"
-        },
-        {
-            "name": "symfony/finder",
-            "version": "v2.8.39",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/finder.git",
-                "reference": "423746fc18ccf31f9abec43e4f078bb6e024b2d5"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/finder/zipball/423746fc18ccf31f9abec43e4f078bb6e024b2d5",
-                "reference": "423746fc18ccf31f9abec43e4f078bb6e024b2d5",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.9"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Finder\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Finder Component",
-            "homepage": "https://symfony.com",
-            "time": "2018-04-04T13:38:31+00:00"
-        },
-        {
-            "name": "symfony/polyfill-mbstring",
-            "version": "v1.8.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "3296adf6a6454a050679cde90f95350ad604b171"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/3296adf6a6454a050679cde90f95350ad604b171",
-                "reference": "3296adf6a6454a050679cde90f95350ad604b171",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.3"
-            },
-            "suggest": {
-                "ext-mbstring": "For best performance"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Mbstring\\": ""
-                },
-                "files": [
-                    "bootstrap.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony polyfill for the Mbstring extension",
-            "homepage": "https://symfony.com",
-            "keywords": [
-                "compatibility",
-                "mbstring",
-                "polyfill",
-                "portable",
-                "shim"
-            ],
-            "time": "2018-04-26T10:06:28+00:00"
-        },
-        {
-            "name": "symfony/process",
-            "version": "v2.8.39",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/process.git",
-                "reference": "ee2c91470ff262b1a00aec27875d38594aa87629"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/ee2c91470ff262b1a00aec27875d38594aa87629",
-                "reference": "ee2c91470ff262b1a00aec27875d38594aa87629",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.9"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Process\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Process Component",
-            "homepage": "https://symfony.com",
-            "time": "2018-04-03T05:20:27+00:00"
-        },
-        {
-            "name": "symfony/translation",
-            "version": "v2.8.39",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/translation.git",
-                "reference": "6f744108f846097cb250d90c8c463ddd23b43f60"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/translation/zipball/6f744108f846097cb250d90c8c463ddd23b43f60",
-                "reference": "6f744108f846097cb250d90c8c463ddd23b43f60",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.9",
-                "symfony/polyfill-mbstring": "~1.0"
-            },
-            "conflict": {
-                "symfony/config": "<2.7"
-            },
-            "require-dev": {
-                "psr/log": "~1.0",
-                "symfony/config": "~2.8",
-                "symfony/intl": "~2.7.25|^2.8.18|~3.2.5",
-                "symfony/yaml": "~2.2|~3.0.0"
-            },
-            "suggest": {
-                "psr/log-implementation": "To use logging capability in translator",
-                "symfony/config": "",
-                "symfony/yaml": ""
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Translation\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Translation Component",
-            "homepage": "https://symfony.com",
-            "time": "2018-04-30T01:21:07+00:00"
-        },
-        {
-            "name": "symfony/yaml",
-            "version": "v2.8.39",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/yaml.git",
-                "reference": "d20bd2bdee063863e426297af41eda45ccad6f7e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/d20bd2bdee063863e426297af41eda45ccad6f7e",
-                "reference": "d20bd2bdee063863e426297af41eda45ccad6f7e",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.9"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Yaml\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Yaml Component",
-            "homepage": "https://symfony.com",
-            "time": "2018-04-08T07:53:13+00:00"
-        },
-        {
-            "name": "wp-cli/autoload-splitter",
-            "version": "v0.1.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/autoload-splitter.git",
-                "reference": "fb4302da26390811d2631c62b42b75976d224bb8"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/autoload-splitter/zipball/fb4302da26390811d2631c62b42b75976d224bb8",
-                "reference": "fb4302da26390811d2631c62b42b75976d224bb8",
-                "shasum": ""
-            },
-            "require": {
-                "composer-plugin-api": "^1.1"
-            },
-            "type": "composer-plugin",
-            "extra": {
-                "class": "WP_CLI\\AutoloadSplitter\\ComposerPlugin"
-            },
-            "autoload": {
-                "psr-4": {
-                    "WP_CLI\\AutoloadSplitter\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Alain Schlesser",
-                    "email": "alain.schlesser@gmail.com",
-                    "homepage": "https://www.alainschlesser.com"
-                }
-            ],
-            "description": "Composer plugin for splitting a generated autoloader into two distinct parts.",
-            "homepage": "https://wp-cli.org",
-            "time": "2017-08-03T08:40:17+00:00"
-        },
-        {
-            "name": "wp-cli/cache-command",
-            "version": "v1.0.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/cache-command.git",
-                "reference": "d82cba9effa198f17847dce5771c8fb20c443ffa"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/cache-command/zipball/d82cba9effa198f17847dce5771c8fb20c443ffa",
-                "reference": "d82cba9effa198f17847dce5771c8fb20c443ffa",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "*"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "cache",
-                    "cache add",
-                    "cache decr",
-                    "cache delete",
-                    "cache flush",
-                    "cache get",
-                    "cache incr",
-                    "cache replace",
-                    "cache set",
-                    "cache type",
-                    "transient",
-                    "transient delete",
-                    "transient get",
-                    "transient set",
-                    "transient type"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "cache-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Manages object and transient caches.",
-            "homepage": "https://github.com/wp-cli/cache-command",
-            "time": "2017-12-14T19:21:19+00:00"
-        },
-        {
-            "name": "wp-cli/checksum-command",
-            "version": "v1.0.9",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/checksum-command.git",
-                "reference": "89a319440651f2867f282339c2223cfe5e9cc3fb"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/checksum-command/zipball/89a319440651f2867f282339c2223cfe5e9cc3fb",
-                "reference": "89a319440651f2867f282339c2223cfe5e9cc3fb",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "^1.5"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "core verify-checksums",
-                    "plugin verify-checksums"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "checksum-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Verifies file integrity by comparing to published checksums.",
-            "homepage": "https://github.com/wp-cli/checksum-command",
-            "time": "2018-04-20T07:47:27+00:00"
-        },
-        {
-            "name": "wp-cli/config-command",
-            "version": "v1.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/config-command.git",
-                "reference": "7bec9b4685b4022ab511630422dd6acccadfca9b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/config-command/zipball/7bec9b4685b4022ab511630422dd6acccadfca9b",
-                "reference": "7bec9b4685b4022ab511630422dd6acccadfca9b",
-                "shasum": ""
-            },
-            "require": {
-                "wp-cli/wp-config-transformer": "^1.2.1"
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "*"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "config",
-                    "config edit",
-                    "config delete",
-                    "config create",
-                    "config get",
-                    "config has",
-                    "config list",
-                    "config path",
-                    "config set"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "config-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                },
-                {
-                    "name": "Alain Schlesser",
-                    "email": "alain.schlesser@gmail.com",
-                    "homepage": "https://www.alainschlesser.com"
-                }
-            ],
-            "description": "Generates and reads the wp-config.php file.",
-            "homepage": "https://github.com/wp-cli/config-command",
-            "time": "2018-04-20T08:03:51+00:00"
-        },
-        {
-            "name": "wp-cli/core-command",
-            "version": "v1.0.9",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/core-command.git",
-                "reference": "0e825668d2c060c40ec1d7debbee94bc08eec9b3"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/core-command/zipball/0e825668d2c060c40ec1d7debbee94bc08eec9b3",
-                "reference": "0e825668d2c060c40ec1d7debbee94bc08eec9b3",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "*"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "core",
-                    "core check-update",
-                    "core download",
-                    "core install",
-                    "core is-installed",
-                    "core multisite-convert",
-                    "core multisite-install",
-                    "core update",
-                    "core update-db",
-                    "core version"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "core-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Downloads, installs, updates, and manages a WordPress installation.",
-            "homepage": "https://github.com/wp-cli/core-command",
-            "time": "2018-01-30T06:57:10+00:00"
-        },
-        {
-            "name": "wp-cli/cron-command",
-            "version": "v1.0.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/cron-command.git",
-                "reference": "9da7e36e8f9c14cb171a3c5204cba2865e0ed7ef"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/cron-command/zipball/9da7e36e8f9c14cb171a3c5204cba2865e0ed7ef",
-                "reference": "9da7e36e8f9c14cb171a3c5204cba2865e0ed7ef",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "*"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "cron",
-                    "cron test",
-                    "cron event",
-                    "cron event delete",
-                    "cron event list",
-                    "cron event run",
-                    "cron event schedule",
-                    "cron schedule",
-                    "cron schedule list"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "cron-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Tests, runs, and deletes WP-Cron events; manages WP-Cron schedules.",
-            "homepage": "https://github.com/wp-cli/cron-command",
-            "time": "2017-12-08T15:09:54+00:00"
-        },
-        {
-            "name": "wp-cli/db-command",
-            "version": "v1.3.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/db-command.git",
-                "reference": "7d361a15ffe34dfc9d798a81208fe61b8a2f049a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/db-command/zipball/7d361a15ffe34dfc9d798a81208fe61b8a2f049a",
-                "reference": "7d361a15ffe34dfc9d798a81208fe61b8a2f049a",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "^1.5"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "db",
-                    "db create",
-                    "db drop",
-                    "db reset",
-                    "db check",
-                    "db optimize",
-                    "db prefix",
-                    "db repair",
-                    "db cli",
-                    "db query",
-                    "db export",
-                    "db import",
-                    "db search",
-                    "db tables",
-                    "db size"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "db-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Performs basic database operations using credentials stored in wp-config.php.",
-            "homepage": "https://github.com/wp-cli/db-command",
-            "time": "2018-01-29T02:30:16+00:00"
-        },
-        {
-            "name": "wp-cli/embed-command",
-            "version": "v1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/embed-command.git",
-                "reference": "81319d4243a8dfe096389bf54cdc4fc3dec53497"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/embed-command/zipball/81319d4243a8dfe096389bf54cdc4fc3dec53497",
-                "reference": "81319d4243a8dfe096389bf54cdc4fc3dec53497",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "^1.5"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "embed",
-                    "embed fetch",
-                    "embed provider list",
-                    "embed provider match",
-                    "embed handler list",
-                    "embed cache clear",
-                    "embed cache find",
-                    "embed cache trigger"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "WP_CLI\\Embeds\\": "src/"
-                },
-                "files": [
-                    "embed-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Pascal Birchler",
-                    "homepage": "https://pascalbirchler.com/"
-                }
-            ],
-            "description": "Inspects oEmbed providers, clears embed cache, and more.",
-            "homepage": "https://github.com/wp-cli/embed-command",
-            "time": "2018-01-22T21:26:48+00:00"
-        },
-        {
-            "name": "wp-cli/entity-command",
-            "version": "v1.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/entity-command.git",
-                "reference": "035b74ea16912f5b14db7d28036a6d123eb90547"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/entity-command/zipball/035b74ea16912f5b14db7d28036a6d123eb90547",
-                "reference": "035b74ea16912f5b14db7d28036a6d123eb90547",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "phpunit/phpunit": "^4.8",
-                "wp-cli/wp-cli": "^1.5"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "comment",
-                    "comment approve",
-                    "comment count",
-                    "comment create",
-                    "comment delete",
-                    "comment exists",
-                    "comment generate",
-                    "comment get",
-                    "comment list",
-                    "comment meta",
-                    "comment meta add",
-                    "comment meta delete",
-                    "comment meta get",
-                    "comment meta list",
-                    "comment meta patch",
-                    "comment meta pluck",
-                    "comment meta update",
-                    "comment recount",
-                    "comment spam",
-                    "comment status",
-                    "comment trash",
-                    "comment unapprove",
-                    "comment unspam",
-                    "comment untrash",
-                    "comment update",
-                    "menu",
-                    "menu create",
-                    "menu delete",
-                    "menu item",
-                    "menu item add-custom",
-                    "menu item add-post",
-                    "menu item add-term",
-                    "menu item delete",
-                    "menu item list",
-                    "menu item update",
-                    "menu list",
-                    "menu location",
-                    "menu location assign",
-                    "menu location list",
-                    "menu location remove",
-                    "network meta",
-                    "network meta add",
-                    "network meta delete",
-                    "network meta get",
-                    "network meta list",
-                    "network meta patch",
-                    "network meta pluck",
-                    "network meta update",
-                    "option",
-                    "option add",
-                    "option delete",
-                    "option get",
-                    "option list",
-                    "option patch",
-                    "option pluck",
-                    "option update",
-                    "post",
-                    "post create",
-                    "post delete",
-                    "post edit",
-                    "post generate",
-                    "post get",
-                    "post list",
-                    "post meta",
-                    "post meta add",
-                    "post meta delete",
-                    "post meta get",
-                    "post meta list",
-                    "post meta patch",
-                    "post meta pluck",
-                    "post meta update",
-                    "post term",
-                    "post term add",
-                    "post term list",
-                    "post term remove",
-                    "post term set",
-                    "post update",
-                    "post-type",
-                    "post-type get",
-                    "post-type list",
-                    "site",
-                    "site activate",
-                    "site archive",
-                    "site create",
-                    "site deactivate",
-                    "site delete",
-                    "site empty",
-                    "site list",
-                    "site mature",
-                    "site option",
-                    "site private",
-                    "site public",
-                    "site spam",
-                    "site unarchive",
-                    "site unmature",
-                    "site unspam",
-                    "taxonomy",
-                    "taxonomy get",
-                    "taxonomy list",
-                    "term",
-                    "term create",
-                    "term delete",
-                    "term generate",
-                    "term get",
-                    "term list",
-                    "term meta",
-                    "term meta add",
-                    "term meta delete",
-                    "term meta get",
-                    "term meta list",
-                    "term meta patch",
-                    "term meta pluck",
-                    "term meta update",
-                    "term recount",
-                    "term update",
-                    "user",
-                    "user add-cap",
-                    "user add-role",
-                    "user create",
-                    "user delete",
-                    "user generate",
-                    "user get",
-                    "user import-csv",
-                    "user list",
-                    "user list-caps",
-                    "user meta",
-                    "user meta add",
-                    "user meta delete",
-                    "user meta get",
-                    "user meta list",
-                    "user meta patch",
-                    "user meta pluck",
-                    "user meta update",
-                    "user remove-cap",
-                    "user remove-role",
-                    "user reset-password",
-                    "user session",
-                    "user session destroy",
-                    "user session list",
-                    "user set-role",
-                    "user spam",
-                    "user term",
-                    "user term add",
-                    "user term list",
-                    "user term remove",
-                    "user term set",
-                    "user unspam",
-                    "user update"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/",
-                    "WP_CLI\\": "src/WP_CLI"
-                },
-                "files": [
-                    "entity-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Manage WordPress core entities.",
-            "homepage": "https://github.com/wp-cli/entity-command",
-            "time": "2018-01-29T15:10:05+00:00"
-        },
-        {
-            "name": "wp-cli/eval-command",
-            "version": "v1.0.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/eval-command.git",
-                "reference": "9640d40ab28cd86590396f08f8c382e659f57321"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/eval-command/zipball/9640d40ab28cd86590396f08f8c382e659f57321",
-                "reference": "9640d40ab28cd86590396f08f8c382e659f57321",
-                "shasum": ""
-            },
-            "require": {
-                "wp-cli/wp-cli": "*"
-            },
-            "require-dev": {
-                "behat/behat": "~2.5"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "eval",
-                    "eval-file"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "eval-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Executes arbitrary PHP code or files.",
-            "homepage": "https://github.com/wp-cli/eval-command",
-            "time": "2017-12-08T14:33:34+00:00"
-        },
-        {
-            "name": "wp-cli/export-command",
-            "version": "v1.0.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/export-command.git",
-                "reference": "4ae43d370ed6ed0cffd166dd84cfc6c8c2f3f633"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/export-command/zipball/4ae43d370ed6ed0cffd166dd84cfc6c8c2f3f633",
-                "reference": "4ae43d370ed6ed0cffd166dd84cfc6c8c2f3f633",
-                "shasum": ""
-            },
-            "require": {
-                "nb/oxymel": "~0.1.0"
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "^1.5"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "export"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "export-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Exports WordPress content to a WXR file.",
-            "homepage": "https://github.com/wp-cli/export-command",
-            "time": "2018-01-29T02:33:05+00:00"
-        },
-        {
-            "name": "wp-cli/extension-command",
-            "version": "v1.1.10",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/extension-command.git",
-                "reference": "3fd9ff469311bb2d6935997bc7d7e9f157fe29e6"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/3fd9ff469311bb2d6935997bc7d7e9f157fe29e6",
-                "reference": "3fd9ff469311bb2d6935997bc7d7e9f157fe29e6",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "*"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "plugin",
-                    "plugin activate",
-                    "plugin deactivate",
-                    "plugin delete",
-                    "plugin get",
-                    "plugin install",
-                    "plugin is-installed",
-                    "plugin list",
-                    "plugin path",
-                    "plugin search",
-                    "plugin status",
-                    "plugin toggle",
-                    "plugin uninstall",
-                    "plugin update",
-                    "theme",
-                    "theme activate",
-                    "theme delete",
-                    "theme disable",
-                    "theme enable",
-                    "theme get",
-                    "theme install",
-                    "theme is-installed",
-                    "theme list",
-                    "theme mod",
-                    "theme mod get",
-                    "theme mod set",
-                    "theme mod remove",
-                    "theme path",
-                    "theme search",
-                    "theme status",
-                    "theme update"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "extension-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Manages plugins and themes, including installs, activations, and updates.",
-            "homepage": "https://github.com/wp-cli/extension-command",
-            "time": "2018-03-02T13:26:40+00:00"
-        },
-        {
-            "name": "wp-cli/import-command",
-            "version": "v1.0.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/import-command.git",
-                "reference": "d2c21d590a1bfae6ac4e289a0b57fb1870b5990c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/import-command/zipball/d2c21d590a1bfae6ac4e289a0b57fb1870b5990c",
-                "reference": "d2c21d590a1bfae6ac4e289a0b57fb1870b5990c",
-                "shasum": ""
-            },
-            "require": {
-                "wp-cli/wp-cli": "*"
-            },
-            "require-dev": {
-                "behat/behat": "~2.5"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "import"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "import-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Imports content from a given WXR file.",
-            "homepage": "https://github.com/wp-cli/import-command",
-            "time": "2017-12-08T15:13:36+00:00"
-        },
-        {
-            "name": "wp-cli/language-command",
-            "version": "v1.0.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/language-command.git",
-                "reference": "2a3d1ce5a722a4d70809619a065087aa933f6209"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/language-command/zipball/2a3d1ce5a722a4d70809619a065087aa933f6209",
-                "reference": "2a3d1ce5a722a4d70809619a065087aa933f6209",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "*"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "commands": [
-                    "language",
-                    "language core",
-                    "language core activate",
-                    "language core install",
-                    "language core list",
-                    "language core uninstall",
-                    "language core update"
-                ],
-                "bundled": true
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "language-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Installs, activates, and manages language packs.",
-            "homepage": "https://github.com/wp-cli/language-command",
-            "time": "2017-12-08T17:50:26+00:00"
-        },
-        {
-            "name": "wp-cli/media-command",
-            "version": "v1.1.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/media-command.git",
-                "reference": "7f8664ba722505446b3ef3dbc6717e8e7f20265c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/media-command/zipball/7f8664ba722505446b3ef3dbc6717e8e7f20265c",
-                "reference": "7f8664ba722505446b3ef3dbc6717e8e7f20265c",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "^1.5"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "media",
-                    "media import",
-                    "media regenerate",
-                    "media image-size"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "media-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Imports files as attachments, regenerates thumbnails, or lists registered image sizes.",
-            "homepage": "https://github.com/wp-cli/media-command",
-            "time": "2018-01-29T02:17:56+00:00"
-        },
-        {
-            "name": "wp-cli/mustangostang-spyc",
-            "version": "0.6.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/spyc.git",
-                "reference": "6aa0b4da69ce9e9a2c8402dab8d43cf32c581cc7"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/spyc/zipball/6aa0b4da69ce9e9a2c8402dab8d43cf32c581cc7",
-                "reference": "6aa0b4da69ce9e9a2c8402dab8d43cf32c581cc7",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.1"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "4.3.*@dev"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "0.5.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Mustangostang\\": "src/"
-                },
-                "files": [
-                    "includes/functions.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "mustangostang",
-                    "email": "vlad.andersen@gmail.com"
-                }
-            ],
-            "description": "A simple YAML loader/dumper class for PHP (WP-CLI fork)",
-            "homepage": "https://github.com/mustangostang/spyc/",
-            "time": "2017-04-25T11:26:20+00:00"
-        },
-        {
-            "name": "wp-cli/package-command",
-            "version": "v1.0.13",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/package-command.git",
-                "reference": "c912f5bbad216997d7496d46fc5c05af0e16fc5b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/c912f5bbad216997d7496d46fc5c05af0e16fc5b",
-                "reference": "c912f5bbad216997d7496d46fc5c05af0e16fc5b",
-                "shasum": ""
-            },
-            "require": {
-                "composer/composer": "^1.2.0"
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "^1.5"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "package",
-                    "package browse",
-                    "package install",
-                    "package list",
-                    "package update",
-                    "package uninstall"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "package-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Lists, installs, and removes WP-CLI packages.",
-            "homepage": "https://github.com/wp-cli/package-command",
-            "time": "2018-04-20T23:33:22+00:00"
-        },
-        {
             "name": "wp-cli/php-cli-tools",
             "version": "v0.11.9",
             "source": {
@@ -2491,492 +195,6 @@
                 "console"
             ],
             "time": "2018-04-20T08:11:30+00:00"
-        },
-        {
-            "name": "wp-cli/rewrite-command",
-            "version": "v1.0.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/rewrite-command.git",
-                "reference": "6b1695887e289ffad14c8f4ea86b5f1d92757408"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/rewrite-command/zipball/6b1695887e289ffad14c8f4ea86b5f1d92757408",
-                "reference": "6b1695887e289ffad14c8f4ea86b5f1d92757408",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "*"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "commands": [
-                    "rewrite",
-                    "rewrite flush",
-                    "rewrite list",
-                    "rewrite structure"
-                ],
-                "bundled": true
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "rewrite-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Lists or flushes the site's rewrite rules, updates the permalink structure.",
-            "homepage": "https://github.com/wp-cli/rewrite-command",
-            "time": "2017-12-08T17:51:04+00:00"
-        },
-        {
-            "name": "wp-cli/role-command",
-            "version": "v1.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/role-command.git",
-                "reference": "f50134ea9c27c108b1069cf044f7395c8f9bf716"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/role-command/zipball/f50134ea9c27c108b1069cf044f7395c8f9bf716",
-                "reference": "f50134ea9c27c108b1069cf044f7395c8f9bf716",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "*"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "commands": [
-                    "role",
-                    "role create",
-                    "role delete",
-                    "role exists",
-                    "role list",
-                    "role reset",
-                    "cap",
-                    "cap add",
-                    "cap list",
-                    "cap remove"
-                ],
-                "bundled": true
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "role-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Adds, removes, lists, and resets roles and capabilities.",
-            "homepage": "https://github.com/wp-cli/role-command",
-            "time": "2018-04-20T08:05:51+00:00"
-        },
-        {
-            "name": "wp-cli/scaffold-command",
-            "version": "v1.1.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/scaffold-command.git",
-                "reference": "659348f05ebb47e70d7286b2e989146893a3c588"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/scaffold-command/zipball/659348f05ebb47e70d7286b2e989146893a3c588",
-                "reference": "659348f05ebb47e70d7286b2e989146893a3c588",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "^1.5"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "scaffold",
-                    "scaffold _s",
-                    "scaffold block",
-                    "scaffold child-theme",
-                    "scaffold plugin",
-                    "scaffold plugin-tests",
-                    "scaffold post-type",
-                    "scaffold taxonomy",
-                    "scaffold theme-tests"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "scaffold-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Generates code for post types, taxonomies, blocks, plugins, child themes, etc.",
-            "homepage": "https://github.com/wp-cli/scaffold-command",
-            "time": "2018-04-20T18:37:18+00:00"
-        },
-        {
-            "name": "wp-cli/search-replace-command",
-            "version": "v1.3.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/search-replace-command.git",
-                "reference": "df1092f65a5953dddace5fc060a9155f430a560e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/search-replace-command/zipball/df1092f65a5953dddace5fc060a9155f430a560e",
-                "reference": "df1092f65a5953dddace5fc060a9155f430a560e",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "^1.5"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "search-replace"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "search-replace-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Searches/replaces strings in the database.",
-            "homepage": "https://github.com/wp-cli/search-replace-command",
-            "time": "2018-04-21T01:30:44+00:00"
-        },
-        {
-            "name": "wp-cli/server-command",
-            "version": "v1.0.9",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/server-command.git",
-                "reference": "6192e6d7becd07e4c11a8f1560655c73a3b3526a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/server-command/zipball/6192e6d7becd07e4c11a8f1560655c73a3b3526a",
-                "reference": "6192e6d7becd07e4c11a8f1560655c73a3b3526a",
-                "shasum": ""
-            },
-            "require": {
-                "wp-cli/wp-cli": "*"
-            },
-            "require-dev": {
-                "behat/behat": "~2.5"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "commands": [
-                    "server"
-                ],
-                "bundled": true
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "server-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Launches PHP's built-in web server for a specific WordPress installation.",
-            "homepage": "https://github.com/wp-cli/server-command",
-            "time": "2017-12-14T20:06:24+00:00"
-        },
-        {
-            "name": "wp-cli/shell-command",
-            "version": "v1.0.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/shell-command.git",
-                "reference": "507603a8994d984b6c4d5bd26e31ede6d9cce37e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/shell-command/zipball/507603a8994d984b6c4d5bd26e31ede6d9cce37e",
-                "reference": "507603a8994d984b6c4d5bd26e31ede6d9cce37e",
-                "shasum": ""
-            },
-            "require": {
-                "wp-cli/wp-cli": "*"
-            },
-            "require-dev": {
-                "behat/behat": "~2.5"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "commands": [
-                    "shell"
-                ],
-                "bundled": true
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/",
-                    "WP_CLI\\": "src/WP_CLI"
-                },
-                "files": [
-                    "shell-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Opens an interactive PHP console for running and testing PHP code.",
-            "homepage": "https://github.com/wp-cli/shell-command",
-            "time": "2017-12-08T16:03:53+00:00"
-        },
-        {
-            "name": "wp-cli/super-admin-command",
-            "version": "v1.0.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/super-admin-command.git",
-                "reference": "2982d2e6514dbb318561d72d0577746a3a37181e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/super-admin-command/zipball/2982d2e6514dbb318561d72d0577746a3a37181e",
-                "reference": "2982d2e6514dbb318561d72d0577746a3a37181e",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "*"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "commands": [
-                    "super-admin",
-                    "super-admin add",
-                    "super-admin list",
-                    "super-admin remove"
-                ],
-                "bundled": true
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "super-admin-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Lists, adds, or removes super admin users on a multisite installation.",
-            "homepage": "https://github.com/wp-cli/super-admin-command",
-            "time": "2017-12-08T17:43:53+00:00"
-        },
-        {
-            "name": "wp-cli/widget-command",
-            "version": "v1.0.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/widget-command.git",
-                "reference": "657e0f77d80c892f8f72f90a3a25112c254386df"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/widget-command/zipball/657e0f77d80c892f8f72f90a3a25112c254386df",
-                "reference": "657e0f77d80c892f8f72f90a3a25112c254386df",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "*"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "commands": [
-                    "widget",
-                    "widget add",
-                    "widget deactivate",
-                    "widget delete",
-                    "widget list",
-                    "widget move",
-                    "widget reset",
-                    "widget update",
-                    "sidebar",
-                    "sidebar list"
-                ],
-                "bundled": true
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "widget-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Adds, moves, and removes widgets; lists sidebars.",
-            "homepage": "https://github.com/wp-cli/widget-command",
-            "time": "2017-12-08T17:45:57+00:00"
-        },
-        {
-            "name": "wp-cli/wp-config-transformer",
-            "version": "v1.2.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/wp-config-transformer.git",
-                "reference": "6ce0a9fae09d53145c9c9c79486a69684598488d"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/wp-config-transformer/zipball/6ce0a9fae09d53145c9c9c79486a69684598488d",
-                "reference": "6ce0a9fae09d53145c9c9c79486a69684598488d",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.29"
-            },
-            "require-dev": {
-                "composer/composer": "^1.5.6",
-                "phpunit/phpunit": "^6.5.5",
-                "wp-coding-standards/wpcs": "^0.14.0"
-            },
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "src/WPConfigTransformer.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Frankie Jarrett",
-                    "email": "fjarrett@gmail.com"
-                }
-            ],
-            "description": "Programmatically edit a wp-config.php file.",
-            "time": "2018-03-20T16:19:27+00:00"
         }
     ],
     "packages-dev": [
@@ -3542,17 +760,64 @@
             "time": "2013-01-13T10:24:48+00:00"
         },
         {
+            "name": "psr/log",
+            "version": "1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/log.git",
+                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
+                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Log\\": "Psr/Log/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for logging libraries",
+            "homepage": "https://github.com/php-fig/log",
+            "keywords": [
+                "log",
+                "psr",
+                "psr-3"
+            ],
+            "time": "2016-10-10T12:19:37+00:00"
+        },
+        {
             "name": "roave/security-advisories",
             "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "6fe712594835e5b70de30aec5fc244a7bd8464cd"
+                "reference": "79ef6566b9c7fe6c1b6f6d12e5729d5cb545ac69"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/6fe712594835e5b70de30aec5fc244a7bd8464cd",
-                "reference": "6fe712594835e5b70de30aec5fc244a7bd8464cd",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/79ef6566b9c7fe6c1b6f6d12e5729d5cb545ac69",
+                "reference": "79ef6566b9c7fe6c1b6f6d12e5729d5cb545ac69",
                 "shasum": ""
             },
             "conflict": {
@@ -3563,7 +828,7 @@
                 "asymmetricrypt/asymmetricrypt": ">=0,<9.9.99",
                 "aws/aws-sdk-php": ">=3,<3.2.1",
                 "bugsnag/bugsnag-laravel": ">=2,<2.0.2",
-                "cakephp/cakephp": ">=1.3,<1.3.18|>=2,<2.4.99|>=2.5,<2.5.99|>=2.6,<2.6.12|>=2.7,<2.7.6|>=3,<3.0.15|>=3.1,<3.1.4",
+                "cakephp/cakephp": ">=1.3,<1.3.18|>=2,<2.4.99|>=2.5,<2.5.99|>=2.6,<2.6.12|>=2.7,<2.7.6|>=3,<3.0.15|>=3.1,<3.1.4|>=3.4,<3.4.14|>=3.5,<3.5.17|>=3.6,<3.6.4",
                 "cart2quote/module-quotation": ">=4.1.6,<=4.4.5|>=5,<5.4.4",
                 "cartalyst/sentry": "<=2.1.6",
                 "codeigniter/framework": "<=3.0.6",
@@ -3651,7 +916,7 @@
                 "symfony/web-profiler-bundle": ">=2,<2.3.19|>=2.4,<2.4.9|>=2.5,<2.5.4",
                 "symfony/yaml": ">=2,<2.0.22|>=2.1,<2.1.7",
                 "thelia/backoffice-default-template": ">=2.1,<2.1.2",
-                "thelia/thelia": ">=2.1,<2.1.2|>=2.1.0-beta1,<2.1.3",
+                "thelia/thelia": ">=2.1.0-beta1,<2.1.3|>=2.1,<2.1.2",
                 "titon/framework": ">=0,<9.9.99",
                 "twig/twig": "<1.20",
                 "typo3/cms": ">=6.2,<6.2.30|>=7,<7.6.22|>=8,<8.7.5",
@@ -3703,67 +968,40 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2018-05-11T06:55:15+00:00"
+            "time": "2018-05-21T07:43:38+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "2.9.1",
+            "version": "3.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "dcbed1074f8244661eecddfc2a675430d8d33f62"
+                "reference": "4842476c434e375f9d3182ff7b89059583aa8b27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/dcbed1074f8244661eecddfc2a675430d8d33f62",
-                "reference": "dcbed1074f8244661eecddfc2a675430d8d33f62",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/4842476c434e375f9d3182ff7b89059583aa8b27",
+                "reference": "4842476c434e375f9d3182ff7b89059583aa8b27",
                 "shasum": ""
             },
             "require": {
                 "ext-simplexml": "*",
                 "ext-tokenizer": "*",
                 "ext-xmlwriter": "*",
-                "php": ">=5.1.2"
+                "php": ">=5.4.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "~4.0"
+                "phpunit/phpunit": "^4.0 || ^5.0 || ^6.0 || ^7.0"
             },
             "bin": [
-                "scripts/phpcs",
-                "scripts/phpcbf"
+                "bin/phpcs",
+                "bin/phpcbf"
             ],
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.x-dev"
+                    "dev-master": "3.x-dev"
                 }
-            },
-            "autoload": {
-                "classmap": [
-                    "CodeSniffer.php",
-                    "CodeSniffer/CLI.php",
-                    "CodeSniffer/Exception.php",
-                    "CodeSniffer/File.php",
-                    "CodeSniffer/Fixer.php",
-                    "CodeSniffer/Report.php",
-                    "CodeSniffer/Reporting.php",
-                    "CodeSniffer/Sniff.php",
-                    "CodeSniffer/Tokens.php",
-                    "CodeSniffer/Reports/",
-                    "CodeSniffer/Tokenizers/",
-                    "CodeSniffer/DocGenerators/",
-                    "CodeSniffer/Standards/AbstractPatternSniff.php",
-                    "CodeSniffer/Standards/AbstractScopeSniff.php",
-                    "CodeSniffer/Standards/AbstractVariableSniff.php",
-                    "CodeSniffer/Standards/IncorrectPatternException.php",
-                    "CodeSniffer/Standards/Generic/Sniffs/",
-                    "CodeSniffer/Standards/MySource/Sniffs/",
-                    "CodeSniffer/Standards/PEAR/Sniffs/",
-                    "CodeSniffer/Standards/PSR1/Sniffs/",
-                    "CodeSniffer/Standards/PSR2/Sniffs/",
-                    "CodeSniffer/Standards/Squiz/Sniffs/",
-                    "CodeSniffer/Standards/Zend/Sniffs/"
-                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -3781,7 +1019,632 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2017-05-22T02:43:20+00:00"
+            "time": "2018-02-20T21:35:23+00:00"
+        },
+        {
+            "name": "symfony/config",
+            "version": "v2.8.40",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/config.git",
+                "reference": "93bdf96d0e3c9b29740bf9050e7a996b443c8436"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/config/zipball/93bdf96d0e3c9b29740bf9050e7a996b443c8436",
+                "reference": "93bdf96d0e3c9b29740bf9050e7a996b443c8436",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9",
+                "symfony/filesystem": "~2.3|~3.0.0",
+                "symfony/polyfill-ctype": "~1.8"
+            },
+            "require-dev": {
+                "symfony/yaml": "~2.7|~3.0.0"
+            },
+            "suggest": {
+                "symfony/yaml": "To use the yaml reference dumper"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Config\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Config Component",
+            "homepage": "https://symfony.com",
+            "time": "2018-05-01T22:52:40+00:00"
+        },
+        {
+            "name": "symfony/console",
+            "version": "v2.8.40",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/console.git",
+                "reference": "e8e59b74ad1274714dad2748349b55e3e6e630c7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/console/zipball/e8e59b74ad1274714dad2748349b55e3e6e630c7",
+                "reference": "e8e59b74ad1274714dad2748349b55e3e6e630c7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9",
+                "symfony/debug": "^2.7.2|~3.0.0",
+                "symfony/polyfill-mbstring": "~1.0"
+            },
+            "require-dev": {
+                "psr/log": "~1.0",
+                "symfony/event-dispatcher": "~2.1|~3.0.0",
+                "symfony/process": "~2.1|~3.0.0"
+            },
+            "suggest": {
+                "psr/log-implementation": "For using the console logger",
+                "symfony/event-dispatcher": "",
+                "symfony/process": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Console\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Console Component",
+            "homepage": "https://symfony.com",
+            "time": "2018-05-15T21:17:45+00:00"
+        },
+        {
+            "name": "symfony/debug",
+            "version": "v2.8.40",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/debug.git",
+                "reference": "fe8838e11cf7dbaf324bd6f51d065d873ccf78a2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/debug/zipball/fe8838e11cf7dbaf324bd6f51d065d873ccf78a2",
+                "reference": "fe8838e11cf7dbaf324bd6f51d065d873ccf78a2",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9",
+                "psr/log": "~1.0"
+            },
+            "conflict": {
+                "symfony/http-kernel": ">=2.3,<2.3.24|~2.4.0|>=2.5,<2.5.9|>=2.6,<2.6.2"
+            },
+            "require-dev": {
+                "symfony/class-loader": "~2.2|~3.0.0",
+                "symfony/http-kernel": "~2.3.24|~2.5.9|^2.6.2|~3.0.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Debug\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Debug Component",
+            "homepage": "https://symfony.com",
+            "time": "2018-05-15T21:17:45+00:00"
+        },
+        {
+            "name": "symfony/dependency-injection",
+            "version": "v2.8.40",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/dependency-injection.git",
+                "reference": "3d7cbf34cd75ede7f94b9b990f85bd089e15cd55"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/dependency-injection/zipball/3d7cbf34cd75ede7f94b9b990f85bd089e15cd55",
+                "reference": "3d7cbf34cd75ede7f94b9b990f85bd089e15cd55",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9"
+            },
+            "conflict": {
+                "symfony/expression-language": "<2.6"
+            },
+            "require-dev": {
+                "symfony/config": "~2.2|~3.0.0",
+                "symfony/expression-language": "~2.6|~3.0.0",
+                "symfony/yaml": "~2.3.42|~2.7.14|~2.8.7|~3.0.7"
+            },
+            "suggest": {
+                "symfony/config": "",
+                "symfony/expression-language": "For using expressions in service container configuration",
+                "symfony/proxy-manager-bridge": "Generate service proxies to lazy load them",
+                "symfony/yaml": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\DependencyInjection\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony DependencyInjection Component",
+            "homepage": "https://symfony.com",
+            "time": "2018-02-19T16:23:47+00:00"
+        },
+        {
+            "name": "symfony/event-dispatcher",
+            "version": "v2.8.40",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/event-dispatcher.git",
+                "reference": "9b69aad7d4c086dc94ebade2d5eb9145da5dac8c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/9b69aad7d4c086dc94ebade2d5eb9145da5dac8c",
+                "reference": "9b69aad7d4c086dc94ebade2d5eb9145da5dac8c",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9"
+            },
+            "require-dev": {
+                "psr/log": "~1.0",
+                "symfony/config": "^2.0.5|~3.0.0",
+                "symfony/dependency-injection": "~2.6|~3.0.0",
+                "symfony/expression-language": "~2.6|~3.0.0",
+                "symfony/stopwatch": "~2.3|~3.0.0"
+            },
+            "suggest": {
+                "symfony/dependency-injection": "",
+                "symfony/http-kernel": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\EventDispatcher\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony EventDispatcher Component",
+            "homepage": "https://symfony.com",
+            "time": "2018-04-06T07:35:03+00:00"
+        },
+        {
+            "name": "symfony/filesystem",
+            "version": "v2.8.40",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/filesystem.git",
+                "reference": "1ed4b265550ec43d2ceaa0e9e57b0bc4eeb1b541"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/1ed4b265550ec43d2ceaa0e9e57b0bc4eeb1b541",
+                "reference": "1ed4b265550ec43d2ceaa0e9e57b0bc4eeb1b541",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9",
+                "symfony/polyfill-ctype": "~1.8"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Filesystem\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Filesystem Component",
+            "homepage": "https://symfony.com",
+            "time": "2018-05-15T21:17:45+00:00"
+        },
+        {
+            "name": "symfony/finder",
+            "version": "v2.8.40",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/finder.git",
+                "reference": "79764d21163db295f0daf8bd9d9b91f97e65db6a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/finder/zipball/79764d21163db295f0daf8bd9d9b91f97e65db6a",
+                "reference": "79764d21163db295f0daf8bd9d9b91f97e65db6a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Finder\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Finder Component",
+            "homepage": "https://symfony.com",
+            "time": "2018-05-15T21:17:45+00:00"
+        },
+        {
+            "name": "symfony/polyfill-ctype",
+            "version": "v1.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-ctype.git",
+                "reference": "7cc359f1b7b80fc25ed7796be7d96adc9b354bae"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/7cc359f1b7b80fc25ed7796be7d96adc9b354bae",
+                "reference": "7cc359f1b7b80fc25ed7796be7d96adc9b354bae",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Ctype\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                },
+                {
+                    "name": "Gert de Pagter",
+                    "email": "BackEndTea@gmail.com"
+                }
+            ],
+            "description": "Symfony polyfill for ctype functions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "ctype",
+                "polyfill",
+                "portable"
+            ],
+            "time": "2018-04-30T19:57:29+00:00"
+        },
+        {
+            "name": "symfony/polyfill-mbstring",
+            "version": "v1.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-mbstring.git",
+                "reference": "3296adf6a6454a050679cde90f95350ad604b171"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/3296adf6a6454a050679cde90f95350ad604b171",
+                "reference": "3296adf6a6454a050679cde90f95350ad604b171",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "suggest": {
+                "ext-mbstring": "For best performance"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Mbstring\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for the Mbstring extension",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "mbstring",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "time": "2018-04-26T10:06:28+00:00"
+        },
+        {
+            "name": "symfony/translation",
+            "version": "v2.8.40",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/translation.git",
+                "reference": "c6a27966a92fa361bf2c3a938abc6dee91f7ad67"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/translation/zipball/c6a27966a92fa361bf2c3a938abc6dee91f7ad67",
+                "reference": "c6a27966a92fa361bf2c3a938abc6dee91f7ad67",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9",
+                "symfony/polyfill-mbstring": "~1.0"
+            },
+            "conflict": {
+                "symfony/config": "<2.7"
+            },
+            "require-dev": {
+                "psr/log": "~1.0",
+                "symfony/config": "~2.8",
+                "symfony/intl": "~2.7.25|^2.8.18|~3.2.5",
+                "symfony/yaml": "~2.2|~3.0.0"
+            },
+            "suggest": {
+                "psr/log-implementation": "To use logging capability in translator",
+                "symfony/config": "",
+                "symfony/yaml": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Translation\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Translation Component",
+            "homepage": "https://symfony.com",
+            "time": "2018-05-21T09:59:10+00:00"
+        },
+        {
+            "name": "symfony/yaml",
+            "version": "v2.8.40",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/yaml.git",
+                "reference": "51356b7a2ff7c9fd06b2f1681cc463bb62b5c1ff"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/51356b7a2ff7c9fd06b2f1681cc463bb62b5c1ff",
+                "reference": "51356b7a2ff7c9fd06b2f1681cc463bb62b5c1ff",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9",
+                "symfony/polyfill-ctype": "~1.8"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Yaml\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Yaml Component",
+            "homepage": "https://symfony.com",
+            "time": "2018-05-01T22:52:40+00:00"
         },
         {
             "name": "wimg/php-compatibility",
@@ -3884,10 +1747,10 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=5.3.29"
+        "php": ">=5.4"
     },
     "platform-dev": [],
     "platform-overrides": {
-        "php": "5.3.29"
+        "php": "5.4"
     }
 }
