@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "729893e07680345790ee458c963f44bd",
+    "content-hash": "94c2728e9d7b7b1595cd3e7dbbff782c",
     "packages": [
         {
             "name": "mustache/mustache",
@@ -2852,6 +2852,63 @@
             "description": "Manages plugins and themes, including installs, activations, and updates.",
             "homepage": "https://github.com/wp-cli/extension-command",
             "time": "2018-03-02T13:26:40+00:00"
+        },
+        {
+            "name": "wp-cli/language-command",
+            "version": "v1.0.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/language-command.git",
+                "reference": "2a3d1ce5a722a4d70809619a065087aa933f6209"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/language-command/zipball/2a3d1ce5a722a4d70809619a065087aa933f6209",
+                "reference": "2a3d1ce5a722a4d70809619a065087aa933f6209",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5",
+                "wp-cli/wp-cli": "*"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
+                "commands": [
+                    "language",
+                    "language core",
+                    "language core activate",
+                    "language core install",
+                    "language core list",
+                    "language core uninstall",
+                    "language core update"
+                ],
+                "bundled": true
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "language-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Installs, activates, and manages language packs.",
+            "homepage": "https://github.com/wp-cli/language-command",
+            "time": "2017-12-08T17:50:26+00:00"
         },
         {
             "name": "wp-cli/package-command",
