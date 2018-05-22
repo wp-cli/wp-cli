@@ -1231,7 +1231,7 @@ function is_bundled_command( $command ) {
 		// if ( file_exists( WP_CLI_VENDOR_DIR . '/composer/' ) ) {
 		// 	$classes = include $class_map;
 		// }
-		$classes = array();
+		$classes = array( 'CLI_Command' => true );
 	}
 
 	if ( is_object( $command ) ) {
