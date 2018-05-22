@@ -1,6 +1,6 @@
 {
 	"name": "wp-cli/wp-cli",
-	"description": "The command line interface for WordPress",
+	"description": "WP-CLI framework",
 	"keywords": [ "cli", "wordpress" ],
 	"homepage": "https://wp-cli.org",
 	"license": "MIT",
