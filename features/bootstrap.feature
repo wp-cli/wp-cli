@@ -219,8 +219,6 @@ Feature: Bootstrap WP-CLI
   Scenario: Composer stack with both WordPress and wp-cli as dependencies and a custom vendor directory
     Given a WP installation with Composer and a custom vendor directory 'vendor-custom'
     And a dependency on current wp-cli
-    Then the vendor-custom/autoload_commands.php file should exist
-    Then the vendor-custom/autoload_framework.php file should exist
     When I run `vendor-custom/bin/wp option get blogname`
     Then STDOUT should contain:
       """

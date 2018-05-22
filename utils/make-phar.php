@@ -276,8 +276,6 @@ if ( 'cli' !== BUILD ) {
 }
 
 add_file( $phar, WP_CLI_VENDOR_DIR . '/autoload.php' );
-add_file( $phar, WP_CLI_VENDOR_DIR . '/autoload_commands.php' );
-add_file( $phar, WP_CLI_VENDOR_DIR . '/autoload_framework.php' );
 if ( 'cli' !== BUILD ) {
 	add_file( $phar, WP_CLI_ROOT . '/ci/behat-tags.php' );
 	add_file( $phar, WP_CLI_VENDOR_DIR . '/composer/composer/LICENSE' );
