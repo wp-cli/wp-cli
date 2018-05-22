@@ -63,7 +63,6 @@ function add_file( $phar, $path ) {
 				$strips = array(
 					'\/(?:behat|composer|gherkin)\/src\/',
 					'\/phpunit\/',
-					'\/nb\/oxymel\/',
 					'-command\/src\/',
 					'\/wp-cli\/[^\n]+?-command\/',
 					'\/symfony\/(?!finder|polyfill-mbstring)[^\/]+\/',
@@ -191,7 +190,6 @@ if ( 'cli' === BUILD ) {
 		->in(WP_CLI_ROOT . '/features/bootstrap') // These are required for scaffold-package-command.
 		->in(WP_CLI_ROOT . '/features/steps')
 		->in(WP_CLI_ROOT . '/features/extra')
-		->in(WP_CLI_VENDOR_DIR . '/nb/oxymel')
 		->in(WP_CLI_VENDOR_DIR . '/psr')
 		->in(WP_CLI_VENDOR_DIR . '/seld')
 		->in(WP_CLI_VENDOR_DIR . '/symfony/console')
@@ -199,7 +197,6 @@ if ( 'cli' === BUILD ) {
 		->in(WP_CLI_VENDOR_DIR . '/symfony/process')
 		->in(WP_CLI_VENDOR_DIR . '/justinrainbow/json-schema')
 		->exclude('demo')
-		->exclude('nb/oxymel/OxymelTest.php')
 		->exclude('composer/spdx-licenses')
 		->exclude('composer/composer/src/Composer/Command')
 		->exclude('composer/composer/src/Composer/Compiler.php')
