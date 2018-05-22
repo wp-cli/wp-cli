@@ -3846,11 +3846,16 @@
         {
             "name": "wp-cli/wp-cli-tests",
             "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/wp-cli-tests.git",
+                "reference": "3b1e240aa7215da0031aeeaefad59b9f6005a761"
+            },
             "dist": {
-                "type": "path",
-                "url": "../wp-cli-tests",
-                "reference": "bbf8187468948f9fb6d0a727991e99a281893544",
-                "shasum": null
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/3b1e240aa7215da0031aeeaefad59b9f6005a761",
+                "reference": "3b1e240aa7215da0031aeeaefad59b9f6005a761",
+                "shasum": ""
             },
             "require": {
                 "behat/behat": "^2.5",
@@ -3862,12 +3867,12 @@
                 "wp-cli/wp-cli": "dev-4748-split-off-bundle"
             },
             "bin": [
-                "bin/get-behat-root",
                 "bin/run-behat-tests",
                 "bin/run-php-unit-tests",
                 "bin/install-package-tests"
             ],
             "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -3877,11 +3882,7 @@
                 "cli",
                 "wordpress"
             ],
-            "support": {
-                "issues": "https://github.com/wp-cli/wp-cli-tests/issues",
-                "source": "https://github.com/wp-cli/wp-cli-tests",
-                "docs": "https://make.wordpress.org/cli/handbook/"
-            }
+            "time": "2018-05-22T15:43:58+00:00"
         },
         {
             "name": "wp-cli/wp-config-transformer",
