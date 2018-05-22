@@ -1226,10 +1226,12 @@ function is_bundled_command( $command ) {
 
 	if ( null === $classes ) {
 		$classes = array();
-		$class_map = WP_CLI_VENDOR_DIR . '/composer/autoload_commands_classmap.php';
-		if ( file_exists( WP_CLI_VENDOR_DIR . '/composer/' ) ) {
-			$classes = include $class_map;
-		}
+		// TODO: This needs to be rebuilt.
+		// $class_map = WP_CLI_VENDOR_DIR . '/composer/autoload_commands_classmap.php';
+		// if ( file_exists( WP_CLI_VENDOR_DIR . '/composer/' ) ) {
+		// 	$classes = include $class_map;
+		// }
+		$classes = array();
 	}
 
 	if ( is_object( $command ) ) {
