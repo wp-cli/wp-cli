@@ -38,9 +38,6 @@
 		"wimg/php-compatibility": "^8.0",
 		"wp-coding-standards/wpcs": "^0.13.1"
 	},
-	"suggest": {
-		"psy/psysh": "Enhanced `wp shell` functionality"
-	},
 	"autoload": {
 		"psr-0": { "WP_CLI": "php" },
 		"psr-4": { "": "php/commands/src" }
