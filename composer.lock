@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4b86ba098022e10752923a9eddd52ed1",
+    "content-hash": "235905046b910cf9c7f28f24f8382537",
     "packages": [
         {
             "name": "mustache/mustache",
@@ -2387,6 +2387,287 @@
             "description": "Downloads, installs, updates, and manages a WordPress installation.",
             "homepage": "https://github.com/wp-cli/core-command",
             "time": "2018-01-30T06:57:10+00:00"
+        },
+        {
+            "name": "wp-cli/entity-command",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/entity-command.git",
+                "reference": "035b74ea16912f5b14db7d28036a6d123eb90547"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/entity-command/zipball/035b74ea16912f5b14db7d28036a6d123eb90547",
+                "reference": "035b74ea16912f5b14db7d28036a6d123eb90547",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5",
+                "phpunit/phpunit": "^4.8",
+                "wp-cli/wp-cli": "^1.5"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
+                "bundled": true,
+                "commands": [
+                    "comment",
+                    "comment approve",
+                    "comment count",
+                    "comment create",
+                    "comment delete",
+                    "comment exists",
+                    "comment generate",
+                    "comment get",
+                    "comment list",
+                    "comment meta",
+                    "comment meta add",
+                    "comment meta delete",
+                    "comment meta get",
+                    "comment meta list",
+                    "comment meta patch",
+                    "comment meta pluck",
+                    "comment meta update",
+                    "comment recount",
+                    "comment spam",
+                    "comment status",
+                    "comment trash",
+                    "comment unapprove",
+                    "comment unspam",
+                    "comment untrash",
+                    "comment update",
+                    "menu",
+                    "menu create",
+                    "menu delete",
+                    "menu item",
+                    "menu item add-custom",
+                    "menu item add-post",
+                    "menu item add-term",
+                    "menu item delete",
+                    "menu item list",
+                    "menu item update",
+                    "menu list",
+                    "menu location",
+                    "menu location assign",
+                    "menu location list",
+                    "menu location remove",
+                    "network meta",
+                    "network meta add",
+                    "network meta delete",
+                    "network meta get",
+                    "network meta list",
+                    "network meta patch",
+                    "network meta pluck",
+                    "network meta update",
+                    "option",
+                    "option add",
+                    "option delete",
+                    "option get",
+                    "option list",
+                    "option patch",
+                    "option pluck",
+                    "option update",
+                    "post",
+                    "post create",
+                    "post delete",
+                    "post edit",
+                    "post generate",
+                    "post get",
+                    "post list",
+                    "post meta",
+                    "post meta add",
+                    "post meta delete",
+                    "post meta get",
+                    "post meta list",
+                    "post meta patch",
+                    "post meta pluck",
+                    "post meta update",
+                    "post term",
+                    "post term add",
+                    "post term list",
+                    "post term remove",
+                    "post term set",
+                    "post update",
+                    "post-type",
+                    "post-type get",
+                    "post-type list",
+                    "site",
+                    "site activate",
+                    "site archive",
+                    "site create",
+                    "site deactivate",
+                    "site delete",
+                    "site empty",
+                    "site list",
+                    "site mature",
+                    "site option",
+                    "site private",
+                    "site public",
+                    "site spam",
+                    "site unarchive",
+                    "site unmature",
+                    "site unspam",
+                    "taxonomy",
+                    "taxonomy get",
+                    "taxonomy list",
+                    "term",
+                    "term create",
+                    "term delete",
+                    "term generate",
+                    "term get",
+                    "term list",
+                    "term meta",
+                    "term meta add",
+                    "term meta delete",
+                    "term meta get",
+                    "term meta list",
+                    "term meta patch",
+                    "term meta pluck",
+                    "term meta update",
+                    "term recount",
+                    "term update",
+                    "user",
+                    "user add-cap",
+                    "user add-role",
+                    "user create",
+                    "user delete",
+                    "user generate",
+                    "user get",
+                    "user import-csv",
+                    "user list",
+                    "user list-caps",
+                    "user meta",
+                    "user meta add",
+                    "user meta delete",
+                    "user meta get",
+                    "user meta list",
+                    "user meta patch",
+                    "user meta pluck",
+                    "user meta update",
+                    "user remove-cap",
+                    "user remove-role",
+                    "user reset-password",
+                    "user session",
+                    "user session destroy",
+                    "user session list",
+                    "user set-role",
+                    "user spam",
+                    "user term",
+                    "user term add",
+                    "user term list",
+                    "user term remove",
+                    "user term set",
+                    "user unspam",
+                    "user update"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/",
+                    "WP_CLI\\": "src/WP_CLI"
+                },
+                "files": [
+                    "entity-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Manage WordPress core entities.",
+            "homepage": "https://github.com/wp-cli/entity-command",
+            "time": "2018-01-29T15:10:05+00:00"
+        },
+        {
+            "name": "wp-cli/extension-command",
+            "version": "v1.1.10",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-cli/extension-command.git",
+                "reference": "3fd9ff469311bb2d6935997bc7d7e9f157fe29e6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/3fd9ff469311bb2d6935997bc7d7e9f157fe29e6",
+                "reference": "3fd9ff469311bb2d6935997bc7d7e9f157fe29e6",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "~2.5",
+                "wp-cli/wp-cli": "*"
+            },
+            "type": "wp-cli-package",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                },
+                "bundled": true,
+                "commands": [
+                    "plugin",
+                    "plugin activate",
+                    "plugin deactivate",
+                    "plugin delete",
+                    "plugin get",
+                    "plugin install",
+                    "plugin is-installed",
+                    "plugin list",
+                    "plugin path",
+                    "plugin search",
+                    "plugin status",
+                    "plugin toggle",
+                    "plugin uninstall",
+                    "plugin update",
+                    "theme",
+                    "theme activate",
+                    "theme delete",
+                    "theme disable",
+                    "theme enable",
+                    "theme get",
+                    "theme install",
+                    "theme is-installed",
+                    "theme list",
+                    "theme mod",
+                    "theme mod get",
+                    "theme mod set",
+                    "theme mod remove",
+                    "theme path",
+                    "theme search",
+                    "theme status",
+                    "theme update"
+                ]
+            },
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                },
+                "files": [
+                    "extension-command.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Bachhuber",
+                    "email": "daniel@runcommand.io",
+                    "homepage": "https://runcommand.io"
+                }
+            ],
+            "description": "Manages plugins and themes, including installs, activations, and updates.",
+            "homepage": "https://github.com/wp-cli/extension-command",
+            "time": "2018-03-02T13:26:40+00:00"
         },
         {
             "name": "wp-cli/package-command",
