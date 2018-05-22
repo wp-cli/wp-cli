@@ -30,13 +30,13 @@
         "mustache/mustache": "~2.4",
         "ramsey/array_column": "~1.1",
         "rmccue/requests": "~1.6",
+        "symfony/finder": ">2.7",
         "wp-cli/php-cli-tools": "~0.11.2",
         "wp-cli/mustangostang-spyc": "^0.6.3"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3",
         "roave/security-advisories": "dev-master",
-        "symfony/finder": ">2.7",
         "wimg/php-compatibility": "^8.0",
         "wp-cli/cache-command": "^1.0",
         "wp-cli/config-command": "^1.0",
