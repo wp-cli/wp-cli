@@ -181,7 +181,7 @@ Read through our [contributing guidelines in the handbook](https://make.wordpres
 
 ## Leadership
 
-WP-CLI has two project maintainers: [danielbachhuber](https://github.com/danielbachhuber) and [schlessera](http://github.com/schlessera).
+WP-CLI has one project maintainer: [schlessera](http://github.com/schlessera).
 
 On occasion, we [grant write access to contributors](https://make.wordpress.org/cli/handbook/committers-credo/) who have demonstrated, over a period of time, that they are capable and invested in moving the project forward.
 
