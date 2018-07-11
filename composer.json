@@ -65,10 +65,14 @@
         "post-install-cmd": [
             "./utils/git-setup-pre-commit-hook"
         ],
+        "lint": "run-linter-tests",
+        "phpcs": "run-phpcs-tests",
         "phpunit": "run-php-unit-tests",
         "behat": "run-behat-tests",
         "prepare-tests": "install-package-tests",
         "test": [
+            "@lint",
+            "@phpcs",
             "@phpunit",
             "@behat"
         ]
