@@ -79,7 +79,7 @@ Feature: Skipping themes
       """
     And STDERR should be empty
 
-    When I run `wp eval 'var_export( function_exists( "stout_setup" ) );'`
+    When I run `wp eval 'var_export( function_exists( "stout_move_elements" ) );'`
     Then STDOUT should be:
       """
       true
@@ -93,7 +93,7 @@ Feature: Skipping themes
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=stout eval 'var_export( function_exists( "stout_setup" ) );'`
+    When I run `wp --skip-themes=stout eval 'var_export( function_exists( "stout_move_elements" ) );'`
     Then STDOUT should be:
       """
       false
