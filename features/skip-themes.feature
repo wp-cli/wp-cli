@@ -52,6 +52,7 @@ Feature: Skipping themes
       """
     And STDERR should be empty
 
+  @require-wp-4.4
   Scenario: Skip parent and child themes
     Given a WP installation
     And I run `wp theme install primer stout`
