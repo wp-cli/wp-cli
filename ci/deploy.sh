@@ -32,7 +32,7 @@ echo "|1|qPmmP7LVZ7Qbpk7AylmkfR0FApQ=|WUy1WS3F4qcr3R5Sc728778goPw= ssh-rsa AAAAB
 
 git clone git@github.com:wp-cli/builds.git
 mv PHAR_BUILD_VERSION builds/phar/NIGHTLY_VERSION
-cd builds
+cd builds || exit
 
 git config user.name "Travis CI"
 git config user.email "travis@travis-ci.org"
