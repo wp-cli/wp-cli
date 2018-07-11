@@ -7,7 +7,7 @@ if [[ "false" != "$TRAVIS_PULL_REQUEST" ]]; then
 	exit
 fi
 
-if [ -z $DEPLOY_BRANCH ]; then
+if [ -z "$DEPLOY_BRANCH" ]; then
 	echo "Skipping deployment as DEPLOY_BRANCH is not set"
 	exit
 fi
@@ -21,7 +21,7 @@ fi
 set +x
 
 # Get the encrypted private key from the repo settings
-echo $WP_CLI_REPO_DEPLOY_KEY | base64 --decode > ~/.ssh/id_rsa
+echo "$WP_CLI_REPO_DEPLOY_KEY" | base64 --decode > ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 
 # anyone can read the build log, so it MUST NOT contain any sensitive data
