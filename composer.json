@@ -35,9 +35,7 @@
         "wp-cli/mustangostang-spyc": "^0.6.3"
     },
     "require-dev": {
-        "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3",
         "roave/security-advisories": "dev-master",
-        "wimg/php-compatibility": "^8.0",
         "wp-cli/cache-command": "^1.0",
         "wp-cli/db-command": "^1.3",
         "wp-cli/entity-command": "^1.2",
@@ -50,8 +48,7 @@
         "wp-cli/scaffold-command": "^1.1",
         "wp-cli/search-replace-command": "^1.3",
         "wp-cli/server-command": "^1.0",
-        "wp-cli/wp-cli-tests": "dev-master",
-        "wp-coding-standards/wpcs": "^0.13.1"
+        "wp-cli/wp-cli-tests": "dev-master"
     },
     "autoload": {
         "psr-0": {
