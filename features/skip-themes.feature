@@ -79,7 +79,7 @@ Feature: Skipping themes
       """
     And STDERR should be empty
 
-    When I run `wp eval 'var_export( function_exists( "buntu_theme_setup" ) );'`
+    When I run `wp eval 'var_export( function_exists( "buntu_custom_header" ) );'`
     Then STDOUT should be:
       """
       true
@@ -93,7 +93,7 @@ Feature: Skipping themes
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=buntu eval 'var_export( function_exists( "buntu_theme_setup" ) );'`
+    When I run `wp --skip-themes=buntu eval 'var_export( function_exists( "buntu_custom_header" ) );'`
     Then STDOUT should be:
       """
       false
