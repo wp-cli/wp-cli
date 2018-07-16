@@ -57,14 +57,14 @@ Feature: Skipping themes
     And I run `wp theme install stargazer buntu`
 
     When I run `wp theme activate stargazer`
-    When I run `wp eval 'var_export( function_exists( "theme_setup" ) );'`
+    When I run `wp eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
     Then STDOUT should be:
       """
       true
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=stargazer eval 'var_export( function_exists( "theme_setup" ) );'`
+    When I run `wp --skip-themes=stargazer eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
     Then STDOUT should be:
       """
       false
@@ -72,28 +72,28 @@ Feature: Skipping themes
     And STDERR should be empty
 
     When I run `wp theme activate buntu`
-    When I run `wp eval 'var_export( function_exists( "theme_setup" ) );'`
+    When I run `wp eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
     Then STDOUT should be:
       """
       true
       """
     And STDERR should be empty
 
-    When I run `wp eval 'var_export( function_exists( "buntu_custom_header" ) );'`
+    When I run `wp eval 'var_export( function_exists( "buntu_theme_setup" ) );'`
     Then STDOUT should be:
       """
       true
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=buntu eval 'var_export( function_exists( "theme_setup" ) );'`
+    When I run `wp --skip-themes=buntu eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
     Then STDOUT should be:
       """
-      false
+      true
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=buntu eval 'var_export( function_exists( "buntu_custom_header" ) );'`
+    When I run `wp --skip-themes=buntu eval 'var_export( function_exists( "buntu_theme_setup" ) );'`
     Then STDOUT should be:
       """
       false
