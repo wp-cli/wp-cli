@@ -52,66 +52,65 @@ Feature: Skipping themes
       """
     And STDERR should be empty
 
-  @require-wp-4.4
   Scenario: Skip parent and child themes
     Given a WP installation
-    And I run `wp theme install primer stout`
+    And I run `wp theme install stargazer buntu`
 
-    When I run `wp theme activate primer`
-    When I run `wp eval 'var_export( function_exists( "primer_setup" ) );'`
+    When I run `wp theme activate stargazer`
+    When I run `wp eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
     Then STDOUT should be:
       """
       true
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=primer eval 'var_export( function_exists( "primer_setup" ) );'`
+    When I run `wp --skip-themes=stargazer eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
     Then STDOUT should be:
       """
       false
       """
     And STDERR should be empty
 
-    When I run `wp theme activate stout`
-    When I run `wp eval 'var_export( function_exists( "primer_setup" ) );'`
+    When I run `wp theme activate buntu`
+    When I run `wp eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
     Then STDOUT should be:
       """
       true
       """
     And STDERR should be empty
 
-    When I run `wp eval 'var_export( function_exists( "stout_move_elements" ) );'`
+    When I run `wp eval 'var_export( function_exists( "buntu_theme_setup" ) );'`
     Then STDOUT should be:
       """
       true
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=stout eval 'var_export( function_exists( "primer_setup" ) );'`
+    When I run `wp --skip-themes=buntu eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
     Then STDOUT should be:
       """
       false
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=stout eval 'var_export( function_exists( "stout_move_elements" ) );'`
+    When I run `wp --skip-themes=buntu eval 'var_export( function_exists( "buntu_theme_setup" ) );'`
     Then STDOUT should be:
       """
       false
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=stout eval 'echo get_template_directory();'`
+    When I run `wp --skip-themes=buntu eval 'echo get_template_directory();'`
     Then STDOUT should contain:
       """
-      wp-content/themes/primer
+      wp-content/themes/stargazer
       """
     And STDERR should be empty
 
-    When I run `wp --skip-themes=biker eval 'echo get_stylesheet_directory();'`
+    When I run `wp --skip-themes=buntu eval 'echo get_stylesheet_directory();'`
     Then STDOUT should contain:
       """
-      wp-content/themes/stout
+      wp-content/themes/buntu
       """
     And STDERR should be empty
 
