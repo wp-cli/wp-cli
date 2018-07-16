@@ -89,7 +89,7 @@ Feature: Skipping themes
     When I run `wp --skip-themes=buntu eval 'var_export( class_exists( "Stargazer_Theme" ) );'`
     Then STDOUT should be:
       """
-      true
+      false
       """
     And STDERR should be empty
 
