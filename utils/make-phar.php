@@ -273,6 +273,17 @@ if ( 'cli' !== BUILD ) {
 	foreach ( $finder as $file ) {
 		add_file( $phar, $file );
 	}
+	
+	$finder = new Finder();
+	$finder
+		->files()
+		->ignoreVCS(true)
+		->ignoreDotFiles(false)
+		->in( WP_CLI_VENDOR_DIR . '/wp-cli/extension-command/templates')
+		;
+	foreach ( $finder as $file ) {
+		add_file( $phar, $file );
+	}
 }
 
 add_file( $phar, WP_CLI_VENDOR_DIR . '/autoload.php' );
