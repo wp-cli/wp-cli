@@ -20,7 +20,7 @@
         "platform": {
             "php": "5.4"
         },
-        "process-timeout": 1800,
+        "process-timeout": 7200,
         "sort-packages": true
     },
     "minimum-stability": "dev",
