@@ -36,12 +36,12 @@ class Help_Command extends WP_CLI_Command {
 		$out = self::get_initial_markdown( $command );
 
 		// Remove subcommands if in columns - will wordwrap separately.
-		$subcommands = '';
+		$subcommands       = '';
 		$column_subpattern = '[ \t]+[^\t]+\t+';
 		if ( preg_match( '/(^## SUBCOMMANDS[^\n]*\n+' . $column_subpattern . '.+?)(?:^##|\z)/ms', $out, $matches, PREG_OFFSET_CAPTURE ) ) {
-			$subcommands = $matches[1][0];
+			$subcommands        = $matches[1][0];
 			$subcommands_header = "## SUBCOMMANDS\n";
-			$out = substr_replace( $out, $subcommands_header, $matches[1][1], strlen( $subcommands ) );
+			$out                = substr_replace( $out, $subcommands_header, $matches[1][1], strlen( $subcommands ) );
 		}
 
 		$out .= self::parse_reference_links( $command->get_longdesc() );
@@ -74,10 +74,10 @@ class Help_Command extends WP_CLI_Command {
 				'/^(' . $column_subpattern . ')([^\n]+)\n/m',
 				function ( $matches ) use ( $wordwrap_width, $tab ) {
 					// Need to de-tab for wordwrapping to work properly.
-					$matches[1] = str_replace( "\t", $tab, $matches[1] );
-					$matches[2] = str_replace( "\t", $tab, $matches[2] );
+					$matches[1]  = str_replace( "\t", $tab, $matches[1] );
+					$matches[2]  = str_replace( "\t", $tab, $matches[2] );
 					$padding_len = strlen( $matches[1] );
-					$padding = str_repeat( ' ', $padding_len );
+					$padding     = str_repeat( ' ', $padding_len );
 					return $matches[1] . str_replace( "\n", "\n$padding", wordwrap( $matches[2], $wordwrap_width - $padding_len ) ) . "\n";
 				},
 				$subcommands
@@ -95,7 +95,7 @@ class Help_Command extends WP_CLI_Command {
 
 	private static function rewrap_param_desc( $matches ) {
 		$param = $matches[1];
-		$desc = self::indent( "\t\t", $matches[2] );
+		$desc  = self::indent( "\t\t", $matches[2] );
 		return "\t$param\n$desc\n\n";
 	}
 
@@ -144,7 +144,7 @@ class Help_Command extends WP_CLI_Command {
 		$name = implode( ' ', Dispatcher\get_path( $command ) );
 
 		$binding = array(
-			'name' => $name,
+			'name'      => $name,
 			'shortdesc' => $command->get_shortdesc(),
 		);
 
@@ -212,23 +212,25 @@ class Help_Command extends WP_CLI_Command {
 
 		// Fires if it has description text at the head of `$longdesc`.
 		if ( $description ) {
-			$links = array(); // An array of URLs from the description.
+			$links   = array(); // An array of URLs from the description.
 			$pattern = '/\[.+?\]\((https?:\/\/.+?)\)/';
-			$newdesc = preg_replace_callback( $pattern, function( $matches ) use ( &$links ) {
-				static $count = 0;
-				$count++;
-				$links[] = $matches[1];
-				return str_replace( '(' . $matches[1] . ')', '[' . $count . ']', $matches[0] );
-			}, $description );
+			$newdesc = preg_replace_callback(
+				$pattern, function( $matches ) use ( &$links ) {
+					static $count = 0;
+					$count++;
+					$links[] = $matches[1];
+					return str_replace( '(' . $matches[1] . ')', '[' . $count . ']', $matches[0] );
+				}, $description
+			);
 
 			$footnote = '';
 			for ( $i = 0; $i < count( $links ); $i++ ) {
-				$n = $i + 1;
+				$n         = $i + 1;
 				$footnote .= '[' . $n . '] ' . $links[ $i ] . "\n";
 			}
 
 			if ( $footnote ) {
-				$newdesc = trim( $newdesc ) . "\n\n---\n" . $footnote;
+				$newdesc  = trim( $newdesc ) . "\n\n---\n" . $footnote;
 				$longdesc = str_replace( trim( $description ), trim( $newdesc ), $longdesc );
 			}
 		}

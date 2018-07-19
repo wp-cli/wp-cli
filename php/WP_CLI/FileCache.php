@@ -48,9 +48,9 @@ class FileCache {
 	 * @param string $whitelist  List of characters that are allowed in path names (used in a regex character class)
 	 */
 	public function __construct( $cacheDir, $ttl, $maxSize, $whitelist = 'a-z0-9._-' ) {
-		$this->root = Utils\trailingslashit( $cacheDir );
-		$this->ttl = (int) $ttl;
-		$this->maxSize = (int) $maxSize;
+		$this->root      = Utils\trailingslashit( $cacheDir );
+		$this->ttl       = (int) $ttl;
+		$this->maxSize   = (int) $maxSize;
 		$this->whitelist = $whitelist;
 
 		if ( ! $this->ensure_dir_exists( $this->root ) ) {
@@ -215,7 +215,7 @@ class FileCache {
 			return false;
 		}
 
-		$ttl = $this->ttl;
+		$ttl     = $this->ttl;
 		$maxSize = $this->maxSize;
 
 		// unlink expired files
@@ -297,13 +297,13 @@ class FileCache {
 	protected function validate_key( $key ) {
 		$url_parts = parse_url( $key );
 		if ( ! empty( $url_parts['scheme'] ) ) { // is url
-			$parts = array( 'misc' );
+			$parts   = array( 'misc' );
 			$parts[] = $url_parts['scheme'] . '-' . $url_parts['host'] .
 				( empty( $url_parts['port'] ) ? '' : '-' . $url_parts['port'] );
 			$parts[] = substr( $url_parts['path'], 1 ) .
 				( empty( $url_parts['query'] ) ? '' : '-' . $url_parts['query'] );
 		} else {
-			$key = str_replace( '\\', '/', $key );
+			$key   = str_replace( '\\', '/', $key );
 			$parts = explode( '/', ltrim( $key ) );
 		}
 

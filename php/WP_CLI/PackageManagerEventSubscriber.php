@@ -16,7 +16,7 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 	public static function getSubscribedEvents() {
 
 		return array(
-			PackageEvents::PRE_PACKAGE_INSTALL => 'pre_install',
+			PackageEvents::PRE_PACKAGE_INSTALL  => 'pre_install',
 			PackageEvents::POST_PACKAGE_INSTALL => 'post_install',
 		);
 	}
@@ -29,7 +29,7 @@ class PackageManagerEventSubscriber implements EventSubscriberInterface {
 	public static function post_install( PackageEvent $event ) {
 
 		$operation = $event->getOperation();
-		$reason = $operation->getReason();
+		$reason    = $operation->getReason();
 		if ( $reason instanceof Rule ) {
 
 			switch ( $reason->getReason() ) {
