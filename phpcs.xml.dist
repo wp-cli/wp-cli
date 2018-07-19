@@ -27,6 +27,10 @@
 		<exclude name="PHPCompatibility.PHP.DeprecatedIniDirectives.magic_quotes_sybaseDeprecatedRemoved"/>
 	</rule>
 	<config name="testVersion" value="5.3-"/>
+	<!-- Ignore php_uname mode issue, we're conditionally providing a callback -->
+	<rule ref="PHPCompatibility.PHP.NewFunctionParameters.php_uname_modeFound">
+		<exclude-pattern>*/php/commands/src/CLI_Command.php</exclude-pattern>
+	</rule>
 
 	<rule ref="WordPress-Core">
 		<exclude name="Squiz.PHP.DisallowMultipleAssignments.Found" />
