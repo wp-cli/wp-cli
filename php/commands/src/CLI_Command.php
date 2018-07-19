@@ -105,11 +105,23 @@ class CLI_Command extends WP_CLI_Command {
 	public function info( $_, $assoc_args ) {
 		$php_bin = Utils\get_php_binary();
 
-		$system_os = sprintf( '%s %s %s %s', php_uname( 's' ), php_uname( 'r' ), php_uname( 'v' ), php_uname( 'm' ) );
-		$shell     = getenv( 'SHELL' );
+		// php_uname() $mode argument was only added with PHP 7.0+. Fall back to
+		// entire string for older versions.
+		$system_os = PHP_MAJOR_VERSION >= 7
+			? php_uname()
+			: sprintf(
+				'%s %s %s %s',
+				php_uname( 's' ),
+				php_uname( 'r' ),
+				php_uname( 'v' ),
+				php_uname( 'm' )
+			);
+
+		$shell = getenv( 'SHELL' );
 		if ( ! $shell && Utils\is_windows() ) {
 			$shell = getenv( 'ComSpec' );
 		}
+
 		$runner = WP_CLI::get_runner();
 
 		$packages_dir = $runner->get_packages_dir_path();
