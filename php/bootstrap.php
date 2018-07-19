@@ -71,6 +71,6 @@ function bootstrap() {
 	foreach ( get_bootstrap_steps() as $step ) {
 		/** @var \WP_CLI\Bootstrap\BootstrapStep $step_instance */
 		$step_instance = new $step();
-		$state = $step_instance->process( $state );
+		$state         = $step_instance->process( $state );
 	}
 }

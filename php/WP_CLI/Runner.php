@@ -64,7 +64,7 @@ class Runner {
 
 		// Search the value of @when from the command method.
 		$real_when = '';
-		$r = $this->find_command_to_run( $this->arguments );
+		$r         = $this->find_command_to_run( $this->arguments );
 		if ( is_array( $r ) ) {
 			list( $command, $final_args, $cmd_path ) = $r;
 
@@ -94,10 +94,10 @@ class Runner {
 	public function get_global_config_path() {
 
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
-			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
+			$config_path                     = getenv( 'WP_CLI_CONFIG_PATH' );
 			$this->_global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
 		} else {
-			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
+			$config_path                     = Utils\get_home_dir() . '/.wp-cli/config.yml';
 			$this->_global_config_path_debug = 'Using default global config: ' . $config_path;
 		}
 
@@ -130,7 +130,7 @@ class Runner {
 			getcwd(),
 			function ( $dir ) {
 				static $wp_load_count = 0;
-				$wp_load_path = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
+				$wp_load_path         = $dir . DIRECTORY_SEPARATOR . 'wp-load.php';
 				if ( file_exists( $wp_load_path ) ) {
 					++ $wp_load_count;
 				}
@@ -176,7 +176,7 @@ class Runner {
 
 		$wp_path_src = $matches[1] . $matches[2];
 		$wp_path_src = Utils\replace_path_consts( $wp_path_src, $index_path );
-		$wp_path = eval( "return $wp_path_src;" );
+		$wp_path     = eval( "return $wp_path_src;" );
 
 		if ( ! Utils\is_path_absolute( $wp_path ) ) {
 			$wp_path = dirname( $index_path ) . "/$wp_path";
@@ -235,10 +235,12 @@ class Runner {
 		if ( ! defined( 'ABSPATH' ) ) {
 			define( 'ABSPATH', Utils\normalize_path( Utils\trailingslashit( $path ) ) );
 		} elseif ( ! is_null( $path ) ) {
-			WP_CLI::error_multi_line( array(
-				'The --path parameter cannot be used when ABSPATH is already defined elsewhere',
-				'ABSPATH is defined as: "' . ABSPATH . '"',
-			) );
+			WP_CLI::error_multi_line(
+				array(
+					'The --path parameter cannot be used when ABSPATH is already defined elsewhere',
+					'ABSPATH is defined as: "' . ABSPATH . '"',
+				)
+			);
 		}
 		WP_CLI::debug( 'ABSPATH defined: ' . ABSPATH, 'bootstrap' );
 
@@ -289,15 +291,15 @@ class Runner {
 
 		while ( ! empty( $args ) && $command->can_have_subcommands() ) {
 			$cmd_path[] = $args[0];
-			$full_name = implode( ' ', $cmd_path );
+			$full_name  = implode( ' ', $cmd_path );
 
 			$subcommand = $command->find_subcommand( $args );
 
 			if ( ! $subcommand ) {
 				if ( count( $cmd_path ) > 1 ) {
-					$child = array_pop( $cmd_path );
+					$child       = array_pop( $cmd_path );
 					$parent_name = implode( ' ', $cmd_path );
-					$suggestion = $this->get_subcommand_suggestion( $child, $command );
+					$suggestion  = $this->get_subcommand_suggestion( $child, $command );
 					return sprintf(
 						"'%s' is not a registered subcommand of '%s'. See 'wp help %s' for available subcommands.%s",
 						$child,
@@ -422,7 +424,7 @@ class Runner {
 		}
 
 		$wp_binary = 'wp';
-		$wp_args = array_slice( $GLOBALS['argv'], 1 );
+		$wp_args   = array_slice( $GLOBALS['argv'], 1 );
 
 		if ( $this->alias && ! empty( $wp_args[0] ) && $this->alias === $wp_args[0] ) {
 			array_shift( $wp_args );
@@ -439,7 +441,7 @@ class Runner {
 						$this->alias => $runtime_alias,
 					)
 				);
-				$wp_binary = "WP_CLI_RUNTIME_ALIAS='{$encoded_alias}' {$wp_binary} {$this->alias}";
+				$wp_binary     = "WP_CLI_RUNTIME_ALIAS='{$encoded_alias}' {$wp_binary} {$this->alias}";
 			}
 		}
 
@@ -449,7 +451,7 @@ class Runner {
 			}
 		}
 
-		$wp_command = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) );
+		$wp_command      = $pre_cmd . $env_vars . $wp_binary . ' ' . implode( ' ', array_map( 'escapeshellarg', $wp_args ) );
 		$escaped_command = $this->generate_ssh_command( $bits, $wp_command );
 
 		passthru( $escaped_command, $exit_code );
@@ -589,7 +591,7 @@ class Runner {
 	 */
 	private static function back_compat_conversions( $args, $assoc_args ) {
 		$top_level_aliases = array(
-			'sql' => 'db',
+			'sql'  => 'db',
 			'blog' => 'site',
 		);
 		if ( count( $args ) > 0 ) {
@@ -643,19 +645,19 @@ class Runner {
 		if ( count( $args ) > 1 && in_array( $args[0], array( 'plugin', 'theme' ) )
 			&& 'update-all' === $args[1]
 		) {
-			$args[1] = 'update';
+			$args[1]           = 'update';
 			$assoc_args['all'] = true;
 		}
 
 		// transient delete-expired  ->  transient delete --expired
 		if ( count( $args ) > 1 && 'transient' === $args[0] && 'delete-expired' === $args[1] ) {
-			$args[1] = 'delete';
+			$args[1]               = 'delete';
 			$assoc_args['expired'] = true;
 		}
 
 		// transient delete-all  ->  transient delete --all
 		if ( count( $args ) > 1 && 'transient' === $args[0] && 'delete-all' === $args[1] ) {
-			$args[1] = 'delete';
+			$args[1]           = 'delete';
 			$assoc_args['all'] = true;
 		}
 
@@ -701,36 +703,36 @@ class Runner {
 		if ( count( $args ) >= 2 && in_array( $args[0], array( 'post', 'comment', 'site', 'term' ) ) && 'url' === $args[1] ) {
 			switch ( $args[0] ) {
 				case 'post':
-					$post_ids = array_slice( $args, 2 );
-					$args = array( 'post', 'list' );
-					$assoc_args['post__in'] = implode( ',', $post_ids );
+					$post_ids                = array_slice( $args, 2 );
+					$args                    = array( 'post', 'list' );
+					$assoc_args['post__in']  = implode( ',', $post_ids );
 					$assoc_args['post_type'] = 'any';
-					$assoc_args['orderby'] = 'post__in';
-					$assoc_args['field'] = 'url';
+					$assoc_args['orderby']   = 'post__in';
+					$assoc_args['field']     = 'url';
 					break;
 				case 'comment':
-					$comment_ids = array_slice( $args, 2 );
-					$args = array( 'comment', 'list' );
+					$comment_ids               = array_slice( $args, 2 );
+					$args                      = array( 'comment', 'list' );
 					$assoc_args['comment__in'] = implode( ',', $comment_ids );
-					$assoc_args['orderby'] = 'comment__in';
-					$assoc_args['field'] = 'url';
+					$assoc_args['orderby']     = 'comment__in';
+					$assoc_args['field']       = 'url';
 					break;
 				case 'site':
-					$site_ids = array_slice( $args, 2 );
-					$args = array( 'site', 'list' );
+					$site_ids               = array_slice( $args, 2 );
+					$args                   = array( 'site', 'list' );
 					$assoc_args['site__in'] = implode( ',', $site_ids );
-					$assoc_args['field'] = 'url';
+					$assoc_args['field']    = 'url';
 					break;
 				case 'term':
 					$taxonomy = '';
 					if ( isset( $args[2] ) ) {
 						$taxonomy = $args[2];
 					}
-					$term_ids = array_slice( $args, 3 );
-					$args = array( 'term', 'list', $taxonomy );
+					$term_ids              = array_slice( $args, 3 );
+					$args                  = array( 'term', 'list', $taxonomy );
 					$assoc_args['include'] = implode( ',', $term_ids );
 					$assoc_args['orderby'] = 'include';
-					$assoc_args['field'] = 'url';
+					$assoc_args['field']   = 'url';
 					break;
 			}
 		}
@@ -750,7 +752,7 @@ class Runner {
 				unset( $assoc_args['constant'] );
 			}
 			if ( ! empty( $name ) && ! empty( $type ) ) {
-				$args[] = $name;
+				$args[]             = $name;
 				$assoc_args['type'] = $type;
 			} else {
 				// We had a 'config get' without a '<name>', so assume 'list' was wanted.
@@ -811,12 +813,12 @@ class Runner {
 	}
 
 	private function check_wp_version() {
-		$wp_exists = $this->wp_exists();
+		$wp_exists      = $this->wp_exists();
 		$wp_is_readable = $this->wp_is_readable();
 		if ( ! $wp_exists || ! $wp_is_readable ) {
 			$this->show_synopsis_if_composite_command();
 			// If the command doesn't exist use as error.
-			$args = $this->cmd_starts_with( array( 'help' ) ) ? array_slice( $this->arguments, 1 ) : $this->arguments;
+			$args                   = $this->cmd_starts_with( array( 'help' ) ) ? array_slice( $this->arguments, 1 ) : $this->arguments;
 			$suggestion_or_disabled = $this->find_command_to_run( $args );
 			if ( is_string( $suggestion_or_disabled ) ) {
 				if ( ! preg_match( '/disabled from the config file.$/', $suggestion_or_disabled ) ) {
@@ -864,14 +866,14 @@ class Runner {
 
 		// File config
 		{
-			$this->global_config_path = $this->get_global_config_path();
+			$this->global_config_path  = $this->get_global_config_path();
 			$this->project_config_path = $this->get_project_config_path();
 
 			$configurator->merge_yml( $this->global_config_path, $this->alias );
-			$config = $configurator->to_array();
+			$config                          = $configurator->to_array();
 			$this->_required_files['global'] = $config[0]['require'];
 			$configurator->merge_yml( $this->project_config_path, $this->alias );
-			$config = $configurator->to_array();
+			$config                           = $configurator->to_array();
 			$this->_required_files['project'] = $config[0]['require'];
 		}
 
@@ -887,11 +889,11 @@ class Runner {
 		}
 
 		list( $this->config, $this->extra_config ) = $configurator->to_array();
-		$this->aliases = $configurator->get_aliases();
+		$this->aliases                             = $configurator->get_aliases();
 		if ( count( $this->aliases ) && ! isset( $this->aliases['@all'] ) ) {
-			$this->aliases = array_reverse( $this->aliases );
+			$this->aliases         = array_reverse( $this->aliases );
 			$this->aliases['@all'] = 'Run command against every registered alias.';
-			$this->aliases = array_reverse( $this->aliases );
+			$this->aliases         = array_reverse( $this->aliases );
 		}
 		$this->_required_files['runtime'] = $this->config['require'];
 	}
@@ -945,17 +947,17 @@ class Runner {
 
 		foreach ( $aliases as $alias ) {
 			WP_CLI::log( $alias );
-			$args = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
-			$assoc_args = Utils\assoc_args_to_str( $this->assoc_args );
+			$args           = implode( ' ', array_map( 'escapeshellarg', $this->arguments ) );
+			$assoc_args     = Utils\assoc_args_to_str( $this->assoc_args );
 			$runtime_config = Utils\assoc_args_to_str( $this->runtime_config );
-			$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
-			$proc = Utils\proc_open_compat( $full_command, array( STDIN, STDOUT, STDERR ), $pipes );
+			$full_command   = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$alias} {$args}{$assoc_args}{$runtime_config}";
+			$proc           = Utils\proc_open_compat( $full_command, array( STDIN, STDOUT, STDERR ), $pipes );
 			proc_close( $proc );
 		}
 	}
 
 	private function set_alias( $alias ) {
-		$orig_config = $this->config;
+		$orig_config  = $this->config;
 		$alias_config = $this->aliases[ $this->alias ];
 		$this->config = array_merge( $orig_config, $alias_config );
 		foreach ( $alias_config as $key => $_ ) {
@@ -984,14 +986,14 @@ class Runner {
 
 			if ( '@all' === $this->alias && is_string( $this->aliases['@all'] ) ) {
 				$aliases = array_keys( $this->aliases );
-				$k = array_search( '@all', $aliases );
+				$k       = array_search( '@all', $aliases );
 				unset( $aliases[ $k ] );
 				$this->run_alias_group( $aliases );
 				exit;
 			}
 
 			if ( ! array_key_exists( $this->alias, $this->aliases ) ) {
-				$error_msg = "Alias '{$this->alias}' not found.";
+				$error_msg  = "Alias '{$this->alias}' not found.";
 				$suggestion = Utils\get_suggestion( $this->alias, array_keys( $this->aliases ), $threshold = 2 );
 				if ( $suggestion ) {
 					$error_msg .= PHP_EOL . "Did you mean '{$suggestion}'?";
@@ -1001,7 +1003,7 @@ class Runner {
 			// Numerically indexed means a group of aliases
 			if ( isset( $this->aliases[ $this->alias ][0] ) ) {
 				$group_aliases = $this->aliases[ $this->alias ];
-				$all_aliases = array_keys( $this->aliases );
+				$all_aliases   = array_keys( $this->aliases );
 				if ( $diff = array_diff( $group_aliases, $all_aliases ) ) {
 					WP_CLI::error( "Group '{$this->alias}' contains one or more invalid aliases: " . implode( ', ', $diff ) );
 				}
@@ -1216,25 +1218,25 @@ class Runner {
 		}
 
 		$current_site = (object) array(
-			'id' => 1,
-			'blog_id' => 1,
-			'domain' => $url_parts['host'],
-			'path' => $url_parts['path'],
+			'id'            => 1,
+			'blog_id'       => 1,
+			'domain'        => $url_parts['host'],
+			'path'          => $url_parts['path'],
 			'cookie_domain' => $url_parts['host'],
-			'site_name' => 'Fake Site',
+			'site_name'     => 'Fake Site',
 		);
 
 		$current_blog = (object) array(
-			'blog_id' => 1,
-			'site_id' => 1,
-			'domain' => $url_parts['host'],
-			'path' => $url_parts['path'],
-			'public' => '1',
+			'blog_id'  => 1,
+			'site_id'  => 1,
+			'domain'   => $url_parts['host'],
+			'path'     => $url_parts['path'],
+			'public'   => '1',
 			'archived' => '0',
-			'mature' => '0',
-			'spam' => '0',
-			'deleted' => '0',
-			'lang_id' => '0',
+			'mature'   => '0',
+			'spam'     => '0',
+			'deleted'  => '0',
+			'lang_id'  => '0',
 		);
 	}
 
@@ -1316,12 +1318,12 @@ class Runner {
 		// Get rid of warnings when converting single site to multisite
 		if ( defined( 'WP_INSTALLING' ) && $this->is_multisite() ) {
 			$values = array(
-				'ms_files_rewriting' => null,
-				'active_sitewide_plugins' => array(),
-				'_site_transient_update_core' => null,
-				'_site_transient_update_themes' => null,
+				'ms_files_rewriting'             => null,
+				'active_sitewide_plugins'        => array(),
+				'_site_transient_update_core'    => null,
+				'_site_transient_update_themes'  => null,
 				'_site_transient_update_plugins' => null,
-				'WPLANG' => '',
+				'WPLANG'                         => '',
 			);
 			foreach ( $values as $key => $value ) {
 				WP_CLI::add_wp_hook(
@@ -1398,10 +1400,10 @@ class Runner {
 			WP_CLI::add_wp_hook(
 				'ms_site_not_found',
 				function( $current_site, $domain, $path ) {
-					$url = $domain . $path;
-					$message = $url ? "Site '{$url}' not found." : 'Site not found.';
-					$has_param = isset( WP_CLI::get_runner()->config['url'] );
-					$has_const = defined( 'DOMAIN_CURRENT_SITE' );
+					$url         = $domain . $path;
+					$message     = $url ? "Site '{$url}' not found." : 'Site not found.';
+					$has_param   = isset( WP_CLI::get_runner()->config['url'] );
+					$has_const   = defined( 'DOMAIN_CURRENT_SITE' );
 					$explanation = '';
 					if ( $has_param ) {
 						$explanation = 'Verify `--url=<url>` matches an existing site.';
@@ -1442,7 +1444,7 @@ class Runner {
 				function() use ( $config ) {
 					if ( isset( $config['user'] ) ) {
 						$fetcher = new \WP_CLI\Fetchers\User;
-						$user = $fetcher->get_check( $config['user'] );
+						$user    = $fetcher->get_check( $config['user'] );
 						wp_set_current_user( $user->ID );
 					} else {
 						add_action( 'init', 'kses_remove_filters', 11 );
@@ -1562,7 +1564,7 @@ class Runner {
 			}
 			return $value;
 		};
-		$hooks = array(
+		$hooks                      = array(
 			'pre_option_template',
 			'option_template',
 			'pre_option_stylesheet',
@@ -1646,7 +1648,7 @@ class Runner {
 			$days_between_checks = 1;
 		}
 
-		$cache = WP_CLI::get_cache();
+		$cache     = WP_CLI::get_cache();
 		$cache_key = 'wp-cli-update-check';
 		// Bail early on the first check, so we don't always check on an unwritable cache.
 		if ( ! $cache->has( $cache_key ) ) {

@@ -7,7 +7,7 @@ namespace WP_CLI\Utils;
 function wp_not_installed() {
 	global $wpdb, $table_prefix;
 	if ( ! is_blog_installed() && ! defined( 'WP_INSTALLING' ) ) {
-		$tables = $wpdb->get_col( "SHOW TABLES LIKE '%_options'" );
+		$tables         = $wpdb->get_col( "SHOW TABLES LIKE '%_options'" );
 		$found_prefixes = array();
 		if ( count( $tables ) ) {
 			foreach ( $tables as $table ) {
@@ -18,7 +18,7 @@ function wp_not_installed() {
 			}
 		}
 		if ( count( $found_prefixes ) ) {
-			$prefix_list = implode( ', ', $found_prefixes );
+			$prefix_list   = implode( ', ', $found_prefixes );
 			$install_label = count( $found_prefixes ) > 1 ? 'installs' : 'install';
 			\WP_CLI::error(
 				"The site you have requested is not installed.\n" .
@@ -100,12 +100,12 @@ function wp_clean_error_message( $message ) {
 	}
 
 	$search_replace = array(
-		'<code>'    => '`',
-		'</code>'   => '`',
+		'<code>'  => '`',
+		'</code>' => '`',
 	);
-	$message = str_replace( array_keys( $search_replace ), array_values( $search_replace ), $message );
-	$message = strip_tags( $message );
-	$message = html_entity_decode( $message, ENT_COMPAT, 'UTF-8' );
+	$message        = str_replace( array_keys( $search_replace ), array_values( $search_replace ), $message );
+	$message        = strip_tags( $message );
+	$message        = html_entity_decode( $message, ENT_COMPAT, 'UTF-8' );
 
 	return $message;
 }
@@ -189,14 +189,14 @@ function wp_register_unused_sidebar() {
 
 	register_sidebar(
 		array(
-			'name' => __( 'Inactive Widgets' ),
-			'id' => 'wp_inactive_widgets',
-			'class' => 'inactive-sidebar',
-			'description' => __( 'Drag widgets here to remove them from the sidebar but keep their settings.' ),
+			'name'          => __( 'Inactive Widgets' ),
+			'id'            => 'wp_inactive_widgets',
+			'class'         => 'inactive-sidebar',
+			'description'   => __( 'Drag widgets here to remove them from the sidebar but keep their settings.' ),
 			'before_widget' => '',
-			'after_widget' => '',
-			'before_title' => '',
-			'after_title' => '',
+			'after_widget'  => '',
+			'before_title'  => '',
+			'after_title'   => '',
 		)
 	);
 
@@ -253,7 +253,7 @@ function wp_get_cache_type() {
 			$message = 'WP LCache';
 
 		} elseif ( function_exists( 'w3_instance' ) ) {
-			$config = w3_instance( 'W3_Config' );
+			$config  = w3_instance( 'W3_Config' );
 			$message = 'Unknown';
 
 			if ( $config->get_boolean( 'objectcache.enabled' ) ) {
@@ -329,7 +329,7 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 		// Note: BC change 1.5.0, taking scope into consideration for network also.
 		if ( get_flag_value( $assoc_args, 'network' ) && is_multisite() ) {
 			$network_global_scope = in_array( $scope, array( 'all', 'global', 'ms_global' ), true ) ? ( 'all' === $scope ? 'global' : $scope ) : '';
-			$wp_tables = array_values( $wpdb->tables( $network_global_scope ) );
+			$wp_tables            = array_values( $wpdb->tables( $network_global_scope ) );
 			if ( in_array( $scope, array( 'all', 'blog' ), true ) ) {
 				// Do directly for compat with old WP versions. Note: private, deleted, archived sites are not excluded.
 				$blog_ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs WHERE site_id = $wpdb->siteid" );
@@ -356,9 +356,13 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 		$args_tables = array();
 		foreach ( $args as $arg ) {
 			if ( false !== strpos( $arg, '*' ) || false !== strpos( $arg, '?' ) ) {
-				$args_tables = array_merge( $args_tables, array_filter( $tables, function ( $v ) use ( $arg ) {
-					return fnmatch( $arg, $v );
-				} ) );
+				$args_tables = array_merge(
+					$args_tables, array_filter(
+						$tables, function ( $v ) use ( $arg ) {
+							return fnmatch( $arg, $v );
+						}
+					)
+				);
 			} else {
 				$args_tables[] = $arg;
 			}
