@@ -1666,3 +1666,21 @@ Feature: WP-CLI Commands
       """
       core custom-subcommand
       """
+
+  Scenario: An activated plugin should successfully add custom commands when hooked on the cli_init action
+    Given a WP installation
+    And a wp-content/plugins/custom-command/custom-cmd.php file:
+      """
+      <?php
+      // Plugin Name: Custom Command
+
+      add_action( 'cli_init', function() {
+        WP_CLI::add_command( 'custom', function () {} );
+      } );
+      """
+    And I run `wp plugin activate custom-command`
+    When I run `wp custom --help`
+    Then STDOUT should contain:
+    """
+    wp custom
+    """
