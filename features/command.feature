@@ -1667,7 +1667,7 @@ Feature: WP-CLI Commands
       core custom-subcommand
       """
 
-  Scenario: An activated plugin should successfully trigger custom commands on the cli_init action.
+  Scenario: An activated plugin should successfully add custom commands when hooked on the cli_init action.
     Given a WP installation
     And a wp-content/plugins/custom-command/custom-cmd.php file:
       """
