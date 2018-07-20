@@ -966,10 +966,6 @@ class Runner {
 	}
 
 	public function start() {
-		WP_CLI::add_wp_hook( 'plugins_loaded', function () {
-			do_action( 'cli_init' );
-		} );
-
 		// Enable PHP error reporting to stderr if testing. Will need to be re-enabled after WP loads.
 		if ( getenv( 'BEHAT_RUN' ) ) {
 			$this->enable_error_reporting();
@@ -1490,6 +1486,10 @@ class Runner {
 			4
 		);
 
+		// Set up hook for WP-CLI packages to use.
+		WP_CLI::add_wp_hook( 'init', function () {
+			do_action( 'cli_init' );
+		} );
 	}
 
 	/**
