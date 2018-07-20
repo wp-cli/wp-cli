@@ -301,7 +301,7 @@ if ( 'cli' !== BUILD ) {
 		->files()
 		->ignoreVCS(true)
 		->ignoreDotFiles(false)
-		->in( WP_CLI_VENDOR_DIR . '/wp-cli/extension-command/templates')
+		->in( WP_CLI_VENDOR_DIR . '/wp-cli/core-command/templates')
 		;
 	foreach ( $finder as $file ) {
 		add_file( $phar, $file );
