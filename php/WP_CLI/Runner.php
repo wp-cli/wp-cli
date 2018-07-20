@@ -1486,7 +1486,7 @@ class Runner {
 			4
 		);
 
-		// Set up hook for WP-CLI packages to use.
+		// Set up hook for plugins and themes to conditionally add WP-CLI commands.
 		WP_CLI::add_wp_hook( 'init', function () {
 			do_action( 'cli_init' );
 		} );
