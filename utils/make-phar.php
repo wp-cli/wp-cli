@@ -187,9 +187,9 @@ if ( 'cli' === BUILD ) {
 } else {
 	$finder
 		->in(WP_CLI_VENDOR_DIR . '/wp-cli')
-		->in(WP_CLI_ROOT . '/features/bootstrap') // These are required for scaffold-package-command.
-		->in(WP_CLI_ROOT . '/features/steps')
-		->in(WP_CLI_ROOT . '/features/extra')
+		->in(WP_CLI_VENDOR_DIR . '/wp-cli/wp-cli-tests/features/bootstrap') // These are required for scaffold-package-command.
+		->in(WP_CLI_VENDOR_DIR . '/wp-cli/wp-cli-tests/features/steps')
+		->in(WP_CLI_VENDOR_DIR . '/wp-cli/wp-cli-tests/features/extra')
 		->in(WP_CLI_VENDOR_DIR . '/psr')
 		->in(WP_CLI_VENDOR_DIR . '/seld')
 		->in(WP_CLI_VENDOR_DIR . '/symfony/console')

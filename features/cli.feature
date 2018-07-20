@@ -31,7 +31,7 @@ Feature: `wp cli` tasks
 
   Scenario: Ability to set a custom version when building
     Given an empty directory
-    And save the {SRC_DIR}/VERSION file as {TRUE_VERSION}
+    And save the {FRAMEWORK_ROOT}/VERSION file as {TRUE_VERSION}
     And a new Phar with version "1.2.3"
 
     When I run `{PHAR_PATH} cli version`
@@ -39,7 +39,7 @@ Feature: `wp cli` tasks
     """
     WP-CLI 1.2.3
     """
-    And the {SRC_DIR}/VERSION file should be:
+    And the {FRAMEWORK_ROOT}/VERSION file should be:
     """
     {TRUE_VERSION}
     """
