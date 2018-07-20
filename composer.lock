@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "8f489f049b400fc809fe702956787d59",
+    "content-hash": "2f7842c55102768e34d9d48b187ab0b7",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -1601,16 +1601,16 @@
         },
         {
             "name": "wp-cli/core-command",
-            "version": "v1.0.10",
+            "version": "v1.0.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/core-command.git",
-                "reference": "d557fb48cc46dc3c684ff02445c24dfa7ebc39a0"
+                "reference": "96b7ee4a035c11f473a07c04cd6c07bbf053d797"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/core-command/zipball/d557fb48cc46dc3c684ff02445c24dfa7ebc39a0",
-                "reference": "d557fb48cc46dc3c684ff02445c24dfa7ebc39a0",
+                "url": "https://api.github.com/repos/wp-cli/core-command/zipball/96b7ee4a035c11f473a07c04cd6c07bbf053d797",
+                "reference": "96b7ee4a035c11f473a07c04cd6c07bbf053d797",
                 "shasum": ""
             },
             "require-dev": {
@@ -1657,7 +1657,7 @@
             ],
             "description": "Downloads, installs, updates, and manages a WordPress installation.",
             "homepage": "https://github.com/wp-cli/core-command",
-            "time": "2018-06-03T07:47:36+00:00"
+            "time": "2018-07-20T12:46:52+00:00"
         },
         {
             "name": "wp-cli/cron-command",
@@ -2151,16 +2151,16 @@
         },
         {
             "name": "wp-cli/extension-command",
-            "version": "v1.2.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/extension-command.git",
-                "reference": "fe25c2acbe23963a5a95524b3770e04aedfd3d9e"
+                "reference": "5609057ff728712954f0ec2ab00f5295c94a0be5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/fe25c2acbe23963a5a95524b3770e04aedfd3d9e",
-                "reference": "fe25c2acbe23963a5a95524b3770e04aedfd3d9e",
+                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/5609057ff728712954f0ec2ab00f5295c94a0be5",
+                "reference": "5609057ff728712954f0ec2ab00f5295c94a0be5",
                 "shasum": ""
             },
             "require-dev": {
@@ -2229,7 +2229,7 @@
             ],
             "description": "Manages plugins and themes, including installs, activations, and updates.",
             "homepage": "https://github.com/wp-cli/extension-command",
-            "time": "2018-07-18T20:24:09+00:00"
+            "time": "2018-07-20 12:42:38"
         },
         {
             "name": "wp-cli/import-command",
