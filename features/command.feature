@@ -1675,23 +1675,13 @@ Feature: WP-CLI Commands
       // Plugin Name: Custom Command
 
       add_action( 'cli_init', function() {
-        require_once plugin_dir_path( __FILE__ ) . '/class-custom-command.php';
-        $command = new Custom_Command();
-        WP_CLI::add_command( 'custom', array( $command, 'do_custom_command' ) );
+        WP_CLI::add_command( 'custom', 'do_custom_command' );
       } );
-      """
-    And a wp-content/plugins/custom-command/class-custom-command.php file:
-    """
-    <?php
-    class Custom_Command extends WP_CLI_Command {
-      /**
-      * Tell the whole world!
-      */
-      public function do_custom_command() {
-        WP_CLI::success( "This command doesn't really do much, does it?" );
+
+      function do_custom_command() {
+        WP_CLI::success( 'Triggered the callback for the custom command.' );
       }
-    }
-    """
+      """
     And I run `wp plugin activate custom-command`
     When I run `wp custom --help`
     Then STDOUT should contain:
