@@ -46,7 +46,7 @@ Feature: `wp cli completions` tasks
       """
     And STDOUT should contain:
       """
-      media
+      theme
       """
     And STDERR should be empty
     And the return code should be 0
@@ -105,7 +105,7 @@ Feature: `wp cli completions` tasks
       --extra-php
       """
 
-    When I run `wp cli completions --line='wp media import ' --point=100`
+    When I run `wp cli completions --line='wp eval-file ' --point=100`
     Then STDOUT should contain:
       """
       <file>
