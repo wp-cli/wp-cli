@@ -515,7 +515,7 @@ Feature: WP-CLI Commands
       WP_CLI::add_command( 'foo', 'foo', array(
         'shortdesc'   => 'My awesome function command',
         'when'        => 'before_wp_load',
-        'longdesc'    => '## EXAMPLES ' . PHP_EOL . PHP_EOL . '  # Run the custom foo command',
+        'longdesc'    => '## EXAMPLES' . PHP_EOL . PHP_EOL . '  # Run the custom foo command',
       ) );
       """
     And a wp-cli.yml file:
@@ -537,7 +537,7 @@ Feature: WP-CLI Commands
 
       SYNOPSIS
 
-        wp foo
+        wp foo 
 
       EXAMPLES
 
