@@ -1413,7 +1413,7 @@
             ],
             "description": "Composer plugin for splitting a generated autoloader into two distinct parts.",
             "homepage": "https://wp-cli.org",
-            "time": "2017-08-03T08:40:16+00:00"
+            "time": "2017-08-03T08:40:17+00:00"
         },
         {
             "name": "wp-cli/cache-command",
@@ -2151,7 +2151,7 @@
         },
         {
             "name": "wp-cli/extension-command",
-            "version": "dev-master",
+            "version": "1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/extension-command.git",
@@ -2229,7 +2229,7 @@
             ],
             "description": "Manages plugins and themes, including installs, activations, and updates.",
             "homepage": "https://github.com/wp-cli/extension-command",
-            "time": "2018-07-20 12:42:38"
+            "time": "2018-07-20T12:42:38+00:00"
         },
         {
             "name": "wp-cli/import-command",
