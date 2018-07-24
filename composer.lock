@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "944a7d54ba2d9a75116e7702e3aae90a",
+    "content-hash": "6c0e39df86aa8a928832a0ceceb17a0f",
     "packages": [
         {
             "name": "mustache/mustache",
@@ -2946,71 +2946,6 @@
                 "standards"
             ],
             "time": "2018-07-17T13:42:26+00:00"
-        },
-        {
-            "name": "wp-cli/cache-command",
-            "version": "v1.0.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wp-cli/cache-command.git",
-                "reference": "d82cba9effa198f17847dce5771c8fb20c443ffa"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/cache-command/zipball/d82cba9effa198f17847dce5771c8fb20c443ffa",
-                "reference": "d82cba9effa198f17847dce5771c8fb20c443ffa",
-                "shasum": ""
-            },
-            "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "*"
-            },
-            "type": "wp-cli-package",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "bundled": true,
-                "commands": [
-                    "cache",
-                    "cache add",
-                    "cache decr",
-                    "cache delete",
-                    "cache flush",
-                    "cache get",
-                    "cache incr",
-                    "cache replace",
-                    "cache set",
-                    "cache type",
-                    "transient",
-                    "transient delete",
-                    "transient get",
-                    "transient set",
-                    "transient type"
-                ]
-            },
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                },
-                "files": [
-                    "cache-command.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bachhuber",
-                    "email": "daniel@runcommand.io",
-                    "homepage": "https://runcommand.io"
-                }
-            ],
-            "description": "Manages object and transient caches.",
-            "homepage": "https://github.com/wp-cli/cache-command",
-            "time": "2017-12-14T19:21:19+00:00"
         },
         {
             "name": "wp-cli/config-command",

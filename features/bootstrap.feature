@@ -269,6 +269,7 @@ Feature: Bootstrap WP-CLI
       """
       url: invalid.com
       """
+    And I run `wp package install wp-cli/cache-command`
 
     When I try `wp cache add foo bar`
     Then STDERR should contain:
