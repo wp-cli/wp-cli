@@ -518,7 +518,7 @@ Feature: Get help about WP-CLI commands
   Scenario: Help renders global parameters correctly
     Given a WP installation
 
-    When I run `wp help import get`
+    When I run `wp help core`
     Then STDOUT should contain:
       """
       GLOBAL PARAMETERS
