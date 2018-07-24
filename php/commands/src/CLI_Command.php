@@ -107,7 +107,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		// php_uname() $mode argument was only added with PHP 7.0+. Fall back to
 		// entire string for older versions.
-		$system_os = PHP_MAJOR_VERSION >= 7
+		$system_os = PHP_MAJOR_VERSION < 7
 			? php_uname()
 			: sprintf(
 				'%s %s %s %s',
