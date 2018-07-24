@@ -36,7 +36,6 @@
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
-        "wp-cli/cache-command": "^1.0",
         "wp-cli/db-command": "^1.3",
         "wp-cli/entity-command": "^1.2",
         "wp-cli/extension-command": "^1.1",
