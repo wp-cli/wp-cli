@@ -291,6 +291,7 @@ Feature: Bootstrap WP-CLI
       """
       url: invalid.com
       """
+    And I run `wp package install wp-cli/search-replace-command`
 
     When I try `wp search-replace foo bar`
     Then STDERR should contain:
