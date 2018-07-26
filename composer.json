@@ -71,7 +71,7 @@
 		"phpunit/phpunit": "3.7.*",
 		"roave/security-advisories": "dev-master",
         "phpcompatibility/phpcompatibility-wp": "^1",
-		"wp-coding-standards/wpcs": "^0.13.1"
+		"wp-coding-standards/wpcs": "^1"
 	},
 	"suggest": {
 		"psy/psysh": "Enhanced `wp shell` functionality"
