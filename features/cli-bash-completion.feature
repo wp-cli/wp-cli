@@ -6,11 +6,15 @@ Feature: `wp cli completions` tasks
     When I run `wp cli completions --line="wp " --point=100`
     Then STDOUT should contain:
       """
-      plugin
+      config
       """
     And STDOUT should contain:
       """
-      server
+      core
+      """
+    And STDOUT should contain:
+      """
+      eval
       """
     And STDERR should be empty
     And the return code should be 0
@@ -18,11 +22,15 @@ Feature: `wp cli completions` tasks
     When I run `wp cli completions --line="wp co" --point=100`
     Then STDOUT should contain:
       """
-      comment
+      config
       """
     And STDOUT should contain:
       """
       core
+      """
+    And STDOUT should not contain:
+      """
+      eval
       """
     And STDERR should be empty
     And the return code should be 0
@@ -42,16 +50,16 @@ Feature: `wp cli completions` tasks
     When I run `wp cli completions --line="wp help " --point=100`
     Then STDOUT should contain:
       """
-      rewrite
+      config
       """
     And STDOUT should contain:
       """
-      theme
+      core
       """
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp cli completions --line="wp help language core " --point=100`
+    When I run `wp cli completions --line="wp help core " --point=100`
     Then STDOUT should contain:
       """
       install
@@ -126,11 +134,15 @@ Feature: `wp cli completions` tasks
       """
     And STDOUT should contain:
       """
-      plugin
+      config
       """
     And STDOUT should contain:
       """
-      server
+      core
+      """
+    And STDOUT should contain:
+      """
+      eval
       """
     And STDERR should be empty
     And the return code should be 0
@@ -150,6 +162,10 @@ Feature: `wp cli completions` tasks
       """
     And STDOUT should contain:
       """
+      config
+      """
+    And STDOUT should contain:
+      """
       core
       """
     And STDOUT should contain:
@@ -159,15 +175,19 @@ Feature: `wp cli completions` tasks
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp cli completions --line="wp @example plugin " --point=100`
+    When I run `wp cli completions --line="wp @example core " --point=100`
     Then STDOUT should contain:
       """
-      list
+      install
+      """
+    And STDOUT should contain:
+      """
+      update
       """
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp cli completions --line="wp help language core " --point=100`
+    When I run `wp cli completions --line="wp help core " --point=100`
     Then STDOUT should contain:
       """
       install
@@ -186,7 +206,15 @@ Feature: `wp cli completions` tasks
       """
     And STDOUT should contain:
       """
-      post-type
+      config
+      """
+    And STDOUT should contain:
+      """
+      core
+      """
+    And STDOUT should contain:
+      """
+      eval
       """
     And STDERR should be empty
     And the return code should be 0
@@ -210,7 +238,7 @@ Feature: `wp cli completions` tasks
   Scenario: Bash Completion for global parameters
     Given an empty directory
 
-    When I run `wp cli completions --line="wp plugin list " --point=100`
+    When I run `wp cli completions --line="wp core download " --point=100`
     Then STDOUT should contain:
       """
       --path=
@@ -282,7 +310,7 @@ Feature: `wp cli completions` tasks
     And STDERR should be empty
     And the return code should be 0
 
-    When I run `wp cli completions --line="wp plugin list --path --p" --point=100`
+    When I run `wp cli completions --line="wp core download --path --p" --point=100`
     Then STDOUT should contain:
       """
       --prompt=
@@ -292,7 +320,7 @@ Feature: `wp cli completions` tasks
       --path
       """
 
-    When I run `wp cli completions --line="wp plugin list --no-color" --point=100`
+    When I run `wp cli completions --line="wp core download --no-color" --point=100`
     Then STDOUT should not contain:
       """
       --no-color

@@ -42,7 +42,6 @@
         "wp-cli/language-command": "^1.0",
         "wp-cli/package-command": "^1.0",
         "wp-cli/rewrite-command": "^1.0",
-        "wp-cli/server-command": "^1.0",
         "wp-cli/wp-cli-tests": "dev-master"
     },
     "autoload": {
