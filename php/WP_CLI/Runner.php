@@ -556,7 +556,14 @@ class Runner {
 	public function get_wp_config_code() {
 		$wp_config_path = Utils\locate_wp_config();
 
-		$wp_config_code = explode( "\n", file_get_contents( $wp_config_path ) );
+		$wp_config_code = file_get_contents( $wp_config_path );
+		
+		if(preg_match('/wp-config-local/', $wp_config_code)) {
+			$wp_config_path = str_replace('wp-config.php', 'wp-config-local.php', $wp_config_path);
+			$wp_config_code = file_get_contents( $wp_config_path );
+		}
+
+		$wp_config_code = explode( "\n", $wp_config_code );
 
 		$found_wp_settings = false;
 
