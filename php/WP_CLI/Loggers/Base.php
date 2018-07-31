@@ -43,7 +43,7 @@ abstract class Base {
 		if ( true !== $debug && $group !== $debug ) {
 			return;
 		}
-		$time = round( microtime( true ) - ( defined( 'WP_CLI_START_MICROTIME' ) ? WP_CLI_START_MICROTIME : $start_time ), 3 );
+		$time   = round( microtime( true ) - ( defined( 'WP_CLI_START_MICROTIME' ) ? WP_CLI_START_MICROTIME : $start_time ), 3 );
 		$prefix = 'Debug';
 		if ( $group && true === $debug ) {
 			$prefix = 'Debug (' . $group . ')';

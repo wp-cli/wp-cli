@@ -28,7 +28,7 @@ class Formatter {
 		$format_args = array(
 			'format' => 'table',
 			'fields' => $fields,
-			'field' => null,
+			'field'  => null,
 		);
 
 		foreach ( array( 'format', 'fields', 'field' ) as $key ) {
@@ -44,7 +44,7 @@ class Formatter {
 
 		$format_args['fields'] = array_map( 'trim', $format_args['fields'] );
 
-		$this->args = $format_args;
+		$this->args   = $format_args;
 		$this->prefix = $prefix;
 	}
 
@@ -98,8 +98,8 @@ class Formatter {
 	 */
 	public function display_item( $item, $ascii_pre_colorized = false ) {
 		if ( isset( $this->args['field'] ) ) {
-			$item = (object) $item;
-			$key = $this->find_item_key( $item, $this->args['field'] );
+			$item  = (object) $item;
+			$key   = $this->find_item_key( $item, $this->args['field'] );
 			$value = $item->$key;
 			if ( in_array( $this->args['format'], array( 'table', 'csv' ) ) && ( is_object( $value ) || is_array( $value ) ) ) {
 				$value = json_encode( $value );
@@ -178,7 +178,7 @@ class Formatter {
 	 * @param string The field to show
 	 */
 	private function show_single_field( $items, $field ) {
-		$key = null;
+		$key    = null;
 		$values = array();
 
 		foreach ( $items as $item ) {
@@ -256,7 +256,7 @@ class Formatter {
 
 			case 'table':
 			case 'csv':
-				$rows = $this->assoc_array_to_rows( $data );
+				$rows   = $this->assoc_array_to_rows( $data );
 				$fields = array( 'Field', 'Value' );
 				if ( 'table' == $format ) {
 					self::show_table( $rows, $fields, $ascii_pre_colorized );
@@ -347,7 +347,7 @@ class Formatter {
 	public function transform_item_values_to_json( $item ) {
 		foreach ( $this->args['fields'] as $field ) {
 			$true_field = $this->find_item_key( $item, $field );
-			$value = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
+			$value      = is_object( $item ) ? $item->$true_field : $item[ $true_field ];
 			if ( is_array( $value ) || is_object( $value ) ) {
 				if ( is_object( $item ) ) {
 					$item->$true_field = json_encode( $value );
