@@ -176,7 +176,7 @@ class Runner {
 
 		$wp_path_src = $matches[1] . $matches[2];
 		$wp_path_src = Utils\replace_path_consts( $wp_path_src, $index_path );
-		$wp_path     = eval( "return $wp_path_src;" );
+		$wp_path     = eval( "return $wp_path_src;" ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- @codingStandardsIgnoreLine
 
 		if ( ! Utils\is_path_absolute( $wp_path ) ) {
 			$wp_path = dirname( $index_path ) . "/$wp_path";
@@ -1143,7 +1143,7 @@ class Runner {
 
 		// Load wp-config.php code, in the global scope
 		$wp_cli_original_defined_vars = get_defined_vars();
-		eval( $this->get_wp_config_code() );
+		eval( $this->get_wp_config_code() ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- @codingStandardsIgnoreLine
 		foreach ( get_defined_vars() as $key => $var ) {
 			if ( array_key_exists( $key, $wp_cli_original_defined_vars ) || 'wp_cli_original_defined_vars' === $key ) {
 				continue;
