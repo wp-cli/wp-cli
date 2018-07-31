@@ -24,10 +24,10 @@ class CommandFactory {
 		if ( ( is_object( $callable ) && ( $callable instanceof \Closure ) )
 			|| ( is_string( $callable ) && function_exists( $callable ) ) ) {
 			$reflection = new \ReflectionFunction( $callable );
-			$command = self::create_subcommand( $parent, $name, $callable, $reflection );
+			$command    = self::create_subcommand( $parent, $name, $callable, $reflection );
 		} elseif ( is_array( $callable ) && is_callable( $callable ) ) {
 			$reflection = new \ReflectionClass( $callable[0] );
-			$command = self::create_subcommand(
+			$command    = self::create_subcommand(
 				$parent, $name, array( $callable[0], $callable[1] ),
 				$reflection->getMethod( $callable[1] )
 			);
@@ -36,7 +36,7 @@ class CommandFactory {
 			if ( $reflection->isSubclassOf( '\WP_CLI\Dispatcher\CommandNamespace' ) ) {
 				$command = self::create_namespace( $parent, $name, $callable );
 			} elseif ( $reflection->hasMethod( '__invoke' ) ) {
-				$class = is_object( $callable ) ? $callable : $reflection->name;
+				$class   = is_object( $callable ) ? $callable : $reflection->name;
 				$command = self::create_subcommand(
 					$parent, $name, array( $class, '__invoke' ),
 					$reflection->getMethod( '__invoke' )
@@ -68,7 +68,7 @@ class CommandFactory {
 	 */
 	private static function create_subcommand( $parent, $name, $callable, $reflection ) {
 		$doc_comment = self::get_doc_comment( $reflection );
-		$docparser = new \WP_CLI\DocParser( $doc_comment );
+		$docparser   = new \WP_CLI\DocParser( $doc_comment );
 
 		if ( is_array( $callable ) ) {
 			if ( ! $name ) {
@@ -103,7 +103,7 @@ class CommandFactory {
 	 * @param mixed $callable
 	 */
 	private static function create_composite_command( $parent, $name, $callable ) {
-		$reflection = new \ReflectionClass( $callable );
+		$reflection  = new \ReflectionClass( $callable );
 		$doc_comment = self::get_doc_comment( $reflection );
 		if ( ! $doc_comment ) {
 			\WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
@@ -117,7 +117,7 @@ class CommandFactory {
 				continue;
 			}
 
-			$class = is_object( $callable ) ? $callable : $reflection->name;
+			$class      = is_object( $callable ) ? $callable : $reflection->name;
 			$subcommand = self::create_subcommand( $container, false, array( $class, $method->name ), $method );
 
 			$subcommand_name = $subcommand->get_name();
@@ -136,7 +136,7 @@ class CommandFactory {
 	 * @param mixed $callable
 	 */
 	private static function create_namespace( $parent, $name, $callable ) {
-		$reflection = new \ReflectionClass( $callable );
+		$reflection  = new \ReflectionClass( $callable );
 		$doc_comment = self::get_doc_comment( $reflection );
 		if ( ! $doc_comment ) {
 			\WP_CLI::debug( null === $doc_comment ? "Failed to get doc comment for {$name}." : "No doc comment for {$name}.", 'commandfactory' );
@@ -193,7 +193,7 @@ class CommandFactory {
 	 * @return string|bool The last doc comment if any, or false if none.
 	 */
 	private static function extract_last_doc_comment( $content ) {
-		$content = trim( $content );
+		$content         = trim( $content );
 		$comment_end_pos = strrpos( $content, '*/' );
 		if ( false === $comment_end_pos ) {
 			return false;
@@ -214,7 +214,7 @@ class CommandFactory {
 		$subcontent = substr( $content, 0, $comment_start_pos );
 		while ( false !== ( $comment_start2_pos = strrpos( $subcontent, '/**' ) ) && false === strpos( $subcontent, '*/', $comment_start2_pos ) ) {
 			$comment_start_pos = $comment_start2_pos;
-			$subcontent = substr( $subcontent, 0, $comment_start_pos );
+			$subcontent        = substr( $subcontent, 0, $comment_start_pos );
 		}
 		return substr( $content, $comment_start_pos, $comment_end_pos + 2 );
 	}

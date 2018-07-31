@@ -175,7 +175,7 @@ class Subcommand extends CompositeCommand {
 			}
 
 			$current_prompt = ( $key + 1 ) . '/' . count( $spec ) . ' ';
-			$default = $spec_arg['optional'] ? '' : false;
+			$default        = $spec_arg['optional'] ? '' : false;
 
 			// 'generic' permits arbitrary key=value (e.g. [--<field>=<value>] )
 			if ( 'generic' == $spec_arg['type'] ) {
@@ -197,7 +197,7 @@ class Subcommand extends CompositeCommand {
 
 					if ( $key ) {
 						$key_prompt_count = strlen( $key_prompt ) - strlen( $value_token ) - 1;
-						$value_prompt = str_repeat( ' ', $key_prompt_count ) . '=' . $value_token;
+						$value_prompt     = str_repeat( ' ', $key_prompt_count ) . '=' . $value_token;
 
 						$value = $this->prompt( $value_prompt, $default );
 						if ( false === $value ) {
@@ -293,15 +293,15 @@ class Subcommand extends CompositeCommand {
 		}
 
 		$synopsis_spec = \WP_CLI\SynopsisParser::parse( $synopsis );
-		$i = 0;
-		$errors = array(
-			'fatal' => array(),
+		$i             = 0;
+		$errors        = array(
+			'fatal'   => array(),
 			'warning' => array(),
 		);
-		$mock_doc = array( $this->get_shortdesc(), '' );
-		$mock_doc = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
-		$mock_doc = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
-		$docparser = new \WP_CLI\DocParser( $mock_doc );
+		$mock_doc      = array( $this->get_shortdesc(), '' );
+		$mock_doc      = array_merge( $mock_doc, explode( "\n", $this->get_longdesc() ) );
+		$mock_doc      = '/**' . PHP_EOL . '* ' . implode( PHP_EOL . '* ', $mock_doc ) . PHP_EOL . '*/';
+		$docparser     = new \WP_CLI\DocParser( $mock_doc );
 		foreach ( $synopsis_spec as $spec ) {
 			if ( 'positional' === $spec['type'] ) {
 				$spec_args = $docparser->get_arg_args( $spec['name'] );
@@ -349,7 +349,7 @@ class Subcommand extends CompositeCommand {
 
 		if ( 'help' !== $this->name ) {
 			foreach ( $validator->unknown_assoc( $assoc_args ) as $key ) {
-				$suggestion = Utils\get_suggestion(
+				$suggestion    = Utils\get_suggestion(
 					$key,
 					$this->get_parameters( $synopsis_spec ),
 					$threshold = 2
@@ -392,8 +392,8 @@ class Subcommand extends CompositeCommand {
 		static $prompted_once = false;
 		if ( \WP_CLI::get_config( 'prompt' ) && ! $prompted_once ) {
 			list( $_args, $assoc_args ) = $this->prompt_args( $args, $assoc_args );
-			$args = array_merge( $args, $_args );
-			$prompted_once = true;
+			$args                       = array_merge( $args, $_args );
+			$prompted_once              = true;
 		}
 
 		$extra_positionals = array();
@@ -413,9 +413,9 @@ class Subcommand extends CompositeCommand {
 			unset( $assoc_args[ $key ] );
 		}
 
-		$path = get_path( $this->get_parent() );
+		$path   = get_path( $this->get_parent() );
 		$parent = implode( ' ', array_slice( $path, 1 ) );
-		$cmd = $this->name;
+		$cmd    = $this->name;
 		if ( $parent ) {
 			WP_CLI::do_hook( "before_invoke:{$parent}" );
 			$cmd = $parent . ' ' . $cmd;
@@ -439,7 +439,7 @@ class Subcommand extends CompositeCommand {
 	 * @return array Array of parameter names
 	 */
 	private function get_parameters( $spec = array() ) {
-		$local_parameters = array_column( $spec, 'name' );
+		$local_parameters  = array_column( $spec, 'name' );
 		$global_parameters = array_column(
 			WP_CLI\SynopsisParser::parse( $this->get_global_params() ),
 			'name'
