@@ -1,7 +1,6 @@
 {
     "name": "wp-cli/wp-cli",
     "description": "WP-CLI framework",
-    "version": "2.0.0",
     "keywords": [
         "cli",
         "wordpress"
