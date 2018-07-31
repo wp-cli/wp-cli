@@ -10,16 +10,16 @@ namespace WP_CLI\Iterators;
 class Query implements \Iterator {
 
 	private $chunk_size;
-	private $query = '';
+	private $query       = '';
 	private $count_query = '';
 
-	private $global_index = 0;
+	private $global_index     = 0;
 	private $index_in_results = 0;
-	private $results = array();
-	private $row_count = 0;
-	private $offset = 0;
-	private $db = null;
-	private $depleted = false;
+	private $results          = array();
+	private $row_count        = 0;
+	private $offset           = 0;
+	private $db               = null;
+	private $depleted         = false;
 
 	/**
 	 * Creates a new query iterator
@@ -71,7 +71,7 @@ class Query implements \Iterator {
 	private function load_items_from_db() {
 		$this->adjust_offset_for_shrinking_result_set();
 
-		$query = $this->query . sprintf( ' LIMIT %d OFFSET %d', $this->chunk_size, $this->offset );
+		$query         = $this->query . sprintf( ' LIMIT %d OFFSET %d', $this->chunk_size, $this->offset );
 		$this->results = $this->db->get_results( $query );
 
 		if ( ! $this->results ) {
@@ -100,11 +100,11 @@ class Query implements \Iterator {
 	}
 
 	public function rewind() {
-		$this->results = array();
-		$this->global_index = 0;
+		$this->results          = array();
+		$this->global_index     = 0;
 		$this->index_in_results = 0;
-		$this->offset = 0;
-		$this->depleted = false;
+		$this->offset           = 0;
+		$this->depleted         = false;
 	}
 
 	public function valid() {

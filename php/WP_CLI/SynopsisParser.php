@@ -28,7 +28,7 @@ class SynopsisParser {
 			}
 
 			$param['token'] = $token;
-			$params[] = $param;
+			$params[]       = $param;
 		}
 
 		return $params;
@@ -44,9 +44,9 @@ class SynopsisParser {
 		}
 		$bits = array(
 			'positional' => '',
-			'assoc' => '',
-			'generic' => '',
-			'flag' => '',
+			'assoc'      => '',
+			'generic'    => '',
+			'flag'       => '',
 		);
 		foreach ( $bits as $key => &$value ) {
 			foreach ( $synopsis as $arg ) {
@@ -62,7 +62,7 @@ class SynopsisParser {
 				if ( 'positional' === $key ) {
 					$rendered_arg = "<{$arg['name']}>";
 				} elseif ( 'assoc' === $key ) {
-					$arg_value = isset( $arg['value']['name'] ) ? $arg['value']['name'] : $arg['name'];
+					$arg_value    = isset( $arg['value']['name'] ) ? $arg['value']['name'] : $arg['name'];
 					$rendered_arg = "--{$arg['name']}=<{$arg_value}>";
 				} elseif ( 'generic' === $key ) {
 					$rendered_arg = '--<field>=<value>';
@@ -96,10 +96,10 @@ class SynopsisParser {
 	private static function classify_token( $token ) {
 		$param = array();
 
-		list( $param['optional'], $token ) = self::is_optional( $token );
+		list( $param['optional'], $token )  = self::is_optional( $token );
 		list( $param['repeating'], $token ) = self::is_repeating( $token );
 
-		$p_name = '([a-z-_0-9]+)';
+		$p_name  = '([a-z-_0-9]+)';
 		$p_value = '([a-zA-Z-_|,0-9]+)';
 
 		if ( '--<field>=<value>' === $token ) {

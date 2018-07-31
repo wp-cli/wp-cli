@@ -53,8 +53,8 @@ class Process {
 		$proc = new self;
 
 		$proc->command = $command;
-		$proc->cwd = $cwd;
-		$proc->env = $env;
+		$proc->cwd     = $cwd;
+		$proc->env     = $env;
 
 		return $proc;
 	}
@@ -91,13 +91,13 @@ class Process {
 
 		return new ProcessRun(
 			array(
-				'stdout' => $stdout,
-				'stderr' => $stderr,
+				'stdout'      => $stdout,
+				'stderr'      => $stderr,
 				'return_code' => $return_code,
-				'command' => $this->command,
-				'cwd' => $this->cwd,
-				'env' => $this->env,
-				'run_time' => $run_time,
+				'command'     => $this->command,
+				'cwd'         => $this->cwd,
+				'env'         => $this->env,
+				'run_time'    => $run_time,
 			)
 		);
 	}

@@ -21,7 +21,7 @@ class Completions {
 		}
 
 		$is_alias = false;
-		$is_help = false;
+		$is_help  = false;
 		if ( ! empty( $this->words[0] ) && preg_match( '/^@/', $this->words[0] ) ) {
 			array_shift( $this->words );
 			// `wp @al` is false, but `wp @all ` is true.
