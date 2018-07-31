@@ -2668,16 +2668,16 @@
         },
         {
             "name": "wp-cli/scaffold-command",
-            "version": "v1.1.3",
+            "version": "v1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/scaffold-command.git",
-                "reference": "659348f05ebb47e70d7286b2e989146893a3c588"
+                "reference": "a897a54ba0a8199743d90204ff773b302fc77572"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/scaffold-command/zipball/659348f05ebb47e70d7286b2e989146893a3c588",
-                "reference": "659348f05ebb47e70d7286b2e989146893a3c588",
+                "url": "https://api.github.com/repos/wp-cli/scaffold-command/zipball/a897a54ba0a8199743d90204ff773b302fc77572",
+                "reference": "a897a54ba0a8199743d90204ff773b302fc77572",
                 "shasum": ""
             },
             "require-dev": {
@@ -2723,7 +2723,7 @@
             ],
             "description": "Generates code for post types, taxonomies, blocks, plugins, child themes, etc.",
             "homepage": "https://github.com/wp-cli/scaffold-command",
-            "time": "2018-04-20T18:37:18+00:00"
+            "time": "2018-07-29T15:02:24+00:00"
         },
         {
             "name": "wp-cli/search-replace-command",
