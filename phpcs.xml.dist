@@ -1,17 +1,15 @@
 <?xml version="1.0"?>
 <ruleset name="WP-CLI">
-	<description>WordPress Coding Standards for WP-CLI</description>
+	<description>Custom ruleset for WP-CLI</description>
 
-	<!-- Show sniff codes in all reports, and progress while running -->
-	<arg value="sp"/>
-	<!-- Check all PHP files in directory tree by default. -->
-	<arg name="extensions" value="php"/>
-	<!-- Run different reports -->
-	<arg name="report" value="full"/>
-	<arg name="report" value="summary"/>
-	<arg name="report" value="source"/>
+	<!-- For help in understanding this file: https://github.com/squizlabs/PHP_CodeSniffer/wiki/Annotated-ruleset.xml -->
+	<!-- For help in using PHPCS: https://github.com/squizlabs/PHP_CodeSniffer/wiki/Usage -->
 
+	<!-- What to scan -->
 	<file>.</file>
+	<!-- Ignoring Files and Folders:
+		https://github.com/squizlabs/PHP_CodeSniffer/wiki/Advanced-Usage#ignoring-files-and-folders -->
+	<exclude-pattern>*/.git/*</exclude-pattern>
 	<exclude-pattern>*/ci/*</exclude-pattern>
 	<exclude-pattern>*/features/*</exclude-pattern>
 	<exclude-pattern>*/packages/*</exclude-pattern>
@@ -19,25 +17,41 @@
 	<exclude-pattern>*/utils/*</exclude-pattern>
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 
-	<rule ref="PHPCompatibility">
+	<!-- How to scan -->
+	<arg value="sp"/> <!-- Show sniff and progress -->
+	<arg name="colors"/> <!-- Show results with colors -->
+	<arg name="extensions" value="php"/> <!-- Limit to PHP files -->
+
+	<!-- Rules: Check PHP version compatibility - see
+		https://github.com/PHPCompatibility/PHPCompatibilityWP -->
+	<rule ref="PHPCompatibilityWP">
 		<!-- Polyfill package is used so array_column() is available for PHP 5.4- -->
 		<exclude name="PHPCompatibility.PHP.NewFunctions.array_columnFound"/>
 		<!-- Both magic quotes directives set in wp-settings-cli.php to provide consistent starting point. -->
 		<exclude name="PHPCompatibility.PHP.DeprecatedIniDirectives.magic_quotes_runtimeDeprecatedRemoved"/>
 		<exclude name="PHPCompatibility.PHP.DeprecatedIniDirectives.magic_quotes_sybaseDeprecatedRemoved"/>
 	</rule>
+
+	<!-- For help in understanding this testVersion:
+		https://github.com/PHPCompatibility/PHPCompatibility#sniffing-your-code-for-compatibility-with-specific-php-versions -->
 	<config name="testVersion" value="5.3-"/>
+
 	<!-- Ignore php_uname mode issue, we're conditionally providing a callback -->
 	<rule ref="PHPCompatibility.PHP.NewFunctionParameters.php_uname_modeFound">
 		<exclude-pattern>*/php/commands/src/CLI_Command.php</exclude-pattern>
 	</rule>
 
+	<!-- Rules: WordPress Coding Standards - see
+		https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards -->
 	<rule ref="WordPress-Core">
 		<exclude name="Squiz.PHP.DisallowMultipleAssignments.Found" />
 		<exclude name="WordPress.NamingConventions.ValidVariableName.NotSnakeCaseMemberVar" />
 		<exclude name="WordPress.NamingConventions.ValidVariableName.MemberNotSnakeCase" />
 		<exclude name="WordPress.NamingConventions.ValidVariableName.NotSnakeCase" />
 	</rule>
+
+	<!-- For help in understanding these custom sniff properties:
+		https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/wiki/Customizable-sniff-properties -->
 	<rule ref="WordPress.Files.FileName">
 		<properties>
 			<property name="strict_class_file_names" value="false"/>
