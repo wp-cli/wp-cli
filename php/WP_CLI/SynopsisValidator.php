@@ -43,7 +43,7 @@ class SynopsisValidator {
 	public function enough_positionals( $args ) {
 		$positional = $this->query_spec(
 			array(
-				'type' => 'positional',
+				'type'     => 'positional',
 				'optional' => false,
 			)
 		);
@@ -60,7 +60,7 @@ class SynopsisValidator {
 	public function unknown_positionals( $args ) {
 		$positional_repeating = $this->query_spec(
 			array(
-				'type' => 'positional',
+				'type'      => 'positional',
 				'repeating' => true,
 			)
 		);
@@ -72,7 +72,7 @@ class SynopsisValidator {
 
 		$positional = $this->query_spec(
 			array(
-				'type' => 'positional',
+				'type'      => 'positional',
 				'repeating' => false,
 			)
 		);
@@ -94,7 +94,7 @@ class SynopsisValidator {
 		);
 
 		$errors = array(
-			'fatal' => array(),
+			'fatal'   => array(),
 			'warning' => array(),
 		);
 
@@ -109,7 +109,7 @@ class SynopsisValidator {
 				}
 			} else {
 				if ( true === $assoc_args[ $key ] && ! $param['value']['optional'] ) {
-					$error_type = ( ! $param['optional'] ) ? 'fatal' : 'warning';
+					$error_type                    = ( ! $param['optional'] ) ? 'fatal' : 'warning';
 					$errors[ $error_type ][ $key ] = "--$key parameter needs a value";
 
 					$to_unset[] = $key;
@@ -157,7 +157,7 @@ class SynopsisValidator {
 	 */
 	private function query_spec( $args, $operator = 'AND' ) {
 		$operator = strtoupper( $operator );
-		$count = count( $args );
+		$count    = count( $args );
 		$filtered = array();
 
 		foreach ( $this->spec as $key => $to_match ) {

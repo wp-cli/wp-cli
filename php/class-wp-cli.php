@@ -75,7 +75,7 @@ class WP_CLI {
 
 		if ( ! $cache ) {
 			$home = Utils\get_home_dir();
-			$dir = getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
+			$dir  = getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
 
 			// 6 months, 300mb
 			$cache = new FileCache( $dir, 15552000, 314572800 );
@@ -120,8 +120,8 @@ class WP_CLI {
 			$_SERVER['SERVER_NAME'] = $url_parts['host'];
 		}
 
-		$_SERVER['REQUEST_URI'] = $f( 'path' ) . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
-		$_SERVER['SERVER_PORT'] = \WP_CLI\Utils\get_flag_value( $url_parts, 'port', '80' );
+		$_SERVER['REQUEST_URI']  = $f( 'path' ) . ( isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '' );
+		$_SERVER['SERVER_PORT']  = \WP_CLI\Utils\get_flag_value( $url_parts, 'port', '80' );
 		$_SERVER['QUERY_STRING'] = $f( 'query' );
 	}
 
@@ -296,9 +296,9 @@ class WP_CLI {
 		if ( function_exists( 'add_filter' ) ) {
 			add_filter( $tag, $function_to_add, $priority, $accepted_args );
 		} else {
-			$idx = self::wp_hook_build_unique_id( $tag, $function_to_add, $priority );
+			$idx                                    = self::wp_hook_build_unique_id( $tag, $function_to_add, $priority );
 			$wp_filter[ $tag ][ $priority ][ $idx ] = array(
-				'function' => $function_to_add,
+				'function'      => $function_to_add,
 				'accepted_args' => $accepted_args,
 			);
 			unset( $merged_filters[ $tag ] );
@@ -338,7 +338,7 @@ class WP_CLI {
 				if ( false === $priority ) {
 					return false;
 				}
-				$obj_idx .= isset( $wp_filter[ $tag ][ $priority ] ) ? count( (array) $wp_filter[ $tag ][ $priority ] ) : $filter_id_count;
+				$obj_idx                  .= isset( $wp_filter[ $tag ][ $priority ] ) ? count( (array) $wp_filter[ $tag ][ $priority ] ) : $filter_id_count;
 				$function[0]->wp_filter_id = $filter_id_count;
 				++$filter_id_count;
 			} else {
@@ -422,7 +422,7 @@ class WP_CLI {
 		if ( ! $valid ) {
 			if ( is_array( $callable ) ) {
 				$callable[0] = is_object( $callable[0] ) ? get_class( $callable[0] ) : $callable[0];
-				$callable = array( $callable[0], $callable[1] );
+				$callable    = array( $callable[0], $callable[1] );
 			}
 			WP_CLI::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', json_encode( $callable ), $name ) );
 		}
@@ -450,8 +450,8 @@ class WP_CLI {
 
 		while ( ! empty( $path ) ) {
 			$subcommand_name = $path[0];
-			$parent = implode( ' ', $path );
-			$subcommand = $command->find_subcommand( $path );
+			$parent          = implode( ' ', $path );
+			$subcommand      = $command->find_subcommand( $path );
 
 			// Parent not found. Defer addition or create an empty container as
 			// needed.
@@ -488,7 +488,7 @@ class WP_CLI {
 			throw new Exception(
 				sprintf(
 					"'%s' can't have subcommands.",
-					implode( ' ' , Dispatcher\get_path( $command ) )
+					implode( ' ', Dispatcher\get_path( $command ) )
 				)
 			);
 		}
@@ -508,7 +508,7 @@ class WP_CLI {
 				$synopsis = \WP_CLI\SynopsisParser::render( $args['synopsis'] );
 				$leaf_command->set_synopsis( $synopsis );
 				$long_desc = '';
-				$bits = explode( ' ', $synopsis );
+				$bits      = explode( ' ', $synopsis );
 				foreach ( $args['synopsis'] as $key => $arg ) {
 					$long_desc .= $bits[ $key ] . "\n";
 					if ( ! empty( $arg['description'] ) ) {
@@ -557,7 +557,7 @@ class WP_CLI {
 	 * @param array  $args     Optional. See `WP_CLI::add_command()` for details.
 	 */
 	private static function defer_command_addition( $name, $parent, $callable, $args = array() ) {
-		$args['is_deferred'] = true;
+		$args['is_deferred']               = true;
 		self::$deferred_additions[ $name ] = array(
 			'parent'   => $parent,
 			'callable' => $callable,
@@ -947,7 +947,7 @@ class WP_CLI {
 	public static function launch( $command, $exit_on_error = true, $return_detailed = false ) {
 		Utils\check_proc_available( 'launch' );
 
-		$proc = Process::create( $command );
+		$proc    = Process::create( $command );
 		$results = $proc->run();
 
 		if ( -1 == $results->return_code ) {
@@ -1013,7 +1013,7 @@ class WP_CLI {
 		}
 		$config_path = escapeshellarg( $config_path );
 
-		$args = implode( ' ', array_map( 'escapeshellarg', $args ) );
+		$args       = implode( ' ', array_map( 'escapeshellarg', $args ) );
 		$assoc_args = \WP_CLI\Utils\assoc_args_to_str( $assoc_args );
 
 		$full_command = "WP_CLI_CONFIG_PATH={$config_path} {$php_bin} {$script_path} {$command} {$args} {$assoc_args}";
@@ -1095,18 +1095,18 @@ class WP_CLI {
 	 * @return mixed
 	 */
 	public static function runcommand( $command, $options = array() ) {
-		$defaults = array(
+		$defaults   = array(
 			'launch'     => true, // Launch a new process, or reuse the existing.
 			'exit_error' => true, // Exit on error by default.
 			'return'     => false, // Capture and return output, or render in realtime.
 			'parse'      => false, // Parse returned output as a particular format.
 		);
-		$options = array_merge( $defaults, $options );
-		$launch = $options['launch'];
+		$options    = array_merge( $defaults, $options );
+		$launch     = $options['launch'];
 		$exit_error = $options['exit_error'];
-		$return = $options['return'];
-		$parse = $options['parse'];
-		$retval = null;
+		$return     = $options['return'];
+		$parse      = $options['parse'];
+		$retval     = null;
 		if ( $launch ) {
 			Utils\check_proc_available( 'launch option' );
 
@@ -1124,12 +1124,12 @@ class WP_CLI {
 				);
 			}
 
-			$php_bin = escapeshellarg( Utils\get_php_binary() );
+			$php_bin     = escapeshellarg( Utils\get_php_binary() );
 			$script_path = $GLOBALS['argv'][0];
 
 			// Persist runtime arguments unless they've been specified otherwise.
-			$configurator = \WP_CLI::get_configurator();
-			$argv = array_slice( $GLOBALS['argv'], 1 );
+			$configurator                   = \WP_CLI::get_configurator();
+			$argv                           = array_slice( $GLOBALS['argv'], 1 );
 			list( $_, $_, $runtime_config ) = $configurator->parse_args( $argv );
 			foreach ( $runtime_config as $k => $v ) {
 				if ( preg_match( "|^--{$k}=?$|", $command ) ) {
@@ -1168,12 +1168,12 @@ class WP_CLI {
 				);
 			}
 		} else {
-			$configurator = self::get_configurator();
-			$argv = Utils\parse_str_to_argv( $command );
+			$configurator                               = self::get_configurator();
+			$argv                                       = Utils\parse_str_to_argv( $command );
 			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
 			if ( $return ) {
 				$existing_logger = self::$logger;
-				self::$logger = new WP_CLI\Loggers\Execution;
+				self::$logger    = new WP_CLI\Loggers\Execution;
 				self::$logger->ob_start();
 			}
 			if ( ! $exit_error ) {
@@ -1193,8 +1193,8 @@ class WP_CLI {
 				$execution_logger = self::$logger;
 				$execution_logger->ob_end();
 				self::$logger = $existing_logger;
-				$stdout = $execution_logger->stdout;
-				$stderr = $execution_logger->stderr;
+				$stdout       = $execution_logger->stdout;
+				$stderr       = $execution_logger->stderr;
 				if ( true === $return || 'stdout' === $return ) {
 					$retval = trim( $stdout );
 				} elseif ( 'stderr' === $return ) {

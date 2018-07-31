@@ -53,7 +53,7 @@ class WpHttpCacheManager {
 				// simulate successful download response
 				return array(
 					'response' => array(
-						'code' => 200,
+						'code'    => 200,
 						'message' => 'OK',
 					),
 					'filename' => $args['filename'],
@@ -115,7 +115,7 @@ class WpHttpCacheManager {
 	 * @param int    $ttl
 	 */
 	public function whitelist_url( $url, $key = null, $ttl = null ) {
-		$key = $key ? : $url;
+		$key                     = $key ? : $url;
 		$this->whitelist[ $url ] = compact( 'key', 'ttl' );
 	}
 

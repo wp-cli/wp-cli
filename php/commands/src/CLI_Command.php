@@ -29,9 +29,9 @@ class CLI_Command extends WP_CLI_Command {
 
 	private function command_to_array( $command ) {
 		$dump = array(
-			'name' => $command->get_name(),
+			'name'        => $command->get_name(),
 			'description' => $command->get_shortdesc(),
-			'longdesc' => $command->get_longdesc(),
+			'longdesc'    => $command->get_longdesc(),
 		);
 
 		foreach ( $command->get_subcommands() as $subcommand ) {
@@ -283,11 +283,11 @@ class CLI_Command extends WP_CLI_Command {
 		if ( Utils\get_flag_value( $assoc_args, 'nightly' ) ) {
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest nightly?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar';
-			$md5_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.md5';
+			$md5_url      = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar.md5';
 		} elseif ( Utils\get_flag_value( $assoc_args, 'stable' ) ) {
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to the latest stable release?', WP_CLI_VERSION ), $assoc_args );
 			$download_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar';
-			$md5_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.md5';
+			$md5_url      = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.md5';
 		} else {
 
 			$updates = $this->get_updates( $assoc_args );
@@ -303,7 +303,7 @@ class CLI_Command extends WP_CLI_Command {
 			WP_CLI::confirm( sprintf( 'You have version %s. Would you like to update to %s?', WP_CLI_VERSION, $newest['version'] ), $assoc_args );
 
 			$download_url = $newest['package_url'];
-			$md5_url = str_replace( '.phar', '.phar.md5', $download_url );
+			$md5_url      = str_replace( '.phar', '.phar.md5', $download_url );
 		}
 
 		WP_CLI::log( sprintf( 'Downloading from %s...', $download_url ) );
@@ -312,7 +312,7 @@ class CLI_Command extends WP_CLI_Command {
 
 		$headers = array();
 		$options = array(
-			'timeout' => 600,  // 10 minutes ought to be enough for everybody.
+			'timeout'  => 600,  // 10 minutes ought to be enough for everybody.
 			'filename' => $temp,
 		);
 
@@ -322,7 +322,7 @@ class CLI_Command extends WP_CLI_Command {
 		if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
 			WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$md5_response->status_code})." );
 		}
-		$md5_file = md5_file( $temp );
+		$md5_file     = md5_file( $temp );
 		$release_hash = trim( $md5_response->body );
 		if ( $md5_file === $release_hash ) {
 			WP_CLI::log( 'md5 hash verified: ' . $release_hash );
@@ -332,8 +332,8 @@ class CLI_Command extends WP_CLI_Command {
 
 		$allow_root = WP_CLI::get_runner()->config['allow-root'] ? '--allow-root' : '';
 		$php_binary = Utils\get_php_binary();
-		$process = WP_CLI\Process::create( "{$php_binary} $temp --info {$allow_root}" );
-		$result = $process->run();
+		$process    = WP_CLI\Process::create( "{$php_binary} $temp --info {$allow_root}" );
+		$result     = $process->run();
 		if ( 0 !== $result->return_code || false === stripos( $result->stdout, 'WP-CLI version' ) ) {
 			$multi_line = explode( PHP_EOL, $result->stderr );
 			WP_CLI::error_multi_line( $multi_line );
@@ -390,9 +390,9 @@ class CLI_Command extends WP_CLI_Command {
 		$release_data = json_decode( $response->body );
 
 		$updates = array(
-			'major'      => false,
-			'minor'      => false,
-			'patch'      => false,
+			'major' => false,
+			'minor' => false,
+			'patch' => false,
 		);
 		foreach ( $release_data as $release ) {
 
@@ -412,7 +412,7 @@ class CLI_Command extends WP_CLI_Command {
 			}
 
 			$updates[ $update_type ] = array(
-				'version' => $release_version,
+				'version'     => $release_version,
 				'update_type' => $update_type,
 				'package_url' => $release->assets[0]->browser_download_url,
 			);
@@ -432,16 +432,16 @@ class CLI_Command extends WP_CLI_Command {
 
 		if ( empty( $updates ) && preg_match( '#-alpha-(.+)$#', WP_CLI_VERSION, $matches ) ) {
 			$version_url = 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/NIGHTLY_VERSION';
-			$response = Utils\http_request( 'GET', $version_url );
+			$response    = Utils\http_request( 'GET', $version_url );
 			if ( ! $response->success || 200 !== $response->status_code ) {
 				WP_CLI::error( sprintf( 'Failed to get current nightly version (HTTP code %d)', $response->status_code ) );
 			}
 			$nightly_version = trim( $response->body );
 			if ( WP_CLI_VERSION != $nightly_version ) {
 				$updates['nightly'] = array(
-					'version'        => $nightly_version,
-					'update_type'    => 'nightly',
-					'package_url'    => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
+					'version'     => $nightly_version,
+					'update_type' => 'nightly',
+					'package_url' => 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli-nightly.phar',
 				);
 			}
 		}
@@ -541,7 +541,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *     eval-file
 	 */
 	public function completions( $_, $assoc_args ) {
-		$line = substr( $assoc_args['line'], 0, $assoc_args['point'] );
+		$line  = substr( $assoc_args['line'], 0, $assoc_args['point'] );
 		$compl = new \WP_CLI\Completions( $line );
 		$compl->render();
 	}

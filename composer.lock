@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2f7842c55102768e34d9d48b187ab0b7",
+    "content-hash": "5b3032f9ed818e3d27e6a02ee0d84c0d",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -3232,6 +3232,105 @@
             "time": "2017-12-06T16:27:17+00:00"
         },
         {
+            "name": "phpcompatibility/php-compatibility",
+            "version": "8.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PHPCompatibility/PHPCompatibility.git",
+                "reference": "eaf613c1a8265bcfd7b0ab690783f2aef519f78a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PHPCompatibility/PHPCompatibility/zipball/eaf613c1a8265bcfd7b0ab690783f2aef519f78a",
+                "reference": "eaf613c1a8265bcfd7b0ab690783f2aef519f78a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3",
+                "squizlabs/php_codesniffer": "^2.3 || ^3.0.2"
+            },
+            "conflict": {
+                "squizlabs/php_codesniffer": "2.6.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.5 || ^5.0 || ^6.0 || ^7.0"
+            },
+            "suggest": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3 || This Composer plugin will sort out the PHPCS 'installed_paths' automatically.",
+                "roave/security-advisories": "dev-master || Helps prevent installing dependencies with known security issues."
+            },
+            "type": "phpcodesniffer-standard",
+            "autoload": {
+                "psr-4": {
+                    "PHPCompatibility\\": "PHPCompatibility/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Wim Godden",
+                    "role": "lead"
+                }
+            ],
+            "description": "A set of sniffs for PHP_CodeSniffer that checks for PHP version compatibility.",
+            "homepage": "http://techblog.wimgodden.be/tag/codesniffer/",
+            "keywords": [
+                "compatibility",
+                "phpcs",
+                "standards"
+            ],
+            "time": "2018-07-17T13:42:26+00:00"
+        },
+        {
+            "name": "phpcompatibility/phpcompatibility-wp",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PHPCompatibility/PHPCompatibilityWP.git",
+                "reference": "b26c84df3ec1d4850d0f22264a4a16482a171996"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PHPCompatibility/PHPCompatibilityWP/zipball/b26c84df3ec1d4850d0f22264a4a16482a171996",
+                "reference": "b26c84df3ec1d4850d0f22264a4a16482a171996",
+                "shasum": ""
+            },
+            "require": {
+                "phpcompatibility/php-compatibility": "^8.1"
+            },
+            "suggest": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3 || This Composer plugin will sort out the PHPCS 'installed_paths' automatically.",
+                "roave/security-advisories": "dev-master || Helps prevent installing dependencies with known security issues."
+            },
+            "type": "phpcodesniffer-standard",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Wim Godden",
+                    "role": "lead"
+                },
+                {
+                    "name": "Juliette Reinders Folmer",
+                    "role": "lead"
+                }
+            ],
+            "description": "A set of sniffs for PHP_CodeSniffer that checks for PHP version compatibility for WordPress projects.",
+            "homepage": "http://phpcompatibility.com/",
+            "keywords": [
+                "compatibility",
+                "phpcs",
+                "standards",
+                "wordpress"
+            ],
+            "time": "2018-07-16T22:10:02+00:00"
+        },
+        {
             "name": "phpunit/php-code-coverage",
             "version": "1.2.18",
             "source": {
@@ -3850,78 +3949,28 @@
             "time": "2017-05-22T02:43:20+00:00"
         },
         {
-            "name": "wimg/php-compatibility",
-            "version": "8.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/PHPCompatibility/PHPCompatibility.git",
-                "reference": "eaf613c1a8265bcfd7b0ab690783f2aef519f78a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/PHPCompatibility/PHPCompatibility/zipball/eaf613c1a8265bcfd7b0ab690783f2aef519f78a",
-                "reference": "eaf613c1a8265bcfd7b0ab690783f2aef519f78a",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3",
-                "squizlabs/php_codesniffer": "^2.3 || ^3.0.2"
-            },
-            "conflict": {
-                "squizlabs/php_codesniffer": "2.6.2"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "~4.5 || ^5.0 || ^6.0 || ^7.0"
-            },
-            "suggest": {
-                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3 || This Composer plugin will sort out the PHPCS 'installed_paths' automatically.",
-                "roave/security-advisories": "dev-master || Helps prevent installing dependencies with known security issues."
-            },
-            "type": "phpcodesniffer-standard",
-            "autoload": {
-                "psr-4": {
-                    "PHPCompatibility\\": "PHPCompatibility/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL-3.0-or-later"
-            ],
-            "authors": [
-                {
-                    "name": "Wim Godden",
-                    "role": "lead"
-                }
-            ],
-            "description": "A set of sniffs for PHP_CodeSniffer that checks for PHP version compatibility.",
-            "homepage": "http://techblog.wimgodden.be/tag/codesniffer/",
-            "keywords": [
-                "compatibility",
-                "phpcs",
-                "standards"
-            ],
-            "time": "2018-07-17T13:42:26+00:00"
-        },
-        {
             "name": "wp-coding-standards/wpcs",
-            "version": "0.13.1",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards.git",
-                "reference": "1f64b1a0b5b789822d0303436ee4e30e0135e4dc"
+                "reference": "539c6d74e6207daa22b7ea754d6f103e9abb2755"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/WordPress-Coding-Standards/WordPress-Coding-Standards/zipball/1f64b1a0b5b789822d0303436ee4e30e0135e4dc",
-                "reference": "1f64b1a0b5b789822d0303436ee4e30e0135e4dc",
+                "url": "https://api.github.com/repos/WordPress-Coding-Standards/WordPress-Coding-Standards/zipball/539c6d74e6207daa22b7ea754d6f103e9abb2755",
+                "reference": "539c6d74e6207daa22b7ea754d6f103e9abb2755",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3",
                 "squizlabs/php_codesniffer": "^2.9.0 || ^3.0.2"
             },
+            "require-dev": {
+                "phpcompatibility/php-compatibility": "*"
+            },
             "suggest": {
-                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.1"
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3 || This Composer plugin will sort out the PHPCS 'installed_paths' automatically."
             },
             "type": "phpcodesniffer-standard",
             "notification-url": "https://packagist.org/downloads/",
@@ -3940,7 +3989,7 @@
                 "standards",
                 "wordpress"
             ],
-            "time": "2017-08-05T16:08:58+00:00"
+            "time": "2018-07-25T18:10:35+00:00"
         }
     ],
     "aliases": [],
