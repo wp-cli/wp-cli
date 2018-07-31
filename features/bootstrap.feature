@@ -158,7 +158,7 @@ Feature: Bootstrap WP-CLI
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (web)
     Given a WP installation with Composer
     And a dependency on current wp-cli
-    And a PHP built-in web server to serve 'wordpress'
+    And a PHP built-in web server to serve 'WordPress'
     Then the HTTP status code should be 200
 
   Scenario: Composer stack with both WordPress and wp-cli as dependencies and a custom vendor directory
