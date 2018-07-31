@@ -1001,6 +1001,105 @@
             "time": "2018-02-14T22:26:30+00:00"
         },
         {
+            "name": "phpcompatibility/php-compatibility",
+            "version": "8.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PHPCompatibility/PHPCompatibility.git",
+                "reference": "eaf613c1a8265bcfd7b0ab690783f2aef519f78a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PHPCompatibility/PHPCompatibility/zipball/eaf613c1a8265bcfd7b0ab690783f2aef519f78a",
+                "reference": "eaf613c1a8265bcfd7b0ab690783f2aef519f78a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3",
+                "squizlabs/php_codesniffer": "^2.3 || ^3.0.2"
+            },
+            "conflict": {
+                "squizlabs/php_codesniffer": "2.6.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.5 || ^5.0 || ^6.0 || ^7.0"
+            },
+            "suggest": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3 || This Composer plugin will sort out the PHPCS 'installed_paths' automatically.",
+                "roave/security-advisories": "dev-master || Helps prevent installing dependencies with known security issues."
+            },
+            "type": "phpcodesniffer-standard",
+            "autoload": {
+                "psr-4": {
+                    "PHPCompatibility\\": "PHPCompatibility/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Wim Godden",
+                    "role": "lead"
+                }
+            ],
+            "description": "A set of sniffs for PHP_CodeSniffer that checks for PHP version compatibility.",
+            "homepage": "http://techblog.wimgodden.be/tag/codesniffer/",
+            "keywords": [
+                "compatibility",
+                "phpcs",
+                "standards"
+            ],
+            "time": "2018-07-17T13:42:26+00:00"
+        },
+        {
+            "name": "phpcompatibility/phpcompatibility-wp",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PHPCompatibility/PHPCompatibilityWP.git",
+                "reference": "b26c84df3ec1d4850d0f22264a4a16482a171996"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PHPCompatibility/PHPCompatibilityWP/zipball/b26c84df3ec1d4850d0f22264a4a16482a171996",
+                "reference": "b26c84df3ec1d4850d0f22264a4a16482a171996",
+                "shasum": ""
+            },
+            "require": {
+                "phpcompatibility/php-compatibility": "^8.1"
+            },
+            "suggest": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3 || This Composer plugin will sort out the PHPCS 'installed_paths' automatically.",
+                "roave/security-advisories": "dev-master || Helps prevent installing dependencies with known security issues."
+            },
+            "type": "phpcodesniffer-standard",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Wim Godden",
+                    "role": "lead"
+                },
+                {
+                    "name": "Juliette Reinders Folmer",
+                    "role": "lead"
+                }
+            ],
+            "description": "A set of sniffs for PHP_CodeSniffer that checks for PHP version compatibility for WordPress projects.",
+            "homepage": "http://phpcompatibility.com/",
+            "keywords": [
+                "compatibility",
+                "phpcs",
+                "standards",
+                "wordpress"
+            ],
+            "time": "2018-07-16T22:10:02+00:00"
+        },
+        {
             "name": "phpdocumentor/reflection-docblock",
             "version": "2.0.5",
             "source": {
@@ -3016,16 +3115,16 @@
         },
         {
             "name": "wp-cli/core-command",
-            "version": "v1.0.11",
+            "version": "v1.0.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/core-command.git",
-                "reference": "96b7ee4a035c11f473a07c04cd6c07bbf053d797"
+                "reference": "b41913707029c5147b38810700e424ed5f5fe8e0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/core-command/zipball/96b7ee4a035c11f473a07c04cd6c07bbf053d797",
-                "reference": "96b7ee4a035c11f473a07c04cd6c07bbf053d797",
+                "url": "https://api.github.com/repos/wp-cli/core-command/zipball/b41913707029c5147b38810700e424ed5f5fe8e0",
+                "reference": "b41913707029c5147b38810700e424ed5f5fe8e0",
                 "shasum": ""
             },
             "require-dev": {
@@ -3072,7 +3171,7 @@
             ],
             "description": "Downloads, installs, updates, and manages a WordPress installation.",
             "homepage": "https://github.com/wp-cli/core-command",
-            "time": "2018-07-20T12:46:52+00:00"
+            "time": "2018-07-25T15:55:02+00:00"
         },
         {
             "name": "wp-cli/db-command",
@@ -3541,28 +3640,28 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/wp-cli-tests.git",
-                "reference": "953e40892665934b450ea764e62374e102cb1715"
+                "reference": "e434d149f48d51f61e1340b1d57fd3155ef65ae6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/953e40892665934b450ea764e62374e102cb1715",
-                "reference": "953e40892665934b450ea764e62374e102cb1715",
+                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/e434d149f48d51f61e1340b1d57fd3155ef65ae6",
+                "reference": "e434d149f48d51f61e1340b1d57fd3155ef65ae6",
                 "shasum": ""
             },
             "require": {
                 "behat/behat": "^2.5",
-                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.4",
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3",
                 "jakub-onderka/php-console-highlighter": "^0.3.2",
                 "jakub-onderka/php-parallel-lint": "^1.0",
                 "php": ">=5.4",
+                "phpcompatibility/phpcompatibility-wp": "^1",
                 "phpunit/phpunit": ">=4.8 <7",
                 "roave/security-advisories": "dev-master",
-                "squizlabs/php_codesniffer": "^3.3",
                 "wimg/php-compatibility": "^8.1",
                 "wp-cli/config-command": "^1.0",
                 "wp-cli/core-command": "^1.0",
                 "wp-cli/eval-command": "^1.0",
-                "wp-coding-standards/wpcs": "^0.14.1"
+                "wp-coding-standards/wpcs": "^1"
             },
             "require-dev": {
                 "wp-cli/regenerate-readme": "dev-master",
@@ -3599,7 +3698,7 @@
                 "cli",
                 "wordpress"
             ],
-            "time": "2018-07-31T12:05:03+00:00"
+            "time": "2018-07-31T17:23:12+00:00"
         },
         {
             "name": "wp-cli/wp-config-transformer",
@@ -3644,24 +3743,27 @@
         },
         {
             "name": "wp-coding-standards/wpcs",
-            "version": "0.14.1",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards.git",
-                "reference": "cf6b310caad735816caef7573295f8a534374706"
+                "reference": "539c6d74e6207daa22b7ea754d6f103e9abb2755"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/WordPress-Coding-Standards/WordPress-Coding-Standards/zipball/cf6b310caad735816caef7573295f8a534374706",
-                "reference": "cf6b310caad735816caef7573295f8a534374706",
+                "url": "https://api.github.com/repos/WordPress-Coding-Standards/WordPress-Coding-Standards/zipball/539c6d74e6207daa22b7ea754d6f103e9abb2755",
+                "reference": "539c6d74e6207daa22b7ea754d6f103e9abb2755",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3",
                 "squizlabs/php_codesniffer": "^2.9.0 || ^3.0.2"
             },
+            "require-dev": {
+                "phpcompatibility/php-compatibility": "*"
+            },
             "suggest": {
-                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3"
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3 || This Composer plugin will sort out the PHPCS 'installed_paths' automatically."
             },
             "type": "phpcodesniffer-standard",
             "notification-url": "https://packagist.org/downloads/",
@@ -3680,7 +3782,7 @@
                 "standards",
                 "wordpress"
             ],
-            "time": "2018-02-16T01:57:48+00:00"
+            "time": "2018-07-25T18:10:35+00:00"
         }
     ],
     "aliases": [],

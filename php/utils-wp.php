@@ -357,8 +357,10 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 		foreach ( $args as $arg ) {
 			if ( false !== strpos( $arg, '*' ) || false !== strpos( $arg, '?' ) ) {
 				$args_tables = array_merge(
-					$args_tables, array_filter(
-						$tables, function ( $v ) use ( $arg ) {
+					$args_tables,
+					array_filter(
+						$tables,
+						function ( $v ) use ( $arg ) {
 							return fnmatch( $arg, $v );
 						}
 					)
