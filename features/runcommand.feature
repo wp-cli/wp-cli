@@ -255,11 +255,10 @@ Feature: Run a WP-CLI command
   Scenario Outline: Persists global parameters when supplied interactively
     Given a WP installation in 'foo'
 
-    When I run `wp <flag> --path=foo run 'rewrite structure "archives/%post_id%/" --path=foo'`
+    When I run `wp <flag> --path=foo run 'config set test 42 --type=constant'`
     Then STDOUT should be:
       """
-      Success: Rewrite rules flushed.
-      Success: Rewrite structure set.
+      Success: Added the constant 'test' to the 'wp-config.php' file with the value '42'.
       returned: NULL
       """
     And STDERR should be empty

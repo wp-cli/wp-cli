@@ -1226,11 +1226,13 @@ function is_bundled_command( $command ) {
 	static $classes;
 
 	if ( null === $classes ) {
-		$classes   = array();
-		$class_map = WP_CLI_VENDOR_DIR . '/composer/autoload_commands_classmap.php';
-		if ( file_exists( WP_CLI_VENDOR_DIR . '/composer/' ) ) {
-			$classes = include $class_map;
-		}
+		$classes = array();
+		// TODO: This needs to be rebuilt.
+		// $class_map = WP_CLI_VENDOR_DIR . '/composer/autoload_commands_classmap.php';
+		// if ( file_exists( WP_CLI_VENDOR_DIR . '/composer/' ) ) {
+		// 	$classes = include $class_map;
+		// }
+		$classes = array( 'CLI_Command' => true );
 	}
 
 	if ( is_object( $command ) ) {
@@ -1482,11 +1484,45 @@ function parse_shell_arrays( $assoc_args, $array_arguments ) {
 }
 
 /**
+ * Describe a callable as a string.
+ *
+ * @param callable $callable The callable to describe.
+ *
+ * @return string String description of the callable.
+ */
+function describe_callable( $callable ) {
+	try {
+		if ( $callable instanceof \Closure ) {
+			$reflection = new \ReflectionFunction( $callable );
+
+			return (string) "Closure in file {$reflection->getFileName()} at line {$reflection->getStartLine()}";
+		}
+
+		if ( is_array( $callable ) ) {
+			if ( is_object( $callable[0] ) ) {
+				return (string) sprintf(
+					'%s->%s()',
+					get_class( $callable[0] ),
+					$callable[1]
+				);
+			}
+
+			return (string) sprintf( '%s::%s()', $callable[0], $callable[1] );
+		}
+
+		return (string) gettype( $callable );
+	} catch ( \Exception $exception ) {
+		return 'Callable of unknown type';
+	}
+}
+
+/**
  * Pluralizes a noun in a grammatically correct way.
  *
  * @param string   $noun  Noun to be pluralized. Needs to be in singular form.
- * @param int|null $count Optional. Count of the nouns, to decide whether to pluralize.
- *                        Will pluralize unconditionally if none provided.
+ * @param int|null $count Optional. Count of the nouns, to decide whether to
+ *                        pluralize. Will pluralize unconditionally if none
+ *                        provided.
  *
  * @return string Pluralized noun.
  */

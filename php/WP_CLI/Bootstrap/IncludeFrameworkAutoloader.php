@@ -22,15 +22,20 @@ final class IncludeFrameworkAutoloader extends AutoloaderStep {
 	 */
 	protected function get_autoloader_paths() {
 		$autoloader_paths = array(
-			WP_CLI_VENDOR_DIR . '/autoload_framework.php',
+			WP_CLI_VENDOR_DIR . '/autoload.php',
 		);
 
 		if ( $custom_vendor = $this->get_custom_vendor_folder() ) {
 			array_unshift(
 				$autoloader_paths,
-				WP_CLI_ROOT . '/../../../' . $custom_vendor . '/autoload_framework.php'
+				WP_CLI_ROOT . '/../../../' . $custom_vendor . '/autoload.php'
 			);
 		}
+
+		\WP_CLI::debug( sprintf(
+			'Framework autoloader paths: %s',
+			implode( ', ', $autoloader_paths )
+		), 'bootstrap' );
 
 		return $autoloader_paths;
 	}
