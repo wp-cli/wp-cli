@@ -238,6 +238,13 @@ class WP_CLI {
 	 */
 	public static function add_hook( $when, $callback ) {
 		if ( array_key_exists( $when, self::$hooks_passed ) ) {
+			\WP_CLI::debug(
+				sprintf(
+					'Immediately invoking on passed hook "%s": %s',
+					$when,
+					Utils\describe_callable( $callback )
+				), 'hooks'
+			);
 			call_user_func_array( $callback, (array) self::$hooks_passed[ $when ] );
 		}
 
