@@ -8,6 +8,7 @@ use \Composer\Semver\Comparator;
 use \Composer\Semver\Semver;
 use \WP_CLI;
 use \WP_CLI\Dispatcher;
+use \WP_CLI\Inflector;
 use \WP_CLI\Iterators\Transform;
 
 const PHAR_STREAM_PREFIX = 'phar://';
@@ -1513,4 +1514,21 @@ function describe_callable( $callable ) {
 	} catch ( \Exception $exception ) {
 		return 'Callable of unknown type';
 	}
+}
+
+/**  
+ * Pluralizes a noun in a grammatically correct way.
+ *
+ * @param string   $noun  Noun to be pluralized. Needs to be in singular form.
+ * @param int|null $count Optional. Count of the nouns, to decide whether to pluralize.
+ *                        Will pluralize unconditionally if none provided.
+ *
+ * @return string Pluralized noun.
+ */
+function pluralize( $noun, $count = null ) {
+	if ( 1 === $count ) {
+		return $noun;
+	}
+
+	return Inflector::pluralize( $noun );
 }
