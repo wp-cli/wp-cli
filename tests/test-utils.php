@@ -709,4 +709,17 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			array( array( 'alpha' => '{"key":"value"}' ), array( 'beta' ), array( 'alpha' => '{"key":"value"}' ) ),
 		);
 	}
+
+	/** @dataProvider dataPluralize */
+	public function testPluralize( $singular, $count, $expected ) {
+		$this->assertEquals( $expected, Utils\pluralize( $singular, $count ) );
+	}
+
+	public function dataPluralize() {
+		return array(
+			array( 'string', 1, 'string' ),
+			array( 'string', 2, 'strings' ),
+			array( 'string', null, 'strings' ),
+		);
+	}
 }
