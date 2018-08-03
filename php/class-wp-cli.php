@@ -693,6 +693,21 @@ class WP_CLI {
 	 * @return null
 	 */
 	public static function debug( $message, $group = false ) {
+		static $storage = array();
+
+		if ( ! self::$logger ) {
+			$storage[] = array( $message, $group );
+			return;
+		}
+
+		if ( ! empty( $storage ) && self::$logger ) {
+			foreach ( $storage as $entry ) {
+				list( $message, $group ) = $entry;
+				self::$logger->debug( self::error_to_string( $message ), $group );
+				$storage = array();
+			}
+		}
+
 		self::$logger->debug( self::error_to_string( $message ), $group );
 	}
 
