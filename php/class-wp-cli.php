@@ -259,6 +259,7 @@ class WP_CLI {
 	 * @return null
 	 */
 	public static function do_hook( $when ) {
+
 		$args = func_num_args() > 1
 			? array_slice( func_get_args(), 1 )
 			: array();
@@ -266,10 +267,31 @@ class WP_CLI {
 		self::$hooks_passed[ $when ] = $args;
 
 		if ( ! isset( self::$hooks[ $when ] ) ) {
+			\WP_CLI::debug(
+				sprintf(
+					'Skipping hook "%s", no callbacks set',
+					$when
+				), 'hooks'
+			);
 			return;
 		}
 
+		\WP_CLI::debug(
+			sprintf(
+				'Processing hook "%s" with %d callbacks',
+				$when,
+				count( self::$hooks[ $when ] )
+			), 'hooks'
+		);
+
 		foreach ( self::$hooks[ $when ] as $callback ) {
+			\WP_CLI::debug(
+				sprintf(
+					'On hook "%s": %s',
+					$when,
+					Utils\describe_callable( $callback )
+				), 'hooks'
+			);
 			call_user_func_array( $callback, $args );
 		}
 	}
