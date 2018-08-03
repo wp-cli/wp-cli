@@ -1516,12 +1516,13 @@ function describe_callable( $callable ) {
 	}
 }
 
-/**  
+/**
  * Pluralizes a noun in a grammatically correct way.
  *
  * @param string   $noun  Noun to be pluralized. Needs to be in singular form.
- * @param int|null $count Optional. Count of the nouns, to decide whether to pluralize.
- *                        Will pluralize unconditionally if none provided.
+ * @param int|null $count Optional. Count of the nouns, to decide whether to
+ *                        pluralize. Will pluralize unconditionally if none
+ *                        provided.
  *
  * @return string Pluralized noun.
  */
