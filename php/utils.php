@@ -1481,3 +1481,36 @@ function parse_shell_arrays( $assoc_args, $array_arguments ) {
 
 	return $assoc_args;
 }
+
+/**
+ * Describe a callable as a string.
+ *
+ * @param callable $callable The callable to describe.
+ *
+ * @return string String description of the callable.
+ */
+function describe_callable( $callable ) {
+	try {
+		if ( $callable instanceof \Closure ) {
+			$reflection = new \ReflectionFunction( $callable );
+
+			return (string) "Closure in file {$reflection->getFileName()} at line {$reflection->getStartLine()}";
+		}
+
+		if ( is_array( $callable ) ) {
+			if ( is_object( $callable[0] ) ) {
+				return (string) sprintf(
+					'%s->%s()',
+					get_class( $callable[0] ),
+					$callable[1]
+				);
+			}
+
+			return (string) sprintf( '%s::%s()', $callable[0], $callable[1] );
+		}
+
+		return (string) gettype( $callable );
+	} catch ( \Exception $exception ) {
+		return 'Callable of unknown type';
+	}
+}
