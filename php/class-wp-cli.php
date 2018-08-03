@@ -212,6 +212,7 @@ class WP_CLI {
 	 * * `before_wp_config_load` - After wp-config.php has been located.
 	 * * `after_wp_config_load` - After wp-config.php has been loaded into scope.
 	 * * `after_wp_load` - Just after the WP load process has completed.
+	 * * `before_run_command` - Just before the command is executed.
 	 *
 	 * WP-CLI commands can create their own hooks with `WP_CLI::do_hook()`.
 	 *
@@ -238,6 +239,13 @@ class WP_CLI {
 	 */
 	public static function add_hook( $when, $callback ) {
 		if ( array_key_exists( $when, self::$hooks_passed ) ) {
+			\WP_CLI::debug(
+				sprintf(
+					'Immediately invoking on passed hook "%s": %s',
+					$when,
+					Utils\describe_callable( $callback )
+				), 'hooks'
+			);
 			call_user_func_array( $callback, (array) self::$hooks_passed[ $when ] );
 		}
 
@@ -259,6 +267,7 @@ class WP_CLI {
 	 * @return null
 	 */
 	public static function do_hook( $when ) {
+
 		$args = func_num_args() > 1
 			? array_slice( func_get_args(), 1 )
 			: array();
@@ -269,7 +278,22 @@ class WP_CLI {
 			return;
 		}
 
+		\WP_CLI::debug(
+			sprintf(
+				'Processing hook "%s" with %d callbacks',
+				$when,
+				count( self::$hooks[ $when ] )
+			), 'hooks'
+		);
+
 		foreach ( self::$hooks[ $when ] as $callback ) {
+			\WP_CLI::debug(
+				sprintf(
+					'On hook "%s": %s',
+					$when,
+					Utils\describe_callable( $callback )
+				), 'hooks'
+			);
 			call_user_func_array( $callback, $args );
 		}
 	}
@@ -462,8 +486,16 @@ class WP_CLI {
 						$subcommand_name,
 						new \WP_CLI\DocParser( '' )
 					);
+
+					\WP_CLI::debug(
+						"Adding empty container for deferred command: {$name}",
+						'commands'
+					);
+
 					$command->add_subcommand( $subcommand_name, $subcommand );
 				} else {
+					\WP_CLI::debug( "Deferring command: {$name}", 'commands' );
+
 					self::defer_command_addition(
 						$name,
 						$parent,
@@ -540,6 +572,8 @@ class WP_CLI {
 		if ( isset( $args['when'] ) ) {
 			self::get_runner()->register_early_invoke( $args['when'], $leaf_command );
 		}
+
+		\WP_CLI::debug( "Adding command: {$name}", 'commands' );
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
 
@@ -693,6 +727,21 @@ class WP_CLI {
 	 * @return null
 	 */
 	public static function debug( $message, $group = false ) {
+		static $storage = array();
+
+		if ( ! self::$logger ) {
+			$storage[] = array( $message, $group );
+			return;
+		}
+
+		if ( ! empty( $storage ) && self::$logger ) {
+			foreach ( $storage as $entry ) {
+				list( $message, $group ) = $entry;
+				self::$logger->debug( self::error_to_string( $message ), $group );
+				$storage = array();
+			}
+		}
+
 		self::$logger->debug( self::error_to_string( $message ), $group );
 	}
 
