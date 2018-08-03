@@ -1490,7 +1490,7 @@ function parse_shell_arrays( $assoc_args, $array_arguments ) {
  *
  * @return string Pluralized noun.
  */
-public function pluralize( $noun, $count = null ) {
+function pluralize( $noun, $count = null ) {
 	if ( 1 === count ) {
 		return $noun;
 	}
