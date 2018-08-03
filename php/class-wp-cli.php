@@ -274,12 +274,6 @@ class WP_CLI {
 		self::$hooks_passed[ $when ] = $args;
 
 		if ( ! isset( self::$hooks[ $when ] ) ) {
-			\WP_CLI::debug(
-				sprintf(
-					'Skipping hook "%s", no callbacks set',
-					$when
-				), 'hooks'
-			);
 			return;
 		}
 
@@ -491,8 +485,17 @@ class WP_CLI {
 						$subcommand_name,
 						new \WP_CLI\DocParser( '' )
 					);
+
+					die();
+					\WP_CLI::debug(
+						"Adding empty container for deferred command: {$name}",
+						'commands'
+					);
+
 					$command->add_subcommand( $subcommand_name, $subcommand );
 				} else {
+					\WP_CLI::debug( "Deferring command: {$name}", 'commands' );
+
 					self::defer_command_addition(
 						$name,
 						$parent,
@@ -569,6 +572,8 @@ class WP_CLI {
 		if ( isset( $args['when'] ) ) {
 			self::get_runner()->register_early_invoke( $args['when'], $leaf_command );
 		}
+
+		\WP_CLI::debug( "Adding command: {$name}", 'commands' );
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
 
