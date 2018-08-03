@@ -486,7 +486,6 @@ class WP_CLI {
 						new \WP_CLI\DocParser( '' )
 					);
 
-					die();
 					\WP_CLI::debug(
 						"Adding empty container for deferred command: {$name}",
 						'commands'
