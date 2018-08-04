@@ -70,5 +70,4 @@ jobs:
       env: WP_VERSION=trunk
     - stage: test
       php: 5.4
-      dist: precise
       env: WP_VERSION=latest
