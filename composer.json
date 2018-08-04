@@ -1,99 +1,71 @@
 {
-	"name": "wp-cli/wp-cli",
-	"description": "The command line interface for WordPress",
-	"keywords": [ "cli", "wordpress" ],
-	"homepage": "https://wp-cli.org",
-	"license": "MIT",
-	"support": {
-		"issues": "https://github.com/wp-cli/wp-cli/issues",
-		"source": "https://github.com/wp-cli/wp-cli",
-		"docs": "https://make.wordpress.org/cli/handbook/"
-	},
-	"bin": [
-		"bin/wp.bat", "bin/wp"
-	],
-	"config": {
-		"platform": {
-			"php": "5.3.29"
-		},
-		"sort-packages": true
-	},
-	"minimum-stability": "dev",
-	"prefer-stable": true,
-	"require": {
-		"php": ">=5.3.29",
-		"composer/composer": "^1.2.0",
-		"composer/semver": "~1.0",
-		"justinrainbow/json-schema": "~5.2.5",
-		"mustache/mustache": "~2.4",
-		"ramsey/array_column": "~1.1",
-		"rmccue/requests": "~1.6",
-		"symfony/config": "^2.7|^3.0",
-		"symfony/console": "^2.7|^3.0",
-		"symfony/debug": "^2.7|^3.0",
-		"symfony/dependency-injection": "^2.7|^3.0",
-		"symfony/event-dispatcher": "^2.7|^3.0",
-		"symfony/filesystem": "^2.7|^3.0",
-		"symfony/finder": "^2.7|^3.0",
-		"symfony/process": "^2.1|^3.0",
-		"symfony/translation": "^2.7|^3.0",
-		"symfony/yaml": "^2.7|^3.0",
-		"wp-cli/autoload-splitter": "^0.1.5",
-		"wp-cli/cache-command": "^1.0",
-		"wp-cli/checksum-command": "^1.0",
-		"wp-cli/config-command": "^1.0",
-		"wp-cli/core-command": "^1.0",
-		"wp-cli/cron-command": "^1.0",
-		"wp-cli/db-command": "^1.0",
-		"wp-cli/embed-command": "^1.0",
-		"wp-cli/entity-command": "^1.0",
-		"wp-cli/eval-command": "^1.0",
-		"wp-cli/export-command": "^1.0",
-		"wp-cli/extension-command": "^1.0",
-		"wp-cli/import-command": "^1.0",
-		"wp-cli/language-command": "^1.0",
-		"wp-cli/media-command": "^1.0",
-		"wp-cli/mustangostang-spyc": "^0.6.3",
-		"wp-cli/package-command": "^1.0",
-		"wp-cli/php-cli-tools": "~0.11.2",
-		"wp-cli/rewrite-command": "^1.0",
-		"wp-cli/role-command": "^1.0",
-		"wp-cli/scaffold-command": "^1.0",
-		"wp-cli/search-replace-command": "^1.0",
-		"wp-cli/server-command": "^1.0",
-		"wp-cli/shell-command": "^1.0",
-		"wp-cli/super-admin-command": "^1.0",
-		"wp-cli/widget-command": "^1.0"
-	},
-	"require-dev": {
-		"behat/behat": "2.5.*",
-		"dealerdirect/phpcodesniffer-composer-installer": "^0.4.3",
-		"phpunit/phpunit": "3.7.*",
-		"roave/security-advisories": "dev-master",
-		"wimg/php-compatibility": "^8.0",
-		"wp-coding-standards/wpcs": "^0.13.1"
-	},
-	"suggest": {
-		"psy/psysh": "Enhanced `wp shell` functionality"
-	},
-	"autoload": {
-		"psr-0": { "WP_CLI": "php" },
-		"psr-4": { "": "php/commands/src" }
-	},
-	"scripts": {
-		"post-install-cmd": [
-			"./utils/git-setup-pre-commit-hook"
-		]
-	},
-	"extra": {
-		"branch-alias": {
-			"dev-master": "1.5.x-dev"
-		},
-		"autoload-splitter": {
-			"splitter-logic": "WP_CLI\\AutoloadSplitter",
-			"splitter-location": "php/WP_CLI/AutoloadSplitter.php",
-			"split-target-prefix-true": "autoload_commands",
-			"split-target-prefix-false": "autoload_framework"
-		}
-	}
+    "name": "wp-cli/wp-cli",
+    "description": "WP-CLI framework",
+    "keywords": [
+        "cli",
+        "wordpress"
+    ],
+    "homepage": "https://wp-cli.org",
+    "license": "MIT",
+    "support": {
+        "issues": "https://github.com/wp-cli/wp-cli/issues",
+        "source": "https://github.com/wp-cli/wp-cli",
+        "docs": "https://make.wordpress.org/cli/handbook/"
+    },
+    "bin": [
+        "bin/wp.bat",
+        "bin/wp"
+    ],
+    "config": {
+        "platform": {
+            "php": "5.4"
+        },
+        "process-timeout": 7200,
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=5.4",
+        "mustache/mustache": "~2.4",
+        "ramsey/array_column": "~1.1",
+        "rmccue/requests": "~1.6",
+        "symfony/finder": ">2.7",
+        "wp-cli/php-cli-tools": "~0.11.2",
+        "wp-cli/mustangostang-spyc": "^0.6.3"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master",
+        "wp-cli/db-command": "^1.3",
+        "wp-cli/entity-command": "^1.2",
+        "wp-cli/extension-command": "^1.1",
+        "wp-cli/package-command": "^1.0",
+        "wp-cli/wp-cli-tests": "dev-master"
+    },
+    "autoload": {
+        "psr-0": {
+            "WP_CLI": "php"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "./utils/git-setup-pre-commit-hook"
+        ],
+        "lint": "run-linter-tests",
+        "phpcs": "run-phpcs-tests",
+        "phpunit": "run-php-unit-tests",
+        "behat": "run-behat-tests",
+        "prepare-tests": "install-package-tests",
+        "test": [
+            "@lint",
+            "@phpcs",
+            "@phpunit",
+            "@behat"
+        ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.0.x-dev"
+        }
+    }
 }

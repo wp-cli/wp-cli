@@ -145,64 +145,11 @@ Feature: Bootstrap WP-CLI
         WP-Override-CLI
         """
 
-  Scenario: Override command bundled with freshly built PHAR
-
-    Given an empty directory
-    And a new Phar with the same version
-    And a cli-override-command/cli.php file:
-      """
-      <?php
-      if ( ! class_exists( 'WP_CLI' ) ) {
-        return;
-      }
-      $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
-      if ( file_exists( $autoload ) ) {
-        require_once $autoload;
-      }
-      WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
-      """
-    And a cli-override-command/src/CLI_Command.php file:
-      """
-      <?php
-      class CLI_Command extends WP_CLI_Command {
-        public function version() {
-          WP_CLI::success( "WP-Override-CLI" );
-        }
-      }
-      """
-    And a cli-override-command/composer.json file:
-      """
-      {
-        "name": "wp-cli/cli-override",
-        "description": "A command that overrides the bundled 'cli' command.",
-        "autoload": {
-          "psr-4": { "": "src/" },
-          "files": [ "cli.php" ]
-        },
-        "extra": {
-          "commands": [
-            "cli"
-          ]
-        }
-      }
-      """
-    And I run `composer install --working-dir={RUN_DIR}/cli-override-command --no-interaction 2>&1`
-
-    When I run `{PHAR_PATH} cli version`
-      Then STDOUT should contain:
-        """
-        WP-CLI
-        """
-
-    When I run `{PHAR_PATH} --require=cli-override-command/cli.php cli version`
-      Then STDOUT should contain:
-        """
-        WP-Override-CLI
-        """
-
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (command line)
     Given a WP installation with Composer
     And a dependency on current wp-cli
+    And I try `composer require wp-cli/entity-command --no-interaction`
+
     When I run `vendor/bin/wp option get blogname`
     Then STDOUT should contain:
       """
@@ -213,14 +160,14 @@ Feature: Bootstrap WP-CLI
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (web)
     Given a WP installation with Composer
     And a dependency on current wp-cli
-    And a PHP built-in web server to serve 'wordpress'
+    And a PHP built-in web server to serve 'WordPress'
     Then the HTTP status code should be 200
 
   Scenario: Composer stack with both WordPress and wp-cli as dependencies and a custom vendor directory
     Given a WP installation with Composer and a custom vendor directory 'vendor-custom'
     And a dependency on current wp-cli
-    Then the vendor-custom/autoload_commands.php file should exist
-    Then the vendor-custom/autoload_framework.php file should exist
+    And I try `composer require wp-cli/entity-command --no-interaction`
+
     When I run `vendor-custom/bin/wp option get blogname`
     Then STDOUT should contain:
       """
@@ -271,6 +218,7 @@ Feature: Bootstrap WP-CLI
       """
       url: invalid.com
       """
+    And I run `wp package install wp-cli/cache-command`
 
     When I try `wp cache add foo bar`
     Then STDERR should contain:
@@ -293,6 +241,7 @@ Feature: Bootstrap WP-CLI
       """
       url: invalid.com
       """
+    And I run `wp package install wp-cli/search-replace-command`
 
     When I try `wp search-replace foo bar`
     Then STDERR should contain:

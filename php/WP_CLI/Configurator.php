@@ -54,10 +54,10 @@ class Configurator {
 		$this->spec = include $path;
 
 		$defaults = array(
-			'runtime' => false,
-			'file' => false,
+			'runtime'  => false,
+			'file'     => false,
 			'synopsis' => '',
-			'default' => null,
+			'default'  => null,
 			'multiple' => false,
 		);
 
@@ -118,7 +118,7 @@ class Configurator {
 	 */
 	public function parse_args( $arguments ) {
 		list( $positional_args, $mixed_args, $global_assoc, $local_assoc ) = self::extract_assoc( $arguments );
-		list( $assoc_args, $runtime_config ) = $this->unmix_assoc_args( $mixed_args, $global_assoc, $local_assoc );
+		list( $assoc_args, $runtime_config )                               = $this->unmix_assoc_args( $mixed_args, $global_assoc, $local_assoc );
 		return array( $positional_args, $assoc_args, $runtime_config );
 	}
 
@@ -224,14 +224,14 @@ class Configurator {
 		foreach ( $yaml as $key => $value ) {
 			if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {
 				$this->aliases[ $key ] = array();
-				$is_alias = false;
+				$is_alias              = false;
 				foreach ( self::$alias_spec as $i ) {
 					if ( isset( $value[ $i ] ) ) {
 						if ( 'path' === $i && ! isset( $value['ssh'] ) ) {
 							self::absolutize( $value[ $i ], $yml_file_dir );
 						}
 						$this->aliases[ $key ][ $i ] = $value[ $i ];
-						$is_alias = true;
+						$is_alias                    = true;
 					}
 				}
 				// If it's not an alias, it might be a group of aliases

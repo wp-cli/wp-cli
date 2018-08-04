@@ -73,7 +73,7 @@ class Extractor {
 
 		if ( class_exists( 'PharData' ) ) {
 			try {
-				$phar = new PharData( $tarball );
+				$phar    = new PharData( $tarball );
 				$tempdir = implode(
 					DIRECTORY_SEPARATOR,
 					array(
@@ -95,7 +95,7 @@ class Extractor {
 			}
 		}
 		// Note: directory must exist for tar --directory to work.
-		$cmd = Utils\esc_cmd( 'tar xz --strip-components=1 --directory=%s -f %s', $dest, $tarball );
+		$cmd         = Utils\esc_cmd( 'tar xz --strip-components=1 --directory=%s -f %s', $dest, $tarball );
 		$process_run = WP_CLI::launch( $cmd, false /*exit_on_error*/, true /*return_detailed*/ );
 		if ( 0 !== $process_run->return_code ) {
 			throw new \Exception( sprintf( 'Failed to execute `%s`: %s.', $cmd, self::tar_error_msg( $process_run ) ) );
@@ -172,30 +172,30 @@ class Extractor {
 	public static function zip_error_msg( $error_code ) {
 		// From https://github.com/php/php-src/blob/php-5.3.0/ext/zip/php_zip.c#L2623-L2646
 		static $zip_err_msgs = array(
-			ZipArchive::ER_OK => 'No error',
-			ZipArchive::ER_MULTIDISK => 'Multi-disk zip archives not supported',
-			ZipArchive::ER_RENAME => 'Renaming temporary file failed',
-			ZipArchive::ER_CLOSE => 'Closing zip archive failed',
-			ZipArchive::ER_SEEK => 'Seek error',
-			ZipArchive::ER_READ => 'Read error',
-			ZipArchive::ER_WRITE => 'Write error',
-			ZipArchive::ER_CRC => 'CRC error',
-			ZipArchive::ER_ZIPCLOSED => 'Containing zip archive was closed',
-			ZipArchive::ER_NOENT => 'No such file',
-			ZipArchive::ER_EXISTS => 'File already exists',
-			ZipArchive::ER_OPEN => 'Can\'t open file',
-			ZipArchive::ER_TMPOPEN => 'Failure to create temporary file',
-			ZipArchive::ER_ZLIB => 'Zlib error',
-			ZipArchive::ER_MEMORY => 'Malloc failure',
-			ZipArchive::ER_CHANGED => 'Entry has been changed',
+			ZipArchive::ER_OK          => 'No error',
+			ZipArchive::ER_MULTIDISK   => 'Multi-disk zip archives not supported',
+			ZipArchive::ER_RENAME      => 'Renaming temporary file failed',
+			ZipArchive::ER_CLOSE       => 'Closing zip archive failed',
+			ZipArchive::ER_SEEK        => 'Seek error',
+			ZipArchive::ER_READ        => 'Read error',
+			ZipArchive::ER_WRITE       => 'Write error',
+			ZipArchive::ER_CRC         => 'CRC error',
+			ZipArchive::ER_ZIPCLOSED   => 'Containing zip archive was closed',
+			ZipArchive::ER_NOENT       => 'No such file',
+			ZipArchive::ER_EXISTS      => 'File already exists',
+			ZipArchive::ER_OPEN        => 'Can\'t open file',
+			ZipArchive::ER_TMPOPEN     => 'Failure to create temporary file',
+			ZipArchive::ER_ZLIB        => 'Zlib error',
+			ZipArchive::ER_MEMORY      => 'Malloc failure',
+			ZipArchive::ER_CHANGED     => 'Entry has been changed',
 			ZipArchive::ER_COMPNOTSUPP => 'Compression method not supported',
-			ZipArchive::ER_EOF => 'Premature EOF',
-			ZipArchive::ER_INVAL => 'Invalid argument',
-			ZipArchive::ER_NOZIP => 'Not a zip archive',
-			ZipArchive::ER_INTERNAL => 'Internal error',
-			ZipArchive::ER_INCONS => 'Zip archive inconsistent',
-			ZipArchive::ER_REMOVE => 'Can\'t remove file',
-			ZipArchive::ER_DELETED => 'Entry has been deleted',
+			ZipArchive::ER_EOF         => 'Premature EOF',
+			ZipArchive::ER_INVAL       => 'Invalid argument',
+			ZipArchive::ER_NOZIP       => 'Not a zip archive',
+			ZipArchive::ER_INTERNAL    => 'Internal error',
+			ZipArchive::ER_INCONS      => 'Zip archive inconsistent',
+			ZipArchive::ER_REMOVE      => 'Can\'t remove file',
+			ZipArchive::ER_DELETED     => 'Entry has been deleted',
 		);
 
 		if ( isset( $zip_err_msgs[ $error_code ] ) ) {

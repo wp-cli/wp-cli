@@ -8,6 +8,7 @@ use \Composer\Semver\Comparator;
 use \Composer\Semver\Semver;
 use \WP_CLI;
 use \WP_CLI\Dispatcher;
+use \WP_CLI\Inflector;
 use \WP_CLI\Iterators\Transform;
 
 const PHAR_STREAM_PREFIX = 'phar://';
@@ -66,7 +67,7 @@ function load_dependencies() {
 }
 
 function get_vendor_paths() {
-	$vendor_paths = array(
+	$vendor_paths        = array(
 		WP_CLI_ROOT . '/../../../vendor',  // part of a larger project / installed via Composer (preferred)
 		WP_CLI_ROOT . '/vendor',           // top-level project / installed as Git clone
 	);
@@ -247,7 +248,7 @@ function locate_wp_config() {
 
 function wp_version_compare( $since, $operator ) {
 	$wp_version = str_replace( '-src', '', $GLOBALS['wp_version'] );
-	$since = str_replace( '-src', '', $since );
+	$since      = str_replace( '-src', '', $since );
 	return version_compare( $wp_version, $since, $operator );
 }
 
@@ -298,7 +299,7 @@ function wp_version_compare( $since, $operator ) {
  */
 function format_items( $format, $items, $fields ) {
 	$assoc_args = compact( 'format', 'fields' );
-	$formatter = new \WP_CLI\Formatter( $assoc_args );
+	$formatter  = new \WP_CLI\Formatter( $assoc_args );
 	$formatter->display_items( $items );
 }
 
@@ -362,11 +363,11 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 	$tmpdir = get_temp_dir();
 
 	do {
-		$tmpfile = basename( $title );
-		$tmpfile = preg_replace( '|\.[^.]*$|', '', $tmpfile );
+		$tmpfile  = basename( $title );
+		$tmpfile  = preg_replace( '|\.[^.]*$|', '', $tmpfile );
 		$tmpfile .= '-' . substr( md5( mt_rand() ), 0, 6 );
-		$tmpfile = $tmpdir . $tmpfile . '.' . $ext;
-		$fp = fopen( $tmpfile, 'xb' );
+		$tmpfile  = $tmpdir . $tmpfile . '.' . $ext;
+		$fp       = fopen( $tmpfile, 'xb' );
 		if ( ! $fp && is_writable( $tmpdir ) && file_exists( $tmpfile ) ) {
 			$tmpfile = '';
 			continue;
@@ -389,8 +390,8 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 	}
 
 	$descriptorspec = array( STDIN, STDOUT, STDERR );
-	$process = proc_open_compat( "$editor " . escapeshellarg( $tmpfile ), $descriptorspec, $pipes );
-	$r = proc_close( $process );
+	$process        = proc_open_compat( "$editor " . escapeshellarg( $tmpfile ), $descriptorspec, $pipes );
+	$r              = proc_close( $process );
 	if ( $r ) {
 		exit( $r );
 	}
@@ -413,12 +414,12 @@ function launch_editor_for_input( $input, $title = 'WP-CLI', $ext = 'tmp' ) {
 function mysql_host_to_cli_args( $raw_host ) {
 	$assoc_args = array();
 
-	$host_parts = explode( ':',  $raw_host );
+	$host_parts = explode( ':', $raw_host );
 	if ( count( $host_parts ) == 2 ) {
 		list( $assoc_args['host'], $extra ) = $host_parts;
-		$extra = trim( $extra );
+		$extra                              = trim( $extra );
 		if ( is_numeric( $extra ) ) {
-			$assoc_args['port'] = (int) $extra;
+			$assoc_args['port']     = (int) $extra;
 			$assoc_args['protocol'] = 'tcp';
 		} elseif ( '' !== $extra ) {
 			$assoc_args['socket'] = $extra;
@@ -585,7 +586,7 @@ function replace_path_consts( $source, $path ) {
  */
 function http_request( $method, $url, $data = null, $headers = array(), $options = array() ) {
 
-	$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
+	$cert_path     = '/rmccue/requests/library/Requests/Transport/cacert.pem';
 	$halt_on_error = ! isset( $options['halt_on_error'] ) || (bool) $options['halt_on_error'];
 	if ( inside_phar() ) {
 		// cURL can't read Phar archives
@@ -704,7 +705,7 @@ function get_named_sem_ver( $new_version, $original_version ) {
 	}
 
 	$parts = explode( '-', $original_version );
-	$bits = explode( '.', $parts[0] );
+	$bits  = explode( '.', $parts[0] );
 	$major = $bits[0];
 	if ( isset( $bits[1] ) ) {
 		$minor = $bits[1];
@@ -903,8 +904,8 @@ function parse_ssh_url( $url, $component = -1 ) {
  * @param null|integer $skips     Optional. Number of skipped operations. Default null (don't show skips).
  */
 function report_batch_operation_results( $noun, $verb, $total, $successes, $failures, $skips = null ) {
-	$plural_noun = $noun . 's';
-	$past_tense_verb = past_tense_verb( $verb );
+	$plural_noun           = $noun . 's';
+	$past_tense_verb       = past_tense_verb( $verb );
 	$past_tense_verb_upper = ucfirst( $past_tense_verb );
 	if ( $failures ) {
 		$failed_skipped_message = null === $skips ? '' : " ({$failures} failed" . ( $skips ? ", {$skips} skipped" : '' ) . ')';
@@ -987,7 +988,7 @@ function isPiped() {
 		return filter_var( $shellPipe, FILTER_VALIDATE_BOOLEAN );
 	}
 
-	return (function_exists( 'posix_isatty' ) && ! posix_isatty( STDOUT ));
+	return ( function_exists( 'posix_isatty' ) && ! posix_isatty( STDOUT ) );
 }
 
 /**
@@ -1046,8 +1047,8 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 	if ( ! $next_brace_sub ) {
 		// Find the end of the subpattern in a brace expression.
 		$next_brace_sub = function ( $pattern, $current ) {
-			$length  = strlen( $pattern );
-			$depth   = 0;
+			$length = strlen( $pattern );
+			$depth  = 0;
 
 			while ( $current < $length ) {
 				if ( '\\' === $pattern[ $current ] ) {
@@ -1096,7 +1097,7 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 	}
 
 	$paths = array();
-	$p = $begin + 1;
+	$p     = $begin + 1;
 
 	// For each comma-separated subpattern.
 	do {
@@ -1138,26 +1139,26 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 function get_suggestion( $target, array $options, $threshold = 2 ) {
 
 	$suggestion_map = array(
-		'add' => 'create',
-		'check' => 'check-update',
+		'add'        => 'create',
+		'check'      => 'check-update',
 		'capability' => 'cap',
-		'clear' => 'flush',
-		'decrement' => 'decr',
-		'del' => 'delete',
-		'directory' => 'dir',
-		'exec' => 'eval',
-		'exec-file' => 'eval-file',
-		'increment' => 'incr',
-		'language' => 'locale',
-		'lang' => 'locale',
-		'new' => 'create',
-		'number' => 'count',
-		'remove' => 'delete',
-		'regen' => 'regenerate',
-		'rep' => 'replace',
-		'repl' => 'replace',
-		'trash' => 'delete',
-		'v' => 'version',
+		'clear'      => 'flush',
+		'decrement'  => 'decr',
+		'del'        => 'delete',
+		'directory'  => 'dir',
+		'exec'       => 'eval',
+		'exec-file'  => 'eval-file',
+		'increment'  => 'incr',
+		'language'   => 'locale',
+		'lang'       => 'locale',
+		'new'        => 'create',
+		'number'     => 'count',
+		'remove'     => 'delete',
+		'regen'      => 'regenerate',
+		'rep'        => 'replace',
+		'repl'       => 'replace',
+		'trash'      => 'delete',
+		'v'          => 'version',
 	);
 
 	if ( array_key_exists( $target, $suggestion_map ) && in_array( $suggestion_map[ $target ], $options, true ) ) {
@@ -1168,7 +1169,7 @@ function get_suggestion( $target, array $options, $threshold = 2 ) {
 		return '';
 	}
 	foreach ( $options as $option ) {
-		$distance = levenshtein( $option, $target );
+		$distance               = levenshtein( $option, $target );
 		$levenshtein[ $option ] = $distance;
 	}
 
@@ -1226,10 +1227,12 @@ function is_bundled_command( $command ) {
 
 	if ( null === $classes ) {
 		$classes = array();
-		$class_map = WP_CLI_VENDOR_DIR . '/composer/autoload_commands_classmap.php';
-		if ( file_exists( WP_CLI_VENDOR_DIR . '/composer/' ) ) {
-			$classes = include $class_map;
-		}
+		// TODO: This needs to be rebuilt.
+		// $class_map = WP_CLI_VENDOR_DIR . '/composer/autoload_commands_classmap.php';
+		// if ( file_exists( WP_CLI_VENDOR_DIR . '/composer/' ) ) {
+		// 	$classes = include $class_map;
+		// }
+		$classes = array( 'CLI_Command' => true );
 	}
 
 	if ( is_object( $command ) ) {
@@ -1250,7 +1253,7 @@ function is_bundled_command( $command ) {
  * @return string
  */
 function force_env_on_nix_systems( $command ) {
-	$env_prefix = '/usr/bin/env ';
+	$env_prefix     = '/usr/bin/env ';
 	$env_prefix_len = strlen( $env_prefix );
 	if ( is_windows() ) {
 		if ( 0 === strncmp( $command, $env_prefix, $env_prefix_len ) ) {
@@ -1478,4 +1481,55 @@ function parse_shell_arrays( $assoc_args, $array_arguments ) {
 	}
 
 	return $assoc_args;
+}
+
+/**
+ * Describe a callable as a string.
+ *
+ * @param callable $callable The callable to describe.
+ *
+ * @return string String description of the callable.
+ */
+function describe_callable( $callable ) {
+	try {
+		if ( $callable instanceof \Closure ) {
+			$reflection = new \ReflectionFunction( $callable );
+
+			return (string) "Closure in file {$reflection->getFileName()} at line {$reflection->getStartLine()}";
+		}
+
+		if ( is_array( $callable ) ) {
+			if ( is_object( $callable[0] ) ) {
+				return (string) sprintf(
+					'%s->%s()',
+					get_class( $callable[0] ),
+					$callable[1]
+				);
+			}
+
+			return (string) sprintf( '%s::%s()', $callable[0], $callable[1] );
+		}
+
+		return (string) gettype( $callable );
+	} catch ( \Exception $exception ) {
+		return 'Callable of unknown type';
+	}
+}
+
+/**
+ * Pluralizes a noun in a grammatically correct way.
+ *
+ * @param string   $noun  Noun to be pluralized. Needs to be in singular form.
+ * @param int|null $count Optional. Count of the nouns, to decide whether to
+ *                        pluralize. Will pluralize unconditionally if none
+ *                        provided.
+ *
+ * @return string Pluralized noun.
+ */
+function pluralize( $noun, $count = null ) {
+	if ( 1 === $count ) {
+		return $noun;
+	}
+
+	return Inflector::pluralize( $noun );
 }

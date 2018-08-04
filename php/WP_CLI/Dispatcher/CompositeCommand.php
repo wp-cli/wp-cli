@@ -29,7 +29,7 @@ class CompositeCommand {
 		$this->name = $name;
 
 		$this->shortdesc = $docparser->get_shortdesc();
-		$this->longdesc = $docparser->get_longdesc();
+		$this->longdesc  = $docparser->get_longdesc();
 		$this->docparser = $docparser;
 
 		$when_to_invoke = $docparser->get_tag( 'when' );
@@ -265,7 +265,7 @@ class CompositeCommand {
 	 * @return string
 	 */
 	protected function get_global_params( $root_command = false ) {
-		$binding = array();
+		$binding                 = array();
 		$binding['root_command'] = $root_command;
 
 		if ( ! $this->can_have_subcommands() || ( is_object( $this->parent ) && get_class( $this->parent ) == 'WP_CLI\Dispatcher\CompositeCommand' ) ) {
@@ -293,7 +293,7 @@ class CompositeCommand {
 
 			$binding['parameters'][] = array(
 				'synopsis' => $synopsis,
-				'desc' => $details['desc'],
+				'desc'     => $details['desc'],
 			);
 		}
 

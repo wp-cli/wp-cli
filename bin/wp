@@ -28,7 +28,7 @@ if [ ! -z "$WP_CLI_PHP" ] ; then
 else
 	# Default to using the php that we find on the PATH.
 	# Note that we need the full path to php here for Dreamhost, which behaves oddly.  See http://drupal.org/node/662926
-	php="`which php`"
+	php="$(command -v php)"
 fi
 
 # Build the path to the root PHP file

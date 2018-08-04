@@ -72,7 +72,7 @@ class Regular extends Base {
 
 		foreach ( $message_lines as $line ) {
 			$padding = str_repeat( ' ', $longest - strlen( $line ) );
-			$line = \cli\Colors::colorize( "%w%1 $line $padding%n" );
+			$line    = \cli\Colors::colorize( "%w%1 $line $padding%n" );
 			$this->write( STDERR, "\t$line\n" );
 		}
 

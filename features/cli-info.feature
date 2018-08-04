@@ -6,7 +6,7 @@ Feature: Review CLI information
 
   Scenario: Get the path to the packages directory
     Given an empty directory
-	And a non-existent {PACKAGE_PATH} directory
+    And a non-existent {PACKAGE_PATH} directory
 
     When I run `wp cli info --format=json`
     Then STDOUT should be JSON containing:
