@@ -1,7 +1,6 @@
 {
     "name": "wp-cli/wp-cli",
     "description": "WP-CLI framework",
-    "version": "2.0.0",
     "keywords": [
         "cli",
         "wordpress"
@@ -18,9 +17,6 @@
         "bin/wp"
     ],
     "config": {
-        "platform": {
-            "php": "5.4"
-        },
         "process-timeout": 7200,
         "sort-packages": true
     },
