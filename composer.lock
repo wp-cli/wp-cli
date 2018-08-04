@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7f16fcbf863a3466e921edd1aaa884dd",
+    "content-hash": "8afc828958ede6336e3af47fa5367e00",
     "packages": [
         {
             "name": "mustache/mustache",
@@ -1681,6 +1681,17 @@
         {
             "name": "roave/security-advisories",
             "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Roave/SecurityAdvisories.git",
+                "reference": "b3569bbd5257d4ae0885b14feb6e45e41e8184b7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/b3569bbd5257d4ae0885b14feb6e45e41e8184b7",
+                "reference": "b3569bbd5257d4ae0885b14feb6e45e41e8184b7",
+                "shasum": ""
+            },
             "conflict": {
                 "3f/pygmentize": "<1.2",
                 "adodb/adodb-php": "<5.20.12",
@@ -3569,16 +3580,16 @@
         },
         {
             "name": "wp-cli/wp-cli-tests",
-            "version": "dev-master",
+            "version": "v0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/wp-cli-tests.git",
-                "reference": "2d996e8a136e863718070f5bb07fe861430530c0"
+                "reference": "90f71595d52bf20301961201e9d39bb190d5ddab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/2d996e8a136e863718070f5bb07fe861430530c0",
-                "reference": "2d996e8a136e863718070f5bb07fe861430530c0",
+                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/90f71595d52bf20301961201e9d39bb190d5ddab",
+                "reference": "90f71595d52bf20301961201e9d39bb190d5ddab",
                 "shasum": ""
             },
             "require": {
@@ -3596,8 +3607,8 @@
                 "wp-coding-standards/wpcs": "^1"
             },
             "require-dev": {
-                "wp-cli/regenerate-readme": "dev-master",
-                "wp-cli/wp-cli": "dev-4748-split-off-bundle"
+                "wp-cli/regenerate-readme": "^0",
+                "wp-cli/wp-cli": "^2"
             },
             "bin": [
                 "bin/run-linter-tests",
@@ -3630,7 +3641,7 @@
                 "cli",
                 "wordpress"
             ],
-            "time": "2018-08-04T00:31:34+00:00"
+            "time": "2018-08-04T07:47:19+00:00"
         },
         {
             "name": "wp-cli/wp-config-transformer",
@@ -3720,8 +3731,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "roave/security-advisories": 20,
-        "wp-cli/wp-cli-tests": 20
+        "roave/security-advisories": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
