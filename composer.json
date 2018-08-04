@@ -7,32 +7,14 @@
     ],
     "homepage": "https://wp-cli.org",
     "license": "MIT",
-    "support": {
-        "issues": "https://github.com/wp-cli/wp-cli/issues",
-        "source": "https://github.com/wp-cli/wp-cli",
-        "docs": "https://make.wordpress.org/cli/handbook/"
-    },
-    "bin": [
-        "bin/wp.bat",
-        "bin/wp"
-    ],
-    "config": {
-        "platform": {
-            "php": "5.4"
-        },
-        "process-timeout": 7200,
-        "sort-packages": true
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "require": {
         "php": ">=5.4",
         "mustache/mustache": "~2.4",
         "ramsey/array_column": "~1.1",
         "rmccue/requests": "~1.6",
         "symfony/finder": ">2.7",
-        "wp-cli/php-cli-tools": "~0.11.2",
-        "wp-cli/mustangostang-spyc": "^0.6.3"
+        "wp-cli/mustangostang-spyc": "^0.6.3",
+        "wp-cli/php-cli-tools": "~0.11.2"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
@@ -40,21 +22,39 @@
         "wp-cli/entity-command": "^1.2",
         "wp-cli/extension-command": "^1.1",
         "wp-cli/package-command": "^1.0",
-        "wp-cli/wp-cli-tests": "dev-master"
+        "wp-cli/wp-cli-tests": "^0"
+    },
+    "config": {
+        "platform": {
+            "php": "5.4"
+        },
+        "process-timeout": 7200,
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.0.x-dev"
+        }
     },
     "autoload": {
         "psr-0": {
             "WP_CLI": "php"
         }
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "bin": [
+        "bin/wp",
+        "bin/wp.bat"
+    ],
     "scripts": {
         "post-install-cmd": [
             "./utils/git-setup-pre-commit-hook"
         ],
+        "behat": "run-behat-tests",
         "lint": "run-linter-tests",
         "phpcs": "run-phpcs-tests",
         "phpunit": "run-php-unit-tests",
-        "behat": "run-behat-tests",
         "prepare-tests": "install-package-tests",
         "test": [
             "@lint",
@@ -63,9 +63,9 @@
             "@behat"
         ]
     },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "2.0.x-dev"
-        }
+    "support": {
+        "issues": "https://github.com/wp-cli/wp-cli/issues",
+        "source": "https://github.com/wp-cli/wp-cli",
+        "docs": "https://make.wordpress.org/cli/handbook/"
     }
 }
