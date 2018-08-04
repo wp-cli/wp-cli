@@ -284,17 +284,16 @@ class FileCache {
 
 		$files_to_delete = array();
 
-		foreach ( $finder as $key => $file ) {
-			$pieces                     = explode( '-', $file->getBasename( '.zip' ) );
-			$timestamp                  = end( $pieces );
-			$basename_without_timestamp = str_replace( '-' . $timestamp, '', $file->getBasename() );
+		foreach ( $finder as $file ) {
+			$pieces    = explode( '-', $file->getBasename( $file->getExtension() ) );
+			$timestamp = end( $pieces );
 
-			// No way to compare versions, remove directly.
+			// No way to compare versions, do nothing.
 			if ( ! is_numeric( $timestamp ) ) {
-				unlink( $file->getRealPath() );
-
 				continue;
 			}
+
+			$basename_without_timestamp = str_replace( '-' . $timestamp, '', $file->getBasename() );
 
 			// There's a file with an older timestamp, delete it.
 			if ( isset( $files_to_delete[ $basename_without_timestamp ] ) ) {
