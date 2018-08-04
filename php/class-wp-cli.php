@@ -738,8 +738,8 @@ class WP_CLI {
 			foreach ( $storage as $entry ) {
 				list( $message, $group ) = $entry;
 				self::$logger->debug( self::error_to_string( $message ), $group );
-				$storage = array();
 			}
+			$storage = array();
 		}
 
 		self::$logger->debug( self::error_to_string( $message ), $group );
