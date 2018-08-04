@@ -28,7 +28,7 @@ final class RegisterDeferredCommands implements BootstrapStep {
 		// Process deferred command additions for commands added through
 		// plugins.
 		\WP_CLI::add_hook(
-			'find_command_to_run_pre',
+			'before_run_command',
 			array( $this, 'add_deferred_commands' )
 		);
 
@@ -42,6 +42,12 @@ final class RegisterDeferredCommands implements BootstrapStep {
 		$deferred_additions = \WP_CLI::get_deferred_additions();
 
 		foreach ( $deferred_additions as $name => $addition ) {
+			\WP_CLI::debug( sprintf(
+				'Adding deferred command: %s => %s',
+				$name,
+				json_encode( $addition )
+			), 'bootstrap' );
+
 			\WP_CLI::add_command(
 				$name,
 				$addition['callable'],

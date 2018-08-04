@@ -40,19 +40,19 @@ class Table extends Query {
 	 */
 	public function __construct( $args = array() ) {
 		$defaults = array(
-			'fields' => '*',
-			'where' => array(),
-			'append' => '',
-			'table' => null,
+			'fields'     => '*',
+			'where'      => array(),
+			'append'     => '',
+			'table'      => null,
 			'chunk_size' => 500,
 		);
-		$table = $args['table'];
-		$args = array_merge( $defaults, $args );
+		$table    = $args['table'];
+		$args     = array_merge( $defaults, $args );
 
-		$fields = self::build_fields( $args['fields'] );
+		$fields     = self::build_fields( $args['fields'] );
 		$conditions = self::build_where_conditions( $args['where'] );
-		$where_sql = $conditions ? " WHERE $conditions" : '';
-		$query = "SELECT $fields FROM `$table` $where_sql {$args['append']}";
+		$where_sql  = $conditions ? " WHERE $conditions" : '';
+		$query      = "SELECT $fields FROM `$table` $where_sql {$args['append']}";
 
 		parent::__construct( $query, $args['chunk_size'] );
 	}
@@ -79,7 +79,7 @@ class Table extends Query {
 			$conditions = array();
 			foreach ( $where as $key => $value ) {
 				if ( is_array( $value ) ) {
-					$conditions[]  = $key . ' IN (' . esc_sql( implode( ',', $value ) ) . ')';
+					$conditions[] = $key . ' IN (' . esc_sql( implode( ',', $value ) ) . ')';
 				} elseif ( is_numeric( $key ) ) {
 					$conditions[] = $value;
 				} else {

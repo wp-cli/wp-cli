@@ -518,7 +518,7 @@ Feature: Get help about WP-CLI commands
   Scenario: Help renders global parameters correctly
     Given a WP installation
 
-    When I run `wp help import get`
+    When I run `wp help core`
     Then STDOUT should contain:
       """
       GLOBAL PARAMETERS
@@ -939,16 +939,6 @@ Feature: Get help about WP-CLI commands
         ---
         [1] https://wordpress.org/
         [2] http://wp-cli.org/
-      """
-
-    When I run `wp help role`
-    Then STDOUT should contain:
-      """
-        See references for [Roles and Capabilities][1] and [WP User class][2].
-
-        ---
-        [1] https://codex.wordpress.org/Roles_and_Capabilities
-        [2] https://codex.wordpress.org/Class_Reference/WP_User
       """
 
   Scenario: Very long description for top-level command which has reference link display well

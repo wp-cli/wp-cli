@@ -20,7 +20,7 @@ class DocParser {
 	 */
 	public function __construct( $docComment ) {
 		/* Make sure we have a known line ending in document */
-		$docComment = str_replace( "\r\n", "\n", $docComment );
+		$docComment       = str_replace( "\r\n", "\n", $docComment );
 		$this->docComment = self::remove_decorations( $docComment );
 	}
 
@@ -162,9 +162,9 @@ class DocParser {
 	 * @return array|null Interpreted YAML document, or null.
 	 */
 	private function get_arg_or_param_args( $regex ) {
-		$bits = explode( "\n", $this->docComment );
+		$bits       = explode( "\n", $this->docComment );
 		$within_arg = $within_doc = false;
-		$document = array();
+		$document   = array();
 		foreach ( $bits as $bit ) {
 			if ( preg_match( $regex, $bit ) ) {
 				$within_arg = true;

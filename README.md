@@ -96,7 +96,7 @@ Want to live life on the edge? Run `wp cli update --nightly` to use the latest n
 
 ### Tab completions
 
-WP-CLI also comes with a tab completion script for Bash and ZSH. Just download [wp-completion.bash](https://raw.githubusercontent.com/wp-cli/wp-cli/master/utils/wp-completion.bash) and source it from `~/.bash_profile`:
+WP-CLI also comes with a tab completion script for Bash and ZSH. Just download [wp-completion.bash](https://raw.githubusercontent.com/wp-cli/wp-cli/v1.5.1/utils/wp-completion.bash) and source it from `~/.bash_profile`:
 
 ```bash
 source /FULL/PATH/TO/wp-completion.bash
@@ -181,7 +181,7 @@ Read through our [contributing guidelines in the handbook](https://make.wordpres
 
 ## Leadership
 
-WP-CLI has two project maintainers: [danielbachhuber](https://github.com/danielbachhuber) and [schlessera](http://github.com/schlessera).
+WP-CLI has one project maintainer: [schlessera](http://github.com/schlessera).
 
 On occasion, we [grant write access to contributors](https://make.wordpress.org/cli/handbook/committers-credo/) who have demonstrated, over a period of time, that they are capable and invested in moving the project forward.
 

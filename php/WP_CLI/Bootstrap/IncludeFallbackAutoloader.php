@@ -30,6 +30,11 @@ final class IncludeFallbackAutoloader extends AutoloaderStep {
 			);
 		}
 
+		\WP_CLI::debug( sprintf(
+			'Fallback autoloader paths: %s',
+			implode( ', ', $autoloader_paths )
+		), 'bootstrap' );
+
 		return $autoloader_paths;
 	}
 }

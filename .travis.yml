@@ -2,68 +2,72 @@ sudo: false
 dist: trusty
 
 language: php
-php: 7.1
-
-env:
-  global:
-    - WP_CLI_BIN_DIR=/tmp/wp-cli-phar
-
-before_script:
-  - export PATH="$HOME/.composer/vendor/bin:$PATH"
-  - ./ci/prepare.sh
-
-jobs:
-  include:
-    - stage: sniff
-      script: ./ci/sniff.sh
-      env: BUILD=sniff
-    - stage: test
-      script: ./ci/test.sh
-      php: 7.2
-      env: WP_VERSION=latest
-    - stage: test
-      script: ./ci/test.sh
-      php: 7.1
-      env: WP_VERSION=latest
-    - stage: test
-      script: ./ci/test.sh
-      php: 7.0
-      env: WP_VERSION=latest
-    - stage: test
-      script: ./ci/test.sh
-      php: 5.6
-      env: WP_VERSION=latest
-    - stage: test
-      script: ./ci/test.sh
-      php: 5.6
-      env: WP_VERSION=trunk
-    - stage: test
-      script: ./ci/test.sh
-      php: 5.6
-      env: WP_VERSION=latest BUILD=git WP_CLI_BIN_DIR=''
-    - stage: test
-      script: ./ci/test.sh
-      php: 5.6
-      env: WP_VERSION=3.7.11
-    - stage: test
-      script: ./ci/test.sh
-      php: 5.3
-      dist: precise
-      env: WP_VERSION=3.7.11
-    - stage: deploy
-      env: DEPLOY_BRANCH=master
-      script: ./ci/deploy.sh
-
-cache:
-  directories:
-    - $HOME/.composer/cache
-
-branches:
-  only:
-    - master
-    - /^release-.+$/
+php: 7.2
 
 notifications:
   email:
     on_success: never
     on_failure: change
+
+branches:
+  only:
+    - master
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+env:
+  global:
+    - PATH="$TRAVIS_BUILD_DIR/vendor/bin:$PATH"
+    - WP_CLI_BIN_DIR="$TRAVIS_BUILD_DIR/vendor/bin"
+
+before_install:
+  - |
+    # Remove Xdebug for a huge performance increase:
+    if [ -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then
+      phpenv config-rm xdebug.ini
+    else
+      echo "xdebug.ini does not exist"
+    fi
+  - |
+    # Raise PHP memory limit to 2048MB
+    echo 'memory_limit = 2048M' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+  - composer validate
+
+install:
+  - composer install
+  - composer prepare-tests
+
+script:
+  - composer phpunit
+  - composer behat
+
+jobs:
+  include:
+    - stage: sniff
+      script:
+        - composer lint
+        - composer phpcs
+      env: BUILD=sniff
+    - stage: test
+      php: 7.2
+      env: WP_VERSION=latest
+    - stage: test
+      php: 7.1
+      env: WP_VERSION=latest
+    - stage: test
+      php: 7.0
+      env: WP_VERSION=latest
+    - stage: test
+      php: 5.6
+      env: WP_VERSION=latest
+    - stage: test
+      php: 5.6
+      env: WP_VERSION=3.7.11
+    - stage: test
+      php: 5.6
+      env: WP_VERSION=trunk
+    - stage: test
+      php: 5.4
+      env: WP_VERSION=latest

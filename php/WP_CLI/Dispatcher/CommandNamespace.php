@@ -24,7 +24,7 @@ class CommandNamespace extends CompositeCommand {
 	public function show_usage() {
 		$methods = $this->get_subcommands();
 
-		$i = 0;
+		$i     = 0;
 		$count = 0;
 
 		foreach ( $methods as $name => $subcommand ) {
@@ -39,7 +39,7 @@ class CommandNamespace extends CompositeCommand {
 		}
 
 		$cmd_name = implode( ' ', array_slice( get_path( $this ), 1 ) );
-		$message = $count > 0
+		$message  = $count > 0
 			? "See 'wp help $cmd_name <command>' for more information on a specific command."
 			: "The namespace $cmd_name does not contain any usable commands in the current context.";
 
