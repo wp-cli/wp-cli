@@ -3128,26 +3128,29 @@
         },
         {
             "name": "wp-cli/db-command",
-            "version": "v1.3.5",
+            "version": "v2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/db-command.git",
-                "reference": "c260be59d9ac4c0012b016405e17d0251137fb89"
+                "reference": "9378fb54b8d66b1dadaf3940c8e74c7953ebb22b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/db-command/zipball/c260be59d9ac4c0012b016405e17d0251137fb89",
-                "reference": "c260be59d9ac4c0012b016405e17d0251137fb89",
+                "url": "https://api.github.com/repos/wp-cli/db-command/zipball/9378fb54b8d66b1dadaf3940c8e74c7953ebb22b",
+                "reference": "9378fb54b8d66b1dadaf3940c8e74c7953ebb22b",
                 "shasum": ""
             },
+            "require": {
+                "wp-cli/wp-cli": "^2"
+            },
             "require-dev": {
-                "behat/behat": "~2.5",
-                "wp-cli/wp-cli": "^1.5"
+                "wp-cli/entity-command": "^1.3 || ^2",
+                "wp-cli/wp-cli-tests": "^2"
             },
             "type": "wp-cli-package",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.x-dev"
+                    "dev-master": "2.x-dev"
                 },
                 "bundled": true,
                 "commands": [
@@ -3190,7 +3193,7 @@
             ],
             "description": "Performs basic database operations using credentials stored in wp-config.php.",
             "homepage": "https://github.com/wp-cli/db-command",
-            "time": "2018-07-31T02:06:59+00:00"
+            "time": "2018-08-05T12:59:55+00:00"
         },
         {
             "name": "wp-cli/entity-command",
