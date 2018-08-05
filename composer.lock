@@ -3385,28 +3385,28 @@
         },
         {
             "name": "wp-cli/eval-command",
-            "version": "v1.0.5",
+            "version": "v2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/eval-command.git",
-                "reference": "9640d40ab28cd86590396f08f8c382e659f57321"
+                "reference": "4a53bbf192ab7baa1fe4aa442c02801aa17ed6f4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/eval-command/zipball/9640d40ab28cd86590396f08f8c382e659f57321",
-                "reference": "9640d40ab28cd86590396f08f8c382e659f57321",
+                "url": "https://api.github.com/repos/wp-cli/eval-command/zipball/4a53bbf192ab7baa1fe4aa442c02801aa17ed6f4",
+                "reference": "4a53bbf192ab7baa1fe4aa442c02801aa17ed6f4",
                 "shasum": ""
             },
             "require": {
-                "wp-cli/wp-cli": "*"
+                "wp-cli/wp-cli": "^2"
             },
             "require-dev": {
-                "behat/behat": "~2.5"
+                "wp-cli/wp-cli-tests": "^2"
             },
             "type": "wp-cli-package",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.x-dev"
+                    "dev-master": "2.x-dev"
                 },
                 "bundled": true,
                 "commands": [
@@ -3435,7 +3435,7 @@
             ],
             "description": "Executes arbitrary PHP code or files.",
             "homepage": "https://github.com/wp-cli/eval-command",
-            "time": "2017-12-08T14:33:34+00:00"
+            "time": "2018-08-05T09:25:28+00:00"
         },
         {
             "name": "wp-cli/extension-command",
@@ -3580,16 +3580,16 @@
         },
         {
             "name": "wp-cli/wp-cli-tests",
-            "version": "v2.0.0",
+            "version": "v2.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/wp-cli-tests.git",
-                "reference": "d774a7b5ae4476a00dce74c5ad90b88b399f7399"
+                "reference": "5447030bb6dd964445e4aff61f1d711404e7271f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/d774a7b5ae4476a00dce74c5ad90b88b399f7399",
-                "reference": "d774a7b5ae4476a00dce74c5ad90b88b399f7399",
+                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/5447030bb6dd964445e4aff61f1d711404e7271f",
+                "reference": "5447030bb6dd964445e4aff61f1d711404e7271f",
                 "shasum": ""
             },
             "require": {
@@ -3601,9 +3601,9 @@
                 "phpcompatibility/phpcompatibility-wp": "^1",
                 "phpunit/phpunit": ">=4.8 <7",
                 "roave/security-advisories": "dev-master",
-                "wp-cli/config-command": "^1.0",
-                "wp-cli/core-command": "^1.0",
-                "wp-cli/eval-command": "^1.0",
+                "wp-cli/config-command": "^1 || ^2",
+                "wp-cli/core-command": "^1 || ^2",
+                "wp-cli/eval-command": "^1 || ^2",
                 "wp-coding-standards/wpcs": "^1"
             },
             "require-dev": {
@@ -3641,7 +3641,7 @@
                 "cli",
                 "wordpress"
             ],
-            "time": "2018-08-05T08:19:16+00:00"
+            "time": "2018-08-05T08:56:54+00:00"
         },
         {
             "name": "wp-cli/wp-config-transformer",
