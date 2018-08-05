@@ -22,7 +22,7 @@
         "wp-cli/entity-command": "^1.2",
         "wp-cli/extension-command": "^1.1",
         "wp-cli/package-command": "^1.0",
-        "wp-cli/wp-cli-tests": "^0"
+        "wp-cli/wp-cli-tests": "^2"
     },
     "config": {
         "platform": {
