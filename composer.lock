@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8afc828958ede6336e3af47fa5367e00",
+    "content-hash": "45bd4ad7011aabeb42aeef50ad836b67",
     "packages": [
         {
             "name": "mustache/mustache",
@@ -3580,16 +3580,16 @@
         },
         {
             "name": "wp-cli/wp-cli-tests",
-            "version": "v0.1.0",
+            "version": "v2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/wp-cli-tests.git",
-                "reference": "90f71595d52bf20301961201e9d39bb190d5ddab"
+                "reference": "d774a7b5ae4476a00dce74c5ad90b88b399f7399"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/90f71595d52bf20301961201e9d39bb190d5ddab",
-                "reference": "90f71595d52bf20301961201e9d39bb190d5ddab",
+                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/d774a7b5ae4476a00dce74c5ad90b88b399f7399",
+                "reference": "d774a7b5ae4476a00dce74c5ad90b88b399f7399",
                 "shasum": ""
             },
             "require": {
@@ -3607,15 +3607,15 @@
                 "wp-coding-standards/wpcs": "^1"
             },
             "require-dev": {
-                "wp-cli/regenerate-readme": "^0",
+                "wp-cli/regenerate-readme": "^2",
                 "wp-cli/wp-cli": "^2"
             },
             "bin": [
-                "bin/run-linter-tests",
-                "bin/run-phpcs-tests",
-                "bin/run-php-unit-tests",
+                "bin/install-package-tests",
                 "bin/run-behat-tests",
-                "bin/install-package-tests"
+                "bin/run-linter-tests",
+                "bin/run-php-unit-tests",
+                "bin/run-phpcs-tests"
             ],
             "type": "library",
             "extra": {
@@ -3641,7 +3641,7 @@
                 "cli",
                 "wordpress"
             ],
-            "time": "2018-08-04T07:47:19+00:00"
+            "time": "2018-08-05T08:19:16+00:00"
         },
         {
             "name": "wp-cli/wp-config-transformer",
