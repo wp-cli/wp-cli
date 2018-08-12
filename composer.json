@@ -9,7 +9,6 @@
     "license": "MIT",
     "require": {
         "php": ">=5.4",
-        "composer/composer": "^1.7.1",
         "mustache/mustache": "~2.4",
         "ramsey/array_column": "~1.1",
         "rmccue/requests": "~1.6",
@@ -23,7 +22,8 @@
         "wp-cli/db-command": "^1.3 || ^2",
         "wp-cli/entity-command": "^1.2 || ^2",
         "wp-cli/extension-command": "^1.1 || ^2",
-        "wp-cli/package-command": "^1 || ^2"
+        "wp-cli/package-command": "^1 || ^2",
+        "wp-cli/wp-cli-tests": "^2.0.7"
     },
     "config": {
         "platform": {
