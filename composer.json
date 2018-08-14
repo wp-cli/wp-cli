@@ -14,8 +14,7 @@
         "rmccue/requests": "~1.6",
         "symfony/finder": ">2.7",
         "wp-cli/mustangostang-spyc": "^0.6.3",
-        "wp-cli/php-cli-tools": "~0.11.2",
-        "wp-cli/wp-cli-tests": "^2.0.7"
+        "wp-cli/php-cli-tools": "~0.11.2"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
