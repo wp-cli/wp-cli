@@ -1,6 +1,8 @@
 <?php
 
-define( 'WP_CLI_ROOT', dirname( __DIR__ ) );
+if ( ! defined( 'WP_CLI_ROOT' ) ) {
+	define( 'WP_CLI_ROOT', dirname( __DIR__ ) );
+}
 
 /**
  * Compatibility with PHPUnit 6+
