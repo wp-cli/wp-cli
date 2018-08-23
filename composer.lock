@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2c8cea897eafdaf5c2239084b7f00aa8",
+    "content-hash": "afe59a8ab1447f779f7a0ebf05ff2f4b",
     "packages": [
         {
             "name": "mustache/mustache",
@@ -476,16 +476,16 @@
         },
         {
             "name": "composer/composer",
-            "version": "1.7.1",
+            "version": "1.7.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "5d9311d4555787c8a57fea15f82471499aedf712"
+                "reference": "576aab9b5abb2ed11a1c52353a759363216a4ad2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/5d9311d4555787c8a57fea15f82471499aedf712",
-                "reference": "5d9311d4555787c8a57fea15f82471499aedf712",
+                "url": "https://api.github.com/repos/composer/composer/zipball/576aab9b5abb2ed11a1c52353a759363216a4ad2",
+                "reference": "576aab9b5abb2ed11a1c52353a759363216a4ad2",
                 "shasum": ""
             },
             "require": {
@@ -552,7 +552,7 @@
                 "dependency",
                 "package"
             ],
-            "time": "2018-08-07T07:39:23+00:00"
+            "time": "2018-08-16T14:57:12+00:00"
         },
         {
             "name": "composer/semver",
@@ -679,16 +679,16 @@
         },
         {
             "name": "composer/xdebug-handler",
-            "version": "1.1.0",
+            "version": "1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/xdebug-handler.git",
-                "reference": "c919dc6c62e221fc6406f861ea13433c0aa24f08"
+                "reference": "e37cbd80da64afe314c72de8d2d2fec0e40d9373"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/c919dc6c62e221fc6406f861ea13433c0aa24f08",
-                "reference": "c919dc6c62e221fc6406f861ea13433c0aa24f08",
+                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/e37cbd80da64afe314c72de8d2d2fec0e40d9373",
+                "reference": "e37cbd80da64afe314c72de8d2d2fec0e40d9373",
                 "shasum": ""
             },
             "require": {
@@ -719,7 +719,7 @@
                 "Xdebug",
                 "performance"
             ],
-            "time": "2018-04-11T15:42:36+00:00"
+            "time": "2018-08-23T12:00:19+00:00"
         },
         {
             "name": "dealerdirect/phpcodesniffer-composer-installer",
@@ -1815,7 +1815,7 @@
                 "zendframework/zend-validator": ">=2.3,<2.3.6",
                 "zendframework/zend-view": ">=2,<2.2.7|>=2.3,<2.3.1",
                 "zendframework/zend-xmlrpc": ">=2.1,<2.1.6|>=2.2,<2.2.6",
-                "zendframework/zendframework": ">=2,<2.4.11|>=2.5,<2.5.1",
+                "zendframework/zendframework": "<2.5.1",
                 "zendframework/zendframework1": "<1.12.20",
                 "zendframework/zendopenid": ">=2,<2.0.2",
                 "zendframework/zendxml": ">=1,<1.0.1",
@@ -1837,7 +1837,7 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2018-08-10T10:05:21+00:00"
+            "time": "2018-08-14T15:39:17+00:00"
         },
         {
             "name": "sebastian/comparator",
@@ -3597,16 +3597,16 @@
         },
         {
             "name": "wp-cli/wp-cli-tests",
-            "version": "v2.0.7",
+            "version": "v2.0.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/wp-cli-tests.git",
-                "reference": "894c76528a5a33d7856785cfeb99bd3fa21cafec"
+                "reference": "00c487c54597691a6ae05b7022f1b963f3f64037"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/894c76528a5a33d7856785cfeb99bd3fa21cafec",
-                "reference": "894c76528a5a33d7856785cfeb99bd3fa21cafec",
+                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/00c487c54597691a6ae05b7022f1b963f3f64037",
+                "reference": "00c487c54597691a6ae05b7022f1b963f3f64037",
                 "shasum": ""
             },
             "require": {
@@ -3659,7 +3659,7 @@
                 "cli",
                 "wordpress"
             ],
-            "time": "2018-08-09T10:25:09+00:00"
+            "time": "2018-08-23T16:46:06+00:00"
         },
         {
             "name": "wp-cli/wp-config-transformer",
