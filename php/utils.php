@@ -334,12 +334,16 @@ function write_csv( $fd, $rows, $headers = array() ) {
  * @return array
  */
 function pick_fields( $item, $fields ) {
-	$item = (object) $item;
-
 	$values = array();
 
-	foreach ( $fields as $field ) {
-		$values[ $field ] = isset( $item->$field ) ? $item->$field : null;
+	if ( is_object( $item ) ) {
+		foreach ( $fields as $field ) {
+			$values[ $field ] = isset( $item->$field ) ? $item->$field : null;
+		}
+	} else {
+		foreach ( $fields as $field ) {
+			$values[ $field ] = isset( $item[ $field ] ) ? $item[ $field ] : null;
+		}
 	}
 
 	return $values;
