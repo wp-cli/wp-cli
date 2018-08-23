@@ -52,6 +52,7 @@
             "./utils/git-setup-pre-commit-hook"
         ],
         "behat": "run-behat-tests",
+        "behat-rerun": "rerun-behat-tests",
         "lint": "run-linter-tests",
         "phpcs": "run-phpcs-tests",
         "phpunit": "run-php-unit-tests",
