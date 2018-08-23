@@ -2985,16 +2985,16 @@
         },
         {
             "name": "wp-cli/config-command",
-            "version": "v2.0.0",
+            "version": "v2.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/config-command.git",
-                "reference": "e6f9ae208f85efe65e13ffaf433ba9d418076edb"
+                "reference": "044c550ef4e4d4fae6ed62daad13f94959696453"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/config-command/zipball/e6f9ae208f85efe65e13ffaf433ba9d418076edb",
-                "reference": "e6f9ae208f85efe65e13ffaf433ba9d418076edb",
+                "url": "https://api.github.com/repos/wp-cli/config-command/zipball/044c550ef4e4d4fae6ed62daad13f94959696453",
+                "reference": "044c550ef4e4d4fae6ed62daad13f94959696453",
                 "shasum": ""
             },
             "require": {
@@ -3050,7 +3050,7 @@
             ],
             "description": "Generates and reads the wp-config.php file.",
             "homepage": "https://github.com/wp-cli/config-command",
-            "time": "2018-08-05T12:28:47+00:00"
+            "time": "2018-08-20T10:59:48+00:00"
         },
         {
             "name": "wp-cli/core-command",
@@ -3190,16 +3190,16 @@
         },
         {
             "name": "wp-cli/entity-command",
-            "version": "v2.0.0",
+            "version": "v2.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/entity-command.git",
-                "reference": "e3f3d244ae5e88c2ef347966e4b74872c8fe6408"
+                "reference": "80d4b667555f74b29f57c92cf0fbf363b1f93474"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/entity-command/zipball/e3f3d244ae5e88c2ef347966e4b74872c8fe6408",
-                "reference": "e3f3d244ae5e88c2ef347966e4b74872c8fe6408",
+                "url": "https://api.github.com/repos/wp-cli/entity-command/zipball/80d4b667555f74b29f57c92cf0fbf363b1f93474",
+                "reference": "80d4b667555f74b29f57c92cf0fbf363b1f93474",
                 "shasum": ""
             },
             "require": {
@@ -3210,7 +3210,7 @@
                 "wp-cli/db-command": "^1.3 || ^2",
                 "wp-cli/extension-command": "^1.2 || ^2",
                 "wp-cli/media-command": "^1.1 || ^2",
-                "wp-cli/wp-cli-tests": "^2"
+                "wp-cli/wp-cli-tests": "^2.0.7"
             },
             "type": "wp-cli-package",
             "extra": {
@@ -3391,7 +3391,7 @@
             ],
             "description": "Manage WordPress core entities.",
             "homepage": "https://github.com/wp-cli/entity-command",
-            "time": "2018-08-05T18:29:31+00:00"
+            "time": "2018-08-17T11:08:49+00:00"
         },
         {
             "name": "wp-cli/eval-command",
@@ -3449,16 +3449,16 @@
         },
         {
             "name": "wp-cli/extension-command",
-            "version": "v2.0.0",
+            "version": "v2.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/extension-command.git",
-                "reference": "4fed9eeb946229ce4f611752433e942a9f49edc2"
+                "reference": "49273af9aaa77fe795ae3564b3c68086ed8068a2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/4fed9eeb946229ce4f611752433e942a9f49edc2",
-                "reference": "4fed9eeb946229ce4f611752433e942a9f49edc2",
+                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/49273af9aaa77fe795ae3564b3c68086ed8068a2",
+                "reference": "49273af9aaa77fe795ae3564b3c68086ed8068a2",
                 "shasum": ""
             },
             "require": {
@@ -3468,7 +3468,7 @@
             "require-dev": {
                 "wp-cli/entity-command": "^1.3 || ^2",
                 "wp-cli/scaffold-command": "^1.2 || ^2",
-                "wp-cli/wp-cli-tests": "^2"
+                "wp-cli/wp-cli-tests": "^2.0.7"
             },
             "type": "wp-cli-package",
             "extra": {
@@ -3532,7 +3532,7 @@
             ],
             "description": "Manages plugins and themes, including installs, activations, and updates.",
             "homepage": "https://github.com/wp-cli/extension-command",
-            "time": "2018-08-05T15:59:47+00:00"
+            "time": "2018-08-23T13:40:50+00:00"
         },
         {
             "name": "wp-cli/package-command",
