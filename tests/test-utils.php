@@ -722,4 +722,21 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			array( 'string', null, 'strings' ),
 		);
 	}
+
+	/** @dataProvider dataPickFields */
+	public function testPickFields( $data, $fields, $expected ) {
+		$this->assertEquals( $expected, Utils\pick_fields( $data, $fields ) );
+	}
+
+	public function dataPickFields() {
+		return array(
+			array( array( 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ), array( 'keyB' ), array( 'keyB' => 'valB' ) ),
+			array( array( '1' => 'valA', '2' => 'valB', '3' => 'valC' ), array( '2' ), array( '2' => 'valB' ) ),
+			array( array( 1 => 'valA', 2 => 'valB', 3 => 'valC' ), array( 2 ), array( 2 => 'valB' ) ),
+			array( (object) array( 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ), array( 'keyB' ), array( 'keyB' => 'valB' ) ),
+			array( array(), array( 'keyB' ), array( 'keyB' => null ) ),
+			array( array( 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ), array( 'keyD' ), array( 'keyD' => null ) ),
+			array( array( 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC' ), array( 'keyA', 'keyB', 'keyC', 'keyD' ), array( 'keyA' => 'valA', 'keyB' => 'valB', 'keyC' => 'valC', 'keyD' => null ) ),
+		);
+	}
 }
