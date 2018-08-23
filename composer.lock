@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fc8c38fcf9e98efa4fb929734a6a82e9",
+    "content-hash": "afe59a8ab1447f779f7a0ebf05ff2f4b",
     "packages": [
         {
             "name": "mustache/mustache",
@@ -679,16 +679,16 @@
         },
         {
             "name": "composer/xdebug-handler",
-            "version": "1.2.0",
+            "version": "1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/xdebug-handler.git",
-                "reference": "e1809da56ce1bd1b547a752936817341ac244d8e"
+                "reference": "e37cbd80da64afe314c72de8d2d2fec0e40d9373"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/e1809da56ce1bd1b547a752936817341ac244d8e",
-                "reference": "e1809da56ce1bd1b547a752936817341ac244d8e",
+                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/e37cbd80da64afe314c72de8d2d2fec0e40d9373",
+                "reference": "e37cbd80da64afe314c72de8d2d2fec0e40d9373",
                 "shasum": ""
             },
             "require": {
@@ -719,7 +719,7 @@
                 "Xdebug",
                 "performance"
             ],
-            "time": "2018-08-16T10:54:23+00:00"
+            "time": "2018-08-23T12:00:19+00:00"
         },
         {
             "name": "dealerdirect/phpcodesniffer-composer-installer",
@@ -1681,17 +1681,6 @@
         {
             "name": "roave/security-advisories",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "0abc14e0df387fe74b4b32e0b8647d1639256d38"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/0abc14e0df387fe74b4b32e0b8647d1639256d38",
-                "reference": "0abc14e0df387fe74b4b32e0b8647d1639256d38",
-                "shasum": ""
-            },
             "conflict": {
                 "3f/pygmentize": "<1.2",
                 "adodb/adodb-php": "<5.20.12",
@@ -3608,16 +3597,16 @@
         },
         {
             "name": "wp-cli/wp-cli-tests",
-            "version": "v2.0.7",
+            "version": "v2.0.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/wp-cli-tests.git",
-                "reference": "894c76528a5a33d7856785cfeb99bd3fa21cafec"
+                "reference": "00c487c54597691a6ae05b7022f1b963f3f64037"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/894c76528a5a33d7856785cfeb99bd3fa21cafec",
-                "reference": "894c76528a5a33d7856785cfeb99bd3fa21cafec",
+                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/00c487c54597691a6ae05b7022f1b963f3f64037",
+                "reference": "00c487c54597691a6ae05b7022f1b963f3f64037",
                 "shasum": ""
             },
             "require": {
@@ -3670,7 +3659,7 @@
                 "cli",
                 "wordpress"
             ],
-            "time": "2018-08-09T10:25:09+00:00"
+            "time": "2018-08-23T16:46:06+00:00"
         },
         {
             "name": "wp-cli/wp-config-transformer",
