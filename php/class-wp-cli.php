@@ -936,7 +936,7 @@ class WP_CLI {
 		} elseif ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'yaml' ) {
 			$value = Spyc::YAMLDump( $value, 2, 0 );
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
-			$value = var_export( $value );
+			$value = var_export( $value, true );
 		}
 
 		echo $value . "\n";
