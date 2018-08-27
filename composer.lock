@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
     "content-hash": "afe59a8ab1447f779f7a0ebf05ff2f4b",
@@ -1681,6 +1681,17 @@
         {
             "name": "roave/security-advisories",
             "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Roave/SecurityAdvisories.git",
+                "reference": "0abc14e0df387fe74b4b32e0b8647d1639256d38"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/0abc14e0df387fe74b4b32e0b8647d1639256d38",
+                "reference": "0abc14e0df387fe74b4b32e0b8647d1639256d38",
+                "shasum": ""
+            },
             "conflict": {
                 "3f/pygmentize": "<1.2",
                 "adodb/adodb-php": "<5.20.12",
@@ -3597,16 +3608,16 @@
         },
         {
             "name": "wp-cli/wp-cli-tests",
-            "version": "v2.0.9",
+            "version": "v2.0.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/wp-cli-tests.git",
-                "reference": "00c487c54597691a6ae05b7022f1b963f3f64037"
+                "reference": "32de18d70ea79d30f10f8e24e77d23fb05ac413b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/00c487c54597691a6ae05b7022f1b963f3f64037",
-                "reference": "00c487c54597691a6ae05b7022f1b963f3f64037",
+                "url": "https://api.github.com/repos/wp-cli/wp-cli-tests/zipball/32de18d70ea79d30f10f8e24e77d23fb05ac413b",
+                "reference": "32de18d70ea79d30f10f8e24e77d23fb05ac413b",
                 "shasum": ""
             },
             "require": {
@@ -3659,7 +3670,7 @@
                 "cli",
                 "wordpress"
             ],
-            "time": "2018-08-23T16:46:06+00:00"
+            "time": "2018-08-24T15:13:24+00:00"
         },
         {
             "name": "wp-cli/wp-config-transformer",
