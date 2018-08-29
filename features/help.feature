@@ -46,6 +46,13 @@ Feature: Get help about WP-CLI commands
       """
     And STDERR should be empty
 
+    When I run `wp post list --post_type=post --posts_per_page=5 --help --prompt`
+    Then STDOUT should contain:
+      """
+      wp post list
+      """
+    And STDERR should be empty
+
   # Prior to WP 4.3 widgets & others used PHP 4 style constructors and prior to WP 3.9 wpdb used the mysql extension which can all lead (depending on PHP version) to PHP Deprecated notices.
   @require-wp-4.3
   Scenario: Help for internal commands with WP

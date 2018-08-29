@@ -88,3 +88,11 @@ Feature: Prompt user for input
       """
       flag1: bar
       """
+
+    When I run `wp foobar foo --prompt --help`
+    Then STDOUT should contain:
+      """
+      wp foobar
+      """
+    And STDERR should be empty
+    
