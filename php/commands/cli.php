@@ -9,4 +9,4 @@ if ( ! class_exists( 'Alias_Command' ) ) {
 }
 
 WP_CLI::add_command( 'cli', 'CLI_Command' );
-WP_CLI::add_command( 'alias', 'Alias_Command' );
+WP_CLI::add_command( 'cli alias', 'Alias_Command' );

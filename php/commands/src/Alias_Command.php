@@ -1,6 +1,7 @@
 <?php
 
 use Mustangostang\Spyc;
+
 /**
  * Retrieves and sets alias for WP Installs.
  *
