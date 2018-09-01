@@ -13,19 +13,19 @@ use Mustangostang\Spyc;
  * ## EXAMPLES
  *
  *     # Get alias information.
- *     $ wp alias get @dev
+ *     $ wp cli alias get @dev
  *     ssh: dev@somedeve.env:12345/home/dev/
  *
  *     # Add alias.
- *     $ wp alias add prod login@host /path/to/wordpress/install/
+ *     $ wp cli alias add prod login@host /path/to/wordpress/install/
  *     Success: Added '@prod' alias.
  *
  *     # Update alias.
- *     $ wp alias update @prod newlogin@host /updated/wordpress/path/
+ *     $ wp cli alias update @prod newlogin@host /updated/wordpress/path/
  *     Success: Updated 'prod' alias.
  *
  *     # Delete alias.
- *     $ wp alias delete @prod
+ *     $ wp cli alias delete @prod
  *     Success: Deleted '@prod' alias.
  *
  * @package wp-cli
@@ -56,7 +56,7 @@ class Alias_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # List all available aliases.
-	 *     $ wp alias list
+	 *     $ wp cli alias list
 	 *     ---
 	 *     @all: Run command against every registered alias.
 	 *     @prod:
@@ -84,7 +84,7 @@ class Alias_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Get alias.
-	 *     $ wp alias get @prod
+	 *     $ wp cli alias get @prod
 	 *     ssh: dev@somedeve.env:12345/home/dev/
 	 *
 	 * @subcommand get
@@ -119,7 +119,7 @@ class Alias_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Add alias.
-	 *     $ wp alias add prod login@host /path/to/wordpress/install/
+	 *     $ wp cli alias add prod login@host /path/to/wordpress/install/
 	 *     Success: Added '@prod' alias.
 	 *
 	 * @subcommand add
@@ -170,7 +170,7 @@ class Alias_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Delete alias.
-	 *     $ wp alias delete @prod
+	 *     $ wp cli alias delete @prod
 	 *     Success: Deleted '@prod' alias.
 	 *
 	 * @subcommand delete
@@ -227,7 +227,7 @@ class Alias_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Update alias.
-	 *     $ wp alias update @prod newlogin@host /updated/wordpress/path/
+	 *     $ wp cli alias update @prod newlogin@host /updated/wordpress/path/
 	 *     Success: Updated 'prod' alias.
 	 *
 	 * @subcommand update

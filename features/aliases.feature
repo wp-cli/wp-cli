@@ -142,15 +142,14 @@ Feature: Create shortcuts to specific WordPress installs
 
   Scenario: Get alias information
     Given an empty directory
-    And a wp-cli.yml file:
+    And a config.yml file:
       """
       @foo:
         ssh: user@host:/path/to/wordpress
       """
 
-
     When I run `wp cli alias get @foo`
-    Then STDOUT should be YAML containing:
+    Then STDOUT should be:
       """
       ssh: user@host:/path/to/wordpress
       """
@@ -158,7 +157,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp cli alias get @someotherfoo`
     Then STDERR should contain:
       """
-      Error: No alias found with key '@rtmew'.
+      Error: No alias found with key '@someotherfoo'.
       """
 
   Scenario: Add an alias
@@ -199,6 +198,13 @@ Feature: Create shortcuts to specific WordPress installs
       """
        Success: Deleted '@test' alias.
        """
+    When I run `wp cli alias list`
+    Then STDOUT should be YAML containing:
+      """
+      @all: Run command against every registered alias.
+      @foo:
+        ssh: foo@bar:/path/to/wordpress
+      """
     When I try `wp cli alias delete @test`
     Then STDERR should contain:
       """
@@ -218,6 +224,13 @@ Feature: Create shortcuts to specific WordPress installs
        """
       Success: Updated '@foo' alias.
        """
+    When I run `wp cli alias list`
+    Then STDOUT should be YAML containing:
+      """
+      @all: Run command against every registered alias.
+      @foo:
+        ssh: foo@host:/new/path
+      """
     When I try `wp cli alias update @otherfoo foo@host /some/path`
     Then STDERR should contain:
       """
