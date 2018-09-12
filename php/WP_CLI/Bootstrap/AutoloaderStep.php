@@ -39,10 +39,13 @@ abstract class AutoloaderStep implements BootstrapStep {
 		foreach ( $autoloader_paths as $autoloader_path ) {
 			if ( is_readable( $autoloader_path ) ) {
 				try {
-					\WP_CLI::debug( sprintf(
-						'Loading detected autoloader: %s',
-						$autoloader_path
-					), 'bootstrap' );
+					\WP_CLI::debug(
+						sprintf(
+							'Loading detected autoloader: %s',
+							$autoloader_path
+						),
+						'bootstrap'
+					);
 					require $autoloader_path;
 					$found_autoloader = true;
 				} catch ( \Exception $exception ) {
