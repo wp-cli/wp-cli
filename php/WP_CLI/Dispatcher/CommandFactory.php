@@ -28,7 +28,9 @@ class CommandFactory {
 		} elseif ( is_array( $callable ) && is_callable( $callable ) ) {
 			$reflection = new \ReflectionClass( $callable[0] );
 			$command    = self::create_subcommand(
-				$parent, $name, array( $callable[0], $callable[1] ),
+				$parent,
+				$name,
+				array( $callable[0], $callable[1] ),
 				$reflection->getMethod( $callable[1] )
 			);
 		} else {
@@ -38,7 +40,9 @@ class CommandFactory {
 			} elseif ( $reflection->hasMethod( '__invoke' ) ) {
 				$class   = is_object( $callable ) ? $callable : $reflection->name;
 				$command = self::create_subcommand(
-					$parent, $name, array( $class, '__invoke' ),
+					$parent,
+					$name,
+					array( $class, '__invoke' ),
 					$reflection->getMethod( '__invoke' )
 				);
 			} else {
