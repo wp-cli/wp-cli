@@ -215,12 +215,14 @@ class Help_Command extends WP_CLI_Command {
 			$links   = array(); // An array of URLs from the description.
 			$pattern = '/\[.+?\]\((https?:\/\/.+?)\)/';
 			$newdesc = preg_replace_callback(
-				$pattern, function( $matches ) use ( &$links ) {
+				$pattern,
+				function( $matches ) use ( &$links ) {
 					static $count = 0;
 					$count++;
 					$links[] = $matches[1];
 					return str_replace( '(' . $matches[1] . ')', '[' . $count . ']', $matches[0] );
-				}, $description
+				},
+				$description
 			);
 
 			$footnote = '';

@@ -950,7 +950,8 @@ function parse_str_to_argv( $arguments ) {
 				}
 			}
 				return $arg;
-		}, $argv
+		},
+		$argv
 	);
 	return $argv;
 }

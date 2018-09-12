@@ -30,7 +30,8 @@ class SynopsisValidator {
 				array(
 					'type' => 'unknown',
 				)
-			), 'token'
+			),
+			'token'
 		);
 	}
 
