@@ -411,6 +411,10 @@ class CLI_Command extends WP_CLI_Command {
 				continue;
 			}
 
+			if ( ! isset( $release->assets[0]->browser_download_url ) ) {
+				continue;
+			}
+
 			if ( ! empty( $updates[ $update_type ] ) && ! Comparator::greaterThan( $release_version, $updates[ $update_type ]['version'] ) ) {
 				continue;
 			}
