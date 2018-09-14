@@ -244,7 +244,8 @@ class WP_CLI {
 					'Immediately invoking on passed hook "%s": %s',
 					$when,
 					Utils\describe_callable( $callback )
-				), 'hooks'
+				),
+				'hooks'
 			);
 			call_user_func_array( $callback, (array) self::$hooks_passed[ $when ] );
 		}
@@ -283,7 +284,8 @@ class WP_CLI {
 				'Processing hook "%s" with %d callbacks',
 				$when,
 				count( self::$hooks[ $when ] )
-			), 'hooks'
+			),
+			'hooks'
 		);
 
 		foreach ( self::$hooks[ $when ] as $callback ) {
@@ -292,7 +294,8 @@ class WP_CLI {
 					'On hook "%s": %s',
 					$when,
 					Utils\describe_callable( $callback )
-				), 'hooks'
+				),
+				'hooks'
 			);
 			call_user_func_array( $callback, $args );
 		}
@@ -736,10 +739,10 @@ class WP_CLI {
 
 		if ( ! empty( $storage ) && self::$logger ) {
 			foreach ( $storage as $entry ) {
-				list( $message, $group ) = $entry;
-				self::$logger->debug( self::error_to_string( $message ), $group );
-				$storage = array();
+				list( $stored_message, $stored_group ) = $entry;
+				self::$logger->debug( self::error_to_string( $stored_message ), $stored_group );
 			}
+			$storage = array();
 		}
 
 		self::$logger->debug( self::error_to_string( $message ), $group );
@@ -936,7 +939,7 @@ class WP_CLI {
 		} elseif ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'yaml' ) {
 			$value = Spyc::YAMLDump( $value, 2, 0 );
 		} elseif ( is_array( $value ) || is_object( $value ) ) {
-			$value = var_export( $value );
+			$value = var_export( $value, true );
 		}
 
 		echo $value . "\n";
@@ -1230,7 +1233,9 @@ class WP_CLI {
 			}
 			try {
 				self::get_runner()->run_command(
-					$args, $assoc_args, array(
+					$args,
+					$assoc_args,
+					array(
 						'back_compat_conversions' => true,
 					)
 				);
@@ -1314,8 +1319,10 @@ class WP_CLI {
 		trigger_error(
 			sprintf(
 				'wp %s: %s is deprecated. use WP_CLI::add_command() instead.',
-				$name, __FUNCTION__
-			), E_USER_WARNING
+				$name,
+				__FUNCTION__
+			),
+			E_USER_WARNING
 		);
 		self::add_command( $name, $class );
 	}

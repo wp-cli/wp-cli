@@ -885,7 +885,8 @@ class Runner {
 			list( $args, $assoc_args, $this->runtime_config ) = $configurator->parse_args( $argv );
 
 			list( $this->arguments, $this->assoc_args ) = self::back_compat_conversions(
-				$args, $assoc_args
+				$args,
+				$assoc_args
 			);
 
 			$configurator->merge_array( $this->runtime_config );
@@ -1495,7 +1496,8 @@ class Runner {
 
 		// Set up hook for plugins and themes to conditionally add WP-CLI commands.
 		WP_CLI::add_wp_hook(
-			'init', function () {
+			'init',
+			function () {
 				do_action( 'cli_init' );
 			}
 		);

@@ -29,10 +29,13 @@ final class RegisterFrameworkCommands implements BootstrapStep {
 			}
 
 			try {
-				\WP_CLI::debug( sprintf(
-					'Adding framework command: %s',
-					"$cmd_dir/$filename"
-				), 'bootstrap' );
+				\WP_CLI::debug(
+					sprintf(
+						'Adding framework command: %s',
+						"$cmd_dir/$filename"
+					),
+					'bootstrap'
+				);
 
 				include_once "$cmd_dir/$filename";
 			} catch ( \Exception $exception ) {
