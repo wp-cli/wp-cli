@@ -9,3 +9,4 @@ PHAR_BUILD_VERSION
 /codesniffer
 /PHP_Codesniffer-VariableAnalysis
 .*.swp
+*.log
