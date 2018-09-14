@@ -142,7 +142,7 @@ Feature: Create shortcuts to specific WordPress installs
 
   Scenario: Get alias information
     Given an empty directory
-    And a config.yml file:
+    And a wp-cli.yml file:
       """
       @foo:
         ssh: user@host:/path/to/wordpress
