@@ -12,7 +12,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp core is-installed`
     Then STDERR should contain:
       """
-      Error: This does not seem to be a WordPress install.
+      Error: This does not seem to be a WordPress installation.
       """
     And the return code should be 1
 
@@ -170,7 +170,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `WP_CLI_CONFIG_PATH=config.yml wp @foo option get home`
     Then STDERR should contain:
       """
-      Error: This does not seem to be a WordPress install.
+      Error: This does not seem to be a WordPress installation.
       """
 
   Scenario: Use a group of aliases to run a command against multiple installs
@@ -341,7 +341,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp core is-installed --allow-root --debug`
     Then STDERR should contain:
       """
-      Error: This does not seem to be a WordPress install.
+      Error: This does not seem to be a WordPress installation.
       """
     And STDERR should contain:
       """
