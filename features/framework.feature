@@ -81,7 +81,7 @@ Feature: Load WP-CLI
       """
     And STDERR should contain:
       """
-      Error: This does not seem to be a WordPress install.
+      Error: This does not seem to be a WordPress installation.
       """
 
   Scenario: Globalize global variables in wp-config.php
