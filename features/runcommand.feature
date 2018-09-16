@@ -287,7 +287,7 @@ Feature: Run a WP-CLI command
     | --launch    |
 
   Scenario Outline: Check that proc_open() and proc_close() aren't disabled for launch
-    Given a WP install
+    Given a WP installation
 
     When I try `{INVOKE_WP_CLI_WITH_PHP_ARGS--ddisable_functions=<func>} --launch run 'option get home'`
     Then STDERR should contain:
