@@ -554,8 +554,8 @@ class CLI_Command extends WP_CLI_Command {
 	 * List available WP-CLI aliases.
 	 *
 	 * Aliases are shorthand references to WordPress installs. For instance,
-	 * `@dev` could refer to a development install and `@prod` could refer to
-	 * a production install. This command gives you visibility in what
+	 * `@dev` could refer to a development installation and `@prod` could refer
+	 * to a production installation. This command gives you visibility in what
 	 * registered aliases you have available.
 	 *
 	 * ## OPTIONS
@@ -575,6 +575,7 @@ class CLI_Command extends WP_CLI_Command {
 	 *     # List all available aliases.
 	 *     $ wp cli alias
 	 *     ---
+	 *
 	 *     @all: Run command against every registered alias.
 	 *     @prod:
 	 *       ssh: runcommand@runcommand.io~/webapps/production

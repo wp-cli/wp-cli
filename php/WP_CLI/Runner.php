@@ -124,7 +124,7 @@ class Runner {
 		);
 
 		// Stop looking upward when we find we have emerged from a subdirectory
-		// install into a parent installation
+		// installation into a parent installation
 		$project_config_path = Utils\find_file_upward(
 			$config_files,
 			getcwd(),
