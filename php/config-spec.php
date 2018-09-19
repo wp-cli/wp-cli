@@ -22,7 +22,7 @@ return array(
 	'http'              => array(
 		'runtime' => '=<http>',
 		'file'    => '<http>',
-		'desc'    => 'Perform operation against a remote WordPress install over HTTP.',
+		'desc'    => 'Perform operation against a remote WordPress installation over HTTP.',
 	),
 
 	'blog'              => array(
