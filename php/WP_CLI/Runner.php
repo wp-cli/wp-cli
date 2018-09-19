@@ -124,7 +124,7 @@ class Runner {
 		);
 
 		// Stop looking upward when we find we have emerged from a subdirectory
-		// install into a parent install
+		// installation into a parent installation
 		$project_config_path = Utils\find_file_upward(
 			$config_files,
 			getcwd(),
@@ -162,7 +162,7 @@ class Runner {
 	}
 
 	/**
-	 * Attempts to find the path to the WP install inside index.php
+	 * Attempts to find the path to the WP installation inside index.php
 	 *
 	 * @param string $index_path
 	 * @return string|false
@@ -825,7 +825,7 @@ class Runner {
 			$suggestion_or_disabled = $this->find_command_to_run( $args );
 			if ( is_string( $suggestion_or_disabled ) ) {
 				if ( ! preg_match( '/disabled from the config file.$/', $suggestion_or_disabled ) ) {
-					WP_CLI::warning( "No WordPress install found. If the command '" . implode( ' ', $args ) . "' is in a plugin or theme, pass --path=`path/to/wordpress`." );
+					WP_CLI::warning( "No WordPress installation found. If the command '" . implode( ' ', $args ) . "' is in a plugin or theme, pass --path=`path/to/wordpress`." );
 				}
 				WP_CLI::error( $suggestion_or_disabled );
 			}
@@ -836,7 +836,7 @@ class Runner {
 				);
 			}
 			WP_CLI::error(
-				"This does not seem to be a WordPress install.\n" .
+				"This does not seem to be a WordPress installation.\n" .
 				'Pass --path=`path/to/wordpress` or run `wp core download`.'
 			);
 		}
@@ -918,7 +918,7 @@ class Runner {
 
 		WP_CLI::error(
 			"YIKES! It looks like you're running this as root. You probably meant to " .
-			"run this as the user that your WordPress install exists under.\n" .
+			"run this as the user that your WordPress installation exists under.\n" .
 			"\n" .
 			"If you REALLY mean to run this as root, we won't stop you, but just " .
 			'bear in mind that any code on this site will then have full control of ' .
@@ -1368,7 +1368,7 @@ class Runner {
 			}
 		);
 
-		// In a multisite install, die if unable to find site given in --url parameter
+		// In a multisite installation, die if unable to find site given in --url parameter
 		if ( $this->is_multisite() ) {
 			$run_on_site_not_found = false;
 			if ( $this->cmd_starts_with( array( 'cache', 'flush' ) ) ) {
@@ -1598,7 +1598,7 @@ class Runner {
 	}
 
 	/**
-	 * Whether or not this WordPress install is multisite.
+	 * Whether or not this WordPress installation is multisite.
 	 *
 	 * For use after wp-config.php has loaded, but before the rest of WordPress
 	 * is loaded.

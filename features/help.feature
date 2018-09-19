@@ -179,7 +179,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Warning: No WordPress install found. If the command 'non-existent-command' is in a plugin or theme, pass --path=`path/to/wordpress`.
+      Warning: No WordPress installation found. If the command 'non-existent-command' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
       """
     And STDOUT should be empty
@@ -196,19 +196,19 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Warning: No WordPress install found. If the command 'non-existent-command non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
+      Warning: No WordPress installation found. If the command 'non-existent-command non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
       """
     And STDOUT should be empty
 
-  Scenario: Help for nonexistent commands without a WP install
+  Scenario: Help for nonexistent commands without a WP installation
     Given an empty directory
 
     When I try `wp help non-existent-command`
     Then the return code should be 1
     And STDERR should be:
       """
-      Warning: No WordPress install found. If the command 'non-existent-command' is in a plugin or theme, pass --path=`path/to/wordpress`.
+      Warning: No WordPress installation found. If the command 'non-existent-command' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'non-existent-command' is not a registered wp command. See 'wp help' for available commands.
       """
     And STDOUT should be empty
@@ -228,7 +228,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Warning: No WordPress install found. If the command 'config non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
+      Warning: No WordPress installation found. If the command 'config non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'non-existent-subcommand' is not a registered subcommand of 'config'. See 'wp help config' for available subcommands.
       """
     And STDOUT should be empty
@@ -245,7 +245,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Warning: No WordPress install found. If the command 'core non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
+      Warning: No WordPress installation found. If the command 'core non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'non-existent-subcommand' is not a registered subcommand of 'core'. See 'wp help core' for available subcommands.
       """
     And STDOUT should be empty
@@ -262,7 +262,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Warning: No WordPress install found. If the command 'db non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
+      Warning: No WordPress installation found. If the command 'db non-existent-subcommand' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'non-existent-subcommand' is not a registered subcommand of 'db'. See 'wp help db' for available subcommands.
       """
     And STDOUT should be empty
@@ -274,7 +274,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Warning: No WordPress install found. If the command 'confi' is in a plugin or theme, pass --path=`path/to/wordpress`.
+      Warning: No WordPress installation found. If the command 'confi' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'confi' is not a registered wp command. See 'wp help' for available commands.
       Did you mean 'config'?
       """
@@ -284,7 +284,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Warning: No WordPress install found. If the command 'cor' is in a plugin or theme, pass --path=`path/to/wordpress`.
+      Warning: No WordPress installation found. If the command 'cor' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'cor' is not a registered wp command. See 'wp help' for available commands.
       Did you mean 'core'?
       """
@@ -294,7 +294,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Warning: No WordPress install found. If the command 'd' is in a plugin or theme, pass --path=`path/to/wordpress`.
+      Warning: No WordPress installation found. If the command 'd' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'd' is not a registered wp command. See 'wp help' for available commands.
       Did you mean 'db'?
       """
@@ -304,7 +304,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Warning: No WordPress install found. If the command 'packag' is in a plugin or theme, pass --path=`path/to/wordpress`.
+      Warning: No WordPress installation found. If the command 'packag' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'packag' is not a registered wp command. See 'wp help' for available commands.
       Did you mean 'package'?
       """
@@ -317,7 +317,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Warning: No WordPress install found. If the command 'config creat' is in a plugin or theme, pass --path=`path/to/wordpress`.
+      Warning: No WordPress installation found. If the command 'config creat' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'creat' is not a registered subcommand of 'config'. See 'wp help config' for available subcommands.
       Did you mean 'create'?
       """
@@ -327,7 +327,7 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Warning: No WordPress install found. If the command 'core versio' is in a plugin or theme, pass --path=`path/to/wordpress`.
+      Warning: No WordPress installation found. If the command 'core versio' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'versio' is not a registered subcommand of 'core'. See 'wp help core' for available subcommands.
       Did you mean 'version'?
       """
@@ -337,13 +337,13 @@ Feature: Get help about WP-CLI commands
     Then the return code should be 1
     And STDERR should be:
       """
-      Warning: No WordPress install found. If the command 'db chec' is in a plugin or theme, pass --path=`path/to/wordpress`.
+      Warning: No WordPress installation found. If the command 'db chec' is in a plugin or theme, pass --path=`path/to/wordpress`.
       Error: 'chec' is not a registered subcommand of 'db'. See 'wp help db' for available subcommands.
       Did you mean 'check'?
       """
     And STDOUT should be empty
 
-  Scenario: No WordPress install warning or suggestions for disabled commands
+  Scenario: No WordPress installation warning or suggestions for disabled commands
     Given an empty directory
     And a wp-cli.yml file:
       """
