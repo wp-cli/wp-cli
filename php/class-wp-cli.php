@@ -519,6 +519,20 @@ class WP_CLI {
 			return false;
 		}
 
+		// Reattach commands attached to namespace to real command.
+		$subcommand_name  = (array) $leaf_name;
+		$existing_command = $command->find_subcommand( $subcommand_name );
+		if ( $existing_command instanceof Dispatcher\CommandNamespace ) {
+			$subcommands = $existing_command->get_subcommands();
+			if ( ! empty( $subcommands )
+				&& ( $leaf_command instanceof Dispatcher\CompositeCommand
+					|| $leaf_command->can_have_subcommands ) ) {
+				foreach ( $subcommands as $subname => $subcommand ) {
+					$leaf_command->add_subcommand( $subname, $subcommand );
+				}
+			}
+		}
+
 		if ( ! $command->can_have_subcommands() ) {
 			throw new Exception(
 				sprintf(
