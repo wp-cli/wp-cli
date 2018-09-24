@@ -1,6 +1,6 @@
 Feature: Create shortcuts to specific WordPress installs
 
-  Scenario: Alias for a path to a specific WP install
+  Scenario: Alias for a path to a specific WP installation
     Given a WP installation in 'foo'
     And I run `mkdir bar`
     And a wp-cli.yml file:
@@ -12,7 +12,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp core is-installed`
     Then STDERR should contain:
       """
-      Error: This does not seem to be a WordPress install.
+      Error: This does not seem to be a WordPress installation.
       """
     And the return code should be 1
 
@@ -259,12 +259,12 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `WP_CLI_CONFIG_PATH=config.yml wp @foo option get home`
     Then STDERR should contain:
       """
-      Error: This does not seem to be a WordPress install.
+      Error: This does not seem to be a WordPress installation.
       """
 
   Scenario: Use a group of aliases to run a command against multiple installs
     Given a WP installation in 'foo'
-    And a WP install in 'bar'
+    And a WP installation in 'bar'
     And a wp-cli.yml file:
       """
       @both:
@@ -317,7 +317,7 @@ Feature: Create shortcuts to specific WordPress installs
 
   Scenario: Register '@all' alias for running on one or more aliases
     Given a WP installation in 'foo'
-    And a WP install in 'bar'
+    And a WP installation in 'bar'
     And a wp-cli.yml file:
       """
       @foo:
@@ -358,7 +358,7 @@ Feature: Create shortcuts to specific WordPress installs
 
   Scenario: Don't register '@all' when its already set
     Given a WP installation in 'foo'
-    And a WP install in 'bar'
+    And a WP installation in 'bar'
     And a wp-cli.yml file:
       """
       @all:
@@ -415,7 +415,7 @@ Feature: Create shortcuts to specific WordPress installs
 
   Scenario: Global parameters should be passed to grouped aliases
     Given a WP installation in 'foo'
-    And a WP install in 'bar'
+    And a WP installation in 'bar'
     And a wp-cli.yml file:
       """
       @foo:
@@ -430,7 +430,7 @@ Feature: Create shortcuts to specific WordPress installs
     When I try `wp core is-installed --allow-root --debug`
     Then STDERR should contain:
       """
-      Error: This does not seem to be a WordPress install.
+      Error: This does not seem to be a WordPress installation.
       """
     And STDERR should contain:
       """
@@ -469,7 +469,7 @@ Feature: Create shortcuts to specific WordPress installs
 
   Scenario Outline: Check that proc_open() and proc_close() aren't disabled for grouped aliases
     Given a WP installation in 'foo'
-    And a WP install in 'bar'
+    And a WP installation in 'bar'
     And a wp-cli.yml file:
       """
       @foo:

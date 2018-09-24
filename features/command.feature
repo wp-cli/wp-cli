@@ -1210,7 +1210,7 @@ Feature: WP-CLI Commands
     When I try `wp command after_wp_load --path=/tmp`
     Then STDERR should contain:
       """
-      Error: This does not seem to be a WordPress install.
+      Error: This does not seem to be a WordPress installation.
       """
     And the return code should be 1
 
@@ -1292,7 +1292,7 @@ Feature: WP-CLI Commands
     When I try `wp command --path=/tmp`
     Then STDERR should contain:
       """
-      Error: This does not seem to be a WordPress install.
+      Error: This does not seem to be a WordPress installation.
       """
     And the return code should be 1
 
