@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
     "content-hash": "afe59a8ab1447f779f7a0ebf05ff2f4b",
@@ -1680,17 +1680,6 @@
         {
             "name": "roave/security-advisories",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "8605f2e74f558d3e349b219e58414b75b0adc30e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/8605f2e74f558d3e349b219e58414b75b0adc30e",
-                "reference": "8605f2e74f558d3e349b219e58414b75b0adc30e",
-                "shasum": ""
-            },
             "conflict": {
                 "3f/pygmentize": "<1.2",
                 "adodb/adodb-php": "<5.20.12",
@@ -3560,26 +3549,26 @@
         },
         {
             "name": "wp-cli/package-command",
-            "version": "v2.0.2",
+            "version": "v2.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/package-command.git",
-                "reference": "d6637f39d9e1eeb9c93c5fb108c4f6e3cd9de2cf"
+                "reference": "b295eec9f503000a3bea9c247397db4b0b4839c9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/d6637f39d9e1eeb9c93c5fb108c4f6e3cd9de2cf",
-                "reference": "d6637f39d9e1eeb9c93c5fb108c4f6e3cd9de2cf",
+                "url": "https://api.github.com/repos/wp-cli/package-command/zipball/b295eec9f503000a3bea9c247397db4b0b4839c9",
+                "reference": "b295eec9f503000a3bea9c247397db4b0b4839c9",
                 "shasum": ""
             },
             "require": {
                 "composer/composer": ">=1.2.0 <1.7.0 || ^1.7.1",
                 "ext-json": "*",
-                "wp-cli/wp-cli": "^2"
+                "wp-cli/wp-cli": "dev-master"
             },
             "require-dev": {
                 "wp-cli/scaffold-command": "^1 || ^2",
-                "wp-cli/wp-cli-tests": "^2"
+                "wp-cli/wp-cli-tests": "^2.0.7"
             },
             "type": "wp-cli-package",
             "extra": {
@@ -3617,7 +3606,7 @@
             ],
             "description": "Lists, installs, and removes WP-CLI packages.",
             "homepage": "https://github.com/wp-cli/package-command",
-            "time": "2018-08-07T09:46:57+00:00"
+            "time": "2018-10-02T10:24:48+00:00"
         },
         {
             "name": "wp-cli/wp-cli-tests",
