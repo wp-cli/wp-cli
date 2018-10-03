@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
     "content-hash": "afe59a8ab1447f779f7a0ebf05ff2f4b",
@@ -1680,9 +1680,21 @@
         {
             "name": "roave/security-advisories",
             "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Roave/SecurityAdvisories.git",
+                "reference": "67643fa62d521fb76855b0a4cc9a3de7ba38f85b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/67643fa62d521fb76855b0a4cc9a3de7ba38f85b",
+                "reference": "67643fa62d521fb76855b0a4cc9a3de7ba38f85b",
+                "shasum": ""
+            },
             "conflict": {
                 "3f/pygmentize": "<1.2",
                 "adodb/adodb-php": "<5.20.12",
+                "alterphp/easyadmin-extension-bundle": ">=1.2,<1.2.11|>=1.3,<1.3.1",
                 "amphp/artax": "<1.0.6|>=2,<2.0.6",
                 "amphp/http": "<1.0.1",
                 "asymmetricrypt/asymmetricrypt": ">=0,<9.9.99",
@@ -1850,7 +1862,7 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2018-09-17T20:20:31+00:00"
+            "time": "2018-10-02T16:19:22+00:00"
         },
         {
             "name": "sebastian/comparator",
@@ -3462,16 +3474,16 @@
         },
         {
             "name": "wp-cli/extension-command",
-            "version": "v2.0.1",
+            "version": "v2.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/extension-command.git",
-                "reference": "49273af9aaa77fe795ae3564b3c68086ed8068a2"
+                "reference": "aa552f5ec645adf2bd5e8ff2957ed3e9c55af33e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/49273af9aaa77fe795ae3564b3c68086ed8068a2",
-                "reference": "49273af9aaa77fe795ae3564b3c68086ed8068a2",
+                "url": "https://api.github.com/repos/wp-cli/extension-command/zipball/aa552f5ec645adf2bd5e8ff2957ed3e9c55af33e",
+                "reference": "aa552f5ec645adf2bd5e8ff2957ed3e9c55af33e",
                 "shasum": ""
             },
             "require": {
@@ -3545,7 +3557,7 @@
             ],
             "description": "Manages plugins and themes, including installs, activations, and updates.",
             "homepage": "https://github.com/wp-cli/extension-command",
-            "time": "2018-08-23T13:40:50+00:00"
+            "time": "2018-10-02T13:58:22+00:00"
         },
         {
             "name": "wp-cli/package-command",
