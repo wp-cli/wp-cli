@@ -19,7 +19,7 @@ function wp_not_installed() {
 		}
 		if ( count( $found_prefixes ) ) {
 			$prefix_list   = implode( ', ', $found_prefixes );
-			$install_label = count( $found_prefixes ) > 1 ? 'installs' : 'install';
+			$install_label = count( $found_prefixes ) > 1 ? 'installations' : 'installation';
 			\WP_CLI::error(
 				"The site you have requested is not installed.\n" .
 				"Your table prefix is '{$table_prefix}'. Found {$install_label} with table prefix: {$prefix_list}.\n" .

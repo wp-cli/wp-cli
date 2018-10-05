@@ -1,7 +1,7 @@
 Feature: Utilities that depend on WordPress code
 
   Scenario: Clear WP cache
-    Given a WP install
+    Given a WP installation
     And a test.php file:
       """
       <?php
@@ -22,7 +22,7 @@ Feature: Utilities that depend on WordPress code
       """
 
   Scenario: Get WP table names for single site install
-    Given a WP install
+    Given a WP installation
     And I run `wp db query "CREATE TABLE xx_wp_posts ( id int );"`
     And I run `wp db query "CREATE TABLE wp_xx_posts ( id int );"`
     And I run `wp db query "CREATE TABLE wp_posts_xx ( id int );"`

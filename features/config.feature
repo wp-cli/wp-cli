@@ -80,9 +80,9 @@ Feature: Have a config file
     And I run `wp core is-installed` from 'other/subdir'
     Then STDOUT should be empty
 
-  Scenario: Nested installs
+  Scenario: Nested installations
     Given a WP installation
-    And a WP install in 'foo'
+    And a WP installation in 'foo'
     And a wp-cli.yml file:
       """
       """
@@ -470,7 +470,7 @@ Feature: Have a config file
       """
 
   @require-wp-3.9
-  Scenario: WordPress install with local dev DOMAIN_CURRENT_SITE
+  Scenario: WordPress installation with local dev DOMAIN_CURRENT_SITE
     Given a WP multisite installation
     And a local-dev.php file:
       """
