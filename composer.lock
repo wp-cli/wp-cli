@@ -3688,16 +3688,16 @@
         },
         {
             "name": "wp-cli/wp-config-transformer",
-            "version": "v1.2.1",
+            "version": "v1.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-cli/wp-config-transformer.git",
-                "reference": "6ce0a9fae09d53145c9c9c79486a69684598488d"
+                "reference": "c469771d29279e5d7a8a2065f6be809ae66a47cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-cli/wp-config-transformer/zipball/6ce0a9fae09d53145c9c9c79486a69684598488d",
-                "reference": "6ce0a9fae09d53145c9c9c79486a69684598488d",
+                "url": "https://api.github.com/repos/wp-cli/wp-config-transformer/zipball/c469771d29279e5d7a8a2065f6be809ae66a47cc",
+                "reference": "c469771d29279e5d7a8a2065f6be809ae66a47cc",
                 "shasum": ""
             },
             "require": {
@@ -3725,7 +3725,7 @@
                 }
             ],
             "description": "Programmatically edit a wp-config.php file.",
-            "time": "2018-03-20T16:19:27+00:00"
+            "time": "2018-10-03T10:40:09+00:00"
         },
         {
             "name": "wp-coding-standards/wpcs",
