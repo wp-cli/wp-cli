@@ -1,7 +1,7 @@
 WP-CLI
 ======
 
-[WP-CLI](https://wp-cli.org/) is the command-line interface for [WordPress](https://wordpress.org/). You can update plugins, configure multisite installs and much more, without using a web browser.
+[WP-CLI](https://wp-cli.org/) is the command-line interface for [WordPress](https://wordpress.org/). You can update plugins, configure multisite installations and much more, without using a web browser.
 
 Ongoing maintenance is <a href="https://make.wordpress.org/cli/2017/04/03/new-co-maintainer-alain-thanks-2017-sponsors/#sponsors">made possible by</a>:
 
@@ -20,7 +20,7 @@ WP-CLI provides a command-line interface for many actions you might perform in t
 ```bash
 $ wp plugin install user-switching --activate
 Installing User Switching (1.0.9)
-Downloading install package from https://downloads.wordpress.org/plugin/user-switching.1.0.9.zip...
+Downloading installation package from https://downloads.wordpress.org/plugin/user-switching.1.0.9.zip...
 Unpacking the package...
 Installing the plugin...
 Plugin installed successfully.
@@ -131,7 +131,7 @@ If you didn't find an answer in one of the venues above, you can:
 
 GitHub issues are meant for tracking enhancements to and bugs of existing commands, not general support. Before submitting a bug report, please [review our best practices](https://make.wordpress.org/cli/handbook/bug-reports/) to help ensure your issue is addressed in a timely manner.
 
-Please do not ask support questions on Twitter. Twitter isn't an acceptable venue for support because: 1) it's hard to hold conversations in under 140 characters, and 2) Twitter isn't a place where someone with your same question can search for an answer in a prior conversation.
+Please do not ask support questions on Twitter. Twitter isn't an acceptable venue for support because: 1) it's hard to hold conversations in under 280 characters, and 2) Twitter isn't a place where someone with your same question can search for an answer in a prior conversation.
 
 Remember, libre != gratis; the open source license grants you the freedom to use and modify, but not commitments of other people's time. Please be respectful, and set your expectations accordingly.
 
