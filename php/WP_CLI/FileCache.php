@@ -251,6 +251,62 @@ class FileCache {
 	}
 
 	/**
+	 * Remove all cached files.
+	 *
+	 * @return bool
+	 */
+	public function clear() {
+		if ( ! $this->enabled ) {
+			return false;
+		}
+
+		$finder = $this->get_finder();
+
+		foreach ( $finder as $file ) {
+			unlink( $file->getRealPath() );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Remove all cached files except for the newest version of one.
+	 *
+	 * @return bool
+	 */
+	public function prune() {
+		if ( ! $this->enabled ) {
+			return false;
+		}
+
+		/* @var Finder $finder */
+		$finder = $this->get_finder()->sortByName();
+
+		$files_to_delete = array();
+
+		foreach ( $finder as $file ) {
+			$pieces    = explode( '-', $file->getBasename( $file->getExtension() ) );
+			$timestamp = end( $pieces );
+
+			// No way to compare versions, do nothing.
+			if ( ! is_numeric( $timestamp ) ) {
+				continue;
+			}
+
+			$basename_without_timestamp = str_replace( '-' . $timestamp, '', $file->getBasename() );
+
+			// There's a file with an older timestamp, delete it.
+			if ( isset( $files_to_delete[ $basename_without_timestamp ] ) ) {
+				unlink( $files_to_delete[ $basename_without_timestamp ] );
+			}
+
+			$files_to_delete[ $basename_without_timestamp ] = $file->getRealPath();
+		}
+
+		return true;
+	}
+
+	/**
 	 * Ensure directory exists
 	 *
 	 * @param string $dir directory
