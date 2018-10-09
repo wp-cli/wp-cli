@@ -23,6 +23,10 @@ use \WP_CLI\Utils;
  *     New version works. Proceeding to replace.
  *     Success: Updated WP-CLI to 0.24.1.
  *
+ *     # Clear the internal WP-CLI cache.
+ *     $ wp cli cache clear
+ *     Success: Cache cleared.
+ *
  * @when before_wp_load
  */
 class CLI_Command extends WP_CLI_Command {
