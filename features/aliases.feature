@@ -141,7 +141,7 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   Scenario: Get alias information
-    Given an empty directory
+    Given a WP installation in 'foo'
     And a wp-cli.yml file:
       """
       @foo:
@@ -149,7 +149,7 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
     When I run `wp cli alias get @foo`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       ssh: user@host:/path/to/wordpress
       """
@@ -161,14 +161,14 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
   Scenario: Add an alias
-    Given an empty directory
+    Given a WP installation in 'foo'
     And a wp-cli.yml file:
     """
     @foo:
       ssh: foo@bar:/path/to/wordpress
     """
 
-    When I run `wp cli alias add dev user@hostname /path/to/wordpress`
+    When I run `wp cli alias add @dev user@hostname /path/to/wordpress --config=project`
     Then STDOUT should be:
        """
        Success: Added '@dev' alias.
@@ -179,25 +179,25 @@ Feature: Create shortcuts to specific WordPress installs
       @all: Run command against every registered alias.
       @foo:
         ssh: foo@bar:/path/to/wordpress
-      @dev
+      @dev:
         ssh: user@hostname:/path/to/wordpress
       """
 
   Scenario: Delete an alias
-    Given an empty directory
+    Given a WP installation in 'foo'
     And a wp-cli.yml file:
     """
     @foo:
-      ssh: foo@bar /path/to/wordpress
-    @test:
-      ssh: test@host /path/to/wordpress
+      ssh: foo@bar:/path/to/wordpress
+    @dev:
+      ssh: user@hostname:/path/to/wordpress
     """
 
-    When I run `wp cli alias delete @test`
+    When I run `wp cli alias delete @dev --config=project`
     Then STDOUT should be:
       """
-       Success: Deleted '@test' alias.
-       """
+      Success: Deleted '@dev' alias.
+      """
     When I run `wp cli alias list`
     Then STDOUT should be YAML containing:
       """
@@ -205,21 +205,21 @@ Feature: Create shortcuts to specific WordPress installs
       @foo:
         ssh: foo@bar:/path/to/wordpress
       """
-    When I try `wp cli alias delete @test`
+    When I try `wp cli alias delete @dev`
     Then STDERR should contain:
       """
-      Error: No alias found with key '@test'.
+      Error: No alias found with key '@dev'.
       """
 
   Scenario: Update an alias
-    Given an empty directory
+    Given a WP installation in 'foo'
     And a wp-cli.yml file:
     """
     @foo:
       ssh: foo@host:/old/path
     """
 
-    When I run `wp cli alias update @foo foo@host /new/path`
+    When I run `wp cli alias update @foo foo@host /new/path --config=project`
     Then STDOUT should be:
        """
       Success: Updated '@foo' alias.

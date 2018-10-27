@@ -31,7 +31,7 @@ use Mustangostang\Spyc;
  * @package wp-cli
  * @when before_wp_load
  */
-class Alias_Command extends WP_CLI_Command {
+class CLI_Alias_Command extends WP_CLI_Command {
 
 	/**
 	 * List available WP-CLI aliases.
@@ -91,7 +91,8 @@ class Alias_Command extends WP_CLI_Command {
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $alias ) = $args;
-		$aliases       = Spyc::YAMLLoad( WP_CLI::get_runner()->get_global_config_path() );
+
+		$aliases = WP_CLI::get_runner()->aliases;
 
 		if ( ! empty( $aliases[ $alias ] ) ) {
 			foreach ( $aliases[ $alias ] as $key => $value ) {
@@ -116,36 +117,36 @@ class Alias_Command extends WP_CLI_Command {
 	 * <wp_path>
 	 * : WordPress install path.
 	 *
+	 * [--config=<config>]
+	 * : Config file to be considered for operations.
+	 * ---
+	 * default: global
+	 * options:
+	 *   - global
+	 *   - project
+	 * ---
+	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Add alias.
-	 *     $ wp cli alias add prod login@host /path/to/wordpress/install/
+	 *     # Add alias to global config.
+	 *     $ wp cli alias add @prod login@host /path/to/wordpress/install/
+	 *     Success: Added '@prod' alias.
+	 *
+	 *     # Add alias to project config.
+	 *     $ wp cli alias add @prod login@host /path/to/wordpress/install/ --config=project
 	 *     Success: Added '@prod' alias.
 	 *
 	 * @subcommand add
 	 */
 	public function add( $args, $assoc_args ) {
-		$config_path = WP_CLI::get_runner()->get_global_config_path();
 
-		try {
-			if ( ! file_exists( $config_path ) ) {
-				throw new Exception( 'config file does not exist.' );
-			}
-		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
-		}
+		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : 'global' );
 
-		try {
-			if ( ! is_writable( $config_path ) ) {
-				throw new Exception( 'config file is not writable.' );
-			}
-		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
-		}
+		list( $config_path, $aliases ) = $this->_get_aliases_data( $config, '' );
+
+		$this->_validate_config_file( $config_path );
 
 		list( $alias, $login, $wp_path ) = $args;
-
-		$aliases = Spyc::YAMLLoad( $config_path );
 
 		if ( ! isset( $aliases[ $alias ] ) ) {
 			$aliases[ $alias ]['ssh'] = $login . ':' . $wp_path;
@@ -167,36 +168,35 @@ class Alias_Command extends WP_CLI_Command {
 	 * <key>
 	 * : Key for the alias.
 	 *
+	 * [--config=<config>]
+	 * : Config file to be considered for operations.
+	 * ---
+	 * options:
+	 *   - global
+	 *   - project
+	 * ---
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Delete alias.
 	 *     $ wp cli alias delete @prod
 	 *     Success: Deleted '@prod' alias.
 	 *
+	 *     # Delete project alias.
+	 *     $ wp cli alias delete @prod --config=project
+	 *     Success: Deleted '@prod' alias.
+	 *
 	 * @subcommand delete
 	 */
 	public function delete( $args, $assoc_args ) {
 
-		$config_path = WP_CLI::get_runner()->get_global_config_path();
-
-		try {
-			if ( ! file_exists( $config_path ) ) {
-				throw new Exception( 'config file does not exist.' );
-			}
-		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
-		}
-
-		try {
-			if ( ! is_writable( $config_path ) ) {
-				throw new Exception( 'config file is not writable.' );
-			}
-		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
-		}
-
 		list( $alias ) = $args;
-		$aliases       = Spyc::YAMLLoad( $config_path );
+
+		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
+
+		list( $config_path, $aliases ) = $this->_get_aliases_data( $config, $alias );
+
+		$this->_validate_config_file( $config_path );
 
 		if ( ! empty( $aliases[ $alias ] ) ) {
 			unset( $aliases[ $alias ] );
@@ -224,17 +224,98 @@ class Alias_Command extends WP_CLI_Command {
 	 * <wp_path>
 	 * : WordPress install path.
 	 *
+	 * [--config=<config>]
+	 * : Config file to be considered for operations.
+	 * ---
+	 * options:
+	 *   - global
+	 *   - project
+	 * ---
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Update alias.
 	 *     $ wp cli alias update @prod newlogin@host /updated/wordpress/path/
 	 *     Success: Updated 'prod' alias.
 	 *
+	 *     # Update project alias.
+	 *     $ wp cli alias update @prod newlogin@host /updated/wordpress/path/ --config=project
+	 *     Success: Updated 'prod' alias.
+	 *
 	 * @subcommand update
 	 */
 	public function update( $args, $assoc_args ) {
-		$config_path = WP_CLI::get_runner()->get_global_config_path();
 
+		list( $alias, $login, $wp_path ) = $args;
+
+		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
+
+		list( $config_path, $aliases ) = $this->_get_aliases_data( $config, $alias );
+
+		$this->_validate_config_file( $config_path );
+
+		if ( ! empty( $aliases[ $alias ] ) ) {
+			$aliases[ $alias ]['ssh'] = $login . ':' . $wp_path;
+			$yaml_data                = Spyc::YAMLDump( $aliases );
+
+			if ( file_put_contents( $config_path, $yaml_data ) ) {
+				WP_CLI::success( sprintf( 'Updated \'%s\' alias.', $alias ) );
+			}
+		} else {
+			WP_CLI::error( sprintf( 'No alias found with key \'%s\'.', $alias ) );
+		}
+	}
+
+	/**
+	 * Get config path and aliases data based on config type.
+	 *
+	 * @param string $config Type of config to get data from.
+	 * @param string $alias  Alias to be used for Add/Update/Delete.
+	 *
+	 * @return array Config Path and Aliases in it.
+	 */
+	private function _get_aliases_data( $config, $alias ) {
+
+		$global_config_path = WP_CLI::get_runner()->get_global_config_path();
+		$global_aliases     = Spyc::YAMLLoad( $global_config_path );
+
+		$project_config_path = WP_CLI::get_runner()->get_project_config_path();
+		$project_aliases     = Spyc::YAMLLoad( $project_config_path );
+
+		if ( 'global' === $config ) {
+			$config_path = $global_config_path;
+			$aliases     = $global_aliases;
+		} elseif ( 'project' === $config ) {
+			$config_path = $project_config_path;
+			$aliases     = $project_aliases;
+		} else {
+
+			$is_global_alias  = array_key_exists( $alias, $global_aliases );
+			$is_project_alias = array_key_exists( $alias, $project_aliases );
+
+			if ( $is_global_alias && $is_project_alias ) {
+				WP_CLI::error( sprintf( 'Key \'%s\' found in more than one path. Please pass --config param.', $alias ) );
+			} elseif ( $is_global_alias ) {
+				$config_path = $global_config_path;
+				$aliases     = $global_aliases;
+			} else {
+				$config_path = $project_config_path;
+				$aliases     = $project_aliases;
+			}
+		}
+
+		return array( $config_path, $aliases );
+
+	}
+
+	/**
+	 * Check if the config file exists and is writable.
+	 *
+	 * @param string $config_path Path to config file.
+	 *
+	 * @return void
+	 */
+	private function _validate_config_file( $config_path ) {
 		try {
 			if ( ! file_exists( $config_path ) ) {
 				throw new Exception( 'config file does not exist.' );
@@ -249,20 +330,6 @@ class Alias_Command extends WP_CLI_Command {
 			}
 		} catch ( Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
-		}
-
-		list( $alias, $login, $wp_path ) = $args;
-		$aliases                         = Spyc::YAMLLoad( $config_path );
-
-		if ( ! empty( $aliases[ $alias ] ) ) {
-			$aliases[ $alias ]['ssh'] = $login . ':' . $wp_path;
-			$yaml_data                = Spyc::YAMLDump( $aliases );
-
-			if ( file_put_contents( $config_path, $yaml_data ) ) {
-				WP_CLI::success( sprintf( 'Updated \'%s\' alias.', $alias ) );
-			}
-		} else {
-			WP_CLI::error( sprintf( 'No alias found with key \'%s\'.', $alias ) );
 		}
 	}
 }
