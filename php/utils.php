@@ -226,6 +226,11 @@ function esc_cmd( $cmd ) {
 	return vsprintf( $cmd, array_map( 'escapeshellarg', $args ) );
 }
 
+/**
+ * Gets path to WordPress configuration.
+ *
+ * @return string
+ */
 function locate_wp_config() {
 	static $path;
 
@@ -235,7 +240,7 @@ function locate_wp_config() {
 		if ( file_exists( ABSPATH . 'wp-config.php' ) ) {
 			$path = ABSPATH . 'wp-config.php';
 		} elseif ( file_exists( dirname( ABSPATH ) . '/wp-config.php' ) && ! file_exists( dirname( ABSPATH ) . '/wp-settings.php' ) ) {
-			$path = ABSPATH . '../wp-config.php';
+			$path = dirname( ABSPATH ) . '/wp-config.php';
 		}
 
 		if ( $path ) {
