@@ -591,14 +591,10 @@ class WP_CLI {
 		}
 
 		if ( ! empty( $parent ) ) {
-
 			$sub_command = trim( str_replace( $parent, '', $name ) );
 			\WP_CLI::debug( "Adding command: {$sub_command} in {$parent} Namespace", 'commands' );
-
 		} else {
-
 			\WP_CLI::debug( "Adding command: {$name}", 'commands' );
-
 		}
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
