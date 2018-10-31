@@ -252,8 +252,22 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			'post',
 			'create',
 			'--post_title="Hello world!"',
-			'--post_content=\'mixed "quotes are working" hopefully\'',
-		), Utils\parse_str_to_argv( 'post create --post_title="Hello world!" --post_content=\'mixed "quotes are working" hopefully\'' ) );
+		), Utils\parse_str_to_argv( 'post create --post_title="Hello world!"' ) );
+		$this->assertEquals( array(
+			'post',
+			'create',
+			'--post_title=\'Mixed "quotes are working" hopefully\'',
+		), Utils\parse_str_to_argv( 'post create --post_title=\'Mixed "quotes are working" hopefully\'' ) );
+		$this->assertEquals( array(
+			'post',
+			'create',
+			'--post_title="Escaped \"double \"quotes!"',
+		), Utils\parse_str_to_argv( 'post create --post_title="Escaped \"double \"quotes!"' ) );
+		$this->assertEquals( array(
+			'post',
+			'create',
+			"--post_title='Escaped \'single \'quotes!'",
+		), Utils\parse_str_to_argv( "post create --post_title='Escaped \'single \'quotes!'" ) );
 	}
 
 	public function testAssocArgsToString() {
