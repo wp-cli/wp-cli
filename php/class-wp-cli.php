@@ -224,7 +224,7 @@ class WP_CLI {
 	 * WP_CLI::add_command( 'network meta', 'Network_Meta_Command', array(
 	 *    'before_invoke' => function () {
 	 *        if ( !is_multisite() ) {
-	 *            WP_CLI::error( 'This is not a multisite install.' );
+	 *            WP_CLI::error( 'This is not a multisite installation.' );
 	 *        }
 	 *    }
 	 * ) );
@@ -590,7 +590,12 @@ class WP_CLI {
 			self::get_runner()->register_early_invoke( $args['when'], $leaf_command );
 		}
 
-		\WP_CLI::debug( "Adding command: {$name}", 'commands' );
+		if ( ! empty( $parent ) ) {
+			$sub_command = trim( str_replace( $parent, '', $name ) );
+			\WP_CLI::debug( "Adding command: {$sub_command} in {$parent} Namespace", 'commands' );
+		} else {
+			\WP_CLI::debug( "Adding command: {$name}", 'commands' );
+		}
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
 
