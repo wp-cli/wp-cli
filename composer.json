@@ -9,6 +9,9 @@
     "license": "MIT",
     "require": {
         "php": ">=5.4",
+        "ext-curl": "*",
+        "ext-posix": "*",
+        "ext-readline": "*",
         "mustache/mustache": "~2.4",
         "ramsey/array_column": "~1.1",
         "rmccue/requests": "~1.6",
