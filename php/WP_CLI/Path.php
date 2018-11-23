@@ -80,9 +80,16 @@ final class Path {
 		}
 
 		// Replace "~" with user's home directory.
-		if ( '~' === $path[0] ) {
-			$path = static::get_home_directory() . substr( $path, 1 );
-		}
+		$path = (string) preg_replace_callback(
+			'~^\~(?<user>[^/\s]+?)?(?=/|$)~',
+			function ( $matches ) {
+				$user = array_key_exists( 'user', $matches )
+					? $matches['user']
+					: null;
+				return self::get_home_directory( $user );
+			},
+			$path
+		);
 
 		$path = str_replace( '\\', '/', $path );
 

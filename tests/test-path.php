@@ -138,9 +138,14 @@ class PathTest extends \PHPUnit_Framework_TestCase {
 			array( 'phar://C:/./../css/style.css', 'phar://C:/css/style.css' ),
 			array( 'phar://C:/.././css/style.css', 'phar://C:/css/style.css' ),
 			array( 'phar://C:/../../css/style.css', 'phar://C:/css/style.css' ),
+		);
+	}
 
+	public function provideHomeCanonicalizationTestsUnix() {
+		return array(
 			// paths with "~" UNIX
 			array( '~/css/style.css', '/home/webmozart/css/style.css' ),
+			array( '~alain/css/style.css', '/home/alain/css/style.css' ),
 			array( '~/css/./style.css', '/home/webmozart/css/style.css' ),
 			array( '~/css/../style.css', '/home/webmozart/style.css' ),
 			array( '~/css/./../style.css', '/home/webmozart/style.css' ),
@@ -153,10 +158,45 @@ class PathTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
+	public function provideHomeCanonicalizationTestsWindows() {
+		return array(
+			// paths with "~" Windows
+			array( '~/css/style.css', 'C:/users/webmozart/css/style.css' ),
+			array( '~alain/css/style.css', 'C:/users/alain/css/style.css' ),
+			array( '~/css/./style.css', 'C:/users/webmozart/css/style.css' ),
+			array( '~/css/../style.css', 'C:/users/webmozart/style.css' ),
+			array( '~/css/./../style.css', 'C:/users/webmozart/style.css' ),
+			array( '~/css/.././style.css', 'C:/users/webmozart/style.css' ),
+			array( '~/./css/style.css', 'C:/users/webmozart/css/style.css' ),
+			array( '~/../css/style.css', 'C:/users/css/style.css' ),
+			array( '~/./../css/style.css', 'C:/users/css/style.css' ),
+			array( '~/.././css/style.css', 'C:/users/css/style.css' ),
+			array( '~/../../css/style.css', 'C:/css/style.css' ),
+		);
+	}
+
 	/**
 	 * @dataProvider provideCanonicalizationTests
 	 */
 	public function testCanonicalize( $path, $canonicalized ) {
+		$this->assertSame( $canonicalized, Path::canonicalize( $path ) );
+	}
+
+	/**
+	 * @dataProvider provideHomeCanonicalizationTestsUnix
+	 */
+	public function testCanonicalizeWithHomeForUnix( $path, $canonicalized ) {
+		$this->assertSame( $canonicalized, Path::canonicalize( $path ) );
+	}
+
+	/**
+	 * @dataProvider provideHomeCanonicalizationTestsWindows
+	 */
+	public function testCanonicalizeWithHomeForWindows( $path, $canonicalized ) {
+		putenv( 'HOME=' );
+		putenv( 'HOMEDRIVE=C:' );
+		putenv( 'HOMEPATH=/users/webmozart' );
+
 		$this->assertSame( $canonicalized, Path::canonicalize( $path ) );
 	}
 
