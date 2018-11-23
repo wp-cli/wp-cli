@@ -14,9 +14,9 @@ class PathTest extends \PHPUnit_Framework_TestCase {
 	protected $storedEnv = array();
 
 	public function setUp() {
-		$this->storedEnv['HOME'] = getenv( 'HOME' );
+		$this->storedEnv['HOME']      = getenv( 'HOME' );
 		$this->storedEnv['HOMEDRIVE'] = getenv( 'HOMEDRIVE' );
-		$this->storedEnv['HOMEPATH'] = getenv( 'HOMEPATH' );
+		$this->storedEnv['HOMEPATH']  = getenv( 'HOMEPATH' );
 
 		putenv( 'HOME=/home/webmozart' );
 		putenv( 'HOMEDRIVE=' );
@@ -1773,7 +1773,14 @@ class PathTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	public function testGetHomeDirectoryForUnix() {
-		$this->assertEquals( '/home/webmozart', Path::get_home_directory() );
+		$this->assertEquals(
+			'/home/webmozart',
+			Path::get_home_directory()
+		);
+		$this->assertEquals(
+			'/home/alain',
+			Path::get_home_directory( 'alain' )
+		);
 	}
 
 	public function testGetHomeDirectoryForWindows() {
@@ -1781,7 +1788,14 @@ class PathTest extends \PHPUnit_Framework_TestCase {
 		putenv( 'HOMEDRIVE=C:' );
 		putenv( 'HOMEPATH=/users/webmozart' );
 
-		$this->assertEquals( 'C:/users/webmozart', Path::get_home_directory() );
+		$this->assertEquals(
+			'C:/users/webmozart',
+			Path::get_home_directory()
+		);
+		$this->assertEquals(
+			'C:/users/alain',
+			Path::get_home_directory( 'alain' )
+		);
 	}
 
 	public function testNormalize() {

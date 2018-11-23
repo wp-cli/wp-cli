@@ -230,15 +230,23 @@ final class Path {
 	 *                          supported
 	 */
 	public static function get_home_directory( $user = null ) {
-		// For UNIX support
 		if ( getenv( 'HOME' ) ) {
-			return static::canonicalize( getenv( 'HOME' ) );
+			// For UNIX support
+			$home = self::canonicalize( getenv( 'HOME' ) );
+		} elseif ( getenv( 'HOMEDRIVE' ) && getenv( 'HOMEPATH' ) ) {
+			// For >= Windows8 support
+			$home = self::canonicalize( getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' ) );
 		}
-		// For >= Windows8 support
-		if ( getenv( 'HOMEDRIVE' ) && getenv( 'HOMEPATH' ) ) {
-			return static::canonicalize( getenv( 'HOMEDRIVE' ) . getenv( 'HOMEPATH' ) );
+
+		if ( ! isset( $home ) ) {
+			throw new RuntimeException( 'Your environment or operation system isn\'t supported' );
 		}
-		throw new RuntimeException( "Your environment or operation system isn't supported" );
+
+		if ( ! empty( $user ) ) {
+			$home = self::join( self::get_directory( $home ), $user );
+		}
+
+		return $home;
 	}
 
 	/**
