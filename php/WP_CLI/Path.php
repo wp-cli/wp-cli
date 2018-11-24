@@ -20,6 +20,8 @@ use RuntimeException;
  */
 final class Path {
 
+	const PHAR_STREAM_PREFIX = 'phar://';
+
 	/**
 	 * The number of buffer entries that triggers a cleanup operation.
 	 */
@@ -910,6 +912,76 @@ final class Path {
 		// won't be discovered as common prefix ("//" is not a prefix of
 		// "/foobar/").
 		return 0 === strpos( $of_path . '/', rtrim( $base_path, '/' ) . '/' );
+	}
+
+	/**
+	 * Add a trailing slash to a path if it doesn't contain one yet.
+	 *
+	 * @param string $path Path to add a trailing slash to.
+	 * @return string Modified path.
+	 */
+	public static function ensure_trailing_slash( $path ) {
+		self::assert_nonempty_string(
+			$path,
+			'The path must be a non-empty string. Got: %s'
+		);
+
+		// Only add slash if it doesn't already end in /, \ or :.
+		if ( ! in_array(
+			substr( $path, - 1 ),
+			array( '/', '\\', ':' ),
+			$strict = true
+		) ) {
+			$path .= self::guess_separator( $path );
+		}
+
+		return $path;
+	}
+
+	/**
+	 * Get a Phar-safe version of a path.
+	 *
+	 * For paths inside a Phar, this strips the outer filesystem's location to
+	 * reduce the path to what it needs to be within the Phar archive.
+	 *
+	 * Use the __FILE__ or __DIR__ constants as a starting point.
+	 *
+	 * @param string $path An absolute path that might be within a Phar.
+	 *
+	 * @return string A Phar-safe version of the path.
+	 */
+	public function phar_safe( $path ) {
+
+		if ( ! Utils\inside_phar() ) {
+			return $path;
+		}
+
+		return self::canonicalize(
+			str_replace(
+				self::join( self::PHAR_STREAM_PREFIX, WP_CLI_PHAR_PATH ),
+				self::PHAR_STREAM_PREFIX,
+				$path
+			)
+		);
+	}
+
+	/**
+	 * Tries to guess the path separator that is used in a given path.
+	 *
+	 * Falls back to PHP default of '/' if inconclusive.
+	 *
+	 * @param string $path Path to guess the separator from.
+	 *
+	 * @return string Separator to use.
+	 */
+	public static function guess_separator( $path ) {
+		if ( false !== strpos( $path, '\\' ) ) {
+			if ( false === strpos( $path, '/' ) ) {
+				return '\\';
+			}
+		}
+
+		return '/';
 	}
 
 	/**

@@ -1849,4 +1849,39 @@ class PathTest extends \PHPUnit_Framework_TestCase {
 	public function testNormalizeFailsIfNoString() {
 		Path::normalize( true );
 	}
+
+	/**
+	 * @dataProvider provideEnsureTrailingSlashTests
+	 */
+	public function testEnsureTrailingSlash( $path, $expected ) {
+		$this->assertSame( $expected, Path::ensure_trailing_slash( $path ) );
+	}
+
+	public function provideEnsureTrailingSlashTests() {
+		return [
+			[ '/', '/' ],
+			[ '/folder/', '/folder/' ],
+			[ '/folder', '/folder/' ],
+			[ 'C:\\', 'C:\\' ],
+			[ 'C:\\Folder\\', 'C:\\Folder\\' ],
+			[ 'C:\\Folder', 'C:\\Folder\\' ],
+		];
+	}
+
+	/**
+	 * @dataProvider provideGuessSeparatorTests
+	 */
+	public function testGuessSeparator( $path, $expected ) {
+		$this->assertSame( $expected, Path::guess_separator( $path ) );
+	}
+
+	public function provideGuessSeparatorTests() {
+		return [
+			[ '/', '/' ],
+			[ '/folder/', '/' ],
+			[ 'C:\\', '\\' ],
+			[ 'C:\\Folder\\', '\\' ],
+			[ 'C:\\Folder/other_folder', '/' ],
+		];
+	}
 }
