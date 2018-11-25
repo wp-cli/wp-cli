@@ -149,13 +149,13 @@ Feature: Create shortcuts to specific WordPress installs
       """
 
     When I run `wp cli alias get @foo`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
       ssh: user@host:/path/to/wordpress
       """
 
     When I try `wp cli alias get @someotherfoo`
-    Then STDERR should contain:
+    Then STDERR should be:
       """
       Error: No alias found with key '@someotherfoo'.
       """
@@ -206,7 +206,7 @@ Feature: Create shortcuts to specific WordPress installs
         ssh: foo@bar:/path/to/wordpress
       """
     When I try `wp cli alias delete @dev`
-    Then STDERR should contain:
+    Then STDERR should be:
       """
       Error: No alias found with key '@dev'.
       """
@@ -232,7 +232,7 @@ Feature: Create shortcuts to specific WordPress installs
         ssh: foo@host:/new/path
       """
     When I try `wp cli alias update @otherfoo foo@host /some/path`
-    Then STDERR should contain:
+    Then STDERR should be:
       """
       Error: No alias found with key '@otherfoo'.
       """

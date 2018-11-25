@@ -96,10 +96,10 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		if ( ! empty( $aliases[ $alias ] ) ) {
 			foreach ( $aliases[ $alias ] as $key => $value ) {
-				WP_CLI::log( sprintf( ' %1$s: %2$s', $key, $value ) );
+				WP_CLI::log( "{$key}: {$value}" );
 			}
 		} else {
-			WP_CLI::error( sprintf( 'No alias found with key \'%s\'.', $alias ) );
+			WP_CLI::error( "No alias found with key '{$alias}'." );
 		}
 	}
 
@@ -142,21 +142,21 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : 'global' );
 
-		list( $config_path, $aliases ) = $this->_get_aliases_data( $config, '' );
+		list( $config_path, $aliases ) = $this->get_aliases_data( $config, '' );
 
-		$this->_validate_config_file( $config_path );
+		$this->validate_config_file( $config_path );
 
 		list( $alias, $login, $wp_path ) = $args;
 
 		if ( ! isset( $aliases[ $alias ] ) ) {
-			$aliases[ $alias ]['ssh'] = $login . ':' . $wp_path;
+			$aliases[ $alias ]['ssh'] = "{$login}:{$wp_path}";
 			$yaml_data                = Spyc::YAMLDump( $aliases );
 
 			if ( file_put_contents( $config_path, $yaml_data ) ) {
-				WP_CLI::success( sprintf( 'Added \'%s\' alias.', $alias ) );
+				WP_CLI::success( "Added '{$alias}' alias." );
 			}
 		} else {
-			WP_CLI::error( sprintf( 'Key \'%s\' exists already!', $alias ) );
+			WP_CLI::error( "Key '{$alias}' exists already." );
 		}
 	}
 
@@ -194,19 +194,19 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
 
-		list( $config_path, $aliases ) = $this->_get_aliases_data( $config, $alias );
+		list( $config_path, $aliases ) = $this->get_aliases_data( $config, $alias );
 
-		$this->_validate_config_file( $config_path );
+		$this->validate_config_file( $config_path );
 
 		if ( ! empty( $aliases[ $alias ] ) ) {
 			unset( $aliases[ $alias ] );
 			$yaml_data = Spyc::YAMLDump( $aliases );
 
 			if ( file_put_contents( $config_path, $yaml_data ) ) {
-				WP_CLI::success( sprintf( 'Deleted \'%s\' alias.', $alias ) );
+				WP_CLI::success( "Deleted '{$alias}' alias." );
 			}
 		} else {
-			WP_CLI::error( sprintf( 'No alias found with key \'%s\'.', $alias ) );
+			WP_CLI::error( "No alias found with key '{$alias}'." );
 		}
 	}
 
@@ -250,19 +250,19 @@ class CLI_Alias_Command extends WP_CLI_Command {
 
 		$config = ( ! empty( $assoc_args['config'] ) ? $assoc_args['config'] : '' );
 
-		list( $config_path, $aliases ) = $this->_get_aliases_data( $config, $alias );
+		list( $config_path, $aliases ) = $this->get_aliases_data( $config, $alias );
 
-		$this->_validate_config_file( $config_path );
+		$this->validate_config_file( $config_path );
 
 		if ( ! empty( $aliases[ $alias ] ) ) {
-			$aliases[ $alias ]['ssh'] = $login . ':' . $wp_path;
+			$aliases[ $alias ]['ssh'] = "{$login}:{$wp_path}";
 			$yaml_data                = Spyc::YAMLDump( $aliases );
 
 			if ( file_put_contents( $config_path, $yaml_data ) ) {
-				WP_CLI::success( sprintf( 'Updated \'%s\' alias.', $alias ) );
+				WP_CLI::success( "Updated '{$alias}' alias." );
 			}
 		} else {
-			WP_CLI::error( sprintf( 'No alias found with key \'%s\'.', $alias ) );
+			WP_CLI::error( "No alias found with key '{$alias}'." );
 		}
 	}
 
@@ -274,7 +274,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * @return array Config Path and Aliases in it.
 	 */
-	private function _get_aliases_data( $config, $alias ) {
+	private function get_aliases_data( $config, $alias ) {
 
 		$global_config_path = WP_CLI::get_runner()->get_global_config_path();
 		$global_aliases     = Spyc::YAMLLoad( $global_config_path );
@@ -294,7 +294,7 @@ class CLI_Alias_Command extends WP_CLI_Command {
 			$is_project_alias = array_key_exists( $alias, $project_aliases );
 
 			if ( $is_global_alias && $is_project_alias ) {
-				WP_CLI::error( sprintf( 'Key \'%s\' found in more than one path. Please pass --config param.', $alias ) );
+				WP_CLI::error( "Key '{$alias}' found in more than one path. Please pass --config param." );
 			} elseif ( $is_global_alias ) {
 				$config_path = $global_config_path;
 				$aliases     = $global_aliases;
@@ -315,21 +315,9 @@ class CLI_Alias_Command extends WP_CLI_Command {
 	 *
 	 * @return void
 	 */
-	private function _validate_config_file( $config_path ) {
-		try {
-			if ( ! file_exists( $config_path ) ) {
-				throw new Exception( 'config file does not exist.' );
-			}
-		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
-		}
-
-		try {
-			if ( ! is_writable( $config_path ) ) {
-				throw new Exception( 'config file is not writable.' );
-			}
-		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+	private function validate_config_file( $config_path ) {
+		if ( ! file_exists( $config_path ) || ! is_writable( $config_path ) ) {
+			WP_CLI::error( "Config file does not exist: {$config_path}" );
 		}
 	}
 }
