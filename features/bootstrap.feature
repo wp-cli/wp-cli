@@ -23,7 +23,7 @@ Feature: Bootstrap WP-CLI
       """
 
   Scenario: Composer stack with override requirement before WP-CLI
-    Given an empty directory
+    Given a WP installation
     And a composer.json file:
       """
       {
@@ -34,19 +34,19 @@ Feature: Bootstrap WP-CLI
         "repositories": [
           {
             "type": "path",
-            "url": "./cli-override-command",
+            "url": "./override",
             "options": {
                 "symlink": false
             }
           }
         ],
         "require": {
-          "wp-cli/cli-override-command": "*",
+          "wp-cli/override": "*",
           "wp-cli/wp-cli": "dev-master"
         }
       }
       """
-    And a cli-override-command/cli.php file:
+    And a override/override.php file:
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
@@ -56,9 +56,12 @@ Feature: Bootstrap WP-CLI
       if ( file_exists( $autoload ) && ! class_exists( 'CLI_Command' ) ) {
         require_once $autoload;
       }
+      // Override framework command.
       WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
+      // Override bundled command.
+      WP_CLI::add_command( 'eval', 'Eval_Command', array( 'when' => 'before_wp_load' ) );
       """
-    And a cli-override-command/src/CLI_Command.php file:
+    And a override/src/CLI_Command.php file:
       """
       <?php
       class CLI_Command extends WP_CLI_Command {
@@ -67,18 +70,28 @@ Feature: Bootstrap WP-CLI
         }
       }
       """
-    And a cli-override-command/composer.json file:
+    And a override/src/Eval_Command.php file:
+      """
+      <?php
+      class Eval_Command extends WP_CLI_Command {
+        public function __invoke() {
+          WP_CLI::success( "WP-Override-Eval" );
+        }
+      }
+      """
+    And a override/composer.json file:
       """
       {
-        "name": "wp-cli/cli-override-command",
-        "description": "A command that overrides the bundled 'cli' command.",
+        "name": "wp-cli/override",
+        "description": "A command that overrides the bundled 'cli' and 'eval' commands.",
         "autoload": {
           "psr-4": { "": "src/" },
-          "files": [ "cli.php" ]
+          "files": [ "override.php" ]
         },
         "extra": {
           "commands": [
-            "cli"
+            "cli",
+            "eval"
           ]
         }
      }
@@ -91,10 +104,16 @@ Feature: Bootstrap WP-CLI
       Success: WP-Override-CLI
       """
 
+    When I run `vendor/bin/wp eval '\WP_CLI::Success( "WP-Standard-Eval" );'`
+    Then STDOUT should contain:
+      """
+      Success: WP-Override-Eval
+      """
+
   Scenario: Override command bundled with current source
 
-    Given an empty directory
-    And a cli-override-command/cli.php file:
+    Given a WP installation
+    And a override/override.php file:
       """
       <?php
       if ( ! class_exists( 'WP_CLI' ) ) {
@@ -104,9 +123,12 @@ Feature: Bootstrap WP-CLI
       if ( file_exists( $autoload ) && ! class_exists( 'CLI_Command' ) ) {
         require_once $autoload;
       }
+      // Override framework command.
       WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
+      // Override bundled command.
+      WP_CLI::add_command( 'eval', 'Eval_Command', array( 'when' => 'before_wp_load' ) );
       """
-    And a cli-override-command/src/CLI_Command.php file:
+    And a override/src/CLI_Command.php file:
       """
       <?php
       class CLI_Command extends WP_CLI_Command {
@@ -115,35 +137,136 @@ Feature: Bootstrap WP-CLI
         }
       }
       """
-    And a cli-override-command/composer.json file:
+    And a override/src/Eval_Command.php file:
+      """
+      <?php
+      class Eval_Command extends WP_CLI_Command {
+        public function __invoke() {
+          WP_CLI::success( "WP-Override-Eval" );
+        }
+      }
+      """
+    And a override/composer.json file:
       """
       {
-        "name": "wp-cli/cli-override",
-        "description": "A command that overrides the bundled 'cli' command.",
+        "name": "wp-cli/override",
+        "description": "A command that overrides the bundled 'cli' and 'eval' commands.",
         "autoload": {
           "psr-4": { "": "src/" },
-          "files": [ "cli.php" ]
+          "files": [ "override.php" ]
         },
         "extra": {
           "commands": [
-            "cli"
+            "cli",
+            "eval"
           ]
         }
       }
       """
-    And I run `composer install --working-dir={RUN_DIR}/cli-override-command --no-interaction 2>&1`
+    And I run `composer install --working-dir={RUN_DIR}/override --no-interaction 2>&1`
 
     When I run `wp cli version`
-      Then STDOUT should contain:
-        """
-        WP-CLI
-        """
+    Then STDOUT should contain:
+      """
+      WP-CLI
+      """
 
-    When I run `wp --require=cli-override-command/cli.php cli version`
-      Then STDOUT should contain:
-        """
-        WP-Override-CLI
-        """
+    When I run `wp eval '\WP_CLI::Success( "WP-Standard-Eval" );'`
+    Then STDOUT should contain:
+      """
+      Success: WP-Standard-Eval
+      """
+
+    When I run `wp --require=override/override.php cli version`
+    Then STDOUT should contain:
+      """
+      WP-Override-CLI
+      """
+
+    When I run `wp --require=override/override.php eval '\WP_CLI::Success( "WP-Standard-Eval" );'`
+    Then STDOUT should contain:
+      """
+      Success: WP-Override-Eval
+      """
+
+  Scenario: Override command through package manager
+
+    Given a WP installation
+    And a override/override.php file:
+      """
+      <?php
+      if ( ! class_exists( 'WP_CLI' ) ) {
+        return;
+      }
+      $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
+      if ( file_exists( $autoload ) && ! class_exists( 'CLI_Command' ) ) {
+        require_once $autoload;
+      }
+      // Override framework command.
+      WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
+      // Override bundled command.
+      WP_CLI::add_command( 'eval', 'Eval_Command', array( 'when' => 'before_wp_load' ) );
+      """
+    And a override/src/CLI_Command.php file:
+      """
+      <?php
+      class CLI_Command extends WP_CLI_Command {
+        public function version() {
+          WP_CLI::success( "WP-Override-CLI" );
+        }
+      }
+      """
+    And a override/src/Eval_Command.php file:
+      """
+      <?php
+      class Eval_Command extends WP_CLI_Command {
+        public function __invoke() {
+          WP_CLI::success( "WP-Override-Eval" );
+        }
+      }
+      """
+    And a override/composer.json file:
+      """
+      {
+        "name": "wp-cli/override",
+        "description": "A command that overrides the bundled 'cli' and 'eval' commands.",
+        "autoload": {
+          "psr-4": { "": "src/" },
+          "files": [ "override.php" ]
+        },
+        "extra": {
+          "commands": [
+            "cli",
+            "eval"
+          ]
+        }
+      }
+      """
+    And I run `wp package install {RUN_DIR}/override`
+
+    When I run `wp cli version --skip-packages`
+    Then STDOUT should contain:
+      """
+      WP-CLI
+      """
+
+    When I run `wp eval '\WP_CLI::Success( "WP-Standard-Eval" );' --skip-packages`
+    Then STDOUT should contain:
+      """
+      Success: WP-Standard-Eval
+      """
+
+    When I run `wp cli version`
+    Then STDOUT should contain:
+      """
+      WP-Override-CLI
+      """
+
+    When I run `wp eval '\WP_CLI::Success( "WP-Standard-Eval" );'`
+    Then STDOUT should contain:
+      """
+      Success: WP-Override-Eval
+      """
 
   Scenario: Composer stack with both WordPress and wp-cli as dependencies (command line)
     Given a WP installation with Composer
