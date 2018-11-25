@@ -1,5 +1,12 @@
 Feature: Bootstrap WP-CLI
 
+  Background:
+    When I run `wp package path`
+    And save STDOUT as {PACKAGE_PATH}
+    And I run `rm -rf {PACKAGE_PATH}/vendor`
+    And I run `rm -rf {PACKAGE_PATH}/composer.json`
+    And I run `rm -rf {PACKAGE_PATH}/composer.lock`
+
   @require-opcache-save-comments
   Scenario: Basic Composer stack
     Given an empty directory
