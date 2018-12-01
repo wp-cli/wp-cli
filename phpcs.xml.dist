@@ -34,7 +34,7 @@
 
 	<!-- For help in understanding this testVersion:
 		https://github.com/PHPCompatibility/PHPCompatibility#sniffing-your-code-for-compatibility-with-specific-php-versions -->
-	<config name="testVersion" value="5.3-"/>
+	<config name="testVersion" value="5.4-"/>
 
 	<!-- Ignore php_uname mode issue, we're conditionally providing a callback -->
 	<rule ref="PHPCompatibility.PHP.NewFunctionParameters.php_uname_modeFound">
