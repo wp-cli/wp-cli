@@ -2,57 +2,55 @@
 
 namespace WP_CLI\Bootstrap;
 
+use WP_CLI\Autoloader;
+
 /**
  * Class IncludeFrameworkAutoloader.
  *
- * Loads the framework autoloader that is provided through the `composer.json`
- * file.
+ * Loads the framework autoloader through an autolaoder separate from the
+ * Composer one, to avoid coupling the loading of the framework with bundled
+ * commands.
  *
  * This only contains classes for the framework.
  *
  * @package WP_CLI\Bootstrap
  */
-final class IncludeFrameworkAutoloader extends AutoloaderStep {
+final class IncludeFrameworkAutoloader implements BootstrapStep {
 
 	/**
-	 * Get the autoloader paths to scan for an autoloader.
+	 * Process this single bootstrapping step.
 	 *
-	 * @return string[]|false Array of strings with autoloader paths, or false
-	 *                        to skip.
+	 * @param BootstrapState $state Contextual state to pass into the step.
+	 *
+	 * @return BootstrapState Modified state to pass to the next step.
 	 */
-	protected function get_autoloader_paths() {
-		$autoloader_paths = array(
-			WP_CLI_VENDOR_DIR . '/autoload.php',
-		);
+	public function process( BootstrapState $state ) {
+		if ( ! class_exists( 'WP_CLI\Autolaoder' ) ) {
+			require_once WP_CLI_ROOT . '/php/WP_CLI/Autoloader.php';
+		}
 
-		if ( $custom_vendor = $this->get_custom_vendor_folder() ) {
-			array_unshift(
-				$autoloader_paths,
-				WP_CLI_ROOT . '/../../../' . $custom_vendor . '/autoload.php'
+		$autoloader = new Autoloader();
+
+		$mappings = [
+			'WP_CLI'                   => WP_CLI_ROOT . '/php/WP_CLI',
+			'cli'                      => WP_CLI_VENDOR_DIR . '/wp-cli/php-cli-tools/lib/cli',
+			'Requests'                 => WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests',
+			'Symfony\Component\Finder' => WP_CLI_VENDOR_DIR . '/symfony/finder/',
+		];
+
+		foreach ( $mappings as $namespace => $folder ) {
+			$autoloader->add_namespace(
+				$namespace,
+				$folder
 			);
 		}
 
-		\WP_CLI::debug(
-			sprintf(
-				'Framework autoloader paths: %s',
-				implode( ', ', $autoloader_paths )
-			),
-			'bootstrap'
-		);
+		include_once WP_CLI_VENDOR_DIR . '/rmccue/requests/library/Requests.php';
+		include_once WP_CLI_VENDOR_DIR . '/ramsey/array_column/src/array_column.php';
+		include_once WP_CLI_VENDOR_DIR . '/wp-cli/mustangostang-spyc/Spyc.php';
 
-		return $autoloader_paths;
-	}
+		$autoloader->register();
 
-	/**
-	 * Handle the failure to find an autoloader.
-	 *
-	 * @return void
-	 */
-	protected function handle_failure() {
-		fwrite(
-			STDERR,
-			"Internal error: Can't find Composer autoloader.\nTry running: composer install\n"
-		);
-		exit( 3 );
+		return $state;
 	}
 }
