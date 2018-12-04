@@ -146,8 +146,12 @@ class Subcommand extends CompositeCommand {
 
 		$spec = array_filter(
 			\WP_CLI\SynopsisParser::parse( $synopsis ),
-			function( $spec_arg ) {
-				return in_array( $spec_arg['type'], array( 'generic', 'positional', 'assoc', 'flag' ) );
+			function( $spec_arg ) use ( $assoc_args ) {
+				return in_array( $spec_arg['type'], [ 'generic', 'positional' ] )
+					|| (
+						in_array( $spec_arg['type'], [ 'assoc', 'flag' ] )
+						&& ! isset( $assoc_args[ $spec_arg['name'] ] )
+					);
 			}
 		);
 
@@ -213,7 +217,6 @@ class Subcommand extends CompositeCommand {
 				} while ( $repeat );
 
 			} else {
-
 				$prompt = $current_prompt . $spec_arg['token'];
 				if ( 'flag' == $spec_arg['type'] ) {
 					$prompt .= ' (Y/n)';
