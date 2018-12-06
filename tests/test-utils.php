@@ -448,7 +448,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 				}
 				$current_dir .= '/' . $dir;
 			}
-			if ( $current_dir === dirname( $bad_cacert_path ) && file_put_contents( $bad_cacert_path, "-----BEGIN CERTIFICATE-----\nasdfasdf\n-----END CERTIFICATE-----\n" ) ) {
+			if ( dirname( $bad_cacert_path ) === $current_dir && file_put_contents( $bad_cacert_path, "-----BEGIN CERTIFICATE-----\nasdfasdf\n-----END CERTIFICATE-----\n" ) ) {
 				$have_bad_cacert = true;
 			}
 		}
