@@ -5,11 +5,11 @@ use WP_CLI\Inflector;
 class InflectorTest extends PHPUnit_Framework_TestCase {
 
 	/** @dataProvider dataProviderPluralize */
-	function testPluralize( $singular, $expected ) {
+	public function testPluralize( $singular, $expected ) {
 		$this->assertEquals( $expected, Inflector::pluralize( $singular ) );
 	}
 
-	function dataProviderPluralize() {
+	public function dataProviderPluralize() {
 		return array(
 			array( 'string', 'strings' ), // regular
 			array( 'person', 'people' ),  // irregular
@@ -18,11 +18,11 @@ class InflectorTest extends PHPUnit_Framework_TestCase {
 	}
 
 	/** @dataProvider dataProviderSingularize */
-	function testSingularize( $singular, $expected ) {
+	public function testSingularize( $singular, $expected ) {
 		$this->assertEquals( $expected, Inflector::singularize( $singular ) );
 	}
 
-	function dataProviderSingularize() {
+	public function dataProviderSingularize() {
 		return array(
 			array( 'strings', 'string' ), // regular
 			array( 'people', 'person' ),  // irregular

@@ -8,7 +8,7 @@ class ProcessTests extends PHPUnit_Framework_TestCase {
 	/**
 	 * @dataProvider data_process_env
 	 */
-	function test_process_env( $cmd_prefix, $env, $expected_env_vars, $expected_out ) {
+	public function test_process_env( $cmd_prefix, $env, $expected_env_vars, $expected_out ) {
 		$code = vsprintf( str_repeat( 'echo getenv( \'%s\' );', count( $expected_env_vars ) ), $expected_env_vars );
 
 		$cmd         = $cmd_prefix . ' ' . escapeshellarg( Utils\get_php_binary() ) . ' -r ' . escapeshellarg( $code );
@@ -17,7 +17,7 @@ class ProcessTests extends PHPUnit_Framework_TestCase {
 		$this->assertSame( $process_run->stdout, $expected_out );
 	}
 
-	function data_process_env() {
+	public function data_process_env() {
 		return array(
 			array( '', array(), array(), '' ),
 			array( 'ENV=blah', array(), array( 'ENV' ), 'blah' ),

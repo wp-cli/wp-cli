@@ -4,7 +4,7 @@ use WP_CLI\SynopsisValidator;
 
 class ArgValidationTests extends PHPUnit_Framework_TestCase {
 
-	function testMissingPositional() {
+	public function testMissingPositional() {
 		$validator = new SynopsisValidator( '<foo> <bar> [<baz>]' );
 
 		$this->assertFalse( $validator->enough_positionals( array() ) );
@@ -14,7 +14,7 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( array( 4 ), $validator->unknown_positionals( array( 1, 2, 3, 4 ) ) );
 	}
 
-	function testRepeatingPositional() {
+	public function testRepeatingPositional() {
 		$validator = new SynopsisValidator( '<foo> [<bar>...]' );
 
 		$this->assertFalse( $validator->enough_positionals( array() ) );
@@ -24,7 +24,7 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 		$this->assertEmpty( $validator->unknown_positionals( array( 1, 2, 3 ) ) );
 	}
 
-	function testUnknownAssocEmpty() {
+	public function testUnknownAssocEmpty() {
 		$validator = new SynopsisValidator( '' );
 
 		$assoc_args = array(
@@ -34,7 +34,7 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( array_keys( $assoc_args ), $validator->unknown_assoc( $assoc_args ) );
 	}
 
-	function testUnknownAssoc() {
+	public function testUnknownAssoc() {
 		$validator = new SynopsisValidator( '--type=<type> [--brand=<brand>] [--flag]' );
 
 		$assoc_args = array(
@@ -48,7 +48,7 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 		$this->assertContains( 'another', $validator->unknown_assoc( $assoc_args ) );
 	}
 
-	function testMissingAssoc() {
+	public function testMissingAssoc() {
 		$validator = new SynopsisValidator( '--type=<type> [--brand=<brand>] [--flag]' );
 
 		$assoc_args                = array(
@@ -61,7 +61,7 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 		$this->assertCount( 1, $errors['warning'] );
 	}
 
-	function testAssocWithOptionalValue() {
+	public function testAssocWithOptionalValue() {
 		$validator = new SynopsisValidator( '[--network[=<id>]]' );
 
 		$assoc_args                = array( 'network' => true );

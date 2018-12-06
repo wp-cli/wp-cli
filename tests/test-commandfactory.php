@@ -9,7 +9,7 @@ class CommandFactoryTests extends PHPUnit_Framework_TestCase {
 	/**
 	 * @dataProvider dataProviderExtractLastDocComment
 	 */
-	function testExtractLastDocComment( $content, $expected ) {
+	public function testExtractLastDocComment( $content, $expected ) {
 		// Save and set test env var.
 		$is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 		putenv( 'WP_CLI_TEST_IS_WINDOWS=0' );
@@ -30,7 +30,7 @@ class CommandFactoryTests extends PHPUnit_Framework_TestCase {
 	/**
 	 * @dataProvider dataProviderExtractLastDocComment
 	 */
-	function testExtractLastDocCommentWin( $content, $expected ) {
+	public function testExtractLastDocCommentWin( $content, $expected ) {
 		// Save and set test env var.
 		$is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
 		putenv( 'WP_CLI_TEST_IS_WINDOWS=1' );
@@ -48,7 +48,7 @@ class CommandFactoryTests extends PHPUnit_Framework_TestCase {
 		putenv( false === $is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$is_windows" );
 	}
 
-	function dataProviderExtractLastDocComment() {
+	public function dataProviderExtractLastDocComment() {
 		return array(
 			array( '', false ),
 			array( '*/', false ),
@@ -80,7 +80,7 @@ class CommandFactoryTests extends PHPUnit_Framework_TestCase {
 		);
 	}
 
-	function testGetDocComment() {
+	public function testGetDocComment() {
 		// Save and set test env var.
 		$get_doc_comment = getenv( 'WP_CLI_TEST_GET_DOC_COMMENT' );
 		$is_windows      = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
@@ -248,7 +248,7 @@ class CommandFactoryTests extends PHPUnit_Framework_TestCase {
 		putenv( false === $is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$is_windows" );
 	}
 
-	function testGetDocCommentWin() {
+	public function testGetDocCommentWin() {
 		// Save and set test env var.
 		$get_doc_comment = getenv( 'WP_CLI_TEST_GET_DOC_COMMENT' );
 		$is_windows      = getenv( 'WP_CLI_TEST_IS_WINDOWS' );

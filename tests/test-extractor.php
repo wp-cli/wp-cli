@@ -5,9 +5,9 @@ use WP_CLI\Utils;
 
 class Extractor_Test extends PHPUnit_Framework_TestCase {
 
-	static $copy_overwrite_files_prefix = 'wp-cli-test-utils-copy-overwrite-files-';
+	public static $copy_overwrite_files_prefix = 'wp-cli-test-utils-copy-overwrite-files-';
 
-	static $expected_wp = array(
+	public static $expected_wp = array(
 		'index1.php',
 		'license2.php',
 		'wp-admin/',
@@ -21,8 +21,8 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		'xmlrpc8.php',
 	);
 
-	static $logger      = null;
-	static $prev_logger = null;
+	public static $logger      = null;
+	public static $prev_logger = null;
 
 	public function setUp() {
 		parent::setUp();
