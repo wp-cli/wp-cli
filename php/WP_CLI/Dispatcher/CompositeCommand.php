@@ -304,4 +304,3 @@ class CompositeCommand {
 		return Utils\mustache_render( 'man-params.mustache', $binding );
 	}
 }
-

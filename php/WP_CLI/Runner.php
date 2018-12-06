@@ -786,7 +786,7 @@ class Runner {
 
 	public function init_logger() {
 		if ( $this->config['quiet'] ) {
-			$logger = new \WP_CLI\Loggers\Quiet;
+			$logger = new \WP_CLI\Loggers\Quiet();
 		} else {
 			$logger = new \WP_CLI\Loggers\Regular( $this->in_color() );
 		}
@@ -1450,7 +1450,7 @@ class Runner {
 				'init',
 				function() use ( $config ) {
 					if ( isset( $config['user'] ) ) {
-						$fetcher = new \WP_CLI\Fetchers\User;
+						$fetcher = new \WP_CLI\Fetchers\User();
 						$user    = $fetcher->get_check( $config['user'] );
 						wp_set_current_user( $user->ID );
 					} else {

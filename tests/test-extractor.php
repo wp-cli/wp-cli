@@ -21,7 +21,7 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		'xmlrpc8.php',
 	);
 
-	static $logger = null;
+	static $logger      = null;
 	static $prev_logger = null;
 
 	public function setUp() {
@@ -32,7 +32,7 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		$class_wp_cli_logger->setAccessible( true );
 		self::$prev_logger = $class_wp_cli_logger->getValue();
 
-		self::$logger = new \WP_CLI\Loggers\Execution;
+		self::$logger = new \WP_CLI\Loggers\Execution();
 		WP_CLI::set_logger( self::$logger );
 
 		// Remove any failed tests detritus.
@@ -106,11 +106,11 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 
 		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
 
-		$tarball = $temp_dir . '/test.tar.gz';
+		$tarball  = $temp_dir . '/test.tar.gz';
 		$dest_dir = $temp_dir . '/dest';
 
 		// Create test tarball.
-		$output = array();
+		$output     = array();
 		$return_var = -1;
 		// Need --force-local for Windows to avoid "C:" being interpreted as being on remote machine, and redirect for Mac as outputs verbosely on STDERR.
 		$cmd = 'tar czvf %1$s' . ( Utils\is_windows() ? ' --force-local' : '' ) . ' --directory=%2$s/src wordpress 2>&1';
@@ -155,7 +155,9 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		$this->assertTrue( 0 === strpos( self::$logger->stderr, 'Warning: PharData failed' ) );
 		$this->assertTrue( false !== strpos( self::$logger->stderr, 'no-such-tar' ) );
 
-		self::$logger->stderr = self::$logger->stdout = ''; // Reset logger.
+		// Reset logger.
+		self::$logger->stderr = '';
+		self::$logger->stdout = '';
 
 		// Zero-length.
 		$zero_tar = Utils\get_temp_dir() . 'zero-tar.tar.gz';
@@ -179,11 +181,11 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 
 		list( $temp_dir, $src_dir, $wp_dir ) = self::create_test_directory_structure();
 
-		$zipfile = $temp_dir . '/test.zip';
+		$zipfile  = $temp_dir . '/test.zip';
 		$dest_dir = $temp_dir . '/dest';
 
 		// Create test zip.
-		$zip = new ZipArchive;
+		$zip    = new ZipArchive();
 		$result = $zip->open( $zipfile, ZipArchive::CREATE );
 		$this->assertTrue( $result );
 		$files = self::recursive_scandir( $src_dir );
@@ -224,7 +226,9 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		$this->assertTrue( false !== strpos( $msg, 'no-such-zip' ) );
 		$this->assertTrue( empty( self::$logger->stderr ) );
 
-		self::$logger->stderr = self::$logger->stdout = ''; // Reset logger.
+		// Reset logger.
+		self::$logger->stderr = '';
+		self::$logger->stdout = '';
 
 		// Zero-length.
 		$zero_zip = Utils\get_temp_dir() . 'zero-zip.zip';
@@ -276,10 +280,10 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		$ret = array();
 		foreach ( array_diff( scandir( $dir ), array( '.', '..' ) ) as $file ) {
 			if ( is_dir( $dir . '/' . $file ) ) {
-				$ret[] = ( $prefix_dir ? ( $prefix_dir . '/'. $file ) : $file ) . '/';
-				$ret = array_merge( $ret, self::recursive_scandir( $dir . '/' . $file, $prefix_dir ? ( $prefix_dir . '/' . $file ) : $file ) );
+				$ret[] = ( $prefix_dir ? ( $prefix_dir . '/' . $file ) : $file ) . '/';
+				$ret   = array_merge( $ret, self::recursive_scandir( $dir . '/' . $file, $prefix_dir ? ( $prefix_dir . '/' . $file ) : $file ) );
 			} else {
-				$ret[] = $prefix_dir ? ( $prefix_dir . '/'. $file ) : $file;
+				$ret[] = $prefix_dir ? ( $prefix_dir . '/' . $file ) : $file;
 			}
 		}
 		return $ret;

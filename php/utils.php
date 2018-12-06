@@ -528,7 +528,7 @@ function mustache_render( $template_name, $data = array() ) {
  */
 function make_progress_bar( $message, $count, $interval = 100 ) {
 	if ( \cli\Shell::isPiped() ) {
-		return new \WP_CLI\NoOp;
+		return new \WP_CLI\NoOp();
 	}
 
 	return new \cli\progress\Bar( $message, $count, $interval );

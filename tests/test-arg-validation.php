@@ -27,14 +27,21 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 	function testUnknownAssocEmpty() {
 		$validator = new SynopsisValidator( '' );
 
-		$assoc_args = array( 'foo' => true, 'bar' => false );
+		$assoc_args = array(
+			'foo' => true,
+			'bar' => false,
+		);
 		$this->assertEquals( array_keys( $assoc_args ), $validator->unknown_assoc( $assoc_args ) );
 	}
 
 	function testUnknownAssoc() {
 		$validator = new SynopsisValidator( '--type=<type> [--brand=<brand>] [--flag]' );
 
-		$assoc_args = array( 'type' => 'analog', 'brand' => true, 'flag' => true );
+		$assoc_args = array(
+			'type'  => 'analog',
+			'brand' => true,
+			'flag'  => true,
+		);
 		$this->assertEmpty( $validator->unknown_assoc( $assoc_args ) );
 
 		$assoc_args['another'] = true;
@@ -44,7 +51,10 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 	function testMissingAssoc() {
 		$validator = new SynopsisValidator( '--type=<type> [--brand=<brand>] [--flag]' );
 
-		$assoc_args = array( 'brand' => true, 'flag' => true );
+		$assoc_args                = array(
+			'brand' => true,
+			'flag'  => true,
+		);
 		list( $errors, $to_unset ) = $validator->validate_assoc( $assoc_args );
 
 		$this->assertCount( 1, $errors['fatal'] );
@@ -54,7 +64,7 @@ class ArgValidationTests extends PHPUnit_Framework_TestCase {
 	function testAssocWithOptionalValue() {
 		$validator = new SynopsisValidator( '[--network[=<id>]]' );
 
-		$assoc_args = array( 'network' => true );
+		$assoc_args                = array( 'network' => true );
 		list( $errors, $to_unset ) = $validator->validate_assoc( $assoc_args );
 
 		$this->assertCount( 0, $errors['fatal'] );
