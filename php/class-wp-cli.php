@@ -1199,9 +1199,10 @@ class WP_CLI {
 			$script_path = $GLOBALS['argv'][0];
 
 			// Persist runtime arguments unless they've been specified otherwise.
-			$configurator                   = \WP_CLI::get_configurator();
-			$argv                           = array_slice( $GLOBALS['argv'], 1 );
-			list( $_, $_, $runtime_config ) = $configurator->parse_args( $argv );
+			$configurator = \WP_CLI::get_configurator();
+			$argv         = array_slice( $GLOBALS['argv'], 1 );
+
+			list( $ignore1, $ignore2, $runtime_config ) = $configurator->parse_args( $argv );
 			foreach ( $runtime_config as $k => $v ) {
 				if ( preg_match( "|^--{$k}=?$|", $command ) ) {
 					unset( $runtime_config[ $k ] );
