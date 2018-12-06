@@ -34,6 +34,7 @@ function wp_not_installed() {
 	}
 }
 
+// phpcs:disable WordPress.PHP.IniSet -- Intentional & correct usage.
 function wp_debug_mode() {
 	if ( \WP_CLI::get_config( 'debug' ) ) {
 		if ( ! defined( 'WP_DEBUG' ) ) {
@@ -67,6 +68,7 @@ function wp_debug_mode() {
 	// XDebug already sends errors to STDERR.
 	ini_set( 'display_errors', function_exists( 'xdebug_debug_zval' ) ? false : 'STDERR' );
 }
+// phpcs:enable
 
 function replace_wp_die_handler() {
 	\remove_filter( 'wp_die_handler', '_default_wp_die_handler' );

@@ -331,12 +331,14 @@ class Subcommand extends CompositeCommand {
 				if ( isset( $spec_args['options'] ) ) {
 					if ( ! empty( $spec['repeating'] ) ) {
 						do {
+							// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
 							if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
 								\WP_CLI::error( 'Invalid value specified for positional arg.' );
 							}
 							$i++;
 						} while ( isset( $args[ $i ] ) );
 					} else {
+						// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
 						if ( isset( $args[ $i ] ) && ! in_array( $args[ $i ], $spec_args['options'] ) ) {
 							\WP_CLI::error( 'Invalid value specified for positional arg.' );
 						}
@@ -351,6 +353,7 @@ class Subcommand extends CompositeCommand {
 					}
 				}
 				if ( isset( $assoc_args[ $spec['name'] ] ) && isset( $spec_args['options'] ) ) {
+					// phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict -- This is a loose comparison by design.
 					if ( ! in_array( $assoc_args[ $spec['name'] ], $spec_args['options'] ) ) {
 						$errors['fatal'][ $spec['name'] ] = "Invalid value specified for '{$spec['name']}'";
 					}
