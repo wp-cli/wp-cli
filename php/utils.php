@@ -424,7 +424,7 @@ function mysql_host_to_cli_args( $raw_host ) {
 	$assoc_args = array();
 
 	$host_parts = explode( ':', $raw_host );
-	if ( count( $host_parts ) == 2 ) {
+	if ( count( $host_parts ) === 2 ) {
 		list( $assoc_args['host'], $extra ) = $host_parts;
 		$extra                              = trim( $extra );
 		if ( is_numeric( $extra ) ) {

@@ -51,7 +51,7 @@ class Completions {
 
 		if ( $command->can_have_subcommands() ) {
 			// add completion when command is `wp` and alias isn't set.
-			if ( 'wp' === $command->get_name() && false === $is_alias && false == $is_help ) {
+			if ( 'wp' === $command->get_name() && false === $is_alias && false === $is_help ) {
 				$aliases = \WP_CLI::get_configurator()->get_aliases();
 				foreach ( $aliases as $name => $_ ) {
 					$this->add( "$name " );
@@ -62,7 +62,7 @@ class Completions {
 			}
 		} else {
 			foreach ( $spec as $arg ) {
-				if ( in_array( $arg['type'], array( 'flag', 'assoc' ) ) ) {
+				if ( in_array( $arg['type'], array( 'flag', 'assoc' ), true ) ) {
 					if ( isset( $assoc_args[ $arg['name'] ] ) ) {
 						continue;
 					}
@@ -110,7 +110,7 @@ class Completions {
 		}
 
 		$r = \WP_CLI::get_runner()->find_command_to_run( $positional_args );
-		if ( ! is_array( $r ) && array_pop( $positional_args ) == $this->cur_word ) {
+		if ( ! is_array( $r ) && array_pop( $positional_args ) === $this->cur_word ) {
 			$r = \WP_CLI::get_runner()->find_command_to_run( $positional_args );
 		}
 

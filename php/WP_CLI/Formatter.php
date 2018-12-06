@@ -68,7 +68,7 @@ class Formatter {
 		if ( $this->args['field'] ) {
 			$this->show_single_field( $items, $this->args['field'] );
 		} else {
-			if ( in_array( $this->args['format'], array( 'csv', 'json', 'table' ) ) ) {
+			if ( in_array( $this->args['format'], array( 'csv', 'json', 'table' ), true ) ) {
 				$item = is_array( $items ) && ! empty( $items ) ? array_shift( $items ) : false;
 				if ( $item && ! empty( $this->args['fields'] ) ) {
 					foreach ( $this->args['fields'] as &$field ) {
@@ -78,7 +78,7 @@ class Formatter {
 				}
 			}
 
-			if ( in_array( $this->args['format'], array( 'table', 'csv' ) ) ) {
+			if ( in_array( $this->args['format'], array( 'table', 'csv' ), true ) ) {
 				if ( is_object( $items ) && is_a( $items, 'Iterator' ) ) {
 					$items = \WP_CLI\Utils\iterator_map( $items, array( $this, 'transform_item_values_to_json' ) );
 				} else {
@@ -101,7 +101,7 @@ class Formatter {
 			$item  = (object) $item;
 			$key   = $this->find_item_key( $item, $this->args['field'] );
 			$value = $item->$key;
-			if ( in_array( $this->args['format'], array( 'table', 'csv' ) ) && ( is_object( $value ) || is_array( $value ) ) ) {
+			if ( in_array( $this->args['format'], array( 'table', 'csv' ), true ) && ( is_object( $value ) || is_array( $value ) ) ) {
 				$value = json_encode( $value );
 			}
 			\WP_CLI::print_value(
@@ -188,7 +188,7 @@ class Formatter {
 				$key = $this->find_item_key( $item, $field );
 			}
 
-			if ( 'json' == $this->args['format'] ) {
+			if ( 'json' === $this->args['format'] ) {
 				$values[] = $item->$key;
 			} else {
 				\WP_CLI::print_value(
@@ -200,7 +200,7 @@ class Formatter {
 			}
 		}
 
-		if ( 'json' == $this->args['format'] ) {
+		if ( 'json' === $this->args['format'] ) {
 			echo json_encode( $values );
 		}
 	}
@@ -258,9 +258,9 @@ class Formatter {
 			case 'csv':
 				$rows   = $this->assoc_array_to_rows( $data );
 				$fields = array( 'Field', 'Value' );
-				if ( 'table' == $format ) {
+				if ( 'table' === $format ) {
 					self::show_table( $rows, $fields, $ascii_pre_colorized );
-				} elseif ( 'csv' == $format ) {
+				} elseif ( 'csv' === $format ) {
 					\WP_CLI\Utils\write_csv( STDOUT, $rows, $fields );
 				}
 				break;

@@ -98,7 +98,7 @@ class Contrib_List_Command {
 
 		// Sort and render the contributor list
 		asort( $contributors, SORT_NATURAL | SORT_FLAG_CASE );
-		if ( in_array( $assoc_args['format'], array( 'markdown', 'html' ) ) ) {
+		if ( in_array( $assoc_args['format'], array( 'markdown', 'html' ), true ) ) {
 			$contrib_list = '';
 			foreach( $contributors as $url => $login ) {
 				if ( 'markdown' === $assoc_args['format'] ) {
