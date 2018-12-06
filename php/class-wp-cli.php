@@ -51,7 +51,7 @@ class WP_CLI {
 		static $root;
 
 		if ( ! $root ) {
-			$root = new Dispatcher\RootCommand;
+			$root = new Dispatcher\RootCommand();
 		}
 
 		return $root;
@@ -61,7 +61,7 @@ class WP_CLI {
 		static $runner;
 
 		if ( ! $runner ) {
-			$runner = new WP_CLI\Runner;
+			$runner = new WP_CLI\Runner();
 		}
 
 		return $runner;
@@ -1249,7 +1249,7 @@ class WP_CLI {
 			list( $args, $assoc_args, $runtime_config ) = $configurator->parse_args( $argv );
 			if ( $return ) {
 				$existing_logger = self::$logger;
-				self::$logger    = new WP_CLI\Loggers\Execution;
+				self::$logger    = new WP_CLI\Loggers\Execution();
 				self::$logger->ob_start();
 			}
 			if ( ! $exit_error ) {

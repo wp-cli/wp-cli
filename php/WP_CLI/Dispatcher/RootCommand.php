@@ -47,4 +47,3 @@ class RootCommand extends CompositeCommand {
 		return $this->subcommands[ $command ];
 	}
 }
-

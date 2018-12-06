@@ -453,4 +453,3 @@ class Subcommand extends CompositeCommand {
 		return array_unique( array_merge( $local_parameters, $global_parameters ) );
 	}
 }
-

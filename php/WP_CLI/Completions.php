@@ -99,7 +99,8 @@ class Completions {
 	}
 
 	private function get_command( $words ) {
-		$positional_args = $assoc_args = array();
+		$positional_args = array();
+		$assoc_args      = array();
 
 		foreach ( $words as $arg ) {
 			if ( preg_match( '|^--([^=]+)=?|', $arg, $matches ) ) {

@@ -10,7 +10,7 @@ class DocParserTests extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( '', $doc->get_shortdesc() );
 		$this->assertEquals( '', $doc->get_longdesc() );
 		$this->assertEquals( '', $doc->get_synopsis() );
-		$this->assertEquals( '', $doc->get_tag('alias') );
+		$this->assertEquals( '', $doc->get_tag( 'alias' ) );
 	}
 
 	function test_only_tags() {
@@ -25,9 +25,9 @@ EOB
 		$this->assertEquals( '', $doc->get_shortdesc() );
 		$this->assertEquals( '', $doc->get_longdesc() );
 		$this->assertEquals( '', $doc->get_synopsis() );
-		$this->assertEquals( '', $doc->get_tag('foo') );
-		$this->assertEquals( 'rock-on', $doc->get_tag('alias') );
-		$this->assertEquals( 'revoke-md5-passwords', $doc->get_tag('subcommand') );
+		$this->assertEquals( '', $doc->get_tag( 'foo' ) );
+		$this->assertEquals( 'rock-on', $doc->get_tag( 'alias' ) );
+		$this->assertEquals( 'revoke-md5-passwords', $doc->get_tag( 'subcommand' ) );
 	}
 
 	function test_no_longdesc() {
@@ -42,7 +42,7 @@ EOB
 		$this->assertEquals( 'Rock and roll!', $doc->get_shortdesc() );
 		$this->assertEquals( '', $doc->get_longdesc() );
 		$this->assertEquals( '', $doc->get_synopsis() );
-		$this->assertEquals( 'rock-on', $doc->get_tag('alias') );
+		$this->assertEquals( 'rock-on', $doc->get_tag( 'alias' ) );
 	}
 
 	function test_complete() {
@@ -75,7 +75,7 @@ EOB
 		$this->assertEquals( '[--volume=<number>]', $doc->get_synopsis() );
 		$this->assertEquals( 'Start with one or more genres.', $doc->get_arg_desc( 'genre' ) );
 		$this->assertEquals( 'Sets the volume.', $doc->get_param_desc( 'volume' ) );
-		$this->assertEquals( 'rock-on', $doc->get_tag('alias') );
+		$this->assertEquals( 'rock-on', $doc->get_tag( 'alias' ) );
 
 		$longdesc = <<<EOB
 ## OPTIONS
@@ -92,8 +92,7 @@ EOB
 ## EXAMPLES
 
 wp rock-on --volume=11
-EOB
-		;
+EOB;
 		$this->assertEquals( $longdesc, $doc->get_longdesc() );
 	}
 
@@ -131,6 +130,7 @@ default: 10
 wp rock-on electronic --volume=11
 
 EOB;
+
 		$doc = new DocParser( $longdesc );
 		$this->assertEquals( 'Start with one or more genres.', $doc->get_arg_desc( 'genre' ) );
 		$this->assertEquals( 'Sets the volume.', $doc->get_param_desc( 'volume' ) );
@@ -162,6 +162,7 @@ options:
   - yaml
 ---
 EOB;
+
 		$doc = new DocParser( $longdesc );
 		$this->assertEquals( array(
 			'default' => 'table',
@@ -188,6 +189,7 @@ options:
   - yaml
 ---
 EOB;
+
 		$doc = new DocParser( $longdesc );
 		$this->assertEquals( array(
 			'default' => 'table',
@@ -197,4 +199,3 @@ EOB;
 	}
 
 }
-
