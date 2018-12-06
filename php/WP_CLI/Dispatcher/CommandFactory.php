@@ -206,12 +206,14 @@ class CommandFactory {
 		if ( preg_match_all( '/(?:^|[\s;}])(?:class|function)\s+/', substr( $content, $comment_end_pos + 2 ), $dummy /*needed for PHP 5.3*/ ) > 1 ) {
 			return false;
 		}
-		$content = substr( $content, 0, $comment_end_pos + 2 );
-		if ( false === ( $comment_start_pos = strrpos( $content, '/**' ) ) || $comment_start_pos + 2 === $comment_end_pos ) {
+		$content           = substr( $content, 0, $comment_end_pos + 2 );
+		$comment_start_pos = strrpos( $content, '/**' );
+		if ( false === $comment_start_pos || $comment_start_pos + 2 === $comment_end_pos ) {
 			return false;
 		}
 		// Make sure comment start belongs to this comment end.
-		if ( false !== ( $comment_end2_pos = strpos( substr( $content, $comment_start_pos ), '*/' ) ) && $comment_start_pos + $comment_end2_pos < $comment_end_pos ) {
+		$comment_end2_pos = strpos( substr( $content, $comment_start_pos ), '*/' );
+		if ( false !== $comment_end2_pos && $comment_start_pos + $comment_end2_pos < $comment_end_pos ) {
 			return false;
 		}
 		// Allow for '/**' within doc comment.

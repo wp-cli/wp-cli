@@ -371,7 +371,8 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 			}
 		}
 		$args_tables = array_values( array_unique( $args_tables ) );
-		if ( ! ( $tables = array_values( array_intersect( $tables, $args_tables ) ) ) ) {
+		$tables      = array_values( array_intersect( $tables, $args_tables ) );
+		if ( empty( $tables ) ) {
 			\WP_CLI::error( sprintf( "Couldn't find any tables matching: %s", implode( ' ', $args ) ) );
 		}
 	}

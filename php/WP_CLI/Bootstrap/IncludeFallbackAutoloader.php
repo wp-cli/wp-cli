@@ -23,7 +23,8 @@ final class IncludeFallbackAutoloader extends AutoloaderStep {
 			WP_CLI_VENDOR_DIR . '/autoload.php',
 		);
 
-		if ( $custom_vendor = $this->get_custom_vendor_folder() ) {
+		$custom_vendor = $this->get_custom_vendor_folder();
+		if ( false !== $custom_vendor ) {
 			array_unshift(
 				$autoloader_paths,
 				WP_CLI_ROOT . '/../../../' . $custom_vendor . '/autoload.php'

@@ -430,7 +430,8 @@ do_action( 'init' );
 // Check site status
 # if ( is_multisite() ) {  // WP-CLI
 if ( is_multisite() && ! defined( 'WP_INSTALLING' ) ) {
-	if ( true !== ( $file = ms_site_check() ) ) {
+	$file = ms_site_check();
+	if ( true !== $file ) {
 		require $file;
 		die();
 	}
