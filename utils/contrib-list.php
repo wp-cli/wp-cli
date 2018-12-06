@@ -190,7 +190,8 @@ class Contrib_List_Command {
 			'Accept'     => 'application/vnd.github.v3+json',
 			'User-Agent' => 'WP-CLI',
 		);
-		if ( $token = getenv( 'GITHUB_TOKEN' ) ) {
+		$token   = getenv( 'GITHUB_TOKEN' );
+		if ( false !== $token ) {
 			$headers['Authorization'] = 'token ' . $token;
 		}
 		$response = Utils\http_request( 'GET', $url, $args, $headers );
