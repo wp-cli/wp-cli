@@ -4,13 +4,13 @@ use WP_CLI\SynopsisParser;
 
 class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 
-	function testEmpty() {
+	public function testEmpty() {
 		$r = SynopsisParser::parse( ' ' );
 
 		$this->assertEmpty( $r );
 	}
 
-	function testPositional() {
+	public function testPositional() {
 		$r = SynopsisParser::parse( '<plugin|zip> [<bar>]' );
 
 		$this->assertCount( 2, $r );
@@ -24,7 +24,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue( $param['optional'] );
 	}
 
-	function testFlag() {
+	public function testFlag() {
 		$r = SynopsisParser::parse( '[--foo]' );
 
 		$this->assertCount( 1, $r );
@@ -42,7 +42,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'unknown', $param['type'] );
 	}
 
-	function testGeneric() {
+	public function testGeneric() {
 		$r = SynopsisParser::parse( '--<field>=<value> [--<field>=<value>] --<field>[=<value>] [--<field>[=<value>]]' );
 
 		$this->assertCount( 4, $r );
@@ -62,7 +62,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'unknown', $param['type'] );
 	}
 
-	function testAssoc() {
+	public function testAssoc() {
 		$r = SynopsisParser::parse( '--foo=<value> [--bar=<value>] [--bar[=<value>]]' );
 
 		$this->assertCount( 3, $r );
@@ -81,7 +81,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue( $param['value']['optional'] );
 	}
 
-	function testInvalidAssoc() {
+	public function testInvalidAssoc() {
 		$r = SynopsisParser::parse( '--bar[=<value>] --bar=[<value>] --count=100' );
 
 		$this->assertCount( 3, $r );
@@ -91,7 +91,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'unknown', $r[2]['type'] );
 	}
 
-	function testRepeating() {
+	public function testRepeating() {
 		$r = SynopsisParser::parse( '<positional>... [--<field>=<value>...]' );
 
 		$this->assertCount( 2, $r );
@@ -105,7 +105,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue( $param['repeating'] );
 	}
 
-	function testCombined() {
+	public function testCombined() {
 		$r = SynopsisParser::parse( '<positional> --assoc=<someval> --<field>=<value> [--flag]' );
 
 		$this->assertCount( 4, $r );
@@ -116,7 +116,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'flag', $r[3]['type'] );
 	}
 
-	function testAllowedValueCharacters() {
+	public function testAllowedValueCharacters() {
 		$r = SynopsisParser::parse( '--capitals=<VALUE> --hyphen=<val-ue> --combined=<VAL-ue> --disallowed=<wrong:char>' );
 
 		$this->assertCount( 4, $r );
@@ -136,7 +136,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'unknown', $r[3]['type'] );
 	}
 
-	function testRender() {
+	public function testRender() {
 		$a = array(
 			array(
 				'name'        => 'message',
@@ -165,14 +165,14 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( '<message> [<secrets>...] --meal=<meal> [--snack=<snack>]', SynopsisParser::render( $a ) );
 	}
 
-	function testParseThenRender() {
+	public function testParseThenRender() {
 		$o = '<positional> --assoc=<assoc> --<field>=<value> [--flag]';
 		$a = SynopsisParser::parse( $o );
 		$r = SynopsisParser::render( $a );
 		$this->assertEquals( $o, $r );
 	}
 
-	function testParseThenRenderNumeric() {
+	public function testParseThenRenderNumeric() {
 		$o = '<p1ositional> --a2ssoc=<assoc> --<field>=<value> [--f3lag]';
 		$a = SynopsisParser::parse( $o );
 		$this->assertEquals( 'p1ositional', $a[0]['name'] );

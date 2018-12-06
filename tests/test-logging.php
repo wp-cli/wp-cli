@@ -28,7 +28,7 @@ class MockQuietLogger extends WP_CLI\Loggers\Quiet {
 
 class LoggingTests extends PHPUnit_Framework_TestCase {
 
-	function testLogDebug() {
+	public function testLogDebug() {
 		$message = 'This is a test message.';
 
 		$regularLogger = new MockRegularLogger( false );
@@ -40,7 +40,7 @@ class LoggingTests extends PHPUnit_Framework_TestCase {
 		$quietLogger->debug( $message );
 	}
 
-	function testLogEscaping() {
+	public function testLogEscaping() {
 		$logger = new MockRegularLogger( false );
 
 		$message = 'foo%20bar';
@@ -49,7 +49,7 @@ class LoggingTests extends PHPUnit_Framework_TestCase {
 		$logger->success( $message );
 	}
 
-	function testExecutionLogger() {
+	public function testExecutionLogger() {
 		// Save Runner config.
 		$runner        = WP_CLI::get_runner();
 		$runner_config = new \ReflectionProperty( $runner, 'config' );
