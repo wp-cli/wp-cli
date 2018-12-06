@@ -225,8 +225,9 @@ class Help_Command extends WP_CLI_Command {
 				$description
 			);
 
-			$footnote = '';
-			for ( $i = 0; $i < count( $links ); $i++ ) {
+			$footnote   = '';
+			$link_count = count( $links );
+			for ( $i = 0; $i < $link_count; $i++ ) {
 				$n         = $i + 1;
 				$footnote .= '[' . $n . '] ' . $links[ $i ] . "\n";
 			}
