@@ -214,7 +214,8 @@ class Runner {
 			}
 
 			if ( file_exists( "$dir/index.php" ) ) {
-				if ( $path = self::extract_subdir_path( "$dir/index.php" ) ) {
+				$path = self::extract_subdir_path( "$dir/index.php" );
+				if ( ! empty( $path ) ) {
 					return $path;
 				}
 			}
@@ -1007,7 +1008,8 @@ class Runner {
 			if ( isset( $this->aliases[ $this->alias ][0] ) ) {
 				$group_aliases = $this->aliases[ $this->alias ];
 				$all_aliases   = array_keys( $this->aliases );
-				if ( $diff = array_diff( $group_aliases, $all_aliases ) ) {
+				$diff          = array_diff( $group_aliases, $all_aliases );
+				if ( ! empty( $diff ) ) {
 					WP_CLI::error( "Group '{$this->alias}' contains one or more invalid aliases: " . implode( ', ', $diff ) );
 				}
 				$this->run_alias_group( $group_aliases );
