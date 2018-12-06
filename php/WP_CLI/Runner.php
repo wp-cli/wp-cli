@@ -239,6 +239,7 @@ class Runner {
 	 */
 	private static function set_wp_root( $path ) {
 		if ( ! defined( 'ABSPATH' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Declaring a WP native constant.
 			define( 'ABSPATH', Utils\normalize_path( Utils\trailingslashit( $path ) ) );
 		} elseif ( ! is_null( $path ) ) {
 			WP_CLI::error_multi_line(
@@ -1075,6 +1076,8 @@ class Runner {
 			);
 		}
 
+		// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Declaring WP native constants.
+
 		if ( $this->cmd_starts_with( array( 'core', 'is-installed' ) )
 			|| $this->cmd_starts_with( array( 'core', 'update-db' ) ) ) {
 			define( 'WP_INSTALLING', true );
@@ -1112,6 +1115,7 @@ class Runner {
 		if ( $this->cmd_starts_with( array( 'cron', 'event', 'run' ) ) ) {
 			define( 'DOING_CRON', true );
 		}
+		// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
 
 		$this->load_wordpress();
 
@@ -1161,6 +1165,7 @@ class Runner {
 
 			// phpcs:ignore PHPCompatibility.Variables.ForbiddenGlobalVariableVariable.NonBareVariableFound
 			global ${$key};
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 			${$key} = $var;
 		}
 
@@ -1197,6 +1202,7 @@ class Runner {
 		}
 
 		// Fix memory limit. See http://core.trac.wordpress.org/ticket/14889
+		// phpcs:ignore WordPress.PHP.IniSet.memory_limit_Blacklisted -- This is perfectly fine for CLI usage.
 		ini_set( 'memory_limit', -1 );
 
 		// Load all the admin APIs, for convenience
@@ -1227,6 +1233,7 @@ class Runner {
 			$url_parts['path'] = '/';
 		}
 
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Intentional override.
 		$current_site = (object) array(
 			'id'            => 1,
 			'blog_id'       => 1,
@@ -1236,6 +1243,10 @@ class Runner {
 			'site_name'     => 'Fake Site',
 		);
 
+		// Bug in WPCS {@link https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/pull/1693}
+		// which will be fixed in WPCS 2.1.1/2.2.0. Once the bug fix is in, this comment can be removed.
+		// However, it then need to be replaced with the GlobalVariableOverride ignore as used above.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 		$current_blog = (object) array(
 			'blog_id'  => 1,
 			'site_id'  => 1,
@@ -1747,6 +1758,6 @@ class Runner {
 			// Don't enable E_DEPRECATED as old versions of WP use PHP 4 style constructors and the mysql extension.
 			error_reporting( E_ALL & ~E_DEPRECATED );
 		}
-		ini_set( 'display_errors', 'stderr' );
+		ini_set( 'display_errors', 'stderr' ); // phpcs:ignore WordPress.PHP.IniSet.display_errors_Blacklisted
 	}
 }

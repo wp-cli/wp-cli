@@ -1,6 +1,11 @@
 <?php
 /**
  * A modified version of wp-settings.php, tailored for CLI use.
+ *
+ * @phpcs:disable WordPress.WP.GlobalVariablesOverride -- Setting the globals is the point of this file.
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- These are WP native constants which are needed.
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- All hook calls in this file are to WP native hooks.
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Ensuring native WP variables are available.
  */
 
 use WP_CLI\Utils;
@@ -41,10 +46,13 @@ wp_initial_constants();
 wp_check_php_mysql_versions();
 
 // Disable magic quotes at runtime. Magic quotes are added using wpdb later in wp-settings.php.
+// phpcs:disable PHPCompatibility.IniDirectives.RemovedIniDirectives,WordPress.PHP.IniSet.Risky
 ini_set( 'magic_quotes_runtime', 0 );
 ini_set( 'magic_quotes_sybase', 0 );
+// phpc:enable PHPCompatibility.IniDirectives.RemovedIniDirectives,WordPress.PHP.IniSet
 
 // WordPress calculates offsets from UTC.
+// phpcs:ignore WordPress.WP.TimezoneChange.timezone_change_date_default_timezone_set
 date_default_timezone_set( 'UTC' );
 
 // Turn register_globals off.
@@ -401,6 +409,7 @@ require_once ABSPATH . WPINC . '/locale.php';
 $GLOBALS['wp_locale'] = new WP_Locale();
 
 // Load the functions for the active theme, for both parent and child theme if applicable.
+// phpcs:disable WordPress.WP.DiscouragedConstants.STYLESHEETPATHUsageFound,WordPress.WP.DiscouragedConstants.TEMPLATEPATHUsageFound
 global $pagenow;
 if ( ! defined( 'WP_INSTALLING' ) || 'wp-activate.php' === $pagenow ) {
 	if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists( STYLESHEETPATH . '/functions.php' ) ) {
@@ -410,6 +419,7 @@ if ( ! defined( 'WP_INSTALLING' ) || 'wp-activate.php' === $pagenow ) {
 		include TEMPLATEPATH . '/functions.php';
 	}
 }
+// phpcs:enable WordPress.WP.DiscouragedConstants
 
 do_action( 'after_setup_theme' );
 
