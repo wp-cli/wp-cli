@@ -14,7 +14,8 @@ class DocParserTests extends PHPUnit_Framework_TestCase {
 	}
 
 	public function test_only_tags() {
-		$doc = new DocParser( <<<EOB
+		$doc = new DocParser(
+			<<<EOB
 /**
  * @alias rock-on
  * @subcommand revoke-md5-passwords
@@ -31,7 +32,8 @@ EOB
 	}
 
 	public function test_no_longdesc() {
-		$doc = new DocParser( <<<EOB
+		$doc = new DocParser(
+			<<<EOB
 /**
  * Rock and roll!
  * @alias rock-on
@@ -46,7 +48,8 @@ EOB
 	}
 
 	public function test_complete() {
-		$doc = new DocParser( <<<EOB
+		$doc = new DocParser(
+			<<<EOB
 /**
  * Rock and roll!
  *
@@ -134,13 +137,18 @@ EOB;
 		$doc = new DocParser( $longdesc );
 		$this->assertEquals( 'Start with one or more genres.', $doc->get_arg_desc( 'genre' ) );
 		$this->assertEquals( 'Sets the volume.', $doc->get_param_desc( 'volume' ) );
-		$this->assertEquals( array(
+
+		$expected = array(
 			'options' => array( 'rock', 'electronic' ),
 			'default' => 'rock',
-		), $doc->get_arg_args( 'genre' ) );
-		$this->assertEquals( array(
+		);
+		$this->assertEquals( $expected, $doc->get_arg_args( 'genre' ) );
+
+		$expected = array(
 			'default' => 10,
-		), $doc->get_param_args( 'volume' ) );
+		);
+		$this->assertEquals( $expected, $doc->get_param_args( 'volume' ) );
+
 		$this->assertNull( $doc->get_param_args( 'artist' ) );
 	}
 
@@ -164,10 +172,12 @@ options:
 EOB;
 
 		$doc = new DocParser( $longdesc );
-		$this->assertEquals( array(
+
+		$expected = array(
 			'default' => 'table',
 			'options' => array( 'table', 'json', 'csv', 'yaml' ),
-		), $doc->get_param_args( 'format' ) );
+		);
+		$this->assertEquals( $expected, $doc->get_param_args( 'format' ) );
 		$this->assertNull( $doc->get_arg_args( 'hook' ) );
 	}
 
@@ -191,10 +201,12 @@ options:
 EOB;
 
 		$doc = new DocParser( $longdesc );
-		$this->assertEquals( array(
+
+		$expected = array(
 			'default' => 'table',
 			'options' => array( 'table', 'json', 'csv', 'yaml' ),
-		), $doc->get_arg_args( 'format' ) );
+		);
+		$this->assertEquals( $expected, $doc->get_arg_args( 'format' ) );
 		$this->assertNull( $doc->get_arg_args( 'hook' ) );
 	}
 

@@ -119,7 +119,7 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		$this->assertFalse( empty( $output ) );
 
 		// Normalize (Mac) output.
-		$output = array_map( function ( $v ) {
+		$normalize = function ( $v ) {
 			if ( 'a ' === substr( $v, 0, 2 ) ) {
 				$v = substr( $v, 2 );
 			}
@@ -127,7 +127,8 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 				$v .= '/';
 			}
 			return $v;
-		}, $output );
+		};
+		$output    = array_map( $normalize, $output );
 		sort( $output );
 
 		$this->assertSame( self::recursive_scandir( $src_dir ), $output );
