@@ -106,7 +106,7 @@ class FileCache {
 		}
 
 		//
-		if ( $ttl > 0 && filemtime( $filename ) + $ttl < time() ) {
+		if ( $ttl > 0 && ( filemtime( $filename ) + $ttl ) < time() ) {
 			if ( $this->ttl > 0 && $ttl >= $this->ttl ) {
 				unlink( $filename );
 			}
@@ -239,7 +239,7 @@ class FileCache {
 			$total = 0;
 
 			foreach ( $files as $file ) {
-				if ( $total + $file->getSize() <= $maxSize ) {
+				if ( ( $total + $file->getSize() ) <= $maxSize ) {
 					$total += $file->getSize();
 				} else {
 					unlink( $file->getRealPath() );
