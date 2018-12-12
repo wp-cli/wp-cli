@@ -92,7 +92,8 @@ class Configurator {
 	 * @return array
 	 */
 	public function get_aliases() {
-		if ( $runtime_alias = getenv( 'WP_CLI_RUNTIME_ALIAS' ) ) {
+		$runtime_alias = getenv( 'WP_CLI_RUNTIME_ALIAS' );
+		if ( false !== $runtime_alias ) {
 			$returned_aliases = array();
 			foreach ( json_decode( $runtime_alias, true ) as $key => $value ) {
 				if ( preg_match( '#' . self::ALIAS_REGEX . '#', $key ) ) {

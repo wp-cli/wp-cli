@@ -212,7 +212,8 @@ class Extractor {
 	 */
 	public static function tar_error_msg( $process_run ) {
 		$stderr = trim( $process_run->stderr );
-		if ( false !== ( $nl_pos = strpos( $stderr, "\n" ) ) ) {
+		$nl_pos = strpos( $stderr, "\n" );
+		if ( false !== $nl_pos ) {
 			$stderr = trim( substr( $stderr, 0, $nl_pos ) );
 		}
 		if ( $stderr ) {
