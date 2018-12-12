@@ -160,7 +160,7 @@ function is_plugin_skipped( $file ) {
 		$skipped_plugins = explode( ',', $skipped_plugins );
 	}
 
-	return in_array( $name, array_filter( $skipped_plugins ) );
+	return in_array( $name, array_filter( $skipped_plugins ), true );
 }
 
 function get_theme_name( $path ) {
@@ -179,7 +179,7 @@ function is_theme_skipped( $path ) {
 		$skipped_themes = explode( ',', $skipped_themes );
 	}
 
-	return in_array( $name, array_filter( $skipped_themes ) );
+	return in_array( $name, array_filter( $skipped_themes ), true );
 }
 
 /**

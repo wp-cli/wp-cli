@@ -141,7 +141,7 @@ class SynopsisValidator {
 		$known_assoc = array();
 
 		foreach ( $this->spec as $param ) {
-			if ( in_array( $param['type'], array( 'assoc', 'flag' ) ) ) {
+			if ( in_array( $param['type'], array( 'assoc', 'flag' ), true ) ) {
 				$known_assoc[] = $param['name'];
 			}
 		}
@@ -169,9 +169,9 @@ class SynopsisValidator {
 				}
 			}
 
-			if ( ( 'AND' == $operator && $matched == $count )
-				|| ( 'OR' == $operator && $matched > 0 )
-				|| ( 'NOT' == $operator && 0 == $matched ) ) {
+			if ( ( 'AND' === $operator && $matched === $count )
+				|| ( 'OR' === $operator && $matched > 0 )
+				|| ( 'NOT' === $operator && 0 === $matched ) ) {
 					$filtered[ $key ] = $to_match;
 			}
 		}

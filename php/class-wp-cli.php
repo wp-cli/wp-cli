@@ -895,7 +895,7 @@ class WP_CLI {
 
 			$answer = strtolower( trim( fgets( STDIN ) ) );
 
-			if ( 'y' != $answer ) {
+			if ( 'y' !== $answer ) {
 				exit;
 			}
 		}
