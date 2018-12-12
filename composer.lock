@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f2c05d4e25054f8af8b16e584e6091ac",
+    "content-hash": "eea2fcc353b7a69e08b5fe4e8b63531b",
     "packages": [
         {
             "name": "mustache/mustache",
@@ -1680,6 +1680,11 @@
         {
             "name": "roave/security-advisories",
             "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Roave/SecurityAdvisories.git",
+                "reference": "9fd088ff8176ceb154c7d3cc0d1241af80e5c93e"
+            },
             "conflict": {
                 "3f/pygmentize": "<1.2",
                 "adodb/adodb-php": "<5.20.12",
@@ -3779,7 +3784,6 @@
     "platform": {
         "php": ">=5.4",
         "ext-curl": "*",
-        "ext-posix": "*",
         "ext-readline": "*"
     },
     "platform-dev": [],

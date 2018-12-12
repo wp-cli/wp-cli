@@ -46,14 +46,4 @@ class RootCommand extends CompositeCommand {
 
 		return $this->subcommands[ $command ];
 	}
-
-	/**
-	 * Get all registered subcommands.
-	 *
-	 * @return array
-	 */
-	public function get_subcommands() {
-		return parent::get_subcommands();
-	}
 }
-

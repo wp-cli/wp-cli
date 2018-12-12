@@ -115,7 +115,8 @@ class Help_Command extends WP_CLI_Command {
 			return -1;
 		}
 
-		if ( false === ( $pager = getenv( 'PAGER' ) ) ) {
+		$pager = getenv( 'PAGER' );
+		if ( false === $pager ) {
 			$pager = Utils\is_windows() ? 'more' : 'less -r';
 		}
 
@@ -225,8 +226,9 @@ class Help_Command extends WP_CLI_Command {
 				$description
 			);
 
-			$footnote = '';
-			for ( $i = 0; $i < count( $links ); $i++ ) {
+			$footnote   = '';
+			$link_count = count( $links );
+			for ( $i = 0; $i < $link_count; $i++ ) {
 				$n         = $i + 1;
 				$footnote .= '[' . $n . '] ' . $links[ $i ] . "\n";
 			}

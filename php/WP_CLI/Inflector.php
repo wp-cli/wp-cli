@@ -437,7 +437,8 @@ class Inflector {
 			}
 
 			if ( 'plural' === $type ) {
-				self::$cache['pluralize'] = self::$cache['tableize'] = array();
+				self::$cache['pluralize'] = array();
+				self::$cache['tableize']  = array();
 			} elseif ( 'singular' === $type ) {
 				self::$cache['singularize'] = array();
 			}

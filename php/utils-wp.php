@@ -73,7 +73,7 @@ function replace_wp_die_handler() {
 	\add_filter(
 		'wp_die_handler',
 		function() {
-			return __NAMESPACE__ . '\\' . 'wp_die_handler';
+			return __NAMESPACE__ . '\\wp_die_handler';
 		}
 	);
 }
@@ -92,7 +92,8 @@ function wp_die_handler( $message ) {
  * Clean HTML error message so suitable for text display.
  */
 function wp_clean_error_message( $message ) {
-	$original_message = $message = trim( $message );
+	$original_message = trim( $message );
+	$message          = $original_message;
 	if ( preg_match( '|^\<h1>(.+?)</h1>|', $original_message, $matches ) ) {
 		$message = $matches[1] . '.';
 	}
@@ -132,7 +133,7 @@ function get_upgrader( $class ) {
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 	}
 
-	return new $class( new \WP_CLI\UpgraderSkin );
+	return new $class( new \WP_CLI\UpgraderSkin() );
 }
 
 /**
@@ -160,7 +161,7 @@ function is_plugin_skipped( $file ) {
 		$skipped_plugins = explode( ',', $skipped_plugins );
 	}
 
-	return in_array( $name, array_filter( $skipped_plugins ) );
+	return in_array( $name, array_filter( $skipped_plugins ), true );
 }
 
 function get_theme_name( $path ) {
@@ -179,7 +180,7 @@ function is_theme_skipped( $path ) {
 		$skipped_themes = explode( ',', $skipped_themes );
 	}
 
-	return in_array( $name, array_filter( $skipped_themes ) );
+	return in_array( $name, array_filter( $skipped_themes ), true );
 }
 
 /**
@@ -371,7 +372,8 @@ function wp_get_table_names( $args, $assoc_args = array() ) {
 			}
 		}
 		$args_tables = array_values( array_unique( $args_tables ) );
-		if ( ! ( $tables = array_values( array_intersect( $tables, $args_tables ) ) ) ) {
+		$tables      = array_values( array_intersect( $tables, $args_tables ) );
+		if ( empty( $tables ) ) {
 			\WP_CLI::error( sprintf( "Couldn't find any tables matching: %s", implode( ' ', $args ) ) );
 		}
 	}

@@ -175,7 +175,8 @@ class CompositeCommand {
 		$i = 0;
 
 		foreach ( $methods as $name => $subcommand ) {
-			$prefix = ( 0 == $i++ ) ? 'usage: ' : '   or: ';
+			$prefix = ( 0 === $i ) ? 'usage: ' : '   or: ';
+			$i++;
 
 			if ( \WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
 				continue;
@@ -268,7 +269,7 @@ class CompositeCommand {
 		$binding                 = array();
 		$binding['root_command'] = $root_command;
 
-		if ( ! $this->can_have_subcommands() || ( is_object( $this->parent ) && get_class( $this->parent ) == 'WP_CLI\Dispatcher\CompositeCommand' ) ) {
+		if ( ! $this->can_have_subcommands() || ( is_object( $this->parent ) && get_class( $this->parent ) === 'WP_CLI\Dispatcher\CompositeCommand' ) ) {
 			$binding['is_subcommand'] = true;
 		}
 
@@ -304,4 +305,3 @@ class CompositeCommand {
 		return Utils\mustache_render( 'man-params.mustache', $binding );
 	}
 }
-

@@ -3,10 +3,10 @@
 class MockRegularLogger extends WP_CLI\Loggers\Regular {
 
 	protected function get_runner() {
-		return (object) array (
-			'config' => array (
-				'debug' => true
-			)
+		return (object) array(
+			'config' => array(
+				'debug' => true,
+			),
 		);
 	}
 
@@ -18,10 +18,10 @@ class MockRegularLogger extends WP_CLI\Loggers\Regular {
 class MockQuietLogger extends WP_CLI\Loggers\Quiet {
 
 	protected function get_runner() {
-		return (object) array (
-			'config' => array (
-				'debug' => true
-			)
+		return (object) array(
+			'config' => array(
+				'debug' => true,
+			),
 		);
 	}
 }
@@ -51,7 +51,7 @@ class LoggingTests extends PHPUnit_Framework_TestCase {
 
 	function testExecutionLogger() {
 		// Save Runner config.
-		$runner = WP_CLI::get_runner();
+		$runner        = WP_CLI::get_runner();
 		$runner_config = new \ReflectionProperty( $runner, 'config' );
 		$runner_config->setAccessible( true );
 
@@ -60,7 +60,7 @@ class LoggingTests extends PHPUnit_Framework_TestCase {
 		// Set debug.
 		$runner_config->setValue( $runner, array( 'debug' => true ) );
 
-		$logger = new WP_CLI\Loggers\Execution;
+		$logger = new WP_CLI\Loggers\Execution();
 
 		// Standard use.
 
@@ -72,9 +72,9 @@ class LoggingTests extends PHPUnit_Framework_TestCase {
 		$logger->success( 'success2' );
 		$logger->warning( 'warning2' );
 		$logger->debug( 'debug', 'group' );
-		$logger->error_multi_line( array( "line11", "line12", "line13" ) );
+		$logger->error_multi_line( array( 'line11', 'line12', 'line13' ) );
 		$logger->error( 'error2' );
-		$logger->error_multi_line( array( "line21" ) );
+		$logger->error_multi_line( array( 'line21' ) );
 		$logger->debug( 'debug2', 'group2' );
 
 		$this->assertSame( "info\ninfo2\nSuccess: success\nSuccess: success2\n", $logger->stdout );
@@ -84,13 +84,14 @@ class LoggingTests extends PHPUnit_Framework_TestCase {
 			. 'Error:\nline11\nline12\nline13\n---------\n\nError: error2\n'
 			. 'Error:\nline21\n---------\n\nDebug \(group2\): debug2 \([0-9.]+s\)$/', $logger->stderr ) );
 
-		$logger->stdout = $logger->stderr = '';
+		$logger->stdout = '';
+		$logger->stderr = '';
 
 		// With output buffering.
 
 		$logger->ob_start();
 
-		echo "echo";
+		echo 'echo';
 		$logger->info( 'info' );
 		print "print\n";
 		$logger->success( 'success' );
@@ -98,14 +99,15 @@ class LoggingTests extends PHPUnit_Framework_TestCase {
 		$logger->error( 'error' );
 		echo "echo3\n";
 		$logger->success( 'success2' );
-		echo "echo4";
+		echo 'echo4';
 
 		$logger->ob_end();
 
 		$this->assertSame( "echoinfo\nprint\nSuccess: success\necho2\necho3\nSuccess: success2\necho4", $logger->stdout );
 		$this->assertSame( "Error: error\n", $logger->stderr );
 
-		$logger->stdout = $logger->stderr = '';
+		$logger->stdout = '';
+		$logger->stderr = '';
 
 		// Restore.
 		$runner_config->setValue( $runner, $prev_config );

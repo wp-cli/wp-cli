@@ -142,7 +142,7 @@ class SynopsisParser {
 	 * @return array
 	 */
 	private static function is_optional( $token ) {
-		if ( '[' == substr( $token, 0, 1 ) && ']' == substr( $token, -1 ) ) {
+		if ( '[' === substr( $token, 0, 1 ) && ']' === substr( $token, -1 ) ) {
 			return array( true, substr( $token, 1, -1 ) );
 		}
 

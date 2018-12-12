@@ -147,9 +147,9 @@ class Subcommand extends CompositeCommand {
 		$spec = array_filter(
 			\WP_CLI\SynopsisParser::parse( $synopsis ),
 			function( $spec_arg ) use ( $assoc_args ) {
-				return in_array( $spec_arg['type'], [ 'generic', 'positional' ] )
+				return in_array( $spec_arg['type'], [ 'generic', 'positional' ], true )
 					|| (
-						in_array( $spec_arg['type'], [ 'assoc', 'flag' ] )
+						in_array( $spec_arg['type'], [ 'assoc', 'flag' ], true )
 						&& ! isset( $assoc_args[ $spec_arg['name'] ] )
 					);
 			}
@@ -182,7 +182,7 @@ class Subcommand extends CompositeCommand {
 			$default        = $spec_arg['optional'] ? '' : false;
 
 			// 'generic' permits arbitrary key=value (e.g. [--<field>=<value>] )
-			if ( 'generic' == $spec_arg['type'] ) {
+			if ( 'generic' === $spec_arg['type'] ) {
 
 				list( $key_token, $value_token ) = explode( '=', $spec_arg['token'] );
 
@@ -218,7 +218,7 @@ class Subcommand extends CompositeCommand {
 
 			} else {
 				$prompt = $current_prompt . $spec_arg['token'];
-				if ( 'flag' == $spec_arg['type'] ) {
+				if ( 'flag' === $spec_arg['type'] ) {
 					$prompt .= ' (Y/n)';
 				}
 
@@ -241,7 +241,7 @@ class Subcommand extends CompositeCommand {
 							$assoc_args[ $spec_arg['name'] ] = $response;
 							break;
 						case 'flag':
-							if ( 'Y' == strtoupper( $response ) ) {
+							if ( 'Y' === strtoupper( $response ) ) {
 								$assoc_args[ $spec_arg['name'] ] = true;
 							}
 							break;
@@ -370,7 +370,8 @@ class Subcommand extends CompositeCommand {
 			$out = 'Parameter errors:';
 			foreach ( $errors['fatal'] as $key => $error ) {
 				$out .= "\n {$error}";
-				if ( $desc = $docparser->get_param_desc( $key ) ) {
+				$desc = $docparser->get_param_desc( $key );
+				if ( '' !== $desc ) {
 					$out .= " ({$desc})";
 				}
 			}
@@ -455,4 +456,3 @@ class Subcommand extends CompositeCommand {
 		return array_unique( array_merge( $local_parameters, $global_parameters ) );
 	}
 }
-

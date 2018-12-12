@@ -424,7 +424,7 @@ function mysql_host_to_cli_args( $raw_host ) {
 	$assoc_args = array();
 
 	$host_parts = explode( ':', $raw_host );
-	if ( count( $host_parts ) == 2 ) {
+	if ( count( $host_parts ) === 2 ) {
 		list( $assoc_args['host'], $extra ) = $host_parts;
 		$extra                              = trim( $extra );
 		if ( is_numeric( $extra ) ) {
@@ -528,7 +528,7 @@ function mustache_render( $template_name, $data = array() ) {
  */
 function make_progress_bar( $message, $count, $interval = 100 ) {
 	if ( \cli\Shell::isPiped() ) {
-		return new \WP_CLI\NoOp;
+		return new \WP_CLI\NoOp();
 	}
 
 	return new \cli\progress\Bar( $message, $count, $interval );
@@ -550,7 +550,8 @@ function parse_url( $url ) {
  * @return bool
  */
 function is_windows() {
-	return false !== ( $test_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' ) ) ? (bool) $test_is_windows : strtoupper( substr( PHP_OS, 0, 3 ) ) === 'WIN';
+	$test_is_windows = getenv( 'WP_CLI_TEST_IS_WINDOWS' );
+	return false !== $test_is_windows ? (bool) $test_is_windows : strtoupper( substr( PHP_OS, 0, 3 ) ) === 'WIN';
 }
 
 /**
@@ -1093,7 +1094,8 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 	}
 
 	// Find comma or matching closing brace.
-	if ( null === ( $next = $next_brace_sub( $pattern, $begin + 1 ) ) ) {
+	$next = $next_brace_sub( $pattern, $begin + 1 );
+	if ( null === $next ) {
 		return glob( $pattern );
 	}
 
@@ -1101,7 +1103,8 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 
 	// Point `$rest` to matching closing brace.
 	while ( '}' !== $pattern[ $rest ] ) {
-		if ( null === ( $rest = $next_brace_sub( $pattern, $rest + 1 ) ) ) {
+		$rest = $next_brace_sub( $pattern, $rest + 1 );
+		if ( null === $rest ) {
 			return glob( $pattern );
 		}
 	}
@@ -1115,7 +1118,8 @@ function glob_brace( $pattern, $dummy_flags = null ) {
 					. substr( $pattern, $p, $next - $p )
 					. substr( $pattern, $rest + 1 );
 
-		if ( $result = glob_brace( $subpattern ) ) {
+		$result = glob_brace( $subpattern );
+		if ( ! empty( $result ) ) {
 			$paths = array_merge( $paths, $result );
 		}
 
@@ -1337,11 +1341,13 @@ function past_tense_verb( $verb ) {
  * @return string
  */
 function get_php_binary() {
-	if ( $wp_cli_php_used = getenv( 'WP_CLI_PHP_USED' ) ) {
+	$wp_cli_php_used = getenv( 'WP_CLI_PHP_USED' );
+	if ( false !== $wp_cli_php_used ) {
 		return $wp_cli_php_used;
 	}
 
-	if ( $wp_cli_php = getenv( 'WP_CLI_PHP' ) ) {
+	$wp_cli_php = getenv( 'WP_CLI_PHP' );
+	if ( false !== $wp_cli_php ) {
 		return $wp_cli_php;
 	}
 

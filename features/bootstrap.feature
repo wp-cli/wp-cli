@@ -59,23 +59,8 @@ Feature: Bootstrap WP-CLI
       if ( ! class_exists( 'WP_CLI' ) ) {
         return;
       }
-      $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
-      if ( file_exists( $autoload ) && ! class_exists( 'CLI_Command' ) ) {
-        require_once $autoload;
-      }
-      // Override framework command.
-      WP_CLI::add_command( 'cli', 'CLI_Command', array( 'when' => 'before_wp_load' ) );
       // Override bundled command.
       WP_CLI::add_command( 'eval', 'Eval_Command', array( 'when' => 'before_wp_load' ) );
-      """
-    And a override/src/CLI_Command.php file:
-      """
-      <?php
-      class CLI_Command extends WP_CLI_Command {
-        public function version() {
-          WP_CLI::success( "WP-Override-CLI" );
-        }
-      }
       """
     And a override/src/Eval_Command.php file:
       """
@@ -90,26 +75,19 @@ Feature: Bootstrap WP-CLI
       """
       {
         "name": "wp-cli/override",
-        "description": "A command that overrides the bundled 'cli' and 'eval' commands.",
+        "description": "A command that overrides the 'eval' command.",
         "autoload": {
           "psr-4": { "": "src/" },
           "files": [ "override.php" ]
         },
         "extra": {
           "commands": [
-            "cli",
             "eval"
           ]
         }
      }
       """
     And I run `composer install --no-interaction 2>&1`
-
-    When I run `vendor/bin/wp cli version`
-    Then STDOUT should contain:
-      """
-      Success: WP-Override-CLI
-      """
 
     When I run `vendor/bin/wp eval '\WP_CLI::Success( "WP-Standard-Eval" );'`
     Then STDOUT should contain:
