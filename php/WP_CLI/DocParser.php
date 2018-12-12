@@ -163,7 +163,8 @@ class DocParser {
 	 */
 	private function get_arg_or_param_args( $regex ) {
 		$bits       = explode( "\n", $this->docComment );
-		$within_arg = $within_doc = false;
+		$within_arg = false;
+		$within_doc = false;
 		$document   = array();
 		foreach ( $bits as $bit ) {
 			if ( preg_match( $regex, $bit ) ) {

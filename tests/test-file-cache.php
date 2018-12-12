@@ -12,7 +12,7 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 	 */
 	public function testGetRoot() {
 		$max_size = 32;
-		$ttl = 60;
+		$ttl      = 60;
 
 		$cache_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );
 
@@ -36,16 +36,16 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 		$class_wp_cli_logger->setAccessible( true );
 		$prev_logger = $class_wp_cli_logger->getValue();
 
-		$logger = new WP_CLI\Loggers\Execution;
+		$logger = new WP_CLI\Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
-		$max_size = 32;
-		$ttl = 60;
+		$max_size  = 32;
+		$ttl       = 60;
 		$cache_dir = Utils\get_temp_dir() . uniqid( 'wp-cli-test-file-cache', true );
 
-		$cache = new FileCache( $cache_dir, $ttl, $max_size );
+		$cache      = new FileCache( $cache_dir, $ttl, $max_size );
 		$test_class = new ReflectionClass( $cache );
-		$method = $test_class->getMethod( 'ensure_dir_exists' );
+		$method     = $test_class->getMethod( 'ensure_dir_exists' );
 		$method->setAccessible( true );
 
 		// Cache directory should be created.
@@ -62,7 +62,7 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 			// It should be failed because permission denied.
 			$logger->stderr = '';
 			chmod( $cache_dir . '/test1', 0000 );
-			$result = $method->invokeArgs( $cache, array( $cache_dir . '/test1/error' ) );
+			$result   = $method->invokeArgs( $cache, array( $cache_dir . '/test1/error' ) );
 			$expected = "/^Warning: Failed to create directory '.+': mkdir\(\): Permission denied\.$/";
 			$this->assertRegexp( $expected, $logger->stderr );
 		}
@@ -70,7 +70,7 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 		// It should be failed because file exists.
 		$logger->stderr = '';
 		file_put_contents( $cache_dir . '/test2', '' );
-		$result = $method->invokeArgs( $cache, array( $cache_dir . '/test2' ) );
+		$result   = $method->invokeArgs( $cache, array( $cache_dir . '/test2' ) );
 		$expected = "/^Warning: Failed to create directory '.+': mkdir\(\): File exists\.$/";
 		$this->assertRegexp( $expected, $logger->stderr );
 
