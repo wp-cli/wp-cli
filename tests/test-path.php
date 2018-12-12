@@ -1884,4 +1884,23 @@ class PathTest extends \PHPUnit_Framework_TestCase {
 			[ 'C:\\Folder/other_folder', '/' ],
 		];
 	}
+
+
+	/**
+	 * @dataProvider provideIsStreamTests
+	 */
+	public function testIsStream( $path, $expected ) {
+		$this->assertEquals( $expected, Path::is_stream( $path ) );
+	}
+
+	public function provideIsStreamTests() {
+		return [
+			[ 'test', false ],
+			[ 'php://test', true ],
+			[ 'http://test', true ],
+			[ 'unknown://test', false ],
+			[ '://', false ],
+			[ 'unknown://php://test', false ],
+		];
+	}
 }
