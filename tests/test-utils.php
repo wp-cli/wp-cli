@@ -6,7 +6,7 @@ require_once dirname( __DIR__ ) . '/php/class-wp-cli.php';
 
 class UtilsTest extends PHPUnit_Framework_TestCase {
 
-	function testIncrementVersion() {
+	public function testIncrementVersion() {
 		// keyword increments
 		$this->assertEquals(
 			Utils\increment_version( '1.2.3-pre', 'same' ),
@@ -650,7 +650,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		putenv( false === $env_is_windows ? 'WP_CLI_TEST_IS_WINDOWS' : "WP_CLI_TEST_IS_WINDOWS=$env_is_windows" );
 	}
 
-	function dataProcOpenCompatWinEnv() {
+	public function dataProcOpenCompatWinEnv() {
 		return array(
 			array( 'echo', array(), 'echo', array() ),
 			array( 'ENV=blah echo', array(), 'echo', array( 'ENV' => 'blah' ) ),
@@ -674,7 +674,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	/**
 	 * Copied from core "tests/phpunit/tests/db.php" (adapted to not use `$wpdb`).
 	 */
-	function test_esc_like() {
+	public function test_esc_like() {
 		$inputs   = array(
 			'howdy%', //Single Percent
 			'howdy_', //Single Underscore
