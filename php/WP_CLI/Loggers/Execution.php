@@ -20,7 +20,7 @@ class Execution extends Regular {
 	/**
 	 * @param bool $in_color Whether or not to Colorize strings.
 	 */
-	function __construct( $in_color = false ) {
+	public function __construct( $in_color = false ) {
 		parent::__construct( $in_color );
 	}
 

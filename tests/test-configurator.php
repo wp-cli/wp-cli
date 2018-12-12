@@ -4,7 +4,7 @@ use WP_CLI\Configurator;
 
 class ConfiguratorTest extends PHPUnit_Framework_TestCase {
 
-	function testExtractAssoc() {
+	public function testExtractAssoc() {
 		$args = Configurator::extract_assoc( array( 'foo', '--bar', '--baz=text' ) );
 
 		$this->assertCount( 1, $args[0] );
@@ -20,7 +20,7 @@ class ConfiguratorTest extends PHPUnit_Framework_TestCase {
 
 	}
 
-	function testExtractAssocNoValue() {
+	public function testExtractAssocNoValue() {
 		$args = Configurator::extract_assoc( array( 'foo', '--bar=', '--baz=text' ) );
 
 		$this->assertCount( 1, $args[0] );
@@ -36,7 +36,7 @@ class ConfiguratorTest extends PHPUnit_Framework_TestCase {
 
 	}
 
-	function testExtractAssocGlobalLocal() {
+	public function testExtractAssocGlobalLocal() {
 		$args = Configurator::extract_assoc( array( '--url=foo.dev', '--path=wp', 'foo', '--bar=', '--baz=text', '--url=bar.dev' ) );
 
 		$this->assertCount( 1, $args[0] );
@@ -50,7 +50,7 @@ class ConfiguratorTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'bar.dev', $args[3][2][1] );
 	}
 
-	function testExtractAssocDoubleDashInValue() {
+	public function testExtractAssocDoubleDashInValue() {
 		$args = Configurator::extract_assoc( array( '--test=text--text' ) );
 
 		$this->assertCount( 0, $args[0] );

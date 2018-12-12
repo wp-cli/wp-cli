@@ -4,7 +4,7 @@ use WP_CLI\DocParser;
 
 class DocParserTests extends PHPUnit_Framework_TestCase {
 
-	function test_empty() {
+	public function test_empty() {
 		$doc = new DocParser( '' );
 
 		$this->assertEquals( '', $doc->get_shortdesc() );
@@ -13,7 +13,7 @@ class DocParserTests extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( '', $doc->get_tag( 'alias' ) );
 	}
 
-	function test_only_tags() {
+	public function test_only_tags() {
 		$doc = new DocParser( <<<EOB
 /**
  * @alias rock-on
@@ -30,7 +30,7 @@ EOB
 		$this->assertEquals( 'revoke-md5-passwords', $doc->get_tag( 'subcommand' ) );
 	}
 
-	function test_no_longdesc() {
+	public function test_no_longdesc() {
 		$doc = new DocParser( <<<EOB
 /**
  * Rock and roll!
@@ -45,7 +45,7 @@ EOB
 		$this->assertEquals( 'rock-on', $doc->get_tag( 'alias' ) );
 	}
 
-	function test_complete() {
+	public function test_complete() {
 		$doc = new DocParser( <<<EOB
 /**
  * Rock and roll!
