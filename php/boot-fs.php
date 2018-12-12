@@ -14,5 +14,5 @@ if ( version_compare( PHP_VERSION, '5.3.0', '<' ) ) {
 
 define( 'WP_CLI_ROOT', dirname( __DIR__ ) );
 
-include_once WP_CLI_ROOT . '/php/wp-cli.php';
+require_once WP_CLI_ROOT . '/php/wp-cli.php';
 
