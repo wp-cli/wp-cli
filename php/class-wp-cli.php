@@ -1068,7 +1068,11 @@ class WP_CLI {
 		foreach ( $reused_runtime_args as $key ) {
 			if ( isset( $runtime_args[ $key ] ) ) {
 				$assoc_args[ $key ] = $runtime_args[ $key ];
-			} elseif ( $value = self::get_runner()->config[ $key ] ) {
+				continue;
+			}
+
+			$value = self::get_runner()->config[ $key ];
+			if ( $value ) {
 				$assoc_args[ $key ] = $value;
 			}
 		}
