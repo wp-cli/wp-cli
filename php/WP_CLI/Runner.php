@@ -1672,7 +1672,7 @@ class Runner {
 
 		// Bail if last check is still within our update check time period.
 		$last_check = (int) $cache->read( $cache_key );
-		if ( time() - ( 24 * 60 * 60 * $days_between_checks ) < $last_check ) {
+		if ( ( time() - ( 24 * 60 * 60 * $days_between_checks ) ) < $last_check ) {
 			return;
 		}
 
