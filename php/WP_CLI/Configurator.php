@@ -275,7 +275,7 @@ class Configurator {
 			if ( false !== $details['runtime'] && isset( $config[ $key ] ) ) {
 				$value = $config[ $key ];
 
-				if ( 'require' == $key ) {
+				if ( 'require' === $key ) {
 					$value = \WP_CLI\Utils\expand_globs( $value );
 				}
 
