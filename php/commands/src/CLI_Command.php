@@ -221,7 +221,7 @@ class CLI_Command extends WP_CLI_Command {
 				array( 'version', 'update_type', 'package_url' )
 			);
 			$formatter->display_items( $updates );
-		} elseif ( empty( $assoc_args['format'] ) || 'table' == $assoc_args['format'] ) {
+		} elseif ( empty( $assoc_args['format'] ) || 'table' === $assoc_args['format'] ) {
 			$update_type = $this->get_update_type_str( $assoc_args );
 			WP_CLI::success( "WP-CLI is at the latest{$update_type}version." );
 		}
@@ -323,7 +323,7 @@ class CLI_Command extends WP_CLI_Command {
 		Utils\http_request( 'GET', $download_url, null, $headers, $options );
 
 		$md5_response = Utils\http_request( 'GET', $md5_url );
-		if ( 20 != substr( $md5_response->status_code, 0, 2 ) ) {
+		if ( '20' !== substr( $md5_response->status_code, 0, 2 ) ) {
 			WP_CLI::error( "Couldn't access md5 hash for release (HTTP code {$md5_response->status_code})." );
 		}
 		$md5_file     = md5_file( $temp );
@@ -381,7 +381,9 @@ class CLI_Command extends WP_CLI_Command {
 		$headers = array(
 			'Accept' => 'application/json',
 		);
-		if ( $github_token = getenv( 'GITHUB_TOKEN' ) ) {
+
+		$github_token = getenv( 'GITHUB_TOKEN' );
+		if ( false !== $github_token ) {
 			$headers['Authorization'] = 'token ' . $github_token;
 		}
 
@@ -445,7 +447,7 @@ class CLI_Command extends WP_CLI_Command {
 				WP_CLI::error( sprintf( 'Failed to get current nightly version (HTTP code %d)', $response->status_code ) );
 			}
 			$nightly_version = trim( $response->body );
-			if ( WP_CLI_VERSION != $nightly_version ) {
+			if ( WP_CLI_VERSION !== $nightly_version ) {
 				$updates['nightly'] = array(
 					'version'     => $nightly_version,
 					'update_type' => 'nightly',

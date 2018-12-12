@@ -214,7 +214,8 @@ class Runner {
 			}
 
 			if ( file_exists( "$dir/index.php" ) ) {
-				if ( $path = self::extract_subdir_path( "$dir/index.php" ) ) {
+				$path = self::extract_subdir_path( "$dir/index.php" );
+				if ( ! empty( $path ) ) {
 					return $path;
 				}
 			}
@@ -550,7 +551,7 @@ class Runner {
 	 */
 	public function is_command_disabled( $command ) {
 		$path = implode( ' ', array_slice( \WP_CLI\Dispatcher\get_path( $command ), 1 ) );
-		return in_array( $path, $this->config['disabled_commands'] );
+		return in_array( $path, $this->config['disabled_commands'], true );
 	}
 
 	/**
@@ -599,7 +600,7 @@ class Runner {
 		);
 		if ( count( $args ) > 0 ) {
 			foreach ( $top_level_aliases as $old => $new ) {
-				if ( $old == $args[0] ) {
+				if ( $old === $args[0] ) {
 					$args[0] = $new;
 					break;
 				}
@@ -614,27 +615,27 @@ class Runner {
 		}
 
 		// core (multsite-)install --admin_name=  ->  --admin_user=
-		if ( count( $args ) > 0 && 'core' == $args[0] && isset( $assoc_args['admin_name'] ) ) {
+		if ( count( $args ) > 0 && 'core' === $args[0] && isset( $assoc_args['admin_name'] ) ) {
 			$assoc_args['admin_user'] = $assoc_args['admin_name'];
 			unset( $assoc_args['admin_name'] );
 		}
 
 		// core config  ->  config create
-		if ( array( 'core', 'config' ) == array_slice( $args, 0, 2 ) ) {
+		if ( array( 'core', 'config' ) === array_slice( $args, 0, 2 ) ) {
 			list( $args[0], $args[1] ) = array( 'config', 'create' );
 		}
 		// core language  ->  language core
-		if ( array( 'core', 'language' ) == array_slice( $args, 0, 2 ) ) {
+		if ( array( 'core', 'language' ) === array_slice( $args, 0, 2 ) ) {
 			list( $args[0], $args[1] ) = array( 'language', 'core' );
 		}
 
 		// checksum core  ->  core verify-checksums
-		if ( array( 'checksum', 'core' ) == array_slice( $args, 0, 2 ) ) {
+		if ( array( 'checksum', 'core' ) === array_slice( $args, 0, 2 ) ) {
 			list( $args[0], $args[1] ) = array( 'core', 'verify-checksums' );
 		}
 
 		// checksum plugin  ->  plugin verify-checksums
-		if ( array( 'checksum', 'plugin' ) == array_slice( $args, 0, 2 ) ) {
+		if ( array( 'checksum', 'plugin' ) === array_slice( $args, 0, 2 ) ) {
 			list( $args[0], $args[1] ) = array( 'plugin', 'verify-checksums' );
 		}
 
@@ -645,7 +646,7 @@ class Runner {
 		}
 
 		// {plugin|theme} update-all  ->  {plugin|theme} update --all
-		if ( count( $args ) > 1 && in_array( $args[0], array( 'plugin', 'theme' ) )
+		if ( count( $args ) > 1 && in_array( $args[0], array( 'plugin', 'theme' ), true )
 			&& 'update-all' === $args[1]
 		) {
 			$args[1]           = 'update';
@@ -665,7 +666,7 @@ class Runner {
 		}
 
 		// plugin scaffold  ->  scaffold plugin
-		if ( array( 'plugin', 'scaffold' ) == array_slice( $args, 0, 2 ) ) {
+		if ( array( 'plugin', 'scaffold' ) === array_slice( $args, 0, 2 ) ) {
 			list( $args[0], $args[1] ) = array( $args[1], $args[0] );
 		}
 
@@ -676,7 +677,7 @@ class Runner {
 		}
 
 		// {post|user} list --ids  ->  {post|user} list --format=ids
-		if ( count( $args ) > 1 && in_array( $args[0], array( 'post', 'user' ) )
+		if ( count( $args ) > 1 && in_array( $args[0], array( 'post', 'user' ), true )
 			&& 'list' === $args[1]
 			&& isset( $assoc_args['ids'] )
 		) {
@@ -703,7 +704,7 @@ class Runner {
 		}
 
 		// (post|comment|site|term) url  --> (post|comment|site|term) list --*__in --field=url
-		if ( count( $args ) >= 2 && in_array( $args[0], array( 'post', 'comment', 'site', 'term' ) ) && 'url' === $args[1] ) {
+		if ( count( $args ) >= 2 && in_array( $args[0], array( 'post', 'comment', 'site', 'term' ), true ) && 'url' === $args[1] ) {
 			switch ( $args[0] ) {
 				case 'post':
 					$post_ids                = array_slice( $args, 2 );
@@ -785,7 +786,7 @@ class Runner {
 
 	public function init_logger() {
 		if ( $this->config['quiet'] ) {
-			$logger = new \WP_CLI\Loggers\Quiet;
+			$logger = new \WP_CLI\Loggers\Quiet();
 		} else {
 			$logger = new \WP_CLI\Loggers\Regular( $this->in_color() );
 		}
@@ -989,7 +990,7 @@ class Runner {
 
 			if ( '@all' === $this->alias && is_string( $this->aliases['@all'] ) ) {
 				$aliases = array_keys( $this->aliases );
-				$k       = array_search( '@all', $aliases );
+				$k       = array_search( '@all', $aliases, true );
 				unset( $aliases[ $k ] );
 				$this->run_alias_group( $aliases );
 				exit;
@@ -1007,7 +1008,8 @@ class Runner {
 			if ( isset( $this->aliases[ $this->alias ][0] ) ) {
 				$group_aliases = $this->aliases[ $this->alias ];
 				$all_aliases   = array_keys( $this->aliases );
-				if ( $diff = array_diff( $group_aliases, $all_aliases ) ) {
+				$diff          = array_diff( $group_aliases, $all_aliases );
+				if ( ! empty( $diff ) ) {
 					WP_CLI::error( "Group '{$this->alias}' contains one or more invalid aliases: " . implode( ', ', $diff ) );
 				}
 				$this->run_alias_group( $group_aliases );
@@ -1079,7 +1081,7 @@ class Runner {
 		if (
 			count( $this->arguments ) >= 2 &&
 			'core' === $this->arguments[0] &&
-			in_array( $this->arguments[1], array( 'install', 'multisite-install' ) )
+			in_array( $this->arguments[1], array( 'install', 'multisite-install' ), true )
 		) {
 			define( 'WP_INSTALLING', true );
 
@@ -1089,7 +1091,7 @@ class Runner {
 				\WP_CLI::set_url( $url );
 			}
 
-			if ( 'multisite-install' == $this->arguments[1] ) {
+			if ( 'multisite-install' === $this->arguments[1] ) {
 				// need to fake some globals to skip the checks in wp-includes/ms-settings.php
 				$url_parts = Utils\parse_url( $url );
 				self::fake_current_site_blog( $url_parts );
@@ -1448,7 +1450,7 @@ class Runner {
 				'init',
 				function() use ( $config ) {
 					if ( isset( $config['user'] ) ) {
-						$fetcher = new \WP_CLI\Fetchers\User;
+						$fetcher = new \WP_CLI\Fetchers\User();
 						$user    = $fetcher->get_check( $config['user'] );
 						wp_set_current_user( $user->ID );
 					} else {
@@ -1465,7 +1467,7 @@ class Runner {
 			function( $from_email ) {
 				if ( 'wordpress@' === $from_email ) {
 					$sitename = strtolower( parse_url( site_url(), PHP_URL_HOST ) );
-					if ( substr( $sitename, 0, 4 ) == 'www.' ) {
+					if ( substr( $sitename, 0, 4 ) === 'www.' ) {
 						$sitename = substr( $sitename, 4 );
 					}
 					$from_email = 'wordpress@' . $sitename;
@@ -1571,7 +1573,7 @@ class Runner {
 				$checked_value = get_option( 'stylesheet' );
 			}
 
-			if ( '' === $checked_value || in_array( $checked_value, $skipped_themes ) ) {
+			if ( '' === $checked_value || in_array( $checked_value, $skipped_themes, true ) ) {
 				return '';
 			}
 			return $value;
@@ -1670,7 +1672,7 @@ class Runner {
 
 		// Bail if last check is still within our update check time period.
 		$last_check = (int) $cache->read( $cache_key );
-		if ( time() - ( 24 * 60 * 60 * $days_between_checks ) < $last_check ) {
+		if ( ( time() - ( 24 * 60 * 60 * $days_between_checks ) ) < $last_check ) {
 			return;
 		}
 

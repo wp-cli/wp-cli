@@ -89,7 +89,7 @@ class CommandFactory {
 
 		$when_invoked = function ( $args, $assoc_args ) use ( $callable ) {
 			if ( is_array( $callable ) ) {
-				$callable[0] = is_object( $callable[0] ) ? $callable[0] : new $callable[0];
+				$callable[0] = is_object( $callable[0] ) ? $callable[0] : new $callable[0]();
 				call_user_func( array( $callable[0], $callable[1] ), $args, $assoc_args );
 			} else {
 				call_user_func( $callable, $args, $assoc_args );
@@ -181,7 +181,8 @@ class CommandFactory {
 		if ( isset( self::$file_contents[ $filename ] ) ) {
 			$contents = self::$file_contents[ $filename ];
 		} elseif ( is_readable( $filename ) && ( $contents = file_get_contents( $filename ) ) ) {
-			self::$file_contents[ $filename ] = $contents = explode( "\n", $contents );
+			$contents                         = explode( "\n", $contents );
+			self::$file_contents[ $filename ] = $contents;
 		} else {
 			\WP_CLI::debug( "Could not read contents for filename '{$filename}'.", 'commandfactory' );
 			return null;
@@ -206,12 +207,14 @@ class CommandFactory {
 		if ( preg_match_all( '/(?:^|[\s;}])(?:class|function)\s+/', substr( $content, $comment_end_pos + 2 ), $dummy /*needed for PHP 5.3*/ ) > 1 ) {
 			return false;
 		}
-		$content = substr( $content, 0, $comment_end_pos + 2 );
-		if ( false === ( $comment_start_pos = strrpos( $content, '/**' ) ) || $comment_start_pos + 2 === $comment_end_pos ) {
+		$content           = substr( $content, 0, $comment_end_pos + 2 );
+		$comment_start_pos = strrpos( $content, '/**' );
+		if ( false === $comment_start_pos || ( $comment_start_pos + 2 ) === $comment_end_pos ) {
 			return false;
 		}
 		// Make sure comment start belongs to this comment end.
-		if ( false !== ( $comment_end2_pos = strpos( substr( $content, $comment_start_pos ), '*/' ) ) && $comment_start_pos + $comment_end2_pos < $comment_end_pos ) {
+		$comment_end2_pos = strpos( substr( $content, $comment_start_pos ), '*/' );
+		if ( false !== $comment_end2_pos && ( $comment_start_pos + $comment_end2_pos ) < $comment_end_pos ) {
 			return false;
 		}
 		// Allow for '/**' within doc comment.

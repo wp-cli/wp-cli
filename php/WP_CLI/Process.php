@@ -50,7 +50,7 @@ class Process {
 	 * @return Process
 	 */
 	public static function create( $command, $cwd = null, $env = array() ) {
-		$proc = new self;
+		$proc = new self();
 
 		$proc->command = $command;
 		$proc->cwd     = $cwd;

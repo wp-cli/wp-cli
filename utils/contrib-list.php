@@ -32,28 +32,28 @@ class Contrib_List_Command {
 	 */
 	public function __invoke( $_, $assoc_args ) {
 
-		$contributors = array();
-		$contributor_count = 0;
+		$contributors       = array();
+		$contributor_count  = 0;
 		$pull_request_count = 0;
 
 		// Get the contributors to the current open large project milestones
-		foreach( array( 'wp-cli/wp-cli', 'wp-cli/handbook', 'wp-cli/wp-cli.github.com' ) as $repo ) {
+		foreach ( array( 'wp-cli/wp-cli', 'wp-cli/handbook', 'wp-cli/wp-cli.github.com' ) as $repo ) {
 			$milestones = self::get_project_milestones( $repo );
 			// Cheap way to get the latest milestone
 			$milestone = array_shift( $milestones );
 			WP_CLI::log( 'Current open ' . $repo . ' milestone: ' . $milestone->title );
-			$pull_requests = self::get_project_milestone_pull_requests( $repo, $milestone->number );
+			$pull_requests     = self::get_project_milestone_pull_requests( $repo, $milestone->number );
 			$repo_contributors = self::parse_contributors_from_pull_requests( $pull_requests );
 			WP_CLI::log( ' - Contributors: ' . count( $repo_contributors ) );
 			WP_CLI::log( ' - Pull requests: ' . count( $pull_requests ) );
 			$pull_request_count += count( $pull_requests );
-			$contributors = array_merge( $contributors, $repo_contributors );
+			$contributors        = array_merge( $contributors, $repo_contributors );
 		}
 
 		// Identify all command dependencies and their contributors
 		$milestones = self::get_project_milestones( 'wp-cli/wp-cli', array( 'state' => 'closed' ) );
 		// Cheap way to get the latest closed milestone
-		$milestone = array_shift( $milestones );
+		$milestone         = array_shift( $milestones );
 		$composer_lock_url = sprintf( 'https://raw.githubusercontent.com/wp-cli/wp-cli/v%s/composer.lock', $milestone->title );
 		WP_CLI::log( 'Fetching ' . $composer_lock_url );
 		$response = Utils\http_request( 'GET', $composer_lock_url );
@@ -61,21 +61,21 @@ class Contrib_List_Command {
 			WP_CLI::error( sprintf( 'Could not fetch composer.json (HTTP code %d)', $response->status_code ) );
 		}
 		$composer_json = json_decode( $response->body, true );
-		foreach( $composer_json['packages'] as $package ) {
-			$package_name = $package['name'];
+		foreach ( $composer_json['packages'] as $package ) {
+			$package_name       = $package['name'];
 			$version_constraint = str_replace( 'v', '', $package['version'] );
 			if ( ! preg_match( '#^wp-cli/.+-command$#', $package_name ) ) {
 				continue;
 			}
 			// Closed milestones denote a tagged release
-			$milestones = self::get_project_milestones( $package_name, array( 'state' => 'closed' ) );
-			$milestone_ids = array();
+			$milestones       = self::get_project_milestones( $package_name, array( 'state' => 'closed' ) );
+			$milestone_ids    = array();
 			$milestone_titles = array();
-			foreach( $milestones as $milestone ) {
+			foreach ( $milestones as $milestone ) {
 				if ( ! version_compare( $milestone->title, $version_constraint, '>' ) ) {
 					continue;
 				}
-				$milestone_ids[] = $milestone->number;
+				$milestone_ids[]    = $milestone->number;
 				$milestone_titles[] = $milestone->title;
 			}
 			// No shipped releases for this milestone.
@@ -83,13 +83,13 @@ class Contrib_List_Command {
 				continue;
 			}
 			WP_CLI::log( 'Closed ' . $package_name . ' milestone(s): ' . implode( ', ', $milestone_titles ) );
-			foreach( $milestone_ids as $milestone_id ) {
-				$pull_requests = self::get_project_milestone_pull_requests( $package_name, $milestone_id );
+			foreach ( $milestone_ids as $milestone_id ) {
+				$pull_requests     = self::get_project_milestone_pull_requests( $package_name, $milestone_id );
 				$repo_contributors = self::parse_contributors_from_pull_requests( $pull_requests );
 				WP_CLI::log( ' - Contributors: ' . count( $repo_contributors ) );
 				WP_CLI::log( ' - Pull requests: ' . count( $pull_requests ) );
 				$pull_request_count += count( $pull_requests );
-				$contributors = array_merge( $contributors, $repo_contributors );
+				$contributors        = array_merge( $contributors, $repo_contributors );
 			}
 		}
 
@@ -98,9 +98,9 @@ class Contrib_List_Command {
 
 		// Sort and render the contributor list
 		asort( $contributors, SORT_NATURAL | SORT_FLAG_CASE );
-		if ( in_array( $assoc_args['format'], array( 'markdown', 'html' ) ) ) {
+		if ( in_array( $assoc_args['format'], array( 'markdown', 'html' ), true ) ) {
 			$contrib_list = '';
-			foreach( $contributors as $url => $login ) {
+			foreach ( $contributors as $url => $login ) {
 				if ( 'markdown' === $assoc_args['format'] ) {
 					$contrib_list .= '[' . $login . '](' . $url . '), ';
 				} elseif ( 'html' === $assoc_args['format'] ) {
@@ -119,7 +119,7 @@ class Contrib_List_Command {
 	 * @return array
 	 */
 	private static function get_project_milestones( $project, $args = array() ) {
-		$request_url = sprintf( 'https://api.github.com/repos/%s/milestones', $project );
+		$request_url            = sprintf( 'https://api.github.com/repos/%s/milestones', $project );
 		list( $body, $headers ) = self::make_github_api_request( $request_url, $args );
 		return $body;
 	}
@@ -132,33 +132,33 @@ class Contrib_List_Command {
 	 * @return array
 	 */
 	private static function get_project_milestone_pull_requests( $project, $milestone_id ) {
-		$request_url = sprintf( 'https://api.github.com/repos/%s/issues', $project );
-		$args = array(
+		$request_url   = sprintf( 'https://api.github.com/repos/%s/issues', $project );
+		$args          = array(
 			'milestone' => $milestone_id,
 			'state'     => 'all',
 		);
 		$pull_requests = array();
 		do {
 			list( $body, $headers ) = self::make_github_api_request( $request_url, $args );
-			foreach( $body as $issue ) {
+			foreach ( $body as $issue ) {
 				if ( ! empty( $issue->pull_request ) ) {
 					$pull_requests[] = $issue;
 				}
 			}
-			$args = array();
+			$args        = array();
 			$request_url = false;
 			// Set $request_url to 'rel="next" if present'
 			if ( ! empty( $headers['Link'] ) ) {
 				$bits = trim( explode( ',', $headers['Link'] ) );
-				foreach( $bits as $bit ) {
+				foreach ( $bits as $bit ) {
 					if ( false !== stripos( $bit, 'rel="next"' ) ) {
-						$hrefandrel = explode( '; ', $bit );
+						$hrefandrel  = explode( '; ', $bit );
 						$request_url = trim( $hrefandrel[0], '<>' );
 						break;
 					}
 				}
 			}
-		} while( $request_url );
+		} while ( $request_url );
 		return $pull_requests;
 	}
 
@@ -170,7 +170,7 @@ class Contrib_List_Command {
 	 */
 	private static function parse_contributors_from_pull_requests( $pull_requests ) {
 		$contributors = array();
-		foreach( $pull_requests as $pull_request ) {
+		foreach ( $pull_requests as $pull_request ) {
 			if ( ! empty( $pull_request->user ) ) {
 				$contributors[ $pull_request->user->html_url ] = $pull_request->user->login;
 			}
@@ -190,7 +190,8 @@ class Contrib_List_Command {
 			'Accept'     => 'application/vnd.github.v3+json',
 			'User-Agent' => 'WP-CLI',
 		);
-		if ( $token = getenv( 'GITHUB_TOKEN' ) ) {
+		$token   = getenv( 'GITHUB_TOKEN' );
+		if ( false !== $token ) {
 			$headers['Authorization'] = 'token ' . $token;
 		}
 		$response = Utils\http_request( 'GET', $url, $args, $headers );

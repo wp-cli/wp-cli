@@ -137,7 +137,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( array(
 			'host' => 'foo.com',
 			'path' => '~/path/to/dir',
-			'port' => '2222'
+			'port' => '2222',
 		), Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -149,9 +149,9 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$testcase = 'ssh:bar@foo.com:~/path/to/dir';
 		$this->assertEquals( array(
 			'scheme' => 'ssh',
-			'user' => 'bar',
-			'host' => 'foo.com',
-			'path' => '~/path/to/dir',
+			'user'   => 'bar',
+			'host'   => 'foo.com',
+			'path'   => '~/path/to/dir',
 		), Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'ssh', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -163,7 +163,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$testcase = 'docker:wordpress';
 		$this->assertEquals( array(
 			'scheme' => 'docker',
-			'host' => 'wordpress',
+			'host'   => 'wordpress',
 		), Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'docker', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -175,8 +175,8 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$testcase = 'docker:bar@wordpress';
 		$this->assertEquals( array(
 			'scheme' => 'docker',
-			'user' => 'bar',
-			'host' => 'wordpress',
+			'user'   => 'bar',
+			'host'   => 'wordpress',
 		), Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'docker', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -188,9 +188,9 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$testcase = 'docker-compose:bar@wordpress:~/path/to/dir';
 		$this->assertEquals( array(
 			'scheme' => 'docker-compose',
-			'user' => 'bar',
-			'host' => 'wordpress',
-			'path' => '~/path/to/dir',
+			'user'   => 'bar',
+			'host'   => 'wordpress',
+			'path'   => '~/path/to/dir',
 		), Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'docker-compose', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -202,7 +202,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$testcase = 'vagrant:default';
 		$this->assertEquals( array(
 			'scheme' => 'vagrant',
-			'host' => 'default',
+			'host'   => 'default',
 		), Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'vagrant', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
@@ -277,22 +277,22 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		};
 
 		$expected = " --url='foo.dev' --porcelain --apple='banana'";
-		$actual = Utils\assoc_args_to_str( array(
+		$actual   = Utils\assoc_args_to_str( array(
 			'url'       => 'foo.dev',
 			'porcelain' => true,
-			'apple'     => 'banana'
+			'apple'     => 'banana',
 		) );
 		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
 
 		$expected = " --url='foo.dev' --require='file-a.php' --require='file-b.php' --porcelain --apple='banana'";
-		$actual = Utils\assoc_args_to_str( array(
+		$actual   = Utils\assoc_args_to_str( array(
 			'url'       => 'foo.dev',
 			'require'   => array(
 				'file-a.php',
 				'file-b.php',
 			),
 			'porcelain' => true,
-			'apple'     => 'banana'
+			'apple'     => 'banana',
 		) );
 		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
 	}
@@ -314,12 +314,12 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	public function testGetHomeDir() {
 
 		// save environments
-		$home = getenv( 'HOME' );
+		$home      = getenv( 'HOME' );
 		$homedrive = getenv( 'HOMEDRIVE' );
-		$homepath = getenv( 'HOMEPATH' );
+		$homepath  = getenv( 'HOMEPATH' );
 
 		putenv( 'HOME=/home/user' );
-		$this->assertSame('/home/user', Utils\get_home_dir() );
+		$this->assertSame( '/home/user', Utils\get_home_dir() );
 
 		putenv( 'HOME' );
 
@@ -391,13 +391,13 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		$class_wp_cli_capture_exit->setAccessible( true );
 
-		$prev_logger = $class_wp_cli_logger->getValue();
+		$prev_logger       = $class_wp_cli_logger->getValue();
 		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
 
 		// Enable exit exception.
 		$class_wp_cli_capture_exit->setValue( true );
 
-		$logger = new \WP_CLI\Loggers\Execution;
+		$logger = new \WP_CLI\Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
 		$exception = null;
@@ -429,15 +429,15 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$prev_logger = $class_wp_cli_logger->getValue();
 
 		$have_bad_cacert = false;
-		$created_dirs = array();
+		$created_dirs    = array();
 
 		// Hack to create bad CAcert, using Utils\get_vendor_paths() preference for a path as part of a Composer-installed larger project.
-		$vendor_dir = WP_CLI_ROOT . '/../../../vendor';
-		$cert_path = '/rmccue/requests/library/Requests/Transport/cacert.pem';
+		$vendor_dir      = WP_CLI_ROOT . '/../../../vendor';
+		$cert_path       = '/rmccue/requests/library/Requests/Transport/cacert.pem';
 		$bad_cacert_path = $vendor_dir . $cert_path;
 		if ( ! file_exists( $bad_cacert_path ) ) {
 			// Capture any directories created so can clean up.
-			$dirs = array_merge( array( 'vendor' ), array_filter( explode( '/', dirname( $cert_path ) ) ) );
+			$dirs        = array_merge( array( 'vendor' ), array_filter( explode( '/', dirname( $cert_path ) ) ) );
 			$current_dir = dirname( $vendor_dir );
 			foreach ( $dirs as $dir ) {
 				if ( ! file_exists( $current_dir . '/' . $dir ) ) {
@@ -448,7 +448,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 				}
 				$current_dir .= '/' . $dir;
 			}
-			if ( $current_dir === dirname( $bad_cacert_path ) && file_put_contents( $bad_cacert_path, "-----BEGIN CERTIFICATE-----\nasdfasdf\n-----END CERTIFICATE-----\n" ) ) {
+			if ( dirname( $bad_cacert_path ) === $current_dir && file_put_contents( $bad_cacert_path, "-----BEGIN CERTIFICATE-----\nasdfasdf\n-----END CERTIFICATE-----\n" ) ) {
 				$have_bad_cacert = true;
 			}
 		}
@@ -460,7 +460,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			$this->markTestSkipped( 'Unable to create bad CAcert.' );
 		}
 
-		$logger = new \WP_CLI\Loggers\Execution;
+		$logger = new \WP_CLI\Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
 		Utils\http_request( 'GET', 'https://example.com' );
@@ -522,7 +522,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 	public function testExpandGlobs( $path, $expected ) {
 		$expand_globs_no_glob_brace = getenv( 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE' );
 
-		$dir = __DIR__ . '/data/expand_globs/';
+		$dir      = __DIR__ . '/data/expand_globs/';
 		$expected = array_map( function ( $v ) use ( $dir ) { return $dir . $v; }, $expected );
 		sort( $expected );
 
@@ -544,12 +544,12 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		return array(
 			array( 'foo.ab1', array( 'foo.ab1' ) ),
 			array( '{foo,bar}.ab1', array( 'foo.ab1', 'bar.ab1' ) ),
-			array( '{foo,baz}.a{b,c}1', array( 'foo.ab1', 'baz.ab1' , 'baz.ac1' ) ),
-			array( '{foo,baz}.{ab,ac}1', array( 'foo.ab1', 'baz.ab1' , 'baz.ac1' ) ),
+			array( '{foo,baz}.a{b,c}1', array( 'foo.ab1', 'baz.ab1', 'baz.ac1' ) ),
+			array( '{foo,baz}.{ab,ac}1', array( 'foo.ab1', 'baz.ab1', 'baz.ac1' ) ),
 			array( '{foo,bar}.{ab1,efg1}', array( 'foo.ab1', 'foo.efg1', 'bar.ab1' ) ),
 			array( '{foo,bar,baz}.{ab,ac,efg}1', array( 'foo.ab1', 'foo.efg1', 'bar.ab1', 'baz.ab1', 'baz.ac1' ) ),
 			array( '{foo,ba{r,z}}.ab1', array( 'foo.ab1', 'bar.ab1', 'baz.ab1' ) ),
-			array( '{foo,ba{r,z}}.{ab1,efg1}', array( 'foo.ab1', 'foo.efg1', 'bar.ab1', 'baz.ab1') ),
+			array( '{foo,ba{r,z}}.{ab1,efg1}', array( 'foo.ab1', 'foo.efg1', 'bar.ab1', 'baz.ab1' ) ),
 			array( '{foo,bar}.{ab{1,2},efg1}', array( 'foo.ab1', 'foo.ab2', 'foo.efg1', 'bar.ab1', 'bar.ab2' ) ),
 			array( '{foo,ba{r,z}}.{a{b,c}{1,2},efg{1,2}}', array( 'foo.ab1', 'foo.ab2', 'foo.efg1', 'foo.efg2', 'bar.ab1', 'bar.ab2', 'baz.ab1', 'baz.ac1', 'baz.efg2' ) ),
 
@@ -567,13 +567,13 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$class_wp_cli_capture_exit = new \ReflectionProperty( 'WP_CLI', 'capture_exit' );
 		$class_wp_cli_capture_exit->setAccessible( true );
 
-		$prev_logger = $class_wp_cli_logger->getValue();
+		$prev_logger       = $class_wp_cli_logger->getValue();
 		$prev_capture_exit = $class_wp_cli_capture_exit->getValue();
 
 		// Enable exit exception.
 		$class_wp_cli_capture_exit->setValue( true );
 
-		$logger = new \WP_CLI\Loggers\Execution;
+		$logger = new \WP_CLI\Loggers\Execution();
 		WP_CLI::set_logger( $logger );
 
 		$exception = null;
@@ -611,7 +611,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 	public function testGetPHPBinary() {
 		$env_php_used = getenv( 'WP_CLI_PHP_USED' );
-		$env_php = getenv( 'WP_CLI_PHP' );
+		$env_php      = getenv( 'WP_CLI_PHP' );
 
 		putenv( 'WP_CLI_PHP_USED' );
 		putenv( 'WP_CLI_PHP' );
