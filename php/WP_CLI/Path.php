@@ -966,6 +966,26 @@ final class Path {
 	}
 
 	/**
+	 * Returns whether a given path points to a stream.
+	 *
+	 * @param string $path Path to check.
+	 *
+	 * @return bool Whether the given path points to a stream.
+	 */
+	public function is_stream( $path ) {
+		$scheme_separator = strpos( $path, '://' );
+
+		if ( false === $scheme_separator ) {
+			// The $path doesn't match the basic format of a stream.
+			return false;
+		}
+
+		$stream = substr( $path, 0, $scheme_separator );
+
+		return in_array( $stream, stream_get_wrappers(), true );
+	}
+
+	/**
 	 * Tries to guess the path separator that is used in a given path.
 	 *
 	 * Falls back to PHP default of '/' if inconclusive.
