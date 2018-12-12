@@ -3,6 +3,7 @@
 use \WP_CLI\ExitException;
 use \WP_CLI\Dispatcher;
 use \WP_CLI\FileCache;
+use WP_CLI\Path;
 use \WP_CLI\Process;
 use \WP_CLI\WpHttpCacheManager;
 use \WP_CLI\Utils;
@@ -74,8 +75,8 @@ class WP_CLI {
 		static $cache;
 
 		if ( ! $cache ) {
-			$home = Utils\get_home_dir();
-			$dir  = getenv( 'WP_CLI_CACHE_DIR' ) ? : "$home/.wp-cli/cache";
+			$dir = getenv( 'WP_CLI_CACHE_DIR' ) ?: '~/.wp-cli/cache';
+			$dir = Path::canonicalize( $dir );
 
 			// 6 months, 300mb
 			$cache = new FileCache( $dir, 15552000, 314572800 );
@@ -1077,12 +1078,8 @@ class WP_CLI {
 
 		$script_path = $GLOBALS['argv'][0];
 
-		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
-			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
-		} else {
-			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
-		}
-		$config_path = escapeshellarg( $config_path );
+		$config_path = getenv( 'WP_CLI_CONFIG_PATH' ) ?: '~/.wp-cli/config.yml';
+		$config_path = escapeshellarg( Path::canonicalize( $config_path ) );
 
 		$args       = implode( ' ', array_map( 'escapeshellarg', $args ) );
 		$assoc_args = \WP_CLI\Utils\assoc_args_to_str( $assoc_args );

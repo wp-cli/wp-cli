@@ -93,7 +93,7 @@ final class Path {
 			$path
 		);
 
-		$path = str_replace( '\\', '/', $path );
+		$path = self::normalize( $path );
 
 		list( $root, $path_without_root ) = self::split( $path );
 

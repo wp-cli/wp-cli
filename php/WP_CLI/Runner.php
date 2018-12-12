@@ -94,10 +94,10 @@ class Runner {
 	public function get_global_config_path() {
 
 		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
-			$config_path                     = getenv( 'WP_CLI_CONFIG_PATH' );
+			$config_path                     = Path::canonicalize( getenv( 'WP_CLI_CONFIG_PATH' ) );
 			$this->_global_config_path_debug = 'Using global config from WP_CLI_CONFIG_PATH env var: ' . $config_path;
 		} else {
-			$config_path                     = Utils\get_home_dir() . '/.wp-cli/config.yml';
+			$config_path                     = Path::canonicalize( '~/.wp-cli/config.yml' );
 			$this->_global_config_path_debug = 'Using default global config: ' . $config_path;
 		}
 
@@ -153,11 +153,8 @@ class Runner {
 	 * @return string
 	 */
 	public function get_packages_dir_path() {
-		if ( getenv( 'WP_CLI_PACKAGES_DIR' ) ) {
-			$packages_dir = Utils\trailingslashit( getenv( 'WP_CLI_PACKAGES_DIR' ) );
-		} else {
-			$packages_dir = Utils\get_home_dir() . '/.wp-cli/packages/';
-		}
+		$packages_dir = getenv( 'WP_CLI_PACKAGES_DIR' ) ?: '~/.wp-cli/packages';
+		$packages_dir = Path::ensure_trailing_slash( Path::canonicalize( $packages_dir ) );
 		return $packages_dir;
 	}
 
@@ -179,7 +176,7 @@ class Runner {
 
 		$wp_path     = eval( "return $wp_path_src;" ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- @codingStandardsIgnoreLine
 
-		if ( ! Utils\is_path_absolute( $wp_path ) ) {
+		if ( ! Path::is_absolute( $wp_path ) ) {
 			$wp_path = dirname( $index_path ) . "/$wp_path";
 		}
 
@@ -195,7 +192,7 @@ class Runner {
 	private function find_wp_root() {
 		if ( ! empty( $this->config['path'] ) ) {
 			$path = $this->config['path'];
-			if ( ! Utils\is_path_absolute( $path ) ) {
+			if ( ! Path::is_absolute( $path ) ) {
 				$path = getcwd() . '/' . $path;
 			}
 
@@ -225,6 +222,8 @@ class Runner {
 			}
 			$dir = $parent_dir;
 		}
+
+		return getcwd();
 	}
 
 	/**
@@ -234,8 +233,8 @@ class Runner {
 	 */
 	private static function set_wp_root( $path ) {
 		if ( ! defined( 'ABSPATH' ) ) {
-			define( 'ABSPATH', Utils\normalize_path( Utils\trailingslashit( $path ) ) );
-		} elseif ( ! is_null( $path ) ) {
+			define( 'ABSPATH', Path::normalize( Path::ensure_trailing_slash( $path ) ) );
+		} elseif ( null !== $path ) {
 			WP_CLI::error_multi_line(
 				array(
 					'The --path parameter cannot be used when ABSPATH is already defined elsewhere',
@@ -942,12 +941,8 @@ class Runner {
 
 		$script_path = $GLOBALS['argv'][0];
 
-		if ( getenv( 'WP_CLI_CONFIG_PATH' ) ) {
-			$config_path = getenv( 'WP_CLI_CONFIG_PATH' );
-		} else {
-			$config_path = Utils\get_home_dir() . '/.wp-cli/config.yml';
-		}
-		$config_path = escapeshellarg( $config_path );
+		$config_path = getenv( 'WP_CLI_CONFIG_PATH' ) ?: '~/.wp-cli/config.yml';
+		$config_path = escapeshellarg( Path::canonicalize( $config_path ) );
 
 		foreach ( $aliases as $alias ) {
 			WP_CLI::log( $alias );
