@@ -2,6 +2,7 @@
 
 
 namespace WP_CLI;
+
 use WP_CLI;
 
 

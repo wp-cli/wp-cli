@@ -12,9 +12,9 @@ if ( class_exists( 'PHPUnit\Runner\Version' ) ) {
 }
 
 if ( file_exists( WP_CLI_ROOT . '/vendor/autoload.php' ) ) {
-	define( 'WP_CLI_VENDOR_DIR' , WP_CLI_ROOT . '/vendor' );
+	define( 'WP_CLI_VENDOR_DIR', WP_CLI_ROOT . '/vendor' );
 } elseif ( file_exists( dirname( dirname( WP_CLI_ROOT ) ) . '/autoload.php' ) ) {
-	define( 'WP_CLI_VENDOR_DIR' , dirname( dirname( WP_CLI_ROOT ) ) );
+	define( 'WP_CLI_VENDOR_DIR', dirname( dirname( WP_CLI_ROOT ) ) );
 }
 
 require_once WP_CLI_VENDOR_DIR . '/autoload.php';

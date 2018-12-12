@@ -160,7 +160,7 @@ class SynopsisParserTest extends PHPUnit_Framework_TestCase {
 				'type'        => 'assoc',
 				'description' => 'If you are hungry between meals, you should snack.',
 				'optional'    => true,
-			)
+			),
 		);
 		$this->assertEquals( '<message> [<secrets>...] --meal=<meal> [--snack=<snack>]', SynopsisParser::render( $a ) );
 	}

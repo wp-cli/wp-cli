@@ -89,7 +89,7 @@ class CommandFactory {
 
 		$when_invoked = function ( $args, $assoc_args ) use ( $callable ) {
 			if ( is_array( $callable ) ) {
-				$callable[0] = is_object( $callable[0] ) ? $callable[0] : new $callable[0];
+				$callable[0] = is_object( $callable[0] ) ? $callable[0] : new $callable[0]();
 				call_user_func( array( $callable[0], $callable[1] ), $args, $assoc_args );
 			} else {
 				call_user_func( $callable, $args, $assoc_args );
@@ -181,7 +181,8 @@ class CommandFactory {
 		if ( isset( self::$file_contents[ $filename ] ) ) {
 			$contents = self::$file_contents[ $filename ];
 		} elseif ( is_readable( $filename ) && ( $contents = file_get_contents( $filename ) ) ) {
-			self::$file_contents[ $filename ] = $contents = explode( "\n", $contents );
+			$contents                         = explode( "\n", $contents );
+			self::$file_contents[ $filename ] = $contents;
 		} else {
 			\WP_CLI::debug( "Could not read contents for filename '{$filename}'.", 'commandfactory' );
 			return null;

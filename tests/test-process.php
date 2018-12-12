@@ -11,7 +11,7 @@ class ProcessTests extends PHPUnit_Framework_TestCase {
 	function test_process_env( $cmd_prefix, $env, $expected_env_vars, $expected_out ) {
 		$code = vsprintf( str_repeat( 'echo getenv( \'%s\' );', count( $expected_env_vars ) ), $expected_env_vars );
 
-		$cmd = $cmd_prefix . ' ' . escapeshellarg( Utils\get_php_binary() ) . ' -r ' . escapeshellarg( $code );
+		$cmd         = $cmd_prefix . ' ' . escapeshellarg( Utils\get_php_binary() ) . ' -r ' . escapeshellarg( $code );
 		$process_run = Process::create( $cmd, null /*cwd*/, $env )->run();
 
 		$this->assertSame( $process_run->stdout, $expected_out );
