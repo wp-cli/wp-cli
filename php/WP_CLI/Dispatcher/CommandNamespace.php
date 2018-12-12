@@ -28,7 +28,8 @@ class CommandNamespace extends CompositeCommand {
 		$count = 0;
 
 		foreach ( $methods as $name => $subcommand ) {
-			$prefix = ( 0 == $i++ ) ? 'usage: ' : '   or: ';
+			$prefix = ( 0 === $i ) ? 'usage: ' : '   or: ';
+			$i++;
 
 			if ( \WP_CLI::get_runner()->is_command_disabled( $subcommand ) ) {
 				continue;
