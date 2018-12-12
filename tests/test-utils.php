@@ -523,7 +523,10 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$expand_globs_no_glob_brace = getenv( 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE' );
 
 		$dir      = __DIR__ . '/data/expand_globs/';
-		$expected = array_map( function ( $v ) use ( $dir ) { return $dir . $v; }, $expected );
+		$concat   = function ( $v ) use ( $dir ) {
+			return $dir . $v;
+		};
+		$expected = array_map( $concat, $expected );
 		sort( $expected );
 
 		putenv( 'WP_CLI_TEST_EXPAND_GLOBS_NO_GLOB_BRACE=0' );
