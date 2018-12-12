@@ -381,7 +381,9 @@ class CLI_Command extends WP_CLI_Command {
 		$headers = array(
 			'Accept' => 'application/json',
 		);
-		if ( $github_token = getenv( 'GITHUB_TOKEN' ) ) {
+
+		$github_token = getenv( 'GITHUB_TOKEN' );
+		if ( false !== $github_token ) {
 			$headers['Authorization'] = 'token ' . $github_token;
 		}
 
