@@ -972,7 +972,7 @@ final class Path {
 	 *
 	 * @return bool Whether the given path points to a stream.
 	 */
-	public function is_stream( $path ) {
+	public static function is_stream( $path ) {
 		$scheme_separator = strpos( $path, '://' );
 
 		if ( false === $scheme_separator ) {
