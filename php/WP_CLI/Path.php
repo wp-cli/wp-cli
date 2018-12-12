@@ -158,7 +158,24 @@ final class Path {
 	public static function normalize( $path ) {
 		self::assert_string( $path, 'The path must be a string. Got: %s' );
 
-		return str_replace( '\\', '/', $path );
+		$wrapper = '';
+		if ( self::is_stream( $path ) ) {
+			list( $wrapper, $path ) = explode( '://', $path, 2 );
+			$wrapper               .= '://';
+		}
+
+		// Standardise all paths to use /
+		$path = str_replace( '\\', '/', $path );
+
+		// Replace multiple slashes down to a singular, allowing for network shares having two slashes.
+		$path = preg_replace( '|(?<=.)/+|', '/', $path );
+
+		// Windows paths should uppercase the drive letter
+		if ( ':' === substr( $path, 1, 1 ) ) {
+			$path = ucfirst( $path );
+		}
+
+		return "{$wrapper}{$path}";
 	}
 
 	/**

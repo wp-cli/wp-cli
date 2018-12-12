@@ -1838,9 +1838,19 @@ class PathTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
-	public function testNormalize() {
-		$this->assertSame( 'C:/Foo/Bar/test',
-			Path::normalize( 'C:\\Foo\\Bar/test' ) );
+	/**
+	 * @dataProvider provideNormalizeTests
+	 */
+	public function testNormalize( $path, $expected ) {
+		$this->assertSame( $expected, Path::normalize( $path ) );
+	}
+
+	public function provideNormalizeTests() {
+		return [
+			[ 'c:\\Foo\\Bar/test', 'C:/Foo/Bar/test' ],
+			[ 'phar://Foo\\Bar/test', 'phar://Foo/Bar/test' ],
+			[ '\\\\my_share\\path/file', '//my_share/path/file' ],
+		];
 	}
 
 	/**
