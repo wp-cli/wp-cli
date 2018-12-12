@@ -97,7 +97,7 @@ class WP_CLI {
 	 * Set the context in which WP-CLI should be run
 	 */
 	public static function set_url( $url ) {
-		WP_CLI::debug( 'Set URL: ' . $url, 'bootstrap' );
+		self::debug( 'Set URL: ' . $url, 'bootstrap' );
 		$url_parts = Utils\parse_url( $url );
 		self::set_url_params( $url_parts );
 	}
@@ -239,7 +239,7 @@ class WP_CLI {
 	 */
 	public static function add_hook( $when, $callback ) {
 		if ( array_key_exists( $when, self::$hooks_passed ) ) {
-			\WP_CLI::debug(
+			self::debug(
 				sprintf(
 					'Immediately invoking on passed hook "%s": %s',
 					$when,
@@ -279,7 +279,7 @@ class WP_CLI {
 			return;
 		}
 
-		\WP_CLI::debug(
+		self::debug(
 			sprintf(
 				'Processing hook "%s" with %d callbacks',
 				$when,
@@ -289,7 +289,7 @@ class WP_CLI {
 		);
 
 		foreach ( self::$hooks[ $when ] as $callback ) {
-			\WP_CLI::debug(
+			self::debug(
 				sprintf(
 					'On hook "%s": %s',
 					$when,
@@ -451,14 +451,14 @@ class WP_CLI {
 				$callable[0] = is_object( $callable[0] ) ? get_class( $callable[0] ) : $callable[0];
 				$callable    = array( $callable[0], $callable[1] );
 			}
-			WP_CLI::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', json_encode( $callable ), $name ) );
+			self::error( sprintf( 'Callable %s does not exist, and cannot be registered as `wp %s`.', json_encode( $callable ), $name ) );
 		}
 
 		$addition = new Dispatcher\CommandAddition();
 		self::do_hook( "before_add_command:{$name}", $addition );
 
 		if ( $addition->was_aborted() ) {
-			WP_CLI::warning( "Aborting the addition of the command '{$name}' with reason: {$addition->get_reason()}." );
+			self::warning( "Aborting the addition of the command '{$name}' with reason: {$addition->get_reason()}." );
 			return false;
 		}
 
@@ -490,14 +490,14 @@ class WP_CLI {
 						new \WP_CLI\DocParser( '' )
 					);
 
-					\WP_CLI::debug(
+					self::debug(
 						"Adding empty container for deferred command: {$name}",
 						'commands'
 					);
 
 					$command->add_subcommand( $subcommand_name, $subcommand );
 				} else {
-					\WP_CLI::debug( "Deferring command: {$name}", 'commands' );
+					self::debug( "Deferring command: {$name}", 'commands' );
 
 					self::defer_command_addition(
 						$name,
@@ -592,9 +592,9 @@ class WP_CLI {
 
 		if ( ! empty( $parent ) ) {
 			$sub_command = trim( str_replace( $parent, '', $name ) );
-			\WP_CLI::debug( "Adding command: {$sub_command} in {$parent} Namespace", 'commands' );
+			self::debug( "Adding command: {$sub_command} in {$parent} Namespace", 'commands' );
 		} else {
-			\WP_CLI::debug( "Adding command: {$name}", 'commands' );
+			self::debug( "Adding command: {$name}", 'commands' );
 		}
 
 		$command->add_subcommand( $leaf_name, $leaf_command );
@@ -651,7 +651,7 @@ class WP_CLI {
 	 */
 	public static function remove_deferred_addition( $name ) {
 		if ( ! array_key_exists( $name, self::$deferred_additions ) ) {
-			WP_CLI::warning( "Trying to remove a non-existent command addition '{$name}'." );
+			self::warning( "Trying to remove a non-existent command addition '{$name}'." );
 		}
 
 		unset( self::$deferred_additions[ $name ] );
@@ -937,7 +937,7 @@ class WP_CLI {
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'json' ) {
 			$value = json_decode( $raw_value, true );
 			if ( null === $value ) {
-				WP_CLI::error( sprintf( 'Invalid JSON: %s', $raw_value ) );
+				self::error( sprintf( 'Invalid JSON: %s', $raw_value ) );
 			}
 		} else {
 			$value = $raw_value;
