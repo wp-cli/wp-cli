@@ -22,7 +22,7 @@ final class LoadRequiredCommand implements BootstrapStep {
 	 * @return BootstrapState Modified state to pass to the next step.
 	 */
 	public function process( BootstrapState $state ) {
-		if ( $state->getValue( BootstrapState::IS_PROTECTED_COMMAND, $fallback = false ) ) {
+		if ( $state->getValue( BootstrapState::IS_PROTECTED_COMMAND, false ) ) {
 			return $state;
 		}
 
