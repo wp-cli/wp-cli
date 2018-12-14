@@ -627,6 +627,66 @@ Feature: WP-CLI Commands
 
       """
 
+    Given a test-reordering.php file:
+      """
+      <?php
+      WP_CLI::add_command( 'test-reordering', function () { }, [
+        'shortdesc' => 'Test reordering of arguments.',
+        'synopsis'  => [
+          [
+            'type'        => 'flag',
+            'name'        => 'my-flag',
+            'description' => 'Flag something',
+          ],
+          [
+            'type'        => 'assoc',
+            'name'        => 'my-assoc',
+            'description' => 'Assoc something',
+            'options'     => [ 'a', 'b', 'c' ],
+            'default'     => 'a',
+          ],
+          [
+            'type'        => 'positional',
+            'name'        => 'my-positional',
+            'description' => 'Positional something.',
+            'optional'    => false,
+            'repeating'   => false,
+          ],
+        ],
+        'when'      => 'before_wp_load',
+      ] );
+      """
+
+    When I run `wp --require=test-reordering.php help test-reordering`
+    Then STDOUT should contain:
+      """
+      NAME
+
+        wp test-reordering
+
+      SYNOPSIS
+
+        wp test-reordering --my-assoc=<my-assoc> --my-flag
+
+      OPTIONS
+
+        <my-positional>
+          Positional something.
+
+        --my-assoc=<my-assoc>
+          Assoc something
+          ---
+          default: a
+          options:
+            - a
+            - b
+            - c
+          ---
+
+        --my-flag
+          Flag something
+      """
+
   Scenario: Register a command with default and accepted arguments.
     Given an empty directory
     And a test-cmd.php file:
