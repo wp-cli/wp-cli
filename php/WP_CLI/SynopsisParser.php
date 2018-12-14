@@ -35,19 +35,28 @@ class SynopsisParser {
 	}
 
 	/**
-	 * @param array A structured synopsis
-	 * @return string Rendered synopsis
+	 * Render the Synopsis into a format string.
+	 *
+	 * @param array $synopsis A structured synopsis. This might get reordered
+	 *                        to match the parsed output.
+	 * @return string Rendered synopsis.
 	 */
-	public static function render( $synopsis ) {
+	public static function render( &$synopsis ) {
 		if ( ! is_array( $synopsis ) ) {
 			return '';
 		}
-		$bits = array(
+		$bits               = [
 			'positional' => '',
 			'assoc'      => '',
 			'generic'    => '',
 			'flag'       => '',
-		);
+		];
+		$reordered_synopsis = [
+			'positional' => [],
+			'assoc'      => [],
+			'generic'    => [],
+			'flag'       => [],
+		];
 		foreach ( $bits as $key => &$value ) {
 			foreach ( $synopsis as $arg ) {
 				if ( empty( $arg['type'] )
@@ -61,13 +70,21 @@ class SynopsisParser {
 
 				if ( 'positional' === $key ) {
 					$rendered_arg = "<{$arg['name']}>";
+
+					$reordered_synopsis['positional'] [] = $arg;
 				} elseif ( 'assoc' === $key ) {
 					$arg_value    = isset( $arg['value']['name'] ) ? $arg['value']['name'] : $arg['name'];
 					$rendered_arg = "--{$arg['name']}=<{$arg_value}>";
+
+					$reordered_synopsis['assoc'] [] = $arg;
 				} elseif ( 'generic' === $key ) {
 					$rendered_arg = '--<field>=<value>';
+
+					$reordered_synopsis['generic'] [] = $arg;
 				} elseif ( 'flag' === $key ) {
 					$rendered_arg = "--{$arg['name']}";
+
+					$reordered_synopsis['flag'] [] = $arg;
 				}
 				if ( ! empty( $arg['repeating'] ) ) {
 					$rendered_arg = "{$rendered_arg}...";
@@ -84,6 +101,14 @@ class SynopsisParser {
 				$rendered .= $v;
 			}
 		}
+
+		$synopsis = array_merge(
+			$reordered_synopsis['positional'],
+			$reordered_synopsis['assoc'],
+			$reordered_synopsis['generic'],
+			$reordered_synopsis['flag']
+		);
+
 		return rtrim( $rendered, ' ' );
 	}
 
