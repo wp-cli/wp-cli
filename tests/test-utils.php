@@ -59,9 +59,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 	public function testParseSSHUrl() {
 		$testcase = 'foo';
-		$this->assertEquals( array(
-			'host' => 'foo',
-		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( array( 'host' => 'foo' ), Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -69,9 +67,7 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com';
-		$this->assertEquals( array(
-			'host' => 'foo.com',
-		), Utils\parse_ssh_url( $testcase ) );
+		$this->assertEquals( array( 'host' => 'foo.com' ), Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -79,10 +75,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com:2222';
-		$this->assertEquals( array(
+		$expected = array(
 			'host' => 'foo.com',
 			'port' => 2222,
-		), Utils\parse_ssh_url( $testcase ) );
+		);
+		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -90,11 +87,12 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com:2222/path/to/dir';
-		$this->assertEquals( array(
+		$expected = array(
 			'host' => 'foo.com',
 			'port' => 2222,
 			'path' => '/path/to/dir',
-		), Utils\parse_ssh_url( $testcase ) );
+		);
+		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -102,10 +100,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( '/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com~/path/to/dir';
-		$this->assertEquals( array(
+		$expected = array(
 			'host' => 'foo.com',
 			'path' => '~/path/to/dir',
-		), Utils\parse_ssh_url( $testcase ) );
+		);
+		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -123,10 +122,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// host and path, no port, with scp notation
 		$testcase = 'foo.com:~/path/to/dir';
-		$this->assertEquals( array(
+		$expected = array(
 			'host' => 'foo.com',
 			'path' => '~/path/to/dir',
-		), Utils\parse_ssh_url( $testcase ) );
+		);
+		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -134,11 +134,12 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals( '~/path/to/dir', Utils\parse_ssh_url( $testcase, PHP_URL_PATH ) );
 
 		$testcase = 'foo.com:2222~/path/to/dir';
-		$this->assertEquals( array(
+		$expected = array(
 			'host' => 'foo.com',
 			'path' => '~/path/to/dir',
 			'port' => '2222',
-		), Utils\parse_ssh_url( $testcase ) );
+		);
+		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -147,12 +148,13 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// explicit scheme, user, host, path, no port
 		$testcase = 'ssh:bar@foo.com:~/path/to/dir';
-		$this->assertEquals( array(
+		$expected = array(
 			'scheme' => 'ssh',
 			'user'   => 'bar',
 			'host'   => 'foo.com',
 			'path'   => '~/path/to/dir',
-		), Utils\parse_ssh_url( $testcase ) );
+		);
+		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'ssh', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'foo.com', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -161,10 +163,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// container scheme
 		$testcase = 'docker:wordpress';
-		$this->assertEquals( array(
+		$expected = array(
 			'scheme' => 'docker',
 			'host'   => 'wordpress',
-		), Utils\parse_ssh_url( $testcase ) );
+		);
+		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'docker', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -173,11 +176,12 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// container scheme with user, and host
 		$testcase = 'docker:bar@wordpress';
-		$this->assertEquals( array(
+		$expected = array(
 			'scheme' => 'docker',
 			'user'   => 'bar',
 			'host'   => 'wordpress',
-		), Utils\parse_ssh_url( $testcase ) );
+		);
+		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'docker', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -186,12 +190,13 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// container scheme with user, host, and path
 		$testcase = 'docker-compose:bar@wordpress:~/path/to/dir';
-		$this->assertEquals( array(
+		$expected = array(
 			'scheme' => 'docker-compose',
 			'user'   => 'bar',
 			'host'   => 'wordpress',
 			'path'   => '~/path/to/dir',
-		), Utils\parse_ssh_url( $testcase ) );
+		);
+		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'docker-compose', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( 'bar', Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'wordpress', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -200,10 +205,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// vagrant scheme
 		$testcase = 'vagrant:default';
-		$this->assertEquals( array(
+		$expected = array(
 			'scheme' => 'vagrant',
 			'host'   => 'default',
-		), Utils\parse_ssh_url( $testcase ) );
+		);
+		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( 'vagrant', Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'default', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -212,10 +218,11 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 		// vagrant scheme
 		$testcase = 'vagrant:/var/www/html';
-		$this->assertEquals( array(
+		$expected = array(
 			'host' => 'vagrant',
 			'path' => '/var/www/html',
-		), Utils\parse_ssh_url( $testcase ) );
+		);
+		$this->assertEquals( $expected, Utils\parse_ssh_url( $testcase ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_SCHEME ) );
 		$this->assertEquals( null, Utils\parse_ssh_url( $testcase, PHP_URL_USER ) );
 		$this->assertEquals( 'vagrant', Utils\parse_ssh_url( $testcase, PHP_URL_HOST ) );
@@ -234,40 +241,54 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 
 	public function testParseStrToArgv() {
 		$this->assertEquals( array(), Utils\parse_str_to_argv( '' ) );
-		$this->assertEquals( array(
+
+		$expected = array(
 			'option',
 			'get',
 			'home',
-		), Utils\parse_str_to_argv( 'option get home' ) );
-		$this->assertEquals( array(
+		);
+		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'option get home' ) );
+
+		$expected = array(
 			'core',
 			'download',
 			'--path=/var/www/',
-		), Utils\parse_str_to_argv( 'core download --path=/var/www/' ) );
-		$this->assertEquals( array(
+		);
+		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'core download --path=/var/www/' ) );
+
+		$expected = array(
 			'eval',
 			'echo wp_get_current_user()->user_login;',
-		), Utils\parse_str_to_argv( 'eval "echo wp_get_current_user()->user_login;"' ) );
-		$this->assertEquals( array(
+		);
+		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'eval "echo wp_get_current_user()->user_login;"' ) );
+
+		$expected = array(
 			'post',
 			'create',
 			'--post_title="Hello world!"',
-		), Utils\parse_str_to_argv( 'post create --post_title="Hello world!"' ) );
-		$this->assertEquals( array(
+		);
+		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'post create --post_title="Hello world!"' ) );
+
+		$expected = array(
 			'post',
 			'create',
 			'--post_title=\'Mixed "quotes are working" hopefully\'',
-		), Utils\parse_str_to_argv( 'post create --post_title=\'Mixed "quotes are working" hopefully\'' ) );
-		$this->assertEquals( array(
+		);
+		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'post create --post_title=\'Mixed "quotes are working" hopefully\'' ) );
+
+		$expected = array(
 			'post',
 			'create',
 			'--post_title="Escaped \"double \"quotes!"',
-		), Utils\parse_str_to_argv( 'post create --post_title="Escaped \"double \"quotes!"' ) );
-		$this->assertEquals( array(
+		);
+		$this->assertEquals( $expected, Utils\parse_str_to_argv( 'post create --post_title="Escaped \"double \"quotes!"' ) );
+
+		$expected = array(
 			'post',
 			'create',
 			"--post_title='Escaped \'single \'quotes!'",
-		), Utils\parse_str_to_argv( "post create --post_title='Escaped \'single \'quotes!'" ) );
+		);
+		$this->assertEquals( $expected, Utils\parse_str_to_argv( "post create --post_title='Escaped \'single \'quotes!'" ) );
 	}
 
 	public function testAssocArgsToString() {
@@ -277,15 +298,16 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 		};
 
 		$expected = " --url='foo.dev' --porcelain --apple='banana'";
-		$actual   = Utils\assoc_args_to_str( array(
+		$input    = array(
 			'url'       => 'foo.dev',
 			'porcelain' => true,
 			'apple'     => 'banana',
-		) );
+		);
+		$actual   = Utils\assoc_args_to_str( $input );
 		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
 
 		$expected = " --url='foo.dev' --require='file-a.php' --require='file-b.php' --porcelain --apple='banana'";
-		$actual   = Utils\assoc_args_to_str( array(
+		$input    = array(
 			'url'       => 'foo.dev',
 			'require'   => array(
 				'file-a.php',
@@ -293,7 +315,8 @@ class UtilsTest extends PHPUnit_Framework_TestCase {
 			),
 			'porcelain' => true,
 			'apple'     => 'banana',
-		) );
+		);
+		$actual   = Utils\assoc_args_to_str( $input );
 		$this->assertSame( $strip_quotes( $expected ), $strip_quotes( $actual ) );
 	}
 
