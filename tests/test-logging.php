@@ -78,11 +78,16 @@ class LoggingTests extends PHPUnit_Framework_TestCase {
 		$logger->debug( 'debug2', 'group2' );
 
 		$this->assertSame( "info\ninfo2\nSuccess: success\nSuccess: success2\n", $logger->stdout );
-		$this->assertSame( 1, preg_match( '/^'
-			. 'Warning: warning\nError: error\n'
-			. 'Warning: warning2\nDebug \(group\): debug \([0-9.]+s\)\n'
-			. 'Error:\nline11\nline12\nline13\n---------\n\nError: error2\n'
-			. 'Error:\nline21\n---------\n\nDebug \(group2\): debug2 \([0-9.]+s\)$/', $logger->stderr ) );
+
+		$match_count = preg_match(
+			'/^'
+				. 'Warning: warning\nError: error\n'
+				. 'Warning: warning2\nDebug \(group\): debug \([0-9.]+s\)\n'
+				. 'Error:\nline11\nline12\nline13\n---------\n\nError: error2\n'
+				. 'Error:\nline21\n---------\n\nDebug \(group2\): debug2 \([0-9.]+s\)$/',
+			$logger->stderr
+		);
+		$this->assertSame( 1, $match_count );
 
 		$logger->stdout = '';
 		$logger->stderr = '';
