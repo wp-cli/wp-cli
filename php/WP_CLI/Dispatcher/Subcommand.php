@@ -144,10 +144,29 @@ class Subcommand extends CompositeCommand {
 			return array( $args, $assoc_args );
 		}
 
+		// To skip the already provided positional arguments, we need to count
+		// how many we had already received.
+		$arg_index = 0;
+
 		$spec = array_filter(
 			\WP_CLI\SynopsisParser::parse( $synopsis ),
-			function( $spec_arg ) {
-				return in_array( $spec_arg['type'], array( 'generic', 'positional', 'assoc', 'flag' ), true );
+			function( $spec_arg ) use ( $args, $assoc_args, &$arg_index ) {
+				switch ( $spec_arg['type'] ) {
+					case 'positional':
+						// Only prompt for the positional arguments that are not
+						// yet provided, based purely on number.
+						return $arg_index++ >= count( $args );
+						break;
+					case 'generic':
+						// Always prompt for generic arguments.
+						return true;
+					case 'assoc':
+					case 'flag':
+					default:
+						// Prompt for the specific flags that were not provided
+						// yet, based on name.
+						return ! isset( $assoc_args[ $spec_arg['name'] ] );
+				}
 			}
 		);
 
@@ -161,6 +180,7 @@ class Subcommand extends CompositeCommand {
 		// 'positional' arguments are positional (aka zero-indexed)
 		// so $args needs to be reset before prompting for new arguments
 		$args = array();
+
 		foreach ( $spec as $key => $spec_arg ) {
 
 			// When prompting for specific arguments (e.g. --prompt=user_pass),
@@ -213,7 +233,6 @@ class Subcommand extends CompositeCommand {
 				} while ( $repeat );
 
 			} else {
-
 				$prompt = $current_prompt . $spec_arg['token'];
 				if ( 'flag' === $spec_arg['type'] ) {
 					$prompt .= ' (Y/n)';
