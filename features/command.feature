@@ -648,7 +648,7 @@ Feature: WP-CLI Commands
           [
             'type'        => 'positional',
             'name'        => 'my-positional',
-            'description' => 'Positional something.',
+            'description' => 'Positional something',
             'optional'    => false,
             'repeating'   => false,
           ],
@@ -664,14 +664,18 @@ Feature: WP-CLI Commands
 
         wp test-reordering
 
+      DESCRIPTION
+
+        Test reordering of arguments.
+
       SYNOPSIS
 
-        wp test-reordering --my-assoc=<my-assoc> --my-flag
+        wp test-reordering <my-positional> --my-assoc=<my-assoc> --my-flag
 
       OPTIONS
 
         <my-positional>
-          Positional something.
+          Positional something
 
         --my-assoc=<my-assoc>
           Assoc something
